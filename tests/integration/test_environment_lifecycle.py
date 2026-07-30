@@ -110,6 +110,59 @@ CONFIG_STDOUT = json.dumps(
                 **(
                     {
                         "volumes": [
+                            *(
+                                [
+                                    {
+                                        "type": "bind",
+                                        "source": str(
+                                            ROOT
+                                            / "third_party"
+                                            / "opentelemetry-demo"
+                                            / "src"
+                                            / "jaeger"
+                                            / "config.yml"
+                                        ),
+                                        "target": "/etc/jaeger/config.yml",
+                                        "read_only": True,
+                                    },
+                                    {
+                                        "type": "bind",
+                                        "source": str(
+                                            ROOT
+                                            / "third_party"
+                                            / "opentelemetry-demo"
+                                            / "src"
+                                            / "jaeger"
+                                            / "ui-config.json"
+                                        ),
+                                        "target": "/etc/jaeger/ui-config.json",
+                                        "read_only": True,
+                                    },
+                                ]
+                                if service == "jaeger"
+                                else (
+                                    [
+                                        {
+                                            "type": "bind",
+                                            "source": str(
+                                                ROOT
+                                                / "third_party"
+                                                / "opentelemetry-demo"
+                                                / "src"
+                                                / "prometheus"
+                                                / "prometheus-config.yaml"
+                                            ),
+                                            "target": (
+                                                "/etc/prometheus/"
+                                                "prometheus-config.yaml"
+                                            ),
+                                            "read_only": True,
+                                        }
+                                    ]
+                                    if service == "prometheus"
+                                    else []
+                                )
+                            ),
                             {
                                 "type": "volume",
                                 "source": {
@@ -831,6 +884,7 @@ def test_fresh_up_closes_intent_image_and_post_start_ownership_artifacts(
 
     assert execution.result.outcome is Outcome.SUCCESS
     assert execution.result.exit_code == 0
+    assert execution.mutation_may_have_occurred
     assert execution.ownership_context is not None
     assert execution.ownership_context.is_authentic()
     assert execution.docker_endpoint == DOCKER_ENDPOINT
@@ -1207,6 +1261,7 @@ def test_volume_plan_fails_closed_before_up(
 
     assert execution.result.outcome is Outcome.UNSAFE
     assert execution.result.reason_code == "UNSAFE_VOLUME_PLAN"
+    assert not execution.mutation_may_have_occurred
     assert message
     assert all(call[0] != up.arguments for call in runner.calls)
 
@@ -1399,6 +1454,7 @@ def test_compose_up_uncertainty_is_typed_41_with_truthful_evidence(
     assert execution.result.outcome is Outcome.MANUAL_INTERVENTION_REQUIRED
     assert execution.result.exit_code == 41
     assert execution.result.reason_code == "COMPOSE_UP_MUTATION_UNCERTAIN"
+    assert execution.mutation_may_have_occurred
     assert execution.artifact_paths is not None
     assert execution.artifact_paths.ownership_intent is not None
     assert execution.artifact_paths.ownership_intent.is_file()

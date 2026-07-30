@@ -25,10 +25,12 @@ from ecomsre.environment.lifecycle import (
 )
 from ecomsre.environment.manifests import (
     ImageLockManifest,
+    ImageLockSourceSetChanged,
     ImageLockStatus,
     InspectedImage,
     generate_candidate_image_lock,
     load_image_lock,
+    rotate_candidate_image_lock,
     verify_acceptance_image_lock,
     write_candidate_image_lock,
 )
@@ -61,6 +63,10 @@ class ProxyDiscoveryUnavailable(RuntimeError):
 
 class ProxyConfigurationUnsafe(ValueError):
     """The enabled macOS proxy configuration is malformed or unsafe."""
+
+
+class ImageLockRotationRequired(ValueError):
+    """A stale LOCKED file requires an explicit compare-and-swap rotation."""
 
 
 _REGISTRY_TOTAL_ATTEMPTS = 3
@@ -760,6 +766,9 @@ def bootstrap_image_lock(
     runner: _Runner,
     docker_endpoint: str,
     replace_locked: bool = False,
+    rotate_image_lock: bool = False,
+    expected_old_lock_sha256: str | None = None,
+    rotation_reason: str | None = None,
 ) -> ImageLockManifest:
     """Resolve exact inputs and publish or verify one local ARM64 lock."""
     root = Path(project_root).resolve()
@@ -767,6 +776,13 @@ def bootstrap_image_lock(
     existing = load_image_lock(lock_path)
     if existing.status is ImageLockStatus.LOCKED and replace_locked:
         raise FileExistsError("existing image lock is immutable")
+    rotation_arguments = (
+        rotate_image_lock,
+        expected_old_lock_sha256 is not None,
+        rotation_reason is not None,
+    )
+    if any(rotation_arguments) and not all(rotation_arguments):
+        raise ValueError("image lock rotation arguments must be supplied together")
 
     config = build_compose_invocation(
         ComposeAction.CONFIG,
@@ -788,12 +804,42 @@ def bootstrap_image_lock(
     port_plan = parse_expected_port_bindings(resolved)
 
     if existing.status is ImageLockStatus.LOCKED:
+        lock_mismatch = (
+            resolved.sha256 != existing.compose_config_sha256
+            or set(resolved.image_references)
+            != set(existing.allowed_source_references)
+        )
+        if lock_mismatch and not rotate_image_lock:
+            raise ImageLockRotationRequired("IMAGE_LOCK_ROTATION_REQUIRED")
+        if rotate_image_lock and not lock_mismatch:
+            raise ValueError("image lock rotation is not required")
         cached = _inspect_local_images(
             runner=runner,
             docker_endpoint=docker_endpoint,
             run_id=run_id,
             sources=existing.allowed_source_references,
         )
+        if rotate_image_lock:
+            assert expected_old_lock_sha256 is not None
+            assert rotation_reason is not None
+            rotation = rotate_candidate_image_lock(
+                path=lock_path,
+                resolved_compose=resolved,
+                cached_images=cached,
+                expected_old_lock_sha256=expected_old_lock_sha256,
+                rotation_reason=rotation_reason,
+                rotated_at=datetime.now(UTC),
+            )
+            with ObserverEvidenceStore(artifacts_root, run_id) as store:
+                store.write_immutable(
+                    "inputs/bootstrap/image-lock-rotation.json",
+                    {
+                        **rotation.evidence.model_dump(mode="json"),
+                        **compose_evidence,
+                        "run_id": run_id,
+                    },
+                )
+            return rotation.lock
         verification = verify_acceptance_image_lock(
             existing,
             cached_images=cached,

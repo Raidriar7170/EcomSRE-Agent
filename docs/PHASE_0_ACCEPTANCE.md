@@ -3,9 +3,11 @@
 ## Status
 
 This is the normative canonical interface and evidence contract. Phase 0
-commands have an offline implementation and are undergoing bounded live repair;
-they have not completed formal acceptance. This document alone does not
-authorize running Docker.
+commands have an offline implementation. The current repository state is
+`PRE_SMOKE_OFFLINE_REPAIR_READY`, based only on fixture-backed offline tests;
+the repaired Compose mount plan, image-lock rotation, and direct-stop path have
+not been validated against a real Docker runtime. Phase 0 has not completed
+formal acceptance. This document alone does not authorize running Docker.
 
 This contract implements `DEC-001` through `DEC-008`. `DEC-009` through
 `DEC-012` are later-phase decisions and are not Phase 0 dependencies. Phase 0
@@ -226,6 +228,14 @@ Direct `phase0-up` returns
 a supervised smoke records the persistence failure in its terminal `UNSAFE`
 report and still attempts the exact safe stop.
 
+Startup returns a typed mutation disposition. Any failure before
+`docker compose up` begins is `PRE_MUTATION_BLOCKED` and does not seek stop
+authority or append `SAFE_STOP_NOT_CONFIRMED`. Once Compose up has been invoked,
+the disposition is `MUTATION_MAY_HAVE_OCCURRED` until authenticated ownership
+proves `OWNED_ENVIRONMENT_STARTED`; those two dispositions require an exact safe
+stop attempt. The original typed start failure remains authoritative if stop
+authority cannot be established.
+
 ### 4. Execute each cycle
 
 Each cycle is:
@@ -293,6 +303,18 @@ then stops only proven project-owned resources.
 Failed runs remain intact. A rerun creates a new `RUN_ID`; it does not replace
 the failed record.
 
+Direct `phase0-stop` authenticates the stored ownership context and collects
+only the supported local Docker context, Unix endpoint, daemon availability,
+and daemon ID needed to request `FreshStopAuthority`. It does not require full
+preflight, image-lock agreement, capacity, readiness, telemetry, or observer
+artifact persistence. Resource rediscovery must match the authenticated
+manifest exactly before the one allowlisted down operation. An observer
+authority-evidence write error is retained as a typed warning without revoking
+the already authenticated in-process stop capability. A post-stop recovery
+reseal failure reports
+`MANUAL_INTERVENTION_REQUIRED / RECOVERY_EVIDENCE_PERSISTENCE_FAILED` while
+preserving the fact that the owned stop completed.
+
 The terminal ordering is strict:
 
 1. decide the terminal disposition;
@@ -327,9 +349,14 @@ All are required:
 
 Any Compose-layer change invalidates the previous resolved Compose hash binding.
 An offline edit cannot manufacture the replacement hash. Before `up`, a live,
-separately authorized bootstrap/preflight must re-resolve Compose, create or
-version the candidate image lock, and verify every cached ARM64 image. A stale
-binding is `BLOCKED_UPSTREAM`; it must not be bypassed.
+separately authorized bootstrap must re-resolve Compose and explicitly rotate
+the candidate image lock using the expected old lock-content hash and
+`COMPOSE_OVERRIDE_CHANGED`. Rotation preserves the old bytes under
+`image-lock-history/<old-sha256>.json`, rejects source-set changes, re-verifies
+every cached ARM64 image, compare-and-swaps the current inode/bytes/hash, and
+revalidates the published lock. Without complete explicit rotation
+authorization, a stale binding is
+`BLOCKED_UPSTREAM / IMAGE_LOCK_ROTATION_REQUIRED`; it must not be bypassed.
 
 The sole passing outcome is `SUCCESS`. Terms such as “mostly passed,”
 “basically passed,” or “passed except for” are invalid.

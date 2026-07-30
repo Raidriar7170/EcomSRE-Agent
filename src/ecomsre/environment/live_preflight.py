@@ -41,6 +41,7 @@ from ecomsre.environment.ownership_authority import (
 from ecomsre.environment.preflight import (
     AuthenticatedPreflightEvidence,
     CommandResult,
+    DOCKER_DESKTOP_CONTEXT,
     OwnershipProof,
     PortObservation,
     PreflightInputs,
@@ -48,7 +49,9 @@ from ecomsre.environment.preflight import (
     ResourceObservation,
     collect_docker_snapshot,
     collect_host_snapshot,
+    docker_host_prefix,
     issue_authenticated_preflight_evidence,
+    is_local_unix_docker_endpoint,
     parse_cached_images,
     parse_port_observation,
     parse_resolved_compose_config,
@@ -56,7 +59,6 @@ from ecomsre.environment.preflight import (
 from ecomsre.evidence.store import ObserverEvidenceStore
 from ecomsre.evidence.hashes import canonical_json_sha256
 from ecomsre.phase0.models import Outcome
-from ecomsre.environment.preflight import docker_host_prefix
 
 
 _FRESH_STOP_AUTHORITY_TOKEN = object()
@@ -68,6 +70,16 @@ _OBSERVER_RESOURCE_LABEL_ALLOWLIST = frozenset(
         RUN_LABEL,
     }
 )
+
+
+@dataclass(frozen=True, slots=True)
+class DirectStopDockerSnapshot:
+    """Only the local daemon identity facts needed to seek stop authority."""
+
+    daemon_available: bool
+    context_name: str
+    docker_endpoint: str
+    daemon_id: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -93,6 +105,88 @@ class FreshStopAuthority:
             and bool(self.docker_endpoint)
             and bool(self.daemon_id)
         )
+
+
+def collect_direct_stop_docker_snapshot(
+    runner: LifecycleRunner,
+    *,
+    timeout_seconds: float = 10,
+) -> DirectStopDockerSnapshot:
+    """Read only the supported local context, endpoint, and daemon identity."""
+    context_arguments = (
+        "docker",
+        "--context",
+        DOCKER_DESKTOP_CONTEXT,
+        "context",
+        "inspect",
+        DOCKER_DESKTOP_CONTEXT,
+        "--format",
+        "{{json .}}",
+    )
+    try:
+        context_result = runner.run(
+            context_arguments,
+            timeout_seconds=timeout_seconds,
+        )
+        if context_result.exit_code != 0:
+            raise PreflightCollectionError(
+                "direct stop Docker context is unavailable"
+            )
+        context_payload = json.loads(context_result.stdout)
+        if not isinstance(context_payload, dict):
+            raise ValueError("Docker context inspection must be an object")
+        endpoints = context_payload.get("Endpoints")
+        docker_endpoint = (
+            endpoints.get("docker")
+            if isinstance(endpoints, dict)
+            else None
+        )
+        endpoint = (
+            str(docker_endpoint.get("Host", ""))
+            if isinstance(docker_endpoint, dict)
+            else ""
+        )
+        context_name = str(context_payload.get("Name", ""))
+        if (
+            context_name != DOCKER_DESKTOP_CONTEXT
+            or not is_local_unix_docker_endpoint(endpoint)
+        ):
+            return DirectStopDockerSnapshot(
+                daemon_available=False,
+                context_name=context_name,
+                docker_endpoint=endpoint,
+                daemon_id="",
+            )
+        info_result = runner.run(
+            (
+                *docker_host_prefix(endpoint),
+                "info",
+                "--format",
+                "{{json .ID}}",
+            ),
+            timeout_seconds=timeout_seconds,
+        )
+        daemon_id = (
+            json.loads(info_result.stdout)
+            if info_result.exit_code == 0
+            else ""
+        )
+        if not isinstance(daemon_id, str):
+            raise ValueError("Docker daemon identity must be a string")
+        return DirectStopDockerSnapshot(
+            daemon_available=(
+                info_result.exit_code == 0 and bool(daemon_id)
+            ),
+            context_name=context_name,
+            docker_endpoint=endpoint,
+            daemon_id=daemon_id,
+        )
+    except PreflightCollectionError:
+        raise
+    except Exception as error:
+        raise PreflightCollectionError(
+            "direct stop Docker snapshot is malformed"
+        ) from error
 
 
 def collect_fresh_stop_authority(

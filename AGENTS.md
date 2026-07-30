@@ -15,7 +15,7 @@ invalidates one, stop and propose a new Decision Record.
 
 ## Current state
 
-The project is in `PHASE0_POST_UNSAFE_OFFLINE_REPAIR_READY`.
+The project is in `PRE_SMOKE_OFFLINE_REPAIR_READY`.
 
 - The 12 decisions `DEC-001` through `DEC-012` are accepted.
 - Phase 0 offline implementation and fixture-backed tests exist.
@@ -32,16 +32,26 @@ The project is in `PHASE0_POST_UNSAFE_OFFLINE_REPAIR_READY`.
   post-up failure classification, stop-authority retention, observer projection,
   append-only recovery sealing, image-lock test isolation, and named-volume
   ownership. These changes have offline test evidence only.
+- The pre-smoke offline repair v2 closes four additional static Must Fix items:
+  frozen-upstream Jaeger/Prometheus config-bind preservation, explicit
+  compare-and-swap image-lock rotation, typed pre-mutation versus
+  mutation-possible start disposition, and direct stop through
+  `FreshStopAuthority`. These paths also have offline test evidence only.
+- Required config binds are enforced by fixture-backed resolved mount-plan
+  checks, but the repaired Compose plan has not been expanded by a real Docker
+  runtime.
 - The Compose override changed after the current image lock was created. The
   checked-in lock still binds the pre-repair resolved Compose hash. Before any
   future `up`, a separately authorized live task must re-resolve Compose and
-  safely generate and verify a matching candidate lock; hash mismatch must fail
-  closed.
+  explicitly rotate and verify a matching candidate lock; hash mismatch without
+  rotation authorization must fail closed. No real rotation has been executed.
+- The direct-stop minimal authority path has not been exercised against the real
+  Docker daemon.
 - `OQ-001` is closed by the preserved real preflight fingerprint.
   `OQ-002` through `OQ-004` remain open.
 - Phase 0 is incomplete. No second smoke or formal acceptance has been run.
 - PR disposition remains `Draft / REVIEW_REQUIRED`.
-- This bounded repair is governed by
+- Any future bounded smoke remains governed by
   `docs/PHASE_0_BOUNDED_REPAIR_SMOKE_PROMPT.md`.
 - The one-smoke allowance has been consumed. Do not run another smoke without
   new explicit authorization.

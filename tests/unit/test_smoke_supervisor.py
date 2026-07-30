@@ -8,6 +8,8 @@ import pytest
 import ecomsre.cli as cli_module
 import ecomsre.phase0.smoke as smoke_module
 from ecomsre.phase0.smoke import (
+    EnvironmentStartDisposition,
+    SmokeEnvironmentStart,
     SmokeExecutionError,
     SmokeSupervisorState,
     finalize_supervised_smoke,
@@ -41,7 +43,15 @@ class FakeOperations:
 
     def start_environment(self):
         self._step("up")
-        return TerminalResult(outcome=Outcome.SUCCESS, reason_code="UP")
+        return SmokeEnvironmentStart(
+            result=TerminalResult(
+                outcome=Outcome.SUCCESS,
+                reason_code="UP",
+            ),
+            disposition=(
+                EnvironmentStartDisposition.OWNED_ENVIRONMENT_STARTED
+            ),
+        )
 
     def fresh_authority(self, boundary: str):
         return self._step(f"authority:{boundary}")
@@ -151,7 +161,7 @@ def test_supervisor_finalizes_and_stops_after_every_post_up_failure(
 
     assert operations.events[-1] == "finalize"
     assert failure_step in state.failure_reason_codes
-    if failure_step not in {"authority:stop", "down"}:
+    if failure_step not in {"up", "authority:stop", "down"}:
         assert "authority:stop" in operations.events
     if failure_step not in {"up", "authority:stop"}:
         assert "down" in operations.events
@@ -173,27 +183,28 @@ def test_supervisor_finalizes_and_stops_after_every_post_up_failure(
         )
 
 
-def test_supervisor_stops_after_non_success_start_result() -> None:
+def test_supervisor_does_not_stop_after_pre_mutation_start_result() -> None:
     class FailedStart(FakeOperations):
         def start_environment(self):
             self._step("up")
-            return TerminalResult(
-                outcome=Outcome.BLOCKED_ENVIRONMENT,
-                reason_code="UP_FAILED",
+            return SmokeEnvironmentStart(
+                result=TerminalResult(
+                    outcome=Outcome.BLOCKED_ENVIRONMENT,
+                    reason_code="UP_FAILED",
+                ),
+                disposition=(
+                    EnvironmentStartDisposition.PRE_MUTATION_BLOCKED
+                ),
             )
 
     operations = FailedStart()
 
     state = supervise_smoke_attempt(run_id=RUN_ID, operations=operations)
 
-    assert operations.events == [
-        "up",
-        "authority:stop",
-        "down",
-        "finalize",
-    ]
+    assert operations.events == ["up", "finalize"]
     assert not state.environment_started
-    assert state.stop_succeeded
+    assert not state.stop_required
+    assert not state.stop_attempted
     assert "UP_FAILED" in state.failure_reason_codes
     assert state.failure_statuses == [DiagnosticStatus.BLOCKED]
 
@@ -319,6 +330,7 @@ def test_production_start_retains_available_authority_for_guarded_cleanup(
             ownership_context=ownership,
             docker_endpoint="unix:///var/run/docker.sock",
             daemon_id="fixture-daemon",
+            mutation_may_have_occurred=True,
         ),
     )
     monkeypatch.setattr(
@@ -335,7 +347,14 @@ def test_production_start_retains_available_authority_for_guarded_cleanup(
 
     result = operations.start_environment()
 
-    assert result.reason_code == "POST_UP_EVIDENCE_PERSISTENCE_FAILED"
+    assert (
+        result.result.reason_code
+        == "POST_UP_EVIDENCE_PERSISTENCE_FAILED"
+    )
+    assert (
+        result.disposition
+        is EnvironmentStartDisposition.MUTATION_MAY_HAVE_OCCURRED
+    )
     assert operations.stop_ownership is ownership
     assert operations.stop_docker_endpoint == "unix:///var/run/docker.sock"
     assert operations.stop_daemon_id == "fixture-daemon"

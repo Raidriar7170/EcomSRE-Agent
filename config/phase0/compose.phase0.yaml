@@ -157,6 +157,14 @@ services:
     <<: *phase0-service
     container_name: ecomsre-phase0-jaeger
     volumes: !override
+      - type: bind
+        source: ./src/jaeger/config.yml
+        target: /etc/jaeger/config.yml
+        read_only: true
+      - type: bind
+        source: ./src/jaeger/ui-config.json
+        target: /etc/jaeger/ui-config.json
+        read_only: true
       - type: volume
         source: jaeger-data
         target: /tmp
@@ -174,6 +182,10 @@ services:
     <<: *phase0-service
     container_name: ecomsre-phase0-prometheus
     volumes: !override
+      - type: bind
+        source: ./src/prometheus/prometheus-config.yaml
+        target: /etc/prometheus/prometheus-config.yaml
+        read_only: true
       - type: volume
         source: prometheus-data
         target: /prometheus

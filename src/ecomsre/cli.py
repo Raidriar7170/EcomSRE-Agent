@@ -30,11 +30,13 @@ from ecomsre.environment.bootstrap import (
     Arm64ManifestUnavailable,
     ProxyConfigurationUnsafe,
     ProxyDiscoveryUnavailable,
+    ImageLockRotationRequired,
     UpstreamCommandFailed,
     bootstrap_image_lock,
 )
 from ecomsre.environment.live_preflight import (
     FreshStopAuthority,
+    collect_direct_stop_docker_snapshot,
     collect_fresh_preflight,
     collect_fresh_stop_authority,
 )
@@ -46,6 +48,7 @@ from ecomsre.environment.readiness import (
 )
 from ecomsre.environment.manifests import (
     ImageLockManifest,
+    ImageLockSourceSetChanged,
     ImageLockStatus,
     load_image_lock,
 )
@@ -56,9 +59,11 @@ from ecomsre.environment.ownership_authority import (
 )
 from ecomsre.environment.preflight import (
     AuthenticatedPreflightEvidence,
+    DOCKER_DESKTOP_CONTEXT,
     DiscoveryParseError,
     PreflightCollectionError,
     collect_docker_snapshot,
+    is_local_unix_docker_endpoint,
 )
 from ecomsre.environment.upstream import (
     bootstrap_frozen_upstream,
@@ -73,6 +78,8 @@ from ecomsre.phase0.models import (
     TerminalResult,
 )
 from ecomsre.phase0.smoke import (
+    EnvironmentStartDisposition,
+    SmokeEnvironmentStart,
     SmokeExecutionError,
     SmokeSupervisorState,
     execute_diagnostic_cycle,
@@ -157,6 +164,13 @@ class CliCommandResult(TerminalResult):
     ownership_manifest_sha256: str | None = None
 
 
+class DirectStopResult(TerminalResult):
+    """Terminal stop truth plus non-fatal evidence-persistence detail."""
+
+    evidence_persistence_error: str | None = None
+    owned_stop_completed: bool = False
+
+
 class SubprocessRunner(AuditedSubprocessRunner):
     """Compatibility name for the single audited execution boundary."""
 
@@ -212,6 +226,20 @@ def build_parser() -> argparse.ArgumentParser:
                 required=False,
                 type=_parse_run_id,
                 metavar="RUN_ID",
+            )
+        if name == "bootstrap":
+            command.add_argument(
+                "--rotate-image-lock",
+                action="store_true",
+            )
+            command.add_argument(
+                "--expected-old-lock-sha256",
+                type=_parse_sha256,
+                metavar="SHA256",
+            )
+            command.add_argument(
+                "--rotation-reason",
+                choices=("COMPOSE_OVERRIDE_CHANGED",),
             )
 
     return parser
@@ -314,6 +342,16 @@ def _handle_bootstrap(
     args: argparse.Namespace,
     context: HandlerContext,
 ) -> TerminalResult:
+    rotation_values = (
+        bool(getattr(args, "rotate_image_lock", False)),
+        getattr(args, "expected_old_lock_sha256", None) is not None,
+        getattr(args, "rotation_reason", None) is not None,
+    )
+    if any(rotation_values) and not all(rotation_values):
+        return TerminalResult(
+            outcome=Outcome.INVALID_INVOCATION,
+            reason_code="IMAGE_LOCK_ROTATION_ARGUMENTS_REQUIRED",
+        )
     verification = bootstrap_frozen_upstream(
         context.project_root,
         context.runner,
@@ -342,6 +380,25 @@ def _handle_bootstrap(
             run_id=args.run_id,
             runner=context.runner,
             docker_endpoint=docker.endpoint,
+            rotate_image_lock=getattr(args, "rotate_image_lock", False),
+            expected_old_lock_sha256=getattr(
+                args,
+                "expected_old_lock_sha256",
+                None,
+            ),
+            rotation_reason=getattr(args, "rotation_reason", None),
+        )
+    except ImageLockRotationRequired:
+        return TerminalResult(
+            outcome=Outcome.BLOCKED_UPSTREAM,
+            reason_code="IMAGE_LOCK_ROTATION_REQUIRED",
+        )
+    except ImageLockSourceSetChanged:
+        return TerminalResult(
+            outcome=Outcome.BLOCKED_UPSTREAM,
+            reason_code=(
+                "IMAGE_LOCK_SOURCE_SET_CHANGED_REQUIRES_FULL_BOOTSTRAP"
+            ),
         )
     except Arm64ManifestUnavailable:
         return TerminalResult(
@@ -803,10 +860,15 @@ class _ProductionSmokeOperations:
         self.stop_docker_endpoint: str | None = None
         self.stop_daemon_id: str | None = None
 
-    def start_environment(self) -> TerminalResult:
+    def start_environment(self) -> SmokeEnvironmentStart:
         execution = _execute_up(self.args, self.context)
         if isinstance(execution, TerminalResult):
-            return execution
+            return SmokeEnvironmentStart(
+                result=execution,
+                disposition=(
+                    EnvironmentStartDisposition.PRE_MUTATION_BLOCKED
+                ),
+            )
         if (
             execution.ownership_context is not None
             and execution.docker_endpoint
@@ -815,7 +877,21 @@ class _ProductionSmokeOperations:
             self.stop_ownership = execution.ownership_context
             self.stop_docker_endpoint = execution.docker_endpoint
             self.stop_daemon_id = execution.daemon_id
-        return summarize_lifecycle_execution(execution)
+        result = summarize_lifecycle_execution(execution)
+        if result.outcome is Outcome.SUCCESS:
+            disposition = (
+                EnvironmentStartDisposition.OWNED_ENVIRONMENT_STARTED
+            )
+        elif execution.mutation_may_have_occurred:
+            disposition = (
+                EnvironmentStartDisposition.MUTATION_MAY_HAVE_OCCURRED
+            )
+        else:
+            disposition = EnvironmentStartDisposition.PRE_MUTATION_BLOCKED
+        return SmokeEnvironmentStart(
+            result=result,
+            disposition=disposition,
+        )
 
     def fresh_authority(
         self,
@@ -1091,31 +1167,78 @@ def _handle_stop(
     args: argparse.Namespace,
     context: HandlerContext,
 ) -> TerminalResult:
-    frozen = _verify_upstream(context)
-    if frozen is not None:
-        return frozen
     ownership = load_authenticated_ownership_context(
         context.artifacts_root,
         args.run_id,
     )
-    docker_endpoint = _current_docker_endpoint(context, args.run_id)
-    if docker_endpoint is None:
-        return TerminalResult(
-            outcome=Outcome.BLOCKED_ENVIRONMENT,
-            reason_code="PREFLIGHT_BLOCKED",
+    try:
+        docker = collect_direct_stop_docker_snapshot(context.runner)
+    except (OSError, PreflightCollectionError, ValueError):
+        return DirectStopResult(
+            outcome=Outcome.MANUAL_INTERVENTION_REQUIRED,
+            reason_code="FRESH_STOP_DOCKER_SNAPSHOT_UNAVAILABLE",
+        )
+    if docker.context_name != DOCKER_DESKTOP_CONTEXT:
+        return DirectStopResult(
+            outcome=Outcome.MANUAL_INTERVENTION_REQUIRED,
+            reason_code="FRESH_STOP_DOCKER_CONTEXT_UNSUPPORTED",
+        )
+    if (
+        not isinstance(docker.docker_endpoint, str)
+        or not is_local_unix_docker_endpoint(docker.docker_endpoint)
+    ):
+        return DirectStopResult(
+            outcome=Outcome.MANUAL_INTERVENTION_REQUIRED,
+            reason_code="FRESH_STOP_DOCKER_ENDPOINT_UNSAFE",
+        )
+    if not docker.daemon_available:
+        return DirectStopResult(
+            outcome=Outcome.MANUAL_INTERVENTION_REQUIRED,
+            reason_code="FRESH_STOP_DAEMON_UNAVAILABLE",
+        )
+    if not docker.daemon_id:
+        return DirectStopResult(
+            outcome=Outcome.MANUAL_INTERVENTION_REQUIRED,
+            reason_code="FRESH_STOP_DAEMON_ID_UNAVAILABLE",
+        )
+    try:
+        authority = collect_fresh_stop_authority(
+            project_root=context.project_root,
+            artifacts_root=context.artifacts_root,
+            runner=context.runner,
+            ownership=ownership,
+            expected_docker_endpoint=docker.docker_endpoint,
+            expected_daemon_id=docker.daemon_id,
+        )
+    except (OSError, OwnershipAuthorityError, ValueError):
+        return DirectStopResult(
+            outcome=Outcome.MANUAL_INTERVENTION_REQUIRED,
+            reason_code="FRESH_STOP_AUTHORITY_UNAVAILABLE",
+        )
+    if not authority.is_authentic(ownership):
+        return DirectStopResult(
+            outcome=Outcome.MANUAL_INTERVENTION_REQUIRED,
+            reason_code="FRESH_STOP_AUTHORITY_UNAVAILABLE",
         )
     stopped = down_environment(
         context.runner,
         context=ownership,
         project_root=context.project_root,
-        docker_endpoint=docker_endpoint,
+        docker_endpoint=authority.docker_endpoint,
     )
     if stopped.outcome is not Outcome.SUCCESS:
-        return stopped
+        return DirectStopResult(
+            **stopped.model_dump(),
+            evidence_persistence_error=authority.evidence_persistence_error,
+        )
     report_root = context.artifacts_root / "reports" / args.run_id
     smoke_report = report_root / "smoke-report.json"
     if not smoke_report.exists() and not smoke_report.is_symlink():
-        return stopped
+        return DirectStopResult(
+            **stopped.model_dump(),
+            evidence_persistence_error=authority.evidence_persistence_error,
+            owned_stop_completed=True,
+        )
     initial_checksum = report_root / "checksums.sha256"
     try:
         if (
@@ -1134,11 +1257,17 @@ def _handle_stop(
             reason_code="BOUNDED_RECOVERY_STOP",
         )
     except (OSError, RuntimeError, TypeError, ValueError):
-        return TerminalResult(
+        return DirectStopResult(
             outcome=Outcome.MANUAL_INTERVENTION_REQUIRED,
             reason_code="RECOVERY_EVIDENCE_PERSISTENCE_FAILED",
+            evidence_persistence_error=authority.evidence_persistence_error,
+            owned_stop_completed=True,
         )
-    return stopped
+    return DirectStopResult(
+        **stopped.model_dump(),
+        evidence_persistence_error=authority.evidence_persistence_error,
+        owned_stop_completed=True,
+    )
 
 
 def _next_recovery_seal_sequence(report_root: Path) -> int:
@@ -1356,6 +1485,14 @@ def _parse_run_id(value: str) -> str:
     if re.fullmatch(r"[0-9a-f]{32}", value) is None:
         raise argparse.ArgumentTypeError(
             "run_id must be exactly 32 lowercase hexadecimal characters"
+        )
+    return value
+
+
+def _parse_sha256(value: str) -> str:
+    if re.fullmatch(r"[0-9a-f]{64}", value) is None:
+        raise argparse.ArgumentTypeError(
+            "expected old lock sha256 must be 64 lowercase hexadecimal characters"
         )
     return value
 

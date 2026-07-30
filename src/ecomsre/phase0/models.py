@@ -413,6 +413,7 @@ class SmokeAttemptEvidence(BaseModel):
     safe_reset_attempted: bool
     safe_reset_succeeded: bool
     fresh_stop_authority: bool
+    safe_stop_required: bool = True
     safe_stop_attempted: bool
     safe_stop_succeeded: bool
     failure_reason_codes: tuple[str, ...]
@@ -499,6 +500,7 @@ class SmokeReport(BaseModel):
             and attempt.safe_reset_attempted
             and attempt.safe_reset_succeeded
             and attempt.fresh_stop_authority
+            and attempt.safe_stop_required
             and attempt.safe_stop_attempted
             and attempt.safe_stop_succeeded
             and not attempt.failure_reason_codes

@@ -61,6 +61,34 @@ IMPLEMENTED_COMMANDS = {
 }
 
 
+def _stub_minimal_direct_stop(monkeypatch, cli) -> None:
+    ownership = SimpleNamespace(is_authentic=lambda: True)
+    monkeypatch.setattr(
+        cli,
+        "load_authenticated_ownership_context",
+        lambda *_args: ownership,
+    )
+    monkeypatch.setattr(
+        cli,
+        "collect_direct_stop_docker_snapshot",
+        lambda *_args: SimpleNamespace(
+            daemon_available=True,
+            docker_endpoint="unix:///var/run/docker.sock",
+            daemon_id="fixture-daemon",
+            context_name="desktop-linux",
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "collect_fresh_stop_authority",
+        lambda **_kwargs: SimpleNamespace(
+            docker_endpoint="unix:///var/run/docker.sock",
+            evidence_persistence_error=None,
+            is_authentic=lambda candidate: candidate is ownership,
+        ),
+    )
+
+
 def test_exit_code_mapping_matches_acceptance_contract() -> None:
     from ecomsre.cli import EXIT_CODES
 
@@ -207,17 +235,7 @@ def test_stop_reseals_existing_terminal_smoke_bundle_after_successful_down(
         "a" * 64 + f"  reports/{run_id}/smoke-report.json\n",
         encoding="utf-8",
     )
-    monkeypatch.setattr(cli, "_verify_upstream", lambda _context: None)
-    monkeypatch.setattr(
-        cli,
-        "load_authenticated_ownership_context",
-        lambda *_args: object(),
-    )
-    monkeypatch.setattr(
-        cli,
-        "_current_docker_endpoint",
-        lambda *_args: "unix:///var/run/docker.sock",
-    )
+    _stub_minimal_direct_stop(monkeypatch, cli)
     monkeypatch.setattr(
         cli,
         "down_environment",
@@ -251,17 +269,7 @@ def test_stop_returns_manual_when_required_recovery_reseal_fails(
     report_root.mkdir(parents=True)
     (report_root / "smoke-report.json").write_text("{}", encoding="utf-8")
     (report_root / "checksums.sha256").write_text("", encoding="utf-8")
-    monkeypatch.setattr(cli, "_verify_upstream", lambda _context: None)
-    monkeypatch.setattr(
-        cli,
-        "load_authenticated_ownership_context",
-        lambda *_args: object(),
-    )
-    monkeypatch.setattr(
-        cli,
-        "_current_docker_endpoint",
-        lambda *_args: "unix:///var/run/docker.sock",
-    )
+    _stub_minimal_direct_stop(monkeypatch, cli)
     monkeypatch.setattr(
         cli,
         "down_environment",
@@ -295,17 +303,7 @@ def test_stop_without_existing_smoke_report_does_not_reseal(
     import ecomsre.cli as cli
 
     run_id = "a" * 32
-    monkeypatch.setattr(cli, "_verify_upstream", lambda _context: None)
-    monkeypatch.setattr(
-        cli,
-        "load_authenticated_ownership_context",
-        lambda *_args: object(),
-    )
-    monkeypatch.setattr(
-        cli,
-        "_current_docker_endpoint",
-        lambda *_args: "unix:///var/run/docker.sock",
-    )
+    _stub_minimal_direct_stop(monkeypatch, cli)
     monkeypatch.setattr(
         cli,
         "down_environment",

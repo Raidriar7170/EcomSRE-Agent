@@ -8,6 +8,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
+from enum import Enum
 from pathlib import Path
 from typing import Any, Literal, Protocol
 
@@ -32,6 +33,7 @@ from ecomsre.phase0.models import (
     SmokeAttemptEvidence,
     SmokeControlAcknowledgement,
     SmokePhaseEvidence,
+    TerminalResult,
     WindowCounts,
     WindowDecision,
 )
@@ -61,6 +63,32 @@ class SmokeExecutionError(RuntimeError):
         self.reason_code = reason_code
         self.status = status
         super().__init__(reason_code)
+
+
+class EnvironmentStartDisposition(str, Enum):
+    PRE_MUTATION_BLOCKED = "PRE_MUTATION_BLOCKED"
+    MUTATION_MAY_HAVE_OCCURRED = "MUTATION_MAY_HAVE_OCCURRED"
+    OWNED_ENVIRONMENT_STARTED = "OWNED_ENVIRONMENT_STARTED"
+
+
+class SmokeEnvironmentStart(BaseModel):
+    """Typed mutation boundary returned by the production start operation."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    result: TerminalResult
+    disposition: EnvironmentStartDisposition
+
+    @model_validator(mode="after")
+    def require_consistent_disposition(self) -> "SmokeEnvironmentStart":
+        if (
+            self.result.outcome is Outcome.SUCCESS
+        ) is not (
+            self.disposition
+            is EnvironmentStartDisposition.OWNED_ENVIRONMENT_STARTED
+        ):
+            raise ValueError("smoke start disposition conflicts with outcome")
+        return self
 
 
 class RecoveryReportRecord(BaseModel):
@@ -105,12 +133,15 @@ class SmokeSupervisorState:
 
     run_id: str
     environment_start_attempted: bool = False
+    start_disposition: EnvironmentStartDisposition | None = None
+    mutation_may_have_occurred: bool = False
     environment_started: bool = False
     control_open: bool = False
     fault_may_be_active: bool = False
     reset_attempted: bool = False
     reset_succeeded: bool = False
     stop_authority_fresh: bool = False
+    stop_required: bool = False
     stop_attempted: bool = False
     stop_succeeded: bool = False
     records: dict[str, Any] = field(default_factory=dict)
@@ -121,7 +152,7 @@ class SmokeSupervisorState:
 class SmokeSupervisorOperations(Protocol):
     """Concrete Phase 0 operations used by the single smoke supervisor."""
 
-    def start_environment(self) -> Any: ...
+    def start_environment(self) -> SmokeEnvironmentStart: ...
 
     def fresh_authority(self, boundary: str) -> Any: ...
 
@@ -167,10 +198,18 @@ def supervise_smoke_attempt(
     try:
         state.environment_start_attempted = True
         started = operations.start_environment()
-        if getattr(started, "outcome", None) is not Outcome.SUCCESS:
+        if not isinstance(started, SmokeEnvironmentStart):
+            raise TypeError("smoke start result is not typed")
+        state.start_disposition = started.disposition
+        state.mutation_may_have_occurred = started.disposition in {
+            EnvironmentStartDisposition.MUTATION_MAY_HAVE_OCCURRED,
+            EnvironmentStartDisposition.OWNED_ENVIRONMENT_STARTED,
+        }
+        state.stop_required = state.mutation_may_have_occurred
+        if started.result.outcome is not Outcome.SUCCESS:
             _record_supervisor_result_failure(
                 state,
-                started,
+                started.result,
                 default_reason="ENVIRONMENT_START_FAILED",
             )
         else:
@@ -214,6 +253,8 @@ def supervise_smoke_attempt(
                 state.reset_succeeded = (
                     getattr(reset, "outcome", None) is Outcome.SUCCESS
                 )
+                if state.reset_succeeded:
+                    state.fault_may_be_active = False
                 if not state.reset_succeeded:
                     _record_supervisor_result_failure(
                         state,
@@ -242,7 +283,7 @@ def supervise_smoke_attempt(
                         status=DiagnosticStatus.UNSAFE,
                     )
                 state.control_open = False
-        if state.environment_start_attempted:
+        if state.stop_required:
             try:
                 stop_authority = operations.fresh_stop_authority()
                 state.stop_authority_fresh = True
@@ -359,9 +400,9 @@ def finalize_supervised_smoke(
         and promotion.is_authentic()
     )
     failure_reasons = list(state.failure_reason_codes)
-    if not state.reset_succeeded:
+    if state.fault_may_be_active and not state.reset_succeeded:
         failure_reasons.append("SAFE_RESET_NOT_CONFIRMED")
-    if not state.stop_succeeded:
+    if state.stop_required and not state.stop_succeeded:
         failure_reasons.append("SAFE_STOP_NOT_CONFIRMED")
     typed_status = next(
         (
@@ -569,6 +610,7 @@ def _build_smoke_attempt_evidence(
         safe_reset_attempted=state.reset_attempted,
         safe_reset_succeeded=state.reset_succeeded,
         fresh_stop_authority=state.stop_authority_fresh,
+        safe_stop_required=state.stop_required,
         safe_stop_attempted=state.stop_attempted,
         safe_stop_succeeded=state.stop_succeeded,
         failure_reason_codes=tuple(state.failure_reason_codes),

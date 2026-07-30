@@ -81,6 +81,18 @@ _REQUIRED_NAMED_VOLUME_PLAN = {
     "jaeger": ("jaeger-data", "/tmp"),
     "prometheus": ("prometheus-data", "/prometheus"),
 }
+_REQUIRED_UPSTREAM_CONFIG_BINDS = {
+    "jaeger": (
+        ("src/jaeger/config.yml", "/etc/jaeger/config.yml"),
+        ("src/jaeger/ui-config.json", "/etc/jaeger/ui-config.json"),
+    ),
+    "prometheus": (
+        (
+            "src/prometheus/prometheus-config.yaml",
+            "/etc/prometheus/prometheus-config.yaml",
+        ),
+    ),
+}
 _OBSERVER_COMPOSE_LABEL_ALLOWLIST = frozenset(
     {
         _COMPOSE_PROJECT_LABEL,
@@ -237,6 +249,7 @@ class LifecycleExecution(BaseModel):
     ownership_context: AuthenticatedOwnershipContext | None = None
     docker_endpoint: str | None = None
     daemon_id: str | None = None
+    mutation_may_have_occurred: bool = False
 
     @model_validator(mode="after")
     def require_success_artifacts(self) -> "LifecycleExecution":
@@ -497,7 +510,11 @@ def up_environment(
             command_results=tuple(command_results),
         )
     try:
-        _require_explicit_volume_plan(resolved, run_id=run_id)
+        _require_explicit_volume_plan(
+            resolved,
+            run_id=run_id,
+            project_root=project_root,
+        )
     except ValueError:
         return LifecycleExecution(
             result=_terminal(
@@ -759,6 +776,7 @@ def up_environment(
                 if failure_context is not None
                 else None
             ),
+            mutation_may_have_occurred=True,
         )
 
     try:
@@ -789,6 +807,7 @@ def up_environment(
             artifact_paths=artifact_paths,
             docker_endpoint=docker_endpoint,
             daemon_id=preflight_evidence.inputs.docker.daemon_id,
+            mutation_may_have_occurred=True,
         )
 
     try:
@@ -813,6 +832,7 @@ def up_environment(
             artifact_paths=artifact_paths,
             docker_endpoint=docker_endpoint,
             daemon_id=preflight_evidence.inputs.docker.daemon_id,
+            mutation_may_have_occurred=True,
         )
 
     try:
@@ -848,6 +868,7 @@ def up_environment(
             artifact_paths=artifact_paths,
             docker_endpoint=docker_endpoint,
             daemon_id=preflight_evidence.inputs.docker.daemon_id,
+            mutation_may_have_occurred=True,
         )
 
     try:
@@ -877,6 +898,7 @@ def up_environment(
             artifact_paths=artifact_paths,
             docker_endpoint=docker_endpoint,
             daemon_id=preflight_evidence.inputs.docker.daemon_id,
+            mutation_may_have_occurred=True,
         )
 
     assert context is not None
@@ -923,6 +945,7 @@ def up_environment(
             ownership_context=context,
             docker_endpoint=docker_endpoint,
             daemon_id=preflight_evidence.inputs.docker.daemon_id,
+            mutation_may_have_occurred=True,
         )
 
     return LifecycleExecution(
@@ -934,6 +957,7 @@ def up_environment(
         ownership_context=context,
         docker_endpoint=docker_endpoint,
         daemon_id=preflight_evidence.inputs.docker.daemon_id,
+        mutation_may_have_occurred=True,
     )
 
 
@@ -2207,6 +2231,7 @@ def _require_explicit_volume_plan(
     resolved: ResolvedComposeConfig,
     *,
     run_id: str,
+    project_root: Path,
 ) -> None:
     payload = json.loads(resolved.stdout)
     if not isinstance(payload, dict):
@@ -2273,6 +2298,34 @@ def _require_explicit_volume_plan(
             for mount in mounts
         ):
             raise ValueError(f"required volume mount is unsafe: {service_name}")
+    upstream_root = (
+        Path(project_root).resolve()
+        / "third_party"
+        / "opentelemetry-demo"
+    )
+    for service_name, required_binds in _REQUIRED_UPSTREAM_CONFIG_BINDS.items():
+        service = services.get(service_name)
+        mounts = service.get("volumes") if isinstance(service, dict) else None
+        if not isinstance(mounts, list):
+            raise ValueError(
+                f"required config bind is missing: {service_name}"
+            )
+        for relative_source, target in required_binds:
+            expected_source = (upstream_root / relative_source).resolve()
+            exact = [
+                mount
+                for mount in mounts
+                if isinstance(mount, dict)
+                and mount.get("type") == "bind"
+                and isinstance(mount.get("source"), str)
+                and Path(str(mount["source"])).resolve() == expected_source
+                and mount.get("target") == target
+                and mount.get("read_only") is True
+            ]
+            if len(exact) != 1:
+                raise ValueError(
+                    f"required config bind is unsafe: {service_name}:{target}"
+                )
 
 
 def _existing_regular_artifact(
