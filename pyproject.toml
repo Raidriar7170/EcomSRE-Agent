@@ -1,0 +1,21 @@
+[project]
+name = "ecomsre-agent"
+version = "0.1.0"
+description = "Deterministic Phase 0 control and evidence contracts for EcomSRE-Agent"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.0,<3",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0,<9",
+]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+pythonpath = ["src", "tests"]
+testpaths = ["tests"]
+
+[tool.uv]
+package = false

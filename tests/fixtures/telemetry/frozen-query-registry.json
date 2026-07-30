@@ -1,0 +1,199 @@
+{
+  "schema_version": "phase0.telemetry-query-registry.v1",
+  "fixture_version": "otel-demo-3.0.0-test-fixture-v1",
+  "state": "FROZEN",
+  "upstream_tag": "3.0.0",
+  "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+  "compose_config_sha256": "a23520301cd8dc6b4af4315628ca19b694ebdac0ca0dc1d29a4ad43d205bbc84",
+  "source_facts": [
+    {
+      "path": "third_party/opentelemetry-demo/compose.yaml",
+      "sha256": "a23520301cd8dc6b4af4315628ca19b694ebdac0ca0dc1d29a4ad43d205bbc84",
+      "description": "Pinned upstream Compose source for strict offline promotion tests."
+    }
+  ],
+  "promotion_proof": {
+    "current_run_id": "99999999999999999999999999999999",
+    "raw_artifacts": [
+      "observer-visible/99999999999999999999999999999999/telemetry/promotion/raw.json"
+    ],
+    "artifact_sha256": {
+      "observer-visible/99999999999999999999999999999999/telemetry/promotion/raw.json": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "observer-visible/99999999999999999999999999999999/telemetry/promotion/identities.json": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "observer-visible/99999999999999999999999999999999/telemetry/promotion/counter-map.json": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "observer-visible/99999999999999999999999999999999/telemetry/promotion/probe-attribution.json": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "observer-visible/99999999999999999999999999999999/telemetry/promotion/review.json": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    "emitted_identity_artifacts": [
+      "observer-visible/99999999999999999999999999999999/telemetry/promotion/identities.json"
+    ],
+    "counter_mapping_artifact": "observer-visible/99999999999999999999999999999999/telemetry/promotion/counter-map.json",
+    "probe_getads_attribution_artifact": "observer-visible/99999999999999999999999999999999/telemetry/promotion/probe-attribution.json",
+    "upstream_sha256": "3d08edb3cf260cbf25330fc121e12ae80d2344e56538d9392e3d3c4eb2823585",
+    "compose_config_sha256": "a23520301cd8dc6b4af4315628ca19b694ebdac0ca0dc1d29a4ad43d205bbc84",
+    "fixture_content_sha256": "d03e812dfe9d656c1dec9f6dccfe59262cfbc4f71723108498793f35194e60e8",
+    "review_decision": "APPROVED",
+    "review_artifact": "observer-visible/99999999999999999999999999999999/telemetry/promotion/review.json"
+  },
+  "prometheus": {
+    "state": "FROZEN",
+    "target": {
+      "service": "prometheus",
+      "target_port": 9090,
+      "protocol": "tcp"
+    },
+    "request_template": "/api/v1/query?query={percent_encoded_query}",
+    "expected_response_schema": "prometheus.http-api.vector.v1",
+    "upstream_tag": "3.0.0",
+    "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+    "applicable_service": "ad",
+    "failure_semantics": [
+      "Fail on missing, malformed, stale, reset, restart, or drifting series."
+    ],
+    "freshness_semantics": "Every actual scrape sample is current-run and phase-local.",
+    "source_facts": [
+      {
+        "path": "third_party/opentelemetry-demo/src/grafana/provisioning/dashboards/demo/demo-dashboard.json",
+        "sha256": "c2c7df48fa291f1dbbfef3815c2513b216bddc914131b9eb6ec7eba0ef0cb427",
+        "description": "Pinned static metric discovery source."
+      }
+    ],
+    "candidate_metric": "traces_span_metrics_calls_total",
+    "total_query": "traces_span_metrics_calls_total{service_name=\"ad\",span_name=\"oteldemo.AdService/GetAds\"}",
+    "error_query": "traces_span_metrics_calls_total{service_name=\"ad\",span_name=\"oteldemo.AdService/GetAds\",status_code=\"STATUS_CODE_ERROR\"}",
+    "target_incarnation_query": "process_start_time_seconds{job=\"ad\"}",
+    "operation": "oteldemo.AdService/GetAds",
+    "counter_identity_labels": [
+      "service_name",
+      "span_name",
+      "status_code"
+    ],
+    "expected_total_series": [
+      {
+        "labels": {
+          "__name__": "traces_span_metrics_calls_total",
+          "service_name": "ad",
+          "span_name": "oteldemo.AdService/GetAds",
+          "status_code": "STATUS_CODE_UNSET"
+        }
+      },
+      {
+        "labels": {
+          "__name__": "traces_span_metrics_calls_total",
+          "service_name": "ad",
+          "span_name": "oteldemo.AdService/GetAds",
+          "status_code": "STATUS_CODE_ERROR"
+        }
+      }
+    ],
+    "expected_target_incarnation_series": {
+      "labels": {
+        "__name__": "process_start_time_seconds",
+        "job": "ad"
+      }
+    },
+    "error_classification": {
+      "label": "status_code",
+      "values": [
+        "STATUS_CODE_ERROR"
+      ]
+    },
+    "scrape_interval_seconds": 10.0,
+    "scrape_interval_tolerance_seconds": 0.5,
+    "maximum_scrape_lag_seconds": 2.0,
+    "boundary_rule": "(start_sample_timestamp,end_sample_timestamp]",
+    "cardinality_rule": "exact_frozen_series_set",
+    "reset_policy": "reject_any_counter_decrease_or_target_restart",
+    "staleness_policy": "reject_stale_marker_or_lag",
+    "zero_series_rule": "absent_error_series_means_zero"
+  },
+  "jaeger": {
+    "state": "FROZEN",
+    "target": {
+      "service": "jaeger",
+      "target_port": 16686,
+      "protocol": "tcp"
+    },
+    "request_template": "/api/traces?service={service}&operation={operation}&start={start_us}&end={end_us}",
+    "expected_response_schema": "jaeger.http-api.traces.v1",
+    "upstream_tag": "3.0.0",
+    "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+    "applicable_service": "ad",
+    "failure_semantics": [
+      "Fail unless an exact Ad operation is fresh in the phase window."
+    ],
+    "freshness_semantics": "Selected span start and end are within the current phase.",
+    "source_facts": [
+      {
+        "path": "third_party/opentelemetry-demo/compose.yaml",
+        "sha256": "a23520301cd8dc6b4af4315628ca19b694ebdac0ca0dc1d29a4ad43d205bbc84",
+        "description": "Pinned Jaeger service identity source."
+      }
+    ],
+    "service_identity": "ad",
+    "operation": "oteldemo.AdService/GetAds"
+  },
+  "opensearch": {
+    "state": "FROZEN",
+    "target": {
+      "service": "opensearch",
+      "target_port": 9200,
+      "protocol": "tcp"
+    },
+    "request_template": "/{index}/_search",
+    "expected_response_schema": "opensearch.search.hits.v1",
+    "upstream_tag": "3.0.0",
+    "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+    "applicable_service": "ad",
+    "failure_semantics": [
+      "Fail unless an exact Ad log is fresh in the phase window."
+    ],
+    "freshness_semantics": "Selected log timestamp is within the current phase.",
+    "source_facts": [
+      {
+        "path": "third_party/opentelemetry-demo/compose.yaml",
+        "sha256": "a23520301cd8dc6b4af4315628ca19b694ebdac0ca0dc1d29a4ad43d205bbc84",
+        "description": "Pinned OpenSearch service identity source."
+      }
+    ],
+    "index": "otel-logs-*",
+    "service_identity_field": "resource.service.name",
+    "service_identity": "ad",
+    "timestamp_field": "@timestamp",
+    "trace_id_field": "trace.id",
+    "span_id_field": "span.id"
+  },
+  "probe": {
+    "state": "FROZEN",
+    "target": {
+      "service": "frontend-proxy",
+      "target_port": 8080,
+      "protocol": "tcp"
+    },
+    "method": "GET",
+    "path": "/api/data?contextKeys=telescopes",
+    "input": "fixed storefront data request",
+    "response_contract": "HTTP 200 JSON containing a direct nonempty Ad array",
+    "exit_semantics": "HTTP and schema failures are typed and fail closed.",
+    "attribution_mechanism": "Frozen trace correlation proves a real Ad GetAds call.",
+    "getads_proof_artifact": "observer-visible/99999999999999999999999999999999/telemetry/promotion/probe-attribution.json",
+    "hidden_input_denial_required": true,
+    "required_phases": [
+      "baseline",
+      "fault",
+      "recovery"
+    ],
+    "source_facts": [
+      {
+        "path": "third_party/opentelemetry-demo/src/frontend/pages/api/data.ts",
+        "sha256": "a40106be0ee89f55970ea56cf2be2f7fe0aa91303833317f0f5960f2d53ef902",
+        "description": "Pinned direct Ad array API handler."
+      },
+      {
+        "path": "third_party/opentelemetry-demo/src/frontend/protos/demo.ts",
+        "sha256": "6d525d23e48a502b7f13079d7261beb29f0a30622b3f0b9ef916246a59da9212",
+        "description": "Pinned Ad redirectUrl and text schema."
+      }
+    ]
+  }
+}

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EcomSRE-Agent Phase 0 — UNSAFE</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; }
+    body { max-width: 900px; margin: 40px auto; padding: 0 24px; line-height: 1.6; color: #172033; }
+    h1, h2 { line-height: 1.2; }
+    .status { display: inline-block; padding: 6px 12px; border: 1px solid #a3261e;
+      border-radius: 999px; color: #a3261e; font-weight: 700; }
+    code { background: #f1f3f6; padding: 2px 5px; border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; vertical-align: top; border-bottom: 1px solid #d8dde6; padding: 9px; }
+    .note { border-left: 4px solid #a3261e; padding: 8px 14px; background: #fff5f4; }
+  </style>
+</head>
+<body>
+  <h1>EcomSRE-Agent Phase 0</h1>
+  <p><span class="status">UNSAFE · exit 40</span></p>
+  <p>本轮在 Task 7 只读代码审查期间停止。审查代理误执行
+    <code>uvx ruff check .</code>，发生联网下载和项目外 uv 缓存写入，违反该审查任务的
+    no-network/read-only 边界，并命中 Phase 0 的项目命名空间安全停止条件。</p>
+
+  <h2>事实</h2>
+  <table>
+    <tr><th>Run ID</th><td><code>90552667b2d24c81b11886c85aa6a9be</code></td></tr>
+    <tr><th>首次发生步骤</th><td>Task 7 independent read-only code review</td></tr>
+    <tr><th>命令</th><td><code>uvx ruff check .</code></td></tr>
+    <tr><th>输出</th><td>下载 Ruff 10.0MiB；安装 1 package；报告 219 errors</td></tr>
+    <tr><th>退出码</th><td>工具记录未保留；根据 Ruff 结果推断为 1，未当作观测事实</td></tr>
+    <tr><th>项目外写入</th><td><code>/Users/raidriar/.cache/uv</code>，取证显示 Ruff 0.16.0 缓存条目</td></tr>
+    <tr><th>Workspace</th><td>未观察到该命令写入；命令未带 <code>--fix</code></td></tr>
+    <tr><th>Docker</th><td>daemon 未启动；没有 Phase 0 Docker 操作或资源</td></tr>
+    <tr><th>正式验收</th><td>未开始；0 个 cycle；OQ-001 至 OQ-004 未关闭</td></tr>
+  </table>
+
+  <h2>已采取的安全动作</h2>
+  <ul>
+    <li>停止 Task 7 修改及所有后续 Docker/bootstrap/acceptance 计划。</li>
+    <li>只读确认 cache 条目、workspace 状态和 Docker daemon 未启动。</li>
+    <li>未擅自删除项目外 cache，以免造成第二次越权修改。</li>
+    <li>在项目内保存命令、环境、cache hash、终止判定和 checksums。</li>
+  </ul>
+
+  <h2>恢复要求</h2>
+  <p class="note">人工审阅列出的 uv cache 条目并决定保留或删除；之后明确授权一次新的
+    Phase 0 goal run。本 run 永久保持 <code>NON_CANONICAL / UNSAFE</code>，不得通过只重跑
+    成功步骤改写。</p>
+
+  <h2>停止时的工程状态</h2>
+  <p>Task 7 仍为 <code>REVIEW_REQUIRED</code>。最新审查还指出生产 client 内部依赖完整性、
+    lifecycle subprocess 绑定、阶段化 discovery 调度和失败 terminal 引用等未闭合问题。
+    因安全停止，本轮没有继续修复，也没有进入 Task 8。</p>
+</body>
+</html>

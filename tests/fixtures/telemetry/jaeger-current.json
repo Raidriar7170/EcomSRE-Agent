@@ -1,0 +1,28 @@
+{
+  "data": [
+    {
+      "traceID": "trace-current-001",
+      "spans": [
+        {
+          "traceID": "trace-current-001",
+          "spanID": "span-current-001",
+          "operationName": "oteldemo.AdService/GetAds",
+          "startTime": 1785373330000000,
+          "duration": 500000,
+          "processID": "p1",
+          "tags": []
+        }
+      ],
+      "processes": {
+        "p1": {
+          "serviceName": "ad",
+          "tags": []
+        }
+      }
+    }
+  ],
+  "total": 1,
+  "limit": 20,
+  "offset": 0,
+  "errors": null
+}

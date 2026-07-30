@@ -1,0 +1,150 @@
+# Project-owned Phase 0 override for the frozen upstream Compose layers.
+# This file adds isolation metadata and frozen image selection without editing
+# any file under third_party/opentelemetry-demo.
+
+x-phase0-labels: &phase0-labels
+  io.ecomsre.project: ecomsre-phase0
+  io.ecomsre.run: ${ECOMSRE_RUN_ID:?ECOMSRE_RUN_ID is required}
+
+x-phase0-service: &phase0-service
+  platform: linux/arm64
+  pull_policy: never
+  labels: *phase0-labels
+
+networks:
+  default:
+    name: ecomsre-phase0
+    labels: *phase0-labels
+
+services:
+  ad:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-ad
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-ad
+
+  cart:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-cart
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-cart
+
+  checkout:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-checkout
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-checkout
+
+  currency:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-currency
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-currency
+
+  email:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-email
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-email
+
+  frontend:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-frontend
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-frontend
+
+  frontend-proxy:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-frontend-proxy
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-frontend-proxy
+
+  image-provider:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-image-provider
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-image-provider
+
+  load-generator:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-load-generator
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-load-generator
+
+  payment:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-payment
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-payment
+
+  product-catalog:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-product-catalog
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-product-catalog
+
+  quote:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-quote
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-quote
+
+  recommendation:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-recommendation
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-recommendation
+
+  shipping:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-shipping
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-shipping
+
+  flagd:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-flagd
+    command:
+      - start
+      - --uri
+      - "file:./etc/flagd/demo.flagd.json"
+    volumes: !override
+      - type: bind
+        source: ../../artifacts/phase0/evaluator-only/${ECOMSRE_RUN_ID:?ECOMSRE_RUN_ID is required}/control
+        target: /etc/flagd
+        read_only: true
+
+  flagd-ui:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-flagd-ui
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-flagd-ui
+    volumes: !override
+      - type: bind
+        source: ../../artifacts/phase0/evaluator-only/${ECOMSRE_RUN_ID:?ECOMSRE_RUN_ID is required}/control
+        target: /app/data
+        read_only: true
+
+  telemetry-docs:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-telemetry-docs
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-telemetry-docs
+
+  astronomy-db:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-astronomy-db
+
+  valkey-cart:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-valkey-cart
+
+  otel-collector:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-otel-collector
+
+  jaeger:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-jaeger
+
+  grafana:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-grafana
+
+  prometheus:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-prometheus
+
+  opensearch:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-opensearch
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-opensearch
+
+  opamp-server:
+    <<: *phase0-service
+    container_name: ecomsre-phase0-opamp-server
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}-opamp-server

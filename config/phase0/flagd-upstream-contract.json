@@ -1,0 +1,50 @@
+{
+  "schema_version": "phase0.flagd-upstream-contract.v1",
+  "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+  "upstream_tag": "3.0.0",
+  "files": {
+    "third_party/opentelemetry-demo/.env": "517055b93534de0b38e6d4e9a0fff8cfaa3145083d8089e1bb503beedd2d3c99",
+    "third_party/opentelemetry-demo/compose.yaml": "a23520301cd8dc6b4af4315628ca19b694ebdac0ca0dc1d29a4ad43d205bbc84",
+    "third_party/opentelemetry-demo/src/ad/src/main/java/oteldemo/AdService.java": "cbfd11041cc9f3f14d32f54eda3499fced380b33d80c8efdd2dedcff16f4b11b",
+    "third_party/opentelemetry-demo/src/flagd-ui/README.md": "13fc0d3c51902b88bc23d4dafe688dabf7e0488097b6c42798a86c23de868f35",
+    "third_party/opentelemetry-demo/src/flagd-ui/lib/flagd_ui/storage.ex": "59e25a343d6babe6119083414329ef20c8b8654951e76416e1bac22c9a39a5d1",
+    "third_party/opentelemetry-demo/src/flagd-ui/lib/flagd_ui_web/controllers/feature_controller.ex": "e0c72afb38207c70363ac58bcee64a0ed272c4a522ed318f67520bdeefa593b0",
+    "third_party/opentelemetry-demo/src/flagd/demo.flagd.json": "bef4fa5da0ad8b1f64cc0d66fc66afaf7b9877c85895b78bf47d9a97577f9983",
+    "third_party/opentelemetry-demo/src/load-generator/entrypoint.sh": "5716aec2baaa9a61a0f007df2c00ebdffddd4760b9e67b42c35af6bd595a4e7a"
+  },
+  "flagd": {
+    "image": "ghcr.io/open-feature/flagd:v0.16.0",
+    "command": [
+      "start",
+      "--uri",
+      "file:./etc/flagd/demo.flagd.json"
+    ],
+    "upstream_mount": "./src/flagd:/etc/flagd",
+    "grpc_port": 8013,
+    "ofrep_port": 8016
+  },
+  "flagd_ui": {
+    "port": 4000,
+    "upstream_mount": "./src/flagd:/app/data",
+    "read_endpoint": "/api/read",
+    "write_endpoint": "/api/write",
+    "write_acknowledgement": "asynchronous-full-config-rewrite",
+    "selected_for_control": false
+  },
+  "scenario_mapping": {
+    "logical_scenario": "adServiceFailure",
+    "physical_flag_key": "adFailure",
+    "schema": "https://flagd.dev/schema/v0/flags.json",
+    "default_variant": "off",
+    "variants": {
+      "off": false,
+      "on": true
+    }
+  },
+  "readback": {
+    "method": "POST",
+    "path_template": "/ofrep/v1/evaluate/flags/{physical_flag_key}",
+    "request_json": {},
+    "requires_file_and_evaluation_agreement": true
+  }
+}

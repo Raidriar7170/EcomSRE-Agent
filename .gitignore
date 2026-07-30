@@ -1,0 +1,10 @@
+.DS_Store
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Runtime artifacts are local, immutable evidence and are not Git inputs.
+artifacts/

@@ -1,0 +1,10 @@
+{
+  "schema_version": "phase0.image-lock.v1",
+  "status": "UNINITIALIZED",
+  "upstream_tag": "3.0.0",
+  "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+  "compose_config_sha256": null,
+  "created_at": null,
+  "allowed_source_references": [],
+  "images": []
+}

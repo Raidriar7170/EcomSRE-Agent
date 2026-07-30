@@ -1,0 +1,148 @@
+{
+  "schema_version": "phase0.telemetry-query-registry.v1",
+  "fixture_version": "otel-demo-3.0.0-unresolved-v1",
+  "state": "UNRESOLVED",
+  "upstream_tag": "3.0.0",
+  "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+  "compose_config_sha256": "a23520301cd8dc6b4af4315628ca19b694ebdac0ca0dc1d29a4ad43d205bbc84",
+  "source_facts": [
+    {
+      "path": "third_party/opentelemetry-demo/compose.yaml",
+      "sha256": "a23520301cd8dc6b4af4315628ca19b694ebdac0ca0dc1d29a4ad43d205bbc84",
+      "description": "Pinned static Compose candidate source; emitted runtime identity remains unresolved."
+    }
+  ],
+  "promotion_proof": null,
+  "prometheus": {
+    "state": "CANDIDATE",
+    "target": {
+      "service": "prometheus",
+      "target_port": 9090,
+      "protocol": "tcp"
+    },
+    "request_template": "/api/v1/query?query={percent_encoded_query}",
+    "expected_response_schema": "prometheus.http-api.vector.v1",
+    "upstream_tag": "3.0.0",
+    "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+    "applicable_service": "ad",
+    "failure_semantics": [
+      "UNRESOLVED/CANDIDATE cannot be used for readiness or measurement.",
+      "Future frozen use fails on missing, malformed, stale, reset, restart, or drifting series."
+    ],
+    "freshness_semantics": "Scrape interval, maximum lag, emitted identity, and exact current-run series set remain UNRESOLVED.",
+    "source_facts": [
+      {
+        "path": "third_party/opentelemetry-demo/src/grafana/provisioning/dashboards/demo/demo-dashboard.json",
+        "sha256": "c2c7df48fa291f1dbbfef3815c2513b216bddc914131b9eb6ec7eba0ef0cb427",
+        "description": "Static candidate names only; hash and emitted response proof remain unresolved."
+      }
+    ],
+    "candidate_metric": "traces_span_metrics_calls_total",
+    "total_query": null,
+    "error_query": null,
+    "target_incarnation_query": null,
+    "operation": null,
+    "counter_identity_labels": null,
+    "expected_total_series": null,
+    "expected_target_incarnation_series": null,
+    "error_classification": null,
+    "scrape_interval_seconds": null,
+    "scrape_interval_tolerance_seconds": null,
+    "maximum_scrape_lag_seconds": null,
+    "boundary_rule": null,
+    "cardinality_rule": null,
+    "reset_policy": null,
+    "staleness_policy": null,
+    "zero_series_rule": null
+  },
+  "jaeger": {
+    "state": "CANDIDATE",
+    "target": {
+      "service": "jaeger",
+      "target_port": 16686,
+      "protocol": "tcp"
+    },
+    "request_template": "/api/traces?service={service}&operation={operation}&start={start_us}&end={end_us}",
+    "expected_response_schema": "jaeger.http-api.traces.v1",
+    "upstream_tag": "3.0.0",
+    "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+    "applicable_service": "ad",
+    "failure_semantics": [
+      "UNRESOLVED/CANDIDATE cannot satisfy readiness."
+    ],
+    "freshness_semantics": "Exact emitted service, operation, and phase-local timestamps remain UNRESOLVED.",
+    "source_facts": [
+      {
+        "path": "third_party/opentelemetry-demo/compose.yaml",
+        "sha256": "a23520301cd8dc6b4af4315628ca19b694ebdac0ca0dc1d29a4ad43d205bbc84",
+        "description": "OTEL_SERVICE_NAME=ad is a static candidate pending owned runtime proof."
+      }
+    ],
+    "service_identity": "ad",
+    "operation": null,
+    "index": null,
+    "service_identity_field": null,
+    "timestamp_field": null,
+    "trace_id_field": null,
+    "span_id_field": null
+  },
+  "opensearch": {
+    "state": "CANDIDATE",
+    "target": {
+      "service": "opensearch",
+      "target_port": 9200,
+      "protocol": "tcp"
+    },
+    "request_template": "/{index}/_search",
+    "expected_response_schema": "opensearch.search.hits.v1",
+    "upstream_tag": "3.0.0",
+    "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+    "applicable_service": "ad",
+    "failure_semantics": [
+      "UNRESOLVED/CANDIDATE cannot satisfy readiness."
+    ],
+    "freshness_semantics": "Exact emitted index, service field, and timestamp field remain UNRESOLVED.",
+    "source_facts": [
+      {
+        "path": "third_party/opentelemetry-demo/src/grafana/provisioning/dashboards/demo/events-by-name.json",
+        "sha256": "2b1cf41688cf64177275a3d43841f6d7af8b550244ae9ef5c304cc0fd2cc9115",
+        "description": "Static dashboard fields are candidates pending owned runtime proof."
+      }
+    ],
+    "service_identity": "ad",
+    "operation": null,
+    "index": "otel-logs-*",
+    "service_identity_field": "resource.service.name",
+    "timestamp_field": null,
+    "trace_id_field": null,
+    "span_id_field": null
+  },
+  "probe": {
+    "state": "UNRESOLVED",
+    "target": {
+      "service": "frontend-proxy",
+      "target_port": 8080,
+      "protocol": "tcp"
+    },
+    "method": null,
+    "path": null,
+    "input": null,
+    "response_contract": null,
+    "exit_semantics": null,
+    "attribution_mechanism": null,
+    "getads_proof_artifact": null,
+    "hidden_input_denial_required": true,
+    "required_phases": [
+      "baseline",
+      "fault",
+      "recovery"
+    ],
+    "source_facts": [
+      {
+        "path": "third_party/opentelemetry-demo/compose.yaml",
+        "sha256": "a23520301cd8dc6b4af4315628ca19b694ebdac0ca0dc1d29a4ad43d205bbc84",
+        "description": "Local storefront target candidate only; no GetAds attribution has been proven."
+      }
+    ]
+  }
+}

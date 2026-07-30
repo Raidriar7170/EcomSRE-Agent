@@ -1,0 +1,31 @@
+{
+  "took": 2,
+  "timed_out": false,
+  "hits": {
+    "total": {
+      "value": 1,
+      "relation": "eq"
+    },
+    "hits": [
+      {
+        "_index": "otel-logs-2026.07.30",
+        "_id": "log-current-001",
+        "_source": {
+          "@timestamp": "2026-07-30T01:02:10Z",
+          "resource": {
+            "service": {
+              "name": "ad"
+            }
+          },
+          "trace": {
+            "id": "trace-current-001"
+          },
+          "span": {
+            "id": "span-current-001"
+          },
+          "body": "fixture Ad request observation"
+        }
+      }
+    ]
+  }
+}
