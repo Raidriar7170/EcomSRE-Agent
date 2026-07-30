@@ -104,7 +104,7 @@ CONFIG_STDOUT = json.dumps(
                     {
                         "ports": [
                             {
-                                "host_ip": "0.0.0.0",
+                                "host_ip": "127.0.0.1",
                                 "mode": "ingress",
                                 "protocol": "tcp",
                                 "published": str(HOST_PORT),
@@ -288,7 +288,7 @@ def _resources(run_id: str = RUN_ID) -> tuple[OwnedResource, ...]:
             "service": "frontend-proxy",
             "container_name": "ecomsre-phase0-frontend-proxy",
             "container_id": FRONTEND_PROXY_ID,
-            "host_ip": "0.0.0.0",
+            "host_ip": "127.0.0.1",
             "host_family": "ipv4",
             "published_port": HOST_PORT,
             "target_port": 8080,
@@ -313,13 +313,13 @@ def _resources(run_id: str = RUN_ID) -> tuple[OwnedResource, ...]:
                 f"container:{FRONTEND_PROXY_ID}",
                 "container_name:ecomsre-phase0-frontend-proxy",
                 "service:frontend-proxy",
-                "host_ip:0.0.0.0",
+                "host_ip:127.0.0.1",
                 "host_family:ipv4",
                 f"published_port:{HOST_PORT}",
                 "target_port:8080",
                 "protocol:tcp",
-                f"binding:0.0.0.0:{HOST_PORT}->8080/tcp",
-                f"raw_binding:0.0.0.0:{HOST_PORT}->8080/tcp",
+                f"binding:127.0.0.1:{HOST_PORT}->8080/tcp",
+                f"raw_binding:127.0.0.1:{HOST_PORT}->8080/tcp",
             ),
         ),
     )
@@ -656,11 +656,11 @@ def _records_stdout(
             )
         ):
             if port_mode == "host_ip":
-                host_ip = "127.0.0.1"
+                host_ip = "0.0.0.0"
             elif port_mode == "ipv6_only":
                 host_ip = "[::]"
             else:
-                host_ip = "0.0.0.0"
+                host_ip = "127.0.0.1"
             actual_published_port = (
                 published_port + 1 if port_mode == "published" else published_port
             )
@@ -801,7 +801,15 @@ def test_fresh_up_closes_intent_image_and_post_start_ownership_artifacts(
     command_log = json.loads(
         execution.artifact_paths.command_log.read_text(encoding="utf-8")
     )
-    assert any(record["arguments"][-1:] == ["--no-build"] for record in command_log)
+    assert command_log["schema_version"] == "phase0.command-log-index.v1"
+    assert any(
+        record["arguments"][-1:] == ["--no-build"]
+        for record in command_log["records"]
+    )
+    assert all(
+        record["audit_status"] == "FIXTURE_UNAVAILABLE"
+        for record in command_log["records"]
+    )
 
     inspect_calls = [
         arguments
@@ -809,7 +817,16 @@ def test_fresh_up_closes_intent_image_and_post_start_ownership_artifacts(
         if arguments[:5] == ("docker", "--host", DOCKER_ENDPOINT, "image", "inspect")
     ]
     assert len(inspect_calls) == 25
-    assert {arguments[5] for arguments in inspect_calls} == set(IMAGE_SOURCES)
+    assert all(
+        arguments[5:7] == ("--platform", "linux/arm64")
+        for arguments in inspect_calls
+    )
+    assert {arguments[7] for arguments in inspect_calls} == set(IMAGE_SOURCES)
+    assert all(
+        "imagetools" not in arguments
+        and "pull" not in arguments
+        for arguments, _environment in runner.calls
+    )
     assert [call[0] for call in runner.calls][-7:] == [
         up.arguments,
         *(invocation.arguments for invocation in discovery),
@@ -830,6 +847,7 @@ def test_success_up_keeps_raw_resolved_compose_only_in_evaluator_evidence(
                 "file:./etc/flagd/demo.flagd.json",
             ],
             "environment": {
+                "FLAGD_OFREP_PORT": "8016",
                 "PHYSICAL_FLAG_KEY": "adFailure",
                 "SCENARIO_IDENTITY": "adServiceFailure",
             },
@@ -1656,7 +1674,7 @@ def test_post_up_rejects_inexact_or_ambiguous_published_port_binding(
     assert all(call[0][-1:] != ("down",) for call in runner.calls)
 
 
-def test_real_upstream_resolved_fixture_models_all_target_only_ports() -> None:
+def test_real_upstream_resolved_fixture_requires_phase0_loopback_override() -> None:
     lifecycle = _lifecycle_module()
     upstream = ROOT / "third_party" / "opentelemetry-demo"
     compose_text = "\n".join(
@@ -1686,8 +1704,6 @@ def test_real_upstream_resolved_fixture_models_all_target_only_ports() -> None:
     ] + target_only_literals
     resolved = ResolvedComposeConfig.from_stdout(REAL_UPSTREAM_RESOLVED_CONFIG_STDOUT)
 
-    expected = lifecycle.parse_expected_port_bindings(resolved)
-
     assert sum(map(len, REAL_UPSTREAM_TARGET_ONLY_PORTS.values())) == 25
     assert len(target_only_variables) == 24
     assert target_only_literals == [9200]
@@ -1696,19 +1712,12 @@ def test_real_upstream_resolved_fixture_models_all_target_only_ports() -> None:
         for targets in REAL_UPSTREAM_TARGET_ONLY_PORTS.values()
         for target in targets
     )
-    assert len(expected) == 25
-    assert all(binding.published_port is None for binding in expected)
-    assert {
-        (binding.service, binding.target_port, binding.protocol) for binding in expected
-    } == {
-        (service, target, "tcp")
-        for service, targets in REAL_UPSTREAM_TARGET_ONLY_PORTS.items()
-        for target in targets
-    }
+    with pytest.raises(ValueError, match="outside allowlist"):
+        lifecycle.parse_expected_port_bindings(resolved)
 
 
 @pytest.mark.parametrize("dual_stack", [False, True])
-def test_target_only_port_accepts_one_runtime_assigned_published_port(
+def test_target_only_port_fails_closed_before_environment_mutation(
     tmp_path: Path,
     dual_stack: bool,
 ) -> None:
@@ -1752,25 +1761,15 @@ def test_target_only_port_accepts_one_runtime_assigned_published_port(
         artifacts_root=tmp_path,
     )
 
-    assert execution.result.outcome is Outcome.SUCCESS
-    assert execution.ownership_context is not None
-    ports = tuple(
-        resource
-        for resource in execution.ownership_context.manifest.resources
-        if resource.kind == "port"
-    )
-    assert len(ports) == (2 if dual_stack else 1)
-    assert len({resource.resource_id for resource in ports}) == len(ports)
-    assert all(
-        resource.resource_id.startswith("port-binding:")
-        and f"published_port:{RUNTIME_PORT}" in resource.identity_evidence
-        and "target_port:9555" in resource.identity_evidence
-        and "service:ad" in resource.identity_evidence
-        for resource in ports
-    )
+    assert execution.result.outcome is Outcome.UNSAFE
+    assert execution.result.exit_code == 40
+    assert execution.result.reason_code == "UNSAFE_PORT_EXPOSURE"
+    assert execution.ownership_context is None
+    assert execution.artifact_paths is None
+    assert all(call[0] != up.arguments for call in runner.calls)
 
 
-def test_explicit_wildcard_port_accepts_equivalent_dual_stack_bindings(
+def test_explicit_loopback_port_rejects_additional_wildcard_binding(
     tmp_path: Path,
 ) -> None:
     lifecycle = _lifecycle_module()
@@ -1800,23 +1799,10 @@ def test_explicit_wildcard_port_accepts_equivalent_dual_stack_bindings(
         artifacts_root=tmp_path,
     )
 
-    assert execution.result.outcome is Outcome.SUCCESS
-    assert execution.ownership_context is not None
-    ports = tuple(
-        resource
-        for resource in execution.ownership_context.manifest.resources
-        if resource.kind == "port"
-    )
-    assert len(ports) == 2
-    assert len({resource.resource_id for resource in ports}) == 2
-    assert {
-        next(
-            value.removeprefix("host_family:")
-            for value in resource.identity_evidence
-            if value.startswith("host_family:")
-        )
-        for resource in ports
-    } == {"ipv4", "ipv6"}
+    assert execution.result.outcome is Outcome.MANUAL_INTERVENTION_REQUIRED
+    assert execution.result.exit_code == 41
+    assert execution.result.reason_code == "POST_UP_OWNERSHIP_UNPROVEN"
+    assert execution.ownership_context is None
 
 
 def test_target_only_port_rejects_multiple_runtime_published_ports(
@@ -1862,12 +1848,12 @@ def test_target_only_port_rejects_multiple_runtime_published_ports(
         artifacts_root=tmp_path,
     )
 
-    assert execution.result.outcome is Outcome.MANUAL_INTERVENTION_REQUIRED
-    assert execution.result.exit_code == 41
+    assert execution.result.outcome is Outcome.UNSAFE
+    assert execution.result.exit_code == 40
+    assert execution.result.reason_code == "UNSAFE_PORT_EXPOSURE"
     assert execution.ownership_context is None
-    assert execution.artifact_paths is not None
-    assert execution.artifact_paths.ownership_manifest is None
-    assert all(call[0][-1:] != ("down",) for call in runner.calls)
+    assert execution.artifact_paths is None
+    assert all(call[0] != up.arguments for call in runner.calls)
 
 
 @pytest.mark.parametrize(
@@ -1918,11 +1904,9 @@ def test_target_only_port_rejects_non_default_host_bindings(
         artifacts_root=tmp_path,
     )
 
-    assert execution.result.outcome is Outcome.MANUAL_INTERVENTION_REQUIRED
-    assert execution.result.exit_code == 41
+    assert execution.result.outcome is Outcome.UNSAFE
+    assert execution.result.exit_code == 40
+    assert execution.result.reason_code == "UNSAFE_PORT_EXPOSURE"
     assert execution.ownership_context is None
-    assert execution.artifact_paths is not None
-    assert execution.artifact_paths.ownership_manifest is None
-    assert execution.artifact_paths.manual_diagnostic is not None
-    assert execution.artifact_paths.manual_diagnostic.is_file()
-    assert all(call[0][-1:] != ("down",) for call in runner.calls)
+    assert execution.artifact_paths is None
+    assert all(call[0] != up.arguments for call in runner.calls)

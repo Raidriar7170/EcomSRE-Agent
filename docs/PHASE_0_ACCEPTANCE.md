@@ -2,9 +2,10 @@
 
 ## Status
 
-This is a normative interface and evidence contract, not an implementation.
-None of the commands below exists yet, and this document does not authorize
-running Docker.
+This is the normative canonical interface and evidence contract. Phase 0
+commands have an offline implementation and are undergoing bounded live repair;
+they have not completed formal acceptance. This document alone does not
+authorize running Docker.
 
 This contract implements `DEC-001` through `DEC-008`. `DEC-009` through
 `DEC-012` are later-phase decisions and are not Phase 0 dependencies. Phase 0
@@ -34,6 +35,13 @@ non-semantic, collision-resistant, and safe as path components.
 Canonical thresholds come from a future versioned repository configuration.
 Diagnostic overrides are permitted only when explicitly marked
 `NON_CANONICAL`; they cannot produce Phase 0 `SUCCESS`.
+
+### Non-canonical bounded smoke
+
+`make phase0-smoke` is a separate one-cycle diagnostic interface governed by
+[PHASE_0_BOUNDED_REPAIR_SMOKE_PROMPT.md](PHASE_0_BOUNDED_REPAIR_SMOKE_PROMPT.md).
+It records `canonical=false`, writes `smoke-report.json`, and cannot write a
+canonical acceptance report, close Phase 0, or authorize Phase 1.
 
 ### Command contract
 

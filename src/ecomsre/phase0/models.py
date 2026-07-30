@@ -308,3 +308,215 @@ class DiagnosticRunResult(BaseModel):
         if self.diagnostic_passed != (not actual_failed):
             raise ValueError("diagnostic pass result is inconsistent")
         return self
+
+
+class DiagnosticStatus(str, Enum):
+    """Terminal status for a non-canonical smoke, never a Phase 0 outcome."""
+
+    PASSED = "PASSED"
+    FAILED = "FAILED"
+    BLOCKED = "BLOCKED"
+    UNSAFE = "UNSAFE"
+
+    @property
+    def exit_code(self) -> int:
+        return {
+            DiagnosticStatus.PASSED: 0,
+            DiagnosticStatus.FAILED: 30,
+            DiagnosticStatus.BLOCKED: 20,
+            DiagnosticStatus.UNSAFE: 40,
+        }[self]
+
+
+class DiagnosticSmokePolicy(BaseModel):
+    """Exact one-cycle diagnostic policy authorized by the repair prompt."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
+
+    cycles: Literal[1] = 1
+    stabilization_seconds: Literal[30] = 30
+    minimum_getads_attempts_per_window: Literal[100] = 100
+    window_deadline_seconds: Literal[120] = 120
+    baseline_max_error_rate: Literal[0.01] = 0.01
+    fault_min_error_rate: Literal[0.05] = 0.05
+    fault_max_error_rate: Literal[0.20] = 0.20
+    recovery_max_error_rate: Literal[0.01] = 0.01
+
+    def as_phase0_policy(self) -> Phase0Policy:
+        return Phase0Policy(
+            minimum_getads_attempts=self.minimum_getads_attempts_per_window,
+            window_deadline_seconds=self.window_deadline_seconds,
+            stabilization_seconds=self.stabilization_seconds,
+            consecutive_cycles=self.cycles,
+            baseline_max_error_rate=self.baseline_max_error_rate,
+            fault_min_error_rate=self.fault_min_error_rate,
+            fault_max_error_rate=self.fault_max_error_rate,
+            recovery_max_error_rate=self.recovery_max_error_rate,
+        )
+
+
+class SmokePhaseEvidence(BaseModel):
+    """Complete report projection for one measured diagnostic phase."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
+
+    phase: MeasurementPhase
+    attempts: int = Field(ge=0)
+    errors: int = Field(ge=0)
+    error_rate: float = Field(ge=0, le=1)
+    wilson_lower: float = Field(ge=0, le=1)
+    wilson_upper: float = Field(ge=0, le=1)
+    window_started_at: datetime
+    window_ended_at: datetime
+    monotonic_duration_seconds: float = Field(ge=0)
+    fixture_sha256: str | None = Field(
+        default=None,
+        pattern=r"^[0-9a-f]{64}$",
+    )
+    raw_artifact_refs: tuple[str, ...]
+    passed: bool
+    reason_code: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def require_consistent_phase_projection(self) -> "SmokePhaseEvidence":
+        if self.errors > self.attempts:
+            raise ValueError("smoke phase errors exceed attempts")
+        expected = self.errors / self.attempts if self.attempts else 0.0
+        if abs(expected - self.error_rate) > 1e-12:
+            raise ValueError("smoke phase error rate is inconsistent")
+        if not self.wilson_lower <= self.error_rate <= self.wilson_upper:
+            raise ValueError("smoke phase Wilson interval is inconsistent")
+        return self
+
+
+class SmokeControlAcknowledgement(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
+
+    stage: Literal["promotion", "diagnostic", "finalization"]
+    phase: MeasurementPhase | None = None
+    transition_succeeded: bool
+    acknowledgement_duration_seconds: float = Field(ge=0)
+    reason_code: str = Field(min_length=1)
+    artifact_ref: str = Field(min_length=1)
+
+
+class SmokeAttemptEvidence(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    attempt_number: Literal[1] = 1
+    phase_evidence: tuple[SmokePhaseEvidence, ...]
+    control_acknowledgements: tuple[SmokeControlAcknowledgement, ...]
+    initial_readiness_artifacts: tuple[str, ...]
+    post_promotion_readiness_artifacts: tuple[str, ...]
+    final_readiness_artifacts: tuple[str, ...]
+    probe_attribution_artifacts: tuple[str, ...]
+    safe_reset_attempted: bool
+    safe_reset_succeeded: bool
+    fresh_stop_authority: bool
+    safe_stop_attempted: bool
+    safe_stop_succeeded: bool
+    failure_reason_codes: tuple[str, ...]
+
+
+class SmokeReport(BaseModel):
+    """Independent diagnostic report that cannot encode formal acceptance."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
+
+    schema_version: Literal["phase0.smoke-report.v1"]
+    run_id: str = Field(pattern=r"^[0-9a-f]{32}$")
+    canonical: Literal[False] = False
+    diagnostic_status: DiagnosticStatus
+    phase0_complete: Literal[False] = False
+    formal_three_cycle_acceptance_executed: Literal[False] = False
+    policy: DiagnosticSmokePolicy
+    phase_decisions: dict[MeasurementPhase, bool]
+    telemetry_gate_decisions: dict[str, bool]
+    task7_registry_frozen: bool
+    origin_promotion_run_id: str | None = Field(
+        default=None,
+        pattern=r"^[0-9a-f]{32}$",
+    )
+    attempts: tuple[SmokeAttemptEvidence, ...]
+    safe_stop_completed: bool
+    failure_reason_codes: tuple[str, ...]
+
+    @property
+    def exit_code(self) -> int:
+        return self.diagnostic_status.exit_code
+
+    @model_validator(mode="after")
+    def require_diagnostic_truth(self) -> "SmokeReport":
+        passed = self.diagnostic_status is DiagnosticStatus.PASSED
+        required_phases = set(MeasurementPhase)
+        required_telemetry = {"prometheus", "jaeger", "opensearch", "probe"}
+        required_acknowledgements = {
+            ("promotion", MeasurementPhase.BASELINE),
+            ("promotion", MeasurementPhase.FAULT),
+            ("promotion", MeasurementPhase.RECOVERY),
+            ("diagnostic", MeasurementPhase.BASELINE),
+            ("diagnostic", MeasurementPhase.FAULT),
+            ("diagnostic", MeasurementPhase.RECOVERY),
+            ("finalization", None),
+        }
+        attempt = self.attempts[0] if len(self.attempts) == 1 else None
+        fixture_hashes = (
+            {item.fixture_sha256 for item in attempt.phase_evidence}
+            if attempt is not None
+            else set()
+        )
+        complete_attempt = (
+            attempt is not None
+            and len(attempt.phase_evidence) == 3
+            and {item.phase for item in attempt.phase_evidence} == required_phases
+            and all(
+                item.passed
+                and item.attempts >= self.policy.minimum_getads_attempts_per_window
+                and bool(item.raw_artifact_refs)
+                for item in attempt.phase_evidence
+            )
+            and fixture_hashes != {None}
+            and len(fixture_hashes) == 1
+            and "0" * 64 not in fixture_hashes
+            and len(attempt.control_acknowledgements)
+            == len(required_acknowledgements)
+            and {
+                (item.stage, item.phase)
+                for item in attempt.control_acknowledgements
+            }
+            == required_acknowledgements
+            and all(
+                item.transition_succeeded
+                and item.reason_code == "CONTROL_STATE_CONFIRMED"
+                and item.acknowledgement_duration_seconds <= 30
+                and bool(item.artifact_ref)
+                for item in attempt.control_acknowledgements
+            )
+            and bool(attempt.initial_readiness_artifacts)
+            and bool(attempt.post_promotion_readiness_artifacts)
+            and bool(attempt.final_readiness_artifacts)
+            and bool(attempt.probe_attribution_artifacts)
+            and attempt.safe_reset_attempted
+            and attempt.safe_reset_succeeded
+            and attempt.fresh_stop_authority
+            and attempt.safe_stop_attempted
+            and attempt.safe_stop_succeeded
+            and not attempt.failure_reason_codes
+        )
+        if passed and (
+            set(self.phase_decisions) != required_phases
+            or not all(self.phase_decisions.values())
+            or not required_telemetry.issubset(self.telemetry_gate_decisions)
+            or not all(
+                self.telemetry_gate_decisions[name] for name in required_telemetry
+            )
+            or not self.task7_registry_frozen
+            or self.origin_promotion_run_id is None
+            or not complete_attempt
+            or not self.safe_stop_completed
+            or self.failure_reason_codes
+        ):
+            raise ValueError("passing smoke report is missing diagnostic proof")
+        if not passed and not self.failure_reason_codes:
+            raise ValueError("non-passing smoke report requires failure reasons")
+        return self

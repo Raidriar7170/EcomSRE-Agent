@@ -1,6 +1,8 @@
 import json
+import os
 import time
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
@@ -23,6 +25,9 @@ from ecomsre.environment.preflight import (
     issue_authenticated_preflight_evidence,
     preflight_failure_result,
 )
+import ecomsre.environment.preflight as preflight_module
+from ecomsre.environment.live_preflight import _persist_preflight
+from ecomsre.evidence.hashes import sha256_bytes
 from ecomsre.environment.ownership import (
     PROJECT_LABEL,
     PROJECT_NAMESPACE,
@@ -75,6 +80,92 @@ class FixtureRunner:
     ) -> CommandResult:
         self.calls.append(arguments)
         return self.results[arguments]
+
+
+def _docker_runner_with_settings_result(
+    settings_result: CommandResult,
+    *,
+    memory_bytes: int = 8 * GIB,
+) -> FixtureRunner:
+    endpoint = "unix:///var/run/docker.sock"
+    prefix = ("docker", "--host", endpoint)
+    context_arguments = (
+        "docker",
+        "--context",
+        "desktop-linux",
+        "context",
+        "inspect",
+        "desktop-linux",
+        "--format",
+        "{{json .}}",
+    )
+    client_arguments = (*prefix, "--version")
+    compose_arguments = (*prefix, "compose", "version", "--short")
+    info_arguments = (*prefix, "info", "--format", "{{json .}}")
+    settings_arguments = (*prefix, "desktop", "settings", "export")
+    return FixtureRunner(
+        {
+            context_arguments: CommandResult(
+                arguments=context_arguments,
+                exit_code=0,
+                stdout=json.dumps(
+                    {
+                        "Name": "desktop-linux",
+                        "Endpoints": {"docker": {"Host": endpoint}},
+                    }
+                ),
+                stderr="",
+            ),
+            client_arguments: CommandResult(
+                arguments=client_arguments,
+                exit_code=0,
+                stdout="Docker version 29.6.1, build test",
+                stderr="",
+            ),
+            compose_arguments: CommandResult(
+                arguments=compose_arguments,
+                exit_code=0,
+                stdout="v2.29.1",
+                stderr="",
+            ),
+            info_arguments: CommandResult(
+                arguments=info_arguments,
+                exit_code=0,
+                stdout=json.dumps(
+                    {
+                        "ID": "docker-desktop-daemon",
+                        "ServerVersion": "29.6.1",
+                        "OperatingSystem": "Docker Desktop 4.50.0",
+                        "Name": "docker-desktop",
+                        "OSType": "linux",
+                        "Architecture": "aarch64",
+                        "NCPU": 8,
+                        "MemTotal": memory_bytes,
+                    }
+                ),
+                stderr="",
+            ),
+            settings_arguments: settings_result,
+        }
+    )
+
+
+def _standard_settings_path(home: Path) -> Path:
+    return (
+        home
+        / "Library"
+        / "Group Containers"
+        / "group.com.docker"
+        / "settings-store.json"
+    )
+
+
+def _write_standard_settings(home: Path, content: bytes) -> Path:
+    path = _standard_settings_path(home)
+    path.parent.mkdir(parents=True)
+    path.write_bytes(content)
+    path.chmod(0o600)
+    return path
 
 
 def _host(**overrides) -> HostSnapshot:
@@ -870,9 +961,164 @@ def test_successful_docker_fixture_is_parsed_without_real_commands() -> None:
     assert snapshot.memory_bytes == 24 * GIB
     assert snapshot.disk_bytes == 100 * GIB
     assert snapshot.resource_fields_verified is True
+    assert snapshot.settings_source_kind == "cli_export"
+    assert snapshot.settings_content_sha256 is not None
     assert all(
         "DockerRootDirSize" not in result.stdout for result in runner.results.values()
     )
+
+
+def test_docker_settings_usage_output_uses_validated_standard_file_fallback(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings_bytes = json.dumps(
+        {
+            "SettingsVersion": 45,
+            "DiskSizeMiB": 948_534,
+            "unrelatedSecretLikeValue": "must-not-be-recorded",
+        }
+    ).encode()
+    _write_standard_settings(tmp_path, settings_bytes)
+    monkeypatch.setattr(
+        preflight_module.Path,
+        "home",
+        classmethod(lambda _cls: tmp_path),
+    )
+    settings_arguments = (
+        "docker",
+        "--host",
+        "unix:///var/run/docker.sock",
+        "desktop",
+        "settings",
+        "export",
+    )
+    runner = _docker_runner_with_settings_result(
+        CommandResult(
+            arguments=settings_arguments,
+            exit_code=0,
+            stdout="Usage: docker desktop settings COMMAND\n",
+            stderr="",
+        )
+    )
+
+    snapshot = collect_docker_snapshot(runner)
+    result = evaluate_preflight(_inputs(docker=snapshot))
+
+    assert snapshot.memory_bytes == 8 * GIB
+    assert snapshot.disk_bytes == 948_534 * 1024**2
+    assert snapshot.resource_fields_verified is True
+    assert snapshot.settings_source_kind == "standard_file"
+    assert snapshot.settings_content_sha256 == sha256_bytes(settings_bytes)
+    assert snapshot.settings_version == 45
+    assert result.reason_codes == ("DOCKER_RESOURCES_INSUFFICIENT",)
+    assert "unrelatedSecretLikeValue" not in snapshot.model_dump_json()
+    evidence = issue_authenticated_preflight_evidence(
+        run_id=ACTIVE_RUN_ID,
+        inputs=_inputs(docker=snapshot),
+        collected_at=datetime(2026, 7, 30, 9, 0, tzinfo=UTC),
+        monotonic_started_ns=100,
+        monotonic_finished_ns=200,
+    )
+    _persist_preflight(
+        artifacts_root=tmp_path,
+        evidence=evidence,
+        sequence=200,
+    )
+    persisted = json.loads(
+        (
+            tmp_path
+            / "observer-visible"
+            / ACTIVE_RUN_ID
+            / "lifecycle"
+            / "preflight"
+            / "200.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert persisted["result"]["reason_codes"] == [
+        "DOCKER_RESOURCES_INSUFFICIENT"
+    ]
+    assert persisted["docker"]["settings_source_kind"] == "standard_file"
+    assert persisted["docker"]["settings_content_sha256"] == sha256_bytes(
+        settings_bytes
+    )
+    assert "unrelatedSecretLikeValue" not in json.dumps(persisted)
+    assert str(tmp_path) not in json.dumps(persisted)
+
+
+@pytest.mark.parametrize(
+    "invalid_kind",
+    [
+        "missing",
+        "symlink",
+        "writable",
+        "wrong_owner",
+        "oversize",
+        "malformed",
+        "non_object",
+        "duplicate_key",
+    ],
+)
+def test_docker_settings_standard_file_fallback_fails_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    invalid_kind: str,
+) -> None:
+    monkeypatch.setattr(
+        preflight_module.Path,
+        "home",
+        classmethod(lambda _cls: tmp_path),
+    )
+    path = _standard_settings_path(tmp_path)
+    valid = json.dumps(
+        {"SettingsVersion": 45, "DiskSizeMiB": 100 * 1024}
+    ).encode()
+    if invalid_kind == "symlink":
+        target = tmp_path / "settings-target.json"
+        target.write_bytes(valid)
+        path.parent.mkdir(parents=True)
+        path.symlink_to(target)
+    elif invalid_kind != "missing":
+        content = (
+            b" " * (preflight_module._MAX_DOCKER_SETTINGS_BYTES + 1)
+            if invalid_kind == "oversize"
+            else b"{malformed"
+            if invalid_kind == "malformed"
+            else b"[]"
+            if invalid_kind == "non_object"
+            else b'{"SettingsVersion":45,"SettingsVersion":46,"DiskSizeMiB":102400}'
+            if invalid_kind == "duplicate_key"
+            else valid
+        )
+        _write_standard_settings(tmp_path, content)
+        if invalid_kind == "writable":
+            path.chmod(0o620)
+    if invalid_kind == "wrong_owner":
+        actual_uid = os.getuid()
+        monkeypatch.setattr(
+            preflight_module.os,
+            "getuid",
+            lambda: actual_uid + 1,
+        )
+    settings_arguments = (
+        "docker",
+        "--host",
+        "unix:///var/run/docker.sock",
+        "desktop",
+        "settings",
+        "export",
+    )
+    runner = _docker_runner_with_settings_result(
+        CommandResult(
+            arguments=settings_arguments,
+            exit_code=0,
+            stdout="Usage: docker desktop settings COMMAND\n",
+            stderr="",
+        )
+    )
+
+    with pytest.raises(PreflightCollectionError, match="PREFLIGHT_BLOCKED"):
+        collect_docker_snapshot(runner)
 
 
 @pytest.mark.parametrize(

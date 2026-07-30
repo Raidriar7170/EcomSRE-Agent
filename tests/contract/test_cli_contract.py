@@ -36,6 +36,7 @@ CANONICAL_COMMANDS = {
     "accept",
     "stop",
 }
+DIAGNOSTIC_COMMANDS = {"smoke"}
 
 RUN_ID_REQUIRED_COMMANDS = {
     "up",
@@ -48,11 +49,13 @@ RUN_ID_REQUIRED_COMMANDS = {
 
 IMPLEMENTED_COMMANDS = {
     "bootstrap",
+    "preflight",
     "up",
     "health",
     "inject",
     "reset",
     "status",
+    "smoke",
     "stop",
 }
 
@@ -73,7 +76,7 @@ def test_cli_parser_exposes_only_explicit_phase0_commands() -> None:
         action for action in phase0_parser._actions if action.dest == "command"
     )
 
-    assert set(command_action.choices) == CANONICAL_COMMANDS
+    assert set(command_action.choices) == CANONICAL_COMMANDS | DIAGNOSTIC_COMMANDS
 
 
 def test_existing_run_commands_require_a_valid_opaque_run_id() -> None:
@@ -158,6 +161,39 @@ def test_task6_registry_exposes_lifecycle_and_control_handlers() -> None:
     assert set(registry) == IMPLEMENTED_COMMANDS
 
 
+def test_smoke_generates_one_opaque_run_id_when_make_exports_empty_value(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    import ecomsre.cli as cli
+
+    observed: list[str] = []
+
+    def smoke_handler(args, _context):
+        observed.append(args.run_id)
+        return TerminalResult(
+            outcome=Outcome.BLOCKED_ENVIRONMENT,
+            reason_code="TEST_STOP",
+        )
+
+    monkeypatch.setenv("ECOMSRE_RUN_ID", "")
+    monkeypatch.setattr(cli, "build_handler_registry", lambda: {"smoke": smoke_handler})
+
+    exit_code = cli.main(
+        ["phase0", "smoke"],
+        runner=object(),
+        project_root=tmp_path,
+        artifacts_root=tmp_path / "artifacts",
+    )
+
+    assert exit_code == 20
+    assert len(observed) == 1
+    assert len(observed[0]) == 32
+    int(observed[0], 16)
+    capsys.readouterr()
+
+
 def test_task5_cli_preserves_unknown_ownership_truth_marker() -> None:
     completed = _run_cli(
         "phase0",
@@ -205,8 +241,8 @@ def test_control_cli_requires_current_preflight_before_any_runtime_write(
     handler = cli._handle_inject if command == "inject" else cli._handle_reset
     result = handler(SimpleNamespace(run_id="a" * 32), context)
 
-    assert result.outcome is Outcome.UNSAFE
-    assert result.reason_code == "PREFLIGHT_EVIDENCE_INVALID"
+    assert result.outcome is Outcome.BLOCKED_ENVIRONMENT
+    assert result.reason_code == "PREFLIGHT_BLOCKED"
     assert list(tmp_path.iterdir()) == []
 
 
@@ -642,7 +678,7 @@ def test_evaluator_capability_io_failure_has_dedicated_typed_result(
     assert failure.exit_code == 20
 
 
-def test_cli_up_requires_current_authenticated_preflight_before_ownership_load(
+def test_cli_up_collects_fresh_preflight_when_no_evidence_is_injected(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -656,13 +692,41 @@ def test_cli_up_requires_current_authenticated_preflight_before_ownership_load(
     )
     monkeypatch.setattr(cli, "_verify_upstream", lambda _context: None)
 
-    def forbidden_ownership_load(*_args, **_kwargs):
-        raise AssertionError("ownership loaded before authenticated preflight")
-
+    evidence = SimpleNamespace(
+        run_id="a" * 32,
+        is_current=lambda: True,
+        inputs=SimpleNamespace(ownership_context=None),
+        result=SimpleNamespace(outcome=Outcome.SUCCESS),
+    )
+    collected = []
+    monkeypatch.setattr(
+        cli,
+        "collect_fresh_preflight",
+        lambda **kwargs: collected.append(kwargs) or evidence,
+    )
+    monkeypatch.setattr(
+        cli,
+        "prepare_flagd_runtime",
+        lambda **_kwargs: None,
+    )
     monkeypatch.setattr(
         cli,
         "load_authenticated_ownership_context",
-        forbidden_ownership_load,
+        lambda *_args: (_ for _ in ()).throw(cli.OwnershipAuthorityError()),
+    )
+    monkeypatch.setattr(
+        cli,
+        "up_environment",
+        lambda *_args, **kwargs: LifecycleExecution(
+            result=TerminalResult(
+                outcome=Outcome.BLOCKED_ENVIRONMENT,
+                reason_code=(
+                    "FRESH_EVIDENCE_USED"
+                    if kwargs["preflight_evidence"] is evidence
+                    else "STALE_EVIDENCE_USED"
+                ),
+            )
+        ),
     )
     context = cli.HandlerContext(
         runner=SimpleNamespace(),
@@ -676,9 +740,10 @@ def test_cli_up_requires_current_authenticated_preflight_before_ownership_load(
         context,
     )
 
-    assert result.outcome is Outcome.UNSAFE
-    assert result.exit_code == 40
-    assert result.reason_code == "PREFLIGHT_EVIDENCE_INVALID"
+    assert result.outcome is Outcome.BLOCKED_ENVIRONMENT
+    assert result.reason_code == "FRESH_EVIDENCE_USED"
+    assert len(collected) == 1
+    assert collected[0]["run_id"] == "a" * 32
 
 
 def test_cli_up_prepares_verified_run_config_before_compose_mutation(
@@ -741,6 +806,7 @@ def test_subprocess_runner_never_forwards_ambient_docker_proxy_or_compose_env(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
+    import ecomsre.environment.command_runner as command_runner
     from ecomsre.cli import SubprocessRunner
 
     for name in (
@@ -755,17 +821,20 @@ def test_subprocess_runner_never_forwards_ambient_docker_proxy_or_compose_env(
         monkeypatch.setenv(name, f"ambient-{name}")
     captured: dict[str, object] = {}
 
-    def fake_run(arguments, **kwargs):
+    class FakeProcess:
+        returncode = 0
+
+        def communicate(self, timeout):
+            assert timeout == 10
+            return "", ""
+
+    def fake_popen(arguments, **kwargs):
         captured["arguments"] = arguments
         captured.update(kwargs)
-        return SimpleNamespace(
-            returncode=0,
-            stdout="",
-            stderr="",
-        )
+        return FakeProcess()
 
-    monkeypatch.setattr(subprocess, "run", fake_run)
-    runner = SubprocessRunner(cwd=tmp_path)
+    monkeypatch.setattr(command_runner, "_Popen", fake_popen)
+    runner = SubprocessRunner(cwd=tmp_path, run_id="a" * 32)
 
     runner.run(
         ("docker", "--context", "desktop-linux", "info"),

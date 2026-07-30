@@ -236,25 +236,47 @@ class StatisticalEvidence(EvidenceModel):
 
 
 class CommandLog(EvidenceModel):
-    schema_version: Literal["phase0.command-log.v1"]
+    schema_version: Literal["phase0.command-log.v2"]
     run_id: str = Field(pattern=RUN_ID_PATTERN.pattern)
     command: str
     arguments: tuple[str, ...]
     working_directory: str
     started_at: datetime
     ended_at: datetime
-    exit_code: int
-    outcome: Outcome
-    output_artifacts: tuple[str, ...]
+    monotonic_started_seconds: float = Field(ge=0)
+    monotonic_ended_seconds: float = Field(ge=0)
+    timeout_seconds: float = Field(gt=0)
+    process_exit_code: int | None
+    process_timed_out: bool
+    classification: Outcome
+    terminal_exit_code: int
+    reason_code: str = Field(min_length=1)
+    stdout_artifact: str = Field(min_length=1)
+    stdout_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    stderr_artifact: str = Field(min_length=1)
+    stderr_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    network_access_declared: bool
+    network_access_scope: Literal[
+        "NONE",
+        "LOCAL_DOCKER_DAEMON",
+        "EXTERNAL_GIT",
+        "EXTERNAL_REGISTRY",
+    ]
+    filesystem_write_scope: tuple[str, ...]
+    observed_effect_scope: tuple[str, ...]
 
     @model_validator(mode="after")
     def reject_unsanitized_secrets(self) -> "CommandLog":
         if _has_unsanitized_secret(self.arguments):
             raise ValueError("command log contains unsanitized secret arguments")
-        if self.exit_code != self.outcome.exit_code:
-            raise ValueError("command exit code conflicts with outcome")
+        if self.process_timed_out and self.process_exit_code is not None:
+            raise ValueError("timed-out process cannot have an exit code")
+        if self.terminal_exit_code != self.classification.exit_code:
+            raise ValueError("terminal exit code conflicts with classification")
         if self.ended_at < self.started_at:
             raise ValueError("command ended_at precedes started_at")
+        if self.monotonic_ended_seconds < self.monotonic_started_seconds:
+            raise ValueError("command monotonic end precedes start")
         return self
 
 

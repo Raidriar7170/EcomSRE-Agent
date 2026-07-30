@@ -64,6 +64,13 @@ _RUN_ID = re.compile(r"^[0-9a-f]{32}$")
 _COMPOSE_PROJECT_LABEL = "com.docker.compose.project"
 _COMPOSE_SERVICE_LABEL = "com.docker.compose.service"
 _COMPOSE_RESOURCE_KINDS = frozenset({"container", "network", "volume", "port"})
+_HOST_PORT_ALLOWLIST = {
+    "frontend-proxy": frozenset({8080}),
+    "prometheus": frozenset({9090}),
+    "jaeger": frozenset({16686}),
+    "opensearch": frozenset({9200}),
+    "flagd": frozenset({8016}),
+}
 _COMPOSE_FILES = (
     "third_party/opentelemetry-demo/compose.yaml",
     "third_party/opentelemetry-demo/compose.observability.yaml",
@@ -167,6 +174,11 @@ class ExpectedPortBinding(BaseModel):
             raise ValueError("target-only port cannot predeclare a host binding")
         if self.published_port is not None and not self.host_ip:
             raise ValueError("explicit published port requires a host binding")
+        if self.published_port is not None and self.host_ip not in {
+            "127.0.0.1",
+            "::1",
+        }:
+            raise ValueError("published port host binding must be loopback")
         return self
 
 
@@ -296,6 +308,8 @@ def build_image_inspection_invocations(
                 *docker_host_prefix(docker_endpoint),
                 "image",
                 "inspect",
+                "--platform",
+                "linux/arm64",
                 source,
             ),
             environment={"ECOMSRE_RUN_ID": run_id},
@@ -452,6 +466,17 @@ def up_environment(
             result=_terminal(
                 Outcome.BLOCKED_UPSTREAM,
                 "COMPOSE_CONFIG_HASH_MISMATCH",
+            ),
+            resolved_compose=resolved,
+            command_results=tuple(command_results),
+        )
+    try:
+        parse_expected_port_bindings(resolved)
+    except ValueError:
+        return LifecycleExecution(
+            result=_terminal(
+                Outcome.UNSAFE,
+                "UNSAFE_PORT_EXPOSURE",
             ),
             resolved_compose=resolved,
             command_results=tuple(command_results),
@@ -1006,11 +1031,18 @@ def _invocation_is_allowlisted(
     if purpose == "inspect_image":
         return (
             invocation.read_only
-            and len(arguments) == 6
-            and arguments[:5] == (*docker_prefix, "image", "inspect")
-            and bool(arguments[5])
-            and not arguments[5].startswith("-")
-            and not any(character.isspace() for character in arguments[5])
+            and len(arguments) == 8
+            and arguments[:7]
+            == (
+                *docker_prefix,
+                "image",
+                "inspect",
+                "--platform",
+                "linux/arm64",
+            )
+            and bool(arguments[7])
+            and not arguments[7].startswith("-")
+            and not any(character.isspace() for character in arguments[7])
         )
     if purpose in {
         f"{scope}_{kind}s"
@@ -1193,9 +1225,10 @@ def parse_expected_port_bindings(
             raise ValueError
     except (json.JSONDecodeError, KeyError, TypeError, ValueError) as error:
         raise ValueError(
-            "resolved Compose port metadata is incomplete or ambiguous"
+            "resolved Compose port metadata is incomplete or ambiguous: "
+            f"{error}"
         ) from error
-    return tuple(
+    bindings = tuple(
         sorted(
             expected,
             key=lambda binding: (
@@ -1208,6 +1241,22 @@ def parse_expected_port_bindings(
             ),
         )
     )
+    _audit_minimal_loopback_port_plan(bindings)
+    return bindings
+
+
+def _audit_minimal_loopback_port_plan(
+    bindings: tuple[ExpectedPortBinding, ...],
+) -> None:
+    for binding in bindings:
+        allowed_targets = _HOST_PORT_ALLOWLIST.get(binding.service)
+        if allowed_targets is None or binding.target_port not in allowed_targets:
+            raise ValueError("published port service/target is outside allowlist")
+        if (
+            binding.published_port is None
+            or binding.host_ip not in {"127.0.0.1", "::1"}
+        ):
+            raise ValueError("published port must use an explicit loopback binding")
 
 
 def _require_resolved_resource_completeness(
@@ -1415,20 +1464,14 @@ def _require_equivalent_host_bindings(
     hosts = {(binding.host_ip, binding.host_family) for binding in actual}
     if len(hosts) != len(actual):
         raise ValueError("published port host binding is duplicate")
-    wildcard_pair = {
-        ("0.0.0.0", "ipv4"),
-        ("::", "ipv6"),
-    }
-    if expected.published_port is None:
-        if hosts == {("0.0.0.0", "ipv4")} or hosts == wildcard_pair:
-            return
-        raise ValueError("target-only host binding is not the Compose wildcard default")
+    if expected.published_port is None or expected.host_ip is None:
+        raise ValueError("published port lacks explicit loopback intent")
     assert expected.host_ip is not None
     expected_host, expected_family = _normalize_host_binding(expected.host_ip)
-    if expected_host == "0.0.0.0":
-        if hosts == {("0.0.0.0", "ipv4")} or hosts == wildcard_pair:
-            return
-    elif hosts == {(expected_host, expected_family)}:
+    if (
+        expected_host in {"127.0.0.1", "::1"}
+        and hosts == {(expected_host, expected_family)}
+    ):
         return
     raise ValueError("explicit published host binding differs")
 
@@ -1878,16 +1921,26 @@ def _persist_manual_diagnostic_best_effort(
 
 def _command_log_payload(
     command_results: list[CommandResult],
-) -> list[dict[str, object]]:
-    return [
-        {
-            "arguments": result.arguments,
-            "exit_code": result.exit_code,
-            "stdout_sha256": sha256_bytes(result.stdout.encode("utf-8")),
-            "stderr_sha256": sha256_bytes(result.stderr.encode("utf-8")),
-        }
-        for result in command_results
-    ]
+) -> dict[str, object]:
+    return {
+        "schema_version": "phase0.command-log-index.v1",
+        "records": [
+            {
+                "arguments": result.arguments,
+                "exit_code": result.exit_code,
+                "stdout_sha256": sha256_bytes(result.stdout.encode("utf-8")),
+                "stderr_sha256": sha256_bytes(result.stderr.encode("utf-8")),
+                "audit_status": (
+                    "COMMAND_LOG_V2"
+                    if result.command_log_artifact is not None
+                    else "FIXTURE_UNAVAILABLE"
+                ),
+                "command_log_artifact": result.command_log_artifact,
+                "command_log_sha256": result.command_log_sha256,
+            }
+            for result in command_results
+        ],
+    }
 
 
 def _refresh_existing_artifact_paths(
@@ -1941,6 +1994,7 @@ def _sanitize_resolved_compose(stdout: str) -> dict[str, object]:
         "evaluator-only",
         "/control",
         "demo.flagd.json",
+        "flagd_ofrep_port",
         "adfailure",
         "adservicefailure",
         "physical_flag",

@@ -5,8 +5,10 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import os
 import re
 import secrets
+import stat
 import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
@@ -38,6 +40,12 @@ from ecomsre.evidence.hashes import (
 from ecomsre.phase0.models import Outcome
 
 
+_DOCKER_SETTINGS_RELATIVE_PATH = Path(
+    "Library/Group Containers/group.com.docker/settings-store.json"
+)
+_MAX_DOCKER_SETTINGS_BYTES = 4 * 1024 * 1024
+
+
 GIB = 1024**3
 MINIMUM_MEMORY_BYTES = 16 * GIB
 MINIMUM_DISK_BYTES = 25 * GIB
@@ -64,6 +72,28 @@ class CommandResult(BaseModel):
     exit_code: int
     stdout: str
     stderr: str
+    process_exit_code: int | None = None
+    process_timed_out: bool = False
+    stdout_artifact: str | None = None
+    stdout_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    stderr_artifact: str | None = None
+    stderr_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    command_log_artifact: str | None = None
+    command_log_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+
+    @model_validator(mode="after")
+    def require_consistent_process_evidence(self) -> "CommandResult":
+        if self.process_timed_out and self.process_exit_code is not None:
+            raise ValueError("timed-out process cannot have an exit code")
+        if (self.stdout_artifact is None) != (self.stdout_sha256 is None):
+            raise ValueError("stdout artifact and hash must be recorded together")
+        if (self.stderr_artifact is None) != (self.stderr_sha256 is None):
+            raise ValueError("stderr artifact and hash must be recorded together")
+        if (self.command_log_artifact is None) != (
+            self.command_log_sha256 is None
+        ):
+            raise ValueError("command log artifact and hash must be recorded together")
+        return self
 
 
 class CommandRunner(Protocol):
@@ -108,6 +138,16 @@ class DockerSnapshot(BaseModel):
     memory_bytes: int = Field(ge=0)
     disk_bytes: int = Field(ge=0)
     resource_fields_verified: bool
+    settings_source_kind: Literal[
+        "cli_export",
+        "standard_file",
+        "unavailable",
+    ] = "unavailable"
+    settings_content_sha256: str | None = Field(
+        default=None,
+        pattern=r"^[0-9a-f]{64}$",
+    )
+    settings_version: int | None = Field(default=None, ge=0)
     context_name: str
     endpoint: str
     daemon_id: str
@@ -923,6 +963,79 @@ def collect_docker_snapshot(
         ) from error
 
 
+def _strict_json_object(raw: bytes) -> dict[str, object]:
+    def reject_duplicate_keys(
+        pairs: list[tuple[str, object]],
+    ) -> dict[str, object]:
+        result: dict[str, object] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate JSON key")
+            result[key] = value
+        return result
+
+    try:
+        payload = json.loads(
+            raw,
+            object_pairs_hook=reject_duplicate_keys,
+        )
+    except (json.JSONDecodeError, UnicodeDecodeError) as error:
+        raise ValueError("Docker settings JSON is malformed") from error
+    if not isinstance(payload, dict):
+        raise ValueError("Docker settings must be a JSON object")
+    return payload
+
+
+def _validate_docker_settings_stat(metadata: os.stat_result) -> None:
+    if (
+        not stat.S_ISREG(metadata.st_mode)
+        or metadata.st_uid != os.getuid()
+        or metadata.st_mode & 0o022
+        or metadata.st_size < 2
+        or metadata.st_size > _MAX_DOCKER_SETTINGS_BYTES
+    ):
+        raise ValueError("Docker settings file safety boundary differs")
+
+
+def _load_standard_docker_settings() -> tuple[dict[str, object], str]:
+    path = Path.home() / _DOCKER_SETTINGS_RELATIVE_PATH
+    before = os.lstat(path)
+    _validate_docker_settings_stat(before)
+    flags = os.O_RDONLY
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor = os.open(path, flags)
+    try:
+        opened = os.fstat(descriptor)
+        _validate_docker_settings_stat(opened)
+        if (before.st_dev, before.st_ino) != (opened.st_dev, opened.st_ino):
+            raise ValueError("Docker settings file identity changed")
+        chunks: list[bytes] = []
+        remaining = opened.st_size
+        while remaining:
+            chunk = os.read(descriptor, min(remaining, 64 * 1024))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        raw = b"".join(chunks)
+        after = os.fstat(descriptor)
+    finally:
+        os.close(descriptor)
+    if (
+        len(raw) != opened.st_size
+        or opened.st_size != after.st_size
+        or opened.st_mtime_ns != after.st_mtime_ns
+    ):
+        raise ValueError("Docker settings file read was incomplete")
+    return _strict_json_object(raw), hashlib.sha256(raw).hexdigest()
+
+
+def _docker_settings_version(settings: dict[str, object]) -> int | None:
+    value = settings.get("SettingsVersion")
+    return value if isinstance(value, int) and not isinstance(value, bool) else None
+
+
 def _collect_docker_snapshot(
     runner: CommandRunner,
     *,
@@ -1020,18 +1133,40 @@ def _collect_docker_snapshot(
         (*docker_prefix, "desktop", "settings", "export"),
         timeout_seconds=timeout_seconds,
     )
-    settings_payload = (
-        json.loads(settings.stdout)
-        if settings.exit_code == 0 and settings.stdout.strip()
-        else {}
-    )
-    if not isinstance(settings_payload, dict):
-        raise ValueError("Docker settings must be a JSON object")
+    settings_payload: dict[str, object] | None = None
+    settings_content_sha256: str | None = None
+    settings_source_kind: Literal["cli_export", "standard_file"]
+    if settings.exit_code == 0 and settings.stdout.strip():
+        settings_raw = settings.stdout.encode()
+        try:
+            settings_payload = _strict_json_object(settings_raw)
+        except ValueError:
+            pass
+        else:
+            settings_content_sha256 = hashlib.sha256(settings_raw).hexdigest()
+            settings_source_kind = "cli_export"
+    if settings_payload is None:
+        settings_payload, settings_content_sha256 = (
+            _load_standard_docker_settings()
+        )
+        settings_source_kind = "standard_file"
+    settings_version = _docker_settings_version(settings_payload)
+    if settings_source_kind == "standard_file":
+        disk_size_mib = settings_payload.get("DiskSizeMiB")
+        if (
+            settings_version is None
+            or not isinstance(disk_size_mib, (int, float))
+            or isinstance(disk_size_mib, bool)
+            or disk_size_mib <= 0
+        ):
+            raise ValueError("Docker settings standard fields differ")
+        disk_bytes = int(disk_size_mib * 1024**2)
+    else:
+        disk_bytes = _docker_desktop_disk_bytes(settings_payload)
     operating_system = str(payload.get("OperatingSystem", ""))
     desktop_match = re.search(r"Docker Desktop\s+([0-9A-Za-z.-]+)", operating_system)
     os_type = str(payload.get("OSType", "")).lower()
     architecture = _normalize_architecture(str(payload.get("Architecture", "")).lower())
-    disk_bytes = _docker_desktop_disk_bytes(settings_payload)
     cpu_count = float(payload.get("NCPU", 0))
     memory_bytes = int(payload.get("MemTotal", 0))
     desktop_identity_verified = (
@@ -1059,9 +1194,12 @@ def _collect_docker_snapshot(
             cpu_count > 0
             and memory_bytes > 0
             and disk_bytes > 0
-            and settings.exit_code == 0
+            and settings_content_sha256 is not None
             and context_result.exit_code == 0
         ),
+        settings_source_kind=settings_source_kind,
+        settings_content_sha256=settings_content_sha256,
+        settings_version=settings_version,
         context_name=context_name,
         endpoint=endpoint,
         daemon_id=str(payload.get("ID", "")),
@@ -1212,6 +1350,8 @@ def build_read_only_discovery_plan(
                     *docker_prefix,
                     "image",
                     "inspect",
+                    "--platform",
+                    "linux/arm64",
                     *image_references,
                 ),
             )
@@ -1605,15 +1745,16 @@ def parse_cached_images(result: CommandResult) -> tuple[InspectedImage, ...]:
         )
     try:
         if (
-            len(result.arguments) < 6
+            len(result.arguments) < 8
             or result.arguments[:2] != ("docker", "--host")
             or not is_local_unix_docker_endpoint(result.arguments[2])
             or result.arguments[3:5] != ("image", "inspect")
+            or result.arguments[5:7] != ("--platform", "linux/arm64")
         ):
             raise DiscoveryParseError(
                 "cached image inspection arguments are not auditable"
             )
-        requested_references = result.arguments[5:]
+        requested_references = result.arguments[7:]
         payload = json.loads(result.stdout)
         if (
             not isinstance(payload, list)
@@ -1646,6 +1787,10 @@ def parse_cached_images(result: CommandResult) -> tuple[InspectedImage, ...]:
             platform_digest = item["Descriptor"]["digest"]
             architecture = _normalize_architecture(item["Architecture"])
             operating_system = str(item["Os"]).lower()
+            if architecture != "arm64" or operating_system != "linux":
+                raise DiscoveryParseError(
+                    "cached image inspection is not native linux/arm64"
+                )
             tag = source_reference.rsplit("/", 1)[-1].split(":", 1)[1]
             images.append(
                 InspectedImage(
@@ -1660,6 +1805,7 @@ def parse_cached_images(result: CommandResult) -> tuple[InspectedImage, ...]:
             )
     except (
         DiscoveryParseError,
+        AttributeError,
         IndexError,
         KeyError,
         TypeError,
@@ -1755,9 +1901,17 @@ def _docker_desktop_disk_bytes(settings: object) -> int:
     if isinstance(settings, dict):
         for key, value in settings.items():
             normalized = key.lower()
-            if normalized == "disksizemib" and isinstance(value, (int, float)):
+            if (
+                normalized == "disksizemib"
+                and isinstance(value, (int, float))
+                and not isinstance(value, bool)
+            ):
                 return int(value * 1024**2)
-            if normalized == "disksizegib" and isinstance(value, (int, float)):
+            if (
+                normalized == "disksizegib"
+                and isinstance(value, (int, float))
+                and not isinstance(value, bool)
+            ):
                 return int(value * 1024**3)
             nested = _docker_desktop_disk_bytes(value)
             if nested:

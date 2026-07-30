@@ -10,6 +10,7 @@ x-phase0-service: &phase0-service
   platform: linux/arm64
   pull_policy: never
   labels: *phase0-labels
+  ports: !override []
 
 networks:
   default:
@@ -51,6 +52,11 @@ services:
     <<: *phase0-service
     container_name: ecomsre-phase0-frontend-proxy
     image: ${IMAGE_NAME}:${IMAGE_VERSION}-frontend-proxy
+    ports: !override
+      - target: 8080
+        published: "8080"
+        host_ip: "127.0.0.1"
+        protocol: tcp
 
   image-provider:
     <<: *phase0-service
@@ -90,6 +96,11 @@ services:
   flagd:
     <<: *phase0-service
     container_name: ecomsre-phase0-flagd
+    ports: !override
+      - target: 8016
+        published: "8016"
+        host_ip: "127.0.0.1"
+        protocol: tcp
     command:
       - start
       - --uri
@@ -130,6 +141,11 @@ services:
   jaeger:
     <<: *phase0-service
     container_name: ecomsre-phase0-jaeger
+    ports: !override
+      - target: 16686
+        published: "16686"
+        host_ip: "127.0.0.1"
+        protocol: tcp
 
   grafana:
     <<: *phase0-service
@@ -138,11 +154,21 @@ services:
   prometheus:
     <<: *phase0-service
     container_name: ecomsre-phase0-prometheus
+    ports: !override
+      - target: 9090
+        published: "9090"
+        host_ip: "127.0.0.1"
+        protocol: tcp
 
   opensearch:
     <<: *phase0-service
     container_name: ecomsre-phase0-opensearch
     image: ${IMAGE_NAME}:${IMAGE_VERSION}-opensearch
+    ports: !override
+      - target: 9200
+        published: "9200"
+        host_ip: "127.0.0.1"
+        protocol: tcp
 
   opamp-server:
     <<: *phase0-service

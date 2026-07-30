@@ -5,7 +5,7 @@
 | Item | State |
 |---|---|
 | Planning and decision freeze | accepted |
-| Phase 0 implementation | not started |
+| Phase 0 implementation | bounded repair ended `UNSAFE`; review required |
 | Phase 1–5 implementation | deferred |
 | Production deployment | non-goal |
 
@@ -38,12 +38,18 @@ verification.
 
 ## Current phase
 
-The current phase is `PLANNING_FROZEN`. The next possible phase is Phase 0, but
-it begins only after explicit authorization.
+The current phase is `PHASE0_BOUNDED_REPAIR_UNSAFE`. Live bootstrap verified a
+local ARM64 image lock, but the single authorized non-canonical smoke terminated
+`UNSAFE` before readiness and measurement. A later authenticated, project-scoped
+stop succeeded; it does not change the smoke verdict. The current disposition
+is `REVIEW_REQUIRED`. `OQ-001` is closed by the real preflight fingerprint;
+`OQ-002` through `OQ-004` remain open.
 
 Phase 0 establishes a local, non-LLM fault loop on the frozen OpenTelemetry
 Astronomy Shop baseline. Its normative acceptance contract is
 [PHASE_0_ACCEPTANCE.md](PHASE_0_ACCEPTANCE.md).
+The current bounded task is constrained by
+[PHASE_0_BOUNDED_REPAIR_SMOKE_PROMPT.md](PHASE_0_BOUNDED_REPAIR_SMOKE_PROMPT.md).
 
 ## Later phases
 

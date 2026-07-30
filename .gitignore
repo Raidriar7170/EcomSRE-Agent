@@ -5,6 +5,11 @@
 .venv/
 __pycache__/
 *.py[cod]
+.ecomsre-cache/
+.ecomsre-tmp/
+.env
+.env.*
+!.env.example
 
 # Runtime artifacts are local, immutable evidence and are not Git inputs.
 artifacts/

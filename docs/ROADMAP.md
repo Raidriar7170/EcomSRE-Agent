@@ -12,13 +12,14 @@ Outputs:
 - `DEC-001` through `DEC-012`;
 - project charter, architecture, roadmap, safety, acceptance, and open-question
   documents;
-- no production implementation.
+- the accepted planning packet.
 
-Stop after documentation. Do not infer authorization for Phase 0.
+That planning-only boundary has ended through explicit bounded Phase 0
+authorization; it does not authorize work beyond the current repair prompt.
 
 ## Phase 0 — Local deterministic control and statistical fault loop
 
-**State:** not started.
+**State:** bounded repair ended `UNSAFE`; `REVIEW_REQUIRED`.
 
 Entry:
 
@@ -42,6 +43,12 @@ Exit:
 - every condition in [PHASE_0_ACCEPTANCE.md](PHASE_0_ACCEPTANCE.md) passes for
   one canonical run containing three consecutive cycles;
 - evidence is preserved and independently reviewable.
+
+The single authorized `NON_CANONICAL` smoke was consumed and terminated
+`UNSAFE` before readiness or measurement. Its later authenticated environment
+stop does not satisfy this phase exit gate, close `OQ-002` through `OQ-004`, or
+authorize Phase 1. The real preflight evidence independently closes `OQ-001`.
+A second smoke requires a new explicit bounded task.
 
 ## Phase 1 — Read-only tools and Single-Agent baseline
 

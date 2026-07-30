@@ -520,15 +520,28 @@ def test_lifecycle_execution_rejects_authenticator_monkeypatch(
 
 
 @pytest.mark.parametrize(
-    "function_name",
+    ("function_name", "extra_arguments"),
     [
-        "acquire_load_generator_telemetry_receipt",
-        "acquire_collector_pipeline_receipt",
+        (
+            "acquire_load_generator_telemetry_receipt",
+            {"jaeger_base_url": "http://127.0.0.1:32772"},
+        ),
+        (
+            "acquire_collector_pipeline_receipt",
+            {
+                "context": object(),
+                "execution": object(),
+                "prometheus": object(),
+                "jaeger": object(),
+                "opensearch": object(),
+            },
+        ),
     ],
 )
 def test_specialized_receipt_acquisition_rejects_injected_transport(
     tmp_path: Path,
     function_name: str,
+    extra_arguments: dict[str, object],
 ) -> None:
     acquire = getattr(probe_module, function_name, None)
     assert callable(acquire)
@@ -543,5 +556,5 @@ def test_specialized_receipt_acquisition_rejects_injected_transport(
             evidence_store=object(),
             registry_capability=object(),
             window=_windows()[0],
-            jaeger_base_url="http://127.0.0.1:32772",
+            **extra_arguments,
         )

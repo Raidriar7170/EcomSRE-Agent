@@ -120,6 +120,59 @@ def test_candidate_lock_publish_is_exclusive_atomic_and_leaves_no_temp(
         write_candidate_image_lock(target, lock)
 
 
+def test_candidate_lock_replaces_only_verified_uninitialized_placeholder(
+    tmp_path,
+) -> None:
+    lock = generate_candidate_image_lock(
+        images=(_image(),),
+        resolved_compose=_resolved_compose(),
+        acquired_at=datetime(2026, 7, 30, 2, 0, tzinfo=UTC),
+    )
+    target = tmp_path / "image-lock.json"
+    target.write_text(
+        json.dumps(
+            {
+                "schema_version": "phase0.image-lock.v1",
+                "status": "UNINITIALIZED",
+                "upstream_tag": UPSTREAM_TAG,
+                "upstream_commit": UPSTREAM_COMMIT,
+                "compose_config_sha256": None,
+                "created_at": None,
+                "allowed_source_references": [],
+                "images": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    write_candidate_image_lock(target, lock)
+
+    assert type(lock).model_validate_json(target.read_text()) == lock
+    with pytest.raises(FileExistsError):
+        write_candidate_image_lock(target, lock)
+
+
+def test_resolved_compose_allows_shared_images_and_retains_service_mapping() -> None:
+    shared = "otel/demo:3.0.0-shared"
+    stdout = json.dumps(
+        {
+            "services": {
+                "alpha": {"image": shared, "platform": "linux/arm64"},
+                "beta": {"image": shared, "platform": "linux/arm64"},
+            }
+        },
+        sort_keys=True,
+    )
+
+    resolved = ResolvedComposeConfig.from_stdout(stdout)
+
+    assert resolved.image_references == (shared,)
+    assert resolved.service_image_mapping == (
+        ("alpha", shared),
+        ("beta", shared),
+    )
+
+
 def test_acceptance_verifies_candidate_immutably_against_cached_image() -> None:
     lock = generate_candidate_image_lock(
         images=(_image(),),

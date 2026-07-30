@@ -6,6 +6,7 @@ import json
 import os
 import re
 import secrets
+import stat
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -38,20 +39,28 @@ class ResolvedComposeConfig(BaseModel):
     stdout: str = Field(min_length=1)
     sha256: str = Field(pattern=SHA256_PATTERN)
     image_references: tuple[str, ...] = Field(min_length=1)
+    service_image_mapping: tuple[tuple[str, str], ...] = Field(min_length=1)
 
     @classmethod
     def from_stdout(cls, stdout: str) -> "ResolvedComposeConfig":
+        mapping = _compose_service_image_mapping(stdout)
         return cls(
             stdout=stdout,
             sha256=sha256_bytes(stdout.encode("utf-8")),
-            image_references=_compose_image_references(stdout),
+            image_references=tuple(sorted({image for _service, image in mapping})),
+            service_image_mapping=mapping,
         )
 
     @model_validator(mode="after")
     def bind_inventory_to_exact_stdout(self) -> "ResolvedComposeConfig":
         if self.sha256 != sha256_bytes(self.stdout.encode("utf-8")):
             raise ValueError("resolved Compose hash does not match stdout")
-        if self.image_references != _compose_image_references(self.stdout):
+        mapping = _compose_service_image_mapping(self.stdout)
+        if self.service_image_mapping != mapping:
+            raise ValueError("resolved Compose service image mapping differs")
+        if self.image_references != tuple(
+            sorted({image for _service, image in mapping})
+        ):
             raise ValueError("resolved Compose image inventory does not match stdout")
         return self
 
@@ -416,8 +425,10 @@ def write_candidate_image_lock(
     path: Path,
     lock: ImageLockManifest,
 ) -> None:
-    """Write a candidate once; existing locks are never replaced."""
+    """Publish once, permitting only UNINITIALIZED -> LOCKED replacement."""
     validated = ImageLockManifest.model_validate(lock.model_dump(mode="python"))
+    if validated.status is not ImageLockStatus.LOCKED:
+        raise ValueError("candidate image lock must be LOCKED")
     serialized = (
         json.dumps(
             validated.model_dump(mode="json"),
@@ -427,6 +438,33 @@ def write_candidate_image_lock(
         + "\n"
     ).encode("utf-8")
     parent_descriptor = os.open(path.parent, os.O_RDONLY)
+    existing_identity: tuple[int, int] | None = None
+    try:
+        existing_descriptor = os.open(
+            path.name,
+            os.O_RDONLY | (getattr(os, "O_NOFOLLOW", 0)),
+            dir_fd=parent_descriptor,
+        )
+    except FileNotFoundError:
+        existing_descriptor = None
+    if existing_descriptor is not None:
+        try:
+            metadata = os.fstat(existing_descriptor)
+            if (
+                not stat.S_ISREG(metadata.st_mode)
+                or metadata.st_uid != os.getuid()
+                or metadata.st_nlink != 1
+                or stat.S_IMODE(metadata.st_mode) & 0o022
+            ):
+                raise ValueError("existing image lock placeholder is unsafe")
+            existing = ImageLockManifest.model_validate_json(
+                _read_descriptor(existing_descriptor)
+            )
+            if existing.status is not ImageLockStatus.UNINITIALIZED:
+                raise FileExistsError("existing image lock is already initialized")
+            existing_identity = (metadata.st_dev, metadata.st_ino)
+        finally:
+            os.close(existing_descriptor)
     temporary_name = f".{secrets.token_hex(16)}.tmp"
     temporary_descriptor: int | None = None
     try:
@@ -446,16 +484,32 @@ def write_candidate_image_lock(
                 raise OSError("candidate image lock write made no progress")
             remaining = remaining[written:]
         os.fsync(temporary_descriptor)
-        os.link(
-            temporary_name,
-            path.name,
-            src_dir_fd=parent_descriptor,
-            dst_dir_fd=parent_descriptor,
-            follow_symlinks=False,
-        )
+        if existing_identity is None:
+            os.link(
+                temporary_name,
+                path.name,
+                src_dir_fd=parent_descriptor,
+                dst_dir_fd=parent_descriptor,
+                follow_symlinks=False,
+            )
+        else:
+            current = os.stat(
+                path.name,
+                dir_fd=parent_descriptor,
+                follow_symlinks=False,
+            )
+            if (current.st_dev, current.st_ino) != existing_identity:
+                raise ValueError("image lock placeholder changed before publish")
+            os.rename(
+                temporary_name,
+                path.name,
+                src_dir_fd=parent_descriptor,
+                dst_dir_fd=parent_descriptor,
+            )
         os.close(temporary_descriptor)
         temporary_descriptor = None
-        os.unlink(temporary_name, dir_fd=parent_descriptor)
+        if existing_identity is None:
+            os.unlink(temporary_name, dir_fd=parent_descriptor)
         os.fsync(parent_descriptor)
     finally:
         if temporary_descriptor is not None:
@@ -467,27 +521,36 @@ def write_candidate_image_lock(
         os.close(parent_descriptor)
 
 
-def _compose_image_references(stdout: str) -> tuple[str, ...]:
+def _compose_service_image_mapping(stdout: str) -> tuple[tuple[str, str], ...]:
     try:
         payload = json.loads(stdout)
         services = payload["services"]
         if not isinstance(services, dict) or not services:
             raise ValueError
-        references = tuple(
-            str(service["image"])
-            for _name, service in sorted(services.items())
+        mapping = tuple(
+            (str(name), str(service["image"]))
+            for name, service in sorted(services.items())
             if isinstance(service, dict)
         )
     except (json.JSONDecodeError, KeyError, TypeError, ValueError) as error:
         raise ValueError(
             "resolved Compose JSON lacks a complete service image inventory"
         ) from error
-    if len(references) != len(services) or any(
-        not reference for reference in references
+    if len(mapping) != len(services) or any(
+        not service or not reference for service, reference in mapping
     ):
         raise ValueError(
             "resolved Compose JSON lacks a complete service image inventory"
         )
-    if len(set(references)) != len(references):
-        raise ValueError("resolved Compose image inventory contains duplicates")
-    return references
+    return mapping
+
+
+def _read_descriptor(descriptor: int) -> bytes:
+    chunks: list[bytes] = []
+    offset = 0
+    while True:
+        chunk = os.pread(descriptor, 64 * 1024, offset)
+        if not chunk:
+            return b"".join(chunks)
+        chunks.append(chunk)
+        offset += len(chunk)

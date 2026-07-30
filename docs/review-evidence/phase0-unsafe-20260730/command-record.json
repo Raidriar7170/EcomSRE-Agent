@@ -1,0 +1,25 @@
+{
+  "schema_version": "phase0.sanitized-command-review.v1",
+  "run_id": "90552667b2d24c81b11886c85aa6a9be",
+  "launcher": "uvx",
+  "arguments": [
+    "ruff",
+    "check",
+    "."
+  ],
+  "working_directory": "$HOME/Documents/New project",
+  "started_at": "NOT_RECORDED",
+  "ended_at": "NOT_RECORDED",
+  "observed_elapsed_seconds": 28.1,
+  "process_exit_code": null,
+  "process_exit_code_inference": 1,
+  "process_exit_code_evidence_complete": false,
+  "process_timed_out": "NOT_RECORDED",
+  "classification": "UNSAFE",
+  "terminal_exit_code": 40,
+  "reason_code": "PROJECT_EXTERNAL_DEPENDENCY_CACHE_WRITE",
+  "network_access_observed": true,
+  "package_install_observed": true,
+  "workspace_write_observed": false,
+  "project_external_write_observed": true
+}

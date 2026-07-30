@@ -15,6 +15,7 @@ from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
 from enum import Enum
 from pathlib import Path
+from statistics import median
 from typing import Any, Literal, Protocol
 from urllib.parse import quote, urlencode
 
@@ -53,6 +54,58 @@ _PINNED_GETADS_OPERATION = "oteldemo.AdService/GetAds"
 _PINNED_PROBE_PATH = "/api/data?contextKeys=telescopes"
 
 
+class PrometheusAcquisitionPolicy(BaseModel):
+    """Closed acquisition budgets for canonical acceptance and bounded smoke."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    mode: Literal["CANONICAL", "DIAGNOSTIC_SMOKE"]
+    minimum_getads_attempts: int = Field(ge=1)
+    window_deadline_seconds: float = Field(gt=0)
+
+    @model_validator(mode="after")
+    def require_frozen_budget(self) -> "PrometheusAcquisitionPolicy":
+        expected = (
+            (_ACCEPTANCE_MINIMUM_ATTEMPTS, _ACCEPTANCE_DEADLINE_SECONDS)
+            if self.mode == "CANONICAL"
+            else (100, 120.0)
+        )
+        if (
+            self.minimum_getads_attempts,
+            self.window_deadline_seconds,
+        ) != expected:
+            raise ValueError("Prometheus acquisition budget is not frozen")
+        return self
+
+    @classmethod
+    def canonical(cls) -> "PrometheusAcquisitionPolicy":
+        return cls(
+            mode="CANONICAL",
+            minimum_getads_attempts=_ACCEPTANCE_MINIMUM_ATTEMPTS,
+            window_deadline_seconds=_ACCEPTANCE_DEADLINE_SECONDS,
+        )
+
+    @classmethod
+    def diagnostic_smoke(cls) -> "PrometheusAcquisitionPolicy":
+        return cls(
+            mode="DIAGNOSTIC_SMOKE",
+            minimum_getads_attempts=100,
+            window_deadline_seconds=120,
+        )
+
+
+class PromotionAcquisitionPolicy(BaseModel):
+    """One explicit bounded ingestion budget shared by Task 7 backends."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    max_attempts: Literal[6] = 6
+    poll_interval_seconds: Literal[5.0] = 5.0
+    ingestion_delay_seconds: Literal[10.0] = 10.0
+    phase_window_seconds: Literal[60] = 60
+    fault_probe_attempts: Literal[1] = 1
+
+
 class FixtureState(str, Enum):
     UNRESOLVED = "UNRESOLVED"
     CANDIDATE = "CANDIDATE"
@@ -78,6 +131,7 @@ class TargetFixture(_FixtureModel):
 class PromotionProof(_FixtureModel):
     current_run_id: str = Field(pattern=_RUN_ID_PATTERN)
     raw_artifacts: tuple[str, ...] = Field(min_length=1)
+    acquisition_attempt_artifacts: tuple[str, ...] = ()
     artifact_sha256: dict[str, str]
     emitted_identity_artifacts: tuple[str, ...] = Field(min_length=1)
     counter_mapping_artifact: str = Field(min_length=1)
@@ -92,6 +146,7 @@ class PromotionProof(_FixtureModel):
     def require_immutable_observer_proof(self) -> "PromotionProof":
         paths = (
             *self.raw_artifacts,
+            *self.acquisition_attempt_artifacts,
             *self.emitted_identity_artifacts,
             self.counter_mapping_artifact,
             self.probe_getads_attribution_artifact,
@@ -545,11 +600,13 @@ class FrozenTelemetryQueryCapability:
             or not self._acquisition_receipt.is_authentic(self._store)
         ):
             return False
-        try:
-            hashes = _verify_promotion_artifacts(self._loaded, self._store)
-        except (OSError, RuntimeError, TypeError, ValueError):
+        audit = validate_frozen_query_registry_origin(
+            self._loaded.registry.model_dump(mode="json"),
+            artifacts_root=self._store._capability.base_root,
+        )
+        if not audit.valid:
             return False
-        return tuple(sorted(hashes.items())) == self._verified_hashes
+        return audit.verified_hashes == self._verified_hashes
 
 
 def load_query_registry(
@@ -633,13 +690,181 @@ def validate_frozen_query_registry(
     )
 
 
+def validate_frozen_query_registry_origin(
+    source: Path | str | dict[str, Any],
+    *,
+    artifacts_root: Path,
+) -> FrozenRegistryAudit:
+    """Verify the immutable origin promotion without creating or copying evidence."""
+    try:
+        loaded = load_query_registry(source)
+        proof = loaded.registry.promotion_proof
+        if loaded.registry.state is not FixtureState.FROZEN or proof is None:
+            raise ValueError("QUERY_FIXTURE_NOT_FROZEN")
+        with ObserverEvidenceStore.open_existing(
+            Path(artifacts_root),
+            proof.current_run_id,
+        ) as origin:
+            verified = _verify_promotion_artifacts(loaded, origin)
+    except (
+        FileNotFoundError,
+        OSError,
+        OverflowError,
+        RuntimeError,
+        TypeError,
+        ValueError,
+    ) as error:
+        return FrozenRegistryAudit(
+            run_id=(
+                proof.current_run_id
+                if "proof" in locals() and proof is not None
+                else "0" * 32
+            ),
+            valid=False,
+            reason=str(error),
+        )
+    return FrozenRegistryAudit(
+        run_id=proof.current_run_id,
+        valid=True,
+        verified_hashes=tuple(sorted(verified.items())),
+    )
+
+
+def revalidate_frozen_query_capability(
+    source: Path | str | dict[str, Any],
+    *,
+    evidence_store: ObserverEvidenceStore,
+    client: OwnedHttpClient,
+    window: PhaseWindow,
+    probe_base_url: str,
+) -> FrozenTelemetryQueryCapability:
+    """Reissue runtime authority from frozen proof plus one fresh owned probe."""
+    if (
+        type(client) is not OwnedHttpClient
+        or not _owned_http_client_has_production_integrity(client)
+    ):
+        raise TypeError("frozen revalidation requires production OwnedHttpClient")
+    if (
+        not isinstance(evidence_store, ObserverEvidenceStore)
+        or client.run_id != evidence_store.run_id
+        or window.run_id != evidence_store.run_id
+        or not window.utc_started_at <= datetime.now(UTC) < window.utc_ended_at
+        or not window.monotonic_started_at
+        <= time.monotonic()
+        < window.monotonic_ended_at
+    ):
+        raise ValueError("frozen revalidation window or authority is invalid")
+    loaded = load_query_registry(source)
+    audit = validate_frozen_query_registry_origin(
+        source,
+        artifacts_root=evidence_store._capability.base_root,
+    )
+    if (
+        loaded.registry.state is not FixtureState.FROZEN
+        or not audit.valid
+        or loaded.registry.promotion_proof is None
+    ):
+        raise ValueError(audit.reason or "QUERY_FIXTURE_NOT_FROZEN")
+    fixture = loaded.registry.probe
+    assert fixture.method is not None and fixture.path is not None
+    exchange = client.request(
+        HttpRequest(
+            endpoint=OwnedEndpoint(
+                base_url=probe_base_url,
+                service=fixture.target.service,
+                target_port=fixture.target.target_port,
+                protocol=fixture.target.protocol,
+            ),
+            method=fixture.method,
+            target=fixture.path,
+            absolute_deadline_monotonic=window.monotonic_ended_at,
+        )
+    )
+    business_observation, accepted = _evaluate_revalidation_probe(
+        exchange,
+        phase=window.scenario_phase,
+    )
+    evidence_store.write_immutable(
+        f"telemetry/revalidation/{time.monotonic_ns()}-probe.json",
+        {
+            "schema_version": "phase0.telemetry-registry-revalidation.v1",
+            "run_id": evidence_store.run_id,
+            "fixture_sha256": loaded.content_sha256,
+            "origin_promotion_run_id": (
+                loaded.registry.promotion_proof.current_run_id
+            ),
+            "scenario_phase": window.scenario_phase.value,
+            "request_target": exchange.request.target,
+            "started_at": exchange.started_at.isoformat(),
+            "ended_at": exchange.ended_at.isoformat(),
+            "raw_response_sha256": exchange.raw_sha256,
+            "raw_response_base64": base64.b64encode(exchange.raw_body).decode(
+                "ascii"
+            ),
+            "raw_response_partial": exchange.raw_body_partial,
+            "http_status": exchange.status_code,
+            "reason": exchange.reason.value,
+            "business_observation": business_observation,
+            "probe_attempt_ordinal": 1,
+            "probe_attempt_budget": 1,
+            "accepted": accepted,
+        },
+    )
+    if not accepted:
+        raise ValueError(
+            f"frozen revalidation probe failed:{business_observation}"
+        )
+    receipt = _ProductionAcquisitionReceipt(
+        _token=_PRODUCTION_ACQUISITION_TOKEN,
+        run_id=evidence_store.run_id,
+        store_root=evidence_store.root,
+        windows=(window,),
+        exchanges=(exchange,),
+    )
+    return FrozenTelemetryQueryCapability(
+        _token=_FROZEN_CAPABILITY_TOKEN,
+        loaded=loaded,
+        store=evidence_store,
+        verified_hashes=dict(audit.verified_hashes),
+        acquisition_receipt=receipt,
+    )
+
+
+def _evaluate_revalidation_probe(
+    exchange: HttpExchange,
+    *,
+    phase: MeasurementPhase,
+) -> tuple[str, bool]:
+    """Classify one fixed probe without outcome-based retries."""
+    if not exchange.succeeded:
+        if (
+            phase is MeasurementPhase.FAULT
+            and exchange.reason is HttpReason.HTTP_STATUS_ERROR
+            and not exchange.raw_body_partial
+        ):
+            return "FAULT_NON_SUCCESS", True
+        if exchange.reason is HttpReason.HTTP_STATUS_ERROR:
+            return "NON_SUCCESS", False
+        return "TRANSPORT_FAILURE", False
+    try:
+        _verify_direct_ad_array(exchange.raw_body)
+    except ValueError:
+        if phase is MeasurementPhase.FAULT:
+            return "FAULT_EMPTY_OR_INVALID_PAYLOAD", True
+        return "INVALID_PAYLOAD", False
+    return "SUCCESS_PAYLOAD", True
+
+
 def discover_and_freeze_registry(
     source: Path | str | dict[str, Any],
     *,
     evidence_store: ObserverEvidenceStore,
     client: OwnedHttpClient,
-    windows: tuple[PhaseWindow, PhaseWindow, PhaseWindow],
+    windows: tuple[PhaseWindow, PhaseWindow, PhaseWindow] | None = None,
+    phase_window_provider: Callable[[MeasurementPhase], PhaseWindow] | None = None,
     base_urls: dict[str, str],
+    correlation_retry_sleep: Callable[[float], None] = time.sleep,
+    retry_policy: PromotionAcquisitionPolicy | None = None,
 ) -> FrozenTelemetryQueryCapability:
     """Acquire the frozen contract through owned transport and issue its sole seal."""
     if type(client) is not OwnedHttpClient:
@@ -650,31 +875,54 @@ def discover_and_freeze_registry(
         raise TypeError("production discovery rejects injected test transport")
     if not isinstance(evidence_store, ObserverEvidenceStore):
         raise TypeError("production discovery requires ObserverEvidenceStore")
-    _validate_promotion_windows(
-        windows,
-        run_id=client.run_id,
-        store_run_id=evidence_store.run_id,
-    )
+    if (windows is None) == (phase_window_provider is None):
+        raise ValueError(
+            "promotion requires either fixed test windows or a live phase provider"
+        )
+    staged_windows: list[PhaseWindow]
+    if windows is not None:
+        _validate_promotion_windows(
+            windows,
+            run_id=client.run_id,
+            store_run_id=evidence_store.run_id,
+        )
+        staged_windows = list(windows)
+        baseline = windows[0]
+    else:
+        assert phase_window_provider is not None
+        baseline = _acquire_staged_promotion_window(
+            phase_window_provider,
+            expected_phase=MeasurementPhase.BASELINE,
+            run_id=client.run_id,
+            cycle_number=1,
+        )
+        staged_windows = [baseline]
     if set(base_urls) != {"prometheus", "jaeger", "opensearch", "probe"}:
         raise ValueError("production discovery windows or endpoints are unbound")
     payload = _prepare_candidate_registry_for_live_discovery(
         source,
         run_id=client.run_id,
     )
-    baseline = windows[0]
     prometheus = payload["prometheus"]
     jaeger = payload["jaeger"]
     opensearch = payload["opensearch"]
     probe = payload["probe"]
     fixture_version = payload["fixture_version"]
+    candidate_registry = TelemetryQueryRegistry.model_validate(payload)
+    policy = retry_policy or PromotionAcquisitionPolicy()
     exchanges: list[HttpExchange] = []
     raw_records: list[tuple[str, str, str, HttpExchange]] = []
+    acquisition_attempts: list[tuple[str, str]] = []
     sequence = 0
 
-    def acquire(request: HttpRequest, *, purpose: str) -> HttpExchange:
+    def record_exchange(
+        exchange: HttpExchange,
+        *,
+        purpose: str,
+        allow_business_outcome: bool = False,
+    ) -> HttpExchange:
         nonlocal sequence
         sequence += 1
-        exchange = client.request(request)
         stored_path, digest = _persist_promotion_exchange_before_parse(
             evidence_store,
             exchange=exchange,
@@ -685,7 +933,7 @@ def discover_and_freeze_registry(
         logical_path = _promotion_logical_path(evidence_store, stored_path)
         exchanges.append(exchange)
         raw_records.append((purpose, logical_path, digest, exchange))
-        if not exchange.succeeded:
+        if not exchange.succeeded and not allow_business_outcome:
             _persist_promotion_terminal(
                 evidence_store,
                 sequence=sequence,
@@ -699,14 +947,85 @@ def discover_and_freeze_registry(
         return exchange
 
     observations: list[dict[str, Any]] = []
-    prometheus_exchanges: dict[str, HttpExchange] = {}
-    for query_kind, query in (
-        ("total", prometheus["total_query"]),
-        ("error", prometheus["error_query"]),
-        ("target_incarnation", prometheus["target_incarnation_query"]),
-    ):
-        exchange = acquire(
-            HttpRequest(
+    prometheus_exchanges: dict[
+        MeasurementPhase,
+        dict[str, HttpExchange],
+    ] = {}
+    prometheus_discovery_observations: dict[
+        MeasurementPhase,
+        dict[str, list[_PrometheusDiscoveryObservation]],
+    ] = {}
+    prometheus_phase_raw_observations: list[dict[str, Any]] = []
+
+    def acquire_prometheus_phase(window: PhaseWindow) -> None:
+        phase = window.scenario_phase
+        phase_exchanges: dict[str, HttpExchange] = {}
+        phase_observations: dict[
+            str,
+            list[_PrometheusDiscoveryObservation],
+        ] = {}
+        suffix = "" if phase is MeasurementPhase.BASELINE else f"-{phase.value}"
+        for query_kind, query in (
+            ("total", prometheus["total_query"]),
+            ("error", prometheus["error_query"]),
+            ("target_incarnation", prometheus["target_incarnation_query"]),
+            (
+                "source_timestamp",
+                f"timestamp({prometheus['total_query']})",
+            ),
+        ):
+            collected: list[_PrometheusDiscoveryObservation] = []
+            allow_empty = (
+                query_kind == "error"
+                and phase is MeasurementPhase.BASELINE
+            )
+
+            def validator(
+                result: HttpExchange,
+                *,
+                collected: list[_PrometheusDiscoveryObservation] = collected,
+                allow_empty: bool = allow_empty,
+                query_kind: str = query_kind,
+            ) -> bool:
+                observed = _observe_prometheus_discovery_exchange(
+                    result,
+                    window=window,
+                    allow_empty=allow_empty,
+                )
+                if query_kind == "source_timestamp":
+                    source_timestamp = _source_timestamp_from_observation(
+                        observed
+                    )
+                    if source_timestamp < window.utc_started_at:
+                        return False
+                    collected.append(observed)
+                    return (
+                        len(
+                            {
+                                _source_timestamp_from_observation(item)
+                                for item in collected
+                            }
+                        )
+                        >= 2
+                    )
+                collected.append(observed)
+                if not observed.labels:
+                    return allow_empty
+                return (
+                    len(
+                        {
+                            item.sample_timestamp
+                            for item in collected
+                            if item.sample_timestamp is not None
+                        }
+                    )
+                    >= 2
+                )
+
+            purpose = (
+                f"prometheus-{query_kind.replace('_', '-')}{suffix}"
+            )
+            request = HttpRequest(
                 endpoint=OwnedEndpoint(
                     base_url=base_urls["prometheus"],
                     service=prometheus["target"]["service"],
@@ -715,11 +1034,47 @@ def discover_and_freeze_registry(
                 ),
                 method="GET",
                 target=f"/api/v1/query?query={quote(query, safe='')}",
-                absolute_deadline_monotonic=baseline.monotonic_ended_at,
-            ),
-            purpose=f"prometheus-{query_kind.replace('_', '-')}",
-        )
-        prometheus_exchanges[query_kind] = exchange
+                absolute_deadline_monotonic=window.monotonic_ended_at,
+            )
+            exchange, attempts = _bounded_promotion_backend_poll(
+                client=client,
+                evidence_store=evidence_store,
+                request=request,
+                window=window,
+                purpose=purpose,
+                fixture_version=fixture_version,
+                validator=validator,
+                policy=policy,
+                sleep=correlation_retry_sleep,
+            )
+            acquisition_attempts.extend(attempts)
+            record_exchange(exchange, purpose=purpose)
+            phase_exchanges[query_kind] = exchange
+            phase_observations[query_kind] = collected
+            prometheus_phase_raw_observations.append(
+                {
+                    "scenario_phase": phase.value,
+                    **_promotion_observation_from_exchange(
+                        backend="prometheus",
+                        query_kind=query_kind,
+                        request=query,
+                        response_schema=prometheus["expected_response_schema"],
+                        exchange=exchange,
+                    ),
+                }
+            )
+        prometheus_exchanges[phase] = phase_exchanges
+        prometheus_discovery_observations[phase] = phase_observations
+
+    if phase_window_provider is not None:
+        correlation_retry_sleep(policy.ingestion_delay_seconds)
+    acquire_prometheus_phase(baseline)
+    for query_kind, query in (
+        ("total", prometheus["total_query"]),
+        ("error", prometheus["error_query"]),
+        ("target_incarnation", prometheus["target_incarnation_query"]),
+    ):
+        exchange = prometheus_exchanges[MeasurementPhase.BASELINE][query_kind]
         observations.append(
             _promotion_observation_from_exchange(
                 backend="prometheus",
@@ -739,8 +1094,7 @@ def discover_and_freeze_registry(
             "limit": 100,
         }
     )
-    jaeger_exchange = acquire(
-        HttpRequest(
+    jaeger_request = HttpRequest(
             endpoint=OwnedEndpoint(
                 base_url=base_urls["jaeger"],
                 service=jaeger["target"]["service"],
@@ -750,9 +1104,27 @@ def discover_and_freeze_registry(
             method="GET",
             target=jaeger_target,
             absolute_deadline_monotonic=baseline.monotonic_ended_at,
-        ),
+        )
+    jaeger_exchange, attempts = _bounded_promotion_backend_poll(
+        client=client,
+        evidence_store=evidence_store,
+        request=jaeger_request,
+        window=baseline,
         purpose="jaeger-readiness",
+        fixture_version=fixture_version,
+        validator=lambda result: _json_exchange_matches(
+            result,
+            lambda parsed: _jaeger_response_has_exact_identity(
+                parsed,
+                candidate_registry,
+                utc_window=(baseline.utc_started_at, baseline.utc_ended_at),
+            ),
+        ),
+        policy=policy,
+        sleep=correlation_retry_sleep,
     )
+    acquisition_attempts.extend(attempts)
+    record_exchange(jaeger_exchange, purpose="jaeger-readiness")
     observations.append(
         _promotion_observation_from_exchange(
             backend="jaeger",
@@ -791,8 +1163,7 @@ def discover_and_freeze_registry(
             },
         }
     )
-    opensearch_exchange = acquire(
-        HttpRequest(
+    opensearch_request = HttpRequest(
             endpoint=OwnedEndpoint(
                 base_url=base_urls["opensearch"],
                 service=opensearch["target"]["service"],
@@ -807,9 +1178,27 @@ def discover_and_freeze_registry(
             ),
             body=opensearch_body,
             absolute_deadline_monotonic=baseline.monotonic_ended_at,
-        ),
+        )
+    opensearch_exchange, attempts = _bounded_promotion_backend_poll(
+        client=client,
+        evidence_store=evidence_store,
+        request=opensearch_request,
+        window=baseline,
         purpose="opensearch-readiness",
+        fixture_version=fixture_version,
+        validator=lambda result: _json_exchange_matches(
+            result,
+            lambda parsed: _opensearch_response_has_exact_identity(
+                parsed,
+                candidate_registry,
+                utc_window=(baseline.utc_started_at, baseline.utc_ended_at),
+            ),
+        ),
+        policy=policy,
+        sleep=correlation_retry_sleep,
     )
+    acquisition_attempts.extend(attempts)
+    record_exchange(opensearch_exchange, purpose="opensearch-readiness")
     observations.append(
         _promotion_observation_from_exchange(
             backend="opensearch",
@@ -823,7 +1212,28 @@ def discover_and_freeze_registry(
     phase_observations: list[dict[str, Any]] = []
     probe_exchanges: list[HttpExchange] = []
     generated_trace_ids: set[str] = set()
-    for window in windows:
+    for phase_index, expected_phase in enumerate(
+        (
+            MeasurementPhase.BASELINE,
+            MeasurementPhase.FAULT,
+            MeasurementPhase.RECOVERY,
+        )
+    ):
+        if phase_index == 0:
+            window = baseline
+        elif phase_window_provider is not None:
+            window = _acquire_staged_promotion_window(
+                phase_window_provider,
+                expected_phase=expected_phase,
+                run_id=client.run_id,
+                cycle_number=1,
+            )
+            staged_windows.append(window)
+            correlation_retry_sleep(policy.ingestion_delay_seconds)
+        else:
+            window = staged_windows[phase_index]
+        if expected_phase is not MeasurementPhase.BASELINE:
+            acquire_prometheus_phase(window)
         trace_id = secrets.token_hex(16)
         if trace_id in generated_trace_ids:
             raise RuntimeError("production probe trace_id collision")
@@ -831,8 +1241,9 @@ def discover_and_freeze_registry(
         parent_span_id = secrets.token_hex(8)
         traceparent = f"00-{trace_id}-{parent_span_id}-01"
         phase_name = window.scenario_phase.value
-        exchange = acquire(
-            HttpRequest(
+        exchange = record_exchange(
+            client.request(
+                HttpRequest(
                 endpoint=OwnedEndpoint(
                     base_url=base_urls["probe"],
                     service=probe["target"]["service"],
@@ -843,9 +1254,13 @@ def discover_and_freeze_registry(
                 target=probe["path"],
                 headers=(("traceparent", traceparent),),
                 absolute_deadline_monotonic=window.monotonic_ended_at,
+                )
             ),
             purpose=f"probe-{phase_name}",
+            allow_business_outcome=expected_phase is MeasurementPhase.FAULT,
         )
+        if expected_phase is not MeasurementPhase.FAULT:
+            _verify_direct_ad_array(exchange.raw_body)
         probe_exchanges.append(exchange)
         probe_record = raw_records[-1]
         envelope = exchange.observer_input_envelope
@@ -857,8 +1272,7 @@ def discover_and_freeze_registry(
             and exchange.request.body == b""
             and exchange.request.headers == (("traceparent", traceparent),)
         )
-        correlation_exchange = acquire(
-            HttpRequest(
+        correlation_request = HttpRequest(
                 endpoint=OwnedEndpoint(
                     base_url=base_urls["jaeger"],
                     service=jaeger["target"]["service"],
@@ -868,21 +1282,27 @@ def discover_and_freeze_registry(
                 method="GET",
                 target=f"/api/traces/{trace_id}",
                 absolute_deadline_monotonic=window.monotonic_ended_at,
-            ),
+            )
+        correlation_exchange, correlation_payload, attempts = (
+            _bounded_jaeger_correlation_retry(
+                client=client,
+                evidence_store=evidence_store,
+                request=correlation_request,
+                window=window,
+                trace_id=trace_id,
+                operation=jaeger["operation"],
+                phase_name=phase_name,
+                sleep=correlation_retry_sleep,
+                policy=policy,
+                fixture_version=fixture_version,
+            )
+        )
+        acquisition_attempts.extend(attempts)
+        record_exchange(
+            correlation_exchange,
             purpose=f"jaeger-correlation-{phase_name}",
         )
         correlation_record = raw_records[-1]
-        try:
-            correlation_payload = json.loads(correlation_exchange.raw_body)
-        except (json.JSONDecodeError, UnicodeDecodeError) as error:
-            _persist_promotion_terminal(
-                evidence_store,
-                sequence=sequence,
-                reason="JAEGER_CORRELATION_SCHEMA_INVALID",
-                raw_artifact=correlation_record[1],
-                raw_sha256=correlation_record[2],
-            )
-            raise ValueError("Jaeger correlation response is invalid JSON") from error
         correlation_proven = _jaeger_trace_proves_getads(
             correlation_payload,
             trace_id=trace_id,
@@ -898,6 +1318,19 @@ def discover_and_freeze_registry(
                 raw_sha256=correlation_record[2],
             )
             raise ValueError("probe trace lacks phase-local Ad GetAds span")
+        if exchange.succeeded:
+            try:
+                _verify_direct_ad_array(exchange.raw_body)
+            except ValueError:
+                business_observation = "FAULT_EMPTY_OR_INVALID_PAYLOAD"
+                if expected_phase is not MeasurementPhase.FAULT:
+                    raise
+            else:
+                business_observation = "SUCCESS_PAYLOAD"
+        elif expected_phase is MeasurementPhase.FAULT:
+            business_observation = "FAULT_NON_SUCCESS"
+        else:
+            raise ValueError("non-fault promotion probe failed")
         phase_observations.append(
             {
                 "phase": phase_name,
@@ -909,6 +1342,9 @@ def discover_and_freeze_registry(
                 "fixed_input": probe["input"],
                 "observer_input_boundary_passed": boundary_passed,
                 "unexpected_input_count": 0 if boundary_passed else 1,
+                "business_observation": business_observation,
+                "probe_attempt_ordinal": 1,
+                "probe_attempt_budget": policy.fault_probe_attempts,
                 "trace_id": trace_id,
                 "traceparent_sha256": sha256_bytes(traceparent.encode()),
                 "probe_raw_artifact": probe_record[1],
@@ -943,22 +1379,16 @@ def discover_and_freeze_registry(
         )
     )
 
+    windows = tuple(staged_windows)
+    _validate_promotion_windows(
+        windows,
+        run_id=client.run_id,
+        store_run_id=evidence_store.run_id,
+    )
     prefix = f"observer-visible/{client.run_id}/"
     try:
-        total_labels = _discover_prometheus_vector_labels(
-            prometheus_exchanges["total"].raw_body,
-            window=baseline,
-            allow_empty=False,
-        )
-        _discover_prometheus_vector_labels(
-            prometheus_exchanges["error"].raw_body,
-            window=baseline,
-            allow_empty=True,
-        )
-        incarnation_labels = _discover_prometheus_vector_labels(
-            prometheus_exchanges["target_incarnation"].raw_body,
-            window=baseline,
-            allow_empty=False,
+        prometheus_derivation = _derive_prometheus_live_contract(
+            prometheus_discovery_observations
         )
     except ValueError:
         last = raw_records[-1]
@@ -970,9 +1400,15 @@ def discover_and_freeze_registry(
             raw_sha256=last[2],
         )
         raise
+    total_labels = [
+        item["labels"]
+        for item in prometheus_derivation["expected_total_series"]
+    ]
+    incarnation_labels = [
+        prometheus_derivation["expected_target_incarnation_series"]["labels"]
+    ]
     if (
-        len(incarnation_labels) != 1
-        or incarnation_labels[0].get("__name__") != "process_start_time_seconds"
+        incarnation_labels[0].get("__name__") != "process_start_time_seconds"
         or incarnation_labels[0].get("job") != "ad"
         or any(
             labels.get("__name__") != prometheus["candidate_metric"]
@@ -999,15 +1435,18 @@ def discover_and_freeze_registry(
         payload[backend]["state"] = FixtureState.FROZEN.value
     prometheus.update(
         {
-            "expected_total_series": [
-                {"labels": labels}
-                for labels in sorted(total_labels, key=canonical_json_sha256)
-            ],
-            "expected_target_incarnation_series": {"labels": incarnation_labels[0]},
-            "error_classification": {
-                "label": "status_code",
-                "values": ["STATUS_CODE_ERROR"],
-            },
+            key: prometheus_derivation[key]
+            for key in (
+                "expected_total_series",
+                "expected_target_incarnation_series",
+                "error_classification",
+                "zero_series_rule",
+                "scrape_interval_seconds",
+                "scrape_interval_tolerance_seconds",
+                "maximum_scrape_lag_seconds",
+            )
+        }
+        | {
             "failure_semantics": [
                 "Fail on missing, malformed, stale, reset, restart, or drifting series."
             ],
@@ -1034,6 +1473,28 @@ def discover_and_freeze_registry(
     attribution_path = prefix + "telemetry/promotion/probe-attribution.json"
     review_path = prefix + "telemetry/promotion/review.json"
     raw_paths = [record[1] for record in raw_records]
+    acquisition_attempt_paths = [path for path, _digest in acquisition_attempts]
+    prometheus_derivation_artifact = {
+        "frozen_contract": {
+            key: prometheus_derivation[key]
+            for key in (
+                "expected_total_series",
+                "expected_target_incarnation_series",
+                "error_classification",
+                "zero_series_rule",
+                "scrape_interval_seconds",
+                "scrape_interval_tolerance_seconds",
+                "maximum_scrape_lag_seconds",
+            )
+        },
+        **prometheus_derivation["derivation_evidence"],
+        "source_timestamp_query": f"timestamp({prometheus['total_query']})",
+        "source_attempt_artifacts": [
+            path
+            for path in acquisition_attempt_paths
+            if "/prometheus-" in path
+        ],
+    }
     facts: dict[str, str] = {}
     for component in (
         payload,
@@ -1059,6 +1520,7 @@ def discover_and_freeze_registry(
     all_paths = [
         raw_path,
         *raw_paths,
+        *acquisition_attempt_paths,
         identity_path,
         counter_path,
         attribution_path,
@@ -1067,6 +1529,7 @@ def discover_and_freeze_registry(
     proof = {
         "current_run_id": client.run_id,
         "raw_artifacts": [raw_path, *raw_paths],
+        "acquisition_attempt_artifacts": acquisition_attempt_paths,
         "artifact_sha256": {path: "0" * 64 for path in all_paths},
         "emitted_identity_artifacts": [identity_path],
         "counter_mapping_artifact": counter_path,
@@ -1123,7 +1586,10 @@ def discover_and_freeze_registry(
             "backend_monotonic_started_at": baseline.monotonic_started_at,
             "backend_monotonic_ended_at": baseline.monotonic_ended_at,
             "backend_observations": observations,
+            "prometheus_phase_observations": prometheus_phase_raw_observations,
+            "prometheus_derivation": prometheus_derivation_artifact,
             "probe_phase_observations": phase_observations,
+            "acquisition_policy": policy.model_dump(mode="json"),
         },
         identity_path: {
             **common,
@@ -1156,6 +1622,7 @@ def discover_and_freeze_registry(
     hashes: dict[str, str] = {
         path: digest for _purpose, path, digest, _exchange in raw_records
     }
+    hashes.update(dict(acquisition_attempts))
     for absolute_path, artifact_payload in artifact_payloads.items():
         artifact = evidence_store.write_immutable(
             absolute_path.removeprefix(prefix),
@@ -1204,6 +1671,125 @@ def discover_and_freeze_registry(
     )
 
 
+def _acquire_staged_promotion_window(
+    provider: Callable[[MeasurementPhase], PhaseWindow],
+    *,
+    expected_phase: MeasurementPhase,
+    run_id: str,
+    cycle_number: int,
+) -> PhaseWindow:
+    """Acquire a phase bound only after its caller-confirmed live transition."""
+    window = provider(expected_phase)
+    now_utc = datetime.now(UTC)
+    now_monotonic = time.monotonic()
+    if (
+        not isinstance(window, PhaseWindow)
+        or window.run_id != run_id
+        or window.cycle_number != cycle_number
+        or window.scenario_phase is not expected_phase
+        or not window.utc_started_at <= now_utc < window.utc_ended_at
+        or not window.monotonic_started_at <= now_monotonic
+        < window.monotonic_ended_at
+    ):
+        raise ValueError("live promotion phase window is stale or misclassified")
+    return window
+
+
+def publish_frozen_registry(
+    target: Path,
+    *,
+    capability: FrozenTelemetryQueryCapability,
+    expected_source_sha256: str,
+) -> Path:
+    """Publish one live-verified registry over its exact unresolved source."""
+    if (
+        not isinstance(capability, FrozenTelemetryQueryCapability)
+        or not capability.is_authentic()
+    ):
+        raise TypeError("registry publication requires live promotion authority")
+    _guarded_atomic_registry_write(
+        target,
+        expected_source_sha256=expected_source_sha256,
+        frozen_payload=capability.registry.model_dump(mode="json"),
+    )
+    loaded = load_query_registry(target)
+    if loaded.content_sha256 != capability.content_sha256:
+        raise ValueError("published registry bytes differ from promoted authority")
+    return Path(target)
+
+
+def _guarded_atomic_registry_write(
+    target: Path,
+    *,
+    expected_source_sha256: str,
+    frozen_payload: dict[str, Any],
+) -> None:
+    target = Path(target)
+    try:
+        metadata = target.lstat()
+    except FileNotFoundError as error:
+        raise ValueError("registry source is missing") from error
+    if (
+        stat.S_ISLNK(metadata.st_mode)
+        or not stat.S_ISREG(metadata.st_mode)
+        or metadata.st_uid != os.geteuid()
+        or stat.S_IMODE(metadata.st_mode) & 0o022
+    ):
+        raise ValueError("registry source identity is unsafe")
+    source_bytes = target.read_bytes()
+    if sha256_bytes(source_bytes) != expected_source_sha256:
+        raise ValueError("registry source changed before publication")
+    source = load_query_registry(target)
+    if (
+        source.registry.state is not FixtureState.UNRESOLVED
+        or source.registry.promotion_proof is not None
+    ):
+        raise ValueError("registry source is not the unresolved candidate")
+    frozen = TelemetryQueryRegistry.model_validate(frozen_payload)
+    if (
+        frozen.state is not FixtureState.FROZEN
+        or frozen.promotion_proof is None
+    ):
+        raise ValueError("registry publication payload is not frozen")
+    content = canonical_json_bytes(frozen_payload)
+    temporary = target.parent / f".{target.name}.{secrets.token_hex(8)}.tmp"
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor = os.open(temporary, flags, stat.S_IMODE(metadata.st_mode))
+    try:
+        view = memoryview(content)
+        while view:
+            written = os.write(descriptor, view)
+            if written <= 0:
+                raise OSError("registry temporary write made no progress")
+            view = view[written:]
+        os.fsync(descriptor)
+    except BaseException:
+        os.close(descriptor)
+        temporary.unlink(missing_ok=True)
+        raise
+    else:
+        os.close(descriptor)
+    try:
+        current = target.lstat()
+        if (
+            current.st_dev != metadata.st_dev
+            or current.st_ino != metadata.st_ino
+            or sha256_file(target) != expected_source_sha256
+        ):
+            raise ValueError("registry source changed during publication")
+        os.replace(temporary, target)
+        directory = os.open(target.parent, os.O_RDONLY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
+
+
 def _prepare_candidate_registry_for_live_discovery(
     source: Path | str | dict[str, Any],
     *,
@@ -1248,14 +1834,10 @@ def _prepare_candidate_registry_for_live_discovery(
                 "span_name",
                 "status_code",
             ],
-            "scrape_interval_seconds": 10.0,
-            "scrape_interval_tolerance_seconds": 0.5,
-            "maximum_scrape_lag_seconds": 2.0,
             "boundary_rule": "(start_sample_timestamp,end_sample_timestamp]",
             "cardinality_rule": "exact_frozen_series_set",
             "reset_policy": "reject_any_counter_decrease_or_target_restart",
             "staleness_policy": "reject_stale_marker_or_lag",
-            "zero_series_rule": "absent_error_series_means_zero",
         }
     )
     payload["jaeger"]["operation"] = _PINNED_GETADS_OPERATION
@@ -1311,6 +1893,142 @@ def _validate_promotion_windows(
         raise ValueError(
             "promotion windows must be same-run, same-cycle, and strictly ordered"
         )
+
+
+def _bounded_jaeger_correlation_retry(
+    *,
+    client: Any,
+    evidence_store: ObserverEvidenceStore,
+    request: HttpRequest,
+    window: PhaseWindow,
+    trace_id: str,
+    operation: str,
+    phase_name: str,
+    sleep: Callable[[float], None],
+    policy: PromotionAcquisitionPolicy,
+    fixture_version: str = "TASK7_CANDIDATE",
+) -> tuple[HttpExchange, dict[str, Any], tuple[tuple[str, str], ...]]:
+    """Retry bounded trace ingestion while persisting every raw Jaeger response."""
+    if (
+        not isinstance(policy, PromotionAcquisitionPolicy)
+        or phase_name != window.scenario_phase.value
+    ):
+        raise ValueError("Jaeger retry policy or phase is invalid")
+    def validator(exchange: HttpExchange) -> bool:
+        try:
+            payload = json.loads(exchange.raw_body)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return False
+        return _jaeger_trace_proves_getads(
+            payload,
+            trace_id=trace_id,
+            operation=operation,
+            window=window,
+        )
+
+    exchange, artifacts = _bounded_promotion_backend_poll(
+        client=client,
+        evidence_store=evidence_store,
+        request=request,
+        window=window,
+        purpose=f"jaeger-correlation-{phase_name}",
+        fixture_version=fixture_version,
+        validator=validator,
+        policy=policy,
+        sleep=sleep,
+    )
+    try:
+        payload = json.loads(exchange.raw_body)
+    except (json.JSONDecodeError, UnicodeDecodeError) as error:
+        raise ValueError("Jaeger correlation response is invalid JSON") from error
+    return exchange, payload, artifacts
+
+
+def _bounded_promotion_backend_poll(
+    *,
+    client: Any,
+    evidence_store: ObserverEvidenceStore,
+    request: HttpRequest,
+    window: PhaseWindow,
+    purpose: str,
+    fixture_version: str,
+    validator: Callable[[HttpExchange], bool],
+    policy: PromotionAcquisitionPolicy,
+    sleep: Callable[[float], None],
+) -> tuple[HttpExchange, tuple[tuple[str, str], ...]]:
+    """Poll one Task 7 input under one policy and persist every response."""
+    if (
+        not isinstance(policy, PromotionAcquisitionPolicy)
+        or not isinstance(evidence_store, ObserverEvidenceStore)
+        or request.absolute_deadline_monotonic != window.monotonic_ended_at
+        or not purpose
+        or not fixture_version
+    ):
+        raise ValueError("promotion backend polling authority is invalid")
+    artifacts: list[tuple[str, str]] = []
+    last_reason = "PROMOTION_BACKEND_NOT_READY"
+    for attempt in range(1, policy.max_attempts + 1):
+        exchange = client.request(request)
+        artifact = evidence_store.write_immutable(
+            (
+                "telemetry/promotion/acquisition-attempts/"
+                f"{purpose}-{attempt:02d}.json"
+            ),
+            {
+                "schema_version": "phase0.promotion-acquisition-attempt.v1",
+                "run_id": window.run_id,
+                "fixture_version": fixture_version,
+                "purpose": purpose,
+                "phase": window.scenario_phase.value,
+                "attempt": attempt,
+                "request_target": request.target,
+                "request_started_at": exchange.started_at.isoformat(),
+                "response_ended_at": exchange.ended_at.isoformat(),
+                "monotonic_started_at": exchange.monotonic_started_at,
+                "monotonic_ended_at": exchange.monotonic_ended_at,
+                "http_status": exchange.status_code,
+                "transport_reason": exchange.reason.value,
+                "raw_response_base64": base64.b64encode(
+                    exchange.raw_body
+                ).decode("ascii"),
+                "raw_response_sha256": exchange.raw_sha256,
+                "raw_response_partial": exchange.raw_body_partial,
+            },
+        )
+        artifacts.append(
+            (_promotion_logical_path(evidence_store, str(artifact.path)), artifact.sha256)
+        )
+        if exchange.succeeded:
+            try:
+                valid = validator(exchange)
+            except (TypeError, ValueError):
+                valid = False
+            if valid:
+                return exchange, tuple(artifacts)
+            last_reason = "PROMOTION_BACKEND_SCHEMA_OR_FRESHNESS_PENDING"
+        else:
+            last_reason = exchange.reason.value
+        remaining = window.monotonic_ended_at - exchange.monotonic_ended_at
+        if (
+            attempt == policy.max_attempts
+            or remaining <= policy.poll_interval_seconds
+        ):
+            break
+        sleep(policy.poll_interval_seconds)
+    raise ValueError(
+        f"promotion backend polling exhausted:{purpose}:{last_reason}"
+    )
+
+
+def _json_exchange_matches(
+    exchange: HttpExchange,
+    validator: Callable[[Any], bool],
+) -> bool:
+    try:
+        payload = json.loads(exchange.raw_body)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return False
+    return validator(payload)
 
 
 def _promotion_observation_from_exchange(
@@ -1463,6 +2181,373 @@ def _discover_prometheus_vector_labels(
     return labels
 
 
+@dataclass(frozen=True)
+class _PrometheusDiscoveryObservation:
+    labels: tuple[tuple[tuple[str, str], ...], ...]
+    values: tuple[tuple[tuple[tuple[str, str], ...], Decimal], ...]
+    sample_timestamp: datetime | None
+    response_ended_at: datetime
+
+
+def _observe_prometheus_discovery_exchange(
+    exchange: HttpExchange,
+    *,
+    window: PhaseWindow,
+    allow_empty: bool,
+) -> _PrometheusDiscoveryObservation:
+    return _observe_prometheus_discovery_body(
+        exchange.raw_body,
+        response_ended_at=exchange.ended_at,
+        window=window,
+        allow_empty=allow_empty,
+    )
+
+
+def _observe_prometheus_discovery_body(
+    body: bytes,
+    *,
+    response_ended_at: datetime,
+    window: PhaseWindow,
+    allow_empty: bool,
+) -> _PrometheusDiscoveryObservation:
+    labels = _discover_prometheus_vector_labels(
+        body,
+        window=window,
+        allow_empty=allow_empty,
+    )
+    payload = json.loads(body)
+    results = payload["data"]["result"]
+    timestamps = {
+        datetime.fromtimestamp(float(item["value"][0]), tz=UTC)
+        for item in results
+    }
+    if len(timestamps) > 1:
+        raise ValueError("Prometheus discovery scrape timestamps differ")
+    values = tuple(
+        sorted(
+            (
+                tuple(sorted(item["metric"].items())),
+                Decimal(str(item["value"][1])),
+            )
+            for item in results
+        )
+    )
+    return _PrometheusDiscoveryObservation(
+        labels=tuple(tuple(sorted(item.items())) for item in labels),
+        values=values,
+        sample_timestamp=next(iter(timestamps)) if timestamps else None,
+        response_ended_at=response_ended_at,
+    )
+
+
+def _source_timestamp_from_observation(
+    observation: _PrometheusDiscoveryObservation,
+) -> datetime:
+    source_values = {value for _identity, value in observation.values}
+    if len(source_values) != 1:
+        raise ValueError("Prometheus source timestamps differ across series")
+    try:
+        source_timestamp = datetime.fromtimestamp(
+            float(next(iter(source_values))),
+            tz=UTC,
+        )
+    except (OSError, OverflowError, ValueError) as error:
+        raise ValueError("Prometheus source timestamp is invalid") from error
+    if (
+        observation.sample_timestamp is None
+        or source_timestamp > observation.sample_timestamp
+        or source_timestamp > observation.response_ended_at
+    ):
+        raise ValueError("Prometheus source timestamp boundary differs")
+    return source_timestamp
+
+
+def _derive_prometheus_source_timing(
+    observations: dict[
+        MeasurementPhase,
+        list[_PrometheusDiscoveryObservation],
+    ],
+) -> dict[str, Any]:
+    if set(observations) != set(MeasurementPhase):
+        raise ValueError("Prometheus source timestamp phase coverage is incomplete")
+    intervals: list[float] = []
+    lags: list[float] = []
+    timestamps_by_phase: dict[str, list[str]] = {}
+    for phase in MeasurementPhase:
+        timestamps = sorted(
+            {_source_timestamp_from_observation(item) for item in observations[phase]}
+        )
+        if len(timestamps) < 2:
+            raise ValueError("Prometheus source scrape cadence evidence is incomplete")
+        timestamps_by_phase[phase.value] = [
+            timestamp.isoformat() for timestamp in timestamps
+        ]
+        intervals.extend(
+            (later - earlier).total_seconds()
+            for earlier, later in zip(timestamps, timestamps[1:])
+        )
+        lags.extend(
+            (
+                item.response_ended_at
+                - _source_timestamp_from_observation(item)
+            ).total_seconds()
+            for item in observations[phase]
+        )
+    scrape_interval = float(median(intervals))
+    maximum_deviation = max(abs(value - scrape_interval) for value in intervals)
+    tolerance = round(maximum_deviation + 0.5, 3)
+    maximum_lag = round(max(lags) + 0.5, 3)
+    if (
+        not 0 < scrape_interval <= 60
+        or tolerance > 5
+        or any(value <= 0 for value in intervals)
+        or any(value < 0 for value in lags)
+    ):
+        raise ValueError("Prometheus source cadence or lag derivation failed")
+    return {
+        "scrape_interval_seconds": round(scrape_interval, 3),
+        "scrape_interval_tolerance_seconds": tolerance,
+        "maximum_scrape_lag_seconds": maximum_lag,
+        "scrape_timestamps_by_phase": timestamps_by_phase,
+        "observed_intervals_seconds": intervals,
+        "observed_lags_seconds": lags,
+    }
+
+
+def _recompute_prometheus_source_timing_from_attempts(
+    attempt_payloads: dict[str, dict[str, Any]],
+    *,
+    phase_windows: dict[MeasurementPhase, PhaseWindow],
+    source_timestamp_query: str,
+    registry: TelemetryQueryRegistry,
+) -> dict[str, Any]:
+    if set(phase_windows) != set(MeasurementPhase):
+        raise ValueError("Prometheus source timestamp phase windows differ")
+    purpose_by_phase = {
+        phase: (
+            "prometheus-source-timestamp"
+            if phase is MeasurementPhase.BASELINE
+            else f"prometheus-source-timestamp-{phase.value}"
+        )
+        for phase in MeasurementPhase
+    }
+    expected_target = (
+        f"/api/v1/query?query={quote(source_timestamp_query, safe='')}"
+    )
+    observations: dict[
+        MeasurementPhase,
+        list[_PrometheusDiscoveryObservation],
+    ] = {phase: [] for phase in MeasurementPhase}
+    observed_purposes: set[str] = set()
+    for payload in attempt_payloads.values():
+        purpose = payload.get("purpose")
+        matching_phase = next(
+            (
+                phase
+                for phase, expected_purpose in purpose_by_phase.items()
+                if purpose == expected_purpose
+            ),
+            None,
+        )
+        if matching_phase is None:
+            continue
+        observed_purposes.add(purpose)
+        window = phase_windows[matching_phase]
+        try:
+            response_ended_at = datetime.fromisoformat(
+                payload["response_ended_at"]
+            )
+        except (KeyError, TypeError, ValueError) as error:
+            raise ValueError(
+                "Prometheus source attempt timing differs"
+            ) from error
+        body = _decode_embedded_body(payload)
+        if (
+            payload.get("phase") != matching_phase.value
+            or payload.get("request_target") != expected_target
+            or payload.get("http_status") != 200
+            or payload.get("transport_reason") != HttpReason.OK.value
+            or payload.get("raw_response_partial") is not False
+            or sha256_bytes(body) != payload.get("raw_response_sha256")
+            or response_ended_at.tzinfo is None
+            or not window.utc_started_at
+            <= response_ended_at
+            <= window.utc_ended_at
+        ):
+            raise ValueError("Prometheus source attempt binding differs")
+        _verify_prometheus_promotion_vector(
+            json.loads(body),
+            query_kind="source_timestamp",
+            registry=registry,
+            utc_window=(window.utc_started_at, window.utc_ended_at),
+        )
+        observation = _observe_prometheus_discovery_body(
+            body,
+            response_ended_at=response_ended_at,
+            window=window,
+            allow_empty=False,
+        )
+        source_timestamp = _source_timestamp_from_observation(observation)
+        if source_timestamp >= window.utc_started_at:
+            observations[matching_phase].append(observation)
+    if observed_purposes != set(purpose_by_phase.values()):
+        raise ValueError("Prometheus source attempt coverage differs")
+    return _derive_prometheus_source_timing(observations)
+
+
+def _verify_prometheus_source_derivation(
+    derivation: dict[str, Any],
+    *,
+    expected_contract: dict[str, Any],
+    attempt_payloads: dict[str, dict[str, Any]],
+    phase_windows: dict[MeasurementPhase, PhaseWindow],
+    source_timestamp_query: str,
+    registry: TelemetryQueryRegistry,
+) -> None:
+    raw_source_timing = _recompute_prometheus_source_timing_from_attempts(
+        attempt_payloads,
+        phase_windows=phase_windows,
+        source_timestamp_query=source_timestamp_query,
+        registry=registry,
+    )
+    if (
+        derivation.get("source_timestamp_query") != source_timestamp_query
+        or derivation.get("scrape_timestamps_by_phase")
+        != raw_source_timing["scrape_timestamps_by_phase"]
+        or derivation.get("observed_intervals_seconds")
+        != raw_source_timing["observed_intervals_seconds"]
+        or derivation.get("observed_lags_seconds")
+        != raw_source_timing["observed_lags_seconds"]
+        or expected_contract["scrape_interval_seconds"]
+        != raw_source_timing["scrape_interval_seconds"]
+        or expected_contract["scrape_interval_tolerance_seconds"]
+        != raw_source_timing["scrape_interval_tolerance_seconds"]
+        or expected_contract["maximum_scrape_lag_seconds"]
+        != raw_source_timing["maximum_scrape_lag_seconds"]
+    ):
+        raise ValueError("Prometheus raw-derived source timing differs")
+
+
+def _derive_prometheus_live_contract(
+    observations: dict[
+        MeasurementPhase,
+        dict[str, list[_PrometheusDiscoveryObservation]],
+    ],
+) -> dict[str, Any]:
+    if set(observations) != set(MeasurementPhase) or any(
+        set(phase)
+        != {"total", "error", "target_incarnation", "source_timestamp"}
+        for phase in observations.values()
+    ):
+        raise ValueError("Prometheus promotion phase coverage is incomplete")
+    total_identities = {
+        identity
+        for phase in observations.values()
+        for item in phase["total"]
+        for identity in item.labels
+    }
+    fault_error_identities = {
+        identity
+        for item in observations[MeasurementPhase.FAULT]["error"]
+        for identity in item.labels
+    }
+    baseline_error_identities = {
+        identity
+        for item in observations[MeasurementPhase.BASELINE]["error"]
+        for identity in item.labels
+    }
+    incarnation_values = {
+        value
+        for phase in observations.values()
+        for item in phase["target_incarnation"]
+        for _identity, value in item.values
+    }
+    incarnation_identities = {
+        identity
+        for phase in observations.values()
+        for item in phase["target_incarnation"]
+        for identity in item.labels
+    }
+    error_values = {
+        dict(identity).get("status_code")
+        for identity in fault_error_identities
+    }
+    if (
+        not total_identities
+        or baseline_error_identities
+        or not fault_error_identities
+        or not fault_error_identities <= total_identities
+        or error_values != {"STATUS_CODE_ERROR"}
+        or len(incarnation_identities) != 1
+        or len(incarnation_values) != 1
+    ):
+        raise ValueError("Prometheus live error or incarnation derivation failed")
+    counter_history: dict[
+        tuple[tuple[str, str], ...],
+        list[tuple[datetime, Decimal]],
+    ] = {}
+    for phase in MeasurementPhase:
+        for query_kind in ("total", "error"):
+            for item in observations[phase][query_kind]:
+                if item.sample_timestamp is None:
+                    continue
+                for identity, value in item.values:
+                    counter_history.setdefault(identity, []).append(
+                        (item.sample_timestamp, value)
+                    )
+    if any(
+        later_value < earlier_value
+        for history in counter_history.values()
+        for (_earlier_time, earlier_value), (_later_time, later_value) in zip(
+            sorted(history),
+            sorted(history)[1:],
+        )
+    ):
+        raise ValueError("Prometheus promotion observed a counter decrease")
+    source_timing = _derive_prometheus_source_timing(
+        {
+            phase: observations[phase]["source_timestamp"]
+            for phase in MeasurementPhase
+        }
+    )
+    return {
+        "expected_total_series": [
+            {"labels": dict(identity)}
+            for identity in sorted(total_identities)
+        ],
+        "expected_target_incarnation_series": {
+            "labels": dict(next(iter(incarnation_identities)))
+        },
+        "error_classification": {
+            "label": "status_code",
+            "values": sorted(value for value in error_values if value is not None),
+        },
+        "zero_series_rule": "absent_error_series_means_zero",
+        "scrape_interval_seconds": source_timing["scrape_interval_seconds"],
+        "scrape_interval_tolerance_seconds": source_timing[
+            "scrape_interval_tolerance_seconds"
+        ],
+        "maximum_scrape_lag_seconds": source_timing[
+            "maximum_scrape_lag_seconds"
+        ],
+        "derivation_evidence": {
+            "required_phases": [phase.value for phase in MeasurementPhase],
+            "baseline_error_series_absent": True,
+            "fault_error_series_observed": True,
+            "target_incarnation_value": str(next(iter(incarnation_values))),
+            "scrape_timestamps_by_phase": source_timing[
+                "scrape_timestamps_by_phase"
+            ],
+            "observed_intervals_seconds": source_timing[
+                "observed_intervals_seconds"
+            ],
+            "observed_lags_seconds": source_timing["observed_lags_seconds"],
+            "tolerance_formula": "max_observed_deviation_plus_0.5_seconds",
+            "maximum_lag_formula": "max_observed_lag_plus_0.5_seconds",
+        },
+    }
+
+
 def _promotion_raw_exchange_fields(exchange: HttpExchange) -> dict[str, Any]:
     return {
         "http_status": exchange.status_code,
@@ -1581,7 +2666,13 @@ def _verify_promotion_semantics(
             raise ValueError("promotion artifact identity differs")
         return payload
 
-    expected_exchange_paths = _expected_promotion_exchange_paths(proof.current_run_id)
+    live_promotion = registry.fixture_version.startswith(
+        "otel-demo-3.0.0-live-"
+    )
+    expected_exchange_paths = _expected_promotion_exchange_paths(
+        proof.current_run_id,
+        three_phase_prometheus=live_promotion,
+    )
     if (
         proof.raw_artifacts
         != (
@@ -1607,10 +2698,23 @@ def _verify_promotion_semantics(
         != (f"observer-visible/{proof.current_run_id}/telemetry/promotion/review.json")
     ):
         raise ValueError("promotion proof artifact set or prefix differs")
+    if live_promotion and not proof.acquisition_attempt_artifacts:
+        raise ValueError("live promotion lacks bounded acquisition attempts")
+    _verify_promotion_acquisition_attempts(
+        proof,
+        payloads,
+        fixture_version=registry.fixture_version,
+        required=live_promotion,
+        three_phase_prometheus=live_promotion,
+    )
     raw = require_common(proof.raw_artifacts[0])
     exchange_payloads = {
         purpose: require_common(path)
         for purpose, path in expected_exchange_paths.items()
+    }
+    attempt_payloads = {
+        path: require_common(path)
+        for path in proof.acquisition_attempt_artifacts
     }
     for sequence, purpose in enumerate(expected_exchange_paths, start=1):
         _verify_promotion_exchange_artifact(
@@ -1623,6 +2727,7 @@ def _verify_promotion_semantics(
         proof,
         raw,
         exchange_payloads=exchange_payloads,
+        attempt_payloads=attempt_payloads,
     )
     identity = require_common(proof.emitted_identity_artifacts[0])
     if (
@@ -1818,8 +2923,12 @@ def _expected_prometheus_contract(
     }
 
 
-def _expected_promotion_exchange_paths(run_id: str) -> dict[str, str]:
-    purposes = (
+def _expected_promotion_exchange_paths(
+    run_id: str,
+    *,
+    three_phase_prometheus: bool = False,
+) -> dict[str, str]:
+    baseline = (
         "prometheus-total",
         "prometheus-error",
         "prometheus-target-incarnation",
@@ -1827,16 +2936,171 @@ def _expected_promotion_exchange_paths(run_id: str) -> dict[str, str]:
         "opensearch-readiness",
         "probe-baseline",
         "jaeger-correlation-baseline",
-        "probe-fault",
-        "jaeger-correlation-fault",
-        "probe-recovery",
-        "jaeger-correlation-recovery",
     )
+    if three_phase_prometheus:
+        purposes = (
+            *baseline[:3],
+            "prometheus-source-timestamp",
+            *baseline[3:],
+            "prometheus-total-fault",
+            "prometheus-error-fault",
+            "prometheus-target-incarnation-fault",
+            "prometheus-source-timestamp-fault",
+            "probe-fault",
+            "jaeger-correlation-fault",
+            "prometheus-total-recovery",
+            "prometheus-error-recovery",
+            "prometheus-target-incarnation-recovery",
+            "prometheus-source-timestamp-recovery",
+            "probe-recovery",
+            "jaeger-correlation-recovery",
+        )
+    else:
+        purposes = (
+            *baseline,
+            "probe-fault",
+            "jaeger-correlation-fault",
+            "probe-recovery",
+            "jaeger-correlation-recovery",
+        )
     prefix = f"observer-visible/{run_id}/telemetry/promotion/raw-exchanges/"
     return {
         purpose: f"{prefix}{sequence:02d}-{purpose}.json"
         for sequence, purpose in enumerate(purposes, start=1)
     }
+
+
+def _verify_promotion_acquisition_attempts(
+    proof: PromotionProof,
+    payloads: dict[str, Any],
+    *,
+    fixture_version: str,
+    required: bool,
+    three_phase_prometheus: bool,
+) -> None:
+    required_purposes = {
+        "prometheus-total",
+        "prometheus-error",
+        "prometheus-target-incarnation",
+        "jaeger-readiness",
+        "opensearch-readiness",
+        "jaeger-correlation-baseline",
+        "jaeger-correlation-fault",
+        "jaeger-correlation-recovery",
+    }
+    if three_phase_prometheus:
+        required_purposes.add("prometheus-source-timestamp")
+        required_purposes.update(
+            {
+                f"prometheus-{kind}-{phase}"
+                for phase in ("fault", "recovery")
+                for kind in (
+                    "total",
+                    "error",
+                    "target-incarnation",
+                    "source-timestamp",
+                )
+            }
+        )
+    if not proof.acquisition_attempt_artifacts:
+        if required:
+            raise ValueError("live promotion lacks acquisition attempt evidence")
+        return
+    prefix = (
+        f"observer-visible/{proof.current_run_id}/"
+        "telemetry/promotion/acquisition-attempts/"
+    )
+    by_purpose: dict[str, list[tuple[int, dict[str, Any]]]] = {}
+    for path in proof.acquisition_attempt_artifacts:
+        payload = payloads.get(path)
+        if not path.startswith(prefix) or not isinstance(payload, dict):
+            raise ValueError("promotion acquisition attempt path differs")
+        if set(payload) != {
+            "schema_version",
+            "run_id",
+            "fixture_version",
+            "purpose",
+            "phase",
+            "attempt",
+            "request_target",
+            "request_started_at",
+            "response_ended_at",
+            "monotonic_started_at",
+            "monotonic_ended_at",
+            "http_status",
+            "transport_reason",
+            "raw_response_base64",
+            "raw_response_sha256",
+            "raw_response_partial",
+        }:
+            raise ValueError("promotion acquisition attempt schema differs")
+        purpose = payload.get("purpose")
+        attempt = payload.get("attempt")
+        if isinstance(purpose, str) and purpose.startswith(
+            "jaeger-correlation-"
+        ):
+            expected_phase = purpose.removeprefix("jaeger-correlation-")
+        elif isinstance(purpose, str) and purpose.endswith("-fault"):
+            expected_phase = MeasurementPhase.FAULT.value
+        elif isinstance(purpose, str) and purpose.endswith("-recovery"):
+            expected_phase = MeasurementPhase.RECOVERY.value
+        else:
+            expected_phase = MeasurementPhase.BASELINE.value
+        try:
+            utc_started = datetime.fromisoformat(payload["request_started_at"])
+            utc_ended = datetime.fromisoformat(payload["response_ended_at"])
+        except (KeyError, TypeError, ValueError) as error:
+            raise ValueError("promotion acquisition attempt timing differs") from error
+        monotonic_started = payload.get("monotonic_started_at")
+        monotonic_ended = payload.get("monotonic_ended_at")
+        if (
+            payload.get("schema_version")
+            != "phase0.promotion-acquisition-attempt.v1"
+            or payload.get("run_id") != proof.current_run_id
+            or payload.get("fixture_version") != fixture_version
+            or purpose not in required_purposes
+            or payload.get("phase") != expected_phase
+            or not isinstance(attempt, int)
+            or isinstance(attempt, bool)
+            or not 1 <= attempt <= PromotionAcquisitionPolicy().max_attempts
+            or path != f"{prefix}{purpose}-{attempt:02d}.json"
+            or not isinstance(payload.get("request_target"), str)
+            or not payload["request_target"].startswith("/")
+            or utc_started.tzinfo is None
+            or utc_ended.tzinfo is None
+            or utc_ended < utc_started
+            or not isinstance(monotonic_started, (int, float))
+            or isinstance(monotonic_started, bool)
+            or not isinstance(monotonic_ended, (int, float))
+            or isinstance(monotonic_ended, bool)
+            or monotonic_ended < monotonic_started
+            or payload.get("transport_reason")
+            not in {reason.value for reason in HttpReason}
+            or not isinstance(payload.get("raw_response_partial"), bool)
+            or sha256_bytes(_decode_embedded_body(payload))
+            != payload.get("raw_response_sha256")
+        ):
+            raise ValueError("promotion acquisition attempt differs")
+        by_purpose.setdefault(purpose, []).append((attempt, payload))
+    if required and set(by_purpose) != required_purposes:
+        raise ValueError("promotion acquisition attempt coverage differs")
+    expected_exchanges = _expected_promotion_exchange_paths(
+        proof.current_run_id,
+        three_phase_prometheus=three_phase_prometheus,
+    )
+    for purpose, attempts in by_purpose.items():
+        ordered = sorted(attempts)
+        if [attempt for attempt, _payload in ordered] != list(
+            range(1, len(ordered) + 1)
+        ):
+            raise ValueError("promotion acquisition attempt sequence differs")
+        final = ordered[-1][1]
+        canonical = payloads[expected_exchanges[purpose]]
+        if (
+            final["request_target"] != canonical["request"]["target"]
+            or final["raw_response_sha256"] != canonical["raw_response_sha256"]
+        ):
+            raise ValueError("promotion acquisition final response is not raw-bound")
 
 
 def _verify_promotion_exchange_artifact(
@@ -1845,6 +3109,17 @@ def _verify_promotion_exchange_artifact(
     sequence: int,
     purpose: str,
 ) -> None:
+    successful = (
+        payload.get("http_status") == 200
+        and payload.get("transport_reason") == HttpReason.OK.value
+        and payload.get("terminal_failure") is False
+    )
+    expected_business_failure = (
+        purpose == "probe-fault"
+        and payload.get("http_status") != 200
+        and payload.get("transport_reason") == HttpReason.HTTP_STATUS_ERROR.value
+        and payload.get("terminal_failure") is True
+    )
     if (
         set(payload)
         != {
@@ -1869,9 +3144,7 @@ def _verify_promotion_exchange_artifact(
         or payload.get("schema_version") != "phase0.telemetry-promotion-exchange.v1"
         or payload.get("sequence") != sequence
         or payload.get("purpose") != purpose
-        or payload.get("http_status") != 200
-        or payload.get("transport_reason") != HttpReason.OK.value
-        or payload.get("terminal_failure") is not False
+        or not (successful or expected_business_failure)
         or payload.get("raw_response_partial") is not False
         or not isinstance(payload.get("response_headers"), list)
     ):
@@ -1918,33 +3191,50 @@ def _verify_raw_promotion_artifact(
     payload: dict[str, Any],
     *,
     exchange_payloads: dict[str, dict[str, Any]],
+    attempt_payloads: dict[str, dict[str, Any]],
 ) -> None:
+    live_promotion = registry.fixture_version.startswith(
+        "otel-demo-3.0.0-live-"
+    )
+    expected_fields = {
+        "run_id",
+        "fixture_version",
+        "schema_version",
+        "upstream_tag",
+        "upstream_commit",
+        "upstream_sha256",
+        "compose_config_sha256",
+        "promotion_started_at",
+        "promotion_ended_at",
+        "promotion_monotonic_started_at",
+        "promotion_monotonic_ended_at",
+        "backend_window_started_at",
+        "backend_window_ended_at",
+        "backend_monotonic_started_at",
+        "backend_monotonic_ended_at",
+        "backend_observations",
+        "probe_phase_observations",
+    }
+    if live_promotion:
+        expected_fields.update(
+            {
+                "acquisition_policy",
+                "prometheus_phase_observations",
+                "prometheus_derivation",
+            }
+        )
     if (
-        set(payload)
-        != {
-            "run_id",
-            "fixture_version",
-            "schema_version",
-            "upstream_tag",
-            "upstream_commit",
-            "upstream_sha256",
-            "compose_config_sha256",
-            "promotion_started_at",
-            "promotion_ended_at",
-            "promotion_monotonic_started_at",
-            "promotion_monotonic_ended_at",
-            "backend_window_started_at",
-            "backend_window_ended_at",
-            "backend_monotonic_started_at",
-            "backend_monotonic_ended_at",
-            "backend_observations",
-            "probe_phase_observations",
-        }
+        set(payload) != expected_fields
         or payload.get("schema_version") != "phase0.telemetry-promotion-raw.v1"
         or payload.get("upstream_tag") != registry.upstream_tag
         or payload.get("upstream_commit") != registry.upstream_commit
         or payload.get("upstream_sha256") != proof.upstream_sha256
         or payload.get("compose_config_sha256") != registry.compose_config_sha256
+        or (
+            live_promotion
+            and payload.get("acquisition_policy")
+            != PromotionAcquisitionPolicy().model_dump(mode="json")
+        )
     ):
         raise ValueError("raw promotion source identity differs")
     try:
@@ -2066,11 +3356,26 @@ def _verify_raw_promotion_artifact(
                 backend_monotonic_ended,
             ),
         )
-        _verify_backend_response_schema(
-            observation,
-            registry,
-            utc_window=(backend_started, backend_ended),
-        )
+        if live_promotion and observation["backend"] == "prometheus":
+            _discover_prometheus_vector_labels(
+                _decode_embedded_body(observation),
+                window=PhaseWindow(
+                    run_id=proof.current_run_id,
+                    cycle_number=1,
+                    scenario_phase=MeasurementPhase.BASELINE,
+                    utc_started_at=backend_started,
+                    utc_ended_at=backend_ended,
+                    monotonic_started_at=backend_monotonic_started,
+                    monotonic_ended_at=backend_monotonic_ended,
+                ),
+                allow_empty=observation["query_kind"] == "error",
+            )
+        else:
+            _verify_backend_response_schema(
+                observation,
+                registry,
+                utc_window=(backend_started, backend_ended),
+            )
         purpose = {
             ("prometheus", "total"): "prometheus-total",
             ("prometheus", "error"): "prometheus-error",
@@ -2087,6 +3392,212 @@ def _verify_raw_promotion_artifact(
             exchange_payloads[purpose],
         ):
             raise ValueError("promotion aggregate response is not raw-bound")
+    if live_promotion:
+        phase_observations = payload.get("prometheus_phase_observations")
+        expected_prometheus_coverage = {
+            (phase.value, query_kind)
+            for phase in MeasurementPhase
+            for query_kind in (
+                "total",
+                "error",
+                "target_incarnation",
+                "source_timestamp",
+            )
+        }
+        if (
+            not isinstance(phase_observations, list)
+            or len(phase_observations) != len(expected_prometheus_coverage)
+            or {
+                (item.get("scenario_phase"), item.get("query_kind"))
+                for item in phase_observations
+                if isinstance(item, dict)
+            }
+            != expected_prometheus_coverage
+        ):
+            raise ValueError("three-phase Prometheus promotion coverage differs")
+        expected_paths = _expected_promotion_exchange_paths(
+            proof.current_run_id,
+            three_phase_prometheus=True,
+        )
+        phase_window_payloads = {
+            item.get("phase"): item
+            for item in payload.get("probe_phase_observations", [])
+            if isinstance(item, dict)
+        }
+        phase_windows_by_phase: dict[MeasurementPhase, PhaseWindow] = {}
+        for phase in MeasurementPhase:
+            phase_window_payload = phase_window_payloads.get(phase.value)
+            if not isinstance(phase_window_payload, dict):
+                raise ValueError("Prometheus phase window binding is missing")
+            try:
+                phase_windows_by_phase[phase] = PhaseWindow(
+                    run_id=proof.current_run_id,
+                    cycle_number=phase_window_payload["cycle_number"],
+                    scenario_phase=phase,
+                    utc_started_at=datetime.fromisoformat(
+                        phase_window_payload["phase_started_at"]
+                    ),
+                    utc_ended_at=datetime.fromisoformat(
+                        phase_window_payload["phase_ended_at"]
+                    ),
+                    monotonic_started_at=phase_window_payload[
+                        "phase_monotonic_started_at"
+                    ],
+                    monotonic_ended_at=phase_window_payload[
+                        "phase_monotonic_ended_at"
+                    ],
+                )
+            except (KeyError, TypeError, ValueError) as error:
+                raise ValueError(
+                    "Prometheus phase window binding differs"
+                ) from error
+        for observation in phase_observations:
+            if set(observation) != {
+                "scenario_phase",
+                "backend",
+                "query_kind",
+                "request",
+                "response_schema",
+                "http_status",
+                "request_started_at",
+                "response_ended_at",
+                "monotonic_started_at",
+                "monotonic_ended_at",
+                "raw_response_base64",
+                "raw_response_sha256",
+            }:
+                raise ValueError("three-phase Prometheus observation schema differs")
+            phase_name = observation["scenario_phase"]
+            query_kind = observation["query_kind"]
+            expected_query = {
+                "total": registry.prometheus.total_query,
+                "error": registry.prometheus.error_query,
+                "target_incarnation": (
+                    registry.prometheus.target_incarnation_query
+                ),
+                "source_timestamp": (
+                    f"timestamp({registry.prometheus.total_query})"
+                ),
+            }.get(query_kind)
+            suffix = "" if phase_name == "baseline" else f"-{phase_name}"
+            purpose = (
+                f"prometheus-{query_kind.replace('_', '-')}{suffix}"
+            )
+            phase_window_payload = phase_window_payloads.get(phase_name)
+            if not isinstance(phase_window_payload, dict):
+                raise ValueError("Prometheus phase window binding is missing")
+            try:
+                phase_started = datetime.fromisoformat(
+                    phase_window_payload["phase_started_at"]
+                )
+                phase_ended = datetime.fromisoformat(
+                    phase_window_payload["phase_ended_at"]
+                )
+                phase_monotonic_started = phase_window_payload[
+                    "phase_monotonic_started_at"
+                ]
+                phase_monotonic_ended = phase_window_payload[
+                    "phase_monotonic_ended_at"
+                ]
+            except (KeyError, TypeError, ValueError) as error:
+                raise ValueError(
+                    "Prometheus phase window binding differs"
+                ) from error
+            if (
+                observation.get("backend") != "prometheus"
+                or observation.get("http_status") != 200
+                or observation.get("request") != expected_query
+                or purpose not in expected_paths
+                or sha256_bytes(_decode_embedded_body(observation))
+                != observation.get("raw_response_sha256")
+                or not _embedded_response_matches_exchange(
+                    observation,
+                    exchange_payloads[purpose],
+                )
+            ):
+                raise ValueError("three-phase Prometheus raw binding differs")
+            _verify_embedded_raw_response(
+                observation,
+                utc_window=(phase_started, phase_ended),
+                monotonic_window=(
+                    phase_monotonic_started,
+                    phase_monotonic_ended,
+                ),
+            )
+            _discover_prometheus_vector_labels(
+                _decode_embedded_body(observation),
+                window=phase_windows_by_phase[MeasurementPhase(phase_name)],
+                allow_empty=(
+                    phase_name == MeasurementPhase.BASELINE.value
+                    and query_kind == "error"
+                ),
+            )
+            _verify_prometheus_promotion_vector(
+                json.loads(_decode_embedded_body(observation)),
+                query_kind=query_kind,
+                registry=registry,
+                utc_window=(phase_started, phase_ended),
+            )
+        derivation = payload.get("prometheus_derivation")
+        expected_contract = {
+            "expected_total_series": [
+                item.model_dump(mode="json")
+                for item in registry.prometheus.expected_total_series or ()
+            ],
+            "expected_target_incarnation_series": (
+                registry.prometheus.expected_target_incarnation_series.model_dump(
+                    mode="json"
+                )
+                if registry.prometheus.expected_target_incarnation_series
+                is not None
+                else None
+            ),
+            "error_classification": (
+                registry.prometheus.error_classification.model_dump(mode="json")
+                if registry.prometheus.error_classification is not None
+                else None
+            ),
+            "zero_series_rule": registry.prometheus.zero_series_rule,
+            "scrape_interval_seconds": registry.prometheus.scrape_interval_seconds,
+            "scrape_interval_tolerance_seconds": (
+                registry.prometheus.scrape_interval_tolerance_seconds
+            ),
+            "maximum_scrape_lag_seconds": (
+                registry.prometheus.maximum_scrape_lag_seconds
+            ),
+        }
+        prometheus_attempts = [
+            path
+            for path in proof.acquisition_attempt_artifacts
+            if "/prometheus-" in path
+        ]
+        source_timestamp_query = (
+            f"timestamp({registry.prometheus.total_query})"
+        )
+        if not isinstance(derivation, dict):
+            raise ValueError("Prometheus frozen derivation evidence differs")
+        _verify_prometheus_source_derivation(
+            derivation,
+            expected_contract=expected_contract,
+            attempt_payloads=attempt_payloads,
+            phase_windows=phase_windows_by_phase,
+            source_timestamp_query=source_timestamp_query,
+            registry=registry,
+        )
+        if (
+            derivation.get("frozen_contract") != expected_contract
+            or derivation.get("required_phases")
+            != [phase.value for phase in MeasurementPhase]
+            or derivation.get("baseline_error_series_absent") is not True
+            or derivation.get("fault_error_series_observed") is not True
+            or derivation.get("source_attempt_artifacts")
+            != prometheus_attempts
+            or derivation.get("tolerance_formula")
+            != "max_observed_deviation_plus_0.5_seconds"
+            or derivation.get("maximum_lag_formula")
+            != "max_observed_lag_plus_0.5_seconds"
+        ):
+            raise ValueError("Prometheus frozen derivation evidence differs")
     phases = payload.get("probe_phase_observations")
     if not isinstance(phases, list) or [
         item.get("phase") for item in phases if isinstance(item, dict)
@@ -2095,42 +3606,54 @@ def _verify_raw_promotion_artifact(
     phase_windows: list[tuple[datetime, datetime, float, float]] = []
     cycle_numbers: set[int] = set()
     trace_ids: set[str] = set()
+    all_expected_exchange_paths = _expected_promotion_exchange_paths(
+        proof.current_run_id,
+        three_phase_prometheus=live_promotion,
+    )
     for phase in phases:
+        expected_phase_fields = {
+            "phase",
+            "cycle_number",
+            "phase_started_at",
+            "phase_ended_at",
+            "phase_monotonic_started_at",
+            "phase_monotonic_ended_at",
+            "fixed_input",
+            "observer_input_boundary_passed",
+            "unexpected_input_count",
+            "trace_id",
+            "traceparent_sha256",
+            "probe_raw_artifact",
+            "probe_raw_sha256",
+            "jaeger_request",
+            "jaeger_raw_artifact",
+            "jaeger_raw_sha256",
+            "jaeger_http_status",
+            "jaeger_request_started_at",
+            "jaeger_response_ended_at",
+            "jaeger_monotonic_started_at",
+            "jaeger_monotonic_ended_at",
+            "jaeger_raw_response_base64",
+            "jaeger_raw_response_sha256",
+            "getads_span_proven",
+            "http_status",
+            "request_started_at",
+            "response_ended_at",
+            "monotonic_started_at",
+            "monotonic_ended_at",
+            "raw_response_base64",
+            "raw_response_sha256",
+        }
+        if live_promotion:
+            expected_phase_fields.update(
+                {
+                    "business_observation",
+                    "probe_attempt_ordinal",
+                    "probe_attempt_budget",
+                }
+            )
         if (
-            set(phase)
-            != {
-                "phase",
-                "cycle_number",
-                "phase_started_at",
-                "phase_ended_at",
-                "phase_monotonic_started_at",
-                "phase_monotonic_ended_at",
-                "fixed_input",
-                "observer_input_boundary_passed",
-                "unexpected_input_count",
-                "trace_id",
-                "traceparent_sha256",
-                "probe_raw_artifact",
-                "probe_raw_sha256",
-                "jaeger_request",
-                "jaeger_raw_artifact",
-                "jaeger_raw_sha256",
-                "jaeger_http_status",
-                "jaeger_request_started_at",
-                "jaeger_response_ended_at",
-                "jaeger_monotonic_started_at",
-                "jaeger_monotonic_ended_at",
-                "jaeger_raw_response_base64",
-                "jaeger_raw_response_sha256",
-                "getads_span_proven",
-                "http_status",
-                "request_started_at",
-                "response_ended_at",
-                "monotonic_started_at",
-                "monotonic_ended_at",
-                "raw_response_base64",
-                "raw_response_sha256",
-            }
+            set(phase) != expected_phase_fields
             or phase.get("fixed_input") != registry.probe.input
             or phase.get("observer_input_boundary_passed") is not True
             or phase.get("unexpected_input_count") != 0
@@ -2176,9 +3699,41 @@ def _verify_raw_promotion_artifact(
                 phase_monotonic_started,
                 phase_monotonic_ended,
             ),
+            allow_non_success=(
+                live_promotion and phase["phase"] == MeasurementPhase.FAULT.value
+            ),
         )
-        _verify_direct_ad_array(_decode_embedded_body(phase))
         phase_name = phase["phase"]
+        if live_promotion:
+            business_observation = phase.get("business_observation")
+            if (
+                phase.get("probe_attempt_ordinal") != 1
+                or phase.get("probe_attempt_budget")
+                != PromotionAcquisitionPolicy().fault_probe_attempts
+                or business_observation
+                not in {
+                    "SUCCESS_PAYLOAD",
+                    "FAULT_NON_SUCCESS",
+                    "FAULT_EMPTY_OR_INVALID_PAYLOAD",
+                }
+                or (
+                    phase_name != MeasurementPhase.FAULT.value
+                    and business_observation != "SUCCESS_PAYLOAD"
+                )
+                or (
+                    business_observation == "FAULT_NON_SUCCESS"
+                    and phase.get("http_status") == 200
+                )
+                or (
+                    business_observation != "FAULT_NON_SUCCESS"
+                    and phase.get("http_status") != 200
+                )
+            ):
+                raise ValueError("promotion probe business observation differs")
+            if business_observation == "SUCCESS_PAYLOAD":
+                _verify_direct_ad_array(_decode_embedded_body(phase))
+        else:
+            _verify_direct_ad_array(_decode_embedded_body(phase))
         trace_id = phase.get("trace_id")
         if (
             not isinstance(trace_id, str)
@@ -2190,12 +3745,8 @@ def _verify_raw_promotion_artifact(
         trace_ids.add(trace_id)
         probe_purpose = f"probe-{phase_name}"
         jaeger_purpose = f"jaeger-correlation-{phase_name}"
-        probe_path = _expected_promotion_exchange_paths(proof.current_run_id)[
-            probe_purpose
-        ]
-        jaeger_path = _expected_promotion_exchange_paths(proof.current_run_id)[
-            jaeger_purpose
-        ]
+        probe_path = all_expected_exchange_paths[probe_purpose]
+        jaeger_path = all_expected_exchange_paths[jaeger_purpose]
         probe_exchange = exchange_payloads[probe_purpose]
         jaeger_exchange = exchange_payloads[jaeger_purpose]
         headers = probe_exchange["request"]["headers"]
@@ -2298,6 +3849,7 @@ def _verify_embedded_raw_response(
     *,
     utc_window: tuple[datetime, datetime],
     monotonic_window: tuple[float, float],
+    allow_non_success: bool = False,
 ) -> None:
     started = payload.get("monotonic_started_at")
     ended = payload.get("monotonic_ended_at")
@@ -2307,7 +3859,7 @@ def _verify_embedded_raw_response(
     except (KeyError, TypeError, ValueError) as error:
         raise ValueError("promotion response UTC timing is invalid") from error
     if (
-        payload.get("http_status") != 200
+        (payload.get("http_status") != 200 and not allow_non_success)
         or not isinstance(started, (int, float))
         or isinstance(started, bool)
         or not isinstance(ended, (int, float))
@@ -2374,13 +3926,25 @@ def _verify_backend_response_schema(
         raise ValueError("promotion backend response schema differs")
 
 
+def _normalize_source_timestamp_identity(
+    labels: dict[str, str],
+) -> tuple[tuple[str, str], ...]:
+    return tuple(
+        sorted(
+            (key, value)
+            for key, value in labels.items()
+            if key != "__name__"
+        )
+    )
+
+
 def _verify_prometheus_promotion_vector(
     payload: Any,
     *,
     query_kind: str,
     registry: TelemetryQueryRegistry,
     utc_window: tuple[datetime, datetime],
-) -> None:
+) -> datetime | None:
     if (
         not isinstance(payload, dict)
         or set(payload) != {"status", "data"}
@@ -2405,6 +3969,7 @@ def _verify_prometheus_promotion_vector(
             in fixture.error_classification.values
         ],
         "target_incarnation": [fixture.expected_target_incarnation_series.labels],
+        "source_timestamp": expected_total,
     }.get(query_kind)
     if expected is None:
         raise ValueError("promotion Prometheus query kind differs")
@@ -2417,6 +3982,7 @@ def _verify_prometheus_promotion_vector(
         raise ValueError("promotion Prometheus response schema differs")
     actual: list[dict[str, str]] = []
     timestamps: set[Decimal] = set()
+    values: set[Decimal] = set()
     for result in payload["data"]["result"]:
         if (
             not isinstance(result, dict)
@@ -2441,16 +4007,53 @@ def _verify_prometheus_promotion_vector(
         if not timestamp.is_finite() or not value.is_finite() or value < 0:
             raise ValueError("promotion Prometheus numeric value differs")
         timestamps.add(timestamp)
+        values.add(value)
         actual.append(result["metric"])
     if len(timestamps) != 1:
         raise ValueError("promotion Prometheus emitted identity differs")
     timestamp = next(iter(timestamps))
-    if not Decimal(str(utc_window[0].timestamp())) <= timestamp <= Decimal(
-        str(utc_window[1].timestamp())
-    ) or sorted(actual, key=canonical_json_sha256) != sorted(
-        expected, key=canonical_json_sha256
+    identity = (
+        _normalize_source_timestamp_identity
+        if query_kind == "source_timestamp"
+        else lambda labels: tuple(sorted(labels.items()))
+    )
+    actual_identities = {identity(labels) for labels in actual}
+    expected_identities = {identity(labels) for labels in expected}
+    allowed_missing: set[tuple[tuple[str, str], ...]] = set()
+    if (
+        query_kind == "source_timestamp"
+        and fixture.zero_series_rule == "absent_error_series_means_zero"
+    ):
+        allowed_missing = {
+            identity(labels)
+            for labels in expected_total
+            if labels[fixture.error_classification.label]
+            in fixture.error_classification.values
+        }
+    if (
+        not actual_identities
+        or len(actual_identities) != len(actual)
+        or not actual_identities <= expected_identities
+        or expected_identities - actual_identities - allowed_missing
     ):
         raise ValueError("promotion Prometheus emitted identity differs")
+    if query_kind == "source_timestamp":
+        if len(values) != 1:
+            raise ValueError("promotion Prometheus source timestamp differs")
+        source_timestamp = next(iter(values))
+        if (
+            source_timestamp > timestamp
+            or not Decimal(str(utc_window[0].timestamp()))
+            <= source_timestamp
+            <= Decimal(str(utc_window[1].timestamp()))
+        ):
+            raise ValueError("promotion Prometheus source timestamp differs")
+        return datetime.fromtimestamp(float(source_timestamp), tz=UTC)
+    if not Decimal(str(utc_window[0].timestamp())) <= timestamp <= Decimal(
+        str(utc_window[1].timestamp())
+    ):
+        raise ValueError("promotion Prometheus evaluation timestamp differs")
+    return None
 
 
 def _jaeger_response_has_exact_identity(
@@ -2759,11 +4362,20 @@ class _ParsedScrape:
 
 
 @dataclass(frozen=True)
+class _ParsedSourceTimestamp:
+    timestamp: datetime
+    evaluation_timestamp: datetime
+    labels: tuple[dict[str, str], ...]
+    zero_series_inferred: bool = False
+
+
+@dataclass(frozen=True)
 class _ScrapePair:
     timestamp: datetime
     total: _ParsedScrape
     errors: _ParsedScrape
     incarnation: _ParsedScrape
+    source_timestamp: _ParsedSourceTimestamp
     acquired_monotonic: float
 
 
@@ -2782,11 +4394,15 @@ class PrometheusAdapter:
         client: _HttpClient,
         evidence_store: _EvidenceStore,
         fixture: RegistryAccess,
+        acquisition_policy: PrometheusAcquisitionPolicy | None = None,
         sleep: Callable[[float], None] = time.sleep,
     ) -> None:
         self._client = client
         self._store = evidence_store
         self._loaded = fixture
+        self._acquisition_policy = (
+            acquisition_policy or PrometheusAcquisitionPolicy.canonical()
+        )
         self._sleep = sleep
 
     def _measurement(self, **values: Any) -> PrometheusMeasurement:
@@ -2811,8 +4427,8 @@ class PrometheusAdapter:
         base_url: str,
         artifact_prefix: str,
     ) -> PrometheusMeasurement:
-        minimum_attempts = _ACCEPTANCE_MINIMUM_ATTEMPTS
-        deadline_seconds = _ACCEPTANCE_DEADLINE_SECONDS
+        minimum_attempts = self._acquisition_policy.minimum_getads_attempts
+        deadline_seconds = self._acquisition_policy.window_deadline_seconds
         if (
             not _registry_access_is_frozen_for_adapter(
                 self._loaded,
@@ -3089,16 +4705,95 @@ class PrometheusAdapter:
                     artifact_paths=tuple(paths),
                 )
 
+            source_timestamp_query = f"timestamp({fixture.total_query})"
+            source_timestamp_exchange = self._query(
+                endpoint,
+                source_timestamp_query,
+                deadline=request_deadline,
+            )
+            source_timestamp_raw_path = (
+                f"{artifact_prefix}/telemetry/prometheus/"
+                f"sample-{sample_number:04d}-source-timestamp-raw.json"
+            )
+            if not self._persist_raw(
+                source_timestamp_raw_path,
+                source_timestamp_exchange,
+                window=window,
+                query_kind="source_timestamp",
+                query=source_timestamp_query,
+                paths=paths,
+            ):
+                return self._measurement(
+                    reason=PrometheusReason.EVIDENCE_PERSISTENCE_FAILED,
+                    artifact_paths=tuple(paths),
+                )
+            if not source_timestamp_exchange.succeeded:
+                reason = _http_reason(source_timestamp_exchange.reason)
+                if not self._persist_decision(
+                    source_timestamp_raw_path,
+                    window=window,
+                    reason=reason,
+                    paths=paths,
+                ):
+                    reason = PrometheusReason.EVIDENCE_PERSISTENCE_FAILED
+                return self._finish(
+                    window=window,
+                    artifact_prefix=artifact_prefix,
+                    reason=reason,
+                    paths=paths,
+                )
+            try:
+                source_timestamp = _parse_source_timestamp_vector(
+                    source_timestamp_exchange,
+                    expected=expected_total,
+                    zero_fill_missing=(
+                        tuple(expected_errors)
+                        if fixture.zero_series_rule
+                        == "absent_error_series_means_zero"
+                        else ()
+                    ),
+                    fixture=fixture,
+                    window=window,
+                )
+            except _PrometheusParseFailure as failure:
+                reason = failure.reason
+                if not self._persist_decision(
+                    source_timestamp_raw_path,
+                    window=window,
+                    reason=reason,
+                    paths=paths,
+                ):
+                    reason = PrometheusReason.EVIDENCE_PERSISTENCE_FAILED
+                return self._finish(
+                    window=window,
+                    artifact_prefix=artifact_prefix,
+                    reason=reason,
+                    paths=paths,
+                )
+            if not self._persist_decision(
+                source_timestamp_raw_path,
+                window=window,
+                reason=PrometheusReason.READY,
+                paths=paths,
+                parsed=source_timestamp,
+            ):
+                return self._measurement(
+                    reason=PrometheusReason.EVIDENCE_PERSISTENCE_FAILED,
+                    artifact_paths=tuple(paths),
+                )
+
             acquired_monotonic = max(
                 total_exchange.monotonic_ended_at,
                 error_exchange.monotonic_ended_at,
                 incarnation_exchange.monotonic_ended_at,
+                source_timestamp_exchange.monotonic_ended_at,
             )
             pair = _ScrapePair(
-                timestamp=total.timestamp,
+                timestamp=source_timestamp.timestamp,
                 total=total,
                 errors=errors,
                 incarnation=incarnation,
+                source_timestamp=source_timestamp,
                 acquired_monotonic=acquired_monotonic,
             )
             pair_reason = _validate_scrape_pair(
@@ -3250,6 +4945,7 @@ class PrometheusAdapter:
             "backend": "prometheus",
             "query_kind": query_kind,
             "raw_query": query,
+            "raw_query_sha256": sha256_bytes(query.encode()),
             "request_target": exchange.request.target,
             "started_at": exchange.started_at.isoformat(),
             "ended_at": exchange.ended_at.isoformat(),
@@ -3276,7 +4972,7 @@ class PrometheusAdapter:
         window: PhaseWindow,
         reason: PrometheusReason,
         paths: list[str],
-        parsed: _ParsedScrape | None = None,
+        parsed: _ParsedScrape | _ParsedSourceTimestamp | None = None,
     ) -> bool:
         path = raw_path.removesuffix("-raw.json") + "-decision.json"
         payload: dict[str, Any] = {
@@ -3292,6 +4988,13 @@ class PrometheusAdapter:
             "reason": reason.value,
             "parsed_sample_timestamp": (
                 parsed.timestamp.isoformat() if parsed is not None else None
+            ),
+            "parsed_evaluation_timestamp": (
+                parsed.evaluation_timestamp.isoformat()
+                if isinstance(parsed, _ParsedSourceTimestamp)
+                else parsed.timestamp.isoformat()
+                if parsed is not None
+                else None
             ),
             "parsed_series": parsed.labels if parsed is not None else (),
             "zero_series_inferred": (
@@ -3341,6 +5044,7 @@ class PrometheusAdapter:
                 else None
             ),
             "raw_and_parse_artifacts": tuple(paths),
+            "acquisition_policy": self._acquisition_policy.model_dump(mode="json"),
         }
         try:
             artifact = self._store.write_immutable(path, payload)
@@ -3363,6 +5067,125 @@ class PrometheusAdapter:
             artifact_paths=tuple(paths),
             artifact_sha256=_hash_existing_artifacts(paths),
         )
+
+
+def _parse_source_timestamp_vector(
+    exchange: HttpExchange,
+    *,
+    expected: tuple[dict[str, str], ...],
+    zero_fill_missing: tuple[dict[str, str], ...] = (),
+    fixture: PrometheusQueryFixture,
+    window: PhaseWindow,
+) -> _ParsedSourceTimestamp:
+    try:
+        payload = json.loads(
+            exchange.raw_body,
+            object_pairs_hook=_reject_duplicate_json_keys,
+        )
+        if (
+            not isinstance(payload, dict)
+            or payload.get("status") != "success"
+            or not isinstance(payload.get("data"), dict)
+            or payload["data"].get("resultType") != "vector"
+            or not isinstance(payload["data"].get("result"), list)
+        ):
+            raise TypeError
+        result = payload["data"]["result"]
+    except (json.JSONDecodeError, UnicodeDecodeError, TypeError, ValueError):
+        raise _PrometheusParseFailure(
+            PrometheusReason.PROMETHEUS_SCHEMA_INVALID
+        ) from None
+
+    expected_identities = {
+        _normalize_source_timestamp_identity(labels) for labels in expected
+    }
+    identities: set[tuple[tuple[str, str], ...]] = set()
+    evaluation_timestamps: set[Decimal] = set()
+    source_timestamps: set[Decimal] = set()
+    labels_out: list[dict[str, str]] = []
+    try:
+        for item in result:
+            if (
+                not isinstance(item, dict)
+                or not isinstance(item.get("metric"), dict)
+                or not isinstance(item.get("value"), list)
+                or len(item["value"]) != 2
+                or any(
+                    not isinstance(key, str) or not isinstance(value, str)
+                    for key, value in item["metric"].items()
+                )
+            ):
+                raise TypeError
+            identity = _normalize_source_timestamp_identity(item["metric"])
+            evaluation_timestamp = Decimal(str(item["value"][0]))
+            raw_source_timestamp = str(item["value"][1])
+            if raw_source_timestamp.casefold() in {"nan", "stalenan"}:
+                raise _PrometheusParseFailure(
+                    PrometheusReason.PROMETHEUS_STALE_SAMPLE
+                )
+            source_timestamp = Decimal(raw_source_timestamp)
+            if (
+                not evaluation_timestamp.is_finite()
+                or not source_timestamp.is_finite()
+                or source_timestamp < 0
+                or identity in identities
+            ):
+                raise ValueError
+            identities.add(identity)
+            evaluation_timestamps.add(evaluation_timestamp)
+            source_timestamps.add(source_timestamp)
+            labels_out.append(dict(item["metric"]))
+    except (InvalidOperation, TypeError, ValueError, OverflowError):
+        raise _PrometheusParseFailure(
+            PrometheusReason.PROMETHEUS_SCHEMA_INVALID
+        ) from None
+
+    missing = expected_identities - identities
+    allowed_missing = {
+        _normalize_source_timestamp_identity(labels)
+        for labels in zero_fill_missing
+    }
+    if (
+        not identities
+        or not identities <= expected_identities
+        or missing - allowed_missing
+    ):
+        raise _PrometheusParseFailure(PrometheusReason.PROMETHEUS_CARDINALITY_DRIFT)
+    if len(evaluation_timestamps) != 1 or len(source_timestamps) != 1:
+        raise _PrometheusParseFailure(
+            PrometheusReason.PROMETHEUS_SCRAPE_TIMESTAMP_MISMATCH
+        )
+    try:
+        evaluation_timestamp = datetime.fromtimestamp(
+            float(next(iter(evaluation_timestamps))),
+            tz=UTC,
+        )
+        source_timestamp = datetime.fromtimestamp(
+            float(next(iter(source_timestamps))),
+            tz=UTC,
+        )
+    except (OSError, OverflowError, ValueError):
+        raise _PrometheusParseFailure(
+            PrometheusReason.PROMETHEUS_SCHEMA_INVALID
+        ) from None
+    lag = (exchange.ended_at - source_timestamp).total_seconds()
+    assert fixture.maximum_scrape_lag_seconds is not None
+    if (
+        source_timestamp > evaluation_timestamp
+        or evaluation_timestamp > exchange.ended_at
+        or not window.contains_observation(source_timestamp)
+        or lag < 0
+        or lag > fixture.maximum_scrape_lag_seconds
+    ):
+        raise _PrometheusParseFailure(PrometheusReason.PROMETHEUS_STALE_SAMPLE)
+    return _ParsedSourceTimestamp(
+        timestamp=source_timestamp,
+        evaluation_timestamp=evaluation_timestamp,
+        labels=tuple(
+            sorted(labels_out, key=lambda value: tuple(sorted(value.items())))
+        ),
+        zero_series_inferred=bool(missing),
+    )
 
 
 def _parse_vector(
@@ -3484,8 +5307,16 @@ def _validate_scrape_pair(
     previous: _ScrapePair | None,
     fixture: PrometheusQueryFixture,
 ) -> PrometheusReason | None:
-    if not (
-        pair.total.timestamp == pair.errors.timestamp == pair.incarnation.timestamp
+    if (
+        pair.timestamp > pair.source_timestamp.evaluation_timestamp
+        or any(
+            scrape.timestamp > pair.source_timestamp.evaluation_timestamp
+            for scrape in (pair.total, pair.errors, pair.incarnation)
+        )
+        or any(
+            pair.timestamp > scrape.timestamp
+            for scrape in (pair.total, pair.errors, pair.incarnation)
+        )
     ):
         return PrometheusReason.PROMETHEUS_SCRAPE_TIMESTAMP_MISMATCH
     if len(pair.incarnation.values) != 1:
@@ -3497,7 +5328,7 @@ def _validate_scrape_pair(
         if pair.incarnation.values != previous.incarnation.values:
             return PrometheusReason.PROMETHEUS_COUNTER_RESET_OR_TARGET_RESTART
         if pair.timestamp <= previous.timestamp:
-            return PrometheusReason.PROMETHEUS_SCRAPE_TIMESTAMP_MISMATCH
+            return PrometheusReason.PROMETHEUS_STALE_SAMPLE
         assert fixture.scrape_interval_seconds is not None
         assert fixture.scrape_interval_tolerance_seconds is not None
         interval = (pair.timestamp - previous.timestamp).total_seconds()

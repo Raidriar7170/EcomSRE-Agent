@@ -1,0 +1,14 @@
+{
+  "schema_version": "phase0.sanitized-disposition-review.v1",
+  "run_id": "90552667b2d24c81b11886c85aa6a9be",
+  "canonical_state": "NON_CANONICAL",
+  "final_outcome": "UNSAFE",
+  "terminal_exit_code": 40,
+  "formal_cycles_executed": 0,
+  "phase0_complete": false,
+  "phase0_runtime_started": false,
+  "telemetry_readiness_executed": false,
+  "cleanup_attempted": false,
+  "environment_disposition": "NO_DOCKER_ENVIRONMENT_TO_STOP",
+  "review_effect": "NO_RECLASSIFICATION"
+}

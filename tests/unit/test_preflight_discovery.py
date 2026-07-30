@@ -122,6 +122,19 @@ def test_discovery_plan_covers_all_read_only_preflight_surfaces(
     assert _option_values(compose_command.arguments, "--env-file") == [
         str(tmp_path / "third_party" / "opentelemetry-demo" / ".env")
     ]
+    cached_command = next(
+        command for command in plan if command.purpose == "cached_images"
+    )
+    assert cached_command.arguments == (
+        "docker",
+        "--host",
+        DOCKER_ENDPOINT,
+        "image",
+        "inspect",
+        "--platform",
+        "linux/arm64",
+        "otel/demo:3.0.0-adservice",
+    )
 
 
 def test_discovery_plan_rejects_paths_outside_project_root(tmp_path: Path) -> None:
@@ -634,6 +647,8 @@ def test_upstream_compose_and_cached_image_parsers_preserve_exact_facts() -> Non
             "unix:///var/run/docker.sock",
             "image",
             "inspect",
+            "--platform",
+            "linux/arm64",
             "otel/demo:3.0.0-adservice",
         ),
         stdout=json.dumps(image_payload),
@@ -689,6 +704,8 @@ def test_cached_image_parser_binds_requested_reference_not_repo_tag_order() -> N
             "unix:///var/run/docker.sock",
             "image",
             "inspect",
+            "--platform",
+            "linux/arm64",
             requested,
         ),
         stdout=json.dumps(
@@ -720,6 +737,8 @@ def test_cached_image_parser_selects_digest_for_requested_repository() -> None:
             "unix:///var/run/docker.sock",
             "image",
             "inspect",
+            "--platform",
+            "linux/arm64",
             requested,
         ),
         stdout=json.dumps(
@@ -753,6 +772,8 @@ def test_cached_image_parser_rejects_missing_requested_repository_digest() -> No
             "unix:///var/run/docker.sock",
             "image",
             "inspect",
+            "--platform",
+            "linux/arm64",
             requested,
         ),
         stdout=json.dumps(
@@ -797,4 +818,114 @@ def test_cached_image_parser_fails_closed_on_incomplete_metadata(
     )
 
     with pytest.raises(DiscoveryParseError):
+        parse_cached_images(result)
+
+
+def test_cached_image_parser_rejects_unscoped_inspection() -> None:
+    source = "otel/demo:3.0.0-adservice"
+    result = _result(
+        (
+            "docker",
+            "--host",
+            "unix:///var/run/docker.sock",
+            "image",
+            "inspect",
+            source,
+        ),
+        stdout=json.dumps(
+            [
+                {
+                    "Id": "sha256:" + "c" * 64,
+                    "RepoTags": [source],
+                    "RepoDigests": ["otel/demo@sha256:" + "a" * 64],
+                    "Descriptor": {"digest": "sha256:" + "b" * 64},
+                    "Architecture": "arm64",
+                    "Os": "linux",
+                }
+            ]
+        ),
+    )
+
+    with pytest.raises(DiscoveryParseError, match="arguments"):
+        parse_cached_images(result)
+
+
+def test_cached_image_parser_wraps_primitive_digest_as_typed_failure() -> None:
+    source = "otel/demo:3.0.0-adservice"
+    result = _result(
+        (
+            "docker",
+            "--host",
+            "unix:///var/run/docker.sock",
+            "image",
+            "inspect",
+            "--platform",
+            "linux/arm64",
+            source,
+        ),
+        stdout=json.dumps(
+            [
+                {
+                    "Id": "sha256:" + "c" * 64,
+                    "RepoTags": [source],
+                    "RepoDigests": [1],
+                    "Descriptor": {"digest": "sha256:" + "b" * 64},
+                    "Architecture": "arm64",
+                    "Os": "linux",
+                }
+            ]
+        ),
+    )
+
+    with pytest.raises(DiscoveryParseError, match="incomplete"):
+        parse_cached_images(result)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_message"),
+    [
+        ("missing-descriptor", "incomplete"),
+        ("wrong-architecture", "native linux/arm64"),
+        ("wrong-os", "native linux/arm64"),
+        ("nonzero", "inspection failed"),
+    ],
+)
+def test_cached_image_parser_fails_closed_without_complete_native_platform_facts(
+    mutation: str,
+    expected_message: str,
+) -> None:
+    source = "otel/demo:3.0.0-adservice"
+    payload = {
+        "Id": "sha256:" + "c" * 64,
+        "RepoTags": [source],
+        "RepoDigests": ["otel/demo@sha256:" + "a" * 64],
+        "Descriptor": {"digest": "sha256:" + "b" * 64},
+        "Architecture": "arm64",
+        "Os": "linux",
+    }
+    exit_code = 0
+    if mutation == "missing-descriptor":
+        del payload["Descriptor"]
+    elif mutation == "wrong-architecture":
+        payload["Architecture"] = "amd64"
+    elif mutation == "wrong-os":
+        payload["Os"] = "windows"
+    else:
+        exit_code = 1
+    result = _result(
+        (
+            "docker",
+            "--host",
+            "unix:///var/run/docker.sock",
+            "image",
+            "inspect",
+            "--platform",
+            "linux/arm64",
+            source,
+        ),
+        exit_code=exit_code,
+        stdout=json.dumps([payload]) if exit_code == 0 else "",
+    )
+
+    with pytest.raises(DiscoveryParseError, match=expected_message):
         parse_cached_images(result)
