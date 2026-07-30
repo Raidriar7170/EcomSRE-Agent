@@ -590,18 +590,32 @@ def test_audited_runner_terminates_the_entire_process_group_on_timeout(
 )
 def test_command_network_declaration_distinguishes_local_and_external_operations(
     tmp_path: Path,
+    monkeypatch,
     arguments: tuple[str, ...],
     expected_scope: str,
     declared: bool,
 ) -> None:
+    from ecomsre.environment import command_runner
+
+    class ImmediateSuccess:
+        returncode = 0
+
+        @staticmethod
+        def communicate(*, timeout):
+            assert timeout == 1
+            return "", ""
+
+    monkeypatch.setattr(
+        command_runner,
+        "_Popen",
+        lambda *_args, **_kwargs: ImmediateSuccess(),
+    )
     runner = AuditedSubprocessRunner(
         project_root=ROOT,
         artifacts_root=tmp_path / "artifacts",
         run_id=RUN_ID,
     )
     executable = tmp_path / arguments[0]
-    executable.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
-    os.chmod(executable, 0o700)
     fake_arguments = (str(executable), *arguments[1:])
 
     result = runner.run(fake_arguments, timeout_seconds=1)
@@ -652,13 +666,27 @@ def test_production_subprocess_access_is_centralized() -> None:
 )
 def test_nonzero_command_classification_is_purpose_aware_and_effect_unobserved(
     tmp_path: Path,
+    monkeypatch,
     arguments: tuple[str, ...],
     expected_outcome: Outcome,
     expected_reason: str,
 ) -> None:
+    from ecomsre.environment import command_runner
+
+    class ImmediateFailure:
+        returncode = 7
+
+        @staticmethod
+        def communicate(*, timeout):
+            assert timeout == 1
+            return "", "fixture failure"
+
+    monkeypatch.setattr(
+        command_runner,
+        "_Popen",
+        lambda *_args, **_kwargs: ImmediateFailure(),
+    )
     executable = tmp_path / arguments[0]
-    executable.write_text("#!/bin/sh\nexit 7\n", encoding="utf-8")
-    os.chmod(executable, 0o700)
     runner = AuditedSubprocessRunner(
         project_root=ROOT,
         artifacts_root=tmp_path / "artifacts",

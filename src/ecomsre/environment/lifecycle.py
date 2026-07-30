@@ -76,6 +76,19 @@ _COMPOSE_FILES = (
     "third_party/opentelemetry-demo/compose.observability.yaml",
     "config/phase0/compose.phase0.yaml",
 )
+_REQUIRED_NAMED_VOLUME_PLAN = {
+    "astronomy-db": ("astronomy-db-data", "/var/lib/postgresql"),
+    "jaeger": ("jaeger-data", "/tmp"),
+    "prometheus": ("prometheus-data", "/prometheus"),
+}
+_OBSERVER_COMPOSE_LABEL_ALLOWLIST = frozenset(
+    {
+        _COMPOSE_PROJECT_LABEL,
+        _COMPOSE_SERVICE_LABEL,
+        PROJECT_LABEL,
+        RUN_LABEL,
+    }
+)
 
 
 class ComposeAction(str, Enum):
@@ -222,6 +235,8 @@ class LifecycleExecution(BaseModel):
     command_results: tuple[CommandResult, ...] = ()
     artifact_paths: LifecycleArtifactPaths | None = None
     ownership_context: AuthenticatedOwnershipContext | None = None
+    docker_endpoint: str | None = None
+    daemon_id: str | None = None
 
     @model_validator(mode="after")
     def require_success_artifacts(self) -> "LifecycleExecution":
@@ -481,6 +496,17 @@ def up_environment(
             resolved_compose=resolved,
             command_results=tuple(command_results),
         )
+    try:
+        _require_explicit_volume_plan(resolved, run_id=run_id)
+    except ValueError:
+        return LifecycleExecution(
+            result=_terminal(
+                Outcome.UNSAFE,
+                "UNSAFE_VOLUME_PLAN",
+            ),
+            resolved_compose=resolved,
+            command_results=tuple(command_results),
+        )
 
     cached_images = []
     image_parse_failed = False
@@ -725,6 +751,14 @@ def up_environment(
             command_results=tuple(command_results),
             artifact_paths=artifact_paths,
             ownership_context=failure_context,
+            docker_endpoint=(
+                docker_endpoint if failure_context is not None else None
+            ),
+            daemon_id=(
+                preflight_evidence.inputs.docker.daemon_id
+                if failure_context is not None
+                else None
+            ),
         )
 
     try:
@@ -735,84 +769,160 @@ def up_environment(
             docker_endpoint=docker_endpoint,
             command_results=command_results,
         )
-        _require_resolved_resource_completeness(discovered, resolved)
-        if context is None:
-            manifest = OwnershipManifest(
-                run_id=run_id,
-                resources=discovered,
-            )
-            create_ownership_authority_artifacts(
-                Path(artifacts_root),
-                manifest,
-                created_at=datetime.now(UTC),
-            )
-            context = load_authenticated_ownership_context(
-                Path(artifacts_root),
-                run_id,
-            )
-        else:
-            expected = _compose_manifest(context)
-            verify_owned_resources(discovered, expected)
-        if not _context_is_authentic(context):
-            raise OwnershipAuthorityError("post-up ownership context is not authentic")
-        if artifact_paths is None:
-            artifact_paths = _artifact_paths(
-                Path(artifacts_root),
-                run_id,
-                ownership_intent=(
-                    Path(artifacts_root)
-                    / "observer-visible"
-                    / run_id
-                    / "ownership-intent.json"
-                ),
-            )
-        artifact_paths = _refresh_existing_artifact_paths(
-            artifact_paths,
+    except (DiscoveryParseError, ValueError):
+        assert artifact_paths is not None
+        artifact_paths = _persist_manual_diagnostic_best_effort(
+            _refresh_existing_artifact_paths(artifact_paths, run_id=run_id),
+            artifacts_root=Path(artifacts_root),
             run_id=run_id,
+            command_results=command_results,
+            reason_code="POST_UP_DISCOVERY_FAILED",
         )
-        artifact_paths = _persist_success_artifacts(
+        return LifecycleExecution(
+            result=_terminal(
+                Outcome.MANUAL_INTERVENTION_REQUIRED,
+                "POST_UP_DISCOVERY_FAILED",
+            ),
+            resolved_compose=resolved,
+            image_verification=verification,
+            command_results=tuple(command_results),
+            artifact_paths=artifact_paths,
+            docker_endpoint=docker_endpoint,
+            daemon_id=preflight_evidence.inputs.docker.daemon_id,
+        )
+
+    try:
+        _require_resolved_resource_completeness(discovered, resolved)
+    except (OwnershipError, ValueError):
+        assert artifact_paths is not None
+        artifact_paths = _persist_manual_diagnostic_best_effort(
+            _refresh_existing_artifact_paths(artifact_paths, run_id=run_id),
+            artifacts_root=Path(artifacts_root),
+            run_id=run_id,
+            command_results=command_results,
+            reason_code="POST_UP_RESOURCE_COMPLETENESS_FAILED",
+        )
+        return LifecycleExecution(
+            result=_terminal(
+                Outcome.MANUAL_INTERVENTION_REQUIRED,
+                "POST_UP_RESOURCE_COMPLETENESS_FAILED",
+            ),
+            resolved_compose=resolved,
+            image_verification=verification,
+            command_results=tuple(command_results),
+            artifact_paths=artifact_paths,
+            docker_endpoint=docker_endpoint,
+            daemon_id=preflight_evidence.inputs.docker.daemon_id,
+        )
+
+    try:
+        _create_or_verify_post_up_ownership_manifest(
+            artifacts_root=Path(artifacts_root),
+            run_id=run_id,
+            discovered=discovered,
+            context=context,
+        )
+    except (
+        OSError,
+        OwnershipAuthorityError,
+        OwnershipError,
+        ValueError,
+    ):
+        assert artifact_paths is not None
+        artifact_paths = _persist_manual_diagnostic_best_effort(
+            _refresh_existing_artifact_paths(artifact_paths, run_id=run_id),
+            artifacts_root=Path(artifacts_root),
+            run_id=run_id,
+            command_results=command_results,
+            reason_code="POST_UP_OWNERSHIP_AUTHENTICATION_FAILED",
+            failure_stage="ownership_manifest",
+        )
+        return LifecycleExecution(
+            result=_terminal(
+                Outcome.MANUAL_INTERVENTION_REQUIRED,
+                "POST_UP_OWNERSHIP_AUTHENTICATION_FAILED",
+            ),
+            resolved_compose=resolved,
+            image_verification=verification,
+            command_results=tuple(command_results),
+            artifact_paths=artifact_paths,
+            docker_endpoint=docker_endpoint,
+            daemon_id=preflight_evidence.inputs.docker.daemon_id,
+        )
+
+    try:
+        context = _load_and_authenticate_post_up_ownership_context(
+            artifacts_root=Path(artifacts_root),
+            run_id=run_id,
+            context=context,
+        )
+    except (OSError, OwnershipAuthorityError, ValueError):
+        assert artifact_paths is not None
+        artifact_paths = _persist_manual_diagnostic_best_effort(
+            _refresh_existing_artifact_paths(artifact_paths, run_id=run_id),
+            artifacts_root=Path(artifacts_root),
+            run_id=run_id,
+            command_results=command_results,
+            reason_code="POST_UP_OWNERSHIP_AUTHENTICATION_FAILED",
+            failure_stage="ownership_context_authentication",
+        )
+        return LifecycleExecution(
+            result=_terminal(
+                Outcome.MANUAL_INTERVENTION_REQUIRED,
+                "POST_UP_OWNERSHIP_AUTHENTICATION_FAILED",
+            ),
+            resolved_compose=resolved,
+            image_verification=verification,
+            command_results=tuple(command_results),
+            artifact_paths=artifact_paths,
+            docker_endpoint=docker_endpoint,
+            daemon_id=preflight_evidence.inputs.docker.daemon_id,
+        )
+
+    assert context is not None
+    assert artifact_paths is not None
+    artifact_paths = _refresh_existing_artifact_paths(
+        artifact_paths,
+        run_id=run_id,
+    )
+    try:
+        artifact_paths = _persist_evaluator_success_artifact(
+            artifact_paths,
+            artifacts_root=Path(artifacts_root),
+            run_id=run_id,
+            resolved=resolved,
+        )
+        artifact_paths = _persist_observer_success_artifacts(
             artifact_paths,
             artifacts_root=Path(artifacts_root),
             run_id=run_id,
             resolved=resolved,
             command_results=command_results,
         )
-    except (
-        DiscoveryParseError,
-        OSError,
-        OwnershipAuthorityError,
-        OwnershipError,
-        ValueError,
-    ):
-        if artifact_paths is None:
-            return LifecycleExecution(
-                result=_terminal(
-                    Outcome.MANUAL_INTERVENTION_REQUIRED,
-                    "POST_UP_OWNERSHIP_UNPROVEN",
-                ),
-                resolved_compose=resolved,
-                image_verification=verification,
-                command_results=tuple(command_results),
-            )
+    except (OSError, ValueError):
+        artifact_paths = _refresh_existing_artifact_paths(
+            artifact_paths,
+            run_id=run_id,
+        )
         artifact_paths = _persist_manual_diagnostic_best_effort(
-            _refresh_existing_artifact_paths(
-                artifact_paths,
-                run_id=run_id,
-            ),
+            artifact_paths,
             artifacts_root=Path(artifacts_root),
             run_id=run_id,
             command_results=command_results,
-            reason_code="POST_UP_OWNERSHIP_UNPROVEN",
+            reason_code="POST_UP_EVIDENCE_PERSISTENCE_FAILED",
         )
         return LifecycleExecution(
             result=_terminal(
                 Outcome.MANUAL_INTERVENTION_REQUIRED,
-                "POST_UP_OWNERSHIP_UNPROVEN",
+                "POST_UP_EVIDENCE_PERSISTENCE_FAILED",
             ),
             resolved_compose=resolved,
             image_verification=verification,
             command_results=tuple(command_results),
             artifact_paths=artifact_paths,
+            ownership_context=context,
+            docker_endpoint=docker_endpoint,
+            daemon_id=preflight_evidence.inputs.docker.daemon_id,
         )
 
     return LifecycleExecution(
@@ -822,6 +932,8 @@ def up_environment(
         command_results=tuple(command_results),
         artifact_paths=artifact_paths,
         ownership_context=context,
+        docker_endpoint=docker_endpoint,
+        daemon_id=preflight_evidence.inputs.docker.daemon_id,
     )
 
 
@@ -1828,26 +1940,54 @@ def _artifact_paths(
     )
 
 
-def _persist_success_artifacts(
+def _create_or_verify_post_up_ownership_manifest(
+    *,
+    artifacts_root: Path,
+    run_id: str,
+    discovered: tuple[OwnedResource, ...],
+    context: AuthenticatedOwnershipContext | None,
+) -> None:
+    """Create the post-up manifest, or verify it against existing authority."""
+    if context is None:
+        create_ownership_authority_artifacts(
+            artifacts_root,
+            OwnershipManifest(
+                run_id=run_id,
+                resources=discovered,
+            ),
+            created_at=datetime.now(UTC),
+        )
+        return
+    verify_owned_resources(discovered, _compose_manifest(context))
+
+
+def _load_and_authenticate_post_up_ownership_context(
+    *,
+    artifacts_root: Path,
+    run_id: str,
+    context: AuthenticatedOwnershipContext | None,
+) -> AuthenticatedOwnershipContext:
+    """Load and authenticate context only after manifest handling succeeded."""
+    authenticated = (
+        load_authenticated_ownership_context(artifacts_root, run_id)
+        if context is None
+        else context
+    )
+    if not _context_is_authentic(authenticated):
+        raise OwnershipAuthorityError("post-up ownership context is not authentic")
+    return authenticated
+
+
+def _persist_evaluator_success_artifact(
     paths: LifecycleArtifactPaths,
     *,
     artifacts_root: Path,
     run_id: str,
     resolved: ResolvedComposeConfig,
-    command_results: list[CommandResult],
 ) -> LifecycleArtifactPaths:
     raw_payload = {
         "schema_version": "phase0.resolved-compose-raw.v1",
         "stdout": resolved.stdout,
-        "sha256": resolved.sha256,
-        "image_sources": resolved.image_references,
-        "compose_files": _COMPOSE_FILES,
-        "pull_policy": "never",
-        "build_policy": "no-build",
-    }
-    observer_payload = {
-        "schema_version": "phase0.resolved-compose-summary.v1",
-        "sanitized_config": _sanitize_resolved_compose(resolved.stdout),
         "sha256": resolved.sha256,
         "image_sources": resolved.image_references,
         "compose_files": _COMPOSE_FILES,
@@ -1859,6 +1999,26 @@ def _persist_success_artifacts(
             "lifecycle/resolved-compose.json",
             raw_payload,
         )
+    return paths.model_copy(update={"resolved_compose_raw": raw_artifact.path})
+
+
+def _persist_observer_success_artifacts(
+    paths: LifecycleArtifactPaths,
+    *,
+    artifacts_root: Path,
+    run_id: str,
+    resolved: ResolvedComposeConfig,
+    command_results: list[CommandResult],
+) -> LifecycleArtifactPaths:
+    observer_payload = {
+        "schema_version": "phase0.resolved-compose-summary.v1",
+        "sanitized_config": _project_resolved_compose_for_observer(resolved.stdout),
+        "sha256": resolved.sha256,
+        "image_sources": resolved.image_references,
+        "compose_files": _COMPOSE_FILES,
+        "pull_policy": "never",
+        "build_policy": "no-build",
+    }
     with ObserverEvidenceStore(artifacts_root, run_id) as observer:
         resolved_artifact = observer.write_immutable(
             "lifecycle/resolved-compose.json",
@@ -1871,7 +2031,6 @@ def _persist_success_artifacts(
     return paths.model_copy(
         update={
             "resolved_compose": resolved_artifact.path,
-            "resolved_compose_raw": raw_artifact.path,
             "command_log": command_artifact.path,
         }
     )
@@ -1902,17 +2061,21 @@ def _persist_manual_diagnostic_best_effort(
     run_id: str,
     command_results: list[CommandResult],
     reason_code: str,
+    failure_stage: str | None = None,
 ) -> LifecycleArtifactPaths:
     try:
         with ObserverEvidenceStore(artifacts_root, run_id) as observer:
+            payload: dict[str, object] = {
+                "schema_version": "phase0.manual-diagnostic.v1",
+                "reason_code": reason_code,
+                "automatic_down_attempted": False,
+                "commands": _command_log_payload(command_results),
+            }
+            if failure_stage is not None:
+                payload["failure_stage"] = failure_stage
             artifact = observer.write_immutable(
                 "lifecycle/manual-diagnostic.json",
-                {
-                    "schema_version": "phase0.manual-diagnostic.v1",
-                    "reason_code": reason_code,
-                    "automatic_down_attempted": False,
-                    "commands": _command_log_payload(command_results),
-                },
+                payload,
             )
     except (OSError, ValueError):
         return _refresh_existing_artifact_paths(paths, run_id=run_id)
@@ -1985,47 +2148,131 @@ def _refresh_existing_artifact_paths(
     )
 
 
-def _sanitize_resolved_compose(stdout: str) -> dict[str, object]:
+def _project_resolved_compose_for_observer(stdout: str) -> dict[str, object]:
     payload = json.loads(stdout)
     if not isinstance(payload, dict):
         raise ValueError("resolved Compose must be an object")
-
-    sensitive_markers = (
-        "evaluator-only",
-        "/control",
-        "demo.flagd.json",
-        "flagd_ofrep_port",
-        "adfailure",
-        "adservicefailure",
-        "physical_flag",
-        "scenario_identity",
-        "runtime",
-    )
-
-    def sanitize(value: object, *, in_volume: bool = False) -> object:
-        if isinstance(value, dict):
-            sanitized: dict[str, object] = {}
-            for key, nested in value.items():
-                key_text = str(key)
-                if any(marker in key_text.casefold() for marker in sensitive_markers):
-                    sanitized["<opaque>"] = "<opaque>"
+    services = payload.get("services")
+    if not isinstance(services, dict):
+        raise ValueError("resolved Compose services are unavailable")
+    projected_services: dict[str, object] = {}
+    for logical_service, raw_service in sorted(services.items()):
+        if not isinstance(logical_service, str) or not isinstance(raw_service, dict):
+            raise ValueError("resolved Compose service is malformed")
+        projected: dict[str, object] = {"logical_service": logical_service}
+        for field in ("image", "container_name", "platform"):
+            value = raw_service.get(field)
+            if isinstance(value, str) and value:
+                projected[field] = value
+        raw_labels = raw_service.get("labels", {})
+        if isinstance(raw_labels, dict):
+            labels = {
+                str(key): str(value)
+                for key, value in raw_labels.items()
+                if str(key) in _OBSERVER_COMPOSE_LABEL_ALLOWLIST
+            }
+            if labels:
+                projected["labels"] = labels
+        raw_ports = raw_service.get("ports", [])
+        if isinstance(raw_ports, list):
+            ports: list[dict[str, object]] = []
+            for raw_port in raw_ports:
+                if not isinstance(raw_port, dict):
                     continue
-                sanitized[key_text] = sanitize(
-                    nested,
-                    in_volume=in_volume or key_text.casefold() == "volumes",
-                )
-            return sanitized
-        if isinstance(value, list):
-            return [sanitize(item, in_volume=in_volume) for item in value]
-        if isinstance(value, str) and (
-            in_volume or any(marker in value.casefold() for marker in sensitive_markers)
-        ):
-            return "<opaque>"
-        return value
+                host_ip = raw_port.get("host_ip")
+                published = raw_port.get("published")
+                target = raw_port.get("target")
+                protocol = raw_port.get("protocol", "tcp")
+                if (
+                    host_ip in {"127.0.0.1", "::1"}
+                    and published is not None
+                    and isinstance(target, int)
+                    and protocol in {"tcp", "udp"}
+                ):
+                    ports.append(
+                        {
+                            "host_ip": host_ip,
+                            "published": str(published),
+                            "target": target,
+                            "protocol": protocol,
+                        }
+                    )
+            if ports:
+                projected["ports"] = ports
+        projected_services[logical_service] = projected
+    return {"services": projected_services}
 
-    sanitized = sanitize(payload)
-    assert isinstance(sanitized, dict)
-    return sanitized
+
+def _require_explicit_volume_plan(
+    resolved: ResolvedComposeConfig,
+    *,
+    run_id: str,
+) -> None:
+    payload = json.loads(resolved.stdout)
+    if not isinstance(payload, dict):
+        raise ValueError("resolved Compose must be an object")
+    services = payload.get("services")
+    volumes = payload.get("volumes")
+    if not isinstance(services, dict) or not isinstance(volumes, dict):
+        raise ValueError("resolved Compose named volume plan is unavailable")
+    expected_labels = {
+        PROJECT_LABEL: PROJECT_NAMESPACE,
+        RUN_LABEL: run_id,
+    }
+    for volume_name, volume in volumes.items():
+        if not isinstance(volume_name, str) or not isinstance(volume, dict):
+            raise ValueError("resolved Compose named volume is malformed")
+        labels = volume.get("labels")
+        if not isinstance(labels, dict) or any(
+            labels.get(key) != value for key, value in expected_labels.items()
+        ):
+            raise ValueError(f"named volume labels are invalid: {volume_name}")
+        if volume.get("name") != f"{PROJECT_NAMESPACE}-{run_id}-{volume_name}":
+            raise ValueError(f"named volume identity is invalid: {volume_name}")
+    for service_name, service in services.items():
+        if not isinstance(service_name, str) or not isinstance(service, dict):
+            raise ValueError("resolved Compose service is malformed")
+        mounts = service.get("volumes", [])
+        if not isinstance(mounts, list):
+            raise ValueError(f"service volume plan is malformed: {service_name}")
+        for mount in mounts:
+            if not isinstance(mount, dict):
+                raise ValueError(f"service volume mount is ambiguous: {service_name}")
+            mount_type = mount.get("type")
+            source = mount.get("source")
+            if mount_type == "volume":
+                if not isinstance(source, str) or not source or source not in volumes:
+                    raise ValueError(
+                        f"service volume source is undeclared: {service_name}"
+                    )
+            elif mount_type not in {"bind", "tmpfs"}:
+                raise ValueError(
+                    f"service volume mount type is unknown: {service_name}"
+                )
+    for service_name, (volume_name, target) in _REQUIRED_NAMED_VOLUME_PLAN.items():
+        service = services.get(service_name)
+        volume = volumes.get(volume_name)
+        if not isinstance(service, dict) or not isinstance(volume, dict):
+            raise ValueError(f"required named volume is missing: {service_name}")
+        declared_name = volume.get("name")
+        if declared_name != f"{PROJECT_NAMESPACE}-{run_id}-{volume_name}":
+            raise ValueError(f"named volume identity is invalid: {volume_name}")
+        mounts = service.get("volumes")
+        if not isinstance(mounts, list):
+            raise ValueError(f"required volume mount is missing: {service_name}")
+        exact = [
+            mount
+            for mount in mounts
+            if isinstance(mount, dict)
+            and mount.get("type") == "volume"
+            and mount.get("source") == volume_name
+            and mount.get("target") == target
+        ]
+        if len(exact) != 1 or any(
+            not isinstance(mount, dict) or not mount.get("source")
+            for mount in mounts
+        ):
+            raise ValueError(f"required volume mount is unsafe: {service_name}")
 
 
 def _existing_regular_artifact(

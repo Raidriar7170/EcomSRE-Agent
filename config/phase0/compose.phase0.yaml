@@ -17,6 +17,17 @@ networks:
     name: ecomsre-phase0
     labels: *phase0-labels
 
+volumes:
+  astronomy-db-data:
+    name: ecomsre-phase0-${ECOMSRE_RUN_ID:?ECOMSRE_RUN_ID is required}-astronomy-db-data
+    labels: *phase0-labels
+  jaeger-data:
+    name: ecomsre-phase0-${ECOMSRE_RUN_ID:?ECOMSRE_RUN_ID is required}-jaeger-data
+    labels: *phase0-labels
+  prometheus-data:
+    name: ecomsre-phase0-${ECOMSRE_RUN_ID:?ECOMSRE_RUN_ID is required}-prometheus-data
+    labels: *phase0-labels
+
 services:
   ad:
     <<: *phase0-service
@@ -129,6 +140,10 @@ services:
   astronomy-db:
     <<: *phase0-service
     container_name: ecomsre-phase0-astronomy-db
+    volumes: !override
+      - type: volume
+        source: astronomy-db-data
+        target: /var/lib/postgresql
 
   valkey-cart:
     <<: *phase0-service
@@ -141,6 +156,10 @@ services:
   jaeger:
     <<: *phase0-service
     container_name: ecomsre-phase0-jaeger
+    volumes: !override
+      - type: volume
+        source: jaeger-data
+        target: /tmp
     ports: !override
       - target: 16686
         published: "16686"
@@ -154,6 +173,10 @@ services:
   prometheus:
     <<: *phase0-service
     container_name: ecomsre-phase0-prometheus
+    volumes: !override
+      - type: volume
+        source: prometheus-data
+        target: /prometheus
     ports: !override
       - target: 9090
         published: "9090"

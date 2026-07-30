@@ -15,7 +15,7 @@ invalidates one, stop and propose a new Decision Record.
 
 ## Current state
 
-The project is in `PHASE0_BOUNDED_REPAIR_UNSAFE`.
+The project is in `PHASE0_POST_UNSAFE_OFFLINE_REPAIR_READY`.
 
 - The 12 decisions `DEC-001` through `DEC-012` are accepted.
 - Phase 0 offline implementation and fixture-backed tests exist.
@@ -28,15 +28,27 @@ The project is in `PHASE0_BOUNDED_REPAIR_UNSAFE`.
 - A post-terminal bounded repair removed that observer leakage, and the same
   authenticated run authority then completed a project-scoped stop. The smoke
   result remains `UNSAFE`; the later stop does not rewrite it.
+- The follow-up offline repair closes the six static Must Fix items covering
+  post-up failure classification, stop-authority retention, observer projection,
+  append-only recovery sealing, image-lock test isolation, and named-volume
+  ownership. These changes have offline test evidence only.
+- The Compose override changed after the current image lock was created. The
+  checked-in lock still binds the pre-repair resolved Compose hash. Before any
+  future `up`, a separately authorized live task must re-resolve Compose and
+  safely generate and verify a matching candidate lock; hash mismatch must fail
+  closed.
 - `OQ-001` is closed by the preserved real preflight fingerprint.
   `OQ-002` through `OQ-004` remain open.
-- Current disposition remains `REVIEW_REQUIRED`.
+- Phase 0 is incomplete. No second smoke or formal acceptance has been run.
+- PR disposition remains `Draft / REVIEW_REQUIRED`.
 - This bounded repair is governed by
   `docs/PHASE_0_BOUNDED_REPAIR_SMOKE_PROMPT.md`.
 - The one-smoke allowance has been consumed. Do not run another smoke without
   new explicit authorization.
-- No commit, push, PR, deployment, release, formal three-cycle acceptance, or
-  Phase 1 work is authorized by the bounded repair.
+- The offline-repair scope itself does not authorize commit, push, or PR
+  updates; publication requires a separate explicit user request. Publication
+  does not authorize a second smoke, deployment, release, formal three-cycle
+  acceptance, or Phase 1 work.
 
 Do not extend beyond the bounded-repair prompt. If a Phase 0 behavior is not
 authorized by the planning packet and bounded-repair prompt, do not infer it.

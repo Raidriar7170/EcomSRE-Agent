@@ -9,9 +9,15 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 
-from ecomsre.evidence.hashes import canonical_json_sha256, sha256_file
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from ecomsre.evidence.hashes import (
+    canonical_json_sha256,
+    sha256_bytes,
+    sha256_file,
+)
 from ecomsre.evidence.models import IntegrityManifest
 from ecomsre.evidence.store import ObserverEvidenceStore, ReportEvidenceStore
 from ecomsre.phase0.models import (
@@ -55,6 +61,42 @@ class SmokeExecutionError(RuntimeError):
         self.reason_code = reason_code
         self.status = status
         super().__init__(reason_code)
+
+
+class RecoveryReportRecord(BaseModel):
+    """Append-only truth about a bounded post-terminal recovery action."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    schema_version: Literal["phase0.recovery-report.v1"]
+    run_id: str = Field(pattern=r"^[0-9a-f]{32}$")
+    sequence: int = Field(ge=1, le=999)
+    disposition: str = Field(min_length=1, max_length=80)
+    reason_code: str = Field(min_length=1, max_length=120)
+    canonical: Literal[False] = False
+    phase0_complete: Literal[False] = False
+
+
+class RecoverySealIndexEntry(BaseModel):
+    """One immutable pointer; the last valid entry is the current seal."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    schema_version: Literal["phase0.recovery-seal-index.v1"]
+    run_id: str = Field(pattern=r"^[0-9a-f]{32}$")
+    sequence: int = Field(ge=1, le=999)
+    checksum_path: str
+    checksum_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    content_manifest_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    prior_index_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    current: Literal[True] = True
+
+    @model_validator(mode="after")
+    def require_exact_checksum_path(self) -> "RecoverySealIndexEntry":
+        expected = f"reports/{self.run_id}/seals/{self.sequence:03d}.sha256"
+        if self.checksum_path != expected:
+            raise ValueError("recovery seal checksum path is outside the allowlist")
+        return self
 
 
 @dataclass
@@ -204,6 +246,16 @@ def supervise_smoke_attempt(
             try:
                 stop_authority = operations.fresh_stop_authority()
                 state.stop_authority_fresh = True
+                if getattr(
+                    stop_authority,
+                    "evidence_persistence_error",
+                    None,
+                ):
+                    _record_supervisor_failure(
+                        state,
+                        reason="STOP_AUTHORITY_OBSERVER_PERSISTENCE_FAILED",
+                        status=DiagnosticStatus.UNSAFE,
+                    )
                 state.stop_attempted = True
                 stopped = operations.stop_environment(stop_authority)
                 state.stop_succeeded = (
@@ -876,8 +928,9 @@ def _run_artifact_hashes(
     artifacts_root: Path,
     *,
     run_id: str,
+    excluded_report_path: str | None = None,
 ) -> dict[str, str]:
-    """Hash every finalized run artifact except the checksum file itself."""
+    """Hash final artifacts except the active seal and append-only seal index."""
     root = Path(artifacts_root)
     content_hashes: dict[str, str] = {}
     for zone in ("observer-visible", "evaluator-only", "reports"):
@@ -885,12 +938,161 @@ def _run_artifact_hashes(
         if not run_root.is_dir() or run_root.is_symlink():
             raise ValueError(f"smoke evidence zone is unavailable: {zone}")
         for path in sorted(run_root.rglob("*")):
-            if path.name == "checksums.sha256":
-                continue
             if path.is_symlink():
                 raise ValueError("smoke evidence cannot contain symlinks")
             if path.is_file():
-                content_hashes[path.relative_to(root).as_posix()] = sha256_file(path)
+                relative = path.relative_to(root).as_posix()
+                if zone == "reports" and (
+                    path.name == "seal-index.jsonl"
+                    or relative == excluded_report_path
+                ):
+                    continue
+                content_hashes[relative] = sha256_file(path)
     if not content_hashes:
         raise ValueError("smoke evidence hash set is empty")
     return content_hashes
+
+
+def reseal_recovery_evidence(
+    *,
+    artifacts_root: Path,
+    run_id: str,
+    sequence: int,
+    disposition: str,
+    reason_code: str,
+) -> RecoverySealIndexEntry:
+    """Append a bounded recovery report, versioned checksum, and current pointer."""
+    index_path = Path(artifacts_root) / "reports" / run_id / "seal-index.jsonl"
+    prior_index_bytes, prior_entries = _validated_recovery_seal_index(
+        index_path,
+        run_id=run_id,
+    )
+    expected_sequence = (
+        prior_entries[-1].sequence + 1 if prior_entries else 1
+    )
+    if sequence != expected_sequence:
+        raise ValueError("recovery seal must use the next append-only sequence")
+    recovery = RecoveryReportRecord(
+        schema_version="phase0.recovery-report.v1",
+        run_id=run_id,
+        sequence=sequence,
+        disposition=disposition,
+        reason_code=reason_code,
+    )
+    with ReportEvidenceStore(artifacts_root, run_id) as reports:
+        reports.write_recovery_report(sequence=sequence, value=recovery)
+        current_checksum_relative = (
+            f"reports/{run_id}/seals/{sequence:03d}.sha256"
+        )
+        content_hashes = _run_artifact_hashes(
+            artifacts_root,
+            run_id=run_id,
+            excluded_report_path=current_checksum_relative,
+        )
+        manifest = IntegrityManifest(
+            schema_version="phase0.integrity.v1",
+            run_id=run_id,
+            content_hashes=content_hashes,
+            manifest_sha256=canonical_json_sha256(content_hashes),
+        )
+        checksum = reports.write_versioned_checksums(
+            manifest,
+            sequence=sequence,
+        )
+        entry = RecoverySealIndexEntry(
+            schema_version="phase0.recovery-seal-index.v1",
+            run_id=run_id,
+            sequence=sequence,
+            checksum_path=checksum.path.relative_to(
+                Path(artifacts_root)
+            ).as_posix(),
+            checksum_sha256=checksum.sha256,
+            content_manifest_sha256=manifest.manifest_sha256,
+            prior_index_sha256=sha256_bytes(prior_index_bytes),
+        )
+        reports.append_seal_index(entry)
+    return entry
+
+
+def validate_current_recovery_seal(
+    artifacts_root: Path,
+    *,
+    run_id: str,
+) -> bool:
+    """Validate the last append-only seal pointer against every final artifact."""
+    root = Path(artifacts_root)
+    index = root / "reports" / run_id / "seal-index.jsonl"
+    try:
+        _index_bytes, entries = _validated_recovery_seal_index(
+            index,
+            run_id=run_id,
+        )
+        if not entries:
+            return False
+        entry = entries[-1]
+        expected_relative = f"reports/{run_id}/seals/{entry.sequence:03d}.sha256"
+        if entry.checksum_path != expected_relative:
+            return False
+        checksum_path = root / entry.checksum_path
+        if (
+            not checksum_path.is_file()
+            or checksum_path.is_symlink()
+            or sha256_file(checksum_path) != entry.checksum_sha256
+        ):
+            return False
+        recorded: dict[str, str] = {}
+        for line in checksum_path.read_text(encoding="utf-8").splitlines():
+            digest, separator, relative_path = line.partition("  ")
+            if (
+                separator != "  "
+                or len(digest) != 64
+                or any(character not in "0123456789abcdef" for character in digest)
+                or not relative_path
+                or relative_path in recorded
+            ):
+                return False
+            recorded[relative_path] = digest
+        actual = _run_artifact_hashes(
+            root,
+            run_id=run_id,
+            excluded_report_path=entry.checksum_path,
+        )
+        return (
+            recorded == actual
+            and canonical_json_sha256(recorded)
+            == entry.content_manifest_sha256
+        )
+    except (OSError, ValueError):
+        return False
+
+
+def _validated_recovery_seal_index(
+    index_path: Path,
+    *,
+    run_id: str,
+) -> tuple[bytes, tuple[RecoverySealIndexEntry, ...]]:
+    if not index_path.exists() and not index_path.is_symlink():
+        return b"", ()
+    if index_path.is_symlink() or not index_path.is_file():
+        raise ValueError("recovery seal index is invalid")
+    raw = index_path.read_bytes()
+    if not raw or not raw.endswith(b"\n"):
+        raise ValueError("recovery seal index is incomplete")
+    entries: list[RecoverySealIndexEntry] = []
+    prior = b""
+    for expected_sequence, line in enumerate(
+        raw.splitlines(keepends=True),
+        start=1,
+    ):
+        if not line.endswith(b"\n") or line == b"\n":
+            raise ValueError("recovery seal index line is invalid")
+        entry = RecoverySealIndexEntry.model_validate_json(line[:-1])
+        if (
+            entry.run_id != run_id
+            or entry.sequence != expected_sequence
+            or entry.prior_index_sha256 != sha256_bytes(prior)
+        ):
+            raise ValueError("recovery seal index chain is invalid")
+        entries.append(entry)
+        prior += line
+    return raw, tuple(entries)

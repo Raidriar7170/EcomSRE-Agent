@@ -198,6 +198,41 @@ def test_supervisor_stops_after_non_success_start_result() -> None:
     assert state.failure_statuses == [DiagnosticStatus.BLOCKED]
 
 
+def test_stop_authority_observer_failure_is_reported_but_stop_continues(
+    tmp_path: Path,
+) -> None:
+    for zone in ("observer-visible", "evaluator-only"):
+        run_root = tmp_path / zone / RUN_ID
+        run_root.mkdir(parents=True)
+        (run_root / "evidence.json").write_text("{}", encoding="utf-8")
+
+    class ObserverFailure(FakeOperations):
+        def fresh_stop_authority(self):
+            self._step("authority:stop")
+            return SimpleNamespace(
+                evidence_persistence_error="OBSERVER_PERSISTENCE_FAILED"
+            )
+
+        def finalize(self, state: SmokeSupervisorState):
+            self._step("finalize")
+            return finalize_supervised_smoke(
+                state=state,
+                artifacts_root=tmp_path,
+            )
+
+    operations = ObserverFailure()
+
+    report = supervise_smoke_attempt(run_id=RUN_ID, operations=operations)
+
+    assert "authority:stop" in operations.events
+    assert "down" in operations.events
+    assert report.safe_stop_completed
+    assert report.diagnostic_status is DiagnosticStatus.UNSAFE
+    assert "STOP_AUTHORITY_OBSERVER_PERSISTENCE_FAILED" in (
+        report.failure_reason_codes
+    )
+
+
 def test_supervisor_preserves_typed_unsafe_execution_error() -> None:
     class UnsafeDiagnostic(FakeOperations):
         def diagnostic(self, authority, control):
@@ -268,25 +303,30 @@ def test_final_report_uses_typed_supervisor_status_and_exit_code(
 def test_production_start_retains_available_authority_for_guarded_cleanup(
     monkeypatch,
 ) -> None:
-    preflight = SimpleNamespace(run_id=RUN_ID)
-    ownership = SimpleNamespace(run_id=RUN_ID)
+    ownership = SimpleNamespace(
+        run_id=RUN_ID,
+        manifest_sha256="a" * 64,
+        is_authentic=lambda: True,
+    )
     monkeypatch.setattr(
         cli_module,
-        "_handle_up",
-        lambda *_args: TerminalResult(
-            outcome=Outcome.BLOCKED_ENVIRONMENT,
-            reason_code="PARTIAL_UP_FAILED",
+        "_execute_up",
+        lambda *_args: cli_module.LifecycleExecution.model_construct(
+            result=TerminalResult(
+                outcome=Outcome.MANUAL_INTERVENTION_REQUIRED,
+                reason_code="POST_UP_EVIDENCE_PERSISTENCE_FAILED",
+            ),
+            ownership_context=ownership,
+            docker_endpoint="unix:///var/run/docker.sock",
+            daemon_id="fixture-daemon",
         ),
     )
     monkeypatch.setattr(
         cli_module,
         "_resolve_fresh_preflight",
-        lambda *_args, **_kwargs: preflight,
-    )
-    monkeypatch.setattr(
-        cli_module,
-        "load_authenticated_ownership_context",
-        lambda *_args, **_kwargs: ownership,
+        lambda *_args, **_kwargs: pytest.fail(
+            "start must not recollect full preflight for stop authority"
+        ),
     )
     operations = cli_module._ProductionSmokeOperations(
         args=SimpleNamespace(run_id=RUN_ID),
@@ -295,8 +335,10 @@ def test_production_start_retains_available_authority_for_guarded_cleanup(
 
     result = operations.start_environment()
 
-    assert result.reason_code == "PARTIAL_UP_FAILED"
-    assert operations.latest_authority == (preflight, ownership)
+    assert result.reason_code == "POST_UP_EVIDENCE_PERSISTENCE_FAILED"
+    assert operations.stop_ownership is ownership
+    assert operations.stop_docker_endpoint == "unix:///var/run/docker.sock"
+    assert operations.stop_daemon_id == "fixture-daemon"
 
 
 def test_supervisor_uses_minimal_terminal_when_report_finalization_fails() -> None:

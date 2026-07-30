@@ -24,6 +24,7 @@ from ecomsre.environment.preflight import (
     HostSnapshot,
 )
 from ecomsre.evidence.hashes import sha256_bytes
+from ecomsre.evidence.store import ObserverEvidenceStore
 from datetime import UTC, datetime
 
 
@@ -403,6 +404,53 @@ def test_fresh_stop_authority_checks_only_daemon_identity_and_exact_resources(
     assert runner.calls == [info]
 
 
+def test_fresh_stop_authority_survives_observer_persistence_failure(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    manifest = OwnershipManifest(run_id=RUN_ID, resources=())
+    create_ownership_authority_artifacts(
+        tmp_path,
+        manifest,
+        created_at=datetime(2026, 7, 30, 8, 0, tzinfo=UTC),
+    )
+    ownership = load_authenticated_ownership_context(tmp_path, RUN_ID)
+    info = (
+        "docker",
+        "--host",
+        DOCKER_ENDPOINT,
+        "info",
+        "--format",
+        "{{json .ID}}",
+    )
+    runner = Runner(
+        {info: _result(info, stdout=json.dumps("fixture-daemon") + "\n")}
+    )
+    monkeypatch.setattr(
+        "ecomsre.environment.live_preflight._discover_verified_resources",
+        lambda *_args, **_kwargs: (),
+    )
+
+    def fail_write(*_args, **_kwargs):
+        raise OSError("observer disk fixture")
+
+    monkeypatch.setattr(ObserverEvidenceStore, "write_immutable", fail_write)
+
+    authority = collect_fresh_stop_authority(
+        project_root=tmp_path,
+        artifacts_root=tmp_path,
+        runner=runner,
+        ownership=ownership,
+        expected_docker_endpoint=DOCKER_ENDPOINT,
+        expected_daemon_id="fixture-daemon",
+    )
+
+    assert authority.is_authentic(ownership)
+    assert authority.evidence_artifact is None
+    assert authority.evidence_sha256 is None
+    assert authority.evidence_persistence_error == "OBSERVER_PERSISTENCE_FAILED"
+
+
 def test_observer_owned_resource_evidence_omits_private_bind_source(
     tmp_path: Path,
 ) -> None:
@@ -547,6 +595,62 @@ def test_fresh_stop_authority_fails_closed_on_daemon_drift(
     )
 
     with pytest.raises(OwnershipAuthorityError, match="daemon"):
+        collect_fresh_stop_authority(
+            project_root=tmp_path,
+            artifacts_root=tmp_path,
+            runner=runner,
+            ownership=ownership,
+            expected_docker_endpoint=DOCKER_ENDPOINT,
+            expected_daemon_id="fixture-daemon",
+        )
+
+
+def test_fresh_stop_authority_resource_drift_still_fails_when_observer_is_broken(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    manifest = OwnershipManifest(run_id=RUN_ID, resources=())
+    create_ownership_authority_artifacts(
+        tmp_path,
+        manifest,
+        created_at=datetime(2026, 7, 30, 8, 0, tzinfo=UTC),
+    )
+    ownership = load_authenticated_ownership_context(tmp_path, RUN_ID)
+    info = (
+        "docker",
+        "--host",
+        DOCKER_ENDPOINT,
+        "info",
+        "--format",
+        "{{json .ID}}",
+    )
+    runner = Runner(
+        {info: _result(info, stdout=json.dumps("fixture-daemon") + "\n")}
+    )
+    changed = OwnedResource(
+        kind="network",
+        name="ecomsre-phase0",
+        resource_id="changed-network",
+        labels={
+            "com.docker.compose.project": "ecomsre-phase0",
+            "io.ecomsre.project": "ecomsre-phase0",
+            "io.ecomsre.run": RUN_ID,
+        },
+        identity_evidence=("network:changed-network",),
+    )
+    monkeypatch.setattr(
+        "ecomsre.environment.live_preflight._discover_verified_resources",
+        lambda *_args, **_kwargs: (changed,),
+    )
+    monkeypatch.setattr(
+        ObserverEvidenceStore,
+        "write_immutable",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            OSError("observer disk fixture")
+        ),
+    )
+
+    with pytest.raises(OwnershipAuthorityError, match="resource identity"):
         collect_fresh_stop_authority(
             project_root=tmp_path,
             artifacts_root=tmp_path,

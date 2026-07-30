@@ -11,6 +11,7 @@ from ecomsre.environment.lifecycle import (
     LifecycleArtifactPaths,
     LifecycleExecution,
 )
+from ecomsre.environment.manifests import load_image_lock
 from ecomsre.phase0.models import Outcome, TerminalResult
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -143,14 +144,191 @@ def test_existing_run_command_rejects_malformed_run_id(command: str) -> None:
     assert "run_id" in completed.stderr.lower()
 
 
-def test_formal_up_without_bootstrap_lock_returns_blocked_upstream() -> None:
-    completed = _run_cli("phase0", "up", "--run-id", "a" * 32)
+def test_formal_up_without_bootstrap_lock_returns_blocked_upstream(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    import ecomsre.cli as cli
 
-    assert completed.returncode == EXPECTED_EXIT_CODES["BLOCKED_UPSTREAM"]
-    payload = __import__("json").loads(completed.stdout)
-    assert payload["outcome"] == "BLOCKED_UPSTREAM"
-    assert payload["reason_code"] == "IMAGE_LOCK_UNINITIALIZED"
-    assert completed.stderr == ""
+    lock_path = tmp_path / "image-lock.json"
+    lock_path.write_text(
+        __import__("json").dumps(
+            {
+                "schema_version": "phase0.image-lock.v1",
+                "status": "UNINITIALIZED",
+                "upstream_tag": "3.0.0",
+                "upstream_commit": (
+                    "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
+                ),
+                "compose_config_sha256": None,
+                "created_at": None,
+                "allowed_source_references": [],
+                "images": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(cli, "_load_lock", lambda _root: load_image_lock(lock_path))
+    context = cli.HandlerContext(
+        runner=SimpleNamespace(
+            run=lambda *_args, **_kwargs: pytest.fail(
+                "uninitialized lock must block before commands"
+            )
+        ),
+        project_root=tmp_path,
+        artifacts_root=tmp_path / "artifacts",
+    )
+
+    result = cli._handle_up(SimpleNamespace(run_id="a" * 32), context)
+
+    assert result.outcome is Outcome.BLOCKED_UPSTREAM
+    assert result.reason_code == "IMAGE_LOCK_UNINITIALIZED"
+
+
+def test_stop_reseals_existing_terminal_smoke_bundle_after_successful_down(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    import ecomsre.cli as cli
+    from ecomsre.phase0.smoke import validate_current_recovery_seal
+
+    run_id = "a" * 32
+    for zone in ("observer-visible", "evaluator-only"):
+        run_root = tmp_path / zone / run_id
+        run_root.mkdir(parents=True)
+        (run_root / "evidence.json").write_text("{}", encoding="utf-8")
+    report_root = tmp_path / "reports" / run_id
+    report_root.mkdir(parents=True)
+    (report_root / "smoke-report.json").write_text(
+        '{"diagnostic_status":"UNSAFE"}',
+        encoding="utf-8",
+    )
+    (report_root / "checksums.sha256").write_text(
+        "a" * 64 + f"  reports/{run_id}/smoke-report.json\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(cli, "_verify_upstream", lambda _context: None)
+    monkeypatch.setattr(
+        cli,
+        "load_authenticated_ownership_context",
+        lambda *_args: object(),
+    )
+    monkeypatch.setattr(
+        cli,
+        "_current_docker_endpoint",
+        lambda *_args: "unix:///var/run/docker.sock",
+    )
+    monkeypatch.setattr(
+        cli,
+        "down_environment",
+        lambda *_args, **_kwargs: TerminalResult(
+            outcome=Outcome.SUCCESS,
+            reason_code="ENVIRONMENT_STOPPED",
+        ),
+    )
+    context = cli.HandlerContext(
+        runner=SimpleNamespace(),
+        project_root=tmp_path,
+        artifacts_root=tmp_path,
+    )
+
+    result = cli._handle_stop(SimpleNamespace(run_id=run_id), context)
+
+    assert result.outcome is Outcome.SUCCESS
+    assert (report_root / "recovery" / "001.json").is_file()
+    assert (report_root / "seals" / "001.sha256").is_file()
+    assert validate_current_recovery_seal(tmp_path, run_id=run_id)
+
+
+def test_stop_returns_manual_when_required_recovery_reseal_fails(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    import ecomsre.cli as cli
+
+    run_id = "a" * 32
+    report_root = tmp_path / "reports" / run_id
+    report_root.mkdir(parents=True)
+    (report_root / "smoke-report.json").write_text("{}", encoding="utf-8")
+    (report_root / "checksums.sha256").write_text("", encoding="utf-8")
+    monkeypatch.setattr(cli, "_verify_upstream", lambda _context: None)
+    monkeypatch.setattr(
+        cli,
+        "load_authenticated_ownership_context",
+        lambda *_args: object(),
+    )
+    monkeypatch.setattr(
+        cli,
+        "_current_docker_endpoint",
+        lambda *_args: "unix:///var/run/docker.sock",
+    )
+    monkeypatch.setattr(
+        cli,
+        "down_environment",
+        lambda *_args, **_kwargs: TerminalResult(
+            outcome=Outcome.SUCCESS,
+            reason_code="ENVIRONMENT_STOPPED",
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "reseal_recovery_evidence",
+        lambda **_kwargs: (_ for _ in ()).throw(OSError("fixture seal failure")),
+        raising=False,
+    )
+    context = cli.HandlerContext(
+        runner=SimpleNamespace(),
+        project_root=tmp_path,
+        artifacts_root=tmp_path,
+    )
+
+    result = cli._handle_stop(SimpleNamespace(run_id=run_id), context)
+
+    assert result.outcome is Outcome.MANUAL_INTERVENTION_REQUIRED
+    assert result.reason_code == "RECOVERY_EVIDENCE_PERSISTENCE_FAILED"
+
+
+def test_stop_without_existing_smoke_report_does_not_reseal(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    import ecomsre.cli as cli
+
+    run_id = "a" * 32
+    monkeypatch.setattr(cli, "_verify_upstream", lambda _context: None)
+    monkeypatch.setattr(
+        cli,
+        "load_authenticated_ownership_context",
+        lambda *_args: object(),
+    )
+    monkeypatch.setattr(
+        cli,
+        "_current_docker_endpoint",
+        lambda *_args: "unix:///var/run/docker.sock",
+    )
+    monkeypatch.setattr(
+        cli,
+        "down_environment",
+        lambda *_args, **_kwargs: TerminalResult(
+            outcome=Outcome.SUCCESS,
+            reason_code="ENVIRONMENT_STOPPED",
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "reseal_recovery_evidence",
+        lambda **_kwargs: pytest.fail("stop without report must not reseal"),
+    )
+    context = cli.HandlerContext(
+        runner=SimpleNamespace(),
+        project_root=tmp_path,
+        artifacts_root=tmp_path,
+    )
+
+    result = cli._handle_stop(SimpleNamespace(run_id=run_id), context)
+
+    assert result.outcome is Outcome.SUCCESS
+    assert not (tmp_path / "reports" / run_id).exists()
 
 
 def test_task6_registry_exposes_lifecycle_and_control_handlers() -> None:

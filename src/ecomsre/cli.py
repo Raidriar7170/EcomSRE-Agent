@@ -78,6 +78,7 @@ from ecomsre.phase0.smoke import (
     execute_diagnostic_cycle,
     finalize_supervised_smoke,
     promote_or_revalidate_registry,
+    reseal_recovery_evidence,
     supervise_smoke_attempt,
 )
 from ecomsre.scenarios.ad_service_failure import (
@@ -402,6 +403,17 @@ def _handle_up(
     args: argparse.Namespace,
     context: HandlerContext,
 ) -> TerminalResult:
+    execution = _execute_up(args, context)
+    if isinstance(execution, TerminalResult):
+        return execution
+    return summarize_lifecycle_execution(execution)
+
+
+def _execute_up(
+    args: argparse.Namespace,
+    context: HandlerContext,
+) -> TerminalResult | LifecycleExecution:
+    """Execute up while retaining authenticated post-mutation stop inputs."""
     lock = _load_lock(context.project_root)
     if lock.status is ImageLockStatus.UNINITIALIZED:
         return TerminalResult(
@@ -439,7 +451,7 @@ def _handle_up(
         if evidence.inputs.ownership_context is not None:
             raise
         ownership = None
-    execution = up_environment(
+    return up_environment(
         context.runner,
         context=ownership,
         preflight_evidence=evidence,
@@ -447,7 +459,6 @@ def _handle_up(
         project_root=context.project_root,
         artifacts_root=context.artifacts_root,
     )
-    return summarize_lifecycle_execution(execution)
 
 
 def _handle_status(
@@ -788,32 +799,23 @@ class _ProductionSmokeOperations:
             AuthenticatedPreflightEvidence,
             AuthenticatedOwnershipContext,
         ] | None = None
+        self.stop_ownership: AuthenticatedOwnershipContext | None = None
+        self.stop_docker_endpoint: str | None = None
+        self.stop_daemon_id: str | None = None
 
     def start_environment(self) -> TerminalResult:
-        try:
-            return _handle_up(self.args, self.context)
-        finally:
-            try:
-                evidence = _resolve_fresh_preflight(
-                    self.context,
-                    run_id=self.args.run_id,
-                )
-            except (AttributeError, OSError, RuntimeError, TypeError, ValueError):
-                evidence = TerminalResult(
-                    outcome=Outcome.BLOCKED_ENVIRONMENT,
-                    reason_code="STOP_AUTHORITY_INPUT_UNAVAILABLE",
-                )
-            if not isinstance(evidence, TerminalResult):
-                try:
-                    ownership = load_authenticated_ownership_context(
-                        self.context.artifacts_root,
-                        self.args.run_id,
-                    )
-                except (OSError, OwnershipAuthorityError, ValueError):
-                    pass
-                else:
-                    if evidence.run_id == ownership.run_id:
-                        self.latest_authority = (evidence, ownership)
+        execution = _execute_up(self.args, self.context)
+        if isinstance(execution, TerminalResult):
+            return execution
+        if (
+            execution.ownership_context is not None
+            and execution.docker_endpoint
+            and execution.daemon_id
+        ):
+            self.stop_ownership = execution.ownership_context
+            self.stop_docker_endpoint = execution.docker_endpoint
+            self.stop_daemon_id = execution.daemon_id
+        return summarize_lifecycle_execution(execution)
 
     def fresh_authority(
         self,
@@ -1010,25 +1012,28 @@ class _ProductionSmokeOperations:
         handle.runtime.close()
 
     def fresh_stop_authority(self) -> FreshStopAuthority:
-        if self.latest_authority is None:
+        if (
+            self.stop_ownership is None
+            or self.stop_docker_endpoint is None
+            or self.stop_daemon_id is None
+        ):
             raise RuntimeError("STOP_AUTHORITY_INPUT_UNAVAILABLE")
-        preflight, ownership = self.latest_authority
         return collect_fresh_stop_authority(
             project_root=self.context.project_root,
             artifacts_root=self.context.artifacts_root,
             runner=self.context.runner,
-            ownership=ownership,
-            expected_docker_endpoint=preflight.inputs.docker.endpoint,
-            expected_daemon_id=preflight.inputs.docker.daemon_id,
+            ownership=self.stop_ownership,
+            expected_docker_endpoint=self.stop_docker_endpoint,
+            expected_daemon_id=self.stop_daemon_id,
         )
 
     def stop_environment(self, authority: object) -> TerminalResult:
         if (
             not isinstance(authority, FreshStopAuthority)
-            or self.latest_authority is None
+            or self.stop_ownership is None
         ):
             raise TypeError("fresh stop authority is invalid")
-        _preflight, ownership = self.latest_authority
+        ownership = self.stop_ownership
         if not authority.is_authentic(ownership):
             raise ValueError("fresh stop authority is unauthenticated")
         return down_environment(
@@ -1099,12 +1104,61 @@ def _handle_stop(
             outcome=Outcome.BLOCKED_ENVIRONMENT,
             reason_code="PREFLIGHT_BLOCKED",
         )
-    return down_environment(
+    stopped = down_environment(
         context.runner,
         context=ownership,
         project_root=context.project_root,
         docker_endpoint=docker_endpoint,
     )
+    if stopped.outcome is not Outcome.SUCCESS:
+        return stopped
+    report_root = context.artifacts_root / "reports" / args.run_id
+    smoke_report = report_root / "smoke-report.json"
+    if not smoke_report.exists() and not smoke_report.is_symlink():
+        return stopped
+    initial_checksum = report_root / "checksums.sha256"
+    try:
+        if (
+            smoke_report.is_symlink()
+            or not smoke_report.is_file()
+            or initial_checksum.is_symlink()
+            or not initial_checksum.is_file()
+        ):
+            raise ValueError("terminal smoke bundle is incomplete")
+        sequence = _next_recovery_seal_sequence(report_root)
+        reseal_recovery_evidence(
+            artifacts_root=context.artifacts_root,
+            run_id=args.run_id,
+            sequence=sequence,
+            disposition="SAFE_STOP_COMPLETED",
+            reason_code="BOUNDED_RECOVERY_STOP",
+        )
+    except (OSError, RuntimeError, TypeError, ValueError):
+        return TerminalResult(
+            outcome=Outcome.MANUAL_INTERVENTION_REQUIRED,
+            reason_code="RECOVERY_EVIDENCE_PERSISTENCE_FAILED",
+        )
+    return stopped
+
+
+def _next_recovery_seal_sequence(report_root: Path) -> int:
+    index = report_root / "seal-index.jsonl"
+    if not index.exists() and not index.is_symlink():
+        return 1
+    if index.is_symlink() or not index.is_file():
+        raise ValueError("recovery seal index is unsafe")
+    lines = [
+        line
+        for line in index.read_text(encoding="utf-8").splitlines()
+        if line
+    ]
+    if not lines:
+        raise ValueError("recovery seal index is empty")
+    payload = json.loads(lines[-1])
+    sequence = payload.get("sequence")
+    if not isinstance(sequence, int) or sequence < 1 or sequence >= 999:
+        raise ValueError("recovery seal sequence is invalid")
+    return sequence + 1
 
 
 def _current_docker_endpoint(

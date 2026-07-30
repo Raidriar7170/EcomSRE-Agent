@@ -110,6 +110,35 @@ def test_phase0_override_clears_inherited_ports_and_publishes_only_loopback() ->
     assert 'host_ip: "::"' not in text
 
 
+def test_phase0_override_replaces_image_anonymous_volumes_with_owned_names() -> None:
+    text = OVERRIDE.read_text(encoding="utf-8")
+    expected = {
+        "astronomy-db": ("astronomy-db-data", "/var/lib/postgresql"),
+        "jaeger": ("jaeger-data", "/tmp"),
+        "prometheus": ("prometheus-data", "/prometheus"),
+    }
+
+    for service, (volume, target) in expected.items():
+        assert (
+            f"name: ecomsre-phase0-${{ECOMSRE_RUN_ID:"
+            f"?ECOMSRE_RUN_ID is required}}-{volume}"
+        ) in text
+        block = re.search(
+            rf"(?ms)^  {re.escape(service)}:\n"
+            rf"    <<: \*phase0-service\n"
+            rf"(.*?)(?=^  [a-z0-9][a-z0-9-]*:|\Z)",
+            text,
+        )
+        assert block is not None
+        payload = block.group(1)
+        assert "volumes: !override" in payload
+        assert "type: volume" in payload
+        assert f"source: {volume}" in payload
+        assert f"target: {target}" in payload
+    assert "down -v" not in text
+    assert "prune" not in text
+
+
 def test_compose_invocations_use_only_frozen_layers_and_tuple_arguments() -> None:
     lifecycle = _lifecycle_module()
 

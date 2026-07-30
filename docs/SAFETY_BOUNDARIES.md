@@ -24,6 +24,13 @@ Every mutable resource must have:
 - a run or lifecycle reference where applicable;
 - a matching entry in the ownership manifest.
 
+Every Compose mount with `type: volume` must also resolve to an explicitly
+declared, run-scoped named volume with matching project/run labels. Service
+mounts may not create anonymous or undeclared volumes. Allowlisted `bind` and
+`tmpfs` mounts follow separate path and leakage rules; unknown mount types fail
+closed. A volume declaration or mount that cannot be mapped exactly before
+mutation blocks startup.
+
 The project may act only when all identifiers agree. Missing, conflicting, or
 unreadable ownership information produces `RESOURCE_OWNERSHIP_UNKNOWN`.
 
@@ -72,6 +79,28 @@ the external scorer and scenario controller.
   `MANUAL_INTERVENTION_REQUIRED`.
 
 No failure permits a broader cleanup command.
+
+Stop authority is an authenticated capability over one exact Docker daemon and
+one exact resource set. Observer-visible evidence persistence is not part of
+that capability. If observer persistence fails after authentication, record the
+failure without discarding the in-process capability long enough to attempt the
+exact project-scoped stop. Direct `phase0-up` returns
+`MANUAL_INTERVENTION_REQUIRED`; a supervised smoke records terminal `UNSAFE`.
+Any daemon identity or resource-set drift invalidates the capability and fails
+closed.
+
+`down -v`, prune, and deletion by unverified historical IDs are prohibited.
+
+## Evidence integrity lifecycle
+
+Terminal evidence is sealed only after the final stop or scene-preservation
+events are persisted. If a later necessary safety action extends an already
+sealed failed run, the original report and seal remain immutable. Recovery uses
+a versioned report, a versioned seal, and an append-only chained seal index.
+Validation must cover the initial checksum, all prior recovery seals, and the
+current audit trail. See
+[PHASE_0_ACCEPTANCE.md](PHASE_0_ACCEPTANCE.md#evidence-layout) for the owned
+layout.
 
 ## Phase 3 write model
 

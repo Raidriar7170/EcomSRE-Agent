@@ -360,6 +360,9 @@ class ReportEvidenceStore(_EvidenceStoreLifecycle):
                 "human-summary.md",
                 "minimal-terminal.json",
                 "checksums.sha256",
+                "recovery",
+                "seals",
+                "seal-index.jsonl",
             },
         )
         self.root = self._capability.root
@@ -505,6 +508,57 @@ class ReportEvidenceStore(_EvidenceStoreLifecycle):
             content,
             zone="report",
             allowed_top_level={"checksums.sha256"},
+        )
+
+    def write_recovery_report(
+        self,
+        *,
+        sequence: int,
+        value: BaseModel,
+    ) -> StoredArtifact:
+        if sequence < 1 or sequence > 999:
+            raise ValueError("recovery sequence is outside the bounded range")
+        self._require_run_id(str(getattr(value, "run_id", "")))
+        return _write_immutable(
+            self._capability,
+            f"recovery/{sequence:03d}.json",
+            value,
+            zone="report",
+            allowed_top_level={"recovery"},
+        )
+
+    def write_versioned_checksums(
+        self,
+        manifest: IntegrityManifest,
+        *,
+        sequence: int,
+    ) -> StoredArtifact:
+        if sequence < 1 or sequence > 999:
+            raise ValueError("seal sequence is outside the bounded range")
+        validated = IntegrityManifest.model_validate(
+            manifest.model_dump(mode="python")
+        )
+        self._require_run_id(validated.run_id)
+        content = "".join(
+            f"{digest}  {relative_path}\n"
+            for relative_path, digest in sorted(validated.content_hashes.items())
+        ).encode("utf-8")
+        return _write_immutable_bytes(
+            self._capability,
+            f"seals/{sequence:03d}.sha256",
+            content,
+            zone="report",
+            allowed_top_level={"seals"},
+        )
+
+    def append_seal_index(self, value: BaseModel) -> StoredArtifact:
+        self._require_run_id(str(getattr(value, "run_id", "")))
+        return _append_jsonl(
+            self._capability,
+            "seal-index.jsonl",
+            value,
+            zone="report",
+            allowed_top_level={"seal-index.jsonl"},
         )
 
     def _require_run_id(self, run_id: str) -> None:

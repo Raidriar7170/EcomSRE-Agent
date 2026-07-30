@@ -100,6 +100,34 @@ CONFIG_STDOUT = json.dumps(
             service: {
                 "container_name": f"ecomsre-phase0-{service}",
                 "image": source,
+                "platform": "linux/arm64",
+                "labels": {
+                    "com.docker.compose.project": PROJECT_NAMESPACE,
+                    "com.docker.compose.service": service,
+                    PROJECT_LABEL: PROJECT_NAMESPACE,
+                    RUN_LABEL: RUN_ID,
+                },
+                **(
+                    {
+                        "volumes": [
+                            {
+                                "type": "volume",
+                                "source": {
+                                    "astronomy-db": "astronomy-db-data",
+                                    "jaeger": "jaeger-data",
+                                    "prometheus": "prometheus-data",
+                                }[service],
+                                "target": {
+                                    "astronomy-db": "/var/lib/postgresql",
+                                    "jaeger": "/tmp",
+                                    "prometheus": "/prometheus",
+                                }[service],
+                            }
+                        ]
+                    }
+                    if service in {"astronomy-db", "jaeger", "prometheus"}
+                    else {}
+                ),
                 **(
                     {
                         "ports": [
@@ -117,7 +145,21 @@ CONFIG_STDOUT = json.dumps(
                 ),
             }
             for service, source in SERVICE_IMAGES.items()
-        }
+        },
+        "volumes": {
+            name: {
+                "name": f"ecomsre-phase0-{RUN_ID}-{name}",
+                "labels": {
+                    PROJECT_LABEL: PROJECT_NAMESPACE,
+                    RUN_LABEL: RUN_ID,
+                },
+            }
+            for name in (
+                "astronomy-db-data",
+                "jaeger-data",
+                "prometheus-data",
+            )
+        },
     },
     sort_keys=True,
 )
@@ -295,7 +337,23 @@ def _resources(run_id: str = RUN_ID) -> tuple[OwnedResource, ...]:
             "protocol": "tcp",
         }
     )
-    resources = containers + (
+    volumes = tuple(
+        OwnedResource(
+            kind="volume",
+            name=f"{PROJECT_NAMESPACE}-{run_id}-{logical_name}",
+            resource_id=f"{PROJECT_NAMESPACE}-{run_id}-{logical_name}",
+            labels=_labels(run_id),
+            identity_evidence=(
+                f"volume:{PROJECT_NAMESPACE}-{run_id}-{logical_name}",
+            ),
+        )
+        for logical_name in (
+            "astronomy-db-data",
+            "jaeger-data",
+            "prometheus-data",
+        )
+    )
+    resources = containers + volumes + (
         OwnedResource(
             kind="network",
             name=PROJECT_NAMESPACE,
@@ -775,6 +833,8 @@ def test_fresh_up_closes_intent_image_and_post_start_ownership_artifacts(
     assert execution.result.exit_code == 0
     assert execution.ownership_context is not None
     assert execution.ownership_context.is_authentic()
+    assert execution.docker_endpoint == DOCKER_ENDPOINT
+    assert execution.daemon_id == DOCKER_DAEMON_ID
     assert execution.ownership_context.manifest.resources == _resources()
     assert any(
         resource.kind == "port" and resource.resource_id.startswith("port-binding:")
@@ -793,7 +853,20 @@ def test_fresh_up_closes_intent_image_and_post_start_ownership_artifacts(
     resolved = json.loads(
         execution.artifact_paths.resolved_compose.read_text(encoding="utf-8")
     )
-    assert resolved["sanitized_config"] == json.loads(CONFIG_STDOUT)
+    projected = resolved["sanitized_config"]
+    assert set(projected) == {"services"}
+    assert set(projected["services"]) == set(SERVICE_IMAGES)
+    assert projected["services"]["frontend-proxy"]["logical_service"] == (
+        "frontend-proxy"
+    )
+    assert projected["services"]["frontend-proxy"]["ports"] == [
+        {
+            "host_ip": "127.0.0.1",
+            "protocol": "tcp",
+            "published": "18080",
+            "target": 8080,
+        }
+    ]
     assert resolved["sha256"] == _locked_manifest().compose_config_sha256
     assert set(resolved["image_sources"]) == set(IMAGE_SOURCES)
     assert resolved["pull_policy"] == "never"
@@ -900,7 +973,16 @@ def test_success_up_keeps_raw_resolved_compose_only_in_evaluator_evidence(
     raw = json.loads(raw_path.read_text(encoding="utf-8"))
     assert "stdout" not in observer_summary
     assert observer_summary["sanitized_config"] != leaking_payload
-    assert "<opaque>" in json.dumps(observer_summary["sanitized_config"])
+    projection = observer_summary["sanitized_config"]
+    assert set(projection) == {"services"}
+    assert set(projection["services"]["flagd"]) <= {
+        "logical_service",
+        "image",
+        "container_name",
+        "platform",
+        "ports",
+        "labels",
+    }
     assert raw["stdout"] == leaking_stdout
     assert raw["sha256"] == observer_summary["sha256"] == lock.compose_config_sha256
     assert set(raw["image_sources"]) == set(observer_summary["image_sources"])
@@ -916,8 +998,217 @@ def test_success_up_keeps_raw_resolved_compose_only_in_evaluator_evidence(
         "demo.flagd.json",
         "adfailure",
         "adservicefailure",
+        "physical_flag_key",
+        "scenario_identity",
     ):
         assert forbidden not in observer_text
+
+
+def test_post_up_observer_persistence_failure_preserves_authenticated_stop_seed(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    lifecycle = _lifecycle_module()
+    runner = FixtureRunner()
+    _prepare_successful_up(lifecycle, runner)
+    original_write = lifecycle.ObserverEvidenceStore.write_immutable
+
+    def fail_resolved_summary(self, relative_path, value):
+        if relative_path == "lifecycle/resolved-compose.json":
+            raise OSError("observer persistence fixture")
+        return original_write(self, relative_path, value)
+
+    monkeypatch.setattr(
+        lifecycle.ObserverEvidenceStore,
+        "write_immutable",
+        fail_resolved_summary,
+    )
+
+    execution = lifecycle.up_environment(
+        runner,
+        context=None,
+        preflight_evidence=_preflight_evidence(),
+        image_lock=_locked_manifest(),
+        project_root=ROOT,
+        artifacts_root=tmp_path,
+    )
+
+    assert execution.result.outcome is Outcome.MANUAL_INTERVENTION_REQUIRED
+    assert execution.result.reason_code == "POST_UP_EVIDENCE_PERSISTENCE_FAILED"
+    assert execution.ownership_context is not None
+    assert execution.ownership_context.is_authentic()
+    assert execution.docker_endpoint == DOCKER_ENDPOINT
+    assert execution.daemon_id == DOCKER_DAEMON_ID
+    assert execution.artifact_paths is not None
+    assert execution.artifact_paths.ownership_manifest is not None
+    assert execution.artifact_paths.resolved_compose_raw is not None
+    assert execution.artifact_paths.resolved_compose is None
+
+
+def test_post_up_evaluator_persistence_failure_preserves_authenticated_stop_seed(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    lifecycle = _lifecycle_module()
+    runner = FixtureRunner()
+    _prepare_successful_up(lifecycle, runner)
+
+    monkeypatch.setattr(
+        lifecycle,
+        "_persist_evaluator_success_artifact",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            OSError("evaluator persistence fixture")
+        ),
+    )
+
+    execution = lifecycle.up_environment(
+        runner,
+        context=None,
+        preflight_evidence=_preflight_evidence(),
+        image_lock=_locked_manifest(),
+        project_root=ROOT,
+        artifacts_root=tmp_path,
+    )
+
+    assert execution.result.outcome is Outcome.MANUAL_INTERVENTION_REQUIRED
+    assert execution.result.reason_code == "POST_UP_EVIDENCE_PERSISTENCE_FAILED"
+    assert execution.ownership_context is not None
+    assert execution.ownership_context.is_authentic()
+    assert execution.docker_endpoint == DOCKER_ENDPOINT
+    assert execution.daemon_id == DOCKER_DAEMON_ID
+    assert execution.artifact_paths is not None
+    assert execution.artifact_paths.ownership_manifest is not None
+    assert execution.artifact_paths.resolved_compose_raw is None
+    assert execution.artifact_paths.resolved_compose is None
+
+
+def test_observer_compose_projection_drops_adversarial_unknown_fields() -> None:
+    lifecycle = _lifecycle_module()
+    payload = json.loads(CONFIG_STDOUT)
+    payload["private_top_level"] = {"token": "do-not-copy"}
+    payload["services"]["ad"].update(
+        {
+            "environment": {"SECRET": "do-not-copy"},
+            "command": ["reveal", "do-not-copy"],
+            "volumes": [{"type": "bind", "source": "/private", "target": "/x"}],
+            "x-unknown": {"nested": "do-not-copy"},
+            "ports": [
+                {
+                    "host_ip": "0.0.0.0",
+                    "published": "9555",
+                    "target": 9555,
+                    "protocol": "tcp",
+                }
+            ],
+            "labels": {
+                PROJECT_LABEL: PROJECT_NAMESPACE,
+                RUN_LABEL: RUN_ID,
+                "com.docker.compose.project": PROJECT_NAMESPACE,
+                "com.docker.compose.service": "ad",
+                "private.label": "do-not-copy",
+            },
+        }
+    )
+
+    projected = lifecycle._project_resolved_compose_for_observer(
+        json.dumps(payload)
+    )
+    serialized = json.dumps(projected, sort_keys=True)
+
+    assert "do-not-copy" not in serialized
+    assert "private_top_level" not in serialized
+    assert "environment" not in serialized
+    assert "command" not in serialized
+    assert "volumes" not in serialized
+    assert "x-unknown" not in serialized
+    assert "0.0.0.0" not in serialized
+    assert set(projected["services"]["ad"]["labels"]) == {
+        PROJECT_LABEL,
+        RUN_LABEL,
+        "com.docker.compose.project",
+        "com.docker.compose.service",
+    }
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        (("remove_mount", "jaeger"), "jaeger"),
+        (("anonymous_mount", "prometheus"), "prometheus"),
+        (("wrong_target", "astronomy-db"), "astronomy-db"),
+        (("remove_run_label", "jaeger-data"), "jaeger-data"),
+        (("wrong_name", "prometheus-data"), "prometheus-data"),
+        (("other_anonymous", "cart"), "cart"),
+        (("other_undeclared", "cart"), "cart"),
+        (("extra_unlabelled", "rogue-data"), "rogue-data"),
+    ],
+)
+def test_volume_plan_fails_closed_before_up(
+    tmp_path: Path,
+    mutation: tuple[str, str],
+    message: str,
+) -> None:
+    lifecycle = _lifecycle_module()
+    payload = json.loads(CONFIG_STDOUT)
+    action, subject = mutation
+    if action == "remove_mount":
+        payload["services"][subject].pop("volumes")
+    elif action == "anonymous_mount":
+        payload["services"][subject]["volumes"][0].pop("source")
+    elif action == "wrong_target":
+        payload["services"][subject]["volumes"][0]["target"] = "/wrong"
+    elif action == "remove_run_label":
+        payload["volumes"][subject]["labels"].pop(RUN_LABEL)
+    elif action == "wrong_name":
+        payload["volumes"][subject]["name"] = (
+            f"{PROJECT_NAMESPACE}-{RUN_ID}-unexpected"
+        )
+    elif action == "other_anonymous":
+        payload["services"][subject]["volumes"] = [
+            {"type": "volume", "target": "/cache"}
+        ]
+    elif action == "other_undeclared":
+        payload["services"][subject]["volumes"] = [
+            {
+                "type": "volume",
+                "source": "undeclared-data",
+                "target": "/cache",
+            }
+        ]
+    else:
+        payload["volumes"][subject] = {
+            "name": f"{PROJECT_NAMESPACE}-{RUN_ID}-{subject}",
+            "labels": {},
+        }
+    stdout = json.dumps(payload, sort_keys=True)
+    lock = _locked_manifest(stdout)
+    runner = FixtureRunner()
+    _register_config_and_images(
+        lifecycle,
+        runner,
+        config_stdout=stdout,
+        image_lock=lock,
+    )
+    up = lifecycle.build_compose_invocation(
+        lifecycle.ComposeAction.UP,
+        project_root=ROOT,
+        run_id=RUN_ID,
+        docker_endpoint=DOCKER_ENDPOINT,
+    )
+
+    execution = lifecycle.up_environment(
+        runner,
+        context=None,
+        preflight_evidence=_preflight_evidence(image_lock=lock),
+        image_lock=lock,
+        project_root=ROOT,
+        artifacts_root=tmp_path,
+    )
+
+    assert execution.result.outcome is Outcome.UNSAFE
+    assert execution.result.reason_code == "UNSAFE_VOLUME_PLAN"
+    assert message
+    assert all(call[0] != up.arguments for call in runner.calls)
 
 
 def test_formal_up_without_bootstrap_lock_blocks_before_runner(
@@ -1118,6 +1409,8 @@ def test_compose_up_uncertainty_is_typed_41_with_truthful_evidence(
     assert execution.artifact_paths.resolved_compose is None
     assert execution.ownership_context is not None
     assert execution.ownership_context.is_authentic()
+    assert execution.docker_endpoint == DOCKER_ENDPOINT
+    assert execution.daemon_id == DOCKER_DAEMON_ID
     assert execution.artifact_paths.ownership_manifest is not None
     assert execution.artifact_paths.ownership_manifest.is_file()
     assert all(call[0][-1:] != ("down",) for call in runner.calls)
@@ -1564,7 +1857,10 @@ def test_post_up_signing_failure_keeps_intent_and_manual_diagnostic(
 
     assert execution.result.outcome is Outcome.MANUAL_INTERVENTION_REQUIRED
     assert execution.result.exit_code == 41
-    assert execution.result.reason_code == "POST_UP_OWNERSHIP_UNPROVEN"
+    assert (
+        execution.result.reason_code
+        == "POST_UP_OWNERSHIP_AUTHENTICATION_FAILED"
+    )
     assert execution.artifact_paths is not None
     assert execution.artifact_paths.ownership_intent.is_file()
     assert execution.artifact_paths.manual_diagnostic is not None
@@ -1572,9 +1868,52 @@ def test_post_up_signing_failure_keeps_intent_and_manual_diagnostic(
     diagnostic = json.loads(
         execution.artifact_paths.manual_diagnostic.read_text(encoding="utf-8")
     )
-    assert diagnostic["reason_code"] == "POST_UP_OWNERSHIP_UNPROVEN"
+    assert (
+        diagnostic["reason_code"]
+        == "POST_UP_OWNERSHIP_AUTHENTICATION_FAILED"
+    )
+    assert diagnostic["failure_stage"] == "ownership_manifest"
     assert any(call[0] == up.arguments for call in runner.calls)
     assert all(call[0][-1:] != ("down",) for call in runner.calls)
+
+
+def test_post_up_context_load_failure_is_separate_authentication_stage(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    lifecycle = _lifecycle_module()
+    runner = FixtureRunner()
+    _prepare_successful_up(lifecycle, runner)
+
+    monkeypatch.setattr(
+        lifecycle,
+        "load_authenticated_ownership_context",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            OwnershipAuthorityError("fixture context load failed")
+        ),
+    )
+
+    execution = lifecycle.up_environment(
+        runner,
+        context=None,
+        preflight_evidence=_preflight_evidence(),
+        image_lock=_locked_manifest(),
+        project_root=ROOT,
+        artifacts_root=tmp_path,
+    )
+
+    assert execution.result.outcome is Outcome.MANUAL_INTERVENTION_REQUIRED
+    assert (
+        execution.result.reason_code
+        == "POST_UP_OWNERSHIP_AUTHENTICATION_FAILED"
+    )
+    assert execution.artifact_paths is not None
+    assert execution.artifact_paths.ownership_manifest is not None
+    assert execution.artifact_paths.manual_diagnostic is not None
+    diagnostic = json.loads(
+        execution.artifact_paths.manual_diagnostic.read_text(encoding="utf-8")
+    )
+    assert diagnostic["failure_stage"] == "ownership_context_authentication"
 
 
 def test_post_up_missing_expected_published_port_requires_manual_intervention(
@@ -1609,7 +1948,7 @@ def test_post_up_missing_expected_published_port_requires_manual_intervention(
 
     assert execution.result.outcome is Outcome.MANUAL_INTERVENTION_REQUIRED
     assert execution.result.exit_code == 41
-    assert execution.result.reason_code == "POST_UP_OWNERSHIP_UNPROVEN"
+    assert execution.result.reason_code == "POST_UP_RESOURCE_COMPLETENESS_FAILED"
     assert execution.artifact_paths is not None
     assert execution.artifact_paths.ownership_intent.is_file()
     assert execution.artifact_paths.manual_diagnostic is not None
@@ -1666,7 +2005,11 @@ def test_post_up_rejects_inexact_or_ambiguous_published_port_binding(
 
     assert execution.result.outcome is Outcome.MANUAL_INTERVENTION_REQUIRED
     assert execution.result.exit_code == 41
-    assert execution.result.reason_code == "POST_UP_OWNERSHIP_UNPROVEN"
+    assert execution.result.reason_code == (
+        "POST_UP_DISCOVERY_FAILED"
+        if port_mode in {"duplicate", "unknown_arrow"}
+        else "POST_UP_RESOURCE_COMPLETENESS_FAILED"
+    )
     assert execution.artifact_paths is not None
     assert execution.artifact_paths.ownership_manifest is None
     assert execution.artifact_paths.manual_diagnostic is not None
@@ -1801,7 +2144,7 @@ def test_explicit_loopback_port_rejects_additional_wildcard_binding(
 
     assert execution.result.outcome is Outcome.MANUAL_INTERVENTION_REQUIRED
     assert execution.result.exit_code == 41
-    assert execution.result.reason_code == "POST_UP_OWNERSHIP_UNPROVEN"
+    assert execution.result.reason_code == "POST_UP_RESOURCE_COMPLETENESS_FAILED"
     assert execution.ownership_context is None
 
 

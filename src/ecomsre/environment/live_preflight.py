@@ -79,8 +79,9 @@ class FreshStopAuthority:
     daemon_id: str
     manifest_sha256: str
     resources_sha256: str
-    evidence_artifact: str
-    evidence_sha256: str
+    evidence_artifact: str | None
+    evidence_sha256: str | None
+    evidence_persistence_error: str | None
     _token: object = field(repr=False, compare=False)
 
     def is_authentic(self, ownership: AuthenticatedOwnershipContext) -> bool:
@@ -166,19 +167,25 @@ def collect_fresh_stop_authority(
         "host_capacity_required": False,
         "image_lock_required": False,
     }
-    with ObserverEvidenceStore(artifacts_root, ownership.run_id) as store:
-        artifact = store.write_immutable(
-            f"lifecycle/stop-authority/{time.monotonic_ns()}.json",
-            payload,
-        )
+    artifact = None
+    persistence_error = None
+    try:
+        with ObserverEvidenceStore(artifacts_root, ownership.run_id) as store:
+            artifact = store.write_immutable(
+                f"lifecycle/stop-authority/{time.monotonic_ns()}.json",
+                payload,
+            )
+    except (OSError, ValueError):
+        persistence_error = "OBSERVER_PERSISTENCE_FAILED"
     return FreshStopAuthority(
         run_id=ownership.run_id,
         docker_endpoint=expected_docker_endpoint,
         daemon_id=expected_daemon_id,
         manifest_sha256=ownership.manifest_sha256,
         resources_sha256=resources_sha256,
-        evidence_artifact=str(artifact.path),
-        evidence_sha256=artifact.sha256,
+        evidence_artifact=(str(artifact.path) if artifact is not None else None),
+        evidence_sha256=(artifact.sha256 if artifact is not None else None),
+        evidence_persistence_error=persistence_error,
         _token=_FRESH_STOP_AUTHORITY_TOKEN,
     )
 
