@@ -1,0 +1,1 @@
+{"observations":[{"attributes":{"anomaly":true,"error_rate":0.42},"ended_at":"2026-07-31T08:04:30Z","limitations":["Aggregated replay metric for the bounded window."],"observation_type":"request_error_rate","service":"ad","started_at":"2026-07-31T08:00:30Z"}],"schema_version":"phase1.replay-observations.v1","status":"AVAILABLE"}

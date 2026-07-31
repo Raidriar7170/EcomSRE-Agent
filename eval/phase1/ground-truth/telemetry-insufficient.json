@@ -1,0 +1,1 @@
+{"case_id":"telemetry-insufficient","decoys":[],"expected_decision":"NEED_MORE_EVIDENCE","expected_fault_mechanism":null,"expected_root_service":null,"schema_version":"phase1.ground-truth.v1"}

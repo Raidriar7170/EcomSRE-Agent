@@ -1,0 +1,1 @@
+{"observations":[{"attributes":{"anomaly":true,"error_rate":0.21},"ended_at":"2026-07-31T08:04:45Z","limitations":["The metric does not identify a fault mechanism."],"observation_type":"checkout_error_rate","service":"checkout","started_at":"2026-07-31T08:00:15Z"}],"schema_version":"phase1.replay-observations.v1","status":"AVAILABLE"}

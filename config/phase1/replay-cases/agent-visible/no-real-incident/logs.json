@@ -1,0 +1,1 @@
+{"observations":[{"attributes":{"error_count":0,"status":"healthy"},"ended_at":"2026-07-31T08:04:25Z","limitations":["Sanitized replay log aggregation."],"observation_type":"normal_request_log","service":"frontend","started_at":"2026-07-31T08:00:35Z"}],"schema_version":"phase1.replay-observations.v1","status":"AVAILABLE"}

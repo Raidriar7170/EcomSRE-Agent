@@ -1,0 +1,1 @@
+{"case_id":"recommendation-cache-failure","decoys":[],"expected_decision":"RCA_CONFIRMED","expected_fault_mechanism":"cache_backend_timeout","expected_root_service":"recommendation","schema_version":"phase1.ground-truth.v1"}

@@ -1,0 +1,1 @@
+{"case_id":"ad-partial-failure-complete","decoys":[],"expected_decision":"RCA_CONFIRMED","expected_fault_mechanism":"runtime_configuration_failure","expected_root_service":"ad","schema_version":"phase1.ground-truth.v1"}
