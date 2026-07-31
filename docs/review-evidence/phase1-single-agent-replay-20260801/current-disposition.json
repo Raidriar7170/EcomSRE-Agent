@@ -1,0 +1,33 @@
+{
+  "schema_version": "phase1.current-disposition.v1",
+  "phase": "phase1-single-agent-rca-replay",
+  "truth_marker": "PHASE1_SINGLE_AGENT_REPLAY_MVP_READY",
+  "offline_scripted_evaluation": {
+    "status": "PASSED",
+    "adapter": "scripted-replay-v1",
+    "case_count": 7,
+    "decision_accuracy": {
+      "numerator": 7,
+      "denominator": 7
+    },
+    "report_path": "artifacts/phase1/evaluation/evaluation-report.json"
+  },
+  "real_provider_gate": {
+    "status": "PASSED",
+    "provider": "openai-compatible",
+    "model_snapshot": "gpt-5.4-mini-2026-03-17",
+    "case_count": 2,
+    "cases": [
+      {
+        "case_id": "ad-partial-failure-complete",
+        "decision": "RCA_CONFIRMED"
+      },
+      {
+        "case_id": "no-real-incident",
+        "decision": "ABSTAIN"
+      }
+    ],
+    "report_path": "artifacts/phase1/provider-smoke/provider-smoke-report.json"
+  },
+  "baseline_lock_path": "config/phase1/baseline-lock.json"
+}

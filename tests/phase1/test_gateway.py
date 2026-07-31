@@ -353,6 +353,94 @@ def test_gateway_sends_five_strict_tools_and_one_deterministic_call() -> None:
     assert "never Evidence" in system_instruction
 
 
+def test_gateway_exposes_canonical_evidence_reference_schema() -> None:
+    transport = FakeTransport()
+
+    gateway(transport).complete(model_request())
+
+    payload = transport.calls[0]["payload"]
+    assert isinstance(payload, dict)
+    tools = payload["tools"]
+    assert isinstance(tools, list)
+    rca_properties = tools[-1]["function"]["parameters"]["properties"]
+    expected_pattern = (
+        r"^evidence://[0-9a-f]{32}/"
+        r"(?:metrics|logs|traces|changes)/[0-9]{4}$"
+    )
+    assert rca_properties["supporting_evidence"]["items"]["pattern"] == (
+        expected_pattern
+    )
+    assert rca_properties["contradicting_evidence"]["items"][
+        "pattern"
+    ] == expected_pattern
+
+
+def test_gateway_instructs_model_to_use_existing_independent_evidence() -> None:
+    transport = FakeTransport()
+
+    gateway(transport).complete(model_request())
+
+    payload = transport.calls[0]["payload"]
+    assert isinstance(payload, dict)
+    messages = payload["messages"]
+    assert isinstance(messages, list)
+    system_instruction = messages[0]["content"]
+    assert "copy evidence_ref strings exactly" in system_instruction
+    assert "Never invent or transform" in system_instruction
+    assert "two distinct Evidence sources" in system_instruction
+    assert (
+        "runtime_configuration_failure requires matching CHANGES Evidence"
+        in system_instruction
+    )
+    assert "For ABSTAIN, set root_service and fault_mechanism to null" in (
+        system_instruction
+    )
+    assert "no confirmed incident" in system_instruction
+    assert "Do not repeat an identical successful query" in system_instruction
+
+
+def test_gateway_accepts_standard_optional_usage_detail_objects() -> None:
+    envelope = provider_response()
+    envelope["usage"].update(
+        {
+            "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0,
+            },
+            "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0,
+                "accepted_prediction_tokens": 0,
+                "rejected_prediction_tokens": 0,
+            },
+        }
+    )
+
+    response = gateway(FakeTransport(envelope)).complete(model_request())
+
+    assert response.usage.input_tokens == 20
+    assert response.usage.output_tokens == 8
+    assert response.usage.total_tokens == 28
+
+
+@pytest.mark.parametrize(
+    "usage_patch",
+    (
+        {"prompt_tokens_details": []},
+        {"completion_tokens_details": "not-an-object"},
+        {"vendor_usage_extension": {}},
+    ),
+)
+def test_gateway_rejects_non_object_usage_details_and_unknown_fields(
+    usage_patch: dict[str, object],
+) -> None:
+    envelope = provider_response()
+    envelope["usage"].update(usage_patch)
+
+    with pytest.raises(ProviderProtocolError, match="object|exact"):
+        gateway(FakeTransport(envelope)).complete(model_request())
+
+
 def test_gateway_parses_submit_rca_into_the_internal_final_action() -> None:
     result = {
         "schema_version": "phase1.rca-result.v1",

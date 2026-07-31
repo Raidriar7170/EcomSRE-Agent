@@ -68,15 +68,16 @@
     如本页与机器可读证据冲突，以后者为准。</p>
 
   <p class="ready"><strong>当前结论：</strong>
-    <code>PHASE1_REPLAY_PIPELINE_READY</code>。scripted adapter 下的离线
-    contract、动态 typed-tool 调度、Evidence Store、七案例 replay、结构化
-    RCA 验证和 evaluation pipeline 全部通过。</p>
+    <code>PHASE1_SINGLE_AGENT_REPLAY_MVP_READY</code>。下层
+    <code>PHASE1_REPLAY_PIPELINE_READY</code> 已由 scripted adapter 的离线
+    contract、动态 typed-tool 调度、Evidence Store、冻结七案例 replay、结构化
+    RCA 验证和 evaluation pipeline 支持；附加真实 gateway gate 也已通过。</p>
 
-  <p class="warning"><strong>未达到：</strong>
-    <code>PHASE1_SINGLE_AGENT_REPLAY_MVP_READY</code>。本次没有配置或调用真实
-    OpenAI-compatible provider；<code>phase1-provider-smoke</code> 的真实结果为
-    <code>SKIPPED_NOT_CONFIGURED</code>。pytest 中的 injected transport 只能验证
-    orchestration contract，不能替代真实 provider gate。</p>
+  <p class="warning"><strong>必须分开解读：</strong>scripted adapter 冻结七案例：Decision Accuracy 7 / 7。
+    真实 provider gate 仅运行两个指定案例，不是七案例真实模型准确率：
+    <code>ad-partial-failure-complete</code> 返回 <code>RCA_CONFIRMED</code>，
+    <code>no-real-incident</code> 返回 <code>ABSTAIN</code>；两者均由
+    <code>gpt-5.4-mini-2026-03-17</code> 通过 OpenAI-compatible gateway 完成。</p>
 
   <h2>双层 verdict</h2>
   <table>
@@ -91,7 +92,7 @@
       <td><code>PHASE1_SINGLE_AGENT_REPLAY_MVP_READY</code></td>
       <td>上述条件，加真实 gateway 至少验证一个 <code>RCA_CONFIRMED</code> 和一个
         <code>ABSTAIN</code> 或 <code>NEED_MORE_EVIDENCE</code>。</td>
-      <td>未满足：未配置真实 provider</td>
+      <td>满足：2 / 2 gate cases 通过</td>
     </tr>
   </table>
 
@@ -157,21 +158,22 @@
     <tr><td>replay-only observability</td><td>loader 拒绝绝对路径、traversal、symlink、unknown file 和 hash mismatch</td><td>PASS</td></tr>
     <tr><td>evaluator 隔离</td><td>static import/path scan 与 clean-subprocess filesystem/import guards</td><td>PASS</td></tr>
     <tr><td>默认 workflows 不依赖 API</td><td>清除 provider env 后，test、smoke、eval 均通过</td><td>PASS</td></tr>
-    <tr><td>OpenAI-compatible gateway 无提交 key</td><td>HTTPS、no redirect、timeout、no retry、strict parse、redaction 与 injected transport tests；<code>.env.example</code> 仅含 placeholder</td><td>PASS（contract）</td></tr>
+    <tr><td>OpenAI-compatible gateway 无提交 key</td><td>HTTPS、no redirect、timeout、no retry、strict parse、redaction 与 injected transport tests；真实凭证只从本地环境读取，<code>.env.example</code> 仅含 placeholder</td><td>PASS</td></tr>
     <tr><td>预算与可观察性</td><td>模型、工具、token、timeout limits 和稳定错误码 tests；run report 包含 call records 与 monotonic duration</td><td>PASS</td></tr>
-    <tr><td>七案例跨 root/mechanism</td><td>35 个 fixture hashes、49 个 canonical JSON checks、7 个真实 E2E；含 recommendation cache failure</td><td>PASS</td></tr>
+    <tr><td>七案例跨 root/mechanism</td><td>35 个 fixture hashes、49 个 canonical JSON checks、7 个 replay E2E；含 recommendation cache failure</td><td>PASS</td></tr>
     <tr><td>Frontend decoy resistance</td><td>decoy 存储但不 supporting，root 仍为 ad；1 / 1</td><td>PASS</td></tr>
     <tr><td>十项 evaluation metrics</td><td>raw numerators / denominators、case coverage 与 semantic fingerprint</td><td>PASS</td></tr>
     <tr><td>默认 Make workflows</td><td><code>phase1-test</code>、<code>phase1-replay-smoke</code>、<code>phase1-eval</code></td><td>PASS</td></tr>
-    <tr><td>provider workflow 真实 gating</td><td>未配置时末行精确 <code>SKIPPED_NOT_CONFIGURED</code>；injected tests 不升级 verdict</td><td>PASS（skip）；真实 gate 未运行</td></tr>
+    <tr><td>provider workflow 真实 gating</td><td><code>gpt-5.4-mini-2026-03-17</code> 对两个指定案例分别验证 <code>RCA_CONFIRMED</code> 与 <code>ABSTAIN</code>；该 gate 不冒充七案例模型评测。未配置时仍返回 <code>SKIPPED_NOT_CONFIGURED</code>，且不进入 pytest</td><td>PASS（2 / 2 gate cases）</td></tr>
+    <tr><td>可重算 baseline lock</td><td>prompt、tool schema、RCA schema、evaluator、replay suite 与 validator hashes；模型 snapshot、temperature 和 8 / 8 / 12000 budgets</td><td>PASS</td></tr>
     <tr><td>禁止范围未进入实现</td><td>changed-file/static import review；无 Multi-Agent、Commander、Judge、Remediation、training、Docker/Compose 或 live-observability 实现</td><td>PASS</td></tr>
     <tr><td>L2 derived review surface</td><td>本页链接机器报告并保留 Phase 0 / Phase 2 边界</td><td>PASS</td></tr>
-    <tr><td>truth marker</td><td>仅发出 offline gate 支持的 <code>PHASE1_REPLAY_PIPELINE_READY</code></td><td>PASS</td></tr>
+    <tr><td>truth marker</td><td>scripted 七案例与真实 provider 两案例在机器状态中分开记录，支持 <code>PHASE1_SINGLE_AGENT_REPLAY_MVP_READY</code></td><td>PASS</td></tr>
   </table>
 
   <h2>新鲜验证</h2>
   <pre><code>make phase1-test
-# 868 passed
+# PASSED
 
 make phase1-replay-smoke
 # PASSED
@@ -179,12 +181,11 @@ make phase1-replay-smoke
 make phase1-eval
 # PASSED, 7 cases, 10 metrics
 
-env -u ECOMSRE_LLM_BASE_URL -u ECOMSRE_LLM_API_KEY \
-  -u ECOMSRE_LLM_MODEL make phase1-provider-smoke
-# SKIPPED_NOT_CONFIGURED
+make phase1-provider-smoke
+# PASSED: 2 cases; one RCA_CONFIRMED plus one ABSTAIN
 
 uv run --frozen --no-sync pytest -q
-# 1705 passed
+# PASSED
 
 uv run --frozen --no-sync ruff check \
   src/ecomsre/backends src/ecomsre/model src/ecomsre/phase1 \
@@ -209,6 +210,8 @@ git diff --check
     <li><a href="../../artifacts/phase1/reports/f6e80e94a56daa32916d9cb72a1873e8/agent-run-report.json">Replay smoke AgentRunReport</a></li>
     <li><a href="../../artifacts/phase1/evaluation/evaluation-report.json">Evaluation report</a></li>
     <li><a href="../../artifacts/phase1/provider-smoke/provider-smoke-report.json">Provider smoke report</a></li>
+    <li><a href="../review-evidence/phase1-single-agent-replay-20260801/current-disposition.json">Tracked current-disposition.json</a></li>
+    <li><a href="../../config/phase1/baseline-lock.json">Recomputable baseline-lock.json</a></li>
     <li><a href="../superpowers/specs/2026-07-31-phase1-single-agent-rca-replay-design.md">Approved design and requirement matrix</a></li>
     <li><a href="../../config/phase1/agent.json">Agent JSON configuration</a></li>
     <li><a href="../../src/ecomsre/phase1/agent.py">Single Agent loop</a></li>
@@ -225,14 +228,15 @@ git diff --check
 
   <h2>不能扩大声称的事项</h2>
   <ul>
-    <li>不能声称真实模型质量、真实 provider 可用性或
-      <code>PHASE1_SINGLE_AGENT_REPLAY_MVP_READY</code>。</li>
+    <li>真实 provider smoke 只是两个指定 gate cases，不能声称它取得七案例
+      Decision Accuracy 7 / 7，也不能推广为一般模型质量或生产可用性。</li>
     <li>evaluator capability isolation 当前在 macOS 使用
       <code>sandbox-exec</code> / Seatbelt；没有经过证明的非 Darwin sandbox
       backend 时，evaluation 会 fail closed，而不是降级运行。</li>
     <li>不能把 1 / 1 decoy case 推广为一般化 decoy robustness。</li>
     <li>不能把 replay fixture evaluation 解释为 live observability 或生产验证。</li>
-    <li>不能把 injected transport contract test 解释为真实 gateway smoke。</li>
+    <li>injected transport contract tests 与这次真实 gateway 两案例 smoke 是两类证据，
+      不能互相替代或合并计算。</li>
     <li>不能用非确定的真实 wall-clock 数值替代 deterministic semantic projection。</li>
   </ul>
 
