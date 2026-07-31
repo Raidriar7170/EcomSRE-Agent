@@ -149,12 +149,20 @@ class EnvironmentManifest(EvidenceModel):
 
 
 class FrozenInputs(EvidenceModel):
-    schema_version: Literal["phase0.frozen-inputs.v1"]
+    schema_version: Literal["phase0.frozen-inputs.v2"]
     upstream_tag: str
     upstream_commit: str = Field(pattern=r"^[0-9a-f]{40}$")
     image_lock_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     resolved_arm64_digests: dict[str, str]
-    compose_config_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    canonical_compose_contract_sha256: str = Field(
+        pattern=r"^[0-9a-f]{64}$"
+    )
+    runtime_compose_instance_sha256: str = Field(
+        pattern=r"^[0-9a-f]{64}$"
+    )
+    compose_canonicalization_schema_version: Literal[
+        "phase0.compose-canonicalization.v1"
+    ]
 
     @model_validator(mode="after")
     def require_valid_resolved_digests(self) -> "FrozenInputs":

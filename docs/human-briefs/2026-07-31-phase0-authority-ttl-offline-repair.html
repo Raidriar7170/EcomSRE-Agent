@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EcomSRE-Agent Phase 0 Authority TTL 离线修复</title>
+  <style>
+    body { max-width: 920px; margin: 40px auto; padding: 0 24px;
+      font: 16px/1.65 system-ui, sans-serif; color: #172033; }
+    h1, h2 { line-height: 1.25; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px 10px; border: 1px solid #cbd5e1;
+      text-align: left; vertical-align: top; }
+    code { background: #eef2f7; padding: 1px 4px; }
+    .warning { border-left: 4px solid #b45309; padding: 10px 14px;
+      background: #fff7ed; }
+  </style>
+</head>
+<body>
+  <h1>Phase 0 Authority TTL 离线修复</h1>
+  <p class="warning"><strong>状态：</strong><code>OFFLINE-ONLY</code>。
+    本轮没有 live validation、Docker、commit、push 或 Phase 1 工作。
+    Phase 0 未完成，正式三轮 acceptance 未执行。</p>
+
+  <h2>历史事实保持</h2>
+  <table>
+    <tr><th>当前 image lock</th><td>v2，SHA-256
+      <code>50f86b333fb6f1b66c16ff287a190995230b6ba2c1ec71cc0e56f38b783db5ac</code></td></tr>
+    <tr><th>Migration</th><td>legacy v1 → v2 已成功，旧字节保留在 content-addressed history</td></tr>
+    <tr><th>Run</th><td><code>51002ad655ba4c65c1165be433664d7d</code></td></tr>
+    <tr><th>Run verdict</th><td><code>FAILED</code>；不得改写为成功</td></tr>
+    <tr><th>失败边界</th><td>65 秒稳定期发生在 fresh authority 之后，
+      30 秒 TTL 到期；pre-HTTP <code>attempt_count=0</code></td></tr>
+    <tr><th>安全收尾</th><td>exact stop、owned-volume cleanup、final seal 成功，
+      但不改变 FAILED</td></tr>
+  </table>
+
+  <h2>窄修复</h2>
+  <ol>
+    <li>顺序改为 environment up → 65 秒稳定 → fresh authority → readiness。</li>
+    <li>readiness collector 仅保留 5 秒 retry；control mutation 不重复初始等待。</li>
+    <li>inject/reset 前在 candidate readiness 后再次验证 current/authentic/same-run。</li>
+    <li>pre-HTTP failure 增加 endpoint 与 propagation 的 typed gate diagnostics。</li>
+    <li>只有 authentic same-run authority 可获得 failure evidence 写入路径。</li>
+  </ol>
+
+  <h2>TDD 证据</h2>
+  <table>
+    <tr><th>RED</th><td><code>9 failed, 41 passed</code>；命中 freshness race、
+      重复 65 秒来源、缺失 propagation diagnostics 和未认证 evidence 写入。</td></tr>
+    <tr><th>Focused GREEN</th><td><code>50 passed</code></td></tr>
+    <tr><th>验证性质</th><td>fixture-backed offline tests；不是 live validation</td></tr>
+  </table>
+
+  <h2>剩余风险与授权边界</h2>
+  <p>修复尚未在真实 Docker runtime 上重验。历史所有
+    <code>UNSAFE</code>、<code>FAILED</code>、<code>BLOCKED</code> 结果继续保留。
+    本轮不授权第三次或后续 smoke；任何额外 live revalidation 必须获得新的、
+    明确且有界的授权。</p>
+</body>
+</html>

@@ -19,6 +19,7 @@ from ecomsre.environment.lifecycle import (
     parse_expected_port_bindings,
 )
 from ecomsre.environment.manifests import (
+    COMPOSE_CANONICALIZATION_SCHEMA_VERSION,
     ImageLockStatus,
     LockMatchChecks,
     LockVerification,
@@ -303,8 +304,9 @@ def collect_fresh_preflight(
         run_id=run_id,
     )
 
-    resolved_hash = lock.compose_config_sha256 or ("0" * 64)
-    expected_hash = resolved_hash
+    runtime_instance_hash: str | None = None
+    resolved_contract_hash: str | None = None
+    expected_contract_hash = lock.canonical_compose_contract_sha256
     verification = _uninitialized_verification()
     ports: tuple[PortObservation, ...] = ()
     resources: tuple[ResourceObservation, ...] = ()
@@ -323,8 +325,14 @@ def collect_fresh_preflight(
         )
         resolved = parse_resolved_compose_config(config_result)
         expected_bindings = parse_expected_port_bindings(resolved)
-        resolved_hash = resolved.sha256
-        expected_hash = lock.compose_config_sha256 or resolved.sha256
+        runtime_instance_hash = resolved.runtime_compose_instance_sha256
+        resolved_contract_hash = (
+            resolved.canonical_compose_contract_sha256
+        )
+        expected_contract_hash = (
+            lock.canonical_compose_contract_sha256
+            or resolved.canonical_compose_contract_sha256
+        )
 
         command_results: list[CommandResult] = []
         discovered = _discover_verified_resources(
@@ -376,7 +384,12 @@ def collect_fresh_preflight(
                 lock,
                 cached_images=tuple(cached),
                 observed_upstream_commit=observed_upstream_commit,
-                observed_compose_config_sha256=resolved.sha256,
+                observed_canonical_compose_contract_sha256=(
+                    resolved.canonical_compose_contract_sha256
+                ),
+                observed_canonicalization_schema_version=(
+                    resolved.canonicalization_schema_version
+                ),
             )
 
     inputs = PreflightInputs(
@@ -386,8 +399,16 @@ def collect_fresh_preflight(
         resources=resources,
         ownership_context=ownership,
         observed_upstream_commit=observed_upstream_commit,
-        observed_compose_config_sha256=resolved_hash,
-        expected_compose_config_sha256=expected_hash,
+        runtime_compose_instance_sha256=runtime_instance_hash,
+        observed_canonical_compose_contract_sha256=(
+            resolved_contract_hash
+        ),
+        expected_canonical_compose_contract_sha256=(
+            expected_contract_hash
+        ),
+        compose_canonicalization_schema_version=(
+            COMPOSE_CANONICALIZATION_SCHEMA_VERSION
+        ),
         image_lock_verification=verification,
         pull_policy="never",
     )
@@ -700,7 +721,7 @@ def _persist_preflight(
     sequence: int,
 ) -> None:
     payload = {
-        "schema_version": "phase0.preflight-snapshot.v1",
+        "schema_version": "phase0.preflight-snapshot.v2",
         "run_id": evidence.run_id,
         "content_sha256": evidence.content_sha256,
         "result": evidence.result.model_dump(mode="json"),
@@ -711,11 +732,17 @@ def _persist_preflight(
             item.model_dump(mode="json") for item in evidence.inputs.resources
         ],
         "observed_upstream_commit": evidence.inputs.observed_upstream_commit,
-        "observed_compose_config_sha256": (
-            evidence.inputs.observed_compose_config_sha256
+        "runtime_compose_instance_sha256": (
+            evidence.inputs.runtime_compose_instance_sha256
         ),
-        "expected_compose_config_sha256": (
-            evidence.inputs.expected_compose_config_sha256
+        "observed_canonical_compose_contract_sha256": (
+            evidence.inputs.observed_canonical_compose_contract_sha256
+        ),
+        "expected_canonical_compose_contract_sha256": (
+            evidence.inputs.expected_canonical_compose_contract_sha256
+        ),
+        "compose_canonicalization_schema_version": (
+            evidence.inputs.compose_canonicalization_schema_version
         ),
         "image_lock_verification": (
             evidence.inputs.image_lock_verification.model_dump(mode="json")

@@ -39,6 +39,7 @@ conflicts with this register, this register wins.
 | DEC-010 | Equal-budget comparison | accepted | Phase 1 onward only | `DECISIONS.md` | Charter, Architecture, Roadmap, Open Questions | No — no Phase 0 model or budget dependency |
 | DEC-011 | Frozen evaluation | accepted | Phase 5 only | `DECISIONS.md` | Charter, Architecture, Roadmap, Open Questions | No — no Phase 0 scenario-suite dependency |
 | DEC-012 | Restricted writes | accepted | Phase 3 onward only | `DECISIONS.md` | AGENTS, Charter, Roadmap, Safety, Open Questions | No — Phase 0 has no remediation executor |
+| DEC-013 | Run-invariant Compose contract | accepted | Phase 0 | `DECISIONS.md` | AGENTS, Safety, Acceptance | Yes — legacy or mismatched canonical binding blocks startup |
 
 ## DEC-001 — Supported host baseline
 
@@ -61,8 +62,9 @@ The sole Phase 0 upstream is OpenTelemetry Demo tag `3.0.0`, commit
 No `main`, floating tag, `latest`, silent fallback, amd64 emulation, or upstream
 patch is allowed. Every executed image is locked by both image-index digest and
 resolved `linux/arm64` digest. Runtime evidence records those digests, the
-submodule commit, the resolved Compose hash, and frozen `demo.*` query fixtures.
-Failure of this baseline requires a new Decision Record.
+submodule commit, both resolved Compose hashes defined by `DEC-013`, and frozen
+`demo.*` query fixtures. Failure of this baseline requires a new Decision
+Record.
 
 ## DEC-003 — Compose topology and Phase 0 service scope
 
@@ -175,6 +177,49 @@ verification, and necessary compensating rollback do not consume that limit.
 Human approval is the default; auto-approval exists only in an explicitly
 marked local test mode. Unsafe, failed, or uncertain state terminates without a
 second forward mutation.
+
+## DEC-013 — Run-invariant resolved Compose contract
+
+Resolved Compose has two distinct hashes:
+
+- `canonical_compose_contract_sha256` is the image-lock binding. It hashes a
+  strict canonical JSON envelope containing canonicalization schema version
+  `phase0.compose-canonicalization.v1` and the schema-aware projected resolved
+  Compose object.
+- `runtime_compose_instance_sha256` is SHA-256 over the exact resolved Compose
+  stdout bytes. It is recorded for each run and is never used as the
+  cross-run image-lock equality key.
+
+Canonicalization schema v1 has one runtime identity type: a 32-character
+lowercase hexadecimal `ECOMSRE_RUN_ID`, projected to the fixed token
+`<ECOMSRE_RUN_ID>`. Its complete selector set is:
+
+- `services.*.labels.io.ecomsre.run`;
+- `networks.*.labels.io.ecomsre.run`;
+- `volumes.*.labels.io.ecomsre.run`;
+- `x-phase0-labels.io.ecomsre.run`;
+- `x-phase0-service.labels.io.ecomsre.run`;
+- `volumes.<logical-name>.name` only when it exactly equals
+  `ecomsre-phase0-<run-id>-<logical-name>` and carries the matching project/run
+  labels;
+- a service `type: bind` source only at the exact path components
+  `artifacts/phase0/evaluator-only/<run-id>/...` and only when the service
+  carries matching project/run labels.
+
+The projection is idempotent and fails closed on inconsistent run-label
+identities. It does not normalize image references or digests, service set,
+platform, ports, mount type/target, non-evaluator bind sources, commands,
+environment semantics, pull/build policy, upstream files or commit, or any
+arbitrary string occurrence.
+
+Image-lock schema v2 records the canonical contract hash and canonicalization
+schema version at both manifest and image-entry binding levels. A legacy v1
+lock remains readable only so it can fail closed or undergo a separately
+authorized compare-and-swap migration using reason
+`RUN_INVARIANT_COMPOSE_CONTRACT_MIGRATION`. Migration must re-resolve Compose,
+reverify cached ARM64 image identity, and preserve the exact v1 bytes in
+content-addressed history. It never rewrites historical run outcomes or
+evidence.
 
 ## Upstream references
 

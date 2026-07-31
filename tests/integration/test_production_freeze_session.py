@@ -204,8 +204,12 @@ def _preflight():
         resources=(),
         ownership_context=None,
         observed_upstream_commit=("1755859a9de82c2e5e225be68abc401a5ebf2b4f"),
-        observed_compose_config_sha256=compose_hash,
-        expected_compose_config_sha256=compose_hash,
+        runtime_compose_instance_sha256=compose_hash,
+        observed_canonical_compose_contract_sha256=compose_hash,
+        expected_canonical_compose_contract_sha256=compose_hash,
+        compose_canonicalization_schema_version=(
+            "phase0.compose-canonicalization.v1"
+        ),
         image_lock_verification=LockVerification(
             passed=True,
             outcome=Outcome.SUCCESS,

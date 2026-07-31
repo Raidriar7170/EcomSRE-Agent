@@ -22,6 +22,9 @@ from ecomsre.telemetry.http import (
     PhaseWindow,
     _owned_http_client_has_production_integrity,
 )
+from ecomsre.telemetry.opensearch_identity import (
+    parse_opensearch_service_identity,
+)
 from ecomsre.telemetry.prometheus import (
     FixtureState,
     FrozenTelemetryQueryCapability,
@@ -379,7 +382,13 @@ def _select_log(
                 or not log_id
             ):
                 raise TypeError
-            identity = _nested(source, service_field)
+            identity_result = parse_opensearch_service_identity(
+                source,
+                field=service_field,
+            )
+            if not identity_result.parsed:
+                raise TypeError
+            identity = identity_result.value
             if identity != service:
                 continue
             identity_seen = True

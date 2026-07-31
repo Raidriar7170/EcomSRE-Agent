@@ -1,3 +1,4 @@
+import inspect
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -7,6 +8,10 @@ import pytest
 
 import ecomsre.cli as cli_module
 import ecomsre.phase0.smoke as smoke_module
+from ecomsre.environment.readiness import (
+    CandidateReadinessPolicy,
+    ReadinessCollectionError,
+)
 from ecomsre.phase0.smoke import (
     EnvironmentStartDisposition,
     SmokeEnvironmentStart,
@@ -52,6 +57,10 @@ class FakeOperations:
                 EnvironmentStartDisposition.OWNED_ENVIRONMENT_STARTED
             ),
         )
+
+    def stabilize_initial_readiness(self, seconds: float):
+        assert seconds == 65.0
+        self._step(f"stabilize:{seconds}")
 
     def fresh_authority(self, boundary: str):
         return self._step(f"authority:{boundary}")
@@ -118,6 +127,7 @@ def test_supervisor_orders_initial_readiness_before_control_and_refreshes_bounda
 
     assert operations.events == [
         "up",
+        "stabilize:65.0",
         "authority:initial",
         "readiness:initial",
         "control:open",
@@ -165,6 +175,7 @@ def test_supervisor_reports_owned_volume_cleanup_failure_after_successful_stop()
     "failure_step",
     [
         "up",
+        "stabilize:65.0",
         "authority:initial",
         "readiness:initial",
         "control:open",
@@ -291,6 +302,85 @@ def test_supervisor_preserves_typed_unsafe_execution_error() -> None:
     assert DiagnosticStatus.UNSAFE in state.failure_statuses
 
 
+def test_pre_http_readiness_failure_artifact_is_referenced_by_smoke_report(
+    tmp_path: Path,
+) -> None:
+    for zone in ("observer-visible", "evaluator-only"):
+        run_root = tmp_path / zone / RUN_ID
+        run_root.mkdir(parents=True)
+        (run_root / "evidence.json").write_text("{}", encoding="utf-8")
+    artifact = (
+        tmp_path
+        / "observer-visible"
+        / RUN_ID
+        / "lifecycle"
+        / "initial-readiness"
+        / "123"
+        / "pre-http-failure.json"
+    )
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text("{}", encoding="utf-8")
+    state = SmokeSupervisorState(
+        run_id=RUN_ID,
+        failure_reason_codes=["INITIAL_READINESS_LIFECYCLE_AUTHORITY_INVALID"],
+        failure_statuses=[DiagnosticStatus.FAILED],
+    )
+
+    report = finalize_supervised_smoke(
+        state=state,
+        artifacts_root=tmp_path,
+    )
+
+    assert report.attempts[0].initial_readiness_artifacts == (str(artifact),)
+
+
+def test_post_http_v2_failure_summary_is_referenced_by_supervised_smoke_report(
+    tmp_path: Path,
+) -> None:
+    for zone in ("observer-visible", "evaluator-only"):
+        run_root = tmp_path / zone / RUN_ID
+        run_root.mkdir(parents=True)
+        (run_root / "evidence.json").write_text("{}", encoding="utf-8")
+    artifact = (
+        tmp_path
+        / "observer-visible"
+        / RUN_ID
+        / "lifecycle"
+        / "initial-readiness"
+        / "456"
+        / "summary.json"
+    )
+
+    class PostHttpReadinessFailure(FakeOperations):
+        def initial_readiness(self, authority):
+            assert authority == "authority:initial"
+            self._step("readiness:initial")
+            artifact.parent.mkdir(parents=True)
+            artifact.write_text(
+                '{"schema_version":"phase0.candidate-initial-readiness.v2"}',
+                encoding="utf-8",
+            )
+            raise ReadinessCollectionError(
+                "INITIAL_CANDIDATE_READINESS_INCOMPLETE",
+                artifact_path=str(artifact),
+            )
+
+        def finalize(self, state: SmokeSupervisorState):
+            self._step("finalize")
+            return finalize_supervised_smoke(
+                state=state,
+                artifacts_root=tmp_path,
+            )
+
+    report = supervise_smoke_attempt(
+        run_id=RUN_ID,
+        operations=PostHttpReadinessFailure(),
+    )
+
+    assert report.attempts[0].initial_readiness_artifacts == (str(artifact),)
+    assert "INITIAL_CANDIDATE_READINESS_INCOMPLETE" in report.failure_reason_codes
+
+
 @pytest.mark.parametrize(
     ("step", "outcome", "expected"),
     [
@@ -387,6 +477,105 @@ def test_production_start_retains_available_authority_for_guarded_cleanup(
     assert operations.stop_ownership is ownership
     assert operations.stop_docker_endpoint == "unix:///var/run/docker.sock"
     assert operations.stop_daemon_id == "fixture-daemon"
+
+
+def test_production_initial_stabilization_sleeps_exactly_65_seconds(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    policy = CandidateReadinessPolicy()
+    sleeps: list[float] = []
+    monkeypatch.setattr(cli_module.time, "sleep", sleeps.append)
+    operations = cli_module._ProductionSmokeOperations(
+        args=SimpleNamespace(run_id=RUN_ID),
+        context=SimpleNamespace(),
+    )
+
+    operations.stabilize_initial_readiness(policy.initial_delay_seconds)
+
+    assert sleeps == [policy.initial_delay_seconds]
+    with pytest.raises(
+        ValueError,
+        match="initial readiness stabilization must remain 65 seconds",
+    ):
+        operations.stabilize_initial_readiness(64.0)
+    assert sleeps == [policy.initial_delay_seconds]
+
+
+def test_initial_stabilization_uses_candidate_policy_as_single_source() -> None:
+    assert not hasattr(
+        smoke_module,
+        "INITIAL_READINESS_STABILIZATION_SECONDS",
+    )
+    production_source = inspect.getsource(
+        cli_module._ProductionSmokeOperations.stabilize_initial_readiness
+    )
+    assert "65.0" not in production_source
+    assert "CandidateReadinessPolicy" in production_source
+
+
+@pytest.mark.parametrize(
+    ("invalidated_field", "expected_reason"),
+    [
+        ("current", "CONTROL_MUTATION_AUTHORITY_EXPIRED"),
+        ("preflight_authentic", "CONTROL_MUTATION_AUTHORITY_INVALID"),
+        ("ownership_authentic", "CONTROL_MUTATION_AUTHORITY_INVALID"),
+        ("run_id", "CONTROL_MUTATION_AUTHORITY_INVALID"),
+    ],
+)
+def test_control_mutation_revalidates_authority_after_candidate_readiness(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    invalidated_field: str,
+    expected_reason: str,
+) -> None:
+    state = {
+        "current": True,
+        "preflight_authentic": True,
+        "ownership_authentic": True,
+    }
+    preflight = SimpleNamespace(
+        run_id=RUN_ID,
+        is_current=lambda: state["current"],
+        is_authentic=lambda: state["preflight_authentic"],
+    )
+    ownership = SimpleNamespace(
+        run_id=RUN_ID,
+        is_authentic=lambda: state["ownership_authentic"],
+    )
+    operations = cli_module._ProductionSmokeOperations(
+        args=SimpleNamespace(run_id=RUN_ID),
+        context=SimpleNamespace(
+            project_root=tmp_path,
+            artifacts_root=tmp_path,
+        ),
+    )
+    monkeypatch.setattr(
+        operations,
+        "fresh_authority",
+        lambda _boundary: (preflight, ownership),
+    )
+
+    def collect(**_kwargs):
+        if invalidated_field == "run_id":
+            ownership.run_id = "f" * 32
+        else:
+            state[invalidated_field] = False
+        return object()
+
+    monkeypatch.setattr(
+        cli_module,
+        "collect_candidate_initial_readiness",
+        collect,
+    )
+
+    with pytest.raises(SmokeExecutionError) as captured:
+        operations._refresh_control_mutation(
+            stage="diagnostic",
+            phase=MeasurementPhase.FAULT,
+        )
+
+    assert captured.value.reason_code == expected_reason
+    assert captured.value.status is DiagnosticStatus.UNSAFE
 
 
 def test_supervisor_uses_minimal_terminal_when_report_finalization_fails() -> None:

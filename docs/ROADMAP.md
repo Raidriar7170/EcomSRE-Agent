@@ -44,11 +44,14 @@ Exit:
   one canonical run containing three consecutive cycles;
 - evidence is preserved and independently reviewable.
 
-The single authorized `NON_CANONICAL` smoke was consumed and terminated
-`UNSAFE` before readiness or measurement. Its later authenticated environment
-stop does not satisfy this phase exit gate, close `OQ-002` through `OQ-004`, or
+Historical `NON_CANONICAL` runs include preserved `UNSAFE` and `FAILED`
+outcomes. Run `51002ad655ba4c65c1165be433664d7d` remains `FAILED` before any
+HTTP readiness attempt because authority expired during the initial
+stabilization ordering; its successful exact stop, owned-volume cleanup, and
+seal do not satisfy this phase exit gate, close `OQ-002` through `OQ-004`, or
 authorize Phase 1. The real preflight evidence independently closes `OQ-001`.
-A second smoke requires a new explicit bounded task.
+Every additional smoke requires a new explicit bounded task; none is currently
+authorized.
 
 ## Phase 1 — Read-only tools and Single-Agent baseline
 

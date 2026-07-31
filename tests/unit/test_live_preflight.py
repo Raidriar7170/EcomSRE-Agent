@@ -12,6 +12,7 @@ from ecomsre.environment.live_preflight import (
     collect_fresh_stop_authority,
 )
 from ecomsre.environment.lifecycle import ExpectedPortBinding
+from ecomsre.environment.manifests import ResolvedComposeConfig
 from ecomsre.environment.ownership import OwnedResource, OwnershipManifest
 from ecomsre.environment.ownership_authority import (
     OwnershipAuthorityError,
@@ -23,7 +24,6 @@ from ecomsre.environment.preflight import (
     DockerSnapshot,
     HostSnapshot,
 )
-from ecomsre.evidence.hashes import sha256_bytes
 from ecomsre.evidence.store import ObserverEvidenceStore
 from datetime import UTC, datetime
 
@@ -125,17 +125,22 @@ def test_cli_fresh_preflight_types_platform_image_failures_without_mutation(
         },
         sort_keys=True,
     )
-    compose_sha256 = sha256_bytes(compose.encode())
+    resolved = ResolvedComposeConfig.from_stdout(compose)
     lock_path = tmp_path / "config" / "phase0" / "image-lock.json"
     lock_path.parent.mkdir(parents=True)
     lock_path.write_text(
         json.dumps(
             {
-                "schema_version": "phase0.image-lock.v1",
+                "schema_version": "phase0.image-lock.v2",
                 "status": "LOCKED",
                 "upstream_tag": "3.0.0",
                 "upstream_commit": COMMIT,
-                "compose_config_sha256": compose_sha256,
+                "canonical_compose_contract_sha256": (
+                    resolved.canonical_compose_contract_sha256
+                ),
+                "compose_canonicalization_schema_version": (
+                    resolved.canonicalization_schema_version
+                ),
                 "created_at": "2026-07-30T08:00:00Z",
                 "allowed_source_references": [source],
                 "images": [
@@ -149,7 +154,12 @@ def test_cli_fresh_preflight_types_platform_image_failures_without_mutation(
                         "image_id": child_digest,
                         "acquired_at": "2026-07-30T08:00:00Z",
                         "upstream_commit": COMMIT,
-                        "compose_config_sha256": compose_sha256,
+                        "canonical_compose_contract_sha256": (
+                            resolved.canonical_compose_contract_sha256
+                        ),
+                        "compose_canonicalization_schema_version": (
+                            resolved.canonicalization_schema_version
+                        ),
                     }
                 ],
             },

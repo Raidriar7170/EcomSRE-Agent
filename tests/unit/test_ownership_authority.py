@@ -120,7 +120,7 @@ def test_authenticated_empty_inventory_intent_roundtrip_and_tamper_rejection(
     assert hasattr(authority, "create_ownership_intent_artifacts")
     assert hasattr(authority, "load_authenticated_ownership_intent")
     intent = authority.OwnershipIntent(
-        schema_version="phase0.ownership-intent.v1",
+        schema_version="phase0.ownership-intent.v2",
         run_id=RUN_ID,
         project_name=PROJECT_NAMESPACE,
         canonical_labels={
@@ -132,7 +132,11 @@ def test_authenticated_empty_inventory_intent_roundtrip_and_tamper_rejection(
             "third_party/opentelemetry-demo/compose.observability.yaml",
             "config/phase0/compose.phase0.yaml",
         ),
-        expected_compose_sha256="1" * 64,
+        runtime_compose_instance_sha256="1" * 64,
+        canonical_compose_contract_sha256="2" * 64,
+        compose_canonicalization_schema_version=(
+            "phase0.compose-canonicalization.v1"
+        ),
         expected_image_sources=("example.test/demo:3.0.0-ad",),
         pull_policy="never",
         build_policy="no-build",
@@ -154,7 +158,7 @@ def test_authenticated_empty_inventory_intent_roundtrip_and_tamper_rejection(
     assert paths.key_path.stat().st_mode & 0o077 == 0
 
     raw = json.loads(paths.intent_path.read_text(encoding="utf-8"))
-    raw["expected_compose_sha256"] = "2" * 64
+    raw["runtime_compose_instance_sha256"] = "3" * 64
     paths.intent_path.write_text(json.dumps(raw), encoding="utf-8")
     with pytest.raises(OwnershipAuthorityError, match="intent"):
         authority.load_authenticated_ownership_intent(tmp_path, RUN_ID)
@@ -164,7 +168,7 @@ def test_ownership_intent_rejects_nonempty_inventory() -> None:
     assert hasattr(authority, "OwnershipIntent")
     with pytest.raises(ValueError, match="empty inventory"):
         authority.OwnershipIntent(
-            schema_version="phase0.ownership-intent.v1",
+            schema_version="phase0.ownership-intent.v2",
             run_id=RUN_ID,
             project_name=PROJECT_NAMESPACE,
             canonical_labels={
@@ -172,7 +176,11 @@ def test_ownership_intent_rejects_nonempty_inventory() -> None:
                 RUN_LABEL: RUN_ID,
             },
             expected_compose_files=("compose.yaml",),
-            expected_compose_sha256="1" * 64,
+            runtime_compose_instance_sha256="1" * 64,
+            canonical_compose_contract_sha256="2" * 64,
+            compose_canonicalization_schema_version=(
+                "phase0.compose-canonicalization.v1"
+            ),
             expected_image_sources=("example.test/demo:3.0.0-ad",),
             pull_policy="never",
             build_policy="no-build",

@@ -113,6 +113,28 @@ def test_cli_parser_exposes_only_explicit_phase0_commands() -> None:
     )
 
 
+def test_bootstrap_parser_accepts_explicit_canonical_lock_migration() -> None:
+    from ecomsre.cli import build_parser
+
+    parsed = build_parser().parse_args(
+        [
+            "phase0",
+            "bootstrap",
+            "--run-id",
+            "a" * 32,
+            "--rotate-image-lock",
+            "--expected-old-lock-sha256",
+            "b" * 64,
+            "--rotation-reason",
+            "RUN_INVARIANT_COMPOSE_CONTRACT_MIGRATION",
+        ]
+    )
+
+    assert parsed.rotation_reason == (
+        "RUN_INVARIANT_COMPOSE_CONTRACT_MIGRATION"
+    )
+
+
 def test_existing_run_commands_require_a_valid_opaque_run_id() -> None:
     from ecomsre.cli import build_parser
 

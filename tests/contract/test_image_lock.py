@@ -25,9 +25,17 @@ def test_repository_image_lock_is_complete_locked_arm64_inventory() -> None:
         lock.upstream_commit
         == "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     )
+    assert lock.schema_version == "phase0.image-lock.v2"
     assert len(lock.images) == 25
-    assert lock.compose_config_sha256 is not None
-    assert re.fullmatch(r"[0-9a-f]{64}", lock.compose_config_sha256)
+    assert lock.compose_config_sha256 is None
+    assert re.fullmatch(
+        r"[0-9a-f]{64}",
+        lock.canonical_compose_contract_sha256 or "",
+    )
+    assert (
+        lock.compose_canonicalization_schema_version
+        == "phase0.compose-canonicalization.v1"
+    )
     assert len(lock.allowed_source_references) == 25
     assert {image.source_reference for image in lock.images} == set(
         lock.allowed_source_references
@@ -48,7 +56,14 @@ def test_repository_image_lock_is_complete_locked_arm64_inventory() -> None:
     )
     assert all(image.upstream_commit == lock.upstream_commit for image in lock.images)
     assert all(
-        image.compose_config_sha256 == lock.compose_config_sha256
+        image.compose_config_sha256 is None
+        for image in lock.images
+    )
+    assert all(
+        image.canonical_compose_contract_sha256
+        == lock.canonical_compose_contract_sha256
+        and image.compose_canonicalization_schema_version
+        == lock.compose_canonicalization_schema_version
         for image in lock.images
     )
 
@@ -78,7 +93,10 @@ def test_uninitialized_lock_fixture_blocks_formal_acceptance(tmp_path: Path) -> 
         lock,
         cached_images=(),
         observed_upstream_commit=lock.upstream_commit,
-        observed_compose_config_sha256="a" * 64,
+        observed_canonical_compose_contract_sha256="a" * 64,
+        observed_canonicalization_schema_version=(
+            "phase0.compose-canonicalization.v1"
+        ),
     )
 
     assert result.passed is False

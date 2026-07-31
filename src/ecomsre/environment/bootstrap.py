@@ -805,7 +805,11 @@ def bootstrap_image_lock(
 
     if existing.status is ImageLockStatus.LOCKED:
         lock_mismatch = (
-            resolved.sha256 != existing.compose_config_sha256
+            existing.schema_version != "phase0.image-lock.v2"
+            or resolved.canonical_compose_contract_sha256
+            != existing.canonical_compose_contract_sha256
+            or resolved.canonicalization_schema_version
+            != existing.compose_canonicalization_schema_version
             or set(resolved.image_references)
             != set(existing.allowed_source_references)
         )
@@ -844,7 +848,12 @@ def bootstrap_image_lock(
             existing,
             cached_images=cached,
             observed_upstream_commit=existing.upstream_commit,
-            observed_compose_config_sha256=resolved.sha256,
+            observed_canonical_compose_contract_sha256=(
+                resolved.canonical_compose_contract_sha256
+            ),
+            observed_canonicalization_schema_version=(
+                resolved.canonicalization_schema_version
+            ),
         )
         if not verification.passed:
             raise ValueError("existing image lock failed live verification")
@@ -896,8 +905,16 @@ def bootstrap_image_lock(
         store.write_immutable(
             "inputs/bootstrap/resolved-compose.json",
             {
-                "schema_version": "phase0.bootstrap-resolved-compose.v1",
-                "compose_config_sha256": resolved.sha256,
+                "schema_version": "phase0.bootstrap-resolved-compose.v2",
+                "runtime_compose_instance_sha256": (
+                    resolved.runtime_compose_instance_sha256
+                ),
+                "canonical_compose_contract_sha256": (
+                    resolved.canonical_compose_contract_sha256
+                ),
+                "compose_canonicalization_schema_version": (
+                    resolved.canonicalization_schema_version
+                ),
                 **compose_evidence,
                 "service_image_mapping": resolved.service_image_mapping,
                 "service_platforms": service_platforms,
@@ -1116,7 +1133,12 @@ def bootstrap_image_lock(
         published,
         cached_images=local,
         observed_upstream_commit=published.upstream_commit,
-        observed_compose_config_sha256=resolved.sha256,
+        observed_canonical_compose_contract_sha256=(
+            resolved.canonical_compose_contract_sha256
+        ),
+        observed_canonicalization_schema_version=(
+            resolved.canonicalization_schema_version
+        ),
     )
     if not verification.passed:
         raise ValueError("published image lock failed live verification")

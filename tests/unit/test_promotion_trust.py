@@ -772,6 +772,65 @@ def test_promotion_source_timestamp_identity_ignores_only_metric_name() -> None:
         )
 
 
+def test_task7_opensearch_identity_accepts_hybrid_flattened_resource_key() -> None:
+    registry = prometheus_module._load_test_query_registry(
+        FIXTURES / "frozen-query-registry.json"
+    ).registry
+    payload = json.loads((FIXTURES / "opensearch-current.json").read_bytes())
+    source = payload["hits"]["hits"][0]["_source"]
+    resource = source["resource"]
+    resource["service.name"] = resource.pop("service")["name"]
+
+    assert prometheus_module._opensearch_response_has_exact_identity(
+        payload,
+        registry,
+        utc_window=(NOW, NOW + timedelta(seconds=30)),
+    )
+    resource["service"] = {"name": "frontend"}
+    assert not prometheus_module._opensearch_response_has_exact_identity(
+        payload,
+        registry,
+        utc_window=(NOW, NOW + timedelta(seconds=30)),
+    )
+
+
+@pytest.mark.parametrize(
+    "invalid_resource",
+    [
+        {"service.name": "ad", "service": {"name": "frontend"}},
+        {"service.name": 7},
+        {"service": "ad"},
+        {},
+    ],
+)
+@pytest.mark.parametrize("invalid_position", ["first", "last"])
+def test_task7_opensearch_identity_fails_closed_if_any_hit_identity_is_invalid(
+    invalid_resource: dict[str, object],
+    invalid_position: str,
+) -> None:
+    registry = prometheus_module._load_test_query_registry(
+        FIXTURES / "frozen-query-registry.json"
+    ).registry
+    valid = json.loads((FIXTURES / "opensearch-current.json").read_bytes())[
+        "hits"
+    ]["hits"][0]
+    invalid = json.loads(json.dumps(valid))
+    invalid["_id"] = "invalid-log"
+    invalid["_source"]["resource"] = invalid_resource
+    ordered_hits = (
+        [invalid, valid]
+        if invalid_position == "first"
+        else [valid, invalid]
+    )
+    payload = {"hits": {"hits": ordered_hits}}
+
+    assert not prometheus_module._opensearch_response_has_exact_identity(
+        payload,
+        registry,
+        utc_window=(NOW, NOW + timedelta(seconds=30)),
+    )
+
+
 def test_fault_probe_preserves_expected_business_failure_without_selective_retry(
     tmp_path: Path,
 ) -> None:

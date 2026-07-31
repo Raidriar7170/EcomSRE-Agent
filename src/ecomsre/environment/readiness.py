@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Literal
 from urllib.parse import quote, urlencode
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ecomsre.environment.lifecycle import ReadinessEvidence
 from ecomsre.environment.ownership_authority import AuthenticatedOwnershipContext
@@ -20,6 +20,8 @@ from ecomsre.evidence.store import ObserverEvidenceStore
 from ecomsre.evidence.hashes import canonical_json_bytes
 from ecomsre.phase0.models import MeasurementPhase
 from ecomsre.telemetry.http import (
+    HttpExchange,
+    HttpReason,
     HttpRequest,
     OwnedEndpoint,
     OwnedHttpClient,
@@ -27,6 +29,9 @@ from ecomsre.telemetry.http import (
 )
 from ecomsre.telemetry.jaeger import JaegerAdapter
 from ecomsre.telemetry.opensearch import OpenSearchAdapter
+from ecomsre.telemetry.opensearch_identity import (
+    parse_opensearch_service_identity,
+)
 from ecomsre.telemetry.probe import (
     ReadinessGateName,
     acquire_collector_pipeline_receipt,
@@ -56,13 +61,302 @@ from ecomsre.telemetry.prometheus import (
 class ReadinessCollectionError(RuntimeError):
     """Fresh readiness could not be proven without widening authority."""
 
+    def __init__(
+        self,
+        reason_code: str,
+        *,
+        artifact_path: str | None = None,
+    ) -> None:
+        self.reason_code = reason_code
+        self.artifact_path = artifact_path
+        super().__init__(reason_code)
+
+
+class CandidateEndpointPreHttpDiagnostic(BaseModel):
+    """Typed endpoint truth when readiness aborts before any HTTP attempt."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    http_status: Literal["NOT_ATTEMPTED"] = "NOT_ATTEMPTED"
+    transport_reason: Literal["NOT_ATTEMPTED"] = "NOT_ATTEMPTED"
+    raw_artifact: None = None
+    parse_reason: Literal["NOT_ATTEMPTED_NO_HTTP_RESPONSE"] = (
+        "NOT_ATTEMPTED_NO_HTTP_RESPONSE"
+    )
+    freshness_reason: str = Field(min_length=1)
+
+
+class CandidatePropagationPreHttpDiagnostic(BaseModel):
+    """Typed propagation truth when no underlying check was attempted."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    raw_artifact: None = None
+    parse_reason: Literal["NOT_ATTEMPTED"] = "NOT_ATTEMPTED"
+    freshness_reason: Literal["NOT_EVALUATED"] = "NOT_EVALUATED"
+
+
+class CandidateReadinessPreHttpFailure(BaseModel):
+    """Machine-readable gate matrix for a readiness failure before HTTP."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    schema_version: Literal["phase0.candidate-readiness-pre-http-failure.v1"]
+    run_id: str = Field(pattern=r"^[0-9a-f]{32}$")
+    preflight_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    ownership_manifest_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    purpose: Literal["INITIAL", "CONTROL_MUTATION"]
+    reason_code: str = Field(min_length=1)
+    failure_detail: str = Field(min_length=1)
+    attempt_count: Literal[0] = 0
+    endpoint_gates: dict[str, Literal["NOT_EVALUATED"]]
+    propagation_gates: dict[str, Literal["NOT_EVALUATED"]]
+    endpoint_diagnostics: dict[str, CandidateEndpointPreHttpDiagnostic]
+    propagation_diagnostics: dict[
+        str,
+        CandidatePropagationPreHttpDiagnostic,
+    ]
+    raw_artifacts: tuple[()] = ()
+
+    @model_validator(mode="after")
+    def require_exact_gate_diagnostics(
+        self,
+    ) -> "CandidateReadinessPreHttpFailure":
+        if (
+            set(self.endpoint_gates) != _CANDIDATE_ENDPOINT_NAMES
+            or set(self.endpoint_diagnostics) != _CANDIDATE_ENDPOINT_NAMES
+        ):
+            raise ValueError("endpoint diagnostic keys are not exact")
+        if (
+            set(self.propagation_gates) != _CANDIDATE_PROPAGATION_NAMES
+            or set(self.propagation_diagnostics)
+            != _CANDIDATE_PROPAGATION_NAMES
+        ):
+            raise ValueError("propagation diagnostic keys are not exact")
+        return self
+
+
+_CANDIDATE_TRANSPORT_FAILURE_REASONS = frozenset(
+    {
+        "RESOURCE_OWNERSHIP_UNKNOWN",
+        "HTTP_DEADLINE_EXCEEDED",
+        "HTTP_TRANSPORT_ERROR",
+    }
+)
+_CANDIDATE_PARSE_FAILURE_REASONS = frozenset(
+    {
+        "PROMETHEUS_JSON_INVALID",
+        "PROMETHEUS_SCHEMA_INVALID",
+        "PROMETHEUS_IDENTITY_MISMATCH",
+        "JAEGER_JSON_INVALID",
+        "JAEGER_SCHEMA_INVALID",
+        "OPENSEARCH_JSON_INVALID",
+        "OPENSEARCH_SCHEMA_INVALID",
+        "OPENSEARCH_EMPTY_HIT_SET",
+        "OPENSEARCH_IDENTITY_MISMATCH",
+        "OPENSEARCH_TIMESTAMP_INVALID",
+        "OPENSEARCH_SERVICE_IDENTITY_MISSING",
+        "OPENSEARCH_SERVICE_IDENTITY_TYPE_INVALID",
+        "OPENSEARCH_SERVICE_IDENTITY_SHAPE_INVALID",
+        "OPENSEARCH_SERVICE_IDENTITY_CONFLICT",
+        "OPENSEARCH_SERVICE_IDENTITY_FIELD_UNSUPPORTED",
+        "PROBE_JSON_INVALID",
+        "PROBE_SCHEMA_INVALID",
+    }
+)
+_CANDIDATE_PARSED_FRESHNESS_CHAINS = frozenset(
+    {
+        (
+            "PROMETHEUS_IDENTITY_MATCH",
+            "PASSED",
+            "PROMETHEUS_CURRENT_SAMPLE",
+        ),
+        (
+            "PROMETHEUS_IDENTITY_MATCH",
+            "FAILED",
+            "PROMETHEUS_STALE_SAMPLE",
+        ),
+        ("JAEGER_IDENTITY_MATCH", "PASSED", "JAEGER_CURRENT_TRACE"),
+        (
+            "JAEGER_SCHEMA_PARSED",
+            "FAILED",
+            "JAEGER_CURRENT_TRACE_NOT_FOUND",
+        ),
+        ("OPENSEARCH_IDENTITY_MATCH", "PASSED", "OPENSEARCH_CURRENT_LOG"),
+        ("OPENSEARCH_IDENTITY_MATCH", "FAILED", "OPENSEARCH_STALE_LOG"),
+        (
+            "PROBE_AD_ARRAY_PARSED",
+            "PASSED",
+            "PROBE_CURRENT_ATTEMPT_RESPONSE",
+        ),
+    }
+)
+_CANDIDATE_LIFECYCLE_FRESHNESS_CHAINS = frozenset(
+    {
+        ("PASSED", "LOAD_GENERATOR_HEALTHY"),
+        ("FAILED", "LOAD_GENERATOR_NOT_HEALTHY"),
+        ("PASSED", "OTEL_COLLECTOR_HEALTHY"),
+        ("FAILED", "OTEL_COLLECTOR_NOT_HEALTHY"),
+    }
+)
+
+
+class CandidateGateDiagnostic(BaseModel):
+    """Final-attempt truth for one post-HTTP readiness gate."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    attempt: int = Field(ge=1, le=6)
+    raw_artifact: str = Field(min_length=1)
+    transport_outcome: Literal["PASSED", "FAILED", "NOT_APPLICABLE"]
+    transport_reason: str = Field(min_length=1)
+    http_outcome: Literal[
+        "PASSED",
+        "FAILED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE",
+    ]
+    http_status: int | None = Field(default=None, ge=100, le=599)
+    http_reason: str = Field(min_length=1)
+    parse_outcome: Literal["PASSED", "FAILED", "NOT_EVALUATED"]
+    parse_reason: str = Field(min_length=1)
+    freshness_outcome: Literal["PASSED", "FAILED", "NOT_EVALUATED"]
+    freshness_reason: str = Field(min_length=1)
+
+    @property
+    def passed(self) -> bool:
+        return (
+            self.transport_outcome in {"PASSED", "NOT_APPLICABLE"}
+            and self.http_outcome in {"PASSED", "NOT_APPLICABLE"}
+            and self.parse_outcome == "PASSED"
+            and self.freshness_outcome == "PASSED"
+        )
+
+    @model_validator(mode="after")
+    def require_outcome_chain(self) -> "CandidateGateDiagnostic":
+        lifecycle_chain = (
+            self.transport_outcome == "NOT_APPLICABLE"
+            and self.transport_reason == "NOT_APPLICABLE_LIFECYCLE_ARTIFACT"
+            and self.http_outcome == "NOT_APPLICABLE"
+            and self.http_status is None
+            and self.http_reason == "NOT_APPLICABLE_LIFECYCLE_ARTIFACT"
+            and self.parse_outcome == "PASSED"
+            and self.parse_reason == "LIFECYCLE_VERIFIED_ARTIFACT_PARSED"
+            and (self.freshness_outcome, self.freshness_reason)
+            in _CANDIDATE_LIFECYCLE_FRESHNESS_CHAINS
+        )
+        if lifecycle_chain:
+            return self
+
+        transport_failure_chain = (
+            self.transport_outcome == "FAILED"
+            and self.transport_reason in _CANDIDATE_TRANSPORT_FAILURE_REASONS
+            and self.http_outcome == "NOT_EVALUATED"
+            and self.http_status is None
+            and self.http_reason == "NOT_EVALUATED_TRANSPORT_FAILURE"
+            and self.parse_outcome == "NOT_EVALUATED"
+            and self.parse_reason == "NOT_EVALUATED_TRANSPORT_FAILURE"
+            and self.freshness_outcome == "NOT_EVALUATED"
+            and self.freshness_reason == "NOT_EVALUATED_TRANSPORT_FAILURE"
+        )
+        http_failure_chain = (
+            self.transport_outcome == "PASSED"
+            and self.transport_reason == "TRANSPORT_SUCCEEDED"
+            and self.http_outcome == "FAILED"
+            and _candidate_http_failure_matches_status(
+                self.http_reason,
+                self.http_status,
+            )
+            and self.parse_outcome == "NOT_EVALUATED"
+            and self.parse_reason == "NOT_EVALUATED_HTTP_FAILURE"
+            and self.freshness_outcome == "NOT_EVALUATED"
+            and self.freshness_reason == "NOT_EVALUATED_HTTP_FAILURE"
+        )
+        parsed_http_chain = (
+            self.transport_outcome == "PASSED"
+            and self.transport_reason == "TRANSPORT_SUCCEEDED"
+            and self.http_outcome == "PASSED"
+            and self.http_status is not None
+            and 200 <= self.http_status < 300
+            and self.http_reason == "HTTP_STATUS_OK"
+            and (
+                (
+                    self.parse_outcome == "FAILED"
+                    and self.parse_reason in _CANDIDATE_PARSE_FAILURE_REASONS
+                    and self.freshness_outcome == "NOT_EVALUATED"
+                    and self.freshness_reason == "NOT_EVALUATED_PARSE_FAILURE"
+                )
+                or (
+                    self.parse_outcome == "PASSED"
+                    and (
+                        self.parse_reason,
+                        self.freshness_outcome,
+                        self.freshness_reason,
+                    )
+                    in _CANDIDATE_PARSED_FRESHNESS_CHAINS
+                )
+            )
+        )
+        if transport_failure_chain or http_failure_chain or parsed_http_chain:
+            return self
+        raise ValueError("candidate diagnostic state chain is invalid")
+
+
+def _candidate_http_failure_matches_status(
+    reason: str,
+    status: int | None,
+) -> bool:
+    if reason in {"HTTP_HEADER_LIMIT_EXCEEDED", "HTTP_BODY_LIMIT_EXCEEDED"}:
+        return status is not None
+    if reason == "HTTP_REDIRECT_FORBIDDEN":
+        return status is not None and 300 <= status <= 399
+    if reason == "HTTP_STATUS_ERROR":
+        return status is not None and (status < 200 or status >= 400)
+    if reason == "HTTP_STATUS_INVALID":
+        return status is None or not 200 <= status < 300
+    return False
+
+
+def _candidate_endpoint_reason_family_matches(
+    endpoint: str,
+    diagnostic: CandidateGateDiagnostic,
+) -> bool:
+    if diagnostic.parse_outcome == "NOT_EVALUATED":
+        return True
+    prefix = {
+        "prometheus": "PROMETHEUS_",
+        "jaeger": "JAEGER_",
+        "opensearch": "OPENSEARCH_",
+        "probe": "PROBE_",
+    }.get(endpoint)
+    if prefix is None or not diagnostic.parse_reason.startswith(prefix):
+        return False
+    return (
+        diagnostic.freshness_outcome == "NOT_EVALUATED"
+        or diagnostic.freshness_reason.startswith(prefix)
+    )
+
+
+def _candidate_lifecycle_reason_family_matches(
+    gate_name: str,
+    diagnostic: CandidateGateDiagnostic,
+) -> bool:
+    prefix = {
+        "load_generator_healthy": "LOAD_GENERATOR_",
+        "otel_collector_healthy": "OTEL_COLLECTOR_",
+    }.get(gate_name)
+    return prefix is not None and diagnostic.freshness_reason.startswith(prefix)
+
 
 class CandidateInitialReadiness(BaseModel):
     """Pre-control endpoint/lifecycle proof that makes no frozen-query claim."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    schema_version: str = "phase0.candidate-initial-readiness.v1"
+    schema_version: Literal[
+        "phase0.candidate-initial-readiness.v1",
+        "phase0.candidate-initial-readiness.v2",
+    ] = "phase0.candidate-initial-readiness.v2"
     run_id: str = Field(pattern=r"^[0-9a-f]{32}$")
     preflight_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     ownership_manifest_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
@@ -74,12 +368,89 @@ class CandidateInitialReadiness(BaseModel):
     window_started_at: datetime
     window_ended_at: datetime
     propagation_gates: dict[str, bool]
+    endpoint_diagnostics: dict[str, CandidateGateDiagnostic] | None = None
+    propagation_diagnostics: dict[str, CandidateGateDiagnostic] | None = None
     raw_artifacts: tuple[str, ...]
     registry_frozen_claimed: bool = False
     lifecycle_artifact: str
     lifecycle_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
-    evidence_artifact: str
-    evidence_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    evidence_artifact: str | None = None
+    evidence_sha256: str | None = Field(
+        default=None,
+        pattern=r"^[0-9a-f]{64}$",
+    )
+
+    @model_validator(mode="after")
+    def require_versioned_diagnostics(self) -> "CandidateInitialReadiness":
+        if (self.evidence_artifact is None) != (self.evidence_sha256 is None):
+            raise ValueError("candidate evidence path and hash must be paired")
+        if self.schema_version.endswith(".v1"):
+            if (
+                self.endpoint_diagnostics is not None
+                or self.propagation_diagnostics is not None
+            ):
+                raise ValueError("candidate readiness v1 cannot contain diagnostics")
+            return self
+        if set(self.endpoint_gates) != _CANDIDATE_ENDPOINT_NAMES:
+            raise ValueError("endpoint gate keys are not exact")
+        if set(self.propagation_gates) != _CANDIDATE_PROPAGATION_NAMES:
+            raise ValueError("propagation gate keys are not exact")
+        if (
+            self.endpoint_diagnostics is None
+            or set(self.endpoint_diagnostics) != _CANDIDATE_ENDPOINT_NAMES
+        ):
+            raise ValueError("endpoint diagnostic keys are not exact")
+        if (
+            self.propagation_diagnostics is None
+            or set(self.propagation_diagnostics)
+            != _CANDIDATE_PROPAGATION_NAMES
+        ):
+            raise ValueError("propagation diagnostic keys are not exact")
+        for name, gate in self.endpoint_gates.items():
+            if gate != self.endpoint_diagnostics[name].passed:
+                raise ValueError("endpoint gate and diagnostic disagree")
+            diagnostic = self.endpoint_diagnostics[name]
+            expected_suffix = (
+                f"attempt-{self.attempt_count:02d}-{name}-raw.json"
+            )
+            if (
+                diagnostic.attempt != self.attempt_count
+                or diagnostic.raw_artifact not in self.raw_artifacts
+                or not diagnostic.raw_artifact.endswith(expected_suffix)
+            ):
+                raise ValueError("endpoint diagnostic does not map final raw artifact")
+            if not _candidate_endpoint_reason_family_matches(name, diagnostic):
+                raise ValueError("endpoint diagnostic reason family differs")
+        backend_mappings = {
+            "prometheus_ad_getads_current": "prometheus",
+            "jaeger_load_to_ad_getads_current": "jaeger",
+            "opensearch_ad_log_current": "opensearch",
+        }
+        for gate_name, endpoint_name in backend_mappings.items():
+            diagnostic = self.propagation_diagnostics[gate_name]
+            endpoint_diagnostic = self.endpoint_diagnostics[endpoint_name]
+            if diagnostic != endpoint_diagnostic:
+                raise ValueError(
+                    "backend propagation diagnostic differs from endpoint diagnostic"
+                )
+        for gate_name in ("load_generator_healthy", "otel_collector_healthy"):
+            if (
+                self.propagation_diagnostics[gate_name].raw_artifact
+                != self.lifecycle_artifact
+            ):
+                raise ValueError("lifecycle diagnostic raw mapping differs")
+            if not _candidate_lifecycle_reason_family_matches(
+                gate_name,
+                self.propagation_diagnostics[gate_name],
+            ):
+                raise ValueError("lifecycle diagnostic reason family differs")
+        for name, gate in self.propagation_gates.items():
+            diagnostic = self.propagation_diagnostics[name]
+            if gate != diagnostic.passed:
+                raise ValueError("propagation gate and diagnostic disagree")
+            if diagnostic.attempt != self.attempt_count:
+                raise ValueError("propagation diagnostic attempt differs")
+        return self
 
     @property
     def ready(self) -> bool:
@@ -119,6 +490,20 @@ class CandidateReadinessPolicy(BaseModel):
     window_seconds: Literal[60] = 60
 
 
+_CANDIDATE_ENDPOINT_NAMES = frozenset(
+    ("prometheus", "jaeger", "opensearch", "probe")
+)
+_CANDIDATE_PROPAGATION_NAMES = frozenset(
+    (
+        "prometheus_ad_getads_current",
+        "jaeger_load_to_ad_getads_current",
+        "opensearch_ad_log_current",
+        "load_generator_healthy",
+        "otel_collector_healthy",
+    )
+)
+
+
 def collect_candidate_initial_readiness(
     *,
     project_root: Path,
@@ -129,26 +514,67 @@ def collect_candidate_initial_readiness(
     retry_sleep: Callable[[float], None] = time.sleep,
 ) -> CandidateInitialReadiness:
     """Prove lifecycle ownership and candidate endpoints before any control write."""
+    prefix = f"lifecycle/initial-readiness/{time.monotonic_ns()}"
     if (
         not preflight.is_current()
         or not ownership.is_authentic()
         or preflight.run_id != ownership.run_id
     ):
-        raise ReadinessCollectionError("INITIAL_READINESS_AUTHORITY_INVALID")
+        reason_code = "INITIAL_READINESS_AUTHORITY_INVALID"
+        artifact_path = None
+        if _candidate_pre_http_persistence_allowed(
+            preflight=preflight,
+            ownership=ownership,
+        ):
+            failure = _persist_candidate_pre_http_failure(
+                artifacts_root=artifacts_root,
+                ownership=ownership,
+                preflight=preflight,
+                purpose=purpose,
+                prefix=prefix,
+                reason_code=reason_code,
+                failure_detail=reason_code,
+            )
+            artifact_path = str(failure.path)
+        raise ReadinessCollectionError(
+            reason_code,
+            artifact_path=artifact_path,
+        )
     policy = CandidateReadinessPolicy()
-    retry_sleep(policy.initial_delay_seconds)
-    (
-        lifecycle_artifact,
-        lifecycle_sha256,
-        lifecycle_gates,
-    ) = _verify_initial_lifecycle_ownership(
-        project_root=project_root,
-        artifacts_root=artifacts_root,
-        preflight=preflight,
-        ownership=ownership,
-    )
-    base_urls = _owned_base_urls(ownership)
-    client = OwnedHttpClient(context=ownership)
+    try:
+        (
+            lifecycle_artifact,
+            lifecycle_sha256,
+            lifecycle_gates,
+        ) = _verify_initial_lifecycle_ownership(
+            project_root=project_root,
+            artifacts_root=artifacts_root,
+            preflight=preflight,
+            ownership=ownership,
+        )
+        base_urls = _owned_base_urls(ownership)
+        client = OwnedHttpClient(context=ownership)
+    except (OSError, RuntimeError, TypeError, ValueError) as error:
+        reason_code = _candidate_pre_http_reason_code(error)
+        artifact_path = None
+        if _candidate_pre_http_persistence_allowed(
+            preflight=preflight,
+            ownership=ownership,
+        ):
+            failure = _persist_candidate_pre_http_failure(
+                artifacts_root=artifacts_root,
+                ownership=ownership,
+                preflight=preflight,
+                purpose=purpose,
+                prefix=prefix,
+                reason_code=reason_code,
+                failure_detail=str(error) or type(error).__name__,
+            )
+            artifact_path = str(failure.path)
+        raise ReadinessCollectionError(
+            reason_code,
+            artifact_path=artifact_path,
+        ) from error
     started_at = datetime.now(UTC)
     monotonic_started = time.monotonic()
     window = PhaseWindow(
@@ -168,9 +594,10 @@ def collect_candidate_initial_readiness(
         **lifecycle_gates,
     }
     raw_artifacts: list[str] = []
+    endpoint_diagnostics: dict[str, CandidateGateDiagnostic] = {}
+    propagation_diagnostics: dict[str, CandidateGateDiagnostic] = {}
     attempt_count = 0
     with ObserverEvidenceStore(artifacts_root, ownership.run_id) as store:
-        prefix = f"lifecycle/initial-readiness/{time.monotonic_ns()}"
         for attempt in range(1, policy.max_attempts + 1):
             attempt_count = attempt
             exchanges = _candidate_signal_exchanges(
@@ -198,12 +625,17 @@ def collect_candidate_initial_readiness(
                         "raw_response_sha256": exchange.raw_sha256,
                     },
                 )
-                raw_artifacts.append(str(raw.path))
-                gates[name] = _candidate_endpoint_ready(
+                raw_artifact = str(raw.path)
+                raw_artifacts.append(raw_artifact)
+                diagnostic = _candidate_endpoint_diagnostic(
                     name,
                     exchange,
+                    attempt=attempt,
+                    raw_artifact=raw_artifact,
                     window=window,
                 )
+                endpoint_diagnostics[name] = diagnostic
+                gates[name] = diagnostic.passed
             propagation.update(
                 {
                     "prometheus_ad_getads_current": gates["prometheus"],
@@ -211,6 +643,29 @@ def collect_candidate_initial_readiness(
                     "opensearch_ad_log_current": gates["opensearch"],
                 }
             )
+            propagation_diagnostics = {
+                "prometheus_ad_getads_current": endpoint_diagnostics[
+                    "prometheus"
+                ],
+                "jaeger_load_to_ad_getads_current": endpoint_diagnostics[
+                    "jaeger"
+                ],
+                "opensearch_ad_log_current": endpoint_diagnostics[
+                    "opensearch"
+                ],
+                "load_generator_healthy": _candidate_lifecycle_diagnostic(
+                    gate_name="load_generator_healthy",
+                    passed=propagation["load_generator_healthy"],
+                    attempt=attempt,
+                    lifecycle_artifact=lifecycle_artifact,
+                ),
+                "otel_collector_healthy": _candidate_lifecycle_diagnostic(
+                    gate_name="otel_collector_healthy",
+                    passed=propagation["otel_collector_healthy"],
+                    attempt=attempt,
+                    lifecycle_artifact=lifecycle_artifact,
+                ),
+            }
             endpoints_ready = (
                 all(gates.values())
                 if purpose == "INITIAL"
@@ -227,26 +682,35 @@ def collect_candidate_initial_readiness(
                 < window.monotonic_ended_at
             ):
                 retry_sleep(policy.retry_interval_seconds)
-        summary_payload = {
-            "schema_version": "phase0.candidate-initial-readiness.v1",
-            "run_id": ownership.run_id,
-            "preflight_sha256": preflight.content_sha256,
-            "ownership_manifest_sha256": ownership.manifest_sha256,
-            "purpose": purpose,
-            "endpoint_gates": gates,
-            "propagation_authority": "CANDIDATE_OWNED_CURRENT_RUN",
-            "attempt_count": attempt_count,
-            "max_attempts": policy.max_attempts,
-            "window_started_at": window.utc_started_at.isoformat(),
-            "window_ended_at": window.utc_ended_at.isoformat(),
-            "propagation_gates": propagation,
-            "registry_frozen_claimed": False,
-            "lifecycle_artifact": lifecycle_artifact,
-            "lifecycle_sha256": lifecycle_sha256,
-            "raw_artifacts": raw_artifacts,
-        }
-        summary = store.write_immutable(f"{prefix}/summary.json", summary_payload)
+        candidate_summary = CandidateInitialReadiness(
+            schema_version="phase0.candidate-initial-readiness.v2",
+            run_id=ownership.run_id,
+            preflight_sha256=preflight.content_sha256,
+            ownership_manifest_sha256=ownership.manifest_sha256,
+            purpose=purpose,
+            endpoint_gates=gates,
+            propagation_authority="CANDIDATE_OWNED_CURRENT_RUN",
+            attempt_count=attempt_count,
+            max_attempts=policy.max_attempts,
+            window_started_at=window.utc_started_at,
+            window_ended_at=window.utc_ended_at,
+            propagation_gates=propagation,
+            endpoint_diagnostics=endpoint_diagnostics,
+            propagation_diagnostics=propagation_diagnostics,
+            raw_artifacts=tuple(raw_artifacts),
+            registry_frozen_claimed=False,
+            lifecycle_artifact=lifecycle_artifact,
+            lifecycle_sha256=lifecycle_sha256,
+        )
+        summary = store.write_immutable(
+            f"{prefix}/summary.json",
+            candidate_summary.model_dump(
+                mode="json",
+                exclude={"evidence_artifact", "evidence_sha256"},
+            ),
+        )
     evidence = CandidateInitialReadiness(
+        schema_version="phase0.candidate-initial-readiness.v2",
         run_id=ownership.run_id,
         preflight_sha256=preflight.content_sha256,
         ownership_manifest_sha256=ownership.manifest_sha256,
@@ -257,6 +721,8 @@ def collect_candidate_initial_readiness(
         window_started_at=window.utc_started_at,
         window_ended_at=window.utc_ended_at,
         propagation_gates=propagation,
+        endpoint_diagnostics=endpoint_diagnostics,
+        propagation_diagnostics=propagation_diagnostics,
         raw_artifacts=tuple(raw_artifacts),
         registry_frozen_claimed=False,
         lifecycle_artifact=lifecycle_artifact,
@@ -265,8 +731,80 @@ def collect_candidate_initial_readiness(
         evidence_sha256=summary.sha256,
     )
     if not evidence.ready:
-        raise ReadinessCollectionError("INITIAL_CANDIDATE_READINESS_INCOMPLETE")
+        raise ReadinessCollectionError(
+            "INITIAL_CANDIDATE_READINESS_INCOMPLETE",
+            artifact_path=str(summary.path),
+        )
     return evidence
+
+
+def _candidate_pre_http_reason_code(error: BaseException) -> str:
+    detail = str(error)
+    if detail == "lifecycle runner authority is invalid":
+        return "INITIAL_READINESS_LIFECYCLE_AUTHORITY_INVALID"
+    if detail == "lifecycle runner Docker binding is invalid":
+        return "INITIAL_READINESS_LIFECYCLE_DOCKER_BINDING_INVALID"
+    return "INITIAL_READINESS_PRE_HTTP_FAILURE"
+
+
+def _candidate_pre_http_persistence_allowed(
+    *,
+    preflight: AuthenticatedPreflightEvidence,
+    ownership: AuthenticatedOwnershipContext,
+) -> bool:
+    return (
+        preflight.is_authentic()
+        and ownership.is_authentic()
+        and preflight.run_id == ownership.run_id
+    )
+
+
+def _persist_candidate_pre_http_failure(
+    *,
+    artifacts_root: Path,
+    ownership: AuthenticatedOwnershipContext,
+    preflight: AuthenticatedPreflightEvidence,
+    purpose: Literal["INITIAL", "CONTROL_MUTATION"],
+    prefix: str,
+    reason_code: str,
+    failure_detail: str,
+):
+    if not _candidate_pre_http_persistence_allowed(
+        preflight=preflight,
+        ownership=ownership,
+    ):
+        raise ValueError("pre-HTTP failure evidence authority is invalid")
+    diagnostic = CandidateEndpointPreHttpDiagnostic(
+        freshness_reason=reason_code,
+    )
+    propagation_diagnostic = CandidatePropagationPreHttpDiagnostic()
+    failure = CandidateReadinessPreHttpFailure(
+        schema_version="phase0.candidate-readiness-pre-http-failure.v1",
+        run_id=ownership.run_id,
+        preflight_sha256=preflight.content_sha256,
+        ownership_manifest_sha256=ownership.manifest_sha256,
+        purpose=purpose,
+        reason_code=reason_code,
+        failure_detail=failure_detail,
+        endpoint_gates={
+            name: "NOT_EVALUATED" for name in _CANDIDATE_ENDPOINT_NAMES
+        },
+        propagation_gates={
+            name: "NOT_EVALUATED" for name in _CANDIDATE_PROPAGATION_NAMES
+        },
+        endpoint_diagnostics={
+            name: diagnostic for name in _CANDIDATE_ENDPOINT_NAMES
+        },
+        propagation_diagnostics={
+            name: propagation_diagnostic
+            for name in _CANDIDATE_PROPAGATION_NAMES
+        },
+    )
+    with ObserverEvidenceStore(artifacts_root, ownership.run_id) as store:
+        return store.write_immutable(
+            f"{prefix}/pre-http-failure.json",
+            failure,
+        )
 
 
 def _candidate_signal_exchanges(
@@ -360,96 +898,369 @@ def _candidate_signal_exchanges(
     return {name: client.request(request) for name, request in targets.items()}
 
 
-def _candidate_endpoint_ready(
+def _candidate_endpoint_diagnostic(
     name: str,
-    exchange: object,
+    exchange: HttpExchange,
     *,
+    attempt: int,
+    raw_artifact: str,
     window: PhaseWindow,
-) -> bool:
-    if not getattr(exchange, "succeeded", False):
-        return False
-    body = exchange.raw_body
+) -> CandidateGateDiagnostic:
+    transport_failures = {
+        HttpReason.RESOURCE_OWNERSHIP_UNKNOWN,
+        HttpReason.HTTP_DEADLINE_EXCEEDED,
+        HttpReason.HTTP_TRANSPORT_ERROR,
+    }
+    if exchange.reason in transport_failures:
+        return CandidateGateDiagnostic(
+            attempt=attempt,
+            raw_artifact=raw_artifact,
+            transport_outcome="FAILED",
+            transport_reason=exchange.reason.value,
+            http_outcome="NOT_EVALUATED",
+            http_status=None,
+            http_reason="NOT_EVALUATED_TRANSPORT_FAILURE",
+            parse_outcome="NOT_EVALUATED",
+            parse_reason="NOT_EVALUATED_TRANSPORT_FAILURE",
+            freshness_outcome="NOT_EVALUATED",
+            freshness_reason="NOT_EVALUATED_TRANSPORT_FAILURE",
+        )
+    if exchange.reason is not HttpReason.OK:
+        return CandidateGateDiagnostic(
+            attempt=attempt,
+            raw_artifact=raw_artifact,
+            transport_outcome="PASSED",
+            transport_reason="TRANSPORT_SUCCEEDED",
+            http_outcome="FAILED",
+            http_status=exchange.status_code,
+            http_reason=exchange.reason.value,
+            parse_outcome="NOT_EVALUATED",
+            parse_reason="NOT_EVALUATED_HTTP_FAILURE",
+            freshness_outcome="NOT_EVALUATED",
+            freshness_reason="NOT_EVALUATED_HTTP_FAILURE",
+        )
+    if exchange.status_code is None or not 200 <= exchange.status_code < 300:
+        return CandidateGateDiagnostic(
+            attempt=attempt,
+            raw_artifact=raw_artifact,
+            transport_outcome="PASSED",
+            transport_reason="TRANSPORT_SUCCEEDED",
+            http_outcome="FAILED",
+            http_status=exchange.status_code,
+            http_reason="HTTP_STATUS_INVALID",
+            parse_outcome="NOT_EVALUATED",
+            parse_reason="NOT_EVALUATED_HTTP_FAILURE",
+            freshness_outcome="NOT_EVALUATED",
+            freshness_reason="NOT_EVALUATED_HTTP_FAILURE",
+        )
     try:
-        payload = json.loads(body)
-        if name == "prometheus":
-            return _candidate_prometheus_has_current_ad_getads(payload, window)
-        if name == "jaeger":
+        payload = json.loads(exchange.raw_body)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        parse_outcome = "FAILED"
+        parse_reason = f"{name.upper()}_JSON_INVALID"
+        freshness_outcome = "NOT_EVALUATED"
+        freshness_reason = "NOT_EVALUATED_PARSE_FAILURE"
+    else:
+        (
+            parse_outcome,
+            parse_reason,
+            freshness_outcome,
+            freshness_reason,
+        ) = _candidate_payload_diagnostic(
+            name,
+            payload,
+            body=exchange.raw_body,
+            window=window,
+        )
+    return CandidateGateDiagnostic(
+        attempt=attempt,
+        raw_artifact=raw_artifact,
+        transport_outcome="PASSED",
+        transport_reason="TRANSPORT_SUCCEEDED",
+        http_outcome="PASSED",
+        http_status=exchange.status_code,
+        http_reason="HTTP_STATUS_OK",
+        parse_outcome=parse_outcome,
+        parse_reason=parse_reason,
+        freshness_outcome=freshness_outcome,
+        freshness_reason=freshness_reason,
+    )
+
+
+def _candidate_payload_diagnostic(
+    name: str,
+    payload: object,
+    *,
+    body: bytes,
+    window: PhaseWindow,
+) -> tuple[str, str, str, str]:
+    if name == "prometheus":
+        return _candidate_prometheus_diagnostic(payload, window)
+    if name == "jaeger":
+        if not isinstance(payload, dict) or not isinstance(
+            payload.get("data"), list
+        ):
             return (
-                _jaeger_trace_proves_load_generator_and_getads(
-                    payload,
-                    window=window,
-                )
-                is not None
+                "FAILED",
+                "JAEGER_SCHEMA_INVALID",
+                "NOT_EVALUATED",
+                "NOT_EVALUATED_PARSE_FAILURE",
             )
-        if name == "opensearch":
-            return _candidate_opensearch_has_current_ad_log(payload, window)
+        if (
+            _jaeger_trace_proves_load_generator_and_getads(
+                payload,
+                window=window,
+            )
+            is None
+        ):
+            return (
+                "PASSED",
+                "JAEGER_SCHEMA_PARSED",
+                "FAILED",
+                "JAEGER_CURRENT_TRACE_NOT_FOUND",
+            )
+        return (
+            "PASSED",
+            "JAEGER_IDENTITY_MATCH",
+            "PASSED",
+            "JAEGER_CURRENT_TRACE",
+        )
+    if name == "opensearch":
+        return _candidate_opensearch_diagnostic(payload, window)
+    if name != "probe":
+        raise ValueError("candidate endpoint name is unknown")
+    try:
         _verify_direct_ad_array(body)
-        return True
-    except (json.JSONDecodeError, UnicodeDecodeError, TypeError, ValueError):
-        return False
+    except (TypeError, ValueError):
+        return (
+            "FAILED",
+            "PROBE_SCHEMA_INVALID",
+            "NOT_EVALUATED",
+            "NOT_EVALUATED_PARSE_FAILURE",
+        )
+    return (
+        "PASSED",
+        "PROBE_AD_ARRAY_PARSED",
+        "PASSED",
+        "PROBE_CURRENT_ATTEMPT_RESPONSE",
+    )
 
 
-def _candidate_prometheus_has_current_ad_getads(
+def _candidate_prometheus_diagnostic(
     payload: object,
     window: PhaseWindow,
-) -> bool:
+) -> tuple[str, str, str, str]:
     if not isinstance(payload, dict) or payload.get("status") != "success":
-        return False
+        return (
+            "FAILED",
+            "PROMETHEUS_SCHEMA_INVALID",
+            "NOT_EVALUATED",
+            "NOT_EVALUATED_PARSE_FAILURE",
+        )
     data = payload.get("data")
     if not isinstance(data, dict) or data.get("resultType") != "vector":
-        return False
+        return (
+            "FAILED",
+            "PROMETHEUS_SCHEMA_INVALID",
+            "NOT_EVALUATED",
+            "NOT_EVALUATED_PARSE_FAILURE",
+        )
     result = data.get("result")
     if not isinstance(result, list):
-        return False
+        return (
+            "FAILED",
+            "PROMETHEUS_SCHEMA_INVALID",
+            "NOT_EVALUATED",
+            "NOT_EVALUATED_PARSE_FAILURE",
+        )
+    identity_seen = False
+    stale_seen = False
     for item in result:
         if not isinstance(item, dict) or not isinstance(item.get("metric"), dict):
-            continue
+            return (
+                "FAILED",
+                "PROMETHEUS_SCHEMA_INVALID",
+                "NOT_EVALUATED",
+                "NOT_EVALUATED_PARSE_FAILURE",
+            )
         metric = item["metric"]
         value = item.get("value")
         if (
             metric.get("service_name") != "ad"
             or metric.get("span_name") != "oteldemo.AdService/GetAds"
-            or not isinstance(value, list)
+        ):
+            continue
+        identity_seen = True
+        if (
+            not isinstance(value, list)
             or len(value) != 2
             or isinstance(value[0], bool)
             or not isinstance(value[0], (int, float))
         ):
-            continue
-        observed = datetime.fromtimestamp(value[0], tz=UTC)
+            return (
+                "FAILED",
+                "PROMETHEUS_SCHEMA_INVALID",
+                "NOT_EVALUATED",
+                "NOT_EVALUATED_PARSE_FAILURE",
+            )
+        try:
+            observed = datetime.fromtimestamp(value[0], tz=UTC)
+        except (OSError, OverflowError, ValueError):
+            return (
+                "FAILED",
+                "PROMETHEUS_SCHEMA_INVALID",
+                "NOT_EVALUATED",
+                "NOT_EVALUATED_PARSE_FAILURE",
+            )
         if window.utc_started_at <= observed <= window.utc_ended_at:
-            return True
-    return False
+            return (
+                "PASSED",
+                "PROMETHEUS_IDENTITY_MATCH",
+                "PASSED",
+                "PROMETHEUS_CURRENT_SAMPLE",
+            )
+        stale_seen = True
+    if identity_seen and stale_seen:
+        return (
+            "PASSED",
+            "PROMETHEUS_IDENTITY_MATCH",
+            "FAILED",
+            "PROMETHEUS_STALE_SAMPLE",
+        )
+    return (
+        "FAILED",
+        "PROMETHEUS_IDENTITY_MISMATCH",
+        "NOT_EVALUATED",
+        "NOT_EVALUATED_PARSE_FAILURE",
+    )
 
 
-def _candidate_opensearch_has_current_ad_log(
+def _candidate_opensearch_diagnostic(
     payload: object,
     window: PhaseWindow,
-) -> bool:
+) -> tuple[str, str, str, str]:
     if not isinstance(payload, dict):
-        return False
+        return (
+            "FAILED",
+            "OPENSEARCH_SCHEMA_INVALID",
+            "NOT_EVALUATED",
+            "NOT_EVALUATED_PARSE_FAILURE",
+        )
     hits = payload.get("hits")
     if not isinstance(hits, dict) or not isinstance(hits.get("hits"), list):
-        return False
+        return (
+            "FAILED",
+            "OPENSEARCH_SCHEMA_INVALID",
+            "NOT_EVALUATED",
+            "NOT_EVALUATED_PARSE_FAILURE",
+        )
+    if not hits["hits"]:
+        return (
+            "FAILED",
+            "OPENSEARCH_EMPTY_HIT_SET",
+            "NOT_EVALUATED",
+            "NOT_EVALUATED_PARSE_FAILURE",
+        )
+    identity_seen = False
+    stale_seen = False
     for hit in hits["hits"]:
         source = hit.get("_source") if isinstance(hit, dict) else None
         if not isinstance(source, dict):
+            return (
+                "FAILED",
+                "OPENSEARCH_SCHEMA_INVALID",
+                "NOT_EVALUATED",
+                "NOT_EVALUATED_PARSE_FAILURE",
+            )
+        identity = parse_opensearch_service_identity(
+            source,
+            field="resource.service.name",
+        )
+        if not identity.parsed:
+            return (
+                "FAILED",
+                identity.reason.value,
+                "NOT_EVALUATED",
+                "NOT_EVALUATED_PARSE_FAILURE",
+            )
+        if identity.value != "ad":
             continue
-        resource = source.get("resource")
-        service = resource.get("service") if isinstance(resource, dict) else None
+        identity_seen = True
         timestamp = source.get("@timestamp")
-        if (
-            not isinstance(service, dict)
-            or service.get("name") != "ad"
-            or not isinstance(timestamp, str)
-        ):
-            continue
+        if not isinstance(timestamp, str):
+            return (
+                "FAILED",
+                "OPENSEARCH_TIMESTAMP_INVALID",
+                "NOT_EVALUATED",
+                "NOT_EVALUATED_PARSE_FAILURE",
+            )
         try:
             observed = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
         except ValueError:
-            continue
+            return (
+                "FAILED",
+                "OPENSEARCH_TIMESTAMP_INVALID",
+                "NOT_EVALUATED",
+                "NOT_EVALUATED_PARSE_FAILURE",
+            )
+        if observed.utcoffset() is None:
+            return (
+                "FAILED",
+                "OPENSEARCH_TIMESTAMP_INVALID",
+                "NOT_EVALUATED",
+                "NOT_EVALUATED_PARSE_FAILURE",
+            )
         if window.utc_started_at <= observed <= window.utc_ended_at:
-            return True
-    return False
+            return (
+                "PASSED",
+                "OPENSEARCH_IDENTITY_MATCH",
+                "PASSED",
+                "OPENSEARCH_CURRENT_LOG",
+            )
+        stale_seen = True
+    if identity_seen and stale_seen:
+        return (
+            "PASSED",
+            "OPENSEARCH_IDENTITY_MATCH",
+            "FAILED",
+            "OPENSEARCH_STALE_LOG",
+        )
+    return (
+        "FAILED",
+        "OPENSEARCH_IDENTITY_MISMATCH",
+        "NOT_EVALUATED",
+        "NOT_EVALUATED_PARSE_FAILURE",
+    )
+
+
+def _candidate_lifecycle_diagnostic(
+    *,
+    gate_name: str,
+    passed: bool,
+    attempt: int,
+    lifecycle_artifact: str,
+) -> CandidateGateDiagnostic:
+    service = {
+        "load_generator_healthy": "LOAD_GENERATOR",
+        "otel_collector_healthy": "OTEL_COLLECTOR",
+    }.get(gate_name)
+    if service is None:
+        raise ValueError("candidate lifecycle gate name is unknown")
+    return CandidateGateDiagnostic(
+        attempt=attempt,
+        raw_artifact=lifecycle_artifact,
+        transport_outcome="NOT_APPLICABLE",
+        transport_reason="NOT_APPLICABLE_LIFECYCLE_ARTIFACT",
+        http_outcome="NOT_APPLICABLE",
+        http_status=None,
+        http_reason="NOT_APPLICABLE_LIFECYCLE_ARTIFACT",
+        parse_outcome="PASSED",
+        parse_reason="LIFECYCLE_VERIFIED_ARTIFACT_PARSED",
+        freshness_outcome="PASSED" if passed else "FAILED",
+        freshness_reason=(
+            f"{service}_HEALTHY" if passed else f"{service}_NOT_HEALTHY"
+        ),
+    )
 
 
 def _verify_initial_lifecycle_ownership(

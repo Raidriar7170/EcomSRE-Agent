@@ -14,6 +14,7 @@ from typing import Any, Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from ecomsre.environment.readiness import CandidateReadinessPolicy
 from ecomsre.evidence.hashes import (
     canonical_json_sha256,
     sha256_bytes,
@@ -54,7 +55,6 @@ from ecomsre.telemetry.prometheus import (
     publish_frozen_registry,
     revalidate_frozen_query_capability,
 )
-
 
 class SmokeExecutionError(RuntimeError):
     """A diagnostic smoke failed without claiming formal Phase 0 failure."""
@@ -157,6 +157,8 @@ class SmokeSupervisorOperations(Protocol):
 
     def start_environment(self) -> SmokeEnvironmentStart: ...
 
+    def stabilize_initial_readiness(self, seconds: float) -> None: ...
+
     def fresh_authority(self, boundary: str) -> Any: ...
 
     def initial_readiness(self, authority: Any) -> Any: ...
@@ -220,6 +222,9 @@ def supervise_smoke_attempt(
             )
         else:
             state.environment_started = True
+            operations.stabilize_initial_readiness(
+                CandidateReadinessPolicy().initial_delay_seconds
+            )
             initial = operations.fresh_authority("initial")
             operations.initial_readiness(initial)
             control = operations.open_control(initial)
@@ -593,7 +598,11 @@ def _build_smoke_attempt_evidence(
     initial = tuple(
         str(path)
         for path in sorted(
-            (observer / "lifecycle" / "initial-readiness").glob("*/summary.json")
+            path
+            for path in (
+                observer / "lifecycle" / "initial-readiness"
+            ).glob("*/*.json")
+            if path.name in {"summary.json", "pre-http-failure.json"}
         )
     )
     post = tuple(

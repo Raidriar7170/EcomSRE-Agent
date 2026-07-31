@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phase 0 OpenSearch Readiness Diagnostics 离线修复</title>
+  <style>
+    body { max-width: 900px; margin: 40px auto; padding: 0 24px;
+      font: 16px/1.65 system-ui, sans-serif; color: #172033; }
+    h1, h2 { line-height: 1.25; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px 10px; border: 1px solid #cbd5e1;
+      text-align: left; vertical-align: top; }
+    code { background: #eef2f7; padding: 1px 4px; }
+    .warning { border-left: 4px solid #b45309; padding: 10px 14px;
+      background: #fff7ed; }
+  </style>
+</head>
+<body>
+  <h1>Phase 0 OpenSearch Readiness Diagnostics 离线修复</h1>
+  <p class="warning"><strong>状态：</strong><code>OFFLINE-ONLY</code>。
+    本轮没有 Docker、live revalidation、image-lock rotation、commit、push
+    或 Phase 1 工作。Phase 0 未完成，正式三轮 acceptance 未执行。</p>
+
+  <h2>历史 run 保持原判</h2>
+  <table>
+    <tr><th>Run</th><td><code>f5b0c63e18c156a3630bc769dc51b08d</code></td></tr>
+    <tr><th>Verdict</th><td><code>FAILED_SMOKE / INITIAL_CANDIDATE_READINESS_INCOMPLETE</code></td></tr>
+    <tr><th>已通过</th><td>initial Prometheus、Jaeger、probe，以及
+      load-generator / OTel Collector lifecycle health</td></tr>
+    <tr><th>未执行</th><td>Task 7、baseline、fault、recovery、final telemetry readiness</td></tr>
+    <tr><th>安全收尾</th><td>safe stop、owned-volume cleanup、final seal 成功；
+      不改变 FAILED verdict</td></tr>
+  </table>
+
+  <h2>根因与窄修复</h2>
+  <p>attempt 06 的真实 OpenSearch 文档在 <code>resource</code> 对象内使用
+    flattened key <code>service.name</code>。旧 candidate parser 只识别 nested
+    <code>resource.service.name</code>，因此把已有的新鲜 Ad log 判为失败。</p>
+  <ol>
+    <li>新增 schema-aware parser，仅接受 flattened、nested 或二者同值。</li>
+    <li>冲突、非字符串、缺失和错误结构均 fail closed，并保留 typed reason。</li>
+    <li>candidate、OpenSearch adapter，以及 Task 7 使用的
+      <code>_opensearch_response_has_exact_identity</code> 共用同一解析规则；
+      Task 7 响应中任一 identity-invalid hit 都会使整次响应 fail closed。
+      traceId / spanId 语义不变。</li>
+    <li>post-HTTP summary 升级为
+      <code>phase0.candidate-initial-readiness.v2</code>，记录四个 endpoint 与
+      五个 propagation gate 的最终 attempt、raw path、transport、HTTP、parse、
+      freshness 结果。</li>
+    <li>失败异常携带 summary artifact path；历史 v1 evidence 不改写。</li>
+  </ol>
+
+  <h2>TDD 与剩余边界</h2>
+  <table>
+    <tr><th>行为 RED</th><td><code>10 failed, 47 passed</code>；命中 flattened
+      identity、schema conflict、Task 7 和 v2 diagnostics 缺口。</td></tr>
+    <tr><th>Focused GREEN</th><td><code>60 passed</code></td></tr>
+    <tr><th>Reviewer RED</th><td><code>9 failed, 109 passed</code>；命中矛盾
+      diagnostic chain、Task 7 invalid+valid 混合接受和 empty-hit reason。</td></tr>
+    <tr><th>Reviewer GREEN</th><td><code>118 passed</code></td></tr>
+    <tr><th>Reviewer 2 RED</th><td><code>11 failed, 49 passed</code>；命中
+      valid-first 提前返回，以及 outcome/status/reason 交叉矛盾。</td></tr>
+    <tr><th>Reviewer 2 GREEN</th><td><code>129 passed</code></td></tr>
+    <tr><th>Final gate-aware RED</th><td><code>11 failed, 30 passed</code>；命中
+      endpoint/lifecycle reason family 互换及 propagation/endpoint 不一致。</td></tr>
+    <tr><th>Final reviewer-focused GREEN</th><td><code>141 passed</code></td></tr>
+    <tr><th>验证性质</th><td>fixture-backed offline tests；不是 live validation</td></tr>
+  </table>
+  <p><code>f5b0c63e18c156a3630bc769dc51b08d</code> 之后未授权任何 additional
+    smoke。Phase 0 live revalidation 继续冻结；<code>OQ-002</code> 至
+    <code>OQ-004</code> 未关闭，Phase 0 与正式 acceptance 均未完成。</p>
+</body>
+</html>

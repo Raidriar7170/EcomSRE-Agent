@@ -662,17 +662,39 @@ def up_environment(
         return LifecycleExecution(
             result=_terminal(
                 Outcome.BLOCKED_UPSTREAM,
-                "COMPOSE_CONFIG_HASH_MISMATCH",
+                "COMPOSE_CONTRACT_HASH_MISMATCH",
             ),
             command_results=tuple(command_results),
         )
-    if resolved.sha256 != image_lock.compose_config_sha256 or set(
-        resolved.image_references
-    ) != set(image_lock.allowed_source_references):
+    if (
+        preflight_evidence.inputs.runtime_compose_instance_sha256
+        != resolved.runtime_compose_instance_sha256
+        or preflight_evidence.inputs.observed_canonical_compose_contract_sha256
+        != resolved.canonical_compose_contract_sha256
+        or preflight_evidence.inputs.compose_canonicalization_schema_version
+        != resolved.canonicalization_schema_version
+    ):
+        return LifecycleExecution(
+            result=_terminal(
+                Outcome.UNSAFE,
+                "PREFLIGHT_EVIDENCE_INVALID",
+            ),
+            resolved_compose=resolved,
+            command_results=tuple(command_results),
+        )
+    if (
+        image_lock.schema_version != "phase0.image-lock.v2"
+        or resolved.canonical_compose_contract_sha256
+        != image_lock.canonical_compose_contract_sha256
+        or resolved.canonicalization_schema_version
+        != image_lock.compose_canonicalization_schema_version
+        or set(resolved.image_references)
+        != set(image_lock.allowed_source_references)
+    ):
         return LifecycleExecution(
             result=_terminal(
                 Outcome.BLOCKED_UPSTREAM,
-                "COMPOSE_CONFIG_HASH_MISMATCH",
+                "COMPOSE_CONTRACT_HASH_MISMATCH",
             ),
             resolved_compose=resolved,
             command_results=tuple(command_results),
@@ -724,7 +746,12 @@ def up_environment(
             image_lock,
             cached_images=tuple(cached_images),
             observed_upstream_commit=UPSTREAM_COMMIT,
-            observed_compose_config_sha256=resolved.sha256,
+            observed_canonical_compose_contract_sha256=(
+                resolved.canonical_compose_contract_sha256
+            ),
+            observed_canonicalization_schema_version=(
+                resolved.canonicalization_schema_version
+            ),
         )
     )
     if verification is None or not verification.passed:
@@ -753,12 +780,20 @@ def up_environment(
     if context is None:
         created_at = datetime.now(UTC)
         intent = OwnershipIntent(
-            schema_version="phase0.ownership-intent.v1",
+            schema_version="phase0.ownership-intent.v2",
             run_id=run_id,
             project_name=PROJECT_NAMESPACE,
             canonical_labels=_canonical_labels(run_id),
             expected_compose_files=_COMPOSE_FILES,
-            expected_compose_sha256=resolved.sha256,
+            runtime_compose_instance_sha256=(
+                resolved.runtime_compose_instance_sha256
+            ),
+            canonical_compose_contract_sha256=(
+                resolved.canonical_compose_contract_sha256
+            ),
+            compose_canonicalization_schema_version=(
+                resolved.canonicalization_schema_version
+            ),
             expected_image_sources=resolved.image_references,
             pull_policy="never",
             build_policy="no-build",
@@ -2109,8 +2144,13 @@ def _preflight_matches_requested_ownership(
             else evidence.run_id
         )
         or inputs.observed_upstream_commit != UPSTREAM_COMMIT
-        or inputs.observed_compose_config_sha256 != image_lock.compose_config_sha256
-        or inputs.expected_compose_config_sha256 != image_lock.compose_config_sha256
+        or image_lock.schema_version != "phase0.image-lock.v2"
+        or inputs.observed_canonical_compose_contract_sha256
+        != image_lock.canonical_compose_contract_sha256
+        or inputs.expected_canonical_compose_contract_sha256
+        != image_lock.canonical_compose_contract_sha256
+        or inputs.compose_canonicalization_schema_version
+        != image_lock.compose_canonicalization_schema_version
         or not inputs.image_lock_verification.passed
         or inputs.pull_policy != "never"
         or inputs.docker.context_name != DOCKER_DESKTOP_CONTEXT
@@ -2394,9 +2434,17 @@ def _persist_evaluator_success_artifact(
     resolved: ResolvedComposeConfig,
 ) -> LifecycleArtifactPaths:
     raw_payload = {
-        "schema_version": "phase0.resolved-compose-raw.v1",
+        "schema_version": "phase0.resolved-compose-raw.v2",
         "stdout": resolved.stdout,
-        "sha256": resolved.sha256,
+        "runtime_compose_instance_sha256": (
+            resolved.runtime_compose_instance_sha256
+        ),
+        "canonical_compose_contract_sha256": (
+            resolved.canonical_compose_contract_sha256
+        ),
+        "compose_canonicalization_schema_version": (
+            resolved.canonicalization_schema_version
+        ),
         "image_sources": resolved.image_references,
         "compose_files": _COMPOSE_FILES,
         "pull_policy": "never",
@@ -2419,9 +2467,17 @@ def _persist_observer_success_artifacts(
     command_results: list[CommandResult],
 ) -> LifecycleArtifactPaths:
     observer_payload = {
-        "schema_version": "phase0.resolved-compose-summary.v1",
+        "schema_version": "phase0.resolved-compose-summary.v2",
         "sanitized_config": _project_resolved_compose_for_observer(resolved.stdout),
-        "sha256": resolved.sha256,
+        "runtime_compose_instance_sha256": (
+            resolved.runtime_compose_instance_sha256
+        ),
+        "canonical_compose_contract_sha256": (
+            resolved.canonical_compose_contract_sha256
+        ),
+        "compose_canonicalization_schema_version": (
+            resolved.canonicalization_schema_version
+        ),
         "image_sources": resolved.image_references,
         "compose_files": _COMPOSE_FILES,
         "pull_policy": "never",

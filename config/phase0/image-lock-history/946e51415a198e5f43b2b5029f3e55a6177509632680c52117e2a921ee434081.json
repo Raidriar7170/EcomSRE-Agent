@@ -26,17 +26,13 @@
     "quay.io/jaegertracing/jaeger:2.19.0",
     "quay.io/prometheus/prometheus:v3.13.1"
   ],
-  "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-  "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-  "compose_config_sha256": null,
-  "created_at": "2026-07-31T05:33:12.680566Z",
+  "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
+  "created_at": "2026-07-31T03:32:52.367635Z",
   "images": [
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:5115fd9352d58fd41c7be775b33336f5e4b2cef8056bf5982f5c704d13ec590e",
       "image_index_digest": "sha256:32234e63c1d0634883aabd31cbd46802934aaaef0153dfd653b5d1017940bb4e",
       "logical_name": "v0.16.0",
@@ -46,11 +42,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:3f1965d23056bf68614e34d407faa6a9c730ab37a0d8ef698709ebf7d9fe1e91",
       "image_index_digest": "sha256:e6c593fe75eb0309392951d35c7ac85fcd15c0b80430500921b7d2e9c332a6db",
       "logical_name": "3.0.0-ad",
@@ -60,11 +54,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:2dd680b26be9a124424c0e1237e37060c30edf91f31c25d2c4e4775653f3a2a9",
       "image_index_digest": "sha256:3f89a444250a8a56050ba59756be3ca269af500bf44e33579e79ba9c74cab8c1",
       "logical_name": "3.0.0-cart",
@@ -74,11 +66,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:07eae46624d18e21cf2c19c055f58133d5cc008b31a74f4765b20e294a9ae5f0",
       "image_index_digest": "sha256:3d18cb304a6af6a512c5e488bb19ee42be7d71bdf75a9786aa7296b8fb0a5036",
       "logical_name": "3.0.0-checkout",
@@ -88,11 +78,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:4e8197e55b8b1646775281f5613d457026573b17cc486e0f74ce6edf234eb634",
       "image_index_digest": "sha256:f82a7805e7ba635b62c08f8fe67a5deccb06c91dc51cb56ae88767f582ad7f75",
       "logical_name": "3.0.0-currency",
@@ -102,11 +90,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:893da607ae8f600845a1039fb7922a3fdbf577fe4e265e2c87fb59262ae494f2",
       "image_index_digest": "sha256:d674d4081ca4201cbec9994e753ddf8f6a6fea7d57451c54fc964de6ac51c76c",
       "logical_name": "3.0.0-email",
@@ -116,11 +102,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:bb6e142378a01f94d4f2cf322b8a145f2e33b20a2c41ba1643320b5039fe6b0e",
       "image_index_digest": "sha256:92873a8e277d4db925f61b680708f4043e3aa08d8073c8e9000b83731f288bb7",
       "logical_name": "3.0.0-flagd-ui",
@@ -130,11 +114,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:9b9495aa98049fe8987fcb9193312f70260fbacdba31b088089c789a2506a5c6",
       "image_index_digest": "sha256:9505e349e140ed5efde4b03b77cf500ef5d53c568ea83502c7e9c26494b964a3",
       "logical_name": "3.0.0-frontend",
@@ -144,11 +126,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:5dca3e6fe127f12a78765428bb86e9aad3ec8ee5b6498095e9d9b258cf8d64d3",
       "image_index_digest": "sha256:1c53bfb596970a014682925f804c686762c0c593949ce58a90ac38563f317841",
       "logical_name": "3.0.0-frontend-proxy",
@@ -158,11 +138,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:a34c69344d9c7da1f312c3c4516d5e04e75b44bdfe1eae824215f76d89c6f74e",
       "image_index_digest": "sha256:93e1585e97ac3de0e2ace6929dc5e2a797e2c009fbb3eba668fa3990f4f271b5",
       "logical_name": "3.0.0-image-provider",
@@ -172,11 +150,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:b04ac2c1fa16c126c1077710dd31d5780f002c5f69f8892c54b83a3a74877898",
       "image_index_digest": "sha256:cd12cb42fb150fb2283fc05df5353fde88d5e35f3bf8189058756a6458eede87",
       "logical_name": "3.0.0-load-generator",
@@ -186,11 +162,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:f8459b4e3e6a5153acc4571f99de64be8658621f6fc1d06f7715644b9a1259d6",
       "image_index_digest": "sha256:62cfae32adb1f51904d5772727a846eb90c8304170c01c2e6ca09925cc49a693",
       "logical_name": "3.0.0-opamp-server",
@@ -200,11 +174,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:e2d67dae0dc224f4f2f5c64adb17a2d6e41aac9f2bd18bb59ac2a896d20b0fde",
       "image_index_digest": "sha256:8950f637638476318a9f8eaf8fd608e4d3a164fbd3f429612f65009ee31677f5",
       "logical_name": "3.0.0-opensearch",
@@ -214,11 +186,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:c9bbe72133e9b6569f8e490441e7a1472f8767d12759b0eaf0af14e91e4a9d45",
       "image_index_digest": "sha256:d498c7434d22ff7a82ec86843efd22c93c52cb8c6df4961a7110617b1e08c15f",
       "logical_name": "3.0.0-payment",
@@ -228,11 +198,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:7471d710ccf34ae074f15c7dfe5943fb731f8f21759bcfee2c81f670bf4d9363",
       "image_index_digest": "sha256:278aff685646443b88cf1ab7d83812d82204fbb16ea279296161d05bf1329080",
       "logical_name": "3.0.0-product-catalog",
@@ -242,11 +210,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:370d920d330a145a5e6769eab82dd256a11c8186c78d7afd7927119f402d2438",
       "image_index_digest": "sha256:6bc8f7f6809e1435241dc9ea404e602657d192cf237bcd175d7344cec9e0d615",
       "logical_name": "3.0.0-quote",
@@ -256,11 +222,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:0b8524ba9dd99a12f4223b82816d80751fbc3c06b39ccee4b08669040ac0ad6b",
       "image_index_digest": "sha256:6510027907f925b1d76d0c645c9c757427c8735577ea9a422291c7b4b770bfd5",
       "logical_name": "3.0.0-recommendation",
@@ -270,11 +234,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:c3622ca9ed2cadd4a6b7a28ca703549b7898ef5c7ee9c08ee34f2db410b547dd",
       "image_index_digest": "sha256:02602e60edbfa7e019b21fa98f95e3d44bc3181c9aafaf82a73b5169ae8f9031",
       "logical_name": "3.0.0-shipping",
@@ -284,11 +246,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:51c253309603d438fa5e7d529c3f568fdd2c07b6907ca4d28d48b29107079be9",
       "image_index_digest": "sha256:3519858704e72fe6ef8ce8c41e70dbd41410e79bdc1eea9608658e9eade06d05",
       "logical_name": "3.0.0-telemetry-docs",
@@ -298,11 +258,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6",
       "image_index_digest": "sha256:f2f01157055a9b2aab9df7118e1f1c9abf345e99b23bc7a2bc791db374a7d0f6",
       "logical_name": "0.157.0",
@@ -312,11 +270,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:bb8b48198974cb792b8bfc09d7e3c5f0d6e07508cb33e06817e2f24805778be5",
       "image_index_digest": "sha256:107b203169a20ef7c87548c157f4e4a833dbbbd20fefd3a26740b7f98ac80216",
       "logical_name": "9.0.4-alpine3.23",
@@ -326,11 +282,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:55f41cacf3e8334ea89d76ada9cc546c09473650ab48a7861743bcbd83f5ef38",
       "image_index_digest": "sha256:121a7a9ece6dc10b969f1f96eed64b4f07dfac0d0b8abc070f7cb83bbde86f63",
       "logical_name": "13.1.0",
@@ -340,11 +294,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:f1dd3522a7fde8bf8e505f42583ecdc00b4967a4b94d32ba1f890d118fe17335",
       "image_index_digest": "sha256:3a82e1f56c8f0f5616a11103ac3d47e632c3938698946a7ad26da0df1334744a",
       "logical_name": "18.4",
@@ -354,11 +306,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:476f9d88b6660cf93b47aac9b50de842855cb5cb50a35eef0108e7bde58a6985",
       "image_index_digest": "sha256:ede4864215be4cd85bd8c3129a2fea6c5713c5653c7282c429dba123014bc68b",
       "logical_name": "2.19.0",
@@ -368,11 +318,9 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     },
     {
-      "acquired_at": "2026-07-31T05:33:12.680566Z",
+      "acquired_at": "2026-07-31T03:32:52.367635Z",
       "architecture": "arm64",
-      "canonical_compose_contract_sha256": "78e351c53fc7c847be24640951eb7a856c90e37ac38e0fd9f26dc11f6675c74b",
-      "compose_canonicalization_schema_version": "phase0.compose-canonicalization.v1",
-      "compose_config_sha256": null,
+      "compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
       "image_id": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814",
       "image_index_digest": "sha256:3c42b892cf723fa54d2f262c37a0e1f80aa8c8ddb1da7b9b0df9455a35a7f893",
       "logical_name": "v3.13.1",
@@ -382,7 +330,7 @@
       "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     }
   ],
-  "schema_version": "phase0.image-lock.v2",
+  "schema_version": "phase0.image-lock.v1",
   "status": "LOCKED",
   "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
   "upstream_tag": "3.0.0"

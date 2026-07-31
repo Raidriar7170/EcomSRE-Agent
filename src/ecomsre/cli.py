@@ -42,6 +42,7 @@ from ecomsre.environment.live_preflight import (
     collect_fresh_stop_authority,
 )
 from ecomsre.environment.readiness import (
+    CandidateReadinessPolicy,
     ReadinessCollectionError,
     _owned_base_urls,
     collect_candidate_initial_readiness,
@@ -253,7 +254,10 @@ def build_parser() -> argparse.ArgumentParser:
             )
             command.add_argument(
                 "--rotation-reason",
-                choices=("COMPOSE_OVERRIDE_CHANGED",),
+                choices=(
+                    "COMPOSE_OVERRIDE_CHANGED",
+                    "RUN_INVARIANT_COMPOSE_CONTRACT_MIGRATION",
+                ),
             )
 
     return parser
@@ -908,6 +912,12 @@ class _ProductionSmokeOperations:
             disposition=disposition,
         )
 
+    def stabilize_initial_readiness(self, seconds: float) -> None:
+        expected = CandidateReadinessPolicy().initial_delay_seconds
+        if seconds != expected:
+            raise ValueError("initial readiness stabilization must remain 65 seconds")
+        time.sleep(seconds)
+
     def fresh_authority(
         self,
         boundary: str,
@@ -1087,13 +1097,29 @@ class _ProductionSmokeOperations:
         preflight, ownership = self.fresh_authority(
             f"control-{stage}-{phase.value}"
         )
-        return collect_candidate_initial_readiness(
+        readiness = collect_candidate_initial_readiness(
             project_root=self.context.project_root,
             artifacts_root=self.context.artifacts_root,
             preflight=preflight,
             ownership=ownership,
             purpose="CONTROL_MUTATION",
         )
+        if (
+            not preflight.is_authentic()
+            or not ownership.is_authentic()
+            or preflight.run_id != ownership.run_id
+            or preflight.run_id != self.args.run_id
+        ):
+            raise SmokeExecutionError(
+                "CONTROL_MUTATION_AUTHORITY_INVALID",
+                status=DiagnosticStatus.UNSAFE,
+            )
+        if not preflight.is_current():
+            raise SmokeExecutionError(
+                "CONTROL_MUTATION_AUTHORITY_EXPIRED",
+                status=DiagnosticStatus.UNSAFE,
+            )
+        return readiness
 
     def close_control(self, control: object) -> None:
         handle = self._control(control)

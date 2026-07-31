@@ -228,8 +228,12 @@ def _inputs(**overrides) -> PreflightInputs:
         "resources": (),
         "ownership_context": None,
         "observed_upstream_commit": EXPECTED_COMMIT,
-        "observed_compose_config_sha256": COMPOSE_HASH,
-        "expected_compose_config_sha256": COMPOSE_HASH,
+        "runtime_compose_instance_sha256": COMPOSE_HASH,
+        "observed_canonical_compose_contract_sha256": COMPOSE_HASH,
+        "expected_canonical_compose_contract_sha256": COMPOSE_HASH,
+        "compose_canonicalization_schema_version": (
+            "phase0.compose-canonicalization.v1"
+        ),
         "image_lock_verification": LockVerification(
             passed=True,
             outcome=Outcome.SUCCESS,
@@ -756,8 +760,8 @@ def test_missing_or_tampered_context_cannot_trust_resource_classification(
     [
         ({"observed_upstream_commit": "wrong"}, "INPUT_NOT_FROZEN"),
         (
-            {"observed_compose_config_sha256": "b" * 64},
-            "COMPOSE_CONFIG_HASH_MISMATCH",
+            {"observed_canonical_compose_contract_sha256": "b" * 64},
+            "COMPOSE_CONTRACT_HASH_MISMATCH",
         ),
         ({"pull_policy": "missing"}, "PULL_POLICY_NOT_FROZEN"),
     ],

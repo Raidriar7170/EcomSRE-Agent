@@ -15,13 +15,13 @@ invalidates one, stop and propose a new Decision Record.
 
 ## Current state
 
-The project is in `PRE_SMOKE_OFFLINE_REPAIR_READY`.
+The project is in `CANDIDATE_READINESS_DIAGNOSTICS_OFFLINE_REPAIR_READY`.
 
-- The 12 decisions `DEC-001` through `DEC-012` are accepted.
+- The 13 decisions `DEC-001` through `DEC-013` are accepted.
 - Phase 0 offline implementation and fixture-backed tests exist.
 - Live bootstrap produced and verified a local `linux/arm64` candidate image
   lock.
-- The single authorized non-canonical smoke
+- Historical non-canonical smoke
   `f1c9253b03dd4afca4284a89524562fb` terminated `UNSAFE` before readiness or
   measurement because observer-evidence sanitization prevented the authenticated
   post-up authority handoff.
@@ -40,24 +40,55 @@ The project is in `PRE_SMOKE_OFFLINE_REPAIR_READY`.
 - Required config binds are enforced by fixture-backed resolved mount-plan
   checks, but the repaired Compose plan has not been expanded by a real Docker
   runtime.
-- The Compose override changed after the current image lock was created. The
-  checked-in lock still binds the pre-repair resolved Compose hash. Before any
-  future `up`, a separately authorized live task must re-resolve Compose and
-  explicitly rotate and verify a matching candidate lock; hash mismatch without
-  rotation authorization must fail closed. No real rotation has been executed.
-- The direct-stop minimal authority path has not been exercised against the real
-  Docker daemon.
+- Run `51002ad655ba4c65c1165be433664d7d` completed the separately authorized
+  compare-and-swap migration from the legacy v1 binding to image-lock v2 with
+  reason `RUN_INVARIANT_COMPOSE_CONTRACT_MIGRATION`. The current lock-content
+  SHA-256 is
+  `50f86b333fb6f1b66c16ff287a190995230b6ba2c1ec71cc0e56f38b783db5ac`;
+  the exact legacy bytes remain in content-addressed history.
+- The same non-canonical run
+  `51002ad655ba4c65c1165be433664d7d` remains `FAILED`. Environment startup and
+  authenticated ownership succeeded, but the 65-second candidate stabilization
+  occurred after fresh preflight authority was acquired. The 30-second
+  authority expired before lifecycle readiness, so no HTTP endpoint or
+  propagation gate was attempted (`attempt_count=0`). This failure is not a
+  successful smoke and must not be rewritten.
+- The failed run completed fresh direct-stop authority, exact project-scoped
+  container/network stop, owned named-volume cleanup, and final evidence seal.
+  Those safety actions do not improve the run's `FAILED` verdict.
+- The authority-TTL offline repair moves the 65-second candidate stabilization
+  before fresh initial authority, removes that delay from the readiness
+  collector, revalidates authority immediately after control-mutation readiness,
+  and adds authenticated typed pre-HTTP failure matrices. These changes have
+  offline tests only; they have not received live validation.
+- The later non-canonical run `f5b0c63e18c156a3630bc769dc51b08d`
+  remains `FAILED_SMOKE / INITIAL_CANDIDATE_READINESS_INCOMPLETE`. Across six
+  candidate attempts, Prometheus, Jaeger, the direct probe, load-generator
+  health, and OTel Collector health passed. OpenSearch freshness was present,
+  but the v1 candidate parser did not recognize the actual hybrid source shape
+  where `resource` contains the flattened key `service.name`. Task 7, baseline,
+  fault, recovery, and final telemetry readiness were not executed. Exact safe
+  stop, owned-volume cleanup, and final sealing succeeded without changing the
+  failed verdict.
+- The candidate-readiness diagnostics offline repair accepts only the approved
+  flattened or nested OpenSearch service-identity shapes, fails closed on
+  conflict/type/missing/shape errors, reuses the same parser in the OpenSearch
+  adapter and Task 7 exact-identity check, and emits
+  `phase0.candidate-initial-readiness.v2` with final-attempt endpoint and
+  propagation diagnostics. Historical v1 evidence remains readable and is not
+  rewritten. These changes have offline test evidence only.
 - `OQ-001` is closed by the preserved real preflight fingerprint.
   `OQ-002` through `OQ-004` remain open.
-- Phase 0 is incomplete. No second smoke or formal acceptance has been run.
+- Phase 0 is incomplete. Formal three-cycle acceptance has not been run.
 - PR disposition remains `Draft / REVIEW_REQUIRED`.
 - Any future bounded smoke remains governed by
   `docs/PHASE_0_BOUNDED_REPAIR_SMOKE_PROMPT.md`.
-- The one-smoke allowance has been consumed. Do not run another smoke without
-  new explicit authorization.
+- After sealed run `f5b0c63e18c156a3630bc769dc51b08d`, no additional smoke
+  has been authorized. Phase 0 live revalidation is frozen. Do not infer a
+  further smoke from offline repair, review, or green tests.
 - The offline-repair scope itself does not authorize commit, push, or PR
   updates; publication requires a separate explicit user request. Publication
-  does not authorize a second smoke, deployment, release, formal three-cycle
+  does not authorize another smoke, deployment, release, formal three-cycle
   acceptance, or Phase 1 work.
 
 Do not extend beyond the bounded-repair prompt. If a Phase 0 behavior is not
@@ -98,8 +129,9 @@ Before any environment command, follow `docs/SAFETY_BOUNDARIES.md`.
 - Observer-visible and evaluator-only artifacts must remain separated.
 - Agent-visible names, paths, tags, and URIs must not reveal scenario truth.
 - Use UTC timestamps plus monotonic durations.
-- Record schema versions, hashes, upstream commit, resolved Compose hash,
-  image index digests, and resolved `linux/arm64` digests.
+- Record schema versions, hashes, upstream commit, canonical Compose contract
+  hash, per-run runtime Compose instance hash, image index digests, and
+  resolved `linux/arm64` digests.
 - Use the exact truth markers defined by the relevant acceptance or safety
   document. Do not smooth blocked or failed states into success language.
 

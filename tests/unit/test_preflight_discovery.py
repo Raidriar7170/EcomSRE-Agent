@@ -25,12 +25,13 @@ from ecomsre.environment.preflight import (
     ResourceObservation,
     build_read_only_discovery_plan,
     parse_cached_images,
-    parse_compose_config_hash,
+    parse_canonical_compose_contract_hash,
     parse_docker_resource_listing,
     parse_path_probe,
     parse_port_observation,
     parse_process_listing,
     parse_resolved_compose_config,
+    parse_runtime_compose_instance_hash,
     parse_upstream_commit,
 )
 from ecomsre.evidence.hashes import canonical_json_sha256, sha256_bytes
@@ -655,10 +656,17 @@ def test_upstream_compose_and_cached_image_parsers_preserve_exact_facts() -> Non
     )
 
     assert parse_upstream_commit(upstream) == UPSTREAM_COMMIT
-    assert parse_compose_config_hash(compose) == sha256_bytes(compose_content.encode())
+    assert parse_runtime_compose_instance_hash(compose) == sha256_bytes(
+        compose_content.encode()
+    )
     resolved = parse_resolved_compose_config(compose)
+    assert parse_canonical_compose_contract_hash(compose) == (
+        resolved.canonical_compose_contract_sha256
+    )
     assert resolved.stdout == compose_content
-    assert resolved.sha256 == sha256_bytes(compose_content.encode())
+    assert resolved.runtime_compose_instance_sha256 == sha256_bytes(
+        compose_content.encode()
+    )
     assert resolved.image_references == ("otel/demo:3.0.0-adservice",)
     parsed = parse_cached_images(images)
     assert parsed == (

@@ -4,10 +4,27 @@
 
 This is the normative canonical interface and evidence contract. Phase 0
 commands have an offline implementation. The current repository state is
-`PRE_SMOKE_OFFLINE_REPAIR_READY`, based only on fixture-backed offline tests;
-the repaired Compose mount plan, image-lock rotation, and direct-stop path have
-not been validated against a real Docker runtime. Phase 0 has not completed
-formal acceptance. This document alone does not authorize running Docker.
+`CANDIDATE_READINESS_DIAGNOSTICS_OFFLINE_REPAIR_READY`. The current checked-in image lock is v2,
+with content SHA-256
+`50f86b333fb6f1b66c16ff287a190995230b6ba2c1ec71cc0e56f38b783db5ac`;
+the authorized legacy migration and old-byte history preservation succeeded.
+Non-canonical run `51002ad655ba4c65c1165be433664d7d` nevertheless remains
+`FAILED`: its fresh preflight authority was acquired before the 65-second
+candidate stabilization and expired before lifecycle readiness. No HTTP or
+propagation gate was attempted (`attempt_count=0`). Exact safe stop, owned
+named-volume cleanup, and final sealing succeeded without changing that
+failure. The ordering/evidence repair after this run has offline tests only.
+Later non-canonical run `f5b0c63e18c156a3630bc769dc51b08d` remains
+`FAILED_SMOKE / INITIAL_CANDIDATE_READINESS_INCOMPLETE`. Its six candidate
+attempts passed Prometheus, Jaeger, the direct probe, load-generator health,
+and OTel Collector health. The v1 OpenSearch candidate parser rejected the
+actual hybrid `resource` object containing flattened key `service.name`.
+Task 7, baseline, fault, recovery, and final telemetry readiness were not
+executed; exact safe stop, owned-volume cleanup, and final seal succeeded.
+The parser and post-HTTP diagnostic repair has offline tests only. Live
+revalidation remains frozen.
+Phase 0 has not completed formal acceptance. This document alone does not
+authorize Docker or another smoke.
 
 This contract implements `DEC-001` through `DEC-008`. `DEC-009` through
 `DEC-012` are later-phase decisions and are not Phase 0 dependencies. Phase 0
@@ -44,6 +61,12 @@ Diagnostic overrides are permitted only when explicitly marked
 [PHASE_0_BOUNDED_REPAIR_SMOKE_PROMPT.md](PHASE_0_BOUNDED_REPAIR_SMOKE_PROMPT.md).
 It records `canonical=false`, writes `smoke-report.json`, and cannot write a
 canonical acceptance report, close Phase 0, or authorize Phase 1.
+
+Every historical `UNSAFE`, `FAILED`, or `BLOCKED` run remains immutable. In
+particular, run `51002ad655ba4c65c1165be433664d7d` is not live validation of
+the authority-TTL offline repair and is not a passing smoke. After sealed run
+`f5b0c63e18c156a3630bc769dc51b08d`, no additional smoke has been authorized.
+This contract does not authorize a further smoke.
 
 ### Command contract
 
@@ -189,7 +212,8 @@ Inputs:
 
 Outputs:
 
-- resolved Compose content hash;
+- canonical resolved Compose contract hash and canonicalization schema version;
+- exact runtime resolved Compose instance hash;
 - exact resource ownership manifest;
 - declaration of whether any pull or external dependency access occurred;
 - service and dependency health;
@@ -198,6 +222,34 @@ Outputs:
 - fresh Prometheus, Jaeger, and OpenSearch checks.
 
 Container `Running` or `healthy` alone is insufficient.
+
+For the bounded non-canonical candidate path, the 65-second initial
+stabilization is a distinct warm-up budget owned by
+`CandidateReadinessPolicy`; it is not the 30-second measured-phase
+stabilization. The supervisor orders it after successful environment startup
+and before collecting fresh initial preflight authority. The candidate
+readiness collector then performs lifecycle and HTTP checks immediately, with
+only the frozen 5-second retry interval.
+
+If candidate readiness terminates before any HTTP request, the observer
+failure artifact records `attempt_count=0`, all four endpoint gates and all
+five propagation gates as `NOT_EVALUATED`, endpoint HTTP/transport as
+`NOT_ATTEMPTED`, null raw-artifact references, and per-gate parse/freshness
+reasons. Such an artifact may be written only when the preflight and ownership
+capabilities are both authentic and bind the same run. An expired but authentic
+same-run preflight may record the failure; an unauthenticated or run-mismatched
+object receives no evidence write path.
+
+After at least one HTTP request, candidate readiness writes
+`phase0.candidate-initial-readiness.v2`. Its four endpoint diagnostics and five
+propagation diagnostics identify the final attempt and direct raw artifact,
+then separately record typed transport, HTTP status, parse, and freshness
+outcomes and reasons. Backend propagation diagnostics point to their endpoint's
+final raw response; load-generator and Collector health diagnostics point to
+the lifecycle verified artifact and mark transport/HTTP as `NOT_APPLICABLE`.
+The model rejects non-exact gate keys, gate/diagnostic disagreement, and a raw
+artifact that does not map to the final attempt. Historical pre-HTTP v1 and
+candidate-readiness v1 artifacts remain immutable and readable.
 
 Before mutation, every service mount with `type: volume` must resolve to a
 declared, run-scoped named volume with matching project/run ownership labels.
@@ -250,6 +302,14 @@ Each cycle is:
 8. 30-second stabilization;
 9. recovery window.
 
+Immediately before every real inject or reset, the bounded smoke obtains fresh
+preflight and ownership authority, completes candidate readiness, and then
+revalidates preflight authenticity/currentness, ownership authenticity, and
+run equality again. Any post-readiness expiry fails closed as
+`CONTROL_MUTATION_AUTHORITY_EXPIRED`; authentication or run mismatch fails
+closed as `CONTROL_MUTATION_AUTHORITY_INVALID`. Neither condition expands the
+30-second authority lifetime or permits the controller write.
+
 Each measured window ends when 200 valid observed `GetAds` attempts are
 available, or fails at 180 seconds. The denominator is not homepage requests,
 k6 iterations, or total HTTP traffic.
@@ -293,6 +353,14 @@ OpenSearch logs cannot satisfy readiness or become current-run evidence.
 The human name “Ad Service” does not override upstream telemetry. Exact emitted
 `service.name` and metric names must be captured from the frozen 3.0.0
 baseline, placed in query fixtures, and then treated as immutable.
+
+For the frozen OpenSearch identity field `resource.service.name`, readers
+accept either nested `resource.service.name` or the observed hybrid form where
+the `resource` object contains the flattened key `service.name`. If both forms
+are present they must be strings with identical values. Conflict, non-string,
+missing, unsupported, or malformed shapes fail closed with a typed parse
+reason. This exception applies only to the service-identity field and does not
+change `traceId`, `spanId`, timestamp, index, or freshness semantics.
 
 ### 6. Evaluate and stop
 
@@ -338,7 +406,8 @@ All are required:
 - no ownership or port conflict;
 - no pull, install, update, upstream fetch, or undeclared external dependency
   during acceptance;
-- resolved Compose hash recorded;
+- canonical Compose contract hash bound to image-lock v2;
+- exact runtime Compose instance hash recorded in run evidence;
 - three-signal telemetry readiness in the current run;
 - three consecutive cycles, each meeting the sample limits and all three error
   thresholds;
@@ -347,16 +416,23 @@ All are required:
 - `OQ-001` through `OQ-004` closed with their required evidence;
 - safe project-scoped stop.
 
-Any Compose-layer change invalidates the previous resolved Compose hash binding.
-An offline edit cannot manufacture the replacement hash. Before `up`, a live,
-separately authorized bootstrap must re-resolve Compose and explicitly rotate
-the candidate image lock using the expected old lock-content hash and
-`COMPOSE_OVERRIDE_CHANGED`. Rotation preserves the old bytes under
+Any material Compose-layer change invalidates the
+`canonical_compose_contract_sha256` binding. A RUN_ID-only change does not.
+The exact `runtime_compose_instance_sha256` remains different and must be
+recorded for every run. An offline edit cannot manufacture a replacement live
+binding. Before `up`, a live, separately authorized bootstrap must re-resolve
+Compose and explicitly rotate the candidate image lock using the expected old
+lock-content hash. Use `COMPOSE_OVERRIDE_CHANGED` for a v2 contract change and
+`RUN_INVARIANT_COMPOSE_CONTRACT_MIGRATION` for a legacy v1 lock.
+Rotation preserves the old bytes under
 `image-lock-history/<old-sha256>.json`, rejects source-set changes, re-verifies
 every cached ARM64 image, compare-and-swaps the current inode/bytes/hash, and
 revalidates the published lock. Without complete explicit rotation
-authorization, a stale binding is
+authorization, a legacy or stale binding is
 `BLOCKED_UPSTREAM / IMAGE_LOCK_ROTATION_REQUIRED`; it must not be bypassed.
+The current repository lock has already completed this migration; its v2
+content SHA-256 is
+`50f86b333fb6f1b66c16ff287a190995230b6ba2c1ec71cc0e56f38b783db5ac`.
 
 The sole passing outcome is `SUCCESS`. Terms such as “mostly passed,”
 “basically passed,” or “passed except for” are invalid.
@@ -370,6 +446,9 @@ Examples include:
 - `RESOURCE_CONFLICT`;
 - `RESOURCE_OWNERSHIP_UNKNOWN`;
 - `INPUT_NOT_FROZEN`;
+- `IMAGE_LOCK_CANONICALIZATION_REQUIRED`;
+- `COMPOSE_CANONICALIZATION_SCHEMA_MISMATCH`;
+- `COMPOSE_CONTRACT_HASH_MISMATCH`;
 - `ARM64_DIGEST_MISMATCH`;
 - `EXTERNAL_DEPENDENCY_DETECTED`;
 - `TELEMETRY_NOT_READY`;
@@ -419,7 +498,7 @@ It may not delete evidence or broaden cleanup. Unsafe cleanup ends with
 | Run identity | `run_id`, opaque scenario-instance reference, canonical/non-canonical state, start/end times, final outcome |
 | Machine manifest | Detected macOS/architecture, CPU, memory, disk, Docker client/server/Desktop/engine, Compose, and Docker resource allocation |
 | Environment manifest | Owned resources and ports, startup/readiness state, external-runtime-dependency observations, and shutdown/preservation state |
-| Frozen inputs | Upstream tag and commit, committed image digest lock plus resolved ARM64 digests, and resolved Compose configuration hash |
+| Frozen inputs | Upstream tag and commit, committed image digest lock plus resolved ARM64 digests, canonical Compose contract hash and schema version, and exact runtime Compose instance hash |
 | Phase record | Scenario phase, cycle number, UTC and monotonic time window, probe/query fixture versions, and freshness boundaries |
 | Query evidence | Raw query text or request, raw response, backend, timestamps, exit/status code, and content hash |
 | Statistical evidence | Valid `GetAds` attempts, errors, rate, 95% Wilson interval, threshold decision, and sample timeout state |
@@ -446,14 +525,15 @@ artifacts/phase0/
 │   ├── inputs/
 │   │   ├── upstream.json
 │   │   ├── image-digests.json
-│   │   ├── compose.sha256
 │   │   └── query-fixtures.json
 │   ├── changes/changes.jsonl
 │   ├── dependency-audit/
 │   │   ├── pulls.jsonl
 │   │   └── external-access.jsonl
 │   ├── commands/commands.jsonl
-│   ├── lifecycle/events.jsonl
+│   ├── lifecycle/
+│   │   ├── events.jsonl
+│   │   └── resolved-compose.json
 │   ├── cycles/01..03/
 │   │   ├── baseline/
 │   │   ├── fault/

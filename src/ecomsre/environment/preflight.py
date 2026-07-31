@@ -18,6 +18,7 @@ from typing import Literal, Protocol
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from ecomsre.environment.manifests import (
+    COMPOSE_CANONICALIZATION_SCHEMA_VERSION,
     EXPECTED_PLATFORM,
     InspectedImage,
     ResolvedComposeConfig,
@@ -365,10 +366,37 @@ class PreflightInputs(BaseModel):
     resources: tuple[ResourceObservation, ...]
     ownership_context: AuthenticatedOwnershipContext | None = None
     observed_upstream_commit: str
-    observed_compose_config_sha256: str
-    expected_compose_config_sha256: str
+    runtime_compose_instance_sha256: str | None = Field(
+        pattern=r"^[0-9a-f]{64}$"
+    )
+    observed_canonical_compose_contract_sha256: str | None = Field(
+        pattern=r"^[0-9a-f]{64}$"
+    )
+    expected_canonical_compose_contract_sha256: str | None = Field(
+        pattern=r"^[0-9a-f]{64}$"
+    )
+    compose_canonicalization_schema_version: Literal[
+        "phase0.compose-canonicalization.v1"
+    ]
     image_lock_verification: LockVerification
     pull_policy: str
+
+    @model_validator(mode="after")
+    def require_resolved_hashes_for_available_daemon(
+        self,
+    ) -> "PreflightInputs":
+        if self.docker.daemon_available and any(
+            value is None
+            for value in (
+                self.runtime_compose_instance_sha256,
+                self.observed_canonical_compose_contract_sha256,
+                self.expected_canonical_compose_contract_sha256,
+            )
+        ):
+            raise ValueError(
+                "available Docker daemon requires resolved Compose hashes"
+            )
+        return self
 
 
 class PreflightResult(BaseModel):
@@ -592,8 +620,16 @@ def evaluate_preflight(inputs: PreflightInputs) -> PreflightResult:
     frozen_reasons: list[str] = []
     if inputs.observed_upstream_commit != UPSTREAM_COMMIT:
         frozen_reasons.append("INPUT_NOT_FROZEN")
-    if inputs.observed_compose_config_sha256 != inputs.expected_compose_config_sha256:
-        frozen_reasons.append("COMPOSE_CONFIG_HASH_MISMATCH")
+    if (
+        inputs.compose_canonicalization_schema_version
+        != COMPOSE_CANONICALIZATION_SCHEMA_VERSION
+    ):
+        frozen_reasons.append("COMPOSE_CANONICALIZATION_SCHEMA_MISMATCH")
+    if (
+        inputs.observed_canonical_compose_contract_sha256
+        != inputs.expected_canonical_compose_contract_sha256
+    ):
+        frozen_reasons.append("COMPOSE_CONTRACT_HASH_MISMATCH")
     if inputs.pull_policy != "never":
         frozen_reasons.append("PULL_POLICY_NOT_FROZEN")
     if frozen_reasons:
@@ -703,7 +739,7 @@ def _preflight_evidence_payload(
         }
     )
     return {
-        "schema_version": "phase0.preflight-evidence.v1",
+        "schema_version": "phase0.preflight-evidence.v2",
         "run_id": run_id,
         "project_name": PROJECT_NAMESPACE,
         "canonical_labels": {
@@ -722,8 +758,18 @@ def _preflight_evidence_payload(
             ],
             "ownership_context": ownership_payload,
             "observed_upstream_commit": inputs.observed_upstream_commit,
-            "observed_compose_config_sha256": (inputs.observed_compose_config_sha256),
-            "expected_compose_config_sha256": (inputs.expected_compose_config_sha256),
+            "runtime_compose_instance_sha256": (
+                inputs.runtime_compose_instance_sha256
+            ),
+            "observed_canonical_compose_contract_sha256": (
+                inputs.observed_canonical_compose_contract_sha256
+            ),
+            "expected_canonical_compose_contract_sha256": (
+                inputs.expected_canonical_compose_contract_sha256
+            ),
+            "compose_canonicalization_schema_version": (
+                inputs.compose_canonicalization_schema_version
+            ),
             "image_lock_verification": (
                 inputs.image_lock_verification.model_dump(mode="json")
             ),
@@ -1719,7 +1765,7 @@ def parse_resolved_compose_config(
         raise DiscoveryParseError(
             "resolved Compose configuration is unavailable",
             outcome=Outcome.BLOCKED_UPSTREAM,
-            reason_code="COMPOSE_CONFIG_HASH_MISMATCH",
+            reason_code="COMPOSE_CONTRACT_HASH_MISMATCH",
         )
     try:
         return ResolvedComposeConfig.from_stdout(result.stdout)
@@ -1727,12 +1773,20 @@ def parse_resolved_compose_config(
         raise DiscoveryParseError(
             "resolved Compose configuration is incomplete",
             outcome=Outcome.BLOCKED_UPSTREAM,
-            reason_code="COMPOSE_CONFIG_HASH_MISMATCH",
+            reason_code="COMPOSE_CONTRACT_HASH_MISMATCH",
         ) from error
 
 
-def parse_compose_config_hash(result: CommandResult) -> str:
-    return parse_resolved_compose_config(result).sha256
+def parse_runtime_compose_instance_hash(result: CommandResult) -> str:
+    return parse_resolved_compose_config(
+        result
+    ).runtime_compose_instance_sha256
+
+
+def parse_canonical_compose_contract_hash(result: CommandResult) -> str:
+    return parse_resolved_compose_config(
+        result
+    ).canonical_compose_contract_sha256
 
 
 def parse_cached_images(result: CommandResult) -> tuple[InspectedImage, ...]:

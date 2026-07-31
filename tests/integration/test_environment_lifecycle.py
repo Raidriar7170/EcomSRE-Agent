@@ -461,6 +461,8 @@ def _preflight_evidence(
     image_lock: ImageLockManifest | None = None,
     stale: bool = False,
     docker_overrides: dict[str, object] | None = None,
+    input_overrides: dict[str, object] | None = None,
+    config_stdout: str = CONFIG_STDOUT,
 ):
     finished_ns = time.monotonic_ns()
     collected_at = datetime.now(UTC)
@@ -572,8 +574,20 @@ def _preflight_evidence(
         resources=resources,
         ownership_context=context,
         observed_upstream_commit=lock.upstream_commit,
-        observed_compose_config_sha256=lock.compose_config_sha256 or "",
-        expected_compose_config_sha256=lock.compose_config_sha256 or "",
+        runtime_compose_instance_sha256=(
+            ResolvedComposeConfig.from_stdout(
+                config_stdout
+            ).runtime_compose_instance_sha256
+        ),
+        observed_canonical_compose_contract_sha256=(
+            lock.canonical_compose_contract_sha256 or ""
+        ),
+        expected_canonical_compose_contract_sha256=(
+            lock.canonical_compose_contract_sha256 or ""
+        ),
+        compose_canonicalization_schema_version=(
+            "phase0.compose-canonicalization.v1"
+        ),
         image_lock_verification=LockVerification(
             passed=True,
             outcome=Outcome.SUCCESS,
@@ -582,6 +596,8 @@ def _preflight_evidence(
         ),
         pull_policy="never",
     )
+    if input_overrides:
+        inputs = inputs.model_copy(update=input_overrides)
     return issue_authenticated_preflight_evidence(
         run_id=RUN_ID,
         inputs=inputs,
@@ -903,7 +919,13 @@ def test_fresh_up_closes_intent_image_and_post_start_ownership_artifacts(
         execution.artifact_paths.ownership_intent.read_text(encoding="utf-8")
     )
     assert intent["resources"] == []
-    assert intent["expected_compose_sha256"] == _locked_manifest().compose_config_sha256
+    expected_resolved = ResolvedComposeConfig.from_stdout(CONFIG_STDOUT)
+    assert intent["runtime_compose_instance_sha256"] == (
+        expected_resolved.runtime_compose_instance_sha256
+    )
+    assert intent["canonical_compose_contract_sha256"] == (
+        expected_resolved.canonical_compose_contract_sha256
+    )
     resolved = json.loads(
         execution.artifact_paths.resolved_compose.read_text(encoding="utf-8")
     )
@@ -921,7 +943,12 @@ def test_fresh_up_closes_intent_image_and_post_start_ownership_artifacts(
             "target": 8080,
         }
     ]
-    assert resolved["sha256"] == _locked_manifest().compose_config_sha256
+    assert resolved["runtime_compose_instance_sha256"] == (
+        expected_resolved.runtime_compose_instance_sha256
+    )
+    assert resolved["canonical_compose_contract_sha256"] == (
+        _locked_manifest().canonical_compose_contract_sha256
+    )
     assert set(resolved["image_sources"]) == set(IMAGE_SOURCES)
     assert resolved["pull_policy"] == "never"
     assert resolved["build_policy"] == "no-build"
@@ -1010,7 +1037,10 @@ def test_success_up_keeps_raw_resolved_compose_only_in_evaluator_evidence(
     execution = lifecycle.up_environment(
         runner,
         context=None,
-        preflight_evidence=_preflight_evidence(image_lock=lock),
+        preflight_evidence=_preflight_evidence(
+            image_lock=lock,
+            config_stdout=leaking_stdout,
+        ),
         image_lock=lock,
         project_root=ROOT,
         artifacts_root=tmp_path,
@@ -1038,7 +1068,15 @@ def test_success_up_keeps_raw_resolved_compose_only_in_evaluator_evidence(
         "labels",
     }
     assert raw["stdout"] == leaking_stdout
-    assert raw["sha256"] == observer_summary["sha256"] == lock.compose_config_sha256
+    assert raw["runtime_compose_instance_sha256"] == (
+        observer_summary["runtime_compose_instance_sha256"]
+    )
+    assert raw["canonical_compose_contract_sha256"] == (
+        observer_summary["canonical_compose_contract_sha256"]
+    )
+    assert raw["canonical_compose_contract_sha256"] == (
+        lock.canonical_compose_contract_sha256
+    )
     assert set(raw["image_sources"]) == set(observer_summary["image_sources"])
 
     observer_text = "\n".join(
@@ -1253,7 +1291,10 @@ def test_volume_plan_fails_closed_before_up(
     execution = lifecycle.up_environment(
         runner,
         context=None,
-        preflight_evidence=_preflight_evidence(image_lock=lock),
+        preflight_evidence=_preflight_evidence(
+            image_lock=lock,
+            config_stdout=stdout,
+        ),
         image_lock=lock,
         project_root=ROOT,
         artifacts_root=tmp_path,
@@ -1585,6 +1626,37 @@ def test_current_empty_preflight_mismatch_is_unsafe_and_zero_up(
     assert execution.result.reason_code == "PREFLIGHT_SNAPSHOT_CHANGED"
     assert all(arguments != up.arguments for arguments, _ in runner.calls)
     assert list(tmp_path.rglob("ownership-intent.json"))
+
+
+def test_up_rejects_a_different_runtime_compose_instance_from_preflight(
+    tmp_path: Path,
+) -> None:
+    lifecycle = _lifecycle_module()
+    runner = FixtureRunner()
+    _register_config_and_images(lifecycle, runner)
+    up = lifecycle.build_compose_invocation(
+        lifecycle.ComposeAction.UP,
+        project_root=ROOT,
+        run_id=RUN_ID,
+        docker_endpoint=DOCKER_ENDPOINT,
+    )
+
+    execution = lifecycle.up_environment(
+        runner,
+        context=None,
+        preflight_evidence=_preflight_evidence(
+            input_overrides={
+                "runtime_compose_instance_sha256": "f" * 64,
+            }
+        ),
+        image_lock=_locked_manifest(),
+        project_root=ROOT,
+        artifacts_root=tmp_path,
+    )
+
+    assert execution.result.outcome is Outcome.UNSAFE
+    assert execution.result.reason_code == "PREFLIGHT_EVIDENCE_INVALID"
+    assert all(arguments != up.arguments for arguments, _ in runner.calls)
 
 
 @pytest.mark.parametrize(
@@ -2373,7 +2445,10 @@ def test_target_only_port_fails_closed_before_environment_mutation(
     execution = lifecycle.up_environment(
         runner,
         context=None,
-        preflight_evidence=_preflight_evidence(image_lock=lock),
+        preflight_evidence=_preflight_evidence(
+            image_lock=lock,
+            config_stdout=TARGET_ONLY_CONFIG_STDOUT,
+        ),
         image_lock=lock,
         project_root=ROOT,
         artifacts_root=tmp_path,
@@ -2460,7 +2535,10 @@ def test_target_only_port_rejects_multiple_runtime_published_ports(
     execution = lifecycle.up_environment(
         runner,
         context=None,
-        preflight_evidence=_preflight_evidence(image_lock=lock),
+        preflight_evidence=_preflight_evidence(
+            image_lock=lock,
+            config_stdout=TARGET_ONLY_CONFIG_STDOUT,
+        ),
         image_lock=lock,
         project_root=ROOT,
         artifacts_root=tmp_path,
@@ -2516,7 +2594,10 @@ def test_target_only_port_rejects_non_default_host_bindings(
     execution = lifecycle.up_environment(
         runner,
         context=None,
-        preflight_evidence=_preflight_evidence(image_lock=lock),
+        preflight_evidence=_preflight_evidence(
+            image_lock=lock,
+            config_stdout=TARGET_ONLY_CONFIG_STDOUT,
+        ),
         image_lock=lock,
         project_root=ROOT,
         artifacts_root=tmp_path,

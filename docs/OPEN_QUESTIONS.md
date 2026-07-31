@@ -36,9 +36,11 @@ expand or block Phase 0.
   `artifacts/phase0/observer-visible/f1c9253b03dd4afca4284a89524562fb/environment-manifest.json`,
   and
   `artifacts/phase0/observer-visible/f1c9253b03dd4afca4284a89524562fb/lifecycle/preflight/1052948244423375.json`.
-  The preflight result is `SUCCESS`, the upstream commit and Compose hash match
-  the lock, and the machine/Docker resource fields are recorded with command
-  evidence.
+  The historical preflight result is `SUCCESS` under the then-current legacy
+  v1 runtime-Compose binding, the upstream commit and recorded Compose hash
+  match that lock, and the machine/Docker resource fields are recorded with
+  command evidence. `DEC-013` does not rewrite that historical result; future
+  runs require an image-lock v2 canonical contract binding.
 
 ### OQ-002 — Frozen OTel 3.0.0 telemetry/query fixtures
 

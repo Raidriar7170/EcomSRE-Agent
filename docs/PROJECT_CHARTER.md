@@ -38,12 +38,15 @@ verification.
 
 ## Current phase
 
-The current phase is `PHASE0_BOUNDED_REPAIR_UNSAFE`. Live bootstrap verified a
-local ARM64 image lock, but the single authorized non-canonical smoke terminated
-`UNSAFE` before readiness and measurement. A later authenticated, project-scoped
-stop succeeded; it does not change the smoke verdict. The current disposition
-is `REVIEW_REQUIRED`. `OQ-001` is closed by the real preflight fingerprint;
-`OQ-002` through `OQ-004` remain open.
+The current phase is `AUTHORITY_TTL_OFFLINE_REPAIR_READY`. Historical
+non-canonical runs retain their `UNSAFE` and `FAILED` outcomes. Run
+`51002ad655ba4c65c1165be433664d7d` migrated the image lock to v2 but failed
+before HTTP readiness because preflight authority expired during the old
+stabilization ordering; its exact stop, owned-volume cleanup, and seal do not
+change that verdict. The current repair has offline tests only and authorizes
+no additional smoke. The disposition remains `REVIEW_REQUIRED`; `OQ-001` is
+closed by the real preflight fingerprint, while `OQ-002` through `OQ-004`
+remain open.
 
 Phase 0 establishes a local, non-LLM fault loop on the frozen OpenTelemetry
 Astronomy Shop baseline. Its normative acceptance contract is

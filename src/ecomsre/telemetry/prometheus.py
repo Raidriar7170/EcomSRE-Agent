@@ -39,6 +39,9 @@ from ecomsre.telemetry.http import (
     _PRODUCTION_TRANSPORT_TOKEN,
     _owned_http_client_has_production_integrity,
 )
+from ecomsre.telemetry.opensearch_identity import (
+    parse_opensearch_service_identity,
+)
 
 
 _UPSTREAM_COMMIT = "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
@@ -4211,12 +4214,19 @@ def _opensearch_response_has_exact_identity(
     assert fixture.index is not None
     assert fixture.service_identity_field is not None
     assert fixture.timestamp_field is not None
+    exact_identity_seen = False
     for hit in payload["hits"]["hits"]:
         if not isinstance(hit, dict) or not isinstance(hit.get("_source"), dict):
-            continue
+            return False
         source = hit["_source"]
         index = hit.get("_index")
         observed_at = _nested_value(source, fixture.timestamp_field)
+        identity = parse_opensearch_service_identity(
+            source,
+            field=fixture.service_identity_field,
+        )
+        if not identity.parsed:
+            return False
         try:
             observed = datetime.fromisoformat(observed_at)
         except (TypeError, ValueError):
@@ -4224,8 +4234,7 @@ def _opensearch_response_has_exact_identity(
         if (
             isinstance(index, str)
             and index.startswith(fixture.index.removesuffix("*"))
-            and _nested_value(source, fixture.service_identity_field)
-            == fixture.service_identity
+            and identity.value == fixture.service_identity
             and observed.tzinfo is not None
             and utc_window[0] <= observed <= utc_window[1]
             and (
@@ -4237,8 +4246,8 @@ def _opensearch_response_has_exact_identity(
                 or isinstance(_nested_value(source, fixture.span_id_field), str)
             )
         ):
-            return True
-    return False
+            exact_identity_seen = True
+    return exact_identity_seen
 
 
 def _nested_value(payload: dict[str, Any], dotted_path: str) -> Any:

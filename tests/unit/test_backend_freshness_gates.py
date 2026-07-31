@@ -14,6 +14,10 @@ from ecomsre.phase0.models import MeasurementPhase
 from ecomsre.telemetry.http import HttpExchange, HttpReason, HttpRequest, PhaseWindow
 from ecomsre.telemetry.jaeger import JaegerAdapter, JaegerReason
 from ecomsre.telemetry.opensearch import OpenSearchAdapter, OpenSearchReason
+from ecomsre.telemetry.opensearch_identity import (
+    OpenSearchServiceIdentityReason,
+    parse_opensearch_service_identity,
+)
 from ecomsre.telemetry.prometheus import (
     _load_test_query_registry,
     load_query_registry,
@@ -210,6 +214,171 @@ def test_opensearch_requires_exact_current_phase_ad_log_and_bounded_query() -> N
     assert {"term": {"resource.service.name": "ad"}} in filters
     assert len(store.records) == 2
     assert store.records[0][0].endswith("raw.json")
+
+
+@pytest.mark.parametrize(
+    ("resource", "reason"),
+    [
+        (
+            {"service.name": "ad"},
+            OpenSearchReason.READY,
+        ),
+        (
+            {"service": {"name": "ad"}},
+            OpenSearchReason.READY,
+        ),
+        (
+            {"service.name": "ad", "service": {"name": "ad"}},
+            OpenSearchReason.READY,
+        ),
+        (
+            {"service.name": "ad", "service": {"name": "frontend"}},
+            OpenSearchReason.OPENSEARCH_SCHEMA_INVALID,
+        ),
+        (
+            {"service.name": 7},
+            OpenSearchReason.OPENSEARCH_SCHEMA_INVALID,
+        ),
+        (
+            {"service": "ad"},
+            OpenSearchReason.OPENSEARCH_SCHEMA_INVALID,
+        ),
+        (
+            {},
+            OpenSearchReason.OPENSEARCH_SCHEMA_INVALID,
+        ),
+    ],
+)
+def test_opensearch_adapter_accepts_only_approved_identity_shapes(
+    resource: dict[str, Any],
+    reason: OpenSearchReason,
+) -> None:
+    payload = json.loads((FIXTURES / "opensearch-current.json").read_bytes())
+    payload["hits"]["hits"][0]["_source"]["resource"] = resource
+    result = OpenSearchAdapter(
+        client=OneResponseClient(canonical_json_bytes(payload)),
+        evidence_store=RecordingStore(),
+        fixture=FROZEN,
+    ).check_readiness(
+        window=_window(),
+        base_url="http://127.0.0.1:32773",
+        artifact_prefix="cycles/01/baseline",
+    )
+
+    assert result.reason is reason
+
+
+def test_opensearch_adapter_accepts_flattened_resource_identity() -> None:
+    payload = json.loads((FIXTURES / "opensearch-current.json").read_bytes())
+    resource = payload["hits"]["hits"][0]["_source"]["resource"]
+    resource["service.name"] = resource.pop("service")["name"]
+    client = OneResponseClient(canonical_json_bytes(payload))
+
+    result = OpenSearchAdapter(
+        client=client,
+        evidence_store=RecordingStore(),
+        fixture=FROZEN,
+    ).check_readiness(
+        window=_window(),
+        base_url="http://127.0.0.1:32773",
+        artifact_prefix="cycles/01/baseline",
+    )
+
+    assert result.ready
+
+
+@pytest.mark.parametrize(
+    "resource",
+    [
+        {"service.name": "ad", "service": {"name": "frontend"}},
+        {"service.name": 7},
+        {"service": "ad"},
+        {},
+    ],
+)
+def test_opensearch_adapter_fails_closed_on_identity_parse_error(
+    resource: dict[str, Any],
+) -> None:
+    payload = json.loads((FIXTURES / "opensearch-current.json").read_bytes())
+    payload["hits"]["hits"][0]["_source"]["resource"] = resource
+    client = OneResponseClient(canonical_json_bytes(payload))
+
+    result = OpenSearchAdapter(
+        client=client,
+        evidence_store=RecordingStore(),
+        fixture=FROZEN,
+    ).check_readiness(
+        window=_window(),
+        base_url="http://127.0.0.1:32773",
+        artifact_prefix="cycles/01/baseline",
+    )
+
+    assert result.reason is OpenSearchReason.OPENSEARCH_SCHEMA_INVALID
+
+
+@pytest.mark.parametrize(
+    ("source", "field", "reason"),
+    [
+        (
+            {"resource": {"service.name": "ad"}},
+            "resource.service.name",
+            OpenSearchServiceIdentityReason.PARSED,
+        ),
+        (
+            {"resource": {"service": {"name": "ad"}}},
+            "resource.service.name",
+            OpenSearchServiceIdentityReason.PARSED,
+        ),
+        (
+            {
+                "resource": {
+                    "service.name": "ad",
+                    "service": {"name": "ad"},
+                }
+            },
+            "resource.service.name",
+            OpenSearchServiceIdentityReason.PARSED,
+        ),
+        (
+            {
+                "resource": {
+                    "service.name": "ad",
+                    "service": {"name": "frontend"},
+                }
+            },
+            "resource.service.name",
+            OpenSearchServiceIdentityReason.CONFLICT,
+        ),
+        (
+            {"resource": {"service.name": 7}},
+            "resource.service.name",
+            OpenSearchServiceIdentityReason.TYPE_INVALID,
+        ),
+        (
+            {"resource": {"service": "ad"}},
+            "resource.service.name",
+            OpenSearchServiceIdentityReason.SHAPE_INVALID,
+        ),
+        (
+            {"resource": {}},
+            "resource.service.name",
+            OpenSearchServiceIdentityReason.MISSING,
+        ),
+        (
+            {"resource": {"service.name": "ad"}},
+            "resource.attributes.service.name",
+            OpenSearchServiceIdentityReason.FIELD_UNSUPPORTED,
+        ),
+    ],
+)
+def test_opensearch_service_identity_parser_reports_exact_shape_reason(
+    source: object,
+    field: str,
+    reason: OpenSearchServiceIdentityReason,
+) -> None:
+    parsed = parse_opensearch_service_identity(source, field=field)
+
+    assert parsed.reason is reason
 
 
 @pytest.mark.parametrize(

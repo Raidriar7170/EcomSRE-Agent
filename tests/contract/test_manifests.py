@@ -5,6 +5,7 @@ import pytest
 from pydantic import ValidationError
 
 from ecomsre.environment.manifests import (
+    COMPOSE_CANONICALIZATION_SCHEMA_VERSION,
     EXPECTED_PLATFORM,
     UPSTREAM_COMMIT,
     UPSTREAM_TAG,
@@ -19,14 +20,12 @@ from ecomsre.environment.manifests import (
     write_candidate_image_lock,
 )
 from ecomsre.phase0.models import Outcome
-from ecomsre.evidence.hashes import sha256_bytes
 
 
 COMPOSE_CONTENT = json.dumps(
     {"services": {"adservice": {"image": "otel/demo:3.0.0-adservice"}}},
     sort_keys=True,
 )
-COMPOSE_HASH = sha256_bytes(COMPOSE_CONTENT.encode())
 INDEX_DIGEST = "sha256:" + "d" * 64
 PLATFORM_DIGEST = "sha256:" + "e" * 64
 SOURCE_REFERENCES = ("otel/demo:3.0.0-adservice",)
@@ -70,7 +69,12 @@ def test_bootstrap_generates_candidate_lock_only_from_inspected_metadata() -> No
     assert lock.images[0].resolved_platform_digest == PLATFORM_DIGEST
     assert lock.images[0].acquired_at == acquired_at
     assert lock.images[0].upstream_commit == UPSTREAM_COMMIT
-    assert lock.images[0].compose_config_sha256 == COMPOSE_HASH
+    assert lock.images[0].canonical_compose_contract_sha256 == (
+        _resolved_compose().canonical_compose_contract_sha256
+    )
+    assert lock.images[0].compose_canonicalization_schema_version == (
+        COMPOSE_CANONICALIZATION_SCHEMA_VERSION
+    )
     assert lock.allowed_source_references == SOURCE_REFERENCES
 
 
@@ -185,7 +189,12 @@ def test_acceptance_verifies_candidate_immutably_against_cached_image() -> None:
         lock,
         cached_images=(_image(),),
         observed_upstream_commit=UPSTREAM_COMMIT,
-        observed_compose_config_sha256=COMPOSE_HASH,
+        observed_canonical_compose_contract_sha256=(
+            _resolved_compose().canonical_compose_contract_sha256
+        ),
+        observed_canonicalization_schema_version=(
+            COMPOSE_CANONICALIZATION_SCHEMA_VERSION
+        ),
     )
 
     assert result.passed is True
@@ -211,7 +220,12 @@ def test_digest_or_platform_mismatch_blocks_acceptance() -> None:
             ),
         ),
         observed_upstream_commit=UPSTREAM_COMMIT,
-        observed_compose_config_sha256=COMPOSE_HASH,
+        observed_canonical_compose_contract_sha256=(
+            _resolved_compose().canonical_compose_contract_sha256
+        ),
+        observed_canonicalization_schema_version=(
+            COMPOSE_CANONICALIZATION_SCHEMA_VERSION
+        ),
     )
 
     assert result.passed is False
@@ -279,7 +293,12 @@ def test_acceptance_rejects_source_reference_mismatch() -> None:
         lock,
         cached_images=(_image(source_reference="other/demo:3.0.0-adservice"),),
         observed_upstream_commit=UPSTREAM_COMMIT,
-        observed_compose_config_sha256=COMPOSE_HASH,
+        observed_canonical_compose_contract_sha256=(
+            _resolved_compose().canonical_compose_contract_sha256
+        ),
+        observed_canonicalization_schema_version=(
+            COMPOSE_CANONICALIZATION_SCHEMA_VERSION
+        ),
     )
 
     assert result.passed is False
@@ -307,7 +326,12 @@ def test_acceptance_rejects_duplicate_cached_logical_images() -> None:
         lock,
         cached_images=(_image(), _image()),
         observed_upstream_commit=UPSTREAM_COMMIT,
-        observed_compose_config_sha256=COMPOSE_HASH,
+        observed_canonical_compose_contract_sha256=(
+            _resolved_compose().canonical_compose_contract_sha256
+        ),
+        observed_canonicalization_schema_version=(
+            COMPOSE_CANONICALIZATION_SCHEMA_VERSION
+        ),
     )
 
     assert result.passed is False

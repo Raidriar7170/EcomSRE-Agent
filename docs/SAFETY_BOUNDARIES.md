@@ -62,9 +62,13 @@ provide environment overrides, add ownership metadata, and query APIs. They may
 not patch upstream source to make the baseline pass. A reproducible upstream or
 ARM64 failure is evidence for a new Decision Record, not permission to improvise.
 
-An existing `LOCKED` image manifest is immutable by default. A Compose-binding
-mismatch requires a separately authorized live rotation with the exact old
-lock-content hash and fixed reason `COMPOSE_OVERRIDE_CHANGED`. Rotation must
+An existing `LOCKED` image manifest is immutable by default. Image-lock v2
+binds `canonical_compose_contract_sha256` plus canonicalization schema version;
+the run-specific `runtime_compose_instance_sha256` is evidence, not a
+cross-run equality key. A v2 contract mismatch requires a separately
+authorized live rotation with the exact old lock-content hash and reason
+`COMPOSE_OVERRIDE_CHANGED`. A legacy v1 lock requires the same authorization
+boundary with reason `RUN_INVARIANT_COMPOSE_CONTRACT_MIGRATION`. Rotation must
 preserve the old bytes by content hash, reject a changed source-reference set,
 reverify the frozen ARM64 image identities, use compare-and-swap publication,
 and verify the result. Missing authorization, mismatched bytes/inode/hash, or
@@ -108,6 +112,19 @@ the allowlisted down operation only after fresh resource discovery matches the
 authenticated ownership manifest exactly.
 
 `down -v`, prune, and deletion by unverified historical IDs are prohibited.
+
+Candidate readiness failure evidence is also capability-gated. A pre-HTTP
+failure artifact may be written only from an authentic preflight capability
+and authentic ownership capability that name the same run. Expiry alone does
+not invalidate historical truth recording, but unauthenticated or
+run-mismatched objects must receive no observer evidence path.
+
+Before every real inject or reset, successful candidate readiness is followed
+by one more fail-closed validation of preflight authenticity/currentness,
+ownership authenticity, and run equality. Expired authority terminates with
+`CONTROL_MUTATION_AUTHORITY_EXPIRED`; invalid authentication or identity
+terminates with `CONTROL_MUTATION_AUTHORITY_INVALID`. The 30-second preflight
+authority lifetime is not extended.
 
 ## Evidence integrity lifecycle
 

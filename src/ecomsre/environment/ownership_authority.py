@@ -78,12 +78,20 @@ class OwnershipIntent(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    schema_version: Literal["phase0.ownership-intent.v1"]
+    schema_version: Literal["phase0.ownership-intent.v2"]
     run_id: str = Field(pattern=_RUN_ID_PATTERN.pattern)
     project_name: Literal["ecomsre-phase0"]
     canonical_labels: dict[str, str]
     expected_compose_files: tuple[str, ...] = Field(min_length=1)
-    expected_compose_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    runtime_compose_instance_sha256: str = Field(
+        pattern=r"^[0-9a-f]{64}$"
+    )
+    canonical_compose_contract_sha256: str = Field(
+        pattern=r"^[0-9a-f]{64}$"
+    )
+    compose_canonicalization_schema_version: Literal[
+        "phase0.compose-canonicalization.v1"
+    ]
     expected_image_sources: tuple[str, ...] = Field(min_length=1)
     pull_policy: Literal["never"]
     build_policy: Literal["no-build"]

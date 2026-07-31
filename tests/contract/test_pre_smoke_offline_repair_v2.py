@@ -414,11 +414,23 @@ def test_rotation_preserves_history_and_revalidates_new_lock(tmp_path: Path) -> 
         lock_path.parent / "image-lock-history" / f"{old_sha256}.json"
     )
     assert history.read_bytes() == original
-    assert result.lock.compose_config_sha256 == NEW_COMPOSE.sha256
+    assert result.lock.canonical_compose_contract_sha256 == (
+        NEW_COMPOSE.canonical_compose_contract_sha256
+    )
     assert result.verification.passed
     assert result.evidence.rotation_reason == "COMPOSE_OVERRIDE_CHANGED"
-    assert result.evidence.old_compose_config_sha256 == OLD_COMPOSE.sha256
-    assert result.evidence.new_compose_config_sha256 == NEW_COMPOSE.sha256
+    assert result.evidence.old_compose_binding_kind == (
+        "canonical_compose_contract_sha256"
+    )
+    assert result.evidence.old_compose_binding_sha256 == (
+        OLD_COMPOSE.canonical_compose_contract_sha256
+    )
+    assert result.evidence.new_canonical_compose_contract_sha256 == (
+        NEW_COMPOSE.canonical_compose_contract_sha256
+    )
+    assert result.evidence.runtime_compose_instance_sha256 == (
+        NEW_COMPOSE.runtime_compose_instance_sha256
+    )
     assert result.evidence.old_lock_sha256 == old_sha256
     assert result.evidence.new_lock_sha256 == sha256_bytes(lock_path.read_bytes())
 
@@ -486,6 +498,9 @@ class _StartOperations:
     def start_environment(self):
         self.events.append("up")
         return self.start
+
+    def stabilize_initial_readiness(self, seconds: float):
+        self.events.append(f"stabilize:{seconds}")
 
     def fresh_authority(self, boundary: str):
         self.events.append(f"authority:{boundary}")

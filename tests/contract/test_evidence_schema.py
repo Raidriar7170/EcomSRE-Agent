@@ -60,7 +60,9 @@ REQUIRED_FIELDS = {
         "upstream_commit",
         "image_lock_sha256",
         "resolved_arm64_digests",
-        "compose_config_sha256",
+        "canonical_compose_contract_sha256",
+        "runtime_compose_instance_sha256",
+        "compose_canonicalization_schema_version",
     },
     PhaseRecord: {
         "schema_version",
