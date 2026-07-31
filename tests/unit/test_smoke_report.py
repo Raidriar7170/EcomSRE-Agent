@@ -80,6 +80,8 @@ def _attempt() -> SmokeAttemptEvidence:
         fresh_stop_authority=True,
         safe_stop_attempted=True,
         safe_stop_succeeded=True,
+        owned_volume_cleanup_attempted=True,
+        owned_volume_cleanup_succeeded=True,
         failure_reason_codes=(),
     )
 
@@ -117,6 +119,7 @@ def _report(*, status: DiagnosticStatus = DiagnosticStatus.PASSED) -> SmokeRepor
         origin_promotion_run_id="a" * 32,
         attempts=(_attempt(),),
         safe_stop_completed=True,
+        owned_volume_cleanup_completed=True,
         failure_reason_codes=(
             ()
             if status is DiagnosticStatus.PASSED

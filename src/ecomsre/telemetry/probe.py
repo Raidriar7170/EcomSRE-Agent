@@ -1351,8 +1351,13 @@ def acquire_collector_pipeline_receipt(
         status is None
         or status.get("Running") is not True
         or status.get("Status") != "running"
-        or not isinstance(health, dict)
-        or health.get("Status") != "healthy"
+        or (
+            health is not None
+            and (
+                not isinstance(health, dict)
+                or health.get("Status") != "healthy"
+            )
+        )
     ):
         raise ValueError("collector container is not healthy")
     root = Path(__file__).resolve().parents[3]
@@ -1430,7 +1435,7 @@ def _acquire_service_trace_receipt(
     ):
         raise ValueError("specialized receipt authority is invalid")
     fixture = registry_capability.registry.jaeger
-    target = "/api/traces?" + urlencode(
+    target = "/jaeger/ui/api/traces?" + urlencode(
         {
             "service": "load-generator",
             "operation": "user_get_ads",
@@ -1517,7 +1522,7 @@ def _service_trace_artifact_is_valid(
         ValueError,
     ):
         return False
-    expected_request = "/api/traces?" + urlencode(
+    expected_request = "/jaeger/ui/api/traces?" + urlencode(
         {
             "service": "load-generator",
             "operation": "user_get_ads",
@@ -1724,7 +1729,9 @@ def derive_service_readiness_proof(
     if status is None:
         raise ValueError("Docker state output or container identity is invalid")
     health = status.get("Health")
-    healthy = isinstance(health, dict) and health.get("Status") == "healthy"
+    healthy = health is None or (
+        isinstance(health, dict) and health.get("Status") == "healthy"
+    )
     status_artifact = _persist_lifecycle_result(
         evidence_store,
         purpose=f"{service}_status",
@@ -2902,7 +2909,10 @@ def _backend_raw_payloads_match_frozen_contract(
                 }
             )
             payload = payloads[next(iter(raw_paths))]
-            if payload.get("exact_request") != f"/api/traces?{expected_query}":
+            if (
+                payload.get("exact_request")
+                != f"/jaeger/ui/api/traces?{expected_query}"
+            ):
                 return False
             _select_span(
                 bodies[next(iter(raw_paths))],

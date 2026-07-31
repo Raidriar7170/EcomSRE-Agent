@@ -198,7 +198,7 @@ def issue_strict_frozen_test_capability(
             sequence=7 + (index - 1) * 2,
             purpose=f"jaeger-correlation-{phase}",
             method="GET",
-            target=f"/api/traces/{trace_id}",
+            target=f"/jaeger/ui/api/traces/{trace_id}",
             body=correlation_body,
             monotonic_started_at=offset + 11.0,
         )
@@ -223,7 +223,7 @@ def issue_strict_frozen_test_capability(
                 "traceparent_sha256": sha256_bytes(traceparent.encode()),
                 "probe_raw_artifact": exchange_paths[f"probe-{phase}"],
                 "probe_raw_sha256": probe_artifact_sha256,
-                "jaeger_request": f"/api/traces/{trace_id}",
+                "jaeger_request": f"/jaeger/ui/api/traces/{trace_id}",
                 "jaeger_raw_artifact": exchange_paths[f"jaeger-correlation-{phase}"],
                 "jaeger_raw_sha256": jaeger_artifact_sha256,
                 "jaeger_http_status": 200,
@@ -271,7 +271,7 @@ def issue_strict_frozen_test_capability(
         (
             "jaeger-readiness",
             "GET",
-            "/api/traces?"
+            "/jaeger/ui/api/traces?"
             + urlencode(
                 {
                     "service": payload["jaeger"]["service_identity"],
@@ -339,7 +339,7 @@ def issue_strict_frozen_test_capability(
                 sequence=7 + (index - 1) * 2,
                 purpose=correlation_purpose,
                 method="GET",
-                target=f"/api/traces/{index:032x}",
+                target=f"/jaeger/ui/api/traces/{index:032x}",
                 body=correlation_bodies[phase],
                 monotonic_started_at=(index - 1) * 40.0 + 11.0,
             )

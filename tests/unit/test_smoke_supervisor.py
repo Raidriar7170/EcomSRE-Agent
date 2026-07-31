@@ -96,6 +96,13 @@ class FakeOperations:
         self._step("down")
         return TerminalResult(outcome=Outcome.SUCCESS, reason_code="DOWN")
 
+    def cleanup_owned_volumes(self, authority):
+        self._step("cleanup:volumes")
+        return TerminalResult(
+            outcome=Outcome.SUCCESS,
+            reason_code="OWNED_NAMED_VOLUMES_CLEANED",
+        )
+
     def finalize(self, state: SmokeSupervisorState):
         self._step("finalize")
         return state
@@ -125,11 +132,33 @@ def test_supervisor_orders_initial_readiness_before_control_and_refreshes_bounda
         "control:close",
         "authority:stop",
         "down",
+        "cleanup:volumes",
         "finalize",
     ]
     assert state.environment_started
     assert state.reset_succeeded
     assert state.stop_succeeded
+    assert state.owned_volume_cleanup_succeeded
+
+
+def test_supervisor_reports_owned_volume_cleanup_failure_after_successful_stop():
+    class CleanupFailure(FakeOperations):
+        def cleanup_owned_volumes(self, authority):
+            self._step("cleanup:volumes")
+            return TerminalResult(
+                outcome=Outcome.MANUAL_INTERVENTION_REQUIRED,
+                reason_code="OWNED_VOLUME_CLEANUP_FAILED",
+            )
+
+    operations = CleanupFailure()
+
+    state = supervise_smoke_attempt(run_id=RUN_ID, operations=operations)
+
+    assert state.stop_succeeded
+    assert state.owned_volume_cleanup_attempted
+    assert not state.owned_volume_cleanup_succeeded
+    assert "OWNED_VOLUME_CLEANUP_FAILED" in state.failure_reason_codes
+    assert operations.events[-2:] == ["cleanup:volumes", "finalize"]
 
 
 @pytest.mark.parametrize(

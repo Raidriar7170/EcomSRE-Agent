@@ -270,6 +270,134 @@ class LifecycleExecution(BaseModel):
         return self
 
 
+class ResourceDriftObservation(BaseModel):
+    """One read-only Docker resource observation at a named boundary."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    kind: Literal["container", "network", "volume"]
+    name: str = Field(min_length=1)
+    resource_id: str = Field(min_length=1)
+    labels: dict[str, str]
+    present: bool
+
+
+class ResourceDriftAssessment(BaseModel):
+    """Causal safety classification for one observed resource disappearance."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    schema_version: Literal["phase0.resource-drift-assessment.v1"]
+    current_run_id: str = Field(pattern=_RUN_ID.pattern)
+    before: ResourceDriftObservation
+    after: ResourceDriftObservation
+    reason_code: Literal[
+        "EXTERNAL_UNOWNED_RESOURCE_DRIFT",
+        "OWNED_OR_ATTRIBUTABLE_RESOURCE_DRIFT",
+    ]
+    severity: Literal["WARNING", "UNSAFE"]
+    current_run_causality: Literal["UNPROVEN", "PROVEN"]
+    blocking: bool
+    manifest_owned: bool
+    project_labeled: bool
+    delete_command_attributed: bool
+    additional_causality_proven: bool
+
+    @property
+    def warning_reason_codes(self) -> tuple[str, ...]:
+        return (self.reason_code,) if not self.blocking else ()
+
+    @property
+    def blocking_reason_codes(self) -> tuple[str, ...]:
+        return (self.reason_code,) if self.blocking else ()
+
+
+class OwnedVolumeCleanupExecution(BaseModel):
+    """Exact owned-volume cleanup truth plus its audited command results."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    result: TerminalResult
+    removed_volume_names: tuple[str, ...] = ()
+    command_results: tuple[CommandResult, ...] = ()
+
+
+def classify_resource_drift(
+    *,
+    before: ResourceDriftObservation,
+    after: ResourceDriftObservation,
+    authenticated_manifests: tuple[OwnershipManifest, ...],
+    audited_arguments: tuple[tuple[str, ...], ...],
+    current_run_id: str,
+    additional_causality_proven: bool = False,
+) -> ResourceDriftAssessment | None:
+    """Classify disappearance without adopting or reconstructing the resource."""
+    if _RUN_ID.fullmatch(current_run_id) is None:
+        raise ValueError("current run id is invalid")
+    identity = (before.kind, before.name, before.resource_id)
+    if identity != (after.kind, after.name, after.resource_id):
+        raise ValueError("resource observation identity changed")
+    if not before.present:
+        raise ValueError("drift classification requires a present before observation")
+    if after.present:
+        return None
+    manifest_owned = any(
+        any(
+            (
+                resource.kind,
+                resource.name,
+                resource.resource_id,
+            )
+            == identity
+            for resource in manifest.resources
+        )
+        for manifest in authenticated_manifests
+    )
+    project_labeled = (
+        before.labels.get(PROJECT_LABEL) == PROJECT_NAMESPACE
+        and _RUN_ID.fullmatch(before.labels.get(RUN_LABEL, "")) is not None
+    )
+    delete_command_attributed = any(
+        _arguments_delete_exact_resource(
+            arguments,
+            kind=before.kind,
+            name=before.name,
+            resource_id=before.resource_id,
+        )
+        for arguments in audited_arguments
+    )
+    blocking = any(
+        (
+            manifest_owned,
+            project_labeled,
+            delete_command_attributed,
+            additional_causality_proven,
+        )
+    )
+    return ResourceDriftAssessment(
+        schema_version="phase0.resource-drift-assessment.v1",
+        current_run_id=current_run_id,
+        before=before,
+        after=after,
+        reason_code=(
+            "OWNED_OR_ATTRIBUTABLE_RESOURCE_DRIFT"
+            if blocking
+            else "EXTERNAL_UNOWNED_RESOURCE_DRIFT"
+        ),
+        severity="UNSAFE" if blocking else "WARNING",
+        current_run_causality=(
+            "PROVEN"
+            if delete_command_attributed or additional_causality_proven
+            else "UNPROVEN"
+        ),
+        blocking=blocking,
+        manifest_owned=manifest_owned,
+        project_labeled=project_labeled,
+        delete_command_attributed=delete_command_attributed,
+        additional_causality_proven=additional_causality_proven,
+    )
+
+
 def build_compose_invocation(
     action: ComposeAction,
     *,
@@ -319,6 +447,57 @@ def build_compose_invocation(
             ComposeAction.STATUS,
             ComposeAction.HEALTH,
         },
+    )
+
+
+def build_owned_volume_cleanup_daemon_invocation(
+    *,
+    run_id: str,
+    docker_endpoint: str,
+) -> ComposeInvocation:
+    return ComposeInvocation(
+        purpose="cleanup_revalidate_daemon",
+        arguments=(
+            *docker_host_prefix(docker_endpoint),
+            "info",
+            "--format",
+            "{{json .ID}}",
+        ),
+        environment={"ECOMSRE_RUN_ID": run_id},
+        timeout_seconds=30,
+        read_only=True,
+    )
+
+
+def build_owned_volume_cleanup_invocation(
+    resource: OwnedResource,
+    *,
+    run_id: str,
+    docker_endpoint: str,
+) -> ComposeInvocation:
+    expected_labels = _canonical_labels(run_id)
+    if (
+        resource.kind != "volume"
+        or not resource.name
+        or resource.name != resource.resource_id
+        or any(
+            resource.labels.get(key) != value
+            for key, value in expected_labels.items()
+        )
+        or resource.identity_evidence != (f"volume:{resource.resource_id}",)
+    ):
+        raise ValueError("volume cleanup ownership identity is invalid")
+    return ComposeInvocation(
+        purpose="cleanup_owned_volume",
+        arguments=(
+            *docker_host_prefix(docker_endpoint),
+            "volume",
+            "rm",
+            resource.name,
+        ),
+        environment={"ECOMSRE_RUN_ID": run_id},
+        timeout_seconds=30,
+        read_only=False,
     )
 
 
@@ -1043,6 +1222,163 @@ def down_environment(
     return _terminal(Outcome.SUCCESS, "OWNED_ENVIRONMENT_STOPPED")
 
 
+def cleanup_owned_named_volumes(
+    runner: LifecycleRunner,
+    *,
+    context: AuthenticatedOwnershipContext,
+    project_root: Path,
+    docker_endpoint: str,
+    expected_daemon_id: str,
+) -> OwnedVolumeCleanupExecution:
+    """Remove only the still-present exact named-volume subset in the manifest."""
+    command_results: list[CommandResult] = []
+    if (
+        not _context_is_authentic(context)
+        or not is_local_unix_docker_endpoint(docker_endpoint)
+        or not expected_daemon_id
+    ):
+        return OwnedVolumeCleanupExecution(
+            result=_terminal(Outcome.UNSAFE, "RESOURCE_OWNERSHIP_UNKNOWN"),
+        )
+    daemon_invocation = build_owned_volume_cleanup_daemon_invocation(
+        run_id=context.run_id,
+        docker_endpoint=docker_endpoint,
+    )
+    daemon_result = _execute(runner, daemon_invocation)
+    command_results.append(daemon_result)
+    try:
+        observed_daemon_id = json.loads(daemon_result.stdout)
+    except (json.JSONDecodeError, TypeError):
+        observed_daemon_id = None
+    if (
+        daemon_result.exit_code != 0
+        or observed_daemon_id != expected_daemon_id
+    ):
+        return OwnedVolumeCleanupExecution(
+            result=_terminal(
+                Outcome.UNSAFE,
+                "DOCKER_DAEMON_IDENTITY_CHANGED",
+            ),
+            command_results=tuple(command_results),
+        )
+
+    manifest_volumes = tuple(
+        resource
+        for resource in context.manifest.resources
+        if resource.kind == "volume"
+    )
+    try:
+        manifest_by_identity = {
+            (resource.kind, resource.name, resource.resource_id): resource
+            for resource in manifest_volumes
+        }
+        if len(manifest_by_identity) != len(manifest_volumes):
+            raise ValueError("manifest volume identities are duplicated")
+        for resource in manifest_volumes:
+            build_owned_volume_cleanup_invocation(
+                resource,
+                run_id=context.run_id,
+                docker_endpoint=docker_endpoint,
+            )
+        discovered = _discover_verified_resources(
+            runner,
+            project_root=project_root,
+            run_id=context.run_id,
+            docker_endpoint=docker_endpoint,
+            command_results=command_results,
+        )
+        unexpected = tuple(
+            resource
+            for resource in discovered
+            if (
+                resource.kind,
+                resource.name,
+                resource.resource_id,
+            )
+            not in manifest_by_identity
+            and resource.kind == "volume"
+        )
+        if unexpected:
+            raise ValueError("current volume identity is outside the manifest")
+        current_volumes = tuple(
+            resource for resource in discovered if resource.kind == "volume"
+        )
+        if any(
+            manifest_by_identity[
+                (resource.kind, resource.name, resource.resource_id)
+            ]
+            != resource
+            for resource in current_volumes
+        ):
+            raise ValueError("current volume identity drifted from the manifest")
+    except (DiscoveryParseError, KeyError, OwnershipError, ValueError):
+        return OwnedVolumeCleanupExecution(
+            result=_terminal(Outcome.UNSAFE, "RESOURCE_OWNERSHIP_UNKNOWN"),
+            command_results=tuple(command_results),
+        )
+
+    if any(resource.kind != "volume" for resource in discovered):
+        return OwnedVolumeCleanupExecution(
+            result=_terminal(
+                Outcome.MANUAL_INTERVENTION_REQUIRED,
+                "OWNED_VOLUME_CLEANUP_PRECONDITION_FAILED",
+            ),
+            command_results=tuple(command_results),
+        )
+
+    removed: list[str] = []
+    for resource in current_volumes:
+        invocation = build_owned_volume_cleanup_invocation(
+            resource,
+            run_id=context.run_id,
+            docker_endpoint=docker_endpoint,
+        )
+        result = _execute(runner, invocation)
+        command_results.append(result)
+        if result.exit_code != 0:
+            return OwnedVolumeCleanupExecution(
+                result=_terminal(
+                    Outcome.MANUAL_INTERVENTION_REQUIRED,
+                    "OWNED_VOLUME_CLEANUP_FAILED",
+                ),
+                removed_volume_names=tuple(removed),
+                command_results=tuple(command_results),
+            )
+        removed.append(resource.name)
+
+    try:
+        remaining = _discover_verified_resources(
+            runner,
+            project_root=project_root,
+            run_id=context.run_id,
+            docker_endpoint=docker_endpoint,
+            command_results=command_results,
+        )
+    except (DiscoveryParseError, OwnershipError, ValueError):
+        return OwnedVolumeCleanupExecution(
+            result=_terminal(
+                Outcome.MANUAL_INTERVENTION_REQUIRED,
+                "OWNED_VOLUME_CLEANUP_FAILED",
+            ),
+            removed_volume_names=tuple(removed),
+            command_results=tuple(command_results),
+        )
+    if remaining:
+        return OwnedVolumeCleanupExecution(
+            result=_terminal(
+                Outcome.MANUAL_INTERVENTION_REQUIRED,
+                "OWNED_VOLUME_CLEANUP_FAILED",
+            ),
+            removed_volume_names=tuple(removed),
+            command_results=tuple(command_results),
+        )
+    return OwnedVolumeCleanupExecution(
+        result=_terminal(Outcome.SUCCESS, "OWNED_NAMED_VOLUMES_CLEANED"),
+        removed_volume_names=tuple(removed),
+        command_results=tuple(command_results),
+    )
+
+
 def _read_environment_state(
     runner: LifecycleRunner,
     *,
@@ -1108,6 +1444,14 @@ def _invocation_is_allowlisted(
             and arguments[:2] == ("docker", "--host")
             and is_local_unix_docker_endpoint(arguments[2])
             and arguments[3:] == ("info", "--format", "{{json .}}")
+        )
+    if purpose == "cleanup_revalidate_daemon":
+        return (
+            invocation.read_only
+            and len(arguments) == 6
+            and arguments[:2] == ("docker", "--host")
+            and is_local_unix_docker_endpoint(arguments[2])
+            and arguments[3:] == ("info", "--format", "{{json .ID}}")
         )
     if (
         len(arguments) < 3
@@ -1179,6 +1523,23 @@ def _invocation_is_allowlisted(
             and bool(arguments[7])
             and not arguments[7].startswith("-")
             and not any(character.isspace() for character in arguments[7])
+        )
+    if purpose == "cleanup_owned_volume":
+        name = arguments[-1] if arguments else ""
+        return (
+            not invocation.read_only
+            and len(arguments) == 6
+            and arguments[:5]
+            == (
+                *docker_prefix,
+                "volume",
+                "rm",
+            )
+            and name.startswith(f"{PROJECT_NAMESPACE}-{run_id}-")
+            and name
+            and not name.startswith("-")
+            and not any(character.isspace() for character in name)
+            and not any(character in name for character in "*?[]")
         )
     if purpose in {
         f"{scope}_{kind}s"
@@ -1911,6 +2272,29 @@ def _resource_identities(
     return {
         (resource.kind, resource.resource_id, resource.name) for resource in resources
     }
+
+
+def _arguments_delete_exact_resource(
+    arguments: tuple[str, ...],
+    *,
+    kind: str,
+    name: str,
+    resource_id: str,
+) -> bool:
+    if not isinstance(arguments, tuple) or not arguments:
+        return False
+    try:
+        index = arguments.index(kind)
+    except ValueError:
+        return False
+    return (
+        index + 2 < len(arguments)
+        and arguments[index + 1] == "rm"
+        and any(
+            candidate in {name, resource_id}
+            for candidate in arguments[index + 2 :]
+        )
+    )
 
 
 def _parse_json_records(stdout: str) -> tuple[dict[str, object], ...]:

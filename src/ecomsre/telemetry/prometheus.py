@@ -1085,7 +1085,7 @@ def discover_and_freeze_registry(
             )
         )
 
-    jaeger_target = "/api/traces?" + urlencode(
+    jaeger_target = "/jaeger/ui/api/traces?" + urlencode(
         {
             "service": jaeger["service_identity"],
             "operation": jaeger["operation"],
@@ -1280,7 +1280,7 @@ def discover_and_freeze_registry(
                     protocol=jaeger["target"]["protocol"],
                 ),
                 method="GET",
-                target=f"/api/traces/{trace_id}",
+                target=f"/jaeger/ui/api/traces/{trace_id}",
                 absolute_deadline_monotonic=window.monotonic_ended_at,
             )
         correlation_exchange, correlation_payload, attempts = (
@@ -1349,7 +1349,7 @@ def discover_and_freeze_registry(
                 "traceparent_sha256": sha256_bytes(traceparent.encode()),
                 "probe_raw_artifact": probe_record[1],
                 "probe_raw_sha256": probe_record[2],
-                "jaeger_request": f"/api/traces/{trace_id}",
+                "jaeger_request": f"/jaeger/ui/api/traces/{trace_id}",
                 "jaeger_raw_artifact": correlation_record[1],
                 "jaeger_raw_sha256": correlation_record[2],
                 "jaeger_http_status": correlation_exchange.status_code,
@@ -3772,8 +3772,10 @@ def _verify_raw_promotion_artifact(
         if (
             not _traceparent_matches_trace_id(traceparent, trace_id=trace_id)
             or sha256_bytes(traceparent.encode()) != phase.get("traceparent_sha256")
-            or jaeger_exchange["request"]["target"] != f"/api/traces/{trace_id}"
-            or phase.get("jaeger_request") != f"/api/traces/{trace_id}"
+            or jaeger_exchange["request"]["target"]
+            != f"/jaeger/ui/api/traces/{trace_id}"
+            or phase.get("jaeger_request")
+            != f"/jaeger/ui/api/traces/{trace_id}"
             or phase.get("jaeger_http_status") != jaeger_exchange["http_status"]
             or phase.get("jaeger_raw_response_sha256")
             != jaeger_exchange["raw_response_sha256"]

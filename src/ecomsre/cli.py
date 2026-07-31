@@ -20,6 +20,7 @@ from ecomsre.environment.lifecycle import (
     LifecycleExecution,
     LifecycleRunner,
     ReadinessEvidence,
+    cleanup_owned_named_volumes,
     down_environment,
     health_environment,
     status_environment,
@@ -87,6 +88,7 @@ from ecomsre.phase0.smoke import (
     promote_or_revalidate_registry,
     reseal_recovery_evidence,
     supervise_smoke_attempt,
+    validate_current_recovery_seal,
 )
 from ecomsre.scenarios.ad_service_failure import (
     AdServiceFailureController,
@@ -119,6 +121,7 @@ PHASE0_COMMANDS = (
     "accept",
     "smoke",
     "stop",
+    "cleanup-owned-volumes",
 )
 
 RUN_ID_REQUIRED_COMMANDS = {
@@ -128,6 +131,7 @@ RUN_ID_REQUIRED_COMMANDS = {
     "reset",
     "status",
     "stop",
+    "cleanup-owned-volumes",
 }
 
 IMPLEMENTED_COMMANDS = frozenset(
@@ -141,6 +145,7 @@ IMPLEMENTED_COMMANDS = frozenset(
         "status",
         "smoke",
         "stop",
+        "cleanup-owned-volumes",
     }
 )
 @dataclass(frozen=True)
@@ -169,6 +174,14 @@ class DirectStopResult(TerminalResult):
 
     evidence_persistence_error: str | None = None
     owned_stop_completed: bool = False
+
+
+class DirectOwnedVolumeCleanupResult(TerminalResult):
+    """Exact cleanup truth, including append-only recovery seal status."""
+
+    removed_volume_names: tuple[str, ...] = ()
+    owned_volume_cleanup_completed: bool = False
+    recovery_seal_current: bool = False
 
 
 class SubprocessRunner(AuditedSubprocessRunner):
@@ -220,6 +233,7 @@ def build_parser() -> argparse.ArgumentParser:
             "accept",
             "smoke",
             "stop",
+            "cleanup-owned-volumes",
         }:
             command.add_argument(
                 "--run-id",
@@ -257,6 +271,7 @@ def build_handler_registry() -> dict[str, Handler]:
         "status": _handle_status,
         "smoke": _handle_smoke,
         "stop": _handle_stop,
+        "cleanup-owned-volumes": _handle_cleanup_owned_volumes,
     }
 
 
@@ -1119,6 +1134,24 @@ class _ProductionSmokeOperations:
             docker_endpoint=authority.docker_endpoint,
         )
 
+    def cleanup_owned_volumes(self, authority: object) -> TerminalResult:
+        if (
+            not isinstance(authority, FreshStopAuthority)
+            or self.stop_ownership is None
+        ):
+            raise TypeError("fresh stop authority is invalid")
+        ownership = self.stop_ownership
+        if not authority.is_authentic(ownership):
+            raise ValueError("fresh stop authority is unauthenticated")
+        execution = cleanup_owned_named_volumes(
+            self.context.runner,
+            context=ownership,
+            project_root=self.context.project_root,
+            docker_endpoint=authority.docker_endpoint,
+            expected_daemon_id=authority.daemon_id,
+        )
+        return execution.result
+
     def finalize(self, state: SmokeSupervisorState) -> SmokeReport:
         return finalize_supervised_smoke(
             state=state,
@@ -1267,6 +1300,131 @@ def _handle_stop(
         **stopped.model_dump(),
         evidence_persistence_error=authority.evidence_persistence_error,
         owned_stop_completed=True,
+    )
+
+
+def _handle_cleanup_owned_volumes(
+    args: argparse.Namespace,
+    context: HandlerContext,
+) -> DirectOwnedVolumeCleanupResult:
+    ownership = load_authenticated_ownership_context(
+        context.artifacts_root,
+        args.run_id,
+    )
+    try:
+        docker = collect_direct_stop_docker_snapshot(context.runner)
+    except (OSError, PreflightCollectionError, ValueError):
+        return _finalize_owned_volume_cleanup(
+            context=context,
+            run_id=args.run_id,
+            result=TerminalResult(
+                outcome=Outcome.MANUAL_INTERVENTION_REQUIRED,
+                reason_code="FRESH_STOP_DOCKER_SNAPSHOT_UNAVAILABLE",
+            ),
+            removed_volume_names=(),
+        )
+    snapshot_failure = None
+    if docker.context_name != DOCKER_DESKTOP_CONTEXT:
+        snapshot_failure = "FRESH_STOP_DOCKER_CONTEXT_UNSUPPORTED"
+    elif (
+        not isinstance(docker.docker_endpoint, str)
+        or not is_local_unix_docker_endpoint(docker.docker_endpoint)
+    ):
+        snapshot_failure = "FRESH_STOP_DOCKER_ENDPOINT_UNSAFE"
+    elif not docker.daemon_available:
+        snapshot_failure = "FRESH_STOP_DAEMON_UNAVAILABLE"
+    elif not docker.daemon_id:
+        snapshot_failure = "FRESH_STOP_DAEMON_ID_UNAVAILABLE"
+    if snapshot_failure is not None:
+        return _finalize_owned_volume_cleanup(
+            context=context,
+            run_id=args.run_id,
+            result=TerminalResult(
+                outcome=Outcome.MANUAL_INTERVENTION_REQUIRED,
+                reason_code=snapshot_failure,
+            ),
+            removed_volume_names=(),
+        )
+    try:
+        execution = cleanup_owned_named_volumes(
+            context.runner,
+            context=ownership,
+            project_root=context.project_root,
+            docker_endpoint=docker.docker_endpoint,
+            expected_daemon_id=docker.daemon_id,
+        )
+    except (OSError, RuntimeError, TypeError, ValueError):
+        return _finalize_owned_volume_cleanup(
+            context=context,
+            run_id=args.run_id,
+            result=TerminalResult(
+                outcome=Outcome.MANUAL_INTERVENTION_REQUIRED,
+                reason_code="OWNED_VOLUME_CLEANUP_FAILED",
+            ),
+            removed_volume_names=(),
+        )
+    return _finalize_owned_volume_cleanup(
+        context=context,
+        run_id=args.run_id,
+        result=execution.result,
+        removed_volume_names=execution.removed_volume_names,
+    )
+
+
+def _finalize_owned_volume_cleanup(
+    *,
+    context: HandlerContext,
+    run_id: str,
+    result: TerminalResult,
+    removed_volume_names: tuple[str, ...],
+) -> DirectOwnedVolumeCleanupResult:
+    completed = result.outcome is Outcome.SUCCESS
+    report_root = context.artifacts_root / "reports" / run_id
+    smoke_report = report_root / "smoke-report.json"
+    if not smoke_report.exists() and not smoke_report.is_symlink():
+        return DirectOwnedVolumeCleanupResult(
+            **result.model_dump(),
+            removed_volume_names=removed_volume_names,
+            owned_volume_cleanup_completed=completed,
+        )
+    initial_checksum = report_root / "checksums.sha256"
+    try:
+        if (
+            smoke_report.is_symlink()
+            or not smoke_report.is_file()
+            or initial_checksum.is_symlink()
+            or not initial_checksum.is_file()
+        ):
+            raise ValueError("terminal smoke bundle is incomplete")
+        sequence = _next_recovery_seal_sequence(report_root)
+        reseal_recovery_evidence(
+            artifacts_root=context.artifacts_root,
+            run_id=run_id,
+            sequence=sequence,
+            disposition=(
+                "OWNED_VOLUME_CLEANUP_COMPLETED"
+                if completed
+                else "OWNED_VOLUME_CLEANUP_INCOMPLETE"
+            ),
+            reason_code=result.reason_code,
+        )
+        if not validate_current_recovery_seal(
+            context.artifacts_root,
+            run_id=run_id,
+        ):
+            raise ValueError("recovery seal validation failed")
+    except (OSError, RuntimeError, TypeError, ValueError):
+        return DirectOwnedVolumeCleanupResult(
+            outcome=Outcome.MANUAL_INTERVENTION_REQUIRED,
+            reason_code="RECOVERY_EVIDENCE_PERSISTENCE_FAILED",
+            removed_volume_names=removed_volume_names,
+            owned_volume_cleanup_completed=completed,
+        )
+    return DirectOwnedVolumeCleanupResult(
+        **result.model_dump(),
+        removed_volume_names=removed_volume_names,
+        owned_volume_cleanup_completed=completed,
+        recovery_seal_current=True,
     )
 
 

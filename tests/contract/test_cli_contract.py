@@ -38,6 +38,7 @@ CANONICAL_COMMANDS = {
     "stop",
 }
 DIAGNOSTIC_COMMANDS = {"smoke"}
+MAINTENANCE_COMMANDS = {"cleanup-owned-volumes"}
 
 RUN_ID_REQUIRED_COMMANDS = {
     "up",
@@ -46,6 +47,7 @@ RUN_ID_REQUIRED_COMMANDS = {
     "reset",
     "status",
     "stop",
+    "cleanup-owned-volumes",
 }
 
 IMPLEMENTED_COMMANDS = {
@@ -58,6 +60,7 @@ IMPLEMENTED_COMMANDS = {
     "status",
     "smoke",
     "stop",
+    "cleanup-owned-volumes",
 }
 
 
@@ -105,7 +108,9 @@ def test_cli_parser_exposes_only_explicit_phase0_commands() -> None:
         action for action in phase0_parser._actions if action.dest == "command"
     )
 
-    assert set(command_action.choices) == CANONICAL_COMMANDS | DIAGNOSTIC_COMMANDS
+    assert set(command_action.choices) == (
+        CANONICAL_COMMANDS | DIAGNOSTIC_COMMANDS | MAINTENANCE_COMMANDS
+    )
 
 
 def test_existing_run_commands_require_a_valid_opaque_run_id() -> None:

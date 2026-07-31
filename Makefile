@@ -10,7 +10,8 @@ PHASE0_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m
 export ECOMSRE_RUN_ID := $(value RUN_ID)
 
 .PHONY: phase0-prerequisites phase0-bootstrap phase0-preflight phase0-up phase0-health \
-	phase0-inject phase0-reset phase0-status phase0-accept phase0-smoke phase0-stop
+	phase0-inject phase0-reset phase0-status phase0-accept phase0-smoke phase0-stop \
+	phase0-cleanup-owned-volumes
 
 phase0-prerequisites:
 	@for path in "$(UV_CACHE_ROOT)" "$(UV_CACHE_DIR)" "$(TMPDIR)"; do \
@@ -48,3 +49,6 @@ phase0-smoke: phase0-prerequisites
 
 phase0-stop: phase0-prerequisites
 	$(PHASE0_CLI) stop
+
+phase0-cleanup-owned-volumes: phase0-prerequisites
+	$(PHASE0_CLI) cleanup-owned-volumes

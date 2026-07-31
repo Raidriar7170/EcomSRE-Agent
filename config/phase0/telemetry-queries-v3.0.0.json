@@ -62,7 +62,7 @@
       "target_port": 16686,
       "protocol": "tcp"
     },
-    "request_template": "/api/traces?service={service}&operation={operation}&start={start_us}&end={end_us}",
+    "request_template": "/jaeger/ui/api/traces?service={service}&operation={operation}&start={start_us}&end={end_us}",
     "expected_response_schema": "jaeger.http-api.traces.v1",
     "upstream_tag": "3.0.0",
     "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",

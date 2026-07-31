@@ -1,0 +1,56 @@
+{
+  "schema_version": "phase0.sanitized-freeze-disposition.v1",
+  "phase0_complete": false,
+  "formal_three_cycle_acceptance_executed": false,
+  "additional_phase0_smoke_authorized": false,
+  "draft_pr_disposition": "Draft / REVIEW_REQUIRED",
+  "historical_verdict_or_live_evidence_rewritten": false,
+  "runs": [
+    {
+      "run_id": "f1c9253b03dd4afca4284a89524562fb",
+      "verdict": "UNSAFE",
+      "evidence_surface": "smoke-report",
+      "reason_codes": [
+        "POST_UP_OWNERSHIP_UNPROVEN",
+        "STOP_AUTHORITY_INPUT_UNAVAILABLE",
+        "SAFE_RESET_NOT_CONFIRMED",
+        "SAFE_STOP_NOT_CONFIRMED"
+      ]
+    },
+    {
+      "run_id": "5f43827ec1be3fb20a558f454ab391ad",
+      "verdict": "FAILED",
+      "evidence_surface": "smoke-report",
+      "reason_codes": [
+        "INITIAL_CANDIDATE_READINESS_INCOMPLETE"
+      ]
+    },
+    {
+      "run_id": "95876a1561846bebc4ffe9f2bf2531b1",
+      "verdict": "FAILED",
+      "evidence_surface": "smoke-report",
+      "reason_codes": [
+        "lifecycle runner authority is invalid"
+      ]
+    },
+    {
+      "run_id": "9650bb2e9657d5dbee864099f961541e",
+      "verdict": "BLOCKED",
+      "evidence_surface": "preflight-snapshot",
+      "reason_codes": [
+        "COMPOSE_CONFIG_HASH_MISMATCH"
+      ]
+    }
+  ],
+  "objective_run_id_aliases": {
+    "95876a1561846bebc4ffef9f2bf2531b1": "95876a1561846bebc4ffe9f2bf2531b1"
+  },
+  "latest_blocker": {
+    "summary": "Run-interpolated resolved Compose hashes are not reusable across runs.",
+    "run_id": "9650bb2e9657d5dbee864099f961541e",
+    "expected_compose_config_sha256": "e8ad821d79fdcd4df2c7951bc0b87978ebfb63e18ef8676f95bd1d526893a2ea",
+    "observed_compose_config_sha256": "613ee99fcaeecc60a4fd4e264c2c1172259779994ae605e00d36b92c93c2e47d",
+    "scope_disposition": "OUT_OF_SCOPE_FOR_PHASE1"
+  },
+  "next_authorized_scope": "PHASE1_SINGLE_AGENT_RCA_REPLAY"
+}

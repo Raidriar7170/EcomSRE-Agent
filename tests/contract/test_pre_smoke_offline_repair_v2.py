@@ -527,6 +527,13 @@ class _StartOperations:
         self.events.append("down")
         return TerminalResult(outcome=Outcome.SUCCESS, reason_code="DOWN")
 
+    def cleanup_owned_volumes(self, authority):
+        self.events.append("cleanup:volumes")
+        return TerminalResult(
+            outcome=Outcome.SUCCESS,
+            reason_code="OWNED_NAMED_VOLUMES_CLEANED",
+        )
+
     def finalize(self, state):
         self.events.append("finalize")
         return state
@@ -582,7 +589,13 @@ def test_mutation_possible_start_failure_requires_safe_stop() -> None:
         operations=operations,
     )
 
-    assert operations.events == ["up", "authority:stop", "down", "finalize"]
+    assert operations.events == [
+        "up",
+        "authority:stop",
+        "down",
+        "cleanup:volumes",
+        "finalize",
+    ]
     assert state.stop_required
     assert state.stop_attempted
     assert state.stop_succeeded

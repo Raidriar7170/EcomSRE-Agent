@@ -1885,6 +1885,225 @@ def test_down_label_extra_or_missing_resource_is_unsafe_without_down(
     assert all(call[0] != down.arguments for call in runner.calls)
 
 
+def test_cleanup_owned_named_volumes_removes_only_exact_manifest_subset(
+    tmp_path: Path,
+) -> None:
+    lifecycle = _lifecycle_module()
+    context = _context(tmp_path)
+    runner = FixtureRunner()
+    volumes = tuple(
+        resource
+        for resource in context.manifest.resources
+        if resource.kind == "volume"
+    )
+    daemon = lifecycle.build_owned_volume_cleanup_daemon_invocation(
+        run_id=RUN_ID,
+        docker_endpoint=DOCKER_ENDPOINT,
+    )
+    runner.respond(
+        daemon.arguments,
+        stdout=json.dumps(DOCKER_DAEMON_ID),
+    )
+    _register_discovery(
+        lifecycle,
+        runner,
+        potential=volumes,
+        owned=volumes,
+        include_ports=False,
+    )
+    removals = tuple(
+        lifecycle.build_owned_volume_cleanup_invocation(
+            resource,
+            run_id=RUN_ID,
+            docker_endpoint=DOCKER_ENDPOINT,
+        )
+        for resource in volumes
+    )
+    for invocation in removals:
+        runner.respond(invocation.arguments, stdout=invocation.arguments[-1])
+    _register_discovery(
+        lifecycle,
+        runner,
+        potential=(),
+        owned=(),
+        include_ports=False,
+    )
+
+    execution = lifecycle.cleanup_owned_named_volumes(
+        runner,
+        context=context,
+        project_root=ROOT,
+        docker_endpoint=DOCKER_ENDPOINT,
+        expected_daemon_id=DOCKER_DAEMON_ID,
+    )
+
+    assert execution.result.outcome is Outcome.SUCCESS
+    assert execution.result.reason_code == "OWNED_NAMED_VOLUMES_CLEANED"
+    assert execution.removed_volume_names == tuple(
+        resource.name for resource in volumes
+    )
+    assert all(
+        call[0] not in {
+            ("docker", "volume", "prune"),
+            ("docker", "compose", "down", "-v"),
+        }
+        for call in runner.calls
+    )
+    assert [call[0] for call in runner.calls].count(daemon.arguments) == 1
+    for invocation in removals:
+        assert [call[0] for call in runner.calls].count(invocation.arguments) == 1
+
+
+def test_cleanup_owned_named_volumes_rejects_identity_drift_without_delete(
+    tmp_path: Path,
+) -> None:
+    lifecycle = _lifecycle_module()
+    context = _context(tmp_path)
+    runner = FixtureRunner()
+    volumes = tuple(
+        resource
+        for resource in context.manifest.resources
+        if resource.kind == "volume"
+    )
+    drifted = (
+        volumes[0].model_copy(
+            update={
+                "resource_id": volumes[0].resource_id + "-changed",
+                "identity_evidence": (
+                    f"volume:{volumes[0].resource_id}-changed",
+                ),
+            }
+        ),
+        *volumes[1:],
+    )
+    daemon = lifecycle.build_owned_volume_cleanup_daemon_invocation(
+        run_id=RUN_ID,
+        docker_endpoint=DOCKER_ENDPOINT,
+    )
+    runner.respond(daemon.arguments, stdout=json.dumps(DOCKER_DAEMON_ID))
+    _register_discovery(
+        lifecycle,
+        runner,
+        potential=drifted,
+        owned=drifted,
+        include_ports=False,
+    )
+
+    execution = lifecycle.cleanup_owned_named_volumes(
+        runner,
+        context=context,
+        project_root=ROOT,
+        docker_endpoint=DOCKER_ENDPOINT,
+        expected_daemon_id=DOCKER_DAEMON_ID,
+    )
+
+    assert execution.result.outcome is Outcome.UNSAFE
+    assert execution.result.reason_code == "RESOURCE_OWNERSHIP_UNKNOWN"
+    assert all("rm" not in call[0] for call in runner.calls)
+
+
+def test_cleanup_owned_named_volumes_requires_containers_and_network_absent(
+    tmp_path: Path,
+) -> None:
+    lifecycle = _lifecycle_module()
+    context = _context(tmp_path)
+    runner = FixtureRunner()
+    daemon = lifecycle.build_owned_volume_cleanup_daemon_invocation(
+        run_id=RUN_ID,
+        docker_endpoint=DOCKER_ENDPOINT,
+    )
+    runner.respond(daemon.arguments, stdout=json.dumps(DOCKER_DAEMON_ID))
+    _register_discovery(lifecycle, runner)
+
+    execution = lifecycle.cleanup_owned_named_volumes(
+        runner,
+        context=context,
+        project_root=ROOT,
+        docker_endpoint=DOCKER_ENDPOINT,
+        expected_daemon_id=DOCKER_DAEMON_ID,
+    )
+
+    assert execution.result.outcome is Outcome.MANUAL_INTERVENTION_REQUIRED
+    assert (
+        execution.result.reason_code
+        == "OWNED_VOLUME_CLEANUP_PRECONDITION_FAILED"
+    )
+    assert all("rm" not in call[0] for call in runner.calls)
+
+
+def test_cleanup_owned_named_volumes_fails_closed_on_daemon_drift(
+    tmp_path: Path,
+) -> None:
+    lifecycle = _lifecycle_module()
+    context = _context(tmp_path)
+    runner = FixtureRunner()
+    daemon = lifecycle.build_owned_volume_cleanup_daemon_invocation(
+        run_id=RUN_ID,
+        docker_endpoint=DOCKER_ENDPOINT,
+    )
+    runner.respond(daemon.arguments, stdout=json.dumps("other-daemon"))
+
+    execution = lifecycle.cleanup_owned_named_volumes(
+        runner,
+        context=context,
+        project_root=ROOT,
+        docker_endpoint=DOCKER_ENDPOINT,
+        expected_daemon_id=DOCKER_DAEMON_ID,
+    )
+
+    assert execution.result.outcome is Outcome.UNSAFE
+    assert execution.result.reason_code == "DOCKER_DAEMON_IDENTITY_CHANGED"
+    assert [call[0] for call in runner.calls] == [daemon.arguments]
+
+
+def test_cleanup_owned_named_volumes_preserves_partial_cleanup_truth(
+    tmp_path: Path,
+) -> None:
+    lifecycle = _lifecycle_module()
+    context = _context(tmp_path)
+    runner = FixtureRunner()
+    volumes = tuple(
+        resource
+        for resource in context.manifest.resources
+        if resource.kind == "volume"
+    )
+    daemon = lifecycle.build_owned_volume_cleanup_daemon_invocation(
+        run_id=RUN_ID,
+        docker_endpoint=DOCKER_ENDPOINT,
+    )
+    runner.respond(daemon.arguments, stdout=json.dumps(DOCKER_DAEMON_ID))
+    _register_discovery(
+        lifecycle,
+        runner,
+        potential=volumes,
+        owned=volumes,
+        include_ports=False,
+    )
+    removals = tuple(
+        lifecycle.build_owned_volume_cleanup_invocation(
+            resource,
+            run_id=RUN_ID,
+            docker_endpoint=DOCKER_ENDPOINT,
+        )
+        for resource in volumes
+    )
+    runner.respond(removals[0].arguments, stdout=removals[0].arguments[-1])
+    runner.respond(removals[1].arguments, exit_code=1, stderr="in use")
+
+    execution = lifecycle.cleanup_owned_named_volumes(
+        runner,
+        context=context,
+        project_root=ROOT,
+        docker_endpoint=DOCKER_ENDPOINT,
+        expected_daemon_id=DOCKER_DAEMON_ID,
+    )
+
+    assert execution.result.outcome is Outcome.MANUAL_INTERVENTION_REQUIRED
+    assert execution.result.reason_code == "OWNED_VOLUME_CLEANUP_FAILED"
+    assert execution.removed_volume_names == (volumes[0].name,)
+    assert [call[0] for call in runner.calls].count(removals[2].arguments) == 0
+
+
 def test_post_up_signing_failure_keeps_intent_and_manual_diagnostic(
     tmp_path: Path,
     monkeypatch,

@@ -144,6 +144,9 @@ class SmokeSupervisorState:
     stop_required: bool = False
     stop_attempted: bool = False
     stop_succeeded: bool = False
+    owned_volume_cleanup_required: bool = False
+    owned_volume_cleanup_attempted: bool = False
+    owned_volume_cleanup_succeeded: bool = False
     records: dict[str, Any] = field(default_factory=dict)
     failure_reason_codes: list[str] = field(default_factory=list)
     failure_statuses: list[DiagnosticStatus] = field(default_factory=list)
@@ -178,6 +181,8 @@ class SmokeSupervisorOperations(Protocol):
 
     def stop_environment(self, authority: Any) -> Any: ...
 
+    def cleanup_owned_volumes(self, authority: Any) -> Any: ...
+
     def finalize(self, state: SmokeSupervisorState) -> Any: ...
 
     def write_minimal_terminal(
@@ -206,6 +211,7 @@ def supervise_smoke_attempt(
             EnvironmentStartDisposition.OWNED_ENVIRONMENT_STARTED,
         }
         state.stop_required = state.mutation_may_have_occurred
+        state.owned_volume_cleanup_required = state.stop_required
         if started.result.outcome is not Outcome.SUCCESS:
             _record_supervisor_result_failure(
                 state,
@@ -308,6 +314,18 @@ def supervise_smoke_attempt(
                         stopped,
                         default_reason="SAFE_STOP_FAILED",
                     )
+                else:
+                    state.owned_volume_cleanup_attempted = True
+                    cleaned = operations.cleanup_owned_volumes(stop_authority)
+                    state.owned_volume_cleanup_succeeded = (
+                        getattr(cleaned, "outcome", None) is Outcome.SUCCESS
+                    )
+                    if not state.owned_volume_cleanup_succeeded:
+                        _record_supervisor_result_failure(
+                            state,
+                            cleaned,
+                            default_reason="OWNED_VOLUME_CLEANUP_FAILED",
+                        )
             except SmokeExecutionError as error:
                 _record_supervisor_failure(
                     state,
@@ -404,6 +422,11 @@ def finalize_supervised_smoke(
         failure_reasons.append("SAFE_RESET_NOT_CONFIRMED")
     if state.stop_required and not state.stop_succeeded:
         failure_reasons.append("SAFE_STOP_NOT_CONFIRMED")
+    if (
+        state.owned_volume_cleanup_required
+        and not state.owned_volume_cleanup_succeeded
+    ):
+        failure_reasons.append("OWNED_VOLUME_CLEANUP_NOT_CONFIRMED")
     typed_status = next(
         (
             status
@@ -423,6 +446,7 @@ def finalize_supervised_smoke(
         and diagnostic_passed
         and all(telemetry.values())
         and task7_frozen
+        and state.owned_volume_cleanup_succeeded
     ):
         status = DiagnosticStatus.PASSED
     elif diagnostic is not None:
@@ -456,6 +480,9 @@ def finalize_supervised_smoke(
         origin_promotion_run_id=origin_run_id,
         attempts=(attempt,),
         safe_stop_completed=state.stop_succeeded,
+        owned_volume_cleanup_completed=(
+            state.owned_volume_cleanup_succeeded
+        ),
         failure_reason_codes=tuple(dict.fromkeys(failure_reasons)),
     )
     with ReportEvidenceStore(artifacts_root, state.run_id) as reports:
@@ -613,6 +640,9 @@ def _build_smoke_attempt_evidence(
         safe_stop_required=state.stop_required,
         safe_stop_attempted=state.stop_attempted,
         safe_stop_succeeded=state.stop_succeeded,
+        owned_volume_cleanup_required=state.owned_volume_cleanup_required,
+        owned_volume_cleanup_attempted=state.owned_volume_cleanup_attempted,
+        owned_volume_cleanup_succeeded=state.owned_volume_cleanup_succeeded,
         failure_reason_codes=tuple(state.failure_reason_codes),
     )
 

@@ -113,6 +113,7 @@ class CandidateReadinessPolicy(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
+    initial_delay_seconds: Literal[65.0] = 65.0
     max_attempts: Literal[6] = 6
     retry_interval_seconds: Literal[5.0] = 5.0
     window_seconds: Literal[60] = 60
@@ -134,6 +135,8 @@ def collect_candidate_initial_readiness(
         or preflight.run_id != ownership.run_id
     ):
         raise ReadinessCollectionError("INITIAL_READINESS_AUTHORITY_INVALID")
+    policy = CandidateReadinessPolicy()
+    retry_sleep(policy.initial_delay_seconds)
     (
         lifecycle_artifact,
         lifecycle_sha256,
@@ -146,7 +149,6 @@ def collect_candidate_initial_readiness(
     )
     base_urls = _owned_base_urls(ownership)
     client = OwnedHttpClient(context=ownership)
-    policy = CandidateReadinessPolicy()
     started_at = datetime.now(UTC)
     monotonic_started = time.monotonic()
     window = PhaseWindow(
@@ -315,7 +317,7 @@ def _candidate_signal_exchanges(
                 target_port=16686,
             ),
             method="GET",
-            target="/api/traces?"
+            target="/jaeger/ui/api/traces?"
             + urlencode(
                 {
                     "service": "load-generator",
@@ -521,15 +523,22 @@ def _candidate_lifecycle_service_gates(
             if len(resources) == 1 and result is not None
             else None
         )
-        health = state.get("Health") if isinstance(state, dict) else None
-        gates[gate] = bool(
-            isinstance(state, dict)
-            and state.get("Running") is True
-            and state.get("Status") == "running"
-            and isinstance(health, dict)
-            and health.get("Status") == "healthy"
-        )
+        gates[gate] = _container_state_is_ready(state)
     return gates
+
+
+def _container_state_is_ready(state: object) -> bool:
+    """Require configured healthchecks to pass; running-only services stay eligible."""
+    if (
+        not isinstance(state, dict)
+        or state.get("Running") is not True
+        or state.get("Status") != "running"
+    ):
+        return False
+    health = state.get("Health")
+    return health is None or (
+        isinstance(health, dict) and health.get("Status") == "healthy"
+    )
 
 
 def collect_fresh_readiness(

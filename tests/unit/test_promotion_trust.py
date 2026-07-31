@@ -327,7 +327,7 @@ def test_jaeger_correlation_retry_is_bounded_and_persists_each_response(
             target_port=16686,
         ),
         method="GET",
-        target=f"/api/traces/{trace_id}",
+        target=f"/jaeger/ui/api/traces/{trace_id}",
         absolute_deadline_monotonic=30,
     )
     empty = b'{"data":[]}'

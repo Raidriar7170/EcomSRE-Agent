@@ -416,6 +416,9 @@ class SmokeAttemptEvidence(BaseModel):
     safe_stop_required: bool = True
     safe_stop_attempted: bool
     safe_stop_succeeded: bool
+    owned_volume_cleanup_required: bool = True
+    owned_volume_cleanup_attempted: bool = False
+    owned_volume_cleanup_succeeded: bool = False
     failure_reason_codes: tuple[str, ...]
 
 
@@ -440,6 +443,7 @@ class SmokeReport(BaseModel):
     )
     attempts: tuple[SmokeAttemptEvidence, ...]
     safe_stop_completed: bool
+    owned_volume_cleanup_completed: bool = False
     failure_reason_codes: tuple[str, ...]
 
     @property
@@ -503,6 +507,9 @@ class SmokeReport(BaseModel):
             and attempt.safe_stop_required
             and attempt.safe_stop_attempted
             and attempt.safe_stop_succeeded
+            and attempt.owned_volume_cleanup_required
+            and attempt.owned_volume_cleanup_attempted
+            and attempt.owned_volume_cleanup_succeeded
             and not attempt.failure_reason_codes
         )
         if passed and (
@@ -516,6 +523,7 @@ class SmokeReport(BaseModel):
             or self.origin_promotion_run_id is None
             or not complete_attempt
             or not self.safe_stop_completed
+            or not self.owned_volume_cleanup_completed
             or self.failure_reason_codes
         ):
             raise ValueError("passing smoke report is missing diagnostic proof")

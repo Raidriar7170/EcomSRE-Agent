@@ -31,7 +31,7 @@
     "probe_getads_attribution_artifact": "observer-visible/99999999999999999999999999999999/telemetry/promotion/probe-attribution.json",
     "upstream_sha256": "3d08edb3cf260cbf25330fc121e12ae80d2344e56538d9392e3d3c4eb2823585",
     "compose_config_sha256": "a23520301cd8dc6b4af4315628ca19b694ebdac0ca0dc1d29a4ad43d205bbc84",
-    "fixture_content_sha256": "d03e812dfe9d656c1dec9f6dccfe59262cfbc4f71723108498793f35194e60e8",
+    "fixture_content_sha256": "bd77fb367b553b037966647d1903a64b2630074fb3abb506c9ad238b4d72697c",
     "review_decision": "APPROVED",
     "review_artifact": "observer-visible/99999999999999999999999999999999/telemetry/promotion/review.json"
   },
@@ -114,7 +114,7 @@
       "target_port": 16686,
       "protocol": "tcp"
     },
-    "request_template": "/api/traces?service={service}&operation={operation}&start={start_us}&end={end_us}",
+    "request_template": "/jaeger/ui/api/traces?service={service}&operation={operation}&start={start_us}&end={end_us}",
     "expected_response_schema": "jaeger.http-api.traces.v1",
     "upstream_tag": "3.0.0",
     "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",

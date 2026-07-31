@@ -15,12 +15,14 @@ RUN_ID = "c" * 32
 
 class FakeClient:
     calls = 0
+    targets: list[str] = []
 
     def __init__(self, *, context) -> None:
         self.run_id = context.run_id
 
     def request(self, request):
         type(self).calls += 1
+        type(self).targets.append(request.target)
         now = datetime.now(UTC)
         started = int(now.timestamp() * 1_000_000)
         if request.endpoint.service == "jaeger":
@@ -110,6 +112,7 @@ def test_initial_candidate_readiness_persists_owned_endpoints_without_frozen_cla
     tmp_path: Path,
     monkeypatch,
 ) -> None:
+    FakeClient.targets = []
     preflight = SimpleNamespace(
         run_id=RUN_ID,
         content_sha256="a" * 64,
@@ -175,8 +178,29 @@ def test_initial_candidate_readiness_persists_owned_endpoints_without_frozen_cla
         "otel_collector_healthy": True,
     }
     assert len(evidence.raw_artifacts) == 4
-    assert sleeps == []
+    assert sleeps == [65.0]
+    assert any(
+        target.startswith("/jaeger/ui/api/traces?")
+        for target in FakeClient.targets
+    )
     assert Path(evidence.evidence_artifact).is_file()
+
+
+def test_running_container_without_configured_healthcheck_is_ready() -> None:
+    assert readiness_module._container_state_is_ready(
+        {
+            "Running": True,
+            "Status": "running",
+            "Health": None,
+        }
+    )
+    assert not readiness_module._container_state_is_ready(
+        {
+            "Running": True,
+            "Status": "running",
+            "Health": {"Status": "starting"},
+        }
+    )
 
 
 def test_initial_candidate_readiness_retries_all_signals_with_one_bounded_policy(
@@ -267,7 +291,7 @@ def test_initial_candidate_readiness_retries_all_signals_with_one_bounded_policy
     assert evidence.ready
     assert evidence.attempt_count == 2
     assert len(evidence.raw_artifacts) == 8
-    assert sleeps == [5.0]
+    assert sleeps == [65.0, 5.0]
 
 
 def test_control_mutation_candidate_tolerates_fault_probe_transport_outcome(
