@@ -1,0 +1,1 @@
+{"affected_sli":"recommendation relevance freshness","alert_source_service":null,"ended_at":"2026-08-03T11:05:00Z","incident_id":"incident-recommendation-feature-gap","schema_version":"phase1.incident.v1","severity":"SEV2","started_at":"2026-08-03T11:00:00Z","summary":"Recommendation failure has a possible stale feature signal without a supporting read observation."}

@@ -1,0 +1,1 @@
+{"observations":[{"attributes":{"change_kind":"model_rollout","transition":"previous_to_candidate"},"ended_at":"2026-08-03T09:00:15Z","limitations":["Replay deployment metadata without causal classification."],"observation_type":"model_rollout","service":"ranking","started_at":"2026-08-03T09:00:10Z"}],"schema_version":"phase1.replay-observations.v1","status":"AVAILABLE"}

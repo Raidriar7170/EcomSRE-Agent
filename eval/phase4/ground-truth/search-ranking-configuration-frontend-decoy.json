@@ -1,0 +1,1 @@
+{"case_id":"search-ranking-configuration-frontend-decoy","decoy_evidence":["CHANGES:frontend:frontend_rollout"],"expected_decision":"RCA_CONFIRMED","expected_fault_mechanism":"ranking_configuration_failure","expected_root_service":"ranking","schema_version":"phase4.domain-ground-truth.v1"}

@@ -1,0 +1,1 @@
+{"case_id":"recommendation-model-feature-schema-mismatch","decoy_evidence":[],"expected_decision":"RCA_CONFIRMED","expected_fault_mechanism":"model_feature_schema_mismatch","expected_root_service":"ranking","schema_version":"phase4.domain-ground-truth.v1"}

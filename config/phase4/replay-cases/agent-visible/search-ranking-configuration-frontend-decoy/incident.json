@@ -1,0 +1,1 @@
+{"affected_sli":"search request success rate","alert_source_service":null,"ended_at":"2026-08-03T10:05:00Z","incident_id":"incident-search-ranking-config","schema_version":"phase1.incident.v1","severity":"SEV2","started_at":"2026-08-03T10:00:00Z","summary":"Search request failure follows a ranking config change while a frontend deploy is also visible."}
