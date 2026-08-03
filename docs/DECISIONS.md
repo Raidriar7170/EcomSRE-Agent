@@ -40,6 +40,7 @@ conflicts with this register, this register wins.
 | DEC-011 | Frozen evaluation | accepted | Phase 5 only | `DECISIONS.md` | Charter, Architecture, Roadmap, Open Questions | No — no Phase 0 scenario-suite dependency |
 | DEC-012 | Restricted writes | accepted | Phase 3 onward only | `DECISIONS.md` | AGENTS, Charter, Roadmap, Safety, Open Questions | No — Phase 0 has no remediation executor |
 | DEC-025 | Phase 3 agile restricted-remediation replay MVP | accepted | Phase 3 v1 only | `DECISIONS.md` | Roadmap, Safety, Open Questions, Phase 3 implementation and tests | No — replay-only Phase 3 boundary |
+| DEC-026 | Phase 4 e-commerce domain replay extension MVP | accepted | Phase 4 only | `DECISIONS.md` | Roadmap, Open Questions, Phase 4 implementation and tests | No — replay-only Phase 4 boundary |
 
 ## DEC-001 — Supported host baseline
 
@@ -269,6 +270,51 @@ This decision authorizes implementation on
 0 or frozen Phase 1/2 semantics, a live mutation, Phase 4, or Phase 5. The
 accepted Phase 3 goal remains controlling unless it conflicts with this record;
 where it conflicts, this DEC-025 wins.
+
+## DEC-026 — Phase 4 E-commerce Domain Replay Extension MVP
+
+**Status: `accepted`. The binding offline completion marker is
+`PHASE4_OFFLINE_ECOMMERCE_DOMAIN_REPLAY_MVP_READY`; it may be upgraded to
+`PHASE4_ECOMMERCE_DOMAIN_REPLAY_MVP_READY` only after the separate four-run
+real-provider gate passes.**
+
+Phase 4 extends only replay-backed Search and Recommendation diagnosis through
+the existing Commander, Metrics/Logs/Trace/Change Specialists, DAG admission,
+Evidence and Finding Stores, and central Budget Ledger. It adds no Agent and no
+general orchestration framework. A narrow pre-Judge Specialist execution
+boundary permits an independent `phase4.domain-rca-result.v1` Judge without
+changing the frozen Phase 1 RCA v1 schema or the Phase 2 default Judge.
+
+The exact new mechanism allowlist is `feature_freshness_lag`,
+`model_feature_schema_mismatch`, and `ranking_configuration_failure`. Confirmed
+roots are limited to `feature` or `ranking`; Search and Recommendation are the
+bounded business SLI surfaces. Mechanism classification is evidence-native and
+uses only typed current-run source, service, observation, and attributes.
+Evaluator labels, case identity, fixture paths, and expected answers are not
+runtime inputs.
+
+The visible Phase 4 suite contains exactly five new templates: three confirmed,
+one need-more-evidence, and one abstention, including one frontend decoy. Each
+template runs once through `FIXED_SPECIALIST_WORKFLOW` and once through
+`DYNAMIC_MULTI_AGENT`, for ten retained offline runs. The report is a
+deterministic domain-correctness evaluation, not a Fixed-versus-Dynamic
+superiority claim and not a Phase 5 statistical evaluation.
+
+Phase 3 remains unchanged. A confirmed Phase 4 domain mechanism receives
+`NO_SUPPORTED_REMEDIATION`; an unconfirmed result receives `NO_ACTION`.
+Neither path can produce `RESTORE_FROZEN_SERVICE_CONFIGURATION`, a Docker or
+provider fallback, a live mutation, or a new remediation action.
+
+The bounded provider smoke reuses the frozen Agent Mainline model snapshot and
+OpenAI-compatible transport for exactly four positive/negative Fixed/Dynamic
+runs with temperature zero, one exact typed Domain tool call, no retry, no
+scripted fallback, and no evaluator truth. An unconfigured provider yields
+`SKIPPED_NOT_CONFIGURED` and preserves the offline completion marker.
+
+This decision closes `OQ-009`. It does not authorize live Feature or Ranking
+services, Docker or OTel Demo work, Phase 5 hidden splits or paired seeds,
+bootstrap confidence intervals, remediation expansion, release, deployment,
+or a Multi-Agent superiority claim.
 
 ## Upstream references
 

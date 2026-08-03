@@ -6,8 +6,9 @@ a custom lightweight Multi-Agent runtime, typed handoffs, a central budget,
 run-scoped evidence, deterministic policy enforcement, and replayable reports.
 
 This repository is an evidence-oriented local research system—not a production
-autonomous SRE. Its public demo connects the implemented Phase 1–3 path without
-Docker, provider credentials, live telemetry, or live mutation.
+autonomous SRE. Its demos cover the implemented Phase 1–3 path and the separate
+Phase 4 Search/Recommendation domain replay path without Docker, live telemetry,
+or live mutation.
 
 ## One-command offline demo
 
@@ -47,6 +48,24 @@ Docker called: false
 Live execution: false
 ```
 
+## One-command Phase 4 domain demo
+
+```bash
+make phase4-demo
+```
+
+This deterministic `SCRIPTED_REPLAY` demo runs the
+`search-feature-freshness-lag-complete` case through the existing Dynamic
+Commander and Metrics/Logs/Trace/Change Specialists, then the versioned Phase 4
+Domain Judge. It diagnoses `feature` / `feature_freshness_lag` and terminates at
+`NO_SUPPORTED_REMEDIATION` with `remediation_backend = NONE` and
+`live_mutation = false`.
+
+Phase 4 adds five visible Search/Recommendation templates over Feature and
+Ranking evidence. Its three new mechanisms are `feature_freshness_lag`,
+`model_feature_schema_mismatch`, and `ranking_configuration_failure`. It does
+not add an Agent, a live Feature/Ranking service, or a remediation action.
+
 ## Architecture
 
 ```mermaid
@@ -84,14 +103,15 @@ it cannot expand the Policy Gate or Executor authority.
 | Phase 1 | `PHASE1_SINGLE_AGENT_REPLAY_MVP_READY` |
 | Phase 2 | `PHASE2_MULTI_AGENT_REPLAY_MVP_READY`; offline comparison and bounded provider gate verified, with no superiority claim |
 | Phase 3 | `PHASE3_RESTRICTED_REMEDIATION_REPLAY_MVP_READY`; replay-only |
-| Phase 4 | Not entered |
+| Phase 4 | `PHASE4_OFFLINE_ECOMMERCE_DOMAIN_REPLAY_MVP_READY`; deterministic offline replay verified, real-provider gate `SKIPPED_NOT_CONFIGURED` |
 | Phase 5 | Not entered |
 
 The authoritative detail lives in the [Roadmap](docs/ROADMAP.md),
 [Decision Register](docs/DECISIONS.md),
 [Phase 0 acceptance contract](docs/PHASE_0_ACCEPTANCE.md),
 [Phase 2 closeout](docs/PHASE_2_CLOSEOUT.md), and
-[Phase 3 disposition](docs/review-evidence/phase3-restricted-remediation/current-disposition.json).
+[Phase 3 disposition](docs/review-evidence/phase3-restricted-remediation/current-disposition.json), and
+[Phase 4 disposition](docs/review-evidence/phase4-ecommerce-domain-replay/current-disposition.json).
 
 ## Evidence boundaries
 
@@ -104,6 +124,8 @@ The phases intentionally make different claims:
 | Phase 2 offline comparison | 7 cases × 3 variants: Single, Fixed, and Dynamic |
 | Phase 2 real-provider gate | 4 bounded Fixed/Dynamic positive/negative runs |
 | Phase 3 remediation | 6 deterministic replay cases; no Docker, provider, or live mutation |
+| Phase 4 domain replay | 5 new cases × 2 variants: Fixed and Dynamic; no superiority claim |
+| Phase 4 real-provider gate | 4 bounded positive/negative Fixed/Dynamic runs when configured; otherwise `SKIPPED_NOT_CONFIGURED` |
 | Agent Mainline V1 demo | One deterministic scripted replay integration case; not an evaluation or provider result |
 
 The Phase 1 real-provider result is **not** 7/7.
@@ -132,17 +154,23 @@ make agent-demo
 make phase1-test
 make phase2-test
 make phase3-test
+make phase4-test
 
 # Recompute and verify deterministic reports
 make phase2-compare
 make phase2-verify
 make phase3-replay
 make phase3-verify
+make phase4-compare
+make phase4-verify
+make phase4-demo
+make phase4-provider-smoke
 ```
 
-No provider configuration is needed for any command above. Provider smoke is a
-separately authorized and separately reported gate; it is not part of the demo
-or CI.
+No provider configuration is needed for the tests, comparisons, verifiers, or
+demos above. `make phase4-provider-smoke` returns `SKIPPED_NOT_CONFIGURED` when
+its complete provider environment is absent. Provider smoke is a separately
+reported gate and is not part of either demo or CI.
 
 ## Results
 
@@ -153,11 +181,14 @@ The current integration baseline records:
 | Phase 1 tests | 877 passed |
 | Phase 2 tests | 378 passed |
 | Phase 3 tests | 27 passed |
+| Phase 4 tests | 63 passed |
 | Agent Mainline V1 demo tests | 8 passed |
-| Full repository tests | 2,127 passed |
+| Full repository tests | 2,190 passed |
 | Phase 2 comparison | 7 × 3 report verified |
 | Phase 2 real-provider gate | 4 bounded requirements passed |
 | Phase 3 replay evaluation | 6 cases verified |
+| Phase 4 domain comparison | 5 × 2 deterministic report verified |
+| Phase 4 real-provider gate | `SKIPPED_NOT_CONFIGURED` on the offline branch |
 
 These counts are development evidence for the named revision. They are not a
 release, production-readiness, Phase 0 acceptance, or model-quality claim.
@@ -184,8 +215,10 @@ release, production-readiness, Phase 0 acceptance, or model-quality claim.
 src/ecomsre/phase1/   Single-Agent RCA and read-only evidence contracts
 src/ecomsre/phase2/   Fixed/Dynamic workflows, Commander, Specialists, Judge
 src/ecomsre/phase3/   Planner, Policy Gate, replay executor, verifier, rollback
+src/ecomsre/phase4/   Search/Recommendation Domain RCA, evaluation, provider gate
 src/ecomsre/demo/     Thin public Phase 2 → Phase 3 offline integration
-config/phase1/        Frozen observer-visible replay cases
+config/phase1/        Frozen seven-case observer-visible replay baseline
+config/phase4/        Five independent domain replay cases
 eval/                 Evaluator-only scoring surfaces; never read by the demo
 tests/                 Contract, replay, isolation, and regression checks
 ```
@@ -198,6 +231,8 @@ tests/                 Contract, replay, isolation, and regression checks
 - The public demo uses an evidence-driven deterministic scripted backend. It
   exercises integration behavior but does not replace the frozen Phase 2
   comparison baseline or the bounded real-provider gate.
+- Phase 4 is replay-only. Its provider gate is bounded and currently
+  unconfigured; it does not substitute scripted output for provider output.
 - Phase 5's frozen 12+ template superiority evaluation has not been run.
 - No production write capability, live remediation, release, or deployment is
   claimed.
