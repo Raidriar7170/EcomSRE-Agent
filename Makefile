@@ -78,8 +78,11 @@ phase1-provider-smoke: phase1-prerequisites
 
 PHASE2_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.phase2.cli
 PHASE2_REPORT ?= $(PROJECT_ROOT)/artifacts/phase2/comparison/comparison-report.json
+PHASE2_PROVIDER_CASE_ROOT ?= $(PROJECT_ROOT)/artifacts/phase2/provider-smoke/cases
+PHASE2_PROVIDER_REQUIREMENT ?=
 
-.PHONY: phase2-compare phase2-verify phase2-test
+.PHONY: phase2-compare phase2-verify phase2-test phase2-provider-smoke \
+	phase2-provider-smoke-case phase2-provider-smoke-aggregate
 
 phase2-compare: phase1-prerequisites
 	$(PHASE2_CLI) compare --output "$(PHASE2_REPORT)"
@@ -89,3 +92,15 @@ phase2-verify: phase1-prerequisites
 
 phase2-test: phase1-prerequisites
 	env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync pytest tests/phase2 -q
+
+phase2-provider-smoke: phase1-prerequisites
+	$(PHASE2_CLI) provider-smoke
+
+phase2-provider-smoke-case: phase1-prerequisites
+	@test -n "$(PHASE2_PROVIDER_REQUIREMENT)" || { echo "PHASE2_PROVIDER_REQUIREMENT is required" >&2; exit 2; }
+	$(PHASE2_CLI) provider-smoke-case \
+		--requirement "$(PHASE2_PROVIDER_REQUIREMENT)" \
+		--output "$(PHASE2_PROVIDER_CASE_ROOT)/$(PHASE2_PROVIDER_REQUIREMENT).json"
+
+phase2-provider-smoke-aggregate: phase1-prerequisites
+	$(PHASE2_CLI) provider-smoke-aggregate --case-root "$(PHASE2_PROVIDER_CASE_ROOT)"

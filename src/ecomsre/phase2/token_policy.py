@@ -108,7 +108,7 @@ ENCODING_PAT_STR = (
     r"\s+(?!\S)|\s+"
 )
 TOKEN_POLICY_CORE_SHA256 = (
-    "9ced287ec7a424bb274bc5b5a7b33ba60a8435113db8815a743b05762fb0ee90"
+    "387bf51f7ccbf563ec45df8e89db0ddad75b51247a15146e6bbd95b50cc8201d"
 )
 
 EXPECTED_MODEL_TO_ENCODING = {MODEL_SNAPSHOT: ENCODING_NAME}
@@ -129,19 +129,19 @@ EXPECTED_SYSTEM_INSTRUCTION_SHA256 = {
         "f4734dcf4d9c9b01d2c3a048ba4dd9bcfb9ea8c6a5b876ab370163045a36475a"
     ),
     "FINAL_JUDGE_MODEL/FINAL_ONLY": (
-        "291b13047e48ef5d134ae017e6c0f6ad496b9a063a52e58d9b596b67c86c6211"
+        "43b0ac622cd519a99ab73ef74fc33fc3cf11e9077198412a9154289d381b4506"
     ),
     "FIRST_JUDGE_MODEL/FINAL_ONLY": (
-        "2f35d626afacd432cd5f6bea7562788f7987a4a7962faa3b6978c573a3bc9181"
+        "76776923882a2afbfaeed7312f62d4a4e1a5f0c9bdc197a355837935fff72f9c"
     ),
     "FIRST_JUDGE_MODEL/FINAL_OR_REFINEMENT": (
-        "2f35d626afacd432cd5f6bea7562788f7987a4a7962faa3b6978c573a3bc9181"
+        "76776923882a2afbfaeed7312f62d4a4e1a5f0c9bdc197a355837935fff72f9c"
     ),
     "SINGLE_AGENT_MODEL/PHASE1_ACTION_CATALOG": (
         "4c6b8d2559cb50706e40b10b3a3575f97314b885bd40785627b9126a0d14ce2f"
     ),
     "SPECIALIST_MODEL/FINDING_ONLY": (
-        "77ce79cc71405a3a02fdee76ec36d8b3fb25aa53f220f9029a4b7345e215d531"
+        "5cd74ed0a829538b3786e5e587cdd968604be763a155644c3ec163ae71eaa6d0"
     ),
 }
 
@@ -159,8 +159,26 @@ SPECIALIST_SYSTEM_INSTRUCTION = (
     "You are the source-bound Specialist named by the validated task. Infer "
     "only from the supplied successful tool record, new Evidence, resolved "
     "dependency Evidence view, and budget snapshot. Return exactly one valid "
-    "SpecialistFinding. Do not invent or allocate Evidence refs, call tools, "
-    "contact another agent, or include prose outside the typed response."
+    "SpecialistFinding. Copy run_id, incident_id, plan_id, node_id, source, and "
+    "specialist_role exactly from the supplied task. evidence_refs may contain "
+    "only exact visible refs from dependency and new Evidence. Never put "
+    "evidence:// strings, tool or command names, shell metacharacters, or "
+    "execute, write, or remediation instructions in free-text fields. Do not "
+    "invent or allocate Evidence refs, call tools, contact another agent, or "
+    "include prose outside the typed response."
+)
+JUDGE_IDENTITY_SEMANTICS = (
+    "Copy run_id, incident_id, judge_request_id, and finding_ids_considered "
+    "exactly from the JudgeRequest. Set refinement_used to true only when "
+    "refinement_round is 1, otherwise set it to false. "
+)
+JUDGE_DECISION_SEMANTICS = (
+    "RCA_CONFIRMED requires root_service, fault_mechanism, causal_chain, "
+    "affected_sli, at least two supporting refs from two distinct Evidence "
+    "sources, and empty missing_evidence. NEED_MORE_EVIDENCE requires nonempty "
+    "missing_evidence and a rationale that explains the evidence gap. ABSTAIN "
+    "requires null root_service and fault_mechanism and a rationale that says "
+    "there is no confirmed incident. "
 )
 FIRST_JUDGE_SYSTEM_INSTRUCTION = (
     "You are the RCA Judge for a bounded replay-only diagnosis. Compare every "
@@ -168,15 +186,19 @@ FIRST_JUDGE_SYSTEM_INSTRUCTION = (
     "contradicting, and missing evidence. Return exactly one allowed "
     "FirstJudgeAction. Request refinement only when FINAL_OR_REFINEMENT is "
     "exposed and the typed gap justifies it; otherwise return a fail-closed or "
-    "confirmed final RCA that satisfies Phase 1 evidence semantics. Do not "
-    "invent refs or include prose outside the typed response."
+    "confirmed final RCA that satisfies Phase 1 evidence semantics. "
+    + JUDGE_IDENTITY_SEMANTICS
+    + JUDGE_DECISION_SEMANTICS
+    + "Do not invent refs or include prose outside the typed response."
 )
 FINAL_JUDGE_SYSTEM_INSTRUCTION = (
     "You are the final RCA Judge after one bounded investigation round. "
     "Compare every supplied finding and resolved Evidence item and return "
     "exactly one valid JudgeFinalResult. No further refinement is allowed. "
-    "Apply Phase 1 evidence semantics, abstain when evidence is insufficient, "
-    "do not invent refs, and include no prose outside the typed response."
+    "Apply Phase 1 evidence semantics and abstain when evidence is insufficient. "
+    + JUDGE_IDENTITY_SEMANTICS
+    + JUDGE_DECISION_SEMANTICS
+    + "Do not invent refs or include prose outside the typed response."
 )
 SYSTEM_INSTRUCTIONS = {
     (ModelOperation.SINGLE_AGENT_MODEL, ModelAllowedActions.PHASE1_ACTION_CATALOG): (

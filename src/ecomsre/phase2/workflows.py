@@ -44,6 +44,7 @@ from ecomsre.phase2.comparison_adapter import (
     ComparisonAdapter,
     ModelCallAuditRecord,
     Phase1GatewayBackend,
+    TypedModelBackend,
     ToolCallAuditRecord,
     make_phase1_comparison_gateway,
 )
@@ -65,6 +66,7 @@ from ecomsre.phase2.contracts import (
     SpecialistToolDispatchResult,
     build_fixed_admitted_graph,
 )
+from ecomsre.phase2.dag import schedule_layers
 from ecomsre.phase2.evidence_views import FindingStore
 from ecomsre.phase2.judge import JudgeContext, JudgeOutcome, JudgeRuntime
 from ecomsre.phase2.scripted import ExactTokenScriptedGateway, ScriptedModelBackend
@@ -588,12 +590,14 @@ def _run_fixed_or_dynamic(
     authority: TokenAuthority,
     variant: Phase2Variant,
     allow_refinement: bool,
+    model_backend: TypedModelBackend | None,
+    expected_provider_identity: str,
 ) -> WorkflowRunResult:
     settings = load_agent_settings(project_root)
     evidence_store = EvidenceStore(run_id)
     finding_store = FindingStore(run_id)
     replay_backend = ReplayObservabilityBackend(replay_case)
-    backend = ScriptedModelBackend(
+    backend = model_backend or ScriptedModelBackend(
         token_authority=authority,
         provider_identity=_PROVIDER_ID,
     )
@@ -601,7 +605,7 @@ def _run_fixed_or_dynamic(
         ledger=ledger,
         token_authority=authority,
         backend=backend,
-        expected_provider_identity=_PROVIDER_ID,
+        expected_provider_identity=expected_provider_identity,
         utc_clock=lambda: replay_case.incident.started_at,
     )
     phase1_budget = RunBudget(
@@ -677,7 +681,11 @@ def _run_fixed_or_dynamic(
             binding.node_id: binding.specialist_capacity_slot_id
             for binding in bindings
         }
-        for node in graph.initial_plan.nodes:
+        finding_id_by_node: dict[str, str] = {}
+        scheduled_nodes = (
+            node for layer in schedule_layers(graph.initial_plan) for node in layer
+        )
+        for node in scheduled_nodes:
             if variant is Phase2Variant.DYNAMIC_MULTI_AGENT:
                 slot_id = dynamic_slot_by_node[node.node_id]
             else:
@@ -717,16 +725,20 @@ def _run_fixed_or_dynamic(
                 ),
                 dispatch_observer=remember_dispatch,
             )
-            outcomes.append(
-                runtime.execute_node(
-                    SpecialistExecutionContext(
-                        schema_version="phase2.specialist-execution-context.v1",
-                        admitted_graph=graph,
-                        node_id=node.node_id,
-                        specialist_capacity_slot_id=slot_id,
-                    )
+            outcome = runtime.execute_node(
+                SpecialistExecutionContext(
+                    schema_version="phase2.specialist-execution-context.v1",
+                    admitted_graph=graph,
+                    node_id=node.node_id,
+                    specialist_capacity_slot_id=slot_id,
+                    dependency_finding_ids=tuple(
+                        finding_id_by_node[dependency]
+                        for dependency in node.depends_on
+                    ),
                 )
             )
+            outcomes.append(outcome)
+            finding_id_by_node[node.node_id] = outcome.finding.finding_id
 
         judge = JudgeRuntime(
             ledger=ledger,
@@ -741,7 +753,10 @@ def _run_fixed_or_dynamic(
                 run_id=run_id,
                 incident=replay_case.incident,
                 admitted_graph=graph,
-                finding_ids=tuple(outcome.finding.finding_id for outcome in outcomes),
+                finding_ids=tuple(
+                    finding_id_by_node[node.node_id]
+                    for node in graph.initial_plan.nodes
+                ),
                 judge_capacity_slot_id=judge_slot_id,
                 allow_refinement=(
                     allow_refinement
@@ -780,9 +795,18 @@ def _run_fixed_or_dynamic(
                 for context in judged.refinement_contexts
             )
             outcomes.extend(refined)
+            finding_id_by_node.update(
+                {
+                    outcome.finding.node_id: outcome.finding.finding_id
+                    for outcome in refined
+                }
+            )
             graph = judged.admitted_graph
             judged = judge.finalize(
-                tuple(outcome.finding.finding_id for outcome in outcomes)
+                tuple(
+                    finding_id_by_node[node.node_id]
+                    for node in graph.all_nodes
+                )
             )
         return WorkflowRunResult(
             trace=_trace(
@@ -823,6 +847,8 @@ def run_replay_workflow(
     variant: Phase2Variant,
     run_id: str | None = None,
     allow_refinement: bool = False,
+    model_backend: TypedModelBackend | None = None,
+    expected_provider_identity: str = _PROVIDER_ID,
 ) -> WorkflowRunResult:
     """Run one already-loaded replay case without evaluator or network access."""
 
@@ -841,8 +867,14 @@ def run_replay_workflow(
     )
     authority = load_token_authority(Path(project_root))
     if selected_variant is Phase2Variant.SINGLE_AGENT:
-        if allow_refinement:
-            raise ValueError("Single-Agent cannot enable refinement")
+        if (
+            allow_refinement
+            or model_backend is not None
+            or expected_provider_identity != _PROVIDER_ID
+        ):
+            raise ValueError(
+                "Single-Agent cannot enable refinement or a Phase 2 backend"
+            )
         return _run_single(
             project_root=Path(project_root),
             replay_case=validated_case,
@@ -858,4 +890,6 @@ def run_replay_workflow(
         authority=authority,
         variant=selected_variant,
         allow_refinement=allow_refinement,
+        model_backend=model_backend,
+        expected_provider_identity=expected_provider_identity,
     )

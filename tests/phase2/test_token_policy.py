@@ -93,6 +93,40 @@ def test_first_judge_capabilities_have_distinct_schema_and_goldens() -> None:
     assert union.minimum_completion_tokens == 512
 
 
+def test_judge_instructions_expose_non_schema_phase1_decision_semantics() -> None:
+    authority = load_token_authority(PROJECT_ROOT)
+    judge_keys = (
+        (ModelOperation.FIRST_JUDGE_MODEL, ModelAllowedActions.FINAL_ONLY),
+        (
+            ModelOperation.FIRST_JUDGE_MODEL,
+            ModelAllowedActions.FINAL_OR_REFINEMENT,
+        ),
+        (ModelOperation.FINAL_JUDGE_MODEL, ModelAllowedActions.FINAL_ONLY),
+    )
+
+    for key in judge_keys:
+        instruction = authority.envelopes[key].system_instruction
+        assert "RCA_CONFIRMED requires" in instruction
+        assert "two distinct Evidence sources" in instruction
+        assert "empty missing_evidence" in instruction
+        assert "NEED_MORE_EVIDENCE requires" in instruction
+        assert "ABSTAIN requires" in instruction
+        assert "Copy run_id, incident_id, judge_request_id" in instruction
+        assert "finding_ids_considered exactly" in instruction
+
+
+def test_specialist_instruction_exposes_identity_and_read_only_text_rules() -> None:
+    authority = load_token_authority(PROJECT_ROOT)
+    instruction = authority.envelopes[
+        (ModelOperation.SPECIALIST_MODEL, ModelAllowedActions.FINDING_ONLY)
+    ].system_instruction
+
+    assert "Copy run_id, incident_id, plan_id, node_id" in instruction
+    assert "evidence_refs may contain only exact visible refs" in instruction
+    assert "Never put evidence:// strings" in instruction
+    assert "tool or command names" in instruction
+
+
 def test_all_twelve_fixtures_are_canonical_complete_and_hash_bound() -> None:
     authority = load_token_authority(PROJECT_ROOT)
     fixture_paths = {

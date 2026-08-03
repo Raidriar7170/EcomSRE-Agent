@@ -360,12 +360,16 @@ def admit_initial_plan(
 
 
 def schedule_layers(
-    plan: InvestigationPlan,
+    plan: InvestigationPlan | FixedInvestigationPlan,
 ) -> tuple[tuple[InvestigationNode, ...], ...]:
     """Return deterministic parallel-ready layers for a validated initial DAG."""
 
     try:
-        validated = InvestigationPlan.model_validate(plan)
+        validated: InvestigationPlan | FixedInvestigationPlan
+        if isinstance(plan, FixedInvestigationPlan):
+            validated = FixedInvestigationPlan.model_validate(plan)
+        else:
+            validated = InvestigationPlan.model_validate(plan)
     except ValidationError as error:
         raise DagValidationError(
             DagValidationErrorCode.INVALID_DAG,

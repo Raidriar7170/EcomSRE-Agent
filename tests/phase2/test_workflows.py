@@ -2,18 +2,38 @@
 
 from pathlib import Path
 
+import pytest
+
 from ecomsre.backends.replay import ReplayObservabilityBackend, load_replay_case
 from ecomsre.model.scripted import ScriptedModelGateway
 from ecomsre.phase1.agent import SingleAgent
 from ecomsre.phase1.contracts import (
     BudgetLimits,
+    EvidenceSource,
     InvestigationRequest,
+    MetricsAction,
     ModelConfiguration,
+    ReadOnlyToolName,
+    TracesAction,
 )
 from ecomsre.phase1.runtime_config import load_agent_settings
-from ecomsre.phase2.comparison_adapter import BudgetCaps
-from ecomsre.phase2.contracts import ModelOperation, Phase2Variant
-from ecomsre.phase2.token_policy import MODEL_SNAPSHOT
+from ecomsre.phase2.comparison_adapter import (
+    BudgetCaps,
+    ModelCompletion,
+    ModelInvocation,
+)
+from ecomsre.phase2.contracts import (
+    CommanderRequest,
+    InvestigationNode,
+    InvestigationPlan,
+    ModelInputEnvelope,
+    ModelOperation,
+    Phase2Variant,
+    SpecialistModelRequest,
+    SpecialistRole,
+)
+from ecomsre.phase2.scripted import ScriptedModelBackend
+from ecomsre.phase2.token_policy import MODEL_SNAPSHOT, load_token_authority
 from ecomsre.phase2.workflows import run_replay_workflow, stable_workflow_run_id
 
 
@@ -42,7 +62,10 @@ def test_fixed_control_executes_four_specialists_and_final_judge() -> None:
         variant=Phase2Variant.FIXED_SPECIALIST_WORKFLOW,
     )
 
-    assert result.trace.status == "COMPLETED"
+    assert result.trace.status == "COMPLETED", (
+        result.trace.terminal_failure_code,
+        result.trace.terminal_reason,
+    )
     assert tuple(
         record.operation for record in result.trace.model_call_audits
     ) == (
@@ -157,3 +180,142 @@ def test_dynamic_runs_one_bounded_refinement_and_complete_trace() -> None:
     assert result.trace.final_budget_snapshot.cumulative_tokens == sum(
         record.total_tokens or 0 for record in result.trace.model_call_audits
     )
+
+
+def test_dynamic_workflow_executes_dependency_layers_not_declaration_order(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    replay_case = load_replay_case(
+        PROJECT_ROOT / "config/phase1/replay-cases/agent-visible",
+        "ad-partial-failure-complete",
+    )
+
+    def dependent_plan(request: CommanderRequest) -> InvestigationPlan:
+        started_at = request.allowed_started_at
+        ended_at = request.allowed_ended_at
+        prerequisite = InvestigationNode(
+            schema_version="phase2.investigation-node.v1",
+            node_id="metrics-prerequisite",
+            source=EvidenceSource.METRICS,
+            specialist_role=SpecialistRole.METRICS_AGENT,
+            tool_name=ReadOnlyToolName.QUERY_METRICS,
+            query=MetricsAction(
+                action_type="metrics",
+                started_at=started_at,
+                ended_at=ended_at,
+                service="ad",
+            ),
+            depends_on=(),
+            objective="Establish the prerequisite service signal.",
+            query_started_at=started_at,
+            query_ended_at=ended_at,
+            priority=1,
+        )
+        dependent = InvestigationNode(
+            schema_version="phase2.investigation-node.v1",
+            node_id="traces-dependent",
+            source=EvidenceSource.TRACES,
+            specialist_role=SpecialistRole.TRACE_AGENT,
+            tool_name=ReadOnlyToolName.SEARCH_TRACES,
+            query=TracesAction(
+                action_type="traces",
+                started_at=started_at,
+                ended_at=ended_at,
+                service="ad",
+            ),
+            depends_on=(prerequisite.node_id,),
+            objective="Use the prerequisite signal to inspect request traces.",
+            query_started_at=started_at,
+            query_ended_at=ended_at,
+            priority=0,
+        )
+        return InvestigationPlan(
+            schema_version="phase2.investigation-plan.v1",
+            run_id=request.run_id,
+            incident_id=request.incident.incident_id,
+            plan_id="dependent-plan",
+            nodes=(dependent, prerequisite),
+            planning_rationale="Exercise dependency ordering explicitly.",
+            budget_snapshot_id=request.budget_snapshot.snapshot_id,
+        )
+
+    monkeypatch.setattr(
+        ScriptedModelBackend,
+        "_commander_plan",
+        staticmethod(dependent_plan),
+    )
+    specialist_requests: list[SpecialistModelRequest] = []
+    original_complete = ScriptedModelBackend.complete
+
+    def recording_complete(
+        self: ScriptedModelBackend,
+        invocation: ModelInvocation,
+        *,
+        envelope: ModelInputEnvelope,
+        exact_input_tokens: int,
+        max_completion_tokens: int,
+    ) -> ModelCompletion:
+        if invocation.operation is ModelOperation.SPECIALIST_MODEL:
+            specialist_requests.append(
+                SpecialistModelRequest.model_validate(envelope.request)
+            )
+        return original_complete(
+            self,
+            invocation,
+            envelope=envelope,
+            exact_input_tokens=exact_input_tokens,
+            max_completion_tokens=max_completion_tokens,
+        )
+
+    monkeypatch.setattr(ScriptedModelBackend, "complete", recording_complete)
+
+    result = run_replay_workflow(
+        project_root=PROJECT_ROOT,
+        replay_case=replay_case,
+        variant=Phase2Variant.DYNAMIC_MULTI_AGENT,
+    )
+
+    assert result.trace.status == "COMPLETED", (
+        result.trace.terminal_failure_code,
+        result.trace.terminal_reason,
+    )
+    assert tuple(finding.node_id for finding in result.trace.findings) == (
+        "metrics-prerequisite",
+        "traces-dependent",
+    )
+    assert len(specialist_requests) == 2
+    prerequisite_finding = result.trace.findings[0]
+    dependent_request = specialist_requests[1]
+    assert dependent_request.dependency_finding_ids == (
+        prerequisite_finding.finding_id,
+    )
+    assert tuple(
+        evidence.evidence_ref
+        for evidence in dependent_request.resolved_dependency_evidence_view.evidence
+    ) == prerequisite_finding.evidence_refs
+
+
+def test_fixed_workflow_uses_an_explicit_typed_backend() -> None:
+    replay_case = load_replay_case(
+        PROJECT_ROOT / "config/phase1/replay-cases/agent-visible",
+        "ad-partial-failure-complete",
+    )
+    backend = ScriptedModelBackend(
+        token_authority=load_token_authority(PROJECT_ROOT),
+        provider_identity="injected-provider",
+    )
+
+    result = run_replay_workflow(
+        project_root=PROJECT_ROOT,
+        replay_case=replay_case,
+        variant=Phase2Variant.FIXED_SPECIALIST_WORKFLOW,
+        model_backend=backend,
+        expected_provider_identity="injected-provider",
+    )
+
+    assert result.trace.status == "COMPLETED"
+    assert backend.calls == 5
+    assert {
+        record.observed_provider_identity
+        for record in result.trace.model_call_audits
+    } == {"injected-provider"}
