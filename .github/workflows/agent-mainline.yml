@@ -1,0 +1,84 @@
+name: Agent mainline
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-mainline-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline-replay:
+    name: Offline replay and verification
+    runs-on: macos-14
+    timeout-minutes: 45
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Fetch pinned upstream tag metadata
+        run: git -C third_party/opentelemetry-demo fetch origin tag 3.0.0
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Sync frozen dependencies
+        run: uv sync --frozen --python 3.11 --group ci
+
+      - name: Phase 1 tests
+        run: make phase1-test
+
+      - name: Phase 2 tests
+        run: make phase2-test
+
+      - name: Phase 2 comparison
+        run: make phase2-compare
+
+      - name: Verify Phase 2 comparison
+        run: make phase2-verify
+
+      - name: Phase 3 tests
+        run: make phase3-test
+
+      - name: Phase 3 replay
+        run: make phase3-replay
+
+      - name: Verify Phase 3 replay
+        run: make phase3-verify
+
+      - name: Agent mainline demo
+        run: make agent-demo
+
+      - name: Full repository tests
+        run: uv run --frozen --no-sync pytest -q
+
+      - name: Ruff
+        run: uv run --frozen --no-sync ruff check .
+
+      - name: mypy (Agent mainline scope)
+        run: >-
+          uv run --frozen --no-sync mypy
+          src/ecomsre/backends
+          src/ecomsre/model
+          src/ecomsre/phase1
+          src/ecomsre/phase2
+          src/ecomsre/phase3
+          src/ecomsre/tools
+          src/ecomsre/demo
+          eval/phase1/run.py
+          eval/phase2/compare.py

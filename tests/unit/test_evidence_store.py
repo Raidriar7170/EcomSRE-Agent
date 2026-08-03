@@ -687,29 +687,40 @@ def test_redaction_limits_fail_closed_for_excessive_size_or_json_depth() -> None
     assert redact_command(("tool", parser_exhaustion))[1] == "[REDACTED]"
 
 
-def test_command_log_rejects_unsanitized_secret_or_wrong_outcome_code() -> None:
+def test_command_log_rejects_unsanitized_secret_or_wrong_terminal_code() -> None:
     common = {
-        "schema_version": "phase0.command-log.v1",
+        "schema_version": "phase0.command-log.v2",
         "run_id": RUN_ID,
         "command": "tool",
         "working_directory": "/project",
         "started_at": STARTED,
         "ended_at": ENDED,
-        "output_artifacts": (),
+        "monotonic_started_seconds": 1.0,
+        "monotonic_ended_seconds": 2.0,
+        "timeout_seconds": 30.0,
+        "process_exit_code": 1,
+        "process_timed_out": False,
+        "classification": Outcome.FAILED_ACCEPTANCE,
+        "terminal_exit_code": Outcome.FAILED_ACCEPTANCE.exit_code,
+        "reason_code": "COMMAND_FAILED",
+        "stdout_artifact": "commands/01.stdout.json",
+        "stdout_sha256": "a" * 64,
+        "stderr_artifact": "commands/01.stderr.json",
+        "stderr_sha256": "b" * 64,
+        "network_access_declared": False,
+        "network_access_scope": "NONE",
+        "filesystem_write_scope": (),
+        "observed_effect_scope": (),
     }
     with pytest.raises(ValidationError, match="unsanitized"):
         CommandLog(
             **common,
             arguments=("--token", "secret-token"),
-            exit_code=30,
-            outcome=Outcome.FAILED_ACCEPTANCE,
         )
-    with pytest.raises(ValidationError, match="exit"):
+    with pytest.raises(ValidationError, match="terminal"):
         CommandLog(
-            **common,
+            **{**common, "terminal_exit_code": 0},
             arguments=("--safe", "value"),
-            exit_code=0,
-            outcome=Outcome.FAILED_ACCEPTANCE,
         )
 
     for arguments in (
@@ -729,17 +740,45 @@ def test_command_log_rejects_unsanitized_secret_or_wrong_outcome_code() -> None:
             CommandLog(
                 **common,
                 arguments=arguments,
-                exit_code=30,
-                outcome=Outcome.FAILED_ACCEPTANCE,
             )
 
     safe_file_uri = CommandLog(
         **common,
         arguments=("file:///project/config.db",),
-        exit_code=30,
-        outcome=Outcome.FAILED_ACCEPTANCE,
     )
     assert safe_file_uri.arguments == ("file:///project/config.db",)
+
+
+def test_command_log_separates_process_classification_and_terminal_exit() -> None:
+    log = CommandLog(
+        schema_version="phase0.command-log.v2",
+        run_id=RUN_ID,
+        command="docker",
+        arguments=("docker", "version"),
+        working_directory="/project",
+        started_at=STARTED,
+        ended_at=ENDED,
+        monotonic_started_seconds=10.0,
+        monotonic_ended_seconds=10.5,
+        timeout_seconds=30.0,
+        process_exit_code=1,
+        process_timed_out=False,
+        classification=Outcome.BLOCKED_ENVIRONMENT,
+        terminal_exit_code=Outcome.BLOCKED_ENVIRONMENT.exit_code,
+        reason_code="DOCKER_DAEMON_UNAVAILABLE",
+        stdout_artifact="commands/01.stdout.json",
+        stdout_sha256="a" * 64,
+        stderr_artifact="commands/01.stderr.json",
+        stderr_sha256="b" * 64,
+        network_access_declared=False,
+        network_access_scope="LOCAL_DOCKER_DAEMON",
+        filesystem_write_scope=(),
+        observed_effect_scope=("docker-daemon-read",),
+    )
+
+    assert log.process_exit_code == 1
+    assert log.terminal_exit_code == Outcome.BLOCKED_ENVIRONMENT.exit_code
+    assert log.process_exit_code != log.terminal_exit_code
 
 
 def test_statistical_evidence_rejects_nonfinite_or_contradictory_values() -> None:

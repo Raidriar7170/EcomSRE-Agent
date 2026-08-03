@@ -1,0 +1,1 @@
+{"case_id":"no-real-incident","decoys":[],"expected_decision":"ABSTAIN","expected_fault_mechanism":null,"expected_root_service":null,"schema_version":"phase1.ground-truth.v1"}

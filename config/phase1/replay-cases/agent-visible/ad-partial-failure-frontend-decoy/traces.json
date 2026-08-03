@@ -1,0 +1,1 @@
+{"observations":[{"attributes":{"component_role":"request_handler","error_count":12,"operation":"GetAds","outcome":"failure"},"ended_at":"2026-07-31T08:04:05Z","limitations":["Sampled replay spans only."],"observation_type":"request_handler_failure_span","service":"ad","started_at":"2026-07-31T08:00:55Z"}],"schema_version":"phase1.replay-observations.v1","status":"AVAILABLE"}

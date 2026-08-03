@@ -19,6 +19,7 @@ from ecomsre.telemetry.http import (
     PhaseWindow,
 )
 from ecomsre.telemetry.prometheus import (
+    PrometheusAcquisitionPolicy,
     _load_test_query_registry,
     PrometheusAdapter,
     PrometheusReason,
@@ -134,6 +135,27 @@ def _vector(
     )
 
 
+def _source_timestamp_vector(
+    evaluation_timestamp: datetime,
+    source_timestamp: datetime,
+    labels: list[dict[str, str]],
+) -> bytes:
+    return _vector(
+        evaluation_timestamp,
+        [
+            (
+                {
+                    key: value
+                    for key, value in identity.items()
+                    if key != "__name__"
+                },
+                str(source_timestamp.timestamp()),
+            )
+            for identity in labels
+        ],
+    )
+
+
 def _responses(
     *,
     start_values: tuple[int, int] = (100, 10),
@@ -151,17 +173,7 @@ def _responses(
         (start_timestamp or PHASE_START + timedelta(seconds=3)) + timedelta(seconds=20),
     )
     counter_values = (start_values, middle_values, end_values)
-    monotonic = (
-        2.0,
-        2.01,
-        2.02,
-        12.0,
-        12.01,
-        12.02,
-        end_monotonic,
-        end_monotonic + 0.01,
-        end_monotonic + 0.02,
-    )
+    monotonic_starts = (2.0, 12.0, end_monotonic)
     responses: list[tuple[bytes, datetime, float]] = []
     for index, (timestamp, (ok_value, error_value)) in enumerate(
         zip(timestamps, counter_values, strict=True)
@@ -180,13 +192,14 @@ def _responses(
                 )
             )
         observed_at = timestamp + timedelta(seconds=1)
+        monotonic_started = monotonic_starts[index]
         responses.extend(
             (
-                (_vector(timestamp, total_series), observed_at, monotonic[index * 3]),
+                (_vector(timestamp, total_series), observed_at, monotonic_started),
                 (
                     _vector(timestamp, [(ERROR, str(error_value))]),
                     observed_at,
-                    monotonic[index * 3 + 1],
+                    monotonic_started + 0.01,
                 ),
                 (
                     _vector(
@@ -194,7 +207,16 @@ def _responses(
                         [(INCARNATION, str(incarnation_values[index]))],
                     ),
                     observed_at,
-                    monotonic[index * 3 + 2],
+                    monotonic_started + 0.02,
+                ),
+                (
+                    _source_timestamp_vector(
+                        timestamp,
+                        timestamp,
+                        [identity for identity, _value in total_series],
+                    ),
+                    observed_at,
+                    monotonic_started + 0.03,
                 ),
             )
         )
@@ -235,13 +257,31 @@ def test_prometheus_uses_raw_scrape_anchors_and_returns_exact_window_delta() -> 
     assert result.getads_errors == 15
     assert result.start_sample_timestamp == PHASE_START + timedelta(seconds=3)
     assert result.end_sample_timestamp == PHASE_START + timedelta(seconds=23)
-    assert len(client.requests) == 9
-    assert len(store.records) == 19
+    assert len(client.requests) == 12
+    assert len(store.records) == 25
     assert all(
         "rate(" not in request.target
         and "increase(" not in request.target
         and "delta(" not in request.target
         for request in client.requests
+    )
+    source_query = f"timestamp({REGISTRY.registry.prometheus.total_query})"
+    source_requests = [
+        request
+        for request in client.requests
+        if "timestamp%28" in request.target
+    ]
+    assert len(source_requests) == 3
+    source_raw_payloads = [
+        payload
+        for _path, payload in store.records
+        if payload.get("query_kind") == "source_timestamp"
+    ]
+    assert len(source_raw_payloads) == 3
+    assert all(
+        payload["raw_query"] == source_query
+        and payload["raw_query_sha256"] == sha256_bytes(source_query.encode())
+        for payload in source_raw_payloads
     )
     first_payload = store.records[0][1]
     assert base64.b64decode(first_payload["raw_response_base64"]) == _responses()[0][0]
@@ -253,6 +293,70 @@ def test_prometheus_uses_raw_scrape_anchors_and_returns_exact_window_delta() -> 
     assert final_payload["decision"]
     assert final_payload["getads_attempts"] == 200
     assert final_payload["getads_errors"] == 15
+
+
+def test_prometheus_rejects_advanced_evaluation_with_unchanged_source_timestamp(
+) -> None:
+    responses = _responses()
+    repeated_source = PHASE_START + timedelta(seconds=3)
+    advanced_evaluation = repeated_source + timedelta(seconds=5)
+    for index in range(4, 8):
+        payload = json.loads(responses[index][0])
+        for item in payload["data"]["result"]:
+            item["value"][0] = advanced_evaluation.timestamp()
+            if index == 7:
+                item["value"][1] = str(repeated_source.timestamp())
+        responses[index] = (
+            canonical_json_bytes(payload),
+            advanced_evaluation + timedelta(seconds=1),
+            7.0 + (index - 4) * 0.01,
+        )
+    adapter, client = _adapter(responses, RecordingStore())
+
+    result = adapter.measure_getads(
+        window=_window(),
+        base_url="http://127.0.0.1:32771",
+        artifact_prefix="cycles/01/baseline",
+    )
+
+    assert result.reason is PrometheusReason.PROMETHEUS_STALE_SAMPLE
+    assert len(client.requests) == 8
+
+
+@pytest.mark.parametrize(
+    ("mutate", "expected_reason"),
+    [
+        (
+            lambda labels: labels.pop("service_name"),
+            PrometheusReason.PROMETHEUS_CARDINALITY_DRIFT,
+        ),
+        (
+            lambda labels: labels.__setitem__("span_name", "wrong/GetAds"),
+            PrometheusReason.PROMETHEUS_CARDINALITY_DRIFT,
+        ),
+    ],
+)
+def test_prometheus_source_timestamp_requires_exact_non_name_labels(
+    mutate,
+    expected_reason: PrometheusReason,
+) -> None:
+    responses = _responses()
+    payload = json.loads(responses[3][0])
+    mutate(payload["data"]["result"][0]["metric"])
+    responses[3] = (
+        canonical_json_bytes(payload),
+        responses[3][1],
+        responses[3][2],
+    )
+    adapter, _client = _adapter(responses, RecordingStore())
+
+    result = adapter.measure_getads(
+        window=_window(),
+        base_url="http://127.0.0.1:32771",
+        artifact_prefix="cycles/01/baseline",
+    )
+
+    assert result.reason is expected_reason
 
 
 def test_prometheus_waits_one_frozen_scrape_interval_between_anchor_polls() -> None:
@@ -295,13 +399,38 @@ def test_prometheus_public_runtime_has_no_acquisition_limit_override(
         )
 
 
+def test_prometheus_smoke_policy_uses_exact_100_attempt_120_second_budget() -> None:
+    store = RecordingStore()
+    client = FixtureHttpClient(_responses())
+    policy = PrometheusAcquisitionPolicy.diagnostic_smoke()
+    adapter = PrometheusAdapter(
+        client=client,
+        evidence_store=store,
+        fixture=REGISTRY,
+        acquisition_policy=policy,
+        sleep=lambda _seconds: None,
+    )
+
+    result = adapter.measure_getads(
+        window=_window(),
+        base_url="http://127.0.0.1:32771",
+        artifact_prefix="cycles/01/baseline",
+    )
+
+    assert policy.minimum_getads_attempts == 100
+    assert policy.window_deadline_seconds == 120
+    assert result.ready
+    assert result.getads_attempts == 120
+    assert len(client.requests) == 8
+
+
 def test_prometheus_zero_series_rule_accepts_absent_error_vector_as_zero() -> None:
     responses = _responses(
         start_values=(100, 0),
         middle_values=(210, 0),
         end_values=(300, 0),
     )
-    for index in (1, 4, 7):
+    for index in (1, 5, 9):
         timestamp = json.loads(responses[index - 1][0])["data"]["result"][0]["value"][0]
         responses[index] = (
             _vector(datetime.fromtimestamp(timestamp, tz=UTC), []),
@@ -332,7 +461,7 @@ def test_prometheus_zero_rule_fills_only_missing_error_identity_in_total() -> No
         end_values=(300, 0),
         omit_error_from_total=True,
     )
-    for index in (1, 4, 7):
+    for index in (1, 5, 9):
         timestamp = json.loads(responses[index - 1][0])["data"]["result"][0]["value"][0]
         responses[index] = (
             _vector(datetime.fromtimestamp(timestamp, tz=UTC), []),
@@ -392,16 +521,14 @@ def test_prometheus_zero_rule_rejects_missing_non_error_identity_in_total() -> N
 def test_prometheus_accepts_frozen_scrape_jitter_within_tolerance() -> None:
     responses = _responses()
     for index, jitter in (
-        (3, 0.2),
-        (4, 0.2),
-        (5, 0.2),
-        (6, 0.4),
-        (7, 0.4),
-        (8, 0.4),
+        *((index, 0.2) for index in range(4, 8)),
+        *((index, 0.4) for index in range(8, 12)),
     ):
         payload = json.loads(responses[index][0])
         for item in payload["data"]["result"]:
             item["value"][0] += jitter
+            if index % 4 == 3:
+                item["value"][1] = str(float(item["value"][1]) + jitter)
         responses[index] = (
             canonical_json_bytes(payload),
             responses[index][1] + timedelta(seconds=jitter),
@@ -436,9 +563,15 @@ def test_prometheus_refuses_unresolved_fixture_before_http_or_evidence() -> None
 
 def test_prometheus_persists_raw_response_before_schema_failure() -> None:
     malformed = b'{"status":"success","data":{"resultType":"matrix"}}'
+    responses = _responses()[:4]
+    responses[0] = (
+        malformed,
+        responses[0][1],
+        responses[0][2],
+    )
     store = RecordingStore()
     adapter, _client = _adapter(
-        [(malformed, PHASE_START + timedelta(seconds=4), 2.0)],
+        responses,
         store,
     )
 
@@ -470,7 +603,7 @@ def test_prometheus_evidence_failure_can_never_return_ready() -> None:
 
 
 def test_prometheus_final_decision_persistence_failure_can_never_return_ready() -> None:
-    store = RecordingStore(fail_at=19)
+    store = RecordingStore(fail_at=25)
     adapter, client = _adapter(_responses(), store)
 
     result = adapter.measure_getads(
@@ -481,7 +614,7 @@ def test_prometheus_final_decision_persistence_failure_can_never_return_ready() 
 
     assert not result.ready
     assert result.reason is PrometheusReason.EVIDENCE_PERSISTENCE_FAILED
-    assert len(client.requests) == 9
+    assert len(client.requests) == 12
 
 
 @pytest.mark.parametrize(
@@ -546,12 +679,12 @@ def test_prometheus_rejects_total_error_scrape_timestamp_mismatch() -> None:
 
 def test_prometheus_rejects_stale_marker_as_freshness_failure() -> None:
     responses = _responses()
-    payload = json.loads(responses[3][0])
+    payload = json.loads(responses[4][0])
     payload["data"]["result"][0]["value"][1] = "NaN"
-    responses[3] = (
+    responses[4] = (
         canonical_json_bytes(payload),
-        responses[3][1],
-        responses[3][2],
+        responses[4][1],
+        responses[4][2],
     )
     adapter, _client = _adapter(responses, RecordingStore())
 
@@ -566,7 +699,7 @@ def test_prometheus_rejects_stale_marker_as_freshness_failure() -> None:
 
 def test_prometheus_rejects_non_integral_window_delta() -> None:
     responses = _responses()
-    for index, value in ((0, "100.5"), (6, "285.75")):
+    for index, value in ((0, "100.5"), (8, "285.75")):
         payload = json.loads(responses[index][0])
         payload["data"]["result"][0]["value"][1] = value
         responses[index] = (

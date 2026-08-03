@@ -1,0 +1,1 @@
+{"observations":[{"attributes":{"change_id":"ad-release-20260731","status":"completed"},"ended_at":"2026-07-31T08:02:10Z","limitations":["Temporal proximity alone does not establish causality."],"observation_type":"deployment","service":"ad","started_at":"2026-07-31T08:01:40Z"}],"schema_version":"phase1.replay-observations.v1","status":"AVAILABLE"}

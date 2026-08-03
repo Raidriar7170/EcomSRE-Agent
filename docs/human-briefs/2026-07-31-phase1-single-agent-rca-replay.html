@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EcomSRE-Agent Phase 1 Single-Agent RCA Replay 简报</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #526076;
+      --line: #cbd5e1;
+      --panel: #f8fafc;
+      --ready: #166534;
+      --ready-bg: #f0fdf4;
+      --warn: #9a3412;
+      --warn-bg: #fff7ed;
+    }
+    body {
+      max-width: 1040px;
+      margin: 40px auto;
+      padding: 0 24px 64px;
+      font: 16px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+    }
+    h1, h2 { line-height: 1.25; }
+    h2 { margin-top: 2rem; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--panel); }
+    code { background: #eef2f7; padding: 1px 4px; }
+    pre {
+      overflow-x: auto;
+      padding: 12px 14px;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    a { color: #1d4ed8; }
+    .ready, .warning, .derived {
+      padding: 10px 14px;
+      border-left: 4px solid;
+    }
+    .ready {
+      border-color: var(--ready);
+      background: var(--ready-bg);
+    }
+    .warning {
+      border-color: var(--warn);
+      background: var(--warn-bg);
+    }
+    .derived {
+      border-color: #475569;
+      background: var(--panel);
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <h1>EcomSRE-Agent Phase 1 Single-Agent RCA Replay</h1>
+
+  <p class="derived"><strong>证据地位：</strong>本简报是从代码、冻结 fixture、
+    测试和机器可读报告派生的审阅材料，不是权威状态源，不能自行升级 verdict。
+    如本页与机器可读证据冲突，以后者为准。</p>
+
+  <p class="ready"><strong>当前结论：</strong>
+    <code>PHASE1_SINGLE_AGENT_REPLAY_MVP_READY</code>。下层
+    <code>PHASE1_REPLAY_PIPELINE_READY</code> 已由 scripted adapter 的离线
+    contract、动态 typed-tool 调度、Evidence Store、冻结七案例 replay、结构化
+    RCA 验证和 evaluation pipeline 支持；附加真实 gateway gate 也已通过。</p>
+
+  <p class="warning"><strong>必须分开解读：</strong>scripted adapter 冻结七案例：Decision Accuracy 7 / 7。
+    真实 provider gate 仅运行两个指定案例，不是七案例真实模型准确率：
+    <code>ad-partial-failure-complete</code> 返回 <code>RCA_CONFIRMED</code>，
+    <code>no-real-incident</code> 返回 <code>ABSTAIN</code>；两者均由
+    <code>gpt-5.4-mini-2026-03-17</code> 通过 OpenAI-compatible gateway 完成。</p>
+
+  <h2>双层 verdict</h2>
+  <table>
+    <tr><th>Verdict</th><th>条件</th><th>本次状态</th></tr>
+    <tr>
+      <td><code>PHASE1_REPLAY_PIPELINE_READY</code></td>
+      <td>scripted offline pipeline、七案例、十项指标、默认 Make workflows、
+        fail-closed refs 和 Phase 0 protected checks 全部通过。</td>
+      <td>满足</td>
+    </tr>
+    <tr>
+      <td><code>PHASE1_SINGLE_AGENT_REPLAY_MVP_READY</code></td>
+      <td>上述条件，加真实 gateway 至少验证一个 <code>RCA_CONFIRMED</code> 和一个
+        <code>ABSTAIN</code> 或 <code>NEED_MORE_EVIDENCE</code>。</td>
+      <td>满足：2 / 2 gate cases 通过</td>
+    </tr>
+  </table>
+
+  <h2>实现范围</h2>
+  <ul>
+    <li>一个 <code>SingleAgent</code>，根据观察结果动态选择 Metrics、Logs、
+      Traces、Changes 四个只读 typed tools。</li>
+    <li>run-scoped Evidence Store 分配和解析可验证
+      <code>evidence://&lt;run-id&gt;/&lt;source&gt;/&lt;sequence&gt;</code> 引用。</li>
+    <li>结构化 <code>RCA_CONFIRMED</code>、<code>NEED_MORE_EVIDENCE</code>、
+      <code>ABSTAIN</code>，包含有界且不作为 Evidence 的
+      <code>decision_rationale</code>。</li>
+    <li><code>alert_source_service</code> 为 optional、non-authoritative；
+      多数案例为空，frontend decoy 案例故意提供错误 hint。</li>
+    <li>scripted adapter 是 pytest、replay smoke 和 evaluation 的默认模型；
+      OpenAI-compatible gateway 仅由显式 provider smoke opt in。</li>
+    <li>evaluation 在 <code>python -I</code> 的 src-only 子进程执行 Agent；
+      import、filesystem 与 audit guards 对 evaluator-only 路径 fail closed。
+      父 evaluator 仅在重新验证 <code>AgentRunReport</code> 后读取 ground truth。</li>
+  </ul>
+
+  <h2>七个冻结 replay cases</h2>
+  <table>
+    <tr><th>Case</th><th>期望 decision</th><th>关键覆盖</th></tr>
+    <tr><td><code>ad-partial-failure-complete</code></td><td>RCA_CONFIRMED</td><td>ad runtime configuration failure，Changes 为必需独立证据</td></tr>
+    <tr><td><code>ad-partial-failure-without-logs</code></td><td>RCA_CONFIRMED</td><td>缺失 Logs，Metrics 与 Traces 支持 request-processing failure</td></tr>
+    <tr><td><code>ad-partial-failure-frontend-decoy</code></td><td>RCA_CONFIRMED</td><td>错误 frontend hint 与 decoy change 被读取但不进入 supporting evidence</td></tr>
+    <tr><td><code>ad-change-with-normal-sli</code></td><td>ABSTAIN</td><td>change 存在但无 incident</td></tr>
+    <tr><td><code>telemetry-insufficient</code></td><td>NEED_MORE_EVIDENCE</td><td>缺失关键 evidence</td></tr>
+    <tr><td><code>no-real-incident</code></td><td>ABSTAIN</td><td>negative / abstain</td></tr>
+    <tr><td><code>recommendation-cache-failure</code></td><td>RCA_CONFIRMED</td><td>非 ad root service 与 cache backend timeout mechanism</td></tr>
+  </table>
+
+  <h2>Evaluation 结果</h2>
+  <table>
+    <tr><th>Metric</th><th>结果</th></tr>
+    <tr><td>Decision Accuracy</td><td>7 / 7</td></tr>
+    <tr><td>Schema Valid Rate</td><td>7 / 7</td></tr>
+    <tr><td>Root Service Accuracy</td><td>4 / 4 confirmed cases</td></tr>
+    <tr><td>Fault Mechanism Accuracy</td><td>4 / 4 confirmed cases</td></tr>
+    <tr><td>Evidence Reference Validity</td><td>7 / 7</td></tr>
+    <tr><td>Abstention Accuracy</td><td>3 / 3 non-confirmed cases</td></tr>
+    <tr><td>Decoy Resistance</td><td>1 / 1 declared-decoy case</td></tr>
+    <tr><td>Average Tool Calls</td><td>20 total；2.8571428571 / case</td></tr>
+    <tr><td>Token Usage</td><td>15,768 total；2,252.5714286 / case</td></tr>
+    <tr><td>Wall-clock Latency</td><td>每案例、总计和平均 monotonic duration 均记录；数值随真实运行变化</td></tr>
+  </table>
+  <p>决策、evidence refs、工具序列、token counts 和指标的非时序 semantic
+    projection 在重复运行中一致，SHA-256 为
+    <code>15d8da7e6b589fddf4cbb50dd611b60b9c72196bcec701c268867bbfb9ba3a01</code>。
+    真实 wall-clock timing 不属于 byte-identical determinism 边界。</p>
+
+  <h2>Requirement-to-evidence audit</h2>
+  <table>
+    <tr><th>Requirement</th><th>本次证据</th><th>结果</th></tr>
+    <tr><td>正确分支、base 与 Phase 0 Draft PR</td><td><code>phase1/single-agent-rca-replay</code>；base <code>9dc840e820009794f344e0a3fa5320d739cb6291</code>；PR #1 OPEN、Draft、未 merge</td><td>PASS</td></tr>
+    <tr><td>Phase 0 protected areas 不变</td><td>四个记录 hash 精确匹配，protected-path diff 为空</td><td>PASS</td></tr>
+    <tr><td>严格 contracts 与 rationale 约束</td><td>构造、序列化和 negative contract tests</td><td>PASS</td></tr>
+    <tr><td>hint optional / non-authoritative</td><td>至少五个 null、一个错误 frontend hint、零 hint-derived Evidence</td><td>PASS</td></tr>
+    <tr><td>一个 Agent、四个只读 typed tools</td><td>typed call records 与 tool contract tests</td><td>PASS</td></tr>
+    <tr><td>动态工具选择</td><td>七案例工具序列不同，至少一个 case 跳过不必要工具</td><td>PASS</td></tr>
+    <tr><td>Evidence refs 可验证</td><td>未知、跨 run、malformed、overlap、未持久化 refs 均被拒绝；七报告全部可解析</td><td>PASS</td></tr>
+    <tr><td>replay-only observability</td><td>loader 拒绝绝对路径、traversal、symlink、unknown file 和 hash mismatch</td><td>PASS</td></tr>
+    <tr><td>evaluator 隔离</td><td>static import/path scan 与 clean-subprocess filesystem/import guards</td><td>PASS</td></tr>
+    <tr><td>默认 workflows 不依赖 API</td><td>清除 provider env 后，test、smoke、eval 均通过</td><td>PASS</td></tr>
+    <tr><td>OpenAI-compatible gateway 无提交 key</td><td>HTTPS、no redirect、timeout、no retry、strict parse、redaction 与 injected transport tests；真实凭证只从本地环境读取，<code>.env.example</code> 仅含 placeholder</td><td>PASS</td></tr>
+    <tr><td>预算与可观察性</td><td>模型、工具、token、timeout limits 和稳定错误码 tests；run report 包含 call records 与 monotonic duration</td><td>PASS</td></tr>
+    <tr><td>七案例跨 root/mechanism</td><td>35 个 fixture hashes、49 个 canonical JSON checks、7 个 replay E2E；含 recommendation cache failure</td><td>PASS</td></tr>
+    <tr><td>Frontend decoy resistance</td><td>decoy 存储但不 supporting，root 仍为 ad；1 / 1</td><td>PASS</td></tr>
+    <tr><td>十项 evaluation metrics</td><td>raw numerators / denominators、case coverage 与 semantic fingerprint</td><td>PASS</td></tr>
+    <tr><td>默认 Make workflows</td><td><code>phase1-test</code>、<code>phase1-replay-smoke</code>、<code>phase1-eval</code></td><td>PASS</td></tr>
+    <tr><td>provider workflow 真实 gating</td><td><code>gpt-5.4-mini-2026-03-17</code> 对两个指定案例分别验证 <code>RCA_CONFIRMED</code> 与 <code>ABSTAIN</code>；该 gate 不冒充七案例模型评测。未配置时仍返回 <code>SKIPPED_NOT_CONFIGURED</code>，且不进入 pytest</td><td>PASS（2 / 2 gate cases）</td></tr>
+    <tr><td>可重算 baseline lock</td><td>prompt、tool schema、RCA schema、evaluator、replay suite 与 validator hashes；模型 snapshot、temperature 和 8 / 8 / 12000 budgets</td><td>PASS</td></tr>
+    <tr><td>禁止范围未进入实现</td><td>changed-file/static import review；无 Multi-Agent、Commander、Judge、Remediation、training、Docker/Compose 或 live-observability 实现</td><td>PASS</td></tr>
+    <tr><td>L2 derived review surface</td><td>本页链接机器报告并保留 Phase 0 / Phase 2 边界</td><td>PASS</td></tr>
+    <tr><td>truth marker</td><td>scripted 七案例与真实 provider 两案例在机器状态中分开记录，支持 <code>PHASE1_SINGLE_AGENT_REPLAY_MVP_READY</code></td><td>PASS</td></tr>
+  </table>
+
+  <h2>新鲜验证</h2>
+  <pre><code>make phase1-test
+# PASSED
+
+make phase1-replay-smoke
+# PASSED
+
+make phase1-eval
+# PASSED, 7 cases, 10 metrics
+
+make phase1-provider-smoke
+# PASSED: 2 cases; one RCA_CONFIRMED plus one ABSTAIN
+
+uv run --frozen --no-sync pytest -q
+# PASSED
+
+uv run --frozen --no-sync ruff check \
+  src/ecomsre/backends src/ecomsre/model src/ecomsre/phase1 \
+  src/ecomsre/tools eval tests/phase1
+# All checks passed
+
+uv run --frozen --no-sync mypy --strict \
+  src/ecomsre/backends src/ecomsre/model src/ecomsre/phase1 \
+  src/ecomsre/tools eval/phase1/run.py
+# Success: no issues found in 23 source files
+
+uv run --frozen --no-sync python -m compileall -q src/ecomsre eval/phase1
+git diff --check
+# PASS</code></pre>
+  <p>额外兼容性证据：Python 3.12.2 + Pydantic 2.12.5 下，合法的
+    <code>ctypes</code>、<code>subprocess</code>、<code>multiprocessing</code>
+    依赖导入成功，而 CDLL、Popen/run 和 Process.start 等危险操作被拒绝；
+    七案例 evaluation 仍为 PASSED，semantic SHA 与默认 Python 3.11 一致。</p>
+
+  <h2>机器可读证据与关键文件</h2>
+  <ul>
+    <li><a href="../../artifacts/phase1/reports/f6e80e94a56daa32916d9cb72a1873e8/agent-run-report.json">Replay smoke AgentRunReport</a></li>
+    <li><a href="../../artifacts/phase1/evaluation/evaluation-report.json">Evaluation report</a></li>
+    <li><a href="../../artifacts/phase1/provider-smoke/provider-smoke-report.json">Provider smoke report</a></li>
+    <li><a href="../review-evidence/phase1-single-agent-replay-20260801/current-disposition.json">Tracked current-disposition.json</a></li>
+    <li><a href="../../config/phase1/baseline-lock.json">Recomputable baseline-lock.json</a></li>
+    <li><a href="../superpowers/specs/2026-07-31-phase1-single-agent-rca-replay-design.md">Approved design and requirement matrix</a></li>
+    <li><a href="../../config/phase1/agent.json">Agent JSON configuration</a></li>
+    <li><a href="../../src/ecomsre/phase1/agent.py">Single Agent loop</a></li>
+    <li><a href="../../eval/phase1/run.py">Frozen-suite evaluator</a></li>
+  </ul>
+
+  <h2>Phase 0 与范围边界</h2>
+  <p>Phase 0 的历史结论和 live evidence 未被重写；protected trees/blobs
+    与批准 base 完全一致。Phase 0 仍不完整，PR #1 仍为 Draft /
+    REVIEW_REQUIRED。本 Phase 1 不等待或修复 live integration，也没有运行
+    Docker。</p>
+  <p>本分支未实现 Multi-Agent、Commander、Judge、Remediation、live
+    observability 或模型训练。Phase 2 仍未实现。</p>
+
+  <h2>不能扩大声称的事项</h2>
+  <ul>
+    <li>真实 provider smoke 只是两个指定 gate cases，不能声称它取得七案例
+      Decision Accuracy 7 / 7，也不能推广为一般模型质量或生产可用性。</li>
+    <li>evaluator capability isolation 当前在 macOS 使用
+      <code>sandbox-exec</code> / Seatbelt；没有经过证明的非 Darwin sandbox
+      backend 时，evaluation 会 fail closed，而不是降级运行。</li>
+    <li>不能把 1 / 1 decoy case 推广为一般化 decoy robustness。</li>
+    <li>不能把 replay fixture evaluation 解释为 live observability 或生产验证。</li>
+    <li>injected transport contract tests 与这次真实 gateway 两案例 smoke 是两类证据，
+      不能互相替代或合并计算。</li>
+    <li>不能用非确定的真实 wall-clock 数值替代 deterministic semantic projection。</li>
+  </ul>
+
+  <h2>推荐下一步</h2>
+  <p>Phase 2: replace the single all-tools agent with Commander plus Metrics,
+    Logs, Trace and Change specialist agents under the same replay suite.</p>
+</body>
+</html>

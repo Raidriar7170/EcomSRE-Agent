@@ -11,6 +11,7 @@ from ecomsre.environment.lifecycle import (
     LifecycleArtifactPaths,
     LifecycleExecution,
 )
+from ecomsre.environment.manifests import load_image_lock
 from ecomsre.phase0.models import Outcome, TerminalResult
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -36,6 +37,8 @@ CANONICAL_COMMANDS = {
     "accept",
     "stop",
 }
+DIAGNOSTIC_COMMANDS = {"smoke"}
+MAINTENANCE_COMMANDS = {"cleanup-owned-volumes"}
 
 RUN_ID_REQUIRED_COMMANDS = {
     "up",
@@ -44,17 +47,49 @@ RUN_ID_REQUIRED_COMMANDS = {
     "reset",
     "status",
     "stop",
+    "cleanup-owned-volumes",
 }
 
 IMPLEMENTED_COMMANDS = {
     "bootstrap",
+    "preflight",
     "up",
     "health",
     "inject",
     "reset",
     "status",
+    "smoke",
     "stop",
+    "cleanup-owned-volumes",
 }
+
+
+def _stub_minimal_direct_stop(monkeypatch, cli) -> None:
+    ownership = SimpleNamespace(is_authentic=lambda: True)
+    monkeypatch.setattr(
+        cli,
+        "load_authenticated_ownership_context",
+        lambda *_args: ownership,
+    )
+    monkeypatch.setattr(
+        cli,
+        "collect_direct_stop_docker_snapshot",
+        lambda *_args: SimpleNamespace(
+            daemon_available=True,
+            docker_endpoint="unix:///var/run/docker.sock",
+            daemon_id="fixture-daemon",
+            context_name="desktop-linux",
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "collect_fresh_stop_authority",
+        lambda **_kwargs: SimpleNamespace(
+            docker_endpoint="unix:///var/run/docker.sock",
+            evidence_persistence_error=None,
+            is_authentic=lambda candidate: candidate is ownership,
+        ),
+    )
 
 
 def test_exit_code_mapping_matches_acceptance_contract() -> None:
@@ -73,7 +108,9 @@ def test_cli_parser_exposes_only_explicit_phase0_commands() -> None:
         action for action in phase0_parser._actions if action.dest == "command"
     )
 
-    assert set(command_action.choices) == CANONICAL_COMMANDS
+    assert set(command_action.choices) == (
+        CANONICAL_COMMANDS | DIAGNOSTIC_COMMANDS | MAINTENANCE_COMMANDS
+    )
 
 
 def test_existing_run_commands_require_a_valid_opaque_run_id() -> None:
@@ -140,14 +177,161 @@ def test_existing_run_command_rejects_malformed_run_id(command: str) -> None:
     assert "run_id" in completed.stderr.lower()
 
 
-def test_formal_up_without_bootstrap_lock_returns_blocked_upstream() -> None:
-    completed = _run_cli("phase0", "up", "--run-id", "a" * 32)
+def test_formal_up_without_bootstrap_lock_returns_blocked_upstream(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    import ecomsre.cli as cli
 
-    assert completed.returncode == EXPECTED_EXIT_CODES["BLOCKED_UPSTREAM"]
-    payload = __import__("json").loads(completed.stdout)
-    assert payload["outcome"] == "BLOCKED_UPSTREAM"
-    assert payload["reason_code"] == "IMAGE_LOCK_UNINITIALIZED"
-    assert completed.stderr == ""
+    lock_path = tmp_path / "image-lock.json"
+    lock_path.write_text(
+        __import__("json").dumps(
+            {
+                "schema_version": "phase0.image-lock.v1",
+                "status": "UNINITIALIZED",
+                "upstream_tag": "3.0.0",
+                "upstream_commit": (
+                    "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
+                ),
+                "compose_config_sha256": None,
+                "created_at": None,
+                "allowed_source_references": [],
+                "images": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(cli, "_load_lock", lambda _root: load_image_lock(lock_path))
+    context = cli.HandlerContext(
+        runner=SimpleNamespace(
+            run=lambda *_args, **_kwargs: pytest.fail(
+                "uninitialized lock must block before commands"
+            )
+        ),
+        project_root=tmp_path,
+        artifacts_root=tmp_path / "artifacts",
+    )
+
+    result = cli._handle_up(SimpleNamespace(run_id="a" * 32), context)
+
+    assert result.outcome is Outcome.BLOCKED_UPSTREAM
+    assert result.reason_code == "IMAGE_LOCK_UNINITIALIZED"
+
+
+def test_stop_reseals_existing_terminal_smoke_bundle_after_successful_down(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    import ecomsre.cli as cli
+    from ecomsre.phase0.smoke import validate_current_recovery_seal
+
+    run_id = "a" * 32
+    for zone in ("observer-visible", "evaluator-only"):
+        run_root = tmp_path / zone / run_id
+        run_root.mkdir(parents=True)
+        (run_root / "evidence.json").write_text("{}", encoding="utf-8")
+    report_root = tmp_path / "reports" / run_id
+    report_root.mkdir(parents=True)
+    (report_root / "smoke-report.json").write_text(
+        '{"diagnostic_status":"UNSAFE"}',
+        encoding="utf-8",
+    )
+    (report_root / "checksums.sha256").write_text(
+        "a" * 64 + f"  reports/{run_id}/smoke-report.json\n",
+        encoding="utf-8",
+    )
+    _stub_minimal_direct_stop(monkeypatch, cli)
+    monkeypatch.setattr(
+        cli,
+        "down_environment",
+        lambda *_args, **_kwargs: TerminalResult(
+            outcome=Outcome.SUCCESS,
+            reason_code="ENVIRONMENT_STOPPED",
+        ),
+    )
+    context = cli.HandlerContext(
+        runner=SimpleNamespace(),
+        project_root=tmp_path,
+        artifacts_root=tmp_path,
+    )
+
+    result = cli._handle_stop(SimpleNamespace(run_id=run_id), context)
+
+    assert result.outcome is Outcome.SUCCESS
+    assert (report_root / "recovery" / "001.json").is_file()
+    assert (report_root / "seals" / "001.sha256").is_file()
+    assert validate_current_recovery_seal(tmp_path, run_id=run_id)
+
+
+def test_stop_returns_manual_when_required_recovery_reseal_fails(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    import ecomsre.cli as cli
+
+    run_id = "a" * 32
+    report_root = tmp_path / "reports" / run_id
+    report_root.mkdir(parents=True)
+    (report_root / "smoke-report.json").write_text("{}", encoding="utf-8")
+    (report_root / "checksums.sha256").write_text("", encoding="utf-8")
+    _stub_minimal_direct_stop(monkeypatch, cli)
+    monkeypatch.setattr(
+        cli,
+        "down_environment",
+        lambda *_args, **_kwargs: TerminalResult(
+            outcome=Outcome.SUCCESS,
+            reason_code="ENVIRONMENT_STOPPED",
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "reseal_recovery_evidence",
+        lambda **_kwargs: (_ for _ in ()).throw(OSError("fixture seal failure")),
+        raising=False,
+    )
+    context = cli.HandlerContext(
+        runner=SimpleNamespace(),
+        project_root=tmp_path,
+        artifacts_root=tmp_path,
+    )
+
+    result = cli._handle_stop(SimpleNamespace(run_id=run_id), context)
+
+    assert result.outcome is Outcome.MANUAL_INTERVENTION_REQUIRED
+    assert result.reason_code == "RECOVERY_EVIDENCE_PERSISTENCE_FAILED"
+
+
+def test_stop_without_existing_smoke_report_does_not_reseal(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    import ecomsre.cli as cli
+
+    run_id = "a" * 32
+    _stub_minimal_direct_stop(monkeypatch, cli)
+    monkeypatch.setattr(
+        cli,
+        "down_environment",
+        lambda *_args, **_kwargs: TerminalResult(
+            outcome=Outcome.SUCCESS,
+            reason_code="ENVIRONMENT_STOPPED",
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "reseal_recovery_evidence",
+        lambda **_kwargs: pytest.fail("stop without report must not reseal"),
+    )
+    context = cli.HandlerContext(
+        runner=SimpleNamespace(),
+        project_root=tmp_path,
+        artifacts_root=tmp_path,
+    )
+
+    result = cli._handle_stop(SimpleNamespace(run_id=run_id), context)
+
+    assert result.outcome is Outcome.SUCCESS
+    assert not (tmp_path / "reports" / run_id).exists()
 
 
 def test_task6_registry_exposes_lifecycle_and_control_handlers() -> None:
@@ -156,6 +340,39 @@ def test_task6_registry_exposes_lifecycle_and_control_handlers() -> None:
     registry = build_handler_registry()
 
     assert set(registry) == IMPLEMENTED_COMMANDS
+
+
+def test_smoke_generates_one_opaque_run_id_when_make_exports_empty_value(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    import ecomsre.cli as cli
+
+    observed: list[str] = []
+
+    def smoke_handler(args, _context):
+        observed.append(args.run_id)
+        return TerminalResult(
+            outcome=Outcome.BLOCKED_ENVIRONMENT,
+            reason_code="TEST_STOP",
+        )
+
+    monkeypatch.setenv("ECOMSRE_RUN_ID", "")
+    monkeypatch.setattr(cli, "build_handler_registry", lambda: {"smoke": smoke_handler})
+
+    exit_code = cli.main(
+        ["phase0", "smoke"],
+        runner=object(),
+        project_root=tmp_path,
+        artifacts_root=tmp_path / "artifacts",
+    )
+
+    assert exit_code == 20
+    assert len(observed) == 1
+    assert len(observed[0]) == 32
+    int(observed[0], 16)
+    capsys.readouterr()
 
 
 def test_task5_cli_preserves_unknown_ownership_truth_marker() -> None:
@@ -205,8 +422,8 @@ def test_control_cli_requires_current_preflight_before_any_runtime_write(
     handler = cli._handle_inject if command == "inject" else cli._handle_reset
     result = handler(SimpleNamespace(run_id="a" * 32), context)
 
-    assert result.outcome is Outcome.UNSAFE
-    assert result.reason_code == "PREFLIGHT_EVIDENCE_INVALID"
+    assert result.outcome is Outcome.BLOCKED_ENVIRONMENT
+    assert result.reason_code == "PREFLIGHT_BLOCKED"
     assert list(tmp_path.iterdir()) == []
 
 
@@ -642,7 +859,7 @@ def test_evaluator_capability_io_failure_has_dedicated_typed_result(
     assert failure.exit_code == 20
 
 
-def test_cli_up_requires_current_authenticated_preflight_before_ownership_load(
+def test_cli_up_collects_fresh_preflight_when_no_evidence_is_injected(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -656,13 +873,41 @@ def test_cli_up_requires_current_authenticated_preflight_before_ownership_load(
     )
     monkeypatch.setattr(cli, "_verify_upstream", lambda _context: None)
 
-    def forbidden_ownership_load(*_args, **_kwargs):
-        raise AssertionError("ownership loaded before authenticated preflight")
-
+    evidence = SimpleNamespace(
+        run_id="a" * 32,
+        is_current=lambda: True,
+        inputs=SimpleNamespace(ownership_context=None),
+        result=SimpleNamespace(outcome=Outcome.SUCCESS),
+    )
+    collected = []
+    monkeypatch.setattr(
+        cli,
+        "collect_fresh_preflight",
+        lambda **kwargs: collected.append(kwargs) or evidence,
+    )
+    monkeypatch.setattr(
+        cli,
+        "prepare_flagd_runtime",
+        lambda **_kwargs: None,
+    )
     monkeypatch.setattr(
         cli,
         "load_authenticated_ownership_context",
-        forbidden_ownership_load,
+        lambda *_args: (_ for _ in ()).throw(cli.OwnershipAuthorityError()),
+    )
+    monkeypatch.setattr(
+        cli,
+        "up_environment",
+        lambda *_args, **kwargs: LifecycleExecution(
+            result=TerminalResult(
+                outcome=Outcome.BLOCKED_ENVIRONMENT,
+                reason_code=(
+                    "FRESH_EVIDENCE_USED"
+                    if kwargs["preflight_evidence"] is evidence
+                    else "STALE_EVIDENCE_USED"
+                ),
+            )
+        ),
     )
     context = cli.HandlerContext(
         runner=SimpleNamespace(),
@@ -676,9 +921,10 @@ def test_cli_up_requires_current_authenticated_preflight_before_ownership_load(
         context,
     )
 
-    assert result.outcome is Outcome.UNSAFE
-    assert result.exit_code == 40
-    assert result.reason_code == "PREFLIGHT_EVIDENCE_INVALID"
+    assert result.outcome is Outcome.BLOCKED_ENVIRONMENT
+    assert result.reason_code == "FRESH_EVIDENCE_USED"
+    assert len(collected) == 1
+    assert collected[0]["run_id"] == "a" * 32
 
 
 def test_cli_up_prepares_verified_run_config_before_compose_mutation(
@@ -741,6 +987,7 @@ def test_subprocess_runner_never_forwards_ambient_docker_proxy_or_compose_env(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
+    import ecomsre.environment.command_runner as command_runner
     from ecomsre.cli import SubprocessRunner
 
     for name in (
@@ -755,17 +1002,20 @@ def test_subprocess_runner_never_forwards_ambient_docker_proxy_or_compose_env(
         monkeypatch.setenv(name, f"ambient-{name}")
     captured: dict[str, object] = {}
 
-    def fake_run(arguments, **kwargs):
+    class FakeProcess:
+        returncode = 0
+
+        def communicate(self, timeout):
+            assert timeout == 10
+            return "", ""
+
+    def fake_popen(arguments, **kwargs):
         captured["arguments"] = arguments
         captured.update(kwargs)
-        return SimpleNamespace(
-            returncode=0,
-            stdout="",
-            stderr="",
-        )
+        return FakeProcess()
 
-    monkeypatch.setattr(subprocess, "run", fake_run)
-    runner = SubprocessRunner(cwd=tmp_path)
+    monkeypatch.setattr(command_runner, "_Popen", fake_popen)
+    runner = SubprocessRunner(cwd=tmp_path, run_id="a" * 32)
 
     runner.run(
         ("docker", "--context", "desktop-linux", "info"),
@@ -869,7 +1119,10 @@ def test_pyproject_declares_python_311_and_only_approved_dependencies() -> None:
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
 
     assert pyproject["project"]["requires-python"] == ">=3.11"
-    assert pyproject["project"]["dependencies"] == ["pydantic>=2.0,<3"]
+    assert pyproject["project"]["dependencies"] == [
+        "pydantic>=2.0,<3",
+        "tiktoken==0.13.0",
+    ]
     assert pyproject["dependency-groups"]["dev"] == ["pytest>=8.0,<9"]
     assert "scripts" not in pyproject["project"]
 

@@ -460,7 +460,7 @@ class OwnedHttpClient:
                 continue
             allowed_host = evidence.get("host_family") == host_family and evidence.get(
                 "host_ip"
-            ) in ({"::", "::1"} if host_family == "ipv6" else {"0.0.0.0", "127.0.0.1"})
+            ) == host
             if (
                 allowed_host
                 and evidence.get("service") == endpoint.service

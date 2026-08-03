@@ -1,0 +1,1 @@
+{"observations":[{"attributes":{"diagnostic_kind":"configuration_parse_failure","error_count":18,"operation":"GetAds"},"ended_at":"2026-07-31T08:04:20Z","limitations":["Sampled replay spans only."],"observation_type":"configuration_error_span","service":"ad","started_at":"2026-07-31T08:00:50Z"}],"schema_version":"phase1.replay-observations.v1","status":"AVAILABLE"}

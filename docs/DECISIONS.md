@@ -39,6 +39,7 @@ conflicts with this register, this register wins.
 | DEC-010 | Equal-budget comparison | accepted | Phase 1 onward only | `DECISIONS.md` | Charter, Architecture, Roadmap, Open Questions | No — no Phase 0 model or budget dependency |
 | DEC-011 | Frozen evaluation | accepted | Phase 5 only | `DECISIONS.md` | Charter, Architecture, Roadmap, Open Questions | No — no Phase 0 scenario-suite dependency |
 | DEC-012 | Restricted writes | accepted | Phase 3 onward only | `DECISIONS.md` | AGENTS, Charter, Roadmap, Safety, Open Questions | No — Phase 0 has no remediation executor |
+| DEC-025 | Phase 3 agile restricted-remediation replay MVP | accepted | Phase 3 v1 only | `DECISIONS.md` | Roadmap, Safety, Open Questions, Phase 3 implementation and tests | No — replay-only Phase 3 boundary |
 
 ## DEC-001 — Supported host baseline
 
@@ -175,6 +176,99 @@ verification, and necessary compensating rollback do not consume that limit.
 Human approval is the default; auto-approval exists only in an explicitly
 marked local test mode. Unsafe, failed, or uncertain state terminates without a
 second forward mutation.
+
+## DEC-025 — Phase 3 Agile Restricted Remediation Replay MVP
+
+**Status: `accepted`. On 2026-08-03 the user rejected the earlier heavyweight
+proposal and explicitly accepted this lean replay-only replacement. The binding
+completion marker is `PHASE3_RESTRICTED_REMEDIATION_REPLAY_MVP_READY`.**
+
+Phase 3 v1 closes only the local, offline, replay-backed Planner → deterministic
+Policy Gate → Human Approval Gate → Restricted Executor → independent Verifier
+→ compensating rollback path. It must not run Docker, the OTel Demo, a real
+feature flag, a host write, a cloud API, or any other live mutation.
+
+The exact v1 allowlist contains only
+`RESTORE_FROZEN_SERVICE_CONFIGURATION`. Its target service is `ad`, its required
+RCA mechanism is `runtime_configuration_failure`, its backend is a replay
+resource, its blast radius is exactly one replay-owned configuration field, and
+each attempt permits at most one forward mutation. The Executor never accepts
+shell, argv, a script, URL, arbitrary path, Docker command, arbitrary key/value
+map, or free-form action.
+
+The deterministic Planner emits the action only when the Phase 2 decision is
+`RCA_CONFIRMED`, the root service is `ad`, the mechanism is
+`runtime_configuration_failure`, at least one supporting evidence reference
+resolves in the current-run Evidence Store, `missing_evidence` is empty, the
+replay resource belongs to the current run, and its pre-state matches the
+fault state. Otherwise it returns typed `NO_ACTION`. Phase 3 adds no two-source
+requirement and no LLM Planner requirement; it does not weaken the frozen Phase
+1 or Phase 2 RCA contracts.
+
+The pure deterministic Policy Gate checks run, incident, attempt, action and
+plan identity; the exact action allowlist; RCA/action compatibility;
+current-run evidence scope; replay resource ownership; expected pre-state;
+state version; zero prior forward mutations; valid approval; available rollback
+pre-state; and replay-only targeting. It returns only typed `ALLOW` or `DENY`
+with a stable reason code.
+
+Human approval is required by default and binds `run_id`, `incident_id`,
+`attempt_id`, `action_id`, the plan digest, and the decision. An explicitly
+marked `LOCAL_TEST_AUTO_APPROVAL` is allowed only in tests and must appear in
+the report. Phase 3 v1 does not require approval expiry, a cryptographic nonce,
+an authenticated ownership digest, or a separate anti-replay authority.
+Typed identity validation still rejects a forged, duplicate, wrong-run,
+wrong-attempt, wrong-action, or wrong-plan approval.
+
+The attempt state is in memory or temporary replay state. It uses
+compare-before-mutate state-version checks, allows at most one forward mutation,
+rejects a second invocation, closes on every terminal outcome, and produces a
+deterministically replayable report. A compact ordered event list and one
+semantic report hash are allowed. A durable append-only hash-chained ledger,
+exclusive filesystem locking, crash-recovery journal, CAS storage engine,
+previous-event hash chain, and per-event provenance hierarchy are explicitly
+not required and must not be introduced as Phase 3 v1 evidence machinery.
+
+The Restricted Executor accepts only the exact typed action, an `ALLOW`
+PolicyDecision, an approved ApprovalDecision, and matching run/resource/state
+version. It may change only the one frozen field in the replay resource and
+returns `NOT_APPLIED`, `APPLIED`, or `FAILED`. Phase 3 v1 does not build an
+`UNKNOWN` crash-recovery protocol. Exceptions fail closed and preserve the
+current replay state.
+
+The independent Verifier is read-only over replay post-state and a deterministic
+replay-health fixture. It proves configuration recovery, unchanged ownership,
+the correct state version, exactly one allowed field change, a forward mutation
+count of one, and recovered replay health. It does not depend on a 200-attempt
+or 180-second window, live Prometheus/Jaeger/OpenSearch freshness, Phase 0
+readiness, or a live SLO window; those belong to a later live-integration phase.
+
+When verification is `FAILED` or `INCONCLUSIVE`, the attempt forbids another
+forward mutation and may perform one compensating rollback using only the exact
+before-state in the ExecutionReceipt. Rollback restores only this change and is
+then read back against the before-state. Terminal outcomes include at least
+`REMEDIATION_VERIFIED`, `NO_ACTION`, `APPROVAL_DENIED`, `POLICY_REJECTED`,
+`PRECONDITION_FAILED`, `VERIFICATION_FAILED_ROLLED_BACK`, `ROLLBACK_FAILED`, and
+`UNSAFE`.
+
+Minimum evaluation covers six replay cases: safe remediation success; human
+approval denied; RCA abstain/no action; pre-state or state-version drift;
+cross-run or unowned resource rejection; and verification failure followed by
+rollback. Separate tests reject a forged approval, a second forward mutation,
+and an arbitrary executable payload.
+
+The only new tracked review summary allowed is
+`docs/review-evidence/phase3-restricted-remediation/current-disposition.json`.
+Phase 3 v1 must not add a layered review packet, command-by-command evidence
+tree, durable hash ledger, new hash contract, long closure HTML, or independent
+review workflow framework.
+
+This decision authorizes implementation on
+`phase3/restricted-remediation-replay`, closing `OQ-008`, and adding
+`src/ecomsre/phase3` plus `tests/phase3`. It does not authorize changes to Phase
+0 or frozen Phase 1/2 semantics, a live mutation, Phase 4, or Phase 5. The
+accepted Phase 3 goal remains controlling unless it conflicts with this record;
+where it conflicts, this DEC-025 wins.
 
 ## Upstream references
 

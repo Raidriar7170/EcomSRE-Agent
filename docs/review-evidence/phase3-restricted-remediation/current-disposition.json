@@ -1,0 +1,47 @@
+{
+  "schema_version": "phase3.current-disposition.v1",
+  "status": "PHASE3_RESTRICTED_REMEDIATION_REPLAY_MVP_READY",
+  "decision": {
+    "id": "DEC-025",
+    "status": "accepted",
+    "oq_008": "closed"
+  },
+  "branch": "phase3/restricted-remediation-replay",
+  "baseline_head": "20833fd9e3ec629cae4718f7fb1c75ae28570d50",
+  "action_allowlist": [
+    "RESTORE_FROZEN_SERVICE_CONFIGURATION"
+  ],
+  "minimum_evaluation": {
+    "status": "VERIFIED",
+    "case_count": 6,
+    "semantic_sha256": "92326b48c3e78024f75c30068feabe547163ad73d50031cd8ce6cd84d37e37f7"
+  },
+  "safety_requirements": {
+    "forged_approval_rejected": true,
+    "second_forward_mutation_rejected": true,
+    "arbitrary_executable_payload_rejected": true
+  },
+  "validation": {
+    "phase3_tests": 27,
+    "phase2_tests": 374,
+    "phase1_tests": 877,
+    "full_tests": 2115,
+    "ruff": "PASSED",
+    "mypy": "PASSED",
+    "independent_read_only_review": "PASS",
+    "git_diff_check": "PASSED"
+  },
+  "execution_boundary": {
+    "replay_only": true,
+    "docker_run": false,
+    "provider_call": false,
+    "live_mutation": false,
+    "live_telemetry": false,
+    "durable_ledger": false,
+    "phase4_entered": false
+  },
+  "publication": {
+    "commit_created": true,
+    "pushed": true
+  }
+}

@@ -24,6 +24,16 @@ Every mutable resource must have:
 - a run or lifecycle reference where applicable;
 - a matching entry in the ownership manifest.
 
+Every Compose mount with `type: volume` must also resolve to an explicitly
+declared, run-scoped named volume with matching project/run labels. Service
+mounts may not create anonymous or undeclared volumes. Allowlisted `bind` and
+`tmpfs` mounts follow separate path and leakage rules; unknown mount types fail
+closed. The Phase 0 Jaeger and Prometheus config binds must resolve under the
+frozen `third_party/opentelemetry-demo` tree, use the exact frozen targets, and
+remain read-only. Observer-visible Compose projections must omit bind sources.
+A volume declaration or mount that cannot be mapped exactly before mutation
+blocks startup.
+
 The project may act only when all identifiers agree. Missing, conflicting, or
 unreadable ownership information produces `RESOURCE_OWNERSHIP_UNKNOWN`.
 
@@ -52,6 +62,14 @@ provide environment overrides, add ownership metadata, and query APIs. They may
 not patch upstream source to make the baseline pass. A reproducible upstream or
 ARM64 failure is evidence for a new Decision Record, not permission to improvise.
 
+An existing `LOCKED` image manifest is immutable by default. A Compose-binding
+mismatch requires a separately authorized live rotation with the exact old
+lock-content hash and fixed reason `COMPOSE_OVERRIDE_CHANGED`. Rotation must
+preserve the old bytes by content hash, reject a changed source-reference set,
+reverify the frozen ARM64 image identities, use compare-and-swap publication,
+and verify the result. Missing authorization, mismatched bytes/inode/hash, or
+conflicting history fails closed without silently rewriting the current lock.
+
 ## Evidence confidentiality and leakage
 
 Observer-visible and evaluator-only artifacts use separate roots. The
@@ -72,6 +90,35 @@ the external scorer and scenario controller.
   `MANUAL_INTERVENTION_REQUIRED`.
 
 No failure permits a broader cleanup command.
+
+Stop authority is an authenticated capability over one exact Docker daemon and
+one exact resource set. Observer-visible evidence persistence is not part of
+that capability. If observer persistence fails after authentication, record the
+failure without discarding the in-process capability long enough to attempt the
+exact project-scoped stop. Direct `phase0-up` returns
+`MANUAL_INTERVENTION_REQUIRED`; a supervised smoke records terminal `UNSAFE`.
+Any daemon identity or resource-set drift invalidates the capability and fails
+closed.
+
+Direct `phase0-stop` may establish this capability through the minimal
+read-only stop snapshot: supported local Docker context, local Unix endpoint,
+daemon availability, and daemon ID. It must not depend on full preflight,
+capacity, image-lock, readiness, telemetry, or observer persistence. It may call
+the allowlisted down operation only after fresh resource discovery matches the
+authenticated ownership manifest exactly.
+
+`down -v`, prune, and deletion by unverified historical IDs are prohibited.
+
+## Evidence integrity lifecycle
+
+Terminal evidence is sealed only after the final stop or scene-preservation
+events are persisted. If a later necessary safety action extends an already
+sealed failed run, the original report and seal remain immutable. Recovery uses
+a versioned report, a versioned seal, and an append-only chained seal index.
+Validation must cover the initial checksum, all prior recovery seals, and the
+current audit trail. See
+[PHASE_0_ACCEPTANCE.md](PHASE_0_ACCEPTANCE.md#evidence-layout) for the owned
+layout.
 
 ## Phase 3 write model
 

@@ -6,12 +6,20 @@ import json
 import os
 import re
 import secrets
+import stat
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
 
 from ecomsre.evidence.hashes import sha256_bytes
 from ecomsre.phase0.models import Outcome
@@ -30,6 +38,10 @@ class ImageLockStatus(str, Enum):
     LOCKED = "LOCKED"
 
 
+class ImageLockSourceSetChanged(ValueError):
+    """Lightweight rotation cannot change the frozen source inventory."""
+
+
 class ResolvedComposeConfig(BaseModel):
     """Exact, interpolated Compose JSON and its derived image inventory."""
 
@@ -38,20 +50,28 @@ class ResolvedComposeConfig(BaseModel):
     stdout: str = Field(min_length=1)
     sha256: str = Field(pattern=SHA256_PATTERN)
     image_references: tuple[str, ...] = Field(min_length=1)
+    service_image_mapping: tuple[tuple[str, str], ...] = Field(min_length=1)
 
     @classmethod
     def from_stdout(cls, stdout: str) -> "ResolvedComposeConfig":
+        mapping = _compose_service_image_mapping(stdout)
         return cls(
             stdout=stdout,
             sha256=sha256_bytes(stdout.encode("utf-8")),
-            image_references=_compose_image_references(stdout),
+            image_references=tuple(sorted({image for _service, image in mapping})),
+            service_image_mapping=mapping,
         )
 
     @model_validator(mode="after")
     def bind_inventory_to_exact_stdout(self) -> "ResolvedComposeConfig":
         if self.sha256 != sha256_bytes(self.stdout.encode("utf-8")):
             raise ValueError("resolved Compose hash does not match stdout")
-        if self.image_references != _compose_image_references(self.stdout):
+        mapping = _compose_service_image_mapping(self.stdout)
+        if self.service_image_mapping != mapping:
+            raise ValueError("resolved Compose service image mapping differs")
+        if self.image_references != tuple(
+            sorted({image for _service, image in mapping})
+        ):
             raise ValueError("resolved Compose image inventory does not match stdout")
         return self
 
@@ -239,6 +259,29 @@ class LockVerification(BaseModel):
         )
 
 
+class ImageLockRotationEvidence(BaseModel):
+    """Machine-readable compare-and-swap evidence for one live rotation."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    schema_version: Literal["phase0.image-lock-rotation.v1"]
+    rotation_reason: Literal["COMPOSE_OVERRIDE_CHANGED"]
+    old_compose_config_sha256: str = Field(pattern=SHA256_PATTERN)
+    new_compose_config_sha256: str = Field(pattern=SHA256_PATTERN)
+    old_lock_sha256: str = Field(pattern=SHA256_PATTERN)
+    new_lock_sha256: str = Field(pattern=SHA256_PATTERN)
+    source_references_unchanged: Literal[True] = True
+    cached_images_reverified: Literal[True] = True
+
+
+class ImageLockRotationResult(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    lock: ImageLockManifest
+    verification: LockVerification
+    evidence: ImageLockRotationEvidence
+
+
 def generate_candidate_image_lock(
     *,
     images: tuple[InspectedImage, ...],
@@ -416,8 +459,10 @@ def write_candidate_image_lock(
     path: Path,
     lock: ImageLockManifest,
 ) -> None:
-    """Write a candidate once; existing locks are never replaced."""
+    """Publish once, permitting only UNINITIALIZED -> LOCKED replacement."""
     validated = ImageLockManifest.model_validate(lock.model_dump(mode="python"))
+    if validated.status is not ImageLockStatus.LOCKED:
+        raise ValueError("candidate image lock must be LOCKED")
     serialized = (
         json.dumps(
             validated.model_dump(mode="json"),
@@ -427,6 +472,33 @@ def write_candidate_image_lock(
         + "\n"
     ).encode("utf-8")
     parent_descriptor = os.open(path.parent, os.O_RDONLY)
+    existing_identity: tuple[int, int] | None = None
+    try:
+        existing_descriptor = os.open(
+            path.name,
+            os.O_RDONLY | (getattr(os, "O_NOFOLLOW", 0)),
+            dir_fd=parent_descriptor,
+        )
+    except FileNotFoundError:
+        existing_descriptor = None
+    if existing_descriptor is not None:
+        try:
+            metadata = os.fstat(existing_descriptor)
+            if (
+                not stat.S_ISREG(metadata.st_mode)
+                or metadata.st_uid != os.getuid()
+                or metadata.st_nlink != 1
+                or stat.S_IMODE(metadata.st_mode) & 0o022
+            ):
+                raise ValueError("existing image lock placeholder is unsafe")
+            existing = ImageLockManifest.model_validate_json(
+                _read_descriptor(existing_descriptor)
+            )
+            if existing.status is not ImageLockStatus.UNINITIALIZED:
+                raise FileExistsError("existing image lock is already initialized")
+            existing_identity = (metadata.st_dev, metadata.st_ino)
+        finally:
+            os.close(existing_descriptor)
     temporary_name = f".{secrets.token_hex(16)}.tmp"
     temporary_descriptor: int | None = None
     try:
@@ -446,16 +518,32 @@ def write_candidate_image_lock(
                 raise OSError("candidate image lock write made no progress")
             remaining = remaining[written:]
         os.fsync(temporary_descriptor)
-        os.link(
-            temporary_name,
-            path.name,
-            src_dir_fd=parent_descriptor,
-            dst_dir_fd=parent_descriptor,
-            follow_symlinks=False,
-        )
+        if existing_identity is None:
+            os.link(
+                temporary_name,
+                path.name,
+                src_dir_fd=parent_descriptor,
+                dst_dir_fd=parent_descriptor,
+                follow_symlinks=False,
+            )
+        else:
+            current = os.stat(
+                path.name,
+                dir_fd=parent_descriptor,
+                follow_symlinks=False,
+            )
+            if (current.st_dev, current.st_ino) != existing_identity:
+                raise ValueError("image lock placeholder changed before publish")
+            os.rename(
+                temporary_name,
+                path.name,
+                src_dir_fd=parent_descriptor,
+                dst_dir_fd=parent_descriptor,
+            )
         os.close(temporary_descriptor)
         temporary_descriptor = None
-        os.unlink(temporary_name, dir_fd=parent_descriptor)
+        if existing_identity is None:
+            os.unlink(temporary_name, dir_fd=parent_descriptor)
         os.fsync(parent_descriptor)
     finally:
         if temporary_descriptor is not None:
@@ -467,27 +555,330 @@ def write_candidate_image_lock(
         os.close(parent_descriptor)
 
 
-def _compose_image_references(stdout: str) -> tuple[str, ...]:
+def rotate_candidate_image_lock(
+    *,
+    path: Path,
+    resolved_compose: ResolvedComposeConfig,
+    cached_images: tuple[InspectedImage, ...],
+    expected_old_lock_sha256: str,
+    rotation_reason: str,
+    rotated_at: datetime,
+) -> ImageLockRotationResult:
+    """Rotate one LOCKED candidate with explicit live evidence and CAS."""
+    if (
+        re.fullmatch(SHA256_PATTERN, expected_old_lock_sha256) is None
+        or rotation_reason != "COMPOSE_OVERRIDE_CHANGED"
+    ):
+        raise ValueError("image lock rotation authorization is invalid")
+    lock_path = Path(path)
+    original_bytes, original_identity = _read_secure_lock_snapshot(lock_path)
+    original_sha256 = sha256_bytes(original_bytes)
+    if original_sha256 != expected_old_lock_sha256:
+        raise ValueError("expected old lock sha256 does not match current lock")
+    original = ImageLockManifest.model_validate_json(original_bytes)
+    if original.status is not ImageLockStatus.LOCKED:
+        raise ValueError("image lock rotation requires an existing LOCKED file")
+    if set(resolved_compose.image_references) != set(
+        original.allowed_source_references
+    ):
+        raise ImageLockSourceSetChanged(
+            "IMAGE_LOCK_SOURCE_SET_CHANGED_REQUIRES_FULL_BOOTSTRAP"
+        )
+    old_verification = verify_acceptance_image_lock(
+        original,
+        cached_images=cached_images,
+        observed_upstream_commit=UPSTREAM_COMMIT,
+        observed_compose_config_sha256=(
+            original.compose_config_sha256 or ("0" * 64)
+        ),
+    )
+    if not old_verification.passed:
+        raise ValueError("cached image metadata differs from the current lock")
+    candidate = generate_candidate_image_lock(
+        images=cached_images,
+        resolved_compose=resolved_compose,
+        acquired_at=rotated_at,
+    )
+    candidate_verification = verify_acceptance_image_lock(
+        candidate,
+        cached_images=cached_images,
+        observed_upstream_commit=UPSTREAM_COMMIT,
+        observed_compose_config_sha256=resolved_compose.sha256,
+    )
+    if not candidate_verification.passed:
+        raise ValueError("rotated candidate image lock verification failed")
+    candidate_bytes = _serialized_image_lock(candidate)
+    candidate_sha256 = sha256_bytes(candidate_bytes)
+    _persist_image_lock_history(
+        lock_path.parent,
+        old_sha256=original_sha256,
+        old_bytes=original_bytes,
+    )
+    _replace_lock_bytes_compare_and_swap(
+        lock_path,
+        replacement=candidate_bytes,
+        expected_bytes=original_bytes,
+        expected_identity=original_identity,
+    )
+    try:
+        published = load_image_lock(lock_path)
+        published_verification = verify_acceptance_image_lock(
+            published,
+            cached_images=cached_images,
+            observed_upstream_commit=UPSTREAM_COMMIT,
+            observed_compose_config_sha256=resolved_compose.sha256,
+        )
+        if (
+            lock_path.read_bytes() != candidate_bytes
+            or sha256_bytes(lock_path.read_bytes()) != candidate_sha256
+            or published != candidate
+            or not published_verification.passed
+        ):
+            raise ValueError("published rotated image lock verification failed")
+    except (OSError, ValidationError, ValueError):
+        try:
+            current_bytes, current_identity = _read_secure_lock_snapshot(
+                lock_path
+            )
+            if current_bytes == candidate_bytes:
+                _replace_lock_bytes_compare_and_swap(
+                    lock_path,
+                    replacement=original_bytes,
+                    expected_bytes=candidate_bytes,
+                    expected_identity=current_identity,
+                )
+        except (OSError, ValueError):
+            pass
+        raise
+    return ImageLockRotationResult(
+        lock=published,
+        verification=published_verification,
+        evidence=ImageLockRotationEvidence(
+            schema_version="phase0.image-lock-rotation.v1",
+            rotation_reason="COMPOSE_OVERRIDE_CHANGED",
+            old_compose_config_sha256=original.compose_config_sha256
+            or ("0" * 64),
+            new_compose_config_sha256=resolved_compose.sha256,
+            old_lock_sha256=original_sha256,
+            new_lock_sha256=candidate_sha256,
+        ),
+    )
+
+
+def _serialized_image_lock(lock: ImageLockManifest) -> bytes:
+    return (
+        json.dumps(
+            lock.model_dump(mode="json"),
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n"
+    ).encode("utf-8")
+
+
+def _read_secure_lock_snapshot(
+    path: Path,
+) -> tuple[bytes, tuple[int, int]]:
+    metadata = path.lstat()
+    if (
+        stat.S_ISLNK(metadata.st_mode)
+        or not stat.S_ISREG(metadata.st_mode)
+        or metadata.st_uid != os.getuid()
+        or metadata.st_nlink != 1
+        or stat.S_IMODE(metadata.st_mode) & 0o022
+    ):
+        raise ValueError("current image lock is unsafe")
+    raw = path.read_bytes()
+    return raw, (metadata.st_dev, metadata.st_ino)
+
+
+def _persist_image_lock_history(
+    lock_directory: Path,
+    *,
+    old_sha256: str,
+    old_bytes: bytes,
+) -> Path:
+    history_directory = lock_directory / "image-lock-history"
+    history_directory.mkdir(mode=0o700, exist_ok=True)
+    directory_metadata = history_directory.lstat()
+    if (
+        stat.S_ISLNK(directory_metadata.st_mode)
+        or not stat.S_ISDIR(directory_metadata.st_mode)
+        or directory_metadata.st_uid != os.getuid()
+        or stat.S_IMODE(directory_metadata.st_mode) & 0o022
+    ):
+        raise ValueError("image lock history directory is unsafe")
+    history_path = history_directory / f"{old_sha256}.json"
+    if history_path.exists() or history_path.is_symlink():
+        metadata = history_path.lstat()
+        if (
+            stat.S_ISLNK(metadata.st_mode)
+            or not stat.S_ISREG(metadata.st_mode)
+            or metadata.st_uid != os.getuid()
+            or metadata.st_nlink != 1
+            or stat.S_IMODE(metadata.st_mode) & 0o022
+            or history_path.read_bytes() != old_bytes
+        ):
+            raise ValueError("existing image lock history conflicts")
+        return history_path
+    _write_exclusive_bytes(history_directory, history_path.name, old_bytes)
+    return history_path
+
+
+def _write_exclusive_bytes(
+    directory: Path,
+    name: str,
+    payload: bytes,
+) -> None:
+    directory_descriptor = os.open(directory, os.O_RDONLY)
+    temporary_name = f".{secrets.token_hex(16)}.tmp"
+    temporary_descriptor: int | None = None
+    try:
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+        if hasattr(os, "O_NOFOLLOW"):
+            flags |= os.O_NOFOLLOW
+        temporary_descriptor = os.open(
+            temporary_name,
+            flags,
+            0o600,
+            dir_fd=directory_descriptor,
+        )
+        _write_all(temporary_descriptor, payload)
+        os.fsync(temporary_descriptor)
+        os.link(
+            temporary_name,
+            name,
+            src_dir_fd=directory_descriptor,
+            dst_dir_fd=directory_descriptor,
+            follow_symlinks=False,
+        )
+        os.unlink(temporary_name, dir_fd=directory_descriptor)
+        os.close(temporary_descriptor)
+        temporary_descriptor = None
+        os.fsync(directory_descriptor)
+    finally:
+        if temporary_descriptor is not None:
+            os.close(temporary_descriptor)
+            try:
+                os.unlink(temporary_name, dir_fd=directory_descriptor)
+            except FileNotFoundError:
+                pass
+        os.close(directory_descriptor)
+
+
+def _replace_lock_bytes_compare_and_swap(
+    path: Path,
+    *,
+    replacement: bytes,
+    expected_bytes: bytes,
+    expected_identity: tuple[int, int],
+) -> None:
+    parent_descriptor = os.open(path.parent, os.O_RDONLY)
+    temporary_name = f".{secrets.token_hex(16)}.tmp"
+    temporary_descriptor: int | None = None
+    current_descriptor: int | None = None
+    try:
+        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+        current_descriptor = os.open(
+            path.name,
+            flags,
+            dir_fd=parent_descriptor,
+        )
+        current_metadata = os.fstat(current_descriptor)
+        current_bytes = _read_descriptor(current_descriptor)
+        if (
+            (current_metadata.st_dev, current_metadata.st_ino)
+            != expected_identity
+            or current_bytes != expected_bytes
+            or sha256_bytes(current_bytes) != sha256_bytes(expected_bytes)
+        ):
+            raise ValueError("current image lock changed before rotation")
+        write_flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+        if hasattr(os, "O_NOFOLLOW"):
+            write_flags |= os.O_NOFOLLOW
+        temporary_descriptor = os.open(
+            temporary_name,
+            write_flags,
+            0o600,
+            dir_fd=parent_descriptor,
+        )
+        _write_all(temporary_descriptor, replacement)
+        os.fsync(temporary_descriptor)
+        current_at_publish = os.stat(
+            path.name,
+            dir_fd=parent_descriptor,
+            follow_symlinks=False,
+        )
+        current_at_publish_bytes = _read_descriptor(current_descriptor)
+        if (
+            current_at_publish.st_dev,
+            current_at_publish.st_ino,
+        ) != expected_identity or (
+            current_at_publish_bytes != expected_bytes
+            or sha256_bytes(current_at_publish_bytes)
+            != sha256_bytes(expected_bytes)
+        ):
+            raise ValueError("current image lock changed before rotation")
+        os.rename(
+            temporary_name,
+            path.name,
+            src_dir_fd=parent_descriptor,
+            dst_dir_fd=parent_descriptor,
+        )
+        os.close(temporary_descriptor)
+        temporary_descriptor = None
+        os.fsync(parent_descriptor)
+    finally:
+        if current_descriptor is not None:
+            os.close(current_descriptor)
+        if temporary_descriptor is not None:
+            os.close(temporary_descriptor)
+            try:
+                os.unlink(temporary_name, dir_fd=parent_descriptor)
+            except FileNotFoundError:
+                pass
+        os.close(parent_descriptor)
+
+
+def _write_all(descriptor: int, payload: bytes) -> None:
+    remaining = memoryview(payload)
+    while remaining:
+        written = os.write(descriptor, remaining)
+        if written <= 0:
+            raise OSError("image lock write made no progress")
+        remaining = remaining[written:]
+
+
+def _compose_service_image_mapping(stdout: str) -> tuple[tuple[str, str], ...]:
     try:
         payload = json.loads(stdout)
         services = payload["services"]
         if not isinstance(services, dict) or not services:
             raise ValueError
-        references = tuple(
-            str(service["image"])
-            for _name, service in sorted(services.items())
+        mapping = tuple(
+            (str(name), str(service["image"]))
+            for name, service in sorted(services.items())
             if isinstance(service, dict)
         )
     except (json.JSONDecodeError, KeyError, TypeError, ValueError) as error:
         raise ValueError(
             "resolved Compose JSON lacks a complete service image inventory"
         ) from error
-    if len(references) != len(services) or any(
-        not reference for reference in references
+    if len(mapping) != len(services) or any(
+        not service or not reference for service, reference in mapping
     ):
         raise ValueError(
             "resolved Compose JSON lacks a complete service image inventory"
         )
-    if len(set(references)) != len(references):
-        raise ValueError("resolved Compose image inventory contains duplicates")
-    return references
+    return mapping
+
+
+def _read_descriptor(descriptor: int) -> bytes:
+    chunks: list[bytes] = []
+    offset = 0
+    while True:
+        chunk = os.pread(descriptor, 64 * 1024, offset)
+        if not chunk:
+            return b"".join(chunks)
+        chunks.append(chunk)
+        offset += len(chunk)

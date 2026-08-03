@@ -182,7 +182,7 @@ class JaegerAdapter:
                 protocol=fixture.target.protocol,
             ),
             method="GET",
-            target=f"/api/traces?{query}",
+            target=f"/jaeger/ui/api/traces?{query}",
             absolute_deadline_monotonic=window.monotonic_ended_at,
         )
         exchange = self._client.request(request)

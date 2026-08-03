@@ -1,0 +1,4 @@
+No test execution or test result was recorded for the old UNSAFE run.
+
+The Ruff output reported 219 errors, 124 fixable findings, and 6 hidden fixes.
+That lint output is not a test result and is not evidence that tests ran.

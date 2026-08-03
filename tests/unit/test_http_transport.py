@@ -106,7 +106,7 @@ class FixtureFactory:
 def _context(tmp_path: Path, *, host_family: str = "ipv4"):
     service = "prometheus"
     container_id = "container-prometheus"
-    host_ip = "0.0.0.0" if host_family == "ipv4" else "::"
+    host_ip = "127.0.0.1" if host_family == "ipv4" else "::1"
     published_port = 32771
     target_port = 9090
     labels = {

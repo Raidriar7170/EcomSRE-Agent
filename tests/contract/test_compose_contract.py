@@ -1,4 +1,5 @@
 import importlib
+import json
 import re
 from pathlib import Path
 
@@ -46,6 +47,13 @@ OBSERVABILITY_SERVICES = {
     "opensearch",
     "opamp-server",
 }
+HOST_PORTS = {
+    "frontend-proxy": (8080, 8080),
+    "prometheus": (9090, 9090),
+    "jaeger": (16686, 16686),
+    "opensearch": (9200, 9200),
+    "flagd": (8016, 8016),
+}
 
 
 def _lifecycle_module():
@@ -78,6 +86,57 @@ def test_phase0_override_namespaces_and_labels_every_actual_upstream_service() -
     assert "compose.profiling.yaml" not in text
     assert "linux/amd64" not in text
     assert "latest" not in text
+
+
+def test_phase0_override_clears_inherited_ports_and_publishes_only_loopback() -> None:
+    text = OVERRIDE.read_text(encoding="utf-8")
+    anchor = text.split("networks:", 1)[0]
+
+    assert "ports: !override []" in anchor
+    for service, (published, target) in HOST_PORTS.items():
+        block = re.search(
+            rf"(?ms)^  {re.escape(service)}:\n"
+            rf"    <<: \*phase0-service\n"
+            rf"(.*?)(?=^  [a-z0-9][a-z0-9-]*:|\Z)",
+            text,
+        )
+        assert block is not None
+        payload = block.group(1)
+        assert "ports: !override" in payload
+        assert 'host_ip: "127.0.0.1"' in payload
+        assert f'published: "{published}"' in payload
+        assert f"target: {target}" in payload
+    assert "0.0.0.0" not in text
+    assert 'host_ip: "::"' not in text
+
+
+def test_phase0_override_replaces_image_anonymous_volumes_with_owned_names() -> None:
+    text = OVERRIDE.read_text(encoding="utf-8")
+    expected = {
+        "astronomy-db": ("astronomy-db-data", "/var/lib/postgresql"),
+        "jaeger": ("jaeger-data", "/tmp"),
+        "prometheus": ("prometheus-data", "/prometheus"),
+    }
+
+    for service, (volume, target) in expected.items():
+        assert (
+            f"name: ecomsre-phase0-${{ECOMSRE_RUN_ID:"
+            f"?ECOMSRE_RUN_ID is required}}-{volume}"
+        ) in text
+        block = re.search(
+            rf"(?ms)^  {re.escape(service)}:\n"
+            rf"    <<: \*phase0-service\n"
+            rf"(.*?)(?=^  [a-z0-9][a-z0-9-]*:|\Z)",
+            text,
+        )
+        assert block is not None
+        payload = block.group(1)
+        assert "volumes: !override" in payload
+        assert "type: volume" in payload
+        assert f"source: {volume}" in payload
+        assert f"target: {target}" in payload
+    assert "down -v" not in text
+    assert "prune" not in text
 
 
 def test_compose_invocations_use_only_frozen_layers_and_tuple_arguments() -> None:
@@ -129,6 +188,77 @@ def test_compose_invocations_use_only_frozen_layers_and_tuple_arguments() -> Non
     assert "full" not in " ".join(up.arguments)
     assert "extras" not in " ".join(up.arguments)
     assert "profiling" not in " ".join(up.arguments)
+
+
+def test_resolved_compose_port_plan_is_minimal_and_loopback_only() -> None:
+    from ecomsre.environment.manifests import ResolvedComposeConfig
+
+    lifecycle = _lifecycle_module()
+    safe = ResolvedComposeConfig.from_stdout(
+        json.dumps(
+            {
+                "services": {
+                    "frontend-proxy": {
+                        "container_name": "ecomsre-phase0-frontend-proxy",
+                        "image": "otel/demo:3.0.0-frontend-proxy",
+                        "ports": [
+                            {
+                                "target": 8080,
+                                "published": "8080",
+                                "host_ip": "127.0.0.1",
+                                "protocol": "tcp",
+                            }
+                        ],
+                    },
+                    "ad": {
+                        "container_name": "ecomsre-phase0-ad",
+                        "image": "otel/demo:3.0.0-ad",
+                    },
+                }
+            },
+            sort_keys=True,
+        )
+    )
+    wildcard = ResolvedComposeConfig.from_stdout(
+        safe.stdout.replace('"127.0.0.1"', '"0.0.0.0"')
+    )
+
+    bindings = lifecycle.parse_expected_port_bindings(safe)
+
+    assert len(bindings) == 1
+    assert bindings[0].host_ip == "127.0.0.1"
+    with pytest.raises(ValueError, match="loopback"):
+        lifecycle.parse_expected_port_bindings(wildcard)
+
+
+def test_resolved_compose_rejects_host_port_for_unallowlisted_service() -> None:
+    from ecomsre.environment.manifests import ResolvedComposeConfig
+
+    lifecycle = _lifecycle_module()
+    resolved = ResolvedComposeConfig.from_stdout(
+        json.dumps(
+            {
+                "services": {
+                    "ad": {
+                        "container_name": "ecomsre-phase0-ad",
+                        "image": "otel/demo:3.0.0-ad",
+                        "ports": [
+                            {
+                                "target": 9555,
+                                "published": "9555",
+                                "host_ip": "127.0.0.1",
+                                "protocol": "tcp",
+                            }
+                        ],
+                    }
+                }
+            },
+            sort_keys=True,
+        )
+    )
+
+    with pytest.raises(ValueError, match="allowlist"):
+        lifecycle.parse_expected_port_bindings(resolved)
 
 
 @pytest.mark.parametrize(

@@ -5,19 +5,19 @@
 No item below is waiting for another user product decision before Phase 0 can
 start after explicit authorization.
 
-`OQ-001` through `OQ-004` are `phase0_closure_required`: the Phase 0 implementer
-must resolve them from the frozen environment and preserve the listed evidence.
-They do not block starting implementation, but any open item blocks canonical
-Phase 0 `SUCCESS`.
+`OQ-001` is closed from real preflight evidence. `OQ-002` through `OQ-004`
+remain `phase0_closure_required`: the Phase 0 implementer must resolve them from
+the frozen environment and preserve the listed evidence. They do not block
+starting implementation, but any open item blocks canonical Phase 0 `SUCCESS`.
 
-`OQ-005` through `OQ-008` are `deferred` later-phase questions. They do not
-expand or block Phase 0.
+`OQ-005` through `OQ-007` are `deferred` later-phase questions. `OQ-008` is
+closed by accepted `DEC-025`. None of these items expands or blocks Phase 0.
 
 ## Phase 0 closure-required items
 
 ### OQ-001 — Validated runtime fingerprint
 
-- **State:** `phase0_closure_required`
+- **State:** `closed`
 - **Owner:** Phase 0 implementer
 - **Resolution method:** Run the non-interactive preflight on the accepted
   Apple Silicon/Docker Desktop baseline and automatically detect the macOS,
@@ -31,6 +31,14 @@ expand or block Phase 0.
 - **Closed when:** One supported preflight result is preserved as the first
   validated runtime fingerprint and a reviewer can reproduce its determination
   from the evidence.
+- **Closure evidence:** Run `f1c9253b03dd4afca4284a89524562fb`;
+  `artifacts/phase0/observer-visible/f1c9253b03dd4afca4284a89524562fb/machine-manifest.json`,
+  `artifacts/phase0/observer-visible/f1c9253b03dd4afca4284a89524562fb/environment-manifest.json`,
+  and
+  `artifacts/phase0/observer-visible/f1c9253b03dd4afca4284a89524562fb/lifecycle/preflight/1052948244423375.json`.
+  The preflight result is `SUCCESS`, the upstream commit and Compose hash match
+  the lock, and the machine/Docker resource fields are recorded with command
+  evidence.
 
 ### OQ-002 — Frozen OTel 3.0.0 telemetry/query fixtures
 
@@ -92,18 +100,18 @@ This item does not require a cryptographic proof that macOS emitted no network
 packet. It requires a bounded, auditable execution contract and evidence about
 the project commands and dependencies under test.
 
-## Later-phase deferred items
+## Later-phase deferred and closed items
 
 | ID | State | Owner phase | Question | Blocks Phase 0? |
 |---|---|---|---|---|
 | OQ-005 | deferred | Phase 1 | Which model snapshot, provider, tokenizer accounting method, and concrete token/tool budgets implement `DEC-010`? | No |
 | OQ-006 | deferred | Phase 1 | What exact versioned Evidence Contract schema and migration policy implement the later read-only tool boundary? | No |
 | OQ-007 | deferred | Phase 5 | What final 12+ scenario templates, hidden split, paired seeds, and preregistered analysis version implement `DEC-011`? | No |
-| OQ-008 | deferred | Phase 3 | What action schemas, allowlist entries, preconditions, rollback contracts, and human-approval interface implement `DEC-012`? | No |
+| OQ-008 | closed | Phase 3 | Resolved by accepted `DEC-025`: one replay-only typed restore action, deterministic Policy Gate, bound human/test approval, one-forward-mutation attempt state, replay verification, and exact compensating rollback. | No |
 
 ## Resolution rules
 
-- Resolve `OQ-001` through `OQ-004` from actual frozen evidence, not by
+- Resolve `OQ-002` through `OQ-004` from actual frozen evidence, not by
   weakening `DEC-001` through `DEC-008`.
 - A reproducible incompatibility with `DEC-001` or `DEC-002` requires a new
   Decision Record and `BLOCKED_ENVIRONMENT` or `BLOCKED_UPSTREAM`.

@@ -1,0 +1,1 @@
+{"case_id":"ad-partial-failure-frontend-decoy","decoys":[{"observation_type":"deployment","service":"frontend","source":"CHANGES"}],"expected_decision":"RCA_CONFIRMED","expected_fault_mechanism":"request_processing_failure","expected_root_service":"ad","schema_version":"phase1.ground-truth.v1"}

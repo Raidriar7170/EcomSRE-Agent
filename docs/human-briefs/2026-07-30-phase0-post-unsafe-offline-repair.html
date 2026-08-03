@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EcomSRE-Agent Phase 0 Post-UNSAFE 离线修补简报</title>
+  <style>
+    body { max-width: 920px; margin: 40px auto; padding: 0 24px; font: 16px/1.65 system-ui, sans-serif; color: #172033; }
+    h1, h2 { line-height: 1.25; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px 10px; border: 1px solid #cbd5e1; text-align: left; vertical-align: top; }
+    code { background: #eef2f7; padding: 1px 4px; }
+    .warning { border-left: 4px solid #b45309; padding: 10px 14px; background: #fff7ed; }
+  </style>
+</head>
+<body>
+  <h1>EcomSRE-Agent Phase 0 Post-UNSAFE 离线修补</h1>
+  <p class="warning"><strong>结论：</strong>代码达到 <code>OFFLINE_REPAIR_READY</code>；
+    历史 run <code>f1c9253b03dd4afca4284a89524562fb</code> 仍为
+    <code>UNSAFE</code>。Phase 0 未完成，PR 保持 Draft / REVIEW_REQUIRED。</p>
+
+  <h2>修补范围</h2>
+  <ol>
+    <li>拆分 post-up discovery、完整性、ownership authentication 与 evidence persistence 失败分类。</li>
+    <li>observer 写入失败不再撤销已认证的精确 stop authority；supervised smoke 记录 UNSAFE，daemon 或资源漂移仍 fail closed。</li>
+    <li>observer Compose evidence 改为构造式 allowlist projection。</li>
+    <li>增加 append-only recovery report、versioned seal 与 chained seal index。</li>
+    <li>image-lock 测试改用独立 fixtures，不依赖仓库可变状态。</li>
+    <li>为镜像声明的数据目录增加 run-scoped named volumes，并在 mutation 前检查所有 service mounts。</li>
+  </ol>
+
+  <h2>验证边界</h2>
+  <table>
+    <tr><th>项目</th><th>结果</th></tr>
+    <tr><td>离线 pytest</td><td>787 passed</td></tr>
+    <tr><td>compileall</td><td>PASS</td></tr>
+    <tr><td>git diff --check</td><td>PASS</td></tr>
+    <tr><td>Docker / 第二次 smoke</td><td>未执行</td></tr>
+    <tr><td>历史 artifacts</td><td>保留，不重写</td></tr>
+  </table>
+
+  <h2>仍需真实证据</h2>
+  <p>Compose override 已变化，而当前 image lock 仍绑定修补前的 resolved
+    Compose hash。下一次真实任务必须先重新解析 Compose、生成并验证匹配的
+    candidate lock，再验证 named volumes、post-up 分阶段、精确停机与 recovery
+    seal。不得用离线推断替代这些证据。</p>
+
+  <h2>不可对外声称</h2>
+  <ul>
+    <li>不得声称历史 smoke 已修复或通过。</li>
+    <li>不得声称 Phase 0 完成、正式三轮验收通过或进入 Phase 1。</li>
+    <li>不得声称新的 volume、stop 或 seal 行为已在 Docker Desktop 上验证。</li>
+  </ul>
+
+  <h2>推荐下一步</h2>
+  <p>External static review, followed by a separately authorized one-real-smoke task.</p>
+</body>
+</html>

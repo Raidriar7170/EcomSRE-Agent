@@ -47,9 +47,10 @@ flowchart LR
   V -->|fail| R["Compensating rollback"]
 ```
 
-In Phase 0, only the Environment, Scenario control, Observation readiness, and
-deterministic evaluation portions exist conceptually. No agent or remediation
-component is implemented. The complete exclusion list is owned by
+Phase 0 Environment, Scenario control, Observation readiness, and deterministic
+evaluation portions have an offline implementation under bounded live repair.
+They are not formally accepted. No agent or remediation component is
+implemented. The complete exclusion list is owned by
 [PROJECT_CHARTER.md](PROJECT_CHARTER.md).
 
 ## Phase 0 environment boundary

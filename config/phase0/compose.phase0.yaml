@@ -10,10 +10,22 @@ x-phase0-service: &phase0-service
   platform: linux/arm64
   pull_policy: never
   labels: *phase0-labels
+  ports: !override []
 
 networks:
   default:
     name: ecomsre-phase0
+    labels: *phase0-labels
+
+volumes:
+  astronomy-db-data:
+    name: ecomsre-phase0-${ECOMSRE_RUN_ID:?ECOMSRE_RUN_ID is required}-astronomy-db-data
+    labels: *phase0-labels
+  jaeger-data:
+    name: ecomsre-phase0-${ECOMSRE_RUN_ID:?ECOMSRE_RUN_ID is required}-jaeger-data
+    labels: *phase0-labels
+  prometheus-data:
+    name: ecomsre-phase0-${ECOMSRE_RUN_ID:?ECOMSRE_RUN_ID is required}-prometheus-data
     labels: *phase0-labels
 
 services:
@@ -51,6 +63,11 @@ services:
     <<: *phase0-service
     container_name: ecomsre-phase0-frontend-proxy
     image: ${IMAGE_NAME}:${IMAGE_VERSION}-frontend-proxy
+    ports: !override
+      - target: 8080
+        published: "8080"
+        host_ip: "127.0.0.1"
+        protocol: tcp
 
   image-provider:
     <<: *phase0-service
@@ -90,6 +107,11 @@ services:
   flagd:
     <<: *phase0-service
     container_name: ecomsre-phase0-flagd
+    ports: !override
+      - target: 8016
+        published: "8016"
+        host_ip: "127.0.0.1"
+        protocol: tcp
     command:
       - start
       - --uri
@@ -118,6 +140,10 @@ services:
   astronomy-db:
     <<: *phase0-service
     container_name: ecomsre-phase0-astronomy-db
+    volumes: !override
+      - type: volume
+        source: astronomy-db-data
+        target: /var/lib/postgresql
 
   valkey-cart:
     <<: *phase0-service
@@ -130,6 +156,23 @@ services:
   jaeger:
     <<: *phase0-service
     container_name: ecomsre-phase0-jaeger
+    volumes: !override
+      - type: bind
+        source: ./src/jaeger/config.yml
+        target: /etc/jaeger/config.yml
+        read_only: true
+      - type: bind
+        source: ./src/jaeger/ui-config.json
+        target: /etc/jaeger/ui-config.json
+        read_only: true
+      - type: volume
+        source: jaeger-data
+        target: /tmp
+    ports: !override
+      - target: 16686
+        published: "16686"
+        host_ip: "127.0.0.1"
+        protocol: tcp
 
   grafana:
     <<: *phase0-service
@@ -138,11 +181,29 @@ services:
   prometheus:
     <<: *phase0-service
     container_name: ecomsre-phase0-prometheus
+    volumes: !override
+      - type: bind
+        source: ./src/prometheus/prometheus-config.yaml
+        target: /etc/prometheus/prometheus-config.yaml
+        read_only: true
+      - type: volume
+        source: prometheus-data
+        target: /prometheus
+    ports: !override
+      - target: 9090
+        published: "9090"
+        host_ip: "127.0.0.1"
+        protocol: tcp
 
   opensearch:
     <<: *phase0-service
     container_name: ecomsre-phase0-opensearch
     image: ${IMAGE_NAME}:${IMAGE_VERSION}-opensearch
+    ports: !override
+      - target: 9200
+        published: "9200"
+        host_ip: "127.0.0.1"
+        protocol: tcp
 
   opamp-server:
     <<: *phase0-service

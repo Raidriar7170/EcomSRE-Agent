@@ -12,13 +12,14 @@ Outputs:
 - `DEC-001` through `DEC-012`;
 - project charter, architecture, roadmap, safety, acceptance, and open-question
   documents;
-- no production implementation.
+- the accepted planning packet.
 
-Stop after documentation. Do not infer authorization for Phase 0.
+That planning-only boundary has ended through explicit bounded Phase 0
+authorization; it does not authorize work beyond the current repair prompt.
 
 ## Phase 0 — Local deterministic control and statistical fault loop
 
-**State:** not started.
+**State:** bounded repair ended `UNSAFE`; `REVIEW_REQUIRED`.
 
 Entry:
 
@@ -43,9 +44,15 @@ Exit:
   one canonical run containing three consecutive cycles;
 - evidence is preserved and independently reviewable.
 
+The single authorized `NON_CANONICAL` smoke was consumed and terminated
+`UNSAFE` before readiness or measurement. Its later authenticated environment
+stop does not satisfy this phase exit gate, close `OQ-002` through `OQ-004`, or
+authorize Phase 1. The real preflight evidence independently closes `OQ-001`.
+A second smoke requires a new explicit bounded task.
+
 ## Phase 1 — Read-only tools and Single-Agent baseline
 
-**State:** deferred.
+**State:** frozen local replay baseline implemented and verified.
 
 Entry:
 
@@ -68,7 +75,12 @@ Exit:
 
 ## Phase 2 — Dynamic Multi-Agent diagnosis
 
-**State:** deferred.
+**State:** local offline implementation and 7 x 3 comparison complete; fresh
+Phase 2, frozen Phase 1, and repository-wide tests pass. The final read-only
+review's three Must Fix findings are repaired and focused verified locally;
+fresh repository-wide `FINAL_CLOSURE` evidence is verified. This is not a
+reviewer re-pass, release, or a
+superiority claim.
 
 Entry:
 
@@ -90,7 +102,12 @@ Exit:
 
 ## Phase 3 — Restricted remediation
 
-**State:** deferred.
+**State:** complete for the accepted replay-only MVP (`DEC-025`); live
+integration has not been entered.
+
+Completion marker:
+
+`PHASE3_RESTRICTED_REMEDIATION_REPLAY_MVP_READY`
 
 Entry:
 
@@ -110,6 +127,9 @@ Exit:
 - unsafe and uncertain states fail closed;
 - rollback remains available after the one-forward-mutation limit;
 - no action can escape project-owned local resources.
+
+This exit applies only to deterministic offline replay. It does not authorize
+Docker, provider calls, live telemetry, live mutation, Phase 4, or publication.
 
 ## Phase 4 — Search, ads, and recommendation extensions
 

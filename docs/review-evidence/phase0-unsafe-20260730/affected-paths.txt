@@ -1,0 +1,5 @@
+$HOME/.cache/uv
+$HOME/.cache/uv/wheels-v6/pypi/ruff/0.16.0-py3-none-macosx_11_0_arm64.http
+$HOME/.cache/uv/wheels-v6/pypi/ruff/0.16.0-py3-none-macosx_11_0_arm64.msgpack
+$HOME/.cache/uv/simple-v21/pypi/ruff.rkyv
+$HOME/.cache/uv/archive-v0/Cnk5dCg92Bl_Beoc/bin/ruff

@@ -2,9 +2,12 @@
 
 ## Status
 
-This is a normative interface and evidence contract, not an implementation.
-None of the commands below exists yet, and this document does not authorize
-running Docker.
+This is the normative canonical interface and evidence contract. Phase 0
+commands have an offline implementation. The current repository state is
+`PRE_SMOKE_OFFLINE_REPAIR_READY`, based only on fixture-backed offline tests;
+the repaired Compose mount plan, image-lock rotation, and direct-stop path have
+not been validated against a real Docker runtime. Phase 0 has not completed
+formal acceptance. This document alone does not authorize running Docker.
 
 This contract implements `DEC-001` through `DEC-008`. `DEC-009` through
 `DEC-012` are later-phase decisions and are not Phase 0 dependencies. Phase 0
@@ -34,6 +37,13 @@ non-semantic, collision-resistant, and safe as path components.
 Canonical thresholds come from a future versioned repository configuration.
 Diagnostic overrides are permitted only when explicitly marked
 `NON_CANONICAL`; they cannot produce Phase 0 `SUCCESS`.
+
+### Non-canonical bounded smoke
+
+`make phase0-smoke` is a separate one-cycle diagnostic interface governed by
+[PHASE_0_BOUNDED_REPAIR_SMOKE_PROMPT.md](PHASE_0_BOUNDED_REPAIR_SMOKE_PROMPT.md).
+It records `canonical=false`, writes `smoke-report.json`, and cannot write a
+canonical acceptance report, close Phase 0, or authorize Phase 1.
 
 ### Command contract
 
@@ -110,8 +120,9 @@ The orchestrator performs the following non-interactive sequence:
 10. stabilization;
 11. recovery measurement;
 12. final three-signal telemetry readiness;
-13. evidence finalization and content hashing;
-14. environment shutdown, or predeclared failure-scene preservation.
+13. measurement-evidence finalization;
+14. environment shutdown, or predeclared failure-scene preservation, followed
+    by terminal report finalization and content sealing.
 
 Steps 4–11 form one cycle and repeat three times. Before each repetition, the
 orchestrator revalidates readiness without reusing historical samples. Each
@@ -188,6 +199,43 @@ Outputs:
 
 Container `Running` or `healthy` alone is insufficient.
 
+Before mutation, every service mount with `type: volume` must resolve to a
+declared, run-scoped named volume with matching project/run ownership labels.
+Anonymous, undeclared, unlabeled, or wrong-target volume mounts fail closed.
+This check covers every service, not only the three known stateful services.
+Allowlisted `bind` and `tmpfs` mounts follow their separate path, ownership, and
+observer-leakage rules; unknown mount types fail closed.
+
+Post-up handling has six execution stages and four stable reason-code classes:
+
+1. resource discovery → `POST_UP_DISCOVERY_FAILED`;
+2. resource completeness → `POST_UP_RESOURCE_COMPLETENESS_FAILED`;
+3. ownership-manifest creation/verification;
+4. ownership-context loading/authentication;
+5. evaluator evidence persistence;
+6. observer evidence persistence.
+
+Stages 3–4 share `POST_UP_OWNERSHIP_AUTHENTICATION_FAILED` and distinguish the
+internal stage in diagnostics. Stages 5–6 share
+`POST_UP_EVIDENCE_PERSISTENCE_FAILED`; the artifacts successfully persisted
+before the failure identify which persistence boundary was crossed.
+
+Evidence persistence failure must not be misreported as unknown ownership.
+Once the exact daemon and resource set have been authenticated, the in-process
+stop capability remains available even if observer evidence cannot be written.
+Direct `phase0-up` returns
+`MANUAL_INTERVENTION_REQUIRED / POST_UP_EVIDENCE_PERSISTENCE_FAILED`;
+a supervised smoke records the persistence failure in its terminal `UNSAFE`
+report and still attempts the exact safe stop.
+
+Startup returns a typed mutation disposition. Any failure before
+`docker compose up` begins is `PRE_MUTATION_BLOCKED` and does not seek stop
+authority or append `SAFE_STOP_NOT_CONFIRMED`. Once Compose up has been invoked,
+the disposition is `MUTATION_MAY_HAVE_OCCURRED` until authenticated ownership
+proves `OWNED_ENVIRONMENT_STARTED`; those two dispositions require an exact safe
+stop attempt. The original typed start failure remains authoritative if stop
+authority cannot be established.
+
 ### 4. Execute each cycle
 
 Each cycle is:
@@ -255,6 +303,32 @@ then stops only proven project-owned resources.
 Failed runs remain intact. A rerun creates a new `RUN_ID`; it does not replace
 the failed record.
 
+Direct `phase0-stop` authenticates the stored ownership context and collects
+only the supported local Docker context, Unix endpoint, daemon availability,
+and daemon ID needed to request `FreshStopAuthority`. It does not require full
+preflight, image-lock agreement, capacity, readiness, telemetry, or observer
+artifact persistence. Resource rediscovery must match the authenticated
+manifest exactly before the one allowlisted down operation. An observer
+authority-evidence write error is retained as a typed warning without revoking
+the already authenticated in-process stop capability. A post-stop recovery
+reseal failure reports
+`MANUAL_INTERVENTION_REQUIRED / RECOVERY_EVIDENCE_PERSISTENCE_FAILED` while
+preserving the fact that the owned stop completed.
+
+The terminal ordering is strict:
+
+1. decide the terminal disposition;
+2. perform exact project-scoped stop, or preserve the predeclared scene;
+3. persist final command and lifecycle events;
+4. write the terminal report;
+5. seal the immutable run artifact set.
+
+If a necessary safety action appends evidence after an existing seal, do not
+overwrite that seal or the failed-run report. Write a versioned recovery report
+and seal, then append a chained seal-index entry containing the previous index
+hash. Current integrity validation covers the initial checksum, every prior
+versioned seal, the recovery report, and the append-only audit trail.
+
 ## Pass conditions
 
 All are required:
@@ -272,6 +346,17 @@ All are required:
 - complete observer/evaluator separation and evidence hashes;
 - `OQ-001` through `OQ-004` closed with their required evidence;
 - safe project-scoped stop.
+
+Any Compose-layer change invalidates the previous resolved Compose hash binding.
+An offline edit cannot manufacture the replacement hash. Before `up`, a live,
+separately authorized bootstrap must re-resolve Compose and explicitly rotate
+the candidate image lock using the expected old lock-content hash and
+`COMPOSE_OVERRIDE_CHANGED`. Rotation preserves the old bytes under
+`image-lock-history/<old-sha256>.json`, rejects source-set changes, re-verifies
+every cached ARM64 image, compare-and-swaps the current inode/bytes/hash, and
+revalidates the published lock. Without complete explicit rotation
+authorization, a stale binding is
+`BLOCKED_UPSTREAM / IMAGE_LOCK_ROTATION_REQUIRED`; it must not be bypassed.
 
 The sole passing outcome is `SUCCESS`. Terms such as “mostly passed,”
 “basically passed,” or “passed except for” are invalid.
@@ -341,6 +426,7 @@ It may not delete evidence or broaden cleanup. Unsafe cleanup ends with
 | Command log | Command, sanitized arguments, working directory, start/end time, exit code, outcome, and referenced output artifacts |
 | Final report | Per-cycle decisions, telemetry gate decisions, overall acceptance decision, failure reason codes, and environment disposition |
 | Integrity | Content hash for every immutable evidence object plus the final checksum manifest |
+| Recovery integrity | Versioned recovery report and seal, append-only seal index, prior-index hash, and current validation result when post-terminal safety evidence exists |
 
 Command logs must not contain secrets. Raw queries and responses are retained
 even when parsing or aggregation fails.
@@ -383,7 +469,12 @@ artifacts/phase0/
 └── reports/<run_id>/
     ├── acceptance-report.json
     ├── failure-report.json
-    └── checksums.sha256
+    ├── checksums.sha256
+    ├── recovery/
+    │   └── NNN.json
+    ├── seals/
+    │   └── NNN.sha256
+    └── seal-index.jsonl
 ```
 
 Observer-visible manifests use only opaque scenario/change references. The

@@ -7,9 +7,7 @@ import hashlib
 import hmac
 import json
 import math
-import os
 import secrets
-import subprocess
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
@@ -23,6 +21,7 @@ from ecomsre.environment.lifecycle import (
     _parse_owned_resources,
     build_ownership_discovery_invocations,
 )
+from ecomsre.environment.command_runner import AuditedSubprocessRunner
 from ecomsre.environment.ownership import (
     PROJECT_LABEL,
     PROJECT_NAMESPACE,
@@ -72,9 +71,6 @@ _PRODUCTION_DOCKER_RUNNER_TOKEN = object()
 _AUTHENTICATED_LIFECYCLE_RUNNER_TOKEN = object()
 _LOAD_GENERATOR_RECEIPT_TOKEN = object()
 _COLLECTOR_PIPELINE_RECEIPT_TOKEN = object()
-_SUBPROCESS_RUN = subprocess.run
-
-
 @dataclass(frozen=True, slots=True, init=False)
 class ProductionDockerRunner:
     """Exact subprocess executor locked to one local Docker daemon."""
@@ -82,6 +78,7 @@ class ProductionDockerRunner:
     _run_id: str
     _docker_endpoint: str
     _daemon_id: str
+    _runner: AuditedSubprocessRunner
     _token: object
 
     def __init__(
@@ -91,6 +88,8 @@ class ProductionDockerRunner:
         run_id: str = "",
         docker_endpoint: str = "",
         daemon_id: str = "",
+        project_root: Path | None = None,
+        artifacts_root: Path | None = None,
     ) -> None:
         if _token is not _PRODUCTION_DOCKER_RUNNER_TOKEN:
             raise TypeError("ProductionDockerRunner must come from locked preflight")
@@ -98,6 +97,11 @@ class ProductionDockerRunner:
             "_run_id": run_id,
             "_docker_endpoint": docker_endpoint,
             "_daemon_id": daemon_id,
+            "_runner": AuditedSubprocessRunner(
+                project_root=project_root or Path.cwd(),
+                artifacts_root=artifacts_root or Path.cwd() / "artifacts" / "phase0",
+                run_id=run_id,
+            ),
             "_token": _PRODUCTION_DOCKER_RUNNER_TOKEN,
         }.items():
             object.__setattr__(self, name, value)
@@ -117,25 +121,10 @@ class ProductionDockerRunner:
             or environment != expected_environment
         ):
             raise ValueError("production Docker invocation is not exact")
-        clean_environment = {
-            "PATH": os.defpath,
-            "LANG": "C",
-            "LC_ALL": "C",
-            **expected_environment,
-        }
-        completed = _SUBPROCESS_RUN(
+        return self._runner.run(
             arguments,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout_seconds,
-            env=clean_environment,
-        )
-        return CommandResult(
-            arguments=arguments,
-            exit_code=completed.returncode,
-            stdout=completed.stdout,
-            stderr=completed.stderr,
+            timeout_seconds=timeout_seconds,
+            environment=expected_environment,
         )
 
 
@@ -266,6 +255,8 @@ def create_authenticated_lifecycle_runner(
     *,
     preflight: AuthenticatedPreflightEvidence,
     context: AuthenticatedOwnershipContext,
+    project_root: Path | None = None,
+    artifacts_root: Path | None = None,
 ) -> AuthenticatedLifecycleRunner:
     """Bind a direct Docker executor to one current locked preflight."""
     if (
@@ -285,6 +276,8 @@ def create_authenticated_lifecycle_runner(
         run_id=context.run_id,
         docker_endpoint=docker.endpoint,
         daemon_id=docker.daemon_id,
+        project_root=project_root,
+        artifacts_root=artifacts_root,
     )
     return AuthenticatedLifecycleRunner(
         _token=_AUTHENTICATED_LIFECYCLE_RUNNER_TOKEN,
@@ -1080,14 +1073,14 @@ class LoadGeneratorTelemetryReceipt:
 
 @dataclass(frozen=True, slots=True, init=False)
 class CollectorPipelineReceipt:
-    """Dedicated proof that a current trace traversed the Collector pipeline."""
+    """Collector health/config plus fresh three-signal propagation proof."""
 
     run_id: str
     cycle_number: int
     phase: str
-    trace_id: str
     fixture_sha256: str
-    collector_config_sha256: str
+    collector_config_sha256: tuple[tuple[str, str], ...]
+    propagation_backends: tuple[str, ...]
     artifact_paths: tuple[str, ...]
     artifact_sha256: tuple[tuple[str, str], ...]
     ready: bool
@@ -1102,9 +1095,9 @@ class CollectorPipelineReceipt:
         run_id: str = "",
         cycle_number: int = 0,
         phase: str = "",
-        trace_id: str = "",
         fixture_sha256: str = "",
-        collector_config_sha256: str = "",
+        collector_config_sha256: tuple[tuple[str, str], ...] = (),
+        propagation_backends: tuple[str, ...] = (),
         artifact_sha256: tuple[tuple[str, str], ...] = (),
         store_root: Path | str = "",
     ) -> None:
@@ -1114,9 +1107,9 @@ class CollectorPipelineReceipt:
             "run_id": run_id,
             "cycle_number": cycle_number,
             "phase": phase,
-            "trace_id": trace_id,
             "fixture_sha256": fixture_sha256,
-            "collector_config_sha256": collector_config_sha256,
+            "collector_config_sha256": tuple(collector_config_sha256),
+            "propagation_backends": tuple(propagation_backends),
             "artifact_paths": tuple(path for path, _digest in artifact_sha256),
             "artifact_sha256": artifact_sha256,
             "ready": True,
@@ -1134,28 +1127,30 @@ class CollectorPipelineReceipt:
         store: ObserverEvidenceStore,
         window: PhaseWindow,
     ) -> bool:
-        if not _specialized_receipt_is_current(
-            self,
-            token=_COLLECTOR_PIPELINE_RECEIPT_TOKEN,
-            capability=capability,
-            store=store,
-            window=window,
+        if (
+            self._token is not _COLLECTOR_PIPELINE_RECEIPT_TOKEN
+            or not capability.is_authentic()
+            or capability.store is not store
+            or self.run_id != store.run_id != window.run_id
+            or self.run_id != window.run_id
+            or self.cycle_number != window.cycle_number
+            or self.phase != window.scenario_phase.value
+            or self.fixture_sha256 != capability.content_sha256
+            or self._store_root != str(store.root)
+            or self.propagation_backends
+            != ("prometheus", "jaeger", "opensearch")
+            or not self.artifact_sha256
+            or any(
+                not _specialized_artifact_matches(store, path, digest)
+                for path, digest in self.artifact_sha256
+            )
         ):
             return False
-        config = (
-            Path(__file__).resolve().parents[3]
-            / "third_party/opentelemetry-demo/src/otel-collector/"
-            "otelcol-config-observability.yml"
-        )
-        return (
-            config.is_file()
-            and sha256_file(config) == self.collector_config_sha256
-            and _service_trace_artifact_is_valid(
-                self,
-                store=store,
-                window=window,
-                service="otel-collector",
-            )
+        root = Path(__file__).resolve().parents[3]
+        return all(
+            (root / relative).is_file()
+            and sha256_file(root / relative) == digest
+            for relative, digest in self.collector_config_sha256
         )
 
 
@@ -1273,6 +1268,7 @@ def acquire_load_generator_telemetry_receipt(
     registry_capability: FrozenTelemetryQueryCapability,
     window: PhaseWindow,
     jaeger_base_url: str,
+    artifact_prefix: str = "lifecycle",
 ) -> LoadGeneratorTelemetryReceipt:
     """Acquire a current load-generator/user_get_ads trace and linked GetAds span."""
     trace_id, artifact = _acquire_service_trace_receipt(
@@ -1282,6 +1278,7 @@ def acquire_load_generator_telemetry_receipt(
         window=window,
         jaeger_base_url=jaeger_base_url,
         service="load-generator",
+        artifact_prefix=artifact_prefix,
     )
     return LoadGeneratorTelemetryReceipt(
         _token=_LOAD_GENERATOR_RECEIPT_TOKEN,
@@ -1301,41 +1298,116 @@ def acquire_collector_pipeline_receipt(
     evidence_store: ObserverEvidenceStore,
     registry_capability: FrozenTelemetryQueryCapability,
     window: PhaseWindow,
-    jaeger_base_url: str,
+    context: AuthenticatedOwnershipContext,
+    execution: LifecycleReadinessExecution,
+    prometheus: Any,
+    jaeger: Any,
+    opensearch: Any,
+    artifact_prefix: str = "lifecycle",
 ) -> CollectorPipelineReceipt:
-    """Prove current Collector pipeline ingestion via an exported linked trace."""
-    trace_id, artifact = _acquire_service_trace_receipt(
-        client=client,
-        evidence_store=evidence_store,
-        registry_capability=registry_capability,
-        window=window,
-        jaeger_base_url=jaeger_base_url,
-        service="otel-collector",
+    """Bind healthy Collector config to fresh Prometheus/Jaeger/OpenSearch receipts."""
+    if type(
+        client
+    ) is not OwnedHttpClient or not _owned_http_client_has_production_integrity(client):
+        raise TypeError("collector receipt requires production OwnedHttpClient")
+    if (
+        not isinstance(execution, LifecycleReadinessExecution)
+        or not execution.is_authentic(context)
+        or not isinstance(evidence_store, ObserverEvidenceStore)
+        or client.run_id != context.run_id
+        or evidence_store.run_id != context.run_id != window.run_id
+        or evidence_store.run_id != window.run_id
+    ):
+        raise ValueError("collector propagation authority is invalid")
+    backend_results = (
+        ("prometheus", prometheus),
+        ("jaeger", jaeger),
+        ("opensearch", opensearch),
     )
-    config = (
-        Path(__file__).resolve().parents[3]
-        / "third_party/opentelemetry-demo/src/otel-collector/"
-        "otelcol-config-observability.yml"
+    for _name, result in backend_results:
+        validator = getattr(result, "is_production_receipt", None)
+        if not callable(validator) or not validator(
+            capability=registry_capability,
+            store=evidence_store,
+            window=window,
+        ) or not getattr(result, "ready", False):
+            raise ValueError("collector propagation backend proof is incomplete")
+    by_purpose = dict(execution.command_results)
+    status_result = by_purpose.get("otel-collector_status")
+    containers = [
+        resource
+        for resource in context.manifest.resources
+        if resource.kind == "container"
+        and resource.labels.get(_COMPOSE_SERVICE_LABEL) == "otel-collector"
+    ]
+    if status_result is None or len(containers) != 1:
+        raise ValueError("collector container status evidence is incomplete")
+    status = _parse_service_container_inspect(
+        status_result.stdout,
+        resource=containers[0],
     )
-    content = config.read_text(encoding="utf-8")
-    if not all(
-        marker in content
-        for marker in (
-            "traces:",
-            "otlp_grpc/jaeger",
-            "span_metrics",
+    health = status.get("Health") if status is not None else None
+    if (
+        status is None
+        or status.get("Running") is not True
+        or status.get("Status") != "running"
+        or (
+            health is not None
+            and (
+                not isinstance(health, dict)
+                or health.get("Status") != "healthy"
+            )
         )
     ):
-        raise ValueError("pinned Collector trace pipeline contract differs")
+        raise ValueError("collector container is not healthy")
+    root = Path(__file__).resolve().parents[3]
+    config_relatives = (
+        "third_party/opentelemetry-demo/src/otel-collector/otelcol-config.yml",
+        "third_party/opentelemetry-demo/src/otel-collector/otelcol-config-extras.yml",
+    )
+    config_hashes = tuple(
+        (relative, sha256_file(root / relative)) for relative in config_relatives
+    )
+    config_content = "\n".join(
+        (root / relative).read_text(encoding="utf-8")
+        for relative in config_relatives
+    )
+    if not all(
+        marker in config_content
+        for marker in ("traces:", "metrics:", "logs:", "spanmetrics")
+    ):
+        raise ValueError("pinned Collector three-signal config differs")
+    propagation_artifacts = tuple(
+        item
+        for _name, result in backend_results
+        for item in result.artifact_sha256
+    )
+    proof = evidence_store.write_immutable(
+        f"{artifact_prefix}/signals/otel-collector-propagation.json",
+        {
+            "schema_version": "phase0.collector-propagation-receipt.v1",
+            "run_id": window.run_id,
+            "cycle_number": window.cycle_number,
+            "phase": window.scenario_phase.value,
+            "container_id": containers[0].resource_id,
+            "container_running": True,
+            "container_health": "healthy",
+            "collector_config_sha256": dict(config_hashes),
+            "propagation_backends": [
+                name for name, _result in backend_results
+            ],
+            "propagation_artifact_sha256": dict(propagation_artifacts),
+        },
+    )
     return CollectorPipelineReceipt(
         _token=_COLLECTOR_PIPELINE_RECEIPT_TOKEN,
         run_id=window.run_id,
         cycle_number=window.cycle_number,
         phase=window.scenario_phase.value,
-        trace_id=trace_id,
         fixture_sha256=registry_capability.content_sha256,
-        collector_config_sha256=sha256_file(config),
-        artifact_sha256=(artifact,),
+        collector_config_sha256=config_hashes,
+        propagation_backends=tuple(name for name, _result in backend_results),
+        artifact_sha256=((str(proof.path), proof.sha256), *propagation_artifacts),
         store_root=evidence_store.root,
     )
 
@@ -1348,6 +1420,7 @@ def _acquire_service_trace_receipt(
     window: PhaseWindow,
     jaeger_base_url: str,
     service: str,
+    artifact_prefix: str,
 ) -> tuple[str, tuple[str, str]]:
     if type(
         client
@@ -1362,7 +1435,7 @@ def _acquire_service_trace_receipt(
     ):
         raise ValueError("specialized receipt authority is invalid")
     fixture = registry_capability.registry.jaeger
-    target = "/api/traces?" + urlencode(
+    target = "/jaeger/ui/api/traces?" + urlencode(
         {
             "service": "load-generator",
             "operation": "user_get_ads",
@@ -1385,7 +1458,7 @@ def _acquire_service_trace_receipt(
         )
     )
     artifact = evidence_store.write_immutable(
-        f"lifecycle/signals/{service}-jaeger-trace.json",
+        f"{artifact_prefix}/signals/{service}-jaeger-trace.json",
         {
             "schema_version": "phase0.service-trace-receipt.v1",
             "run_id": window.run_id,
@@ -1449,7 +1522,7 @@ def _service_trace_artifact_is_valid(
         ValueError,
     ):
         return False
-    expected_request = "/api/traces?" + urlencode(
+    expected_request = "/jaeger/ui/api/traces?" + urlencode(
         {
             "service": "load-generator",
             "operation": "user_get_ads",
@@ -1519,6 +1592,8 @@ def derive_current_resource_discovery(
     context: AuthenticatedOwnershipContext,
     evidence_store: ObserverEvidenceStore,
     execution: LifecycleReadinessExecution,
+    *,
+    artifact_prefix: str = "lifecycle",
 ) -> CurrentResourceDiscovery:
     """Derive ownership only from an opaque lifecycle execution receipt."""
     if not execution.is_authentic(context) or evidence_store.run_id != context.run_id:
@@ -1555,6 +1630,7 @@ def derive_current_resource_discovery(
                 evidence_store,
                 purpose=invocation.purpose,
                 result=result,
+                artifact_prefix=artifact_prefix,
             )
         )
     resources: list[OwnedResource] = []
@@ -1574,7 +1650,7 @@ def derive_current_resource_discovery(
     )
     verify_owned_resources(frozen_resources, context.manifest)
     index = evidence_store.write_immutable(
-        "lifecycle/current-resource-discovery.json",
+        f"{artifact_prefix}/current-resource-discovery.json",
         {
             "schema_version": "phase0.current-resource-discovery-index.v2",
             "run_id": context.run_id,
@@ -1604,6 +1680,7 @@ def derive_service_readiness_proof(
     telemetry_receipt: (LoadGeneratorTelemetryReceipt | CollectorPipelineReceipt),
     registry_capability: FrozenTelemetryQueryCapability,
     window: PhaseWindow,
+    artifact_prefix: str = "lifecycle",
 ) -> ServiceReadinessProof:
     """Bind exact Docker state to an adapter-issued telemetry receipt."""
     expected_receipt_type = (
@@ -1652,15 +1729,18 @@ def derive_service_readiness_proof(
     if status is None:
         raise ValueError("Docker state output or container identity is invalid")
     health = status.get("Health")
-    healthy = isinstance(health, dict) and health.get("Status") == "healthy"
+    healthy = health is None or (
+        isinstance(health, dict) and health.get("Status") == "healthy"
+    )
     status_artifact = _persist_lifecycle_result(
         evidence_store,
         purpose=f"{service}_status",
         result=result,
+        artifact_prefix=artifact_prefix,
     )
     signal_artifacts = tuple(telemetry_receipt.artifact_sha256)
     index = evidence_store.write_immutable(
-        f"lifecycle/{service}-readiness.json",
+        f"{artifact_prefix}/{service}-readiness.json",
         {
             "schema_version": "phase0.service-readiness-index.v2",
             "run_id": context.run_id,
@@ -1714,11 +1794,12 @@ def _persist_lifecycle_result(
     *,
     purpose: str,
     result: CommandResult,
+    artifact_prefix: str = "lifecycle",
 ) -> tuple[str, str]:
     stdout = result.stdout.encode()
     stderr = result.stderr.encode()
     artifact = store.write_immutable(
-        f"lifecycle/raw/{purpose}.json",
+        f"{artifact_prefix}/raw/{purpose}.json",
         {
             "schema_version": "phase0.lifecycle-execution-result.v1",
             "run_id": store.run_id,
@@ -2259,6 +2340,7 @@ def build_readiness_handoff(
     gates: tuple[ReadinessGate, ...],
     evidence_store: ObserverEvidenceStore,
     registry_capability: FrozenTelemetryQueryCapability,
+    artifact_prefix: str = "lifecycle",
 ) -> ReadinessHandoff:
     if (
         not isinstance(context, AuthenticatedOwnershipContext)
@@ -2314,7 +2396,7 @@ def build_readiness_handoff(
         jaeger_fresh=decisions[ReadinessGateName.JAEGER_FRESH],
         opensearch_fresh=decisions[ReadinessGateName.OPENSEARCH_FRESH],
     )
-    path = "lifecycle/readiness-evidence.json"
+    path = f"{artifact_prefix}/readiness-evidence.json"
     payload = {
         **evidence.model_dump(mode="json"),
         "gate_decisions": {name.value: decisions[name] for name in ReadinessGateName},
@@ -2644,6 +2726,7 @@ def _backend_artifacts_match(
     ):
         return False
     referenced_raw_paths: set[str] = set()
+    decision_by_raw_path: dict[str, dict[str, Any]] = {}
     for parse_path in parse_paths:
         decision = payloads[parse_path]
         if decision.get("decision") is not True or decision.get("reason") != "READY":
@@ -2655,7 +2738,53 @@ def _backend_artifacts_match(
         if raw_path is None or raw_path in referenced_raw_paths:
             return False
         referenced_raw_paths.add(raw_path)
-    return referenced_raw_paths == raw_paths
+        decision_by_raw_path[raw_path] = decision
+    if referenced_raw_paths != raw_paths:
+        return False
+    try:
+        from ecomsre.telemetry.prometheus import (
+            _verify_prometheus_promotion_vector,
+        )
+
+        source_paths = sorted(
+            path
+            for path in raw_paths
+            if payloads[path].get("query_kind") == "source_timestamp"
+        )
+        source_timestamps: list[datetime] = []
+        for path in source_paths:
+            body = base64.b64decode(
+                payloads[path]["raw_response_base64"],
+                validate=True,
+            )
+            source_timestamp = _verify_prometheus_promotion_vector(
+                json.loads(body),
+                query_kind="source_timestamp",
+                registry=capability.registry,
+                utc_window=(window.utc_started_at, window.utc_ended_at),
+            )
+            decision = decision_by_raw_path[path]
+            if (
+                source_timestamp is None
+                or decision.get("parsed_sample_timestamp")
+                != source_timestamp.isoformat()
+            ):
+                return False
+            source_timestamps.append(source_timestamp)
+        return (
+            len(source_timestamps) >= 2
+            and terminal.get("start_sample_timestamp")
+            == source_timestamps[0].isoformat()
+            and terminal.get("end_sample_timestamp")
+            == source_timestamps[-1].isoformat()
+        )
+    except (
+        KeyError,
+        TypeError,
+        ValueError,
+        json.JSONDecodeError,
+    ):
+        return False
 
 
 def _backend_raw_payloads_match_frozen_contract(
@@ -2685,27 +2814,85 @@ def _backend_raw_payloads_match_frozen_contract(
                 "total": fixture.total_query,
                 "error": fixture.error_query,
                 "target_incarnation": fixture.target_incarnation_query,
+                "source_timestamp": f"timestamp({fixture.total_query})",
             }
             seen: dict[str, int] = {}
-            for path in raw_paths:
+            query_kinds_by_sample: dict[str, set[str]] = {}
+            source_samples: list[tuple[str, datetime]] = []
+            for path in sorted(raw_paths):
                 payload = payloads[path]
                 query_kind = payload.get("query_kind")
                 query = expected_queries.get(query_kind)
                 if (
                     query is None
                     or payload.get("raw_query") != query
+                    or payload.get("raw_query_sha256")
+                    != sha256_bytes(query.encode())
                     or payload.get("request_target")
                     != f"/api/v1/query?query={quote(query, safe='')}"
                 ):
                     return False
-                _verify_prometheus_promotion_vector(
+                filename = Path(path).name
+                parts = filename.split("-")
+                expected_suffix = query_kind.replace("_", "-")
+                if (
+                    len(parts) < 4
+                    or parts[0] != "sample"
+                    or not parts[1].isdigit()
+                    or not filename.endswith(f"-{expected_suffix}-raw.json")
+                ):
+                    return False
+                query_kinds_by_sample.setdefault(parts[1], set()).add(
+                    query_kind
+                )
+                source_timestamp = _verify_prometheus_promotion_vector(
                     json.loads(bodies[path]),
                     query_kind=query_kind,
                     registry=registry,
                     utc_window=(window.utc_started_at, window.utc_ended_at),
                 )
+                if query_kind == "source_timestamp":
+                    if source_timestamp is None:
+                        return False
+                    response_ended_at = datetime.fromisoformat(
+                        payload["ended_at"]
+                    )
+                    lag = (
+                        response_ended_at - source_timestamp
+                    ).total_seconds()
+                    if (
+                        lag < 0
+                        or fixture.maximum_scrape_lag_seconds is None
+                        or lag > fixture.maximum_scrape_lag_seconds
+                    ):
+                        return False
+                    source_samples.append((path, source_timestamp))
                 seen[query_kind] = seen.get(query_kind, 0) + 1
-            return set(seen) == set(expected_queries) and len(set(seen.values())) == 1
+            if (
+                set(seen) != set(expected_queries)
+                or len(set(seen.values())) != 1
+                or not query_kinds_by_sample
+                or any(
+                    query_kinds != set(expected_queries)
+                    for query_kinds in query_kinds_by_sample.values()
+                )
+                or len(source_samples) < 2
+                or fixture.scrape_interval_seconds is None
+                or fixture.scrape_interval_tolerance_seconds is None
+            ):
+                return False
+            for (_previous_path, previous), (_path, current) in zip(
+                source_samples,
+                source_samples[1:],
+            ):
+                interval = (current - previous).total_seconds()
+                if (
+                    current <= previous
+                    or abs(interval - fixture.scrape_interval_seconds)
+                    > fixture.scrape_interval_tolerance_seconds
+                ):
+                    return False
+            return True
         if name is ReadinessGateName.JAEGER_FRESH:
             from ecomsre.telemetry.jaeger import _select_span
 
@@ -2722,7 +2909,10 @@ def _backend_raw_payloads_match_frozen_contract(
                 }
             )
             payload = payloads[next(iter(raw_paths))]
-            if payload.get("exact_request") != f"/api/traces?{expected_query}":
+            if (
+                payload.get("exact_request")
+                != f"/jaeger/ui/api/traces?{expected_query}"
+            ):
                 return False
             _select_span(
                 bodies[next(iter(raw_paths))],

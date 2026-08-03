@@ -25,7 +25,7 @@ from ecomsre.evidence.models import (
     RunManifest,
     redact_command_arguments,
 )
-from ecomsre.phase0.models import Outcome
+from ecomsre.phase0.models import Outcome, SmokeReport
 
 
 _OBSERVER_TOP_LEVEL = {
@@ -241,6 +241,23 @@ class ObserverEvidenceStore(_EvidenceStoreLifecycle):
         self.root = self._capability.root
         self.run_id = run_id
 
+    @classmethod
+    def open_existing(cls, base_root: Path, run_id: str) -> "ObserverEvidenceStore":
+        """Open an existing observer run without creating missing authority."""
+        _validate_run_id(run_id)
+        instance = cls.__new__(cls)
+        instance._capability = _DirectoryCapability(
+            base_root,
+            "observer-visible",
+            run_id,
+            zone="observer",
+            allowed_top_level=_OBSERVER_TOP_LEVEL,
+            create=False,
+        )
+        instance.root = instance._capability.root
+        instance.run_id = run_id
+        return instance
+
     def write_run_manifest(self, manifest: RunManifest) -> StoredArtifact:
         self._require_run_id(manifest.run_id)
         return _write_immutable(
@@ -289,7 +306,7 @@ class EvaluatorEvidenceStore(_EvidenceStoreLifecycle):
 
     def __init__(self, base_root: Path, run_id: str) -> None:
         _validate_run_id(run_id)
-        allowed_top_level = {"control-events.jsonl", "lifecycle"}
+        allowed_top_level = {"commands", "control-events.jsonl", "lifecycle"}
         self._capability = _DirectoryCapability(
             base_root,
             "evaluator-only",
@@ -339,7 +356,13 @@ class ReportEvidenceStore(_EvidenceStoreLifecycle):
             allowed_top_level={
                 "acceptance-report.json",
                 "failure-report.json",
+                "smoke-report.json",
+                "human-summary.md",
+                "minimal-terminal.json",
                 "checksums.sha256",
+                "recovery",
+                "seals",
+                "seal-index.jsonl",
             },
         )
         self.root = self._capability.root
@@ -369,6 +392,109 @@ class ReportEvidenceStore(_EvidenceStoreLifecycle):
             allowed_top_level={"failure-report.json"},
         )
 
+    def write_smoke_report(self, report: SmokeReport) -> StoredArtifact:
+        """Persist a non-canonical report outside formal acceptance outputs."""
+        validated = SmokeReport.model_validate(report.model_dump(mode="python"))
+        self._require_run_id(validated.run_id)
+        return _write_immutable(
+            self._capability,
+            "smoke-report.json",
+            validated,
+            zone="report",
+            allowed_top_level={"smoke-report.json"},
+        )
+
+    def write_human_summary(self, report: SmokeReport) -> StoredArtifact:
+        """Write a compact report-derived summary without acceptance semantics."""
+        validated = SmokeReport.model_validate(report.model_dump(mode="python"))
+        self._require_run_id(validated.run_id)
+        failures = (
+            ", ".join(validated.failure_reason_codes)
+            if validated.failure_reason_codes
+            else "None"
+        )
+        attempt = validated.attempts[0] if validated.attempts else None
+        phase_lines = (
+            "".join(
+                (
+                    f"- `{phase.phase.value}`: attempts={phase.attempts}, "
+                    f"errors={phase.errors}, error_rate={phase.error_rate:.6f}, "
+                    f"passed={str(phase.passed).lower()}, "
+                    f"fixture_sha256={phase.fixture_sha256 or 'MISSING'}\n"
+                )
+                for phase in attempt.phase_evidence
+            )
+            if attempt is not None
+            else "- None\n"
+        )
+        acknowledgement_lines = (
+            "".join(
+                (
+                    f"- `{ack.stage}/{ack.phase.value if ack.phase else 'none'}`: "
+                    f"succeeded={str(ack.transition_succeeded).lower()}, "
+                    f"duration={ack.acknowledgement_duration_seconds:.3f}s, "
+                    f"reason={ack.reason_code}\n"
+                )
+                for ack in attempt.control_acknowledgements
+            )
+            if attempt is not None
+            else "- None\n"
+        )
+        telemetry_lines = "".join(
+            f"- `{name}` freshness gate: `{str(decision).lower()}`\n"
+            for name, decision in sorted(validated.telemetry_gate_decisions.items())
+        )
+        content = (
+            "# Phase 0 diagnostic smoke\n\n"
+            f"- Run ID: `{validated.run_id}`\n"
+            f"- Diagnostic status: `{validated.diagnostic_status.value}`\n"
+            "- Canonical acceptance: `false`\n"
+            "- Phase 0 complete: `false`\n"
+            f"- Safe stop confirmed: `{str(validated.safe_stop_completed).lower()}`\n"
+            f"- Failure reasons: {failures}\n"
+            "\n## Phase measurements\n\n"
+            f"{phase_lines}"
+            "\n## Control acknowledgements\n\n"
+            f"{acknowledgement_lines}"
+            "\n## Backend freshness decisions\n\n"
+            f"{telemetry_lines}"
+        ).encode("utf-8")
+        return _write_immutable_bytes(
+            self._capability,
+            "human-summary.md",
+            content,
+            zone="report",
+            allowed_top_level={"human-summary.md"},
+        )
+
+    def write_minimal_terminal(
+        self,
+        *,
+        run_id: str,
+        reason_code: str,
+        environment_started: bool,
+        reset_attempted: bool,
+        stop_attempted: bool,
+    ) -> StoredArtifact:
+        """Last-resort immutable truth when full report finalization fails."""
+        self._require_run_id(run_id)
+        return _write_immutable(
+            self._capability,
+            "minimal-terminal.json",
+            {
+                "schema_version": "phase0.smoke-minimal-terminal.v1",
+                "run_id": run_id,
+                "canonical": False,
+                "phase0_complete": False,
+                "reason_code": reason_code,
+                "environment_started": environment_started,
+                "reset_attempted": reset_attempted,
+                "stop_attempted": stop_attempted,
+            },
+            zone="report",
+            allowed_top_level={"minimal-terminal.json"},
+        )
+
     def write_checksums(self, manifest: IntegrityManifest) -> StoredArtifact:
         validated = IntegrityManifest.model_validate(manifest.model_dump(mode="python"))
         self._require_run_id(validated.run_id)
@@ -382,6 +508,57 @@ class ReportEvidenceStore(_EvidenceStoreLifecycle):
             content,
             zone="report",
             allowed_top_level={"checksums.sha256"},
+        )
+
+    def write_recovery_report(
+        self,
+        *,
+        sequence: int,
+        value: BaseModel,
+    ) -> StoredArtifact:
+        if sequence < 1 or sequence > 999:
+            raise ValueError("recovery sequence is outside the bounded range")
+        self._require_run_id(str(getattr(value, "run_id", "")))
+        return _write_immutable(
+            self._capability,
+            f"recovery/{sequence:03d}.json",
+            value,
+            zone="report",
+            allowed_top_level={"recovery"},
+        )
+
+    def write_versioned_checksums(
+        self,
+        manifest: IntegrityManifest,
+        *,
+        sequence: int,
+    ) -> StoredArtifact:
+        if sequence < 1 or sequence > 999:
+            raise ValueError("seal sequence is outside the bounded range")
+        validated = IntegrityManifest.model_validate(
+            manifest.model_dump(mode="python")
+        )
+        self._require_run_id(validated.run_id)
+        content = "".join(
+            f"{digest}  {relative_path}\n"
+            for relative_path, digest in sorted(validated.content_hashes.items())
+        ).encode("utf-8")
+        return _write_immutable_bytes(
+            self._capability,
+            f"seals/{sequence:03d}.sha256",
+            content,
+            zone="report",
+            allowed_top_level={"seals"},
+        )
+
+    def append_seal_index(self, value: BaseModel) -> StoredArtifact:
+        self._require_run_id(str(getattr(value, "run_id", "")))
+        return _append_jsonl(
+            self._capability,
+            "seal-index.jsonl",
+            value,
+            zone="report",
+            allowed_top_level={"seal-index.jsonl"},
         )
 
     def _require_run_id(self, run_id: str) -> None:

@@ -1,0 +1,83 @@
+{
+  "schema_version": "phase1.baseline-lock.v1",
+  "baseline_version": "phase1.single-agent-replay.v1",
+  "hash_contract": {
+    "algorithm": "sha256",
+    "canonical_json": "UTF-8 json.dumps with allow_nan=false, ensure_ascii=false, separators=(',', ':'), sort_keys=true",
+    "composite_raw_files": "For each POSIX relative path sorted lexicographically: uint64be(path_utf8_length) + path_utf8 + uint64be(content_length) + raw_content"
+  },
+  "model": {
+    "snapshot": "gpt-5.4-mini-2026-03-17",
+    "temperature": 0
+  },
+  "budgets": {
+    "max_model_calls": 8,
+    "max_tool_calls": 8,
+    "max_total_tokens": 12000
+  },
+  "artifacts": {
+    "prompt": {
+      "sha256": "4c6b8d2559cb50706e40b10b3a3575f97314b885bd40785627b9126a0d14ce2f",
+      "source_paths": [
+        "src/ecomsre/model/gateway.py#PHASE1_SYSTEM_INSTRUCTION"
+      ],
+      "serialization": "exact_utf8_text"
+    },
+    "tool_schema": {
+      "sha256": "6e9a15cc7f8806a26462bec2c2d621195c8399688ee25d7d3017562dbe001be2",
+      "source_paths": [
+        "src/ecomsre/model/gateway.py#_tool_definitions"
+      ],
+      "serialization": "canonical_json"
+    },
+    "rca_schema": {
+      "sha256": "c2699f21bc12088357196c9f0d623e43262d8854384fe8bf94a3ee7e915332f7",
+      "source_paths": [
+        "src/ecomsre/phase1/contracts.py#RCAResult"
+      ],
+      "serialization": "canonical_json"
+    },
+    "evaluator": {
+      "sha256": "5317488c3c8c2dade54d9d877ac6d4a2011da3cfa2207dfa3444eed2e6aa027c",
+      "source_paths": [
+        "eval/phase1/run.py",
+        "eval/phase1/ground-truth/ad-change-with-normal-sli.json",
+        "eval/phase1/ground-truth/ad-partial-failure-complete.json",
+        "eval/phase1/ground-truth/ad-partial-failure-frontend-decoy.json",
+        "eval/phase1/ground-truth/ad-partial-failure-without-logs.json",
+        "eval/phase1/ground-truth/no-real-incident.json",
+        "eval/phase1/ground-truth/recommendation-cache-failure.json",
+        "eval/phase1/ground-truth/telemetry-insufficient.json"
+      ],
+      "serialization": "composite_raw_files"
+    },
+    "replay_suite": {
+      "version": "phase1.replay-suite.v1",
+      "sha256": "759d2718c3aab15b4b57158ed9b6b347cc48002c793f3766aa3e6c51ac5b090c",
+      "source_paths": [
+        "config/phase1/replay-cases/agent-visible/ad-change-with-normal-sli/manifest.json",
+        "config/phase1/replay-cases/agent-visible/ad-partial-failure-complete/manifest.json",
+        "config/phase1/replay-cases/agent-visible/ad-partial-failure-frontend-decoy/manifest.json",
+        "config/phase1/replay-cases/agent-visible/ad-partial-failure-without-logs/manifest.json",
+        "config/phase1/replay-cases/agent-visible/no-real-incident/manifest.json",
+        "config/phase1/replay-cases/agent-visible/recommendation-cache-failure/manifest.json",
+        "config/phase1/replay-cases/agent-visible/telemetry-insufficient/manifest.json",
+        "eval/phase1/ground-truth/ad-change-with-normal-sli.json",
+        "eval/phase1/ground-truth/ad-partial-failure-complete.json",
+        "eval/phase1/ground-truth/ad-partial-failure-frontend-decoy.json",
+        "eval/phase1/ground-truth/ad-partial-failure-without-logs.json",
+        "eval/phase1/ground-truth/no-real-incident.json",
+        "eval/phase1/ground-truth/recommendation-cache-failure.json",
+        "eval/phase1/ground-truth/telemetry-insufficient.json"
+      ],
+      "serialization": "composite_raw_files"
+    },
+    "validator": {
+      "sha256": "525f65e48d0533d02037c2db289fc3b0304a6d5f75bf75d774cff7c70acc41e0",
+      "source_paths": [
+        "src/ecomsre/phase1/validator.py"
+      ],
+      "serialization": "raw_file_bytes"
+    }
+  }
+}

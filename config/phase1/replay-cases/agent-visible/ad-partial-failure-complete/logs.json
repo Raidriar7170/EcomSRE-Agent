@@ -1,0 +1,1 @@
+{"observations":[{"attributes":{"diagnostic_kind":"configuration_parse_failure","sample_count":18},"ended_at":"2026-07-31T08:04:10Z","limitations":["Sanitized replay log aggregation; message bodies are omitted."],"observation_type":"configuration_error_log","service":"ad","started_at":"2026-07-31T08:01:10Z"}],"schema_version":"phase1.replay-observations.v1","status":"AVAILABLE"}

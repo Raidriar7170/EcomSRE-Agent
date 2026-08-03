@@ -64,10 +64,42 @@ _RUN_ID = re.compile(r"^[0-9a-f]{32}$")
 _COMPOSE_PROJECT_LABEL = "com.docker.compose.project"
 _COMPOSE_SERVICE_LABEL = "com.docker.compose.service"
 _COMPOSE_RESOURCE_KINDS = frozenset({"container", "network", "volume", "port"})
+_HOST_PORT_ALLOWLIST = {
+    "frontend-proxy": frozenset({8080}),
+    "prometheus": frozenset({9090}),
+    "jaeger": frozenset({16686}),
+    "opensearch": frozenset({9200}),
+    "flagd": frozenset({8016}),
+}
 _COMPOSE_FILES = (
     "third_party/opentelemetry-demo/compose.yaml",
     "third_party/opentelemetry-demo/compose.observability.yaml",
     "config/phase0/compose.phase0.yaml",
+)
+_REQUIRED_NAMED_VOLUME_PLAN = {
+    "astronomy-db": ("astronomy-db-data", "/var/lib/postgresql"),
+    "jaeger": ("jaeger-data", "/tmp"),
+    "prometheus": ("prometheus-data", "/prometheus"),
+}
+_REQUIRED_UPSTREAM_CONFIG_BINDS = {
+    "jaeger": (
+        ("src/jaeger/config.yml", "/etc/jaeger/config.yml"),
+        ("src/jaeger/ui-config.json", "/etc/jaeger/ui-config.json"),
+    ),
+    "prometheus": (
+        (
+            "src/prometheus/prometheus-config.yaml",
+            "/etc/prometheus/prometheus-config.yaml",
+        ),
+    ),
+}
+_OBSERVER_COMPOSE_LABEL_ALLOWLIST = frozenset(
+    {
+        _COMPOSE_PROJECT_LABEL,
+        _COMPOSE_SERVICE_LABEL,
+        PROJECT_LABEL,
+        RUN_LABEL,
+    }
 )
 
 
@@ -167,6 +199,11 @@ class ExpectedPortBinding(BaseModel):
             raise ValueError("target-only port cannot predeclare a host binding")
         if self.published_port is not None and not self.host_ip:
             raise ValueError("explicit published port requires a host binding")
+        if self.published_port is not None and self.host_ip not in {
+            "127.0.0.1",
+            "::1",
+        }:
+            raise ValueError("published port host binding must be loopback")
         return self
 
 
@@ -210,6 +247,9 @@ class LifecycleExecution(BaseModel):
     command_results: tuple[CommandResult, ...] = ()
     artifact_paths: LifecycleArtifactPaths | None = None
     ownership_context: AuthenticatedOwnershipContext | None = None
+    docker_endpoint: str | None = None
+    daemon_id: str | None = None
+    mutation_may_have_occurred: bool = False
 
     @model_validator(mode="after")
     def require_success_artifacts(self) -> "LifecycleExecution":
@@ -228,6 +268,134 @@ class LifecycleExecution(BaseModel):
                     "successful up requires complete authenticated artifacts"
                 )
         return self
+
+
+class ResourceDriftObservation(BaseModel):
+    """One read-only Docker resource observation at a named boundary."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    kind: Literal["container", "network", "volume"]
+    name: str = Field(min_length=1)
+    resource_id: str = Field(min_length=1)
+    labels: dict[str, str]
+    present: bool
+
+
+class ResourceDriftAssessment(BaseModel):
+    """Causal safety classification for one observed resource disappearance."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    schema_version: Literal["phase0.resource-drift-assessment.v1"]
+    current_run_id: str = Field(pattern=_RUN_ID.pattern)
+    before: ResourceDriftObservation
+    after: ResourceDriftObservation
+    reason_code: Literal[
+        "EXTERNAL_UNOWNED_RESOURCE_DRIFT",
+        "OWNED_OR_ATTRIBUTABLE_RESOURCE_DRIFT",
+    ]
+    severity: Literal["WARNING", "UNSAFE"]
+    current_run_causality: Literal["UNPROVEN", "PROVEN"]
+    blocking: bool
+    manifest_owned: bool
+    project_labeled: bool
+    delete_command_attributed: bool
+    additional_causality_proven: bool
+
+    @property
+    def warning_reason_codes(self) -> tuple[str, ...]:
+        return (self.reason_code,) if not self.blocking else ()
+
+    @property
+    def blocking_reason_codes(self) -> tuple[str, ...]:
+        return (self.reason_code,) if self.blocking else ()
+
+
+class OwnedVolumeCleanupExecution(BaseModel):
+    """Exact owned-volume cleanup truth plus its audited command results."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    result: TerminalResult
+    removed_volume_names: tuple[str, ...] = ()
+    command_results: tuple[CommandResult, ...] = ()
+
+
+def classify_resource_drift(
+    *,
+    before: ResourceDriftObservation,
+    after: ResourceDriftObservation,
+    authenticated_manifests: tuple[OwnershipManifest, ...],
+    audited_arguments: tuple[tuple[str, ...], ...],
+    current_run_id: str,
+    additional_causality_proven: bool = False,
+) -> ResourceDriftAssessment | None:
+    """Classify disappearance without adopting or reconstructing the resource."""
+    if _RUN_ID.fullmatch(current_run_id) is None:
+        raise ValueError("current run id is invalid")
+    identity = (before.kind, before.name, before.resource_id)
+    if identity != (after.kind, after.name, after.resource_id):
+        raise ValueError("resource observation identity changed")
+    if not before.present:
+        raise ValueError("drift classification requires a present before observation")
+    if after.present:
+        return None
+    manifest_owned = any(
+        any(
+            (
+                resource.kind,
+                resource.name,
+                resource.resource_id,
+            )
+            == identity
+            for resource in manifest.resources
+        )
+        for manifest in authenticated_manifests
+    )
+    project_labeled = (
+        before.labels.get(PROJECT_LABEL) == PROJECT_NAMESPACE
+        and _RUN_ID.fullmatch(before.labels.get(RUN_LABEL, "")) is not None
+    )
+    delete_command_attributed = any(
+        _arguments_delete_exact_resource(
+            arguments,
+            kind=before.kind,
+            name=before.name,
+            resource_id=before.resource_id,
+        )
+        for arguments in audited_arguments
+    )
+    blocking = any(
+        (
+            manifest_owned,
+            project_labeled,
+            delete_command_attributed,
+            additional_causality_proven,
+        )
+    )
+    return ResourceDriftAssessment(
+        schema_version="phase0.resource-drift-assessment.v1",
+        current_run_id=current_run_id,
+        before=before,
+        after=after,
+        reason_code=(
+            "OWNED_OR_ATTRIBUTABLE_RESOURCE_DRIFT"
+            if blocking
+            else "EXTERNAL_UNOWNED_RESOURCE_DRIFT"
+        ),
+        severity="UNSAFE" if blocking else "WARNING",
+        current_run_causality=(
+            "PROVEN"
+            if delete_command_attributed or additional_causality_proven
+            else "UNPROVEN"
+        ),
+        blocking=blocking,
+        manifest_owned=manifest_owned,
+        project_labeled=project_labeled,
+        delete_command_attributed=delete_command_attributed,
+        additional_causality_proven=additional_causality_proven,
+    )
 
 
 def build_compose_invocation(
@@ -282,6 +450,57 @@ def build_compose_invocation(
     )
 
 
+def build_owned_volume_cleanup_daemon_invocation(
+    *,
+    run_id: str,
+    docker_endpoint: str,
+) -> ComposeInvocation:
+    return ComposeInvocation(
+        purpose="cleanup_revalidate_daemon",
+        arguments=(
+            *docker_host_prefix(docker_endpoint),
+            "info",
+            "--format",
+            "{{json .ID}}",
+        ),
+        environment={"ECOMSRE_RUN_ID": run_id},
+        timeout_seconds=30,
+        read_only=True,
+    )
+
+
+def build_owned_volume_cleanup_invocation(
+    resource: OwnedResource,
+    *,
+    run_id: str,
+    docker_endpoint: str,
+) -> ComposeInvocation:
+    expected_labels = _canonical_labels(run_id)
+    if (
+        resource.kind != "volume"
+        or not resource.name
+        or resource.name != resource.resource_id
+        or any(
+            resource.labels.get(key) != value
+            for key, value in expected_labels.items()
+        )
+        or resource.identity_evidence != (f"volume:{resource.resource_id}",)
+    ):
+        raise ValueError("volume cleanup ownership identity is invalid")
+    return ComposeInvocation(
+        purpose="cleanup_owned_volume",
+        arguments=(
+            *docker_host_prefix(docker_endpoint),
+            "volume",
+            "rm",
+            resource.name,
+        ),
+        environment={"ECOMSRE_RUN_ID": run_id},
+        timeout_seconds=30,
+        read_only=False,
+    )
+
+
 def build_image_inspection_invocations(
     image_lock: ImageLockManifest,
     *,
@@ -296,6 +515,8 @@ def build_image_inspection_invocations(
                 *docker_host_prefix(docker_endpoint),
                 "image",
                 "inspect",
+                "--platform",
+                "linux/arm64",
                 source,
             ),
             environment={"ECOMSRE_RUN_ID": run_id},
@@ -452,6 +673,32 @@ def up_environment(
             result=_terminal(
                 Outcome.BLOCKED_UPSTREAM,
                 "COMPOSE_CONFIG_HASH_MISMATCH",
+            ),
+            resolved_compose=resolved,
+            command_results=tuple(command_results),
+        )
+    try:
+        parse_expected_port_bindings(resolved)
+    except ValueError:
+        return LifecycleExecution(
+            result=_terminal(
+                Outcome.UNSAFE,
+                "UNSAFE_PORT_EXPOSURE",
+            ),
+            resolved_compose=resolved,
+            command_results=tuple(command_results),
+        )
+    try:
+        _require_explicit_volume_plan(
+            resolved,
+            run_id=run_id,
+            project_root=project_root,
+        )
+    except ValueError:
+        return LifecycleExecution(
+            result=_terminal(
+                Outcome.UNSAFE,
+                "UNSAFE_VOLUME_PLAN",
             ),
             resolved_compose=resolved,
             command_results=tuple(command_results),
@@ -700,6 +947,15 @@ def up_environment(
             command_results=tuple(command_results),
             artifact_paths=artifact_paths,
             ownership_context=failure_context,
+            docker_endpoint=(
+                docker_endpoint if failure_context is not None else None
+            ),
+            daemon_id=(
+                preflight_evidence.inputs.docker.daemon_id
+                if failure_context is not None
+                else None
+            ),
+            mutation_may_have_occurred=True,
         )
 
     try:
@@ -710,84 +966,165 @@ def up_environment(
             docker_endpoint=docker_endpoint,
             command_results=command_results,
         )
-        _require_resolved_resource_completeness(discovered, resolved)
-        if context is None:
-            manifest = OwnershipManifest(
-                run_id=run_id,
-                resources=discovered,
-            )
-            create_ownership_authority_artifacts(
-                Path(artifacts_root),
-                manifest,
-                created_at=datetime.now(UTC),
-            )
-            context = load_authenticated_ownership_context(
-                Path(artifacts_root),
-                run_id,
-            )
-        else:
-            expected = _compose_manifest(context)
-            verify_owned_resources(discovered, expected)
-        if not _context_is_authentic(context):
-            raise OwnershipAuthorityError("post-up ownership context is not authentic")
-        if artifact_paths is None:
-            artifact_paths = _artifact_paths(
-                Path(artifacts_root),
-                run_id,
-                ownership_intent=(
-                    Path(artifacts_root)
-                    / "observer-visible"
-                    / run_id
-                    / "ownership-intent.json"
-                ),
-            )
-        artifact_paths = _refresh_existing_artifact_paths(
-            artifact_paths,
+    except (DiscoveryParseError, ValueError):
+        assert artifact_paths is not None
+        artifact_paths = _persist_manual_diagnostic_best_effort(
+            _refresh_existing_artifact_paths(artifact_paths, run_id=run_id),
+            artifacts_root=Path(artifacts_root),
             run_id=run_id,
+            command_results=command_results,
+            reason_code="POST_UP_DISCOVERY_FAILED",
         )
-        artifact_paths = _persist_success_artifacts(
+        return LifecycleExecution(
+            result=_terminal(
+                Outcome.MANUAL_INTERVENTION_REQUIRED,
+                "POST_UP_DISCOVERY_FAILED",
+            ),
+            resolved_compose=resolved,
+            image_verification=verification,
+            command_results=tuple(command_results),
+            artifact_paths=artifact_paths,
+            docker_endpoint=docker_endpoint,
+            daemon_id=preflight_evidence.inputs.docker.daemon_id,
+            mutation_may_have_occurred=True,
+        )
+
+    try:
+        _require_resolved_resource_completeness(discovered, resolved)
+    except (OwnershipError, ValueError):
+        assert artifact_paths is not None
+        artifact_paths = _persist_manual_diagnostic_best_effort(
+            _refresh_existing_artifact_paths(artifact_paths, run_id=run_id),
+            artifacts_root=Path(artifacts_root),
+            run_id=run_id,
+            command_results=command_results,
+            reason_code="POST_UP_RESOURCE_COMPLETENESS_FAILED",
+        )
+        return LifecycleExecution(
+            result=_terminal(
+                Outcome.MANUAL_INTERVENTION_REQUIRED,
+                "POST_UP_RESOURCE_COMPLETENESS_FAILED",
+            ),
+            resolved_compose=resolved,
+            image_verification=verification,
+            command_results=tuple(command_results),
+            artifact_paths=artifact_paths,
+            docker_endpoint=docker_endpoint,
+            daemon_id=preflight_evidence.inputs.docker.daemon_id,
+            mutation_may_have_occurred=True,
+        )
+
+    try:
+        _create_or_verify_post_up_ownership_manifest(
+            artifacts_root=Path(artifacts_root),
+            run_id=run_id,
+            discovered=discovered,
+            context=context,
+        )
+    except (
+        OSError,
+        OwnershipAuthorityError,
+        OwnershipError,
+        ValueError,
+    ):
+        assert artifact_paths is not None
+        artifact_paths = _persist_manual_diagnostic_best_effort(
+            _refresh_existing_artifact_paths(artifact_paths, run_id=run_id),
+            artifacts_root=Path(artifacts_root),
+            run_id=run_id,
+            command_results=command_results,
+            reason_code="POST_UP_OWNERSHIP_AUTHENTICATION_FAILED",
+            failure_stage="ownership_manifest",
+        )
+        return LifecycleExecution(
+            result=_terminal(
+                Outcome.MANUAL_INTERVENTION_REQUIRED,
+                "POST_UP_OWNERSHIP_AUTHENTICATION_FAILED",
+            ),
+            resolved_compose=resolved,
+            image_verification=verification,
+            command_results=tuple(command_results),
+            artifact_paths=artifact_paths,
+            docker_endpoint=docker_endpoint,
+            daemon_id=preflight_evidence.inputs.docker.daemon_id,
+            mutation_may_have_occurred=True,
+        )
+
+    try:
+        context = _load_and_authenticate_post_up_ownership_context(
+            artifacts_root=Path(artifacts_root),
+            run_id=run_id,
+            context=context,
+        )
+    except (OSError, OwnershipAuthorityError, ValueError):
+        assert artifact_paths is not None
+        artifact_paths = _persist_manual_diagnostic_best_effort(
+            _refresh_existing_artifact_paths(artifact_paths, run_id=run_id),
+            artifacts_root=Path(artifacts_root),
+            run_id=run_id,
+            command_results=command_results,
+            reason_code="POST_UP_OWNERSHIP_AUTHENTICATION_FAILED",
+            failure_stage="ownership_context_authentication",
+        )
+        return LifecycleExecution(
+            result=_terminal(
+                Outcome.MANUAL_INTERVENTION_REQUIRED,
+                "POST_UP_OWNERSHIP_AUTHENTICATION_FAILED",
+            ),
+            resolved_compose=resolved,
+            image_verification=verification,
+            command_results=tuple(command_results),
+            artifact_paths=artifact_paths,
+            docker_endpoint=docker_endpoint,
+            daemon_id=preflight_evidence.inputs.docker.daemon_id,
+            mutation_may_have_occurred=True,
+        )
+
+    assert context is not None
+    assert artifact_paths is not None
+    artifact_paths = _refresh_existing_artifact_paths(
+        artifact_paths,
+        run_id=run_id,
+    )
+    try:
+        artifact_paths = _persist_evaluator_success_artifact(
+            artifact_paths,
+            artifacts_root=Path(artifacts_root),
+            run_id=run_id,
+            resolved=resolved,
+        )
+        artifact_paths = _persist_observer_success_artifacts(
             artifact_paths,
             artifacts_root=Path(artifacts_root),
             run_id=run_id,
             resolved=resolved,
             command_results=command_results,
         )
-    except (
-        DiscoveryParseError,
-        OSError,
-        OwnershipAuthorityError,
-        OwnershipError,
-        ValueError,
-    ):
-        if artifact_paths is None:
-            return LifecycleExecution(
-                result=_terminal(
-                    Outcome.MANUAL_INTERVENTION_REQUIRED,
-                    "POST_UP_OWNERSHIP_UNPROVEN",
-                ),
-                resolved_compose=resolved,
-                image_verification=verification,
-                command_results=tuple(command_results),
-            )
+    except (OSError, ValueError):
+        artifact_paths = _refresh_existing_artifact_paths(
+            artifact_paths,
+            run_id=run_id,
+        )
         artifact_paths = _persist_manual_diagnostic_best_effort(
-            _refresh_existing_artifact_paths(
-                artifact_paths,
-                run_id=run_id,
-            ),
+            artifact_paths,
             artifacts_root=Path(artifacts_root),
             run_id=run_id,
             command_results=command_results,
-            reason_code="POST_UP_OWNERSHIP_UNPROVEN",
+            reason_code="POST_UP_EVIDENCE_PERSISTENCE_FAILED",
         )
         return LifecycleExecution(
             result=_terminal(
                 Outcome.MANUAL_INTERVENTION_REQUIRED,
-                "POST_UP_OWNERSHIP_UNPROVEN",
+                "POST_UP_EVIDENCE_PERSISTENCE_FAILED",
             ),
             resolved_compose=resolved,
             image_verification=verification,
             command_results=tuple(command_results),
             artifact_paths=artifact_paths,
+            ownership_context=context,
+            docker_endpoint=docker_endpoint,
+            daemon_id=preflight_evidence.inputs.docker.daemon_id,
+            mutation_may_have_occurred=True,
         )
 
     return LifecycleExecution(
@@ -797,6 +1134,9 @@ def up_environment(
         command_results=tuple(command_results),
         artifact_paths=artifact_paths,
         ownership_context=context,
+        docker_endpoint=docker_endpoint,
+        daemon_id=preflight_evidence.inputs.docker.daemon_id,
+        mutation_may_have_occurred=True,
     )
 
 
@@ -882,6 +1222,163 @@ def down_environment(
     return _terminal(Outcome.SUCCESS, "OWNED_ENVIRONMENT_STOPPED")
 
 
+def cleanup_owned_named_volumes(
+    runner: LifecycleRunner,
+    *,
+    context: AuthenticatedOwnershipContext,
+    project_root: Path,
+    docker_endpoint: str,
+    expected_daemon_id: str,
+) -> OwnedVolumeCleanupExecution:
+    """Remove only the still-present exact named-volume subset in the manifest."""
+    command_results: list[CommandResult] = []
+    if (
+        not _context_is_authentic(context)
+        or not is_local_unix_docker_endpoint(docker_endpoint)
+        or not expected_daemon_id
+    ):
+        return OwnedVolumeCleanupExecution(
+            result=_terminal(Outcome.UNSAFE, "RESOURCE_OWNERSHIP_UNKNOWN"),
+        )
+    daemon_invocation = build_owned_volume_cleanup_daemon_invocation(
+        run_id=context.run_id,
+        docker_endpoint=docker_endpoint,
+    )
+    daemon_result = _execute(runner, daemon_invocation)
+    command_results.append(daemon_result)
+    try:
+        observed_daemon_id = json.loads(daemon_result.stdout)
+    except (json.JSONDecodeError, TypeError):
+        observed_daemon_id = None
+    if (
+        daemon_result.exit_code != 0
+        or observed_daemon_id != expected_daemon_id
+    ):
+        return OwnedVolumeCleanupExecution(
+            result=_terminal(
+                Outcome.UNSAFE,
+                "DOCKER_DAEMON_IDENTITY_CHANGED",
+            ),
+            command_results=tuple(command_results),
+        )
+
+    manifest_volumes = tuple(
+        resource
+        for resource in context.manifest.resources
+        if resource.kind == "volume"
+    )
+    try:
+        manifest_by_identity = {
+            (resource.kind, resource.name, resource.resource_id): resource
+            for resource in manifest_volumes
+        }
+        if len(manifest_by_identity) != len(manifest_volumes):
+            raise ValueError("manifest volume identities are duplicated")
+        for resource in manifest_volumes:
+            build_owned_volume_cleanup_invocation(
+                resource,
+                run_id=context.run_id,
+                docker_endpoint=docker_endpoint,
+            )
+        discovered = _discover_verified_resources(
+            runner,
+            project_root=project_root,
+            run_id=context.run_id,
+            docker_endpoint=docker_endpoint,
+            command_results=command_results,
+        )
+        unexpected = tuple(
+            resource
+            for resource in discovered
+            if (
+                resource.kind,
+                resource.name,
+                resource.resource_id,
+            )
+            not in manifest_by_identity
+            and resource.kind == "volume"
+        )
+        if unexpected:
+            raise ValueError("current volume identity is outside the manifest")
+        current_volumes = tuple(
+            resource for resource in discovered if resource.kind == "volume"
+        )
+        if any(
+            manifest_by_identity[
+                (resource.kind, resource.name, resource.resource_id)
+            ]
+            != resource
+            for resource in current_volumes
+        ):
+            raise ValueError("current volume identity drifted from the manifest")
+    except (DiscoveryParseError, KeyError, OwnershipError, ValueError):
+        return OwnedVolumeCleanupExecution(
+            result=_terminal(Outcome.UNSAFE, "RESOURCE_OWNERSHIP_UNKNOWN"),
+            command_results=tuple(command_results),
+        )
+
+    if any(resource.kind != "volume" for resource in discovered):
+        return OwnedVolumeCleanupExecution(
+            result=_terminal(
+                Outcome.MANUAL_INTERVENTION_REQUIRED,
+                "OWNED_VOLUME_CLEANUP_PRECONDITION_FAILED",
+            ),
+            command_results=tuple(command_results),
+        )
+
+    removed: list[str] = []
+    for resource in current_volumes:
+        invocation = build_owned_volume_cleanup_invocation(
+            resource,
+            run_id=context.run_id,
+            docker_endpoint=docker_endpoint,
+        )
+        result = _execute(runner, invocation)
+        command_results.append(result)
+        if result.exit_code != 0:
+            return OwnedVolumeCleanupExecution(
+                result=_terminal(
+                    Outcome.MANUAL_INTERVENTION_REQUIRED,
+                    "OWNED_VOLUME_CLEANUP_FAILED",
+                ),
+                removed_volume_names=tuple(removed),
+                command_results=tuple(command_results),
+            )
+        removed.append(resource.name)
+
+    try:
+        remaining = _discover_verified_resources(
+            runner,
+            project_root=project_root,
+            run_id=context.run_id,
+            docker_endpoint=docker_endpoint,
+            command_results=command_results,
+        )
+    except (DiscoveryParseError, OwnershipError, ValueError):
+        return OwnedVolumeCleanupExecution(
+            result=_terminal(
+                Outcome.MANUAL_INTERVENTION_REQUIRED,
+                "OWNED_VOLUME_CLEANUP_FAILED",
+            ),
+            removed_volume_names=tuple(removed),
+            command_results=tuple(command_results),
+        )
+    if remaining:
+        return OwnedVolumeCleanupExecution(
+            result=_terminal(
+                Outcome.MANUAL_INTERVENTION_REQUIRED,
+                "OWNED_VOLUME_CLEANUP_FAILED",
+            ),
+            removed_volume_names=tuple(removed),
+            command_results=tuple(command_results),
+        )
+    return OwnedVolumeCleanupExecution(
+        result=_terminal(Outcome.SUCCESS, "OWNED_NAMED_VOLUMES_CLEANED"),
+        removed_volume_names=tuple(removed),
+        command_results=tuple(command_results),
+    )
+
+
 def _read_environment_state(
     runner: LifecycleRunner,
     *,
@@ -948,6 +1445,14 @@ def _invocation_is_allowlisted(
             and is_local_unix_docker_endpoint(arguments[2])
             and arguments[3:] == ("info", "--format", "{{json .}}")
         )
+    if purpose == "cleanup_revalidate_daemon":
+        return (
+            invocation.read_only
+            and len(arguments) == 6
+            and arguments[:2] == ("docker", "--host")
+            and is_local_unix_docker_endpoint(arguments[2])
+            and arguments[3:] == ("info", "--format", "{{json .ID}}")
+        )
     if (
         len(arguments) < 3
         or arguments[:2] != ("docker", "--host")
@@ -1006,11 +1511,35 @@ def _invocation_is_allowlisted(
     if purpose == "inspect_image":
         return (
             invocation.read_only
+            and len(arguments) == 8
+            and arguments[:7]
+            == (
+                *docker_prefix,
+                "image",
+                "inspect",
+                "--platform",
+                "linux/arm64",
+            )
+            and bool(arguments[7])
+            and not arguments[7].startswith("-")
+            and not any(character.isspace() for character in arguments[7])
+        )
+    if purpose == "cleanup_owned_volume":
+        name = arguments[-1] if arguments else ""
+        return (
+            not invocation.read_only
             and len(arguments) == 6
-            and arguments[:5] == (*docker_prefix, "image", "inspect")
-            and bool(arguments[5])
-            and not arguments[5].startswith("-")
-            and not any(character.isspace() for character in arguments[5])
+            and arguments[:5]
+            == (
+                *docker_prefix,
+                "volume",
+                "rm",
+            )
+            and name.startswith(f"{PROJECT_NAMESPACE}-{run_id}-")
+            and name
+            and not name.startswith("-")
+            and not any(character.isspace() for character in name)
+            and not any(character in name for character in "*?[]")
         )
     if purpose in {
         f"{scope}_{kind}s"
@@ -1193,9 +1722,10 @@ def parse_expected_port_bindings(
             raise ValueError
     except (json.JSONDecodeError, KeyError, TypeError, ValueError) as error:
         raise ValueError(
-            "resolved Compose port metadata is incomplete or ambiguous"
+            "resolved Compose port metadata is incomplete or ambiguous: "
+            f"{error}"
         ) from error
-    return tuple(
+    bindings = tuple(
         sorted(
             expected,
             key=lambda binding: (
@@ -1208,6 +1738,22 @@ def parse_expected_port_bindings(
             ),
         )
     )
+    _audit_minimal_loopback_port_plan(bindings)
+    return bindings
+
+
+def _audit_minimal_loopback_port_plan(
+    bindings: tuple[ExpectedPortBinding, ...],
+) -> None:
+    for binding in bindings:
+        allowed_targets = _HOST_PORT_ALLOWLIST.get(binding.service)
+        if allowed_targets is None or binding.target_port not in allowed_targets:
+            raise ValueError("published port service/target is outside allowlist")
+        if (
+            binding.published_port is None
+            or binding.host_ip not in {"127.0.0.1", "::1"}
+        ):
+            raise ValueError("published port must use an explicit loopback binding")
 
 
 def _require_resolved_resource_completeness(
@@ -1415,20 +1961,14 @@ def _require_equivalent_host_bindings(
     hosts = {(binding.host_ip, binding.host_family) for binding in actual}
     if len(hosts) != len(actual):
         raise ValueError("published port host binding is duplicate")
-    wildcard_pair = {
-        ("0.0.0.0", "ipv4"),
-        ("::", "ipv6"),
-    }
-    if expected.published_port is None:
-        if hosts == {("0.0.0.0", "ipv4")} or hosts == wildcard_pair:
-            return
-        raise ValueError("target-only host binding is not the Compose wildcard default")
+    if expected.published_port is None or expected.host_ip is None:
+        raise ValueError("published port lacks explicit loopback intent")
     assert expected.host_ip is not None
     expected_host, expected_family = _normalize_host_binding(expected.host_ip)
-    if expected_host == "0.0.0.0":
-        if hosts == {("0.0.0.0", "ipv4")} or hosts == wildcard_pair:
-            return
-    elif hosts == {(expected_host, expected_family)}:
+    if (
+        expected_host in {"127.0.0.1", "::1"}
+        and hosts == {(expected_host, expected_family)}
+    ):
         return
     raise ValueError("explicit published host binding differs")
 
@@ -1734,6 +2274,29 @@ def _resource_identities(
     }
 
 
+def _arguments_delete_exact_resource(
+    arguments: tuple[str, ...],
+    *,
+    kind: str,
+    name: str,
+    resource_id: str,
+) -> bool:
+    if not isinstance(arguments, tuple) or not arguments:
+        return False
+    try:
+        index = arguments.index(kind)
+    except ValueError:
+        return False
+    return (
+        index + 2 < len(arguments)
+        and arguments[index + 1] == "rm"
+        and any(
+            candidate in {name, resource_id}
+            for candidate in arguments[index + 2 :]
+        )
+    )
+
+
 def _parse_json_records(stdout: str) -> tuple[dict[str, object], ...]:
     if not stdout.strip():
         return ()
@@ -1785,26 +2348,54 @@ def _artifact_paths(
     )
 
 
-def _persist_success_artifacts(
+def _create_or_verify_post_up_ownership_manifest(
+    *,
+    artifacts_root: Path,
+    run_id: str,
+    discovered: tuple[OwnedResource, ...],
+    context: AuthenticatedOwnershipContext | None,
+) -> None:
+    """Create the post-up manifest, or verify it against existing authority."""
+    if context is None:
+        create_ownership_authority_artifacts(
+            artifacts_root,
+            OwnershipManifest(
+                run_id=run_id,
+                resources=discovered,
+            ),
+            created_at=datetime.now(UTC),
+        )
+        return
+    verify_owned_resources(discovered, _compose_manifest(context))
+
+
+def _load_and_authenticate_post_up_ownership_context(
+    *,
+    artifacts_root: Path,
+    run_id: str,
+    context: AuthenticatedOwnershipContext | None,
+) -> AuthenticatedOwnershipContext:
+    """Load and authenticate context only after manifest handling succeeded."""
+    authenticated = (
+        load_authenticated_ownership_context(artifacts_root, run_id)
+        if context is None
+        else context
+    )
+    if not _context_is_authentic(authenticated):
+        raise OwnershipAuthorityError("post-up ownership context is not authentic")
+    return authenticated
+
+
+def _persist_evaluator_success_artifact(
     paths: LifecycleArtifactPaths,
     *,
     artifacts_root: Path,
     run_id: str,
     resolved: ResolvedComposeConfig,
-    command_results: list[CommandResult],
 ) -> LifecycleArtifactPaths:
     raw_payload = {
         "schema_version": "phase0.resolved-compose-raw.v1",
         "stdout": resolved.stdout,
-        "sha256": resolved.sha256,
-        "image_sources": resolved.image_references,
-        "compose_files": _COMPOSE_FILES,
-        "pull_policy": "never",
-        "build_policy": "no-build",
-    }
-    observer_payload = {
-        "schema_version": "phase0.resolved-compose-summary.v1",
-        "sanitized_config": _sanitize_resolved_compose(resolved.stdout),
         "sha256": resolved.sha256,
         "image_sources": resolved.image_references,
         "compose_files": _COMPOSE_FILES,
@@ -1816,6 +2407,26 @@ def _persist_success_artifacts(
             "lifecycle/resolved-compose.json",
             raw_payload,
         )
+    return paths.model_copy(update={"resolved_compose_raw": raw_artifact.path})
+
+
+def _persist_observer_success_artifacts(
+    paths: LifecycleArtifactPaths,
+    *,
+    artifacts_root: Path,
+    run_id: str,
+    resolved: ResolvedComposeConfig,
+    command_results: list[CommandResult],
+) -> LifecycleArtifactPaths:
+    observer_payload = {
+        "schema_version": "phase0.resolved-compose-summary.v1",
+        "sanitized_config": _project_resolved_compose_for_observer(resolved.stdout),
+        "sha256": resolved.sha256,
+        "image_sources": resolved.image_references,
+        "compose_files": _COMPOSE_FILES,
+        "pull_policy": "never",
+        "build_policy": "no-build",
+    }
     with ObserverEvidenceStore(artifacts_root, run_id) as observer:
         resolved_artifact = observer.write_immutable(
             "lifecycle/resolved-compose.json",
@@ -1828,7 +2439,6 @@ def _persist_success_artifacts(
     return paths.model_copy(
         update={
             "resolved_compose": resolved_artifact.path,
-            "resolved_compose_raw": raw_artifact.path,
             "command_log": command_artifact.path,
         }
     )
@@ -1859,17 +2469,21 @@ def _persist_manual_diagnostic_best_effort(
     run_id: str,
     command_results: list[CommandResult],
     reason_code: str,
+    failure_stage: str | None = None,
 ) -> LifecycleArtifactPaths:
     try:
         with ObserverEvidenceStore(artifacts_root, run_id) as observer:
+            payload: dict[str, object] = {
+                "schema_version": "phase0.manual-diagnostic.v1",
+                "reason_code": reason_code,
+                "automatic_down_attempted": False,
+                "commands": _command_log_payload(command_results),
+            }
+            if failure_stage is not None:
+                payload["failure_stage"] = failure_stage
             artifact = observer.write_immutable(
                 "lifecycle/manual-diagnostic.json",
-                {
-                    "schema_version": "phase0.manual-diagnostic.v1",
-                    "reason_code": reason_code,
-                    "automatic_down_attempted": False,
-                    "commands": _command_log_payload(command_results),
-                },
+                payload,
             )
     except (OSError, ValueError):
         return _refresh_existing_artifact_paths(paths, run_id=run_id)
@@ -1878,16 +2492,26 @@ def _persist_manual_diagnostic_best_effort(
 
 def _command_log_payload(
     command_results: list[CommandResult],
-) -> list[dict[str, object]]:
-    return [
-        {
-            "arguments": result.arguments,
-            "exit_code": result.exit_code,
-            "stdout_sha256": sha256_bytes(result.stdout.encode("utf-8")),
-            "stderr_sha256": sha256_bytes(result.stderr.encode("utf-8")),
-        }
-        for result in command_results
-    ]
+) -> dict[str, object]:
+    return {
+        "schema_version": "phase0.command-log-index.v1",
+        "records": [
+            {
+                "arguments": result.arguments,
+                "exit_code": result.exit_code,
+                "stdout_sha256": sha256_bytes(result.stdout.encode("utf-8")),
+                "stderr_sha256": sha256_bytes(result.stderr.encode("utf-8")),
+                "audit_status": (
+                    "COMMAND_LOG_V2"
+                    if result.command_log_artifact is not None
+                    else "FIXTURE_UNAVAILABLE"
+                ),
+                "command_log_artifact": result.command_log_artifact,
+                "command_log_sha256": result.command_log_sha256,
+            }
+            for result in command_results
+        ],
+    }
 
 
 def _refresh_existing_artifact_paths(
@@ -1932,46 +2556,160 @@ def _refresh_existing_artifact_paths(
     )
 
 
-def _sanitize_resolved_compose(stdout: str) -> dict[str, object]:
+def _project_resolved_compose_for_observer(stdout: str) -> dict[str, object]:
     payload = json.loads(stdout)
     if not isinstance(payload, dict):
         raise ValueError("resolved Compose must be an object")
-
-    sensitive_markers = (
-        "evaluator-only",
-        "/control",
-        "demo.flagd.json",
-        "adfailure",
-        "adservicefailure",
-        "physical_flag",
-        "scenario_identity",
-        "runtime",
-    )
-
-    def sanitize(value: object, *, in_volume: bool = False) -> object:
-        if isinstance(value, dict):
-            sanitized: dict[str, object] = {}
-            for key, nested in value.items():
-                key_text = str(key)
-                if any(marker in key_text.casefold() for marker in sensitive_markers):
-                    sanitized["<opaque>"] = "<opaque>"
+    services = payload.get("services")
+    if not isinstance(services, dict):
+        raise ValueError("resolved Compose services are unavailable")
+    projected_services: dict[str, object] = {}
+    for logical_service, raw_service in sorted(services.items()):
+        if not isinstance(logical_service, str) or not isinstance(raw_service, dict):
+            raise ValueError("resolved Compose service is malformed")
+        projected: dict[str, object] = {"logical_service": logical_service}
+        for field in ("image", "container_name", "platform"):
+            value = raw_service.get(field)
+            if isinstance(value, str) and value:
+                projected[field] = value
+        raw_labels = raw_service.get("labels", {})
+        if isinstance(raw_labels, dict):
+            labels = {
+                str(key): str(value)
+                for key, value in raw_labels.items()
+                if str(key) in _OBSERVER_COMPOSE_LABEL_ALLOWLIST
+            }
+            if labels:
+                projected["labels"] = labels
+        raw_ports = raw_service.get("ports", [])
+        if isinstance(raw_ports, list):
+            ports: list[dict[str, object]] = []
+            for raw_port in raw_ports:
+                if not isinstance(raw_port, dict):
                     continue
-                sanitized[key_text] = sanitize(
-                    nested,
-                    in_volume=in_volume or key_text.casefold() == "volumes",
-                )
-            return sanitized
-        if isinstance(value, list):
-            return [sanitize(item, in_volume=in_volume) for item in value]
-        if isinstance(value, str) and (
-            in_volume or any(marker in value.casefold() for marker in sensitive_markers)
-        ):
-            return "<opaque>"
-        return value
+                host_ip = raw_port.get("host_ip")
+                published = raw_port.get("published")
+                target = raw_port.get("target")
+                protocol = raw_port.get("protocol", "tcp")
+                if (
+                    host_ip in {"127.0.0.1", "::1"}
+                    and published is not None
+                    and isinstance(target, int)
+                    and protocol in {"tcp", "udp"}
+                ):
+                    ports.append(
+                        {
+                            "host_ip": host_ip,
+                            "published": str(published),
+                            "target": target,
+                            "protocol": protocol,
+                        }
+                    )
+            if ports:
+                projected["ports"] = ports
+        projected_services[logical_service] = projected
+    return {"services": projected_services}
 
-    sanitized = sanitize(payload)
-    assert isinstance(sanitized, dict)
-    return sanitized
+
+def _require_explicit_volume_plan(
+    resolved: ResolvedComposeConfig,
+    *,
+    run_id: str,
+    project_root: Path,
+) -> None:
+    payload = json.loads(resolved.stdout)
+    if not isinstance(payload, dict):
+        raise ValueError("resolved Compose must be an object")
+    services = payload.get("services")
+    volumes = payload.get("volumes")
+    if not isinstance(services, dict) or not isinstance(volumes, dict):
+        raise ValueError("resolved Compose named volume plan is unavailable")
+    expected_labels = {
+        PROJECT_LABEL: PROJECT_NAMESPACE,
+        RUN_LABEL: run_id,
+    }
+    for volume_name, volume in volumes.items():
+        if not isinstance(volume_name, str) or not isinstance(volume, dict):
+            raise ValueError("resolved Compose named volume is malformed")
+        labels = volume.get("labels")
+        if not isinstance(labels, dict) or any(
+            labels.get(key) != value for key, value in expected_labels.items()
+        ):
+            raise ValueError(f"named volume labels are invalid: {volume_name}")
+        if volume.get("name") != f"{PROJECT_NAMESPACE}-{run_id}-{volume_name}":
+            raise ValueError(f"named volume identity is invalid: {volume_name}")
+    for service_name, service in services.items():
+        if not isinstance(service_name, str) or not isinstance(service, dict):
+            raise ValueError("resolved Compose service is malformed")
+        mounts = service.get("volumes", [])
+        if not isinstance(mounts, list):
+            raise ValueError(f"service volume plan is malformed: {service_name}")
+        for mount in mounts:
+            if not isinstance(mount, dict):
+                raise ValueError(f"service volume mount is ambiguous: {service_name}")
+            mount_type = mount.get("type")
+            source = mount.get("source")
+            if mount_type == "volume":
+                if not isinstance(source, str) or not source or source not in volumes:
+                    raise ValueError(
+                        f"service volume source is undeclared: {service_name}"
+                    )
+            elif mount_type not in {"bind", "tmpfs"}:
+                raise ValueError(
+                    f"service volume mount type is unknown: {service_name}"
+                )
+    for service_name, (volume_name, target) in _REQUIRED_NAMED_VOLUME_PLAN.items():
+        service = services.get(service_name)
+        volume = volumes.get(volume_name)
+        if not isinstance(service, dict) or not isinstance(volume, dict):
+            raise ValueError(f"required named volume is missing: {service_name}")
+        declared_name = volume.get("name")
+        if declared_name != f"{PROJECT_NAMESPACE}-{run_id}-{volume_name}":
+            raise ValueError(f"named volume identity is invalid: {volume_name}")
+        mounts = service.get("volumes")
+        if not isinstance(mounts, list):
+            raise ValueError(f"required volume mount is missing: {service_name}")
+        exact = [
+            mount
+            for mount in mounts
+            if isinstance(mount, dict)
+            and mount.get("type") == "volume"
+            and mount.get("source") == volume_name
+            and mount.get("target") == target
+        ]
+        if len(exact) != 1 or any(
+            not isinstance(mount, dict) or not mount.get("source")
+            for mount in mounts
+        ):
+            raise ValueError(f"required volume mount is unsafe: {service_name}")
+    upstream_root = (
+        Path(project_root).resolve()
+        / "third_party"
+        / "opentelemetry-demo"
+    )
+    for service_name, required_binds in _REQUIRED_UPSTREAM_CONFIG_BINDS.items():
+        service = services.get(service_name)
+        mounts = service.get("volumes") if isinstance(service, dict) else None
+        if not isinstance(mounts, list):
+            raise ValueError(
+                f"required config bind is missing: {service_name}"
+            )
+        for relative_source, target in required_binds:
+            expected_source = (upstream_root / relative_source).resolve()
+            exact = [
+                mount
+                for mount in mounts
+                if isinstance(mount, dict)
+                and mount.get("type") == "bind"
+                and isinstance(mount.get("source"), str)
+                and Path(str(mount["source"])).resolve() == expected_source
+                and mount.get("target") == target
+                and mount.get("read_only") is True
+            ]
+            if len(exact) != 1:
+                raise ValueError(
+                    f"required config bind is unsafe: {service_name}:{target}"
+                )
 
 
 def _existing_regular_artifact(
