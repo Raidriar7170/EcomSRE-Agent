@@ -25,7 +25,6 @@ from ecomsre.environment.lifecycle import (
 )
 from ecomsre.environment.manifests import (
     ImageLockManifest,
-    ImageLockSourceSetChanged,
     ImageLockStatus,
     InspectedImage,
     generate_candidate_image_lock,

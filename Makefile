@@ -118,3 +118,11 @@ phase3-verify: phase1-prerequisites
 
 phase3-test: phase1-prerequisites
 	env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync pytest tests/phase3 -q
+
+AGENT_DEMO_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.demo
+AGENT_DEMO_REPORT ?= $(PROJECT_ROOT)/artifacts/demo/agent-mainline-v1-report.json
+
+.PHONY: agent-demo
+
+agent-demo: phase1-prerequisites
+	$(AGENT_DEMO_CLI) run --output "$(AGENT_DEMO_REPORT)"

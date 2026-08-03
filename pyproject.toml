@@ -12,6 +12,16 @@ dependencies = [
 dev = [
     "pytest>=8.0,<9",
 ]
+ci = [
+    "mypy==1.20.2",
+    "ruff==0.16.1",
+]
+
+[tool.ruff]
+exclude = ["third_party/opentelemetry-demo"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
 
 [tool.pytest.ini_options]
 addopts = "-ra"

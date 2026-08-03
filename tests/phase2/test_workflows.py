@@ -10,10 +10,12 @@ from ecomsre.phase1.agent import SingleAgent
 from ecomsre.phase1.contracts import (
     BudgetLimits,
     EvidenceSource,
+    FaultMechanism,
     InvestigationRequest,
     MetricsAction,
     ModelConfiguration,
     ReadOnlyToolName,
+    RCADecision,
     TracesAction,
 )
 from ecomsre.phase1.runtime_config import load_agent_settings
@@ -319,3 +321,100 @@ def test_fixed_workflow_uses_an_explicit_typed_backend() -> None:
         record.observed_provider_identity
         for record in result.trace.model_call_audits
     } == {"injected-provider"}
+
+
+@pytest.mark.parametrize(
+    ("case_id", "root_service", "fault_mechanism"),
+    (
+        (
+            "ad-partial-failure-complete",
+            "ad",
+            FaultMechanism.RUNTIME_CONFIGURATION_FAILURE,
+        ),
+        (
+            "recommendation-cache-failure",
+            "recommendation",
+            FaultMechanism.CACHE_BACKEND_TIMEOUT,
+        ),
+    ),
+)
+def test_dynamic_scripted_evidence_confirmation_is_generic_and_opt_in(
+    case_id: str,
+    root_service: str,
+    fault_mechanism: FaultMechanism,
+) -> None:
+    replay_case = load_replay_case(
+        PROJECT_ROOT / "config/phase1/replay-cases/agent-visible",
+        case_id,
+    )
+    backend = ScriptedModelBackend(
+        token_authority=load_token_authority(PROJECT_ROOT),
+        enable_evidence_confirmation=True,
+    )
+
+    result = run_replay_workflow(
+        project_root=PROJECT_ROOT,
+        replay_case=replay_case,
+        variant=Phase2Variant.DYNAMIC_MULTI_AGENT,
+        allow_refinement=True,
+        model_backend=backend,
+    )
+
+    assert result.trace.status == "COMPLETED"
+    assert result.trace.final_rca is not None
+    assert result.trace.final_rca.decision is RCADecision.RCA_CONFIRMED
+    assert result.trace.final_rca.root_service == root_service
+    assert result.trace.final_rca.fault_mechanism is fault_mechanism
+    refs = set(result.trace.final_rca.supporting_evidence)
+    sources = {
+        item.source
+        for record in result.trace.tool_call_records
+        for item in record.evidence
+        if item.evidence_ref in refs
+    }
+    assert len(sources) >= 2
+    if fault_mechanism is FaultMechanism.RUNTIME_CONFIGURATION_FAILURE:
+        assert EvidenceSource.CHANGES in sources
+        assert result.trace.admitted_graph is not None
+        assert result.trace.admitted_graph.refinement_fragment is not None
+
+
+def test_dynamic_scripted_evidence_confirmation_fails_closed_without_anomaly() -> None:
+    replay_case = load_replay_case(
+        PROJECT_ROOT / "config/phase1/replay-cases/agent-visible",
+        "no-real-incident",
+    )
+    backend = ScriptedModelBackend(
+        token_authority=load_token_authority(PROJECT_ROOT),
+        enable_evidence_confirmation=True,
+    )
+
+    result = run_replay_workflow(
+        project_root=PROJECT_ROOT,
+        replay_case=replay_case,
+        variant=Phase2Variant.DYNAMIC_MULTI_AGENT,
+        allow_refinement=True,
+        model_backend=backend,
+    )
+
+    assert result.trace.status == "COMPLETED"
+    assert result.trace.final_rca is not None
+    assert result.trace.final_rca.decision is RCADecision.ABSTAIN
+
+
+def test_scripted_evidence_confirmation_is_disabled_by_default() -> None:
+    replay_case = load_replay_case(
+        PROJECT_ROOT / "config/phase1/replay-cases/agent-visible",
+        "ad-partial-failure-complete",
+    )
+
+    result = run_replay_workflow(
+        project_root=PROJECT_ROOT,
+        replay_case=replay_case,
+        variant=Phase2Variant.DYNAMIC_MULTI_AGENT,
+        allow_refinement=True,
+    )
+
+    assert result.trace.status == "COMPLETED"
+    assert result.trace.final_rca is not None
+    assert result.trace.final_rca.decision is RCADecision.ABSTAIN
