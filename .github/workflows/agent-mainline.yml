@@ -26,6 +26,9 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Fetch pinned upstream tag metadata
+        run: git -C third_party/opentelemetry-demo fetch origin tag 3.0.0
+
       - name: Install Python
         uses: actions/setup-python@v5
         with:

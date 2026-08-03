@@ -13,6 +13,7 @@ def test_agent_mainline_ci_runs_the_locked_offline_validation_surface() -> None:
     for required in (
         "runs-on: macos-14",
         "submodules: recursive",
+        "git -C third_party/opentelemetry-demo fetch origin tag 3.0.0",
         "uv sync --frozen --python 3.11 --group ci",
         "make phase1-test",
         "make phase2-test",
