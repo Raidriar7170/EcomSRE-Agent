@@ -5,6 +5,7 @@ description = "Deterministic Phase 0 control and evidence contracts for EcomSRE-
 requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.0,<3",
+    "tiktoken==0.13.0",
 ]
 
 [dependency-groups]

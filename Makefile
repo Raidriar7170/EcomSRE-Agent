@@ -75,3 +75,17 @@ phase1-test: phase1-prerequisites
 
 phase1-provider-smoke: phase1-prerequisites
 	$(PHASE1_CLI) provider-smoke
+
+PHASE2_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.phase2.cli
+PHASE2_REPORT ?= $(PROJECT_ROOT)/artifacts/phase2/comparison/comparison-report.json
+
+.PHONY: phase2-compare phase2-verify phase2-test
+
+phase2-compare: phase1-prerequisites
+	$(PHASE2_CLI) compare --output "$(PHASE2_REPORT)"
+
+phase2-verify: phase1-prerequisites
+	$(PHASE2_CLI) verify --report "$(PHASE2_REPORT)"
+
+phase2-test: phase1-prerequisites
+	env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync pytest tests/phase2 -q

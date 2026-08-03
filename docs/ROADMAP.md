@@ -52,7 +52,7 @@ A second smoke requires a new explicit bounded task.
 
 ## Phase 1 — Read-only tools and Single-Agent baseline
 
-**State:** deferred.
+**State:** frozen local replay baseline implemented and verified.
 
 Entry:
 
@@ -75,7 +75,12 @@ Exit:
 
 ## Phase 2 — Dynamic Multi-Agent diagnosis
 
-**State:** deferred.
+**State:** local offline implementation and 7 x 3 comparison complete; fresh
+Phase 2, frozen Phase 1, and repository-wide tests pass. The final read-only
+review's three Must Fix findings are repaired and focused verified locally;
+fresh repository-wide `FINAL_CLOSURE` evidence is verified. This is not a
+reviewer re-pass, release, or a
+superiority claim.
 
 Entry:
 

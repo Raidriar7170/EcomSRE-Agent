@@ -1119,7 +1119,10 @@ def test_pyproject_declares_python_311_and_only_approved_dependencies() -> None:
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
 
     assert pyproject["project"]["requires-python"] == ">=3.11"
-    assert pyproject["project"]["dependencies"] == ["pydantic>=2.0,<3"]
+    assert pyproject["project"]["dependencies"] == [
+        "pydantic>=2.0,<3",
+        "tiktoken==0.13.0",
+    ]
     assert pyproject["dependency-groups"]["dev"] == ["pytest>=8.0,<9"]
     assert "scripts" not in pyproject["project"]
 
