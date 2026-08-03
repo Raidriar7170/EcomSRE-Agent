@@ -104,3 +104,17 @@ phase2-provider-smoke-case: phase1-prerequisites
 
 phase2-provider-smoke-aggregate: phase1-prerequisites
 	$(PHASE2_CLI) provider-smoke-aggregate --case-root "$(PHASE2_PROVIDER_CASE_ROOT)"
+
+PHASE3_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.phase3.cli
+PHASE3_REPORT ?= $(PROJECT_ROOT)/artifacts/phase3/replay/minimum-evaluation-report.json
+
+.PHONY: phase3-replay phase3-verify phase3-test
+
+phase3-replay: phase1-prerequisites
+	$(PHASE3_CLI) replay --output "$(PHASE3_REPORT)"
+
+phase3-verify: phase1-prerequisites
+	$(PHASE3_CLI) verify --report "$(PHASE3_REPORT)"
+
+phase3-test: phase1-prerequisites
+	env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync pytest tests/phase3 -q

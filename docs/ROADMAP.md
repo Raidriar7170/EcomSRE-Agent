@@ -102,7 +102,12 @@ Exit:
 
 ## Phase 3 — Restricted remediation
 
-**State:** deferred.
+**State:** complete for the accepted replay-only MVP (`DEC-025`); live
+integration has not been entered.
+
+Completion marker:
+
+`PHASE3_RESTRICTED_REMEDIATION_REPLAY_MVP_READY`
 
 Entry:
 
@@ -122,6 +127,9 @@ Exit:
 - unsafe and uncertain states fail closed;
 - rollback remains available after the one-forward-mutation limit;
 - no action can escape project-owned local resources.
+
+This exit applies only to deterministic offline replay. It does not authorize
+Docker, provider calls, live telemetry, live mutation, Phase 4, or publication.
 
 ## Phase 4 — Search, ads, and recommendation extensions
 
