@@ -136,7 +136,7 @@ Docker, provider calls, live telemetry, live mutation, Phase 4, or publication.
 **State:** `PHASE4_OFFLINE_ECOMMERCE_DOMAIN_REPLAY_MVP_READY` under accepted
 `DEC-026`. The deterministic offline implementation, ten-run evaluation, demo,
 regressions, and Draft PR CI pass. The real-provider gate is not configured and
-is recorded as `SKIPPED_NOT_CONFIGURED`; Phase 5 has not been entered.
+is recorded as `SKIPPED_NOT_CONFIGURED`; Phase 5A does not alter this result.
 
 Entry:
 
@@ -166,7 +166,35 @@ Exit:
 
 These components do not retroactively expand Phase 0 claims.
 
-## Phase 5 — Frozen evaluation and demonstration
+## Phase 5A — Multi-Agent diagnosis quality repair
+
+**State:** `PHASE5A_MULTI_AGENT_QUALITY_REPAIR_READY` under accepted `DEC-027`.
+This is a visible development evaluation. Phase 5B has not been entered.
+
+Entry:
+
+- Phase 4 merge commit `8d9bb8a1e6e173aa795ac5f2ff541c29302ae691` is the baseline;
+- Phase 1/2/3/4 contracts, reports, truth, and safety boundaries remain frozen;
+- `DEC-027` accepted.
+
+Scope:
+
+- mechanism-level typed candidates and Specialist findings;
+- typed empty, unavailable, and query-failed source behavior;
+- capability-parity Single, Fixed, and Dynamic v2 workflows;
+- 12 public templates × 3 variants with all 36 runs retained;
+- metamorphic anti-hardcoding tests and an optional bounded 3 × 3 provider pilot;
+- no new Agent, remediation action, Docker, live telemetry, or live mutation.
+
+Exit:
+
+- 36/36 runs return typed terminal results with zero empty-evidence failures;
+- Fixed and Dynamic v2 each exceed the frozen v1 2/7 original-case result;
+- Dynamic average tool calls do not exceed Fixed;
+- report verification and Phase 1–4 regressions pass;
+- claims remain limited to the visible development templates.
+
+## Phase 5B — Frozen hidden evaluation and demonstration
 
 **State:** deferred.
 

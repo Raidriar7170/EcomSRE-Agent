@@ -15,6 +15,7 @@ from ecomsre.phase5a.workflows import (
     DiagnosisVariantV2,
     run_diagnosis_v2,
 )
+from ecomsre.phase5a import workflows
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -101,6 +102,34 @@ def test_dynamic_stops_after_normal_metrics_and_abstains() -> None:
     assert trace.final_diagnosis.decision is DiagnosisDecisionV2.ABSTAIN
     assert trace.investigated_sources == (EvidenceSource.METRICS,)
     assert trace.final_budget_snapshot.charged_tool_calls == 1
+
+
+@pytest.mark.parametrize("variant", tuple(DiagnosisVariantV2))
+def test_post_charge_exception_is_retained_as_typed_failed_trace(
+    monkeypatch: pytest.MonkeyPatch,
+    variant: DiagnosisVariantV2,
+) -> None:
+    replay_case = load_replay_case(
+        PHASE1_CASE_ROOT,
+        "ad-partial-failure-complete",
+    )
+
+    def fail_after_admission(*_args, **_kwargs):
+        raise RuntimeError("injected post-charge failure")
+
+    monkeypatch.setattr(workflows, "_dispatch_tool", fail_after_admission)
+    trace = run_diagnosis_v2(
+        project_root=PROJECT_ROOT,
+        replay_case=replay_case,
+        variant=variant,
+    )
+
+    assert trace.status == "FAILED"
+    assert trace.final_diagnosis is None
+    assert trace.terminal_reason in {"RuntimeError", "ToolIsolationError"}
+    assert trace.final_budget_snapshot.charged_tool_calls >= len(
+        trace.tool_call_records
+    )
 
 
 @pytest.mark.parametrize(

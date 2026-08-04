@@ -316,6 +316,53 @@ services, Docker or OTel Demo work, Phase 5 hidden splits or paired seeds,
 bootstrap confidence intervals, remediation expansion, release, deployment,
 or a Multi-Agent superiority claim.
 
+## DEC-027 — Multi-Agent Diagnosis Quality Repair and Capability-Parity Evaluation
+
+**Status: `accepted`. The binding completion marker is
+`PHASE5A_MULTI_AGENT_QUALITY_REPAIR_READY`. This is a visible development-set
+quality repair, not Phase 5B or a Multi-Agent superiority evaluation.**
+
+Phase 5A adds the independent `phase5a.diagnosis-quality-v2` surface without
+changing the frozen Phase 1 RCA v1, Phase 2 comparison v1, Phase 3 action
+allowlist, or Phase 4 Domain RCA v1 contracts. Its exact unified mechanism set
+is `runtime_configuration_failure`, `request_processing_failure`,
+`cache_backend_timeout`, `feature_freshness_lag`,
+`model_feature_schema_mismatch`, and `ranking_configuration_failure`.
+
+Specialists now hand off typed mechanism candidates, supporting and
+contradicting current-run evidence, concrete missing evidence, and confidence.
+`AVAILABLE`, `EMPTY`, `SOURCE_UNAVAILABLE`, and `QUERY_FAILED` are distinct
+observation states. A dispatched read-only tool error remains a charged,
+auditable typed attempt and does not automatically collapse the whole workflow.
+The Phase 2 v1 success-only dispatch behavior remains available and unchanged.
+
+Single v2, Fixed Specialist v2, and Dynamic Multi-Agent v2 share the same
+evidence-native semantics and closed `phase5a.diagnosis-result.v2` contract.
+Dynamic v2 uses Metrics first, evidence-driven Logs/Traces expansion, and at
+most one targeted refinement. Every model/tool/token charge remains owned by
+the central Phase 2 budget ledger; no orchestration work is treated as free.
+
+The visible development evaluation runs all seven Phase 1 cases and all five
+Phase 4 cases through all three v2 variants, retaining 36/36 typed terminal
+results. At acceptance, original-seven decision accuracy is 7/7 for Single,
+Fixed, and Dynamic v2; empty-evidence workflow failures are zero; Dynamic uses
+2.5 average tool calls versus Fixed's 4.0. The report labels itself
+`VISIBLE DEVELOPMENT EVALUATION` and `NOT A SUPERIORITY CLAIM`. The frozen
+Phase 2 v1 baseline remains Single 7/7, Fixed 2/7, Dynamic 2/7 with semantic
+SHA-256 `3734e5814a5a0bbe139f7e7ca346e06f0d139ec4f9947b4a97cb6a34c7af14b4`.
+
+The optional real-provider pilot is exactly three visible cases by three
+variants, with one frozen model snapshot, temperature zero, equal completion
+limit, no retry, no scripted fallback, complete usage, and all failures
+retained. An absent provider configuration returns `SKIPPED_NOT_CONFIGURED`
+and does not block the offline marker.
+
+Phase 5A adds no Agent, remediation action, Docker command, live telemetry,
+live mutation, hidden template, paired seed, bootstrap interval, release, or
+deployment. Phase 5B remains separately gated and unentered. This decision
+closes `OQ-010`; it does not close or weaken the hidden-evaluation requirements
+in `OQ-007` and `DEC-011`.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)

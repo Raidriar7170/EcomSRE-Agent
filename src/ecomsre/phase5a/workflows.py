@@ -171,18 +171,22 @@ class DiagnosisWorkflowTraceV2(Phase5AModel):
                 raise ValueError("completed workflow retains active budget records")
         elif self.final_diagnosis is not None or self.terminal_reason is None:
             raise ValueError("failed workflow requires one terminal reason")
-        if self.final_budget_snapshot.charged_tool_calls != len(
-            self.tool_call_records
+        snapshot = self.final_budget_snapshot
+        retained_tokens = sum(item.total_tokens for item in self.model_call_costs)
+        retained_tools = len(self.tool_call_records)
+        retained_models = len(self.model_call_costs)
+        if self.status == "COMPLETED" and (
+            snapshot.charged_tool_calls != retained_tools
+            or snapshot.charged_model_calls != retained_models
+            or snapshot.cumulative_tokens != retained_tokens
         ):
-            raise ValueError("workflow lost charged tool-call records")
-        if self.final_budget_snapshot.charged_model_calls != len(
-            self.model_call_costs
+            raise ValueError("completed workflow lost charged audit records")
+        if self.status == "FAILED" and (
+            snapshot.charged_tool_calls < retained_tools
+            or snapshot.charged_model_calls < retained_models
+            or snapshot.cumulative_tokens < retained_tokens
         ):
-            raise ValueError("workflow lost charged model-call records")
-        if self.final_budget_snapshot.cumulative_tokens != sum(
-            item.total_tokens for item in self.model_call_costs
-        ):
-            raise ValueError("workflow token total differs from the budget ledger")
+            raise ValueError("failed workflow audit exceeds its ledger snapshot")
         return self
 
 

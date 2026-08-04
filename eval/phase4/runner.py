@@ -37,8 +37,8 @@ def _reject_constant(value: str) -> None:
     raise ValueError(f"non-finite worker response constant: {value}")
 
 
-def _sandbox_profile(project_root: Path) -> str:
-    evaluator_root = (project_root / "eval/phase4").resolve(strict=True)
+def _sandbox_profile(project_root: Path, evaluator_relative: Path) -> str:
+    evaluator_root = (project_root / evaluator_relative).resolve(strict=True)
     literal = '"' + str(evaluator_root).replace("\\", "\\\\").replace(
         '"', '\\"'
     ) + '"'
@@ -53,14 +53,21 @@ def _sandbox_profile(project_root: Path) -> str:
     )
 
 
-def worker_request(project_root: Path, request: dict[str, object]) -> object:
+def worker_request(
+    project_root: Path,
+    request: dict[str, object],
+    *,
+    worker_relative: Path = Path("src/ecomsre/phase4/replay_worker.py"),
+    evaluator_relative: Path = Path("eval/phase4"),
+) -> object:
     """Run one isolated worker outside the production subprocess surface."""
 
     root = Path(project_root).resolve(strict=True)
     sandbox = Path("/usr/bin/sandbox-exec")
     if not sandbox.is_file():
         raise RuntimeError("sandbox-exec is required for Phase 4 evaluation")
-    worker = root / "src/ecomsre/phase4/replay_worker.py"
+    worker = (root / worker_relative).resolve(strict=True)
+    worker.relative_to(root)
     environment = dict(os.environ)
     for name in (
         "PYTHONPATH",
@@ -75,7 +82,7 @@ def worker_request(project_root: Path, request: dict[str, object]) -> object:
         [
             str(sandbox),
             "-p",
-            _sandbox_profile(root),
+            _sandbox_profile(root, evaluator_relative),
             sys.executable,
             "-I",
             str(worker),
