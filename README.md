@@ -86,7 +86,8 @@ make phase5a-verify
 ```
 
 The report is explicitly `VISIBLE DEVELOPMENT EVALUATION` and
-`NOT A SUPERIORITY CLAIM`. Phase 5B hidden evaluation has not been entered.
+`NOT A SUPERIORITY CLAIM`. The Phase 5B v1 protocol is frozen, but hidden
+evaluation execution has not been entered.
 The bounded real-provider pilot reached 9/9 protocol acceptance and 8/9 semantic
 acceptance. Its 9/9 gate is `NOT PASSED`; no Multi-Agent superiority is claimed.
 
@@ -129,7 +130,7 @@ it cannot expand the Policy Gate or Executor authority.
 | Phase 3 | `PHASE3_RESTRICTED_REMEDIATION_REPLAY_MVP_READY`; replay-only |
 | Phase 4 | `PHASE4_OFFLINE_ECOMMERCE_DOMAIN_REPLAY_MVP_READY`; deterministic offline replay verified, real-provider gate `SKIPPED_NOT_CONFIGURED` |
 | Phase 5A | `PHASE5A_MULTI_AGENT_QUALITY_REPAIR_READY`; offline quality repair `PASS`; provider protocol 9/9, semantic pilot 8/9, real-provider 9/9 gate `NOT PASSED`; no superiority claim |
-| Phase 5B | Not entered |
+| Phase 5B | `PHASE5B_PROTOCOL_FREEZE_READY`; protocol frozen, hidden pack not sealed, execution not entered, unblinded `NO`, no superiority claim |
 
 The authoritative detail lives in the [Roadmap](docs/ROADMAP.md),
 [Decision Register](docs/DECISIONS.md),
@@ -138,6 +139,9 @@ The authoritative detail lives in the [Roadmap](docs/ROADMAP.md),
 [Phase 3 disposition](docs/review-evidence/phase3-restricted-remediation/current-disposition.json), and
 [Phase 4 disposition](docs/review-evidence/phase4-ecommerce-domain-replay/current-disposition.json), and
 [Phase 5A disposition](docs/review-evidence/phase5a-multi-agent-quality/current-disposition.json).
+The Phase 5B protocol boundary is recorded in
+[DEC-028](docs/DECISIONS.md) and the compact
+[Phase 5B protocol disposition](docs/review-evidence/phase5b-protocol/current-disposition.json).
 
 ## Evidence boundaries
 
@@ -154,6 +158,8 @@ The phases intentionally make different claims:
 | Phase 4 real-provider gate | 4 bounded positive/negative Fixed/Dynamic runs when configured; otherwise `SKIPPED_NOT_CONFIGURED` |
 | Phase 5A visible development evaluation | 12 public cases × 3 capability-parity v2 variants; all 36 runs retained; no superiority claim |
 | Phase 5A real-provider pilot | 3 visible cases × 3 variants; protocol 9/9, semantic acceptance 8/9; `BLOCKED_PROVIDER_PILOT_AFTER_ROOT_CAUSE_FIX` |
+| Phase 5B protocol | 6 public anchors + 6 opaque hidden slots × 5 paired seeds × 3 arms = 180 planned runs; 38 planned ablation runs; no real execution |
+| Phase 5B mock dry run | 2 synthetic templates × 2 seeds × 3 arms; `NOT_MODEL_EVIDENCE`; Provider calls 0 |
 | Agent Mainline V1 demo | One deterministic scripted replay integration case; not an evaluation or provider result |
 
 The Phase 1 real-provider result is **not** 7/7.
@@ -198,6 +204,14 @@ make phase5a-compare
 make phase5a-verify
 make phase5a-demo
 make phase5a-provider-pilot
+
+# Offline-only Phase 5B protocol checks (never call the Provider)
+make phase5b-test
+make phase5b-preflight
+make phase5b-protocol-verify
+make phase5b-schedule
+make phase5b-dry-run
+make phase5b-dry-run-verify
 ```
 
 No provider configuration is needed for the tests, comparisons, verifiers, or
@@ -225,6 +239,8 @@ The current integration baseline records:
 | Phase 4 real-provider gate | `SKIPPED_NOT_CONFIGURED` on the offline branch |
 | Phase 5A capability-parity report | 12 × 3 visible development report verified; Single/Fixed/Dynamic v2 original-seven accuracy 7/7 each |
 | Phase 5A real-provider pilot | Protocol 9/9; semantic acceptance 8/9; real-provider 9/9 gate `NOT PASSED` |
+| Phase 5B protocol | 180-run paired schedule and 38-run ablation registry frozen; hidden pack sealed `NO` |
+| Phase 5B dry run | 12 deterministic synthetic runs verified; Provider calls 0; `NOT_MODEL_EVIDENCE` |
 
 These counts are development evidence for the named revision. They are not a
 release, production-readiness, Phase 0 acceptance, or model-quality claim.

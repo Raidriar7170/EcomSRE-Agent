@@ -1,0 +1,43 @@
+{
+  "ablation_run_count": 38,
+  "actual_hidden_cases_created": 0,
+  "base_main_commit": "30c202adb74d5f2e9224098e4f51eb19f214f275",
+  "ci": {
+    "provider_allowed": false,
+    "required_workflow": "Agent mainline",
+    "status_source": "GitHub required check on current PR head"
+  },
+  "dry_run": {
+    "deterministic": true,
+    "evidence_class": "NOT_MODEL_EVIDENCE",
+    "provider_call_count": 0,
+    "report_sha256": "62120dac39ec41f315a75568d1dffd2588fb8613552a087ea227c84bb27b95a4",
+    "run_count": 12,
+    "type": "MOCK_PROTOCOL_DRY_RUN",
+    "verified": true
+  },
+  "evaluation_version": "phase5b.v1",
+  "execution_entered": false,
+  "freeze_manifest_sha256": "527c3f1a6d08a16c8dc56927fc297ecf9d2769c92be5ed29e752277403ad181e",
+  "hidden_pack_sealed": false,
+  "hidden_share": 0.5,
+  "hidden_slot_count": 6,
+  "local_validation": {
+    "mypy": "PASS",
+    "phase5b_tests": "34 passed",
+    "ruff": "PASS",
+    "secret_scan": "PASS_REQUIRED_AT_FINAL_CLOSURE"
+  },
+  "main_run_count": 180,
+  "paired_seed_count_per_template": 5,
+  "protocol_commit": "790d2c79709ec88b94342b56feeb15d4c21c0d69",
+  "provider_call_count": 0,
+  "public_anchor_count": 6,
+  "schema_version": "phase5b.protocol-disposition.v1",
+  "scripted_fallback": false,
+  "status": "PHASE5B_PROTOCOL_FREEZE_READY",
+  "superiority_claim": false,
+  "template_count": 12,
+  "unblinded": false,
+  "variant_count": 3
+}

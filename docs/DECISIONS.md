@@ -363,6 +363,52 @@ deployment. Phase 5B remains separately gated and unentered. This decision
 closes `OQ-010`; it does not close or weaken the hidden-evaluation requirements
 in `OQ-007` and `DEC-011`.
 
+## DEC-028 — Phase 5B Frozen Hidden Paired Evaluation Protocol
+
+**Status: `accepted`. The protocol-only completion marker is
+`PHASE5B_PROTOCOL_FREEZE_READY`; it is not a hidden-pack, execution, unblinding,
+or superiority result.**
+
+Phase 5B v1 freezes exactly 12 templates: six immutable public anchors and six
+opaque hidden coverage slots, with five paired scenario-instance seeds and the
+three arms `SINGLE_AGENT_V2`, `FIXED_SPECIALIST_V2`, and
+`DYNAMIC_MULTI_AGENT_V2`. The main schedule contains 60 pairing units and 180
+scored runs. The seven preregistered ablations contain 38 additional,
+primary-ineligible runs. Every arm uses the same OpenAI-compatible provider,
+`gpt-5.4-mini-2026-03-17`, temperature zero, model/tool caps of 8, a 32,000
+token cap, a 2,048 completion-token cap, and two-second inter-call pacing.
+Hidden retry and scripted fallback are forbidden.
+
+The primary endpoint is hidden-only Dynamic-versus-Single Decision Accuracy.
+The preregistered 10,000-replicate hierarchical paired bootstrap first samples
+hidden templates with replacement and then paired seeds within each selected
+template. Superiority may be claimed only when the percentile 95% confidence
+interval lower bound for Dynamic minus Single correctness is greater than zero.
+The separate cost-quality rule requires an accuracy lower bound of at least
+-0.05, mean tool-call reduction of at least 20%, and a positive tool-reduction
+interval lower bound. Failures stay in the denominator with correctness zero.
+
+The real hidden pack remains outside the repository. Workers receive only an
+opaque instance identity and the agent-visible replay case; evaluator truth is
+unavailable until all 180 raw execution records are frozen. Unblinding is a
+create-once irreversible record bound to the protocol commit, freeze manifest,
+schedule, hidden-pack hashes, and execution report. Any post-freeze retuning or
+runtime change requires `phase5b.v2`; evaluation commits may not be squashed or
+rewritten after execution begins.
+
+Phase 5B-0 validates only a 2-template × 2-seed × 3-arm synthetic mock dry run,
+labelled `MOCK_PROTOCOL_DRY_RUN` and `NOT_MODEL_EVIDENCE`. It creates no real
+hidden case, reads no hidden truth, calls no Provider, enters no scored
+execution, and establishes no Multi-Agent superiority. At this boundary:
+protocol frozen `YES`; hidden pack sealed `NO`; execution entered `NO`;
+unblinded `NO`.
+
+This decision partially resolves `OQ-007` by freezing suite, seed, schedule,
+statistics, isolation, and unblinding contracts. Final `OQ-007` closure still
+requires a separately authorized sealed hidden-pack manifest and execution
+freeze. It does not authorize hidden-pack construction, Provider execution,
+unblinding, release, deployment, or Phase 5A prompt/runtime modification.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)

@@ -1,0 +1,28 @@
+{
+  "ablation_run_count": 38,
+  "ablations": [
+    {"ablation_id": "NO_COMMANDER", "base_arm": "DYNAMIC_MULTI_AGENT_V2", "description": "replace dynamic investigation with the frozen static source plan", "pairing_unit_count": 6, "primary_eligible": false},
+    {"ablation_id": "NO_RCA_JUDGE", "base_arm": "DYNAMIC_MULTI_AGENT_V2", "description": "use the frozen deterministic highest-confidence candidate aggregator", "pairing_unit_count": 6, "primary_eligible": false},
+    {"ablation_id": "PARALLEL_TO_SEQUENTIAL", "base_arm": "DYNAMIC_MULTI_AGENT_V2", "description": "retain admitted nodes and evidence snapshot while forcing logical layers to run sequentially", "pairing_unit_count": 6, "primary_eligible": false},
+    {"ablation_id": "SHARED_CONTEXT", "base_arm": "DYNAMIC_MULTI_AGENT_V2", "description": "give each Specialist all currently visible Findings and Evidence", "pairing_unit_count": 6, "primary_eligible": false},
+    {"ablation_id": "NO_CONTRADICTION_CHECK", "base_arm": "DYNAMIC_MULTI_AGENT_V2", "description": "prevent the Judge from using contradicting evidence for rejection or need-more decisions", "pairing_unit_count": 6, "primary_eligible": false},
+    {"ablation_id": "FULL_CHANGE_VISIBILITY", "base_arm": "DYNAMIC_MULTI_AGENT_V2", "description": "use fixture-only richer synthetic change metadata without secrets, production values, or production diffs", "pairing_unit_count": 6, "primary_eligible": false},
+    {"ablation_id": "NO_INDEPENDENT_VERIFIER", "base_arm": "DYNAMIC_MULTI_AGENT_V2", "description": "for remediation-applicable cases use the Executor receipt as terminal state", "pairing_unit_count": 2, "primary_eligible": false}
+  ],
+  "diagnosis_pairing_units": [
+    {"seed_id": "seed-00", "template_id": "ad-partial-failure-complete"},
+    {"seed_id": "seed-01", "template_id": "ad-partial-failure-without-logs"},
+    {"seed_id": "seed-02", "template_id": "ad-partial-failure-frontend-decoy"},
+    {"seed_id": "seed-03", "template_id": "recommendation-cache-failure"},
+    {"seed_id": "seed-04", "template_id": "recommendation-feature-evidence-insufficient"},
+    {"seed_id": "seed-00", "template_id": "ranking-change-with-normal-search-sli"}
+  ],
+  "diagnosis_run_count": 36,
+  "evaluation_version": "phase5b.v1",
+  "remediation_pairing_units": [
+    {"seed_id": "seed-00", "template_id": "ad-partial-failure-complete"},
+    {"seed_id": "seed-00", "template_id": "hidden-05"}
+  ],
+  "remediation_run_count": 2,
+  "schema_version": "phase5b.ablation-registry.v1"
+}

@@ -1,0 +1,11 @@
+{
+  "cost_metrics": ["Model Calls", "Tool Calls", "Total Tokens", "Provider Tokens", "Wall-Clock Latency", "Investigated Source Count", "Refinement Rate"],
+  "evaluation_version": "phase5b.v1",
+  "quality_metrics": ["Decision Accuracy", "Root Service Accuracy", "Mechanism Accuracy", "Evidence Reference Validity", "Contradiction Handling Accuracy", "Missing-Evidence Accuracy", "Abstention Accuracy", "Decoy Resistance", "Runtime Completion Rate"],
+  "remediation_metrics": ["Correct No-Action Rate", "Safe Action Accuracy", "Unsafe Action Block Rate", "Verification Accuracy", "Rollback Success Rate"],
+  "remediation_scope": "replay-only remediation; not production remediation",
+  "replay_mttd_steps": "discrete event count from first investigation action to typed final diagnosis",
+  "replay_mttr_steps": "discrete event count from typed confirmed diagnosis to VERIFIED or terminal no-action",
+  "schema_version": "phase5b.metrics-registry.v1",
+  "wall_clock_latency_reported_separately": true
+}

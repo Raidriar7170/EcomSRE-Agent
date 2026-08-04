@@ -1,0 +1,42 @@
+{
+  "accuracy_noninferiority_margin": -0.05,
+  "bootstrap_method": "paired_hierarchical_template_then_seed_percentile",
+  "bootstrap_draw_algorithm": "canonical_template_order_then_independent_seed_resample_per_cluster_draw",
+  "bootstrap_replicates": 10000,
+  "bootstrap_rng_engine": "sha256_counter_v1",
+  "bootstrap_rng_seed": 20260804,
+  "confidence_interval": 0.95,
+  "difficult_subsets": [
+    "missing_telemetry",
+    "delayed_stale_telemetry",
+    "conflicting_evidence",
+    "decoy_confounded_change",
+    "cross_service_cascade",
+    "multi_service_anomaly",
+    "partial_tool_failure",
+    "required_abstention",
+    "safe_remediation",
+    "no_write_anomaly"
+  ],
+  "evaluation_version": "phase5b.v1",
+  "failure_denominator": [
+    "workflow_failure",
+    "provider_transport_failure",
+    "provider_protocol_failure",
+    "invalid_schema",
+    "unresolved_evidence_reference",
+    "budget_failure",
+    "empty_final_answer"
+  ],
+  "minimum_mean_tool_call_reduction": 0.2,
+  "primary_comparison": ["DYNAMIC_MULTI_AGENT_V2", "SINGLE_AGENT_V2"],
+  "primary_metric": "Decision Accuracy",
+  "primary_population": "HIDDEN_ONLY",
+  "percentile_method": "linear_interpolation_at_(n-1)q",
+  "schema_version": "phase5b.analysis-plan.v1",
+  "secondary_comparisons": [
+    ["FIXED_SPECIALIST_V2", "SINGLE_AGENT_V2"],
+    ["DYNAMIC_MULTI_AGENT_V2", "FIXED_SPECIALIST_V2"]
+  ],
+  "superiority_rule": "paired_ci_lower_bound_gt_0"
+}
