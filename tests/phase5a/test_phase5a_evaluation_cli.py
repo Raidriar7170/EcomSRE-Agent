@@ -7,6 +7,7 @@ import socket
 import ssl
 import subprocess
 import sys
+from typing import Any
 import urllib.error
 
 from ecomsre.phase2.token_policy import MODEL_SNAPSHOT
@@ -48,7 +49,7 @@ def test_truth_is_loaded_only_after_each_isolated_trace_returns(monkeypatch) -> 
 
     monkeypatch.setattr(evaluation, "_run_workflow_trace", tracked_runner)
     monkeypatch.setattr(evaluation, "_load_ground_truth", tracked_loader)
-    report = evaluation.run_capability_parity_evaluation(PROJECT_ROOT)
+    report: Any = evaluation.run_capability_parity_evaluation(PROJECT_ROOT)
 
     assert report["status"] == "COMPLETED"
     assert returned == truth_reads
@@ -56,7 +57,7 @@ def test_truth_is_loaded_only_after_each_isolated_trace_returns(monkeypatch) -> 
 
 
 def test_evaluation_retains_36_runs_and_required_quality_gates() -> None:
-    report = evaluation.run_capability_parity_evaluation(PROJECT_ROOT)
+    report: Any = evaluation.run_capability_parity_evaluation(PROJECT_ROOT)
 
     assert report["schema_version"] == "phase5a.capability-parity-report.v2"
     assert report["evaluation_label"] == "VISIBLE DEVELOPMENT EVALUATION"
@@ -114,7 +115,7 @@ def test_unconfigured_provider_pilot_never_uses_a_transport() -> None:
         def post_json(self, **_kwargs):
             raise AssertionError("unconfigured pilot touched provider transport")
 
-    report = run_provider_pilot(
+    report: Any = run_provider_pilot(
         project_root=PROJECT_ROOT,
         environment={},
         transport=ForbiddenTransport(),
@@ -188,7 +189,7 @@ def test_configured_provider_pilot_runs_exactly_nine_no_retry_calls() -> None:
 
     transport = TypedTransport()
     api_key = "provider-test-secret"
-    report = run_provider_pilot(
+    report: Any = run_provider_pilot(
         project_root=PROJECT_ROOT,
         environment={
             "ECOMSRE_LLM_BASE_URL": "https://provider.invalid/v1",
@@ -227,7 +228,7 @@ def test_failed_provider_attempts_retain_reserved_outer_budget_usage() -> None:
         def post_json(self, **_kwargs):
             raise TimeoutError
 
-    report = run_provider_pilot(
+    report: Any = run_provider_pilot(
         project_root=PROJECT_ROOT,
         environment={
             "ECOMSRE_LLM_BASE_URL": "https://provider.invalid/v1",
@@ -271,7 +272,7 @@ def test_provider_failure_codes_are_allowlisted_and_never_copy_error_text() -> N
 
     transport = DiagnosticTransport()
     api_key = "provider-test-secret"
-    report = run_provider_pilot(
+    report: Any = run_provider_pilot(
         project_root=PROJECT_ROOT,
         environment={
             "ECOMSRE_LLM_BASE_URL": "https://provider.invalid/v1",
@@ -356,7 +357,7 @@ def test_provider_diagnosis_failure_codes_use_only_safe_validation_categories() 
                 },
             }
 
-    report = run_provider_pilot(
+    report: Any = run_provider_pilot(
         project_root=PROJECT_ROOT,
         environment={
             "ECOMSRE_LLM_BASE_URL": "https://provider.invalid/v1",
@@ -403,7 +404,7 @@ def test_provider_connection_codes_use_only_safe_exception_categories() -> None:
             except Exception as error:
                 raise ConnectionError("raw-outer-marker") from error
 
-    report = run_provider_pilot(
+    report: Any = run_provider_pilot(
         project_root=PROJECT_ROOT,
         environment={
             "ECOMSRE_LLM_BASE_URL": "https://provider.invalid/v1",
@@ -441,6 +442,8 @@ def test_make_targets_and_ci_are_offline_wired(tmp_path: Path) -> None:
         "phase5a-verify",
         "phase5a-demo",
         "phase5a-provider-pilot",
+        "phase5a-provider-request-shapes",
+        "phase5a-provider-order-isolation",
     ):
         completed = subprocess.run(
             ["make", "-n", target, f"PHASE5A_REPORT={report_path}"],
@@ -461,6 +464,12 @@ def test_make_targets_and_ci_are_offline_wired(tmp_path: Path) -> None:
     assert "ecomsre.phase5a.cli demo" in rendered["phase5a-demo"]
     assert "ecomsre.phase5a.cli provider-pilot" in rendered[
         "phase5a-provider-pilot"
+    ]
+    assert "ecomsre.phase5a.cli provider-request-shapes" in rendered[
+        "phase5a-provider-request-shapes"
+    ]
+    assert "ecomsre.phase5a.cli provider-order-isolation" in rendered[
+        "phase5a-provider-order-isolation"
     ]
     workflow = (PROJECT_ROOT / ".github/workflows/agent-mainline.yml").read_text()
     for target in (

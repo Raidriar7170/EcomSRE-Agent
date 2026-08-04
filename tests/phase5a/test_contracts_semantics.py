@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import cast
 
 import pytest
 from pydantic import ValidationError
@@ -52,7 +53,10 @@ def evidence(
         source=source,
         observation_type=observation_type,
         attributes=tuple(
-            EvidenceAttribute(name=name, value=value)
+            EvidenceAttribute(
+                name=name,
+                value=cast(str | int | float | bool | None, value),
+            )
             for name, value in sorted(attributes.items())
         ),
         raw_artifact_ref=f"{source.value.lower()}.json#{index}",
