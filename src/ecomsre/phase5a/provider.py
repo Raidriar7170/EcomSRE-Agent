@@ -7,7 +7,12 @@ from dataclasses import dataclass
 import json
 import os
 from pathlib import Path
+import socket
+import ssl
 import stat
+import urllib.error
+
+from pydantic import ValidationError
 
 from ecomsre.backends.live_protocol import BackendStatus
 from ecomsre.backends.replay import ReplayCase, load_replay_case
@@ -45,6 +50,225 @@ _MAX_COMPLETION_TOKENS = 2048
 _OUTER_MODEL_CALL_LIMIT = 8
 _OUTER_TOOL_CALL_LIMIT = 8
 _OUTER_TOKEN_LIMIT = 32_000
+_FAILURE_CODE_ALLOWLIST = frozenset(
+    {
+        "ASSISTANT_MESSAGE_INVALID",
+        "CHOICE_METADATA_INVALID",
+        "CHOICE_SHAPE_INVALID",
+        "COMPLETION_LIMIT_EXCEEDED",
+        "DIAGNOSIS_CONTRACT_INVALID",
+        "DIAGNOSIS_DECISION_SEMANTICS_INVALID",
+        "DIAGNOSIS_ENUM_INVALID",
+        "DIAGNOSIS_EVIDENCE_INVALID",
+        "DIAGNOSIS_REQUIRED_FIELD_MISSING",
+        "DIAGNOSIS_TYPE_INVALID",
+        "EVIDENCE_REFERENCE_UNRESOLVED",
+        "INTERNAL_ERROR",
+        "INTERNAL_RUNTIME_ERROR",
+        "MODEL_SNAPSHOT_MISMATCH",
+        "OFFLINE_WORKFLOW_INCOMPLETE",
+        "OUTER_BUDGET_ADMISSION_REJECTED",
+        "OUTER_BUDGET_USAGE_EXCEEDED",
+        "PROVIDER_CONNECTION",
+        "PROVIDER_CONNECTION_REFUSED",
+        "PROVIDER_CONNECTION_RESET",
+        "PROVIDER_DNS",
+        "PROVIDER_HTTP_4XX",
+        "PROVIDER_HTTP_5XX",
+        "PROVIDER_HTTP_OTHER",
+        "PROVIDER_PROTOCOL_OTHER",
+        "PROVIDER_TLS",
+        "PROVIDER_TIMEOUT",
+        "REQUEST_CONFIGURATION_INVALID",
+        "RESPONSE_BOUNDS_INVALID",
+        "RESPONSE_CREDENTIAL_REJECTED",
+        "RESPONSE_ENVELOPE_INVALID",
+        "RESPONSE_ID_INVALID",
+        "RESPONSE_JSON_INVALID",
+        "RESPONSE_SIZE_LIMIT_EXCEEDED",
+        "TOOL_ARGUMENTS_INVALID",
+        "TOOL_CALL_COUNT_INVALID",
+        "TOOL_CALL_SHAPE_INVALID",
+        "TOOL_FUNCTION_INVALID",
+        "USAGE_INVALID",
+    }
+)
+_PROTOCOL_FAILURE_CODE_BY_MESSAGE = {
+    "Phase 5A completion limit is invalid": "REQUEST_CONFIGURATION_INVALID",
+    "assistant content is not strict JSON": "TOOL_ARGUMENTS_INVALID",
+    "assistant content must be a JSON object": "TOOL_ARGUMENTS_INVALID",
+    "assistant content must be nonempty JSON text": "TOOL_ARGUMENTS_INVALID",
+    "choice must be an object": "CHOICE_SHAPE_INVALID",
+    "choices must contain exactly one item": "CHOICE_SHAPE_INVALID",
+    "completion_tokens_details must be an object": "USAGE_INVALID",
+    "function must be an object": "TOOL_FUNCTION_INVALID",
+    "message must be an object": "ASSISTANT_MESSAGE_INVALID",
+    "prompt_tokens_details must be an object": "USAGE_INVALID",
+    "provider Phase 5A tool call is invalid": "TOOL_FUNCTION_INVALID",
+    "provider JSON contains a cycle": "RESPONSE_BOUNDS_INVALID",
+    "provider JSON exceeds depth limit": "RESPONSE_BOUNDS_INVALID",
+    "provider JSON exceeds node limit": "RESPONSE_BOUNDS_INVALID",
+    "provider JSON object keys must be strings": "RESPONSE_BOUNDS_INVALID",
+    "provider assistant message is invalid": "ASSISTANT_MESSAGE_INVALID",
+    "provider choice metadata is invalid": "CHOICE_METADATA_INVALID",
+    "provider completion exceeds admitted limit": "COMPLETION_LIMIT_EXCEEDED",
+    "provider diagnosis cites unresolved evidence": (
+        "EVIDENCE_REFERENCE_UNRESOLVED"
+    ),
+    "provider diagnosis contract is invalid": "DIAGNOSIS_CONTRACT_INVALID",
+    "provider diagnosis decision semantics are invalid": (
+        "DIAGNOSIS_DECISION_SEMANTICS_INVALID"
+    ),
+    "provider diagnosis enum is invalid": "DIAGNOSIS_ENUM_INVALID",
+    "provider diagnosis evidence is invalid": "DIAGNOSIS_EVIDENCE_INVALID",
+    "provider diagnosis field type is invalid": "DIAGNOSIS_TYPE_INVALID",
+    "provider diagnosis required fields are missing": (
+        "DIAGNOSIS_REQUIRED_FIELD_MISSING"
+    ),
+    "provider response contains a non-JSON value": "RESPONSE_BOUNDS_INVALID",
+    "provider response contains credential material": (
+        "RESPONSE_CREDENTIAL_REJECTED"
+    ),
+    "provider response exceeds size limit": "RESPONSE_SIZE_LIMIT_EXCEEDED",
+    "provider response id is invalid": "RESPONSE_ID_INVALID",
+    "provider response is not strict UTF-8 JSON": "RESPONSE_JSON_INVALID",
+    "provider response model is not frozen": "MODEL_SNAPSHOT_MISMATCH",
+    "provider response must be an object": "RESPONSE_ENVELOPE_INVALID",
+    "provider tool call fields are not exact": "TOOL_CALL_SHAPE_INVALID",
+    "provider tool call type is invalid": "TOOL_CALL_SHAPE_INVALID",
+    "tool call must be an object": "TOOL_CALL_SHAPE_INVALID",
+    "tool_calls must contain exactly one item": "TOOL_CALL_COUNT_INVALID",
+    "usage fields are not exact": "USAGE_INVALID",
+    "usage is inconsistent": "USAGE_INVALID",
+    "usage must be an object": "USAGE_INVALID",
+}
+_RUNTIME_FAILURE_CODE_BY_MESSAGE = {
+    "offline evidence workflow did not complete": "OFFLINE_WORKFLOW_INCOMPLETE",
+    "provider call exceeds shared outer budget": (
+        "OUTER_BUDGET_ADMISSION_REJECTED"
+    ),
+    "provider usage exceeds shared outer budget": "OUTER_BUDGET_USAGE_EXCEEDED",
+}
+_CONNECTION_FAILURE_CODE_BY_MESSAGE = {
+    "Phase 5A provider connection failed": "PROVIDER_CONNECTION",
+    "Phase 5A provider connection refused": "PROVIDER_CONNECTION_REFUSED",
+    "Phase 5A provider connection reset": "PROVIDER_CONNECTION_RESET",
+    "Phase 5A provider DNS failure": "PROVIDER_DNS",
+    "Phase 5A provider HTTP 4xx response": "PROVIDER_HTTP_4XX",
+    "Phase 5A provider HTTP 5xx response": "PROVIDER_HTTP_5XX",
+    "Phase 5A provider HTTP response": "PROVIDER_HTTP_OTHER",
+    "Phase 5A provider TLS failure": "PROVIDER_TLS",
+}
+_DIAGNOSIS_FIELD_ALLOWLIST = frozenset(
+    {
+        "affected_sli",
+        "causal_chain",
+        "confidence",
+        "contradicting_evidence",
+        "decision",
+        "decision_rationale",
+        "fault_mechanism",
+        "missing_evidence",
+        "recommended_next_action",
+        "root_service",
+        "run_id",
+        "schema_version",
+        "supporting_evidence",
+    }
+)
+_DIAGNOSIS_EVIDENCE_FIELDS = frozenset(
+    {"contradicting_evidence", "supporting_evidence"}
+)
+
+
+def _safe_diagnosis_validation_detail(error: ValidationError) -> str:
+    entries = error.errors(
+        include_url=False,
+        include_context=False,
+        include_input=False,
+    )
+    error_types: set[str] = set()
+    fields: set[str] = set()
+    model_error = False
+    for entry in entries:
+        error_type = entry.get("type")
+        if isinstance(error_type, str):
+            error_types.add(error_type)
+        location = entry.get("loc")
+        if not isinstance(location, tuple) or not location:
+            model_error = True
+            continue
+        field = location[0]
+        if not isinstance(field, str) or field not in _DIAGNOSIS_FIELD_ALLOWLIST:
+            return "provider diagnosis contract is invalid"
+        fields.add(field)
+    if "missing" in error_types:
+        return "provider diagnosis required fields are missing"
+    if error_types.intersection({"enum", "literal_error"}):
+        return "provider diagnosis enum is invalid"
+    if any(
+        error_type.endswith(("_parsing", "_type"))
+        for error_type in error_types
+    ):
+        return "provider diagnosis field type is invalid"
+    if fields.intersection(_DIAGNOSIS_EVIDENCE_FIELDS):
+        return "provider diagnosis evidence is invalid"
+    if model_error:
+        return "provider diagnosis decision semantics are invalid"
+    return "provider diagnosis contract is invalid"
+
+
+def _safe_connection_detail(error: ConnectionError) -> str:
+    cause: BaseException = error.__cause__ or error
+    if isinstance(cause, urllib.error.HTTPError):
+        if 400 <= cause.code < 500:
+            return "Phase 5A provider HTTP 4xx response"
+        if 500 <= cause.code < 600:
+            return "Phase 5A provider HTTP 5xx response"
+        return "Phase 5A provider HTTP response"
+    reason: object = (
+        cause.reason if isinstance(cause, urllib.error.URLError) else cause
+    )
+    if isinstance(reason, socket.gaierror):
+        return "Phase 5A provider DNS failure"
+    if isinstance(reason, ssl.SSLError):
+        return "Phase 5A provider TLS failure"
+    if isinstance(reason, ConnectionResetError):
+        return "Phase 5A provider connection reset"
+    if isinstance(reason, ConnectionRefusedError):
+        return "Phase 5A provider connection refused"
+    return "Phase 5A provider connection failed"
+
+
+def _safe_failure_code(error: Exception) -> str:
+    """Map failures to fixed diagnostics without copying exception text."""
+
+    if isinstance(error, TimeoutError):
+        code = "PROVIDER_TIMEOUT"
+    elif isinstance(error, ConnectionError):
+        code = _CONNECTION_FAILURE_CODE_BY_MESSAGE.get(
+            str(error),
+            "PROVIDER_CONNECTION",
+        )
+    elif isinstance(error, ProviderProtocolError):
+        detail = str(error)
+        prefix = f"{error.code.value}: "
+        if detail.startswith(prefix):
+            detail = detail[len(prefix) :]
+        code = _PROTOCOL_FAILURE_CODE_BY_MESSAGE.get(
+            detail,
+            "PROVIDER_PROTOCOL_OTHER",
+        )
+    elif isinstance(error, RuntimeError):
+        code = _RUNTIME_FAILURE_CODE_BY_MESSAGE.get(
+            str(error),
+            "INTERNAL_RUNTIME_ERROR",
+        )
+    else:
+        code = "INTERNAL_ERROR"
+    if code not in _FAILURE_CODE_ALLOWLIST:
+        raise AssertionError("Phase 5A failure code is not allowlisted")
+    return code
 
 
 @dataclass(frozen=True, slots=True)
@@ -109,6 +333,8 @@ class OpenAICompatiblePhase5ABackend:
             raise
         except TimeoutError:
             raise TimeoutError("Phase 5A provider request timed out") from None
+        except ConnectionError as error:
+            raise ConnectionError(_safe_connection_detail(error)) from None
         except Exception:
             raise ConnectionError("Phase 5A provider request failed") from None
         response = _require_mapping(raw, "provider response")
@@ -153,13 +379,12 @@ class OpenAICompatiblePhase5ABackend:
             or function.get("name") != "submit_phase5a_diagnosis"
         ):
             raise ProviderProtocolError("provider Phase 5A tool call is invalid")
+        parsed = _parse_content(function.get("arguments"))
         try:
-            result = DiagnosisResultV2.model_validate(
-                _parse_content(function.get("arguments")),
-                strict=False,
-            )
-        except ValueError as error:
-            raise ProviderProtocolError("provider diagnosis is invalid") from error
+            result = DiagnosisResultV2.model_validate(parsed, strict=False)
+        except ValidationError as error:
+            detail = _safe_diagnosis_validation_detail(error)
+            raise ProviderProtocolError(detail) from None
         usage = _parse_usage(response.get("usage"))
         if usage.output_tokens > max_completion_tokens:
             raise ProviderProtocolError("provider completion exceeds admitted limit")
@@ -431,6 +656,7 @@ def run_provider_pilot(
                 "usage": None,
                 "outer_budget": None,
                 "failure_type": None,
+                "failure_code": None,
             }
             try:
                 if trace.status != "COMPLETED":
@@ -500,6 +726,7 @@ def run_provider_pilot(
                 )
             except Exception as error:
                 result["failure_type"] = type(error).__name__
+                result["failure_code"] = _safe_failure_code(error)
             run_results.append(result)
     passed = (
         len(run_results) == 9
