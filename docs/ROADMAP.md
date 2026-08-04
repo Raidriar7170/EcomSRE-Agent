@@ -198,7 +198,9 @@ Exit:
 
 ## Phase 5B — Frozen hidden evaluation and demonstration
 
-**State:** deferred.
+**State:** `PHASE5B_PROTOCOL_FREEZE_READY` under accepted `DEC-028`.
+The v1 protocol is frozen, but the hidden pack is not created or sealed,
+execution has not started, and no result has been unblinded.
 
 Entry:
 
@@ -213,6 +215,13 @@ Scope:
   metrics;
 - required ablations and bootstrap confidence intervals;
 - incident timeline and reproducible demo.
+
+The frozen v1 design contains six public anchors plus six opaque hidden slots,
+five paired seeds, three capability-parity arms, 180 planned main runs, and 38
+primary-ineligible ablation runs. The hidden-only primary endpoint uses a
+10,000-replicate hierarchical paired bootstrap. The completed 12-run synthetic
+dry run is `NOT_MODEL_EVIDENCE`, made zero Provider calls, and does not satisfy
+the Phase 5B execution entry gate.
 
 Exit:
 
