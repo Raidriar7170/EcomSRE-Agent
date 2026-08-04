@@ -1,6 +1,7 @@
 {
   "schema_version": "phase5a.current-disposition.v2",
   "status": "PHASE5A_MULTI_AGENT_QUALITY_REPAIR_READY",
+  "offline_quality_repair": "PASS",
   "decision": {
     "id": "DEC-027",
     "status": "accepted",
@@ -65,11 +66,36 @@
     }
   },
   "real_provider_pilot": {
-    "status": "SKIPPED_NOT_CONFIGURED",
-    "configured": false,
-    "model_snapshot": null,
-    "run_count": 0,
+    "status": "BLOCKED_PROVIDER_PILOT_AFTER_ROOT_CAUSE_FIX",
+    "configured": true,
+    "run_count": 9,
+    "provider_call_count": 9,
+    "protocol_acceptance": "9/9",
+    "semantic_acceptance": "8/9",
+    "variant_semantic_acceptance": {
+      "single": "2/3",
+      "fixed": "3/3",
+      "dynamic": "3/3"
+    },
     "scripted_fallback": false,
+    "hidden_retry": false,
+    "case_specific_tuning": false,
+    "superiority_claim": false,
+    "hidden_evaluation": false,
+    "real_provider_9_of_9_gate": "NOT_PASSED",
+    "unique_semantic_failure": {
+      "requirement": "missing_logs",
+      "expected": {
+        "decision": "RCA_CONFIRMED",
+        "root_service": "ad",
+        "fault_mechanism": "request_processing_failure"
+      },
+      "observed": {
+        "decision": "NEED_MORE_EVIDENCE",
+        "root_service": null,
+        "fault_mechanism": null
+      }
+    },
     "report_path": "artifacts/phase5a/provider-pilot/provider-pilot-report.json"
   },
   "regression": {
@@ -82,8 +108,8 @@
     "phase4_semantic_sha256": "c7002cea9db43c1a46dc448d3ee4140053bcb23eb02e31e6b9bce4c183b68399"
   },
   "validation": {
-    "phase5a_tests": 65,
-    "full_tests": 2256,
+    "phase5a_tests": 74,
+    "full_tests": 2265,
     "ruff": "PASSED",
     "mypy": "PASSED",
     "independent_read_only_review": "PASS",
