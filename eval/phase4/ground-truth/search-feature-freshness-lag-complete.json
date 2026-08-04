@@ -1,0 +1,1 @@
+{"case_id":"search-feature-freshness-lag-complete","decoy_evidence":[],"expected_decision":"RCA_CONFIRMED","expected_fault_mechanism":"feature_freshness_lag","expected_root_service":"feature","schema_version":"phase4.domain-ground-truth.v1"}

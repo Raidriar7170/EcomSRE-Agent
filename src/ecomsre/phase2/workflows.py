@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Literal
@@ -135,6 +135,32 @@ class WorkflowRunTrace(Phase2Model):
 class WorkflowRunResult:
     trace: WorkflowRunTrace
     phase1_report: AgentRunReport | None = None
+
+
+@dataclass(slots=True)
+class SpecialistExecutionBoundary:
+    """One reusable pre-Judge Phase 2 Specialist execution boundary."""
+
+    project_root: Path
+    replay_case: ReplayCase
+    run_id: str
+    ledger: BudgetLedger
+    authority: TokenAuthority
+    variant: Phase2Variant
+    adapter: ComparisonAdapter
+    evidence_store: EvidenceStore
+    finding_store: FindingStore
+    replay_backend: ReplayObservabilityBackend
+    phase1_budget: RunBudget
+    timeout_seconds: float
+    graph: AdmittedInvestigationGraph | None = None
+    judge_capacity_slot_id: str | None = None
+    finding_id_by_node: dict[str, str] = field(default_factory=dict)
+    specialist_outcomes: list[SpecialistOutcome] = field(default_factory=list)
+    successful_dispatches: list[
+        tuple[SpecialistTask, SpecialistToolDispatchResult]
+    ] = field(default_factory=list)
+    executed: bool = False
 
 
 class _DeterministicIds:
@@ -581,22 +607,35 @@ def _run_single(
     return WorkflowRunResult(trace=trace, phase1_report=report)
 
 
-def _run_fixed_or_dynamic(
+def prepare_specialist_execution(
     *,
     project_root: Path,
     replay_case: ReplayCase,
-    run_id: str,
-    ledger: BudgetLedger,
-    authority: TokenAuthority,
     variant: Phase2Variant,
-    allow_refinement: bool,
-    model_backend: TypedModelBackend | None,
-    expected_provider_identity: str,
-) -> WorkflowRunResult:
-    settings = load_agent_settings(project_root)
-    evidence_store = EvidenceStore(run_id)
-    finding_store = FindingStore(run_id)
-    replay_backend = ReplayObservabilityBackend(replay_case)
+    run_id: str | None = None,
+    namespace: str = "phase2-comparison",
+    model_backend: TypedModelBackend | None = None,
+    expected_provider_identity: str = _PROVIDER_ID,
+) -> SpecialistExecutionBoundary:
+    """Prepare the shared Specialist runtime without invoking any Judge."""
+
+    root = Path(project_root)
+    validated_case = ReplayCase.model_validate(replay_case)
+    selected_variant = Phase2Variant(variant)
+    if selected_variant is Phase2Variant.SINGLE_AGENT:
+        raise ValueError("Single-Agent has no reusable Specialist boundary")
+    selected_run_id = run_id or stable_workflow_run_id(
+        validated_case.case_id,
+        selected_variant,
+        namespace=namespace,
+    )
+    authority = load_token_authority(root)
+    ledger = _ledger(
+        run_id=selected_run_id,
+        case_id=validated_case.case_id,
+        variant=selected_variant,
+        now=validated_case.incident.started_at,
+    )
     backend = model_backend or ScriptedModelBackend(
         token_authority=authority,
         provider_identity=_PROVIDER_ID,
@@ -606,145 +645,208 @@ def _run_fixed_or_dynamic(
         token_authority=authority,
         backend=backend,
         expected_provider_identity=expected_provider_identity,
-        utc_clock=lambda: replay_case.incident.started_at,
+        utc_clock=lambda: validated_case.incident.started_at,
     )
-    phase1_budget = RunBudget(
-        BudgetLimits(
-            max_model_calls=_CAPS.model_calls,
-            max_tool_calls=_CAPS.tool_calls,
-            max_total_tokens=_CAPS.total_tokens,
+    settings = load_agent_settings(root)
+    return SpecialistExecutionBoundary(
+        project_root=root,
+        replay_case=validated_case,
+        run_id=selected_run_id,
+        ledger=ledger,
+        authority=authority,
+        variant=selected_variant,
+        adapter=adapter,
+        evidence_store=EvidenceStore(selected_run_id),
+        finding_store=FindingStore(selected_run_id),
+        replay_backend=ReplayObservabilityBackend(validated_case),
+        phase1_budget=RunBudget(
+            BudgetLimits(
+                max_model_calls=_CAPS.model_calls,
+                max_tool_calls=_CAPS.tool_calls,
+                max_total_tokens=_CAPS.total_tokens,
+            )
+        ),
+        timeout_seconds=settings.tool_timeout_seconds,
+    )
+
+
+def execute_replay_specialists(
+    boundary: SpecialistExecutionBoundary,
+) -> SpecialistExecutionBoundary:
+    """Run the admitted Phase 2 Specialists exactly once, stopping pre-Judge."""
+
+    if not isinstance(boundary, SpecialistExecutionBoundary):
+        raise TypeError("boundary must be SpecialistExecutionBoundary")
+    if boundary.executed:
+        raise RuntimeError("specialist execution boundary was already executed")
+    boundary.executed = True
+    replay_case = boundary.replay_case
+    ledger = boundary.ledger
+    variant = boundary.variant
+    authority = boundary.authority
+
+    if variant is Phase2Variant.DYNAMIC_MULTI_AGENT:
+        commander = CommanderRuntime(
+            ledger=ledger,
+            adapter=boundary.adapter,
+            utc_clock=lambda: replay_case.incident.started_at,
+        ).create_initial_graph(
+            CommanderContext(
+                schema_version="phase2.commander-context.v1",
+                run_id=boundary.run_id,
+                incident=replay_case.incident,
+                allowed_started_at=replay_case.incident.started_at,
+                allowed_ended_at=replay_case.incident.ended_at,
+            )
         )
+        graph = commander.admission.admitted_graph
+        bindings = commander.admission.node_slot_bindings
+        judge_slot_id = commander.admission.first_judge_capacity_slot_id
+    else:
+        graph = _fixed_graph(
+            boundary.run_id,
+            replay_case,
+            ledger.snapshot().snapshot_id,
+        )
+        final_golden = authority.golden(
+            ModelOperation.FINAL_JUDGE_MODEL,
+            ModelAllowedActions.FINAL_ONLY,
+        )
+        slots, _ = ledger.hold_capacity_slots(
+            expected_snapshot_sequence=ledger.snapshot().sequence,
+            requests=(
+                CapacitySlotRequest(
+                    permitted_operation=ModelOperation.FINAL_JUDGE_MODEL,
+                    allowed_actions=ModelAllowedActions.FINAL_ONLY,
+                    reserved_model_calls=1,
+                    reserved_tool_calls=0,
+                    minimum_token_floor=final_golden.minimum_call_floor_tokens,
+                    expires_at=replay_case.incident.started_at + timedelta(minutes=5),
+                ),
+            ),
+        )
+        judge_slot_id = slots[0].slot_id
+        bindings = ()
+
+    boundary.graph = graph
+    boundary.judge_capacity_slot_id = judge_slot_id
+    specialist_golden = authority.golden(
+        ModelOperation.SPECIALIST_MODEL,
+        ModelAllowedActions.FINDING_ONLY,
     )
-    outcomes: list[SpecialistOutcome] = []
-    successful_dispatches: list[
-        tuple[SpecialistTask, SpecialistToolDispatchResult]
-    ] = []
-
-    def remember_dispatch(
-        task: SpecialistTask,
-        dispatch_result: SpecialistToolDispatchResult,
-    ) -> None:
-        successful_dispatches.append((task, dispatch_result))
-
-    graph: AdmittedInvestigationGraph | None = None
-    try:
+    dynamic_slot_by_node = {
+        binding.node_id: binding.specialist_capacity_slot_id
+        for binding in bindings
+    }
+    scheduled_nodes = (
+        node for layer in schedule_layers(graph.initial_plan) for node in layer
+    )
+    for node in scheduled_nodes:
         if variant is Phase2Variant.DYNAMIC_MULTI_AGENT:
-            commander = CommanderRuntime(
-                ledger=ledger,
-                adapter=adapter,
-                utc_clock=lambda: replay_case.incident.started_at,
-            ).create_initial_graph(
-                CommanderContext(
-                    schema_version="phase2.commander-context.v1",
-                    run_id=run_id,
-                    incident=replay_case.incident,
-                    allowed_started_at=replay_case.incident.started_at,
-                    allowed_ended_at=replay_case.incident.ended_at,
-                )
-            )
-            graph = commander.admission.admitted_graph
-            bindings = commander.admission.node_slot_bindings
-            judge_slot_id = commander.admission.first_judge_capacity_slot_id
+            slot_id = dynamic_slot_by_node[node.node_id]
         else:
-            graph = _fixed_graph(
-                run_id,
-                replay_case,
-                ledger.snapshot().snapshot_id,
-            )
-            final_golden = authority.golden(
-                ModelOperation.FINAL_JUDGE_MODEL,
-                ModelAllowedActions.FINAL_ONLY,
-            )
             slots, _ = ledger.hold_capacity_slots(
                 expected_snapshot_sequence=ledger.snapshot().sequence,
                 requests=(
                     CapacitySlotRequest(
-                        permitted_operation=ModelOperation.FINAL_JUDGE_MODEL,
-                        allowed_actions=ModelAllowedActions.FINAL_ONLY,
+                        permitted_operation=ModelOperation.SPECIALIST_MODEL,
+                        allowed_actions=ModelAllowedActions.FINDING_ONLY,
                         reserved_model_calls=1,
-                        reserved_tool_calls=0,
-                        minimum_token_floor=final_golden.minimum_call_floor_tokens,
-                        expires_at=replay_case.incident.started_at + timedelta(minutes=5),
-                    ),
-                ),
-            )
-            judge_slot_id = slots[0].slot_id
-            bindings = ()
-
-        if graph is None:
-            raise RuntimeError("workflow graph was not admitted")
-        specialist_golden = authority.golden(
-            ModelOperation.SPECIALIST_MODEL,
-            ModelAllowedActions.FINDING_ONLY,
-        )
-        dynamic_slot_by_node = {
-            binding.node_id: binding.specialist_capacity_slot_id
-            for binding in bindings
-        }
-        finding_id_by_node: dict[str, str] = {}
-        scheduled_nodes = (
-            node for layer in schedule_layers(graph.initial_plan) for node in layer
-        )
-        for node in scheduled_nodes:
-            if variant is Phase2Variant.DYNAMIC_MULTI_AGENT:
-                slot_id = dynamic_slot_by_node[node.node_id]
-            else:
-                slots, _ = ledger.hold_capacity_slots(
-                    expected_snapshot_sequence=ledger.snapshot().sequence,
-                    requests=(
-                        CapacitySlotRequest(
-                            permitted_operation=ModelOperation.SPECIALIST_MODEL,
-                            allowed_actions=ModelAllowedActions.FINDING_ONLY,
-                            reserved_model_calls=1,
-                            reserved_tool_calls=1,
-                            minimum_token_floor=(
-                                specialist_golden.minimum_call_floor_tokens
-                            ),
-                            expires_at=(
-                                replay_case.incident.started_at + timedelta(minutes=5)
-                            ),
+                        reserved_tool_calls=1,
+                        minimum_token_floor=(
+                            specialist_golden.minimum_call_floor_tokens
+                        ),
+                        expires_at=(
+                            replay_case.incident.started_at + timedelta(minutes=5)
                         ),
                     ),
-                )
-                slot_id = slots[0].slot_id
-            runtime = SpecialistRuntime(
-                ledger=ledger,
-                adapter=adapter,
-                evidence_store=evidence_store,
-                finding_store=finding_store,
-                registries=_registries(
-                    nodes=(node,),
-                    ledger=ledger,
-                    case_id=replay_case.case_id,
-                    variant=variant,
-                    incident=replay_case.incident,
-                    evidence_store=evidence_store,
-                    phase1_budget=phase1_budget,
-                    backend=replay_backend,
-                    timeout_seconds=settings.tool_timeout_seconds,
                 ),
-                dispatch_observer=remember_dispatch,
             )
-            outcome = runtime.execute_node(
-                SpecialistExecutionContext(
-                    schema_version="phase2.specialist-execution-context.v1",
-                    admitted_graph=graph,
-                    node_id=node.node_id,
-                    specialist_capacity_slot_id=slot_id,
-                    dependency_finding_ids=tuple(
-                        finding_id_by_node[dependency]
-                        for dependency in node.depends_on
-                    ),
-                )
+            slot_id = slots[0].slot_id
+        runtime = SpecialistRuntime(
+            ledger=ledger,
+            adapter=boundary.adapter,
+            evidence_store=boundary.evidence_store,
+            finding_store=boundary.finding_store,
+            registries=_registries(
+                nodes=(node,),
+                ledger=ledger,
+                case_id=replay_case.case_id,
+                variant=variant,
+                incident=replay_case.incident,
+                evidence_store=boundary.evidence_store,
+                phase1_budget=boundary.phase1_budget,
+                backend=boundary.replay_backend,
+                timeout_seconds=boundary.timeout_seconds,
+            ),
+            dispatch_observer=lambda task, result: (
+                boundary.successful_dispatches.append((task, result))
+            ),
+        )
+        outcome = runtime.execute_node(
+            SpecialistExecutionContext(
+                schema_version="phase2.specialist-execution-context.v1",
+                admitted_graph=graph,
+                node_id=node.node_id,
+                specialist_capacity_slot_id=slot_id,
+                dependency_finding_ids=tuple(
+                    boundary.finding_id_by_node[dependency]
+                    for dependency in node.depends_on
+                ),
             )
-            outcomes.append(outcome)
-            finding_id_by_node[node.node_id] = outcome.finding.finding_id
+        )
+        boundary.specialist_outcomes.append(outcome)
+        boundary.finding_id_by_node[node.node_id] = outcome.finding.finding_id
+    return boundary
 
+
+def specialist_tool_audits(
+    boundary: SpecialistExecutionBoundary,
+) -> tuple[ToolCallAuditRecord, ...]:
+    """Expose the completed Specialist tool audit without a private import."""
+
+    if not isinstance(boundary, SpecialistExecutionBoundary):
+        raise TypeError("boundary must be SpecialistExecutionBoundary")
+    if not boundary.executed:
+        raise RuntimeError("specialist execution boundary has not executed")
+    return _tool_audits(
+        boundary.ledger,
+        variant=boundary.variant,
+        case_id=boundary.replay_case.case_id,
+    )
+
+
+def _run_fixed_or_dynamic(
+    *,
+    project_root: Path,
+    replay_case: ReplayCase,
+    run_id: str,
+    variant: Phase2Variant,
+    allow_refinement: bool,
+    model_backend: TypedModelBackend | None,
+    expected_provider_identity: str,
+) -> WorkflowRunResult:
+    boundary = prepare_specialist_execution(
+        project_root=project_root,
+        replay_case=replay_case,
+        variant=variant,
+        run_id=run_id,
+        model_backend=model_backend,
+        expected_provider_identity=expected_provider_identity,
+    )
+    ledger = boundary.ledger
+    adapter = boundary.adapter
+    try:
+        execute_replay_specialists(boundary)
+        graph = boundary.graph
+        judge_slot_id = boundary.judge_capacity_slot_id
+        if graph is None or judge_slot_id is None:
+            raise RuntimeError("workflow graph was not admitted")
         judge = JudgeRuntime(
             ledger=ledger,
             adapter=adapter,
-            evidence_store=evidence_store,
-            finding_store=finding_store,
+            evidence_store=boundary.evidence_store,
+            finding_store=boundary.finding_store,
             utc_clock=lambda: replay_case.incident.started_at,
         )
         judged: JudgeOutcome = judge.judge(
@@ -754,7 +856,7 @@ def _run_fixed_or_dynamic(
                 incident=replay_case.incident,
                 admitted_graph=graph,
                 finding_ids=tuple(
-                    finding_id_by_node[node.node_id]
+                    boundary.finding_id_by_node[node.node_id]
                     for node in graph.initial_plan.nodes
                 ),
                 judge_capacity_slot_id=judge_slot_id,
@@ -775,27 +877,29 @@ def _run_fixed_or_dynamic(
             refinement_runtime = SpecialistRuntime(
                 ledger=ledger,
                 adapter=adapter,
-                evidence_store=evidence_store,
-                finding_store=finding_store,
+                evidence_store=boundary.evidence_store,
+                finding_store=boundary.finding_store,
                 registries=_registries(
                     nodes=refinement_nodes,
                     ledger=ledger,
                     case_id=replay_case.case_id,
                     variant=variant,
                     incident=replay_case.incident,
-                    evidence_store=evidence_store,
-                    phase1_budget=phase1_budget,
-                    backend=replay_backend,
-                    timeout_seconds=settings.tool_timeout_seconds,
+                    evidence_store=boundary.evidence_store,
+                    phase1_budget=boundary.phase1_budget,
+                    backend=boundary.replay_backend,
+                    timeout_seconds=boundary.timeout_seconds,
                 ),
-                dispatch_observer=remember_dispatch,
+                dispatch_observer=lambda task, result: (
+                    boundary.successful_dispatches.append((task, result))
+                ),
             )
             refined = tuple(
                 refinement_runtime.execute_node(context)
                 for context in judged.refinement_contexts
             )
-            outcomes.extend(refined)
-            finding_id_by_node.update(
+            boundary.specialist_outcomes.extend(refined)
+            boundary.finding_id_by_node.update(
                 {
                     outcome.finding.node_id: outcome.finding.finding_id
                     for outcome in refined
@@ -804,7 +908,7 @@ def _run_fixed_or_dynamic(
             graph = judged.admitted_graph
             judged = judge.finalize(
                 tuple(
-                    finding_id_by_node[node.node_id]
+                    boundary.finding_id_by_node[node.node_id]
                     for node in graph.all_nodes
                 )
             )
@@ -816,8 +920,8 @@ def _run_fixed_or_dynamic(
                 case_id=replay_case.case_id,
                 final_rca=judged.result,
                 graph=graph,
-                specialist_outcomes=tuple(outcomes),
-                successful_dispatches=tuple(successful_dispatches),
+                specialist_outcomes=tuple(boundary.specialist_outcomes),
+                successful_dispatches=tuple(boundary.successful_dispatches),
                 terminal_failure_code=ledger.terminal_failure_code,
                 terminal_reason=None,
             )
@@ -831,9 +935,9 @@ def _run_fixed_or_dynamic(
                 variant=variant,
                 case_id=replay_case.case_id,
                 final_rca=None,
-                graph=graph,
-                specialist_outcomes=tuple(outcomes),
-                successful_dispatches=tuple(successful_dispatches),
+                graph=boundary.graph,
+                specialist_outcomes=tuple(boundary.specialist_outcomes),
+                successful_dispatches=tuple(boundary.successful_dispatches),
                 terminal_failure_code=terminal_failure_code,
                 terminal_reason=terminal_reason,
             )
@@ -858,14 +962,6 @@ def run_replay_workflow(
         validated_case.case_id,
         selected_variant,
     )
-    now = validated_case.incident.started_at
-    ledger = _ledger(
-        run_id=selected_run_id,
-        case_id=validated_case.case_id,
-        variant=selected_variant,
-        now=now,
-    )
-    authority = load_token_authority(Path(project_root))
     if selected_variant is Phase2Variant.SINGLE_AGENT:
         if (
             allow_refinement
@@ -875,6 +971,13 @@ def run_replay_workflow(
             raise ValueError(
                 "Single-Agent cannot enable refinement or a Phase 2 backend"
             )
+        ledger = _ledger(
+            run_id=selected_run_id,
+            case_id=validated_case.case_id,
+            variant=selected_variant,
+            now=validated_case.incident.started_at,
+        )
+        authority = load_token_authority(Path(project_root))
         return _run_single(
             project_root=Path(project_root),
             replay_case=validated_case,
@@ -886,8 +989,6 @@ def run_replay_workflow(
         project_root=Path(project_root),
         replay_case=validated_case,
         run_id=selected_run_id,
-        ledger=ledger,
-        authority=authority,
         variant=selected_variant,
         allow_refinement=allow_refinement,
         model_backend=model_backend,

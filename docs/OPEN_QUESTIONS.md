@@ -11,7 +11,8 @@ the frozen environment and preserve the listed evidence. They do not block
 starting implementation, but any open item blocks canonical Phase 0 `SUCCESS`.
 
 `OQ-005` through `OQ-007` are `deferred` later-phase questions. `OQ-008` is
-closed by accepted `DEC-025`. None of these items expands or blocks Phase 0.
+closed by accepted `DEC-025`, and `OQ-009` is closed by accepted `DEC-026`.
+None of these items expands or blocks Phase 0.
 
 ## Phase 0 closure-required items
 
@@ -108,6 +109,7 @@ the project commands and dependencies under test.
 | OQ-006 | deferred | Phase 1 | What exact versioned Evidence Contract schema and migration policy implement the later read-only tool boundary? | No |
 | OQ-007 | deferred | Phase 5 | What final 12+ scenario templates, hidden split, paired seeds, and preregistered analysis version implement `DEC-011`? | No |
 | OQ-008 | closed | Phase 3 | Resolved by accepted `DEC-025`: one replay-only typed restore action, deterministic Policy Gate, bound human/test approval, one-forward-mutation attempt state, replay verification, and exact compensating rollback. | No |
+| OQ-009 | closed | Phase 4 | Resolved by accepted `DEC-026`: five visible Search/Recommendation domain templates, an independent Domain RCA v1 contract, Fixed/Dynamic replay runs, safe Phase 3 no-action disposition, and an optional bounded four-run provider gate. | No |
 
 ## Resolution rules
 

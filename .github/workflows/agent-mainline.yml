@@ -61,6 +61,18 @@ jobs:
       - name: Verify Phase 3 replay
         run: make phase3-verify
 
+      - name: Phase 4 tests
+        run: make phase4-test
+
+      - name: Phase 4 domain comparison
+        run: make phase4-compare
+
+      - name: Verify Phase 4 domain comparison
+        run: make phase4-verify
+
+      - name: Phase 4 domain demo
+        run: make phase4-demo
+
       - name: Agent mainline demo
         run: make agent-demo
 
@@ -78,7 +90,9 @@ jobs:
           src/ecomsre/phase1
           src/ecomsre/phase2
           src/ecomsre/phase3
+          src/ecomsre/phase4
           src/ecomsre/tools
           src/ecomsre/demo
           eval/phase1/run.py
           eval/phase2/compare.py
+          eval/phase4/runner.py

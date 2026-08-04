@@ -119,6 +119,28 @@ phase3-verify: phase1-prerequisites
 phase3-test: phase1-prerequisites
 	env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync pytest tests/phase3 -q
 
+PHASE4_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.phase4.cli
+PHASE4_REPORT ?= $(PROJECT_ROOT)/artifacts/phase4/comparison/domain-comparison-report.json
+PHASE4_DEMO_REPORT ?= $(PROJECT_ROOT)/artifacts/phase4/demo/domain-demo-report.json
+PHASE4_PROVIDER_REPORT ?= $(PROJECT_ROOT)/artifacts/phase4/provider-smoke/provider-smoke-report.json
+
+.PHONY: phase4-test phase4-compare phase4-verify phase4-demo phase4-provider-smoke
+
+phase4-test: phase1-prerequisites
+	env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync pytest tests/phase4 -q
+
+phase4-compare: phase1-prerequisites
+	$(PHASE4_CLI) compare --output "$(PHASE4_REPORT)"
+
+phase4-verify: phase1-prerequisites
+	$(PHASE4_CLI) verify --report "$(PHASE4_REPORT)"
+
+phase4-demo: phase1-prerequisites
+	$(PHASE4_CLI) demo --output "$(PHASE4_DEMO_REPORT)"
+
+phase4-provider-smoke: phase1-prerequisites
+	$(PHASE4_CLI) provider-smoke --output "$(PHASE4_PROVIDER_REPORT)"
+
 AGENT_DEMO_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.demo
 AGENT_DEMO_REPORT ?= $(PROJECT_ROOT)/artifacts/demo/agent-mainline-v1-report.json
 

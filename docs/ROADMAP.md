@@ -131,17 +131,38 @@ Exit:
 This exit applies only to deterministic offline replay. It does not authorize
 Docker, provider calls, live telemetry, live mutation, Phase 4, or publication.
 
-## Phase 4 — Search, ads, and recommendation extensions
+## Phase 4 — Search and recommendation domain replay extension
 
-**State:** deferred.
+**State:** `PHASE4_OFFLINE_ECOMMERCE_DOMAIN_REPLAY_MVP_READY` under accepted
+`DEC-026`. The deterministic offline implementation, ten-run evaluation, demo,
+regressions, and Draft PR CI pass. The real-provider gate is not configured and
+is recorded as `SKIPPED_NOT_CONFIGURED`; Phase 5 has not been entered.
+
+Entry:
+
+- PR #3 merged to `main`;
+- Phase 1–3 contracts and replay semantics remain frozen;
+- `DEC-026` accepted.
 
 Scope:
 
-- Feature Service and Ranking Service;
-- feature freshness lag;
-- model-feature schema mismatch;
-- bad ranking configuration;
-- Search, Ads, and Recommendation SLOs.
+- five new visible Search/Recommendation replay templates;
+- Feature and Ranking root-service evidence;
+- feature freshness lag, model-feature schema mismatch, and ranking
+  configuration failure;
+- Fixed Specialist and Dynamic Multi-Agent workflows over the existing Phase 2
+  runtime;
+- deterministic ten-run offline evaluation, one-command domain demo, and an
+  optional bounded four-run real-provider gate;
+- no new Agent, live service, remediation action, or superiority claim.
+
+Exit:
+
+- the five cases run through both variants and retain all ten traces;
+- Domain RCA, evidence, DAG, isolation, and budget checks verify;
+- new mechanisms yield only `NO_ACTION` or `NO_SUPPORTED_REMEDIATION` at the
+  Phase 3 boundary;
+- Phase 1 fingerprints and Phase 2 comparison semantics remain unchanged.
 
 These components do not retroactively expand Phase 0 claims.
 

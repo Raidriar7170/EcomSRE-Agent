@@ -1,0 +1,100 @@
+{
+  "schema_version": "phase4.current-disposition.v1",
+  "status": "PHASE4_OFFLINE_ECOMMERCE_DOMAIN_REPLAY_MVP_READY",
+  "decision": {
+    "id": "DEC-026",
+    "status": "accepted",
+    "oq_009": "closed"
+  },
+  "branch": "phase4/ecommerce-domain-replay",
+  "implementation_and_evaluation_commit": "a990022020549c4f5e7240691070a4b7ce98534e",
+  "domain_contract": {
+    "schema_version": "phase4.domain-rca-result.v1",
+    "phase1_rca_v1_changed": false,
+    "services": [
+      "feature",
+      "ranking"
+    ],
+    "affected_slis": [
+      "search",
+      "recommendation"
+    ],
+    "mechanisms": [
+      "feature_freshness_lag",
+      "model_feature_schema_mismatch",
+      "ranking_configuration_failure"
+    ]
+  },
+  "offline_evaluation": {
+    "status": "VERIFIED",
+    "case_ids": [
+      "search-feature-freshness-lag-complete",
+      "recommendation-model-feature-schema-mismatch",
+      "search-ranking-configuration-frontend-decoy",
+      "recommendation-feature-evidence-insufficient",
+      "ranking-change-with-normal-search-sli"
+    ],
+    "variants": [
+      "FIXED_SPECIALIST_WORKFLOW",
+      "DYNAMIC_MULTI_AGENT"
+    ],
+    "run_count": 10,
+    "semantic_sha256": "c7002cea9db43c1a46dc448d3ee4140053bcb23eb02e31e6b9bce4c183b68399",
+    "report_path": "artifacts/phase4/comparison/domain-comparison-report.json"
+  },
+  "real_provider_gate": {
+    "status": "SKIPPED_NOT_CONFIGURED",
+    "configured": false,
+    "model_snapshot": null,
+    "run_count": 0,
+    "scripted_fallback": false,
+    "report_path": "artifacts/phase4/provider-smoke/provider-smoke-report.json"
+  },
+  "regression": {
+    "phase1_fingerprint": {
+      "expected": "15d8da7e6b589fddf4cbb50dd611b60b9c72196bcec701c268867bbfb9ba3a01",
+      "observed": "15d8da7e6b589fddf4cbb50dd611b60b9c72196bcec701c268867bbfb9ba3a01",
+      "status": "VERIFIED"
+    },
+    "phase2_comparison": {
+      "semantic_sha256": "3734e5814a5a0bbe139f7e7ca346e06f0d139ec4f9947b4a97cb6a34c7af14b4",
+      "status": "VERIFIED"
+    },
+    "phase3_replay": {
+      "semantic_sha256": "92326b48c3e78024f75c30068feabe547163ad73d50031cd8ce6cd84d37e37f7",
+      "status": "VERIFIED",
+      "new_action_added": false
+    }
+  },
+  "validation": {
+    "phase1_tests": 877,
+    "phase2_tests": 378,
+    "phase3_tests": 27,
+    "phase4_tests": 63,
+    "full_tests": 2190,
+    "ruff": "PASSED",
+    "mypy": "PASSED",
+    "independent_read_only_review": "PASS",
+    "git_diff_check": "PASSED",
+    "first_draft_pr_ci": {
+      "status": "PASSED",
+      "run_id": 30835506649,
+      "head_sha": "a990022020549c4f5e7240691070a4b7ce98534e",
+      "url": "https://github.com/Raidriar7170/EcomSRE-Agent/actions/runs/30835506649"
+    }
+  },
+  "execution_boundary": {
+    "replay_only": true,
+    "docker_run": false,
+    "live_environment": false,
+    "live_telemetry": false,
+    "live_mutation": false,
+    "phase5_entered": false,
+    "superiority_claim": false
+  },
+  "publication": {
+    "pull_request": 4,
+    "draft": true,
+    "merged": false
+  }
+}
