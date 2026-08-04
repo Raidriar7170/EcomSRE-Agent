@@ -16,14 +16,25 @@ from ecomsre.phase1.contracts import (
 from ecomsre.phase1.validator import revalidate_phase1_model
 from ecomsre.phase2.budgets import BudgetLedger, BudgetLedgerError
 from ecomsre.phase2.contracts import (
+    BudgetSnapshot,
     Phase2FailureCode,
     Phase2Variant,
     SPECIALIST_TOOL_BINDINGS,
+    SpecialistExecutionAuthorization,
     SpecialistRole,
     SpecialistTask,
     SpecialistToolDispatchResult,
+    SpecialistToolOutcomeReceipt,
     canonical_tool_call_record_sha256,
 )
+
+
+SpecialistToolAttempt = tuple[
+    ToolCallRecord,
+    SpecialistExecutionAuthorization,
+    BudgetSnapshot,
+    SpecialistToolOutcomeReceipt,
+]
 
 
 class ToolIsolationErrorCode(str, Enum):
@@ -118,6 +129,38 @@ class SpecialistToolRegistry:
         return self._ledger
 
     def dispatch(self, task: SpecialistTask) -> SpecialistToolDispatchResult:
+        """Preserve the Phase 2 success-only projection."""
+
+        record, authorization, snapshot, receipt = self._dispatch_record(
+            task,
+            accept_typed_error=False,
+        )
+        try:
+            return SpecialistToolDispatchResult(
+                schema_version="phase2.specialist-tool-dispatch-result.v1",
+                tool_call_record=record,
+                specialist_authorization=authorization,
+                budget_snapshot=snapshot,
+                outcome_receipt=receipt,
+            )
+        except (TypeError, ValidationError, ValueError) as error:
+            raise ToolIsolationError(
+                ToolIsolationErrorCode.INVALID_REGISTRY,
+                "outcome already sealed; result projection failed and must "
+                f"not be redispatched: {error}",
+            ) from error
+
+    def dispatch_attempt(self, task: SpecialistTask) -> SpecialistToolAttempt:
+        """Charge one typed attempt while retaining a backend-error record."""
+
+        return self._dispatch_record(task, accept_typed_error=True)
+
+    def _dispatch_record(
+        self,
+        task: SpecialistTask,
+        *,
+        accept_typed_error: bool,
+    ) -> SpecialistToolAttempt:
         try:
             validated_task = SpecialistTask.model_validate(task)
         except (TypeError, ValidationError, ValueError) as error:
@@ -208,9 +251,20 @@ class SpecialistToolRegistry:
                     "bound executor must return the exact ToolCallRecord type"
                 )
             record = revalidate_phase1_model(result, ToolCallRecord)
+            accepted_outcome = (
+                record.status == "OK"
+                and record.usable
+                and record.error_code is None
+            ) or (
+                accept_typed_error
+                and record.status == "ERROR"
+                and not record.usable
+                and record.error_code is not None
+                and not record.evidence
+                and not record.evidence_refs
+            )
             if (
-                record.status != "OK"
-                or not record.usable
+                not accepted_outcome
                 or not record.dispatched
                 or record.evidence_quarantined
                 or record.run_id != validated_task.run_id
@@ -261,17 +315,9 @@ class SpecialistToolRegistry:
                 phase2_failure_code=error.code,
             ) from error
 
-        try:
-            return SpecialistToolDispatchResult(
-                schema_version="phase2.specialist-tool-dispatch-result.v1",
-                tool_call_record=record,
-                specialist_authorization=receipt.post_outcome_authorization,
-                budget_snapshot=receipt.outcome_snapshot,
-                outcome_receipt=receipt,
-            )
-        except (TypeError, ValidationError, ValueError) as error:
-            raise ToolIsolationError(
-                ToolIsolationErrorCode.INVALID_REGISTRY,
-                "outcome already sealed; result projection failed and must "
-                f"not be redispatched: {error}",
-            ) from error
+        return (
+            record,
+            receipt.post_outcome_authorization,
+            receipt.outcome_snapshot,
+            receipt,
+        )
