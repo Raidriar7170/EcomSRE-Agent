@@ -87,7 +87,11 @@
     "ruff": "PASSED",
     "mypy": "PASSED",
     "independent_read_only_review": "PASS",
-    "draft_pr_ci": "PENDING"
+    "draft_pr_ci": {
+      "status": "PASSED",
+      "run_id": 30878777714,
+      "head_sha": "d93ace4e54a5b247f6164bd04fe1941d828e4110"
+    }
   },
   "execution_boundary": {
     "replay_only": true,
