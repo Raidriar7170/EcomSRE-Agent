@@ -6,9 +6,9 @@ a custom lightweight Multi-Agent runtime, typed handoffs, a central budget,
 run-scoped evidence, deterministic policy enforcement, and replayable reports.
 
 This repository is an evidence-oriented local research system—not a production
-autonomous SRE. Its demos cover the implemented Phase 1–3 path and the separate
-Phase 4 Search/Recommendation domain replay path without Docker, live telemetry,
-or live mutation.
+autonomous SRE. Its demos cover the implemented Phase 1–3 path, the separate
+Phase 4 Search/Recommendation replay path, and the Phase 5A diagnosis-quality
+repair without Docker, live telemetry, or live mutation.
 
 ## One-command offline demo
 
@@ -66,6 +66,28 @@ Ranking evidence. Its three new mechanisms are `feature_freshness_lag`,
 `model_feature_schema_mismatch`, and `ranking_configuration_failure`. It does
 not add an Agent, a live Feature/Ranking service, or a remediation action.
 
+## One-command Phase 5A missing-telemetry demo
+
+```bash
+make phase5a-demo
+```
+
+This deterministic `SCRIPTED_REPLAY` demo discovers the visible template with
+an unavailable Logs source, runs Dynamic Multi-Agent v2, and preserves that
+source as a typed missing-evidence finding. Metrics and Traces still support
+`ad` / `request_processing_failure`; the workflow completes without a fallback,
+remediation action, Docker call, or live mutation.
+
+Phase 5A also provides a 12-template × 3-variant visible development report:
+
+```bash
+make phase5a-compare
+make phase5a-verify
+```
+
+The report is explicitly `VISIBLE DEVELOPMENT EVALUATION` and
+`NOT A SUPERIORITY CLAIM`. Phase 5B hidden evaluation has not been entered.
+
 ## Architecture
 
 ```mermaid
@@ -104,14 +126,16 @@ it cannot expand the Policy Gate or Executor authority.
 | Phase 2 | `PHASE2_MULTI_AGENT_REPLAY_MVP_READY`; offline comparison and bounded provider gate verified, with no superiority claim |
 | Phase 3 | `PHASE3_RESTRICTED_REMEDIATION_REPLAY_MVP_READY`; replay-only |
 | Phase 4 | `PHASE4_OFFLINE_ECOMMERCE_DOMAIN_REPLAY_MVP_READY`; deterministic offline replay verified, real-provider gate `SKIPPED_NOT_CONFIGURED` |
-| Phase 5 | Not entered |
+| Phase 5A | `PHASE5A_MULTI_AGENT_QUALITY_REPAIR_READY`; 36-run public development report verified, no superiority claim |
+| Phase 5B | Not entered |
 
 The authoritative detail lives in the [Roadmap](docs/ROADMAP.md),
 [Decision Register](docs/DECISIONS.md),
 [Phase 0 acceptance contract](docs/PHASE_0_ACCEPTANCE.md),
 [Phase 2 closeout](docs/PHASE_2_CLOSEOUT.md), and
 [Phase 3 disposition](docs/review-evidence/phase3-restricted-remediation/current-disposition.json), and
-[Phase 4 disposition](docs/review-evidence/phase4-ecommerce-domain-replay/current-disposition.json).
+[Phase 4 disposition](docs/review-evidence/phase4-ecommerce-domain-replay/current-disposition.json), and
+[Phase 5A disposition](docs/review-evidence/phase5a-multi-agent-quality/current-disposition.json).
 
 ## Evidence boundaries
 
@@ -126,6 +150,8 @@ The phases intentionally make different claims:
 | Phase 3 remediation | 6 deterministic replay cases; no Docker, provider, or live mutation |
 | Phase 4 domain replay | 5 new cases × 2 variants: Fixed and Dynamic; no superiority claim |
 | Phase 4 real-provider gate | 4 bounded positive/negative Fixed/Dynamic runs when configured; otherwise `SKIPPED_NOT_CONFIGURED` |
+| Phase 5A visible development evaluation | 12 public cases × 3 capability-parity v2 variants; all 36 runs retained; no superiority claim |
+| Phase 5A real-provider pilot | 3 visible cases × 3 variants when configured; otherwise `SKIPPED_NOT_CONFIGURED` |
 | Agent Mainline V1 demo | One deterministic scripted replay integration case; not an evaluation or provider result |
 
 The Phase 1 real-provider result is **not** 7/7.
@@ -165,12 +191,17 @@ make phase4-compare
 make phase4-verify
 make phase4-demo
 make phase4-provider-smoke
+make phase5a-test
+make phase5a-compare
+make phase5a-verify
+make phase5a-demo
+make phase5a-provider-pilot
 ```
 
 No provider configuration is needed for the tests, comparisons, verifiers, or
-demos above. `make phase4-provider-smoke` returns `SKIPPED_NOT_CONFIGURED` when
-its complete provider environment is absent. Provider smoke is a separately
-reported gate and is not part of either demo or CI.
+demos above. The Phase 4 provider smoke and Phase 5A provider pilot return
+`SKIPPED_NOT_CONFIGURED` when their complete provider environment is absent.
+Provider runs are separately reported gates and are not part of a demo or CI.
 
 ## Results
 
@@ -179,16 +210,19 @@ The current integration baseline records:
 | Check | Result |
 | --- | ---: |
 | Phase 1 tests | 877 passed |
-| Phase 2 tests | 378 passed |
+| Phase 2 tests | 379 passed |
 | Phase 3 tests | 27 passed |
 | Phase 4 tests | 63 passed |
+| Phase 5A tests | 65 passed |
 | Agent Mainline V1 demo tests | 8 passed |
-| Full repository tests | 2,190 passed |
+| Full repository tests | 2,256 passed |
 | Phase 2 comparison | 7 × 3 report verified |
 | Phase 2 real-provider gate | 4 bounded requirements passed |
 | Phase 3 replay evaluation | 6 cases verified |
 | Phase 4 domain comparison | 5 × 2 deterministic report verified |
 | Phase 4 real-provider gate | `SKIPPED_NOT_CONFIGURED` on the offline branch |
+| Phase 5A capability-parity report | 12 × 3 visible development report verified; Single/Fixed/Dynamic v2 original-seven accuracy 7/7 each |
+| Phase 5A real-provider pilot | `SKIPPED_NOT_CONFIGURED` on the offline branch |
 
 These counts are development evidence for the named revision. They are not a
 release, production-readiness, Phase 0 acceptance, or model-quality claim.
@@ -216,6 +250,7 @@ src/ecomsre/phase1/   Single-Agent RCA and read-only evidence contracts
 src/ecomsre/phase2/   Fixed/Dynamic workflows, Commander, Specialists, Judge
 src/ecomsre/phase3/   Planner, Policy Gate, replay executor, verifier, rollback
 src/ecomsre/phase4/   Search/Recommendation Domain RCA, evaluation, provider gate
+src/ecomsre/phase5a/  Capability-parity v2 diagnosis policy and evaluation
 src/ecomsre/demo/     Thin public Phase 2 → Phase 3 offline integration
 config/phase1/        Frozen seven-case observer-visible replay baseline
 config/phase4/        Five independent domain replay cases
@@ -233,7 +268,10 @@ tests/                 Contract, replay, isolation, and regression checks
   comparison baseline or the bounded real-provider gate.
 - Phase 4 is replay-only. Its provider gate is bounded and currently
   unconfigured; it does not substitute scripted output for provider output.
-- Phase 5's frozen 12+ template superiority evaluation has not been run.
+- Phase 5A uses public development templates. Its 7/7 v2 results are a bounded
+  quality-repair result, not a hidden-set or superiority claim.
+- Phase 5B's frozen hidden templates, paired seeds, and bootstrap comparison
+  have not been run.
 - No production write capability, live remediation, release, or deployment is
   claimed.
 

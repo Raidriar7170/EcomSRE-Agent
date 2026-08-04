@@ -73,6 +73,18 @@ jobs:
       - name: Phase 4 domain demo
         run: make phase4-demo
 
+      - name: Phase 5A tests
+        run: make phase5a-test
+
+      - name: Phase 5A capability-parity comparison
+        run: make phase5a-compare
+
+      - name: Verify Phase 5A capability-parity comparison
+        run: make phase5a-verify
+
+      - name: Phase 5A missing-source demo
+        run: make phase5a-demo
+
       - name: Agent mainline demo
         run: make agent-demo
 
@@ -91,8 +103,10 @@ jobs:
           src/ecomsre/phase2
           src/ecomsre/phase3
           src/ecomsre/phase4
+          src/ecomsre/phase5a
           src/ecomsre/tools
           src/ecomsre/demo
           eval/phase1/run.py
           eval/phase2/compare.py
           eval/phase4/runner.py
+          eval/phase5a/runner.py

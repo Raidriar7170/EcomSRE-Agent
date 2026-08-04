@@ -1,0 +1,107 @@
+{
+  "schema_version": "phase5a.current-disposition.v2",
+  "status": "PHASE5A_MULTI_AGENT_QUALITY_REPAIR_READY",
+  "decision": {
+    "id": "DEC-027",
+    "status": "accepted",
+    "oq_010": "closed"
+  },
+  "branch": "phase5a/multi-agent-quality-parity",
+  "implementation_commit": "2909ed25aed4a6e2c381db3179a14849d65128b5",
+  "frozen_v1_baseline": {
+    "single": "7/7",
+    "fixed": "2/7",
+    "dynamic": "2/7",
+    "semantic_sha256": "3734e5814a5a0bbe139f7e7ca346e06f0d139ec4f9947b4a97cb6a34c7af14b4"
+  },
+  "visible_development_evaluation_v2": {
+    "label": "VISIBLE DEVELOPMENT EVALUATION",
+    "claim_boundary": "NOT A SUPERIORITY CLAIM",
+    "case_count": 12,
+    "variant_count": 3,
+    "run_count": 36,
+    "typed_terminal_results": 36,
+    "workflow_failures": 0,
+    "empty_evidence_failures": 0,
+    "original_7_decision_accuracy": {
+      "single": "7/7",
+      "fixed": "7/7",
+      "dynamic": "7/7"
+    },
+    "average_tool_calls": {
+      "fixed": 4.0,
+      "dynamic": 2.5
+    },
+    "semantic_sha256": "c418af796a173178e96c108f6e33c0f617f90dd2fb3adddc824e906390242ae8",
+    "verify": "VERIFIED",
+    "report_path": "artifacts/phase5a/comparison/capability-parity-report.json"
+  },
+  "hard_subsets": {
+    "missing_telemetry": {
+      "run_count": 29,
+      "decision_accuracy": "29/29",
+      "runtime_completion": "29/29"
+    },
+    "decoy_change": {
+      "run_count": 6,
+      "decision_accuracy": "6/6",
+      "runtime_completion": "6/6"
+    },
+    "configuration": {
+      "run_count": 6,
+      "decision_accuracy": "6/6"
+    },
+    "cache_dependency": {
+      "run_count": 3,
+      "decision_accuracy": "3/3"
+    },
+    "search_recommendation_domain": {
+      "run_count": 15,
+      "decision_accuracy": "15/15"
+    },
+    "negative_no_incident": {
+      "run_count": 9,
+      "decision_accuracy": "9/9"
+    }
+  },
+  "real_provider_pilot": {
+    "status": "SKIPPED_NOT_CONFIGURED",
+    "configured": false,
+    "model_snapshot": null,
+    "run_count": 0,
+    "scripted_fallback": false,
+    "report_path": "artifacts/phase5a/provider-pilot/provider-pilot-report.json"
+  },
+  "regression": {
+    "phase1_tests": 877,
+    "phase2_tests": 379,
+    "phase2_v1_semantic_sha256": "3734e5814a5a0bbe139f7e7ca346e06f0d139ec4f9947b4a97cb6a34c7af14b4",
+    "phase3_tests": 27,
+    "phase3_semantic_sha256": "92326b48c3e78024f75c30068feabe547163ad73d50031cd8ce6cd84d37e37f7",
+    "phase4_tests": 63,
+    "phase4_semantic_sha256": "c7002cea9db43c1a46dc448d3ee4140053bcb23eb02e31e6b9bce4c183b68399"
+  },
+  "validation": {
+    "phase5a_tests": 65,
+    "full_tests": 2256,
+    "ruff": "PASSED",
+    "mypy": "PASSED",
+    "independent_read_only_review": "PASS",
+    "draft_pr_ci": {
+      "status": "PASSED",
+      "run_id": 30878777714,
+      "head_sha": "d93ace4e54a5b247f6164bd04fe1941d828e4110"
+    }
+  },
+  "execution_boundary": {
+    "replay_only": true,
+    "docker_run": false,
+    "live_environment": false,
+    "live_telemetry": false,
+    "live_mutation": false,
+    "new_remediation_action": false,
+    "phase5b_entered": false,
+    "hidden_evaluation": false,
+    "superiority_claim": false
+  }
+}

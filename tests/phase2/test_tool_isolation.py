@@ -12,6 +12,7 @@ from ecomsre.phase1.contracts import (
     LogsAction,
     MetricsAction,
     ReadOnlyToolName,
+    StableErrorCode,
     ToolCallRecord,
     TracesAction,
 )
@@ -195,6 +196,35 @@ def test_tool_isolation_error_code_contract_is_closed() -> None:
         "AUTHORIZATION_MISMATCH",
         "RECORD_MISMATCH",
         "EXECUTOR_FAILURE",
+    )
+
+
+def test_typed_attempt_charges_unavailable_source_without_terminal_failure() -> None:
+    instance, authorization, selected_task = authorized_ledger(
+        specialist_role=SpecialistRole.LOGS_AGENT,
+        source=EvidenceSource.LOGS,
+        tool_name=ReadOnlyToolName.SEARCH_LOGS,
+    )
+    unavailable = record(
+        selected_task,
+        usable=False,
+        status="ERROR",
+        error_code=StableErrorCode.BACKEND_UNAVAILABLE,
+    )
+
+    attempted = registry(
+        instance,
+        lambda _query: unavailable,
+        SpecialistRole.LOGS_AGENT,
+    ).dispatch_attempt(selected_task)
+
+    assert attempted[0] == unavailable
+    assert attempted[1].status is SpecialistAuthorizationStatus.TOOL_CHARGED
+    assert attempted[2].charged_tool_calls == 1
+    assert attempted[3].tool_call_record_sha256 is not None
+    assert instance.terminal_failure_code is None
+    assert authorization.authorization_id in (
+        instance.snapshot().active_specialist_authorization_ids
     )
 
 

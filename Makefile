@@ -141,6 +141,29 @@ phase4-demo: phase1-prerequisites
 phase4-provider-smoke: phase1-prerequisites
 	$(PHASE4_CLI) provider-smoke --output "$(PHASE4_PROVIDER_REPORT)"
 
+PHASE5A_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.phase5a.cli
+PHASE5A_REPORT ?= $(PROJECT_ROOT)/artifacts/phase5a/comparison/capability-parity-report.json
+PHASE5A_DEMO_REPORT ?= $(PROJECT_ROOT)/artifacts/phase5a/demo/diagnosis-quality-demo.json
+PHASE5A_PROVIDER_REPORT ?= $(PROJECT_ROOT)/artifacts/phase5a/provider-pilot/provider-pilot-report.json
+
+.PHONY: phase5a-test phase5a-compare phase5a-verify phase5a-demo \
+	phase5a-provider-pilot
+
+phase5a-test: phase1-prerequisites
+	env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync pytest tests/phase5a -q
+
+phase5a-compare: phase1-prerequisites
+	$(PHASE5A_CLI) compare --output "$(PHASE5A_REPORT)"
+
+phase5a-verify: phase1-prerequisites
+	$(PHASE5A_CLI) verify --report "$(PHASE5A_REPORT)"
+
+phase5a-demo: phase1-prerequisites
+	$(PHASE5A_CLI) demo --output "$(PHASE5A_DEMO_REPORT)"
+
+phase5a-provider-pilot: phase1-prerequisites
+	$(PHASE5A_CLI) provider-pilot --output "$(PHASE5A_PROVIDER_REPORT)"
+
 AGENT_DEMO_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.demo
 AGENT_DEMO_REPORT ?= $(PROJECT_ROOT)/artifacts/demo/agent-mainline-v1-report.json
 
