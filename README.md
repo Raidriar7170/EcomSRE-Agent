@@ -87,6 +87,8 @@ make phase5a-verify
 
 The report is explicitly `VISIBLE DEVELOPMENT EVALUATION` and
 `NOT A SUPERIORITY CLAIM`. Phase 5B hidden evaluation has not been entered.
+The bounded real-provider pilot reached 9/9 protocol acceptance and 8/9 semantic
+acceptance. Its 9/9 gate is `NOT PASSED`; no Multi-Agent superiority is claimed.
 
 ## Architecture
 
@@ -126,7 +128,7 @@ it cannot expand the Policy Gate or Executor authority.
 | Phase 2 | `PHASE2_MULTI_AGENT_REPLAY_MVP_READY`; offline comparison and bounded provider gate verified, with no superiority claim |
 | Phase 3 | `PHASE3_RESTRICTED_REMEDIATION_REPLAY_MVP_READY`; replay-only |
 | Phase 4 | `PHASE4_OFFLINE_ECOMMERCE_DOMAIN_REPLAY_MVP_READY`; deterministic offline replay verified, real-provider gate `SKIPPED_NOT_CONFIGURED` |
-| Phase 5A | `PHASE5A_MULTI_AGENT_QUALITY_REPAIR_READY`; 36-run public development report verified, no superiority claim |
+| Phase 5A | `PHASE5A_MULTI_AGENT_QUALITY_REPAIR_READY`; offline quality repair `PASS`; provider protocol 9/9, semantic pilot 8/9, real-provider 9/9 gate `NOT PASSED`; no superiority claim |
 | Phase 5B | Not entered |
 
 The authoritative detail lives in the [Roadmap](docs/ROADMAP.md),
@@ -151,7 +153,7 @@ The phases intentionally make different claims:
 | Phase 4 domain replay | 5 new cases × 2 variants: Fixed and Dynamic; no superiority claim |
 | Phase 4 real-provider gate | 4 bounded positive/negative Fixed/Dynamic runs when configured; otherwise `SKIPPED_NOT_CONFIGURED` |
 | Phase 5A visible development evaluation | 12 public cases × 3 capability-parity v2 variants; all 36 runs retained; no superiority claim |
-| Phase 5A real-provider pilot | 3 visible cases × 3 variants when configured; otherwise `SKIPPED_NOT_CONFIGURED` |
+| Phase 5A real-provider pilot | 3 visible cases × 3 variants; protocol 9/9, semantic acceptance 8/9; `BLOCKED_PROVIDER_PILOT_AFTER_ROOT_CAUSE_FIX` |
 | Agent Mainline V1 demo | One deterministic scripted replay integration case; not an evaluation or provider result |
 
 The Phase 1 real-provider result is **not** 7/7.
@@ -213,16 +215,16 @@ The current integration baseline records:
 | Phase 2 tests | 379 passed |
 | Phase 3 tests | 27 passed |
 | Phase 4 tests | 63 passed |
-| Phase 5A tests | 65 passed |
+| Phase 5A tests | 74 passed |
 | Agent Mainline V1 demo tests | 8 passed |
-| Full repository tests | 2,256 passed |
+| Full repository tests | 2,265 passed |
 | Phase 2 comparison | 7 × 3 report verified |
 | Phase 2 real-provider gate | 4 bounded requirements passed |
 | Phase 3 replay evaluation | 6 cases verified |
 | Phase 4 domain comparison | 5 × 2 deterministic report verified |
 | Phase 4 real-provider gate | `SKIPPED_NOT_CONFIGURED` on the offline branch |
 | Phase 5A capability-parity report | 12 × 3 visible development report verified; Single/Fixed/Dynamic v2 original-seven accuracy 7/7 each |
-| Phase 5A real-provider pilot | `SKIPPED_NOT_CONFIGURED` on the offline branch |
+| Phase 5A real-provider pilot | Protocol 9/9; semantic acceptance 8/9; real-provider 9/9 gate `NOT PASSED` |
 
 These counts are development evidence for the named revision. They are not a
 release, production-readiness, Phase 0 acceptance, or model-quality claim.

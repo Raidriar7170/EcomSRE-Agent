@@ -3,8 +3,12 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+import socket
+import ssl
 import subprocess
 import sys
+from typing import Any
+import urllib.error
 
 from ecomsre.phase2.token_policy import MODEL_SNAPSHOT
 from ecomsre.phase5a import cli, evaluation
@@ -45,7 +49,7 @@ def test_truth_is_loaded_only_after_each_isolated_trace_returns(monkeypatch) -> 
 
     monkeypatch.setattr(evaluation, "_run_workflow_trace", tracked_runner)
     monkeypatch.setattr(evaluation, "_load_ground_truth", tracked_loader)
-    report = evaluation.run_capability_parity_evaluation(PROJECT_ROOT)
+    report: Any = evaluation.run_capability_parity_evaluation(PROJECT_ROOT)
 
     assert report["status"] == "COMPLETED"
     assert returned == truth_reads
@@ -53,7 +57,7 @@ def test_truth_is_loaded_only_after_each_isolated_trace_returns(monkeypatch) -> 
 
 
 def test_evaluation_retains_36_runs_and_required_quality_gates() -> None:
-    report = evaluation.run_capability_parity_evaluation(PROJECT_ROOT)
+    report: Any = evaluation.run_capability_parity_evaluation(PROJECT_ROOT)
 
     assert report["schema_version"] == "phase5a.capability-parity-report.v2"
     assert report["evaluation_label"] == "VISIBLE DEVELOPMENT EVALUATION"
@@ -111,7 +115,7 @@ def test_unconfigured_provider_pilot_never_uses_a_transport() -> None:
         def post_json(self, **_kwargs):
             raise AssertionError("unconfigured pilot touched provider transport")
 
-    report = run_provider_pilot(
+    report: Any = run_provider_pilot(
         project_root=PROJECT_ROOT,
         environment={},
         transport=ForbiddenTransport(),
@@ -185,7 +189,7 @@ def test_configured_provider_pilot_runs_exactly_nine_no_retry_calls() -> None:
 
     transport = TypedTransport()
     api_key = "provider-test-secret"
-    report = run_provider_pilot(
+    report: Any = run_provider_pilot(
         project_root=PROJECT_ROOT,
         environment={
             "ECOMSRE_LLM_BASE_URL": "https://provider.invalid/v1",
@@ -213,6 +217,7 @@ def test_configured_provider_pilot_runs_exactly_nine_no_retry_calls() -> None:
         item["outer_budget"]["provider_attempted"] is True
         and item["outer_budget"]["provider_token_accounting"] == "ACTUAL"
         and item["outer_budget"]["within_budget"] is True
+        and item["failure_code"] is None
         for item in report["case_results"]
     )
     assert api_key not in json.dumps(report)
@@ -223,7 +228,7 @@ def test_failed_provider_attempts_retain_reserved_outer_budget_usage() -> None:
         def post_json(self, **_kwargs):
             raise TimeoutError
 
-    report = run_provider_pilot(
+    report: Any = run_provider_pilot(
         project_root=PROJECT_ROOT,
         environment={
             "ECOMSRE_LLM_BASE_URL": "https://provider.invalid/v1",
@@ -238,12 +243,192 @@ def test_failed_provider_attempts_retain_reserved_outer_budget_usage() -> None:
     assert report["provider_call_count"] == 9
     assert all(
         item["status"] == "FAILED"
+        and item["failure_code"] == "PROVIDER_TIMEOUT"
         and item["outer_budget"]["provider_attempted"] is True
         and item["outer_budget"]["provider_token_accounting"]
         == "RESERVED_UNKNOWN"
         and item["outer_budget"]["usage"]["model_calls"] >= 6
         for item in report["case_results"]
     )
+
+
+def test_provider_failure_codes_are_allowlisted_and_never_copy_error_text() -> None:
+    class DiagnosticTransport:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def post_json(self, **_kwargs):
+            self.calls += 1
+            failure_kind = (self.calls - 1) % 3
+            if failure_kind == 0:
+                raise TimeoutError("raw-timeout-marker")
+            if failure_kind == 1:
+                raise OSError("raw-connection-marker")
+            return {
+                "id": f"completion-{self.calls}",
+                "model": MODEL_SNAPSHOT,
+                "choices": [{"index": 0, "finish_reason": "stop"}],
+            }
+
+    transport = DiagnosticTransport()
+    api_key = "provider-test-secret"
+    report: Any = run_provider_pilot(
+        project_root=PROJECT_ROOT,
+        environment={
+            "ECOMSRE_LLM_BASE_URL": "https://provider.invalid/v1",
+            "ECOMSRE_LLM_API_KEY": api_key,
+            "ECOMSRE_LLM_MODEL": MODEL_SNAPSHOT,
+        },
+        transport=transport,
+    )
+
+    assert report["status"] == "FAILED"
+    assert report["provider_call_count"] == 9
+    assert [item["failure_code"] for item in report["case_results"]] == [
+        "PROVIDER_TIMEOUT",
+        "PROVIDER_CONNECTION",
+        "CHOICE_METADATA_INVALID",
+    ] * 3
+    serialized = json.dumps(report)
+    assert api_key not in serialized
+    assert "raw-timeout-marker" not in serialized
+    assert "raw-connection-marker" not in serialized
+
+
+def test_provider_diagnosis_failure_codes_use_only_safe_validation_categories() -> None:
+    class InvalidDiagnosisTransport:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def post_json(self, **kwargs):
+            self.calls += 1
+            envelope = json.loads(kwargs["payload"]["messages"][1]["content"])
+            diagnosis = {
+                "schema_version": "phase5a.diagnosis-result.v2",
+                "run_id": envelope["run_id"],
+                "decision": "NEED_MORE_EVIDENCE",
+                "root_service": None,
+                "fault_mechanism": None,
+                "causal_chain": [],
+                "affected_sli": envelope["incident"]["affected_sli"],
+                "supporting_evidence": [],
+                "contradicting_evidence": [],
+                "missing_evidence": ["One read-only source is still required."],
+                "confidence": 0.2,
+                "decision_rationale": "The available evidence is insufficient.",
+                "recommended_next_action": (
+                    "Collect additional read-only telemetry evidence."
+                ),
+            }
+            failure_kind = (self.calls - 1) % 3
+            if failure_kind == 0:
+                del diagnosis["decision_rationale"]
+            elif failure_kind == 1:
+                diagnosis["decision"] = "raw-invalid-decision-marker"
+            else:
+                diagnosis["missing_evidence"] = []
+            return {
+                "id": f"completion-{self.calls}",
+                "model": MODEL_SNAPSHOT,
+                "choices": [
+                    {
+                        "index": 0,
+                        "finish_reason": "tool_calls",
+                        "message": {
+                            "role": "assistant",
+                            "content": None,
+                            "tool_calls": [
+                                {
+                                    "id": f"tool-{self.calls}",
+                                    "type": "function",
+                                    "function": {
+                                        "name": "submit_phase5a_diagnosis",
+                                        "arguments": json.dumps(diagnosis),
+                                    },
+                                }
+                            ],
+                        },
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 100,
+                    "completion_tokens": 50,
+                    "total_tokens": 150,
+                },
+            }
+
+    report: Any = run_provider_pilot(
+        project_root=PROJECT_ROOT,
+        environment={
+            "ECOMSRE_LLM_BASE_URL": "https://provider.invalid/v1",
+            "ECOMSRE_LLM_API_KEY": "provider-test-secret",
+            "ECOMSRE_LLM_MODEL": MODEL_SNAPSHOT,
+        },
+        transport=InvalidDiagnosisTransport(),
+    )
+
+    assert [item["failure_code"] for item in report["case_results"]] == [
+        "DIAGNOSIS_REQUIRED_FIELD_MISSING",
+        "DIAGNOSIS_ENUM_INVALID",
+        "DIAGNOSIS_DECISION_SEMANTICS_INVALID",
+    ] * 3
+    serialized = json.dumps(report)
+    assert "raw-invalid-decision-marker" not in serialized
+    assert "provider-test-secret" not in serialized
+
+
+def test_provider_connection_codes_use_only_safe_exception_categories() -> None:
+    class ClassifiedConnectionTransport:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def post_json(self, **_kwargs):
+            self.calls += 1
+            failure_kind = (self.calls - 1) % 3
+            if failure_kind == 0:
+                cause: Exception = urllib.error.HTTPError(
+                    "https://raw-private-url.invalid",
+                    503,
+                    "raw-http-marker",
+                    {},
+                    None,
+                )
+            elif failure_kind == 1:
+                cause = urllib.error.URLError(
+                    socket.gaierror("raw-dns-marker")
+                )
+            else:
+                cause = urllib.error.URLError(ssl.SSLError("raw-tls-marker"))
+            try:
+                raise cause
+            except Exception as error:
+                raise ConnectionError("raw-outer-marker") from error
+
+    report: Any = run_provider_pilot(
+        project_root=PROJECT_ROOT,
+        environment={
+            "ECOMSRE_LLM_BASE_URL": "https://provider.invalid/v1",
+            "ECOMSRE_LLM_API_KEY": "provider-test-secret",
+            "ECOMSRE_LLM_MODEL": MODEL_SNAPSHOT,
+        },
+        transport=ClassifiedConnectionTransport(),
+    )
+
+    assert [item["failure_code"] for item in report["case_results"]] == [
+        "PROVIDER_HTTP_5XX",
+        "PROVIDER_DNS",
+        "PROVIDER_TLS",
+    ] * 3
+    serialized = json.dumps(report)
+    for forbidden in (
+        "raw-private-url",
+        "raw-http-marker",
+        "raw-dns-marker",
+        "raw-tls-marker",
+        "raw-outer-marker",
+        "provider-test-secret",
+    ):
+        assert forbidden not in serialized
 
 
 def test_make_targets_and_ci_are_offline_wired(tmp_path: Path) -> None:
@@ -257,6 +442,8 @@ def test_make_targets_and_ci_are_offline_wired(tmp_path: Path) -> None:
         "phase5a-verify",
         "phase5a-demo",
         "phase5a-provider-pilot",
+        "phase5a-provider-request-shapes",
+        "phase5a-provider-order-isolation",
     ):
         completed = subprocess.run(
             ["make", "-n", target, f"PHASE5A_REPORT={report_path}"],
@@ -277,6 +464,12 @@ def test_make_targets_and_ci_are_offline_wired(tmp_path: Path) -> None:
     assert "ecomsre.phase5a.cli demo" in rendered["phase5a-demo"]
     assert "ecomsre.phase5a.cli provider-pilot" in rendered[
         "phase5a-provider-pilot"
+    ]
+    assert "ecomsre.phase5a.cli provider-request-shapes" in rendered[
+        "phase5a-provider-request-shapes"
+    ]
+    assert "ecomsre.phase5a.cli provider-order-isolation" in rendered[
+        "phase5a-provider-order-isolation"
     ]
     workflow = (PROJECT_ROOT / ".github/workflows/agent-mainline.yml").read_text()
     for target in (

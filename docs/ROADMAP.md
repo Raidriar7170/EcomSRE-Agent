@@ -169,7 +169,9 @@ These components do not retroactively expand Phase 0 claims.
 ## Phase 5A — Multi-Agent diagnosis quality repair
 
 **State:** `PHASE5A_MULTI_AGENT_QUALITY_REPAIR_READY` under accepted `DEC-027`.
-This is a visible development evaluation. Phase 5B has not been entered.
+The offline quality repair is `PASS`. The bounded provider pilot reached 9/9
+protocol acceptance and 8/9 semantic acceptance, so the real-provider 9/9 gate
+is `NOT PASSED`. No superiority is claimed, and Phase 5B has not been entered.
 
 Entry:
 
