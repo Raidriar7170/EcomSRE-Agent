@@ -173,6 +173,30 @@ phase5a-provider-request-shapes: phase1-prerequisites
 phase5a-provider-order-isolation: phase1-prerequisites
 	$(PHASE5A_CLI) provider-order-isolation --output "$(PHASE5A_PROVIDER_ORDER_REPORT)"
 
+PHASE5B_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.phase5b.cli
+PHASE5B_DRY_RUN_REPORT ?= $(PROJECT_ROOT)/artifacts/phase5b/mock-protocol-dry-run.json
+
+.PHONY: phase5b-test phase5b-preflight phase5b-protocol-verify phase5b-schedule \
+	phase5b-dry-run phase5b-dry-run-verify
+
+phase5b-test: phase1-prerequisites
+	env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync pytest tests/phase5b -q
+
+phase5b-preflight: phase1-prerequisites
+	$(PHASE5B_CLI) preflight
+
+phase5b-protocol-verify: phase1-prerequisites
+	$(PHASE5B_CLI) protocol-verify
+
+phase5b-schedule: phase1-prerequisites
+	$(PHASE5B_CLI) schedule
+
+phase5b-dry-run: phase1-prerequisites
+	$(PHASE5B_CLI) dry-run --output "$(PHASE5B_DRY_RUN_REPORT)"
+
+phase5b-dry-run-verify: phase1-prerequisites
+	$(PHASE5B_CLI) dry-run-verify --report "$(PHASE5B_DRY_RUN_REPORT)"
+
 AGENT_DEMO_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.demo
 AGENT_DEMO_REPORT ?= $(PROJECT_ROOT)/artifacts/demo/agent-mainline-v1-report.json
 

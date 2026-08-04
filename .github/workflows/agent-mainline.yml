@@ -85,6 +85,24 @@ jobs:
       - name: Phase 5A missing-source demo
         run: make phase5a-demo
 
+      - name: Phase 5B protocol tests
+        run: make phase5b-test
+
+      - name: Phase 5B frozen-path preflight
+        run: make phase5b-preflight
+
+      - name: Verify Phase 5B protocol
+        run: make phase5b-protocol-verify
+
+      - name: Verify Phase 5B execution schedule
+        run: make phase5b-schedule
+
+      - name: Phase 5B mock-only dry run
+        run: make phase5b-dry-run
+
+      - name: Verify Phase 5B mock-only dry run
+        run: make phase5b-dry-run-verify
+
       - name: Agent mainline demo
         run: make agent-demo
 
@@ -104,9 +122,12 @@ jobs:
           src/ecomsre/phase3
           src/ecomsre/phase4
           src/ecomsre/phase5a
+          src/ecomsre/phase5b
           src/ecomsre/tools
           src/ecomsre/demo
           eval/phase1/run.py
           eval/phase2/compare.py
           eval/phase4/runner.py
           eval/phase5a/runner.py
+          eval/phase5b/runner.py
+          tests/phase5b

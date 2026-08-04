@@ -1,0 +1,31 @@
+{
+  "allowed_transformations": [
+    "run_id",
+    "evidence_ref",
+    "opaque_request_trace_ids",
+    "timestamp_offset",
+    "evidence_declaration_order",
+    "same_layer_dag_declaration_order",
+    "decoy_opaque_id",
+    "irrelevant_healthy_telemetry_order",
+    "safe_lexical_variant_index"
+  ],
+  "derivation": "sha256(evaluation_version+NUL+template_id+NUL+seed_id)",
+  "evaluation_version": "phase5b.v1",
+  "forbidden_transformations": [
+    "ground_truth_decision",
+    "root_service",
+    "fault_mechanism",
+    "critical_evidence_availability",
+    "contradiction_class",
+    "write_no_write_disposition",
+    "budget",
+    "model",
+    "provider",
+    "tool_schema"
+  ],
+  "schema_version": "phase5b.seed-policy.v1",
+  "seed_count_per_template": 5,
+  "seed_ids": ["seed-00", "seed-01", "seed-02", "seed-03", "seed-04"],
+  "temperature": 0
+}

@@ -1,0 +1,20 @@
+{
+  "agent_visible_layout": ["manifest.json", "incident.json", "metrics.json", "logs.json", "traces.json", "changes.json"],
+  "agent_visible_root": "agent-visible",
+  "canonical_json": true,
+  "default_external_pack_path": "../ecomsre-phase5b-hidden-pack",
+  "evaluation_version": "phase5b.v1",
+  "ground_truth_read_after_execution_complete_only": true,
+  "ground_truth_root": "ground-truth",
+  "hash_algorithm": "sha256_path_nul_canonical_bytes_nul",
+  "hidden_template_ids": ["hidden-01", "hidden-02", "hidden-03", "hidden-04", "hidden-05", "hidden-06"],
+  "manifest_public_fields": ["schema_version", "evaluation_version", "pack_id", "template_count", "seed_count_per_template", "agent_visible_pack_sha256", "ground_truth_pack_sha256", "generator_version", "sealed", "unblinded", "templates"],
+  "overlapping_roots_rejected": true,
+  "schema_version": "phase5b.hidden-pack-contract.v1",
+  "seed_ids": ["seed-00", "seed-01", "seed-02", "seed-03", "seed-04"],
+  "symlinks_rejected": true,
+  "template_count": 6,
+  "traversal_rejected": true,
+  "unknown_files_rejected": true,
+  "worker_allowed_root": "agent-visible"
+}

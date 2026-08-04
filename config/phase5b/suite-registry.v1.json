@@ -1,0 +1,102 @@
+{
+  "evaluation_version": "phase5b.v1",
+  "hidden_share": 0.5,
+  "hidden_slots": [
+    {
+      "actual_content_created": false,
+      "actual_ground_truth_created": false,
+      "challenge": "causal_chain_reconstruction",
+      "coverage": "cross_service_cascade",
+      "expected_decision_family": "RCA_CONFIRMED",
+      "template_id": "hidden-01",
+      "visibility": "HIDDEN_SLOT",
+      "write_disposition": "NO_ACTION"
+    },
+    {
+      "actual_content_created": false,
+      "actual_ground_truth_created": false,
+      "challenge": "unresolved_contradiction",
+      "coverage": "conflicting_evidence",
+      "expected_decision_family": "NEED_MORE_EVIDENCE",
+      "template_id": "hidden-02",
+      "visibility": "HIDDEN_SLOT",
+      "write_disposition": "NO_ACTION"
+    },
+    {
+      "actual_content_created": false,
+      "actual_ground_truth_created": false,
+      "challenge": "freshness_and_abstention",
+      "coverage": "delayed_stale_telemetry_negative",
+      "expected_decision_family": "ABSTAIN",
+      "template_id": "hidden-03",
+      "visibility": "HIDDEN_SLOT",
+      "write_disposition": "NO_ACTION"
+    },
+    {
+      "actual_content_created": false,
+      "actual_ground_truth_created": false,
+      "challenge": "root_disambiguation",
+      "coverage": "multi_service_anomaly",
+      "expected_decision_family": "RCA_CONFIRMED",
+      "template_id": "hidden-04",
+      "visibility": "HIDDEN_SLOT",
+      "write_disposition": "NO_ACTION"
+    },
+    {
+      "actual_content_created": false,
+      "actual_ground_truth_created": false,
+      "challenge": "causal_change_selection",
+      "coverage": "confounded_changes",
+      "expected_decision_family": "RCA_CONFIRMED",
+      "template_id": "hidden-05",
+      "visibility": "HIDDEN_SLOT",
+      "write_disposition": "SAFE_REPLAY_REMEDIATION_CANDIDATE"
+    },
+    {
+      "actual_content_created": false,
+      "actual_ground_truth_created": false,
+      "challenge": "graceful_degradation",
+      "coverage": "partial_tool_failure",
+      "expected_decision_family": "RCA_CONFIRMED",
+      "template_id": "hidden-06",
+      "visibility": "HIDDEN_SLOT",
+      "write_disposition": "NO_ACTION"
+    }
+  ],
+  "hidden_template_count": 6,
+  "public_anchor_count": 6,
+  "public_anchors": [
+    {
+      "coverage": ["simple_confirmed_incident", "safe_remediation_candidate"],
+      "template_id": "ad-partial-failure-complete",
+      "visibility": "PUBLIC_ANCHOR"
+    },
+    {
+      "coverage": ["missing_telemetry"],
+      "template_id": "ad-partial-failure-without-logs",
+      "visibility": "PUBLIC_ANCHOR"
+    },
+    {
+      "coverage": ["decoy_change"],
+      "template_id": "ad-partial-failure-frontend-decoy",
+      "visibility": "PUBLIC_ANCHOR"
+    },
+    {
+      "coverage": ["cache_dependency"],
+      "template_id": "recommendation-cache-failure",
+      "visibility": "PUBLIC_ANCHOR"
+    },
+    {
+      "coverage": ["required_need_more_evidence", "anomaly_requiring_no_write"],
+      "template_id": "recommendation-feature-evidence-insufficient",
+      "visibility": "PUBLIC_ANCHOR"
+    },
+    {
+      "coverage": ["normal_sli_abstention"],
+      "template_id": "ranking-change-with-normal-search-sli",
+      "visibility": "PUBLIC_ANCHOR"
+    }
+  ],
+  "schema_version": "phase5b.suite-registry.v1",
+  "template_count": 12
+}
