@@ -10,8 +10,10 @@ remain `phase0_closure_required`: the Phase 0 implementer must resolve them from
 the frozen environment and preserve the listed evidence. They do not block
 starting implementation, but any open item blocks canonical Phase 0 `SUCCESS`.
 
-`OQ-005` and `OQ-006` are `deferred` later-phase questions. `OQ-007` is
-`protocol_frozen_hidden_pack_pending` under accepted `DEC-028`. `OQ-008` is
+`OQ-005` and `OQ-006` are `deferred` later-phase questions. For `OQ-007`, the
+protocol and hidden-pack portions are closed under accepted `DEC-028` and
+`DEC-029`; the execution, unblinding, and final-report portions remain pending.
+`OQ-008` is
 closed by accepted `DEC-025`, `OQ-009` is closed by accepted `DEC-026`, and
 `OQ-010` is closed by accepted `DEC-027`. None of these items expands or blocks
 Phase 0.
@@ -109,7 +111,7 @@ the project commands and dependencies under test.
 |---|---|---|---|---|
 | OQ-005 | deferred | Phase 1 | Which model snapshot, provider, tokenizer accounting method, and concrete token/tool budgets implement `DEC-010`? | No |
 | OQ-006 | deferred | Phase 1 | What exact versioned Evidence Contract schema and migration policy implement the later read-only tool boundary? | No |
-| OQ-007 | protocol_frozen_hidden_pack_pending | Phase 5B | `DEC-028` freezes the 12-template composition, 50% hidden split, five paired seeds, 180-run schedule, 38 ablation runs, analysis, isolation, and unblinding protocol. Final closure still requires a separately authorized sealed hidden-pack manifest and execution freeze. | No |
+| OQ-007 | protocol_and_hidden_pack_closed_execution_pending | Phase 5B | `DEC-028` freezes the protocol; `DEC-029` keeps seal tooling outside frozen runtime discovery and binds the public seal only to the fresh authoritative external pack. It is sealed with 30 agent-visible instances plus 30 evaluator-only truth records. Protocol and hidden-pack portions are closed; execution, unblinding, and final-report portions remain pending. | No |
 | OQ-008 | closed | Phase 3 | Resolved by accepted `DEC-025`: one replay-only typed restore action, deterministic Policy Gate, bound human/test approval, one-forward-mutation attempt state, replay verification, and exact compensating rollback. | No |
 | OQ-009 | closed | Phase 4 | Resolved by accepted `DEC-026`: five visible Search/Recommendation domain templates, an independent Domain RCA v1 contract, Fixed/Dynamic replay runs, safe Phase 3 no-action disposition, and an optional bounded four-run provider gate. | No |
 | OQ-010 | closed | Phase 5A | Resolved by accepted `DEC-027`: mechanism-level v2 findings, typed missing-source continuation, capability-parity Single/Fixed/Dynamic workflows, and a 12 × 3 visible development evaluation with no superiority claim. | No |
