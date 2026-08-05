@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EcomSRE-Agent Phase 5B-2A Execution Freeze 审阅简报</title>
+  <style>
+    :root { color-scheme: light; --ink: #172033; --muted: #526076;
+      --line: #cbd5e1; --panel: #f8fafc; --ok: #166534;
+      --ok-bg: #f0fdf4; --warn: #9a3412; --warn-bg: #fff7ed; }
+    body { max-width: 980px; margin: 40px auto; padding: 0 24px 64px;
+      font: 16px/1.65 system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", sans-serif; color: var(--ink); }
+    h1, h2 { line-height: 1.25; } h2 { margin-top: 2rem; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px 10px; border: 1px solid var(--line);
+      text-align: left; vertical-align: top; }
+    th { background: var(--panel); }
+    code { background: #eef2f7; padding: 1px 4px; }
+    .status, .warning, .derived { padding: 10px 14px; border-left: 4px solid; }
+    .status { border-color: var(--ok); background: var(--ok-bg); }
+    .warning { border-color: var(--warn); background: var(--warn-bg); }
+    .derived { border-color: #475569; background: var(--panel); color: var(--muted); }
+  </style>
+</head>
+<body>
+  <h1>Phase 5B-2A Execution Harness Build and Freeze</h1>
+
+  <p class="derived"><strong>证据地位：</strong>本页是给人工审阅者的派生简报，
+    不是协议、seal、冻结清单或 CI 的替代品；如有冲突，以机器可读证据为准。</p>
+
+  <p class="status"><strong>本分支目标：</strong>只冻结 Phase 5B v1 执行控制面。
+    本分支包含首次 scored call 前必须冻结的 canary、生命周期、unblinding、评分、
+    预注册分析与 final-report 代码路径；但绝不在本分支实际执行这些路径或发布结果。</p>
+
+  <p class="warning"><strong>硬边界：</strong><code>Provider calls = 0</code>、
+    <code>Actual scored runs = 0</code>、<code>Ground truth read = NO</code>、
+    <code>Unblinded = NO</code>、<code>Execution started = NO</code>。Mock 输出明确标为
+    <code>MOCK_EXECUTION_REHEARSAL</code> 与 <code>NOT_MODEL_EVIDENCE</code>。</p>
+
+  <p class="warning"><strong>Ablation 的已知、冻结限制：</strong>七项预注册 ablation
+    在既有冻结 runtime 中都没有可忠实执行的实现。因此 v1 正式 38 项 ablation 会全部写为
+    <code>ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS</code> terminal failures，
+    <code>Provider calls = 0</code>，全部保留在 ablation denominator，且证据标记
+    <code>PRIMARY_INELIGIBLE_AND_NOT_IMPLEMENTED</code>。这些记录不能支持任何真实 ablation
+    或 remediation 效果声称；如需真实 ablation 证据，必须重新冻结 <code>phase5b.v2</code>。</p>
+
+  <h2>实现与证据</h2>
+  <table>
+    <tr><th>边界</th><th>实现</th><th>专项证据</th></tr>
+    <tr><td>严格执行 contracts</td><td>frozen Pydantic models、extra forbid、canonical JSON、typed terminal failures、usage/budget 完整记录</td><td>构造、拒绝 extra、SHA 自校验与预算超限测试</td></tr>
+    <tr><td>公共 paired seeds</td><td>按 <code>phase5b.v1 + template_id + seed_id</code> 运行时 materialize；不提交 30 份副本</td><td>确定性树 SHA 不变、不同 seed 不同、semantic projection 不变</td></tr>
+    <tr><td>hidden loader</td><td>只接受 agent-visible root 与冻结 schedule 身份，复用 <code>load_agent_visible_instance()</code></td><td>请求和环境不含 truth、coverage 或 expected answer 字段</td></tr>
+    <tr><td>Provider adapter</td><td>复用冻结 Phase 5A workflow/backend；一次调用；本地 typed-result、evidence-ref 与共享预算验证</td><td>仅 injected transport；canary PASS 要求 known usage；endpoint/model/API key 仅以 SHA 绑定到 pre-call marker/state，crash recovery 不可换配置归属</td></tr>
+    <tr><td>no-retry checkpoint</td><td>私有、owner-only、non-symlink journal；call 前原子 attempt marker，terminal record create-once，marker 后关闭</td><td>中断 marker 被落为 terminal failure，executor 不再调用；symlink 与开放权限目录 fail closed</td></tr>
+    <tr><td>worker 隔离</td><td><code>python -I</code> 子进程、环境 allowlist、OS/Python guards、evaluator import 拒绝</td><td>Phase 1/4 truth、外部 ground-truth、Builder source/logs 探针均为 DENIED</td></tr>
+    <tr><td>完整 mock 演练</td><td>严格冻结顺序的 180 main + 38 ablation；注入 sleeper 验证 2 秒 pacing contract</td><td>218 个唯一 terminal records、零 missing/extra、全部 checkpoint 关闭、零 Provider network calls</td></tr>
+    <tr><td>evaluator gate</td><td>先从 218 条 raw records 重建 main/ablation reports、complete seal 与唯一合法 unblinding record，全部相等后才准入 hidden truth root</td><td>伪造的 canary summary、complete seal 或自洽 seal/unblinding 对均 fail closed；在 <code>EXECUTION_COMPLETE</code> 状态不触碰 truth 路径</td></tr>
+    <tr><td>不可逆生命周期</td><td>合并后的精确 <code>origin/main</code>、固定 results branch、全 worktree clean、canary raw chain 与可见 pack hash全部满足后，才 create-once 进入 <code>EXECUTION_STARTED</code>；main 180 闭合后才允许 38 ablation，再 seal/unblind</td><td>每个 actual attempt 前后重验精确 HEAD、执行/协议冻结、全 worktree 与 visible pack；漂移会 terminalize 当前 attempt 并全局停止</td></tr>
+    <tr><td>冻结评分与报告</td><td>严格映射公开合并的 hidden-truth contract；terminal failure 保留质量 denominator；未知 Provider token/latency 不被解释为零成本；复用冻结 10,000 次 hierarchical paired bootstrap</td><td>final verify 必须重新读取已封印 truth pack、重算 canonical scoring bundle，再确定性重建 populations、subsets、bootstrap、ablation summary 与完整 disposition</td></tr>
+  </table>
+
+  <h2>冻结清单路径说明</h2>
+  <p>协议冻结器会把 <code>config/phase5b/**/*.json</code> 的完整 path set 视为不可变；
+    因此直接新增原建议路径 <code>config/phase5b/execution-freeze.v1.json</code>
+    会使既有 <code>make phase5b-preflight</code> fail closed。执行控制面清单放在独立的
+    <code>config/phase5b-execution/execution-freeze.v1.json</code>，不修改协议冻结器或
+    原 freeze manifest；清单仍绑定协议 commit、公开 seal/hash、schedule、ablation、
+    全部新 harness 文件、Makefile、Provider/budget/pacing、sandbox 与 checkpoint policy。</p>
+
+  <h2>禁止扩大声称</h2>
+  <ul>
+    <li>Mock terminal records 只证明调度、序列化、checkpoint 与隔离控制面，不证明模型质量。</li>
+    <li>本分支不读取 hidden answers，不得给出任何 accuracy、superiority 或 cost-quality 结论。</li>
+    <li>绿色测试不授权正式 218 次 Provider 调用；仍须等待 freeze PR 合并及精确授权
+      <code>AUTHORIZE_PHASE5B_V1_SCORED_EXECUTION</code>。</li>
+    <li>本阶段不修改 Phase 5A prompt、contracts、semantics、planner、Judge、workflows 或 Provider。</li>
+    <li>冻结协议原有 <code>UnblindingRecord</code> 未包含 execution-freeze SHA；本执行层按本任务更高优先级要求，创建 exactly-one、同为
+      <code>phase5b.unblinding-record.v1</code> 的严格 execution-layer superset，并额外绑定 execution freeze、ablation report 与 execution-complete seal。
+      它不修改已冻结协议文件；人工 review 必须显式接受此兼容性选择。</li>
+  </ul>
+
+  <h2>人工 review 清单</h2>
+  <ul>
+    <li>确认原 Phase 5B protocol frozen paths 的 Git diff 为空且 preflight 通过。</li>
+    <li>确认 PR 文案保留六项 NO/0 真值，不把 mock 叫作 scored model evidence。</li>
+    <li>确认没有 retry、rerun-failed、overwrite CLI 入口。</li>
+    <li>确认 CI 与独立只读 review 均无 Must Fix 后，才使用普通 merge commit。</li>
+  </ul>
+</body>
+</html>

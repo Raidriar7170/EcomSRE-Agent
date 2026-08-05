@@ -178,6 +178,9 @@ PHASE5B_CONTROL_PLANE_PYTHONPATH := $(PROJECT_ROOT):$(PYTHONPATH)
 PHASE5B_SEAL_CLI := env PYTHONPATH="$(PHASE5B_CONTROL_PLANE_PYTHONPATH)" uv run --frozen --no-sync python -m scripts.phase5b_hidden_pack.seal_cli
 PHASE5B_DRY_RUN_REPORT ?= $(PROJECT_ROOT)/artifacts/phase5b/mock-protocol-dry-run.json
 PHASE5B_HIDDEN_PACK_ROOT ?=
+PHASE5B_EXECUTION_CLI := env PYTHONPATH="$(PHASE5B_CONTROL_PLANE_PYTHONPATH)" uv run --frozen --no-sync python -m scripts.phase5b_execution.cli
+PHASE5B_EXECUTION_MOCK_ROOT ?= $(PROJECT_ROOT)/artifacts/phase5b-execution/mock-rehearsal
+PHASE5B_EXECUTION_ROOT ?= $(HOME)/.ecomsre-private/phase5b-v1-execution
 
 .PHONY: phase5b-test phase5b-preflight phase5b-protocol-verify phase5b-schedule \
 	phase5b-dry-run phase5b-dry-run-verify phase5b-hidden-pack-contract-test \
@@ -212,6 +215,66 @@ phase5b-hidden-pack-verify: phase1-prerequisites
 
 phase5b-hidden-pack-seal-verify: phase1-prerequisites
 	@$(PHASE5B_SEAL_CLI) verify-seal
+
+.PHONY: phase5b-execution-test phase5b-execution-preflight \
+	phase5b-execution-freeze-verify phase5b-execution-mock-rehearsal \
+	phase5b-execution-mock-verify phase5b-provider-preflight \
+	phase5b-provider-canary phase5b-enter-execution phase5b-execute-main \
+	phase5b-execute-ablation phase5b-seal-execution \
+	phase5b-execution-report-verify phase5b-ablation-report-verify \
+	phase5b-unblind phase5b-unblinding-verify phase5b-final-analysis \
+	phase5b-final-report-verify
+
+phase5b-execution-test: phase1-prerequisites
+	env PYTHONPATH="$(PHASE5B_CONTROL_PLANE_PYTHONPATH)" uv run --frozen --no-sync pytest tests/phase5b_execution -q
+
+phase5b-execution-preflight: phase1-prerequisites
+	$(PHASE5B_EXECUTION_CLI) preflight
+
+phase5b-execution-freeze-verify: phase1-prerequisites
+	$(PHASE5B_EXECUTION_CLI) freeze-verify
+
+phase5b-execution-mock-rehearsal: phase1-prerequisites
+	$(PHASE5B_EXECUTION_CLI) mock-rehearsal --output-root "$(PHASE5B_EXECUTION_MOCK_ROOT)"
+
+phase5b-execution-mock-verify: phase1-prerequisites
+	$(PHASE5B_EXECUTION_CLI) mock-verify --output-root "$(PHASE5B_EXECUTION_MOCK_ROOT)"
+
+phase5b-provider-preflight: phase1-prerequisites
+	$(PHASE5B_EXECUTION_CLI) provider-preflight
+
+phase5b-provider-canary: phase1-prerequisites
+	$(PHASE5B_EXECUTION_CLI) provider-canary --output-root "$(PHASE5B_EXECUTION_ROOT)"
+
+phase5b-enter-execution: phase1-prerequisites
+	$(PHASE5B_EXECUTION_CLI) enter-execution --output-root "$(PHASE5B_EXECUTION_ROOT)"
+
+phase5b-execute-main: phase1-prerequisites
+	$(PHASE5B_EXECUTION_CLI) execute-main --output-root "$(PHASE5B_EXECUTION_ROOT)"
+
+phase5b-execute-ablation: phase1-prerequisites
+	$(PHASE5B_EXECUTION_CLI) execute-ablation --output-root "$(PHASE5B_EXECUTION_ROOT)"
+
+phase5b-seal-execution: phase1-prerequisites
+	$(PHASE5B_EXECUTION_CLI) seal-execution --output-root "$(PHASE5B_EXECUTION_ROOT)"
+
+phase5b-execution-report-verify: phase1-prerequisites
+	$(PHASE5B_EXECUTION_CLI) report-verify --output-root "$(PHASE5B_EXECUTION_ROOT)"
+
+phase5b-ablation-report-verify: phase1-prerequisites
+	$(PHASE5B_EXECUTION_CLI) ablation-report-verify --output-root "$(PHASE5B_EXECUTION_ROOT)"
+
+phase5b-unblind: phase1-prerequisites
+	$(PHASE5B_EXECUTION_CLI) unblind --output-root "$(PHASE5B_EXECUTION_ROOT)"
+
+phase5b-unblinding-verify: phase1-prerequisites
+	$(PHASE5B_EXECUTION_CLI) unblinding-verify --output-root "$(PHASE5B_EXECUTION_ROOT)"
+
+phase5b-final-analysis: phase1-prerequisites
+	$(PHASE5B_EXECUTION_CLI) final-analysis --output-root "$(PHASE5B_EXECUTION_ROOT)"
+
+phase5b-final-report-verify: phase1-prerequisites
+	$(PHASE5B_EXECUTION_CLI) final-report-verify --output-root "$(PHASE5B_EXECUTION_ROOT)"
 
 AGENT_DEMO_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.demo
 AGENT_DEMO_REPORT ?= $(PROJECT_ROOT)/artifacts/demo/agent-mainline-v1-report.json
