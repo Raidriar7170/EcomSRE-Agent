@@ -130,6 +130,14 @@ def create_execution_started_record(
         to_state="EXECUTION_STARTED",
         completed_main_runs=0,
         completed_ablation_runs=0,
+        main_evaluation_ready=freeze.main_evaluation_ready,
+        ablation_slot_count=freeze.ablation_slot_count,
+        ablation_implementation_available=(
+            freeze.ablation_implementation_available
+        ),
+        ablation_evidence_available=freeze.ablation_evidence_available,
+        ablation_primary_eligible=freeze.ablation_primary_eligible,
+        ablation_disposition=freeze.ablation_disposition,
         frozen_files_unchanged=True,
         ground_truth_read=False,
         create_once=True,
@@ -312,6 +320,12 @@ def _verify_ablation_execution_complete(
         terminal_count_by_category=dict(sorted(terminal_counts.items())),
         provider_network_calls=provider_calls,
         primary_eligible=False,
+        main_evaluation_ready=True,
+        ablation_slot_count=38,
+        ablation_implementation_available=False,
+        ablation_evidence_available=False,
+        ablation_primary_eligible=False,
+        ablation_disposition="ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS",
     )
     return report, tuple(raw)
 
@@ -345,6 +359,14 @@ def _build_complete_seal(
         ablation_report_sha256=ablation_report_sha256,
         completed_main_runs=180,
         completed_ablation_runs=38,
+        main_evaluation_ready=started.main_evaluation_ready,
+        ablation_slot_count=ablation_report.ablation_slot_count,
+        ablation_implementation_available=(
+            ablation_report.ablation_implementation_available
+        ),
+        ablation_evidence_available=ablation_report.ablation_evidence_available,
+        ablation_primary_eligible=ablation_report.ablation_primary_eligible,
+        ablation_disposition=ablation_report.ablation_disposition,
         terminal_count_by_category=dict(sorted(terminal_counts.items())),
         provider_network_calls=sum(
             record.usage.provider_network_calls for record in all_records
@@ -453,6 +475,12 @@ def _build_unblinding_record(
         execution_complete_seal_sha256=execution_complete_seal_sha256,
         completed_main_runs=180,
         completed_ablation_runs=38,
+        main_evaluation_ready=seal.main_evaluation_ready,
+        ablation_slot_count=seal.ablation_slot_count,
+        ablation_implementation_available=seal.ablation_implementation_available,
+        ablation_evidence_available=seal.ablation_evidence_available,
+        ablation_primary_eligible=seal.ablation_primary_eligible,
+        ablation_disposition=seal.ablation_disposition,
         from_state="EXECUTION_COMPLETE",
         to_state="UNBLINDED",
         irreversible=True,

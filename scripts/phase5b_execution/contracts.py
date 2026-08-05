@@ -584,6 +584,14 @@ class ExecutionFreezeManifest(ExecutionModel):
     scripted_fallback: Literal[False]
     main_run_count: Literal[180]
     ablation_run_count: Literal[38]
+    main_evaluation_ready: Literal[True]
+    ablation_slot_count: Literal[38]
+    ablation_implementation_available: Literal[False]
+    ablation_evidence_available: Literal[False]
+    ablation_primary_eligible: Literal[False]
+    ablation_disposition: Literal[
+        "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS"
+    ]
     worker_sandbox_policy: WorkerSandboxPolicy
     checkpoint_policy: CheckpointPolicy
     lifecycle_policy: ExecutionLifecyclePolicy
@@ -808,6 +816,13 @@ class DifficultSubsetSummary(ExecutionModel):
 class FrozenAblationSummary(ExecutionModel):
     run_count: Literal[38]
     primary_eligible: Literal[False]
+    ablation_slot_count: Literal[38]
+    ablation_implementation_available: Literal[False]
+    ablation_evidence_available: Literal[False]
+    ablation_primary_eligible: Literal[False]
+    ablation_disposition: Literal[
+        "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS"
+    ]
     implemented_run_count: StrictInt = Field(ge=0, le=38)
     terminal_failure_count: StrictInt = Field(ge=0, le=38)
     provider_network_calls: StrictInt = Field(ge=0, le=38)
@@ -851,6 +866,14 @@ class FinalEvaluationReport(ExecutionModel):
     scoring_bundle_sha256: str = Field(pattern=_SHA256_PATTERN)
     main_run_count: Literal[180]
     ablation_run_count: Literal[38]
+    main_evaluation_ready: Literal[True]
+    ablation_slot_count: Literal[38]
+    ablation_implementation_available: Literal[False]
+    ablation_evidence_available: Literal[False]
+    ablation_primary_eligible: Literal[False]
+    ablation_disposition: Literal[
+        "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS"
+    ]
     populations: tuple[PopulationSummary, PopulationSummary, PopulationSummary]
     hidden_accuracy_bootstrap: BootstrapResult
     hidden_tool_reduction_bootstrap: BootstrapResult | None
@@ -896,6 +919,14 @@ class FinalReportDisposition(ExecutionModel):
     final_report_sha256: str = Field(pattern=_SHA256_PATTERN)
     main_runs: Literal[180]
     ablation_runs: Literal[38]
+    main_evaluation_ready: Literal[True]
+    ablation_slot_count: Literal[38]
+    ablation_implementation_available: Literal[False]
+    ablation_evidence_available: Literal[False]
+    ablation_primary_eligible: Literal[False]
+    ablation_disposition: Literal[
+        "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS"
+    ]
     failure_count: StrictInt = Field(ge=0, le=218)
     claim_classification: Literal[
         "HIDDEN_ACCURACY_SUPERIORITY_SUPPORTED",
@@ -955,6 +986,14 @@ class ExecutionStartedRecord(ExecutionModel):
     to_state: Literal["EXECUTION_STARTED"]
     completed_main_runs: Literal[0]
     completed_ablation_runs: Literal[0]
+    main_evaluation_ready: Literal[True] = True
+    ablation_slot_count: Literal[38] = 38
+    ablation_implementation_available: Literal[False] = False
+    ablation_evidence_available: Literal[False] = False
+    ablation_primary_eligible: Literal[False] = False
+    ablation_disposition: Literal[
+        "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS"
+    ] = "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS"
     frozen_files_unchanged: Literal[True]
     ground_truth_read: Literal[False]
     create_once: Literal[True]
@@ -976,6 +1015,14 @@ class AblationExecutionReport(ExecutionModel):
     terminal_count_by_category: dict[str, StrictInt]
     provider_network_calls: StrictInt = Field(ge=0, le=38)
     primary_eligible: Literal[False]
+    main_evaluation_ready: Literal[True]
+    ablation_slot_count: Literal[38]
+    ablation_implementation_available: Literal[False]
+    ablation_evidence_available: Literal[False]
+    ablation_primary_eligible: Literal[False]
+    ablation_disposition: Literal[
+        "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS"
+    ]
 
     @model_validator(mode="after")
     def require_ablation_report_counts(self) -> AblationExecutionReport:
@@ -998,6 +1045,14 @@ class ExecutionCompleteSeal(ExecutionModel):
     ablation_report_sha256: str = Field(pattern=_SHA256_PATTERN)
     completed_main_runs: Literal[180]
     completed_ablation_runs: Literal[38]
+    main_evaluation_ready: Literal[True] = True
+    ablation_slot_count: Literal[38] = 38
+    ablation_implementation_available: Literal[False] = False
+    ablation_evidence_available: Literal[False] = False
+    ablation_primary_eligible: Literal[False] = False
+    ablation_disposition: Literal[
+        "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS"
+    ] = "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS"
     terminal_count_by_category: dict[str, StrictInt]
     provider_network_calls: StrictInt = Field(ge=0, le=218)
     model_calls: StrictInt = Field(ge=0)
@@ -1027,6 +1082,14 @@ class ExecutionUnblindingRecord(ExecutionModel):
     execution_complete_seal_sha256: str = Field(pattern=_SHA256_PATTERN)
     completed_main_runs: Literal[180]
     completed_ablation_runs: Literal[38]
+    main_evaluation_ready: Literal[True] = True
+    ablation_slot_count: Literal[38] = 38
+    ablation_implementation_available: Literal[False] = False
+    ablation_evidence_available: Literal[False] = False
+    ablation_primary_eligible: Literal[False] = False
+    ablation_disposition: Literal[
+        "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS"
+    ] = "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS"
     from_state: Literal["EXECUTION_COMPLETE"]
     to_state: Literal["UNBLINDED"]
     irreversible: Literal[True]

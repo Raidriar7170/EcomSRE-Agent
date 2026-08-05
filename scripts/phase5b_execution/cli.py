@@ -43,7 +43,10 @@ from scripts.phase5b_execution.checkpoint import (
 )
 from scripts.phase5b_execution.contracts import (
     ExecutionCompleteSeal,
+    ExecutionFreezeManifest,
     ExecutionStartedRecord,
+    ExecutionUnblindingRecord,
+    FinalEvaluationReport,
     canonical_json_bytes,
     sha256_canonical,
 )
@@ -84,6 +87,27 @@ _EXECUTION_BASE_COMMIT = "2cf6147b62394921727bde2f3094a72caa1563d9"
 
 def _print(payload: dict[str, object]) -> None:
     print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
+
+
+def _readiness_status(
+    record: (
+        ExecutionFreezeManifest
+        | ExecutionStartedRecord
+        | ExecutionCompleteSeal
+        | ExecutionUnblindingRecord
+        | FinalEvaluationReport
+    ),
+) -> dict[str, object]:
+    return {
+        "main_evaluation_ready": record.main_evaluation_ready,
+        "ablation_slot_count": record.ablation_slot_count,
+        "ablation_implementation_available": (
+            record.ablation_implementation_available
+        ),
+        "ablation_evidence_available": record.ablation_evidence_available,
+        "ablation_primary_eligible": record.ablation_primary_eligible,
+        "ablation_disposition": record.ablation_disposition,
+    }
 
 
 def _write_atomic(path: Path, payload: object) -> None:
@@ -150,6 +174,7 @@ def execution_preflight() -> dict[str, object]:
         "protocol_status": protocol["status"],
         "main_run_count": execution.main_run_count,
         "ablation_run_count": execution.ablation_run_count,
+        **_readiness_status(execution),
         "provider_calls": 0,
         "ground_truth_reads": 0,
         "unblinded": False,
@@ -182,6 +207,14 @@ def write_mock_rehearsal(output_root: Path) -> dict[str, object]:
         "not_model_evidence": True,
         "main_terminal_records": main["unique_terminal_records"],
         "ablation_terminal_records": ablation["unique_terminal_records"],
+        "main_evaluation_ready": ablation["main_evaluation_ready"],
+        "ablation_slot_count": ablation["ablation_slot_count"],
+        "ablation_implementation_available": ablation[
+            "ablation_implementation_available"
+        ],
+        "ablation_evidence_available": ablation["ablation_evidence_available"],
+        "ablation_primary_eligible": ablation["ablation_primary_eligible"],
+        "ablation_disposition": ablation["ablation_disposition"],
         "provider_calls": 0,
         "ground_truth_reads": 0,
     }
@@ -212,6 +245,12 @@ def verify_mock_rehearsal(output_root: Path) -> dict[str, object]:
         "ground_truth_reads": 0,
         "all_checkpoints_closed": True,
         "primary_eligible": False,
+        "main_evaluation_ready": True,
+        "ablation_slot_count": 38,
+        "ablation_implementation_available": False,
+        "ablation_evidence_available": False,
+        "ablation_primary_eligible": False,
+        "ablation_disposition": "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS",
     }
     if any(main.get(key) != value for key, value in required_main.items()):
         raise ValueError("main mock rehearsal report is invalid")
@@ -282,6 +321,12 @@ def verify_mock_rehearsal(output_root: Path) -> dict[str, object]:
         "status": "MOCK_EXECUTION_REHEARSAL_VERIFIED",
         "main_terminal_records": 180,
         "ablation_terminal_records": 38,
+        "main_evaluation_ready": True,
+        "ablation_slot_count": 38,
+        "ablation_implementation_available": False,
+        "ablation_evidence_available": False,
+        "ablation_primary_eligible": False,
+        "ablation_disposition": "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS",
         "provider_calls": 0,
         "ground_truth_reads": 0,
     }
@@ -394,6 +439,7 @@ def enter_execution(
         "status": record.to_state,
         "completed_main_runs": record.completed_main_runs,
         "completed_ablation_runs": record.completed_ablation_runs,
+        **_readiness_status(record),
         "provider_calls": 0,
         "ground_truth_reads": 0,
         "irreversible": True,
@@ -491,6 +537,7 @@ def run_execution_seal(
         "status": seal.to_state,
         "completed_main_runs": seal.completed_main_runs,
         "completed_ablation_runs": seal.completed_ablation_runs,
+        **_readiness_status(seal),
         "provider_calls": seal.provider_network_calls,
         "ground_truth_reads": 0,
         "failure_count": seal.failure_count,
@@ -523,6 +570,7 @@ def run_unblinding_transition(
         "status": record.to_state,
         "completed_main_runs": record.completed_main_runs,
         "completed_ablation_runs": record.completed_ablation_runs,
+        **_readiness_status(record),
         "irreversible": record.irreversible,
         "ground_truth_reads": 0,
     }
@@ -543,6 +591,7 @@ def verify_execution_complete_reports(
         "status": "PHASE5B_EXECUTION_REPORTS_VERIFIED",
         "main_runs": seal.completed_main_runs,
         "ablation_runs": seal.completed_ablation_runs,
+        **_readiness_status(seal),
         "provider_calls": seal.provider_network_calls,
         "ground_truth_reads": 0,
     }
@@ -561,6 +610,7 @@ def verify_unblinding_record(*, output_root: Path) -> dict[str, object]:
         "irreversible": record.irreversible,
         "completed_main_runs": record.completed_main_runs,
         "completed_ablation_runs": record.completed_ablation_runs,
+        **_readiness_status(record),
     }
 
 
@@ -590,6 +640,7 @@ def run_final_analysis(
         "claim_classification": report.claim_classification,
         "main_runs": report.main_run_count,
         "ablation_runs": report.ablation_run_count,
+        **_readiness_status(report),
         "provider_calls": 0,
         "post_unblinding_tuning": False,
     }
@@ -766,6 +817,7 @@ def main(argv: list[str] | None = None) -> int:
                 "claim_classification": report.claim_classification,
                 "main_runs": report.main_run_count,
                 "ablation_runs": report.ablation_run_count,
+                **_readiness_status(report),
             }
         )
     return 0

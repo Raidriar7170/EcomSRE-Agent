@@ -823,6 +823,12 @@ def _build_final_report(
         scoring_bundle_sha256=_sha256(execution_root / SCORING_BUNDLE),
         main_run_count=180,
         ablation_run_count=38,
+        main_evaluation_ready=True,
+        ablation_slot_count=38,
+        ablation_implementation_available=False,
+        ablation_evidence_available=False,
+        ablation_primary_eligible=False,
+        ablation_disposition="ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS",
         populations=populations,
         hidden_accuracy_bootstrap=accuracy,
         hidden_tool_reduction_bootstrap=tool_reduction,
@@ -830,6 +836,11 @@ def _build_final_report(
         ablations=FrozenAblationSummary(
             run_count=38,
             primary_eligible=False,
+            ablation_slot_count=38,
+            ablation_implementation_available=False,
+            ablation_evidence_available=False,
+            ablation_primary_eligible=False,
+            ablation_disposition="ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS",
             implemented_run_count=38 - not_implemented,
             terminal_failure_count=sum(
                 item.terminal_status is not TerminalStatus.COMPLETED
@@ -894,6 +905,14 @@ def _build_final_disposition(
         final_report_sha256=_sha256(execution_root / FINAL_REPORT),
         main_runs=180,
         ablation_runs=38,
+        main_evaluation_ready=report.main_evaluation_ready,
+        ablation_slot_count=report.ablation_slot_count,
+        ablation_implementation_available=(
+            report.ablation_implementation_available
+        ),
+        ablation_evidence_available=report.ablation_evidence_available,
+        ablation_primary_eligible=report.ablation_primary_eligible,
+        ablation_disposition=report.ablation_disposition,
         failure_count=complete.failure_count,
         claim_classification=report.claim_classification,
         retuning_after_unblind=False,

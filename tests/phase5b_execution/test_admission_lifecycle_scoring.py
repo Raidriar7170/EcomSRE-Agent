@@ -364,6 +364,14 @@ def test_execution_start_rejects_prepositioned_scored_artifacts(
         lambda _path: SimpleNamespace(
             hidden_pack_manifest_sha256="4" * 64,
             agent_visible_pack_sha256="5" * 64,
+            main_evaluation_ready=True,
+            ablation_slot_count=38,
+            ablation_implementation_available=False,
+            ablation_evidence_available=False,
+            ablation_primary_eligible=False,
+            ablation_disposition=(
+                "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS"
+            ),
         ),
     )
     monkeypatch.setattr(lifecycle, "sha256_regular_file", lambda _path: "2" * 64)
@@ -548,6 +556,15 @@ def test_lifecycle_seals_exact_180_plus_38_terminal_records_create_once(
 
     assert seal.completed_main_runs == 180
     assert seal.completed_ablation_runs == 38
+    assert seal.main_evaluation_ready is True
+    assert seal.ablation_slot_count == 38
+    assert seal.ablation_implementation_available is False
+    assert seal.ablation_evidence_available is False
+    assert seal.ablation_primary_eligible is False
+    assert (
+        seal.ablation_disposition
+        == "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS"
+    )
     assert seal.failure_count == 218
     assert seal.provider_network_calls == 0
     assert seal.ground_truth_read is False
@@ -585,6 +602,15 @@ def test_lifecycle_seals_exact_180_plus_38_terminal_records_create_once(
     assert unblinding.execution_freeze_sha256 == seal.execution_freeze_sha256
     assert unblinding.completed_main_runs == 180
     assert unblinding.completed_ablation_runs == 38
+    assert unblinding.main_evaluation_ready is True
+    assert unblinding.ablation_slot_count == 38
+    assert unblinding.ablation_implementation_available is False
+    assert unblinding.ablation_evidence_available is False
+    assert unblinding.ablation_primary_eligible is False
+    assert (
+        unblinding.ablation_disposition
+        == "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS"
+    )
     unblinding_path = execution_root / lifecycle.UNBLINDING_RECORD
     forged_unblinding = unblinding.model_copy(update={"protocol_commit": "c" * 40})
     unblinding_path.write_bytes(
@@ -777,6 +803,71 @@ def test_unknown_provider_usage_is_not_counted_as_zero_cost() -> None:
 
     assert summary.cost_denominators["provider_tokens"] == 0
     assert summary.cost_denominators["total_tokens"] == 0
+
+
+def test_final_report_builder_emits_main_readiness_and_ablation_gap(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(scoring_module, "load_strict_json", lambda *_args: object())
+    monkeypatch.setattr(scoring_module, "_analysis_runs", lambda _bundle: ())
+    monkeypatch.setattr(
+        scoring_module,
+        "analyze_populations",
+        lambda *_args, **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        scoring_module,
+        "hidden_primary_bootstrap",
+        lambda *_args, **_kwargs: object(),
+    )
+    monkeypatch.setattr(scoring_module, "superiority_claim", lambda _result: False)
+    monkeypatch.setattr(
+        scoring_module,
+        "cost_quality_claim",
+        lambda *_args: False,
+    )
+    monkeypatch.setattr(scoring_module, "_population", lambda *_args: object())
+    monkeypatch.setattr(scoring_module, "_DIFFICULT_SUBSETS", ())
+    monkeypatch.setattr(scoring_module, "_sha256", lambda _path: "c" * 64)
+
+    captured: dict[str, object] = {}
+
+    def capture_report(**kwargs):
+        captured.update(kwargs)
+        return SimpleNamespace(**kwargs)
+
+    monkeypatch.setattr(scoring_module, "FinalEvaluationReport", capture_report)
+    ablation_records = tuple(
+        SimpleNamespace(
+            failure_code="ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS",
+            terminal_status=TerminalStatus.WORKFLOW_FAILURE,
+            usage=SimpleNamespace(provider_network_calls=0),
+        )
+        for _ in range(38)
+    )
+
+    scoring_module._build_final_report(
+        project_root=tmp_path,
+        execution_root=tmp_path,
+        complete=SimpleNamespace(
+            source_commit="a" * 40,
+            execution_freeze_sha256="b" * 64,
+            execution_report_sha256="d" * 64,
+        ),
+        unblinding=SimpleNamespace(protocol_commit="e" * 40),
+        bundle=SimpleNamespace(records=()),
+        ablation_records=ablation_records,
+    )
+
+    assert captured["main_evaluation_ready"] is True
+    assert captured["ablation_slot_count"] == 38
+    assert captured["ablation_implementation_available"] is False
+    assert captured["ablation_evidence_available"] is False
+    assert captured["ablation_primary_eligible"] is False
+    assert captured["ablation_disposition"] == (
+        "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS"
+    )
 
 
 def test_final_report_verification_stops_on_source_drift_before_truth_scoring(

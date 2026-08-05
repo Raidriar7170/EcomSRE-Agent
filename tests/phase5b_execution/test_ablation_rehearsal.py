@@ -47,6 +47,14 @@ def test_38_run_mock_ablation_rehearsal_is_primary_ineligible(
     assert report["remediation_run_count"] == 2
     assert report["primary_eligible"] is False
     assert report["primary_disposition"] == "PRIMARY_INELIGIBLE"
+    assert report["main_evaluation_ready"] is True
+    assert report["ablation_slot_count"] == 38
+    assert report["ablation_implementation_available"] is False
+    assert report["ablation_evidence_available"] is False
+    assert report["ablation_primary_eligible"] is False
+    assert report["ablation_disposition"] == (
+        "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS"
+    )
     assert report["executor_calls_this_process"] == 38
     assert "mock_transport_calls" not in report
     assert report["provider_network_calls"] == 0

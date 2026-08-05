@@ -131,6 +131,12 @@ def build_execution_freeze_manifest(
         scripted_fallback=False,
         main_run_count=180,
         ablation_run_count=38,
+        main_evaluation_ready=True,
+        ablation_slot_count=38,
+        ablation_implementation_available=False,
+        ablation_evidence_available=False,
+        ablation_primary_eligible=False,
+        ablation_disposition="ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS",
         worker_sandbox_policy=WorkerSandboxPolicy(
             schema_version="phase5b.worker-sandbox-policy.v1",
             request_fields=("run_id", "template_id", "seed_id", "variant"),

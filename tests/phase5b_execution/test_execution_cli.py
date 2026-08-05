@@ -5,12 +5,26 @@ from pathlib import Path
 import pytest
 
 from scripts.phase5b_execution.cli import (
+    execution_preflight,
     run_actual_ablation_execution,
     run_actual_main_execution,
     main,
     verify_mock_rehearsal,
     write_mock_rehearsal,
 )
+
+
+def test_execution_preflight_exposes_main_readiness_and_ablation_gap() -> None:
+    report = execution_preflight()
+
+    assert report["main_evaluation_ready"] is True
+    assert report["ablation_slot_count"] == 38
+    assert report["ablation_implementation_available"] is False
+    assert report["ablation_evidence_available"] is False
+    assert report["ablation_primary_eligible"] is False
+    assert report["ablation_disposition"] == (
+        "ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS"
+    )
 
 
 def test_cli_mock_rehearsal_and_verify_close_180_plus_38(tmp_path: Path) -> None:
