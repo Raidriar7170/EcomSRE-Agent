@@ -198,9 +198,17 @@ Exit:
 
 ## Phase 5B — Frozen hidden evaluation and demonstration
 
-**State:** `PHASE5B_PROTOCOL_FREEZE_READY` under accepted `DEC-028`.
-The v1 protocol is frozen, but the hidden pack is not created or sealed,
-execution has not started, and no result has been unblinded.
+**State:** `PHASE5B_HIDDEN_PACK_SEALED` under accepted `DEC-028` and `DEC-029`.
+The v1 protocol is frozen and the external hidden pack is sealed. It contains
+six opaque templates with five paired seeds each: 30 agent-visible instances
+and 30 evaluator-only truth records. Agent runs and Provider calls remain zero,
+execution has not started, no result has been unblinded, and no superiority
+claim is made.
+
+The seal contract, verifier, and CLI are out-of-band control-plane tooling and
+remain outside the frozen v1 discovery roots. The first pre-decision pack is
+retained read-only as `SUPERSEDED / NOT_EXECUTION_ELIGIBLE`; the public seal
+records bind only the fresh authoritative replacement pack.
 
 Entry:
 
@@ -222,6 +230,10 @@ primary-ineligible ablation runs. The hidden-only primary endpoint uses a
 10,000-replicate hierarchical paired bootstrap. The completed 12-run synthetic
 dry run is `NOT_MODEL_EVIDENCE`, made zero Provider calls, and does not satisfy
 the Phase 5B execution entry gate.
+
+The hidden-pack seal closes only the protocol and hidden-pack portions of
+Phase 5B. Execution, irreversible unblinding, and the final report remain
+pending and require separate authorization.
 
 Exit:
 
