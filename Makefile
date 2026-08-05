@@ -174,13 +174,17 @@ phase5a-provider-order-isolation: phase1-prerequisites
 	$(PHASE5A_CLI) provider-order-isolation --output "$(PHASE5A_PROVIDER_ORDER_REPORT)"
 
 PHASE5B_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.phase5b.cli
+PHASE5B_CONTROL_PLANE_PYTHONPATH := $(PROJECT_ROOT):$(PYTHONPATH)
+PHASE5B_SEAL_CLI := env PYTHONPATH="$(PHASE5B_CONTROL_PLANE_PYTHONPATH)" uv run --frozen --no-sync python -m scripts.phase5b_hidden_pack.seal_cli
 PHASE5B_DRY_RUN_REPORT ?= $(PROJECT_ROOT)/artifacts/phase5b/mock-protocol-dry-run.json
+PHASE5B_HIDDEN_PACK_ROOT ?=
 
 .PHONY: phase5b-test phase5b-preflight phase5b-protocol-verify phase5b-schedule \
-	phase5b-dry-run phase5b-dry-run-verify
+	phase5b-dry-run phase5b-dry-run-verify phase5b-hidden-pack-contract-test \
+	phase5b-hidden-pack-verify phase5b-hidden-pack-seal-verify
 
 phase5b-test: phase1-prerequisites
-	env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync pytest tests/phase5b -q
+	env PYTHONPATH="$(PHASE5B_CONTROL_PLANE_PYTHONPATH)" uv run --frozen --no-sync pytest tests/phase5b -q
 
 phase5b-preflight: phase1-prerequisites
 	$(PHASE5B_CLI) preflight
@@ -196,6 +200,18 @@ phase5b-dry-run: phase1-prerequisites
 
 phase5b-dry-run-verify: phase1-prerequisites
 	$(PHASE5B_CLI) dry-run-verify --report "$(PHASE5B_DRY_RUN_REPORT)"
+
+phase5b-hidden-pack-contract-test: phase1-prerequisites
+	env PYTHONPATH="$(PHASE5B_CONTROL_PLANE_PYTHONPATH)" uv run --frozen --no-sync pytest tests/phase5b/test_hidden_pack_seal.py -q
+
+phase5b-hidden-pack-verify: phase1-prerequisites
+	@test -n "$(strip $(PHASE5B_HIDDEN_PACK_ROOT))" || { \
+		echo "PHASE5B_HIDDEN_PACK_ROOT is required" >&2; exit 2; \
+	}
+	@$(PHASE5B_SEAL_CLI) verify-pack --pack-root "$(PHASE5B_HIDDEN_PACK_ROOT)"
+
+phase5b-hidden-pack-seal-verify: phase1-prerequisites
+	@$(PHASE5B_SEAL_CLI) verify-seal
 
 AGENT_DEMO_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.demo
 AGENT_DEMO_REPORT ?= $(PROJECT_ROOT)/artifacts/demo/agent-mainline-v1-report.json

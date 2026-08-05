@@ -41,6 +41,9 @@ conflicts with this register, this register wins.
 | DEC-012 | Restricted writes | accepted | Phase 3 onward only | `DECISIONS.md` | AGENTS, Charter, Roadmap, Safety, Open Questions | No — Phase 0 has no remediation executor |
 | DEC-025 | Phase 3 agile restricted-remediation replay MVP | accepted | Phase 3 v1 only | `DECISIONS.md` | Roadmap, Safety, Open Questions, Phase 3 implementation and tests | No — replay-only Phase 3 boundary |
 | DEC-026 | Phase 4 e-commerce domain replay extension MVP | accepted | Phase 4 only | `DECISIONS.md` | Roadmap, Open Questions, Phase 4 implementation and tests | No — replay-only Phase 4 boundary |
+| DEC-027 | Multi-Agent diagnosis quality repair | accepted | Phase 5A only | `DECISIONS.md` | Roadmap, Open Questions, Phase 5A implementation and tests | No — visible development evaluation only |
+| DEC-028 | Frozen hidden paired evaluation protocol | accepted | Phase 5B v1 | `DECISIONS.md` | Roadmap, Open Questions, Phase 5B protocol and tests | No — protocol freeze does not enter execution |
+| DEC-029 | Hidden-pack seal control plane | accepted | Phase 5B-1 only | `DECISIONS.md` | Roadmap, Open Questions, seal tooling and evidence | No — out-of-band build and verification only |
 
 ## DEC-001 — Supported host baseline
 
@@ -408,6 +411,33 @@ statistics, isolation, and unblinding contracts. Final `OQ-007` closure still
 requires a separately authorized sealed hidden-pack manifest and execution
 freeze. It does not authorize hidden-pack construction, Provider execution,
 unblinding, release, deployment, or Phase 5A prompt/runtime modification.
+
+## DEC-029 — Phase 5B-1 Hidden-Pack Seal Control Plane
+
+**Status: `accepted`. Phase 5B-1 seal tooling is out-of-band control-plane
+tooling. The first sealed pack is `SUPERSEDED / NOT_EXECUTION_ELIGIBLE`; only a
+fresh post-relocation pack may become the authoritative sealed pack.**
+
+The evaluator-only truth contract, safe aggregate seal record, structural seal
+verifier, and offline seal CLI are repository control-plane utilities, not part
+of the frozen `phase5b.v1` execution runtime. Their public modules live under
+`scripts/phase5b_hidden_pack/`, and their answer-free aggregate binding lives
+under `config/phase5b-seal/`. They must remain outside the recursive discovery
+roots owned by the existing v1 freeze manifest. Neither the manifest nor the
+frozen runtime may be updated, bypassed, or reinterpreted to admit them.
+
+The first external pack built before this path boundary was accepted remains
+preserved read-only and blinded. It must not be deleted, overwritten, executed,
+or represented as the authoritative pack. Its exact disposition is
+`SUPERSEDED / NOT_EXECUTION_ELIGIBLE`.
+
+After relocation, Phase 5B-1 must pass the unchanged v1 preflight with an exact
+frozen path set, then create and validate a fresh external pack at a new
+create-once location. The public answer-free seal records may bind only that
+fresh authoritative pack and its relocated builder and validator sources. This
+decision authorizes construction, offline validation, and read-only sealing of
+that replacement pack only. Agent runs, Provider calls, scored execution, and
+unblinding remain forbidden and at zero; no superiority claim is created.
 
 ## Upstream references
 
