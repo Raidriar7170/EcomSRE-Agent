@@ -15,7 +15,7 @@ def test_readme_exposes_the_demo_and_preserves_phase_boundaries() -> None:
         "PHASE3_RESTRICTED_REMEDIATION_REPLAY_MVP_READY",
         "PHASE4_OFFLINE_ECOMMERCE_DOMAIN_REPLAY_MVP_READY",
         "Phase 5A | `PHASE5A_MULTI_AGENT_QUALITY_REPAIR_READY`",
-        "Phase 5B | `PHASE5B_HIDDEN_PACK_SEALED`",
+        "Phase 5B | `PHASE5B_V2_FINAL_REPORT_FROZEN`",
         "make phase4-demo",
         "canonical acceptance is **not complete**",
         "7 cases × 3 variants",

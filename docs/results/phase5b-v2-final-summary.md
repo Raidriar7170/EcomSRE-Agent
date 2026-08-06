@@ -78,8 +78,8 @@ These are aggregate secondary groupings derived only from the preregistered publ
 
 ## Failure and ablation boundary
 
-- Main terminal failure count retained: `69` of `180`.
-- Ablation slots: `38` frozen gap slots.
+- Main terminal failures: Single `12`, Fixed `13`, Dynamic `6`; total `31` of `180`.
+- Ablation `NOT_IMPLEMENTED` gap records: `38`; total non-success terminal records: `69`.
 - Ablation implementation available: `NO`.
 - Ablation model evidence available: `NO`.
 - Ablation primary eligible: `NO`.
