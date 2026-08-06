@@ -1,0 +1,10 @@
+{
+  "aliases": {},
+  "canonicalization": [
+    "trim",
+    "unicode_preserving_casefold"
+  ],
+  "output_rule": "exact_agent_visible_telemetry_service",
+  "schema_version": "rcaeval-re2.service-normalization.v1",
+  "unresolved_alias_disposition": "UNRESOLVED_ALIAS"
+}

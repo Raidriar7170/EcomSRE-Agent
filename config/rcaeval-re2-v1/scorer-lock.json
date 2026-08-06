@@ -1,0 +1,17 @@
+{
+  "failure_denominator": "all_scheduled_runs_count_incorrect_unless_completed_and_correct",
+  "fine_grained_endpoint": "root_cause_pair_ac1",
+  "indicator_mapping": {
+    "cpu": "cpu",
+    "delay": "latency",
+    "disk": "diskio",
+    "loss": "latency",
+    "mem": "mem",
+    "socket": "socket"
+  },
+  "official_semantics_source": "RCAEval/benchmark/evaluation.py",
+  "schema_version": "rcaeval-re2.scorer-lock.v1",
+  "service_endpoint": "root_service_ac1",
+  "top_k": 1,
+  "upstream_commit": "9d14687ce0644188f1f1a576fd3f57cd903af446"
+}

@@ -1,0 +1,13 @@
+{
+  "architectures": [
+    "single",
+    "fixed",
+    "dynamic"
+  ],
+  "case_count": 90,
+  "expected_schedule_sha256": "4c2834dc4a1ab4d4396b5f5671fd46916143ecea4b54f5d0db06bfb93596087c",
+  "per_architecture_call_position_count": 30,
+  "record_count": 270,
+  "schedule_seed": 20260806,
+  "schema_version": "rcaeval-re2.schedule-generation.v1"
+}

@@ -1,0 +1,28 @@
+{
+  "archives": {
+    "RE2-OB": {
+      "archive_md5": "b9e23f8842c404b396ffd2becff15de4",
+      "archive_sha256": "0605a36cdcad8a6ae0107f2357c9c91ecee2c4ab5d72579bffea0372d9747513",
+      "extracted_manifest_sha256": "440c6651e98cf77160b73efd1165ded5a4164a127dece3caf58dbafac9b9b297",
+      "schema_manifest_sha256": "1ec60a1a5c5fc95f56048d24c53c4c6ef671c98025e7a6cae13adf2a14b3105c"
+    },
+    "RE2-SS": {
+      "archive_md5": "bd747a8fc7c5be00c613e13fbf9dd74b",
+      "archive_sha256": "7aff9a3a0df7e2febbce4f75f0b7ba332da943aacadbffe6d5113a588ef6e295",
+      "extracted_manifest_sha256": "4053855da60b499b2ed4ad14f9854d365ea268e88c88ec6ae2baabbe7bb96387",
+      "schema_manifest_sha256": "2cbb47c37cb486892fd2fbb1d16482483220afec5ca6b83a8bb0f5ccbcddfcf8"
+    }
+  },
+  "benchmark": "RCAEval",
+  "expected_cases": {
+    "RE2-OB": 90,
+    "RE2-SS": 90,
+    "RE2-TT": 90
+  },
+  "schema_version": "rcaeval-re2.dataset-lock.v1",
+  "source_record": "10.5281/zenodo.14590730",
+  "suite": "RE2",
+  "upstream_commit": "9d14687ce0644188f1f1a576fd3f57cd903af446",
+  "upstream_ref": "www25",
+  "upstream_repo": "phamquiluan/RCAEval"
+}

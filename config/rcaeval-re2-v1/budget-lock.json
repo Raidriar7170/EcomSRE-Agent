@@ -1,0 +1,10 @@
+{
+  "model_call_accounting": "actual_provider_model_calls",
+  "max_model_calls": 8,
+  "max_targeted_refinement": 0,
+  "max_tool_calls": 8,
+  "max_total_tokens": 32000,
+  "model_call_timeout_seconds": 30.0,
+  "overall_run_timeout_seconds": 45.0,
+  "schema_version": "rcaeval-re2.budget-lock.v1"
+}
