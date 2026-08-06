@@ -1,0 +1,53 @@
+{
+  "artifacts": {
+    "final_disposition_created": false,
+    "final_report_created": false,
+    "final_report_verifier_run": false,
+    "scoring_bundle_created": false
+  },
+  "contract_mismatch": {
+    "affected_hidden_ground_truth_records": 30,
+    "difficult_subset_labels_disclosed": false,
+    "disposition": "FROZEN_RUNTIME_ALLOWLIST_MISMATCH",
+    "unknown_private_label_count": 6
+  },
+  "evaluation_version": "phase5b.v1",
+  "execution": {
+    "ablation_gap_terminal": 38,
+    "ablation_slot_count": 38,
+    "failure_count": 69,
+    "main_scheduled": 180,
+    "main_terminal": 180,
+    "post_unblind_tuning": false,
+    "provider_reruns": 0,
+    "scored_runs_retried": false,
+    "state": "UNBLINDED"
+  },
+  "ground_truth_admission": {
+    "aggregate_sha256_verified": true,
+    "canonical_json_verified": true,
+    "expected_records": 30,
+    "layout": "EXACT_6_X_5",
+    "records_admitted": 30
+  },
+  "hashes": {
+    "agent_visible_pack_sha256": "0be64f31d5a356b6138a3acc325dc1adfdad9d1b3b24ed8c4da7bbc3c7a47153",
+    "execution_freeze_sha256": "36a96ddf089c1ca49720fa73651ecc50472a19279e846c776a2d88f055e4a615",
+    "execution_report_sha256": "9b8763069df52d0ae66c3b75df3c578db15ed9789b2a69379893b5abaa78837f",
+    "execution_schedule_sha256": "a711696a2c12745e062d068fd507b74a4ce67e845505b05f458d7db5a97d37ec",
+    "ground_truth_pack_sha256": "e9743db596bf580dd5a9b31488e502e472fa9169ea57cbbb8234285c617f6aa5",
+    "hidden_pack_manifest_sha256": "52730b078040508e1ce0a99baca24aefffba36e577ff77c0737c8c5bd933d848",
+    "hidden_pack_seal_record_sha256": "0e247bb20af81a2b9758dbbfe09bb490e5bc386f6b3887c240e0b78ecb90f233",
+    "protocol_freeze_manifest_sha256": "527c3f1a6d08a16c8dc56927fc297ecf9d2769c92be5ed29e752277403ad181e",
+    "unblinding_record_sha256": "3f16f29cdd178ad39c199e40af09f9e068ef82b7d95235ff7622ecac630f47b4"
+  },
+  "immutable_source": {
+    "execution_source_commit": "c45533bcf0ad959bebfa67f7b0fdd358f7c80af5",
+    "ground_truth_modified": false,
+    "hidden_pack_modified": false,
+    "phase5b_v1_frozen_files_modified": false,
+    "provider_or_agent_rerun": false
+  },
+  "schema_version": "phase5b.v1-termination-disposition.v1",
+  "status": "PHASE5B_V1_TERMINATED_GROUND_TRUTH_CONTRACT_MISMATCH"
+}
