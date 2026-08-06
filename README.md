@@ -86,8 +86,12 @@ make phase5a-verify
 ```
 
 The report is explicitly `VISIBLE DEVELOPMENT EVALUATION` and
-`NOT A SUPERIORITY CLAIM`. The Phase 5B v1 protocol and external hidden pack
-are sealed, but hidden evaluation execution has not been entered.
+`NOT A SUPERIORITY CLAIM`. Phase 5B v1 later completed all 180 frozen main
+runs, but v1 scoring was terminated because hidden difficult-subset metadata
+did not satisfy the frozen analysis contract. Phase 5B v2 repaired only that
+analysis-time projection over the identical immutable execution evidence and
+froze `NO_PREREGISTERED_ADVANTAGE_SUPPORTED`, with no Provider, Agent, or
+scored-run reruns.
 The bounded real-provider pilot reached 9/9 protocol acceptance and 8/9 semantic
 acceptance. Its 9/9 gate is `NOT PASSED`; no Multi-Agent superiority is claimed.
 
@@ -130,7 +134,7 @@ it cannot expand the Policy Gate or Executor authority.
 | Phase 3 | `PHASE3_RESTRICTED_REMEDIATION_REPLAY_MVP_READY`; replay-only |
 | Phase 4 | `PHASE4_OFFLINE_ECOMMERCE_DOMAIN_REPLAY_MVP_READY`; deterministic offline replay verified, real-provider gate `SKIPPED_NOT_CONFIGURED` |
 | Phase 5A | `PHASE5A_MULTI_AGENT_QUALITY_REPAIR_READY`; offline quality repair `PASS`; provider protocol 9/9, semantic pilot 8/9, real-provider 9/9 gate `NOT PASSED`; no superiority claim |
-| Phase 5B | `PHASE5B_HIDDEN_PACK_SEALED`; protocol frozen, external hidden pack sealed, execution not entered, Provider calls `0`, unblinded `NO`, no superiority claim |
+| Phase 5B | `PHASE5B_V2_FINAL_REPORT_FROZEN`; v1 completed 180/180 frozen main runs and was irreversibly unblinded, v1 scoring terminated on a metadata-contract mismatch, and v2 analysis-only scoring reused the same records with Provider/Agent/scored-run reruns `0`; final claim `NO_PREREGISTERED_ADVANTAGE_SUPPORTED` |
 
 The authoritative detail lives in the [Roadmap](docs/ROADMAP.md),
 [Decision Register](docs/DECISIONS.md),
@@ -146,6 +150,11 @@ authoritative-pack replacement rule are recorded in
 [Phase 5B protocol disposition](docs/review-evidence/phase5b-protocol/current-disposition.json).
 The answer-free aggregate binding for the external pack is recorded in the
 [Phase 5B hidden-pack disposition](docs/review-evidence/phase5b-hidden-pack/current-disposition.json).
+The v1 scoring termination is recorded in the
+[Phase 5B v1 termination disposition](docs/review-evidence/phase5b-v1-termination/current-disposition.json).
+The frozen v2 aggregate report and exact public claim are recorded in the
+[Phase 5B v2 final summary](docs/results/phase5b-v2-final-summary.md) and
+[Phase 5B v2 final disposition](docs/review-evidence/phase5b-v2-final/current-disposition.json).
 
 ## Evidence boundaries
 
@@ -162,8 +171,8 @@ The phases intentionally make different claims:
 | Phase 4 real-provider gate | 4 bounded positive/negative Fixed/Dynamic runs when configured; otherwise `SKIPPED_NOT_CONFIGURED` |
 | Phase 5A visible development evaluation | 12 public cases × 3 capability-parity v2 variants; all 36 runs retained; no superiority claim |
 | Phase 5A real-provider pilot | 3 visible cases × 3 variants; protocol 9/9, semantic acceptance 8/9; `BLOCKED_PROVIDER_PILOT_AFTER_ROOT_CAUSE_FIX` |
-| Phase 5B sealed hidden pack | 6 opaque hidden slots × 5 paired seeds = 30 external agent-visible instances plus 30 evaluator-only truth records; Agent runs 0; Provider calls 0; no execution or unblinding |
-| Phase 5B protocol | 6 public anchors + 6 opaque hidden slots × 5 paired seeds × 3 arms = 180 planned runs; 38 planned ablation runs; no real execution |
+| Phase 5B v1 frozen execution | 6 public anchors + 6 opaque hidden slots × 5 paired seeds × 3 arms = 180/180 terminal main records; 38/38 frozen ablation-gap records; all failures retained; irreversibly unblinded |
+| Phase 5B v2 analysis-only result | Identical immutable v1 records; hidden-only Dynamic/Single Decision Accuracy 63.3%/53.3%, difference +10.0 pp with 95% hierarchical paired CI [−16.7 pp, +36.7 pp]; Provider/Agent/scored-run reruns 0; `NO_PREREGISTERED_ADVANTAGE_SUPPORTED` |
 | Phase 5B mock dry run | 2 synthetic templates × 2 seeds × 3 arms; `NOT_MODEL_EVIDENCE`; Provider calls 0 |
 | Agent Mainline V1 demo | One deterministic scripted replay integration case; not an evaluation or provider result |
 
@@ -247,7 +256,7 @@ The current integration baseline records:
 | Phase 4 real-provider gate | `SKIPPED_NOT_CONFIGURED` on the offline branch |
 | Phase 5A capability-parity report | 12 × 3 visible development report verified; Single/Fixed/Dynamic v2 original-seven accuracy 7/7 each |
 | Phase 5A real-provider pilot | Protocol 9/9; semantic acceptance 8/9; real-provider 9/9 gate `NOT PASSED` |
-| Phase 5B protocol | 180-run paired schedule and 38-run ablation registry frozen; external hidden pack sealed `YES`; execution entered `NO`; unblinded `NO` |
+| Phase 5B v2 final analysis | v1 180/180 frozen main records reused; v2 hidden-only paired analysis and 10,000-replicate bootstrap frozen; additional Provider calls 0; final claim `NO_PREREGISTERED_ADVANTAGE_SUPPORTED`; 38 ablation slots remain `NOT_IMPLEMENTED` and are not model evidence |
 | Phase 5B dry run | 12 deterministic synthetic runs verified; Provider calls 0; `NOT_MODEL_EVIDENCE` |
 
 These counts are development evidence for the named revision. They are not a
@@ -296,8 +305,9 @@ tests/                 Contract, replay, isolation, and regression checks
   unconfigured; it does not substitute scripted output for provider output.
 - Phase 5A uses public development templates. Its 7/7 v2 results are a bounded
   quality-repair result, not a hidden-set or superiority claim.
-- Phase 5B's frozen hidden templates, paired seeds, and bootstrap comparison
-  have not been run.
+- Phase 5B v2 did not establish a preregistered accuracy or cost-quality
+  advantage. Its 38 ablation gap slots are not implemented, not model evidence,
+  and not ablation results.
 - No production write capability, live remediation, release, or deployment is
   claimed.
 

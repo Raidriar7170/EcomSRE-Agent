@@ -171,7 +171,9 @@ These components do not retroactively expand Phase 0 claims.
 **State:** `PHASE5A_MULTI_AGENT_QUALITY_REPAIR_READY` under accepted `DEC-027`.
 The offline quality repair is `PASS`. The bounded provider pilot reached 9/9
 protocol acceptance and 8/9 semantic acceptance, so the real-provider 9/9 gate
-is `NOT PASSED`. No superiority is claimed, and Phase 5B has not been entered.
+is `NOT PASSED`. No Phase 5A superiority is claimed. Phase 5B later completed
+under its separately authorized frozen v1 execution and v2 analysis-only
+contracts.
 
 Entry:
 
@@ -198,12 +200,18 @@ Exit:
 
 ## Phase 5B — Frozen hidden evaluation and demonstration
 
-**State:** `PHASE5B_HIDDEN_PACK_SEALED` under accepted `DEC-028` and `DEC-029`.
-The v1 protocol is frozen and the external hidden pack is sealed. It contains
-six opaque templates with five paired seeds each: 30 agent-visible instances
-and 30 evaluator-only truth records. Agent runs and Provider calls remain zero,
-execution has not started, no result has been unblinded, and no superiority
-claim is made.
+**State:** `PHASE5B_V2_FINAL_REPORT_FROZEN` under accepted `DEC-028` and
+`DEC-029`. Phase 5B v1 completed 180/180 frozen main runs and 38/38 frozen
+ablation-gap records, then entered irreversible `UNBLINDED`. Its scoring was
+safely terminated as `PHASE5B_V1_TERMINATED_GROUND_TRUTH_CONTRACT_MISMATCH`
+before a v1 bundle or final report was created.
+
+Phase 5B v2 repaired only the analysis-time difficult-subset projection and
+reused the identical immutable v1 execution records. It did not change
+diagnosis output, decision/root/mechanism truth, Prompt, Agent runtime,
+schedule, budgets, Provider model, statistics, thresholds, or the hidden-only
+primary population. Additional Provider calls and Agent/scored-run reruns were
+zero; all failures remained in their frozen denominators.
 
 The seal contract, verifier, and CLI are out-of-band control-plane tooling and
 remain outside the frozen v1 discovery roots. The first pre-decision pack is
@@ -231,9 +239,20 @@ primary-ineligible ablation runs. The hidden-only primary endpoint uses a
 dry run is `NOT_MODEL_EVIDENCE`, made zero Provider calls, and does not satisfy
 the Phase 5B execution entry gate.
 
-The hidden-pack seal closes only the protocol and hidden-pack portions of
-Phase 5B. Execution, irreversible unblinding, and the final report remain
-pending and require separate authorization.
+The frozen v2 hidden-only primary result is Single 53.3%, Fixed 63.3%, and
+Dynamic 63.3% Decision Accuracy. Dynamic minus Single is +10.0 percentage
+points with a preregistered 95% hierarchical paired CI of −16.7 to +36.7
+percentage points. Accuracy non-inferiority did not pass, so the exact frozen
+classification is `NO_PREREGISTERED_ADVANTAGE_SUPPORTED`. Dynamic used 25.0%
+fewer tool calls than Single, but the cost-quality claim is not supported
+because the accuracy condition did not pass.
+
+The 38 frozen ablation slots remain
+`ABLATION_NOT_IMPLEMENTED_IN_FROZEN_HARNESS`: implementation is unavailable,
+model evidence is unavailable, and the slots are not primary eligible or
+ablation results. The safe aggregate result is published in
+`docs/results/phase5b-v2-final-summary.md`; hidden truth, raw records, the
+scoring bundle, and the one-time attempt marker remain external.
 
 Exit:
 
