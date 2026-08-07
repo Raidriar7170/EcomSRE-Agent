@@ -1,0 +1,206 @@
+{
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "design_cases": 60,
+  "dev_validation_cases_reserved": 120,
+  "dev_validation_values_accessed": false,
+  "formula_candidates": [
+    {
+      "ambiguous_count": 0,
+      "auxiliary_metric_count": 665,
+      "eligible_unknown_count": 0,
+      "formula": "F0",
+      "macro_truth_indicator_coverage_at_6": 0.9500000000000001,
+      "memory_coverage_at_6": {
+        "denominator": 10,
+        "numerator": 10,
+        "value": 1.0
+      },
+      "overall_coverage_at_6": {
+        "denominator": 60,
+        "numerator": 57,
+        "value": 0.95
+      },
+      "per_fault_coverage_at_6": {
+        "cpu": {
+          "denominator": 10,
+          "numerator": 10,
+          "value": 1.0
+        },
+        "delay": {
+          "denominator": 10,
+          "numerator": 10,
+          "value": 1.0
+        },
+        "disk": {
+          "denominator": 10,
+          "numerator": 8,
+          "value": 0.8
+        },
+        "loss": {
+          "denominator": 10,
+          "numerator": 10,
+          "value": 1.0
+        },
+        "mem": {
+          "denominator": 10,
+          "numerator": 10,
+          "value": 1.0
+        },
+        "socket": {
+          "denominator": 10,
+          "numerator": 9,
+          "value": 0.9
+        }
+      },
+      "socket_coverage_at_6": {
+        "denominator": 10,
+        "numerator": 9,
+        "value": 0.9
+      }
+    },
+    {
+      "ambiguous_count": 0,
+      "auxiliary_metric_count": 665,
+      "eligible_unknown_count": 0,
+      "formula": "F1",
+      "macro_truth_indicator_coverage_at_6": 0.8166666666666668,
+      "memory_coverage_at_6": {
+        "denominator": 10,
+        "numerator": 6,
+        "value": 0.6
+      },
+      "overall_coverage_at_6": {
+        "denominator": 60,
+        "numerator": 49,
+        "value": 0.8166666666666667
+      },
+      "per_fault_coverage_at_6": {
+        "cpu": {
+          "denominator": 10,
+          "numerator": 9,
+          "value": 0.9
+        },
+        "delay": {
+          "denominator": 10,
+          "numerator": 9,
+          "value": 0.9
+        },
+        "disk": {
+          "denominator": 10,
+          "numerator": 8,
+          "value": 0.8
+        },
+        "loss": {
+          "denominator": 10,
+          "numerator": 8,
+          "value": 0.8
+        },
+        "mem": {
+          "denominator": 10,
+          "numerator": 6,
+          "value": 0.6
+        },
+        "socket": {
+          "denominator": 10,
+          "numerator": 9,
+          "value": 0.9
+        }
+      },
+      "socket_coverage_at_6": {
+        "denominator": 10,
+        "numerator": 9,
+        "value": 0.9
+      }
+    },
+    {
+      "ambiguous_count": 0,
+      "auxiliary_metric_count": 665,
+      "eligible_unknown_count": 0,
+      "formula": "F2",
+      "macro_truth_indicator_coverage_at_6": 0.8333333333333334,
+      "memory_coverage_at_6": {
+        "denominator": 10,
+        "numerator": 6,
+        "value": 0.6
+      },
+      "overall_coverage_at_6": {
+        "denominator": 60,
+        "numerator": 50,
+        "value": 0.8333333333333334
+      },
+      "per_fault_coverage_at_6": {
+        "cpu": {
+          "denominator": 10,
+          "numerator": 8,
+          "value": 0.8
+        },
+        "delay": {
+          "denominator": 10,
+          "numerator": 10,
+          "value": 1.0
+        },
+        "disk": {
+          "denominator": 10,
+          "numerator": 7,
+          "value": 0.7
+        },
+        "loss": {
+          "denominator": 10,
+          "numerator": 10,
+          "value": 1.0
+        },
+        "mem": {
+          "denominator": 10,
+          "numerator": 6,
+          "value": 0.6
+        },
+        "socket": {
+          "denominator": 10,
+          "numerator": 9,
+          "value": 0.9
+        }
+      },
+      "socket_coverage_at_6": {
+        "denominator": 10,
+        "numerator": 9,
+        "value": 0.9
+      }
+    }
+  ],
+  "private_evidence_sha256": "6677905a3db06d3135bce8d8ffd4cfd8f404fb8f8ab3061dc09bd1c4222be3ce",
+  "provider_calls": 0,
+  "schema_version": "rcaeval-re2-v2-dev.formula-tool-gate-public.v1",
+  "selection": {
+    "eligible_formulas": [
+      "F0"
+    ],
+    "gate_passed": true,
+    "rejections": {
+      "F0": [],
+      "F1": [
+        "OVERALL_GATE",
+        "MEMORY_GATE",
+        "PER_FAULT_REGRESSION"
+      ],
+      "F2": [
+        "OVERALL_GATE",
+        "MEMORY_GATE",
+        "PER_FAULT_REGRESSION"
+      ]
+    },
+    "selected_formula": "F0"
+  },
+  "source_bindings": {
+    "assignment_manifest_sha256": "917b1043b1444b1099418ebf0ac5308692dceabe9e0baaa230a4020b83841b40",
+    "dataset_lock_sha256": "e0cc4ef5c3414e457f3b04695059e352522adedbb13f6d1f7b9a531c2739a957",
+    "formula_config_sha256": "51a8373e72e924151d9e8749ffc6b2959eadee59cc0b11510f9d8f6d6ed2455a",
+    "protocol_id": "rcaeval-re2-v2-dev-v1",
+    "protocol_sha256": "110d95c388597d417bf0dc15b16c177e1d0dbdc60fb686b8f02edf3a244236ad",
+    "split_lock_sha256": "14e88500098a282e89d4b1cee96d5c622aca9c91f35f73a6811cad9526909cba"
+  },
+  "state": "V2_INDICATOR_TOOL_GATE_PASSED"
+}

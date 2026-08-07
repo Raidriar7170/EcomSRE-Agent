@@ -1,0 +1,85 @@
+{
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "evaluated_at_utc": "2026-08-07T14:47:27Z",
+  "failure_taxonomy": {
+    "FINAL_JUDGE": 1,
+    "UNATTRIBUTED_BEFORE_OPERATION_MARKER": 2
+  },
+  "gate_checks": {
+    "exact_failure_stage_coverage": {
+      "denominator": 3,
+      "numerator": 1,
+      "passed": false,
+      "required": 1.0,
+      "value": 0.3333333333333333
+    },
+    "positive_known_token_accounting": {
+      "known_tokens": 90540,
+      "passed": true
+    },
+    "run_traces_complete_for_terminalized_v2_runs": {
+      "denominator": 5,
+      "numerator": 5,
+      "passed": true,
+      "value": 1.0
+    },
+    "secret_or_private_path_hits": {
+      "hits": 0,
+      "passed": true
+    },
+    "terminal_overwrites": {
+      "count": 0,
+      "passed": true
+    },
+    "v2_run_completion": {
+      "denominator": 5,
+      "numerator": 2,
+      "passed": false,
+      "required_minimum": 0.95,
+      "value": 0.4
+    }
+  },
+  "observability": {
+    "commander_success_records": 1,
+    "judge_input_snapshots": 3,
+    "operation_records": 13,
+    "run_traces": 5,
+    "specialist_success_records": 7
+  },
+  "provider_accounting": {
+    "known_tokens": 90540,
+    "provider_operations": 29,
+    "semantic_retries": 0,
+    "transport_retries": 0
+  },
+  "run_accounting": {
+    "planned_smoke_runs": 72,
+    "terminalized_runs": 10,
+    "v1_reference_terminal_status": {
+      "COMPLETED": 5
+    },
+    "v2_terminal_status": {
+      "COMPLETED": 2,
+      "INVALID_SCHEMA": 1,
+      "PROTOCOL_VIOLATION": 2
+    }
+  },
+  "schema_version": "rcaeval-re2-v2-dev.provider-smoke-gate.v1",
+  "source_bindings": {
+    "evaluation_lock_sha256": "69642f1bd675b7b3532651e434434fc42897f5f052665150597094d69d8cf992",
+    "indicator_formula_sha256": "51a8373e72e924151d9e8749ffc6b2959eadee59cc0b11510f9d8f6d6ed2455a",
+    "indicator_tool_gate_sha256": "acacf5493d94ad1641a034d92dd825da8eefde325c42d12ad5dcec9aff42b886",
+    "model_prompt_lock_sha256": "7c95845672bd4c1f86cef5b7b50d721b979326b7c67b36a52c0e61ae4b7be19f",
+    "protocol_sha256": "110d95c388597d417bf0dc15b16c177e1d0dbdc60fb686b8f02edf3a244236ad",
+    "runtime_implementation_commit": "23703280c5371e166891e22a788471b1808e1f56",
+    "smoke_schedule_sha256": "a9fb19abef43a336e0de13b0cc7a26fcd42d3e95a557507c4883828fc0c12339",
+    "source_base_commit": "095dfd95964df9d77da06dcfb1b31023185b3f41",
+    "split_lock_sha256": "14e88500098a282e89d4b1cee96d5c622aca9c91f35f73a6811cad9526909cba"
+  },
+  "state": "V2_PROVIDER_DEV_GATE_NOT_PASSED",
+  "stop_reason": "Agent-visible bounded evidence rejected a local absolute path before an operation marker, leaving two failures without exact operation stage. The frozen run identifiers were not retried. The required evaluation root lock was reconstructed only after termination and has no retroactive validity effect."
+}
