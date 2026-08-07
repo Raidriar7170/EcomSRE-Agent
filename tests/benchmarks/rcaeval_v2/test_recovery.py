@@ -6,6 +6,7 @@ from pathlib import Path
 from ecomsre_rcaeval_v2.contracts import (
     DiagnosisV2,
     OperationFailureCode,
+    OperationStage,
     OperationStatus,
     OperationType,
     ProviderUsageDelta,
@@ -13,7 +14,11 @@ from ecomsre_rcaeval_v2.contracts import (
     SpecialistOperationRecord,
     TerminalDispositionV2,
 )
-from ecomsre_rcaeval_v2.observability import RunJournalV2, execute_run_once
+from ecomsre_rcaeval_v2.observability import (
+    OperationTransaction,
+    RunJournalV2,
+    execute_run_once,
+)
 
 
 NOW = datetime(2026, 8, 7, tzinfo=timezone.utc)
@@ -44,7 +49,15 @@ def _execute(run_root: Path, callback):
     )
 
 
-def _completed_operation() -> SpecialistOperationRecord:
+def _completed_operation(
+    transaction: OperationTransaction,
+) -> SpecialistOperationRecord:
+    transaction.start_stage(OperationStage.INPUT_SANITIZATION)
+    transaction.start_stage(OperationStage.INPUT_CONSTRUCTION)
+    transaction.start_stage(OperationStage.INPUT_PERSISTENCE)
+    transaction.start_stage(OperationStage.PROVIDER_CALL)
+    transaction.start_stage(OperationStage.OUTPUT_VALIDATION)
+    transaction.start_stage(OperationStage.OUTPUT_PERSISTENCE)
     return SpecialistOperationRecord(
         schema_version="rcaeval-re2-v2.operation-record.v1",
         run_id="1" * 32,
@@ -59,6 +72,10 @@ def _completed_operation() -> SpecialistOperationRecord:
         latency_ms=0.0,
         status=OperationStatus.COMPLETED,
         failure_code=None,
+        failure_stage=None,
+        last_completed_stage=OperationStage.OUTPUT_PERSISTENCE,
+        stage_trace_sha256=transaction.stage_trace_sha256(),
+        safe_validation_error=None,
         provider_call_index=1,
         input_snapshot_sha256="a" * 64,
         output_snapshot_sha256="b" * 64,
@@ -96,6 +113,7 @@ def test_existing_terminal_is_read_only_and_second_execution_skips_callback(
             failure_operation_type=None,
             failure_operation_index=None,
             failure_code=None,
+            failure_stage=None,
             diagnosis=_diagnosis(),
             tool_calls=1,
         )
@@ -129,7 +147,7 @@ def test_orphan_run_attempt_terminalizes_without_callback(tmp_path: Path) -> Non
     assert recovered.terminal_status is OperationStatus.PROTOCOL_VIOLATION
     assert (
         recovered.failure_code
-        is OperationFailureCode.STARTED_ATTEMPT_WITHOUT_TERMINAL
+        is OperationFailureCode.STARTED_OPERATION_WITHOUT_TERMINAL
     )
     assert recovered.failure_operation_type is None
     assert recovered.failure_operation_index is None
@@ -178,11 +196,17 @@ def test_orphan_operation_attempt_preserves_exact_stage_without_retry(
         started_at_utc=NOW,
     )
     journal.begin()
+
+    def interrupted(transaction: OperationTransaction) -> SpecialistOperationRecord:
+        transaction.start_stage(OperationStage.INPUT_SANITIZATION)
+        transaction.start_stage(OperationStage.INPUT_CONSTRUCTION)
+        raise ConnectionError("interrupted")
+
     try:
         journal.record_operation(
             1,
             OperationType.METRICS_SPECIALIST,
-            lambda: (_ for _ in ()).throw(ConnectionError("interrupted")),
+            interrupted,
         )
     except ConnectionError:
         pass
@@ -193,6 +217,7 @@ def test_orphan_operation_attempt_preserves_exact_stage_without_retry(
     recovered = _execute(run_root, must_not_run)
     assert recovered.failure_operation_type is OperationType.METRICS_SPECIALIST
     assert recovered.failure_operation_index == 1
+    assert recovered.failure_stage is OperationStage.INPUT_CONSTRUCTION
 
 
 def test_orphan_after_completed_operation_does_not_mislabel_it_as_failure(
@@ -208,9 +233,7 @@ def test_orphan_after_completed_operation_does_not_mislabel_it_as_failure(
         started_at_utc=NOW,
     )
     journal.begin()
-    journal.record_operation(
-        1, OperationType.METRICS_SPECIALIST, _completed_operation
-    )
+    journal.record_operation(1, OperationType.METRICS_SPECIALIST, _completed_operation)
 
     recovered = _execute(
         run_root,

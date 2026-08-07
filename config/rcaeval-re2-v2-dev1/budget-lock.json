@@ -1,0 +1,21 @@
+{
+  "fallback_count": 0,
+  "max_model_calls_per_run": 8,
+  "max_targeted_refinement": 0,
+  "max_tool_calls_per_run": 8,
+  "max_total_tokens_per_run": 32000,
+  "model_call_timeout_seconds": 30.0,
+  "operation_caps": {
+    "design": 1200,
+    "smoke": 240
+  },
+  "overall_run_timeout_seconds": 45.0,
+  "protocol_id": "rcaeval-re2-v2-dev.1",
+  "protocol_sha256": "b79ecbd11ee4180781daff92f50056e5fc25ad6217d431faf9e47a6cfbd4bee7",
+  "result_driven_retries": 0,
+  "schedule_overflow_disposition": "BLOCKED_DEV_EVAL_BUDGET_EXCEEDED",
+  "schema_version": "rcaeval-re2-v2-dev1.budget-lock.v1",
+  "semantic_attempts_per_run": 1,
+  "semantic_retries": 0,
+  "transport_retries": 0
+}

@@ -1,0 +1,110 @@
+{
+  "allowed_systems": [
+    "RE2-OB",
+    "RE2-SS"
+  ],
+  "benchmark": "RCAEval",
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "DESIGN_SET",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "evaluation_authorization": {
+    "lock_location": "EXTERNAL_CONTROL_ROOT",
+    "lock_name": "evaluation-root-lock.json",
+    "provider_construction_without_verified_lock": "FORBIDDEN"
+  },
+  "excluded_scope": [
+    "DEV_VALIDATION_EXECUTION",
+    "RE2-TT",
+    "SINGLE_FIRST_ADAPTIVE_ESCALATION",
+    "TRANSPORT_RETRY",
+    "RELEASE",
+    "TAG",
+    "MERGE"
+  ],
+  "fallback": "NO_FALLBACK",
+  "forbidden_systems": [
+    "RE2-TT"
+  ],
+  "operation_transaction": {
+    "attempt_marker_precedes_input_processing": true,
+    "stages": [
+      "INPUT_SANITIZATION",
+      "INPUT_CONSTRUCTION",
+      "INPUT_PERSISTENCE",
+      "PROVIDER_CALL",
+      "OUTPUT_VALIDATION",
+      "OUTPUT_PERSISTENCE",
+      "COMPLETED"
+    ]
+  },
+  "path_sanitizer": {
+    "replacement": "<LOCAL_PATH:sha256-prefix-12>",
+    "version": "rcaeval-re2-v2-dev1.local-path-sanitizer.v1"
+  },
+  "protocol_id": "rcaeval-re2-v2-dev.1",
+  "provider_operation_caps": {
+    "design": 1200,
+    "smoke": 240
+  },
+  "required_config_files": [
+    "protocol.json",
+    "dataset-lock.json",
+    "split-lock.json",
+    "model-prompt-lock.json",
+    "budget-lock.json",
+    "indicator-lock.json",
+    "schedule-generation.json",
+    "evaluation-policy.json"
+  ],
+  "result_driven_retry": "FORBIDDEN",
+  "run_counts": {
+    "design": 360,
+    "dev_validation_reserved": 480,
+    "smoke": 72
+  },
+  "schema_version": "rcaeval-re2-v2-dev1.protocol-lock.v1",
+  "semantic_attempts_per_run": 1,
+  "semantic_retry": "FORBIDDEN",
+  "source_base_commit": "95e835460c83b631e5860e98276b3fc55c7f77aa",
+  "split": {
+    "design_case_count": 60,
+    "dev_validation_case_count": 120,
+    "reallocation": "FORBIDDEN"
+  },
+  "suite": "RE2",
+  "transport_retry": "FORBIDDEN",
+  "v1_bindings": {
+    "attribution_commit": "3991102f6fb228568d6c620c386340a3956ac949",
+    "frozen_implementation_commit": "3a03995037ce410488a4364f8a485b27c80f0ac0",
+    "frozen_scope_mutation": "FORBIDDEN",
+    "pr13_merge_commit": "095dfd95964df9d77da06dcfb1b31023185b3f41"
+  },
+  "v2_dev_v1_negative_evidence": {
+    "config_mutation": "FORBIDDEN",
+    "provider_operations": 29,
+    "provider_smoke_gate_sha256": "bf1c5ff3bba26afd570a02b6fa182f74dc93fab99ee4e4c2c88a612dfaa90e7c",
+    "protocol_id": "rcaeval-re2-v2-dev-v1",
+    "run_id_reuse": "FORBIDDEN",
+    "state": "V2_PROVIDER_DEV_GATE_NOT_PASSED",
+    "terminalized_smoke_runs": 10
+  },
+  "variants": {
+    "DESIGN": [
+      "single_v1_reference",
+      "fixed_v1_reference",
+      "dynamic_v1_reference",
+      "single_v2_dev1",
+      "fixed_v2_dev1",
+      "dynamic_v2_dev1"
+    ],
+    "DEV_VALIDATION_RESERVED": [
+      "single_v1_reference",
+      "single_v2_dev1",
+      "fixed_v2_dev1",
+      "dynamic_v2_dev1"
+    ]
+  }
+}

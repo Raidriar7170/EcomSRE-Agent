@@ -11,6 +11,7 @@ from ecomsre_rcaeval_v2.dev_execution import (
     load_private_schedule,
     provider_config_from_env_file,
 )
+from ecomsre_rcaeval_v2.schedule import SplitName
 
 
 def main(argv: tuple[str, ...] | None = None) -> int:
@@ -18,9 +19,12 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     parser.add_argument("--ob-root", required=True, type=Path)
     parser.add_argument("--ss-root", required=True, type=Path)
     parser.add_argument("--schedule", required=True, type=Path)
+    parser.add_argument("--control-root", required=True, type=Path)
     parser.add_argument("--private-run-root", required=True, type=Path)
     parser.add_argument("--env-file", required=True, type=Path)
+    parser.add_argument("--phase", required=True, choices=("smoke", "design"))
     args = parser.parse_args(argv)
+    schedule = load_private_schedule(args.schedule, allowed_split=SplitName.DESIGN)
 
     def progress(index, total, scheduled, record) -> None:
         print(
@@ -30,10 +34,16 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         )
 
     execute_development_schedule(
-        load_private_schedule(args.schedule),
-        cases=discover_case_index(args.ob_root, args.ss_root),
+        schedule,
+        cases=discover_case_index(
+            args.ob_root,
+            args.ss_root,
+            {item.identity for item in schedule},
+        ),
         provider_config=provider_config_from_env_file(args.env_file),
+        control_root=args.control_root,
         private_run_root=args.private_run_root,
+        execution_phase=args.phase,
         progress=progress,
     )
     return 0

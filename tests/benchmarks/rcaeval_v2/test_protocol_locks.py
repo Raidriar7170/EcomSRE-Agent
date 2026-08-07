@@ -5,18 +5,23 @@ import json
 from pathlib import Path
 
 from ecomsre_rcaeval_v2.locks import (
-    verify_evaluation_lock,
+    verify_legacy_negative_evaluation_lock,
     verify_model_prompt_lock,
 )
 
 
 ROOT = Path(__file__).parents[3]
 CONFIG = ROOT / "config" / "rcaeval-re2-v2-dev"
+NEW_CONFIG = ROOT / "config" / "rcaeval-re2-v2-dev1"
 V1_CONFIG = ROOT / "config" / "rcaeval-re2-v1"
 PROTOCOL_SHA256 = "110d95c388597d417bf0dc15b16c177e1d0dbdc60fb686b8f02edf3a244236ad"
 SPLIT_LOCK_SHA256 = "14e88500098a282e89d4b1cee96d5c622aca9c91f35f73a6811cad9526909cba"
-INDICATOR_FORMULA_SHA256 = "51a8373e72e924151d9e8749ffc6b2959eadee59cc0b11510f9d8f6d6ed2455a"
-EVALUATION_LOCK_SHA256 = "69642f1bd675b7b3532651e434434fc42897f5f052665150597094d69d8cf992"
+INDICATOR_FORMULA_SHA256 = (
+    "51a8373e72e924151d9e8749ffc6b2959eadee59cc0b11510f9d8f6d6ed2455a"
+)
+EVALUATION_LOCK_SHA256 = (
+    "69642f1bd675b7b3532651e434434fc42897f5f052665150597094d69d8cf992"
+)
 
 
 def _load(name: str) -> dict[str, object]:
@@ -49,11 +54,12 @@ def test_protocol_lock_has_exact_development_boundary_and_v1_bindings() -> None:
         "dev_validation": 480,
         "total": 840,
     }
-    assert protocol["cross_hash_policy"]["evaluation_root"] == (
-        "evaluation-lock.json"
-    )
+    assert protocol["cross_hash_policy"]["evaluation_root"] == ("evaluation-lock.json")
     bindings = protocol["v1_bindings"]
-    assert bindings["frozen_implementation_commit"] == "3a03995037ce410488a4364f8a485b27c80f0ac0"
+    assert (
+        bindings["frozen_implementation_commit"]
+        == "3a03995037ce410488a4364f8a485b27c80f0ac0"
+    )
     assert bindings["attribution_commit"] == "3991102f6fb228568d6c620c386340a3956ac949"
     assert bindings["pr13_merge_commit"] == "095dfd95964df9d77da06dcfb1b31023185b3f41"
     assert bindings["frozen_scope_mutation"] == "FORBIDDEN"
@@ -155,7 +161,7 @@ def test_model_prompt_lock_is_exactly_bound_to_live_prompts_and_schemas() -> Non
 
 
 def test_evaluation_root_lock_binds_every_prerequisite_and_is_fail_closed() -> None:
-    lock = verify_evaluation_lock()
+    lock = verify_legacy_negative_evaluation_lock()
 
     assert _sha(CONFIG / "evaluation-lock.json") == EVALUATION_LOCK_SHA256
     assert lock["indicator_selection"]["formula"] == "F0"
@@ -169,3 +175,70 @@ def test_evaluation_root_lock_binds_every_prerequisite_and_is_fail_closed() -> N
         "negative_gate_evidence_only": True,
         "retroactive_provider_authorization": False,
     }
+
+
+def test_new_protocol_preserves_negative_evidence_and_has_new_identities() -> None:
+    protocol = json.loads((NEW_CONFIG / "protocol.json").read_text(encoding="utf-8"))
+    assert _sha(NEW_CONFIG / "protocol.json") == (
+        "b79ecbd11ee4180781daff92f50056e5fc25ad6217d431faf9e47a6cfbd4bee7"
+    )
+    assert protocol["protocol_id"] == "rcaeval-re2-v2-dev.1"
+    assert protocol["source_base_commit"] == (
+        "95e835460c83b631e5860e98276b3fc55c7f77aa"
+    )
+    assert protocol["v2_dev_v1_negative_evidence"] == {
+        "config_mutation": "FORBIDDEN",
+        "provider_operations": 29,
+        "provider_smoke_gate_sha256": (
+            "bf1c5ff3bba26afd570a02b6fa182f74dc93fab99ee4e4c2c88a612dfaa90e7c"
+        ),
+        "protocol_id": "rcaeval-re2-v2-dev-v1",
+        "run_id_reuse": "FORBIDDEN",
+        "state": "V2_PROVIDER_DEV_GATE_NOT_PASSED",
+        "terminalized_smoke_runs": 10,
+    }
+    assert protocol["operation_transaction"]["stages"] == [
+        "INPUT_SANITIZATION",
+        "INPUT_CONSTRUCTION",
+        "INPUT_PERSISTENCE",
+        "PROVIDER_CALL",
+        "OUTPUT_VALIDATION",
+        "OUTPUT_PERSISTENCE",
+        "COMPLETED",
+    ]
+    assert protocol["evaluation_authorization"] == {
+        "lock_location": "EXTERNAL_CONTROL_ROOT",
+        "lock_name": "evaluation-root-lock.json",
+        "provider_construction_without_verified_lock": "FORBIDDEN",
+    }
+    assert "DEV_VALIDATION_EXECUTION" in protocol["excluded_scope"]
+    assert "RE2-TT" in protocol["excluded_scope"]
+
+
+def test_new_config_lock_set_is_complete_cross_bound_and_path_free() -> None:
+    protocol_sha = _sha(NEW_CONFIG / "protocol.json")
+    expected_hashes = {
+        "budget-lock.json": "6b05e21be4ad603b2ccafda090824475749cea6d2a565cdb730411cfcfbcfb8c",
+        "dataset-lock.json": "1fb7635160d26f77b00d2be4052325444c11b17b617fc0e3249f1f71302b04e4",
+        "evaluation-policy.json": "bba4b43061448d690cb7bdc7a364137986bf6329f8d43749d45942b750426d02",
+        "indicator-lock.json": "91c81e1225d3b7722fbc8e9ef3976215a95124e25b4dcbca75914c8f62b3ad64",
+        "model-prompt-lock.json": "04c983b246c2841b6c50284d7a9452b9c1bc545988bb9f26b5f66680f599c555",
+        "protocol.json": "b79ecbd11ee4180781daff92f50056e5fc25ad6217d431faf9e47a6cfbd4bee7",
+        "schedule-generation.json": "855a1355521a163f1544dd15e3be4025bcb79e7d858967f3b029fbc891b870c0",
+        "split-lock.json": "e0d7ed174a0bd48ae4084a607aa675d9d0a502184de1d70e2cbde0272d8f2f29",
+    }
+    assert {
+        path.name: _sha(path) for path in sorted(NEW_CONFIG.glob("*.json"))
+    } == expected_hashes
+    for path in NEW_CONFIG.glob("*.json"):
+        text = path.read_text(encoding="utf-8")
+        assert "TBD" not in text
+        assert "0" * 64 not in text
+        assert "/Users/" not in text
+        assert "/home/" not in text
+        assert "/private/" not in text
+        payload = json.loads(text)
+        if path.name != "protocol.json":
+            assert payload["protocol_id"] == "rcaeval-re2-v2-dev.1"
+            if "protocol_sha256" in payload:
+                assert payload["protocol_sha256"] == protocol_sha

@@ -5,7 +5,6 @@ from __future__ import annotations
 from enum import Enum
 import hashlib
 import json
-import re
 from typing import Annotated, Literal
 
 from pydantic import (
@@ -24,9 +23,7 @@ Sha256 = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 RunId = Annotated[str, Field(pattern=r"^[0-9a-f]{32}$")]
 CaseId = Annotated[str, Field(pattern=r"^[a-z0-9][a-z0-9-]{0,127}$")]
 ServiceName = Annotated[str, Field(pattern=r"^[a-z0-9][a-z0-9-]{0,127}$")]
-MetricServiceName = Annotated[
-    str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9-]{0,127}$")
-]
+MetricServiceName = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9-]{0,127}$")]
 SourceName = Literal["metrics", "logs", "traces"]
 DevSystem = Literal["RE2-OB", "RE2-SS"]
 ArchitectureV2 = Literal["single_v2", "fixed_v2", "dynamic_v2"]
@@ -41,10 +38,6 @@ _FORBIDDEN_TEXT = (
     "raw http response",
     "raw function-call text",
     "raw function call text",
-    "://",
-)
-_ABSOLUTE_PATH = re.compile(
-    r"(?:^|[\s='\"])/(?!/)[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*"
 )
 
 
@@ -73,7 +66,9 @@ def _assert_serialization_safe(value: object) -> None:
         normalized = value.casefold()
         if any(marker in normalized for marker in _FORBIDDEN_TEXT):
             raise ValueError("v2 contract is not serialization-safe")
-        if _ABSOLUTE_PATH.search(value):
+        from ecomsre_rcaeval_v2.privacy import scan_agent_visible_payload
+
+        if scan_agent_visible_payload(value).path_hit_count:
             raise ValueError("v2 contract is not serialization-safe")
 
 
@@ -104,6 +99,16 @@ class OperationStatus(str, Enum):
     NOT_EXECUTED = "NOT_EXECUTED"
 
 
+class OperationStage(str, Enum):
+    INPUT_SANITIZATION = "INPUT_SANITIZATION"
+    INPUT_CONSTRUCTION = "INPUT_CONSTRUCTION"
+    INPUT_PERSISTENCE = "INPUT_PERSISTENCE"
+    PROVIDER_CALL = "PROVIDER_CALL"
+    OUTPUT_VALIDATION = "OUTPUT_VALIDATION"
+    OUTPUT_PERSISTENCE = "OUTPUT_PERSISTENCE"
+    COMPLETED = "COMPLETED"
+
+
 class OperationFailureCode(str, Enum):
     PROVIDER_TRANSPORT_FAILURE = "PROVIDER_TRANSPORT_FAILURE"
     PROVIDER_TIMEOUT = "PROVIDER_TIMEOUT"
@@ -115,6 +120,8 @@ class OperationFailureCode(str, Enum):
     RUNTIME_CONTRACT_VIOLATION = "RUNTIME_CONTRACT_VIOLATION"
     OPERATION_NOT_EXECUTED = "OPERATION_NOT_EXECUTED"
     STARTED_ATTEMPT_WITHOUT_TERMINAL = "STARTED_ATTEMPT_WITHOUT_TERMINAL"
+    STARTED_OPERATION_WITHOUT_TERMINAL = "STARTED_OPERATION_WITHOUT_TERMINAL"
+    AGENT_VISIBLE_PRIVATE_PATH_REMAINED = "AGENT_VISIBLE_PRIVATE_PATH_REMAINED"
     NO_INDICATOR_CANDIDATE = "NO_INDICATOR_CANDIDATE"
 
 
@@ -139,6 +146,19 @@ class ProviderUsageDelta(V2Model):
             self.prompt_tokens_delta + self.completion_tokens_delta
         ):
             raise ValueError("provider usage total differs from token deltas")
+        return self
+
+
+class SafeValidationError(V2Model):
+    error_class: str = Field(pattern=r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
+    field_paths: tuple[str, ...] = Field(max_length=64)
+    constraint_types: tuple[str, ...] = Field(min_length=1, max_length=64)
+    error_count: StrictInt = Field(ge=1, le=64)
+
+    @model_validator(mode="after")
+    def require_safe_bounded_diagnostics(self) -> SafeValidationError:
+        if self.error_count < max(len(self.field_paths), len(self.constraint_types)):
+            raise ValueError("safe validation diagnostics count is inconsistent")
         return self
 
 
@@ -291,7 +311,10 @@ class DiagnosisV2(V2Model):
         if self.indicator_disposition == "RESOLVED":
             if self.resolved_indicator is None or self.indicator_evidence_ref is None:
                 raise ValueError("resolved diagnosis requires indicator evidence")
-        elif self.resolved_indicator is not None or self.indicator_evidence_ref is not None:
+        elif (
+            self.resolved_indicator is not None
+            or self.indicator_evidence_ref is not None
+        ):
             raise ValueError("missing indicator candidate cannot claim resolution")
         return self
 
@@ -310,8 +333,12 @@ class _OperationRecord(V2Model):
     latency_ms: StrictFloat = Field(ge=0.0)
     status: OperationStatus
     failure_code: OperationFailureCode | None
+    failure_stage: OperationStage | None
+    last_completed_stage: OperationStage | None
+    stage_trace_sha256: Sha256
+    safe_validation_error: SafeValidationError | None
     provider_call_index: StrictInt | None = Field(ge=1)
-    input_snapshot_sha256: Sha256
+    input_snapshot_sha256: Sha256 | None
     output_snapshot_sha256: Sha256 | None
     usage_delta: ProviderUsageDelta
     investigated_sources: tuple[SourceName, ...] = Field(max_length=3)
@@ -323,10 +350,40 @@ class _OperationRecord(V2Model):
         if self.ended_at_utc < self.started_at_utc:
             raise ValueError("operation ended before it started")
         if self.status is OperationStatus.COMPLETED:
-            if self.failure_code is not None or self.output_snapshot_sha256 is None:
+            if (
+                self.failure_code is not None
+                or self.failure_stage is not None
+                or self.safe_validation_error is not None
+                or self.input_snapshot_sha256 is None
+                or self.output_snapshot_sha256 is None
+                or self.last_completed_stage is not OperationStage.OUTPUT_PERSISTENCE
+            ):
                 raise ValueError("completed operation requires output and no failure")
-        elif self.failure_code is None or self.output_snapshot_sha256 is not None:
+        elif (
+            self.failure_code is None
+            or self.failure_stage is None
+            or self.output_snapshot_sha256 is not None
+            or self.last_completed_stage is OperationStage.COMPLETED
+        ):
             raise ValueError("failed operation requires failure and no output")
+        if self.failure_stage in {
+            OperationStage.INPUT_SANITIZATION,
+            OperationStage.INPUT_CONSTRUCTION,
+            OperationStage.INPUT_PERSISTENCE,
+        } and (
+            self.provider_call_index is not None
+            or self.usage_delta.model_calls_delta != 0
+            or self.usage_delta.prompt_tokens_delta != 0
+            or self.usage_delta.completion_tokens_delta != 0
+            or self.usage_delta.total_tokens_delta != 0
+        ):
+            raise ValueError("pre-provider failure cannot claim Provider usage")
+        if self.safe_validation_error is not None and self.failure_stage not in {
+            OperationStage.INPUT_SANITIZATION,
+            OperationStage.INPUT_CONSTRUCTION,
+            OperationStage.OUTPUT_VALIDATION,
+        }:
+            raise ValueError("safe validation diagnostics have an invalid stage")
         if self.operation_type is OperationType.INDICATOR_RESOLVER:
             if self.provider_call_index is not None or any(
                 (
@@ -360,7 +417,9 @@ class SpecialistOperationRecord(_OperationRecord):
         }
         if self.source is None or expected[self.source] is not self.operation_type:
             raise ValueError("specialist source differs from operation type")
-        if (self.status is OperationStatus.COMPLETED) != (self.typed_output is not None):
+        if (self.status is OperationStatus.COMPLETED) != (
+            self.typed_output is not None
+        ):
             raise ValueError("specialist output differs from operation status")
         if self.typed_output is not None and self.typed_output.source != self.source:
             raise ValueError("specialist output source differs from operation")
@@ -372,9 +431,14 @@ class CommanderOperationRecord(_OperationRecord):
 
     @model_validator(mode="after")
     def require_commander_type(self) -> CommanderOperationRecord:
-        if self.operation_type is not OperationType.COMMANDER or self.source is not None:
+        if (
+            self.operation_type is not OperationType.COMMANDER
+            or self.source is not None
+        ):
             raise ValueError("commander operation identity is invalid")
-        if (self.status is OperationStatus.COMPLETED) != (self.typed_output is not None):
+        if (self.status is OperationStatus.COMPLETED) != (
+            self.typed_output is not None
+        ):
             raise ValueError("commander output differs from operation status")
         if self.typed_output is not None:
             if self.selected_sources != self.typed_output.selected_sources:
@@ -387,9 +451,14 @@ class JudgeOperationRecord(_OperationRecord):
 
     @model_validator(mode="after")
     def require_judge_type(self) -> JudgeOperationRecord:
-        if self.operation_type is not OperationType.FINAL_JUDGE or self.source is not None:
+        if (
+            self.operation_type is not OperationType.FINAL_JUDGE
+            or self.source is not None
+        ):
             raise ValueError("judge operation identity is invalid")
-        if (self.status is OperationStatus.COMPLETED) != (self.typed_output is not None):
+        if (self.status is OperationStatus.COMPLETED) != (
+            self.typed_output is not None
+        ):
             raise ValueError("judge output differs from operation status")
         return self
 
@@ -404,7 +473,9 @@ class IndicatorResolutionRecord(_OperationRecord):
             or self.source is not None
         ):
             raise ValueError("indicator resolver operation identity is invalid")
-        if (self.status is OperationStatus.COMPLETED) != (self.typed_output is not None):
+        if (self.status is OperationStatus.COMPLETED) != (
+            self.typed_output is not None
+        ):
             raise ValueError("indicator output differs from operation status")
         return self
 
@@ -421,12 +492,18 @@ class OperationDigestV2(V2Model):
     operation_index: StrictInt = Field(ge=1)
     operation_type: OperationType
     operation_sha256: Sha256
+    stage_trace_sha256: Sha256
+    completion_marker_sha256: Sha256
 
 
 def operation_tree_sha256(entries: tuple[OperationDigestV2, ...]) -> str:
     payload = [entry.model_dump(mode="json") for entry in entries]
     encoded = json.dumps(
-        payload, allow_nan=False, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        payload,
+        allow_nan=False,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
     ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
 
@@ -460,6 +537,7 @@ class TerminalDispositionV2(V2Model):
     failure_operation_type: OperationType | None
     failure_operation_index: StrictInt | None = Field(ge=1)
     failure_code: OperationFailureCode | None
+    failure_stage: OperationStage | None
     diagnosis: DiagnosisV2 | None
     tool_calls: StrictInt = Field(ge=0, le=8)
 
@@ -471,12 +549,19 @@ class TerminalDispositionV2(V2Model):
         if self.terminal_status is OperationStatus.COMPLETED:
             if (
                 self.failure_code is not None
+                or self.failure_stage is not None
                 or stage != (None, None)
                 or self.diagnosis is None
             ):
                 raise ValueError("completed terminal disposition cannot claim failure")
-        elif self.failure_code is None or self.diagnosis is not None:
-            raise ValueError("failed terminal disposition requires failure without diagnosis")
+        elif (
+            self.failure_code is None
+            or self.failure_stage is None
+            or self.diagnosis is not None
+        ):
+            raise ValueError(
+                "failed terminal disposition requires failure without diagnosis"
+            )
         return self
 
 
@@ -490,6 +575,7 @@ class TerminalRecordV2(V2Model):
     failure_operation_type: OperationType | None
     failure_operation_index: StrictInt | None = Field(ge=1)
     failure_code: OperationFailureCode | None
+    failure_stage: OperationStage | None
     diagnosis: DiagnosisV2 | None
     tool_calls: StrictInt = Field(ge=0, le=8)
     run_trace_sha256: Sha256
@@ -506,6 +592,7 @@ class TerminalRecordV2(V2Model):
             failure_operation_type=self.failure_operation_type,
             failure_operation_index=self.failure_operation_index,
             failure_code=self.failure_code,
+            failure_stage=self.failure_stage,
             diagnosis=self.diagnosis,
             tool_calls=self.tool_calls,
         )

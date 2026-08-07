@@ -8,6 +8,8 @@ import os
 from pathlib import Path
 import re
 
+from ecomsre_rcaeval_v2.privacy import scan_agent_visible_payload
+
 
 _FORBIDDEN_KEYS = {
     "authorization",
@@ -70,6 +72,8 @@ def assert_public_payload(payload: object) -> None:
                 raise ValueError("public payload contains a forbidden private path")
 
     visit(payload)
+    if scan_agent_visible_payload(payload).path_hit_count:
+        raise ValueError("public payload contains a forbidden local path")
 
 
 def _fsync_directory(path: Path) -> None:
@@ -113,3 +117,21 @@ def write_private_json_create_once(path: Path, payload: object) -> str:
 def write_public_text_create_once(path: Path, payload: str) -> str:
     assert_public_payload(payload)
     return _create_once(path, payload.encode("utf-8"), private=False)
+
+
+def scan_public_paths(
+    paths: tuple[Path, ...], *, allow_missing: bool = False
+) -> int:
+    """Validate existing JSON or text public artifacts without modifying them."""
+
+    scanned = 0
+    for path in paths:
+        if not path.exists() and allow_missing:
+            continue
+        if path.is_symlink() or not path.is_file():
+            raise ValueError("public evidence path is missing or invalid")
+        text = path.read_text(encoding="utf-8")
+        value: object = json.loads(text) if path.suffix == ".json" else text
+        assert_public_payload(value)
+        scanned += 1
+    return scanned

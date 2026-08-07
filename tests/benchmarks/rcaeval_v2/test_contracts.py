@@ -17,6 +17,7 @@ from ecomsre_rcaeval_v2.contracts import (
     JudgeOperationRecord,
     JudgeServiceDecisionV2,
     OperationFailureCode,
+    OperationStage,
     OperationStatus,
     OperationType,
     ProviderUsageDelta,
@@ -48,6 +49,10 @@ def _common(operation_type: OperationType, *, source: str | None) -> dict[str, o
         "latency_ms": 0.0,
         "status": OperationStatus.COMPLETED,
         "failure_code": None,
+        "failure_stage": None,
+        "last_completed_stage": OperationStage.OUTPUT_PERSISTENCE,
+        "stage_trace_sha256": "c" * 64,
+        "safe_validation_error": None,
         "provider_call_index": (
             None if operation_type is OperationType.INDICATOR_RESOLVER else 1
         ),
@@ -135,6 +140,10 @@ def test_operation_records_require_every_observability_field_and_strict_types() 
         "latency_ms",
         "status",
         "failure_code",
+        "failure_stage",
+        "last_completed_stage",
+        "stage_trace_sha256",
+        "safe_validation_error",
         "provider_call_index",
         "input_snapshot_sha256",
         "output_snapshot_sha256",
@@ -173,7 +182,6 @@ def test_operation_records_require_every_observability_field_and_strict_types() 
         "Authorization: Bearer secret",
         "api_key=secret",
         "OPENAI_API_KEY=secret",
-        "https://provider.example/v1",
         "/Users/example/private-run",
         "/home/example/private-run",
         "/private/tmp/private-run",
@@ -227,6 +235,8 @@ def test_status_failure_code_and_usage_totals_are_consistent() -> None:
     fields.update(
         status=OperationStatus.PROVIDER_FAILURE,
         failure_code=OperationFailureCode.PROVIDER_TRANSPORT_FAILURE,
+        failure_stage=OperationStage.PROVIDER_CALL,
+        last_completed_stage=OperationStage.INPUT_PERSISTENCE,
         output_snapshot_sha256=None,
     )
     record = SpecialistOperationRecord(**fields, typed_output=None)
@@ -248,6 +258,7 @@ def test_terminal_record_has_direct_exact_failure_stage_and_trace_binding() -> N
         failure_operation_type=OperationType.FINAL_JUDGE,
         failure_operation_index=2,
         failure_code=OperationFailureCode.PROVIDER_TRANSPORT_FAILURE,
+        failure_stage=OperationStage.PROVIDER_CALL,
         diagnosis=None,
         tool_calls=3,
         run_trace_sha256=SHA_A,
@@ -287,6 +298,7 @@ def test_completed_terminal_requires_resolved_diagnosis() -> None:
         failure_operation_type=None,
         failure_operation_index=None,
         failure_code=None,
+        failure_stage=None,
         diagnosis=diagnosis,
         tool_calls=3,
         run_trace_sha256=SHA_A,

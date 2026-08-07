@@ -386,74 +386,75 @@ def build_runtime_metric_candidates(
     )
 
 
-def _evaluate_case(
-    case: DevCase, config: LoadedIndicatorConfig
-) -> tuple[FormulaCaseOutcome, ...]:
+def _evaluate_case_formula(
+    case: DevCase,
+    formula: FormulaId,
+    config: LoadedIndicatorConfig,
+) -> FormulaCaseOutcome:
     identity = _case_identity(case)
     identity_sha256 = hashlib.sha256(case_identity_bytes(identity)).hexdigest()
     samples_by_name = read_metric_samples(case.metrics_path, config)
     truth_indicator = normalize_indicator(case.fault)
-    outcomes: list[FormulaCaseOutcome] = []
-    for formula in FormulaId:
-        raw_candidates = tuple(
-            score_metric_candidate(
-                case.system,
-                metric_name,
-                samples,
-                float(case.inject_time),
-                formula,
-                f"metric:{index:04d}",
-                identity_sha256,
-                config,
-            )
-            for index, (metric_name, samples) in enumerate(
-                samples_by_name.items(), start=1
-            )
+    raw_candidates = tuple(
+        score_metric_candidate(
+            case.system,
+            metric_name,
+            samples,
+            float(case.inject_time),
+            formula,
+            f"metric:{index:04d}",
+            identity_sha256,
+            config,
         )
-        ranked = collapse_and_rank_candidates(raw_candidates, config)
-        matching = tuple(
-            item
-            for item in ranked
-            if item.service == case.root_cause_service
-            and item.canonical_indicator == truth_indicator
+        for index, (metric_name, samples) in enumerate(
+            samples_by_name.items(), start=1
         )
-        if len(matching) > 1:
-            raise ValueError("canonical truth indicator was not collapsed")
-        rank = matching[0].rank_global if matching else None
-        raw_truth_present = any(
-            item.normalization.disposition is MetricNameDisposition.CANONICAL
-            and item.normalization.service == case.root_cause_service
-            and item.normalization.canonical_indicator == truth_indicator
+    )
+    ranked = collapse_and_rank_candidates(raw_candidates, config)
+    matching = tuple(
+        item
+        for item in ranked
+        if item.service == case.root_cause_service
+        and item.canonical_indicator == truth_indicator
+    )
+    if len(matching) > 1:
+        raise ValueError("canonical truth indicator was not collapsed")
+    rank = matching[0].rank_global if matching else None
+    raw_truth_present = any(
+        item.normalization.disposition is MetricNameDisposition.CANONICAL
+        and item.normalization.service == case.root_cause_service
+        and item.normalization.canonical_indicator == truth_indicator
+        for item in raw_candidates
+    )
+    return FormulaCaseOutcome(
+        schema_version="rcaeval-re2-v2-dev.formula-case-outcome.v1",
+        case_identity_sha256=identity_sha256,
+        system=case.system,  # type: ignore[arg-type]
+        root_cause_service=case.root_cause_service,
+        fault=case.fault,
+        formula=formula,
+        raw_truth_indicator_present=raw_truth_present,
+        truth_indicator_global_rank=rank,
+        truth_indicator_top6_present=rank is not None and rank <= 6,
+        ranked_candidate_count=len(ranked),
+        eligible_unknown_count=sum(item.eligible_unknown for item in raw_candidates),
+        ambiguous_count=sum(
+            item.normalization.disposition is MetricNameDisposition.AMBIGUOUS
+            for item in raw_candidates
+        ),
+        auxiliary_metric_count=sum(
+            item.normalization.disposition is MetricNameDisposition.AUXILIARY
             for item in raw_candidates
         )
-        outcomes.append(
-            FormulaCaseOutcome(
-                schema_version="rcaeval-re2-v2-dev.formula-case-outcome.v1",
-                case_identity_sha256=identity_sha256,
-                system=case.system,  # type: ignore[arg-type]
-                root_cause_service=case.root_cause_service,
-                fault=case.fault,
-                formula=formula,
-                raw_truth_indicator_present=raw_truth_present,
-                truth_indicator_global_rank=rank,
-                truth_indicator_top6_present=rank is not None and rank <= 6,
-                ranked_candidate_count=len(ranked),
-                eligible_unknown_count=sum(
-                    item.eligible_unknown for item in raw_candidates
-                ),
-                ambiguous_count=sum(
-                    item.normalization.disposition
-                    is MetricNameDisposition.AMBIGUOUS
-                    for item in raw_candidates
-                ),
-                auxiliary_metric_count=sum(
-                    item.normalization.disposition
-                    is MetricNameDisposition.AUXILIARY
-                    for item in raw_candidates
-                ),
-            )
-        )
-    return tuple(outcomes)
+    )
+
+
+def _evaluate_case(
+    case: DevCase, config: LoadedIndicatorConfig
+) -> tuple[FormulaCaseOutcome, ...]:
+    return tuple(
+        _evaluate_case_formula(case, formula, config) for formula in FormulaId
+    )
 
 
 def _aggregate_formula(
@@ -496,6 +497,24 @@ def _aggregate_formula(
         ambiguous_count=sum(item.ambiguous_count for item in selected),
         auxiliary_metric_count=sum(item.auxiliary_metric_count for item in selected),
     )
+
+
+def evaluate_frozen_formula(
+    cases: tuple[DevCase, ...],
+    formula: FormulaId,
+    config: LoadedIndicatorConfig,
+) -> tuple[tuple[FormulaCaseOutcome, ...], FormulaEvaluation]:
+    """Reverify one inherited formula without evaluating or selecting alternatives."""
+
+    if not cases:
+        raise ValueError("frozen formula reverification requires DESIGN cases")
+    identities = tuple(_case_identity(case) for case in cases)
+    if len(set(identities)) != len(identities):
+        raise ValueError("frozen formula reverification has duplicate identities")
+    outcomes = tuple(
+        _evaluate_case_formula(case, formula, config) for case in cases
+    )
+    return outcomes, _aggregate_formula(formula, outcomes)
 
 
 def evaluate_design_formulas(

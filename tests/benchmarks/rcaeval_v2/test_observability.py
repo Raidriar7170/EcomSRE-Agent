@@ -8,6 +8,7 @@ import pytest
 
 from ecomsre_rcaeval_v2.contracts import (
     DiagnosisV2,
+    OperationStage,
     OperationStatus,
     OperationType,
     ProviderUsageDelta,
@@ -16,10 +17,12 @@ from ecomsre_rcaeval_v2.contracts import (
     TerminalDispositionV2,
 )
 from ecomsre_rcaeval_v2.observability import (
+    OperationTransaction,
     RunJournalV2,
     compute_operation_tree_sha256,
     execute_run_once,
     write_private_snapshot_create_once,
+    verify_terminal_run_journal,
 )
 
 
@@ -51,7 +54,11 @@ def _assessment() -> SpecialistAssessmentV2:
     )
 
 
-def _operation(input_sha: str, output_sha: str) -> SpecialistOperationRecord:
+def _operation(
+    input_sha: str,
+    output_sha: str,
+    transaction: OperationTransaction,
+) -> SpecialistOperationRecord:
     return SpecialistOperationRecord(
         schema_version="rcaeval-re2-v2.operation-record.v1",
         run_id="1" * 32,
@@ -66,6 +73,10 @@ def _operation(input_sha: str, output_sha: str) -> SpecialistOperationRecord:
         latency_ms=0.0,
         status=OperationStatus.COMPLETED,
         failure_code=None,
+        failure_stage=None,
+        last_completed_stage=OperationStage.OUTPUT_PERSISTENCE,
+        stage_trace_sha256=transaction.stage_trace_sha256(),
+        safe_validation_error=None,
         provider_call_index=1,
         input_snapshot_sha256=input_sha,
         output_snapshot_sha256=output_sha,
@@ -86,7 +97,9 @@ def test_private_typed_snapshot_is_create_once_durable_and_contains_no_path(
     tmp_path: Path,
 ) -> None:
     run_root = tmp_path / "private-run"
-    digest = write_private_snapshot_create_once(run_root, "specialist-output", _assessment())
+    digest = write_private_snapshot_create_once(
+        run_root, "specialist-output", _assessment()
+    )
     path = run_root / "snapshots" / "specialist-output.json"
 
     assert path.is_file()
@@ -105,17 +118,25 @@ def test_run_journal_writes_attempts_before_callbacks_and_binds_recomputable_has
 
     def run_callback(journal: RunJournalV2) -> TerminalDispositionV2:
         assert (run_root / "run-attempt.json").is_file()
-        input_sha = write_private_snapshot_create_once(
-            run_root, "specialist-input", _assessment()
-        )
-        output_sha = write_private_snapshot_create_once(
-            run_root, "specialist-output", _assessment()
-        )
 
-        def operation_callback() -> SpecialistOperationRecord:
+        def operation_callback(
+            transaction: OperationTransaction,
+        ) -> SpecialistOperationRecord:
             marker = run_root / "operation-attempts" / "0001-METRICS_SPECIALIST.json"
             assert marker.is_file()
-            return _operation(input_sha, output_sha)
+            transaction.start_stage(OperationStage.INPUT_SANITIZATION)
+            transaction.start_stage(OperationStage.INPUT_CONSTRUCTION)
+            transaction.start_stage(OperationStage.INPUT_PERSISTENCE)
+            input_sha = write_private_snapshot_create_once(
+                run_root, "specialist-input", _assessment()
+            )
+            transaction.start_stage(OperationStage.PROVIDER_CALL)
+            transaction.start_stage(OperationStage.OUTPUT_VALIDATION)
+            transaction.start_stage(OperationStage.OUTPUT_PERSISTENCE)
+            output_sha = write_private_snapshot_create_once(
+                run_root, "specialist-output", _assessment()
+            )
+            return _operation(input_sha, output_sha, transaction)
 
         journal.record_operation(
             1, OperationType.METRICS_SPECIALIST, operation_callback
@@ -125,6 +146,7 @@ def test_run_journal_writes_attempts_before_callbacks_and_binds_recomputable_has
             failure_operation_type=None,
             failure_operation_index=None,
             failure_code=None,
+            failure_stage=None,
             diagnosis=_diagnosis(),
             tool_calls=1,
         )
@@ -148,6 +170,28 @@ def test_run_journal_writes_attempts_before_callbacks_and_binds_recomputable_has
     assert (run_root / "terminal-record.json").is_file()
     assert terminal.diagnosis == _diagnosis()
     assert terminal.tool_calls == 1
+    verified_terminal, verified_operations = verify_terminal_run_journal(run_root)
+    assert verified_terminal == terminal
+    assert len(verified_operations) == 1
+
+    reread = execute_run_once(
+        run_root,
+        run_id="1" * 32,
+        case_id="re2-ob-case-0001",
+        system="RE2-OB",
+        architecture="single_v2",
+        started_at_utc=NOW,
+        callback=lambda _journal: (_ for _ in ()).throw(
+            AssertionError("terminal reread invoked the run callback")
+        ),
+    )
+    assert reread == terminal
+
+    for directory in ("operations", "operation-attempts", "operation-stages"):
+        for path in (run_root / directory).glob("*.json"):
+            path.unlink()
+    with pytest.raises(ValueError, match="terminal journal differs"):
+        verify_terminal_run_journal(run_root)
 
 
 def test_operation_indices_must_be_contiguous(tmp_path: Path) -> None:
@@ -164,5 +208,5 @@ def test_operation_indices_must_be_contiguous(tmp_path: Path) -> None:
         journal.record_operation(
             2,
             OperationType.METRICS_SPECIALIST,
-            lambda: _operation("a" * 64, "b" * 64),
+            lambda _transaction: _operation("a" * 64, "b" * 64, _transaction),
         )

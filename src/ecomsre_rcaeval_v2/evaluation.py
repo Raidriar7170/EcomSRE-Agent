@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter, defaultdict
+from statistics import median
 from typing import Literal
 
 from pydantic import Field, StrictFloat, StrictInt
@@ -10,6 +11,7 @@ from pydantic import Field, StrictFloat, StrictInt
 from ecomsre_rcaeval_v2.contracts import (
     CanonicalIndicator,
     OperationStatus,
+    OperationStage,
     OperationType,
     SourceName,
     V2Model,
@@ -36,7 +38,7 @@ class PrivateSpecialistOutcome(V2Model):
 
 
 class PrivateRunOutcome(V2Model):
-    schema_version: Literal["rcaeval-re2-v2-dev.private-run-outcome.v1"]
+    schema_version: Literal["rcaeval-re2-v2-dev1.private-run-outcome.v1"]
     system: Literal["RE2-OB", "RE2-SS"]
     root_cause_service: str
     fault: Literal["cpu", "mem", "disk", "delay", "loss", "socket"]
@@ -52,6 +54,7 @@ class PrivateRunOutcome(V2Model):
     token_usage_known: bool
     latency_ms: StrictFloat = Field(ge=0.0)
     failure_operation_type: OperationType | None
+    failure_stage: OperationStage | None
     specialists: tuple[PrivateSpecialistOutcome, ...] = Field(max_length=3)
     commander_selected_sources: tuple[Literal["logs", "traces"], ...] = Field(
         max_length=2
@@ -117,12 +120,35 @@ def _architecture_summary(outcomes: tuple[PrivateRunOutcome, ...]) -> dict[str, 
         ).model_dump(mode="json"),
         "cost": {
             "tool_calls_total": sum(item.tool_calls for item in outcomes),
+            "tool_calls_mean": float(
+                sum(item.tool_calls for item in outcomes) / len(outcomes)
+            ) if outcomes else 0.0,
+            "tool_calls_median": float(
+                median(item.tool_calls for item in outcomes)
+            ) if outcomes else 0.0,
             "model_calls_total": sum(item.model_calls for item in outcomes),
-            "known_token_runs": len(known_tokens),
+            "model_calls_mean": float(
+                sum(item.model_calls for item in outcomes) / len(outcomes)
+            ) if outcomes else 0.0,
+            "model_calls_median": float(
+                median(item.model_calls for item in outcomes)
+            ) if outcomes else 0.0,
+            "known_token_coverage": rate(
+                len(known_tokens), len(outcomes)
+            ).model_dump(mode="json"),
             "total_tokens_known": sum(item.total_tokens for item in known_tokens),
+            "tokens_mean_known": float(
+                sum(item.total_tokens for item in known_tokens) / len(known_tokens)
+            ) if known_tokens else 0.0,
+            "tokens_median_known": float(
+                median(item.total_tokens for item in known_tokens)
+            ) if known_tokens else 0.0,
             "latency_ms_total": float(sum(item.latency_ms for item in outcomes)),
             "latency_ms_mean": float(
                 sum(item.latency_ms for item in outcomes) / len(outcomes)
+            ) if outcomes else 0.0,
+            "latency_ms_median": float(
+                median(item.latency_ms for item in outcomes)
             ) if outcomes else 0.0,
         },
     }
@@ -196,6 +222,7 @@ def _disagreement_and_judge(
     follows = Counter({source: 0 for source in ("metrics", "logs", "traces")})
     judge = Counter(
         {
+            "follows_correct_specialist_candidate": 0,
             "selects_no_specialist_candidate": 0,
             "overrides_correct_specialist_with_wrong_final": 0,
             "repairs_wrong_specialists": 0,
@@ -215,6 +242,8 @@ def _disagreement_and_judge(
         for item in run.specialists:
             if (item.candidate_service, item.candidate_indicator) == predicted_pair:
                 follows[item.source] += 1
+                if run.pair_correct:
+                    judge["follows_correct_specialist_candidate"] += 1
         if predicted_pair not in specialist_pairs:
             judge["selects_no_specialist_candidate"] += 1
         specialist_correct = [
@@ -256,32 +285,74 @@ def _routes(outcomes: tuple[PrivateRunOutcome, ...]) -> dict[str, object]:
             "route_failure": 0,
         }
     )
-    route_correct = 0
+    route_rows: dict[str, list[PrivateRunOutcome]] = defaultdict(list)
     for item in dynamic:
         route = item.commander_selected_sources
         if route == ("logs",):
             counts["logs_only"] += 1
+            route_name = "logs_only"
         elif route == ("traces",):
             counts["traces_only"] += 1
+            route_name = "traces_only"
         elif set(route) == {"logs", "traces"}:
             counts["both"] += 1
+            route_name = "both"
         else:
             counts["route_failure"] += 1
-        selected = tuple(
-            specialist
-            for specialist in item.specialists
-            if specialist.source in route
-        )
-        if any(
-            specialist.candidate_service == item.root_cause_service
-            and specialist.candidate_indicator == item.truth_indicator
-            for specialist in selected
-        ):
-            route_correct += 1
+            route_name = "route_failure"
+        route_rows[route_name].append(item)
     return {
         "distribution": dict(counts),
-        "route_accuracy": rate(route_correct, len(dynamic)).model_dump(mode="json"),
+        "by_route": {
+            name: {
+                "scheduled_runs": len(rows),
+                "completed_runs": rate(
+                    sum(
+                        item.terminal_status is OperationStatus.COMPLETED
+                        for item in rows
+                    ),
+                    len(rows),
+                ).model_dump(mode="json"),
+                "root_service_ac_at_1": rate(
+                    sum(item.service_correct for item in rows), len(rows)
+                ).model_dump(mode="json"),
+                "terminal_failures": sum(
+                    item.terminal_status is not OperationStatus.COMPLETED
+                    for item in rows
+                ),
+            }
+            for name, rows in sorted(route_rows.items())
+        },
     }
+
+
+def _multi_agent_damage_rescue(
+    outcomes: tuple[PrivateRunOutcome, ...],
+) -> dict[str, object]:
+    indexed = {(item.identity, item.variant): item for item in outcomes}
+    result: dict[str, object] = {"endpoint": "root_cause_pair_ac_at_1"}
+    for label, candidate in (
+        ("fixed", Variant.FIXED_V2),
+        ("dynamic", Variant.DYNAMIC_V2),
+    ):
+        rows = tuple(
+            (item, indexed.get((item.identity, candidate)))
+            for item in outcomes
+            if item.variant is Variant.SINGLE_V2
+        )
+        paired = tuple((single, other) for single, other in rows if other is not None)
+        result[label] = {
+            "paired_cases": len(paired),
+            "single_correct_candidate_wrong": sum(
+                single.pair_correct and not other.pair_correct
+                for single, other in paired
+            ),
+            "single_wrong_candidate_correct": sum(
+                not single.pair_correct and other.pair_correct
+                for single, other in paired
+            ),
+        }
+    return result
 
 
 def _paired(
@@ -360,15 +431,24 @@ def aggregate_development_outcomes(
         )
         for variant in variants
     }
-    failure_stage = dict(
-        sorted(
-            Counter(
-                item.failure_operation_type.value
-                for item in selected
-                if item.failure_operation_type is not None
-            ).items()
+    failure_stage: dict[str, dict[str, int]] = {}
+    for operation_type in OperationType:
+        rows = tuple(
+            item
+            for item in selected
+            if item.failure_operation_type is operation_type
+            and item.failure_stage is not None
         )
-    )
+        if rows:
+            failure_stage[operation_type.value] = dict(
+                sorted(
+                    Counter(
+                        item.failure_stage.value
+                        for item in rows
+                        if item.failure_stage is not None
+                    ).items()
+                )
+            )
     per_fault = {
         fault: {
             variant.value: {
@@ -450,9 +530,10 @@ def aggregate_development_outcomes(
         )
     }
     return {
-        "schema_version": "rcaeval-re2-v2-dev.aggregate-split.v1",
+        "schema_version": "rcaeval-re2-v2-dev1.aggregate-split.v1",
         "classification": [
             "DEVELOPMENT_VISIBLE",
+            "DESIGN_SET",
             "NOT_EXTERNAL_HOLDOUT",
             "NOT_PRIMARY_INFERENCE",
         ],
@@ -465,10 +546,16 @@ def aggregate_development_outcomes(
         "architecture_summaries": architecture_summaries,
         "terminal_taxonomy": terminal_taxonomy,
         "failure_stage_taxonomy": failure_stage,
+        "unattributed_terminal_failures": sum(
+            item.terminal_status is not OperationStatus.COMPLETED
+            and item.failure_stage is None
+            for item in selected
+        ),
         "specialist_candidate_accuracy": _specialist_attribution(selected),
         "specialist_disagreement": specialist,
         "judge_follow_override": judge,
         "dynamic_route_distribution": _routes(selected),
+        "multi_agent_damage_rescue": _multi_agent_damage_rescue(selected),
         "indicator_funnel": indicator_funnel,
         "per_fault_aggregates": per_fault,
         "paired_development_comparisons": paired,

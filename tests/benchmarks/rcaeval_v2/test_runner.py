@@ -50,6 +50,7 @@ class _StaticObservableProvider:
     def __init__(self, *, fail_operation: OperationType | None = None) -> None:
         self.usage = UsageCapturingTransport(_UsageTransport())
         self.fail_operation = fail_operation
+        self.seen_contexts = []
 
     @property
     def calls(self) -> int:
@@ -58,9 +59,7 @@ class _StaticObservableProvider:
     def usage_snapshot(self) -> ProviderCounterSnapshot:
         return self.usage.snapshot()
 
-    def usage_delta_since(
-        self, before: ProviderCounterSnapshot
-    ) -> ProviderCallDelta:
+    def usage_delta_since(self, before: ProviderCounterSnapshot) -> ProviderCallDelta:
         return self.usage.delta_since(before)
 
     def _charge(self, operation_type: OperationType) -> None:
@@ -73,21 +72,22 @@ class _StaticObservableProvider:
         if self.fail_operation is operation_type:
             raise ConnectionError("synthetic provider failure")
 
-    def specialize(self, incident, context, source):
+    def specialize(self, incident, context, source, *, before_output_validation=None):
         del incident
+        self.seen_contexts.append(context)
         operation_type = {
             "metrics": OperationType.METRICS_SPECIALIST,
             "logs": OperationType.LOGS_SPECIALIST,
             "traces": OperationType.TRACES_SPECIALIST,
         }[source]
         self._charge(operation_type)
+        if before_output_validation is not None:
+            before_output_validation()
         evidence = next(
             item
             for item in context.evidence
             if item.evidence_id.startswith(
-                {"metrics": "metric:", "logs": "log:", "traces": "trace:"}[
-                    source
-                ]
+                {"metrics": "metric:", "logs": "log:", "traces": "trace:"}[source]
             )
         )
         return SpecialistAssessment(
@@ -100,17 +100,28 @@ class _StaticObservableProvider:
             summary="Synthetic source-isolated assessment.",
         )
 
-    def plan_followup(self, incident, context, metrics_assessment):
+    def plan_followup(
+        self,
+        incident,
+        context,
+        metrics_assessment,
+        *,
+        before_output_validation=None,
+    ):
         del incident, context, metrics_assessment
         self._charge(OperationType.COMMANDER)
+        if before_output_validation is not None:
+            before_output_validation()
         return CommanderDecision(
             selected_sources=("logs",),
             rationale="Inspect Logs after the Metrics assessment.",
         )
 
-    def judge(self, judge_input, architecture):
+    def judge(self, judge_input, architecture, *, before_output_validation=None):
         del architecture
         self._charge(OperationType.FINAL_JUDGE)
+        if before_output_validation is not None:
+            before_output_validation()
         return JudgeServiceDecisionV2(
             root_cause_service="checkoutservice",
             model_proposed_indicator="mem",
@@ -135,8 +146,7 @@ def _case(tmp_path: Path):
         encoding="utf-8",
     )
     (root / "logs.csv").write_text(
-        "time,service,message,level\n"
-        "1000,checkoutservice,overload,ERROR\n",
+        "time,service,message,level\n1000,checkoutservice,overload,ERROR\n",
         encoding="utf-8",
     )
     (root / "traces.csv").write_text(
@@ -145,15 +155,13 @@ def _case(tmp_path: Path):
         "1000,checkoutservice,cartservice,5,1\n",
         encoding="utf-8",
     )
-    case = discover_dev_cases(
-        tmp_path / "dataset" / "RE2-OB", DevSystem.RE2_OB
-    )[0]
+    case = discover_dev_cases(tmp_path / "dataset" / "RE2-OB", DevSystem.RE2_OB)[0]
     return case, dev_case_to_telemetry_case(case)
 
 
 def _scheduled(case, variant: Variant) -> ScheduleRecord:
     return ScheduleRecord(
-        schema_version="rcaeval-re2-v2-dev.scheduled-run.v1",
+        schema_version="rcaeval-re2-v2-dev1.scheduled-run.v1",
         run_id=hashlib.sha256(variant.value.encode("utf-8")).hexdigest()[:32],
         split=SplitName.DESIGN,
         identity=CaseIdentity(
@@ -262,3 +270,48 @@ def test_provider_failure_has_exact_stage_and_second_call_is_read_only(
     assert first.diagnosis is None
     assert calls == 1
     assert second_provider.calls == 0
+
+
+def test_local_path_is_sanitized_before_snapshot_and_provider_serialization(
+    tmp_path: Path,
+) -> None:
+    dev_case, visible = _case(tmp_path)
+    dev_case.logs_path.write_text(
+        "time,service,message,level\n"
+        "1000,checkoutservice,failed at /Users/private-user/secret/run.json,ERROR\n",
+        encoding="utf-8",
+    )
+    provider = _StaticObservableProvider()
+    run_root = tmp_path / "runs" / "sanitized"
+
+    terminal = execute_v2_scheduled_once(
+        _scheduled(dev_case, Variant.FIXED_V2),
+        visible,
+        case_identity_sha256="c" * 64,
+        provider=provider,
+        indicator_formula=FormulaId.F0,
+        indicator_config=_config(),
+        run_root=run_root,
+    )
+
+    assert terminal.terminal_status is OperationStatus.COMPLETED
+    persisted = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in sorted((run_root / "snapshots").iterdir())
+    )
+    serialized_contexts = "\n".join(
+        context.model_dump_json() for context in provider.seen_contexts
+    )
+    assert "/Users/" not in persisted
+    assert "/Users/" not in serialized_contexts
+    assert "private-user" not in persisted
+    assert "private-user" not in serialized_contexts
+    assert "<LOCAL_PATH:" in persisted
+    logs_attempt = run_root / "operation-attempts" / "0002-LOGS_SPECIALIST.json"
+    logs_sanitize = (
+        run_root
+        / "operation-stages"
+        / "0002-LOGS_SPECIALIST-01-INPUT_SANITIZATION.json"
+    )
+    assert logs_attempt.is_file()
+    assert logs_sanitize.is_file()

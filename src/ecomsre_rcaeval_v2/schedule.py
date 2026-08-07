@@ -16,11 +16,12 @@ from ecomsre_rcaeval_v2.contracts import DevSystem, ServiceName, Sha256, V2Model
 
 
 SPLIT_SEED = 20260807
-SPLIT_DOMAIN: Literal["rcaeval-re2-v2-dev-split-v1"] = (
-    "rcaeval-re2-v2-dev-split-v1"
-)
-CASE_ORDER_DOMAIN = "rcaeval-re2-v2-dev-schedule-case-v1"
-PROTOCOL_ID: Literal["rcaeval-re2-v2-dev-v1"] = "rcaeval-re2-v2-dev-v1"
+SCHEDULE_SEED = 20260808
+SPLIT_DOMAIN: Literal["rcaeval-re2-v2-dev-split-v1"] = "rcaeval-re2-v2-dev-split-v1"
+CASE_ORDER_DOMAIN = "rcaeval-re2-v2-dev1-schedule-case-v1"
+LEGACY_CASE_ORDER_DOMAIN = "rcaeval-re2-v2-dev-schedule-case-v1"
+LEGACY_SCHEDULE_SEED = 20260807
+PROTOCOL_ID: Literal["rcaeval-re2-v2-dev.1"] = "rcaeval-re2-v2-dev.1"
 _ROOT_SERVICES = {
     "RE2-OB": (
         "checkoutservice",
@@ -53,9 +54,9 @@ class Variant(str, Enum):
     SINGLE_V1_REFERENCE = "single_v1_reference"
     FIXED_V1_REFERENCE = "fixed_v1_reference"
     DYNAMIC_V1_REFERENCE = "dynamic_v1_reference"
-    SINGLE_V2 = "single_v2"
-    FIXED_V2 = "fixed_v2"
-    DYNAMIC_V2 = "dynamic_v2"
+    SINGLE_V2 = "single_v2_dev1"
+    FIXED_V2 = "fixed_v2_dev1"
+    DYNAMIC_V2 = "dynamic_v2_dev1"
 
 
 DESIGN_VARIANTS = (
@@ -96,8 +97,8 @@ class SplitAssignmentManifest(V2Model):
 
 
 class PublicSplitLock(V2Model):
-    schema_version: Literal["rcaeval-re2-v2-dev.split-lock.v1"]
-    protocol_id: Literal["rcaeval-re2-v2-dev-v1"]
+    schema_version: Literal["rcaeval-re2-v2-dev1.split-lock.v1"]
+    protocol_id: Literal["rcaeval-re2-v2-dev.1"]
     classification: tuple[
         Literal["DEVELOPMENT_VISIBLE"],
         Literal["NOT_EXTERNAL_HOLDOUT"],
@@ -118,7 +119,7 @@ class PublicSplitLock(V2Model):
 
 
 class ScheduleRecord(V2Model):
-    schema_version: Literal["rcaeval-re2-v2-dev.scheduled-run.v1"]
+    schema_version: Literal["rcaeval-re2-v2-dev1.scheduled-run.v1"]
     run_id: str = Field(pattern=r"^[0-9a-f]{32}$")
     split: SplitName
     identity: CaseIdentity
@@ -136,6 +137,7 @@ class ScheduleRecord(V2Model):
 
 
 class ScheduleBudgetSummary(V2Model):
+    smoke_max_provider_operations: Literal[240]
     design_max_provider_operations: Literal[1200]
     dev_validation_max_provider_operations: Literal[1320]
     worst_case_provider_operations: Literal[2520]
@@ -149,8 +151,7 @@ class ScheduleBudgetSummary(V2Model):
             self.design_max_provider_operations
             + self.dev_validation_max_provider_operations
             != self.worst_case_provider_operations
-            or self.hard_max_provider_operations
-            - self.worst_case_provider_operations
+            or self.hard_max_provider_operations - self.worst_case_provider_operations
             != self.provider_operation_headroom
         ):
             raise ValueError("schedule budget summary is inconsistent")
@@ -223,9 +224,7 @@ def build_split_assignments(
                 SplitAssignment(
                     identity=identity,
                     split=(
-                        SplitName.DESIGN
-                        if index == 0
-                        else SplitName.DEV_VALIDATION
+                        SplitName.DESIGN if index == 0 else SplitName.DEV_VALIDATION
                     ),
                     selection_digest_sha256=_domain_digest(
                         SPLIT_DOMAIN, seed, identity
@@ -268,7 +267,9 @@ def _create_once_or_verify(path: Path, payload: bytes, *, private: bool) -> None
     _ensure_directory(path.parent, private=private)
     if path.exists():
         if path.is_symlink() or not path.is_file() or path.read_bytes() != payload:
-            raise ValueError("existing split artifact differs from deterministic payload")
+            raise ValueError(
+                "existing split artifact differs from deterministic payload"
+            )
         return
     with path.open("xb") as handle:
         handle.write(payload)
@@ -282,7 +283,9 @@ def _reject_forbidden_paths(*paths: Path) -> None:
     for path in paths:
         normalized = str(path).casefold()
         if any(marker in normalized for marker in _FORBIDDEN_PATH_MARKERS):
-            raise ValueError("split artifact path contains a forbidden TT/private marker")
+            raise ValueError(
+                "split artifact path contains a forbidden TT/private marker"
+            )
 
 
 def write_split_artifacts(
@@ -318,7 +321,7 @@ def write_split_artifacts(
         (item.identity.system, item.split) for item in canonical_assignments
     )
     public = PublicSplitLock(
-        schema_version="rcaeval-re2-v2-dev.split-lock.v1",
+        schema_version="rcaeval-re2-v2-dev1.split-lock.v1",
         protocol_id=PROTOCOL_ID,
         classification=(
             "DEVELOPMENT_VISIBLE",
@@ -336,12 +339,8 @@ def write_split_artifacts(
             "total": len(canonical_assignments),
             "strata": 60,
             "design": counts[SplitName.DESIGN],
-            "design_re2_ob": counts_by_system_split[
-                ("RE2-OB", SplitName.DESIGN)
-            ],
-            "design_re2_ss": counts_by_system_split[
-                ("RE2-SS", SplitName.DESIGN)
-            ],
+            "design_re2_ob": counts_by_system_split[("RE2-OB", SplitName.DESIGN)],
+            "design_re2_ss": counts_by_system_split[("RE2-SS", SplitName.DESIGN)],
             "dev_validation": counts[SplitName.DEV_VALIDATION],
             "dev_validation_re2_ob": counts_by_system_split[
                 ("RE2-OB", SplitName.DEV_VALIDATION)
@@ -364,6 +363,11 @@ def _case_order_digest(identity: CaseIdentity, split: SplitName, seed: int) -> s
     return _domain_digest(domain, seed, identity)
 
 
+def _legacy_smoke_order_digest(identity: CaseIdentity) -> str:
+    domain = f"{LEGACY_CASE_ORDER_DOMAIN}\0{SplitName.DESIGN.value}"
+    return _domain_digest(domain, LEGACY_SCHEDULE_SEED, identity)
+
+
 def _run_id(
     identity: CaseIdentity, split: SplitName, variant: Variant, seed: int
 ) -> str:
@@ -384,17 +388,18 @@ def build_schedule(
     *,
     seed: int,
 ) -> tuple[ScheduleRecord, ...]:
-    if type(seed) is not int or seed != SPLIT_SEED:
+    if type(seed) is not int or seed != SCHEDULE_SEED:
         raise ValueError("development schedule seed differs from pre-registration")
     if not isinstance(split, SplitName):
         raise TypeError("development schedule split must be typed")
     selected = tuple(item for item in assignments if item.split is split)
     expected_cases = 60 if split is SplitName.DESIGN else 120
-    if len(selected) != expected_cases or len({item.identity for item in selected}) != expected_cases:
+    if (
+        len(selected) != expected_cases
+        or len({item.identity for item in selected}) != expected_cases
+    ):
         raise ValueError("development schedule case count differs from frozen split")
-    variants = (
-        DESIGN_VARIANTS if split is SplitName.DESIGN else DEV_VALIDATION_VARIANTS
-    )
+    variants = DESIGN_VARIANTS if split is SplitName.DESIGN else DEV_VALIDATION_VARIANTS
     ordered_cases = tuple(
         sorted(
             selected,
@@ -412,7 +417,7 @@ def build_schedule(
         for position, variant in enumerate(rotated, 1):
             records.append(
                 ScheduleRecord(
-                    schema_version="rcaeval-re2-v2-dev.scheduled-run.v1",
+                    schema_version="rcaeval-re2-v2-dev1.scheduled-run.v1",
                     run_id=_run_id(assignment.identity, split, variant, seed),
                     split=split,
                     identity=assignment.identity,
@@ -430,7 +435,7 @@ def build_smoke_schedule(
     *,
     seed: int,
 ) -> tuple[ScheduleRecord, ...]:
-    if type(seed) is not int or seed != SPLIT_SEED:
+    if type(seed) is not int or seed != SCHEDULE_SEED:
         raise ValueError("development smoke seed differs from pre-registration")
     design = tuple(item for item in assignments if item.split is SplitName.DESIGN)
     grouped: dict[tuple[str, str], list[SplitAssignment]] = {}
@@ -445,16 +450,14 @@ def build_smoke_schedule(
         min(
             group,
             key=lambda item: (
-                _case_order_digest(item.identity, SplitName.DESIGN, seed),
+                _legacy_smoke_order_digest(item.identity),
                 case_identity_bytes(item.identity),
             ),
         ).identity
         for group in grouped.values()
     }
     smoke = tuple(
-        record
-        for record in design_schedule
-        if record.identity in selected_identities
+        record for record in design_schedule if record.identity in selected_identities
     )
     if len(smoke) != 72 or len({item.identity for item in smoke}) != 12:
         raise ValueError("development smoke is not an exact 12-case design subset")
@@ -463,6 +466,7 @@ def build_smoke_schedule(
 
 def schedule_budget_summary() -> ScheduleBudgetSummary:
     return ScheduleBudgetSummary(
+        smoke_max_provider_operations=240,
         design_max_provider_operations=1200,
         dev_validation_max_provider_operations=1320,
         worst_case_provider_operations=2520,
