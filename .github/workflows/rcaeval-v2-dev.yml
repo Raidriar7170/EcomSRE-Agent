@@ -21,7 +21,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
-      - run: uv sync --frozen
+      - run: uv sync --frozen --group ci
       - run: uv run --frozen --no-sync pytest -q tests/benchmarks/rcaeval_v2
       - run: uv run --frozen --no-sync ruff check src/ecomsre_rcaeval_v2 scripts/rcaeval_v2 tests/benchmarks/rcaeval_v2
       - run: uv run --frozen --no-sync mypy src/ecomsre_rcaeval_v2 scripts/rcaeval_v2
