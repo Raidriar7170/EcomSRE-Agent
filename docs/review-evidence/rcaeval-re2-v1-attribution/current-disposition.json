@@ -1,0 +1,23 @@
+{
+  "classification": [
+    "POST_HOC_EXPLORATORY",
+    "NOT_PRIMARY_INFERENCE",
+    "NO_HOLDOUT_RERUN"
+  ],
+  "frozen_result_unchanged": true,
+  "holdout_rerun": false,
+  "human_review_required": true,
+  "merge_authorized": false,
+  "private_case_analysis_committed": false,
+  "provider_calls_during_attribution": 0,
+  "schema_version": "rcaeval-re2.post-hoc-attribution-disposition.v1",
+  "source_bindings": {
+    "final_report_sha256": "f40be2375ccd80b9cdd831577079043d4370a02924c19073b0ec8cf8b3232155",
+    "implementation_commit": "3a03995037ce410488a4364f8a485b27c80f0ac0",
+    "protocol_freeze_sha256": "cb5e31a0a20a3d7a4a2c10c6e2454ca19deb16d6faab01bf83e805b0840f1a2f",
+    "terminal_records_lock_sha256": "4eaeb2a1b68413ea6bea86391d8663baf49228484b2a935d2f0256dece321ab0",
+    "unblinding_lock_sha256": "19c52b02b07ed63c7592335062acd2cc638c025cd9346e491cbf30c9ee9cbe89"
+  },
+  "state": "POST_HOC_ATTRIBUTION_REPORT_READY_FOR_HUMAN_REVIEW",
+  "terminal_retry": false
+}

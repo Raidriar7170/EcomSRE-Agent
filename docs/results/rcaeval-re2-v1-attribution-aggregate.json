@@ -1,0 +1,1544 @@
+{
+  "architecture_decomposition": {
+    "dynamic": {
+      "completed": 79,
+      "completed_but_root_service_wrong": 12,
+      "completed_only_root_service_accuracy": {
+        "denominator": 79,
+        "numerator": 67,
+        "value": 0.8481012658227848
+      },
+      "reliability_ceiling_if_all_failures_correct": {
+        "denominator": 90,
+        "numerator": 78,
+        "value": 0.8666666666666667
+      },
+      "root_cause_pair_accuracy": {
+        "denominator": 90,
+        "numerator": 37,
+        "value": 0.4111111111111111
+      },
+      "root_service_accuracy": {
+        "denominator": 90,
+        "numerator": 67,
+        "value": 0.7444444444444445
+      },
+      "runs": 90,
+      "terminal_failures": 11,
+      "vs_single": {
+        "excess_completed_wrong": 7,
+        "excess_terminal_failures": 10,
+        "reconciled": true,
+        "total_correct_gap": 17
+      }
+    },
+    "fixed": {
+      "completed": 81,
+      "completed_but_root_service_wrong": 14,
+      "completed_only_root_service_accuracy": {
+        "denominator": 81,
+        "numerator": 67,
+        "value": 0.8271604938271605
+      },
+      "reliability_ceiling_if_all_failures_correct": {
+        "denominator": 90,
+        "numerator": 76,
+        "value": 0.8444444444444444
+      },
+      "root_cause_pair_accuracy": {
+        "denominator": 90,
+        "numerator": 36,
+        "value": 0.4
+      },
+      "root_service_accuracy": {
+        "denominator": 90,
+        "numerator": 67,
+        "value": 0.7444444444444445
+      },
+      "runs": 90,
+      "terminal_failures": 9,
+      "vs_single": {
+        "excess_completed_wrong": 9,
+        "excess_terminal_failures": 8,
+        "reconciled": true,
+        "total_correct_gap": 17
+      }
+    },
+    "single": {
+      "completed": 89,
+      "completed_but_root_service_wrong": 5,
+      "completed_only_root_service_accuracy": {
+        "denominator": 89,
+        "numerator": 84,
+        "value": 0.9438202247191011
+      },
+      "reliability_ceiling_if_all_failures_correct": {
+        "denominator": 90,
+        "numerator": 85,
+        "value": 0.9444444444444444
+      },
+      "root_cause_pair_accuracy": {
+        "denominator": 90,
+        "numerator": 49,
+        "value": 0.5444444444444444
+      },
+      "root_service_accuracy": {
+        "denominator": 90,
+        "numerator": 84,
+        "value": 0.9333333333333333
+      },
+      "runs": 90,
+      "terminal_failures": 1,
+      "vs_single": {
+        "excess_completed_wrong": 0,
+        "excess_terminal_failures": 0,
+        "reconciled": true,
+        "total_correct_gap": 0
+      }
+    }
+  },
+  "citation_behavior": {
+    "dynamic": {
+      "correct": {
+        "citation_bucket_counts": {
+          "metrics": 24,
+          "multiple_sources": 43
+        },
+        "completed_runs": 67,
+        "evidence_ref_count": {
+          "count": 67,
+          "maximum": 7,
+          "mean": 3.746268656716418,
+          "median": 4,
+          "minimum": 1
+        }
+      },
+      "incorrect": {
+        "citation_bucket_counts": {
+          "metrics": 2,
+          "multiple_sources": 9,
+          "traces": 1
+        },
+        "completed_runs": 12,
+        "evidence_ref_count": {
+          "count": 12,
+          "maximum": 6,
+          "mean": 3.4166666666666665,
+          "median": 3.0,
+          "minimum": 1
+        }
+      }
+    },
+    "fixed": {
+      "correct": {
+        "citation_bucket_counts": {
+          "metrics": 27,
+          "multiple_sources": 39,
+          "traces": 1
+        },
+        "completed_runs": 67,
+        "evidence_ref_count": {
+          "count": 67,
+          "maximum": 6,
+          "mean": 3.5223880597014925,
+          "median": 3,
+          "minimum": 1
+        }
+      },
+      "incorrect": {
+        "citation_bucket_counts": {
+          "metrics": 2,
+          "multiple_sources": 10,
+          "traces": 2
+        },
+        "completed_runs": 14,
+        "evidence_ref_count": {
+          "count": 14,
+          "maximum": 8,
+          "mean": 4.285714285714286,
+          "median": 4.0,
+          "minimum": 1
+        }
+      }
+    },
+    "interpretation_boundary": "These are final Diagnosis citations, not proof of every queried source.",
+    "single": {
+      "correct": {
+        "citation_bucket_counts": {
+          "metrics": 1,
+          "multiple_sources": 83
+        },
+        "completed_runs": 84,
+        "evidence_ref_count": {
+          "count": 84,
+          "maximum": 12,
+          "mean": 3.5714285714285716,
+          "median": 3.0,
+          "minimum": 2
+        }
+      },
+      "incorrect": {
+        "citation_bucket_counts": {
+          "multiple_sources": 5
+        },
+        "completed_runs": 5,
+        "evidence_ref_count": {
+          "count": 5,
+          "maximum": 5,
+          "mean": 3.4,
+          "median": 3,
+          "minimum": 3
+        }
+      }
+    }
+  },
+  "classification": [
+    "POST_HOC_EXPLORATORY",
+    "NOT_PRIMARY_INFERENCE",
+    "NO_HOLDOUT_RERUN"
+  ],
+  "cross_system_deterministic_comparison": {
+    "RE2-OB": {
+      "any_source_root_service_coverage_at_6": {
+        "denominator": 90,
+        "numerator": 90,
+        "value": 1.0
+      },
+      "case_count": 90,
+      "cross_source_top_service_agreement": {
+        "denominator": 90,
+        "numerator": 4,
+        "value": 0.044444444444444446
+      },
+      "log_rows_in_window": {
+        "count": 90,
+        "maximum": 151125,
+        "mean": 139551.54444444444,
+        "median": 145729.5,
+        "minimum": 94374
+      },
+      "metric_columns_per_case": {
+        "count": 90,
+        "maximum": 77,
+        "mean": 73.36666666666666,
+        "median": 74.0,
+        "minimum": 69
+      },
+      "metrics_top_1_top_2_margin": {
+        "count": 90,
+        "maximum": 1.075599999999668e+19,
+        "mean": 1.4772428446531476e+18,
+        "median": 55.54571,
+        "minimum": 0.0
+      },
+      "root_service_coverage": {
+        "logs": {
+          "root_service_coverage_at_6": {
+            "denominator": 90,
+            "numerator": 16,
+            "value": 0.17777777777777778
+          },
+          "status": "AVAILABLE"
+        },
+        "metrics": {
+          "root_service_coverage_at_6": {
+            "denominator": 90,
+            "numerator": 90,
+            "value": 1.0
+          },
+          "status": "AVAILABLE"
+        },
+        "traces": {
+          "root_service_coverage_at_6": {
+            "denominator": 90,
+            "numerator": 88,
+            "value": 0.9777777777777777
+          },
+          "status": "AVAILABLE"
+        }
+      },
+      "services_per_case": {
+        "count": 90,
+        "maximum": 14,
+        "mean": 12.022222222222222,
+        "median": 12.0,
+        "minimum": 11
+      },
+      "trace_rows_in_window": {
+        "count": 90,
+        "maximum": 344205,
+        "mean": 319427.6,
+        "median": 333091.0,
+        "minimum": 165561
+      },
+      "truth_indicator_raw_coverage": {
+        "denominator": 90,
+        "numerator": 90,
+        "value": 1.0
+      },
+      "truth_indicator_top6_coverage": {
+        "denominator": 90,
+        "numerator": 82,
+        "value": 0.9111111111111111
+      },
+      "unique_log_services": {
+        "count": 90,
+        "maximum": 11,
+        "mean": 10.022222222222222,
+        "median": 10.0,
+        "minimum": 9
+      },
+      "unique_trace_services": {
+        "count": 90,
+        "maximum": 7,
+        "mean": 7,
+        "median": 7.0,
+        "minimum": 7
+      }
+    },
+    "RE2-SS": {
+      "any_source_root_service_coverage_at_6": {
+        "denominator": 90,
+        "numerator": 90,
+        "value": 1.0
+      },
+      "case_count": 90,
+      "cross_source_top_service_agreement": {
+        "denominator": 90,
+        "numerator": 2,
+        "value": 0.022222222222222223
+      },
+      "log_rows_in_window": {
+        "count": 90,
+        "maximum": 78493,
+        "mean": 70400.83333333333,
+        "median": 72037.5,
+        "minimum": 45912
+      },
+      "metric_columns_per_case": {
+        "count": 90,
+        "maximum": 82,
+        "mean": 76.61111111111111,
+        "median": 76.0,
+        "minimum": 74
+      },
+      "metrics_top_1_top_2_margin": {
+        "count": 90,
+        "maximum": 2.42584e+19,
+        "mean": 1.8129448398649295e+18,
+        "median": 83.39574999999999,
+        "minimum": 0.608700000000006
+      },
+      "root_service_coverage": {
+        "logs": {
+          "root_service_coverage_at_6": {
+            "denominator": 90,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "status": "AVAILABLE"
+        },
+        "metrics": {
+          "root_service_coverage_at_6": {
+            "denominator": 90,
+            "numerator": 90,
+            "value": 1.0
+          },
+          "status": "AVAILABLE"
+        },
+        "traces": {
+          "case_count": 90,
+          "status": "SOURCE_UNAVAILABLE"
+        }
+      },
+      "services_per_case": {
+        "count": 90,
+        "maximum": 16,
+        "mean": 15.022222222222222,
+        "median": 15.0,
+        "minimum": 15
+      },
+      "trace_rows_in_window": {
+        "case_count": 90,
+        "status": "SOURCE_UNAVAILABLE"
+      },
+      "truth_indicator_raw_coverage": {
+        "denominator": 90,
+        "numerator": 90,
+        "value": 1.0
+      },
+      "truth_indicator_top6_coverage": {
+        "denominator": 90,
+        "numerator": 83,
+        "value": 0.9222222222222223
+      },
+      "unique_log_services": {
+        "count": 90,
+        "maximum": 15,
+        "mean": 10.722222222222221,
+        "median": 11.0,
+        "minimum": 10
+      },
+      "unique_trace_services": {
+        "case_count": 90,
+        "status": "SOURCE_UNAVAILABLE"
+      }
+    },
+    "RE2-TT": {
+      "any_source_root_service_coverage_at_6": {
+        "denominator": 90,
+        "numerator": 90,
+        "value": 1.0
+      },
+      "case_count": 90,
+      "cross_source_top_service_agreement": {
+        "denominator": 90,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "log_rows_in_window": {
+        "count": 90,
+        "maximum": 260429,
+        "mean": 196900.38888888888,
+        "median": 222722.0,
+        "minimum": 47970
+      },
+      "metric_columns_per_case": {
+        "count": 90,
+        "maximum": 376,
+        "mean": 362.1333333333333,
+        "median": 362.5,
+        "minimum": 340
+      },
+      "metrics_top_1_top_2_margin": {
+        "count": 90,
+        "maximum": 21624000.0,
+        "mean": 925550.0594500444,
+        "median": 423.40229999999997,
+        "minimum": 0.0
+      },
+      "root_service_coverage": {
+        "logs": {
+          "root_service_coverage_at_6": {
+            "denominator": 90,
+            "numerator": 11,
+            "value": 0.12222222222222222
+          },
+          "status": "AVAILABLE"
+        },
+        "metrics": {
+          "root_service_coverage_at_6": {
+            "denominator": 90,
+            "numerator": 87,
+            "value": 0.9666666666666667
+          },
+          "status": "AVAILABLE"
+        },
+        "traces": {
+          "root_service_coverage_at_6": {
+            "denominator": 90,
+            "numerator": 90,
+            "value": 1.0
+          },
+          "status": "AVAILABLE"
+        }
+      },
+      "services_per_case": {
+        "count": 90,
+        "maximum": 69,
+        "mean": 68.05555555555556,
+        "median": 68.0,
+        "minimum": 68
+      },
+      "trace_rows_in_window": {
+        "count": 90,
+        "maximum": 1282924,
+        "mean": 624841.5,
+        "median": 645175.5,
+        "minimum": 102827
+      },
+      "truth_indicator_raw_coverage": {
+        "denominator": 90,
+        "numerator": 90,
+        "value": 1.0
+      },
+      "truth_indicator_top6_coverage": {
+        "denominator": 90,
+        "numerator": 59,
+        "value": 0.6555555555555556
+      },
+      "unique_log_services": {
+        "count": 90,
+        "maximum": 48,
+        "mean": 44.77777777777778,
+        "median": 45.0,
+        "minimum": 39
+      },
+      "unique_trace_services": {
+        "count": 90,
+        "maximum": 27,
+        "mean": 26.07777777777778,
+        "median": 27.0,
+        "minimum": 20
+      }
+    },
+    "performance_boundary": "Deterministic tool statistics only; no OB/SS Provider evaluation was run."
+  },
+  "dynamic_routing": {
+    "all_three_sources_rate": {
+      "denominator": 90,
+      "numerator": 86,
+      "value": 0.9555555555555556
+    },
+    "exact_skipped_source": "UNOBSERVABLE_FROM_FROZEN_ARTIFACTS",
+    "interpretation_boundary": "The verdict concerns source-acquisition reduction under this frozen routing policy and distribution only.",
+    "mean_tool_reduction_vs_single": {
+      "denominator": 270,
+      "numerator": 8,
+      "value": 0.02962962962962963
+    },
+    "median_paired_tool_reduction_vs_single": {
+      "paired_case_count": 90,
+      "value": 0.0
+    },
+    "route_subgroups": {
+      "1": {
+        "classification": "DESCRIPTIVE_ONLY",
+        "root_service_accuracy": {
+          "denominator": 4,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "runs": 4,
+        "terminal_failure_rate": {
+          "denominator": 4,
+          "numerator": 4,
+          "value": 1.0
+        }
+      },
+      "2": {
+        "classification": "DESCRIPTIVE_ONLY",
+        "root_service_accuracy": null,
+        "runs": 0,
+        "terminal_failure_rate": null
+      },
+      "3": {
+        "classification": "DESCRIPTIVE_ONLY",
+        "root_service_accuracy": {
+          "denominator": 86,
+          "numerator": 67,
+          "value": 0.7790697674418605
+        },
+        "runs": 86,
+        "terminal_failure_rate": {
+          "denominator": 86,
+          "numerator": 7,
+          "value": 0.08139534883720931
+        }
+      }
+    },
+    "tool_call_distribution": {
+      "2": 0,
+      "3": 86,
+      "other": 4
+    },
+    "total_tool_calls": 262,
+    "verdict": "DYNAMIC_ROUTE_DEGENERACY_SUPPORTED"
+  },
+  "evidence_gaps": [
+    {
+      "question": "Specialist candidate accuracy",
+      "result": "UNOBSERVABLE_FROM_FROZEN_ARTIFACTS"
+    },
+    {
+      "question": "Judge follow-rate",
+      "result": "UNOBSERVABLE_FROM_FROZEN_ARTIFACTS"
+    },
+    {
+      "question": "Exact Provider failure stage",
+      "result": "UNOBSERVABLE_FROM_FROZEN_ARTIFACTS"
+    },
+    {
+      "question": "Exact invalid-schema field",
+      "result": "UNOBSERVABLE_FROM_FROZEN_ARTIFACTS"
+    },
+    {
+      "question": "Dynamic exact skipped source",
+      "result": "UNOBSERVABLE_FROM_FROZEN_ARTIFACTS"
+    },
+    {
+      "question": "Specialist-to-Judge anchoring",
+      "result": "UNOBSERVABLE_FROM_FROZEN_ARTIFACTS"
+    },
+    {
+      "question": "Architecture-aware Judge bias",
+      "result": "UNOBSERVABLE_FROM_FROZEN_ARTIFACTS"
+    }
+  ],
+  "frozen_result_reconciliation": {
+    "ci_source": "FROZEN_FINAL_REPORT_NOT_RECOMPUTED_BY_ATTRIBUTION",
+    "cost_quality_supported": false,
+    "primary_ci": {
+      "lower": -0.28888888888888886,
+      "upper": -0.08888888888888889
+    },
+    "primary_point_estimate": -0.18888888888888888,
+    "primary_superiority_supported": false,
+    "unchanged": true
+  },
+  "hypothesis_matrix": {
+    "H1": {
+      "confidence": "high",
+      "contradicting_observations": [
+        "The frozen artifacts do not expose a per-operation hazard rate."
+      ],
+      "evidence_level": "LEVEL_1_DIRECT",
+      "hypothesis": "Multi-call reliability amplification",
+      "recommended_next_experiment": "Persist per-operation status and estimate transport/schema hazard by stage on development data.",
+      "result": "supported",
+      "supporting_observations": [
+        "Fixed and Dynamic used more model calls and had 9 and 11 failures, versus 1 for Single."
+      ],
+      "what_cannot_be_concluded": "More calls are not proven causal, and the failing operation is unobservable."
+    },
+    "H2": {
+      "confidence": "high",
+      "contradicting_observations": [
+        "Fixed recovered 2 Single-wrong outcomes."
+      ],
+      "evidence_level": "LEVEL_1_DIRECT + LEVEL_2_DETERMINISTIC_RECONSTRUCTION",
+      "hypothesis": "Same-source Multi-Agent semantic degradation",
+      "recommended_next_experiment": "Persist intermediate assessments and run architecture-blind Judge ablations on development data.",
+      "result": "supported",
+      "supporting_observations": [
+        "11 both-completed outcomes were Single-correct and Fixed-wrong."
+      ],
+      "what_cannot_be_concluded": "Specialist anchoring, Judge anchoring, context redundancy, and label bias cannot be separated."
+    },
+    "H3": {
+      "confidence": "high",
+      "contradicting_observations": [
+        "4 runs used one tool, but all were terminal failures; no two-tool route was observed."
+      ],
+      "evidence_level": "LEVEL_1_DIRECT",
+      "hypothesis": "Dynamic route degeneracy",
+      "recommended_next_experiment": "Persist Commander decisions and evaluate truly sequential routes on development data.",
+      "result": "supported",
+      "supporting_observations": [
+        "86 of 90 Dynamic runs used three tools."
+      ],
+      "what_cannot_be_concluded": "The exact skipped source and the counterfactual accuracy of another route are unobservable."
+    },
+    "H4": {
+      "confidence": "high",
+      "contradicting_observations": [
+        "14 Fixed completed-wrong runs had the truth service visible in at least one projection."
+      ],
+      "evidence_level": "LEVEL_2_DETERMINISTIC_RECONSTRUCTION",
+      "hypothesis": "Root-service tool projection misses",
+      "recommended_next_experiment": "Measure source-specific recall and feed ranked supporting and contradicting evidence.",
+      "result": "not_supported",
+      "supporting_observations": [],
+      "what_cannot_be_concluded": "Visibility does not prove the model attended to or correctly interpreted the evidence."
+    },
+    "H5": {
+      "confidence": "high",
+      "contradicting_observations": [
+        "Other fault families retain non-zero pair accuracy."
+      ],
+      "evidence_level": "LEVEL_2_DETERMINISTIC_RECONSTRUCTION",
+      "hypothesis": "Indicator pipeline failure",
+      "recommended_next_experiment": "Add deterministic metric-to-indicator candidates and test the full raw/top-6/final funnel.",
+      "result": "supported",
+      "supporting_observations": [
+        "Memory classification is TOOL_RANKING_GAP; Socket classification is MIXED."
+      ],
+      "what_cannot_be_concluded": "No Provider-internal reasoning trace identifies why a visible indicator was rejected."
+    },
+    "H6": {
+      "confidence": "medium",
+      "contradicting_observations": [
+        "Any-source root-service Coverage@6 is TT=1.0, OB=1.0, SS=1.0; system schemas and trace availability also differ."
+      ],
+      "evidence_level": "LEVEL_2_DETERMINISTIC_RECONSTRUCTION",
+      "hypothesis": "Cross-system tool distribution shift",
+      "recommended_next_experiment": "Create a development-only semantic evaluation shared across OB, SS, and TT-like cases.",
+      "result": "mixed",
+      "supporting_observations": [
+        "Truth-indicator Metrics top-6 coverage is TT=0.6555555555555556, OB=0.9111111111111111, SS=0.9222222222222223."
+      ],
+      "what_cannot_be_concluded": "No full-protocol OB/SS Provider accuracy exists, so performance-point impact is unknown."
+    },
+    "H7": {
+      "confidence": "low",
+      "contradicting_observations": [
+        "No frozen SpecialistAssessment or Judge input is persisted."
+      ],
+      "evidence_level": "UNOBSERVABLE",
+      "hypothesis": "Specialist-to-Judge anchoring",
+      "recommended_next_experiment": "Persist SpecialistAssessment, CommanderDecision, and exact Judge input.",
+      "result": "unobservable",
+      "supporting_observations": [
+        "Same-source semantic degradation is compatible with anchoring."
+      ],
+      "what_cannot_be_concluded": "UNOBSERVABLE_FROM_FROZEN_ARTIFACTS"
+    },
+    "H8": {
+      "confidence": "none",
+      "contradicting_observations": [
+        "No architecture-blind ablation is part of the frozen run."
+      ],
+      "evidence_level": "UNOBSERVABLE",
+      "hypothesis": "Architecture-aware Judge bias",
+      "recommended_next_experiment": "Blind architecture labels while holding evidence and prompt content constant.",
+      "result": "unobservable",
+      "supporting_observations": [],
+      "what_cannot_be_concluded": "UNOBSERVABLE_FROM_FROZEN_ARTIFACTS"
+    },
+    "H9": {
+      "confidence": "medium",
+      "contradicting_observations": [
+        "Single root-service correctness is 84/90, while both Multi-Agent arms are lower; architecture therefore adds a separate observed degradation.",
+        "Dynamic recovered 0 Single-wrong outcomes but damaged more Single-correct outcomes."
+      ],
+      "evidence_level": "LEVEL_3_INDIRECT_INFERENCE",
+      "hypothesis": "Model capability is the primary bottleneck",
+      "recommended_next_experiment": "Use development-only controlled prompts with identical evidence and architecture-blind scoring.",
+      "result": "mixed",
+      "supporting_observations": [
+        "Single pair accuracy remains materially below its root-service accuracy."
+      ],
+      "what_cannot_be_concluded": "The frozen comparison does not isolate model capacity from prompting and architecture."
+    }
+  },
+  "indicator_pipeline": {
+    "fault_funnels": {
+      "cpu": {
+        "cases": 15,
+        "final_reasoning": {
+          "dynamic": {
+            "final_indicator_correct": 9,
+            "final_selection_accuracy_given_projected_and_completed": {
+              "denominator": 11,
+              "numerator": 9,
+              "value": 0.8181818181818182
+            },
+            "projected_and_completed_runs": 11
+          },
+          "fixed": {
+            "final_indicator_correct": 10,
+            "final_selection_accuracy_given_projected_and_completed": {
+              "denominator": 12,
+              "numerator": 10,
+              "value": 0.8333333333333334
+            },
+            "projected_and_completed_runs": 12
+          },
+          "single": {
+            "final_indicator_correct": 11,
+            "final_selection_accuracy_given_projected_and_completed": {
+              "denominator": 13,
+              "numerator": 11,
+              "value": 0.8461538461538461
+            },
+            "projected_and_completed_runs": 13
+          }
+        },
+        "final_selection_distribution": {
+          "dynamic": {
+            "NO_DIAGNOSIS": 3,
+            "cpu": 9,
+            "latency": 3
+          },
+          "fixed": {
+            "NO_DIAGNOSIS": 2,
+            "cpu": 10,
+            "latency": 3
+          },
+          "single": {
+            "cpu": 11,
+            "latency": 4
+          }
+        },
+        "raw_schema_coverage": {
+          "denominator": 15,
+          "numerator": 15,
+          "value": 1.0
+        },
+        "top6_projection_coverage": {
+          "denominator": 15,
+          "numerator": 13,
+          "value": 0.8666666666666667
+        },
+        "truth_indicator": "cpu"
+      },
+      "delay": {
+        "cases": 15,
+        "final_reasoning": {
+          "dynamic": {
+            "final_indicator_correct": 14,
+            "final_selection_accuracy_given_projected_and_completed": {
+              "denominator": 14,
+              "numerator": 14,
+              "value": 1.0
+            },
+            "projected_and_completed_runs": 14
+          },
+          "fixed": {
+            "final_indicator_correct": 15,
+            "final_selection_accuracy_given_projected_and_completed": {
+              "denominator": 15,
+              "numerator": 15,
+              "value": 1.0
+            },
+            "projected_and_completed_runs": 15
+          },
+          "single": {
+            "final_indicator_correct": 14,
+            "final_selection_accuracy_given_projected_and_completed": {
+              "denominator": 14,
+              "numerator": 14,
+              "value": 1.0
+            },
+            "projected_and_completed_runs": 14
+          }
+        },
+        "final_selection_distribution": {
+          "dynamic": {
+            "NO_DIAGNOSIS": 1,
+            "latency": 14
+          },
+          "fixed": {
+            "latency": 15
+          },
+          "single": {
+            "NO_DIAGNOSIS": 1,
+            "latency": 14
+          }
+        },
+        "raw_schema_coverage": {
+          "denominator": 15,
+          "numerator": 15,
+          "value": 1.0
+        },
+        "top6_projection_coverage": {
+          "denominator": 15,
+          "numerator": 15,
+          "value": 1.0
+        },
+        "truth_indicator": "latency"
+      },
+      "disk": {
+        "cases": 15,
+        "final_reasoning": {
+          "dynamic": {
+            "final_indicator_correct": 13,
+            "final_selection_accuracy_given_projected_and_completed": {
+              "denominator": 14,
+              "numerator": 13,
+              "value": 0.9285714285714286
+            },
+            "projected_and_completed_runs": 14
+          },
+          "fixed": {
+            "final_indicator_correct": 13,
+            "final_selection_accuracy_given_projected_and_completed": {
+              "denominator": 13,
+              "numerator": 13,
+              "value": 1.0
+            },
+            "projected_and_completed_runs": 13
+          },
+          "single": {
+            "final_indicator_correct": 15,
+            "final_selection_accuracy_given_projected_and_completed": {
+              "denominator": 15,
+              "numerator": 15,
+              "value": 1.0
+            },
+            "projected_and_completed_runs": 15
+          }
+        },
+        "final_selection_distribution": {
+          "dynamic": {
+            "NO_DIAGNOSIS": 1,
+            "diskio": 13,
+            "latency": 1
+          },
+          "fixed": {
+            "NO_DIAGNOSIS": 2,
+            "diskio": 13
+          },
+          "single": {
+            "diskio": 15
+          }
+        },
+        "raw_schema_coverage": {
+          "denominator": 15,
+          "numerator": 15,
+          "value": 1.0
+        },
+        "top6_projection_coverage": {
+          "denominator": 15,
+          "numerator": 15,
+          "value": 1.0
+        },
+        "truth_indicator": "diskio"
+      },
+      "loss": {
+        "cases": 15,
+        "final_reasoning": {
+          "dynamic": {
+            "final_indicator_correct": 9,
+            "final_selection_accuracy_given_projected_and_completed": {
+              "denominator": 9,
+              "numerator": 9,
+              "value": 1.0
+            },
+            "projected_and_completed_runs": 9
+          },
+          "fixed": {
+            "final_indicator_correct": 6,
+            "final_selection_accuracy_given_projected_and_completed": {
+              "denominator": 7,
+              "numerator": 6,
+              "value": 0.8571428571428571
+            },
+            "projected_and_completed_runs": 7
+          },
+          "single": {
+            "final_indicator_correct": 10,
+            "final_selection_accuracy_given_projected_and_completed": {
+              "denominator": 10,
+              "numerator": 10,
+              "value": 1.0
+            },
+            "projected_and_completed_runs": 10
+          }
+        },
+        "final_selection_distribution": {
+          "dynamic": {
+            "NO_DIAGNOSIS": 2,
+            "cpu": 1,
+            "diskio": 1,
+            "latency": 11
+          },
+          "fixed": {
+            "NO_DIAGNOSIS": 3,
+            "cpu": 1,
+            "diskio": 2,
+            "latency": 9
+          },
+          "single": {
+            "cpu": 2,
+            "diskio": 2,
+            "latency": 11
+          }
+        },
+        "raw_schema_coverage": {
+          "denominator": 15,
+          "numerator": 15,
+          "value": 1.0
+        },
+        "top6_projection_coverage": {
+          "denominator": 15,
+          "numerator": 10,
+          "value": 0.6666666666666666
+        },
+        "truth_indicator": "latency"
+      },
+      "mem": {
+        "cases": 15,
+        "final_reasoning": {
+          "dynamic": {
+            "final_indicator_correct": 0,
+            "final_selection_accuracy_given_projected_and_completed": null,
+            "projected_and_completed_runs": 0
+          },
+          "fixed": {
+            "final_indicator_correct": 0,
+            "final_selection_accuracy_given_projected_and_completed": null,
+            "projected_and_completed_runs": 0
+          },
+          "single": {
+            "final_indicator_correct": 0,
+            "final_selection_accuracy_given_projected_and_completed": null,
+            "projected_and_completed_runs": 0
+          }
+        },
+        "final_selection_distribution": {
+          "dynamic": {
+            "NO_DIAGNOSIS": 3,
+            "diskio": 12
+          },
+          "fixed": {
+            "NO_DIAGNOSIS": 1,
+            "diskio": 14
+          },
+          "single": {
+            "diskio": 15
+          }
+        },
+        "raw_schema_coverage": {
+          "denominator": 15,
+          "numerator": 15,
+          "value": 1.0
+        },
+        "top6_projection_coverage": {
+          "denominator": 15,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "truth_indicator": "mem"
+      },
+      "socket": {
+        "cases": 15,
+        "final_reasoning": {
+          "dynamic": {
+            "final_indicator_correct": 0,
+            "final_selection_accuracy_given_projected_and_completed": {
+              "denominator": 6,
+              "numerator": 0,
+              "value": 0.0
+            },
+            "projected_and_completed_runs": 6
+          },
+          "fixed": {
+            "final_indicator_correct": 0,
+            "final_selection_accuracy_given_projected_and_completed": {
+              "denominator": 5,
+              "numerator": 0,
+              "value": 0.0
+            },
+            "projected_and_completed_runs": 5
+          },
+          "single": {
+            "final_indicator_correct": 0,
+            "final_selection_accuracy_given_projected_and_completed": {
+              "denominator": 6,
+              "numerator": 0,
+              "value": 0.0
+            },
+            "projected_and_completed_runs": 6
+          }
+        },
+        "final_selection_distribution": {
+          "dynamic": {
+            "NO_DIAGNOSIS": 1,
+            "cpu": 10,
+            "latency": 4
+          },
+          "fixed": {
+            "NO_DIAGNOSIS": 1,
+            "cpu": 9,
+            "latency": 5
+          },
+          "single": {
+            "cpu": 9,
+            "latency": 6
+          }
+        },
+        "raw_schema_coverage": {
+          "denominator": 15,
+          "numerator": 15,
+          "value": 1.0
+        },
+        "top6_projection_coverage": {
+          "denominator": 15,
+          "numerator": 6,
+          "value": 0.4
+        },
+        "truth_indicator": "socket"
+      }
+    },
+    "memory_and_socket": {
+      "mem": {
+        "classification": "TOOL_RANKING_GAP",
+        "final_selection_distribution": {
+          "dynamic": {
+            "NO_DIAGNOSIS": 3,
+            "diskio": 12
+          },
+          "fixed": {
+            "NO_DIAGNOSIS": 1,
+            "diskio": 14
+          },
+          "single": {
+            "diskio": 15
+          }
+        },
+        "raw_schema_coverage": {
+          "denominator": 15,
+          "numerator": 15,
+          "value": 1.0
+        },
+        "top6_projection_coverage": {
+          "denominator": 15,
+          "numerator": 0,
+          "value": 0.0
+        }
+      },
+      "socket": {
+        "classification": "MIXED",
+        "final_selection_distribution": {
+          "dynamic": {
+            "NO_DIAGNOSIS": 1,
+            "cpu": 10,
+            "latency": 4
+          },
+          "fixed": {
+            "NO_DIAGNOSIS": 1,
+            "cpu": 9,
+            "latency": 5
+          },
+          "single": {
+            "cpu": 9,
+            "latency": 6
+          }
+        },
+        "raw_schema_coverage": {
+          "denominator": 15,
+          "numerator": 15,
+          "value": 1.0
+        },
+        "top6_projection_coverage": {
+          "denominator": 15,
+          "numerator": 6,
+          "value": 0.4
+        }
+      }
+    },
+    "predicted_indicator_confusion_matrix": {
+      "dynamic": {
+        "cpu": {
+          "NO_DIAGNOSIS": 3,
+          "cpu": 9,
+          "diskio": 0,
+          "latency": 3,
+          "mem": 0,
+          "socket": 0
+        },
+        "diskio": {
+          "NO_DIAGNOSIS": 1,
+          "cpu": 0,
+          "diskio": 13,
+          "latency": 1,
+          "mem": 0,
+          "socket": 0
+        },
+        "latency": {
+          "NO_DIAGNOSIS": 3,
+          "cpu": 1,
+          "diskio": 1,
+          "latency": 25,
+          "mem": 0,
+          "socket": 0
+        },
+        "mem": {
+          "NO_DIAGNOSIS": 3,
+          "cpu": 0,
+          "diskio": 12,
+          "latency": 0,
+          "mem": 0,
+          "socket": 0
+        },
+        "socket": {
+          "NO_DIAGNOSIS": 1,
+          "cpu": 10,
+          "diskio": 0,
+          "latency": 4,
+          "mem": 0,
+          "socket": 0
+        }
+      },
+      "fixed": {
+        "cpu": {
+          "NO_DIAGNOSIS": 2,
+          "cpu": 10,
+          "diskio": 0,
+          "latency": 3,
+          "mem": 0,
+          "socket": 0
+        },
+        "diskio": {
+          "NO_DIAGNOSIS": 2,
+          "cpu": 0,
+          "diskio": 13,
+          "latency": 0,
+          "mem": 0,
+          "socket": 0
+        },
+        "latency": {
+          "NO_DIAGNOSIS": 3,
+          "cpu": 1,
+          "diskio": 2,
+          "latency": 24,
+          "mem": 0,
+          "socket": 0
+        },
+        "mem": {
+          "NO_DIAGNOSIS": 1,
+          "cpu": 0,
+          "diskio": 14,
+          "latency": 0,
+          "mem": 0,
+          "socket": 0
+        },
+        "socket": {
+          "NO_DIAGNOSIS": 1,
+          "cpu": 9,
+          "diskio": 0,
+          "latency": 5,
+          "mem": 0,
+          "socket": 0
+        }
+      },
+      "single": {
+        "cpu": {
+          "NO_DIAGNOSIS": 0,
+          "cpu": 11,
+          "diskio": 0,
+          "latency": 4,
+          "mem": 0,
+          "socket": 0
+        },
+        "diskio": {
+          "NO_DIAGNOSIS": 0,
+          "cpu": 0,
+          "diskio": 15,
+          "latency": 0,
+          "mem": 0,
+          "socket": 0
+        },
+        "latency": {
+          "NO_DIAGNOSIS": 1,
+          "cpu": 2,
+          "diskio": 2,
+          "latency": 25,
+          "mem": 0,
+          "socket": 0
+        },
+        "mem": {
+          "NO_DIAGNOSIS": 0,
+          "cpu": 0,
+          "diskio": 15,
+          "latency": 0,
+          "mem": 0,
+          "socket": 0
+        },
+        "socket": {
+          "NO_DIAGNOSIS": 0,
+          "cpu": 9,
+          "diskio": 0,
+          "latency": 6,
+          "mem": 0,
+          "socket": 0
+        }
+      }
+    }
+  },
+  "pairwise_outcomes": {
+    "eight_way": {
+      "single_correct__fixed_correct__dynamic_correct": 54,
+      "single_correct__fixed_correct__dynamic_wrong": 11,
+      "single_correct__fixed_wrong__dynamic_correct": 13,
+      "single_correct__fixed_wrong__dynamic_wrong": 6,
+      "single_wrong__fixed_correct__dynamic_correct": 0,
+      "single_wrong__fixed_correct__dynamic_wrong": 2,
+      "single_wrong__fixed_wrong__dynamic_correct": 0,
+      "single_wrong__fixed_wrong__dynamic_wrong": 4
+    },
+    "same_source_set_semantic_degradation": {
+      "classification": "SAME_SOURCE_SET_SEMANTIC_DEGRADATION",
+      "count": 11,
+      "denominator": 90,
+      "evidence_level": "LEVEL_1_DIRECT + LEVEL_2_DETERMINISTIC_RECONSTRUCTION",
+      "internal_mechanism": "UNOBSERVABLE_FROM_FROZEN_ARTIFACTS",
+      "rate": {
+        "denominator": 90,
+        "numerator": 11,
+        "value": 0.12222222222222222
+      }
+    },
+    "simplified": {
+      "single_correct_dynamic_wrong": 17,
+      "single_correct_fixed_wrong": 19,
+      "single_wrong_dynamic_correct": 0,
+      "single_wrong_fixed_correct": 2
+    }
+  },
+  "recommended_next_experiments": [
+    {
+      "expected_benefit": "Makes stage-specific reliability and anchoring hypotheses directly testable.",
+      "new_external_holdout_required": "No for instrumentation validation; yes for final performance claims.",
+      "observed_failure_mechanism": "Internal stage attribution is currently unobservable despite elevated Multi-Agent failures.",
+      "priority": "P0",
+      "recommendation": "Persist SpecialistAssessment, CommanderDecision, Judge inputs, and per-operation status.",
+      "required_development_set_test": "Hash-bound replay verifies complete stage records without Agent-visible truth leakage.",
+      "risk": "More restricted review storage increases leakage-control obligations."
+    },
+    {
+      "expected_benefit": "Raises pair accuracy without changing root-service selection.",
+      "new_external_holdout_required": "Yes before any new external pair-accuracy claim.",
+      "observed_failure_mechanism": "The raw/top-6/final funnel and zero Memory/Socket pair scores expose indicator loss.",
+      "priority": "P0",
+      "recommendation": "Repair and directly test the metric indicator pipeline.",
+      "required_development_set_test": "Per-fault raw coverage, top-6 coverage, confusion, and unseen-name robustness.",
+      "risk": "Rule-based mappings may overfit benchmark naming conventions."
+    },
+    {
+      "expected_benefit": "Protects strong Single outcomes and spends extra calls only on uncertainty.",
+      "new_external_holdout_required": "Yes for architecture superiority or cost-quality claims.",
+      "observed_failure_mechanism": "Most Dynamic runs acquired all three sources while Multi-stage semantics damaged Single-correct cases.",
+      "priority": "P1",
+      "recommendation": "Use Single-first adaptive escalation with Metrics-only termination and truly sequential routing.",
+      "required_development_set_test": "Calibrated escalation precision/recall, route counts, accuracy, and failure accounting.",
+      "risk": "An incorrect confidence gate may suppress useful escalation."
+    },
+    {
+      "expected_benefit": "Reduces premature commitment and tests whether labels influence fusion.",
+      "new_external_holdout_required": "Yes for final architecture claims.",
+      "observed_failure_mechanism": "Truth services were often visible when Fixed still selected the wrong service.",
+      "priority": "P1",
+      "recommendation": "Provide top-k hypotheses with supporting/contradicting evidence and an architecture-blind Judge.",
+      "required_development_set_test": "Same-evidence blind ablation with rescue/damage pairwise accounting.",
+      "risk": "Larger structured context may increase cost and schema failures."
+    },
+    {
+      "expected_benefit": "Adds genuinely heterogeneous signals and deterministic failure localization.",
+      "new_external_holdout_required": "Yes after development selection is frozen.",
+      "observed_failure_mechanism": "Source projection and final fusion failures require source-specific, testable hypotheses.",
+      "priority": "P2",
+      "recommendation": "Replace homogeneous model-only specialists with algorithmic metric, log-delta, and trace-root rankers.",
+      "required_development_set_test": "Source-isolated recall, calibration, causal-role labels, and cross-system robustness.",
+      "risk": "Specialist heuristics may encode dataset-specific assumptions."
+    },
+    {
+      "expected_benefit": "Improves run reliability and cost without hiding semantic failures.",
+      "new_external_holdout_required": "Yes because retry and execution semantics define a new protocol.",
+      "observed_failure_mechanism": "Multi-Agent arms amplify Provider operations, latency, tokens, and terminal failures.",
+      "priority": "P3",
+      "recommendation": "Adopt strict structured output where supported, transport-only retry under a new protocol, parallel Fixed specialists, and reduced repeated context.",
+      "required_development_set_test": "Per-operation failure, retry disposition, latency, token, and schema accounting.",
+      "risk": "Retries change the estimand and parallelism can create new rate-limit behavior."
+    }
+  ],
+  "run_accounting": {
+    "architecture_arms_per_case": 3,
+    "attempt_markers": 270,
+    "cases": 90,
+    "duplicate_runs": 0,
+    "provider_calls_during_attribution": 0,
+    "scheduled_runs": 270,
+    "terminal_records": 270
+  },
+  "schema_version": "rcaeval-re2.post-hoc-attribution.v1",
+  "source_bindings": {
+    "final_report_sha256": "f40be2375ccd80b9cdd831577079043d4370a02924c19073b0ec8cf8b3232155",
+    "implementation_commit": "3a03995037ce410488a4364f8a485b27c80f0ac0",
+    "protocol_freeze_sha256": "cb5e31a0a20a3d7a4a2c10c6e2454ca19deb16d6faab01bf83e805b0840f1a2f",
+    "terminal_records_lock_sha256": "4eaeb2a1b68413ea6bea86391d8663baf49228484b2a935d2f0256dece321ab0",
+    "unblinding_lock_sha256": "19c52b02b07ed63c7592335062acd2cc638c025cd9346e491cbf30c9ee9cbe89"
+  },
+  "terminal_failures": {
+    "causal_boundary": "Provider operation count and run-level failure rate are co-observed; causality and the exact failing operation are not identified.",
+    "dynamic": {
+      "failure_code_counts": {
+        "PROVIDER_OUTPUT_INVALID_SCHEMA": 1,
+        "PROVIDER_TRANSPORT_FAILURE": 10
+      },
+      "invalid_schema_count": 1,
+      "mean_model_calls": 4.7,
+      "mean_tool_calls": 2.911111111111111,
+      "other_terminal_failure_count": 0,
+      "provider_failure_count": 10,
+      "status_counts": {
+        "COMPLETED": 79,
+        "INVALID_SCHEMA": 1,
+        "PROVIDER_FAILURE": 10
+      },
+      "terminal_failure_count": 11,
+      "terminal_failure_rate": {
+        "denominator": 90,
+        "numerator": 11,
+        "value": 0.12222222222222222
+      },
+      "total_model_calls": 423,
+      "total_tool_calls": 262
+    },
+    "exact_provider_failure_stage": "UNOBSERVABLE_FROM_FROZEN_ARTIFACTS",
+    "exact_schema_field_failure": "UNOBSERVABLE_FROM_FROZEN_ARTIFACTS",
+    "fixed": {
+      "failure_code_counts": {
+        "PROVIDER_OUTPUT_INVALID_SCHEMA": 1,
+        "PROVIDER_TRANSPORT_FAILURE": 8
+      },
+      "invalid_schema_count": 1,
+      "mean_model_calls": 3.7888888888888888,
+      "mean_tool_calls": 3,
+      "other_terminal_failure_count": 0,
+      "provider_failure_count": 8,
+      "status_counts": {
+        "COMPLETED": 81,
+        "INVALID_SCHEMA": 1,
+        "PROVIDER_FAILURE": 8
+      },
+      "terminal_failure_count": 9,
+      "terminal_failure_rate": {
+        "denominator": 90,
+        "numerator": 9,
+        "value": 0.1
+      },
+      "total_model_calls": 341,
+      "total_tool_calls": 270
+    },
+    "single": {
+      "failure_code_counts": {
+        "PROVIDER_TRANSPORT_FAILURE": 1
+      },
+      "invalid_schema_count": 0,
+      "mean_model_calls": 1,
+      "mean_tool_calls": 3,
+      "other_terminal_failure_count": 0,
+      "provider_failure_count": 1,
+      "status_counts": {
+        "COMPLETED": 89,
+        "PROVIDER_FAILURE": 1
+      },
+      "terminal_failure_count": 1,
+      "terminal_failure_rate": {
+        "denominator": 90,
+        "numerator": 1,
+        "value": 0.011111111111111112
+      },
+      "total_model_calls": 90,
+      "total_tool_calls": 270
+    }
+  },
+  "tool_coverage": {
+    "all_source_absence_rate": {
+      "denominator": 90,
+      "numerator": 0,
+      "value": 0.0
+    },
+    "any_source_coverage_at_6": {
+      "denominator": 90,
+      "numerator": 90,
+      "value": 1.0
+    },
+    "fixed_completed_wrong_attribution": {
+      "all_root_service_incorrect_runs": 23,
+      "completed_wrong_runs": 14,
+      "coverage_failure_rate": {
+        "denominator": 14,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "terminal_failure_runs": 9,
+      "truth_service_absent_from_all_three": 0,
+      "truth_service_present_in_at_least_one": 14,
+      "truth_service_present_in_multiple": 13,
+      "visible_but_wrong_rate": {
+        "denominator": 14,
+        "numerator": 14,
+        "value": 1.0
+      }
+    },
+    "logs": {
+      "coverage_at_1": {
+        "denominator": 90,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "coverage_at_3": {
+        "denominator": 90,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "coverage_at_6": {
+        "denominator": 90,
+        "numerator": 11,
+        "value": 0.12222222222222222
+      },
+      "status": "AVAILABLE",
+      "top_1_top_2_score_margin": {
+        "count": 90,
+        "maximum": 2641.0,
+        "mean": 1231.0555555555557,
+        "median": 1188.5,
+        "minimum": 150.0
+      },
+      "unique_service_count": {
+        "count": 90,
+        "maximum": 4,
+        "mean": 2.9444444444444446,
+        "median": 3.0,
+        "minimum": 2
+      }
+    },
+    "metrics": {
+      "coverage_at_1": {
+        "denominator": 90,
+        "numerator": 65,
+        "value": 0.7222222222222222
+      },
+      "coverage_at_3": {
+        "denominator": 90,
+        "numerator": 78,
+        "value": 0.8666666666666667
+      },
+      "coverage_at_6": {
+        "denominator": 90,
+        "numerator": 87,
+        "value": 0.9666666666666667
+      },
+      "status": "AVAILABLE",
+      "top_1_top_2_score_margin": {
+        "count": 90,
+        "maximum": 21624000.0,
+        "mean": 925550.0594500444,
+        "median": 423.40229999999997,
+        "minimum": 0.0
+      },
+      "unique_service_count": {
+        "count": 90,
+        "maximum": 6,
+        "mean": 4.444444444444445,
+        "median": 4.0,
+        "minimum": 2
+      }
+    },
+    "traces": {
+      "coverage_at_1": {
+        "denominator": 90,
+        "numerator": 78,
+        "value": 0.8666666666666667
+      },
+      "coverage_at_3": {
+        "denominator": 90,
+        "numerator": 85,
+        "value": 0.9444444444444444
+      },
+      "coverage_at_6": {
+        "denominator": 90,
+        "numerator": 90,
+        "value": 1.0
+      },
+      "status": "AVAILABLE",
+      "top_1_top_2_score_margin": {
+        "count": 90,
+        "maximum": 101.88419999999999,
+        "mean": 8.735655955555556,
+        "median": 1.7673885,
+        "minimum": 0.008249999999999869
+      },
+      "unique_service_count": {
+        "count": 90,
+        "maximum": 6,
+        "mean": 6,
+        "median": 6.0,
+        "minimum": 6
+      }
+    }
+  }
+}
