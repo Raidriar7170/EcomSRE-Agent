@@ -1,0 +1,109 @@
+{
+  "allowed_systems": [
+    "RE2-OB",
+    "RE2-SS"
+  ],
+  "benchmark": "RCAEval",
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "cross_hash_policy": {
+    "algorithm": "sha256",
+    "encoding": "canonical_json_utf8",
+    "evaluation_root": "evaluation-lock.json"
+  },
+  "excluded_scope": [
+    "SINGLE_FIRST_ESCALATION",
+    "ADAPTIVE_CONFIDENCE_GATE",
+    "TARGETED_REFINEMENT",
+    "ARCHITECTURE_BLIND_JUDGE",
+    "HETEROGENEOUS_SPECIALISTS",
+    "EXTERNAL_HOLDOUT"
+  ],
+  "fallback": "NO_FALLBACK",
+  "forbidden_data_classes": [
+    "RAW_EXTERNAL_HOLDOUT_TELEMETRY",
+    "SANITIZED_EXTERNAL_HOLDOUT_TELEMETRY",
+    "EXTERNAL_HOLDOUT_CASE_GROUND_TRUTH",
+    "EXTERNAL_HOLDOUT_CASE_ATTRIBUTION",
+    "EXTERNAL_HOLDOUT_RERUN"
+  ],
+  "forbidden_input_disposition": "FAIL_CLOSED",
+  "forbidden_systems": [
+    "RE2-TT"
+  ],
+  "per_system": {
+    "case_count": 90,
+    "fault_count": 6,
+    "instances_per_stratum": 3,
+    "service_count": 5
+  },
+  "protocol_id": "rcaeval-re2-v2-dev-v1",
+  "required_lock_files": [
+    "config/rcaeval-re2-v2-dev/protocol.json",
+    "config/rcaeval-re2-v2-dev/dataset-lock.json",
+    "config/rcaeval-re2-v2-dev/split-lock.json",
+    "config/rcaeval-re2-v2-dev/model-prompt-lock.json",
+    "config/rcaeval-re2-v2-dev/budget-lock.json",
+    "config/rcaeval-re2-v2-dev/indicator-candidate-formulas.json",
+    "config/rcaeval-re2-v2-dev/evaluation-lock.json"
+  ],
+  "result_driven_retry": "FORBIDDEN",
+  "run_counts": {
+    "design": 360,
+    "dev_validation": 480,
+    "total": 840
+  },
+  "schema_version": "rcaeval-re2-v2-dev.protocol-lock.v1",
+  "semantic_attempts_per_run": 1,
+  "semantic_retry": "FORBIDDEN",
+  "source_base_commit": "095dfd95964df9d77da06dcfb1b31023185b3f41",
+  "split": {
+    "design_case_count": 60,
+    "dev_validation_case_count": 120
+  },
+  "suite": "RE2",
+  "terminal_denominator": "ALL_SCHEDULED_RUNS",
+  "transport_retry": "FORBIDDEN",
+  "v1_bindings": {
+    "attribution_commit": "3991102f6fb228568d6c620c386340a3956ac949",
+    "final_report_sha256": "f40be2375ccd80b9cdd831577079043d4370a02924c19073b0ec8cf8b3232155",
+    "frozen_implementation_commit": "3a03995037ce410488a4364f8a485b27c80f0ac0",
+    "frozen_result_reinterpretation": "FORBIDDEN",
+    "frozen_scope_mutation": "FORBIDDEN",
+    "pr13_merge_commit": "095dfd95964df9d77da06dcfb1b31023185b3f41",
+    "protocol_freeze_sha256": "cb5e31a0a20a3d7a4a2c10c6e2454ca19deb16d6faab01bf83e805b0840f1a2f",
+    "terminal_records_lock_sha256": "4eaeb2a1b68413ea6bea86391d8663baf49228484b2a935d2f0256dece321ab0",
+    "unblinding_lock_sha256": "19c52b02b07ed63c7592335062acd2cc638c025cd9346e491cbf30c9ee9cbe89"
+  },
+  "v1_config_hashes": {
+    "budget-lock.json": "43dc662e6f703ccc29917ed5716329c8bc62da44864078c5290022064d055c84",
+    "dataset-lock.json": "4ea5ebd9f0a88ad6a88db0ea01f8a9c375e44b2082982464d18ec73b7f5592c7",
+    "holdout-policy.json": "73658749a845f4a01ed727c6490db27f8e8279112f4a23bf40634f8a114f37a8",
+    "prompt-lock.json": "333c137a3f0d33ed301909aaf7e0683228bc80a02e16358d15a17c9dcbe15061",
+    "protocol.json": "f6f47f3ee734c9c539f84bec72806c1c9c9922bc2f53cd693f10fa220f1ce102",
+    "schedule-generation.json": "030e2864880c39728e51b8fd44bd9ad40b3c04a7e2baa99f7e1e8e030e248d1a",
+    "scorer-lock.json": "54e9617946615e224bcc0cf0d84f65fee8e8c4c491fb648abb65c6784e654ac6",
+    "service-normalization.json": "7256460cdefabef73c0e037c702049229b963c5ef3c28c2706efbab92b242694",
+    "statistics-lock.json": "ea5912212c224f46504fac0d24b1d4a81ee4e65852c4cf07c551ed863da5b512"
+  },
+  "v2_scope": "OBSERVABILITY_AND_INDICATOR_PIPELINE_ONLY",
+  "variants": {
+    "DESIGN": [
+      "single_v1_reference",
+      "fixed_v1_reference",
+      "dynamic_v1_reference",
+      "single_v2",
+      "fixed_v2",
+      "dynamic_v2"
+    ],
+    "DEV_VALIDATION": [
+      "single_v1_reference",
+      "single_v2",
+      "fixed_v2",
+      "dynamic_v2"
+    ]
+  }
+}

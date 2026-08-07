@@ -1,0 +1,33 @@
+{
+  "max_completion_tokens": 2048,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "prompts": {
+    "commander_prompt_sha256": "c07bfd5c1a2371df861f86e1d833a91de8fdee183c7ca1935643c528dfdf7909",
+    "final_judge_prompt_v2_sha256": "49a0ca835bdd7b806b49787bd30ac6f8861320258d6615b547b906dc9f2c98f3",
+    "incident_template_sha256": "86feac64cfda056ca30780482e2b9fc4d38825ec516ce50626f670c38cd2ee59",
+    "specialist_prompt_sha256": "6e6d795ab38ccb3a49cd79fb726fd7e9d3eaec21019adff8ac7c52519e35ba35"
+  },
+  "protocol_id": "rcaeval-re2-v2-dev-v1",
+  "provider": "openai-compatible",
+  "retry": {
+    "fallback": "NO_FALLBACK",
+    "semantic": "FORBIDDEN",
+    "transport": "FORBIDDEN"
+  },
+  "schema_version": "rcaeval-re2-v2-dev.model-prompt-lock.v1",
+  "schemas": {
+    "v1_commander_sha256": "0ff69d4ae42b7304235d67ecb75b30dc27e56844e4d04ef5230f1076062667cb",
+    "v1_specialist_sha256": "577dfdd6b7133b54b9821d3cb898e99922549c3ec3fcfd14f4b1d63e3662e921",
+    "v2_commander_input_sha256": "81ca19848be1576e288a1e962fe2a47e2867c4c2c5172ee5d59d9468d83a8717",
+    "v2_commander_output_sha256": "376bcb30476250e518ebccff8d25225593806144fbbd59ff5f2b336fd8ac402d",
+    "v2_judge_input_sha256": "2d2cc20c2ba6cfaecde5e1511a0fcad1b2a0abdb5cd90d18e2808999aa726b7c",
+    "v2_judge_output_sha256": "1ab22ca59d7050ca114082830a4168d62d49ad76f5f6a197978bf8aef30b3d14",
+    "v2_resolver_input_sha256": "0c0545a659256849245ddacd80059ebcf9995f3f70cccf07db2d3a0106132a81",
+    "v2_resolver_output_sha256": "0ece7d082701d6224acf4ea679ba9fa83025ac29ea78a6bdbccf8ef4b624101e",
+    "v2_specialist_input_sha256": "314a11c12ae00d154b600d82b79f81621667802ebbbdd16e3313d528652665e4",
+    "v2_specialist_output_sha256": "23f2616a13c17d550fb9b7160ecc1c876a4ebcd8dc948c579bc4476ac641adc9"
+  },
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "v1_prompt_lock_sha256": "333c137a3f0d33ed301909aaf7e0683228bc80a02e16358d15a17c9dcbe15061"
+}

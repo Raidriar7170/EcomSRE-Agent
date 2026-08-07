@@ -1,0 +1,34 @@
+{
+  "algorithm": {
+    "domain": "rcaeval-re2-v2-dev-split-v1",
+    "identity_encoding": "utf8_nul_joined",
+    "selection_order": "sha256_digest_then_instance_bytes"
+  },
+  "assignment_manifest_sha256": "917b1043b1444b1099418ebf0ac5308692dceabe9e0baaa230a4020b83841b40",
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "counts": {
+    "design": 60,
+    "design_re2_ob": 30,
+    "design_re2_ss": 30,
+    "dev_validation": 120,
+    "dev_validation_re2_ob": 60,
+    "dev_validation_re2_ss": 60,
+    "strata": 60,
+    "total": 180
+  },
+  "dataset_lock_sha256": "e0cc4ef5c3414e457f3b04695059e352522adedbb13f6d1f7b9a531c2739a957",
+  "identity_fields": [
+    "system",
+    "root_cause_service",
+    "fault",
+    "instance"
+  ],
+  "protocol_id": "rcaeval-re2-v2-dev-v1",
+  "protocol_sha256": "110d95c388597d417bf0dc15b16c177e1d0dbdc60fb686b8f02edf3a244236ad",
+  "schema_version": "rcaeval-re2-v2-dev.split-lock.v1",
+  "seed": 20260807
+}
