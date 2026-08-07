@@ -1,0 +1,121 @@
+{
+  "architectures": [
+    "single",
+    "fixed",
+    "dynamic"
+  ],
+  "baseline_policy": {
+    "baro": {
+      "future_disposition": "separate_secondary_analysis_only",
+      "included_in_main_experiment": false,
+      "primary_inference_eligible": false
+    }
+  },
+  "benchmark": "RCAEval",
+  "bootstrap": {
+    "confidence_level": 0.95,
+    "instance_resampling": "within_resampled_stratum_with_replacement",
+    "pairing": "preserve_all_architecture_arms_per_case",
+    "replicates": 10000,
+    "seed": 20260806,
+    "stratum_resampling": "service_fault_with_replacement"
+  },
+  "cost_quality": {
+    "comparison": "dynamic_minus_single",
+    "minimum_accuracy_ci_lower": -0.05,
+    "minimum_tool_reduction_ci_lower": 0.0,
+    "minimum_tool_reduction_point_estimate": 0.2
+  },
+  "development_systems": [
+    "RE2-OB",
+    "RE2-SS"
+  ],
+  "holdout_system": "RE2-TT",
+  "incident_window_seconds": 600,
+  "implementation_freeze": {
+    "base_commit": "bad8f25ccfbec0ba5d61a40187b40742cb5eec26",
+    "expected_scoped_file_count": 54,
+    "scoped_paths": [
+      ".github/workflows/agent-mainline.yml",
+      ".gitignore",
+      "config/rcaeval-re2-v1/budget-lock.json",
+      "config/rcaeval-re2-v1/dataset-lock.json",
+      "config/rcaeval-re2-v1/holdout-policy.json",
+      "config/rcaeval-re2-v1/prompt-lock.json",
+      "config/rcaeval-re2-v1/protocol.json",
+      "config/rcaeval-re2-v1/schedule-generation.json",
+      "config/rcaeval-re2-v1/scorer-lock.json",
+      "config/rcaeval-re2-v1/service-normalization.json",
+      "config/rcaeval-re2-v1/statistics-lock.json",
+      "docs/external-benchmarks/rcaeval-re2-v1-data-card.md",
+      "docs/external-benchmarks/rcaeval-re2-v1-human-brief.md",
+      "docs/external-benchmarks/rcaeval-re2-v1-protocol.md",
+      "scripts/rcaeval/__init__.py",
+      "scripts/rcaeval/audit_dev.py",
+      "scripts/rcaeval/common.py",
+      "scripts/rcaeval/freeze_protocol.py",
+      "scripts/rcaeval/preflight_holdout.py",
+      "scripts/rcaeval/run_dev_pilot.py",
+      "scripts/rcaeval/run_holdout.py",
+      "scripts/rcaeval/seal_holdout.py",
+      "scripts/rcaeval/unblind_and_score.py",
+      "scripts/rcaeval/verify_report.py",
+      "src/ecomsre_rcaeval/__init__.py",
+      "src/ecomsre_rcaeval/adapter.py",
+      "src/ecomsre_rcaeval/artifacts.py",
+      "src/ecomsre_rcaeval/contracts.py",
+      "src/ecomsre_rcaeval/dataset.py",
+      "src/ecomsre_rcaeval/execution.py",
+      "src/ecomsre_rcaeval/freeze.py",
+      "src/ecomsre_rcaeval/lifecycle.py",
+      "src/ecomsre_rcaeval/normalization.py",
+      "src/ecomsre_rcaeval/protocol.py",
+      "src/ecomsre_rcaeval/provider.py",
+      "src/ecomsre_rcaeval/reporting.py",
+      "src/ecomsre_rcaeval/runner.py",
+      "src/ecomsre_rcaeval/sanitize.py",
+      "src/ecomsre_rcaeval/schedule.py",
+      "src/ecomsre_rcaeval/scoring.py",
+      "src/ecomsre_rcaeval/state.py",
+      "src/ecomsre_rcaeval/statistics.py",
+      "src/ecomsre_rcaeval/tools.py",
+      "tests/benchmarks/rcaeval/test_control_plane.py",
+      "tests/benchmarks/rcaeval/test_dataset_tools.py",
+      "tests/benchmarks/rcaeval/test_execution.py",
+      "tests/benchmarks/rcaeval/test_holdout_sealing.py",
+      "tests/benchmarks/rcaeval/test_normalization.py",
+      "tests/benchmarks/rcaeval/test_protocol_locks.py",
+      "tests/benchmarks/rcaeval/test_provider.py",
+      "tests/benchmarks/rcaeval/test_reporting.py",
+      "tests/benchmarks/rcaeval/test_runner.py",
+      "tests/benchmarks/rcaeval/test_scoring_statistics_schedule.py",
+      "tests/benchmarks/rcaeval/test_synthetic_holdout_e2e.py"
+    ]
+  },
+  "indicator_mapping": {
+    "cpu": "cpu",
+    "delay": "latency",
+    "disk": "diskio",
+    "loss": "latency",
+    "mem": "mem",
+    "socket": "socket"
+  },
+  "main_comparison": "dynamic_minus_single_root_service_ac1",
+  "planned_final_runs": 270,
+  "primary_metric": "root_service_ac1",
+  "protocol_id": "rcaeval-re2-external-v1",
+  "schema_version": "rcaeval-re2.protocol-lock.v1",
+  "secondary_metrics": [
+    "root_cause_pair_ac1",
+    "fixed_minus_single_root_service_ac1",
+    "dynamic_minus_fixed_root_service_ac1",
+    "runtime_completion",
+    "evidence_validity",
+    "mean_median_tool_calls",
+    "mean_median_model_calls",
+    "known_provider_tokens",
+    "latency",
+    "terminal_failure_taxonomy"
+  ],
+  "superiority_rule": "95_percent_ci_lower_bound_gt_0"
+}

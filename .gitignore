@@ -13,3 +13,13 @@ __pycache__/
 
 # Runtime artifacts are local, immutable evidence and are not Git inputs.
 artifacts/
+
+# RCAEval external benchmark data and evaluator-only outputs stay outside Git.
+.ecomsre-private/
+rcaeval-data/
+rcaeval-runs/
+rcaeval-reports/
+/holdout-raw/
+/holdout-sanitized/
+/evaluator-only/
+/.rcaeval-holdout-manifest.tmp

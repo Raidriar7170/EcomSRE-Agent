@@ -1,0 +1,15 @@
+{
+  "diagnosis_schema_sha256": "a9314e9431a9f460b7f8bdb13c648b3b968020a77b591c867c8bad20e16b4d01",
+  "commander_prompt_sha256": "c07bfd5c1a2371df861f86e1d833a91de8fdee183c7ca1935643c528dfdf7909",
+  "commander_schema_sha256": "0ff69d4ae42b7304235d67ecb75b30dc27e56844e4d04ef5230f1076062667cb",
+  "incident_template_sha256": "86feac64cfda056ca30780482e2b9fc4d38825ec516ce50626f670c38cd2ee59",
+  "max_completion_tokens": 2048,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "provider": "openai-compatible",
+  "schema_version": "rcaeval-re2.prompt-model-provider-lock.v1",
+  "specialist_prompt_sha256": "6e6d795ab38ccb3a49cd79fb726fd7e9d3eaec21019adff8ac7c52519e35ba35",
+  "specialist_schema_sha256": "577dfdd6b7133b54b9821d3cb898e99922549c3ec3fcfd14f4b1d63e3662e921",
+  "system_prompt_sha256": "2e3e1e600a88d2b6aa07862efcab2520e2f341a2560f0386272fb4a82c4b474f",
+  "temperature": 0.0,
+  "top_p": 1.0
+}

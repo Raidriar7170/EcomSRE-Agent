@@ -24,6 +24,8 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
           submodules: recursive
 
       - name: Fetch pinned upstream tag metadata
@@ -125,9 +127,11 @@ jobs:
           src/ecomsre/phase5b
           src/ecomsre/tools
           src/ecomsre/demo
+          src/ecomsre_rcaeval
           eval/phase1/run.py
           eval/phase2/compare.py
           eval/phase4/runner.py
           eval/phase5a/runner.py
           eval/phase5b/runner.py
+          scripts/rcaeval
           tests/phase5b

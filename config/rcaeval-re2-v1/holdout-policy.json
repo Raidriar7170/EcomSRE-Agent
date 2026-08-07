@@ -1,0 +1,14 @@
+{
+  "agent_mount": "holdout-sanitized-only",
+  "expected_cases": 90,
+  "ground_truth_root": "evaluator-only",
+  "holdout_system": "RE2-TT",
+  "max_semantic_attempts": 1,
+  "opaque_case_pattern": "tt-case-[0-9]{4}",
+  "raw_holdout_access_without_separate_post_b1_authorization": "forbidden",
+  "raw_holdout_root": "holdout-raw",
+  "sanitized_holdout_root": "holdout-sanitized",
+  "schema_version": "rcaeval-re2.holdout-policy.v1",
+  "terminal_record_retry": "forbidden",
+  "unblinding_before_terminal_record_lock": "forbidden"
+}
