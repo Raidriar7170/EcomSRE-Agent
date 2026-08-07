@@ -1,0 +1,23 @@
+{
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "DESIGN_SET",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "design_state": "NOT_RUN_DUE_TO_SMOKE_GATE",
+  "dev_validation_executed": false,
+  "dev_validation_values_accessed": false,
+  "external_claim_made": false,
+  "formula": "F0",
+  "formula_reselection_performed": false,
+  "old_identifiers_reused": false,
+  "private_case_records_committed": false,
+  "protocol_id": "rcaeval-re2-v2-dev.1",
+  "raw_provider_outputs_committed": false,
+  "re2_tt_accessed": false,
+  "schema_version": "rcaeval-re2-v2-dev1.current-disposition.v1",
+  "smoke_state": "V2_DEV1_PROVIDER_SMOKE_GATE_NOT_PASSED",
+  "state": "V2_DEV1_PROVIDER_SMOKE_GATE_NOT_PASSED",
+  "v2_dev_v1_evidence_changed": false
+}

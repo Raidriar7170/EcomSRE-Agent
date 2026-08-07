@@ -1,0 +1,122 @@
+{
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "DESIGN_SET",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "evaluated_at_utc": "2026-08-07T17:43:55.804706+00:00",
+  "gate_checks": {
+    "exact_failure_stage_coverage": {
+      "denominator": 0,
+      "numerator": 0,
+      "passed": true,
+      "required": 1.0,
+      "value": 0.0
+    },
+    "execution_abort": {
+      "boundary": "PRE_RUN_ATTEMPT",
+      "occurred": true,
+      "passed": false,
+      "provider_called": false,
+      "provider_constructed": false,
+      "safe_validation_error": {
+        "constraint_types": [
+          "less_than_equal"
+        ],
+        "error_class": "ValidationError",
+        "error_count": 1,
+        "field_paths": [
+          "call_position"
+        ]
+      }
+    },
+    "final_judge_schema": {
+      "invalid_schema_count": 0,
+      "passed": true
+    },
+    "operation_attempt_markers": {
+      "attempts": 26,
+      "operation_records": 26,
+      "passed": true
+    },
+    "positive_known_token_accounting": {
+      "known_tokens": 108698,
+      "passed": true
+    },
+    "privacy": {
+      "credential_text_hits": 0,
+      "forbidden_key_hits": 0,
+      "passed": true,
+      "raw_local_path_hits": 0
+    },
+    "provider_operation_cap": {
+      "maximum": 240,
+      "operations": 39,
+      "passed": true
+    },
+    "run_attempt_accounting": {
+      "denominator": 72,
+      "numerator": 11,
+      "passed": false,
+      "value": 0.1527777777777778
+    },
+    "terminal_accounting": {
+      "denominator": 72,
+      "numerator": 11,
+      "passed": false,
+      "value": 0.1527777777777778
+    },
+    "terminal_overwrites": {
+      "count": 0,
+      "passed": true
+    },
+    "v2_run_completion": {
+      "denominator": 36,
+      "numerator": 6,
+      "passed": false,
+      "required_minimum": 0.95,
+      "value": 0.16666666666666666
+    },
+    "v2_run_trace_coverage": {
+      "denominator": 36,
+      "numerator": 6,
+      "passed": false,
+      "value": 0.16666666666666666
+    }
+  },
+  "observability": {
+    "operation_attempt_markers": 26,
+    "operation_records": 26,
+    "v2_run_traces": 6
+  },
+  "protocol_id": "rcaeval-re2-v2-dev.1",
+  "provider_accounting": {
+    "known_tokens": 108698,
+    "provider_operations": 39,
+    "semantic_retries": 0,
+    "transport_retries": 0
+  },
+  "run_accounting": {
+    "attempted": 11,
+    "planned": 72,
+    "terminalized": 11,
+    "v1_reference_terminal_status": {
+      "COMPLETED": 5
+    },
+    "v2_terminal_status": {
+      "COMPLETED": 6
+    }
+  },
+  "schema_version": "rcaeval-re2-v2-dev1.provider-smoke-gate.v1",
+  "source_bindings": {
+    "design_schedule_sha256": "73de92e0a6ec6e92352d40e37abcd3430a0b1d330e3cbd2d13e5c88cc6d5fd8f",
+    "evaluation_root_lock_sha256": "897328f9fc40b1edff4093d62f4b7f37dae30c21c6a9a82ae038fdc51d5b30f4",
+    "indicator_lock_sha256": "91c81e1225d3b7722fbc8e9ef3976215a95124e25b4dcbca75914c8f62b3ad64",
+    "model_prompt_lock_sha256": "04c983b246c2841b6c50284d7a9452b9c1bc545988bb9f26b5f66680f599c555",
+    "protocol_sha256": "b79ecbd11ee4180781daff92f50056e5fc25ad6217d431faf9e47a6cfbd4bee7",
+    "smoke_schedule_sha256": "110652ee6d35dd62a64124d9f868e52343d3e4d60f7276c67d84a36d5de3705d",
+    "split_lock_sha256": "e0d7ed174a0bd48ae4084a607aa675d9d0a502184de1d70e2cbde0272d8f2f29"
+  },
+  "state": "V2_DEV1_PROVIDER_SMOKE_GATE_NOT_PASSED"
+}
