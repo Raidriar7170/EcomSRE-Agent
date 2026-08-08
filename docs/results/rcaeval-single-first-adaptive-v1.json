@@ -1,0 +1,67 @@
+{
+  "candidate_selected": false,
+  "candidates": [
+    {
+      "candidate_id": "candidate-1",
+      "completed": 0,
+      "conservative_token_upper_bound": 89868,
+      "invalid_schema": 12,
+      "private_path_hits": 0,
+      "provider_attempts": 12,
+      "scheduled": 12,
+      "transport_retries": 0
+    },
+    {
+      "candidate_id": "candidate-2",
+      "completed": 0,
+      "conservative_token_upper_bound": 89506,
+      "invalid_schema": 12,
+      "private_path_hits": 0,
+      "provider_attempts": 12,
+      "scheduled": 12,
+      "transport_retries": 0
+    },
+    {
+      "candidate_id": "candidate-3",
+      "completed": 0,
+      "conservative_token_upper_bound": 88871,
+      "invalid_schema": 12,
+      "private_path_hits": 0,
+      "provider_attempts": 12,
+      "safe_diagnostic": {
+        "constraint_types": [
+          "validation_error"
+        ],
+        "error_class": "ValueError",
+        "error_count": 1,
+        "field_paths": [
+          "$"
+        ],
+        "observed_count": 12
+      },
+      "scheduled": 12,
+      "transport_retries": 0
+    }
+  ],
+  "claim_boundary": "DEVELOPMENT_VISIBLE_DESIGN_NOT_EXTERNAL_HOLDOUT",
+  "config_sha256": {
+    "agent": "4efced9ff8c202bd48878901a2a0e7e674aa0ff8404048b66947d942011e6a02",
+    "evaluation": "1193cf02c2c9ee999eda891f157fd765b2385c2edbac11531b4afada33dc9a2d",
+    "model_lock": "c77e34d33f8662ac056055dc456e4be37524d7742f5a2b380f78dd816886b3ff"
+  },
+  "design": {
+    "executed": false,
+    "historical_strong_single_baseline_pair_correct": 29,
+    "historical_strong_single_baseline_root_service_correct": 51,
+    "reason": "NO_CANDIDATE_PASSED_PROVIDER_SMOKE"
+  },
+  "evaluation_version": "single-first-adaptive-v1",
+  "final_state": "SINGLE_FIRST_ADAPTIVE_V1_DESIGN_NOT_PASSED_READY_FOR_ALGORITHM_REVIEW",
+  "schema_version": "rcaeval-single-first-adaptive.public-result.v1",
+  "validation": {
+    "candidate_freeze_created": false,
+    "executed": false,
+    "schedule_values_accessed": false,
+    "validation_case_directories_opened": false
+  }
+}

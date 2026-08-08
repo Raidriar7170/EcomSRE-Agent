@@ -1,0 +1,37 @@
+{
+  "architecture": "STRONG_SINGLE_THEN_DETERMINISTIC_GATE_THEN_SELECTIVE_SPECIALISTS_THEN_FUSION_THEN_HYBRID_INDICATOR",
+  "evaluation_version": "single-first-adaptive-v1",
+  "gate": {
+    "direct_confidence_threshold": 0.75,
+    "low_confidence_threshold": 0.55,
+    "metrics_margin_threshold": 0.25
+  },
+  "indicator_resolver": {
+    "deterministic_margin_threshold": 0.6,
+    "model_candidate_keep_top_k": 2
+  },
+  "initial_sources": [
+    "metrics",
+    "logs"
+  ],
+  "route_costs": {
+    "DIRECT_RETURN": {
+      "semantic_operations": 1,
+      "tool_calls": 2
+    },
+    "ESCALATE_BOTH": {
+      "semantic_operations": 4,
+      "tool_calls": 3
+    },
+    "ESCALATE_LOGS": {
+      "semantic_operations": 3,
+      "tool_calls": 2
+    },
+    "ESCALATE_TRACES": {
+      "semantic_operations": 3,
+      "tool_calls": 3
+    }
+  },
+  "schema_version": "rcaeval-single-first-adaptive.agent.v1",
+  "ss_trace_policy": "UNAVAILABLE"
+}

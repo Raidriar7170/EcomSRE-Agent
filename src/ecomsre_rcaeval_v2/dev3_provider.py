@@ -913,6 +913,10 @@ class Dev3ProviderProxy:
             raise TypeError("v1 Provider token counter must be an integer or null")
         return value
 
+    @property
+    def last_safe_validation_error(self) -> object | None:
+        return getattr(self._inner, "last_safe_validation_error", None)
+
     def usage_snapshot(self) -> object:
         return getattr(self._inner, "usage_snapshot")()
 
