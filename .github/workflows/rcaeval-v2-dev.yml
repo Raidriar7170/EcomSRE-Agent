@@ -8,6 +8,7 @@ on:
       - "tests/benchmarks/rcaeval_v2/**"
       - "config/rcaeval-re2-v2-dev/**"
       - "config/rcaeval-re2-v2-dev1/**"
+      - "config/rcaeval-re2-v2-dev2/**"
       - "docs/**/rcaeval-re2-v2-dev*"
       - ".github/workflows/rcaeval-v2-dev.yml"
 
@@ -17,6 +18,8 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: src:.
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,7 +29,7 @@ jobs:
       - run: uv run --frozen --no-sync pytest -q tests/benchmarks/rcaeval_v2
       - run: uv run --frozen --no-sync ruff check src/ecomsre_rcaeval_v2 scripts/rcaeval_v2 tests/benchmarks/rcaeval_v2
       - run: uv run --frozen --no-sync mypy src/ecomsre_rcaeval_v2 scripts/rcaeval_v2
-      - name: Scan v2-dev.1 public outputs for leakage
+      - name: Scan v2 development public outputs for leakage
         run: >-
           uv run --frozen --no-sync python -m scripts.rcaeval_v2.scan_public_outputs
           --allow-missing
@@ -36,3 +39,10 @@ jobs:
           docs/review-evidence/rcaeval-re2-v2-dev1/provider-smoke-gate.json
           docs/review-evidence/rcaeval-re2-v2-dev1/design-gate.json
           docs/review-evidence/rcaeval-re2-v2-dev1/human-brief.md
+          docs/results/rcaeval-re2-v2-dev2-design-aggregate.json
+          docs/results/rcaeval-re2-v2-dev2-design-summary.md
+          docs/review-evidence/rcaeval-re2-v2-dev2/current-disposition.json
+          docs/review-evidence/rcaeval-re2-v2-dev2/schedule-admission-gate.json
+          docs/review-evidence/rcaeval-re2-v2-dev2/provider-smoke-gate.json
+          docs/review-evidence/rcaeval-re2-v2-dev2/design-gate.json
+          docs/review-evidence/rcaeval-re2-v2-dev2/human-brief.md

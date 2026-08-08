@@ -1,0 +1,18 @@
+{
+  "admission_lock_before_provider": true,
+  "all_terminal_failures_retained": true,
+  "candidate_freeze_requires_human_review": true,
+  "design_classification": ["DEVELOPMENT_VISIBLE", "DESIGN_SET", "NOT_EXTERNAL_HOLDOUT", "NOT_PRIMARY_INFERENCE"],
+  "dev_validation_access": "METADATA_ONLY_DURING_ADMISSION",
+  "dev_validation_execution": "FORBIDDEN_IN_THIS_TASK",
+  "evaluation_root_lock_before_admission": true,
+  "external_superiority_claim": "FORBIDDEN",
+  "one_shot": true,
+  "prompt_or_code_change_after_admission_lock": "FORBIDDEN",
+  "protocol_id": "rcaeval-re2-v2-dev.2",
+  "protocol_sha256": "bdae9acab73e550a837807cfdb180015fde83a566eb745dae7be1887d5cad86f",
+  "re2_tt_access": "FORBIDDEN",
+  "schema_version": "rcaeval-re2-v2-dev2.evaluation-policy.v1",
+  "smoke_gate_before_design": true,
+  "validation_failure_rerun": "FORBIDDEN"
+}
