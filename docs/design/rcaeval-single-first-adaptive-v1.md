@@ -46,7 +46,7 @@ Each Logs or Trace call receives one `SpecialistInput`:
 
 Fusion receives one architecture-blind `FusionInput` whose Initial service, visible services, visible references, and override candidates are explicit and self-validating. Output validation uses only that same input authority. Fusion keeps the Initial service by default and may override only to an authorized root-candidate service with explicit support and contradiction.
 
-The Runtime propagates nine exact Specialist failure codes and eight exact Fusion failure codes. Safe diagnostics contain only code, role, field path, constraint type, and counts; they never persist raw invalid service/ref values, raw Provider arguments, or raw responses.
+The Runtime propagates nine exact Specialist failure codes and eight exact Fusion failure codes. Safe diagnostics contain only code, role, field path, constraint type, and counts; they never persist original invalid service/ref values, unredacted Provider arguments, or unredacted Provider payloads.
 
 ## Evaluation protocol
 
