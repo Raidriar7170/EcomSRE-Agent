@@ -1,0 +1,23 @@
+{
+  "candidate_id": "candidate-3",
+  "config_sha256": {
+    "agent": "de4fc5bfd1bacdd34d00ef78bef357b5d0a27e088df9a2669f8dca682e143604",
+    "evaluation": "d6651c3e49a289ce8ed16f189d58b9885d9c4147bccf41c1b581e4e85c271465",
+    "model_lock": "c77e34d33f8662ac056055dc456e4be37524d7742f5a2b380f78dd816886b3ff"
+  },
+  "design_metrics": {
+    "candidate_id": "candidate-3",
+    "damage": 2,
+    "mean_semantic_operations": 1.85,
+    "minimum_gate_passed": true,
+    "net_rescue": 4,
+    "pair_correct": 33,
+    "root_service_correct": 57,
+    "zero_escalation": 35
+  },
+  "evaluation_version": "single-first-adaptive-v1",
+  "implementation_git_sha": "28d219b868aa4cf5a058dd87fe9449cd0cc81074",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "schema_version": "rcaeval-single-first-adaptive.candidate-freeze.v1",
+  "validation_split_id": "DEV_VALIDATION"
+}
