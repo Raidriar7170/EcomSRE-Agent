@@ -58,6 +58,25 @@ def test_medium_conflict_escalates_to_logs() -> None:
     assert decision.route is EscalationRoute.ESCALATE_LOGS
 
 
+def test_default_policy_keeps_cross_source_conflict_as_a_hard_veto() -> None:
+    decision = decide_escalation(
+        _inputs(cross_source_service_disagreement=True),
+        GatePolicy(),
+    )
+
+    assert decision.route is EscalationRoute.ESCALATE_LOGS
+
+
+def test_candidate_two_softens_log_disagreement_when_metrics_anchor_is_strong() -> None:
+    decision = decide_escalation(
+        _inputs(cross_source_service_disagreement=True),
+        GatePolicy(cross_source_conflict_blocks_direct=False),
+    )
+
+    assert decision.route is EscalationRoute.DIRECT_RETURN
+    assert decision.gate_feature_snapshot.cross_source_service_disagreement is True
+
+
 def test_network_ambiguity_escalates_to_traces_when_available() -> None:
     decision = decide_escalation(
         _inputs(

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import Field, StrictFloat
+from pydantic import Field, StrictBool, StrictFloat
 
 from ecomsre_rcaeval_adaptive.contracts import (
     EscalationDecision,
@@ -17,6 +17,7 @@ from ecomsre_rcaeval_adaptive.contracts import (
 
 
 class GatePolicy(V2Model):
+    cross_source_conflict_blocks_direct: StrictBool = True
     direct_confidence_threshold: StrictFloat = Field(default=0.75, ge=0.0, le=1.0)
     low_confidence_threshold: StrictFloat = Field(default=0.55, ge=0.0, le=1.0)
     metrics_margin_threshold: StrictFloat = Field(default=0.25, ge=0.0)
@@ -89,7 +90,10 @@ def decide_escalation(inputs: GateInputs, policy: GatePolicy) -> EscalationDecis
             initial.confidence >= policy.direct_confidence_threshold,
             rank is not None and rank <= 2,
             margin >= policy.metrics_margin_threshold,
-            not inputs.cross_source_service_disagreement,
+            (
+                not inputs.cross_source_service_disagreement
+                or not policy.cross_source_conflict_blocks_direct
+            ),
             inputs.initial_evidence_supports_predicted_service,
             inputs.indicator_candidate_available,
             not ambiguity,

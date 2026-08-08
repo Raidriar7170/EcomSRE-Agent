@@ -2,6 +2,7 @@
   "architecture": "STRONG_SINGLE_THEN_DETERMINISTIC_GATE_THEN_SELECTIVE_SPECIALISTS_THEN_FUSION_THEN_HYBRID_INDICATOR",
   "evaluation_version": "single-first-adaptive-v1",
   "gate": {
+    "cross_source_conflict_blocks_direct": false,
     "direct_confidence_threshold": 0.75,
     "low_confidence_threshold": 0.55,
     "metrics_margin_threshold": 0.25

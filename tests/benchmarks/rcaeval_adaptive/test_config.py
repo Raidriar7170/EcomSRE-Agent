@@ -18,6 +18,7 @@ def test_agent_config_locks_single_first_routes_and_exact_costs() -> None:
     assert agent["evaluation_version"] == "single-first-adaptive-v1"
     assert agent["initial_sources"] == ["metrics", "logs"]
     assert agent["gate"] == {
+        "cross_source_conflict_blocks_direct": False,
         "direct_confidence_threshold": 0.75,
         "low_confidence_threshold": 0.55,
         "metrics_margin_threshold": 0.25,
