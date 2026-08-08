@@ -173,13 +173,31 @@ class InitialDiagnosis(V2Model):
         return self
 
 
+class SpecialistInitialDiagnosisContext(V2Model):
+    """Provider-visible Initial context without non-authoritative evidence refs."""
+
+    root_cause_service: ServiceName
+    model_proposed_indicator: CanonicalIndicator | None
+    confidence: StrictFloat = Field(ge=0.0, le=1.0)
+    explanation: str = Field(min_length=1, max_length=2_000)
+    uncertainty_flags: tuple[UncertaintyFlag, ...]
+
+    @model_validator(mode="after")
+    def require_unique_uncertainty_flags(
+        self,
+    ) -> SpecialistInitialDiagnosisContext:
+        if len(self.uncertainty_flags) != len(set(self.uncertainty_flags)):
+            raise ValueError("specialist Initial uncertainty flags must be unique")
+        return self
+
+
 class SpecialistInput(V2Model):
     schema_version: Literal[
         "rcaeval-single-first-adaptive.specialist-input.v1"
     ] = "rcaeval-single-first-adaptive.specialist-input.v1"
     source: Literal["logs", "traces"]
     incident: IncidentManifest
-    initial_diagnosis: InitialDiagnosis
+    initial_diagnosis: SpecialistInitialDiagnosisContext
     source_evidence: tuple[BoundedEvidenceSnapshotV2, ...] = Field(
         min_length=1, max_length=64
     )

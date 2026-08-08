@@ -16,6 +16,7 @@ from ecomsre_rcaeval_adaptive.contracts import (
     RankedHypothesis,
     RankedHypothesisBatch,
     SpecialistFailureCode,
+    SpecialistInitialDiagnosisContext,
     SpecialistInput,
 )
 from ecomsre_rcaeval_adaptive.specialists import (
@@ -107,11 +108,10 @@ def _specialist_input() -> SpecialistInput:
     return SpecialistInput(
         source="logs",
         incident=_initial_input().incident,
-        initial_diagnosis=InitialDiagnosis(
+        initial_diagnosis=SpecialistInitialDiagnosisContext(
             root_cause_service="checkoutservice",
             model_proposed_indicator="cpu",
             confidence=0.8,
-            evidence_refs=("log:0001",),
             explanation="The bounded evidence supports this service.",
             uncertainty_flags=(),
         ),
@@ -203,10 +203,25 @@ def test_specialist_input_has_one_exact_source_authority() -> None:
     assert specialist_input.visible_services == ("checkoutservice",)
     assert specialist_input.visible_evidence_refs == ("log:0001",)
     serialized = specialist_input.model_dump_json()
+    initial_context = specialist_input.model_dump(mode="json")["initial_diagnosis"]
+    assert "evidence_refs" not in initial_context
     assert "metric:0001" not in serialized
     assert "trace:0001" not in serialized
     assert "canonical_evidence" not in serialized
     assert "ArchitectureContext" not in serialized
+
+
+def test_specialist_initial_context_preserves_explanation_bound() -> None:
+    source_schema = InitialDiagnosis.model_json_schema(mode="validation")
+    projected_schema = SpecialistInitialDiagnosisContext.model_json_schema(
+        mode="validation"
+    )
+
+    assert source_schema["properties"]["explanation"]["maxLength"] == 2_000
+    assert (
+        projected_schema["properties"]["explanation"]["maxLength"]
+        == source_schema["properties"]["explanation"]["maxLength"]
+    )
 
 
 def test_specialist_provider_uses_exact_input_and_runtime_adds_source() -> None:
@@ -239,6 +254,7 @@ def test_specialist_provider_uses_exact_input_and_runtime_adds_source() -> None:
     }
     assert envelope["visible_services"] == ["checkoutservice"]
     assert envelope["visible_evidence_refs"] == ["log:0001"]
+    assert "evidence_refs" not in envelope["initial_diagnosis"]
     serialized = json.dumps(transport.payload, sort_keys=True)
     assert "canonical_evidence" not in serialized
     assert "bounded_context" not in serialized

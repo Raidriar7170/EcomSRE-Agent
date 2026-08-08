@@ -396,6 +396,11 @@ def test_logs_path_uses_three_model_calls_and_two_tools(tmp_path: Path) -> None:
     assert len(provider.specialist_inputs) == 1
     specialist_input = provider.specialist_inputs[0]
     assert specialist_input.source == "logs"
+    assert (
+        specialist_input.initial_diagnosis.root_cause_service
+        == result.diagnosis.initial_diagnosis.root_cause_service
+    )
+    assert "evidence_refs" not in specialist_input.initial_diagnosis.model_dump()
     assert specialist_input.visible_evidence_refs == tuple(
         sorted(item.evidence_ref for item in specialist_input.source_evidence)
     )
@@ -575,7 +580,7 @@ def test_run_domain_separates_old_smoke_and_validation_ids() -> None:
             )
         )
     ).hexdigest()[:32]
-    domain = "single-first-adaptive-v1-downstream-fix-r1"
+    domain = "single-first-adaptive-v1-downstream-fix-r2"
     design = adaptive_run_id(domain, "candidate-1", "DESIGN", identity)
 
     assert design != legacy
@@ -601,7 +606,7 @@ def test_run_domain_separates_old_smoke_and_validation_ids() -> None:
     for other_domain in (
         "single-first-adaptive-v1-interface-fix-r1",
         "single-first-adaptive-v1-interface-fix-r2",
-        "single-first-adaptive-v1-downstream-fix-r2",
+        "single-first-adaptive-v1-downstream-fix-r1",
     ):
         assert design != adaptive_run_id(
             other_domain,
@@ -615,7 +620,7 @@ def test_candidate_config_is_create_once_and_binds_prompts(tmp_path: Path) -> No
     kwargs = {
         "run_root": tmp_path,
         "candidate_id": "candidate-1",
-        "run_domain": "single-first-adaptive-v1-downstream-fix-r1",
+        "run_domain": "single-first-adaptive-v1-downstream-fix-r2",
         "agent_config": {"gate": {"direct_confidence_threshold": 0.75}},
         "indicator_policy": IndicatorPolicy(),
         "implementation_git_sha": "a" * 40,
@@ -628,7 +633,7 @@ def test_candidate_config_is_create_once_and_binds_prompts(tmp_path: Path) -> No
     payload = json.loads(first.read_text(encoding="utf-8"))
     assert payload["evaluation_version"] == "single-first-adaptive-v1"
     assert payload["candidate_id"] == "candidate-1"
-    assert payload["run_domain"] == "single-first-adaptive-v1-downstream-fix-r1"
+    assert payload["run_domain"] == "single-first-adaptive-v1-downstream-fix-r2"
     assert payload["implementation_git_sha"] == "a" * 40
     assert set(payload["prompt_sha256"]) == {
         "fusion",

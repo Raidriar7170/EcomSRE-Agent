@@ -39,6 +39,7 @@ from ecomsre_rcaeval_adaptive.contracts import (
     InitialDiagnosisInput,
     RankedHypothesis,
     RankedHypothesisBatch,
+    SpecialistInitialDiagnosisContext,
     SpecialistInput,
 )
 from ecomsre_rcaeval_adaptive.fusion import FUSION_PROMPT, FusionInput
@@ -200,7 +201,13 @@ def _specialist_input(
     return SpecialistInput(
         source=source,  # type: ignore[arg-type]
         incident=incident,
-        initial_diagnosis=initial_diagnosis,
+        initial_diagnosis=SpecialistInitialDiagnosisContext(
+            root_cause_service=initial_diagnosis.root_cause_service,
+            model_proposed_indicator=initial_diagnosis.model_proposed_indicator,
+            confidence=initial_diagnosis.confidence,
+            explanation=initial_diagnosis.explanation,
+            uncertainty_flags=initial_diagnosis.uncertainty_flags,
+        ),
         source_evidence=source_evidence,
         visible_services=tuple(
             sorted(
