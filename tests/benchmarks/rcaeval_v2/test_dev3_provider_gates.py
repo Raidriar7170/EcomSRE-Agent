@@ -144,18 +144,22 @@ def test_path_boundary_rejects_safe_alias_resolving_into_tt(tmp_path: Path) -> N
         reject_dev3_forbidden_paths(alias / "opaque.json")
 
 
-def test_publisher_requires_fresh_canonical_f0_reverification(
+def test_publisher_requires_postrun_lock_without_rerunning_f0(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[3]))
     publisher = importlib.import_module(
         "scripts.rcaeval_v2.publish_dev3_results"
     )
+    assert not hasattr(publisher, "run_reverification")
+
+    def reject_missing_successor(*args: object, **kwargs: object) -> None:
+        raise ValueError("post-run successor lock required")
+
     monkeypatch.setattr(
-        publisher, "verify_provider_ready", lambda *args, **kwargs: (object(), object())
+        publisher, "verify_postrun_evaluation_ready", reject_missing_successor
     )
-    monkeypatch.setattr(publisher, "run_reverification", lambda **kwargs: False)
-    with pytest.raises(ValueError, match="F0 reverification drift"):
+    with pytest.raises(ValueError, match="post-run successor lock required"):
         publisher.publish(
             ob_root=tmp_path / "ob",
             ss_root=tmp_path / "ss",

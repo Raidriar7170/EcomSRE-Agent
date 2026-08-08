@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Mapping
 
 from ecomsre_rcaeval_v2.dev3_audit import Dev2FailureAuditLock
-from ecomsre_rcaeval_v2.dev3_evaluation_root import verify_provider_ready
 from ecomsre_rcaeval_v2.dev3_evidence import (
     assess_design,
     evidence_source_bindings,
@@ -18,9 +17,11 @@ from ecomsre_rcaeval_v2.dev3_evidence import (
     public_admission_gate,
     verify_smoke_gate,
 )
-from ecomsre_rcaeval_v2.dev3_execution import (
-    discover_case_index,
-    load_locked_phase_schedule,
+from ecomsre_rcaeval_v2.dev3_execution import discover_case_index
+from ecomsre_rcaeval_v2.dev3_postrun import (
+    POSTRUN_LOCK_NAME,
+    load_postrun_phase_schedules,
+    verify_postrun_evaluation_ready,
 )
 from ecomsre_rcaeval_v2.public_projection import (
     assert_public_payload,
@@ -31,7 +32,6 @@ from scripts.rcaeval_v2.dev3_cli import (
     add_preserved_root_arguments,
     preserved_roots_from_args,
 )
-from scripts.rcaeval_v2.reverify_dev3_f0 import run_reverification
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -319,7 +319,7 @@ def publish(
     design_journal_root: Path,
     preserved_roots: Mapping[str, Path],
 ) -> str:
-    _evaluation, admission_lock = verify_provider_ready(
+    _postrun, parent, admission_lock = verify_postrun_evaluation_ready(
         control_root,
         private_schedule_root,
         output_root,
@@ -328,19 +328,6 @@ def publish(
         project_root=PROJECT_ROOT,
         preserved_roots=preserved_roots,
     )
-    if not run_reverification(
-        ob_root=ob_root,
-        ss_root=ss_root,
-        control_root=control_root,
-        private_schedule_root=private_schedule_root,
-        output_root=output_root,
-        smoke_journal_root=smoke_journal_root,
-        design_journal_root=design_journal_root,
-        private_output=output_root / "evidence/f0-private.json",
-        public_output=control_root / "evidence/f0-public.json",
-        preserved_roots=preserved_roots,
-    ):
-        raise ValueError("dev3 canonical inherited F0 reverification drift")
     f0 = _load(control_root / "evidence/f0-public.json")
     if (
         f0.get("protocol_id") != PROTOCOL_ID
@@ -370,14 +357,10 @@ def publish(
         lock_sha256=hashlib.sha256(audit_lock_path.read_bytes()).hexdigest(),
     )
 
-    smoke_schedule = load_locked_phase_schedule(
-        control_root,
+    smoke_schedule, design_schedule = load_postrun_phase_schedules(
         private_schedule_root,
-        output_root,
-        smoke_journal_root,
-        design_journal_root,
-        "smoke",
-        preserved_roots=preserved_roots,
+        parent=parent,
+        admission=admission_lock,
     )
     smoke = verify_smoke_gate(
         control_root / "evidence/provider-smoke-gate.json",
@@ -400,15 +383,6 @@ def publish(
 
     smoke_passed = smoke.get("state") == "V2_DEV3_PROVIDER_SMOKE_GATE_PASSED"
     if smoke_passed:
-        design_schedule = load_locked_phase_schedule(
-            control_root,
-            private_schedule_root,
-            output_root,
-            smoke_journal_root,
-            design_journal_root,
-            "design",
-            preserved_roots=preserved_roots,
-        )
         combined_root = output_root / "evidence/combined-design-journal"
         combined_sha = materialize_combined_design_journal(
             smoke_journal_root=smoke_journal_root,
@@ -426,6 +400,9 @@ def publish(
             design_journal_root=design_journal_root,
         )
         bindings["combined_design_journal_sha256"] = combined_sha
+        bindings["postrun_evaluation_lock_sha256"] = hashlib.sha256(
+            (control_root / "locks" / POSTRUN_LOCK_NAME).read_bytes()
+        ).hexdigest()
         cases = discover_case_index(
             ob_root, ss_root, {record.identity for record in design_schedule}
         )

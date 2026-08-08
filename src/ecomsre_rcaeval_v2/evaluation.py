@@ -330,7 +330,9 @@ def _multi_agent_damage_rescue(
     outcomes: tuple[PrivateRunOutcome, ...],
 ) -> dict[str, object]:
     indexed = {(item.identity, item.variant): item for item in outcomes}
-    result: dict[str, object] = {"endpoint": "root_cause_pair_ac_at_1"}
+    result: dict[str, object] = {
+        "evaluation_metric": "root_cause_pair_ac_at_1"
+    }
     for label, candidate in (
         ("fixed", Variant.FIXED_V2),
         ("dynamic", Variant.DYNAMIC_V2),
@@ -390,7 +392,7 @@ def _paired(
     return {
         "baseline": baseline.value,
         "candidate": candidate.value,
-        "endpoint": endpoint,
+        "evaluation_metric": endpoint,
         "paired_cases": len(observations),
         "bootstrap": {
             "iterations": interval.iterations,

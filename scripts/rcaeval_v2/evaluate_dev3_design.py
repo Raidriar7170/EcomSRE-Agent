@@ -3,19 +3,21 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 from pathlib import Path
 
-from ecomsre_rcaeval_v2.dev3_evaluation_root import verify_provider_ready
 from ecomsre_rcaeval_v2.dev3_evidence import (
     assess_design,
     evidence_source_bindings,
     materialize_combined_design_journal,
     verify_passing_smoke_gate,
 )
-from ecomsre_rcaeval_v2.dev3_execution import (
-    discover_case_index,
-    load_locked_phase_schedule,
+from ecomsre_rcaeval_v2.dev3_postrun import (
+    POSTRUN_LOCK_NAME,
+    load_postrun_phase_schedules,
+    verify_postrun_evaluation_ready,
 )
+from ecomsre_rcaeval_v2.dev3_execution import discover_case_index
 from ecomsre_rcaeval_v2.public_projection import (
     write_private_json_create_once,
     write_public_json_create_once,
@@ -41,7 +43,7 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     add_preserved_root_arguments(parser)
     args = parser.parse_args(argv)
     preserved_roots = preserved_roots_from_args(args)
-    verify_provider_ready(
+    _postrun, parent, admission = verify_postrun_evaluation_ready(
         args.control_root,
         args.private_schedule_root,
         args.output_root,
@@ -50,23 +52,10 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         project_root=PROJECT_ROOT,
         preserved_roots=preserved_roots,
     )
-    schedule = load_locked_phase_schedule(
-        args.control_root,
+    smoke_schedule, schedule = load_postrun_phase_schedules(
         args.private_schedule_root,
-        args.output_root,
-        args.smoke_journal_root,
-        args.design_journal_root,
-        "design",
-        preserved_roots=preserved_roots,
-    )
-    smoke_schedule = load_locked_phase_schedule(
-        args.control_root,
-        args.private_schedule_root,
-        args.output_root,
-        args.smoke_journal_root,
-        args.design_journal_root,
-        "smoke",
-        preserved_roots=preserved_roots,
+        parent=parent,
+        admission=admission,
     )
     verify_passing_smoke_gate(
         args.control_root / "evidence/provider-smoke-gate.json",
@@ -98,6 +87,9 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         design_journal_root=args.design_journal_root,
     )
     bindings["combined_design_journal_sha256"] = combined_sha
+    bindings["postrun_evaluation_lock_sha256"] = hashlib.sha256(
+        (args.control_root / "locks" / POSTRUN_LOCK_NAME).read_bytes()
+    ).hexdigest()
     outcomes, aggregate, gate, passed = assess_design(
         schedule,
         combined_root,

@@ -13,6 +13,7 @@ from ecomsre_rcaeval_v2.evaluation import (
     aggregate_development_outcomes,
 )
 from ecomsre_rcaeval_v2.evidence import design_signals
+from ecomsre_rcaeval_v2.public_projection import assert_public_payload
 from ecomsre_rcaeval_v2.schedule import SplitName, Variant
 from ecomsre_rcaeval_v2.statistics import (
     PairedObservation,
@@ -112,6 +113,7 @@ def test_public_aggregate_contains_rates_and_no_private_identifiers() -> None:
     comparison = aggregate["paired_development_comparisons"][
         "single_v2_minus_single_v1_pair"
     ]
+    assert comparison["evaluation_metric"] == "pair"
     assert comparison["bootstrap"]["point_estimate"] == 1.0
     pair_rate = aggregate["architecture_summaries"]["single_v2_dev1"][
         "root_cause_pair_ac_at_1"
@@ -131,12 +133,17 @@ def test_public_aggregate_contains_rates_and_no_private_identifiers() -> None:
         "single_correct_candidate_wrong": 0,
         "single_wrong_candidate_correct": 0,
     }
+    assert aggregate["multi_agent_damage_rescue"]["evaluation_metric"] == (
+        "root_cause_pair_ac_at_1"
+    )
     signals = design_signals(aggregate)
     assert signals["indicator"]["single_v2_pair_improvement"] == 1.0
     assert signals["indicator"]["recommended_for_candidate_freeze_review"] is False
     assert "instance" not in encoded
     assert "case_id" not in encoded
     assert "run_id" not in encoded
+    assert '"endpoint"' not in encoded
+    assert_public_payload(aggregate)
 
 
 def test_failure_taxonomy_crosses_operation_and_exact_stage() -> None:
