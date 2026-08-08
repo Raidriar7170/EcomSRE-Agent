@@ -15,10 +15,13 @@ from ecomsre_rcaeval_adaptive.contracts import (
     InitialFailureCode,
     RankedHypothesis,
     RankedHypothesisBatch,
+    SpecialistFailureCode,
+    SpecialistInput,
 )
 from ecomsre_rcaeval_adaptive.specialists import (
     InitialOutputValidationError,
     OpenAICompatibleAdaptiveProvider,
+    SpecialistOutputValidationError,
     validate_hypothesis_batch,
 )
 from ecomsre_rcaeval_v2.contracts import (
@@ -34,6 +37,7 @@ class _InitialTransport:
 
     def post_json(self, **kwargs):
         self.payload = kwargs["payload"]
+        function_name = self.payload["tool_choice"]["function"]["name"]
         return {
             "model": "locked-model",
             "choices": [
@@ -46,7 +50,7 @@ class _InitialTransport:
                             {
                                 "type": "function",
                                 "function": {
-                                    "name": "submit_rcaeval_initial_diagnosis",
+                                    "name": function_name,
                                     "arguments": json.dumps(self.arguments),
                                 },
                             }
@@ -99,6 +103,31 @@ def _initial_input() -> InitialDiagnosisInput:
     )
 
 
+def _specialist_input() -> SpecialistInput:
+    return SpecialistInput(
+        source="logs",
+        incident=_initial_input().incident,
+        initial_diagnosis=InitialDiagnosis(
+            root_cause_service="checkoutservice",
+            model_proposed_indicator="cpu",
+            confidence=0.8,
+            evidence_refs=("log:0001",),
+            explanation="The bounded evidence supports this service.",
+            uncertainty_flags=(),
+        ),
+        source_evidence=(
+            BoundedEvidenceSnapshotV2(
+                evidence_ref="log:0001",
+                source="logs",
+                service="checkoutservice",
+                observation="Checkout emitted an overload error.",
+            ),
+        ),
+        visible_services=("checkoutservice",),
+        visible_evidence_refs=("log:0001",),
+    )
+
+
 def _provider(arguments: Mapping[str, object]):
     transport = _InitialTransport(arguments)
     provider = OpenAICompatibleAdaptiveProvider(
@@ -123,6 +152,22 @@ def _valid_arguments() -> dict[str, object]:
         "evidence_refs": ["log:0001", "indicator:0001"],
         "explanation": "The bounded evidence supports this service.",
         "uncertainty_flags": [],
+    }
+
+
+def _valid_specialist_arguments() -> dict[str, object]:
+    return {
+        "hypotheses": [
+            {
+                "service": "checkoutservice",
+                "indicator_or_none": "cpu",
+                "score": 1,
+                "causal_role": "ROOT_CANDIDATE",
+                "supporting_evidence_refs": ["log:0001"],
+                "contradicting_evidence_refs": [],
+                "summary": "The source supports a root-candidate hypothesis.",
+            }
+        ]
     }
 
 
@@ -151,6 +196,184 @@ def test_specialist_returns_one_to_three_hypotheses() -> None:
         )
 
 
+def test_specialist_input_has_one_exact_source_authority() -> None:
+    specialist_input = _specialist_input()
+
+    assert specialist_input.source == "logs"
+    assert specialist_input.visible_services == ("checkoutservice",)
+    assert specialist_input.visible_evidence_refs == ("log:0001",)
+    serialized = specialist_input.model_dump_json()
+    assert "metric:0001" not in serialized
+    assert "trace:0001" not in serialized
+    assert "canonical_evidence" not in serialized
+    assert "ArchitectureContext" not in serialized
+
+
+def test_specialist_provider_uses_exact_input_and_runtime_adds_source() -> None:
+    arguments = _valid_specialist_arguments()
+    hypothesis = arguments["hypotheses"][0]
+    assert isinstance(hypothesis, dict)
+    hypothesis["service"] = " CheckoutService "
+    hypothesis["indicator_or_none"] = " CPU "
+    provider, transport = _provider(arguments)
+
+    batch = provider.specialize(_specialist_input())
+
+    assert batch.source == "logs"
+    assert batch.hypotheses[0].source == "logs"
+    assert batch.hypotheses[0].service == "checkoutservice"
+    assert batch.hypotheses[0].indicator_or_none == "cpu"
+    assert batch.hypotheses[0].score == 1.0
+    assert transport.payload is not None
+    messages = transport.payload["messages"]
+    assert isinstance(messages, list)
+    envelope = json.loads(messages[1]["content"])
+    assert set(envelope) == {
+        "schema_version",
+        "source",
+        "incident",
+        "initial_diagnosis",
+        "source_evidence",
+        "visible_services",
+        "visible_evidence_refs",
+    }
+    assert envelope["visible_services"] == ["checkoutservice"]
+    assert envelope["visible_evidence_refs"] == ["log:0001"]
+    serialized = json.dumps(transport.payload, sort_keys=True)
+    assert "canonical_evidence" not in serialized
+    assert "bounded_context" not in serialized
+    parameters = transport.payload["tools"][0]["function"]["parameters"]
+    assert "source" not in parameters["$defs"]["ProviderRankedHypothesis"][
+        "properties"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("arguments", "expected_code", "raw_value"),
+    (
+        (
+            {
+                "hypotheses": [
+                    {
+                        **_valid_specialist_arguments()["hypotheses"][0],
+                        "service": "invented-service",
+                    }
+                ]
+            },
+            SpecialistFailureCode.SPECIALIST_SERVICE_NOT_VISIBLE,
+            "invented-service",
+        ),
+        (
+            {
+                "hypotheses": [
+                    {
+                        **_valid_specialist_arguments()["hypotheses"][0],
+                        "supporting_evidence_refs": ["not-visible-ref"],
+                    }
+                ]
+            },
+            SpecialistFailureCode.SPECIALIST_EVIDENCE_REF_NOT_VISIBLE,
+            "not-visible-ref",
+        ),
+        (
+            {
+                "hypotheses": [
+                    {
+                        **_valid_specialist_arguments()["hypotheses"][0],
+                        "supporting_evidence_refs": ["log:0001", "log:0001"],
+                    }
+                ]
+            },
+            SpecialistFailureCode.SPECIALIST_DUPLICATE_EVIDENCE_REF,
+            "log:0001",
+        ),
+        (
+            {
+                "hypotheses": [
+                    {
+                        **_valid_specialist_arguments()["hypotheses"][0],
+                        "contradicting_evidence_refs": ["log:0001"],
+                    }
+                ]
+            },
+            SpecialistFailureCode.SPECIALIST_OVERLAPPING_EVIDENCE_REF,
+            "log:0001",
+        ),
+        (
+            {**_valid_specialist_arguments(), "source": "traces"},
+            SpecialistFailureCode.SPECIALIST_BATCH_SOURCE_MISMATCH,
+            "traces",
+        ),
+        (
+            {
+                "hypotheses": [
+                    {
+                        **_valid_specialist_arguments()["hypotheses"][0],
+                        "score": "not-a-score",
+                    }
+                ]
+            },
+            SpecialistFailureCode.SPECIALIST_SCORE_INVALID,
+            "not-a-score",
+        ),
+        (
+            {
+                "hypotheses": [
+                    {
+                        **_valid_specialist_arguments()["hypotheses"][0],
+                        "causal_role": "NOT_A_ROLE",
+                    }
+                ]
+            },
+            SpecialistFailureCode.SPECIALIST_CAUSAL_ROLE_INVALID,
+            "NOT_A_ROLE",
+        ),
+        (
+            {"hypotheses": []},
+            SpecialistFailureCode.SPECIALIST_HYPOTHESIS_COUNT_INVALID,
+            "raw-never-persisted",
+        ),
+        (
+            {
+                "hypotheses": _valid_specialist_arguments()["hypotheses"] * 4,
+            },
+            SpecialistFailureCode.SPECIALIST_HYPOTHESIS_COUNT_INVALID,
+            "raw-never-persisted",
+        ),
+    ),
+)
+def test_specialist_exact_safe_failure_codes_do_not_persist_raw_values(
+    arguments: Mapping[str, object],
+    expected_code: SpecialistFailureCode,
+    raw_value: str,
+) -> None:
+    provider, _transport = _provider(arguments)
+
+    with pytest.raises(SpecialistOutputValidationError) as captured:
+        provider.specialize(_specialist_input())
+
+    assert captured.value.failure_code is expected_code
+    safe = captured.value.safe_validation_error.model_dump_json()
+    assert raw_value not in safe
+    assert raw_value not in str(captured.value)
+
+
+def test_specialist_missing_required_field_has_exact_schema_code() -> None:
+    arguments = _valid_specialist_arguments()
+    hypothesis = arguments["hypotheses"][0]
+    assert isinstance(hypothesis, dict)
+    del hypothesis["service"]
+    provider, _transport = _provider(arguments)
+
+    with pytest.raises(SpecialistOutputValidationError) as captured:
+        provider.specialize(_specialist_input())
+
+    assert (
+        captured.value.failure_code
+        is SpecialistFailureCode.SPECIALIST_JSON_OR_SCHEMA_INVALID
+    )
+
+
 def test_specialist_has_no_final_diagnosis_field() -> None:
     schema = RankedHypothesisBatch.model_json_schema(mode="validation")
 
@@ -167,8 +390,7 @@ def test_unknown_or_cross_source_evidence_is_rejected() -> None:
     with pytest.raises(ValueError, match="unknown source evidence"):
         validate_hypothesis_batch(
             batch,
-            visible_services={"checkoutservice"},
-            visible_evidence_refs={"log:0001"},
+            _specialist_input(),
         )
 
 

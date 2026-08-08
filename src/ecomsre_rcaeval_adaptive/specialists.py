@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 import json
+import re
 from typing import Any
 
 from pydantic import ValidationError
@@ -14,13 +15,19 @@ from ecomsre.model.gateway import (
     ProviderProtocolError,
     StdlibOpenAICompatibleTransport,
 )
-from ecomsre_rcaeval.adapter import ArchitectureContext, IncidentManifest, SourceName
 from ecomsre_rcaeval_adaptive.contracts import (
+    CausalRole,
+    FusionAction,
     FusionDecision,
+    FusionFailureCode,
     InitialDiagnosis,
     InitialDiagnosisInput,
     InitialFailureCode,
+    ProviderRankedHypothesisBatch,
+    RankedHypothesis,
     RankedHypothesisBatch,
+    SpecialistFailureCode,
+    SpecialistInput,
     UncertaintyFlag,
 )
 from ecomsre_rcaeval_adaptive.fusion import (
@@ -58,14 +65,19 @@ INITIAL_PROMPT = (
 LOGS_PROMPT = (
     "Act as a selective Logs Verifier. Return one to three ranked hypotheses. "
     "Identify support, contradiction, propagated symptoms, and temporal ordering. "
-    "Do not emit a final diagnosis. Use only supplied Logs evidence and copy "
-    "evidence references exactly."
+    "Do not emit a final diagnosis. Copy service only from visible_services and "
+    "evidence references only from visible_evidence_refs. causal_role must be "
+    "ROOT_CANDIDATE, PROPAGATED_SYMPTOM, or UNCERTAIN. Return hypotheses only; "
+    "the Runtime owns source and the Provider must not guess or repeat it."
 )
 TRACES_PROMPT = (
     "Act as a selective Trace Causal Specialist. Return one to three ranked "
     "hypotheses. Analyze caller/callee direction, error or latency propagation, "
-    "and root-versus-symptom roles. Do not emit a final diagnosis. Use only "
-    "supplied Trace evidence and copy evidence references exactly."
+    "and root-versus-symptom roles. Do not emit a final diagnosis. Copy service "
+    "only from visible_services and evidence references only from "
+    "visible_evidence_refs. causal_role must be ROOT_CANDIDATE, "
+    "PROPAGATED_SYMPTOM, or UNCERTAIN. Return hypotheses only; the Runtime owns "
+    "source and the Provider must not guess or repeat it."
 )
 
 
@@ -81,12 +93,38 @@ class InitialOutputValidationError(ProviderOutputValidationError):
         super().__init__(safe_validation_error)
 
 
+class SpecialistOutputValidationError(ProviderOutputValidationError):
+    """Specialist output rejected with one safe field-level failure code."""
+
+    def __init__(
+        self,
+        failure_code: SpecialistFailureCode,
+        safe_validation_error: SafeValidationError,
+    ) -> None:
+        self.failure_code = failure_code
+        super().__init__(safe_validation_error)
+
+
+class FusionOutputValidationError(ProviderOutputValidationError):
+    """Fusion output rejected with one safe field-level failure code."""
+
+    def __init__(
+        self,
+        failure_code: FusionFailureCode,
+        safe_validation_error: SafeValidationError,
+    ) -> None:
+        self.failure_code = failure_code
+        super().__init__(safe_validation_error)
+
+
 def validate_hypothesis_batch(
     batch: RankedHypothesisBatch,
-    *,
-    visible_services: set[str],
-    visible_evidence_refs: set[str],
+    specialist_input: SpecialistInput,
 ) -> RankedHypothesisBatch:
+    visible_services = set(specialist_input.visible_services)
+    visible_evidence_refs = set(specialist_input.visible_evidence_refs)
+    if batch.source != specialist_input.source:
+        raise ValueError("specialist batch source differs from sent input")
     for hypothesis in batch.hypotheses:
         if hypothesis.service not in visible_services:
             raise ValueError("specialist selected an unknown visible service")
@@ -222,6 +260,40 @@ class OpenAICompatibleAdaptiveProvider:
         self._last_safe_validation_error = safe
         return InitialOutputValidationError(code, safe)
 
+    def _specialist_validation_failure(
+        self,
+        code: SpecialistFailureCode,
+        *,
+        field_path: str,
+        constraint_type: str,
+        error_count: int = 1,
+    ) -> SpecialistOutputValidationError:
+        safe = SafeValidationError(
+            error_class="ValueError",
+            field_paths=(field_path,),
+            constraint_types=(constraint_type,),
+            error_count=max(1, error_count),
+        )
+        self._last_safe_validation_error = safe
+        return SpecialistOutputValidationError(code, safe)
+
+    def _fusion_validation_failure(
+        self,
+        code: FusionFailureCode,
+        *,
+        field_path: str,
+        constraint_type: str,
+        error_count: int = 1,
+    ) -> FusionOutputValidationError:
+        safe = SafeValidationError(
+            error_class="ValueError",
+            field_paths=(field_path,),
+            constraint_types=(constraint_type,),
+            error_count=max(1, error_count),
+        )
+        self._last_safe_validation_error = safe
+        return FusionOutputValidationError(code, safe)
+
     def usage_snapshot(self) -> ProviderCounterSnapshot:
         return self._usage.snapshot()
 
@@ -289,20 +361,6 @@ class OpenAICompatibleAdaptiveProvider:
                     field_path="$",
                     constraint_type="json_or_schema",
                 ) from error
-            raise self._validation_failure(error) from error
-
-    def _typed(
-        self,
-        value: object,
-        model: type[InitialDiagnosis]
-        | type[RankedHypothesisBatch]
-        | type[FusionDecision],
-    ):
-        try:
-            return model.model_validate_json(
-                json.dumps(value, allow_nan=False, ensure_ascii=False)
-            )
-        except (TypeError, ValidationError, ValueError) as error:
             raise self._validation_failure(error) from error
 
     def diagnose(
@@ -385,49 +443,176 @@ class OpenAICompatibleAdaptiveProvider:
 
     def specialize(
         self,
-        incident: IncidentManifest,
-        context: ArchitectureContext,
-        source: SourceName,
-        initial_diagnosis: InitialDiagnosis,
+        specialist_input: SpecialistInput,
         *,
         before_output_validation: Callable[[], None] | None = None,
     ) -> RankedHypothesisBatch:
-        if source not in {"logs", "traces"}:
-            raise ValueError("Adaptive specialist source must be Logs or Traces")
-        prefix = {"logs": "log:", "traces": "trace:"}[source]
-        source_evidence = tuple(
-            item for item in context.evidence if item.evidence_id.startswith(prefix)
-        )
+        source = specialist_input.source
         function_name = "submit_rcaeval_ranked_hypotheses"
-        parsed = self._request(
-            _payload(
-                model=self._config.model,
-                prompt=LOGS_PROMPT if source == "logs" else TRACES_PROMPT,
-                envelope={
-                    "schema_version": "rcaeval-re2.hypothesis-envelope.v1",
-                    "incident": incident.model_dump(mode="json"),
-                    "source": source,
-                    "initial_diagnosis": initial_diagnosis.model_dump(mode="json"),
-                    "evidence": [item.model_dump(mode="json") for item in source_evidence],
-                },
-                function_name=function_name,
-                description="Return one to three exact ranked source hypotheses.",
-                schema=RankedHypothesisBatch.model_json_schema(mode="validation"),
-                max_completion_tokens=self._max_completion,
-            ),
-            function_name,
-            before_output_validation,
-        )
-        batch = self._typed(parsed, RankedHypothesisBatch)
-        assert isinstance(batch, RankedHypothesisBatch)
         try:
-            return validate_hypothesis_batch(
-                batch,
-                visible_services={item.service for item in context.evidence},
-                visible_evidence_refs={item.evidence_id for item in source_evidence},
+            parsed = self._request(
+                _payload(
+                    model=self._config.model,
+                    prompt=LOGS_PROMPT if source == "logs" else TRACES_PROMPT,
+                    envelope=specialist_input.model_dump(mode="json"),
+                    function_name=function_name,
+                    description="Return one to three exact ranked source hypotheses.",
+                    schema=ProviderRankedHypothesisBatch.model_json_schema(
+                        mode="validation"
+                    ),
+                    max_completion_tokens=self._max_completion,
+                ),
+                function_name,
+                before_output_validation,
             )
-        except ValueError as error:
-            raise self._validation_failure(error) from error
+        except ProviderOutputValidationError as error:
+            raise self._specialist_validation_failure(
+                SpecialistFailureCode.SPECIALIST_JSON_OR_SCHEMA_INVALID,
+                field_path="$",
+                constraint_type="json_or_schema",
+            ) from error
+        if not isinstance(parsed, dict):
+            raise self._specialist_validation_failure(
+                SpecialistFailureCode.SPECIALIST_JSON_OR_SCHEMA_INVALID,
+                field_path="$",
+                constraint_type="json_or_schema",
+            )
+        normalized = dict(parsed)
+        supplied_source = normalized.pop("source", None)
+        if supplied_source is not None and (
+            not isinstance(supplied_source, str)
+            or supplied_source.strip().casefold() != source
+        ):
+            raise self._specialist_validation_failure(
+                SpecialistFailureCode.SPECIALIST_BATCH_SOURCE_MISMATCH,
+                field_path="source",
+                constraint_type="batch_source",
+            )
+        hypotheses = normalized.get("hypotheses")
+        if not isinstance(hypotheses, list) or not 1 <= len(hypotheses) <= 3:
+            raise self._specialist_validation_failure(
+                SpecialistFailureCode.SPECIALIST_HYPOTHESIS_COUNT_INVALID,
+                field_path="hypotheses",
+                constraint_type="hypothesis_count",
+                error_count=len(hypotheses) if isinstance(hypotheses, list) else 1,
+            )
+        visible_services = set(specialist_input.visible_services)
+        visible_refs = set(specialist_input.visible_evidence_refs)
+        allowed_roles = {item.value for item in CausalRole}
+        normalized_hypotheses: list[dict[str, object]] = []
+        for index, raw_hypothesis in enumerate(hypotheses):
+            path = f"hypotheses.{index}"
+            if not isinstance(raw_hypothesis, Mapping):
+                raise self._specialist_validation_failure(
+                    SpecialistFailureCode.SPECIALIST_JSON_OR_SCHEMA_INVALID,
+                    field_path=path,
+                    constraint_type="json_or_schema",
+                )
+            item = dict(raw_hypothesis)
+            item_source = item.pop("source", None)
+            if item_source is not None and (
+                not isinstance(item_source, str)
+                or item_source.strip().casefold() != source
+            ):
+                raise self._specialist_validation_failure(
+                    SpecialistFailureCode.SPECIALIST_BATCH_SOURCE_MISMATCH,
+                    field_path=f"{path}.source",
+                    constraint_type="batch_source",
+                )
+            service = item.get("service")
+            if isinstance(service, str):
+                service = service.strip().casefold()
+                item["service"] = service
+            if isinstance(service, str) and service not in visible_services:
+                raise self._specialist_validation_failure(
+                    SpecialistFailureCode.SPECIALIST_SERVICE_NOT_VISIBLE,
+                    field_path=f"{path}.service",
+                    constraint_type="visible_service",
+                )
+            indicator = item.get("indicator_or_none")
+            if isinstance(indicator, str):
+                item["indicator_or_none"] = indicator.strip().casefold()
+            score = item.get("score")
+            if (
+                isinstance(score, bool)
+                or not isinstance(score, (int, float))
+                or score < 0
+            ):
+                raise self._specialist_validation_failure(
+                    SpecialistFailureCode.SPECIALIST_SCORE_INVALID,
+                    field_path=f"{path}.score",
+                    constraint_type="score",
+                )
+            item["score"] = float(score)
+            causal_role = item.get("causal_role")
+            if not isinstance(causal_role, str) or causal_role not in allowed_roles:
+                raise self._specialist_validation_failure(
+                    SpecialistFailureCode.SPECIALIST_CAUSAL_ROLE_INVALID,
+                    field_path=f"{path}.causal_role",
+                    constraint_type="causal_role",
+                )
+            ref_groups: dict[str, tuple[str, ...]] = {}
+            for field_name in (
+                "supporting_evidence_refs",
+                "contradicting_evidence_refs",
+            ):
+                raw_refs = item.get(field_name, [])
+                if not isinstance(raw_refs, list) or any(
+                    not isinstance(reference, str) for reference in raw_refs
+                ):
+                    raise self._specialist_validation_failure(
+                        SpecialistFailureCode.SPECIALIST_JSON_OR_SCHEMA_INVALID,
+                        field_path=f"{path}.{field_name}",
+                        constraint_type="json_or_schema",
+                    )
+                refs = tuple(raw_refs)
+                if len(refs) != len(set(refs)):
+                    raise self._specialist_validation_failure(
+                        SpecialistFailureCode.SPECIALIST_DUPLICATE_EVIDENCE_REF,
+                        field_path=f"{path}.{field_name}",
+                        constraint_type="duplicate_evidence_ref",
+                    )
+                ref_groups[field_name] = refs
+                item[field_name] = refs
+            supporting = set(ref_groups["supporting_evidence_refs"])
+            contradicting = set(ref_groups["contradicting_evidence_refs"])
+            if supporting & contradicting:
+                raise self._specialist_validation_failure(
+                    SpecialistFailureCode.SPECIALIST_OVERLAPPING_EVIDENCE_REF,
+                    field_path=path,
+                    constraint_type="overlapping_evidence_ref",
+                )
+            cited = supporting | contradicting
+            if not cited.issubset(visible_refs):
+                raise self._specialist_validation_failure(
+                    SpecialistFailureCode.SPECIALIST_EVIDENCE_REF_NOT_VISIBLE,
+                    field_path=path,
+                    constraint_type="visible_evidence_ref",
+                    error_count=len(cited - visible_refs),
+                )
+            normalized_hypotheses.append(item)
+        normalized["hypotheses"] = normalized_hypotheses
+        try:
+            provider_batch = ProviderRankedHypothesisBatch.model_validate_json(
+                json.dumps(normalized, allow_nan=False, ensure_ascii=False)
+            )
+            batch = RankedHypothesisBatch(
+                source=source,
+                hypotheses=tuple(
+                    RankedHypothesis(
+                        **hypothesis.model_dump(mode="python"),
+                        source=source,
+                    )
+                    for hypothesis in provider_batch.hypotheses
+                ),
+            )
+        except (TypeError, ValidationError, ValueError) as error:
+            raise self._specialist_validation_failure(
+                SpecialistFailureCode.SPECIALIST_JSON_OR_SCHEMA_INVALID,
+                field_path="$",
+                constraint_type="json_or_schema",
+            ) from error
+        return validate_hypothesis_batch(batch, specialist_input)
 
     def judge(
         self,
@@ -436,30 +621,173 @@ class OpenAICompatibleAdaptiveProvider:
         before_output_validation: Callable[[], None] | None = None,
     ) -> FusionDecision:
         function_name = "submit_rcaeval_fusion_decision"
-        parsed = self._request(
-            build_fusion_request_payload(
-                model=self._config.model,
-                fusion_input=fusion_input,
-                max_completion_tokens=self._max_completion,
-            ),
-            function_name,
-            before_output_validation,
-        )
-        if isinstance(parsed, dict) and isinstance(parsed.get("final_root_service"), str):
-            parsed["final_root_service"] = parsed["final_root_service"].strip().casefold()
-        decision = self._typed(parsed, FusionDecision)
-        assert isinstance(decision, FusionDecision)
+        try:
+            parsed = self._request(
+                build_fusion_request_payload(
+                    model=self._config.model,
+                    fusion_input=fusion_input,
+                    max_completion_tokens=self._max_completion,
+                ),
+                function_name,
+                before_output_validation,
+            )
+        except ProviderOutputValidationError as error:
+            raise self._fusion_validation_failure(
+                FusionFailureCode.FUSION_JSON_OR_SCHEMA_INVALID,
+                field_path="$",
+                constraint_type="json_or_schema",
+            ) from error
+        if not isinstance(parsed, dict):
+            raise self._fusion_validation_failure(
+                FusionFailureCode.FUSION_JSON_OR_SCHEMA_INVALID,
+                field_path="$",
+                constraint_type="json_or_schema",
+            )
+        normalized = dict(parsed)
+        service = normalized.get("final_root_service")
+        if not isinstance(service, str):
+            raise self._fusion_validation_failure(
+                FusionFailureCode.FUSION_JSON_OR_SCHEMA_INVALID,
+                field_path="final_root_service",
+                constraint_type="json_or_schema",
+            )
+        service = service.strip().casefold()
+        normalized["final_root_service"] = service
+        confidence = normalized.get("confidence")
+        if (
+            isinstance(confidence, bool)
+            or not isinstance(confidence, (int, float))
+            or not 0 <= confidence <= 1
+        ):
+            raise self._fusion_validation_failure(
+                FusionFailureCode.FUSION_JSON_OR_SCHEMA_INVALID,
+                field_path="confidence",
+                constraint_type="json_or_schema",
+            )
+        normalized["confidence"] = float(confidence)
+        action = normalized.get("action")
+        allowed_actions = {item.value for item in FusionAction}
+        if not isinstance(action, str) or action not in allowed_actions:
+            raise self._fusion_validation_failure(
+                FusionFailureCode.FUSION_JSON_OR_SCHEMA_INVALID,
+                field_path="action",
+                constraint_type="json_or_schema",
+            )
+        ref_groups: dict[str, tuple[str, ...]] = {}
+        for field_name, required in (
+            ("supporting_evidence_refs", True),
+            ("contradicting_evidence_refs", False),
+        ):
+            raw_refs = normalized.get(field_name, [] if not required else None)
+            if not isinstance(raw_refs, list) or any(
+                not isinstance(reference, str) for reference in raw_refs
+            ):
+                raise self._fusion_validation_failure(
+                    FusionFailureCode.FUSION_JSON_OR_SCHEMA_INVALID,
+                    field_path=field_name,
+                    constraint_type="json_or_schema",
+                )
+            refs = tuple(raw_refs)
+            if len(refs) != len(set(refs)):
+                raise self._fusion_validation_failure(
+                    FusionFailureCode.FUSION_DUPLICATE_EVIDENCE_REF,
+                    field_path=field_name,
+                    constraint_type="duplicate_evidence_ref",
+                )
+            ref_groups[field_name] = refs
+            normalized[field_name] = refs
+        supporting = set(ref_groups["supporting_evidence_refs"])
+        contradicting = set(ref_groups["contradicting_evidence_refs"])
+        if supporting & contradicting:
+            raise self._fusion_validation_failure(
+                FusionFailureCode.FUSION_OVERLAPPING_EVIDENCE_REF,
+                field_path="evidence_refs",
+                constraint_type="overlapping_evidence_ref",
+            )
+        cited = supporting | contradicting
+        visible_refs = set(fusion_input.visible_evidence_refs)
+        if not cited.issubset(visible_refs):
+            raise self._fusion_validation_failure(
+                FusionFailureCode.FUSION_EVIDENCE_REF_NOT_VISIBLE,
+                field_path="evidence_refs",
+                constraint_type="visible_evidence_ref",
+                error_count=len(cited - visible_refs),
+            )
+        reason_codes = normalized.get("reason_codes")
+        if not isinstance(reason_codes, list) or not reason_codes or any(
+            not isinstance(code, str)
+            or re.fullmatch(r"[A-Z][A-Z0-9_]{0,63}", code) is None
+            for code in reason_codes
+        ):
+            raise self._fusion_validation_failure(
+                FusionFailureCode.FUSION_REASON_CODE_INVALID,
+                field_path="reason_codes",
+                constraint_type="reason_code",
+            )
+        normalized["reason_codes"] = tuple(dict.fromkeys(reason_codes))
+        if isinstance(service, str) and service not in set(
+            fusion_input.visible_services
+        ):
+            raise self._fusion_validation_failure(
+                FusionFailureCode.FUSION_SERVICE_NOT_SUPPORTED,
+                field_path="final_root_service",
+                constraint_type="supported_service",
+            )
+        if (
+            action == FusionAction.KEEP_INITIAL.value
+            and service != fusion_input.initial_service
+        ) or (
+            action == FusionAction.OVERRIDE_INITIAL.value
+            and service == fusion_input.initial_service
+        ):
+            raise self._fusion_validation_failure(
+                FusionFailureCode.FUSION_ACTION_SERVICE_INCONSISTENT,
+                field_path="final_root_service",
+                constraint_type="action_service",
+            )
+        if (
+            action == FusionAction.OVERRIDE_INITIAL.value
+            and isinstance(service, str)
+            and service not in fusion_input.override_candidate_services
+        ):
+            raise self._fusion_validation_failure(
+                FusionFailureCode.FUSION_ACTION_SERVICE_INCONSISTENT,
+                field_path="final_root_service",
+                constraint_type="override_candidate",
+            )
+        try:
+            decision = FusionDecision.model_validate_json(
+                json.dumps(normalized, allow_nan=False, ensure_ascii=False)
+            )
+        except (TypeError, ValidationError, ValueError) as error:
+            raise self._fusion_validation_failure(
+                FusionFailureCode.FUSION_JSON_OR_SCHEMA_INVALID,
+                field_path="$",
+                constraint_type="json_or_schema",
+            ) from error
         try:
             return validate_fusion_decision(decision, fusion_input)
         except ValueError as error:
-            raise self._validation_failure(error) from error
+            if decision.action is FusionAction.OVERRIDE_INITIAL:
+                raise self._fusion_validation_failure(
+                    FusionFailureCode.FUSION_OVERRIDE_LACKS_CONTRADICTION,
+                    field_path="contradicting_evidence_refs",
+                    constraint_type="override_contradiction",
+                ) from error
+            raise self._fusion_validation_failure(
+                FusionFailureCode.FUSION_JSON_OR_SCHEMA_INVALID,
+                field_path="$",
+                constraint_type="json_or_schema",
+            ) from error
 
 
 __all__ = [
     "INITIAL_PROMPT",
+    "FusionOutputValidationError",
     "InitialOutputValidationError",
     "LOGS_PROMPT",
     "OpenAICompatibleAdaptiveProvider",
+    "SpecialistOutputValidationError",
     "TRACES_PROMPT",
     "validate_hypothesis_batch",
 ]

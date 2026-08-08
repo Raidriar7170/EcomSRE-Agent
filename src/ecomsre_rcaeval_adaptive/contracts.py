@@ -92,6 +92,29 @@ class InitialFailureCode(str, Enum):
     INITIAL_UNCERTAINTY_FLAG_INVALID = "INITIAL_UNCERTAINTY_FLAG_INVALID"
 
 
+class SpecialistFailureCode(str, Enum):
+    SPECIALIST_JSON_OR_SCHEMA_INVALID = "SPECIALIST_JSON_OR_SCHEMA_INVALID"
+    SPECIALIST_BATCH_SOURCE_MISMATCH = "SPECIALIST_BATCH_SOURCE_MISMATCH"
+    SPECIALIST_SERVICE_NOT_VISIBLE = "SPECIALIST_SERVICE_NOT_VISIBLE"
+    SPECIALIST_EVIDENCE_REF_NOT_VISIBLE = "SPECIALIST_EVIDENCE_REF_NOT_VISIBLE"
+    SPECIALIST_DUPLICATE_EVIDENCE_REF = "SPECIALIST_DUPLICATE_EVIDENCE_REF"
+    SPECIALIST_OVERLAPPING_EVIDENCE_REF = "SPECIALIST_OVERLAPPING_EVIDENCE_REF"
+    SPECIALIST_HYPOTHESIS_COUNT_INVALID = "SPECIALIST_HYPOTHESIS_COUNT_INVALID"
+    SPECIALIST_SCORE_INVALID = "SPECIALIST_SCORE_INVALID"
+    SPECIALIST_CAUSAL_ROLE_INVALID = "SPECIALIST_CAUSAL_ROLE_INVALID"
+
+
+class FusionFailureCode(str, Enum):
+    FUSION_JSON_OR_SCHEMA_INVALID = "FUSION_JSON_OR_SCHEMA_INVALID"
+    FUSION_SERVICE_NOT_SUPPORTED = "FUSION_SERVICE_NOT_SUPPORTED"
+    FUSION_EVIDENCE_REF_NOT_VISIBLE = "FUSION_EVIDENCE_REF_NOT_VISIBLE"
+    FUSION_ACTION_SERVICE_INCONSISTENT = "FUSION_ACTION_SERVICE_INCONSISTENT"
+    FUSION_OVERRIDE_LACKS_CONTRADICTION = "FUSION_OVERRIDE_LACKS_CONTRADICTION"
+    FUSION_DUPLICATE_EVIDENCE_REF = "FUSION_DUPLICATE_EVIDENCE_REF"
+    FUSION_OVERLAPPING_EVIDENCE_REF = "FUSION_OVERLAPPING_EVIDENCE_REF"
+    FUSION_REASON_CODE_INVALID = "FUSION_REASON_CODE_INVALID"
+
+
 class InitialDiagnosisInput(V2Model):
     schema_version: Literal[
         "rcaeval-single-first-adaptive.initial-input.v1"
@@ -150,6 +173,42 @@ class InitialDiagnosis(V2Model):
         return self
 
 
+class SpecialistInput(V2Model):
+    schema_version: Literal[
+        "rcaeval-single-first-adaptive.specialist-input.v1"
+    ] = "rcaeval-single-first-adaptive.specialist-input.v1"
+    source: Literal["logs", "traces"]
+    incident: IncidentManifest
+    initial_diagnosis: InitialDiagnosis
+    source_evidence: tuple[BoundedEvidenceSnapshotV2, ...] = Field(
+        min_length=1, max_length=64
+    )
+    visible_services: tuple[ServiceName, ...] = Field(min_length=1, max_length=64)
+    visible_evidence_refs: tuple[str, ...] = Field(min_length=1, max_length=64)
+
+    @model_validator(mode="after")
+    def require_single_source_authority(self) -> SpecialistInput:
+        if any(item.source != self.source for item in self.source_evidence):
+            raise ValueError("specialist evidence differs from requested source")
+        evidence_refs = tuple(item.evidence_ref for item in self.source_evidence)
+        if len(evidence_refs) != len(set(evidence_refs)):
+            raise ValueError("specialist source evidence references must be unique")
+        expected_services = tuple(
+            sorted(
+                {
+                    self.initial_diagnosis.root_cause_service,
+                    *(item.service for item in self.source_evidence),
+                }
+            )
+        )
+        expected_refs = tuple(sorted(evidence_refs))
+        if self.visible_services != expected_services:
+            raise ValueError("specialist visible services differ from sent evidence")
+        if self.visible_evidence_refs != expected_refs:
+            raise ValueError("specialist visible refs differ from sent evidence")
+        return self
+
+
 class GateFeatureSnapshot(V2Model):
     initial_output_valid: Literal[True] = True
     initial_confidence: StrictFloat = Field(ge=0.0, le=1.0)
@@ -205,6 +264,24 @@ class RankedHypothesis(V2Model):
         return self
 
 
+class ProviderRankedHypothesis(V2Model):
+    """Source-free hypothesis shape exposed to the external Provider."""
+
+    service: ServiceName
+    indicator_or_none: CanonicalIndicator | None = None
+    score: StrictFloat = Field(ge=0.0)
+    causal_role: CausalRole
+    supporting_evidence_refs: tuple[str, ...] = Field(default=(), max_length=64)
+    contradicting_evidence_refs: tuple[str, ...] = Field(default=(), max_length=64)
+    summary: str = Field(min_length=1, max_length=2_000)
+
+
+class ProviderRankedHypothesisBatch(V2Model):
+    hypotheses: tuple[ProviderRankedHypothesis, ...] = Field(
+        min_length=1, max_length=3
+    )
+
+
 class RankedHypothesisBatch(V2Model):
     source: Literal["logs", "traces"]
     hypotheses: tuple[RankedHypothesis, ...] = Field(min_length=1, max_length=3)
@@ -221,7 +298,7 @@ class FusionDecision(V2Model):
     final_root_service: ServiceName
     confidence: StrictFloat = Field(ge=0.0, le=1.0)
     supporting_evidence_refs: tuple[str, ...] = Field(min_length=1, max_length=64)
-    contradicting_evidence_refs: tuple[str, ...] = Field(max_length=64)
+    contradicting_evidence_refs: tuple[str, ...] = Field(default=(), max_length=64)
     reason_codes: tuple[str, ...] = Field(min_length=1, max_length=16)
 
     @model_validator(mode="after")

@@ -91,6 +91,14 @@ class Dev2FailureAudit(V2Model):
 
 
 _SCHEMA_FAILURES = {
+    "FUSION_ACTION_SERVICE_INCONSISTENT",
+    "FUSION_DUPLICATE_EVIDENCE_REF",
+    "FUSION_EVIDENCE_REF_NOT_VISIBLE",
+    "FUSION_JSON_OR_SCHEMA_INVALID",
+    "FUSION_OVERLAPPING_EVIDENCE_REF",
+    "FUSION_OVERRIDE_LACKS_CONTRADICTION",
+    "FUSION_REASON_CODE_INVALID",
+    "FUSION_SERVICE_NOT_SUPPORTED",
     "INITIAL_DUPLICATE_EVIDENCE_REF",
     "INITIAL_EVIDENCE_REF_NOT_VISIBLE",
     "INITIAL_JSON_OR_SCHEMA_INVALID",
@@ -98,6 +106,15 @@ _SCHEMA_FAILURES = {
     "INITIAL_UNCERTAINTY_FLAG_INVALID",
     "PROVIDER_OUTPUT_INVALID_SCHEMA",
     "PROVIDER_OUTPUT_UNRESOLVED_SERVICE_ALIAS",
+    "SPECIALIST_BATCH_SOURCE_MISMATCH",
+    "SPECIALIST_CAUSAL_ROLE_INVALID",
+    "SPECIALIST_DUPLICATE_EVIDENCE_REF",
+    "SPECIALIST_EVIDENCE_REF_NOT_VISIBLE",
+    "SPECIALIST_HYPOTHESIS_COUNT_INVALID",
+    "SPECIALIST_JSON_OR_SCHEMA_INVALID",
+    "SPECIALIST_OVERLAPPING_EVIDENCE_REF",
+    "SPECIALIST_SCORE_INVALID",
+    "SPECIALIST_SERVICE_NOT_VISIBLE",
 }
 _PROTOCOL_FAILURES = {"PROVIDER_PROTOCOL_VIOLATION"}
 _LOCAL_FAILURES = {
@@ -860,10 +877,10 @@ def _semantic_failure(
         )
         return failure_class, error.code, "PROVIDER_CALL"
     if isinstance(error, ProviderOutputValidationError):
-        initial_code = getattr(error, "failure_code", None)
+        safe_code = getattr(error, "failure_code", None)
         failure_code = (
-            initial_code
-            if isinstance(initial_code, str) and initial_code in _SCHEMA_FAILURES
+            safe_code
+            if isinstance(safe_code, str) and safe_code in _SCHEMA_FAILURES
             else "PROVIDER_OUTPUT_INVALID_SCHEMA"
         )
         return (
@@ -1053,7 +1070,10 @@ class Dev3ProviderProxy:
         return result
 
     def specialize(self, *args: object, **kwargs: object) -> object:
-        source = args[2] if len(args) >= 3 else kwargs.get("source")
+        specialist_input = args[0] if args else kwargs.get("specialist_input")
+        source = getattr(specialist_input, "source", None)
+        if source is None and len(args) > 2:
+            source = args[2]
         operation_types = {
             "metrics": "METRICS_SPECIALIST",
             "logs": "LOGS_SPECIALIST",

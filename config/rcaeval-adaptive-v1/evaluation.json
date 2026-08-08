@@ -29,7 +29,7 @@
   },
   "dev_validation_cases": 120,
   "evaluation_version": "single-first-adaptive-v1",
-  "run_domain": "single-first-adaptive-v1-interface-fix-r1",
+  "run_domain": "single-first-adaptive-v1-downstream-fix-r1",
   "phase_budgets": {
     "design": {
       "conservative_tokens": 15360000,

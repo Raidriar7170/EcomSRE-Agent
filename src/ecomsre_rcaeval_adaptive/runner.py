@@ -39,6 +39,7 @@ from ecomsre_rcaeval_adaptive.contracts import (
     InitialDiagnosisInput,
     RankedHypothesis,
     RankedHypothesisBatch,
+    SpecialistInput,
 )
 from ecomsre_rcaeval_adaptive.fusion import FUSION_PROMPT, FusionInput
 from ecomsre_rcaeval_adaptive.gate import GateInputs, GatePolicy, decide_escalation
@@ -96,10 +97,7 @@ class AdaptiveDiagnosisProvider(Protocol):
 
     def specialize(
         self,
-        incident: IncidentManifest,
-        context: ArchitectureContext,
-        source: str,
-        initial_diagnosis: InitialDiagnosis,
+        specialist_input: SpecialistInput,
         *,
         before_output_validation: Callable[[], None] | None = None,
     ) -> RankedHypothesisBatch: ...
@@ -184,6 +182,38 @@ def _metrics_hypotheses(
     if not output:
         raise ValueError("Adaptive Metrics anchor has no ranked service")
     return tuple(output)
+
+
+def _specialist_input(
+    context: ArchitectureContext,
+    source: str,
+    incident: IncidentManifest,
+    initial_diagnosis: InitialDiagnosis,
+) -> SpecialistInput:
+    if source not in {"logs", "traces"}:
+        raise ValueError("Adaptive specialist source must be Logs or Traces")
+    source_evidence = tuple(
+        item for item in _bounded_evidence(context) if item.source == source
+    )
+    if not source_evidence:
+        raise ValueError("Adaptive specialist source has no bounded evidence")
+    return SpecialistInput(
+        source=source,  # type: ignore[arg-type]
+        incident=incident,
+        initial_diagnosis=initial_diagnosis,
+        source_evidence=source_evidence,
+        visible_services=tuple(
+            sorted(
+                {
+                    initial_diagnosis.root_cause_service,
+                    *(item.service for item in source_evidence),
+                }
+            )
+        ),
+        visible_evidence_refs=tuple(
+            sorted(item.evidence_ref for item in source_evidence)
+        ),
+    )
 
 
 def _sum_usage(traces: tuple[AdaptiveOperationTrace, ...]) -> ProviderUsageDelta:
@@ -324,14 +354,12 @@ def execute_adaptive_case(
         EscalationRoute.ESCALATE_LOGS,
         EscalationRoute.ESCALATE_BOTH,
     }:
+        specialist_input = _specialist_input(context, "logs", incident, initial)
         batch = invoke(
             AdaptiveOperationRole.LOGS_VERIFIER,
             "logs",
             lambda: provider.specialize(
-                incident,
-                context,
-                "logs",
-                initial,
+                specialist_input,
                 before_output_validation=lambda: None,
             ),
         )
@@ -340,14 +368,12 @@ def execute_adaptive_case(
         EscalationRoute.ESCALATE_TRACES,
         EscalationRoute.ESCALATE_BOTH,
     }:
+        specialist_input = _specialist_input(context, "traces", incident, initial)
         batch = invoke(
             AdaptiveOperationRole.TRACE_CAUSAL_SPECIALIST,
             "traces",
             lambda: provider.specialize(
-                incident,
-                context,
-                "traces",
-                initial,
+                specialist_input,
                 before_output_validation=lambda: None,
             ),
         )
@@ -369,11 +395,34 @@ def execute_adaptive_case(
                     )
                 )
                 known_refs.add(item.evidence_ref)
+        all_hypotheses = metrics_hypotheses + tuple(hypotheses)
         fusion_input = FusionInput(
             initial_diagnosis=initial,
             metrics_hypotheses=metrics_hypotheses,
             specialist_hypotheses=tuple(hypotheses),
             bounded_evidence=tuple(bounded),
+            initial_service=initial.root_cause_service,
+            visible_services=tuple(
+                sorted(
+                    {
+                        initial.root_cause_service,
+                        *(item.service for item in all_hypotheses),
+                    }
+                )
+            ),
+            visible_evidence_refs=tuple(
+                sorted(item.evidence_ref for item in bounded)
+            ),
+            override_candidate_services=tuple(
+                sorted(
+                    {
+                        item.service
+                        for item in all_hypotheses
+                        if item.service != initial.root_cause_service
+                        and item.causal_role is CausalRole.ROOT_CANDIDATE
+                    }
+                )
+            ),
         )
         fusion = invoke(
             AdaptiveOperationRole.FUSION_JUDGE,
@@ -449,6 +498,8 @@ def write_candidate_config_create_once(
     if run_domain not in {
         "single-first-adaptive-v1-interface-fix-r1",
         "single-first-adaptive-v1-interface-fix-r2",
+        "single-first-adaptive-v1-downstream-fix-r1",
+        "single-first-adaptive-v1-downstream-fix-r2",
     }:
         raise ValueError("adaptive run domain is invalid")
     if len(implementation_git_sha) != 40 or any(
@@ -725,6 +776,8 @@ def adaptive_run_id(
     if run_domain not in {
         "single-first-adaptive-v1-interface-fix-r1",
         "single-first-adaptive-v1-interface-fix-r2",
+        "single-first-adaptive-v1-downstream-fix-r1",
+        "single-first-adaptive-v1-downstream-fix-r2",
     }:
         raise ValueError("adaptive run domain is invalid")
     if candidate_id not in {"candidate-1", "candidate-2", "candidate-3"}:

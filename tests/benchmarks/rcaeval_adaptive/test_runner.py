@@ -9,6 +9,7 @@ import sys
 
 import pytest
 
+from ecomsre.model.gateway import OpenAICompatibleConfig
 from ecomsre_rcaeval.dataset import DevSystem, discover_dev_cases
 from ecomsre_rcaeval_v2.adapter import dev_case_to_telemetry_case
 from ecomsre_rcaeval_v2.indicator import FormulaId, load_indicator_config
@@ -24,6 +25,7 @@ from ecomsre_rcaeval_adaptive.contracts import (
     InitialFailureCode,
     RankedHypothesis,
     RankedHypothesisBatch,
+    SpecialistInput,
     UncertaintyFlag,
 )
 from ecomsre_rcaeval_adaptive.gate import GatePolicy
@@ -34,9 +36,13 @@ from ecomsre_rcaeval_adaptive.runner import (
     execute_adaptive_scheduled_once,
     write_candidate_config_create_once,
 )
-from ecomsre_rcaeval_adaptive.specialists import InitialOutputValidationError
+from ecomsre_rcaeval_adaptive.specialists import (
+    InitialOutputValidationError,
+    OpenAICompatibleAdaptiveProvider,
+)
 from ecomsre_rcaeval_v2.contracts import SafeValidationError
-from ecomsre_rcaeval_v2.dev3_provider import Dev3ProviderProxy
+from ecomsre_rcaeval_v2.dev3_provider import Dev3ProviderProxy, Dev3RetryingTransport
+from ecomsre_rcaeval_v2.dev3_token_accounting import AttemptBudget
 from ecomsre_rcaeval_v2.schedule import CaseIdentity, case_identity_bytes
 
 
@@ -59,6 +65,120 @@ class _UsageTransport:
         }
 
 
+class _ScriptedAdaptiveTransport:
+    def __init__(self, fail_role: str) -> None:
+        self.fail_role = fail_role
+        self.calls = 0
+
+    def post_json(self, **kwargs):
+        self.calls += 1
+        payload = kwargs["payload"]
+        function_name = payload["tool_choice"]["function"]["name"]
+        messages = payload["messages"]
+        envelope = json.loads(messages[1]["content"])
+        if function_name == "submit_rcaeval_initial_diagnosis":
+            arguments = {
+                "root_cause_service": "checkoutservice",
+                "model_proposed_indicator": "cpu",
+                "confidence": 0.7,
+                "evidence_refs": [envelope["visible_evidence_refs"][0]],
+                "explanation": "Synthetic bounded initial diagnosis.",
+                "uncertainty_flags": [],
+            }
+        elif function_name == "submit_rcaeval_ranked_hypotheses":
+            arguments = {
+                "hypotheses": [
+                    {
+                        "service": (
+                            "invented-service"
+                            if self.fail_role == "specialist"
+                            else envelope["visible_services"][0]
+                        ),
+                        "indicator_or_none": "cpu",
+                        "score": 1,
+                        "causal_role": "ROOT_CANDIDATE",
+                        "supporting_evidence_refs": [
+                            envelope["visible_evidence_refs"][0]
+                        ],
+                        "contradicting_evidence_refs": [],
+                        "summary": "Synthetic bounded specialist hypothesis.",
+                    }
+                ]
+            }
+        elif function_name == "submit_rcaeval_fusion_decision":
+            fusion_input = envelope["fusion_input"]
+            arguments = {
+                "action": "OVERRIDE_INITIAL",
+                "final_root_service": fusion_input["initial_service"],
+                "confidence": 1,
+                "supporting_evidence_refs": [
+                    fusion_input["visible_evidence_refs"][0]
+                ],
+                "contradicting_evidence_refs": [],
+                "reason_codes": ["SYNTHETIC_OVERRIDE"],
+            }
+        else:
+            raise AssertionError("unexpected Adaptive function")
+        return {
+            "model": "locked-model",
+            "choices": [
+                {
+                    "index": 0,
+                    "finish_reason": "tool_calls",
+                    "message": {
+                        "role": "assistant",
+                        "tool_calls": [
+                            {
+                                "type": "function",
+                                "function": {
+                                    "name": function_name,
+                                    "arguments": json.dumps(arguments),
+                                },
+                            }
+                        ],
+                    },
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 10,
+                "completion_tokens": 5,
+                "total_tokens": 15,
+            },
+        }
+
+
+def _scripted_proxy(sidecar: Path, fail_role: str) -> Dev3ProviderProxy:
+    transport = Dev3RetryingTransport(
+        _ScriptedAdaptiveTransport(fail_role),
+        run_root=sidecar,
+        budget=AttemptBudget(
+            max_provider_attempts=8,
+            max_retry_attempts=0,
+            prompt_token_reservation=29_952,
+            max_completion_tokens=2_048,
+            max_conservative_tokens=256_000,
+        ),
+        policy_lock_sha256="e" * 64,
+        expected_timeout_seconds=30.0,
+    )
+    inner = OpenAICompatibleAdaptiveProvider(
+        config=OpenAICompatibleConfig(
+            base_url="https://provider.example/v1",
+            api_key="secret",
+            model="locked-model",
+        ),
+        expected_model="locked-model",
+        timeout_seconds=30.0,
+        max_completion_tokens=2_048,
+        transport=transport,
+    )
+    return Dev3ProviderProxy(
+        inner,
+        run_root=sidecar,
+        policy_lock_sha256="e" * 64,
+    )
+
+
 class _FakeProvider:
     def __init__(
         self,
@@ -74,6 +194,7 @@ class _FakeProvider:
         self.flags = flags
         self.cite_candidate = cite_candidate
         self.initial_input: InitialDiagnosisInput | None = None
+        self.specialist_inputs: list[SpecialistInput] = []
 
     @property
     def calls(self) -> int:
@@ -120,19 +241,15 @@ class _FakeProvider:
 
     def specialize(
         self,
-        incident,
-        context,
-        source,
-        initial_diagnosis,
+        specialist_input,
         *,
         before_output_validation=None,
     ):
-        del incident, initial_diagnosis
+        assert isinstance(specialist_input, SpecialistInput)
+        self.specialist_inputs.append(specialist_input)
         self._charge(before_output_validation)
-        prefix = {"logs": "log:", "traces": "trace:"}[source]
-        evidence = next(
-            item for item in context.evidence if item.evidence_id.startswith(prefix)
-        )
+        source = specialist_input.source
+        evidence = specialist_input.source_evidence[0]
         return RankedHypothesisBatch(
             source=source,
             hypotheses=(
@@ -141,7 +258,7 @@ class _FakeProvider:
                     indicator_or_none=self.indicator,
                     score=0.8,
                     causal_role=CausalRole.ROOT_CANDIDATE,
-                    supporting_evidence_refs=(evidence.evidence_id,),
+                    supporting_evidence_refs=(evidence.evidence_ref,),
                     contradicting_evidence_refs=(),
                     summary="Synthetic specialist hypothesis.",
                     source=source,
@@ -276,6 +393,20 @@ def test_logs_path_uses_three_model_calls_and_two_tools(tmp_path: Path) -> None:
     assert result.tool_calls == 2
     assert result.semantic_operations == 3
     assert provider.calls == 3
+    assert len(provider.specialist_inputs) == 1
+    specialist_input = provider.specialist_inputs[0]
+    assert specialist_input.source == "logs"
+    assert specialist_input.visible_evidence_refs == tuple(
+        sorted(item.evidence_ref for item in specialist_input.source_evidence)
+    )
+    assert specialist_input.visible_services == tuple(
+        sorted(
+            {
+                result.diagnosis.initial_diagnosis.root_cause_service,
+                *(item.service for item in specialist_input.source_evidence),
+            }
+        )
+    )
 
 
 def test_trace_path_uses_three_model_calls_and_three_tools(tmp_path: Path) -> None:
@@ -368,6 +499,65 @@ def test_initial_failure_code_reaches_semantic_and_terminal_records(
     assert semantic["failure_class"] == "NON_RETRYABLE_SCHEMA"
 
 
+@pytest.mark.parametrize(
+    ("fail_role", "semantic_index", "expected_code", "expected_calls"),
+    (
+        (
+            "specialist",
+            2,
+            "SPECIALIST_SERVICE_NOT_VISIBLE",
+            2,
+        ),
+        (
+            "fusion",
+            3,
+            "FUSION_ACTION_SERVICE_INCONSISTENT",
+            3,
+        ),
+    ),
+)
+def test_downstream_failure_code_reaches_semantic_and_terminal_without_retry(
+    tmp_path: Path,
+    fail_role: str,
+    semantic_index: int,
+    expected_code: str,
+    expected_calls: int,
+) -> None:
+    sidecar = tmp_path / "sidecar"
+    provider = _scripted_proxy(sidecar, fail_role)
+
+    terminal = execute_adaptive_scheduled_once(
+        case=_case(tmp_path),
+        run_id="9" * 32,
+        case_identity_sha256="d" * 64,
+        candidate_id="candidate-1",
+        split="DESIGN",
+        provider=provider,  # type: ignore[arg-type]
+        indicator_formula=FormulaId.F0,
+        indicator_config=_config(),
+        gate_policy=GatePolicy(),
+        indicator_policy=IndicatorPolicy(),
+        terminal_root=tmp_path / "terminals",
+        sidecar_root=sidecar,
+        policy_lock_sha256="e" * 64,
+    )
+    semantic = json.loads(
+        (
+            sidecar
+            / "semantic-operations"
+            / f"{semantic_index:04d}.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert terminal.status == "INVALID_SCHEMA"
+    assert terminal.failure_code == expected_code
+    assert terminal.safe_validation_error == provider.last_safe_validation_error
+    assert semantic["failure_code"] == expected_code
+    assert semantic["failure_class"] == "NON_RETRYABLE_SCHEMA"
+    assert semantic["retry_disposition"] is None
+    assert provider.calls == expected_calls
+
+
 def test_run_domain_separates_old_smoke_and_validation_ids() -> None:
     identity = CaseIdentity(
         system="RE2-OB",
@@ -385,7 +575,7 @@ def test_run_domain_separates_old_smoke_and_validation_ids() -> None:
             )
         )
     ).hexdigest()[:32]
-    domain = "single-first-adaptive-v1-interface-fix-r1"
+    domain = "single-first-adaptive-v1-downstream-fix-r1"
     design = adaptive_run_id(domain, "candidate-1", "DESIGN", identity)
 
     assert design != legacy
@@ -393,19 +583,39 @@ def test_run_domain_separates_old_smoke_and_validation_ids() -> None:
     assert design != adaptive_run_id(
         domain, "candidate-1", "DEV_VALIDATION", identity
     )
-    assert design != adaptive_run_id(
+    reference_validation = hashlib.sha256(
+        b"\0".join(
+            (
+                b"single-first-adaptive-v1",
+                domain.encode(),
+                b"candidate-1",
+                b"DEV_VALIDATION",
+                b"strong-single-reference",
+                case_identity_bytes(identity),
+            )
+        )
+    ).hexdigest()[:32]
+    assert adaptive_run_id(
+        domain, "candidate-1", "DEV_VALIDATION", identity
+    ) != reference_validation
+    for other_domain in (
+        "single-first-adaptive-v1-interface-fix-r1",
         "single-first-adaptive-v1-interface-fix-r2",
-        "candidate-1",
-        "DESIGN",
-        identity,
-    )
+        "single-first-adaptive-v1-downstream-fix-r2",
+    ):
+        assert design != adaptive_run_id(
+            other_domain,
+            "candidate-1",
+            "DESIGN",
+            identity,
+        )
 
 
 def test_candidate_config_is_create_once_and_binds_prompts(tmp_path: Path) -> None:
     kwargs = {
         "run_root": tmp_path,
         "candidate_id": "candidate-1",
-        "run_domain": "single-first-adaptive-v1-interface-fix-r1",
+        "run_domain": "single-first-adaptive-v1-downstream-fix-r1",
         "agent_config": {"gate": {"direct_confidence_threshold": 0.75}},
         "indicator_policy": IndicatorPolicy(),
         "implementation_git_sha": "a" * 40,
@@ -418,7 +628,7 @@ def test_candidate_config_is_create_once_and_binds_prompts(tmp_path: Path) -> No
     payload = json.loads(first.read_text(encoding="utf-8"))
     assert payload["evaluation_version"] == "single-first-adaptive-v1"
     assert payload["candidate_id"] == "candidate-1"
-    assert payload["run_domain"] == "single-first-adaptive-v1-interface-fix-r1"
+    assert payload["run_domain"] == "single-first-adaptive-v1-downstream-fix-r1"
     assert payload["implementation_git_sha"] == "a" * 40
     assert set(payload["prompt_sha256"]) == {
         "fusion",
