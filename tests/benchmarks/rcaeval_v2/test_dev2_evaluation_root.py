@@ -49,9 +49,56 @@ def _git(repo: Path, *args: str) -> str:
     ).stdout.strip()
 
 
-def _fixture(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path, str]:
+def test_private_schedule_root_must_be_disjoint_from_control_root(
+    tmp_path: Path,
+) -> None:
+    with pytest.raises(ValueError, match="pairwise disjoint"):
+        evaluation_root._validate_roots(
+            tmp_path / "repo",
+            tmp_path / "control",
+            tmp_path / "control/schedules",
+            tmp_path / "output",
+            tmp_path / "smoke",
+            tmp_path / "design",
+        )
+
+
+def test_prepare_rejects_preserved_root_nesting_before_writing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo, control, _schedule, output, smoke, design, source_base = _fixture(tmp_path)
+    old_v1 = tmp_path / "old-dev-v1"
+    private_schedule = old_v1 / "nested-private-schedules"
+    private_schedule.mkdir(parents=True)
+    for name in SCHEDULE_NAMES:
+        (private_schedule / name).write_text(
+            json.dumps({"name": name}) + "\n", encoding="utf-8"
+        )
+    monkeypatch.setattr(evaluation_root, "SOURCE_BASE_COMMIT", source_base)
+    with pytest.raises(ValueError, match="pairwise disjoint"):
+        prepare_evaluation_root(
+            control,
+            private_schedule,
+            output,
+            smoke,
+            design,
+            project_root=repo,
+            source_base_commit=source_base,
+            preserved_roots={
+                "v2_dev_v1": old_v1,
+                "v2_dev1_control": tmp_path / "old-dev1-control",
+                "v2_dev1_output": tmp_path / "old-dev1-output",
+            },
+        )
+    assert not (control / "locks" / EVALUATION_LOCK_NAME).exists()
+    assert not (private_schedule / ".evaluation-root-authority.json").exists()
+
+
+def _fixture(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path, Path, str]:
     repo = tmp_path / "repo"
     control = tmp_path / "control"
+    private_schedule = tmp_path / "private-schedules"
     output = tmp_path / "output"
     smoke = tmp_path / "smoke-journal"
     design = tmp_path / "design-journal"
@@ -63,7 +110,7 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path, str]:
         repo / "scripts/rcaeval_v2",
         repo / "tests/benchmarks/rcaeval_v2",
         repo / ".github/workflows",
-        control / "schedules",
+        private_schedule,
     ):
         directory.mkdir(parents=True, exist_ok=True)
     (repo / "src/ecomsre_rcaeval_v2/runtime.py").write_text("DEV2 = True\n", encoding="utf-8")
@@ -81,7 +128,7 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path, str]:
         encoding="utf-8",
     )
     for name in SCHEDULE_NAMES:
-        (control / "schedules" / name).write_text(json.dumps({"name": name}) + "\n", encoding="utf-8")
+        (private_schedule / name).write_text(json.dumps({"name": name}) + "\n", encoding="utf-8")
     _git(repo, "init")
     _git(repo, "config", "user.name", "Test User")
     _git(repo, "config", "user.email", "test@example.invalid")
@@ -95,7 +142,7 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path, str]:
     )
     _git(repo, "add", "--", str(config / "protocol.json"))
     _git(repo, "commit", "-m", "implementation fixture")
-    return repo, control, output, smoke, design, source_base
+    return repo, control, private_schedule, output, smoke, design, source_base
 
 
 def _preserved_roots(parent: Path) -> dict[str, Path]:
@@ -140,6 +187,7 @@ def _admission(evaluation, parent: Path) -> ScheduleAdmissionLock:
             "validation_schedule_sha256": evaluation.validation_schedule_sha256,
             "schedule_set_sha256": evaluation.schedule_set_sha256,
             "v1_external_schedule_sha256": "1" * 64,
+            "private_schedule_root_identity_sha256": evaluation.private_schedule_root_identity_sha256,
             "private_output_root_identity_sha256": evaluation.private_output_root_identity_sha256,
             "smoke_journal_root_identity_sha256": evaluation.smoke_journal_root_identity_sha256,
             "design_journal_root_identity_sha256": evaluation.design_journal_root_identity_sha256,
@@ -176,22 +224,25 @@ def test_provider_ready_requires_evaluation_then_matching_admission_lock(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    repo, control, output, smoke, design, source_base = _fixture(tmp_path)
+    repo, control, private_schedule, output, smoke, design, source_base = _fixture(tmp_path)
     monkeypatch.setattr(evaluation_root, "SOURCE_BASE_COMMIT", source_base)
     evaluation = prepare_evaluation_root(
         control,
+        private_schedule,
         output,
         smoke,
         design,
         project_root=repo,
         source_base_commit=source_base,
+        preserved_roots=_preserved_roots(tmp_path),
     )
     assert evaluation == verify_evaluation_root(
-        control, output, smoke, design, project_root=repo
+        control, private_schedule, output, smoke, design, project_root=repo
     )
     with pytest.raises(ValueError, match="admission"):
         verify_provider_ready(
             control,
+            private_schedule,
             output,
             smoke,
             design,
@@ -202,6 +253,7 @@ def test_provider_ready_requires_evaluation_then_matching_admission_lock(
     write_admission_lock(control / "locks/schedule-admission-lock.json", admission)
     verified_evaluation, verified_admission = verify_provider_ready(
         control,
+        private_schedule,
         output,
         smoke,
         design,
@@ -212,6 +264,10 @@ def test_provider_ready_requires_evaluation_then_matching_admission_lock(
     assert verified_admission == admission
     lock_text = (control / "locks" / EVALUATION_LOCK_NAME).read_text(encoding="utf-8")
     assert str(output.resolve()) not in lock_text
+    assert str(private_schedule.resolve()) not in lock_text
+    assert evaluation.private_schedule_root_identity_sha256 == hashlib.sha256(
+        str(private_schedule.resolve()).encode()
+    ).hexdigest()
     assert evaluation.private_output_root_identity_sha256 == hashlib.sha256(
         str(output.resolve()).encode()
     ).hexdigest()
@@ -220,18 +276,26 @@ def test_provider_ready_requires_evaluation_then_matching_admission_lock(
 def test_provider_ready_fails_closed_on_schedule_or_source_drift(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    repo, control, output, smoke, design, source_base = _fixture(tmp_path)
+    repo, control, private_schedule, output, smoke, design, source_base = _fixture(tmp_path)
     monkeypatch.setattr(evaluation_root, "SOURCE_BASE_COMMIT", source_base)
     evaluation = prepare_evaluation_root(
-        control, output, smoke, design, project_root=repo, source_base_commit=source_base
+        control,
+        private_schedule,
+        output,
+        smoke,
+        design,
+        project_root=repo,
+        source_base_commit=source_base,
+        preserved_roots=_preserved_roots(tmp_path),
     )
     write_admission_lock(
         control / "locks/schedule-admission-lock.json", _admission(evaluation, tmp_path)
     )
-    (control / "schedules/smoke-schedule.json").write_text('{"drift":true}\n', encoding="utf-8")
+    (private_schedule / "smoke-schedule.json").write_text('{"drift":true}\n', encoding="utf-8")
     with pytest.raises(ValueError, match="drift"):
         verify_provider_ready(
             control,
+            private_schedule,
             output,
             smoke,
             design,
@@ -243,10 +307,17 @@ def test_provider_ready_fails_closed_on_schedule_or_source_drift(
 def test_provider_ready_fails_closed_on_preserved_terminal_drift(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    repo, control, output, smoke, design, source_base = _fixture(tmp_path)
+    repo, control, private_schedule, output, smoke, design, source_base = _fixture(tmp_path)
     monkeypatch.setattr(evaluation_root, "SOURCE_BASE_COMMIT", source_base)
     evaluation = prepare_evaluation_root(
-        control, output, smoke, design, project_root=repo, source_base_commit=source_base
+        control,
+        private_schedule,
+        output,
+        smoke,
+        design,
+        project_root=repo,
+        source_base_commit=source_base,
+        preserved_roots=_preserved_roots(tmp_path),
     )
     admission = _admission(evaluation, tmp_path)
     write_admission_lock(
@@ -258,6 +329,7 @@ def test_provider_ready_fails_closed_on_preserved_terminal_drift(
     with pytest.raises(ValueError, match="preserved terminal evidence drift"):
         verify_provider_ready(
             control,
+            private_schedule,
             output,
             smoke,
             design,
@@ -269,17 +341,19 @@ def test_provider_ready_fails_closed_on_preserved_terminal_drift(
 def test_evaluation_root_fails_closed_on_dirty_tree_before_writing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    repo, control, output, smoke, design, source_base = _fixture(tmp_path)
+    repo, control, private_schedule, output, smoke, design, source_base = _fixture(tmp_path)
     monkeypatch.setattr(evaluation_root, "SOURCE_BASE_COMMIT", source_base)
     (repo / "src/ecomsre_rcaeval_v2/runtime.py").write_text("dirty = True\n", encoding="utf-8")
     with pytest.raises(ValueError, match="clean"):
         prepare_evaluation_root(
             control,
+            private_schedule,
             output,
             smoke,
             design,
             project_root=repo,
             source_base_commit=source_base,
+            preserved_roots=_preserved_roots(tmp_path),
         )
     assert not (control / "locks" / EVALUATION_LOCK_NAME).exists()
     assert not output.exists()

@@ -101,6 +101,7 @@ class ScheduleAdmissionLock(V2Model):
     validation_schedule_sha256: Sha256
     schedule_set_sha256: Sha256
     v1_external_schedule_sha256: Sha256
+    private_schedule_root_identity_sha256: Sha256
     private_output_root_identity_sha256: Sha256
     smoke_journal_root_identity_sha256: Sha256
     design_journal_root_identity_sha256: Sha256
@@ -206,6 +207,7 @@ def rehearse_schedule_admission(
     validation_schedule: tuple[ScheduleRecord, ...],
     design_cases: Mapping[CaseIdentity, DevCase],
     control_root: Path,
+    private_schedule_root: Path,
     output_root: Path,
     smoke_journal_root: Path,
     design_journal_root: Path,
@@ -222,6 +224,7 @@ def rehearse_schedule_admission(
 
     require_pairwise_disjoint(
         control_root,
+        private_schedule_root,
         output_root,
         smoke_journal_root,
         design_journal_root,
@@ -318,6 +321,9 @@ def rehearse_schedule_admission(
         validation_schedule_sha256=schedule_hashes["validation"],
         schedule_set_sha256=schedule_hashes["set"],
         v1_external_schedule_sha256=v1_external_schedule_sha256,
+        private_schedule_root_identity_sha256=hashlib.sha256(
+            str(private_schedule_root.resolve()).encode()
+        ).hexdigest(),
         private_output_root_identity_sha256=hashlib.sha256(
             str(output_root.resolve()).encode()
         ).hexdigest(),

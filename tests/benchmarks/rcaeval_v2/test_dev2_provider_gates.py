@@ -68,6 +68,23 @@ def test_state_only_smoke_gate_cannot_unlock_design(
         dev2_evidence.verify_passing_smoke_gate(
             gate,
             control_root=tmp_path / "control",
+            private_schedule_root=tmp_path / "private-schedules",
+            output_root=tmp_path / "output",
+            smoke_journal_root=tmp_path / "smoke-journal",
+            design_journal_root=tmp_path / "design-journal",
+            project_root=tmp_path / "repo",
+            smoke_schedule=(),
+        )
+
+
+def test_smoke_verifier_rejects_forbidden_private_schedule_path_before_io(
+    tmp_path: Path,
+) -> None:
+    with pytest.raises(ValueError, match="forbidden"):
+        dev2_evidence.verify_passing_smoke_gate(
+            tmp_path / "control/evidence/provider-smoke-gate.json",
+            control_root=tmp_path / "control",
+            private_schedule_root=tmp_path / "RE2-TT/private-schedules",
             output_root=tmp_path / "output",
             smoke_journal_root=tmp_path / "smoke-journal",
             design_journal_root=tmp_path / "design-journal",
@@ -127,6 +144,7 @@ def test_publisher_requires_fresh_canonical_f0_reverification(
             ob_root=tmp_path / "ob",
             ss_root=tmp_path / "ss",
             control_root=tmp_path / "control",
+            private_schedule_root=tmp_path / "private-schedules",
             output_root=tmp_path / "output",
             smoke_journal_root=tmp_path / "smoke",
             design_journal_root=tmp_path / "design",

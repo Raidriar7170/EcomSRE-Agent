@@ -46,6 +46,7 @@ from ecomsre_rcaeval_v2.observability import verify_terminal_run_journal
 from ecomsre_rcaeval_v2.dev2_paths import (
     journal_root_for,
     reject_dev2_forbidden_paths,
+    require_pairwise_disjoint,
 )
 from ecomsre_rcaeval_v2.provider import OpenAICompatibleRCAEvalV2Provider
 from ecomsre_rcaeval_v2.runner import execute_v2_scheduled_once
@@ -119,9 +120,31 @@ def _write_private_create_once(path: Path, payload: bytes) -> None:
 
 
 def freeze_private_schedules(
-    assignments: tuple[SplitAssignment, ...], private_schedule_root: Path
+    assignments: tuple[SplitAssignment, ...],
+    private_schedule_root: Path,
+    *,
+    control_root: Path,
+    output_root: Path,
+    smoke_journal_root: Path,
+    design_journal_root: Path,
+    preserved_roots: Mapping[str, Path],
+    project_root: Path = PROJECT_ROOT,
 ) -> PrivateScheduleSet:
-    reject_dev2_forbidden_paths(private_schedule_root)
+    if set(preserved_roots) != {
+        "v2_dev_v1",
+        "v2_dev1_control",
+        "v2_dev1_output",
+    }:
+        raise ValueError("dev2 schedule freeze preserved roots are incomplete")
+    require_pairwise_disjoint(
+        project_root,
+        control_root,
+        private_schedule_root,
+        output_root,
+        smoke_journal_root,
+        design_journal_root,
+        *preserved_roots.values(),
+    )
     design = build_schedule(assignments, SplitName.DESIGN, seed=SCHEDULE_SEED)
     validation = build_schedule(assignments, SplitName.DEV_VALIDATION, seed=SCHEDULE_SEED)
     smoke = build_smoke_schedule(assignments, design, seed=SCHEDULE_SEED)
@@ -180,14 +203,14 @@ def load_private_schedule(
 
 
 def _load_locked_phase_schedule(
-    control_root: Path,
+    private_schedule_root: Path,
     phase: Literal["smoke", "design"],
     *,
     evaluation: EvaluationRootLock,
     admission: ScheduleAdmissionLock,
 ) -> tuple[ScheduleRecord, ...]:
     name = "smoke-schedule.json" if phase == "smoke" else "design-schedule.json"
-    path = control_root / "schedules" / name
+    path = private_schedule_root / name
     observed_sha = _sha(path.read_bytes())
     expected_sha = (
         evaluation.smoke_schedule_sha256
@@ -210,6 +233,7 @@ def _load_locked_phase_schedule(
 
 def load_locked_phase_schedule(
     control_root: Path,
+    private_schedule_root: Path,
     output_root: Path,
     smoke_journal_root: Path,
     design_journal_root: Path,
@@ -220,6 +244,7 @@ def load_locked_phase_schedule(
 ) -> tuple[ScheduleRecord, ...]:
     evaluation, admission = verify_provider_ready(
         control_root,
+        private_schedule_root,
         output_root,
         smoke_journal_root,
         design_journal_root,
@@ -227,7 +252,10 @@ def load_locked_phase_schedule(
         preserved_roots=preserved_roots,
     )
     return _load_locked_phase_schedule(
-        control_root, phase, evaluation=evaluation, admission=admission
+        private_schedule_root,
+        phase,
+        evaluation=evaluation,
+        admission=admission,
     )
 
 
@@ -367,6 +395,7 @@ def execute_development_schedule(
     cases: Mapping[CaseIdentity, DevCase],
     provider_config: OpenAICompatibleConfig,
     control_root: Path,
+    private_schedule_root: Path,
     output_root: Path,
     smoke_journal_root: Path,
     design_journal_root: Path,
@@ -378,6 +407,7 @@ def execute_development_schedule(
 
     evaluation, admission = verify_provider_ready(
         control_root,
+        private_schedule_root,
         output_root,
         smoke_journal_root,
         design_journal_root,
@@ -385,7 +415,7 @@ def execute_development_schedule(
         preserved_roots=preserved_roots,
     )
     locked_schedule = _load_locked_phase_schedule(
-        control_root,
+        private_schedule_root,
         execution_phase,
         evaluation=evaluation,
         admission=admission,
@@ -396,12 +426,13 @@ def execute_development_schedule(
         verify_passing_smoke_gate(
             control_root / "evidence" / "provider-smoke-gate.json",
             control_root=control_root,
+            private_schedule_root=private_schedule_root,
             output_root=output_root,
             smoke_journal_root=smoke_journal_root,
             design_journal_root=design_journal_root,
             project_root=PROJECT_ROOT,
             smoke_schedule=_load_locked_phase_schedule(
-                control_root,
+                private_schedule_root,
                 "smoke",
                 evaluation=evaluation,
                 admission=admission,
@@ -425,7 +456,7 @@ def execute_development_schedule(
     smoke_ids = {
         record.run_id
         for record in _load_locked_phase_schedule(
-            control_root,
+            private_schedule_root,
             "smoke",
             evaluation=evaluation,
             admission=admission,
@@ -434,6 +465,7 @@ def execute_development_schedule(
     for index, record in enumerate(schedule, 1):
         verify_evaluation_root(
             control_root,
+            private_schedule_root,
             output_root,
             smoke_journal_root,
             design_journal_root,

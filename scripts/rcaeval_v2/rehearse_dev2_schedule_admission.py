@@ -50,6 +50,7 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     parser.add_argument("--ss-root", required=True, type=Path)
     parser.add_argument("--split-manifest", required=True, type=Path)
     parser.add_argument("--control-root", required=True, type=Path)
+    parser.add_argument("--private-schedule-root", required=True, type=Path)
     parser.add_argument("--output-root", required=True, type=Path)
     parser.add_argument("--smoke-journal-root", required=True, type=Path)
     parser.add_argument("--design-journal-root", required=True, type=Path)
@@ -62,6 +63,7 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         args.ss_root,
         args.split_manifest,
         args.control_root,
+        args.private_schedule_root,
         args.output_root,
         args.smoke_journal_root,
         args.design_journal_root,
@@ -71,12 +73,13 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     )
     evaluation = verify_evaluation_root(
         args.control_root,
+        args.private_schedule_root,
         args.output_root,
         args.smoke_journal_root,
         args.design_journal_root,
         project_root=PROJECT_ROOT,
     )
-    schedules_root = args.control_root / "schedules"
+    schedules_root = args.private_schedule_root
     smoke = load_private_schedule(
         schedules_root / "smoke-schedule.json", allowed_split=SplitName.DESIGN
     )
@@ -158,6 +161,7 @@ def main(argv: tuple[str, ...] | None = None) -> int:
             args.ob_root, args.ss_root, {record.identity for record in design}
         ),
         control_root=args.control_root,
+        private_schedule_root=args.private_schedule_root,
         output_root=args.output_root,
         smoke_journal_root=args.smoke_journal_root,
         design_journal_root=args.design_journal_root,

@@ -65,6 +65,7 @@ class EvaluationRootLock(V2Model):
     design_schedule_sha256: Sha256
     validation_schedule_sha256: Sha256
     schedule_set_sha256: Sha256
+    private_schedule_root_identity_sha256: Sha256
     private_output_root_identity_sha256: Sha256
     smoke_journal_root_identity_sha256: Sha256
     design_journal_root_identity_sha256: Sha256
@@ -147,20 +148,25 @@ def _is_within(child: Path, parent: Path) -> bool:
 def _validate_roots(
     project_root: Path,
     control_root: Path,
+    private_schedule_root: Path,
     output_root: Path,
     smoke_journal_root: Path,
     design_journal_root: Path,
-) -> tuple[Path, Path, Path, Path, Path]:
-    repo, control, output, smoke, design = require_pairwise_disjoint(
+) -> tuple[Path, Path, Path, Path, Path, Path]:
+    repo, control, schedules, output, smoke, design = require_pairwise_disjoint(
         project_root,
         control_root,
+        private_schedule_root,
         output_root,
         smoke_journal_root,
         design_journal_root,
     )
-    if any(_is_within(path, repo) for path in (control, output, smoke, design)):
+    if any(
+        _is_within(path, repo)
+        for path in (control, schedules, output, smoke, design)
+    ):
         raise ValueError("dev2 external roots must live outside Git")
-    return repo, control, output, smoke, design
+    return repo, control, schedules, output, smoke, design
 
 
 def _tracked_files_for_scope(project_root: Path, scope: Path) -> tuple[Path, ...]:
@@ -184,15 +190,16 @@ def _tree_hash(project_root: Path, scope: Path) -> str:
 
 def _current_bindings(
     project_root: Path,
-    control_root: Path,
+    private_schedule_root: Path,
     output_root: Path,
     smoke_journal_root: Path,
     design_journal_root: Path,
 ) -> dict[str, object]:
     config_root = project_root / CONFIG_DIRECTORY
     config_hashes = {name: _sha_file(config_root / name) for name in CONFIG_NAMES}
-    schedules = control_root / "schedules"
-    schedule_hashes = {name: _sha_file(schedules / name) for name in SCHEDULE_NAMES}
+    schedule_hashes = {
+        name: _sha_file(private_schedule_root / name) for name in SCHEDULE_NAMES
+    }
     return {
         "source_tree_hashes": {
             name: _tree_hash(project_root, scope) for name, scope in SOURCE_SCOPES.items()
@@ -207,6 +214,9 @@ def _current_bindings(
         "design_schedule_sha256": schedule_hashes["design-schedule.json"],
         "validation_schedule_sha256": schedule_hashes["dev-validation-schedule.json"],
         "schedule_set_sha256": schedule_hashes["schedule-set-lock.json"],
+        "private_schedule_root_identity_sha256": _sha_bytes(
+            str(private_schedule_root).encode()
+        ),
         "private_output_root_identity_sha256": _sha_bytes(str(output_root).encode()),
         "smoke_journal_root_identity_sha256": _sha_bytes(
             str(smoke_journal_root).encode()
@@ -223,19 +233,37 @@ def _run_attempt_count(output_root: Path) -> int:
 
 def prepare_evaluation_root(
     control_root: Path,
+    private_schedule_root: Path,
     output_root: Path,
     smoke_journal_root: Path,
     design_journal_root: Path,
     *,
     project_root: Path,
     source_base_commit: str,
+    preserved_roots: Mapping[str, Path],
 ) -> EvaluationRootLock:
-    repo, control, output, smoke, design = _validate_roots(
+    repo, control, schedules, output, smoke, design = _validate_roots(
         project_root,
         control_root,
+        private_schedule_root,
         output_root,
         smoke_journal_root,
         design_journal_root,
+    )
+    if set(preserved_roots) != {
+        "v2_dev_v1",
+        "v2_dev1_control",
+        "v2_dev1_output",
+    }:
+        raise ValueError("dev2 evaluation root preserved roots are incomplete")
+    require_pairwise_disjoint(
+        repo,
+        control,
+        schedules,
+        output,
+        smoke,
+        design,
+        *preserved_roots.values(),
     )
     lock_path = control / "locks" / EVALUATION_LOCK_NAME
     if lock_path.exists():
@@ -259,9 +287,15 @@ def prepare_evaluation_root(
     for root in (output, smoke, design):
         if root.exists() and any(root.iterdir()):
             raise ValueError("dev2 external output/journal roots must start empty")
+    if (
+        schedules.is_symlink()
+        or not schedules.is_dir()
+        or {path.name for path in schedules.iterdir()} != set(SCHEDULE_NAMES)
+    ):
+        raise ValueError("dev2 private schedule root is missing or not freshly frozen")
     if _run_attempt_count(smoke) != 0 or _run_attempt_count(design) != 0:
         raise ValueError("dev2 journal root already contains attempts")
-    bindings = _current_bindings(repo, control, output, smoke, design)
+    bindings = _current_bindings(repo, schedules, output, smoke, design)
     lock = EvaluationRootLock.model_validate(
         {
             "schema_version": "rcaeval-re2-v2-dev2.evaluation-root-lock.v1",
@@ -277,6 +311,11 @@ def prepare_evaluation_root(
     )
     lock_sha = _durable_create(lock_path, _canonical_bytes(lock.model_dump(mode="json")))
     for role, root, identity in (
+        (
+            "PRIVATE_SCHEDULE",
+            schedules,
+            lock.private_schedule_root_identity_sha256,
+        ),
         ("PRIVATE_OUTPUT", output, lock.private_output_root_identity_sha256),
         ("SMOKE_JOURNAL", smoke, lock.smoke_journal_root_identity_sha256),
         ("DESIGN_JOURNAL", design, lock.design_journal_root_identity_sha256),
@@ -300,15 +339,17 @@ def prepare_evaluation_root(
 
 def verify_evaluation_root(
     control_root: Path,
+    private_schedule_root: Path,
     output_root: Path,
     smoke_journal_root: Path,
     design_journal_root: Path,
     *,
     project_root: Path,
 ) -> EvaluationRootLock:
-    repo, control, output, smoke, design = _validate_roots(
+    repo, control, schedules, output, smoke, design = _validate_roots(
         project_root,
         control_root,
+        private_schedule_root,
         output_root,
         smoke_journal_root,
         design_journal_root,
@@ -324,10 +365,18 @@ def verify_evaluation_root(
         raise ValueError("dev2 evaluation root implementation commit drift")
     if lock.source_base_commit != SOURCE_BASE_COMMIT:
         raise ValueError("dev2 evaluation root source base drift")
-    for name, expected in _current_bindings(repo, control, output, smoke, design).items():
+    for name, expected in _current_bindings(
+        repo, schedules, output, smoke, design
+    ).items():
         if getattr(lock, name) != expected:
             raise ValueError(f"dev2 evaluation root {name} drift")
     for role, root, identity, allowed in (
+        (
+            "PRIVATE_SCHEDULE",
+            schedules,
+            lock.private_schedule_root_identity_sha256,
+            {".evaluation-root-authority.json", *SCHEDULE_NAMES},
+        ),
         (
             "PRIVATE_OUTPUT",
             output,
@@ -366,6 +415,7 @@ def verify_evaluation_root(
 
 def verify_provider_ready(
     control_root: Path,
+    private_schedule_root: Path,
     output_root: Path,
     smoke_journal_root: Path,
     design_journal_root: Path,
@@ -375,6 +425,7 @@ def verify_provider_ready(
 ) -> tuple[EvaluationRootLock, ScheduleAdmissionLock]:
     evaluation = verify_evaluation_root(
         control_root,
+        private_schedule_root,
         output_root,
         smoke_journal_root,
         design_journal_root,
@@ -388,6 +439,7 @@ def verify_provider_ready(
         "design_schedule_sha256": evaluation.design_schedule_sha256,
         "validation_schedule_sha256": evaluation.validation_schedule_sha256,
         "schedule_set_sha256": evaluation.schedule_set_sha256,
+        "private_schedule_root_identity_sha256": evaluation.private_schedule_root_identity_sha256,
         "private_output_root_identity_sha256": evaluation.private_output_root_identity_sha256,
         "smoke_journal_root_identity_sha256": evaluation.smoke_journal_root_identity_sha256,
         "design_journal_root_identity_sha256": evaluation.design_journal_root_identity_sha256,
@@ -418,6 +470,7 @@ def verify_provider_ready(
     }
     require_pairwise_disjoint(
         control_root,
+        private_schedule_root,
         output_root,
         smoke_journal_root,
         design_journal_root,

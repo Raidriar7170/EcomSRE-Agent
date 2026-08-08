@@ -143,6 +143,7 @@ def publish(
     ob_root: Path,
     ss_root: Path,
     control_root: Path,
+    private_schedule_root: Path,
     output_root: Path,
     smoke_journal_root: Path,
     design_journal_root: Path,
@@ -150,6 +151,7 @@ def publish(
 ) -> str:
     _evaluation, admission_lock = verify_provider_ready(
         control_root,
+        private_schedule_root,
         output_root,
         smoke_journal_root,
         design_journal_root,
@@ -160,6 +162,7 @@ def publish(
         ob_root=ob_root,
         ss_root=ss_root,
         control_root=control_root,
+        private_schedule_root=private_schedule_root,
         output_root=output_root,
         smoke_journal_root=smoke_journal_root,
         design_journal_root=design_journal_root,
@@ -188,6 +191,7 @@ def publish(
         raise ValueError("dev2 canonical Admission Gate differs from its lock")
     smoke_schedule = load_locked_phase_schedule(
         control_root,
+        private_schedule_root,
         output_root,
         smoke_journal_root,
         design_journal_root,
@@ -197,6 +201,7 @@ def publish(
     smoke = verify_smoke_gate(
         control_root / "evidence/provider-smoke-gate.json",
         control_root=control_root,
+        private_schedule_root=private_schedule_root,
         output_root=output_root,
         smoke_journal_root=smoke_journal_root,
         design_journal_root=design_journal_root,
@@ -208,6 +213,7 @@ def publish(
     if smoke_passed:
         design_schedule = load_locked_phase_schedule(
             control_root,
+            private_schedule_root,
             output_root,
             smoke_journal_root,
             design_journal_root,
@@ -225,6 +231,7 @@ def publish(
         bindings = evidence_source_bindings(
             project_root=PROJECT_ROOT,
             control_root=control_root,
+            private_schedule_root=private_schedule_root,
             output_root=output_root,
             smoke_journal_root=smoke_journal_root,
             design_journal_root=design_journal_root,
@@ -320,6 +327,7 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     parser.add_argument("--ob-root", required=True, type=Path)
     parser.add_argument("--ss-root", required=True, type=Path)
     parser.add_argument("--control-root", required=True, type=Path)
+    parser.add_argument("--private-schedule-root", required=True, type=Path)
     parser.add_argument("--output-root", required=True, type=Path)
     parser.add_argument("--smoke-journal-root", required=True, type=Path)
     parser.add_argument("--design-journal-root", required=True, type=Path)
@@ -332,6 +340,7 @@ def main(argv: tuple[str, ...] | None = None) -> int:
             ob_root=args.ob_root,
             ss_root=args.ss_root,
             control_root=args.control_root,
+            private_schedule_root=args.private_schedule_root,
             output_root=args.output_root,
             smoke_journal_root=args.smoke_journal_root,
             design_journal_root=args.design_journal_root,

@@ -60,6 +60,7 @@ def test_missing_admission_blocks_provider_construction_and_attempts(
                 base_url="https://provider.invalid", api_key="unused", model="unused"
             ),
             control_root=tmp_path / "control",
+            private_schedule_root=tmp_path / "private-schedules",
             output_root=tmp_path / "output",
             smoke_journal_root=tmp_path / "smoke-journal",
             design_journal_root=tmp_path / "design-journal",
@@ -140,8 +141,21 @@ def test_design_reuses_existing_smoke_terminal_without_provider_object(
 
 def test_locked_phase_loader_rejects_hash_drift(tmp_path: Path) -> None:
     assignments = build_split_assignments(_identities(), seed=SPLIT_SEED)
-    schedule_root = tmp_path / "control/schedules"
-    frozen = execution.freeze_private_schedules(assignments, schedule_root)
+    schedule_root = tmp_path / "private-schedules"
+    frozen = execution.freeze_private_schedules(
+        assignments,
+        schedule_root,
+        control_root=tmp_path / "control",
+        output_root=tmp_path / "output",
+        smoke_journal_root=tmp_path / "smoke-journal",
+        design_journal_root=tmp_path / "design-journal",
+        preserved_roots={
+            "v2_dev_v1": tmp_path / "old-dev-v1",
+            "v2_dev1_control": tmp_path / "old-dev1-control",
+            "v2_dev1_output": tmp_path / "old-dev1-output",
+        },
+        project_root=tmp_path / "repo",
+    )
     evaluation = SimpleNamespace(
         smoke_schedule_sha256=frozen.smoke_schedule_sha256,
         design_schedule_sha256=frozen.design_schedule_sha256,
@@ -151,7 +165,7 @@ def test_locked_phase_loader_rejects_hash_drift(tmp_path: Path) -> None:
         design_schedule_sha256=frozen.design_schedule_sha256,
     )
     observed = execution._load_locked_phase_schedule(
-        tmp_path / "control",
+        schedule_root,
         "smoke",
         evaluation=evaluation,  # type: ignore[arg-type]
         admission=admission,  # type: ignore[arg-type]
@@ -162,11 +176,35 @@ def test_locked_phase_loader_rejects_hash_drift(tmp_path: Path) -> None:
     assert hashlib.sha256(smoke_path.read_bytes()).hexdigest() != frozen.smoke_schedule_sha256
     with pytest.raises(ValueError, match="hash drift"):
         execution._load_locked_phase_schedule(
-            tmp_path / "control",
+            schedule_root,
             "smoke",
             evaluation=evaluation,  # type: ignore[arg-type]
             admission=admission,  # type: ignore[arg-type]
         )
+
+
+def test_schedule_freeze_rejects_preserved_root_nesting_before_writing(
+    tmp_path: Path,
+) -> None:
+    assignments = build_split_assignments(_identities(), seed=SPLIT_SEED)
+    old_v1 = tmp_path / "old-dev-v1"
+    private_schedule = old_v1 / "nested-private-schedules"
+    with pytest.raises(ValueError, match="pairwise disjoint"):
+        execution.freeze_private_schedules(
+            assignments,
+            private_schedule,
+            control_root=tmp_path / "control",
+            output_root=tmp_path / "output",
+            smoke_journal_root=tmp_path / "smoke-journal",
+            design_journal_root=tmp_path / "design-journal",
+            preserved_roots={
+                "v2_dev_v1": old_v1,
+                "v2_dev1_control": tmp_path / "old-dev1-control",
+                "v2_dev1_output": tmp_path / "old-dev1-output",
+            },
+            project_root=tmp_path / "repo",
+        )
+    assert not private_schedule.exists()
 
 
 def test_caller_supplied_rows_cannot_bypass_locked_schedule(
@@ -188,6 +226,7 @@ def test_caller_supplied_rows_cannot_bypass_locked_schedule(
                 base_url="https://provider.invalid", api_key="unused", model="unused"
             ),
             control_root=tmp_path / "control",
+            private_schedule_root=tmp_path / "private-schedules",
             output_root=tmp_path / "output",
             smoke_journal_root=tmp_path / "smoke-journal",
             design_journal_root=tmp_path / "design-journal",

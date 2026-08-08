@@ -156,6 +156,7 @@ def verify_smoke_gate(
     path: Path,
     *,
     control_root: Path,
+    private_schedule_root: Path,
     output_root: Path,
     smoke_journal_root: Path,
     design_journal_root: Path,
@@ -166,7 +167,12 @@ def verify_smoke_gate(
     """Recompute canonical Smoke evidence; a state-only JSON is never authoritative."""
 
     reject_dev2_forbidden_paths(
-        path, control_root, output_root, smoke_journal_root, design_journal_root
+        path,
+        control_root,
+        private_schedule_root,
+        output_root,
+        smoke_journal_root,
+        design_journal_root,
     )
     canonical = (control_root / "evidence" / "provider-smoke-gate.json").resolve()
     if path.resolve() != canonical or path.is_symlink() or not path.is_file():
@@ -186,6 +192,7 @@ def verify_smoke_gate(
         source_bindings=evidence_source_bindings(
             project_root=project_root,
             control_root=control_root,
+            private_schedule_root=private_schedule_root,
             output_root=output_root,
             smoke_journal_root=smoke_journal_root,
             design_journal_root=design_journal_root,
@@ -214,6 +221,7 @@ def verify_passing_smoke_gate(
     path: Path,
     *,
     control_root: Path,
+    private_schedule_root: Path,
     output_root: Path,
     smoke_journal_root: Path,
     design_journal_root: Path,
@@ -223,6 +231,7 @@ def verify_passing_smoke_gate(
     return verify_smoke_gate(
         path,
         control_root=control_root,
+        private_schedule_root=private_schedule_root,
         output_root=output_root,
         smoke_journal_root=smoke_journal_root,
         design_journal_root=design_journal_root,
@@ -384,13 +393,21 @@ def evidence_source_bindings(
     *,
     project_root: Path,
     control_root: Path,
+    private_schedule_root: Path,
     output_root: Path,
     smoke_journal_root: Path,
     design_journal_root: Path,
 ) -> dict[str, str]:
+    reject_dev2_forbidden_paths(
+        project_root,
+        control_root,
+        private_schedule_root,
+        output_root,
+        smoke_journal_root,
+        design_journal_root,
+    )
     config = project_root / "config" / "rcaeval-re2-v2-dev2"
     locks = control_root / "locks"
-    schedules = control_root / "schedules"
     return {
         "evaluation_root_lock_sha256": _sha(locks / "evaluation-root-lock.json"),
         "schedule_admission_lock_sha256": _sha(locks / "schedule-admission-lock.json"),
@@ -398,10 +415,17 @@ def evidence_source_bindings(
         "split_lock_sha256": _sha(config / "split-lock.json"),
         "indicator_lock_sha256": _sha(config / "indicator-lock.json"),
         "model_prompt_lock_sha256": _sha(config / "model-prompt-lock.json"),
-        "smoke_schedule_sha256": _sha(schedules / "smoke-schedule.json"),
-        "design_schedule_sha256": _sha(schedules / "design-schedule.json"),
+        "smoke_schedule_sha256": _sha(
+            private_schedule_root / "smoke-schedule.json"
+        ),
+        "design_schedule_sha256": _sha(
+            private_schedule_root / "design-schedule.json"
+        ),
         "validation_schedule_sha256": _sha(
-            schedules / "dev-validation-schedule.json"
+            private_schedule_root / "dev-validation-schedule.json"
+        ),
+        "private_schedule_authority_sha256": _sha(
+            private_schedule_root / ".evaluation-root-authority.json"
         ),
         "output_root_authority_sha256": _sha(
             output_root / ".evaluation-root-authority.json"

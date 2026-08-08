@@ -29,6 +29,7 @@ def run_reverification(
     ob_root: Path,
     ss_root: Path,
     control_root: Path,
+    private_schedule_root: Path,
     output_root: Path,
     smoke_journal_root: Path,
     design_journal_root: Path,
@@ -38,6 +39,7 @@ def run_reverification(
 ) -> bool:
     schedule = load_locked_phase_schedule(
         control_root,
+        private_schedule_root,
         output_root,
         smoke_journal_root,
         design_journal_root,
@@ -117,6 +119,7 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     parser.add_argument("--ob-root", required=True, type=Path)
     parser.add_argument("--ss-root", required=True, type=Path)
     parser.add_argument("--control-root", required=True, type=Path)
+    parser.add_argument("--private-schedule-root", required=True, type=Path)
     parser.add_argument("--output-root", required=True, type=Path)
     parser.add_argument("--smoke-journal-root", required=True, type=Path)
     parser.add_argument("--design-journal-root", required=True, type=Path)
@@ -128,6 +131,7 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         ob_root=args.ob_root,
         ss_root=args.ss_root,
         control_root=args.control_root,
+        private_schedule_root=args.private_schedule_root,
         output_root=args.output_root,
         smoke_journal_root=args.smoke_journal_root,
         design_journal_root=args.design_journal_root,
