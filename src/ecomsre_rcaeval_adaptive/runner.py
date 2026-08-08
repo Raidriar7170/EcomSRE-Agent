@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import subprocess
 from time import monotonic
 from typing import Protocol, TypeVar
 
@@ -35,10 +36,11 @@ from ecomsre_rcaeval_adaptive.contracts import (
     EscalationRoute,
     FusionDecision,
     InitialDiagnosis,
+    InitialDiagnosisInput,
     RankedHypothesis,
     RankedHypothesisBatch,
 )
-from ecomsre_rcaeval_adaptive.fusion import FusionInput
+from ecomsre_rcaeval_adaptive.fusion import FUSION_PROMPT, FusionInput
 from ecomsre_rcaeval_adaptive.gate import GateInputs, GatePolicy, decide_escalation
 from ecomsre_rcaeval_adaptive.indicator import (
     IndicatorPolicy,
@@ -71,7 +73,12 @@ from ecomsre_rcaeval_v2.schedule import (
     CaseIdentity,
     case_identity_bytes,
 )
-from ecomsre_rcaeval_adaptive.specialists import OpenAICompatibleAdaptiveProvider
+from ecomsre_rcaeval_adaptive.specialists import (
+    INITIAL_PROMPT,
+    LOGS_PROMPT,
+    TRACES_PROMPT,
+    OpenAICompatibleAdaptiveProvider,
+)
 from ecomsre_rcaeval_v2.provider import ProviderCallDelta, ProviderCounterSnapshot
 
 
@@ -82,9 +89,7 @@ class AdaptiveDiagnosisProvider(Protocol):
 
     def diagnose(
         self,
-        incident: IncidentManifest,
-        context: ArchitectureContext,
-        indicator_candidates: tuple[IndicatorCandidateSnapshotV2, ...],
+        initial_input: InitialDiagnosisInput,
         *,
         before_output_validation: Callable[[], None] | None = None,
     ) -> InitialDiagnosis: ...
@@ -221,6 +226,28 @@ def execute_adaptive_case(
         config=indicator_config,
     )
     candidate_snapshots = _candidate_snapshots(candidates)
+    initial_bounded_evidence = _bounded_evidence(context)
+    initial_input = InitialDiagnosisInput(
+        incident=incident,
+        bounded_evidence=initial_bounded_evidence,
+        indicator_candidates=candidate_snapshots,
+        visible_services=tuple(
+            sorted(
+                {
+                    *(item.service for item in initial_bounded_evidence),
+                    *(item.service for item in candidate_snapshots),
+                }
+            )
+        ),
+        visible_evidence_refs=tuple(
+            sorted(
+                {
+                    *(item.evidence_ref for item in initial_bounded_evidence),
+                    *(item.evidence_ref for item in candidate_snapshots),
+                }
+            )
+        ),
+    )
     operation_trace: list[AdaptiveOperationTrace] = []
 
     def invoke(
@@ -248,23 +275,23 @@ def execute_adaptive_case(
         AdaptiveOperationRole.INITIAL_DIAGNOSIS,
         None,
         lambda: provider.diagnose(
-            incident,
-            context,
-            candidate_snapshots,
+            initial_input,
             before_output_validation=lambda: None,
         ),
     )
-    evidence_services = {item.evidence_id: item.service for item in context.evidence}
+    evidence_services = {
+        item.evidence_ref: item.service for item in initial_input.bounded_evidence
+    }
     evidence_services.update(
-        {item.evidence_ref: item.service for item in candidates}
+        {item.evidence_ref: item.service for item in initial_input.indicator_candidates}
     )
     metrics_ranking = _service_ranking(candidates)
     metrics_top = metrics_ranking[0][0] if metrics_ranking else None
     log_top = next(
         (
             item.service
-            for item in context.evidence
-            if item.evidence_id.startswith("log:") and item.service != "unknown"
+            for item in initial_input.bounded_evidence
+            if item.evidence_ref.startswith("log:") and item.service != "unknown"
         ),
         None,
     )
@@ -404,6 +431,112 @@ def _terminal_bytes(record: AdaptiveTerminalRecord) -> bytes:
         )
         + "\n"
     ).encode()
+
+
+def write_candidate_config_create_once(
+    *,
+    run_root: Path,
+    candidate_id: str,
+    run_domain: str,
+    agent_config: Mapping[str, object],
+    indicator_policy: IndicatorPolicy,
+    implementation_git_sha: str,
+) -> Path:
+    """Bind one private candidate root to the exact Agent and prompt config."""
+
+    if candidate_id not in {"candidate-1", "candidate-2", "candidate-3"}:
+        raise ValueError("adaptive candidate ID is outside the bounded search")
+    if run_domain not in {
+        "single-first-adaptive-v1-interface-fix-r1",
+        "single-first-adaptive-v1-interface-fix-r2",
+    }:
+        raise ValueError("adaptive run domain is invalid")
+    if len(implementation_git_sha) != 40 or any(
+        item not in "0123456789abcdef" for item in implementation_git_sha
+    ):
+        raise ValueError("adaptive implementation Git SHA is invalid")
+    prompts = {
+        "fusion": FUSION_PROMPT,
+        "initial": INITIAL_PROMPT,
+        "logs_specialist": LOGS_PROMPT,
+        "traces_specialist": TRACES_PROMPT,
+    }
+    payload = {
+        "schema_version": "rcaeval-single-first-adaptive.candidate-config.v1",
+        "evaluation_version": "single-first-adaptive-v1",
+        "candidate_id": candidate_id,
+        "run_domain": run_domain,
+        "agent_config": dict(agent_config),
+        "prompt_sha256": {
+            name: hashlib.sha256(value.encode()).hexdigest()
+            for name, value in prompts.items()
+        },
+        "indicator_policy": indicator_policy.model_dump(mode="json"),
+        "implementation_git_sha": implementation_git_sha,
+    }
+    encoded = (
+        json.dumps(
+            payload,
+            allow_nan=False,
+            ensure_ascii=False,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n"
+    ).encode()
+    output = run_root / "candidate-config.json"
+    if output.exists():
+        if output.is_symlink() or not output.is_file() or output.read_bytes() != encoded:
+            raise ValueError("adaptive candidate config differs from existing root")
+        return output
+    output.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    output.parent.chmod(0o700)
+    with output.open("xb") as handle:
+        handle.write(encoded)
+        handle.flush()
+        os.fsync(handle.fileno())
+    output.chmod(0o600)
+    return output
+
+
+def require_clean_implementation_git_sha(repository_root: Path) -> str:
+    """Return HEAD only when all candidate-defining tracked scopes are clean."""
+
+    scopes = (
+        "config/rcaeval-adaptive-v1",
+        "scripts/rcaeval_adaptive",
+        "src/ecomsre_rcaeval_adaptive",
+        "src/ecomsre_rcaeval_v2/dev3_provider.py",
+    )
+    status = subprocess.run(
+        (
+            "git",
+            "status",
+            "--porcelain=v1",
+            "--untracked-files=all",
+            "--",
+            *scopes,
+        ),
+        cwd=repository_root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if status.returncode != 0 or status.stdout:
+        raise ValueError("adaptive candidate implementation scope is not clean")
+    head = subprocess.run(
+        ("git", "rev-parse", "HEAD"),
+        cwd=repository_root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    value = head.stdout.strip()
+    if head.returncode != 0 or len(value) != 40 or any(
+        item not in "0123456789abcdef" for item in value
+    ):
+        raise ValueError("adaptive candidate implementation HEAD is invalid")
+    return value
 
 
 def _write_terminal_create_once(path: Path, record: AdaptiveTerminalRecord) -> None:
@@ -584,8 +717,16 @@ def execute_adaptive_scheduled_once(
 
 
 def adaptive_run_id(
-    candidate_id: str, split: str, identity: CaseIdentity
+    run_domain: str,
+    candidate_id: str,
+    split: str,
+    identity: CaseIdentity,
 ) -> str:
+    if run_domain not in {
+        "single-first-adaptive-v1-interface-fix-r1",
+        "single-first-adaptive-v1-interface-fix-r2",
+    }:
+        raise ValueError("adaptive run domain is invalid")
     if candidate_id not in {"candidate-1", "candidate-2", "candidate-3"}:
         raise ValueError("adaptive candidate ID is outside the bounded search")
     if split not in {"DESIGN", "DEV_VALIDATION"}:
@@ -594,6 +735,7 @@ def adaptive_run_id(
         b"\0".join(
             (
                 b"single-first-adaptive-v1",
+                run_domain.encode(),
                 candidate_id.encode(),
                 split.encode(),
                 case_identity_bytes(identity),
@@ -607,6 +749,7 @@ def execute_adaptive_batch(
     *,
     cases: Mapping[CaseIdentity, DevCase],
     candidate_id: str,
+    run_domain: str,
     split: str,
     provider_config: OpenAICompatibleConfig,
     model: str,
@@ -616,6 +759,8 @@ def execute_adaptive_batch(
     indicator_config: LoadedIndicatorConfig,
     gate_policy: GatePolicy,
     indicator_policy: IndicatorPolicy,
+    agent_config: Mapping[str, object],
+    implementation_git_sha: str,
     run_root: Path,
     policy_lock_sha256: str,
     max_semantic_operations: int,
@@ -628,11 +773,20 @@ def execute_adaptive_batch(
 
     if len(set(identities)) != len(identities):
         raise ValueError("adaptive batch identities must be unique")
+    write_candidate_config_create_once(
+        run_root=run_root,
+        candidate_id=candidate_id,
+        run_domain=run_domain,
+        agent_config=agent_config,
+        indicator_policy=indicator_policy,
+        implementation_git_sha=implementation_git_sha,
+    )
     operation_ceiling = 4 * len(identities)
     if operation_ceiling > max_semantic_operations:
         raise ValueError("adaptive batch exceeds the frozen semantic-operation cap")
     run_ids = tuple(
-        adaptive_run_id(candidate_id, split, identity) for identity in identities
+        adaptive_run_id(run_domain, candidate_id, split, identity)
+        for identity in identities
     )
     sidecar_roots = tuple(
         run_root / "provider-sidecars" / run_id for run_id in run_ids
@@ -702,4 +856,10 @@ def execute_adaptive_batch(
     return tuple(terminals)
 
 
-__all__ = ["AdaptiveDiagnosisProvider", "execute_adaptive_case"]
+__all__ = [
+    "AdaptiveDiagnosisProvider",
+    "adaptive_run_id",
+    "execute_adaptive_case",
+    "require_clean_implementation_git_sha",
+    "write_candidate_config_create_once",
+]

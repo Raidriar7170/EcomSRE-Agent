@@ -3,16 +3,23 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import hashlib
 import json
 from pathlib import Path
 from typing import Any
 
-from ecomsre_rcaeval_adaptive.contracts import AdaptiveTerminalStatus
+from ecomsre_rcaeval_adaptive.contracts import (
+    AdaptiveTerminalStatus,
+    InitialFailureCode,
+)
 from ecomsre_rcaeval_adaptive.gate import GatePolicy
 from ecomsre_rcaeval_adaptive.indicator import IndicatorPolicy
 from ecomsre_rcaeval_adaptive.evaluation import validate_smoke_strata
-from ecomsre_rcaeval_adaptive.runner import execute_adaptive_batch
+from ecomsre_rcaeval_adaptive.runner import (
+    execute_adaptive_batch,
+    require_clean_implementation_git_sha,
+)
 from ecomsre_rcaeval_v2.dev3_evidence import verify_provider_sidecar
 from ecomsre_rcaeval_v2.dev3_execution import (
     discover_case_index,
@@ -23,7 +30,7 @@ from ecomsre_rcaeval_v2.dev_execution import provider_config_from_env_file
 from ecomsre_rcaeval_v2.indicator import FormulaId, load_indicator_config
 from ecomsre_rcaeval_v2.privacy import scan_agent_visible_payload
 from ecomsre_rcaeval_v2.public_projection import write_private_json_create_once
-from ecomsre_rcaeval_v2.schedule import SplitName
+from ecomsre_rcaeval_v2.schedule import SplitName, case_identity_bytes
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -50,6 +57,8 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     parser.add_argument("--env-file", required=True, type=Path)
     parser.add_argument("--run-root", required=True, type=Path)
     args = parser.parse_args(argv)
+    if args.candidate_id != "candidate-1":
+        raise ValueError("adaptive shared interface smoke requires candidate-1")
 
     agent = _load("agent.json")
     model = _load("model-lock.json")
@@ -80,10 +89,17 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         raise ValueError("adaptive smoke budget config is invalid")
     budget = budgets["smoke"]
     provider_config = provider_config_from_env_file(args.env_file)
+    indicator_policy = IndicatorPolicy(
+        deterministic_margin_threshold=float(
+            agent["indicator_resolver"]["deterministic_margin_threshold"]
+        )
+    )
+    run_domain = str(evaluation["run_domain"])
     terminals = execute_adaptive_batch(
         identities,
         cases=cases,
         candidate_id=args.candidate_id,
+        run_domain=run_domain,
         split="DESIGN",
         provider_config=provider_config,
         model=str(model["model"]),
@@ -92,11 +108,9 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         indicator_formula=FormulaId.F0,
         indicator_config=formula,
         gate_policy=GatePolicy.model_validate(agent["gate"]),
-        indicator_policy=IndicatorPolicy(
-            deterministic_margin_threshold=float(
-                agent["indicator_resolver"]["deterministic_margin_threshold"]
-            )
-        ),
+        indicator_policy=indicator_policy,
+        agent_config=agent,
+        implementation_git_sha=require_clean_implementation_git_sha(PROJECT_ROOT),
         run_root=args.run_root,
         policy_lock_sha256=policy_sha,
         max_semantic_operations=int(budget["semantic_operations"]),
@@ -129,6 +143,12 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         status.value: sum(item.status is status for item in terminals)
         for status in AdaptiveTerminalStatus
     }
+    failure_code_counts = Counter(
+        item.failure_code for item in terminals if item.failure_code is not None
+    )
+    initial_failure_count = sum(
+        failure_code_counts[code.value] for code in InitialFailureCode
+    )
     attempts = sum(item.attempt_accounting.provider_attempt_count for item in terminals)
     retries = sum(item.attempt_accounting.retry_attempt_count for item in terminals)
     upper = sum(
@@ -137,10 +157,17 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     gate = {
         "schema_version": "rcaeval-single-first-adaptive.smoke-gate.v1",
         "evaluation_version": "single-first-adaptive-v1",
+        "run_domain": run_domain,
         "candidate_id": args.candidate_id,
         "scheduled": 12,
         "terminalized": len(terminals),
         "status_counts": status_counts,
+        "failure_code_counts": dict(sorted(failure_code_counts.items())),
+        "semantic_retries": 0,
+        "smoke_identity_sha256": sorted(
+            hashlib.sha256(case_identity_bytes(identity)).hexdigest()
+            for identity in identities
+        ),
         "provider_attempts": attempts,
         "transport_retries": retries,
         "conservative_token_upper_bound": upper,
@@ -148,6 +175,8 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         "passed": (
             len(terminals) == 12
             and status_counts[AdaptiveTerminalStatus.COMPLETED.value] == 12
+            and status_counts[AdaptiveTerminalStatus.INVALID_SCHEMA.value] == 0
+            and initial_failure_count == 0
             and attempts <= int(budget["provider_attempts"])
             and retries <= int(budget["transport_retries"])
             and upper <= int(budget["conservative_tokens"])

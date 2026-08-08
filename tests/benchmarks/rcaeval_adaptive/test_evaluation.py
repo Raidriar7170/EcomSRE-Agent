@@ -160,10 +160,13 @@ def test_candidate_freeze_binds_all_agent_config_hashes(tmp_path: Path) -> None:
     for name, path in config_paths.items():
         path.write_text(json.dumps({"name": name}) + "\n", encoding="utf-8")
     runtime_path = tmp_path / "src/ecomsre_rcaeval_adaptive/runtime.py"
+    dev3_provider_path = tmp_path / "src/ecomsre_rcaeval_v2/dev3_provider.py"
     script_path = tmp_path / "scripts/rcaeval_adaptive/run.py"
     runtime_path.parent.mkdir(parents=True)
+    dev3_provider_path.parent.mkdir(parents=True)
     script_path.parent.mkdir(parents=True)
     runtime_path.write_text("VALUE = 1\n", encoding="utf-8")
+    dev3_provider_path.write_text("VALUE = 1\n", encoding="utf-8")
     script_path.write_text("VALUE = 1\n", encoding="utf-8")
     subprocess.run(("git", "add", "."), cwd=tmp_path, check=True)
     subprocess.run(
@@ -255,6 +258,16 @@ def test_candidate_freeze_binds_all_agent_config_hashes(tmp_path: Path) -> None:
     freeze.write_text(original_freeze, encoding="utf-8")
 
     runtime_path.write_text("VALUE = 2\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="runtime differs"):
+        load_candidate_freeze(
+            freeze,
+            expected_candidate_id="candidate-1",
+            config_paths=config_paths,
+            repository_root=tmp_path,
+        )
+    runtime_path.write_text("VALUE = 1\n", encoding="utf-8")
+
+    dev3_provider_path.write_text("VALUE = 2\n", encoding="utf-8")
     with pytest.raises(ValueError, match="runtime differs"):
         load_candidate_freeze(
             freeze,

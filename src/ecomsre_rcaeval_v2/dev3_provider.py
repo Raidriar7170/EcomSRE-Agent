@@ -91,6 +91,11 @@ class Dev2FailureAudit(V2Model):
 
 
 _SCHEMA_FAILURES = {
+    "INITIAL_DUPLICATE_EVIDENCE_REF",
+    "INITIAL_EVIDENCE_REF_NOT_VISIBLE",
+    "INITIAL_JSON_OR_SCHEMA_INVALID",
+    "INITIAL_SERVICE_NOT_VISIBLE",
+    "INITIAL_UNCERTAINTY_FLAG_INVALID",
     "PROVIDER_OUTPUT_INVALID_SCHEMA",
     "PROVIDER_OUTPUT_UNRESOLVED_SERVICE_ALIAS",
 }
@@ -854,10 +859,21 @@ def _semantic_failure(
             else FailureClass.NON_RETRYABLE_LOCAL_CONTRACT
         )
         return failure_class, error.code, "PROVIDER_CALL"
+    if isinstance(error, ProviderOutputValidationError):
+        initial_code = getattr(error, "failure_code", None)
+        failure_code = (
+            initial_code
+            if isinstance(initial_code, str) and initial_code in _SCHEMA_FAILURES
+            else "PROVIDER_OUTPUT_INVALID_SCHEMA"
+        )
+        return (
+            FailureClass.NON_RETRYABLE_SCHEMA,
+            failure_code,
+            "OUTPUT_VALIDATION" if attempts else "INPUT_CONSTRUCTION",
+        )
     if isinstance(
         error,
         (
-            ProviderOutputValidationError,
             ProviderDiagnosisError,
             UnresolvedServiceAlias,
             ValidationError,

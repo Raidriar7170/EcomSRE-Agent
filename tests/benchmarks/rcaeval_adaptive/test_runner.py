@@ -1,7 +1,13 @@
 from __future__ import annotations
 
 import hashlib
+import json
+import os
 from pathlib import Path
+import subprocess
+import sys
+
+import pytest
 
 from ecomsre_rcaeval.dataset import DevSystem, discover_dev_cases
 from ecomsre_rcaeval_v2.adapter import dev_case_to_telemetry_case
@@ -14,14 +20,24 @@ from ecomsre_rcaeval_adaptive.contracts import (
     FusionAction,
     FusionDecision,
     InitialDiagnosis,
+    InitialDiagnosisInput,
+    InitialFailureCode,
     RankedHypothesis,
     RankedHypothesisBatch,
     UncertaintyFlag,
 )
 from ecomsre_rcaeval_adaptive.gate import GatePolicy
 from ecomsre_rcaeval_adaptive.indicator import IndicatorPolicy
-from ecomsre_rcaeval_adaptive.runner import execute_adaptive_case
-from ecomsre_rcaeval_adaptive.runner import execute_adaptive_scheduled_once
+from ecomsre_rcaeval_adaptive.runner import (
+    adaptive_run_id,
+    execute_adaptive_case,
+    execute_adaptive_scheduled_once,
+    write_candidate_config_create_once,
+)
+from ecomsre_rcaeval_adaptive.specialists import InitialOutputValidationError
+from ecomsre_rcaeval_v2.contracts import SafeValidationError
+from ecomsre_rcaeval_v2.dev3_provider import Dev3ProviderProxy
+from ecomsre_rcaeval_v2.schedule import CaseIdentity, case_identity_bytes
 
 
 CONFIG_PATH = (
@@ -57,6 +73,7 @@ class _FakeProvider:
         self.indicator = indicator
         self.flags = flags
         self.cite_candidate = cite_candidate
+        self.initial_input: InitialDiagnosisInput | None = None
 
     @property
     def calls(self) -> int:
@@ -80,18 +97,17 @@ class _FakeProvider:
 
     def diagnose(
         self,
-        incident,
-        context,
-        indicator_candidates,
+        initial_input,
         *,
         before_output_validation=None,
     ):
-        del incident
+        assert isinstance(initial_input, InitialDiagnosisInput)
+        self.initial_input = initial_input
         self._charge(before_output_validation)
         evidence_ref = (
-            indicator_candidates[0].evidence_ref
+            initial_input.indicator_candidates[0].evidence_ref
             if self.cite_candidate
-            else context.evidence[0].evidence_id
+            else initial_input.bounded_evidence[0].evidence_ref
         )
         return InitialDiagnosis(
             root_cause_service="checkoutservice",
@@ -147,6 +163,28 @@ class _FakeProvider:
         )
 
 
+class _InitialFailureProvider(_FakeProvider):
+    def __init__(self) -> None:
+        super().__init__(confidence=0.9)
+        self._safe_error = SafeValidationError(
+            error_class="ValueError",
+            field_paths=("evidence_refs",),
+            constraint_types=("visible_evidence_ref",),
+            error_count=1,
+        )
+
+    @property
+    def last_safe_validation_error(self) -> SafeValidationError:
+        return self._safe_error
+
+    def diagnose(self, initial_input, *, before_output_validation=None):
+        del initial_input, before_output_validation
+        raise InitialOutputValidationError(
+            InitialFailureCode.INITIAL_EVIDENCE_REF_NOT_VISIBLE,
+            self._safe_error,
+        )
+
+
 def _config():
     return load_indicator_config(
         CONFIG_PATH, expected_sha256=hashlib.sha256(CONFIG_PATH.read_bytes()).hexdigest()
@@ -197,6 +235,26 @@ def test_direct_path_uses_one_model_call_and_two_tools(tmp_path: Path) -> None:
     assert result.tool_calls == 2
     assert result.semantic_operations == 1
     assert provider.calls == 1
+    assert provider.initial_input is not None
+    assert provider.initial_input.visible_services == tuple(
+        sorted(
+            {
+                *(item.service for item in provider.initial_input.bounded_evidence),
+                *(item.service for item in provider.initial_input.indicator_candidates),
+            }
+        )
+    )
+    assert provider.initial_input.visible_evidence_refs == tuple(
+        sorted(
+            {
+                *(item.evidence_ref for item in provider.initial_input.bounded_evidence),
+                *(
+                    item.evidence_ref
+                    for item in provider.initial_input.indicator_candidates
+                ),
+            }
+        )
+    )
 
 
 def test_metric_candidate_reference_counts_as_initial_service_support(
@@ -272,3 +330,141 @@ def test_scheduled_execution_reuses_create_once_terminal_without_provider_replay
     assert second.status == "COMPLETED"
     assert provider.calls == calls_after_first == 1
     assert len(list((tmp_path / "terminals").glob("*.json"))) == 1
+
+
+def test_initial_failure_code_reaches_semantic_and_terminal_records(
+    tmp_path: Path,
+) -> None:
+    sidecar = tmp_path / "sidecar"
+    provider = Dev3ProviderProxy(
+        _InitialFailureProvider(),
+        run_root=sidecar,
+        policy_lock_sha256="e" * 64,
+    )
+
+    terminal = execute_adaptive_scheduled_once(
+        case=_case(tmp_path),
+        run_id="f" * 32,
+        case_identity_sha256="d" * 64,
+        candidate_id="candidate-1",
+        split="DESIGN",
+        provider=provider,  # type: ignore[arg-type]
+        indicator_formula=FormulaId.F0,
+        indicator_config=_config(),
+        gate_policy=GatePolicy(),
+        indicator_policy=IndicatorPolicy(),
+        terminal_root=tmp_path / "terminals",
+        sidecar_root=sidecar,
+        policy_lock_sha256="e" * 64,
+    )
+    semantic = json.loads(
+        (sidecar / "semantic-operations/0001.json").read_text(encoding="utf-8")
+    )
+
+    assert terminal.status == "INVALID_SCHEMA"
+    assert terminal.failure_code == "INITIAL_EVIDENCE_REF_NOT_VISIBLE"
+    assert terminal.safe_validation_error == provider.last_safe_validation_error
+    assert semantic["failure_code"] == "INITIAL_EVIDENCE_REF_NOT_VISIBLE"
+    assert semantic["failure_class"] == "NON_RETRYABLE_SCHEMA"
+
+
+def test_run_domain_separates_old_smoke_and_validation_ids() -> None:
+    identity = CaseIdentity(
+        system="RE2-OB",
+        root_cause_service="checkoutservice",
+        fault="cpu",
+        instance="1",
+    )
+    legacy = hashlib.sha256(
+        b"\0".join(
+            (
+                b"single-first-adaptive-v1",
+                b"candidate-1",
+                b"DESIGN",
+                case_identity_bytes(identity),
+            )
+        )
+    ).hexdigest()[:32]
+    domain = "single-first-adaptive-v1-interface-fix-r1"
+    design = adaptive_run_id(domain, "candidate-1", "DESIGN", identity)
+
+    assert design != legacy
+    assert design == adaptive_run_id(domain, "candidate-1", "DESIGN", identity)
+    assert design != adaptive_run_id(
+        domain, "candidate-1", "DEV_VALIDATION", identity
+    )
+    assert design != adaptive_run_id(
+        "single-first-adaptive-v1-interface-fix-r2",
+        "candidate-1",
+        "DESIGN",
+        identity,
+    )
+
+
+def test_candidate_config_is_create_once_and_binds_prompts(tmp_path: Path) -> None:
+    kwargs = {
+        "run_root": tmp_path,
+        "candidate_id": "candidate-1",
+        "run_domain": "single-first-adaptive-v1-interface-fix-r1",
+        "agent_config": {"gate": {"direct_confidence_threshold": 0.75}},
+        "indicator_policy": IndicatorPolicy(),
+        "implementation_git_sha": "a" * 40,
+    }
+
+    first = write_candidate_config_create_once(**kwargs)
+    second = write_candidate_config_create_once(**kwargs)
+
+    assert first == second == tmp_path / "candidate-config.json"
+    payload = json.loads(first.read_text(encoding="utf-8"))
+    assert payload["evaluation_version"] == "single-first-adaptive-v1"
+    assert payload["candidate_id"] == "candidate-1"
+    assert payload["run_domain"] == "single-first-adaptive-v1-interface-fix-r1"
+    assert payload["implementation_git_sha"] == "a" * 40
+    assert set(payload["prompt_sha256"]) == {
+        "fusion",
+        "initial",
+        "logs_specialist",
+        "traces_specialist",
+    }
+    assert payload["indicator_policy"] == {
+        "deterministic_margin_threshold": 0.6
+    }
+
+    with pytest.raises(ValueError, match="candidate config differs"):
+        write_candidate_config_create_once(
+            **{**kwargs, "agent_config": {"gate": {"direct_confidence_threshold": 0.9}}}
+        )
+
+
+def test_shared_smoke_rejects_non_candidate_one_before_reading_inputs(
+    tmp_path: Path,
+) -> None:
+    project_root = Path(__file__).resolve().parents[3]
+    completed = subprocess.run(
+        (
+            sys.executable,
+            "-m",
+            "scripts.rcaeval_adaptive.run_adaptive_smoke",
+                "--candidate-id",
+                "candidate-2",
+                "--ob-root",
+                str(tmp_path / "missing-ob"),
+                "--ss-root",
+                str(tmp_path / "missing-ss"),
+                "--smoke-schedule",
+                str(tmp_path / "missing-schedule.json"),
+                "--env-file",
+                str(tmp_path / "missing.env"),
+                "--run-root",
+                str(tmp_path / "missing-run-root"),
+        ),
+        cwd=project_root,
+        env={**os.environ, "PYTHONPATH": "src:."},
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode != 0
+    assert "requires candidate-1" in completed.stderr
+    assert "missing-schedule" not in completed.stderr

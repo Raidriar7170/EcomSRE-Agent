@@ -70,11 +70,14 @@ def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _reference_run_id(candidate_id: str, identity: CaseIdentity) -> str:
+def _reference_run_id(
+    run_domain: str, candidate_id: str, identity: CaseIdentity
+) -> str:
     return hashlib.sha256(
         b"\0".join(
             (
                 b"single-first-adaptive-v1",
+                run_domain.encode(),
                 candidate_id.encode(),
                 b"DEV_VALIDATION",
                 b"strong-single-reference",
@@ -89,12 +92,15 @@ def _run_reference(
     *,
     cases,
     candidate_id: str,
+    run_domain: str,
     provider_config,
     run_root: Path,
     policy_sha: str,
     timeout_seconds: float,
 ) -> tuple[TerminalRecord, ...]:
-    run_ids = tuple(_reference_run_id(candidate_id, item) for item in identities)
+    run_ids = tuple(
+        _reference_run_id(run_domain, candidate_id, item) for item in identities
+    )
     sidecars = tuple(run_root / "provider-sidecars" / item for item in run_ids)
     budget = AttemptBudget.restore(
         sidecars,
@@ -167,12 +173,13 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     evaluation = _load(config_paths["evaluation"])
     model = _load(config_paths["model_lock"])
     # This authorization intentionally precedes any validation schedule/case read.
-    load_candidate_freeze(
+    freeze = load_candidate_freeze(
         args.candidate_freeze,
         expected_candidate_id=args.candidate_id,
         config_paths=config_paths,
         repository_root=PROJECT_ROOT,
     )
+    run_domain = str(evaluation["run_domain"])
 
     schedule = load_private_schedule(
         args.validation_schedule, allowed_split=SplitName.DEV_VALIDATION
@@ -197,6 +204,7 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         identities,
         cases=cases,
         candidate_id=args.candidate_id,
+        run_domain=run_domain,
         provider_config=provider_config,
         run_root=reference_root,
         policy_sha=policy_sha,
@@ -235,6 +243,7 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         identities,
         cases=cases,
         candidate_id=args.candidate_id,
+        run_domain=run_domain,
         split="DEV_VALIDATION",
         provider_config=provider_config,
         model=str(model["model"]),
@@ -251,6 +260,8 @@ def main(argv: tuple[str, ...] | None = None) -> int:
                 agent["indicator_resolver"]["deterministic_margin_threshold"]
             )
         ),
+        agent_config=agent,
+        implementation_git_sha=freeze.implementation_git_sha,
         run_root=args.run_root / "adaptive",
         policy_lock_sha256=policy_sha,
         max_semantic_operations=480,
@@ -306,6 +317,7 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     public = {
         "schema_version": "rcaeval-single-first-adaptive.validation-aggregate.v1",
         "evaluation_version": "single-first-adaptive-v1",
+        "run_domain": run_domain,
         "candidate_id": args.candidate_id,
         "scheduled_per_variant": 120,
         "variants": 2,

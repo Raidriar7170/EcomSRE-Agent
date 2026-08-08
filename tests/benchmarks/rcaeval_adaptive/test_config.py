@@ -34,6 +34,10 @@ def test_agent_config_locks_single_first_routes_and_exact_costs() -> None:
 def test_evaluation_config_locks_candidate_design_and_validation_gates() -> None:
     evaluation = _load("evaluation.json")
 
+    assert evaluation["evaluation_version"] == "single-first-adaptive-v1"
+    assert evaluation["run_domain"] == (
+        "single-first-adaptive-v1-interface-fix-r1"
+    )
     assert evaluation["candidate_limit"] == 3
     assert evaluation["smoke_cases"] == 12
     assert evaluation["design_cases"] == 60

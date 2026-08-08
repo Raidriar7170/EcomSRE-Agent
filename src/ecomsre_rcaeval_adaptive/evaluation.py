@@ -266,8 +266,23 @@ def load_candidate_freeze(
         raise ValueError("adaptive candidate implementation commit is not an ancestor")
     runtime_scopes = (
         "src/ecomsre_rcaeval_adaptive",
+        "src/ecomsre_rcaeval_v2/dev3_provider.py",
         "scripts/rcaeval_adaptive",
     )
+    for runtime_scope in runtime_scopes:
+        present = subprocess.run(
+            (
+                "git",
+                "cat-file",
+                "-e",
+                f"{freeze.implementation_git_sha}:{runtime_scope}",
+            ),
+            cwd=repository_root,
+            check=False,
+            capture_output=True,
+        )
+        if present.returncode != 0:
+            raise ValueError("adaptive candidate frozen runtime scope is absent")
     runtime_diff = subprocess.run(
         (
             "git",

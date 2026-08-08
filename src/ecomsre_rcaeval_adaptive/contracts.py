@@ -7,8 +7,11 @@ from typing import Literal
 
 from pydantic import AwareDatetime, Field, StrictBool, StrictFloat, StrictInt, model_validator
 
+from ecomsre_rcaeval.adapter import IncidentManifest
 from ecomsre_rcaeval_v2.contracts import (
+    BoundedEvidenceSnapshotV2,
     CanonicalIndicator,
+    IndicatorCandidateSnapshotV2,
     ServiceName,
     SourceName,
     V2Model,
@@ -79,6 +82,55 @@ class AdaptiveTerminalStatus(str, Enum):
     PROTOCOL_VIOLATION = "PROTOCOL_VIOLATION"
     RUNTIME_CONTRACT_VIOLATION = "RUNTIME_CONTRACT_VIOLATION"
     INTERRUPTED = "INTERRUPTED"
+
+
+class InitialFailureCode(str, Enum):
+    INITIAL_JSON_OR_SCHEMA_INVALID = "INITIAL_JSON_OR_SCHEMA_INVALID"
+    INITIAL_SERVICE_NOT_VISIBLE = "INITIAL_SERVICE_NOT_VISIBLE"
+    INITIAL_EVIDENCE_REF_NOT_VISIBLE = "INITIAL_EVIDENCE_REF_NOT_VISIBLE"
+    INITIAL_DUPLICATE_EVIDENCE_REF = "INITIAL_DUPLICATE_EVIDENCE_REF"
+    INITIAL_UNCERTAINTY_FLAG_INVALID = "INITIAL_UNCERTAINTY_FLAG_INVALID"
+
+
+class InitialDiagnosisInput(V2Model):
+    schema_version: Literal[
+        "rcaeval-single-first-adaptive.initial-input.v1"
+    ] = "rcaeval-single-first-adaptive.initial-input.v1"
+    incident: IncidentManifest
+    bounded_evidence: tuple[BoundedEvidenceSnapshotV2, ...] = Field(
+        min_length=1, max_length=64
+    )
+    indicator_candidates: tuple[IndicatorCandidateSnapshotV2, ...] = Field(
+        min_length=1, max_length=6
+    )
+    visible_services: tuple[ServiceName, ...] = Field(min_length=1, max_length=64)
+    visible_evidence_refs: tuple[str, ...] = Field(min_length=1, max_length=70)
+
+    @model_validator(mode="after")
+    def require_single_external_authority(self) -> InitialDiagnosisInput:
+        if any(item.source not in {"metrics", "logs"} for item in self.bounded_evidence):
+            raise ValueError("initial input may contain only Metrics and Logs evidence")
+        expected_services = tuple(
+            sorted(
+                {
+                    *(item.service for item in self.bounded_evidence),
+                    *(item.service for item in self.indicator_candidates),
+                }
+            )
+        )
+        expected_refs = tuple(
+            sorted(
+                {
+                    *(item.evidence_ref for item in self.bounded_evidence),
+                    *(item.evidence_ref for item in self.indicator_candidates),
+                }
+            )
+        )
+        if self.visible_services != expected_services:
+            raise ValueError("initial visible services differ from sent evidence")
+        if self.visible_evidence_refs != expected_refs:
+            raise ValueError("initial visible refs differ from sent evidence")
+        return self
 
 
 class InitialDiagnosis(V2Model):

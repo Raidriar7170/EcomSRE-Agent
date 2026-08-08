@@ -1,18 +1,129 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
+import json
+
 import pytest
 from pydantic import ValidationError
 
+from ecomsre.model.gateway import OpenAICompatibleConfig
+from ecomsre_rcaeval.adapter import IncidentManifest
 from ecomsre_rcaeval_adaptive.contracts import (
     CausalRole,
     InitialDiagnosis,
+    InitialDiagnosisInput,
+    InitialFailureCode,
     RankedHypothesis,
     RankedHypothesisBatch,
 )
 from ecomsre_rcaeval_adaptive.specialists import (
+    InitialOutputValidationError,
+    OpenAICompatibleAdaptiveProvider,
     validate_hypothesis_batch,
-    validate_initial_diagnosis,
 )
+from ecomsre_rcaeval_v2.contracts import (
+    BoundedEvidenceSnapshotV2,
+    IndicatorCandidateSnapshotV2,
+)
+
+
+class _InitialTransport:
+    def __init__(self, arguments: Mapping[str, object]) -> None:
+        self.arguments = arguments
+        self.payload: Mapping[str, object] | None = None
+
+    def post_json(self, **kwargs):
+        self.payload = kwargs["payload"]
+        return {
+            "model": "locked-model",
+            "choices": [
+                {
+                    "index": 0,
+                    "finish_reason": "tool_calls",
+                    "message": {
+                        "role": "assistant",
+                        "tool_calls": [
+                            {
+                                "type": "function",
+                                "function": {
+                                    "name": "submit_rcaeval_initial_diagnosis",
+                                    "arguments": json.dumps(self.arguments),
+                                },
+                            }
+                        ],
+                    },
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 10,
+                "completion_tokens": 5,
+                "total_tokens": 15,
+            },
+        }
+
+
+def _initial_input() -> InitialDiagnosisInput:
+    return InitialDiagnosisInput(
+        schema_version="rcaeval-single-first-adaptive.initial-input.v1",
+        incident=IncidentManifest(
+            case_id="re2-ob-case-0001",
+            system="RE2-OB",
+            anomaly_timestamp=1_000,
+            modalities=("metrics", "logs", "traces"),
+        ),
+        bounded_evidence=(
+            BoundedEvidenceSnapshotV2(
+                evidence_ref="metric:0001",
+                source="metrics",
+                service="frontend",
+                observation="Frontend latency shifted.",
+            ),
+            BoundedEvidenceSnapshotV2(
+                evidence_ref="log:0001",
+                source="logs",
+                service="checkoutservice",
+                observation="Checkout emitted an overload error.",
+            ),
+        ),
+        indicator_candidates=(
+            IndicatorCandidateSnapshotV2(
+                service="checkoutservice",
+                canonical_indicator="cpu",
+                metric_name="checkoutservice_cpu",
+                score=4.0,
+                evidence_ref="indicator:0001",
+            ),
+        ),
+        visible_services=("checkoutservice", "frontend"),
+        visible_evidence_refs=("indicator:0001", "log:0001", "metric:0001"),
+    )
+
+
+def _provider(arguments: Mapping[str, object]):
+    transport = _InitialTransport(arguments)
+    provider = OpenAICompatibleAdaptiveProvider(
+        config=OpenAICompatibleConfig(
+            base_url="https://provider.example/v1",
+            api_key="secret",
+            model="locked-model",
+        ),
+        expected_model="locked-model",
+        timeout_seconds=30.0,
+        max_completion_tokens=2_048,
+        transport=transport,
+    )
+    return provider, transport
+
+
+def _valid_arguments() -> dict[str, object]:
+    return {
+        "root_cause_service": "checkoutservice",
+        "model_proposed_indicator": "cpu",
+        "confidence": 0.9,
+        "evidence_refs": ["log:0001", "indicator:0001"],
+        "explanation": "The bounded evidence supports this service.",
+        "uncertainty_flags": [],
+    }
 
 
 def _hypothesis(*, source: str = "logs", evidence_ref: str = "log:0001"):
@@ -61,23 +172,6 @@ def test_unknown_or_cross_source_evidence_is_rejected() -> None:
         )
 
 
-def test_initial_diagnosis_accepts_supplied_metric_candidate_reference() -> None:
-    diagnosis = InitialDiagnosis(
-        root_cause_service="checkoutservice",
-        model_proposed_indicator="cpu",
-        confidence=0.9,
-        evidence_refs=("metric-indicator:checkoutservice:cpu",),
-        explanation="The deterministic candidate supports the diagnosis.",
-        uncertainty_flags=(),
-    )
-
-    assert validate_initial_diagnosis(
-        diagnosis,
-        visible_services={"checkoutservice"},
-        visible_evidence_refs={"metric-indicator:checkoutservice:cpu"},
-    ) == diagnosis
-
-
 def test_initial_diagnosis_defaults_absent_optional_outputs_to_none_and_empty() -> None:
     diagnosis = InitialDiagnosis.model_validate(
         {
@@ -90,3 +184,101 @@ def test_initial_diagnosis_defaults_absent_optional_outputs_to_none_and_empty() 
 
     assert diagnosis.model_proposed_indicator is None
     assert diagnosis.uncertainty_flags == ()
+
+
+def test_initial_payload_has_one_external_reference_authority() -> None:
+    provider, transport = _provider(_valid_arguments())
+
+    diagnosis = provider.diagnose(_initial_input())
+
+    assert diagnosis.root_cause_service == "checkoutservice"
+    assert transport.payload is not None
+    messages = transport.payload["messages"]
+    assert isinstance(messages, list)
+    envelope = json.loads(messages[1]["content"])
+    assert set(envelope) == {
+        "schema_version",
+        "incident",
+        "bounded_evidence",
+        "indicator_candidates",
+        "visible_services",
+        "visible_evidence_refs",
+    }
+    serialized = json.dumps(transport.payload, sort_keys=True)
+    for forbidden in (
+        "bounded_context",
+        "canonical_evidence",
+        "artifact_ref",
+        "architecture-context",
+        "/Users/",
+        "evidence://",
+    ):
+        assert forbidden not in serialized
+    assert envelope["visible_services"] == ["checkoutservice", "frontend"]
+    assert envelope["visible_evidence_refs"] == [
+        "indicator:0001",
+        "log:0001",
+        "metric:0001",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("updates", "expected_code", "raw_value"),
+    (
+        (
+            {"root_cause_service": "not-visible-service"},
+            InitialFailureCode.INITIAL_SERVICE_NOT_VISIBLE,
+            "not-visible-service",
+        ),
+        (
+            {"evidence_refs": ["not-visible-ref"]},
+            InitialFailureCode.INITIAL_EVIDENCE_REF_NOT_VISIBLE,
+            "not-visible-ref",
+        ),
+        (
+            {"evidence_refs": ["evidence://internal-canonical"]},
+            InitialFailureCode.INITIAL_EVIDENCE_REF_NOT_VISIBLE,
+            "evidence://internal-canonical",
+        ),
+        (
+            {"evidence_refs": ["metric:0001", "metric:0001"]},
+            InitialFailureCode.INITIAL_DUPLICATE_EVIDENCE_REF,
+            "metric:0001",
+        ),
+        (
+            {"uncertainty_flags": ["NOT_A_FLAG"]},
+            InitialFailureCode.INITIAL_UNCERTAINTY_FLAG_INVALID,
+            "NOT_A_FLAG",
+        ),
+    ),
+)
+def test_initial_validation_returns_safe_field_code_without_raw_value(
+    updates: Mapping[str, object],
+    expected_code: InitialFailureCode,
+    raw_value: str,
+) -> None:
+    arguments = _valid_arguments()
+    arguments.update(updates)
+    provider, _transport = _provider(arguments)
+
+    with pytest.raises(InitialOutputValidationError) as captured:
+        provider.diagnose(_initial_input())
+
+    assert captured.value.failure_code is expected_code
+    safe = captured.value.safe_validation_error.model_dump_json()
+    assert raw_value not in safe
+    assert raw_value not in str(captured.value)
+
+
+def test_initial_schema_failure_has_exact_safe_code() -> None:
+    arguments = _valid_arguments()
+    del arguments["root_cause_service"]
+    provider, _transport = _provider(arguments)
+
+    with pytest.raises(InitialOutputValidationError) as captured:
+        provider.diagnose(_initial_input())
+
+    assert (
+        captured.value.failure_code
+        is InitialFailureCode.INITIAL_JSON_OR_SCHEMA_INVALID
+    )
