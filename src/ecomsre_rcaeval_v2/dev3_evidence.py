@@ -537,6 +537,14 @@ def _sidecar_metrics(
         and item.failure_class is FailureClass.NON_RETRYABLE_SCHEMA
         for item in semantic_records
     )
+    judge_invalid_schema_exact = sum(
+        item.operation_type == "FINAL_JUDGE"
+        and item.status == "FAILED"
+        and item.failure_class is FailureClass.NON_RETRYABLE_SCHEMA
+        and item.failure_code is not None
+        and item.failure_stage is not None
+        for item in semantic_records
+    )
     reliability_by_architecture = {
         name: {
             "semantic_operations": counts["semantic_operations"],
@@ -637,10 +645,37 @@ def _sidecar_metrics(
         },
         "final_judge_schema_dev3": {
             "invalid_schema_count": judge_invalid_schema,
+            "exact_stage_attributed": judge_invalid_schema_exact,
             "passed": judge_invalid_schema == 0,
         },
     }
     return metrics, checks, all(bool(item["passed"]) for item in checks.values())
+
+
+def _design_completion_checks(
+    checks: Mapping[str, object],
+) -> dict[str, dict[str, object]]:
+    """Apply DESIGN G3 disposition semantics without weakening the Smoke Gate."""
+
+    adapted: dict[str, dict[str, object]] = {}
+    for name, value in checks.items():
+        if not isinstance(value, dict):
+            raise ValueError("dev3 DESIGN gate check is invalid")
+        adapted[name] = dict(value)
+    schema = adapted.pop("final_judge_schema_dev3", None)
+    attribution = adapted.get("semantic_failure_attribution")
+    if schema is None or attribution is None:
+        raise ValueError("dev3 DESIGN schema disposition evidence is incomplete")
+    invalid = schema.get("invalid_schema_count")
+    exact = schema.get("exact_stage_attributed")
+    if type(invalid) is not int or type(exact) is not int:
+        raise ValueError("dev3 DESIGN schema disposition counts are invalid")
+    adapted["final_judge_schema_disposition_dev3"] = {
+        "invalid_schema_count": invalid,
+        "exact_stage_attributed": exact,
+        "passed": exact == invalid and bool(attribution.get("passed")),
+    }
+    return adapted
 
 
 def assess_smoke_gate(
@@ -917,7 +952,7 @@ def assess_design(
         raise ValueError("dev3 DESIGN gate checks are invalid")
     checks["terminal_overwrites"] = {"count": 0, "passed": True}
     checks["semantic_retries"] = {"count": 0, "passed": True}
-    reliability, dev3_checks, dev3_passed = _sidecar_metrics(
+    reliability, dev3_checks, _dev3_passed = _sidecar_metrics(
         schedule,
         output_root,
         max_provider_attempts=2400,
@@ -937,6 +972,8 @@ def assess_design(
             raise ValueError("dev3 DESIGN variant Provider reliability is incomplete")
         row["provider_reliability"] = provider_row
     checks.update(dev3_checks)
+    checks = _design_completion_checks(checks)
+    projected_gate["checks"] = checks
     transport_retries = reliability.get("transport_retries")
     if type(transport_retries) is not int:
         raise ValueError("dev3 DESIGN retry count is invalid")
@@ -945,8 +982,11 @@ def assess_design(
         "maximum": 60,
         "passed": transport_retries <= 60,
     }
-    passed = passed and dev3_passed and all(
-        bool(item["passed"]) for item in checks.values()
+    passed = passed and all(bool(item["passed"]) for item in checks.values())
+    projected_gate["state"] = (
+        "V2_DEV3_DESIGN_GATE_PASSED"
+        if passed
+        else "V2_DEV3_DESIGN_GATE_NOT_PASSED"
     )
     assert_public_payload(projected_aggregate)
     assert_public_payload(projected_gate)

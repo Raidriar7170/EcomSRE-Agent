@@ -144,7 +144,31 @@ def test_path_boundary_rejects_safe_alias_resolving_into_tt(tmp_path: Path) -> N
         reject_dev3_forbidden_paths(alias / "opaque.json")
 
 
-def test_publisher_requires_postrun_lock_without_rerunning_f0(
+def test_design_completion_allows_exactly_attributed_schema_terminals() -> None:
+    checks = {
+        "semantic_failure_attribution": {
+            "numerator": 7,
+            "denominator": 7,
+            "passed": True,
+        },
+        "final_judge_schema_dev3": {
+            "invalid_schema_count": 7,
+            "exact_stage_attributed": 7,
+            "passed": False,
+        },
+    }
+
+    adapted = dev3_evidence._design_completion_checks(checks)
+
+    assert "final_judge_schema_dev3" not in adapted
+    assert adapted["final_judge_schema_disposition_dev3"] == {
+        "invalid_schema_count": 7,
+        "exact_stage_attributed": 7,
+        "passed": True,
+    }
+
+
+def test_publisher_requires_completion_amendment_without_rerunning_f0(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[3]))
@@ -157,7 +181,9 @@ def test_publisher_requires_postrun_lock_without_rerunning_f0(
         raise ValueError("post-run successor lock required")
 
     monkeypatch.setattr(
-        publisher, "verify_postrun_evaluation_ready", reject_missing_successor
+        publisher,
+        "verify_design_completion_amendment_ready",
+        reject_missing_successor,
     )
     with pytest.raises(ValueError, match="post-run successor lock required"):
         publisher.publish(

@@ -10,6 +10,12 @@ from pathlib import Path
 from typing import Mapping
 
 from ecomsre_rcaeval_v2.dev3_audit import Dev2FailureAuditLock
+from ecomsre_rcaeval_v2.dev3_completion import (
+    COMPLETION_AMENDMENT_LOCK_NAME,
+    COMPLETION_GATE_NAME,
+    load_completion_phase_schedules,
+    verify_design_completion_amendment_ready,
+)
 from ecomsre_rcaeval_v2.dev3_evidence import (
     assess_design,
     evidence_source_bindings,
@@ -18,11 +24,7 @@ from ecomsre_rcaeval_v2.dev3_evidence import (
     verify_smoke_gate,
 )
 from ecomsre_rcaeval_v2.dev3_execution import discover_case_index
-from ecomsre_rcaeval_v2.dev3_postrun import (
-    POSTRUN_LOCK_NAME,
-    load_postrun_phase_schedules,
-    verify_postrun_evaluation_ready,
-)
+from ecomsre_rcaeval_v2.dev3_postrun import POSTRUN_LOCK_NAME
 from ecomsre_rcaeval_v2.public_projection import (
     assert_public_payload,
     write_public_json_create_once,
@@ -319,14 +321,16 @@ def publish(
     design_journal_root: Path,
     preserved_roots: Mapping[str, Path],
 ) -> str:
-    _postrun, parent, admission_lock = verify_postrun_evaluation_ready(
-        control_root,
-        private_schedule_root,
-        output_root,
-        smoke_journal_root,
-        design_journal_root,
-        project_root=PROJECT_ROOT,
-        preserved_roots=preserved_roots,
+    _amendment, _postrun, parent, admission_lock = (
+        verify_design_completion_amendment_ready(
+            control_root,
+            private_schedule_root,
+            output_root,
+            smoke_journal_root,
+            design_journal_root,
+            project_root=PROJECT_ROOT,
+            preserved_roots=preserved_roots,
+        )
     )
     f0 = _load(control_root / "evidence/f0-public.json")
     if (
@@ -357,7 +361,7 @@ def publish(
         lock_sha256=hashlib.sha256(audit_lock_path.read_bytes()).hexdigest(),
     )
 
-    smoke_schedule, design_schedule = load_postrun_phase_schedules(
+    smoke_schedule, design_schedule = load_completion_phase_schedules(
         private_schedule_root,
         parent=parent,
         admission=admission_lock,
@@ -414,8 +418,20 @@ def publish(
                 source_bindings=bindings,
             )
         )
+        expected_bindings = expected_design_gate.get("source_bindings")
+        if not isinstance(expected_bindings, dict):
+            raise ValueError("dev3 DESIGN completion gate binding is invalid")
+        expected_bindings["design_completion_amendment_lock_sha256"] = (
+            hashlib.sha256(
+                (
+                    control_root
+                    / "locks"
+                    / COMPLETION_AMENDMENT_LOCK_NAME
+                ).read_bytes()
+            ).hexdigest()
+        )
         aggregate = _load(control_root / "evidence/design-aggregate.json")
-        design_gate = _load(control_root / "evidence/design-gate.json")
+        design_gate = _load(control_root / "evidence" / COMPLETION_GATE_NAME)
         if aggregate != expected_aggregate or design_gate != expected_design_gate:
             raise ValueError("dev3 canonical DESIGN evidence failed recomputation")
         if not design_passed:
