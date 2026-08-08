@@ -1,0 +1,1328 @@
+{
+  "architecture_summaries": {
+    "dynamic_v1_reference": {
+      "completed_only_root_cause_pair_ac_at_1": {
+        "denominator": 60,
+        "numerator": 26,
+        "value": 0.43333333333333335
+      },
+      "completed_only_root_service_ac_at_1": {
+        "denominator": 60,
+        "numerator": 51,
+        "value": 0.85
+      },
+      "completed_runs": {
+        "denominator": 60,
+        "numerator": 60,
+        "value": 1.0
+      },
+      "cost": {
+        "known_token_coverage": {
+          "denominator": 60,
+          "numerator": 60,
+          "value": 1.0
+        },
+        "latency_ms_mean": 11728.050494485069,
+        "latency_ms_median": 11745.956583530642,
+        "latency_ms_total": 703683.0296691041,
+        "model_calls_mean": 4.5,
+        "model_calls_median": 4.5,
+        "model_calls_total": 270,
+        "tokens_mean_known": 14503.9,
+        "tokens_median_known": 14420.0,
+        "tool_calls_mean": 2.5,
+        "tool_calls_median": 2.5,
+        "tool_calls_total": 150,
+        "total_tokens_known": 870234
+      },
+      "provider_reliability": {
+        "conservative_token_upper_bound": 998234,
+        "known_token_lower_bound": 870234,
+        "provider_attempts": 274,
+        "semantic_operations": 270,
+        "transport_retries": 4,
+        "unknown_attempt_count": 4
+      },
+      "root_cause_pair_ac_at_1": {
+        "denominator": 60,
+        "numerator": 26,
+        "value": 0.43333333333333335
+      },
+      "root_service_ac_at_1": {
+        "denominator": 60,
+        "numerator": 51,
+        "value": 0.85
+      },
+      "scheduled_runs": 60
+    },
+    "dynamic_v2_dev3": {
+      "completed_only_root_cause_pair_ac_at_1": {
+        "denominator": 60,
+        "numerator": 29,
+        "value": 0.48333333333333334
+      },
+      "completed_only_root_service_ac_at_1": {
+        "denominator": 60,
+        "numerator": 52,
+        "value": 0.8666666666666667
+      },
+      "completed_runs": {
+        "denominator": 60,
+        "numerator": 60,
+        "value": 1.0
+      },
+      "cost": {
+        "known_token_coverage": {
+          "denominator": 60,
+          "numerator": 60,
+          "value": 1.0
+        },
+        "latency_ms_mean": 11655.1044,
+        "latency_ms_median": 11911.091,
+        "latency_ms_total": 699306.264,
+        "model_calls_mean": 4.5,
+        "model_calls_median": 4.5,
+        "model_calls_total": 270,
+        "tokens_mean_known": 8163.566666666667,
+        "tokens_median_known": 8073.5,
+        "tool_calls_mean": 2.5,
+        "tool_calls_median": 2.5,
+        "tool_calls_total": 150,
+        "total_tokens_known": 489814
+      },
+      "provider_reliability": {
+        "conservative_token_upper_bound": 617814,
+        "known_token_lower_bound": 489814,
+        "provider_attempts": 274,
+        "semantic_operations": 270,
+        "transport_retries": 4,
+        "unknown_attempt_count": 4
+      },
+      "root_cause_pair_ac_at_1": {
+        "denominator": 60,
+        "numerator": 29,
+        "value": 0.48333333333333334
+      },
+      "root_service_ac_at_1": {
+        "denominator": 60,
+        "numerator": 52,
+        "value": 0.8666666666666667
+      },
+      "scheduled_runs": 60
+    },
+    "fixed_v1_reference": {
+      "completed_only_root_cause_pair_ac_at_1": {
+        "denominator": 60,
+        "numerator": 23,
+        "value": 0.38333333333333336
+      },
+      "completed_only_root_service_ac_at_1": {
+        "denominator": 60,
+        "numerator": 48,
+        "value": 0.8
+      },
+      "completed_runs": {
+        "denominator": 60,
+        "numerator": 60,
+        "value": 1.0
+      },
+      "cost": {
+        "known_token_coverage": {
+          "denominator": 60,
+          "numerator": 60,
+          "value": 1.0
+        },
+        "latency_ms_mean": 10838.84092986506,
+        "latency_ms_median": 10408.99735444691,
+        "latency_ms_total": 650330.4557919037,
+        "model_calls_mean": 4.0,
+        "model_calls_median": 4.0,
+        "model_calls_total": 240,
+        "tokens_mean_known": 14098.05,
+        "tokens_median_known": 13927.0,
+        "tool_calls_mean": 3.0,
+        "tool_calls_median": 3.0,
+        "tool_calls_total": 180,
+        "total_tokens_known": 845883
+      },
+      "provider_reliability": {
+        "conservative_token_upper_bound": 1037883,
+        "known_token_lower_bound": 845883,
+        "provider_attempts": 246,
+        "semantic_operations": 240,
+        "transport_retries": 6,
+        "unknown_attempt_count": 6
+      },
+      "root_cause_pair_ac_at_1": {
+        "denominator": 60,
+        "numerator": 23,
+        "value": 0.38333333333333336
+      },
+      "root_service_ac_at_1": {
+        "denominator": 60,
+        "numerator": 48,
+        "value": 0.8
+      },
+      "scheduled_runs": 60
+    },
+    "fixed_v2_dev3": {
+      "completed_only_root_cause_pair_ac_at_1": {
+        "denominator": 60,
+        "numerator": 19,
+        "value": 0.31666666666666665
+      },
+      "completed_only_root_service_ac_at_1": {
+        "denominator": 60,
+        "numerator": 42,
+        "value": 0.7
+      },
+      "completed_runs": {
+        "denominator": 60,
+        "numerator": 60,
+        "value": 1.0
+      },
+      "cost": {
+        "known_token_coverage": {
+          "denominator": 60,
+          "numerator": 60,
+          "value": 1.0
+        },
+        "latency_ms_mean": 10728.237816666666,
+        "latency_ms_median": 10266.879,
+        "latency_ms_total": 643694.269,
+        "model_calls_mean": 4.0,
+        "model_calls_median": 4.0,
+        "model_calls_total": 240,
+        "tokens_mean_known": 7781.6,
+        "tokens_median_known": 7718.5,
+        "tool_calls_mean": 3.0,
+        "tool_calls_median": 3.0,
+        "tool_calls_total": 180,
+        "total_tokens_known": 466896
+      },
+      "provider_reliability": {
+        "conservative_token_upper_bound": 626896,
+        "known_token_lower_bound": 466896,
+        "provider_attempts": 245,
+        "semantic_operations": 240,
+        "transport_retries": 5,
+        "unknown_attempt_count": 5
+      },
+      "root_cause_pair_ac_at_1": {
+        "denominator": 60,
+        "numerator": 19,
+        "value": 0.31666666666666665
+      },
+      "root_service_ac_at_1": {
+        "denominator": 60,
+        "numerator": 42,
+        "value": 0.7
+      },
+      "scheduled_runs": 60
+    },
+    "single_v1_reference": {
+      "completed_only_root_cause_pair_ac_at_1": {
+        "denominator": 60,
+        "numerator": 29,
+        "value": 0.48333333333333334
+      },
+      "completed_only_root_service_ac_at_1": {
+        "denominator": 60,
+        "numerator": 51,
+        "value": 0.85
+      },
+      "completed_runs": {
+        "denominator": 60,
+        "numerator": 60,
+        "value": 1.0
+      },
+      "cost": {
+        "known_token_coverage": {
+          "denominator": 60,
+          "numerator": 60,
+          "value": 1.0
+        },
+        "latency_ms_mean": 4506.268121542719,
+        "latency_ms_median": 4437.763479654677,
+        "latency_ms_total": 270376.08729256317,
+        "model_calls_mean": 1.0,
+        "model_calls_median": 1.0,
+        "model_calls_total": 60,
+        "tokens_mean_known": 8190.85,
+        "tokens_median_known": 8099.0,
+        "tool_calls_mean": 3.0,
+        "tool_calls_median": 3.0,
+        "tool_calls_total": 180,
+        "total_tokens_known": 491451
+      },
+      "provider_reliability": {
+        "conservative_token_upper_bound": 555451,
+        "known_token_lower_bound": 491451,
+        "provider_attempts": 62,
+        "semantic_operations": 60,
+        "transport_retries": 2,
+        "unknown_attempt_count": 2
+      },
+      "root_cause_pair_ac_at_1": {
+        "denominator": 60,
+        "numerator": 29,
+        "value": 0.48333333333333334
+      },
+      "root_service_ac_at_1": {
+        "denominator": 60,
+        "numerator": 51,
+        "value": 0.85
+      },
+      "scheduled_runs": 60
+    },
+    "single_v2_dev3": {
+      "completed_only_root_cause_pair_ac_at_1": {
+        "denominator": 53,
+        "numerator": 23,
+        "value": 0.4339622641509434
+      },
+      "completed_only_root_service_ac_at_1": {
+        "denominator": 53,
+        "numerator": 43,
+        "value": 0.8113207547169812
+      },
+      "completed_runs": {
+        "denominator": 60,
+        "numerator": 53,
+        "value": 0.8833333333333333
+      },
+      "cost": {
+        "known_token_coverage": {
+          "denominator": 60,
+          "numerator": 60,
+          "value": 1.0
+        },
+        "latency_ms_mean": 4518.5575499999995,
+        "latency_ms_median": 4318.617,
+        "latency_ms_total": 271113.453,
+        "model_calls_mean": 1.0,
+        "model_calls_median": 1.0,
+        "model_calls_total": 60,
+        "tokens_mean_known": 1830.6,
+        "tokens_median_known": 1835.0,
+        "tool_calls_mean": 3.0,
+        "tool_calls_median": 3.0,
+        "tool_calls_total": 180,
+        "total_tokens_known": 109836
+      },
+      "provider_reliability": {
+        "conservative_token_upper_bound": 237836,
+        "known_token_lower_bound": 109836,
+        "provider_attempts": 64,
+        "semantic_operations": 60,
+        "transport_retries": 4,
+        "unknown_attempt_count": 4
+      },
+      "root_cause_pair_ac_at_1": {
+        "denominator": 60,
+        "numerator": 23,
+        "value": 0.38333333333333336
+      },
+      "root_service_ac_at_1": {
+        "denominator": 60,
+        "numerator": 43,
+        "value": 0.7166666666666667
+      },
+      "scheduled_runs": 60
+    }
+  },
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "DESIGN_SET",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "dynamic_route_costs": {
+    "both": {
+      "completed": {
+        "denominator": 30,
+        "numerator": 30,
+        "value": 1.0
+      },
+      "model_calls_mean": 5.0,
+      "model_calls_median": 5.0,
+      "root_service_ac_at_1": {
+        "denominator": 30,
+        "numerator": 25,
+        "value": 0.8333333333333334
+      },
+      "terminal_count": 30,
+      "tool_calls_mean": 3.0,
+      "tool_calls_median": 3.0
+    },
+    "logs_only": {
+      "completed": {
+        "denominator": 30,
+        "numerator": 30,
+        "value": 1.0
+      },
+      "model_calls_mean": 4.0,
+      "model_calls_median": 4.0,
+      "root_service_ac_at_1": {
+        "denominator": 30,
+        "numerator": 27,
+        "value": 0.9
+      },
+      "terminal_count": 30,
+      "tool_calls_mean": 2.0,
+      "tool_calls_median": 2.0
+    },
+    "route_failure": {
+      "completed": {
+        "denominator": 0,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "model_calls_mean": 0.0,
+      "model_calls_median": 0.0,
+      "root_service_ac_at_1": {
+        "denominator": 0,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "terminal_count": 0,
+      "tool_calls_mean": 0.0,
+      "tool_calls_median": 0.0
+    },
+    "traces_only": {
+      "completed": {
+        "denominator": 0,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "model_calls_mean": 0.0,
+      "model_calls_median": 0.0,
+      "root_service_ac_at_1": {
+        "denominator": 0,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "terminal_count": 0,
+      "tool_calls_mean": 0.0,
+      "tool_calls_median": 0.0
+    }
+  },
+  "dynamic_route_distribution": {
+    "by_route": {
+      "both": {
+        "completed_runs": {
+          "denominator": 30,
+          "numerator": 30,
+          "value": 1.0
+        },
+        "root_service_ac_at_1": {
+          "denominator": 30,
+          "numerator": 25,
+          "value": 0.8333333333333334
+        },
+        "scheduled_runs": 30,
+        "terminal_failures": 0
+      },
+      "logs_only": {
+        "completed_runs": {
+          "denominator": 30,
+          "numerator": 30,
+          "value": 1.0
+        },
+        "root_service_ac_at_1": {
+          "denominator": 30,
+          "numerator": 27,
+          "value": 0.9
+        },
+        "scheduled_runs": 30,
+        "terminal_failures": 0
+      }
+    },
+    "distribution": {
+      "both": 30,
+      "logs_only": 30,
+      "route_failure": 0,
+      "traces_only": 0
+    }
+  },
+  "exact_failure_taxonomy": [
+    {
+      "architecture": "single_v2_dev3",
+      "count": 7,
+      "failure_code": "PROVIDER_OUTPUT_INVALID_SCHEMA",
+      "failure_stage": "OUTPUT_VALIDATION",
+      "operation_type": "FINAL_JUDGE"
+    }
+  ],
+  "failure_stage_taxonomy": {
+    "FINAL_JUDGE": {
+      "OUTPUT_VALIDATION": 7
+    }
+  },
+  "indicator_funnel": {
+    "cpu": {
+      "pair_resolved_correctly": {
+        "denominator": 10,
+        "numerator": 5,
+        "value": 0.5
+      },
+      "root_service_selected": {
+        "denominator": 10,
+        "numerator": 7,
+        "value": 0.7
+      },
+      "truth_pair_in_top_6": {
+        "denominator": 10,
+        "numerator": 10,
+        "value": 1.0
+      }
+    },
+    "delay": {
+      "pair_resolved_correctly": {
+        "denominator": 10,
+        "numerator": 5,
+        "value": 0.5
+      },
+      "root_service_selected": {
+        "denominator": 10,
+        "numerator": 6,
+        "value": 0.6
+      },
+      "truth_pair_in_top_6": {
+        "denominator": 10,
+        "numerator": 10,
+        "value": 1.0
+      }
+    },
+    "disk": {
+      "pair_resolved_correctly": {
+        "denominator": 10,
+        "numerator": 8,
+        "value": 0.8
+      },
+      "root_service_selected": {
+        "denominator": 10,
+        "numerator": 8,
+        "value": 0.8
+      },
+      "truth_pair_in_top_6": {
+        "denominator": 10,
+        "numerator": 8,
+        "value": 0.8
+      }
+    },
+    "loss": {
+      "pair_resolved_correctly": {
+        "denominator": 10,
+        "numerator": 3,
+        "value": 0.3
+      },
+      "root_service_selected": {
+        "denominator": 10,
+        "numerator": 4,
+        "value": 0.4
+      },
+      "truth_pair_in_top_6": {
+        "denominator": 10,
+        "numerator": 10,
+        "value": 1.0
+      }
+    },
+    "mem": {
+      "pair_resolved_correctly": {
+        "denominator": 10,
+        "numerator": 1,
+        "value": 0.1
+      },
+      "root_service_selected": {
+        "denominator": 10,
+        "numerator": 8,
+        "value": 0.8
+      },
+      "truth_pair_in_top_6": {
+        "denominator": 10,
+        "numerator": 10,
+        "value": 1.0
+      }
+    },
+    "socket": {
+      "pair_resolved_correctly": {
+        "denominator": 10,
+        "numerator": 1,
+        "value": 0.1
+      },
+      "root_service_selected": {
+        "denominator": 10,
+        "numerator": 10,
+        "value": 1.0
+      },
+      "truth_pair_in_top_6": {
+        "denominator": 10,
+        "numerator": 9,
+        "value": 0.9
+      }
+    }
+  },
+  "judge_follow_override": {
+    "denominator": 353,
+    "follows": {
+      "logs": 4,
+      "metrics": 73,
+      "traces": 10
+    },
+    "follows_correct_specialist_candidate": 44,
+    "overrides_correct_specialist_with_wrong_final": 24,
+    "repairs_wrong_specialists": 8,
+    "selects_no_specialist_candidate": 274
+  },
+  "multi_agent_damage_rescue": {
+    "dynamic": {
+      "paired_cases": 60,
+      "single_correct_candidate_wrong": 3,
+      "single_wrong_candidate_correct": 9
+    },
+    "evaluation_metric": "root_cause_pair_ac_at_1",
+    "fixed": {
+      "paired_cases": 60,
+      "single_correct_candidate_wrong": 8,
+      "single_wrong_candidate_correct": 4
+    }
+  },
+  "multi_agent_damage_rescue_by_family": {
+    "v1_reference": {
+      "all_correct": 16,
+      "all_wrong": 25,
+      "paired_cases": 60,
+      "single_correct_dynamic_wrong": 9,
+      "single_correct_fixed_wrong": 9,
+      "single_wrong_dynamic_correct": 6,
+      "single_wrong_fixed_correct": 3
+    },
+    "v2_dev3": {
+      "all_correct": 15,
+      "all_wrong": 27,
+      "paired_cases": 60,
+      "single_correct_dynamic_wrong": 3,
+      "single_correct_fixed_wrong": 8,
+      "single_wrong_dynamic_correct": 9,
+      "single_wrong_fixed_correct": 4
+    }
+  },
+  "paired_development_comparisons": {
+    "dynamic_v2_minus_single_v2_service": {
+      "baseline": "single_v2_dev3",
+      "bootstrap": {
+        "iterations": 10000,
+        "lower_95": -0.15,
+        "point_estimate": 0.15,
+        "seed": 20260807,
+        "upper_95": 0.45
+      },
+      "candidate": "dynamic_v2_dev3",
+      "evaluation_metric": "service",
+      "paired_cases": 60
+    },
+    "fixed_v2_minus_single_v2_service": {
+      "baseline": "single_v2_dev3",
+      "bootstrap": {
+        "iterations": 10000,
+        "lower_95": -0.23333333333333334,
+        "point_estimate": -0.016666666666666666,
+        "seed": 20260807,
+        "upper_95": 0.21666666666666667
+      },
+      "candidate": "fixed_v2_dev3",
+      "evaluation_metric": "service",
+      "paired_cases": 60
+    },
+    "single_v2_minus_single_v1_pair": {
+      "baseline": "single_v1_reference",
+      "bootstrap": {
+        "iterations": 10000,
+        "lower_95": -0.26666666666666666,
+        "point_estimate": -0.1,
+        "seed": 20260807,
+        "upper_95": 0.03333333333333333
+      },
+      "candidate": "single_v2_dev3",
+      "evaluation_metric": "pair",
+      "paired_cases": 60
+    },
+    "single_v2_minus_single_v1_service": {
+      "baseline": "single_v1_reference",
+      "bootstrap": {
+        "iterations": 10000,
+        "lower_95": -0.35,
+        "point_estimate": -0.13333333333333333,
+        "seed": 20260807,
+        "upper_95": 0.0
+      },
+      "candidate": "single_v2_dev3",
+      "evaluation_metric": "service",
+      "paired_cases": 60
+    }
+  },
+  "per_fault_aggregates": {
+    "cpu": {
+      "dynamic_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 8,
+          "value": 0.8
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 9,
+          "value": 0.9
+        }
+      },
+      "dynamic_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 7,
+          "value": 0.7
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 9,
+          "value": 0.9
+        }
+      },
+      "fixed_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 6,
+          "value": 0.6
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 7,
+          "value": 0.7
+        }
+      },
+      "fixed_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 4,
+          "value": 0.4
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 7,
+          "value": 0.7
+        }
+      },
+      "single_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 7,
+          "value": 0.7
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 9,
+          "value": 0.9
+        }
+      },
+      "single_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 5,
+          "value": 0.5
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 7,
+          "value": 0.7
+        }
+      }
+    },
+    "delay": {
+      "dynamic_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 5,
+          "value": 0.5
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 5,
+          "value": 0.5
+        }
+      },
+      "dynamic_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 4,
+          "value": 0.4
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 5,
+          "value": 0.5
+        }
+      },
+      "fixed_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 4,
+          "value": 0.4
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 5,
+          "value": 0.5
+        }
+      },
+      "fixed_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 2,
+          "value": 0.2
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 3,
+          "value": 0.3
+        }
+      },
+      "single_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 6,
+          "value": 0.6
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 7,
+          "value": 0.7
+        }
+      },
+      "single_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 5,
+          "value": 0.5
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 6,
+          "value": 0.6
+        }
+      }
+    },
+    "disk": {
+      "dynamic_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 5,
+          "value": 0.5
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 10,
+          "value": 1.0
+        }
+      },
+      "dynamic_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 8,
+          "value": 0.8
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 10,
+          "value": 1.0
+        }
+      },
+      "fixed_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 4,
+          "value": 0.4
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 9,
+          "value": 0.9
+        }
+      },
+      "fixed_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 8,
+          "value": 0.8
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 9,
+          "value": 0.9
+        }
+      },
+      "single_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 8,
+          "value": 0.8
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 10,
+          "value": 1.0
+        }
+      },
+      "single_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 8,
+          "value": 0.8
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 8,
+          "value": 0.8
+        }
+      }
+    },
+    "loss": {
+      "dynamic_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 5,
+          "value": 0.5
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 8,
+          "value": 0.8
+        }
+      },
+      "dynamic_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 8,
+          "value": 0.8
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 9,
+          "value": 0.9
+        }
+      },
+      "fixed_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 5,
+          "value": 0.5
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 8,
+          "value": 0.8
+        }
+      },
+      "fixed_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 3,
+          "value": 0.3
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 4,
+          "value": 0.4
+        }
+      },
+      "single_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 5,
+          "value": 0.5
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 7,
+          "value": 0.7
+        }
+      },
+      "single_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 3,
+          "value": 0.3
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 4,
+          "value": 0.4
+        }
+      }
+    },
+    "mem": {
+      "dynamic_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 2,
+          "value": 0.2
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 9,
+          "value": 0.9
+        }
+      },
+      "dynamic_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 1,
+          "value": 0.1
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 9,
+          "value": 0.9
+        }
+      },
+      "fixed_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 2,
+          "value": 0.2
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 9,
+          "value": 0.9
+        }
+      },
+      "fixed_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 1,
+          "value": 0.1
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 9,
+          "value": 0.9
+        }
+      },
+      "single_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 1,
+          "value": 0.1
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 8,
+          "value": 0.8
+        }
+      },
+      "single_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 1,
+          "value": 0.1
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 8,
+          "value": 0.8
+        }
+      }
+    },
+    "socket": {
+      "dynamic_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 1,
+          "value": 0.1
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 10,
+          "value": 1.0
+        }
+      },
+      "dynamic_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 1,
+          "value": 0.1
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 10,
+          "value": 1.0
+        }
+      },
+      "fixed_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 2,
+          "value": 0.2
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 10,
+          "value": 1.0
+        }
+      },
+      "fixed_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 1,
+          "value": 0.1
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 10,
+          "value": 1.0
+        }
+      },
+      "single_v1_reference": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 2,
+          "value": 0.2
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 10,
+          "value": 1.0
+        }
+      },
+      "single_v2_dev3": {
+        "root_cause_pair_ac_at_1": {
+          "denominator": 10,
+          "numerator": 1,
+          "value": 0.1
+        },
+        "root_service_ac_at_1": {
+          "denominator": 10,
+          "numerator": 10,
+          "value": 1.0
+        }
+      }
+    }
+  },
+  "protocol_id": "rcaeval-re2-v2-dev.3",
+  "provider_reliability": {
+    "by_architecture": {
+      "dynamic_v1_reference": {
+        "conservative_token_upper_bound": 998234,
+        "known_token_lower_bound": 870234,
+        "provider_attempts": 274,
+        "semantic_operations": 270,
+        "transport_retries": 4,
+        "unknown_attempt_count": 4
+      },
+      "dynamic_v2_dev3": {
+        "conservative_token_upper_bound": 617814,
+        "known_token_lower_bound": 489814,
+        "provider_attempts": 274,
+        "semantic_operations": 270,
+        "transport_retries": 4,
+        "unknown_attempt_count": 4
+      },
+      "fixed_v1_reference": {
+        "conservative_token_upper_bound": 1037883,
+        "known_token_lower_bound": 845883,
+        "provider_attempts": 246,
+        "semantic_operations": 240,
+        "transport_retries": 6,
+        "unknown_attempt_count": 6
+      },
+      "fixed_v2_dev3": {
+        "conservative_token_upper_bound": 626896,
+        "known_token_lower_bound": 466896,
+        "provider_attempts": 245,
+        "semantic_operations": 240,
+        "transport_retries": 5,
+        "unknown_attempt_count": 5
+      },
+      "single_v1_reference": {
+        "conservative_token_upper_bound": 555451,
+        "known_token_lower_bound": 491451,
+        "provider_attempts": 62,
+        "semantic_operations": 60,
+        "transport_retries": 2,
+        "unknown_attempt_count": 2
+      },
+      "single_v2_dev3": {
+        "conservative_token_upper_bound": 237836,
+        "known_token_lower_bound": 109836,
+        "provider_attempts": 64,
+        "semantic_operations": 60,
+        "transport_retries": 4,
+        "unknown_attempt_count": 4
+      }
+    },
+    "conservative_token_upper_bound": 4074114,
+    "failed_provider_attempts_by_architecture": {
+      "dynamic_v1_reference": 4,
+      "dynamic_v2_dev3": 4,
+      "fixed_v1_reference": 6,
+      "fixed_v2_dev3": 5,
+      "single_v1_reference": 2,
+      "single_v2_dev3": 4
+    },
+    "failed_provider_attempts_by_operation_type": {
+      "COMMANDER": 3,
+      "FINAL_JUDGE": 12,
+      "LOGS_SPECIALIST": 2,
+      "METRICS_SPECIALIST": 5,
+      "TRACES_SPECIALIST": 3
+    },
+    "first_attempt_failures": 25,
+    "first_attempt_provider_success": {
+      "denominator": 1140,
+      "numerator": 1115,
+      "value": 0.9780701754385965
+    },
+    "known_token_lower_bound": 3274114,
+    "provider_attempts": 1165,
+    "retry_budget_suppressed": 0,
+    "retry_eligible_failures": 25,
+    "retry_exhaustions": 0,
+    "retry_failures": 0,
+    "retry_recoveries": 25,
+    "semantic_operations": 1140,
+    "transport_retries": 25,
+    "unknown_attempt_count": 25,
+    "unknown_reserved_tokens": 800000,
+    "usage_dispositions": {
+      "KNOWN_POSITIVE": 1140,
+      "UNKNOWN_NO_VALID_RESPONSE": 25
+    }
+  },
+  "run_accounting": {
+    "scheduled": 360,
+    "semantic_retries": 0,
+    "terminalized": 360
+  },
+  "schema_version": "rcaeval-re2-v2-dev3.aggregate-split.v1",
+  "source_bindings": {
+    "budget_lock_sha256": "758555c23f9494b1b205a92b0677eba19fe7ac14a7f80db929340eb4af4a7bcb",
+    "combined_design_journal_sha256": "2af1653c17665080269fa369489dcb410ff5056caeefc797ab38ebf8d0d67b60",
+    "design_journal_authority_sha256": "16f8cb252e26e7470ae6af326f6063cd4df3482958d101e68f919e0d3b997c47",
+    "design_schedule_sha256": "f5bd027a40464d44051b686c32c3a07653e3516c9681b5a10becd4b13b82cd8d",
+    "dev2_provider_failure_audit_lock_sha256": "8600bc5eef68b4d3fbc50126fe6ee79416e343678b178aa43bcb871bd17ba79b",
+    "evaluation_root_lock_sha256": "8fbc67604b878801826f5712fc6a61342410bcc9f93da292f122ffc65e50d44b",
+    "indicator_lock_sha256": "98d83abbc121b31aaf19f600889622bad9574b800457ed39031034fed54b2dbc",
+    "model_prompt_lock_sha256": "a9d05db350080b4ce7163b6f952aa24f11aed238ab4f178ddaef1b2a876bfa14",
+    "output_root_authority_sha256": "12ca1796cd60b0692016b58d4032800c506b25124d2962682bae7618f6ba64df",
+    "postrun_evaluation_lock_sha256": "ae750947c8dad739b7c9cc0fde91c75972d760a516b27c22a554c75601021381",
+    "private_schedule_authority_sha256": "35d577bdbe76a02e345d9b4045f2081aa871c52c9b360d34074a675b66670ee0",
+    "protocol_sha256": "3cbc02eec0bda6734bf777999200c3f5e6cdc6522fe8fb0baa22b126b402d8c4",
+    "schedule_admission_lock_sha256": "fbbbacea2b9ebb1e8205b891aef23550ea793ff0254f463d5648da11070e8629",
+    "smoke_journal_authority_sha256": "27a9585ccdb48f3d2a54954415c1055af904afa7595466c865c4cbd3b2765b32",
+    "smoke_schedule_sha256": "9ee6f72f0800750ab731d618faee3893d85b0f70475ac08676c233c70ee8206a",
+    "split_lock_sha256": "9f145cf8beb75d6b97c11421cb0e138c00e12963ddd896b9509a85d3b7bafd66",
+    "transport_retry_policy_sha256": "7fd010103f83a1cb99b0c478ddafdf6e9fd0dc349a4297e7bb55c9b4157c202b",
+    "validation_schedule_sha256": "e5adae294869eceb0d8fdb323afbde2eb6778d771cc798dd36f4f6e8842bbe69"
+  },
+  "specialist_candidate_accuracy": {
+    "logs": {
+      "candidate_indicator_accuracy": {
+        "denominator": 120,
+        "numerator": 33,
+        "value": 0.275
+      },
+      "candidate_missing_rate": {
+        "denominator": 120,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "candidate_pair_accuracy": {
+        "denominator": 120,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "candidate_service_accuracy": {
+        "denominator": 120,
+        "numerator": 4,
+        "value": 0.03333333333333333
+      },
+      "service_confidence_brier": 0.6649908333333333
+    },
+    "metrics": {
+      "candidate_indicator_accuracy": {
+        "denominator": 120,
+        "numerator": 71,
+        "value": 0.5916666666666667
+      },
+      "candidate_missing_rate": {
+        "denominator": 120,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "candidate_pair_accuracy": {
+        "denominator": 120,
+        "numerator": 63,
+        "value": 0.525
+      },
+      "candidate_service_accuracy": {
+        "denominator": 120,
+        "numerator": 108,
+        "value": 0.9
+      },
+      "service_confidence_brier": 0.0897225
+    },
+    "traces": {
+      "candidate_indicator_accuracy": {
+        "denominator": 90,
+        "numerator": 20,
+        "value": 0.2222222222222222
+      },
+      "candidate_missing_rate": {
+        "denominator": 90,
+        "numerator": 30,
+        "value": 0.3333333333333333
+      },
+      "candidate_pair_accuracy": {
+        "denominator": 90,
+        "numerator": 6,
+        "value": 0.06666666666666667
+      },
+      "candidate_service_accuracy": {
+        "denominator": 90,
+        "numerator": 28,
+        "value": 0.3111111111111111
+      },
+      "service_confidence_brier": 0.32426333333333335
+    }
+  },
+  "specialist_disagreement": {
+    "all_agree": 0,
+    "all_disagree": 45,
+    "correct_majority": 5,
+    "correct_minority": 1,
+    "two_vs_one": 15
+  },
+  "split": "DESIGN",
+  "terminal_taxonomy": {
+    "dynamic_v1_reference": {
+      "COMPLETED": 60
+    },
+    "dynamic_v2_dev3": {
+      "COMPLETED": 60
+    },
+    "fixed_v1_reference": {
+      "COMPLETED": 60
+    },
+    "fixed_v2_dev3": {
+      "COMPLETED": 60
+    },
+    "single_v1_reference": {
+      "COMPLETED": 60
+    },
+    "single_v2_dev3": {
+      "COMPLETED": 53,
+      "INVALID_SCHEMA": 7
+    }
+  },
+  "unattributed_terminal_failures": 0
+}

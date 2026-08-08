@@ -1,0 +1,138 @@
+{
+  "checks": {
+    "completed_attempt_usage_coverage": {
+      "denominator": 1140,
+      "numerator": 1140,
+      "passed": true
+    },
+    "exact_failure_stage_coverage": {
+      "denominator": 7,
+      "numerator": 7,
+      "passed": true,
+      "value": 1.0
+    },
+    "failed_attempt_disposition_coverage": {
+      "denominator": 25,
+      "numerator": 25,
+      "passed": true
+    },
+    "final_judge_schema_disposition_dev3": {
+      "exact_stage_attributed": 7,
+      "invalid_schema_count": 7,
+      "passed": true
+    },
+    "missing_completed_operation_records": {
+      "count": 0,
+      "passed": true
+    },
+    "persisted_raw_paths": {
+      "hits": 0,
+      "passed": true
+    },
+    "provider_attempt_accounting": {
+      "maximum": 2400,
+      "passed": true,
+      "records": 1165,
+      "starts": 1165,
+      "unbound_or_duplicate_attempts": 0
+    },
+    "semantic_failure_attribution": {
+      "denominator": 7,
+      "numerator": 7,
+      "passed": true
+    },
+    "semantic_operation_accounting": {
+      "passed": true,
+      "records": 1140,
+      "starts": 1140,
+      "terminal_mismatches": 0,
+      "terminal_model_calls": 1140
+    },
+    "semantic_retries": {
+      "count": 0,
+      "passed": true
+    },
+    "terminal_accounting": {
+      "denominator": 360,
+      "numerator": 360,
+      "passed": true,
+      "value": 1.0
+    },
+    "terminal_overwrites": {
+      "count": 0,
+      "passed": true
+    },
+    "token_accounting_v2": {
+      "conservative_token_upper_bound": 4074114,
+      "known_token_lower_bound": 3274114,
+      "maximum": 76800000,
+      "orphan_attempts": 0,
+      "passed": true,
+      "unknown_attempt_count": 25,
+      "unknown_reserved_tokens": 800000
+    },
+    "transport_retries": {
+      "count": 25,
+      "maximum": 60,
+      "passed": true
+    },
+    "transport_retry_policy": {
+      "maximum": 60,
+      "non_allowlisted_retries": 0,
+      "passed": true,
+      "request_identity_mismatches": 0,
+      "retry_attempts": 25
+    },
+    "v2_run_trace_coverage": {
+      "denominator": 180,
+      "numerator": 180,
+      "passed": true,
+      "value": 1.0
+    }
+  },
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "DESIGN_SET",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "design_signals": {
+    "architecture": {
+      "classification": "ARCHITECTURE_REDESIGN_REQUIRED",
+      "dynamic_root_service_delta": 0.15,
+      "fixed_root_service_delta": -0.016666666666666666
+    },
+    "indicator": {
+      "memory_pair_correct": 1,
+      "recommended_for_candidate_freeze_review": false,
+      "root_service_preservation": -0.13333333333333333,
+      "single_v2_pair_improvement": -0.1,
+      "socket_pair_correct": 1
+    }
+  },
+  "protocol_id": "rcaeval-re2-v2-dev.3",
+  "schema_version": "rcaeval-re2-v2-dev3.design-gate.v1",
+  "source_bindings": {
+    "budget_lock_sha256": "758555c23f9494b1b205a92b0677eba19fe7ac14a7f80db929340eb4af4a7bcb",
+    "combined_design_journal_sha256": "2af1653c17665080269fa369489dcb410ff5056caeefc797ab38ebf8d0d67b60",
+    "design_completion_amendment_lock_sha256": "fa66895d72d93dc3389ee17363317afe9b3626f1eccd7fac6fda236b54023b49",
+    "design_completion_finalization_lock_sha256": "d2f270a201f8a02ba44696ef7ef5020215bb66d4b00c19021525c53d79c62a9c",
+    "design_journal_authority_sha256": "16f8cb252e26e7470ae6af326f6063cd4df3482958d101e68f919e0d3b997c47",
+    "design_schedule_sha256": "f5bd027a40464d44051b686c32c3a07653e3516c9681b5a10becd4b13b82cd8d",
+    "dev2_provider_failure_audit_lock_sha256": "8600bc5eef68b4d3fbc50126fe6ee79416e343678b178aa43bcb871bd17ba79b",
+    "evaluation_root_lock_sha256": "8fbc67604b878801826f5712fc6a61342410bcc9f93da292f122ffc65e50d44b",
+    "indicator_lock_sha256": "98d83abbc121b31aaf19f600889622bad9574b800457ed39031034fed54b2dbc",
+    "model_prompt_lock_sha256": "a9d05db350080b4ce7163b6f952aa24f11aed238ab4f178ddaef1b2a876bfa14",
+    "output_root_authority_sha256": "12ca1796cd60b0692016b58d4032800c506b25124d2962682bae7618f6ba64df",
+    "postrun_evaluation_lock_sha256": "ae750947c8dad739b7c9cc0fde91c75972d760a516b27c22a554c75601021381",
+    "private_schedule_authority_sha256": "35d577bdbe76a02e345d9b4045f2081aa871c52c9b360d34074a675b66670ee0",
+    "protocol_sha256": "3cbc02eec0bda6734bf777999200c3f5e6cdc6522fe8fb0baa22b126b402d8c4",
+    "schedule_admission_lock_sha256": "fbbbacea2b9ebb1e8205b891aef23550ea793ff0254f463d5648da11070e8629",
+    "smoke_journal_authority_sha256": "27a9585ccdb48f3d2a54954415c1055af904afa7595466c865c4cbd3b2765b32",
+    "smoke_schedule_sha256": "9ee6f72f0800750ab731d618faee3893d85b0f70475ac08676c233c70ee8206a",
+    "split_lock_sha256": "9f145cf8beb75d6b97c11421cb0e138c00e12963ddd896b9509a85d3b7bafd66",
+    "transport_retry_policy_sha256": "7fd010103f83a1cb99b0c478ddafdf6e9fd0dc349a4297e7bb55c9b4157c202b",
+    "validation_schedule_sha256": "e5adae294869eceb0d8fdb323afbde2eb6778d771cc798dd36f4f6e8842bbe69"
+  },
+  "state": "V2_DEV3_DESIGN_GATE_PASSED"
+}

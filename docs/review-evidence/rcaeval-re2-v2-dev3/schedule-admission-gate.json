@@ -1,0 +1,56 @@
+{
+  "budget_checks": {
+    "attempt_token_reservation": 32000,
+    "design_conservative_token_budget": 76800000,
+    "design_operation_ceiling": 1200,
+    "design_provider_attempt_ceiling": 2400,
+    "design_retry_cap": 60,
+    "retry_and_token_reservations_validated": true,
+    "smoke_conservative_token_budget": 15360000,
+    "smoke_operation_ceiling": 240,
+    "smoke_provider_attempt_ceiling": 480,
+    "smoke_retry_cap": 12,
+    "validation_operation_ceiling": 1320,
+    "within_locked_caps": true
+  },
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "DESIGN_SET",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "design": {
+    "admitted": 360,
+    "rejected": 0
+  },
+  "dev_validation_metadata": {
+    "admitted": 480,
+    "rejected": 0,
+    "values_accessed": false
+  },
+  "old_new_overlap_count": 0,
+  "operation_attempts_created": 0,
+  "protocol_id": "rcaeval-re2-v2-dev.3",
+  "provider_attempts_created": 0,
+  "provider_calls": 0,
+  "provider_objects_constructed": 0,
+  "run_attempts_created": 0,
+  "schedule_admission_lock_sha256": "fbbbacea2b9ebb1e8205b891aef23550ea793ff0254f463d5648da11070e8629",
+  "schema_version": "rcaeval-re2-v2-dev3.schedule-admission-gate.v1",
+  "smoke": {
+    "admitted": 72,
+    "rejected": 0
+  },
+  "state": "V2_DEV3_ADMISSION_REHEARSAL_PASSED",
+  "v1_contract_construction": {
+    "admitted": 216,
+    "call_position_max": 3,
+    "call_position_min": 1
+  },
+  "v1_external_schedule_sha256": "4c2834dc4a1ab4d4396b5f5671fd46916143ecea4b54f5d0db06bfb93596087c",
+  "v2_contract_construction": {
+    "admitted": 216,
+    "family_position_max": 3,
+    "family_position_min": 1
+  }
+}
