@@ -8,4 +8,4 @@ Provider Smoke：`V2_DEV1_PROVIDER_SMOKE_GATE_NOT_PASSED`。DESIGN：`NOT_RUN_DU
 
 数据边界：未访问 DEV_VALIDATION values，未执行 validation，未访问 RE2-TT，未形成外部优越性结论。
 
-建议：人工检查 DESIGN 指标信号与 architecture 分类；若接受，再通过独立任务冻结 candidate 并授权一次性 DEV_VALIDATION。
+建议：人工审阅负向 Smoke Gate 并保留现有 run IDs；任何后续 Provider 尝试都必须使用新版本、新 run IDs 与独立授权。当前不得冻结 candidate 或运行 DEV_VALIDATION。
