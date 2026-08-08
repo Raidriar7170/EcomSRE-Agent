@@ -31,7 +31,7 @@ All six pre-guardrail terminal/sidecar groups were freshly rehashed after valida
 
 ## Fusion overlap guardrail
 
-The Provider-facing Fusion proposal may contain overlapping supporting and contradicting evidence references, while the internal `FusionDecision` disjointness invariant remains unchanged. Materialization applies JSON/schema validation, stable normalization, visible-reference authorization, and service/action authorization before the overlap-only fallback.
+The Provider-facing Fusion proposal may contain overlapping supporting and contradicting evidence references, while the internal `FusionDecision` disjointness invariant remains unchanged. Materialization applies JSON/schema validation, stable normalization, visible-reference checks, and service/action checks before the overlap-only fallback.
 
 An otherwise authorized overlap proposal becomes deterministic `KEEP_INITIAL`: it preserves the Initial service, confidence, and evidence authority; clears contradicting references; stable-deduplicates the original reason codes; and appends `OVERLAPPING_EVIDENCE_REJECTED_KEEP_INITIAL`. Unknown references and unsupported services still fail closed. The guardrail never asks the Provider a second time. Private traces record only the applied flag, safe reason, and overlap count; public results report only an aggregate count.
 
