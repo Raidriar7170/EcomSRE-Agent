@@ -1,6 +1,8 @@
 # RCAEval Single-first Adaptive Agent v1
 
-Status: `SINGLE_FIRST_ADAPTIVE_V1_DESIGN_NOT_PASSED_READY_FOR_ALGORITHM_REVIEW`
+Status: `BLOCKED`
+
+Reason: `SHARED_SMOKE_DOWNSTREAM_SCHEMA_FAILURE_OUTSIDE_R2_INITIAL_INTERFACE_SCOPE`
 
 Claim boundary: `DEVELOPMENT_VISIBLE / DESIGN_SET / NOT_EXTERNAL_HOLDOUT / NOT_PRIMARY_INFERENCE`.
 
@@ -48,10 +50,12 @@ Damage and Rescue use the authoritative `root_cause_pair_ac_at_1` endpoint.
 
 ## Fail-closed validation boundary
 
-Before it opens the validation schedule or any validation case directory, the validation entrypoint requires the canonical `config/rcaeval-adaptive-v1/adaptive-candidate.json` to be byte-identical to its tracked `HEAD` blob. It then verifies the selected candidate, config hashes, model, passing DESIGN metrics, implementation ancestry, and that the Adaptive runtime and entrypoint scripts have no tracked or untracked drift from the recorded implementation commit. No candidate passed the Provider smoke, so no freeze exists and the validation boundary remained closed.
+Before it opens the validation schedule or any validation case directory, the validation entrypoint requires the canonical `config/rcaeval-adaptive-v1/adaptive-candidate.json` to be byte-identical to its tracked `HEAD` blob. It then verifies the selected candidate, config hashes, model, passing DESIGN metrics, implementation ancestry, and that the Adaptive runtime, inherited Provider adapter, and entrypoint scripts have no tracked or untracked drift from the recorded implementation commit. The new r1 shared smoke did not pass, so no freeze exists and the validation boundary remained closed.
 
-## Current algorithm-review issue
+## Current review issue
 
-All three bounded candidates produced 12/12 typed `INVALID_SCHEMA` terminals at initial output validation. Candidate 2 aligned candidate evidence references with the visible-reference validator. Candidate 3 additionally made absent optional outputs explicit, deduplicated bounded arrays, strengthened the field-level prompt, and retained safe validation diagnostics. The final safe diagnostic is consistently a root-level `ValueError / validation_error`; raw Provider responses were not persisted, so the public evidence does not claim whether the remaining semantic rejection is the visible-service check or visible-evidence-reference check.
+The earlier three 12-case attempts remain preserved as pre-fix Initial Diagnosis interface failures and do not count as DESIGN candidates. The bounded repair introduced `InitialDiagnosisInput`, removed `canonical_evidence` from the Provider envelope, derived visible services and evidence references from that same envelope, and added safe field-specific `INITIAL_*` validation codes.
 
-The next review should narrow that semantic validator with bounded field-specific error codes before authorizing any new evaluation version. Reusing these consumed run IDs or opening DEV_VALIDATION is not an acceptable debugging shortcut.
+In the new candidate-1 r1 shared smoke, all 12 runs completed Initial Diagnosis with zero `INITIAL_*` failures. Seven completed end to end. Four stopped at Logs Specialist output validation and one stopped at Fusion output validation, each with `PROVIDER_OUTPUT_INVALID_SCHEMA`; there were zero transport or semantic retries and zero private-path hits.
+
+The authorized r2 path applies only to a precise shared Initial Diagnosis interface code, which was not observed. The next review should decide whether to authorize a separately bounded repair of the downstream Logs Specialist and Fusion Provider-output schemas. The shared-smoke gate must remain unchanged, prior execution identifiers must not be reused, and DEV_VALIDATION must remain closed until a candidate passes that gate.

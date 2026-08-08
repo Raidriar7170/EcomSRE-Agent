@@ -1,33 +1,59 @@
 # Single-first Adaptive v1 result
 
-Final state: `SINGLE_FIRST_ADAPTIVE_V1_DESIGN_NOT_PASSED_READY_FOR_ALGORITHM_REVIEW`
+Final state: `BLOCKED`
 
-## Result
+Reason: `SHARED_SMOKE_DOWNSTREAM_SCHEMA_FAILURE_OUTSIDE_R2_INITIAL_INTERFACE_SCOPE`
 
-Three candidate versions reached the required 12-case DESIGN smoke. Each smoke was fully terminalized with 12 `INVALID_SCHEMA` results, 12 Provider attempts, zero transport retries, and zero detected private-path hits. The conservative token upper bounds were 89,868, 89,506, and 88,871 respectively.
+## Disposition
 
-No candidate passed the Provider canary. The 60-case DESIGN evaluation was therefore not run, no candidate was selected or frozen, and DEV_VALIDATION remained unopened and unexecuted. The historical Strong Single DESIGN baseline remains 51/60 Root Service and 29/60 Pair; it is context only, not a newly executed comparison.
+The bounded Initial Diagnosis interface repair succeeded at its own boundary: all 12 new candidate-1 smoke runs completed Initial Diagnosis, with zero `INITIAL_*` failures. The new provider envelope contains one external evidence projection, does not send `canonical_evidence`, and derives visible services and evidence references from the exact input sent to the Provider.
 
-## Candidate sequence
+The required shared smoke nevertheless did not pass. Seven of 12 runs completed end to end. Four stopped at Logs Specialist output validation and one stopped at Fusion output validation, all with the safe generic code `PROVIDER_OUTPUT_INVALID_SCHEMA`. The run used 30 Provider attempts, zero transport retries, zero semantic retries, and had zero detected private-path hits.
 
-| Candidate | Change entering smoke | Terminal result |
-| --- | --- | --- |
-| candidate-1 | Initial Single-first runtime and strict output validation | 0/12 completed; 12/12 invalid schema |
-| candidate-2 | Candidate evidence references admitted by the initial visible-reference contract | 0/12 completed; 12/12 invalid schema |
-| candidate-3 | Optional-output defaults, bounded deduplication, explicit field prompt, safe diagnostics | 0/12 completed; 12/12 invalid schema |
+The authorized r2 path was limited to a precise, fixable shared Initial Diagnosis interface failure. No such failure occurred, so r2 was not run. The Gate was not relaxed, DESIGN was not started, and DEV_VALIDATION remained unopened.
 
-Candidate 3's bounded diagnostic was identical on all 12 cases: field path `$`, error class `ValueError`, constraint `validation_error`, error count 1. It confirms a local semantic validation rejection after a valid Provider response, but deliberately does not retain raw output or values.
+## Preserved pre-fix evidence
 
-## Safety and accounting
+The earlier 36 terminals remain unchanged and are classified as `PRE_FIX_INITIAL_INTERFACE_FAILURE`:
 
-- Total across three smokes: 36 scheduled, 36 terminalized, 36 Provider attempts, zero retries.
-- Schema/result retry: zero.
-- TT accessed: no.
+- three pre-fix candidate labels, each with 12/12 `INVALID_SCHEMA`;
+- 36 scheduled and terminalized runs, 36 Provider attempts, and zero transport retries;
+- failure stage `INITIAL_DIAGNOSIS / OUTPUT_VALIDATION`;
+- not DESIGN-eligible and excluded from candidate selection;
+- no old run ID was reused.
+
+These failures are evidence of the former shared Initial Diagnosis interface, not three DESIGN candidate results.
+
+## New shared smoke
+
+| Boundary | Result |
+| --- | --- |
+| Candidate / domain | candidate-1 / `single-first-adaptive-v1-interface-fix-r1` |
+| Scheduled / terminalized | 12 / 12 |
+| Initial Diagnosis completed | 12 / 12 |
+| End-to-end completed | 7 / 12 |
+| `INITIAL_*` failures | 0 |
+| Logs Specialist schema failures | 4 |
+| Fusion schema failures | 1 |
+| Provider attempts | 30 |
+| Transport / semantic retries | 0 / 0 |
+| Private-path hits | 0 |
+| Conservative token upper bound | 53,069 |
+| Gate | failed |
+
+The safe records retain only operation type, status, and allowlisted failure codes. No raw invalid service, evidence reference, or Provider output is persisted in the public result.
+
+## Evaluation boundary
+
+- 60-case DESIGN: not run; iterations used: 0.
+- Candidate selection and freeze: not performed.
 - DEV_VALIDATION schedule values accessed: no.
 - DEV_VALIDATION case directories opened: no.
-- Candidate freeze created: no.
-- Merge, release, deployment, remediation, browser control, Docker, and GPU work: none.
+- RE2-TT or any external holdout accessed: no.
+- Validation reruns or result-driven tuning: none.
+
+The historical Strong Single DESIGN baseline remains 51/60 Root Service and 29/60 Pair as context only. It was not rerun and is not presented as a new comparison.
 
 ## Required next action
 
-Run algorithm review on the remaining initial semantic boundary and introduce field-specific safe diagnostic codes in a new, explicitly authorized evaluation version. Do not reinterpret this result as a DESIGN accuracy failure: accuracy evaluation never began because the Provider smoke did not pass.
+Human algorithm review should decide whether a separately authorized follow-up may repair the newly exposed Logs Specialist and Fusion Provider-output schema boundaries. Do not call this a DESIGN accuracy result, do not reuse r1 IDs, and do not open DEV_VALIDATION before a candidate passes the unchanged shared-smoke gate.

@@ -1,67 +1,95 @@
 {
-  "candidate_selected": false,
-  "candidates": [
-    {
-      "candidate_id": "candidate-1",
-      "completed": 0,
-      "conservative_token_upper_bound": 89868,
-      "invalid_schema": 12,
-      "private_path_hits": 0,
-      "provider_attempts": 12,
-      "scheduled": 12,
-      "transport_retries": 0
-    },
-    {
-      "candidate_id": "candidate-2",
-      "completed": 0,
-      "conservative_token_upper_bound": 89506,
-      "invalid_schema": 12,
-      "private_path_hits": 0,
-      "provider_attempts": 12,
-      "scheduled": 12,
-      "transport_retries": 0
-    },
-    {
-      "candidate_id": "candidate-3",
-      "completed": 0,
-      "conservative_token_upper_bound": 88871,
-      "invalid_schema": 12,
-      "private_path_hits": 0,
-      "provider_attempts": 12,
-      "safe_diagnostic": {
-        "constraint_types": [
-          "validation_error"
-        ],
-        "error_class": "ValueError",
-        "error_count": 1,
-        "field_paths": [
-          "$"
-        ],
-        "observed_count": 12
-      },
-      "scheduled": 12,
-      "transport_retries": 0
-    }
-  ],
+  "schema_version": "rcaeval-single-first-adaptive.public-result.v1",
+  "evaluation_version": "single-first-adaptive-v1",
   "claim_boundary": "DEVELOPMENT_VISIBLE_DESIGN_NOT_EXTERNAL_HOLDOUT",
+  "implementation_git_sha": "43cf03d88739e268ed49e01b6f4779aef87acb64",
   "config_sha256": {
     "agent": "4efced9ff8c202bd48878901a2a0e7e674aa0ff8404048b66947d942011e6a02",
-    "evaluation": "1193cf02c2c9ee999eda891f157fd765b2385c2edbac11531b4afada33dc9a2d",
+    "evaluation": "1bee06b459ad2a2b6b3fd122f4d58cbaaf8322a6e7690cc01e053e8aa52d4bd5",
     "model_lock": "c77e34d33f8662ac056055dc456e4be37524d7742f5a2b380f78dd816886b3ff"
   },
+  "pre_fix_interface_failure": {
+    "candidates": 3,
+    "scheduled": 36,
+    "terminalized": 36,
+    "provider_attempts": 36,
+    "status": "INVALID_SCHEMA",
+    "stage": "INITIAL_DIAGNOSIS / OUTPUT_VALIDATION",
+    "design_eligible": false,
+    "excluded_from_candidate_selection": true,
+    "terminals_preserved": true,
+    "old_execution_identifiers_reused": false
+  },
+  "interface_repair": {
+    "run_domain": "single-first-adaptive-v1-interface-fix-r1",
+    "new_input_contract": "InitialDiagnosisInput",
+    "full_architecture_context_sent": false,
+    "canonical_evidence_sent": false,
+    "visible_services_source": "same InitialDiagnosisInput provider envelope",
+    "visible_evidence_refs_source": "same InitialDiagnosisInput provider envelope",
+    "prompt_requires_verbatim_visible_values": true,
+    "safe_failure_codes": [
+      "INITIAL_JSON_OR_SCHEMA_INVALID",
+      "INITIAL_SERVICE_NOT_VISIBLE",
+      "INITIAL_EVIDENCE_REF_NOT_VISIBLE",
+      "INITIAL_DUPLICATE_EVIDENCE_REF",
+      "INITIAL_UNCERTAINTY_FLAG_INVALID"
+    ],
+    "raw_invalid_values_persisted": false,
+    "new_old_id_overlap": 0
+  },
+  "shared_smoke": {
+    "candidate_id": "candidate-1",
+    "repair_rounds_used": 1,
+    "scheduled": 12,
+    "terminalized": 12,
+    "completed": 7,
+    "invalid_schema": 5,
+    "initial_diagnosis_completed": 12,
+    "initial_failure_code_counts": {
+      "INITIAL_JSON_OR_SCHEMA_INVALID": 0,
+      "INITIAL_SERVICE_NOT_VISIBLE": 0,
+      "INITIAL_EVIDENCE_REF_NOT_VISIBLE": 0,
+      "INITIAL_DUPLICATE_EVIDENCE_REF": 0,
+      "INITIAL_UNCERTAINTY_FLAG_INVALID": 0
+    },
+    "downstream_failure_code_counts": {
+      "PROVIDER_OUTPUT_INVALID_SCHEMA": 5
+    },
+    "downstream_failure_stage_counts": {
+      "LOGS_SPECIALIST": 4,
+      "FUSION": 1
+    },
+    "provider_attempts": 30,
+    "transport_retries": 0,
+    "semantic_retries": 0,
+    "private_path_hits": 0,
+    "conservative_token_upper_bound": 53069,
+    "budget_passed": true,
+    "gate_passed": false,
+    "r2_executed": false,
+    "r2_reason": "No precise shared Initial Diagnosis interface failure code was observed; the remaining failures were downstream generic output-schema failures."
+  },
+  "design_candidates": [],
   "design": {
     "executed": false,
-    "historical_strong_single_baseline_pair_correct": 29,
+    "iterations_used": 0,
     "historical_strong_single_baseline_root_service_correct": 51,
-    "reason": "NO_CANDIDATE_PASSED_PROVIDER_SMOKE"
+    "historical_strong_single_baseline_pair_correct": 29,
+    "reason": "SHARED_SMOKE_NOT_PASSED"
   },
-  "evaluation_version": "single-first-adaptive-v1",
-  "final_state": "SINGLE_FIRST_ADAPTIVE_V1_DESIGN_NOT_PASSED_READY_FOR_ALGORITHM_REVIEW",
-  "schema_version": "rcaeval-single-first-adaptive.public-result.v1",
-  "validation": {
-    "candidate_freeze_created": false,
+  "selected_candidate": null,
+  "candidate_freeze": {
+    "created": false
+  },
+  "dev_validation": {
     "executed": false,
     "schedule_values_accessed": false,
-    "validation_case_directories_opened": false
-  }
+    "validation_case_directories_opened": false,
+    "reruns": 0,
+    "validation_driven_changes": false
+  },
+  "final_state": "BLOCKED",
+  "blocked_reason_code": "SHARED_SMOKE_DOWNSTREAM_SCHEMA_FAILURE_OUTSIDE_R2_INITIAL_INTERFACE_SCOPE",
+  "disposition_note": "The Initial Diagnosis repair itself completed all 12 smoke cases. The continuation is blocked before DESIGN because the shared smoke exposed downstream Logs Specialist and Fusion output-schema failures that do not qualify for the single authorized r2 Initial Interface repair."
 }
