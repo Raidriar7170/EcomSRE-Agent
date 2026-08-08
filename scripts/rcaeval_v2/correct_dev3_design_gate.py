@@ -9,9 +9,10 @@ from pathlib import Path
 
 from ecomsre_rcaeval_v2.dev3_completion import (
     COMPLETION_AMENDMENT_LOCK_NAME,
+    COMPLETION_FINALIZATION_LOCK_NAME,
     COMPLETION_GATE_NAME,
     load_completion_phase_schedules,
-    verify_design_completion_amendment_ready,
+    verify_design_completion_finalization_ready,
 )
 from ecomsre_rcaeval_v2.dev3_evidence import (
     assess_design,
@@ -51,8 +52,8 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     parser.add_argument("--design-journal-root", required=True, type=Path)
     add_preserved_root_arguments(parser)
     args = parser.parse_args(argv)
-    _amendment, _postrun, parent, admission = (
-        verify_design_completion_amendment_ready(
+    _finalization, _amendment, _postrun, parent, admission = (
+        verify_design_completion_finalization_ready(
             args.control_root,
             args.private_schedule_root,
             args.output_root,
@@ -140,6 +141,15 @@ def main(argv: tuple[str, ...] | None = None) -> int:
             / COMPLETION_AMENDMENT_LOCK_NAME
         ).read_bytes()
     ).hexdigest()
+    source_bindings["design_completion_finalization_lock_sha256"] = (
+        hashlib.sha256(
+            (
+                args.control_root
+                / "locks"
+                / COMPLETION_FINALIZATION_LOCK_NAME
+            ).read_bytes()
+        ).hexdigest()
+    )
     assert_public_payload(gate)
     write_public_json_create_once(
         args.control_root / "evidence" / COMPLETION_GATE_NAME,

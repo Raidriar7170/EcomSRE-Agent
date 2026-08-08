@@ -153,7 +153,6 @@ def test_design_completion_allows_exactly_attributed_schema_terminals() -> None:
         },
         "final_judge_schema_dev3": {
             "invalid_schema_count": 7,
-            "exact_stage_attributed": 7,
             "passed": False,
         },
     }
@@ -168,7 +167,7 @@ def test_design_completion_allows_exactly_attributed_schema_terminals() -> None:
     }
 
 
-def test_publisher_requires_completion_amendment_without_rerunning_f0(
+def test_publisher_requires_completion_finalization_without_rerunning_f0(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[3]))
@@ -182,7 +181,7 @@ def test_publisher_requires_completion_amendment_without_rerunning_f0(
 
     monkeypatch.setattr(
         publisher,
-        "verify_design_completion_amendment_ready",
+        "verify_design_completion_finalization_ready",
         reject_missing_successor,
     )
     with pytest.raises(ValueError, match="post-run successor lock required"):

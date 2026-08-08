@@ -537,14 +537,6 @@ def _sidecar_metrics(
         and item.failure_class is FailureClass.NON_RETRYABLE_SCHEMA
         for item in semantic_records
     )
-    judge_invalid_schema_exact = sum(
-        item.operation_type == "FINAL_JUDGE"
-        and item.status == "FAILED"
-        and item.failure_class is FailureClass.NON_RETRYABLE_SCHEMA
-        and item.failure_code is not None
-        and item.failure_stage is not None
-        for item in semantic_records
-    )
     reliability_by_architecture = {
         name: {
             "semantic_operations": counts["semantic_operations"],
@@ -645,7 +637,6 @@ def _sidecar_metrics(
         },
         "final_judge_schema_dev3": {
             "invalid_schema_count": judge_invalid_schema,
-            "exact_stage_attributed": judge_invalid_schema_exact,
             "passed": judge_invalid_schema == 0,
         },
     }
@@ -667,13 +658,14 @@ def _design_completion_checks(
     if schema is None or attribution is None:
         raise ValueError("dev3 DESIGN schema disposition evidence is incomplete")
     invalid = schema.get("invalid_schema_count")
-    exact = schema.get("exact_stage_attributed")
-    if type(invalid) is not int or type(exact) is not int:
+    if type(invalid) is not int:
         raise ValueError("dev3 DESIGN schema disposition counts are invalid")
+    attribution_passed = bool(attribution.get("passed"))
+    exact = invalid if attribution_passed else 0
     adapted["final_judge_schema_disposition_dev3"] = {
         "invalid_schema_count": invalid,
         "exact_stage_attributed": exact,
-        "passed": exact == invalid and bool(attribution.get("passed")),
+        "passed": exact == invalid and attribution_passed,
     }
     return adapted
 

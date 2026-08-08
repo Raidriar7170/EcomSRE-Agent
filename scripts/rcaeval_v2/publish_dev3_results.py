@@ -12,9 +12,10 @@ from typing import Mapping
 from ecomsre_rcaeval_v2.dev3_audit import Dev2FailureAuditLock
 from ecomsre_rcaeval_v2.dev3_completion import (
     COMPLETION_AMENDMENT_LOCK_NAME,
+    COMPLETION_FINALIZATION_LOCK_NAME,
     COMPLETION_GATE_NAME,
     load_completion_phase_schedules,
-    verify_design_completion_amendment_ready,
+    verify_design_completion_finalization_ready,
 )
 from ecomsre_rcaeval_v2.dev3_evidence import (
     assess_design,
@@ -321,8 +322,8 @@ def publish(
     design_journal_root: Path,
     preserved_roots: Mapping[str, Path],
 ) -> str:
-    _amendment, _postrun, parent, admission_lock = (
-        verify_design_completion_amendment_ready(
+    _finalization, _amendment, _postrun, parent, admission_lock = (
+        verify_design_completion_finalization_ready(
             control_root,
             private_schedule_root,
             output_root,
@@ -427,6 +428,15 @@ def publish(
                     control_root
                     / "locks"
                     / COMPLETION_AMENDMENT_LOCK_NAME
+                ).read_bytes()
+            ).hexdigest()
+        )
+        expected_bindings["design_completion_finalization_lock_sha256"] = (
+            hashlib.sha256(
+                (
+                    control_root
+                    / "locks"
+                    / COMPLETION_FINALIZATION_LOCK_NAME
                 ).read_bytes()
             ).hexdigest()
         )

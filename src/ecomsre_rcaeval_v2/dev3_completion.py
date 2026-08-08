@@ -37,12 +37,22 @@ from ecomsre_rcaeval_v2.public_projection import assert_public_payload
 
 
 COMPLETION_AMENDMENT_LOCK_NAME = "design-completion-amendment-lock.json"
+COMPLETION_FINALIZATION_LOCK_NAME = "design-completion-finalization-lock.json"
 COMPLETION_GATE_NAME = "design-completion-gate.json"
 _ALLOWED_AMENDMENT_PATHS = {
     "src/ecomsre_rcaeval_v2/dev3_completion.py",
     "src/ecomsre_rcaeval_v2/dev3_evidence.py",
     "scripts/rcaeval_v2/correct_dev3_design_gate.py",
     "scripts/rcaeval_v2/prepare_dev3_completion_amendment.py",
+    "scripts/rcaeval_v2/publish_dev3_results.py",
+    "tests/benchmarks/rcaeval_v2/test_dev3_postrun.py",
+    "tests/benchmarks/rcaeval_v2/test_dev3_provider_gates.py",
+}
+_ALLOWED_FINALIZATION_PATHS = {
+    "src/ecomsre_rcaeval_v2/dev3_completion.py",
+    "src/ecomsre_rcaeval_v2/dev3_evidence.py",
+    "scripts/rcaeval_v2/correct_dev3_design_gate.py",
+    "scripts/rcaeval_v2/prepare_dev3_completion_finalization.py",
     "scripts/rcaeval_v2/publish_dev3_results.py",
     "tests/benchmarks/rcaeval_v2/test_dev3_postrun.py",
     "tests/benchmarks/rcaeval_v2/test_dev3_provider_gates.py",
@@ -64,6 +74,30 @@ class DesignCompletionAmendmentLock(V2Model):
     required_ci_checks: tuple[CiCheckAuthorization, ...]
     changed_paths: tuple[str, ...]
     amendment_diff_sha256: Sha256
+    source_tree_hashes: dict[str, Sha256]
+    config_hashes: dict[str, Sha256]
+    frozen_evidence_hashes: dict[str, Sha256]
+    original_design_output_hashes: dict[str, Sha256]
+    created_at_utc: str
+    provider_access_authorized: Literal[False]
+    provider_calls_authorized: Literal[0]
+
+
+class DesignCompletionFinalizationLock(V2Model):
+    """Bind the byte-compatible Smoke repair after the failed correction attempt."""
+
+    schema_version: Literal[
+        "rcaeval-re2-v2-dev3.design-completion-finalization-lock.v1"
+    ]
+    protocol_id: Literal["rcaeval-re2-v2-dev.3"]
+    completion_amendment_lock_sha256: Sha256
+    completion_amendment_commit: str = Field(pattern=r"^[0-9a-f]{40}$")
+    finalization_commit: str = Field(pattern=r"^[0-9a-f]{40}$")
+    draft_pr_number: int = Field(ge=1)
+    draft_pr_url: str = Field(min_length=1, max_length=2048)
+    required_ci_checks: tuple[CiCheckAuthorization, ...]
+    changed_paths: tuple[str, ...]
+    finalization_diff_sha256: Sha256
     source_tree_hashes: dict[str, Sha256]
     config_hashes: dict[str, Sha256]
     frozen_evidence_hashes: dict[str, Sha256]
@@ -103,6 +137,25 @@ def _validate_amendment_paths(paths: tuple[str, ...]) -> None:
         raise ValueError("dev3 DESIGN completion amendment contains forbidden dev4 work")
 
 
+def _validate_finalization_paths(paths: tuple[str, ...]) -> None:
+    rejected = tuple(
+        path for path in paths if path not in _ALLOWED_FINALIZATION_PATHS
+    )
+    if rejected:
+        raise ValueError(
+            "dev3 DESIGN completion finalization changed an unauthorized path: "
+            + ", ".join(rejected)
+        )
+    required = {
+        "src/ecomsre_rcaeval_v2/dev3_evidence.py",
+        "src/ecomsre_rcaeval_v2/dev3_completion.py",
+    }
+    if not required.issubset(paths):
+        raise ValueError("dev3 DESIGN completion finalization lacks its repair")
+    if any("dev4" in path.casefold() for path in paths):
+        raise ValueError("dev3 DESIGN completion finalization contains forbidden dev4 work")
+
+
 def _commit_diff(
     project_root: Path, base_commit: str
 ) -> tuple[str, tuple[str, ...], str]:
@@ -124,7 +177,6 @@ def _commit_diff(
         ).splitlines()
         if item
     )
-    _validate_amendment_paths(paths)
     diff = subprocess.run(
         ("git", "diff", "--binary", f"{base_commit}..{commit}"),
         cwd=project_root,
@@ -132,6 +184,33 @@ def _commit_diff(
         capture_output=True,
     ).stdout
     return commit, paths, _sha_bytes(diff)
+
+
+def _historical_diff(
+    project_root: Path, base_commit: str, commit: str
+) -> tuple[tuple[str, ...], str]:
+    ancestry = subprocess.run(
+        ("git", "merge-base", "--is-ancestor", base_commit, commit),
+        cwd=project_root,
+        capture_output=True,
+        text=True,
+    )
+    if ancestry.returncode != 0 or commit == base_commit:
+        raise ValueError("dev3 completion lock history is invalid")
+    paths = tuple(
+        item
+        for item in _git(
+            project_root, "diff", "--name-only", f"{base_commit}..{commit}"
+        ).splitlines()
+        if item
+    )
+    diff = subprocess.run(
+        ("git", "diff", "--binary", f"{base_commit}..{commit}"),
+        cwd=project_root,
+        check=True,
+        capture_output=True,
+    ).stdout
+    return paths, _sha_bytes(diff)
 
 
 def _tree_hash_at_commit(project_root: Path, commit: str, scope: Path) -> str:
@@ -354,6 +433,7 @@ def prepare_design_completion_amendment(
     commit, changed_paths, diff_sha = _commit_diff(
         project_root, postrun.evaluation_commit
     )
+    _validate_amendment_paths(changed_paths)
     remote = _remote_authorization(project_root, commit)
     lock_path = control_root / "locks" / COMPLETION_AMENDMENT_LOCK_NAME
     completion_gate = control_root / "evidence" / COMPLETION_GATE_NAME
@@ -419,6 +499,7 @@ def verify_design_completion_amendment_ready(
     commit, changed_paths, diff_sha = _commit_diff(
         project_root, postrun.evaluation_commit
     )
+    _validate_amendment_paths(changed_paths)
     remote = _remote_authorization(project_root, commit)
     remote_checks = remote["required_ci_checks"]
     if not isinstance(remote_checks, tuple):
@@ -446,6 +527,179 @@ def verify_design_completion_amendment_ready(
     ):
         raise ValueError("dev3 DESIGN completion amendment binding drift")
     return lock, postrun, parent, admission
+
+
+def _amendment_snapshot(
+    control_root: Path,
+    private_schedule_root: Path,
+    output_root: Path,
+    smoke_journal_root: Path,
+    design_journal_root: Path,
+    *,
+    project_root: Path,
+    preserved_roots: Mapping[str, Path],
+) -> tuple[
+    DesignCompletionAmendmentLock,
+    PostRunEvaluationLock,
+    EvaluationRootLock,
+    ScheduleAdmissionLock,
+    dict[str, str],
+    dict[str, object],
+]:
+    postrun, parent, admission, frozen, current = _snapshot(
+        control_root,
+        private_schedule_root,
+        output_root,
+        smoke_journal_root,
+        design_journal_root,
+        project_root=project_root,
+        preserved_roots=preserved_roots,
+    )
+    amendment_path = control_root / "locks" / COMPLETION_AMENDMENT_LOCK_NAME
+    amendment = DesignCompletionAmendmentLock.model_validate_json(
+        amendment_path.read_text(encoding="utf-8")
+    )
+    historical_paths, historical_diff = _historical_diff(
+        project_root, postrun.evaluation_commit, amendment.amendment_commit
+    )
+    if (
+        amendment.postrun_evaluation_lock_sha256
+        != _sha_file(control_root / "locks" / POSTRUN_LOCK_NAME)
+        or amendment.postrun_evaluation_commit != postrun.evaluation_commit
+        or amendment.changed_paths != historical_paths
+        or amendment.amendment_diff_sha256 != historical_diff
+        or amendment.source_tree_hashes
+        != _source_hashes_at_commit(project_root, amendment.amendment_commit)
+        or amendment.config_hashes != current["config_hashes"]
+        or amendment.frozen_evidence_hashes != frozen
+        or amendment.original_design_output_hashes
+        != _original_output_hashes(control_root, output_root)
+        or amendment.provider_access_authorized
+        or amendment.provider_calls_authorized != 0
+    ):
+        raise ValueError("dev3 DESIGN completion amendment predecessor drift")
+    return amendment, postrun, parent, admission, frozen, current
+
+
+def prepare_design_completion_finalization(
+    control_root: Path,
+    private_schedule_root: Path,
+    output_root: Path,
+    smoke_journal_root: Path,
+    design_journal_root: Path,
+    *,
+    project_root: Path,
+    preserved_roots: Mapping[str, Path],
+) -> DesignCompletionFinalizationLock:
+    amendment, _postrun, _parent, _admission, frozen, current = (
+        _amendment_snapshot(
+            control_root,
+            private_schedule_root,
+            output_root,
+            smoke_journal_root,
+            design_journal_root,
+            project_root=project_root,
+            preserved_roots=preserved_roots,
+        )
+    )
+    commit, changed_paths, diff_sha = _commit_diff(
+        project_root, amendment.amendment_commit
+    )
+    _validate_finalization_paths(changed_paths)
+    remote = _remote_authorization(project_root, commit)
+    lock_path = control_root / "locks" / COMPLETION_FINALIZATION_LOCK_NAME
+    completion_gate = control_root / "evidence" / COMPLETION_GATE_NAME
+    if lock_path.exists() or completion_gate.exists():
+        raise FileExistsError("dev3 DESIGN completion finalization already exists")
+    lock = DesignCompletionFinalizationLock.model_validate(
+        {
+            "schema_version": (
+                "rcaeval-re2-v2-dev3.design-completion-finalization-lock.v1"
+            ),
+            "protocol_id": PROTOCOL_ID,
+            "completion_amendment_lock_sha256": _sha_file(
+                control_root / "locks" / COMPLETION_AMENDMENT_LOCK_NAME
+            ),
+            "completion_amendment_commit": amendment.amendment_commit,
+            "finalization_commit": commit,
+            **remote,
+            "changed_paths": changed_paths,
+            "finalization_diff_sha256": diff_sha,
+            "source_tree_hashes": _source_hashes(project_root),
+            "config_hashes": current["config_hashes"],
+            "frozen_evidence_hashes": frozen,
+            "original_design_output_hashes": _original_output_hashes(
+                control_root, output_root
+            ),
+            "created_at_utc": datetime.now(timezone.utc).isoformat(),
+            "provider_access_authorized": False,
+            "provider_calls_authorized": 0,
+        }
+    )
+    _durable_create(lock_path, _canonical_bytes(lock.model_dump(mode="json")))
+    return lock
+
+
+def verify_design_completion_finalization_ready(
+    control_root: Path,
+    private_schedule_root: Path,
+    output_root: Path,
+    smoke_journal_root: Path,
+    design_journal_root: Path,
+    *,
+    project_root: Path,
+    preserved_roots: Mapping[str, Path],
+) -> tuple[
+    DesignCompletionFinalizationLock,
+    DesignCompletionAmendmentLock,
+    PostRunEvaluationLock,
+    EvaluationRootLock,
+    ScheduleAdmissionLock,
+]:
+    amendment, postrun, parent, admission, frozen, current = _amendment_snapshot(
+        control_root,
+        private_schedule_root,
+        output_root,
+        smoke_journal_root,
+        design_journal_root,
+        project_root=project_root,
+        preserved_roots=preserved_roots,
+    )
+    lock_path = control_root / "locks" / COMPLETION_FINALIZATION_LOCK_NAME
+    lock = DesignCompletionFinalizationLock.model_validate_json(
+        lock_path.read_text(encoding="utf-8")
+    )
+    commit, changed_paths, diff_sha = _commit_diff(
+        project_root, amendment.amendment_commit
+    )
+    _validate_finalization_paths(changed_paths)
+    remote = _remote_authorization(project_root, commit)
+    remote_checks = remote["required_ci_checks"]
+    if not isinstance(remote_checks, tuple):
+        raise ValueError("dev3 DESIGN finalization CI authorization is invalid")
+    expected_checks = tuple(
+        CiCheckAuthorization.model_validate(item) for item in remote_checks
+    )
+    if (
+        lock.completion_amendment_lock_sha256
+        != _sha_file(control_root / "locks" / COMPLETION_AMENDMENT_LOCK_NAME)
+        or lock.completion_amendment_commit != amendment.amendment_commit
+        or lock.finalization_commit != commit
+        or lock.changed_paths != changed_paths
+        or lock.finalization_diff_sha256 != diff_sha
+        or lock.draft_pr_number != remote["draft_pr_number"]
+        or lock.draft_pr_url != remote["draft_pr_url"]
+        or lock.required_ci_checks != expected_checks
+        or lock.source_tree_hashes != _source_hashes(project_root)
+        or lock.config_hashes != current["config_hashes"]
+        or lock.frozen_evidence_hashes != frozen
+        or lock.original_design_output_hashes
+        != _original_output_hashes(control_root, output_root)
+        or lock.provider_access_authorized
+        or lock.provider_calls_authorized != 0
+    ):
+        raise ValueError("dev3 DESIGN completion finalization binding drift")
+    return lock, amendment, postrun, parent, admission
 
 
 def load_completion_phase_schedules(
