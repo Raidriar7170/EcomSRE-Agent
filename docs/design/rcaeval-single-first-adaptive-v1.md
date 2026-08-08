@@ -1,14 +1,14 @@
 # RCAEval Single-first Adaptive Agent v1
 
-Status: `BLOCKED`
+Status: `SINGLE_FIRST_ADAPTIVE_V1_DOWNSTREAM_INTERFACE_BLOCKED_READY_FOR_REVIEW`
 
-Reason: `SHARED_SMOKE_DOWNSTREAM_SCHEMA_FAILURE_OUTSIDE_R2_INITIAL_INTERFACE_SCOPE`
+Reason: `DOWNSTREAM_INTERFACE_REPAIR_ROUND_LIMIT_EXHAUSTED`
 
-Claim boundary: `DEVELOPMENT_VISIBLE / DESIGN_SET / NOT_EXTERNAL_HOLDOUT / NOT_PRIMARY_INFERENCE`.
+Claim boundary: `DEVELOPMENT_VISIBLE / SHARED_SMOKE / NOT_DESIGN_RESULT / NOT_EXTERNAL_HOLDOUT / NOT_PRIMARY_INFERENCE`.
 
 ## Intent
 
-This implementation turns the dev.3 redesign handoff into a real bounded Agent:
+This implementation turns the dev.3 redesign handoff into a bounded Agent:
 
 1. Query Metrics and Logs once.
 2. Produce one Strong Single initial diagnosis.
@@ -21,7 +21,7 @@ RE2-SS never exposes Traces. RE2-OB queries Traces only after the gate selects a
 
 ## Frozen routing and cost contract
 
-The initial gate uses confidence thresholds `0.75` and `0.55`, normalized Metrics top-1/top-2 margin `0.25`, evidence support, cross-source disagreement, indicator availability, and trace ambiguity.
+The gate uses confidence thresholds `0.75` and `0.55`, normalized Metrics top-1/top-2 margin `0.25`, evidence support, cross-source disagreement, indicator availability, and trace ambiguity.
 
 | Route | Model operations | Tool calls |
 | --- | ---: | ---: |
@@ -32,16 +32,26 @@ The initial gate uses confidence thresholds `0.75` and `0.55`, normalized Metric
 
 Every semantic operation permits at most one byte-identical retry for the inherited dev.3 transport allowlist. Schema, protocol, semantic-result, and validation-driven retries remain forbidden. Each run ID has one create-once terminal; an interrupted sidecar is sealed and never replayed.
 
-## Output contracts
+## Input and output authority
 
-The initial Agent emits one visible service, an optional canonical indicator, calibrated confidence, exact evidence references, an explanation, and bounded uncertainty flags. Specialists emit ranked hypotheses with explicit root-candidate, propagated-symptom, or uncertain roles and separate supporting/contradicting references. Fusion sees an architecture-blind envelope and may override the initial service only when new evidence clearly contradicts it.
+Initial Diagnosis receives one bounded evidence projection plus exact visible service and evidence-reference sets. It does not receive canonical/internal evidence.
 
-The hybrid indicator resolver keeps a model indicator when it is among the selected service's top two deterministic candidates, uses deterministic top-1 when its normalized margin is at least `0.6`, and otherwise preserves the model output with an uncertainty disposition.
+Each Logs or Trace call receives one `SpecialistInput`:
+
+- `source_evidence` contains only the selected source;
+- `visible_evidence_refs` equals the selected-source reference set exactly;
+- `visible_services` equals the selected-source services plus the Initial root service;
+- the Provider-visible Initial context excludes Initial evidence references that are not authorized Specialist output references;
+- the Provider-facing hypotheses omit source, which the Runtime attaches authoritatively after validation.
+
+Fusion receives one architecture-blind `FusionInput` whose Initial service, visible services, visible references, and override candidates are explicit and self-validating. Output validation uses only that same input authority. Fusion keeps the Initial service by default and may override only to an authorized root-candidate service with explicit support and contradiction.
+
+The Runtime propagates nine exact Specialist failure codes and eight exact Fusion failure codes. Safe diagnostics contain only code, role, field path, constraint type, and counts; they never persist raw invalid service/ref values, raw Provider arguments, or raw responses.
 
 ## Evaluation protocol
 
 - Provider smoke: 12 DESIGN cases stratified across both systems and all six fault types.
-- DESIGN: one 60-case arm per candidate, at most three candidates.
+- DESIGN: one 60-case arm per candidate, at most three candidates, only after the shared smoke passes.
 - Minimum DESIGN gate: completion at least 58/60; Root Service at least 50/60; Pair at least 28/60; Damage at most 3; Rescue greater than Damage; at least 24 direct returns; mean semantic operations at most 3.0; no privacy, schema, or schedule failure.
 - Candidate selection: Root Service, Pair, net Rescue, lower Damage, lower mean semantic operations, then more direct returns.
 - DEV_VALIDATION: only after a tracked candidate freeze; 120 cases × Strong Single reference and selected Adaptive Agent; no tuning after access.
@@ -50,12 +60,21 @@ Damage and Rescue use the authoritative `root_cause_pair_ac_at_1` endpoint.
 
 ## Fail-closed validation boundary
 
-Before it opens the validation schedule or any validation case directory, the validation entrypoint requires the canonical `config/rcaeval-adaptive-v1/adaptive-candidate.json` to be byte-identical to its tracked `HEAD` blob. It then verifies the selected candidate, config hashes, model, passing DESIGN metrics, implementation ancestry, and that the Adaptive runtime, inherited Provider adapter, and entrypoint scripts have no tracked or untracked drift from the recorded implementation commit. The new r1 shared smoke did not pass, so no freeze exists and the validation boundary remained closed.
+Before opening the validation schedule or any validation case directory, the validation entrypoint requires the canonical candidate freeze to be byte-identical to its tracked `HEAD` blob. It verifies selected candidate, config hashes, model, passing DESIGN metrics, implementation ancestry, and absence of tracked or untracked drift across the Adaptive runtime, inherited Provider adapter, and entrypoint scripts.
 
-## Current review issue
+The shared smoke did not pass after the second and final downstream-interface repair round. No candidate freeze exists, so the validation boundary remained closed. DEV_VALIDATION schedule values and case directories were not opened.
 
-The earlier three 12-case attempts remain preserved as pre-fix Initial Diagnosis interface failures and do not count as DESIGN candidates. The bounded repair introduced `InitialDiagnosisInput`, removed `canonical_evidence` from the Provider envelope, derived visible services and evidence references from that same envelope, and added safe field-specific `INITIAL_*` validation codes.
+## Preserved execution history
 
-In the new candidate-1 r1 shared smoke, all 12 runs completed Initial Diagnosis with zero `INITIAL_*` failures. Seven completed end to end. Four stopped at Logs Specialist output validation and one stopped at Fusion output validation, each with `PROVIDER_OUTPUT_INVALID_SCHEMA`; there were zero transport or semantic retries and zero private-path hits.
+The evidence chain remains append-only:
 
-The authorized r2 path applies only to a precise shared Initial Diagnosis interface code, which was not observed. The next review should decide whether to authorize a separately bounded repair of the downstream Logs Specialist and Fusion Provider-output schemas. The shared-smoke gate must remain unchanged, prior execution identifiers must not be reused, and DEV_VALIDATION must remain closed until a candidate passes that gate.
+1. Three pre-fix labels produced 36/36 Initial Diagnosis `INVALID_SCHEMA`; these are not DESIGN candidates.
+2. Initial-interface-fix r1 completed Initial Diagnosis in 12/12 cases, but only 7/12 completed end to end; four Logs and one Fusion output failures were still generic.
+3. Downstream-fix r1 introduced the shared Specialist/Fusion authority and exact codes; 5/12 completed, while seven Logs operations ended with `SPECIALIST_EVIDENCE_REF_NOT_VISIBLE`.
+4. Downstream-fix r2 removed the conflicting non-authoritative Initial ref vocabulary from Specialist input; 11/12 completed, while one Fusion operation ended with `FUSION_OVERLAPPING_EVIDENCE_REF`.
+
+All older terminal and sidecar aggregates were rehashed unchanged, and every new round used a distinct run domain and private root.
+
+## Review disposition
+
+The two-round downstream-interface repair allowance is exhausted. The unchanged smoke gate forbids continuing to DESIGN, candidate selection, candidate freeze, or DEV_VALIDATION. Human review may assess whether the remaining Fusion overlap warrants a future separately authorized version, but this task must not run a third `single-first-adaptive-v1` repair, reuse consumed IDs, or characterize the smoke as an accuracy result.

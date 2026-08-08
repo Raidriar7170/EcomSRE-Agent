@@ -1,14 +1,14 @@
 {
   "schema_version": "rcaeval-single-first-adaptive.public-result.v1",
   "evaluation_version": "single-first-adaptive-v1",
-  "claim_boundary": "DEVELOPMENT_VISIBLE_DESIGN_NOT_EXTERNAL_HOLDOUT",
-  "implementation_git_sha": "43cf03d88739e268ed49e01b6f4779aef87acb64",
+  "claim_boundary": "DEVELOPMENT_VISIBLE_SHARED_SMOKE_NOT_DESIGN_OR_EXTERNAL_HOLDOUT",
+  "implementation_git_sha": "3ced2fec8dcaf2e37f97b3fb9b84745f5ec51274",
   "config_sha256": {
     "agent": "4efced9ff8c202bd48878901a2a0e7e674aa0ff8404048b66947d942011e6a02",
-    "evaluation": "1bee06b459ad2a2b6b3fd122f4d58cbaaf8322a6e7690cc01e053e8aa52d4bd5",
+    "evaluation": "317ba4cbdfddc1fb7ef550d199bc218a8bddbfc19f4d6ddbffeee75f27403cf9",
     "model_lock": "c77e34d33f8662ac056055dc456e4be37524d7742f5a2b380f78dd816886b3ff"
   },
-  "pre_fix_interface_failure": {
+  "pre_fix_initial_interface_failure": {
     "candidates": 3,
     "scheduled": 36,
     "terminalized": 36,
@@ -18,41 +18,26 @@
     "design_eligible": false,
     "excluded_from_candidate_selection": true,
     "terminals_preserved": true,
-    "old_execution_identifiers_reused": false
-  },
-  "interface_repair": {
-    "run_domain": "single-first-adaptive-v1-interface-fix-r1",
-    "new_input_contract": "InitialDiagnosisInput",
-    "full_architecture_context_sent": false,
-    "canonical_evidence_sent": false,
-    "visible_services_source": "same InitialDiagnosisInput provider envelope",
-    "visible_evidence_refs_source": "same InitialDiagnosisInput provider envelope",
-    "prompt_requires_verbatim_visible_values": true,
-    "safe_failure_codes": [
-      "INITIAL_JSON_OR_SCHEMA_INVALID",
-      "INITIAL_SERVICE_NOT_VISIBLE",
-      "INITIAL_EVIDENCE_REF_NOT_VISIBLE",
-      "INITIAL_DUPLICATE_EVIDENCE_REF",
-      "INITIAL_UNCERTAINTY_FLAG_INVALID"
+    "sidecars_preserved": true,
+    "old_execution_identifiers_reused": false,
+    "terminal_aggregate_sha256": [
+      "d54425e492166e633703c3b84f5907c9f57ce6269ecc51f1603bcfe86aadde86",
+      "3640482694a51dc95e003d77892b8d0892b82d5726eb001480f20ac216bdc1ed",
+      "a81fec9cbfd47d282ac3b3093964a286b0665d8b5ae2999e4993da448b1d0b4d"
     ],
-    "raw_invalid_values_persisted": false,
-    "new_old_id_overlap": 0
+    "sidecar_aggregate_sha256": [
+      "eb35189e5a67ea07ccc965422d45d4bb2f8127c30ca9053f54353f72b1c4b86d",
+      "c4eca62b25c4773698c0e4b1faebb19047813dcc27dafa0470a43f39a53ed949",
+      "a3e94ef1e7113236c0cec51f2f38324f372e9b31432be468463716389a1808cb"
+    ]
   },
-  "shared_smoke": {
-    "candidate_id": "candidate-1",
-    "repair_rounds_used": 1,
+  "initial_interface_fix_r1_downstream_failure": {
+    "run_domain": "single-first-adaptive-v1-interface-fix-r1",
     "scheduled": 12,
     "terminalized": 12,
+    "initial_diagnosis_completed": 12,
     "completed": 7,
     "invalid_schema": 5,
-    "initial_diagnosis_completed": 12,
-    "initial_failure_code_counts": {
-      "INITIAL_JSON_OR_SCHEMA_INVALID": 0,
-      "INITIAL_SERVICE_NOT_VISIBLE": 0,
-      "INITIAL_EVIDENCE_REF_NOT_VISIBLE": 0,
-      "INITIAL_DUPLICATE_EVIDENCE_REF": 0,
-      "INITIAL_UNCERTAINTY_FLAG_INVALID": 0
-    },
     "downstream_failure_code_counts": {
       "PROVIDER_OUTPUT_INVALID_SCHEMA": 5
     },
@@ -65,10 +50,114 @@
     "semantic_retries": 0,
     "private_path_hits": 0,
     "conservative_token_upper_bound": 53069,
+    "terminal_aggregate_sha256": "75745728f1678683e55a3d7b0b2183fbb6c5bc503d6db3ab7d6945b0152cfaa9",
+    "sidecar_aggregate_sha256": "0db58fa1a153f58329bcdb633c21d3ea0826331f32e99d67910a81a9ec5e2307",
+    "preserved": true
+  },
+  "downstream_interface_repair": {
+    "repair_round_limit": 2,
+    "repair_rounds_used": 2,
+    "specialist_input_contract": "one source-isolated SpecialistInput with one visible service/ref authority",
+    "fusion_input_contract": "one architecture-blind FusionInput with explicit visible services, refs, and override candidates",
+    "provider_only_output_simplification": true,
+    "runtime_authoritative_specialist_source": true,
+    "deterministic_normalization": [
+      "service trim and casefold",
+      "indicator trim and casefold",
+      "integer score and confidence to float",
+      "reason-code stable dedup"
+    ],
+    "specialist_safe_failure_codes": [
+      "SPECIALIST_JSON_OR_SCHEMA_INVALID",
+      "SPECIALIST_BATCH_SOURCE_MISMATCH",
+      "SPECIALIST_SERVICE_NOT_VISIBLE",
+      "SPECIALIST_EVIDENCE_REF_NOT_VISIBLE",
+      "SPECIALIST_DUPLICATE_EVIDENCE_REF",
+      "SPECIALIST_OVERLAPPING_EVIDENCE_REF",
+      "SPECIALIST_HYPOTHESIS_COUNT_INVALID",
+      "SPECIALIST_SCORE_INVALID",
+      "SPECIALIST_CAUSAL_ROLE_INVALID"
+    ],
+    "fusion_safe_failure_codes": [
+      "FUSION_JSON_OR_SCHEMA_INVALID",
+      "FUSION_SERVICE_NOT_SUPPORTED",
+      "FUSION_EVIDENCE_REF_NOT_VISIBLE",
+      "FUSION_ACTION_SERVICE_INCONSISTENT",
+      "FUSION_OVERRIDE_LACKS_CONTRADICTION",
+      "FUSION_DUPLICATE_EVIDENCE_REF",
+      "FUSION_OVERLAPPING_EVIDENCE_REF",
+      "FUSION_REASON_CODE_INVALID"
+    ],
+    "raw_invalid_values_persisted": false,
+    "new_old_id_overlap": 0,
+    "rounds": [
+      {
+        "round": "downstream-fix-r1",
+        "implementation_git_sha": "6e61f3a4d289a4ac89b883080ae8c2bed309b7cd",
+        "run_domain": "single-first-adaptive-v1-downstream-fix-r1",
+        "scheduled": 12,
+        "terminalized": 12,
+        "initial_diagnosis_completed": 12,
+        "completed": 5,
+        "invalid_schema": 7,
+        "failure_code_counts": {
+          "SPECIALIST_EVIDENCE_REF_NOT_VISIBLE": 7
+        },
+        "provider_attempts": 28,
+        "transport_retries": 1,
+        "semantic_retries": 0,
+        "private_path_hits": 0,
+        "conservative_token_upper_bound": 78434,
+        "terminal_aggregate_sha256": "f1689af57f3b514d86b640a0644233eb3560b5850404197bba13c53d401cbc44",
+        "sidecar_aggregate_sha256": "1422b45fedb6b135e077ac9ffe56b7c5bd8d69c98f462fde216d76e30e8863fe",
+        "gate_passed": false,
+        "preserved": true
+      },
+      {
+        "round": "downstream-fix-r2",
+        "implementation_git_sha": "3ced2fec8dcaf2e37f97b3fb9b84745f5ec51274",
+        "run_domain": "single-first-adaptive-v1-downstream-fix-r2",
+        "scheduled": 12,
+        "terminalized": 12,
+        "initial_diagnosis_completed": 12,
+        "completed": 11,
+        "invalid_schema": 1,
+        "failure_code_counts": {
+          "FUSION_OVERLAPPING_EVIDENCE_REF": 1
+        },
+        "provider_attempts": 34,
+        "transport_retries": 0,
+        "semantic_retries": 0,
+        "private_path_hits": 0,
+        "conservative_token_upper_bound": 60962,
+        "terminal_aggregate_sha256": "ec6765cd89c71a325642bcf1d7613b6b6703d18efb666b19ee683f45f895f44b",
+        "sidecar_aggregate_sha256": "901977efef759d747eca49a5d789bdb8923380a1615a7d145b90f34c452ae645",
+        "gate_passed": false,
+        "preserved": true
+      }
+    ]
+  },
+  "shared_smoke": {
+    "candidate_id": "candidate-1",
+    "run_domain": "single-first-adaptive-v1-downstream-fix-r2",
+    "repair_rounds_used": 2,
+    "scheduled": 12,
+    "terminalized": 12,
+    "initial_diagnosis_completed": 12,
+    "completed": 11,
+    "invalid_schema": 1,
+    "initial_failure_count": 0,
+    "specialist_failure_count": 0,
+    "fusion_failure_code_counts": {
+      "FUSION_OVERLAPPING_EVIDENCE_REF": 1
+    },
+    "provider_attempts": 34,
+    "transport_retries": 0,
+    "semantic_retries": 0,
+    "private_path_hits": 0,
+    "conservative_token_upper_bound": 60962,
     "budget_passed": true,
-    "gate_passed": false,
-    "r2_executed": false,
-    "r2_reason": "No precise shared Initial Diagnosis interface failure code was observed; the remaining failures were downstream generic output-schema failures."
+    "gate_passed": false
   },
   "design_candidates": [],
   "design": {
@@ -76,7 +165,7 @@
     "iterations_used": 0,
     "historical_strong_single_baseline_root_service_correct": 51,
     "historical_strong_single_baseline_pair_correct": 29,
-    "reason": "SHARED_SMOKE_NOT_PASSED"
+    "reason": "SHARED_SMOKE_NOT_PASSED_AFTER_TWO_DOWNSTREAM_INTERFACE_REPAIR_ROUNDS"
   },
   "selected_candidate": null,
   "candidate_freeze": {
@@ -89,7 +178,7 @@
     "reruns": 0,
     "validation_driven_changes": false
   },
-  "final_state": "BLOCKED",
-  "blocked_reason_code": "SHARED_SMOKE_DOWNSTREAM_SCHEMA_FAILURE_OUTSIDE_R2_INITIAL_INTERFACE_SCOPE",
-  "disposition_note": "The Initial Diagnosis repair itself completed all 12 smoke cases. The continuation is blocked before DESIGN because the shared smoke exposed downstream Logs Specialist and Fusion output-schema failures that do not qualify for the single authorized r2 Initial Interface repair."
+  "final_state": "SINGLE_FIRST_ADAPTIVE_V1_DOWNSTREAM_INTERFACE_BLOCKED_READY_FOR_REVIEW",
+  "blocked_reason_code": "DOWNSTREAM_INTERFACE_REPAIR_ROUND_LIMIT_EXHAUSTED",
+  "disposition_note": "The second and final shared downstream-interface smoke terminalized all 12 cases but retained one Fusion overlap failure. The unchanged gate therefore blocks DESIGN, candidate freeze, and DEV_VALIDATION."
 }
