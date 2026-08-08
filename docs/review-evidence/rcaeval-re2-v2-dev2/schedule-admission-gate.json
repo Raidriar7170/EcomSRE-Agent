@@ -1,0 +1,41 @@
+{
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "DESIGN_SET",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "design": {
+    "admitted": 360,
+    "rejected": 0
+  },
+  "dev_validation_metadata": {
+    "admitted": 480,
+    "rejected": 0,
+    "values_accessed": false
+  },
+  "old_new_overlap_count": 0,
+  "operation_attempts_created": 0,
+  "protocol_id": "rcaeval-re2-v2-dev.2",
+  "provider_calls": 0,
+  "provider_objects_constructed": 0,
+  "run_attempts_created": 0,
+  "schedule_admission_lock_sha256": "01db23682cea140e6b60e6f29ee5932eee1e247078b0a8c37c4c38bf34ca9e02",
+  "schema_version": "rcaeval-re2-v2-dev2.schedule-admission-gate.v1",
+  "smoke": {
+    "admitted": 72,
+    "rejected": 0
+  },
+  "state": "V2_DEV2_ADMISSION_REHEARSAL_PASSED",
+  "v1_contract_construction": {
+    "admitted": 216,
+    "call_position_max": 3,
+    "call_position_min": 1
+  },
+  "v1_external_schedule_sha256": "4c2834dc4a1ab4d4396b5f5671fd46916143ecea4b54f5d0db06bfb93596087c",
+  "v2_contract_construction": {
+    "admitted": 216,
+    "family_position_max": 3,
+    "family_position_min": 1
+  }
+}

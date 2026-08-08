@@ -1,0 +1,11 @@
+{
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "DESIGN_SET",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "protocol_id": "rcaeval-re2-v2-dev.2",
+  "schema_version": "rcaeval-re2-v2-dev2.design-gate.v1",
+  "state": "NOT_RUN_DUE_TO_SMOKE_GATE"
+}
