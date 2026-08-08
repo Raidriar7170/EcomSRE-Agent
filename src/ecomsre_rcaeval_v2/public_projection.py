@@ -17,8 +17,13 @@ _FORBIDDEN_KEYS = {
     "openai_api_key",
     "provider_base_url",
     "raw_response",
+    "raw_request",
     "raw_provider_response",
+    "raw_provider_request",
     "raw_function_call",
+    "endpoint",
+    "provider_endpoint",
+    "request_url",
     "case_id",
     "run_id",
     "instance",
@@ -32,6 +37,8 @@ _FORBIDDEN_TEXT = (
     "scored_cases",
     "ground-truth.json",
     "evaluator-only",
+    "raw request",
+    "raw response",
 )
 _PRIVATE_PATH = re.compile(r"(?:^|[\s='\"])/(?:users|home|private)/", re.IGNORECASE)
 

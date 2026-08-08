@@ -9,7 +9,9 @@ on:
       - "config/rcaeval-re2-v2-dev/**"
       - "config/rcaeval-re2-v2-dev1/**"
       - "config/rcaeval-re2-v2-dev2/**"
+      - "config/rcaeval-re2-v2-dev3/**"
       - "docs/**/rcaeval-re2-v2-dev*"
+      - "docs/design/rcaeval-agent-redesign-handoff.md"
       - ".github/workflows/rcaeval-v2-dev.yml"
 
 permissions:
@@ -46,3 +48,16 @@ jobs:
           docs/review-evidence/rcaeval-re2-v2-dev2/provider-smoke-gate.json
           docs/review-evidence/rcaeval-re2-v2-dev2/design-gate.json
           docs/review-evidence/rcaeval-re2-v2-dev2/human-brief.md
+          docs/external-benchmarks/rcaeval-re2-v2-dev3-protocol.md
+          docs/external-benchmarks/rcaeval-re2-v2-dev3-data-card.md
+          docs/results/rcaeval-re2-v2-dev3-smoke-aggregate.json
+          docs/results/rcaeval-re2-v2-dev3-design-aggregate.json
+          docs/results/rcaeval-re2-v2-dev3-summary.md
+          docs/results/rcaeval-re2-v2-dev3-final-infrastructure-limit.md
+          docs/review-evidence/rcaeval-re2-v2-dev3/current-disposition.json
+          docs/review-evidence/rcaeval-re2-v2-dev3/provider-failure-audit.json
+          docs/review-evidence/rcaeval-re2-v2-dev3/schedule-admission-gate.json
+          docs/review-evidence/rcaeval-re2-v2-dev3/provider-smoke-gate.json
+          docs/review-evidence/rcaeval-re2-v2-dev3/design-gate.json
+          docs/review-evidence/rcaeval-re2-v2-dev3/human-brief.md
+          docs/design/rcaeval-agent-redesign-handoff.md
