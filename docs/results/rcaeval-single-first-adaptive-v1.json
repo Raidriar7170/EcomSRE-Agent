@@ -1,11 +1,11 @@
 {
   "schema_version": "rcaeval-single-first-adaptive.public-result.v1",
   "evaluation_version": "single-first-adaptive-v1",
-  "claim_boundary": "DEVELOPMENT_VISIBLE_SHARED_SMOKE_NOT_DESIGN_OR_EXTERNAL_HOLDOUT",
-  "implementation_git_sha": "3ced2fec8dcaf2e37f97b3fb9b84745f5ec51274",
+  "claim_boundary": "DEVELOPMENT_VISIBLE_DEV_VALIDATION_NOT_EXTERNAL_HOLDOUT",
+  "implementation_git_sha": "28d219b868aa4cf5a058dd87fe9449cd0cc81074",
   "config_sha256": {
-    "agent": "4efced9ff8c202bd48878901a2a0e7e674aa0ff8404048b66947d942011e6a02",
-    "evaluation": "317ba4cbdfddc1fb7ef550d199bc218a8bddbfc19f4d6ddbffeee75f27403cf9",
+    "agent": "de4fc5bfd1bacdd34d00ef78bef357b5d0a27e088df9a2669f8dca682e143604",
+    "evaluation": "d6651c3e49a289ce8ed16f189d58b9885d9c4147bccf41c1b581e4e85c271465",
     "model_lock": "c77e34d33f8662ac056055dc456e4be37524d7742f5a2b380f78dd816886b3ff"
   },
   "pre_fix_initial_interface_failure": {
@@ -137,48 +137,291 @@
       }
     ]
   },
+  "fusion_overlap_guardrail_patch": {
+    "implementation_git_sha": "10c2dec2f1df30151471a9ca070020e602beb95f",
+    "run_domain": "single-first-adaptive-v1-fusion-guardrail-r1",
+    "provider_facing_proposal_accepts_overlap": true,
+    "internal_fusion_decision_disjoint_invariant_changed": false,
+    "materialization_order": [
+      "json and schema",
+      "stable normalization",
+      "visible evidence check",
+      "service and action check",
+      "overlap-only deterministic keep"
+    ],
+    "overlap_action": "KEEP_INITIAL",
+    "guardrail_reason_code": "OVERLAPPING_EVIDENCE_REJECTED_KEEP_INITIAL",
+    "guardrail_keep_uses_initial_authority": true,
+    "guardrail_contradicting_evidence_refs": [],
+    "unknown_reference_fallback": false,
+    "unsupported_service_fallback": false,
+    "construction_failure_code": "FUSION_RUNTIME_GUARDRAIL_CONSTRUCTION_FAILED",
+    "second_provider_call": false,
+    "private_trace_fields": [
+      "fusion_guardrail_applied",
+      "fusion_guardrail_reason",
+      "overlap_count"
+    ],
+    "public_aggregate_field": "fusion_overlap_guardrail_count"
+  },
   "shared_smoke": {
     "candidate_id": "candidate-1",
-    "run_domain": "single-first-adaptive-v1-downstream-fix-r2",
-    "repair_rounds_used": 2,
+    "run_domain": "single-first-adaptive-v1-fusion-guardrail-r1",
     "scheduled": 12,
     "terminalized": 12,
-    "initial_diagnosis_completed": 12,
-    "completed": 11,
-    "invalid_schema": 1,
+    "completed": 12,
     "initial_failure_count": 0,
     "specialist_failure_count": 0,
-    "fusion_failure_code_counts": {
-      "FUSION_OVERLAPPING_EVIDENCE_REF": 1
-    },
+    "fusion_terminal_failure_count": 0,
+    "fusion_overlap_guardrail_count": 0,
     "provider_attempts": 34,
     "transport_retries": 0,
     "semantic_retries": 0,
     "private_path_hits": 0,
-    "conservative_token_upper_bound": 60962,
+    "conservative_token_upper_bound": 61895,
     "budget_passed": true,
-    "gate_passed": false
+    "gate_passed": true,
+    "post_smoke_terminal_aggregate_sha256": "dff2d8b6da3e9fe55d2135b98e4da618a42f7a0529c215c326f0594ce878f76f",
+    "post_smoke_sidecar_aggregate_sha256": "8684a499137f9778fac0a45cb1b8c53763ea9f7a321cf3783eee306c29024ef4"
   },
-  "design_candidates": [],
+  "design_candidates": [
+    {
+      "candidate_id": "candidate-1",
+      "minimum_gate_passed": false,
+      "root_service_correct": 55,
+      "pair_correct": 33,
+      "completed": 57,
+      "damage": 3,
+      "rescue": 7,
+      "net_rescue": 4,
+      "route_distribution": {
+        "DIRECT_RETURN": 1,
+        "ESCALATE_LOGS": 51,
+        "ESCALATE_TRACES": 4,
+        "ESCALATE_BOTH": 4
+      },
+      "mean_semantic_operations": 3.033333333333333,
+      "provider_attempts": 176,
+      "transport_retries": 0,
+      "known_token_lower_bound": 320236,
+      "conservative_token_upper_bound": 320236,
+      "mean_latency_ms": 8322.388386101617,
+      "fusion_overlap_guardrail_count": 1,
+      "correct_overrides": 0,
+      "wrong_overrides": 0,
+      "rejected_unsafe_overrides": 1,
+      "terminal_status_counts": {
+        "COMPLETED": 57,
+        "INVALID_SCHEMA": 1,
+        "PROVIDER_FAILURE": 2
+      },
+      "failure_code_counts": {
+        "SPECIALIST_JSON_OR_SCHEMA_INVALID": 1,
+        "UNKNOWN_ADAPTIVE_FAILURE": 2
+      },
+      "design_aggregate_sha256": "1b392ef6966d96240ff368870d1457b47dc375b1238190b63a3984e95dbcd2c6",
+      "terminal_aggregate_sha256": "bfcbb1e45298b14a4fd283918494d73ab497de23bbb3965d673577691364689c",
+      "sidecar_aggregate_sha256": "c23e28bf1dcbc3e31a336442e2f2148ec962109799975d70da263ed88e3d2219"
+    },
+    {
+      "candidate_id": "candidate-2",
+      "minimum_gate_passed": false,
+      "root_service_correct": 56,
+      "pair_correct": 32,
+      "completed": 59,
+      "damage": 3,
+      "rescue": 6,
+      "net_rescue": 3,
+      "route_distribution": {
+        "DIRECT_RETURN": 32,
+        "ESCALATE_LOGS": 23,
+        "ESCALATE_TRACES": 3,
+        "ESCALATE_BOTH": 2
+      },
+      "mean_semantic_operations": 1.9666666666666666,
+      "provider_attempts": 116,
+      "transport_retries": 0,
+      "known_token_lower_bound": 208424,
+      "conservative_token_upper_bound": 208424,
+      "mean_latency_ms": 5559.109537610008,
+      "fusion_overlap_guardrail_count": 1,
+      "correct_overrides": 0,
+      "wrong_overrides": 0,
+      "rejected_unsafe_overrides": 1,
+      "terminal_status_counts": {
+        "COMPLETED": 59,
+        "INVALID_SCHEMA": 1
+      },
+      "failure_code_counts": {
+        "SPECIALIST_OVERLAPPING_EVIDENCE_REF": 1
+      },
+      "design_aggregate_sha256": "06a43e221524232a2a8eba4a2b678e7efc07006fa53107bdafae1e8dd1c24842",
+      "terminal_aggregate_sha256": "fd37b6f0b0199dc5fdc96a237eddf9949189846309203b6105ce5fd5b7f813f6",
+      "sidecar_aggregate_sha256": "2ed67dd80a65ccf4135b1d90b1598952ddbb1b8c32d4876cdb6548620b45548f"
+    },
+    {
+      "candidate_id": "candidate-3",
+      "minimum_gate_passed": true,
+      "root_service_correct": 57,
+      "pair_correct": 33,
+      "completed": 60,
+      "damage": 2,
+      "rescue": 6,
+      "net_rescue": 4,
+      "route_distribution": {
+        "DIRECT_RETURN": 35,
+        "ESCALATE_LOGS": 20,
+        "ESCALATE_TRACES": 4,
+        "ESCALATE_BOTH": 1
+      },
+      "mean_semantic_operations": 1.85,
+      "provider_attempts": 111,
+      "transport_retries": 0,
+      "known_token_lower_bound": 199128,
+      "conservative_token_upper_bound": 199128,
+      "mean_latency_ms": 5224.180812578804,
+      "fusion_overlap_guardrail_count": 0,
+      "correct_overrides": 0,
+      "wrong_overrides": 0,
+      "rejected_unsafe_overrides": 0,
+      "terminal_status_counts": {
+        "COMPLETED": 60
+      },
+      "failure_code_counts": {},
+      "design_aggregate_sha256": "4776948443c9c34eaa3248cc17809f0d7a78bd055d0cc6f59dee947d3e841b9f",
+      "terminal_aggregate_sha256": "e32055d1f313a07252b0c002683d33bb8e12e0b7fc9d703c75cc15efe9b8d366",
+      "sidecar_aggregate_sha256": "645fbfbd1df736a7755d2a7c3259e1db1215b8b20b106a0465f297753fe42e69"
+    }
+  ],
   "design": {
-    "executed": false,
-    "iterations_used": 0,
+    "executed": true,
+    "iterations_used": 3,
     "historical_strong_single_baseline_root_service_correct": 51,
     "historical_strong_single_baseline_pair_correct": 29,
-    "reason": "SHARED_SMOKE_NOT_PASSED_AFTER_TWO_DOWNSTREAM_INTERFACE_REPAIR_ROUNDS"
+    "selected_candidate_id": "candidate-3",
+    "selection_reason": "only candidate passing the unchanged minimum gate"
   },
-  "selected_candidate": null,
+  "selected_candidate": {
+    "candidate_id": "candidate-3",
+    "implementation_git_sha": "28d219b868aa4cf5a058dd87fe9449cd0cc81074",
+    "agent_config_sha256": "de4fc5bfd1bacdd34d00ef78bef357b5d0a27e088df9a2669f8dca682e143604",
+    "candidate_config_sha256": "f0f6b38794230dd4bb7689564e3c2f2e58a8ad03fa8830a69697299008ef22d1",
+    "prompt_sha256": {
+      "initial": "853b9cf16c7f0ad03947f4e913427dd0c619390e6300126dd290166d9968dfdb",
+      "logs_specialist": "8e06b36a10f533c9493c5c4e96522bc95bfe218bd597fea796489a642f979191",
+      "traces_specialist": "9e24c3607769bd5313b28ae76182baa7e1b3b61ac8e8c22958dc68f1c6570f87",
+      "fusion": "c624d9343420681739b37840e50096ef8d9175a345ccde507f285f262ed9025f"
+    }
+  },
   "candidate_freeze": {
-    "created": false
+    "created": true,
+    "candidate_id": "candidate-3",
+    "implementation_git_sha": "28d219b868aa4cf5a058dd87fe9449cd0cc81074",
+    "freeze_git_sha": "f8d046449b71a683a29a8940fb83bd3d32ef919c",
+    "freeze_file_sha256": "1761d7c61657ee0a86671d10c6fe9c1e6e65562b13988c10b709c0733c69faec",
+    "loader_verified": true,
+    "runtime_changed_after_freeze": false
   },
   "dev_validation": {
-    "executed": false,
-    "schedule_values_accessed": false,
-    "validation_case_directories_opened": false,
+    "executed": true,
+    "schedule_values_accessed_after_freeze": true,
+    "validation_case_directories_opened_after_freeze": true,
+    "scheduled_per_variant": 120,
+    "variants": 2,
+    "terminalized": 240,
+    "strong_single_reference": {
+      "completed": 120,
+      "root_service_correct": 99,
+      "pair_correct": 55,
+      "terminal_aggregate_sha256": "f0ffce9e1a862a6673c60753e647e15296fc9ada0fecc197371dde09a4e08bf3",
+      "sidecar_aggregate_sha256": "f32363e31b5b88b7142a96fb74083f37fd6c9ee171ac6cd04a95c3a6cf7d07ea"
+    },
+    "adaptive": {
+      "completed": 55,
+      "provider_failure": 65,
+      "provider_failure_code_counts": {
+        "HTTP_429": 65
+      },
+      "provider_failure_class_counts": {
+        "ALLOWLISTED_TRANSPORT_TRANSIENT": 65
+      },
+      "provider_failure_stage_counts": {
+        "PROVIDER_CALL": 65
+      },
+      "root_service_correct": 51,
+      "pair_correct": 31,
+      "damage": 31,
+      "rescue": 7,
+      "net_rescue": -24,
+      "zero_escalation": 30,
+      "escalation_precision": {
+        "numerator": 68,
+        "denominator": 90,
+        "value": 0.7555555555555555
+      },
+      "escalation_recall": {
+        "numerator": 68,
+        "denominator": 69,
+        "value": 0.9855072463768116
+      },
+      "route_distribution": {
+        "DIRECT_RETURN": 30,
+        "ESCALATE_LOGS": 22,
+        "ESCALATE_TRACES": 2,
+        "ESCALATE_BOTH": 66
+      },
+      "mean_tools": 0.9416666666666667,
+      "mean_semantic_operations": 3.05,
+      "provider_attempts": 237,
+      "transport_retries": 65,
+      "known_token_lower_bound": 190786,
+      "conservative_token_upper_bound": 4350786,
+      "mean_latency_ms": 5261.6004913269235,
+      "fusion_overlap_guardrail_count": 0,
+      "correct_overrides": 0,
+      "wrong_overrides": 0,
+      "rejected_unsafe_overrides": 0,
+      "terminal_aggregate_sha256": "2071bbfdac0007d9faab295b481a91e1286461d8f15d19efc2d1f4d26994454e",
+      "sidecar_aggregate_sha256": "37ec99426e7cfada42e7ffce6968afe2dfb752a0ae6ea903f3fca161c1896d3a"
+    },
+    "root_difference": {
+      "point_estimate": -0.4,
+      "lower_95": -0.5833333333333334,
+      "upper_95": -0.21666666666666667,
+      "iterations": 10000,
+      "seed": 20260807
+    },
+    "pair_difference": {
+      "point_estimate": -0.2,
+      "lower_95": -0.35833333333333334,
+      "upper_95": -0.058333333333333334,
+      "iterations": 10000,
+      "seed": 20260807
+    },
+    "positive_result": false,
+    "entrypoint_finalization_error": "BOOTSTRAP_INTERVAL_SLOTS_NO_DICT",
+    "terminal_only_finalizer": {
+      "used": true,
+      "provider_calls": 0,
+      "new_execution_identifiers": 0,
+      "tracked_runtime_changes": 0
+    },
+    "validation_aggregate_sha256": "724c0a8046fb40b29d9910061d8412f8b73ae994ebbb2be9afefb55d8a2b86c1",
+    "validation_outcomes_sha256": "d7489a436238722caac5d013f008e27042630858fedf5fd01f65f8465cf5b99c",
     "reruns": 0,
     "validation_driven_changes": false
   },
-  "final_state": "SINGLE_FIRST_ADAPTIVE_V1_DOWNSTREAM_INTERFACE_BLOCKED_READY_FOR_REVIEW",
-  "blocked_reason_code": "DOWNSTREAM_INTERFACE_REPAIR_ROUND_LIMIT_EXHAUSTED",
-  "disposition_note": "The second and final shared downstream-interface smoke terminalized all 12 cases but retained one Fusion overlap failure. The unchanged gate therefore blocks DESIGN, candidate freeze, and DEV_VALIDATION."
+  "data_boundary": {
+    "re2_ob_validation_cases": 60,
+    "re2_ss_validation_cases": 60,
+    "design_validation_identity_overlap": 0,
+    "validation_opened_before_freeze": false,
+    "re2_tt_accessed": false,
+    "external_holdout_accessed": false
+  },
+  "historical_evidence_rehashed_unchanged": true,
+  "old_execution_identifiers_reused": false,
+  "final_state": "SINGLE_FIRST_ADAPTIVE_V1_VALIDATION_COMPLETE_NEGATIVE_RESULT_READY_FOR_REVIEW",
+  "blocked_reason_code": null,
+  "disposition_note": "The selected candidate passed DESIGN and was frozen before validation. The one-shot 240-run DEV_VALIDATION terminalized completely, but 65 Adaptive runs ended in retained HTTP 429 provider failures. Fixed-denominator accuracy and paired confidence intervals therefore do not support an improvement claim. The result is negative and provider-failure-contaminated, not an external-holdout result."
 }
