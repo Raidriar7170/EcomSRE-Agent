@@ -20,6 +20,8 @@ from ecomsre_rcaeval_adaptive.contracts import (
     SpecialistInput,
 )
 from ecomsre_rcaeval_adaptive.specialists import (
+    LOGS_PROMPT,
+    TRACES_PROMPT,
     InitialOutputValidationError,
     OpenAICompatibleAdaptiveProvider,
     SpecialistOutputValidationError,
@@ -184,6 +186,12 @@ def _hypothesis(*, source: str = "logs", evidence_ref: str = "log:0001"):
             "source": source,
         }
     )
+
+
+@pytest.mark.parametrize("prompt", (LOGS_PROMPT, TRACES_PROMPT))
+def test_specialist_prompts_prohibit_overlapping_evidence_roles(prompt: str) -> None:
+    assert "must not overlap" in prompt
+    assert "exactly one evidence role" in prompt
 
 
 def test_specialist_returns_one_to_three_hypotheses() -> None:

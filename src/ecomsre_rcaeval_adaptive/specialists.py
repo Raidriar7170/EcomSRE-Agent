@@ -70,7 +70,10 @@ LOGS_PROMPT = (
     "Do not emit a final diagnosis. Copy service only from visible_services and "
     "evidence references only from visible_evidence_refs. causal_role must be "
     "ROOT_CANDIDATE, PROPAGATED_SYMPTOM, or UNCERTAIN. Return hypotheses only; "
-    "the Runtime owns source and the Provider must not guess or repeat it."
+    "supporting_evidence_refs and contradicting_evidence_refs must not overlap. "
+    "Assign each cited reference to exactly one evidence role; if its role is "
+    "ambiguous, omit it. The Runtime owns source and the Provider must not guess "
+    "or repeat it."
 )
 TRACES_PROMPT = (
     "Act as a selective Trace Causal Specialist. Return one to three ranked "
@@ -79,7 +82,10 @@ TRACES_PROMPT = (
     "only from visible_services and evidence references only from "
     "visible_evidence_refs. causal_role must be ROOT_CANDIDATE, "
     "PROPAGATED_SYMPTOM, or UNCERTAIN. Return hypotheses only; the Runtime owns "
-    "source and the Provider must not guess or repeat it."
+    "source and the Provider must not guess or repeat it. "
+    "supporting_evidence_refs and contradicting_evidence_refs must not overlap. "
+    "Assign each cited reference to exactly one evidence role; if its role is "
+    "ambiguous, omit it."
 )
 
 
