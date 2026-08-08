@@ -149,6 +149,14 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     initial_failure_count = sum(
         failure_code_counts[code.value] for code in InitialFailureCode
     )
+    fusion_overlap_guardrail_count = sum(
+        terminal.result is not None
+        and any(
+            trace.fusion_guardrail_applied
+            for trace in terminal.result.operation_trace
+        )
+        for terminal in terminals
+    )
     attempts = sum(item.attempt_accounting.provider_attempt_count for item in terminals)
     retries = sum(item.attempt_accounting.retry_attempt_count for item in terminals)
     upper = sum(
@@ -163,6 +171,7 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         "terminalized": len(terminals),
         "status_counts": status_counts,
         "failure_code_counts": dict(sorted(failure_code_counts.items())),
+        "fusion_overlap_guardrail_count": fusion_overlap_guardrail_count,
         "semantic_retries": 0,
         "smoke_identity_sha256": sorted(
             hashlib.sha256(case_identity_bytes(identity)).hexdigest()

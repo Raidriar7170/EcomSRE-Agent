@@ -115,6 +115,11 @@ class FusionFailureCode(str, Enum):
     FUSION_REASON_CODE_INVALID = "FUSION_REASON_CODE_INVALID"
 
 
+FusionGuardrailReason = Literal[
+    "OVERLAPPING_EVIDENCE_REJECTED_KEEP_INITIAL"
+]
+
+
 class InitialDiagnosisInput(V2Model):
     schema_version: Literal[
         "rcaeval-single-first-adaptive.initial-input.v1"
@@ -311,6 +316,17 @@ class RankedHypothesisBatch(V2Model):
         return self
 
 
+class ProviderFusionProposal(V2Model):
+    """Provider-facing proposal before internal cross-list safety checks."""
+
+    action: FusionAction
+    final_root_service: ServiceName
+    confidence: StrictFloat = Field(ge=0.0, le=1.0)
+    supporting_evidence_refs: tuple[str, ...] = Field(min_length=1, max_length=64)
+    contradicting_evidence_refs: tuple[str, ...] = Field(default=(), max_length=64)
+    reason_codes: tuple[str, ...] = Field(min_length=1, max_length=16)
+
+
 class FusionDecision(V2Model):
     action: FusionAction
     final_root_service: ServiceName
@@ -375,6 +391,9 @@ class AdaptiveOperationTrace(V2Model):
     source: SourceName | None
     provider_call_index: StrictInt = Field(ge=1)
     usage: ProviderUsageDelta
+    fusion_guardrail_applied: StrictBool = False
+    fusion_guardrail_reason: FusionGuardrailReason | None = None
+    overlap_count: StrictInt = Field(default=0, ge=0, le=64)
 
     @model_validator(mode="after")
     def require_role_source_consistency(self) -> AdaptiveOperationTrace:
@@ -388,6 +407,18 @@ class AdaptiveOperationTrace(V2Model):
             raise ValueError("adaptive operation role differs from source")
         if self.usage.model_calls_delta != 1:
             raise ValueError("completed adaptive operation requires one model call")
+        if self.fusion_guardrail_applied:
+            if (
+                self.role is not AdaptiveOperationRole.FUSION_JUDGE
+                or self.fusion_guardrail_reason is None
+                or self.overlap_count < 1
+            ):
+                raise ValueError("adaptive Fusion guardrail trace is incomplete")
+        elif (
+            self.fusion_guardrail_reason is not None
+            or self.overlap_count != 0
+        ):
+            raise ValueError("inactive Adaptive Fusion guardrail has trace details")
         return self
 
 

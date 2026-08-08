@@ -13,10 +13,12 @@ from ecomsre_rcaeval_adaptive.contracts import (
     FusionDecision,
     FusionFailureCode,
     InitialDiagnosis,
+    ProviderFusionProposal,
     RankedHypothesis,
 )
 from ecomsre_rcaeval_adaptive.fusion import (
     FusionInput,
+    FusionGuardrailConstructionError,
     build_fusion_request_payload,
     validate_fusion_decision,
 )
@@ -99,7 +101,7 @@ def _override_input() -> FusionInput:
 
 
 class _FusionTransport:
-    def __init__(self, arguments: Mapping[str, object]) -> None:
+    def __init__(self, arguments: Mapping[str, object] | str) -> None:
         self.arguments = arguments
         self.payload: Mapping[str, object] | None = None
 
@@ -119,7 +121,11 @@ class _FusionTransport:
                                 "type": "function",
                                 "function": {
                                     "name": function_name,
-                                    "arguments": json.dumps(self.arguments),
+                                    "arguments": (
+                                        self.arguments
+                                        if isinstance(self.arguments, str)
+                                        else json.dumps(self.arguments)
+                                    ),
                                 },
                             }
                         ],
@@ -134,7 +140,7 @@ class _FusionTransport:
         }
 
 
-def _provider(arguments: Mapping[str, object]):
+def _provider(arguments: Mapping[str, object] | str):
     transport = _FusionTransport(arguments)
     provider = OpenAICompatibleAdaptiveProvider(
         config=OpenAICompatibleConfig(
@@ -177,6 +183,9 @@ def test_fusion_provider_uses_exact_input_and_normalizes_integer_confidence() ->
     assert decision.action is FusionAction.KEEP_INITIAL
     assert decision.confidence == 1.0
     assert decision.contradicting_evidence_refs == ()
+    assert provider.last_fusion_guardrail_applied is False
+    assert provider.last_fusion_guardrail_reason is None
+    assert provider.last_fusion_guardrail_overlap_count == 0
     assert transport.payload is not None
     messages = transport.payload["messages"]
     assert isinstance(messages, list)
@@ -188,6 +197,27 @@ def test_fusion_provider_uses_exact_input_and_normalizes_integer_confidence() ->
     serialized = json.dumps(transport.payload).casefold()
     for forbidden in ("adaptive", "single", "dynamic", "variant"):
         assert forbidden not in serialized
+
+
+def test_fusion_provider_preserves_valid_non_overlap_override() -> None:
+    provider, _transport = _provider(
+        {
+            "action": "OVERRIDE_INITIAL",
+            "final_root_service": " FRONTEND ",
+            "confidence": 1,
+            "supporting_evidence_refs": ["log:0001"],
+            "contradicting_evidence_refs": ["metric:0001"],
+            "reason_codes": ["STRONG_CAUSAL_CONTRADICTION"],
+        }
+    )
+
+    decision = provider.judge(_override_input())
+
+    assert decision.action is FusionAction.OVERRIDE_INITIAL
+    assert decision.final_root_service == "frontend"
+    assert decision.supporting_evidence_refs == ("log:0001",)
+    assert decision.contradicting_evidence_refs == ("metric:0001",)
+    assert provider.last_fusion_guardrail_applied is False
 
 
 @pytest.mark.parametrize(
@@ -244,24 +274,6 @@ def test_fusion_provider_uses_exact_input_and_normalizes_integer_confidence() ->
         ),
         (
             _input(),
-            {
-                **_valid_keep_arguments(),
-                "supporting_evidence_refs": ["metric:0001", "metric:0001"],
-            },
-            FusionFailureCode.FUSION_DUPLICATE_EVIDENCE_REF,
-            "metric:0001",
-        ),
-        (
-            _input(),
-            {
-                **_valid_keep_arguments(),
-                "contradicting_evidence_refs": ["metric:0001"],
-            },
-            FusionFailureCode.FUSION_OVERLAPPING_EVIDENCE_REF,
-            "metric:0001",
-        ),
-        (
-            _input(),
             {**_valid_keep_arguments(), "reason_codes": ["not valid!"]},
             FusionFailureCode.FUSION_REASON_CODE_INVALID,
             "not valid!",
@@ -283,6 +295,125 @@ def test_fusion_exact_safe_failure_codes_do_not_persist_raw_values(
     safe = captured.value.safe_validation_error.model_dump_json()
     assert raw_value not in safe
     assert raw_value not in str(captured.value)
+
+
+def test_fusion_stably_deduplicates_refs_and_reason_codes() -> None:
+    provider, _transport = _provider(
+        {
+            **_valid_keep_arguments(),
+            "supporting_evidence_refs": ["metric:0001", "metric:0001"],
+            "reason_codes": ["DEFAULT_KEEP", "DEFAULT_KEEP"],
+        }
+    )
+
+    decision = provider.judge(_input())
+
+    assert decision.supporting_evidence_refs == ("metric:0001",)
+    assert decision.reason_codes == ("DEFAULT_KEEP",)
+    assert provider.last_fusion_guardrail_overlap_count == 0
+
+
+def test_fusion_overlap_falls_back_to_deterministic_keep_without_second_call() -> None:
+    provider, _transport = _provider(
+        {
+            "action": "OVERRIDE_INITIAL",
+            "final_root_service": "frontend",
+            "confidence": 0.95,
+            "supporting_evidence_refs": ["log:0001", "metric:0001"],
+            "contradicting_evidence_refs": ["metric:0001"],
+            "reason_codes": ["STRONG_CAUSAL_CONTRADICTION"],
+        }
+    )
+
+    decision = provider.judge(_override_input())
+
+    assert provider.calls == 1
+    assert decision.action is FusionAction.KEEP_INITIAL
+    assert decision.final_root_service == "checkoutservice"
+    assert decision.confidence == 0.7
+    assert decision.supporting_evidence_refs == ("metric:0001",)
+    assert decision.contradicting_evidence_refs == ()
+    assert decision.reason_codes == (
+        "STRONG_CAUSAL_CONTRADICTION",
+        "OVERLAPPING_EVIDENCE_REJECTED_KEEP_INITIAL",
+    )
+    assert provider.last_fusion_guardrail_applied is True
+    assert (
+        provider.last_fusion_guardrail_reason
+        == "OVERLAPPING_EVIDENCE_REJECTED_KEEP_INITIAL"
+    )
+    assert provider.last_fusion_guardrail_overlap_count == 1
+
+
+def test_fusion_unknown_overlap_ref_is_not_masked_by_guardrail() -> None:
+    provider, _transport = _provider(
+        {
+            **_valid_keep_arguments(),
+            "supporting_evidence_refs": ["not-visible-ref"],
+            "contradicting_evidence_refs": ["not-visible-ref"],
+        }
+    )
+
+    with pytest.raises(FusionOutputValidationError) as captured:
+        provider.judge(_input())
+
+    assert (
+        captured.value.failure_code
+        is FusionFailureCode.FUSION_EVIDENCE_REF_NOT_VISIBLE
+    )
+    assert provider.calls == 1
+    assert provider.last_fusion_guardrail_applied is False
+
+
+def test_fusion_unsupported_service_overlap_is_not_masked_by_guardrail() -> None:
+    provider, _transport = _provider(
+        {
+            **_valid_keep_arguments(),
+            "final_root_service": "invented-service",
+            "contradicting_evidence_refs": ["metric:0001"],
+        }
+    )
+
+    with pytest.raises(FusionOutputValidationError) as captured:
+        provider.judge(_input())
+
+    assert (
+        captured.value.failure_code
+        is FusionFailureCode.FUSION_SERVICE_NOT_SUPPORTED
+    )
+    assert provider.calls == 1
+    assert provider.last_fusion_guardrail_applied is False
+
+
+def test_fusion_malformed_json_retains_exact_schema_failure() -> None:
+    provider, _transport = _provider("{")
+
+    with pytest.raises(FusionOutputValidationError) as captured:
+        provider.judge(_input())
+
+    assert (
+        captured.value.failure_code
+        is FusionFailureCode.FUSION_JSON_OR_SCHEMA_INVALID
+    )
+    assert provider.calls == 1
+
+
+def test_fusion_unexpected_guardrail_construction_failure_is_local_and_single_call() -> None:
+    provider, _transport = _provider(
+        {
+            **_valid_keep_arguments(),
+            "contradicting_evidence_refs": ["metric:0001"],
+            "reason_codes": [f"REASON_{index:02d}" for index in range(16)],
+        }
+    )
+
+    with pytest.raises(FusionGuardrailConstructionError) as captured:
+        provider.judge(_input())
+
+    assert captured.value.failure_code == (
+        "FUSION_RUNTIME_GUARDRAIL_CONSTRUCTION_FAILED"
+    )
+    assert provider.calls == 1
 
 
 @pytest.mark.parametrize("missing_field", ("action", "final_root_service"))
@@ -318,6 +449,21 @@ def test_fusion_payload_is_architecture_blind() -> None:
 
     for forbidden in ("adaptive", "single", "dynamic", "variant"):
         assert forbidden not in serialized
+
+
+def test_provider_proposal_allows_overlap_but_internal_decision_rejects_it() -> None:
+    proposal = ProviderFusionProposal(
+        action=FusionAction.KEEP_INITIAL,
+        final_root_service="checkoutservice",
+        confidence=0.8,
+        supporting_evidence_refs=("metric:0001",),
+        contradicting_evidence_refs=("metric:0001",),
+        reason_codes=("AMBIGUOUS_EVIDENCE",),
+    )
+
+    assert proposal.supporting_evidence_refs == proposal.contradicting_evidence_refs
+    with pytest.raises(ValidationError, match="unique and disjoint"):
+        FusionDecision(**proposal.model_dump())
 
 
 def test_default_keep_requires_initial_service() -> None:

@@ -297,6 +297,19 @@ def execute_adaptive_case(
         delta = provider.usage_delta_since(before)
         if delta.provider_call_index is None or delta.usage.model_calls_delta != 1:
             raise ValueError("Adaptive Provider operation did not make exactly one call")
+        guardrail_applied = False
+        guardrail_reason = None
+        guardrail_overlap_count = 0
+        if role is AdaptiveOperationRole.FUSION_JUDGE:
+            guardrail_applied = bool(
+                getattr(provider, "last_fusion_guardrail_applied", False)
+            )
+            guardrail_reason = getattr(
+                provider, "last_fusion_guardrail_reason", None
+            )
+            guardrail_overlap_count = getattr(
+                provider, "last_fusion_guardrail_overlap_count", 0
+            )
         operation_trace.append(
             AdaptiveOperationTrace(
                 semantic_operation_index=len(operation_trace) + 1,
@@ -304,6 +317,9 @@ def execute_adaptive_case(
                 source=source,  # type: ignore[arg-type]
                 provider_call_index=delta.provider_call_index,
                 usage=delta.usage,
+                fusion_guardrail_applied=guardrail_applied,
+                fusion_guardrail_reason=guardrail_reason,  # type: ignore[arg-type]
+                overlap_count=guardrail_overlap_count,
             )
         )
         return result
@@ -507,6 +523,7 @@ def write_candidate_config_create_once(
         "single-first-adaptive-v1-interface-fix-r2",
         "single-first-adaptive-v1-downstream-fix-r1",
         "single-first-adaptive-v1-downstream-fix-r2",
+        "single-first-adaptive-v1-fusion-guardrail-r1",
     }:
         raise ValueError("adaptive run domain is invalid")
     if len(implementation_git_sha) != 40 or any(
@@ -785,6 +802,7 @@ def adaptive_run_id(
         "single-first-adaptive-v1-interface-fix-r2",
         "single-first-adaptive-v1-downstream-fix-r1",
         "single-first-adaptive-v1-downstream-fix-r2",
+        "single-first-adaptive-v1-fusion-guardrail-r1",
     }:
         raise ValueError("adaptive run domain is invalid")
     if candidate_id not in {"candidate-1", "candidate-2", "candidate-3"}:

@@ -120,6 +120,7 @@ _PROTOCOL_FAILURES = {"PROVIDER_PROTOCOL_VIOLATION"}
 _LOCAL_FAILURES = {
     "RUNTIME_CONTRACT_VIOLATION",
     "AGENT_VISIBLE_PRIVATE_PATH_REMAINED",
+    "FUSION_RUNTIME_GUARDRAIL_CONSTRUCTION_FAILED",
     "NO_INDICATOR_CANDIDATE",
 }
 
@@ -908,6 +909,13 @@ def _semantic_failure(
             "PROVIDER_PROTOCOL_VIOLATION",
             "OUTPUT_VALIDATION" if attempts else "INPUT_CONSTRUCTION",
         )
+    local_code = getattr(error, "failure_code", None)
+    if isinstance(local_code, str) and local_code in _LOCAL_FAILURES:
+        return (
+            FailureClass.NON_RETRYABLE_LOCAL_CONTRACT,
+            local_code,
+            "OUTPUT_VALIDATION" if attempts else "INPUT_CONSTRUCTION",
+        )
     if attempts and attempts[-1].failure_class is not None:
         return (
             FailureClass(attempts[-1].failure_class),
@@ -949,6 +957,21 @@ class Dev3ProviderProxy:
     @property
     def last_safe_validation_error(self) -> object | None:
         return getattr(self._inner, "last_safe_validation_error", None)
+
+    @property
+    def last_fusion_guardrail_applied(self) -> bool:
+        return bool(getattr(self._inner, "last_fusion_guardrail_applied", False))
+
+    @property
+    def last_fusion_guardrail_reason(self) -> object | None:
+        return getattr(self._inner, "last_fusion_guardrail_reason", None)
+
+    @property
+    def last_fusion_guardrail_overlap_count(self) -> int:
+        value = getattr(self._inner, "last_fusion_guardrail_overlap_count", 0)
+        if not isinstance(value, int):
+            raise TypeError("Fusion guardrail overlap count must be an integer")
+        return value
 
     def usage_snapshot(self) -> object:
         return getattr(self._inner, "usage_snapshot")()

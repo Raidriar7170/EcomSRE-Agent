@@ -107,16 +107,32 @@ class _ScriptedAdaptiveTransport:
             }
         elif function_name == "submit_rcaeval_fusion_decision":
             fusion_input = envelope["fusion_input"]
-            arguments = {
-                "action": "OVERRIDE_INITIAL",
-                "final_root_service": fusion_input["initial_service"],
-                "confidence": 1,
-                "supporting_evidence_refs": [
-                    fusion_input["visible_evidence_refs"][0]
-                ],
-                "contradicting_evidence_refs": [],
-                "reason_codes": ["SYNTHETIC_OVERRIDE"],
-            }
+            reference = fusion_input["visible_evidence_refs"][0]
+            if self.fail_role in {
+                "fusion_overlap",
+                "fusion_guardrail_construction_failure",
+            }:
+                arguments = {
+                    "action": "KEEP_INITIAL",
+                    "final_root_service": fusion_input["initial_service"],
+                    "confidence": 1,
+                    "supporting_evidence_refs": [reference],
+                    "contradicting_evidence_refs": [reference],
+                    "reason_codes": (
+                        [f"REASON_{index:02d}" for index in range(16)]
+                        if self.fail_role == "fusion_guardrail_construction_failure"
+                        else ["SYNTHETIC_AMBIGUITY"]
+                    ),
+                }
+            else:
+                arguments = {
+                    "action": "OVERRIDE_INITIAL",
+                    "final_root_service": fusion_input["initial_service"],
+                    "confidence": 1,
+                    "supporting_evidence_refs": [reference],
+                    "contradicting_evidence_refs": [],
+                    "reason_codes": ["SYNTHETIC_OVERRIDE"],
+                }
         else:
             raise AssertionError("unexpected Adaptive function")
         return {
@@ -563,6 +579,92 @@ def test_downstream_failure_code_reaches_semantic_and_terminal_without_retry(
     assert provider.calls == expected_calls
 
 
+def test_fusion_overlap_completes_end_to_end_without_semantic_retry(
+    tmp_path: Path,
+) -> None:
+    sidecar = tmp_path / "sidecar"
+    provider = _scripted_proxy(sidecar, "fusion_overlap")
+
+    terminal = execute_adaptive_scheduled_once(
+        case=_case(tmp_path),
+        run_id="8" * 32,
+        case_identity_sha256="d" * 64,
+        candidate_id="candidate-1",
+        split="DESIGN",
+        provider=provider,  # type: ignore[arg-type]
+        indicator_formula=FormulaId.F0,
+        indicator_config=_config(),
+        gate_policy=GatePolicy(),
+        indicator_policy=IndicatorPolicy(),
+        terminal_root=tmp_path / "terminals",
+        sidecar_root=sidecar,
+        policy_lock_sha256="e" * 64,
+    )
+
+    assert terminal.status == "COMPLETED"
+    assert terminal.result is not None
+    result = terminal.result
+    fusion = result.diagnosis.fusion_decision_or_none
+    assert fusion is not None
+    assert fusion.action is FusionAction.KEEP_INITIAL
+    assert fusion.final_root_service == result.diagnosis.initial_diagnosis.root_cause_service
+    assert fusion.contradicting_evidence_refs == ()
+    assert "OVERLAPPING_EVIDENCE_REJECTED_KEEP_INITIAL" in fusion.reason_codes
+    assert result.semantic_operations == 3
+    assert provider.calls == 3
+    assert terminal.attempt_accounting.provider_attempt_count == 3
+    assert terminal.attempt_accounting.retry_attempt_count == 0
+    guardrail_trace = result.operation_trace[-1]
+    assert guardrail_trace.role.value == "FUSION_JUDGE"
+    assert guardrail_trace.fusion_guardrail_applied is True
+    assert (
+        guardrail_trace.fusion_guardrail_reason
+        == "OVERLAPPING_EVIDENCE_REJECTED_KEEP_INITIAL"
+    )
+    assert guardrail_trace.overlap_count == 1
+    semantic_records = tuple((sidecar / "semantic-operations").glob("*.json"))
+    retry_records = tuple((sidecar / "retry-decisions").glob("*.json"))
+    assert len(semantic_records) == 3
+    assert retry_records == ()
+
+
+def test_guardrail_construction_failure_is_local_exact_and_not_retried(
+    tmp_path: Path,
+) -> None:
+    sidecar = tmp_path / "sidecar"
+    provider = _scripted_proxy(sidecar, "fusion_guardrail_construction_failure")
+
+    terminal = execute_adaptive_scheduled_once(
+        case=_case(tmp_path),
+        run_id="7" * 32,
+        case_identity_sha256="d" * 64,
+        candidate_id="candidate-1",
+        split="DESIGN",
+        provider=provider,  # type: ignore[arg-type]
+        indicator_formula=FormulaId.F0,
+        indicator_config=_config(),
+        gate_policy=GatePolicy(),
+        indicator_policy=IndicatorPolicy(),
+        terminal_root=tmp_path / "terminals",
+        sidecar_root=sidecar,
+        policy_lock_sha256="e" * 64,
+    )
+    semantic = json.loads(
+        (sidecar / "semantic-operations/0003.json").read_text(encoding="utf-8")
+    )
+
+    assert terminal.status == "RUNTIME_CONTRACT_VIOLATION"
+    assert terminal.failure_class == "NON_RETRYABLE_LOCAL_CONTRACT"
+    assert terminal.failure_code == "FUSION_RUNTIME_GUARDRAIL_CONSTRUCTION_FAILED"
+    assert terminal.failure_stage == "OUTPUT_VALIDATION"
+    assert terminal.safe_validation_error is None
+    assert semantic["failure_code"] == terminal.failure_code
+    assert semantic["retry_disposition"] is None
+    assert provider.calls == 3
+    assert terminal.attempt_accounting.provider_attempt_count == 3
+    assert terminal.attempt_accounting.retry_attempt_count == 0
+
+
 def test_run_domain_separates_old_smoke_and_validation_ids() -> None:
     identity = CaseIdentity(
         system="RE2-OB",
@@ -580,7 +682,7 @@ def test_run_domain_separates_old_smoke_and_validation_ids() -> None:
             )
         )
     ).hexdigest()[:32]
-    domain = "single-first-adaptive-v1-downstream-fix-r2"
+    domain = "single-first-adaptive-v1-fusion-guardrail-r1"
     design = adaptive_run_id(domain, "candidate-1", "DESIGN", identity)
 
     assert design != legacy
@@ -607,6 +709,7 @@ def test_run_domain_separates_old_smoke_and_validation_ids() -> None:
         "single-first-adaptive-v1-interface-fix-r1",
         "single-first-adaptive-v1-interface-fix-r2",
         "single-first-adaptive-v1-downstream-fix-r1",
+        "single-first-adaptive-v1-downstream-fix-r2",
     ):
         assert design != adaptive_run_id(
             other_domain,
@@ -620,7 +723,7 @@ def test_candidate_config_is_create_once_and_binds_prompts(tmp_path: Path) -> No
     kwargs = {
         "run_root": tmp_path,
         "candidate_id": "candidate-1",
-        "run_domain": "single-first-adaptive-v1-downstream-fix-r2",
+        "run_domain": "single-first-adaptive-v1-fusion-guardrail-r1",
         "agent_config": {"gate": {"direct_confidence_threshold": 0.75}},
         "indicator_policy": IndicatorPolicy(),
         "implementation_git_sha": "a" * 40,
@@ -633,7 +736,7 @@ def test_candidate_config_is_create_once_and_binds_prompts(tmp_path: Path) -> No
     payload = json.loads(first.read_text(encoding="utf-8"))
     assert payload["evaluation_version"] == "single-first-adaptive-v1"
     assert payload["candidate_id"] == "candidate-1"
-    assert payload["run_domain"] == "single-first-adaptive-v1-downstream-fix-r2"
+    assert payload["run_domain"] == "single-first-adaptive-v1-fusion-guardrail-r1"
     assert payload["implementation_git_sha"] == "a" * 40
     assert set(payload["prompt_sha256"]) == {
         "fusion",

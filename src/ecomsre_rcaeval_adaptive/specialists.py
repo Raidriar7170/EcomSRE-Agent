@@ -23,6 +23,7 @@ from ecomsre_rcaeval_adaptive.contracts import (
     InitialDiagnosis,
     InitialDiagnosisInput,
     InitialFailureCode,
+    ProviderFusionProposal,
     ProviderRankedHypothesisBatch,
     RankedHypothesis,
     RankedHypothesisBatch,
@@ -32,8 +33,9 @@ from ecomsre_rcaeval_adaptive.contracts import (
 )
 from ecomsre_rcaeval_adaptive.fusion import (
     FusionInput,
+    FusionMaterializationError,
     build_fusion_request_payload,
-    validate_fusion_decision,
+    materialize_fusion_proposal,
 )
 from ecomsre_rcaeval_v2.contracts import (
     SafeValidationError,
@@ -225,6 +227,9 @@ class OpenAICompatibleAdaptiveProvider:
         self._known_tokens = 0
         self._usage_known = True
         self._last_safe_validation_error: SafeValidationError | None = None
+        self._last_fusion_guardrail_applied = False
+        self._last_fusion_guardrail_reason: str | None = None
+        self._last_fusion_guardrail_overlap_count = 0
 
     @property
     def calls(self) -> int:
@@ -237,6 +242,18 @@ class OpenAICompatibleAdaptiveProvider:
     @property
     def last_safe_validation_error(self) -> SafeValidationError | None:
         return self._last_safe_validation_error
+
+    @property
+    def last_fusion_guardrail_applied(self) -> bool:
+        return self._last_fusion_guardrail_applied
+
+    @property
+    def last_fusion_guardrail_reason(self) -> str | None:
+        return self._last_fusion_guardrail_reason
+
+    @property
+    def last_fusion_guardrail_overlap_count(self) -> int:
+        return self._last_fusion_guardrail_overlap_count
 
     def _validation_failure(self, error: Exception) -> ProviderOutputValidationError:
         safe = safe_validation_error_from_exception(error)
@@ -620,6 +637,10 @@ class OpenAICompatibleAdaptiveProvider:
         *,
         before_output_validation: Callable[[], None] | None = None,
     ) -> FusionDecision:
+        self._last_safe_validation_error = None
+        self._last_fusion_guardrail_applied = False
+        self._last_fusion_guardrail_reason = None
+        self._last_fusion_guardrail_overlap_count = 0
         function_name = "submit_rcaeval_fusion_decision"
         try:
             parsed = self._request(
@@ -673,7 +694,6 @@ class OpenAICompatibleAdaptiveProvider:
                 field_path="action",
                 constraint_type="json_or_schema",
             )
-        ref_groups: dict[str, tuple[str, ...]] = {}
         for field_name, required in (
             ("supporting_evidence_refs", True),
             ("contradicting_evidence_refs", False),
@@ -687,32 +707,7 @@ class OpenAICompatibleAdaptiveProvider:
                     field_path=field_name,
                     constraint_type="json_or_schema",
                 )
-            refs = tuple(raw_refs)
-            if len(refs) != len(set(refs)):
-                raise self._fusion_validation_failure(
-                    FusionFailureCode.FUSION_DUPLICATE_EVIDENCE_REF,
-                    field_path=field_name,
-                    constraint_type="duplicate_evidence_ref",
-                )
-            ref_groups[field_name] = refs
-            normalized[field_name] = refs
-        supporting = set(ref_groups["supporting_evidence_refs"])
-        contradicting = set(ref_groups["contradicting_evidence_refs"])
-        if supporting & contradicting:
-            raise self._fusion_validation_failure(
-                FusionFailureCode.FUSION_OVERLAPPING_EVIDENCE_REF,
-                field_path="evidence_refs",
-                constraint_type="overlapping_evidence_ref",
-            )
-        cited = supporting | contradicting
-        visible_refs = set(fusion_input.visible_evidence_refs)
-        if not cited.issubset(visible_refs):
-            raise self._fusion_validation_failure(
-                FusionFailureCode.FUSION_EVIDENCE_REF_NOT_VISIBLE,
-                field_path="evidence_refs",
-                constraint_type="visible_evidence_ref",
-                error_count=len(cited - visible_refs),
-            )
+            normalized[field_name] = tuple(dict.fromkeys(raw_refs))
         reason_codes = normalized.get("reason_codes")
         if not isinstance(reason_codes, list) or not reason_codes or any(
             not isinstance(code, str)
@@ -725,38 +720,8 @@ class OpenAICompatibleAdaptiveProvider:
                 constraint_type="reason_code",
             )
         normalized["reason_codes"] = tuple(dict.fromkeys(reason_codes))
-        if isinstance(service, str) and service not in set(
-            fusion_input.visible_services
-        ):
-            raise self._fusion_validation_failure(
-                FusionFailureCode.FUSION_SERVICE_NOT_SUPPORTED,
-                field_path="final_root_service",
-                constraint_type="supported_service",
-            )
-        if (
-            action == FusionAction.KEEP_INITIAL.value
-            and service != fusion_input.initial_service
-        ) or (
-            action == FusionAction.OVERRIDE_INITIAL.value
-            and service == fusion_input.initial_service
-        ):
-            raise self._fusion_validation_failure(
-                FusionFailureCode.FUSION_ACTION_SERVICE_INCONSISTENT,
-                field_path="final_root_service",
-                constraint_type="action_service",
-            )
-        if (
-            action == FusionAction.OVERRIDE_INITIAL.value
-            and isinstance(service, str)
-            and service not in fusion_input.override_candidate_services
-        ):
-            raise self._fusion_validation_failure(
-                FusionFailureCode.FUSION_ACTION_SERVICE_INCONSISTENT,
-                field_path="final_root_service",
-                constraint_type="override_candidate",
-            )
         try:
-            decision = FusionDecision.model_validate_json(
+            proposal = ProviderFusionProposal.model_validate_json(
                 json.dumps(normalized, allow_nan=False, ensure_ascii=False)
             )
         except (TypeError, ValidationError, ValueError) as error:
@@ -766,19 +731,24 @@ class OpenAICompatibleAdaptiveProvider:
                 constraint_type="json_or_schema",
             ) from error
         try:
-            return validate_fusion_decision(decision, fusion_input)
-        except ValueError as error:
-            if decision.action is FusionAction.OVERRIDE_INITIAL:
-                raise self._fusion_validation_failure(
-                    FusionFailureCode.FUSION_OVERRIDE_LACKS_CONTRADICTION,
-                    field_path="contradicting_evidence_refs",
-                    constraint_type="override_contradiction",
-                ) from error
+            decision, observation = materialize_fusion_proposal(
+                proposal, fusion_input
+            )
+        except FusionMaterializationError as error:
             raise self._fusion_validation_failure(
-                FusionFailureCode.FUSION_JSON_OR_SCHEMA_INVALID,
-                field_path="$",
-                constraint_type="json_or_schema",
+                error.failure_code,
+                field_path=error.field_path,
+                constraint_type=error.constraint_type,
+                error_count=error.error_count,
             ) from error
+        self._last_fusion_guardrail_applied = (
+            observation.fusion_guardrail_applied
+        )
+        self._last_fusion_guardrail_reason = (
+            observation.fusion_guardrail_reason
+        )
+        self._last_fusion_guardrail_overlap_count = observation.overlap_count
+        return decision
 
 
 __all__ = [
