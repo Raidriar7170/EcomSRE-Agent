@@ -759,12 +759,24 @@ def audit_free_specialist(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         ]
         for rank, item in enumerate(logs_values, start=1):
             hypotheses.append((row, item, rank))
-    correct = [item for item in hypotheses if item[1].get("service") == item[0].get("truth_service")]
+    truth_hypotheses = [
+        item
+        for item in hypotheses
+        if item[1].get("service") == item[0].get("truth_service")
+    ]
+    correct = [
+        item
+        for item in truth_hypotheses
+        if item[0].get("initial_service") != item[0].get("truth_service")
+    ]
     root_role = [item for item in hypotheses if item[1].get("causal_role") == "ROOT_CANDIDATE"]
     symptom_role = [
         item for item in hypotheses if item[1].get("causal_role") == "PROPAGATED_SYMPTOM"
     ]
-    root_role_correct = sum(item[1].get("service") == item[0].get("truth_service") for item in root_role)
+    root_role_correct = sum(
+        item[1].get("service") == item[0].get("truth_service")
+        for item in root_role
+    )
     symptom_role_correct = sum(
         item[1].get("service") == item[0].get("initial_service")
         and item[0].get("initial_service") != item[0].get("truth_service")
@@ -779,10 +791,19 @@ def audit_free_specialist(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         "unique_service_count": len(services),
         "correct_alternative_rank1": sum(item[2] == 1 for item in correct),
         "correct_alternative_any_rank": len({str(item[0].get("private_case_key")) for item in correct}),
+        "truth_hypothesis_rank1_all_calls": sum(
+            item[2] == 1 for item in truth_hypotheses
+        ),
+        "truth_hypothesis_any_rank_all_calls": len(
+            {
+                str(item[0].get("private_case_key"))
+                for item in truth_hypotheses
+            }
+        ),
         "initial_hypothesis_count": sum(
             item[1].get("service") == item[0].get("initial_service") for item in hypotheses
         ),
-        "truth_hypothesis_count": len(correct),
+        "truth_hypothesis_count": len(truth_hypotheses),
         "root_candidate_role_truth_alignment": _ratio(root_role_correct, len(root_role)),
         "propagated_symptom_role_heuristic_alignment": _ratio(
             symptom_role_correct, len(symptom_role)
@@ -791,9 +812,18 @@ def audit_free_specialist(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         "supporting_ref_count": sum(len(tuple(item[1].get("supporting_evidence_refs", ()))) for item in hypotheses),
         "contradicting_ref_count": sum(len(tuple(item[1].get("contradicting_evidence_refs", ()))) for item in hypotheses),
         "score_correctness": {
-            "correct": _continuous([float(item[1].get("score", 0.0)) for item in correct]),
+            "correct": _continuous(
+                [
+                    float(item[1].get("score", 0.0))
+                    for item in truth_hypotheses
+                ]
+            ),
             "incorrect": _continuous(
-                [float(item[1].get("score", 0.0)) for item in hypotheses if item not in correct]
+                [
+                    float(item[1].get("score", 0.0))
+                    for item in hypotheses
+                    if item not in truth_hypotheses
+                ]
             ),
         },
     }
@@ -2493,6 +2523,8 @@ def _render_public_markdown(report: Mapping[str, Any]) -> str:
         "",
         "## Specialist, Fusion, and Trace evidence",
         "",
+        f"Candidate-4 produced {report['specialist_audit']['candidate_4_free']['hypothesis_count']} free-generation hypotheses. Truth-matching hypotheses appeared in {report['specialist_audit']['candidate_4_free']['truth_hypothesis_any_rank_all_calls']} calls overall, but correct alternatives for Initial-wrong cases appeared at rank 1 / any rank in {report['specialist_audit']['candidate_4_free']['correct_alternative_rank1']} / {report['specialist_audit']['candidate_4_free']['correct_alternative_any_rank']} calls.",
+        "",
         f"Candidate-5 had {report['specialist_audit']['candidate_5_pairwise']['pairwise_calls']} pairwise calls. Both candidates were Logs-visible in {counts(report['specialist_audit']['candidate_5_pairwise']['communication_feasibility']['field_rates']['both_candidates_comparable'])}; candidate provenance, strength, Gate reason, and Initial rationale were each present in 0 of those calls. Causal-role comparisons below are explicitly heuristic because evaluator truth provides root identity, not a propagated-symptom oracle.",
         "",
         f"Current Fusion replay was value-identical in {counts(fusion['replay_value_identical'])}. F1/F2/F3 each produced net rescue `{fusion['F1']['net_rescue']}` / `{fusion['F2']['net_rescue']}` / `{fusion['F3']['net_rescue']}`; bottleneck verdict: `{fusion['bottleneck_verdict']}`.",
@@ -2661,8 +2693,7 @@ def validate_output_boundaries(
     private_root: Path, public_paths: Sequence[Path]
 ) -> None:
     resolved_private = private_root.expanduser().resolve()
-    project = PROJECT_ROOT.resolve(strict=True)
-    if resolved_private == project or project in resolved_private.parents:
+    if any((ancestor / ".git").exists() for ancestor in (resolved_private, *resolved_private.parents)):
         raise ValueError("private audit output must be Git-external")
     for path in public_paths:
         resolved_public = path.expanduser().resolve()

@@ -1190,8 +1190,8 @@
     "candidate_4_free": {
       "causal_role_oracle": "ROOT_IDENTITY_PLUS_NON_ROOT_HEURISTIC_ONLY",
       "contradicting_ref_count": 26,
-      "correct_alternative_any_rank": 8,
-      "correct_alternative_rank1": 7,
+      "correct_alternative_any_rank": 0,
+      "correct_alternative_rank1": 0,
       "hypothesis_count": 44,
       "initial_hypothesis_count": 16,
       "propagated_symptom_role_heuristic_alignment": {
@@ -1218,7 +1218,9 @@
       },
       "specialist_calls": 16,
       "supporting_ref_count": 89,
+      "truth_hypothesis_any_rank_all_calls": 8,
       "truth_hypothesis_count": 8,
+      "truth_hypothesis_rank1_all_calls": 7,
       "unique_service_count": 10
     },
     "candidate_5_pairwise": {

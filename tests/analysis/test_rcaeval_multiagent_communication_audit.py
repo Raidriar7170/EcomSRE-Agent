@@ -271,13 +271,31 @@ def test_free_and_pairwise_specialist_audits_separate_sufficiency() -> None:
                     "source": "logs",
                 },
             ),
-        )
+        ),
+        _row(
+            private_case_key="initial-correct-case",
+            candidate="candidate-4",
+            initial_service="checkout",
+            logs_pairwise_verification=None,
+            specialist_hypotheses=(
+                {
+                    "service": "checkout",
+                    "causal_role": "ROOT_CANDIDATE",
+                    "score": 0.95,
+                    "supporting_evidence_refs": ("log:0002",),
+                    "contradicting_evidence_refs": (),
+                    "source": "logs",
+                },
+            ),
+        ),
     ]
     free = audit.audit_free_specialist(free_rows)
-    assert free["hypothesis_count"] == 2
+    assert free["hypothesis_count"] == 3
     assert free["correct_alternative_rank1"] == 1
     assert free["correct_alternative_any_rank"] == 1
-    assert free["root_candidate_role_truth_alignment"]["numerator"] == 1
+    assert free["truth_hypothesis_rank1_all_calls"] == 2
+    assert free["truth_hypothesis_any_rank_all_calls"] == 2
+    assert free["root_candidate_role_truth_alignment"]["numerator"] == 2
 
     pairwise_rows = [
         _row(),
@@ -518,6 +536,12 @@ def test_private_output_boundary_requires_git_external_root(tmp_path: Path) -> N
     with pytest.raises(ValueError, match="Git-external"):
         audit.validate_output_boundaries(PROJECT_ROOT / "private", public_paths)
     audit.validate_output_boundaries(tmp_path / "private", public_paths)
+
+    other_worktree = tmp_path / "other-worktree"
+    other_worktree.mkdir()
+    (other_worktree / ".git").mkdir()
+    with pytest.raises(ValueError, match="Git-external"):
+        audit.validate_output_boundaries(other_worktree / "private", public_paths)
 
 
 def test_architecture_decision_rules_are_exclusive() -> None:

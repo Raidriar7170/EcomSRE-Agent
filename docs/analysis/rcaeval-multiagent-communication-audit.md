@@ -37,6 +37,8 @@ M3 overrides the root only when the deterministic Metrics alternative is rank 1,
 
 ## Specialist, Fusion, and Trace evidence
 
+Candidate-4 produced 44 free-generation hypotheses. Truth-matching hypotheses appeared in 8 calls overall, but correct alternatives for Initial-wrong cases appeared at rank 1 / any rank in 0 / 0 calls.
+
 Candidate-5 had 23 pairwise calls. Both candidates were Logs-visible in 2/23; candidate provenance, strength, Gate reason, and Initial rationale were each present in 0 of those calls. Causal-role comparisons below are explicitly heuristic because evaluator truth provides root identity, not a propagated-symptom oracle.
 
 Current Fusion replay was value-identical in 60/60. F1/F2/F3 each produced net rescue `0` / `1` / `0`; bottleneck verdict: `FUSION_IS_BOTTLENECK`.
