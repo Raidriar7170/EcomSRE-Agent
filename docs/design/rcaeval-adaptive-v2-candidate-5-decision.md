@@ -1,6 +1,6 @@
 # Adaptive v2 Candidate-5 decision
 
-Status: `ACCEPTED_FOR_ONE_BOUNDED_TUNE`
+Status: `CONSUMED / TERMINAL_TUNE_GATE_NOT_PASSED`
 
 Decision code: `CASE_E_SPECIALIST_GENERATION_FAILURE`
 
@@ -85,3 +85,15 @@ revision.
 Before any Candidate-5 Provider call, the analysis aggregate, this Decision
 Record, and the Candidate-5 runtime and tests must be committed. Provider
 capacity recovery does not weaken that commit-before-Provider boundary.
+
+## Execution disposition
+
+The authorized TUNE executed once from the committed Candidate-5 runtime. It
+terminalized and completed 60/60 records with no HTTP 429, Provider failure, or
+schema/privacy/schedule failure. The pairwise verifier completed 23 calls, but
+deterministic Fusion authorized no override; same-run Root and Pair Damage /
+Rescue / Net were both 0 / 0 / 0. Final Root was 45/60 and Final Pair was 23/60.
+
+Candidate-5 therefore did not pass the frozen TUNE Gate. Per this decision,
+Regression did not run and no Candidate-6 is authorized. Terminal state:
+`ADAPTIVE_V2_TUNE_GATE_NOT_PASSED_AFTER_CANDIDATE5`.

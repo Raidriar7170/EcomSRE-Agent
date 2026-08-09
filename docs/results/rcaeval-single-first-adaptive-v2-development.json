@@ -1,8 +1,8 @@
 {
   "schema_version": "rcaeval-single-first-adaptive.development-public.v2",
   "development_state": "TERMINAL",
-  "verdict": "ADAPTIVE_V2_TUNE_GATE_NOT_PASSED_AFTER_REAL_ALGORITHM_ITERATIONS",
-  "failure_reason": "NO_AUTHORIZED_CANDIDATE_5_CHANGE_AFTER_CANDIDATE_4_GATE_FAILURE",
+  "verdict": "ADAPTIVE_V2_TUNE_GATE_NOT_PASSED_AFTER_CANDIDATE5",
+  "failure_reason": "CANDIDATE_5_MISSED_FROZEN_ROOT_PAIR_AND_ROOT_RESCUE_GATES",
   "classification": [
     "CONSUMED_OBSS_DEVELOPMENT_RESULT",
     "DEVELOPMENT_VISIBLE",
@@ -11,14 +11,14 @@
   ],
   "candidate_loop": {
     "record_limit": 5,
-    "records_attempted": 4,
+    "records_attempted": 5,
     "capacity_records": 2,
     "algorithm_candidate_limit": 3,
-    "algorithm_candidates_attempted": 2,
+    "algorithm_candidates_attempted": 3,
     "complete": true,
     "selected_candidate": null,
-    "candidate_5_executed": false,
-    "candidate_5_disposition": "NO_AUTHORIZED_SINGLE_PRIMARY_CHANGE_UNDER_CASE_A_D"
+    "candidate_5_executed": true,
+    "candidate_5_disposition": "TUNE_GATE_NOT_PASSED"
   },
   "gate_feature_diagnosis": {
     "classification": [
@@ -45,6 +45,30 @@
       "risk_signal_threshold": 1
     },
     "public_artifact": "docs/analysis/rcaeval-adaptive-v2-gate-diagnosis.json"
+  },
+  "candidate_4_metrics_alternative_analysis": {
+    "classification": [
+      "POST_HOC_CONSUMED_TUNE_DIAGNOSTIC",
+      "NO_PROVIDER_CALLS",
+      "NOT_EXTERNAL_VALIDATION"
+    ],
+    "provider_calls": 0,
+    "initial_root_wrong_completed": 8,
+    "gate_escalated_initial_wrong": 8,
+    "true_root_metrics_coverage": {
+      "at_1": 6,
+      "at_2": 8,
+      "at_3": 8,
+      "at_6": 8,
+      "denominator": 8
+    },
+    "deterministic_metrics_alternative_truth_matches": 7,
+    "truth_matching_alternative_logs_visible": 0,
+    "initial_and_alternative_logs_visible": 0,
+    "no_metrics_alternative": 0,
+    "decision_supported": true,
+    "decision_code": "CASE_E_SPECIALIST_GENERATION_FAILURE",
+    "public_artifact": "docs/analysis/rcaeval-adaptive-v2-candidate4-metrics-alternative-analysis.json"
   },
   "historical_strong_single_tune_baseline": {
     "scheduled": 60,
@@ -314,12 +338,119 @@
         "PRIVACY_SCHEMA_SCHEDULE_FAILURE_MAX_0"
       ],
       "interpretation": "Selective routing met its Direct, cost, Trace, completion, Root, and override bounds, but one schema failure, Final Pair 27, and zero same-run Root rescue prevented TUNE passage."
+    },
+    {
+      "candidate": "candidate-5",
+      "candidate_role": "FINAL_METRICS_ANCHORED_LOGS_PAIRWISE_VERIFIER",
+      "decision_code": "CASE_E_SPECIALIST_GENERATION_FAILURE",
+      "scheduled": 60,
+      "terminalized": 60,
+      "completed": 60,
+      "completion_coverage": {
+        "numerator": 60,
+        "denominator": 60,
+        "value": 1.0
+      },
+      "algorithm_quality_evaluable": true,
+      "terminal_provider_failures": 0,
+      "http_429_terminal_failures": 0,
+      "provider_failure_code_distribution": {},
+      "provider_attempts": 85,
+      "transport_retries": 2,
+      "initial_root_correct": 45,
+      "final_root_correct": 45,
+      "same_run_root_damage": 0,
+      "same_run_root_rescue": 0,
+      "same_run_root_net_rescue": 0,
+      "same_run_root_damage_rate": {
+        "numerator": 0,
+        "denominator": 45,
+        "value": 0.0
+      },
+      "initial_pair_correct": 23,
+      "final_pair_correct": 23,
+      "same_run_pair_damage": 0,
+      "same_run_pair_rescue": 0,
+      "same_run_pair_net_rescue": 0,
+      "historical_cross_run_comparison": {
+        "classification": [
+          "CROSS_RUN_CONTEXTUAL_COMPARISON",
+          "MODEL_RUN_VARIABILITY_CONFOUNDED"
+        ],
+        "root_damage": 7,
+        "root_rescue": 1,
+        "pair_damage": 7,
+        "pair_rescue": 1
+      },
+      "direct_return": 37,
+      "route_distribution": {
+        "DIRECT_RETURN": 37,
+        "VERIFY_LOGS": 23,
+        "VERIFY_TRACES": 0,
+        "VERIFY_BOTH": 0
+      },
+      "trace_routes": 0,
+      "escalation_precision": {
+        "numerator": 14,
+        "denominator": 23,
+        "value": 0.6086956521739131
+      },
+      "escalation_recall": {
+        "numerator": 14,
+        "denominator": 15,
+        "value": 0.9333333333333333
+      },
+      "initial_correct_escalated": 9,
+      "initial_wrong_direct": 1,
+      "metrics_alternative_rank_distribution": {
+        "1": 16,
+        "2": 44
+      },
+      "no_metrics_alternative": 0,
+      "pairwise_calls": 23,
+      "pairwise_completed_verifications": 23,
+      "pairwise_preference_distribution": {
+        "INITIAL": 7,
+        "ALTERNATIVE": 1,
+        "INCONCLUSIVE": 15
+      },
+      "alternative_preference_when_alternative_true_root": 1,
+      "alternative_preference_when_alternative_wrong": 0,
+      "fusion_action_distribution": {
+        "KEEP_INITIAL": 60
+      },
+      "fusion_reason_distribution": {
+        "KEEP_DIRECT": 37,
+        "LOGS_PAIRWISE_ALT_LACKS_ROOT_ROLE": 1,
+        "LOGS_PAIRWISE_INCONCLUSIVE": 15,
+        "LOGS_PAIRWISE_INITIAL": 7
+      },
+      "correct_overrides": 0,
+      "wrong_overrides": 0,
+      "mean_semantic_operations": 1.3833333333333333,
+      "mean_semantic_operations_basis": "FIXED_SCHEDULED_DENOMINATOR",
+      "known_token_lower_bound": 516021,
+      "conservative_token_upper_bound": 580021,
+      "mean_latency_ms": 7272.912942358137,
+      "schema_privacy_schedule_failures": 0,
+      "gate_passed": false,
+      "gate_disposition": "TUNE_GATE_NOT_PASSED",
+      "failed_gate_requirements": [
+        "ROOT_SERVICE_CORRECT_MIN_51",
+        "PAIR_CORRECT_MIN_29",
+        "SAME_RUN_ROOT_RESCUE_STRICTLY_GREATER_THAN_DAMAGE",
+        "SAME_RUN_ROOT_NET_RESCUE_MIN_1"
+      ],
+      "interpretation": "The pairwise Logs verifier completed without capacity or contract failures, but it never authorized an override. Final Root and Pair therefore remained equal to Initial and missed the frozen absolute floors and strict Root-rescue requirements."
     }
   ],
   "candidate_5": {
-    "executed": false,
-    "single_primary_change": null,
-    "reason": "No Work Package F Case A-D condition authorized a supported single change. Gate routing was in range, no correct Specialist alternative was suppressed by Fusion, Pair did not degrade through indicator override, and Gate tightening could not create Root rescue."
+    "executed": true,
+    "decision_code": "CASE_E_SPECIALIST_GENERATION_FAILURE",
+    "single_primary_change": "Replace free Logs hypothesis generation with a deterministic Metrics-alternative Initial-vs-Alternative Logs pairwise verifier and deterministic Fusion.",
+    "tune_gate_passed": false,
+    "candidate_6_authorized": false,
+    "reason": "The final bounded candidate completed 60/60 but missed the frozen Root, Pair, and Root-rescue requirements."
   },
   "selected_candidate": null,
   "regression": {
@@ -329,7 +460,7 @@
     "terminalized": 0,
     "reruns": 0,
     "post_regression_tuning": false,
-    "reason": "NO_TUNE_CANDIDATE_PASSED"
+    "reason": "CANDIDATE_5_TUNE_GATE_NOT_PASSED"
   },
   "combined_180": {
     "available": false
@@ -340,5 +471,5 @@
     "dataset_accessed": false,
     "provider_run_executed": false
   },
-  "claim_boundary": "Candidates 1 and 2 are retained capacity-blocked executions and are not algorithm-quality estimates. Candidates 3 and 4 are consumed-data algorithm iterations; neither passed the frozen TUNE gate. Candidate 5, Regression, and fresh holdout execution did not run. None is external validation."
+  "claim_boundary": "Candidates 1 and 2 are retained capacity-blocked executions and are not algorithm-quality estimates. Candidates 3 through 5 are consumed-data algorithm iterations; none passed the frozen TUNE gate. Candidate 5 completed after API credit recovery but did not improve Initial under same-run Fusion. Regression and fresh holdout execution did not run. None is external validation."
 }

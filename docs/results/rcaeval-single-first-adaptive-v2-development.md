@@ -2,11 +2,10 @@
 
 Development state: `TERMINAL`
 
-Verdict: `ADAPTIVE_V2_TUNE_GATE_NOT_PASSED_AFTER_REAL_ALGORITHM_ITERATIONS`
+Verdict: `ADAPTIVE_V2_TUNE_GATE_NOT_PASSED_AFTER_CANDIDATE5`
 
-Failure reason: candidate-4 did not pass the frozen TUNE gate, and its observed
-failure mode did not authorize any single candidate-5 change under Work Package
-F Case A-D.
+Failure reason: the final bounded candidate completed 60/60 but missed the
+frozen Root, Pair, and Root-rescue requirements.
 
 Claim boundary: `CONSUMED_OBSS_DEVELOPMENT_RESULT / DEVELOPMENT_VISIBLE / NOT_EXTERNAL_VALIDATION / NOT_PRIMARY_INFERENCE`.
 
@@ -63,19 +62,57 @@ Historical cross-run comparison remains labeled
 `CROSS_RUN_CONTEXTUAL_COMPARISON / MODEL_RUN_VARIABILITY_CONFOUNDED`; it is not
 the authoritative same-run Agent Damage/Rescue measure.
 
-## Candidate-5 protocol disposition
+## Candidate-4 Metrics opportunity and Candidate-5 decision
 
-Candidate-5 was not executed. Candidate-4 had Direct 43 and escalation Recall
-1.0, so Case A did not apply. Direct was not below 36, and Gate tightening could
-not create the missing correct Specialist alternative or Root rescue. Among the
-eight Initial-wrong escalations, Specialist produced no correct Root
-alternative, so Case C did not apply. Pair had zero same-run Damage and no
-deterministic indicator override, so Case D did not apply. The one schema
-failure is not an authorized Case A-D algorithm direction.
+A zero-Provider post-hoc analysis covered all eight completed Candidate-4
+Initial-wrong cases. The Gate escalated 8/8. True Root Metrics Coverage@1 / @2 /
+@3 / @6 was 6/8 / 8/8 / 8/8 / 8/8, and the deterministic highest-ranked
+non-Initial Metrics alternative matched the True Root in 7/8. None of the
+truth-matching alternatives was visible in bounded Logs, and no case had both
+Initial and alternative visible in Logs. The analysis made zero Provider calls
+and exposed no case-level data publicly.
 
-Running candidate-5 would therefore have required an unsupported change,
-result-driven retry, or scope expansion. The candidate loop stops without a
-candidate-6.
+This supported Decision `CASE_E_SPECIALIST_GENERATION_FAILURE`: replace
+Candidate-5 free Logs hypothesis generation with an Initial-vs-Alternative
+pairwise verifier anchored to the deterministic Metrics alternative. Fusion
+remained deterministic and keep-by-default. Gate, Trace, Indicator, model,
+pacing, retry policy, splits, and acceptance thresholds remained frozen.
+
+## Same-run candidate-5 result
+
+Candidate-5 completed all 60 TUNE records after API credit recovery, with no
+HTTP 429, Provider failure, or schema/privacy/schedule failure.
+
+| Metric | Candidate-5 |
+| --- | ---: |
+| Scheduled / terminalized / completed | 60 / 60 / 60 |
+| Initial Root / Pair | 45 / 23 |
+| Final Root / Pair | 45 / 23 |
+| Same-run Root Damage / Rescue / Net | 0 / 0 / 0 |
+| Same-run Pair Damage / Rescue / Net | 0 / 0 / 0 |
+| Direct / Logs / Traces / Both | 37 / 23 / 0 / 0 |
+| Escalation Precision / Recall | 14/23 / 14/15 |
+| Pairwise INITIAL / ALTERNATIVE / INCONCLUSIVE | 7 / 1 / 15 |
+| Fusion KEEP / OVERRIDE | 60 / 0 |
+| Correct / Wrong Override | 0 / 0 |
+| Mean semantic operations | 1.3833 |
+| Provider attempts / transport retries | 85 / 2 |
+| Known / conservative tokens | 516,021 / 580,021 |
+| Mean latency | 7,272.9 ms |
+| HTTP 429 | 0 |
+| Schema/privacy/schedule failures | 0 |
+| Gate | `TUNE_GATE_NOT_PASSED` |
+
+The pairwise verifier completed 23/23 calls. It preferred `ALTERNATIVE` once,
+but that alternative lacked the required root-role support, so deterministic
+Fusion kept Initial. All 60 Final predictions therefore remained equal to
+Initial. Candidate-5 met the execution, route/cost, Trace, and override bounds,
+but Final Root 45 < 51, Final Pair 23 < 29, same-run Root Rescue was not strictly
+greater than Damage, and Root net Rescue was 0 < 1.
+
+The historical cross-run 7 Damage / 1 Rescue aliases are retained only as
+`CROSS_RUN_CONTEXTUAL_COMPARISON / MODEL_RUN_VARIABILITY_CONFOUNDED`; they do not
+decide the gate. Candidate-5 is final and candidate-6 is not authorized.
 
 ## Protected downstream stages
 
@@ -91,7 +128,8 @@ references, credentials, and raw Provider outputs remain private.
 
 ## Terminal disposition
 
-Preserve candidate-1 through candidate-4 terminals and sidecars unchanged. Mark
-PR #19 Ready for algorithm review. Do not run candidate-5 without a new protocol
-decision, create candidate-6, run regression, generate a fresh holdout plan, or
-make an external performance claim under this Goal.
+Preserve candidate-1 through candidate-5 terminals and sidecars unchanged. Mark
+PR #19 Ready for algorithm review. Do not create candidate-6, run regression,
+generate a fresh holdout plan, or make an external performance claim under this
+Goal. The recommended next step is an algorithm review, not a result-driven
+TUNE rerun.

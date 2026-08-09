@@ -123,10 +123,11 @@ must interleave cases and alternate arm order rather than run one arm in bulk.
 The 60 former DESIGN cases are `TUNE_SET`; the 120 former DEV_VALIDATION cases
 are `REGRESSION_SET`. Both are consumed development data. The execution record
 budget is five: candidate-1 and candidate-2 are preserved capacity-only records,
-while candidate-3 through candidate-5 are the only three real algorithm
-candidates. Candidate-3 is the first algorithm candidate, so only candidate-4
-and candidate-5 remain available. A candidate may enter the single permitted
-120-case regression only after all frozen TUNE gates pass.
+while candidate-3 through candidate-5 were the only three real algorithm
+candidates. Candidate-3 was the first algorithm candidate, so candidate-4 and
+candidate-5 were the two remaining slots before they were consumed. A candidate
+could enter the single permitted 120-case regression only after all frozen TUNE
+gates passed; none did, so no candidate or TUNE slot remains available.
 
 The TUNE gates require completion at least 58/60, at most three terminal HTTP
 429 failures, final Root Service at least 51/60, and final Pair at least 29/60.
@@ -170,7 +171,16 @@ candidate that replaces free Logs hypothesis generation with a runtime-bound
 Initial-vs-Alternative verifier and corresponding deterministic Fusion. See
 `rcaeval-adaptive-v2-candidate-5-decision.md`.
 
-Candidate-5 remains the last algorithm candidate; candidate-6 is not
-authorized. Its 60-case TUNE must use the frozen Gate, Trace trigger, Indicator,
-model, pacing, retry, splits, and gates. Regression remains conditional on a
-passing Candidate-5 TUNE and may run only once.
+Candidate-5 executed once as the last algorithm candidate using the frozen
+Gate, Trace trigger, Indicator, model, pacing, retry, splits, and gates. It
+completed 60/60 with 37 Direct and 23 Logs routes, zero Trace-bearing routes,
+and mean semantic operations 1.3833. The pairwise verifier completed all 23
+calls, while deterministic Fusion kept Initial for all 60 records. Initial and
+Final were therefore both Root 45/60 and Pair 23/60, with zero same-run Damage
+and zero same-run Rescue.
+
+Candidate-5 did not pass TUNE because it missed the frozen Root and Pair floors
+and the strict same-run Root-rescue requirements. Regression was consequently
+ineligible and did not run. Candidate-6 is not authorized. The terminal state
+is `ADAPTIVE_V2_TUNE_GATE_NOT_PASSED_AFTER_CANDIDATE5`; the next permitted step
+is algorithm review, not a result-driven rerun.
