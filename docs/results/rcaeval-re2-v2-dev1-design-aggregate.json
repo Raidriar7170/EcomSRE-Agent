@@ -1,0 +1,12 @@
+{
+  "architecture_summaries": {},
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "DESIGN_SET",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "protocol_id": "rcaeval-re2-v2-dev.1",
+  "schema_version": "rcaeval-re2-v2-dev1.aggregate-split.v1",
+  "state": "V2_DEV1_PROVIDER_SMOKE_GATE_NOT_PASSED"
+}

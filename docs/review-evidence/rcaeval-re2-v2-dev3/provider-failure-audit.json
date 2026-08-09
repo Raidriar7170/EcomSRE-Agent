@@ -1,0 +1,29 @@
+{
+  "audit_lock_sha256": "8600bc5eef68b4d3fbc50126fe6ee79416e343678b178aa43bcb871bd17ba79b",
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "DESIGN_SET",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "failed_attempt_usage_disposition": {
+    "KNOWN_POSITIVE": 0,
+    "UNKNOWN_NO_VALID_RESPONSE": 5
+  },
+  "failure_classes": {
+    "UNKNOWN_INSUFFICIENT_EVIDENCE": 5
+  },
+  "failure_count": 5,
+  "operation_types": {
+    "DYNAMIC_FOLLOWUP_SPECIALIST": 1,
+    "FINAL_JUDGE": 2,
+    "LOGS_SPECIALIST": 1,
+    "METRICS_SPECIALIST": 1
+  },
+  "protocol_id": "rcaeval-re2-v2-dev.3",
+  "retry_eligible": 0,
+  "retry_ineligible": 5,
+  "schema_version": "rcaeval-re2-v2-dev3.provider-failure-audit.v1",
+  "state": "DEV2_PROVIDER_FAILURE_AUDIT_LOCKED",
+  "valid_response_received": 0
+}

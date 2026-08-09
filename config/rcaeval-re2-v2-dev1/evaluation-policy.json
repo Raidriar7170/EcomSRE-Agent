@@ -1,0 +1,20 @@
+{
+  "all_terminal_failures_retained": true,
+  "candidate_freeze_requires_human_review": true,
+  "design_classification": [
+    "DEVELOPMENT_VISIBLE",
+    "DESIGN_SET",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "dev_validation_access": "FORBIDDEN_IN_THIS_TASK",
+  "external_superiority_claim": "FORBIDDEN",
+  "one_shot": true,
+  "prompt_or_code_change_after_design": "FORBIDDEN",
+  "protocol_id": "rcaeval-re2-v2-dev.1",
+  "protocol_sha256": "b79ecbd11ee4180781daff92f50056e5fc25ad6217d431faf9e47a6cfbd4bee7",
+  "re2_tt_access": "FORBIDDEN",
+  "schema_version": "rcaeval-re2-v2-dev1.evaluation-policy.v1",
+  "smoke_gate_before_design": true,
+  "validation_failure_rerun": "FORBIDDEN"
+}

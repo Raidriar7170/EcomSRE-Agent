@@ -1,0 +1,20 @@
+{
+  "case_order_domain": "rcaeval-re2-v2-dev2-schedule-v1-case",
+  "design_runs": 360,
+  "dev_validation_reserved_runs": 480,
+  "family_position_algorithm": "stable_rank_within_architecture_family_in_actual_global_order",
+  "global_position_algorithm": "one_based_index_in_rotated_execution_order",
+  "legacy_smoke_case_selection": {
+    "case_order_domain": "rcaeval-re2-v2-dev-schedule-case-v1",
+    "same_case_selection_required": true,
+    "seed": 20260807
+  },
+  "protocol_id": "rcaeval-re2-v2-dev.2",
+  "protocol_sha256": "bdae9acab73e550a837807cfdb180015fde83a566eb745dae7be1887d5cad86f",
+  "run_id_algorithm": "sha256(protocol_id NUL schedule_domain NUL split NUL seed NUL identity NUL variant)[:32]",
+  "schedule_domain": "rcaeval-re2-v2-dev2-schedule-v1",
+  "schedule_seed": 20260809,
+  "schema_version": "rcaeval-re2-v2-dev2.schedule-generation.v1",
+  "smoke_runs": 72,
+  "split_seed": 20260807
+}

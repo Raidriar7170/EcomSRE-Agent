@@ -1,0 +1,27 @@
+{
+  "admission_lock_before_provider": true,
+  "all_terminal_failures_retained": true,
+  "candidate_freeze_requires_human_review": true,
+  "design_classification": [
+    "DEVELOPMENT_VISIBLE",
+    "DESIGN_SET",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "dev_validation_access": "METADATA_ONLY_DURING_ADMISSION",
+  "dev_validation_execution": "FORBIDDEN_IN_THIS_TASK",
+  "evaluation_root_lock_before_admission": true,
+  "dev2_failure_audit_lock_before_admission": true,
+  "external_superiority_claim": "FORBIDDEN",
+  "one_shot": true,
+  "prompt_or_code_change_after_admission_lock": "FORBIDDEN",
+  "protocol_id": "rcaeval-re2-v2-dev.3",
+  "protocol_sha256": "3cbc02eec0bda6734bf777999200c3f5e6cdc6522fe8fb0baa22b126b402d8c4",
+  "re2_tt_access": "FORBIDDEN",
+  "schema_version": "rcaeval-re2-v2-dev3.evaluation-policy.v1",
+  "smoke_gate_before_design": true,
+  "smoke_failure_disposition": "RCAEval_RE2_V2_DEV3_FINAL_PROVIDER_LIMIT_RECORDED_READY_FOR_AGENT_REDESIGN",
+  "smoke_failure_creates_next_harness_version": false,
+  "agent_redesign_handoff_required": true,
+  "validation_failure_rerun": "FORBIDDEN"
+}

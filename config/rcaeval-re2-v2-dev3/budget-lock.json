@@ -1,0 +1,40 @@
+{
+  "fallback_count": 0,
+  "max_model_calls_per_run": 8,
+  "max_targeted_refinement": 0,
+  "max_tool_calls_per_run": 8,
+  "max_total_tokens_per_run": 32000,
+  "model_call_timeout_seconds": 30.0,
+  "operation_caps": {
+    "design": 1200,
+    "dev_validation_reserved": 1320,
+    "smoke": 240
+  },
+  "provider_attempt_caps": {
+    "design": 2400,
+    "smoke": 480
+  },
+  "transport_retry_caps": {
+    "design": 60,
+    "per_semantic_operation": 1,
+    "smoke": 12
+  },
+  "attempt_token_reservation": {
+    "max_completion_tokens": 2048,
+    "prompt_tokens": 29952,
+    "total_tokens": 32000
+  },
+  "conservative_phase_token_budgets": {
+    "design": 76800000,
+    "smoke": 15360000
+  },
+  "overall_run_timeout_seconds": 45.0,
+  "protocol_id": "rcaeval-re2-v2-dev.3",
+  "protocol_sha256": "3cbc02eec0bda6734bf777999200c3f5e6cdc6522fe8fb0baa22b126b402d8c4",
+  "result_driven_retries": 0,
+  "schedule_overflow_disposition": "BLOCKED_DEV_EVAL_BUDGET_EXCEEDED",
+  "schema_version": "rcaeval-re2-v2-dev3.budget-lock.v1",
+  "semantic_attempts_per_run": 1,
+  "semantic_retries": 0,
+  "transport_retries": "ALLOWLISTED_ONLY"
+}

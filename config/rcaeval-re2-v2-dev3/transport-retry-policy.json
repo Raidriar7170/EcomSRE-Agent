@@ -1,0 +1,31 @@
+{
+  "schema_version": "rcaeval-re2-v2-dev3.transport-retry-policy.v1",
+  "protocol_id": "rcaeval-re2-v2-dev.3",
+  "max_transport_retries_per_semantic_operation": 1,
+  "allowlist": [
+    "CONNECTION_RESET_OR_DISCONNECT",
+    "TLS_TRANSIENT",
+    "TIMEOUT_PRE_RESPONSE",
+    "HTTP_429",
+    "HTTP_5XX"
+  ],
+  "eligibility": {
+    "canonical_request_bytes_available": true,
+    "parsed_tool_call_received": false,
+    "semantic_result_received": false,
+    "valid_model_output_received": false
+  },
+  "waiting_seconds": {
+    "connection_tls_timeout": 2,
+    "http_429_default": 3,
+    "http_429_retry_after_cap": 10,
+    "http_5xx": 2
+  },
+  "jitter": "FORBIDDEN",
+  "exponential_backoff": "FORBIDDEN",
+  "semantic_retry": "FORBIDDEN",
+  "schema_retry": "FORBIDDEN",
+  "result_driven_retry": "FORBIDDEN",
+  "fallback": "NO_FALLBACK",
+  "request_identity": "BYTE_IDENTICAL_WIRE_JSON_SHA256"
+}

@@ -1,0 +1,83 @@
+{
+  "architecture_summaries": {},
+  "bootstrap_intervals": {},
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "dataset_split_counts": {
+    "design_cases": 60,
+    "dev_validation_cases": 120,
+    "re2_ob_cases": 90,
+    "re2_ss_cases": 90
+  },
+  "failure_stage_taxonomy": {
+    "FINAL_JUDGE": 1,
+    "UNATTRIBUTED_BEFORE_OPERATION_MARKER": 2
+  },
+  "formula_selection": {
+    "selected": "F0",
+    "selection_result": "V2_INDICATOR_TOOL_GATE_PASSED"
+  },
+  "gates": {
+    "indicator_tool_gate": "PASSED",
+    "provider_smoke_gate": "NOT_PASSED"
+  },
+  "limitations": [
+    "Execution stopped during the bounded DESIGN smoke gate.",
+    "No full DESIGN architecture comparison was produced.",
+    "DEV_VALIDATION was not accessed or executed.",
+    "No external holdout or production-readiness claim is supported."
+  ],
+  "paired_development_comparisons": {},
+  "run_accounting": {
+    "planned_design_runs": 360,
+    "planned_dev_validation_runs": 480,
+    "planned_smoke_runs": 72,
+    "provider_operations": 29,
+    "semantic_retries": 0,
+    "terminalized_smoke_runs": 10,
+    "transport_retries": 0
+  },
+  "schema_version": "rcaeval-re2-v2-dev.public-aggregate.v1",
+  "source_bindings": {
+    "evaluation_lock_sha256": "69642f1bd675b7b3532651e434434fc42897f5f052665150597094d69d8cf992",
+    "indicator_formula_sha256": "51a8373e72e924151d9e8749ffc6b2959eadee59cc0b11510f9d8f6d6ed2455a",
+    "model_prompt_lock_sha256": "7c95845672bd4c1f86cef5b7b50d721b979326b7c67b36a52c0e61ae4b7be19f",
+    "protocol_sha256": "110d95c388597d417bf0dc15b16c177e1d0dbdc60fb686b8f02edf3a244236ad",
+    "runtime_implementation_commit": "23703280c5371e166891e22a788471b1808e1f56",
+    "source_base_commit": "095dfd95964df9d77da06dcfb1b31023185b3f41",
+    "split_lock_sha256": "14e88500098a282e89d4b1cee96d5c622aca9c91f35f73a6811cad9526909cba"
+  },
+  "specialist_candidate_accuracy": {},
+  "specialist_disagreement": {},
+  "state": "V2_PROVIDER_DEV_GATE_NOT_PASSED",
+  "terminal_taxonomy": {
+    "v1_reference": {
+      "COMPLETED": 5
+    },
+    "v2": {
+      "COMPLETED": 2,
+      "INVALID_SCHEMA": 1,
+      "PROTOCOL_VIOLATION": 2
+    }
+  },
+  "tool_only_coverage": {
+    "F0": {
+      "denominator": 60,
+      "numerator": 57,
+      "value": 0.95
+    },
+    "F1": {
+      "denominator": 60,
+      "numerator": 49,
+      "value": 0.8166666666666667
+    },
+    "F2": {
+      "denominator": 60,
+      "numerator": 50,
+      "value": 0.8333333333333334
+    }
+  }
+}

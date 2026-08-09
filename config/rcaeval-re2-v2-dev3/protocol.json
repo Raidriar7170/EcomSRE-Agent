@@ -1,0 +1,134 @@
+{
+  "admission_rehearsal": {
+    "design_records": 360,
+    "dev_validation_metadata_records": 480,
+    "dev_validation_values_accessed": false,
+    "provider_calls": 0,
+    "provider_objects_constructed": 0,
+    "run_attempts_created": 0,
+    "smoke_records": 72
+  },
+  "allowed_systems": [
+    "RE2-OB",
+    "RE2-SS"
+  ],
+  "benchmark": "RCAEval",
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "DESIGN_SET",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "evaluation_authorization": {
+    "admission_lock_name": "schedule-admission-lock.json",
+    "dev2_failure_audit_lock_name": "dev2-provider-failure-audit.json",
+    "evaluation_lock_name": "evaluation-root-lock.json",
+    "lock_location": "EXTERNAL_CONTROL_ROOT",
+    "provider_construction_without_all_verified_locks": "FORBIDDEN"
+  },
+  "excluded_scope": [
+    "DEV_VALIDATION_CASE_ACCESS",
+    "DEV_VALIDATION_EXECUTION",
+    "RE2-TT",
+    "SINGLE_FIRST_ADAPTIVE_ESCALATION",
+    "SEMANTIC_RETRY",
+    "INVALID_SCHEMA_RETRY",
+    "RESULT_DRIVEN_RETRY",
+    "RELEASE",
+    "TAG",
+    "MERGE"
+  ],
+  "fallback": "NO_FALLBACK",
+  "forbidden_systems": [
+    "RE2-TT"
+  ],
+  "position_contract": {
+    "family_call_position": "ACTUAL_FAMILY_ORDER_1_TO_3",
+    "global_arm_position": "ACTUAL_SIX_ARM_ORDER_1_TO_6",
+    "v1_adapter_field": "family_call_position"
+  },
+  "protocol_id": "rcaeval-re2-v2-dev.3",
+  "provider_operation_caps": {
+    "design": 1200,
+    "smoke": 240
+  },
+  "provider_attempt_caps": {
+    "design": 2400,
+    "smoke": 480
+  },
+  "transport_retry_caps": {
+    "design": 60,
+    "per_semantic_operation": 1,
+    "smoke": 12
+  },
+  "required_config_files": [
+    "protocol.json",
+    "dataset-lock.json",
+    "split-lock.json",
+    "model-prompt-lock.json",
+    "budget-lock.json",
+    "indicator-lock.json",
+    "schedule-generation.json",
+    "evaluation-policy.json",
+    "transport-retry-policy.json"
+  ],
+  "result_driven_retry": "FORBIDDEN",
+  "run_counts": {
+    "design": 360,
+    "dev_validation_reserved": 480,
+    "smoke": 72
+  },
+  "schema_version": "rcaeval-re2-v2-dev3.protocol-lock.v1",
+  "semantic_attempts_per_run": 1,
+  "semantic_retry": "FORBIDDEN",
+  "source_base_commit": "ee755db525d2df1bca5c74b7b4c9336bc183443b",
+  "split": {
+    "design_case_count": 60,
+    "dev_validation_case_count": 120,
+    "reallocation": "FORBIDDEN",
+    "seed": 20260807
+  },
+  "suite": "RE2",
+  "transport_retry": "ONE_ALLOWLISTED_SAME_REQUEST_RETRY",
+  "no_further_harness_version": "NO_DEV4",
+  "legal_terminal_states": [
+    "RCAEval_RE2_V2_DEV3_DESIGN_COMPLETE_READY_FOR_AGENT_REDESIGN",
+    "RCAEval_RE2_V2_DEV3_FINAL_PROVIDER_LIMIT_RECORDED_READY_FOR_AGENT_REDESIGN",
+    "BLOCKED"
+  ],
+  "v1_bindings": {
+    "attribution_commit": "3991102f6fb228568d6c620c386340a3956ac949",
+    "frozen_implementation_commit": "3a03995037ce410488a4364f8a485b27c80f0ac0",
+    "frozen_scope_mutation": "FORBIDDEN"
+  },
+  "variants": {
+    "DESIGN": [
+      "single_v1_reference",
+      "fixed_v1_reference",
+      "dynamic_v1_reference",
+      "single_v2_dev3",
+      "fixed_v2_dev3",
+      "dynamic_v2_dev3"
+    ],
+    "DEV_VALIDATION_RESERVED": [
+      "single_v1_reference",
+      "single_v2_dev3",
+      "fixed_v2_dev3",
+      "dynamic_v2_dev3"
+    ]
+  },
+  "preserved_negative_evidence": {
+    "pr14": {
+      "head": "95e835460c83b631e5860e98276b3fc55c7f77aa",
+      "state": "V2_PROVIDER_DEV_GATE_NOT_PASSED"
+    },
+    "pr15": {
+      "head": "3b04ef340990e136312e1e1cbcf931a385cbe250",
+      "state": "V2_DEV1_PROVIDER_SMOKE_GATE_NOT_PASSED"
+    },
+    "pr16": {
+      "head": "ee755db525d2df1bca5c74b7b4c9336bc183443b",
+      "state": "V2_DEV2_PROVIDER_SMOKE_GATE_NOT_PASSED"
+    }
+  }
+}

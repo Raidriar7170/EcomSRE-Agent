@@ -1,0 +1,114 @@
+{
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "DESIGN_SET",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "evaluated_at_utc": "2026-08-08T05:08:35.941793+00:00",
+  "gate_checks": {
+    "exact_failure_stage_coverage": {
+      "denominator": 3,
+      "numerator": 3,
+      "passed": true,
+      "required": 1.0,
+      "value": 1.0
+    },
+    "final_judge_schema": {
+      "invalid_schema_count": 0,
+      "passed": true
+    },
+    "operation_attempt_markers": {
+      "attempts": 142,
+      "operation_records": 142,
+      "passed": true
+    },
+    "positive_known_token_accounting": {
+      "known_tokens": 614018,
+      "passed": false
+    },
+    "pre_run_admission_failures": {
+      "count": 0,
+      "passed": true
+    },
+    "privacy": {
+      "credential_text_hits": 0,
+      "forbidden_key_hits": 0,
+      "passed": true,
+      "raw_local_path_hits": 0
+    },
+    "provider_operation_cap": {
+      "maximum": 240,
+      "operations": 222,
+      "passed": true
+    },
+    "run_attempt_accounting": {
+      "denominator": 72,
+      "numerator": 72,
+      "passed": true,
+      "value": 1.0
+    },
+    "schedule_contract_failures": {
+      "count": 0,
+      "passed": true
+    },
+    "terminal_accounting": {
+      "denominator": 72,
+      "numerator": 72,
+      "passed": true,
+      "value": 1.0
+    },
+    "terminal_overwrites": {
+      "count": 0,
+      "passed": true
+    },
+    "v2_run_completion": {
+      "denominator": 36,
+      "numerator": 33,
+      "passed": false,
+      "required_minimum": 0.95,
+      "value": 0.9166666666666666
+    }
+  },
+  "observability": {
+    "operation_attempt_markers": 142,
+    "operation_records": 142,
+    "v2_run_traces": 36
+  },
+  "protocol_id": "rcaeval-re2-v2-dev.2",
+  "provider_accounting": {
+    "known_tokens": 614018,
+    "provider_operations": 222,
+    "semantic_retries": 0,
+    "transport_retries": 0
+  },
+  "run_accounting": {
+    "planned": 72,
+    "terminalized": 72,
+    "v1_reference_terminal_status": {
+      "COMPLETED": 34,
+      "PROVIDER_FAILURE": 2
+    },
+    "v2_terminal_status": {
+      "COMPLETED": 33,
+      "PROVIDER_FAILURE": 3
+    }
+  },
+  "schema_version": "rcaeval-re2-v2-dev2.provider-smoke-gate.v1",
+  "source_bindings": {
+    "design_journal_authority_sha256": "1aff3db35a337f99e802487a17877181d52a3d2facf0383e6e3435f43e075dde",
+    "design_schedule_sha256": "1e131a95cd68f05813bb26db613763db2e85abd22f143b0a691571c8c99f7849",
+    "evaluation_root_lock_sha256": "01c10b23af09006266ed360ead7586defbe926a5034a889b56952dc1581d0bb2",
+    "indicator_lock_sha256": "b08dfb309bb06d99675365eb7ca773b8a4d61dcedde2b694427e33d8452b2f3d",
+    "model_prompt_lock_sha256": "1ad8febee08c060b096e8ba6b2f81bbb52cd07fd96cbd2d5f67b97ea85325d44",
+    "output_root_authority_sha256": "9acf2bcac2fe06291c547f85e48bd55a834115bd0fae02bf14e5f8189bcc4540",
+    "private_schedule_authority_sha256": "5e9db121f38613253670ecde4ce194052c2d8645db7d982116bfd3aa4ea60050",
+    "protocol_sha256": "bdae9acab73e550a837807cfdb180015fde83a566eb745dae7be1887d5cad86f",
+    "schedule_admission_lock_sha256": "01db23682cea140e6b60e6f29ee5932eee1e247078b0a8c37c4c38bf34ca9e02",
+    "smoke_journal_authority_sha256": "ffdb1e19ecf5184329971a4c0f5719909c6251f3009fef033062b819aaa8f22c",
+    "smoke_schedule_sha256": "02343035d9b92ca874eb61cf92e460485765754c47dc7fde63e6f323ab0554d4",
+    "split_lock_sha256": "a1a4ea08d608610340a26056a917225407e45e51b072f78ede94bc9a884d108f",
+    "validation_schedule_sha256": "60a6f0a761a12bc8eabfead97b54e0c06fb471f0c4c199e15171937234eaf701"
+  },
+  "state": "V2_DEV2_PROVIDER_SMOKE_GATE_NOT_PASSED"
+}

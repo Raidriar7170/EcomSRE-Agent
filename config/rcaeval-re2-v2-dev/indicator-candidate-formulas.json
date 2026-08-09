@@ -1,0 +1,145 @@
+{
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "dataset_lock_sha256": "e0cc4ef5c3414e457f3b04695059e352522adedbb13f6d1f7b9a531c2739a957",
+  "dataset_schema_sha256": {
+    "RE2-OB": "1ec60a1a5c5fc95f56048d24c53c4c6ef671c98025e7a6cae13adf2a14b3105c",
+    "RE2-SS": "2cbb47c37cb486892fd2fbb1d16482483220afec5ca6b83a8bb0f5ccbcddfcf8"
+  },
+  "formulas": {
+    "F0": {
+      "definition": "abs(post_mean-pre_mean)/max(abs(pre_mean),epsilon)",
+      "epsilon": 1e-09
+    },
+    "F1": {
+      "definition": "abs(post_median-pre_median)/max(1.4826*pre_mad,scale_floor)",
+      "mad_multiplier": 1.4826,
+      "scale_floor": 1e-09
+    },
+    "F2": {
+      "clip": 20.0,
+      "definition": "max(min(F0,clip),min(F1,clip))+persistence_bonus",
+      "persistence_bonus": 1.0,
+      "persistence_gate": 0.5,
+      "persistence_threshold": "max(3*1.4826*pre_mad,1e-9)"
+    }
+  },
+  "metric_value_policy": {
+    "initial_value": "ZERO",
+    "missing_timestamp": "DROP_ROW",
+    "missing_value": "PREVIOUS_FINITE_OR_ZERO",
+    "nonfinite_timestamp": "FAIL_CLOSED",
+    "nonfinite_value": "PREVIOUS_FINITE_OR_ZERO",
+    "row_order": "PRESERVE"
+  },
+  "normalization": {
+    "auxiliary_suffixes": {
+      "_error": "error",
+      "_workload": "workload"
+    },
+    "canonical_suffixes": {
+      "_cpu": "cpu",
+      "_diskio": "diskio",
+      "_latency-50": "latency",
+      "_latency-90": "latency",
+      "_mem": "mem",
+      "_socket": "socket"
+    },
+    "casefold": false,
+    "root_service_allowlists": {
+      "RE2-OB": [
+        "checkoutservice",
+        "currencyservice",
+        "emailservice",
+        "productcatalogservice",
+        "recommendationservice"
+      ],
+      "RE2-SS": [
+        "carts",
+        "catalogue",
+        "orders",
+        "payment",
+        "user"
+      ]
+    },
+    "service_prefix_allowlists": {
+      "RE2-OB": [
+        "InboundPassthroughClusterIpv4",
+        "PassthroughCluster",
+        "adservice",
+        "cartservice",
+        "checkoutservice",
+        "currencyservice",
+        "emailservice",
+        "frontend",
+        "frontend-check",
+        "frontend-external",
+        "istio-init",
+        "paymentservice",
+        "productcatalogservice",
+        "recommendationservice",
+        "redis",
+        "shippingservice"
+      ],
+      "RE2-SS": [
+        "carts",
+        "carts-db",
+        "catalogue",
+        "catalogue-db",
+        "front-end",
+        "istio-init",
+        "orders",
+        "orders-db",
+        "payment",
+        "queue-master",
+        "rabbitmq",
+        "rabbitmq-exporter",
+        "session-db",
+        "shipping",
+        "user",
+        "user-db"
+      ]
+    },
+    "trim": false,
+    "unknown_suffix_disposition": "UNKNOWN",
+    "unmapped_prefix_disposition": "UNKNOWN"
+  },
+  "ranking": {
+    "canonical_collapse_key": [
+      "service",
+      "canonical_indicator"
+    ],
+    "metric_bytes_final_tie_break": true,
+    "primary_order": "score_desc",
+    "tie_breaker_domain": "rcaeval-v2-indicator-tie-v1"
+  },
+  "protocol_id": "rcaeval-re2-v2-dev-v1",
+  "protocol_sha256": "110d95c388597d417bf0dc15b16c177e1d0dbdc60fb686b8f02edf3a244236ad",
+  "schema_version": "rcaeval-re2-v2.indicator-candidate-formulas.v2",
+  "selection": {
+    "formula_simplicity_order": [
+      "F0",
+      "F1",
+      "F2"
+    ],
+    "gates": {
+      "ambiguous_count_max": 0,
+      "eligible_unknown_count_max": 0,
+      "memory_coverage_at_6_min": 0.8,
+      "overall_coverage_at_6_min": 0.95,
+      "per_fault_delta_from_f0_min": -0.05,
+      "socket_coverage_at_6_min": 0.8
+    },
+    "macro_tie_simpler_if_difference_lt": 0.01,
+    "primary_metric": "macro_truth_indicator_coverage_at_6"
+  },
+  "windows": {
+    "post": "[T0,T0+600]",
+    "post_seconds": 600,
+    "pre": "[T0-600,T0)",
+    "pre_seconds": 600
+  }
+}

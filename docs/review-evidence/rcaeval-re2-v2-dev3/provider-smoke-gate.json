@@ -1,0 +1,241 @@
+{
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "DESIGN_SET",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "evaluated_at_utc": "2026-08-08T08:32:02.854615+00:00",
+  "gate_checks": {
+    "completed_attempt_usage_coverage": {
+      "denominator": 228,
+      "numerator": 228,
+      "passed": true
+    },
+    "exact_failure_stage_coverage": {
+      "denominator": 0,
+      "numerator": 0,
+      "passed": true,
+      "required": 1.0,
+      "value": 0.0
+    },
+    "failed_attempt_disposition_coverage": {
+      "denominator": 6,
+      "numerator": 6,
+      "passed": true
+    },
+    "final_judge_schema": {
+      "invalid_schema_count": 0,
+      "passed": true
+    },
+    "final_judge_schema_dev3": {
+      "invalid_schema_count": 0,
+      "passed": true
+    },
+    "operation_attempt_markers": {
+      "attempts": 150,
+      "operation_records": 150,
+      "passed": true
+    },
+    "pre_run_admission_failures": {
+      "count": 0,
+      "passed": true
+    },
+    "privacy": {
+      "credential_text_hits": 0,
+      "forbidden_key_hits": 0,
+      "passed": true,
+      "raw_local_path_hits": 0
+    },
+    "provider_attempt_accounting": {
+      "maximum": 480,
+      "passed": true,
+      "records": 234,
+      "starts": 234,
+      "unbound_or_duplicate_attempts": 0
+    },
+    "provider_operation_cap": {
+      "maximum": 240,
+      "operations": 228,
+      "passed": true
+    },
+    "run_attempt_accounting": {
+      "denominator": 72,
+      "numerator": 72,
+      "passed": true,
+      "value": 1.0
+    },
+    "schedule_contract_failures": {
+      "count": 0,
+      "passed": true
+    },
+    "semantic_failure_attribution": {
+      "denominator": 0,
+      "numerator": 0,
+      "passed": true
+    },
+    "semantic_operation_accounting": {
+      "passed": true,
+      "records": 228,
+      "starts": 228,
+      "terminal_mismatches": 0,
+      "terminal_model_calls": 228
+    },
+    "terminal_accounting": {
+      "denominator": 72,
+      "numerator": 72,
+      "passed": true,
+      "value": 1.0
+    },
+    "terminal_overwrites": {
+      "count": 0,
+      "passed": true
+    },
+    "token_accounting_v2": {
+      "conservative_token_upper_bound": 849535,
+      "known_token_lower_bound": 657535,
+      "maximum": 15360000,
+      "orphan_attempts": 0,
+      "passed": true,
+      "unknown_attempt_count": 6,
+      "unknown_reserved_tokens": 192000
+    },
+    "transport_retry_policy": {
+      "maximum": 12,
+      "non_allowlisted_retries": 0,
+      "passed": true,
+      "request_identity_mismatches": 0,
+      "retry_attempts": 6
+    },
+    "v2_run_completion": {
+      "denominator": 36,
+      "numerator": 36,
+      "passed": true,
+      "required_minimum": 0.95,
+      "value": 1.0
+    }
+  },
+  "observability": {
+    "operation_attempt_markers": 150,
+    "operation_records": 150,
+    "provider_attempt_records": 234,
+    "semantic_operation_records": 228,
+    "v2_run_traces": 36
+  },
+  "protocol_id": "rcaeval-re2-v2-dev.3",
+  "provider_accounting": {
+    "by_architecture": {
+      "dynamic_v1_reference": {
+        "conservative_token_upper_bound": 174726,
+        "known_token_lower_bound": 174726,
+        "provider_attempts": 54,
+        "semantic_operations": 54,
+        "transport_retries": 0,
+        "unknown_attempt_count": 0
+      },
+      "dynamic_v2_dev3": {
+        "conservative_token_upper_bound": 97936,
+        "known_token_lower_bound": 97936,
+        "provider_attempts": 54,
+        "semantic_operations": 54,
+        "transport_retries": 0,
+        "unknown_attempt_count": 0
+      },
+      "fixed_v1_reference": {
+        "conservative_token_upper_bound": 201964,
+        "known_token_lower_bound": 169964,
+        "provider_attempts": 49,
+        "semantic_operations": 48,
+        "transport_retries": 1,
+        "unknown_attempt_count": 1
+      },
+      "fixed_v2_dev3": {
+        "conservative_token_upper_bound": 189854,
+        "known_token_lower_bound": 93854,
+        "provider_attempts": 51,
+        "semantic_operations": 48,
+        "transport_retries": 3,
+        "unknown_attempt_count": 3
+      },
+      "single_v1_reference": {
+        "conservative_token_upper_bound": 131065,
+        "known_token_lower_bound": 99065,
+        "provider_attempts": 13,
+        "semantic_operations": 12,
+        "transport_retries": 1,
+        "unknown_attempt_count": 1
+      },
+      "single_v2_dev3": {
+        "conservative_token_upper_bound": 53990,
+        "known_token_lower_bound": 21990,
+        "provider_attempts": 13,
+        "semantic_operations": 12,
+        "transport_retries": 1,
+        "unknown_attempt_count": 1
+      }
+    },
+    "conservative_token_upper_bound": 849535,
+    "failed_provider_attempts_by_architecture": {
+      "fixed_v1_reference": 1,
+      "fixed_v2_dev3": 3,
+      "single_v1_reference": 1,
+      "single_v2_dev3": 1
+    },
+    "failed_provider_attempts_by_operation_type": {
+      "FINAL_JUDGE": 4,
+      "LOGS_SPECIALIST": 1,
+      "TRACES_SPECIALIST": 1
+    },
+    "first_attempt_failures": 6,
+    "first_attempt_provider_success": {
+      "denominator": 228,
+      "numerator": 222,
+      "value": 0.9736842105263158
+    },
+    "known_token_lower_bound": 657535,
+    "provider_attempts": 234,
+    "retry_budget_suppressed": 0,
+    "retry_eligible_failures": 6,
+    "retry_exhaustions": 0,
+    "retry_failures": 0,
+    "retry_recoveries": 6,
+    "semantic_operations": 228,
+    "transport_retries": 6,
+    "unknown_attempt_count": 6,
+    "unknown_reserved_tokens": 192000,
+    "usage_dispositions": {
+      "KNOWN_POSITIVE": 228,
+      "UNKNOWN_NO_VALID_RESPONSE": 6
+    }
+  },
+  "run_accounting": {
+    "planned": 72,
+    "terminalized": 72,
+    "v1_reference_terminal_status": {
+      "COMPLETED": 36
+    },
+    "v2_terminal_status": {
+      "COMPLETED": 36
+    }
+  },
+  "schema_version": "rcaeval-re2-v2-dev3.provider-smoke-gate.v1",
+  "source_bindings": {
+    "budget_lock_sha256": "758555c23f9494b1b205a92b0677eba19fe7ac14a7f80db929340eb4af4a7bcb",
+    "design_journal_authority_sha256": "16f8cb252e26e7470ae6af326f6063cd4df3482958d101e68f919e0d3b997c47",
+    "design_schedule_sha256": "f5bd027a40464d44051b686c32c3a07653e3516c9681b5a10becd4b13b82cd8d",
+    "dev2_provider_failure_audit_lock_sha256": "8600bc5eef68b4d3fbc50126fe6ee79416e343678b178aa43bcb871bd17ba79b",
+    "evaluation_root_lock_sha256": "8fbc67604b878801826f5712fc6a61342410bcc9f93da292f122ffc65e50d44b",
+    "indicator_lock_sha256": "98d83abbc121b31aaf19f600889622bad9574b800457ed39031034fed54b2dbc",
+    "model_prompt_lock_sha256": "a9d05db350080b4ce7163b6f952aa24f11aed238ab4f178ddaef1b2a876bfa14",
+    "output_root_authority_sha256": "12ca1796cd60b0692016b58d4032800c506b25124d2962682bae7618f6ba64df",
+    "private_schedule_authority_sha256": "35d577bdbe76a02e345d9b4045f2081aa871c52c9b360d34074a675b66670ee0",
+    "protocol_sha256": "3cbc02eec0bda6734bf777999200c3f5e6cdc6522fe8fb0baa22b126b402d8c4",
+    "schedule_admission_lock_sha256": "fbbbacea2b9ebb1e8205b891aef23550ea793ff0254f463d5648da11070e8629",
+    "smoke_journal_authority_sha256": "27a9585ccdb48f3d2a54954415c1055af904afa7595466c865c4cbd3b2765b32",
+    "smoke_schedule_sha256": "9ee6f72f0800750ab731d618faee3893d85b0f70475ac08676c233c70ee8206a",
+    "split_lock_sha256": "9f145cf8beb75d6b97c11421cb0e138c00e12963ddd896b9509a85d3b7bafd66",
+    "transport_retry_policy_sha256": "7fd010103f83a1cb99b0c478ddafdf6e9fd0dc349a4297e7bb55c9b4157c202b",
+    "validation_schedule_sha256": "e5adae294869eceb0d8fdb323afbde2eb6778d771cc798dd36f4f6e8842bbe69"
+  },
+  "state": "V2_DEV3_PROVIDER_SMOKE_GATE_PASSED"
+}

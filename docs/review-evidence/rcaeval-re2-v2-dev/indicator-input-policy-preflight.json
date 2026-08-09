@@ -1,0 +1,29 @@
+{
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "formula_case_outcomes_persisted": false,
+  "formula_scores_persisted": false,
+  "metric_value_quality": {
+    "RE2-OB": {
+      "metric_cells": 9482628,
+      "missing_values": 59684,
+      "nonfinite_values": 2642,
+      "rows": 129256
+    },
+    "RE2-SS": {
+      "metric_cells": 9935695,
+      "missing_values": 47013,
+      "nonfinite_values": 39458,
+      "rows": 129690
+    }
+  },
+  "previous_formula_config_sha256": "07eb8b74b940af56f8f619a2fe7e8a11c2fd525cb58daa553f01c1785ab0f64b",
+  "previous_formula_config_version": "rcaeval-re2-v2.indicator-candidate-formulas.v1",
+  "provider_calls": 0,
+  "schema_version": "rcaeval-re2-v2-dev.indicator-input-policy-preflight.v1",
+  "state": "V2_INDICATOR_INPUT_POLICY_PREFLIGHT_NOT_PASSED",
+  "supersession_disposition": "SUPERSEDED_BY_FROZEN_V1_COMPATIBLE_VALUE_POLICY"
+}

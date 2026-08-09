@@ -1,0 +1,29 @@
+{
+  "admission_state": "V2_DEV3_ADMISSION_REHEARSAL_PASSED",
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "DESIGN_SET",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "design_state": "V2_DEV3_DESIGN_GATE_PASSED",
+  "dev4_created": false,
+  "dev_validation_directories_opened": false,
+  "dev_validation_executed": false,
+  "dev_validation_values_accessed": false,
+  "external_claim_made": false,
+  "formula": "F0",
+  "formula_reselection_performed": false,
+  "old_identifiers_reused": false,
+  "pr14_evidence_changed": false,
+  "pr15_evidence_changed": false,
+  "pr16_evidence_changed": false,
+  "private_records_committed": false,
+  "protocol_id": "rcaeval-re2-v2-dev.3",
+  "provider_payloads_committed": false,
+  "re2_tt_accessed": false,
+  "schema_version": "rcaeval-re2-v2-dev3.current-disposition.v1",
+  "smoke_state": "V2_DEV3_PROVIDER_SMOKE_GATE_PASSED",
+  "state": "RCAEval_RE2_V2_DEV3_DESIGN_COMPLETE_READY_FOR_AGENT_REDESIGN",
+  "v1_frozen_scope_changed": false
+}

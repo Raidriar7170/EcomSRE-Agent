@@ -1,0 +1,19 @@
+{
+  "allowed_next_action": "HUMAN_REVIEW_AND_SEPARATE_V2_DEV_1_PROTOCOL_PROPOSAL",
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "design_evaluation_started": false,
+  "dev_candidate_frozen": false,
+  "dev_validation_accessed": false,
+  "dev_validation_executed": false,
+  "external_holdout_accessed": false,
+  "external_holdout_reruns": 0,
+  "indicator_tool_gate": "V2_INDICATOR_TOOL_GATE_PASSED",
+  "provider_smoke_gate": "V2_PROVIDER_DEV_GATE_NOT_PASSED",
+  "provider_smoke_gate_sha256": "bf1c5ff3bba26afd570a02b6fa182f74dc93fab99ee4e4c2c88a612dfaa90e7c",
+  "schema_version": "rcaeval-re2-v2-dev.current-disposition.v1",
+  "state": "V2_PROVIDER_DEV_GATE_NOT_PASSED"
+}

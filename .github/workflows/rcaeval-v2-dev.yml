@@ -1,0 +1,73 @@
+name: RCAEval RE2 v2 development
+
+on:
+  pull_request:
+    paths:
+      - "src/ecomsre_rcaeval_v2/**"
+      - "src/ecomsre_rcaeval_adaptive/**"
+      - "scripts/rcaeval_v2/**"
+      - "scripts/rcaeval_adaptive/**"
+      - "tests/benchmarks/rcaeval_v2/**"
+      - "tests/benchmarks/rcaeval_adaptive/**"
+      - "config/rcaeval-re2-v2-dev/**"
+      - "config/rcaeval-re2-v2-dev1/**"
+      - "config/rcaeval-re2-v2-dev2/**"
+      - "config/rcaeval-re2-v2-dev3/**"
+      - "config/rcaeval-adaptive-v1/**"
+      - "docs/**/rcaeval-re2-v2-dev*"
+      - "docs/design/rcaeval-agent-redesign-handoff.md"
+      - "docs/design/rcaeval-single-first-adaptive-v1.md"
+      - "docs/results/rcaeval-single-first-adaptive-v1*"
+      - ".github/workflows/rcaeval-v2-dev.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: src:.
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen --group ci
+      - run: uv run --frozen --no-sync pytest -q tests/benchmarks/rcaeval_v2 tests/benchmarks/rcaeval_adaptive
+      - run: uv run --frozen --no-sync ruff check src/ecomsre_rcaeval_v2 src/ecomsre_rcaeval_adaptive scripts/rcaeval_v2 scripts/rcaeval_adaptive tests/benchmarks/rcaeval_v2 tests/benchmarks/rcaeval_adaptive
+      - run: uv run --frozen --no-sync mypy src/ecomsre_rcaeval_v2 src/ecomsre_rcaeval_adaptive scripts/rcaeval_v2 scripts/rcaeval_adaptive
+      - name: Scan v2 development public outputs for leakage
+        run: >-
+          uv run --frozen --no-sync python -m scripts.rcaeval_v2.scan_public_outputs
+          --allow-missing
+          docs/results/rcaeval-re2-v2-dev1-design-aggregate.json
+          docs/results/rcaeval-re2-v2-dev1-design-summary.md
+          docs/review-evidence/rcaeval-re2-v2-dev1/current-disposition.json
+          docs/review-evidence/rcaeval-re2-v2-dev1/provider-smoke-gate.json
+          docs/review-evidence/rcaeval-re2-v2-dev1/design-gate.json
+          docs/review-evidence/rcaeval-re2-v2-dev1/human-brief.md
+          docs/results/rcaeval-re2-v2-dev2-design-aggregate.json
+          docs/results/rcaeval-re2-v2-dev2-design-summary.md
+          docs/review-evidence/rcaeval-re2-v2-dev2/current-disposition.json
+          docs/review-evidence/rcaeval-re2-v2-dev2/schedule-admission-gate.json
+          docs/review-evidence/rcaeval-re2-v2-dev2/provider-smoke-gate.json
+          docs/review-evidence/rcaeval-re2-v2-dev2/design-gate.json
+          docs/review-evidence/rcaeval-re2-v2-dev2/human-brief.md
+          docs/external-benchmarks/rcaeval-re2-v2-dev3-protocol.md
+          docs/external-benchmarks/rcaeval-re2-v2-dev3-data-card.md
+          docs/results/rcaeval-re2-v2-dev3-smoke-aggregate.json
+          docs/results/rcaeval-re2-v2-dev3-design-aggregate.json
+          docs/results/rcaeval-re2-v2-dev3-summary.md
+          docs/results/rcaeval-re2-v2-dev3-final-infrastructure-limit.md
+          docs/review-evidence/rcaeval-re2-v2-dev3/current-disposition.json
+          docs/review-evidence/rcaeval-re2-v2-dev3/provider-failure-audit.json
+          docs/review-evidence/rcaeval-re2-v2-dev3/schedule-admission-gate.json
+          docs/review-evidence/rcaeval-re2-v2-dev3/provider-smoke-gate.json
+          docs/review-evidence/rcaeval-re2-v2-dev3/design-gate.json
+          docs/review-evidence/rcaeval-re2-v2-dev3/human-brief.md
+          docs/design/rcaeval-agent-redesign-handoff.md
+          docs/design/rcaeval-single-first-adaptive-v1.md
+          docs/results/rcaeval-single-first-adaptive-v1.json
+          docs/results/rcaeval-single-first-adaptive-v1.md
+          docs/results/rcaeval-single-first-adaptive-v1-human-brief.md

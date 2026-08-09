@@ -1,0 +1,62 @@
+{
+  "bootstrap": {
+    "confidence_level": 0.95,
+    "instance_resampling": "within_resampled_stratum_with_replacement",
+    "interval": "percentile",
+    "pairing": "preserve_all_compared_arms_per_case",
+    "replicates": 10000,
+    "seed": 20260807,
+    "strata": [
+      "system",
+      "root_cause_service",
+      "fault"
+    ],
+    "stratum_resampling": "with_replacement"
+  },
+  "candidate_state": "PROVIDER_SMOKE_GATE_NOT_PASSED",
+  "classification": [
+    "DEVELOPMENT_VISIBLE",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "created_at_utc": "2026-08-07T14:57:10Z",
+  "freeze_timing": {
+    "created_after_provider_smoke_termination": true,
+    "negative_gate_evidence_only": true,
+    "retroactive_provider_authorization": false
+  },
+  "indicator_selection": {
+    "formula": "F0",
+    "result": "V2_INDICATOR_TOOL_GATE_PASSED",
+    "tool_gate_sha256": "acacf5493d94ad1641a034d92dd825da8eefde325c42d12ad5dcec9aff42b886"
+  },
+  "prerequisite_lock_sha256": {
+    "budget-lock.json": "8bbc49531cbe6056cd4187f0d1d58ddc62e117a8d8ce64d0d2d8815e9c3551d9",
+    "dataset-lock.json": "e0cc4ef5c3414e457f3b04695059e352522adedbb13f6d1f7b9a531c2739a957",
+    "indicator-candidate-formulas.json": "51a8373e72e924151d9e8749ffc6b2959eadee59cc0b11510f9d8f6d6ed2455a",
+    "model-prompt-lock.json": "7c95845672bd4c1f86cef5b7b50d721b979326b7c67b36a52c0e61ae4b7be19f",
+    "protocol.json": "110d95c388597d417bf0dc15b16c177e1d0dbdc60fb686b8f02edf3a244236ad",
+    "split-lock.json": "14e88500098a282e89d4b1cee96d5c622aca9c91f35f73a6811cad9526909cba"
+  },
+  "protocol_id": "rcaeval-re2-v2-dev-v1",
+  "run_counts": {
+    "design": 360,
+    "dev_validation": 480,
+    "total": 840
+  },
+  "schedule_sha256": {
+    "design": "ee648cf503d26c6df04510161480d8a35009f885ba3eb60784f14521dd031db6",
+    "dev_validation": "e1c6bcb143dc0c00f8cd2cd2fd44c90a531b1d9a83ff96054e323a88d5c1e8d0",
+    "schedule_set_lock": "0ae4841b947a3150d355ac6c6e323ecb97c2efc84ab3bf3491de2802aa715c80",
+    "smoke": "a9fb19abef43a336e0de13b0cc7a26fcd42d3e95a557507c4883828fc0c12339"
+  },
+  "schema_version": "rcaeval-re2-v2-dev.evaluation-lock.v1",
+  "split_assignment_manifest_sha256": "917b1043b1444b1099418ebf0ac5308692dceabe9e0baaa230a4020b83841b40",
+  "validation_policy": {
+    "all_terminal_failures_retained": true,
+    "external_superiority_claim": "FORBIDDEN",
+    "one_shot": true,
+    "validation_driven_config_change": "FORBIDDEN",
+    "validation_failure_rerun": "FORBIDDEN"
+  }
+}

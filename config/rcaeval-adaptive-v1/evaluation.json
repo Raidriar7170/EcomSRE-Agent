@@ -1,0 +1,73 @@
+{
+  "baseline": {
+    "design_pair_correct": 29,
+    "design_root_service_correct": 51,
+    "variant": "single_v1_reference"
+  },
+  "candidate_limit": 3,
+  "damage_rescue_endpoint": "root_cause_pair_ac_at_1",
+  "design_cases": 60,
+  "design_minimum_gate": {
+    "completion_min": 58,
+    "damage_max": 3,
+    "direct_return_min": 24,
+    "mean_semantic_operations_max": 3.0,
+    "pair_correct_min": 28,
+    "privacy_schema_schedule_failure_max": 0,
+    "rescue_strictly_greater_than_damage": true,
+    "root_service_correct_min": 50
+  },
+  "design_target": {
+    "damage_max": 2,
+    "direct_return_min": 30,
+    "mean_semantic_operations_max": 2.5,
+    "net_rescue_min": 2,
+    "pair_correct_min": 30,
+    "rescue_min": 5,
+    "root_service_correct_min": 52,
+    "trace_route_rate_max": 0.4
+  },
+  "dev_validation_cases": 120,
+  "evaluation_version": "single-first-adaptive-v1",
+  "run_domain": "single-first-adaptive-v1-fusion-guardrail-r1",
+  "phase_budgets": {
+    "design": {
+      "conservative_tokens": 15360000,
+      "provider_attempts": 480,
+      "semantic_operations": 240,
+      "transport_retries": 60
+    },
+    "smoke": {
+      "conservative_tokens": 3072000,
+      "provider_attempts": 96,
+      "semantic_operations": 48,
+      "transport_retries": 12
+    },
+    "validation": {
+      "conservative_tokens": 38400000,
+      "provider_attempts": 1200,
+      "semantic_operations": 600,
+      "transport_retries": 120
+    }
+  },
+  "schema_version": "rcaeval-single-first-adaptive.evaluation.v1",
+  "selection_order": [
+    "root_service_correct_desc",
+    "pair_correct_desc",
+    "net_rescue_desc",
+    "damage_asc",
+    "mean_semantic_operations_asc",
+    "direct_return_desc"
+  ],
+  "smoke_cases": 12,
+  "validation_positive_gate": {
+    "completion_rate_min": 0.95,
+    "damage_rate_max": 0.05,
+    "direct_return_rate_min": 0.4,
+    "mean_semantic_operations_max": 2.5,
+    "pair_difference_min": 0.0,
+    "rescue_strictly_greater_than_damage": true,
+    "root_difference_ci_lower_min": -0.05,
+    "root_difference_min": 0.0
+  }
+}

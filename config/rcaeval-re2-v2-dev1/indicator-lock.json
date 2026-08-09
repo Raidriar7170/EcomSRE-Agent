@@ -1,0 +1,29 @@
+{
+  "formula_reselection_performed": false,
+  "inherited_formula_config_sha256": "51a8373e72e924151d9e8749ffc6b2959eadee59cc0b11510f9d8f6d6ed2455a",
+  "inherited_tool_gate": {
+    "design_cases": 60,
+    "memory_coverage_at_6": {
+      "denominator": 10,
+      "numerator": 10,
+      "value": 1.0
+    },
+    "overall_coverage_at_6": {
+      "denominator": 60,
+      "numerator": 57,
+      "value": 0.95
+    },
+    "selected_formula": "F0",
+    "socket_coverage_at_6": {
+      "denominator": 10,
+      "numerator": 9,
+      "value": 0.9
+    },
+    "tool_gate_sha256": "acacf5493d94ad1641a034d92dd825da8eefde325c42d12ad5dcec9aff42b886"
+  },
+  "protocol_id": "rcaeval-re2-v2-dev.1",
+  "protocol_sha256": "b79ecbd11ee4180781daff92f50056e5fc25ad6217d431faf9e47a6cfbd4bee7",
+  "provider_calls_for_reverification": 0,
+  "schema_version": "rcaeval-re2-v2-dev1.indicator-lock.v1",
+  "selected_formula": "F0"
+}
