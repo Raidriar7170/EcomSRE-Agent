@@ -8,6 +8,8 @@
 
 最终 Fusion overlap Guardrail 已通过共享 Smoke，candidate-3 也通过了 DESIGN Minimum Gate 并在访问 validation 前完成冻结；但一次性 DEV_VALIDATION 中 Adaptive 保留了 65 个 `HTTP_429`，固定分母结果显著低于 Strong Single，因此当前证据不支持“Adaptive 改进”结论。这个负向结果受到 Provider 失败严重污染，不能等价解释为 120 次成功 Adaptive 推理的真实准确率。
 
+DEV_VALIDATION first executed all 120 Strong Single runs and only then executed all 120 Adaptive runs. Provider capacity and temporal execution order are therefore confounded with architecture. The 65 Adaptive HTTP 429 failures remain part of the fixed-denominator result, but the run does not provide a clean architecture-only reliability or accuracy comparison.
+
 ## 本轮修复了什么
 
 - Provider-facing Fusion proposal 可以观察 supporting / contradicting evidence overlap；内部 `FusionDecision` 的唯一、互斥 invariant 没有放宽。
@@ -43,6 +45,8 @@ candidate-3 的最后改动仅是已授权的 Logs/Trace evidence-role wording �
 - Fusion Guardrail 0；correct/wrong override 均为 0。
 
 这些指标保留了全部失败 case 和固定 120 分母。Route / escalation aggregate 也包含失败路径默认值，不应被当作 120 次成功 Adaptive 的干净行为估计。
+
+执行顺序没有配对交错：先完成全部 120 个 Strong Single，之后才开始 120 个 Adaptive。因此 Provider capacity、时间窗口与 architecture arm 混杂。65 个 Adaptive HTTP 429 仍属于实际执行协议的固定分母结果，但这次运行不能支持干净的 architecture-only reliability 或 accuracy 比较。
 
 ## 汇总缺陷与处理
 

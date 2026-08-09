@@ -411,6 +411,13 @@
     "reruns": 0,
     "validation_driven_changes": false
   },
+  "dev_validation_execution_order": {
+    "strategy": "ALL_STRONG_SINGLE_THEN_ALL_ADAPTIVE",
+    "paired_interleaving": false,
+    "provider_capacity_confounded_with_architecture": true,
+    "strong_single_completed_before_adaptive_started": 120,
+    "interpretation": "The fixed-denominator result is valid for the executed protocol, but it is not a clean architecture-only reliability or accuracy comparison."
+  },
   "data_boundary": {
     "re2_ob_validation_cases": 60,
     "re2_ss_validation_cases": 60,

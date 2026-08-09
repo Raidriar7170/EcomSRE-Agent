@@ -10,6 +10,8 @@ The final Fusion overlap guardrail passed its shared 12-case smoke. Three bounde
 
 The one-shot DEV_VALIDATION terminalized all 240 scheduled runs: 120/120 Strong Single reference runs completed, while the frozen Adaptive candidate completed 55/120 and retained 65 `HTTP_429` Provider failures after the one allowlisted transport retry. With failures kept in the denominator, Strong Single reached 99/120 Root Service and 55/120 Pair; Adaptive reached 51/120 Root Service and 31/120 Pair. The paired differences were -40.0 percentage points for Root Service (95% CI -58.3 to -21.7) and -20.0 points for Pair (95% CI -35.8 to -5.8). This does not support an improvement claim.
 
+DEV_VALIDATION first executed all 120 Strong Single runs and only then executed all 120 Adaptive runs. Provider capacity and temporal execution order are therefore confounded with architecture. The 65 Adaptive HTTP 429 failures remain part of the fixed-denominator result, but the run does not provide a clean architecture-only reliability or accuracy comparison.
+
 The negative result is materially Provider-failure-contaminated. It is not evidence that 120 successful Adaptive inferences would have had the same accuracy, and it is not an external-holdout result. No validation rerun, result-driven retry, or validation-driven Agent change was made.
 
 ## Preserved evidence chain
@@ -94,6 +96,8 @@ Adaptive fixed-denominator metrics:
 - Known-token lower bound 190,786; conservative upper bound 4,350,786.
 - Mean recorded latency 5,261.6 ms.
 - Fusion overlap guardrail count 0; correct overrides 0; wrong overrides 0; rejected unsafe overrides 0.
+
+The execution order was not paired or interleaved: all 120 Strong Single runs completed before the Adaptive arm began. Provider capacity and wall-clock order are therefore inseparable from the architecture arm in this run. The fixed-denominator metrics remain authoritative for the protocol that was actually executed, including all 65 Adaptive HTTP 429 failures, but they are not a clean architecture-only reliability or accuracy comparison.
 
 The route and escalation aggregates include the retained failure-path defaults and must not be read as clean behavioral estimates for 120 successful Adaptive runs.
 
