@@ -1,0 +1,35 @@
+{
+  "architecture": "STRONG_SINGLE_COMPATIBLE_INITIAL_THEN_CONSERVATIVE_GATE_THEN_SELECTIVE_VERIFIERS_THEN_DETERMINISTIC_FUSION",
+  "evaluation_version": "single-first-adaptive-v2",
+  "fusion": {
+    "alternative_support_score_threshold": 0.95,
+    "default_action": "KEEP_INITIAL"
+  },
+  "gate": {
+    "direct_confidence_threshold": 0.9,
+    "low_confidence_threshold": 0.75,
+    "metrics_conflict_rank": 3
+  },
+  "indicator": {
+    "default_action": "KEEP_STRONG_SINGLE_INDICATOR",
+    "deterministic_override_margin": 0.95
+  },
+  "initial_sources": [
+    "metrics",
+    "logs",
+    "traces"
+  ],
+  "pacing": {
+    "concurrency": 1,
+    "minimum_interval_seconds": 5.0,
+    "respect_retry_after": true
+  },
+  "route_costs": {
+    "DIRECT_RETURN": 1,
+    "VERIFY_BOTH": 3,
+    "VERIFY_LOGS": 2,
+    "VERIFY_TRACES": 2
+  },
+  "schema_version": "rcaeval-single-first-adaptive.agent.v2",
+  "trace_policy": "LATENCY_OR_SOCKET_WITH_PROPAGATION_CONFLICT_ONLY"
+}

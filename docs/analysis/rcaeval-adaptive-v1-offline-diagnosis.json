@@ -1,0 +1,250 @@
+{
+  "arm_order": {
+    "adaptive_first_started_at_utc": "2026-08-08T18:34:25.001601Z",
+    "adaptive_last_ended_at_utc": "2026-08-08T18:44:56.826208Z",
+    "all_reference_completed_before_adaptive_started": true,
+    "first_adaptive_429_at_utc": "2026-08-08T18:39:29.806475Z",
+    "provider_attempts_before_first_adaptive": 122,
+    "provider_attempts_before_first_adaptive_429": 229,
+    "reference_first_started_at_utc": "2026-08-08T18:25:38.243574Z",
+    "reference_last_ended_at_utc": "2026-08-08T18:34:24.153600Z",
+    "strategy_observed": "ALL_STRONG_SINGLE_THEN_ALL_ADAPTIVE",
+    "timing_basis": "PROVIDER_ATTEMPT_ACTIVITY",
+    "wall_clock_overlap": false
+  },
+  "classification": [
+    "POST_HOC_DEVELOPMENT_DIAGNOSTIC",
+    "NO_PROVIDER_CALLS",
+    "NOT_EXTERNAL_INFERENCE"
+  ],
+  "design_inputs": {
+    "deterministic_fusion_required": true,
+    "direct_return_should_be_default": true,
+    "provider_capacity_result_is_architecture_confounded": true,
+    "strong_single_compatible_initial_required": true,
+    "trace_trigger_should_be_strict": true
+  },
+  "escalation_quality": {
+    "comparable_completed_cases": 55,
+    "direct_return_correctness": {
+      "denominator": 30,
+      "numerator": 29,
+      "value": 0.9666666666666667
+    },
+    "escalated_cases": 25,
+    "escalated_initial_correctness": {
+      "denominator": 25,
+      "numerator": 22,
+      "value": 0.88
+    },
+    "historical_strong_single_proxy": {
+      "basis": "HISTORICAL_STRONG_SINGLE_CORRECTNESS_PROXY",
+      "known_route_cases": 56,
+      "precision": {
+        "denominator": 26,
+        "numerator": 9,
+        "value": 0.34615384615384615
+      },
+      "recall": {
+        "denominator": 11,
+        "numerator": 9,
+        "value": 0.8181818181818182
+      }
+    },
+    "interpretation": "POST_HOC_SELECTION_BIASED",
+    "precision": {
+      "basis": "PERSISTED_ADAPTIVE_INITIAL",
+      "denominator": 25,
+      "numerator": 3,
+      "value": 0.12
+    },
+    "recall": {
+      "basis": "PERSISTED_ADAPTIVE_INITIAL",
+      "denominator": 4,
+      "numerator": 3,
+      "value": 0.75
+    }
+  },
+  "fusion_utility": {
+    "action_distribution": {
+      "KEEP_INITIAL": 25,
+      "OVERRIDE_INITIAL": 0
+    },
+    "completed_result_coverage": {
+      "denominator": 120,
+      "numerator": 55,
+      "value": 0.4583333333333333
+    },
+    "correct_overrides": 0,
+    "guardrail_activations": 0,
+    "guardrail_recomputation": "TRACE_CONSISTENCY_RECOMPUTED",
+    "guardrail_trace_consistent": 0,
+    "guardrail_trace_inconsistent": 0,
+    "interpretation": "POST_HOC_SELECTION_BIASED",
+    "keep_with_correct_final": 22,
+    "proposal_overlap_recomputable": false,
+    "rejected_fusion_distribution": {},
+    "unsafe_overrides_rejected": 0,
+    "wrong_overrides": 0
+  },
+  "gate_behavior": {
+    "existing_reporting_default": {
+      "failure_count": 65,
+      "ignored_in_this_diagnostic": true,
+      "route": "VERIFY_BOTH",
+      "used_as_true_gate_route": false
+    },
+    "known_before_terminal_distribution": {
+      "DIRECT_RETURN": 30,
+      "VERIFY_BOTH": 1,
+      "VERIFY_LOGS": 22,
+      "VERIFY_TRACES": 3
+    },
+    "known_route_count": 56,
+    "route_provenance_distribution": {
+      "PERSISTED_TRUE": 55,
+      "SEQUENCE_INFERRED": 1,
+      "UNAVAILABLE_INITIAL_FAILED_BEFORE_GATE": 64
+    },
+    "unavailable_distribution": {
+      "UNAVAILABLE_INITIAL_FAILED_BEFORE_GATE": 64
+    },
+    "unavailable_route_count": 64
+  },
+  "http_429": {
+    "attempt_role_distribution": {
+      "FUSION_JUDGE": 0,
+      "INITIAL_DIAGNOSIS": 128,
+      "LOGS_VERIFIER": 0,
+      "TRACE_CAUSAL_SPECIALIST": 2
+    },
+    "attempts": 130,
+    "episode_role_distribution": {
+      "FUSION_JUDGE": 0,
+      "INITIAL_DIAGNOSIS": 64,
+      "LOGS_VERIFIER": 0,
+      "TRACE_CAUSAL_SPECIALIST": 1
+    },
+    "episodes": 65,
+    "first_attempts": 65,
+    "recovered_operations": 0,
+    "retry_after": {
+      "disposition": "SOURCE_NOT_DISTINGUISHABLE_FROM_SAVED_SAFE_METADATA",
+      "provider_header_source_persisted": false,
+      "retry_disposition_distribution": {
+        "RETRY_ISSUED": 65
+      },
+      "saved_wait_ms_distribution": {
+        "3000": 65
+      }
+    },
+    "retry_attempts": 65,
+    "retry_issued_then_failed_again": 65,
+    "route_or_unavailable_distribution": {
+      "UNAVAILABLE_INITIAL_FAILED_BEFORE_GATE": 64,
+      "VERIFY_TRACES": 1
+    },
+    "terminal_failures": 65,
+    "timestamp_hour_distribution": {
+      "2026-08-08T18:00Z": 130
+    }
+  },
+  "indicator_resolution": {
+    "action_distribution": {
+      "KEEP_MODEL_INDICATOR": 54,
+      "KEEP_MODEL_INDICATOR_WITH_UNCERTAINTY": 1,
+      "USE_DETERMINISTIC_TOP1": 0
+    },
+    "completed_result_coverage": {
+      "denominator": 120,
+      "numerator": 55,
+      "value": 0.4583333333333333
+    },
+    "interpretation": "POST_HOC_SELECTION_BIASED",
+    "pair_correct": 31,
+    "pair_success_given_root_correct": {
+      "denominator": 51,
+      "numerator": 31,
+      "value": 0.6078431372549019
+    },
+    "pair_success_given_root_correct_by_action": {
+      "KEEP_MODEL_INDICATOR": {
+        "denominator": 51,
+        "numerator": 31,
+        "value": 0.6078431372549019
+      },
+      "KEEP_MODEL_INDICATOR_WITH_UNCERTAINTY": {
+        "denominator": 0,
+        "numerator": 0,
+        "value": null
+      },
+      "USE_DETERMINISTIC_TOP1": {
+        "denominator": 0,
+        "numerator": 0,
+        "value": null
+      }
+    },
+    "root_correct": 51
+  },
+  "initial_comparison": {
+    "both_correct": 44,
+    "both_wrong": 4,
+    "comparable_completed_cases": 55,
+    "different_root_service": 7,
+    "initial_unavailable_cases": 65,
+    "interpretation": "POST_HOC_SELECTION_BIASED",
+    "reference_correct_initial_wrong": 0,
+    "reference_wrong_initial_correct": 7,
+    "same_root_service": 48
+  },
+  "provider_calls": 0,
+  "schema_version": "rcaeval-adaptive-v1.offline-diagnosis.v1",
+  "scope": {
+    "adaptive_completed": 55,
+    "adaptive_terminal_failures": 65,
+    "adaptive_terminals": 120,
+    "paired_cases": 120,
+    "reference_terminals": 120
+  },
+  "specialist_utility": {
+    "completed_result_coverage": {
+      "denominator": 120,
+      "numerator": 55,
+      "value": 0.4583333333333333
+    },
+    "final_changed_after_specialists": 0,
+    "interpretation": "POST_HOC_SELECTION_BIASED",
+    "logs": {
+      "alternative_hypotheses": 2,
+      "calls_with_correct_root_candidate": 17,
+      "calls_with_persisted_hypotheses": 23,
+      "causal_role_distribution": {
+        "PROPAGATED_SYMPTOM": 28,
+        "ROOT_CANDIDATE": 22,
+        "UNCERTAIN": 19
+      },
+      "hypotheses_supporting_initial": 14,
+      "root_candidate_accuracy": {
+        "denominator": 22,
+        "numerator": 17,
+        "value": 0.7727272727272727
+      }
+    },
+    "traces": {
+      "alternative_hypotheses": 0,
+      "calls_with_correct_root_candidate": 3,
+      "calls_with_persisted_hypotheses": 3,
+      "causal_role_distribution": {
+        "PROPAGATED_SYMPTOM": 5,
+        "ROOT_CANDIDATE": 3,
+        "UNCERTAIN": 1
+      },
+      "hypotheses_supporting_initial": 3,
+      "root_candidate_accuracy": {
+        "denominator": 3,
+        "numerator": 3,
+        "value": 1.0
+      }
+    }
+  }
+}

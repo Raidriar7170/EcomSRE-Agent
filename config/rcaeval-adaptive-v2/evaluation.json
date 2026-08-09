@@ -1,0 +1,54 @@
+{
+  "candidate_limit": 3,
+  "classification": [
+    "OBSS_DEVELOPMENT_POOL",
+    "DEVELOPMENT_VISIBLE",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "damage_rescue_endpoint": "root_cause_pair_ac_at_1",
+  "evaluation_version": "single-first-adaptive-v2",
+  "historical_baselines": {
+    "combined_pair_correct": 84,
+    "combined_root_correct": 150,
+    "regression_pair_correct": 55,
+    "regression_root_correct": 99,
+    "tune_pair_correct": 29,
+    "tune_root_correct": 51
+  },
+  "regression_gate": {
+    "completion_min": 114,
+    "damage_not_greater_than_rescue": true,
+    "direct_return_min": 72,
+    "http_429_terminal_failure_max": 6,
+    "mean_semantic_operations_max": 1.8,
+    "net_rescue_min": 0,
+    "pair_correct_min": 53,
+    "privacy_schema_schedule_failure_max": 0,
+    "root_service_correct_min": 97,
+    "trace_route_max": 24,
+    "wrong_override_not_greater_than_correct": true
+  },
+  "schema_version": "rcaeval-single-first-adaptive.evaluation.v2",
+  "selection_order": [
+    "gate_passed_desc",
+    "root_service_correct_desc",
+    "pair_correct_desc",
+    "net_rescue_desc",
+    "damage_asc",
+    "mean_semantic_operations_asc",
+    "direct_return_desc"
+  ],
+  "tune_gate": {
+    "completion_min": 58,
+    "damage_not_greater_than_rescue": true,
+    "damage_rate_max": 0.05,
+    "direct_return_min": 36,
+    "mean_semantic_operations_max": 1.8,
+    "pair_correct_min": 29,
+    "privacy_schema_schedule_failure_max": 0,
+    "root_service_correct_min": 51,
+    "trace_route_max": 12,
+    "wrong_override_not_greater_than_correct": true
+  }
+}
