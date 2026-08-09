@@ -439,6 +439,51 @@ decision authorizes construction, offline validation, and read-only sealing of
 that replacement pack only. Agent runs, Provider calls, scored execution, and
 unblinding remain forbidden and at zero; no superiority claim is created.
 
+## DEC-030 — RCAEval Root-only Metrics Arbitration M3
+
+**Status: `accepted`. The development result remains bounded by the exact live
+marker recorded in `docs/results/rcaeval-metrics-arbitration-v1-development.json`;
+it is not external validation or a production-generalization claim.**
+
+RCAEval Metrics Arbitration v1 is an independent evaluation/runtime derived
+from the PR #20 `METRICS_ARBITRATION` decision at commit `59ace4d`. It is not a
+sixth Adaptive candidate and does not alter Candidate-3, Candidate-4,
+Candidate-5, PR #19, or PR #20. Each case queries the same bounded Metrics,
+Logs, and Traces tools, makes exactly one Strong Single `ArchitectureContext ->
+Diagnosis` model call, then applies deterministic Root-only M3. It constructs
+no specialist Provider and performs no model Fusion.
+
+M3 overrides the Initial Root with Metrics Top-1 only when the Initial service
+is absent from the Metrics ranking or has rank greater than two, and
+`(top1_score - top2_score) / max(abs(top1_score), 1e-12) >= 0.25`. A
+single-service ranking has margin `1.0`. If Metrics Top-1 already equals the
+Initial Root, the action is `KEEP_INITIAL`. The exact Initial indicator is
+always preserved. KEEP retains the exact Initial Diagnosis; OVERRIDE cites only
+legal run-visible Metrics evidence, uses deterministic provenance and
+explanation, and assigns no model confidence to the changed Root.
+
+The frozen development lifecycle is zero-Provider fixture replay, one
+synthetic non-case Provider preflight, a 12-case Smoke reused inside one
+60-case consumed TUNE, then—only if the TUNE gate passes—one 120-case consumed
+Regression. Concurrency is one, pacing is five seconds, Retry-After is
+respected, and at most one allowlisted byte-identical transport retry is
+permitted. Terminal, retry, token, and pacing evidence reuse the dev3 transport
+sidecars under a new Metrics Arbitration namespace.
+
+Primary damage/rescue conclusions compare the Strong Single Initial and M3
+Final from the same call/run. Historical Strong Single TUNE `51/60` Root and
+`29/60` Pair, and Regression `99/120` Root and `55/120` Pair, are
+`CROSS_RUN_CONTEXTUAL_BASELINE` only. All case-level material remains outside
+Git. Public results exclude case/run identifiers, concrete services, evidence
+references, raw Provider output, private paths, and credentials.
+
+This decision authorizes the bounded development implementation and the exact
+one-shot evaluation lifecycle above. It does not authorize RE2-TT access, new
+external data, a second TUNE or Regression, post-Regression retuning, release,
+deployment, merge, or an external-validity claim. A fresh external holdout is
+plan-only and may be written only after a passing Regression; acquiring or
+running it requires separate authorization.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)

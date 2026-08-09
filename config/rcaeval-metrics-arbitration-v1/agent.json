@@ -1,0 +1,27 @@
+{
+  "architecture": "STRONG_SINGLE_INITIAL_THEN_DETERMINISTIC_ROOT_ONLY_METRICS_M3",
+  "evaluation_version": "metrics-arbitration-v1",
+  "fusion_model_enabled": false,
+  "initial_rank_override_min_exclusive": 2,
+  "initial_sources": [
+    "metrics",
+    "logs",
+    "traces"
+  ],
+  "normalized_margin_min": 0.25,
+  "pacing": {
+    "concurrency": 1,
+    "minimum_interval_seconds": 5.0,
+    "respect_retry_after": true
+  },
+  "preserve_initial_indicator": true,
+  "retry": {
+    "max_allowlisted_transport_retries_per_operation": 1,
+    "schema_retry": "FORBIDDEN",
+    "semantic_retry": "FORBIDDEN"
+  },
+  "rule": "M3",
+  "schema_version": "rcaeval-metrics-arbitration.agent.v1",
+  "semantic_model_calls": 1,
+  "specialists_enabled": false
+}

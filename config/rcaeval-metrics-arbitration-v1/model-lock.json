@@ -1,0 +1,19 @@
+{
+  "fallback": "NO_FALLBACK",
+  "inherited_indicator_config_path": "config/rcaeval-re2-v2-dev/indicator-candidate-formulas.json",
+  "inherited_indicator_config_sha256": "51a8373e72e924151d9e8749ffc6b2959eadee59cc0b11510f9d8f6d6ed2455a",
+  "inherited_transport_retry_policy_path": "config/rcaeval-re2-v2-dev3/transport-retry-policy.json",
+  "max_completion_tokens": 2048,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "provider": "openai-compatible",
+  "schema_retry": "FORBIDDEN",
+  "schema_version": "rcaeval-metrics-arbitration.model-lock.v1",
+  "selected_indicator_formula": "F0",
+  "semantic_retry": "FORBIDDEN",
+  "strong_single_initial": "EXACT_V1_REFERENCE_PROVIDER_PROMPT_CONTEXT_AND_DIAGNOSIS",
+  "temperature": 0.0,
+  "timeout_seconds": 30.0,
+  "top_p": 1.0,
+  "transport_retry": "ONE_ALLOWLISTED_BYTE_IDENTICAL_REQUEST_RETRY",
+  "transport_retry_policy_sha256": "7fd010103f83a1cb99b0c478ddafdf6e9fd0dc349a4297e7bb55c9b4157c202b"
+}
