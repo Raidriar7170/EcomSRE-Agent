@@ -84,6 +84,121 @@ def _clean_implementation_sha() -> str:
     ).stdout.strip()
 
 
+def _validate_private_run_root(path: Path) -> Path:
+    requested = path.expanduser()
+    if not requested.is_absolute():
+        raise ValueError("Adaptive v2 run root must be an absolute private path")
+    if requested.is_symlink():
+        raise ValueError("Adaptive v2 run root must not be a symlink")
+    resolved = requested.resolve(strict=False)
+    project = PROJECT_ROOT.resolve()
+    if resolved == project or resolved.is_relative_to(project):
+        raise ValueError("Adaptive v2 run root must remain outside Git")
+    existing = resolved
+    while not existing.exists():
+        if existing == existing.parent:
+            break
+        existing = existing.parent
+    inside_git = subprocess.run(
+        ("git", "-C", str(existing), "rev-parse", "--is-inside-work-tree"),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if inside_git.returncode == 0 and inside_git.stdout.strip() == "true":
+        raise ValueError("Adaptive v2 run root must remain outside Git")
+    return resolved
+
+
+def _load_private_result(path: Path) -> dict[str, Any]:
+    requested = path.expanduser()
+    if not requested.is_absolute() or requested.is_symlink():
+        raise ValueError("Adaptive v2 prior result must be an absolute non-symlink file")
+    resolved = requested.resolve(strict=True)
+    _validate_private_run_root(resolved.parent)
+    return _load(resolved)
+
+
+def _validate_tune_lineage(
+    candidate_id: str, previous_results: tuple[Path, ...]
+) -> tuple[str, ...]:
+    if candidate_id not in {"candidate-1", "candidate-2", "candidate-3"}:
+        raise ValueError("Adaptive v2 candidate lineage is invalid")
+    ordinal = int(candidate_id[-1])
+    expected = tuple(f"candidate-{index}" for index in range(1, ordinal))
+    if ordinal not in {1, 2, 3} or len(previous_results) != len(expected):
+        raise ValueError("Adaptive v2 candidate lineage is incomplete or outside the limit")
+    observed: list[str] = []
+    for path, expected_id in zip(previous_results, expected, strict=True):
+        result = _load_private_result(path)
+        aggregate = result.get("aggregate")
+        if (
+            result.get("schema_version")
+            != "rcaeval-single-first-adaptive.development-result.v2"
+            or result.get("phase") != "TUNE_SET"
+            or result.get("candidate_id") != expected_id
+            or not isinstance(aggregate, dict)
+            or aggregate.get("scheduled") != 60
+            or type(aggregate.get("gate_passed")) is not bool
+        ):
+            raise ValueError("Adaptive v2 candidate lineage result differs")
+        if aggregate["gate_passed"] is True:
+            raise ValueError("Adaptive v2 candidate loop already passed")
+        observed.append(expected_id)
+    return tuple(observed)
+
+
+def _git_success(*args: str) -> bool:
+    return (
+        subprocess.run(
+            ("git", *args),
+            cwd=PROJECT_ROOT,
+            check=False,
+            capture_output=True,
+        ).returncode
+        == 0
+    )
+
+
+def _validate_regression_authorization(
+    *,
+    candidate_id: str,
+    tune_result_path: Path,
+    current_implementation_sha: str,
+    agent_config_sha256: str,
+    model_lock_sha256: str,
+) -> None:
+    result = _load_private_result(tune_result_path)
+    aggregate = result.get("aggregate")
+    if (
+        result.get("schema_version")
+        != "rcaeval-single-first-adaptive.development-result.v2"
+        or result.get("phase") != "TUNE_SET"
+        or result.get("candidate_id") != candidate_id
+        or not isinstance(aggregate, dict)
+        or aggregate.get("gate_passed") is not True
+        or aggregate.get("gate_disposition") != "PASSED"
+        or aggregate.get("algorithm_quality_evaluable") is not True
+        or not _gate_passed("tune", aggregate)
+    ):
+        raise ValueError("Adaptive v2 regression requires a passed TUNE result")
+    lock = _load_private_result(tune_result_path.parent / "candidate-lock.json")
+    implementation_sha = lock.get("implementation_git_sha")
+    if (
+        lock.get("schema_version")
+        != "rcaeval-single-first-adaptive.candidate-lock.v2"
+        or lock.get("candidate_id") != candidate_id
+        or lock.get("phase") != "TUNE_SET"
+        or lock.get("agent_config_sha256") != agent_config_sha256
+        or lock.get("model_lock_sha256") != model_lock_sha256
+        or not isinstance(implementation_sha, str)
+        or len(implementation_sha) != 40
+        or not _git_success("merge-base", "--is-ancestor", implementation_sha, current_implementation_sha)
+        or not _git_success("diff", "--quiet", implementation_sha, current_implementation_sha, "--", *_RUNTIME_SCOPES)
+    ):
+        raise ValueError("Adaptive v2 TUNE binding differs from regression runtime")
+
+
 def _write_create_once(path: Path, payload: object) -> None:
     encoded = (
         json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
@@ -143,6 +258,7 @@ def _aggregate(
     routes: Counter[str] = Counter()
     indicator_actions: Counter[str] = Counter()
     fusion_actions: Counter[str] = Counter()
+    provider_failure_codes: Counter[str] = Counter()
     for ordinal, (identity, terminal) in enumerate(
         zip(identities, terminals, strict=True), start=1
     ):
@@ -156,6 +272,8 @@ def _aggregate(
         semantic_operations = 0
         correct_override = False
         wrong_override = False
+        if terminal.status is AdaptiveTerminalStatus.PROVIDER_FAILURE:
+            provider_failure_codes[terminal.failure_code or "UNKNOWN_PROVIDER_FAILURE"] += 1
         if result is not None:
             diagnosis = result.diagnosis
             initial_correct = (
@@ -198,6 +316,7 @@ def _aggregate(
         )
     scheduled = len(rows)
     completed_count = sum(item["completed"] for item in rows)
+    completed_rows = tuple(item for item in rows if item["completed"])
     root_correct_count = sum(item["root_correct"] for item in rows)
     pair_correct_count = sum(item["pair_correct"] for item in rows)
     baseline_pair_correct = sum(item["baseline_pair_correct"] for item in rows)
@@ -221,6 +340,14 @@ def _aggregate(
     aggregate = {
         "scheduled": scheduled,
         "completed": completed_count,
+        "completion_coverage": _rate(completed_count, scheduled),
+        "algorithm_quality_evaluable": completed_count > 0,
+        "completed_only_root_service_accuracy": _rate(
+            sum(item["root_correct"] for item in completed_rows), completed_count
+        ),
+        "completed_only_pair_accuracy": _rate(
+            sum(item["pair_correct"] for item in completed_rows), completed_count
+        ),
         "root_service_correct": root_correct_count,
         "pair_correct": pair_correct_count,
         "damage": damage,
@@ -240,6 +367,13 @@ def _aggregate(
             item["semantic_operations"] for item in rows
         )
         / scheduled,
+        "mean_semantic_operations_basis": "FIXED_SCHEDULED_DENOMINATOR",
+        "mean_semantic_operations_completed_only": (
+            None
+            if not completed_rows
+            else sum(item["semantic_operations"] for item in completed_rows)
+            / completed_count
+        ),
         "provider_attempts": sum(item["provider_attempts"] for item in rows),
         "transport_retries": sum(item["transport_retries"] for item in rows),
         "known_token_lower_bound": sum(
@@ -249,6 +383,11 @@ def _aggregate(
             item["conservative_token_upper_bound"] for item in rows
         ),
         "mean_latency_ms": sum(item["latency_ms"] for item in rows) / scheduled,
+        "mean_latency_ms_completed_only": (
+            None
+            if not completed_rows
+            else sum(item["latency_ms"] for item in completed_rows) / completed_count
+        ),
         "correct_overrides": sum(item["correct_override"] for item in rows),
         "wrong_overrides": sum(item["wrong_override"] for item in rows),
         "fusion_action_distribution": dict(sorted(fusion_actions.items())),
@@ -256,6 +395,8 @@ def _aggregate(
         "http_429_terminal_failures": sum(
             item["failure_code"] == "HTTP_429" for item in rows
         ),
+        "provider_failure_count": sum(provider_failure_codes.values()),
+        "provider_failure_code_distribution": dict(sorted(provider_failure_codes.items())),
         "disqualifying_failure_count": disqualifying,
     }
     return aggregate, rows
@@ -293,6 +434,21 @@ def _gate_passed(phase: str, aggregate: Mapping[str, Any]) -> bool:
     )
 
 
+def _gate_disposition(phase: str, aggregate: Mapping[str, Any]) -> str:
+    if _gate_passed(phase, aggregate):
+        return "PASSED"
+    if (
+        aggregate["completed"] == 0
+        and aggregate["provider_failure_count"] == aggregate["scheduled"]
+    ):
+        return (
+            "PROVIDER_CAPACITY_BLOCKED"
+            if aggregate["http_429_terminal_failures"] > 0
+            else "PROVIDER_EXECUTION_BLOCKED"
+        )
+    return "TUNE_GATE_NOT_PASSED" if phase == "tune" else "REGRESSION_GATE_NOT_PASSED"
+
+
 def main(argv: tuple[str, ...] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--phase", required=True, choices=("tune", "regression"))
@@ -304,11 +460,30 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     parser.add_argument("--run-root", required=True, type=Path)
     parser.add_argument("--baseline-outcomes", type=Path)
     parser.add_argument("--reference-terminal-root", type=Path)
+    parser.add_argument("--previous-tune-result", action="append", default=[], type=Path)
+    parser.add_argument("--tune-result", type=Path)
     args = parser.parse_args(argv)
 
+    args.run_root = _validate_private_run_root(args.run_root)
     implementation_sha = _clean_implementation_sha()
     agent = _load(CONFIG_ROOT / "agent.json")
     model = _load(CONFIG_ROOT / "model-lock.json")
+    agent_config_sha256 = _sha(CONFIG_ROOT / "agent.json")
+    model_lock_sha256 = _sha(CONFIG_ROOT / "model-lock.json")
+    if args.phase == "tune":
+        if args.tune_result is not None:
+            raise ValueError("TUNE_SET does not accept regression authorization")
+        _validate_tune_lineage(args.candidate_id, tuple(args.previous_tune_result))
+    else:
+        if args.previous_tune_result or args.tune_result is None:
+            raise ValueError("REGRESSION_SET requires one passed TUNE result")
+        _validate_regression_authorization(
+            candidate_id=args.candidate_id,
+            tune_result_path=args.tune_result,
+            current_implementation_sha=implementation_sha,
+            agent_config_sha256=agent_config_sha256,
+            model_lock_sha256=model_lock_sha256,
+        )
     split = SplitName.DESIGN if args.phase == "tune" else SplitName.DEV_VALIDATION
     records = load_private_schedule(args.schedule, allowed_split=split)
     identities = tuple(
@@ -340,8 +515,8 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         "schema_version": "rcaeval-single-first-adaptive.candidate-lock.v2",
         "candidate_id": args.candidate_id,
         "implementation_git_sha": implementation_sha,
-        "agent_config_sha256": _sha(CONFIG_ROOT / "agent.json"),
-        "model_lock_sha256": _sha(CONFIG_ROOT / "model-lock.json"),
+        "agent_config_sha256": agent_config_sha256,
+        "model_lock_sha256": model_lock_sha256,
         "phase": split_name,
     }
     _write_create_once(args.run_root / "candidate-lock.json", candidate_lock)
@@ -371,6 +546,7 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     )
     aggregate, rows = _aggregate(identities, terminals, baseline)
     aggregate["gate_passed"] = _gate_passed(args.phase, aggregate)
+    aggregate["gate_disposition"] = _gate_disposition(args.phase, aggregate)
     private = {
         "schema_version": "rcaeval-single-first-adaptive.development-result.v2",
         "classification": [

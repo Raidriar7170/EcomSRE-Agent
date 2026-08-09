@@ -1,0 +1,83 @@
+{
+  "schema_version": "rcaeval-single-first-adaptive.development-public.v2",
+  "development_state": "INCOMPLETE",
+  "verdict": "BLOCKED",
+  "blocking_condition": "PROVIDER_CAPACITY_UNAVAILABLE_DURING_TUNE",
+  "classification": [
+    "CONSUMED_OBSS_DEVELOPMENT_RESULT",
+    "DEVELOPMENT_VISIBLE",
+    "NOT_EXTERNAL_VALIDATION",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "candidate_loop": {
+    "limit": 3,
+    "attempted": 1,
+    "complete": false,
+    "selected_candidate": null,
+    "remaining_candidates_started": false
+  },
+  "historical_strong_single_tune_baseline": {
+    "scheduled": 60,
+    "root_service_correct": 51,
+    "pair_correct": 29,
+    "rerun": false
+  },
+  "tune_candidates": [
+    {
+      "candidate": "candidate-1",
+      "scheduled": 60,
+      "terminalized": 60,
+      "completed": 0,
+      "completion_coverage": {
+        "numerator": 0,
+        "denominator": 60,
+        "value": 0.0
+      },
+      "algorithm_quality_evaluable": false,
+      "completed_only_root_service_accuracy": null,
+      "completed_only_pair_accuracy": null,
+      "terminal_provider_failures": 60,
+      "http_429_terminal_failures": 59,
+      "tls_transient_terminal_failures": 1,
+      "provider_failure_code_distribution": {
+        "HTTP_429": 59,
+        "TLS_TRANSIENT": 1
+      },
+      "provider_attempts": 120,
+      "transport_retries": 60,
+      "root_service_correct": 0,
+      "pair_correct": 0,
+      "damage": 29,
+      "rescue": 0,
+      "direct_return": 0,
+      "mean_semantic_operations": 0.0,
+      "mean_semantic_operations_basis": "FIXED_SCHEDULED_DENOMINATOR",
+      "mean_semantic_operations_completed_only": null,
+      "trace_routes": 0,
+      "correct_overrides": 0,
+      "wrong_overrides": 0,
+      "known_token_lower_bound": 0,
+      "conservative_token_upper_bound": 3840000,
+      "mean_latency_ms": 10056.647966681825,
+      "schema_privacy_schedule_failures": 0,
+      "gate_passed": false,
+      "gate_disposition": "PROVIDER_CAPACITY_BLOCKED",
+      "interpretation": "The candidate never completed Initial Diagnosis. This fixed-denominator record preserves Provider failures but does not provide an algorithm-quality estimate."
+    }
+  ],
+  "regression": {
+    "eligible": false,
+    "executed": false,
+    "reason": "NO_TUNE_CANDIDATE_PASSED"
+  },
+  "combined_180": {
+    "available": false
+  },
+  "fresh_external_holdout": {
+    "eligible": false,
+    "plan_created": false,
+    "dataset_accessed": false,
+    "provider_run_executed": false
+  },
+  "claim_boundary": "Candidate-1 is a retained capacity-blocked consumed-data development execution. It is neither an external result nor evidence for or against Adaptive v2 algorithm quality."
+}
