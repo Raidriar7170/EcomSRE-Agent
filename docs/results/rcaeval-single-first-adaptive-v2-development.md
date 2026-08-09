@@ -1,58 +1,62 @@
 # Single-first Adaptive v2 development result
 
-Development state: `INCOMPLETE`
+Development state: `TERMINAL`
 
-Verdict: `BLOCKED`
+Verdict: `ADAPTIVE_V2_TUNE_GATE_NOT_PASSED`
 
-Blocking condition: Provider capacity was unavailable throughout TUNE
-candidate-1 and the unchanged-Agent capacity retry candidate-2.
+Failure reason: none of the three bounded candidates passed the frozen TUNE
+gate.
 
 Claim boundary: `CONSUMED_OBSS_DEVELOPMENT_RESULT / DEVELOPMENT_VISIBLE / NOT_EXTERNAL_VALIDATION / NOT_PRIMARY_INFERENCE`.
 
 ## Current disposition
 
-Adaptive v2 is implemented and locally verified, but the consumed-data
-candidate loop is not complete. Candidate-1 terminalized all 60 scheduled TUNE
+Adaptive v2 is implemented and locally verified. Candidate-1 terminalized all
+60 scheduled TUNE
 cases without completing Initial Diagnosis. Fifty-nine cases retained terminal
 HTTP 429 failures and one retained a TLS transient after the single authorized
 transport retry. Candidate-2 kept the Agent, model, retry policy, pacing, and
 development gates unchanged; all 60 cases again failed before Initial Diagnosis,
-this time with terminal HTTP 429.
+this time with terminal HTTP 429. The operator then confirmed that API credit
+had been exhausted and recharged it.
 
-This is a fixed-denominator Provider-capacity result, not an estimate of Agent
-quality. It does not show that Adaptive v2 is worse than Strong Single, and it
-does not authorize threshold, prompt, model, retry, baseline, or development-gate
-changes. Candidate-2 is a capacity retry, not an algorithm-tuning candidate.
-Candidate-3 has not started.
+Candidate-3 preserved the same Agent, model, retry policy, pacing, and gates
+after credit recovery. It completed 60/60 with zero Provider failures, proving
+that the capacity blocker had cleared. Its Root Service result was 49/60 and
+Pair was 25/60, with Damage 6 and Rescue 2. It therefore missed the unchanged
+Root, Pair, Damage, and Damage Rate gates. No candidate is selected.
+
+Candidates 1 and 2 are fixed-denominator Provider-capacity records, not Agent
+quality estimates. Candidate-3 is the only algorithm-quality-evaluable v2 TUNE
+result. It is consumed development evidence, not external validation.
 
 ## TUNE_SET
 
 The historical Strong Single baseline is Root Service 51/60 and Pair 29/60. It
 was reused and not rerun.
 
-| Metric | Candidate-1 | Candidate-2 |
-| --- | ---: | ---: |
-| Role | initial candidate | unchanged-Agent capacity retry |
-| Scheduled / terminalized | 60 / 60 | 60 / 60 |
-| Completed | 0 | 0 |
-| Algorithm-quality evaluable | no | no |
-| Terminal Provider failures | 60 | 60 |
-| HTTP 429 / TLS transient | 59 / 1 | 60 / 0 |
-| Provider attempts / transport retries | 120 / 60 | 120 / 60 |
-| Root Service / Pair | 0 / 0 | 0 / 0 |
-| Damage / Rescue | 29 / 0 | 29 / 0 |
-| Direct / Trace-bearing routes | 0 / 0 | 0 / 0 |
-| Mean semantic operations, fixed denominator | 0.00 | 0.00 |
-| Mean semantic operations, completed-only | unavailable | unavailable |
-| Correct / Wrong Override | 0 / 0 | 0 / 0 |
-| Known-token lower bound | 0 | 0 |
-| Conservative token upper bound | 3,840,000 | 3,840,000 |
-| Schema/privacy/schedule failures | 0 | 0 |
-| Gate | `PROVIDER_CAPACITY_BLOCKED` | `PROVIDER_CAPACITY_BLOCKED` |
+| Metric | Candidate-1 | Candidate-2 | Candidate-3 |
+| --- | ---: | ---: | ---: |
+| Role | initial candidate | capacity retry | post-credit-recovery TUNE |
+| Scheduled / terminalized | 60 / 60 | 60 / 60 | 60 / 60 |
+| Completed | 0 | 0 | 60 |
+| Algorithm-quality evaluable | no | no | yes |
+| Terminal Provider failures | 60 | 60 | 0 |
+| HTTP 429 / TLS transient | 59 / 1 | 60 / 0 | 0 / 0 |
+| Provider attempts / transport retries | 120 / 60 | 120 / 60 | 60 / 0 |
+| Root Service / Pair | unavailable | unavailable | 49 / 25 |
+| Damage / Rescue | unavailable | unavailable | 6 / 2 |
+| Direct / Trace-bearing routes | unavailable | unavailable | 60 / 0 |
+| Mean semantic operations, completed-only | unavailable | unavailable | 1.00 |
+| Correct / Wrong Override | unavailable | unavailable | 0 / 0 |
+| Known-token lower bound | 0 | 0 | 491,343 |
+| Conservative token upper bound | 3,840,000 | 3,840,000 | 491,343 |
+| Schema/privacy/schedule failures | 0 | 0 | 0 |
+| Gate | `PROVIDER_CAPACITY_BLOCKED` | `PROVIDER_CAPACITY_BLOCKED` | `TUNE_GATE_NOT_PASSED` |
 
-Damage treats every non-completed candidate endpoint as incorrect on the fixed
-denominator. Because no Initial Diagnosis completed, Damage, Root, Pair, route,
-operation, and override values do not describe successful Adaptive v2 behavior.
+Candidate-3 met Completion, Direct Return, Mean Operations, Trace, Override, and
+schema/privacy/schedule requirements. It failed Root Service 49 < 51, Pair
+25 < 29, Damage 6 > Rescue 2, and Damage Rate 20.7% > 5%.
 
 ## Protected downstream stages
 
@@ -65,9 +69,9 @@ operation, and override values do not describe successful Adaptive v2 behavior.
 All case identifiers, run identifiers, private paths, concrete evidence
 references, credentials, and raw Provider outputs remain private.
 
-## Resume condition
+## Terminal disposition
 
-Continue the bounded candidate loop only after Provider quota/capacity is known
-to be available. Preserve candidate-1 and candidate-2 unchanged. Do not use a
-partial recovery, result-driven retry, or development-gate modification to
-manufacture a pass.
+The bounded three-candidate loop is exhausted. Preserve all candidate terminals,
+sidecars, and public aggregates unchanged. Do not run the 120-case regression,
+prepare a fresh external holdout plan, modify the current candidate, or create a
+fourth candidate under this Goal.

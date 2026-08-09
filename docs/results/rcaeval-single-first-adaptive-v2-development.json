@@ -1,8 +1,8 @@
 {
   "schema_version": "rcaeval-single-first-adaptive.development-public.v2",
-  "development_state": "INCOMPLETE",
-  "verdict": "BLOCKED",
-  "blocking_condition": "PROVIDER_CAPACITY_UNAVAILABLE_DURING_TUNE",
+  "development_state": "TERMINAL",
+  "verdict": "ADAPTIVE_V2_TUNE_GATE_NOT_PASSED",
+  "failure_reason": "NO_TUNE_CANDIDATE_PASSED",
   "classification": [
     "CONSUMED_OBSS_DEVELOPMENT_RESULT",
     "DEVELOPMENT_VISIBLE",
@@ -11,8 +11,8 @@
   ],
   "candidate_loop": {
     "limit": 3,
-    "attempted": 2,
-    "complete": false,
+    "attempted": 3,
+    "complete": true,
     "selected_candidate": null,
     "remaining_candidates_started": true
   },
@@ -104,6 +104,79 @@
       "gate_passed": false,
       "gate_disposition": "PROVIDER_CAPACITY_BLOCKED",
       "interpretation": "The unchanged Agent capacity retry also never completed Initial Diagnosis. It confirms continued Provider unavailability, not an algorithm-quality outcome."
+    },
+    {
+      "candidate": "candidate-3",
+      "candidate_role": "UNCHANGED_AGENT_POST_CREDIT_RECOVERY_TUNE",
+      "scheduled": 60,
+      "terminalized": 60,
+      "completed": 60,
+      "completion_coverage": {
+        "numerator": 60,
+        "denominator": 60,
+        "value": 1.0
+      },
+      "algorithm_quality_evaluable": true,
+      "completed_only_root_service_accuracy": {
+        "numerator": 49,
+        "denominator": 60,
+        "value": 0.8166666666666667
+      },
+      "completed_only_pair_accuracy": {
+        "numerator": 25,
+        "denominator": 60,
+        "value": 0.4166666666666667
+      },
+      "terminal_provider_failures": 0,
+      "http_429_terminal_failures": 0,
+      "tls_transient_terminal_failures": 0,
+      "provider_failure_code_distribution": {},
+      "provider_attempts": 60,
+      "transport_retries": 0,
+      "root_service_correct": 49,
+      "pair_correct": 25,
+      "damage": 6,
+      "damage_rate": {
+        "numerator": 6,
+        "denominator": 29,
+        "value": 0.20689655172413793
+      },
+      "rescue": 2,
+      "net_rescue": -4,
+      "direct_return": 60,
+      "route_distribution": {
+        "DIRECT_RETURN": 60,
+        "VERIFY_LOGS": 0,
+        "VERIFY_TRACES": 0,
+        "VERIFY_BOTH": 0
+      },
+      "mean_semantic_operations": 1.0,
+      "mean_semantic_operations_basis": "FIXED_SCHEDULED_DENOMINATOR",
+      "mean_semantic_operations_completed_only": 1.0,
+      "trace_routes": 0,
+      "fusion_action_distribution": {
+        "KEEP_INITIAL": 60
+      },
+      "indicator_action_distribution": {
+        "KEEP_STRONG_SINGLE_INDICATOR": 50,
+        "KEEP_WITH_UNCERTAINTY": 9,
+        "DETERMINISTIC_OVERRIDE_STRONG_MARGIN": 1
+      },
+      "correct_overrides": 0,
+      "wrong_overrides": 0,
+      "known_token_lower_bound": 491343,
+      "conservative_token_upper_bound": 491343,
+      "mean_latency_ms": 5145.467159706944,
+      "schema_privacy_schedule_failures": 0,
+      "gate_passed": false,
+      "gate_disposition": "TUNE_GATE_NOT_PASSED",
+      "failed_gate_requirements": [
+        "ROOT_SERVICE_CORRECT_MIN_51",
+        "PAIR_CORRECT_MIN_29",
+        "DAMAGE_NOT_GREATER_THAN_RESCUE",
+        "DAMAGE_RATE_MAX_0_05"
+      ],
+      "interpretation": "API credit recovery restored Provider completion. The fully completed candidate is algorithm-quality evaluable but missed the frozen Root, Pair, Damage, and Damage Rate gates."
     }
   ],
   "regression": {
@@ -120,5 +193,5 @@
     "dataset_accessed": false,
     "provider_run_executed": false
   },
-  "claim_boundary": "Candidate-1 is a retained capacity-blocked consumed-data development execution. It is neither an external result nor evidence for or against Adaptive v2 algorithm quality."
+  "claim_boundary": "Candidates 1 and 2 are retained capacity-blocked executions and are not algorithm-quality estimates. Candidate 3 is a fully completed consumed-data development result that did not pass the frozen TUNE gate. None is external validation."
 }
