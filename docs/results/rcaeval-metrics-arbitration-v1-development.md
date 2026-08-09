@@ -1,6 +1,6 @@
 # RCAEval Metrics Arbitration v1 — Development Results
 
-Status: `IMPLEMENTED_AWAITING_PROVIDER_CAPACITY_PREFLIGHT`
+Status: `METRICS_ARBITRATION_REGRESSION_PASSED_READY_FOR_FRESH_HOLDOUT_PLAN`
 
 M3 changes only the Root service when the Initial service is outside Metrics Top-2 and the normalized Top-1/Top-2 margin is at least 0.25. The exact Initial indicator is always retained.
 
@@ -16,9 +16,9 @@ The primary evidence is the same-run Initial → Final comparison. Historical St
 
 ## Live phases
 
-- Smoke: not executed.
-- Tune: not executed.
-- Regression: not executed.
+- Smoke: gate `True`; completed 12/12; Final Root 12; Final Pair 7; Root net rescue +2.
+- Tune: gate `True`; completed 60/60; Final Root 57; Final Pair 28; Root net rescue +6.
+- Regression: gate `True`; completed 120/120; Final Root 112; Final Pair 55; Root net rescue +17.
 
 ## Historical context
 
