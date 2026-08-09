@@ -121,21 +121,31 @@ must interleave cases and alternate arm order rather than run one arm in bulk.
 ## Consumed-data development protocol
 
 The 60 former DESIGN cases are `TUNE_SET`; the 120 former DEV_VALIDATION cases
-are `REGRESSION_SET`. Both are consumed development data. At most three
-60-case candidates may be evaluated. A candidate may enter the single permitted
+are `REGRESSION_SET`. Both are consumed development data. The execution record
+budget is five: candidate-1 and candidate-2 are preserved capacity-only records,
+while candidate-3 through candidate-5 are the only three real algorithm
+candidates. Candidate-3 is the first algorithm candidate, so only candidate-4
+and candidate-5 remain available. A candidate may enter the single permitted
 120-case regression only after all frozen TUNE gates pass.
 
-The TUNE gates require completion at least 58/60, Root Service at least 51/60,
-Pair at least 29/60, Damage no greater than Rescue, Damage Rate at most 5%, at
-least 36 direct returns, mean semantic operations at most 1.8, no more than 12
-Trace-bearing routes, Wrong Override no greater than Correct Override, and zero
-schema/privacy/schedule failures.
+The TUNE gates require completion at least 58/60, at most three terminal HTTP
+429 failures, final Root Service at least 51/60, and final Pair at least 29/60.
+Within the same run, Root Rescue must be strictly greater than Root Damage,
+Root Damage must be at most two, Root net Rescue must be at least one, Pair
+Rescue must be no less than Pair Damage, and Pair net Rescue must be
+non-negative. The route/cost gates require 36 through 48 direct returns, mean
+semantic operations at most 1.8, no more than 12 Trace-bearing routes, Wrong
+Override no greater than Correct Override, and zero schema/privacy/schedule
+failures. Historical cross-run Damage/Rescue is contextual and confounded by
+model-run variability; it does not decide this gate.
 
-The single regression requires completion at least 114/120, Root Service at
-least 97/120, Pair at least 53/120, Damage no greater than Rescue, non-negative
-net Rescue, at least 72 direct returns, mean semantic operations at most 1.8,
-no more than 24 Trace-bearing routes, Wrong Override no greater than Correct
-Override, at most six terminal HTTP 429 failures, and zero
+The single regression requires completion at least 114/120, final Root Service
+at least 97/120, final Pair at least 53/120, and at most six terminal HTTP 429
+failures. Within the same run, Root and Pair Rescue must each be no less than
+the corresponding Damage, both net Rescue values must be non-negative, and the
+Root Damage Rate must be at most 5%. It also requires at least 72 direct returns,
+mean semantic operations at most 1.8, no more than 24 Trace-bearing routes,
+Wrong Override no greater than Correct Override, and zero
 schema/privacy/schedule failures.
 
 No regression result may modify the selected candidate or trigger a second

@@ -1,5 +1,17 @@
 {
-  "candidate_limit": 3,
+  "candidate_budget": {
+    "algorithm_candidate_ids": [
+      "candidate-3",
+      "candidate-4",
+      "candidate-5"
+    ],
+    "algorithm_candidate_limit": 3,
+    "capacity_record_ids": [
+      "candidate-1",
+      "candidate-2"
+    ],
+    "record_limit": 5
+  },
   "classification": [
     "OBSS_DEVELOPMENT_POOL",
     "DEVELOPMENT_VISIBLE",
@@ -18,14 +30,17 @@
   },
   "regression_gate": {
     "completion_min": 114,
-    "damage_not_greater_than_rescue": true,
     "direct_return_min": 72,
     "http_429_terminal_failure_max": 6,
     "mean_semantic_operations_max": 1.8,
-    "net_rescue_min": 0,
     "pair_correct_min": 53,
     "privacy_schema_schedule_failure_max": 0,
     "root_service_correct_min": 97,
+    "same_run_pair_net_rescue_min": 0,
+    "same_run_pair_rescue_not_less_than_damage": true,
+    "same_run_root_damage_rate_max": 0.05,
+    "same_run_root_net_rescue_min": 0,
+    "same_run_root_rescue_not_less_than_damage": true,
     "trace_route_max": 24,
     "wrong_override_not_greater_than_correct": true
   },
@@ -34,20 +49,25 @@
     "gate_passed_desc",
     "root_service_correct_desc",
     "pair_correct_desc",
-    "net_rescue_desc",
-    "damage_asc",
+    "same_run_root_net_rescue_desc",
+    "same_run_root_damage_asc",
     "mean_semantic_operations_asc",
     "direct_return_desc"
   ],
   "tune_gate": {
     "completion_min": 58,
-    "damage_not_greater_than_rescue": true,
-    "damage_rate_max": 0.05,
+    "direct_return_max": 48,
     "direct_return_min": 36,
+    "http_429_terminal_failure_max": 3,
     "mean_semantic_operations_max": 1.8,
     "pair_correct_min": 29,
     "privacy_schema_schedule_failure_max": 0,
     "root_service_correct_min": 51,
+    "same_run_pair_net_rescue_min": 0,
+    "same_run_pair_rescue_not_less_than_damage": true,
+    "same_run_root_damage_max": 2,
+    "same_run_root_net_rescue_min": 1,
+    "same_run_root_rescue_strictly_greater_than_damage": true,
     "trace_route_max": 12,
     "wrong_override_not_greater_than_correct": true
   }

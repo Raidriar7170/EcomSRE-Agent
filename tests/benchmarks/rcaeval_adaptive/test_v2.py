@@ -59,20 +59,22 @@ def _gate_inputs(
     *,
     ranking: tuple[tuple[str, float], ...] = (
         ("checkoutservice", 1.0),
-        ("emailservice", 0.7),
+        ("emailservice", 0.2),
     ),
     logs_oppose: bool = False,
     propagation_conflict: bool = False,
     trace_available: bool = True,
+    evidence_supports: bool = True,
+    indicator_available: bool = True,
 ) -> V2GateInputs:
     return V2GateInputs(
         initial_diagnosis=initial,
         metrics_service_ranking=ranking,
-        diagnosis_evidence_supports_service=True,
+        diagnosis_evidence_supports_service=evidence_supports,
         logs_explicitly_oppose_initial=logs_oppose,
         propagation_conflict=propagation_conflict,
         trace_available=trace_available,
-        indicator_candidate_available=True,
+        indicator_candidate_available=indicator_available,
     )
 
 
@@ -97,9 +99,7 @@ def _hypothesis(
     )
 
 
-def _candidate(
-    indicator: str, score: float, rank: int
-) -> MetricIndicatorCandidate:
+def _candidate(indicator: str, score: float, rank: int) -> MetricIndicatorCandidate:
     return MetricIndicatorCandidate.model_validate(
         {
             "service": "checkoutservice",
@@ -181,11 +181,89 @@ def test_cpu_conflict_never_uses_trace_without_trace_semantics() -> None:
     assert decision.route is AdaptiveV2Route.VERIFY_LOGS
 
 
+def test_low_confidence_is_a_route_authoritative_risk_signal() -> None:
+    decision = decide_v2_gate(
+        _gate_inputs(_diagnosis(confidence=0.8)),
+        V2GatePolicy(metrics_margin_threshold=0.1, risk_signal_threshold=1),
+    )
+
+    assert decision.route is AdaptiveV2Route.VERIFY_LOGS
+    assert decision.risk_signal_count == 1
+    assert "LOW_CONFIDENCE" in decision.reason_codes
+
+
+def test_low_metrics_margin_is_a_route_authoritative_risk_signal() -> None:
+    decision = decide_v2_gate(
+        _gate_inputs(
+            _diagnosis(),
+            ranking=(("checkoutservice", 1.0), ("emailservice", 0.8)),
+        ),
+        V2GatePolicy(metrics_margin_threshold=0.25, risk_signal_threshold=1),
+    )
+
+    assert decision.route is AdaptiveV2Route.VERIFY_LOGS
+    assert decision.metrics_margin_risk is True
+    assert "METRICS_MARGIN_RISK" in decision.reason_codes
+
+
+def test_metrics_rank_risk_is_route_authoritative() -> None:
+    decision = decide_v2_gate(
+        _gate_inputs(
+            _diagnosis(),
+            ranking=(
+                ("emailservice", 1.0),
+                ("currencyservice", 0.5),
+                ("checkoutservice", 0.1),
+            ),
+        ),
+        V2GatePolicy(metrics_margin_threshold=0.1, risk_signal_threshold=1),
+    )
+
+    assert decision.route is AdaptiveV2Route.VERIFY_LOGS
+    assert decision.metrics_rank_risk is True
+    assert "METRICS_RANK_RISK" in decision.reason_codes
+
+
+def test_two_weak_risks_select_logs_at_threshold_two() -> None:
+    decision = decide_v2_gate(
+        _gate_inputs(
+            _diagnosis(confidence=0.8),
+            evidence_supports=False,
+        ),
+        V2GatePolicy(metrics_margin_threshold=0.1, risk_signal_threshold=2),
+    )
+
+    assert decision.route is AdaptiveV2Route.VERIFY_LOGS
+    assert decision.risk_signal_count == 2
+
+
+def test_one_weak_risk_remains_direct_at_threshold_two_but_is_recorded() -> None:
+    decision = decide_v2_gate(
+        _gate_inputs(_diagnosis(confidence=0.8)),
+        V2GatePolicy(metrics_margin_threshold=0.1, risk_signal_threshold=2),
+    )
+
+    assert decision.route is AdaptiveV2Route.DIRECT_RETURN
+    assert decision.initial_unstable is True
+    assert decision.risk_signal_count == 1
+    assert "LOW_CONFIDENCE" in decision.reason_codes
+    assert "RISK_COUNT_BELOW_ROUTE_THRESHOLD" in decision.reason_codes
+
+
+def test_initial_unstable_is_not_silently_direct_at_threshold_one() -> None:
+    decision = decide_v2_gate(
+        _gate_inputs(_diagnosis(), indicator_available=False),
+        V2GatePolicy(metrics_margin_threshold=0.1, risk_signal_threshold=1),
+    )
+
+    assert decision.initial_unstable is True
+    assert decision.route is AdaptiveV2Route.VERIFY_LOGS
+    assert "INDICATOR_MISSING" in decision.reason_codes
+
+
 def test_deterministic_fusion_keeps_without_supported_contradiction() -> None:
     initial = _diagnosis()
-    gate = decide_v2_gate(
-        _gate_inputs(initial, logs_oppose=True), V2GatePolicy()
-    )
+    gate = decide_v2_gate(_gate_inputs(initial, logs_oppose=True), V2GatePolicy())
 
     result = deterministic_fusion(
         initial=initial,
@@ -203,9 +281,7 @@ def test_deterministic_fusion_keeps_without_supported_contradiction() -> None:
 
 def test_deterministic_fusion_allows_one_strong_supported_override() -> None:
     initial = _diagnosis()
-    gate = decide_v2_gate(
-        _gate_inputs(initial, logs_oppose=True), V2GatePolicy()
-    )
+    gate = decide_v2_gate(_gate_inputs(initial, logs_oppose=True), V2GatePolicy())
 
     result = deterministic_fusion(
         initial=initial,
@@ -327,9 +403,7 @@ def _telemetry_case(tmp_path: Path):
         "1000,checkoutservice,cartservice,5,1\n",
         encoding="utf-8",
     )
-    case = discover_dev_cases(
-        tmp_path / "dataset" / "RE2-OB", DevSystem.RE2_OB
-    )[0]
+    case = discover_dev_cases(tmp_path / "dataset" / "RE2-OB", DevSystem.RE2_OB)[0]
     return dev_case_to_telemetry_case(case)
 
 
@@ -357,7 +431,9 @@ def test_v2_initial_is_exact_strong_single_call_and_direct_cost(tmp_path: Path) 
 
     assert provider.initial_architecture.value == "single"
     assert provider.initial_context.architecture.value == "single"
-    assert tuple(item.source for item in provider.initial_context.source_observations) == (
+    assert tuple(
+        item.source for item in provider.initial_context.source_observations
+    ) == (
         "metrics",
         "logs",
         "traces",

@@ -44,6 +44,39 @@ _RUNTIME_SCOPES = (
     "scripts/rcaeval_adaptive/run_v2_development.py",
     "config/rcaeval-adaptive-v2",
 )
+_CANDIDATE_IDS = tuple(f"candidate-{index}" for index in range(1, 6))
+
+
+def _candidate_metadata(
+    candidate_id: str, evaluation: Mapping[str, Any] | None = None
+) -> dict[str, Any]:
+    frozen = (
+        _load(CONFIG_ROOT / "evaluation.json") if evaluation is None else evaluation
+    )
+    budget = frozen.get("candidate_budget")
+    if not isinstance(budget, Mapping):
+        raise ValueError("Adaptive v2 candidate budget is invalid")
+    capacity_ids = tuple(budget.get("capacity_record_ids", ()))
+    algorithm_ids = tuple(budget.get("algorithm_candidate_ids", ()))
+    candidate_ids = capacity_ids + algorithm_ids
+    if (
+        candidate_ids != _CANDIDATE_IDS
+        or budget.get("record_limit") != len(candidate_ids)
+        or budget.get("algorithm_candidate_limit") != len(algorithm_ids)
+        or candidate_id not in candidate_ids
+    ):
+        raise ValueError("Adaptive v2 candidate metadata is invalid")
+    return {
+        "candidate_kind": (
+            "CAPACITY_RECORD" if candidate_id in capacity_ids else "ALGORITHM_TUNE"
+        ),
+        "algorithm_candidate_ordinal": (
+            None
+            if candidate_id in capacity_ids
+            else algorithm_ids.index(candidate_id) + 1
+        ),
+        "algorithm_candidate_limit": int(budget["algorithm_candidate_limit"]),
+    }
 
 
 def _load(path: Path) -> dict[str, Any]:
@@ -74,7 +107,9 @@ def _clean_implementation_sha() -> str:
         text=True,
     )
     if status.stdout:
-        raise ValueError("Adaptive v2 runtime must be committed before Provider execution")
+        raise ValueError(
+            "Adaptive v2 runtime must be committed before Provider execution"
+        )
     return subprocess.run(
         ("git", "rev-parse", "HEAD"),
         cwd=PROJECT_ROOT,
@@ -113,7 +148,9 @@ def _validate_private_run_root(path: Path) -> Path:
 def _load_private_result(path: Path) -> dict[str, Any]:
     requested = path.expanduser()
     if not requested.is_absolute() or requested.is_symlink():
-        raise ValueError("Adaptive v2 prior result must be an absolute non-symlink file")
+        raise ValueError(
+            "Adaptive v2 prior result must be an absolute non-symlink file"
+        )
     resolved = requested.resolve(strict=True)
     _validate_private_run_root(resolved.parent)
     return _load(resolved)
@@ -122,12 +159,14 @@ def _load_private_result(path: Path) -> dict[str, Any]:
 def _validate_tune_lineage(
     candidate_id: str, previous_results: tuple[Path, ...]
 ) -> tuple[str, ...]:
-    if candidate_id not in {"candidate-1", "candidate-2", "candidate-3"}:
+    if candidate_id not in _CANDIDATE_IDS:
         raise ValueError("Adaptive v2 candidate lineage is invalid")
     ordinal = int(candidate_id[-1])
     expected = tuple(f"candidate-{index}" for index in range(1, ordinal))
-    if ordinal not in {1, 2, 3} or len(previous_results) != len(expected):
-        raise ValueError("Adaptive v2 candidate lineage is incomplete or outside the limit")
+    if len(previous_results) != len(expected):
+        raise ValueError(
+            "Adaptive v2 candidate lineage is incomplete or outside the limit"
+        )
     observed: list[str] = []
     for path, expected_id in zip(previous_results, expected, strict=True):
         result = _load_private_result(path)
@@ -167,6 +206,8 @@ def _validate_regression_authorization(
     current_implementation_sha: str,
     agent_config_sha256: str,
     model_lock_sha256: str,
+    evaluation_config_sha256: str,
+    evaluation: Mapping[str, Any],
 ) -> None:
     result = _load_private_result(tune_result_path)
     aggregate = result.get("aggregate")
@@ -179,22 +220,34 @@ def _validate_regression_authorization(
         or aggregate.get("gate_passed") is not True
         or aggregate.get("gate_disposition") != "PASSED"
         or aggregate.get("algorithm_quality_evaluable") is not True
-        or not _gate_passed("tune", aggregate)
+        or not _gate_passed("tune", aggregate, evaluation)
     ):
         raise ValueError("Adaptive v2 regression requires a passed TUNE result")
     lock = _load_private_result(tune_result_path.parent / "candidate-lock.json")
     implementation_sha = lock.get("implementation_git_sha")
     if (
-        lock.get("schema_version")
-        != "rcaeval-single-first-adaptive.candidate-lock.v2"
+        lock.get("schema_version") != "rcaeval-single-first-adaptive.candidate-lock.v2"
         or lock.get("candidate_id") != candidate_id
         or lock.get("phase") != "TUNE_SET"
         or lock.get("agent_config_sha256") != agent_config_sha256
         or lock.get("model_lock_sha256") != model_lock_sha256
+        or lock.get("evaluation_config_sha256") != evaluation_config_sha256
         or not isinstance(implementation_sha, str)
         or len(implementation_sha) != 40
-        or not _git_success("merge-base", "--is-ancestor", implementation_sha, current_implementation_sha)
-        or not _git_success("diff", "--quiet", implementation_sha, current_implementation_sha, "--", *_RUNTIME_SCOPES)
+        or not _git_success(
+            "merge-base",
+            "--is-ancestor",
+            implementation_sha,
+            current_implementation_sha,
+        )
+        or not _git_success(
+            "diff",
+            "--quiet",
+            implementation_sha,
+            current_implementation_sha,
+            "--",
+            *_RUNTIME_SCOPES,
+        )
     ):
         raise ValueError("Adaptive v2 TUNE binding differs from regression runtime")
 
@@ -234,7 +287,9 @@ def _regression_baseline(
         if terminal is None or terminal.terminal_status is not TerminalStatus.COMPLETED:
             raise ValueError("Adaptive v2 regression baseline is incomplete")
         assert terminal.diagnosis is not None
-        root_correct = terminal.diagnosis.root_cause_service == identity.root_cause_service
+        root_correct = (
+            terminal.diagnosis.root_cause_service == identity.root_cause_service
+        )
         output[identity] = BaselineOutcome(
             identity=identity,
             root_correct=root_correct,
@@ -266,6 +321,7 @@ def _aggregate(
         completed = terminal.status is AdaptiveTerminalStatus.COMPLETED
         result = terminal.result
         initial_correct = False
+        initial_pair_correct = False
         root_correct = False
         pair_correct = False
         route = None
@@ -273,16 +329,24 @@ def _aggregate(
         correct_override = False
         wrong_override = False
         if terminal.status is AdaptiveTerminalStatus.PROVIDER_FAILURE:
-            provider_failure_codes[terminal.failure_code or "UNKNOWN_PROVIDER_FAILURE"] += 1
+            provider_failure_codes[
+                terminal.failure_code or "UNKNOWN_PROVIDER_FAILURE"
+            ] += 1
         if result is not None:
             diagnosis = result.diagnosis
             initial_correct = (
                 diagnosis.initial_diagnosis.root_cause_service
                 == identity.root_cause_service
             )
+            initial_pair_correct = (
+                initial_correct
+                and diagnosis.initial_diagnosis.root_cause_indicator
+                == normalize_indicator(identity.fault)
+            )
             root_correct = diagnosis.final_root_service == identity.root_cause_service
-            pair_correct = root_correct and diagnosis.final_indicator == normalize_indicator(
-                identity.fault
+            pair_correct = (
+                root_correct
+                and diagnosis.final_indicator == normalize_indicator(identity.fault)
             )
             route = diagnosis.gate_decision.route.value
             routes[route] += 1
@@ -301,6 +365,7 @@ def _aggregate(
                 "baseline_root_correct": reference.root_correct,
                 "baseline_pair_correct": reference.pair_correct,
                 "initial_root_correct": initial_correct if completed else None,
+                "initial_pair_correct": initial_pair_correct if completed else None,
                 "root_correct": root_correct,
                 "pair_correct": pair_correct,
                 "route": route,
@@ -312,6 +377,9 @@ def _aggregate(
                 "latency_ms": terminal.latency_ms,
                 "correct_override": correct_override,
                 "wrong_override": wrong_override,
+                "specialist_hypothesis_count": (
+                    0 if result is None else len(result.diagnosis.specialist_hypotheses)
+                ),
             }
         )
     scheduled = len(rows)
@@ -319,8 +387,47 @@ def _aggregate(
     completed_rows = tuple(item for item in rows if item["completed"])
     root_correct_count = sum(item["root_correct"] for item in rows)
     pair_correct_count = sum(item["pair_correct"] for item in rows)
+    initial_root_correct_count = sum(
+        item["initial_root_correct"] for item in completed_rows
+    )
+    initial_pair_correct_count = sum(
+        item["initial_pair_correct"] for item in completed_rows
+    )
+    same_run_root_damage = sum(
+        item["initial_root_correct"] and not item["root_correct"]
+        for item in completed_rows
+    )
+    same_run_root_rescue = sum(
+        not item["initial_root_correct"] and item["root_correct"]
+        for item in completed_rows
+    )
+    same_run_pair_damage = sum(
+        item["initial_pair_correct"] and not item["pair_correct"]
+        for item in completed_rows
+    )
+    same_run_pair_rescue = sum(
+        not item["initial_pair_correct"] and item["pair_correct"]
+        for item in completed_rows
+    )
+    escalated_rows = tuple(
+        item
+        for item in completed_rows
+        if item["route"] != AdaptiveV2Route.DIRECT_RETURN.value
+    )
+    initial_wrong_count = completed_count - initial_root_correct_count
+    escalated_initial_wrong = sum(
+        not item["initial_root_correct"] for item in escalated_rows
+    )
     baseline_pair_correct = sum(item["baseline_pair_correct"] for item in rows)
     baseline_pair_wrong = scheduled - baseline_pair_correct
+    baseline_root_correct = sum(item["baseline_root_correct"] for item in rows)
+    baseline_root_wrong = scheduled - baseline_root_correct
+    historical_root_damage = sum(
+        item["baseline_root_correct"] and not item["root_correct"] for item in rows
+    )
+    historical_root_rescue = sum(
+        not item["baseline_root_correct"] and item["root_correct"] for item in rows
+    )
     damage = sum(
         item["baseline_pair_correct"] and not item["pair_correct"] for item in rows
     )
@@ -350,11 +457,49 @@ def _aggregate(
         ),
         "root_service_correct": root_correct_count,
         "pair_correct": pair_correct_count,
+        "initial_root_correct": initial_root_correct_count,
+        "final_root_correct": root_correct_count,
+        "same_run_root_damage": same_run_root_damage,
+        "same_run_root_damage_rate": _rate(
+            same_run_root_damage, initial_root_correct_count
+        ),
+        "same_run_root_rescue": same_run_root_rescue,
+        "same_run_root_rescue_rate": _rate(same_run_root_rescue, initial_wrong_count),
+        "same_run_root_net_rescue": same_run_root_rescue - same_run_root_damage,
+        "initial_pair_correct": initial_pair_correct_count,
+        "final_pair_correct": pair_correct_count,
+        "same_run_pair_damage": same_run_pair_damage,
+        "same_run_pair_damage_rate": _rate(
+            same_run_pair_damage, initial_pair_correct_count
+        ),
+        "same_run_pair_rescue": same_run_pair_rescue,
+        "same_run_pair_rescue_rate": _rate(
+            same_run_pair_rescue, completed_count - initial_pair_correct_count
+        ),
+        "same_run_pair_net_rescue": same_run_pair_rescue - same_run_pair_damage,
+        "legacy_damage_rescue_alias_classification": [
+            "CROSS_RUN_CONTEXTUAL_COMPARISON",
+            "MODEL_RUN_VARIABILITY_CONFOUNDED",
+        ],
         "damage": damage,
         "damage_rate": _rate(damage, baseline_pair_correct),
         "rescue": rescue,
         "rescue_rate": _rate(rescue, baseline_pair_wrong),
         "net_rescue": rescue - damage,
+        "historical_cross_run_comparison": {
+            "classification": [
+                "CROSS_RUN_CONTEXTUAL_COMPARISON",
+                "MODEL_RUN_VARIABILITY_CONFOUNDED",
+            ],
+            "root_damage": historical_root_damage,
+            "root_damage_rate": _rate(historical_root_damage, baseline_root_correct),
+            "root_rescue": historical_root_rescue,
+            "root_rescue_rate": _rate(historical_root_rescue, baseline_root_wrong),
+            "pair_damage": damage,
+            "pair_damage_rate": _rate(damage, baseline_pair_correct),
+            "pair_rescue": rescue,
+            "pair_rescue_rate": _rate(rescue, baseline_pair_wrong),
+        },
         "direct_return": routes[AdaptiveV2Route.DIRECT_RETURN.value],
         "route_distribution": {
             route.value: routes[route.value] for route in AdaptiveV2Route
@@ -363,9 +508,20 @@ def _aggregate(
             routes[AdaptiveV2Route.VERIFY_TRACES.value]
             + routes[AdaptiveV2Route.VERIFY_BOTH.value]
         ),
-        "mean_semantic_operations": sum(
-            item["semantic_operations"] for item in rows
-        )
+        "escalation_precision": _rate(escalated_initial_wrong, len(escalated_rows)),
+        "escalation_recall": _rate(escalated_initial_wrong, initial_wrong_count),
+        "initial_correct_escalated": sum(
+            item["initial_root_correct"] for item in escalated_rows
+        ),
+        "initial_wrong_direct": sum(
+            not item["initial_root_correct"]
+            and item["route"] == AdaptiveV2Route.DIRECT_RETURN.value
+            for item in completed_rows
+        ),
+        "specialist_hypothesis_count": sum(
+            item["specialist_hypothesis_count"] for item in rows
+        ),
+        "mean_semantic_operations": sum(item["semantic_operations"] for item in rows)
         / scheduled,
         "mean_semantic_operations_basis": "FIXED_SCHEDULED_DENOMINATOR",
         "mean_semantic_operations_completed_only": (
@@ -396,46 +552,89 @@ def _aggregate(
             item["failure_code"] == "HTTP_429" for item in rows
         ),
         "provider_failure_count": sum(provider_failure_codes.values()),
-        "provider_failure_code_distribution": dict(sorted(provider_failure_codes.items())),
+        "provider_failure_code_distribution": dict(
+            sorted(provider_failure_codes.items())
+        ),
         "disqualifying_failure_count": disqualifying,
     }
     return aggregate, rows
 
 
-def _gate_passed(phase: str, aggregate: Mapping[str, Any]) -> bool:
-    damage_rate = aggregate["damage_rate"]["value"]
+def _gate_passed(
+    phase: str,
+    aggregate: Mapping[str, Any],
+    evaluation: Mapping[str, Any] | None = None,
+) -> bool:
+    frozen = (
+        _load(CONFIG_ROOT / "evaluation.json") if evaluation is None else evaluation
+    )
+    gate_name = "tune_gate" if phase == "tune" else "regression_gate"
+    if phase not in {"tune", "regression"}:
+        raise ValueError("Adaptive v2 gate phase is invalid")
+    gate = frozen.get(gate_name)
+    if not isinstance(gate, Mapping):
+        raise ValueError("Adaptive v2 evaluation gate is invalid")
+    damage_rate = aggregate["same_run_root_damage_rate"]["value"]
     shared = (
-        aggregate["damage"] <= aggregate["rescue"]
+        gate["wrong_override_not_greater_than_correct"] is True
         and aggregate["wrong_overrides"] <= aggregate["correct_overrides"]
-        and aggregate["disqualifying_failure_count"] == 0
+        and aggregate["disqualifying_failure_count"]
+        <= int(gate["privacy_schema_schedule_failure_max"])
     )
     if phase == "tune":
         return bool(
             shared
-            and aggregate["completed"] >= 58
-            and aggregate["root_service_correct"] >= 51
-            and aggregate["pair_correct"] >= 29
-            and damage_rate is not None
-            and damage_rate <= 0.05
-            and aggregate["direct_return"] >= 36
-            and aggregate["mean_semantic_operations"] <= 1.8
-            and aggregate["trace_routes"] <= 12
+            and aggregate["completed"] >= int(gate["completion_min"])
+            and aggregate["http_429_terminal_failures"]
+            <= int(gate["http_429_terminal_failure_max"])
+            and aggregate["final_root_correct"] >= int(gate["root_service_correct_min"])
+            and aggregate["final_pair_correct"] >= int(gate["pair_correct_min"])
+            and gate["same_run_root_rescue_strictly_greater_than_damage"] is True
+            and aggregate["same_run_root_rescue"] > aggregate["same_run_root_damage"]
+            and aggregate["same_run_root_damage"]
+            <= int(gate["same_run_root_damage_max"])
+            and aggregate["same_run_root_net_rescue"]
+            >= int(gate["same_run_root_net_rescue_min"])
+            and gate["same_run_pair_rescue_not_less_than_damage"] is True
+            and aggregate["same_run_pair_rescue"] >= aggregate["same_run_pair_damage"]
+            and aggregate["same_run_pair_net_rescue"]
+            >= int(gate["same_run_pair_net_rescue_min"])
+            and aggregate["direct_return"] >= int(gate["direct_return_min"])
+            and aggregate["direct_return"] <= int(gate["direct_return_max"])
+            and aggregate["mean_semantic_operations"]
+            <= float(gate["mean_semantic_operations_max"])
+            and aggregate["trace_routes"] <= int(gate["trace_route_max"])
         )
     return bool(
         shared
-        and aggregate["completed"] >= 114
-        and aggregate["root_service_correct"] >= 97
-        and aggregate["pair_correct"] >= 53
-        and aggregate["net_rescue"] >= 0
-        and aggregate["direct_return"] >= 72
-        and aggregate["mean_semantic_operations"] <= 1.8
-        and aggregate["trace_routes"] <= 24
-        and aggregate["http_429_terminal_failures"] <= 6
+        and aggregate["completed"] >= int(gate["completion_min"])
+        and aggregate["final_root_correct"] >= int(gate["root_service_correct_min"])
+        and aggregate["final_pair_correct"] >= int(gate["pair_correct_min"])
+        and gate["same_run_root_rescue_not_less_than_damage"] is True
+        and aggregate["same_run_root_rescue"] >= aggregate["same_run_root_damage"]
+        and aggregate["same_run_root_net_rescue"]
+        >= int(gate["same_run_root_net_rescue_min"])
+        and gate["same_run_pair_rescue_not_less_than_damage"] is True
+        and aggregate["same_run_pair_rescue"] >= aggregate["same_run_pair_damage"]
+        and aggregate["same_run_pair_net_rescue"]
+        >= int(gate["same_run_pair_net_rescue_min"])
+        and damage_rate is not None
+        and damage_rate <= float(gate["same_run_root_damage_rate_max"])
+        and aggregate["direct_return"] >= int(gate["direct_return_min"])
+        and aggregate["mean_semantic_operations"]
+        <= float(gate["mean_semantic_operations_max"])
+        and aggregate["trace_routes"] <= int(gate["trace_route_max"])
+        and aggregate["http_429_terminal_failures"]
+        <= int(gate["http_429_terminal_failure_max"])
     )
 
 
-def _gate_disposition(phase: str, aggregate: Mapping[str, Any]) -> str:
-    if _gate_passed(phase, aggregate):
+def _gate_disposition(
+    phase: str,
+    aggregate: Mapping[str, Any],
+    evaluation: Mapping[str, Any] | None = None,
+) -> str:
+    if _gate_passed(phase, aggregate, evaluation):
         return "PASSED"
     if (
         aggregate["completed"] == 0
@@ -460,16 +659,35 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     parser.add_argument("--run-root", required=True, type=Path)
     parser.add_argument("--baseline-outcomes", type=Path)
     parser.add_argument("--reference-terminal-root", type=Path)
-    parser.add_argument("--previous-tune-result", action="append", default=[], type=Path)
+    parser.add_argument(
+        "--previous-tune-result", action="append", default=[], type=Path
+    )
     parser.add_argument("--tune-result", type=Path)
+    parser.add_argument("--candidate-selection-reason")
     args = parser.parse_args(argv)
 
     args.run_root = _validate_private_run_root(args.run_root)
     implementation_sha = _clean_implementation_sha()
     agent = _load(CONFIG_ROOT / "agent.json")
     model = _load(CONFIG_ROOT / "model-lock.json")
+    evaluation = _load(CONFIG_ROOT / "evaluation.json")
     agent_config_sha256 = _sha(CONFIG_ROOT / "agent.json")
     model_lock_sha256 = _sha(CONFIG_ROOT / "model-lock.json")
+    evaluation_config_sha256 = _sha(CONFIG_ROOT / "evaluation.json")
+    candidate_metadata = _candidate_metadata(args.candidate_id, evaluation)
+    candidate_selection_reason = (
+        args.candidate_selection_reason.strip()
+        if isinstance(args.candidate_selection_reason, str)
+        else None
+    )
+    if (
+        candidate_metadata["candidate_kind"] == "ALGORITHM_TUNE"
+        and int(candidate_metadata["algorithm_candidate_ordinal"]) >= 2
+        and not candidate_selection_reason
+    ):
+        raise ValueError(
+            "Adaptive v2 real algorithm candidate requires a selection reason"
+        )
     if args.phase == "tune":
         if args.tune_result is not None:
             raise ValueError("TUNE_SET does not accept regression authorization")
@@ -483,6 +701,8 @@ def main(argv: tuple[str, ...] | None = None) -> int:
             current_implementation_sha=implementation_sha,
             agent_config_sha256=agent_config_sha256,
             model_lock_sha256=model_lock_sha256,
+            evaluation_config_sha256=evaluation_config_sha256,
+            evaluation=evaluation,
         )
     split = SplitName.DESIGN if args.phase == "tune" else SplitName.DEV_VALIDATION
     records = load_private_schedule(args.schedule, allowed_split=split)
@@ -501,9 +721,7 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     else:
         if args.reference_terminal_root is None:
             raise ValueError("REGRESSION_SET requires Strong Single terminals")
-        baseline = _regression_baseline(
-            identities, cases, args.reference_terminal_root
-        )
+        baseline = _regression_baseline(identities, cases, args.reference_terminal_root)
         split_name = "REGRESSION_SET"
     formula_path = PROJECT_ROOT / str(model["inherited_indicator_config_path"])
     policy_path = PROJECT_ROOT / str(model["inherited_transport_retry_policy_path"])
@@ -517,7 +735,21 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         "implementation_git_sha": implementation_sha,
         "agent_config_sha256": agent_config_sha256,
         "model_lock_sha256": model_lock_sha256,
+        "evaluation_config_sha256": evaluation_config_sha256,
         "phase": split_name,
+        **candidate_metadata,
+        "candidate_selection_reason": candidate_selection_reason,
+        "agent_policy_snapshot": {
+            "gate": agent["gate"],
+            "fusion": agent["fusion"],
+            "indicator": agent["indicator"],
+            "pacing": agent["pacing"],
+        },
+        "evaluation_policy_snapshot": {
+            "candidate_budget": evaluation["candidate_budget"],
+            "tune_gate": evaluation["tune_gate"],
+            "regression_gate": evaluation["regression_gate"],
+        },
     }
     _write_create_once(args.run_root / "candidate-lock.json", candidate_lock)
     terminals = execute_v2_batch(
@@ -545,8 +777,8 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         ),
     )
     aggregate, rows = _aggregate(identities, terminals, baseline)
-    aggregate["gate_passed"] = _gate_passed(args.phase, aggregate)
-    aggregate["gate_disposition"] = _gate_disposition(args.phase, aggregate)
+    aggregate["gate_passed"] = _gate_passed(args.phase, aggregate, evaluation)
+    aggregate["gate_disposition"] = _gate_disposition(args.phase, aggregate, evaluation)
     private = {
         "schema_version": "rcaeval-single-first-adaptive.development-result.v2",
         "classification": [
@@ -555,6 +787,8 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         ],
         "candidate_id": args.candidate_id,
         "phase": split_name,
+        "evaluation_config_sha256": evaluation_config_sha256,
+        **candidate_metadata,
         "aggregate": aggregate,
         "outcomes": rows,
     }

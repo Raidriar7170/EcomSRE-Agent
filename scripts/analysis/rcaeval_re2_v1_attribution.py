@@ -1078,7 +1078,23 @@ def _cross_system_item(
         for item in complexities
         if item["unique_trace_services"] is not None
     ]
-    aggregate = {
+    trace_rows_distribution: dict[str, Any]
+    if trace_rows:
+        trace_rows_distribution = _distribution(trace_rows)
+    else:
+        trace_rows_distribution = {
+            "status": "SOURCE_UNAVAILABLE",
+            "case_count": total,
+        }
+    trace_services_distribution: dict[str, Any]
+    if trace_services:
+        trace_services_distribution = _distribution(trace_services)
+    else:
+        trace_services_distribution = {
+            "status": "SOURCE_UNAVAILABLE",
+            "case_count": total,
+        }
+    aggregate: dict[str, Any] = {
         "case_count": total,
         "services_per_case": _distribution([item["services"] for item in complexities]),
         "metric_columns_per_case": _distribution(
@@ -1087,19 +1103,11 @@ def _cross_system_item(
         "log_rows_in_window": _distribution(
             [item["log_rows_in_window"] for item in complexities]
         ),
-        "trace_rows_in_window": (
-            _distribution(trace_rows)
-            if trace_rows
-            else {"status": "SOURCE_UNAVAILABLE", "case_count": total}
-        ),
+        "trace_rows_in_window": trace_rows_distribution,
         "unique_log_services": _distribution(
             [item["unique_log_services"] for item in complexities]
         ),
-        "unique_trace_services": (
-            _distribution(trace_services)
-            if trace_services
-            else {"status": "SOURCE_UNAVAILABLE", "case_count": total}
-        ),
+        "unique_trace_services": trace_services_distribution,
         "root_service_coverage": coverage,
         "any_source_root_service_coverage_at_6": ratio(any_coverage, total),
         "truth_indicator_raw_coverage": ratio(raw_indicator, total),

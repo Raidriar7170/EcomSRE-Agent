@@ -18,7 +18,12 @@ from ecomsre.model.gateway import (
     OpenAICompatibleTransport,
     StdlibOpenAICompatibleTransport,
 )
-from ecomsre_rcaeval.adapter import ArchitectureContext, ArchitectureContextBuilder, IncidentManifest, incident_for_case
+from ecomsre_rcaeval.adapter import (
+    ArchitectureContext,
+    ArchitectureContextBuilder,
+    IncidentManifest,
+    incident_for_case,
+)
 from ecomsre_rcaeval.contracts import Architecture, Diagnosis
 from ecomsre_rcaeval.dataset import DevCase, TelemetryCase
 from ecomsre_rcaeval_adaptive.contracts import (
@@ -108,18 +113,23 @@ class AdaptiveV2CaseResult(V2Model):
     case_id: str = Field(pattern=r"^[a-z0-9][a-z0-9-]{0,127}$")
     system: Literal["RE2-OB", "RE2-SS"]
     diagnosis: AdaptiveV2Diagnosis
-    operation_trace: tuple[AdaptiveV2OperationTrace, ...] = Field(min_length=1, max_length=3)
+    operation_trace: tuple[AdaptiveV2OperationTrace, ...] = Field(
+        min_length=1, max_length=3
+    )
     tool_calls: Literal[3]
     semantic_operations: StrictInt = Field(ge=1, le=3)
 
     @model_validator(mode="after")
     def require_exact_cost(self) -> AdaptiveV2CaseResult:
         expected = expected_semantic_operations(self.diagnosis.gate_decision.route)
-        if self.semantic_operations != expected or len(self.operation_trace) != expected:
-            raise ValueError("Adaptive v2 semantic cost differs from route")
-        if tuple(item.semantic_operation_index for item in self.operation_trace) != tuple(
-            range(1, expected + 1)
+        if (
+            self.semantic_operations != expected
+            or len(self.operation_trace) != expected
         ):
+            raise ValueError("Adaptive v2 semantic cost differs from route")
+        if tuple(
+            item.semantic_operation_index for item in self.operation_trace
+        ) != tuple(range(1, expected + 1)):
             raise ValueError("Adaptive v2 operation trace is not contiguous")
         return self
 
@@ -127,7 +137,7 @@ class AdaptiveV2CaseResult(V2Model):
 class AdaptiveV2TerminalRecord(V2Model):
     schema_version: Literal["rcaeval-single-first-adaptive.terminal.v2"]
     evaluation_version: Literal["single-first-adaptive-v2"]
-    candidate_id: str = Field(pattern=r"^candidate-[1-3]$")
+    candidate_id: str = Field(pattern=r"^candidate-[1-5]$")
     split: Literal["TUNE_SET", "REGRESSION_SET"]
     run_id: str = Field(pattern=r"^[0-9a-f]{32}$")
     case_id: str = Field(pattern=r"^[a-z0-9][a-z0-9-]{0,127}$")
@@ -260,7 +270,9 @@ def execute_v2_case(
         result = operation()
         after = provider.calls
         if after != before + 1:
-            raise ValueError("Adaptive v2 semantic operation made an invalid call count")
+            raise ValueError(
+                "Adaptive v2 semantic operation made an invalid call count"
+            )
         trace.append(
             AdaptiveV2OperationTrace(
                 semantic_operation_index=len(trace) + 1,
@@ -397,7 +409,9 @@ class RequestPacer:
 
 
 class PacedTransport:
-    def __init__(self, delegate: OpenAICompatibleTransport, pacer: RequestPacer) -> None:
+    def __init__(
+        self, delegate: OpenAICompatibleTransport, pacer: RequestPacer
+    ) -> None:
         self._delegate = delegate
         self._pacer = pacer
 
@@ -418,10 +432,14 @@ class PacedTransport:
         )
 
 
-def adaptive_v2_run_id(
-    candidate_id: str, split: str, identity: CaseIdentity
-) -> str:
-    if candidate_id not in {"candidate-1", "candidate-2", "candidate-3"}:
+def adaptive_v2_run_id(candidate_id: str, split: str, identity: CaseIdentity) -> str:
+    if candidate_id not in {
+        "candidate-1",
+        "candidate-2",
+        "candidate-3",
+        "candidate-4",
+        "candidate-5",
+    }:
         raise ValueError("Adaptive v2 candidate is outside the bounded search")
     if split not in {"TUNE_SET", "REGRESSION_SET"}:
         raise ValueError("Adaptive v2 split is invalid")
@@ -437,7 +455,9 @@ def adaptive_v2_run_id(
     ).hexdigest()[:32]
 
 
-def _accounting(sidecar_root: Path, max_completion_tokens: int) -> AttemptAccountingSummary:
+def _accounting(
+    sidecar_root: Path, max_completion_tokens: int
+) -> AttemptAccountingSummary:
     return rebuild_attempt_accounting(
         (sidecar_root,),
         prompt_token_reservation=29_952,
@@ -445,7 +465,9 @@ def _accounting(sidecar_root: Path, max_completion_tokens: int) -> AttemptAccoun
     )
 
 
-def _last_failure(sidecar_root: Path) -> tuple[AdaptiveTerminalStatus, str | None, str, str | None]:
+def _last_failure(
+    sidecar_root: Path,
+) -> tuple[AdaptiveTerminalStatus, str | None, str, str | None]:
     paths = tuple(sorted((sidecar_root / "semantic-operations").glob("*.json")))
     if not paths:
         return (
@@ -454,7 +476,9 @@ def _last_failure(sidecar_root: Path) -> tuple[AdaptiveTerminalStatus, str | Non
             "MISSING_SEMANTIC_FAILURE_RECORD",
             "INPUT_CONSTRUCTION",
         )
-    record = SemanticOperationRecord.model_validate_json(paths[-1].read_text(encoding="utf-8"))
+    record = SemanticOperationRecord.model_validate_json(
+        paths[-1].read_text(encoding="utf-8")
+    )
     statuses = {
         FailureClass.NON_RETRYABLE_SCHEMA: AdaptiveTerminalStatus.INVALID_SCHEMA,
         FailureClass.NON_RETRYABLE_PROTOCOL: AdaptiveTerminalStatus.PROTOCOL_VIOLATION,
@@ -462,7 +486,11 @@ def _last_failure(sidecar_root: Path) -> tuple[AdaptiveTerminalStatus, str | Non
         FailureClass.ALLOWLISTED_TRANSPORT_TRANSIENT: AdaptiveTerminalStatus.PROVIDER_FAILURE,
         FailureClass.UNKNOWN_INSUFFICIENT_EVIDENCE: AdaptiveTerminalStatus.PROVIDER_FAILURE,
     }
-    status = AdaptiveTerminalStatus.PROVIDER_FAILURE if record.failure_class is None else statuses[record.failure_class]
+    status = (
+        AdaptiveTerminalStatus.PROVIDER_FAILURE
+        if record.failure_class is None
+        else statuses[record.failure_class]
+    )
     return (
         status,
         None if record.failure_class is None else record.failure_class.value,
@@ -525,7 +553,9 @@ def execute_v2_scheduled_once(
     failure_class: str | None
     failure_code: str | None
     failure_stage: str | None
-    if sidecar_root.exists() and any(path.is_file() for path in sidecar_root.rglob("*")):
+    if sidecar_root.exists() and any(
+        path.is_file() for path in sidecar_root.rglob("*")
+    ):
         seal_interrupted_provider_sidecar(
             sidecar_root,
             policy_lock_sha256=policy_lock_sha256,
@@ -554,7 +584,9 @@ def execute_v2_scheduled_once(
             failure_class = failure_code = failure_stage = None
         except Exception:
             result = None
-            status, failure_class, failure_code, failure_stage = _last_failure(sidecar_root)
+            status, failure_class, failure_code, failure_stage = _last_failure(
+                sidecar_root
+            )
     terminal = AdaptiveV2TerminalRecord(
         schema_version="rcaeval-single-first-adaptive.terminal.v2",
         evaluation_version="single-first-adaptive-v2",
@@ -600,7 +632,9 @@ def execute_v2_batch(
 ) -> tuple[AdaptiveV2TerminalRecord, ...]:
     if len(set(identities)) != len(identities):
         raise ValueError("Adaptive v2 identities must be unique")
-    run_ids = tuple(adaptive_v2_run_id(candidate_id, split, item) for item in identities)
+    run_ids = tuple(
+        adaptive_v2_run_id(candidate_id, split, item) for item in identities
+    )
     sidecars = tuple(run_root / "provider-sidecars" / item for item in run_ids)
     max_operations = len(identities) * 3
     budget = AttemptBudget.restore(

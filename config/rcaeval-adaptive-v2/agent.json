@@ -7,7 +7,9 @@
   "gate": {
     "direct_confidence_threshold": 0.9,
     "low_confidence_threshold": 0.75,
-    "metrics_conflict_rank": 3
+    "metrics_conflict_rank": 3,
+    "metrics_margin_threshold": 0.75,
+    "risk_signal_threshold": 1
   },
   "indicator": {
     "deterministic_override_margin": 0.95

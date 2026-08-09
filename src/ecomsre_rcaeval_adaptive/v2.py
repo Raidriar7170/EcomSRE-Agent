@@ -27,6 +27,8 @@ class V2GatePolicy(V2Model):
     direct_confidence_threshold: StrictFloat = Field(default=0.9, ge=0.0, le=1.0)
     low_confidence_threshold: StrictFloat = Field(default=0.75, ge=0.0, le=1.0)
     metrics_conflict_rank: StrictInt = Field(default=3, ge=2, le=6)
+    metrics_margin_threshold: StrictFloat = Field(default=0.75, ge=0.0, le=1.0)
+    risk_signal_threshold: StrictInt = Field(default=1, ge=1, le=5)
 
 
 class V2GateInputs(V2Model):
@@ -48,6 +50,13 @@ class V2GateDecision(V2Model):
     metrics_top1_top2_margin: StrictFloat = Field(ge=0.0)
     initial_unstable: StrictBool
     trace_semantics_triggered: StrictBool
+    risk_signal_count: StrictInt = Field(default=0, ge=0, le=5)
+    low_confidence_risk: StrictBool = False
+    very_low_confidence: StrictBool = False
+    metrics_rank_risk: StrictBool = False
+    metrics_margin_risk: StrictBool = False
+    evidence_weak: StrictBool = False
+    indicator_missing: StrictBool = False
 
 
 def _normalized_margin(ranking: tuple[tuple[str, float], ...]) -> float:
@@ -62,11 +71,21 @@ def decide_v2_gate(inputs: V2GateInputs, policy: V2GatePolicy) -> V2GateDecision
 
     initial = inputs.initial_diagnosis
     services = tuple(item[0] for item in inputs.metrics_service_ranking)
-    rank = services.index(initial.root_cause_service) + 1 if initial.root_cause_service in services else None
+    rank = (
+        services.index(initial.root_cause_service) + 1
+        if initial.root_cause_service in services
+        else None
+    )
     confidence = initial.confidence
     below_direct = confidence is None or confidence < policy.direct_confidence_threshold
     below_low = confidence is None or confidence < policy.low_confidence_threshold
-    metrics_conflict = rank is None or rank >= policy.metrics_conflict_rank
+    metrics_rank_risk = rank is None or rank >= policy.metrics_conflict_rank
+    metrics_margin = _normalized_margin(
+        tuple(
+            (service, float(score)) for service, score in inputs.metrics_service_ranking
+        )
+    )
+    metrics_margin_risk = metrics_margin < policy.metrics_margin_threshold
     evidence_weak = not inputs.diagnosis_evidence_supports_service
     indicator_missing = not inputs.indicator_candidate_available
     trace_semantics = (
@@ -74,31 +93,38 @@ def decide_v2_gate(inputs: V2GateInputs, policy: V2GatePolicy) -> V2GateDecision
         and initial.root_cause_indicator in {"latency", "socket"}
         and inputs.propagation_conflict
     )
+    risk_count = sum(
+        (
+            below_direct,
+            metrics_rank_risk,
+            metrics_margin_risk,
+            evidence_weak,
+            indicator_missing,
+        )
+    )
     initial_unstable = (
-        below_low
-        or metrics_conflict
-        or evidence_weak
-        or inputs.logs_explicitly_oppose_initial
+        risk_count > 0 or inputs.logs_explicitly_oppose_initial or trace_semantics
     )
     severe_multi_source = (
-        below_low
-        and metrics_conflict
-        and inputs.logs_explicitly_oppose_initial
+        inputs.logs_explicitly_oppose_initial
         and trace_semantics
+        and (below_low or metrics_rank_risk)
     )
     reasons: list[str] = []
     if below_direct:
-        reasons.append("CONFIDENCE_BELOW_DIRECT_THRESHOLD")
+        reasons.append("LOW_CONFIDENCE")
     if below_low:
-        reasons.append("CONFIDENCE_BELOW_LOW_THRESHOLD")
-    if metrics_conflict:
-        reasons.append("METRICS_CONFLICT")
+        reasons.append("VERY_LOW_CONFIDENCE")
+    if metrics_rank_risk:
+        reasons.append("METRICS_RANK_RISK")
+    if metrics_margin_risk:
+        reasons.append("METRICS_MARGIN_RISK")
     if inputs.logs_explicitly_oppose_initial:
         reasons.append("LOGS_OPPOSE_INITIAL")
     if evidence_weak:
-        reasons.append("DIAGNOSIS_EVIDENCE_WEAK")
+        reasons.append("EVIDENCE_WEAK")
     if indicator_missing:
-        reasons.append("INDICATOR_CANDIDATE_MISSING")
+        reasons.append("INDICATOR_MISSING")
     if trace_semantics:
         reasons.append("LATENCY_SOCKET_PROPAGATION_CONFLICT")
 
@@ -108,20 +134,27 @@ def decide_v2_gate(inputs: V2GateInputs, policy: V2GatePolicy) -> V2GateDecision
         route = AdaptiveV2Route.VERIFY_TRACES
     elif inputs.logs_explicitly_oppose_initial:
         route = AdaptiveV2Route.VERIFY_LOGS
-    elif metrics_conflict and evidence_weak:
+    elif risk_count >= policy.risk_signal_threshold:
         route = AdaptiveV2Route.VERIFY_LOGS
     else:
         route = AdaptiveV2Route.DIRECT_RETURN
-        reasons = ["CONSERVATIVE_DIRECT_DEFAULT"]
+        if risk_count:
+            reasons.append("RISK_COUNT_BELOW_ROUTE_THRESHOLD")
+        reasons.append("CONSERVATIVE_DIRECT_DEFAULT")
     return V2GateDecision(
         route=route,
         reason_codes=tuple(dict.fromkeys(reasons)),
         metrics_service_rank=rank,
-        metrics_top1_top2_margin=_normalized_margin(
-            tuple((service, float(score)) for service, score in inputs.metrics_service_ranking)
-        ),
+        metrics_top1_top2_margin=metrics_margin,
         initial_unstable=initial_unstable,
         trace_semantics_triggered=trace_semantics,
+        risk_signal_count=risk_count,
+        low_confidence_risk=below_direct,
+        very_low_confidence=below_low,
+        metrics_rank_risk=metrics_rank_risk,
+        metrics_margin_risk=metrics_margin_risk,
+        evidence_weak=evidence_weak,
+        indicator_missing=indicator_missing,
     )
 
 
@@ -155,6 +188,7 @@ def deterministic_fusion(
             final_root_service=initial.root_cause_service,
             reason_codes=(reason,),
         )
+
     if gate.route is AdaptiveV2Route.DIRECT_RETURN or not gate.initial_unstable:
         return keep("INITIAL_NOT_UNSTABLE")
     metrics_top_two = {item[0] for item in metrics_service_ranking[:2]}
@@ -191,10 +225,19 @@ def deterministic_fusion(
     alternative = next(iter(candidate_services))
     supporting_sources = tuple(
         dict.fromkeys(
-            ("metrics", *(item.source for item in root_candidates if item.service == alternative))
+            (
+                "metrics",
+                *(
+                    item.source
+                    for item in root_candidates
+                    if item.service == alternative
+                ),
+            )
         )
     )
-    contradicting_sources = tuple(dict.fromkeys(item.source for item in initial_contradictions))
+    contradicting_sources = tuple(
+        dict.fromkeys(item.source for item in initial_contradictions)
+    )
     return DeterministicFusionDecision(
         action="OVERRIDE_INITIAL",
         final_root_service=alternative,
@@ -250,7 +293,11 @@ def resolve_strong_single_indicator(
     if top1 is not None and top1.canonical_indicator == initial.root_cause_indicator:
         action = StrongSingleIndicatorAction.KEEP_STRONG_SINGLE_INDICATOR
         final = initial.root_cause_indicator
-    elif top1 is not None and margin is not None and margin >= policy.deterministic_override_margin:
+    elif (
+        top1 is not None
+        and margin is not None
+        and margin >= policy.deterministic_override_margin
+    ):
         action = StrongSingleIndicatorAction.DETERMINISTIC_OVERRIDE_STRONG_MARGIN
         final = top1.canonical_indicator
     else:
