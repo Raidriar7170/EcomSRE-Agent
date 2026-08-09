@@ -294,16 +294,28 @@ def test_free_and_pairwise_specialist_audits_separate_sufficiency() -> None:
                 "summary": "No source evidence.",
             },
         ),
+        _row(
+            private_case_key="private-case-3",
+            logs_pairwise_verification={
+                "preference": "INCONCLUSIVE",
+                "initial_role": "UNCERTAIN",
+                "alternative_role": "UNCERTAIN",
+                "supporting_evidence_refs": (),
+                "contradicting_evidence_refs": (),
+                "confidence": 0.4,
+                "summary": "Both candidates visible but unresolved.",
+            },
+        ),
     ]
     pairwise = audit.audit_pairwise_specialist(pairwise_rows)
     assert pairwise["preference_distribution"] == {
         "INITIAL": 0,
         "ALTERNATIVE": 1,
-        "INCONCLUSIVE": 1,
+        "INCONCLUSIVE": 2,
     }
     assert pairwise["inconclusive_insufficient_source"] == 1
-    assert pairwise["inconclusive_despite_sufficient_source"] == 0
-    assert pairwise["communication_feasibility"]["call_count"] == 2
+    assert pairwise["inconclusive_despite_sufficient_source"] == 1
+    assert pairwise["communication_feasibility"]["call_count"] == 3
 
 
 def test_fusion_replay_and_limited_counterfactual_rules() -> None:

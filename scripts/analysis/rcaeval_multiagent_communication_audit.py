@@ -820,8 +820,13 @@ def audit_pairwise_specialist(rows: Sequence[Mapping[str, Any]]) -> dict[str, An
         str(row["logs_pairwise_verification"].get("preference")) for row in calls
     )
     sufficient = {
-        str(row.get("private_case_key")): classify_evidence_sufficiency(row)["class"]
-        in {"LOGS_CAN_COMPARE", "LOGS_AND_TRACE_CAN_COMPARE"}
+        str(row.get("private_case_key")): (
+            _alternative_service(row) is not None
+            and {
+                str(row.get("initial_service")),
+                str(_alternative_service(row)),
+            }.issubset(_source_services(row, "logs_evidence"))
+        )
         for row in calls
     }
     correct_preferences = sum(

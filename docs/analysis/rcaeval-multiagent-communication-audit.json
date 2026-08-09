@@ -1300,8 +1300,8 @@
         }
       },
       "contradicting_ref_count": 31,
-      "inconclusive_despite_sufficient_source": 3,
-      "inconclusive_insufficient_source": 12,
+      "inconclusive_despite_sufficient_source": 2,
+      "inconclusive_insufficient_source": 13,
       "initial_role_heuristic_alignment": {
         "denominator": 23,
         "numerator": 2,
