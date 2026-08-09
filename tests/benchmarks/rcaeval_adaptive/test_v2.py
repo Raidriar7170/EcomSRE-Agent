@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from pathlib import Path
 
 from ecomsre_rcaeval.contracts import Diagnosis
@@ -244,6 +245,18 @@ def test_cost_and_future_pair_order_have_no_fusion_call() -> None:
         ("STRONG_SINGLE", "ADAPTIVE_V2"),
         ("ADAPTIVE_V2", "STRONG_SINGLE"),
     )
+
+
+def test_tracked_v2_agent_config_is_strictly_loadable() -> None:
+    agent = json.loads(
+        (Path(__file__).parents[3] / "config/rcaeval-adaptive-v2/agent.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    V2GatePolicy.model_validate(agent["gate"])
+    DeterministicFusionPolicy.model_validate(agent["fusion"])
+    StrongSingleIndicatorPolicy.model_validate(agent["indicator"])
 
 
 class _V2FakeProvider:
