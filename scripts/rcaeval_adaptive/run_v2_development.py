@@ -39,10 +39,19 @@ from ecomsre_rcaeval_v2.schedule import CaseIdentity, SplitName
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 CONFIG_ROOT = PROJECT_ROOT / "config/rcaeval-adaptive-v2"
 _RUNTIME_SCOPES = (
+    "docs/analysis/rcaeval-adaptive-v2-candidate4-metrics-alternative-analysis.json",
+    "docs/analysis/rcaeval-adaptive-v2-candidate4-metrics-alternative-analysis.md",
+    "docs/design/rcaeval-adaptive-v2-candidate-5-decision.md",
+    "scripts/analysis/rcaeval_adaptive_v2_gate_diagnosis.py",
+    "src/ecomsre_rcaeval_adaptive/contracts.py",
+    "src/ecomsre_rcaeval_adaptive/specialists.py",
     "src/ecomsre_rcaeval_adaptive/v2.py",
     "src/ecomsre_rcaeval_adaptive/v2_runner.py",
     "scripts/rcaeval_adaptive/run_v2_development.py",
     "config/rcaeval-adaptive-v2",
+    "tests/benchmarks/rcaeval_adaptive/test_specialists.py",
+    "tests/benchmarks/rcaeval_adaptive/test_v2.py",
+    "tests/benchmarks/rcaeval_adaptive/test_v2_development.py",
 )
 _CANDIDATE_IDS = tuple(f"candidate-{index}" for index in range(1, 6))
 
@@ -313,6 +322,9 @@ def _aggregate(
     routes: Counter[str] = Counter()
     indicator_actions: Counter[str] = Counter()
     fusion_actions: Counter[str] = Counter()
+    fusion_reasons: Counter[str] = Counter()
+    pairwise_preferences: Counter[str] = Counter()
+    metrics_alternative_ranks: Counter[int] = Counter()
     provider_failure_codes: Counter[str] = Counter()
     for ordinal, (identity, terminal) in enumerate(
         zip(identities, terminals, strict=True), start=1
@@ -325,15 +337,26 @@ def _aggregate(
         root_correct = False
         pair_correct = False
         route = None
-        semantic_operations = 0
+        semantic_operations = terminal.semantic_operations_attempted
+        pairwise_call_attempts = terminal.pairwise_calls_attempted
         correct_override = False
         wrong_override = False
+        metrics_alternative_rank = None
+        metrics_alternative_is_true_root = None
+        pairwise_preference = None
+        pairwise_initial_role = None
+        pairwise_alternative_role = None
+        fusion_reason = None
+        decision_basis = None
         if terminal.status is AdaptiveTerminalStatus.PROVIDER_FAILURE:
             provider_failure_codes[
                 terminal.failure_code or "UNKNOWN_PROVIDER_FAILURE"
             ] += 1
         if result is not None:
             diagnosis = result.diagnosis
+            decision_basis = getattr(
+                diagnosis, "decision_basis", "LEGACY_RANKED_HYPOTHESES"
+            )
             initial_correct = (
                 diagnosis.initial_diagnosis.root_cause_service
                 == identity.root_cause_service
@@ -350,9 +373,33 @@ def _aggregate(
             )
             route = diagnosis.gate_decision.route.value
             routes[route] += 1
-            semantic_operations = result.semantic_operations
+            semantic_operations = (
+                terminal.semantic_operations_attempted
+                if terminal.semantic_operations_attempted
+                else result.semantic_operations
+            )
             fusion_actions[diagnosis.fusion_decision.action] += 1
+            fusion_reason = getattr(
+                diagnosis.fusion_decision,
+                "reason_codes",
+                ("LEGACY_FUSION",),
+            )[0]
+            fusion_reasons[fusion_reason] += 1
             indicator_actions[diagnosis.indicator_resolution.action.value] += 1
+            metrics_alternative = getattr(diagnosis, "metrics_alternative", None)
+            if metrics_alternative is not None:
+                metrics_alternative_rank = metrics_alternative.alternative_rank
+                metrics_alternative_ranks[metrics_alternative_rank] += 1
+                metrics_alternative_is_true_root = (
+                    metrics_alternative.alternative_service
+                    == identity.root_cause_service
+                )
+            pairwise = getattr(diagnosis, "logs_pairwise_verification", None)
+            if pairwise is not None:
+                pairwise_preference = pairwise.preference.value
+                pairwise_initial_role = pairwise.initial_role.value
+                pairwise_alternative_role = pairwise.alternative_role.value
+                pairwise_preferences[pairwise_preference] += 1
             if diagnosis.fusion_decision.action == "OVERRIDE_INITIAL":
                 correct_override = root_correct and not initial_correct
                 wrong_override = not root_correct
@@ -380,6 +427,17 @@ def _aggregate(
                 "specialist_hypothesis_count": (
                     0 if result is None else len(result.diagnosis.specialist_hypotheses)
                 ),
+                "metrics_alternative_rank": metrics_alternative_rank,
+                "metrics_alternative_is_true_root": metrics_alternative_is_true_root,
+                "pairwise_preference": pairwise_preference,
+                "pairwise_call_attempts": pairwise_call_attempts,
+                "pairwise_initial_role": pairwise_initial_role,
+                "pairwise_alternative_role": pairwise_alternative_role,
+                "fusion_action": (
+                    None if result is None else result.diagnosis.fusion_decision.action
+                ),
+                "fusion_reason": fusion_reason,
+                "decision_basis": decision_basis,
             }
         )
     scheduled = len(rows)
@@ -521,6 +579,34 @@ def _aggregate(
         "specialist_hypothesis_count": sum(
             item["specialist_hypothesis_count"] for item in rows
         ),
+        "metrics_alternative_rank_distribution": dict(
+            sorted(metrics_alternative_ranks.items())
+        ),
+        "no_metrics_alternative": sum(
+            item["decision_basis"] == "METRICS_LOGS_PAIRWISE"
+            and item["metrics_alternative_rank"] is None
+            for item in rows
+        ),
+        "pairwise_calls": sum(
+            item["pairwise_call_attempts"] for item in rows
+        ),
+        "pairwise_completed_verifications": sum(
+            item["pairwise_preference"] is not None for item in rows
+        ),
+        "pairwise_preference_distribution": {
+            preference: pairwise_preferences[preference]
+            for preference in ("INITIAL", "ALTERNATIVE", "INCONCLUSIVE")
+        },
+        "alternative_preference_when_alternative_true_root": sum(
+            item["pairwise_preference"] == "ALTERNATIVE"
+            and item["metrics_alternative_is_true_root"] is True
+            for item in rows
+        ),
+        "alternative_preference_when_alternative_wrong": sum(
+            item["pairwise_preference"] == "ALTERNATIVE"
+            and item["metrics_alternative_is_true_root"] is False
+            for item in rows
+        ),
         "mean_semantic_operations": sum(item["semantic_operations"] for item in rows)
         / scheduled,
         "mean_semantic_operations_basis": "FIXED_SCHEDULED_DENOMINATOR",
@@ -547,6 +633,7 @@ def _aggregate(
         "correct_overrides": sum(item["correct_override"] for item in rows),
         "wrong_overrides": sum(item["wrong_override"] for item in rows),
         "fusion_action_distribution": dict(sorted(fusion_actions.items())),
+        "fusion_reason_distribution": dict(sorted(fusion_reasons.items())),
         "indicator_action_distribution": dict(sorted(indicator_actions.items())),
         "http_429_terminal_failures": sum(
             item["failure_code"] == "HTTP_429" for item in rows

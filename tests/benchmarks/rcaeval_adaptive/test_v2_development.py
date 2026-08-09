@@ -115,6 +115,40 @@ def test_gate_diagnosis_uses_tracked_policy_and_rejects_public_identifiers(
         _DIAGNOSIS_MODULE.assert_public_payload({"case_id": "private"})
 
 
+def test_candidate4_metrics_alternative_analysis_is_aggregate_only() -> None:
+    rows = []
+    for ordinal in range(1, 60):
+        wrong = ordinal <= 8
+        rows.append(
+            {
+                "pair_ordinal": ordinal,
+                "initial_root_correct": not wrong,
+                "initial_service": "initial",
+                "true_root_service": "truth" if wrong else "initial",
+                "metrics_service_ranking": (
+                    (("truth", 4.0), ("initial", 3.0))
+                    if wrong
+                    else (("initial", 4.0), ("other", 3.0))
+                ),
+                "logs_visible_services": ("initial",),
+                "metrics_margin": 0.25,
+                "stored_route": "VERIFY_LOGS" if wrong else "DIRECT_RETURN",
+            }
+        )
+
+    report, private_rows = _DIAGNOSIS_MODULE.build_metrics_alternative_analysis(rows)
+
+    assert report["provider_calls"] == 0
+    assert report["scope"]["wrong_initial_cases"] == 8
+    assert report["opportunity_summary"]["alternative_truth_match_count"] == 8
+    assert report["decision_support"]["condition_met"] is True
+    assert len(private_rows) == 8
+    _DIAGNOSIS_MODULE.assert_public_payload(report)
+    rows[0]["stored_route"] = None
+    with pytest.raises(ValueError, match="invalid route"):
+        _DIAGNOSIS_MODULE.build_metrics_alternative_analysis(rows)
+
+
 def _identity(instance: str, *, fault: str = "cpu") -> CaseIdentity:
     return CaseIdentity.model_validate(
         {
@@ -126,12 +160,19 @@ def _identity(instance: str, *, fault: str = "cpu") -> CaseIdentity:
     )
 
 
-def _failed_terminal(ordinal: int, failure_code: str) -> AdaptiveV2TerminalRecord:
+def _failed_terminal(
+    ordinal: int,
+    failure_code: str,
+    *,
+    candidate_id: str = "candidate-1",
+    semantic_operations_attempted: int = 0,
+    pairwise_calls_attempted: int = 0,
+) -> AdaptiveV2TerminalRecord:
     now = datetime.now(timezone.utc)
     return AdaptiveV2TerminalRecord(
         schema_version="rcaeval-single-first-adaptive.terminal.v2",
         evaluation_version="single-first-adaptive-v2",
-        candidate_id="candidate-1",
+        candidate_id=candidate_id,
         split="TUNE_SET",
         run_id=f"{ordinal:032x}",
         case_id=f"case-{ordinal}",
@@ -158,6 +199,8 @@ def _failed_terminal(ordinal: int, failure_code: str) -> AdaptiveV2TerminalRecor
             failed_attempt_disposition_coverage_denominator=2,
         ),
         policy_lock_sha256="a" * 64,
+        semantic_operations_attempted=semantic_operations_attempted,
+        pairwise_calls_attempted=pairwise_calls_attempted,
     )
 
 
@@ -170,6 +213,9 @@ def _completed_terminal(
     final_indicator: str,
     route: AdaptiveV2Route,
     fusion_action: str,
+    alternative_service: str | None = None,
+    pairwise_preference: str | None = None,
+    fusion_reason: str = "LEGACY_FUSION",
 ):
     semantic_operations = {
         AdaptiveV2Route.DIRECT_RETURN: 1,
@@ -178,6 +224,11 @@ def _completed_terminal(
         AdaptiveV2Route.VERIFY_BOTH: 3,
     }[route]
     diagnosis = SimpleNamespace(
+        decision_basis=(
+            "METRICS_LOGS_PAIRWISE"
+            if alternative_service is not None
+            else "LEGACY_RANKED_HYPOTHESES"
+        ),
         initial_diagnosis=SimpleNamespace(
             root_cause_service=initial_service,
             root_cause_indicator=initial_indicator,
@@ -185,11 +236,30 @@ def _completed_terminal(
         final_root_service=final_service,
         final_indicator=final_indicator,
         gate_decision=SimpleNamespace(route=route),
-        fusion_decision=SimpleNamespace(action=fusion_action),
+        fusion_decision=SimpleNamespace(
+            action=fusion_action, reason_codes=(fusion_reason,)
+        ),
         indicator_resolution=SimpleNamespace(
             action=StrongSingleIndicatorAction.KEEP_STRONG_SINGLE_INDICATOR
         ),
         specialist_hypotheses=(),
+        metrics_alternative=(
+            None
+            if alternative_service is None
+            else SimpleNamespace(
+                alternative_service=alternative_service,
+                alternative_rank=1,
+            )
+        ),
+        logs_pairwise_verification=(
+            None
+            if pairwise_preference is None
+            else SimpleNamespace(
+                preference=SimpleNamespace(value=pairwise_preference),
+                initial_role=SimpleNamespace(value="PROPAGATED_SYMPTOM"),
+                alternative_role=SimpleNamespace(value="ROOT_CANDIDATE"),
+            )
+        ),
     )
     return SimpleNamespace(
         status=AdaptiveTerminalStatus.COMPLETED,
@@ -205,7 +275,61 @@ def _completed_terminal(
             conservative_token_upper_bound=100,
         ),
         latency_ms=10.0,
+        semantic_operations_attempted=semantic_operations,
+        pairwise_calls_attempted=int(pairwise_preference is not None),
     )
+
+
+def test_candidate5_aggregate_records_pairwise_outcomes_without_service_names() -> None:
+    identities = (_identity("1"), _identity("2"))
+    baseline = {
+        identity: BaselineOutcome(
+            identity=identity,
+            root_correct=False,
+            pair_correct=False,
+        )
+        for identity in identities
+    }
+    terminals = (
+        _completed_terminal(
+            1,
+            initial_service="emailservice",
+            final_service="checkoutservice",
+            initial_indicator="cpu",
+            final_indicator="cpu",
+            route=AdaptiveV2Route.VERIFY_LOGS,
+            fusion_action="OVERRIDE_INITIAL",
+            alternative_service="checkoutservice",
+            pairwise_preference="ALTERNATIVE",
+            fusion_reason="LOGS_PAIRWISE_ALTERNATIVE_OVERRIDE",
+        ),
+        _completed_terminal(
+            2,
+            initial_service="checkoutservice",
+            final_service="checkoutservice",
+            initial_indicator="cpu",
+            final_indicator="cpu",
+            route=AdaptiveV2Route.VERIFY_LOGS,
+            fusion_action="KEEP_INITIAL",
+            alternative_service="emailservice",
+            pairwise_preference="INITIAL",
+            fusion_reason="LOGS_PAIRWISE_INITIAL",
+        ),
+    )
+
+    aggregate, rows = _aggregate(identities, terminals, baseline)
+
+    assert aggregate["pairwise_calls"] == 2
+    assert aggregate["pairwise_preference_distribution"] == {
+        "INITIAL": 1,
+        "ALTERNATIVE": 1,
+        "INCONCLUSIVE": 0,
+    }
+    assert aggregate["alternative_preference_when_alternative_true_root"] == 1
+    assert aggregate["alternative_preference_when_alternative_wrong"] == 0
+    assert aggregate["metrics_alternative_rank_distribution"] == {1: 2}
+    assert rows[0]["pairwise_initial_role"] == "PROPAGATED_SYMPTOM"
+    assert rows[0]["pairwise_alternative_role"] == "ROOT_CANDIDATE"
 
 
 def test_same_run_root_pair_damage_rescue_and_escalation_are_authoritative() -> None:
@@ -357,6 +481,18 @@ def test_evaluation_config_locks_candidate_budget_and_same_run_gates() -> None:
     assert evaluation["tune_gate"]["same_run_root_damage_max"] == 2
     assert evaluation["tune_gate"]["same_run_root_net_rescue_min"] == 1
     assert evaluation["regression_gate"]["same_run_root_damage_rate_max"] == 0.05
+    assert "src/ecomsre_rcaeval_adaptive/contracts.py" in _MODULE._RUNTIME_SCOPES
+    assert "src/ecomsre_rcaeval_adaptive/specialists.py" in _MODULE._RUNTIME_SCOPES
+    for required_path in (
+        "docs/analysis/rcaeval-adaptive-v2-candidate4-metrics-alternative-analysis.json",
+        "docs/analysis/rcaeval-adaptive-v2-candidate4-metrics-alternative-analysis.md",
+        "docs/design/rcaeval-adaptive-v2-candidate-5-decision.md",
+        "scripts/analysis/rcaeval_adaptive_v2_gate_diagnosis.py",
+        "tests/benchmarks/rcaeval_adaptive/test_specialists.py",
+        "tests/benchmarks/rcaeval_adaptive/test_v2.py",
+        "tests/benchmarks/rcaeval_adaptive/test_v2_development.py",
+    ):
+        assert required_path in _MODULE._RUNTIME_SCOPES
 
 
 def _write_json(path: Path, payload: object) -> None:
@@ -396,6 +532,32 @@ def test_capacity_failures_are_separate_from_algorithm_quality() -> None:
     assert aggregate["completed_only_pair_accuracy"]["value"] is None
     assert aggregate["mean_semantic_operations_completed_only"] is None
     assert _gate_disposition("tune", aggregate) == "PROVIDER_CAPACITY_BLOCKED"
+
+
+def test_failed_pairwise_attempt_is_included_in_call_and_cost_aggregates() -> None:
+    identity = _identity("1")
+    baseline = {
+        identity: BaselineOutcome(
+            identity=identity,
+            root_correct=False,
+            pair_correct=False,
+        )
+    }
+    terminal = _failed_terminal(
+        1,
+        "PROVIDER_OUTPUT_INVALID_SCHEMA",
+        candidate_id="candidate-5",
+        semantic_operations_attempted=2,
+        pairwise_calls_attempted=1,
+    )
+
+    aggregate, rows = _aggregate((identity,), (terminal,), baseline)
+
+    assert aggregate["pairwise_calls"] == 1
+    assert aggregate["pairwise_completed_verifications"] == 0
+    assert aggregate["mean_semantic_operations"] == 2.0
+    assert rows[0]["semantic_operations"] == 2
+    assert rows[0]["pairwise_call_attempts"] == 1
 
 
 def test_private_run_root_rejects_git_and_symlink_targets(tmp_path: Path) -> None:

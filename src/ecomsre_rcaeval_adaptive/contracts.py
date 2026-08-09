@@ -55,6 +55,12 @@ class CausalRole(str, Enum):
     UNCERTAIN = "UNCERTAIN"
 
 
+class LogsPairwisePreference(str, Enum):
+    INITIAL = "INITIAL"
+    ALTERNATIVE = "ALTERNATIVE"
+    INCONCLUSIVE = "INCONCLUSIVE"
+
+
 class FusionAction(str, Enum):
     KEEP_INITIAL = "KEEP_INITIAL"
     OVERRIDE_INITIAL = "OVERRIDE_INITIAL"
@@ -102,6 +108,16 @@ class SpecialistFailureCode(str, Enum):
     SPECIALIST_HYPOTHESIS_COUNT_INVALID = "SPECIALIST_HYPOTHESIS_COUNT_INVALID"
     SPECIALIST_SCORE_INVALID = "SPECIALIST_SCORE_INVALID"
     SPECIALIST_CAUSAL_ROLE_INVALID = "SPECIALIST_CAUSAL_ROLE_INVALID"
+
+
+class PairwiseFailureCode(str, Enum):
+    PAIRWISE_JSON_OR_SCHEMA_INVALID = "PAIRWISE_JSON_OR_SCHEMA_INVALID"
+    PAIRWISE_PREFERENCE_INVALID = "PAIRWISE_PREFERENCE_INVALID"
+    PAIRWISE_ROLE_INVALID = "PAIRWISE_ROLE_INVALID"
+    PAIRWISE_CONFIDENCE_INVALID = "PAIRWISE_CONFIDENCE_INVALID"
+    PAIRWISE_EVIDENCE_REF_NOT_VISIBLE = "PAIRWISE_EVIDENCE_REF_NOT_VISIBLE"
+    PAIRWISE_DUPLICATE_EVIDENCE_REF = "PAIRWISE_DUPLICATE_EVIDENCE_REF"
+    PAIRWISE_OVERLAPPING_EVIDENCE_REF = "PAIRWISE_OVERLAPPING_EVIDENCE_REF"
 
 
 class FusionFailureCode(str, Enum):
@@ -229,6 +245,63 @@ class SpecialistInput(V2Model):
             raise ValueError("specialist visible services differ from sent evidence")
         if self.visible_evidence_refs != expected_refs:
             raise ValueError("specialist visible refs differ from sent evidence")
+        return self
+
+
+class LogsPairwiseInput(V2Model):
+    """Provider-visible Initial-vs-Alternative comparison with Logs authority only."""
+
+    schema_version: Literal[
+        "rcaeval-single-first-adaptive.logs-pairwise-input.v1"
+    ] = "rcaeval-single-first-adaptive.logs-pairwise-input.v1"
+    incident: IncidentManifest
+    initial_service: ServiceName
+    metrics_alternative_service: ServiceName
+    initial_indicator: CanonicalIndicator | None
+    logs_evidence: tuple[BoundedEvidenceSnapshotV2, ...] = Field(
+        min_length=1, max_length=64
+    )
+    visible_evidence_refs: tuple[str, ...] = Field(min_length=1, max_length=64)
+
+    @property
+    def source(self) -> Literal["logs"]:
+        """Expose runtime dispatch authority without serializing an extra field."""
+
+        return "logs"
+
+    @model_validator(mode="after")
+    def require_exact_logs_authority(self) -> LogsPairwiseInput:
+        if self.initial_service == self.metrics_alternative_service:
+            raise ValueError("pairwise candidates must differ")
+        if any(item.source != "logs" for item in self.logs_evidence):
+            raise ValueError("pairwise input may contain only Logs evidence")
+        evidence_refs = tuple(item.evidence_ref for item in self.logs_evidence)
+        if len(evidence_refs) != len(set(evidence_refs)):
+            raise ValueError("pairwise Logs evidence references must be unique")
+        if self.visible_evidence_refs != tuple(sorted(evidence_refs)):
+            raise ValueError("pairwise visible refs differ from sent Logs evidence")
+        return self
+
+
+class LogsPairwiseVerification(V2Model):
+    preference: LogsPairwisePreference
+    initial_role: CausalRole
+    alternative_role: CausalRole
+    supporting_evidence_refs: tuple[str, ...] = Field(default=(), max_length=64)
+    contradicting_evidence_refs: tuple[str, ...] = Field(default=(), max_length=64)
+    confidence: StrictFloat = Field(ge=0.0, le=1.0)
+    summary: str = Field(min_length=1, max_length=2_000)
+
+    @model_validator(mode="after")
+    def require_disjoint_unique_references(self) -> LogsPairwiseVerification:
+        supporting = set(self.supporting_evidence_refs)
+        contradicting = set(self.contradicting_evidence_refs)
+        if len(supporting) != len(self.supporting_evidence_refs):
+            raise ValueError("pairwise supporting evidence references must be unique")
+        if len(contradicting) != len(self.contradicting_evidence_refs):
+            raise ValueError("pairwise contradicting evidence references must be unique")
+        if supporting & contradicting:
+            raise ValueError("pairwise evidence roles must be disjoint")
         return self
 
 

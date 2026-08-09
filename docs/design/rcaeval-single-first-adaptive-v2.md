@@ -152,7 +152,7 @@ No regression result may modify the selected candidate or trigger a second
 regression. A fresh external holdout plan is eligible only after the regression
 gate passes; this design neither accesses nor executes a fresh holdout.
 
-## Terminal development disposition
+## Current development disposition
 
 Candidate-4 exercised the repaired Gate and finished with 43 Direct and 16 Logs
 routes, zero Trace-bearing routes, and mean semantic operations 1.25. It did not
@@ -160,11 +160,17 @@ pass TUNE: one record had a schema failure, Final Pair was 27/60, and same-run
 Root Damage / Rescue / Net was 0 / 0 / 0 rather than the required strict Rescue
 gain.
 
-Candidate-5 was not executed because none of the bounded Work Package F
-conditions authorized a supported single change. Direct and escalation Recall
-were already in range; no correct Specialist Root alternative was suppressed
-by Fusion; Pair did not degrade through indicator override; and tightening Gate
-could not create the missing Root rescue. The schema failure was not an
-authorized algorithm direction. Candidate iteration therefore stops without a
-candidate-6, regression, or fresh holdout plan, with verdict
-`ADAPTIVE_V2_TUNE_GATE_NOT_PASSED_AFTER_REAL_ALGORITHM_ITERATIONS`.
+That terminal disposition was superseded by the accepted, evidence-backed
+Candidate-5 Decision Record. A zero-Provider analysis found that the
+highest-ranked non-Initial Metrics alternative matched the True Root in 7/8
+completed Initial-wrong Candidate-4 cases, although none of those alternatives
+was visible in the bounded Logs evidence. Decision
+`CASE_E_SPECIALIST_GENERATION_FAILURE` therefore authorizes one high-risk final
+candidate that replaces free Logs hypothesis generation with a runtime-bound
+Initial-vs-Alternative verifier and corresponding deterministic Fusion. See
+`rcaeval-adaptive-v2-candidate-5-decision.md`.
+
+Candidate-5 remains the last algorithm candidate; candidate-6 is not
+authorized. Its 60-case TUNE must use the frozen Gate, Trace trigger, Indicator,
+model, pacing, retry, splits, and gates. Regression remains conditional on a
+passing Candidate-5 TUNE and may run only once.

@@ -1,4 +1,4 @@
-"""Diagnose Adaptive v2 candidate-3 Gate features without a Provider."""
+"""Run bounded Adaptive v2 post-hoc diagnostics without a Provider."""
 
 from __future__ import annotations
 
@@ -229,6 +229,8 @@ def _identity_rows(
     low_confidence_threshold: float,
     metrics_conflict_rank: int,
     metrics_margin_threshold: float,
+    candidate_id: str = "candidate-3",
+    allow_incomplete: bool = False,
 ) -> list[dict[str, Any]]:
     indicator_config = load_indicator_config(
         indicator_config_path,
@@ -239,17 +241,22 @@ def _identity_rows(
         case = cases[identity]
         terminal = terminals_by_case.get(case.case_id)
         if terminal is None or terminal.get("status") != "COMPLETED":
-            raise ValueError("candidate-3 diagnostic requires 60 completed terminals")
+            if allow_incomplete and terminal is not None:
+                continue
+            raise ValueError(f"{candidate_id} diagnostic requires completed terminals")
         result = terminal.get("result")
         if not isinstance(result, dict) or not isinstance(
             result.get("diagnosis"), dict
         ):
-            raise ValueError("candidate-3 terminal lacks a completed diagnosis")
+            raise ValueError(f"{candidate_id} terminal lacks a completed diagnosis")
         diagnosis = result["diagnosis"]
         initial = diagnosis.get("initial_diagnosis")
         stored_gate = diagnosis.get("gate_decision")
         if not isinstance(initial, dict) or not isinstance(stored_gate, dict):
-            raise ValueError("candidate-3 terminal lacks Gate inputs")
+            raise ValueError(f"{candidate_id} terminal lacks Gate inputs")
+        stored_route = stored_gate.get("route")
+        if stored_route not in ROUTES:
+            raise ValueError(f"{candidate_id} terminal has an invalid Gate route")
 
         telemetry = dev_case_to_telemetry_case(case)
         builder = ArchitectureContextBuilder(
@@ -294,20 +301,20 @@ def _identity_rows(
             None,
         )
         if rank != stored_gate.get("metrics_service_rank"):
-            raise ValueError("recomputed candidate-3 Metrics rank differs")
+            raise ValueError(f"recomputed {candidate_id} Metrics rank differs")
         confidence = initial.get("confidence")
         if not isinstance(confidence, (int, float)) or isinstance(confidence, bool):
-            raise ValueError("candidate-3 confidence must be numeric")
+            raise ValueError(f"{candidate_id} confidence must be numeric")
         metrics_margin = stored_gate.get("metrics_top1_top2_margin")
         if not isinstance(metrics_margin, (int, float)) or isinstance(
             metrics_margin, bool
         ):
-            raise ValueError("candidate-3 Metrics margin must be numeric")
+            raise ValueError(f"{candidate_id} Metrics margin must be numeric")
         recomputed_margin = _normalized_margin(ranking)
         if not math.isclose(
             float(metrics_margin), recomputed_margin, rel_tol=0.0, abs_tol=1e-12
         ):
-            raise ValueError("recomputed candidate-3 Metrics margin differs")
+            raise ValueError(f"recomputed {candidate_id} Metrics margin differs")
         evidence_supports = any(
             service_by_ref.get(str(reference)) == initial_service
             for reference in initial.get("evidence_refs", [])
@@ -373,13 +380,207 @@ def _identity_rows(
                 "indicator_missing": indicator_missing,
                 "risk_count": risk_count,
                 "initial_unstable": bool(stored_gate.get("initial_unstable")),
-                "stored_route": stored_gate.get("route"),
+                "stored_route": stored_route,
                 "stored_gate_reason_codes": tuple(
                     str(item) for item in stored_gate.get("reason_codes", [])
                 ),
+                # Private-only inputs for later aggregate diagnostics. Public builders
+                # below intentionally expose only counts, ranks, and rates.
+                "initial_service": initial_service,
+                "true_root_service": identity.root_cause_service,
+                "metrics_service_ranking": tuple(
+                    (str(service), float(score)) for service, score in ranking
+                ),
+                "logs_visible_services": log_services,
             }
         )
     return rows
+
+
+def _rank_or_none(service: str, ranking: tuple[tuple[str, float], ...]) -> int | None:
+    return next(
+        (
+            index
+            for index, (ranked_service, _score) in enumerate(ranking, start=1)
+            if ranked_service == service
+        ),
+        None,
+    )
+
+
+def build_metrics_alternative_analysis(
+    rows: list[dict[str, Any]],
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Aggregate Candidate-4 Initial-wrong Metrics opportunity without truth leakage."""
+
+    wrong = [row for row in rows if not row["initial_root_correct"]]
+    if len(rows) != 59 or len(wrong) != 8:
+        raise ValueError(
+            "candidate-4 Metrics alternative analysis requires 59 completed and 8 Initial-wrong rows"
+        )
+    if any(row.get("stored_route") not in ROUTES for row in rows):
+        raise ValueError("candidate-4 Metrics alternative analysis has an invalid route")
+    private_rows: list[dict[str, Any]] = []
+    for row in wrong:
+        ranking = tuple(row["metrics_service_ranking"])
+        initial_service = str(row["initial_service"])
+        true_root_service = str(row["true_root_service"])
+        alternative = next(
+            (
+                (index, service, float(score))
+                for index, (service, score) in enumerate(ranking, start=1)
+                if service != initial_service
+            ),
+            None,
+        )
+        logs_visible = set(row["logs_visible_services"])
+        alternative_rank = None if alternative is None else alternative[0]
+        alternative_service = None if alternative is None else alternative[1]
+        private_rows.append(
+            {
+                "pair_ordinal": row["pair_ordinal"],
+                "stored_route": row["stored_route"],
+                "initial_service": initial_service,
+                "true_root_service": true_root_service,
+                "metrics_alternative_service": alternative_service,
+                "initial_service_metrics_rank": _rank_or_none(initial_service, ranking),
+                "true_root_metrics_rank": _rank_or_none(true_root_service, ranking),
+                "metrics_alternative_rank": alternative_rank,
+                "metrics_alternative_score": (
+                    None if alternative is None else alternative[2]
+                ),
+                "metrics_alternative_is_true_root": (
+                    alternative_service == true_root_service
+                ),
+                "true_root_visible_in_logs": true_root_service in logs_visible,
+                "metrics_alternative_visible_in_logs": (
+                    alternative_service in logs_visible
+                    if alternative_service is not None
+                    else False
+                ),
+                "initial_service_visible_in_logs": initial_service in logs_visible,
+                "metrics_top1_top2_margin": float(row["metrics_margin"]),
+            }
+        )
+
+    def rank_summary(key: str) -> dict[str, Any]:
+        ranks = [item[key] for item in private_rows if item[key] is not None]
+        return {
+            "distribution": dict(sorted(Counter(int(rank) for rank in ranks).items())),
+            "absent": sum(item[key] is None for item in private_rows),
+        }
+
+    truth_match = sum(item["metrics_alternative_is_true_root"] for item in private_rows)
+    truth_and_logs = sum(
+        item["metrics_alternative_is_true_root"]
+        and item["metrics_alternative_visible_in_logs"]
+        for item in private_rows
+    )
+    both_logs = sum(
+        item["initial_service_visible_in_logs"]
+        and item["metrics_alternative_visible_in_logs"]
+        for item in private_rows
+    )
+    coverage: dict[str, dict[str, int | float]] = {
+        f"at_{cutoff}": {
+            "numerator": sum(
+                item["true_root_metrics_rank"] is not None
+                and int(item["true_root_metrics_rank"]) <= cutoff
+                for item in private_rows
+            ),
+            "denominator": len(private_rows),
+        }
+        for cutoff in (1, 2, 3, 6)
+    }
+    for value in coverage.values():
+        value["value"] = value["numerator"] / value["denominator"]
+    report = {
+        "schema_version": "rcaeval-adaptive-v2.metrics-alternative-analysis.v1",
+        "classification": [
+            "POST_HOC_CONSUMED_TUNE_DIAGNOSTIC",
+            "NO_PROVIDER_CALLS",
+            "NOT_EXTERNAL_VALIDATION",
+        ],
+        "provider_calls": 0,
+        "scope": {
+            "candidate": "candidate-4",
+            "completed_records": len(rows),
+            "wrong_initial_cases": len(private_rows),
+            "gate_escalated_initial_wrong": sum(
+                item["stored_route"] != "DIRECT_RETURN" for item in private_rows
+            ),
+        },
+        "deterministic_alternative_rule": (
+            "Highest-ranked Metrics service different from the Initial service."
+        ),
+        "true_root_metrics_coverage": coverage,
+        "initial_service_metrics_rank": rank_summary("initial_service_metrics_rank"),
+        "true_root_metrics_rank": rank_summary("true_root_metrics_rank"),
+        "selected_metrics_alternative_rank": rank_summary(
+            "metrics_alternative_rank"
+        ),
+        "metrics_top1_top2_margin": _continuous(
+            [float(item["metrics_top1_top2_margin"]) for item in private_rows]
+        ),
+        "opportunity_summary": {
+            "alternative_truth_match_count": truth_match,
+            "alternative_truth_match_rate": truth_match / len(private_rows),
+            "alternative_truth_and_logs_visible_count": truth_and_logs,
+            "initial_and_alternative_both_logs_visible_count": both_logs,
+            "true_root_logs_visible_count": sum(
+                item["true_root_visible_in_logs"] for item in private_rows
+            ),
+            "metrics_alternative_logs_visible_count": sum(
+                item["metrics_alternative_visible_in_logs"] for item in private_rows
+            ),
+            "initial_service_logs_visible_count": sum(
+                item["initial_service_visible_in_logs"] for item in private_rows
+            ),
+            "no_alternative_count": sum(
+                item["metrics_alternative_rank"] is None for item in private_rows
+            ),
+        },
+        "decision_support": {
+            "minimum_condition": "alternative_truth_match_count >= 1",
+            "condition_met": truth_match >= 1,
+            "interpretation": (
+                "A deterministic Metrics alternative has technical rescue opportunity; "
+                "this does not predict Candidate-5 Gate passage."
+            ),
+        },
+    }
+    return report, private_rows
+
+
+def _metrics_alternative_markdown(report: Mapping[str, Any]) -> str:
+    scope = report["scope"]
+    coverage = report["true_root_metrics_coverage"]
+    opportunity = report["opportunity_summary"]
+    margin = report["metrics_top1_top2_margin"]
+    return "\n".join(
+        (
+            "# Adaptive v2 candidate-4 Metrics alternative analysis",
+            "",
+            "Classification: `POST_HOC_CONSUMED_TUNE_DIAGNOSTIC / NO_PROVIDER_CALLS / NOT_EXTERNAL_VALIDATION`.",
+            "",
+            "## Finding",
+            "",
+            f"The deterministic non-Initial Metrics alternative matched the True Root in {opportunity['alternative_truth_match_count']}/{scope['wrong_initial_cases']} completed Initial-wrong cases ({opportunity['alternative_truth_match_rate']:.1%}). This clears the minimum opportunity condition for Candidate-5, but it does not predict Gate passage.",
+            "",
+            "## Coverage and selection",
+            "",
+            f"- Gate-escalated Initial-wrong: {scope['gate_escalated_initial_wrong']}/{scope['wrong_initial_cases']}",
+            f"- True Root Metrics Coverage@1 / @2 / @3 / @6: {coverage['at_1']['numerator']}/{coverage['at_1']['denominator']} / {coverage['at_2']['numerator']}/{coverage['at_2']['denominator']} / {coverage['at_3']['numerator']}/{coverage['at_3']['denominator']} / {coverage['at_6']['numerator']}/{coverage['at_6']['denominator']}",
+            f"- Alternative truth and Logs visible: {opportunity['alternative_truth_and_logs_visible_count']}",
+            f"- Initial and Alternative both Logs visible: {opportunity['initial_and_alternative_both_logs_visible_count']}",
+            f"- True Root / Alternative / Initial Logs visible: {opportunity['true_root_logs_visible_count']} / {opportunity['metrics_alternative_logs_visible_count']} / {opportunity['initial_service_logs_visible_count']}",
+            f"- No alternative: {opportunity['no_alternative_count']}",
+            f"- Metrics Top1/Top2 normalized margin min / mean / max: {margin['minimum']:.6f} / {margin['mean']:.6f} / {margin['maximum']:.6f}",
+            "",
+            "The zero Logs-visibility counts make the pairwise-verifier hypothesis high risk: the opportunity comes from Metrics selection, while the bounded Logs evidence may remain insufficient to choose the alternative.",
+            "",
+        )
+    )
 
 
 def build_diagnosis(
@@ -502,6 +703,11 @@ def _markdown(report: Mapping[str, Any]) -> str:
 
 def main(argv: tuple[str, ...] | None = None) -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--analysis",
+        choices=("candidate3-gate", "candidate4-metrics-alternative"),
+        default="candidate3-gate",
+    )
     parser.add_argument("--terminal-root", required=True, type=Path)
     parser.add_argument("--ob-root", required=True, type=Path)
     parser.add_argument("--ss-root", required=True, type=Path)
@@ -521,13 +727,18 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     gate_policy, agent_config_sha256 = _tracked_gate_policy(args.agent_config)
     terminal_paths = tuple(sorted(args.terminal_root.glob("*.json")))
     if len(terminal_paths) != 60:
-        raise ValueError("candidate-3 diagnostic requires 60 terminal files")
+        raise ValueError("Adaptive v2 diagnostic requires 60 terminal files")
     terminals = tuple(_read_object(path) for path in terminal_paths)
-    if any(item.get("candidate_id") != "candidate-3" for item in terminals):
-        raise ValueError("Gate diagnosis accepts candidate-3 only")
+    candidate_id = (
+        "candidate-3"
+        if args.analysis == "candidate3-gate"
+        else "candidate-4"
+    )
+    if any(item.get("candidate_id") != candidate_id for item in terminals):
+        raise ValueError(f"diagnostic accepts {candidate_id} only")
     terminals_by_case = {str(item["case_id"]): item for item in terminals}
     if len(terminals_by_case) != 60:
-        raise ValueError("candidate-3 diagnostic terminal identities differ")
+        raise ValueError(f"{candidate_id} diagnostic terminal identities differ")
 
     schedule = load_private_schedule(args.schedule, allowed_split=SplitName.DESIGN)
     identities = tuple(
@@ -536,7 +747,7 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         if item.variant is Variant.SINGLE_V1_REFERENCE
     )
     if len(identities) != 60 or len(set(identities)) != 60:
-        raise ValueError("candidate-3 diagnostic schedule differs")
+        raise ValueError(f"{candidate_id} diagnostic schedule differs")
     cases = discover_case_index(args.ob_root, args.ss_root, set(identities))
     rows = _identity_rows(
         identities=identities,
@@ -547,7 +758,50 @@ def main(argv: tuple[str, ...] | None = None) -> int:
         low_confidence_threshold=gate_policy.low_confidence_threshold,
         metrics_conflict_rank=gate_policy.metrics_conflict_rank,
         metrics_margin_threshold=gate_policy.metrics_margin_threshold,
+        candidate_id=candidate_id,
+        allow_incomplete=args.analysis == "candidate4-metrics-alternative",
     )
+    if args.analysis == "candidate4-metrics-alternative":
+        report, private_rows = build_metrics_alternative_analysis(rows)
+        report["policy_source"] = {
+            "classification": "TRACKED_PRODUCTION_GATE_CONFIG",
+            "agent_config_sha256": agent_config_sha256,
+        }
+        markdown = _metrics_alternative_markdown(report)
+        assert_public_payload(report)
+        assert_public_payload(markdown)
+        _write_json(args.public_json, report)
+        args.public_markdown.parent.mkdir(parents=True, exist_ok=True)
+        args.public_markdown.write_text(markdown, encoding="utf-8")
+        _write_json(
+            private_output,
+            {
+                "schema_version": (
+                    "rcaeval-adaptive-v2.metrics-alternative-analysis-private.v1"
+                ),
+                "classification": ["PRIVATE_GIT_EXTERNAL", "NO_PROVIDER_CALLS"],
+                "rows": private_rows,
+            },
+            private=True,
+        )
+        print(
+            json.dumps(
+                {
+                    "provider_calls": 0,
+                    "completed_records": len(rows),
+                    "wrong_initial_cases": report["scope"]["wrong_initial_cases"],
+                    "alternative_truth_match_count": report[
+                        "opportunity_summary"
+                    ]["alternative_truth_match_count"],
+                    "authorization_condition_met": report["decision_support"][
+                        "condition_met"
+                    ],
+                },
+                sort_keys=True,
+            )
+        )
+        return 0
+
     report = build_diagnosis(
         rows,
         direct_confidence_threshold=gate_policy.direct_confidence_threshold,

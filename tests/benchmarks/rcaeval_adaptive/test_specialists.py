@@ -13,6 +13,10 @@ from ecomsre_rcaeval_adaptive.contracts import (
     InitialDiagnosis,
     InitialDiagnosisInput,
     InitialFailureCode,
+    LogsPairwiseInput,
+    LogsPairwisePreference,
+    LogsPairwiseVerification,
+    PairwiseFailureCode,
     RankedHypothesis,
     RankedHypothesisBatch,
     SpecialistFailureCode,
@@ -20,10 +24,12 @@ from ecomsre_rcaeval_adaptive.contracts import (
     SpecialistInput,
 )
 from ecomsre_rcaeval_adaptive.specialists import (
+    LOGS_PAIRWISE_PROMPT,
     LOGS_PROMPT,
     TRACES_PROMPT,
     InitialOutputValidationError,
     OpenAICompatibleAdaptiveProvider,
+    PairwiseOutputValidationError,
     SpecialistOutputValidationError,
     validate_hypothesis_batch,
 )
@@ -130,6 +136,30 @@ def _specialist_input() -> SpecialistInput:
     )
 
 
+def _pairwise_input() -> LogsPairwiseInput:
+    return LogsPairwiseInput(
+        incident=_initial_input().incident,
+        initial_service="checkoutservice",
+        metrics_alternative_service="frontend",
+        initial_indicator="cpu",
+        logs_evidence=(
+            BoundedEvidenceSnapshotV2(
+                evidence_ref="log:0001",
+                source="logs",
+                service="checkoutservice",
+                observation="Checkout emitted an overload error.",
+            ),
+            BoundedEvidenceSnapshotV2(
+                evidence_ref="log:0002",
+                source="logs",
+                service="frontend",
+                observation="Frontend reported a downstream failure.",
+            ),
+        ),
+        visible_evidence_refs=("log:0001", "log:0002"),
+    )
+
+
 def _provider(arguments: Mapping[str, object]):
     transport = _InitialTransport(arguments)
     provider = OpenAICompatibleAdaptiveProvider(
@@ -171,6 +201,144 @@ def _valid_specialist_arguments() -> dict[str, object]:
             }
         ]
     }
+
+
+def _valid_pairwise_arguments(
+    preference: str = "ALTERNATIVE",
+) -> dict[str, object]:
+    if preference == "INITIAL":
+        supporting = ["log:0001"]
+        contradicting = ["log:0002"]
+        initial_role = "ROOT_CANDIDATE"
+        alternative_role = "PROPAGATED_SYMPTOM"
+    elif preference == "INCONCLUSIVE":
+        supporting = []
+        contradicting = []
+        initial_role = alternative_role = "UNCERTAIN"
+    else:
+        supporting = ["log:0002"]
+        contradicting = ["log:0001"]
+        initial_role = "PROPAGATED_SYMPTOM"
+        alternative_role = "ROOT_CANDIDATE"
+    return {
+        "preference": preference,
+        "initial_role": initial_role,
+        "alternative_role": alternative_role,
+        "supporting_evidence_refs": supporting,
+        "contradicting_evidence_refs": contradicting,
+        "confidence": 0.9,
+        "summary": "The bounded Logs evidence favors the alternative.",
+    }
+
+
+def test_pairwise_prompt_forbids_free_service_generation() -> None:
+    assert "not generating a root service" in LOGS_PAIRWISE_PROMPT
+    assert "Compare only INITIAL and ALTERNATIVE" in LOGS_PAIRWISE_PROMPT
+    assert "Use only the supplied Logs evidence" in LOGS_PAIRWISE_PROMPT
+
+
+def test_pairwise_input_serializes_only_bounded_logs_authority() -> None:
+    pairwise_input = _pairwise_input()
+    payload = pairwise_input.model_dump(mode="json")
+    serialized = pairwise_input.model_dump_json()
+
+    assert set(payload) == {
+        "schema_version",
+        "incident",
+        "initial_service",
+        "metrics_alternative_service",
+        "initial_indicator",
+        "logs_evidence",
+        "visible_evidence_refs",
+    }
+    assert pairwise_input.source == "logs"
+    assert all(item["source"] == "logs" for item in payload["logs_evidence"])
+    assert payload["visible_evidence_refs"] == ["log:0001", "log:0002"]
+    for forbidden in (
+        "architecture",
+        "candidate_id",
+        "ground_truth",
+        "canonical",
+        "metrics_service_ranking",
+        "metric:0001",
+        "trace:0001",
+    ):
+        assert forbidden not in serialized.casefold()
+
+
+@pytest.mark.parametrize("preference", ("INITIAL", "ALTERNATIVE", "INCONCLUSIVE"))
+def test_pairwise_provider_accepts_each_typed_preference(preference: str) -> None:
+    arguments = _valid_pairwise_arguments(preference)
+    provider, transport = _provider(arguments)
+
+    verification = provider.specialize(_pairwise_input())
+
+    assert isinstance(verification, LogsPairwiseVerification)
+    assert verification.preference is LogsPairwisePreference(preference)
+    assert transport.payload is not None
+    parameters = transport.payload["tools"][0]["function"]["parameters"]
+    serialized_schema = json.dumps(parameters, sort_keys=True)
+    assert '"service"' not in serialized_schema
+    assert "final_root_service" not in serialized_schema
+
+
+@pytest.mark.parametrize(
+    ("changes", "expected_code"),
+    (
+        (
+            {"supporting_evidence_refs": ["log:9999"]},
+            PairwiseFailureCode.PAIRWISE_EVIDENCE_REF_NOT_VISIBLE,
+        ),
+        (
+            {
+                "supporting_evidence_refs": ["log:0001"],
+                "contradicting_evidence_refs": ["log:0001"],
+            },
+            PairwiseFailureCode.PAIRWISE_OVERLAPPING_EVIDENCE_REF,
+        ),
+        (
+            {"supporting_evidence_refs": ["log:0001", "log:0001"]},
+            PairwiseFailureCode.PAIRWISE_DUPLICATE_EVIDENCE_REF,
+        ),
+        (
+            {"preference": "THIRD_SERVICE"},
+            PairwiseFailureCode.PAIRWISE_PREFERENCE_INVALID,
+        ),
+        (
+            {"alternative_role": "NOT_A_ROLE"},
+            PairwiseFailureCode.PAIRWISE_ROLE_INVALID,
+        ),
+        (
+            {"confidence": 1.5},
+            PairwiseFailureCode.PAIRWISE_CONFIDENCE_INVALID,
+        ),
+    ),
+)
+def test_pairwise_provider_rejects_invalid_typed_outputs(
+    changes: Mapping[str, object], expected_code: PairwiseFailureCode
+) -> None:
+    arguments = {**_valid_pairwise_arguments(), **changes}
+    provider, _transport = _provider(arguments)
+
+    with pytest.raises(PairwiseOutputValidationError) as captured:
+        provider.specialize(_pairwise_input())
+
+    assert captured.value.failure_code is expected_code
+
+
+def test_pairwise_safe_failure_does_not_retain_raw_reference() -> None:
+    raw_reference = "log:raw-secret-reference"
+    arguments = {
+        **_valid_pairwise_arguments(),
+        "supporting_evidence_refs": [raw_reference],
+    }
+    provider, _transport = _provider(arguments)
+
+    with pytest.raises(PairwiseOutputValidationError) as captured:
+        provider.specialize(_pairwise_input())
+
+    assert raw_reference not in str(captured.value)
+    assert raw_reference not in captured.value.safe_validation_error.model_dump_json()
 
 
 def _hypothesis(*, source: str = "logs", evidence_ref: str = "log:0001"):

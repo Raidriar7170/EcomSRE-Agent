@@ -23,6 +23,10 @@ from ecomsre_rcaeval_adaptive.contracts import (
     InitialDiagnosis,
     InitialDiagnosisInput,
     InitialFailureCode,
+    LogsPairwiseInput,
+    LogsPairwisePreference,
+    LogsPairwiseVerification,
+    PairwiseFailureCode,
     ProviderFusionProposal,
     ProviderRankedHypothesisBatch,
     RankedHypothesis,
@@ -87,6 +91,20 @@ TRACES_PROMPT = (
     "Assign each cited reference to exactly one evidence role; if its role is "
     "ambiguous, omit it."
 )
+LOGS_PAIRWISE_PROMPT = (
+    "Act as a bounded Logs pairwise verifier. You are not generating a root "
+    "service. Compare only INITIAL and ALTERNATIVE. Use only the supplied Logs "
+    "evidence. Return ALTERNATIVE only when Logs evidence supports the "
+    "alternative and contradicts the initial service. Return INCONCLUSIVE when "
+    "evidence is insufficient or ambiguous. Copy references only from "
+    "visible_evidence_refs. For ALTERNATIVE, supporting_evidence_refs support "
+    "Alternative and contradicting_evidence_refs oppose Initial. For INITIAL, "
+    "supporting_evidence_refs support Initial and contradicting_evidence_refs "
+    "oppose Alternative. For INCONCLUSIVE, prefer both reference lists empty. "
+    "supporting_evidence_refs and "
+    "contradicting_evidence_refs must be unique and must not overlap. Do not "
+    "emit a service, final diagnosis, Fusion action, or extra field."
+)
 
 
 class InitialOutputValidationError(ProviderOutputValidationError):
@@ -107,6 +125,18 @@ class SpecialistOutputValidationError(ProviderOutputValidationError):
     def __init__(
         self,
         failure_code: SpecialistFailureCode,
+        safe_validation_error: SafeValidationError,
+    ) -> None:
+        self.failure_code = failure_code
+        super().__init__(safe_validation_error)
+
+
+class PairwiseOutputValidationError(ProviderOutputValidationError):
+    """Pairwise output rejected with one safe field-level failure code."""
+
+    def __init__(
+        self,
+        failure_code: PairwiseFailureCode,
         safe_validation_error: SafeValidationError,
     ) -> None:
         self.failure_code = failure_code
@@ -300,6 +330,23 @@ class OpenAICompatibleAdaptiveProvider:
         self._last_safe_validation_error = safe
         return SpecialistOutputValidationError(code, safe)
 
+    def _pairwise_validation_failure(
+        self,
+        code: PairwiseFailureCode,
+        *,
+        field_path: str,
+        constraint_type: str,
+        error_count: int = 1,
+    ) -> PairwiseOutputValidationError:
+        safe = SafeValidationError(
+            error_class="ValueError",
+            field_paths=(field_path,),
+            constraint_types=(constraint_type,),
+            error_count=max(1, error_count),
+        )
+        self._last_safe_validation_error = safe
+        return PairwiseOutputValidationError(code, safe)
+
     def _fusion_validation_failure(
         self,
         code: FusionFailureCode,
@@ -466,10 +513,15 @@ class OpenAICompatibleAdaptiveProvider:
 
     def specialize(
         self,
-        specialist_input: SpecialistInput,
+        specialist_input: SpecialistInput | LogsPairwiseInput,
         *,
         before_output_validation: Callable[[], None] | None = None,
-    ) -> RankedHypothesisBatch:
+    ) -> RankedHypothesisBatch | LogsPairwiseVerification:
+        if isinstance(specialist_input, LogsPairwiseInput):
+            return self._verify_logs_pairwise(
+                specialist_input,
+                before_output_validation=before_output_validation,
+            )
         source = specialist_input.source
         function_name = "submit_rcaeval_ranked_hypotheses"
         try:
@@ -637,6 +689,125 @@ class OpenAICompatibleAdaptiveProvider:
             ) from error
         return validate_hypothesis_batch(batch, specialist_input)
 
+    def _verify_logs_pairwise(
+        self,
+        pairwise_input: LogsPairwiseInput,
+        *,
+        before_output_validation: Callable[[], None] | None = None,
+    ) -> LogsPairwiseVerification:
+        function_name = "submit_rcaeval_logs_pairwise_verification"
+        try:
+            parsed = self._request(
+                _payload(
+                    model=self._config.model,
+                    prompt=LOGS_PAIRWISE_PROMPT,
+                    envelope=pairwise_input.model_dump(mode="json"),
+                    function_name=function_name,
+                    description=(
+                        "Compare only the runtime-bound Initial and Metrics alternative."
+                    ),
+                    schema=LogsPairwiseVerification.model_json_schema(
+                        mode="validation"
+                    ),
+                    max_completion_tokens=self._max_completion,
+                ),
+                function_name,
+                before_output_validation,
+            )
+        except ProviderOutputValidationError as error:
+            raise self._pairwise_validation_failure(
+                PairwiseFailureCode.PAIRWISE_JSON_OR_SCHEMA_INVALID,
+                field_path="$",
+                constraint_type="json_or_schema",
+            ) from error
+        if not isinstance(parsed, dict):
+            raise self._pairwise_validation_failure(
+                PairwiseFailureCode.PAIRWISE_JSON_OR_SCHEMA_INVALID,
+                field_path="$",
+                constraint_type="json_or_schema",
+            )
+        normalized = dict(parsed)
+        preference = normalized.get("preference")
+        if not isinstance(preference, str) or preference not in {
+            item.value for item in LogsPairwisePreference
+        }:
+            raise self._pairwise_validation_failure(
+                PairwiseFailureCode.PAIRWISE_PREFERENCE_INVALID,
+                field_path="preference",
+                constraint_type="preference",
+            )
+        allowed_roles = {item.value for item in CausalRole}
+        for field_name in ("initial_role", "alternative_role"):
+            role = normalized.get(field_name)
+            if not isinstance(role, str) or role not in allowed_roles:
+                raise self._pairwise_validation_failure(
+                    PairwiseFailureCode.PAIRWISE_ROLE_INVALID,
+                    field_path=field_name,
+                    constraint_type="causal_role",
+                )
+        confidence = normalized.get("confidence")
+        if (
+            isinstance(confidence, bool)
+            or not isinstance(confidence, (int, float))
+            or not 0 <= confidence <= 1
+        ):
+            raise self._pairwise_validation_failure(
+                PairwiseFailureCode.PAIRWISE_CONFIDENCE_INVALID,
+                field_path="confidence",
+                constraint_type="confidence",
+            )
+        normalized["confidence"] = float(confidence)
+        ref_groups: dict[str, tuple[str, ...]] = {}
+        for field_name in (
+            "supporting_evidence_refs",
+            "contradicting_evidence_refs",
+        ):
+            raw_refs = normalized.get(field_name, [])
+            if not isinstance(raw_refs, list) or any(
+                not isinstance(reference, str) for reference in raw_refs
+            ):
+                raise self._pairwise_validation_failure(
+                    PairwiseFailureCode.PAIRWISE_JSON_OR_SCHEMA_INVALID,
+                    field_path=field_name,
+                    constraint_type="json_or_schema",
+                )
+            refs = tuple(raw_refs)
+            if len(refs) != len(set(refs)):
+                raise self._pairwise_validation_failure(
+                    PairwiseFailureCode.PAIRWISE_DUPLICATE_EVIDENCE_REF,
+                    field_path=field_name,
+                    constraint_type="duplicate_evidence_ref",
+                )
+            ref_groups[field_name] = refs
+            normalized[field_name] = refs
+        supporting = set(ref_groups["supporting_evidence_refs"])
+        contradicting = set(ref_groups["contradicting_evidence_refs"])
+        if supporting & contradicting:
+            raise self._pairwise_validation_failure(
+                PairwiseFailureCode.PAIRWISE_OVERLAPPING_EVIDENCE_REF,
+                field_path="$",
+                constraint_type="overlapping_evidence_ref",
+            )
+        cited = supporting | contradicting
+        visible = set(pairwise_input.visible_evidence_refs)
+        if not cited.issubset(visible):
+            raise self._pairwise_validation_failure(
+                PairwiseFailureCode.PAIRWISE_EVIDENCE_REF_NOT_VISIBLE,
+                field_path="$",
+                constraint_type="visible_evidence_ref",
+                error_count=len(cited - visible),
+            )
+        try:
+            return LogsPairwiseVerification.model_validate_json(
+                json.dumps(normalized, allow_nan=False, ensure_ascii=False)
+            )
+        except (TypeError, ValidationError, ValueError) as error:
+            raise self._pairwise_validation_failure(
+                PairwiseFailureCode.PAIRWISE_JSON_OR_SCHEMA_INVALID,
+                field_path="$",
+                constraint_type="json_or_schema",
+            ) from error
+
     def judge(
         self,
         fusion_input: FusionInput,
@@ -762,7 +933,9 @@ __all__ = [
     "FusionOutputValidationError",
     "InitialOutputValidationError",
     "LOGS_PROMPT",
+    "LOGS_PAIRWISE_PROMPT",
     "OpenAICompatibleAdaptiveProvider",
+    "PairwiseOutputValidationError",
     "SpecialistOutputValidationError",
     "TRACES_PROMPT",
     "validate_hypothesis_batch",

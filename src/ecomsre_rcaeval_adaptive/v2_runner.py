@@ -29,6 +29,8 @@ from ecomsre_rcaeval.dataset import DevCase, TelemetryCase
 from ecomsre_rcaeval_adaptive.contracts import (
     AdaptiveTerminalStatus,
     InitialDiagnosis,
+    LogsPairwiseInput,
+    LogsPairwiseVerification,
     RankedHypothesis,
     RankedHypothesisBatch,
     V2Model,
@@ -43,6 +45,7 @@ from ecomsre_rcaeval_adaptive.v2 import (
     AdaptiveV2Route,
     DeterministicFusionDecision,
     DeterministicFusionPolicy,
+    MetricsAlternative,
     StrongSingleIndicatorPolicy,
     StrongSingleIndicatorResolution,
     V2GateDecision,
@@ -50,8 +53,10 @@ from ecomsre_rcaeval_adaptive.v2 import (
     V2GatePolicy,
     decide_v2_gate,
     deterministic_fusion,
+    deterministic_pairwise_fusion,
     expected_semantic_operations,
     resolve_strong_single_indicator,
+    select_metrics_alternative,
 )
 from ecomsre_rcaeval_v2.adapter import dev_case_to_telemetry_case
 from ecomsre_rcaeval_v2.dev3_execution import new_v1_reference_provider
@@ -60,6 +65,7 @@ from ecomsre_rcaeval_v2.dev3_provider import (
     Dev3RetryingTransport,
     FailureClass,
     SemanticOperationRecord,
+    SemanticOperationStart,
     seal_interrupted_provider_sidecar,
 )
 from ecomsre_rcaeval_v2.dev3_token_accounting import (
@@ -91,9 +97,14 @@ class AdaptiveV2OperationTrace(V2Model):
 
 
 class AdaptiveV2Diagnosis(V2Model):
+    decision_basis: Literal[
+        "LEGACY_RANKED_HYPOTHESES", "METRICS_LOGS_PAIRWISE"
+    ] = "LEGACY_RANKED_HYPOTHESES"
     initial_diagnosis: Diagnosis
     gate_decision: V2GateDecision
     specialist_hypotheses: tuple[RankedHypothesis, ...] = Field(max_length=6)
+    metrics_alternative: MetricsAlternative | None = None
+    logs_pairwise_verification: LogsPairwiseVerification | None = None
     fusion_decision: DeterministicFusionDecision
     indicator_resolution: StrongSingleIndicatorResolution
     final_root_service: str
@@ -105,6 +116,30 @@ class AdaptiveV2Diagnosis(V2Model):
             raise ValueError("Adaptive v2 final Root differs from deterministic Fusion")
         if self.final_indicator != self.indicator_resolution.final_indicator:
             raise ValueError("Adaptive v2 final Indicator differs from resolution")
+        pairwise = self.decision_basis == "METRICS_LOGS_PAIRWISE"
+        if not pairwise and (
+            self.metrics_alternative is not None
+            or self.logs_pairwise_verification is not None
+        ):
+            raise ValueError("legacy Adaptive v2 diagnosis retained pairwise fields")
+        if pairwise and any(
+            item.source == "logs" for item in self.specialist_hypotheses
+        ):
+            raise ValueError("pairwise Adaptive v2 diagnosis retained free Logs hypotheses")
+        logs_route = self.gate_decision.route in {
+            AdaptiveV2Route.VERIFY_LOGS,
+            AdaptiveV2Route.VERIFY_BOTH,
+        }
+        if self.logs_pairwise_verification is not None and not (pairwise and logs_route):
+            raise ValueError("pairwise verification differs from Gate route")
+        if (
+            self.logs_pairwise_verification is not None
+            and self.metrics_alternative is None
+        ):
+            raise ValueError("pairwise verification lacks a Metrics alternative")
+        if pairwise and logs_route and self.metrics_alternative is not None:
+            if self.logs_pairwise_verification is None:
+                raise ValueError("pairwise Logs route lacks verification")
         return self
 
 
@@ -122,6 +157,14 @@ class AdaptiveV2CaseResult(V2Model):
     @model_validator(mode="after")
     def require_exact_cost(self) -> AdaptiveV2CaseResult:
         expected = expected_semantic_operations(self.diagnosis.gate_decision.route)
+        if (
+            self.diagnosis.decision_basis == "METRICS_LOGS_PAIRWISE"
+            and self.diagnosis.metrics_alternative is None
+        ):
+            if self.diagnosis.gate_decision.route is AdaptiveV2Route.VERIFY_LOGS:
+                expected = 1
+            elif self.diagnosis.gate_decision.route is AdaptiveV2Route.VERIFY_BOTH:
+                expected = 2
         if (
             self.semantic_operations != expected
             or len(self.operation_trace) != expected
@@ -152,6 +195,8 @@ class AdaptiveV2TerminalRecord(V2Model):
     latency_ms: StrictFloat = Field(ge=0.0)
     attempt_accounting: AttemptAccountingSummary
     policy_lock_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    semantic_operations_attempted: StrictInt = Field(default=0, ge=0, le=3)
+    pairwise_calls_attempted: StrictInt = Field(default=0, ge=0, le=1)
 
     @model_validator(mode="after")
     def require_terminal_consistency(self) -> AdaptiveV2TerminalRecord:
@@ -167,6 +212,29 @@ class AdaptiveV2TerminalRecord(V2Model):
             raise ValueError("failed Adaptive v2 terminal lacks failure code")
         if self.ended_at_utc < self.started_at_utc:
             raise ValueError("Adaptive v2 terminal ended before it started")
+        if completed:
+            assert self.result is not None
+            pairwise = (
+                self.result.diagnosis.decision_basis == "METRICS_LOGS_PAIRWISE"
+            )
+            if pairwise != (self.candidate_id == "candidate-5"):
+                raise ValueError("Adaptive v2 candidate differs from decision basis")
+            if self.candidate_id == "candidate-5" and (
+                self.semantic_operations_attempted
+                != self.result.semantic_operations
+            ):
+                raise ValueError("Candidate-5 attempted operation count differs")
+            if self.candidate_id == "candidate-5" and (
+                self.pairwise_calls_attempted
+                != int(
+                    self.result.diagnosis.logs_pairwise_verification is not None
+                )
+            ):
+                raise ValueError("Candidate-5 pairwise attempt count differs")
+        if self.pairwise_calls_attempted > self.semantic_operations_attempted:
+            raise ValueError("pairwise attempts exceed semantic operations")
+        if self.candidate_id != "candidate-5" and self.pairwise_calls_attempted:
+            raise ValueError("legacy candidate retained pairwise attempts")
         return self
 
 
@@ -186,7 +254,7 @@ class V2DiagnosisProvider(Protocol):
         specialist_input: object,
         *,
         before_output_validation: Callable[[], None] | None = None,
-    ) -> RankedHypothesisBatch: ...
+    ) -> RankedHypothesisBatch | LogsPairwiseVerification: ...
 
 
 class StrongSingleSpecialistProvider:
@@ -244,9 +312,13 @@ def execute_v2_case(
     gate_policy: V2GatePolicy,
     fusion_policy: DeterministicFusionPolicy,
     indicator_policy: StrongSingleIndicatorPolicy,
+    candidate_id: str = "candidate-4",
 ) -> AdaptiveV2CaseResult:
     """Execute one case; deterministic Gate/Fusion never call the Provider."""
 
+    if candidate_id not in {f"candidate-{index}" for index in range(1, 6)}:
+        raise ValueError("Adaptive v2 candidate is outside the bounded search")
+    pairwise_mode = candidate_id == "candidate-5"
     builder = ArchitectureContextBuilder(case, Architecture.SINGLE, run_id=run_id)
     for source in ("metrics", "logs", "traces"):
         builder.query_source(source)  # type: ignore[arg-type]
@@ -331,20 +403,58 @@ def execute_v2_case(
         ),
         gate_policy,
     )
+    metrics_alternative = (
+        select_metrics_alternative(
+            initial.root_cause_service,
+            tuple((service, float(score)) for service, score in ranking),
+        )
+        if pairwise_mode
+        else None
+    )
     hypotheses: list[RankedHypothesis] = []
+    logs_pairwise_verification: LogsPairwiseVerification | None = None
     specialist_initial = _initial_for_specialist(initial)
     if gate.route in {AdaptiveV2Route.VERIFY_LOGS, AdaptiveV2Route.VERIFY_BOTH}:
-        specialist_input = _specialist_input(
-            context, "logs", incident, specialist_initial
-        )
-        batch = invoke(
-            "LOGS_VERIFIER",
-            "logs",
-            lambda: provider.specialize(
-                specialist_input, before_output_validation=lambda: None
-            ),
-        )
-        hypotheses.extend(batch.hypotheses)
+        if pairwise_mode and metrics_alternative is not None:
+            logs_evidence = tuple(
+                item for item in bounded if item.source == "logs"
+            )
+            pairwise_input = LogsPairwiseInput(
+                incident=incident,
+                initial_service=initial.root_cause_service,
+                metrics_alternative_service=(
+                    metrics_alternative.alternative_service
+                ),
+                initial_indicator=initial.root_cause_indicator,
+                logs_evidence=logs_evidence,
+                visible_evidence_refs=tuple(
+                    sorted(item.evidence_ref for item in logs_evidence)
+                ),
+            )
+            pairwise_result = invoke(
+                "LOGS_VERIFIER",
+                "logs",
+                lambda: provider.specialize(
+                    pairwise_input, before_output_validation=lambda: None
+                ),
+            )
+            if not isinstance(pairwise_result, LogsPairwiseVerification):
+                raise TypeError("Candidate-5 Logs verifier returned the wrong contract")
+            logs_pairwise_verification = pairwise_result
+        elif not pairwise_mode:
+            specialist_input = _specialist_input(
+                context, "logs", incident, specialist_initial
+            )
+            batch = invoke(
+                "LOGS_VERIFIER",
+                "logs",
+                lambda: provider.specialize(
+                    specialist_input, before_output_validation=lambda: None
+                ),
+            )
+            if not isinstance(batch, RankedHypothesisBatch):
+                raise TypeError("legacy Logs specialist returned the wrong contract")
+            hypotheses.extend(batch.hypotheses)
     if gate.route in {AdaptiveV2Route.VERIFY_TRACES, AdaptiveV2Route.VERIFY_BOTH}:
         specialist_input = _specialist_input(
             context, "traces", incident, specialist_initial
@@ -356,15 +466,31 @@ def execute_v2_case(
                 specialist_input, before_output_validation=lambda: None
             ),
         )
+        if not isinstance(batch, RankedHypothesisBatch):
+            raise TypeError("Trace specialist returned the wrong contract")
         hypotheses.extend(batch.hypotheses)
-    fusion = deterministic_fusion(
-        initial=initial,
-        gate=gate,
-        metrics_service_ranking=tuple(
-            (service, float(score)) for service, score in ranking
-        ),
-        specialist_hypotheses=tuple(hypotheses),
-        policy=fusion_policy,
+    ranking_values = tuple((service, float(score)) for service, score in ranking)
+    fusion = (
+        deterministic_pairwise_fusion(
+            initial=initial,
+            gate=gate,
+            metrics_alternative=metrics_alternative,
+            metrics_service_ranking=ranking_values,
+            logs_pairwise_verification=logs_pairwise_verification,
+            trace_hypotheses=tuple(hypotheses),
+            visible_logs_refs=tuple(
+                item.evidence_ref for item in bounded if item.source == "logs"
+            ),
+            policy=fusion_policy,
+        )
+        if pairwise_mode
+        else deterministic_fusion(
+            initial=initial,
+            gate=gate,
+            metrics_service_ranking=ranking_values,
+            specialist_hypotheses=tuple(hypotheses),
+            policy=fusion_policy,
+        )
     )
     indicator = resolve_strong_single_indicator(
         final_root_service=fusion.final_root_service,
@@ -373,9 +499,16 @@ def execute_v2_case(
         policy=indicator_policy,
     )
     diagnosis = AdaptiveV2Diagnosis(
+        decision_basis=(
+            "METRICS_LOGS_PAIRWISE"
+            if pairwise_mode
+            else "LEGACY_RANKED_HYPOTHESES"
+        ),
         initial_diagnosis=initial,
         gate_decision=gate,
         specialist_hypotheses=tuple(hypotheses),
+        metrics_alternative=metrics_alternative,
+        logs_pairwise_verification=logs_pairwise_verification,
         fusion_decision=fusion,
         indicator_resolution=indicator,
         final_root_service=fusion.final_root_service,
@@ -499,6 +632,25 @@ def _last_failure(
     )
 
 
+def _operation_attempt_counts(sidecar_root: Path, candidate_id: str) -> tuple[int, int]:
+    starts = tuple(
+        SemanticOperationStart.model_validate_json(path.read_text(encoding="utf-8"))
+        for path in sorted((sidecar_root / "semantic-operation-starts").glob("*.json"))
+    )
+    if len(starts) > 3 or tuple(
+        item.semantic_operation_index for item in starts
+    ) != tuple(range(1, len(starts) + 1)):
+        raise ValueError("Adaptive v2 semantic operation starts are invalid")
+    pairwise_calls = (
+        sum(item.operation_type == "LOGS_SPECIALIST" for item in starts)
+        if candidate_id == "candidate-5"
+        else 0
+    )
+    if pairwise_calls > 1:
+        raise ValueError("Candidate-5 attempted more than one pairwise call")
+    return len(starts), pairwise_calls
+
+
 def _terminal_bytes(record: AdaptiveV2TerminalRecord) -> bytes:
     return (
         json.dumps(
@@ -579,6 +731,7 @@ def execute_v2_scheduled_once(
                 gate_policy=gate_policy,
                 fusion_policy=fusion_policy,
                 indicator_policy=indicator_policy,
+                candidate_id=candidate_id,
             )
             status = AdaptiveTerminalStatus.COMPLETED
             failure_class = failure_code = failure_stage = None
@@ -587,6 +740,9 @@ def execute_v2_scheduled_once(
             status, failure_class, failure_code, failure_stage = _last_failure(
                 sidecar_root
             )
+    semantic_operations_attempted, pairwise_calls_attempted = (
+        _operation_attempt_counts(sidecar_root, candidate_id)
+    )
     terminal = AdaptiveV2TerminalRecord(
         schema_version="rcaeval-single-first-adaptive.terminal.v2",
         evaluation_version="single-first-adaptive-v2",
@@ -605,6 +761,8 @@ def execute_v2_scheduled_once(
         latency_ms=max(0.0, (monotonic() - monotonic_started) * 1_000),
         attempt_accounting=_accounting(sidecar_root, max_completion_tokens),
         policy_lock_sha256=policy_lock_sha256,
+        semantic_operations_attempted=semantic_operations_attempted,
+        pairwise_calls_attempted=pairwise_calls_attempted,
     )
     _write_create_once(terminal_path, _terminal_bytes(terminal))
     return terminal

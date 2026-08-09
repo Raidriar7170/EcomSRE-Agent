@@ -10,6 +10,8 @@ from pydantic import Field, StrictBool, StrictFloat, StrictInt
 from ecomsre_rcaeval.contracts import Diagnosis
 from ecomsre_rcaeval_adaptive.contracts import (
     CausalRole,
+    LogsPairwisePreference,
+    LogsPairwiseVerification,
     RankedHypothesis,
     V2Model,
 )
@@ -64,6 +66,50 @@ def _normalized_margin(ranking: tuple[tuple[str, float], ...]) -> float:
         return 1.0
     top1, top2 = ranking[0][1], ranking[1][1]
     return max(0.0, (top1 - top2) / max(abs(top1), 1e-12))
+
+
+class MetricsAlternative(V2Model):
+    initial_service: str
+    alternative_service: str
+    alternative_rank: StrictInt = Field(ge=1, le=6)
+    alternative_score: StrictFloat = Field(ge=0.0)
+    initial_rank_or_none: StrictInt | None = Field(default=None, ge=1, le=6)
+    metrics_margin: StrictFloat = Field(ge=0.0)
+
+
+def select_metrics_alternative(
+    initial_service: str,
+    ranking: tuple[tuple[str, float], ...],
+) -> MetricsAlternative | None:
+    """Select the highest-ranked non-Initial service without outcome authority."""
+
+    if not ranking or len(ranking) > 6:
+        raise ValueError("Metrics alternative ranking must contain one to six services")
+    services = tuple(service for service, _score in ranking)
+    if len(services) != len(set(services)):
+        raise ValueError("Metrics alternative ranking services must be unique")
+    initial_rank = (
+        services.index(initial_service) + 1 if initial_service in services else None
+    )
+    alternative = next(
+        (
+            (rank, service, float(score))
+            for rank, (service, score) in enumerate(ranking, start=1)
+            if service != initial_service
+        ),
+        None,
+    )
+    if alternative is None:
+        return None
+    rank, service, score = alternative
+    return MetricsAlternative(
+        initial_service=initial_service,
+        alternative_service=service,
+        alternative_rank=rank,
+        alternative_score=score,
+        initial_rank_or_none=initial_rank,
+        metrics_margin=_normalized_margin(ranking),
+    )
 
 
 def decide_v2_gate(inputs: V2GateInputs, policy: V2GatePolicy) -> V2GateDecision:
@@ -244,6 +290,108 @@ def deterministic_fusion(
         reason_codes=("STRONG_AUTHORIZED_ALTERNATIVE",),
         supporting_sources=supporting_sources,  # type: ignore[arg-type]
         contradicting_sources=contradicting_sources,  # type: ignore[arg-type]
+    )
+
+
+def deterministic_pairwise_fusion(
+    *,
+    initial: Diagnosis,
+    gate: V2GateDecision,
+    metrics_alternative: MetricsAlternative | None,
+    metrics_service_ranking: tuple[tuple[str, float], ...],
+    logs_pairwise_verification: LogsPairwiseVerification | None,
+    trace_hypotheses: tuple[RankedHypothesis, ...],
+    visible_logs_refs: tuple[str, ...],
+    policy: DeterministicFusionPolicy,
+) -> DeterministicFusionDecision:
+    """Fuse one runtime-bound Metrics alternative with typed source authority."""
+
+    def keep(reason: str) -> DeterministicFusionDecision:
+        return DeterministicFusionDecision(
+            action="KEEP_INITIAL",
+            final_root_service=initial.root_cause_service,
+            reason_codes=(reason,),
+        )
+
+    if gate.route is AdaptiveV2Route.DIRECT_RETURN:
+        return keep("KEEP_DIRECT")
+    if not gate.initial_unstable:
+        return keep("INITIAL_NOT_UNSTABLE")
+    if metrics_alternative is None:
+        return keep("NO_METRICS_ALTERNATIVE")
+    if gate.route is AdaptiveV2Route.VERIFY_TRACES:
+        trace_decision = deterministic_fusion(
+            initial=initial,
+            gate=gate,
+            metrics_service_ranking=metrics_service_ranking,
+            specialist_hypotheses=trace_hypotheses,
+            policy=policy,
+        )
+        if trace_decision.action == "OVERRIDE_INITIAL":
+            return trace_decision.model_copy(
+                update={"reason_codes": ("TRACE_ALTERNATIVE_OVERRIDE",)}
+            )
+        return trace_decision
+
+    verification = logs_pairwise_verification
+    if verification is None:
+        return keep("LOGS_PAIRWISE_INCONCLUSIVE")
+    if gate.route is AdaptiveV2Route.VERIFY_BOTH:
+        logs_authorize = (
+            verification.preference is LogsPairwisePreference.ALTERNATIVE
+            and verification.alternative_role is CausalRole.ROOT_CANDIDATE
+            and (
+                verification.initial_role is CausalRole.PROPAGATED_SYMPTOM
+                or bool(verification.contradicting_evidence_refs)
+            )
+            and bool(verification.supporting_evidence_refs)
+            and set(
+                verification.supporting_evidence_refs
+                + verification.contradicting_evidence_refs
+            ).issubset(visible_logs_refs)
+        )
+        trace_agrees = any(
+            hypothesis.service == metrics_alternative.alternative_service
+            and hypothesis.causal_role is CausalRole.ROOT_CANDIDATE
+            and hypothesis.score >= policy.alternative_support_score_threshold
+            and bool(hypothesis.supporting_evidence_refs)
+            for hypothesis in trace_hypotheses
+        )
+        if logs_authorize and trace_agrees:
+            return DeterministicFusionDecision(
+                action="OVERRIDE_INITIAL",
+                final_root_service=metrics_alternative.alternative_service,
+                reason_codes=("BOTH_SOURCES_AGREE_OVERRIDE",),
+                supporting_sources=("metrics", "logs", "traces"),
+                contradicting_sources=("logs",),
+            )
+        return keep("BOTH_SOURCES_DO_NOT_AGREE")
+
+    if verification.preference is LogsPairwisePreference.INITIAL:
+        return keep("LOGS_PAIRWISE_INITIAL")
+    if verification.preference is LogsPairwisePreference.INCONCLUSIVE:
+        return keep("LOGS_PAIRWISE_INCONCLUSIVE")
+    if verification.alternative_role is not CausalRole.ROOT_CANDIDATE:
+        return keep("LOGS_PAIRWISE_ALT_LACKS_ROOT_ROLE")
+    if not verification.supporting_evidence_refs:
+        return keep("LOGS_PAIRWISE_ALT_LACKS_SUPPORT")
+    if not (
+        verification.initial_role is CausalRole.PROPAGATED_SYMPTOM
+        or verification.contradicting_evidence_refs
+    ):
+        return keep("LOGS_PAIRWISE_INITIAL_NOT_CONTRADICTED")
+    cited = set(
+        verification.supporting_evidence_refs
+        + verification.contradicting_evidence_refs
+    )
+    if not cited.issubset(visible_logs_refs):
+        return keep("LOGS_PAIRWISE_REF_NOT_VISIBLE")
+    return DeterministicFusionDecision(
+        action="OVERRIDE_INITIAL",
+        final_root_service=metrics_alternative.alternative_service,
+        reason_codes=("LOGS_PAIRWISE_ALTERNATIVE_OVERRIDE",),
+        supporting_sources=("metrics", "logs"),
+        contradicting_sources=("logs",),
     )
 
 
