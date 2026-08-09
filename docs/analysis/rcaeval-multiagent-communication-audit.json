@@ -1,0 +1,1348 @@
+{
+  "architecture_decision": {
+    "decision": "METRICS_ARBITRATION",
+    "reason": "A deterministic metrics rule shows robust positive net rescue."
+  },
+  "architecture_matrix": {
+    "dimensions": [
+      "offline_root_net_rescue",
+      "root_damage",
+      "cross_fixture_robustness",
+      "evidence_sufficiency",
+      "communication_completeness",
+      "expected_model_calls",
+      "expected_latency",
+      "provider_failure_exposure",
+      "interpretability",
+      "multi_agent_authenticity",
+      "implementation_complexity"
+    ],
+    "options": {
+      "COMMUNICATION_REPAIRED_CROSS_SOURCE_VERIFIER": {
+        "communication_completeness": "C4_STATIC_ONLY",
+        "cross_fixture_robustness": "UNRESOLVED",
+        "evidence_sufficiency": "NOT_SUPPORTED",
+        "expected_latency": "HIGHER",
+        "expected_model_calls": 2,
+        "implementation_complexity": "HIGH",
+        "interpretability": "MEDIUM",
+        "multi_agent_authenticity": "CROSS_SOURCE_VERIFIER",
+        "offline_root_net_rescue": 1,
+        "provider_failure_exposure": "TWO_CALLS",
+        "root_damage": 0
+      },
+      "METRICS_ARBITRATION": {
+        "communication_completeness": "NO_NEW_MESSAGE",
+        "cross_fixture_robustness": "SUPPORTED",
+        "evidence_sufficiency": "DETERMINISTIC_METRICS",
+        "expected_latency": "LOW",
+        "expected_model_calls": 1,
+        "implementation_complexity": "LOW",
+        "interpretability": "HIGH",
+        "multi_agent_authenticity": "DETERMINISTIC_ARBITRATION_NOT_MULTI_AGENT",
+        "offline_root_net_rescue": 26,
+        "provider_failure_exposure": "ONE_CALL",
+        "root_damage": 0
+      },
+      "METRICS_PLUS_TRACE_VERIFICATION": {
+        "communication_completeness": "STATIC_CONTRACT_ONLY",
+        "cross_fixture_robustness": "UNRESOLVED",
+        "evidence_sufficiency": "NOT_SUPPORTED",
+        "expected_latency": "HIGHER",
+        "expected_model_calls": 2,
+        "implementation_complexity": "MEDIUM",
+        "interpretability": "MEDIUM",
+        "multi_agent_authenticity": "SOURCE_SPECIALIST",
+        "offline_root_net_rescue": null,
+        "provider_failure_exposure": "TWO_CALLS",
+        "root_damage": null
+      },
+      "STRONG_SINGLE": {
+        "communication_completeness": "NOT_APPLICABLE",
+        "cross_fixture_robustness": "PRESERVED_BASELINE_ONLY",
+        "evidence_sufficiency": "FULL_BOUNDED_CONTEXT",
+        "expected_latency": "LOWEST",
+        "expected_model_calls": 1,
+        "implementation_complexity": "LOW",
+        "interpretability": "MODEL_RATIONALE",
+        "multi_agent_authenticity": "NONE",
+        "offline_root_net_rescue": 0,
+        "provider_failure_exposure": "ONE_CALL",
+        "root_damage": 0
+      }
+    }
+  },
+  "artifact_sufficiency": {
+    "failed_terminal_semantic_outputs": {
+      "basis": "Failed terminal result is null and sidecars contain no semantic body.",
+      "classification": "UNOBSERVABLE_FROM_PRESERVED_ARTIFACTS"
+    },
+    "final_diagnosis": {
+      "basis": "Completed terminal final Root and Indicator.",
+      "classification": "DIRECTLY_OBSERVABLE"
+    },
+    "fusion_input": {
+      "basis": "Initial, Gate, Metrics, Specialist output, and visible Logs refs are preserved or reconstructed.",
+      "classification": "DETERMINISTICALLY_RECONSTRUCTABLE"
+    },
+    "fusion_reason": {
+      "basis": "Completed terminal deterministic Fusion reason codes.",
+      "classification": "DIRECTLY_OBSERVABLE"
+    },
+    "gate_feature_snapshot": {
+      "basis": "Flattened v2 Gate decision is stored; omitted raw inputs are reconstructed.",
+      "classification": "DETERMINISTICALLY_RECONSTRUCTABLE"
+    },
+    "gate_reason_codes": {
+      "basis": "Completed terminal Gate decision reason codes.",
+      "classification": "DIRECTLY_OBSERVABLE"
+    },
+    "gate_route": {
+      "basis": "Completed terminal Gate route.",
+      "classification": "DIRECTLY_OBSERVABLE"
+    },
+    "indicator_action": {
+      "basis": "Completed terminal Indicator resolution action.",
+      "classification": "DIRECTLY_OBSERVABLE"
+    },
+    "initial_confidence": {
+      "basis": "Completed terminal Initial Diagnosis confidence.",
+      "classification": "DIRECTLY_OBSERVABLE"
+    },
+    "initial_diagnosis": {
+      "basis": "Completed Adaptive v2 terminal diagnosis.initial_diagnosis.",
+      "classification": "DIRECTLY_OBSERVABLE"
+    },
+    "initial_evidence_refs": {
+      "basis": "Completed terminal Initial Diagnosis refs.",
+      "classification": "DIRECTLY_OBSERVABLE"
+    },
+    "metrics_alternative": {
+      "basis": "Stored for Candidate-5; deterministically reconstructed for Candidate-3/4.",
+      "classification": "DETERMINISTICALLY_RECONSTRUCTABLE"
+    },
+    "metrics_rank_score_margin": {
+      "basis": "Rank and margin are partly stored; full ranking is reconstructed.",
+      "classification": "DETERMINISTICALLY_RECONSTRUCTABLE"
+    },
+    "metrics_ranking": {
+      "basis": "Frozen raw Metrics plus tracked F0 indicator configuration.",
+      "classification": "DETERMINISTICALLY_RECONSTRUCTABLE"
+    },
+    "pairwise_output": {
+      "basis": "Candidate-5 completed terminal pairwise verification.",
+      "classification": "DIRECTLY_OBSERVABLE"
+    },
+    "provider_request_body": {
+      "basis": "Provider sidecars retain request SHA only, not request bodies.",
+      "classification": "UNOBSERVABLE_FROM_PRESERVED_ARTIFACTS"
+    },
+    "specialist_input_envelope": {
+      "basis": "Typed tracked contract plus Initial and bounded source evidence; sidecar stores only request hash.",
+      "classification": "DETERMINISTICALLY_RECONSTRUCTABLE"
+    },
+    "specialist_output": {
+      "basis": "Completed terminal free hypotheses or pairwise verification.",
+      "classification": "DIRECTLY_OBSERVABLE"
+    },
+    "specialist_visible_refs": {
+      "basis": "Exact typed projection from single-source bounded evidence.",
+      "classification": "DETERMINISTICALLY_RECONSTRUCTABLE"
+    },
+    "specialist_visible_services": {
+      "basis": "Exact typed projection from single-source bounded evidence.",
+      "classification": "DETERMINISTICALLY_RECONSTRUCTABLE"
+    },
+    "trace_hypotheses": {
+      "basis": "Trace outputs share specialist_hypotheses and are separated by source when called.",
+      "classification": "DIRECTLY_OBSERVABLE"
+    }
+  },
+  "classification": [
+    "CONSUMED_OBSS_DEVELOPMENT",
+    "POST_HOC_DIAGNOSTIC",
+    "NOT_EXTERNAL_VALIDATION",
+    "NOT_PRIMARY_INFERENCE",
+    "NO_PROVIDER_CALLS"
+  ],
+  "communication_stage_count": 10,
+  "failure_mechanism_counts": {
+    "candidate-3": {
+      "ALTERNATIVE_NOT_VISIBLE_TO_SPECIALIST": 0,
+      "CANDIDATE_NOT_RETRIEVED": 0,
+      "CAUSAL_ROLE_MISCLASSIFICATION": 0,
+      "EVIDENCE_ROLE_MISCLASSIFICATION": 0,
+      "FUSION_CORRECTLY_REJECTED_WEAK_OUTPUT": 0,
+      "FUSION_OVERCONSTRAINED": 0,
+      "GATE_MISSED_ERROR": 11,
+      "INDICATOR_ONLY_FAILURE": 24,
+      "INITIAL_RATIONALE_NOT_TRANSMITTED": 0,
+      "METRICS_PROVENANCE_NOT_TRANSMITTED": 0,
+      "NO_ACTIONABLE_ALTERNATIVE": 25,
+      "OUTPUT_COMPRESSION_LOSS": 0,
+      "ROUTING_RATIONALE_NOT_TRANSMITTED": 0,
+      "SOURCE_SIGNAL_ABSENT": 0,
+      "SPECIALIST_REASONING_ERROR_WITH_SUFFICIENT_INPUT": 0,
+      "SPECIALIST_TASK_SOURCE_MISMATCH": 0,
+      "WRONG_SOURCE_SELECTED": 0
+    },
+    "candidate-4": {
+      "ALTERNATIVE_NOT_VISIBLE_TO_SPECIALIST": 0,
+      "CANDIDATE_NOT_RETRIEVED": 0,
+      "CAUSAL_ROLE_MISCLASSIFICATION": 0,
+      "EVIDENCE_ROLE_MISCLASSIFICATION": 0,
+      "FUSION_CORRECTLY_REJECTED_WEAK_OUTPUT": 0,
+      "FUSION_OVERCONSTRAINED": 0,
+      "GATE_MISSED_ERROR": 0,
+      "INDICATOR_ONLY_FAILURE": 24,
+      "INITIAL_RATIONALE_NOT_TRANSMITTED": 0,
+      "METRICS_PROVENANCE_NOT_TRANSMITTED": 0,
+      "NO_ACTIONABLE_ALTERNATIVE": 27,
+      "OUTPUT_COMPRESSION_LOSS": 0,
+      "ROUTING_RATIONALE_NOT_TRANSMITTED": 0,
+      "SOURCE_SIGNAL_ABSENT": 6,
+      "SPECIALIST_REASONING_ERROR_WITH_SUFFICIENT_INPUT": 0,
+      "SPECIALIST_TASK_SOURCE_MISMATCH": 0,
+      "WRONG_SOURCE_SELECTED": 2
+    },
+    "candidate-5": {
+      "ALTERNATIVE_NOT_VISIBLE_TO_SPECIALIST": 0,
+      "CANDIDATE_NOT_RETRIEVED": 0,
+      "CAUSAL_ROLE_MISCLASSIFICATION": 0,
+      "EVIDENCE_ROLE_MISCLASSIFICATION": 0,
+      "FUSION_CORRECTLY_REJECTED_WEAK_OUTPUT": 0,
+      "FUSION_OVERCONSTRAINED": 0,
+      "GATE_MISSED_ERROR": 1,
+      "INDICATOR_ONLY_FAILURE": 22,
+      "INITIAL_RATIONALE_NOT_TRANSMITTED": 0,
+      "METRICS_PROVENANCE_NOT_TRANSMITTED": 0,
+      "NO_ACTIONABLE_ALTERNATIVE": 23,
+      "OUTPUT_COMPRESSION_LOSS": 0,
+      "ROUTING_RATIONALE_NOT_TRANSMITTED": 0,
+      "SOURCE_SIGNAL_ABSENT": 12,
+      "SPECIALIST_REASONING_ERROR_WITH_SUFFICIENT_INPUT": 0,
+      "SPECIALIST_TASK_SOURCE_MISMATCH": 0,
+      "WRONG_SOURCE_SELECTED": 2
+    }
+  },
+  "fusion_frontier": {
+    "F0": {
+      "case_count": 60,
+      "correct_override": 0,
+      "final_root": 45,
+      "initial_root": 45,
+      "net_rescue": 0,
+      "override_count": 0,
+      "root_damage": 0,
+      "root_damage_rate": {
+        "denominator": 60,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "root_rescue": 0,
+      "wrong_override": 0
+    },
+    "F1": {
+      "case_count": 60,
+      "correct_override": 0,
+      "final_root": 45,
+      "initial_root": 45,
+      "net_rescue": 0,
+      "override_count": 0,
+      "root_damage": 0,
+      "root_damage_rate": {
+        "denominator": 60,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "root_rescue": 0,
+      "wrong_override": 0
+    },
+    "F2": {
+      "case_count": 60,
+      "correct_override": 1,
+      "final_root": 46,
+      "initial_root": 45,
+      "net_rescue": 1,
+      "override_count": 1,
+      "root_damage": 0,
+      "root_damage_rate": {
+        "denominator": 60,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "root_rescue": 1,
+      "wrong_override": 0
+    },
+    "F3": {
+      "case_count": 60,
+      "correct_override": 0,
+      "final_root": 45,
+      "initial_root": 45,
+      "net_rescue": 0,
+      "override_count": 0,
+      "root_damage": 0,
+      "root_damage_rate": {
+        "denominator": 60,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "root_rescue": 0,
+      "wrong_override": 0
+    },
+    "bottleneck_verdict": "FUSION_IS_BOTTLENECK",
+    "keep_reason_distribution": {
+      "KEEP_DIRECT": 37,
+      "LOGS_PAIRWISE_ALT_LACKS_ROOT_ROLE": 1,
+      "LOGS_PAIRWISE_INCONCLUSIVE": 15,
+      "LOGS_PAIRWISE_INITIAL": 7
+    },
+    "positive_net_rescue": true,
+    "replay_value_identical": {
+      "denominator": 60,
+      "numerator": 60,
+      "value": 1.0
+    }
+  },
+  "initial_wrong_union_source_sufficiency": {
+    "candidate_not_retrieved_count": 0,
+    "class_counts": {
+      "LOGS_AND_TRACE_CAN_COMPARE": 0,
+      "LOGS_CAN_COMPARE": 0,
+      "METRICS_ONLY_SUFFICIENT": 1,
+      "NO_SPECIALIST_SOURCE_CAN_COMPARE": 13,
+      "TRACE_CAN_COMPARE": 2
+    },
+    "initial_wrong_count": 16,
+    "truth_retrieved_count": 16
+  },
+  "message_contract_ablation": {
+    "C0": {
+      "both_candidate_visibility": {
+        "denominator": 23,
+        "numerator": 2,
+        "value": 0.08695652173913043
+      },
+      "candidate_provenance_completeness": {
+        "denominator": 23,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "estimated_payload_bytes": {
+        "maximum": 1419.0,
+        "mean": 1261.5217391304348,
+        "minimum": 1059.0
+      },
+      "evidence_duplication": {
+        "denominator": 276,
+        "numerator": 138,
+        "value": 0.5
+      },
+      "field_completeness": {
+        "denominator": 391,
+        "numerator": 115,
+        "value": 0.29411764705882354
+      },
+      "field_count": 5,
+      "fields": [
+        "initial_service",
+        "alternative_service",
+        "initial_indicator",
+        "logs_evidence",
+        "visible_refs"
+      ],
+      "payload_field_units": 115,
+      "source_sufficiency": {
+        "denominator": 23,
+        "numerator": 0,
+        "value": 0.0
+      }
+    },
+    "C1": {
+      "both_candidate_visibility": {
+        "denominator": 23,
+        "numerator": 2,
+        "value": 0.08695652173913043
+      },
+      "candidate_provenance_completeness": {
+        "denominator": 23,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "estimated_payload_bytes": {
+        "maximum": 1553.0,
+        "mean": 1395.1304347826087,
+        "minimum": 1207.0
+      },
+      "evidence_duplication": {
+        "denominator": 276,
+        "numerator": 138,
+        "value": 0.5
+      },
+      "field_completeness": {
+        "denominator": 391,
+        "numerator": 207,
+        "value": 0.5294117647058824
+      },
+      "field_count": 9,
+      "fields": [
+        "initial_service",
+        "alternative_service",
+        "initial_indicator",
+        "logs_evidence",
+        "visible_refs",
+        "gate_reason_codes",
+        "initial_confidence",
+        "metrics_rank_risk",
+        "metrics_margin_risk"
+      ],
+      "payload_field_units": 207,
+      "source_sufficiency": {
+        "denominator": 23,
+        "numerator": 0,
+        "value": 0.0
+      }
+    },
+    "C2": {
+      "both_candidate_visibility": {
+        "denominator": 23,
+        "numerator": 2,
+        "value": 0.08695652173913043
+      },
+      "candidate_provenance_completeness": {
+        "denominator": 23,
+        "numerator": 23,
+        "value": 1.0
+      },
+      "estimated_payload_bytes": {
+        "maximum": 1548.0,
+        "mean": 1390.5652173913043,
+        "minimum": 1187.0
+      },
+      "evidence_duplication": {
+        "denominator": 276,
+        "numerator": 138,
+        "value": 0.5
+      },
+      "field_completeness": {
+        "denominator": 391,
+        "numerator": 207,
+        "value": 0.5294117647058824
+      },
+      "field_count": 9,
+      "fields": [
+        "initial_service",
+        "alternative_service",
+        "initial_indicator",
+        "logs_evidence",
+        "visible_refs",
+        "alternative_rank",
+        "alternative_score",
+        "metrics_margin",
+        "initial_metrics_rank"
+      ],
+      "payload_field_units": 207,
+      "source_sufficiency": {
+        "denominator": 23,
+        "numerator": 0,
+        "value": 0.0
+      }
+    },
+    "C3": {
+      "both_candidate_visibility": {
+        "denominator": 23,
+        "numerator": 2,
+        "value": 0.08695652173913043
+      },
+      "candidate_provenance_completeness": {
+        "denominator": 23,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "estimated_payload_bytes": {
+        "maximum": 3348.0,
+        "mean": 2773.2608695652175,
+        "minimum": 2221.0
+      },
+      "evidence_duplication": {
+        "denominator": 376,
+        "numerator": 163,
+        "value": 0.43351063829787234
+      },
+      "field_completeness": {
+        "denominator": 391,
+        "numerator": 161,
+        "value": 0.4117647058823529
+      },
+      "field_count": 7,
+      "fields": [
+        "initial_service",
+        "alternative_service",
+        "initial_indicator",
+        "logs_evidence",
+        "visible_refs",
+        "initial_explanation",
+        "initial_cited_evidence_summary"
+      ],
+      "payload_field_units": 161,
+      "source_sufficiency": {
+        "denominator": 23,
+        "numerator": 0,
+        "value": 0.0
+      }
+    },
+    "C4": {
+      "both_candidate_visibility": {
+        "denominator": 23,
+        "numerator": 23,
+        "value": 1.0
+      },
+      "candidate_provenance_completeness": {
+        "denominator": 23,
+        "numerator": 23,
+        "value": 1.0
+      },
+      "estimated_payload_bytes": {
+        "maximum": 2769.0,
+        "mean": 2633.608695652174,
+        "minimum": 2447.0
+      },
+      "evidence_duplication": {
+        "denominator": 414,
+        "numerator": 138,
+        "value": 0.3333333333333333
+      },
+      "field_completeness": {
+        "denominator": 391,
+        "numerator": 322,
+        "value": 0.8235294117647058
+      },
+      "field_count": 14,
+      "fields": [
+        "initial_service",
+        "alternative_service",
+        "initial_indicator",
+        "logs_evidence",
+        "visible_refs",
+        "gate_reason_codes",
+        "initial_confidence",
+        "metrics_rank_risk",
+        "metrics_margin_risk",
+        "alternative_rank",
+        "alternative_score",
+        "metrics_margin",
+        "initial_metrics_rank",
+        "bounded_metrics_evidence"
+      ],
+      "payload_field_units": 322,
+      "source_sufficiency": {
+        "denominator": 23,
+        "numerator": 13,
+        "value": 0.5652173913043478
+      }
+    },
+    "C5": {
+      "both_candidate_visibility": {
+        "denominator": 23,
+        "numerator": 6,
+        "value": 0.2608695652173913
+      },
+      "candidate_provenance_completeness": {
+        "denominator": 23,
+        "numerator": 23,
+        "value": 1.0
+      },
+      "estimated_payload_bytes": {
+        "maximum": 1759.0,
+        "mean": 986.2608695652174,
+        "minimum": 397.0
+      },
+      "evidence_duplication": {
+        "denominator": 120,
+        "numerator": 60,
+        "value": 0.5
+      },
+      "field_completeness": {
+        "denominator": 391,
+        "numerator": 299,
+        "value": 0.7647058823529411
+      },
+      "field_count": 13,
+      "fields": [
+        "initial_service",
+        "alternative_service",
+        "initial_indicator",
+        "gate_reason_codes",
+        "initial_confidence",
+        "metrics_rank_risk",
+        "metrics_margin_risk",
+        "alternative_rank",
+        "alternative_score",
+        "metrics_margin",
+        "initial_metrics_rank",
+        "trace_evidence",
+        "visible_refs"
+      ],
+      "payload_field_units": 299,
+      "source_sufficiency": {
+        "denominator": 23,
+        "numerator": 2,
+        "value": 0.08695652173913043
+      }
+    },
+    "communication_repair_eligible": false,
+    "communication_repair_eligible_count": 0,
+    "cross_source_verifier_redundant": true,
+    "initial_context_source_overlap": {
+      "maximum": 1.0,
+      "mean": 1.0,
+      "minimum": 1.0
+    },
+    "redundancy_basis": "Initial already consumes the full bounded ArchitectureContext; overlap measures whether a new verifier would mainly repeat evidence."
+  },
+  "metrics_frontiers": {
+    "candidate-3": {
+      "M0": {
+        "case_count": 60,
+        "correct_override": 0,
+        "final_pair": 25,
+        "final_root": 49,
+        "indicator_policy": "KEEP_INITIAL_INDICATOR",
+        "initial_pair": 25,
+        "initial_root": 49,
+        "net_rescue": 0,
+        "override_count": 0,
+        "pair_damage": 0,
+        "pair_net_rescue": 0,
+        "pair_rescue": 0,
+        "root_damage": 0,
+        "root_damage_rate": {
+          "denominator": 60,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "root_rescue": 0,
+        "wrong_override": 0
+      },
+      "M1": {
+        "case_count": 60,
+        "correct_override": 9,
+        "final_pair": 27,
+        "final_root": 57,
+        "indicator_policy": "KEEP_INITIAL_INDICATOR",
+        "initial_pair": 25,
+        "initial_root": 49,
+        "net_rescue": 8,
+        "override_count": 10,
+        "pair_damage": 0,
+        "pair_net_rescue": 2,
+        "pair_rescue": 2,
+        "root_damage": 1,
+        "root_damage_rate": {
+          "denominator": 60,
+          "numerator": 1,
+          "value": 0.016666666666666666
+        },
+        "root_rescue": 9,
+        "wrong_override": 1
+      },
+      "M2": {
+        "case_count": 60,
+        "correct_override": 9,
+        "final_pair": 27,
+        "final_root": 57,
+        "indicator_policy": "KEEP_INITIAL_INDICATOR",
+        "initial_pair": 25,
+        "initial_root": 49,
+        "net_rescue": 8,
+        "override_count": 10,
+        "pair_damage": 0,
+        "pair_net_rescue": 2,
+        "pair_rescue": 2,
+        "root_damage": 1,
+        "root_damage_rate": {
+          "denominator": 60,
+          "numerator": 1,
+          "value": 0.016666666666666666
+        },
+        "root_rescue": 9,
+        "wrong_override": 1
+      },
+      "M3": {
+        "case_count": 60,
+        "correct_override": 8,
+        "final_pair": 26,
+        "final_root": 57,
+        "indicator_policy": "KEEP_INITIAL_INDICATOR",
+        "initial_pair": 25,
+        "initial_root": 49,
+        "net_rescue": 8,
+        "override_count": 8,
+        "pair_damage": 0,
+        "pair_net_rescue": 1,
+        "pair_rescue": 1,
+        "root_damage": 0,
+        "root_damage_rate": {
+          "denominator": 60,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "root_rescue": 8,
+        "wrong_override": 0
+      }
+    },
+    "candidate-4": {
+      "M0": {
+        "case_count": 59,
+        "correct_override": 0,
+        "final_pair": 27,
+        "final_root": 51,
+        "indicator_policy": "KEEP_INITIAL_INDICATOR",
+        "initial_pair": 27,
+        "initial_root": 51,
+        "net_rescue": 0,
+        "override_count": 0,
+        "pair_damage": 0,
+        "pair_net_rescue": 0,
+        "pair_rescue": 0,
+        "root_damage": 0,
+        "root_damage_rate": {
+          "denominator": 59,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "root_rescue": 0,
+        "wrong_override": 0
+      },
+      "M1": {
+        "case_count": 59,
+        "correct_override": 6,
+        "final_pair": 29,
+        "final_root": 56,
+        "indicator_policy": "KEEP_INITIAL_INDICATOR",
+        "initial_pair": 27,
+        "initial_root": 51,
+        "net_rescue": 5,
+        "override_count": 7,
+        "pair_damage": 0,
+        "pair_net_rescue": 2,
+        "pair_rescue": 2,
+        "root_damage": 1,
+        "root_damage_rate": {
+          "denominator": 59,
+          "numerator": 1,
+          "value": 0.01694915254237288
+        },
+        "root_rescue": 6,
+        "wrong_override": 1
+      },
+      "M2": {
+        "case_count": 59,
+        "correct_override": 6,
+        "final_pair": 29,
+        "final_root": 56,
+        "indicator_policy": "KEEP_INITIAL_INDICATOR",
+        "initial_pair": 27,
+        "initial_root": 51,
+        "net_rescue": 5,
+        "override_count": 7,
+        "pair_damage": 0,
+        "pair_net_rescue": 2,
+        "pair_rescue": 2,
+        "root_damage": 1,
+        "root_damage_rate": {
+          "denominator": 59,
+          "numerator": 1,
+          "value": 0.01694915254237288
+        },
+        "root_rescue": 6,
+        "wrong_override": 1
+      },
+      "M3": {
+        "case_count": 59,
+        "correct_override": 6,
+        "final_pair": 29,
+        "final_root": 57,
+        "indicator_policy": "KEEP_INITIAL_INDICATOR",
+        "initial_pair": 27,
+        "initial_root": 51,
+        "net_rescue": 6,
+        "override_count": 6,
+        "pair_damage": 0,
+        "pair_net_rescue": 2,
+        "pair_rescue": 2,
+        "root_damage": 0,
+        "root_damage_rate": {
+          "denominator": 59,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "root_rescue": 6,
+        "wrong_override": 0
+      }
+    },
+    "candidate-5": {
+      "M0": {
+        "case_count": 60,
+        "correct_override": 0,
+        "final_pair": 23,
+        "final_root": 45,
+        "indicator_policy": "KEEP_INITIAL_INDICATOR",
+        "initial_pair": 23,
+        "initial_root": 45,
+        "net_rescue": 0,
+        "override_count": 0,
+        "pair_damage": 0,
+        "pair_net_rescue": 0,
+        "pair_rescue": 0,
+        "root_damage": 0,
+        "root_damage_rate": {
+          "denominator": 60,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "root_rescue": 0,
+        "wrong_override": 0
+      },
+      "M1": {
+        "case_count": 60,
+        "correct_override": 13,
+        "final_pair": 25,
+        "final_root": 57,
+        "indicator_policy": "KEEP_INITIAL_INDICATOR",
+        "initial_pair": 23,
+        "initial_root": 45,
+        "net_rescue": 12,
+        "override_count": 14,
+        "pair_damage": 0,
+        "pair_net_rescue": 2,
+        "pair_rescue": 2,
+        "root_damage": 1,
+        "root_damage_rate": {
+          "denominator": 60,
+          "numerator": 1,
+          "value": 0.016666666666666666
+        },
+        "root_rescue": 13,
+        "wrong_override": 1
+      },
+      "M2": {
+        "case_count": 60,
+        "correct_override": 13,
+        "final_pair": 25,
+        "final_root": 57,
+        "indicator_policy": "KEEP_INITIAL_INDICATOR",
+        "initial_pair": 23,
+        "initial_root": 45,
+        "net_rescue": 12,
+        "override_count": 14,
+        "pair_damage": 0,
+        "pair_net_rescue": 2,
+        "pair_rescue": 2,
+        "root_damage": 1,
+        "root_damage_rate": {
+          "denominator": 60,
+          "numerator": 1,
+          "value": 0.016666666666666666
+        },
+        "root_rescue": 13,
+        "wrong_override": 1
+      },
+      "M3": {
+        "case_count": 60,
+        "correct_override": 12,
+        "final_pair": 24,
+        "final_root": 57,
+        "indicator_policy": "KEEP_INITIAL_INDICATOR",
+        "initial_pair": 23,
+        "initial_root": 45,
+        "net_rescue": 12,
+        "override_count": 12,
+        "pair_damage": 0,
+        "pair_net_rescue": 1,
+        "pair_rescue": 1,
+        "root_damage": 0,
+        "root_damage_rate": {
+          "denominator": 60,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "root_rescue": 12,
+        "wrong_override": 0
+      }
+    }
+  },
+  "metrics_selection": {
+    "rule_support": {
+      "M1": {
+        "candidate_3_4_robustness_gate": true,
+        "candidate_5_primary_gate": true
+      },
+      "M2": {
+        "candidate_3_4_robustness_gate": true,
+        "candidate_5_primary_gate": true
+      },
+      "M3": {
+        "candidate_3_4_robustness_gate": true,
+        "candidate_5_primary_gate": true
+      }
+    },
+    "selected_rule": "M3",
+    "supported_rules": [
+      "M1",
+      "M2",
+      "M3"
+    ]
+  },
+  "multiagent_communication_verdict": [
+    {
+      "basis": {
+        "denominator": 23,
+        "numerator": 2,
+        "value": 0.08695652173913043
+      },
+      "mechanism": "SOURCE_SIGNAL_INSUFFICIENT",
+      "rank": 1,
+      "support": "SUPPORTED"
+    },
+    {
+      "basis": {
+        "maximum": 1.0,
+        "mean": 1.0,
+        "minimum": 1.0
+      },
+      "mechanism": "MULTI_STAGE_REDUNDANCY",
+      "rank": 2,
+      "support": "SUPPORTED"
+    },
+    {
+      "basis": {
+        "denominator": 23,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "mechanism": "MESSAGE_CONTRACT_LOSS",
+      "rank": 3,
+      "support": "PARTIALLY_SUPPORTED"
+    },
+    {
+      "basis": "Causal-role truth is unavailable beyond root identity.",
+      "mechanism": "SPECIALIST_TASK_DEFINITION",
+      "rank": 4,
+      "support": "UNRESOLVED"
+    },
+    {
+      "basis": "FUSION_IS_BOTTLENECK",
+      "mechanism": "FUSION_OVERSTRICT",
+      "rank": 5,
+      "support": "SUPPORTED"
+    }
+  ],
+  "provider_calls": 0,
+  "schema_version": "rcaeval-multiagent-communication-audit-v1",
+  "scope": {
+    "candidate-3": {
+      "completed_count": 60,
+      "failed_count": 0,
+      "terminal_count": 60
+    },
+    "candidate-4": {
+      "completed_count": 59,
+      "failed_count": 1,
+      "terminal_count": 60
+    },
+    "candidate-5": {
+      "completed_count": 60,
+      "failed_count": 0,
+      "terminal_count": 60
+    }
+  },
+  "source_sufficiency_counts": {
+    "candidate-3": {
+      "candidate_not_retrieved_count": 0,
+      "class_counts": {
+        "LOGS_AND_TRACE_CAN_COMPARE": 0,
+        "LOGS_CAN_COMPARE": 0,
+        "METRICS_ONLY_SUFFICIENT": 1,
+        "NO_SPECIALIST_SOURCE_CAN_COMPARE": 9,
+        "TRACE_CAN_COMPARE": 1
+      },
+      "initial_wrong_count": 11,
+      "truth_retrieved_count": 11
+    },
+    "candidate-4": {
+      "candidate_not_retrieved_count": 0,
+      "class_counts": {
+        "LOGS_AND_TRACE_CAN_COMPARE": 0,
+        "LOGS_CAN_COMPARE": 0,
+        "METRICS_ONLY_SUFFICIENT": 1,
+        "NO_SPECIALIST_SOURCE_CAN_COMPARE": 5,
+        "TRACE_CAN_COMPARE": 2
+      },
+      "initial_wrong_count": 8,
+      "truth_retrieved_count": 8
+    },
+    "candidate-5": {
+      "candidate_not_retrieved_count": 0,
+      "class_counts": {
+        "LOGS_AND_TRACE_CAN_COMPARE": 0,
+        "LOGS_CAN_COMPARE": 0,
+        "METRICS_ONLY_SUFFICIENT": 1,
+        "NO_SPECIALIST_SOURCE_CAN_COMPARE": 12,
+        "TRACE_CAN_COMPARE": 2
+      },
+      "initial_wrong_count": 15,
+      "truth_retrieved_count": 15
+    }
+  },
+  "source_visibility": {
+    "candidate-3": {
+      "alternative_logs_visible": {
+        "denominator": 60,
+        "numerator": 18,
+        "value": 0.3
+      },
+      "alternative_trace_visible": {
+        "denominator": 60,
+        "numerator": 13,
+        "value": 0.21666666666666667
+      },
+      "case_count": 60,
+      "initial_alternative_logs_co_visible": {
+        "denominator": 60,
+        "numerator": 4,
+        "value": 0.06666666666666667
+      },
+      "initial_alternative_trace_co_visible": {
+        "denominator": 60,
+        "numerator": 13,
+        "value": 0.21666666666666667
+      },
+      "initial_logs_visible": {
+        "denominator": 60,
+        "numerator": 14,
+        "value": 0.23333333333333334
+      },
+      "initial_trace_visible": {
+        "denominator": 60,
+        "numerator": 29,
+        "value": 0.48333333333333334
+      },
+      "truth_logs_visible": {
+        "denominator": 60,
+        "numerator": 5,
+        "value": 0.08333333333333333
+      },
+      "truth_metrics_top1": {
+        "denominator": 60,
+        "numerator": 56,
+        "value": 0.9333333333333333
+      },
+      "truth_metrics_top2": {
+        "denominator": 60,
+        "numerator": 59,
+        "value": 0.9833333333333333
+      },
+      "truth_metrics_top3": {
+        "denominator": 60,
+        "numerator": 59,
+        "value": 0.9833333333333333
+      },
+      "truth_metrics_top6": {
+        "denominator": 60,
+        "numerator": 60,
+        "value": 1.0
+      },
+      "truth_trace_visible": {
+        "denominator": 60,
+        "numerator": 28,
+        "value": 0.4666666666666667
+      }
+    },
+    "candidate-4": {
+      "alternative_logs_visible": {
+        "denominator": 59,
+        "numerator": 17,
+        "value": 0.288135593220339
+      },
+      "alternative_trace_visible": {
+        "denominator": 59,
+        "numerator": 15,
+        "value": 0.2542372881355932
+      },
+      "case_count": 59,
+      "initial_alternative_logs_co_visible": {
+        "denominator": 59,
+        "numerator": 4,
+        "value": 0.06779661016949153
+      },
+      "initial_alternative_trace_co_visible": {
+        "denominator": 59,
+        "numerator": 14,
+        "value": 0.23728813559322035
+      },
+      "initial_logs_visible": {
+        "denominator": 59,
+        "numerator": 10,
+        "value": 0.1694915254237288
+      },
+      "initial_trace_visible": {
+        "denominator": 59,
+        "numerator": 27,
+        "value": 0.4576271186440678
+      },
+      "truth_logs_visible": {
+        "denominator": 59,
+        "numerator": 4,
+        "value": 0.06779661016949153
+      },
+      "truth_metrics_top1": {
+        "denominator": 59,
+        "numerator": 55,
+        "value": 0.9322033898305084
+      },
+      "truth_metrics_top2": {
+        "denominator": 59,
+        "numerator": 58,
+        "value": 0.9830508474576272
+      },
+      "truth_metrics_top3": {
+        "denominator": 59,
+        "numerator": 58,
+        "value": 0.9830508474576272
+      },
+      "truth_metrics_top6": {
+        "denominator": 59,
+        "numerator": 59,
+        "value": 1.0
+      },
+      "truth_trace_visible": {
+        "denominator": 59,
+        "numerator": 27,
+        "value": 0.4576271186440678
+      }
+    },
+    "candidate-5": {
+      "alternative_logs_visible": {
+        "denominator": 60,
+        "numerator": 17,
+        "value": 0.2833333333333333
+      },
+      "alternative_trace_visible": {
+        "denominator": 60,
+        "numerator": 14,
+        "value": 0.23333333333333334
+      },
+      "case_count": 60,
+      "initial_alternative_logs_co_visible": {
+        "denominator": 60,
+        "numerator": 4,
+        "value": 0.06666666666666667
+      },
+      "initial_alternative_trace_co_visible": {
+        "denominator": 60,
+        "numerator": 14,
+        "value": 0.23333333333333334
+      },
+      "initial_logs_visible": {
+        "denominator": 60,
+        "numerator": 17,
+        "value": 0.2833333333333333
+      },
+      "initial_trace_visible": {
+        "denominator": 60,
+        "numerator": 29,
+        "value": 0.48333333333333334
+      },
+      "truth_logs_visible": {
+        "denominator": 60,
+        "numerator": 5,
+        "value": 0.08333333333333333
+      },
+      "truth_metrics_top1": {
+        "denominator": 60,
+        "numerator": 56,
+        "value": 0.9333333333333333
+      },
+      "truth_metrics_top2": {
+        "denominator": 60,
+        "numerator": 59,
+        "value": 0.9833333333333333
+      },
+      "truth_metrics_top3": {
+        "denominator": 60,
+        "numerator": 59,
+        "value": 0.9833333333333333
+      },
+      "truth_metrics_top6": {
+        "denominator": 60,
+        "numerator": 60,
+        "value": 1.0
+      },
+      "truth_trace_visible": {
+        "denominator": 60,
+        "numerator": 28,
+        "value": 0.4666666666666667
+      }
+    }
+  },
+  "specialist_audit": {
+    "candidate_4_free": {
+      "causal_role_oracle": "ROOT_IDENTITY_PLUS_NON_ROOT_HEURISTIC_ONLY",
+      "contradicting_ref_count": 26,
+      "correct_alternative_any_rank": 8,
+      "correct_alternative_rank1": 7,
+      "hypothesis_count": 44,
+      "initial_hypothesis_count": 16,
+      "propagated_symptom_role_heuristic_alignment": {
+        "denominator": 18,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "root_candidate_role_truth_alignment": {
+        "denominator": 16,
+        "numerator": 7,
+        "value": 0.4375
+      },
+      "score_correctness": {
+        "correct": {
+          "maximum": 0.98,
+          "mean": 0.89625,
+          "minimum": 0.41
+        },
+        "incorrect": {
+          "maximum": 0.98,
+          "mean": 0.5377777777777778,
+          "minimum": 0.18
+        }
+      },
+      "specialist_calls": 16,
+      "supporting_ref_count": 89,
+      "truth_hypothesis_count": 8,
+      "unique_service_count": 10
+    },
+    "candidate_5_pairwise": {
+      "alternative_case_count": 1,
+      "alternative_override_conditions": {
+        "alternative_role_root_candidate": 0,
+        "contradict_refs_nonempty": 1,
+        "initial_role_propagated_symptom": 0,
+        "metrics_alternative_correct": 1,
+        "refs_visible": 1,
+        "support_refs_nonempty": 1
+      },
+      "alternative_role_truth_alignment": {
+        "denominator": 23,
+        "numerator": 10,
+        "value": 0.43478260869565216
+      },
+      "causal_role_oracle": "ROOT_IDENTITY_PLUS_NON_ROOT_HEURISTIC_ONLY",
+      "communication_feasibility": {
+        "call_count": 23,
+        "field_rates": {
+          "both_candidates_comparable": {
+            "denominator": 23,
+            "numerator": 2,
+            "value": 0.08695652173913043
+          },
+          "candidate_identity_present": {
+            "denominator": 23,
+            "numerator": 23,
+            "value": 1.0
+          },
+          "candidate_provenance_present": {
+            "denominator": 23,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "candidate_strength_present": {
+            "denominator": 23,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "gate_reason_present": {
+            "denominator": 23,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_rationale_present": {
+            "denominator": 23,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "source_evidence_for_alternative_present": {
+            "denominator": 23,
+            "numerator": 4,
+            "value": 0.17391304347826086
+          },
+          "source_evidence_for_initial_present": {
+            "denominator": 23,
+            "numerator": 15,
+            "value": 0.6521739130434783
+          }
+        }
+      },
+      "confidence_bins": {
+        "[0.00,0.50)": {
+          "denominator": 11,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "[0.50,0.75)": {
+          "denominator": 3,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "[0.75,1.01)": {
+          "denominator": 9,
+          "numerator": 1,
+          "value": 0.1111111111111111
+        }
+      },
+      "contradicting_ref_count": 31,
+      "inconclusive_despite_sufficient_source": 3,
+      "inconclusive_insufficient_source": 12,
+      "initial_role_heuristic_alignment": {
+        "denominator": 23,
+        "numerator": 2,
+        "value": 0.08695652173913043
+      },
+      "pairwise_calls": 23,
+      "preference_accuracy": {
+        "denominator": 23,
+        "numerator": 1,
+        "value": 0.043478260869565216
+      },
+      "preference_distribution": {
+        "ALTERNATIVE": 1,
+        "INCONCLUSIVE": 15,
+        "INITIAL": 7
+      },
+      "supporting_ref_count": 16
+    }
+  },
+  "trace_opportunity": {
+    "alternative_trace_visible": {
+      "denominator": 15,
+      "numerator": 2,
+      "value": 0.13333333333333333
+    },
+    "causal_sufficiency": {
+      "basis": "Current bounded trace projection is per-service latency/error summary without dependency edges or propagation roles.",
+      "caller_callee_available": false,
+      "error_propagation_available": false,
+      "latency_anomaly_available": true,
+      "root_symptom_roles_available": false
+    },
+    "genuine_causal_information": false,
+    "initial_alternative_trace_co_visible": 2,
+    "support_gate": false,
+    "truth_matching_alternative_count": 15,
+    "truth_trace_visible": {
+      "denominator": 15,
+      "numerator": 2,
+      "value": 0.13333333333333333
+    },
+    "wrong_initial_count": 16
+  }
+}
