@@ -2,76 +2,96 @@
 
 Development state: `TERMINAL`
 
-Verdict: `ADAPTIVE_V2_TUNE_GATE_NOT_PASSED`
+Verdict: `ADAPTIVE_V2_TUNE_GATE_NOT_PASSED_AFTER_REAL_ALGORITHM_ITERATIONS`
 
-Failure reason: none of the three bounded candidates passed the frozen TUNE
-gate.
+Failure reason: candidate-4 did not pass the frozen TUNE gate, and its observed
+failure mode did not authorize any single candidate-5 change under Work Package
+F Case A-D.
 
 Claim boundary: `CONSUMED_OBSS_DEVELOPMENT_RESULT / DEVELOPMENT_VISIBLE / NOT_EXTERNAL_VALIDATION / NOT_PRIMARY_INFERENCE`.
 
-## Current disposition
+## Preserved capacity and algorithm records
 
-Adaptive v2 is implemented and locally verified. Candidate-1 terminalized all
-60 scheduled TUNE
-cases without completing Initial Diagnosis. Fifty-nine cases retained terminal
-HTTP 429 failures and one retained a TLS transient after the single authorized
-transport retry. Candidate-2 kept the Agent, model, retry policy, pacing, and
-development gates unchanged; all 60 cases again failed before Initial Diagnosis,
-this time with terminal HTTP 429. The operator then confirmed that API credit
-had been exhausted and recharged it.
+Candidate-1 and candidate-2 remain fixed-denominator Provider-capacity records:
+both completed 0/60, with 59/60 and 60/60 terminal HTTP 429 failures
+respectively. They are not algorithm-quality estimates and were not rewritten.
+The operator then confirmed exhausted API credit and recharged it.
 
-Candidate-3 preserved the same Agent, model, retry policy, pacing, and gates
-after credit recovery. It completed 60/60 with zero Provider failures, proving
-that the capacity blocker had cleared. Its Root Service result was 49/60 and
-Pair was 25/60, with Damage 6 and Rescue 2. It therefore missed the unchanged
-Root, Pair, Damage, and Damage Rate gates. No candidate is selected.
+Candidate-3 completed 60/60 after credit recovery, proving that the capacity
+blocker had cleared. It returned Direct for all 60 records. The zero-Provider
+diagnosis found 49 Initial Root-correct and 11 Initial Root-wrong records; all
+10 records marked unstable still returned Direct. Offline Policy A would have
+escalated 3 records, while Policy B would have escalated 20. The production Gate
+was therefore frozen at Metrics margin `0.75` and risk-signal count `1` for
+candidate-4. The public aggregate-only diagnosis is in
+`docs/analysis/rcaeval-adaptive-v2-gate-diagnosis.json`.
 
-Candidates 1 and 2 are fixed-denominator Provider-capacity records, not Agent
-quality estimates. Candidate-3 is the only algorithm-quality-evaluable v2 TUNE
-result. It is consumed development evidence, not external validation.
+## Same-run candidate-4 result
 
-## TUNE_SET
+Candidate-4 used the second real algorithm-candidate slot and completed 59/60.
+The remaining terminal was an invalid schema result; no HTTP 429 or Provider
+failure occurred.
 
-The historical Strong Single baseline is Root Service 51/60 and Pair 29/60. It
-was reused and not rerun.
+| Metric | Candidate-4 |
+| --- | ---: |
+| Scheduled / terminalized / completed | 60 / 60 / 59 |
+| Initial Root / Pair | 51 / 27 |
+| Final Root / Pair | 51 / 27 |
+| Same-run Root Damage / Rescue / Net | 0 / 0 / 0 |
+| Same-run Pair Damage / Rescue / Net | 0 / 0 / 0 |
+| Direct / Logs / Traces / Both | 43 / 16 / 0 / 0 |
+| Escalation Precision / Recall | 8/16 / 8/8 |
+| Initial-correct escalated / Initial-wrong Direct | 8 / 0 |
+| Specialist hypotheses | 44 |
+| Fusion KEEP / OVERRIDE | 59 / 0 |
+| Deterministic indicator overrides | 0 |
+| Correct / Wrong Override | 0 / 0 |
+| Mean semantic operations | 1.25 |
+| Provider attempts / transport retries | 77 / 0 |
+| Known / conservative tokens | 515,817 / 515,817 |
+| Mean latency | 6,572.0 ms |
+| HTTP 429 | 0 |
+| Schema/privacy/schedule failures | 1 |
+| Gate | `TUNE_GATE_NOT_PASSED` |
 
-| Metric | Candidate-1 | Candidate-2 | Candidate-3 |
-| --- | ---: | ---: | ---: |
-| Role | initial candidate | capacity retry | post-credit-recovery TUNE |
-| Scheduled / terminalized | 60 / 60 | 60 / 60 | 60 / 60 |
-| Completed | 0 | 0 | 60 |
-| Algorithm-quality evaluable | no | no | yes |
-| Terminal Provider failures | 60 | 60 | 0 |
-| HTTP 429 / TLS transient | 59 / 1 | 60 / 0 | 0 / 0 |
-| Provider attempts / transport retries | 120 / 60 | 120 / 60 | 60 / 0 |
-| Root Service / Pair | unavailable | unavailable | 49 / 25 |
-| Damage / Rescue | unavailable | unavailable | 6 / 2 |
-| Direct / Trace-bearing routes | unavailable | unavailable | 60 / 0 |
-| Mean semantic operations, completed-only | unavailable | unavailable | 1.00 |
-| Correct / Wrong Override | unavailable | unavailable | 0 / 0 |
-| Known-token lower bound | 0 | 0 | 491,343 |
-| Conservative token upper bound | 3,840,000 | 3,840,000 | 491,343 |
-| Schema/privacy/schedule failures | 0 | 0 | 0 |
-| Gate | `PROVIDER_CAPACITY_BLOCKED` | `PROVIDER_CAPACITY_BLOCKED` | `TUNE_GATE_NOT_PASSED` |
+Candidate-4 met the completion, final Root, Direct, mean-operations, Trace, 429,
+and override bounds. It failed because final Pair was 27 < 29, Root Rescue 0
+was not strictly greater than Root Damage 0, Root net Rescue was 0 < 1, and one
+schema failure violated the zero-failure requirement.
 
-Candidate-3 met Completion, Direct Return, Mean Operations, Trace, Override, and
-schema/privacy/schedule requirements. It failed Root Service 49 < 51, Pair
-25 < 29, Damage 6 > Rescue 2, and Damage Rate 20.7% > 5%.
+Historical cross-run comparison remains labeled
+`CROSS_RUN_CONTEXTUAL_COMPARISON / MODEL_RUN_VARIABILITY_CONFOUNDED`; it is not
+the authoritative same-run Agent Damage/Rescue measure.
+
+## Candidate-5 protocol disposition
+
+Candidate-5 was not executed. Candidate-4 had Direct 43 and escalation Recall
+1.0, so Case A did not apply. Direct was not below 36, and Gate tightening could
+not create the missing correct Specialist alternative or Root rescue. Among the
+eight Initial-wrong escalations, Specialist produced no correct Root
+alternative, so Case C did not apply. Pair had zero same-run Damage and no
+deterministic indicator override, so Case D did not apply. The one schema
+failure is not an authorized Case A-D algorithm direction.
+
+Running candidate-5 would therefore have required an unsupported change,
+result-driven retry, or scope expansion. The candidate loop stops without a
+candidate-6.
 
 ## Protected downstream stages
 
-- No TUNE candidate has passed the frozen gate.
-- The single 120-case consumed-data regression is not eligible and has not run.
-- No Combined-180 result exists.
-- A fresh external holdout plan is not eligible and has not been created.
-- No fresh dataset was opened, downloaded, or executed.
+- No TUNE candidate passed the frozen gate.
+- The single 120-case consumed-data regression was not eligible and did not run.
+- No post-regression tuning or regression rerun occurred.
+- A fresh external holdout plan was not eligible and was not created.
+- No fresh dataset, RE2-TT data, or new external data was accessed.
+- No candidate is selected.
 
 All case identifiers, run identifiers, private paths, concrete evidence
 references, credentials, and raw Provider outputs remain private.
 
 ## Terminal disposition
 
-The bounded three-candidate loop is exhausted. Preserve all candidate terminals,
-sidecars, and public aggregates unchanged. Do not run the 120-case regression,
-prepare a fresh external holdout plan, modify the current candidate, or create a
-fourth candidate under this Goal.
+Preserve candidate-1 through candidate-4 terminals and sidecars unchanged. Mark
+PR #19 Ready for algorithm review. Do not run candidate-5 without a new protocol
+decision, create candidate-6, run regression, generate a fresh holdout plan, or
+make an external performance claim under this Goal.

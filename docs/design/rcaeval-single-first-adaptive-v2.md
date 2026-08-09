@@ -151,3 +151,20 @@ schema/privacy/schedule failures.
 No regression result may modify the selected candidate or trigger a second
 regression. A fresh external holdout plan is eligible only after the regression
 gate passes; this design neither accesses nor executes a fresh holdout.
+
+## Terminal development disposition
+
+Candidate-4 exercised the repaired Gate and finished with 43 Direct and 16 Logs
+routes, zero Trace-bearing routes, and mean semantic operations 1.25. It did not
+pass TUNE: one record had a schema failure, Final Pair was 27/60, and same-run
+Root Damage / Rescue / Net was 0 / 0 / 0 rather than the required strict Rescue
+gain.
+
+Candidate-5 was not executed because none of the bounded Work Package F
+conditions authorized a supported single change. Direct and escalation Recall
+were already in range; no correct Specialist Root alternative was suppressed
+by Fusion; Pair did not degrade through indicator override; and tightening Gate
+could not create the missing Root rescue. The schema failure was not an
+authorized algorithm direction. Candidate iteration therefore stops without a
+candidate-6, regression, or fresh holdout plan, with verdict
+`ADAPTIVE_V2_TUNE_GATE_NOT_PASSED_AFTER_REAL_ALGORITHM_ITERATIONS`.

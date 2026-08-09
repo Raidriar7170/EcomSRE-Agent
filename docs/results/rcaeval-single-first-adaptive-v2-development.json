@@ -1,8 +1,8 @@
 {
   "schema_version": "rcaeval-single-first-adaptive.development-public.v2",
   "development_state": "TERMINAL",
-  "verdict": "ADAPTIVE_V2_TUNE_GATE_NOT_PASSED",
-  "failure_reason": "NO_TUNE_CANDIDATE_PASSED",
+  "verdict": "ADAPTIVE_V2_TUNE_GATE_NOT_PASSED_AFTER_REAL_ALGORITHM_ITERATIONS",
+  "failure_reason": "NO_AUTHORIZED_CANDIDATE_5_CHANGE_AFTER_CANDIDATE_4_GATE_FAILURE",
   "classification": [
     "CONSUMED_OBSS_DEVELOPMENT_RESULT",
     "DEVELOPMENT_VISIBLE",
@@ -10,11 +10,41 @@
     "NOT_PRIMARY_INFERENCE"
   ],
   "candidate_loop": {
-    "limit": 3,
-    "attempted": 3,
+    "record_limit": 5,
+    "records_attempted": 4,
+    "capacity_records": 2,
+    "algorithm_candidate_limit": 3,
+    "algorithm_candidates_attempted": 2,
     "complete": true,
     "selected_candidate": null,
-    "remaining_candidates_started": true
+    "candidate_5_executed": false,
+    "candidate_5_disposition": "NO_AUTHORIZED_SINGLE_PRIMARY_CHANGE_UNDER_CASE_A_D"
+  },
+  "gate_feature_diagnosis": {
+    "classification": [
+      "POST_HOC_CONSUMED_TUNE_DIAGNOSTIC",
+      "NO_PROVIDER_CALLS",
+      "NOT_EXTERNAL_VALIDATION"
+    ],
+    "provider_calls": 0,
+    "initial_root_correct": 49,
+    "initial_root_wrong": 11,
+    "below_direct": 0,
+    "below_low": 0,
+    "metrics_rank_risk": 10,
+    "metrics_margin_risk": 13,
+    "evidence_weak": 0,
+    "logs_oppose": 0,
+    "trace_semantics": 0,
+    "initial_unstable": 10,
+    "initial_unstable_and_direct": 10,
+    "policy_a_simulated_escalations": 3,
+    "policy_b_simulated_escalations": 20,
+    "selected_gate_policy": {
+      "metrics_margin_threshold": 0.75,
+      "risk_signal_threshold": 1
+    },
+    "public_artifact": "docs/analysis/rcaeval-adaptive-v2-gate-diagnosis.json"
   },
   "historical_strong_single_tune_baseline": {
     "scheduled": 60,
@@ -135,6 +165,20 @@
       "transport_retries": 0,
       "root_service_correct": 49,
       "pair_correct": 25,
+      "initial_root_correct": 49,
+      "final_root_correct": 49,
+      "same_run_root_damage": 0,
+      "same_run_root_rescue": 0,
+      "same_run_root_net_rescue": 0,
+      "initial_pair_correct": 25,
+      "final_pair_correct": 25,
+      "same_run_pair_damage": 0,
+      "same_run_pair_rescue": 0,
+      "same_run_pair_net_rescue": 0,
+      "historical_cross_run_comparison_classification": [
+        "CROSS_RUN_CONTEXTUAL_COMPARISON",
+        "MODEL_RUN_VARIABILITY_CONFOUNDED"
+      ],
       "damage": 6,
       "damage_rate": {
         "numerator": 6,
@@ -173,15 +217,118 @@
       "failed_gate_requirements": [
         "ROOT_SERVICE_CORRECT_MIN_51",
         "PAIR_CORRECT_MIN_29",
-        "DAMAGE_NOT_GREATER_THAN_RESCUE",
-        "DAMAGE_RATE_MAX_0_05"
+        "SAME_RUN_ROOT_RESCUE_STRICTLY_GREATER_THAN_DAMAGE",
+        "SAME_RUN_ROOT_NET_RESCUE_MIN_1",
+        "DIRECT_RETURN_MAX_48"
       ],
-      "interpretation": "API credit recovery restored Provider completion. The fully completed candidate is algorithm-quality evaluable but missed the frozen Root, Pair, Damage, and Damage Rate gates."
+      "interpretation": "API credit recovery restored Provider completion. All cases returned Direct, so same-run Initial and Final were unchanged; the older Damage and Rescue aliases are historical cross-run context only. The candidate missed the frozen Root and Pair floors."
+    },
+    {
+      "candidate": "candidate-4",
+      "candidate_role": "SECOND_REAL_ALGORITHM_CANDIDATE_SELECTIVE_GATE",
+      "scheduled": 60,
+      "terminalized": 60,
+      "completed": 59,
+      "completion_coverage": {
+        "numerator": 59,
+        "denominator": 60,
+        "value": 0.9833333333333333
+      },
+      "algorithm_quality_evaluable": true,
+      "terminal_provider_failures": 0,
+      "http_429_terminal_failures": 0,
+      "provider_failure_code_distribution": {},
+      "provider_attempts": 77,
+      "transport_retries": 0,
+      "initial_root_correct": 51,
+      "final_root_correct": 51,
+      "same_run_root_damage": 0,
+      "same_run_root_rescue": 0,
+      "same_run_root_net_rescue": 0,
+      "same_run_root_damage_rate": {
+        "numerator": 0,
+        "denominator": 51,
+        "value": 0.0
+      },
+      "initial_pair_correct": 27,
+      "final_pair_correct": 27,
+      "same_run_pair_damage": 0,
+      "same_run_pair_rescue": 0,
+      "same_run_pair_net_rescue": 0,
+      "historical_cross_run_comparison": {
+        "classification": [
+          "CROSS_RUN_CONTEXTUAL_COMPARISON",
+          "MODEL_RUN_VARIABILITY_CONFOUNDED"
+        ],
+        "root_damage": 4,
+        "root_rescue": 4,
+        "pair_damage": 5,
+        "pair_rescue": 3
+      },
+      "direct_return": 43,
+      "route_distribution": {
+        "DIRECT_RETURN": 43,
+        "VERIFY_LOGS": 16,
+        "VERIFY_TRACES": 0,
+        "VERIFY_BOTH": 0
+      },
+      "trace_routes": 0,
+      "escalation_precision": {
+        "numerator": 8,
+        "denominator": 16,
+        "value": 0.5
+      },
+      "escalation_recall": {
+        "numerator": 8,
+        "denominator": 8,
+        "value": 1.0
+      },
+      "initial_correct_escalated": 8,
+      "initial_wrong_direct": 0,
+      "specialist_hypothesis_count": 44,
+      "correct_specialist_alternatives_for_initial_wrong": 0,
+      "fusion_action_distribution": {
+        "KEEP_INITIAL": 59,
+        "OVERRIDE_INITIAL": 0
+      },
+      "indicator_action_distribution": {
+        "KEEP_STRONG_SINGLE_INDICATOR": 52,
+        "KEEP_WITH_UNCERTAINTY": 7,
+        "DETERMINISTIC_OVERRIDE_STRONG_MARGIN": 0
+      },
+      "correct_overrides": 0,
+      "wrong_overrides": 0,
+      "mean_semantic_operations": 1.25,
+      "mean_semantic_operations_basis": "FIXED_SCHEDULED_DENOMINATOR",
+      "known_token_lower_bound": 515817,
+      "conservative_token_upper_bound": 515817,
+      "mean_latency_ms": 6571.995636793629,
+      "mean_latency_ms_completed_only": 6473.1982485864755,
+      "schema_privacy_schedule_failures": 1,
+      "gate_passed": false,
+      "gate_disposition": "TUNE_GATE_NOT_PASSED",
+      "failed_gate_requirements": [
+        "PAIR_CORRECT_MIN_29",
+        "SAME_RUN_ROOT_RESCUE_STRICTLY_GREATER_THAN_DAMAGE",
+        "SAME_RUN_ROOT_NET_RESCUE_MIN_1",
+        "PRIVACY_SCHEMA_SCHEDULE_FAILURE_MAX_0"
+      ],
+      "interpretation": "Selective routing met its Direct, cost, Trace, completion, Root, and override bounds, but one schema failure, Final Pair 27, and zero same-run Root rescue prevented TUNE passage."
     }
   ],
+  "candidate_5": {
+    "executed": false,
+    "single_primary_change": null,
+    "reason": "No Work Package F Case A-D condition authorized a supported single change. Gate routing was in range, no correct Specialist alternative was suppressed by Fusion, Pair did not degrade through indicator override, and Gate tightening could not create Root rescue."
+  },
+  "selected_candidate": null,
   "regression": {
     "eligible": false,
     "executed": false,
+    "scheduled": 0,
+    "terminalized": 0,
+    "reruns": 0,
+    "post_regression_tuning": false,
     "reason": "NO_TUNE_CANDIDATE_PASSED"
   },
   "combined_180": {
@@ -193,5 +340,5 @@
     "dataset_accessed": false,
     "provider_run_executed": false
   },
-  "claim_boundary": "Candidates 1 and 2 are retained capacity-blocked executions and are not algorithm-quality estimates. Candidate 3 is a fully completed consumed-data development result that did not pass the frozen TUNE gate. None is external validation."
+  "claim_boundary": "Candidates 1 and 2 are retained capacity-blocked executions and are not algorithm-quality estimates. Candidates 3 and 4 are consumed-data algorithm iterations; neither passed the frozen TUNE gate. Candidate 5, Regression, and fresh holdout execution did not run. None is external validation."
 }
