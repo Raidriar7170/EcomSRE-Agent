@@ -11,10 +11,10 @@
   ],
   "candidate_loop": {
     "limit": 3,
-    "attempted": 1,
+    "attempted": 2,
     "complete": false,
     "selected_candidate": null,
-    "remaining_candidates_started": false
+    "remaining_candidates_started": true
   },
   "historical_strong_single_tune_baseline": {
     "scheduled": 60,
@@ -63,6 +63,47 @@
       "gate_passed": false,
       "gate_disposition": "PROVIDER_CAPACITY_BLOCKED",
       "interpretation": "The candidate never completed Initial Diagnosis. This fixed-denominator record preserves Provider failures but does not provide an algorithm-quality estimate."
+    },
+    {
+      "candidate": "candidate-2",
+      "candidate_role": "UNCHANGED_AGENT_CAPACITY_RETRY",
+      "scheduled": 60,
+      "terminalized": 60,
+      "completed": 0,
+      "completion_coverage": {
+        "numerator": 0,
+        "denominator": 60,
+        "value": 0.0
+      },
+      "algorithm_quality_evaluable": false,
+      "completed_only_root_service_accuracy": null,
+      "completed_only_pair_accuracy": null,
+      "terminal_provider_failures": 60,
+      "http_429_terminal_failures": 60,
+      "tls_transient_terminal_failures": 0,
+      "provider_failure_code_distribution": {
+        "HTTP_429": 60
+      },
+      "provider_attempts": 120,
+      "transport_retries": 60,
+      "root_service_correct": 0,
+      "pair_correct": 0,
+      "damage": 29,
+      "rescue": 0,
+      "direct_return": 0,
+      "mean_semantic_operations": 0.0,
+      "mean_semantic_operations_basis": "FIXED_SCHEDULED_DENOMINATOR",
+      "mean_semantic_operations_completed_only": null,
+      "trace_routes": 0,
+      "correct_overrides": 0,
+      "wrong_overrides": 0,
+      "known_token_lower_bound": 0,
+      "conservative_token_upper_bound": 3840000,
+      "mean_latency_ms": 10011.923006922007,
+      "schema_privacy_schedule_failures": 0,
+      "gate_passed": false,
+      "gate_disposition": "PROVIDER_CAPACITY_BLOCKED",
+      "interpretation": "The unchanged Agent capacity retry also never completed Initial Diagnosis. It confirms continued Provider unavailability, not an algorithm-quality outcome."
     }
   ],
   "regression": {
