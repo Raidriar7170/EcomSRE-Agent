@@ -3,28 +3,23 @@
 from __future__ import annotations
 
 from collections import Counter
-from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
 import statistics
 from typing import Mapping
 
-from ecomsre.evidence.hashes import canonical_json_bytes, sha256_file
-from ecomsre_rca100.entity import EntityCatalog, load_entity_catalog
-from ecomsre_rca100.evaluator import (
-    RCA100GroundTruth,
-    evaluate_terminals,
-    load_answer_key,
-)
+from ecomsre.evidence.hashes import canonical_json_bytes
+from ecomsre_rca100.evaluation_integrity import load_frozen_evaluation_inputs
+from ecomsre_rca100.evaluator import evaluate_terminals
 from ecomsre_rca100.lifecycle import (
     PrivateRoots,
-    RCA100Schedule,
     advance_state,
     create_once_json,
     current_state,
     load_strict_json,
 )
+from ecomsre_rca100.prompt import output_schema_sha256, prompt_sha256
 from ecomsre_rca100.public_projection import scan_public_artifacts
 from ecomsre_rca100.runner import RCA100TerminalRecord
 
@@ -34,8 +29,10 @@ SOURCE_REPOSITORY = (
 )
 SOURCE_COMMIT = "fd92cae17e6e14fa3ed0f3963c31838151fbdaa7"
 INPUT_TREE_SHA256 = "8ab512ce9ad041ed1ffd89226c2df77d3bb741fed08990854f481794c98585bb"
+FRESH_INPUT_TREE_SHA256 = "aca130e350330000e0d9bc575606e3a5378178b6d7e0c2afb5cf13910596fea9"
 SCHEDULE_SHA256 = "00604fa3157edde3597a7ef6758637be06a099051181d921cc35a7f305c4459e"
 MODEL = "gpt-5.4-mini-2026-03-17"
+PROTOCOL_ID = "rca100-metrics-arbitration-v1"
 _PROVIDER_CREDENTIALS = (
     "ECOMSRE_LLM_API_KEY",
     "ECOMSRE_LLM_BASE_URL",
@@ -48,40 +45,6 @@ _PROVIDER_CREDENTIALS = (
 
 def _repository_root() -> Path:
     return Path(__file__).resolve().parents[2]
-
-
-def _load_inputs(
-    roots: PrivateRoots,
-) -> tuple[
-    RCA100Schedule,
-    dict[str, RCA100TerminalRecord],
-    dict[str, RCA100GroundTruth],
-    dict[str, EntityCatalog],
-]:
-    schedule = RCA100Schedule.model_validate_json(
-        (roots.schedule / "schedule.json").read_text(encoding="utf-8")
-    )
-    terminals = {
-        terminal.opaque_case_id: terminal
-        for path in sorted((roots.output / "terminals").glob("*.json"))
-        if (
-            terminal := RCA100TerminalRecord.model_validate_json(
-                path.read_text(encoding="utf-8")
-            )
-        )
-    }
-    truths = load_answer_key(roots.evaluator_source / "RCA100" / "answer_key")
-    catalogs = {
-        record.source_task_id: load_entity_catalog(
-            roots.input_source
-            / "RCA100"
-            / "cases"
-            / record.source_task_id
-            / "topology.json"
-        )
-        for record in schedule.records
-    }
-    return schedule, terminals, truths, catalogs
 
 
 def _write_once_text(path: Path, text: str) -> None:
@@ -159,6 +122,7 @@ def _public_report(
             "fixed_denominator": 103,
             "agent_facing_files": 721,
             "input_tree_sha256": INPUT_TREE_SHA256,
+            "fresh_content_tree_sha256": FRESH_INPUT_TREE_SHA256,
         },
         "protocol": {
             "implementation_commit": protocol_lock["implementation_commit"],
@@ -174,6 +138,21 @@ def _public_report(
             "agent_visible_modalities": ["task", "metrics", "logs", "traces"],
             "excluded_modalities": ["events", "full_alerts"],
             "topology_use": "DETERMINISTIC_CANONICALIZATION_ONLY",
+            "entity_normalization": "UNICODE_NFC_TRIM_CASEFOLD_COLLAPSE_WHITESPACE_EXACT",
+            "metrics_projection": {
+                "formula": "ABS_POST_MINUS_PRE_OVER_MAX_ABS_PRE_EPSILON",
+                "minimum_pre_samples": 3,
+                "minimum_post_samples": 3,
+                "entity_aggregation": "MAX_VALID_SERIES_F0",
+                "top_k": 6,
+            },
+            "budget": {
+                "timeout_seconds": 30,
+                "max_completion_tokens": 2048,
+                "max_provider_attempts": 206,
+                "max_transport_retries": 103,
+                "conservative_token_upper_bound": 6592000,
+            },
         },
         "adapter_audit": {
             "tasks_parsed": audit["tasks_parsed"],
@@ -201,8 +180,10 @@ def _public_report(
         },
         "execution": dict(execution),
         "primary": aggregate["root"],
+        "primary_inference_eligible": aggregate["primary_inference_eligible"],
         "secondary_pair": aggregate["pair"],
         "m3": aggregate["m3"],
+        "descriptive_subgroups": aggregate["descriptive_subgroups"],
         "official_style": aggregate["official_style"],
         "claim_boundary": {
             "superiority_rule": "POINT_GT_0_AND_CI_LOWER_GT_0",
@@ -241,10 +222,12 @@ was used only for deterministic entity identity.
 
 - Initial Root Entity correct: {primary['initial_correct']} / 103
 - Final Root Entity correct: {primary['final_correct']} / 103
+- Primary-inference eligible: {report['primary_inference_eligible']} / 103
 - Point difference: {float(primary['point_difference']):.6f}
 - 95% paired bootstrap CI: [{float(primary['ci_lower']):.6f}, {float(primary['ci_upper']):.6f}]
 - Exact McNemar p-value: {float(primary['mcnemar_exact_p_value']):.6g}
 - Root Damage / Rescue / Net: {primary['damage']} / {primary['rescue']} / {primary['net_rescue']}
+- Root Damage Rate: {float(primary['damage_rate']):.6f} ({primary['damage']} / {primary['damage_rate_denominator']})
 - KEEP / OVERRIDE: {m3['keep']} / {m3['override']}
 - Correct / Wrong Override: {m3['correct_override']} / {m3['wrong_override']}
 
@@ -261,6 +244,14 @@ was used only for deterministic entity identity.
 - Conservative token upper bound: {execution['conservative_token_upper_bound']}
 - Mean / median latency: {float(execution['mean_latency_seconds']):.3f}s / {float(execution['median_latency_seconds']):.3f}s
 - Official composite: `OFFICIAL_COMPOSITE_NOT_AVAILABLE`
+
+## Descriptive subgroups
+
+The canonical JSON includes frozen aggregate-only subgroup records for fault
+category, fault type, root entity domain/type, alert entity type, M3 action and
+applicability, Initial rank, normalized-margin bins, and Metrics projection
+availability. Every subgroup record carries its denominator. These descriptive
+views do not alter the fixed 103-case primary endpoint.
 
 ## Claim boundary
 
@@ -290,7 +281,9 @@ Single 调用，随后执行未修改的确定性 M3；没有 Specialist、Fusio
 
 - Initial Root 正确：{primary['initial_correct']} / 103
 - Final Root 正确：{primary['final_correct']} / 103
+- Primary inference eligible：{report['primary_inference_eligible']} / 103
 - Root Damage / Rescue / Net：{primary['damage']} / {primary['rescue']} / {primary['net_rescue']}
+- Root Damage Rate：{float(primary['damage_rate']):.6f}（{primary['damage']} / {primary['damage_rate_denominator']}）
 - 95% 配对区间：[{float(primary['ci_lower']):.6f}, {float(primary['ci_upper']):.6f}]
 - McNemar exact p：{float(primary['mcnemar_exact_p_value']):.6g}
 - KEEP / OVERRIDE：{m3['keep']} / {m3['override']}
@@ -305,6 +298,65 @@ Provider credentials 已移除。公开材料仅含 aggregate，不含任何逐�
 """
 
 
+def _current_disposition(report: Mapping[str, object]) -> dict[str, object]:
+    return {
+        "schema_version": "rca100.public-disposition.v1",
+        "status": report["status"],
+        "classification": report["classification"],
+        "draft_pr": "REVIEW_REQUIRED",
+        "merge": "FORBIDDEN_BY_GOAL",
+        "release_tag": "FORBIDDEN_BY_GOAL",
+        "rerun": "FORBIDDEN",
+    }
+
+
+def _source_lock_public() -> dict[str, object]:
+    return {
+        "schema_version": "rca100.source-lock-public.v1",
+        "repository": SOURCE_REPOSITORY,
+        "commit": SOURCE_COMMIT,
+        "license": "CC BY-NC-SA 4.0",
+        "fixed_denominator": 103,
+        "agent_facing_files": 721,
+        "input_tree_sha256": INPUT_TREE_SHA256,
+        "fresh_content_tree_sha256": FRESH_INPUT_TREE_SHA256,
+    }
+
+
+def _execution_integrity_public(
+    *,
+    protocol_lock: Mapping[str, object],
+    terminal_lock: Mapping[str, object],
+    answer_lock: Mapping[str, object],
+) -> dict[str, object]:
+    return {
+        "schema_version": "rca100.execution-integrity-public.v1",
+        "implementation_commit": protocol_lock["implementation_commit"],
+        "schedule_sha256": SCHEDULE_SHA256,
+        "terminal_tree_sha256": terminal_lock["terminal_tree_sha256"],
+        "attempt_tree_sha256": terminal_lock["attempt_tree_sha256"],
+        "provider_attempt_tree_sha256": terminal_lock[
+            "provider_attempt_tree_sha256"
+        ],
+        "answer_tree_sha256": answer_lock["answer_key_tree_sha256"],
+        "terminal_records": 103,
+        "run_attempts": 103,
+        "semantic_retries": 0,
+        "case_replacements": 0,
+    }
+
+
+HUMAN_REVIEW_CHECKLIST = """# RCA100 Publication Review Checklist
+
+- Confirm the classification exactly matches the frozen paired interval.
+- Confirm all denominators remain 103 and every failure remains included.
+- Confirm public artifacts contain aggregate values only.
+- Preserve the contamination caveat and non-release claim boundary.
+- Do not rerun the benchmark or change M3 based on this result.
+- Merge, release, and tag remain outside this Goal.
+"""
+
+
 def main() -> None:
     roots = PrivateRoots.from_environment(os.environ)
     roots.validate(repository_root=_repository_root(), create=False)
@@ -312,12 +364,29 @@ def main() -> None:
         raise ValueError("report build requires ANSWER_KEY_ACQUIRED")
     if any(name in os.environ for name in _PROVIDER_CREDENTIALS):
         raise ValueError("Provider credentials remained during unblinding")
-    schedule, terminals, truths, catalogs = _load_inputs(roots)
+    inputs = load_frozen_evaluation_inputs(
+        roots=roots,
+        repository_root=_repository_root(),
+        protocol_id=PROTOCOL_ID,
+        expected_source_commit=SOURCE_COMMIT,
+        expected_input_tree_sha256=INPUT_TREE_SHA256,
+        expected_fresh_input_tree_sha256=FRESH_INPUT_TREE_SHA256,
+        expected_input_file_count=721,
+        expected_schedule_sha256=SCHEDULE_SHA256,
+        expected_model=MODEL,
+        expected_prompt_sha256=prompt_sha256(),
+        expected_output_schema_sha256=output_schema_sha256(),
+    )
+    schedule = inputs.schedule
+    terminals = inputs.terminals
+    truths = inputs.truths
+    catalogs = inputs.catalogs
     aggregate, scores = evaluate_terminals(
         schedule=schedule,
         terminals=terminals,
         truths=truths,
         catalogs=catalogs,
+        alert_entity_types=inputs.alert_entity_types,
     )
     aggregate_sha = create_once_json(
         roots.evaluator / "results" / "aggregate.json", aggregate
@@ -337,15 +406,9 @@ def main() -> None:
     audit = load_strict_json(
         roots.control / "audit" / "no-label-schema-audit.json"
     )
-    terminal_lock = load_strict_json(
-        roots.control / "locks" / "terminal-records-lock.json"
-    )
-    answer_lock = load_strict_json(
-        roots.evaluator / "locks" / "answer-key-lock.json"
-    )
-    protocol_lock = load_strict_json(
-        roots.control / "locks" / "protocol-freeze.json"
-    )
+    terminal_lock = inputs.terminal_lock
+    answer_lock = inputs.answer_lock
+    protocol_lock = inputs.protocol_lock
     if not all(
         isinstance(item, Mapping)
         for item in (audit, terminal_lock, answer_lock, protocol_lock)
@@ -369,57 +432,23 @@ def main() -> None:
     _write_once_text(brief, _human_brief(report))
     create_once_json(
         review / "current-disposition.json",
-        {
-            "schema_version": "rca100.public-disposition.v1",
-            "status": report["status"],
-            "classification": report["classification"],
-            "draft_pr": "REVIEW_REQUIRED",
-            "merge": "FORBIDDEN_BY_GOAL",
-            "release_tag": "FORBIDDEN_BY_GOAL",
-            "rerun": "FORBIDDEN",
-        },
+        _current_disposition(report),
     )
     create_once_json(
         review / "source-lock-public.json",
-        {
-            "schema_version": "rca100.source-lock-public.v1",
-            "repository": SOURCE_REPOSITORY,
-            "commit": SOURCE_COMMIT,
-            "license": "CC BY-NC-SA 4.0",
-            "fixed_denominator": 103,
-            "agent_facing_files": 721,
-            "input_tree_sha256": INPUT_TREE_SHA256,
-        },
+        _source_lock_public(),
     )
     create_once_json(
         review / "execution-integrity.json",
-        {
-            "schema_version": "rca100.execution-integrity-public.v1",
-            "implementation_commit": protocol_lock["implementation_commit"],  # type: ignore[index]
-            "schedule_sha256": SCHEDULE_SHA256,
-            "terminal_tree_sha256": terminal_lock["terminal_tree_sha256"],  # type: ignore[index]
-            "attempt_tree_sha256": terminal_lock["attempt_tree_sha256"],  # type: ignore[index]
-            "provider_attempt_tree_sha256": terminal_lock[
-                "provider_attempt_tree_sha256"
-            ],  # type: ignore[index]
-            "answer_tree_sha256": answer_lock["answer_key_tree_sha256"],  # type: ignore[index]
-            "terminal_records": 103,
-            "run_attempts": 103,
-            "semantic_retries": 0,
-            "case_replacements": 0,
-        },
+        _execution_integrity_public(
+            protocol_lock=protocol_lock,  # type: ignore[arg-type]
+            terminal_lock=terminal_lock,  # type: ignore[arg-type]
+            answer_lock=answer_lock,  # type: ignore[arg-type]
+        ),
     )
     _write_once_text(
         review / "human-review-checklist.md",
-        """# RCA100 Publication Review Checklist
-
-- Confirm the classification exactly matches the frozen paired interval.
-- Confirm all denominators remain 103 and every failure remains included.
-- Confirm public artifacts contain aggregate values only.
-- Preserve the contamination caveat and non-release claim boundary.
-- Do not rerun the benchmark or change M3 based on this result.
-- Merge, release, and tag remain outside this Goal.
-""",
+        HUMAN_REVIEW_CHECKLIST,
     )
     public_paths = (
         final_json,
@@ -438,24 +467,11 @@ def main() -> None:
         terminals=terminals,
         truths=truths,
         catalogs=catalogs,
+        alert_entity_types=inputs.alert_entity_types,
     )
     if canonical_json_bytes(recomputed) != canonical_json_bytes(aggregate):
         raise ValueError("canonical report recomputation differs")
-    report_sha = sha256_file(final_json)
-    advance_state(
-        roots.control,
-        "FINAL_REPORT_FROZEN",
-        bindings={
-            "final_report_sha256": report_sha,
-            "classification": report["classification"],
-            "canonical_verification": "PASS",
-            "public_leakage_scan": "PASS",
-            "frozen_at_utc": datetime.now(timezone.utc).isoformat().replace(
-                "+00:00", "Z"
-            ),
-        },
-    )
-    print(json.dumps({"final_report_sha256": report_sha, **report}, indent=2))
+    print(json.dumps({"report_built_state": "UNBLINDED", **report}, indent=2))
 
 
 if __name__ == "__main__":

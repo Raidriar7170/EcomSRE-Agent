@@ -25,3 +25,6 @@ payloads, terminals, evaluator records, and labels remain Git-external. No
 dataset file or case-level record is committed. The intended use is narrow:
 independent evidence about the frozen deterministic M3 rule, not a release,
 deployment, equivalence, non-inferiority, or general autonomous-agent claim.
+Aggregate-only descriptive subgroup summaries may name benchmark fault classes
+and entity types, but every record contains a denominator and no case identity,
+prediction, answer, evidence, or reasoning.

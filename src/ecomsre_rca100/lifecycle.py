@@ -252,6 +252,22 @@ def tree_sha256(root: Path, pattern: str = "**/*") -> tuple[str, int]:
     return hashlib.sha256(b"".join(records)).hexdigest(), count
 
 
+def verify_tree_binding(
+    root: Path,
+    *,
+    expected_sha256: str,
+    expected_file_count: int,
+    label: str,
+) -> tuple[str, int]:
+    observed_sha256, observed_file_count = tree_sha256(root)
+    if (
+        observed_sha256 != expected_sha256
+        or observed_file_count != expected_file_count
+    ):
+        raise ValueError(f"BLOCKED_PROTOCOL_DRIFT: {label} tree differs")
+    return observed_sha256, observed_file_count
+
+
 __all__ = [
     "PrivateRoots",
     "RCA100Schedule",
@@ -264,4 +280,5 @@ __all__ = [
     "load_strict_json",
     "schedule_sha256",
     "tree_sha256",
+    "verify_tree_binding",
 ]

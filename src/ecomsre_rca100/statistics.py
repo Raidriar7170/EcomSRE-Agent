@@ -23,6 +23,8 @@ class RCA100PairedInference(RCA100Model):
     initial_correct: StrictInt = Field(ge=0)
     final_correct: StrictInt = Field(ge=0)
     damage: StrictInt = Field(ge=0)
+    damage_rate_denominator: StrictInt = Field(ge=0)
+    damage_rate: StrictFloat = Field(ge=0.0, le=1.0)
     rescue: StrictInt = Field(ge=0)
     net_rescue: int
     point_difference: StrictFloat
@@ -80,6 +82,8 @@ def paired_inference(
         initial_correct=sum(initial),
         final_correct=sum(final),
         damage=damage,
+        damage_rate_denominator=sum(initial),
+        damage_rate=(damage / sum(initial)) if any(initial) else 0.0,
         rescue=rescue,
         net_rescue=rescue - damage,
         point_difference=point,

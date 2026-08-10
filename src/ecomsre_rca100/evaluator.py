@@ -45,6 +45,13 @@ class RCA100CaseScore(RCA100Model):
     final_pair_correct: bool
     m3_action: str | None = None
     metrics_projection_status: str | None = None
+    fault_category: str
+    fault_type_group: str
+    root_entity_domain_type: str
+    alert_entity_type: str
+    initial_rank_group: str
+    margin_bin: str
+    m3_applicability: str
 
 
 def _strings(value: object) -> tuple[str, ...]:
@@ -134,14 +141,112 @@ def fault_correct(fault_type: str | None, truth: RCA100GroundTruth) -> bool:
     return value in {normalize_entity_name(item) for item in truth.fault_types}
 
 
+def _fault_category(canonical_case_id: str) -> str:
+    prefix = canonical_case_id.split("-", 1)[0].strip()
+    return prefix or "UNAVAILABLE"
+
+
+def _fault_type_group(truth: RCA100GroundTruth) -> str:
+    values = sorted({normalize_entity_name(item) for item in truth.fault_types})
+    return " | ".join(values) if values else "UNAVAILABLE"
+
+
+def _root_entity_domain_type(
+    truth: RCA100GroundTruth,
+    catalog: EntityCatalog,
+) -> str:
+    truth_ids = set(truth.target_entity_ids)
+    truth_names = {
+        normalize_entity_name(item) for item in truth.target_entity_names
+    }
+    values = {
+        f"{entity.domain}/{entity.type}"
+        for entity in catalog.by_ref.values()
+        if entity.entity_id in truth_ids or entity.normalized_name in truth_names
+    }
+    return " | ".join(sorted(values)) if values else "UNRESOLVED"
+
+
+def _initial_rank_group(terminal: RCA100TerminalRecord) -> str:
+    if terminal.initial_metrics_rank_or_none is None:
+        return "NONE"
+    return str(terminal.initial_metrics_rank_or_none)
+
+
+def _margin_bin(terminal: RCA100TerminalRecord) -> str:
+    margin = terminal.normalized_margin
+    if margin is None:
+        return "NONE"
+    if margin < 0.25:
+        return "[0.00,0.25)"
+    if margin < 0.5:
+        return "[0.25,0.50)"
+    return "[0.50,+inf)"
+
+
+def _subgroup_records(
+    scores: tuple[RCA100CaseScore, ...],
+    attribute: str,
+) -> list[dict[str, object]]:
+    groups: dict[str, list[RCA100CaseScore]] = {}
+    for score in scores:
+        key = str(getattr(score, attribute))
+        groups.setdefault(key, []).append(score)
+    records: list[dict[str, object]] = []
+    for group, values in sorted(groups.items()):
+        root_damage = sum(
+            item.initial_root_correct and not item.final_root_correct
+            for item in values
+        )
+        root_rescue = sum(
+            not item.initial_root_correct and item.final_root_correct
+            for item in values
+        )
+        pair_damage = sum(
+            item.initial_pair_correct and not item.final_pair_correct
+            for item in values
+        )
+        pair_rescue = sum(
+            not item.initial_pair_correct and item.final_pair_correct
+            for item in values
+        )
+        records.append(
+            {
+                "group": group,
+                "denominator": len(values),
+                "initial_root_correct": sum(
+                    item.initial_root_correct for item in values
+                ),
+                "final_root_correct": sum(item.final_root_correct for item in values),
+                "root_damage": root_damage,
+                "root_rescue": root_rescue,
+                "root_net_rescue": root_rescue - root_damage,
+                "initial_pair_correct": sum(
+                    item.initial_pair_correct for item in values
+                ),
+                "final_pair_correct": sum(item.final_pair_correct for item in values),
+                "pair_damage": pair_damage,
+                "pair_rescue": pair_rescue,
+                "pair_net_rescue": pair_rescue - pair_damage,
+            }
+        )
+    return records
+
+
 def evaluate_terminals(
     *,
     schedule: RCA100Schedule,
     terminals: Mapping[str, RCA100TerminalRecord],
     truths: Mapping[str, RCA100GroundTruth],
     catalogs: Mapping[str, EntityCatalog],
+    alert_entity_types: Mapping[str, str],
 ) -> tuple[dict[str, object], tuple[RCA100CaseScore, ...]]:
-    if len(schedule.records) != 103 or len(terminals) != 103 or len(truths) != 103:
+    if (
+        len(schedule.records) != 103
+        or len(terminals) != 103
+        or len(truths) != 103
+        or len(alert_entity_types) != 103
+    ):
         raise ValueError("RCA100 evaluator requires the fixed 103-case denominator")
     scores: list[RCA100CaseScore] = []
     for record in schedule.records:
@@ -166,6 +271,17 @@ def evaluate_terminals(
                     None if terminal.m3_action is None else terminal.m3_action.value
                 ),
                 metrics_projection_status=terminal.metrics_projection_status,
+                fault_category=_fault_category(truth.canonical_case_id),
+                fault_type_group=_fault_type_group(truth),
+                root_entity_domain_type=_root_entity_domain_type(truth, catalog),
+                alert_entity_type=alert_entity_types[record.source_task_id],
+                initial_rank_group=_initial_rank_group(terminal),
+                margin_bin=_margin_bin(terminal),
+                m3_applicability=(
+                    "APPLICABLE"
+                    if terminal.m3_action is not None
+                    else "NOT_APPLICABLE_TERMINAL_FAILURE"
+                ),
             )
         )
     initial_root_vector = tuple(item.initial_root_correct for item in scores)
@@ -190,9 +306,11 @@ def evaluate_terminals(
         item.m3_action == "OVERRIDE_METRICS_TOP1" and not item.final_root_correct
         for item in scores
     )
+    score_tuple = tuple(scores)
     aggregate: dict[str, object] = {
         "schema_version": "rca100.evaluation-aggregate.v1",
         "fixed_denominator": 103,
+        "primary_inference_eligible": 103,
         "root": root_inference.model_dump(mode="json"),
         "pair": {
             "initial_correct": sum(initial_pair_vector),
@@ -225,8 +343,27 @@ def evaluate_terminals(
             "composite": None,
             "status": "OFFICIAL_COMPOSITE_NOT_AVAILABLE",
         },
+        "descriptive_subgroups": {
+            "fault_category": _subgroup_records(score_tuple, "fault_category"),
+            "fault_type": _subgroup_records(score_tuple, "fault_type_group"),
+            "root_entity_domain_type": _subgroup_records(
+                score_tuple, "root_entity_domain_type"
+            ),
+            "alert_entity_type": _subgroup_records(
+                score_tuple, "alert_entity_type"
+            ),
+            "m3_action": _subgroup_records(score_tuple, "m3_action"),
+            "m3_applicability": _subgroup_records(
+                score_tuple, "m3_applicability"
+            ),
+            "initial_rank": _subgroup_records(score_tuple, "initial_rank_group"),
+            "margin_bin": _subgroup_records(score_tuple, "margin_bin"),
+            "metrics_projection_status": _subgroup_records(
+                score_tuple, "metrics_projection_status"
+            ),
+        },
     }
-    return aggregate, tuple(scores)
+    return aggregate, score_tuple
 
 
 def load_answer_key(answer_root: Path) -> dict[str, RCA100GroundTruth]:

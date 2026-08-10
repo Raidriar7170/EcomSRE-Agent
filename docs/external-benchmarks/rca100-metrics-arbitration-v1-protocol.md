@@ -45,6 +45,15 @@ valid typed response with known usage in one attempt and no HTTP 429. Every run
 attempt, Provider attempt, diagnosis, M3 decision, Final diagnosis, and terminal
 is create-once and Git-external.
 
+Before that capacity request, a separate synthetic RCA100-shaped non-case is
+materialized under the private control root and executes the full Task →
+projections → mock Strong Single → M3 → terminal path. The label-blind 721-file
+case tree is freshly SHA-256 verified at freeze and preflight with the frozen
+`SORTED_RELATIVE_PATH_NUL_SHA256_NEWLINE_V1` algorithm and digest
+`aca130e350330000e0d9bc575606e3a5378178b6d7e0c2afb5cf13910596fea9`;
+checking only the acquisition lock declaration is insufficient. The original
+acquisition provenance digest `8ab512...` remains separately preserved.
+
 ## Isolation and scoring
 
 Case labels are not materialized in the runtime source and are acquired in a
@@ -63,7 +72,22 @@ are descriptive secondary results. The official Process component and
 composite are `OFFICIAL_COMPOSITE_NOT_AVAILABLE` because no label-blind,
 pre-execution implementation of the checkpoint scorer was available.
 
+Root Damage Rate is Damage divided by the number of Initial-correct cases, with
+zero defined when that denominator is zero. Descriptive subgroup records are
+frozen for fault category, exact normalized fault type, root entity domain/type,
+alert entity type, M3 action, M3 applicability, exact Initial rank, Metrics
+availability, and normalized-margin bins `NONE`, `[0.00,0.25)`, `[0.25,0.50)`,
+and `[0.50,+inf)`. Every subgroup record carries its denominator and cannot
+alter the primary inference.
+
+After terminal and answer-key locks exist, both report construction and final
+verification freshly recompute the input, terminal, run-attempt,
+Provider-sidecar, and answer-key tree hashes. Final verification independently
+recomputes case scores, paired statistics, aggregate sections, execution
+integrity, and public-report content before create-once advancement to
+`FINAL_REPORT_FROZEN`.
+
 Only aggregate public artifacts are allowed. They exclude any per-case
-identifier, prediction, answer, entity, fault phrase, reasoning, raw evidence,
-private path, credential, or Provider endpoint. This one-shot result must be
-reported whether it supports, weakly suggests, or does not support M3.
+identifier, prediction, answer, entity, case-linked fault phrase, reasoning, raw
+evidence, private path, credential, or Provider endpoint. This one-shot result
+must be reported whether it supports, weakly suggests, or does not support M3.

@@ -54,6 +54,7 @@ def scan_public_artifacts(paths: Iterable[Path]) -> tuple[str, ...]:
 
 def scan_preexecution_runtime(repository_root: Path) -> tuple[str, ...]:
     allowed = {
+        "src/ecomsre_rca100/evaluation_integrity.py",
         "src/ecomsre_rca100/evaluator.py",
         "src/ecomsre_rca100/public_projection.py",
         "tests/benchmarks/rca100/test_evaluator.py",
@@ -82,14 +83,26 @@ def scan_preexecution_runtime(repository_root: Path) -> tuple[str, ...]:
 def verify_runtime_evaluator_import_separation(repository_root: Path) -> None:
     package = repository_root / "src" / "ecomsre_rca100"
     for path in package.glob("*.py"):
-        if path.name in {"evaluator.py", "public_projection.py"}:
+        if path.name in {
+            "evaluation_integrity.py",
+            "evaluator.py",
+            "public_projection.py",
+        }:
             continue
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):
-            if isinstance(node, ast.ImportFrom) and node.module == "ecomsre_rca100.evaluator":
+            if isinstance(node, ast.ImportFrom) and node.module in {
+                "ecomsre_rca100.evaluation_integrity",
+                "ecomsre_rca100.evaluator",
+            }:
                 raise ValueError(f"runtime module imports evaluator: {path.name}")
             if isinstance(node, ast.Import) and any(
-                alias.name == "ecomsre_rca100.evaluator" for alias in node.names
+                alias.name
+                in {
+                    "ecomsre_rca100.evaluation_integrity",
+                    "ecomsre_rca100.evaluator",
+                }
+                for alias in node.names
             ):
                 raise ValueError(f"runtime module imports evaluator: {path.name}")
 

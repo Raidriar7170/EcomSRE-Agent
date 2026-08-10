@@ -18,10 +18,7 @@ from ecomsre.model.gateway import (
 )
 from ecomsre_rca100.contracts import (
     CanonicalRCA100Entity,
-    RCA100InitialDiagnosis,
     RCA100MetricsEntityRank,
-    RCA100ReasoningStep,
-    arbitrate_rca100_diagnosis,
 )
 from ecomsre_rca100.dataset import audit_dataset
 from ecomsre_rca100.lifecycle import (
@@ -33,6 +30,7 @@ from ecomsre_rca100.lifecycle import (
     load_strict_json,
     schedule_sha256,
     tree_sha256,
+    verify_tree_binding,
 )
 from ecomsre_rca100.projection import (
     RCA100AgentContext,
@@ -41,6 +39,7 @@ from ecomsre_rca100.projection import (
     RCA100MetricsProjection,
     RCA100SourceProjection,
 )
+from ecomsre_rca100.preflight import run_synthetic_full_pipeline
 from ecomsre_rca100.prompt import (
     OpenAICompatibleRCA100Provider,
     output_schema_sha256,
@@ -66,6 +65,7 @@ from ecomsre_rcaeval_v2.dev3_token_accounting import (
 PROTOCOL_ID = "rca100-metrics-arbitration-v1"
 SOURCE_COMMIT = "fd92cae17e6e14fa3ed0f3963c31838151fbdaa7"
 INPUT_TREE_SHA256 = "8ab512ce9ad041ed1ffd89226c2df77d3bb741fed08990854f481794c98585bb"
+FRESH_INPUT_TREE_SHA256 = "aca130e350330000e0d9bc575606e3a5378178b6d7e0c2afb5cf13910596fea9"
 SCHEDULE_SHA256 = "00604fa3157edde3597a7ef6758637be06a099051181d921cc35a7f305c4459e"
 MODEL = "gpt-5.4-mini-2026-03-17"
 TIMEOUT_SECONDS = 30.0
@@ -142,6 +142,8 @@ def _verify_static_bindings(roots: PrivateRoots) -> dict[str, object]:
         raise ValueError("BLOCKED_PROTOCOL_DRIFT: output schema differs")
     if lock.get("schedule_sha256") != SCHEDULE_SHA256:
         raise ValueError("BLOCKED_PROTOCOL_DRIFT: schedule binding differs")
+    if lock.get("fresh_content_tree_sha256") != FRESH_INPUT_TREE_SHA256:
+        raise ValueError("BLOCKED_PROTOCOL_DRIFT: fresh input tree binding differs")
     source = load_strict_json(roots.control / "source" / "input-source-lock.json")
     if not isinstance(source, dict) or (
         source.get("source_commit") != SOURCE_COMMIT
@@ -151,6 +153,12 @@ def _verify_static_bindings(roots: PrivateRoots) -> dict[str, object]:
         raise ValueError("BLOCKED_PROTOCOL_DRIFT: source lock differs")
     if (roots.input_source / "RCA100" / ("answer" + "_key")).exists():
         raise ValueError("BLOCKED_GROUND_TRUTH_LEAKAGE")
+    verify_tree_binding(
+        roots.input_source / "RCA100" / "cases",
+        expected_sha256=FRESH_INPUT_TREE_SHA256,
+        expected_file_count=721,
+        label="RCA100 label-blind input",
+    )
     _schedule(roots)
     _require_clean()
     return lock
@@ -194,6 +202,12 @@ def command_freeze(*, ci_reference: str) -> None:
     if scan_preexecution_runtime(_repository_root()):
         raise ValueError("BLOCKED_GROUND_TRUTH_LEAKAGE")
     verify_runtime_evaluator_import_separation(_repository_root())
+    verify_tree_binding(
+        roots.input_source / "RCA100" / "cases",
+        expected_sha256=FRESH_INPUT_TREE_SHA256,
+        expected_file_count=721,
+        label="RCA100 label-blind input",
+    )
     schedule = _schedule(roots)
     prompt_lock = load_strict_json(_config_root() / "prompt-lock.json")
     if not isinstance(prompt_lock, dict) or (
@@ -208,6 +222,8 @@ def command_freeze(*, ci_reference: str) -> None:
         "ci_reference": ci_reference,
         "source_commit": SOURCE_COMMIT,
         "input_tree_sha256": INPUT_TREE_SHA256,
+        "fresh_content_tree_sha256": FRESH_INPUT_TREE_SHA256,
+        "fresh_content_tree_algorithm": "SORTED_RELATIVE_PATH_NUL_SHA256_NEWLINE_V1",
         "source_lock_sha256": "f99c48e69d240bedbfe9d441fef1effd6ede0ef66b28f33859fddc45aa89356e",
         "config_tree_sha256": _config_tree_sha256(),
         "prompt_sha256": prompt_sha256(),
@@ -318,26 +334,23 @@ def command_preflight() -> None:
         raise ValueError("RCA100 preflight requires PROTOCOL_FROZEN")
     lock = _verify_static_bindings(roots)
     config = _provider_config()
+    protocol_freeze_sha = sha256_file(
+        roots.control / "locks" / "protocol-freeze.json"
+    )
+    synthetic_terminal = run_synthetic_full_pipeline(
+        roots,
+        protocol_freeze_sha256=protocol_freeze_sha,
+        schedule_sha256=SCHEDULE_SHA256,
+        model=MODEL,
+        timeout_seconds=TIMEOUT_SECONDS,
+        max_completion_tokens=MAX_COMPLETION_TOKENS,
+        prompt_token_reservation=PROMPT_TOKEN_RESERVATION,
+        attempt_token_reservation=ATTEMPT_TOKEN_RESERVATION,
+        retry_policy_sha256=hashlib.sha256(
+            canonical_json_bytes(load_strict_json(_config_root() / "budget.json"))
+        ).hexdigest(),
+    )
     context = _synthetic_context()
-    local_initial = RCA100InitialDiagnosis(
-        root_cause_entity_ref=context.visible_entities[1].entity_ref,
-        fault_type="synthetic latency",
-        confidence=0.8,
-        evidence_refs=("metric:0002",),
-        reasoning_steps=(
-            RCA100ReasoningStep(
-                claim="Synthetic evidence supports the initial entity.",
-                entity_ref_or_none=context.visible_entities[1].entity_ref,
-                evidence_refs=("metric:0002",),
-            ),
-        ),
-        summary="Synthetic full-pipeline contract check.",
-    )
-    local_result = arbitrate_rca100_diagnosis(
-        local_initial, context.metrics.ranking
-    )
-    if local_result.final_diagnosis.fault_type != local_initial.fault_type:
-        raise ValueError("synthetic M3 preflight changed fault type")
     run_root = roots.journal / "preflight" / "synthetic-capacity-v1"
     budget = AttemptBudget(
         max_provider_attempts=2,
@@ -383,11 +396,17 @@ def command_preflight() -> None:
     )
     gate = {
         "schema_version": "rca100.holdout-preflight.v1",
-        "protocol_freeze_sha256": sha256_file(
-            roots.control / "locks" / "protocol-freeze.json"
-        ),
+        "protocol_freeze_sha256": protocol_freeze_sha,
         "implementation_commit": lock["implementation_commit"],
         "synthetic_full_pipeline": "PASS",
+        "synthetic_terminal_sha256": sha256_file(
+            roots.control
+            / "preflight"
+            / "synthetic-full-pipeline-v1"
+            / "output"
+            / "terminals"
+            / f"{synthetic_terminal.opaque_case_id}.json"
+        ),
         "provider_valid_typed_response": success,
         "provider_known_usage": provider.usage_known,
         "provider_attempts": accounting.provider_attempt_count,

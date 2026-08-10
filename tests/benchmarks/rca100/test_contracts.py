@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import hashlib
+import json
+from pathlib import Path
+
 import pytest
 from pydantic import ValidationError
 
+from ecomsre.evidence.hashes import canonical_json_bytes
 from ecomsre_rca100.contracts import (
     RCA100InitialDiagnosis,
     RCA100MetricsEntityRank,
@@ -103,3 +108,13 @@ def test_m3_rejects_non_metrics_provenance() -> None:
             score=4.0,
             supporting_metrics_evidence_refs=("indicator:0001",),
         )
+
+
+def test_scoring_lock_self_hashes_frozen_subgroup_contract() -> None:
+    repository = Path(__file__).resolve().parents[3]
+    path = repository / "config" / "rca100-metrics-arbitration-v1" / "scoring.json"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    expected = payload.pop("config_sha256")
+
+    assert hashlib.sha256(canonical_json_bytes(payload)).hexdigest() == expected
+    assert payload["subgroup_use"] == "DESCRIPTIVE_ONLY_WITH_DENOMINATOR"
