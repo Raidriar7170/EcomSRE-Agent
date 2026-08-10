@@ -104,9 +104,13 @@ _IMPLEMENTATION_PATHS = frozenset(
         "config/rca100-metrics-arbitration-v1-evaluator-repair.1/protocol.json",
         "docs/decisions/rca100-metrics-arbitration-v1-evaluator-repair-decision.md",
         "docs/external-benchmarks/rca100-metrics-arbitration-v1-evaluator-repair-protocol.md",
-        "scripts/rca100/build_repair_report.py",
-        "scripts/rca100/evaluator_repair.py",
-        "scripts/rca100/verify_repair_report.py",
+        "scripts/rca100/acquire_answer_key.py",
+        "scripts/rca100/build_report.py",
+        "scripts/rca100/repair/__init__.py",
+        "scripts/rca100/repair/build_report.py",
+        "scripts/rca100/repair/lifecycle.py",
+        "scripts/rca100/repair/verify_report.py",
+        "scripts/rca100/verify_report.py",
         "src/ecomsre_rca100/evaluator.py",
         "tests/benchmarks/rca100/test_evaluator.py",
         "tests/benchmarks/rca100/test_evaluator_repair.py",
@@ -479,6 +483,20 @@ def verify_original_execution(repair: RepairEnvironment) -> OriginalExecution:
 
 
 _FROZEN_FUNCTIONS: Mapping[str, tuple[str, ...]] = {
+    "scripts/rca100/acquire_answer_key.py": ("_repository_root", "main"),
+    "scripts/rca100/build_report.py": (
+        "_repository_root",
+        "_write_once_text",
+        "_execution_summary",
+        "_public_report",
+        "_markdown",
+        "_human_brief",
+        "_current_disposition",
+        "_source_lock_public",
+        "_execution_integrity_public",
+        "main",
+    ),
+    "scripts/rca100/verify_report.py": ("_mapping", "_written_text", "main"),
     "src/ecomsre_rca100/evaluator.py": (
         "parse_ground_truth",
         "prediction_correct",
@@ -583,9 +601,13 @@ def freeze_implementation(
         "tests/benchmarks/rca100/test_evaluator.py",
         "tests/benchmarks/rca100/test_evaluator_repair.py",
         "docs/decisions/rca100-metrics-arbitration-v1-evaluator-repair-decision.md",
-        "scripts/rca100/evaluator_repair.py",
-        "scripts/rca100/build_repair_report.py",
-        "scripts/rca100/verify_repair_report.py",
+        "scripts/rca100/acquire_answer_key.py",
+        "scripts/rca100/build_report.py",
+        "scripts/rca100/repair/__init__.py",
+        "scripts/rca100/repair/build_report.py",
+        "scripts/rca100/repair/lifecycle.py",
+        "scripts/rca100/repair/verify_report.py",
+        "scripts/rca100/verify_report.py",
         "config/rca100-metrics-arbitration-v1-evaluator-repair.1/protocol.json",
         "docs/external-benchmarks/rca100-metrics-arbitration-v1-evaluator-repair-protocol.md",
     }
@@ -951,7 +973,7 @@ def score_frozen_terminals(repair: RepairEnvironment) -> Mapping[str, object]:
 
 
 def _repository_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[3]
 
 
 def _repair_environment() -> RepairEnvironment:
@@ -960,7 +982,7 @@ def _repair_environment() -> RepairEnvironment:
     )
 
 
-def main() -> None:
+def repair_main() -> None:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command", required=True)
     freeze = subparsers.add_parser("freeze-implementation")
@@ -1045,7 +1067,3 @@ __all__ = [
     "verify_repair_implementation",
     "verify_source_snapshot",
 ]
-
-
-if __name__ == "__main__":
-    main()

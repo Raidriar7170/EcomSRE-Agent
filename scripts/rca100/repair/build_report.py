@@ -11,7 +11,7 @@ from ecomsre.evidence.hashes import sha256_file
 from ecomsre_rca100.lifecycle import create_once_json, load_strict_json
 from ecomsre_rca100.public_projection import scan_public_artifacts
 from scripts.rca100.build_report import _execution_summary
-from scripts.rca100.evaluator_repair import (
+from scripts.rca100.repair.lifecycle import (
     DECISION_RECORD_SHA256,
     ORIGINAL_ATTEMPT_TREE_SHA256,
     ORIGINAL_NO_LABEL_AUDIT_SHA256,
@@ -318,10 +318,10 @@ HUMAN_REVIEW_CHECKLIST = """# RCA100 Evaluator Repair Publication Review Checkli
 
 
 def _repository_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[3]
 
 
-def main() -> None:
+def repair_main() -> None:
     repository = _repository_root()
     repair = RepairEnvironment.from_environment(
         os.environ, repository_root=repository
@@ -408,7 +408,3 @@ def main() -> None:
     if findings:
         raise ValueError(f"public repair report leakage detected: {findings}")
     print(json.dumps({"report_built": True, **report}, indent=2))
-
-
-if __name__ == "__main__":
-    main()

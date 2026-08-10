@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import statistics
+import sys
 from typing import Mapping
 
 from ecomsre.evidence.hashes import canonical_json_bytes
@@ -474,5 +475,14 @@ def main() -> None:
     print(json.dumps({"report_built_state": "UNBLINDED", **report}, indent=2))
 
 
-if __name__ == "__main__":
+def _dispatch_main() -> None:
+    if sys.argv[1:] == ["evaluator-repair"]:
+        from scripts.rca100.repair.build_report import repair_main
+
+        repair_main()
+        return
     main()
+
+
+if __name__ == "__main__":
+    _dispatch_main()

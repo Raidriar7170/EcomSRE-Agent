@@ -13,7 +13,7 @@ from ecomsre_rca100.evaluator import RCA100CaseScore, evaluate_terminals
 from ecomsre_rca100.lifecycle import create_once_json, load_strict_json
 from ecomsre_rca100.public_projection import scan_public_artifacts
 from scripts.rca100.build_report import _execution_summary
-from scripts.rca100.build_repair_report import (
+from scripts.rca100.repair.build_report import (
     HUMAN_REVIEW_CHECKLIST,
     disposition,
     execution_integrity,
@@ -21,7 +21,7 @@ from scripts.rca100.build_repair_report import (
     markdown,
     public_report,
 )
-from scripts.rca100.evaluator_repair import (
+from scripts.rca100.repair.lifecycle import (
     ORIGINAL_TERMINAL_LOCK_SHA256,
     REPAIR_PROTOCOL_ID,
     RepairEnvironment,
@@ -51,10 +51,10 @@ def _score_records(scores: tuple[RCA100CaseScore, ...]) -> dict[str, object]:
 
 
 def _repository_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[3]
 
 
-def main() -> None:
+def repair_main() -> None:
     repository = _repository_root()
     repair = RepairEnvironment.from_environment(
         os.environ, repository_root=repository
@@ -285,7 +285,3 @@ def main() -> None:
             indent=2,
         )
     )
-
-
-if __name__ == "__main__":
-    main()

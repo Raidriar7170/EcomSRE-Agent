@@ -9,12 +9,12 @@ _REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPOSITORY_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPOSITORY_ROOT))
 
-from scripts.rca100.build_repair_report import (  # noqa: E402
+from scripts.rca100.repair.build_report import (  # noqa: E402
     METHOD_STATUS,
     human_brief,
     markdown,
 )
-from scripts.rca100.evaluator_repair import (  # noqa: E402
+from scripts.rca100.repair.lifecycle import (  # noqa: E402
     REPAIR_STATE_CHAIN,
     RepairEnvironment,
     advance_repair_state,

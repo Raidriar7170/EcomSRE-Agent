@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
+import sys
 from typing import Mapping
 
 from ecomsre.evidence.hashes import canonical_json_bytes, sha256_file
@@ -209,5 +210,14 @@ def main() -> None:
     )
 
 
-if __name__ == "__main__":
+def _dispatch_main() -> None:
+    if sys.argv[1:] == ["evaluator-repair"]:
+        from scripts.rca100.repair.verify_report import repair_main
+
+        repair_main()
+        return
     main()
+
+
+if __name__ == "__main__":
+    _dispatch_main()

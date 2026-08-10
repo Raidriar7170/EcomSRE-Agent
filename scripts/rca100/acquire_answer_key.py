@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 
 from ecomsre_rca100.evaluator import load_answer_key
 from ecomsre_rca100.lifecycle import (
@@ -77,5 +78,15 @@ def main() -> None:
     print(json.dumps(lock, indent=2))
 
 
-if __name__ == "__main__":
+def _dispatch_main() -> None:
+    if len(sys.argv) > 1 and sys.argv[1] == "evaluator-repair":
+        del sys.argv[1]
+        from scripts.rca100.repair.lifecycle import repair_main
+
+        repair_main()
+        return
     main()
+
+
+if __name__ == "__main__":
+    _dispatch_main()
