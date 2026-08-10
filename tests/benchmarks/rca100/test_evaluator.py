@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 
+import pytest
+
 from ecomsre_rca100.contracts import (
     RCA100DiagnosisProvenance,
     RCA100MetricsArbitrationAction,
@@ -14,11 +16,169 @@ from ecomsre_rca100.evaluator import (
     RCA100GroundTruth,
     evaluate_terminals,
     fault_correct,
+    load_answer_key,
     parse_ground_truth,
 )
 from ecomsre_rca100.lifecycle import build_schedule
 from ecomsre_rca100.runner import RCA100TerminalRecord, RCA100TerminalStatus
 from ecomsre_rca100.statistics import exact_mcnemar_p_value, paired_inference
+
+
+def _synthetic_mapping_envelope() -> dict[str, object]:
+    task_to_case_id = {
+        f"t{index:03d}": f"synthetic-case-{index:03d}"
+        for index in range(1, 104)
+    }
+    return {
+        "version": "synthetic-envelope-v1",
+        "seed": 17,
+        "task_to_case_id": task_to_case_id,
+        "case_id_to_task": {
+            case_id: task_id for task_id, case_id in task_to_case_id.items()
+        },
+    }
+
+
+def _write_synthetic_answer_key(
+    root: Path,
+    mapping: object,
+    *,
+    missing_gt: str | None = None,
+    invalid_gt: str | None = None,
+) -> None:
+    root.mkdir()
+    (root / "mapping.json").write_text(json.dumps(mapping), encoding="utf-8")
+    for index in range(1, 104):
+        task_id = f"t{index:03d}"
+        if task_id == missing_gt:
+            continue
+        payload: object = {
+            "root_cause_entities": [f"synthetic-entity-{index:03d}"],
+            "root_cause_types": ["synthetic-fault"],
+            "raw_ground_truth": {
+                "outcome": {
+                    "target_entity_ids": [f"synthetic-entity-{index:03d}"]
+                }
+            },
+        }
+        if task_id == invalid_gt:
+            payload = ["invalid-ground-truth"]
+        (root / f"{task_id}.gt.json").write_text(
+            json.dumps(payload), encoding="utf-8"
+        )
+
+
+def test_answer_key_loader_accepts_only_frozen_official_envelope(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from ecomsre_rca100 import runner
+
+    answer_root = tmp_path / "answer-key"
+    envelope = _synthetic_mapping_envelope()
+    task_mapping = envelope["task_to_case_id"]
+    assert isinstance(task_mapping, dict)
+    task_mapping["t001"] = "  synthetic-case-001  "
+    _write_synthetic_answer_key(answer_root, envelope)
+    monkeypatch.setattr(
+        runner,
+        "OpenAICompatibleRCA100Provider",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("evaluator repair constructed a Provider")
+        ),
+    )
+
+    truths = load_answer_key(answer_root)
+
+    assert len(truths) == 103
+    assert truths["t001"].canonical_case_id == "synthetic-case-001"
+    assert truths["t103"].canonical_case_id == "synthetic-case-103"
+
+
+def test_answer_key_loader_rejects_legacy_flat_mapping(tmp_path: Path) -> None:
+    answer_root = tmp_path / "answer-key"
+    flat_mapping = {
+        f"t{index:03d}": f"synthetic-case-{index:03d}"
+        for index in range(1, 104)
+    }
+    _write_synthetic_answer_key(answer_root, flat_mapping)
+
+    with pytest.raises(ValueError):
+        load_answer_key(answer_root)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    (
+        "missing_inner_mapping",
+        "inner_mapping_not_object",
+        "too_few_tasks",
+        "too_many_tasks",
+        "unknown_task_key",
+        "non_string_case_id",
+        "empty_case_id",
+        "unexpected_top_level_key",
+        "version_type_changed",
+        "seed_type_changed",
+        "seed_boolean",
+        "reverse_mapping_type_changed",
+    ),
+)
+def test_answer_key_loader_rejects_mapping_envelope_drift(
+    tmp_path: Path,
+    mutation: str,
+) -> None:
+    envelope = _synthetic_mapping_envelope()
+    task_mapping = envelope["task_to_case_id"]
+    assert isinstance(task_mapping, dict)
+    if mutation == "missing_inner_mapping":
+        del envelope["task_to_case_id"]
+    elif mutation == "inner_mapping_not_object":
+        envelope["task_to_case_id"] = []
+    elif mutation == "too_few_tasks":
+        del task_mapping["t103"]
+    elif mutation == "too_many_tasks":
+        task_mapping["t104"] = "synthetic-case-104"
+    elif mutation == "unknown_task_key":
+        del task_mapping["t103"]
+        task_mapping["t999"] = "synthetic-case-999"
+    elif mutation == "non_string_case_id":
+        task_mapping["t001"] = 1
+    elif mutation == "empty_case_id":
+        task_mapping["t001"] = "   "
+    elif mutation == "unexpected_top_level_key":
+        envelope["unexpected"] = "synthetic"
+    elif mutation == "version_type_changed":
+        envelope["version"] = 1
+    elif mutation == "seed_type_changed":
+        envelope["seed"] = "17"
+    elif mutation == "seed_boolean":
+        envelope["seed"] = True
+    elif mutation == "reverse_mapping_type_changed":
+        envelope["case_id_to_task"] = []
+    answer_root = tmp_path / mutation
+    _write_synthetic_answer_key(answer_root, envelope)
+
+    with pytest.raises(ValueError):
+        load_answer_key(answer_root)
+
+
+def test_answer_key_loader_preserves_ground_truth_fail_closed_behavior(
+    tmp_path: Path,
+) -> None:
+    missing_root = tmp_path / "missing"
+    _write_synthetic_answer_key(
+        missing_root, _synthetic_mapping_envelope(), missing_gt="t103"
+    )
+    with pytest.raises(FileNotFoundError):
+        load_answer_key(missing_root)
+
+    invalid_root = tmp_path / "invalid"
+    _write_synthetic_answer_key(
+        invalid_root, _synthetic_mapping_envelope(), invalid_gt="t001"
+    )
+    with pytest.raises(ValueError, match="Ground Truth file must be an object"):
+        load_answer_key(invalid_root)
 
 
 def test_ground_truth_parser_prefers_structured_outcome_ids() -> None:

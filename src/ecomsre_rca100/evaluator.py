@@ -366,18 +366,38 @@ def evaluate_terminals(
     return aggregate, score_tuple
 
 
+def _frozen_task_mapping(envelope: object) -> Mapping[str, object]:
+    if not isinstance(envelope, Mapping):
+        raise ValueError("RCA100 answer mapping envelope must be an object")
+    if set(envelope) != {
+        "case_id_to_task",
+        "seed",
+        "task_to_case_id",
+        "version",
+    }:
+        raise ValueError("RCA100 answer mapping envelope schema differs")
+    if (
+        not isinstance(envelope["case_id_to_task"], Mapping)
+        or not isinstance(envelope["seed"], int)
+        or isinstance(envelope["seed"], bool)
+        or not isinstance(envelope["task_to_case_id"], Mapping)
+        or not isinstance(envelope["version"], str)
+    ):
+        raise ValueError("RCA100 answer mapping envelope types differ")
+    return envelope["task_to_case_id"]  # type: ignore[return-value]
+
+
 def load_answer_key(answer_root: Path) -> dict[str, RCA100GroundTruth]:
-    mapping_value = load_strict_json(answer_root / "mapping.json")
-    if not isinstance(mapping_value, dict):
-        raise ValueError("RCA100 answer mapping must be an object")
+    mapping_value = _frozen_task_mapping(
+        load_strict_json(answer_root / "mapping.json")
+    )
     mapping: dict[str, str] = {}
     for key, value in mapping_value.items():
-        if isinstance(value, str):
-            mapping[key] = value
-        elif isinstance(value, Mapping) and isinstance(value.get("case_id"), str):
-            mapping[key] = value["case_id"]  # type: ignore[assignment]
-        else:
-            raise ValueError("RCA100 answer mapping value is invalid")
+        if not isinstance(key, str):
+            raise ValueError("RCA100 answer mapping task key is invalid")
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError("RCA100 answer mapping case ID is invalid")
+        mapping[key] = value.strip()
     if set(mapping) != {f"t{index:03d}" for index in range(1, 104)}:
         raise ValueError("RCA100 answer mapping coverage differs from 103 tasks")
     truths: dict[str, RCA100GroundTruth] = {}
