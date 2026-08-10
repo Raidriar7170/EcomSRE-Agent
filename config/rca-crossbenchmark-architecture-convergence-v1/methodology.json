@@ -1,0 +1,130 @@
+{
+  "causal_ranking": {
+    "candidate_pool": "METRICS_TOP6_ONLY",
+    "eligible_relations_to_symptom": [
+      "ROOT",
+      "UPSTREAM"
+    ],
+    "insufficient_evidence_action": "KEEP_INITIAL",
+    "minimum_source_support": 2,
+    "order": [
+      "FIRST_ANOMALY_ASC",
+      "SOURCE_SUPPORT_DESC",
+      "METRICS_RANK_ASC",
+      "ENTITY_REF_ASC"
+    ]
+  },
+  "compatible_layer_groups": [
+    [
+      "SERVICE",
+      "WORKLOAD",
+      "POD",
+      "CONTAINER"
+    ],
+    [
+      "NODE",
+      "CLUSTER",
+      "INFRASTRUCTURE"
+    ],
+    [
+      "DATABASE",
+      "CACHE",
+      "MESSAGE_QUEUE",
+      "NETWORK_COMPONENT"
+    ],
+    [
+      "OPERATION"
+    ]
+  ],
+  "fault_ontology": {
+    "application_markers": [
+      "error",
+      "exception",
+      "incorrect",
+      "bug"
+    ],
+    "dependency_markers": [
+      "dependency",
+      "downstream",
+      "database",
+      "cache",
+      "queue",
+      "timeout"
+    ],
+    "local_resource_markers": [
+      "cpu",
+      "memory",
+      "mem",
+      "disk",
+      "io",
+      "resource",
+      "load"
+    ],
+    "network_markers": [
+      "network",
+      "socket",
+      "packet",
+      "loss",
+      "connection"
+    ],
+    "precedence": [
+      "LOCAL_RESOURCE",
+      "NETWORK",
+      "DEPENDENCY",
+      "APPLICATION",
+      "PROPAGATION",
+      "UNKNOWN"
+    ]
+  },
+  "first_anomaly": {
+    "alerts": "FIRST_ENTITY_ALERT_AT_OR_AFTER_ANCHOR",
+    "events": "FIRST_ENTITY_EVENT_AT_OR_AFTER_ANCHOR",
+    "logs": {
+      "content_markers": [
+        "error",
+        "exception",
+        "fail",
+        "timeout",
+        "critical",
+        "panic"
+      ],
+      "rule": "FIRST_MARKED_LOG_AT_OR_AFTER_ANCHOR"
+    },
+    "metrics": {
+      "absolute_relative_floor": 0.25,
+      "mad_multiplier": 3.0,
+      "minimum_pre_samples": 3,
+      "minimum_post_samples": 3,
+      "rule": "FIRST_POST_SAMPLE_ABOVE_MAX_3MAD_OR_25_PERCENT_BASELINE",
+      "zero_epsilon": 1e-09
+    },
+    "traces": {
+      "minimum_pre_samples_for_slow": 3,
+      "rule": "FIRST_FAILED_OR_POST_DURATION_ABOVE_1_5X_PRE_P95",
+      "slow_multiplier": 1.5
+    }
+  },
+  "methodology_schema_version": "rca-crossbenchmark.methodology.v1",
+  "propagation": {
+    "absent_requires_graph_and_timing": true,
+    "calls_edge_causal_direction": "DST_TO_SRC",
+    "contains_edge_hierarchy_direction": "DST_CHILD_TO_SRC_PARENT",
+    "hosts_edge_direction": "UNDIRECTED_COMPONENT_LINK",
+    "missing_source_disposition": "UNAVAILABLE",
+    "root_precedes_symptom_tolerance_seconds": 0.0
+  },
+  "root_eligible_layers": [
+    "OPERATION",
+    "SERVICE",
+    "WORKLOAD",
+    "POD",
+    "CONTAINER",
+    "NODE",
+    "DATABASE",
+    "CACHE",
+    "MESSAGE_QUEUE",
+    "NETWORK_COMPONENT",
+    "CLUSTER",
+    "INFRASTRUCTURE"
+  ]
+}

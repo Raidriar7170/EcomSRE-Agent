@@ -1,0 +1,97 @@
+{
+  "classification": [
+    "CONSUMED_CROSS_BENCHMARK_DEVELOPMENT",
+    "POST_HOC_ARCHITECTURE_ATTRIBUTION",
+    "NOT_EXTERNAL_VALIDATION",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "evaluation_version": "unified-hierarchical-rca-v1",
+  "frontier_schema_version": "rca-crossbenchmark.frontier.v1",
+  "options": {
+    "A0": {
+      "model_calls": 1,
+      "name": "STRONG_SINGLE_HIERARCHICAL",
+      "selectable": true,
+      "strategy": "KEEP_INITIAL"
+    },
+    "A1": {
+      "model_calls": 1,
+      "name": "HISTORICAL_M3",
+      "selectable": false,
+      "strategy": "ROOT_ONLY_M3"
+    },
+    "A2": {
+      "compatible_layers_required": true,
+      "downstream_descendant_forbidden": true,
+      "initial_rank_min_exclusive": 2,
+      "margin_min": 0.25,
+      "model_calls": 1,
+      "name": "HIERARCHY_GUARDED_METRICS_ARBITRATION",
+      "selectable": true,
+      "strategy": "HIERARCHY_GUARDED_M3"
+    },
+    "A3": {
+      "allowed_metric_families": [
+        "CPU",
+        "MEMORY",
+        "DISK",
+        "LOCAL_NODE_RESOURCE"
+      ],
+      "allowed_regimes": [
+        "LOCAL_RESOURCE"
+      ],
+      "model_calls": 1,
+      "name": "LOCAL_FAULT_METRICS_ARBITRATION",
+      "propagation_signal_forbidden": true,
+      "selectable": true,
+      "strategy": "LOCAL_RESOURCE_HIERARCHY_GUARDED_M3"
+    },
+    "A4": {
+      "causal_min_source_support": 2,
+      "causal_requires_earliest_anomaly": true,
+      "causal_requires_upstream_or_root_relation": true,
+      "local_branch": "A3",
+      "model_calls": 1,
+      "name": "HYBRID_LOCAL_METRICS_CAUSAL_RANKING",
+      "nonlocal_regimes": [
+        "PROPAGATION",
+        "NETWORK",
+        "DEPENDENCY",
+        "APPLICATION"
+      ],
+      "selectable": true,
+      "strategy": "LOCAL_A3_ELSE_DETERMINISTIC_CAUSAL_RANKING"
+    },
+    "A5": {
+      "eligible_initial_wrong_coverage_min": 0.2,
+      "local_branch": "A3",
+      "mean_model_calls_max": 1.5,
+      "model_calls": "1_OR_2_SELECTIVE",
+      "name": "HYBRID_LOCAL_METRICS_SELECTIVE_CAUSAL_AGENT",
+      "oracle_damage_max": 2,
+      "oracle_rca100_net_rescue_min": 5,
+      "selectable": true,
+      "strategy": "LOCAL_A3_ELSE_SELECTIVE_CAUSAL_VERIFIER"
+    }
+  },
+  "selection": {
+    "deterministic": {
+      "obss_each_fixture_damage_max": 2,
+      "obss_each_fixture_net_rescue_min": 0,
+      "obss_overall_net_rescue_min_exclusive": 0,
+      "rca100_damage_rate_max": 0.1,
+      "rca100_final_not_below_initial": true,
+      "rca100_net_rescue_min_exclusive": 0,
+      "robust_nonnegative_fold_fraction_min": 0.8
+    },
+    "fallback": "A0",
+    "priority": [
+      "RCA100_EXACT_NET_RESCUE",
+      "CROSS_BENCHMARK_MINIMUM_FOLD_NET_RESCUE",
+      "ROOT_DAMAGE_ASC",
+      "SERVICE_LEVEL_ACCURACY",
+      "MODEL_CALLS_ASC",
+      "COMPLEXITY_ASC"
+    ]
+  }
+}
