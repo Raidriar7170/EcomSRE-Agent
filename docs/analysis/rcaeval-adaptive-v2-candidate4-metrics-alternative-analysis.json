@@ -1,0 +1,84 @@
+{
+  "classification": [
+    "POST_HOC_CONSUMED_TUNE_DIAGNOSTIC",
+    "NO_PROVIDER_CALLS",
+    "NOT_EXTERNAL_VALIDATION"
+  ],
+  "decision_support": {
+    "condition_met": true,
+    "interpretation": "A deterministic Metrics alternative has technical rescue opportunity; this does not predict Candidate-5 Gate passage.",
+    "minimum_condition": "alternative_truth_match_count >= 1"
+  },
+  "deterministic_alternative_rule": "Highest-ranked Metrics service different from the Initial service.",
+  "initial_service_metrics_rank": {
+    "absent": 4,
+    "distribution": {
+      "1": 1,
+      "3": 2,
+      "5": 1
+    }
+  },
+  "metrics_top1_top2_margin": {
+    "maximum": 0.90694592956456,
+    "mean": 0.6174138191196811,
+    "minimum": 0.037749103726160624
+  },
+  "opportunity_summary": {
+    "alternative_truth_and_logs_visible_count": 0,
+    "alternative_truth_match_count": 7,
+    "alternative_truth_match_rate": 0.875,
+    "initial_and_alternative_both_logs_visible_count": 0,
+    "initial_service_logs_visible_count": 6,
+    "metrics_alternative_logs_visible_count": 0,
+    "no_alternative_count": 0,
+    "true_root_logs_visible_count": 0
+  },
+  "policy_source": {
+    "agent_config_sha256": "1684339a7caae35f3991cd8537e8a02de103ecc514ead59491ebb9aee4777913",
+    "classification": "TRACKED_PRODUCTION_GATE_CONFIG"
+  },
+  "provider_calls": 0,
+  "schema_version": "rcaeval-adaptive-v2.metrics-alternative-analysis.v1",
+  "scope": {
+    "candidate": "candidate-4",
+    "completed_records": 59,
+    "gate_escalated_initial_wrong": 8,
+    "wrong_initial_cases": 8
+  },
+  "selected_metrics_alternative_rank": {
+    "absent": 0,
+    "distribution": {
+      "1": 7,
+      "2": 1
+    }
+  },
+  "true_root_metrics_coverage": {
+    "at_1": {
+      "denominator": 8,
+      "numerator": 6,
+      "value": 0.75
+    },
+    "at_2": {
+      "denominator": 8,
+      "numerator": 8,
+      "value": 1.0
+    },
+    "at_3": {
+      "denominator": 8,
+      "numerator": 8,
+      "value": 1.0
+    },
+    "at_6": {
+      "denominator": 8,
+      "numerator": 8,
+      "value": 1.0
+    }
+  },
+  "true_root_metrics_rank": {
+    "absent": 0,
+    "distribution": {
+      "1": 6,
+      "2": 2
+    }
+  }
+}

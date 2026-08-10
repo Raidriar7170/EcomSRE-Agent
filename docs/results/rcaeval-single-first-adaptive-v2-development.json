@@ -1,0 +1,475 @@
+{
+  "schema_version": "rcaeval-single-first-adaptive.development-public.v2",
+  "development_state": "TERMINAL",
+  "verdict": "ADAPTIVE_V2_TUNE_GATE_NOT_PASSED_AFTER_CANDIDATE5",
+  "failure_reason": "CANDIDATE_5_MISSED_FROZEN_ROOT_PAIR_AND_ROOT_RESCUE_GATES",
+  "classification": [
+    "CONSUMED_OBSS_DEVELOPMENT_RESULT",
+    "DEVELOPMENT_VISIBLE",
+    "NOT_EXTERNAL_VALIDATION",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "candidate_loop": {
+    "record_limit": 5,
+    "records_attempted": 5,
+    "capacity_records": 2,
+    "algorithm_candidate_limit": 3,
+    "algorithm_candidates_attempted": 3,
+    "complete": true,
+    "selected_candidate": null,
+    "candidate_5_executed": true,
+    "candidate_5_disposition": "TUNE_GATE_NOT_PASSED"
+  },
+  "gate_feature_diagnosis": {
+    "classification": [
+      "POST_HOC_CONSUMED_TUNE_DIAGNOSTIC",
+      "NO_PROVIDER_CALLS",
+      "NOT_EXTERNAL_VALIDATION"
+    ],
+    "provider_calls": 0,
+    "initial_root_correct": 49,
+    "initial_root_wrong": 11,
+    "below_direct": 0,
+    "below_low": 0,
+    "metrics_rank_risk": 10,
+    "metrics_margin_risk": 13,
+    "evidence_weak": 0,
+    "logs_oppose": 0,
+    "trace_semantics": 0,
+    "initial_unstable": 10,
+    "initial_unstable_and_direct": 10,
+    "policy_a_simulated_escalations": 3,
+    "policy_b_simulated_escalations": 20,
+    "selected_gate_policy": {
+      "metrics_margin_threshold": 0.75,
+      "risk_signal_threshold": 1
+    },
+    "public_artifact": "docs/analysis/rcaeval-adaptive-v2-gate-diagnosis.json"
+  },
+  "candidate_4_metrics_alternative_analysis": {
+    "classification": [
+      "POST_HOC_CONSUMED_TUNE_DIAGNOSTIC",
+      "NO_PROVIDER_CALLS",
+      "NOT_EXTERNAL_VALIDATION"
+    ],
+    "provider_calls": 0,
+    "initial_root_wrong_completed": 8,
+    "gate_escalated_initial_wrong": 8,
+    "true_root_metrics_coverage": {
+      "at_1": 6,
+      "at_2": 8,
+      "at_3": 8,
+      "at_6": 8,
+      "denominator": 8
+    },
+    "deterministic_metrics_alternative_truth_matches": 7,
+    "truth_matching_alternative_logs_visible": 0,
+    "initial_and_alternative_logs_visible": 0,
+    "no_metrics_alternative": 0,
+    "decision_supported": true,
+    "decision_code": "CASE_E_SPECIALIST_GENERATION_FAILURE",
+    "public_artifact": "docs/analysis/rcaeval-adaptive-v2-candidate4-metrics-alternative-analysis.json"
+  },
+  "historical_strong_single_tune_baseline": {
+    "scheduled": 60,
+    "root_service_correct": 51,
+    "pair_correct": 29,
+    "rerun": false
+  },
+  "tune_candidates": [
+    {
+      "candidate": "candidate-1",
+      "scheduled": 60,
+      "terminalized": 60,
+      "completed": 0,
+      "completion_coverage": {
+        "numerator": 0,
+        "denominator": 60,
+        "value": 0.0
+      },
+      "algorithm_quality_evaluable": false,
+      "completed_only_root_service_accuracy": null,
+      "completed_only_pair_accuracy": null,
+      "terminal_provider_failures": 60,
+      "http_429_terminal_failures": 59,
+      "tls_transient_terminal_failures": 1,
+      "provider_failure_code_distribution": {
+        "HTTP_429": 59,
+        "TLS_TRANSIENT": 1
+      },
+      "provider_attempts": 120,
+      "transport_retries": 60,
+      "root_service_correct": 0,
+      "pair_correct": 0,
+      "damage": 29,
+      "rescue": 0,
+      "direct_return": 0,
+      "mean_semantic_operations": 0.0,
+      "mean_semantic_operations_basis": "FIXED_SCHEDULED_DENOMINATOR",
+      "mean_semantic_operations_completed_only": null,
+      "trace_routes": 0,
+      "correct_overrides": 0,
+      "wrong_overrides": 0,
+      "known_token_lower_bound": 0,
+      "conservative_token_upper_bound": 3840000,
+      "mean_latency_ms": 10056.647966681825,
+      "schema_privacy_schedule_failures": 0,
+      "gate_passed": false,
+      "gate_disposition": "PROVIDER_CAPACITY_BLOCKED",
+      "interpretation": "The candidate never completed Initial Diagnosis. This fixed-denominator record preserves Provider failures but does not provide an algorithm-quality estimate."
+    },
+    {
+      "candidate": "candidate-2",
+      "candidate_role": "UNCHANGED_AGENT_CAPACITY_RETRY",
+      "scheduled": 60,
+      "terminalized": 60,
+      "completed": 0,
+      "completion_coverage": {
+        "numerator": 0,
+        "denominator": 60,
+        "value": 0.0
+      },
+      "algorithm_quality_evaluable": false,
+      "completed_only_root_service_accuracy": null,
+      "completed_only_pair_accuracy": null,
+      "terminal_provider_failures": 60,
+      "http_429_terminal_failures": 60,
+      "tls_transient_terminal_failures": 0,
+      "provider_failure_code_distribution": {
+        "HTTP_429": 60
+      },
+      "provider_attempts": 120,
+      "transport_retries": 60,
+      "root_service_correct": 0,
+      "pair_correct": 0,
+      "damage": 29,
+      "rescue": 0,
+      "direct_return": 0,
+      "mean_semantic_operations": 0.0,
+      "mean_semantic_operations_basis": "FIXED_SCHEDULED_DENOMINATOR",
+      "mean_semantic_operations_completed_only": null,
+      "trace_routes": 0,
+      "correct_overrides": 0,
+      "wrong_overrides": 0,
+      "known_token_lower_bound": 0,
+      "conservative_token_upper_bound": 3840000,
+      "mean_latency_ms": 10011.923006922007,
+      "schema_privacy_schedule_failures": 0,
+      "gate_passed": false,
+      "gate_disposition": "PROVIDER_CAPACITY_BLOCKED",
+      "interpretation": "The unchanged Agent capacity retry also never completed Initial Diagnosis. It confirms continued Provider unavailability, not an algorithm-quality outcome."
+    },
+    {
+      "candidate": "candidate-3",
+      "candidate_role": "UNCHANGED_AGENT_POST_CREDIT_RECOVERY_TUNE",
+      "scheduled": 60,
+      "terminalized": 60,
+      "completed": 60,
+      "completion_coverage": {
+        "numerator": 60,
+        "denominator": 60,
+        "value": 1.0
+      },
+      "algorithm_quality_evaluable": true,
+      "completed_only_root_service_accuracy": {
+        "numerator": 49,
+        "denominator": 60,
+        "value": 0.8166666666666667
+      },
+      "completed_only_pair_accuracy": {
+        "numerator": 25,
+        "denominator": 60,
+        "value": 0.4166666666666667
+      },
+      "terminal_provider_failures": 0,
+      "http_429_terminal_failures": 0,
+      "tls_transient_terminal_failures": 0,
+      "provider_failure_code_distribution": {},
+      "provider_attempts": 60,
+      "transport_retries": 0,
+      "root_service_correct": 49,
+      "pair_correct": 25,
+      "initial_root_correct": 49,
+      "final_root_correct": 49,
+      "same_run_root_damage": 0,
+      "same_run_root_rescue": 0,
+      "same_run_root_net_rescue": 0,
+      "initial_pair_correct": 25,
+      "final_pair_correct": 25,
+      "same_run_pair_damage": 0,
+      "same_run_pair_rescue": 0,
+      "same_run_pair_net_rescue": 0,
+      "historical_cross_run_comparison_classification": [
+        "CROSS_RUN_CONTEXTUAL_COMPARISON",
+        "MODEL_RUN_VARIABILITY_CONFOUNDED"
+      ],
+      "damage": 6,
+      "damage_rate": {
+        "numerator": 6,
+        "denominator": 29,
+        "value": 0.20689655172413793
+      },
+      "rescue": 2,
+      "net_rescue": -4,
+      "direct_return": 60,
+      "route_distribution": {
+        "DIRECT_RETURN": 60,
+        "VERIFY_LOGS": 0,
+        "VERIFY_TRACES": 0,
+        "VERIFY_BOTH": 0
+      },
+      "mean_semantic_operations": 1.0,
+      "mean_semantic_operations_basis": "FIXED_SCHEDULED_DENOMINATOR",
+      "mean_semantic_operations_completed_only": 1.0,
+      "trace_routes": 0,
+      "fusion_action_distribution": {
+        "KEEP_INITIAL": 60
+      },
+      "indicator_action_distribution": {
+        "KEEP_STRONG_SINGLE_INDICATOR": 50,
+        "KEEP_WITH_UNCERTAINTY": 9,
+        "DETERMINISTIC_OVERRIDE_STRONG_MARGIN": 1
+      },
+      "correct_overrides": 0,
+      "wrong_overrides": 0,
+      "known_token_lower_bound": 491343,
+      "conservative_token_upper_bound": 491343,
+      "mean_latency_ms": 5145.467159706944,
+      "schema_privacy_schedule_failures": 0,
+      "gate_passed": false,
+      "gate_disposition": "TUNE_GATE_NOT_PASSED",
+      "failed_gate_requirements": [
+        "ROOT_SERVICE_CORRECT_MIN_51",
+        "PAIR_CORRECT_MIN_29",
+        "SAME_RUN_ROOT_RESCUE_STRICTLY_GREATER_THAN_DAMAGE",
+        "SAME_RUN_ROOT_NET_RESCUE_MIN_1",
+        "DIRECT_RETURN_MAX_48"
+      ],
+      "interpretation": "API credit recovery restored Provider completion. All cases returned Direct, so same-run Initial and Final were unchanged; the older Damage and Rescue aliases are historical cross-run context only. The candidate missed the frozen Root and Pair floors."
+    },
+    {
+      "candidate": "candidate-4",
+      "candidate_role": "SECOND_REAL_ALGORITHM_CANDIDATE_SELECTIVE_GATE",
+      "scheduled": 60,
+      "terminalized": 60,
+      "completed": 59,
+      "completion_coverage": {
+        "numerator": 59,
+        "denominator": 60,
+        "value": 0.9833333333333333
+      },
+      "algorithm_quality_evaluable": true,
+      "terminal_provider_failures": 0,
+      "http_429_terminal_failures": 0,
+      "provider_failure_code_distribution": {},
+      "provider_attempts": 77,
+      "transport_retries": 0,
+      "initial_root_correct": 51,
+      "final_root_correct": 51,
+      "same_run_root_damage": 0,
+      "same_run_root_rescue": 0,
+      "same_run_root_net_rescue": 0,
+      "same_run_root_damage_rate": {
+        "numerator": 0,
+        "denominator": 51,
+        "value": 0.0
+      },
+      "initial_pair_correct": 27,
+      "final_pair_correct": 27,
+      "same_run_pair_damage": 0,
+      "same_run_pair_rescue": 0,
+      "same_run_pair_net_rescue": 0,
+      "historical_cross_run_comparison": {
+        "classification": [
+          "CROSS_RUN_CONTEXTUAL_COMPARISON",
+          "MODEL_RUN_VARIABILITY_CONFOUNDED"
+        ],
+        "root_damage": 4,
+        "root_rescue": 4,
+        "pair_damage": 5,
+        "pair_rescue": 3
+      },
+      "direct_return": 43,
+      "route_distribution": {
+        "DIRECT_RETURN": 43,
+        "VERIFY_LOGS": 16,
+        "VERIFY_TRACES": 0,
+        "VERIFY_BOTH": 0
+      },
+      "trace_routes": 0,
+      "escalation_precision": {
+        "numerator": 8,
+        "denominator": 16,
+        "value": 0.5
+      },
+      "escalation_recall": {
+        "numerator": 8,
+        "denominator": 8,
+        "value": 1.0
+      },
+      "initial_correct_escalated": 8,
+      "initial_wrong_direct": 0,
+      "specialist_hypothesis_count": 44,
+      "correct_specialist_alternatives_for_initial_wrong": 0,
+      "fusion_action_distribution": {
+        "KEEP_INITIAL": 59,
+        "OVERRIDE_INITIAL": 0
+      },
+      "indicator_action_distribution": {
+        "KEEP_STRONG_SINGLE_INDICATOR": 52,
+        "KEEP_WITH_UNCERTAINTY": 7,
+        "DETERMINISTIC_OVERRIDE_STRONG_MARGIN": 0
+      },
+      "correct_overrides": 0,
+      "wrong_overrides": 0,
+      "mean_semantic_operations": 1.25,
+      "mean_semantic_operations_basis": "FIXED_SCHEDULED_DENOMINATOR",
+      "known_token_lower_bound": 515817,
+      "conservative_token_upper_bound": 515817,
+      "mean_latency_ms": 6571.995636793629,
+      "mean_latency_ms_completed_only": 6473.1982485864755,
+      "schema_privacy_schedule_failures": 1,
+      "gate_passed": false,
+      "gate_disposition": "TUNE_GATE_NOT_PASSED",
+      "failed_gate_requirements": [
+        "PAIR_CORRECT_MIN_29",
+        "SAME_RUN_ROOT_RESCUE_STRICTLY_GREATER_THAN_DAMAGE",
+        "SAME_RUN_ROOT_NET_RESCUE_MIN_1",
+        "PRIVACY_SCHEMA_SCHEDULE_FAILURE_MAX_0"
+      ],
+      "interpretation": "Selective routing met its Direct, cost, Trace, completion, Root, and override bounds, but one schema failure, Final Pair 27, and zero same-run Root rescue prevented TUNE passage."
+    },
+    {
+      "candidate": "candidate-5",
+      "candidate_role": "FINAL_METRICS_ANCHORED_LOGS_PAIRWISE_VERIFIER",
+      "decision_code": "CASE_E_SPECIALIST_GENERATION_FAILURE",
+      "scheduled": 60,
+      "terminalized": 60,
+      "completed": 60,
+      "completion_coverage": {
+        "numerator": 60,
+        "denominator": 60,
+        "value": 1.0
+      },
+      "algorithm_quality_evaluable": true,
+      "terminal_provider_failures": 0,
+      "http_429_terminal_failures": 0,
+      "provider_failure_code_distribution": {},
+      "provider_attempts": 85,
+      "transport_retries": 2,
+      "initial_root_correct": 45,
+      "final_root_correct": 45,
+      "same_run_root_damage": 0,
+      "same_run_root_rescue": 0,
+      "same_run_root_net_rescue": 0,
+      "same_run_root_damage_rate": {
+        "numerator": 0,
+        "denominator": 45,
+        "value": 0.0
+      },
+      "initial_pair_correct": 23,
+      "final_pair_correct": 23,
+      "same_run_pair_damage": 0,
+      "same_run_pair_rescue": 0,
+      "same_run_pair_net_rescue": 0,
+      "historical_cross_run_comparison": {
+        "classification": [
+          "CROSS_RUN_CONTEXTUAL_COMPARISON",
+          "MODEL_RUN_VARIABILITY_CONFOUNDED"
+        ],
+        "root_damage": 7,
+        "root_rescue": 1,
+        "pair_damage": 7,
+        "pair_rescue": 1
+      },
+      "direct_return": 37,
+      "route_distribution": {
+        "DIRECT_RETURN": 37,
+        "VERIFY_LOGS": 23,
+        "VERIFY_TRACES": 0,
+        "VERIFY_BOTH": 0
+      },
+      "trace_routes": 0,
+      "escalation_precision": {
+        "numerator": 14,
+        "denominator": 23,
+        "value": 0.6086956521739131
+      },
+      "escalation_recall": {
+        "numerator": 14,
+        "denominator": 15,
+        "value": 0.9333333333333333
+      },
+      "initial_correct_escalated": 9,
+      "initial_wrong_direct": 1,
+      "metrics_alternative_rank_distribution": {
+        "1": 16,
+        "2": 44
+      },
+      "no_metrics_alternative": 0,
+      "pairwise_calls": 23,
+      "pairwise_completed_verifications": 23,
+      "pairwise_preference_distribution": {
+        "INITIAL": 7,
+        "ALTERNATIVE": 1,
+        "INCONCLUSIVE": 15
+      },
+      "alternative_preference_when_alternative_true_root": 1,
+      "alternative_preference_when_alternative_wrong": 0,
+      "fusion_action_distribution": {
+        "KEEP_INITIAL": 60
+      },
+      "fusion_reason_distribution": {
+        "KEEP_DIRECT": 37,
+        "LOGS_PAIRWISE_ALT_LACKS_ROOT_ROLE": 1,
+        "LOGS_PAIRWISE_INCONCLUSIVE": 15,
+        "LOGS_PAIRWISE_INITIAL": 7
+      },
+      "correct_overrides": 0,
+      "wrong_overrides": 0,
+      "mean_semantic_operations": 1.3833333333333333,
+      "mean_semantic_operations_basis": "FIXED_SCHEDULED_DENOMINATOR",
+      "known_token_lower_bound": 516021,
+      "conservative_token_upper_bound": 580021,
+      "mean_latency_ms": 7272.912942358137,
+      "schema_privacy_schedule_failures": 0,
+      "gate_passed": false,
+      "gate_disposition": "TUNE_GATE_NOT_PASSED",
+      "failed_gate_requirements": [
+        "ROOT_SERVICE_CORRECT_MIN_51",
+        "PAIR_CORRECT_MIN_29",
+        "SAME_RUN_ROOT_RESCUE_STRICTLY_GREATER_THAN_DAMAGE",
+        "SAME_RUN_ROOT_NET_RESCUE_MIN_1"
+      ],
+      "interpretation": "The pairwise Logs verifier completed without capacity or contract failures, but it never authorized an override. Final Root and Pair therefore remained equal to Initial and missed the frozen absolute floors and strict Root-rescue requirements."
+    }
+  ],
+  "candidate_5": {
+    "executed": true,
+    "decision_code": "CASE_E_SPECIALIST_GENERATION_FAILURE",
+    "single_primary_change": "Replace free Logs hypothesis generation with a deterministic Metrics-alternative Initial-vs-Alternative Logs pairwise verifier and deterministic Fusion.",
+    "tune_gate_passed": false,
+    "candidate_6_authorized": false,
+    "reason": "The final bounded candidate completed 60/60 but missed the frozen Root, Pair, and Root-rescue requirements."
+  },
+  "selected_candidate": null,
+  "regression": {
+    "eligible": false,
+    "executed": false,
+    "scheduled": 0,
+    "terminalized": 0,
+    "reruns": 0,
+    "post_regression_tuning": false,
+    "reason": "CANDIDATE_5_TUNE_GATE_NOT_PASSED"
+  },
+  "combined_180": {
+    "available": false
+  },
+  "fresh_external_holdout": {
+    "eligible": false,
+    "plan_created": false,
+    "dataset_accessed": false,
+    "provider_run_executed": false
+  },
+  "claim_boundary": "Candidates 1 and 2 are retained capacity-blocked executions and are not algorithm-quality estimates. Candidates 3 through 5 are consumed-data algorithm iterations; none passed the frozen TUNE gate. Candidate 5 completed after API credit recovery but did not improve Initial under same-run Fusion. Regression and fresh holdout execution did not run. None is external validation."
+}

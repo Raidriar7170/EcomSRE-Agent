@@ -1,0 +1,272 @@
+{
+  "claim_boundary": [
+    "CONSUMED_OBSS_DEVELOPMENT",
+    "NOT_EXTERNAL_VALIDATION",
+    "NOT_PRODUCTION_GENERALIZATION",
+    "NO_TT_ACCESS"
+  ],
+  "decision_lineage": {
+    "frozen_decision_commit": "59ace4d",
+    "source": "PR_20_METRICS_ARBITRATION_DECISION"
+  },
+  "evaluation_version": "metrics-arbitration-v1",
+  "fixture_replay": {
+    "aggregates": {
+      "candidate-3": {
+        "completed": 60,
+        "final_root_correct": 57,
+        "initial_root_correct": 49,
+        "override": 8,
+        "root_damage": 0,
+        "root_net_rescue": 8,
+        "root_rescue": 8
+      },
+      "candidate-4": {
+        "completed": 59,
+        "final_root_correct": 57,
+        "initial_root_correct": 51,
+        "override": 6,
+        "root_damage": 0,
+        "root_net_rescue": 6,
+        "root_rescue": 6
+      },
+      "candidate-5": {
+        "completed": 60,
+        "final_root_correct": 57,
+        "initial_root_correct": 45,
+        "override": 12,
+        "root_damage": 0,
+        "root_net_rescue": 12,
+        "root_rescue": 12
+      }
+    },
+    "classification": [
+      "CONSUMED_OBSS_DEVELOPMENT",
+      "POST_HOC_DETERMINISTIC_REPLAY",
+      "NOT_EXTERNAL_VALIDATION",
+      "NO_PROVIDER_CALLS",
+      "NO_TT_ACCESS"
+    ],
+    "evaluation_version": "metrics-arbitration-v1",
+    "indicator_policy": "PRESERVE_EXACT_INITIAL_INDICATOR",
+    "provider_calls": 0,
+    "rule": "M3",
+    "schema_version": "rcaeval-metrics-arbitration.fixture-replay.v1",
+    "status": "M3_FIXTURE_REPLAY_PASSED"
+  },
+  "historical_strong_single_context": {
+    "classification": "CROSS_RUN_CONTEXTUAL_BASELINE",
+    "regression": {
+      "pair_correct": 55,
+      "root_correct": 99,
+      "scheduled": 120
+    },
+    "tune": {
+      "pair_correct": 29,
+      "root_correct": 51,
+      "scheduled": 60
+    }
+  },
+  "m3_rule": {
+    "fusion_model_calls": 0,
+    "initial_rank_override_min_exclusive": 2,
+    "normalized_margin_min": 0.25,
+    "preserve_initial_indicator": true,
+    "semantic_model_calls": 1,
+    "specialist_calls": 0
+  },
+  "phases": {
+    "preflight": {
+      "http_429": 0,
+      "response_valid": true,
+      "schema_error": false,
+      "status": "PROVIDER_CAPACITY_PREFLIGHT_PASSED",
+      "usage_known": true
+    },
+    "regression": {
+      "both_condition_count": 17,
+      "completed": 120,
+      "conservative_token_upper_bound": 1044285,
+      "correct_override_count": 17,
+      "disqualifying_failure_count": 0,
+      "final_pair_correct": 55,
+      "final_root_correct": 112,
+      "fusion_model_calls": 0,
+      "gate_disposition": "PASSED",
+      "gate_passed": true,
+      "http_429_terminal_failures": 0,
+      "initial_pair_correct": 52,
+      "initial_rank_distribution": {
+        "1": 92,
+        "2": 7,
+        "3": 4,
+        "4": 2,
+        "5": 3,
+        "6": 3,
+        "NONE": 9
+      },
+      "initial_root_correct": 95,
+      "keep_count": 103,
+      "known_token_lower_bound": 980285,
+      "margin_condition_count": 114,
+      "margin_distribution": {
+        "maximum": 1.0,
+        "mean": 0.8657294423765907,
+        "minimum": 0.013670141580414725
+      },
+      "mean_latency_ms": 5471.967747543628,
+      "mean_latency_ms_completed_only": 5471.967747543628,
+      "mean_semantic_operations": 1.0,
+      "mean_semantic_operations_basis": "COMPLETED_ONLY",
+      "override_count": 17,
+      "provider_attempts": 122,
+      "rank_condition_count": 21,
+      "reason_code_distribution": {
+        "KEEP_INITIAL_MARGIN_CONDITION_NOT_MET": 4,
+        "KEEP_INITIAL_RANK_CONDITION_NOT_MET": 7,
+        "KEEP_INITIAL_TOP1_MATCH": 92,
+        "M3_OVERRIDE_RANK_AND_MARGIN": 17
+      },
+      "same_run_pair_damage": 0,
+      "same_run_pair_net_rescue": 3,
+      "same_run_pair_rescue": 3,
+      "same_run_root_damage": 0,
+      "same_run_root_damage_rate": {
+        "denominator": 95,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "same_run_root_net_rescue": 17,
+      "same_run_root_rescue": 17,
+      "scheduled": 120,
+      "semantic_operations": 120,
+      "specialist_calls": 0,
+      "terminalized": 120,
+      "transport_retries": 2,
+      "wrong_override_count": 0
+    },
+    "smoke": {
+      "both_condition_count": 2,
+      "completed": 12,
+      "conservative_token_upper_bound": 99045,
+      "correct_override_count": 2,
+      "disqualifying_failure_count": 0,
+      "final_pair_correct": 7,
+      "final_root_correct": 12,
+      "fusion_model_calls": 0,
+      "gate_disposition": "PASSED",
+      "gate_passed": true,
+      "http_429_terminal_failures": 0,
+      "initial_pair_correct": 6,
+      "initial_rank_distribution": {
+        "1": 9,
+        "2": 1,
+        "3": 1,
+        "NONE": 1
+      },
+      "initial_root_correct": 10,
+      "keep_count": 10,
+      "known_token_lower_bound": 99045,
+      "margin_condition_count": 12,
+      "margin_distribution": {
+        "maximum": 1.0,
+        "mean": 0.7880273877198177,
+        "minimum": 0.4108811283644387
+      },
+      "mean_latency_ms": 5425.045854198591,
+      "mean_latency_ms_completed_only": 5425.045854198591,
+      "mean_semantic_operations": 1.0,
+      "mean_semantic_operations_basis": "COMPLETED_ONLY",
+      "override_count": 2,
+      "provider_attempts": 12,
+      "rank_condition_count": 2,
+      "reason_code_distribution": {
+        "KEEP_INITIAL_RANK_CONDITION_NOT_MET": 1,
+        "KEEP_INITIAL_TOP1_MATCH": 9,
+        "M3_OVERRIDE_RANK_AND_MARGIN": 2
+      },
+      "same_run_pair_damage": 0,
+      "same_run_pair_net_rescue": 1,
+      "same_run_pair_rescue": 1,
+      "same_run_root_damage": 0,
+      "same_run_root_damage_rate": {
+        "denominator": 10,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "same_run_root_net_rescue": 2,
+      "same_run_root_rescue": 2,
+      "scheduled": 12,
+      "semantic_operations": 12,
+      "specialist_calls": 0,
+      "terminalized": 12,
+      "transport_retries": 0,
+      "wrong_override_count": 0
+    },
+    "tune": {
+      "both_condition_count": 6,
+      "completed": 60,
+      "conservative_token_upper_bound": 523848,
+      "correct_override_count": 6,
+      "disqualifying_failure_count": 0,
+      "final_pair_correct": 28,
+      "final_root_correct": 57,
+      "fusion_model_calls": 0,
+      "gate_disposition": "PASSED",
+      "gate_passed": true,
+      "http_429_terminal_failures": 0,
+      "initial_pair_correct": 27,
+      "initial_rank_distribution": {
+        "1": 50,
+        "2": 2,
+        "3": 2,
+        "4": 1,
+        "5": 1,
+        "6": 1,
+        "NONE": 3
+      },
+      "initial_root_correct": 51,
+      "keep_count": 54,
+      "known_token_lower_bound": 491848,
+      "margin_condition_count": 57,
+      "margin_distribution": {
+        "maximum": 1.0,
+        "mean": 0.8528504134503978,
+        "minimum": 0.037749103726160624
+      },
+      "mean_latency_ms": 5405.604013199142,
+      "mean_latency_ms_completed_only": 5405.604013199142,
+      "mean_semantic_operations": 1.0,
+      "mean_semantic_operations_basis": "COMPLETED_ONLY",
+      "override_count": 6,
+      "provider_attempts": 61,
+      "rank_condition_count": 8,
+      "reason_code_distribution": {
+        "KEEP_INITIAL_MARGIN_CONDITION_NOT_MET": 2,
+        "KEEP_INITIAL_RANK_CONDITION_NOT_MET": 2,
+        "KEEP_INITIAL_TOP1_MATCH": 50,
+        "M3_OVERRIDE_RANK_AND_MARGIN": 6
+      },
+      "same_run_pair_damage": 0,
+      "same_run_pair_net_rescue": 1,
+      "same_run_pair_rescue": 1,
+      "same_run_root_damage": 0,
+      "same_run_root_damage_rate": {
+        "denominator": 51,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "same_run_root_net_rescue": 6,
+      "same_run_root_rescue": 6,
+      "scheduled": 60,
+      "semantic_operations": 60,
+      "specialist_calls": 0,
+      "terminalized": 60,
+      "transport_retries": 1,
+      "wrong_override_count": 0
+    }
+  },
+  "primary_endpoint_authority": "SAME_RUN_INITIAL_TO_FINAL",
+  "schema_version": "rcaeval-metrics-arbitration.public-development.v1",
+  "status": "METRICS_ARBITRATION_REGRESSION_PASSED_READY_FOR_FRESH_HOLDOUT_PLAN"
+}

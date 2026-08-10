@@ -1,0 +1,74 @@
+{
+  "claim_boundary": [
+    "CONSUMED_OBSS_DEVELOPMENT",
+    "NOT_EXTERNAL_VALIDATION",
+    "NOT_PRODUCTION_GENERALIZATION",
+    "NO_TT_ACCESS"
+  ],
+  "classification": [
+    "OBSS_DEVELOPMENT_POOL",
+    "DEVELOPMENT_VISIBLE",
+    "NOT_EXTERNAL_HOLDOUT",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "evaluation_version": "metrics-arbitration-v1",
+  "historical_baselines": {
+    "lineage": "CROSS_RUN_CONTEXTUAL_BASELINE",
+    "regression_strong_single_pair_correct": 55,
+    "regression_strong_single_root_correct": 99,
+    "tune_strong_single_pair_correct": 29,
+    "tune_strong_single_root_correct": 51
+  },
+  "regression_gate": {
+    "completion_min": 114,
+    "final_root_correct_min": 97,
+    "fusion_model_calls_exact": 0,
+    "http_429_terminal_failure_max": 6,
+    "mean_semantic_operations_exact": 1.0,
+    "pair_correct_min": 50,
+    "privacy_schema_schedule_failure_max": 0,
+    "same_run_pair_net_rescue_min": 0,
+    "same_run_pair_rescue_not_less_than_damage": true,
+    "same_run_root_damage_rate_max": 0.05,
+    "same_run_root_net_rescue_min": 0,
+    "same_run_root_rescue_not_less_than_damage": true,
+    "specialist_calls_exact": 0
+  },
+  "same_run_endpoint_authority": {
+    "indicator": "INITIAL_INDICATOR_PRESERVED",
+    "pair": "INITIAL_AND_FINAL_FROM_SAME_METRICS_ARBITRATION_RUN",
+    "root": "INITIAL_AND_FINAL_FROM_SAME_METRICS_ARBITRATION_RUN"
+  },
+  "schedule_sha256": {
+    "regression": "e5adae294869eceb0d8fdb323afbde2eb6778d771cc798dd36f4f6e8842bbe69",
+    "smoke": "9ee6f72f0800750ab731d618faee3893d85b0f70475ac08676c233c70ee8206a",
+    "tune": "f5bd027a40464d44051b686c32c3a07653e3516c9681b5a10becd4b13b82cd8d"
+  },
+  "schema_version": "rcaeval-metrics-arbitration.evaluation.v1",
+  "smoke_gate": {
+    "completion_min": 11,
+    "fusion_model_calls_exact": 0,
+    "http_429_terminal_failure_max": 1,
+    "m3_action_valid_required": true,
+    "privacy_schema_schedule_failure_max": 0,
+    "scheduled_exact": 12,
+    "semantic_operations_per_completed_exact": 1,
+    "specialist_calls_exact": 0,
+    "terminalized_exact": 12
+  },
+  "tune_gate": {
+    "completion_min": 58,
+    "final_root_correct_min": 51,
+    "fusion_model_calls_exact": 0,
+    "http_429_terminal_failure_max": 3,
+    "mean_semantic_operations_exact": 1.0,
+    "pair_correct_min": 27,
+    "privacy_schema_schedule_failure_max": 0,
+    "same_run_pair_net_rescue_min": 0,
+    "same_run_pair_rescue_not_less_than_damage": true,
+    "same_run_root_damage_max": 2,
+    "same_run_root_net_rescue_min": 1,
+    "same_run_root_rescue_strictly_greater_than_damage": true,
+    "specialist_calls_exact": 0
+  }
+}

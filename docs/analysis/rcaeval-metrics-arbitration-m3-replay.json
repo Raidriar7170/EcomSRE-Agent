@@ -1,0 +1,44 @@
+{
+  "aggregates": {
+    "candidate-3": {
+      "completed": 60,
+      "final_root_correct": 57,
+      "initial_root_correct": 49,
+      "override": 8,
+      "root_damage": 0,
+      "root_net_rescue": 8,
+      "root_rescue": 8
+    },
+    "candidate-4": {
+      "completed": 59,
+      "final_root_correct": 57,
+      "initial_root_correct": 51,
+      "override": 6,
+      "root_damage": 0,
+      "root_net_rescue": 6,
+      "root_rescue": 6
+    },
+    "candidate-5": {
+      "completed": 60,
+      "final_root_correct": 57,
+      "initial_root_correct": 45,
+      "override": 12,
+      "root_damage": 0,
+      "root_net_rescue": 12,
+      "root_rescue": 12
+    }
+  },
+  "classification": [
+    "CONSUMED_OBSS_DEVELOPMENT",
+    "POST_HOC_DETERMINISTIC_REPLAY",
+    "NOT_EXTERNAL_VALIDATION",
+    "NO_PROVIDER_CALLS",
+    "NO_TT_ACCESS"
+  ],
+  "evaluation_version": "metrics-arbitration-v1",
+  "indicator_policy": "PRESERVE_EXACT_INITIAL_INDICATOR",
+  "provider_calls": 0,
+  "rule": "M3",
+  "schema_version": "rcaeval-metrics-arbitration.fixture-replay.v1",
+  "status": "M3_FIXTURE_REPLAY_PASSED"
+}
