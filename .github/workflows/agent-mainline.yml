@@ -42,6 +42,11 @@ jobs:
       - name: Sync frozen dependencies
         run: uv sync --frozen --python 3.11 --group ci
 
+      - name: Install frozen RCA100 dependencies
+        run: >-
+          uv pip install --python .venv --requirement
+          config/rca100-metrics-arbitration-v1/python-dependency-lock.txt
+
       - name: Phase 1 tests
         run: make phase1-test
 
