@@ -1,0 +1,34 @@
+{
+  "schema_version": "rca100.evaluator-repair-protocol.v1",
+  "protocol_id": "rca100-metrics-arbitration-v1-evaluator-repair.1",
+  "classification": [
+    "POST_LOCK_EVALUATOR_ONLY_REPAIR",
+    "IMMUTABLE_PREDICTIONS",
+    "NO_PROVIDER_CALLS",
+    "EXTERNAL_SCORING_WITH_REPAIR_DISCLOSURE"
+  ],
+  "original_pr": 22,
+  "original_implementation_commit": "7a0c22fa82a967730e238ac666f565cd935014ee",
+  "original_protocol_freeze_sha256": "7d4684825216f4791d8dae4061bca95995381928beba6f504865854468ca5011",
+  "original_disposition": "BLOCKED_PROTOCOL_DRIFT",
+  "mapping_envelope_schema": {
+    "case_id_to_task": "object",
+    "seed": "integer_not_boolean",
+    "task_to_case_id": "object_with_103_nonempty_string_values",
+    "version": "string",
+    "unknown_top_level_fields": "REJECT"
+  },
+  "authorized_change": "STRICT_EXTRACT_FROZEN_TASK_TO_CASE_ID_ENVELOPE_ONLY",
+  "fixed_denominator": 103,
+  "bootstrap_replicates": 10000,
+  "bootstrap_seed": 20260810,
+  "confidence_interval": "95_PERCENTILE_PAIRED",
+  "mcnemar": "TWO_SIDED_EXACT",
+  "provider_calls": 0,
+  "prediction_reruns": 0,
+  "case_replacements": 0,
+  "m3_changes": 0,
+  "scoring_rule_changes": 0,
+  "evaluation_method_status": "POST_LOCK_EVALUATOR_REPAIR_DISCLOSED",
+  "final_verdict": "RCA100_EVALUATOR_REPAIR_FINAL_REPORT_FROZEN_READY_FOR_PUBLICATION_REVIEW"
+}

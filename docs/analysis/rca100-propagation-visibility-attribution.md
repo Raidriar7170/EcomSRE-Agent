@@ -1,0 +1,2397 @@
+# RCA100 Propagation and Visibility Attribution
+
+Classification: `CONSUMED_CROSS_BENCHMARK_DEVELOPMENT, POST_HOC_ARCHITECTURE_ATTRIBUTION, NOT_EXTERNAL_VALIDATION, NOT_PRIMARY_INFERENCE`.
+
+This is aggregate-only, consumed-development, post-hoc evidence. It does not revise the frozen benchmark results and is not external validation.
+
+## Canonical aggregate
+
+```json
+{
+  "classification": [
+    "CONSUMED_CROSS_BENCHMARK_DEVELOPMENT",
+    "POST_HOC_ARCHITECTURE_ATTRIBUTION",
+    "NOT_EXTERNAL_VALIDATION",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "correction_disclosure": {
+    "original_invalid_attempt_preserved": true,
+    "status": "CORRECTED_V3_APPEND_ONLY_SUCCESSOR",
+    "supersedes": "CORRECTED_V2_GOAL_COVERAGE_INCOMPLETE",
+    "thresholds_changed": false
+  },
+  "cross_benchmark_contrast": {
+    "fault_family": {
+      "obss": {
+        "cpu": {
+          "denominator": 360,
+          "numerator": 60,
+          "value": 0.16666666666666666
+        },
+        "delay": {
+          "denominator": 360,
+          "numerator": 60,
+          "value": 0.16666666666666666
+        },
+        "disk": {
+          "denominator": 360,
+          "numerator": 60,
+          "value": 0.16666666666666666
+        },
+        "loss": {
+          "denominator": 360,
+          "numerator": 60,
+          "value": 0.16666666666666666
+        },
+        "mem": {
+          "denominator": 360,
+          "numerator": 60,
+          "value": 0.16666666666666666
+        },
+        "socket": {
+          "denominator": 360,
+          "numerator": 60,
+          "value": 0.16666666666666666
+        }
+      },
+      "rca100": {
+        "F001": {
+          "denominator": 103,
+          "numerator": 1,
+          "value": 0.009708737864077669
+        },
+        "F002": {
+          "denominator": 103,
+          "numerator": 2,
+          "value": 0.019417475728155338
+        },
+        "F004": {
+          "denominator": 103,
+          "numerator": 3,
+          "value": 0.02912621359223301
+        },
+        "F005": {
+          "denominator": 103,
+          "numerator": 1,
+          "value": 0.009708737864077669
+        },
+        "F006": {
+          "denominator": 103,
+          "numerator": 6,
+          "value": 0.05825242718446602
+        },
+        "F007": {
+          "denominator": 103,
+          "numerator": 12,
+          "value": 0.11650485436893204
+        },
+        "F009": {
+          "denominator": 103,
+          "numerator": 1,
+          "value": 0.009708737864077669
+        },
+        "F010": {
+          "denominator": 103,
+          "numerator": 5,
+          "value": 0.04854368932038835
+        },
+        "F011": {
+          "denominator": 103,
+          "numerator": 1,
+          "value": 0.009708737864077669
+        },
+        "F012": {
+          "denominator": 103,
+          "numerator": 1,
+          "value": 0.009708737864077669
+        },
+        "F014": {
+          "denominator": 103,
+          "numerator": 11,
+          "value": 0.10679611650485436
+        },
+        "F016": {
+          "denominator": 103,
+          "numerator": 11,
+          "value": 0.10679611650485436
+        },
+        "F018": {
+          "denominator": 103,
+          "numerator": 2,
+          "value": 0.019417475728155338
+        },
+        "F020": {
+          "denominator": 103,
+          "numerator": 2,
+          "value": 0.019417475728155338
+        },
+        "F022": {
+          "denominator": 103,
+          "numerator": 2,
+          "value": 0.019417475728155338
+        },
+        "F023": {
+          "denominator": 103,
+          "numerator": 4,
+          "value": 0.038834951456310676
+        },
+        "F025": {
+          "denominator": 103,
+          "numerator": 1,
+          "value": 0.009708737864077669
+        },
+        "F026": {
+          "denominator": 103,
+          "numerator": 12,
+          "value": 0.11650485436893204
+        },
+        "F029": {
+          "denominator": 103,
+          "numerator": 4,
+          "value": 0.038834951456310676
+        },
+        "F031": {
+          "denominator": 103,
+          "numerator": 1,
+          "value": 0.009708737864077669
+        },
+        "F034": {
+          "denominator": 103,
+          "numerator": 8,
+          "value": 0.07766990291262135
+        },
+        "F036": {
+          "denominator": 103,
+          "numerator": 6,
+          "value": 0.05825242718446602
+        },
+        "F039": {
+          "denominator": 103,
+          "numerator": 1,
+          "value": 0.009708737864077669
+        },
+        "F050": {
+          "denominator": 103,
+          "numerator": 1,
+          "value": 0.009708737864077669
+        },
+        "F051": {
+          "denominator": 103,
+          "numerator": 1,
+          "value": 0.009708737864077669
+        },
+        "F052": {
+          "denominator": 103,
+          "numerator": 1,
+          "value": 0.009708737864077669
+        },
+        "F056": {
+          "denominator": 103,
+          "numerator": 1,
+          "value": 0.009708737864077669
+        },
+        "F057": {
+          "denominator": 103,
+          "numerator": 1,
+          "value": 0.009708737864077669
+        }
+      }
+    },
+    "margin_at_least_0_25": {
+      "obss": {
+        "denominator": 360,
+        "numerator": 342,
+        "value": 0.95
+      },
+      "rca100": {
+        "denominator": 103,
+        "numerator": 47,
+        "value": 0.4563106796116505
+      }
+    },
+    "metrics_top1_causal_alignment": {
+      "obss": {
+        "denominator": 360,
+        "numerator": 30,
+        "value": 0.08333333333333333
+      },
+      "rca100": {
+        "denominator": 103,
+        "numerator": 0,
+        "value": 0.0
+      }
+    },
+    "metrics_top6_ground_truth_coverage": {
+      "obss": {
+        "denominator": 360,
+        "numerator": 360,
+        "value": 1.0
+      },
+      "rca100": {
+        "denominator": 103,
+        "numerator": 27,
+        "value": 0.2621359223300971
+      }
+    },
+    "propagation_length": {
+      "ground_truth_to_initial": {
+        "obss": {
+          "available": {
+            "denominator": 360,
+            "numerator": 303,
+            "value": 0.8416666666666667
+          },
+          "denominator": 360,
+          "hop_distribution": {
+            "0": {
+              "denominator": 360,
+              "numerator": 291,
+              "value": 0.8083333333333333
+            },
+            "1": {
+              "denominator": 360,
+              "numerator": 12,
+              "value": 0.03333333333333333
+            },
+            "UNAVAILABLE": {
+              "denominator": 360,
+              "numerator": 57,
+              "value": 0.15833333333333333
+            }
+          },
+          "max_available_hops": 1,
+          "mean_available_hops": 0.039603960396039604
+        },
+        "rca100": {
+          "available": {
+            "denominator": 103,
+            "numerator": 31,
+            "value": 0.30097087378640774
+          },
+          "denominator": 103,
+          "hop_distribution": {
+            "0": {
+              "denominator": 103,
+              "numerator": 16,
+              "value": 0.1553398058252427
+            },
+            "1": {
+              "denominator": 103,
+              "numerator": 11,
+              "value": 0.10679611650485436
+            },
+            "2": {
+              "denominator": 103,
+              "numerator": 2,
+              "value": 0.019417475728155338
+            },
+            "3": {
+              "denominator": 103,
+              "numerator": 2,
+              "value": 0.019417475728155338
+            },
+            "UNAVAILABLE": {
+              "denominator": 103,
+              "numerator": 72,
+              "value": 0.6990291262135923
+            }
+          },
+          "max_available_hops": 3,
+          "mean_available_hops": 0.6774193548387096
+        }
+      },
+      "ground_truth_to_metrics_top1": {
+        "obss": {
+          "available": {
+            "denominator": 360,
+            "numerator": 346,
+            "value": 0.9611111111111111
+          },
+          "denominator": 360,
+          "hop_distribution": {
+            "0": {
+              "denominator": 360,
+              "numerator": 337,
+              "value": 0.9361111111111111
+            },
+            "1": {
+              "denominator": 360,
+              "numerator": 9,
+              "value": 0.025
+            },
+            "UNAVAILABLE": {
+              "denominator": 360,
+              "numerator": 14,
+              "value": 0.03888888888888889
+            }
+          },
+          "max_available_hops": 1,
+          "mean_available_hops": 0.02601156069364162
+        },
+        "rca100": {
+          "available": {
+            "denominator": 103,
+            "numerator": 7,
+            "value": 0.06796116504854369
+          },
+          "denominator": 103,
+          "hop_distribution": {
+            "0": {
+              "denominator": 103,
+              "numerator": 7,
+              "value": 0.06796116504854369
+            },
+            "UNAVAILABLE": {
+              "denominator": 103,
+              "numerator": 96,
+              "value": 0.9320388349514563
+            }
+          },
+          "max_available_hops": 0,
+          "mean_available_hops": 0.0
+        }
+      }
+    },
+    "runtime_fault_regime": {
+      "obss": {
+        "LOCAL_RESOURCE": {
+          "denominator": 360,
+          "numerator": 196,
+          "value": 0.5444444444444444
+        },
+        "NETWORK": {
+          "denominator": 360,
+          "numerator": 54,
+          "value": 0.15
+        },
+        "UNKNOWN": {
+          "denominator": 360,
+          "numerator": 110,
+          "value": 0.3055555555555556
+        }
+      },
+      "rca100": {
+        "APPLICATION": {
+          "denominator": 103,
+          "numerator": 5,
+          "value": 0.04854368932038835
+        },
+        "DEPENDENCY": {
+          "denominator": 103,
+          "numerator": 38,
+          "value": 0.36893203883495146
+        },
+        "NETWORK": {
+          "denominator": 103,
+          "numerator": 10,
+          "value": 0.0970873786407767
+        },
+        "PROPAGATION": {
+          "denominator": 103,
+          "numerator": 4,
+          "value": 0.038834951456310676
+        },
+        "UNKNOWN": {
+          "denominator": 103,
+          "numerator": 46,
+          "value": 0.44660194174757284
+        }
+      }
+    },
+    "target_layer": {
+      "obss": {
+        "SERVICE": {
+          "denominator": 360,
+          "numerator": 360,
+          "value": 1.0
+        }
+      },
+      "rca100": {
+        "NODE": {
+          "denominator": 103,
+          "numerator": 15,
+          "value": 0.14563106796116504
+        },
+        "SERVICE": {
+          "denominator": 103,
+          "numerator": 87,
+          "value": 0.8446601941747572
+        },
+        "WORKLOAD": {
+          "denominator": 103,
+          "numerator": 1,
+          "value": 0.009708737864077669
+        }
+      }
+    },
+    "topology_depth": {
+      "obss_mean": 1.0,
+      "rca100_mean": 1.145631067961165
+    }
+  },
+  "damage_roles": {
+    "NO_GRAPH_PATH": {
+      "denominator": 6,
+      "numerator": 6,
+      "value": 1.0
+    }
+  },
+  "denominators": {
+    "obss_consumed_records": 360,
+    "rca100": 103,
+    "rca100_historical_m3_damage": 6,
+    "rca100_historical_m3_wrong_to_wrong": 30,
+    "rca100_initial_wrong": 87
+  },
+  "downstream_symptom": {
+    "denominator": 103,
+    "numerator": 0,
+    "value": 0.0
+  },
+  "evidence_sufficiency": {
+    "CROSS_SOURCE_SUFFICIENT": {
+      "denominator": 103,
+      "numerator": 10,
+      "value": 0.0970873786407767
+    },
+    "EVENTS_SUFFICIENT": {
+      "denominator": 103,
+      "numerator": 4,
+      "value": 0.038834951456310676
+    },
+    "HIERARCHY_SUFFICIENT": {
+      "denominator": 103,
+      "numerator": 3,
+      "value": 0.02912621359223301
+    },
+    "METRICS_LOCAL_SUFFICIENT": {
+      "denominator": 103,
+      "numerator": 17,
+      "value": 0.1650485436893204
+    },
+    "ROOT_NOT_VISIBLE": {
+      "denominator": 103,
+      "numerator": 52,
+      "value": 0.5048543689320388
+    },
+    "TRACE_CAUSAL_SUFFICIENT": {
+      "denominator": 103,
+      "numerator": 17,
+      "value": 0.1650485436893204
+    }
+  },
+  "fault_phrase_relation": {
+    "CASING_OR_SEPARATOR": {
+      "denominator": 103,
+      "numerator": 0,
+      "value": 0.0
+    },
+    "COMPLETELY_DIFFERENT": {
+      "denominator": 103,
+      "numerator": 97,
+      "value": 0.941747572815534
+    },
+    "EXACT_NORMALIZED": {
+      "denominator": 103,
+      "numerator": 0,
+      "value": 0.0
+    },
+    "SYNONYM_OR_HIERARCHY_MISMATCH": {
+      "denominator": 103,
+      "numerator": 6,
+      "value": 0.05825242718446602
+    },
+    "TOKEN_OVERLAP": {
+      "denominator": 103,
+      "numerator": 0,
+      "value": 0.0
+    }
+  },
+  "first_anomaly_alignment": {
+    "denominator": 103,
+    "numerator": 0,
+    "value": 0.0
+  },
+  "focus_visibility": {
+    "obss_initial_wrong": {
+      "exact": {
+        "alerts": {
+          "denominator": 69,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "any_model_visible": {
+          "denominator": 69,
+          "numerator": 69,
+          "value": 1.0
+        },
+        "catalog": {
+          "denominator": 69,
+          "numerator": 69,
+          "value": 1.0
+        },
+        "causal": {
+          "denominator": 69,
+          "numerator": 12,
+          "value": 0.17391304347826086
+        },
+        "events": {
+          "denominator": 69,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "logs": {
+          "denominator": 69,
+          "numerator": 1,
+          "value": 0.014492753623188406
+        },
+        "metrics": {
+          "denominator": 69,
+          "numerator": 69,
+          "value": 1.0
+        },
+        "topology": {
+          "denominator": 69,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "traces": {
+          "denominator": 69,
+          "numerator": 10,
+          "value": 0.14492753623188406
+        }
+      },
+      "metrics": {
+        "top_1": {
+          "denominator": 69,
+          "numerator": 58,
+          "value": 0.8405797101449275
+        },
+        "top_2": {
+          "denominator": 69,
+          "numerator": 67,
+          "value": 0.9710144927536232
+        },
+        "top_6": {
+          "denominator": 69,
+          "numerator": 69,
+          "value": 1.0
+        }
+      },
+      "per_source": {
+        "alerts": {
+          "ground_truth_exact_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "ground_truth_service_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "events": {
+          "ground_truth_exact_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "ground_truth_service_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "logs": {
+          "ground_truth_exact_visible": {
+            "denominator": 69,
+            "numerator": 1,
+            "value": 0.014492753623188406
+          },
+          "ground_truth_service_visible": {
+            "denominator": 69,
+            "numerator": 1,
+            "value": 0.014492753623188406
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_visible": {
+            "denominator": 69,
+            "numerator": 55,
+            "value": 0.7971014492753623
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 69,
+            "numerator": 1,
+            "value": 0.014492753623188406
+          },
+          "metrics_top1_visible": {
+            "denominator": 69,
+            "numerator": 2,
+            "value": 0.028985507246376812
+          }
+        },
+        "metrics": {
+          "ground_truth_exact_visible": {
+            "denominator": 69,
+            "numerator": 69,
+            "value": 1.0
+          },
+          "ground_truth_service_visible": {
+            "denominator": 69,
+            "numerator": 69,
+            "value": 1.0
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 69,
+            "numerator": 28,
+            "value": 0.4057971014492754
+          },
+          "initial_visible": {
+            "denominator": 69,
+            "numerator": 28,
+            "value": 0.4057971014492754
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 69,
+            "numerator": 69,
+            "value": 1.0
+          },
+          "metrics_top1_visible": {
+            "denominator": 69,
+            "numerator": 69,
+            "value": 1.0
+          }
+        },
+        "topology": {
+          "ground_truth_exact_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "ground_truth_service_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_visible": {
+            "denominator": 69,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "traces": {
+          "ground_truth_exact_visible": {
+            "denominator": 69,
+            "numerator": 10,
+            "value": 0.14492753623188406
+          },
+          "ground_truth_service_visible": {
+            "denominator": 69,
+            "numerator": 10,
+            "value": 0.14492753623188406
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 69,
+            "numerator": 9,
+            "value": 0.13043478260869565
+          },
+          "initial_visible": {
+            "denominator": 69,
+            "numerator": 12,
+            "value": 0.17391304347826086
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 69,
+            "numerator": 10,
+            "value": 0.14492753623188406
+          },
+          "metrics_top1_visible": {
+            "denominator": 69,
+            "numerator": 10,
+            "value": 0.14492753623188406
+          }
+        }
+      },
+      "service": {
+        "alerts": {
+          "denominator": 69,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "any_model_visible": {
+          "denominator": 69,
+          "numerator": 69,
+          "value": 1.0
+        },
+        "catalog": {
+          "denominator": 69,
+          "numerator": 69,
+          "value": 1.0
+        },
+        "causal": {
+          "denominator": 69,
+          "numerator": 12,
+          "value": 0.17391304347826086
+        },
+        "events": {
+          "denominator": 69,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "logs": {
+          "denominator": 69,
+          "numerator": 1,
+          "value": 0.014492753623188406
+        },
+        "metrics": {
+          "denominator": 69,
+          "numerator": 69,
+          "value": 1.0
+        },
+        "topology": {
+          "denominator": 69,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "traces": {
+          "denominator": 69,
+          "numerator": 10,
+          "value": 0.14492753623188406
+        }
+      }
+    },
+    "rca100_historical_m3_damage": {
+      "exact": {
+        "alerts": {
+          "denominator": 6,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "any_model_visible": {
+          "denominator": 6,
+          "numerator": 5,
+          "value": 0.8333333333333334
+        },
+        "catalog": {
+          "denominator": 6,
+          "numerator": 6,
+          "value": 1.0
+        },
+        "causal": {
+          "denominator": 6,
+          "numerator": 1,
+          "value": 0.16666666666666666
+        },
+        "events": {
+          "denominator": 6,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "logs": {
+          "denominator": 6,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "metrics": {
+          "denominator": 6,
+          "numerator": 3,
+          "value": 0.5
+        },
+        "topology": {
+          "denominator": 6,
+          "numerator": 6,
+          "value": 1.0
+        },
+        "traces": {
+          "denominator": 6,
+          "numerator": 4,
+          "value": 0.6666666666666666
+        }
+      },
+      "metrics": {
+        "top_1": {
+          "denominator": 6,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "top_2": {
+          "denominator": 6,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "top_6": {
+          "denominator": 6,
+          "numerator": 3,
+          "value": 0.5
+        }
+      },
+      "per_source": {
+        "alerts": {
+          "ground_truth_exact_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "ground_truth_service_visible": {
+            "denominator": 6,
+            "numerator": 4,
+            "value": 0.6666666666666666
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "events": {
+          "ground_truth_exact_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "ground_truth_service_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "logs": {
+          "ground_truth_exact_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "ground_truth_service_visible": {
+            "denominator": 6,
+            "numerator": 1,
+            "value": 0.16666666666666666
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "metrics": {
+          "ground_truth_exact_visible": {
+            "denominator": 6,
+            "numerator": 3,
+            "value": 0.5
+          },
+          "ground_truth_service_visible": {
+            "denominator": 6,
+            "numerator": 5,
+            "value": 0.8333333333333334
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 6,
+            "numerator": 3,
+            "value": 0.5
+          },
+          "initial_visible": {
+            "denominator": 6,
+            "numerator": 3,
+            "value": 0.5
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 6,
+            "numerator": 3,
+            "value": 0.5
+          },
+          "metrics_top1_visible": {
+            "denominator": 6,
+            "numerator": 6,
+            "value": 1.0
+          }
+        },
+        "topology": {
+          "ground_truth_exact_visible": {
+            "denominator": 6,
+            "numerator": 6,
+            "value": 1.0
+          },
+          "ground_truth_service_visible": {
+            "denominator": 6,
+            "numerator": 6,
+            "value": 1.0
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 6,
+            "numerator": 6,
+            "value": 1.0
+          },
+          "initial_visible": {
+            "denominator": 6,
+            "numerator": 6,
+            "value": 1.0
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 6,
+            "numerator": 6,
+            "value": 1.0
+          },
+          "metrics_top1_visible": {
+            "denominator": 6,
+            "numerator": 6,
+            "value": 1.0
+          }
+        },
+        "traces": {
+          "ground_truth_exact_visible": {
+            "denominator": 6,
+            "numerator": 4,
+            "value": 0.6666666666666666
+          },
+          "ground_truth_service_visible": {
+            "denominator": 6,
+            "numerator": 4,
+            "value": 0.6666666666666666
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 6,
+            "numerator": 4,
+            "value": 0.6666666666666666
+          },
+          "initial_visible": {
+            "denominator": 6,
+            "numerator": 4,
+            "value": 0.6666666666666666
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_visible": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          }
+        }
+      },
+      "service": {
+        "alerts": {
+          "denominator": 6,
+          "numerator": 4,
+          "value": 0.6666666666666666
+        },
+        "any_model_visible": {
+          "denominator": 6,
+          "numerator": 6,
+          "value": 1.0
+        },
+        "catalog": {
+          "denominator": 6,
+          "numerator": 6,
+          "value": 1.0
+        },
+        "causal": {
+          "denominator": 6,
+          "numerator": 2,
+          "value": 0.3333333333333333
+        },
+        "events": {
+          "denominator": 6,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "logs": {
+          "denominator": 6,
+          "numerator": 1,
+          "value": 0.16666666666666666
+        },
+        "metrics": {
+          "denominator": 6,
+          "numerator": 5,
+          "value": 0.8333333333333334
+        },
+        "topology": {
+          "denominator": 6,
+          "numerator": 6,
+          "value": 1.0
+        },
+        "traces": {
+          "denominator": 6,
+          "numerator": 4,
+          "value": 0.6666666666666666
+        }
+      }
+    },
+    "rca100_historical_m3_wrong_to_wrong": {
+      "exact": {
+        "alerts": {
+          "denominator": 30,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "any_model_visible": {
+          "denominator": 30,
+          "numerator": 12,
+          "value": 0.4
+        },
+        "catalog": {
+          "denominator": 30,
+          "numerator": 30,
+          "value": 1.0
+        },
+        "causal": {
+          "denominator": 30,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "events": {
+          "denominator": 30,
+          "numerator": 1,
+          "value": 0.03333333333333333
+        },
+        "logs": {
+          "denominator": 30,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "metrics": {
+          "denominator": 30,
+          "numerator": 4,
+          "value": 0.13333333333333333
+        },
+        "topology": {
+          "denominator": 30,
+          "numerator": 30,
+          "value": 1.0
+        },
+        "traces": {
+          "denominator": 30,
+          "numerator": 8,
+          "value": 0.26666666666666666
+        }
+      },
+      "metrics": {
+        "top_1": {
+          "denominator": 30,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "top_2": {
+          "denominator": 30,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "top_6": {
+          "denominator": 30,
+          "numerator": 4,
+          "value": 0.13333333333333333
+        }
+      },
+      "per_source": {
+        "alerts": {
+          "ground_truth_exact_visible": {
+            "denominator": 30,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "ground_truth_service_visible": {
+            "denominator": 30,
+            "numerator": 6,
+            "value": 0.2
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 30,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_visible": {
+            "denominator": 30,
+            "numerator": 6,
+            "value": 0.2
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 30,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_visible": {
+            "denominator": 30,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "events": {
+          "ground_truth_exact_visible": {
+            "denominator": 30,
+            "numerator": 1,
+            "value": 0.03333333333333333
+          },
+          "ground_truth_service_visible": {
+            "denominator": 30,
+            "numerator": 2,
+            "value": 0.06666666666666667
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 30,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_visible": {
+            "denominator": 30,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 30,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_visible": {
+            "denominator": 30,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "logs": {
+          "ground_truth_exact_visible": {
+            "denominator": 30,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "ground_truth_service_visible": {
+            "denominator": 30,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 30,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_visible": {
+            "denominator": 30,
+            "numerator": 14,
+            "value": 0.4666666666666667
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 30,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_visible": {
+            "denominator": 30,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "metrics": {
+          "ground_truth_exact_visible": {
+            "denominator": 30,
+            "numerator": 4,
+            "value": 0.13333333333333333
+          },
+          "ground_truth_service_visible": {
+            "denominator": 30,
+            "numerator": 13,
+            "value": 0.43333333333333335
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 30,
+            "numerator": 1,
+            "value": 0.03333333333333333
+          },
+          "initial_visible": {
+            "denominator": 30,
+            "numerator": 9,
+            "value": 0.3
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 30,
+            "numerator": 4,
+            "value": 0.13333333333333333
+          },
+          "metrics_top1_visible": {
+            "denominator": 30,
+            "numerator": 30,
+            "value": 1.0
+          }
+        },
+        "topology": {
+          "ground_truth_exact_visible": {
+            "denominator": 30,
+            "numerator": 30,
+            "value": 1.0
+          },
+          "ground_truth_service_visible": {
+            "denominator": 30,
+            "numerator": 26,
+            "value": 0.8666666666666667
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 30,
+            "numerator": 30,
+            "value": 1.0
+          },
+          "initial_visible": {
+            "denominator": 30,
+            "numerator": 30,
+            "value": 1.0
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 30,
+            "numerator": 30,
+            "value": 1.0
+          },
+          "metrics_top1_visible": {
+            "denominator": 30,
+            "numerator": 30,
+            "value": 1.0
+          }
+        },
+        "traces": {
+          "ground_truth_exact_visible": {
+            "denominator": 30,
+            "numerator": 8,
+            "value": 0.26666666666666666
+          },
+          "ground_truth_service_visible": {
+            "denominator": 30,
+            "numerator": 8,
+            "value": 0.26666666666666666
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 30,
+            "numerator": 3,
+            "value": 0.1
+          },
+          "initial_visible": {
+            "denominator": 30,
+            "numerator": 8,
+            "value": 0.26666666666666666
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 30,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_visible": {
+            "denominator": 30,
+            "numerator": 0,
+            "value": 0.0
+          }
+        }
+      },
+      "service": {
+        "alerts": {
+          "denominator": 30,
+          "numerator": 6,
+          "value": 0.2
+        },
+        "any_model_visible": {
+          "denominator": 30,
+          "numerator": 18,
+          "value": 0.6
+        },
+        "catalog": {
+          "denominator": 30,
+          "numerator": 26,
+          "value": 0.8666666666666667
+        },
+        "causal": {
+          "denominator": 30,
+          "numerator": 1,
+          "value": 0.03333333333333333
+        },
+        "events": {
+          "denominator": 30,
+          "numerator": 2,
+          "value": 0.06666666666666667
+        },
+        "logs": {
+          "denominator": 30,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "metrics": {
+          "denominator": 30,
+          "numerator": 13,
+          "value": 0.43333333333333335
+        },
+        "topology": {
+          "denominator": 30,
+          "numerator": 26,
+          "value": 0.8666666666666667
+        },
+        "traces": {
+          "denominator": 30,
+          "numerator": 8,
+          "value": 0.26666666666666666
+        }
+      }
+    },
+    "rca100_initial_wrong": {
+      "exact": {
+        "alerts": {
+          "denominator": 87,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "any_model_visible": {
+          "denominator": 87,
+          "numerator": 29,
+          "value": 0.3333333333333333
+        },
+        "catalog": {
+          "denominator": 87,
+          "numerator": 87,
+          "value": 1.0
+        },
+        "causal": {
+          "denominator": 87,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "events": {
+          "denominator": 87,
+          "numerator": 4,
+          "value": 0.04597701149425287
+        },
+        "logs": {
+          "denominator": 87,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "metrics": {
+          "denominator": 87,
+          "numerator": 15,
+          "value": 0.1724137931034483
+        },
+        "topology": {
+          "denominator": 87,
+          "numerator": 87,
+          "value": 1.0
+        },
+        "traces": {
+          "denominator": 87,
+          "numerator": 19,
+          "value": 0.21839080459770116
+        }
+      },
+      "metrics": {
+        "top_1": {
+          "denominator": 87,
+          "numerator": 1,
+          "value": 0.011494252873563218
+        },
+        "top_2": {
+          "denominator": 87,
+          "numerator": 3,
+          "value": 0.034482758620689655
+        },
+        "top_6": {
+          "denominator": 87,
+          "numerator": 15,
+          "value": 0.1724137931034483
+        }
+      },
+      "per_source": {
+        "alerts": {
+          "ground_truth_exact_visible": {
+            "denominator": 87,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "ground_truth_service_visible": {
+            "denominator": 87,
+            "numerator": 24,
+            "value": 0.27586206896551724
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 87,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_visible": {
+            "denominator": 87,
+            "numerator": 11,
+            "value": 0.12643678160919541
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 87,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_visible": {
+            "denominator": 87,
+            "numerator": 2,
+            "value": 0.022988505747126436
+          }
+        },
+        "events": {
+          "ground_truth_exact_visible": {
+            "denominator": 87,
+            "numerator": 4,
+            "value": 0.04597701149425287
+          },
+          "ground_truth_service_visible": {
+            "denominator": 87,
+            "numerator": 5,
+            "value": 0.05747126436781609
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 87,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_visible": {
+            "denominator": 87,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 87,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_visible": {
+            "denominator": 87,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "logs": {
+          "ground_truth_exact_visible": {
+            "denominator": 87,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "ground_truth_service_visible": {
+            "denominator": 87,
+            "numerator": 1,
+            "value": 0.011494252873563218
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 87,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "initial_visible": {
+            "denominator": 87,
+            "numerator": 32,
+            "value": 0.367816091954023
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 87,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "metrics_top1_visible": {
+            "denominator": 87,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "metrics": {
+          "ground_truth_exact_visible": {
+            "denominator": 87,
+            "numerator": 15,
+            "value": 0.1724137931034483
+          },
+          "ground_truth_service_visible": {
+            "denominator": 87,
+            "numerator": 30,
+            "value": 0.3448275862068966
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 87,
+            "numerator": 5,
+            "value": 0.05747126436781609
+          },
+          "initial_visible": {
+            "denominator": 87,
+            "numerator": 30,
+            "value": 0.3448275862068966
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 87,
+            "numerator": 15,
+            "value": 0.1724137931034483
+          },
+          "metrics_top1_visible": {
+            "denominator": 87,
+            "numerator": 79,
+            "value": 0.9080459770114943
+          }
+        },
+        "topology": {
+          "ground_truth_exact_visible": {
+            "denominator": 87,
+            "numerator": 87,
+            "value": 1.0
+          },
+          "ground_truth_service_visible": {
+            "denominator": 87,
+            "numerator": 71,
+            "value": 0.8160919540229885
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 87,
+            "numerator": 83,
+            "value": 0.9540229885057471
+          },
+          "initial_visible": {
+            "denominator": 87,
+            "numerator": 83,
+            "value": 0.9540229885057471
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 87,
+            "numerator": 79,
+            "value": 0.9080459770114943
+          },
+          "metrics_top1_visible": {
+            "denominator": 87,
+            "numerator": 79,
+            "value": 0.9080459770114943
+          }
+        },
+        "traces": {
+          "ground_truth_exact_visible": {
+            "denominator": 87,
+            "numerator": 19,
+            "value": 0.21839080459770116
+          },
+          "ground_truth_service_visible": {
+            "denominator": 87,
+            "numerator": 19,
+            "value": 0.21839080459770116
+          },
+          "initial_and_ground_truth_co_visible": {
+            "denominator": 87,
+            "numerator": 7,
+            "value": 0.08045977011494253
+          },
+          "initial_visible": {
+            "denominator": 87,
+            "numerator": 20,
+            "value": 0.22988505747126436
+          },
+          "metrics_top1_and_ground_truth_co_visible": {
+            "denominator": 87,
+            "numerator": 1,
+            "value": 0.011494252873563218
+          },
+          "metrics_top1_visible": {
+            "denominator": 87,
+            "numerator": 3,
+            "value": 0.034482758620689655
+          }
+        }
+      },
+      "service": {
+        "alerts": {
+          "denominator": 87,
+          "numerator": 24,
+          "value": 0.27586206896551724
+        },
+        "any_model_visible": {
+          "denominator": 87,
+          "numerator": 40,
+          "value": 0.45977011494252873
+        },
+        "catalog": {
+          "denominator": 87,
+          "numerator": 71,
+          "value": 0.8160919540229885
+        },
+        "causal": {
+          "denominator": 87,
+          "numerator": 5,
+          "value": 0.05747126436781609
+        },
+        "events": {
+          "denominator": 87,
+          "numerator": 5,
+          "value": 0.05747126436781609
+        },
+        "logs": {
+          "denominator": 87,
+          "numerator": 1,
+          "value": 0.011494252873563218
+        },
+        "metrics": {
+          "denominator": 87,
+          "numerator": 30,
+          "value": 0.3448275862068966
+        },
+        "topology": {
+          "denominator": 87,
+          "numerator": 71,
+          "value": 0.8160919540229885
+        },
+        "traces": {
+          "denominator": 87,
+          "numerator": 19,
+          "value": 0.21839080459770116
+        }
+      }
+    }
+  },
+  "historical_m3_damage_audit": {
+    "confident_wrong_margin_bins": {
+      "0_25_TO_0_50": {
+        "denominator": 6,
+        "numerator": 3,
+        "value": 0.5
+      },
+      "AT_LEAST_0_50": {
+        "denominator": 6,
+        "numerator": 3,
+        "value": 0.5
+      }
+    },
+    "initial_correct_evidence_sufficiency": {
+      "CROSS_SOURCE_SUFFICIENT": {
+        "denominator": 6,
+        "numerator": 2,
+        "value": 0.3333333333333333
+      },
+      "METRICS_LOCAL_SUFFICIENT": {
+        "denominator": 6,
+        "numerator": 1,
+        "value": 0.16666666666666666
+      },
+      "ROOT_NOT_VISIBLE": {
+        "denominator": 6,
+        "numerator": 1,
+        "value": 0.16666666666666666
+      },
+      "TRACE_CAUSAL_SUFFICIENT": {
+        "denominator": 6,
+        "numerator": 2,
+        "value": 0.3333333333333333
+      }
+    },
+    "initial_metrics_rank": {
+      "5": {
+        "denominator": 6,
+        "numerator": 3,
+        "value": 0.5
+      },
+      "ABSENT": {
+        "denominator": 6,
+        "numerator": 3,
+        "value": 0.5
+      }
+    },
+    "metrics_top1_alert_target": {
+      "denominator": 6,
+      "numerator": 0,
+      "value": 0.0
+    },
+    "metrics_top1_downstream": {
+      "denominator": 6,
+      "numerator": 0,
+      "value": 0.0
+    },
+    "metrics_top1_high_fan_in": {
+      "denominator": 6,
+      "numerator": 2,
+      "value": 0.3333333333333333
+    },
+    "metrics_top1_later_than_ground_truth": {
+      "denominator": 6,
+      "numerator": 1,
+      "value": 0.16666666666666666
+    },
+    "traffic_volume_available": {
+      "denominator": 6,
+      "numerator": 0,
+      "value": 0.0
+    }
+  },
+  "historical_m3_override_decomposition": {
+    "ALERT_TARGET_OVERRIDE": {
+      "denominator": 36,
+      "numerator": 0,
+      "value": 0.0
+    },
+    "CORRECT_LOCAL_ANOMALY_ROOT": {
+      "denominator": 36,
+      "numerator": 0,
+      "value": 0.0
+    },
+    "DOWNSTREAM_SYMPTOM_OVERRIDE": {
+      "denominator": 36,
+      "numerator": 0,
+      "value": 0.0
+    },
+    "HIGH_MARGIN_NON_CAUSAL_ANOMALY": {
+      "denominator": 36,
+      "numerator": 4,
+      "value": 0.1111111111111111
+    },
+    "RANKING_PROJECTION_ERROR": {
+      "denominator": 36,
+      "numerator": 0,
+      "value": 0.0
+    },
+    "ROOT_NOT_IN_METRICS_CANDIDATES": {
+      "denominator": 36,
+      "numerator": 29,
+      "value": 0.8055555555555556
+    },
+    "UNRESOLVED": {
+      "denominator": 36,
+      "numerator": 0,
+      "value": 0.0
+    },
+    "WRONG_LAYER_OVERRIDE": {
+      "denominator": 36,
+      "numerator": 3,
+      "value": 0.08333333333333333
+    }
+  },
+  "no_graph_path": {
+    "denominator": 103,
+    "numerator": 82,
+    "value": 0.7961165048543689
+  },
+  "obss_historical_m3_rescue_mechanisms": {
+    "LOCAL_RESOURCE_ROOT": {
+      "denominator": 49,
+      "numerator": 2,
+      "value": 0.04081632653061224
+    },
+    "NETWORK_LOCAL_ROOT": {
+      "denominator": 49,
+      "numerator": 44,
+      "value": 0.8979591836734694
+    },
+    "SERVICE_LEVEL_TARGET": {
+      "denominator": 49,
+      "numerator": 3,
+      "value": 0.061224489795918366
+    }
+  },
+  "propagation_roles": {
+    "historical_m3": {
+      "ALERT_TARGET_ONLY": {
+        "denominator": 103,
+        "numerator": 5,
+        "value": 0.04854368932038835
+      },
+      "DOWNSTREAM_SYMPTOM": {
+        "denominator": 103,
+        "numerator": 8,
+        "value": 0.07766990291262135
+      },
+      "NO_GRAPH_PATH": {
+        "denominator": 103,
+        "numerator": 56,
+        "value": 0.5436893203883495
+      },
+      "NO_TEMPORAL_SIGNAL": {
+        "denominator": 103,
+        "numerator": 33,
+        "value": 0.32038834951456313
+      },
+      "UPSTREAM_OF_ROOT": {
+        "denominator": 103,
+        "numerator": 1,
+        "value": 0.009708737864077669
+      }
+    },
+    "initial": {
+      "ALERT_TARGET_ONLY": {
+        "denominator": 103,
+        "numerator": 10,
+        "value": 0.0970873786407767
+      },
+      "DOWNSTREAM_SYMPTOM": {
+        "denominator": 103,
+        "numerator": 15,
+        "value": 0.14563106796116504
+      },
+      "NO_GRAPH_PATH": {
+        "denominator": 103,
+        "numerator": 27,
+        "value": 0.2621359223300971
+      },
+      "NO_TEMPORAL_SIGNAL": {
+        "denominator": 103,
+        "numerator": 49,
+        "value": 0.47572815533980584
+      },
+      "UPSTREAM_OF_ROOT": {
+        "denominator": 103,
+        "numerator": 2,
+        "value": 0.019417475728155338
+      }
+    },
+    "metrics_top1": {
+      "ALERT_TARGET_ONLY": {
+        "denominator": 103,
+        "numerator": 3,
+        "value": 0.02912621359223301
+      },
+      "NO_GRAPH_PATH": {
+        "denominator": 103,
+        "numerator": 82,
+        "value": 0.7961165048543689
+      },
+      "NO_TEMPORAL_SIGNAL": {
+        "denominator": 103,
+        "numerator": 18,
+        "value": 0.17475728155339806
+      }
+    }
+  },
+  "root_correct_fault_exact_wrong": {
+    "denominator": 103,
+    "numerator": 16,
+    "value": 0.1553398058252427
+  },
+  "root_visibility_funnel": {
+    "ground_truth_in_any_model_visible_evidence": {
+      "denominator": 103,
+      "numerator": 44,
+      "value": 0.42718446601941745
+    },
+    "ground_truth_in_catalog": {
+      "denominator": 103,
+      "numerator": 103,
+      "value": 1.0
+    },
+    "ground_truth_in_causal_evidence": {
+      "denominator": 103,
+      "numerator": 2,
+      "value": 0.019417475728155338
+    },
+    "ground_truth_in_metrics_top6": {
+      "denominator": 103,
+      "numerator": 27,
+      "value": 0.2621359223300971
+    },
+    "historical_m3_selected_ground_truth": {
+      "denominator": 103,
+      "numerator": 10,
+      "value": 0.0970873786407767
+    },
+    "initial_selected_ground_truth": {
+      "denominator": 103,
+      "numerator": 16,
+      "value": 0.1553398058252427
+    }
+  },
+  "schema_version": "rca100-propagation-visibility-attribution.v1",
+  "strong_single_failure_decomposition": {
+    "ALERT_TARGET_BIAS": {
+      "denominator": 87,
+      "numerator": 0,
+      "value": 0.0
+    },
+    "DOWNSTREAM_SYMPTOM_SELECTED": {
+      "denominator": 87,
+      "numerator": 9,
+      "value": 0.10344827586206896
+    },
+    "ENTITY_LAYER_MISMATCH": {
+      "denominator": 87,
+      "numerator": 5,
+      "value": 0.05747126436781609
+    },
+    "FAULT_REGIME_MISMATCH": {
+      "denominator": 87,
+      "numerator": 5,
+      "value": 0.05747126436781609
+    },
+    "MODEL_REASONING_FAILURE_WITH_SUFFICIENT_EVIDENCE": {
+      "denominator": 87,
+      "numerator": 4,
+      "value": 0.04597701149425287
+    },
+    "PROMPT_ENTITY_TASK_MISMATCH": {
+      "denominator": 87,
+      "numerator": 0,
+      "value": 0.0
+    },
+    "ROOT_NOT_IN_ENTITY_CATALOG": {
+      "denominator": 87,
+      "numerator": 0,
+      "value": 0.0
+    },
+    "ROOT_NOT_IN_MODEL_VISIBLE_CONTEXT": {
+      "denominator": 87,
+      "numerator": 56,
+      "value": 0.6436781609195402
+    },
+    "ROOT_VISIBLE_BUT_NOT_METRICS_TOPK": {
+      "denominator": 87,
+      "numerator": 4,
+      "value": 0.04597701149425287
+    },
+    "TERMINAL_FAILURE": {
+      "denominator": 87,
+      "numerator": 4,
+      "value": 0.04597701149425287
+    },
+    "UNRESOLVED": {
+      "denominator": 87,
+      "numerator": 0,
+      "value": 0.0
+    },
+    "UPSTREAM_ENTITY_SELECTED": {
+      "denominator": 87,
+      "numerator": 0,
+      "value": 0.0
+    }
+  },
+  "visibility": {
+    "exact": {
+      "alerts": {
+        "denominator": 103,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "any_model_visible": {
+        "denominator": 103,
+        "numerator": 44,
+        "value": 0.42718446601941745
+      },
+      "catalog": {
+        "denominator": 103,
+        "numerator": 103,
+        "value": 1.0
+      },
+      "causal": {
+        "denominator": 103,
+        "numerator": 2,
+        "value": 0.019417475728155338
+      },
+      "events": {
+        "denominator": 103,
+        "numerator": 4,
+        "value": 0.038834951456310676
+      },
+      "logs": {
+        "denominator": 103,
+        "numerator": 0,
+        "value": 0.0
+      },
+      "metrics": {
+        "denominator": 103,
+        "numerator": 27,
+        "value": 0.2621359223300971
+      },
+      "topology": {
+        "denominator": 103,
+        "numerator": 103,
+        "value": 1.0
+      },
+      "traces": {
+        "denominator": 103,
+        "numerator": 27,
+        "value": 0.2621359223300971
+      }
+    },
+    "metrics": {
+      "top_1": {
+        "denominator": 103,
+        "numerator": 7,
+        "value": 0.06796116504854369
+      },
+      "top_2": {
+        "denominator": 103,
+        "numerator": 10,
+        "value": 0.0970873786407767
+      },
+      "top_6": {
+        "denominator": 103,
+        "numerator": 27,
+        "value": 0.2621359223300971
+      }
+    },
+    "per_source": {
+      "alerts": {
+        "ground_truth_exact_visible": {
+          "denominator": 103,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "ground_truth_service_visible": {
+          "denominator": 103,
+          "numerator": 31,
+          "value": 0.30097087378640774
+        },
+        "initial_and_ground_truth_co_visible": {
+          "denominator": 103,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "initial_visible": {
+          "denominator": 103,
+          "numerator": 11,
+          "value": 0.10679611650485436
+        },
+        "metrics_top1_and_ground_truth_co_visible": {
+          "denominator": 103,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "metrics_top1_visible": {
+          "denominator": 103,
+          "numerator": 3,
+          "value": 0.02912621359223301
+        }
+      },
+      "events": {
+        "ground_truth_exact_visible": {
+          "denominator": 103,
+          "numerator": 4,
+          "value": 0.038834951456310676
+        },
+        "ground_truth_service_visible": {
+          "denominator": 103,
+          "numerator": 5,
+          "value": 0.04854368932038835
+        },
+        "initial_and_ground_truth_co_visible": {
+          "denominator": 103,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "initial_visible": {
+          "denominator": 103,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "metrics_top1_and_ground_truth_co_visible": {
+          "denominator": 103,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "metrics_top1_visible": {
+          "denominator": 103,
+          "numerator": 0,
+          "value": 0.0
+        }
+      },
+      "logs": {
+        "ground_truth_exact_visible": {
+          "denominator": 103,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "ground_truth_service_visible": {
+          "denominator": 103,
+          "numerator": 2,
+          "value": 0.019417475728155338
+        },
+        "initial_and_ground_truth_co_visible": {
+          "denominator": 103,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "initial_visible": {
+          "denominator": 103,
+          "numerator": 32,
+          "value": 0.3106796116504854
+        },
+        "metrics_top1_and_ground_truth_co_visible": {
+          "denominator": 103,
+          "numerator": 0,
+          "value": 0.0
+        },
+        "metrics_top1_visible": {
+          "denominator": 103,
+          "numerator": 0,
+          "value": 0.0
+        }
+      },
+      "metrics": {
+        "ground_truth_exact_visible": {
+          "denominator": 103,
+          "numerator": 27,
+          "value": 0.2621359223300971
+        },
+        "ground_truth_service_visible": {
+          "denominator": 103,
+          "numerator": 44,
+          "value": 0.42718446601941745
+        },
+        "initial_and_ground_truth_co_visible": {
+          "denominator": 103,
+          "numerator": 17,
+          "value": 0.1650485436893204
+        },
+        "initial_visible": {
+          "denominator": 103,
+          "numerator": 42,
+          "value": 0.4077669902912621
+        },
+        "metrics_top1_and_ground_truth_co_visible": {
+          "denominator": 103,
+          "numerator": 27,
+          "value": 0.2621359223300971
+        },
+        "metrics_top1_visible": {
+          "denominator": 103,
+          "numerator": 95,
+          "value": 0.9223300970873787
+        }
+      },
+      "topology": {
+        "ground_truth_exact_visible": {
+          "denominator": 103,
+          "numerator": 103,
+          "value": 1.0
+        },
+        "ground_truth_service_visible": {
+          "denominator": 103,
+          "numerator": 87,
+          "value": 0.8446601941747572
+        },
+        "initial_and_ground_truth_co_visible": {
+          "denominator": 103,
+          "numerator": 99,
+          "value": 0.9611650485436893
+        },
+        "initial_visible": {
+          "denominator": 103,
+          "numerator": 99,
+          "value": 0.9611650485436893
+        },
+        "metrics_top1_and_ground_truth_co_visible": {
+          "denominator": 103,
+          "numerator": 95,
+          "value": 0.9223300970873787
+        },
+        "metrics_top1_visible": {
+          "denominator": 103,
+          "numerator": 95,
+          "value": 0.9223300970873787
+        }
+      },
+      "traces": {
+        "ground_truth_exact_visible": {
+          "denominator": 103,
+          "numerator": 27,
+          "value": 0.2621359223300971
+        },
+        "ground_truth_service_visible": {
+          "denominator": 103,
+          "numerator": 27,
+          "value": 0.2621359223300971
+        },
+        "initial_and_ground_truth_co_visible": {
+          "denominator": 103,
+          "numerator": 15,
+          "value": 0.14563106796116504
+        },
+        "initial_visible": {
+          "denominator": 103,
+          "numerator": 28,
+          "value": 0.27184466019417475
+        },
+        "metrics_top1_and_ground_truth_co_visible": {
+          "denominator": 103,
+          "numerator": 2,
+          "value": 0.019417475728155338
+        },
+        "metrics_top1_visible": {
+          "denominator": 103,
+          "numerator": 4,
+          "value": 0.038834951456310676
+        }
+      }
+    },
+    "service": {
+      "alerts": {
+        "denominator": 103,
+        "numerator": 31,
+        "value": 0.30097087378640774
+      },
+      "any_model_visible": {
+        "denominator": 103,
+        "numerator": 56,
+        "value": 0.5436893203883495
+      },
+      "catalog": {
+        "denominator": 103,
+        "numerator": 87,
+        "value": 0.8446601941747572
+      },
+      "causal": {
+        "denominator": 103,
+        "numerator": 9,
+        "value": 0.08737864077669903
+      },
+      "events": {
+        "denominator": 103,
+        "numerator": 5,
+        "value": 0.04854368932038835
+      },
+      "logs": {
+        "denominator": 103,
+        "numerator": 2,
+        "value": 0.019417475728155338
+      },
+      "metrics": {
+        "denominator": 103,
+        "numerator": 44,
+        "value": 0.42718446601941745
+      },
+      "topology": {
+        "denominator": 103,
+        "numerator": 87,
+        "value": 0.8446601941747572
+      },
+      "traces": {
+        "denominator": 103,
+        "numerator": 27,
+        "value": 0.2621359223300971
+      }
+    }
+  },
+  "wrong_to_wrong_audit": {
+    "ground_truth_candidate_earlier_than_top1": {
+      "denominator": 30,
+      "numerator": 1,
+      "value": 0.03333333333333333
+    },
+    "ground_truth_in_metrics_top6": {
+      "denominator": 30,
+      "numerator": 4,
+      "value": 0.13333333333333333
+    },
+    "top1_upstream_or_root": {
+      "denominator": 30,
+      "numerator": 0,
+      "value": 0.0
+    },
+    "topology_or_trace_can_exclude_top1": {
+      "denominator": 30,
+      "numerator": 1,
+      "value": 0.03333333333333333
+    }
+  },
+  "wrong_to_wrong_roles": {
+    "NO_GRAPH_PATH": {
+      "denominator": 30,
+      "numerator": 29,
+      "value": 0.9666666666666667
+    },
+    "NO_TEMPORAL_SIGNAL": {
+      "denominator": 30,
+      "numerator": 1,
+      "value": 0.03333333333333333
+    }
+  }
+}
+```

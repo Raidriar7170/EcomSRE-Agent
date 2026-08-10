@@ -1,0 +1,34 @@
+{
+  "schema_version": "rca100.scoring-lock.v1",
+  "primary": "SAME_RUN_INITIAL_TO_FINAL_ROOT_ENTITY_HIT_AT_1",
+  "entity_match": "EXACT_ID_OR_EXPLICIT_SAME_AS_ELSE_NORMALIZED_EXACT_NAME",
+  "fault_match": "UNICODE_NFC_TRIM_CASEFOLD_EXACT",
+  "fuzzy_match": false,
+  "fixed_denominator": 103,
+  "bootstrap_replicates": 10000,
+  "bootstrap_seed": 20260810,
+  "confidence_interval": "95_PERCENTILE_PAIRED",
+  "sensitivity": "EXACT_TWO_SIDED_MCNEMAR",
+  "superiority_rule": "POINT_GT_0_AND_CI_LOWER_GT_0",
+  "root_damage_rate": "ROOT_DAMAGE_DIVIDED_BY_INITIAL_ROOT_CORRECT_ELSE_ZERO",
+  "descriptive_subgroups": [
+    "FAULT_CATEGORY",
+    "NORMALIZED_EXACT_FAULT_TYPE",
+    "ROOT_ENTITY_DOMAIN_TYPE",
+    "ALERT_ENTITY_TYPE",
+    "M3_ACTION",
+    "M3_APPLICABILITY",
+    "INITIAL_RANK_EXACT_OR_NONE",
+    "NORMALIZED_MARGIN_BIN",
+    "METRICS_PROJECTION_STATUS"
+  ],
+  "margin_bins": [
+    "NONE",
+    "[0.00,0.25)",
+    "[0.25,0.50)",
+    "[0.50,+inf)"
+  ],
+  "subgroup_use": "DESCRIPTIVE_ONLY_WITH_DENOMINATOR",
+  "official_process_status": "OFFICIAL_COMPOSITE_NOT_AVAILABLE",
+  "config_sha256": "fe9934f84ff65803ac28dafa05c69ee1141465531af590cad5072af2f9c0a6c3"
+}

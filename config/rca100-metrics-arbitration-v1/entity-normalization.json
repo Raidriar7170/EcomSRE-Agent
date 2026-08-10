@@ -1,0 +1,14 @@
+{
+  "schema_version": "rca100.entity-normalization.v1",
+  "entity_ref": "<domain>|<type>|<entity_id>",
+  "unicode": "NFC",
+  "trim": true,
+  "casefold_normalized_comparison": true,
+  "collapse_whitespace": true,
+  "explicit_same_as": true,
+  "parent_mapping_relations": ["contains", "hosts"],
+  "fuzzy_matching": false,
+  "edit_distance": false,
+  "suffix_rules": false,
+  "config_sha256": "30c8fb0af7d82e6986cfa8ec1a64a71c94f13e15ffc958386f50135b34bc931a"
+}

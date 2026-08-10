@@ -1,0 +1,19 @@
+{
+  "schema_version": "rca100.budget-lock.v1",
+  "fixed_cases": 103,
+  "semantic_operations_per_case": 1,
+  "max_provider_attempts_holdout": 206,
+  "max_transport_retries_holdout": 103,
+  "max_transport_retries_per_operation": 1,
+  "prompt_token_reservation_per_attempt": 29952,
+  "max_completion_tokens_per_attempt": 2048,
+  "attempt_token_reservation": 32000,
+  "max_conservative_tokens_holdout": 6592000,
+  "preflight_requests": 1,
+  "preflight_max_attempts": 2,
+  "minimum_request_spacing_seconds": 5,
+  "retry_after_cap_seconds": 10,
+  "semantic_retry": 0,
+  "schema_retry": 0,
+  "result_driven_retry": 0
+}

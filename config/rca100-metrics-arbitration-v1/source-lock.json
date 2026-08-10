@@ -1,0 +1,16 @@
+{
+  "schema_version": "rca100.public-source-lock.v1",
+  "repository": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval.git",
+  "commit": "fd92cae17e6e14fa3ed0f3963c31838151fbdaa7",
+  "license": "CC BY-NC-SA 4.0",
+  "manifest_tasks": 103,
+  "case_directories": 103,
+  "agent_facing_files": 721,
+  "input_tree_sha256": "8ab512ce9ad041ed1ffd89226c2df77d3bb741fed08990854f481794c98585bb",
+  "fresh_content_tree_sha256": "aca130e350330000e0d9bc575606e3a5378178b6d7e0c2afb5cf13910596fea9",
+  "fresh_content_tree_algorithm": "SORTED_RELATIVE_PATH_NUL_SHA256_NEWLINE_V1",
+  "per_task_tree_manifest_sha256": "13d736bd80088658bc9d0136b33b39b7c17a6b5dcff32c2ba73d85bfd1d317e9",
+  "source_lock_sha256": "f99c48e69d240bedbfe9d441fef1effd6ede0ef66b28f33859fddc45aa89356e",
+  "lfs_fsck": "PASS_SCOPED_TO_AGENT_FACING_CASES",
+  "label_files_materialized_pre_execution": false
+}
