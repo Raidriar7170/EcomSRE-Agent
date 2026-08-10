@@ -1,0 +1,10 @@
+{
+  "schema_version": "rca100.public-schedule-lock.v1",
+  "seed": 20260810,
+  "records": 103,
+  "unique_source_tasks": 103,
+  "unique_opaque_cases": 103,
+  "unique_run_ids": 103,
+  "private_schedule_canonical_sha256": "00604fa3157edde3597a7ef6758637be06a099051181d921cc35a7f305c4459e",
+  "mapping_publication": "FORBIDDEN"
+}

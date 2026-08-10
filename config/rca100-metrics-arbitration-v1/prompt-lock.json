@@ -1,0 +1,10 @@
+{
+  "schema_version": "rca100.prompt-lock.v1",
+  "prompt_style": "STRONG_SINGLE_DIRECT_DIAGNOSIS",
+  "function_name": "submit_rca100_initial_diagnosis",
+  "prompt_sha256": "65497603adf2884e837c70b9a874eb172eba3d582f10061026716ef15a4a7fc5",
+  "output_schema_sha256": "26ea69ec4708d5c30d18be4928807ab460200d3372fd17b7cbc333a8b88f7ded",
+  "model_knows_downstream_action": false,
+  "model_calls_per_case": 1,
+  "remediation_requested": false
+}

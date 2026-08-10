@@ -1,0 +1,12 @@
+{
+  "schema_version": "rca100.model-lock.v1",
+  "provider": "openai-compatible",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "n": 1,
+  "parallel_tool_calls": false,
+  "timeout_seconds": 30.0,
+  "max_completion_tokens": 2048,
+  "fallback": "NO_FALLBACK"
+}

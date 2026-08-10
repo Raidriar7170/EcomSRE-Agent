@@ -1,0 +1,20 @@
+{
+  "schema_version": "rca100.metrics-projection-lock.v1",
+  "formula": "F0",
+  "formula_expression": "abs(post_mean-pre_mean)/max(abs(pre_mean),1e-9)",
+  "epsilon": 1e-9,
+  "pre_window": "[task_window_start,anchor)",
+  "post_window": "[anchor,task_window_end]",
+  "minimum_pre_samples": 3,
+  "minimum_post_samples": 3,
+  "series_key": ["entity_ref", "metric", "metric_set_id", "service"],
+  "entity_aggregation": "BEST_SERIES_PER_ENTITY",
+  "top_k": 6,
+  "tie_domain": "rca100-metrics-f0-tie-v1",
+  "normalized_margin_threshold": 0.25,
+  "initial_rank_condition": "NONE_OR_GREATER_THAN_2",
+  "top1_equals_initial": "KEEP_INITIAL",
+  "unavailable": "KEEP_INITIAL",
+  "fault_type": "PRESERVE_MODEL_INITIAL",
+  "config_sha256": "d6a06357ae6d214171e9ee2c64993f62dabed1bc3758ddd5aec27cd735b4325f"
+}
