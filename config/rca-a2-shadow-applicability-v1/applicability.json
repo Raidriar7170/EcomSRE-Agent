@@ -1,0 +1,111 @@
+{
+  "schema_version": "hierarchical-a2-shadow-v1.applicability.v1",
+  "evaluation_version": "hierarchical-a2-shadow-v1",
+  "starting_commit": "5b972b3a3dc00830e0d69df27c38935f3c4846ac",
+  "classification": [
+    "CONSUMED_CROSS_BENCHMARK_DEVELOPMENT",
+    "LIVE_DEVELOPMENT_EVALUATION",
+    "NOT_EXTERNAL_VALIDATION",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "authoritative_runtime": {
+    "option": "A0",
+    "name": "STRONG_SINGLE_HIERARCHICAL",
+    "action": "KEEP_INITIAL"
+  },
+  "a2_reference": {
+    "id": "G0_A2_REFERENCE",
+    "initial_rank": "ABSENT_OR_GREATER_THAN_2",
+    "minimum_normalized_margin": 0.25,
+    "requires_compatible_layers": true,
+    "forbids_metrics_top1_downstream": true,
+    "forbids_metrics_top1_equal_initial": true
+  },
+  "design_prefix": [
+    {"fixture": "RCA100", "count": 103},
+    {"fixture": "candidate-3", "count": 60},
+    {"fixture": "candidate-4", "count": 60},
+    {"fixture": "candidate-5", "count": 60}
+  ],
+  "gates": [
+    {
+      "id": "G0_A2_REFERENCE",
+      "conditions": ["A2_EXACT_FROZEN_RULE"]
+    },
+    {
+      "id": "G1_EXACT_LAYER_A2",
+      "conditions": [
+        "A2_EXACT_FROZEN_RULE",
+        "INITIAL_LAYER_EQUALS_METRICS_TOP1_LAYER",
+        "LAYER_NOT_UNKNOWN_OR_OPERATION"
+      ]
+    },
+    {
+      "id": "G2_ROOT_ELIGIBLE_LAYER_A2",
+      "conditions": [
+        "A2_EXACT_FROZEN_RULE",
+        "BOTH_LAYERS_ROOT_ELIGIBLE"
+      ]
+    },
+    {
+      "id": "G3_CROSS_SOURCE_SUPPORTED_A2",
+      "conditions": [
+        "A2_EXACT_FROZEN_RULE",
+        "METRICS_TOP1_EXACT_IN_LOGS_TRACES_EVENTS_OR_ALERTS"
+      ]
+    },
+    {
+      "id": "G4_EXACT_LAYER_CROSS_SOURCE_A2",
+      "conditions": [
+        "G1_EXACT_LAYER_A2",
+        "G3_CROSS_SOURCE_SUPPORTED_A2"
+      ]
+    }
+  ],
+  "root_eligible_layers": [
+    "SERVICE",
+    "WORKLOAD",
+    "NODE",
+    "DATABASE",
+    "CACHE",
+    "MESSAGE_QUEUE",
+    "NETWORK_COMPONENT",
+    "CLUSTER",
+    "INFRASTRUCTURE"
+  ],
+  "acceptance": {
+    "rca100": {
+      "minimum_root_net_rescue": 0,
+      "final_exact_not_below_initial": true,
+      "maximum_root_damage_rate": 0.1,
+      "if_damage_then_rescue_strictly_greater": true
+    },
+    "each_obss_fixture": {
+      "minimum_root_net_rescue": 0,
+      "maximum_root_damage": 2
+    },
+    "obss_aggregate": {
+      "root_net_rescue_strictly_positive": true,
+      "minimum_g0_net_retained_fraction": 0.5
+    },
+    "robustness": {
+      "minimum_nonnegative_fault_family_fold_fraction": 0.8,
+      "minimum_nonnegative_entity_layer_fold_fraction": 0.8
+    },
+    "cost": {"model_calls": 1, "specialist_calls": 0, "fusion_calls": 0}
+  },
+  "selection_priority": [
+    "RCA100_ROOT_NET_RESCUE_DESC",
+    "OBSS_ROOT_NET_RESCUE_DESC",
+    "ROOT_DAMAGE_ASC",
+    "MINIMUM_FOLD_NET_RESCUE_DESC",
+    "OVERRIDE_COUNT_ASC",
+    "GATE_COMPLEXITY_ASC"
+  ],
+  "no_gate_verdict": "A2_APPLICABILITY_GATE_NOT_SUPPORTED_KEEP_A0",
+  "provider_boundary": {
+    "construct_only_if_gate_selected": true,
+    "live_shadow_only_if_gate_selected": true,
+    "regression_only_after_live_shadow_and_promotion": true
+  }
+}
