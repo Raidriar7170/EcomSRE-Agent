@@ -88,7 +88,10 @@ class BoundaryVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_Constant(self, node: ast.Constant) -> None:
-        if node.value in {"root_cause_service", "fault"}:
+        if isinstance(node.value, str) and node.value in {
+            "root_cause_service",
+            "fault",
+        }:
             current_function = self.function_stack[-1] if self.function_stack else None
             allowed = (
                 self.role == "RUNTIME"
