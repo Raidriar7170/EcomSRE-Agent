@@ -1,0 +1,33 @@
+{
+  "combined": {
+    "h1_input_token_ratio_max": 1.35,
+    "h1_latency_ratio_max": 1.4,
+    "h1_mean_model_calls": 1.0,
+    "root_net_rescue_min_exclusive": 0,
+    "specialist_and_fusion_calls": 0
+  },
+  "failure_marker": "HIERARCHICAL_STRONG_SINGLE_LIVE_TUNE_NOT_PASSED",
+  "obss": {
+    "completed_per_arm_min": 58,
+    "denominator": 60,
+    "pair_net_rescue_min": 0,
+    "root_damage_max": 2,
+    "root_net_rescue_min": 0
+  },
+  "rca100": {
+    "completed_per_arm_min": 98,
+    "denominator": 103,
+    "downstream_symptom_selection_delta_max": 0,
+    "entity_layer_mismatch_delta_max": 0,
+    "exact_root_damage_max": 2,
+    "exact_root_net_rescue_min": 3,
+    "exact_root_rescue_strictly_greater_than_damage": true,
+    "h1_exact_root_not_less_than_b0": true,
+    "service_root_net_rescue_min": 0
+  },
+  "schema_version": "strong-single-hierarchical-live.tune-gates.v1",
+  "shared_execution": {
+    "http_429_terminal_max": 0,
+    "schema_privacy_schedule_failure_max": 0
+  }
+}

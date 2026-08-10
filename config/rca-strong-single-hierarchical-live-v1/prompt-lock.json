@@ -1,0 +1,9 @@
+{
+  "b0_prompt_semantics": "PR22_STRONG_SINGLE_PROMPT_SEMANTICS_IDENTITY_NEUTRALIZED",
+  "b0_system_prompt_sha256": "6b64c9e43f25029ca2f76f491faf98906c70fe888270284bf4bd3ff47e564049",
+  "h1_addition": "GENERIC_HIERARCHY_PROPAGATION_AND_FAULT_ONTOLOGY_GUIDANCE_ONLY",
+  "h1_system_prompt_sha256": "d623d23e2df7a28e6fb62741bf167434d908bb191c44dfb5ca210fee5fef110b",
+  "output_schema": "strong-single.diagnosis.identity-neutralized",
+  "output_schema_sha256": "ebd16c28208b6981e4002e8c785e754a2d46ea2ed26f4ff28b05fe84066a8413",
+  "schema_version": "strong-single-hierarchical-live.prompt-lock.v1"
+}

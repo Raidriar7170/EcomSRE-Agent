@@ -10,6 +10,7 @@ on:
       - "scripts/rcaeval_v2/**"
       - "scripts/rcaeval_adaptive/**"
       - "scripts/rca100/**"
+      - "scripts/rca_live/**"
       - "scripts/analysis/**"
       - "tests/benchmarks/rcaeval_v2/**"
       - "tests/benchmarks/rcaeval_adaptive/**"
@@ -22,9 +23,12 @@ on:
       - "config/rcaeval-adaptive-v1/**"
       - "config/rca100-metrics-arbitration-v1/**"
       - "config/rca-crossbenchmark-architecture-convergence-v1/**"
+      - "config/rca-strong-single-hierarchical-live-v1/**"
       - "docs/analysis/**"
       - "docs/design/rca-crossbenchmark-architecture-decision.md"
       - "docs/design/unified-hierarchical-rca-v1-spec.md"
+      - "docs/design/strong-single-hierarchical-live-v1-*"
+      - "docs/results/strong-single-hierarchical-live-v1-*"
       - "docs/results/unified-hierarchical-rca-v1-*"
       - "docs/**/rcaeval-re2-v2-dev*"
       - "docs/design/rcaeval-agent-redesign-handoff.md"
@@ -48,12 +52,16 @@ jobs:
       - run: uv sync --frozen --group ci
       - run: uv pip install --python .venv --requirement config/rca100-metrics-arbitration-v1/python-dependency-lock.txt
       - run: uv run --frozen --no-sync pytest -q tests/analysis tests/benchmarks/rcaeval_v2 tests/benchmarks/rcaeval_adaptive tests/benchmarks/rca100
-      - run: uv run --frozen --no-sync ruff check src/ecomsre_rcaeval_v2 src/ecomsre_rcaeval_adaptive src/ecomsre_rca100 src/ecomsre_rca_unified scripts/analysis scripts/rcaeval_v2 scripts/rcaeval_adaptive scripts/rca100 tests/analysis tests/benchmarks/rcaeval_v2 tests/benchmarks/rcaeval_adaptive tests/benchmarks/rca100
-      - run: uv run --frozen --no-sync mypy src/ecomsre_rcaeval_v2 src/ecomsre_rcaeval_adaptive src/ecomsre_rca100 src/ecomsre_rca_unified scripts/analysis scripts/rcaeval_v2 scripts/rcaeval_adaptive scripts/rca100
+      - run: uv run --frozen --no-sync ruff check src/ecomsre_rcaeval_v2 src/ecomsre_rcaeval_adaptive src/ecomsre_rca100 src/ecomsre_rca_unified scripts/analysis scripts/rcaeval_v2 scripts/rcaeval_adaptive scripts/rca100 scripts/rca_live tests/analysis tests/benchmarks/rcaeval_v2 tests/benchmarks/rcaeval_adaptive tests/benchmarks/rca100
+      - run: uv run --frozen --no-sync mypy src/ecomsre_rcaeval_v2 src/ecomsre_rcaeval_adaptive src/ecomsre_rca100 src/ecomsre_rca_unified scripts/analysis scripts/rcaeval_v2 scripts/rcaeval_adaptive scripts/rca100 scripts/rca_live
       - name: Scan RCA100 pre-execution runtime for label markers
         run: >-
           uv run --frozen --no-sync python -c
           "from pathlib import Path; from ecomsre_rca100.public_projection import scan_preexecution_runtime, verify_runtime_evaluator_import_separation; root=Path.cwd(); assert not scan_preexecution_runtime(root); verify_runtime_evaluator_import_separation(root)"
+      - name: Scan live B0/H1 label and evaluator separation
+        run: >-
+          uv run --frozen --no-sync python scripts/rca_live/scan_boundaries.py
+          --project-root .
       - name: Scan v2 development public outputs for leakage
         run: >-
           uv run --frozen --no-sync python -m scripts.rcaeval_v2.scan_public_outputs

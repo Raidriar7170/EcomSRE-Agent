@@ -1,0 +1,23 @@
+{
+  "arm_order": "PAIR_ODD_B0_H1_PAIR_EVEN_H1_B0",
+  "case_order": "PYTHON_RANDOM_SHUFFLE_FROZEN_SEED",
+  "case_pairs": 163,
+  "datasets": {
+    "OBSS_CONSUMED_TUNE": {
+      "case_count": 60,
+      "case_selection": "LABEL_BLIND_CONSUMED_TERMINAL_CASE_ID_PROJECTION",
+      "terminal_tree_sha256": "d3e8aba8514b8f688107f1d5728dd4c5e476b28dc3b6a86fc9a2a8b4f43e9363"
+    },
+    "RCA100_CONSUMED": {
+      "case_count": 103,
+      "input_source_lock_sha256": "3401e955d0bcc780d1d3fc80532d91ec1a0d7e960b18da92f065c6b07c976f62",
+      "per_task_tree_manifest_sha256": "103917d8a24c6e73dda31e3d9b56bc3e799ea25486270309c15e07f7a1fc1747"
+    }
+  },
+  "mapping_publication": "FORBIDDEN",
+  "provider_sees_source_ids": false,
+  "regression_consumed_terminal_tree_sha256": "7e1d563c248cbe8d082fa84b07d48fd283034815a8a4f4940f68f037d18ac0d7",
+  "schema_version": "strong-single-hierarchical-live.public-schedule.v1",
+  "seed": 20260812,
+  "semantic_model_calls": 326
+}

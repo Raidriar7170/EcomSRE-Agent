@@ -1,0 +1,45 @@
+{
+  "arms": {
+    "B0": "BASELINE_STRONG_SINGLE",
+    "H1": "STRONG_SINGLE_HIERARCHICAL"
+  },
+  "benchmark_identity_model_visible": false,
+  "classification": [
+    "CONSUMED_DEVELOPMENT_EVALUATION",
+    "NOT_EXTERNAL_VALIDATION",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "evaluation_version": "strong-single-hierarchical-live-dev-v1",
+  "ground_truth_runtime_visible": false,
+  "obss_case_selection": "LABEL_BLIND_CONSUMED_TERMINAL_CASE_ID_PROJECTION",
+  "model_calls_per_arm": 1,
+  "override_calls": 0,
+  "provider_payload_source_ids": false,
+  "runtime_diagnosis_metadata": [
+    "ENTITY_LAYER",
+    "SERVICE_ANCESTOR",
+    "ROOT_PROVENANCE",
+    "FAULT_ONTOLOGY_CLASS",
+    "VISIBILITY_SUMMARY"
+  ],
+  "regression": {
+    "arm_order": "ALTERNATING_BY_PAIR",
+    "case_pairs": 120,
+    "dataset": "OBSS_CONSUMED_REGRESSION",
+    "seed": 20260813,
+    "semantic_model_calls": 240
+  },
+  "schema_version": "strong-single-hierarchical-live.protocol.v1",
+  "specialist_calls": 0,
+  "fusion_model_calls": 0,
+  "tune": {
+    "arm_order": "ALTERNATING_BY_PAIR",
+    "case_pairs": 163,
+    "datasets": {
+      "OBSS_CONSUMED_TUNE": 60,
+      "RCA100_CONSUMED": 103
+    },
+    "seed": 20260812,
+    "semantic_model_calls": 326
+  }
+}

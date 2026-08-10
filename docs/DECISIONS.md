@@ -484,6 +484,52 @@ deployment, merge, or an external-validity claim. A fresh external holdout is
 plan-only and may be written only after a passing Regression; acquiring or
 running it requires separate authorization.
 
+## DEC-031 — Strong Single Hierarchical Live Development Comparison
+
+**Status: `accepted`. This is a paired, consumed-development comparison only;
+it is not external validation, a release decision, or a production claim.**
+
+The comparison freezes two one-model-call arms. `B0` retains the Strong Single
+prompt semantics and bounded visible Metrics, Logs, and Traces. `H1` uses the
+same model, sampling controls, raw bounded evidence, evidence limits, output
+schema, and one-call contract, while adding only a deterministic label-free
+entity hierarchy and generic hierarchy guidance. Both arms prohibit Specialist
+and Fusion model calls. Runtime payloads contain neither benchmark/source case
+identities nor evaluator truth.
+
+The TUNE schedule contains 103 consumed RCA100 cases and 60 consumed OB/SS
+cases, with both arms executed for every case in alternating order after a
+fixed-seed shuffle. Provider use is admitted only after the implementation is
+committed, frozen, reviewed through a Draft PR, and applicable CI succeeds. Two
+synthetic non-case preflight requests precede the one-shot TUNE. A final HTTP
+429 stops new pair admission, and a started arm is never reissued. Ground truth
+may be acquired only after all TUNE terminals are create-once locked.
+
+OB/SS membership and runtime loading are label-free before that lock: consumed
+terminal `case_id` values select ordinal `TelemetryCase` descriptors, and no
+pre-execution code parses the service/fault directory encoding. Four superseded
+pre-freeze control generations are preserved, each with zero Provider and Ground
+Truth access: label-boundary repair, context-audit schema repair, Provider-payload
+identity repair, and control-generation repair. Only the clean v5 control is
+execution-eligible. Its create-once audit validates B0/H1 contexts for all 163 TUNE
+cases, with zero duplicate entities, invalid references, or truncations; H1 has
+maximum 53 entities and 12 propagation relations, maximum estimated input 6304
+tokens, and mean H1/B0 input ratio 1.322520977196969. A dedicated CI scanner covers
+the complete new runtime and CLI surface.
+
+Only a passing frozen TUNE gate permits the exact H1 candidate to proceed to
+one 120-case paired OB/SS Regression. TUNE or Regression may not be rerun, and
+H1 may not be modified after live results. Case-level records, source IDs,
+answers, evidence references, Provider responses, credentials, and private
+paths remain outside Git; public output is aggregate-only and canonically
+verified.
+
+This decision authorizes the bounded implementation, synthetic preflight, and
+one-shot consumed-development execution described above. It does not authorize
+RE2-TT access, fresh external data, post-result tuning, a Multi-Agent or
+Specialist/Fusion candidate, release, deployment, tag creation, or merge of the
+new live-evaluation PR.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)

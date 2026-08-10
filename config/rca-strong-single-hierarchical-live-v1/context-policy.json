@@ -1,0 +1,91 @@
+{
+  "b0": {
+    "bounded_evidence_per_source": 6,
+    "sources": [
+      "METRICS",
+      "LOGS",
+      "TRACES"
+    ],
+    "visible_entity_catalog": "SOURCE_NATIVE_STRONG_SINGLE_PROJECTION"
+  },
+  "entity_card_fields": [
+    "entity_ref",
+    "layer",
+    "service_ancestor_or_none",
+    "parent_ref_or_none",
+    "relation_to_alert",
+    "topology_distance_or_none",
+    "visible_sources",
+    "first_anomaly_source_or_none"
+  ],
+  "entity_index_cap": 64,
+  "entity_index_inclusion": [
+    "B0_BOUNDED_EVIDENCE_ENTITIES",
+    "ALERT_ENTITY",
+    "EXPLICIT_PARENTS_AND_SERVICE_ANCESTORS",
+    "ROOT_ELIGIBLE_GRAPH_DISTANCE_LE_2",
+    "ROOT_ELIGIBLE_EXACT_SOURCE_VISIBILITY"
+  ],
+  "entity_index_order": [
+    "HAS_DIRECT_EVIDENCE_DESC",
+    "SOURCE_COUNT_DESC",
+    "DISTANCE_TO_ALERT_ASC",
+    "ROOT_ELIGIBLE_LAYER_PRIORITY",
+    "STABLE_ENTITY_REF"
+  ],
+  "ground_truth_dependencies": 0,
+  "graph_separation": {
+    "propagation_only_edges_excluded_from_topology_distance": [
+      "TRACE_PARENT_CHILD",
+      "FIRST_OBSERVED_BEFORE"
+    ],
+    "topology_distance_edges": [
+      "EXPLICIT_PARENT",
+      "DIRECTED_TOPOLOGY",
+      "EXPLICIT_DEPENDENCY",
+      "UNDIRECTED",
+      "UNKNOWN"
+    ]
+  },
+  "methodology_sha256": "d46d06cd44919ba6caf9501161931685f854a986eb28e5604cd414fd638b0258",
+  "model_serialization": {
+    "dictionary_encoded_fields": [
+      "ENTITY_REF",
+      "LAYER",
+      "RELATION_TO_ALERT",
+      "PROPAGATION_RELATION_TYPE"
+    ],
+    "entity_cards": "ONE_COLUMN_HEADER_PLUS_DICTIONARY_ENCODED_POSITIONAL_ROWS",
+    "null_fields": "PRESERVED",
+    "propagation_relations": "CARD_INDEX_REFERENCES",
+    "semantic_projection_change": false,
+    "visible_sources": "FIXED_SOURCE_ORDER_BITMASK"
+  },
+  "non_root_default_layers": [
+    "OPERATION",
+    "POD",
+    "CONTAINER",
+    "UNKNOWN"
+  ],
+  "propagation_relation_cap": 12,
+  "propagation_relation_types": [
+    "DIRECTED_TOPOLOGY",
+    "TRACE_PARENT_CHILD",
+    "EXPLICIT_DEPENDENCY",
+    "FIRST_OBSERVED_BEFORE",
+    "UNDIRECTED",
+    "UNKNOWN"
+  ],
+  "root_eligible_layers": [
+    "SERVICE",
+    "WORKLOAD",
+    "NODE",
+    "DATABASE",
+    "CACHE",
+    "MESSAGE_QUEUE",
+    "NETWORK_COMPONENT",
+    "CLUSTER",
+    "INFRASTRUCTURE"
+  ],
+  "schema_version": "strong-single-hierarchical-live.context-policy.v1"
+}

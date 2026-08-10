@@ -1,0 +1,16 @@
+{
+  "concurrency": 1,
+  "fallback": "NO_FALLBACK",
+  "max_completion_tokens": 2048,
+  "minimum_request_spacing_seconds": 5.0,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "provider": "openai-compatible",
+  "schema_retry": "FORBIDDEN",
+  "schema_version": "strong-single-hierarchical-live.model-lock.v1",
+  "semantic_retry": "FORBIDDEN",
+  "temperature": 0.0,
+  "timeout_seconds": 30.0,
+  "top_p": 1.0,
+  "transport_retry": "ONE_ALLOWLISTED_BYTE_IDENTICAL_REQUEST_RETRY",
+  "transport_retry_policy_sha256": "7fd010103f83a1cb99b0c478ddafdf6e9fd0dc349a4297e7bb55c9b4157c202b"
+}

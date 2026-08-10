@@ -1,0 +1,27 @@
+{
+  "cost": {
+    "h1_input_token_ratio_max": 1.35,
+    "h1_latency_ratio_max": 1.4,
+    "mean_model_calls": 1.0
+  },
+  "execution": {
+    "completed_per_arm_min": 114,
+    "denominator": 120,
+    "http_429_terminal_max": 2,
+    "schema_privacy_schedule_failure_max": 0
+  },
+  "failure_marker": "HIERARCHICAL_STRONG_SINGLE_REGRESSION_NOT_PASSED",
+  "pair": {
+    "h1_not_less_than_b0": true,
+    "net_rescue_min": 0,
+    "rescue_not_less_than_damage": true
+  },
+  "pass_marker": "HIERARCHICAL_STRONG_SINGLE_LIVE_DEV_PASSED_READY_FOR_EXTERNAL_PLANNING",
+  "root": {
+    "damage_max": 2,
+    "h1_not_less_than_b0": true,
+    "net_rescue_min": 0,
+    "rescue_not_less_than_damage": true
+  },
+  "schema_version": "strong-single-hierarchical-live.regression-gates.v1"
+}

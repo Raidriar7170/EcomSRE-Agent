@@ -1,0 +1,23 @@
+{
+  "max_completion_tokens_per_attempt": 2048,
+  "preflight": {
+    "max_provider_attempts": 4,
+    "max_retry_attempts": 2,
+    "semantic_operations": 2
+  },
+  "prompt_token_reservation_per_attempt": 29952,
+  "regression": {
+    "max_conservative_tokens": 15360000,
+    "max_provider_attempts": 480,
+    "max_retry_attempts": 240,
+    "semantic_operations": 240
+  },
+  "schema_version": "strong-single-hierarchical-live.budget.v1",
+  "tune": {
+    "max_conservative_tokens": 20864000,
+    "max_provider_attempts": 652,
+    "max_retry_attempts": 326,
+    "semantic_operations": 326
+  },
+  "unknown_usage_is_zero": false
+}
