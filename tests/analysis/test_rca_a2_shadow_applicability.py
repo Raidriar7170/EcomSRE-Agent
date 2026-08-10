@@ -49,6 +49,11 @@ _SPEC.loader.exec_module(_SCRIPT)
 load_applicability_policy = _SCRIPT.load_applicability_policy
 read_design_prefix_objects = _SCRIPT.read_design_prefix_objects
 scan_public_payload = _SCRIPT.scan_public_payload
+canonical_replay = _SCRIPT._canonical_replay
+sha256_file = _SCRIPT.sha256_file
+validate_publication_paths = _SCRIPT.validate_publication_paths
+verify_frozen_frontier = _SCRIPT._verify_frozen_frontier
+verify_source_integrity = _SCRIPT._verify_source_integrity
 
 
 def _visibility(
@@ -519,3 +524,91 @@ def test_analysis_entrypoint_has_no_provider_or_live_execution_import() -> None:
     assert "OpenAICompatibleRCA100Provider" not in source
     assert "run_v2_development" not in source
     assert "execute_schedule" not in source
+
+
+def test_source_integrity_rechecks_every_frozen_lineage_binding(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source"
+    (source / "locks").mkdir(parents=True)
+    (source / "state").mkdir()
+    (source / "results-v3").mkdir()
+    vector = source / "results-v3/unified-case-records.jsonl"
+    vector.write_text("{}\n", encoding="utf-8")
+    public_lock = source / "locks/corrected-v3-public-verification-lock.json"
+    public_lock.write_text("{}\n", encoding="utf-8")
+    public_state = source / "state/CORRECTED_V3_PUBLIC_OUTPUTS_VERIFIED.json"
+    public_state.write_text(
+        json.dumps(
+            {
+                "state": "CORRECTED_V3_PUBLIC_OUTPUTS_VERIFIED",
+                "lock_sha256": sha256_file(public_lock),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    source_input_lock = source / "locks/input-and-frontier-lock.json"
+    source_input_lock.write_text("{}\n", encoding="utf-8")
+    frozen = {
+        "source_private_root": str(source),
+        "source_vector_sha256": sha256_file(vector),
+        "source_public_lock_sha256": sha256_file(public_lock),
+        "source_public_state_sha256": sha256_file(public_state),
+        "source_input_lock_sha256": sha256_file(source_input_lock),
+    }
+    assert verify_source_integrity(frozen) == (source, vector)
+
+    public_state.write_text("{}\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="public state"):
+        verify_source_integrity(frozen)
+
+
+def test_frozen_frontier_hash_is_rechecked_before_use(tmp_path: Path) -> None:
+    copied = tmp_path / "frontier.json"
+    copied.write_bytes(FRONTIER_PATH.read_bytes())
+    frozen = {"frontier_sha256": sha256_file(copied)}
+    assert verify_frozen_frontier(frozen, copied) == load_frontier(copied)
+    copied.write_text("{}\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="frontier drifted"):
+        verify_frozen_frontier(frozen, copied)
+
+
+def test_publication_surface_allows_only_generated_public_descendants() -> None:
+    public = {str(item.relative_to(PROJECT_ROOT)) for item in _SCRIPT.PUBLIC_PATHS}
+    validate_publication_paths(public, set())
+    validate_publication_paths(set(), public)
+    with pytest.raises(ValueError, match="protected committed"):
+        validate_publication_paths({"src/ecomsre_rca_unified/a2_shadow.py"}, set())
+    with pytest.raises(ValueError, match="protected worktree"):
+        validate_publication_paths(set(), {"README.md"})
+
+
+def test_canonical_replay_independently_recomputes_reference_and_a0() -> None:
+    cases = tuple(
+        _evaluation_case(
+            fixture=fixture,
+            private_case_key=f"case-{index}",
+            benchmark="RCA100" if fixture == "RCA100" else "OBSS",
+            system="RCA100" if fixture == "RCA100" else "RE2-OB",
+        )
+        for index, fixture in enumerate(
+            ("RCA100", "candidate-3", "candidate-4", "candidate-5")
+        )
+    )
+    references, production, summary = canonical_replay(
+        cases,
+        tuple(item.runtime_input for item in cases),
+        load_frontier(FRONTIER_PATH),
+    )
+    assert len(references) == 20
+    assert production == references
+    assert summary == {
+        "design_cases": 4,
+        "gates": 5,
+        "reference_to_production_exact": 20,
+        "reference_to_production_denominator": 20,
+        "a0_exact": 4,
+        "a0_denominator": 4,
+        "match": True,
+    }

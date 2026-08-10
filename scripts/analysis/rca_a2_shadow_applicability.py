@@ -36,7 +36,7 @@ from ecomsre_rca_unified.contracts import (
     FrontierOutcome,
     PropagationDisposition,
 )
-from ecomsre_rca_unified.frontier import load_frontier
+from ecomsre_rca_unified.frontier import FrozenFrontier, load_frontier
 from ecomsre_rca_unified.runtime import (
     StrongSingleHierarchicalInput,
     execute_unified_hierarchical_rca,
@@ -86,6 +86,9 @@ PUBLIC_PATHS = (
     PROJECT_ROOT / "docs/results/rca-a2-live-shadow-development.md",
     PROJECT_ROOT / "docs/results/rca-a2-live-shadow-human-brief.md",
 )
+PUBLIC_RELATIVE_PATHS = frozenset(
+    str(path.relative_to(PROJECT_ROOT)) for path in PUBLIC_PATHS
+)
 
 _PROVIDER_ENV = (
     "OPENAI_API_KEY",
@@ -110,6 +113,13 @@ def canonical_json_bytes(value: object) -> bytes:
     return (
         json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     ).encode("utf-8")
+
+
+def canonical_jsonl_bytes(records: Sequence[Mapping[str, object]]) -> bytes:
+    return b"".join(
+        json.dumps(record, ensure_ascii=False, sort_keys=True).encode("utf-8") + b"\n"
+        for record in records
+    )
 
 
 def sha256_file(path: Path) -> str:
@@ -264,6 +274,20 @@ def _validate_git_lineage(*, require_clean: bool) -> str:
     return head
 
 
+def validate_publication_paths(
+    committed_paths: set[str],
+    dirty_paths: set[str],
+) -> None:
+    committed_drift = committed_paths - PUBLIC_RELATIVE_PATHS
+    if committed_drift:
+        raise ValueError(
+            f"A2 protected committed path drifted: {sorted(committed_drift)}"
+        )
+    dirty_drift = dirty_paths - PUBLIC_RELATIVE_PATHS
+    if dirty_drift:
+        raise ValueError(f"A2 protected worktree drifted: {sorted(dirty_drift)}")
+
+
 def _validate_private_root(path: Path, *, create: bool) -> Path:
     root = path.expanduser()
     if not root.is_absolute():
@@ -312,11 +336,7 @@ def write_private_jsonl_create_once(
     path: Path,
     records: Sequence[Mapping[str, object]],
 ) -> None:
-    payload = b"".join(
-        json.dumps(record, ensure_ascii=False, sort_keys=True).encode("utf-8") + b"\n"
-        for record in records
-    )
-    _write_private_bytes_create_once(path, payload)
+    _write_private_bytes_create_once(path, canonical_jsonl_bytes(records))
 
 
 def _write_public(path: Path, payload: bytes) -> None:
@@ -339,6 +359,21 @@ def _state_binding(
     ):
         raise ValueError(f"A2 state/lock binding differs: {state_name}")
     return lock, lock_path, state_path
+
+
+def _verify_locked_private_output(
+    lock: Mapping[str, Any],
+    path: Path,
+    expected_bytes: bytes,
+) -> None:
+    outputs = _mapping(lock.get("private_outputs"), "locked private outputs")
+    if (
+        path.is_symlink()
+        or not path.is_file()
+        or outputs.get(path.name) != sha256_file(path)
+        or path.read_bytes() != expected_bytes
+    ):
+        raise ValueError(f"A2 locked private output is noncanonical: {path.name}")
 
 
 def _unified_from_private(record: Mapping[str, Any]) -> UnifiedRCACase:
@@ -532,6 +567,67 @@ def _outcome_record(
     }
 
 
+def _canonical_replay(
+    cases: Sequence[ApplicabilityCase],
+    a0_inputs: Sequence[A2ShadowInput],
+    frontier: FrozenFrontier,
+) -> tuple[
+    tuple[dict[str, object], ...],
+    tuple[dict[str, object], ...],
+    dict[str, object],
+]:
+    reference_records: list[dict[str, object]] = []
+    production_records: list[dict[str, object]] = []
+    exact = 0
+    for gate in ApplicabilityGateId:
+        for case in cases:
+            reference = _outcome_record(
+                case.fixture,
+                gate,
+                evaluate_reference_case(case, gate, frontier),
+            )
+            production = _outcome_record(
+                case.fixture,
+                gate,
+                evaluate_production_case(case, gate, frontier),
+            )
+            reference_records.append(reference)
+            production_records.append(production)
+            if production != reference:
+                raise ValueError("A2 production replay differs from Phase 9 reference")
+            exact += 1
+    a0_exact = 0
+    for runtime_input in a0_inputs:
+        a0 = execute_unified_hierarchical_rca(
+            StrongSingleHierarchicalInput(
+                initial_root=runtime_input.initial_entity,
+                initial_layer=runtime_input.initial_layer,
+                initial_hierarchy_path=runtime_input.initial_hierarchy_path,
+                fault_type_raw=runtime_input.fault_type_raw,
+                fault_ontology_class=runtime_input.fault_ontology_class,
+                evidence_visibility=runtime_input.evidence_visibility,
+                supporting_evidence_refs=runtime_input.supporting_evidence_refs,
+            )
+        )
+        a0_exact += int(
+            a0.final_root == runtime_input.initial_entity
+            and a0.fault_type_raw == runtime_input.fault_type_raw
+        )
+    denominator = len(cases) * len(ApplicabilityGateId)
+    summary: dict[str, object] = {
+        "design_cases": len(cases),
+        "gates": len(ApplicabilityGateId),
+        "reference_to_production_exact": exact,
+        "reference_to_production_denominator": denominator,
+        "a0_exact": a0_exact,
+        "a0_denominator": len(a0_inputs),
+        "match": exact == denominator and a0_exact == len(a0_inputs),
+    }
+    if not summary["match"]:
+        raise ValueError("A2 canonical replay is not exact")
+    return tuple(reference_records), tuple(production_records), summary
+
+
 def _fold_public(item: Any) -> dict[str, object]:
     return {
         "axis": item.axis,
@@ -624,7 +720,7 @@ def _decision_markdown(frontier_payload: Mapping[str, object]) -> str:
             "",
             "G0/G1/G2 fail the frozen RCA100 safety boundary. G3/G4 avoid RCA100 damage but retain less than half of G0 OB/SS net rescue. The finite frontier is consumed; no sixth Gate or threshold search is authorized.",
             "",
-            "Runtime Gate inputs contain only entity layers, hierarchy, Metrics rank/margin, topology relation, propagation disposition, evidence support, metric family, and typed fault ontology. Benchmark identity is not an input.",
+            "Runtime Gate logic reads only entity layers, service ancestry, Metrics rank/margin, downstream/topology relation, propagation disposition, exact non-Metrics evidence support, and typed fault ontology. It reads neither benchmark identity nor metric family.",
             "",
             "No Provider was constructed. Live Shadow, promotion, and Regression were not executed.",
         )
@@ -694,11 +790,34 @@ def _verify_source_integrity(input_lock: Mapping[str, Any]) -> tuple[Path, Path]
     source_public_lock = (
         source_root / "locks/corrected-v3-public-verification-lock.json"
     )
+    source_public_state = (
+        source_root / "state/CORRECTED_V3_PUBLIC_OUTPUTS_VERIFIED.json"
+    )
+    source_input_lock = source_root / "locks/input-and-frontier-lock.json"
     if sha256_file(source_vector) != input_lock.get("source_vector_sha256"):
         raise ValueError("frozen source vector drifted")
     if sha256_file(source_public_lock) != input_lock.get("source_public_lock_sha256"):
         raise ValueError("frozen source public lock drifted")
+    if sha256_file(source_public_state) != input_lock.get("source_public_state_sha256"):
+        raise ValueError("frozen source public state drifted")
+    if sha256_file(source_input_lock) != input_lock.get("source_input_lock_sha256"):
+        raise ValueError("frozen source input lock drifted")
+    state = read_object(source_public_state)
+    if state.get("state") != "CORRECTED_V3_PUBLIC_OUTPUTS_VERIFIED" or state.get(
+        "lock_sha256"
+    ) != sha256_file(source_public_lock):
+        raise ValueError("frozen source public state/lock binding drifted")
     return source_root, source_vector
+
+
+def _verify_frozen_frontier(
+    input_lock: Mapping[str, Any],
+    frontier_path: Path,
+) -> FrozenFrontier:
+    resolved = frontier_path.resolve(strict=True)
+    if sha256_file(resolved) != input_lock.get("frontier_sha256"):
+        raise ValueError("frozen A2 frontier drifted")
+    return load_frontier(resolved)
 
 
 def freeze_inputs(args: argparse.Namespace) -> int:
@@ -851,20 +970,31 @@ def _verify_implementation(root: Path) -> tuple[dict[str, Any], Path, Path]:
         state_name="A2_SHADOW_IMPLEMENTATION_FROZEN",
         lock_name="a2-implementation-lock.json",
     )
-    if _git("rev-parse", "HEAD") != lock.get("implementation_commit"):
-        raise ValueError("A2 analysis HEAD differs from implementation freeze")
+    implementation_commit = str(lock.get("implementation_commit"))
+    head = _git("rev-parse", "HEAD")
+    subprocess.run(
+        ("git", "merge-base", "--is-ancestor", implementation_commit, head),
+        cwd=PROJECT_ROOT,
+        check=True,
+        capture_output=True,
+    )
+    committed = set(
+        _git("diff", "--name-only", f"{implementation_commit}..{head}").splitlines()
+    )
     dirty = set(
         line[3:].split(" -> ")[-1]
         for line in _git("status", "--porcelain=v1", "-uall").splitlines()
         if line
     )
-    allowed = {str(path.relative_to(PROJECT_ROOT)) for path in PUBLIC_PATHS}
-    if dirty - allowed:
-        raise ValueError(f"A2 protected worktree drifted: {sorted(dirty - allowed)}")
+    validate_publication_paths(committed, dirty)
     files = _mapping(lock.get("implementation_files"), "implementation files")
     for relative, expected in files.items():
         if sha256_file(PROJECT_ROOT / str(relative)) != expected:
             raise ValueError(f"A2 implementation file drifted: {relative}")
+    protected = _mapping(lock.get("pr24_protected_files"), "PR #24 protected files")
+    for relative, expected in protected.items():
+        if sha256_file(PROJECT_ROOT / str(relative)) != expected:
+            raise ValueError(f"PR #24 protected file drifted: {relative}")
     return lock, lock_path, state_path
 
 
@@ -880,7 +1010,7 @@ def analyze_offline(args: argparse.Namespace) -> int:
         lock_name="a2-input-lock.json",
     )
     _, source_vector = _verify_source_integrity(input_lock)
-    frontier = load_frontier(args.frontier.resolve(strict=True))
+    frontier = _verify_frozen_frontier(input_lock, args.frontier)
     cases = _load_design_cases(source_vector)
     result = evaluate_applicability_frontier(cases, frontier)
     reference_records = tuple(
@@ -951,20 +1081,6 @@ def analyze_offline(args: argparse.Namespace) -> int:
     return 0
 
 
-def _load_reference_records(path: Path) -> dict[tuple[str, str], dict[str, Any]]:
-    result: dict[tuple[str, str], dict[str, Any]] = {}
-    with path.open("r", encoding="utf-8") as handle:
-        for line in handle:
-            value = json.loads(line)
-            if not isinstance(value, dict):
-                raise ValueError("private A2 reference record must be an object")
-            key = (str(value["gate"]), str(value["private_case_key"]))
-            if key in result:
-                raise ValueError("private A2 reference record is duplicated")
-            result[key] = value
-    return result
-
-
 def replay_offline(args: argparse.Namespace) -> int:
     assert_no_provider_environment()
     root = _validate_private_root(args.private_root, create=False)
@@ -985,56 +1101,33 @@ def replay_offline(args: argparse.Namespace) -> int:
         lock_name="a2-input-lock.json",
     )
     _, source_vector = _verify_source_integrity(input_lock)
-    frontier = load_frontier(args.frontier.resolve(strict=True))
+    frontier = _verify_frozen_frontier(input_lock, args.frontier)
     cases = _load_design_cases(source_vector)
-    references = _load_reference_records(
-        root / "results/offline-reference-by-case.jsonl"
-    )
-    production_records: list[dict[str, object]] = []
-    exact = 0
-    for gate in ApplicabilityGateId:
-        for case in cases:
-            outcome = evaluate_production_case(case, gate, frontier)
-            record = _outcome_record(case.fixture, gate, outcome)
-            expected = references[(gate.value, outcome.private_case_key)]
-            comparable = dict(record)
-            if comparable == expected:
-                exact += 1
-            else:
-                raise ValueError("A2 production replay differs from Phase 9 reference")
-            production_records.append(record)
     all_cases = _read_all_cases(source_vector)
-    a0_exact = 0
-    for unified_case in all_cases:
-        projection = _runtime_projection(unified_case)
-        a0 = execute_unified_hierarchical_rca(
-            StrongSingleHierarchicalInput(
-                initial_root=projection.initial_entity,
-                initial_layer=projection.initial_layer,
-                initial_hierarchy_path=projection.initial_hierarchy_path,
-                fault_type_raw=projection.fault_type_raw,
-                fault_ontology_class=projection.fault_ontology_class,
-                evidence_visibility=projection.evidence_visibility,
-                supporting_evidence_refs=projection.supporting_evidence_refs,
-            )
-        )
-        a0_exact += int(
-            a0.final_root == unified_case.initial_entity
-            and a0.fault_type_raw == unified_case.fault_type_raw
-        )
-    replay_summary = {
-        "design_cases": len(cases),
-        "gates": len(ApplicabilityGateId),
-        "reference_to_production_exact": exact,
-        "reference_to_production_denominator": len(cases) * len(ApplicabilityGateId),
-        "a0_exact": a0_exact,
-        "a0_denominator": len(all_cases),
-        "match": exact == len(cases) * len(ApplicabilityGateId)
-        and a0_exact == len(all_cases),
-    }
+    reference_records, production_records, replay_summary = _canonical_replay(
+        cases,
+        tuple(_runtime_projection(item) for item in all_cases),
+        frontier,
+    )
+    analysis_private = _mapping(
+        analysis_lock.get("private_outputs"), "analysis private outputs"
+    )
+    private_reference = root / "results/offline-reference-by-case.jsonl"
+    private_frontier = root / "results/offline-frontier.json"
+    expected_private_frontier = _frontier_public(
+        evaluate_applicability_frontier(cases, frontier)
+    )
+    if (
+        analysis_private.get(private_reference.name) != sha256_file(private_reference)
+        or analysis_private.get(private_frontier.name) != sha256_file(private_frontier)
+        or private_reference.read_bytes() != canonical_jsonl_bytes(reference_records)
+        or private_frontier.read_bytes()
+        != canonical_json_bytes(expected_private_frontier)
+    ):
+        raise ValueError("A2 analysis private outputs differ from canonical replay")
     private_production = root / "results/offline-production-replay-by-case.jsonl"
     private_summary = root / "results/offline-production-replay.json"
-    write_private_jsonl_create_once(private_production, tuple(production_records))
+    write_private_jsonl_create_once(private_production, production_records)
     write_private_json_create_once(private_summary, replay_summary)
     shadow_public = _shadow_public(replay_summary)
     _write_public(PUBLIC_PATHS[3], _inactive_spec_markdown().encode("utf-8"))
@@ -1076,7 +1169,10 @@ def replay_offline(args: argparse.Namespace) -> int:
         },
     )
     print(
-        f"[replay-offline] G0-G4 {exact}/{len(cases) * len(ApplicabilityGateId)} A0 {a0_exact}/{len(all_cases)} PASS",
+        "[replay-offline] G0-G4 "
+        f"{replay_summary['reference_to_production_exact']}/"
+        f"{replay_summary['reference_to_production_denominator']} A0 "
+        f"{replay_summary['a0_exact']}/{replay_summary['a0_denominator']} PASS",
         flush=True,
     )
     return 0
@@ -1085,7 +1181,14 @@ def replay_offline(args: argparse.Namespace) -> int:
 def verify_public(args: argparse.Namespace) -> int:
     assert_no_provider_environment()
     root = _validate_private_root(args.private_root, create=False)
-    _verify_implementation(root)
+    implementation_lock, _, _ = _verify_implementation(root)
+    head = _git("rev-parse", "HEAD")
+    implementation_commit = str(implementation_lock["implementation_commit"])
+    committed_public = set(
+        _git("diff", "--name-only", f"{implementation_commit}..{head}").splitlines()
+    )
+    if committed_public != PUBLIC_RELATIVE_PATHS:
+        raise ValueError("A2 public verification requires all seven outputs committed")
     analysis_lock, _, _ = _state_binding(
         root,
         state_name="A2_OFFLINE_APPLICABILITY_COMPLETE",
@@ -1102,11 +1205,38 @@ def verify_public(args: argparse.Namespace) -> int:
         lock_name="a2-input-lock.json",
     )
     _, source_vector = _verify_source_integrity(input_lock)
-    frontier = load_frontier(args.frontier.resolve(strict=True))
+    frontier = _verify_frozen_frontier(input_lock, args.frontier)
     cases = _load_design_cases(source_vector)
+    all_cases = _read_all_cases(source_vector)
+    reference_records, production_records, replay_summary = _canonical_replay(
+        cases,
+        tuple(_runtime_projection(item) for item in all_cases),
+        frontier,
+    )
     result = evaluate_applicability_frontier(cases, frontier)
     expected_frontier = _frontier_public(result)
-    replay_summary = read_object(root / "results/offline-production-replay.json")
+    _verify_locked_private_output(
+        analysis_lock,
+        root / "results/offline-reference-by-case.jsonl",
+        canonical_jsonl_bytes(reference_records),
+    )
+    _verify_locked_private_output(
+        analysis_lock,
+        root / "results/offline-frontier.json",
+        canonical_json_bytes(expected_frontier),
+    )
+    _verify_locked_private_output(
+        replay_lock,
+        root / "results/offline-production-replay-by-case.jsonl",
+        canonical_jsonl_bytes(production_records),
+    )
+    _verify_locked_private_output(
+        replay_lock,
+        root / "results/offline-production-replay.json",
+        canonical_json_bytes(replay_summary),
+    )
+    if replay_lock.get("replay_summary") != replay_summary:
+        raise ValueError("A2 replay lock summary differs from canonical recomputation")
     expected_shadow = _shadow_public(replay_summary)
     expected_bytes = {
         PUBLIC_PATHS[0]: canonical_json_bytes(expected_frontier),
@@ -1143,16 +1273,24 @@ def verify_public(args: argparse.Namespace) -> int:
     }
     if public_hashes != locked_hashes:
         raise ValueError("A2 public output hashes differ from the append-only locks")
-    created = utc_now()
     lock_path = root / "locks/a2-public-verification-lock.json"
+    state_path = root / "state/A2_PUBLIC_OUTPUTS_VERIFIED.json"
+    if lock_path.exists():
+        created = str(read_object(lock_path).get("created_at_utc"))
+    else:
+        created = utc_now()
     payload = {
         "schema_version": "hierarchical-a2-shadow-v1.public-lock.v1",
         "created_at_utc": created,
         "classification": list(CLASSIFICATION),
         "previous_lock_sha256": sha256_file(replay_lock_path),
+        "implementation_commit": implementation_commit,
+        "publication_commit": head,
         "public_outputs": public_hashes,
         "canonical_outputs_exact": len(PUBLIC_PATHS),
         "reference_recomputed_from_design_prefix": True,
+        "production_replay_recomputed_from_frozen_inputs": True,
+        "a0_recomputed_from_all_frozen_inputs": True,
         "later_outcomes_semantically_parsed_for_selection": False,
         "leakage_scan_passed": True,
         "provider_objects_constructed": 0,
@@ -1166,7 +1304,7 @@ def verify_public(args: argparse.Namespace) -> int:
     }
     write_private_json_create_once(lock_path, payload)
     write_private_json_create_once(
-        root / "state/A2_PUBLIC_OUTPUTS_VERIFIED.json",
+        state_path,
         {
             "schema_version": "hierarchical-a2-shadow-v1.state.v1",
             "state": "A2_PUBLIC_OUTPUTS_VERIFIED",
