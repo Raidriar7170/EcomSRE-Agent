@@ -1,0 +1,52 @@
+{
+  "schema_version": "live-telemetry.sources.v2",
+  "prometheus": {
+    "backend_kind": "PROMETHEUS_HTTP_API",
+    "service_label": "service_name",
+    "status_path": "/api/v1/status/config",
+    "metric_names_path": "/api/v1/label/__name__/values",
+    "query_path": "/api/v1/query",
+    "query_range_path": "/api/v1/query_range",
+    "total_query_template": "sum by (service_name) (increase(traces_span_metrics_calls_total{service_name=\"$TARGET_SERVICE\"}[30s]))",
+    "error_query_template": "sum by (service_name) (increase(traces_span_metrics_calls_total{service_name=\"$TARGET_SERVICE\",status_code=\"STATUS_CODE_ERROR\"}[30s]))",
+    "p95_query_template": "histogram_quantile(0.95, sum by (le, service_name) (rate(traces_span_metrics_duration_milliseconds_bucket{service_name=\"$TARGET_SERVICE\"}[30s])))",
+    "health_query_template": "count by (service_name) (traces_span_metrics_calls_total{service_name=\"$TARGET_SERVICE\"})",
+    "required_metric_names": [
+      "traces_span_metrics_calls_total",
+      "traces_span_metrics_duration_milliseconds_bucket"
+    ]
+  },
+  "opensearch": {
+    "backend_kind": "OPENSEARCH_HTTP_API",
+    "index_pattern": "otel-logs-*",
+    "indices_path": "/_cat/indices/otel-logs-*?format=json",
+    "field_caps_path": "/otel-logs-*/_field_caps",
+    "time_field_candidates": [
+      "observedTimestamp",
+      "@timestamp",
+      "timestamp",
+      "timeUnixNano"
+    ],
+    "service_field_candidates": [
+      "resource.service.name.keyword",
+      "resource.service.name",
+      "resource.attributes.service.name.keyword",
+      "resource.attributes.service.name",
+      "service.name.keyword",
+      "service.name"
+    ],
+    "body_field_candidates": ["body", "message"],
+    "severity_field_candidates": [
+      "severity.text.keyword",
+      "severity.text",
+      "severityText"
+    ],
+    "maximum_hits": 50
+  },
+  "jaeger": {
+    "backend_kind": "JAEGER_QUERY_API",
+    "service_catalog_path": "/jaeger/ui/api/services",
+    "traces_path": "/jaeger/ui/api/traces",
+    "maximum_traces": 100
+  }
+}
