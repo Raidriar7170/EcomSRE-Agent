@@ -65,7 +65,9 @@ def test_scenario_lock_binds_only_successor_surfaces() -> None:
     config = load_e2e_config(CONFIG)
     lock = scenario_lock_manifest(config)
 
-    assert lock["implementation_branch"] == config.authority.branch
+    assert lock["implementation_branch"] == e2e_v1._git(
+        config.repository_root, "branch", "--show-current"
+    )
     assert lock["source_v3_tracked_sha256"] == config.authority.predecessor_v3_tracked_sha256
     tracked_files = lock["tracked_files"]
     assert isinstance(tracked_files, dict)
