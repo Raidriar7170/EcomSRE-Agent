@@ -1,0 +1,13 @@
+{
+  "schema_version": "live-e2e.projection.v1",
+  "visible_entity_minimum": 3,
+  "visible_entity_maximum": 8,
+  "metric_candidate_limit": 4,
+  "log_raw_hit_limit": 50,
+  "log_evidence_limit": 16,
+  "log_per_service_limit": 4,
+  "trace_query_limit": 3,
+  "trace_evidence_limit": 20,
+  "context_token_limit": 98304,
+  "alert_title": "Observed purchase-flow request error-rate increase"
+}
