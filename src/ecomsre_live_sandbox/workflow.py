@@ -1,4 +1,4 @@
-"""Two-invocation workflow for the one frozen live local sandbox scenario."""
+"""Two-invocation workflow for the independent frozen live scenario."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ import subprocess
 import time
 from typing import Literal, Protocol, cast
 
-from ecomsre.live_sandbox.contracts import (
+from ecomsre_live_sandbox.contracts import (
     ApprovalRequest,
     ConfigBundle,
     DiagnosisResult,
@@ -31,7 +31,7 @@ from ecomsre.live_sandbox.contracts import (
     load_bundle,
     write_private_json,
 )
-from ecomsre.live_sandbox.control import (
+from ecomsre_live_sandbox.control import (
     ForwardMutationCounter,
     IndependentVerifier,
     LocalSandboxRestrictedExecutor,
@@ -43,8 +43,8 @@ from ecomsre.live_sandbox.control import (
     evaluate_policy,
     fault_impact_passed,
 )
-from ecomsre.live_sandbox.environment import SandboxEnvironment
-from ecomsre.live_sandbox.telemetry import (
+from ecomsre_live_sandbox.environment import SandboxEnvironment
+from ecomsre_live_sandbox.telemetry import (
     CapturedTelemetry,
     LiveTelemetryAdapter,
     build_a0_context,
@@ -158,7 +158,7 @@ def _tracked_lock(repository_root: Path, bundle: ConfigBundle) -> dict[str, obje
         raise RuntimeError("implementation worktree must be clean before scenario freeze")
     paths = [
         *sorted((repository_root / CONFIG_RELATIVE).glob("*")),
-        *sorted((repository_root / "src/ecomsre/live_sandbox").glob("*.py")),
+        *sorted((repository_root / "src/ecomsre_live_sandbox").glob("*.py")),
         *sorted((repository_root / "scripts/live_sandbox").glob("*.py")),
         repository_root / "tests/live_sandbox/test_live_sandbox.py",
     ]
@@ -386,7 +386,7 @@ def _controller(
     ensure_private_directory(flag_directory)
     flag_file = flag_directory / "demo.flagd.json"
     write_private_json(flag_file, baseline, create_once=True)
-    from ecomsre.live_sandbox.contracts import LocalEndpoints
+    from ecomsre_live_sandbox.contracts import LocalEndpoints
 
     if not isinstance(endpoints, LocalEndpoints):
         raise TypeError("resolved endpoints are not typed")

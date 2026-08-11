@@ -1,4 +1,4 @@
-"""Local-Docker-only lifecycle and ownership checks for one Compose sandbox."""
+"""Local-Docker-only lifecycle and ownership checks for one sandbox."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import socket
 import subprocess
 import time
 
-from ecomsre.live_sandbox.contracts import (
+from ecomsre_live_sandbox.contracts import (
     CleanupResult,
     ConfigBundle,
     EnvironmentConfig,

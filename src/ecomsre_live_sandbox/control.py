@@ -1,4 +1,4 @@
-"""Frozen flag control, diagnosis gate, policy, execution, and verification."""
+"""Frozen live flag control, policy, execution, and verification."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import time
 from typing import Literal, Protocol
 from urllib.request import Request, urlopen
 
-from ecomsre.live_sandbox.contracts import (
+from ecomsre_live_sandbox.contracts import (
     ApprovalRequest,
     ConfigBundle,
     ConfigurationState,
@@ -30,7 +30,7 @@ from ecomsre.live_sandbox.contracts import (
     canonical_json_bytes,
     canonical_sha256,
 )
-from ecomsre.live_sandbox.environment import (
+from ecomsre_live_sandbox.environment import (
     DockerBoundaryError,
     ResourceOwnershipError,
     require_local_docker_endpoint,

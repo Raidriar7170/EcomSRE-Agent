@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from ecomsre.live_sandbox.contracts import (
+from ecomsre_live_sandbox.contracts import (
     ApprovalRequest,
     CleanupResult,
     ConfigurationState,
@@ -19,7 +19,7 @@ from ecomsre.live_sandbox.contracts import (
     canonical_sha256,
     load_bundle,
 )
-from ecomsre.live_sandbox.control import (
+from ecomsre_live_sandbox.control import (
     ForwardMutationCounter,
     InMemoryConfigurationAdapter,
     IndependentVerifier,
@@ -31,14 +31,14 @@ from ecomsre.live_sandbox.control import (
     evaluate_diagnosis_gate,
     evaluate_policy,
 )
-from ecomsre.live_sandbox.environment import (
+from ecomsre_live_sandbox.environment import (
     DockerBoundaryError,
     ResourceOwnershipError,
     discover_endpoints,
     require_local_docker_endpoint,
     require_owned_labels,
 )
-from ecomsre.live_sandbox.telemetry import (
+from ecomsre_live_sandbox.telemetry import (
     build_a0_context,
     parse_jaeger_response,
     parse_opensearch_response,

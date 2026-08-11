@@ -1,4 +1,4 @@
-"""Closed contracts for the single live local sandbox scenario."""
+"""Closed contracts for the independent live local sandbox scenario."""
 
 from __future__ import annotations
 

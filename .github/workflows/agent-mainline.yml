@@ -132,7 +132,7 @@ jobs:
           src/ecomsre/phase5b
           src/ecomsre/tools
           src/ecomsre/demo
-          src/ecomsre/live_sandbox
+          src/ecomsre_live_sandbox
           src/ecomsre_rcaeval
           eval/phase1/run.py
           eval/phase2/compare.py

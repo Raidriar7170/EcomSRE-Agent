@@ -16,13 +16,13 @@ SOURCE_ROOT = REPOSITORY_ROOT / "src"
 if str(SOURCE_ROOT) not in sys.path:
     sys.path.insert(0, str(SOURCE_ROOT))
 
-from ecomsre.live_sandbox.contracts import (
+from ecomsre_live_sandbox.contracts import (  # noqa: E402
     ApprovalRequest,
     canonical_json_bytes,
     write_private_json,
 )
-from ecomsre.live_sandbox.control import approve_plan
-from ecomsre.live_sandbox.workflow import (
+from ecomsre_live_sandbox.control import approve_plan  # noqa: E402
+from ecomsre_live_sandbox.workflow import (  # noqa: E402
     ManualCleanupRequired,
     PrivateRoots,
     run_invocation_a,

@@ -1,4 +1,4 @@
-"""Real Prometheus, OpenSearch, and Jaeger adapters for the local sandbox."""
+"""Real Prometheus, OpenSearch, and Jaeger local-sandbox adapters."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from typing import Literal, Mapping
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from ecomsre.live_sandbox.contracts import (
+from ecomsre_live_sandbox.contracts import (
     ConfigBundle,
     LiveTelemetrySnapshot,
     LocalEndpoints,
@@ -422,20 +422,20 @@ class LiveTelemetryAdapter:
             raise RuntimeError("target-service Logs or Traces are empty")
         identity_fields = {"service.name"}
         identity_values: list[tuple[str, str | None]] = []
-        for item in logs:
+        for log_item in logs:
             identity_values.extend(
                 (
-                    ("service.instance.id", item.service_instance_id),
-                    ("container.id", item.container_id),
-                    ("host.id", item.host_id),
+                    ("service.instance.id", log_item.service_instance_id),
+                    ("container.id", log_item.container_id),
+                    ("host.id", log_item.host_id),
                 )
             )
-        for item in traces:
+        for trace_item in traces:
             identity_values.extend(
                 (
-                    ("service.instance.id", item.service_instance_id),
-                    ("container.id", item.container_id),
-                    ("host.id", item.host_id),
+                    ("service.instance.id", trace_item.service_instance_id),
+                    ("container.id", trace_item.container_id),
+                    ("host.id", trace_item.host_id),
                 )
             )
         for field, value in identity_values:
