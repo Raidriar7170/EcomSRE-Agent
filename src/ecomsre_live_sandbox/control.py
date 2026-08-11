@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from copy import deepcopy
 from datetime import datetime, timezone
 import hashlib
@@ -537,6 +537,7 @@ def compensate_rollback(
     receipt: ExecutionReceipt,
     verification: VerificationResult,
     controller: ConfigurationAdapter,
+    on_mutation: Callable[[], None] | None = None,
 ) -> RollbackReceipt:
     if verification.passed:
         raise ValueError("rollback is forbidden after successful verification")
@@ -544,6 +545,8 @@ def compensate_rollback(
     if current.document_sha256 != receipt.after_sha256:
         raise RuntimeError("rollback current state differs from execution receipt")
     restored = controller.restore_fault()
+    if on_mutation is not None:
+        on_mutation()
     return RollbackReceipt(
         executed=True,
         before_sha256=receipt.before_sha256,

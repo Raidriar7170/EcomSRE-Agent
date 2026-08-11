@@ -143,6 +143,45 @@ def _rank_metrics(metrics: Iterable[LiveMetricObservation]) -> tuple[LiveMetricO
     )
 
 
+def select_trace_candidate_services(
+    *,
+    metrics: Iterable[LiveMetricObservation],
+    logs: Iterable[LiveLogObservation],
+    root_service: str = "checkout",
+    additional_limit: int = 2,
+) -> tuple[str, ...]:
+    """Select the bounded trace-query services from observed metric/log candidates.
+
+    Metric candidates always use the frozen anomaly ordering.  Log-only services
+    follow them in a deterministic severity/time/content order, so a disjoint log
+    candidate is considered deliberately rather than being lost by concatenation
+    and truncation.
+    """
+    if additional_limit < 0:
+        raise ValueError("trace candidate limit cannot be negative")
+    ordered: list[str] = []
+    for item in _rank_metrics(tuple(metrics)):
+        if item.service_name != root_service and item.service_name not in ordered:
+            ordered.append(item.service_name)
+    log_candidates = sorted(
+        (
+            item
+            for item in logs
+            if _SEVERITY.get(item.severity.upper(), 0) > 0 or "error" in item.body.casefold()
+        ),
+        key=lambda item: (
+            -_SEVERITY.get(item.severity.upper(), 0),
+            item.observed_at,
+            item.service_name,
+            hashlib.sha256(item.body.encode("utf-8")).hexdigest(),
+        ),
+    )
+    for log_item in log_candidates:
+        if log_item.service_name != root_service and log_item.service_name not in ordered:
+            ordered.append(log_item.service_name)
+    return (root_service, *ordered[:additional_limit])
+
+
 def _default_ref(source: str, ordinal: int) -> str:
     return f"{source}:{ordinal:04d}"
 
@@ -447,4 +486,5 @@ __all__ = [
     "LiveTraceObservation",
     "build_live_a0_context",
     "scan_model_projection",
+    "select_trace_candidate_services",
 ]

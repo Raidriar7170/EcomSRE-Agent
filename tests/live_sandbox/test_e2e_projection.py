@@ -10,6 +10,7 @@ from ecomsre_live_sandbox.e2e_telemetry import (
     LiveTraceObservation,
     build_live_a0_context,
     scan_model_projection,
+    select_trace_candidate_services,
 )
 
 
@@ -128,7 +129,6 @@ def test_live_projection_requires_all_three_sources_and_sealed_resolver_refs() -
             traces=traces,
             resolvable_refs=frozenset({"metric:0001", "metric:0002", "metric:0003"}),
         )
-
     with pytest.raises(ValueError, match="nonempty Metrics, Logs, and Traces"):
         build_live_a0_context(
             window_start=NOW,
@@ -137,3 +137,60 @@ def test_live_projection_requires_all_three_sources_and_sealed_resolver_refs() -
             logs=(),
             traces=traces,
         )
+
+
+def test_trace_candidates_reuse_metric_order_and_consider_disjoint_logs() -> None:
+    ranked = select_trace_candidate_services(
+        metrics=(
+            LiveMetricObservation(
+                service_name="relative-and-latency",
+                baseline_requests=100,
+                baseline_errors=1,
+                fault_requests=100,
+                fault_errors=11,
+                baseline_p95_ms=20,
+                fault_p95_ms=60,
+            ),
+            LiveMetricObservation(
+                service_name="relative-only",
+                baseline_requests=100,
+                baseline_errors=2,
+                fault_requests=100,
+                fault_errors=12,
+                baseline_p95_ms=20,
+                fault_p95_ms=20,
+            ),
+            LiveMetricObservation(
+                service_name="request-support",
+                baseline_requests=200,
+                baseline_errors=2,
+                fault_requests=200,
+                fault_errors=22,
+                baseline_p95_ms=20,
+                fault_p95_ms=60,
+            ),
+        ),
+        logs=(),
+        additional_limit=3,
+    )
+    assert ranked == ("checkout", "request-support", "relative-and-latency", "relative-only")
+
+    with_disjoint_log = select_trace_candidate_services(
+        metrics=(
+            LiveMetricObservation(
+                service_name="currency",
+                baseline_requests=100,
+                baseline_errors=1,
+                fault_requests=100,
+                fault_errors=11,
+                baseline_p95_ms=20,
+                fault_p95_ms=60,
+            ),
+        ),
+        logs=(
+            LiveLogObservation(observed_at=NOW, service_name="payment", severity="FATAL", body="payment error"),
+            LiveLogObservation(observed_at=NOW, service_name="frontend", severity="ERROR", body="frontend error"),
+        ),
+        additional_limit=2,
+    )
+    assert with_disjoint_log == ("checkout", "currency", "payment")

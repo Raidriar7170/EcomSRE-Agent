@@ -48,6 +48,7 @@ from ecomsre_live_sandbox.e2e_telemetry import (
     LiveMetricObservation,
     LiveTraceObservation,
     build_live_a0_context,
+    select_trace_candidate_services,
 )
 from ecomsre_live_sandbox.environment import SandboxEnvironment
 from ecomsre_live_sandbox.instrumentation_v2 import (
@@ -84,11 +85,13 @@ _TRACKED_FILES = {
     "projection.json": CONFIG_RELATIVE / "projection.json",
     "reporting.json": CONFIG_RELATIVE / "reporting.json",
     "e2e_contracts.py": Path("src/ecomsre_live_sandbox/e2e_contracts.py"),
+    "control.py": Path("src/ecomsre_live_sandbox/control.py"),
     "e2e_telemetry.py": Path("src/ecomsre_live_sandbox/e2e_telemetry.py"),
     "e2e_v1.py": Path("src/ecomsre_live_sandbox/e2e_v1.py"),
     "e2e_cli.py": Path("scripts/live_sandbox/e2e_v1.py"),
     "test_e2e_projection.py": Path("tests/live_sandbox/test_e2e_projection.py"),
     "test_e2e_v1.py": Path("tests/live_sandbox/test_e2e_v1.py"),
+    "test_live_sandbox.py": Path("tests/live_sandbox/test_live_sandbox.py"),
     "v3_environment.json": Path("config/live-telemetry-instrumentation-v3/environment.json"),
     "v3_sources.json": Path("config/live-telemetry-instrumentation-v3/sources.json"),
     "v3_readiness.json": Path("config/live-telemetry-instrumentation-v3/readiness.json"),
@@ -106,6 +109,33 @@ _TRACKED_FILES = {
     "a0_prompt.py": Path("src/ecomsre_rca100/prompt.py"),
     "unified_runtime.py": Path("src/ecomsre_rca_unified/runtime.py"),
 }
+
+
+def _legal_terminal_verdicts(config: E2EConfig) -> frozenset[str]:
+    return frozenset(
+        {
+            config.authority.invocation_a_terminal,
+            config.authority.invocation_b_success,
+            "BLOCKED_FAULT_IMPACT_NOT_OBSERVED",
+            "BLOCKED_LIVE_TELEMETRY_SOURCE_UNAVAILABLE",
+            "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE",
+            "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION",
+            "BLOCKED_POLICY_REJECTED",
+            "CONTROLLED_REMEDIATION_NOT_VERIFIED_ROLLBACK_COMPLETED",
+            "BLOCKED_PR31_STATE_DRIFT",
+            "BLOCKED_MAIN_DRIFT_REQUIRES_REVIEW",
+            "BLOCKED_V3_AUTHORITY_DRIFT",
+            "BLOCKED_PINNED_SOURCE_DRIFT",
+            "BLOCKED_DOCKER_CONTEXT_NOT_LOCAL",
+            "BLOCKED_E2E_PREFLIGHT",
+            "BLOCKED_PROVIDER_PREFLIGHT",
+            "BLOCKED_MODEL_CONTEXT_LEAKAGE",
+            "BLOCKED_LIVE_RUN_ALREADY_CONSUMED",
+            "BLOCKED_ROLLBACK_FAILED_MANUAL_CLEANUP_REQUIRED",
+            "BLOCKED_CLEANUP_INCOMPLETE",
+            "BLOCKED",
+        }
+    )
 
 
 def _git(repository_root: Path, *arguments: str) -> str:
@@ -904,6 +934,24 @@ def _write_private_final_report(
     write_private_json(roots.reports / f"{invocation}.json", report, create_once=True)
 
 
+def _write_private_projection_source(
+    roots: E2EPrivateRoots, *, terminal: Mapping[str, object]
+) -> Path:
+    """Seal the safe private source used to derive a public projection before finalization."""
+    path = roots.reports / "invocation-b-projection-source.json"
+    write_private_json(
+        path,
+        {
+            "schema_version": "live-e2e.private-projection-source.v1",
+            "invocation": "invocation-b",
+            "terminal": terminal,
+            "cleanup": _terminal_cleanup_truth(terminal),
+        },
+        create_once=True,
+    )
+    return path
+
+
 def run_invocation_a(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, object]:
     """Run the sole no-fault probe and stop at the human authorization boundary."""
     roots.bind_lifecycle(config.authority)
@@ -924,7 +972,11 @@ def run_invocation_a(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
     failure_type: str | None = None
     cleanup_verdict = "NOT_STARTED"
     cleanup_payload: dict[str, object] | None = None
-    started = False
+    start_attempted = False
+    preauthorization_lock: dict[str, object] | None = None
+    preauthorization_template: dict[str, object] | None = None
+    preauthorization_source_counts: dict[str, int] | None = None
+    preauthorization_visible_count: int | None = None
     try:
         environment.verify_local_docker()
         environment.verify_upstream()
@@ -937,8 +989,8 @@ def run_invocation_a(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
             resolved.endpoints,
             flagd_directory=roots.runtime / "preflight-flagd",
         )
+        start_attempted = True
         environment.start()
-        started = True
         environment.wait_healthy()
         time.sleep(config.sandbox.verification.minimum_stabilization_seconds)
         baseline = controller.read_current()
@@ -976,32 +1028,11 @@ def run_invocation_a(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
             window_end=probe_window.ended_at,
             maximum_hits=config.projection.log_raw_hit_limit,
         )
-        preflight_metric_candidates = tuple(
-            item.service_name
-            for item in sorted(
-                observations,
-                key=lambda item: (
-                    -(item.fault_errors / item.fault_requests - item.baseline_errors / item.baseline_requests),
-                    -item.fault_requests,
-                    item.service_name,
-                ),
-            )[:2]
+        trace_services = select_trace_candidate_services(
+            metrics=observations,
+            logs=logs,
+            additional_limit=max(0, config.projection.trace_query_limit - 1),
         )
-        preflight_log_candidates = tuple(
-            item.service_name
-            for item in sorted(
-                logs,
-                key=lambda item: (item.severity.upper() not in {"FATAL", "ERROR"}, item.observed_at, item.service_name),
-            )[:2]
-        )
-        trace_services = tuple(
-            dict.fromkeys(
-                (
-                    "checkout",
-                    *(preflight_metric_candidates + preflight_log_candidates),
-                )
-            )
-        )[: config.projection.trace_query_limit]
         traces = _capture_broad_traces(
             resolved.endpoints.jaeger,
             services=trace_services,
@@ -1038,44 +1069,15 @@ def run_invocation_a(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
             config,
             resolved_compose_sha256=canonical_sha256(raw_compose),
         )
-        write_private_json(roots.control / "scenario-lock.json", lock, create_once=True)
         template = build_plan_template(config)
-        write_private_json(roots.control / "plan-template.json", template, create_once=True)
-        request = create_approval_request(config, scenario_lock=lock)
-        write_private_json(roots.control / "approval-request.json", request, create_once=True)
-        approval_command = (
-            "uv run --with pyarrow python scripts/live_sandbox/e2e_v1.py "
-            f"--private-root {roots.root} approve --approver '<HUMAN_NAME>' "
-            f"--phrase 'APPROVE {request.scenario_id} {request.plan_template_sha256}'"
-        )
-        success_payload = {
-            "schema_version": "live-e2e.invocation-a.terminal.v1",
-            "verdict": config.authority.invocation_a_terminal,
-            "fault_injections": 0,
-            "provider_calls": 0,
-            "model_calls": 0,
-            "forward_mutations": 0,
-            "rollback_mutations": 0,
-            "source_counts": _safe_source_counts(source_results),
-            "approval_request_id": request.approval_request_id,
-            "plan_template_sha256": request.plan_template_sha256,
-            "approval_request_path": str(roots.control / "approval-request.json"),
-            "approval_expires_at": request.expires_at.isoformat(),
-            "approval_command": approval_command,
-            "projection_probe_classification": (
-                "E2E_PROJECTION_DEVELOPMENT_ONLY",
-                "NOT_CANONICAL_V3",
-                "NOT_MODEL_EVIDENCE",
-                "NO_FAULT",
-                "NO_PROVIDER",
-                "NO_REMEDIATION",
-            ),
-            "visible_service_count": len(context.visible_entities),
-        }
+        preauthorization_lock = lock
+        preauthorization_template = template
+        preauthorization_source_counts = _safe_source_counts(source_results)
+        preauthorization_visible_count = len(context.visible_entities)
     except Exception as error:
         failure_type = type(error).__name__
     finally:
-        if started:
+        if start_attempted:
             baseline_restored = False
             if controller is not None:
                 try:
@@ -1093,16 +1095,60 @@ def run_invocation_a(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
             except Exception as error:
                 failure_type = type(error).__name__
                 cleanup_verdict = "BLOCKED"
+    if (
+        cleanup_verdict == "CLEAN"
+        and preauthorization_lock is not None
+        and preauthorization_template is not None
+        and preauthorization_source_counts is not None
+        and preauthorization_visible_count is not None
+    ):
+        try:
+            request = create_approval_request(config, scenario_lock=preauthorization_lock)
+            write_private_json(roots.control / "scenario-lock.json", preauthorization_lock, create_once=True)
+            write_private_json(roots.control / "plan-template.json", preauthorization_template, create_once=True)
+            write_private_json(roots.control / "approval-request.json", request, create_once=True)
+            approval_command = (
+                "uv run --with pyarrow python scripts/live_sandbox/e2e_v1.py "
+                f"--private-root {roots.root} approve --approver '<HUMAN_NAME>' "
+                f"--phrase 'APPROVE {request.scenario_id} {request.plan_template_sha256}'"
+            )
+            success_payload = {
+                "schema_version": "live-e2e.invocation-a.terminal.v1",
+                "verdict": config.authority.invocation_a_terminal,
+                "fault_injections": 0,
+                "provider_calls": 0,
+                "model_calls": 0,
+                "forward_mutations": 0,
+                "rollback_mutations": 0,
+                "source_counts": preauthorization_source_counts,
+                "approval_request_id": request.approval_request_id,
+                "plan_template_sha256": request.plan_template_sha256,
+                "approval_request_path": str(roots.control / "approval-request.json"),
+                "approval_expires_at": request.expires_at.isoformat(),
+                "approval_command": approval_command,
+                "projection_probe_classification": (
+                    "E2E_PROJECTION_DEVELOPMENT_ONLY",
+                    "NOT_CANONICAL_V3",
+                    "NOT_MODEL_EVIDENCE",
+                    "NO_FAULT",
+                    "NO_PROVIDER",
+                    "NO_REMEDIATION",
+                ),
+                "visible_service_count": preauthorization_visible_count,
+            }
+        except Exception as error:
+            failure_type = type(error).__name__
     if success_payload is None or cleanup_verdict != "CLEAN":
         terminal = {
             "schema_version": "live-e2e.invocation-a.terminal.v1",
-            "verdict": "LIVE_E2E_INVOCATION_A_TERMINAL_FAILURE",
+            "verdict": "BLOCKED",
             "fault_injections": 0,
             "provider_calls": 0,
             "model_calls": 0,
             "forward_mutations": 0,
             "rollback_mutations": 0,
             "failure_type": failure_type,
+            "failure_classification": "INVOCATION_A_RUNTIME_FAILURE",
             "cleanup_verdict": cleanup_verdict,
         }
     else:
@@ -1229,12 +1275,23 @@ def _public_result(config: E2EConfig, terminal: Mapping[str, object]) -> dict[st
         "source_counts": terminal.get("source_counts"),
         "provider_calls": terminal.get("provider_calls"),
         "model_calls": terminal.get("model_calls"),
+        "fault_injections": terminal.get("fault_injections"),
         "forward_mutations": terminal.get("forward_mutations"),
         "rollback_mutations": terminal.get("rollback_mutations"),
         "cleanup_verdict": terminal.get("cleanup_verdict"),
         "cleanup": cleanup,
         "diagnosis_gate": terminal.get("diagnosis_gate"),
         "policy_verdict": terminal.get("policy_verdict"),
+        "source_availability": terminal.get("source_availability"),
+        "evidence_resolver_valid": terminal.get("evidence_resolver_valid"),
+        "visible_service_count": terminal.get("visible_service_count"),
+        "context_safety_passed": terminal.get("context_safety_passed"),
+        "fault_impact_passed": terminal.get("fault_impact_passed"),
+        "provider_preflight_passed": terminal.get("provider_preflight_passed"),
+        "approval_valid": terminal.get("approval_valid"),
+        "plan_template_exact": terminal.get("plan_template_exact"),
+        "recovery_verification_passed": terminal.get("recovery_verification_passed"),
+        "implementation_commit": terminal.get("implementation_commit"),
     }
     from ecomsre_live_sandbox.e2e_contracts import scan_public_e2e_payload
 
@@ -1243,8 +1300,80 @@ def _public_result(config: E2EConfig, terminal: Mapping[str, object]) -> dict[st
     return value
 
 
-def verify_public_result(config: E2EConfig, public: Mapping[str, object]) -> bool:
-    """Independently verify the safe, public contract without reading raw private evidence."""
+def _cleanup_truth_is_valid(cleanup_verdict: object, cleanup: object) -> bool:
+    if not isinstance(cleanup_verdict, str) or not isinstance(cleanup, Mapping):
+        return False
+    required = {
+        "owned_containers": 0,
+        "owned_networks": 0,
+        "owned_volumes": 0,
+        "non_owned_resources_changed": False,
+        "verdict": cleanup_verdict,
+    }
+    if any(cleanup.get(key) != expected for key, expected in required.items()):
+        return False
+    if cleanup_verdict in {"CLEAN", "NOT_REQUIRED"}:
+        return cleanup.get("baseline_restored") is True
+    return isinstance(cleanup.get("baseline_restored"), bool)
+
+
+def _successful_terminal_is_valid(config: E2EConfig, terminal: Mapping[str, object]) -> bool:
+    source_counts = terminal.get("source_counts")
+    source_availability = terminal.get("source_availability")
+    if not isinstance(source_counts, Mapping) or not isinstance(source_availability, Mapping):
+        return False
+    if any(source_counts.get(source) is None or not isinstance(source_counts.get(source), int) or source_counts[source] <= 0 for source in ("METRICS", "LOGS", "TRACES")):
+        return False
+    if any(source_availability.get(source) != "AVAILABLE" for source in ("METRICS", "LOGS", "TRACES")):
+        return False
+    expected = {
+        "verdict": config.authority.invocation_b_success,
+        "provider_calls": 2,
+        "model_calls": 1,
+        "fault_injections": 1,
+        "forward_mutations": 1,
+        "rollback_mutations": 0,
+        "cleanup_verdict": "CLEAN",
+        "evidence_resolver_valid": True,
+        "context_safety_passed": True,
+        "fault_impact_passed": True,
+        "provider_preflight_passed": True,
+        "approval_valid": True,
+        "plan_template_exact": True,
+        "diagnosis_gate": True,
+        "policy_verdict": "ALLOW",
+        "recovery_verification_passed": True,
+    }
+    if any(terminal.get(key) != value for key, value in expected.items()):
+        return False
+    visible_count = terminal.get("visible_service_count")
+    return (
+        isinstance(visible_count, int)
+        and config.projection.visible_entity_minimum <= visible_count <= config.projection.visible_entity_maximum
+        and isinstance(terminal.get("implementation_commit"), str)
+        and len(cast(str, terminal["implementation_commit"])) == 40
+        and _cleanup_truth_is_valid(terminal.get("cleanup_verdict"), terminal.get("cleanup"))
+    )
+
+
+def _sealed_terminal_is_publicly_publishable(config: E2EConfig, terminal: Mapping[str, object]) -> bool:
+    """Verify the safe aggregate claims against the sealed terminal, never raw evidence."""
+    if terminal.get("verdict") not in _legal_terminal_verdicts(config):
+        return False
+    if not _cleanup_truth_is_valid(terminal.get("cleanup_verdict"), terminal.get("cleanup")):
+        return False
+    if terminal.get("verdict") == config.authority.invocation_b_success:
+        return _successful_terminal_is_valid(config, terminal)
+    return True
+
+
+def verify_public_result(
+    config: E2EConfig,
+    public: Mapping[str, object],
+    *,
+    sealed_terminal: Mapping[str, object] | None = None,
+) -> bool:
+    """Independently verify public aggregates, optionally against the sealed terminal."""
     from ecomsre_live_sandbox.e2e_contracts import scan_public_e2e_payload
 
     required = {
@@ -1256,21 +1385,17 @@ def verify_public_result(config: E2EConfig, public: Mapping[str, object]) -> boo
         return False
     if scan_public_e2e_payload(public):
         return False
-    cleanup = public.get("cleanup")
-    if public.get("cleanup_verdict") == "CLEAN":
-        if not isinstance(cleanup, Mapping) or any(
-            cleanup.get(key) != expected
-            for key, expected in {
-                "baseline_restored": True,
-                "owned_containers": 0,
-                "owned_networks": 0,
-                "owned_volumes": 0,
-                "non_owned_resources_changed": False,
-                "verdict": "CLEAN",
-            }.items()
-        ):
-            return False
-    return isinstance(public.get("verdict"), str)
+    if not _cleanup_truth_is_valid(public.get("cleanup_verdict"), public.get("cleanup")):
+        return False
+    if public.get("verdict") not in _legal_terminal_verdicts(config):
+        return False
+    if public.get("verdict") == config.authority.invocation_b_success and not _successful_terminal_is_valid(config, public):
+        return False
+    if sealed_terminal is None:
+        return isinstance(public.get("verdict"), str)
+    if not _sealed_terminal_is_publicly_publishable(config, sealed_terminal):
+        return False
+    return public == _public_result(config, sealed_terminal)
 
 
 def _write_new_public(path: Path, payload: bytes) -> None:
@@ -1284,7 +1409,7 @@ def _write_new_public(path: Path, payload: bytes) -> None:
 
 def _write_public_outputs(config: E2EConfig, terminal: Mapping[str, object]) -> tuple[str, str, str]:
     public = _public_result(config, terminal)
-    if not verify_public_result(config, public):
+    if not verify_public_result(config, public, sealed_terminal=terminal):
         raise RuntimeError("independent public E2E verifier did not pass")
     paths = (
         config.repository_root / config.reporting.public_result_json,
@@ -1312,6 +1437,16 @@ def _write_public_outputs(config: E2EConfig, terminal: Mapping[str, object]) -> 
         ).encode("utf-8"),
     )
     return tuple(path.relative_to(config.repository_root).as_posix() for path in paths)  # type: ignore[return-value]
+
+
+def _record_rollback_mutation(roots: E2EPrivateRoots, terminal: dict[str, object]) -> None:
+    """Persist mutation accounting immediately after the controller restores fault state."""
+    terminal["rollback_mutations"] = 1
+    write_private_json(
+        roots.journal / "rollback-mutation.json",
+        {"schema_version": "live-e2e.rollback-mutation.v1", "mutation_count": 1},
+        create_once=True,
+    )
 
 
 def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, object]:
@@ -1355,16 +1490,20 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
     )
     provider: OpenAICompatibleRCA100Provider | None = None
     controller: SandboxFaultController | None = None
-    started = False
+    start_attempted = False
     cleanup = None
+    forward_counter = ForwardMutationCounter(roots.journal / "forward-mutation.txt")
     terminal: dict[str, object] = {
         "schema_version": "live-e2e.invocation-b.terminal.v1",
-        "verdict": "LIVE_E2E_TERMINAL_FAILURE",
+        "verdict": "BLOCKED",
         "provider_calls": 0,
         "model_calls": 0,
         "fault_injections": 0,
         "forward_mutations": 0,
         "rollback_mutations": 0,
+        "approval_valid": True,
+        "plan_template_exact": True,
+        "implementation_commit": lock["implementation_commit"],
     }
     try:
         terminal["verdict"] = "BLOCKED_PROVIDER_PREFLIGHT"
@@ -1374,6 +1513,7 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
         terminal["provider_calls"] = provider.calls
         if provider.calls != 1 or not provider.usage_known or provider.last_usage_tokens is None:
             raise RuntimeError("synthetic Provider preflight did not return known bounded usage")
+        terminal["provider_preflight_passed"] = True
         write_private_json(
             roots.provider / "synthetic-preflight.json",
             {"request_sha256": provider.last_request_sha256, "diagnosis": preflight, "usage_tokens": provider.last_usage_tokens},
@@ -1387,9 +1527,9 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
             resolved.endpoints,
             flagd_directory=roots.runtime / "live-flagd",
         )
+        start_attempted = True
         environment.start()
-        started = True
-        terminal["verdict"] = "LIVE_E2E_TERMINAL_FAILURE"
+        terminal["verdict"] = "BLOCKED"
         environment.wait_healthy()
         time.sleep(config.sandbox.verification.minimum_stabilization_seconds)
         if controller.read_current().document_sha256 != config.sandbox.scenario.baseline_document_sha256:
@@ -1410,10 +1550,10 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
         )
         baseline = (baseline_1, baseline_2)
         baseline_snapshot = _broad_metric_snapshot(resolved.endpoints.prometheus, at=baseline[-1].ended_at)
+        terminal["fault_injections"] = 1
         fault_state = controller.inject_fault()
         if fault_state.document_sha256 != config.sandbox.scenario.fault_document_sha256:
             raise RuntimeError("frozen fault injection did not reach the exact fault document")
-        terminal["fault_injections"] = 1
         time.sleep(config.sandbox.verification.minimum_stabilization_seconds)
         fault_1, _fault_1_sources = _capture_e2e_window(
             config,
@@ -1433,9 +1573,11 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
         if not fault_impact_passed(baseline, fault, config.sandbox):
             terminal["verdict"] = "BLOCKED_FAULT_IMPACT_NOT_OBSERVED"
             raise RuntimeError("two-window fault impact gate did not pass")
+        terminal["fault_impact_passed"] = True
         fault_snapshot = _broad_metric_snapshot(resolved.endpoints.prometheus, at=fault[-1].ended_at)
         terminal["verdict"] = "BLOCKED_LIVE_TELEMETRY_SOURCE_UNAVAILABLE"
         source_results = fault_2_sources
+        terminal["source_availability"] = {item.source: item.status.value for item in source_results}
         observations = tuple(
             LiveMetricObservation(
                 service_name=service,
@@ -1445,6 +1587,13 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
                 fault_errors=fault_values[1],
                 baseline_p95_ms=baseline_snapshot.get(service, (0.0, 0.0, 0.0))[2],
                 fault_p95_ms=fault_values[2],
+                first_anomaly_at=(
+                    fault[0].started_at
+                    if fault_values[1] / fault_values[0]
+                    > baseline_snapshot.get(service, (0.0, 0.0, 0.0))[1]
+                    / baseline_snapshot.get(service, (1.0, 0.0, 0.0))[0]
+                    else None
+                ),
             )
             for service, fault_values in sorted(fault_snapshot.items())
             if baseline_snapshot.get(service, (0.0, 0.0, 0.0))[0] > 0
@@ -1455,26 +1604,11 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
             window_end=fault[-1].ended_at,
             maximum_hits=config.projection.log_raw_hit_limit,
         )
-        metrics_candidates = tuple(
-            item.service_name
-            for item in sorted(
-                observations,
-                key=lambda item: (
-                    -(item.fault_errors / item.fault_requests - item.baseline_errors / item.baseline_requests),
-                    item.service_name,
-                ),
-            )[:2]
+        trace_services = select_trace_candidate_services(
+            metrics=observations,
+            logs=logs,
+            additional_limit=max(0, config.projection.trace_query_limit - 1),
         )
-        log_candidates = tuple(
-            item.service_name
-            for item in sorted(
-                logs,
-                key=lambda item: (item.severity.upper() not in {"FATAL", "ERROR"}, item.observed_at, item.service_name),
-            )[:2]
-        )
-        trace_services = tuple(
-            dict.fromkeys(("checkout", *(metrics_candidates + log_candidates)))
-        )[: config.projection.trace_query_limit]
         traces = _capture_broad_traces(
             resolved.endpoints.jaeger,
             services=trace_services,
@@ -1502,6 +1636,7 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
             logs=logs,
             traces=traces,
         )
+        terminal["evidence_resolver_valid"] = True
         terminal["verdict"] = "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE"
         context = build_live_a0_context(
             window_start=baseline[0].started_at,
@@ -1512,6 +1647,8 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
             resolvable_refs=resolver_refs,
             projection=config.projection,
         )
+        terminal["visible_service_count"] = len(context.visible_entities)
+        terminal["context_safety_passed"] = True
         _write_model_evidence_index(roots, context, raw_observations=raw_observations)
         write_private_json(roots.provider / "live-context.json", context, create_once=True)
         terminal["verdict"] = "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION"
@@ -1524,6 +1661,7 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
         diagnosis_gate = evaluate_diagnosis_gate(diagnosis, config.sandbox)
         if not diagnosis_gate.passed:
             raise RuntimeError("A0 diagnosis gate denied controlled remediation")
+        terminal["diagnosis_gate"] = True
         terminal["verdict"] = "BLOCKED_POLICY_REJECTED"
         plan = build_plan(diagnosis, config.sandbox)
         policy = evaluate_policy(
@@ -1542,15 +1680,16 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
         )
         if policy.verdict.value != "ALLOW":
             raise RuntimeError("Policy Gate denied controlled remediation")
+        terminal["policy_verdict"] = policy.verdict.value
         write_private_json(roots.invocation_b / "plan.json", plan, create_once=True)
         write_private_json(roots.invocation_b / "policy.json", policy, create_once=True)
         receipt = LocalSandboxRestrictedExecutor().execute(
             plan=plan,
             policy=policy,
             controller=controller,
-            mutation_counter=ForwardMutationCounter(roots.journal / "forward-mutation.txt"),
+            mutation_counter=forward_counter,
         )
-        terminal["forward_mutations"] = 1
+        terminal["forward_mutations"] = forward_counter.count
         terminal["verdict"] = "CONTROLLED_REMEDIATION_NOT_VERIFIED_ROLLBACK_COMPLETED"
         write_private_json(roots.invocation_b / "execution-receipt.json", receipt, create_once=True)
         time.sleep(config.sandbox.verification.minimum_stabilization_seconds)
@@ -1581,18 +1720,19 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
         )
         write_private_json(roots.invocation_b / "verification.json", verification, create_once=True)
         if not verification.passed:
+            terminal["recovery_verification_passed"] = False
             try:
                 rollback = compensate_rollback(
                     receipt=receipt,
                     verification=verification,
                     controller=controller,
+                    on_mutation=lambda: _record_rollback_mutation(roots, terminal),
                 )
             except Exception:
                 terminal["verdict"] = "BLOCKED_ROLLBACK_FAILED_MANUAL_CLEANUP_REQUIRED"
                 terminal["manual_cleanup_command"] = environment.manual_cleanup_command()
                 raise
             write_private_json(roots.invocation_b / "rollback.json", rollback, create_once=True)
-            terminal["rollback_mutations"] = 1
             if not rollback.exact_hash_verified or rollback.restored_sha256 != config.sandbox.scenario.fault_document_sha256:
                 raise RuntimeError("compensating rollback did not restore the exact fault state")
             terminal.update(
@@ -1606,6 +1746,7 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
                 }
             )
         else:
+            terminal["recovery_verification_passed"] = True
             terminal.update(
                 {
                     "verdict": config.authority.invocation_b_success,
@@ -1619,8 +1760,11 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
         if provider is not None:
             terminal["provider_calls"] = provider.calls
         terminal["failure_type"] = type(error).__name__
+        if terminal.get("verdict") == "BLOCKED":
+            terminal["failure_classification"] = "UNCLASSIFIED_RUNTIME_FAILURE"
     finally:
-        if started:
+        terminal["forward_mutations"] = forward_counter.count
+        if start_attempted:
             baseline_restored = False
             if controller is not None:
                 try:
@@ -1639,13 +1783,25 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
         else:
             terminal["cleanup_verdict"] = "NOT_REQUIRED"
         terminal["cleanup"] = _terminal_cleanup_truth(terminal)
-        if terminal.get("cleanup_verdict") != "CLEAN" and started:
+        if terminal.get("cleanup_verdict") != "CLEAN" and start_attempted:
             terminal["verdict"] = "BLOCKED_CLEANUP_INCOMPLETE"
+        projection_source_path = _write_private_projection_source(roots, terminal=terminal)
+        roots.verify()
+        projection_source = json.loads(projection_source_path.read_text(encoding="utf-8"))
+        sealed_terminal = projection_source.get("terminal") if isinstance(projection_source, Mapping) else None
+        if (
+            not isinstance(sealed_terminal, Mapping)
+            or not _sealed_terminal_is_publicly_publishable(config, sealed_terminal)
+        ):
+            raise RuntimeError("sealed private Invocation B projection source cannot be safely projected")
         try:
-            terminal["public_outputs"] = _write_public_outputs(config, terminal)
+            terminal["public_outputs"] = _write_public_outputs(config, sealed_terminal)
+            terminal["public_projection_status"] = "PASSED"
         except Exception as error:
-            terminal["verdict"] = "BLOCKED_PUBLIC_REPORT_FAILURE"
+            terminal["verdict"] = "BLOCKED"
             terminal["failure_type"] = type(error).__name__
+            terminal["failure_classification"] = "PUBLIC_REPORT_FAILURE"
+            terminal["public_projection_status"] = "PARTIAL_OR_NONE"
         _write_private_final_report(roots, invocation="invocation-b", terminal=terminal)
         write_private_json(terminal_path, terminal, create_once=True)
         roots.verify()

@@ -315,6 +315,34 @@ def test_restricted_executor_has_no_argv_surface_and_rejects_second_mutation(bun
         )
 
 
+def test_forward_mutation_journal_records_a_restore_failure(bundle, tmp_path: Path) -> None:
+    diagnosis = _diagnosis(bundle)
+    plan = build_plan(diagnosis, bundle)
+    counter = ForwardMutationCounter(tmp_path / "forward-mutation.txt")
+
+    class FailingRestoreController:
+        def read_current(self) -> ConfigurationState:
+            return ConfigurationState(
+                variant="100%",
+                value=1,
+                document_sha256=bundle.scenario.fault_document_sha256,
+            )
+
+        def restore_baseline(self) -> ConfigurationState:
+            raise RuntimeError("controller failed after mutation reservation")
+
+    with pytest.raises(RuntimeError, match="mutation reservation"):
+        LocalSandboxRestrictedExecutor().execute(
+            plan=plan,
+            policy=PolicyDecision(verdict="ALLOW", reason_codes=("ALLOWED",)),
+            controller=FailingRestoreController(),  # type: ignore[arg-type]
+            mutation_counter=counter,
+        )
+
+    assert counter.count == 1
+    assert (tmp_path / "forward-mutation.txt").read_text(encoding="utf-8")
+
+
 def test_independent_verifier_pass_and_failure_compensates_exact_rollback(bundle) -> None:
     diagnosis = _diagnosis(bundle)
     plan = build_plan(diagnosis, bundle)
@@ -355,12 +383,17 @@ def test_independent_verifier_pass_and_failure_compensates_exact_rollback(bundle
     )
     assert result.passed
     failed = result.model_copy(update={"passed": False, "reason_codes": ("RECOVERY_SLI_FAILED",)})
+    mutation_seen: list[bool] = []
     rollback = compensate_rollback(
         receipt=receipt,
         verification=failed,
         controller=adapter,
+        on_mutation=lambda: mutation_seen.append(
+            adapter.read_current().document_sha256 == bundle.scenario.fault_document_sha256
+        ),
     )
     assert rollback.executed and rollback.exact_hash_verified
+    assert mutation_seen == [True]
     assert adapter.read_current().document_sha256 == bundle.scenario.fault_document_sha256
 
 
