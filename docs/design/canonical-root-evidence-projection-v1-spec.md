@@ -11,4 +11,3 @@ Topology retains `contains`/`parent`, `calls`, `depends_on`/`dependency`, `hosts
 Every source-backed entity retains itself when root eligible and every explicit root ancestor within four parent hops. Private provenance binds original ref, candidate ref, full path, path length, source, and evidence ref. The candidate universe contains direct and inherited roots, upstream dependencies within two directed hops, same-component roots within two undirected hops, Metrics Top-6 with all root ancestors, and alert entities with all root ancestors. It never adds an unrelated catalog entity or a label-selected entity.
 
 The one label-blind build is create-once outside Git and is bound by `projection-lock.json` to the clean implementation commit, frozen policy, source hashes, 163 opaque identities, output hashes, offline tokenizer, and `Provider calls = 0`. Evaluator imports and truth access occur only in the post-lock score command.
-
