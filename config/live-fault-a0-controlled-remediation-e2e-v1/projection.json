@@ -8,6 +8,9 @@
   "log_per_service_limit": 4,
   "trace_query_limit": 3,
   "trace_evidence_limit": 20,
-  "context_token_limit": 98304,
+  "trace_neighborhood_hops": 2,
+  "maximum_serialized_context_bytes": 98304,
+  "service_ordering_policy": "SUPPORT_THEN_METRICS_THEN_EARLIEST_THEN_NAME",
+  "evidence_ordering_policy": "SOURCE_SCORE_TIME_SERVICE_HASH",
   "alert_title": "Observed purchase-flow request error-rate increase"
 }

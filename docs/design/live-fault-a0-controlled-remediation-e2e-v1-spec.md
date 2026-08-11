@@ -14,11 +14,15 @@ The sole success marker is
 remains a local, controlled demonstration only:
 
 - `LIVE_LOCAL_SANDBOX_DEMO`
-- `CONTROLLED_FAULT_INJECTION`
-- `HUMAN_APPROVED_REMEDIATION`
+- `ONE_PREREGISTERED_SCENARIO`
+- `HUMAN_PREAUTHORIZED_FROZEN_REMEDIATION_RUNBOOK`
+- `ONE_STRONG_SINGLE_DIAGNOSIS`
+- `ONE_ALLOWLISTED_MUTATION`
+- `INDEPENDENT_RECOVERY_VERIFICATION`
 - `NOT_PRODUCTION`
+- `NOT_AUTONOMOUS_PRODUCTION_REMEDIATION`
 - `NOT_EXTERNAL_BENCHMARK`
-- `NOT_SECURITY_VULNERABILITY_DETECTION`
+- `NOT_MULTI_AGENT_SUPERIORITY_CLAIM`
 
 ## Frozen execution contract
 
@@ -44,10 +48,10 @@ trees with `0600` files. The public result stores only aggregate counts and
 claim boundaries.
 
 The A0 Context is built solely from observed Metrics, Logs, and Traces. It
-contains the observed checkout alert candidate when available, the top four
-deterministically scored metric services, bounded anomalous logs, and traces
-from at most three service queries (checkout plus the two leading metric
-candidates). It never accepts scenario identifiers, flag names/values, action
-names, approval text, source raw IDs, or user payload as model input. It exposes
-three to eight canonical visible entities, at least two source types, resolvable
-evidence references, and at most 98,304 tokens.
+contains the observed checkout symptom anchor only when checkout is actually
+observed, deterministic broad Metrics candidates, bounded WARN/ERROR/FATAL (or
+error-like) untrusted logs, and a bounded two-hop trace neighborhood from at
+most three queries. It never accepts scenario identifiers, flag names/values,
+action names, approval text, source raw IDs, or user payload as model input.
+It exposes three to eight canonical visible entities, all three source types,
+sealed private-resolver references, and at most 98,304 serialized UTF-8 bytes.

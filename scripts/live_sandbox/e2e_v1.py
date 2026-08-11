@@ -64,6 +64,8 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.buffer.write(canonical_json_bytes(result))
         return 1
     sys.stdout.buffer.write(canonical_json_bytes(result))
+    if arguments.command == "approve":
+        return 0
     return 0 if result.get("verdict") in {
         config.authority.invocation_a_terminal,
         config.authority.invocation_b_success,

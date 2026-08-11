@@ -20,6 +20,7 @@ from ecomsre_live_sandbox.contracts import (
     canonical_json_bytes,
     canonical_sha256,
     ensure_private_directory,
+    file_sha256,
     load_bundle,
     verify_private_tree_permissions,
     write_private_json,
@@ -40,6 +41,7 @@ class E2EAuthority(FrozenModel):
     predecessor_head: Literal["e28a1091acba7365d7f4deb2aa61fd39e90ae3ae"]
     predecessor_v3_semantic_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     predecessor_v3_tracked_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    frozen_input_hashes: dict[str, str] = Field(min_length=12)
     scenario_id: Literal["37f142fc-9cde-4839-8184-88f2288ceced"]
     fault_controller_type: Literal["FLAGD_UI_WHOLE_DOCUMENT_HTTP_V1"]
     target_service: Literal["payment"]
@@ -70,7 +72,10 @@ class ProjectionConfig(FrozenModel):
     log_per_service_limit: Literal[4]
     trace_query_limit: Literal[3]
     trace_evidence_limit: Literal[20]
-    context_token_limit: Literal[98304]
+    trace_neighborhood_hops: Literal[2]
+    maximum_serialized_context_bytes: Literal[98304]
+    service_ordering_policy: Literal["SUPPORT_THEN_METRICS_THEN_EARLIEST_THEN_NAME"]
+    evidence_ordering_policy: Literal["SOURCE_SCORE_TIME_SERVICE_HASH"]
     alert_title: Literal["Observed purchase-flow request error-rate increase"]
 
 
@@ -83,11 +88,15 @@ class ReportingConfig(FrozenModel):
     ]
     claim_boundary: tuple[
         Literal["LIVE_LOCAL_SANDBOX_DEMO"],
-        Literal["CONTROLLED_FAULT_INJECTION"],
-        Literal["HUMAN_APPROVED_REMEDIATION"],
+        Literal["ONE_PREREGISTERED_SCENARIO"],
+        Literal["HUMAN_PREAUTHORIZED_FROZEN_REMEDIATION_RUNBOOK"],
+        Literal["ONE_STRONG_SINGLE_DIAGNOSIS"],
+        Literal["ONE_ALLOWLISTED_MUTATION"],
+        Literal["INDEPENDENT_RECOVERY_VERIFICATION"],
         Literal["NOT_PRODUCTION"],
+        Literal["NOT_AUTONOMOUS_PRODUCTION_REMEDIATION"],
         Literal["NOT_EXTERNAL_BENCHMARK"],
-        Literal["NOT_SECURITY_VULNERABILITY_DETECTION"],
+        Literal["NOT_MULTI_AGENT_SUPERIORITY_CLAIM"],
     ]
 
 
@@ -110,11 +119,19 @@ class E2EPrivateRoots:
 
     @property
     def invocation_a(self) -> Path:
-        return self.root / "invocation-a"
+        return self.root / "preflight"
 
     @property
     def invocation_b(self) -> Path:
-        return self.root / "invocation-b"
+        return self.root / "live-run"
+
+    @property
+    def runtime(self) -> Path:
+        return self.root / "runtime"
+
+    @property
+    def reports(self) -> Path:
+        return self.root / "reports"
 
     @property
     def telemetry(self) -> Path:
@@ -134,6 +151,8 @@ class E2EPrivateRoots:
             self.control,
             self.invocation_a,
             self.invocation_b,
+            self.runtime,
+            self.reports,
             self.telemetry,
             self.provider,
             self.journal,
@@ -143,6 +162,29 @@ class E2EPrivateRoots:
     def verify(self) -> None:
         verify_private_tree_permissions(self.root)
 
+    def lifecycle_payload(self, authority: E2EAuthority) -> dict[str, object]:
+        return {
+            "schema_version": "live-e2e.private-root-lifecycle.v1",
+            "version": authority.version,
+            "branch": authority.branch,
+            "starting_pr": authority.predecessor_pr,
+            "starting_result_head": authority.predecessor_head,
+        }
+
+    def bind_lifecycle(self, authority: E2EAuthority) -> None:
+        self.prepare()
+        path = self.control / "private-root-lifecycle.json"
+        expected = self.lifecycle_payload(authority)
+        if path.exists() or path.is_symlink():
+            if path.is_symlink() or not path.is_file():
+                raise RuntimeError("private-root lifecycle binding is unavailable")
+            current = json.loads(path.read_text(encoding="utf-8"))
+            if current != expected:
+                raise RuntimeError("private-root lifecycle binding differs")
+        else:
+            write_private_json(path, expected, create_once=True)
+        self.verify()
+
 
 def _read(path: Path, model: type[FrozenModel]) -> FrozenModel:
     if path.is_symlink() or not path.is_file():
@@ -151,6 +193,7 @@ def _read(path: Path, model: type[FrozenModel]) -> FrozenModel:
 
 
 def _require_predecessor(config: E2EConfig) -> None:
+    authority = config.authority
     result_path = config.repository_root / V3_RESULT_RELATIVE
     if result_path.is_symlink() or not result_path.is_file():
         raise RuntimeError("frozen v3 result is unavailable")
@@ -161,8 +204,26 @@ def _require_predecessor(config: E2EConfig) -> None:
         raise RuntimeError("frozen v3 semantic result drifted")
     if result.get("verdict") != "LIVE_TELEMETRY_INSTRUMENTATION_V3_READY_FOR_E2E":
         raise RuntimeError("frozen v3 terminal differs")
+    frozen_paths = {
+        "v3_environment": "config/live-telemetry-instrumentation-v3/environment.json",
+        "v3_sources": "config/live-telemetry-instrumentation-v3/sources.json",
+        "v3_readiness": "config/live-telemetry-instrumentation-v3/readiness.json",
+        "v3_reporting": "config/live-telemetry-instrumentation-v3/reporting.json",
+        "v1_scenario": "config/live-telemetry-controlled-remediation-v1/scenario.json",
+        "v1_diagnosis": "config/live-telemetry-controlled-remediation-v1/diagnosis.json",
+        "v1_policy": "config/live-telemetry-controlled-remediation-v1/policy.json",
+        "v1_verification": "config/live-telemetry-controlled-remediation-v1/verification.json",
+        "v1_budget": "config/live-telemetry-controlled-remediation-v1/budget.json",
+        "v1_sandbox": "config/live-telemetry-controlled-remediation-v1/sandbox.json",
+        "v1_compose": "config/live-telemetry-controlled-remediation-v1/compose.sandbox.yaml",
+        "v1_otelcol": "config/live-telemetry-controlled-remediation-v1/otelcol-sandbox.yml",
+    }
+    if set(authority.frozen_input_hashes) != set(frozen_paths) or any(
+        file_sha256(config.repository_root / relative) != authority.frozen_input_hashes[name]
+        for name, relative in frozen_paths.items()
+    ):
+        raise RuntimeError("frozen v3 or v1 authority input differs")
     sandbox = config.sandbox
-    authority = config.authority
     if (
         sandbox.scenario.scenario_id != authority.scenario_id
         or sandbox.scenario.target_service != authority.target_service
@@ -244,12 +305,15 @@ def record_human_approval(
 ) -> HumanApprovalRecord:
     if now > request.expires_at:
         raise ValueError("approval request is expired")
+    canonical_approver = approver.strip()
+    if not canonical_approver:
+        raise ValueError("human approver is blank")
     expected_phrase = f"APPROVE {request.scenario_id} {request.plan_template_sha256}"
     if phrase != expected_phrase:
         raise ValueError("human approval phrase differs")
     record = HumanApprovalRecord(
         mode="HUMAN",
-        approver=approver,
+        approver=canonical_approver,
         approval_request_id=request.approval_request_id,
         request_sha256=canonical_sha256(request),
         plan_template_sha256=request.plan_template_sha256,

@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -13,11 +14,28 @@ from ecomsre_live_sandbox.e2e_contracts import (
     record_human_approval,
     scan_public_e2e_payload,
 )
-from ecomsre_live_sandbox.e2e_v1 import scenario_lock_manifest
-from ecomsre_live_sandbox.e2e_v1 import _require_invocation_a_success
+from ecomsre_live_sandbox import e2e_v1
+from ecomsre_live_sandbox.e2e_v1 import _require_invocation_a_success, scenario_lock_manifest
 
 
 CONFIG = Path("config/live-fault-a0-controlled-remediation-e2e-v1")
+
+
+class PreflightEnvironment:
+    def __init__(self, **_: object) -> None:
+        pass
+
+    def verify_local_docker(self) -> dict[str, str]:
+        return {"endpoint": "unix:///private/docker.sock"}
+
+    def verify_upstream(self) -> None:
+        pass
+
+    def resolve(self) -> tuple[object, dict[str, object]]:
+        return SimpleNamespace(endpoints=SimpleNamespace()), {}
+
+    def verify_owned_resources(self, **_: object) -> dict[str, int]:
+        return {"container": 0, "network": 0, "volume": 0}
 
 
 def test_successor_authority_binds_the_frozen_v3_and_a0_surfaces() -> None:
@@ -43,7 +61,9 @@ def test_scenario_lock_binds_only_successor_surfaces() -> None:
 
     assert lock["implementation_branch"] == config.authority.branch
     assert lock["source_v3_tracked_sha256"] == config.authority.predecessor_v3_tracked_sha256
-    assert set(lock["tracked_files"]) == {
+    tracked_files = lock["tracked_files"]
+    assert isinstance(tracked_files, dict)
+    assert {
         "authority.json",
         "projection.json",
         "reporting.json",
@@ -52,7 +72,11 @@ def test_scenario_lock_binds_only_successor_surfaces() -> None:
         "e2e_v1.py",
         "test_e2e_projection.py",
         "test_e2e_v1.py",
-    }
+        "e2e_cli.py",
+        "v3_environment.json",
+        "v1_scenario.json",
+        "v1_budget.json",
+    }.issubset(set(tracked_files))
 
 
 def test_successor_runtime_does_not_import_the_frozen_v1_runtime_modules() -> None:
@@ -83,6 +107,157 @@ def test_invocation_b_requires_a_clean_no_fault_invocation_a_terminal(tmp_path: 
     terminal_path.write_text(json.dumps(terminal), encoding="utf-8")
     with pytest.raises(RuntimeError, match="clean human-authorization"):
         _require_invocation_a_success(config, roots)
+
+
+def test_invocation_b_seals_a_terminal_before_a_provider_preflight_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config = load_e2e_config(CONFIG)
+    roots = E2EPrivateRoots(tmp_path / "private")
+    lock = {"scenario": config.sandbox.scenario.scenario_id}
+    request = create_approval_request(config, scenario_lock=lock)
+    approval = record_human_approval(
+        request,
+        approver="Minghong Sun",
+        phrase=f"APPROVE {request.scenario_id} {request.plan_template_sha256}",
+        now=request.requested_at,
+        destination=tmp_path / "approval.json",
+    )
+    monkeypatch.setattr(e2e_v1, "_verify_scenario_lock", lambda *_, **__: lock)
+    monkeypatch.setattr(e2e_v1, "_require_invocation_a_success", lambda *_: None)
+    monkeypatch.setattr(e2e_v1, "_load_approval", lambda *_: (request, approval))
+    monkeypatch.setattr(e2e_v1, "SandboxEnvironment", PreflightEnvironment)
+    monkeypatch.setattr(e2e_v1, "_write_public_outputs", lambda *_: ("result.json", "result.md", "brief.md"))
+
+    def unavailable_provider(*_: object) -> object:
+        raise RuntimeError("provider is unavailable")
+
+    monkeypatch.setattr(e2e_v1, "_provider", unavailable_provider)
+
+    terminal = e2e_v1.run_invocation_b(config, roots)
+
+    assert terminal["verdict"] == "BLOCKED_PROVIDER_PREFLIGHT"
+    assert terminal["provider_calls"] == 0
+    assert terminal["fault_injections"] == 0
+    assert terminal["forward_mutations"] == 0
+    assert terminal["failure_type"] == "RuntimeError"
+    stored = json.loads((roots.invocation_b / "terminal.json").read_text(encoding="utf-8"))
+    assert stored["verdict"] == terminal["verdict"]
+    assert stored["provider_calls"] == terminal["provider_calls"]
+    assert (roots.invocation_b / "started.json").exists()
+
+    with pytest.raises(RuntimeError, match="already consumed"):
+        e2e_v1.run_invocation_b(config, roots)
+
+
+def test_invalid_approval_is_rejected_before_provider_preflight(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config = load_e2e_config(CONFIG)
+    roots = E2EPrivateRoots(tmp_path / "private")
+    lock = {"scenario": config.sandbox.scenario.scenario_id}
+    request = create_approval_request(config, scenario_lock=lock)
+    approval = record_human_approval(
+        request,
+        approver="Minghong Sun",
+        phrase=f"APPROVE {request.scenario_id} {request.plan_template_sha256}",
+        now=request.requested_at,
+        destination=tmp_path / "approval.json",
+    )
+    altered_request = request.model_copy(update={"scenario_lock_sha256": "0" * 64})
+    monkeypatch.setattr(e2e_v1, "_verify_scenario_lock", lambda *_, **__: lock)
+    monkeypatch.setattr(e2e_v1, "_require_invocation_a_success", lambda *_: None)
+    monkeypatch.setattr(e2e_v1, "_load_approval", lambda *_: (altered_request, approval))
+    monkeypatch.setattr(
+        e2e_v1,
+        "_provider",
+        lambda *_: pytest.fail("Provider must not be reached when approval binding is invalid"),
+    )
+    monkeypatch.setattr(e2e_v1, "SandboxEnvironment", PreflightEnvironment)
+
+    with pytest.raises(RuntimeError, match="exactly bound"):
+        e2e_v1.run_invocation_b(config, roots)
+
+    assert not (roots.invocation_b / "started.json").exists()
+
+
+def test_invocation_b_seals_cleanup_failure_after_start(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config = load_e2e_config(CONFIG)
+    roots = E2EPrivateRoots(tmp_path / "private")
+    lock = {"scenario": config.sandbox.scenario.scenario_id}
+    request = create_approval_request(config, scenario_lock=lock)
+    approval = record_human_approval(
+        request,
+        approver="Minghong Sun",
+        phrase=f"APPROVE {request.scenario_id} {request.plan_template_sha256}",
+        now=request.requested_at,
+        destination=tmp_path / "approval.json",
+    )
+
+    class Provider:
+        calls = 0
+        usage_known = True
+        last_usage_tokens = 1
+        last_request_sha256 = "0" * 64
+
+        def diagnose(self, _: object) -> dict[str, str]:
+            self.calls += 1
+            return {"preflight": "only"}
+
+    class Controller:
+        def read_current(self) -> object:
+            return SimpleNamespace(document_sha256=config.sandbox.scenario.baseline_document_sha256)
+
+    class Environment:
+        def __init__(self, **_: object) -> None:
+            pass
+
+        def verify_local_docker(self) -> dict[str, str]:
+            return {"endpoint": "unix:///private/docker.sock"}
+
+        def verify_upstream(self) -> None:
+            pass
+
+        def resolve(self) -> tuple[object, dict[str, object]]:
+            return SimpleNamespace(endpoints=SimpleNamespace()), {}
+
+        def verify_owned_resources(self, **_: object) -> dict[str, int]:
+            return {"container": 0, "network": 0, "volume": 0}
+
+        def verify_cached_images(self, *_: object) -> None:
+            pass
+
+        def start(self) -> None:
+            pass
+
+        def wait_healthy(self) -> None:
+            raise RuntimeError("health gate failed")
+
+        def cleanup(self, **_: object) -> object:
+            raise RuntimeError("cleanup failed")
+
+    monkeypatch.setattr(e2e_v1, "_verify_scenario_lock", lambda *_, **__: lock)
+    monkeypatch.setattr(e2e_v1, "_require_invocation_a_success", lambda *_: None)
+    monkeypatch.setattr(e2e_v1, "_load_approval", lambda *_: (request, approval))
+    monkeypatch.setattr(e2e_v1, "_provider", lambda *_: Provider())
+    monkeypatch.setattr(e2e_v1, "SandboxEnvironment", Environment)
+    monkeypatch.setattr(e2e_v1, "_make_controller", lambda *_, **__: Controller())
+    monkeypatch.setattr(e2e_v1.time, "sleep", lambda *_: None)
+    monkeypatch.setattr(e2e_v1, "_write_public_outputs", lambda *_: ("result.json", "result.md", "brief.md"))
+
+    terminal = e2e_v1.run_invocation_b(config, roots)
+
+    assert terminal["verdict"] == "BLOCKED_CLEANUP_INCOMPLETE"
+    assert terminal["provider_calls"] == 1
+    assert terminal["fault_injections"] == 0
+    assert terminal["cleanup_verdict"] == "BLOCKED"
+    assert (roots.invocation_b / "started.json").exists()
+    assert (roots.invocation_b / "terminal.json").exists()
+
+    with pytest.raises(RuntimeError, match="already consumed"):
+        e2e_v1.run_invocation_b(config, roots)
 
 
 def test_human_approval_is_create_once_and_phrase_bound(tmp_path: Path) -> None:
@@ -129,6 +304,23 @@ def test_human_approval_is_create_once_and_phrase_bound(tmp_path: Path) -> None:
             now=now + timedelta(minutes=2),
             destination=roots.control / "human-approval.json",
         )
+
+
+def test_human_approval_rejects_a_whitespace_approver(tmp_path: Path) -> None:
+    config = load_e2e_config(CONFIG)
+    request = create_approval_request(config, scenario_lock={"scenario": config.sandbox.scenario.scenario_id})
+    destination = tmp_path / "human-approval.json"
+
+    with pytest.raises(ValueError, match="approver is blank"):
+        record_human_approval(
+            request,
+            approver="   ",
+            phrase=f"APPROVE {request.scenario_id} {request.plan_template_sha256}",
+            now=request.requested_at,
+            destination=destination,
+        )
+
+    assert not destination.exists()
 
 
 def test_public_projection_scan_rejects_private_and_control_surfaces() -> None:
