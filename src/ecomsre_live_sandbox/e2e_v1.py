@@ -476,7 +476,12 @@ def _capture_source_readiness(
     return results
 
 
-def _write_model_evidence_index(roots: E2EPrivateRoots, context: object) -> None:
+def _write_model_evidence_index(
+    roots: E2EPrivateRoots,
+    context: object,
+    *,
+    raw_observations: Mapping[str, object],
+) -> None:
     model = context.model_dump(mode="json") if hasattr(context, "model_dump") else context
     if not isinstance(model, Mapping):
         raise ValueError("A0 context is malformed")
@@ -491,7 +496,14 @@ def _write_model_evidence_index(roots: E2EPrivateRoots, context: object) -> None
             if not isinstance(item, Mapping) or not isinstance(item.get("evidence_ref"), str):
                 raise ValueError("A0 evidence index is malformed")
             reference = item["evidence_ref"]
-            records[reference] = {"source": source.upper(), "sha256": canonical_sha256(item)}
+            raw_source = raw_observations.get(source)
+            if not isinstance(raw_source, list) or not raw_source:
+                raise ValueError("A0 evidence index source observations are unavailable")
+            records[reference] = {
+                "source": source.upper(),
+                "projection_sha256": canonical_sha256(item),
+                "raw_capture_sha256": canonical_sha256(raw_source),
+            }
     if not records:
         raise ValueError("A0 evidence index is empty")
     write_private_json(
@@ -696,6 +708,25 @@ def build_plan_template(config: E2EConfig) -> dict[str, object]:
     return LiveRemediationPlan.template_payload(config.sandbox)
 
 
+def _require_invocation_a_success(config: E2EConfig, roots: E2EPrivateRoots) -> None:
+    path = roots.invocation_a / "terminal.json"
+    if path.is_symlink() or not path.is_file():
+        raise RuntimeError("Invocation B lacks a sealed Invocation A terminal")
+    terminal = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(terminal, Mapping):
+        raise RuntimeError("Invocation A terminal is malformed")
+    if (
+        terminal.get("verdict") != config.authority.invocation_a_terminal
+        or terminal.get("cleanup_verdict") != "CLEAN"
+        or terminal.get("fault_injections") != 0
+        or terminal.get("provider_calls") != 0
+        or terminal.get("model_calls") != 0
+        or terminal.get("forward_mutations") != 0
+        or terminal.get("rollback_mutations") != 0
+    ):
+        raise RuntimeError("Invocation A did not reach the clean human-authorization boundary")
+
+
 def record_human_approval_for_invocation_b(
     config: E2EConfig,
     roots: E2EPrivateRoots,
@@ -706,6 +737,7 @@ def record_human_approval_for_invocation_b(
     from ecomsre_live_sandbox.e2e_contracts import record_human_approval
 
     _verify_scenario_lock(config, roots)
+    _require_invocation_a_success(config, roots)
     request_path = roots.control / "approval-request.json"
     request = json.loads(request_path.read_text(encoding="utf-8"))
     from ecomsre_live_sandbox.contracts import ApprovalRequest
@@ -797,6 +829,7 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
     if (roots.invocation_b / "terminal.json").exists():
         raise RuntimeError("Invocation B is create-once and already consumed")
     lock = _verify_scenario_lock(config, roots)
+    _require_invocation_a_success(config, roots)
     request, approval = _load_approval(roots)
     provider = _provider(config)
     synthetic = _synthetic_provider_context(config)
@@ -887,6 +920,16 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
             maximum_queries=config.projection.trace_query_limit,
             maximum_evidence=config.projection.trace_evidence_limit,
         )
+        raw_observations = {
+            "metrics": [item.model_dump(mode="json") for item in observations],
+            "logs": [item.model_dump(mode="json") for item in logs],
+            "traces": [item.model_dump(mode="json") for item in traces],
+        }
+        write_private_json(
+            roots.telemetry / "model-raw-observations.json",
+            raw_observations,
+            create_once=True,
+        )
         context = build_live_a0_context(
             opaque_case_id="rca100-case-0002",
             window_start=baseline[0].started_at,
@@ -896,7 +939,7 @@ def run_invocation_b(config: E2EConfig, roots: E2EPrivateRoots) -> dict[str, obj
             traces=traces,
             projection=config.projection,
         )
-        _write_model_evidence_index(roots, context)
+        _write_model_evidence_index(roots, context, raw_observations=raw_observations)
         write_private_json(roots.provider / "live-context.json", context, create_once=True)
         diagnosis = _diagnosis_from_initial(provider, context)
         if provider.calls != 2 or not provider.usage_known:

@@ -14,6 +14,7 @@ from ecomsre_live_sandbox.e2e_contracts import (
     scan_public_e2e_payload,
 )
 from ecomsre_live_sandbox.e2e_v1 import scenario_lock_manifest
+from ecomsre_live_sandbox.e2e_v1 import _require_invocation_a_success
 
 
 CONFIG = Path("config/live-fault-a0-controlled-remediation-e2e-v1")
@@ -58,6 +59,30 @@ def test_successor_runtime_does_not_import_the_frozen_v1_runtime_modules() -> No
     source = Path("src/ecomsre_live_sandbox/e2e_v1.py").read_text(encoding="utf-8")
     assert "ecomsre_live_sandbox.workflow" not in source
     assert "ecomsre_live_sandbox.telemetry" not in source
+
+
+def test_invocation_b_requires_a_clean_no_fault_invocation_a_terminal(tmp_path: Path) -> None:
+    config = load_e2e_config(CONFIG)
+    roots = E2EPrivateRoots(tmp_path / "private")
+    roots.prepare()
+    terminal = {
+        "verdict": config.authority.invocation_a_terminal,
+        "cleanup_verdict": "CLEAN",
+        "fault_injections": 0,
+        "provider_calls": 0,
+        "model_calls": 0,
+        "forward_mutations": 0,
+        "rollback_mutations": 0,
+    }
+    terminal_path = roots.invocation_a / "terminal.json"
+    terminal_path.write_text(json.dumps(terminal), encoding="utf-8")
+    terminal_path.chmod(0o600)
+    _require_invocation_a_success(config, roots)
+
+    terminal["cleanup_verdict"] = "BLOCKED"
+    terminal_path.write_text(json.dumps(terminal), encoding="utf-8")
+    with pytest.raises(RuntimeError, match="clean human-authorization"):
+        _require_invocation_a_success(config, roots)
 
 
 def test_human_approval_is_create_once_and_phrase_bound(tmp_path: Path) -> None:
