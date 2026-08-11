@@ -1,0 +1,76 @@
+# Compact Retrieval Admissibility Audit
+
+Classification: `CONSUMED DEVELOPMENT EVALUATION`, `ONE ARCHITECTURE CANDIDATE`, `NO RERUN`, `NOT EXTERNAL VALIDATION`.
+
+```json
+{
+  "classification": [
+    "CONSUMED_DEVELOPMENT_EVALUATION",
+    "NO_PROVIDER_RETRIEVAL_AUDIT",
+    "ONE_ARCHITECTURE_CANDIDATE",
+    "NOT_EXTERNAL_VALIDATION"
+  ],
+  "composition": {
+    "allocation_bucket_counts": {
+      "R1": 663,
+      "R2_R3": 804,
+      "R4": 108
+    },
+    "visible_source_counts": {
+      "ALERTS": 103,
+      "EVENTS": 89,
+      "LOGS": 1280,
+      "METRICS": 1081,
+      "TRACES": 894
+    }
+  },
+  "context": {
+    "candidate_count": {
+      "maximum": 12,
+      "mean": 9.662576687116564,
+      "minimum": 6
+    },
+    "duplicate_candidate_ids": 0,
+    "estimated_input": {
+      "b0_mean": 3478.1042944785277,
+      "basis": "CEIL_CANONICAL_REQUEST_UTF8_BYTES_DIV_3",
+      "c1_mean": 4839.5337423312885,
+      "c1_to_b0_mean_ratio": 1.3914285865475693,
+      "maximum_paired_ratio": 1.722470904207699
+    },
+    "invalid_refs": 0
+  },
+  "gate": {
+    "checks": {
+      "duplicate_candidate_ids_zero": true,
+      "invalid_refs_zero": true,
+      "max_candidates_at_most_12": true,
+      "mean_candidates_at_most_12": true,
+      "mean_estimated_token_ratio_at_most_1_15": false,
+      "obss_root_service_recall_60_of_60": false,
+      "rca100_exact_recall_at_least_60": true,
+      "rca100_exact_recall_legacy_plus_15": true,
+      "rca100_service_recall_at_least_80": false
+    },
+    "passed": false,
+    "verdict": "COMPACT_RETRIEVAL_ADMISSIBILITY_NOT_PASSED_KEEP_A0"
+  },
+  "obss": {
+    "denominator": 60,
+    "median_rank": 4.0,
+    "missing": 2,
+    "root_service_recall_at_12": 58
+  },
+  "rca100": {
+    "denominator": 103,
+    "exact_gt_median_rank": 2.0,
+    "exact_gt_missing": 39,
+    "exact_gt_recall_at_12": 64,
+    "improvement_over_legacy": 20,
+    "legacy_model_visible_exact": 44,
+    "service_ancestor_recall_at_12": 68,
+    "service_gt_median_rank": 2.0
+  },
+  "schema_version": "compact-retrieval.admissibility.v1"
+}
+```

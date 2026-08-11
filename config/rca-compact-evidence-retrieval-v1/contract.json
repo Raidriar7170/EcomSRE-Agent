@@ -1,0 +1,36 @@
+{
+  "architecture": "COMPACT_EVIDENCE_RETRIEVAL_STRONG_SINGLE",
+  "arms": {
+    "B0": "BASELINE_STRONG_SINGLE",
+    "C1": "COMPACT_EVIDENCE_RETRIEVAL_STRONG_SINGLE"
+  },
+  "concurrency": 1,
+  "fallback": "NO_FALLBACK",
+  "max_completion_tokens": 2048,
+  "minimum_request_spacing_seconds": 5.0,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "prompt_hashes": {
+    "b0_output_schema_sha256": "ebd16c28208b6981e4002e8c785e754a2d46ea2ed26f4ff28b05fe84066a8413",
+    "b0_system_prompt_sha256": "6b64c9e43f25029ca2f76f491faf98906c70fe888270284bf4bd3ff47e564049",
+    "c1_output_schema_sha256": "92a8bdf8fc522bb5cafb4b56fc448eba4e868c9ba117e701e6470b32422742b3",
+    "c1_system_prompt_sha256": "892d3594359ab9d778d252ab8988fbb4c4618bc7476431340040a8dc43096242"
+  },
+  "prompt_token_reservation": 29952,
+  "provider": "openai-compatible",
+  "schedule": {
+    "arm_order": "ALTERNATING_BY_PAIR",
+    "case_pairs": 163,
+    "obss_consumed_tune_pairs": 60,
+    "rca100_consumed_pairs": 103,
+    "seed": 20260814,
+    "semantic_model_calls": 326
+  },
+  "schema_retry": "FORBIDDEN",
+  "semantic_retry": "FORBIDDEN",
+  "temperature": 0.0,
+  "timeout_seconds": 30.0,
+  "top_p": 1.0,
+  "transport_retry": "ONE_ALLOWLISTED_BYTE_IDENTICAL_REQUEST_RETRY",
+  "transport_retry_policy_sha256": "7fd010103f83a1cb99b0c478ddafdf6e9fd0dc349a4297e7bb55c9b4157c202b",
+  "version": "compact-evidence-retrieval-strong-single-v1"
+}
