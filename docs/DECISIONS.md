@@ -484,6 +484,50 @@ deployment, merge, or an external-validity claim. A fresh external holdout is
 plan-only and may be written only after a passing Regression; acquiring or
 running it requires separate authorization.
 
+## DEC-031 — One Human-approved Live Local Sandbox Successor
+
+**Status: `accepted`. Invocation A must stop at
+`SANDBOX_REMEDIATION_HUMAN_APPROVAL_REQUIRED`; only an exact, unexpired human
+record may admit Invocation B.**
+
+This decision creates an independent live-local successor without modifying
+historical Phase 0 acceptance or Phase 3 replay contracts. It uses the clean
+OpenTelemetry Demo 3.0.0 submodule at commit
+`1755859a9de82c2e5e225be68abc401a5ebf2b4f`, a local Unix-socket Docker daemon,
+`linux/arm64`, one Compose project, fixed loopback endpoints, and exact dual
+ownership labels. The historical Phase 0 image lock remains immutable. A
+private successor lock may reverify the same cached image identities against a
+new resolved Compose hash with reason `COMPOSE_OVERRIDE_CHANGED`.
+
+Exactly one built-in scenario is registered: `paymentFailure.defaultVariant`
+changes from baseline `off` to fault `100%`, and the only action is
+`RESTORE_FROZEN_SERVICE_CONFIGURATION`. Baseline and fault are hash-bound whole
+documents that differ at only that field. The forward remediation mutation
+limit is one, with at most one exact compensating rollback. There is no
+arbitrary argv, shell, second fault, second candidate, retry run, upstream
+patch, image rebuild, remote Docker, Kubernetes, production, release, or
+deployment authority.
+
+Real target-service Metrics, Logs, and Traces are required. The existing A0
+Strong Single Prompt, typed output schema, one-call runtime, and deterministic
+keep-initial hierarchical decision remain unchanged. Scenario identity,
+expected answer, control key, and remediation action are not model inputs. An
+exact root, exact `APPLICATION` class, valid Metrics evidence, and at least one
+valid Logs or Traces reference are mandatory before planning.
+
+Invocation A is no-fault only. It must prove health, stabilization, baseline
+control, real telemetry, exact cleanup, and zero owned resources before
+creating the private scenario lock and human approval request. Invocation B is
+admitted only by an exact create-once human record and starts with one typed
+Provider preflight. It then permits one positive live run, independent two-
+window SLI verification, baseline restoration, and project-owned cleanup.
+
+Public claims are limited to `LIVE_LOCAL_SANDBOX_DEMO`,
+`CONTROLLED_FAULT_INJECTION`, `HUMAN_APPROVED_REMEDIATION`, `NOT_PRODUCTION`,
+`NOT_EXTERNAL_BENCHMARK`, and `NOT_SECURITY_VULNERABILITY_DETECTION`. Raw
+telemetry, configuration documents, Provider material, approvals, receipts,
+and run evidence remain in private `0700` directories with `0600` files.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)

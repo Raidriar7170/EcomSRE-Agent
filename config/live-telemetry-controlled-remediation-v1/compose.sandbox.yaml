@@ -1,0 +1,207 @@
+x-sandbox-labels: &sandbox-labels
+  io.ecomsre.sandbox.id: ${ECOMSRE_SANDBOX_ID:?ECOMSRE_SANDBOX_ID is required}
+
+x-sandbox-service: &sandbox-service
+  platform: linux/arm64
+  pull_policy: never
+  labels: *sandbox-labels
+  ports: !override []
+
+networks:
+  default:
+    name: ecomsre-live-sandbox-v1-default
+    labels: *sandbox-labels
+
+volumes:
+  astronomy-db-data:
+    name: ecomsre-live-sandbox-v1-${ECOMSRE_SANDBOX_ID:?ECOMSRE_SANDBOX_ID is required}-astronomy-db-data
+    labels: *sandbox-labels
+  jaeger-data:
+    name: ecomsre-live-sandbox-v1-${ECOMSRE_SANDBOX_ID:?ECOMSRE_SANDBOX_ID is required}-jaeger-data
+    labels: *sandbox-labels
+  prometheus-data:
+    name: ecomsre-live-sandbox-v1-${ECOMSRE_SANDBOX_ID:?ECOMSRE_SANDBOX_ID is required}-prometheus-data
+    labels: *sandbox-labels
+
+services:
+  ad:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-ad
+  astronomy-db:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-astronomy-db
+    volumes: !override
+      - type: bind
+        source: ./src/postgresql/init.sql
+        target: /docker-entrypoint-initdb.d/init.sql
+        read_only: true
+      - type: volume
+        source: astronomy-db-data
+        target: /var/lib/postgresql
+  cart:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-cart
+  checkout:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-checkout
+  currency:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-currency
+  email:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-email
+  flagd:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-flagd
+    ports: !override
+      - target: 8016
+        published: "18016"
+        host_ip: "127.0.0.1"
+        protocol: tcp
+    volumes: !override
+      - type: bind
+        source: ${SANDBOX_FLAGD_DIR:?SANDBOX_FLAGD_DIR is required}
+        target: /etc/flagd
+        read_only: true
+  flagd-ui:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-flagd-ui
+    volumes: !override
+      - type: bind
+        source: ${SANDBOX_FLAGD_DIR:?SANDBOX_FLAGD_DIR is required}
+        target: /app/data
+  frontend:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-frontend
+  frontend-proxy:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-frontend-proxy
+    ports: !override
+      - target: 8080
+        published: "18080"
+        host_ip: "127.0.0.1"
+        protocol: tcp
+  grafana:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-grafana
+    volumes: !override
+      - type: bind
+        source: ./src/grafana/grafana.ini
+        target: /etc/grafana/grafana.ini
+        read_only: true
+      - type: bind
+        source: ./src/grafana/provisioning/
+        target: /etc/grafana/provisioning/
+        read_only: true
+  image-provider:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-image-provider
+  jaeger:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-jaeger
+    ports: !override
+      - target: 16686
+        published: "11686"
+        host_ip: "127.0.0.1"
+        protocol: tcp
+    volumes: !override
+      - type: bind
+        source: ./src/jaeger/config.yml
+        target: /etc/jaeger/config.yml
+        read_only: true
+      - type: bind
+        source: ./src/jaeger/ui-config.json
+        target: /etc/jaeger/ui-config.json
+        read_only: true
+      - type: volume
+        source: jaeger-data
+        target: /tmp
+  load-generator:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-load-generator
+    environment:
+      - LOAD_GENERATOR_VUS=25
+  opamp-server:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-opamp-server
+  opensearch:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-opensearch
+    ports: !override
+      - target: 9200
+        published: "19200"
+        host_ip: "127.0.0.1"
+        protocol: tcp
+  otel-collector:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-otel-collector
+    command: !override
+      - --config=/etc/otelcol-config.yml
+      - --config=/etc/otelcol-config-full.yml
+      - --config=/etc/otelcol-config-observability.yml
+      - --config=/etc/otelcol-config-extras.yml
+      - --config=/etc/otelcol-config-sandbox.yml
+      - --feature-gates=service.profilesSupport
+    volumes: !override
+      - type: bind
+        source: ./src/otel-collector/otelcol-config.yml
+        target: /etc/otelcol-config.yml
+        read_only: true
+      - type: bind
+        source: ./src/otel-collector/otelcol-config-full.yml
+        target: /etc/otelcol-config-full.yml
+        read_only: true
+      - type: bind
+        source: ./src/otel-collector/otelcol-config-observability.yml
+        target: /etc/otelcol-config-observability.yml
+        read_only: true
+      - type: bind
+        source: ./src/otel-collector/otelcol-config-extras.yml
+        target: /etc/otelcol-config-extras.yml
+        read_only: true
+      - type: bind
+        source: ${SANDBOX_COLLECTOR_CONFIG:?SANDBOX_COLLECTOR_CONFIG is required}
+        target: /etc/otelcol-config-sandbox.yml
+        read_only: true
+  payment:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-payment
+  product-catalog:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-product-catalog
+    volumes: !override
+      - type: bind
+        source: ./otel-config.yml
+        target: /otel-config.yml
+        read_only: true
+  prometheus:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-prometheus
+    ports: !override
+      - target: 9090
+        published: "19090"
+        host_ip: "127.0.0.1"
+        protocol: tcp
+    volumes: !override
+      - type: bind
+        source: ./src/prometheus/prometheus-config.yaml
+        target: /etc/prometheus/prometheus-config.yaml
+        read_only: true
+      - type: volume
+        source: prometheus-data
+        target: /prometheus
+  quote:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-quote
+  recommendation:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-recommendation
+  shipping:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-shipping
+  telemetry-docs:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-telemetry-docs
+  valkey-cart:
+    <<: *sandbox-service
+    container_name: ecomsre-live-sandbox-v1-valkey-cart

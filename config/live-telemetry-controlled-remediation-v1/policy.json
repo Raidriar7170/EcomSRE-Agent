@@ -1,0 +1,9 @@
+{
+  "action": "RESTORE_FROZEN_SERVICE_CONFIGURATION",
+  "approval_mode": "HUMAN",
+  "approval_ttl_hours": 168,
+  "max_atomic_actions": 1,
+  "max_forward_mutations": 1,
+  "max_rollbacks": 1,
+  "schema_version": "live-sandbox.policy.v1"
+}

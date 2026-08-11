@@ -1,0 +1,10 @@
+{
+  "concurrency": 1,
+  "maximum_transport_retries": 1,
+  "minimum_request_spacing_seconds": 5.0,
+  "provider_timeout_seconds": 30.0,
+  "schema_retry": "FORBIDDEN",
+  "semantic_retry": "FORBIDDEN",
+  "fallback_model": "FORBIDDEN",
+  "schema_version": "live-sandbox.budget.v1"
+}

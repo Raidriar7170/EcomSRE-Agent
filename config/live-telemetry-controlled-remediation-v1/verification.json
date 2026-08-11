@@ -1,0 +1,9 @@
+{
+  "consecutive_windows": 2,
+  "fault_error_rate_absolute_increase": 0.05,
+  "fault_error_rate_multiplier": 3.0,
+  "minimum_stabilization_seconds": 90,
+  "recovery_error_rate_absolute_increase": 0.02,
+  "recovery_error_rate_multiplier": 1.5,
+  "schema_version": "live-sandbox.verification.v1"
+}
