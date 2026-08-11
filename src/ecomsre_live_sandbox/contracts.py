@@ -194,12 +194,45 @@ def file_sha256(path: Path) -> str:
 
 
 def ensure_private_directory(path: Path) -> None:
-    if path.exists() and (path.is_symlink() or not path.is_dir()):
+    missing: list[Path] = []
+    current = path
+    while not current.exists():
+        if current.is_symlink():
+            raise ValueError(f"private root is not a regular directory: {current}")
+        missing.append(current)
+        parent = current.parent
+        if parent == current:
+            break
+        current = parent
+    if current.is_symlink() or not current.is_dir():
+        raise ValueError(f"private root is not a regular directory: {current}")
+    for directory in reversed(missing):
+        directory.mkdir(mode=0o700, parents=False, exist_ok=False)
+        directory.chmod(0o700)
+    if path.is_symlink() or not path.is_dir():
         raise ValueError(f"private root is not a regular directory: {path}")
-    path.mkdir(mode=0o700, parents=True, exist_ok=True)
     path.chmod(0o700)
     if path.stat().st_mode & 0o077:
         raise PermissionError(f"private root permissions are too broad: {path}")
+
+
+def verify_private_tree_permissions(root: Path) -> None:
+    if root.is_symlink() or not root.is_dir():
+        raise ValueError(f"private root is not a regular directory: {root}")
+    for path in (root, *sorted(root.rglob("*"))):
+        if path.is_symlink():
+            raise ValueError(f"private tree contains a symbolic link: {path}")
+        mode = path.stat().st_mode & 0o777
+        if path.is_dir():
+            if mode != 0o700:
+                raise PermissionError(
+                    f"private directory permissions are not exact: {path}"
+                )
+        elif path.is_file():
+            if mode != 0o600:
+                raise PermissionError(f"private file permissions are not exact: {path}")
+        else:
+            raise ValueError(f"private tree contains an unsupported entry: {path}")
 
 
 def write_private_json(path: Path, value: object, *, create_once: bool) -> str:
@@ -565,5 +598,6 @@ __all__ = [
     "ensure_private_directory",
     "file_sha256",
     "load_bundle",
+    "verify_private_tree_permissions",
     "write_private_json",
 ]

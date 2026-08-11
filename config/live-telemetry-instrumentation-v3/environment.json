@@ -1,0 +1,10 @@
+{
+  "schema_version": "live-telemetry.environment.v2",
+  "version": "live-telemetry-instrumentation-v3",
+  "environment_id": "opentelemetry-demo-local-v1",
+  "target_service": "payment",
+  "compose_project": "ecomsre-live-sandbox-v1",
+  "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+  "upstream_tag": "3.0.0",
+  "platform": "linux/arm64"
+}

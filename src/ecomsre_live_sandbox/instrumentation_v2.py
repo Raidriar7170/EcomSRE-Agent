@@ -29,6 +29,7 @@ from ecomsre_live_sandbox.contracts import (
     canonical_json_bytes,
     ensure_private_directory,
     load_bundle,
+    verify_private_tree_permissions,
     write_private_json,
 )
 from ecomsre_live_sandbox.control import SandboxFaultController, build_flag_documents
@@ -40,6 +41,49 @@ TelemetrySource = Literal["METRICS", "LOGS", "TRACES"]
 BackendKind = Literal[
     "PROMETHEUS_HTTP_API", "OPENSEARCH_HTTP_API", "JAEGER_QUERY_API"
 ]
+InstrumentationVersion = Literal[
+    "live-telemetry-instrumentation-v2",
+    "live-telemetry-instrumentation-v3",
+]
+CanonicalSuccessVerdict = Literal[
+    "LIVE_TELEMETRY_INSTRUMENTATION_V2_READY_FOR_E2E",
+    "LIVE_TELEMETRY_INSTRUMENTATION_V3_READY_FOR_E2E",
+]
+
+
+@dataclass(frozen=True, slots=True)
+class InstrumentationLifecycle:
+    version: InstrumentationVersion
+    config_relative: Path
+    branch: str
+    private_root_name: str
+    success_verdict: CanonicalSuccessVerdict
+
+
+V1_CONFIG_RELATIVE = Path("config/live-telemetry-controlled-remediation-v1")
+V2_CONFIG_RELATIVE = Path("config/live-telemetry-instrumentation-v2")
+V3_CONFIG_RELATIVE = Path("config/live-telemetry-instrumentation-v3")
+V2_LIFECYCLE = InstrumentationLifecycle(
+    version="live-telemetry-instrumentation-v2",
+    config_relative=V2_CONFIG_RELATIVE,
+    branch="feature/live-telemetry-instrumentation-v2",
+    private_root_name="live-telemetry-instrumentation-v2",
+    success_verdict="LIVE_TELEMETRY_INSTRUMENTATION_V2_READY_FOR_E2E",
+)
+V3_LIFECYCLE = InstrumentationLifecycle(
+    version="live-telemetry-instrumentation-v3",
+    config_relative=V3_CONFIG_RELATIVE,
+    branch="feature/live-telemetry-instrumentation-v3",
+    private_root_name="live-telemetry-instrumentation-v3",
+    success_verdict="LIVE_TELEMETRY_INSTRUMENTATION_V3_READY_FOR_E2E",
+)
+SUCCESS_VERDICT = V2_LIFECYCLE.success_verdict
+
+
+def _success_verdict(version: InstrumentationVersion) -> CanonicalSuccessVerdict:
+    if version == V2_LIFECYCLE.version:
+        return V2_LIFECYCLE.success_verdict
+    return V3_LIFECYCLE.success_verdict
 
 
 class V2Model(BaseModel):
@@ -48,7 +92,7 @@ class V2Model(BaseModel):
 
 class InstrumentationEnvironmentConfig(V2Model):
     schema_version: Literal["live-telemetry.environment.v2"]
-    version: Literal["live-telemetry-instrumentation-v2"]
+    version: InstrumentationVersion
     environment_id: Literal["opentelemetry-demo-local-v1"]
     target_service: str = Field(min_length=1, max_length=128)
     compose_project: Literal["ecomsre-live-sandbox-v1"]
@@ -981,6 +1025,8 @@ class MetricsSourceProbe:
                     "step": str(self.readiness.query_range_step_seconds),
                 }
             )
+        else:
+            parameters["time"] = f"{self.window_end.timestamp():.3f}"
         return self.request_json(f"{self.endpoint}{path}?{urlencode(parameters)}")
 
     def _attempt(self, attempt: int, started: datetime) -> SourceProbeResult:
@@ -1659,9 +1705,7 @@ class InstrumentationCleanup(V2Model):
 
 
 class TelemetryInstrumentationReport(V2Model):
-    version: Literal["live-telemetry-instrumentation-v2"] = (
-        "live-telemetry-instrumentation-v2"
-    )
+    version: InstrumentationVersion = "live-telemetry-instrumentation-v2"
     environment_id: str
     sandbox_binding_sha256: str = Field(pattern=SHA256_PATTERN)
     pinned_upstream_version: Literal["3.0.0"] = "3.0.0"
@@ -1693,6 +1737,7 @@ class TelemetryInstrumentationReport(V2Model):
         "DEVELOPMENT_PROBE_AVAILABLE",
         "BLOCKED_SOURCE_CONTRACT_UNRESOLVED",
         "LIVE_TELEMETRY_INSTRUMENTATION_V2_READY_FOR_E2E",
+        "LIVE_TELEMETRY_INSTRUMENTATION_V3_READY_FOR_E2E",
         "BLOCKED_CANONICAL_INSTRUMENTATION_PREFLIGHT",
     ]
     semantic_sha256: str = Field(pattern=SHA256_PATTERN)
@@ -1708,7 +1753,7 @@ class TelemetryInstrumentationReport(V2Model):
             raise ValueError("aggregate target nonempty gate differs from source truth")
         success = available and nonempty and self.all_refs_resolve and self.cleanup.verdict == "CLEAN"
         expected_verdict = (
-            "LIVE_TELEMETRY_INSTRUMENTATION_V2_READY_FOR_E2E"
+            _success_verdict(self.version)
             if self.canonical_preflight and success
             else "BLOCKED_CANONICAL_INSTRUMENTATION_PREFLIGHT"
             if self.canonical_preflight
@@ -1727,6 +1772,7 @@ class TelemetryInstrumentationReport(V2Model):
 
 def build_instrumentation_report(
     *,
+    version: InstrumentationVersion = "live-telemetry-instrumentation-v2",
     environment_id: str,
     sandbox_binding_sha256: str,
     resolved_compose_sha256: str,
@@ -1747,7 +1793,7 @@ def build_instrumentation_report(
     cleanup_model = InstrumentationCleanup.model_validate(cleanup)
     success = available and nonempty and all_refs_resolve and cleanup_model.verdict == "CLEAN"
     verdict = (
-        "LIVE_TELEMETRY_INSTRUMENTATION_V2_READY_FOR_E2E"
+        _success_verdict(version)
         if canonical_preflight and success
         else "BLOCKED_CANONICAL_INSTRUMENTATION_PREFLIGHT"
         if canonical_preflight
@@ -1756,7 +1802,7 @@ def build_instrumentation_report(
         else "BLOCKED_SOURCE_CONTRACT_UNRESOLVED"
     )
     payload: dict[str, object] = {
-        "version": "live-telemetry-instrumentation-v2",
+        "version": version,
         "environment_id": environment_id,
         "sandbox_binding_sha256": sandbox_binding_sha256,
         "pinned_upstream_version": "3.0.0",
@@ -1824,7 +1870,7 @@ def public_projection(
         }
 
     return {
-        "schema_version": "live-telemetry-instrumentation-v2.public.v1",
+        "schema_version": f"{report.version}.public.v1",
         "version": report.version,
         "environment": {
             "upstream_version": report.pinned_upstream_version,
@@ -1950,21 +1996,23 @@ def verify_public_result(value: Mapping[str, object]) -> None:
         and cleanup.get("non_owned_resources_changed") is False
         and cleanup.get("verdict") == "CLEAN"
     )
+    version = value.get("version")
+    expected_verdict = (
+        _success_verdict(cast(InstrumentationVersion, version))
+        if version in {V2_LIFECYCLE.version, V3_LIFECYCLE.version}
+        else None
+    )
     aggregate_gate = (
-        value.get("all_sources_available") is True
+        expected_verdict is not None
+        and value.get("schema_version") == f"{version}.public.v1"
+        and value.get("all_sources_available") is True
         and value.get("all_target_sources_nonempty") is True
         and value.get("all_refs_resolve") is True
         and value.get("canonical_preflight") is True
-        and value.get("verdict")
-        == "LIVE_TELEMETRY_INSTRUMENTATION_V2_READY_FOR_E2E"
+        and value.get("verdict") == expected_verdict
     )
     if not (source_gate and safety_gate and cleanup_gate and aggregate_gate):
         raise ValueError("public instrumentation truth gate failed")
-
-
-V1_CONFIG_RELATIVE = Path("config/live-telemetry-controlled-remediation-v1")
-V2_CONFIG_RELATIVE = Path("config/live-telemetry-instrumentation-v2")
-SUCCESS_VERDICT = "LIVE_TELEMETRY_INSTRUMENTATION_V2_READY_FOR_E2E"
 
 
 @dataclass(frozen=True, slots=True)
@@ -2003,8 +2051,36 @@ class InstrumentationPrivateRoots:
             ensure_private_directory(path)
 
 
+_PRIVATE_ROOT_BINDING = "lifecycle-binding.json"
+
+
+def _private_root_binding(lifecycle: InstrumentationLifecycle) -> dict[str, str]:
+    return {
+        "schema_version": "live-telemetry.private-root-binding.v1",
+        "version": lifecycle.version,
+        "branch": lifecycle.branch,
+    }
+
+
+def _verify_private_root_binding(
+    root: Path, lifecycle: InstrumentationLifecycle
+) -> None:
+    binding_path = root / _PRIVATE_ROOT_BINDING
+    if binding_path.is_symlink() or not binding_path.is_file():
+        raise RuntimeError("private root lifecycle binding is unavailable")
+    try:
+        payload = json.loads(binding_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise RuntimeError("private root lifecycle binding is invalid") from error
+    if payload != _private_root_binding(lifecycle):
+        raise RuntimeError("private root belongs to a different lifecycle")
+
+
 def resolve_private_root(
-    explicit: Path | None, *, repository_root: Path
+    explicit: Path | None,
+    *,
+    repository_root: Path,
+    lifecycle: InstrumentationLifecycle = V2_LIFECYCLE,
 ) -> InstrumentationPrivateRoots:
     configured = os.environ.get("ECOMSRE_PRIVATE_ROOT")
     selected = (
@@ -2012,15 +2088,38 @@ def resolve_private_root(
         if explicit is not None
         else Path(configured).expanduser()
         if configured
-        else Path.home() / ".ecomsre/private/live-telemetry-instrumentation-v2"
+        else Path.home() / ".ecomsre/private" / lifecycle.private_root_name
     ).resolve()
     repository = repository_root.resolve()
     if selected == Path("/") or selected == Path.home().resolve():
         raise ValueError("private root target is too broad")
     if selected == repository or selected.is_relative_to(repository):
         raise ValueError("private telemetry root may not be inside the repository")
+    for other in (V2_LIFECYCLE, V3_LIFECYCLE):
+        if (
+            other.version != lifecycle.version
+            and selected.name == other.private_root_name
+        ):
+            raise ValueError("private root belongs to a different lifecycle")
+    binding_path = selected / _PRIVATE_ROOT_BINDING
+    if selected.exists():
+        if selected.is_symlink() or not selected.is_dir():
+            raise ValueError("private telemetry root is not a regular directory")
+        if binding_path.exists() or binding_path.is_symlink():
+            _verify_private_root_binding(selected, lifecycle)
+        elif any(selected.iterdir()):
+            raise ValueError("private telemetry root is nonempty and unbound")
     roots = InstrumentationPrivateRoots.from_root(selected)
     roots.prepare()
+    if binding_path.exists():
+        _verify_private_root_binding(selected, lifecycle)
+    else:
+        write_private_json(
+            binding_path,
+            _private_root_binding(lifecycle),
+            create_once=True,
+        )
+    verify_private_tree_permissions(roots.root)
     return roots
 
 
@@ -2193,6 +2292,7 @@ def _classify_blocker(stage: str, *, canonical: bool) -> str:
 def _run_live_instrumentation(
     *,
     repository_root: Path,
+    lifecycle: InstrumentationLifecycle,
     roots: InstrumentationPrivateRoots,
     output_root: Path,
     terminal_path: Path,
@@ -2201,7 +2301,9 @@ def _run_live_instrumentation(
 ) -> dict[str, object]:
     repository_root = repository_root.resolve()
     v1_bundle = load_bundle(repository_root / V1_CONFIG_RELATIVE)
-    config = load_instrumentation_config(repository_root / V2_CONFIG_RELATIVE)
+    config = load_instrumentation_config(repository_root / lifecycle.config_relative)
+    if config.environment.version != lifecycle.version:
+        raise ValueError("instrumentation config version differs from lifecycle")
     environment = SandboxEnvironment(
         repository_root=repository_root,
         bundle=v1_bundle,
@@ -2311,7 +2413,7 @@ def _run_live_instrumentation(
     except BaseException as error:
         failure = error
         diagnostic = {
-            "schema_version": "live-telemetry.private-diagnostic.v2",
+            "schema_version": f"{lifecycle.version}.private-diagnostic.v1",
             "stage": stage,
             "exception_type": type(error).__name__,
             "exception_chain": traceback.format_exc(),
@@ -2326,7 +2428,12 @@ def _run_live_instrumentation(
     report: TelemetryInstrumentationReport | None = None
     if resolved is not None and cleanup_payload is not None:
         try:
+            if failure is None:
+                stage = "VERIFY_PRIVATE_PERMISSIONS"
+                verify_private_tree_permissions(roots.root)
+                stage = "BUILD_REPORT"
             report = build_instrumentation_report(
+                version=lifecycle.version,
                 environment_id=config.environment.environment_id,
                 sandbox_binding_sha256=hashlib.sha256(
                     v1_bundle.environment.sandbox_id.encode("utf-8")
@@ -2346,7 +2453,6 @@ def _run_live_instrumentation(
         except Exception as error:
             if failure is None:
                 failure = error
-                stage = "BUILD_REPORT"
     if failure is not None:
         verdict = _classify_blocker(stage, canonical=canonical)
     elif report is not None:
@@ -2354,7 +2460,7 @@ def _run_live_instrumentation(
     else:
         verdict = _classify_blocker(stage, canonical=canonical)
     terminal: dict[str, object] = {
-        "schema_version": "live-telemetry-instrumentation-v2.terminal.v1",
+        "schema_version": f"{lifecycle.version}.terminal.v1",
         "mode": "CANONICAL_PREFLIGHT" if canonical else "DEVELOPMENT_PROBE",
         "development_probe_number": development_probe_number,
         "implementation_head": _git(repository_root, "rev-parse", "HEAD"),
@@ -2397,10 +2503,15 @@ def _probe_directories(roots: InstrumentationPrivateRoots) -> tuple[Path, ...]:
 
 
 def run_development_probe(
-    repository_root: Path, private_root: Path | None = None
+    repository_root: Path,
+    private_root: Path | None = None,
+    *,
+    lifecycle: InstrumentationLifecycle = V2_LIFECYCLE,
 ) -> dict[str, object]:
     repository_root = repository_root.resolve()
-    roots = resolve_private_root(private_root, repository_root=repository_root)
+    roots = resolve_private_root(
+        private_root, repository_root=repository_root, lifecycle=lifecycle
+    )
     existing = _probe_directories(roots)
     next_number = max((int(path.name.rsplit("-", 1)[1]) for path in existing), default=0) + 1
     if next_number > 4:
@@ -2410,6 +2521,7 @@ def run_development_probe(
     output_root.chmod(0o700)
     terminal = _run_live_instrumentation(
         repository_root=repository_root,
+        lifecycle=lifecycle,
         roots=roots,
         output_root=output_root,
         terminal_path=output_root / f"development-probe-{next_number:02d}.json",
@@ -2421,6 +2533,7 @@ def run_development_probe(
 
 def _latest_development_terminal(
     roots: InstrumentationPrivateRoots,
+    lifecycle: InstrumentationLifecycle = V2_LIFECYCLE,
 ) -> Mapping[str, object]:
     directories = _probe_directories(roots)
     if not directories:
@@ -2432,6 +2545,11 @@ def _latest_development_terminal(
     payload = json.loads(terminal_path.read_text(encoding="utf-8"))
     if not isinstance(payload, Mapping):
         raise RuntimeError("latest development terminal is malformed")
+    if (
+        payload.get("schema_version") != f"{lifecycle.version}.terminal.v1"
+        or payload.get("mode") != "DEVELOPMENT_PROBE"
+    ):
+        raise RuntimeError("latest development terminal lifecycle is invalid")
     return payload
 
 
@@ -2439,9 +2557,12 @@ def _verify_canonical_admission(
     repository_root: Path,
     roots: InstrumentationPrivateRoots,
     *,
+    lifecycle: InstrumentationLifecycle = V2_LIFECYCLE,
     implementation_ci_passed: bool,
 ) -> str:
-    latest = _latest_development_terminal(roots)
+    _verify_private_root_binding(roots.root, lifecycle)
+    latest = _latest_development_terminal(roots, lifecycle)
+    verify_private_tree_permissions(roots.root)
     if latest.get("verdict") != "DEVELOPMENT_PROBE_AVAILABLE":
         raise RuntimeError("latest development probe is not 3/3 AVAILABLE")
     sources = latest.get("sources")
@@ -2473,13 +2594,13 @@ def _verify_canonical_admission(
     if _git(repository_root, "status", "--porcelain=v1"):
         raise RuntimeError("implementation worktree is not clean")
     branch = _git(repository_root, "branch", "--show-current")
-    if branch != "feature/live-telemetry-instrumentation-v2":
+    if branch != lifecycle.branch:
         raise RuntimeError("canonical preflight is on the wrong branch")
     head = _git(repository_root, "rev-parse", "HEAD")
     remote_head = _git(
         repository_root,
         "rev-parse",
-        "origin/feature/live-telemetry-instrumentation-v2",
+        f"origin/{lifecycle.branch}",
     )
     if head != remote_head:
         raise RuntimeError("implementation head is not pushed exactly")
@@ -2492,7 +2613,7 @@ def _verify_canonical_admission(
     write_private_json(
         admission_path,
         {
-            "schema_version": "live-telemetry.canonical-admission.v2",
+            "schema_version": f"{lifecycle.version}.canonical-admission.v1",
             "implementation_head": head,
             "latest_development_probe": latest.get("development_probe_number"),
             "latest_development_verdict": latest.get("verdict"),
@@ -2520,7 +2641,7 @@ def _public_markdown(value: Mapping[str, object]) -> str:
     sources = value["sources"]
     assert isinstance(sources, Mapping)
     lines = [
-        "# Live Telemetry Instrumentation v2 Result",
+        f"# {str(value['version']).replace('-', ' ').title()} Result",
         "",
         f"**Verdict:** `{value['verdict']}`",
         "",
@@ -2570,7 +2691,7 @@ def _public_markdown(value: Mapping[str, object]) -> str:
 def _public_human_brief(value: Mapping[str, object]) -> str:
     return "\n".join(
         (
-            "# Live Telemetry Instrumentation v2 — Human Brief",
+            f"# {str(value['version']).replace('-', ' ').title()} — Human Brief",
             "",
             f"**当前标记：** `{value['verdict']}`",
             "",
@@ -2616,16 +2737,21 @@ def run_canonical_preflight(
     private_root: Path | None = None,
     *,
     implementation_ci_passed: bool,
+    lifecycle: InstrumentationLifecycle = V2_LIFECYCLE,
 ) -> dict[str, object]:
     repository_root = repository_root.resolve()
-    roots = resolve_private_root(private_root, repository_root=repository_root)
+    roots = resolve_private_root(
+        private_root, repository_root=repository_root, lifecycle=lifecycle
+    )
     implementation_head = _verify_canonical_admission(
         repository_root,
         roots,
+        lifecycle=lifecycle,
         implementation_ci_passed=implementation_ci_passed,
     )
     terminal = _run_live_instrumentation(
         repository_root=repository_root,
+        lifecycle=lifecycle,
         roots=roots,
         output_root=roots.canonical_preflight,
         terminal_path=roots.canonical_preflight / "canonical-preflight.json",
@@ -2633,12 +2759,12 @@ def run_canonical_preflight(
         development_probe_number=None,
     )
     safe = _safe_summary(terminal)
-    if terminal.get("verdict") == SUCCESS_VERDICT:
+    if terminal.get("verdict") == lifecycle.success_verdict:
         raw_report = terminal.get("report")
         if not isinstance(raw_report, Mapping):
             raise RuntimeError("successful canonical terminal lacks a typed report")
         report = TelemetryInstrumentationReport.model_validate(raw_report)
-        config = load_instrumentation_config(repository_root / V2_CONFIG_RELATIVE)
+        config = load_instrumentation_config(repository_root / lifecycle.config_relative)
         outputs = _write_public_outputs(repository_root, config, report)
         safe["public_outputs"] = outputs
         safe["implementation_head"] = implementation_head

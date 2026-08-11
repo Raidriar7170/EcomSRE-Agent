@@ -8,9 +8,9 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 
+from ecomsre_live_sandbox.contracts import verify_private_tree_permissions
 from ecomsre_live_sandbox.instrumentation_v2 import (
     EvidenceResolver,
-    InstrumentationPrivateRoots,
     LogsSourceProbe,
     MetricsSourceProbe,
     PrivateArtifactStore,
@@ -361,6 +361,106 @@ def test_metrics_probe_accepts_absent_optional_error_after_required_total(tmp_pa
     assert result.attempt_count == 1
     assert len(result.evidence_refs) == 5
     assert all("checkout" in url or "/status/" in url or "/label/" in url for url in observed_urls)
+    instant_queries = [
+        parse_qs(urlparse(url).query)
+        for url in observed_urls
+        if urlparse(url).path.endswith("/query")
+    ]
+    expected_time = f"{(NOW + timedelta(seconds=30)).timestamp():.3f}"
+    assert len(instant_queries) == 4
+    assert all(parameters.get("time") == [expected_time] for parameters in instant_queries)
+    range_queries = [
+        parse_qs(urlparse(url).query)
+        for url in observed_urls
+        if urlparse(url).path.endswith("/query_range")
+    ]
+    assert range_queries == [
+        {
+            "query": [
+                'sum by (service_name) (increase(traces_span_metrics_calls_total{service_name="checkout"}[30s]))'
+            ],
+            "start": [f"{NOW.timestamp():.3f}"],
+            "end": [expected_time],
+            "step": ["5"],
+        }
+    ]
+
+
+def test_metrics_probe_preserves_the_frozen_window_across_readiness_retries(
+    tmp_path: Path,
+) -> None:
+    config = load_instrumentation_config(CONFIG)
+    observed_urls: list[str] = []
+    attempt = 0
+
+    def request(url: str, **_: object) -> object:
+        nonlocal attempt
+        observed_urls.append(url)
+        parsed = urlparse(url)
+        parameters = parse_qs(parsed.query)
+        if "/status/config" in url:
+            attempt += 1
+            return {"status": "success", "data": {"yaml": "global: {}"}}
+        if "/label/__name__/values" in url:
+            return {
+                "status": "success",
+                "data": list(config.sources.prometheus.required_metric_names),
+            }
+        if parsed.path.endswith("/query_range"):
+            return {
+                "status": "success",
+                "data": {
+                    "resultType": "matrix",
+                    "result": [
+                        {
+                            "metric": {"service_name": "checkout"},
+                            "values": [[1, "1"], [2, "2"], [3, "3"]],
+                        }
+                    ],
+                },
+            }
+        query = parameters["query"][0]
+        if attempt == 1 and "increase(" in query and "STATUS_CODE_ERROR" not in query:
+            result: list[object] = []
+        elif "STATUS_CODE_ERROR" in query:
+            result = []
+        else:
+            result = [
+                {"metric": {"service_name": "checkout"}, "value": [1, "8"]}
+            ]
+        return {"status": "success", "data": {"resultType": "vector", "result": result}}
+
+    result = MetricsSourceProbe(
+        endpoint="http://127.0.0.1:19090",
+        target_service="checkout",
+        config=config.sources.prometheus,
+        readiness=config.readiness,
+        store=PrivateArtifactStore(tmp_path / "metrics-retry"),
+        window_start=NOW,
+        window_end=NOW + timedelta(seconds=30),
+        request_json=request,
+        sleep=lambda _: None,
+    ).probe()
+    assert result.status is SourceProbeStatus.AVAILABLE
+    assert result.attempt_count == 2
+    expected_start = f"{NOW.timestamp():.3f}"
+    expected_end = f"{(NOW + timedelta(seconds=30)).timestamp():.3f}"
+    instant_parameters = [
+        parse_qs(urlparse(url).query)
+        for url in observed_urls
+        if urlparse(url).path.endswith("/query")
+    ]
+    range_parameters = [
+        parse_qs(urlparse(url).query)
+        for url in observed_urls
+        if urlparse(url).path.endswith("/query_range")
+    ]
+    assert len(instant_parameters) == 8
+    assert all(item["time"] == [expected_end] for item in instant_parameters)
+    assert len(range_parameters) == 2
+    assert all(item["start"] == [expected_start] for item in range_parameters)
+    assert all(item["end"] == [expected_end] for item in range_parameters)
+    assert all(item["step"] == ["5"] for item in range_parameters)
 
 
 def test_logs_probe_uses_discovered_fields_for_catalog_and_target_query(tmp_path: Path) -> None:
@@ -581,6 +681,9 @@ def test_v2_runtime_has_no_invocation_or_provider_or_remediation_entrypoint() ->
 
 def test_private_roots_are_outside_git_and_have_exact_directory_permissions(tmp_path: Path) -> None:
     roots = resolve_private_root(tmp_path / "private-root", repository_root=Path.cwd())
+    store = PrivateArtifactStore(roots.telemetry)
+    store.write_raw("METRICS", "sample", {"value": 1})
+    store.write_diagnostic("LOGS", "sample", {"safe": True})
     for path in (
         roots.root,
         roots.control,
@@ -591,6 +694,18 @@ def test_private_roots_are_outside_git_and_have_exact_directory_permissions(tmp_
         roots.canonical_preflight,
     ):
         assert path.stat().st_mode & 0o777 == 0o700
+    descendants = tuple(path for path in roots.root.rglob("*") if path.is_dir())
+    assert descendants
+    assert all(path.stat().st_mode & 0o777 == 0o700 for path in descendants)
+    verify_private_tree_permissions(roots.root)
+    (roots.telemetry / "raw").chmod(0o755)
+    with pytest.raises(PermissionError, match="private directory permissions"):
+        verify_private_tree_permissions(roots.root)
+    (roots.telemetry / "raw").chmod(0o700)
+    private_file = roots.telemetry / "raw/metrics/sample.json"
+    private_file.chmod(0o644)
+    with pytest.raises(PermissionError, match="private file permissions"):
+        verify_private_tree_permissions(roots.root)
     with pytest.raises(ValueError, match="inside the repository"):
         resolve_private_root(Path.cwd() / "private-root", repository_root=Path.cwd())
 
@@ -598,13 +713,18 @@ def test_private_roots_are_outside_git_and_have_exact_directory_permissions(tmp_
 def test_canonical_admission_recomputes_latest_source_truth(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    roots = InstrumentationPrivateRoots.from_root(tmp_path / "private")
-    roots.prepare()
+    roots = resolve_private_root(
+        tmp_path / "private",
+        repository_root=Path.cwd(),
+    )
     probe = roots.development_probes / "development-probe-04"
     probe.mkdir(mode=0o700)
-    (probe / "development-probe-04.json").write_text(
+    terminal_path = probe / "development-probe-04.json"
+    terminal_path.write_text(
         json.dumps(
             {
+                "schema_version": "live-telemetry-instrumentation-v2.terminal.v1",
+                "mode": "DEVELOPMENT_PROBE",
                 "development_probe_number": 4,
                 "verdict": "DEVELOPMENT_PROBE_AVAILABLE",
                 "sandbox_startup_attempted": True,
@@ -638,6 +758,7 @@ def test_canonical_admission_recomputes_latest_source_truth(
         ),
         encoding="utf-8",
     )
+    terminal_path.chmod(0o600)
 
     def fake_git(_: Path, *arguments: str) -> str:
         if arguments == ("status", "--porcelain=v1"):
