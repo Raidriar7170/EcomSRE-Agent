@@ -79,6 +79,9 @@ EXPECTED_BINDINGS = {
 ALLOWED_PUBLIC_PATHS = (
     "scripts/analysis/rcaeval_re2_v1_attribution.py",
     "tests/analysis/test_rcaeval_re2_v1_attribution.py",
+    "docs/results/live-telemetry-instrumentation-v2-human-brief.md",
+    "docs/results/live-telemetry-instrumentation-v2.json",
+    "docs/results/live-telemetry-instrumentation-v2.md",
     "docs/results/rcaeval-re2-v1-attribution-aggregate.json",
     "docs/results/rcaeval-re2-v1-attribution-summary.md",
     "docs/review-evidence/rcaeval-re2-v1-attribution/current-disposition.json",
