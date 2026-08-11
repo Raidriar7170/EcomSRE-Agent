@@ -1,0 +1,57 @@
+{
+  "benchmark_identity_branching": "FORBIDDEN",
+  "candidate_index": {
+    "family_caps": {
+      "D": 2,
+      "N": 2,
+      "S": 8
+    },
+    "max_candidates": 12,
+    "refill_order": [
+      "S",
+      "N",
+      "D",
+      "GLOBAL"
+    ],
+    "version": "COMPACT_ROOT_CANDIDATE_INDEX_V1"
+  },
+  "classification": [
+    "CONSUMED_CROSS_BENCHMARK_DEVELOPMENT",
+    "DETERMINISTIC_RETRIEVAL_DEVELOPMENT",
+    "NOT_EXTERNAL_VALIDATION",
+    "NOT_PRIMARY_INFERENCE"
+  ],
+  "ground_truth_branching": "FORBIDDEN",
+  "model_lock": "gpt-5.4-mini-2026-03-17",
+  "projection": {
+    "ancestor_depth_limit": 4,
+    "component_distance_limit": 2,
+    "root_eligible_layers": [
+      "SERVICE",
+      "WORKLOAD",
+      "NODE",
+      "DATABASE",
+      "CACHE",
+      "MESSAGE_QUEUE",
+      "NETWORK_COMPONENT",
+      "CLUSTER",
+      "INFRASTRUCTURE"
+    ],
+    "upstream_distance_limit": 2,
+    "version": "CANONICAL_ROOT_EVIDENCE_PROJECTION_V1"
+  },
+  "provider_calls": 0,
+  "references": {
+    "pr27_exact_recall": 64,
+    "pr27_service_recall": 68
+  },
+  "token_accounting": {
+    "asset_path": "config/phase2/tokenizers/o200k_base.tiktoken",
+    "asset_sha256": "446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d",
+    "encoding": "o200k_base",
+    "serialization": "SORTED_UTF8_CANONICAL_FULL_REQUEST_JSON",
+    "tokenizer_policy_path": "config/phase2/token-policy-core.json",
+    "tokenizer_version": "tiktoken==0.13.0"
+  },
+  "version": "root-evidence-projection-candidate-index-v1"
+}
