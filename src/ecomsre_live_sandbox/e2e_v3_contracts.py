@@ -1,4 +1,4 @@
-"""Frozen authority and private lifecycle for the live E2E v2 successor."""
+"""Frozen authority and private lifecycle for the live E2E v3 successor."""
 
 from __future__ import annotations
 
@@ -27,25 +27,28 @@ from ecomsre_live_sandbox.contracts import (
 )
 from ecomsre_live_sandbox.e2e_diagnostics import (
     DiagnosticCommandIdentity,
-    V2_DIAGNOSTIC_FAILURE_CODES,
-    V2_DIAGNOSTIC_STAGES,
+    DiagnosticFailureCode,
+    DiagnosticStage,
 )
+from ecomsre_live_sandbox.image_authority import COMPOSE_NORMALIZATION_POLICY_SHA256
 from ecomsre_rca100.prompt import output_schema_sha256, prompt_sha256
 
 
-E2E_V2_VERSION = "live-fault-a0-controlled-remediation-e2e-v2"
+E2E_V3_VERSION = "live-fault-a0-controlled-remediation-e2e-v3"
 V1_CONFIG_RELATIVE = Path("config/live-telemetry-controlled-remediation-v1")
 V3_RESULT_RELATIVE = Path("docs/results/live-telemetry-instrumentation-v3.json")
 V1_PRIVATE_VERSION = "live-fault-a0-controlled-remediation-e2e-v1"
+V2_PRIVATE_VERSION = "live-fault-a0-controlled-remediation-e2e-v2"
 
 
-class E2EV2Authority(FrozenModel):
-    schema_version: Literal["live-e2e.authority.v2"]
-    version: Literal["live-fault-a0-controlled-remediation-e2e-v2"]
-    branch: Literal["feature/live-fault-a0-controlled-remediation-e2e-v2"]
-    predecessor_pr: Literal[32]
-    predecessor_head: Literal["c176e2423c8f9be0719013dacb5619ff446b6e09"]
-    predecessor_verdict: Literal["BLOCKED_INVOCATION_A_UNCLASSIFIED_RUNTIME_FAILURE"]
+class E2EV3Authority(FrozenModel):
+    schema_version: Literal["live-e2e.authority.v3"]
+    version: Literal["live-fault-a0-controlled-remediation-e2e-v3"]
+    branch: Literal["feature/live-fault-a0-controlled-remediation-e2e-v3"]
+    predecessor_pr: Literal[33]
+    predecessor_head: Literal["925aa7ae96ca7d46a9496c6319ec465c917b84d3"]
+    predecessor_terminal: Literal["BLOCKED_E2E_V2_DIAGNOSTIC_PREFLIGHT_NOT_PASSED"]
+    predecessor_reason: Literal["IMAGE_LOCK_LIFECYCLE_SCOPE_CONFLICT"]
     telemetry_authority_pr: Literal[31]
     telemetry_authority_head: Literal["e28a1091acba7365d7f4deb2aa61fd39e90ae3ae"]
     telemetry_authority_semantic_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
@@ -59,6 +62,8 @@ class E2EV2Authority(FrozenModel):
     diagnostics_policy_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     projection_policy_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     reporting_policy_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    image_authority_policy_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    compose_normalization_policy_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     frozen_input_hashes: dict[str, str] = Field(min_length=12)
     frozen_input_aggregate_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     scenario_id: Literal["37f142fc-9cde-4839-8184-88f2288ceced"]
@@ -67,21 +72,21 @@ class E2EV2Authority(FrozenModel):
     baseline_document_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     fault_document_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     approval_ttl_hours: Literal[168]
-    maximum_no_fault_diagnostic_probes: Literal[2]
+    maximum_no_fault_diagnostic_probes: Literal[1]
     maximum_canonical_invocation_a_runs: Literal[1]
     maximum_provider_calls: Literal[2]
     maximum_forward_mutations: Literal[1]
     maximum_rollbacks: Literal[1]
     maximum_complete_live_runs: Literal[1]
-    diagnostic_success_terminal: Literal["LIVE_E2E_V2_DIAGNOSTIC_PREFLIGHT_PASSED"]
-    invocation_a_terminal: Literal["LIVE_E2E_V2_HUMAN_PREAUTHORIZATION_REQUIRED"]
+    diagnostic_success_terminal: Literal["LIVE_E2E_V3_DIAGNOSTIC_PREFLIGHT_PASSED"]
+    invocation_a_terminal: Literal["LIVE_E2E_V3_HUMAN_PREAUTHORIZATION_REQUIRED"]
     invocation_b_success: Literal[
-        "LIVE_FAULT_A0_CONTROLLED_REMEDIATION_E2E_V2_PASSED_READY_FOR_REVIEW"
+        "LIVE_FAULT_A0_CONTROLLED_REMEDIATION_E2E_V3_PASSED_READY_FOR_REVIEW"
     ]
 
 
 class DiagnosticsConfig(FrozenModel):
-    schema_version: Literal["live-e2e.diagnostics.v2"]
+    schema_version: Literal["live-e2e.diagnostics.v3"]
     event_schema_version: Literal["live-e2e.diagnostic-event.v2"]
     required_stages: tuple[str, ...]
     failure_codes: tuple[str, ...]
@@ -93,8 +98,8 @@ class DiagnosticsConfig(FrozenModel):
     exception_policy: Literal["PRIVATE_RAW_PUBLIC_HASH_ONLY"]
 
 
-class ProjectionConfigV2(FrozenModel):
-    schema_version: Literal["live-e2e.projection.v2"]
+class ProjectionConfigV3(FrozenModel):
+    schema_version: Literal["live-e2e.projection.v3"]
     visible_entity_minimum: Literal[3]
     visible_entity_maximum: Literal[8]
     metric_candidate_limit: Literal[4]
@@ -110,28 +115,28 @@ class ProjectionConfigV2(FrozenModel):
     alert_title: Literal["Observed purchase-flow request error-rate increase"]
 
 
-class ReportingConfigV2(FrozenModel):
-    schema_version: Literal["live-e2e.reporting.v2"]
-    public_result_json: Literal["docs/results/live-fault-a0-controlled-remediation-e2e-v2.json"]
-    public_result_markdown: Literal["docs/results/live-fault-a0-controlled-remediation-e2e-v2.md"]
+class ReportingConfigV3(FrozenModel):
+    schema_version: Literal["live-e2e.reporting.v3"]
+    public_result_json: Literal["docs/results/live-fault-a0-controlled-remediation-e2e-v3.json"]
+    public_result_markdown: Literal["docs/results/live-fault-a0-controlled-remediation-e2e-v3.md"]
     public_human_brief: Literal[
-        "docs/results/live-fault-a0-controlled-remediation-e2e-v2-human-brief.md"
+        "docs/results/live-fault-a0-controlled-remediation-e2e-v3-human-brief.md"
     ]
     claim_boundary: tuple[str, ...]
 
 
 @dataclass(frozen=True, slots=True)
-class E2EV2Config:
+class E2EV3Config:
     repository_root: Path
-    authority: E2EV2Authority
+    authority: E2EV3Authority
     diagnostics: DiagnosticsConfig
-    projection: ProjectionConfigV2
-    reporting: ReportingConfigV2
+    projection: ProjectionConfigV3
+    reporting: ReportingConfigV3
     sandbox: ConfigBundle
 
 
 @dataclass(frozen=True, slots=True)
-class E2EV2PrivateRoots:
+class E2EV3PrivateRoots:
     root: Path
 
     @property
@@ -175,7 +180,7 @@ class E2EV2PrivateRoots:
         return self.root / "reports"
 
     def probe_root(self, index: int) -> Path:
-        if index not in {1, 2}:
+        if index != 1:
             raise ValueError("diagnostic probe index is outside the frozen budget")
         return self.diagnostics / f"probe-{index:02d}"
 
@@ -200,9 +205,9 @@ class E2EV2PrivateRoots:
     def verify(self) -> None:
         verify_private_tree_permissions(self.root)
 
-    def _static_lifecycle(self, authority: E2EV2Authority) -> dict[str, object]:
+    def _static_lifecycle(self, authority: E2EV3Authority) -> dict[str, object]:
         return {
-            "schema_version": "live-e2e.private-root-lifecycle.v2",
+            "schema_version": "live-e2e.private-root-lifecycle.v3",
             "version": authority.version,
             "branch": authority.branch,
             "predecessor_pr": authority.predecessor_pr,
@@ -214,28 +219,28 @@ class E2EV2PrivateRoots:
             ).hexdigest(),
         }
 
-    def bind_lifecycle(self, authority: E2EV2Authority, *, repository_root: Path) -> None:
+    def bind_lifecycle(self, authority: E2EV3Authority, *, repository_root: Path) -> None:
         if self.root.is_symlink():
-            raise ValueError("v2 private root is a symbolic link")
+            raise ValueError("v3 private root is a symbolic link")
         resolved = self.root.resolve()
-        if V1_PRIVATE_VERSION in resolved.parts:
-            raise ValueError("v1 private root cannot be reused by v2")
+        if any(version in resolved.parts for version in (V1_PRIVATE_VERSION, V2_PRIVATE_VERSION)):
+            raise ValueError("an earlier-version private root cannot be reused by v3")
         if resolved == repository_root.resolve() or resolved.is_relative_to(repository_root.resolve()):
-            raise ValueError("v2 private root must remain outside the Git repository")
+            raise ValueError("v3 private root must remain outside the Git repository")
         lifecycle_path = self.control / "private-root-lifecycle.json"
         if self.root.exists() and not lifecycle_path.exists() and any(self.root.iterdir()):
-            raise ValueError("v2 private root contains unbound content")
+            raise ValueError("v3 private root contains unbound content")
         self.prepare()
         expected = self._static_lifecycle(authority)
         if lifecycle_path.exists() or lifecycle_path.is_symlink():
             if lifecycle_path.is_symlink() or not lifecycle_path.is_file():
-                raise ValueError("v2 private lifecycle is not a regular file")
+                raise ValueError("v3 private lifecycle is not a regular file")
             current = json.loads(lifecycle_path.read_text(encoding="utf-8"))
             if not isinstance(current, Mapping):
-                raise ValueError("v2 private lifecycle is malformed")
+                raise ValueError("v3 private lifecycle is malformed")
             static_current = {key: current.get(key) for key in expected}
             if static_current != expected or not isinstance(current.get("created_at"), str):
-                raise ValueError("v2 private lifecycle binding differs")
+                raise ValueError("v3 private lifecycle binding differs")
         else:
             write_private_json(
                 lifecycle_path,
@@ -247,7 +252,7 @@ class E2EV2PrivateRoots:
 
 def _read(path: Path, model: type[FrozenModel]) -> FrozenModel:
     if path.is_symlink() or not path.is_file():
-        raise ValueError(f"v2 config must be a regular file: {path.name}")
+        raise ValueError(f"v3 config must be a regular file: {path.name}")
     return model.model_validate_json(path.read_text(encoding="utf-8"))
 
 
@@ -268,14 +273,18 @@ def _frozen_paths() -> dict[str, str]:
     }
 
 
-def _require_authority(config: E2EV2Config, config_root: Path) -> None:
+def _require_authority(config: E2EV3Config, config_root: Path) -> None:
     authority = config.authority
     if (
         file_sha256(config_root / "diagnostics.json") != authority.diagnostics_policy_sha256
         or file_sha256(config_root / "projection.json") != authority.projection_policy_sha256
         or file_sha256(config_root / "reporting.json") != authority.reporting_policy_sha256
+        or file_sha256(config_root / "image-authority.json.schema-or-policy")
+        != authority.image_authority_policy_sha256
+        or authority.compose_normalization_policy_sha256
+        != COMPOSE_NORMALIZATION_POLICY_SHA256
     ):
-        raise RuntimeError("v2 policy hash binding differs")
+        raise RuntimeError("v3 policy hash binding differs")
     paths = _frozen_paths()
     if set(paths) != set(authority.frozen_input_hashes) or any(
         file_sha256(config.repository_root / relative) != authority.frozen_input_hashes[name]
@@ -320,13 +329,9 @@ def _require_authority(config: E2EV2Config, config_root: Path) -> None:
         or output_schema_sha256() != authority.a0_output_schema_sha256
     ):
         raise RuntimeError("frozen sandbox or A0 authority differs")
-    if config.diagnostics.required_stages != tuple(
-        stage.value for stage in V2_DIAGNOSTIC_STAGES
-    ):
+    if config.diagnostics.required_stages != tuple(stage.value for stage in DiagnosticStage):
         raise RuntimeError("diagnostic stage vocabulary differs")
-    if config.diagnostics.failure_codes != tuple(
-        code.value for code in V2_DIAGNOSTIC_FAILURE_CODES
-    ):
+    if config.diagnostics.failure_codes != tuple(code.value for code in DiagnosticFailureCode):
         raise RuntimeError("diagnostic failure vocabulary differs")
     if config.diagnostics.command_identities != tuple(
         identity.value for identity in DiagnosticCommandIdentity
@@ -334,15 +339,15 @@ def _require_authority(config: E2EV2Config, config_root: Path) -> None:
         raise RuntimeError("diagnostic command vocabulary differs")
 
 
-def load_e2e_v2_config(root: Path) -> E2EV2Config:
+def load_e2e_v3_config(root: Path) -> E2EV3Config:
     root = root.resolve()
     repository_root = root.parents[1]
-    config = E2EV2Config(
+    config = E2EV3Config(
         repository_root=repository_root,
-        authority=E2EV2Authority.model_validate(_read(root / "authority.json", E2EV2Authority)),
+        authority=E2EV3Authority.model_validate(_read(root / "authority.json", E2EV3Authority)),
         diagnostics=DiagnosticsConfig.model_validate(_read(root / "diagnostics.json", DiagnosticsConfig)),
-        projection=ProjectionConfigV2.model_validate(_read(root / "projection.json", ProjectionConfigV2)),
-        reporting=ReportingConfigV2.model_validate(_read(root / "reporting.json", ReportingConfigV2)),
+        projection=ProjectionConfigV3.model_validate(_read(root / "projection.json", ProjectionConfigV3)),
+        reporting=ReportingConfigV3.model_validate(_read(root / "reporting.json", ReportingConfigV3)),
         sandbox=load_bundle(repository_root / V1_CONFIG_RELATIVE),
     )
     _require_authority(config, root)
@@ -350,7 +355,7 @@ def load_e2e_v2_config(root: Path) -> E2EV2Config:
 
 
 def create_approval_request(
-    config: E2EV2Config,
+    config: E2EV3Config,
     *,
     scenario_lock: Mapping[str, object],
     now: datetime | None = None,
@@ -423,13 +428,13 @@ def record_human_approval(
 
 __all__ = [
     "DiagnosticsConfig",
-    "E2E_V2_VERSION",
-    "E2EV2Authority",
-    "E2EV2Config",
-    "E2EV2PrivateRoots",
-    "ProjectionConfigV2",
-    "ReportingConfigV2",
+    "E2E_V3_VERSION",
+    "E2EV3Authority",
+    "E2EV3Config",
+    "E2EV3PrivateRoots",
+    "ProjectionConfigV3",
+    "ReportingConfigV3",
     "create_approval_request",
-    "load_e2e_v2_config",
+    "load_e2e_v3_config",
     "record_human_approval",
 ]

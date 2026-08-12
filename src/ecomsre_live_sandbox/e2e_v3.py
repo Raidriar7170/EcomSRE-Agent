@@ -1,4 +1,4 @@
-"""Staged no-fault diagnostic and canonical lifecycle for live E2E v2."""
+"""Staged no-fault diagnostic and canonical lifecycle for live E2E v3."""
 
 from __future__ import annotations
 
@@ -53,13 +53,21 @@ from ecomsre_live_sandbox.e2e_v1 import (
     _synthetic_provider_context,
     _write_model_evidence_index,
 )
-from ecomsre_live_sandbox.e2e_v2_contracts import (
-    E2EV2Config,
-    E2EV2PrivateRoots,
+from ecomsre_live_sandbox.e2e_v3_contracts import (
+    E2EV3Config,
+    E2EV3PrivateRoots,
     create_approval_request,
     record_human_approval,
 )
 from ecomsre_live_sandbox.environment import SandboxEnvironment
+from ecomsre_live_sandbox.image_authority import (
+    ComposeIdentities,
+    ImageAuthority,
+    RunImageVerification,
+    compose_identities,
+    ensure_image_authority,
+    write_run_image_verification,
+)
 from ecomsre_live_sandbox.control import (
     ForwardMutationCounter,
     IndependentVerifier,
@@ -86,7 +94,7 @@ from ecomsre_live_sandbox.instrumentation_v2 import (
 )
 
 
-V2_CONFIG_RELATIVE = Path("config/live-fault-a0-controlled-remediation-e2e-v2")
+E2E_V3_CONFIG_RELATIVE = Path("config/live-fault-a0-controlled-remediation-e2e-v3")
 V3_CONFIG_RELATIVE = Path("config/live-telemetry-instrumentation-v3")
 
 
@@ -266,10 +274,10 @@ def _git(repository_root: Path, *arguments: str) -> str:
     return completed.stdout.strip()
 
 
-def _verify_worktree(config: E2EV2Config, *, clean_required: bool) -> str:
+def _verify_worktree(config: E2EV3Config, *, clean_required: bool) -> str:
     branch = _git(config.repository_root, "branch", "--show-current")
     if branch != config.authority.branch:
-        raise RuntimeError("v2 branch identity differs")
+        raise RuntimeError("v3 branch identity differs")
     head = _git(config.repository_root, "rev-parse", "HEAD")
     ancestor = subprocess.run(
         (
@@ -286,13 +294,13 @@ def _verify_worktree(config: E2EV2Config, *, clean_required: bool) -> str:
         shell=False,
     )
     if ancestor.returncode != 0:
-        raise RuntimeError("v2 implementation is not rooted in the exact predecessor")
+        raise RuntimeError("v3 implementation is not rooted in the exact predecessor")
     if clean_required and _git(config.repository_root, "status", "--porcelain=v1"):
-        raise RuntimeError("v2 canonical worktree is not clean")
+        raise RuntimeError("v3 canonical worktree is not clean")
     return head
 
 
-def _default_worktree_verifier(config: E2EV2Config, clean_required: bool) -> str:
+def _default_worktree_verifier(config: E2EV3Config, clean_required: bool) -> str:
     return _verify_worktree(config, clean_required=clean_required)
 
 
@@ -314,12 +322,12 @@ def _read_budget(path: Path, *, maximum: int, schema_version: str) -> dict[str, 
     }
 
 
-def _consume_probe_budget(config: E2EV2Config, roots: E2EV2PrivateRoots) -> tuple[int, str]:
+def _consume_probe_budget(config: E2EV3Config, roots: E2EV3PrivateRoots) -> tuple[int, str]:
     path = roots.control / "diagnostic-budget.json"
     budget = _read_budget(
         path,
         maximum=config.authority.maximum_no_fault_diagnostic_probes,
-        schema_version="live-e2e.diagnostic-budget.v2",
+        schema_version="live-e2e.diagnostic-budget.v3",
     )
     runs = budget.get("runs")
     if not isinstance(runs, list):
@@ -342,7 +350,7 @@ def _consume_probe_budget(config: E2EV2Config, roots: E2EV2PrivateRoots) -> tupl
 
 
 def _complete_probe_budget(
-    roots: E2EV2PrivateRoots,
+    roots: E2EV3PrivateRoots,
     *,
     run_id: str,
     verdict: str,
@@ -387,8 +395,8 @@ def _probe_one_source(
 
 
 def _collect_no_fault_evidence(
-    config: E2EV2Config,
-    roots: E2EV2PrivateRoots,
+    config: E2EV3Config,
+    roots: E2EV3PrivateRoots,
     run_root: Path,
     tracker: _StageTracker,
     endpoints: object,
@@ -676,14 +684,108 @@ class _NoFaultRunResult:
     implementation_commit: str
     evidence: NoFaultEvidence | None
     resolved_compose_sha256: str | None
+    image_authority: ImageAuthority | None
+    image_verification: RunImageVerification | None
     cleanup_verdict: str
     cleanup_payload: dict[str, object]
     cleanup_failure_code: str | None
 
 
+@dataclass(frozen=True, slots=True)
+class _ImageRunEvidence:
+    authority: ImageAuthority
+    verification: RunImageVerification
+    compose: ComposeIdentities
+
+
+def _verify_v3_images(
+    *,
+    environment: Any,
+    resolved: Any,
+    raw_compose: Mapping[str, object],
+    roots: E2EV3PrivateRoots,
+    run_root: Path,
+    run_id: str,
+    run_kind: DiagnosticRunKind,
+    tracker: _StageTracker,
+    expected_structure_sha256: str | None = None,
+    expected_authority_sha256: str | None = None,
+) -> _ImageRunEvidence:
+    flagd_directory = roots.runtime / run_id / "flagd"
+    inspection = tracker.execute(
+        DiagnosticStage.IMAGE_AUTHORITY_LOAD_STARTED,
+        lambda: environment.inspect_cached_images(resolved),
+        failure_code=DiagnosticFailureCode.IMAGE_AUTHORITY_MISMATCH,
+    )
+    authority_path = roots.control / "image-authority.json"
+
+    def load_authority() -> ImageAuthority:
+        value = ensure_image_authority(authority_path, inspection)
+        if (
+            expected_authority_sha256 is not None
+            and value.authority_sha256 != expected_authority_sha256
+        ):
+            raise RuntimeError("shared Image Authority differs from Scenario Lock")
+        return value
+
+    if authority_path.exists() or authority_path.is_symlink():
+        authority = tracker.execute(
+            DiagnosticStage.IMAGE_AUTHORITY_VERIFIED,
+            load_authority,
+            failure_code=DiagnosticFailureCode.IMAGE_AUTHORITY_MISMATCH,
+        )
+    else:
+        authority = tracker.execute(
+            DiagnosticStage.IMAGE_AUTHORITY_CREATED,
+            load_authority,
+            failure_code=DiagnosticFailureCode.IMAGE_AUTHORITY_CREATION_FAILED,
+        )
+        tracker.pass_stage(
+            DiagnosticStage.IMAGE_AUTHORITY_VERIFIED,
+            output_value=authority.authority_sha256,
+        )
+    def resolve_identities() -> ComposeIdentities:
+        value = compose_identities(
+            raw_compose,
+            private_root=roots.root,
+            flagd_directory=flagd_directory,
+        )
+        if (
+            expected_structure_sha256 is not None
+            and value.structure_sha256 != expected_structure_sha256
+        ):
+            raise RuntimeError("resolved Compose structure differs from Scenario Lock")
+        return value
+
+    identities = tracker.execute(
+        DiagnosticStage.COMPOSE_STRUCTURE_HASH_VERIFIED,
+        resolve_identities,
+        failure_code=DiagnosticFailureCode.COMPOSE_STRUCTURE_IDENTITY_MISMATCH,
+    )
+    verification = tracker.execute(
+        DiagnosticStage.RUN_IMAGE_VERIFICATION_CREATED,
+        lambda: write_run_image_verification(
+            run_root / "image-verification.json",
+            run_id=run_id,
+            run_kind=run_kind.value,
+            authority=authority,
+            inspection=inspection,
+            resolved_compose=raw_compose,
+            private_root=roots.root,
+            flagd_directory=flagd_directory,
+        ),
+        failure_code=DiagnosticFailureCode.RUN_IMAGE_VERIFICATION_WRITE_FAILED,
+    )
+    return _ImageRunEvidence(
+        authority=authority,
+        verification=verification,
+        compose=identities,
+    )
+
+
 def _execute_no_fault_sequence(
-    config: E2EV2Config,
-    roots: E2EV2PrivateRoots,
+    config: E2EV3Config,
+    roots: E2EV3PrivateRoots,
     *,
     run_id: str,
     run_root: Path,
@@ -693,7 +795,7 @@ def _execute_no_fault_sequence(
     controller_factory: Callable[..., Any],
     evidence_collector: Callable[..., NoFaultEvidence],
     sleep: Callable[[float], None],
-    worktree_verifier: Callable[[E2EV2Config, bool], str],
+    worktree_verifier: Callable[[E2EV3Config, bool], str],
 ) -> _NoFaultRunResult:
     state = _RunState()
 
@@ -741,6 +843,7 @@ def _execute_no_fault_sequence(
     controller: Any = None
     evidence: NoFaultEvidence | None = None
     resolved_compose_sha256: str | None = None
+    image_run: _ImageRunEvidence | None = None
     cleanup_verdict = "NOT_REQUIRED"
     cleanup_payload: dict[str, object] = {
         "baseline_restored": True,
@@ -787,12 +890,16 @@ def _execute_no_fault_sequence(
             failure_code=DiagnosticFailureCode.RESOLVED_COMPOSE_DRIFT,
         )
         write_private_json(run_root / "resolved-compose.json", raw_compose, create_once=True)
-        tracker.execute(
-            DiagnosticStage.IMAGE_LOCK_VERIFICATION_STARTED,
-            lambda: environment.verify_cached_images(resolved, roots.control),
-            failure_code=DiagnosticFailureCode.IMAGE_LOCK_VERIFICATION_FAILED,
+        image_run = _verify_v3_images(
+            environment=environment,
+            resolved=resolved,
+            raw_compose=raw_compose,
+            roots=roots,
+            run_root=run_root,
+            run_id=run_id,
+            run_kind=DiagnosticRunKind.CANONICAL_INVOCATION_A,
+            tracker=tracker,
         )
-        tracker.pass_stage(DiagnosticStage.IMAGE_LOCK_VERIFIED)
         controller = tracker.execute(
             DiagnosticStage.FAULT_CONTROLLER_PREPARATION_STARTED,
             lambda: controller_factory(
@@ -931,6 +1038,8 @@ def _execute_no_fault_sequence(
         implementation_commit=implementation_commit,
         evidence=evidence,
         resolved_compose_sha256=resolved_compose_sha256,
+        image_authority=None if image_run is None else image_run.authority,
+        image_verification=None if image_run is None else image_run.verification,
         cleanup_verdict=cleanup_verdict,
         cleanup_payload=cleanup_payload,
         cleanup_failure_code=cleanup_failure_code,
@@ -938,14 +1047,14 @@ def _execute_no_fault_sequence(
 
 
 def run_diagnostic_preflight(
-    config: E2EV2Config,
-    roots: E2EV2PrivateRoots,
+    config: E2EV3Config,
+    roots: E2EV3PrivateRoots,
     *,
     environment_factory: Callable[..., Any] = SandboxEnvironment,
     controller_factory: Callable[..., Any] = _make_controller,
     evidence_collector: Callable[..., NoFaultEvidence] = _collect_no_fault_evidence,
     sleep: Callable[[float], None] = time.sleep,
-    worktree_verifier: Callable[[E2EV2Config, bool], str] = _default_worktree_verifier,
+    worktree_verifier: Callable[[E2EV3Config, bool], str] = _default_worktree_verifier,
 ) -> dict[str, object]:
     """Consume at most one new no-fault diagnostic probe and always clean after start."""
     roots.bind_lifecycle(config.authority, repository_root=config.repository_root)
@@ -1009,6 +1118,7 @@ def run_diagnostic_preflight(
     implementation_commit = _git(config.repository_root, "rev-parse", "HEAD")
     controller: Any = None
     evidence: NoFaultEvidence | None = None
+    image_run: _ImageRunEvidence | None = None
     cleanup_verdict = "NOT_REQUIRED"
     cleanup_payload: dict[str, object] = {
         "baseline_restored": True,
@@ -1050,12 +1160,16 @@ def run_diagnostic_preflight(
             failure_code=DiagnosticFailureCode.RESOLVED_COMPOSE_DRIFT,
         )
         write_private_json(run_root / "resolved-compose.json", raw_compose, create_once=True)
-        tracker.execute(
-            DiagnosticStage.IMAGE_LOCK_VERIFICATION_STARTED,
-            lambda: environment.verify_cached_images(resolved, roots.control),
-            failure_code=DiagnosticFailureCode.IMAGE_LOCK_VERIFICATION_FAILED,
+        image_run = _verify_v3_images(
+            environment=environment,
+            resolved=resolved,
+            raw_compose=raw_compose,
+            roots=roots,
+            run_root=run_root,
+            run_id=run_id,
+            run_kind=DiagnosticRunKind.DIAGNOSTIC_PROBE,
+            tracker=tracker,
         )
-        tracker.pass_stage(DiagnosticStage.IMAGE_LOCK_VERIFIED)
         controller = tracker.execute(
             DiagnosticStage.FAULT_CONTROLLER_PREPARATION_STARTED,
             lambda: controller_factory(
@@ -1217,14 +1331,18 @@ def run_diagnostic_preflight(
         and 3 <= evidence.visible_service_count <= 8
         and not evidence.scenario_truth_leaked
     )
-    verdict = (
-        config.authority.diagnostic_success_terminal
-        if success
-        else "BLOCKED_E2E_V2_DIAGNOSTIC_PREFLIGHT_NOT_PASSED"
-    )
+    verdict: str
+    if success:
+        verdict = config.authority.diagnostic_success_terminal
+    elif tracker.failure_code is DiagnosticFailureCode.IMAGE_AUTHORITY_MISMATCH:
+        verdict = "BLOCKED_E2E_V3_IMAGE_AUTHORITY_MISMATCH"
+    elif tracker.failure_code is DiagnosticFailureCode.COMPOSE_STRUCTURE_IDENTITY_MISMATCH:
+        verdict = "BLOCKED_E2E_V3_COMPOSE_STRUCTURE_IDENTITY_MISMATCH"
+    else:
+        verdict = "BLOCKED_E2E_V3_DIAGNOSTIC_PREFLIGHT_NOT_PASSED"
     exception = tracker.exception
     terminal: dict[str, object] = {
-        "schema_version": "live-e2e.diagnostic-terminal.v2",
+        "schema_version": "live-e2e.diagnostic-terminal.v3",
         "version": config.authority.version,
         "verdict": verdict,
         "run_kind": DiagnosticRunKind.DIAGNOSTIC_PROBE.value,
@@ -1252,6 +1370,18 @@ def run_diagnostic_preflight(
         "compose_start_requested": state.compose_start_requested,
         "compose_start_returned": state.compose_start_returned,
         "compose_start_return_code": state.compose_start_return_code,
+        "image_authority_sha256": None
+        if image_run is None
+        else image_run.authority.authority_sha256,
+        "image_verification_sha256": None
+        if image_run is None
+        else image_run.verification.verification_sha256,
+        "compose_structure_sha256": None
+        if image_run is None
+        else image_run.compose.structure_sha256,
+        "compose_instance_sha256": None
+        if image_run is None
+        else image_run.compose.instance_sha256,
         "owned_resources_observed": state.owned_resources_after_start,
         "services_healthy": state.services_healthy,
         "baseline_verified": state.baseline_verified,
@@ -1292,21 +1422,29 @@ def run_diagnostic_preflight(
     return terminal
 
 
-_TRACKED_V2_FILES = {
-    "authority.json": V2_CONFIG_RELATIVE / "authority.json",
-    "diagnostics.json": V2_CONFIG_RELATIVE / "diagnostics.json",
-    "projection.json": V2_CONFIG_RELATIVE / "projection.json",
-    "reporting.json": V2_CONFIG_RELATIVE / "reporting.json",
+_TRACKED_V3_FILES = {
+    "authority.json": E2E_V3_CONFIG_RELATIVE / "authority.json",
+    "diagnostics.json": E2E_V3_CONFIG_RELATIVE / "diagnostics.json",
+    "image-authority.json.schema-or-policy": (
+        E2E_V3_CONFIG_RELATIVE / "image-authority.json.schema-or-policy"
+    ),
+    "projection.json": E2E_V3_CONFIG_RELATIVE / "projection.json",
+    "reporting.json": E2E_V3_CONFIG_RELATIVE / "reporting.json",
     "e2e_diagnostics.py": Path("src/ecomsre_live_sandbox/e2e_diagnostics.py"),
     "e2e_v2_contracts.py": Path("src/ecomsre_live_sandbox/e2e_v2_contracts.py"),
     "e2e_v2.py": Path("src/ecomsre_live_sandbox/e2e_v2.py"),
-    "e2e_v2_cli.py": Path("scripts/live_sandbox/e2e_v2.py"),
+    "e2e_v3_contracts.py": Path("src/ecomsre_live_sandbox/e2e_v3_contracts.py"),
+    "e2e_v3.py": Path("src/ecomsre_live_sandbox/e2e_v3.py"),
+    "e2e_v3_cli.py": Path("scripts/live_sandbox/e2e_v3.py"),
     "environment.py": Path("src/ecomsre_live_sandbox/environment.py"),
+    "image_authority.py": Path("src/ecomsre_live_sandbox/image_authority.py"),
     "control.py": Path("src/ecomsre_live_sandbox/control.py"),
     "e2e_telemetry.py": Path("src/ecomsre_live_sandbox/e2e_telemetry.py"),
     "instrumentation_v2.py": Path("src/ecomsre_live_sandbox/instrumentation_v2.py"),
     "test_e2e_diagnostics.py": Path("tests/live_sandbox/test_e2e_diagnostics.py"),
     "test_e2e_v2.py": Path("tests/live_sandbox/test_e2e_v2.py"),
+    "test_e2e_v3.py": Path("tests/live_sandbox/test_e2e_v3.py"),
+    "test_image_authority.py": Path("tests/live_sandbox/test_image_authority.py"),
     "test_e2e_projection.py": Path("tests/live_sandbox/test_e2e_projection.py"),
     "test_live_sandbox.py": Path("tests/live_sandbox/test_live_sandbox.py"),
     "a0_prompt.py": Path("src/ecomsre_rca100/prompt.py"),
@@ -1315,7 +1453,7 @@ _TRACKED_V2_FILES = {
 
 
 def _require_diagnostic_pass(
-    config: E2EV2Config, roots: E2EV2PrivateRoots
+    config: E2EV3Config, roots: E2EV3PrivateRoots
 ) -> tuple[Mapping[str, object], Path]:
     budget_path = roots.control / "diagnostic-budget.json"
     if budget_path.is_symlink() or not budget_path.is_file():
@@ -1353,7 +1491,7 @@ def _require_diagnostic_pass(
 
 
 def _require_exact_head_admission(
-    roots: E2EV2PrivateRoots, *, implementation_commit: str
+    roots: E2EV3PrivateRoots, *, implementation_commit: str
 ) -> tuple[Mapping[str, object], Mapping[str, object]]:
     ci_path = roots.control / "exact-head-ci.json"
     if ci_path.is_symlink() or not ci_path.is_file():
@@ -1362,7 +1500,7 @@ def _require_exact_head_admission(
     workflows = ci.get("workflows") if isinstance(ci, Mapping) else None
     required = {"Agent mainline", "RCAEval RE2 v2 development"}
     if (
-        ci.get("schema_version") != "live-e2e.exact-head-ci.v2"
+        ci.get("schema_version") != "live-e2e.exact-head-ci.v3"
         or ci.get("implementation_commit") != implementation_commit
         or not isinstance(workflows, Mapping)
         or set(workflows) != required
@@ -1380,7 +1518,7 @@ def _require_exact_head_admission(
     review = json.loads(review_path.read_text(encoding="utf-8"))
     if (
         not isinstance(review, Mapping)
-        or review.get("schema_version") != "live-e2e.pre-live-review.v2"
+        or review.get("schema_version") != "live-e2e.pre-live-review.v3"
         or review.get("implementation_commit") != implementation_commit
         or review.get("verdict") != "PRE_LIVE_PASS"
         or review.get("must_fix_count") != 0
@@ -1389,7 +1527,7 @@ def _require_exact_head_admission(
     return ci, review
 
 
-def _consume_canonical_budget(config: E2EV2Config, roots: E2EV2PrivateRoots) -> None:
+def _consume_canonical_budget(config: E2EV3Config, roots: E2EV3PrivateRoots) -> None:
     terminal_path = roots.invocation_a / "terminal.json"
     started_path = roots.invocation_a / "started.json"
     if any(path.exists() or path.is_symlink() for path in (terminal_path, started_path)):
@@ -1398,7 +1536,7 @@ def _consume_canonical_budget(config: E2EV2Config, roots: E2EV2PrivateRoots) -> 
     budget = _read_budget(
         path,
         maximum=config.authority.maximum_canonical_invocation_a_runs,
-        schema_version="live-e2e.canonical-budget.v2",
+        schema_version="live-e2e.canonical-budget.v3",
     )
     consumed = budget.get("consumed")
     if not isinstance(consumed, int) or consumed >= 1:
@@ -1410,14 +1548,14 @@ def _consume_canonical_budget(config: E2EV2Config, roots: E2EV2PrivateRoots) -> 
     write_private_json(
         started_path,
         {
-            "schema_version": "live-e2e.canonical-started.v2",
+            "schema_version": "live-e2e.canonical-started.v3",
             "started_at": datetime.now(timezone.utc).isoformat(),
         },
         create_once=True,
     )
 
 
-def _complete_canonical_budget(roots: E2EV2PrivateRoots, *, verdict: str) -> None:
+def _complete_canonical_budget(roots: E2EV3PrivateRoots, *, verdict: str) -> None:
     path = roots.control / "canonical-budget.json"
     value = json.loads(path.read_text(encoding="utf-8"))
     runs = value.get("runs") if isinstance(value, dict) else None
@@ -1427,22 +1565,26 @@ def _complete_canonical_budget(roots: E2EV2PrivateRoots, *, verdict: str) -> Non
     write_private_json(path, value, create_once=False)
 
 
-def build_plan_template(config: E2EV2Config) -> dict[str, object]:
+def build_plan_template(config: E2EV3Config) -> dict[str, object]:
     return LiveRemediationPlan.template_payload(config.sandbox)
 
 
 def scenario_lock_manifest(
-    config: E2EV2Config,
-    roots: E2EV2PrivateRoots,
+    config: E2EV3Config,
+    roots: E2EV3PrivateRoots,
     *,
     implementation_commit: str,
-    resolved_compose_sha256: str,
+    image_authority_sha256: str,
+    canonical_image_verification_sha256: str,
+    compose_structure_sha256: str,
+    canonical_compose_instance_sha256: str,
+    normalization_policy_sha256: str,
     diagnostic_terminal_path: Path,
 ) -> dict[str, object]:
     plan_template = build_plan_template(config)
     tracked = {
         name: file_sha256(config.repository_root / relative)
-        for name, relative in _TRACKED_V2_FILES.items()
+        for name, relative in _TRACKED_V3_FILES.items()
     }
     approval_seed = hashlib.sha256(
         json.dumps(
@@ -1458,13 +1600,14 @@ def scenario_lock_manifest(
         ).encode("utf-8")
     ).hexdigest()
     return {
-        "schema_version": "live-e2e.scenario-lock.v2",
+        "schema_version": "live-e2e.scenario-lock.v3",
         "version": config.authority.version,
         "implementation_commit": implementation_commit,
         "implementation_branch": config.authority.branch,
         "predecessor_pr": config.authority.predecessor_pr,
         "predecessor_head": config.authority.predecessor_head,
-        "predecessor_verdict": config.authority.predecessor_verdict,
+        "predecessor_terminal": config.authority.predecessor_terminal,
+        "predecessor_reason": config.authority.predecessor_reason,
         "telemetry_authority_pr": config.authority.telemetry_authority_pr,
         "telemetry_authority_head": config.authority.telemetry_authority_head,
         "telemetry_authority_semantic_sha256": (
@@ -1476,7 +1619,11 @@ def scenario_lock_manifest(
         "diagnostic_terminal_sha256": file_sha256(diagnostic_terminal_path),
         "exact_head_ci_marker_sha256": file_sha256(roots.control / "exact-head-ci.json"),
         "pre_live_review_sha256": file_sha256(roots.control / "pre-live-review.json"),
-        "resolved_compose_sha256": resolved_compose_sha256,
+        "image_authority_sha256": image_authority_sha256,
+        "canonical_image_verification_sha256": canonical_image_verification_sha256,
+        "compose_structure_sha256": compose_structure_sha256,
+        "canonical_compose_instance_sha256": canonical_compose_instance_sha256,
+        "normalization_policy_sha256": normalization_policy_sha256,
         "sandbox_identity": {
             "environment_id": config.sandbox.environment.environment_id,
             "sandbox_id": config.sandbox.environment.sandbox_id,
@@ -1511,42 +1658,42 @@ def _canonical_failure_verdict(
     cleanup_verdict: str,
 ) -> str:
     if cleanup_verdict == "BLOCKED":
-        return "BLOCKED_E2E_V2_CLEANUP_INCOMPLETE"
+        return "BLOCKED_E2E_V3_CLEANUP_INCOMPLETE"
     mapping = {
-        DiagnosticFailureCode.COMPOSE_UP_FAILED: "BLOCKED_E2E_V2_COMPOSE_UP_FAILED",
-        DiagnosticFailureCode.SERVICE_HEALTH_TIMEOUT: "BLOCKED_E2E_V2_SERVICE_HEALTH_TIMEOUT",
-        DiagnosticFailureCode.SERVICE_EXITED_BEFORE_READY: "BLOCKED_E2E_V2_SERVICE_HEALTH_TIMEOUT",
+        DiagnosticFailureCode.COMPOSE_UP_FAILED: "BLOCKED_E2E_V3_COMPOSE_UP_FAILED",
+        DiagnosticFailureCode.SERVICE_HEALTH_TIMEOUT: "BLOCKED_E2E_V3_SERVICE_HEALTH_TIMEOUT",
+        DiagnosticFailureCode.SERVICE_EXITED_BEFORE_READY: "BLOCKED_E2E_V3_SERVICE_HEALTH_TIMEOUT",
         DiagnosticFailureCode.BASELINE_CONFIGURATION_UNAVAILABLE: (
-            "BLOCKED_E2E_V2_BASELINE_CONFIGURATION_UNAVAILABLE"
+            "BLOCKED_E2E_V3_BASELINE_CONFIGURATION_UNAVAILABLE"
         ),
         DiagnosticFailureCode.BASELINE_CONFIGURATION_MISMATCH: (
-            "BLOCKED_E2E_V2_BASELINE_CONFIGURATION_MISMATCH"
+            "BLOCKED_E2E_V3_BASELINE_CONFIGURATION_MISMATCH"
         ),
-        DiagnosticFailureCode.METRICS_PREFLIGHT_FAILED: "BLOCKED_E2E_V2_METRICS_PREFLIGHT_FAILED",
-        DiagnosticFailureCode.LOGS_PREFLIGHT_FAILED: "BLOCKED_E2E_V2_LOGS_PREFLIGHT_FAILED",
-        DiagnosticFailureCode.TRACES_PREFLIGHT_FAILED: "BLOCKED_E2E_V2_TRACES_PREFLIGHT_FAILED",
+        DiagnosticFailureCode.METRICS_PREFLIGHT_FAILED: "BLOCKED_E2E_V3_METRICS_PREFLIGHT_FAILED",
+        DiagnosticFailureCode.LOGS_PREFLIGHT_FAILED: "BLOCKED_E2E_V3_LOGS_PREFLIGHT_FAILED",
+        DiagnosticFailureCode.TRACES_PREFLIGHT_FAILED: "BLOCKED_E2E_V3_TRACES_PREFLIGHT_FAILED",
         DiagnosticFailureCode.MULTISERVICE_PROJECTION_FAILED: (
-            "BLOCKED_E2E_V2_MULTISERVICE_PROJECTION_FAILED"
+            "BLOCKED_E2E_V3_MULTISERVICE_PROJECTION_FAILED"
         ),
         DiagnosticFailureCode.APPROVAL_REQUEST_WRITE_FAILED: (
-            "BLOCKED_E2E_V2_APPROVAL_REQUEST_WRITE_FAILED"
+            "BLOCKED_E2E_V3_APPROVAL_REQUEST_WRITE_FAILED"
         ),
-        DiagnosticFailureCode.CLEANUP_FAILED: "BLOCKED_E2E_V2_CLEANUP_INCOMPLETE",
+        DiagnosticFailureCode.CLEANUP_FAILED: "BLOCKED_E2E_V3_CLEANUP_INCOMPLETE",
     }
     if failure_code is None:
-        return "BLOCKED_E2E_V2_UNCLASSIFIED_RUNTIME_FAILURE"
-    return mapping.get(failure_code, "BLOCKED_E2E_V2_UNCLASSIFIED_RUNTIME_FAILURE")
+        return "BLOCKED_E2E_V3_UNCLASSIFIED_RUNTIME_FAILURE"
+    return mapping.get(failure_code, "BLOCKED_E2E_V3_UNCLASSIFIED_RUNTIME_FAILURE")
 
 
 def run_canonical_invocation_a(
-    config: E2EV2Config,
-    roots: E2EV2PrivateRoots,
+    config: E2EV3Config,
+    roots: E2EV3PrivateRoots,
     *,
     environment_factory: Callable[..., Any] = SandboxEnvironment,
     controller_factory: Callable[..., Any] = _make_controller,
     evidence_collector: Callable[..., NoFaultEvidence] = _collect_no_fault_evidence,
     sleep: Callable[[float], None] = time.sleep,
-    worktree_verifier: Callable[[E2EV2Config, bool], str] = _default_worktree_verifier,
+    worktree_verifier: Callable[[E2EV3Config, bool], str] = _default_worktree_verifier,
 ) -> dict[str, object]:
     roots.bind_lifecycle(config.authority, repository_root=config.repository_root)
     diagnostic_terminal, diagnostic_terminal_path = _require_diagnostic_pass(config, roots)
@@ -1590,7 +1737,8 @@ def run_canonical_invocation_a(
     eligible = (
         tracker.failed_stage is None
         and execution.cleanup_verdict == "CLEAN"
-        and execution.resolved_compose_sha256 is not None
+        and execution.image_authority is not None
+        and execution.image_verification is not None
         and evidence is not None
         and state.services_healthy
         and state.baseline_verified
@@ -1607,7 +1755,21 @@ def run_canonical_invocation_a(
                 config,
                 roots,
                 implementation_commit=implementation_commit,
-                resolved_compose_sha256=cast(str, execution.resolved_compose_sha256),
+                image_authority_sha256=cast(
+                    ImageAuthority, execution.image_authority
+                ).authority_sha256,
+                canonical_image_verification_sha256=cast(
+                    RunImageVerification, execution.image_verification
+                ).verification_sha256,
+                compose_structure_sha256=cast(
+                    RunImageVerification, execution.image_verification
+                ).compose_structure_sha256,
+                canonical_compose_instance_sha256=cast(
+                    RunImageVerification, execution.image_verification
+                ).compose_instance_sha256,
+                normalization_policy_sha256=cast(
+                    RunImageVerification, execution.image_verification
+                ).normalization_policy_sha256,
                 diagnostic_terminal_path=diagnostic_terminal_path,
             )
             tracker.execute(
@@ -1637,8 +1799,8 @@ def run_canonical_invocation_a(
             )
             approval_request_created = True
             approval_command = (
-                "uv run --with pyarrow python -m scripts.live_sandbox.e2e_v2 "
-                "--private-root ~/.ecomsre/private/live-fault-a0-controlled-remediation-e2e-v2 "
+                "uv run --with pyarrow python -m scripts.live_sandbox.e2e_v3 "
+                "--private-root ~/.ecomsre/private/live-fault-a0-controlled-remediation-e2e-v3 "
                 "approve --approver \"<HUMAN_NAME>\" "
                 f"--phrase \"APPROVE {request.scenario_id} {request.plan_template_sha256}\""
             )
@@ -1681,7 +1843,7 @@ def run_canonical_invocation_a(
     )
     exception = tracker.exception
     terminal = {
-        "schema_version": "live-e2e.canonical-invocation-a-terminal.v2",
+        "schema_version": "live-e2e.canonical-invocation-a-terminal.v3",
         "version": config.authority.version,
         "verdict": verdict,
         "run_kind": DiagnosticRunKind.CANONICAL_INVOCATION_A.value,
@@ -1763,7 +1925,7 @@ def run_canonical_invocation_a(
 
 
 def _require_canonical_success(
-    config: E2EV2Config, roots: E2EV2PrivateRoots
+    config: E2EV3Config, roots: E2EV3PrivateRoots
 ) -> Mapping[str, object]:
     path = roots.invocation_a / "terminal.json"
     if path.is_symlink() or not path.is_file():
@@ -1789,8 +1951,8 @@ def _require_canonical_success(
 
 
 def record_human_approval_for_invocation_b(
-    config: E2EV2Config,
-    roots: E2EV2PrivateRoots,
+    config: E2EV3Config,
+    roots: E2EV3PrivateRoots,
     *,
     approver: str,
     phrase: str,
@@ -1824,8 +1986,10 @@ def record_human_approval_for_invocation_b(
 
 _LEGAL_INVOCATION_B_TERMINALS = frozenset(
     {
-        "LIVE_FAULT_A0_CONTROLLED_REMEDIATION_E2E_V2_PASSED_READY_FOR_REVIEW",
+        "LIVE_FAULT_A0_CONTROLLED_REMEDIATION_E2E_V3_PASSED_READY_FOR_REVIEW",
         "BLOCKED_PROVIDER_PREFLIGHT",
+        "BLOCKED_E2E_V3_IMAGE_AUTHORITY_MISMATCH",
+        "BLOCKED_E2E_V3_COMPOSE_STRUCTURE_IDENTITY_MISMATCH",
         "BLOCKED_FAULT_IMPACT_NOT_OBSERVED",
         "BLOCKED_LIVE_TELEMETRY_SOURCE_UNAVAILABLE",
         "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE",
@@ -1839,8 +2003,8 @@ _LEGAL_INVOCATION_B_TERMINALS = frozenset(
 
 
 def _load_exact_approval(
-    config: E2EV2Config,
-    roots: E2EV2PrivateRoots,
+    config: E2EV3Config,
+    roots: E2EV3PrivateRoots,
     *,
     now: datetime,
 ) -> tuple[Mapping[str, object], ApprovalRequest, HumanApprovalRecord]:
@@ -1886,26 +2050,47 @@ def _load_exact_approval(
 
 
 def _verify_scenario_lock_for_invocation_b(
-    config: E2EV2Config,
-    roots: E2EV2PrivateRoots,
+    config: E2EV3Config,
+    roots: E2EV3PrivateRoots,
     *,
     locked: Mapping[str, object],
     implementation_commit: str,
-    resolved_compose_sha256: str,
 ) -> None:
     _, diagnostic_terminal_path = _require_diagnostic_pass(config, roots)
+    required_hash_fields = (
+        "image_authority_sha256",
+        "canonical_image_verification_sha256",
+        "compose_structure_sha256",
+        "canonical_compose_instance_sha256",
+        "normalization_policy_sha256",
+    )
+    if any(
+        not isinstance(locked.get(name), str) or len(cast(str, locked.get(name))) != 64
+        for name in required_hash_fields
+    ):
+        raise RuntimeError("Invocation B Scenario Lock image identities are malformed")
     expected = scenario_lock_manifest(
         config,
         roots,
         implementation_commit=implementation_commit,
-        resolved_compose_sha256=resolved_compose_sha256,
+        image_authority_sha256=cast(str, locked["image_authority_sha256"]),
+        canonical_image_verification_sha256=cast(
+            str, locked["canonical_image_verification_sha256"]
+        ),
+        compose_structure_sha256=cast(str, locked["compose_structure_sha256"]),
+        canonical_compose_instance_sha256=cast(
+            str, locked["canonical_compose_instance_sha256"]
+        ),
+        normalization_policy_sha256=cast(
+            str, locked["normalization_policy_sha256"]
+        ),
         diagnostic_terminal_path=diagnostic_terminal_path,
     )
     if canonical_sha256(locked) != canonical_sha256(expected):
         raise RuntimeError("Invocation B scenario lock differs from frozen runtime files")
 
 
-def _consume_live_run_budget(config: E2EV2Config, roots: E2EV2PrivateRoots) -> None:
+def _consume_live_run_budget(config: E2EV3Config, roots: E2EV3PrivateRoots) -> None:
     started_path = roots.invocation_b / "started.json"
     terminal_path = roots.invocation_b / "terminal.json"
     if any(path.exists() or path.is_symlink() for path in (started_path, terminal_path)):
@@ -1914,7 +2099,7 @@ def _consume_live_run_budget(config: E2EV2Config, roots: E2EV2PrivateRoots) -> N
     budget = _read_budget(
         path,
         maximum=config.authority.maximum_complete_live_runs,
-        schema_version="live-e2e.live-run-budget.v2",
+        schema_version="live-e2e.live-run-budget.v3",
     )
     if budget.get("consumed") != 0:
         raise RuntimeError("Invocation B is create-once and already consumed")
@@ -1925,14 +2110,14 @@ def _consume_live_run_budget(config: E2EV2Config, roots: E2EV2PrivateRoots) -> N
     write_private_json(
         started_path,
         {
-            "schema_version": "live-e2e.invocation-b-started.v2",
+            "schema_version": "live-e2e.invocation-b-started.v3",
             "started_at": datetime.now(timezone.utc).isoformat(),
         },
         create_once=True,
     )
 
 
-def _complete_live_run_budget(roots: E2EV2PrivateRoots, *, verdict: str) -> None:
+def _complete_live_run_budget(roots: E2EV3PrivateRoots, *, verdict: str) -> None:
     path = roots.control / "live-run-budget.json"
     value = json.loads(path.read_text(encoding="utf-8"))
     runs = value.get("runs") if isinstance(value, dict) else None
@@ -1942,10 +2127,10 @@ def _complete_live_run_budget(roots: E2EV2PrivateRoots, *, verdict: str) -> None
     write_private_json(path, value, create_once=False)
 
 
-def _public_result_v2(config: E2EV2Config, terminal: Mapping[str, object]) -> dict[str, object]:
+def _public_result_v3(config: E2EV3Config, terminal: Mapping[str, object]) -> dict[str, object]:
     cleanup = terminal.get("cleanup")
     public = {
-        "schema_version": "live-e2e.public-result.v2",
+        "schema_version": "live-e2e.public-result.v3",
         "version": config.authority.version,
         "verdict": terminal.get("verdict"),
         "implementation_commit": terminal.get("implementation_commit"),
@@ -1974,7 +2159,7 @@ def _public_result_v2(config: E2EV2Config, terminal: Mapping[str, object]) -> di
     return public
 
 
-def verify_public_result(config: E2EV2Config, value: Mapping[str, object]) -> None:
+def verify_public_result(config: E2EV3Config, value: Mapping[str, object]) -> None:
     verdict = value.get("verdict")
     if verdict not in _LEGAL_INVOCATION_B_TERMINALS:
         raise ValueError("public Invocation B terminal is not legal")
@@ -2016,10 +2201,10 @@ def _write_new_public(path: Path, payload: bytes) -> None:
         os.fsync(handle.fileno())
 
 
-def _write_public_outputs_v2(
-    config: E2EV2Config, terminal: Mapping[str, object]
+def _write_public_outputs_v3(
+    config: E2EV3Config, terminal: Mapping[str, object]
 ) -> tuple[str, str, str]:
-    public = _public_result_v2(config, terminal)
+    public = _public_result_v3(config, terminal)
     verify_public_result(config, public)
     paths = (
         config.repository_root / config.reporting.public_result_json,
@@ -2030,7 +2215,7 @@ def _write_public_outputs_v2(
     _write_new_public(
         paths[1],
         (
-            "# Live Fault to A0 Controlled Remediation E2E v2\n\n"
+            "# Live Fault to A0 Controlled Remediation E2E v3\n\n"
             f"**Verdict:** `{public['verdict']}`\n\n"
             "This is one preregistered local Sandbox scenario using a "
             "HUMAN_PREAUTHORIZED_FROZEN_REMEDIATION_RUNBOOK. It is not production, "
@@ -2040,7 +2225,7 @@ def _write_public_outputs_v2(
     _write_new_public(
         paths[2],
         (
-            "# Live Fault → A0 → Controlled Remediation v2 — Human Brief\n\n"
+            "# Live Fault → A0 → Controlled Remediation v3 — Human Brief\n\n"
             "本结果仅代表一个本地 Sandbox、一个预注册场景和一个人工预授权的冻结修复 runbook。"
             "人工授权发生在实际诊断之前，不代表人工审阅了实际诊断；不构成生产自治或 Multi-Agent 优越性声明。\n"
         ).encode("utf-8"),
@@ -2066,7 +2251,7 @@ def _cleanup_truth(terminal: Mapping[str, object]) -> dict[str, object]:
     }
 
 
-def _record_rollback(roots: E2EV2PrivateRoots, terminal: dict[str, object]) -> None:
+def _record_rollback(roots: E2EV3PrivateRoots, terminal: dict[str, object]) -> None:
     terminal["rollback_mutations"] = 1
     write_private_json(
         roots.journal / "rollback-mutation.json",
@@ -2075,21 +2260,21 @@ def _record_rollback(roots: E2EV2PrivateRoots, terminal: dict[str, object]) -> N
     )
 
 
-def _default_provider_factory(config: E2EV2Config) -> Any:
+def _default_provider_factory(config: E2EV3Config) -> Any:
     return _provider(cast(Any, config))
 
 
 def run_invocation_b(
-    config: E2EV2Config,
-    roots: E2EV2PrivateRoots,
+    config: E2EV3Config,
+    roots: E2EV3PrivateRoots,
     *,
-    provider_factory: Callable[[E2EV2Config], Any] = _default_provider_factory,
+    provider_factory: Callable[[E2EV3Config], Any] = _default_provider_factory,
     environment_factory: Callable[..., Any] = SandboxEnvironment,
-    worktree_verifier: Callable[[E2EV2Config, bool], str] = _default_worktree_verifier,
+    worktree_verifier: Callable[[E2EV3Config, bool], str] = _default_worktree_verifier,
     sleep: Callable[[float], None] = time.sleep,
     public_writer: Callable[
-        [E2EV2Config, Mapping[str, object]], tuple[str, ...]
-    ] = _write_public_outputs_v2,
+        [E2EV3Config, Mapping[str, object]], tuple[str, ...]
+    ] = _write_public_outputs_v3,
 ) -> dict[str, object]:
     """Execute the single human-preauthorized live run without result-driven retries."""
     roots.bind_lifecycle(config.authority, repository_root=config.repository_root)
@@ -2152,49 +2337,9 @@ def run_invocation_b(
         flagd_directory=roots.runtime / "invocation-b" / "flagd",
         runner=runner,
     )
-    tracker.pass_stage(DiagnosticStage.PRIVATE_ROOT_BOUND)
-    tracker.pass_stage(DiagnosticStage.AUTHORITY_VERIFIED)
-    tracker.pass_stage(
-        DiagnosticStage.WORKTREE_VERIFIED,
-        output_value=implementation_commit,
-    )
-    docker = tracker.execute(
-        DiagnosticStage.LOCAL_DOCKER_VERIFIED,
-        environment.verify_local_docker,
-        failure_code=DiagnosticFailureCode.DOCKER_AUTHORITY_UNAVAILABLE,
-    )
-    tracker.execute(
-        DiagnosticStage.UPSTREAM_PIN_VERIFIED,
-        environment.verify_upstream,
-        failure_code=DiagnosticFailureCode.UPSTREAM_PIN_DRIFT,
-    )
-    resolved, raw_compose = tracker.execute(
-        DiagnosticStage.COMPOSE_RESOLUTION_STARTED,
-        environment.resolve,
-        failure_code=DiagnosticFailureCode.COMPOSE_RESOLUTION_FAILED,
-    )
-    tracker.pass_stage(
-        DiagnosticStage.COMPOSE_RESOLVED,
-        output_value=resolved.compose_sha256,
-    )
-    if any(environment.verify_owned_resources(require_complete=False).values()):
-        raise RuntimeError("Invocation B requires no owned residue")
-    tracker.execute(
-        DiagnosticStage.IMAGE_LOCK_VERIFICATION_STARTED,
-        lambda: environment.verify_cached_images(resolved, roots.control),
-        failure_code=DiagnosticFailureCode.IMAGE_LOCK_VERIFICATION_FAILED,
-    )
-    tracker.pass_stage(DiagnosticStage.IMAGE_LOCK_VERIFIED)
-    _verify_scenario_lock_for_invocation_b(
-        config,
-        roots,
-        locked=locked,
-        implementation_commit=implementation_commit,
-        resolved_compose_sha256=resolved.compose_sha256,
-    )
     _consume_live_run_budget(config, roots)
     terminal: dict[str, object] = {
-        "schema_version": "live-e2e.invocation-b-terminal.v2",
+        "schema_version": "live-e2e.invocation-b-terminal.v3",
         "version": config.authority.version,
         "verdict": "BLOCKED_PROVIDER_PREFLIGHT",
         "run_kind": DiagnosticRunKind.INVOCATION_B.value,
@@ -2210,6 +2355,10 @@ def run_invocation_b(
         "rollback_mutations": 0,
         "compose_start_requested": False,
         "compose_start_returned": False,
+        "image_authority_sha256": None,
+        "image_verification_sha256": None,
+        "compose_structure_sha256": None,
+        "compose_instance_sha256": None,
     }
     provider: Any = None
     controller: Any = None
@@ -2234,6 +2383,57 @@ def run_invocation_b(
             create_once=True,
         )
         sleep(config.sandbox.budget.minimum_request_spacing_seconds)
+        tracker.pass_stage(DiagnosticStage.PRIVATE_ROOT_BOUND)
+        tracker.pass_stage(DiagnosticStage.AUTHORITY_VERIFIED)
+        tracker.pass_stage(
+            DiagnosticStage.WORKTREE_VERIFIED,
+            output_value=implementation_commit,
+        )
+        docker = tracker.execute(
+            DiagnosticStage.LOCAL_DOCKER_VERIFIED,
+            environment.verify_local_docker,
+            failure_code=DiagnosticFailureCode.DOCKER_AUTHORITY_UNAVAILABLE,
+        )
+        tracker.execute(
+            DiagnosticStage.UPSTREAM_PIN_VERIFIED,
+            environment.verify_upstream,
+            failure_code=DiagnosticFailureCode.UPSTREAM_PIN_DRIFT,
+        )
+        resolved, raw_compose = tracker.execute(
+            DiagnosticStage.COMPOSE_RESOLUTION_STARTED,
+            environment.resolve,
+            failure_code=DiagnosticFailureCode.COMPOSE_RESOLUTION_FAILED,
+        )
+        tracker.pass_stage(
+            DiagnosticStage.COMPOSE_RESOLVED,
+            output_value=resolved.compose_sha256,
+        )
+        _verify_scenario_lock_for_invocation_b(
+            config,
+            roots,
+            locked=locked,
+            implementation_commit=implementation_commit,
+        )
+        image_run = _verify_v3_images(
+            environment=environment,
+            resolved=resolved,
+            raw_compose=raw_compose,
+            roots=roots,
+            run_root=roots.invocation_b,
+            run_id="invocation-b",
+            run_kind=DiagnosticRunKind.INVOCATION_B,
+            tracker=tracker,
+            expected_structure_sha256=cast(str, locked["compose_structure_sha256"]),
+            expected_authority_sha256=cast(str, locked["image_authority_sha256"]),
+        )
+        terminal["image_authority_sha256"] = image_run.authority.authority_sha256
+        terminal["image_verification_sha256"] = (
+            image_run.verification.verification_sha256
+        )
+        terminal["compose_structure_sha256"] = image_run.compose.structure_sha256
+        terminal["compose_instance_sha256"] = image_run.compose.instance_sha256
+        if any(environment.verify_owned_resources(require_complete=False).values()):
+            raise RuntimeError("Invocation B requires no owned residue")
         write_private_json(
             roots.invocation_b / "resolved-compose.json",
             raw_compose,
@@ -2561,6 +2761,18 @@ def run_invocation_b(
     except Exception as error:
         if provider is not None and hasattr(provider, "calls"):
             terminal["provider_calls"] = provider.calls
+        if tracker.failure_code is DiagnosticFailureCode.IMAGE_AUTHORITY_MISMATCH:
+            terminal["verdict"] = "BLOCKED_E2E_V3_IMAGE_AUTHORITY_MISMATCH"
+        elif tracker.failure_code is DiagnosticFailureCode.COMPOSE_STRUCTURE_IDENTITY_MISMATCH:
+            terminal["verdict"] = (
+                "BLOCKED_E2E_V3_COMPOSE_STRUCTURE_IDENTITY_MISMATCH"
+            )
+        terminal["failed_stage"] = (
+            None if tracker.failed_stage is None else tracker.failed_stage.value
+        )
+        terminal["failure_code"] = (
+            None if tracker.failure_code is None else tracker.failure_code.value
+        )
         terminal["failure_type"] = type(error).__name__
         private_exception = ExceptionArtifactStore(
             roots.invocation_b / "exceptions"

@@ -21,6 +21,7 @@ from ecomsre_live_sandbox.contracts import (
     file_sha256,
     write_private_json,
 )
+from ecomsre_live_sandbox.image_authority import CachedImage, CachedImageInspection
 
 
 EXPECTED_SERVICES = (
@@ -405,66 +406,103 @@ class SandboxEnvironment:
         self._resolved_payload = raw
         return resolved, raw
 
-    def verify_cached_images(self, resolved: ResolvedSandbox, control_root: Path) -> str:
+    def inspect_cached_images(self, resolved: ResolvedSandbox) -> CachedImageInspection:
         historical_path = self.repository_root / "config/phase0/image-lock.json"
         historical = json.loads(historical_path.read_text(encoding="utf-8"))
         entries = historical.get("images") if isinstance(historical, Mapping) else None
-        if not isinstance(entries, list):
+        allowed = (
+            historical.get("allowed_source_references")
+            if isinstance(historical, Mapping)
+            else None
+        )
+        if not isinstance(entries, list) or not isinstance(allowed, list):
             raise SandboxDriftError("historical frozen image lock is unavailable")
         expected = {
             str(item["source_reference"]): item
             for item in entries
             if isinstance(item, Mapping) and isinstance(item.get("source_reference"), str)
         }
-        if set(resolved.image_references) != set(expected):
+        if (
+            len(expected) != len(entries)
+            or set(expected) != {str(value) for value in allowed}
+            or set(resolved.image_references) != set(expected)
+        ):
             raise SandboxDriftError("sandbox image source set differs from frozen source set")
-        inspected: list[dict[str, str]] = []
+        inspected: list[CachedImage] = []
         for reference in resolved.image_references:
-            raw = json.loads(
-                self.runner.run(
-                    (
-                        "docker",
-                        "image",
-                        "inspect",
-                        "--platform",
-                        "linux/arm64",
-                        reference,
-                    ),
-                    cwd=self.repository_root,
-                ).stdout
+            result = self.runner.run(
+                (
+                    "docker",
+                    "image",
+                    "inspect",
+                    "--platform",
+                    "linux/arm64",
+                    reference,
+                ),
+                cwd=self.repository_root,
             )
+            raw = json.loads(result.stdout)
             if not isinstance(raw, list) or len(raw) != 1 or not isinstance(raw[0], Mapping):
                 raise SandboxDriftError(f"cached image inspection failed for {reference}")
             image = raw[0]
             expected_item = expected[reference]
+            repo_digests = image.get("RepoDigests")
+            repository = reference.rsplit(":", 1)[0]
+            expected_repo_digest = (
+                f"{repository}@{expected_item.get('image_index_digest')}"
+            )
             if (
                 image.get("Os") != "linux"
                 or image.get("Architecture") not in {"arm64", "aarch64"}
                 or image.get("Id") != expected_item.get("image_id")
+                or not isinstance(repo_digests, list)
+                or expected_repo_digest not in repo_digests
             ):
                 raise SandboxDriftError(f"cached image identity drifted for {reference}")
+            resolved_platform_digest = str(expected_item["resolved_platform_digest"])
+            if resolved_platform_digest != image.get("Id"):
+                raise SandboxDriftError(
+                    f"cached platform digest drifted for {reference}"
+                )
             inspected.append(
-                {
-                    "source_reference": reference,
-                    "image_id": str(image["Id"]),
-                    "architecture": "arm64",
-                    "platform": "linux/arm64",
-                    "image_index_digest": str(expected_item["image_index_digest"]),
-                    "resolved_platform_digest": str(
-                        expected_item["resolved_platform_digest"]
-                    ),
-                }
+                CachedImage(
+                    source_reference=reference,
+                    image_id=str(image["Id"]),
+                    image_index_digest=str(expected_item["image_index_digest"]),
+                    resolved_platform_digest=resolved_platform_digest,
+                    raw_inspect_sha256=hashlib.sha256(result.stdout.encode("utf-8")).hexdigest(),
+                )
             )
+        return CachedImageInspection(
+            historical_image_lock_sha256=file_sha256(historical_path),
+            upstream_commit=self.bundle.environment.upstream_commit,
+            upstream_tag=self.bundle.environment.upstream_tag,
+            platform=self.bundle.environment.platform,
+            images=tuple(inspected),
+        )
+
+    def verify_cached_images(self, resolved: ResolvedSandbox, control_root: Path) -> str:
+        inspection = self.inspect_cached_images(resolved)
         lock = {
             "schema_version": "live-sandbox.private-image-lock.v1",
             "rotation_reason": "COMPOSE_OVERRIDE_CHANGED",
-            "historical_lock_sha256": file_sha256(historical_path),
+            "historical_lock_sha256": inspection.historical_image_lock_sha256,
             "historical_lock_unchanged": True,
             "upstream_commit": self.bundle.environment.upstream_commit,
             "compose_sha256": resolved.compose_sha256,
             "source_references_unchanged": True,
             "cached_images_reverified": True,
-            "images": inspected,
+            "images": [
+                {
+                    "source_reference": image.source_reference,
+                    "image_id": image.image_id,
+                    "architecture": "arm64",
+                    "platform": "linux/arm64",
+                    "image_index_digest": image.image_index_digest,
+                    "resolved_platform_digest": image.resolved_platform_digest,
+                }
+                for image in inspection.images
+            ],
         }
         return write_private_json(control_root / "image-lock.json", lock, create_once=True)
 
