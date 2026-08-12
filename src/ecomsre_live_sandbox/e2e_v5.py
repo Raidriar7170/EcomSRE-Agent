@@ -32,6 +32,9 @@ import ecomsre_live_sandbox.e2e_v4 as e2e_v4
 from ecomsre_live_sandbox.e2e_v5_contracts import E2EV5Config, E2EV5PrivateRoots
 from ecomsre_live_sandbox.environment import SandboxEnvironment
 from ecomsre_live_sandbox.instrumentation_v2 import load_instrumentation_config
+from ecomsre_live_sandbox.invocation_b_verdicts import (
+    get_invocation_b_verdict_policy,
+)
 from ecomsre_live_sandbox.no_fault_readiness import (
     NoFaultReadiness,
     evaluate_no_fault_readiness,
@@ -182,26 +185,9 @@ def record_human_approval_for_invocation_b(
     )
 
 
-_LEGAL_INVOCATION_B_TERMINALS = frozenset(
-    {
-        "LIVE_FAULT_A0_CONTROLLED_REMEDIATION_E2E_V5_PASSED_READY_FOR_REVIEW",
-        "BLOCKED_PROVIDER_PREFLIGHT",
-        "BLOCKED_E2E_V5_IMAGE_AUTHORITY_MISMATCH",
-        "BLOCKED_E2E_V5_COMPOSE_STRUCTURE_IDENTITY_MISMATCH",
-        "BLOCKED_E2E_V5_COMPOSE_UP_FAILED",
-        "BLOCKED_E2E_V5_SERVICE_HEALTH_TIMEOUT",
-        "BLOCKED_E2E_V5_BASELINE_CONFIGURATION_UNAVAILABLE",
-        "BLOCKED_E2E_V5_UNCLASSIFIED_RUNTIME_FAILURE",
-        "BLOCKED_FAULT_IMPACT_NOT_OBSERVED",
-        "BLOCKED_LIVE_TELEMETRY_SOURCE_UNAVAILABLE",
-        "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE",
-        "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION",
-        "BLOCKED_POLICY_REJECTED",
-        "CONTROLLED_REMEDIATION_NOT_VERIFIED_ROLLBACK_COMPLETED",
-        "BLOCKED_ROLLBACK_FAILED_MANUAL_CLEANUP_REQUIRED",
-        "BLOCKED_CLEANUP_INCOMPLETE",
-    }
-)
+_LEGAL_INVOCATION_B_TERMINALS = get_invocation_b_verdict_policy(
+    "v5"
+).legal_terminals
 
 
 def _public_result_v5(

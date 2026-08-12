@@ -48,6 +48,9 @@ from ecomsre_live_sandbox.e2e_v4_contracts import (
 )
 from ecomsre_live_sandbox.environment import SandboxEnvironment
 from ecomsre_live_sandbox.instrumentation_v2 import load_instrumentation_config
+from ecomsre_live_sandbox.invocation_b_verdicts import (
+    get_invocation_b_verdict_policy,
+)
 
 
 E2E_V4_CONFIG_RELATIVE = Path("config/live-fault-a0-controlled-remediation-e2e-v4")
@@ -56,11 +59,13 @@ TELEMETRY_V3_CONFIG_RELATIVE = Path("config/live-telemetry-instrumentation-v3")
 
 def _schema_suffix(config: object) -> str:
     version = str(getattr(getattr(config, "authority"), "version"))
+    if version.endswith("e2e-v6"):
+        return "v6"
     return "v5" if version.endswith("e2e-v5") else "v4"
 
 
 def _is_v5(config: object) -> bool:
-    return _schema_suffix(config) == "v5"
+    return _schema_suffix(config) in {"v5", "v6"}
 
 _TRACKED_RUNTIME_CONFIG_FILES = {
     "authority.json": E2E_V4_CONFIG_RELATIVE / "authority.json",
@@ -132,7 +137,10 @@ def _runtime_config_paths(config: E2EV4Config) -> dict[str, Path]:
     paths = dict(_TRACKED_RUNTIME_CONFIG_FILES)
     config_relative = E2E_V4_CONFIG_RELATIVE
     if _is_v5(config):
-        config_relative = Path("config/live-fault-a0-controlled-remediation-e2e-v5")
+        suffix = _schema_suffix(config)
+        config_relative = Path(
+            f"config/live-fault-a0-controlled-remediation-e2e-{suffix}"
+        )
         for name in (
             "authority.json",
             "development-probes.json",
@@ -146,12 +154,9 @@ def _runtime_config_paths(config: E2EV4Config) -> dict[str, Path]:
             {
                 name: config_relative / name
                 for name in (
-                    "authority.json",
-                    "development-probes.json",
-                    "diagnostics.json",
-                    "no-fault-readiness.json",
-                    "fault-projection.json",
-                    "reporting.json",
+                    ("authority.json", "development-probes.json", "diagnostics.json", "no-fault-readiness.json", "fault-projection.json", "reporting.json")
+                    if suffix == "v5"
+                    else ("authority.json", "assurance.json", "diagnostics.json", "reporting.json")
                 )
             }
         )
@@ -174,6 +179,30 @@ def _runtime_config_paths(config: E2EV4Config) -> dict[str, Path]:
                 ),
             }
         )
+        if suffix == "v6":
+            paths.update(
+                {
+                    "e2e_v6.py": Path("src/ecomsre_live_sandbox/e2e_v6.py"),
+                    "e2e_v6_contracts.py": Path(
+                        "src/ecomsre_live_sandbox/e2e_v6_contracts.py"
+                    ),
+                    "invocation_b_assurance.py": Path(
+                        "src/ecomsre_live_sandbox/invocation_b_assurance.py"
+                    ),
+                    "invocation_b_verdicts.py": Path(
+                        "src/ecomsre_live_sandbox/invocation_b_verdicts.py"
+                    ),
+                    "e2e_v6_cli.py": Path("scripts/live_sandbox/e2e_v6.py"),
+                    "v5_no_fault_readiness": Path(
+                        "config/live-fault-a0-controlled-remediation-e2e-v5/"
+                        "no-fault-readiness.json"
+                    ),
+                    "v5_fault_projection": Path(
+                        "config/live-fault-a0-controlled-remediation-e2e-v5/"
+                        "fault-projection.json"
+                    ),
+                }
+            )
     seen = set(paths.values())
     for package in (
         Path("src/ecomsre_live_sandbox"),
@@ -228,12 +257,23 @@ def _consume_development_budget(
     implementation_commit: str,
     runtime_config_aggregate: str,
 ) -> tuple[int, str]:
-    path = roots.control / "development-budget.json"
-    budget = e2e_v3._read_budget(
-        path,
-        maximum=config.authority.maximum_development_integration_probes,
-        schema_version=f"live-e2e.development-budget.{_schema_suffix(config)}",
-    )
+    suffix = _schema_suffix(config)
+    if suffix == "v6":
+        path = roots.control / "development-history.json"
+        if path.exists() or path.is_symlink():
+            budget = json.loads(path.read_text(encoding="utf-8"))
+        else:
+            budget = {
+                "schema_version": "live-e2e.development-history.v6",
+                "runs": [],
+            }
+    else:
+        path = roots.control / "development-budget.json"
+        budget = e2e_v3._read_budget(
+            path,
+            maximum=config.authority.maximum_development_integration_probes,
+            schema_version=f"live-e2e.development-budget.{suffix}",
+        )
     runs = budget.get("runs")
     if not isinstance(runs, list):
         raise ValueError("development run history is malformed")
@@ -244,10 +284,10 @@ def _consume_development_budget(
         for item in runs
     ):
         raise RuntimeError("development integration already passed")
-    consumed = budget.get("consumed")
+    consumed = len(runs) if suffix == "v6" else budget.get("consumed")
     if not isinstance(consumed, int):
         raise ValueError("development run count is malformed")
-    if consumed >= config.authority.maximum_development_integration_probes:
+    if suffix != "v6" and consumed >= config.authority.maximum_development_integration_probes:
         raise RuntimeError("development integration budget is exhausted")
     if runs:
         previous = runs[-1]
@@ -258,7 +298,7 @@ def _consume_development_budget(
         ):
             raise RuntimeError("identical development rerun is forbidden")
     index = consumed + 1
-    run_id = f"probe-{index:02d}"
+    run_id = f"run-{index:04d}" if suffix == "v6" else f"probe-{index:02d}"
     runs.append(
         {
             "run_id": run_id,
@@ -267,7 +307,8 @@ def _consume_development_budget(
             "verdict": "STARTED",
         }
     )
-    budget["consumed"] = index
+    if suffix != "v6":
+        budget["consumed"] = index
     write_private_json(path, budget, create_once=False)
     return index, run_id
 
@@ -278,7 +319,10 @@ def _complete_development_budget(
     run_id: str,
     verdict: str,
 ) -> None:
-    path = roots.control / "development-budget.json"
+    suffix = "v6" if type(roots).__name__ == "E2EV6PrivateRoots" else None
+    path = roots.control / (
+        "development-history.json" if suffix == "v6" else "development-budget.json"
+    )
     value = json.loads(path.read_text(encoding="utf-8"))
     runs = value.get("runs") if isinstance(value, dict) else None
     if not isinstance(runs, list):
@@ -383,7 +427,7 @@ def _development_failure_verdict(
     cleanup_verdict: str,
     schema_suffix: str = "v4",
 ) -> str:
-    marker = "V5" if schema_suffix == "v5" else "V4"
+    marker = schema_suffix.upper()
     if cleanup_verdict == "BLOCKED":
         return f"BLOCKED_E2E_{marker}_CLEANUP_INCOMPLETE"
     mapping = {
@@ -589,10 +633,15 @@ def run_development_probe(
                 run_root.relative_to(roots.root) / "terminal.json"
             ).as_posix(),
         }
+        pass_lock_path = roots.control / (
+            "latest-development-pass-lock.json"
+            if _schema_suffix(config) == "v6"
+            else "development-pass-lock.json"
+        )
         write_private_json(
-            roots.control / "development-pass-lock.json",
+            pass_lock_path,
             pass_lock,
-            create_once=not (roots.control / "development-pass-lock.json").exists(),
+            create_once=not pass_lock_path.exists(),
         )
         pass_lock_created = True
         pass_lock_sha256 = canonical_sha256(pass_lock)
@@ -678,7 +727,11 @@ def _require_development_pass(
     *,
     implementation_commit: str,
 ) -> tuple[Mapping[str, object], Mapping[str, object], Path]:
-    lock_path = roots.control / "development-pass-lock.json"
+    lock_path = roots.control / (
+        "latest-development-pass-lock.json"
+        if _schema_suffix(config) == "v6"
+        else "development-pass-lock.json"
+    )
     if lock_path.is_symlink() or not lock_path.is_file():
         raise RuntimeError("canonical Invocation A requires development PASS")
     lock = json.loads(lock_path.read_text(encoding="utf-8"))
@@ -732,7 +785,10 @@ def _require_exact_head_admission(
     *,
     implementation_commit: str,
 ) -> tuple[Mapping[str, object], Mapping[str, object]]:
-    schema_suffix = "v5" if type(roots).__name__ == "E2EV5PrivateRoots" else "v4"
+    schema_suffix = {
+        "E2EV5PrivateRoots": "v5",
+        "E2EV6PrivateRoots": "v6",
+    }.get(type(roots).__name__, "v4")
     ci_path = roots.control / "exact-head-ci.json"
     if ci_path.is_symlink() or not ci_path.is_file():
         raise RuntimeError("canonical Invocation A lacks an exact-head CI marker")
@@ -769,7 +825,75 @@ def _require_exact_head_admission(
     return ci, review
 
 
-def _consume_canonical_budget(config: E2EV4Config, roots: E2EV4PrivateRoots) -> None:
+def _consume_canonical_budget(
+    config: E2EV4Config,
+    roots: E2EV4PrivateRoots,
+    *,
+    implementation_commit: str,
+) -> None:
+    if _schema_suffix(config) == "v6":
+        if (roots.control / "canonical-accepted.json").exists():
+            raise RuntimeError("canonical human-preauthorization is already accepted")
+        if (roots.control / "human-approval.json").exists():
+            raise RuntimeError("canonical retry is forbidden after human approval")
+        history_path = roots.control / "canonical-history.json"
+        history = (
+            json.loads(history_path.read_text(encoding="utf-8"))
+            if history_path.exists()
+            else {"schema_version": "live-e2e.canonical-history.v6", "attempts": []}
+        )
+        attempts = history.get("attempts")
+        if not isinstance(attempts, list):
+            raise ValueError("canonical attempt history is malformed")
+        if attempts:
+            previous = attempts[-1]
+            if not isinstance(previous, Mapping):
+                raise ValueError("canonical attempt history entry is malformed")
+            relative = previous.get("attempt_relative_path")
+            if not isinstance(relative, str):
+                raise ValueError("canonical attempt path is malformed")
+            previous_terminal_path = roots.root / relative / "terminal.json"
+            previous_terminal = json.loads(
+                previous_terminal_path.read_text(encoding="utf-8")
+            )
+            if not isinstance(previous_terminal, Mapping) or any(
+                (
+                    previous_terminal.get("implementation_commit")
+                    == implementation_commit,
+                    previous_terminal.get("fault_injections") != 0,
+                    previous_terminal.get("provider_calls") != 0,
+                    previous_terminal.get("model_calls") != 0,
+                    previous_terminal.get("forward_mutations") != 0,
+                    previous_terminal.get("rollback_mutations") != 0,
+                    previous_terminal.get("cleanup_verdict") != "CLEAN",
+                )
+            ):
+                raise RuntimeError("canonical retry preconditions are not satisfied")
+        attempt_index = len(attempts) + 1
+        attempt_root = cast(Any, roots).canonical_attempt(attempt_index)
+        write_private_json(
+            roots.control / "canonical-active.json",
+            {
+                "schema_version": "live-e2e.canonical-active.v6",
+                "attempt_index": attempt_index,
+                "attempt_relative_path": attempt_root.relative_to(
+                    roots.root
+                ).as_posix(),
+                "implementation_commit": implementation_commit,
+            },
+            create_once=False,
+        )
+        started_path = attempt_root / "started.json"
+        ensure_private_directory(roots.invocation_a)
+        write_private_json(
+            started_path,
+            {
+                "schema_version": "live-e2e.canonical-started.v6",
+                "started_at": datetime.now(timezone.utc).isoformat(),
+            },
+            create_once=True,
+        )
+        return
     terminal_path = roots.invocation_a / "terminal.json"
     started_path = roots.invocation_a / "started.json"
     if any(path.exists() or path.is_symlink() for path in (terminal_path, started_path)):
@@ -797,6 +921,26 @@ def _consume_canonical_budget(config: E2EV4Config, roots: E2EV4PrivateRoots) -> 
 
 
 def _complete_canonical_budget(roots: E2EV4PrivateRoots, *, verdict: str) -> None:
+    if type(roots).__name__ == "E2EV6PrivateRoots":
+        history_path = roots.control / "canonical-history.json"
+        history = (
+            json.loads(history_path.read_text(encoding="utf-8"))
+            if history_path.exists()
+            else {"schema_version": "live-e2e.canonical-history.v6", "attempts": []}
+        )
+        attempts = history.get("attempts")
+        if not isinstance(attempts, list):
+            raise ValueError("canonical attempt history is malformed")
+        attempts.append(
+            {
+                "attempt_relative_path": roots.invocation_a.relative_to(
+                    roots.root
+                ).as_posix(),
+                "verdict": verdict,
+            }
+        )
+        write_private_json(history_path, history, create_once=False)
+        return
     path = roots.control / "canonical-budget.json"
     value = json.loads(path.read_text(encoding="utf-8"))
     runs = value.get("runs") if isinstance(value, dict) else None
@@ -890,8 +1034,21 @@ def scenario_lock_manifest(
             }
         ),
         "reporting_policy_sha256": config.authority.reporting_policy_sha256,
-        "development_probe_policy_sha256": (
-            config.authority.development_probe_policy_sha256
+        **(
+            {
+                "assurance_policy_sha256": getattr(
+                    config.authority, "assurance_policy_sha256"
+                ),
+                "versioned_verdict_policy_sha256": (
+                    getattr(config.authority, "versioned_verdict_policy_sha256")
+                ),
+            }
+            if _schema_suffix(config) == "v6"
+            else {
+                "development_probe_policy_sha256": (
+                    config.authority.development_probe_policy_sha256
+                )
+            }
         ),
         **(
             {
@@ -923,7 +1080,7 @@ def _canonical_failure_verdict(
     cleanup_verdict: str,
     schema_suffix: str = "v4",
 ) -> str:
-    marker = "V5" if schema_suffix == "v5" else "V4"
+    marker = schema_suffix.upper()
     if cleanup_verdict == "BLOCKED":
         return f"BLOCKED_E2E_{marker}_CLEANUP_INCOMPLETE"
     mapping = {
@@ -992,7 +1149,11 @@ def run_canonical_invocation_a(
         implementation_commit=implementation_commit,
     )
     _require_exact_head_admission(roots, implementation_commit=implementation_commit)
-    _consume_canonical_budget(config, roots)
+    _consume_canonical_budget(
+        config,
+        roots,
+        implementation_commit=implementation_commit,
+    )
     run_root = roots.invocation_a
     for directory in (
         run_root,
@@ -1035,6 +1196,11 @@ def run_canonical_invocation_a(
     approval_request_created = False
     approval_command: str | None = None
     request: ApprovalRequest | None = None
+    lock: Mapping[str, object] | None = None
+    template: Mapping[str, object] | None = None
+    canonical_artifact_root = (
+        run_root if _schema_suffix(config) == "v6" else roots.control
+    )
     eligible = (
         tracker.failed_stage is None
         and execution.cleanup_verdict == "CLEAN"
@@ -1078,7 +1244,9 @@ def run_canonical_invocation_a(
             tracker.execute(
                 DiagnosticStage.SCENARIO_LOCK_CREATED,
                 lambda: write_private_json(
-                    roots.control / "scenario-lock.json", lock, create_once=True
+                    canonical_artifact_root / "scenario-lock.json",
+                    lock,
+                    create_once=True,
                 ),
                 failure_code=DiagnosticFailureCode.SCENARIO_LOCK_WRITE_FAILED,
             )
@@ -1087,7 +1255,9 @@ def run_canonical_invocation_a(
             tracker.execute(
                 DiagnosticStage.PLAN_TEMPLATE_CREATED,
                 lambda: write_private_json(
-                    roots.control / "plan-template.json", template, create_once=True
+                    canonical_artifact_root / "plan-template.json",
+                    template,
+                    create_once=True,
                 ),
                 failure_code=DiagnosticFailureCode.PLAN_TEMPLATE_WRITE_FAILED,
             )
@@ -1096,7 +1266,9 @@ def run_canonical_invocation_a(
             tracker.execute(
                 DiagnosticStage.APPROVAL_REQUEST_CREATED,
                 lambda: write_private_json(
-                    roots.control / "approval-request.json", request, create_once=True
+                    canonical_artifact_root / "approval-request.json",
+                    request,
+                    create_once=True,
                 ),
                 failure_code=DiagnosticFailureCode.APPROVAL_REQUEST_WRITE_FAILED,
             )
@@ -1140,6 +1312,18 @@ def run_canonical_invocation_a(
         and approval_command is not None
         and private_permissions_verified
     )
+    if _schema_suffix(config) == "v6" and success:
+        if lock is None or template is None or request is None:
+            raise RuntimeError("v6 canonical artifacts are incomplete")
+        write_private_json(
+            roots.control / "scenario-lock.json", lock, create_once=True
+        )
+        write_private_json(
+            roots.control / "plan-template.json", template, create_once=True
+        )
+        write_private_json(
+            roots.control / "approval-request.json", request, create_once=True
+        )
     verdict = (
         config.authority.invocation_a_terminal
         if success
@@ -1231,6 +1415,21 @@ def run_canonical_invocation_a(
         "human_approval_record_present": False,
     }
     _write_terminal(tracker, run_root / "terminal.json", terminal)
+    if _schema_suffix(config) == "v6" and success:
+        write_private_json(
+            roots.control / "canonical-accepted.json",
+            {
+                "schema_version": "live-e2e.canonical-accepted.v6",
+                "verdict": "ACCEPTED_HUMAN_PREAUTHORIZATION",
+                "implementation_commit": implementation_commit,
+                "attempt_relative_path": run_root.relative_to(roots.root).as_posix(),
+                "terminal_sha256": file_sha256(run_root / "terminal.json"),
+                "approval_request_sha256": file_sha256(
+                    roots.control / "approval-request.json"
+                ),
+            },
+            create_once=True,
+        )
     roots.verify()
     _complete_canonical_budget(roots, verdict=verdict)
     return terminal
@@ -1284,22 +1483,9 @@ def record_human_approval_for_invocation_b(
     return record
 
 
-_LEGAL_INVOCATION_B_TERMINALS = frozenset(
-    {
-        "LIVE_FAULT_A0_CONTROLLED_REMEDIATION_E2E_V4_PASSED_READY_FOR_REVIEW",
-        "BLOCKED_PROVIDER_PREFLIGHT",
-        "BLOCKED_E2E_V4_IMAGE_AUTHORITY_MISMATCH",
-        "BLOCKED_E2E_V4_COMPOSE_STRUCTURE_IDENTITY_MISMATCH",
-        "BLOCKED_FAULT_IMPACT_NOT_OBSERVED",
-        "BLOCKED_LIVE_TELEMETRY_SOURCE_UNAVAILABLE",
-        "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE",
-        "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION",
-        "BLOCKED_POLICY_REJECTED",
-        "CONTROLLED_REMEDIATION_NOT_VERIFIED_ROLLBACK_COMPLETED",
-        "BLOCKED_ROLLBACK_FAILED_MANUAL_CLEANUP_REQUIRED",
-        "BLOCKED_CLEANUP_INCOMPLETE",
-    }
-)
+_LEGAL_INVOCATION_B_TERMINALS = get_invocation_b_verdict_policy(
+    "v4"
+).legal_terminals
 
 
 def _public_result_v4(
@@ -1340,7 +1526,10 @@ def _public_result_v4(
 
 def verify_public_result(config: E2EV4Config, value: Mapping[str, object]) -> None:
     verdict = value.get("verdict")
-    if verdict not in _LEGAL_INVOCATION_B_TERMINALS:
+    legal_terminals = get_invocation_b_verdict_policy(
+        _schema_suffix(config)
+    ).legal_terminals
+    if verdict not in legal_terminals:
         raise ValueError("public Invocation B terminal is not legal")
     semantic = value.get("semantic_sha256")
     core = dict(value)

@@ -1,0 +1,10 @@
+{
+  "schema_version": "live-e2e.assurance.v6",
+  "development_repeat_policy": "REQUIRE_IMPLEMENTATION_OR_CONFIG_CHANGE_AND_PRESERVE_PRIOR_EVIDENCE",
+  "development_success_policy": "LATEST_EXACT_HEAD_PASS_LOCK_REQUIRED",
+  "pre_live_policy": "REPAIR_IN_SCOPE_MUST_FIX_UNTIL_ZERO",
+  "canonical_policy": "ONE_ACCEPTED_HUMAN_PREAUTHORIZATION_PER_FROZEN_HEAD",
+  "live_policy": "ONE_ACCEPTED_COMPLETE_LIVE_RUN",
+  "context_write_policy": "PRIVATE_CREATE_ONCE",
+  "public_truth_policy": "SEALED_PRIVATE_TERMINAL_REQUIRED"
+}

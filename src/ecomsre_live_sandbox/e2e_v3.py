@@ -95,6 +95,12 @@ from ecomsre_live_sandbox.instrumentation_v2 import (
     load_instrumentation_config,
     terminalize_source_probes,
 )
+from ecomsre_live_sandbox.invocation_b_verdicts import (
+    get_invocation_b_verdict_policy,
+)
+from ecomsre_live_sandbox.invocation_b_assurance import (
+    write_fault_time_context_evidence,
+)
 
 
 E2E_V3_CONFIG_RELATIVE = Path("config/live-fault-a0-controlled-remediation-e2e-v3")
@@ -103,6 +109,8 @@ V3_CONFIG_RELATIVE = Path("config/live-telemetry-instrumentation-v3")
 
 def _schema_suffix(config: object) -> str:
     version = getattr(getattr(config, "authority", None), "version", "")
+    if str(version).endswith("e2e-v6"):
+        return "v6"
     if str(version).endswith("e2e-v5"):
         return "v5"
     if str(version).endswith("e2e-v4"):
@@ -994,7 +1002,7 @@ def _execute_no_fault_sequence(
         state.baseline_verified = True
         try:
             collector_kwargs: dict[str, object] = {}
-            if getattr(config.authority, "version", "").endswith("e2e-v5"):
+            if _schema_suffix(config) in {"v5", "v6"}:
                 collector_kwargs = {
                     "services_healthy_count": sum(health.values()),
                     "baseline_exact": True,
@@ -1525,9 +1533,11 @@ def _require_exact_head_admission(
     roots: E2EV3PrivateRoots, *, implementation_commit: str
 ) -> tuple[Mapping[str, object], Mapping[str, object]]:
     root_name = type(roots).__name__
-    schema_suffix = "v5" if root_name == "E2EV5PrivateRoots" else (
-        "v4" if root_name == "E2EV4PrivateRoots" else "v3"
-    )
+    schema_suffix = {
+        "E2EV4PrivateRoots": "v4",
+        "E2EV5PrivateRoots": "v5",
+        "E2EV6PrivateRoots": "v6",
+    }.get(root_name, "v3")
     ci_path = roots.control / "exact-head-ci.json"
     if ci_path.is_symlink() or not ci_path.is_file():
         raise RuntimeError("canonical Invocation A lacks an exact-head CI marker")
@@ -2034,22 +2044,9 @@ def record_human_approval_for_invocation_b(
     return record
 
 
-_LEGAL_INVOCATION_B_TERMINALS = frozenset(
-    {
-        "LIVE_FAULT_A0_CONTROLLED_REMEDIATION_E2E_V3_PASSED_READY_FOR_REVIEW",
-        "BLOCKED_PROVIDER_PREFLIGHT",
-        "BLOCKED_E2E_V3_IMAGE_AUTHORITY_MISMATCH",
-        "BLOCKED_E2E_V3_COMPOSE_STRUCTURE_IDENTITY_MISMATCH",
-        "BLOCKED_FAULT_IMPACT_NOT_OBSERVED",
-        "BLOCKED_LIVE_TELEMETRY_SOURCE_UNAVAILABLE",
-        "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE",
-        "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION",
-        "BLOCKED_POLICY_REJECTED",
-        "CONTROLLED_REMEDIATION_NOT_VERIFIED_ROLLBACK_COMPLETED",
-        "BLOCKED_ROLLBACK_FAILED_MANUAL_CLEANUP_REQUIRED",
-        "BLOCKED_CLEANUP_INCOMPLETE",
-    }
-)
+_LEGAL_INVOCATION_B_TERMINALS = get_invocation_b_verdict_policy(
+    "v3"
+).legal_terminals
 
 
 def _load_exact_approval(
@@ -2106,7 +2103,7 @@ def _verify_scenario_lock_for_invocation_b(
     locked: Mapping[str, object],
     implementation_commit: str,
 ) -> None:
-    if _schema_suffix(config) in {"v4", "v5"}:
+    if _schema_suffix(config) in {"v4", "v5", "v6"}:
         from ecomsre_live_sandbox.e2e_v4 import (
             _verify_scenario_lock_for_invocation_b as verify_v4_scenario_lock,
         )
@@ -2159,9 +2156,16 @@ def _consume_live_run_budget(config: E2EV3Config, roots: E2EV3PrivateRoots) -> N
         raise RuntimeError("Invocation B is create-once and already consumed")
     path = roots.control / "live-run-budget.json"
     schema_suffix = _schema_suffix(config)
+    maximum = getattr(
+        config.authority,
+        "maximum_complete_live_runs",
+        getattr(config.authority, "maximum_accepted_complete_live_runs", None),
+    )
+    if maximum != 1:
+        raise ValueError("Invocation B accepted live-run authority differs")
     budget = _read_budget(
         path,
-        maximum=config.authority.maximum_complete_live_runs,
+        maximum=maximum,
         schema_version=f"live-e2e.live-run-budget.{schema_suffix}",
     )
     if budget.get("consumed") != 0:
@@ -2269,7 +2273,10 @@ def _public_result_v3(config: E2EV3Config, terminal: Mapping[str, object]) -> di
 
 def verify_public_result(config: E2EV3Config, value: Mapping[str, object]) -> None:
     verdict = value.get("verdict")
-    if verdict not in _LEGAL_INVOCATION_B_TERMINALS:
+    legal_terminals = get_invocation_b_verdict_policy(
+        _schema_suffix(config)
+    ).legal_terminals
+    if verdict not in legal_terminals:
         raise ValueError("public Invocation B terminal is not legal")
     semantic = value.get("semantic_sha256")
     core = dict(value)
@@ -2378,6 +2385,7 @@ def run_invocation_b(
     *,
     provider_factory: Callable[[E2EV3Config], Any] = _default_provider_factory,
     environment_factory: Callable[..., Any] = SandboxEnvironment,
+    controller_factory: Callable[..., Any] = _make_controller,
     worktree_verifier: Callable[[E2EV3Config, bool], str] = _default_worktree_verifier,
     sleep: Callable[[float], None] = time.sleep,
     public_writer: Callable[
@@ -2447,16 +2455,20 @@ def run_invocation_b(
     )
     _consume_live_run_budget(config, roots)
     schema_suffix = _schema_suffix(config)
+    verdict_policy = get_invocation_b_verdict_policy(schema_suffix)
+    uses_fault_projection = schema_suffix in {"v5", "v6"}
     terminal: dict[str, object] = {
         "schema_version": f"live-e2e.invocation-b-terminal.{schema_suffix}",
         "version": config.authority.version,
-        "verdict": "BLOCKED_PROVIDER_PREFLIGHT",
+        "verdict": verdict_policy.provider_preflight_failed,
         "run_kind": DiagnosticRunKind.INVOCATION_B.value,
         "run_id": "invocation-b",
         "complete_live_run_count": 1,
         "implementation_commit": implementation_commit,
+        "result_head": implementation_commit,
         "approval_valid": True,
         "approval_mode": "HUMAN_PREAUTHORIZED_FROZEN_REMEDIATION_RUNBOOK",
+        "claim_boundary": list(config.reporting.claim_boundary),
         "provider_calls": 0,
         "model_calls": 0,
         "a0_context_builder_calls": 0,
@@ -2552,7 +2564,7 @@ def run_invocation_b(
         )
         controller = tracker.execute(
             DiagnosticStage.FAULT_CONTROLLER_PREPARATION_STARTED,
-            lambda: _make_controller(
+            lambda: controller_factory(
                 cast(Any, config),
                 cast(Any, roots),
                 resolved.endpoints,
@@ -2572,7 +2584,16 @@ def run_invocation_b(
             environment.snapshot_all_resources,
             failure_code=DiagnosticFailureCode.DOCKER_BASELINE_SNAPSHOT_FAILED,
         )
-        environment.start()
+        try:
+            environment.start()
+        except Exception as error:
+            if tracker.failed_stage is None:
+                tracker.fail_external(
+                    error,
+                    stage=DiagnosticStage.COMPOSE_START_RETURNED,
+                    failure_code=DiagnosticFailureCode.COMPOSE_UP_FAILED,
+                )
+            raise
         counts = tracker.execute(
             DiagnosticStage.OWNED_RESOURCE_INVENTORY_VERIFIED,
             lambda: environment.verify_owned_resources(require_complete=True),
@@ -2612,7 +2633,7 @@ def run_invocation_b(
             failure_code=DiagnosticFailureCode.BASELINE_CONFIGURATION_MISMATCH,
         )
         state.baseline_verified = True
-        if schema_suffix == "v5":
+        if uses_fault_projection:
             baseline_1 = _capture_sli_window(
                 cast(Any, config), resolved.endpoints.prometheus, phase="BASELINE"
             )
@@ -2645,7 +2666,7 @@ def run_invocation_b(
         if fault_state.document_sha256 != config.sandbox.scenario.fault_document_sha256:
             raise RuntimeError("frozen fault document hash differs")
         sleep(config.sandbox.verification.minimum_stabilization_seconds)
-        if schema_suffix == "v5":
+        if uses_fault_projection:
             fault_1 = _capture_sli_window(
                 cast(Any, config), resolved.endpoints.prometheus, phase="FAULT"
             )
@@ -2673,7 +2694,7 @@ def run_invocation_b(
             raise RuntimeError("frozen two-window fault impact Gate did not pass")
         terminal["fault_impact_passed"] = True
         terminal["verdict"] = "BLOCKED_LIVE_TELEMETRY_SOURCE_UNAVAILABLE"
-        if schema_suffix == "v5":
+        if uses_fault_projection:
             fault_batch = collect_ordered_source_batch(
                 instrumentation=load_instrumentation_config(
                     config.repository_root / V3_CONFIG_RELATIVE
@@ -2765,7 +2786,7 @@ def run_invocation_b(
         tracker.pass_stage(DiagnosticStage.MULTISERVICE_PROJECTION_STARTED)
 
         def build_context() -> Any:
-            if schema_suffix == "v5":
+            if uses_fault_projection:
                 terminal["a0_context_builder_calls"] = cast(
                     int, terminal["a0_context_builder_calls"]
                 ) + 1
@@ -2796,32 +2817,41 @@ def run_invocation_b(
             build_context,
             failure_code=DiagnosticFailureCode.MULTISERVICE_PROJECTION_FAILED,
         )
-        if schema_suffix == "v5":
+        if uses_fault_projection:
             _enrich_v5_invocation_b_terminal(roots, terminal)
         terminal["visible_service_count"] = len(context.visible_entities)
         terminal["projection_completed"] = True
-        if schema_suffix == "v5":
+        if uses_fault_projection:
             fault_context_path = (
                 roots.invocation_b / "fault-time-a0-context.json"
             )
-            write_private_json(
-                fault_context_path,
-                context,
-                create_once=True,
-            )
-            terminal["fault_time_a0_context_sha256"] = file_sha256(
-                fault_context_path
-            )
+            if schema_suffix == "v6":
+                write_fault_time_context_evidence(
+                    private_root=roots.root,
+                    invocation_b_root=roots.invocation_b,
+                    context=context,
+                    terminal=terminal,
+                )
+            else:
+                write_private_json(
+                    fault_context_path,
+                    context,
+                    create_once=True,
+                )
+                terminal["fault_time_a0_context_sha256"] = file_sha256(
+                    fault_context_path
+                )
         _write_model_evidence_index(
             cast(Any, roots),
             context,
             raw_observations=raw_observations,
         )
-        write_private_json(
-            roots.provider / "live-context-v2.json",
-            context,
-            create_once=True,
-        )
+        if schema_suffix != "v6":
+            write_private_json(
+                roots.provider / "live-context-v2.json",
+                context,
+                create_once=True,
+            )
         terminal["verdict"] = "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION"
         diagnosis = _diagnosis_from_initial(provider, context)
         terminal["provider_calls"] = provider.calls
@@ -2877,7 +2907,7 @@ def run_invocation_b(
             create_once=True,
         )
         sleep(config.sandbox.verification.minimum_stabilization_seconds)
-        if schema_suffix == "v5":
+        if uses_fault_projection:
             recovery_1 = _capture_sli_window(
                 cast(Any, config), resolved.endpoints.prometheus, phase="RECOVERY"
             )
@@ -2944,43 +2974,25 @@ def run_invocation_b(
     except Exception as error:
         if provider is not None and hasattr(provider, "calls"):
             terminal["provider_calls"] = provider.calls
+        effective_failure_code = (
+            tracker.failure_code
+            or DiagnosticFailureCode.UNCLASSIFIED_RUNTIME_FAILURE
+        )
         if terminal.get("provider_preflight_passed") is True and (
-            terminal.get("verdict") == "BLOCKED_PROVIDER_PREFLIGHT"
+            terminal.get("verdict") == verdict_policy.provider_preflight_failed
         ):
-            marker = schema_suffix.upper()
-            runtime_verdicts = {
-                DiagnosticFailureCode.IMAGE_AUTHORITY_MISMATCH: (
-                    f"BLOCKED_E2E_{marker}_IMAGE_AUTHORITY_MISMATCH"
-                ),
-                DiagnosticFailureCode.COMPOSE_STRUCTURE_IDENTITY_MISMATCH: (
-                    f"BLOCKED_E2E_{marker}_COMPOSE_STRUCTURE_IDENTITY_MISMATCH"
-                ),
-                DiagnosticFailureCode.COMPOSE_UP_FAILED: (
-                    f"BLOCKED_E2E_{marker}_COMPOSE_UP_FAILED"
-                ),
-                DiagnosticFailureCode.SERVICE_HEALTH_TIMEOUT: (
-                    f"BLOCKED_E2E_{marker}_SERVICE_HEALTH_TIMEOUT"
-                ),
-                DiagnosticFailureCode.SERVICE_EXITED_BEFORE_READY: (
-                    f"BLOCKED_E2E_{marker}_SERVICE_HEALTH_TIMEOUT"
-                ),
-                DiagnosticFailureCode.BASELINE_CONFIGURATION_UNAVAILABLE: (
-                    f"BLOCKED_E2E_{marker}_BASELINE_CONFIGURATION_UNAVAILABLE"
-                ),
-                DiagnosticFailureCode.BASELINE_CONFIGURATION_MISMATCH: (
-                    f"BLOCKED_E2E_{marker}_BASELINE_CONFIGURATION_UNAVAILABLE"
-                ),
-            }
-            terminal["verdict"] = runtime_verdicts.get(
-                tracker.failure_code or DiagnosticFailureCode.UNCLASSIFIED_RUNTIME_FAILURE,
-                f"BLOCKED_E2E_{marker}_UNCLASSIFIED_RUNTIME_FAILURE",
+            terminal["verdict"] = verdict_policy.terminal_for(
+                effective_failure_code
             )
         terminal["failed_stage"] = (
             None if tracker.failed_stage is None else tracker.failed_stage.value
         )
-        terminal["failure_code"] = (
-            None if tracker.failure_code is None else tracker.failure_code.value
+        terminal["last_completed_stage"] = (
+            None
+            if tracker.root_last_completed_stage is None
+            else tracker.root_last_completed_stage.value
         )
+        terminal["failure_code"] = effective_failure_code.value
         terminal["failure_type"] = type(error).__name__
         private_exception = ExceptionArtifactStore(
             roots.invocation_b / "exceptions"
@@ -2991,7 +3003,7 @@ def run_invocation_b(
         )
     finally:
         terminal["forward_mutations"] = forward_counter.count
-        if schema_suffix == "v5":
+        if uses_fault_projection:
             _enrich_v5_invocation_b_terminal(roots, terminal)
         cleanup_verdict, cleanup_payload, cleanup_failure = _cleanup(
             tracker=tracker,
@@ -3008,7 +3020,7 @@ def run_invocation_b(
         terminal["cleanup"] = cleanup_payload
         terminal["cleanup_failure_code"] = cleanup_failure
         if cleanup_verdict == "BLOCKED":
-            terminal["verdict"] = "BLOCKED_CLEANUP_INCOMPLETE"
+            terminal["verdict"] = verdict_policy.cleanup_incomplete
         if private_exception is not None:
             terminal["exception_type"] = private_exception.exception_type
             terminal["exception_module"] = private_exception.exception_module
@@ -3023,8 +3035,6 @@ def run_invocation_b(
                 }
             ]
         terminal["private_permissions_verified"] = True
-        terminal["public_outputs"] = public_writer(config, terminal)
-        terminal["public_projection_status"] = "PASSED"
         tracker.journal.record(
             stage=DiagnosticStage.TERMINAL_SEALED,
             status=DiagnosticEventStatus.STARTED,
@@ -3044,6 +3054,10 @@ def run_invocation_b(
             output_value={"terminal_sha256": canonical_sha256(terminal)},
         )
         roots.verify()
+        public_outputs = public_writer(config, terminal)
+        if schema_suffix != "v6":
+            terminal["public_outputs"] = public_outputs
+            terminal["public_projection_status"] = "PASSED"
         _complete_live_run_budget(roots, verdict=cast(str, terminal["verdict"]))
     return terminal
 

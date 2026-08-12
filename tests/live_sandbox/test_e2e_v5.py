@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import inspect
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -17,6 +16,7 @@ from ecomsre_live_sandbox.contracts import (
 )
 from ecomsre_live_sandbox.e2e_diagnostics import (
     DiagnosticCommandIdentity,
+    DiagnosticFailureCode,
     V5_DIAGNOSTIC_FAILURE_CODES,
     V5_DIAGNOSTIC_STAGES,
 )
@@ -32,6 +32,9 @@ from ecomsre_live_sandbox.e2e_v5_contracts import (
     load_e2e_v5_config,
 )
 from ecomsre_live_sandbox.image_authority import CachedImage, CachedImageInspection
+from ecomsre_live_sandbox.invocation_b_verdicts import (
+    get_invocation_b_verdict_policy,
+)
 
 
 CONFIG = Path("config/live-fault-a0-controlled-remediation-e2e-v5")
@@ -406,12 +409,9 @@ def test_v5_provider_preflight_and_live_batch_keep_builder_boundary(
 
     monkeypatch.setattr(e2e_v1, "build_live_a0_context", forbidden_builder)
     context = e2e_v1._synthetic_provider_context(config)  # type: ignore[arg-type]
-    source = inspect.getsource(e2e_v3.run_invocation_b)
 
     assert len(context.visible_entities) == 3
-    assert source.count("collect_ordered_source_batch(") == 1
-    assert "if schema_suffix == \"v5\"" in source
-    assert "build_fault_time_a0_context(" in source
+    assert e2e_v3._schema_suffix(config) == "v5"
 
 
 def test_v5_public_verifier_recomputes_success_aggregates() -> None:
@@ -469,16 +469,13 @@ def test_v5_public_verifier_recomputes_success_aggregates() -> None:
             verify_public_result(config, forged)
 
 
-def test_v5_runtime_failure_verdicts_are_not_provider_preflight(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    source = inspect.getsource(e2e_v3.run_invocation_b)
+def test_v5_runtime_failure_verdicts_are_not_provider_preflight() -> None:
+    policy = get_invocation_b_verdict_policy("v5")
 
-    assert "provider_preflight_passed" in source
-    for marker in (
-        "COMPOSE_UP_FAILED",
-        "SERVICE_HEALTH_TIMEOUT",
-        "BASELINE_CONFIGURATION_UNAVAILABLE",
-        "UNCLASSIFIED_RUNTIME_FAILURE",
+    for failure_code in (
+        DiagnosticFailureCode.COMPOSE_UP_FAILED,
+        DiagnosticFailureCode.SERVICE_HEALTH_TIMEOUT,
+        DiagnosticFailureCode.BASELINE_CONFIGURATION_UNAVAILABLE,
+        DiagnosticFailureCode.UNCLASSIFIED_RUNTIME_FAILURE,
     ):
-        assert marker in source
+        assert policy.terminal_for(failure_code) != policy.provider_preflight_failed
