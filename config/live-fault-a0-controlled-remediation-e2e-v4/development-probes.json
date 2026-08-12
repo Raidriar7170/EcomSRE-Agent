@@ -1,0 +1,17 @@
+{
+  "schema_version": "live-e2e.development-probes.v4",
+  "maximum_development_integration_probes": 3,
+  "pass_terminal": "LIVE_E2E_V4_DEVELOPMENT_INTEGRATION_PASSED",
+  "exhausted_terminal": "BLOCKED_E2E_V4_DEVELOPMENT_INTEGRATION_EXHAUSTED",
+  "repeat_policy": "REQUIRE_RUNTIME_CONFIG_AGGREGATE_CHANGE_AFTER_FAILURE",
+  "pass_policy": "STOP_AFTER_FIRST_PASS",
+  "pass_invalidation_policy": "TRACKED_RUNTIME_CONFIG_CHANGE_INVALIDATES_PASS",
+  "test_docs_only_change_policy": "DOES_NOT_INVALIDATE_PASS",
+  "evidence_policy": "PRIVATE_CREATE_ONCE_PER_RUN",
+  "fault_injections": 0,
+  "provider_calls": 0,
+  "model_calls": 0,
+  "approval_records": 0,
+  "forward_mutations": 0,
+  "rollback_mutations": 0
+}

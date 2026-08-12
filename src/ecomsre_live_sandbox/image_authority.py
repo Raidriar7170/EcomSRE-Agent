@@ -103,7 +103,12 @@ class ComposeIdentities(FrozenModel):
 class RunImageVerification(FrozenModel):
     schema_version: Literal["live-e2e.run-image-verification.v3"]
     run_id: str = Field(min_length=1)
-    run_kind: Literal["DIAGNOSTIC_PROBE", "CANONICAL_INVOCATION_A", "INVOCATION_B"]
+    run_kind: Literal[
+        "DIAGNOSTIC_PROBE",
+        "DEVELOPMENT_PROBE",
+        "CANONICAL_INVOCATION_A",
+        "INVOCATION_B",
+    ]
     image_authority_sha256: str = Field(pattern=_SHA256_PATTERN)
     historical_image_lock_sha256: str = Field(pattern=_SHA256_PATTERN)
     compose_structure_sha256: str = Field(pattern=_SHA256_PATTERN)

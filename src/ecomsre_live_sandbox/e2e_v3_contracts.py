@@ -27,8 +27,8 @@ from ecomsre_live_sandbox.contracts import (
 )
 from ecomsre_live_sandbox.e2e_diagnostics import (
     DiagnosticCommandIdentity,
-    DiagnosticFailureCode,
-    DiagnosticStage,
+    V3_DIAGNOSTIC_FAILURE_CODES,
+    V3_DIAGNOSTIC_STAGES,
 )
 from ecomsre_live_sandbox.image_authority import COMPOSE_NORMALIZATION_POLICY_SHA256
 from ecomsre_rca100.prompt import output_schema_sha256, prompt_sha256
@@ -329,9 +329,9 @@ def _require_authority(config: E2EV3Config, config_root: Path) -> None:
         or output_schema_sha256() != authority.a0_output_schema_sha256
     ):
         raise RuntimeError("frozen sandbox or A0 authority differs")
-    if config.diagnostics.required_stages != tuple(stage.value for stage in DiagnosticStage):
+    if config.diagnostics.required_stages != tuple(stage.value for stage in V3_DIAGNOSTIC_STAGES):
         raise RuntimeError("diagnostic stage vocabulary differs")
-    if config.diagnostics.failure_codes != tuple(code.value for code in DiagnosticFailureCode):
+    if config.diagnostics.failure_codes != tuple(code.value for code in V3_DIAGNOSTIC_FAILURE_CODES):
         raise RuntimeError("diagnostic failure vocabulary differs")
     if config.diagnostics.command_identities != tuple(
         identity.value for identity in DiagnosticCommandIdentity

@@ -796,6 +796,8 @@ def _execute_no_fault_sequence(
     evidence_collector: Callable[..., NoFaultEvidence],
     sleep: Callable[[float], None],
     worktree_verifier: Callable[[E2EV3Config, bool], str],
+    run_kind: DiagnosticRunKind = DiagnosticRunKind.CANONICAL_INVOCATION_A,
+    fill_legacy_no_fault_stages: bool = True,
     expected_structure_sha256: str | None = None,
 ) -> _NoFaultRunResult:
     state = _RunState()
@@ -898,7 +900,7 @@ def _execute_no_fault_sequence(
             roots=roots,
             run_root=run_root,
             run_id=run_id,
-            run_kind=DiagnosticRunKind.CANONICAL_INVOCATION_A,
+            run_kind=run_kind,
             tracker=tracker,
             expected_structure_sha256=expected_structure_sha256,
         )
@@ -995,25 +997,28 @@ def _execute_no_fault_sequence(
                     failure_code=DiagnosticFailureCode.METRICS_PREFLIGHT_FAILED,
                 )
             raise
-        _fill_no_fault_stages(tracker, evidence)
+        if fill_legacy_no_fault_stages:
+            _fill_no_fault_stages(tracker, evidence)
         state.metrics_status = evidence.metrics_status
         state.logs_status = evidence.logs_status
         state.traces_status = evidence.traces_status
         state.projection_completed = True
-        write_private_json(
-            run_root / "source-results.json",
-            {
-                "schema_version": "live-e2e.safe-source-results.v2",
-                "statuses": {
-                    "METRICS": evidence.metrics_status,
-                    "LOGS": evidence.logs_status,
-                    "TRACES": evidence.traces_status,
+        source_results_path = run_root / "source-results.json"
+        if not source_results_path.exists() and not source_results_path.is_symlink():
+            write_private_json(
+                source_results_path,
+                {
+                    "schema_version": "live-e2e.safe-source-results.v2",
+                    "statuses": {
+                        "METRICS": evidence.metrics_status,
+                        "LOGS": evidence.logs_status,
+                        "TRACES": evidence.traces_status,
+                    },
+                    "counts": evidence.source_counts,
+                    "invalid_refs": evidence.invalid_refs,
                 },
-                "counts": evidence.source_counts,
-                "invalid_refs": evidence.invalid_refs,
-            },
-            create_once=True,
-        )
+                create_once=True,
+            )
         write_private_json(
             run_root / "projection-summary.json",
             {
@@ -1499,6 +1504,7 @@ def _require_diagnostic_pass(
 def _require_exact_head_admission(
     roots: E2EV3PrivateRoots, *, implementation_commit: str
 ) -> tuple[Mapping[str, object], Mapping[str, object]]:
+    schema_suffix = "v4" if type(roots).__name__ == "E2EV4PrivateRoots" else "v3"
     ci_path = roots.control / "exact-head-ci.json"
     if ci_path.is_symlink() or not ci_path.is_file():
         raise RuntimeError("canonical Invocation A lacks an exact-head CI marker")
@@ -1506,7 +1512,7 @@ def _require_exact_head_admission(
     workflows = ci.get("workflows") if isinstance(ci, Mapping) else None
     required = {"Agent mainline", "RCAEval RE2 v2 development"}
     if (
-        ci.get("schema_version") != "live-e2e.exact-head-ci.v3"
+        ci.get("schema_version") != f"live-e2e.exact-head-ci.{schema_suffix}"
         or ci.get("implementation_commit") != implementation_commit
         or not isinstance(workflows, Mapping)
         or set(workflows) != required
@@ -1524,7 +1530,7 @@ def _require_exact_head_admission(
     review = json.loads(review_path.read_text(encoding="utf-8"))
     if (
         not isinstance(review, Mapping)
-        or review.get("schema_version") != "live-e2e.pre-live-review.v3"
+        or review.get("schema_version") != f"live-e2e.pre-live-review.{schema_suffix}"
         or review.get("implementation_commit") != implementation_commit
         or review.get("verdict") != "PRE_LIVE_PASS"
         or review.get("must_fix_count") != 0
@@ -2077,6 +2083,18 @@ def _verify_scenario_lock_for_invocation_b(
     locked: Mapping[str, object],
     implementation_commit: str,
 ) -> None:
+    if getattr(config.authority, "version", "").endswith("e2e-v4"):
+        from ecomsre_live_sandbox.e2e_v4 import (
+            _verify_scenario_lock_for_invocation_b as verify_v4_scenario_lock,
+        )
+
+        verify_v4_scenario_lock(
+            cast(Any, config),
+            cast(Any, roots),
+            locked=locked,
+            implementation_commit=implementation_commit,
+        )
+        return
     _, diagnostic_terminal_path = _require_diagnostic_pass(config, roots)
     required_hash_fields = (
         "image_authority_sha256",
@@ -2117,10 +2135,13 @@ def _consume_live_run_budget(config: E2EV3Config, roots: E2EV3PrivateRoots) -> N
     if any(path.exists() or path.is_symlink() for path in (started_path, terminal_path)):
         raise RuntimeError("Invocation B is create-once and already consumed")
     path = roots.control / "live-run-budget.json"
+    schema_suffix = (
+        "v4" if getattr(config.authority, "version", "").endswith("e2e-v4") else "v3"
+    )
     budget = _read_budget(
         path,
         maximum=config.authority.maximum_complete_live_runs,
-        schema_version="live-e2e.live-run-budget.v3",
+        schema_version=f"live-e2e.live-run-budget.{schema_suffix}",
     )
     if budget.get("consumed") != 0:
         raise RuntimeError("Invocation B is create-once and already consumed")
@@ -2131,7 +2152,7 @@ def _consume_live_run_budget(config: E2EV3Config, roots: E2EV3PrivateRoots) -> N
     write_private_json(
         started_path,
         {
-            "schema_version": "live-e2e.invocation-b-started.v3",
+            "schema_version": f"live-e2e.invocation-b-started.{schema_suffix}",
             "started_at": datetime.now(timezone.utc).isoformat(),
         },
         create_once=True,
@@ -2359,8 +2380,11 @@ def run_invocation_b(
         runner=runner,
     )
     _consume_live_run_budget(config, roots)
+    schema_suffix = (
+        "v4" if getattr(config.authority, "version", "").endswith("e2e-v4") else "v3"
+    )
     terminal: dict[str, object] = {
-        "schema_version": "live-e2e.invocation-b-terminal.v3",
+        "schema_version": f"live-e2e.invocation-b-terminal.{schema_suffix}",
         "version": config.authority.version,
         "verdict": "BLOCKED_PROVIDER_PREFLIGHT",
         "run_kind": DiagnosticRunKind.INVOCATION_B.value,
@@ -2783,10 +2807,16 @@ def run_invocation_b(
         if provider is not None and hasattr(provider, "calls"):
             terminal["provider_calls"] = provider.calls
         if tracker.failure_code is DiagnosticFailureCode.IMAGE_AUTHORITY_MISMATCH:
-            terminal["verdict"] = "BLOCKED_E2E_V3_IMAGE_AUTHORITY_MISMATCH"
+            terminal["verdict"] = (
+                "BLOCKED_E2E_V4_IMAGE_AUTHORITY_MISMATCH"
+                if schema_suffix == "v4"
+                else "BLOCKED_E2E_V3_IMAGE_AUTHORITY_MISMATCH"
+            )
         elif tracker.failure_code is DiagnosticFailureCode.COMPOSE_STRUCTURE_IDENTITY_MISMATCH:
             terminal["verdict"] = (
-                "BLOCKED_E2E_V3_COMPOSE_STRUCTURE_IDENTITY_MISMATCH"
+                "BLOCKED_E2E_V4_COMPOSE_STRUCTURE_IDENTITY_MISMATCH"
+                if schema_suffix == "v4"
+                else "BLOCKED_E2E_V3_COMPOSE_STRUCTURE_IDENTITY_MISMATCH"
             )
         terminal["failed_stage"] = (
             None if tracker.failed_stage is None else tracker.failed_stage.value

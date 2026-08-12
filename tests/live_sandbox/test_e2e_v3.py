@@ -19,8 +19,8 @@ from ecomsre_live_sandbox.contracts import (
 )
 from ecomsre_live_sandbox.e2e_diagnostics import (
     DiagnosticCommandIdentity,
-    DiagnosticFailureCode,
-    DiagnosticStage,
+    V3_DIAGNOSTIC_FAILURE_CODES,
+    V3_DIAGNOSTIC_STAGES,
 )
 from ecomsre_live_sandbox.e2e_v3_contracts import (
     E2EV3PrivateRoots,
@@ -89,10 +89,10 @@ def test_v3_policy_hashes_and_closed_diagnostic_vocabularies_are_exact() -> None
         CONFIG / "image-authority.json.schema-or-policy"
     )
     assert config.diagnostics.required_stages == tuple(
-        stage.value for stage in DiagnosticStage
+        stage.value for stage in V3_DIAGNOSTIC_STAGES
     )
     assert config.diagnostics.failure_codes == tuple(
-        code.value for code in DiagnosticFailureCode
+        code.value for code in V3_DIAGNOSTIC_FAILURE_CODES
     )
     assert config.diagnostics.command_identities == tuple(
         identity.value for identity in DiagnosticCommandIdentity

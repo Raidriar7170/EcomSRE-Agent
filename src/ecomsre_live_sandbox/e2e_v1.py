@@ -623,14 +623,25 @@ def _capture_source_readiness(
     )
     if fixed_end <= fixed_start:
         raise ValueError("source readiness window is invalid")
-    store = PrivateArtifactStore(roots.telemetry / label)
+    is_v4 = getattr(config.authority, "version", "").endswith("e2e-v4")
+    common_root = roots.telemetry / label
+    stores = (
+        {
+            "metrics": PrivateArtifactStore(common_root / "metrics"),
+            "logs": PrivateArtifactStore(common_root / "logs"),
+            "traces": PrivateArtifactStore(common_root / "traces"),
+        }
+        if is_v4
+        else None
+    )
+    store = PrivateArtifactStore(common_root) if stores is None else None
     probes = (
         MetricsSourceProbe(
             endpoint=endpoints.prometheus,
             target_service=v3.environment.target_service,
             config=v3.sources.prometheus,
             readiness=v3.readiness,
-            store=store,
+            store=stores["metrics"] if stores is not None else cast(PrivateArtifactStore, store),
             window_start=fixed_start,
             window_end=fixed_end,
         ),
@@ -639,7 +650,7 @@ def _capture_source_readiness(
             target_service=v3.environment.target_service,
             config=v3.sources.opensearch,
             readiness=v3.readiness,
-            store=store,
+            store=stores["logs"] if stores is not None else cast(PrivateArtifactStore, store),
             window_start=fixed_start,
             window_end=fixed_end,
         ),
@@ -648,7 +659,7 @@ def _capture_source_readiness(
             target_service=v3.environment.target_service,
             config=v3.sources.jaeger,
             readiness=v3.readiness,
-            store=store,
+            store=stores["traces"] if stores is not None else cast(PrivateArtifactStore, store),
             window_start=fixed_start,
             window_end=fixed_end,
         ),
@@ -658,8 +669,33 @@ def _capture_source_readiness(
         window_start=fixed_start,
         window_end=fixed_end,
     )
-    resolver = EvidenceResolver.from_file(store.seal())
-    results, all_refs_resolve = _revalidate_refs(raw_results, resolver=resolver, store_root=store.root)
+    if stores is None:
+        shared_store = cast(PrivateArtifactStore, store)
+        resolver = EvidenceResolver.from_file(shared_store.seal())
+        results, all_refs_resolve = _revalidate_refs(
+            raw_results,
+            resolver=resolver,
+            store_root=shared_store.root,
+        )
+    else:
+        from ecomsre_live_sandbox.e2e_source_batch import _combined_resolver
+
+        resolver = _combined_resolver(stores, common_root=common_root)
+        results, all_refs_resolve = _revalidate_refs(
+            raw_results,
+            resolver=resolver,
+            store_root=common_root,
+        )
+        write_private_json(
+            common_root / "source-results.json",
+            {
+                "schema_version": "live-e2e.source-results.v4",
+                "results": [item.model_dump(mode="json") for item in results],
+                "all_refs_resolve": all_refs_resolve,
+                "invalid_ref_count": sum(item.invalid_ref_count for item in results),
+            },
+            create_once=True,
+        )
     if not all_refs_resolve or any(
         item.status is not SourceProbeStatus.AVAILABLE
         or item.target_record_count <= 0
