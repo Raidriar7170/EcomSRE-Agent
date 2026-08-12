@@ -353,6 +353,12 @@ def test_each_version_public_verifier_accepts_its_own_executed_compose_terminal(
         "fault_injections": 0,
         "forward_mutations": 0,
         "rollback_mutations": 0,
+        "approval_mode": "HUMAN_PREAUTHORIZED_FROZEN_REMEDIATION_RUNBOOK",
+        "approval_valid": True,
+        "claim_boundary": list(config.reporting.claim_boundary),
+        "failed_stage": "COMPOSE_START_RETURNED",
+        "last_completed_stage": "COMPOSE_START_REQUESTED",
+        "failure_code": "COMPOSE_UP_FAILED",
         "cleanup": {
             "baseline_restored": True,
             "owned_containers": 0,

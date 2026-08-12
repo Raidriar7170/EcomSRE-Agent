@@ -63,6 +63,18 @@ def _require_cleanup(cleanup: object, *, success: bool) -> Mapping[str, object]:
             )
         ):
             raise ValueError("sealed private terminal cleanup truth is contradictory")
+    else:
+        baseline_restored = cleanup.get("baseline_restored")
+        non_owned_changed = cleanup.get("non_owned_resources_changed")
+        if type(baseline_restored) is not bool or (
+            non_owned_changed is not None
+            and type(non_owned_changed) is not bool
+        ):
+            raise ValueError("blocked cleanup contains invalid boolean truth")
+        for field in ("owned_containers", "owned_networks", "owned_volumes"):
+            value = cleanup.get(field)
+            if value is not None and not _nonnegative_int(value):
+                raise ValueError("blocked cleanup contains an invalid resource count")
     return cleanup
 
 
@@ -174,9 +186,27 @@ def _require_success_invariants(
 
 
 def _require_non_success_invariants(
-    terminal: Mapping[str, object], *, verdict: str
+    config: E2EV6Config,
+    terminal: Mapping[str, object],
+    *,
+    verdict: str,
 ) -> None:
     cleanup = _require_cleanup(terminal.get("cleanup"), success=False)
+    if terminal.get("cleanup_verdict") not in {None, cleanup.get("verdict")}:
+        raise ValueError("terminal cleanup verdict differs from its cleanup aggregate")
+    if terminal.get("approval_mode") != (
+        "HUMAN_PREAUTHORIZED_FROZEN_REMEDIATION_RUNBOOK"
+    ) or terminal.get("approval_valid") is not True:
+        raise ValueError("non-success terminal approval truth is contradictory")
+    claim_boundary = terminal.get("claim_boundary")
+    if not isinstance(claim_boundary, (list, tuple)) or tuple(
+        claim_boundary
+    ) != config.reporting.claim_boundary:
+        raise ValueError("non-success claim boundary differs from frozen v6 authority")
+    for field in ("implementation_commit", "result_head"):
+        value = terminal.get(field)
+        if not isinstance(value, str) or _COMMIT.fullmatch(value) is None:
+            raise ValueError("non-success terminal head is not exact")
     count_fields = (
         "provider_calls",
         "model_calls",
@@ -195,6 +225,64 @@ def _require_non_success_invariants(
         if any(counts[field] != value for field, value in expected.items()):
             raise ValueError("non-success terminal has impossible stage counts")
 
+    def require_failure_identity(
+        *,
+        failed_stage: str | None = None,
+        failure_code: str | None = None,
+        last_completed_stage: str | None = None,
+    ) -> None:
+        actual_failed = terminal.get("failed_stage")
+        actual_code = terminal.get("failure_code")
+        actual_last = terminal.get("last_completed_stage")
+        if not isinstance(actual_failed, str) or not actual_failed:
+            raise ValueError("non-success terminal failed stage is missing")
+        if not isinstance(actual_code, str) or not actual_code:
+            raise ValueError("non-success terminal failure code is missing")
+        if not isinstance(actual_last, str) or not actual_last:
+            raise ValueError("non-success terminal last completed stage is missing")
+        if actual_failed == actual_last:
+            raise ValueError("non-success terminal stage ordering is contradictory")
+        if failed_stage is not None and actual_failed != failed_stage:
+            raise ValueError("non-success terminal failed stage contradicts its verdict")
+        if failure_code is not None and actual_code != failure_code:
+            raise ValueError("non-success terminal failure code contradicts its verdict")
+        if last_completed_stage is not None and actual_last != last_completed_stage:
+            raise ValueError(
+                "non-success terminal last completed stage contradicts its verdict"
+            )
+
+    def require_context_binding() -> None:
+        context_sha = terminal.get("fault_time_a0_context_sha256")
+        provider_sha = terminal.get("provider_live_context_sha256")
+        if any(
+            (
+                terminal.get("a0_context_builder_calls") != 1,
+                terminal.get("fault_time_a0_context_artifact_exists") is not True,
+                not isinstance(context_sha, str),
+                isinstance(context_sha, str)
+                and _SHA256.fullmatch(context_sha) is None,
+                not isinstance(provider_sha, str),
+                isinstance(provider_sha, str)
+                and _SHA256.fullmatch(provider_sha) is None,
+                context_sha != provider_sha,
+            )
+        ):
+            raise ValueError("non-success fault-time context binding is invalid")
+
+    def require_pre_mutation_gates() -> None:
+        require_context_binding()
+        if any(
+            (
+                terminal.get("fault_impact_passed") is not True,
+                terminal.get("diagnosis_gate") is not True,
+                terminal.get("diagnosis_correct") is not True,
+                terminal.get("plan_action")
+                != "RESTORE_FROZEN_SERVICE_CONFIGURATION",
+                terminal.get("policy_verdict") != "ALLOW",
+            )
+        ):
+            raise ValueError("non-success remediation Gate truth is contradictory")
+
     if verdict == "BLOCKED_PROVIDER_PREFLIGHT":
         require_exact(
             model_calls=0,
@@ -206,6 +294,11 @@ def _require_non_success_invariants(
             "provider_preflight_passed"
         ) is True:
             raise ValueError("Provider-preflight terminal has impossible stage counts")
+        require_failure_identity(
+            failed_stage="PROVIDER_PREFLIGHT",
+            failure_code="PROVIDER_PREFLIGHT_FAILED",
+            last_completed_stage="WORKTREE_VERIFIED",
+        )
     elif verdict.startswith("BLOCKED_E2E_V6_"):
         require_exact(
             provider_calls=1,
@@ -216,6 +309,37 @@ def _require_non_success_invariants(
         )
         if terminal.get("provider_preflight_passed") is not True:
             raise ValueError("post-preflight terminal has impossible stage counts")
+        suffix = verdict.removeprefix("BLOCKED_E2E_V6_")
+        exact_identities = {
+            "IMAGE_AUTHORITY_MISMATCH": (
+                "IMAGE_AUTHORITY_VERIFIED",
+                "IMAGE_AUTHORITY_MISMATCH",
+            ),
+            "COMPOSE_STRUCTURE_IDENTITY_MISMATCH": (
+                "COMPOSE_STRUCTURE_HASH_VERIFIED",
+                "COMPOSE_STRUCTURE_IDENTITY_MISMATCH",
+            ),
+            "COMPOSE_UP_FAILED": ("COMPOSE_START_RETURNED", "COMPOSE_UP_FAILED"),
+            "SERVICE_HEALTH_TIMEOUT": (
+                "SERVICE_HEALTH_WAIT_STARTED",
+                "SERVICE_HEALTH_TIMEOUT",
+            ),
+            "BASELINE_CONFIGURATION_UNAVAILABLE": (
+                "BASELINE_CONFIGURATION_READ_STARTED",
+                "BASELINE_CONFIGURATION_UNAVAILABLE",
+            ),
+            "BASELINE_CONFIGURATION_MISMATCH": (
+                "BASELINE_CONFIGURATION_VERIFIED",
+                "BASELINE_CONFIGURATION_MISMATCH",
+            ),
+        }
+        if suffix == "UNCLASSIFIED_RUNTIME_FAILURE":
+            require_failure_identity(failure_code=suffix)
+        elif suffix in exact_identities:
+            stage, code = exact_identities[suffix]
+            require_failure_identity(failed_stage=stage, failure_code=code)
+        else:
+            raise ValueError("versioned non-success terminal lacks an exact identity")
     elif verdict in {
         "BLOCKED_FAULT_IMPACT_NOT_OBSERVED",
         "BLOCKED_LIVE_TELEMETRY_SOURCE_UNAVAILABLE",
@@ -228,6 +352,32 @@ def _require_non_success_invariants(
             forward_mutations=0,
             rollback_mutations=0,
         )
+        if verdict == "BLOCKED_FAULT_IMPACT_NOT_OBSERVED":
+            if terminal.get("fault_impact_passed") is True:
+                raise ValueError("fault-impact terminal contradicts its Gate")
+            require_failure_identity(
+                failed_stage="FAULT_IMPACT_GATE_EVALUATED",
+                failure_code="FAULT_IMPACT_NOT_OBSERVED",
+                last_completed_stage="BASELINE_CONFIGURATION_VERIFIED",
+            )
+        elif verdict == "BLOCKED_LIVE_TELEMETRY_SOURCE_UNAVAILABLE":
+            if terminal.get("fault_impact_passed") is not True:
+                raise ValueError("source terminal lacks a passed fault-impact Gate")
+            require_failure_identity(
+                failed_stage="LIVE_TELEMETRY_SOURCE_GATE_EVALUATED",
+                failure_code="LIVE_TELEMETRY_SOURCE_GATE_NOT_PASSED",
+                last_completed_stage="FAULT_IMPACT_GATE_EVALUATED",
+            )
+        else:
+            if terminal.get("fault_impact_passed") is not True or terminal.get(
+                "fault_time_a0_context_artifact_exists"
+            ) is True:
+                raise ValueError("projection terminal contradicts its completed Gates")
+            require_failure_identity(
+                failed_stage="MULTISERVICE_PROJECTION_COMPLETED",
+                failure_code="MULTISERVICE_PROJECTION_FAILED",
+                last_completed_stage="MULTISERVICE_PROJECTION_STARTED",
+            )
     elif verdict in {
         "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION",
         "BLOCKED_POLICY_REJECTED",
@@ -239,6 +389,40 @@ def _require_non_success_invariants(
             forward_mutations=0,
             rollback_mutations=0,
         )
+        require_context_binding()
+        if terminal.get("fault_impact_passed") is not True:
+            raise ValueError("diagnosis or Policy terminal lacks fault-impact truth")
+        if verdict == "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION":
+            if any(
+                (
+                    terminal.get("diagnosis_gate") is not False,
+                    terminal.get("policy_verdict") == "ALLOW",
+                    terminal.get("recovery_verification_passed") is True,
+                )
+            ):
+                raise ValueError("Diagnosis-Gate terminal contradicts its Gates")
+            require_failure_identity(
+                failed_stage="DIAGNOSIS_GATE_EVALUATED",
+                failure_code="DIAGNOSIS_GATE_NOT_PASSED",
+                last_completed_stage="MULTISERVICE_PROJECTION_COMPLETED",
+            )
+        else:
+            if any(
+                (
+                    terminal.get("diagnosis_gate") is not True,
+                    terminal.get("diagnosis_correct") is not True,
+                    terminal.get("plan_action")
+                    != "RESTORE_FROZEN_SERVICE_CONFIGURATION",
+                    terminal.get("policy_verdict") != "DENY",
+                    terminal.get("recovery_verification_passed") is True,
+                )
+            ):
+                raise ValueError("Policy-rejected terminal contradicts its Gates")
+            require_failure_identity(
+                failed_stage="POLICY_GATE_EVALUATED",
+                failure_code="POLICY_REJECTED",
+                last_completed_stage="MULTISERVICE_PROJECTION_COMPLETED",
+            )
     elif verdict in {
         "CONTROLLED_REMEDIATION_NOT_VERIFIED_ROLLBACK_COMPLETED",
         "BLOCKED_ROLLBACK_FAILED_MANUAL_CLEANUP_REQUIRED",
@@ -249,15 +433,53 @@ def _require_non_success_invariants(
             fault_injections=1,
             forward_mutations=1,
         )
-        if counts["rollback_mutations"] not in {0, 1}:
-            raise ValueError("remediation terminal has impossible rollback count")
+        require_pre_mutation_gates()
+        if terminal.get("recovery_verification_passed") is not False:
+            raise ValueError("remediation terminal contradicts recovery verification")
+        if verdict == "CONTROLLED_REMEDIATION_NOT_VERIFIED_ROLLBACK_COMPLETED":
+            if counts["rollback_mutations"] != 1 or terminal.get(
+                "rollback_exact_hash_verified"
+            ) is not True:
+                raise ValueError("rollback-completed terminal lacks exact rollback truth")
+            require_failure_identity(
+                failed_stage="REMEDIATION_VERIFICATION_EVALUATED",
+                failure_code="REMEDIATION_NOT_VERIFIED",
+                last_completed_stage="MULTISERVICE_PROJECTION_COMPLETED",
+            )
+        else:
+            if counts["rollback_mutations"] not in {0, 1} or terminal.get(
+                "rollback_exact_hash_verified"
+            ) is True:
+                raise ValueError("rollback-failed terminal contradicts rollback truth")
+            require_failure_identity(
+                failed_stage="ROLLBACK_VERIFICATION_EVALUATED",
+                failure_code="ROLLBACK_FAILED",
+                last_completed_stage="MULTISERVICE_PROJECTION_COMPLETED",
+            )
     elif verdict == "BLOCKED_PUBLIC_RESULT_VERIFICATION":
-        require_exact(
-            provider_calls=2,
-            model_calls=1,
-            fault_injections=1,
-            forward_mutations=1,
-            rollback_mutations=0,
+        source_verdict = terminal.get("public_result_source_verdict")
+        policy = get_invocation_b_verdict_policy("v6")
+        if (
+            not isinstance(source_verdict, str)
+            or source_verdict == verdict
+            or source_verdict not in policy.legal_terminals
+        ):
+            raise ValueError("public-result failure lacks its source terminal")
+        source = dict(terminal)
+        source["verdict"] = source_verdict
+        for field in ("failed_stage", "last_completed_stage", "failure_code"):
+            source[field] = terminal.get(f"public_result_source_{field}")
+        if source_verdict == policy.success:
+            _require_success_invariants(config, source)
+        else:
+            _require_non_success_invariants(
+                config,
+                source,
+                verdict=source_verdict,
+            )
+        require_failure_identity(
+            failed_stage="PUBLIC_RESULT_VERIFICATION",
+            failure_code="PUBLIC_RESULT_VERIFICATION_FAILED",
         )
     elif verdict == "BLOCKED_CLEANUP_INCOMPLETE":
         if any(
@@ -285,9 +507,18 @@ def _require_non_success_invariants(
             )
         ):
             raise ValueError("cleanup terminal has impossible stage counts")
+        if counts["model_calls"] == 1:
+            require_context_binding()
+        if counts["forward_mutations"] == 1:
+            require_pre_mutation_gates()
+        if terminal.get("recovery_verification_passed") is True and counts[
+            "forward_mutations"
+        ] != 1:
+            raise ValueError("cleanup terminal recovery truth is impossible")
+        require_failure_identity()
     else:
         raise ValueError("non-success terminal lacks a stage-count policy")
-    if verdict != "BLOCKED_PROVIDER_PREFLIGHT" and (
+    if verdict not in {"BLOCKED_PROVIDER_PREFLIGHT", "BLOCKED_PUBLIC_RESULT_VERIFICATION"} and (
         terminal.get("provider_preflight_passed") is not True
         or counts["provider_calls"] < 1
     ):
@@ -367,7 +598,11 @@ def build_expected_public_result(
     if verdict == policy.success:
         _require_success_invariants(config, sealed_private_terminal)
     else:
-        _require_non_success_invariants(sealed_private_terminal, verdict=verdict)
+        _require_non_success_invariants(
+            config,
+            sealed_private_terminal,
+            verdict=verdict,
+        )
     core = _safe_public_core(config, sealed_private_terminal)
     core["semantic_sha256"] = canonical_sha256(core)
     if scan_public_e2e_payload(core):

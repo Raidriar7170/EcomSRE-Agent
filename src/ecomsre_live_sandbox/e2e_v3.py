@@ -290,6 +290,58 @@ def _next_unclassified_failure_stage(tracker: _StageTracker) -> DiagnosticStage:
     return ordered[min(completed_index + 1, last_pre_cleanup_index)]
 
 
+_LATE_TERMINAL_FAILURE_IDENTITIES: dict[str, tuple[str, str, str]] = {
+    "BLOCKED_FAULT_IMPACT_NOT_OBSERVED": (
+        "FAULT_IMPACT_GATE_EVALUATED",
+        "FAULT_IMPACT_NOT_OBSERVED",
+        "BASELINE_CONFIGURATION_VERIFIED",
+    ),
+    "BLOCKED_LIVE_TELEMETRY_SOURCE_UNAVAILABLE": (
+        "LIVE_TELEMETRY_SOURCE_GATE_EVALUATED",
+        "LIVE_TELEMETRY_SOURCE_GATE_NOT_PASSED",
+        "FAULT_IMPACT_GATE_EVALUATED",
+    ),
+    "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE": (
+        "MULTISERVICE_PROJECTION_COMPLETED",
+        "MULTISERVICE_PROJECTION_FAILED",
+        "MULTISERVICE_PROJECTION_STARTED",
+    ),
+    "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION": (
+        "DIAGNOSIS_GATE_EVALUATED",
+        "DIAGNOSIS_GATE_NOT_PASSED",
+        "MULTISERVICE_PROJECTION_COMPLETED",
+    ),
+    "BLOCKED_POLICY_REJECTED": (
+        "POLICY_GATE_EVALUATED",
+        "POLICY_REJECTED",
+        "MULTISERVICE_PROJECTION_COMPLETED",
+    ),
+    "CONTROLLED_REMEDIATION_NOT_VERIFIED_ROLLBACK_COMPLETED": (
+        "REMEDIATION_VERIFICATION_EVALUATED",
+        "REMEDIATION_NOT_VERIFIED",
+        "MULTISERVICE_PROJECTION_COMPLETED",
+    ),
+    "BLOCKED_ROLLBACK_FAILED_MANUAL_CLEANUP_REQUIRED": (
+        "ROLLBACK_VERIFICATION_EVALUATED",
+        "ROLLBACK_FAILED",
+        "MULTISERVICE_PROJECTION_COMPLETED",
+    ),
+}
+
+
+def _set_late_terminal_failure_identity(terminal: dict[str, object]) -> None:
+    verdict = terminal.get("verdict")
+    if not isinstance(verdict, str):
+        return
+    identity = _LATE_TERMINAL_FAILURE_IDENTITIES.get(verdict)
+    if identity is None:
+        return
+    failed_stage, failure_code, last_completed_stage = identity
+    terminal["failed_stage"] = failed_stage
+    terminal["failure_code"] = failure_code
+    terminal["last_completed_stage"] = last_completed_stage
+
+
 def _git(repository_root: Path, *arguments: str) -> str:
     completed = subprocess.run(
         ("git", *arguments),
@@ -2401,6 +2453,10 @@ def run_invocation_b(
     public_writer: Callable[
         [E2EV3Config, Mapping[str, object]], tuple[str, ...]
     ] = _write_public_outputs_v3,
+    pre_seal_terminal_verifier: Callable[
+        [E2EV3Config, Mapping[str, object]], object
+    ]
+    | None = None,
 ) -> dict[str, object]:
     """Execute the single human-preauthorized live run without result-driven retries."""
     roots.bind_lifecycle(config.authority, repository_root=config.repository_root)
@@ -2981,6 +3037,7 @@ def run_invocation_b(
             ):
                 terminal["verdict"] = "BLOCKED_ROLLBACK_FAILED_MANUAL_CLEANUP_REQUIRED"
                 raise RuntimeError("compensating rollback hash differs")
+            _set_late_terminal_failure_identity(terminal)
     except Exception as error:
         if provider is not None and hasattr(provider, "calls"):
             terminal["provider_calls"] = provider.calls
@@ -3014,6 +3071,25 @@ def run_invocation_b(
         )
         terminal["failure_code"] = effective_failure_code.value
         terminal["failure_type"] = type(error).__name__
+        if terminal.get("verdict") == verdict_policy.provider_preflight_failed:
+            terminal["failed_stage"] = "PROVIDER_PREFLIGHT"
+            terminal["last_completed_stage"] = "WORKTREE_VERIFIED"
+            terminal["failure_code"] = "PROVIDER_PREFLIGHT_FAILED"
+        if (
+            terminal.get("verdict")
+            == "CONTROLLED_REMEDIATION_NOT_VERIFIED_ROLLBACK_COMPLETED"
+            and forward_counter.count == 1
+            and terminal.get("rollback_mutations") != 1
+        ):
+            terminal["verdict"] = (
+                "BLOCKED_ROLLBACK_FAILED_MANUAL_CLEANUP_REQUIRED"
+            )
+            terminal.setdefault(
+                "manual_cleanup_command",
+                environment.manual_cleanup_command(),
+            )
+            terminal.setdefault("recovery_verification_passed", False)
+        _set_late_terminal_failure_identity(terminal)
         private_exception = ExceptionArtifactStore(
             roots.invocation_b / "exceptions"
         ).capture(
@@ -3041,6 +3117,19 @@ def run_invocation_b(
         terminal["cleanup_failure_code"] = cleanup_failure
         if cleanup_verdict == "BLOCKED":
             terminal["verdict"] = verdict_policy.cleanup_incomplete
+            terminal["failed_stage"] = (
+                None if tracker.failed_stage is None else tracker.failed_stage.value
+            )
+            terminal["last_completed_stage"] = (
+                None
+                if tracker.root_last_completed_stage is None
+                else tracker.root_last_completed_stage.value
+            )
+            terminal["failure_code"] = (
+                DiagnosticFailureCode.CLEANUP_FAILED.value
+                if cleanup_failure is not None
+                else DiagnosticFailureCode.UNCLASSIFIED_RUNTIME_FAILURE.value
+            )
         if private_exception is not None:
             terminal["exception_type"] = private_exception.exception_type
             terminal["exception_module"] = private_exception.exception_module
@@ -3055,6 +3144,32 @@ def run_invocation_b(
                 }
             ]
         terminal["private_permissions_verified"] = True
+        if schema_suffix == "v6" and pre_seal_terminal_verifier is not None:
+            try:
+                pre_seal_terminal_verifier(config, terminal)
+            except Exception as verification_error:
+                source_verdict = terminal.get("verdict")
+                terminal["public_result_source_verdict"] = source_verdict
+                for field in (
+                    "failed_stage",
+                    "last_completed_stage",
+                    "failure_code",
+                ):
+                    terminal[f"public_result_source_{field}"] = terminal.get(field)
+                terminal["verdict"] = "BLOCKED_PUBLIC_RESULT_VERIFICATION"
+                terminal["failed_stage"] = "PUBLIC_RESULT_VERIFICATION"
+                terminal["last_completed_stage"] = (
+                    "CLEANUP_COMPLETED"
+                    if cleanup_verdict == "CLEAN"
+                    else str(terminal.get("last_completed_stage"))
+                )
+                terminal["failure_code"] = "PUBLIC_RESULT_VERIFICATION_FAILED"
+                terminal["public_result_verification_error_type"] = type(
+                    verification_error
+                ).__name__
+                terminal["public_result_verification_error_sha256"] = canonical_sha256(
+                    str(verification_error)
+                )
         tracker.journal.record(
             stage=DiagnosticStage.TERMINAL_SEALED,
             status=DiagnosticEventStatus.STARTED,

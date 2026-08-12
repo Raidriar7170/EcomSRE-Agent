@@ -707,6 +707,91 @@ def test_v6_executes_post_preflight_failure_mapping_without_provider_misclassifi
     assert (roots.invocation_b / "terminal.json").is_file()
 
 
+def test_v6_executes_realizable_public_result_verification_failure_terminal(
+    tmp_path: Path,
+) -> None:
+    config = load_e2e_v6_config(CONFIG)
+    roots = E2EV6PrivateRoots(tmp_path / "public-result-verification")
+    _prepare_approved_v6(config, roots)
+    FakeEnvironment.fail_at = "compose"
+    FakeEnvironment.next_controller_read_failures = 0
+    FakeEnvironment.next_controller_mismatch = False
+    provider = FakeProvider()
+
+    def reject_pre_seal_result(*_: object) -> None:
+        raise ValueError("injected deterministic public verifier failure")
+
+    terminal = run_invocation_b(
+        config,
+        roots,
+        provider_factory=lambda _: provider,
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        worktree_verifier=_fake_worktree,
+        sleep=lambda _: None,
+        public_writer=lambda *_: (),
+        pre_seal_terminal_verifier=reject_pre_seal_result,
+    )
+
+    assert terminal["verdict"] == "BLOCKED_PUBLIC_RESULT_VERIFICATION"
+    assert terminal["public_result_source_verdict"] == (
+        "BLOCKED_E2E_V6_COMPOSE_UP_FAILED"
+    )
+    assert terminal["public_result_source_failed_stage"] == (
+        "COMPOSE_START_RETURNED"
+    )
+    assert terminal["public_result_source_failure_code"] == "COMPOSE_UP_FAILED"
+    assert terminal["failed_stage"] == "PUBLIC_RESULT_VERIFICATION"
+    assert terminal["failure_code"] == "PUBLIC_RESULT_VERIFICATION_FAILED"
+    assert terminal["provider_calls"] == 1
+    assert terminal["model_calls"] == 0
+    assert terminal["fault_injections"] == 0
+    assert terminal["forward_mutations"] == 0
+    assert terminal["rollback_mutations"] == 0
+    assert terminal["cleanup_verdict"] == "CLEAN"
+    assert build_expected_public_result(config, terminal)["verdict"] == (
+        "BLOCKED_PUBLIC_RESULT_VERIFICATION"
+    )
+    sealed = json.loads((roots.invocation_b / "terminal.json").read_text())
+    assert sealed == terminal
+
+
+def test_v6_provider_preflight_failure_seals_verifier_accepted_identity(
+    tmp_path: Path,
+) -> None:
+    config = load_e2e_v6_config(CONFIG)
+    roots = E2EV6PrivateRoots(tmp_path / "provider-preflight")
+    _prepare_approved_v6(config, roots)
+    FakeEnvironment.fail_at = None
+    FakeEnvironment.next_controller_read_failures = 0
+    FakeEnvironment.next_controller_mismatch = False
+
+    def failing_provider(_: object) -> object:
+        raise RuntimeError("injected Provider preflight failure")
+
+    terminal = run_invocation_b(
+        config,
+        roots,
+        provider_factory=failing_provider,
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        worktree_verifier=_fake_worktree,
+        sleep=lambda _: None,
+        public_writer=lambda *_: (),
+    )
+
+    assert terminal["verdict"] == "BLOCKED_PROVIDER_PREFLIGHT"
+    assert terminal["failed_stage"] == "PROVIDER_PREFLIGHT"
+    assert terminal["last_completed_stage"] == "WORKTREE_VERIFIED"
+    assert terminal["failure_code"] == "PROVIDER_PREFLIGHT_FAILED"
+    assert terminal["provider_calls"] == 0
+    assert terminal["fault_injections"] == 0
+    assert terminal["cleanup_verdict"] == "NOT_REQUIRED"
+    assert build_expected_public_result(config, terminal)["verdict"] == (
+        "BLOCKED_PROVIDER_PREFLIGHT"
+    )
+
+
 def _sli_window(phase: str) -> SLIWindow:
     started = datetime(2026, 8, 12, 12, tzinfo=timezone.utc)
     errors = 1.0 if phase == "BASELINE" else 30.0

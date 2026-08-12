@@ -117,6 +117,12 @@ def run_invocation_b(
 ) -> dict[str, object]:
     kwargs.setdefault("environment_factory", SandboxEnvironment)
     kwargs.setdefault(
+        "pre_seal_terminal_verifier",
+        lambda current_config, terminal: build_expected_public_result(
+            cast(E2EV6Config, current_config), terminal
+        ),
+    )
+    kwargs.setdefault(
         "public_writer",
         lambda current_config, terminal: _write_public_outputs_v6(
             cast(E2EV6Config, current_config),
