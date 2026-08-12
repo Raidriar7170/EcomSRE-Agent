@@ -376,6 +376,28 @@ def _nested(value: Mapping[str, object], path: str) -> object | None:
     return current
 
 
+def _compatible_field(
+    fields: Mapping[str, object],
+    candidates: Sequence[str],
+    compatible_types: frozenset[str],
+) -> str | None:
+    for candidate in candidates:
+        declared = fields.get(candidate)
+        if not isinstance(declared, Mapping):
+            continue
+        for fallback_type, descriptor in declared.items():
+            if not isinstance(descriptor, Mapping):
+                continue
+            field_type = descriptor.get("type", fallback_type)
+            if (
+                isinstance(field_type, str)
+                and field_type in compatible_types
+                and descriptor.get("searchable") is not False
+            ):
+                return candidate
+    return None
+
+
 def _capture_broad_logs(
     endpoint: str,
     *,
@@ -391,16 +413,38 @@ def _capture_broad_logs(
     service_field = "resource.service.name.keyword"
     if time_field not in fields or service_field not in fields:
         raise RuntimeError("OpenSearch frozen observed time or service field is unavailable")
-    severity_field = next(
-        (item for item in ("severityText", "severity.text", "severity.text.keyword") if item in fields),
-        None,
+    severity_keyword_field = _compatible_field(
+        fields,
+        ("severityText", "severityText.keyword", "severity.text.keyword"),
+        frozenset({"keyword", "constant_keyword"}),
     )
-    body_field = next((item for item in ("body", "body.keyword", "message") if item in fields), None)
+    severity_text_field = _compatible_field(
+        fields,
+        ("severityText", "severity.text"),
+        frozenset({"text", "match_only_text"}),
+    )
+    severity_field = severity_keyword_field or severity_text_field
+    body_field = _compatible_field(
+        fields,
+        ("body", "body.keyword", "message"),
+        frozenset({"text", "match_only_text", "keyword", "constant_keyword"}),
+    )
     if severity_field is None and body_field is None:
         raise RuntimeError("OpenSearch lacks severity and error-like body fields")
     anomaly_should: list[dict[str, object]] = []
-    if severity_field is not None:
+    if severity_keyword_field is not None:
         anomaly_should.append({"terms": {severity_field: ["WARN", "WARNING", "ERROR", "FATAL"]}})
+    elif severity_text_field is not None:
+        anomaly_should.append(
+            {
+                "match": {
+                    severity_text_field: {
+                        "query": "warn warning error fatal",
+                        "operator": "or",
+                    }
+                }
+            }
+        )
     if body_field is not None:
         anomaly_should.append({"match": {body_field: {"query": "error", "operator": "and"}}})
     query = {
@@ -438,8 +482,16 @@ def _capture_broad_logs(
                 continue
         except (OverflowError, ValueError):
             continue
-        severity = _nested(source, severity_field) if severity_field else "UNKNOWN"
-        body = _nested(source, body_field) if body_field else "observed log event"
+        severity = (
+            _nested(source, severity_field.removesuffix(".keyword"))
+            if severity_field
+            else "UNKNOWN"
+        )
+        body = (
+            _nested(source, body_field.removesuffix(".keyword"))
+            if body_field
+            else "observed log event"
+        )
         if not isinstance(severity, str):
             continue
         if isinstance(body, Mapping):

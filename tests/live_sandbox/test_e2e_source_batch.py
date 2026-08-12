@@ -8,6 +8,7 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 
+from ecomsre_live_sandbox import e2e_v1
 from ecomsre_live_sandbox.contracts import LocalEndpoints
 from ecomsre_live_sandbox.e2e_diagnostics import (
     DiagnosticJournal,
@@ -319,6 +320,68 @@ def test_production_v4_adapter_constructs_no_fault_evidence_from_real_collector(
     assert 3 <= evidence.visible_service_count <= 8
     assert evidence.scenario_truth_leaked is False
     assert all(count > 0 for count in transports.calls.values())
+
+
+def test_broad_log_projection_prefers_keyword_severity_multifield(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    search_payload: dict[str, object] = {}
+
+    def strict_json(
+        url: str,
+        *,
+        method: str = "GET",
+        payload: object | None = None,
+    ) -> object:
+        if url.endswith("/_field_caps"):
+            return {
+                "fields": {
+                    "observedTimestamp": {
+                        "date": {"type": "date", "searchable": True}
+                    },
+                    "resource.service.name.keyword": {
+                        "keyword": {"type": "keyword", "searchable": True}
+                    },
+                    "severity.text": {
+                        "text": {"type": "text", "searchable": True}
+                    },
+                    "severity.text.keyword": {
+                        "keyword": {"type": "keyword", "searchable": True}
+                    },
+                    "body": {"text": {"type": "text", "searchable": True}},
+                }
+            }
+        assert method == "POST"
+        assert isinstance(payload, dict)
+        search_payload.update(payload)
+        return {
+            "hits": {
+                "hits": [
+                    {
+                        "_source": {
+                            "observedTimestamp": "2026-08-12T00:00:20Z",
+                            "resource": {"service": {"name": "payment"}},
+                            "severity": {"text": "ERROR"},
+                            "body": "observed payment request error",
+                        }
+                    }
+                ]
+            }
+        }
+
+    monkeypatch.setattr(e2e_v1, "_strict_json", strict_json)
+
+    logs = e2e_v1._capture_broad_logs(
+        ENDPOINTS.opensearch,
+        window_start=NOW,
+        window_end=NOW + timedelta(seconds=30),
+        maximum_hits=10,
+    )
+
+    should = search_payload["query"]["bool"]["should"]  # type: ignore[index]
+    assert {"terms": {"severity.text.keyword": ["WARN", "WARNING", "ERROR", "FATAL"]}} in should
+    assert len(logs) == 1
+    assert logs[0].severity == "ERROR"
 
 
 def test_unavailable_metrics_preserves_logs_and_traces_terminals(tmp_path: Path) -> None:
