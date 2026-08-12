@@ -157,6 +157,109 @@ def test_impossible_success_terminal_is_rejected_before_projection() -> None:
         build_expected_public_result(config, terminal)
 
 
+@pytest.mark.parametrize(
+    ("verdict", "overrides"),
+    (
+        (
+            "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION",
+            {
+                "provider_calls": 999,
+                "fault_injections": 0,
+                "forward_mutations": 1,
+            },
+        ),
+        (
+            "BLOCKED_FAULT_IMPACT_NOT_OBSERVED",
+            {"model_calls": 1},
+        ),
+        (
+            "CONTROLLED_REMEDIATION_NOT_VERIFIED_ROLLBACK_COMPLETED",
+            {"forward_mutations": 0},
+        ),
+        (
+            "BLOCKED_ROLLBACK_FAILED_MANUAL_CLEANUP_REQUIRED",
+            {"rollback_mutations": 2},
+        ),
+        (
+            "BLOCKED_CLEANUP_INCOMPLETE",
+            {},
+        ),
+        (
+            "BLOCKED_CLEANUP_INCOMPLETE",
+            {
+                "cleanup": {
+                    "baseline_restored": False,
+                    "owned_containers": 1,
+                    "owned_networks": 0,
+                    "owned_volumes": 0,
+                    "non_owned_resources_changed": False,
+                    "verdict": "BLOCKED",
+                },
+                "provider_calls": 2,
+                "model_calls": 0,
+            },
+        ),
+        (
+            "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION",
+            {"provider_preflight_passed": False},
+        ),
+    ),
+)
+def test_impossible_non_success_stage_counts_are_rejected(
+    verdict: str, overrides: dict[str, object]
+) -> None:
+    config = load_e2e_v6_config(CONFIG)
+    terminal = _success_terminal()
+    terminal["verdict"] = verdict
+    terminal.update(overrides)
+
+    with pytest.raises(
+        ValueError,
+        match="stage counts|rollback count|cleanup truth|post-preflight",
+    ):
+        build_expected_public_result(config, terminal)
+
+
+@pytest.mark.parametrize(
+    ("verdict", "counts"),
+    (
+        (
+            "BLOCKED_FAULT_IMPACT_NOT_OBSERVED",
+            (1, 0, 1, 0, 0),
+        ),
+        (
+            "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION",
+            (2, 1, 1, 0, 0),
+        ),
+        (
+            "CONTROLLED_REMEDIATION_NOT_VERIFIED_ROLLBACK_COMPLETED",
+            (2, 1, 1, 1, 0),
+        ),
+        (
+            "BLOCKED_ROLLBACK_FAILED_MANUAL_CLEANUP_REQUIRED",
+            (2, 1, 1, 1, 1),
+        ),
+    ),
+)
+def test_consistent_non_success_stage_counts_are_accepted(
+    verdict: str, counts: tuple[int, int, int, int, int]
+) -> None:
+    config = load_e2e_v6_config(CONFIG)
+    terminal = _success_terminal()
+    terminal["verdict"] = verdict
+    (
+        terminal["provider_calls"],
+        terminal["model_calls"],
+        terminal["fault_injections"],
+        terminal["forward_mutations"],
+        terminal["rollback_mutations"],
+    ) = counts
+
+    public = build_expected_public_result(config, terminal)
+
+    assert public["verdict"] == verdict
+
+
 def test_final_verifier_requires_a_sealed_private_terminal() -> None:
     config = load_e2e_v6_config(CONFIG)
     public = build_expected_public_result(config, _success_terminal())

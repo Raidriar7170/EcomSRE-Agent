@@ -441,7 +441,7 @@ def _development_failure_verdict(
             f"BLOCKED_E2E_{marker}_EVIDENCE_RESOLUTION_FAILED"
         ),
         DiagnosticFailureCode.NO_FAULT_READINESS_FAILED: (
-            "BLOCKED_E2E_V5_NO_FAULT_READINESS_FAILED"
+            f"BLOCKED_E2E_{marker}_NO_FAULT_READINESS_FAILED"
         ),
         DiagnosticFailureCode.MULTISERVICE_PROJECTION_FAILED: (
             f"BLOCKED_E2E_{marker}_MULTISERVICE_PROJECTION_FAILED"
@@ -460,7 +460,7 @@ def _development_failure_verdict(
             f"BLOCKED_E2E_{marker}_BASELINE_CONFIGURATION_UNAVAILABLE"
         ),
         DiagnosticFailureCode.BASELINE_CONFIGURATION_MISMATCH: (
-            f"BLOCKED_E2E_{marker}_BASELINE_CONFIGURATION_UNAVAILABLE"
+            f"BLOCKED_E2E_{marker}_BASELINE_CONFIGURATION_MISMATCH"
         ),
     }
     if failure_code is None:
@@ -1101,7 +1101,7 @@ def _canonical_failure_verdict(
             f"BLOCKED_E2E_{marker}_BASELINE_CONFIGURATION_UNAVAILABLE"
         ),
         DiagnosticFailureCode.BASELINE_CONFIGURATION_MISMATCH: (
-            f"BLOCKED_E2E_{marker}_BASELINE_CONFIGURATION_UNAVAILABLE"
+            f"BLOCKED_E2E_{marker}_BASELINE_CONFIGURATION_MISMATCH"
         ),
         DiagnosticFailureCode.SOURCE_BATCH_CONTRACT_FAILED: (
             f"BLOCKED_E2E_{marker}_SOURCE_BATCH_FAILED"
@@ -1113,7 +1113,7 @@ def _canonical_failure_verdict(
             f"BLOCKED_E2E_{marker}_EVIDENCE_RESOLUTION_FAILED"
         ),
         DiagnosticFailureCode.NO_FAULT_READINESS_FAILED: (
-            "BLOCKED_E2E_V5_NO_FAULT_READINESS_FAILED"
+            f"BLOCKED_E2E_{marker}_NO_FAULT_READINESS_FAILED"
         ),
         DiagnosticFailureCode.MULTISERVICE_PROJECTION_FAILED: (
             f"BLOCKED_E2E_{marker}_MULTISERVICE_PROJECTION_FAILED"

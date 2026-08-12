@@ -177,31 +177,125 @@ def _require_non_success_invariants(
     terminal: Mapping[str, object], *, verdict: str
 ) -> None:
     cleanup = _require_cleanup(terminal.get("cleanup"), success=False)
+    count_fields = (
+        "provider_calls",
+        "model_calls",
+        "fault_injections",
+        "forward_mutations",
+        "rollback_mutations",
+    )
+    counts: dict[str, int] = {}
+    for field in count_fields:
+        value = terminal.get(field)
+        if type(value) is not int or value < 0:
+            raise ValueError("non-success terminal stage count is missing or invalid")
+        counts[field] = value
+
+    def require_exact(**expected: int) -> None:
+        if any(counts[field] != value for field, value in expected.items()):
+            raise ValueError("non-success terminal has impossible stage counts")
+
     if verdict == "BLOCKED_PROVIDER_PREFLIGHT":
-        if any(
-            (
-                terminal.get("fault_injections", 0) != 0,
-                terminal.get("model_calls", 0) != 0,
-                terminal.get("forward_mutations", 0) != 0,
-                terminal.get("rollback_mutations", 0) != 0,
-                terminal.get("provider_preflight_passed") is True,
-            )
-        ):
+        require_exact(
+            model_calls=0,
+            fault_injections=0,
+            forward_mutations=0,
+            rollback_mutations=0,
+        )
+        if counts["provider_calls"] not in {0, 1} or terminal.get(
+            "provider_preflight_passed"
+        ) is True:
             raise ValueError("Provider-preflight terminal has impossible stage counts")
     elif verdict.startswith("BLOCKED_E2E_V6_"):
+        require_exact(
+            provider_calls=1,
+            model_calls=0,
+            fault_injections=0,
+            forward_mutations=0,
+            rollback_mutations=0,
+        )
+        if terminal.get("provider_preflight_passed") is not True:
+            raise ValueError("post-preflight terminal has impossible stage counts")
+    elif verdict in {
+        "BLOCKED_FAULT_IMPACT_NOT_OBSERVED",
+        "BLOCKED_LIVE_TELEMETRY_SOURCE_UNAVAILABLE",
+        "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE",
+    }:
+        require_exact(
+            provider_calls=1,
+            model_calls=0,
+            fault_injections=1,
+            forward_mutations=0,
+            rollback_mutations=0,
+        )
+    elif verdict in {
+        "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION",
+        "BLOCKED_POLICY_REJECTED",
+    }:
+        require_exact(
+            provider_calls=2,
+            model_calls=1,
+            fault_injections=1,
+            forward_mutations=0,
+            rollback_mutations=0,
+        )
+    elif verdict in {
+        "CONTROLLED_REMEDIATION_NOT_VERIFIED_ROLLBACK_COMPLETED",
+        "BLOCKED_ROLLBACK_FAILED_MANUAL_CLEANUP_REQUIRED",
+    }:
+        require_exact(
+            provider_calls=2,
+            model_calls=1,
+            fault_injections=1,
+            forward_mutations=1,
+        )
+        if counts["rollback_mutations"] not in {0, 1}:
+            raise ValueError("remediation terminal has impossible rollback count")
+    elif verdict == "BLOCKED_PUBLIC_RESULT_VERIFICATION":
+        require_exact(
+            provider_calls=2,
+            model_calls=1,
+            fault_injections=1,
+            forward_mutations=1,
+            rollback_mutations=0,
+        )
+    elif verdict == "BLOCKED_CLEANUP_INCOMPLETE":
         if any(
             (
-                terminal.get("provider_preflight_passed") is not True,
-                terminal.get("provider_calls") != 1,
-                terminal.get("model_calls", 0) != 0,
-                terminal.get("fault_injections", 0) != 0,
-                terminal.get("forward_mutations", 0) != 0,
-                terminal.get("rollback_mutations", 0) != 0,
+                counts["provider_calls"] > 2,
+                counts["model_calls"] > 1,
+                counts["fault_injections"] > 1,
+                counts["forward_mutations"] > 1,
+                counts["rollback_mutations"] > 1,
+                counts["model_calls"] == 1
+                and counts["provider_calls"] != 2,
+                counts["provider_calls"] == 2
+                and counts["model_calls"] != 1,
+                counts["model_calls"] == 1
+                and counts["fault_injections"] != 1,
+                counts["fault_injections"] == 1
+                and counts["provider_calls"] < 1,
+                counts["forward_mutations"] == 1
+                and (
+                    counts["model_calls"] != 1
+                    or counts["fault_injections"] != 1
+                ),
+                counts["rollback_mutations"] == 1
+                and counts["forward_mutations"] != 1,
             )
         ):
-            raise ValueError("post-preflight terminal has impossible stage counts")
+            raise ValueError("cleanup terminal has impossible stage counts")
+    else:
+        raise ValueError("non-success terminal lacks a stage-count policy")
+    if verdict != "BLOCKED_PROVIDER_PREFLIGHT" and (
+        terminal.get("provider_preflight_passed") is not True
+        or counts["provider_calls"] < 1
+    ):
+        raise ValueError("post-preflight terminal contradicts Provider preflight")
     if cleanup.get("verdict") == "BLOCKED" and verdict != "BLOCKED_CLEANUP_INCOMPLETE":
         raise ValueError("cleanup failure did not control the public terminal")
+    if verdict == "BLOCKED_CLEANUP_INCOMPLETE" and cleanup.get("verdict") != "BLOCKED":
+        raise ValueError("cleanup terminal lacks blocked cleanup truth")
 
 
 def _safe_public_core(

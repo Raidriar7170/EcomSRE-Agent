@@ -280,6 +280,16 @@ class _StageTracker:
             self.exception = reference
 
 
+def _next_unclassified_failure_stage(tracker: _StageTracker) -> DiagnosticStage:
+    completed = tracker.root_last_completed_stage
+    if completed is None:
+        return DiagnosticStage.PRIVATE_ROOT_BOUND
+    ordered = tuple(DiagnosticStage)
+    completed_index = ordered.index(completed)
+    last_pre_cleanup_index = ordered.index(DiagnosticStage.CLEANUP_STARTED) - 1
+    return ordered[min(completed_index + 1, last_pre_cleanup_index)]
+
+
 def _git(repository_root: Path, *arguments: str) -> str:
     completed = subprocess.run(
         ("git", *arguments),
@@ -2977,10 +2987,11 @@ def run_invocation_b(
         if (
             terminal.get("provider_preflight_passed") is True
             and tracker.failed_stage is None
+            and terminal.get("verdict") == verdict_policy.provider_preflight_failed
         ):
             tracker.fail_external(
                 error,
-                stage=DiagnosticStage.CLEANUP_STARTED,
+                stage=_next_unclassified_failure_stage(tracker),
                 failure_code=DiagnosticFailureCode.UNCLASSIFIED_RUNTIME_FAILURE,
             )
         effective_failure_code = (

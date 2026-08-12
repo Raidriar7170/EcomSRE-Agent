@@ -18,7 +18,11 @@ from ecomsre_live_sandbox.contracts import (
     canonical_sha256,
     write_private_json,
 )
-from ecomsre_live_sandbox.e2e_diagnostics import DiagnosticCommandIdentity
+from ecomsre_live_sandbox.e2e_diagnostics import (
+    DiagnosticCommandIdentity,
+    DiagnosticFailureCode,
+    DiagnosticStage,
+)
 from ecomsre_live_sandbox.e2e_telemetry import (
     LiveLogObservation,
     LiveTraceObservation,
@@ -44,6 +48,36 @@ from ecomsre_live_sandbox.invocation_b_verdicts import (
 
 
 CONFIG = Path("config/live-fault-a0-controlled-remediation-e2e-v6")
+
+
+@pytest.mark.parametrize(
+    ("failure_code", "suffix"),
+    (
+        (
+            DiagnosticFailureCode.BASELINE_CONFIGURATION_MISMATCH,
+            "BASELINE_CONFIGURATION_MISMATCH",
+        ),
+        (
+            DiagnosticFailureCode.NO_FAULT_READINESS_FAILED,
+            "NO_FAULT_READINESS_FAILED",
+        ),
+    ),
+)
+def test_v6_no_fault_failure_mappings_are_version_exact(
+    failure_code: DiagnosticFailureCode, suffix: str
+) -> None:
+    expected = f"BLOCKED_E2E_V6_{suffix}"
+
+    assert e2e_v4._development_failure_verdict(
+        failure_code,
+        cleanup_verdict="CLEAN",
+        schema_suffix="v6",
+    ) == expected
+    assert e2e_v4._canonical_failure_verdict(
+        failure_code,
+        cleanup_verdict="CLEAN",
+        schema_suffix="v6",
+    ) == expected
 
 
 def test_v6_authority_binds_exact_predecessor_and_unbounded_repair_policies() -> None:
@@ -309,6 +343,74 @@ def _no_fault_evidence(
     )
 
 
+def _failing_no_fault_evidence(
+    _: object,
+    __: object,
+    run_root: Path,
+    tracker: object,
+    *___: object,
+    services_healthy_count: int,
+    baseline_exact: bool,
+    **____: object,
+) -> object:
+    assert services_healthy_count == 25
+    assert baseline_exact is True
+    statuses = {"METRICS": "AVAILABLE", "LOGS": "AVAILABLE", "TRACES": "AVAILABLE"}
+    counts = {"METRICS": 5, "LOGS": 28, "TRACES": 14}
+    write_private_json(
+        run_root / "source-results.json",
+        {
+            "schema_version": "live-e2e.source-results.v6",
+            "results": [
+                {
+                    "source": source,
+                    "status": statuses[source],
+                    "target_record_count": counts[source],
+                }
+                for source in statuses
+            ],
+            "source_counts": counts,
+            "all_refs_resolve": True,
+            "invalid_ref_count": 0,
+            "combined_resolver_sha256": "a" * 64,
+            "source_results_sha256": "b" * 64,
+        },
+        create_once=True,
+    )
+
+    def fail_readiness() -> None:
+        write_private_json(
+            run_root / "no-fault-readiness.json",
+            {
+                "schema_version": "live-e2e.no-fault-readiness.v5",
+                "run_id": run_root.name,
+                "services_healthy_count": 25,
+                "baseline_exact": True,
+                "source_statuses": statuses,
+                "source_counts": counts,
+                "invalid_refs": 0,
+                "all_refs_resolve": True,
+                "broad_metric_service_count": 4,
+                "logs_query_contract_completed": True,
+                "traces_query_contract_completed": True,
+                "control_truth_findings": ["injected readiness failure"],
+                "private_permissions_valid": True,
+                "passed": False,
+                "reason_codes": ["CONTROL_TRUTH_LEAK"],
+                "semantic_sha256": "c" * 64,
+            },
+            create_once=True,
+        )
+        raise RuntimeError("injected no-fault readiness failure")
+
+    tracker.execute(  # type: ignore[attr-defined]
+        DiagnosticStage.NO_FAULT_READINESS_EVALUATED,
+        fail_readiness,
+        failure_code=DiagnosticFailureCode.NO_FAULT_READINESS_FAILED,
+    )
+    raise AssertionError("unreachable")
+
+
 def _fake_worktree(_: object, clean_required: bool) -> str:
     assert clean_required is True
     return "d" * 40
@@ -379,6 +481,70 @@ def _prepare_approved_v6(config: object, roots: E2EV6PrivateRoots) -> None:
             f"APPROVE {request['scenario_id']} {request['plan_template_sha256']}"
         ),
     )
+
+
+@pytest.mark.parametrize("run_kind", ("development", "canonical"))
+@pytest.mark.parametrize(
+    ("failure_kind", "expected_suffix", "expected_stage"),
+    (
+        (
+            "baseline-mismatch",
+            "BASELINE_CONFIGURATION_MISMATCH",
+            DiagnosticStage.BASELINE_CONFIGURATION_VERIFIED,
+        ),
+        (
+            "no-fault-readiness",
+            "NO_FAULT_READINESS_FAILED",
+            DiagnosticStage.NO_FAULT_READINESS_EVALUATED,
+        ),
+    ),
+)
+def test_v6_executes_version_exact_no_fault_failure_terminal(
+    tmp_path: Path,
+    run_kind: str,
+    failure_kind: str,
+    expected_suffix: str,
+    expected_stage: DiagnosticStage,
+) -> None:
+    config = load_e2e_v6_config(CONFIG)
+    roots = E2EV6PrivateRoots(tmp_path / f"{run_kind}-{failure_kind}")
+    FakeEnvironment.fail_at = None
+    FakeEnvironment.next_controller_read_failures = 0
+    FakeEnvironment.next_controller_mismatch = False
+    if run_kind == "canonical":
+        _prepare_v6_canonical_admission(config, roots)
+    FakeEnvironment.next_controller_mismatch = failure_kind == "baseline-mismatch"
+    evidence_collector = (
+        _failing_no_fault_evidence
+        if failure_kind == "no-fault-readiness"
+        else _no_fault_evidence
+    )
+    runner = (
+        run_canonical_invocation_a
+        if run_kind == "canonical"
+        else run_development_probe
+    )
+
+    terminal = runner(
+        config,
+        roots,
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        evidence_collector=evidence_collector,
+        sleep=lambda _: None,
+        worktree_verifier=_fake_worktree,
+    )
+
+    assert terminal["verdict"] == f"BLOCKED_E2E_V6_{expected_suffix}"
+    assert "E2E_V5" not in str(terminal["verdict"])
+    assert terminal["failed_stage"] == expected_stage.value
+    assert terminal["failure_code"] == expected_suffix
+    assert terminal["cleanup_verdict"] == "CLEAN"
+    assert terminal["provider_calls"] == 0
+    assert terminal["model_calls"] == 0
+    assert terminal["fault_injections"] == 0
+    assert terminal["forward_mutations"] == 0
+    assert terminal["rollback_mutations"] == 0
 
 
 def test_v6_canonical_promotion_failure_is_rolled_back_and_retry_advances(
@@ -525,8 +691,19 @@ def test_v6_executes_post_preflight_failure_mapping_without_provider_misclassifi
     assert terminal["cleanup_verdict"] == cleanup
     assert terminal["last_completed_stage"] is not None
     if failure_kind == "unclassified":
-        assert terminal["failed_stage"] == "CLEANUP_STARTED"
+        assert terminal["failed_stage"] == "LOCAL_DOCKER_VERIFIED"
         assert terminal["last_completed_stage"] == "WORKTREE_VERIFIED"
+    events = tuple(
+        json.loads(line)
+        for line in (roots.invocation_b / "events.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    )
+    assert not any(
+        {"FAILED", "PASSED"}
+        <= {event["status"] for event in events if event["stage"] == stage}
+        for stage in {event["stage"] for event in events}
+    )
     assert (roots.invocation_b / "terminal.json").is_file()
 
 
