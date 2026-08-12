@@ -796,6 +796,7 @@ def _execute_no_fault_sequence(
     evidence_collector: Callable[..., NoFaultEvidence],
     sleep: Callable[[float], None],
     worktree_verifier: Callable[[E2EV3Config, bool], str],
+    expected_structure_sha256: str | None = None,
 ) -> _NoFaultRunResult:
     state = _RunState()
 
@@ -899,6 +900,7 @@ def _execute_no_fault_sequence(
             run_id=run_id,
             run_kind=DiagnosticRunKind.CANONICAL_INVOCATION_A,
             tracker=tracker,
+            expected_structure_sha256=expected_structure_sha256,
         )
         controller = tracker.execute(
             DiagnosticStage.FAULT_CONTROLLER_PREPARATION_STARTED,
@@ -1484,6 +1486,10 @@ def _require_diagnostic_pass(
             terminal.get("forward_mutations") != 0,
             terminal.get("rollback_mutations") != 0,
             terminal.get("private_permissions_verified") is not True,
+            not isinstance(terminal.get("image_authority_sha256"), str),
+            not isinstance(terminal.get("image_verification_sha256"), str),
+            not isinstance(terminal.get("compose_structure_sha256"), str),
+            not isinstance(terminal.get("compose_instance_sha256"), str),
         )
     ):
         raise RuntimeError("canonical Invocation A requires diagnostic PASS")
@@ -1726,6 +1732,9 @@ def run_canonical_invocation_a(
         evidence_collector=evidence_collector,
         sleep=sleep,
         worktree_verifier=worktree_verifier,
+        expected_structure_sha256=cast(
+            str, diagnostic_terminal["compose_structure_sha256"]
+        ),
     )
     state = execution.state
     evidence = execution.evidence
@@ -1873,6 +1882,18 @@ def run_canonical_invocation_a(
         "compose_start_requested": state.compose_start_requested,
         "compose_start_returned": state.compose_start_returned,
         "compose_start_return_code": state.compose_start_return_code,
+        "image_authority_sha256": None
+        if execution.image_authority is None
+        else execution.image_authority.authority_sha256,
+        "image_verification_sha256": None
+        if execution.image_verification is None
+        else execution.image_verification.verification_sha256,
+        "compose_structure_sha256": None
+        if execution.image_verification is None
+        else execution.image_verification.compose_structure_sha256,
+        "compose_instance_sha256": None
+        if execution.image_verification is None
+        else execution.image_verification.compose_instance_sha256,
         "owned_resources_observed": state.owned_resources_after_start,
         "services_healthy": state.services_healthy,
         "baseline_verified": state.baseline_verified,

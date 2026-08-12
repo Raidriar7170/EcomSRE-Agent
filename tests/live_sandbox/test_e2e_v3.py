@@ -192,6 +192,7 @@ class FakeEnvironment:
     last: "FakeEnvironment | None" = None
     fail_at: str | None = None
     cleanup_verdict = "CLEAN"
+    structural_drift_run: str | None = None
 
     def __init__(self, **kwargs: Any) -> None:
         self.runner = kwargs["runner"]
@@ -228,6 +229,10 @@ class FakeEnvironment:
             },
             "networks": {"default": {"name": "ecomsre-live-sandbox-v1-default"}},
         }
+        if self.structural_drift_run is not None and self.structural_drift_run in str(
+            self.flagd_directory
+        ):
+            compose["networks"] = {"default": {"name": "structural-drift"}}
         return SimpleNamespace(endpoints=SimpleNamespace(), compose_sha256="a" * 64), compose
 
     def inspect_cached_images(self, *_: object) -> CachedImageInspection:
@@ -470,6 +475,7 @@ def _write_canonical_admission(roots: E2EV3PrivateRoots) -> None:
 def _pass_diagnostic(config: object, roots: E2EV3PrivateRoots) -> None:
     FakeEnvironment.fail_at = None
     FakeEnvironment.cleanup_verdict = "CLEAN"
+    FakeEnvironment.structural_drift_run = None
     terminal = run_diagnostic_preflight(
         config,  # type: ignore[arg-type]
         roots,
@@ -596,6 +602,30 @@ def test_canonical_failure_never_creates_approval_request(tmp_path: Path) -> Non
     assert terminal["approval_request_created"] is False
     assert not (roots.control / "scenario-lock.json").exists()
     assert not (roots.control / "approval-request.json").exists()
+
+
+def test_canonical_rejects_structure_drift_from_diagnostic(tmp_path: Path) -> None:
+    config = load_e2e_v3_config(CONFIG)
+    roots = E2EV3PrivateRoots(tmp_path / "private")
+    _pass_diagnostic(config, roots)
+    _write_canonical_admission(roots)
+    FakeEnvironment.structural_drift_run = "invocation-a"
+
+    terminal = run_canonical_invocation_a(
+        config,
+        roots,
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        evidence_collector=_evidence,
+        sleep=lambda _: None,
+        worktree_verifier=_fake_worktree,
+    )
+
+    assert terminal["failed_stage"] == "COMPOSE_STRUCTURE_HASH_VERIFIED"
+    assert terminal["failure_code"] == "COMPOSE_STRUCTURE_IDENTITY_MISMATCH"
+    assert terminal["compose_start_requested"] is False
+    assert not (roots.control / "scenario-lock.json").exists()
+    FakeEnvironment.structural_drift_run = None
 
 
 def test_human_approval_cannot_be_recorded_before_canonical_success(tmp_path: Path) -> None:

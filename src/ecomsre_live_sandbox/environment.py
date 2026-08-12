@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 import hashlib
+from importlib import import_module
 import json
 import os
 from pathlib import Path
@@ -408,23 +409,14 @@ class SandboxEnvironment:
 
     def inspect_cached_images(self, resolved: ResolvedSandbox) -> CachedImageInspection:
         historical_path = self.repository_root / "config/phase0/image-lock.json"
-        historical = json.loads(historical_path.read_text(encoding="utf-8"))
-        entries = historical.get("images") if isinstance(historical, Mapping) else None
-        allowed = (
-            historical.get("allowed_source_references")
-            if isinstance(historical, Mapping)
-            else None
-        )
-        if not isinstance(entries, list) or not isinstance(allowed, list):
-            raise SandboxDriftError("historical frozen image lock is unavailable")
-        expected = {
-            str(item["source_reference"]): item
-            for item in entries
-            if isinstance(item, Mapping) and isinstance(item.get("source_reference"), str)
-        }
+        manifests = import_module("ecomsre.environment.manifests")
+        historical = manifests.load_image_lock(historical_path)
+        if historical.status.value != "LOCKED":
+            raise SandboxDriftError("historical frozen image lock is not LOCKED")
+        expected = {item.source_reference: item for item in historical.images}
         if (
-            len(expected) != len(entries)
-            or set(expected) != {str(value) for value in allowed}
+            len(expected) != len(historical.images)
+            or set(expected) != set(historical.allowed_source_references)
             or set(resolved.image_references) != set(expected)
         ):
             raise SandboxDriftError("sandbox image source set differs from frozen source set")
@@ -448,18 +440,16 @@ class SandboxEnvironment:
             expected_item = expected[reference]
             repo_digests = image.get("RepoDigests")
             repository = reference.rsplit(":", 1)[0]
-            expected_repo_digest = (
-                f"{repository}@{expected_item.get('image_index_digest')}"
-            )
+            expected_repo_digest = f"{repository}@{expected_item.image_index_digest}"
             if (
                 image.get("Os") != "linux"
                 or image.get("Architecture") not in {"arm64", "aarch64"}
-                or image.get("Id") != expected_item.get("image_id")
+                or image.get("Id") != expected_item.image_id
                 or not isinstance(repo_digests, list)
                 or expected_repo_digest not in repo_digests
             ):
                 raise SandboxDriftError(f"cached image identity drifted for {reference}")
-            resolved_platform_digest = str(expected_item["resolved_platform_digest"])
+            resolved_platform_digest = expected_item.resolved_platform_digest
             if resolved_platform_digest != image.get("Id"):
                 raise SandboxDriftError(
                     f"cached platform digest drifted for {reference}"
@@ -468,7 +458,7 @@ class SandboxEnvironment:
                 CachedImage(
                     source_reference=reference,
                     image_id=str(image["Id"]),
-                    image_index_digest=str(expected_item["image_index_digest"]),
+                    image_index_digest=expected_item.image_index_digest,
                     resolved_platform_digest=resolved_platform_digest,
                     raw_inspect_sha256=hashlib.sha256(result.stdout.encode("utf-8")).hexdigest(),
                 )

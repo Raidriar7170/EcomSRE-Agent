@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from ecomsre_live_sandbox.contracts import (
     LocalEndpoints,
@@ -254,13 +255,25 @@ def _real_inspection_environment(
     lock_path.write_text(
         json.dumps(
             {
+                "schema_version": "phase0.image-lock.v1",
+                "status": "LOCKED",
+                "upstream_tag": "3.0.0",
+                "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+                "compose_config_sha256": "9" * 64,
+                "created_at": "2026-08-12T00:00:00Z",
                 "allowed_source_references": [source],
                 "images": [
                     {
+                        "logical_name": "demo-3.0.0",
                         "source_reference": source,
                         "image_id": image_id,
                         "image_index_digest": index_digest,
                         "resolved_platform_digest": image_id,
+                        "architecture": "arm64",
+                        "platform": "linux/arm64",
+                        "acquired_at": "2026-08-12T00:00:00Z",
+                        "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+                        "compose_config_sha256": "9" * 64,
                     }
                 ],
             }
@@ -308,6 +321,18 @@ def test_cached_image_inspection_is_side_effect_free_and_validates_all_identitie
     assert inspection.historical_image_lock_sha256 == file_sha256(lock_path)
     assert inspection.images[0].image_index_digest == "sha256:" + "2" * 64
     assert not (tmp_path / "control").exists()
+
+
+def test_cached_image_inspection_rejects_incomplete_historical_contract(
+    tmp_path: Path,
+) -> None:
+    environment, resolved, lock_path = _real_inspection_environment(tmp_path)
+    incomplete = json.loads(lock_path.read_text())
+    incomplete.pop("status")
+    lock_path.write_text(json.dumps(incomplete), encoding="utf-8")
+
+    with pytest.raises(ValidationError):
+        environment.inspect_cached_images(resolved)
 
 
 @pytest.mark.parametrize("mutation", ("source", "image_id", "index", "platform"))
