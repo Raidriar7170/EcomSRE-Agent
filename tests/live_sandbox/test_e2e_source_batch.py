@@ -322,7 +322,7 @@ def test_production_v4_adapter_constructs_no_fault_evidence_from_real_collector(
     assert all(count > 0 for count in transports.calls.values())
 
 
-def test_broad_log_projection_prefers_keyword_severity_multifield(
+def test_broad_log_projection_bounds_field_caps_and_prefers_keyword_multifield(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     search_payload: dict[str, object] = {}
@@ -333,7 +333,19 @@ def test_broad_log_projection_prefers_keyword_severity_multifield(
         method: str = "GET",
         payload: object | None = None,
     ) -> object:
-        if url.endswith("/_field_caps"):
+        if "/_field_caps?" in url:
+            fields = set(parse_qs(urlparse(url).query)["fields"][0].split(","))
+            assert fields == {
+                "body",
+                "body.keyword",
+                "message",
+                "observedTimestamp",
+                "resource.service.name.keyword",
+                "severity.text",
+                "severity.text.keyword",
+                "severityText",
+                "severityText.keyword",
+            }
             return {
                 "fields": {
                     "observedTimestamp": {

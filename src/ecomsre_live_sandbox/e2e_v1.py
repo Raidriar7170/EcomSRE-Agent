@@ -405,12 +405,25 @@ def _capture_broad_logs(
     window_end: datetime,
     maximum_hits: int,
 ) -> tuple[LiveLogObservation, ...]:
-    field_caps = _strict_json(f"{endpoint}/otel-logs-*/_field_caps")
+    time_field = "observedTimestamp"
+    service_field = "resource.service.name.keyword"
+    severity_candidates = (
+        "severityText",
+        "severityText.keyword",
+        "severity.text",
+        "severity.text.keyword",
+    )
+    body_candidates = ("body", "body.keyword", "message")
+    field_allowlist = sorted(
+        {time_field, service_field, *severity_candidates, *body_candidates}
+    )
+    field_parameters = urlencode({"fields": ",".join(field_allowlist)})
+    field_caps = _strict_json(
+        f"{endpoint}/otel-logs-*/_field_caps?{field_parameters}"
+    )
     fields = field_caps.get("fields") if isinstance(field_caps, Mapping) else None
     if not isinstance(fields, Mapping):
         raise RuntimeError("OpenSearch field caps are unavailable")
-    time_field = "observedTimestamp"
-    service_field = "resource.service.name.keyword"
     if time_field not in fields or service_field not in fields:
         raise RuntimeError("OpenSearch frozen observed time or service field is unavailable")
     severity_keyword_field = _compatible_field(
@@ -426,7 +439,7 @@ def _capture_broad_logs(
     severity_field = severity_keyword_field or severity_text_field
     body_field = _compatible_field(
         fields,
-        ("body", "body.keyword", "message"),
+        body_candidates,
         frozenset({"text", "match_only_text", "keyword", "constant_keyword"}),
     )
     if severity_field is None and body_field is None:
