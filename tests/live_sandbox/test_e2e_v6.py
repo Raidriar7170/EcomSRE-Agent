@@ -756,6 +756,59 @@ def test_v6_executes_realizable_public_result_verification_failure_terminal(
     assert sealed == terminal
 
 
+def test_v6_cleanup_failure_preserves_compose_root_failure_identity(
+    tmp_path: Path,
+) -> None:
+    config = load_e2e_v6_config(CONFIG)
+    roots = E2EV6PrivateRoots(tmp_path / "compose-and-cleanup-failure")
+    _prepare_approved_v6(config, roots)
+    FakeEnvironment.fail_at = "compose"
+    FakeEnvironment.next_controller_read_failures = 0
+    FakeEnvironment.next_controller_mismatch = False
+    provider = FakeProvider()
+
+    class BlockedCleanupEnvironment(FakeEnvironment):
+        def cleanup(self, *, baseline_restored: bool) -> CleanupResult:
+            if self.runner.on_start is not None:
+                self.runner.on_start(DiagnosticCommandIdentity.COMPOSE_DOWN)
+            if self.runner.on_return is not None:
+                self.runner.on_return(DiagnosticCommandIdentity.COMPOSE_DOWN, 1, False)
+            return CleanupResult(
+                baseline_restored=baseline_restored,
+                owned_containers=1,
+                owned_networks=0,
+                owned_volumes=0,
+                non_owned_resources_changed=False,
+                verdict="BLOCKED",
+            )
+
+    terminal = run_invocation_b(
+        config,
+        roots,
+        provider_factory=lambda _: provider,
+        environment_factory=BlockedCleanupEnvironment,
+        controller_factory=_controller,
+        worktree_verifier=_fake_worktree,
+        sleep=lambda _: None,
+        public_writer=lambda *_: (),
+    )
+
+    assert terminal["verdict"] == "BLOCKED_CLEANUP_INCOMPLETE"
+    assert terminal["failed_stage"] == "COMPOSE_START_RETURNED"
+    assert terminal["last_completed_stage"] == "COMPOSE_START_REQUESTED"
+    assert terminal["failure_code"] == "COMPOSE_UP_FAILED"
+    assert terminal["cleanup_failure_code"] == "CLEANUP_FAILED"
+    assert terminal["provider_calls"] == 1
+    assert terminal["model_calls"] == 0
+    assert terminal["fault_injections"] == 0
+    assert terminal["forward_mutations"] == 0
+    assert terminal["rollback_mutations"] == 0
+    assert terminal["cleanup_verdict"] == "BLOCKED"
+    assert build_expected_public_result(config, terminal)["verdict"] == (
+        "BLOCKED_CLEANUP_INCOMPLETE"
+    )
+
+
 def test_v6_provider_preflight_failure_seals_verifier_accepted_identity(
     tmp_path: Path,
 ) -> None:

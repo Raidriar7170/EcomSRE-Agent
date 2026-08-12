@@ -269,6 +269,24 @@ def _require_non_success_invariants(
         ):
             raise ValueError("non-success fault-time context binding is invalid")
 
+    def require_no_context() -> None:
+        if any(
+            (
+                terminal.get("a0_context_builder_calls") != 0,
+                terminal.get("fault_time_a0_context_artifact_exists")
+                not in {None, False},
+                terminal.get("fault_time_a0_context_sha256") is not None,
+                terminal.get("provider_live_context_sha256") is not None,
+            )
+        ):
+            raise ValueError("early terminal contains impossible context proof")
+
+    def require_no_rollback_proof() -> None:
+        if counts["rollback_mutations"] != 0 or terminal.get(
+            "rollback_exact_hash_verified"
+        ) is True:
+            raise ValueError("pre-rollback terminal contains impossible rollback proof")
+
     def require_pre_mutation_gates() -> None:
         require_context_binding()
         if any(
@@ -299,6 +317,8 @@ def _require_non_success_invariants(
             failure_code="PROVIDER_PREFLIGHT_FAILED",
             last_completed_stage="WORKTREE_VERIFIED",
         )
+        require_no_context()
+        require_no_rollback_proof()
     elif verdict.startswith("BLOCKED_E2E_V6_"):
         require_exact(
             provider_calls=1,
@@ -340,6 +360,8 @@ def _require_non_success_invariants(
             require_failure_identity(failed_stage=stage, failure_code=code)
         else:
             raise ValueError("versioned non-success terminal lacks an exact identity")
+        require_no_context()
+        require_no_rollback_proof()
     elif verdict in {
         "BLOCKED_FAULT_IMPACT_NOT_OBSERVED",
         "BLOCKED_LIVE_TELEMETRY_SOURCE_UNAVAILABLE",
@@ -360,6 +382,7 @@ def _require_non_success_invariants(
                 failure_code="FAULT_IMPACT_NOT_OBSERVED",
                 last_completed_stage="BASELINE_CONFIGURATION_VERIFIED",
             )
+            require_no_context()
         elif verdict == "BLOCKED_LIVE_TELEMETRY_SOURCE_UNAVAILABLE":
             if terminal.get("fault_impact_passed") is not True:
                 raise ValueError("source terminal lacks a passed fault-impact Gate")
@@ -368,16 +391,25 @@ def _require_non_success_invariants(
                 failure_code="LIVE_TELEMETRY_SOURCE_GATE_NOT_PASSED",
                 last_completed_stage="FAULT_IMPACT_GATE_EVALUATED",
             )
+            require_no_context()
         else:
-            if terminal.get("fault_impact_passed") is not True or terminal.get(
-                "fault_time_a0_context_artifact_exists"
-            ) is True:
+            if any(
+                (
+                    terminal.get("fault_impact_passed") is not True,
+                    terminal.get("a0_context_builder_calls") != 1,
+                    terminal.get("fault_time_a0_context_artifact_exists")
+                    not in {None, False},
+                    terminal.get("fault_time_a0_context_sha256") is not None,
+                    terminal.get("provider_live_context_sha256") is not None,
+                )
+            ):
                 raise ValueError("projection terminal contradicts its completed Gates")
             require_failure_identity(
                 failed_stage="MULTISERVICE_PROJECTION_COMPLETED",
                 failure_code="MULTISERVICE_PROJECTION_FAILED",
                 last_completed_stage="MULTISERVICE_PROJECTION_STARTED",
             )
+        require_no_rollback_proof()
     elif verdict in {
         "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION",
         "BLOCKED_POLICY_REJECTED",
@@ -390,6 +422,7 @@ def _require_non_success_invariants(
             rollback_mutations=0,
         )
         require_context_binding()
+        require_no_rollback_proof()
         if terminal.get("fault_impact_passed") is not True:
             raise ValueError("diagnosis or Policy terminal lacks fault-impact truth")
         if verdict == "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION":
@@ -515,6 +548,10 @@ def _require_non_success_invariants(
             "forward_mutations"
         ] != 1:
             raise ValueError("cleanup terminal recovery truth is impossible")
+        if counts["rollback_mutations"] == 0 and terminal.get(
+            "rollback_exact_hash_verified"
+        ) is True:
+            raise ValueError("cleanup terminal contains impossible rollback proof")
         require_failure_identity()
     else:
         raise ValueError("non-success terminal lacks a stage-count policy")

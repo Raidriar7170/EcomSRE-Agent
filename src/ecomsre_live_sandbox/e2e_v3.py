@@ -3126,8 +3126,8 @@ def run_invocation_b(
                 else tracker.root_last_completed_stage.value
             )
             terminal["failure_code"] = (
-                DiagnosticFailureCode.CLEANUP_FAILED.value
-                if cleanup_failure is not None
+                tracker.failure_code.value
+                if tracker.failure_code is not None
                 else DiagnosticFailureCode.UNCLASSIFIED_RUNTIME_FAILURE.value
             )
         if private_exception is not None:

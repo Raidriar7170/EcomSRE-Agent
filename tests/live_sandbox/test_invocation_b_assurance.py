@@ -512,6 +512,37 @@ def test_blocked_cleanup_rejects_invalid_field_types_and_ranges(
         build_expected_public_result(config, terminal)
 
 
+@pytest.mark.parametrize(
+    "verdict",
+    (
+        "BLOCKED_PROVIDER_PREFLIGHT",
+        "BLOCKED_FAULT_IMPACT_NOT_OBSERVED",
+        "BLOCKED_LIVE_TELEMETRY_SOURCE_UNAVAILABLE",
+    ),
+)
+@pytest.mark.parametrize(
+    ("field", "forged_value"),
+    (
+        ("a0_context_builder_calls", 1),
+        ("fault_time_a0_context_artifact_exists", True),
+        ("fault_time_a0_context_sha256", "a" * 64),
+        ("provider_live_context_sha256", "a" * 64),
+        ("rollback_exact_hash_verified", True),
+    ),
+)
+def test_early_terminal_rejects_impossible_context_and_rollback_proof(
+    verdict: str,
+    field: str,
+    forged_value: object,
+) -> None:
+    config = load_e2e_v6_config(CONFIG)
+    terminal = _non_success_terminal(verdict)
+    terminal[field] = forged_value
+
+    with pytest.raises(ValueError, match="context|rollback"):
+        build_expected_public_result(config, terminal)
+
+
 def test_final_verifier_requires_a_sealed_private_terminal() -> None:
     config = load_e2e_v6_config(CONFIG)
     public = build_expected_public_result(config, _success_terminal())
