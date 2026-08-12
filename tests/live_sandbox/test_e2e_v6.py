@@ -707,6 +707,151 @@ def test_v6_executes_post_preflight_failure_mapping_without_provider_misclassifi
     assert (roots.invocation_b / "terminal.json").is_file()
 
 
+def test_v6_source_batch_failure_preserves_tracker_root_and_remains_verifiable(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = load_e2e_v6_config(CONFIG)
+    roots = E2EV6PrivateRoots(tmp_path / "source-batch-failure")
+    _prepare_approved_v6(config, roots)
+    FakeEnvironment.fail_at = None
+    FakeEnvironment.next_controller_read_failures = 0
+    FakeEnvironment.next_controller_mismatch = False
+    provider = FakeProvider()
+    snapshots = iter(
+        (
+            {"frontend": (100.0, 1.0, 20.0)},
+            {"frontend": (100.0, 30.0, 40.0)},
+        )
+    )
+
+    monkeypatch.setattr(
+        e2e_v3,
+        "_capture_sli_window",
+        lambda *_, phase: _sli_window(phase),
+    )
+    monkeypatch.setattr(e2e_v3, "fault_impact_passed", lambda *_: True)
+    monkeypatch.setattr(
+        e2e_v3,
+        "_broad_metric_snapshot",
+        lambda *_, **__: next(snapshots),
+    )
+
+    def fail_source_batch(*_: object, **__: object) -> object:
+        raise RuntimeError("injected source batch failure before result sealing")
+
+    monkeypatch.setattr(e2e_v3, "collect_ordered_source_batch", fail_source_batch)
+
+    terminal = run_invocation_b(
+        config,
+        roots,
+        provider_factory=lambda _: provider,
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        worktree_verifier=_fake_worktree,
+        sleep=lambda _: None,
+        public_writer=lambda *_: (),
+    )
+
+    assert terminal["verdict"] == "BLOCKED_E2E_V6_UNCLASSIFIED_RUNTIME_FAILURE"
+    assert terminal["failed_stage"] == "SOURCE_CAPTURE_WINDOW_STARTED"
+    assert terminal["last_completed_stage"] == "BASELINE_CONFIGURATION_VERIFIED"
+    assert terminal["failure_code"] == "UNCLASSIFIED_RUNTIME_FAILURE"
+    assert terminal["provider_calls"] == 1
+    assert terminal["model_calls"] == 0
+    assert terminal["fault_injections"] == 1
+    assert terminal["forward_mutations"] == 0
+    assert terminal["rollback_mutations"] == 0
+    assert "source_availability" not in terminal
+    assert "source_counts" not in terminal
+    assert terminal["cleanup_verdict"] == "CLEAN"
+    assert build_expected_public_result(config, terminal)["verdict"] == (
+        "BLOCKED_E2E_V6_UNCLASSIFIED_RUNTIME_FAILURE"
+    )
+
+
+def test_v6_post_source_seal_failure_preserves_complete_source_truth(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = load_e2e_v6_config(CONFIG)
+    roots = E2EV6PrivateRoots(tmp_path / "post-source-seal-failure")
+    _prepare_approved_v6(config, roots)
+    FakeEnvironment.fail_at = None
+    provider = FakeProvider()
+    snapshots = iter(
+        (
+            {"frontend": (100.0, 1.0, 20.0)},
+            {"frontend": (100.0, 30.0, 40.0)},
+        )
+    )
+    monkeypatch.setattr(
+        e2e_v3,
+        "_capture_sli_window",
+        lambda *_, phase: _sli_window(phase),
+    )
+    monkeypatch.setattr(e2e_v3, "fault_impact_passed", lambda *_: True)
+    monkeypatch.setattr(
+        e2e_v3,
+        "_broad_metric_snapshot",
+        lambda *_, **__: next(snapshots),
+    )
+
+    def fail_after_source_seal(*_: object, **kwargs: object) -> object:
+        run_root = kwargs["run_root"]
+        assert isinstance(run_root, Path)
+        tracker: Any = kwargs["tracker"]
+        counts = {"METRICS": 5, "LOGS": 6, "TRACES": 4}
+        write_private_json(
+            run_root / "source-results.json",
+            {
+                "schema_version": "live-e2e.source-results.v6",
+                "results": [
+                    {"source": source, "status": "AVAILABLE"}
+                    for source in ("METRICS", "LOGS", "TRACES")
+                ],
+                "source_counts": counts,
+                "invalid_ref_count": 0,
+                "all_refs_resolve": True,
+                "source_results_sha256": "b" * 64,
+                "combined_resolver_sha256": "a" * 64,
+            },
+            create_once=True,
+        )
+        tracker.pass_stage(DiagnosticStage.EVIDENCE_RESOLUTION_COMPLETED)
+        raise RuntimeError("injected failure after source result sealing")
+
+    monkeypatch.setattr(e2e_v3, "collect_ordered_source_batch", fail_after_source_seal)
+
+    terminal = run_invocation_b(
+        config,
+        roots,
+        provider_factory=lambda _: provider,
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        worktree_verifier=_fake_worktree,
+        sleep=lambda _: None,
+        public_writer=lambda *_: (),
+    )
+
+    assert terminal["verdict"] == "BLOCKED_E2E_V6_UNCLASSIFIED_RUNTIME_FAILURE"
+    assert terminal["failed_stage"] == "SOURCE_AVAILABILITY_GATE_EVALUATED"
+    assert terminal["last_completed_stage"] == "EVIDENCE_RESOLUTION_COMPLETED"
+    assert terminal["failure_code"] == "UNCLASSIFIED_RUNTIME_FAILURE"
+    assert terminal["source_availability"] == {
+        "METRICS": "AVAILABLE",
+        "LOGS": "AVAILABLE",
+        "TRACES": "AVAILABLE",
+    }
+    assert terminal["source_counts"] == {"METRICS": 5, "LOGS": 6, "TRACES": 4}
+    assert terminal["invalid_refs"] == 0
+    assert terminal["all_refs_resolve"] is True
+    assert terminal["cleanup_verdict"] == "CLEAN"
+    assert build_expected_public_result(config, terminal)["verdict"] == (
+        "BLOCKED_E2E_V6_UNCLASSIFIED_RUNTIME_FAILURE"
+    )
+
+
 def test_v6_executes_realizable_public_result_verification_failure_terminal(
     tmp_path: Path,
 ) -> None:
@@ -858,6 +1003,207 @@ def _sli_window(phase: str) -> SLIWindow:
         p95_latency_ms=20.0 if phase == "BASELINE" else 40.0,
         runtime_health=1.0,
         sample_count=3,
+    )
+
+
+def _patch_live_fault_projection_inputs(
+    monkeypatch: pytest.MonkeyPatch,
+    roots: E2EV6PrivateRoots,
+) -> None:
+    def collect_source_batch(*_: object, **kwargs: object) -> object:
+        run_root = kwargs["run_root"]
+        assert isinstance(run_root, Path)
+        counts = {"METRICS": 5, "LOGS": 6, "TRACES": 4}
+        write_private_json(
+            run_root / "source-results.json",
+            {
+                "schema_version": "live-e2e.source-results.v6",
+                "results": [
+                    {"source": source, "status": "AVAILABLE"}
+                    for source in ("METRICS", "LOGS", "TRACES")
+                ],
+                "source_counts": counts,
+                "invalid_ref_count": 0,
+                "all_refs_resolve": True,
+                "source_results_sha256": "b" * 64,
+                "combined_resolver_sha256": "a" * 64,
+            },
+            create_once=True,
+        )
+        results = tuple(
+            SimpleNamespace(
+                source=source,
+                status=SimpleNamespace(value="AVAILABLE"),
+                target_record_count=counts[source],
+                invalid_ref_count=0,
+            )
+            for source in ("METRICS", "LOGS", "TRACES")
+        )
+        return SimpleNamespace(
+            source_results=results,
+            source_counts=counts,
+            invalid_ref_count=0,
+        )
+
+    snapshots = iter(
+        (
+            {
+                "checkout": (100.0, 1.0, 20.0),
+                "currency": (100.0, 1.0, 20.0),
+                "frontend": (100.0, 1.0, 20.0),
+            },
+            {
+                "checkout": (100.0, 30.0, 40.0),
+                "currency": (100.0, 20.0, 35.0),
+                "frontend": (100.0, 10.0, 30.0),
+            },
+        )
+    )
+    observed_at = datetime(2026, 8, 12, 12, tzinfo=timezone.utc)
+
+    def broad_logs(*_: object, **__: object) -> tuple[LiveLogObservation, ...]:
+        return tuple(
+            LiveLogObservation(
+                observed_at=observed_at,
+                service_name=service,
+                severity="ERROR",
+                body="observed request error",
+            )
+            for service in ("checkout", "currency", "frontend")
+        )
+
+    def seal_resolver(
+        _: object,
+        *,
+        metrics: tuple[object, ...],
+        logs: tuple[LiveLogObservation, ...],
+        traces: tuple[LiveTraceObservation, ...],
+        **__: object,
+    ) -> tuple[
+        tuple[object, ...],
+        tuple[object, ...],
+        tuple[object, ...],
+        frozenset[str],
+    ]:
+        bound_metrics = tuple(
+            item.model_copy(update={"evidence_ref": f"metric:{index:04d}"})
+            for index, item in enumerate(metrics, 1)
+        )
+        bound_logs = tuple(
+            item.model_copy(update={"evidence_ref": f"log:{index:04d}"})
+            for index, item in enumerate(logs, 1)
+        )
+        refs = frozenset(
+            [item.evidence_ref for item in bound_metrics]
+            + [item.evidence_ref for item in bound_logs]
+        )
+        return bound_metrics, bound_logs, traces, refs  # type: ignore[return-value]
+
+    monkeypatch.setattr(e2e_v3, "collect_ordered_source_batch", collect_source_batch)
+    monkeypatch.setattr(
+        e2e_v3,
+        "_capture_sli_window",
+        lambda *_, phase: _sli_window(phase),
+    )
+    monkeypatch.setattr(e2e_v3, "fault_impact_passed", lambda *_: True)
+    monkeypatch.setattr(
+        e2e_v3,
+        "_broad_metric_snapshot",
+        lambda *_, **__: next(snapshots),
+    )
+    monkeypatch.setattr(e2e_v3, "_capture_broad_logs", broad_logs)
+    monkeypatch.setattr(e2e_v3, "_capture_broad_traces", lambda *_, **__: ())
+    monkeypatch.setattr(e2e_v3, "_seal_model_evidence_resolver", seal_resolver)
+    monkeypatch.setattr(
+        e2e_v3,
+        "_write_model_evidence_index",
+        lambda *_args, **_kwargs: None,
+    )
+
+
+def test_v6_post_projection_evidence_failure_preserves_unclassified_root(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = load_e2e_v6_config(CONFIG)
+    roots = E2EV6PrivateRoots(tmp_path / "post-projection-runtime")
+    _prepare_approved_v6(config, roots)
+    FakeEnvironment.fail_at = None
+    provider = FakeProvider()
+    _patch_live_fault_projection_inputs(monkeypatch, roots)
+
+    def fail_context_evidence(**_: object) -> object:
+        raise RuntimeError("injected context evidence write failure")
+
+    monkeypatch.setattr(
+        e2e_v3,
+        "write_fault_time_context_evidence",
+        fail_context_evidence,
+    )
+
+    terminal = run_invocation_b(
+        config,
+        roots,
+        provider_factory=lambda _: provider,
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        worktree_verifier=_fake_worktree,
+        sleep=lambda _: None,
+        public_writer=lambda *_: (),
+    )
+
+    assert terminal["verdict"] == "BLOCKED_E2E_V6_UNCLASSIFIED_RUNTIME_FAILURE"
+    assert terminal["failed_stage"] == "POST_PROJECTION_RUNTIME"
+    assert terminal["last_completed_stage"] == "MULTISERVICE_PROJECTION_COMPLETED"
+    assert terminal["failure_code"] == "UNCLASSIFIED_RUNTIME_FAILURE"
+    assert terminal["provider_calls"] == 1
+    assert terminal["model_calls"] == 0
+    assert terminal["a0_context_builder_calls"] == 1
+    assert terminal["cleanup_verdict"] == "CLEAN"
+    assert build_expected_public_result(config, terminal)["verdict"] == (
+        "BLOCKED_E2E_V6_UNCLASSIFIED_RUNTIME_FAILURE"
+    )
+
+
+def test_v6_live_provider_failure_preserves_unclassified_root(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = load_e2e_v6_config(CONFIG)
+    roots = E2EV6PrivateRoots(tmp_path / "live-diagnosis-runtime")
+    _prepare_approved_v6(config, roots)
+    FakeEnvironment.fail_at = None
+    provider = FakeProvider()
+    _patch_live_fault_projection_inputs(monkeypatch, roots)
+
+    def fail_live_diagnosis(current_provider: FakeProvider, context: object) -> object:
+        current_provider.diagnose(context)
+        raise RuntimeError("injected live Provider transport failure")
+
+    monkeypatch.setattr(e2e_v3, "_diagnosis_from_initial", fail_live_diagnosis)
+
+    terminal = run_invocation_b(
+        config,
+        roots,
+        provider_factory=lambda _: provider,
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        worktree_verifier=_fake_worktree,
+        sleep=lambda _: None,
+        public_writer=lambda *_: (),
+    )
+
+    assert terminal["verdict"] == "BLOCKED_E2E_V6_UNCLASSIFIED_RUNTIME_FAILURE"
+    assert terminal["failed_stage"] == "LIVE_DIAGNOSIS_RUNTIME"
+    assert terminal["last_completed_stage"] == "MULTISERVICE_PROJECTION_COMPLETED"
+    assert terminal["failure_code"] == "UNCLASSIFIED_RUNTIME_FAILURE"
+    assert terminal["provider_calls"] == 2
+    assert terminal["model_calls"] == 0
+    assert terminal["fault_injections"] == 1
+    assert terminal["forward_mutations"] == 0
+    assert terminal["cleanup_verdict"] == "CLEAN"
+    assert build_expected_public_result(config, terminal)["verdict"] == (
+        "BLOCKED_E2E_V6_UNCLASSIFIED_RUNTIME_FAILURE"
     )
 
 

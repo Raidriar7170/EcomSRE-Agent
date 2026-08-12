@@ -3041,6 +3041,49 @@ def run_invocation_b(
     except Exception as error:
         if provider is not None and hasattr(provider, "calls"):
             terminal["provider_calls"] = provider.calls
+        untracked_runtime_identity: tuple[str, str, str] | None = None
+        current_verdict = terminal.get("verdict")
+        if (
+            tracker.failed_stage is None
+            and current_verdict == "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE"
+        ):
+            untracked_runtime_identity = (
+                "POST_PROJECTION_RUNTIME",
+                "UNCLASSIFIED_RUNTIME_FAILURE",
+                "MULTISERVICE_PROJECTION_COMPLETED",
+            )
+        elif (
+            tracker.failed_stage is None
+            and current_verdict == "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION"
+            and terminal.get("diagnosis_gate") is not False
+        ):
+            untracked_runtime_identity = (
+                "LIVE_DIAGNOSIS_RUNTIME",
+                "UNCLASSIFIED_RUNTIME_FAILURE",
+                "MULTISERVICE_PROJECTION_COMPLETED",
+            )
+        elif (
+            tracker.failed_stage is None
+            and current_verdict == "BLOCKED_POLICY_REJECTED"
+            and terminal.get("policy_verdict") != "DENY"
+        ):
+            untracked_runtime_identity = (
+                "REMEDIATION_RUNTIME"
+                if terminal.get("policy_verdict") == "ALLOW"
+                else "POLICY_RUNTIME",
+                "UNCLASSIFIED_RUNTIME_FAILURE",
+                "MULTISERVICE_PROJECTION_COMPLETED",
+            )
+        if (
+            terminal.get("provider_preflight_passed") is True
+            and tracker.failed_stage is None
+            and terminal.get("verdict") == "BLOCKED_LIVE_TELEMETRY_SOURCE_UNAVAILABLE"
+        ):
+            tracker.fail_external(
+                error,
+                stage=_next_unclassified_failure_stage(tracker),
+                failure_code=DiagnosticFailureCode.UNCLASSIFIED_RUNTIME_FAILURE,
+            )
         if (
             terminal.get("provider_preflight_passed") is True
             and tracker.failed_stage is None
@@ -3052,15 +3095,22 @@ def run_invocation_b(
                 failure_code=DiagnosticFailureCode.UNCLASSIFIED_RUNTIME_FAILURE,
             )
         effective_failure_code = (
-            tracker.failure_code
-            or DiagnosticFailureCode.UNCLASSIFIED_RUNTIME_FAILURE
+            tracker.failure_code or DiagnosticFailureCode.UNCLASSIFIED_RUNTIME_FAILURE
         )
-        if terminal.get("provider_preflight_passed") is True and (
+        if untracked_runtime_identity is not None:
+            terminal["verdict"] = verdict_policy.unclassified_runtime_failure
+        elif terminal.get("provider_preflight_passed") is True and (
             terminal.get("verdict") == verdict_policy.provider_preflight_failed
         ):
-            terminal["verdict"] = verdict_policy.terminal_for(
-                effective_failure_code
-            )
+            terminal["verdict"] = verdict_policy.terminal_for(effective_failure_code)
+        elif terminal.get("verdict") in {
+            "BLOCKED_LIVE_TELEMETRY_SOURCE_UNAVAILABLE",
+            "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE",
+        } and effective_failure_code not in {
+            DiagnosticFailureCode.LIVE_TELEMETRY_SOURCE_GATE_NOT_PASSED,
+            DiagnosticFailureCode.MULTISERVICE_PROJECTION_FAILED,
+        }:
+            terminal["verdict"] = verdict_policy.terminal_for(effective_failure_code)
         terminal["failed_stage"] = (
             None if tracker.failed_stage is None else tracker.failed_stage.value
         )
@@ -3070,6 +3120,12 @@ def run_invocation_b(
             else tracker.root_last_completed_stage.value
         )
         terminal["failure_code"] = effective_failure_code.value
+        if untracked_runtime_identity is not None:
+            (
+                terminal["failed_stage"],
+                terminal["failure_code"],
+                terminal["last_completed_stage"],
+            ) = untracked_runtime_identity
         terminal["failure_type"] = type(error).__name__
         if terminal.get("verdict") == verdict_policy.provider_preflight_failed:
             terminal["failed_stage"] = "PROVIDER_PREFLIGHT"

@@ -304,7 +304,9 @@ def test_shared_invocation_b_executes_version_compatible_failure_matrix(
     )
 
     assert terminal["verdict"] == f"BLOCKED_E2E_{version.upper()}_{terminal_suffix}"
-    assert terminal["verdict"] in get_invocation_b_verdict_policy(version).legal_terminals
+    assert (
+        terminal["verdict"] in get_invocation_b_verdict_policy(version).legal_terminals
+    )
     assert terminal["provider_preflight_passed"] is True
     assert terminal["provider_calls"] == 1
     assert terminal["fault_injections"] == 0
@@ -373,6 +375,20 @@ def test_each_version_public_verifier_accepts_its_own_executed_compose_terminal(
             "verdict": "CLEAN",
         },
     }
+    if version == "v6":
+        terminal.update(
+            {
+                "schema_version": "live-e2e.invocation-b-terminal.v6",
+                "cleanup_verdict": "CLEAN",
+                "cleanup_failure_code": None,
+            }
+        )
+        for field in (
+            "fault_time_a0_context_artifact_exists",
+            "provider_live_context_sha256",
+            "rollback_exact_hash_verified",
+        ):
+            terminal.pop(field)
     if version == "v3":
         public = _public_result_v3(config, terminal)  # type: ignore[arg-type]
         verify_v3(config, public)  # type: ignore[arg-type]
