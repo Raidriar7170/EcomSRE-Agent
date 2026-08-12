@@ -12,6 +12,7 @@ from ecomsre_live_sandbox.e2e_telemetry import (
     LiveMetricObservation,
     LiveTraceObservation,
     build_live_a0_context,
+    scan_model_projection,
 )
 from ecomsre_rca100.projection import RCA100AgentContext
 
@@ -83,6 +84,15 @@ def _write_projection_summary(
     )
     if resolvable_diagnostic_count != diagnostic_count:
         reasons.append("INSUFFICIENT_RESOLVABLE_EVIDENCE")
+    control_truth_findings = scan_model_projection(
+        {
+            "metrics": [item.model_dump(mode="json") for item in diagnostic_metrics],
+            "logs": [item.model_dump(mode="json") for item in diagnostic_logs],
+            "traces": [item.model_dump(mode="json") for item in diagnostic_traces],
+        }
+    )
+    if control_truth_findings:
+        reasons.append("CONTROL_TRUTH_LEAK")
     visible_candidates = {
         item.service_name
         for item in diagnostic_metrics
@@ -165,6 +175,8 @@ def build_fault_time_a0_context(
         raise FaultProjectionUnavailable("NO_LOG_OR_TRACE_DIAGNOSTIC_EVIDENCE")
     if "INSUFFICIENT_RESOLVABLE_EVIDENCE" in reasons:
         raise FaultProjectionUnavailable("INSUFFICIENT_RESOLVABLE_EVIDENCE")
+    if "CONTROL_TRUTH_LEAK" in reasons:
+        raise FaultProjectionUnavailable("CONTROL_TRUTH_LEAK")
     if "VISIBLE_SERVICE_COUNT_BELOW_MINIMUM" in reasons:
         raise FaultProjectionUnavailable("VISIBLE_SERVICE_COUNT_BELOW_MINIMUM")
     return build_live_a0_context(

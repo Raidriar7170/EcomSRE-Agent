@@ -188,6 +188,10 @@ _LEGAL_INVOCATION_B_TERMINALS = frozenset(
         "BLOCKED_PROVIDER_PREFLIGHT",
         "BLOCKED_E2E_V5_IMAGE_AUTHORITY_MISMATCH",
         "BLOCKED_E2E_V5_COMPOSE_STRUCTURE_IDENTITY_MISMATCH",
+        "BLOCKED_E2E_V5_COMPOSE_UP_FAILED",
+        "BLOCKED_E2E_V5_SERVICE_HEALTH_TIMEOUT",
+        "BLOCKED_E2E_V5_BASELINE_CONFIGURATION_UNAVAILABLE",
+        "BLOCKED_E2E_V5_UNCLASSIFIED_RUNTIME_FAILURE",
         "BLOCKED_FAULT_IMPACT_NOT_OBSERVED",
         "BLOCKED_LIVE_TELEMETRY_SOURCE_UNAVAILABLE",
         "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE",
@@ -211,6 +215,7 @@ def _public_result_v5(
         "source_availability": terminal.get("source_availability", {}),
         "source_counts": terminal.get("source_counts", {}),
         "invalid_refs": terminal.get("invalid_refs"),
+        "all_refs_resolve": terminal.get("all_refs_resolve"),
         "projection_broad_counts": terminal.get("projection_broad_counts", {}),
         "projection_diagnostic_counts": terminal.get(
             "projection_diagnostic_counts", {}
@@ -251,6 +256,71 @@ def verify_public_result(
         raise ValueError("public Invocation B semantic hash differs")
     if scan_public_e2e_payload(value):
         raise ValueError("public Invocation B result contains private or control data")
+    if value.get("verdict") == config.authority.invocation_b_success:
+        cleanup = value.get("cleanup")
+        source_availability = value.get("source_availability")
+        source_counts = value.get("source_counts")
+        broad = value.get("projection_broad_counts")
+        diagnostic = value.get("projection_diagnostic_counts")
+        if any(
+            (
+                not isinstance(cleanup, Mapping),
+                not isinstance(source_availability, Mapping),
+                not isinstance(source_counts, Mapping),
+                not isinstance(broad, Mapping),
+                not isinstance(diagnostic, Mapping),
+            )
+        ):
+            raise ValueError("public Invocation B success aggregates are missing")
+        assert isinstance(cleanup, Mapping)
+        assert isinstance(source_availability, Mapping)
+        assert isinstance(source_counts, Mapping)
+        assert isinstance(broad, Mapping)
+        assert isinstance(diagnostic, Mapping)
+        required_sources = {"METRICS", "LOGS", "TRACES"}
+        if any(
+            (
+                set(source_availability) != required_sources,
+                any(source_availability.get(name) != "AVAILABLE" for name in required_sources),
+                set(source_counts) != required_sources,
+                any(
+                    not isinstance(source_counts.get(name), int)
+                    or cast(int, source_counts.get(name)) <= 0
+                    for name in required_sources
+                ),
+                value.get("invalid_refs") != 0,
+                value.get("all_refs_resolve") is not True,
+                not isinstance(broad.get("metrics"), int)
+                or cast(int, broad.get("metrics")) <= 0,
+                not isinstance(diagnostic.get("metrics"), int)
+                or cast(int, diagnostic.get("metrics")) <= 0,
+                not (
+                    isinstance(diagnostic.get("logs"), int)
+                    and cast(int, diagnostic.get("logs")) > 0
+                    or isinstance(diagnostic.get("traces"), int)
+                    and cast(int, diagnostic.get("traces")) > 0
+                ),
+                not isinstance(value.get("visible_service_count"), int)
+                or not 3 <= cast(int, value.get("visible_service_count")) <= 8,
+                value.get("fault_injections") != 1,
+                value.get("provider_calls") != 2,
+                value.get("model_calls") != 1,
+                value.get("forward_mutations") != 1,
+                value.get("rollback_mutations") != 0,
+                value.get("fault_impact_gate") is not True,
+                value.get("diagnosis_gate") is not True,
+                value.get("diagnosis_correct") is not True,
+                value.get("plan_action") != "RESTORE_FROZEN_SERVICE_CONFIGURATION",
+                value.get("policy_verdict") != "ALLOW",
+                value.get("recovery_verification") is not True,
+                cleanup.get("verdict") != "CLEAN",
+                cleanup.get("owned_containers") != 0,
+                cleanup.get("owned_networks") != 0,
+                cleanup.get("owned_volumes") != 0,
+                cleanup.get("non_owned_resources_changed") is not False,
+            )
+        ):
+            raise ValueError("public Invocation B success aggregates do not recompute")
 
 
 def _write_new_public(path: Path, payload: bytes) -> None:

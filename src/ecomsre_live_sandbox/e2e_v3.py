@@ -2459,6 +2459,8 @@ def run_invocation_b(
         "approval_mode": "HUMAN_PREAUTHORIZED_FROZEN_REMEDIATION_RUNBOOK",
         "provider_calls": 0,
         "model_calls": 0,
+        "a0_context_builder_calls": 0,
+        "fault_time_a0_context_sha256": None,
         "fault_injections": 0,
         "forward_mutations": 0,
         "rollback_mutations": 0,
@@ -2764,6 +2766,9 @@ def run_invocation_b(
 
         def build_context() -> Any:
             if schema_suffix == "v5":
+                terminal["a0_context_builder_calls"] = cast(
+                    int, terminal["a0_context_builder_calls"]
+                ) + 1
                 return build_fault_time_a0_context(
                     window_start=baseline[0].started_at,
                     window_end=fault[-1].ended_at,
@@ -2795,6 +2800,18 @@ def run_invocation_b(
             _enrich_v5_invocation_b_terminal(roots, terminal)
         terminal["visible_service_count"] = len(context.visible_entities)
         terminal["projection_completed"] = True
+        if schema_suffix == "v5":
+            fault_context_path = (
+                roots.invocation_b / "fault-time-a0-context.json"
+            )
+            write_private_json(
+                fault_context_path,
+                context,
+                create_once=True,
+            )
+            terminal["fault_time_a0_context_sha256"] = file_sha256(
+                fault_context_path
+            )
         _write_model_evidence_index(
             cast(Any, roots),
             context,
@@ -2927,13 +2944,36 @@ def run_invocation_b(
     except Exception as error:
         if provider is not None and hasattr(provider, "calls"):
             terminal["provider_calls"] = provider.calls
-        if tracker.failure_code is DiagnosticFailureCode.IMAGE_AUTHORITY_MISMATCH:
-            terminal["verdict"] = (
-                f"BLOCKED_E2E_{schema_suffix.upper()}_IMAGE_AUTHORITY_MISMATCH"
-            )
-        elif tracker.failure_code is DiagnosticFailureCode.COMPOSE_STRUCTURE_IDENTITY_MISMATCH:
-            terminal["verdict"] = (
-                f"BLOCKED_E2E_{schema_suffix.upper()}_COMPOSE_STRUCTURE_IDENTITY_MISMATCH"
+        if terminal.get("provider_preflight_passed") is True and (
+            terminal.get("verdict") == "BLOCKED_PROVIDER_PREFLIGHT"
+        ):
+            marker = schema_suffix.upper()
+            runtime_verdicts = {
+                DiagnosticFailureCode.IMAGE_AUTHORITY_MISMATCH: (
+                    f"BLOCKED_E2E_{marker}_IMAGE_AUTHORITY_MISMATCH"
+                ),
+                DiagnosticFailureCode.COMPOSE_STRUCTURE_IDENTITY_MISMATCH: (
+                    f"BLOCKED_E2E_{marker}_COMPOSE_STRUCTURE_IDENTITY_MISMATCH"
+                ),
+                DiagnosticFailureCode.COMPOSE_UP_FAILED: (
+                    f"BLOCKED_E2E_{marker}_COMPOSE_UP_FAILED"
+                ),
+                DiagnosticFailureCode.SERVICE_HEALTH_TIMEOUT: (
+                    f"BLOCKED_E2E_{marker}_SERVICE_HEALTH_TIMEOUT"
+                ),
+                DiagnosticFailureCode.SERVICE_EXITED_BEFORE_READY: (
+                    f"BLOCKED_E2E_{marker}_SERVICE_HEALTH_TIMEOUT"
+                ),
+                DiagnosticFailureCode.BASELINE_CONFIGURATION_UNAVAILABLE: (
+                    f"BLOCKED_E2E_{marker}_BASELINE_CONFIGURATION_UNAVAILABLE"
+                ),
+                DiagnosticFailureCode.BASELINE_CONFIGURATION_MISMATCH: (
+                    f"BLOCKED_E2E_{marker}_BASELINE_CONFIGURATION_UNAVAILABLE"
+                ),
+            }
+            terminal["verdict"] = runtime_verdicts.get(
+                tracker.failure_code or DiagnosticFailureCode.UNCLASSIFIED_RUNTIME_FAILURE,
+                f"BLOCKED_E2E_{marker}_UNCLASSIFIED_RUNTIME_FAILURE",
             )
         terminal["failed_stage"] = (
             None if tracker.failed_stage is None else tracker.failed_stage.value

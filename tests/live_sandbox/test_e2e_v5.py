@@ -10,16 +10,22 @@ from typing import Any
 import pytest
 
 from ecomsre_live_sandbox import e2e_v1, e2e_v3
-from ecomsre_live_sandbox.contracts import CleanupResult, write_private_json
+from ecomsre_live_sandbox.contracts import (
+    CleanupResult,
+    canonical_sha256,
+    write_private_json,
+)
 from ecomsre_live_sandbox.e2e_diagnostics import (
     DiagnosticCommandIdentity,
     V5_DIAGNOSTIC_FAILURE_CODES,
     V5_DIAGNOSTIC_STAGES,
 )
 from ecomsre_live_sandbox.e2e_v5 import (
+    _public_result_v5,
     run_canonical_invocation_a,
     run_development_probe,
     run_invocation_b,
+    verify_public_result,
 )
 from ecomsre_live_sandbox.e2e_v5_contracts import (
     E2EV5PrivateRoots,
@@ -406,3 +412,73 @@ def test_v5_provider_preflight_and_live_batch_keep_builder_boundary(
     assert source.count("collect_ordered_source_batch(") == 1
     assert "if schema_suffix == \"v5\"" in source
     assert "build_fault_time_a0_context(" in source
+
+
+def test_v5_public_verifier_recomputes_success_aggregates() -> None:
+    config = load_e2e_v5_config(CONFIG)
+    terminal = {
+        "verdict": config.authority.invocation_b_success,
+        "implementation_commit": "d" * 40,
+        "source_availability": {
+            "METRICS": "AVAILABLE",
+            "LOGS": "AVAILABLE",
+            "TRACES": "AVAILABLE",
+        },
+        "source_counts": {"METRICS": 5, "LOGS": 28, "TRACES": 14},
+        "invalid_refs": 0,
+        "all_refs_resolve": True,
+        "projection_broad_counts": {"metrics": 5, "logs": 28, "traces": 14},
+        "projection_diagnostic_counts": {"metrics": 3, "logs": 3, "traces": 0},
+        "empty_model_streams": ["TRACES"],
+        "projection_reason_codes": ["NO_DIAGNOSTIC_TRACES"],
+        "visible_service_count": 3,
+        "fault_injections": 1,
+        "provider_calls": 2,
+        "model_calls": 1,
+        "forward_mutations": 1,
+        "rollback_mutations": 0,
+        "fault_impact_passed": True,
+        "diagnosis_gate": True,
+        "diagnosis_correct": True,
+        "plan_action": "RESTORE_FROZEN_SERVICE_CONFIGURATION",
+        "policy_verdict": "ALLOW",
+        "recovery_verification_passed": True,
+        "cleanup": {
+            "baseline_restored": True,
+            "owned_containers": 0,
+            "owned_networks": 0,
+            "owned_volumes": 0,
+            "non_owned_resources_changed": False,
+            "verdict": "CLEAN",
+        },
+    }
+    public = _public_result_v5(config, terminal)
+    verify_public_result(config, public)
+
+    for key, forged_value in (
+        ("fault_injections", 0),
+        ("all_refs_resolve", False),
+        ("projection_diagnostic_counts", {"metrics": 3, "logs": 0, "traces": 0}),
+        ("cleanup", {**terminal["cleanup"], "owned_containers": 1}),
+    ):
+        forged = {**public, key: forged_value}
+        core = dict(forged)
+        core.pop("semantic_sha256")
+        forged["semantic_sha256"] = canonical_sha256(core)
+        with pytest.raises(ValueError, match="success aggregates"):
+            verify_public_result(config, forged)
+
+
+def test_v5_runtime_failure_verdicts_are_not_provider_preflight(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = inspect.getsource(e2e_v3.run_invocation_b)
+
+    assert "provider_preflight_passed" in source
+    for marker in (
+        "COMPOSE_UP_FAILED",
+        "SERVICE_HEALTH_TIMEOUT",
+        "BASELINE_CONFIGURATION_UNAVAILABLE",
+        "UNCLASSIFIED_RUNTIME_FAILURE",
+    ):
+        assert marker in source

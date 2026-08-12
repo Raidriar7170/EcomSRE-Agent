@@ -174,3 +174,31 @@ def test_unresolved_diagnostic_input_is_summarized_before_builder(tmp_path) -> N
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     assert summary["logs_with_resolver_ref"] == 0
     assert "INSUFFICIENT_RESOLVABLE_EVIDENCE" in summary["reason_codes"]
+
+
+def test_control_truth_failure_is_recorded_before_builder(tmp_path) -> None:
+    metrics = tuple(
+        item.model_copy(update={"service_name": "paymentfailure"})
+        for item in _metrics()
+    )
+    logs = tuple(
+        item.model_copy(update={"service_name": "paymentfailure"})
+        for item in _logs()
+    )
+    summary_path = tmp_path / "projection-input-summary.json"
+
+    with pytest.raises(FaultProjectionUnavailable) as captured:
+        build_fault_time_a0_context(
+            window_start=NOW,
+            window_end=NOW + timedelta(seconds=60),
+            metrics=metrics,
+            logs=logs,
+            traces=(),
+            resolvable_refs=_refs(metrics, logs),
+            projection=_policy(),
+            summary_path=summary_path,
+        )
+
+    assert captured.value.reason_code == "CONTROL_TRUTH_LEAK"
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    assert "CONTROL_TRUTH_LEAK" in summary["reason_codes"]
