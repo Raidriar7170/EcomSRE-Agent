@@ -257,6 +257,7 @@ def _non_success_terminal(verdict: str) -> dict[str, object]:
                 "failed_stage": "CLEANUP_COMPLETED",
                 "last_completed_stage": "COMPOSE_DOWN_RETURNED",
                 "failure_code": "CLEANUP_FAILED",
+                "cleanup_failure_code": "CLEANUP_FAILED",
             }
         )
     elif verdict == "BLOCKED_PUBLIC_RESULT_VERIFICATION":
@@ -524,10 +525,14 @@ def test_blocked_cleanup_rejects_invalid_field_types_and_ranges(
     ("field", "forged_value"),
     (
         ("a0_context_builder_calls", 1),
+        ("a0_context_builder_calls", False),
         ("fault_time_a0_context_artifact_exists", True),
+        ("fault_time_a0_context_artifact_exists", 0),
         ("fault_time_a0_context_sha256", "a" * 64),
         ("provider_live_context_sha256", "a" * 64),
         ("rollback_exact_hash_verified", True),
+        ("rollback_exact_hash_verified", 1),
+        ("rollback_exact_hash_verified", "true"),
     ),
 )
 def test_early_terminal_rejects_impossible_context_and_rollback_proof(
@@ -540,6 +545,89 @@ def test_early_terminal_rejects_impossible_context_and_rollback_proof(
     terminal[field] = forged_value
 
     with pytest.raises(ValueError, match="context|rollback"):
+        build_expected_public_result(config, terminal)
+
+
+@pytest.mark.parametrize(
+    ("field", "forged_value"),
+    (
+        ("a0_context_builder_calls", 1),
+        ("a0_context_builder_calls", False),
+        ("fault_time_a0_context_artifact_exists", True),
+        ("fault_time_a0_context_artifact_exists", 0),
+        ("fault_time_a0_context_sha256", "a" * 64),
+        ("provider_live_context_sha256", "a" * 64),
+        ("rollback_exact_hash_verified", True),
+        ("rollback_exact_hash_verified", 1),
+        ("rollback_exact_hash_verified", "true"),
+    ),
+)
+def test_cleanup_wrapped_early_terminal_rejects_context_and_rollback_proof(
+    field: str,
+    forged_value: object,
+) -> None:
+    config = load_e2e_v6_config(CONFIG)
+    terminal = _non_success_terminal("BLOCKED_CLEANUP_INCOMPLETE")
+    terminal.update(
+        {
+            "provider_calls": 1,
+            "model_calls": 0,
+            "fault_injections": 0,
+            "forward_mutations": 0,
+            "rollback_mutations": 0,
+            "a0_context_builder_calls": 0,
+            "fault_time_a0_context_artifact_exists": False,
+            "fault_time_a0_context_sha256": None,
+            "provider_live_context_sha256": None,
+            "rollback_exact_hash_verified": None,
+            "failed_stage": "COMPOSE_START_RETURNED",
+            "last_completed_stage": "COMPOSE_START_REQUESTED",
+            "failure_code": "COMPOSE_UP_FAILED",
+        }
+    )
+    terminal[field] = forged_value
+
+    with pytest.raises(ValueError, match="context|rollback"):
+        build_expected_public_result(config, terminal)
+
+
+@pytest.mark.parametrize(
+    ("field", "forged_value"),
+    (
+        ("failure_code", "CLEANUP_FAILED"),
+        ("last_completed_stage", "WORKTREE_VERIFIED"),
+        ("cleanup_failure_code", None),
+        ("cleanup_failure_code", "COMPOSE_UP_FAILED"),
+        ("cleanup_failure_code", 1),
+    ),
+)
+def test_cleanup_wrapped_compose_terminal_rejects_root_identity_contradictions(
+    field: str,
+    forged_value: object,
+) -> None:
+    config = load_e2e_v6_config(CONFIG)
+    terminal = _non_success_terminal("BLOCKED_CLEANUP_INCOMPLETE")
+    terminal.update(
+        {
+            "provider_calls": 1,
+            "model_calls": 0,
+            "fault_injections": 0,
+            "forward_mutations": 0,
+            "rollback_mutations": 0,
+            "a0_context_builder_calls": 0,
+            "fault_time_a0_context_artifact_exists": False,
+            "fault_time_a0_context_sha256": None,
+            "provider_live_context_sha256": None,
+            "rollback_exact_hash_verified": None,
+            "failed_stage": "COMPOSE_START_RETURNED",
+            "last_completed_stage": "COMPOSE_START_REQUESTED",
+            "failure_code": "COMPOSE_UP_FAILED",
+            "cleanup_failure_code": "CLEANUP_FAILED",
+        }
+    )
+    terminal[field] = forged_value
+
+    with pytest.raises(ValueError, match="cleanup|failure code|last completed"):
         build_expected_public_result(config, terminal)
 
 

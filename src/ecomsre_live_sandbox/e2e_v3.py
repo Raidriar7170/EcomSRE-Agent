@@ -3116,17 +3116,28 @@ def run_invocation_b(
         terminal["cleanup"] = cleanup_payload
         terminal["cleanup_failure_code"] = cleanup_failure
         if cleanup_verdict == "BLOCKED":
+            preserved_failed_stage = terminal.get("failed_stage")
+            preserved_last_completed_stage = terminal.get("last_completed_stage")
+            preserved_failure_code = terminal.get("failure_code")
             terminal["verdict"] = verdict_policy.cleanup_incomplete
             terminal["failed_stage"] = (
-                None if tracker.failed_stage is None else tracker.failed_stage.value
+                preserved_failed_stage
+                if isinstance(preserved_failed_stage, str)
+                else None
+                if tracker.failed_stage is None
+                else tracker.failed_stage.value
             )
             terminal["last_completed_stage"] = (
-                None
+                preserved_last_completed_stage
+                if isinstance(preserved_last_completed_stage, str)
+                else None
                 if tracker.root_last_completed_stage is None
                 else tracker.root_last_completed_stage.value
             )
             terminal["failure_code"] = (
-                tracker.failure_code.value
+                preserved_failure_code
+                if isinstance(preserved_failure_code, str)
+                else tracker.failure_code.value
                 if tracker.failure_code is not None
                 else DiagnosticFailureCode.UNCLASSIFIED_RUNTIME_FAILURE.value
             )

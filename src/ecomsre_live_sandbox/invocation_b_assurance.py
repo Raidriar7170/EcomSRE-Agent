@@ -270,11 +270,15 @@ def _require_non_success_invariants(
             raise ValueError("non-success fault-time context binding is invalid")
 
     def require_no_context() -> None:
+        builder_calls = terminal.get("a0_context_builder_calls")
+        artifact_exists = terminal.get("fault_time_a0_context_artifact_exists")
         if any(
             (
-                terminal.get("a0_context_builder_calls") != 0,
-                terminal.get("fault_time_a0_context_artifact_exists")
-                not in {None, False},
+                type(builder_calls) is not int,
+                type(builder_calls) is int and builder_calls != 0,
+                artifact_exists is not None
+                and type(artifact_exists) is not bool,
+                type(artifact_exists) is bool and artifact_exists is not False,
                 terminal.get("fault_time_a0_context_sha256") is not None,
                 terminal.get("provider_live_context_sha256") is not None,
             )
@@ -282,9 +286,14 @@ def _require_non_success_invariants(
             raise ValueError("early terminal contains impossible context proof")
 
     def require_no_rollback_proof() -> None:
-        if counts["rollback_mutations"] != 0 or terminal.get(
-            "rollback_exact_hash_verified"
-        ) is True:
+        exact_hash = terminal.get("rollback_exact_hash_verified")
+        if any(
+            (
+                counts["rollback_mutations"] != 0,
+                exact_hash is not None and type(exact_hash) is not bool,
+                type(exact_hash) is bool and exact_hash is not False,
+            )
+        ):
             raise ValueError("pre-rollback terminal contains impossible rollback proof")
 
     def require_pre_mutation_gates() -> None:
@@ -515,6 +524,8 @@ def _require_non_success_invariants(
             failure_code="PUBLIC_RESULT_VERIFICATION_FAILED",
         )
     elif verdict == "BLOCKED_CLEANUP_INCOMPLETE":
+        if terminal.get("cleanup_failure_code") != "CLEANUP_FAILED":
+            raise ValueError("cleanup terminal lacks its exact cleanup failure code")
         if any(
             (
                 counts["provider_calls"] > 2,
@@ -542,17 +553,101 @@ def _require_non_success_invariants(
             raise ValueError("cleanup terminal has impossible stage counts")
         if counts["model_calls"] == 1:
             require_context_binding()
+        elif terminal.get("failed_stage") == "MULTISERVICE_PROJECTION_COMPLETED":
+            builder_calls = terminal.get("a0_context_builder_calls")
+            artifact_exists = terminal.get(
+                "fault_time_a0_context_artifact_exists"
+            )
+            if any(
+                (
+                    type(builder_calls) is not int,
+                    type(builder_calls) is int and builder_calls != 1,
+                    artifact_exists is not None
+                    and type(artifact_exists) is not bool,
+                    type(artifact_exists) is bool and artifact_exists is not False,
+                    terminal.get("fault_time_a0_context_sha256") is not None,
+                    terminal.get("provider_live_context_sha256") is not None,
+                )
+            ):
+                raise ValueError(
+                    "cleanup-wrapped projection failure has impossible context truth"
+                )
+        else:
+            require_no_context()
         if counts["forward_mutations"] == 1:
             require_pre_mutation_gates()
         if terminal.get("recovery_verification_passed") is True and counts[
             "forward_mutations"
         ] != 1:
             raise ValueError("cleanup terminal recovery truth is impossible")
-        if counts["rollback_mutations"] == 0 and terminal.get(
-            "rollback_exact_hash_verified"
-        ) is True:
-            raise ValueError("cleanup terminal contains impossible rollback proof")
-        require_failure_identity()
+        if counts["rollback_mutations"] == 0:
+            require_no_rollback_proof()
+        cleanup_root_identities = {
+            "PROVIDER_PREFLIGHT": (
+                "PROVIDER_PREFLIGHT_FAILED",
+                "WORKTREE_VERIFIED",
+            ),
+            "COMPOSE_START_RETURNED": (
+                "COMPOSE_UP_FAILED",
+                "COMPOSE_START_REQUESTED",
+            ),
+            "SERVICE_HEALTH_WAIT_STARTED": (
+                "SERVICE_HEALTH_TIMEOUT",
+                "OWNED_RESOURCE_INVENTORY_VERIFIED",
+            ),
+            "BASELINE_CONFIGURATION_READ_STARTED": (
+                "BASELINE_CONFIGURATION_UNAVAILABLE",
+                "STABILIZATION_COMPLETED",
+            ),
+            "BASELINE_CONFIGURATION_VERIFIED": (
+                "BASELINE_CONFIGURATION_MISMATCH",
+                "BASELINE_CONFIGURATION_READ_STARTED",
+            ),
+            "FAULT_IMPACT_GATE_EVALUATED": (
+                "FAULT_IMPACT_NOT_OBSERVED",
+                "BASELINE_CONFIGURATION_VERIFIED",
+            ),
+            "LIVE_TELEMETRY_SOURCE_GATE_EVALUATED": (
+                "LIVE_TELEMETRY_SOURCE_GATE_NOT_PASSED",
+                "FAULT_IMPACT_GATE_EVALUATED",
+            ),
+            "MULTISERVICE_PROJECTION_COMPLETED": (
+                "MULTISERVICE_PROJECTION_FAILED",
+                "MULTISERVICE_PROJECTION_STARTED",
+            ),
+            "DIAGNOSIS_GATE_EVALUATED": (
+                "DIAGNOSIS_GATE_NOT_PASSED",
+                "MULTISERVICE_PROJECTION_COMPLETED",
+            ),
+            "POLICY_GATE_EVALUATED": (
+                "POLICY_REJECTED",
+                "MULTISERVICE_PROJECTION_COMPLETED",
+            ),
+            "REMEDIATION_VERIFICATION_EVALUATED": (
+                "REMEDIATION_NOT_VERIFIED",
+                "MULTISERVICE_PROJECTION_COMPLETED",
+            ),
+            "ROLLBACK_VERIFICATION_EVALUATED": (
+                "ROLLBACK_FAILED",
+                "MULTISERVICE_PROJECTION_COMPLETED",
+            ),
+            "CLEANUP_COMPLETED": (
+                "CLEANUP_FAILED",
+                "COMPOSE_DOWN_RETURNED",
+            ),
+        }
+        failed_stage = terminal.get("failed_stage")
+        if isinstance(failed_stage, str) and failed_stage in cleanup_root_identities:
+            root_code, root_last = cleanup_root_identities[failed_stage]
+            require_failure_identity(
+                failed_stage=failed_stage,
+                failure_code=root_code,
+                last_completed_stage=root_last,
+            )
+        elif terminal.get("failure_code") == "UNCLASSIFIED_RUNTIME_FAILURE":
+            require_failure_identity(failure_code="UNCLASSIFIED_RUNTIME_FAILURE")
+        else:
+            raise ValueError("cleanup terminal lacks a recognized preserved root failure")
     else:
         raise ValueError("non-success terminal lacks a stage-count policy")
     if verdict not in {"BLOCKED_PROVIDER_PREFLIGHT", "BLOCKED_PUBLIC_RESULT_VERIFICATION"} and (
