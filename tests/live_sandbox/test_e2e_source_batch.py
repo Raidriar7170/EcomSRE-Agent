@@ -28,6 +28,12 @@ from ecomsre_live_sandbox.e2e_v4_contracts import (
     E2EV4PrivateRoots,
     load_e2e_v4_config,
 )
+import ecomsre_live_sandbox.e2e_v5 as e2e_v5_module
+from ecomsre_live_sandbox.e2e_v5 import _collect_v5_no_fault_evidence
+from ecomsre_live_sandbox.e2e_v5_contracts import (
+    E2EV5PrivateRoots,
+    load_e2e_v5_config,
+)
 from ecomsre_live_sandbox.instrumentation_v2 import (
     LogsSourceProbe,
     MetricsSourceProbe,
@@ -43,6 +49,7 @@ NOW = datetime(2026, 8, 12, tzinfo=timezone.utc)
 TELEMETRY_CONFIG = Path("config/live-telemetry-instrumentation-v3")
 E2E_CONFIG = Path("config/live-fault-a0-controlled-remediation-e2e-v3")
 E2E_V4_CONFIG = Path("config/live-fault-a0-controlled-remediation-e2e-v4")
+E2E_V5_CONFIG = Path("config/live-fault-a0-controlled-remediation-e2e-v5")
 ENDPOINTS = LocalEndpoints(
     frontend="http://127.0.0.1:18080",
     flag_control="http://127.0.0.1:18080/feature/api",
@@ -248,11 +255,10 @@ def _collect(
         metrics_request_json=transports.metrics,
         logs_request_json=transports.logs,
         traces_request_json=transports.traces,
-        projection_collector=_projection_inputs,
     )
 
 
-def test_real_collector_executes_ordered_batch_resolvers_and_projection(
+def test_real_collector_executes_ordered_batch_and_resolvers_without_projection(
     tmp_path: Path,
 ) -> None:
     transports = FixtureTransports()
@@ -270,8 +276,8 @@ def test_real_collector_executes_ordered_batch_resolvers_and_projection(
     assert all(item.target_record_count > 0 for item in evidence.source_results)
     assert evidence.invalid_refs == 0
     assert evidence.all_refs_resolve is True
-    assert 3 <= evidence.visible_service_count <= 8
-    assert evidence.scenario_truth_leaked is False
+    assert len(evidence.combined_resolver_sha256) == 64
+    assert len(evidence.source_results_sha256) == 64
     assert all(count > 0 for count in transports.calls.values())
     assert all(
         (tmp_path / "telemetry" / "probe-01" / source / "resolver.json").is_file()
@@ -285,6 +291,8 @@ def test_real_collector_executes_ordered_batch_resolvers_and_projection(
         "LOGS",
         "TRACES",
     ]
+    assert not (tmp_path / "telemetry" / "probe-01" / "projection").exists()
+    assert not (tmp_path / "telemetry" / "probe-01" / "model-evidence-index.json").exists()
 
 
 def test_production_v4_adapter_constructs_no_fault_evidence_from_real_collector(
@@ -320,6 +328,56 @@ def test_production_v4_adapter_constructs_no_fault_evidence_from_real_collector(
     assert 3 <= evidence.visible_service_count <= 8
     assert evidence.scenario_truth_leaked is False
     assert all(count > 0 for count in transports.calls.values())
+
+
+def test_production_v5_adapter_evaluates_readiness_without_projection(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = load_e2e_v5_config(E2E_V5_CONFIG)
+    roots = E2EV5PrivateRoots(tmp_path / "private-v5")
+    roots.prepare()
+    run_root = roots.probe_root(1)
+    run_root.mkdir(parents=True)
+    transports = FixtureTransports()
+    journal = DiagnosticJournal(
+        run_root / "events.jsonl",
+        run_kind=DiagnosticRunKind.DEVELOPMENT_PROBE,
+        run_id="probe-01",
+    )
+    tracker = _StageTracker(
+        journal,
+        ExceptionArtifactStore(run_root / "exceptions"),
+    )
+    monkeypatch.setattr(
+        e2e_v5_module,
+        "_broad_metric_snapshot",
+        lambda *_args, **_kwargs: {
+            service: (100.0, 1.0, 20.0)
+            for service in ("checkout", "currency", "frontend", "payment")
+        },
+    )
+
+    evidence = _collect_v5_no_fault_evidence(
+        config,
+        roots,
+        run_root,
+        tracker,
+        ENDPOINTS,
+        lambda _: None,
+        services_healthy_count=25,
+        baseline_exact=True,
+        metrics_request_json=transports.metrics,
+        logs_request_json=transports.logs,
+        traces_request_json=transports.traces,
+        now=Clock().now,
+    )
+
+    assert evidence.readiness.passed is True
+    assert evidence.readiness.broad_metric_service_count == 4
+    assert evidence.source_batch.all_refs_resolve is True
+    assert not (run_root / "projection-summary.json").exists()
+    assert not (roots.telemetry / "probe-01" / "projection").exists()
 
 
 def test_broad_log_projection_bounds_field_caps_and_prefers_keyword_multifield(
@@ -413,17 +471,24 @@ def test_unavailable_metrics_preserves_logs_and_traces_terminals(tmp_path: Path)
     assert results[2]["status"] == SourceProbeStatus.AVAILABLE.value
 
 
-def test_projection_evidence_index_is_run_scoped(tmp_path: Path) -> None:
+def test_source_batch_hashes_are_run_scoped_without_model_evidence(tmp_path: Path) -> None:
     first = _collect(tmp_path, FixtureTransports(), run_id="probe-01")
     second = _collect(tmp_path, FixtureTransports(), run_id="probe-02")
 
-    assert first.projection_sha256 == second.projection_sha256
+    assert len(first.source_results_sha256) == 64
+    assert len(second.source_results_sha256) == 64
     assert (
+        tmp_path / "development" / "probe-01" / "source-results.json"
+    ).is_file()
+    assert (
+        tmp_path / "development" / "probe-02" / "source-results.json"
+    ).is_file()
+    assert not (
         tmp_path / "telemetry" / "probe-01" / "model-evidence-index.json"
-    ).is_file()
-    assert (
+    ).exists()
+    assert not (
         tmp_path / "telemetry" / "probe-02" / "model-evidence-index.json"
-    ).is_file()
+    ).exists()
     assert not (tmp_path / "telemetry" / "model-evidence-index.json").exists()
 
 
@@ -516,3 +581,4 @@ def test_v4_collector_has_no_singleton_terminalization() -> None:
     assert "terminalize_source_probes((" not in source
     assert "probes = (metrics, logs, traces)" in source
     assert source.count("terminalize_source_probes(") == 1
+    assert "build_live_a0_context" not in source

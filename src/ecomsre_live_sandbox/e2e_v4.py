@@ -35,7 +35,7 @@ from ecomsre_live_sandbox.e2e_source_batch import (
     JsonRequester,
     ProjectionCollector,
     _default_projection_inputs,
-    collect_ordered_source_batch,
+    collect_ordered_source_evidence_v4,
 )
 from ecomsre_live_sandbox.e2e_v3 import NoFaultEvidence
 from ecomsre_live_sandbox.e2e_v3_contracts import (
@@ -52,6 +52,15 @@ from ecomsre_live_sandbox.instrumentation_v2 import load_instrumentation_config
 
 E2E_V4_CONFIG_RELATIVE = Path("config/live-fault-a0-controlled-remediation-e2e-v4")
 TELEMETRY_V3_CONFIG_RELATIVE = Path("config/live-telemetry-instrumentation-v3")
+
+
+def _schema_suffix(config: object) -> str:
+    version = str(getattr(getattr(config, "authority"), "version"))
+    return "v5" if version.endswith("e2e-v5") else "v4"
+
+
+def _is_v5(config: object) -> bool:
+    return _schema_suffix(config) == "v5"
 
 _TRACKED_RUNTIME_CONFIG_FILES = {
     "authority.json": E2E_V4_CONFIG_RELATIVE / "authority.json",
@@ -121,6 +130,50 @@ def _verify_worktree(config: E2EV4Config, clean_required: bool) -> str:
 
 def _runtime_config_paths(config: E2EV4Config) -> dict[str, Path]:
     paths = dict(_TRACKED_RUNTIME_CONFIG_FILES)
+    config_relative = E2E_V4_CONFIG_RELATIVE
+    if _is_v5(config):
+        config_relative = Path("config/live-fault-a0-controlled-remediation-e2e-v5")
+        for name in (
+            "authority.json",
+            "development-probes.json",
+            "diagnostics.json",
+            "image-authority.json.schema-or-policy",
+            "projection.json",
+            "reporting.json",
+        ):
+            paths.pop(name, None)
+        paths.update(
+            {
+                name: config_relative / name
+                for name in (
+                    "authority.json",
+                    "development-probes.json",
+                    "diagnostics.json",
+                    "no-fault-readiness.json",
+                    "fault-projection.json",
+                    "reporting.json",
+                )
+            }
+        )
+        paths.update(
+            {
+                "e2e_v5.py": Path("src/ecomsre_live_sandbox/e2e_v5.py"),
+                "e2e_v5_contracts.py": Path(
+                    "src/ecomsre_live_sandbox/e2e_v5_contracts.py"
+                ),
+                "fault_projection.py": Path(
+                    "src/ecomsre_live_sandbox/fault_projection.py"
+                ),
+                "no_fault_readiness.py": Path(
+                    "src/ecomsre_live_sandbox/no_fault_readiness.py"
+                ),
+                "e2e_v5_cli.py": Path("scripts/live_sandbox/e2e_v5.py"),
+                "v4_image_authority_policy": (
+                    E2E_V4_CONFIG_RELATIVE
+                    / "image-authority.json.schema-or-policy"
+                ),
+            }
+        )
     seen = set(paths.values())
     for package in (
         Path("src/ecomsre_live_sandbox"),
@@ -142,7 +195,7 @@ def _runtime_config_paths(config: E2EV4Config) -> dict[str, Path]:
             paths[relative.as_posix()] = relative
             seen.add(relative)
     for config_directory in (
-        E2E_V4_CONFIG_RELATIVE,
+        config_relative,
         TELEMETRY_V3_CONFIG_RELATIVE,
         Path("config/live-telemetry-controlled-remediation-v1"),
     ):
@@ -179,7 +232,7 @@ def _consume_development_budget(
     budget = e2e_v3._read_budget(
         path,
         maximum=config.authority.maximum_development_integration_probes,
-        schema_version="live-e2e.development-budget.v4",
+        schema_version=f"live-e2e.development-budget.{_schema_suffix(config)}",
     )
     runs = budget.get("runs")
     if not isinstance(runs, list):
@@ -255,7 +308,7 @@ def _collect_v4_no_fault_evidence(
     projection_collector: ProjectionCollector = _default_projection_inputs,
     now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
 ) -> NoFaultEvidence:
-    ordered = collect_ordered_source_batch(
+    ordered = collect_ordered_source_evidence_v4(
         instrumentation=load_instrumentation_config(
             config.repository_root / TELEMETRY_V3_CONFIG_RELATIVE
         ),
@@ -328,44 +381,49 @@ def _development_failure_verdict(
     failure_code: DiagnosticFailureCode | None,
     *,
     cleanup_verdict: str,
+    schema_suffix: str = "v4",
 ) -> str:
+    marker = "V5" if schema_suffix == "v5" else "V4"
     if cleanup_verdict == "BLOCKED":
-        return "BLOCKED_E2E_V4_CLEANUP_INCOMPLETE"
+        return f"BLOCKED_E2E_{marker}_CLEANUP_INCOMPLETE"
     mapping = {
         DiagnosticFailureCode.SOURCE_BATCH_CONTRACT_FAILED: (
-            "BLOCKED_E2E_V4_SOURCE_BATCH_CONTRACT_FAILED"
+            f"BLOCKED_E2E_{marker}_SOURCE_BATCH_CONTRACT_FAILED"
         ),
         DiagnosticFailureCode.LIVE_TELEMETRY_SOURCE_GATE_NOT_PASSED: (
-            "BLOCKED_E2E_V4_LIVE_TELEMETRY_SOURCE_GATE_NOT_PASSED"
+            f"BLOCKED_E2E_{marker}_LIVE_TELEMETRY_SOURCE_GATE_NOT_PASSED"
         ),
         DiagnosticFailureCode.EVIDENCE_RESOLUTION_FAILED: (
-            "BLOCKED_E2E_V4_EVIDENCE_RESOLUTION_FAILED"
+            f"BLOCKED_E2E_{marker}_EVIDENCE_RESOLUTION_FAILED"
+        ),
+        DiagnosticFailureCode.NO_FAULT_READINESS_FAILED: (
+            "BLOCKED_E2E_V5_NO_FAULT_READINESS_FAILED"
         ),
         DiagnosticFailureCode.MULTISERVICE_PROJECTION_FAILED: (
-            "BLOCKED_E2E_V4_MULTISERVICE_PROJECTION_FAILED"
+            f"BLOCKED_E2E_{marker}_MULTISERVICE_PROJECTION_FAILED"
         ),
         DiagnosticFailureCode.IMAGE_AUTHORITY_MISMATCH: (
-            "BLOCKED_E2E_V4_IMAGE_AUTHORITY_MISMATCH"
+            f"BLOCKED_E2E_{marker}_IMAGE_AUTHORITY_MISMATCH"
         ),
         DiagnosticFailureCode.COMPOSE_STRUCTURE_IDENTITY_MISMATCH: (
-            "BLOCKED_E2E_V4_COMPOSE_STRUCTURE_IDENTITY_MISMATCH"
+            f"BLOCKED_E2E_{marker}_COMPOSE_STRUCTURE_IDENTITY_MISMATCH"
         ),
-        DiagnosticFailureCode.COMPOSE_UP_FAILED: "BLOCKED_E2E_V4_COMPOSE_UP_FAILED",
+        DiagnosticFailureCode.COMPOSE_UP_FAILED: f"BLOCKED_E2E_{marker}_COMPOSE_UP_FAILED",
         DiagnosticFailureCode.SERVICE_HEALTH_TIMEOUT: (
-            "BLOCKED_E2E_V4_SERVICE_HEALTH_TIMEOUT"
+            f"BLOCKED_E2E_{marker}_SERVICE_HEALTH_TIMEOUT"
         ),
         DiagnosticFailureCode.BASELINE_CONFIGURATION_UNAVAILABLE: (
-            "BLOCKED_E2E_V4_BASELINE_CONFIGURATION_UNAVAILABLE"
+            f"BLOCKED_E2E_{marker}_BASELINE_CONFIGURATION_UNAVAILABLE"
         ),
         DiagnosticFailureCode.BASELINE_CONFIGURATION_MISMATCH: (
-            "BLOCKED_E2E_V4_BASELINE_CONFIGURATION_UNAVAILABLE"
+            f"BLOCKED_E2E_{marker}_BASELINE_CONFIGURATION_UNAVAILABLE"
         ),
     }
     if failure_code is None:
-        return "BLOCKED_E2E_V4_UNCLASSIFIED_RUNTIME_FAILURE"
+        return f"BLOCKED_E2E_{marker}_UNCLASSIFIED_RUNTIME_FAILURE"
     return mapping.get(
         failure_code,
-        "BLOCKED_E2E_V4_UNCLASSIFIED_RUNTIME_FAILURE",
+        f"BLOCKED_E2E_{marker}_UNCLASSIFIED_RUNTIME_FAILURE",
     )
 
 
@@ -465,6 +523,7 @@ def run_development_probe(
         run_root
     )
     evidence = execution.evidence
+    readiness = None if evidence is None else getattr(evidence, "readiness", None)
     source_counts = evidence.source_counts if evidence is not None else preserved_counts
     invalid_refs = evidence.invalid_refs if evidence is not None else preserved_invalid
     success = (
@@ -480,8 +539,12 @@ def run_development_probe(
         and evidence.traces_status == "AVAILABLE"
         and all(value > 0 for value in evidence.source_counts.values())
         and evidence.invalid_refs == 0
-        and 3 <= evidence.visible_service_count <= 8
-        and not evidence.scenario_truth_leaked
+        and (
+            readiness.passed
+            if readiness is not None
+            else 3 <= evidence.visible_service_count <= 8
+            and not evidence.scenario_truth_leaked
+        )
         and private_permissions_verified
     )
     verdict = (
@@ -490,6 +553,7 @@ def run_development_probe(
         else _development_failure_verdict(
             tracker.failure_code,
             cleanup_verdict=execution.cleanup_verdict,
+            schema_suffix=_schema_suffix(config),
         )
     )
     pass_lock_created = False
@@ -498,16 +562,21 @@ def run_development_probe(
         image_authority = cast(Any, execution.image_authority)
         image_verification = cast(Any, execution.image_verification)
         source_results_path = run_root / "source-results.json"
+        readiness_path = run_root / "no-fault-readiness.json"
         projection_path = run_root / "projection-summary.json"
         pass_lock = {
-            "schema_version": "live-e2e.development-pass-lock.v4",
+            "schema_version": f"live-e2e.development-pass-lock.{_schema_suffix(config)}",
             "version": config.authority.version,
             "run_id": run_id,
             "implementation_commit": implementation_commit,
             "runtime_config_hashes": runtime_hashes,
             "runtime_config_aggregate_sha256": runtime_aggregate,
             "source_results_sha256": file_sha256(source_results_path),
-            "projection_sha256": file_sha256(projection_path),
+            **(
+                {"no_fault_readiness_sha256": file_sha256(readiness_path)}
+                if readiness is not None
+                else {"projection_sha256": file_sha256(projection_path)}
+            ),
             "image_authority_sha256": image_authority.authority_sha256,
             "image_verification_sha256": (
                 image_verification.verification_sha256
@@ -529,7 +598,7 @@ def run_development_probe(
         pass_lock_sha256 = canonical_sha256(pass_lock)
     exception = tracker.exception
     terminal: dict[str, object] = {
-        "schema_version": "live-e2e.development-terminal.v4",
+        "schema_version": f"live-e2e.development-terminal.{_schema_suffix(config)}",
         "version": config.authority.version,
         "verdict": verdict,
         "run_kind": DiagnosticRunKind.DEVELOPMENT_PROBE.value,
@@ -576,6 +645,14 @@ def run_development_probe(
         "scenario_truth_leaked": None
         if evidence is None
         else evidence.scenario_truth_leaked,
+        "broad_metric_service_count": None
+        if readiness is None
+        else readiness.broad_metric_service_count,
+        "no_fault_readiness": None if readiness is None else readiness.passed,
+        "no_fault_readiness_reason_codes": []
+        if readiness is None
+        else list(readiness.reason_codes),
+        "a0_context_builder_calls": 0 if readiness is not None else 1,
         "cleanup_verdict": execution.cleanup_verdict,
         "cleanup": execution.cleanup_payload,
         "cleanup_failure_code": execution.cleanup_failure_code,
@@ -617,7 +694,8 @@ def _require_development_pass(
     terminal = json.loads(terminal_path.read_text(encoding="utf-8"))
     if not isinstance(terminal, Mapping) or any(
         (
-            lock.get("schema_version") != "live-e2e.development-pass-lock.v4",
+            lock.get("schema_version")
+            != f"live-e2e.development-pass-lock.{_schema_suffix(config)}",
             lock.get("implementation_commit") != implementation_commit,
             lock.get("runtime_config_hashes") != runtime_hashes,
             lock.get("runtime_config_aggregate_sha256") != runtime_aggregate,
@@ -633,11 +711,16 @@ def _require_development_pass(
     ):
         raise RuntimeError("canonical Invocation A development PASS is stale or invalid")
     source_path = terminal_path.parent / "source-results.json"
-    projection_path = terminal_path.parent / "projection-summary.json"
+    evidence_path = terminal_path.parent / (
+        "no-fault-readiness.json" if _is_v5(config) else "projection-summary.json"
+    )
+    evidence_field = (
+        "no_fault_readiness_sha256" if _is_v5(config) else "projection_sha256"
+    )
     if any(
         (
             lock.get("source_results_sha256") != file_sha256(source_path),
-            lock.get("projection_sha256") != file_sha256(projection_path),
+            lock.get(evidence_field) != file_sha256(evidence_path),
         )
     ):
         raise RuntimeError("canonical Invocation A development evidence differs")
@@ -649,6 +732,7 @@ def _require_exact_head_admission(
     *,
     implementation_commit: str,
 ) -> tuple[Mapping[str, object], Mapping[str, object]]:
+    schema_suffix = "v5" if type(roots).__name__ == "E2EV5PrivateRoots" else "v4"
     ci_path = roots.control / "exact-head-ci.json"
     if ci_path.is_symlink() or not ci_path.is_file():
         raise RuntimeError("canonical Invocation A lacks an exact-head CI marker")
@@ -657,7 +741,7 @@ def _require_exact_head_admission(
     required = {"Agent mainline", "RCAEval RE2 v2 development"}
     if (
         not isinstance(ci, Mapping)
-        or ci.get("schema_version") != "live-e2e.exact-head-ci.v4"
+        or ci.get("schema_version") != f"live-e2e.exact-head-ci.{schema_suffix}"
         or ci.get("implementation_commit") != implementation_commit
         or not isinstance(workflows, Mapping)
         or set(workflows) != required
@@ -675,7 +759,8 @@ def _require_exact_head_admission(
     review = json.loads(review_path.read_text(encoding="utf-8"))
     if (
         not isinstance(review, Mapping)
-        or review.get("schema_version") != "live-e2e.pre-live-review.v4"
+        or review.get("schema_version")
+        != f"live-e2e.pre-live-review.{schema_suffix}"
         or review.get("implementation_commit") != implementation_commit
         or review.get("verdict") != "PRE_LIVE_PASS"
         or review.get("must_fix_count") != 0
@@ -693,7 +778,7 @@ def _consume_canonical_budget(config: E2EV4Config, roots: E2EV4PrivateRoots) -> 
     budget = e2e_v3._read_budget(
         path,
         maximum=config.authority.maximum_canonical_invocation_a_runs,
-        schema_version="live-e2e.canonical-budget.v4",
+        schema_version=f"live-e2e.canonical-budget.{_schema_suffix(config)}",
     )
     if budget.get("consumed") != 0:
         raise RuntimeError("canonical Invocation A is create-once and already consumed")
@@ -704,7 +789,7 @@ def _consume_canonical_budget(config: E2EV4Config, roots: E2EV4PrivateRoots) -> 
     write_private_json(
         started_path,
         {
-            "schema_version": "live-e2e.canonical-started.v4",
+            "schema_version": f"live-e2e.canonical-started.{_schema_suffix(config)}",
             "started_at": datetime.now(timezone.utc).isoformat(),
         },
         create_once=True,
@@ -740,7 +825,7 @@ def scenario_lock_manifest(
     plan_template = build_plan_template(config)
     tracked = _runtime_config_hashes(config)
     return {
-        "schema_version": "live-e2e.scenario-lock.v4",
+        "schema_version": f"live-e2e.scenario-lock.{_schema_suffix(config)}",
         "version": config.authority.version,
         "implementation_commit": implementation_commit,
         "implementation_branch": config.authority.branch,
@@ -754,6 +839,18 @@ def scenario_lock_manifest(
             config.authority.telemetry_authority_semantic_sha256
         ),
         "development_pass_lock_sha256": canonical_sha256(development_pass_lock),
+        **(
+            {
+                "canonical_source_results_sha256": file_sha256(
+                    roots.invocation_a / "source-results.json"
+                ),
+                "canonical_no_fault_readiness_sha256": file_sha256(
+                    roots.invocation_a / "no-fault-readiness.json"
+                ),
+            }
+            if _is_v5(config)
+            else {}
+        ),
         "exact_head_ci_marker_sha256": file_sha256(
             roots.control / "exact-head-ci.json"
         ),
@@ -783,10 +880,32 @@ def scenario_lock_manifest(
             if key.startswith("v3_")
         },
         "diagnostic_policy_sha256": config.authority.diagnostics_policy_sha256,
-        "projection_policy_sha256": config.authority.projection_policy_sha256,
+        **(
+            {}
+            if _is_v5(config)
+            else {
+                "projection_policy_sha256": (
+                    config.authority.projection_policy_sha256
+                )
+            }
+        ),
         "reporting_policy_sha256": config.authority.reporting_policy_sha256,
         "development_probe_policy_sha256": (
             config.authority.development_probe_policy_sha256
+        ),
+        **(
+            {
+                "no_fault_readiness_policy_sha256": (
+                    getattr(
+                        config.authority, "no_fault_readiness_policy_sha256"
+                    )
+                ),
+                "fault_projection_policy_sha256": (
+                    getattr(config.authority, "fault_projection_policy_sha256")
+                ),
+            }
+            if _is_v5(config)
+            else {}
         ),
         "a0_prompt_sha256": config.authority.a0_prompt_sha256,
         "a0_output_schema_sha256": config.authority.a0_output_schema_sha256,
@@ -802,51 +921,56 @@ def _canonical_failure_verdict(
     failure_code: DiagnosticFailureCode | None,
     *,
     cleanup_verdict: str,
+    schema_suffix: str = "v4",
 ) -> str:
+    marker = "V5" if schema_suffix == "v5" else "V4"
     if cleanup_verdict == "BLOCKED":
-        return "BLOCKED_E2E_V4_CLEANUP_INCOMPLETE"
+        return f"BLOCKED_E2E_{marker}_CLEANUP_INCOMPLETE"
     mapping = {
         DiagnosticFailureCode.IMAGE_AUTHORITY_MISMATCH: (
-            "BLOCKED_E2E_V4_IMAGE_AUTHORITY_MISMATCH"
+            f"BLOCKED_E2E_{marker}_IMAGE_AUTHORITY_MISMATCH"
         ),
         DiagnosticFailureCode.COMPOSE_STRUCTURE_IDENTITY_MISMATCH: (
-            "BLOCKED_E2E_V4_COMPOSE_STRUCTURE_IDENTITY_MISMATCH"
+            f"BLOCKED_E2E_{marker}_COMPOSE_STRUCTURE_IDENTITY_MISMATCH"
         ),
-        DiagnosticFailureCode.COMPOSE_UP_FAILED: "BLOCKED_E2E_V4_COMPOSE_UP_FAILED",
+        DiagnosticFailureCode.COMPOSE_UP_FAILED: f"BLOCKED_E2E_{marker}_COMPOSE_UP_FAILED",
         DiagnosticFailureCode.SERVICE_HEALTH_TIMEOUT: (
-            "BLOCKED_E2E_V4_SERVICE_HEALTH_TIMEOUT"
+            f"BLOCKED_E2E_{marker}_SERVICE_HEALTH_TIMEOUT"
         ),
         DiagnosticFailureCode.SERVICE_EXITED_BEFORE_READY: (
-            "BLOCKED_E2E_V4_SERVICE_HEALTH_TIMEOUT"
+            f"BLOCKED_E2E_{marker}_SERVICE_HEALTH_TIMEOUT"
         ),
         DiagnosticFailureCode.BASELINE_CONFIGURATION_UNAVAILABLE: (
-            "BLOCKED_E2E_V4_BASELINE_CONFIGURATION_UNAVAILABLE"
+            f"BLOCKED_E2E_{marker}_BASELINE_CONFIGURATION_UNAVAILABLE"
         ),
         DiagnosticFailureCode.BASELINE_CONFIGURATION_MISMATCH: (
-            "BLOCKED_E2E_V4_BASELINE_CONFIGURATION_UNAVAILABLE"
+            f"BLOCKED_E2E_{marker}_BASELINE_CONFIGURATION_UNAVAILABLE"
         ),
         DiagnosticFailureCode.SOURCE_BATCH_CONTRACT_FAILED: (
-            "BLOCKED_E2E_V4_SOURCE_BATCH_FAILED"
+            f"BLOCKED_E2E_{marker}_SOURCE_BATCH_FAILED"
         ),
         DiagnosticFailureCode.LIVE_TELEMETRY_SOURCE_GATE_NOT_PASSED: (
-            "BLOCKED_E2E_V4_LIVE_TELEMETRY_SOURCE_GATE_NOT_PASSED"
+            f"BLOCKED_E2E_{marker}_LIVE_TELEMETRY_SOURCE_GATE_NOT_PASSED"
         ),
         DiagnosticFailureCode.EVIDENCE_RESOLUTION_FAILED: (
-            "BLOCKED_E2E_V4_EVIDENCE_RESOLUTION_FAILED"
+            f"BLOCKED_E2E_{marker}_EVIDENCE_RESOLUTION_FAILED"
+        ),
+        DiagnosticFailureCode.NO_FAULT_READINESS_FAILED: (
+            "BLOCKED_E2E_V5_NO_FAULT_READINESS_FAILED"
         ),
         DiagnosticFailureCode.MULTISERVICE_PROJECTION_FAILED: (
-            "BLOCKED_E2E_V4_MULTISERVICE_PROJECTION_FAILED"
+            f"BLOCKED_E2E_{marker}_MULTISERVICE_PROJECTION_FAILED"
         ),
         DiagnosticFailureCode.APPROVAL_REQUEST_WRITE_FAILED: (
-            "BLOCKED_E2E_V4_APPROVAL_REQUEST_WRITE_FAILED"
+            f"BLOCKED_E2E_{marker}_APPROVAL_REQUEST_WRITE_FAILED"
         ),
-        DiagnosticFailureCode.CLEANUP_FAILED: "BLOCKED_E2E_V4_CLEANUP_INCOMPLETE",
+        DiagnosticFailureCode.CLEANUP_FAILED: f"BLOCKED_E2E_{marker}_CLEANUP_INCOMPLETE",
     }
     if failure_code is None:
-        return "BLOCKED_E2E_V4_UNCLASSIFIED_RUNTIME_FAILURE"
+        return f"BLOCKED_E2E_{marker}_UNCLASSIFIED_RUNTIME_FAILURE"
     return mapping.get(
         failure_code,
-        "BLOCKED_E2E_V4_UNCLASSIFIED_RUNTIME_FAILURE",
+        f"BLOCKED_E2E_{marker}_UNCLASSIFIED_RUNTIME_FAILURE",
     )
 
 
@@ -905,6 +1029,7 @@ def run_canonical_invocation_a(
         ),
     )
     evidence = execution.evidence
+    readiness = None if evidence is None else getattr(evidence, "readiness", None)
     scenario_lock_created = False
     plan_template_created = False
     approval_request_created = False
@@ -922,8 +1047,12 @@ def run_canonical_invocation_a(
         and evidence.logs_status == "AVAILABLE"
         and evidence.traces_status == "AVAILABLE"
         and evidence.invalid_refs == 0
-        and 3 <= evidence.visible_service_count <= 8
-        and not evidence.scenario_truth_leaked
+        and (
+            readiness.passed
+            if readiness is not None
+            else 3 <= evidence.visible_service_count <= 8
+            and not evidence.scenario_truth_leaked
+        )
     )
     if eligible:
         try:
@@ -973,9 +1102,10 @@ def run_canonical_invocation_a(
             )
             approval_request_created = True
             approval_command = (
-                "uv run --with pyarrow python -m scripts.live_sandbox.e2e_v4 "
+                "uv run --with pyarrow python -m scripts.live_sandbox."
+                f"e2e_{_schema_suffix(config)} "
                 "--private-root ~/.ecomsre/private/"
-                "live-fault-a0-controlled-remediation-e2e-v4 approve "
+                f"{config.authority.version} approve "
                 "--approver \"<HUMAN_NAME>\" "
                 f"--phrase \"APPROVE {request.scenario_id} "
                 f"{request.plan_template_sha256}\""
@@ -1016,12 +1146,15 @@ def run_canonical_invocation_a(
         else _canonical_failure_verdict(
             tracker.failure_code,
             cleanup_verdict=execution.cleanup_verdict,
+            schema_suffix=_schema_suffix(config),
         )
     )
     source_statuses, source_counts, invalid_refs = _preserved_source_summary(run_root)
     exception = tracker.exception
     terminal: dict[str, object] = {
-        "schema_version": "live-e2e.canonical-invocation-a-terminal.v4",
+        "schema_version": (
+            f"live-e2e.canonical-invocation-a-terminal.{_schema_suffix(config)}"
+        ),
         "version": config.authority.version,
         "verdict": verdict,
         "run_kind": DiagnosticRunKind.CANONICAL_INVOCATION_A.value,
@@ -1068,6 +1201,14 @@ def run_canonical_invocation_a(
         "scenario_truth_leaked": None
         if evidence is None
         else evidence.scenario_truth_leaked,
+        "broad_metric_service_count": None
+        if readiness is None
+        else readiness.broad_metric_service_count,
+        "no_fault_readiness": None if readiness is None else readiness.passed,
+        "no_fault_readiness_reason_codes": []
+        if readiness is None
+        else list(readiness.reason_codes),
+        "a0_context_builder_calls": 0 if readiness is not None else 1,
         "scenario_lock_created": scenario_lock_created,
         "plan_template_created": plan_template_created,
         "approval_request_created": approval_request_created,

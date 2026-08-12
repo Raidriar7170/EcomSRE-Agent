@@ -1,4 +1,4 @@
-"""Ordered three-source collection for the live E2E v4 lifecycle."""
+"""Ordered three-source collection shared by the live E2E lifecycles."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from typing import Any, Protocol, cast
 from ecomsre_live_sandbox.contracts import (
     LocalEndpoints,
     canonical_sha256,
+    file_sha256,
     write_private_json,
 )
 from ecomsre_live_sandbox.e2e_diagnostics import (
@@ -80,14 +81,15 @@ class StageTracker(Protocol):
 
 
 @dataclass(frozen=True, slots=True)
-class OrderedSourceEvidence:
+class OrderedSourceBatch:
+    window_start: datetime
+    window_end: datetime
     source_results: tuple[SourceProbeResult, SourceProbeResult, SourceProbeResult]
     source_counts: dict[str, int]
-    invalid_refs: int
+    invalid_ref_count: int
     all_refs_resolve: bool
-    visible_service_count: int
-    scenario_truth_leaked: bool
-    projection_sha256: str
+    combined_resolver_sha256: str
+    source_results_sha256: str
 
     @property
     def metrics_status(self) -> str:
@@ -100,6 +102,49 @@ class OrderedSourceEvidence:
     @property
     def traces_status(self) -> str:
         return self.source_results[2].status.value
+
+    @property
+    def invalid_refs(self) -> int:
+        """Retain the v4 aggregate spelling for narrow compatibility."""
+        return self.invalid_ref_count
+
+
+@dataclass(frozen=True, slots=True)
+class OrderedSourceEvidence:
+    """Historical v4 projection result built from an ``OrderedSourceBatch``."""
+
+    source_batch: OrderedSourceBatch
+    visible_service_count: int
+    scenario_truth_leaked: bool
+    projection_sha256: str
+
+    @property
+    def source_results(self) -> tuple[SourceProbeResult, SourceProbeResult, SourceProbeResult]:
+        return self.source_batch.source_results
+
+    @property
+    def source_counts(self) -> dict[str, int]:
+        return self.source_batch.source_counts
+
+    @property
+    def invalid_refs(self) -> int:
+        return self.source_batch.invalid_ref_count
+
+    @property
+    def all_refs_resolve(self) -> bool:
+        return self.source_batch.all_refs_resolve
+
+    @property
+    def metrics_status(self) -> str:
+        return self.source_batch.metrics_status
+
+    @property
+    def logs_status(self) -> str:
+        return self.source_batch.logs_status
+
+    @property
+    def traces_status(self) -> str:
+        return self.source_batch.traces_status
 
 
 def _execute(
@@ -222,8 +267,7 @@ def collect_ordered_source_batch(
     metrics_request_json: JsonRequester | None = None,
     logs_request_json: JsonRequester | None = None,
     traces_request_json: JsonRequester | None = None,
-    projection_collector: ProjectionCollector = _default_projection_inputs,
-) -> OrderedSourceEvidence:
+) -> OrderedSourceBatch:
     """Run exactly one ordered Metrics/Logs/Traces batch and gate afterward."""
 
     _pass(tracker, DiagnosticStage.SOURCE_CAPTURE_WINDOW_STARTED)
@@ -371,14 +415,28 @@ def collect_ordered_source_batch(
         failure_code=DiagnosticFailureCode.EVIDENCE_RESOLUTION_FAILED,
     )
     invalid_refs = sum(item.invalid_ref_count for item in source_results)
+    resolver_sha256 = file_sha256(common_root / "source-resolver.json")
+    source_schema_suffix = (
+        "v5"
+        if str(getattr(projection, "schema_version", "")).endswith(".v5")
+        else "v4"
+    )
+    source_payload = {
+        "schema_version": f"live-e2e.source-results.{source_schema_suffix}",
+        "window_start": window_start.isoformat(),
+        "window_end": window_end.isoformat(),
+        "results": [item.model_dump(mode="json") for item in source_results],
+        "source_counts": {
+            item.source: item.target_record_count for item in source_results
+        },
+        "all_refs_resolve": all_refs_resolve,
+        "invalid_ref_count": invalid_refs,
+        "combined_resolver_sha256": resolver_sha256,
+    }
+    source_payload["source_results_sha256"] = canonical_sha256(source_payload)
     write_private_json(
         run_root / "source-results.json",
-        {
-            "schema_version": "live-e2e.source-results.v4",
-            "results": [item.model_dump(mode="json") for item in source_results],
-            "all_refs_resolve": all_refs_resolve,
-            "invalid_ref_count": invalid_refs,
-        },
+        source_payload,
         create_once=True,
     )
 
@@ -408,13 +466,41 @@ def collect_ordered_source_batch(
         },
     )
 
+    return OrderedSourceBatch(
+        window_start=window_start,
+        window_end=window_end,
+        source_results=source_results,
+        source_counts={item.source: item.target_record_count for item in source_results},
+        invalid_ref_count=invalid_refs,
+        all_refs_resolve=all_refs_resolve,
+        combined_resolver_sha256=resolver_sha256,
+        source_results_sha256=cast(str, source_payload["source_results_sha256"]),
+    )
+
+
+def collect_ordered_source_evidence_v4(
+    **kwargs: Any,
+) -> OrderedSourceEvidence:
+    """Retain the v4 no-fault projection only for historical regression tests."""
+
+    projection_collector = cast(
+        ProjectionCollector,
+        kwargs.pop("projection_collector", _default_projection_inputs),
+    )
+    batch = collect_ordered_source_batch(**kwargs)
+    tracker = cast(StageTracker | None, kwargs.get("tracker"))
+    endpoints = cast(LocalEndpoints, kwargs["endpoints"])
+    telemetry_root = cast(Path, kwargs["telemetry_root"])
+    run_id = cast(str, kwargs["run_id"])
+    projection = kwargs["projection"]
+    common_root = telemetry_root / run_id
     _pass(tracker, DiagnosticStage.MULTISERVICE_PROJECTION_STARTED)
 
     def project() -> tuple[int, str, bool]:
         metrics_input, logs_input, traces_input = projection_collector(
             endpoints,
-            window_start,
-            window_end,
+            batch.window_start,
+            batch.window_end,
             projection,
         )
         roots = SimpleNamespace(telemetry=common_root)
@@ -422,16 +508,16 @@ def collect_ordered_source_batch(
             _seal_model_evidence_resolver(
                 cast(Any, roots),
                 label="projection",
-                window_start=window_start,
-                window_end=window_end,
+                window_start=batch.window_start,
+                window_end=batch.window_end,
                 metrics=metrics_input,
                 logs=logs_input,
                 traces=traces_input,
             )
         )
         context = build_live_a0_context(
-            window_start=window_start,
-            window_end=window_end,
+            window_start=batch.window_start,
+            window_end=batch.window_end,
             metrics=bound_metrics,
             logs=bound_logs,
             traces=bound_traces,
@@ -460,10 +546,7 @@ def collect_ordered_source_batch(
         failure_code=DiagnosticFailureCode.MULTISERVICE_PROJECTION_FAILED,
     )
     return OrderedSourceEvidence(
-        source_results=source_results,
-        source_counts={item.source: item.target_record_count for item in source_results},
-        invalid_refs=invalid_refs,
-        all_refs_resolve=all_refs_resolve,
+        source_batch=batch,
         visible_service_count=visible_service_count,
         scenario_truth_leaked=scenario_truth_leaked,
         projection_sha256=projection_sha256,
@@ -471,7 +554,9 @@ def collect_ordered_source_batch(
 
 
 __all__ = [
+    "OrderedSourceBatch",
     "OrderedSourceEvidence",
     "ProjectionCollector",
     "collect_ordered_source_batch",
+    "collect_ordered_source_evidence_v4",
 ]

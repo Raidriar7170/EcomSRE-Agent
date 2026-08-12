@@ -688,7 +688,8 @@ def _capture_source_readiness(
     )
     if fixed_end <= fixed_start:
         raise ValueError("source readiness window is invalid")
-    is_v4 = getattr(config.authority, "version", "").endswith("e2e-v4")
+    version = getattr(config.authority, "version", "")
+    uses_combined_resolver = version.endswith(("e2e-v4", "e2e-v5"))
     common_root = roots.telemetry / label
     stores = (
         {
@@ -696,7 +697,7 @@ def _capture_source_readiness(
             "logs": PrivateArtifactStore(common_root / "logs"),
             "traces": PrivateArtifactStore(common_root / "traces"),
         }
-        if is_v4
+        if uses_combined_resolver
         else None
     )
     store = PrivateArtifactStore(common_root) if stores is None else None
@@ -913,27 +914,112 @@ def _seal_model_evidence_resolver(
 
 
 def _synthetic_provider_context(config: E2EConfig) -> RCA100AgentContext:
+    """Build the non-case Provider preflight request without the live A0 builder."""
+    del config
     now = datetime.now(timezone.utc)
-    return build_live_a0_context(
-        window_start=datetime.fromtimestamp(now.timestamp() - 60, tz=timezone.utc),
-        window_end=now,
-        metrics=(
-            LiveMetricObservation(service_name="checkout", baseline_requests=100, baseline_errors=1, fault_requests=100, fault_errors=25, baseline_p95_ms=20, fault_p95_ms=30, evidence_ref="metric:0001"),
-            LiveMetricObservation(service_name="currency", baseline_requests=100, baseline_errors=1, fault_requests=100, fault_errors=12, baseline_p95_ms=20, fault_p95_ms=28, evidence_ref="metric:0002"),
-            LiveMetricObservation(service_name="frontend", baseline_requests=100, baseline_errors=1, fault_requests=100, fault_errors=8, baseline_p95_ms=20, fault_p95_ms=26, evidence_ref="metric:0003"),
-        ),
-        logs=(
-            LiveLogObservation(observed_at=now, service_name="checkout", severity="ERROR", body="observed request error", evidence_ref="log:0001"),
-            LiveLogObservation(observed_at=now, service_name="currency", severity="ERROR", body="observed request error", evidence_ref="log:0002"),
-            LiveLogObservation(observed_at=now, service_name="frontend", severity="WARN", body="observed request error", evidence_ref="log:0003"),
-        ),
-        traces=(
-            LiveTraceObservation(observed_at=now, service_name="checkout", operation="request", status="ERROR", duration_ms=20, evidence_ref="trace:0001"),
-            LiveTraceObservation(observed_at=now, service_name="currency", operation="request", status="ERROR", duration_ms=20, evidence_ref="trace:0002"),
-            LiveTraceObservation(observed_at=now, service_name="frontend", operation="request", status="ERROR", duration_ms=20, evidence_ref="trace:0003"),
-        ),
-        resolvable_refs=frozenset({"metric:0001", "metric:0002", "metric:0003", "log:0001", "log:0002", "log:0003", "trace:0001", "trace:0002", "trace:0003"}),
-        projection=config.projection,
+    started = float(now.timestamp() - 60.0)
+    ended = float(now.timestamp())
+    services = ("checkout", "currency", "frontend")
+    entities = tuple(
+        {
+            "entity_ref": f"apm|apm.service|{service}",
+            "domain": "apm",
+            "type": "apm.service",
+            "entity_id": service,
+            "entity_name": service,
+            "normalized_name": service,
+            "parent_service_ref_or_none": None,
+            "same_as_refs": (),
+        }
+        for service in services
+    )
+    metric_evidence = tuple(
+        {
+            "evidence_ref": f"metric:{index:04d}",
+            "entity_ref": f"apm|apm.service|{service}",
+            "metric": "synthetic_error_rate_delta",
+            "pre_count": 3,
+            "post_count": 3,
+            "pre_mean": 0.01,
+            "post_mean": float(0.30 - index * 0.04),
+            "score": float(1.0 - index * 0.1),
+            "summary": "Synthetic non-case Provider transport and schema preflight.",
+        }
+        for index, service in enumerate(services, 1)
+    )
+    bounded_sources = {
+        source: tuple(
+            {
+                "evidence_ref": f"{prefix}:{index:04d}",
+                "entity_ref": f"apm|apm.service|{service}",
+                "name": f"synthetic-{source}-preflight",
+                "started_at": started,
+                "ended_at": ended,
+                "score": float(1.0 - index * 0.1),
+                "summary": "Synthetic non-case Provider transport and schema preflight.",
+            }
+            for index, service in enumerate(services, 1)
+        )
+        for source, prefix in (("logs", "log"), ("traces", "trace"))
+    }
+    return RCA100AgentContext.model_validate(
+        {
+            "task": {
+                "opaque_case_id": "rca100-case-0000",
+                "alert_title": "Synthetic non-case Provider preflight",
+                "prompt_text": (
+                    "Validate this bounded synthetic request and return the typed "
+                    "diagnosis schema. This is not live diagnostic evidence."
+                ),
+                "window_start_timestamp": started,
+                "anchor_timestamp": float((started + ended) / 2.0),
+                "window_end_timestamp": ended,
+                "anchor_source": "TASK_WINDOW_MIDPOINT",
+                "alert_entity_ref": None,
+            },
+            "visible_entities": entities,
+            "metrics": {
+                "status": "AVAILABLE",
+                "evidence": metric_evidence,
+                "ranking": tuple(
+                    {
+                        "entity_ref": item["entity_ref"],
+                        "rank": index,
+                        "score": item["score"],
+                        "supporting_metrics_evidence_refs": (
+                            item["evidence_ref"],
+                        ),
+                    }
+                    for index, item in enumerate(metric_evidence, 1)
+                ),
+                "total_rows": 18,
+                "window_rows": 18,
+                "mapped_rows": 18,
+                "unmapped_rows": 0,
+                "valid_series": 3,
+                "ranked_entities": 3,
+            },
+            "logs": {
+                "source": "logs",
+                "status": "AVAILABLE",
+                "reason": None,
+                "evidence": bounded_sources["logs"],
+                "total_rows": 3,
+                "window_rows": 3,
+                "mapped_rows": 3,
+                "unmapped_rows": 0,
+            },
+            "traces": {
+                "source": "traces",
+                "status": "AVAILABLE",
+                "reason": None,
+                "evidence": bounded_sources["traces"],
+                "total_rows": 3,
+                "window_rows": 3,
+                "mapped_rows": 3,
+                "unmapped_rows": 0,
+            },
+        }
     )
 
 

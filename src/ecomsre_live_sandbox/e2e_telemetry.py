@@ -349,8 +349,10 @@ def build_live_a0_context(
         evidence_ordering_policy="SOURCE_SCORE_TIME_SERVICE_HASH",
         alert_title="Observed purchase-flow request error-rate increase",
     )
-    if not metrics or not logs or not traces:
-        raise ValueError("live projection requires nonempty Metrics, Logs, and Traces evidence")
+    if not metrics:
+        raise ValueError("NO_DIAGNOSTIC_METRICS")
+    if not logs and not traces:
+        raise ValueError("NO_LOG_OR_TRACE_DIAGNOSTIC_EVIDENCE")
     ranked_metrics = _rank_metrics(metrics)
     ranked_candidates = ranked_metrics[: config.metric_candidate_limit]
     metric_scores = {item.service_name: _metric_score(item) for item in ranked_metrics}
@@ -438,8 +440,10 @@ def build_live_a0_context(
     )
     log_projection = _logs_projection(logs, visible, config, available_refs)
     trace_projection = _traces_projection(traces, visible, config, available_refs)
-    if not metric_evidence or not log_projection.evidence or not trace_projection.evidence:
-        raise ValueError("live projection requires all three observed source types")
+    if not metric_evidence:
+        raise ValueError("NO_DIAGNOSTIC_METRICS")
+    if not log_projection.evidence and not trace_projection.evidence:
+        raise ValueError("NO_LOG_OR_TRACE_DIAGNOSTIC_EVIDENCE")
     visible_entity_refs = {_entity(service).entity_ref for service in visible_services}
     evidence_entity_refs = {
         *(item.entity_ref for item in metric_evidence),

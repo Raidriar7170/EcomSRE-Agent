@@ -1,0 +1,18 @@
+{
+  "schema_version": "live-e2e.reporting.v5",
+  "public_result_json": "docs/results/live-fault-a0-controlled-remediation-e2e-v5.json",
+  "public_result_markdown": "docs/results/live-fault-a0-controlled-remediation-e2e-v5.md",
+  "public_human_brief": "docs/results/live-fault-a0-controlled-remediation-e2e-v5-human-brief.md",
+  "claim_boundary": [
+    "LIVE_LOCAL_SANDBOX_DEMO",
+    "ONE_PREREGISTERED_SCENARIO",
+    "HUMAN_PREAUTHORIZED_FROZEN_REMEDIATION_RUNBOOK",
+    "ONE_STRONG_SINGLE_DIAGNOSIS",
+    "ONE_ALLOWLISTED_MUTATION",
+    "INDEPENDENT_RECOVERY_VERIFICATION",
+    "NOT_PRODUCTION",
+    "NOT_AUTONOMOUS_PRODUCTION_REMEDIATION",
+    "NOT_EXTERNAL_BENCHMARK",
+    "NOT_MULTI_AGENT_SUPERIORITY_CLAIM"
+  ]
+}
