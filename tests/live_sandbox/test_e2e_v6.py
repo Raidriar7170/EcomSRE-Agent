@@ -10,6 +10,7 @@ from typing import Any
 import pytest
 
 import ecomsre_live_sandbox.e2e_v3 as e2e_v3
+import ecomsre_live_sandbox.e2e_v4 as e2e_v4
 from ecomsre_live_sandbox.contracts import (
     CleanupResult,
     DiagnosisResult,
@@ -313,7 +314,9 @@ def _fake_worktree(_: object, clean_required: bool) -> str:
     return "d" * 40
 
 
-def _prepare_approved_v6(config: object, roots: E2EV6PrivateRoots) -> None:
+def _prepare_v6_canonical_admission(
+    config: object, roots: E2EV6PrivateRoots
+) -> None:
     FakeEnvironment.fail_at = None
     FakeEnvironment.next_controller_read_failures = 0
     FakeEnvironment.next_controller_mismatch = False
@@ -353,6 +356,10 @@ def _prepare_approved_v6(config: object, roots: E2EV6PrivateRoots) -> None:
         ),
     ):
         write_private_json(roots.control / name, payload, create_once=True)
+
+
+def _prepare_approved_v6(config: object, roots: E2EV6PrivateRoots) -> None:
+    _prepare_v6_canonical_admission(config, roots)
     canonical = run_canonical_invocation_a(
         config,  # type: ignore[arg-type]
         roots,
@@ -372,6 +379,72 @@ def _prepare_approved_v6(config: object, roots: E2EV6PrivateRoots) -> None:
             f"APPROVE {request['scenario_id']} {request['plan_template_sha256']}"
         ),
     )
+
+
+def test_v6_canonical_promotion_failure_is_rolled_back_and_retry_advances(
+    tmp_path: Path,
+) -> None:
+    config = load_e2e_v6_config(CONFIG)
+    roots = E2EV6PrivateRoots(tmp_path / "private-v6")
+    _prepare_v6_canonical_admission(config, roots)
+
+    def fail_during_promotion(
+        path: Path, value: object, *, create_once: bool
+    ) -> str:
+        if path.name == "plan-template.json":
+            raise OSError("injected canonical promotion failure")
+        return write_private_json(path, value, create_once=create_once)
+
+    with pytest.raises(OSError, match="promotion failure"):
+        run_canonical_invocation_a(
+            config,
+            roots,
+            environment_factory=FakeEnvironment,
+            controller_factory=_controller,
+            evidence_collector=_no_fault_evidence,
+            sleep=lambda _: None,
+            worktree_verifier=_fake_worktree,
+            canonical_control_writer=fail_during_promotion,
+        )
+
+    attempt_1 = roots.canonical_attempt(1)
+    terminal = json.loads((attempt_1 / "terminal.json").read_text())
+    history = json.loads(
+        (roots.control / "canonical-history.json").read_text()
+    )
+    assert terminal["verdict"] == config.authority.invocation_a_terminal
+    assert history["attempts"] == [
+        {
+            "attempt_relative_path": "canonical/attempt-0001",
+            "verdict": config.authority.invocation_a_terminal,
+        }
+    ]
+    assert all(
+        (attempt_1 / name).is_file()
+        for name in (
+            "scenario-lock.json",
+            "plan-template.json",
+            "approval-request.json",
+        )
+    )
+    assert all(
+        not (roots.control / name).exists()
+        for name in (
+            "scenario-lock.json",
+            "plan-template.json",
+            "approval-request.json",
+            "canonical-accepted.json",
+        )
+    )
+
+    e2e_v4._consume_canonical_budget(
+        config,
+        roots,
+        implementation_commit="e" * 40,
+    )
+    active = json.loads((roots.control / "canonical-active.json").read_text())
+    assert active["attempt_index"] == 2
+    assert (roots.canonical_attempt(2) / "started.json").is_file()
 
 
 class FakeProvider:
@@ -450,7 +523,10 @@ def test_v6_executes_post_preflight_failure_mapping_without_provider_misclassifi
     assert terminal["rollback_mutations"] == 0
     assert terminal["failure_code"] == expected_code
     assert terminal["cleanup_verdict"] == cleanup
-    assert terminal["last_completed_stage"] is not None or failure_kind == "unclassified"
+    assert terminal["last_completed_stage"] is not None
+    if failure_kind == "unclassified":
+        assert terminal["failed_stage"] == "CLEANUP_STARTED"
+        assert terminal["last_completed_stage"] == "WORKTREE_VERIFIED"
     assert (roots.invocation_b / "terminal.json").is_file()
 
 

@@ -2487,6 +2487,12 @@ def run_invocation_b(
     controller: Any = None
     forward_counter = ForwardMutationCounter(roots.journal / "forward-mutation.txt")
     private_exception: DiagnosticExceptionReference | None = None
+    tracker.pass_stage(DiagnosticStage.PRIVATE_ROOT_BOUND)
+    tracker.pass_stage(DiagnosticStage.AUTHORITY_VERIFIED)
+    tracker.pass_stage(
+        DiagnosticStage.WORKTREE_VERIFIED,
+        output_value=implementation_commit,
+    )
     try:
         provider = provider_factory(config)
         synthetic = _synthetic_provider_context(cast(Any, config))
@@ -2506,12 +2512,6 @@ def run_invocation_b(
             create_once=True,
         )
         sleep(config.sandbox.budget.minimum_request_spacing_seconds)
-        tracker.pass_stage(DiagnosticStage.PRIVATE_ROOT_BOUND)
-        tracker.pass_stage(DiagnosticStage.AUTHORITY_VERIFIED)
-        tracker.pass_stage(
-            DiagnosticStage.WORKTREE_VERIFIED,
-            output_value=implementation_commit,
-        )
         docker = tracker.execute(
             DiagnosticStage.LOCAL_DOCKER_VERIFIED,
             environment.verify_local_docker,
@@ -2974,6 +2974,15 @@ def run_invocation_b(
     except Exception as error:
         if provider is not None and hasattr(provider, "calls"):
             terminal["provider_calls"] = provider.calls
+        if (
+            terminal.get("provider_preflight_passed") is True
+            and tracker.failed_stage is None
+        ):
+            tracker.fail_external(
+                error,
+                stage=DiagnosticStage.CLEANUP_STARTED,
+                failure_code=DiagnosticFailureCode.UNCLASSIFIED_RUNTIME_FAILURE,
+            )
         effective_failure_code = (
             tracker.failure_code
             or DiagnosticFailureCode.UNCLASSIFIED_RUNTIME_FAILURE

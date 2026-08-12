@@ -1131,6 +1131,49 @@ def _canonical_failure_verdict(
     )
 
 
+def _promote_v6_canonical_artifacts(
+    roots: E2EV4PrivateRoots,
+    *,
+    implementation_commit: str,
+    run_root: Path,
+    lock: Mapping[str, object],
+    template: Mapping[str, object],
+    request: ApprovalRequest,
+    control_writer: Callable[..., str] = write_private_json,
+) -> None:
+    artifacts: tuple[tuple[Path, object], ...] = (
+        (roots.control / "scenario-lock.json", lock),
+        (roots.control / "plan-template.json", template),
+        (roots.control / "approval-request.json", request),
+    )
+    accepted_path = roots.control / "canonical-accepted.json"
+    candidates = tuple(path for path, _ in artifacts) + (accepted_path,)
+    if any(path.exists() or path.is_symlink() for path in candidates):
+        raise RuntimeError("v6 canonical control promotion target already exists")
+    try:
+        for path, value in artifacts:
+            control_writer(path, value, create_once=True)
+        control_writer(
+            accepted_path,
+            {
+                "schema_version": "live-e2e.canonical-accepted.v6",
+                "verdict": "ACCEPTED_HUMAN_PREAUTHORIZATION",
+                "implementation_commit": implementation_commit,
+                "attempt_relative_path": run_root.relative_to(roots.root).as_posix(),
+                "terminal_sha256": file_sha256(run_root / "terminal.json"),
+                "approval_request_sha256": file_sha256(
+                    roots.control / "approval-request.json"
+                ),
+            },
+            create_once=True,
+        )
+    except Exception:
+        for path in reversed(candidates):
+            if path.is_file() and not path.is_symlink():
+                path.unlink()
+        raise
+
+
 def run_canonical_invocation_a(
     config: E2EV4Config,
     roots: E2EV4PrivateRoots,
@@ -1140,6 +1183,7 @@ def run_canonical_invocation_a(
     evidence_collector: Callable[..., NoFaultEvidence] = _collect_v4_no_fault_evidence,
     sleep: Callable[[float], None] = time.sleep,
     worktree_verifier: Callable[[E2EV4Config, bool], str] = _verify_worktree,
+    canonical_control_writer: Callable[..., str] = write_private_json,
 ) -> dict[str, object]:
     roots.bind_lifecycle(config.authority, repository_root=config.repository_root)
     implementation_commit = worktree_verifier(config, True)
@@ -1312,18 +1356,6 @@ def run_canonical_invocation_a(
         and approval_command is not None
         and private_permissions_verified
     )
-    if _schema_suffix(config) == "v6" and success:
-        if lock is None or template is None or request is None:
-            raise RuntimeError("v6 canonical artifacts are incomplete")
-        write_private_json(
-            roots.control / "scenario-lock.json", lock, create_once=True
-        )
-        write_private_json(
-            roots.control / "plan-template.json", template, create_once=True
-        )
-        write_private_json(
-            roots.control / "approval-request.json", request, create_once=True
-        )
     verdict = (
         config.authority.invocation_a_terminal
         if success
@@ -1415,23 +1447,20 @@ def run_canonical_invocation_a(
         "human_approval_record_present": False,
     }
     _write_terminal(tracker, run_root / "terminal.json", terminal)
+    _complete_canonical_budget(roots, verdict=verdict)
     if _schema_suffix(config) == "v6" and success:
-        write_private_json(
-            roots.control / "canonical-accepted.json",
-            {
-                "schema_version": "live-e2e.canonical-accepted.v6",
-                "verdict": "ACCEPTED_HUMAN_PREAUTHORIZATION",
-                "implementation_commit": implementation_commit,
-                "attempt_relative_path": run_root.relative_to(roots.root).as_posix(),
-                "terminal_sha256": file_sha256(run_root / "terminal.json"),
-                "approval_request_sha256": file_sha256(
-                    roots.control / "approval-request.json"
-                ),
-            },
-            create_once=True,
+        if lock is None or template is None or request is None:
+            raise RuntimeError("v6 canonical artifacts are incomplete")
+        _promote_v6_canonical_artifacts(
+            roots,
+            implementation_commit=implementation_commit,
+            run_root=run_root,
+            lock=lock,
+            template=template,
+            request=request,
+            control_writer=canonical_control_writer,
         )
     roots.verify()
-    _complete_canonical_budget(roots, verdict=verdict)
     return terminal
 
 
