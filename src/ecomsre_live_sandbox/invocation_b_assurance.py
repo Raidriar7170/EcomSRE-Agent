@@ -41,6 +41,14 @@ def _nonnegative_int(value: object) -> bool:
     return type(value) is int and value >= 0
 
 
+def _exact_int(value: object, expected: int) -> bool:
+    return type(value) is int and value == expected
+
+
+def _exact_bool(value: object, expected: bool) -> bool:
+    return type(value) is bool and value is expected
+
+
 def _safe_list(value: object) -> list[object]:
     return list(value) if isinstance(value, (list, tuple)) else []
 
@@ -55,9 +63,9 @@ def _require_cleanup(cleanup: object, *, success: bool) -> Mapping[str, object]:
         if any(
             (
                 cleanup.get("baseline_restored") is not True,
-                cleanup.get("owned_containers") != 0,
-                cleanup.get("owned_networks") != 0,
-                cleanup.get("owned_volumes") != 0,
+                not _exact_int(cleanup.get("owned_containers"), 0),
+                not _exact_int(cleanup.get("owned_networks"), 0),
+                not _exact_int(cleanup.get("owned_volumes"), 0),
                 cleanup.get("non_owned_resources_changed") is not False,
                 success and verdict != "CLEAN",
             )
@@ -106,7 +114,9 @@ def _require_success_invariants(
         not _positive_int(counts_map.get(source)) for source in _SOURCES
     ):
         raise ValueError("success source counts are not positive integers")
-    if terminal.get("invalid_refs") != 0 or terminal.get("all_refs_resolve") is not True:
+    if not _exact_int(terminal.get("invalid_refs"), 0) or terminal.get(
+        "all_refs_resolve"
+    ) is not True:
         raise ValueError("success Evidence refs are not fully resolvable")
     if set(broad_map) != _PROJECTION_SOURCES or any(
         not _nonnegative_int(broad_map.get(source)) for source in _PROJECTION_SOURCES
@@ -150,7 +160,7 @@ def _require_success_invariants(
     provider_sha = terminal.get("provider_live_context_sha256")
     if any(
         (
-            terminal.get("a0_context_builder_calls") != 1,
+            not _exact_int(terminal.get("a0_context_builder_calls"), 1),
             terminal.get("fault_time_a0_context_artifact_exists") is not True,
             not isinstance(context_sha, str),
             isinstance(context_sha, str) and _SHA256.fullmatch(context_sha) is None,
@@ -161,23 +171,42 @@ def _require_success_invariants(
     ):
         raise ValueError("success fault-time context binding is invalid")
 
-    required = {
+    required_ints = {
         "fault_injections": 1,
         "provider_calls": 2,
         "model_calls": 1,
         "forward_mutations": 1,
         "rollback_mutations": 0,
+    }
+    required_bools = {
         "provider_preflight_passed": True,
         "fault_impact_passed": True,
         "diagnosis_gate": True,
         "diagnosis_correct": True,
-        "plan_action": "RESTORE_FROZEN_SERVICE_CONFIGURATION",
-        "approval_mode": "HUMAN_PREAUTHORIZED_FROZEN_REMEDIATION_RUNBOOK",
         "approval_valid": True,
-        "policy_verdict": "ALLOW",
         "recovery_verification_passed": True,
     }
-    if any(terminal.get(key) != expected for key, expected in required.items()):
+    required_strings = {
+        "plan_action": "RESTORE_FROZEN_SERVICE_CONFIGURATION",
+        "approval_mode": "HUMAN_PREAUTHORIZED_FROZEN_REMEDIATION_RUNBOOK",
+        "policy_verdict": "ALLOW",
+    }
+    if any(
+        (
+            any(
+                not _exact_int(terminal.get(key), expected)
+                for key, expected in required_ints.items()
+            ),
+            any(
+                not _exact_bool(terminal.get(key), expected)
+                for key, expected in required_bools.items()
+            ),
+            any(
+                terminal.get(key) != expected
+                for key, expected in required_strings.items()
+            ),
+        )
+    ):
         raise ValueError("success execution or authorization Gates are contradictory")
     _require_cleanup(terminal.get("cleanup"), success=True)
     claim_boundary = terminal.get("claim_boundary")
@@ -256,7 +285,7 @@ def _require_non_success_invariants(
         provider_sha = terminal.get("provider_live_context_sha256")
         if any(
             (
-                terminal.get("a0_context_builder_calls") != 1,
+                not _exact_int(terminal.get("a0_context_builder_calls"), 1),
                 terminal.get("fault_time_a0_context_artifact_exists") is not True,
                 not isinstance(context_sha, str),
                 isinstance(context_sha, str)
@@ -268,6 +297,21 @@ def _require_non_success_invariants(
             )
         ):
             raise ValueError("non-success fault-time context binding is invalid")
+
+    def require_projection_context_attempt() -> None:
+        builder_calls = terminal.get("a0_context_builder_calls")
+        artifact_exists = terminal.get("fault_time_a0_context_artifact_exists")
+        if any(
+            (
+                not _exact_int(builder_calls, 1),
+                artifact_exists is not None
+                and type(artifact_exists) is not bool,
+                type(artifact_exists) is bool and artifact_exists is not False,
+                terminal.get("fault_time_a0_context_sha256") is not None,
+                terminal.get("provider_live_context_sha256") is not None,
+            )
+        ):
+            raise ValueError("projection terminal has impossible context truth")
 
     def require_no_context() -> None:
         builder_calls = terminal.get("a0_context_builder_calls")
@@ -402,17 +446,9 @@ def _require_non_success_invariants(
             )
             require_no_context()
         else:
-            if any(
-                (
-                    terminal.get("fault_impact_passed") is not True,
-                    terminal.get("a0_context_builder_calls") != 1,
-                    terminal.get("fault_time_a0_context_artifact_exists")
-                    not in {None, False},
-                    terminal.get("fault_time_a0_context_sha256") is not None,
-                    terminal.get("provider_live_context_sha256") is not None,
-                )
-            ):
+            if terminal.get("fault_impact_passed") is not True:
                 raise ValueError("projection terminal contradicts its completed Gates")
+            require_projection_context_attempt()
             require_failure_identity(
                 failed_stage="MULTISERVICE_PROJECTION_COMPLETED",
                 failure_code="MULTISERVICE_PROJECTION_FAILED",
@@ -554,24 +590,7 @@ def _require_non_success_invariants(
         if counts["model_calls"] == 1:
             require_context_binding()
         elif terminal.get("failed_stage") == "MULTISERVICE_PROJECTION_COMPLETED":
-            builder_calls = terminal.get("a0_context_builder_calls")
-            artifact_exists = terminal.get(
-                "fault_time_a0_context_artifact_exists"
-            )
-            if any(
-                (
-                    type(builder_calls) is not int,
-                    type(builder_calls) is int and builder_calls != 1,
-                    artifact_exists is not None
-                    and type(artifact_exists) is not bool,
-                    type(artifact_exists) is bool and artifact_exists is not False,
-                    terminal.get("fault_time_a0_context_sha256") is not None,
-                    terminal.get("provider_live_context_sha256") is not None,
-                )
-            ):
-                raise ValueError(
-                    "cleanup-wrapped projection failure has impossible context truth"
-                )
+            require_projection_context_attempt()
         else:
             require_no_context()
         if counts["forward_mutations"] == 1:
@@ -806,7 +825,7 @@ def write_fault_time_context_evidence(
         "visible_service_count": len(visible),
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
-    if metadata_core["builder_call_count"] != 1:
+    if not _exact_int(metadata_core["builder_call_count"], 1):
         raise ValueError("fault-time A0 context builder did not run exactly once")
     metadata = {
         **metadata_core,

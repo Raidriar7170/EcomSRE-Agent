@@ -351,6 +351,75 @@ def test_impossible_success_terminal_is_rejected_before_projection() -> None:
 
 
 @pytest.mark.parametrize(
+    ("path", "forged_value"),
+    (
+        (("invalid_refs",), False),
+        (("a0_context_builder_calls",), True),
+        (("fault_injections",), True),
+        (("model_calls",), True),
+        (("forward_mutations",), True),
+        (("rollback_mutations",), False),
+        (("provider_preflight_passed",), 1),
+        (("fault_impact_passed",), 1),
+        (("diagnosis_gate",), 1),
+        (("diagnosis_correct",), 1),
+        (("approval_valid",), 1),
+        (("recovery_verification_passed",), 1),
+        (("cleanup", "owned_containers"), False),
+    ),
+)
+def test_success_terminal_rejects_bool_int_schema_aliases(
+    path: tuple[str, ...],
+    forged_value: object,
+) -> None:
+    config = load_e2e_v6_config(CONFIG)
+    terminal = _success_terminal()
+    target = terminal
+    for key in path[:-1]:
+        nested = target[key]
+        assert isinstance(nested, dict)
+        target = nested
+    target[path[-1]] = forged_value
+
+    with pytest.raises(ValueError):
+        build_expected_public_result(config, terminal)
+
+
+@pytest.mark.parametrize(
+    ("verdict", "field", "forged_value"),
+    (
+        (
+            "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION",
+            "a0_context_builder_calls",
+            True,
+        ),
+        ("BLOCKED_POLICY_REJECTED", "a0_context_builder_calls", True),
+        (
+            "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE",
+            "a0_context_builder_calls",
+            True,
+        ),
+        (
+            "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE",
+            "fault_time_a0_context_artifact_exists",
+            0,
+        ),
+    ),
+)
+def test_non_success_context_rejects_bool_int_schema_aliases(
+    verdict: str,
+    field: str,
+    forged_value: object,
+) -> None:
+    config = load_e2e_v6_config(CONFIG)
+    terminal = _non_success_terminal(verdict)
+    terminal[field] = forged_value
+
+    with pytest.raises(ValueError, match="context|projection"):
+        build_expected_public_result(config, terminal)
+
+
+@pytest.mark.parametrize(
     ("verdict", "overrides"),
     (
         (
