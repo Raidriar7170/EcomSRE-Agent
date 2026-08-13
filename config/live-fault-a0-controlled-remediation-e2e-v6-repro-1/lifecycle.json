@@ -1,0 +1,10 @@
+{
+  "schema_version": "live-e2e.repro-lifecycle.v1",
+  "development_repeat_policy": "REQUIRE_IMPLEMENTATION_OR_CONFIG_CHANGE_AND_PRESERVE_PRIOR_EVIDENCE",
+  "canonical_policy": "ONE_ACTIVE_ACCEPTED_PREAUTHORIZATION_PER_FROZEN_HEAD",
+  "human_approval_policy": "NEW_EXACT_R1_RECORD_REQUIRED_NO_PREDECESSOR_REUSE",
+  "pre_fault_retry_policy": "CHANGE_REQUIRED_ZERO_FAULT_MODEL_MUTATION_AND_CLEAN_OR_NOT_REQUIRED",
+  "accepted_run_policy": "CREATE_ONCE_IMMEDIATELY_BEFORE_FAULT_INJECTION",
+  "accepted_run_change_policy": "NO_CODE_CONFIG_OR_SECOND_FAULT_TIME_RUN",
+  "public_truth_policy": "ACCEPTED_SEALED_PRIVATE_TERMINAL_REQUIRED"
+}

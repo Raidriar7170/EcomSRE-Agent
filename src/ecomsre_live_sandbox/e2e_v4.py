@@ -58,7 +58,14 @@ TELEMETRY_V3_CONFIG_RELATIVE = Path("config/live-telemetry-instrumentation-v3")
 
 
 def _schema_suffix(config: object) -> str:
-    version = str(getattr(getattr(config, "authority"), "version"))
+    authority = getattr(config, "authority")
+    explicit = getattr(authority, "runtime_policy_version", None)
+    if explicit is not None:
+        normalized = str(explicit).lower()
+        if normalized not in {"v4", "v5", "v6"}:
+            raise ValueError("explicit runtime policy is unsupported")
+        return normalized
+    version = str(getattr(authority, "version"))
     if version.endswith("e2e-v6"):
         return "v6"
     return "v5" if version.endswith("e2e-v5") else "v4"
@@ -138,8 +145,11 @@ def _runtime_config_paths(config: E2EV4Config) -> dict[str, Path]:
     config_relative = E2E_V4_CONFIG_RELATIVE
     if _is_v5(config):
         suffix = _schema_suffix(config)
-        config_relative = Path(
-            f"config/live-fault-a0-controlled-remediation-e2e-{suffix}"
+        run_generation = getattr(config.authority, "run_generation", None)
+        config_relative = (
+            Path("config/live-fault-a0-controlled-remediation-e2e-v6-repro-1")
+            if run_generation == "V6_REPRO_1"
+            else Path(f"config/live-fault-a0-controlled-remediation-e2e-{suffix}")
         )
         for name in (
             "authority.json",
@@ -150,16 +160,28 @@ def _runtime_config_paths(config: E2EV4Config) -> dict[str, Path]:
             "reporting.json",
         ):
             paths.pop(name, None)
-        paths.update(
-            {
-                name: config_relative / name
-                for name in (
-                    ("authority.json", "development-probes.json", "diagnostics.json", "no-fault-readiness.json", "fault-projection.json", "reporting.json")
-                    if suffix == "v5"
-                    else ("authority.json", "assurance.json", "diagnostics.json", "reporting.json")
+        config_names = (
+            ("authority.json", "lifecycle.json", "reporting.json")
+            if run_generation == "V6_REPRO_1"
+            else (
+                (
+                    "authority.json",
+                    "development-probes.json",
+                    "diagnostics.json",
+                    "no-fault-readiness.json",
+                    "fault-projection.json",
+                    "reporting.json",
                 )
-            }
+                if suffix == "v5"
+                else (
+                    "authority.json",
+                    "assurance.json",
+                    "diagnostics.json",
+                    "reporting.json",
+                )
+            )
         )
+        paths.update({name: config_relative / name for name in config_names})
         paths.update(
             {
                 "e2e_v5.py": Path("src/ecomsre_live_sandbox/e2e_v5.py"),
@@ -203,6 +225,29 @@ def _runtime_config_paths(config: E2EV4Config) -> dict[str, Path]:
                     ),
                 }
             )
+            if run_generation == "V6_REPRO_1":
+                paths.update(
+                    {
+                        "e2e_v6_repro_1.py": Path(
+                            "src/ecomsre_live_sandbox/e2e_v6_repro_1.py"
+                        ),
+                        "e2e_v6_repro_1_contracts.py": Path(
+                            "src/ecomsre_live_sandbox/"
+                            "e2e_v6_repro_1_contracts.py"
+                        ),
+                        "e2e_v6_repro_1_cli.py": Path(
+                            "scripts/live_sandbox/e2e_v6_repro_1.py"
+                        ),
+                        "v6_assurance": Path(
+                            "config/live-fault-a0-controlled-remediation-e2e-v6/"
+                            "assurance.json"
+                        ),
+                        "v6_diagnostics": Path(
+                            "config/live-fault-a0-controlled-remediation-e2e-v6/"
+                            "diagnostics.json"
+                        ),
+                    }
+                )
     seen = set(paths.values())
     for package in (
         Path("src/ecomsre_live_sandbox"),
@@ -319,7 +364,12 @@ def _complete_development_budget(
     run_id: str,
     verdict: str,
 ) -> None:
-    suffix = "v6" if type(roots).__name__ == "E2EV6PrivateRoots" else None
+    suffix = (
+        "v6"
+        if getattr(roots, "runtime_policy_version", None) == "v6"
+        or type(roots).__name__ == "E2EV6PrivateRoots"
+        else None
+    )
     path = roots.control / (
         "development-history.json" if suffix == "v6" else "development-budget.json"
     )
@@ -715,6 +765,22 @@ def run_development_probe(
         "forward_mutations": 0,
         "rollback_mutations": 0,
     }
+    run_generation = getattr(config.authority, "run_generation", None)
+    if run_generation is not None:
+        terminal.update(
+            {
+                "software_version": config.authority.version,
+                "runtime_policy_version": getattr(
+                    config.authority, "runtime_policy_version", None
+                ),
+                "run_generation": run_generation,
+                "predecessor_original_terminal": config.authority.predecessor_terminal,
+                "predecessor_original_result_head": getattr(
+                    config.authority, "predecessor_result_head", None
+                ),
+                "original_result_preserved": True,
+            }
+        )
     _write_terminal(tracker, run_root / "terminal.json", terminal)
     roots.verify()
     _complete_development_budget(roots, run_id=run_id, verdict=verdict)
@@ -785,7 +851,8 @@ def _require_exact_head_admission(
     *,
     implementation_commit: str,
 ) -> tuple[Mapping[str, object], Mapping[str, object]]:
-    schema_suffix = {
+    explicit = getattr(roots, "runtime_policy_version", None)
+    schema_suffix = str(explicit) if explicit is not None else {
         "E2EV5PrivateRoots": "v5",
         "E2EV6PrivateRoots": "v6",
     }.get(type(roots).__name__, "v4")
@@ -921,7 +988,10 @@ def _consume_canonical_budget(
 
 
 def _complete_canonical_budget(roots: E2EV4PrivateRoots, *, verdict: str) -> None:
-    if type(roots).__name__ == "E2EV6PrivateRoots":
+    if (
+        getattr(roots, "runtime_policy_version", None) == "v6"
+        or type(roots).__name__ == "E2EV6PrivateRoots"
+    ):
         history_path = roots.control / "canonical-history.json"
         history = (
             json.loads(history_path.read_text(encoding="utf-8"))
@@ -968,7 +1038,7 @@ def scenario_lock_manifest(
 ) -> dict[str, object]:
     plan_template = build_plan_template(config)
     tracked = _runtime_config_hashes(config)
-    return {
+    manifest = {
         "schema_version": f"live-e2e.scenario-lock.{_schema_suffix(config)}",
         "version": config.authority.version,
         "implementation_commit": implementation_commit,
@@ -1072,6 +1142,23 @@ def scenario_lock_manifest(
         "plan_template_sha256": canonical_sha256(plan_template),
         "tracked_runtime_and_config": tracked,
     }
+    run_generation = getattr(config.authority, "run_generation", None)
+    if run_generation is not None:
+        manifest.update(
+            {
+                "software_version": config.authority.version,
+                "runtime_policy_version": getattr(
+                    config.authority, "runtime_policy_version", None
+                ),
+                "run_generation": run_generation,
+                "predecessor_original_terminal": config.authority.predecessor_terminal,
+                "predecessor_original_result_head": getattr(
+                    config.authority, "predecessor_result_head", None
+                ),
+                "original_result_preserved": True,
+            }
+        )
+    return manifest
 
 
 def _canonical_failure_verdict(
@@ -1319,9 +1406,9 @@ def run_canonical_invocation_a(
             approval_request_created = True
             approval_command = (
                 "uv run --with pyarrow python -m scripts.live_sandbox."
-                f"e2e_{_schema_suffix(config)} "
+                f"{getattr(config.authority, 'cli_module', f'e2e_{_schema_suffix(config)}').removeprefix('scripts.live_sandbox.')} "
                 "--private-root ~/.ecomsre/private/"
-                f"{config.authority.version} approve "
+                f"{getattr(config.authority, 'private_root_name', config.authority.version)} approve "
                 "--approver \"<HUMAN_NAME>\" "
                 f"--phrase \"APPROVE {request.scenario_id} "
                 f"{request.plan_template_sha256}\""
@@ -1446,6 +1533,22 @@ def run_canonical_invocation_a(
         "codex_self_approved": False,
         "human_approval_record_present": False,
     }
+    run_generation = getattr(config.authority, "run_generation", None)
+    if run_generation is not None:
+        terminal.update(
+            {
+                "software_version": config.authority.version,
+                "runtime_policy_version": getattr(
+                    config.authority, "runtime_policy_version", None
+                ),
+                "run_generation": run_generation,
+                "predecessor_original_terminal": config.authority.predecessor_terminal,
+                "predecessor_original_result_head": getattr(
+                    config.authority, "predecessor_result_head", None
+                ),
+                "original_result_preserved": True,
+            }
+        )
     _write_terminal(tracker, run_root / "terminal.json", terminal)
     _complete_canonical_budget(roots, verdict=verdict)
     if _schema_suffix(config) == "v6" and success:

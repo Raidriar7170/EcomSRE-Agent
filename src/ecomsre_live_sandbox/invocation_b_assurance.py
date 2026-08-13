@@ -1600,7 +1600,7 @@ def _require_non_success_invariants(
 def _safe_public_core(
     config: E2EV6Config, terminal: Mapping[str, object]
 ) -> dict[str, object]:
-    return {
+    core = {
         "schema_version": "live-e2e.public-result.v6",
         "version": config.authority.version,
         "verdict": terminal.get("verdict"),
@@ -1643,6 +1643,30 @@ def _safe_public_core(
         "cleanup": terminal.get("cleanup"),
         "claim_boundary": list(config.reporting.claim_boundary),
     }
+    run_generation = getattr(config.authority, "run_generation", None)
+    if run_generation is not None:
+        core.update(
+            {
+                "software_version": terminal.get("software_version"),
+                "runtime_policy_version": terminal.get(
+                    "runtime_policy_version"
+                ),
+                "run_generation": terminal.get("run_generation"),
+                "predecessor_original_terminal": terminal.get(
+                    "predecessor_original_terminal"
+                ),
+                "predecessor_original_result_head": terminal.get(
+                    "predecessor_original_result_head"
+                ),
+                "original_result_preserved": terminal.get(
+                    "original_result_preserved"
+                ),
+                "accepted_live_run_sha256": terminal.get(
+                    "accepted_live_run_sha256"
+                ),
+            }
+        )
+    return core
 
 
 def build_expected_public_result(
@@ -1662,6 +1686,33 @@ def build_expected_public_result(
         raise ValueError("sealed private terminal is not legal for v6")
     if sealed_private_terminal.get("version") != config.authority.version:
         raise ValueError("sealed private terminal version differs")
+    run_generation = getattr(config.authority, "run_generation", None)
+    if run_generation is not None:
+        accepted = sealed_private_terminal.get("accepted_live_run_sha256")
+        fault_injections = sealed_private_terminal.get("fault_injections", 0)
+        if any(
+            (
+                sealed_private_terminal.get("software_version")
+                != getattr(config.authority, "software_version", None),
+                sealed_private_terminal.get("runtime_policy_version")
+                != getattr(config.authority, "runtime_policy_version", None),
+                sealed_private_terminal.get("run_generation") != run_generation,
+                sealed_private_terminal.get("predecessor_original_terminal")
+                != config.authority.predecessor_terminal,
+                sealed_private_terminal.get("predecessor_original_result_head")
+                != getattr(config.authority, "predecessor_result_head", None),
+                sealed_private_terminal.get("original_result_preserved") is not True,
+                (
+                    isinstance(fault_injections, int)
+                    and fault_injections > 0
+                    and (
+                        not isinstance(accepted, str)
+                        or _SHA256.fullmatch(accepted) is None
+                    )
+                ),
+            )
+        ):
+            raise ValueError("sealed private terminal R1 authority differs")
     if verdict == policy.success:
         _require_success_invariants(config, sealed_private_terminal)
     else:

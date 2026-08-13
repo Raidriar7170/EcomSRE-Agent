@@ -19,6 +19,7 @@ from ecomsre_live_sandbox.contracts import (
     ApprovalRequest,
     HumanApprovalRecord,
     LiveRemediationPlan,
+    SLIWindow,
     canonical_sha256,
     ensure_private_directory,
     file_sha256,
@@ -110,7 +111,13 @@ V3_CONFIG_RELATIVE = Path("config/live-telemetry-instrumentation-v3")
 
 
 def _schema_suffix(config: object) -> str:
-    version = getattr(getattr(config, "authority", None), "version", "")
+    authority = getattr(config, "authority", None)
+    explicit = getattr(authority, "invocation_b_verdict_policy_id", None)
+    if explicit is not None:
+        if explicit not in {"v3", "v4", "v5", "v6"}:
+            raise ValueError("explicit Invocation B verdict policy is unsupported")
+        return str(explicit)
+    version = getattr(authority, "version", "")
     if str(version).endswith("e2e-v6"):
         return "v6"
     if str(version).endswith("e2e-v5"):
@@ -1597,7 +1604,8 @@ def _require_exact_head_admission(
     roots: E2EV3PrivateRoots, *, implementation_commit: str
 ) -> tuple[Mapping[str, object], Mapping[str, object]]:
     root_name = type(roots).__name__
-    schema_suffix = {
+    explicit = getattr(roots, "runtime_policy_version", None)
+    schema_suffix = str(explicit) if explicit is not None else {
         "E2EV4PrivateRoots": "v4",
         "E2EV5PrivateRoots": "v5",
         "E2EV6PrivateRoots": "v6",
@@ -2214,6 +2222,13 @@ def _verify_scenario_lock_for_invocation_b(
 
 
 def _consume_live_run_budget(config: E2EV3Config, roots: E2EV3PrivateRoots) -> None:
+    if getattr(config.authority, "run_generation", None) == "V6_REPRO_1":
+        if (roots.control / "accepted-live-run.json").exists():
+            raise RuntimeError("accepted fault-time run is already sealed")
+        started_path = roots.invocation_b / "started.json"
+        if started_path.is_symlink() or not started_path.is_file():
+            raise RuntimeError("R1 Invocation B lacks an allocated pre-fault attempt")
+        return
     started_path = roots.invocation_b / "started.json"
     terminal_path = roots.invocation_b / "terminal.json"
     if any(path.exists() or path.is_symlink() for path in (started_path, terminal_path)):
@@ -2459,6 +2474,19 @@ def run_invocation_b(
         [E2EV3Config, Mapping[str, object]], object
     ]
     | None = None,
+    live_attempt_allocator: Callable[
+        [E2EV3Config, E2EV3PrivateRoots, str], object
+    ]
+    | None = None,
+    accepted_run_sealer: Callable[
+        [E2EV3Config, E2EV3PrivateRoots, dict[str, object], Sequence[SLIWindow]],
+        str,
+    ]
+    | None = None,
+    live_attempt_completer: Callable[
+        [E2EV3Config, E2EV3PrivateRoots, Mapping[str, object]], None
+    ]
+    | None = None,
 ) -> dict[str, object]:
     """Execute the single human-preauthorized live run without result-driven retries."""
     roots.bind_lifecycle(config.authority, repository_root=config.repository_root)
@@ -2472,6 +2500,8 @@ def run_invocation_b(
     _require_exact_head_admission(roots, implementation_commit=implementation_commit)
     if locked.get("implementation_commit") != implementation_commit:
         raise RuntimeError("Invocation B implementation head differs from scenario lock")
+    if live_attempt_allocator is not None:
+        live_attempt_allocator(config, roots, implementation_commit)
     for directory in (
         roots.invocation_b,
         roots.invocation_b / "commands",
@@ -2551,6 +2581,26 @@ def run_invocation_b(
         "compose_structure_sha256": None,
         "compose_instance_sha256": None,
     }
+    run_generation = getattr(config.authority, "run_generation", None)
+    if run_generation is not None:
+        terminal.update(
+            {
+                "software_version": config.authority.version,
+                "runtime_policy_version": getattr(
+                    config.authority, "runtime_policy_version", None
+                ),
+                "run_generation": run_generation,
+                "predecessor_original_terminal": getattr(
+                    config.authority, "predecessor_terminal", None
+                ),
+                "predecessor_original_result_head": getattr(
+                    config.authority, "predecessor_result_head", None
+                ),
+                "original_result_preserved": True,
+                "accepted_live_run_sealed": False,
+                "accepted_live_run_sha256": None,
+            }
+        )
     provider: Any = None
     controller: Any = None
     forward_counter = ForwardMutationCounter(roots.journal / "forward-mutation.txt")
@@ -2733,6 +2783,11 @@ def run_invocation_b(
             at=baseline[-1].ended_at,
         )
         terminal["baseline_windows"] = 2
+        if accepted_run_sealer is not None:
+            terminal["compose_start_requested"] = state.compose_start_requested
+            terminal["compose_start_returned"] = state.compose_start_returned
+            terminal["compose_start_return_code"] = state.compose_start_return_code
+            accepted_run_sealer(config, roots, terminal, baseline)
         terminal["fault_injections"] = 1
         fault_state = controller.inject_fault()
         if fault_state.document_sha256 != config.sandbox.scenario.fault_document_sha256:
@@ -3262,11 +3317,14 @@ def run_invocation_b(
             output_value={"terminal_sha256": canonical_sha256(terminal)},
         )
         roots.verify()
+        if live_attempt_completer is not None:
+            live_attempt_completer(config, roots, terminal)
         public_outputs = public_writer(config, terminal)
         if schema_suffix != "v6":
             terminal["public_outputs"] = public_outputs
             terminal["public_projection_status"] = "PASSED"
-        _complete_live_run_budget(roots, verdict=cast(str, terminal["verdict"]))
+        if live_attempt_completer is None:
+            _complete_live_run_budget(roots, verdict=cast(str, terminal["verdict"]))
     return terminal
 
 

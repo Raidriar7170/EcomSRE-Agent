@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import stat
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -675,10 +677,208 @@ def test_v6_serializes_real_provider_preflight_model_before_next_stage_failure(
     artifact = json.loads(
         (roots.provider / "synthetic-preflight-v2.json").read_text(encoding="utf-8")
     )
+    with pytest.raises(TypeError):
+        json.dumps({"diagnosis": diagnosis})
+    json_safe_diagnosis = diagnosis.model_dump(mode="json")
     assert artifact["diagnosis"] == diagnosis.model_dump(mode="json")
+    assert canonical_sha256(artifact["diagnosis"]) == canonical_sha256(
+        json_safe_diagnosis
+    )
+    assert stat.S_IMODE(
+        (roots.provider / "synthetic-preflight-v2.json").stat().st_mode
+    ) == 0o600
+    with pytest.raises(FileExistsError, match="create-once"):
+        write_private_json(
+            roots.provider / "synthetic-preflight-v2.json",
+            {"diagnosis": json_safe_diagnosis},
+            create_once=True,
+        )
     assert terminal["provider_preflight_passed"] is True
     assert terminal["provider_calls"] == 1
+    assert terminal["provider_preflight_usage_tokens"] == 1
+    assert terminal["compose_start_requested"] is False
+    assert terminal["fault_injections"] == 0
+    assert terminal["model_calls"] == 0
+    assert terminal["forward_mutations"] == 0
+    assert terminal["rollback_mutations"] == 0
     assert terminal["exception_type"] == "RuntimeError"
+
+
+def test_v6_repro_1_seals_acceptance_before_fault_injection(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from ecomsre_live_sandbox.e2e_v6_repro_1 import (
+        record_human_approval_for_invocation_b as record_r1_approval,
+    )
+    from ecomsre_live_sandbox.e2e_v6_repro_1 import (
+        run_canonical_invocation_a as run_r1_canonical,
+    )
+    from ecomsre_live_sandbox.e2e_v6_repro_1 import (
+        run_development_probe as run_r1_development,
+    )
+    from ecomsre_live_sandbox.e2e_v6_repro_1 import (
+        run_invocation_b as run_r1_invocation_b,
+    )
+    from ecomsre_live_sandbox.e2e_v6_repro_1 import (
+        _write_public_outputs_repro_1 as write_r1_public_outputs,
+    )
+    from ecomsre_live_sandbox.e2e_v6_repro_1_contracts import (
+        E2EV6Repro1PrivateRoots,
+        load_e2e_v6_repro_1_config,
+    )
+
+    config = load_e2e_v6_repro_1_config(
+        Path("config/live-fault-a0-controlled-remediation-e2e-v6-repro-1")
+    )
+    roots = E2EV6Repro1PrivateRoots(tmp_path / "private-repro-1")
+    FakeEnvironment.fail_at = None
+    FakeEnvironment.next_controller_read_failures = 0
+    FakeEnvironment.next_controller_mismatch = False
+    development = run_r1_development(
+        config,
+        roots,
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        evidence_collector=_no_fault_evidence,
+        sleep=lambda _: None,
+        worktree_verifier=_fake_worktree,
+    )
+    assert development["verdict"] == config.authority.development_success_terminal
+    for name, payload in (
+        (
+            "exact-head-ci.json",
+            {
+                "schema_version": "live-e2e.exact-head-ci.v6",
+                "implementation_commit": "d" * 40,
+                "workflows": {
+                    "Agent mainline": {"run_id": 201, "conclusion": "SUCCESS"},
+                    "RCAEval RE2 v2 development": {
+                        "run_id": 202,
+                        "conclusion": "SUCCESS",
+                    },
+                },
+            },
+        ),
+        (
+            "pre-live-review.json",
+            {
+                "schema_version": "live-e2e.pre-live-review.v6",
+                "implementation_commit": "d" * 40,
+                "verdict": "PRE_LIVE_PASS",
+                "must_fix_count": 0,
+            },
+        ),
+    ):
+        write_private_json(roots.control / name, payload, create_once=True)
+    canonical = run_r1_canonical(
+        config,
+        roots,
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        evidence_collector=_no_fault_evidence,
+        sleep=lambda _: None,
+        worktree_verifier=_fake_worktree,
+    )
+    assert canonical["verdict"] == config.authority.invocation_a_terminal
+    request = json.loads(
+        (roots.control / "approval-request.json").read_text(encoding="utf-8")
+    )
+    record_r1_approval(
+        config,
+        roots,
+        approver="Human Reviewer",
+        phrase=f"APPROVE {request['scenario_id']} {request['plan_template_sha256']}",
+    )
+
+    monkeypatch.setattr(
+        e2e_v3,
+        "_capture_sli_window",
+        lambda *_, phase: _sli_window(phase),
+    )
+    monkeypatch.setattr(e2e_v3, "_broad_metric_snapshot", lambda *_, **__: {})
+    observed = {"accepted_before_fault": False}
+
+    def controller_factory(*args: object, **kwargs: object) -> FakeController:
+        controller = _controller(*args, **kwargs)
+
+        def fail_after_acceptance() -> object:
+            accepted = roots.control / "accepted-live-run.json"
+            observed["accepted_before_fault"] = accepted.is_file()
+            assert roots.invocation_b == roots.live_attempt(1)
+            assert json.loads(accepted.read_text(encoding="utf-8"))["attempt_id"] == (
+                "attempt-0001"
+            )
+            raise RuntimeError("injected failure after accepted boundary")
+
+        controller.inject_fault = fail_after_acceptance  # type: ignore[method-assign]
+        return controller
+
+    terminal = run_r1_invocation_b(
+        config,
+        roots,
+        provider_factory=lambda _: FakeProvider(),
+        environment_factory=FakeEnvironment,
+        controller_factory=controller_factory,
+        worktree_verifier=_fake_worktree,
+        sleep=lambda _: None,
+        public_writer=lambda *_: (),
+    )
+
+    assert observed["accepted_before_fault"] is True
+    assert terminal["run_generation"] == "V6_REPRO_1"
+    assert terminal["fault_injections"] == 1
+    assert terminal["accepted_live_run_sealed"] is True
+    assert terminal["accepted_live_run_sha256"] == hashlib.sha256(
+        (roots.control / "accepted-live-run.json").read_bytes()
+    ).hexdigest()
+    assert terminal["model_calls"] == 0
+    assert terminal["forward_mutations"] == 0
+    assert terminal["rollback_mutations"] == 0
+    assert (roots.accepted_live_run / "attempt-pointer.json").is_file()
+    isolated = replace(config, repository_root=tmp_path / "public-repository")
+    outputs = write_r1_public_outputs(isolated, terminal, roots=roots)
+    assert outputs == (
+        isolated.reporting.public_result_json,
+        isolated.reporting.public_result_markdown,
+        isolated.reporting.public_human_brief,
+    )
+    public = json.loads(
+        (isolated.repository_root / isolated.reporting.public_result_json).read_text(
+            encoding="utf-8"
+        )
+    )
+    assert public["software_version"] == config.authority.software_version
+    assert public["runtime_policy_version"] == "V6"
+    assert public["run_generation"] == "V6_REPRO_1"
+    assert public["accepted_live_run_sha256"] == terminal[
+        "accepted_live_run_sha256"
+    ]
+    assert public["predecessor_original_terminal"] == (
+        "BLOCKED_E2E_V6_UNCLASSIFIED_RUNTIME_FAILURE"
+    )
+    assert public["original_result_preserved"] is True
+    with pytest.raises(FileExistsError):
+        write_r1_public_outputs(isolated, terminal, roots=roots)
+    second_provider_calls = 0
+
+    def forbidden_second_provider(_: object) -> FakeProvider:
+        nonlocal second_provider_calls
+        second_provider_calls += 1
+        return FakeProvider()
+
+    with pytest.raises(RuntimeError, match="accepted fault-time run is already sealed"):
+        run_r1_invocation_b(
+            config,
+            roots,
+            provider_factory=forbidden_second_provider,
+            environment_factory=FakeEnvironment,
+            controller_factory=_controller,
+            worktree_verifier=_fake_worktree,
+            sleep=lambda _: None,
+            public_writer=lambda *_: (),
+        )
+    assert second_provider_calls == 0
 
 
 @pytest.mark.parametrize(
