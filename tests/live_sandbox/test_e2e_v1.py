@@ -95,6 +95,76 @@ def test_successor_runtime_does_not_import_the_frozen_v1_runtime_modules() -> No
     assert "ecomsre_live_sandbox.telemetry" not in source
 
 
+def test_prometheus_error_counter_accepts_a_successful_empty_vector_as_zero(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        e2e_v1,
+        "_strict_json",
+        lambda *_args, **_kwargs: {
+            "status": "success",
+            "data": {"result": []},
+        },
+    )
+
+    value = e2e_v1._prometheus_value(
+        "http://127.0.0.1:19090",
+        "sum(increase(error_counter[30s]))",
+        at=datetime.now(timezone.utc),
+        empty_value=0.0,
+    )
+
+    assert value == 0.0
+
+
+def test_prometheus_required_value_still_rejects_an_empty_vector(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        e2e_v1,
+        "_strict_json",
+        lambda *_args, **_kwargs: {
+            "status": "success",
+            "data": {"result": []},
+        },
+    )
+
+    with pytest.raises(RuntimeError, match="does not have one vector value"):
+        e2e_v1._prometheus_value(
+            "http://127.0.0.1:19090",
+            "sum(increase(required_counter[30s]))",
+            at=datetime.now(timezone.utc),
+        )
+
+
+def test_baseline_sli_window_treats_an_empty_error_vector_as_zero(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = load_e2e_config(CONFIG)
+    payloads = iter(
+        (
+            {"status": "success", "data": {"result": [{"value": [1, "12"]}]}},
+            {"status": "success", "data": {"result": []}},
+            {"status": "success", "data": {"result": [{"value": [1, "25"]}]}},
+            {"status": "success", "data": {"result": [{"value": [1, "1"]}]}},
+        )
+    )
+    monkeypatch.setattr(e2e_v1, "_strict_json", lambda *_args, **_kwargs: next(payloads))
+    monkeypatch.setattr(e2e_v1.time, "sleep", lambda _seconds: None)
+
+    window = e2e_v1._capture_sli_window(
+        config,
+        "http://127.0.0.1:19090",
+        phase="BASELINE",
+    )
+
+    assert window.request_count == 12.0
+    assert window.error_count == 0.0
+    assert window.error_rate == 0.0
+    assert window.p95_latency_ms == 25.0
+    assert window.runtime_health == 1.0
+
+
 def test_invocation_b_requires_a_clean_no_fault_invocation_a_terminal(tmp_path: Path) -> None:
     config = load_e2e_config(CONFIG)
     roots = E2EPrivateRoots(tmp_path / "private")

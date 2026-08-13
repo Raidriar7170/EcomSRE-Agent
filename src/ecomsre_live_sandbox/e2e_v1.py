@@ -271,7 +271,13 @@ def _strict_json(url: str, *, method: str = "GET", payload: object | None = None
     return json.loads(raw.decode("utf-8"))
 
 
-def _prometheus_value(endpoint: str, query: str, *, at: datetime) -> float:
+def _prometheus_value(
+    endpoint: str,
+    query: str,
+    *,
+    at: datetime,
+    empty_value: float | None = None,
+) -> float:
     payload = _strict_json(
         f"{endpoint}/api/v1/query?{urlencode({'query': query, 'time': f'{at.timestamp():.6f}'})}"
     )
@@ -279,7 +285,11 @@ def _prometheus_value(endpoint: str, query: str, *, at: datetime) -> float:
         raise ValueError("Prometheus instant payload is malformed")
     data = payload.get("data")
     result = data.get("result") if isinstance(data, Mapping) else None
-    if payload.get("status") != "success" or not isinstance(result, list) or len(result) != 1:
+    if payload.get("status") != "success" or not isinstance(result, list):
+        raise RuntimeError("Prometheus instant query does not have one vector value")
+    if not result and empty_value is not None:
+        return empty_value
+    if len(result) != 1:
         raise RuntimeError("Prometheus instant query does not have one vector value")
     item = result[0]
     sample = item.get("value") if isinstance(item, Mapping) else None
@@ -302,7 +312,12 @@ def _capture_sli_window(
     ended = datetime.now(timezone.utc)
     telemetry = config.sandbox.telemetry.prometheus
     total = _prometheus_value(endpoint, telemetry.total_query, at=ended)
-    errors = _prometheus_value(endpoint, telemetry.error_query, at=ended)
+    errors = _prometheus_value(
+        endpoint,
+        telemetry.error_query,
+        at=ended,
+        empty_value=0.0,
+    )
     p95 = _prometheus_value(endpoint, telemetry.p95_query, at=ended)
     health = _prometheus_value(endpoint, telemetry.health_query, at=ended)
     if errors > total + 1e-9:
