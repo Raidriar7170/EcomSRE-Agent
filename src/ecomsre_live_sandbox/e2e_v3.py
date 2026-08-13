@@ -2549,12 +2549,11 @@ def run_invocation_b(
         flagd_directory=roots.runtime / "invocation-b" / "flagd",
         runner=runner,
     )
-    if live_attempt_allocator is not None:
-        live_attempt_allocator(config, roots, implementation_commit)
-    _consume_live_run_budget(config, roots)
     schema_suffix = _schema_suffix(config)
     verdict_policy = get_invocation_b_verdict_policy(schema_suffix)
     uses_fault_projection = schema_suffix in {"v5", "v6"}
+    if live_attempt_allocator is None:
+        _consume_live_run_budget(config, roots)
     terminal: dict[str, object] = {
         "schema_version": f"live-e2e.invocation-b-terminal.{schema_suffix}",
         "version": config.authority.version,
@@ -2605,13 +2604,17 @@ def run_invocation_b(
     controller: Any = None
     forward_counter = ForwardMutationCounter(roots.journal / "forward-mutation.txt")
     private_exception: DiagnosticExceptionReference | None = None
-    tracker.pass_stage(DiagnosticStage.PRIVATE_ROOT_BOUND)
-    tracker.pass_stage(DiagnosticStage.AUTHORITY_VERIFIED)
-    tracker.pass_stage(
-        DiagnosticStage.WORKTREE_VERIFIED,
-        output_value=implementation_commit,
-    )
+    if live_attempt_allocator is not None:
+        live_attempt_allocator(config, roots, implementation_commit)
     try:
+        tracker.pass_stage(DiagnosticStage.PRIVATE_ROOT_BOUND)
+        tracker.pass_stage(DiagnosticStage.AUTHORITY_VERIFIED)
+        tracker.pass_stage(
+            DiagnosticStage.WORKTREE_VERIFIED,
+            output_value=implementation_commit,
+        )
+        if live_attempt_allocator is not None:
+            _consume_live_run_budget(config, roots)
         provider = provider_factory(config)
         synthetic = _synthetic_provider_context(cast(Any, config))
         preflight = provider.diagnose(synthetic)

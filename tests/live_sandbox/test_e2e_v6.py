@@ -486,6 +486,77 @@ def _prepare_approved_v6(config: object, roots: E2EV6PrivateRoots) -> None:
     )
 
 
+def _prepare_approved_r1(config: object, roots: object) -> None:
+    from ecomsre_live_sandbox.e2e_v6_repro_1 import (
+        record_human_approval_for_invocation_b as record_r1_approval,
+    )
+    from ecomsre_live_sandbox.e2e_v6_repro_1 import (
+        run_canonical_invocation_a as run_r1_canonical,
+    )
+    from ecomsre_live_sandbox.e2e_v6_repro_1 import (
+        run_development_probe as run_r1_development,
+    )
+
+    FakeEnvironment.fail_at = None
+    FakeEnvironment.next_controller_read_failures = 0
+    FakeEnvironment.next_controller_mismatch = False
+    development = run_r1_development(
+        config,  # type: ignore[arg-type]
+        roots,  # type: ignore[arg-type]
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        evidence_collector=_no_fault_evidence,
+        sleep=lambda _: None,
+        worktree_verifier=_fake_worktree,
+    )
+    assert development["verdict"] == config.authority.development_success_terminal  # type: ignore[attr-defined]
+    for name, payload in (
+        (
+            "exact-head-ci.json",
+            {
+                "schema_version": "live-e2e.exact-head-ci.v6",
+                "implementation_commit": "d" * 40,
+                "workflows": {
+                    "Agent mainline": {"run_id": 201, "conclusion": "SUCCESS"},
+                    "RCAEval RE2 v2 development": {
+                        "run_id": 202,
+                        "conclusion": "SUCCESS",
+                    },
+                },
+            },
+        ),
+        (
+            "pre-live-review.json",
+            {
+                "schema_version": "live-e2e.pre-live-review.v6",
+                "implementation_commit": "d" * 40,
+                "verdict": "PRE_LIVE_PASS",
+                "must_fix_count": 0,
+            },
+        ),
+    ):
+        write_private_json(roots.control / name, payload, create_once=True)  # type: ignore[attr-defined]
+    canonical = run_r1_canonical(
+        config,  # type: ignore[arg-type]
+        roots,  # type: ignore[arg-type]
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        evidence_collector=_no_fault_evidence,
+        sleep=lambda _: None,
+        worktree_verifier=_fake_worktree,
+    )
+    assert canonical["verdict"] == config.authority.invocation_a_terminal  # type: ignore[attr-defined]
+    request = json.loads(
+        (roots.control / "approval-request.json").read_text(encoding="utf-8")  # type: ignore[attr-defined]
+    )
+    record_r1_approval(
+        config,  # type: ignore[arg-type]
+        roots,  # type: ignore[arg-type]
+        approver="Human Reviewer",
+        phrase=f"APPROVE {request['scenario_id']} {request['plan_template_sha256']}",
+    )
+
+
 @pytest.mark.parametrize("run_kind", ("development", "canonical"))
 @pytest.mark.parametrize(
     ("failure_kind", "expected_suffix", "expected_stage"),
@@ -709,15 +780,6 @@ def test_v6_repro_1_seals_acceptance_before_fault_injection(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     from ecomsre_live_sandbox.e2e_v6_repro_1 import (
-        record_human_approval_for_invocation_b as record_r1_approval,
-    )
-    from ecomsre_live_sandbox.e2e_v6_repro_1 import (
-        run_canonical_invocation_a as run_r1_canonical,
-    )
-    from ecomsre_live_sandbox.e2e_v6_repro_1 import (
-        run_development_probe as run_r1_development,
-    )
-    from ecomsre_live_sandbox.e2e_v6_repro_1 import (
         run_invocation_b as run_r1_invocation_b,
     )
     from ecomsre_live_sandbox.e2e_v6_repro_1 import (
@@ -732,64 +794,7 @@ def test_v6_repro_1_seals_acceptance_before_fault_injection(
         Path("config/live-fault-a0-controlled-remediation-e2e-v6-repro-1")
     )
     roots = E2EV6Repro1PrivateRoots(tmp_path / "private-repro-1")
-    FakeEnvironment.fail_at = None
-    FakeEnvironment.next_controller_read_failures = 0
-    FakeEnvironment.next_controller_mismatch = False
-    development = run_r1_development(
-        config,
-        roots,
-        environment_factory=FakeEnvironment,
-        controller_factory=_controller,
-        evidence_collector=_no_fault_evidence,
-        sleep=lambda _: None,
-        worktree_verifier=_fake_worktree,
-    )
-    assert development["verdict"] == config.authority.development_success_terminal
-    for name, payload in (
-        (
-            "exact-head-ci.json",
-            {
-                "schema_version": "live-e2e.exact-head-ci.v6",
-                "implementation_commit": "d" * 40,
-                "workflows": {
-                    "Agent mainline": {"run_id": 201, "conclusion": "SUCCESS"},
-                    "RCAEval RE2 v2 development": {
-                        "run_id": 202,
-                        "conclusion": "SUCCESS",
-                    },
-                },
-            },
-        ),
-        (
-            "pre-live-review.json",
-            {
-                "schema_version": "live-e2e.pre-live-review.v6",
-                "implementation_commit": "d" * 40,
-                "verdict": "PRE_LIVE_PASS",
-                "must_fix_count": 0,
-            },
-        ),
-    ):
-        write_private_json(roots.control / name, payload, create_once=True)
-    canonical = run_r1_canonical(
-        config,
-        roots,
-        environment_factory=FakeEnvironment,
-        controller_factory=_controller,
-        evidence_collector=_no_fault_evidence,
-        sleep=lambda _: None,
-        worktree_verifier=_fake_worktree,
-    )
-    assert canonical["verdict"] == config.authority.invocation_a_terminal
-    request = json.loads(
-        (roots.control / "approval-request.json").read_text(encoding="utf-8")
-    )
-    record_r1_approval(
-        config,
-        roots,
-        approver="Human Reviewer",
-        phrase=f"APPROVE {request['scenario_id']} {request['plan_template_sha256']}",
-    )
+    _prepare_approved_r1(config, roots)
 
     def fail_before_attempt_allocation(**_: object) -> object:
         raise RuntimeError("injected environment construction failure")
@@ -926,6 +931,61 @@ def test_v6_repro_1_seals_acceptance_before_fault_injection(
             public_writer=lambda *_: (),
         )
     assert second_provider_calls == 0
+
+
+def test_v6_repro_1_allocator_followup_failure_seals_attempt(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from ecomsre_live_sandbox.e2e_v6_repro_1 import (
+        run_invocation_b as run_r1_invocation_b,
+    )
+    from ecomsre_live_sandbox.e2e_v6_repro_1_contracts import (
+        E2EV6Repro1PrivateRoots,
+        load_e2e_v6_repro_1_config,
+    )
+
+    config = load_e2e_v6_repro_1_config(
+        Path("config/live-fault-a0-controlled-remediation-e2e-v6-repro-1")
+    )
+    roots = E2EV6Repro1PrivateRoots(tmp_path / "allocator-followup-failure")
+    _prepare_approved_r1(config, roots)
+    provider_factory_calls = 0
+
+    def fail_after_allocator(*_: object, **__: object) -> None:
+        raise RuntimeError("injected post-allocation budget failure")
+
+    def provider_factory(_: object) -> FakeProvider:
+        nonlocal provider_factory_calls
+        provider_factory_calls += 1
+        return FakeProvider()
+
+    monkeypatch.setattr(e2e_v3, "_consume_live_run_budget", fail_after_allocator)
+    terminal = run_r1_invocation_b(
+        config,
+        roots,
+        provider_factory=provider_factory,
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        worktree_verifier=_fake_worktree,
+        sleep=lambda _: None,
+        public_writer=lambda *_: (),
+    )
+
+    sealed_path = roots.live_attempt(1) / "terminal.json"
+    history = json.loads(
+        (roots.control / "live-attempt-history.json").read_text(encoding="utf-8")
+    )
+    assert provider_factory_calls == 0
+    assert sealed_path.is_file()
+    assert json.loads(sealed_path.read_text(encoding="utf-8")) == terminal
+    assert history["attempts"][0]["verdict"] == terminal["verdict"]
+    assert history["attempts"][0]["verdict"] != "STARTED"
+    assert terminal["fault_injections"] == 0
+    assert terminal["model_calls"] == 0
+    assert terminal["forward_mutations"] == 0
+    assert terminal["rollback_mutations"] == 0
+    assert terminal["cleanup_verdict"] == "NOT_REQUIRED"
 
 
 @pytest.mark.parametrize(
