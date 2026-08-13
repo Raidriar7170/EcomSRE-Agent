@@ -706,6 +706,8 @@ _ORDERED_SOURCE_COLLECTOR_STAGES = (
 def _require_ordered_source_collector_stages(tracker: _StageTracker) -> None:
     if not all(tracker.has_stage(stage) for stage in _ORDERED_SOURCE_COLLECTOR_STAGES):
         raise RuntimeError("ordered source collector did not seal its owned stage sequence")
+    if tracker.has_stage(DiagnosticStage.MULTISERVICE_PROJECTION_STARTED):
+        raise RuntimeError("ordered source collector projection boundary already crossed")
 
 
 def _record_legacy_source_completion_stages(

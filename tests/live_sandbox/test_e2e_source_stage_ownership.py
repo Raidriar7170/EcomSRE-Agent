@@ -185,3 +185,25 @@ def test_legacy_v3_retains_explicit_source_completion_stages(tmp_path: Path) -> 
         DiagnosticStage.MULTISERVICE_PROJECTION_COMPLETED,
     ]
     assert set(passed).issubset(V3_DIAGNOSTIC_STAGES)
+
+
+def test_ordered_source_guard_rejects_an_already_crossed_projection_boundary(
+    tmp_path: Path,
+) -> None:
+    journal = DiagnosticJournal(
+        tmp_path / "crossed-boundary" / "events.jsonl",
+        run_kind=DiagnosticRunKind.INVOCATION_B,
+        run_id="invocation-b",
+    )
+    tracker = _StageTracker(
+        journal,
+        ExceptionArtifactStore(tmp_path / "crossed-boundary" / "exceptions"),
+    )
+    for stage in (
+        *COLLECTOR_OWNED_COMPLETIONS,
+        DiagnosticStage.MULTISERVICE_PROJECTION_STARTED,
+    ):
+        tracker.pass_stage(stage)
+
+    with pytest.raises(RuntimeError, match="projection boundary already crossed"):
+        _require_ordered_source_collector_stages(tracker)

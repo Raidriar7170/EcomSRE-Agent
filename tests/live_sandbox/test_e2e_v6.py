@@ -11,6 +11,7 @@ from typing import Any
 
 import pytest
 
+import ecomsre_live_sandbox.e2e_source_batch as source_batch_module
 import ecomsre_live_sandbox.e2e_v3 as e2e_v3
 import ecomsre_live_sandbox.e2e_v4 as e2e_v4
 from ecomsre_live_sandbox.contracts import (
@@ -500,6 +501,94 @@ def _prepare_approved_v6(config: object, roots: E2EV6PrivateRoots) -> None:
         phrase=(
             f"APPROVE {request['scenario_id']} {request['plan_template_sha256']}"
         ),
+    )
+
+
+def _prepare_approved_v3(config: object, roots: object) -> None:
+    from ecomsre_live_sandbox.e2e_v3 import (
+        record_human_approval_for_invocation_b as record_v3_approval,
+    )
+    from ecomsre_live_sandbox.e2e_v3 import (
+        run_canonical_invocation_a as run_v3_canonical,
+    )
+    from ecomsre_live_sandbox.e2e_v3 import (
+        NoFaultEvidence,
+        run_diagnostic_preflight as run_v3_diagnostic,
+    )
+
+    FakeEnvironment.fail_at = None
+    FakeEnvironment.next_controller_read_failures = 0
+    FakeEnvironment.next_controller_mismatch = False
+
+    def worktree_verifier(*_: object) -> str:
+        return "d" * 40
+
+    def legacy_no_fault_evidence(*_: object, **__: object) -> NoFaultEvidence:
+        return NoFaultEvidence(
+            metrics_status="AVAILABLE",
+            logs_status="AVAILABLE",
+            traces_status="AVAILABLE",
+            source_counts={"METRICS": 5, "LOGS": 28, "TRACES": 14},
+            invalid_refs=0,
+            visible_service_count=4,
+            scenario_truth_leaked=False,
+            projection_sha256="c" * 64,
+        )
+
+    diagnostic = run_v3_diagnostic(
+        config,  # type: ignore[arg-type]
+        roots,  # type: ignore[arg-type]
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        evidence_collector=legacy_no_fault_evidence,
+        sleep=lambda _: None,
+        worktree_verifier=worktree_verifier,
+    )
+    assert diagnostic["verdict"] == "LIVE_E2E_V3_DIAGNOSTIC_PREFLIGHT_PASSED"
+    for name, payload in (
+        (
+            "exact-head-ci.json",
+            {
+                "schema_version": "live-e2e.exact-head-ci.v3",
+                "implementation_commit": "d" * 40,
+                "workflows": {
+                    "Agent mainline": {"run_id": 91, "conclusion": "SUCCESS"},
+                    "RCAEval RE2 v2 development": {
+                        "run_id": 92,
+                        "conclusion": "SUCCESS",
+                    },
+                },
+            },
+        ),
+        (
+            "pre-live-review.json",
+            {
+                "schema_version": "live-e2e.pre-live-review.v3",
+                "implementation_commit": "d" * 40,
+                "verdict": "PRE_LIVE_PASS",
+                "must_fix_count": 0,
+            },
+        ),
+    ):
+        write_private_json(roots.control / name, payload, create_once=True)  # type: ignore[attr-defined]
+    canonical = run_v3_canonical(
+        config,  # type: ignore[arg-type]
+        roots,  # type: ignore[arg-type]
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        evidence_collector=legacy_no_fault_evidence,
+        sleep=lambda _: None,
+        worktree_verifier=worktree_verifier,
+    )
+    assert canonical["verdict"] == config.authority.invocation_a_terminal  # type: ignore[attr-defined]
+    request = json.loads(
+        (roots.control / "approval-request.json").read_text(encoding="utf-8")  # type: ignore[attr-defined]
+    )
+    record_v3_approval(
+        config,  # type: ignore[arg-type]
+        roots,  # type: ignore[arg-type]
+        approver="Human Reviewer",
+        phrase=f"APPROVE {request['scenario_id']} {request['plan_template_sha256']}",
     )
 
 
@@ -1512,41 +1601,70 @@ def _patch_live_fault_projection_inputs(
     monkeypatch: pytest.MonkeyPatch,
     roots: E2EV6PrivateRoots,
 ) -> None:
-    def collect_source_batch(*_: object, **kwargs: object) -> object:
-        run_root = kwargs["run_root"]
-        assert isinstance(run_root, Path)
-        counts = {"METRICS": 5, "LOGS": 6, "TRACES": 4}
+    from ecomsre_live_sandbox.instrumentation_v2 import (
+        SourceProbeResult,
+        SourceProbeStatus,
+    )
+
+    observed_at = datetime(2026, 8, 12, 12, tzinfo=timezone.utc)
+    counts = {"METRICS": 5, "LOGS": 6, "TRACES": 4}
+    source_results = tuple(
+        SourceProbeResult(
+            source=source,
+            backend_kind={
+                "METRICS": "PROMETHEUS_HTTP_API",
+                "LOGS": "OPENSEARCH_HTTP_API",
+                "TRACES": "JAEGER_QUERY_API",
+            }[source],
+            status=SourceProbeStatus.AVAILABLE,
+            window_start=observed_at,
+            window_end=observed_at + timedelta(seconds=30),
+            probe_started_at=observed_at,
+            probe_ended_at=observed_at + timedelta(seconds=1),
+            attempt_count=1,
+            backend_reachable=True,
+            raw_response_count=counts[source],
+            parsed_record_count=counts[source],
+            target_record_count=counts[source],
+            service_catalog_count=25,
+            target_service_present=True,
+            evidence_refs=(f"{source.casefold()}:0001",),
+        )
+        for source in ("METRICS", "LOGS", "TRACES")
+    )
+    source_clock = iter((observed_at, observed_at + timedelta(seconds=30)))
+
+    class DeterministicSourceDateTime:
+        @classmethod
+        def now(cls, _: object) -> datetime:
+            return next(source_clock)
+
+    def terminalize_source_probes(*_: object, **__: object) -> object:
+        return source_results
+
+    def combined_resolver(*_: object, common_root: Path, **__: object) -> object:
         write_private_json(
-            run_root / "source-results.json",
+            common_root / "source-resolver.json",
             {
-                "schema_version": "live-e2e.source-results.v6",
-                "results": [
-                    {"source": source, "status": "AVAILABLE"}
-                    for source in ("METRICS", "LOGS", "TRACES")
-                ],
-                "source_counts": counts,
-                "invalid_ref_count": 0,
-                "all_refs_resolve": True,
-                "source_results_sha256": "b" * 64,
-                "combined_resolver_sha256": "a" * 64,
+                "schema_version": "live-telemetry.evidence-resolver.v2",
+                "records": {},
             },
             create_once=True,
         )
-        _record_mock_ordered_source_stages(kwargs)
-        results = tuple(
-            SimpleNamespace(
-                source=source,
-                status=SimpleNamespace(value="AVAILABLE"),
-                target_record_count=counts[source],
-                invalid_ref_count=0,
-            )
-            for source in ("METRICS", "LOGS", "TRACES")
-        )
-        return SimpleNamespace(
-            source_results=results,
-            source_counts=counts,
-            invalid_ref_count=0,
-        )
+        return SimpleNamespace()
+
+    monkeypatch.setattr(
+        source_batch_module,
+        "terminalize_source_probes",
+        terminalize_source_probes,
+    )
+    monkeypatch.setattr(source_batch_module, "datetime", DeterministicSourceDateTime)
+    monkeypatch.setattr(source_batch_module, "_combined_resolver", combined_resolver)
+    monkeypatch.setattr(
+        source_batch_module,
+        "_revalidate_refs",
+        lambda results, **_: (results, True),
+    )
 
     snapshots = iter(
         (
@@ -1562,8 +1680,6 @@ def _patch_live_fault_projection_inputs(
             },
         )
     )
-    observed_at = datetime(2026, 8, 12, 12, tzinfo=timezone.utc)
-
     def broad_logs(*_: object, **__: object) -> tuple[LiveLogObservation, ...]:
         return tuple(
             LiveLogObservation(
@@ -1602,7 +1718,6 @@ def _patch_live_fault_projection_inputs(
         )
         return bound_metrics, bound_logs, traces, refs  # type: ignore[return-value]
 
-    monkeypatch.setattr(e2e_v3, "collect_ordered_source_batch", collect_source_batch)
     monkeypatch.setattr(
         e2e_v3,
         "_capture_sli_window",
@@ -1643,6 +1758,10 @@ def test_v6_repro_2_full_simulated_success_executes_fixed_stage_sequence(
     _prepare_approved_r2(config, roots)
     provider = FakeProvider()
     _patch_live_fault_projection_inputs(monkeypatch, roots)
+    assert (
+        e2e_v3.collect_ordered_source_batch
+        is source_batch_module.collect_ordered_source_batch
+    )
     snapshots = iter(
         (
             {
@@ -1761,6 +1880,155 @@ def test_v6_repro_2_full_simulated_success_executes_fixed_stage_sequence(
     assert passed[source_gate_index + 1] == "MULTISERVICE_PROJECTION_STARTED"
 
 
+def test_legacy_v3_invocation_b_emits_source_stages_and_verifies_terminal(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from ecomsre_live_sandbox.e2e_v3 import (
+        _public_result_v3,
+        run_invocation_b as run_v3_invocation_b,
+        verify_public_result as verify_v3_public_result,
+    )
+    from ecomsre_live_sandbox.e2e_v3_contracts import (
+        E2EV3PrivateRoots,
+        load_e2e_v3_config,
+    )
+    from ecomsre_live_sandbox.instrumentation_v2 import (
+        SourceProbeResult,
+        SourceProbeStatus,
+    )
+
+    config = load_e2e_v3_config(
+        Path("config/live-fault-a0-controlled-remediation-e2e-v3")
+    )
+    roots = E2EV3PrivateRoots(tmp_path / "legacy-v3-terminal")
+    _prepare_approved_v3(config, roots)
+    provider = FakeProvider()
+    _patch_live_fault_projection_inputs(monkeypatch, roots)  # type: ignore[arg-type]
+    observed_at = datetime(2026, 8, 13, 12, tzinfo=timezone.utc)
+    sources = tuple(
+        SourceProbeResult(
+            source=source,
+            backend_kind={
+                "METRICS": "PROMETHEUS_HTTP_API",
+                "LOGS": "OPENSEARCH_HTTP_API",
+                "TRACES": "JAEGER_QUERY_API",
+            }[source],
+            status=SourceProbeStatus.AVAILABLE,
+            window_start=observed_at,
+            window_end=observed_at + timedelta(seconds=30),
+            probe_started_at=observed_at,
+            probe_ended_at=observed_at + timedelta(seconds=1),
+            attempt_count=1,
+            backend_reachable=True,
+            raw_response_count=4,
+            parsed_record_count=4,
+            target_record_count=4,
+            service_catalog_count=25,
+            target_service_present=True,
+            evidence_refs=(f"{source.casefold()}:0001",),
+        )
+        for source in ("METRICS", "LOGS", "TRACES")
+    )
+
+    def capture_legacy_window(
+        *_: object,
+        phase: str,
+        **__: object,
+    ) -> tuple[SLIWindow, object]:
+        degraded = phase == "FAULT"
+        errors = 30.0 if degraded else 1.0
+        return (
+            SLIWindow(
+                phase=phase,  # type: ignore[arg-type]
+                started_at=observed_at,
+                ended_at=observed_at + timedelta(seconds=30),
+                request_count=100.0,
+                error_count=errors,
+                error_rate=errors / 100.0,
+                p95_latency_ms=40.0 if degraded else 20.0,
+                runtime_health=1.0,
+                sample_count=3,
+            ),
+            sources,
+        )
+
+    snapshots = iter(
+        (
+            {
+                service: (100.0, 1.0, 20.0)
+                for service in ("checkout", "currency", "frontend", "payment")
+            },
+            {
+                service: (100.0, 30.0, 40.0)
+                for service in ("checkout", "currency", "frontend", "payment")
+            },
+        )
+    )
+
+    def diagnosis_from_provider(
+        current_provider: FakeProvider,
+        context: object,
+    ) -> DiagnosisResult:
+        current_provider.diagnose(context)
+        return DiagnosisResult(
+            terminal="COMPLETED",
+            root_service=config.sandbox.scenario.expected_root_service,
+            root_entity_ref="apm|apm.service|payment",
+            fault_type_raw="payment configuration failure",
+            fault_class=config.sandbox.scenario.expected_fault_class,
+            confidence=0.99,
+            evidence_refs=("metric:0001", "log:0001"),
+            evidence_source_types=("METRICS", "LOGS"),
+            summary="Fixture diagnosis for the legacy v3 verifier boundary.",
+            semantic_model_calls=1,
+            specialist_calls=0,
+            fusion_calls=0,
+            provider_attempts=1,
+            transport_retries=0,
+            usage_tokens=1,
+        )
+
+    monkeypatch.setattr(e2e_v3, "_capture_e2e_window", capture_legacy_window)
+    monkeypatch.setattr(e2e_v3, "_diagnosis_from_initial", diagnosis_from_provider)
+    monkeypatch.setattr(
+        e2e_v3,
+        "_broad_metric_snapshot",
+        lambda *_, **__: next(snapshots),
+    )
+    terminal = run_v3_invocation_b(
+        config,
+        roots,
+        provider_factory=lambda _: provider,
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        worktree_verifier=_fake_worktree,
+        sleep=lambda _: None,
+        public_writer=lambda *_: (),
+    )
+
+    assert terminal["verdict"] == config.authority.invocation_b_success, terminal
+    public = _public_result_v3(config, terminal)
+    verify_v3_public_result(config, public)
+    events = [
+        json.loads(line)
+        for line in (roots.invocation_b / "events.jsonl").read_text().splitlines()
+    ]
+    passed = [event["stage"] for event in events if event["status"] == "PASSED"]
+    for stage in (
+        "METRICS_PREFLIGHT_STARTED",
+        "METRICS_PREFLIGHT_COMPLETED",
+        "LOGS_PREFLIGHT_STARTED",
+        "LOGS_PREFLIGHT_COMPLETED",
+        "TRACES_PREFLIGHT_STARTED",
+        "TRACES_PREFLIGHT_COMPLETED",
+        "EVIDENCE_RESOLUTION_COMPLETED",
+        "MULTISERVICE_PROJECTION_STARTED",
+        "MULTISERVICE_PROJECTION_COMPLETED",
+    ):
+        assert passed.count(stage) == 1
+
+
 @pytest.mark.parametrize(
     ("boundary", "expected_verdict", "forward_mutations", "rollback_mutations"),
     (
@@ -1804,6 +2072,10 @@ def test_v6_repro_2_simulated_negative_boundaries_keep_stage_order(
     _prepare_approved_r2(config, roots)
     provider = FakeProvider()
     _patch_live_fault_projection_inputs(monkeypatch, roots)
+    assert (
+        e2e_v3.collect_ordered_source_batch
+        is source_batch_module.collect_ordered_source_batch
+    )
     snapshots = iter(
         (
             {
