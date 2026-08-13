@@ -1883,6 +1883,37 @@ def _source_complete_runtime_terminal(*, cleanup_blocked: bool) -> dict[str, obj
     return _wrap_blocked_cleanup(terminal) if cleanup_blocked else terminal
 
 
+def _source_stage_order_runtime_terminal() -> dict[str, object]:
+    terminal = _source_complete_runtime_terminal(cleanup_blocked=False)
+    terminal.update(
+        {
+            "failed_stage": "NO_FAULT_READINESS_EVALUATED",
+            "last_completed_stage": "SOURCE_AVAILABILITY_GATE_EVALUATED",
+        }
+    )
+    return terminal
+
+
+def _public_result_failure_for_source_stage_order_runtime() -> dict[str, object]:
+    source = _source_stage_order_runtime_terminal()
+    terminal = deepcopy(source)
+    terminal.update(
+        {
+            "public_result_source_verdict": source["verdict"],
+            "public_result_source_failed_stage": source["failed_stage"],
+            "public_result_source_last_completed_stage": source[
+                "last_completed_stage"
+            ],
+            "public_result_source_failure_code": source["failure_code"],
+            "verdict": "BLOCKED_PUBLIC_RESULT_VERIFICATION",
+            "failed_stage": "PUBLIC_RESULT_VERIFICATION",
+            "last_completed_stage": "CLEANUP_COMPLETED",
+            "failure_code": "PUBLIC_RESULT_VERIFICATION_FAILED",
+        }
+    )
+    return terminal
+
+
 @pytest.mark.parametrize(
     "terminal",
     (
@@ -1933,6 +1964,30 @@ def test_post_source_unclassified_accepts_sealed_source_batch(
         "LOGS": "AVAILABLE",
         "TRACES": "AVAILABLE",
     }
+
+
+def test_public_projection_accepts_observed_source_stage_order_failure() -> None:
+    config = load_e2e_v6_config(CONFIG)
+    terminal = _public_result_failure_for_source_stage_order_runtime()
+
+    public = build_expected_public_result(config, terminal)
+    verify_public_result(config, public, terminal)
+
+    assert public["verdict"] == "BLOCKED_PUBLIC_RESULT_VERIFICATION"
+    assert public["fault_injections"] == 1
+    assert public["model_calls"] == 0
+    assert public["forward_mutations"] == 0
+
+
+def test_public_projection_rejects_forged_source_stage_order_identity() -> None:
+    config = load_e2e_v6_config(CONFIG)
+    terminal = _public_result_failure_for_source_stage_order_runtime()
+    terminal["public_result_source_last_completed_stage"] = (
+        "TRACES_PREFLIGHT_COMPLETED"
+    )
+
+    with pytest.raises(ValueError, match="runtime identity"):
+        build_expected_public_result(config, terminal)
 
 
 @pytest.mark.parametrize(
