@@ -2500,8 +2500,6 @@ def run_invocation_b(
     _require_exact_head_admission(roots, implementation_commit=implementation_commit)
     if locked.get("implementation_commit") != implementation_commit:
         raise RuntimeError("Invocation B implementation head differs from scenario lock")
-    if live_attempt_allocator is not None:
-        live_attempt_allocator(config, roots, implementation_commit)
     for directory in (
         roots.invocation_b,
         roots.invocation_b / "commands",
@@ -2551,6 +2549,8 @@ def run_invocation_b(
         flagd_directory=roots.runtime / "invocation-b" / "flagd",
         runner=runner,
     )
+    if live_attempt_allocator is not None:
+        live_attempt_allocator(config, roots, implementation_commit)
     _consume_live_run_budget(config, roots)
     schema_suffix = _schema_suffix(config)
     verdict_policy = get_invocation_b_verdict_policy(schema_suffix)
@@ -2788,8 +2788,8 @@ def run_invocation_b(
             terminal["compose_start_returned"] = state.compose_start_returned
             terminal["compose_start_return_code"] = state.compose_start_return_code
             accepted_run_sealer(config, roots, terminal, baseline)
-        terminal["fault_injections"] = 1
         fault_state = controller.inject_fault()
+        terminal["fault_injections"] = 1
         if fault_state.document_sha256 != config.sandbox.scenario.fault_document_sha256:
             raise RuntimeError("frozen fault document hash differs")
         sleep(config.sandbox.verification.minimum_stabilization_seconds)

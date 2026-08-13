@@ -351,10 +351,61 @@ def test_repro_1_changed_pre_fault_repair_preserves_and_rotates_authority(
     )
 
     assert not (roots.control / "live-attempt-active.json").exists()
-    assert roots.invocation_b == roots.live_attempt(1)
+    assert roots.invocation_b == roots.live_attempt(2)
     assert (attempt / "invalidated.json").is_file()
     for name, payload in control_payloads.items():
         assert not (roots.control / name).exists()
         assert json.loads(
             (attempt / "invalidated-control" / name).read_text(encoding="utf-8")
+        ) == payload
+
+
+def test_repro_1_rotates_stale_canonical_approval_before_any_live_attempt(
+    tmp_path: Path,
+) -> None:
+    config = load_e2e_v6_repro_1_config(CONFIG)
+    roots = E2EV6Repro1PrivateRoots(tmp_path / "repro-1")
+    bind_repro_1_lifecycle(config, roots)
+    from ecomsre_live_sandbox.contracts import write_private_json
+
+    tracked = {"runtime.py": "a" * 64}
+    payloads = {
+        "latest-development-pass-lock.json": {
+            "implementation_commit": "a" * 40,
+            "runtime_config_aggregate_sha256": canonical_sha256(tracked),
+        },
+        "exact-head-ci.json": {"ci": "old"},
+        "pre-live-review.json": {"review": "old"},
+        "canonical-active.json": {"canonical": "old"},
+        "canonical-accepted.json": {"accepted": "old"},
+        "scenario-lock.json": {
+            "implementation_commit": "a" * 40,
+            "tracked_runtime_and_config": tracked,
+        },
+        "plan-template.json": {"plan": "old"},
+        "approval-request.json": {"request": "old"},
+        "human-approval.json": {"approval": "old"},
+        "human-approval-provenance.json": {"provenance": "old"},
+    }
+    for name, payload in payloads.items():
+        write_private_json(roots.control / name, payload, create_once=True)
+
+    _prepare_pre_fault_repair(
+        config,
+        roots,
+        implementation_commit="b" * 40,
+        runtime_config_aggregate="c" * 64,
+    )
+
+    assert not (roots.control / "canonical-accepted.json").exists()
+    assert not (roots.control / "human-approval.json").exists()
+    assert not (roots.control / "latest-development-pass-lock.json").exists()
+    rotation = roots.root / "authority-history/rotation-0001"
+    invalidation = json.loads(
+        (rotation / "invalidation.json").read_text(encoding="utf-8")
+    )
+    assert invalidation["replacement_implementation_commit"] == "b" * 40
+    for name, payload in payloads.items():
+        assert json.loads(
+            (rotation / "control" / name).read_text(encoding="utf-8")
         ) == payload

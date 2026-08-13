@@ -234,12 +234,25 @@ class E2EV6Repro1PrivateRoots(E2EV6PrivateRoots):
         return self.live_attempts / f"attempt-{index:04d}"
 
     @property
+    def next_live_attempt(self) -> Path:
+        history_path = self.control / "live-attempt-history.json"
+        if not history_path.exists() and not history_path.is_symlink():
+            return self.live_attempt(1)
+        if history_path.is_symlink() or not history_path.is_file():
+            raise ValueError("R1 live-attempt history is malformed")
+        history = json.loads(history_path.read_text(encoding="utf-8"))
+        attempts = history.get("attempts") if isinstance(history, Mapping) else None
+        if not isinstance(attempts, list):
+            raise ValueError("R1 live-attempt history is malformed")
+        return self.live_attempt(len(attempts) + 1)
+
+    @property
     def invocation_b(self) -> Path:
-        return self.active_live_attempt or self.live_attempt(1)
+        return self.active_live_attempt or self.next_live_attempt
 
     def _attempt_scoped(self, name: str, fallback: Path) -> Path:
         active = self.active_live_attempt
-        return fallback if active is None else active / name
+        return (self.next_live_attempt if active is None else active) / name
 
     @property
     def runtime(self) -> Path:

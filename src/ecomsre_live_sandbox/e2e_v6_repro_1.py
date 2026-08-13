@@ -190,6 +190,46 @@ def _complete_live_attempt(
     roots.verify()
 
 
+_ROTATED_CONTROL_NAMES = (
+    "latest-development-pass-lock.json",
+    "exact-head-ci.json",
+    "pre-live-review.json",
+    "canonical-active.json",
+    "canonical-accepted.json",
+    "scenario-lock.json",
+    "plan-template.json",
+    "approval-request.json",
+    "human-approval.json",
+    "human-approval-provenance.json",
+)
+
+
+def _archive_and_remove_control(
+    roots: E2EV6Repro1PrivateRoots,
+    *,
+    archive: Path,
+) -> list[str]:
+    ensure_private_directory(archive)
+    preserved: list[str] = []
+    for name in _ROTATED_CONTROL_NAMES:
+        source = roots.control / name
+        if not source.exists() and not source.is_symlink():
+            continue
+        if source.is_symlink() or not source.is_file():
+            raise RuntimeError(f"R1 control artifact is malformed: {name}")
+        write_private_json(
+            archive / name,
+            _read_mapping(source, label=f"control artifact {name}"),
+            create_once=True,
+        )
+        preserved.append(name)
+    for name in _ROTATED_CONTROL_NAMES:
+        source = roots.control / name
+        if source.is_file() and not source.is_symlink():
+            source.unlink()
+    return preserved
+
+
 def _prepare_pre_fault_repair(
     config: E2EV6Repro1Config,
     roots: E2EV6Repro1PrivateRoots,
@@ -198,10 +238,58 @@ def _prepare_pre_fault_repair(
     runtime_config_aggregate: str,
 ) -> None:
     active_path = roots.control / "live-attempt-active.json"
-    if not active_path.exists() and not active_path.is_symlink():
-        return
     if (roots.control / "accepted-live-run.json").exists():
         raise RuntimeError("accepted fault-time run forbids implementation repair")
+    if not active_path.exists() and not active_path.is_symlink():
+        scenario_path = roots.control / "scenario-lock.json"
+        development_path = roots.control / "latest-development-pass-lock.json"
+        binding_path = scenario_path if scenario_path.exists() else development_path
+        if not binding_path.exists() and not binding_path.is_symlink():
+            return
+        binding = _read_mapping(binding_path, label="current runtime authority")
+        tracked = binding.get("tracked_runtime_and_config")
+        bound_aggregate = (
+            canonical_sha256(tracked)
+            if isinstance(tracked, Mapping)
+            else binding.get("runtime_config_aggregate_sha256")
+        )
+        if (
+            binding.get("implementation_commit") == implementation_commit
+            and bound_aggregate == runtime_config_aggregate
+        ):
+            return
+        history_root = roots.root / "authority-history"
+        ensure_private_directory(history_root)
+        rotations = tuple(
+            path
+            for path in history_root.glob("rotation-*")
+            if path.is_dir() and not path.is_symlink()
+        )
+        rotation = history_root / f"rotation-{len(rotations) + 1:04d}"
+        preserved = _archive_and_remove_control(
+            roots,
+            archive=rotation / "control",
+        )
+        write_private_json(
+            rotation / "invalidation.json",
+            {
+                "schema_version": "live-e2e.authority-invalidation.v6-repro-1",
+                "run_generation": config.authority.run_generation,
+                "previous_implementation_commit": binding.get(
+                    "implementation_commit"
+                ),
+                "previous_runtime_config_aggregate_sha256": bound_aggregate,
+                "replacement_implementation_commit": implementation_commit,
+                "replacement_runtime_config_aggregate_sha256": (
+                    runtime_config_aggregate
+                ),
+                "preserved_control_artifacts": preserved,
+                "invalidated_at": datetime.now(timezone.utc).isoformat(),
+            },
+            create_once=True,
+        )
+        roots.verify()
+        return
     active = _read_mapping(active_path, label="active live-attempt pointer")
     relative = active.get("attempt_relative_path")
     if not isinstance(relative, str):
@@ -227,33 +315,10 @@ def _prepare_pre_fault_repair(
         == runtime_config_aggregate
     ):
         raise RuntimeError("identical pre-fault repair is forbidden")
-    archive = attempt / "invalidated-control"
-    ensure_private_directory(archive)
-    control_names = (
-        "latest-development-pass-lock.json",
-        "exact-head-ci.json",
-        "pre-live-review.json",
-        "canonical-active.json",
-        "canonical-accepted.json",
-        "scenario-lock.json",
-        "plan-template.json",
-        "approval-request.json",
-        "human-approval.json",
-        "human-approval-provenance.json",
+    preserved = _archive_and_remove_control(
+        roots,
+        archive=attempt / "invalidated-control",
     )
-    preserved: list[str] = []
-    for name in control_names:
-        source = roots.control / name
-        if not source.exists() and not source.is_symlink():
-            continue
-        if source.is_symlink() or not source.is_file():
-            raise RuntimeError(f"R1 control artifact is malformed: {name}")
-        write_private_json(
-            archive / name,
-            _read_mapping(source, label=f"control artifact {name}"),
-            create_once=True,
-        )
-        preserved.append(name)
     write_private_json(
         attempt / "invalidated.json",
         {
@@ -276,10 +341,6 @@ def _prepare_pre_fault_repair(
         },
         create_once=True,
     )
-    for name in control_names:
-        source = roots.control / name
-        if source.is_file() and not source.is_symlink():
-            source.unlink()
     active_path.unlink()
     roots.verify()
 
@@ -429,13 +490,45 @@ def _write_public_outputs_repro_1(
         return ()
     if accepted_path.is_symlink() or not accepted_path.is_file():
         raise ValueError("R1 accepted live-run authority is malformed")
+    accepted = _read_mapping(accepted_path, label="accepted live-run authority")
     accepted_sha256 = file_sha256(accepted_path)
-    fault_injections = terminal.get("fault_injections", 0)
+    active = _read_mapping(
+        roots.control / "live-attempt-active.json",
+        label="accepted live-attempt pointer",
+    )
+    counters = accepted.get("pre_fault_counters")
+    baseline_hashes = accepted.get("baseline_window_sha256")
     if any(
         (
-            not isinstance(fault_injections, int) or fault_injections < 1,
             terminal.get("accepted_live_run_sealed") is not True,
             terminal.get("accepted_live_run_sha256") != accepted_sha256,
+            accepted.get("schema_version")
+            != "live-e2e.accepted-live-run.v6-repro-1",
+            accepted.get("run_generation") != config.authority.run_generation,
+            accepted.get("attempt_id") != active.get("attempt_id"),
+            accepted.get("attempt_relative_path")
+            != active.get("attempt_relative_path"),
+            accepted.get("implementation_commit")
+            != terminal.get("implementation_commit"),
+            accepted.get("runtime_config_aggregate_sha256")
+            != active.get("runtime_config_aggregate_sha256"),
+            accepted.get("scenario_lock_sha256")
+            != file_sha256(roots.control / "scenario-lock.json"),
+            accepted.get("human_approval_sha256")
+            != file_sha256(roots.control / "human-approval.json"),
+            counters
+            != {
+                "fault_injections": 0,
+                "model_calls": 0,
+                "forward_mutations": 0,
+                "rollback_mutations": 0,
+            },
+            not isinstance(baseline_hashes, list)
+            or len(baseline_hashes) != 2
+            or any(
+                not isinstance(value, str) or len(value) != 64
+                for value in baseline_hashes
+            ),
         )
     ):
         raise ValueError("R1 public projection requires the accepted fault-time run")
@@ -452,9 +545,8 @@ def _write_public_outputs_repro_1(
         config.repository_root / config.reporting.public_result_markdown,
         config.repository_root / config.reporting.public_human_brief,
     )
-    e2e_v6._write_new_public(paths[0], canonical_json_bytes(public))
-    e2e_v6._write_new_public(
-        paths[1],
+    payloads = (
+        canonical_json_bytes(public),
         (
             "# Live Fault to A0 Controlled Remediation E2E v6 R1\n\n"
             f"**Verdict:** `{public['verdict']}`\n\n"
@@ -464,9 +556,6 @@ def _write_public_outputs_repro_1(
             "preauthorized frozen runbook; it is not production or autonomous "
             "remediation.\n"
         ).encode("utf-8"),
-    )
-    e2e_v6._write_new_public(
-        paths[2],
         (
             "# Live Fault → A0 → Controlled Remediation v6 R1 — Human Brief\n\n"
             "本结果属于独立运行代际 `V6_REPRO_1`，仅在 accepted-live-run "
@@ -475,6 +564,13 @@ def _write_public_outputs_repro_1(
             "runbook，不构成生产自治或 Multi-Agent 优越性声明。\n"
         ).encode("utf-8"),
     )
+    for path, payload in zip(paths, payloads, strict=True):
+        if path.exists() or path.is_symlink():
+            if path.is_symlink() or not path.is_file() or path.read_bytes() != payload:
+                raise FileExistsError(f"R1 public projection differs: {path}")
+    for path, payload in zip(paths, payloads, strict=True):
+        if not path.exists():
+            e2e_v6._write_new_public(path, payload)
     return tuple(
         path.relative_to(config.repository_root).as_posix() for path in paths
     )

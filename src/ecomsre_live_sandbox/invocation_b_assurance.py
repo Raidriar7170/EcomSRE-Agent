@@ -1689,7 +1689,6 @@ def build_expected_public_result(
     run_generation = getattr(config.authority, "run_generation", None)
     if run_generation is not None:
         accepted = sealed_private_terminal.get("accepted_live_run_sha256")
-        fault_injections = sealed_private_terminal.get("fault_injections", 0)
         if any(
             (
                 sealed_private_terminal.get("software_version")
@@ -1703,8 +1702,7 @@ def build_expected_public_result(
                 != getattr(config.authority, "predecessor_result_head", None),
                 sealed_private_terminal.get("original_result_preserved") is not True,
                 (
-                    isinstance(fault_injections, int)
-                    and fault_injections > 0
+                    sealed_private_terminal.get("accepted_live_run_sealed") is True
                     and (
                         not isinstance(accepted, str)
                         or _SHA256.fullmatch(accepted) is None

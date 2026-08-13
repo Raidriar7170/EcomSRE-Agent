@@ -791,6 +791,23 @@ def test_v6_repro_1_seals_acceptance_before_fault_injection(
         phrase=f"APPROVE {request['scenario_id']} {request['plan_template_sha256']}",
     )
 
+    def fail_before_attempt_allocation(**_: object) -> object:
+        raise RuntimeError("injected environment construction failure")
+
+    with pytest.raises(RuntimeError, match="environment construction failure"):
+        run_r1_invocation_b(
+            config,
+            roots,
+            provider_factory=lambda _: FakeProvider(),
+            environment_factory=fail_before_attempt_allocation,
+            controller_factory=_controller,
+            worktree_verifier=_fake_worktree,
+            sleep=lambda _: None,
+            public_writer=lambda *_: (),
+        )
+    assert not (roots.control / "live-attempt-active.json").exists()
+    assert not (roots.control / "live-attempt-history.json").exists()
+
     monkeypatch.setattr(
         e2e_v3,
         "_capture_sli_window",
@@ -814,10 +831,31 @@ def test_v6_repro_1_seals_acceptance_before_fault_injection(
         controller.inject_fault = fail_after_acceptance  # type: ignore[method-assign]
         return controller
 
+    typed_diagnosis = RCA100InitialDiagnosis(
+        root_cause_entity_ref="apm|apm.service|synthetic",
+        fault_type="synthetic preflight",
+        confidence=0.8,
+        evidence_refs=("log:0001",),
+        reasoning_steps=(
+            RCA100ReasoningStep(
+                claim="Synthetic typed output for R1 Provider admission.",
+                entity_ref_or_none="apm|apm.service|synthetic",
+                evidence_refs=("log:0001",),
+            ),
+        ),
+        summary="Synthetic typed R1 Provider preflight output.",
+    )
+
+    class TypedR1PreflightProvider(FakeProvider):
+        def diagnose(self, _: object) -> RCA100InitialDiagnosis:
+            self.calls += 1
+            return typed_diagnosis
+
+    typed_provider = TypedR1PreflightProvider()
     terminal = run_r1_invocation_b(
         config,
         roots,
-        provider_factory=lambda _: FakeProvider(),
+        provider_factory=lambda _: typed_provider,
         environment_factory=FakeEnvironment,
         controller_factory=controller_factory,
         worktree_verifier=_fake_worktree,
@@ -827,7 +865,7 @@ def test_v6_repro_1_seals_acceptance_before_fault_injection(
 
     assert observed["accepted_before_fault"] is True
     assert terminal["run_generation"] == "V6_REPRO_1"
-    assert terminal["fault_injections"] == 1
+    assert terminal["fault_injections"] == 0
     assert terminal["accepted_live_run_sealed"] is True
     assert terminal["accepted_live_run_sha256"] == hashlib.sha256(
         (roots.control / "accepted-live-run.json").read_bytes()
@@ -836,6 +874,16 @@ def test_v6_repro_1_seals_acceptance_before_fault_injection(
     assert terminal["forward_mutations"] == 0
     assert terminal["rollback_mutations"] == 0
     assert (roots.accepted_live_run / "attempt-pointer.json").is_file()
+    preflight_path = roots.live_attempt(1) / "provider/synthetic-preflight-v2.json"
+    preflight = json.loads(preflight_path.read_text(encoding="utf-8"))
+    assert preflight["diagnosis"] == typed_diagnosis.model_dump(mode="json")
+    assert stat.S_IMODE(preflight_path.stat().st_mode) == 0o600
+    with pytest.raises(FileExistsError, match="create-once"):
+        write_private_json(
+            preflight_path,
+            {"diagnosis": typed_diagnosis.model_dump(mode="json")},
+            create_once=True,
+        )
     isolated = replace(config, repository_root=tmp_path / "public-repository")
     outputs = write_r1_public_outputs(isolated, terminal, roots=roots)
     assert outputs == (
@@ -858,8 +906,7 @@ def test_v6_repro_1_seals_acceptance_before_fault_injection(
         "BLOCKED_E2E_V6_UNCLASSIFIED_RUNTIME_FAILURE"
     )
     assert public["original_result_preserved"] is True
-    with pytest.raises(FileExistsError):
-        write_r1_public_outputs(isolated, terminal, roots=roots)
+    assert write_r1_public_outputs(isolated, terminal, roots=roots) == outputs
     second_provider_calls = 0
 
     def forbidden_second_provider(_: object) -> FakeProvider:
