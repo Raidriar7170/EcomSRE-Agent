@@ -45,6 +45,7 @@ from ecomsre_live_sandbox.invocation_b_assurance import (
 from ecomsre_live_sandbox.invocation_b_verdicts import (
     invocation_b_verdict_policy_sha256,
 )
+from ecomsre_rca100.contracts import RCA100InitialDiagnosis, RCA100ReasoningStep
 
 
 CONFIG = Path("config/live-fault-a0-controlled-remediation-e2e-v6")
@@ -628,6 +629,56 @@ class FakeProvider:
             self.live_context_sha256 = canonical_sha256(context)
             self.live_context = context
         return {"provider_call": self.calls}
+
+
+def test_v6_serializes_real_provider_preflight_model_before_next_stage_failure(
+    tmp_path: Path,
+) -> None:
+    config = load_e2e_v6_config(CONFIG)
+    roots = E2EV6PrivateRoots(tmp_path / "real-provider-preflight-model")
+    _prepare_approved_v6(config, roots)
+    diagnosis = RCA100InitialDiagnosis(
+        root_cause_entity_ref="apm|apm.service|synthetic",
+        fault_type="synthetic preflight",
+        confidence=0.8,
+        evidence_refs=("log:0001",),
+        reasoning_steps=(
+            RCA100ReasoningStep(
+                claim="Synthetic typed output for Provider admission.",
+                entity_ref_or_none="apm|apm.service|synthetic",
+                evidence_refs=("log:0001",),
+            ),
+        ),
+        summary="Synthetic typed Provider preflight output.",
+    )
+
+    class RealModelPreflightProvider(FakeProvider):
+        def diagnose(self, _: object) -> RCA100InitialDiagnosis:
+            self.calls += 1
+            return diagnosis
+
+    def stop_after_preflight(_: float) -> None:
+        raise RuntimeError("stop after the persisted synthetic preflight")
+
+    provider = RealModelPreflightProvider()
+    terminal = run_invocation_b(
+        config,
+        roots,
+        provider_factory=lambda _: provider,
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        worktree_verifier=_fake_worktree,
+        sleep=stop_after_preflight,
+        public_writer=lambda *_: (),
+    )
+
+    artifact = json.loads(
+        (roots.provider / "synthetic-preflight-v2.json").read_text(encoding="utf-8")
+    )
+    assert artifact["diagnosis"] == diagnosis.model_dump(mode="json")
+    assert terminal["provider_preflight_passed"] is True
+    assert terminal["provider_calls"] == 1
+    assert terminal["exception_type"] == "RuntimeError"
 
 
 @pytest.mark.parametrize(

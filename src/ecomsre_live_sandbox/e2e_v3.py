@@ -13,6 +13,8 @@ import subprocess
 import time
 from typing import Any, cast
 
+from pydantic import BaseModel
+
 from ecomsre_live_sandbox.contracts import (
     ApprovalRequest,
     HumanApprovalRecord,
@@ -2572,7 +2574,11 @@ def run_invocation_b(
             roots.provider / "synthetic-preflight-v2.json",
             {
                 "request_sha256": provider.last_request_sha256,
-                "diagnosis": preflight,
+                "diagnosis": (
+                    preflight.model_dump(mode="json")
+                    if isinstance(preflight, BaseModel)
+                    else preflight
+                ),
                 "usage_tokens": provider.last_usage_tokens,
             },
             create_once=True,
