@@ -150,44 +150,108 @@ def _complete_live_attempt(
     if not isinstance(attempts, list):
         raise RuntimeError("R2 live-attempt history is malformed")
     attempt_id = active.get("attempt_id")
+    terminal_path = roots.invocation_b / "terminal.json"
+    sealed_terminal = _read_mapping(terminal_path, label="sealed live terminal")
+    if sealed_terminal != dict(terminal):
+        raise RuntimeError("R2 completion terminal differs from sealed terminal")
+    terminal_sha256 = file_sha256(terminal_path)
+    accepted_path = roots.control / "accepted-live-run.json"
+    accepted_pointer: dict[str, object] | None = None
+    if accepted_path.exists() or accepted_path.is_symlink():
+        if accepted_path.is_symlink() or not accepted_path.is_file():
+            raise RuntimeError("R2 accepted live-run authority is malformed")
+        accepted_pointer = {
+            "schema_version": "live-e2e.accepted-attempt-pointer.v6-repro-2",
+            "run_generation": config.authority.run_generation,
+            "attempt_id": active.get("attempt_id"),
+            "attempt_relative_path": active.get("attempt_relative_path"),
+            "accepted_live_run_sha256": file_sha256(accepted_path),
+            "terminal_sha256": terminal_sha256,
+        }
+        pointer_path = roots.accepted_live_run / "attempt-pointer.json"
+        if pointer_path.exists() or pointer_path.is_symlink():
+            if _read_mapping(
+                pointer_path,
+                label="accepted live-attempt pointer",
+            ) != accepted_pointer:
+                raise RuntimeError("R2 accepted live-attempt pointer conflicts")
+    history_changed = False
     for item in reversed(attempts):
         if isinstance(item, dict) and item.get("attempt_id") == attempt_id:
             if item.get("verdict") != "STARTED":
-                if item.get("verdict") == terminal.get("verdict"):
-                    return
-                raise RuntimeError("R2 live attempt is already terminal")
-            item["verdict"] = terminal.get("verdict")
-            item["fault_injections"] = terminal.get("fault_injections", 0)
-            item["model_calls"] = terminal.get("model_calls", 0)
-            item["forward_mutations"] = terminal.get("forward_mutations", 0)
-            item["rollback_mutations"] = terminal.get("rollback_mutations", 0)
-            item["cleanup_verdict"] = terminal.get("cleanup_verdict")
-            item["terminal_sha256"] = file_sha256(
-                roots.invocation_b / "terminal.json"
+                expected = {
+                    "verdict": terminal.get("verdict"),
+                    "fault_injections": terminal.get("fault_injections", 0),
+                    "model_calls": terminal.get("model_calls", 0),
+                    "forward_mutations": terminal.get("forward_mutations", 0),
+                    "rollback_mutations": terminal.get("rollback_mutations", 0),
+                    "cleanup_verdict": terminal.get("cleanup_verdict"),
+                    "terminal_sha256": terminal_sha256,
+                }
+                if any(item.get(key) != value for key, value in expected.items()):
+                    raise RuntimeError("R2 live attempt terminal history conflicts")
+                if not isinstance(item.get("completed_at"), str):
+                    raise RuntimeError("R2 live attempt completion time is absent")
+                break
+            item.update(
+                {
+                    "verdict": terminal.get("verdict"),
+                    "fault_injections": terminal.get("fault_injections", 0),
+                    "model_calls": terminal.get("model_calls", 0),
+                    "forward_mutations": terminal.get("forward_mutations", 0),
+                    "rollback_mutations": terminal.get("rollback_mutations", 0),
+                    "cleanup_verdict": terminal.get("cleanup_verdict"),
+                    "terminal_sha256": terminal_sha256,
+                    "completed_at": datetime.now(timezone.utc).isoformat(),
+                }
             )
-            item["completed_at"] = datetime.now(timezone.utc).isoformat()
+            history_changed = True
             break
     else:
         raise RuntimeError("R2 active live attempt is absent from history")
-    history["run_generation"] = config.authority.run_generation
-    write_private_json(history_path, history, create_once=False)
-    accepted_path = roots.control / "accepted-live-run.json"
-    if accepted_path.is_file() and not accepted_path.is_symlink():
-        write_private_json(
-            roots.accepted_live_run / "attempt-pointer.json",
-            {
-                "schema_version": "live-e2e.accepted-attempt-pointer.v6-repro-2",
-                "run_generation": config.authority.run_generation,
-                "attempt_id": active.get("attempt_id"),
-                "attempt_relative_path": active.get("attempt_relative_path"),
-                "accepted_live_run_sha256": file_sha256(accepted_path),
-                "terminal_sha256": file_sha256(
-                    roots.invocation_b / "terminal.json"
-                ),
-            },
-            create_once=True,
-        )
+    if history_changed:
+        history["run_generation"] = config.authority.run_generation
+        write_private_json(history_path, history, create_once=False)
+    if accepted_pointer is not None:
+        pointer_path = roots.accepted_live_run / "attempt-pointer.json"
+        if not pointer_path.exists():
+            write_private_json(pointer_path, accepted_pointer, create_once=True)
     roots.verify()
+
+
+def reconcile_sealed_live_attempt_completion(
+    config: E2EV6Repro2Config,
+    roots: E2EV6Repro2PrivateRoots,
+) -> None:
+    """Complete lifecycle indexes from an already sealed accepted terminal."""
+
+    terminal = _read_mapping(
+        roots.invocation_b / "terminal.json",
+        label="sealed live terminal",
+    )
+    accepted_path = roots.control / "accepted-live-run.json"
+    accepted = _read_mapping(accepted_path, label="accepted live-run authority")
+    active = _read_mapping(
+        roots.control / "live-attempt-active.json",
+        label="active live-attempt pointer",
+    )
+    accepted_sha256 = file_sha256(accepted_path)
+    if any(
+        (
+            terminal.get("accepted_live_run_sealed") is not True,
+            terminal.get("accepted_live_run_sha256") != accepted_sha256,
+            terminal.get("run_generation") != config.authority.run_generation,
+            accepted.get("run_generation") != config.authority.run_generation,
+            accepted.get("attempt_id") != active.get("attempt_id"),
+            accepted.get("attempt_relative_path")
+            != active.get("attempt_relative_path"),
+            accepted.get("implementation_commit")
+            != terminal.get("implementation_commit"),
+            not isinstance(terminal.get("verdict"), str),
+        )
+    ):
+        raise RuntimeError("R2 sealed completion authorities do not match")
+    _complete_live_attempt(config, roots, terminal)
 
 
 _ROTATED_CONTROL_NAMES = (

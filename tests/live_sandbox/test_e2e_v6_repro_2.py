@@ -24,6 +24,7 @@ from ecomsre_live_sandbox.e2e_v6_repro_2 import (
     _prepare_pre_fault_repair,
     _seal_accepted_live_run,
     _write_public_outputs_repro_2,
+    reconcile_sealed_live_attempt_completion,
 )
 from ecomsre_live_sandbox.invocation_b_verdicts import (
     invocation_b_verdict_policy_sha256,
@@ -297,6 +298,82 @@ def test_repro_2_accepted_pointer_is_create_once_and_precedes_fault(
     assert stat.S_IMODE(path.stat().st_mode) == 0o600
     with pytest.raises(RuntimeError, match="accepted fault-time run is already sealed"):
         _seal_accepted_live_run(config, roots, terminal, baseline)
+
+
+def test_repro_2_reconciles_stranded_sealed_attempt_without_rerun(
+    tmp_path: Path,
+) -> None:
+    config = load_e2e_v6_repro_2_config(CONFIG)
+    roots = E2EV6Repro2PrivateRoots(tmp_path / "repro-2")
+    bind_repro_2_lifecycle(config, roots)
+    from ecomsre_live_sandbox.contracts import write_private_json
+
+    for name, value in (
+        ("scenario-lock.json", {"lock": "a"}),
+        ("human-approval.json", {"approval": "a"}),
+    ):
+        write_private_json(roots.control / name, value, create_once=True)
+    attempt = _allocate_pre_fault_attempt(
+        config,
+        roots,
+        implementation_commit="a" * 40,
+        runtime_config_aggregate="b" * 64,
+    )
+    terminal: dict[str, object] = {
+        "implementation_commit": "a" * 40,
+        "run_generation": "V6_REPRO_2",
+        "provider_calls": 1,
+        "provider_preflight_passed": True,
+        "compose_start_requested": True,
+        "compose_start_returned": True,
+        "baseline_windows": 2,
+        "fault_injections": 0,
+        "model_calls": 0,
+        "forward_mutations": 0,
+        "rollback_mutations": 0,
+        "cleanup_verdict": "CLEAN",
+        "verdict": "BLOCKED_PUBLIC_RESULT_VERIFICATION",
+    }
+    accepted_sha = _seal_accepted_live_run(
+        config,
+        roots,
+        terminal,
+        (_baseline_window(1), _baseline_window(2)),
+    )
+    terminal["fault_injections"] = 1
+    write_private_json(attempt / "terminal.json", terminal, create_once=True)
+
+    history_path = roots.control / "live-attempt-history.json"
+    pointer_path = roots.accepted_live_run / "attempt-pointer.json"
+    assert json.loads(history_path.read_text(encoding="utf-8"))["attempts"][0][
+        "verdict"
+    ] == "STARTED"
+    assert not pointer_path.exists()
+
+    reconcile_sealed_live_attempt_completion(config, roots)
+
+    history = json.loads(history_path.read_text(encoding="utf-8"))
+    completed = history["attempts"][0]
+    assert completed["verdict"] == "BLOCKED_PUBLIC_RESULT_VERIFICATION"
+    assert completed["fault_injections"] == 1
+    assert completed["cleanup_verdict"] == "CLEAN"
+    assert completed["terminal_sha256"] == file_sha256(attempt / "terminal.json")
+    assert isinstance(completed["completed_at"], str)
+    pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
+    assert pointer == {
+        "schema_version": "live-e2e.accepted-attempt-pointer.v6-repro-2",
+        "run_generation": "V6_REPRO_2",
+        "attempt_id": "attempt-0001",
+        "attempt_relative_path": "live-attempts/attempt-0001",
+        "accepted_live_run_sha256": accepted_sha,
+        "terminal_sha256": file_sha256(attempt / "terminal.json"),
+    }
+
+    history_sha = file_sha256(history_path)
+    pointer_sha = file_sha256(pointer_path)
+    reconcile_sealed_live_attempt_completion(config, roots)
+    assert file_sha256(history_path) == history_sha
+    assert file_sha256(pointer_path) == pointer_sha
 
 
 def test_repro_2_pre_fault_terminal_cannot_write_public_outputs(
