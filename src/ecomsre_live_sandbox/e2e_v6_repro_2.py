@@ -150,6 +150,17 @@ def _complete_live_attempt(
     if not isinstance(attempts, list):
         raise RuntimeError("R2 live-attempt history is malformed")
     attempt_id = active.get("attempt_id")
+    started_fields = (
+        "schema_version",
+        "run_generation",
+        "attempt_id",
+        "attempt_relative_path",
+        "implementation_commit",
+        "runtime_config_aggregate_sha256",
+        "scenario_lock_sha256",
+        "human_approval_sha256",
+        "started_at",
+    )
     terminal_path = roots.invocation_b / "terminal.json"
     sealed_terminal = _read_mapping(terminal_path, label="sealed live terminal")
     if sealed_terminal != dict(terminal):
@@ -178,6 +189,8 @@ def _complete_live_attempt(
     history_changed = False
     for item in reversed(attempts):
         if isinstance(item, dict) and item.get("attempt_id") == attempt_id:
+            if any(item.get(field) != active.get(field) for field in started_fields):
+                raise RuntimeError("R2 live attempt history binding conflicts")
             if item.get("verdict") != "STARTED":
                 expected = {
                     "verdict": terminal.get("verdict"),
@@ -236,17 +249,37 @@ def reconcile_sealed_live_attempt_completion(
         label="active live-attempt pointer",
     )
     accepted_sha256 = file_sha256(accepted_path)
+    scenario_lock_sha256, human_approval_sha256 = _authority_file_hashes(roots)
     if any(
         (
             terminal.get("accepted_live_run_sealed") is not True,
             terminal.get("accepted_live_run_sha256") != accepted_sha256,
             terminal.get("run_generation") != config.authority.run_generation,
+            terminal.get("software_version") != config.authority.software_version,
+            terminal.get("runtime_policy_version")
+            != config.authority.runtime_policy_version,
             accepted.get("run_generation") != config.authority.run_generation,
+            accepted.get("software_version") != config.authority.software_version,
+            accepted.get("runtime_policy_version")
+            != config.authority.runtime_policy_version,
+            active.get("schema_version")
+            != "live-e2e.live-attempt-started.v6-repro-2",
+            active.get("run_generation") != config.authority.run_generation,
             accepted.get("attempt_id") != active.get("attempt_id"),
             accepted.get("attempt_relative_path")
             != active.get("attempt_relative_path"),
             accepted.get("implementation_commit")
             != terminal.get("implementation_commit"),
+            accepted.get("implementation_commit")
+            != active.get("implementation_commit"),
+            accepted.get("runtime_config_aggregate_sha256")
+            != active.get("runtime_config_aggregate_sha256"),
+            accepted.get("scenario_lock_sha256") != scenario_lock_sha256,
+            accepted.get("scenario_lock_sha256")
+            != active.get("scenario_lock_sha256"),
+            accepted.get("human_approval_sha256") != human_approval_sha256,
+            accepted.get("human_approval_sha256")
+            != active.get("human_approval_sha256"),
             not isinstance(terminal.get("verdict"), str),
         )
     ):

@@ -322,6 +322,8 @@ def test_repro_2_reconciles_stranded_sealed_attempt_without_rerun(
     terminal: dict[str, object] = {
         "implementation_commit": "a" * 40,
         "run_generation": "V6_REPRO_2",
+        "software_version": "live-fault-a0-controlled-remediation-e2e-v6",
+        "runtime_policy_version": "V6",
         "provider_calls": 1,
         "provider_preflight_passed": True,
         "compose_start_requested": True,
@@ -349,6 +351,15 @@ def test_repro_2_reconciles_stranded_sealed_attempt_without_rerun(
         "verdict"
     ] == "STARTED"
     assert not pointer_path.exists()
+
+    history = json.loads(history_path.read_text(encoding="utf-8"))
+    history["attempts"][0]["runtime_config_aggregate_sha256"] = "c" * 64
+    write_private_json(history_path, history, create_once=False)
+    with pytest.raises(RuntimeError, match="history binding conflicts"):
+        reconcile_sealed_live_attempt_completion(config, roots)
+    assert not pointer_path.exists()
+    history["attempts"][0]["runtime_config_aggregate_sha256"] = "b" * 64
+    write_private_json(history_path, history, create_once=False)
 
     reconcile_sealed_live_attempt_completion(config, roots)
 
