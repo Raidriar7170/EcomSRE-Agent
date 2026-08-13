@@ -147,6 +147,22 @@ def test_repro_1_private_lifecycle_is_bound_and_original_v6_is_not_reusable(
         bind_repro_1_lifecycle(config, original_roots)
 
 
+def test_repro_1_non_live_work_uses_global_private_paths(
+    tmp_path: Path,
+) -> None:
+    config = load_e2e_v6_repro_1_config(CONFIG)
+    roots = E2EV6Repro1PrivateRoots(tmp_path / "repro-1")
+
+    bind_repro_1_lifecycle(config, roots)
+
+    assert roots.invocation_b == roots.root / "live-run/invocation-b"
+    assert roots.runtime == roots.root / "runtime"
+    assert roots.telemetry == roots.root / "telemetry"
+    assert roots.provider == roots.root / "provider"
+    assert roots.journal == roots.root / "journal"
+    assert not roots.live_attempt(1).exists()
+
+
 def _baseline_window(index: int) -> SLIWindow:
     started = datetime(2026, 8, 13, 4, index, tzinfo=timezone.utc)
     return SLIWindow(
@@ -351,7 +367,8 @@ def test_repro_1_changed_pre_fault_repair_preserves_and_rotates_authority(
     )
 
     assert not (roots.control / "live-attempt-active.json").exists()
-    assert roots.invocation_b == roots.live_attempt(2)
+    assert roots.next_live_attempt == roots.live_attempt(2)
+    assert roots.invocation_b == roots.root / "live-run/invocation-b"
     assert (attempt / "invalidated.json").is_file()
     for name, payload in control_payloads.items():
         assert not (roots.control / name).exists()
@@ -389,6 +406,16 @@ def test_repro_1_rotates_stale_canonical_approval_before_any_live_attempt(
     }
     for name, payload in payloads.items():
         write_private_json(roots.control / name, payload, create_once=True)
+    write_private_json(
+        roots.live_attempt(1) / "runtime/run-0001/environment.json",
+        {"source": "misrouted-development"},
+        create_once=True,
+    )
+    write_private_json(
+        roots.live_attempt(1) / "telemetry/attempt-0001/window.json",
+        {"source": "misrouted-canonical"},
+        create_once=True,
+    )
 
     _prepare_pre_fault_repair(
         config,
@@ -409,3 +436,77 @@ def test_repro_1_rotates_stale_canonical_approval_before_any_live_attempt(
         assert json.loads(
             (rotation / "control" / name).read_text(encoding="utf-8")
         ) == payload
+    assert not roots.live_attempt(1).exists()
+    archived_attempt = (
+        rotation / "unallocated-live-attempt-artifacts/attempt-0001"
+    )
+    assert json.loads(
+        (
+            archived_attempt / "runtime/run-0001/environment.json"
+        ).read_text(encoding="utf-8")
+    ) == {"source": "misrouted-development"}
+    assert json.loads(
+        (
+            archived_attempt / "telemetry/attempt-0001/window.json"
+        ).read_text(encoding="utf-8")
+    ) == {"source": "misrouted-canonical"}
+    artifact_invalidation = json.loads(
+        (rotation / "unallocated-live-attempt-invalidation.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert artifact_invalidation["original_attempt_id"] == "attempt-0001"
+    assert len(artifact_invalidation["artifact_files"]) == 2
+
+
+def test_repro_1_rotates_failed_development_artifacts_without_pass_lock(
+    tmp_path: Path,
+) -> None:
+    config = load_e2e_v6_repro_1_config(CONFIG)
+    roots = E2EV6Repro1PrivateRoots(tmp_path / "repro-1")
+    bind_repro_1_lifecycle(config, roots)
+    from ecomsre_live_sandbox.contracts import write_private_json
+
+    write_private_json(
+        roots.control / "development-history.json",
+        {
+            "schema_version": "live-e2e.development-history.v6",
+            "runs": [
+                {
+                    "run_id": "run-0001",
+                    "implementation_commit": "a" * 40,
+                    "runtime_config_aggregate_sha256": "b" * 64,
+                    "verdict": "BLOCKED_E2E_V6_SERVICE_HEALTH_TIMEOUT",
+                }
+            ],
+        },
+        create_once=True,
+    )
+    write_private_json(
+        roots.live_attempt(1) / "telemetry/failed-development.json",
+        {"source": "misrouted-failed-development"},
+        create_once=True,
+    )
+
+    _prepare_pre_fault_repair(
+        config,
+        roots,
+        implementation_commit="c" * 40,
+        runtime_config_aggregate="d" * 64,
+    )
+
+    rotation = roots.root / "authority-history/rotation-0001"
+    assert not roots.live_attempt(1).exists()
+    assert json.loads(
+        (
+            rotation
+            / "unallocated-live-attempt-artifacts/attempt-0001/telemetry/"
+            "failed-development.json"
+        ).read_text(encoding="utf-8")
+    ) == {"source": "misrouted-failed-development"}
+    invalidation = json.loads(
+        (rotation / "invalidation.json").read_text(encoding="utf-8")
+    )
+    assert invalidation["previous_implementation_commit"] == "a" * 40
+    assert invalidation["previous_runtime_config_aggregate_sha256"] == "b" * 64
+    assert invalidation["invalidated_unallocated_live_attempt"] == "attempt-0001"

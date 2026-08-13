@@ -230,6 +230,186 @@ def _archive_and_remove_control(
     return preserved
 
 
+def _archive_unallocated_live_attempt_artifacts(
+    roots: E2EV6Repro1PrivateRoots,
+    *,
+    archive: Path,
+) -> str | None:
+    candidate = roots.next_live_attempt
+    if not candidate.exists() and not candidate.is_symlink():
+        return None
+    if candidate.is_symlink() or not candidate.is_dir():
+        raise RuntimeError("R1 unallocated live-attempt path is malformed")
+    if any(
+        (candidate / marker).exists() or (candidate / marker).is_symlink()
+        for marker in ("started.json", "terminal.json")
+    ):
+        raise RuntimeError("R1 unallocated live-attempt contains lifecycle markers")
+    artifact_files: list[dict[str, object]] = []
+    for path in sorted(candidate.rglob("*")):
+        if path.is_symlink():
+            raise RuntimeError("R1 unallocated live-attempt contains a symbolic link")
+        if path.is_dir():
+            continue
+        if not path.is_file():
+            raise RuntimeError("R1 unallocated live-attempt contains an invalid entry")
+        artifact_files.append(
+            {
+                "relative_path": path.relative_to(candidate).as_posix(),
+                "sha256": file_sha256(path),
+                "size_bytes": path.stat().st_size,
+            }
+        )
+    archived_root = archive / "unallocated-live-attempt-artifacts"
+    ensure_private_directory(archived_root)
+    archived_attempt = archived_root / candidate.name
+    if archived_attempt.exists() or archived_attempt.is_symlink():
+        raise RuntimeError("R1 unallocated live-attempt archive already exists")
+    candidate.rename(archived_attempt)
+    for artifact in artifact_files:
+        relative = artifact["relative_path"]
+        if not isinstance(relative, str):
+            raise AssertionError("R1 artifact relative path is not a string")
+        if file_sha256(archived_attempt / relative) != artifact["sha256"]:
+            raise RuntimeError("R1 archived live-attempt artifact differs")
+    write_private_json(
+        archive / "unallocated-live-attempt-invalidation.json",
+        {
+            "schema_version": (
+                "live-e2e.unallocated-live-attempt-invalidation.v6-repro-1"
+            ),
+            "run_generation": roots.run_generation,
+            "original_attempt_id": candidate.name,
+            "original_attempt_relative_path": candidate.relative_to(
+                roots.root
+            ).as_posix(),
+            "archived_attempt_relative_path": archived_attempt.relative_to(
+                roots.root
+            ).as_posix(),
+            "artifact_files": artifact_files,
+            "invalidated_at": datetime.now(timezone.utc).isoformat(),
+        },
+        create_once=True,
+    )
+    return candidate.name
+
+
+def _archive_preallocation_failure(
+    roots: E2EV6Repro1PrivateRoots,
+    *,
+    error: Exception,
+    runtime_config_aggregate: str,
+) -> None:
+    if roots.active_live_attempt is not None:
+        return
+    candidate = roots.next_live_attempt
+    if not candidate.exists() and not candidate.is_symlink():
+        return
+    failures_root = roots.root / "pre-allocation-failures"
+    if failures_root.exists() or failures_root.is_symlink():
+        if failures_root.is_symlink() or not failures_root.is_dir():
+            raise RuntimeError("R1 pre-allocation failure root is malformed")
+        existing = tuple(
+            path
+            for path in failures_root.glob("failure-*")
+            if path.is_dir() and not path.is_symlink()
+        )
+    else:
+        existing = ()
+    archive = failures_root / f"failure-{len(existing) + 1:04d}"
+    original_attempt_id = _archive_unallocated_live_attempt_artifacts(
+        roots,
+        archive=archive,
+    )
+    if original_attempt_id is None:
+        return
+    scenario_lock = _read_mapping(
+        roots.control / "scenario-lock.json",
+        label="scenario lock",
+    )
+    implementation_commit = scenario_lock.get("implementation_commit")
+    if not isinstance(implementation_commit, str):
+        raise RuntimeError("R1 scenario lock implementation commit is malformed")
+    scenario_lock_sha256, human_approval_sha256 = _authority_file_hashes(roots)
+    write_private_json(
+        archive / "failure.json",
+        {
+            "schema_version": "live-e2e.pre-allocation-failure.v6-repro-1",
+            "run_generation": roots.run_generation,
+            "original_attempt_id": original_attempt_id,
+            "implementation_commit": implementation_commit,
+            "runtime_config_aggregate_sha256": runtime_config_aggregate,
+            "scenario_lock_sha256": scenario_lock_sha256,
+            "human_approval_sha256": human_approval_sha256,
+            "failure_type": type(error).__name__,
+            "failure_module": type(error).__module__,
+            "failure_message_sha256": canonical_sha256(str(error)),
+            "failed_at": datetime.now(timezone.utc).isoformat(),
+        },
+        create_once=True,
+    )
+    roots.verify()
+
+
+def _reject_identical_preallocation_failure(
+    roots: E2EV6Repro1PrivateRoots,
+    *,
+    runtime_config_aggregate: str,
+) -> None:
+    failures_root = roots.root / "pre-allocation-failures"
+    if not failures_root.exists() and not failures_root.is_symlink():
+        return
+    if failures_root.is_symlink() or not failures_root.is_dir():
+        raise RuntimeError("R1 pre-allocation failure root is malformed")
+    failures = tuple(
+        sorted(
+            path
+            for path in failures_root.glob("failure-*")
+            if path.is_dir() and not path.is_symlink()
+        )
+    )
+    if not failures:
+        return
+    previous = _read_mapping(
+        failures[-1] / "failure.json",
+        label="pre-allocation failure",
+    )
+    scenario_lock = _read_mapping(
+        roots.control / "scenario-lock.json",
+        label="scenario lock",
+    )
+    scenario_lock_sha256, human_approval_sha256 = _authority_file_hashes(roots)
+    if all(
+        (
+            previous.get("implementation_commit")
+            == scenario_lock.get("implementation_commit"),
+            previous.get("runtime_config_aggregate_sha256")
+            == runtime_config_aggregate,
+            previous.get("scenario_lock_sha256") == scenario_lock_sha256,
+            previous.get("human_approval_sha256") == human_approval_sha256,
+        )
+    ):
+        raise RuntimeError("identical pre-allocation retry is forbidden")
+
+
+def _latest_development_binding(
+    roots: E2EV6Repro1PrivateRoots,
+) -> dict[str, object] | None:
+    history_path = roots.control / "development-history.json"
+    if not history_path.exists() and not history_path.is_symlink():
+        return None
+    history = _read_mapping(history_path, label="development history")
+    runs = history.get("runs")
+    if not isinstance(runs, list):
+        raise RuntimeError("R1 development history is malformed")
+    if not runs:
+        return None
+    latest = runs[-1]
+    if not isinstance(latest, Mapping):
+        raise RuntimeError("R1 latest development history entry is malformed")
+    return dict(latest)
+
+
 def _prepare_pre_fault_repair(
     config: E2EV6Repro1Config,
     roots: E2EV6Repro1PrivateRoots,
@@ -244,9 +424,13 @@ def _prepare_pre_fault_repair(
         scenario_path = roots.control / "scenario-lock.json"
         development_path = roots.control / "latest-development-pass-lock.json"
         binding_path = scenario_path if scenario_path.exists() else development_path
-        if not binding_path.exists() and not binding_path.is_symlink():
-            return
-        binding = _read_mapping(binding_path, label="current runtime authority")
+        if binding_path.exists() or binding_path.is_symlink():
+            binding = _read_mapping(binding_path, label="current runtime authority")
+        else:
+            candidate = roots.next_live_attempt
+            if not candidate.exists() and not candidate.is_symlink():
+                return
+            binding = _latest_development_binding(roots) or {}
         tracked = binding.get("tracked_runtime_and_config")
         bound_aggregate = (
             canonical_sha256(tracked)
@@ -270,6 +454,12 @@ def _prepare_pre_fault_repair(
             roots,
             archive=rotation / "control",
         )
+        invalidated_unallocated_live_attempt = (
+            _archive_unallocated_live_attempt_artifacts(
+                roots,
+                archive=rotation,
+            )
+        )
         write_private_json(
             rotation / "invalidation.json",
             {
@@ -284,6 +474,9 @@ def _prepare_pre_fault_repair(
                     runtime_config_aggregate
                 ),
                 "preserved_control_artifacts": preserved,
+                "invalidated_unallocated_live_attempt": (
+                    invalidated_unallocated_live_attempt
+                ),
                 "invalidated_at": datetime.now(timezone.utc).isoformat(),
             },
             create_once=True,
@@ -585,6 +778,10 @@ def run_invocation_b(
     _, runtime_config_aggregate = e2e_v4._runtime_config_aggregate(
         cast(Any, config)
     )
+    _reject_identical_preallocation_failure(
+        roots,
+        runtime_config_aggregate=runtime_config_aggregate,
+    )
 
     kwargs.setdefault(
         "live_attempt_allocator",
@@ -624,9 +821,20 @@ def run_invocation_b(
             roots=roots,
         ),
     )
-    return e2e_v6.run_invocation_b(
-        cast(Any, config), cast(Any, roots), **kwargs
-    )
+    roots.arm_live_attempt_scope()
+    try:
+        return e2e_v6.run_invocation_b(
+            cast(Any, config), cast(Any, roots), **kwargs
+        )
+    except Exception as error:
+        _archive_preallocation_failure(
+            roots,
+            error=error,
+            runtime_config_aggregate=runtime_config_aggregate,
+        )
+        raise
+    finally:
+        roots.disarm_live_attempt_scope()
 
 
 __all__ = [

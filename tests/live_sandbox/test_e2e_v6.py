@@ -795,6 +795,7 @@ def test_v6_repro_1_seals_acceptance_before_fault_injection(
     )
     roots = E2EV6Repro1PrivateRoots(tmp_path / "private-repro-1")
     _prepare_approved_r1(config, roots)
+    assert not roots.live_attempt(1).exists()
 
     def fail_before_attempt_allocation(**_: object) -> object:
         raise RuntimeError("injected environment construction failure")
@@ -812,6 +813,42 @@ def test_v6_repro_1_seals_acceptance_before_fault_injection(
         )
     assert not (roots.control / "live-attempt-active.json").exists()
     assert not (roots.control / "live-attempt-history.json").exists()
+    assert not roots.live_attempt(1).exists()
+    preallocation_failure = roots.root / "pre-allocation-failures/failure-0001"
+    failure = json.loads(
+        (preallocation_failure / "failure.json").read_text(encoding="utf-8")
+    )
+    assert failure["failure_type"] == "RuntimeError"
+    assert failure["original_attempt_id"] == "attempt-0001"
+    assert failure["implementation_commit"] == "d" * 40
+    assert failure["runtime_config_aggregate_sha256"] == (
+        e2e_v4._runtime_config_aggregate(config)[1]
+    )
+    assert failure["scenario_lock_sha256"] == hashlib.sha256(
+        (roots.control / "scenario-lock.json").read_bytes()
+    ).hexdigest()
+    assert failure["human_approval_sha256"] == hashlib.sha256(
+        (roots.control / "human-approval.json").read_bytes()
+    ).hexdigest()
+    assert (
+        preallocation_failure
+        / "unallocated-live-attempt-artifacts/attempt-0001/commands"
+    ).is_dir()
+    with pytest.raises(RuntimeError, match="identical pre-allocation retry"):
+        run_r1_invocation_b(
+            config,
+            roots,
+            provider_factory=lambda _: FakeProvider(),
+            environment_factory=FakeEnvironment,
+            controller_factory=_controller,
+            worktree_verifier=_fake_worktree,
+            sleep=lambda _: None,
+            public_writer=lambda *_: (),
+        )
+
+    roots = E2EV6Repro1PrivateRoots(tmp_path / "accepted-repro-1")
+    _prepare_approved_r1(config, roots)
+    assert not roots.live_attempt(1).exists()
 
     monkeypatch.setattr(
         e2e_v3,

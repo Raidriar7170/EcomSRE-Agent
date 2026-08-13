@@ -199,10 +199,23 @@ class E2EV6Repro1Config:
 
 
 class E2EV6Repro1PrivateRoots(E2EV6PrivateRoots):
-    __slots__ = ()
+    __slots__ = ("_live_attempt_scope_armed",)
+    _live_attempt_scope_armed: bool
 
     runtime_policy_version = "v6"
     run_generation = E2E_V6_REPRO_1_GENERATION
+
+    def __init__(self, root: Path) -> None:
+        super().__init__(root)
+        object.__setattr__(self, "_live_attempt_scope_armed", False)
+
+    def arm_live_attempt_scope(self) -> None:
+        if self._live_attempt_scope_armed:
+            raise RuntimeError("R1 live-attempt scope is already armed")
+        object.__setattr__(self, "_live_attempt_scope_armed", True)
+
+    def disarm_live_attempt_scope(self) -> None:
+        object.__setattr__(self, "_live_attempt_scope_armed", False)
 
     @property
     def live_attempts(self) -> Path:
@@ -248,11 +261,20 @@ class E2EV6Repro1PrivateRoots(E2EV6PrivateRoots):
 
     @property
     def invocation_b(self) -> Path:
-        return self.active_live_attempt or self.next_live_attempt
+        active = self.active_live_attempt
+        if active is not None:
+            return active
+        if self._live_attempt_scope_armed:
+            return self.next_live_attempt
+        return super().invocation_b
 
     def _attempt_scoped(self, name: str, fallback: Path) -> Path:
         active = self.active_live_attempt
-        return (self.next_live_attempt if active is None else active) / name
+        if active is not None:
+            return active / name
+        if self._live_attempt_scope_armed:
+            return self.next_live_attempt / name
+        return fallback
 
     @property
     def runtime(self) -> Path:
