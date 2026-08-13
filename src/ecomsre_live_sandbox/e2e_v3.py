@@ -2262,7 +2262,7 @@ def _verify_scenario_lock_for_invocation_b(
 
 def _consume_live_run_budget(config: E2EV3Config, roots: E2EV3PrivateRoots) -> None:
     run_generation = getattr(config.authority, "run_generation", None)
-    if run_generation in {"V6_REPRO_1", "V6_REPRO_2"}:
+    if run_generation in {"V6_REPRO_1", "V6_REPRO_2", "V6_REPRO_3"}:
         if (roots.control / "accepted-live-run.json").exists():
             raise RuntimeError("accepted fault-time run is already sealed")
         started_path = roots.invocation_b / "started.json"

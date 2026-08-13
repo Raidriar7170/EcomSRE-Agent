@@ -734,6 +734,77 @@ def _prepare_approved_r2(config: object, roots: object) -> None:
     )
 
 
+def _prepare_approved_r3(config: object, roots: object) -> None:
+    from ecomsre_live_sandbox.e2e_v6_repro_3 import (
+        record_human_approval_for_invocation_b as record_r3_approval,
+    )
+    from ecomsre_live_sandbox.e2e_v6_repro_3 import (
+        run_canonical_invocation_a as run_r3_canonical,
+    )
+    from ecomsre_live_sandbox.e2e_v6_repro_3 import (
+        run_development_probe as run_r3_development,
+    )
+
+    FakeEnvironment.fail_at = None
+    FakeEnvironment.next_controller_read_failures = 0
+    FakeEnvironment.next_controller_mismatch = False
+    development = run_r3_development(
+        config,  # type: ignore[arg-type]
+        roots,  # type: ignore[arg-type]
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        evidence_collector=_no_fault_evidence,
+        sleep=lambda _: None,
+        worktree_verifier=_fake_worktree,
+    )
+    assert development["verdict"] == config.authority.development_success_terminal  # type: ignore[attr-defined]
+    for name, payload in (
+        (
+            "exact-head-ci.json",
+            {
+                "schema_version": "live-e2e.exact-head-ci.v6",
+                "implementation_commit": "d" * 40,
+                "workflows": {
+                    "Agent mainline": {"run_id": 401, "conclusion": "SUCCESS"},
+                    "RCAEval RE2 v2 development": {
+                        "run_id": 402,
+                        "conclusion": "SUCCESS",
+                    },
+                },
+            },
+        ),
+        (
+            "pre-live-review.json",
+            {
+                "schema_version": "live-e2e.pre-live-review.v6",
+                "implementation_commit": "d" * 40,
+                "verdict": "PRE_LIVE_PASS",
+                "must_fix_count": 0,
+            },
+        ),
+    ):
+        write_private_json(roots.control / name, payload, create_once=True)  # type: ignore[attr-defined]
+    canonical = run_r3_canonical(
+        config,  # type: ignore[arg-type]
+        roots,  # type: ignore[arg-type]
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        evidence_collector=_no_fault_evidence,
+        sleep=lambda _: None,
+        worktree_verifier=_fake_worktree,
+    )
+    assert canonical["verdict"] == config.authority.invocation_a_terminal  # type: ignore[attr-defined]
+    request = json.loads(
+        (roots.control / "approval-request.json").read_text(encoding="utf-8")  # type: ignore[attr-defined]
+    )
+    record_r3_approval(
+        config,  # type: ignore[arg-type]
+        roots,  # type: ignore[arg-type]
+        approver="Human Reviewer",
+        phrase=f"APPROVE {request['scenario_id']} {request['plan_template_sha256']}",
+    )
+
+
 @pytest.mark.parametrize("run_kind", ("development", "canonical"))
 @pytest.mark.parametrize(
     ("failure_kind", "expected_suffix", "expected_stage"),
@@ -1739,6 +1810,88 @@ def _patch_live_fault_projection_inputs(
     )
 
 
+def _patch_r3_high_cardinality_projection_inputs(
+    monkeypatch: pytest.MonkeyPatch,
+    roots: E2EV6PrivateRoots,
+) -> None:
+    _patch_live_fault_projection_inputs(monkeypatch, roots)
+    observed_at = datetime(2026, 8, 14, 12, tzinfo=timezone.utc)
+    services = (
+        "payment",
+        "checkout",
+        "currency",
+        "frontend",
+        "cart",
+        "shipping",
+        "email",
+        "recommendation",
+    )
+    snapshots = iter(
+        (
+            {service: (100.0, 1.0, 20.0) for service in services},
+            {
+                service: (100.0, float(30 - index * 2), float(60 - index))
+                for index, service in enumerate(services)
+            },
+        )
+    )
+    traces = tuple(
+        LiveTraceObservation(
+            observed_at=observed_at + timedelta(milliseconds=index),
+            service_name=services[(index - 1) % 4],
+            operation=f"operation-{index:02d}",
+            status="ERROR",
+            duration_ms=float(200 - index),
+        )
+        for index in range(1, 13)
+    )
+
+    def seal_resolver(
+        _: object,
+        *,
+        metrics: tuple[object, ...],
+        logs: tuple[LiveLogObservation, ...],
+        traces: tuple[LiveTraceObservation, ...],
+        **__: object,
+    ) -> tuple[
+        tuple[object, ...],
+        tuple[object, ...],
+        tuple[object, ...],
+        frozenset[str],
+    ]:
+        bound_metrics = tuple(
+            item.model_copy(update={"evidence_ref": f"metric:{index:04d}"})
+            for index, item in enumerate(metrics, 1)
+        )
+        bound_logs = tuple(
+            item.model_copy(update={"evidence_ref": f"log:{index:04d}"})
+            for index, item in enumerate(logs, 1)
+        )
+        bound_traces = tuple(
+            item.model_copy(update={"evidence_ref": f"trace:{index:04d}"})
+            for index, item in enumerate(traces, 1)
+        )
+        refs = frozenset(
+            item.evidence_ref
+            for source in (bound_metrics, bound_logs, bound_traces)
+            for item in source
+        )
+        return bound_metrics, bound_logs, bound_traces, refs
+
+    monkeypatch.setattr(
+        e2e_v3,
+        "_broad_metric_snapshot",
+        lambda *_, **__: next(snapshots),
+    )
+    monkeypatch.setattr(e2e_v3, "_capture_broad_logs", lambda *_, **__: ())
+    monkeypatch.setattr(
+        e2e_v3,
+        "_capture_broad_traces",
+        lambda *_, **__: traces,
+    )
+    monkeypatch.setattr(e2e_v3, "_seal_model_evidence_resolver", seal_resolver)
+
+
 def test_v6_repro_2_full_simulated_success_executes_fixed_stage_sequence(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -1876,6 +2029,265 @@ def test_v6_repro_2_full_simulated_success_executes_fixed_stage_sequence(
         "MULTISERVICE_PROJECTION_COMPLETED",
     ):
         assert passed.count(stage) == 1
+    source_gate_index = passed.index("SOURCE_AVAILABILITY_GATE_EVALUATED")
+    assert passed[source_gate_index + 1] == "MULTISERVICE_PROJECTION_STARTED"
+
+
+def test_v6_repro_3_full_simulated_success_uses_real_high_cardinality_projection(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from ecomsre_live_sandbox.e2e_v6_repro_3 import (
+        run_invocation_b as run_r3_invocation_b,
+    )
+    from ecomsre_live_sandbox.e2e_v6_repro_3_contracts import (
+        E2EV6Repro3PrivateRoots,
+        load_e2e_v6_repro_3_config,
+    )
+
+    config = load_e2e_v6_repro_3_config(
+        Path("config/live-fault-a0-controlled-remediation-e2e-v6-repro-3")
+    )
+    roots = E2EV6Repro3PrivateRoots(tmp_path / "repro-3-full-success")
+    _prepare_approved_r3(config, roots)
+    provider = FakeProvider()
+    _patch_r3_high_cardinality_projection_inputs(monkeypatch, roots)
+
+    def diagnosis_from_provider(
+        current_provider: FakeProvider,
+        context: object,
+    ) -> DiagnosisResult:
+        current_provider.diagnose(context)
+        return DiagnosisResult(
+            terminal="COMPLETED",
+            root_service=config.sandbox.scenario.expected_root_service,
+            root_entity_ref="apm|apm.service|payment",
+            fault_type_raw="payment configuration failure",
+            fault_class=config.sandbox.scenario.expected_fault_class,
+            confidence=0.99,
+            evidence_refs=("metric:0001", "trace:0001"),
+            evidence_source_types=("METRICS", "TRACES"),
+            summary="Fixture evidence identifies the payment configuration fault.",
+            semantic_model_calls=1,
+            specialist_calls=0,
+            fusion_calls=0,
+            provider_attempts=1,
+            transport_retries=0,
+            usage_tokens=1,
+        )
+
+    def sli_window(*_: object, phase: str) -> SLIWindow:
+        started = datetime(2026, 8, 14, 12, tzinfo=timezone.utc)
+        degraded = phase == "FAULT"
+        errors = 30.0 if degraded else 1.0
+        return SLIWindow(
+            phase=phase,  # type: ignore[arg-type]
+            started_at=started,
+            ended_at=started + timedelta(seconds=30),
+            request_count=100.0,
+            error_count=errors,
+            error_rate=errors / 100.0,
+            p95_latency_ms=40.0 if degraded else 20.0,
+            runtime_health=1.0,
+            sample_count=3,
+        )
+
+    monkeypatch.setattr(e2e_v3, "_diagnosis_from_initial", diagnosis_from_provider)
+    monkeypatch.setattr(e2e_v3, "_capture_sli_window", sli_window)
+
+    terminal = run_r3_invocation_b(
+        config,
+        roots,
+        provider_factory=lambda _: provider,
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        worktree_verifier=_fake_worktree,
+        sleep=lambda _: None,
+        public_writer=lambda *_: (),
+    )
+
+    context_path = roots.invocation_b / "fault-time-a0-context.json"
+    metadata_path = roots.invocation_b / "fault-time-a0-context-metadata.json"
+    summary = json.loads(
+        (roots.invocation_b / "projection-input-summary.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    assert terminal["verdict"] == config.authority.invocation_b_success, terminal
+    assert terminal["provider_calls"] == 2
+    assert terminal["fault_injections"] == 1
+    assert terminal["a0_context_builder_calls"] == 1
+    assert context_path.is_file()
+    assert metadata["context_sha256"] == provider.live_context_sha256
+    assert terminal["fault_time_a0_context_sha256"] == provider.live_context_sha256
+    assert terminal["provider_live_context_sha256"] == provider.live_context_sha256
+    assert terminal["model_calls"] == 1
+    assert terminal["diagnosis_gate"] is True
+    assert terminal["policy_verdict"] == "ALLOW"
+    assert terminal["forward_mutations"] == 1
+    assert terminal["rollback_mutations"] == 0
+    assert terminal["recovery_verification_passed"] is True
+    assert terminal["cleanup_verdict"] == "CLEAN"
+    assert summary["anomalous_metric_count"] == 8
+    assert summary["anomalous_log_count"] == 0
+    assert summary["error_trace_count"] == 12
+    assert summary["metrics_selected_count"] == 4
+    assert summary["logs_selected_count"] == 0
+    assert summary["traces_selected_count"] == 6
+    assert summary["all_selected_refs_resolve"] is True
+
+
+@pytest.mark.parametrize(
+    ("boundary", "expected_verdict", "forward_mutations", "rollback_mutations"),
+    (
+        (
+            "projection",
+            "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE",
+            0,
+            0,
+        ),
+        ("diagnosis", "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION", 0, 0),
+        ("policy", "BLOCKED_POLICY_REJECTED", 0, 0),
+        (
+            "recovery",
+            "CONTROLLED_REMEDIATION_NOT_VERIFIED_ROLLBACK_COMPLETED",
+            1,
+            1,
+        ),
+        (
+            "rollback-failure",
+            "BLOCKED_ROLLBACK_FAILED_MANUAL_CLEANUP_REQUIRED",
+            1,
+            1,
+        ),
+    ),
+)
+def test_v6_repro_3_simulated_negative_matrix_uses_frozen_stage_order(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    boundary: str,
+    expected_verdict: str,
+    forward_mutations: int,
+    rollback_mutations: int,
+) -> None:
+    from ecomsre_live_sandbox.contracts import PolicyDecision, PolicyVerdict
+    from ecomsre_live_sandbox.e2e_v6_repro_3 import (
+        run_invocation_b as run_r3_invocation_b,
+    )
+    from ecomsre_live_sandbox.e2e_v6_repro_3_contracts import (
+        E2EV6Repro3PrivateRoots,
+        load_e2e_v6_repro_3_config,
+    )
+
+    config = load_e2e_v6_repro_3_config(
+        Path("config/live-fault-a0-controlled-remediation-e2e-v6-repro-3")
+    )
+    roots = E2EV6Repro3PrivateRoots(tmp_path / f"repro-3-{boundary}")
+    _prepare_approved_r3(config, roots)
+    provider = FakeProvider()
+    _patch_r3_high_cardinality_projection_inputs(monkeypatch, roots)
+
+    def diagnosis_from_provider(
+        current_provider: FakeProvider,
+        context: object,
+    ) -> DiagnosisResult:
+        current_provider.diagnose(context)
+        admitted = boundary != "diagnosis"
+        return DiagnosisResult(
+            terminal="COMPLETED",
+            root_service=(
+                config.sandbox.scenario.expected_root_service
+                if admitted
+                else "frontend"
+            ),
+            root_entity_ref=(
+                "apm|apm.service|payment"
+                if admitted
+                else "apm|apm.service|frontend"
+            ),
+            fault_type_raw="fixture configuration failure",
+            fault_class=(
+                config.sandbox.scenario.expected_fault_class
+                if admitted
+                else "UNKNOWN"
+            ),
+            confidence=0.99,
+            evidence_refs=("metric:0001", "trace:0001"),
+            evidence_source_types=("METRICS", "TRACES"),
+            summary="Fixture diagnosis for a frozen negative boundary.",
+            semantic_model_calls=1,
+            specialist_calls=0,
+            fusion_calls=0,
+            provider_attempts=1,
+            transport_retries=0,
+            usage_tokens=1,
+        )
+
+    def sli_window(*_: object, phase: str) -> SLIWindow:
+        started = datetime(2026, 8, 14, 12, tzinfo=timezone.utc)
+        degraded = phase == "FAULT" or (
+            phase == "RECOVERY" and boundary in {"recovery", "rollback-failure"}
+        )
+        errors = 30.0 if degraded else 1.0
+        return SLIWindow(
+            phase=phase,  # type: ignore[arg-type]
+            started_at=started,
+            ended_at=started + timedelta(seconds=30),
+            request_count=100.0,
+            error_count=errors,
+            error_rate=errors / 100.0,
+            p95_latency_ms=40.0 if degraded else 20.0,
+            runtime_health=1.0,
+            sample_count=3,
+        )
+
+    monkeypatch.setattr(e2e_v3, "_diagnosis_from_initial", diagnosis_from_provider)
+    monkeypatch.setattr(e2e_v3, "_capture_sli_window", sli_window)
+    if boundary == "projection":
+        monkeypatch.setattr(
+            e2e_v3,
+            "build_fault_time_a0_context",
+            lambda **_: (_ for _ in ()).throw(
+                RuntimeError("simulated projection unavailable")
+            ),
+        )
+    if boundary == "policy":
+        monkeypatch.setattr(
+            e2e_v3,
+            "evaluate_policy",
+            lambda **_: PolicyDecision(
+                verdict=PolicyVerdict.DENY,
+                reason_codes=("SIMULATED_POLICY_REJECTION",),
+            ),
+        )
+    if boundary == "rollback-failure":
+        def fail_rollback(*_: object, on_mutation, **__: object) -> object:
+            on_mutation()
+            raise RuntimeError("simulated rollback failure")
+
+        monkeypatch.setattr(e2e_v3, "compensate_rollback", fail_rollback)
+
+    terminal = run_r3_invocation_b(
+        config,
+        roots,
+        provider_factory=lambda _: provider,
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        worktree_verifier=_fake_worktree,
+        sleep=lambda _: None,
+        public_writer=lambda *_: (),
+    )
+
+    assert terminal["verdict"] == expected_verdict, terminal
+    assert terminal["forward_mutations"] == forward_mutations
+    assert terminal["rollback_mutations"] == rollback_mutations
+    assert terminal["cleanup_verdict"] == "CLEAN"
+    events = [
+        json.loads(line)
+        for line in (roots.invocation_b / "events.jsonl").read_text().splitlines()
+    ]
+    passed = [event["stage"] for event in events if event["status"] == "PASSED"]
     source_gate_index = passed.index("SOURCE_AVAILABILITY_GATE_EVALUATED")
     assert passed[source_gate_index + 1] == "MULTISERVICE_PROJECTION_STARTED"
 

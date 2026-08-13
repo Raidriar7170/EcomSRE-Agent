@@ -170,7 +170,7 @@ def test_unresolved_diagnostic_input_is_summarized_before_builder(tmp_path) -> N
             summary_path=summary_path,
         )
 
-    assert captured.value.reason_code == "INSUFFICIENT_RESOLVABLE_EVIDENCE"
+    assert captured.value.reason_code == "SELECTED_EVIDENCE_REF_UNRESOLVED"
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     assert summary["logs_with_resolver_ref"] == 0
     assert "INSUFFICIENT_RESOLVABLE_EVIDENCE" in summary["reason_codes"]

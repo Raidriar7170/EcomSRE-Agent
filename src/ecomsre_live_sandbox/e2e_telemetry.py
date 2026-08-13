@@ -3,17 +3,22 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import datetime
 import hashlib
 import json
 import math
 import re
-from typing import Iterable
+from typing import Any, Iterable
 
 from pydantic import Field, field_validator
 
 from ecomsre_live_sandbox.contracts import FrozenModel
 from ecomsre_live_sandbox.e2e_contracts import ProjectionConfig
+from ecomsre_live_sandbox.projection_capacity import (
+    EffectiveProjectionLimits,
+    effective_projection_limits,
+)
 from ecomsre_rca100.contracts import CanonicalRCA100Entity, RCA100MetricsEntityRank
 from ecomsre_rca100.projection import (
     RCA100AgentContext,
@@ -84,6 +89,23 @@ class LiveTraceObservation(FrozenModel):
     parent_span_token: str | None = Field(default=None, min_length=1, max_length=128)
 
 
+@dataclass(frozen=True, slots=True)
+class ContractBoundedProjectionInputs:
+    metrics: tuple[LiveMetricObservation, ...]
+    logs: tuple[LiveLogObservation, ...]
+    traces: tuple[LiveTraceObservation, ...]
+    visible_services: tuple[str, ...]
+    diagnostic_metrics_count: int
+    diagnostic_logs_count: int
+    diagnostic_traces_count: int
+    metrics_capacity_selected_count: int
+    logs_capacity_selected_count: int
+    traces_capacity_selected_count: int
+    services_before_capacity_filter: int
+    services_after_capacity_filter: int
+    effective_limits: EffectiveProjectionLimits
+
+
 def _entity(service_name: str) -> CanonicalRCA100Entity:
     return CanonicalRCA100Entity(
         entity_ref=f"apm|apm.service|{service_name}",
@@ -138,8 +160,223 @@ def _rank_metrics(metrics: Iterable[LiveMetricObservation]) -> tuple[LiveMetricO
                 -_metric_components(item)[2],
                 -_metric_components(item)[3],
                 item.service_name,
+                item.evidence_ref or "",
             ),
         )
+    )
+
+
+def _metric_is_diagnostic(item: LiveMetricObservation) -> bool:
+    return (
+        item.fault_errors / item.fault_requests
+        > item.baseline_errors / item.baseline_requests
+        or item.fault_p95_ms > item.baseline_p95_ms
+    )
+
+
+def _log_is_diagnostic(item: LiveLogObservation) -> bool:
+    return _SEVERITY.get(item.severity.upper(), 0) > 0 or (
+        "error" in item.body.casefold()
+    )
+
+
+def _trace_is_diagnostic(item: LiveTraceObservation) -> bool:
+    return item.status.upper() == "ERROR"
+
+
+def _observation_digest(item: FrozenModel) -> str:
+    return hashlib.sha256(
+        json.dumps(
+            item.model_dump(mode="json"),
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+def _diversity_first_logs(
+    candidates: tuple[LiveLogObservation, ...],
+    *,
+    limit: int,
+    per_service_limit: int,
+) -> tuple[LiveLogObservation, ...]:
+    selected_indices: list[int] = []
+    service_counts: dict[str, int] = defaultdict(int)
+    for index, item in enumerate(candidates):
+        if item.service_name in service_counts:
+            continue
+        selected_indices.append(index)
+        service_counts[item.service_name] = 1
+        if len(selected_indices) == limit:
+            break
+    if len(selected_indices) < limit:
+        selected_set = set(selected_indices)
+        for index, item in enumerate(candidates):
+            if index in selected_set:
+                continue
+            if service_counts[item.service_name] >= per_service_limit:
+                continue
+            selected_indices.append(index)
+            service_counts[item.service_name] += 1
+            if len(selected_indices) == limit:
+                break
+    return tuple(candidates[index] for index in selected_indices)
+
+
+def _diversity_first_traces(
+    candidates: tuple[LiveTraceObservation, ...],
+    *,
+    limit: int,
+) -> tuple[LiveTraceObservation, ...]:
+    selected_indices: list[int] = []
+    selected_services: set[str] = set()
+    for index, item in enumerate(candidates):
+        if item.service_name in selected_services:
+            continue
+        selected_indices.append(index)
+        selected_services.add(item.service_name)
+        if len(selected_indices) == limit:
+            break
+    if len(selected_indices) < limit:
+        selected_set = set(selected_indices)
+        for index in range(len(candidates)):
+            if index in selected_set:
+                continue
+            selected_indices.append(index)
+            if len(selected_indices) == limit:
+                break
+    return tuple(candidates[index] for index in selected_indices)
+
+
+def select_contract_bounded_projection_inputs(
+    *,
+    window_start: datetime,
+    window_end: datetime,
+    metrics: tuple[LiveMetricObservation, ...],
+    logs: tuple[LiveLogObservation, ...],
+    traces: tuple[LiveTraceObservation, ...],
+    projection: Any,
+) -> ContractBoundedProjectionInputs:
+    """Select deterministic model inputs without consulting scenario truth."""
+    limits = effective_projection_limits(projection)
+    diagnostic_metrics = tuple(item for item in metrics if _metric_is_diagnostic(item))
+    diagnostic_logs = tuple(item for item in logs if _log_is_diagnostic(item))
+    diagnostic_traces = tuple(item for item in traces if _trace_is_diagnostic(item))
+
+    ranked_metric_rows = _rank_metrics(diagnostic_metrics)
+    selected_metrics: list[LiveMetricObservation] = []
+    metric_services: set[str] = set()
+    for item in ranked_metric_rows:
+        if item.service_name in metric_services:
+            continue
+        selected_metrics.append(item)
+        metric_services.add(item.service_name)
+        if len(selected_metrics) == limits.metrics:
+            break
+
+    ranked_logs = tuple(
+        sorted(
+            diagnostic_logs[: int(projection.log_raw_hit_limit)],
+            key=lambda item: (
+                -_SEVERITY.get(item.severity.upper(), 0),
+                item.observed_at,
+                item.service_name,
+                _observation_digest(item),
+            ),
+        )
+    )
+    selected_logs = _diversity_first_logs(
+        ranked_logs,
+        limit=limits.logs,
+        per_service_limit=int(projection.log_per_service_limit),
+    )
+    ranked_traces = tuple(
+        sorted(
+            diagnostic_traces,
+            key=lambda item: (
+                item.observed_at,
+                -item.duration_ms,
+                item.service_name,
+                item.operation,
+                _observation_digest(item),
+            ),
+        )
+    )
+    selected_traces = _diversity_first_traces(
+        ranked_traces,
+        limit=limits.traces,
+    )
+
+    services_before = {
+        item.service_name
+        for source in (diagnostic_metrics, diagnostic_logs, diagnostic_traces)
+        for item in source
+    }
+    services_after = {
+        item.service_name
+        for source in (tuple(selected_metrics), selected_logs, selected_traces)
+        for item in source
+    }
+    source_support: dict[str, set[str]] = defaultdict(set)
+    earliest: dict[str, datetime] = {}
+    metric_scores: dict[str, float] = {}
+    for metric_item in selected_metrics:
+        source_support[metric_item.service_name].add("metrics")
+        metric_scores[metric_item.service_name] = _metric_score(metric_item)
+        earliest[metric_item.service_name] = (
+            metric_item.first_anomaly_at or window_start
+        )
+    for log_item in selected_logs:
+        source_support[log_item.service_name].add("logs")
+        earliest[log_item.service_name] = min(
+            earliest.get(log_item.service_name, log_item.observed_at),
+            log_item.observed_at,
+        )
+    for trace_item in selected_traces:
+        source_support[trace_item.service_name].add("traces")
+        earliest[trace_item.service_name] = min(
+            earliest.get(trace_item.service_name, trace_item.observed_at),
+            trace_item.observed_at,
+        )
+
+    visible: list[str] = []
+    for item in selected_metrics:
+        if item.service_name not in visible:
+            visible.append(item.service_name)
+    remaining = sorted(
+        services_after - set(visible),
+        key=lambda service: (
+            -len(source_support[service]),
+            -metric_scores.get(service, -1.0),
+            earliest.get(service, window_end),
+            service,
+        ),
+    )
+    visible.extend(remaining)
+    visible_services = tuple(visible[: int(projection.visible_entity_maximum)])
+    visible_set = set(visible_services)
+    final_metrics = tuple(
+        item for item in selected_metrics if item.service_name in visible_set
+    )
+    final_logs = tuple(item for item in selected_logs if item.service_name in visible_set)
+    final_traces = tuple(
+        item for item in selected_traces if item.service_name in visible_set
+    )
+    return ContractBoundedProjectionInputs(
+        metrics=final_metrics,
+        logs=final_logs,
+        traces=final_traces,
+        visible_services=visible_services,
+        diagnostic_metrics_count=len(diagnostic_metrics),
+        diagnostic_logs_count=len(diagnostic_logs),
+        diagnostic_traces_count=len(diagnostic_traces),
+        metrics_capacity_selected_count=len(selected_metrics),
+        logs_capacity_selected_count=len(selected_logs),
+        traces_capacity_selected_count=len(selected_traces),
+        services_before_capacity_filter=len(services_before),
+        services_after_capacity_filter=len(services_after),
+        effective_limits=limits,
     )
 
 
@@ -201,29 +438,15 @@ def _logs_projection(
     visible: set[str],
     projection: ProjectionConfig,
     resolvable_refs: frozenset[str],
+    *,
+    total_rows: int | None = None,
 ) -> RCA100SourceProjection:
-    selected: list[LiveLogObservation] = []
-    per_service: dict[str, int] = defaultdict(int)
-    candidates = (
+    del projection
+    selected = tuple(
         item
-        for item in logs[: projection.log_raw_hit_limit]
-        if item.service_name in visible and (_SEVERITY.get(item.severity.upper(), 0) > 0 or "error" in item.body.casefold())
+        for item in logs
+        if item.service_name in visible and _log_is_diagnostic(item)
     )
-    for item in sorted(
-        candidates,
-        key=lambda value: (
-            -_SEVERITY.get(value.severity.upper(), 0),
-            value.observed_at,
-            value.service_name,
-            hashlib.sha256(value.body.encode("utf-8")).hexdigest(),
-        ),
-    ):
-        if per_service[item.service_name] >= projection.log_per_service_limit:
-            continue
-        selected.append(item)
-        per_service[item.service_name] += 1
-        if len(selected) == projection.log_evidence_limit:
-            break
     refs = tuple(item.evidence_ref or _default_ref("log", index) for index, item in enumerate(selected, 1))
     _require_resolvable(refs, resolvable_refs)
     evidence = tuple(
@@ -246,10 +469,11 @@ def _logs_projection(
         status="AVAILABLE" if evidence else "SOURCE_UNAVAILABLE",
         reason=None if evidence else "NO_VISIBLE_LOG_ANOMALY",
         evidence=evidence,
-        total_rows=len(logs),
-        window_rows=len(logs),
+        total_rows=total_rows if total_rows is not None else len(logs),
+        window_rows=total_rows if total_rows is not None else len(logs),
         mapped_rows=len(selected),
-        unmapped_rows=len(logs) - len(selected),
+        unmapped_rows=(total_rows if total_rows is not None else len(logs))
+        - len(selected),
     )
 
 
@@ -258,18 +482,14 @@ def _traces_projection(
     visible: set[str],
     projection: ProjectionConfig,
     resolvable_refs: frozenset[str],
+    *,
+    total_rows: int | None = None,
 ) -> RCA100SourceProjection:
+    del projection
     selected = tuple(
-        sorted(
-            (item for item in traces if item.service_name in visible),
-            key=lambda item: (
-                item.status.upper() != "ERROR",
-                item.observed_at,
-                -item.duration_ms,
-                item.service_name,
-                item.operation,
-            ),
-        )[: projection.trace_evidence_limit]
+        item
+        for item in traces
+        if item.service_name in visible and _trace_is_diagnostic(item)
     )
     refs = tuple(item.evidence_ref or _default_ref("trace", index) for index, item in enumerate(selected, 1))
     _require_resolvable(refs, resolvable_refs)
@@ -293,10 +513,11 @@ def _traces_projection(
         status="AVAILABLE" if evidence else "SOURCE_UNAVAILABLE",
         reason=None if evidence else "NO_VISIBLE_TRACE_DIAGNOSTIC",
         evidence=evidence,
-        total_rows=len(traces),
-        window_rows=len(traces),
+        total_rows=total_rows if total_rows is not None else len(traces),
+        window_rows=total_rows if total_rows is not None else len(traces),
         mapped_rows=len(selected),
-        unmapped_rows=len(traces) - len(selected),
+        unmapped_rows=(total_rows if total_rows is not None else len(traces))
+        - len(selected),
     )
 
 
@@ -329,6 +550,7 @@ def build_live_a0_context(
     traces: tuple[LiveTraceObservation, ...],
     resolvable_refs: frozenset[str] | None = None,
     projection: ProjectionConfig | None = None,
+    bounded_selection: ContractBoundedProjectionInputs | None = None,
 ) -> RCA100AgentContext:
     """Build the only model-facing projection from observed, resolver-backed evidence."""
     if window_end <= window_start:
@@ -349,55 +571,23 @@ def build_live_a0_context(
         evidence_ordering_policy="SOURCE_SCORE_TIME_SERVICE_HASH",
         alert_title="Observed purchase-flow request error-rate increase",
     )
-    if not metrics:
-        raise ValueError("NO_DIAGNOSTIC_METRICS")
-    if not logs and not traces:
-        raise ValueError("NO_LOG_OR_TRACE_DIAGNOSTIC_EVIDENCE")
-    ranked_metrics = _rank_metrics(metrics)
-    ranked_candidates = ranked_metrics[: config.metric_candidate_limit]
-    metric_scores = {item.service_name: _metric_score(item) for item in ranked_metrics}
-    source_support: dict[str, set[str]] = defaultdict(set)
-    earliest: dict[str, datetime] = {}
-    for metric_observation in metrics:
-        source_support[metric_observation.service_name].add("metrics")
-        earliest[metric_observation.service_name] = min(
-            earliest.get(metric_observation.service_name, window_start),
-            metric_observation.first_anomaly_at or window_start,
-        )
-    for log_observation in logs:
-        if _SEVERITY.get(log_observation.severity.upper(), 0) > 0 or "error" in log_observation.body.casefold():
-            source_support[log_observation.service_name].add("logs")
-            earliest[log_observation.service_name] = min(
-                earliest.get(log_observation.service_name, log_observation.observed_at),
-                log_observation.observed_at,
-            )
-    for trace_observation in traces:
-        source_support[trace_observation.service_name].add("traces")
-        earliest[trace_observation.service_name] = min(
-            earliest.get(trace_observation.service_name, trace_observation.observed_at),
-            trace_observation.observed_at,
-        )
-    observed_services = set(source_support)
-    candidate_services = {item.service_name for item in ranked_candidates}
-    candidate_services.update(item.service_name for item in logs if item.service_name in observed_services)
-    candidate_services.update(item.service_name for item in traces if item.service_name in observed_services)
-    if "checkout" in observed_services:
-        candidate_services.add("checkout")
-    visible_services = tuple(
-        sorted(
-            candidate_services,
-            key=lambda service: (
-                -len(source_support[service]),
-                -metric_scores.get(service, -1.0),
-                earliest.get(service, window_end),
-                service,
-            ),
-        )[: config.visible_entity_maximum]
+    selection = bounded_selection or select_contract_bounded_projection_inputs(
+        window_start=window_start,
+        window_end=window_end,
+        metrics=metrics,
+        logs=logs,
+        traces=traces,
+        projection=config,
     )
+    if not selection.metrics:
+        raise ValueError("NO_DIAGNOSTIC_METRICS")
+    if not selection.logs and not selection.traces:
+        raise ValueError("NO_LOG_OR_TRACE_DIAGNOSTIC_EVIDENCE")
+    visible_services = selection.visible_services
     if len(visible_services) < config.visible_entity_minimum:
         raise ValueError("live projection has fewer than three observable services")
     visible = set(visible_services)
-    metrics_for_visible = tuple(item for item in ranked_metrics if item.service_name in visible)
+    metrics_for_visible = selection.metrics
     metric_refs = tuple(item.evidence_ref or _default_ref("metric", index) for index, item in enumerate(metrics_for_visible, 1))
     available_refs = resolvable_refs or frozenset(metric_refs + tuple(item.evidence_ref or _default_ref("log", index) for index, item in enumerate(logs, 1)) + tuple(item.evidence_ref or _default_ref("trace", index) for index, item in enumerate(traces, 1)))
     _require_resolvable(metric_refs, available_refs)
@@ -431,15 +621,27 @@ def build_live_a0_context(
         status="AVAILABLE" if metric_evidence else "METRICS_PROJECTION_UNAVAILABLE",
         evidence=metric_evidence,
         ranking=metric_ranking,
-        total_rows=len(metrics),
-        window_rows=len(metrics),
+        total_rows=selection.diagnostic_metrics_count,
+        window_rows=selection.diagnostic_metrics_count,
         mapped_rows=len(metric_evidence),
-        unmapped_rows=len(metrics) - len(metric_evidence),
-        valid_series=len(ranked_metrics),
+        unmapped_rows=selection.diagnostic_metrics_count - len(metric_evidence),
+        valid_series=selection.diagnostic_metrics_count,
         ranked_entities=len(metric_evidence),
     )
-    log_projection = _logs_projection(logs, visible, config, available_refs)
-    trace_projection = _traces_projection(traces, visible, config, available_refs)
+    log_projection = _logs_projection(
+        selection.logs,
+        visible,
+        config,
+        available_refs,
+        total_rows=selection.diagnostic_logs_count,
+    )
+    trace_projection = _traces_projection(
+        selection.traces,
+        visible,
+        config,
+        available_refs,
+        total_rows=selection.diagnostic_traces_count,
+    )
     if not metric_evidence:
         raise ValueError("NO_DIAGNOSTIC_METRICS")
     if not log_projection.evidence and not trace_projection.evidence:
@@ -455,7 +657,11 @@ def build_live_a0_context(
     if any(_entity(service).entity_ref not in evidence_entity_refs for service in visible_services):
         raise ValueError("visible service has no resolver-backed evidence")
     task = RCA100AgentTask(
-        opaque_case_id=_opaque_case_id(window_start=window_start, window_end=window_end, metrics=metrics),
+        opaque_case_id=_opaque_case_id(
+            window_start=window_start,
+            window_end=window_end,
+            metrics=selection.metrics,
+        ),
         alert_title=config.alert_title,
         prompt_text=(
             "Diagnose the causal root of the observed live purchase-flow degradation. "
@@ -485,10 +691,12 @@ def build_live_a0_context(
 
 
 __all__ = [
+    "ContractBoundedProjectionInputs",
     "LiveLogObservation",
     "LiveMetricObservation",
     "LiveTraceObservation",
     "build_live_a0_context",
     "scan_model_projection",
+    "select_contract_bounded_projection_inputs",
     "select_trace_candidate_services",
 ]

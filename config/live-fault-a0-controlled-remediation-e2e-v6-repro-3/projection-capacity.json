@@ -1,0 +1,12 @@
+{
+  "schema_version": "live-e2e.projection-capacity.v1",
+  "metrics_evidence_capacity": 6,
+  "metrics_ranking_capacity": 6,
+  "source_evidence_capacity": 6,
+  "metrics_effective_limit_policy": "MIN_METRIC_CANDIDATE_LIMIT_AND_SCHEMA_CAPACITY",
+  "logs_effective_limit_policy": "MIN_LOG_EVIDENCE_LIMIT_AND_SCHEMA_CAPACITY",
+  "traces_effective_limit_policy": "MIN_TRACE_EVIDENCE_LIMIT_AND_SCHEMA_CAPACITY",
+  "source_selection_policy": "DIVERSITY_FIRST_THEN_GLOBAL_ORDER",
+  "visible_service_policy": "SELECTED_EVIDENCE_THEN_METRICS_SEED_THEN_SUPPORT_ORDER",
+  "expected_root_insertion": "FORBIDDEN"
+}
