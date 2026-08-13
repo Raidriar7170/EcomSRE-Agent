@@ -15,6 +15,7 @@ import ecomsre_live_sandbox.e2e_v3 as e2e_v3
 import ecomsre_live_sandbox.e2e_v4 as e2e_v4
 from ecomsre_live_sandbox.contracts import (
     CleanupResult,
+    ConfigurationState,
     DiagnosisResult,
     SLIWindow,
     canonical_sha256,
@@ -137,21 +138,31 @@ class FakeController:
         self.read_failure_count = 0
         self.force_mismatch = False
 
-    def read_current(self) -> object:
+    def read_current(self) -> ConfigurationState:
         if self.read_failure_count > 0:
             self.read_failure_count -= 1
             raise RuntimeError("fake baseline read failure")
         value = "f" * 64 if self.force_mismatch else self.current_sha256
-        return SimpleNamespace(document_sha256=value)
+        is_fault = self.current_sha256 == self.fault_sha256
+        return ConfigurationState(
+            variant="100%" if is_fault else "off",
+            value=1 if is_fault else 0,
+            document_sha256=value,
+        )
 
-    def restore_baseline(self) -> object:
+    def restore_baseline(self) -> ConfigurationState:
         self.current_sha256 = self.baseline_sha256
         self.force_mismatch = False
         return self.read_current()
 
-    def inject_fault(self) -> object:
+    def restore_fault(self) -> ConfigurationState:
         self.current_sha256 = self.fault_sha256
-        return SimpleNamespace(document_sha256=self.fault_sha256)
+        self.force_mismatch = False
+        return self.read_current()
+
+    def inject_fault(self) -> ConfigurationState:
+        self.current_sha256 = self.fault_sha256
+        return self.read_current()
 
 
 class FakeEnvironment:
@@ -167,7 +178,7 @@ class FakeEnvironment:
     def verify_local_docker(self) -> dict[str, str]:
         return {
             "context": "desktop-linux",
-            "endpoint": "unix://opaque",
+            "endpoint": "unix:///opaque",
             "daemon_id": "opaque",
         }
 
@@ -250,6 +261,12 @@ class FakeEnvironment:
         if FakeEnvironment.fail_at == "health":
             raise RuntimeError("fake health timeout")
         return {f"service-{index}": True for index in range(25)}
+
+    def service_health(self) -> dict[str, bool]:
+        return {f"service-{index}": True for index in range(25)}
+
+    def manual_cleanup_command(self) -> str:
+        return "fake project-scoped cleanup"
 
     def cleanup(self, *, baseline_restored: bool) -> CleanupResult:
         if self.runner.on_start is not None:
@@ -550,6 +567,77 @@ def _prepare_approved_r1(config: object, roots: object) -> None:
         (roots.control / "approval-request.json").read_text(encoding="utf-8")  # type: ignore[attr-defined]
     )
     record_r1_approval(
+        config,  # type: ignore[arg-type]
+        roots,  # type: ignore[arg-type]
+        approver="Human Reviewer",
+        phrase=f"APPROVE {request['scenario_id']} {request['plan_template_sha256']}",
+    )
+
+
+def _prepare_approved_r2(config: object, roots: object) -> None:
+    from ecomsre_live_sandbox.e2e_v6_repro_2 import (
+        record_human_approval_for_invocation_b as record_r2_approval,
+    )
+    from ecomsre_live_sandbox.e2e_v6_repro_2 import (
+        run_canonical_invocation_a as run_r2_canonical,
+    )
+    from ecomsre_live_sandbox.e2e_v6_repro_2 import (
+        run_development_probe as run_r2_development,
+    )
+
+    FakeEnvironment.fail_at = None
+    FakeEnvironment.next_controller_read_failures = 0
+    FakeEnvironment.next_controller_mismatch = False
+    development = run_r2_development(
+        config,  # type: ignore[arg-type]
+        roots,  # type: ignore[arg-type]
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        evidence_collector=_no_fault_evidence,
+        sleep=lambda _: None,
+        worktree_verifier=_fake_worktree,
+    )
+    assert development["verdict"] == config.authority.development_success_terminal  # type: ignore[attr-defined]
+    for name, payload in (
+        (
+            "exact-head-ci.json",
+            {
+                "schema_version": "live-e2e.exact-head-ci.v6",
+                "implementation_commit": "d" * 40,
+                "workflows": {
+                    "Agent mainline": {"run_id": 301, "conclusion": "SUCCESS"},
+                    "RCAEval RE2 v2 development": {
+                        "run_id": 302,
+                        "conclusion": "SUCCESS",
+                    },
+                },
+            },
+        ),
+        (
+            "pre-live-review.json",
+            {
+                "schema_version": "live-e2e.pre-live-review.v6",
+                "implementation_commit": "d" * 40,
+                "verdict": "PRE_LIVE_PASS",
+                "must_fix_count": 0,
+            },
+        ),
+    ):
+        write_private_json(roots.control / name, payload, create_once=True)  # type: ignore[attr-defined]
+    canonical = run_r2_canonical(
+        config,  # type: ignore[arg-type]
+        roots,  # type: ignore[arg-type]
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        evidence_collector=_no_fault_evidence,
+        sleep=lambda _: None,
+        worktree_verifier=_fake_worktree,
+    )
+    assert canonical["verdict"] == config.authority.invocation_a_terminal  # type: ignore[attr-defined]
+    request = json.loads(
+        (roots.control / "approval-request.json").read_text(encoding="utf-8")  # type: ignore[attr-defined]
+    )
+    record_r2_approval(
         config,  # type: ignore[arg-type]
         roots,  # type: ignore[arg-type]
         approver="Human Reviewer",
@@ -1401,6 +1489,25 @@ def _sli_window(phase: str) -> SLIWindow:
     )
 
 
+def _record_mock_ordered_source_stages(kwargs: dict[str, object]) -> None:
+    tracker = kwargs["tracker"]
+    for stage in (
+        DiagnosticStage.SOURCE_CAPTURE_WINDOW_STARTED,
+        DiagnosticStage.SOURCE_CAPTURE_WINDOW_COMPLETED,
+        DiagnosticStage.METRICS_PROBE_CREATED,
+        DiagnosticStage.LOGS_PROBE_CREATED,
+        DiagnosticStage.TRACES_PROBE_CREATED,
+        DiagnosticStage.SOURCE_BATCH_TERMINALIZATION_STARTED,
+        DiagnosticStage.SOURCE_BATCH_TERMINALIZATION_COMPLETED,
+        DiagnosticStage.METRICS_PREFLIGHT_COMPLETED,
+        DiagnosticStage.LOGS_PREFLIGHT_COMPLETED,
+        DiagnosticStage.TRACES_PREFLIGHT_COMPLETED,
+        DiagnosticStage.EVIDENCE_RESOLUTION_COMPLETED,
+        DiagnosticStage.SOURCE_AVAILABILITY_GATE_EVALUATED,
+    ):
+        tracker.pass_stage(stage)  # type: ignore[attr-defined]
+
+
 def _patch_live_fault_projection_inputs(
     monkeypatch: pytest.MonkeyPatch,
     roots: E2EV6PrivateRoots,
@@ -1425,6 +1532,7 @@ def _patch_live_fault_projection_inputs(
             },
             create_once=True,
         )
+        _record_mock_ordered_source_stages(kwargs)
         results = tuple(
             SimpleNamespace(
                 source=source,
@@ -1514,6 +1622,302 @@ def _patch_live_fault_projection_inputs(
         "_write_model_evidence_index",
         lambda *_args, **_kwargs: None,
     )
+
+
+def test_v6_repro_2_full_simulated_success_executes_fixed_stage_sequence(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from ecomsre_live_sandbox.e2e_v6_repro_2 import (
+        run_invocation_b as run_r2_invocation_b,
+    )
+    from ecomsre_live_sandbox.e2e_v6_repro_2_contracts import (
+        E2EV6Repro2PrivateRoots,
+        load_e2e_v6_repro_2_config,
+    )
+
+    config = load_e2e_v6_repro_2_config(
+        Path("config/live-fault-a0-controlled-remediation-e2e-v6-repro-2")
+    )
+    roots = E2EV6Repro2PrivateRoots(tmp_path / "repro-2-full-success")
+    _prepare_approved_r2(config, roots)
+    provider = FakeProvider()
+    _patch_live_fault_projection_inputs(monkeypatch, roots)
+    snapshots = iter(
+        (
+            {
+                service: (100.0, 1.0, 20.0)
+                for service in ("checkout", "currency", "frontend", "payment")
+            },
+            {
+                "checkout": (100.0, 20.0, 35.0),
+                "currency": (100.0, 20.0, 35.0),
+                "frontend": (100.0, 20.0, 35.0),
+                "payment": (100.0, 30.0, 40.0),
+            },
+        )
+    )
+
+    def diagnosis_from_provider(
+        current_provider: FakeProvider,
+        context: object,
+    ) -> DiagnosisResult:
+        current_provider.diagnose(context)
+        return DiagnosisResult(
+            terminal="COMPLETED",
+            root_service=config.sandbox.scenario.expected_root_service,
+            root_entity_ref="apm|apm.service|payment",
+            fault_type_raw="payment configuration failure",
+            fault_class=config.sandbox.scenario.expected_fault_class,
+            confidence=0.99,
+            evidence_refs=("metric:0001", "log:0001"),
+            evidence_source_types=("METRICS", "LOGS"),
+            summary="Fixture evidence identifies the payment configuration fault.",
+            semantic_model_calls=1,
+            specialist_calls=0,
+            fusion_calls=0,
+            provider_attempts=1,
+            transport_retries=0,
+            usage_tokens=1,
+        )
+
+    def sli_window(*_: object, phase: str) -> SLIWindow:
+        started = datetime(2026, 8, 13, 12, tzinfo=timezone.utc)
+        errors = 30.0 if phase == "FAULT" else 1.0
+        return SLIWindow(
+            phase=phase,  # type: ignore[arg-type]
+            started_at=started,
+            ended_at=started + timedelta(seconds=30),
+            request_count=100.0,
+            error_count=errors,
+            error_rate=errors / 100.0,
+            p95_latency_ms=40.0 if phase == "FAULT" else 20.0,
+            runtime_health=1.0,
+            sample_count=3,
+        )
+
+    monkeypatch.setattr(e2e_v3, "_diagnosis_from_initial", diagnosis_from_provider)
+    monkeypatch.setattr(e2e_v3, "_capture_sli_window", sli_window)
+    monkeypatch.setattr(
+        e2e_v3,
+        "_broad_metric_snapshot",
+        lambda *_, **__: next(snapshots),
+    )
+
+    terminal = run_r2_invocation_b(
+        config,
+        roots,
+        provider_factory=lambda _: provider,
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        worktree_verifier=_fake_worktree,
+        sleep=lambda _: None,
+        public_writer=lambda *_: (),
+    )
+
+    assert terminal["verdict"] == config.authority.invocation_b_success, terminal
+    assert terminal["provider_calls"] == 2
+    assert terminal["fault_injections"] == 1
+    assert terminal["a0_context_builder_calls"] == 1
+    assert terminal["model_calls"] == 1
+    assert terminal["diagnosis_gate"] is True
+    assert terminal["policy_verdict"] == "ALLOW"
+    assert terminal["forward_mutations"] == 1
+    assert terminal["rollback_mutations"] == 0
+    assert terminal["recovery_verification_passed"] is True
+    assert terminal["cleanup_verdict"] == "CLEAN"
+    assert terminal["predecessor_public_terminal"] == (
+        "BLOCKED_PUBLIC_RESULT_VERIFICATION"
+    )
+    public = build_expected_public_result(config, terminal)
+    assert public["predecessor_original_result_head"] == (
+        "0ffbd73ae258dab5a4a2532b7d753766ca0b48f0"
+    )
+    assert public["predecessor_public_terminal"] == (
+        "BLOCKED_PUBLIC_RESULT_VERIFICATION"
+    )
+    assert public["predecessor_sealed_terminal_sha256"] == (
+        "1141efbfda5bc6244c9579f96ff0f1258c4debdad8c0ff8f455c005eea0d1547"
+    )
+    assert public["original_result_preserved"] is True
+    assert (roots.control / "accepted-live-run.json").is_file()
+    events = [
+        json.loads(line)
+        for line in (roots.invocation_b / "events.jsonl").read_text().splitlines()
+    ]
+    passed = [event["stage"] for event in events if event["status"] == "PASSED"]
+    for stage in (
+        "SOURCE_BATCH_TERMINALIZATION_COMPLETED",
+        "METRICS_PREFLIGHT_COMPLETED",
+        "LOGS_PREFLIGHT_COMPLETED",
+        "TRACES_PREFLIGHT_COMPLETED",
+        "EVIDENCE_RESOLUTION_COMPLETED",
+        "SOURCE_AVAILABILITY_GATE_EVALUATED",
+        "MULTISERVICE_PROJECTION_STARTED",
+        "MULTISERVICE_PROJECTION_COMPLETED",
+    ):
+        assert passed.count(stage) == 1
+    source_gate_index = passed.index("SOURCE_AVAILABILITY_GATE_EVALUATED")
+    assert passed[source_gate_index + 1] == "MULTISERVICE_PROJECTION_STARTED"
+
+
+@pytest.mark.parametrize(
+    ("boundary", "expected_verdict", "forward_mutations", "rollback_mutations"),
+    (
+        (
+            "projection",
+            "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE",
+            0,
+            0,
+        ),
+        ("diagnosis", "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION", 0, 0),
+        ("policy", "BLOCKED_POLICY_REJECTED", 0, 0),
+        (
+            "recovery",
+            "CONTROLLED_REMEDIATION_NOT_VERIFIED_ROLLBACK_COMPLETED",
+            1,
+            1,
+        ),
+    ),
+)
+def test_v6_repro_2_simulated_negative_boundaries_keep_stage_order(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    boundary: str,
+    expected_verdict: str,
+    forward_mutations: int,
+    rollback_mutations: int,
+) -> None:
+    from ecomsre_live_sandbox.contracts import PolicyDecision, PolicyVerdict
+    from ecomsre_live_sandbox.e2e_v6_repro_2 import (
+        run_invocation_b as run_r2_invocation_b,
+    )
+    from ecomsre_live_sandbox.e2e_v6_repro_2_contracts import (
+        E2EV6Repro2PrivateRoots,
+        load_e2e_v6_repro_2_config,
+    )
+
+    config = load_e2e_v6_repro_2_config(
+        Path("config/live-fault-a0-controlled-remediation-e2e-v6-repro-2")
+    )
+    roots = E2EV6Repro2PrivateRoots(tmp_path / f"repro-2-{boundary}")
+    _prepare_approved_r2(config, roots)
+    provider = FakeProvider()
+    _patch_live_fault_projection_inputs(monkeypatch, roots)
+    snapshots = iter(
+        (
+            {
+                service: (100.0, 1.0, 20.0)
+                for service in ("checkout", "currency", "frontend", "payment")
+            },
+            {
+                "checkout": (100.0, 20.0, 35.0),
+                "currency": (100.0, 20.0, 35.0),
+                "frontend": (100.0, 20.0, 35.0),
+                "payment": (100.0, 30.0, 40.0),
+            },
+        )
+    )
+
+    def diagnosis_from_provider(
+        current_provider: FakeProvider,
+        context: object,
+    ) -> DiagnosisResult:
+        current_provider.diagnose(context)
+        admitted = boundary != "diagnosis"
+        return DiagnosisResult(
+            terminal="COMPLETED",
+            root_service=(
+                config.sandbox.scenario.expected_root_service
+                if admitted
+                else "frontend"
+            ),
+            root_entity_ref=(
+                "apm|apm.service|payment"
+                if admitted
+                else "apm|apm.service|frontend"
+            ),
+            fault_type_raw="fixture configuration failure",
+            fault_class=(
+                config.sandbox.scenario.expected_fault_class
+                if admitted
+                else "UNKNOWN"
+            ),
+            confidence=0.99,
+            evidence_refs=("metric:0001", "log:0001"),
+            evidence_source_types=("METRICS", "LOGS"),
+            summary="Fixture diagnosis for a frozen negative boundary.",
+            semantic_model_calls=1,
+            specialist_calls=0,
+            fusion_calls=0,
+            provider_attempts=1,
+            transport_retries=0,
+            usage_tokens=1,
+        )
+
+    def sli_window(*_: object, phase: str) -> SLIWindow:
+        started = datetime(2026, 8, 13, 12, tzinfo=timezone.utc)
+        degraded = phase == "FAULT" or (phase == "RECOVERY" and boundary == "recovery")
+        errors = 30.0 if degraded else 1.0
+        return SLIWindow(
+            phase=phase,  # type: ignore[arg-type]
+            started_at=started,
+            ended_at=started + timedelta(seconds=30),
+            request_count=100.0,
+            error_count=errors,
+            error_rate=errors / 100.0,
+            p95_latency_ms=40.0 if degraded else 20.0,
+            runtime_health=1.0,
+            sample_count=3,
+        )
+
+    monkeypatch.setattr(e2e_v3, "_diagnosis_from_initial", diagnosis_from_provider)
+    monkeypatch.setattr(e2e_v3, "_capture_sli_window", sli_window)
+    monkeypatch.setattr(
+        e2e_v3,
+        "_broad_metric_snapshot",
+        lambda *_, **__: next(snapshots),
+    )
+    if boundary == "projection":
+        monkeypatch.setattr(
+            e2e_v3,
+            "build_fault_time_a0_context",
+            lambda **_: (_ for _ in ()).throw(
+                RuntimeError("simulated projection unavailable")
+            ),
+        )
+    if boundary == "policy":
+        monkeypatch.setattr(
+            e2e_v3,
+            "evaluate_policy",
+            lambda **_: PolicyDecision(
+                verdict=PolicyVerdict.DENY,
+                reason_codes=("SIMULATED_POLICY_REJECTION",),
+            ),
+        )
+
+    terminal = run_r2_invocation_b(
+        config,
+        roots,
+        provider_factory=lambda _: provider,
+        environment_factory=FakeEnvironment,
+        controller_factory=_controller,
+        worktree_verifier=_fake_worktree,
+        sleep=lambda _: None,
+        public_writer=lambda *_: (),
+    )
+
+    assert terminal["verdict"] == expected_verdict, terminal
+    assert terminal["forward_mutations"] == forward_mutations
+    assert terminal["rollback_mutations"] == rollback_mutations
+    assert terminal["cleanup_verdict"] == "CLEAN"
+    events = [
+        json.loads(line)
+        for line in (roots.invocation_b / "events.jsonl").read_text().splitlines()
+    ]
+    passed = [event["stage"] for event in events if event["status"] == "PASSED"]
+    source_gate_index = passed.index("SOURCE_AVAILABILITY_GATE_EVALUATED")
+    assert passed[source_gate_index + 1] == "MULTISERVICE_PROJECTION_STARTED"
 
 
 def test_v6_post_projection_evidence_failure_preserves_unclassified_root(
@@ -1639,6 +2043,7 @@ def test_v6_executes_exactly_one_fault_time_context_and_binds_provider_input(
             },
             create_once=True,
         )
+        _record_mock_ordered_source_stages(kwargs)
         results = tuple(
             SimpleNamespace(
                 source=source,

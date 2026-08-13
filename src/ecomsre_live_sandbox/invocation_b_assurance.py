@@ -1671,6 +1671,26 @@ def _safe_public_core(
                 ),
             }
         )
+        if getattr(config.authority, "predecessor_public_terminal", None) is not None:
+            core.update(
+                {
+                    "predecessor_public_terminal": terminal.get(
+                        "predecessor_public_terminal"
+                    ),
+                    "predecessor_sealed_source_verdict": terminal.get(
+                        "predecessor_sealed_source_verdict"
+                    ),
+                    "predecessor_sealed_terminal_sha256": terminal.get(
+                        "predecessor_sealed_terminal_sha256"
+                    ),
+                    "predecessor_accepted_live_run_sha256": terminal.get(
+                        "predecessor_accepted_live_run_sha256"
+                    ),
+                    "predecessor_final_closure_sha256": terminal.get(
+                        "predecessor_final_closure_sha256"
+                    ),
+                }
+            )
     return core
 
 
@@ -1694,6 +1714,9 @@ def build_expected_public_result(
     run_generation = getattr(config.authority, "run_generation", None)
     if run_generation is not None:
         accepted = sealed_private_terminal.get("accepted_live_run_sha256")
+        predecessor_public_terminal = getattr(
+            config.authority, "predecessor_public_terminal", None
+        )
         if any(
             (
                 sealed_private_terminal.get("software_version")
@@ -1713,9 +1736,52 @@ def build_expected_public_result(
                         or _SHA256.fullmatch(accepted) is None
                     )
                 ),
+                (
+                    predecessor_public_terminal is not None
+                    and any(
+                        (
+                            sealed_private_terminal.get(
+                                "predecessor_public_terminal"
+                            )
+                            != predecessor_public_terminal,
+                            sealed_private_terminal.get(
+                                "predecessor_sealed_source_verdict"
+                            )
+                            != getattr(
+                                config.authority,
+                                "predecessor_sealed_source_verdict",
+                                None,
+                            ),
+                            sealed_private_terminal.get(
+                                "predecessor_sealed_terminal_sha256"
+                            )
+                            != getattr(
+                                config.authority,
+                                "predecessor_sealed_terminal_sha256",
+                                None,
+                            ),
+                            sealed_private_terminal.get(
+                                "predecessor_accepted_live_run_sha256"
+                            )
+                            != getattr(
+                                config.authority,
+                                "predecessor_accepted_live_run_sha256",
+                                None,
+                            ),
+                            sealed_private_terminal.get(
+                                "predecessor_final_closure_sha256"
+                            )
+                            != getattr(
+                                config.authority,
+                                "predecessor_final_closure_sha256",
+                                None,
+                            ),
+                        )
+                    )
+                ),
             )
         ):
-            raise ValueError("sealed private terminal R1 authority differs")
+            raise ValueError("sealed private terminal run-generation authority differs")
     if verdict == policy.success:
         _require_success_invariants(config, sealed_private_terminal)
     else:

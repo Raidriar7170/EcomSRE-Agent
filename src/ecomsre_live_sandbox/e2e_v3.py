@@ -693,6 +693,43 @@ def _fill_no_fault_stages(tracker: _StageTracker, evidence: NoFaultEvidence) -> 
             tracker.pass_stage(stage, output_value=value)
 
 
+_ORDERED_SOURCE_COLLECTOR_STAGES = (
+    DiagnosticStage.SOURCE_BATCH_TERMINALIZATION_COMPLETED,
+    DiagnosticStage.METRICS_PREFLIGHT_COMPLETED,
+    DiagnosticStage.LOGS_PREFLIGHT_COMPLETED,
+    DiagnosticStage.TRACES_PREFLIGHT_COMPLETED,
+    DiagnosticStage.EVIDENCE_RESOLUTION_COMPLETED,
+    DiagnosticStage.SOURCE_AVAILABILITY_GATE_EVALUATED,
+)
+
+
+def _require_ordered_source_collector_stages(tracker: _StageTracker) -> None:
+    if not all(tracker.has_stage(stage) for stage in _ORDERED_SOURCE_COLLECTOR_STAGES):
+        raise RuntimeError("ordered source collector did not seal its owned stage sequence")
+
+
+def _record_legacy_source_completion_stages(
+    tracker: _StageTracker,
+    *,
+    invalid_refs: int,
+) -> None:
+    """Retain explicit source completion stages only for the historical v3 path."""
+
+    tracker.pass_stage(DiagnosticStage.METRICS_PREFLIGHT_STARTED)
+    tracker.pass_stage(DiagnosticStage.METRICS_PREFLIGHT_COMPLETED)
+    tracker.pass_stage(DiagnosticStage.LOGS_PREFLIGHT_STARTED)
+    tracker.pass_stage(DiagnosticStage.LOGS_PREFLIGHT_COMPLETED)
+    tracker.pass_stage(DiagnosticStage.TRACES_PREFLIGHT_STARTED)
+    tracker.pass_stage(DiagnosticStage.TRACES_PREFLIGHT_COMPLETED)
+    tracker.execute(
+        DiagnosticStage.EVIDENCE_RESOLUTION_COMPLETED,
+        lambda: None
+        if invalid_refs == 0
+        else (_ for _ in ()).throw(RuntimeError("live Evidence refs are invalid")),
+        failure_code=DiagnosticFailureCode.EVIDENCE_RESOLUTION_FAILED,
+    )
+
+
 def _cleanup(
     *,
     tracker: _StageTracker,
@@ -2222,12 +2259,15 @@ def _verify_scenario_lock_for_invocation_b(
 
 
 def _consume_live_run_budget(config: E2EV3Config, roots: E2EV3PrivateRoots) -> None:
-    if getattr(config.authority, "run_generation", None) == "V6_REPRO_1":
+    run_generation = getattr(config.authority, "run_generation", None)
+    if run_generation in {"V6_REPRO_1", "V6_REPRO_2"}:
         if (roots.control / "accepted-live-run.json").exists():
             raise RuntimeError("accepted fault-time run is already sealed")
         started_path = roots.invocation_b / "started.json"
         if started_path.is_symlink() or not started_path.is_file():
-            raise RuntimeError("R1 Invocation B lacks an allocated pre-fault attempt")
+            raise RuntimeError(
+                "independent Invocation B lacks an allocated pre-fault attempt"
+            )
         return
     started_path = roots.invocation_b / "started.json"
     terminal_path = roots.invocation_b / "terminal.json"
@@ -2600,6 +2640,35 @@ def run_invocation_b(
                 "accepted_live_run_sha256": None,
             }
         )
+        predecessor_public_terminal = getattr(
+            config.authority, "predecessor_public_terminal", None
+        )
+        if predecessor_public_terminal is not None:
+            terminal.update(
+                {
+                    "predecessor_public_terminal": predecessor_public_terminal,
+                    "predecessor_sealed_source_verdict": getattr(
+                        config.authority,
+                        "predecessor_sealed_source_verdict",
+                        None,
+                    ),
+                    "predecessor_sealed_terminal_sha256": getattr(
+                        config.authority,
+                        "predecessor_sealed_terminal_sha256",
+                        None,
+                    ),
+                    "predecessor_accepted_live_run_sha256": getattr(
+                        config.authority,
+                        "predecessor_accepted_live_run_sha256",
+                        None,
+                    ),
+                    "predecessor_final_closure_sha256": getattr(
+                        config.authority,
+                        "predecessor_final_closure_sha256",
+                        None,
+                    ),
+                }
+            )
     provider: Any = None
     controller: Any = None
     forward_counter = ForwardMutationCounter(roots.journal / "forward-mutation.txt")
@@ -2843,19 +2912,13 @@ def run_invocation_b(
         }
         terminal["source_counts"] = _safe_source_counts(fault_sources)
         terminal["invalid_refs"] = sum(item.invalid_ref_count for item in fault_sources)
-        tracker.pass_stage(DiagnosticStage.METRICS_PREFLIGHT_STARTED)
-        tracker.pass_stage(DiagnosticStage.METRICS_PREFLIGHT_COMPLETED)
-        tracker.pass_stage(DiagnosticStage.LOGS_PREFLIGHT_STARTED)
-        tracker.pass_stage(DiagnosticStage.LOGS_PREFLIGHT_COMPLETED)
-        tracker.pass_stage(DiagnosticStage.TRACES_PREFLIGHT_STARTED)
-        tracker.pass_stage(DiagnosticStage.TRACES_PREFLIGHT_COMPLETED)
-        tracker.execute(
-            DiagnosticStage.EVIDENCE_RESOLUTION_COMPLETED,
-            lambda: None
-            if terminal["invalid_refs"] == 0
-            else (_ for _ in ()).throw(RuntimeError("live Evidence refs are invalid")),
-            failure_code=DiagnosticFailureCode.EVIDENCE_RESOLUTION_FAILED,
-        )
+        if uses_fault_projection:
+            _require_ordered_source_collector_stages(tracker)
+        else:
+            _record_legacy_source_completion_stages(
+                tracker,
+                invalid_refs=cast(int, terminal["invalid_refs"]),
+            )
         fault_snapshot = _broad_metric_snapshot(
             resolved.endpoints.prometheus,
             at=fault[-1].ended_at,
