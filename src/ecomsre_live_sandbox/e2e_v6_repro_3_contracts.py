@@ -504,10 +504,13 @@ def bind_repro_3_lifecycle(
         forbidden in resolved.parts
         for forbidden in (
             config.authority.software_version,
+            "live-fault-a0-controlled-remediation-e2e-v6-repro-1",
             "live-fault-a0-controlled-remediation-e2e-v6-repro-2",
         )
     ):
-        raise ValueError("the original v6 or R2 private root cannot be reused by R3")
+        raise ValueError(
+            "the original v6, R1, or R2 private root cannot be reused by R3"
+        )
     repository = config.repository_root.resolve()
     if resolved == repository or resolved.is_relative_to(repository):
         raise ValueError("R3 private root must remain outside the Git repository")

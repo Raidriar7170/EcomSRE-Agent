@@ -181,6 +181,16 @@ def test_repro_3_non_live_work_uses_global_private_paths(
     assert not roots.live_attempt(1).exists()
 
 
+def test_repro_3_private_root_cannot_reuse_repro_1_root(tmp_path: Path) -> None:
+    config = load_e2e_v6_repro_3_config(CONFIG)
+    roots = E2EV6Repro3PrivateRoots(
+        tmp_path / "live-fault-a0-controlled-remediation-e2e-v6-repro-1"
+    )
+
+    with pytest.raises(ValueError, match="original v6, R1, or R2"):
+        bind_repro_3_lifecycle(config, roots)
+
+
 def _baseline_window(index: int) -> SLIWindow:
     started = datetime(2026, 8, 13, 4, index, tzinfo=timezone.utc)
     return SLIWindow(

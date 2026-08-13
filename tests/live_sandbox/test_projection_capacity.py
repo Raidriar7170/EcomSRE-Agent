@@ -297,6 +297,36 @@ def test_selection_and_context_are_permutation_stable(tmp_path) -> None:
         assert summary_sha == expected_summary_sha
 
 
+def test_log_selection_above_raw_hit_limit_is_permutation_stable() -> None:
+    metrics = _r2_scale_metrics()
+    logs = tuple(
+        LiveLogObservation(
+            observed_at=NOW + timedelta(milliseconds=index),
+            service_name=f"service-{((index - 1) % 8) + 1:02d}",
+            severity="ERROR",
+            body=f"observed request error {index:02d}",
+            evidence_ref=f"log:{index:04d}",
+        )
+        for index in range(1, 61)
+    )
+    expected_refs: tuple[str | None, ...] | None = None
+
+    for seed in range(5):
+        shuffled = list(logs)
+        random.Random(seed).shuffle(shuffled)
+        selected = select_contract_bounded_projection_inputs(
+            window_start=NOW,
+            window_end=NOW + timedelta(minutes=1),
+            metrics=metrics,
+            logs=tuple(shuffled),
+            traces=(),
+            projection=_projection_policy(),
+        )
+        selected_refs = tuple(item.evidence_ref for item in selected.logs)
+        expected_refs = expected_refs or selected_refs
+        assert selected_refs == expected_refs
+
+
 def test_expected_root_name_is_never_inserted_and_renaming_is_stable() -> None:
     metrics = tuple(
         item.model_copy(

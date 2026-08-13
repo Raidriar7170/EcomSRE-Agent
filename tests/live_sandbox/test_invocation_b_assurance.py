@@ -788,6 +788,26 @@ def test_non_success_projection_lists_use_closed_schemas(
         build_expected_public_result(config, terminal)
 
 
+def test_selected_unresolved_reason_requires_resolver_insufficiency() -> None:
+    config = load_e2e_v6_config(CONFIG)
+    terminal = _non_success_terminal(
+        "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE"
+    )
+    terminal["projection_diagnostic_counts"] = {
+        "metrics": 3,
+        "logs": 0,
+        "traces": 3,
+    }
+    terminal["empty_model_streams"] = ["LOGS"]
+    terminal["projection_reason_codes"] = [
+        "NO_DIAGNOSTIC_LOGS",
+        "SELECTED_EVIDENCE_REF_UNRESOLVED",
+    ]
+
+    with pytest.raises(ValueError, match="lacks resolver insufficiency"):
+        build_expected_public_result(config, terminal)
+
+
 @pytest.mark.parametrize(
     ("field", "forged_value"),
     (

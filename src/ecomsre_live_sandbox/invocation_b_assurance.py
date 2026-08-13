@@ -41,6 +41,7 @@ _PROJECTION_REASON_CODES = {
     "NO_DIAGNOSTIC_TRACES",
     "NO_LOG_OR_TRACE_DIAGNOSTIC_EVIDENCE",
     "INSUFFICIENT_RESOLVABLE_EVIDENCE",
+    "SELECTED_EVIDENCE_REF_UNRESOLVED",
     "CONTROL_TRUTH_LEAK",
     "VISIBLE_SERVICE_COUNT_BELOW_MINIMUM",
 }
@@ -56,6 +57,7 @@ _SUCCESS_FORBIDDEN_REASONS = {
     "NO_LOG_OR_TRACE_DIAGNOSTIC_EVIDENCE",
     "NO_DIAGNOSTIC_METRICS",
     "INSUFFICIENT_RESOLVABLE_EVIDENCE",
+    "SELECTED_EVIDENCE_REF_UNRESOLVED",
     "CONTROL_TRUTH_LEAK",
     "VISIBLE_SERVICE_COUNT_BELOW_MINIMUM",
 }
@@ -764,6 +766,13 @@ def _require_non_success_invariants(
             for code, expected in count_reason_truth.items()
         ):
             raise ValueError("non-success projection reasons contradict counts")
+        if (
+            "SELECTED_EVIDENCE_REF_UNRESOLVED" in reason_codes
+            and "INSUFFICIENT_RESOLVABLE_EVIDENCE" not in reason_codes
+        ):
+            raise ValueError(
+                "selected unresolved evidence lacks resolver insufficiency"
+            )
         has_blocking_reason = bool(reason_codes & _PROJECTION_BLOCKING_REASONS)
         if has_blocking_reason is not blocking:
             raise ValueError(

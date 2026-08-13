@@ -277,14 +277,14 @@ def select_contract_bounded_projection_inputs(
 
     ranked_logs = tuple(
         sorted(
-            diagnostic_logs[: int(projection.log_raw_hit_limit)],
+            diagnostic_logs,
             key=lambda item: (
                 -_SEVERITY.get(item.severity.upper(), 0),
                 item.observed_at,
                 item.service_name,
                 _observation_digest(item),
             ),
-        )
+        )[: int(projection.log_raw_hit_limit)]
     )
     selected_logs = _diversity_first_logs(
         ranked_logs,

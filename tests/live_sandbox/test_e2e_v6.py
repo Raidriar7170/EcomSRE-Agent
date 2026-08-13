@@ -1813,6 +1813,8 @@ def _patch_live_fault_projection_inputs(
 def _patch_r3_high_cardinality_projection_inputs(
     monkeypatch: pytest.MonkeyPatch,
     roots: E2EV6PrivateRoots,
+    *,
+    omit_selected_trace_ref: bool = False,
 ) -> None:
     _patch_live_fault_projection_inputs(monkeypatch, roots)
     observed_at = datetime(2026, 8, 14, 12, tzinfo=timezone.utc)
@@ -1876,6 +1878,8 @@ def _patch_r3_high_cardinality_projection_inputs(
             for source in (bound_metrics, bound_logs, bound_traces)
             for item in source
         )
+        if omit_selected_trace_ref:
+            refs = refs - {"trace:0001"}
         return bound_metrics, bound_logs, bound_traces, refs
 
     monkeypatch.setattr(
@@ -2037,9 +2041,7 @@ def test_v6_repro_3_full_simulated_success_uses_real_high_cardinality_projection
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from ecomsre_live_sandbox.e2e_v6_repro_3 import (
-        run_invocation_b as run_r3_invocation_b,
-    )
+    import ecomsre_live_sandbox.e2e_v6_repro_3 as r3_module
     from ecomsre_live_sandbox.e2e_v6_repro_3_contracts import (
         E2EV6Repro3PrivateRoots,
         load_e2e_v6_repro_3_config,
@@ -2052,6 +2054,17 @@ def test_v6_repro_3_full_simulated_success_uses_real_high_cardinality_projection
     _prepare_approved_r3(config, roots)
     provider = FakeProvider()
     _patch_r3_high_cardinality_projection_inputs(monkeypatch, roots)
+    isolated = replace(config, repository_root=tmp_path / "public-repository")
+    real_public_writer = r3_module._write_public_outputs_repro_3
+    monkeypatch.setattr(
+        r3_module,
+        "_write_public_outputs_repro_3",
+        lambda _config, terminal, *, roots: real_public_writer(
+            isolated,
+            terminal,
+            roots=roots,
+        ),
+    )
 
     def diagnosis_from_provider(
         current_provider: FakeProvider,
@@ -2095,7 +2108,7 @@ def test_v6_repro_3_full_simulated_success_uses_real_high_cardinality_projection
     monkeypatch.setattr(e2e_v3, "_diagnosis_from_initial", diagnosis_from_provider)
     monkeypatch.setattr(e2e_v3, "_capture_sli_window", sli_window)
 
-    terminal = run_r3_invocation_b(
+    terminal = r3_module.run_invocation_b(
         config,
         roots,
         provider_factory=lambda _: provider,
@@ -2103,7 +2116,6 @@ def test_v6_repro_3_full_simulated_success_uses_real_high_cardinality_projection
         controller_factory=_controller,
         worktree_verifier=_fake_worktree,
         sleep=lambda _: None,
-        public_writer=lambda *_: (),
     )
 
     context_path = roots.invocation_b / "fault-time-a0-context.json"
@@ -2129,13 +2141,32 @@ def test_v6_repro_3_full_simulated_success_uses_real_high_cardinality_projection
     assert terminal["rollback_mutations"] == 0
     assert terminal["recovery_verification_passed"] is True
     assert terminal["cleanup_verdict"] == "CLEAN"
+    assert terminal["projection_diagnostic_counts"] == {
+        "metrics": 8,
+        "logs": 0,
+        "traces": 12,
+    }
     assert summary["anomalous_metric_count"] == 8
     assert summary["anomalous_log_count"] == 0
     assert summary["error_trace_count"] == 12
+    assert summary["diagnostic_metrics_count"] == 8
+    assert summary["diagnostic_logs_count"] == 0
+    assert summary["diagnostic_traces_count"] == 12
     assert summary["metrics_selected_count"] == 4
     assert summary["logs_selected_count"] == 0
     assert summary["traces_selected_count"] == 6
     assert summary["all_selected_refs_resolve"] is True
+    public_path = isolated.repository_root / isolated.reporting.public_result_json
+    assert public_path.is_file()
+    assert (
+        isolated.repository_root / isolated.reporting.public_result_markdown
+    ).is_file()
+    assert (
+        isolated.repository_root / isolated.reporting.public_human_brief
+    ).is_file()
+    public = json.loads(public_path.read_text(encoding="utf-8"))
+    assert public["verdict"] == terminal["verdict"]
+    assert len(public["semantic_sha256"]) == 64
 
 
 @pytest.mark.parametrize(
@@ -2143,6 +2174,12 @@ def test_v6_repro_3_full_simulated_success_uses_real_high_cardinality_projection
     (
         (
             "projection",
+            "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE",
+            0,
+            0,
+        ),
+        (
+            "projection-unresolved-ref",
             "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE",
             0,
             0,
@@ -2186,7 +2223,11 @@ def test_v6_repro_3_simulated_negative_matrix_uses_frozen_stage_order(
     roots = E2EV6Repro3PrivateRoots(tmp_path / f"repro-3-{boundary}")
     _prepare_approved_r3(config, roots)
     provider = FakeProvider()
-    _patch_r3_high_cardinality_projection_inputs(monkeypatch, roots)
+    _patch_r3_high_cardinality_projection_inputs(
+        monkeypatch,
+        roots,
+        omit_selected_trace_ref=boundary == "projection-unresolved-ref",
+    )
 
     def diagnosis_from_provider(
         current_provider: FakeProvider,
@@ -2283,6 +2324,12 @@ def test_v6_repro_3_simulated_negative_matrix_uses_frozen_stage_order(
     assert terminal["forward_mutations"] == forward_mutations
     assert terminal["rollback_mutations"] == rollback_mutations
     assert terminal["cleanup_verdict"] == "CLEAN"
+    if boundary == "projection-unresolved-ref":
+        assert terminal["projection_reason_codes"] == [
+            "NO_DIAGNOSTIC_LOGS",
+            "INSUFFICIENT_RESOLVABLE_EVIDENCE",
+            "SELECTED_EVIDENCE_REF_UNRESOLVED",
+        ]
     events = [
         json.loads(line)
         for line in (roots.invocation_b / "events.jsonl").read_text().splitlines()

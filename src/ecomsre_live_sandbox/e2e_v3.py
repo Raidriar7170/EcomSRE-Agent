@@ -2347,9 +2347,18 @@ def _enrich_v5_invocation_b_terminal(
                 "traces": summary.get("broad_traces_count"),
             }
             terminal["projection_diagnostic_counts"] = {
-                "metrics": summary.get("anomalous_metric_count"),
-                "logs": summary.get("anomalous_log_count"),
-                "traces": summary.get("error_trace_count"),
+                "metrics": summary.get(
+                    "diagnostic_metrics_count",
+                    summary.get("anomalous_metric_count"),
+                ),
+                "logs": summary.get(
+                    "diagnostic_logs_count",
+                    summary.get("anomalous_log_count"),
+                ),
+                "traces": summary.get(
+                    "diagnostic_traces_count",
+                    summary.get("error_trace_count"),
+                ),
             }
             terminal["empty_model_streams"] = summary.get(
                 "empty_model_streams", []

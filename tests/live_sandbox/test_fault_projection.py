@@ -148,6 +148,9 @@ def test_backend_records_can_exist_while_log_projection_is_empty(tmp_path) -> No
     )
 
     assert summary["broad_logs_count"] == 3
+    assert summary["diagnostic_metrics_count"] == 3
+    assert summary["diagnostic_logs_count"] == 0
+    assert summary["diagnostic_traces_count"] == 3
     assert summary["anomalous_log_count"] == 0
     assert context.logs.status == "SOURCE_UNAVAILABLE"
     assert context.traces.status == "AVAILABLE"
@@ -174,6 +177,7 @@ def test_unresolved_diagnostic_input_is_summarized_before_builder(tmp_path) -> N
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     assert summary["logs_with_resolver_ref"] == 0
     assert "INSUFFICIENT_RESOLVABLE_EVIDENCE" in summary["reason_codes"]
+    assert "SELECTED_EVIDENCE_REF_UNRESOLVED" in summary["reason_codes"]
 
 
 def test_control_truth_failure_is_recorded_before_builder(tmp_path) -> None:
