@@ -1494,15 +1494,61 @@ def test_projection_failure_accepts_consistent_blocking_summary() -> None:
     assert public["verdict"] == terminal["verdict"]
 
 
-def test_projection_failure_rejects_nonblocking_success_summary() -> None:
+def test_projection_failure_rejects_nonblocking_summary_without_exception() -> None:
     config = load_e2e_v6_config(CONFIG)
     terminal = _non_success_terminal(
         "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE"
     )
     _set_complete_fault_evidence(terminal, context_completed=False)
 
-    with pytest.raises(ValueError, match="blocking reasons"):
+    with pytest.raises(ValueError, match="runtime exception evidence"):
         build_expected_public_result(config, terminal)
+
+
+def test_public_result_failure_accepts_hashed_projection_runtime_exception() -> None:
+    config = load_e2e_v6_config(CONFIG)
+    source = _non_success_terminal(
+        "BLOCKED_BOUNDED_MULTISERVICE_PROJECTION_UNAVAILABLE"
+    )
+    _set_complete_fault_evidence(source, context_completed=False)
+    source.update(
+        {
+            "failure_type": "ValidationError",
+            "exception_type": "ValidationError",
+            "exception_module": "pydantic_core._pydantic_core",
+            "exception_message_sha256": "a" * 64,
+            "traceback_sha256": "b" * 64,
+            "diagnostic_artifact_refs": [
+                {
+                    "artifact_ref": "exception-9999",
+                    "artifact_sha256": "c" * 64,
+                }
+            ],
+        }
+    )
+    terminal = deepcopy(source)
+    terminal.update(
+        {
+            "public_result_source_verdict": source["verdict"],
+            "public_result_source_failed_stage": source["failed_stage"],
+            "public_result_source_last_completed_stage": source[
+                "last_completed_stage"
+            ],
+            "public_result_source_failure_code": source["failure_code"],
+            "verdict": "BLOCKED_PUBLIC_RESULT_VERIFICATION",
+            "failed_stage": "PUBLIC_RESULT_VERIFICATION",
+            "last_completed_stage": "CLEANUP_COMPLETED",
+            "failure_code": "PUBLIC_RESULT_VERIFICATION_FAILED",
+        }
+    )
+
+    public = build_expected_public_result(config, terminal)
+    verify_public_result(config, public, terminal)
+
+    assert public["verdict"] == "BLOCKED_PUBLIC_RESULT_VERIFICATION"
+    assert public["fault_injections"] == 1
+    assert public["model_calls"] == 0
+    assert public["forward_mutations"] == 0
 
 
 @pytest.mark.parametrize(

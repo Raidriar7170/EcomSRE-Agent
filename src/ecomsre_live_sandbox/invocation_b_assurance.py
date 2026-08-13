@@ -804,7 +804,48 @@ def _require_non_success_invariants(
             or terminal.get("visible_service_count") is not None
         ):
             raise ValueError("projection failure summary is incomplete")
-        require_projection_summary_consistency(blocking=True)
+        reason_codes = set(
+            cast(
+                list[str] | tuple[str, ...],
+                terminal.get("projection_reason_codes", []),
+            )
+        )
+        if reason_codes & _PROJECTION_BLOCKING_REASONS:
+            require_projection_summary_consistency(blocking=True)
+            return
+        require_projection_summary_consistency(blocking=False)
+        exception_type = terminal.get("exception_type")
+        exception_module = terminal.get("exception_module")
+        exception_message_sha256 = terminal.get("exception_message_sha256")
+        traceback_sha256 = terminal.get("traceback_sha256")
+        refs = terminal.get("diagnostic_artifact_refs")
+        if any(
+            (
+                not isinstance(exception_type, str) or not exception_type,
+                terminal.get("failure_type") != exception_type,
+                not isinstance(exception_module, str) or not exception_module,
+                not isinstance(exception_message_sha256, str)
+                or _SHA256.fullmatch(exception_message_sha256) is None,
+                not isinstance(traceback_sha256, str)
+                or _SHA256.fullmatch(traceback_sha256) is None,
+                not isinstance(refs, (list, tuple)) or len(refs) != 1,
+            )
+        ):
+            raise ValueError(
+                "nonblocking projection failure lacks exact runtime exception evidence"
+            )
+        reference = cast(list[object] | tuple[object, ...], refs)[0]
+        if (
+            not isinstance(reference, Mapping)
+            or set(reference) != {"artifact_ref", "artifact_sha256"}
+            or not isinstance(reference.get("artifact_ref"), str)
+            or not reference.get("artifact_ref")
+            or not isinstance(reference.get("artifact_sha256"), str)
+            or _SHA256.fullmatch(cast(str, reference.get("artifact_sha256"))) is None
+        ):
+            raise ValueError(
+                "nonblocking projection failure lacks exact runtime exception evidence"
+            )
 
     def require_diagnosis_failure_truth() -> None:
         if (
