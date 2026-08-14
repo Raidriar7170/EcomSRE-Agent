@@ -1,0 +1,23 @@
+{
+  "schema_version": "live-e2e.local-demo-reporting.v1",
+  "public_result_json": "docs/results/local-e2e-demo-v1.json",
+  "public_result_markdown": "docs/results/local-e2e-demo-v1.md",
+  "public_human_brief": "docs/results/local-e2e-demo-v1-human-brief.md",
+  "claim_boundary": [
+    "POST_FAILURE_REGRESSION_DEMO",
+    "ONE_LOCAL_25_SERVICE_ENGINEERING_DEMO",
+    "ONE_KNOWN_PAYMENT_SCENARIO",
+    "REAL_THREE_SOURCE_TELEMETRY",
+    "ONE_STRONG_SINGLE_DIAGNOSIS",
+    "HUMAN_STANDING_PREAUTHORIZED_ALLOWLISTED_REMEDIATION",
+    "ONE_CONFIGURATION_RESTORATION",
+    "TWO_RECOVERY_WINDOWS",
+    "INDEPENDENT_VERIFICATION",
+    "NOT_HELD_OUT",
+    "NOT_PRODUCTION",
+    "NOT_AUTONOMOUS_PRODUCTION_REMEDIATION",
+    "NOT_GENERAL_RCA_BENCHMARK",
+    "NOT_FAULT_CLASS_ACCURACY_EVIDENCE",
+    "NOT_MULTI_AGENT_SUPERIORITY_CLAIM"
+  ]
+}

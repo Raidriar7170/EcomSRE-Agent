@@ -180,6 +180,31 @@ def test_provider_accepts_only_visible_entity_and_evidence() -> None:
     assert provider.usage_known is True
 
 
+def test_provider_retains_private_diagnosis_lineage_without_credentials() -> None:
+    transport = _Transport(_diagnosis())
+    provider = OpenAICompatibleRCA100Provider(
+        config=OpenAICompatibleConfig(
+            base_url="https://provider.example/v1",
+            api_key="secret",
+            model="strong-single-snapshot",
+        ),
+        expected_model="strong-single-snapshot",
+        timeout_seconds=90.0,
+        max_completion_tokens=1600,
+        transport=transport,
+    )
+
+    diagnosis = provider.diagnose(_context())
+
+    assert provider.last_raw_response is not None
+    assert provider.last_raw_response["model"] == "strong-single-snapshot"
+    assert provider.last_tool_arguments == _diagnosis()
+    assert provider.last_initial_diagnosis == diagnosis
+    assert provider.last_context_sha256 is not None
+    assert len(provider.last_context_sha256) == 64
+    assert "secret" not in json.dumps(provider.last_raw_response, sort_keys=True)
+
+
 def test_provider_rejects_unseen_entity_without_semantic_retry() -> None:
     invalid = _diagnosis()
     invalid["root_cause_entity_ref"] = "apm|apm.service|unseen"

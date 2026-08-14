@@ -383,6 +383,55 @@ class DiagnosisGate(FrozenModel):
     reason_codes: tuple[str, ...]
 
 
+class LocalDemoDiagnosisAdmission(FrozenModel):
+    schema_version: Literal["live-sandbox.local-demo-diagnosis-admission.v1"] = (
+        "live-sandbox.local-demo-diagnosis-admission.v1"
+    )
+    passed: bool
+    blocking_reason_codes: tuple[str, ...]
+    warning_codes: tuple[str, ...]
+    root_match: bool
+    fault_class_match: bool
+    evidence_valid: bool
+    source_coverage_valid: bool
+    single_call_valid: bool
+    context_binding_valid: bool
+
+    @model_validator(mode="after")
+    def require_consistent_verdict(self) -> "LocalDemoDiagnosisAdmission":
+        if self.passed == bool(self.blocking_reason_codes):
+            raise ValueError("LOCAL_DEMO admission verdict and reasons differ")
+        return self
+
+
+class LocalDemoStandingAuthorization(FrozenModel):
+    schema_version: Literal["live-sandbox.local-demo-standing-authorization.v1"] = (
+        "live-sandbox.local-demo-standing-authorization.v1"
+    )
+    mode: Literal["LOCAL_DEMO"] = "LOCAL_DEMO"
+    approver: Literal["Minghong Sun"]
+    authorization_source: Literal[
+        "USER_EXPLICIT_STANDING_AUTHORIZATION_IN_GOAL"
+    ] = "USER_EXPLICIT_STANDING_AUTHORIZATION_IN_GOAL"
+    command_execution: Literal["CODEX_DELEGATED_EXECUTION"] = (
+        "CODEX_DELEGATED_EXECUTION"
+    )
+    approval_mode: Literal["LOCAL_DEMO_STANDING_PREAUTHORIZATION"] = (
+        "LOCAL_DEMO_STANDING_PREAUTHORIZATION"
+    )
+    codex_autonomous_self_approval: Literal[False] = False
+    environment_id: str
+    sandbox_id: str = Field(pattern=UUID_PATTERN)
+    scenario_id: str = Field(pattern=UUID_PATTERN)
+    target_service: Literal["payment"]
+    configuration_key: Literal["paymentFailure.defaultVariant"]
+    action: Literal["RESTORE_FROZEN_SERVICE_CONFIGURATION"]
+    baseline_sha256: str = Field(pattern=SHA256_PATTERN)
+    maximum_forward_mutations: Literal[1] = 1
+    maximum_rollbacks: Literal[1] = 1
+    created_at: AwareDatetime
+
+
 class LiveRemediationPlan(FrozenModel):
     schema_version: Literal["live-sandbox.remediation-plan.v1"] = (
         "live-sandbox.remediation-plan.v1"
@@ -581,6 +630,8 @@ __all__ = [
     "HumanApprovalRecord",
     "LiveRemediationPlan",
     "LiveTelemetrySnapshot",
+    "LocalDemoDiagnosisAdmission",
+    "LocalDemoStandingAuthorization",
     "LocalEndpoints",
     "LogEvidence",
     "PolicyDecision",

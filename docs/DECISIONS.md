@@ -528,6 +528,52 @@ Public claims are limited to `LIVE_LOCAL_SANDBOX_DEMO`,
 telemetry, configuration documents, Provider material, approvals, receipts,
 and run evidence remain in private `0700` directories with `0600` files.
 
+## DEC-032 — LOCAL_DEMO Root-and-Evidence Admission with Standing Authorization
+
+**Status: `accepted` for the one-session local successor. Until a sealed live
+terminal proves otherwise, its public disposition remains `PRE_LIVE /
+REVIEW_REQUIRED`.**
+
+The `feature/local-e2e-demo-v1` successor starts at the exact PR #40 result
+head `f939824c9b33eca69939aab5d6aa6a5097123e7e` and preserves the V6_REPRO_3
+legal negative result byte-for-byte. It is a `POST_FAILURE_REGRESSION_DEMO` on
+the consumed payment scenario, not a new evaluation generation, held-out RCA
+result, or model-quality comparison.
+
+The existing strict Diagnosis Gate remains unchanged and authoritative for
+fault-class audit quality. LOCAL_DEMO adds a separate injected admission Gate:
+the diagnosis must complete in one Strong Single semantic call with no
+specialists or fusion, select the visible `payment` root, cite unique and
+resolver-backed Metrics plus Logs or Traces evidence with exact source
+accounting, bind to the exact Provider live-input context hash, and expose no
+control truth. An `APPLICATION` class mismatch remains visible as
+`FAULT_CLASS_MISMATCH_WARNING` but does not by itself deny the frozen local
+restoration action.
+
+The user's Goal is the standing human authorization for this successor. Its
+private create-once typed record is bound to the local environment, sandbox,
+scenario, payment service, `paymentFailure.defaultVariant`, exact frozen
+baseline, action `RESTORE_FROZEN_SERVICE_CONFIGURATION`, one forward mutation,
+and at most one compensating rollback. It records `Minghong Sun` as approver,
+`CODEX_DELEGATED_EXECUTION`, and `codex_autonomous_self_approval = false`.
+Ordinary implementation, test, Prompt, projection, transport, CI, or reporting
+repairs do not create a new authorization ceremony or a new version.
+
+Each attempt may use one Provider synthetic preflight and one live A0 semantic
+call. There is no global attempt count, but an identical failed attempt is
+forbidden: a retry requires a real committed implementation or runtime-config
+change and the prior attempt must have restored baseline and completed owned
+cleanup. Every attempt retains private Provider response/tool-call/A0/ontology/
+final-diagnosis and dual-Gate lineage. Public result files are created only
+from a successful sealed terminal.
+
+The only permitted mutation is the deterministic, typed restoration of the
+frozen baseline on the project-owned local Unix Docker sandbox. Remote Docker,
+unknown or non-owned resources, arbitrary model-generated actions or shell,
+Kubernetes, production, merge, release, tag, and deployment remain outside
+this decision. A positive result may claim only the bounded local regression
+demo and its observed fault-to-recovery chain.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)

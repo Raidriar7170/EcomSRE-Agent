@@ -1,0 +1,19 @@
+{
+  "schema_version": "live-e2e.local-demo-authority.v1",
+  "mode": "LOCAL_DEMO",
+  "classification": "POST_FAILURE_REGRESSION_DEMO",
+  "branch": "feature/local-e2e-demo-v1",
+  "starting_pr": 40,
+  "starting_head": "f939824c9b33eca69939aab5d6aa6a5097123e7e",
+  "predecessor_terminal": "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION",
+  "private_root_name": "local-e2e-demo-v1",
+  "cli_module": "scripts.live_sandbox.local_e2e_demo_v1",
+  "r3_authority_sha256": "d6e439cdd85ac72c70af60d2414da854c2f4880c51fb93dc1d06550af17c4ff8",
+  "r3_public_result_sha256": "a9ca87986513ccaaf9f01892496f1ba545356a17a327da15254b810eab4293c6",
+  "r3_public_markdown_sha256": "f2aa09519e9516b67d1cf30627593a61d343d85dab951e83a40db421080f3ccd",
+  "r3_public_human_brief_sha256": "4f3a8bdbb97234f74e3d1203c0aa1468e462f060099d875906102d3566803fe2",
+  "lifecycle_policy_sha256": "fc8cfd037cd25f22c7e3b0fd1d3855493af80d9e3147596107280aee99c1872e",
+  "reporting_policy_sha256": "579012f9e2c605924ce28589e07998a37f3456042b0bbe70c585538966b16c78",
+  "development_success_terminal": "LOCAL_DEMO_NO_FAULT_SMOKE_PASSED",
+  "invocation_b_success": "LOCAL_DEMO_E2E_PASSED_READY_FOR_REVIEW"
+}

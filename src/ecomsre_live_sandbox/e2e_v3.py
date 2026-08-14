@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 import hashlib
@@ -17,8 +17,12 @@ from pydantic import BaseModel
 
 from ecomsre_live_sandbox.contracts import (
     ApprovalRequest,
+    DiagnosisGate,
+    DiagnosisResult,
     HumanApprovalRecord,
     LiveRemediationPlan,
+    LocalDemoDiagnosisAdmission,
+    LocalDemoStandingAuthorization,
     SLIWindow,
     canonical_sha256,
     ensure_private_directory,
@@ -2509,6 +2513,35 @@ def _default_provider_factory(config: E2EV3Config) -> Any:
     return _provider(cast(Any, config))
 
 
+InvocationAuthorityLoader = Callable[
+    [E2EV3Config, E2EV3PrivateRoots, datetime],
+    tuple[
+        Mapping[str, object],
+        ApprovalRequest | None,
+        HumanApprovalRecord | None,
+        LocalDemoStandingAuthorization | None,
+    ],
+]
+ExactHeadAdmissionVerifier = Callable[[E2EV3PrivateRoots, str], object]
+ScenarioLockVerifier = Callable[
+    [E2EV3Config, E2EV3PrivateRoots, Mapping[str, object], str], None
+]
+DiagnosisAdmissionEvaluator = Callable[
+    [DiagnosisResult, object, object, Collection[str], object],
+    LocalDemoDiagnosisAdmission,
+]
+DiagnosisLineageWriter = Callable[
+    [
+        object,
+        object,
+        DiagnosisResult,
+        DiagnosisGate,
+        LocalDemoDiagnosisAdmission | None,
+    ],
+    None,
+]
+
+
 def run_invocation_b(
     config: E2EV3Config,
     roots: E2EV3PrivateRoots,
@@ -2538,17 +2571,41 @@ def run_invocation_b(
         [E2EV3Config, E2EV3PrivateRoots, Mapping[str, object]], None
     ]
     | None = None,
+    invocation_authority_loader: InvocationAuthorityLoader | None = None,
+    exact_head_admission_verifier: ExactHeadAdmissionVerifier | None = None,
+    scenario_lock_verifier: ScenarioLockVerifier | None = None,
+    diagnosis_admission_evaluator: DiagnosisAdmissionEvaluator | None = None,
+    diagnosis_lineage_writer: DiagnosisLineageWriter | None = None,
 ) -> dict[str, object]:
     """Execute the single human-preauthorized live run without result-driven retries."""
     roots.bind_lifecycle(config.authority, repository_root=config.repository_root)
-    _require_canonical_success(config, roots)
-    locked, request, approval = _load_exact_approval(
-        config,
-        roots,
-        now=datetime.now(timezone.utc),
-    )
+    request: ApprovalRequest | None
+    approval: HumanApprovalRecord | None
+    standing_authorization: LocalDemoStandingAuthorization | None
+    if invocation_authority_loader is None:
+        _require_canonical_success(config, roots)
+        locked, request, approval = _load_exact_approval(
+            config,
+            roots,
+            now=datetime.now(timezone.utc),
+        )
+        standing_authorization = None
+    else:
+        locked, request, approval, standing_authorization = (
+            invocation_authority_loader(
+                config,
+                roots,
+                datetime.now(timezone.utc),
+            )
+        )
     implementation_commit = worktree_verifier(config, True)
-    _require_exact_head_admission(roots, implementation_commit=implementation_commit)
+    if exact_head_admission_verifier is None:
+        _require_exact_head_admission(
+            roots,
+            implementation_commit=implementation_commit,
+        )
+    else:
+        exact_head_admission_verifier(roots, implementation_commit)
     if locked.get("implementation_commit") != implementation_commit:
         raise RuntimeError("Invocation B implementation head differs from scenario lock")
     for directory in (
@@ -2615,7 +2672,11 @@ def run_invocation_b(
         "implementation_commit": implementation_commit,
         "result_head": implementation_commit,
         "approval_valid": True,
-        "approval_mode": "HUMAN_PREAUTHORIZED_FROZEN_REMEDIATION_RUNBOOK",
+        "approval_mode": (
+            "HUMAN_PREAUTHORIZED_FROZEN_REMEDIATION_RUNBOOK"
+            if standing_authorization is None
+            else standing_authorization.approval_mode
+        ),
         "claim_boundary": list(config.reporting.claim_boundary),
         "provider_calls": 0,
         "model_calls": 0,
@@ -2680,6 +2741,16 @@ def run_invocation_b(
                     ),
                 }
             )
+    if standing_authorization is not None:
+        terminal.update(
+            {
+                "authorization_source": standing_authorization.authorization_source,
+                "command_execution": standing_authorization.command_execution,
+                "approver": standing_authorization.approver,
+                "codex_autonomous_self_approval": False,
+                "additional_human_confirmation_requested": False,
+            }
+        )
     provider: Any = None
     controller: Any = None
     forward_counter = ForwardMutationCounter(roots.journal / "forward-mutation.txt")
@@ -2736,12 +2807,20 @@ def run_invocation_b(
             DiagnosticStage.COMPOSE_RESOLVED,
             output_value=resolved.compose_sha256,
         )
-        _verify_scenario_lock_for_invocation_b(
-            config,
-            roots,
-            locked=locked,
-            implementation_commit=implementation_commit,
-        )
+        if scenario_lock_verifier is None:
+            _verify_scenario_lock_for_invocation_b(
+                config,
+                roots,
+                locked=locked,
+                implementation_commit=implementation_commit,
+            )
+        else:
+            scenario_lock_verifier(
+                config,
+                roots,
+                locked,
+                implementation_commit,
+            )
         image_run = _verify_v3_images(
             environment=environment,
             resolved=resolved,
@@ -3067,16 +3146,98 @@ def run_invocation_b(
             diagnosis,
             create_once=True,
         )
-        diagnosis_gate = evaluate_diagnosis_gate(diagnosis, config.sandbox)
-        terminal["diagnosis_gate"] = diagnosis_gate.passed
+        strict_diagnosis_gate = evaluate_diagnosis_gate(diagnosis, config.sandbox)
+        local_demo_admission: LocalDemoDiagnosisAdmission | None = None
+        active_diagnosis_gate = strict_diagnosis_gate
+        if diagnosis_admission_evaluator is not None:
+            local_demo_admission = diagnosis_admission_evaluator(
+                diagnosis,
+                config.sandbox,
+                context,
+                resolver_refs,
+                provider,
+            )
+            active_diagnosis_gate = DiagnosisGate(
+                passed=local_demo_admission.passed,
+                reason_codes=local_demo_admission.blocking_reason_codes,
+            )
+            terminal.update(
+                {
+                    "strict_audit_pass": strict_diagnosis_gate.passed,
+                    "strict_reason_codes": list(
+                        strict_diagnosis_gate.reason_codes
+                    ),
+                    "local_demo_gate": local_demo_admission.passed,
+                    "local_demo_blocking_reason_codes": list(
+                        local_demo_admission.blocking_reason_codes
+                    ),
+                    "local_demo_warning_codes": list(
+                        local_demo_admission.warning_codes
+                    ),
+                    "local_demo_root_match": local_demo_admission.root_match,
+                    "local_demo_fault_class_match": (
+                        local_demo_admission.fault_class_match
+                    ),
+                    "local_demo_evidence_valid": local_demo_admission.evidence_valid,
+                    "local_demo_source_coverage_valid": (
+                        local_demo_admission.source_coverage_valid
+                    ),
+                    "local_demo_single_call_valid": (
+                        local_demo_admission.single_call_valid
+                    ),
+                    "local_demo_context_binding_valid": (
+                        local_demo_admission.context_binding_valid
+                    ),
+                    "strict_expected_root_service": (
+                        config.sandbox.scenario.expected_root_service
+                    ),
+                    "strict_expected_fault_class": (
+                        config.sandbox.scenario.expected_fault_class
+                    ),
+                    "predicted_root_service": diagnosis.root_service,
+                    "predicted_fault_class": diagnosis.fault_class,
+                    "semantic_model_calls": diagnosis.semantic_model_calls,
+                    "specialist_calls": diagnosis.specialist_calls,
+                    "fusion_calls": diagnosis.fusion_calls,
+                    "provider_attempts": diagnosis.provider_attempts,
+                    "model": config.authority.a0_model,
+                    "standing_authorization_valid": (
+                        standing_authorization is not None
+                    ),
+                }
+            )
+        terminal["diagnosis_gate"] = strict_diagnosis_gate.passed
         terminal["diagnosis_correct"] = (
             diagnosis.root_service == config.sandbox.scenario.expected_root_service
             and diagnosis.fault_class == config.sandbox.scenario.expected_fault_class
         )
-        if not diagnosis_gate.passed:
+        if diagnosis_lineage_writer is not None:
+            diagnosis_lineage_writer(
+                provider,
+                context,
+                diagnosis,
+                strict_diagnosis_gate,
+                local_demo_admission,
+            )
+        if not active_diagnosis_gate.passed:
             raise RuntimeError("A0 Diagnosis Gate denied remediation")
         terminal["verdict"] = "BLOCKED_POLICY_REJECTED"
-        plan = build_plan(diagnosis, config.sandbox)
+
+        def active_gate_evaluator(
+            candidate: DiagnosisResult, candidate_bundle: object
+        ) -> DiagnosisGate:
+            if candidate != diagnosis or candidate_bundle != config.sandbox:
+                return DiagnosisGate(
+                    passed=False,
+                    reason_codes=("DIAGNOSIS_ADMISSION_BINDING_MISMATCH",),
+                )
+            return active_diagnosis_gate
+
+        plan = build_plan(
+            diagnosis,
+            config.sandbox,
+            gate_evaluator=cast(Any, active_gate_evaluator),
+        )
         terminal["plan_action"] = plan.action
         policy = evaluate_policy(
             plan=plan,
@@ -3091,6 +3252,8 @@ def run_invocation_b(
             },
             forward_mutations=0,
             now=datetime.now(timezone.utc),
+            standing_authorization=standing_authorization,
+            gate_evaluator=cast(Any, active_gate_evaluator),
         )
         terminal["policy_verdict"] = policy.verdict.value
         if policy.verdict.value != "ALLOW":
@@ -3133,6 +3296,7 @@ def run_invocation_b(
                 endpoints=resolved.endpoints,
                 phase="RECOVERY",
             )
+        terminal["recovery_window_count"] = 2
         verification = IndependentVerifier().verify(
             plan=plan,
             receipt=receipt,

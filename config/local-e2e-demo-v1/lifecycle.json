@@ -1,0 +1,11 @@
+{
+  "schema_version": "live-e2e.local-demo-lifecycle.v1",
+  "attempt_policy": "REQUIRE_REAL_CHANGE_AFTER_FAILURE",
+  "authorization_policy": "ONE_SEMANTIC_SCOPE_BOUND_STANDING_AUTHORIZATION",
+  "strict_gate_policy": "PRESERVE_FOR_DIAGNOSIS_QUALITY_AUDIT",
+  "local_demo_gate_policy": "ROOT_AND_EVIDENCE_SAFETY_ADMISSION",
+  "fault_class_policy": "MISMATCH_IS_VISIBLE_WARNING_NOT_BLOCKER",
+  "mutation_policy": "ONE_FORWARD_AND_AT_MOST_ONE_COMPENSATING_ROLLBACK_PER_ATTEMPT",
+  "cleanup_policy": "BASELINE_AND_ZERO_OWNED_RESOURCES_REQUIRED_EVERY_ATTEMPT",
+  "public_truth_policy": "ONLY_SUCCESSFUL_SEALED_ATTEMPT_PROJECTS_PUBLIC_RESULT"
+}

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Collection, Mapping, Sequence
 from copy import deepcopy
 from datetime import datetime, timezone
 import hashlib
@@ -21,6 +21,8 @@ from ecomsre_live_sandbox.contracts import (
     ExecutionReceipt,
     HumanApprovalRecord,
     LiveRemediationPlan,
+    LocalDemoDiagnosisAdmission,
+    LocalDemoStandingAuthorization,
     LocalEndpoints,
     PolicyDecision,
     PolicyVerdict,
@@ -258,8 +260,117 @@ def evaluate_diagnosis_gate(
     return DiagnosisGate(passed=not unique, reason_codes=unique)
 
 
-def build_plan(diagnosis: DiagnosisResult, bundle: ConfigBundle) -> LiveRemediationPlan:
-    gate = evaluate_diagnosis_gate(diagnosis, bundle)
+DiagnosisGateEvaluator = Callable[[DiagnosisResult, ConfigBundle], DiagnosisGate]
+
+
+def evaluate_local_demo_diagnosis_gate(
+    diagnosis: DiagnosisResult,
+    bundle: ConfigBundle,
+    *,
+    resolvable_refs: Collection[str],
+    context_sha256: str,
+    provider_live_input_sha256: str | None,
+    control_truth_findings: Sequence[str],
+) -> LocalDemoDiagnosisAdmission:
+    reasons: list[str] = []
+    terminal_completed = diagnosis.terminal == "COMPLETED"
+    semantic_call_exact = diagnosis.semantic_model_calls == 1
+    auxiliary_calls_absent = not diagnosis.specialist_calls and not diagnosis.fusion_calls
+    single_call_valid = terminal_completed and semantic_call_exact and auxiliary_calls_absent
+    if not terminal_completed:
+        reasons.append("DIAGNOSIS_NOT_COMPLETED")
+    if not semantic_call_exact:
+        reasons.append("SEMANTIC_MODEL_CALL_COUNT_INVALID")
+    if not auxiliary_calls_absent:
+        reasons.append("UNAUTHORIZED_MODEL_CALL")
+
+    root_service_match = diagnosis.root_service == bundle.scenario.expected_root_service
+    root_entity_match = (
+        diagnosis.root_entity_ref is None
+        or diagnosis.root_entity_ref.rsplit("|", 1)[-1]
+        == bundle.scenario.expected_root_service
+    )
+    if not root_service_match:
+        reasons.append("ROOT_SERVICE_MISMATCH")
+    if not root_entity_match:
+        reasons.append("ROOT_ENTITY_MISMATCH")
+    root_match = root_service_match and root_entity_match
+
+    legal_prefixes = {"metric:": "METRICS", "log:": "LOGS", "trace:": "TRACES"}
+    references = tuple(diagnosis.evidence_refs)
+    refs_nonempty = bool(references)
+    refs_unique = len(set(references)) == len(references)
+    if not refs_nonempty:
+        reasons.append("EVIDENCE_REFS_EMPTY")
+    if not refs_unique:
+        reasons.append("EVIDENCE_REFS_DUPLICATE")
+    inferred_sources: list[str] = []
+    prefixes_valid = True
+    for reference in references:
+        matches = [
+            source
+            for prefix, source in legal_prefixes.items()
+            if reference.startswith(prefix)
+        ]
+        if len(matches) != 1:
+            prefixes_valid = False
+        else:
+            inferred_sources.append(matches[0])
+    if not prefixes_valid:
+        reasons.append("EVIDENCE_REF_PREFIX_INVALID")
+    refs_resolved = set(references).issubset(set(resolvable_refs))
+    if references and not refs_resolved:
+        reasons.append("EVIDENCE_REF_UNRESOLVED")
+    inferred = set(inferred_sources)
+    accounting_valid = set(diagnosis.evidence_source_types) == inferred
+    if not accounting_valid:
+        reasons.append("EVIDENCE_SOURCE_ACCOUNTING_MISMATCH")
+    evidence_valid = (
+        refs_nonempty
+        and refs_unique
+        and prefixes_valid
+        and refs_resolved
+        and accounting_valid
+    )
+    coverage_present = "METRICS" in inferred and bool(
+        inferred.intersection({"LOGS", "TRACES"})
+    )
+    if not coverage_present:
+        reasons.append("EVIDENCE_SOURCE_COVERAGE_INSUFFICIENT")
+    source_coverage_valid = coverage_present and accounting_valid
+
+    context_binding_valid = (
+        len(context_sha256) == 64
+        and provider_live_input_sha256 == context_sha256
+    )
+    if not context_binding_valid:
+        reasons.append("CONTEXT_BINDING_MISMATCH")
+    if control_truth_findings:
+        reasons.append("CONTROL_TRUTH_VISIBLE")
+
+    fault_class_match = diagnosis.fault_class == bundle.scenario.expected_fault_class
+    warnings = () if fault_class_match else ("FAULT_CLASS_MISMATCH_WARNING",)
+    unique = tuple(dict.fromkeys(reasons))
+    return LocalDemoDiagnosisAdmission(
+        passed=not unique,
+        blocking_reason_codes=unique,
+        warning_codes=warnings,
+        root_match=root_match,
+        fault_class_match=fault_class_match,
+        evidence_valid=evidence_valid,
+        source_coverage_valid=source_coverage_valid,
+        single_call_valid=single_call_valid,
+        context_binding_valid=context_binding_valid,
+    )
+
+
+def build_plan(
+    diagnosis: DiagnosisResult,
+    bundle: ConfigBundle,
+    *,
+    gate_evaluator: DiagnosisGateEvaluator = evaluate_diagnosis_gate,
+) -> LiveRemediationPlan:
+    gate = gate_evaluator(diagnosis, bundle)
     if not gate.passed:
         raise ValueError("diagnosis gate did not admit a remediation plan")
     diagnosis_hash = canonical_sha256(diagnosis)
@@ -311,13 +422,15 @@ def evaluate_policy(
     *,
     plan: LiveRemediationPlan,
     diagnosis: DiagnosisResult,
-    request: ApprovalRequest,
-    approval: HumanApprovalRecord,
+    request: ApprovalRequest | None = None,
+    approval: HumanApprovalRecord | None = None,
     bundle: ConfigBundle,
     docker_endpoint: str,
     owned_labels: Mapping[str, str],
     forward_mutations: int,
     now: datetime,
+    standing_authorization: LocalDemoStandingAuthorization | None = None,
+    gate_evaluator: DiagnosisGateEvaluator = evaluate_diagnosis_gate,
 ) -> PolicyDecision:
     reasons: list[str] = []
     try:
@@ -328,7 +441,7 @@ def evaluate_policy(
         require_owned_labels(owned_labels, bundle.environment)
     except ResourceOwnershipError:
         reasons.append("RESOURCE_OWNERSHIP_MISMATCH")
-    if not evaluate_diagnosis_gate(diagnosis, bundle).passed:
+    if not gate_evaluator(diagnosis, bundle).passed:
         reasons.append("DIAGNOSIS_GATE_NOT_PASSED")
     template_hash = canonical_sha256(LiveRemediationPlan.template_payload(bundle))
     expected_plan = {
@@ -349,44 +462,72 @@ def evaluate_policy(
         reasons.append("PLAN_DIAGNOSIS_HASH_MISMATCH")
     if forward_mutations != 0:
         reasons.append("FORWARD_MUTATION_LIMIT_REACHED")
-    request_values = {
-        "scenario_id": bundle.scenario.scenario_id,
-        "environment_id": bundle.environment.environment_id,
-        "sandbox_id": bundle.environment.sandbox_id,
-        "action": bundle.policy.action,
-        "target_service": bundle.scenario.target_service,
-        "configuration_key": bundle.scenario.target_configuration_key,
-        "baseline_sha256": bundle.scenario.baseline_document_sha256,
-        "plan_template_sha256": template_hash,
-        "max_forward_mutations": 1,
-    }
-    for key, expected in request_values.items():
-        if getattr(request, key) != expected:
-            reasons.append(f"REQUEST_{key.upper()}_MISMATCH")
-    approval_values = {
-        "approval_request_id": request.approval_request_id,
-        "request_sha256": canonical_sha256(request),
-        "plan_template_sha256": request.plan_template_sha256,
-        "scenario_id": request.scenario_id,
-        "environment_id": request.environment_id,
-        "sandbox_id": request.sandbox_id,
-        "action": request.action,
-        "target_service": request.target_service,
-        "configuration_key": request.configuration_key,
-        "baseline_sha256": request.baseline_sha256,
-        "expires_at": request.expires_at,
-    }
-    for key, expected in approval_values.items():
-        if getattr(approval, key) != expected:
-            reasons.append(f"APPROVAL_{key.upper()}_MISMATCH")
-    if (
-        approval.mode != "HUMAN"
-        or not approval.approver.strip()
-        or approval.approved_at < request.requested_at
-        or approval.approved_at > request.expires_at
-        or now > request.expires_at
-    ):
-        reasons.append("HUMAN_APPROVAL_INVALID_OR_EXPIRED")
+    if standing_authorization is not None:
+        if request is not None or approval is not None:
+            reasons.append("AUTHORIZATION_MODE_AMBIGUOUS")
+        expected_standing = {
+            "mode": "LOCAL_DEMO",
+            "approver": "Minghong Sun",
+            "authorization_source": "USER_EXPLICIT_STANDING_AUTHORIZATION_IN_GOAL",
+            "command_execution": "CODEX_DELEGATED_EXECUTION",
+            "approval_mode": "LOCAL_DEMO_STANDING_PREAUTHORIZATION",
+            "codex_autonomous_self_approval": False,
+            "environment_id": bundle.environment.environment_id,
+            "sandbox_id": bundle.environment.sandbox_id,
+            "scenario_id": bundle.scenario.scenario_id,
+            "target_service": bundle.scenario.target_service,
+            "configuration_key": bundle.scenario.target_configuration_key,
+            "action": bundle.policy.action,
+            "baseline_sha256": bundle.scenario.baseline_document_sha256,
+            "maximum_forward_mutations": 1,
+            "maximum_rollbacks": 1,
+        }
+        if any(
+            getattr(standing_authorization, key) != expected
+            for key, expected in expected_standing.items()
+        ):
+            reasons.append("LOCAL_DEMO_STANDING_AUTHORIZATION_INVALID")
+    elif request is None or approval is None:
+        reasons.append("HUMAN_APPROVAL_MISSING")
+    else:
+        request_values = {
+            "scenario_id": bundle.scenario.scenario_id,
+            "environment_id": bundle.environment.environment_id,
+            "sandbox_id": bundle.environment.sandbox_id,
+            "action": bundle.policy.action,
+            "target_service": bundle.scenario.target_service,
+            "configuration_key": bundle.scenario.target_configuration_key,
+            "baseline_sha256": bundle.scenario.baseline_document_sha256,
+            "plan_template_sha256": template_hash,
+            "max_forward_mutations": 1,
+        }
+        for key, expected in request_values.items():
+            if getattr(request, key) != expected:
+                reasons.append(f"REQUEST_{key.upper()}_MISMATCH")
+        approval_values = {
+            "approval_request_id": request.approval_request_id,
+            "request_sha256": canonical_sha256(request),
+            "plan_template_sha256": request.plan_template_sha256,
+            "scenario_id": request.scenario_id,
+            "environment_id": request.environment_id,
+            "sandbox_id": request.sandbox_id,
+            "action": request.action,
+            "target_service": request.target_service,
+            "configuration_key": request.configuration_key,
+            "baseline_sha256": request.baseline_sha256,
+            "expires_at": request.expires_at,
+        }
+        for key, expected in approval_values.items():
+            if getattr(approval, key) != expected:
+                reasons.append(f"APPROVAL_{key.upper()}_MISMATCH")
+        if (
+            approval.mode != "HUMAN"
+            or not approval.approver.strip()
+            or approval.approved_at < request.requested_at
+            or approval.approved_at > request.expires_at
+            or now > request.expires_at
+        ):
+            reasons.append("HUMAN_APPROVAL_INVALID_OR_EXPIRED")
     unique = tuple(dict.fromkeys(reasons))
     return PolicyDecision(
         verdict=PolicyVerdict.DENY if unique else PolicyVerdict.ALLOW,
@@ -567,6 +708,7 @@ __all__ = [
     "build_plan",
     "compensate_rollback",
     "evaluate_diagnosis_gate",
+    "evaluate_local_demo_diagnosis_gate",
     "evaluate_policy",
     "fault_impact_passed",
 ]

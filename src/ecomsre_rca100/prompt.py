@@ -139,6 +139,10 @@ class OpenAICompatibleRCA100Provider:
         self._usage_total = 0
         self._usage_known = True
         self._last_request_sha256: str | None = None
+        self._last_context_sha256: str | None = None
+        self._last_raw_response: Mapping[str, object] | None = None
+        self._last_tool_arguments: Mapping[str, object] | None = None
+        self._last_initial_diagnosis: RCA100InitialDiagnosis | None = None
 
     @property
     def calls(self) -> int:
@@ -156,7 +160,29 @@ class OpenAICompatibleRCA100Provider:
     def last_request_sha256(self) -> str | None:
         return self._last_request_sha256
 
+    @property
+    def last_context_sha256(self) -> str | None:
+        return self._last_context_sha256
+
+    @property
+    def last_raw_response(self) -> Mapping[str, object] | None:
+        return self._last_raw_response
+
+    @property
+    def last_tool_arguments(self) -> Mapping[str, object] | None:
+        return self._last_tool_arguments
+
+    @property
+    def last_initial_diagnosis(self) -> RCA100InitialDiagnosis | None:
+        return self._last_initial_diagnosis
+
     def diagnose(self, context: RCA100AgentContext) -> RCA100InitialDiagnosis:
+        self._last_raw_response = None
+        self._last_tool_arguments = None
+        self._last_initial_diagnosis = None
+        self._last_context_sha256 = hashlib.sha256(
+            canonical_json_bytes(context.model_dump(mode="json")) + b"\n"
+        ).hexdigest()
         payload = build_request_payload(
             model=self._config.model,
             context=context,
@@ -176,6 +202,9 @@ class OpenAICompatibleRCA100Provider:
             timeout_seconds=self._timeout,
         )
         response = _mapping(raw, "Provider response")
+        self._last_raw_response = json.loads(
+            json.dumps(response, allow_nan=False, ensure_ascii=False)
+        )
         usage = response.get("usage")
         if usage is None:
             self._usage_known = False
@@ -251,6 +280,8 @@ class OpenAICompatibleRCA100Provider:
                 raise ValueError("Provider reasoning cited a non-visible entity")
             if not set(step.evidence_refs).issubset(valid_evidence):
                 raise ValueError("Provider reasoning cited non-visible evidence")
+        self._last_tool_arguments = parsed
+        self._last_initial_diagnosis = diagnosis
         return diagnosis
 
 
