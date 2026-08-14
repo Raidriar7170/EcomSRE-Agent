@@ -2784,6 +2784,9 @@ def run_invocation_b(
             raise RuntimeError("Provider preflight did not return known bounded usage")
         terminal["provider_preflight_passed"] = True
         terminal["provider_preflight_usage_tokens"] = provider.last_usage_tokens
+        terminal["provider_preflight_transport_retries"] = getattr(
+            provider, "last_transport_retries", 0
+        )
         write_private_json(
             roots.provider / "synthetic-preflight-v2.json",
             {

@@ -176,6 +176,11 @@ class OpenAICompatibleRCA100Provider:
     def last_initial_diagnosis(self) -> RCA100InitialDiagnosis | None:
         return self._last_initial_diagnosis
 
+    @property
+    def last_transport_retries(self) -> int:
+        value = getattr(self._transport, "last_retry_count", 0)
+        return value if type(value) is int and 0 <= value <= 1 else 0
+
     def diagnose(self, context: RCA100AgentContext) -> RCA100InitialDiagnosis:
         self._last_raw_response = None
         self._last_tool_arguments = None

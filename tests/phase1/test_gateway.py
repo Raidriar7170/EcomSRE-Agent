@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import ssl
+import urllib.error
 import urllib.request
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -164,6 +166,20 @@ class FakeOpener:
         return FakeHTTPResponse(self.content)
 
 
+class ScriptedOpener:
+    def __init__(self, outcomes: list[BaseException | bytes]) -> None:
+        self.outcomes = list(outcomes)
+        self.calls = 0
+
+    def open(self, request: object, *, timeout: float) -> FakeHTTPResponse:
+        del request, timeout
+        self.calls += 1
+        outcome = self.outcomes.pop(0)
+        if isinstance(outcome, BaseException):
+            raise outcome
+        return FakeHTTPResponse(outcome)
+
+
 def gateway(
     transport: FakeTransport,
     *,
@@ -288,6 +304,61 @@ def test_stdlib_transport_rejects_deep_or_recursive_json_deterministically(
         )
 
     assert len(opener.calls) == 1
+
+
+def test_stdlib_transport_retries_one_tls_eof_without_new_semantic_call() -> None:
+    opener = ScriptedOpener(
+        [
+            urllib.error.URLError(ssl.SSLEOFError(8, "handshake eof")),
+            b'{"ok":true}',
+        ]
+    )
+    waits: list[float] = []
+    transport = gateway_module.StdlibOpenAICompatibleTransport(
+        opener=opener,
+        maximum_tls_transient_retries=1,
+        sleeper=waits.append,
+    )
+
+    result = transport.post_json(
+        url="https://llm.example.test/v1/chat/completions",
+        headers={"Authorization": f"Bearer {API_KEY}"},
+        payload={"bounded": True},
+        timeout_seconds=0.5,
+    )
+
+    assert result == {"ok": True}
+    assert opener.calls == 2
+    assert waits == [2.0]
+    assert transport.last_retry_count == 1
+
+
+def test_stdlib_transport_never_retries_certificate_failure() -> None:
+    opener = ScriptedOpener(
+        [
+            urllib.error.URLError(
+                ssl.SSLCertVerificationError(1, "certificate verify failed")
+            )
+        ]
+    )
+    waits: list[float] = []
+    transport = gateway_module.StdlibOpenAICompatibleTransport(
+        opener=opener,
+        maximum_tls_transient_retries=1,
+        sleeper=waits.append,
+    )
+
+    with pytest.raises(ConnectionError, match="request failed"):
+        transport.post_json(
+            url="https://llm.example.test/v1/chat/completions",
+            headers={"Authorization": f"Bearer {API_KEY}"},
+            payload={"bounded": True},
+            timeout_seconds=0.5,
+        )
+
+    assert opener.calls == 1
+    assert waits == []
+    assert transport.last_retry_count == 0
 
 
 def test_gateway_sends_five_strict_tools_and_one_deterministic_call() -> None:

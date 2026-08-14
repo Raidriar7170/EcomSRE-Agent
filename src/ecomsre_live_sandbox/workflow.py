@@ -49,7 +49,10 @@ from ecomsre_live_sandbox.telemetry import (
     LiveTelemetryAdapter,
     build_a0_context,
 )
-from ecomsre.model.gateway import OpenAICompatibleConfig
+from ecomsre.model.gateway import (
+    OpenAICompatibleConfig,
+    StdlibOpenAICompatibleTransport,
+)
 from ecomsre_rca100.contracts import RCA100InitialDiagnosis
 from ecomsre_rca100.prompt import (
     OpenAICompatibleRCA100Provider,
@@ -126,6 +129,9 @@ class DiagnosisProvider(Protocol):
 
     @property
     def usage_known(self) -> bool: ...
+
+    @property
+    def last_transport_retries(self) -> int: ...
 
     def diagnose(self, context: RCA100AgentContext) -> RCA100InitialDiagnosis: ...
 
@@ -291,6 +297,11 @@ def make_provider(
         expected_model=bundle.diagnosis.model,
         timeout_seconds=bundle.budget.provider_timeout_seconds,
         max_completion_tokens=bundle.diagnosis.max_completion_tokens,
+        transport=StdlibOpenAICompatibleTransport(
+            maximum_tls_transient_retries=(
+                bundle.budget.maximum_transport_retries
+            )
+        ),
     )
 
 
@@ -361,7 +372,7 @@ def run_a0_diagnosis(
         specialist_calls=0,
         fusion_calls=0,
         provider_attempts=1,
-        transport_retries=0,
+        transport_retries=provider.last_transport_retries,
         usage_tokens=provider.last_usage_tokens,
         latency_seconds=latency,
     )
