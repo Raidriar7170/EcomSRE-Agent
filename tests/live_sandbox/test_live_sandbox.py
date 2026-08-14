@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 import inspect
 import json
 from pathlib import Path
+import stat
 
 import pytest
 
@@ -13,17 +14,21 @@ from ecomsre_live_sandbox.contracts import (
     ConfigurationState,
     DiagnosisResult,
     LiveRemediationPlan,
+    LocalEndpoints,
     PolicyDecision,
     PolicyVerdict,
     SLIWindow,
     canonical_sha256,
     load_bundle,
+    write_private_json,
 )
+import ecomsre_live_sandbox.control as control_module
 from ecomsre_live_sandbox.control import (
     ForwardMutationCounter,
     InMemoryConfigurationAdapter,
     IndependentVerifier,
     LocalSandboxRestrictedExecutor,
+    SandboxFaultController,
     approve_plan,
     build_flag_documents,
     build_plan,
@@ -123,6 +128,58 @@ def test_flag_documents_are_exactly_two_hash_bound_whole_documents(bundle) -> No
     assert fault["flags"]["paymentFailure"]["defaultVariant"] == "100%"
     baseline["flags"]["paymentFailure"]["defaultVariant"] = "100%"
     assert baseline == fault
+
+
+def test_flag_controller_restores_private_mode_after_control_write(
+    bundle, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    upstream = json.loads(
+        Path("third_party/opentelemetry-demo/src/flagd/demo.flagd.json").read_text()
+    )
+    baseline, fault = build_flag_documents(upstream, bundle)
+    flag_file = tmp_path / "runtime" / "demo.flagd.json"
+    write_private_json(flag_file, baseline, create_once=True)
+    controller = SandboxFaultController(
+        endpoints=LocalEndpoints(
+            frontend="http://127.0.0.1:18080",
+            flag_control="http://127.0.0.1:18080/feature/api",
+            flag_evaluation="http://127.0.0.1:18016",
+            prometheus="http://127.0.0.1:19090",
+            opensearch="http://127.0.0.1:19200",
+            jaeger="http://127.0.0.1:11686",
+        ),
+        bundle=bundle,
+        flag_file=flag_file,
+        baseline_document=baseline,
+        fault_document=fault,
+    )
+
+    def simulate_control_write(
+        url: str, *, method: str = "GET", payload: object | None = None
+    ) -> dict[str, object]:
+        assert url.endswith("/write") and method == "POST"
+        assert isinstance(payload, dict) and isinstance(payload.get("data"), dict)
+        flag_file.write_text(json.dumps(payload["data"]), encoding="utf-8")
+        flag_file.chmod(0o644)
+        return {}
+
+    observed_modes: list[int] = []
+
+    def read_current(_: SandboxFaultController) -> ConfigurationState:
+        observed_modes.append(stat.S_IMODE(flag_file.stat().st_mode))
+        return ConfigurationState(
+            variant="off",
+            value=0,
+            document_sha256=bundle.scenario.baseline_document_sha256,
+        )
+
+    monkeypatch.setattr(control_module, "_local_json", simulate_control_write)
+    monkeypatch.setattr(SandboxFaultController, "read_current", read_current)
+
+    controller.restore_baseline()
+
+    assert observed_modes == [0o600]
+    assert stat.S_IMODE(flag_file.stat().st_mode) == 0o600
 
 
 def test_live_diagnosis_reuses_exact_main_a0_prompt_and_schema(bundle) -> None:

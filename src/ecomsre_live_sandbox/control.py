@@ -7,7 +7,9 @@ from copy import deepcopy
 from datetime import datetime, timezone
 import hashlib
 import json
+import os
 from pathlib import Path
+import stat
 import time
 from typing import Literal, Protocol
 from urllib.request import Request, urlopen
@@ -203,6 +205,7 @@ class SandboxFaultController:
             method="POST",
             payload={"data": document},
         )
+        _restore_private_flag_mode(self.flag_file)
         deadline = time.monotonic() + 15
         last_error: Exception | None = None
         while time.monotonic() < deadline:
@@ -223,6 +226,23 @@ class SandboxFaultController:
 
     def inject_fault(self) -> ConfigurationState:
         return self._apply("FAULT")
+
+
+def _restore_private_flag_mode(path: Path) -> None:
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as error:
+        raise RuntimeError("private flag file cannot be opened safely") from error
+    try:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode) or before.st_uid != os.getuid():
+            raise RuntimeError("private flag file ownership is invalid")
+        os.fchmod(descriptor, 0o600)
+        if stat.S_IMODE(os.fstat(descriptor).st_mode) != 0o600:
+            raise PermissionError("private flag file mode could not be restored")
+    finally:
+        os.close(descriptor)
 
 
 def evaluate_diagnosis_gate(
