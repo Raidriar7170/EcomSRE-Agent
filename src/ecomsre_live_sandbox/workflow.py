@@ -44,6 +44,7 @@ from ecomsre_live_sandbox.control import (
     fault_impact_passed,
 )
 from ecomsre_live_sandbox.environment import SandboxEnvironment
+from ecomsre_live_sandbox.provider_transport import TransientTLSRetryTransport
 from ecomsre_live_sandbox.telemetry import (
     CapturedTelemetry,
     LiveTelemetryAdapter,
@@ -297,10 +298,9 @@ def make_provider(
         expected_model=bundle.diagnosis.model,
         timeout_seconds=bundle.budget.provider_timeout_seconds,
         max_completion_tokens=bundle.diagnosis.max_completion_tokens,
-        transport=StdlibOpenAICompatibleTransport(
-            maximum_tls_transient_retries=(
-                bundle.budget.maximum_transport_retries
-            )
+        transport=TransientTLSRetryTransport(
+            StdlibOpenAICompatibleTransport(),
+            maximum_retries=bundle.budget.maximum_transport_retries,
         ),
     )
 

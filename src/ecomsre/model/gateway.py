@@ -5,11 +5,10 @@ from __future__ import annotations
 import json
 import math
 import os
-import ssl
 import time
 import urllib.error
 import urllib.request
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any, Protocol, cast
@@ -183,27 +182,10 @@ class OpenAICompatibleConfig:
 class StdlibOpenAICompatibleTransport:
     """Standard-library HTTPS transport used only by explicit complete()."""
 
-    def __init__(
-        self,
-        opener: object | None = None,
-        *,
-        maximum_tls_transient_retries: int = 0,
-        sleeper: Callable[[float], None] = time.sleep,
-    ) -> None:
-        if type(maximum_tls_transient_retries) is not int or not (
-            0 <= maximum_tls_transient_retries <= 1
-        ):
-            raise ValueError("TLS transient retry budget must be zero or one")
+    def __init__(self, opener: object | None = None) -> None:
         self._opener = opener or urllib.request.build_opener(
             RejectRedirectHandler()
         )
-        self._maximum_tls_transient_retries = maximum_tls_transient_retries
-        self._sleeper = sleeper
-        self._last_retry_count = 0
-
-    @property
-    def last_retry_count(self) -> int:
-        return self._last_retry_count
 
     def post_json(
         self,
@@ -223,28 +205,18 @@ class StdlibOpenAICompatibleTransport:
             headers=dict(headers),
             method="POST",
         )
-        self._last_retry_count = 0
-        while True:
-            try:
-                with self._opener.open(  # type: ignore[attr-defined]
-                    request,
-                    timeout=timeout_seconds,
-                ) as response:
-                    content = response.read(MAX_PROVIDER_RESPONSE_BYTES + 1)
-            except ProviderProtocolError:
-                raise
-            except TimeoutError:
-                raise
-            except (OSError, urllib.error.URLError) as error:
-                if (
-                    self._last_retry_count < self._maximum_tls_transient_retries
-                    and _is_tls_eof_transient(error)
-                ):
-                    self._last_retry_count += 1
-                    self._sleeper(2.0)
-                    continue
-                raise ConnectionError("OpenAI-compatible request failed") from error
-            break
+        try:
+            with self._opener.open(  # type: ignore[attr-defined]
+                request,
+                timeout=timeout_seconds,
+            ) as response:
+                content = response.read(MAX_PROVIDER_RESPONSE_BYTES + 1)
+        except ProviderProtocolError:
+            raise
+        except TimeoutError:
+            raise
+        except (OSError, urllib.error.URLError) as error:
+            raise ConnectionError("OpenAI-compatible request failed") from error
         if len(content) > MAX_PROVIDER_RESPONSE_BYTES:
             raise ProviderProtocolError("provider response exceeds size limit")
         try:
@@ -266,30 +238,6 @@ class StdlibOpenAICompatibleTransport:
         if not isinstance(decoded, dict):
             raise ProviderProtocolError("provider response must be an object")
         return decoded
-
-
-def _is_tls_eof_transient(error: BaseException) -> bool:
-    pending = [error]
-    found: list[BaseException] = []
-    seen: set[int] = set()
-    while pending:
-        current = pending.pop(0)
-        if id(current) in seen:
-            continue
-        seen.add(id(current))
-        found.append(current)
-        if current.__cause__ is not None:
-            pending.append(current.__cause__)
-        if isinstance(current, urllib.error.URLError) and isinstance(
-            current.reason, BaseException
-        ):
-            pending.append(current.reason)
-    if any(isinstance(item, ssl.SSLCertVerificationError) for item in found):
-        return False
-    return any(
-        isinstance(item, (ssl.SSLEOFError, ssl.SSLZeroReturnError))
-        for item in found
-    )
 
 
 def _reject_json_constant(value: str) -> None:
