@@ -139,7 +139,7 @@ it cannot expand the Policy Gate or Executor authority.
 | E2E v6 `V6_REPRO_1` | One accepted local run injected the frozen payment fault and passed Fault Impact plus Metrics/Logs/Traces availability, then stopped before A0 because the diagnostic journal rejected a backward stage transition; final public terminal `BLOCKED_PUBLIC_RESULT_VERIFICATION`; A0/model/forward mutation `0/0/0`; baseline restored and cleanup `CLEAN` |
 | E2E v6 `V6_REPRO_2` | One accepted local run proved the repaired ordered source-stage transition and reached `MULTISERVICE_PROJECTION_COMPLETED`, where a typed projection runtime failure stopped the run before diagnosis; final public terminal `BLOCKED_PUBLIC_RESULT_VERIFICATION`; A0 builder/model/forward mutation `1/0/0`; baseline restored and cleanup `CLEAN` |
 | E2E v6 `V6_REPRO_3` | One accepted local run completed the bounded projection and one A0 model diagnosis, but the diagnosis was incorrect; terminal `LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION`; forward/rollback mutation `0/0`; baseline restored and cleanup `CLEAN` |
-| LOCAL_DEMO successor | `PRE_LIVE / REVIEW_REQUIRED`; the separate root-and-evidence admission, standing authorization, private lineage, retry, and runner contracts are implemented, while no successor live result is claimed yet |
+| LOCAL_DEMO successor | `LOCAL_DEMO_E2E_PASSED_READY_FOR_REVIEW`; the fourth retained attempt completed one frozen local payment restoration, two recovery windows, independent verification, exact baseline restoration, and `CLEAN` cleanup |
 
 ### V6_REPRO_2 accepted-run boundary
 
@@ -177,6 +177,12 @@ it cannot expand the Policy Gate or Executor authority.
 
 ### LOCAL_DEMO successor boundary
 
+| Surface | Result |
+| --- | --- |
+| Strict diagnosis audit | Root correct; fault class mismatch; mutation blocked in the preserved R3 result |
+| Local engineering demo | Root/evidence Gate passed; one allowlisted restoration executed; two recovery windows passed; cleanup completed |
+| Production autonomy | Not claimed |
+
 LOCAL_DEMO preserves the strict Diagnosis Gate as a fault-class audit while
 using a separate injected Gate to admit the frozen local restoration only when
 the root is `payment`, cited evidence is resolver-backed and covers Metrics plus
@@ -193,9 +199,12 @@ uv run --with pyarrow python -m scripts.live_sandbox.local_e2e_demo_v1 \
 ```
 
 It is authorized only for the frozen project-owned local Sandbox, the known
-payment fault, and the exact allowlisted baseline-restoration action. Before a
-successful sealed terminal exists, this command and its tests are implementation
-readiness evidence only—not a positive live E2E claim.
+payment fault, and the exact allowlisted baseline-restoration action. The
+successful fourth retained attempt is reported in the
+[structured result](docs/results/local-e2e-demo-v1.json),
+[concise report](docs/results/local-e2e-demo-v1.md), and
+[Human Brief](docs/results/local-e2e-demo-v1-human-brief.md). It is one known
+post-failure regression demo, not held-out or production evidence.
 
 The authoritative detail lives in the [Roadmap](docs/ROADMAP.md),
 [Decision Register](docs/DECISIONS.md),
@@ -237,7 +246,7 @@ The phases intentionally make different claims:
 | Phase 5B mock dry run | 2 synthetic templates × 2 seeds × 3 arms; `NOT_MODEL_EVIDENCE`; Provider calls 0 |
 | Live E2E v6 R1 | One local accepted fault-time run; Provider preflight 1, fault injection 1, fault impact PASS, Metrics/Logs/Traces 5/32/16, A0/model/mutation 0/0/0, cleanup `CLEAN`; exact negative result in [the R1 public report](docs/results/live-fault-a0-controlled-remediation-e2e-v6-repro-1.md) |
 | Live E2E v6 R3 | One local accepted fault-time run; Provider preflight PASS, fault injection 1, fault impact PASS, Metrics/Logs/Traces 5/24/12, A0/model/forward mutation 1/1/0, Diagnosis Gate false, cleanup `CLEAN`; exact legal negative result in [the R3 public report](docs/results/live-fault-a0-controlled-remediation-e2e-v6-repro-3.md) |
-| LOCAL_DEMO successor | Post-failure regression successor with dual strict/LOCAL_DEMO Gates and Goal-scoped standing authorization; live result remains `PRE_LIVE / REVIEW_REQUIRED` until a successful sealed attempt exists |
+| LOCAL_DEMO successor | One known local post-failure regression demo with dual strict/LOCAL_DEMO Gates and Goal-scoped standing authorization; attempt 4 executed one allowlisted restoration, passed two recovery windows and independent verification, restored the exact baseline, and finished `CLEAN`; not held-out or production evidence |
 | Agent Mainline V1 demo | One deterministic scripted replay integration case; not an evaluation or provider result |
 
 The Phase 1 real-provider result is **not** 7/7.
