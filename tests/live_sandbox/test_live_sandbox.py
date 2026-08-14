@@ -167,6 +167,9 @@ def test_flag_controller_restores_private_mode_after_control_write(
 
     def read_current(_: SandboxFaultController) -> ConfigurationState:
         observed_modes.append(stat.S_IMODE(flag_file.stat().st_mode))
+        # The real flag-control process can acknowledge before its atomic
+        # replacement becomes visible, recreating the file with mode 0644.
+        flag_file.chmod(0o644)
         return ConfigurationState(
             variant="off",
             value=0,

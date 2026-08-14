@@ -212,6 +212,7 @@ class SandboxFaultController:
             try:
                 observed = self.read_current()
                 if observed.document_sha256 == expected_hash:
+                    _restore_private_flag_mode(self.flag_file)
                     return observed
             except Exception as error:  # polling preserves the final typed failure
                 last_error = error
