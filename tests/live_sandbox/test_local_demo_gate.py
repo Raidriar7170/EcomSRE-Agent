@@ -75,6 +75,7 @@ def _local_admission(diagnosis: DiagnosisResult, bundle):
         context_sha256=CONTEXT_SHA256,
         provider_live_input_sha256=CONTEXT_SHA256,
         control_truth_findings=(),
+        visible_entity_refs={"apm|apm.service|payment"},
     )
 
 
@@ -213,6 +214,7 @@ def test_local_demo_rejects_invalid_evidence(
         context_sha256=CONTEXT_SHA256,
         provider_live_input_sha256=CONTEXT_SHA256,
         control_truth_findings=(),
+        visible_entity_refs={"apm|apm.service|payment"},
     )
 
     assert admission.passed is False
@@ -249,6 +251,7 @@ def test_local_demo_rejects_context_drift_or_control_truth(
         context_sha256=CONTEXT_SHA256,
         provider_live_input_sha256="a" * 64,
         control_truth_findings=(),
+        visible_entity_refs={"apm|apm.service|payment"},
     )
     leaked = evaluate_local_demo_diagnosis_gate(
         r3_diagnosis,
@@ -257,10 +260,39 @@ def test_local_demo_rejects_context_drift_or_control_truth(
         context_sha256=CONTEXT_SHA256,
         provider_live_input_sha256=CONTEXT_SHA256,
         control_truth_findings=("scenario_id",),
+        visible_entity_refs={"apm|apm.service|payment"},
     )
 
     assert "CONTEXT_BINDING_MISMATCH" in drift.blocking_reason_codes
     assert "CONTROL_TRUTH_VISIBLE" in leaked.blocking_reason_codes
+
+
+@pytest.mark.parametrize(
+    "root_entity_ref",
+    ("attacker|fake|payment", "k8s|pod|payment"),
+)
+def test_local_demo_rejects_unresolved_or_wrong_layer_payment_suffix(
+    bundle, r3_diagnosis, root_entity_ref: str
+) -> None:
+    diagnosis = r3_diagnosis.model_copy(
+        update={"root_entity_ref": root_entity_ref}
+    )
+
+    admission = evaluate_local_demo_diagnosis_gate(
+        diagnosis,
+        bundle,
+        resolvable_refs=frozenset(R3_REFS),
+        context_sha256=CONTEXT_SHA256,
+        provider_live_input_sha256=CONTEXT_SHA256,
+        control_truth_findings=(),
+        visible_entity_refs={
+            "apm|apm.service|payment",
+            "k8s|pod|payment",
+        },
+    )
+
+    assert admission.passed is False
+    assert "ROOT_ENTITY_MISMATCH" in admission.blocking_reason_codes
 
 
 def test_plan_and_policy_keep_strict_default_and_allow_only_local_scope(

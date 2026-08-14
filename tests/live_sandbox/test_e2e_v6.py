@@ -2184,6 +2184,12 @@ def test_v6_repro_3_full_simulated_success_uses_real_high_cardinality_projection
             0,
             0,
         ),
+        (
+            "diagnosis-exception",
+            "BLOCKED_E2E_V6_UNCLASSIFIED_RUNTIME_FAILURE",
+            0,
+            0,
+        ),
         ("diagnosis", "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION", 0, 0),
         ("policy", "BLOCKED_POLICY_REJECTED", 0, 0),
         (
@@ -2197,6 +2203,12 @@ def test_v6_repro_3_full_simulated_success_uses_real_high_cardinality_projection
             "BLOCKED_ROLLBACK_FAILED_MANUAL_CLEANUP_REQUIRED",
             1,
             1,
+        ),
+        (
+            "recovery-exception",
+            "BLOCKED_E2E_V6_UNCLASSIFIED_RUNTIME_FAILURE",
+            1,
+            0,
         ),
     ),
 )
@@ -2234,6 +2246,8 @@ def test_v6_repro_3_simulated_negative_matrix_uses_frozen_stage_order(
         context: object,
     ) -> DiagnosisResult:
         current_provider.diagnose(context)
+        if boundary == "diagnosis-exception":
+            raise ValueError("simulated invalid Provider diagnosis")
         admitted = boundary != "diagnosis"
         return DiagnosisResult(
             terminal="COMPLETED",
@@ -2266,6 +2280,8 @@ def test_v6_repro_3_simulated_negative_matrix_uses_frozen_stage_order(
         )
 
     def sli_window(*_: object, phase: str) -> SLIWindow:
+        if phase == "RECOVERY" and boundary == "recovery-exception":
+            raise RuntimeError("simulated recovery capture failure")
         started = datetime(2026, 8, 14, 12, tzinfo=timezone.utc)
         degraded = phase == "FAULT" or (
             phase == "RECOVERY" and boundary in {"recovery", "rollback-failure"}
@@ -2309,6 +2325,13 @@ def test_v6_repro_3_simulated_negative_matrix_uses_frozen_stage_order(
 
         monkeypatch.setattr(e2e_v3, "compensate_rollback", fail_rollback)
 
+    failed_lineage: list[str] = []
+
+    def write_failed_lineage(*_: object) -> None:
+        failed_lineage.append("WRITTEN")
+        if boundary == "diagnosis-exception":
+            raise RuntimeError("simulated lineage persistence failure")
+
     terminal = run_r3_invocation_b(
         config,
         roots,
@@ -2318,12 +2341,21 @@ def test_v6_repro_3_simulated_negative_matrix_uses_frozen_stage_order(
         worktree_verifier=_fake_worktree,
         sleep=lambda _: None,
         public_writer=lambda *_: (),
+        diagnosis_failure_lineage_writer=write_failed_lineage,
     )
 
     assert terminal["verdict"] == expected_verdict, terminal
     assert terminal["forward_mutations"] == forward_mutations
     assert terminal["rollback_mutations"] == rollback_mutations
     assert terminal["cleanup_verdict"] == "CLEAN"
+    assert failed_lineage == (
+        ["WRITTEN"] if boundary == "diagnosis-exception" else []
+    )
+    if boundary == "diagnosis-exception":
+        assert terminal["provider_calls"] == 2
+        assert terminal["model_calls"] == 1
+        assert terminal["exception_type"] == "ValueError"
+        assert terminal["diagnosis_failure_lineage_error_type"] == "RuntimeError"
     if boundary == "projection-unresolved-ref":
         assert terminal["projection_reason_codes"] == [
             "NO_DIAGNOSTIC_LOGS",
@@ -2728,7 +2760,7 @@ def test_v6_live_provider_failure_preserves_unclassified_root(
     assert terminal["last_completed_stage"] == "MULTISERVICE_PROJECTION_COMPLETED"
     assert terminal["failure_code"] == "UNCLASSIFIED_RUNTIME_FAILURE"
     assert terminal["provider_calls"] == 2
-    assert terminal["model_calls"] == 0
+    assert terminal["model_calls"] == 1
     assert terminal["fault_injections"] == 1
     assert terminal["forward_mutations"] == 0
     assert terminal["cleanup_verdict"] == "CLEAN"

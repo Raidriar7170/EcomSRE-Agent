@@ -416,6 +416,8 @@ class LocalDemoStandingAuthorization(FrozenModel):
     command_execution: Literal["CODEX_DELEGATED_EXECUTION"] = (
         "CODEX_DELEGATED_EXECUTION"
     )
+    execution_boundary: Literal["LOCAL_DOCKER_ONLY"] = "LOCAL_DOCKER_ONLY"
+    user_manually_typed_each_runtime_command: Literal[False] = False
     approval_mode: Literal["LOCAL_DEMO_STANDING_PREAUTHORIZATION"] = (
         "LOCAL_DEMO_STANDING_PREAUTHORIZATION"
     )

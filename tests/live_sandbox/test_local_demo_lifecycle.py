@@ -7,12 +7,14 @@ from pathlib import Path
 
 import pytest
 
+from ecomsre_live_sandbox.e2e_v6_contracts import E2EV6PrivateRoots
 from ecomsre_live_sandbox.local_demo_contracts import (
     LOCAL_DEMO_CONFIG_RELATIVE,
     LocalDemoPrivateRoot,
     load_local_demo_config,
     validate_provider_env,
 )
+import ecomsre_live_sandbox.local_e2e_demo_v1 as local_demo_runner
 from ecomsre_live_sandbox.local_e2e_demo_v1 import build_public_result
 
 
@@ -95,6 +97,136 @@ def test_attempt_retry_requires_real_change_and_clean_previous_attempt(
     assert second.name == "attempt-0002"
 
 
+def test_safe_prestart_not_required_attempt_can_retry_after_change(
+    tmp_path: Path,
+) -> None:
+    config = load_local_demo_config(ROOT / LOCAL_DEMO_CONFIG_RELATIVE)
+    private = LocalDemoPrivateRoot(tmp_path / "private")
+    private.ensure_standing_authorization(config)
+    attempt = private.allocate_attempt(
+        implementation_commit="1" * 40,
+        runtime_config_sha256="2" * 64,
+    )
+    private.complete_attempt(
+        attempt,
+        {
+            "verdict": "BLOCKED_PROVIDER_PREFLIGHT",
+            "compose_start_requested": False,
+            "owned_resources_observed": {},
+            "fault_injections": 0,
+            "model_calls": 0,
+            "forward_mutations": 0,
+            "rollback_mutations": 0,
+            "cleanup_verdict": "NOT_REQUIRED",
+        },
+    )
+
+    second = private.allocate_attempt(
+        implementation_commit="3" * 40,
+        runtime_config_sha256="2" * 64,
+    )
+
+    assert second.name == "attempt-0002"
+
+
+def test_development_probe_exception_seals_safe_attempt_and_changed_head_retries(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config = load_local_demo_config(ROOT / LOCAL_DEMO_CONFIG_RELATIVE)
+    private = LocalDemoPrivateRoot(tmp_path / "private")
+    initial_head = "a" * 40
+    repaired_head = "b" * 40
+    private.record_pre_live_admission(
+        implementation_commit=initial_head,
+        ci_workflow="Agent mainline",
+        ci_run_id=123,
+        reviewer_must_fix_count=0,
+        recorded_at=datetime.now(timezone.utc),
+    )
+    heads = iter((initial_head, repaired_head))
+    monkeypatch.setattr(
+        local_demo_runner,
+        "verify_local_demo_worktree",
+        lambda *_: next(heads),
+    )
+    monkeypatch.setattr(
+        local_demo_runner.e2e_v6,
+        "run_development_probe",
+        lambda *_: (_ for _ in ()).throw(RuntimeError("simulated probe exception")),
+    )
+    provider_environment = {"ECOMSRE_LLM_MODEL": config.authority.a0_model}
+
+    with pytest.raises(RuntimeError, match="simulated probe exception"):
+        local_demo_runner.run_local_demo(
+            config,
+            private,
+            provider_environment=provider_environment,
+        )
+
+    history = json.loads(
+        (private.root / "attempt-history.json").read_text(encoding="utf-8")
+    )
+    assert history["attempts"][0]["verdict"] == (
+        "BLOCKED_LOCAL_DEMO_DEVELOPMENT_PROBE_SAFE_PRESTART_FAILURE"
+    )
+    assert history["attempts"][0]["cleanup_verdict"] == "NOT_REQUIRED"
+    assert history["attempts"][0]["compose_start_requested"] is False
+
+    safe_terminal = {
+        "verdict": "BLOCKED_LOCAL_DEMO_DEVELOPMENT_PROBE_SAFE_PRESTART_FAILURE",
+        "compose_start_requested": False,
+        "owned_resources_observed": {},
+        "fault_injections": 0,
+        "model_calls": 0,
+        "forward_mutations": 0,
+        "rollback_mutations": 0,
+        "cleanup_verdict": "NOT_REQUIRED",
+    }
+    monkeypatch.setattr(
+        local_demo_runner.e2e_v6,
+        "run_development_probe",
+        lambda *_: safe_terminal,
+    )
+
+    result = local_demo_runner.run_local_demo(
+        config,
+        private,
+        provider_environment=provider_environment,
+    )
+
+    assert result == safe_terminal
+    history = json.loads(
+        (private.root / "attempt-history.json").read_text(encoding="utf-8")
+    )
+    assert [item["verdict"] for item in history["attempts"]] == [
+        "BLOCKED_LOCAL_DEMO_DEVELOPMENT_PROBE_SAFE_PRESTART_FAILURE",
+        "BLOCKED_LOCAL_DEMO_DEVELOPMENT_PROBE_SAFE_PRESTART_FAILURE",
+    ]
+
+
+def test_failed_diagnosis_lineage_allows_transport_failure_without_raw_response(
+    tmp_path: Path,
+) -> None:
+    roots = E2EV6PrivateRoots(tmp_path / "evidence")
+    roots.prepare()
+
+    local_demo_runner._write_failed_diagnosis_lineage(
+        roots,
+        object(),
+        {"visible_entities": []},
+        ConnectionError("simulated Provider transport failure"),
+    )
+
+    manifest = json.loads(
+        (
+            roots.provider / "diagnosis-lineage" / "failure-manifest.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert manifest["artifacts"] == {}
+    assert manifest["failure_type"] == "ConnectionError"
+    assert "simulated Provider transport failure" not in json.dumps(manifest)
+
+
 def test_provider_env_validation_returns_only_safe_metadata(tmp_path: Path) -> None:
     path = tmp_path / "provider.env"
     path.write_text(
@@ -118,6 +250,41 @@ def test_provider_env_validation_returns_only_safe_metadata(tmp_path: Path) -> N
         "model": "gpt-5.4-mini-2026-03-17",
     }
     assert "secret-never-returned" not in json.dumps(metadata)
+
+
+def test_provider_env_validation_accepts_literal_export_declarations(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "provider.env"
+    path.write_text(
+        "export ECOMSRE_LLM_BASE_URL=https://provider.invalid/v1\n"
+        "export ECOMSRE_LLM_API_KEY=secret-never-returned\n"
+        "export ECOMSRE_LLM_MODEL=gpt-5.4-mini-2026-03-17\n",
+        encoding="utf-8",
+    )
+    os.chmod(path, 0o600)
+
+    values, metadata = validate_provider_env(path)
+
+    assert values["ECOMSRE_LLM_MODEL"] == "gpt-5.4-mini-2026-03-17"
+    assert metadata["provider_config_valid"] is True
+
+
+@pytest.mark.parametrize("value", ["$(whoami)", "${HOME}", "`whoami`"])
+def test_provider_env_validation_rejects_shell_expansion(
+    tmp_path: Path, value: str
+) -> None:
+    path = tmp_path / "provider.env"
+    path.write_text(
+        "ECOMSRE_LLM_BASE_URL=https://provider.invalid/v1\n"
+        f"ECOMSRE_LLM_API_KEY={value}\n"
+        "ECOMSRE_LLM_MODEL=gpt-5.4-mini-2026-03-17\n",
+        encoding="utf-8",
+    )
+    os.chmod(path, 0o600)
+
+    with pytest.raises(ValueError, match="shell expansion"):
+        validate_provider_env(path)
 
 
 @pytest.mark.parametrize("mode", [0o644, 0o400])
@@ -149,6 +316,25 @@ def test_pre_live_admission_is_exact_head_and_create_once(tmp_path: Path) -> Non
     with pytest.raises(RuntimeError, match="exact implementation head"):
         private.require_pre_live_admission("b" * 40)
 
+    attempt = private.allocate_attempt(
+        implementation_commit="a" * 40,
+        runtime_config_sha256="c" * 64,
+    )
+    private.complete_attempt(
+        attempt,
+        {
+            "verdict": "BLOCKED_PROVIDER_PREFLIGHT",
+            "compose_start_requested": False,
+            "owned_resources_observed": {},
+            "fault_injections": 0,
+            "model_calls": 0,
+            "forward_mutations": 0,
+            "rollback_mutations": 0,
+            "cleanup_verdict": "NOT_REQUIRED",
+        },
+    )
+    assert private.require_pre_live_admission("b" * 40) == created
+
 
 def test_public_result_preserves_strict_mismatch_as_local_demo_warning() -> None:
     config = load_local_demo_config(ROOT / LOCAL_DEMO_CONFIG_RELATIVE)
@@ -173,13 +359,20 @@ def test_public_result_preserves_strict_mismatch_as_local_demo_warning() -> None
         "local_demo_gate": True,
         "local_demo_warning_codes": ["FAULT_CLASS_MISMATCH_WARNING"],
         "local_demo_root_match": True,
+        "local_demo_fault_class_match": False,
         "local_demo_evidence_valid": True,
         "local_demo_source_coverage_valid": True,
         "local_demo_single_call_valid": True,
         "local_demo_context_binding_valid": True,
         "standing_authorization_valid": True,
+        "authorization_source": "USER_EXPLICIT_STANDING_AUTHORIZATION_IN_GOAL",
+        "command_execution": "CODEX_DELEGATED_EXECUTION",
+        "execution_boundary": "LOCAL_DOCKER_ONLY",
+        "user_manually_typed_each_runtime_command": False,
+        "approval_mode": "LOCAL_DEMO_STANDING_PREAUTHORIZATION",
         "codex_autonomous_self_approval": False,
         "fault_injections": 1,
+        "fault_impact_passed": True,
         "provider_calls": 2,
         "model_calls": 1,
         "a0_context_builder_calls": 1,
@@ -195,6 +388,7 @@ def test_public_result_preserves_strict_mismatch_as_local_demo_warning() -> None
         "rollback_mutations": 0,
         "recovery_verification_passed": True,
         "accepted_live_run_sealed": True,
+        "local_demo_attempt_count": 1,
         "cleanup": {
             "verdict": "CLEAN",
             "baseline_restored": True,
@@ -210,3 +404,26 @@ def test_public_result_preserves_strict_mismatch_as_local_demo_warning() -> None
     assert result["strict_audit_pass"] is False
     assert result["local_demo_gate"] is True
     assert result["local_demo_warnings"] == ["FAULT_CLASS_MISMATCH_WARNING"]
+    assert result["scenario_id"] == config.sandbox.scenario.scenario_id
+    assert result["attempt_count"] == 1
+    assert result["fault_impact_gate"] is True
+    assert result["root_match"] is True
+    assert result["fault_class_match"] is False
+    assert result["evidence_valid"] is True
+    assert result["plan_action"] == "RESTORE_FROZEN_SERVICE_CONFIGURATION"
+    assert result["authorization_mode"] == "LOCAL_DEMO_STANDING_PREAUTHORIZATION"
+    assert result["execution_boundary"] == "LOCAL_DOCKER_ONLY"
+    assert result["user_manually_typed_each_runtime_command"] is False
+    assert result["policy_verdict"] == "ALLOW"
+    assert result["baseline_restored"] is True
+
+
+def test_success_terminal_rejects_incomplete_positive_truth() -> None:
+    config = load_local_demo_config(ROOT / LOCAL_DEMO_CONFIG_RELATIVE)
+    terminal = {
+        "verdict": "LOCAL_DEMO_E2E_PASSED_READY_FOR_REVIEW",
+        "fault_injections": 1,
+    }
+
+    with pytest.raises(ValueError, match="does not recompute"):
+        build_public_result(config, terminal)

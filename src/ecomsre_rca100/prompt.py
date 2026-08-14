@@ -252,6 +252,8 @@ class OpenAICompatibleRCA100Provider:
                     ValueError(f"invalid constant: {value}")
                 ),
             )
+            if isinstance(parsed, Mapping):
+                self._last_tool_arguments = parsed
             diagnosis = RCA100InitialDiagnosis.model_validate_json(
                 json.dumps(
                     parsed,
@@ -260,6 +262,7 @@ class OpenAICompatibleRCA100Provider:
                     separators=(",", ":"),
                 )
             )
+            self._last_initial_diagnosis = diagnosis
         except (json.JSONDecodeError, RecursionError, ValidationError, ValueError) as error:
             raise ValueError("Provider diagnosis is invalid") from error
         visible_entities = {item.entity_ref for item in context.visible_entities}
@@ -280,8 +283,6 @@ class OpenAICompatibleRCA100Provider:
                 raise ValueError("Provider reasoning cited a non-visible entity")
             if not set(step.evidence_refs).issubset(valid_evidence):
                 raise ValueError("Provider reasoning cited non-visible evidence")
-        self._last_tool_arguments = parsed
-        self._last_initial_diagnosis = diagnosis
         return diagnosis
 
 

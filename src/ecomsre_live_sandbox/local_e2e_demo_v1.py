@@ -53,6 +53,58 @@ def _read_mapping(path: Path, *, label: str) -> dict[str, object]:
     return value
 
 
+def _development_probe_exception_terminal(
+    roots: E2EV6PrivateRoots, error: BaseException
+) -> dict[str, object]:
+    sealed = sorted(roots.development.glob("run-*/terminal.json"))
+    if sealed:
+        return _read_mapping(sealed[-1], label="development failure terminal")
+
+    compose_start_requested = False
+    state_unknown = False
+    for event_path in roots.development.glob("run-*/events.jsonl"):
+        try:
+            for line in event_path.read_text(encoding="utf-8").splitlines():
+                event = json.loads(line)
+                if not isinstance(event, Mapping):
+                    state_unknown = True
+                    continue
+                if event.get("stage") == "COMPOSE_START_REQUESTED":
+                    compose_start_requested = True
+        except (OSError, json.JSONDecodeError):
+            state_unknown = True
+    for command_path in roots.development.glob("run-*/commands/command-*.json"):
+        try:
+            command = json.loads(command_path.read_text(encoding="utf-8"))
+            if not isinstance(command, Mapping):
+                state_unknown = True
+                continue
+            if command.get("command_identity") == "COMPOSE_UP":
+                compose_start_requested = True
+        except (OSError, json.JSONDecodeError):
+            state_unknown = True
+    unsafe_or_unknown = compose_start_requested or state_unknown
+    return {
+        "verdict": (
+            "BLOCKED_LOCAL_DEMO_DEVELOPMENT_PROBE_STATE_UNKNOWN"
+            if unsafe_or_unknown
+            else "BLOCKED_LOCAL_DEMO_DEVELOPMENT_PROBE_SAFE_PRESTART_FAILURE"
+        ),
+        "development_probe_state": (
+            "UNKNOWN" if unsafe_or_unknown else "SAFE_PRESTART"
+        ),
+        "exception_type": type(error).__name__,
+        "exception_message_sha256": canonical_sha256(str(error)),
+        "compose_start_requested": compose_start_requested,
+        "owned_resources_observed": None if unsafe_or_unknown else {},
+        "fault_injections": 0,
+        "model_calls": 0,
+        "forward_mutations": 0,
+        "rollback_mutations": 0,
+        "cleanup_verdict": "BLOCKED" if unsafe_or_unknown else "NOT_REQUIRED",
+    }
+
+
 def _load_invocation_authority(
     config: LocalDemoConfig,
     roots: E2EV6PrivateRoots,
@@ -102,6 +154,9 @@ def _local_admission(
     context_path_hash = canonical_sha256(dumped)
     provider_hash = getattr(provider, "last_context_sha256", None)
     findings = scan_model_projection(dumped)
+    visible_entity_refs = {
+        item.entity_ref for item in getattr(context, "visible_entities", ())
+    }
     return evaluate_local_demo_diagnosis_gate(
         diagnosis,
         cast(Any, bundle),
@@ -109,6 +164,7 @@ def _local_admission(
         context_sha256=context_path_hash,
         provider_live_input_sha256=provider_hash,
         control_truth_findings=findings,
+        visible_entity_refs=visible_entity_refs,
     )
 
 
@@ -172,6 +228,56 @@ def _write_diagnosis_lineage(
     )
 
 
+def _write_failed_diagnosis_lineage(
+    roots: E2EV6PrivateRoots,
+    provider: object,
+    context: object,
+    error: BaseException,
+) -> None:
+    lineage_root = roots.provider / "diagnosis-lineage"
+    raw = getattr(provider, "last_raw_response", None)
+    hashes: dict[str, str] = {}
+    if isinstance(raw, Mapping):
+        hashes["provider-strict-raw-response.json"] = write_private_json(
+            lineage_root / "provider-strict-raw-response.json",
+            raw,
+            create_once=True,
+        )
+    arguments = getattr(provider, "last_tool_arguments", None)
+    if isinstance(arguments, Mapping):
+        hashes["tool-call-arguments.json"] = write_private_json(
+            lineage_root / "tool-call-arguments.json",
+            arguments,
+            create_once=True,
+        )
+    initial = getattr(provider, "last_initial_diagnosis", None)
+    if isinstance(initial, BaseModel):
+        hashes["parsed-a0.json"] = write_private_json(
+            lineage_root / "parsed-a0.json",
+            initial,
+            create_once=True,
+        )
+    context_value = (
+        context.model_dump(mode="json")
+        if isinstance(context, BaseModel)
+        else context
+    )
+    write_private_json(
+        lineage_root / "failure-manifest.json",
+        {
+            "schema_version": "live-e2e.local-demo-diagnosis-lineage-failure.v1",
+            "artifacts": hashes,
+            "context_sha256": canonical_sha256(context_value),
+            "provider_live_input_sha256": getattr(
+                provider, "last_context_sha256", None
+            ),
+            "failure_type": type(error).__name__,
+            "failure_message_sha256": canonical_sha256(str(error)),
+        },
+        create_once=True,
+    )
+
+
 def _seal_accepted_run(
     config: LocalDemoConfig,
     roots: E2EV6PrivateRoots,
@@ -214,11 +320,29 @@ def verify_success_terminal(
     config: LocalDemoConfig, terminal: Mapping[str, object]
 ) -> None:
     cleanup = terminal.get("cleanup")
+    source_availability = terminal.get("source_availability")
+    source_counts = terminal.get("source_counts")
     if terminal.get("verdict") != config.authority.invocation_b_success:
         return
+    predicted_class = terminal.get("predicted_fault_class")
+    class_match = predicted_class == config.sandbox.scenario.expected_fault_class
+    expected_strict_reasons = [] if class_match else ["FAULT_CLASS_MISMATCH"]
+    expected_warnings = [] if class_match else ["FAULT_CLASS_MISMATCH_WARNING"]
     if any(
         (
             terminal.get("fault_injections") != 1,
+            terminal.get("fault_impact_passed") is not True,
+            not isinstance(source_availability, Mapping),
+            source_availability
+            != {"METRICS": "AVAILABLE", "LOGS": "AVAILABLE", "TRACES": "AVAILABLE"},
+            not isinstance(source_counts, Mapping),
+            not isinstance(source_counts, Mapping)
+            or any(
+                not isinstance(source_counts.get(source), int)
+                or cast(int, source_counts.get(source)) <= 0
+                for source in ("METRICS", "LOGS", "TRACES")
+            ),
+            terminal.get("invalid_refs") != 0,
             terminal.get("provider_calls") != 2,
             terminal.get("model_calls") != 1,
             terminal.get("a0_context_builder_calls") != 1,
@@ -234,7 +358,29 @@ def verify_success_terminal(
             terminal.get("local_demo_source_coverage_valid") is not True,
             terminal.get("local_demo_single_call_valid") is not True,
             terminal.get("local_demo_context_binding_valid") is not True,
+            terminal.get("strict_expected_root_service")
+            != config.sandbox.scenario.expected_root_service,
+            terminal.get("strict_expected_fault_class")
+            != config.sandbox.scenario.expected_fault_class,
+            terminal.get("predicted_root_service")
+            != config.sandbox.scenario.expected_root_service,
+            not isinstance(predicted_class, str),
+            terminal.get("local_demo_fault_class_match") is not class_match,
+            terminal.get("strict_audit_pass") is not class_match,
+            terminal.get("strict_reason_codes") != expected_strict_reasons,
+            terminal.get("local_demo_warning_codes") != expected_warnings,
             terminal.get("standing_authorization_valid") is not True,
+            terminal.get("authorization_source")
+            != "USER_EXPLICIT_STANDING_AUTHORIZATION_IN_GOAL",
+            terminal.get("command_execution") != "CODEX_DELEGATED_EXECUTION",
+            terminal.get("execution_boundary") != "LOCAL_DOCKER_ONLY",
+            terminal.get("user_manually_typed_each_runtime_command") is not False,
+            terminal.get("approval_mode")
+            != "LOCAL_DEMO_STANDING_PREAUTHORIZATION",
+            terminal.get("codex_autonomous_self_approval") is not False,
+            terminal.get("model") != config.authority.a0_model,
+            not isinstance(terminal.get("local_demo_attempt_count"), int),
+            cast(int, terminal.get("local_demo_attempt_count", 0)) < 1,
             terminal.get("plan_action")
             != "RESTORE_FROZEN_SERVICE_CONFIGURATION",
             terminal.get("policy_verdict") != "ALLOW",
@@ -246,6 +392,18 @@ def verify_success_terminal(
             if isinstance(cleanup, Mapping)
             else True,
             cleanup.get("baseline_restored") is not True
+            if isinstance(cleanup, Mapping)
+            else True,
+            cleanup.get("owned_containers") != 0
+            if isinstance(cleanup, Mapping)
+            else True,
+            cleanup.get("owned_networks") != 0
+            if isinstance(cleanup, Mapping)
+            else True,
+            cleanup.get("owned_volumes") != 0
+            if isinstance(cleanup, Mapping)
+            else True,
+            cleanup.get("non_owned_resources_changed") is not False
             if isinstance(cleanup, Mapping)
             else True,
             terminal.get("accepted_live_run_sealed") is not True,
@@ -265,6 +423,10 @@ def build_public_result(
         "schema_version": "live-e2e.local-demo-public-result.v1",
         "mode": "LOCAL_DEMO",
         "classification": "POST_FAILURE_REGRESSION_DEMO",
+        "scenario_id": config.sandbox.scenario.scenario_id,
+        "target_service": config.sandbox.scenario.target_service,
+        "configuration_key": config.sandbox.scenario.target_configuration_key,
+        "attempt_count": terminal.get("local_demo_attempt_count"),
         "verdict": terminal["verdict"],
         "implementation_commit": terminal["implementation_commit"],
         "result_head": terminal["result_head"],
@@ -284,10 +446,17 @@ def build_public_result(
         "strict_reason_codes": terminal.get("strict_reason_codes", []),
         "local_demo_gate": terminal.get("local_demo_gate"),
         "local_demo_warnings": terminal.get("local_demo_warning_codes", []),
+        "root_match": terminal.get("local_demo_root_match"),
+        "fault_class_match": terminal.get("local_demo_fault_class_match"),
+        "evidence_valid": terminal.get("local_demo_evidence_valid"),
+        "source_coverage_valid": terminal.get(
+            "local_demo_source_coverage_valid"
+        ),
         "context_binding_valid": terminal.get(
             "local_demo_context_binding_valid"
         ),
         "fault_injections": terminal.get("fault_injections"),
+        "fault_impact_gate": terminal.get("fault_impact_passed"),
         "model_calls": terminal.get("model_calls"),
         "semantic_model_calls": terminal.get("semantic_model_calls"),
         "specialist_calls": terminal.get("specialist_calls"),
@@ -299,12 +468,22 @@ def build_public_result(
         "independent_verification": terminal.get(
             "recovery_verification_passed"
         ),
+        "plan_action": terminal.get("plan_action"),
+        "authorization_mode": terminal.get("approval_mode"),
+        "authorization_source": terminal.get("authorization_source"),
+        "command_execution": terminal.get("command_execution"),
+        "execution_boundary": terminal.get("execution_boundary"),
+        "user_manually_typed_each_runtime_command": terminal.get(
+            "user_manually_typed_each_runtime_command"
+        ),
+        "policy_verdict": terminal.get("policy_verdict"),
         "standing_authorization_valid": terminal.get(
             "standing_authorization_valid"
         ),
         "codex_autonomous_self_approval": terminal.get(
             "codex_autonomous_self_approval"
         ),
+        "baseline_restored": cleanup.get("baseline_restored"),
         "cleanup": dict(cleanup),
         "claim_boundary": list(config.reporting.claim_boundary),
     }
@@ -386,24 +565,20 @@ def run_local_demo(
         runtime_config_sha256=runtime_sha,
     )
     roots = E2EV6PrivateRoots(attempt / "evidence")
-    development = e2e_v6.run_development_probe(
-        cast(Any, config), cast(Any, roots)
-    )
-    if development.get("verdict") != config.authority.development_success_terminal:
-        top.complete_attempt(attempt, development)
-        return development
-
     completed = False
+
+    def record_completion(terminal: Mapping[str, object]) -> None:
+        nonlocal completed
+        top.complete_attempt(attempt, terminal)
+        completed = True
 
     def complete(
         current_config: object,
         current_roots: object,
         terminal: Mapping[str, object],
     ) -> None:
-        nonlocal completed
         del current_config, current_roots
-        top.complete_attempt(attempt, terminal)
-        completed = True
+        record_completion(terminal)
         if terminal.get("verdict") == config.authority.invocation_b_success:
             write_private_json(
                 top.root / "final" / "accepted-attempt.json",
@@ -419,6 +594,15 @@ def run_local_demo(
             )
 
     try:
+        development = e2e_v6.run_development_probe(
+            cast(Any, config), cast(Any, roots)
+        )
+        if (
+            development.get("verdict")
+            != config.authority.development_success_terminal
+        ):
+            record_completion(development)
+            return development
         terminal = e2e_v6.run_invocation_b(
             cast(Any, config),
             cast(Any, roots),
@@ -445,9 +629,15 @@ def run_local_demo(
                 )
             ),
             diagnosis_admission_evaluator=_local_admission,
+            local_demo_attempt_count=int(attempt.name.rsplit("-", 1)[-1]),
             diagnosis_lineage_writer=lambda provider, context, diagnosis, strict, local: (
                 _write_diagnosis_lineage(
                     roots, provider, context, diagnosis, strict, local
+                )
+            ),
+            diagnosis_failure_lineage_writer=lambda provider, context, error: (
+                _write_failed_diagnosis_lineage(
+                    roots, provider, context, error
                 )
             ),
             accepted_run_sealer=lambda current, current_roots, terminal, windows: (
@@ -467,13 +657,16 @@ def run_local_demo(
                 cast(LocalDemoConfig, current), roots, terminal
             ),
         )
-    except Exception:
+    except Exception as error:
         if not completed:
             terminal_path = roots.invocation_b / "terminal.json"
             if terminal_path.is_file() and not terminal_path.is_symlink():
-                top.complete_attempt(
-                    attempt,
+                record_completion(
                     _read_mapping(terminal_path, label="failed terminal"),
+                )
+            else:
+                record_completion(
+                    _development_probe_exception_terminal(roots, error)
                 )
         raise
     return terminal

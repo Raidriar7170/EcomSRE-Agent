@@ -271,6 +271,7 @@ def evaluate_local_demo_diagnosis_gate(
     context_sha256: str,
     provider_live_input_sha256: str | None,
     control_truth_findings: Sequence[str],
+    visible_entity_refs: Collection[str],
 ) -> LocalDemoDiagnosisAdmission:
     reasons: list[str] = []
     terminal_completed = diagnosis.terminal == "COMPLETED"
@@ -285,9 +286,10 @@ def evaluate_local_demo_diagnosis_gate(
         reasons.append("UNAUTHORIZED_MODEL_CALL")
 
     root_service_match = diagnosis.root_service == bundle.scenario.expected_root_service
-    root_entity_match = (
-        diagnosis.root_entity_ref is None
-        or diagnosis.root_entity_ref.rsplit("|", 1)[-1]
+    root_entity_match = diagnosis.root_entity_ref is None or (
+        diagnosis.root_entity_ref in set(visible_entity_refs)
+        and diagnosis.root_entity_ref.startswith("apm|apm.service|")
+        and diagnosis.root_entity_ref.rsplit("|", 1)[-1]
         == bundle.scenario.expected_root_service
     )
     if not root_service_match:
@@ -470,6 +472,8 @@ def evaluate_policy(
             "approver": "Minghong Sun",
             "authorization_source": "USER_EXPLICIT_STANDING_AUTHORIZATION_IN_GOAL",
             "command_execution": "CODEX_DELEGATED_EXECUTION",
+            "execution_boundary": "LOCAL_DOCKER_ONLY",
+            "user_manually_typed_each_runtime_command": False,
             "approval_mode": "LOCAL_DEMO_STANDING_PREAUTHORIZATION",
             "codex_autonomous_self_approval": False,
             "environment_id": bundle.environment.environment_id,

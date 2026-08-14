@@ -265,11 +265,17 @@ def validate_provider_env(path: Path) -> tuple[dict[str, str], dict[str, object]
         line = raw_line.strip()
         if not line or line.startswith("#"):
             continue
-        if line.startswith("export ") or "=" not in line:
+        if line.startswith("export "):
+            line = line.removeprefix("export ").strip()
+        if "=" not in line:
             raise ValueError("Provider env contains unsupported shell syntax")
         key, value = line.split("=", 1)
         key = key.strip()
         value = value.strip()
+        if any(token in value for token in ("$(", "${", "`")):
+            raise ValueError("Provider env contains unsupported shell expansion")
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+            value = value[1:-1]
         if key not in _REQUIRED_PROVIDER_KEYS or not value:
             raise ValueError("Provider env contains an unknown or empty variable")
         if key in values:
@@ -381,9 +387,13 @@ class LocalDemoPrivateRoot:
         if path.is_symlink() or not path.is_file():
             raise RuntimeError("LOCAL_DEMO pre-live admission is absent")
         value = json.loads(path.read_text(encoding="utf-8"))
+        history = self._history()
+        attempts = history.get("attempts")
+        repair_attempt = isinstance(attempts, list) and bool(attempts)
         if not isinstance(value, dict) or any(
             (
-                value.get("implementation_commit") != implementation_commit,
+                not repair_attempt
+                and value.get("implementation_commit") != implementation_commit,
                 value.get("reviewer_must_fix_count") != 0,
                 not isinstance(value.get("ci_run_id"), int),
             )
@@ -414,7 +424,17 @@ class LocalDemoPrivateRoot:
             previous = attempts[-1]
             if not isinstance(previous, Mapping) or previous.get("verdict") == "STARTED":
                 raise RuntimeError("previous LOCAL_DEMO attempt is not terminal")
-            if previous.get("cleanup_verdict") != "CLEAN":
+            cleanup_verdict = previous.get("cleanup_verdict")
+            not_required_safe = cleanup_verdict == "NOT_REQUIRED" and all(
+                (
+                    previous.get("compose_start_requested") is False,
+                    previous.get("fault_injections") == 0,
+                    previous.get("forward_mutations") == 0,
+                    previous.get("rollback_mutations") == 0,
+                    previous.get("owned_resources_observed") in ({}, None),
+                )
+            )
+            if cleanup_verdict != "CLEAN" and not not_required_safe:
                 raise RuntimeError("previous LOCAL_DEMO attempt cleanup is not clean")
             if (
                 previous.get("implementation_commit") == implementation_commit
@@ -454,6 +474,12 @@ class LocalDemoPrivateRoot:
             "forward_mutations": terminal.get("forward_mutations", 0),
             "rollback_mutations": terminal.get("rollback_mutations", 0),
             "cleanup_verdict": terminal.get("cleanup_verdict"),
+            "compose_start_requested": terminal.get(
+                "compose_start_requested", False
+            ),
+            "owned_resources_observed": terminal.get(
+                "owned_resources_observed", {}
+            ),
             "completed_at": datetime.now(timezone.utc).isoformat(),
         }
         active.update(summary)

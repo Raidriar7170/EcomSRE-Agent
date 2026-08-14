@@ -6,6 +6,7 @@ from typing import Mapping
 import pytest
 
 from ecomsre.model.gateway import OpenAICompatibleConfig
+from ecomsre_live_sandbox.contracts import canonical_sha256
 from ecomsre_rca100.contracts import RCA100InitialDiagnosis
 from ecomsre_rca100.prompt import (
     OpenAICompatibleRCA100Provider,
@@ -200,8 +201,9 @@ def test_provider_retains_private_diagnosis_lineage_without_credentials() -> Non
     assert provider.last_raw_response["model"] == "strong-single-snapshot"
     assert provider.last_tool_arguments == _diagnosis()
     assert provider.last_initial_diagnosis == diagnosis
-    assert provider.last_context_sha256 is not None
-    assert len(provider.last_context_sha256) == 64
+    assert provider.last_context_sha256 == canonical_sha256(
+        _context().model_dump(mode="json")
+    )
     assert "secret" not in json.dumps(provider.last_raw_response, sort_keys=True)
 
 
@@ -224,3 +226,6 @@ def test_provider_rejects_unseen_entity_without_semantic_retry() -> None:
         provider.diagnose(_context())
 
     assert provider.calls == 1
+    assert provider.last_raw_response is not None
+    assert provider.last_tool_arguments == invalid
+    assert provider.last_initial_diagnosis is not None

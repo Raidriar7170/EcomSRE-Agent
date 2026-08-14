@@ -2540,6 +2540,7 @@ DiagnosisLineageWriter = Callable[
     ],
     None,
 ]
+DiagnosisFailureLineageWriter = Callable[[object, object, BaseException], None]
 
 
 def run_invocation_b(
@@ -2576,6 +2577,8 @@ def run_invocation_b(
     scenario_lock_verifier: ScenarioLockVerifier | None = None,
     diagnosis_admission_evaluator: DiagnosisAdmissionEvaluator | None = None,
     diagnosis_lineage_writer: DiagnosisLineageWriter | None = None,
+    diagnosis_failure_lineage_writer: DiagnosisFailureLineageWriter | None = None,
+    local_demo_attempt_count: int | None = None,
 ) -> dict[str, object]:
     """Execute the single human-preauthorized live run without result-driven retries."""
     roots.bind_lifecycle(config.authority, repository_root=config.repository_root)
@@ -2742,13 +2745,20 @@ def run_invocation_b(
                 }
             )
     if standing_authorization is not None:
+        if local_demo_attempt_count is None or local_demo_attempt_count < 1:
+            raise ValueError("LOCAL_DEMO attempt count is invalid")
         terminal.update(
             {
                 "authorization_source": standing_authorization.authorization_source,
                 "command_execution": standing_authorization.command_execution,
+                "execution_boundary": standing_authorization.execution_boundary,
+                "user_manually_typed_each_runtime_command": (
+                    standing_authorization.user_manually_typed_each_runtime_command
+                ),
                 "approver": standing_authorization.approver,
                 "codex_autonomous_self_approval": False,
                 "additional_human_confirmation_requested": False,
+                "local_demo_attempt_count": local_demo_attempt_count,
             }
         )
     provider: Any = None
@@ -3136,9 +3146,27 @@ def run_invocation_b(
                 create_once=True,
             )
         terminal["verdict"] = "LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION"
-        diagnosis = _diagnosis_from_initial(provider, context)
-        terminal["provider_calls"] = provider.calls
         terminal["model_calls"] = 1
+        try:
+            diagnosis = _diagnosis_from_initial(provider, context)
+        except Exception as diagnosis_error:
+            terminal["provider_calls"] = provider.calls
+            if diagnosis_failure_lineage_writer is not None:
+                try:
+                    diagnosis_failure_lineage_writer(
+                        provider,
+                        context,
+                        diagnosis_error,
+                    )
+                except Exception as lineage_error:
+                    terminal["diagnosis_failure_lineage_error_type"] = type(
+                        lineage_error
+                    ).__name__
+                    terminal["diagnosis_failure_lineage_error_sha256"] = (
+                        canonical_sha256(str(lineage_error))
+                    )
+            raise
+        terminal["provider_calls"] = provider.calls
         if provider.calls != 2 or not provider.usage_known:
             raise RuntimeError("live A0 call exceeded the frozen Provider budget")
         write_private_json(
@@ -3433,20 +3461,6 @@ def run_invocation_b(
             terminal["failed_stage"] = "PROVIDER_PREFLIGHT"
             terminal["last_completed_stage"] = "WORKTREE_VERIFIED"
             terminal["failure_code"] = "PROVIDER_PREFLIGHT_FAILED"
-        if (
-            terminal.get("verdict")
-            == "CONTROLLED_REMEDIATION_NOT_VERIFIED_ROLLBACK_COMPLETED"
-            and forward_counter.count == 1
-            and terminal.get("rollback_mutations") != 1
-        ):
-            terminal["verdict"] = (
-                "BLOCKED_ROLLBACK_FAILED_MANUAL_CLEANUP_REQUIRED"
-            )
-            terminal.setdefault(
-                "manual_cleanup_command",
-                environment.manual_cleanup_command(),
-            )
-            terminal.setdefault("recovery_verification_passed", False)
         _set_late_terminal_failure_identity(terminal)
         private_exception = ExceptionArtifactStore(
             roots.invocation_b / "exceptions"
@@ -3499,6 +3513,37 @@ def run_invocation_b(
                 if tracker.failure_code is not None
                 else DiagnosticFailureCode.UNCLASSIFIED_RUNTIME_FAILURE.value
             )
+        if (
+            terminal.get("verdict")
+            == "CONTROLLED_REMEDIATION_NOT_VERIFIED_ROLLBACK_COMPLETED"
+            and forward_counter.count == 1
+            and terminal.get("rollback_mutations") != 1
+        ):
+            cleanup_baseline_restored = (
+                cleanup_payload.get("baseline_restored")
+                if isinstance(cleanup_payload, Mapping)
+                else None
+            )
+            if cleanup_verdict == "CLEAN" and cleanup_baseline_restored is True:
+                terminal["verdict"] = verdict_policy.unclassified_runtime_failure
+                terminal["failed_stage"] = "REMEDIATION_RUNTIME"
+                terminal["failure_code"] = (
+                    DiagnosticFailureCode.UNCLASSIFIED_RUNTIME_FAILURE.value
+                )
+                terminal["last_completed_stage"] = (
+                    "MULTISERVICE_PROJECTION_COMPLETED"
+                )
+                terminal.pop("recovery_verification_passed", None)
+                terminal.pop("manual_cleanup_command", None)
+            else:
+                terminal["verdict"] = (
+                    "BLOCKED_ROLLBACK_FAILED_MANUAL_CLEANUP_REQUIRED"
+                )
+                terminal.setdefault("recovery_verification_passed", False)
+                terminal.setdefault(
+                    "manual_cleanup_command",
+                    environment.manual_cleanup_command(),
+                )
         if private_exception is not None:
             terminal["exception_type"] = private_exception.exception_type
             terminal["exception_module"] = private_exception.exception_module

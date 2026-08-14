@@ -61,6 +61,7 @@ def simulate_local_demo(
         context_sha256=context_sha256,
         provider_live_input_sha256=provider_live_input_sha256,
         control_truth_findings=(),
+        visible_entity_refs={"apm|apm.service|payment"},
     )
 
     def local_gate(current: DiagnosisResult, current_bundle: ConfigBundle) -> DiagnosisGate:
@@ -71,6 +72,7 @@ def simulate_local_demo(
             context_sha256=context_sha256,
             provider_live_input_sha256=provider_live_input_sha256,
             control_truth_findings=(),
+            visible_entity_refs={"apm|apm.service|payment"},
         )
         return DiagnosisGate(
             passed=current_admission.passed,
