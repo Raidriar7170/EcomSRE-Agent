@@ -138,6 +138,7 @@ it cannot expand the Policy Gate or Executor authority.
 | E2E v6 original | `BLOCKED_E2E_V6_UNCLASSIFIED_RUNTIME_FAILURE`; Provider preflight passed, but the run ended before Compose start; fault/model/mutation counts `0/0/0`; the original result remains preserved |
 | E2E v6 `V6_REPRO_1` | One accepted local run injected the frozen payment fault and passed Fault Impact plus Metrics/Logs/Traces availability, then stopped before A0 because the diagnostic journal rejected a backward stage transition; final public terminal `BLOCKED_PUBLIC_RESULT_VERIFICATION`; A0/model/forward mutation `0/0/0`; baseline restored and cleanup `CLEAN` |
 | E2E v6 `V6_REPRO_2` | One accepted local run proved the repaired ordered source-stage transition and reached `MULTISERVICE_PROJECTION_COMPLETED`, where a typed projection runtime failure stopped the run before diagnosis; final public terminal `BLOCKED_PUBLIC_RESULT_VERIFICATION`; A0 builder/model/forward mutation `1/0/0`; baseline restored and cleanup `CLEAN` |
+| E2E v6 `V6_REPRO_3` | One accepted local run completed the bounded projection and one A0 model diagnosis, but the diagnosis was incorrect; terminal `LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION`; forward/rollback mutation `0/0`; baseline restored and cleanup `CLEAN` |
 
 ### V6_REPRO_2 accepted-run boundary
 
@@ -154,6 +155,23 @@ it cannot expand the Policy Gate or Executor authority.
 | Restricted remediation | Not reached; forward mutations `0` |
 | Recovery verification | Not reached |
 | Cleanup | Completed; baseline restored and owned resources `0 / 0 / 0` |
+| Production autonomy | Not claimed |
+
+### V6_REPRO_3 accepted-run boundary
+
+| Gate | Status |
+| --- | --- |
+| 25-service Sandbox | Completed |
+| Human approval | Completed with a new exact R3 record |
+| Fault injection | Completed once with the frozen payment fault |
+| Fault Impact | Passed |
+| Metrics / Logs / Traces | `AVAILABLE / AVAILABLE / AVAILABLE`; source counts `5 / 24 / 12`; invalid refs `0` |
+| Bounded projection | Completed; diagnostic counts `8 / 0 / 14`, visible services `4`, and all selected refs resolved |
+| A0 diagnosis | Executed once from the sealed fault-time context; Diagnosis Gate failed because the diagnosis was incorrect |
+| Restricted remediation | Not entered; forward mutations `0` |
+| Recovery verification | Not reached |
+| Cleanup | Completed; baseline restored and owned resources `0 / 0 / 0` |
+| Terminal | `LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION`; preserved as a legal negative result |
 | Production autonomy | Not claimed |
 
 The authoritative detail lives in the [Roadmap](docs/ROADMAP.md),
@@ -195,6 +213,7 @@ The phases intentionally make different claims:
 | Phase 5B v2 analysis-only result | Identical immutable v1 records; hidden-only Dynamic/Single Decision Accuracy 63.3%/53.3%, difference +10.0 pp with 95% hierarchical paired CI [−16.7 pp, +36.7 pp]; Provider/Agent/scored-run reruns 0; `NO_PREREGISTERED_ADVANTAGE_SUPPORTED` |
 | Phase 5B mock dry run | 2 synthetic templates × 2 seeds × 3 arms; `NOT_MODEL_EVIDENCE`; Provider calls 0 |
 | Live E2E v6 R1 | One local accepted fault-time run; Provider preflight 1, fault injection 1, fault impact PASS, Metrics/Logs/Traces 5/32/16, A0/model/mutation 0/0/0, cleanup `CLEAN`; exact negative result in [the R1 public report](docs/results/live-fault-a0-controlled-remediation-e2e-v6-repro-1.md) |
+| Live E2E v6 R3 | One local accepted fault-time run; Provider preflight PASS, fault injection 1, fault impact PASS, Metrics/Logs/Traces 5/24/12, A0/model/forward mutation 1/1/0, Diagnosis Gate false, cleanup `CLEAN`; exact legal negative result in [the R3 public report](docs/results/live-fault-a0-controlled-remediation-e2e-v6-repro-3.md) |
 | Agent Mainline V1 demo | One deterministic scripted replay integration case; not an evaluation or provider result |
 
 The Phase 1 real-provider result is **not** 7/7.
