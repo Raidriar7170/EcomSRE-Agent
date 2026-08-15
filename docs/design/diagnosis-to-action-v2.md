@@ -1,6 +1,6 @@
 # Diagnosis-to-Action v2 Frozen Design
 
-Status: `PR_B_OFFLINE_FAKE_RUNTIME_IMPLEMENTED / LIVE_NOT_EXECUTED`
+Status: `PR_C_READ_TOOL_RUNTIME_IMPLEMENTED / READ_ONLY_GATE_PASS / CLEAN`
 
 Decision owners: `DEC-033`, `DEC-034`, `DEC-035`
 Safety owner: [SAFETY_BOUNDARIES.md](../SAFETY_BOUNDARIES.md)
@@ -83,25 +83,45 @@ This avoids collision with the existing Phase 5A `DiagnosisResultV2`.
 | `RunbookSpec` | Fully hash-frozen domain/mechanism/target applicability, risk, parameter schema, preconditions, ordered fixed steps, executor/verifier IDs, and step cap. |
 | `CandidateSet` | Diagnosis/resolved-evidence-bound deterministic target-specific write candidates plus fail-closed dispositions; `resolved_evidence_sha256` binds the diagnosis-scoped resolved view. |
 | `ActionProposal` | Accepted only after binding to the actual CandidateSet, Diagnosis, ResolvedDiagnosisEvidenceView, and trusted RunbookSpec and covering every required evidence source; no risk, commands, paths, URLs, or container IDs. |
+| `EvidenceStoreSnapshot` | Full run-scoped, canonical, digest-bound record of every dispatched success or typed failure; it is separate from the diagnosis-cited resolved view. |
 | `OperationalAdmission` | Deterministic current-state, ownership, evidence, parameter, authorization, and precondition verdict. |
 | `AuthorizationRecord` | Standing exact Master scope plus an expiring run/attempt-bound child; neither is model-writable. |
 | `StepReceipt` | Before/after state digest, time window, outcome, error, and semantic hash for each attempted fixed step. |
 | `ExecutionTransaction` | Registry-ordered bounded receipts, Verification identity, terminal, and safe escalation binding. |
 | `VerificationResult` | Fake-backend PR-B infrastructure and business-SLI verdict base contract; real adapters remain later-stage work. |
 
-The current offline slice implements the structural contracts through
+The current implementation provides the structural contracts through
 `ActionProposal`, explicit Registry and selected-Runbook digest binding,
 deterministic Operational Admission, Master and attempt Authorization records,
-fixed-step fake Executors, per-step receipts, and fake Verifiers. It does not
-claim that an artifact exists in a real Evidence Store; the trusted
-resolver/adapter producer is PR-C. No Docker, Provider, fault injection, or real
-mutation was executed by PR-B.
+fixed-step fake Executors, per-step receipts, fake Verifiers, five typed
+read-only adapters, and a full run-scoped Evidence Store. Prometheus,
+OpenSearch, and Jaeger use fixed loopback-only queries; runtime and resource
+inspection use GET-only Docker Engine HTTP over a local Unix socket with exact
+ownership labels. Fake/replay backends remain available for deterministic
+tests. No Provider, fault injection, Runbook execution, or service mutation is
+part of the PR-C read-tool runtime.
+
+Fresh authorized no-fault read-only Smoke `f8532f3a6ab5242ab5bba2f8ae1a6caf`
+completed terminal `PASS`, read-tool terminal `PASS`, unchanged baseline, and
+`CLEAN` cleanup. All five tools returned `SUCCESS` in exactly one dispatch
+each. Owned containers, networks, and volumes ended at `0/0/0`; no non-owned
+resources changed; and the fault-injection, Agent, Provider, Runbook,
+forward/configuration/service-mutation counters all remained zero. Its report
+semantic SHA-256 is
+`6b7c69192c06e9bdef23ccd0c75bf7a822acdd2cc37da82e0d9a6fd450147b1b` and its
+closure semantic SHA-256 is
+`832ef7f326955100364e6d38678bb44345be99c994e44fa364471764072d20cc`.
+The first retained attempt remains `FAIL`, with primary `READ_TOOL_FAILED` and
+terminal `CLEANUP_BLOCKED`; it also ended with zero owned resources and zero
+prohibited-action counters. The fresh result closes only the PR-C read-only
+gate `PASS / CLEAN`; it is not live remediation or Live acceptance.
 
 `ResolvedDiagnosisEvidenceView` is permanently diagnosis-scoped: its reference
-set must equal the Diagnosis supporting plus contradicting reference set. A
-future full-run `EvidenceStoreSnapshot` is a separate PR-C contract and may
-contain additional run evidence; it must not broaden or silently replace this
-exact view. Likewise, the PR-B Operational Admission current-state snapshot
+set must equal the Diagnosis supporting plus contradicting reference set. The
+full-run `EvidenceStoreSnapshot` is a separate contract and may contain
+additional run evidence; its resolver selects only successful refs actually
+cited by the Diagnosis and cannot broaden or silently replace this exact view.
+Likewise, the PR-B Operational Admission current-state snapshot
 uses its own independently named digest field. It does not reuse
 `resolved_evidence_sha256` with different semantics.
 
@@ -114,8 +134,51 @@ the Runbook, target, risk, evidence, or authorization boundary.
 The MVP read tools are `query_metrics`, `search_logs`,
 `query_trace_neighborhood`, `inspect_service_runtime`, and
 `inspect_resource_usage`. At most four are dispatched in one investigation and
-an identical normalized request cannot repeat. Existing legacy `list_changes`
-is preserved but disabled from the first live tool set pending `OQ-011`.
+an identical normalized request cannot repeat. `list_recent_changes` remains
+unavailable in the MVP; the historical namespaced `list_changes` path is not
+part of the DTA v2 tool surface.
+
+Every request is normalized and hash-bound before dispatch. Every dispatch,
+including a backend failure or rejected duplicate, consumes the investigation
+budget and produces a typed, run-bound, artifact-hashed observation. A fifth
+dispatch is rejected without a backend call. Tool projections are bounded and
+exclude raw URLs, queries, container IDs, trace/span IDs, scenario control, and
+evaluator truth. The no-fault Smoke harness runs all five adapter gates as five
+independent one-dispatch investigations so no investigation exceeds the
+four-dispatch Agent budget. The fresh real local Smoke reported above passed
+that read-only exit gate; it does not establish Agent behavior, remediation, or
+Live acceptance.
+
+The owned lifecycle entry point is:
+
+```bash
+PYTHONPATH=src uv run --frozen --no-sync python -m ecomsre.dta_v2.read_only_smoke \
+  owned-lifecycle \
+  --repository-root "$(pwd)" \
+  --private-root "<new-private-create-once-root>" \
+  --smoke-id "<32-lower-hex>" \
+  --service payment
+```
+
+It delegates start, image/Compose admission, dual-label ownership checks, and
+cleanup to the existing `SandboxEnvironment`. The production backend is
+created only from an opaque capability issued by this owned lifecycle after
+readiness and stabilization: the issuer freshly re-authenticates the local
+daemon, freshly resolves the Sandbox, rejects drift from the admitted resolve,
+and binds the daemon context, frozen ConfigBundle, proven resolved Sandbox,
+exact loopback and Unix-socket endpoints, and exact project/Sandbox labels.
+The complete safe authority context is revalidated and persisted in every
+observation and Evidence Store snapshot. Injected test transports use only
+`FAKE_REPLAY` authority. Redirects and proxies are disabled for telemetry
+reads; Docker inspection is GET-only over the admitted Unix socket. The
+lifecycle verifies the frozen baseline before and after the five reads and
+persists one create-once typed closure containing its ordered attempt journal,
+including failures during admission, partial start, readiness, baseline checks,
+reads/evidence persistence, and cleanup. It records exact zero counters for
+fault injection, Agent and Provider calls, Runbook execution,
+forward/configuration/service mutation. `PASS` additionally requires owned
+resources `0 / 0 / 0`, unchanged non-owned Docker resources, and `CLEAN`
+cleanup.
 
 Investigation can require an initial Provider turn, up to four tool
 continuations, and a diagnosis terminal. Action Selection is one later turn.

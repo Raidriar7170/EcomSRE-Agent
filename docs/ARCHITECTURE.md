@@ -10,7 +10,7 @@ and evidence. A green later-phase result does not rewrite Phase 0.
 Decision references: `DEC-002`, `DEC-003`, `DEC-007`, `DEC-008`, `DEC-010`,
 `DEC-011`, `DEC-031`, and `DEC-032` govern the historical paths described below.
 `DEC-033` through `DEC-035` govern the separately versioned Diagnosis-to-Action
-v2 offline contracts, admission, authorization, and proposed future runtime.
+v2 contracts, admission, authorization, and bounded read-only runtime.
 
 ## Logical planes
 
@@ -63,9 +63,22 @@ Diagnosis-to-Action v2 does not replace those paths. It adds the namespaced
 offline contracts described in
 [diagnosis-to-action-v2.md](design/diagnosis-to-action-v2.md). PR-B adds
 deterministic admission, exact authorization records, and fake-only
-Executor/Verifier transactions. No v2 Agent, real Executor, Docker action,
-Provider call, held-out result, or live acceptance is established by this
-offline slice.
+Executor/Verifier transactions. PR-C adds five strict read adapters and a
+separate full-run Evidence Store: fixed-query loopback Prometheus, OpenSearch,
+and Jaeger adapters plus GET-only, exact-owned local Unix Docker runtime and
+resource inspection. Production reads require an owned-lifecycle authority
+capability issued only after fresh local-daemon re-authentication and bound to
+the frozen configuration, a fresh resolve equal to the admitted Sandbox, exact
+endpoints, and ownership labels. The full revalidated authority context and
+canonical request resolver envelopes persist in the run-scoped store separately
+from the diagnosis-cited view.
+The observation plane never exposes raw container, trace, or span identities.
+No v2 Agent, real Executor, Docker mutation,
+Provider call, held-out result, or live acceptance is established by these
+slices. Fresh authorized no-fault Smoke
+`f8532f3a6ab5242ab5bba2f8ae1a6caf` closed the PR-C read-only gate
+`PASS / CLEAN` with all five tools successful and all prohibited-action
+counters zero; this does not establish live remediation or Live acceptance.
 
 ## Phase 0 environment boundary
 

@@ -141,7 +141,7 @@ it cannot expand the Policy Gate or Executor authority.
 | E2E v6 `V6_REPRO_2` | One accepted local run proved the repaired ordered source-stage transition and reached `MULTISERVICE_PROJECTION_COMPLETED`, where a typed projection runtime failure stopped the run before diagnosis; final public terminal `BLOCKED_PUBLIC_RESULT_VERIFICATION`; A0 builder/model/forward mutation `1/0/0`; baseline restored and cleanup `CLEAN` |
 | E2E v6 `V6_REPRO_3` | One accepted local run completed the bounded projection and one A0 model diagnosis, but the diagnosis was incorrect; terminal `LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION`; forward/rollback mutation `0/0`; baseline restored and cleanup `CLEAN` |
 | LOCAL_DEMO successor | `LOCAL_DEMO_E2E_PASSED_READY_FOR_REVIEW`; the fourth retained attempt completed one frozen local payment restoration, two recovery windows, independent verification, exact baseline restoration, and `CLEAN` cleanup |
-| Diagnosis-to-Action v2 | `PR_B_OFFLINE_FAKE_RUNTIME_IMPLEMENTED`; namespaced contracts, explicit Registry/Runbook digest binding, deterministic candidate filtering and Operational Admission, Master/run-bound authorization, fake-only fixed-step transactions, receipts, and Verifiers; store-backed resolver, Agent, real Executor, Provider, held-out, and Live evidence are not implemented |
+| Diagnosis-to-Action v2 | `PR_C_READ_TOOL_RUNTIME_IMPLEMENTED / READ_ONLY_GATE_PASS / CLEAN`; fresh authorized Smoke `f8532f3a6ab5242ab5bba2f8ae1a6caf` completed terminal `PASS`, read-tool terminal `PASS`, unchanged baseline, and `CLEAN` cleanup; all five tools returned `SUCCESS` in exactly one dispatch each, owned containers/networks/volumes ended at `0/0/0`, no non-owned resources changed, and every prohibited-action counter remained zero; the first retained attempt remains `FAIL / READ_TOOL_FAILED / CLEANUP_BLOCKED` |
 
 ### V6_REPRO_2 accepted-run boundary
 
@@ -361,7 +361,7 @@ src/ecomsre/phase2/   Fixed/Dynamic workflows, Commander, Specialists, Judge
 src/ecomsre/phase3/   Planner, Policy Gate, replay executor, verifier, rollback
 src/ecomsre/phase4/   Search/Recommendation Domain RCA, evaluation, provider gate
 src/ecomsre/phase5a/  Capability-parity v2 diagnosis policy and evaluation
-src/ecomsre/dta_v2/   DTA v2 offline contracts, admission, and fake transactions
+src/ecomsre/dta_v2/   DTA v2 contracts, bounded read tools/store, admission, and fake transactions
 src/ecomsre/demo/     Thin public Phase 2 → Phase 3 offline integration
 config/phase1/        Frozen seven-case observer-visible replay baseline
 config/phase4/        Five independent domain replay cases
@@ -377,10 +377,17 @@ tests/                 Contract, replay, isolation, and regression checks
   The separate LOCAL_DEMO executed one exact allowlisted local feature-flag
   restoration; no general Docker, cloud, production, or autonomous write
   capability is claimed.
-- Diagnosis-to-Action v2 currently has offline contracts, registries,
-  deterministic admission, exact authorization, and fake-only bounded
-  transactions. It has no v2 Agent, real Executor, Provider result, held-out
-  result, Docker action, or Live acceptance.
+- Diagnosis-to-Action v2 currently has contracts, registries, deterministic
+  admission, exact authorization, fake-only bounded transactions, five
+  production-capable read adapters, and a separate immutable full-run Evidence
+  Store. Its fresh authorized local no-fault read-only Smoke closed the PR-C
+  read-only gate `PASS / CLEAN`; the first failed attempt remains retained as
+  `FAIL / READ_TOOL_FAILED / CLEANUP_BLOCKED`, with zero owned resources
+  afterward. Both attempts recorded zero prohibited actions and no non-owned
+  resource drift. This gate used no fault injection, Agent or Provider call,
+  Runbook execution, or service/configuration mutation; it is not live
+  remediation or Live acceptance and establishes no real Executor, held-out,
+  or Provider result.
 - The public demo uses an evidence-driven deterministic scripted backend. It
   exercises integration behavior but does not replace the frozen Phase 2
   comparison baseline or the bounded real-provider gate.
