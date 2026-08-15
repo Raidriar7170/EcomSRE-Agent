@@ -623,7 +623,11 @@ Runbooks are LOW risk and permit one forward step. The Email
 forward steps under one proposal and one Policy decision: disable the exact
 leak flag, then restart the exact owned Email service. Every step has its own
 precondition, state binding, and receipt. A partial failure stops without a
-third step or alternate Runbook and escalates to a human.
+third step, alternate Runbook, automatic flag re-enablement, compensation of
+the safer completed step, or any second unknown write. If flag disable succeeds
+and restart fails, the terminal is `PARTIALLY_APPLIED / ESCALATE_HUMAN`; the
+completed flag-disable step remains applied. PR-B must persist one `StepReceipt`
+for every attempted step.
 
 For `ecomsre.dta_v2` only, this record narrowly supersedes the `DEC-012`
 one-forward-mutation limit for that exact versioned Email Runbook transaction.

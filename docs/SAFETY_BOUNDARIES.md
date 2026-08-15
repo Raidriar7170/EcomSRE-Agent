@@ -198,9 +198,12 @@ and every historical or non-Email Runbook limit remains unchanged.
 It is one proposal and one policy decision with separately validated and
 persisted step receipts: disable the exact leak flag, then restart the exact
 owned Email service. A partial failure cannot trigger a third step, an alternate
-Runbook, or automatic re-enablement of the leak flag. It terminates
-`PARTIAL_RUNBOOK_FAILURE / ESCALATE_HUMAN`. Fault injection, remediation steps,
-and later safety cleanup have separate counters; cleanup cannot upgrade a failed
+Runbook, automatic re-enablement of the leak flag, compensation of the safer
+completed step, or any second unknown write. If flag disable succeeds and
+restart fails, the completed flag-disable step remains in place and the Runbook
+terminates `PARTIALLY_APPLIED / ESCALATE_HUMAN`. PR-B must persist an individual
+`StepReceipt` for every attempted step. Fault injection, remediation steps, and
+later safety cleanup have separate counters; cleanup cannot upgrade a failed
 Runbook to success.
 
 LOW standing authorization, if later created, must bind the exact local

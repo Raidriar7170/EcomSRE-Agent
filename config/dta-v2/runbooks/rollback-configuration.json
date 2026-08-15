@@ -32,5 +32,6 @@
   "executor_id": "FeatureFlagRollbackExecutor",
   "verifier_id": "ConfigurationRecoveryVerifier",
   "maximum_forward_steps": 1,
-  "failure_policy": "ESCALATE_HUMAN"
+  "failure_policy": "ESCALATE_HUMAN",
+  "partial_failure_policy": null
 }

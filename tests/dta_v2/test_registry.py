@@ -9,6 +9,7 @@ from ecomsre.dta_v2.contracts import (
     FaultMechanism,
     RiskLevel,
     RunbookId,
+    ScenarioSpec,
 )
 from ecomsre.dta_v2.registry import (
     load_runbook_registry,
@@ -35,13 +36,16 @@ def test_shipped_runbook_registry_freezes_three_mvp_runbooks() -> None:
 
     assert payment.risk_level is RiskLevel.LOW
     assert payment.maximum_forward_steps == 1
+    assert payment.partial_failure_policy is None
     assert payment.supported_mechanisms == (
         FaultMechanism.CONFIGURATION_ERROR,
     )
     assert recommendation.risk_level is RiskLevel.LOW
     assert recommendation.maximum_forward_steps == 1
+    assert recommendation.partial_failure_policy is None
     assert email.risk_level is RiskLevel.MEDIUM
     assert email.maximum_forward_steps == 2
+    assert email.partial_failure_policy is not None
 
 
 def test_shipped_scenario_registry_is_agent_visible_and_four_call_bounded() -> None:
@@ -166,3 +170,40 @@ def test_scenario_contract_rejects_known_control_marker(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="scenario-control marker"):
         load_scenario_registry(tmp_path)
+
+
+@pytest.mark.parametrize(
+    "scenario_name",
+    ["dta-dev-001.json", "dta-dev-002.json", "dta-dev-003.json"],
+)
+@pytest.mark.parametrize(
+    "leaked_control_text",
+    [
+        "paymentFailure is the active scenario control.",
+        "paymentFailure.defaultVariant is the injected key.",
+        "defaultVariant is the selected injection variant.",
+        "emailMemoryLeak is active.",
+        "expected_root is payment.",
+        "expected_mechanism is CONFIGURATION_ERROR.",
+        "expected_runbook is ROLLBACK_CONFIGURATION.",
+        "executor and verifier are evaluator-selected.",
+        "The injected fault is evaluator controlled.",
+        "Run docker stop recommendation.",
+    ],
+)
+def test_each_mvp_scenario_rejects_evaluator_control_leakage(
+    scenario_name: str,
+    leaked_control_text: str,
+) -> None:
+    payload = json.loads(
+        (CONFIG_ROOT / "scenarios" / "agent-visible" / scenario_name).read_text(
+            encoding="utf-8"
+        )
+    )
+    payload["alert_summary"] = leaked_control_text
+
+    with pytest.raises(
+        ValueError,
+        match="evaluator marker|scenario-control marker|executable text",
+    ):
+        ScenarioSpec.model_validate_json(json.dumps(payload))

@@ -16,10 +16,10 @@ from ecomsre.dta_v2.contracts import (
     FaultDomain,
     FaultMechanism,
     ResolvedEvidence,
-    ResolvedEvidenceView,
+    ResolvedDiagnosisEvidenceView,
     RunbookId,
     Terminal,
-    build_resolved_evidence_view,
+    build_resolved_diagnosis_evidence_view,
 )
 from ecomsre.dta_v2.registry import RunbookRegistry, load_runbook_registry
 
@@ -57,7 +57,9 @@ def diagnosis(
     )
 
 
-def resolved_evidence(input_diagnosis: DtaDiagnosis) -> ResolvedEvidenceView:
+def resolved_diagnosis_evidence(
+    input_diagnosis: DtaDiagnosis,
+) -> ResolvedDiagnosisEvidenceView:
     refs = tuple(
         sorted(
             input_diagnosis.supporting_evidence_refs
@@ -72,7 +74,10 @@ def resolved_evidence(input_diagnosis: DtaDiagnosis) -> ResolvedEvidenceView:
         )
         for reference in refs
     )
-    return build_resolved_evidence_view(run_id=RUN_ID, evidence=evidence)
+    return build_resolved_diagnosis_evidence_view(
+        run_id=RUN_ID,
+        evidence=evidence,
+    )
 
 
 def filter_candidates(
@@ -82,7 +87,7 @@ def filter_candidates(
     return filter_runbook_candidates(
         diagnosis=input_diagnosis,
         registry=registry,
-        resolved_evidence=resolved_evidence(input_diagnosis),
+        diagnosis_evidence=resolved_diagnosis_evidence(input_diagnosis),
     )
 
 
@@ -143,7 +148,7 @@ def test_filter_does_not_count_contradicting_or_unresolved_evidence() -> None:
 
     assert result.write_candidates == ()
 
-    incomplete_view = build_resolved_evidence_view(
+    incomplete_view = build_resolved_diagnosis_evidence_view(
         run_id=RUN_ID,
         evidence=(
             ResolvedEvidence(
@@ -157,7 +162,7 @@ def test_filter_does_not_count_contradicting_or_unresolved_evidence() -> None:
         filter_runbook_candidates(
             diagnosis=input_diagnosis,
             registry=registry,
-            resolved_evidence=incomplete_view,
+            diagnosis_evidence=incomplete_view,
         )
 
 
@@ -169,7 +174,7 @@ def test_filter_revalidates_resolved_evidence_objects() -> None:
         service="recommendation",
         sources=(EvidenceSource.METRICS, EvidenceSource.LOGS),
     )
-    evidence = resolved_evidence(input_diagnosis)
+    evidence = resolved_diagnosis_evidence(input_diagnosis)
     spoofed_log = evidence.evidence[1].model_copy(
         update={"source": EvidenceSource.RUNTIME}
     )
@@ -181,7 +186,7 @@ def test_filter_revalidates_resolved_evidence_objects() -> None:
         filter_runbook_candidates(
             diagnosis=input_diagnosis,
             registry=registry,
-            resolved_evidence=spoofed_view,
+            diagnosis_evidence=spoofed_view,
         )
 
 
@@ -245,7 +250,7 @@ def test_filter_rejects_noncompleted_diagnosis() -> None:
         filter_runbook_candidates(
             diagnosis=incomplete,
             registry=registry,
-            resolved_evidence=resolved_evidence(incomplete),
+            diagnosis_evidence=resolved_diagnosis_evidence(incomplete),
         )
 
 

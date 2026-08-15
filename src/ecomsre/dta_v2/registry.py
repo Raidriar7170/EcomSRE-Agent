@@ -20,13 +20,13 @@ _MVP_RUNBOOK_IDS = tuple(sorted(RunbookId, key=lambda item: item.value))
 _MVP_SCENARIO_IDS = ("dta-dev-001", "dta-dev-002", "dta-dev-003")
 _MVP_RUNBOOK_SHA256 = {
     RunbookId.MITIGATE_MEMORY_LEAK: (
-        "00717bc88d7607c0f20228cf975787aaa67d9f8ea22a8f988ea484fdf874640a"
+        "870cde9e39d2685c41f0fa36aedbc09af4b1849c29725c4302da501dbc47664c"
     ),
     RunbookId.RESTART_SERVICE: (
-        "0612af6ed0262abb55386a3d894060903f9c0560c22a267f9df655123f3757e6"
+        "f70130a4f7398caf034a1849af4823778a82aac784e2d87799474859e36e7d83"
     ),
     RunbookId.ROLLBACK_CONFIGURATION: (
-        "5e95365b5156512a89936441e00dbb40135caa1926ef760111ec4d93f02e6978"
+        "b9132c522e81e673c1b765e5f28d1687d1ea3384e085bac9fa1bc5d571130481"
     ),
 }
 _MVP_SCENARIO_SHA256 = {

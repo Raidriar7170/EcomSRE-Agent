@@ -6,7 +6,7 @@ from ecomsre.dta_v2.contracts import (
     CandidateRunbook,
     CandidateSet,
     DtaDiagnosis,
-    ResolvedEvidenceView,
+    ResolvedDiagnosisEvidenceView,
     Terminal,
     build_candidate_set,
     semantic_sha256,
@@ -22,14 +22,14 @@ def filter_runbook_candidates(
     *,
     diagnosis: DtaDiagnosis,
     registry: RunbookRegistry,
-    resolved_evidence: ResolvedEvidenceView,
+    diagnosis_evidence: ResolvedDiagnosisEvidenceView,
 ) -> CandidateSet:
     """Return only root-, mechanism-, and evidence-compatible trusted runbooks."""
 
     diagnosis = DtaDiagnosis.model_validate(diagnosis.model_dump(mode="python"))
     registry = RunbookRegistry.model_validate(registry.model_dump(mode="python"))
-    resolved_evidence = ResolvedEvidenceView.model_validate(
-        resolved_evidence.model_dump(mode="python")
+    diagnosis_evidence = ResolvedDiagnosisEvidenceView.model_validate(
+        diagnosis_evidence.model_dump(mode="python")
     )
     if diagnosis.terminal is not Terminal.COMPLETED:
         raise CandidateFilterError("candidate filtering requires a completed diagnosis")
@@ -38,14 +38,14 @@ def filter_runbook_candidates(
     mechanism = diagnosis.mechanism
     if root_service is None or fault_domain is None or mechanism is None:
         raise CandidateFilterError("completed diagnosis lacks a compatible root")
-    if diagnosis.run_id != resolved_evidence.run_id:
+    if diagnosis.run_id != diagnosis_evidence.run_id:
         raise CandidateFilterError("resolved evidence belongs to another run")
 
     diagnosis_refs = set(
         diagnosis.supporting_evidence_refs + diagnosis.contradicting_evidence_refs
     )
     resolved_by_ref = {
-        item.evidence_ref: item for item in resolved_evidence.evidence
+        item.evidence_ref: item for item in diagnosis_evidence.evidence
     }
     if set(resolved_by_ref) != diagnosis_refs:
         raise CandidateFilterError("diagnosis evidence is not exactly resolved")
@@ -71,6 +71,6 @@ def filter_runbook_candidates(
     return build_candidate_set(
         run_id=diagnosis.run_id,
         diagnosis_sha256=diagnosis_sha256,
-        state_snapshot_sha256=resolved_evidence.resolved_evidence_sha256,
+        resolved_evidence_sha256=diagnosis_evidence.resolved_evidence_sha256,
         write_candidates=candidates,
     )

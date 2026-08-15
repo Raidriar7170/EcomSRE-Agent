@@ -47,5 +47,13 @@
   "executor_id": "MemoryLeakMitigationExecutor",
   "verifier_id": "MemoryLeakRecoveryVerifier",
   "maximum_forward_steps": 2,
-  "failure_policy": "ESCALATE_HUMAN"
+  "failure_policy": "ESCALATE_HUMAN",
+  "partial_failure_policy": {
+    "terminal": "PARTIALLY_APPLIED",
+    "disposition": "ESCALATE_HUMAN",
+    "preserve_completed_steps": true,
+    "completed_step_compensation_allowed": false,
+    "additional_forward_write_allowed": false,
+    "step_receipt_required": true
+  }
 }

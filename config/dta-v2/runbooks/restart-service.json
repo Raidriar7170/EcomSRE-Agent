@@ -42,5 +42,6 @@
   "executor_id": "DockerServiceRestartExecutor",
   "verifier_id": "ServiceRecoveryVerifier",
   "maximum_forward_steps": 1,
-  "failure_policy": "ESCALATE_HUMAN"
+  "failure_policy": "ESCALATE_HUMAN",
+  "partial_failure_policy": null
 }

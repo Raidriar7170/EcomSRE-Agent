@@ -64,6 +64,7 @@ _EXECUTABLE_TEXT_RE = re.compile(
     r"inspect_service_runtime|inspect_resource_usage)\s*\("
 )
 _EVALUATOR_MARKERS = (
+    "expected root",
     "expected root service",
     "expected fault mechanism",
     "expected mechanism",
@@ -75,10 +76,14 @@ _EVALUATOR_MARKERS = (
     "evaluator only",
     "evaluator root service",
     "evaluator path",
+    "executor",
     "injected fault",
+    "verifier",
 )
 _KNOWN_SCENARIO_CONTROL_MARKERS = (
-    "paymentfailure.defaultvariant",
+    "defaultvariant",
+    "emailmemoryleak",
+    "paymentfailure",
 )
 
 
@@ -222,14 +227,14 @@ class ResolvedEvidence(DtaModel):
         return self
 
 
-class ResolvedEvidenceView(DtaModel):
-    schema_version: Literal["dta-v2.resolved-evidence-view.v1"]
+class ResolvedDiagnosisEvidenceView(DtaModel):
+    schema_version: Literal["dta-v2.resolved-diagnosis-evidence-view.v1"]
     run_id: RunId
     evidence: tuple[ResolvedEvidence, ...] = Field(min_length=1, max_length=64)
     resolved_evidence_sha256: Sha256
 
     @model_validator(mode="after")
-    def require_resolution_semantics(self) -> ResolvedEvidenceView:
+    def require_resolution_semantics(self) -> ResolvedDiagnosisEvidenceView:
         refs = tuple(item.evidence_ref for item in self.evidence)
         if len(refs) != len(set(refs)):
             raise ValueError("resolved evidence contains duplicate references")
@@ -244,16 +249,16 @@ class ResolvedEvidenceView(DtaModel):
         return self
 
 
-def build_resolved_evidence_view(
+def build_resolved_diagnosis_evidence_view(
     *,
     run_id: str,
     evidence: tuple[ResolvedEvidence, ...],
-) -> ResolvedEvidenceView:
+) -> ResolvedDiagnosisEvidenceView:
     ordered = tuple(
         sorted(evidence, key=lambda item: _evidence_ref_order(item.evidence_ref))
     )
     typed_payload: dict[str, object] = {
-        "schema_version": "dta-v2.resolved-evidence-view.v1",
+        "schema_version": "dta-v2.resolved-diagnosis-evidence-view.v1",
         "run_id": run_id,
         "evidence": ordered,
     }
@@ -261,7 +266,7 @@ def build_resolved_evidence_view(
         **typed_payload,
         "evidence": [item.model_dump(mode="json") for item in ordered],
     }
-    return ResolvedEvidenceView.model_validate(
+    return ResolvedDiagnosisEvidenceView.model_validate(
         {
             **typed_payload,
             "resolved_evidence_sha256": semantic_sha256(digest_payload),
@@ -337,7 +342,7 @@ class CandidateSet(DtaModel):
     schema_version: Literal["dta-v2.candidate-set.v1"]
     run_id: RunId
     diagnosis_sha256: Sha256
-    state_snapshot_sha256: Sha256
+    resolved_evidence_sha256: Sha256
     write_candidates: tuple[CandidateRunbook, ...] = Field(max_length=3)
     allowed_nonwrite_dispositions: tuple[ActionDisposition, ...]
     candidate_set_sha256: Sha256
@@ -371,7 +376,7 @@ def build_candidate_set(
     *,
     run_id: str,
     diagnosis_sha256: str,
-    state_snapshot_sha256: str,
+    resolved_evidence_sha256: str,
     write_candidates: tuple[CandidateRunbook, ...],
 ) -> CandidateSet:
     nonwrite = (
@@ -382,7 +387,7 @@ def build_candidate_set(
         "schema_version": "dta-v2.candidate-set.v1",
         "run_id": run_id,
         "diagnosis_sha256": diagnosis_sha256,
-        "state_snapshot_sha256": state_snapshot_sha256,
+        "resolved_evidence_sha256": resolved_evidence_sha256,
         "write_candidates": write_candidates,
         "allowed_nonwrite_dispositions": nonwrite,
     }
@@ -528,6 +533,15 @@ class RunbookStepSpec(DtaModel):
         return self
 
 
+class RunbookPartialFailurePolicy(DtaModel):
+    terminal: Literal["PARTIALLY_APPLIED"]
+    disposition: Literal["ESCALATE_HUMAN"]
+    preserve_completed_steps: Literal[True]
+    completed_step_compensation_allowed: Literal[False]
+    additional_forward_write_allowed: Literal[False]
+    step_receipt_required: Literal[True]
+
+
 class RunbookSpec(DtaModel):
     schema_version: Literal["dta-v2.runbook-spec.v1"]
     runbook_id: RunbookId
@@ -544,6 +558,7 @@ class RunbookSpec(DtaModel):
     verifier_id: Identifier
     maximum_forward_steps: StrictInt = Field(ge=1, le=2)
     failure_policy: Literal["ESCALATE_HUMAN"]
+    partial_failure_policy: RunbookPartialFailurePolicy | None = None
 
     @model_validator(mode="after")
     def require_unique_contract_items(self) -> RunbookSpec:
@@ -561,6 +576,10 @@ class RunbookSpec(DtaModel):
             raise ValueError("runbook parameters contain duplicates")
         if len(self.forward_steps) != self.maximum_forward_steps:
             raise ValueError("forward steps differ from the declared step cap")
+        if self.maximum_forward_steps > 1 and self.partial_failure_policy is None:
+            raise ValueError("multi-step runbook requires a partial failure policy")
+        if self.maximum_forward_steps == 1 and self.partial_failure_policy is not None:
+            raise ValueError("single-step runbook must not define a partial failure policy")
         declared = set(names)
         for step in self.forward_steps:
             if not set(step.parameter_names).issubset(declared):
@@ -644,7 +663,7 @@ def build_action_proposal(
     candidate_set: CandidateSet,
     diagnosis: DtaDiagnosis,
     registry: RunbookRegistry,
-    resolved_evidence: ResolvedEvidenceView,
+    diagnosis_evidence: ResolvedDiagnosisEvidenceView,
     disposition: ActionDisposition,
     runbook_id: RunbookId | None,
     target_service: str | None,
@@ -688,7 +707,7 @@ def build_action_proposal(
         candidate_set=candidate_set,
         diagnosis=diagnosis,
         registry=registry,
-        resolved_evidence=resolved_evidence,
+        diagnosis_evidence=diagnosis_evidence,
     )
     return proposal
 
@@ -699,7 +718,7 @@ def validate_action_proposal_binding(
     candidate_set: CandidateSet,
     diagnosis: DtaDiagnosis,
     registry: RunbookRegistry,
-    resolved_evidence: ResolvedEvidenceView,
+    diagnosis_evidence: ResolvedDiagnosisEvidenceView,
 ) -> None:
     """Bind a structural proposal to trusted candidate and evidence artifacts."""
 
@@ -711,14 +730,14 @@ def validate_action_proposal_binding(
         candidate_set.model_dump(mode="python")
     )
     diagnosis = DtaDiagnosis.model_validate(diagnosis.model_dump(mode="python"))
-    resolved_evidence = ResolvedEvidenceView.model_validate(
-        resolved_evidence.model_dump(mode="python")
+    diagnosis_evidence = ResolvedDiagnosisEvidenceView.model_validate(
+        diagnosis_evidence.model_dump(mode="python")
     )
     registry = RunbookRegistry.model_validate(registry.model_dump(mode="python"))
     expected_candidate_set = filter_runbook_candidates(
         diagnosis=diagnosis,
         registry=registry,
-        resolved_evidence=resolved_evidence,
+        diagnosis_evidence=diagnosis_evidence,
     )
     if candidate_set != expected_candidate_set:
         raise ValueError("candidate set is not derived from the frozen registry")
@@ -728,7 +747,7 @@ def validate_action_proposal_binding(
         proposal.run_id
         == candidate_set.run_id
         == diagnosis.run_id
-        == resolved_evidence.run_id
+        == diagnosis_evidence.run_id
     ):
         raise ValueError("proposal artifacts belong to different runs")
     if (
@@ -739,12 +758,15 @@ def validate_action_proposal_binding(
     if proposal.candidate_set_sha256 != candidate_set.candidate_set_sha256:
         raise ValueError("proposal candidate digest is not authoritative")
     if (
-        candidate_set.state_snapshot_sha256
-        != resolved_evidence.resolved_evidence_sha256
+        candidate_set.resolved_evidence_sha256
+        != diagnosis_evidence.resolved_evidence_sha256
     ):
         raise ValueError("candidate set is outside the resolved evidence snapshot")
 
-    resolved_refs = {item.evidence_ref for item in resolved_evidence.evidence}
+    resolved_by_ref = {
+        item.evidence_ref: item for item in diagnosis_evidence.evidence
+    }
+    resolved_refs = set(resolved_by_ref)
     proposal_refs = set(proposal.supporting_evidence_refs)
     if not proposal_refs.issubset(resolved_refs):
         raise ValueError("proposal cites unresolved evidence")
@@ -780,6 +802,12 @@ def validate_action_proposal_binding(
     expected_names = tuple(parameter.name for parameter in runbook.parameters)
     if candidate.parameter_names != expected_names:
         raise ValueError("candidate parameters differ from the trusted runbook")
+    proposal_sources = {
+        resolved_by_ref[reference].source
+        for reference in proposal.supporting_evidence_refs
+    }
+    if not set(runbook.required_evidence_sources).issubset(proposal_sources):
+        raise ValueError("proposal does not cover required evidence sources")
     _validate_action_parameters(proposal.parameters, runbook.parameters)
 
 
