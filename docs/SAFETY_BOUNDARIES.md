@@ -5,7 +5,7 @@ This document owns operational safety rules. Architectural rationale belongs in
 in [DECISIONS.md](DECISIONS.md).
 
 This document provides the normative safety detail for `DEC-004`, `DEC-007`,
-`DEC-012`, and the offline-only `DEC-034` design. `DEC-012` first takes effect in
+`DEC-012`, and the offline-only `DEC-034`/`DEC-035` design. `DEC-012` first takes effect in
 Phase 3 and does not authorize a Phase 0 executor or write path. `DEC-034`
 narrowly replaces only its one-forward limit for the exact future DTA v2 Email
 transaction; it creates no Live authority.
@@ -173,11 +173,11 @@ a second forward mutation.
 
 ## Diagnosis-to-Action v2 design boundary
 
-`DEC-033` and `DEC-034` preserve every historical Phase 0, Phase 3, R3, and
-LOCAL_DEMO contract. The new `ecomsre.dta_v2` package is offline-only until a
-separate live Goal authorizes a versioned runtime. Contracts, registry loading,
-candidate filtering, tests, and documentation do not authorize Docker,
-Provider, fault injection, remediation, or cleanup.
+`DEC-033` through `DEC-035` preserve every historical Phase 0, Phase 3, R3, and
+LOCAL_DEMO contract. The new `ecomsre.dta_v2` package remains offline unless an
+exact user Goal separately authorizes a versioned runtime. Contracts, registry
+loading, candidate filtering, tests, and documentation do not themselves
+authorize Docker, Provider, fault injection, remediation, or cleanup.
 
 The Agent may use only bounded read tools and may emit only a typed
 `ActionProposal`. It cannot set risk, executor, verifier, shell, argv, path,
@@ -206,11 +206,16 @@ terminates `PARTIALLY_APPLIED / ESCALATE_HUMAN`. PR-B must persist an individual
 later safety cleanup have separate counters; cleanup cannot upgrade a failed
 Runbook to success.
 
-LOW standing authorization, if later created, must bind the exact local
-environment, scenario, Runbook, target, parameters, registry/candidate/plan
-digests, limits, and expiry. MEDIUM always requires an exact per-run human
-record. This design decision is not itself a standing record or live execution
-authorization. HIGH risk Runbooks remain outside the MVP.
+Under `DEC-035`, the user-designated `dta-v2-master-v1` Goal is the exact human
+authorization for both LOW scopes and the one frozen MEDIUM Email scope. One
+create-once Master record binds the independent scenario-ID and Runbook-scope
+sets plus environment, target, parameter schema, Registry and Runbook digests,
+and limits; it must not encode a scenario-to-gold Runbook mapping. The Master
+record is standing for this exact Goal; each attempt derives an expiring
+run-bound child that also binds current state,
+Diagnosis, resolved evidence, CandidateSet, Proposal, selected Runbook, target,
+parameter values, and step cap. Any mismatch denies. HIGH risk Runbooks remain
+outside the MVP. Offline records and fake-backend tests create no Live action.
 
 ## Terminal safety states
 

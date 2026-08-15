@@ -9,8 +9,8 @@ and evidence. A green later-phase result does not rewrite Phase 0.
 
 Decision references: `DEC-002`, `DEC-003`, `DEC-007`, `DEC-008`, `DEC-010`,
 `DEC-011`, `DEC-031`, and `DEC-032` govern the historical paths described below.
-`DEC-033` and `DEC-034` govern the separately versioned Diagnosis-to-Action v2
-offline contracts and proposed future runtime.
+`DEC-033` through `DEC-035` govern the separately versioned Diagnosis-to-Action
+v2 offline contracts, admission, authorization, and proposed future runtime.
 
 ## Logical planes
 
@@ -61,9 +61,11 @@ mismatch. Exact evidence and claim limits live in the result documents.
 
 Diagnosis-to-Action v2 does not replace those paths. It adds the namespaced
 offline contracts described in
-[diagnosis-to-action-v2.md](design/diagnosis-to-action-v2.md). No v2 Agent,
-Executor, Docker action, Provider call, held-out result, or live acceptance is
-established by the contract/registry slice.
+[diagnosis-to-action-v2.md](design/diagnosis-to-action-v2.md). PR-B adds
+deterministic admission, exact authorization records, and fake-only
+Executor/Verifier transactions. No v2 Agent, real Executor, Docker action,
+Provider call, held-out result, or live acceptance is established by this
+offline slice.
 
 ## Phase 0 environment boundary
 

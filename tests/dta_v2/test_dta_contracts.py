@@ -338,6 +338,12 @@ def test_action_proposal_binds_candidate_and_rejects_authority_fields() -> None:
 
     assert proposal.proposal_sha256
     assert proposal.runbook_id is RunbookId.ROLLBACK_CONFIGURATION
+    assert proposal.schema_version == "dta-v2.action-proposal.v2"
+    assert proposal.registry_sha256 == registry.registry_sha256
+    assert proposal.resolved_evidence_sha256 == evidence.resolved_evidence_sha256
+    assert proposal.runbook_sha256 == semantic_sha256(
+        registry.require(RunbookId.ROLLBACK_CONFIGURATION).model_dump(mode="json")
+    )
 
     forged_payload = proposal.model_dump(mode="python")
     forged_payload["candidate_set_sha256"] = "e" * 64
