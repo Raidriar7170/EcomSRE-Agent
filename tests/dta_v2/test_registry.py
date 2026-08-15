@@ -24,6 +24,8 @@ CONFIG_ROOT = REPO_ROOT / "config" / "dta-v2"
 def test_shipped_runbook_registry_freezes_three_mvp_runbooks() -> None:
     registry = load_runbook_registry(CONFIG_ROOT / "runbooks")
 
+    assert registry.schema_version == "dta-v2.runbook-registry.v1"
+    assert len(registry.registry_sha256) == 64
     assert registry.runbook_ids == (
         RunbookId.MITIGATE_MEMORY_LEAK,
         RunbookId.RESTART_SERVICE,
@@ -46,6 +48,11 @@ def test_shipped_runbook_registry_freezes_three_mvp_runbooks() -> None:
     assert email.risk_level is RiskLevel.MEDIUM
     assert email.maximum_forward_steps == 2
     assert email.partial_failure_policy is not None
+
+    forged = registry.model_dump(mode="python")
+    forged["registry_sha256"] = "0" * 64
+    with pytest.raises(ValueError, match="registry digest"):
+        type(registry).model_validate(forged)
 
 
 def test_shipped_scenario_registry_is_agent_visible_and_four_call_bounded() -> None:

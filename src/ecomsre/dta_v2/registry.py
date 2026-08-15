@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field, model_validator
 
@@ -12,6 +13,7 @@ from ecomsre.dta_v2.contracts import (
     RunbookId,
     RunbookSpec,
     ScenarioSpec,
+    Sha256,
     semantic_sha256,
 )
 
@@ -37,7 +39,9 @@ _MVP_SCENARIO_SHA256 = {
 
 
 class RunbookRegistry(DtaModel):
+    schema_version: Literal["dta-v2.runbook-registry.v1"]
     runbooks: tuple[RunbookSpec, ...] = Field(min_length=1)
+    registry_sha256: Sha256
 
     @model_validator(mode="after")
     def require_frozen_mvp_catalog(self) -> RunbookRegistry:
@@ -54,6 +58,11 @@ class RunbookRegistry(DtaModel):
             observed = semantic_sha256(runbook.model_dump(mode="json"))
             if observed != _MVP_RUNBOOK_SHA256[runbook.runbook_id]:
                 raise ValueError("runbook differs from the frozen MVP contract")
+        expected = semantic_sha256(
+            self.model_dump(mode="json", exclude={"registry_sha256"})
+        )
+        if self.registry_sha256 != expected:
+            raise ValueError("registry digest does not bind the frozen catalog")
         return self
 
     @property
@@ -113,7 +122,20 @@ def load_runbook_registry(directory: Path) -> RunbookRegistry:
         RunbookSpec.model_validate_json(path.read_text(encoding="utf-8"))
         for path in _contract_files(directory)
     )
-    return RunbookRegistry(runbooks=runbooks)
+    typed_payload = {
+        "schema_version": "dta-v2.runbook-registry.v1",
+        "runbooks": runbooks,
+    }
+    digest_payload = {
+        **typed_payload,
+        "runbooks": [runbook.model_dump(mode="json") for runbook in runbooks],
+    }
+    return RunbookRegistry.model_validate(
+        {
+            **typed_payload,
+            "registry_sha256": semantic_sha256(digest_payload),
+        }
+    )
 
 
 def load_scenario_registry(directory: Path) -> ScenarioRegistry:

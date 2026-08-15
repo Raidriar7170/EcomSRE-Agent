@@ -46,6 +46,7 @@ conflicts with this register, this register wins.
 | DEC-029 | Hidden-pack seal control plane | accepted | Phase 5B-1 only | `DECISIONS.md` | Roadmap, Open Questions, seal tooling and evidence | No — out-of-band build and verification only |
 | DEC-033 | DTA v2 namespaced offline architecture | accepted | DTA v2 PR-0/PR-A offline only | `DECISIONS.md` | Architecture, Safety, DTA v2 design and tests | No — no Live authority or Phase 0 dependency |
 | DEC-034 | DTA v2 bounded multi-step policy | accepted | DTA v2 design only; Live requires a later Goal | `DECISIONS.md` | Safety, DTA v2 design and contracts | No — design does not authorize execution |
+| DEC-035 | DTA v2 Master Authorization delegation | accepted | DTA v2 PR-B onward under `dta-v2-master-v1` | `DECISIONS.md` | Safety, DTA v2 design, admission and authorization tests | No — the record alone creates no Docker or Provider action |
 
 ## DEC-001 — Supported host baseline
 
@@ -643,10 +644,50 @@ match exactly. MEDIUM requires a fresh exact human approval for every live run.
 HIGH is denied. These rules do not alter the historical one-forward-mutation
 contracts in Phase 3, DEC-031, or DEC-032.
 
+For the user-designated `dta-v2-master-v1` Goal only, the later `DEC-035`
+narrowly replaces that fresh-per-run MEDIUM record with one human-issued Master
+record plus an exact expiring run-bound child for every attempt.
+
 This decision authorizes no Docker start/stop/restart, Provider call, fault
 injection, remediation, held-out execution, commit, push, PR, merge, release,
 or deployment. Each protected action retains its independent authorization
 boundary.
+
+## DEC-035 — DTA v2 Master Authorization and Run-bound Delegation
+
+**Status: `accepted` for the user-designated `dta-v2-master-v1` Goal only.**
+
+The active Master Goal is the exact human authorization for all three frozen
+DTA v2 Runbook scopes, including the MEDIUM Email transaction. This record
+narrowly supersedes only `DEC-034`'s requirement to obtain a new human approval
+record for each Email run. It does not change the Email two-step cap, fixed step
+order, partial-failure policy, ownership boundary, no-shell rule, or any
+historical authorization contract.
+
+PR-B persists one create-once `MasterAuthorizationRecord` that binds the Goal
+version and SHA-256, approver `Minghong Sun`, authorization source
+`USER_EXPLICIT_DTA_V2_MASTER_GOAL_AUTHORIZATION`, delegated execution mode,
+local Unix Docker environment class, Sandbox identity, trusted Registry digest,
+the three independently enumerated opaque scenario IDs, each exact Runbook
+digest, target, risk, typed parameter-schema digest, and step cap. The
+scenario-ID set and authorized-Runbook-scope set remain independent: neither
+the authorization record nor Operational Admission contains a scenario-to-gold
+Runbook mapping.
+
+The Master record is standing for this exact Goal and has no arbitrary time
+expiry. Every exact attempt derives an expiring `AttemptAuthorizationRecord`
+bound to the Master digest, run and attempt IDs, opaque scenario ID, current-state,
+Diagnosis, resolved-evidence, CandidateSet, Proposal, Registry, selected
+Runbook, target, parameter-value, risk, and step-cap digests or fields. The
+model cannot create, modify, or broaden either record. Operational Admission
+recomputes these bindings and denies expiry, mismatch, remote Docker, unknown
+ownership, a second transaction, a false precondition, or a step-cap breach.
+HIGH remains denied.
+
+The PR-B implementation and its fake backends remain offline evidence only.
+This Decision Record does not itself start Docker, call a Provider, inject a
+fault, or perform a real mutation. Any later action is additionally bounded by
+the active Goal's exact protected-action authority.
 
 ## Upstream references
 

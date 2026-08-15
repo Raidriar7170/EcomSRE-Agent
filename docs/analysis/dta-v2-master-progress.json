@@ -1,0 +1,19 @@
+{
+  "schema_version": "dta-v2-master-progress.v1",
+  "goal_version": "dta-v2-master-v1",
+  "starting_pr": 43,
+  "completed_stage": "PR-A",
+  "current_stage": "PR-B",
+  "main_head": "6a8c7055e668a0e70b9abfa767f814159317708f",
+  "active_branch": "codex/dta-v2-pr-b-admission-execution",
+  "active_pr": 44,
+  "merged_prs": [
+    43
+  ],
+  "preferred_model": "gpt-5.4-mini-2026-03-17",
+  "frozen_model": null,
+  "frozen_prompt_sha256": null,
+  "frozen_tool_schema_sha256": null,
+  "held_out_seal_sha256": null,
+  "live_demo_terminal": null
+}

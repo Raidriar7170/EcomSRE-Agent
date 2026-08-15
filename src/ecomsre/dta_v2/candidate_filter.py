@@ -56,6 +56,7 @@ def filter_runbook_candidates(
     candidates = tuple(
         CandidateRunbook(
             runbook_id=runbook.runbook_id,
+            runbook_sha256=semantic_sha256(runbook.model_dump(mode="json")),
             target_service=root_service,
             risk_level=runbook.risk_level,
             parameter_names=tuple(parameter.name for parameter in runbook.parameters),
@@ -72,5 +73,6 @@ def filter_runbook_candidates(
         run_id=diagnosis.run_id,
         diagnosis_sha256=diagnosis_sha256,
         resolved_evidence_sha256=diagnosis_evidence.resolved_evidence_sha256,
+        registry_sha256=registry.registry_sha256,
         write_candidates=candidates,
     )

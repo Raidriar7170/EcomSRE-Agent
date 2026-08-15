@@ -327,6 +327,7 @@ class ActionDisposition(str, Enum):
 
 class CandidateRunbook(DtaModel):
     runbook_id: RunbookId
+    runbook_sha256: Sha256
     target_service: Identifier
     risk_level: RiskLevel
     parameter_names: tuple[Identifier, ...] = Field(max_length=8)
@@ -339,10 +340,11 @@ class CandidateRunbook(DtaModel):
 
 
 class CandidateSet(DtaModel):
-    schema_version: Literal["dta-v2.candidate-set.v1"]
+    schema_version: Literal["dta-v2.candidate-set.v2"]
     run_id: RunId
     diagnosis_sha256: Sha256
     resolved_evidence_sha256: Sha256
+    registry_sha256: Sha256
     write_candidates: tuple[CandidateRunbook, ...] = Field(max_length=3)
     allowed_nonwrite_dispositions: tuple[ActionDisposition, ...]
     candidate_set_sha256: Sha256
@@ -377,6 +379,7 @@ def build_candidate_set(
     run_id: str,
     diagnosis_sha256: str,
     resolved_evidence_sha256: str,
+    registry_sha256: str,
     write_candidates: tuple[CandidateRunbook, ...],
 ) -> CandidateSet:
     nonwrite = (
@@ -384,10 +387,11 @@ def build_candidate_set(
         ActionDisposition.NO_ACTION,
     )
     typed_payload: dict[str, object] = {
-        "schema_version": "dta-v2.candidate-set.v1",
+        "schema_version": "dta-v2.candidate-set.v2",
         "run_id": run_id,
         "diagnosis_sha256": diagnosis_sha256,
         "resolved_evidence_sha256": resolved_evidence_sha256,
+        "registry_sha256": registry_sha256,
         "write_candidates": write_candidates,
         "allowed_nonwrite_dispositions": nonwrite,
     }
@@ -612,12 +616,15 @@ class ActionParameter(DtaModel):
 
 
 class ActionProposal(DtaModel):
-    schema_version: Literal["dta-v2.action-proposal.v1"]
+    schema_version: Literal["dta-v2.action-proposal.v2"]
     run_id: RunId
     disposition: ActionDisposition
     candidate_set_sha256: Sha256
     diagnosis_sha256: Sha256
+    resolved_evidence_sha256: Sha256
+    registry_sha256: Sha256
     runbook_id: RunbookId | None = None
+    runbook_sha256: Sha256 | None = None
     target_service: Identifier | None = None
     parameters: tuple[ActionParameter, ...] = Field(max_length=8)
     supporting_evidence_refs: tuple[str, ...] = Field(max_length=32)
@@ -644,11 +651,20 @@ class ActionProposal(DtaModel):
         if evidence_refs != tuple(sorted(evidence_refs, key=_evidence_ref_order)):
             raise ValueError("proposal evidence is not canonically ordered")
         if self.disposition is ActionDisposition.EXECUTE_RUNBOOK:
-            if self.runbook_id is None or self.target_service is None:
+            if (
+                self.runbook_id is None
+                or self.runbook_sha256 is None
+                or self.target_service is None
+            ):
                 raise ValueError("execute proposal requires a runbook and target")
             if not self.supporting_evidence_refs:
                 raise ValueError("execute proposal requires supporting evidence")
-        elif self.runbook_id is not None or self.target_service is not None or self.parameters:
+        elif (
+            self.runbook_id is not None
+            or self.runbook_sha256 is not None
+            or self.target_service is not None
+            or self.parameters
+        ):
             raise ValueError("nonexecute proposal must not carry runbook authority")
         expected = semantic_sha256(
             self.model_dump(mode="json", exclude={"proposal_sha256"})
@@ -676,12 +692,21 @@ def build_action_proposal(
         sorted(supporting_evidence_refs, key=_evidence_ref_order)
     )
     typed_payload: dict[str, object] = {
-        "schema_version": "dta-v2.action-proposal.v1",
+        "schema_version": "dta-v2.action-proposal.v2",
         "run_id": diagnosis.run_id,
         "disposition": disposition,
         "candidate_set_sha256": candidate_set.candidate_set_sha256,
         "diagnosis_sha256": candidate_set.diagnosis_sha256,
+        "resolved_evidence_sha256": candidate_set.resolved_evidence_sha256,
+        "registry_sha256": candidate_set.registry_sha256,
         "runbook_id": runbook_id,
+        "runbook_sha256": (
+            None
+            if runbook_id is None
+            else semantic_sha256(
+                registry.require(runbook_id).model_dump(mode="json")
+            )
+        ),
         "target_service": target_service,
         "parameters": ordered_parameters,
         "supporting_evidence_refs": ordered_evidence_refs,
@@ -758,7 +783,14 @@ def validate_action_proposal_binding(
     if proposal.candidate_set_sha256 != candidate_set.candidate_set_sha256:
         raise ValueError("proposal candidate digest is not authoritative")
     if (
-        candidate_set.resolved_evidence_sha256
+        proposal.registry_sha256 != registry.registry_sha256
+        or candidate_set.registry_sha256 != registry.registry_sha256
+    ):
+        raise ValueError("proposal registry digest is not authoritative")
+    if (
+        proposal.resolved_evidence_sha256
+        != diagnosis_evidence.resolved_evidence_sha256
+        or candidate_set.resolved_evidence_sha256
         != diagnosis_evidence.resolved_evidence_sha256
     ):
         raise ValueError("candidate set is outside the resolved evidence snapshot")
@@ -781,6 +813,9 @@ def validate_action_proposal_binding(
     if proposal.runbook_id is None:
         raise ValueError("execute proposal does not identify a runbook")
     runbook = registry.require(proposal.runbook_id)
+    runbook_sha256 = semantic_sha256(runbook.model_dump(mode="json"))
+    if proposal.runbook_sha256 != runbook_sha256:
+        raise ValueError("proposal runbook digest is not authoritative")
     matching = tuple(
         candidate
         for candidate in candidate_set.write_candidates
@@ -790,6 +825,8 @@ def validate_action_proposal_binding(
     if len(matching) != 1:
         raise ValueError("proposal runbook and target are outside the candidate set")
     candidate = matching[0]
+    if candidate.runbook_sha256 != runbook_sha256:
+        raise ValueError("candidate runbook digest is not authoritative")
     if candidate.risk_level is not runbook.risk_level:
         raise ValueError("candidate risk differs from the trusted runbook")
     if (

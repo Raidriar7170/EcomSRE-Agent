@@ -1,8 +1,8 @@
 # Diagnosis-to-Action v2 Frozen Design
 
-Status: `OFFLINE_IMPLEMENTATION_AUTHORIZED / LIVE_NOT_AUTHORIZED`
+Status: `PR_B_OFFLINE_FAKE_RUNTIME_IMPLEMENTED / LIVE_NOT_EXECUTED`
 
-Decision owners: `DEC-033`, `DEC-034`
+Decision owners: `DEC-033`, `DEC-034`, `DEC-035`
 Safety owner: [SAFETY_BOUNDARIES.md](../SAFETY_BOUNDARIES.md)
 
 ## Claim boundary
@@ -22,11 +22,25 @@ does not prove an Agent, Executor, held-out result, or live recovery.
 
 | ID | Decision |
 |---|---|
-| DTA-001 | Build the three-scenario Portfolio Demo before freezing replay held-out evaluation. |
+| DTA-001 | Portfolio Demo first; replay held-out evidence is reported separately. |
 | DTA-002 | MVP scenarios are Payment configuration failure, Recommendation stopped, and Email memory leak. |
-| DTA-003 | Email uses one Proposal with at most two fixed typed forward steps. |
-| DTA-004 | LOW may use exact-scope standing authorization; MEDIUM requires per-run human approval. |
-| DTA-005 | Held-out is replay-only; known-scenario Live E2E is a separate engineering Demo. |
+| DTA-003 | Email is one Proposal containing at most two fixed typed forward steps. |
+| DTA-004 | One Tool-Using Strong Single identity remains the default. |
+| DTA-005 | Diagnosis and Action Selection use two separate semantic stages. |
+| DTA-006 | Maximum read-tool dispatches per investigation is four. |
+| DTA-007 | Normalized identical read-tool calls may not repeat. |
+| DTA-008 | `list_recent_changes` is deferred from the MVP. |
+| DTA-009 | `RECREATE_SERVICE` is deferred from the MVP. |
+| DTA-010 | Conditional Reviewer is deferred from the MVP. |
+| DTA-011 | Operational Admission never reads evaluator truth. |
+| DTA-012 | Final live results are known-scenario engineering Demo evidence, not held-out accuracy. |
+| DTA-013 | Compare One-shot Full Context and Tool-Using Strong Single; Tool Use superiority is not assumed. |
+| DTA-014 | No-action and escalation are first-class results. |
+| DTA-015 | Actual writes remain deterministic, typed, allowlisted, and verified. |
+
+Authorization is owned separately by `DEC-035`: this Master Goal is the
+standing human record for the exact LOW and MEDIUM scopes, and every concrete
+attempt requires an expiring run-bound child.
 
 ## Architecture
 
@@ -35,7 +49,7 @@ flowchart TD
   A["Alert Context"] --> I["Tool-Using Strong Single"]
   I --> T["Bounded read tools, max 4 dispatches"]
   T --> D["DtaDiagnosis"]
-  D -->|"NEED_MORE / ABSTAIN"| N["NO_ACTION or ESCALATE_HUMAN"]
+  D -->|"NEED_MORE_EVIDENCE / ABSTAIN"| N["NO_ACTION or ESCALATE_HUMAN"]
   D -->|"COMPLETED"| F["Deterministic Candidate Filter"]
   F --> C["CandidateSet, max 3 write candidates"]
   C --> S["Same-Agent Action Selection"]
@@ -52,7 +66,7 @@ flowchart TD
 
 The Agent owns no write authority. Runtime-owned fields include risk,
 preconditions, executor, verifier, ownership, authorization, and step limits.
-`COLLECT_MORE_EVIDENCE` is a diagnosis terminal, not a write action.
+`NEED_MORE_EVIDENCE` is a diagnosis terminal, not a write action.
 
 ## Namespace and contracts
 
@@ -69,28 +83,30 @@ This avoids collision with the existing Phase 5A `DiagnosisResultV2`.
 | `RunbookSpec` | Fully hash-frozen domain/mechanism/target applicability, risk, parameter schema, preconditions, ordered fixed steps, executor/verifier IDs, and step cap. |
 | `CandidateSet` | Diagnosis/resolved-evidence-bound deterministic target-specific write candidates plus fail-closed dispositions; `resolved_evidence_sha256` binds the diagnosis-scoped resolved view. |
 | `ActionProposal` | Accepted only after binding to the actual CandidateSet, Diagnosis, ResolvedDiagnosisEvidenceView, and trusted RunbookSpec and covering every required evidence source; no risk, commands, paths, URLs, or container IDs. |
-| `OperationalAdmission` | Future deterministic current-state, ownership, evidence, parameter, and precondition verdict. |
-| `AuthorizationRecord` | Future exact environment/scenario/action/digest/expiry binding. |
-| `StepReceipt` | Future PR-B before/after state digest and outcome for each individual fixed step. |
-| `VerificationResult` | Future Runbook-specific infrastructure and business-SLI verdict. |
+| `OperationalAdmission` | Deterministic current-state, ownership, evidence, parameter, authorization, and precondition verdict. |
+| `AuthorizationRecord` | Standing exact Master scope plus an expiring run/attempt-bound child; neither is model-writable. |
+| `StepReceipt` | Before/after state digest, time window, outcome, error, and semantic hash for each attempted fixed step. |
+| `ExecutionTransaction` | Registry-ordered bounded receipts, Verification identity, terminal, and safe escalation binding. |
+| `VerificationResult` | Fake-backend PR-B infrastructure and business-SLI verdict base contract; real adapters remain later-stage work. |
 
-The current offline slice implements these structural contracts through
-`ActionProposal`, read-only registry loading, resolved-view structural
-validation, deterministic candidate filtering, and explicit proposal binding.
-It does not claim that an artifact exists in a real Evidence Store; the trusted
-resolver/adapter producer is PR-C. It does not implement operational admission
-or execution.
+The current offline slice implements the structural contracts through
+`ActionProposal`, explicit Registry and selected-Runbook digest binding,
+deterministic Operational Admission, Master and attempt Authorization records,
+fixed-step fake Executors, per-step receipts, and fake Verifiers. It does not
+claim that an artifact exists in a real Evidence Store; the trusted
+resolver/adapter producer is PR-C. No Docker, Provider, fault injection, or real
+mutation was executed by PR-B.
 
 `ResolvedDiagnosisEvidenceView` is permanently diagnosis-scoped: its reference
 set must equal the Diagnosis supporting plus contradicting reference set. A
 future full-run `EvidenceStoreSnapshot` is a separate PR-C contract and may
 contain additional run evidence; it must not broaden or silently replace this
-exact view. Likewise, a future Operational Admission current-state snapshot
-uses its own independently named digest field. It must not reuse
+exact view. Likewise, the PR-B Operational Admission current-state snapshot
+uses its own independently named digest field. It does not reuse
 `resolved_evidence_sha256` with different semantics.
 
 `confidence` remains a non-authorizing diagnosis observation. Candidate
-filtering and future admission must not use model-reported confidence to expand
+filtering and Operational Admission must not use model-reported confidence to expand
 the Runbook, target, risk, evidence, or authorization boundary.
 
 ## Tool budget

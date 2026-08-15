@@ -20,6 +20,7 @@ from ecomsre.dta_v2.contracts import (
     RunbookId,
     Terminal,
     build_resolved_diagnosis_evidence_view,
+    semantic_sha256,
 )
 from ecomsre.dta_v2.registry import RunbookRegistry, load_runbook_registry
 
@@ -105,6 +106,10 @@ def test_filter_selects_only_payment_rollback_candidate() -> None:
         RunbookId.ROLLBACK_CONFIGURATION,
     )
     assert result.write_candidates[0].target_service == "payment"
+    assert result.registry_sha256 == registry.registry_sha256
+    assert result.write_candidates[0].runbook_sha256 == semantic_sha256(
+        registry.require(RunbookId.ROLLBACK_CONFIGURATION).model_dump(mode="json")
+    )
     assert result.allowed_nonwrite_dispositions == (
         ActionDisposition.ESCALATE_HUMAN,
         ActionDisposition.NO_ACTION,

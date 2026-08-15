@@ -141,7 +141,7 @@ it cannot expand the Policy Gate or Executor authority.
 | E2E v6 `V6_REPRO_2` | One accepted local run proved the repaired ordered source-stage transition and reached `MULTISERVICE_PROJECTION_COMPLETED`, where a typed projection runtime failure stopped the run before diagnosis; final public terminal `BLOCKED_PUBLIC_RESULT_VERIFICATION`; A0 builder/model/forward mutation `1/0/0`; baseline restored and cleanup `CLEAN` |
 | E2E v6 `V6_REPRO_3` | One accepted local run completed the bounded projection and one A0 model diagnosis, but the diagnosis was incorrect; terminal `LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION`; forward/rollback mutation `0/0`; baseline restored and cleanup `CLEAN` |
 | LOCAL_DEMO successor | `LOCAL_DEMO_E2E_PASSED_READY_FOR_REVIEW`; the fourth retained attempt completed one frozen local payment restoration, two recovery windows, independent verification, exact baseline restoration, and `CLEAN` cleanup |
-| Diagnosis-to-Action v2 | `OFFLINE_CONTRACTS_AND_REGISTRIES_ONLY`; namespaced contracts, three observer-visible scenario specs, three fully frozen trusted Runbook specs, resolved-view structural validation, deterministic candidate filtering, and proposal-binding checks; store-backed resolver, Agent, Executor, Provider, held-out, and Live evidence are not implemented |
+| Diagnosis-to-Action v2 | `PR_B_OFFLINE_FAKE_RUNTIME_IMPLEMENTED`; namespaced contracts, explicit Registry/Runbook digest binding, deterministic candidate filtering and Operational Admission, Master/run-bound authorization, fake-only fixed-step transactions, receipts, and Verifiers; store-backed resolver, Agent, real Executor, Provider, held-out, and Live evidence are not implemented |
 
 ### V6_REPRO_2 accepted-run boundary
 
@@ -361,7 +361,7 @@ src/ecomsre/phase2/   Fixed/Dynamic workflows, Commander, Specialists, Judge
 src/ecomsre/phase3/   Planner, Policy Gate, replay executor, verifier, rollback
 src/ecomsre/phase4/   Search/Recommendation Domain RCA, evaluation, provider gate
 src/ecomsre/phase5a/  Capability-parity v2 diagnosis policy and evaluation
-src/ecomsre/dta_v2/   Diagnosis-to-Action v2 offline contracts and registries
+src/ecomsre/dta_v2/   DTA v2 offline contracts, admission, and fake transactions
 src/ecomsre/demo/     Thin public Phase 2 → Phase 3 offline integration
 config/phase1/        Frozen seven-case observer-visible replay baseline
 config/phase4/        Five independent domain replay cases
@@ -377,9 +377,10 @@ tests/                 Contract, replay, isolation, and regression checks
   The separate LOCAL_DEMO executed one exact allowlisted local feature-flag
   restoration; no general Docker, cloud, production, or autonomous write
   capability is claimed.
-- Diagnosis-to-Action v2 currently has offline contracts, registries, and
-  candidate filtering only. It has no v2 Agent, Executor, Provider result,
-  held-out result, Docker action, or Live acceptance.
+- Diagnosis-to-Action v2 currently has offline contracts, registries,
+  deterministic admission, exact authorization, and fake-only bounded
+  transactions. It has no v2 Agent, real Executor, Provider result, held-out
+  result, Docker action, or Live acceptance.
 - The public demo uses an evidence-driven deterministic scripted backend. It
   exercises integration behavior but does not replace the frozen Phase 2
   comparison baseline or the bounded real-provider gate.
