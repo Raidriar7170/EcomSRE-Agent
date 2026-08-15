@@ -2,15 +2,16 @@
   "schema_version": "dta-v2-master-progress.v1",
   "goal_version": "dta-v2-master-v1",
   "starting_pr": 43,
-  "completed_stage": "PR-C",
-  "current_stage": "PR-D",
-  "main_head": "262256c14fbb1a9c01d62fa4860fe8c6a1ac21b0",
-  "active_branch": "codex/dta-v2-pr-d-tool-using-agent",
-  "active_pr": 46,
+  "completed_stage": "PR-D",
+  "current_stage": "PR-E",
+  "main_head": "ab12d02531bd0faabb6720ba1f2b58914c4b0aab",
+  "active_branch": "codex/dta-v2-pr-e-evaluation",
+  "active_pr": null,
   "merged_prs": [
     43,
     44,
-    45
+    45,
+    46
   ],
   "preferred_model": "gpt-5.4-mini-2026-03-17",
   "frozen_model": "gpt-5.4-mini-2026-03-17",
