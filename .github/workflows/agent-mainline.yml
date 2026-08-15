@@ -95,8 +95,11 @@ jobs:
       - name: Phase 5B protocol tests
         run: make phase5b-test
 
-      - name: Phase 5B frozen-path preflight
-        run: make phase5b-preflight
+      - name: Phase 5B historical bindings
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_phase5b_historical_bindings
 
       - name: Verify Phase 5B protocol
         run: make phase5b-protocol-verify
@@ -130,6 +133,7 @@ jobs:
           src/ecomsre/phase4
           src/ecomsre/phase5a
           src/ecomsre/phase5b
+          src/ecomsre/dta_v2
           src/ecomsre/tools
           src/ecomsre/demo
           src/ecomsre_live_sandbox
@@ -140,5 +144,6 @@ jobs:
           eval/phase5a/runner.py
           eval/phase5b/runner.py
           scripts/rcaeval
+          scripts/ci
           scripts/live_sandbox
           tests/phase5b

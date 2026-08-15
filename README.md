@@ -1,14 +1,15 @@
 # EcomSRE-Agent
 
 EcomSRE-Agent is a verifiable, authority-separated Agent runtime for
-e-commerce incident diagnosis and replay-only restricted remediation. It uses
-a custom lightweight Multi-Agent runtime, typed handoffs, a central budget,
+e-commerce incident diagnosis and bounded restricted remediation. It contains
+Single-Agent and Multi-Agent diagnosis paths, typed handoffs, central budgets,
 run-scoped evidence, deterministic policy enforcement, and replayable reports.
 
 This repository is an evidence-oriented local research system—not a production
-autonomous SRE. Its demos cover the implemented Phase 1–3 path, the separate
-Phase 4 Search/Recommendation replay path, and the Phase 5A diagnosis-quality
-repair without Docker, live telemetry, or live mutation.
+autonomous SRE. Its default Phase 1–5 demos are offline/replay-only. A separate
+LOCAL_DEMO successor proved one known local Payment configuration restoration;
+its strict R3 diagnosis remained negative because of a fault-class mismatch.
+That bounded result is not general live-remediation or production evidence.
 
 ## One-command offline demo
 
@@ -140,6 +141,7 @@ it cannot expand the Policy Gate or Executor authority.
 | E2E v6 `V6_REPRO_2` | One accepted local run proved the repaired ordered source-stage transition and reached `MULTISERVICE_PROJECTION_COMPLETED`, where a typed projection runtime failure stopped the run before diagnosis; final public terminal `BLOCKED_PUBLIC_RESULT_VERIFICATION`; A0 builder/model/forward mutation `1/0/0`; baseline restored and cleanup `CLEAN` |
 | E2E v6 `V6_REPRO_3` | One accepted local run completed the bounded projection and one A0 model diagnosis, but the diagnosis was incorrect; terminal `LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION`; forward/rollback mutation `0/0`; baseline restored and cleanup `CLEAN` |
 | LOCAL_DEMO successor | `LOCAL_DEMO_E2E_PASSED_READY_FOR_REVIEW`; the fourth retained attempt completed one frozen local payment restoration, two recovery windows, independent verification, exact baseline restoration, and `CLEAN` cleanup |
+| Diagnosis-to-Action v2 | `OFFLINE_CONTRACTS_AND_REGISTRIES_ONLY`; namespaced contracts, three observer-visible scenario specs, three fully frozen trusted Runbook specs, resolved-view structural validation, deterministic candidate filtering, and proposal-binding checks; store-backed resolver, Agent, Executor, Provider, held-out, and Live evidence are not implemented |
 
 ### V6_REPRO_2 accepted-run boundary
 
@@ -359,9 +361,11 @@ src/ecomsre/phase2/   Fixed/Dynamic workflows, Commander, Specialists, Judge
 src/ecomsre/phase3/   Planner, Policy Gate, replay executor, verifier, rollback
 src/ecomsre/phase4/   Search/Recommendation Domain RCA, evaluation, provider gate
 src/ecomsre/phase5a/  Capability-parity v2 diagnosis policy and evaluation
+src/ecomsre/dta_v2/   Diagnosis-to-Action v2 offline contracts and registries
 src/ecomsre/demo/     Thin public Phase 2 → Phase 3 offline integration
 config/phase1/        Frozen seven-case observer-visible replay baseline
 config/phase4/        Five independent domain replay cases
+config/dta-v2/        Agent-visible scenarios and trusted Runbook catalog
 eval/                 Evaluator-only scoring surfaces; never read by the demo
 tests/                 Contract, replay, isolation, and regression checks
 ```
@@ -369,8 +373,13 @@ tests/                 Contract, replay, isolation, and regression checks
 ## Limitations
 
 - Phase 0's live environment has not passed canonical acceptance.
-- Remediation is process-local and replay-only; it does not write Docker,
-  feature flags, cloud systems, or production resources.
+- The default Phase 3/public remediation demo is process-local and replay-only.
+  The separate LOCAL_DEMO executed one exact allowlisted local feature-flag
+  restoration; no general Docker, cloud, production, or autonomous write
+  capability is claimed.
+- Diagnosis-to-Action v2 currently has offline contracts, registries, and
+  candidate filtering only. It has no v2 Agent, Executor, Provider result,
+  held-out result, Docker action, or Live acceptance.
 - The public demo uses an evidence-driven deterministic scripted backend. It
   exercises integration behavior but does not replace the frozen Phase 2
   comparison baseline or the bounded real-provider gate.

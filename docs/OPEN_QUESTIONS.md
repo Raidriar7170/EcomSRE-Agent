@@ -115,6 +115,11 @@ the project commands and dependencies under test.
 | OQ-008 | closed | Phase 3 | Resolved by accepted `DEC-025`: one replay-only typed restore action, deterministic Policy Gate, bound human/test approval, one-forward-mutation attempt state, replay verification, and exact compensating rollback. | No |
 | OQ-009 | closed | Phase 4 | Resolved by accepted `DEC-026`: five visible Search/Recommendation domain templates, an independent Domain RCA v1 contract, Fixed/Dynamic replay runs, safe Phase 3 no-action disposition, and an optional bounded four-run provider gate. | No |
 | OQ-010 | closed | Phase 5A | Resolved by accepted `DEC-027`: mechanism-level v2 findings, typed missing-source continuation, capability-parity Single/Fixed/Dynamic workflows, and a 12 × 3 visible development evaluation with no superiority claim. | No |
+| OQ-011 | observation_needed | DTA v2 read tools | Can a sanitized live `list_changes` adapter add configuration evidence without exposing flag keys, scenario identity, injected values, or expected answers? It remains disabled until an explicit leakage audit passes. | No |
+| OQ-012 | observation_needed | DTA v2 verifier | What frozen window length, sampling interval, and slope threshold reliably distinguish recovered Email memory behavior from allocator/GC noise on the supported local runtime? | No |
+| OQ-013 | observation_needed | DTA v2 runtime | Does the pinned local Compose/Docker path provide a stable logical-service restart with exact dual-label ownership and no container-ID input? | No |
+| OQ-014 | deferred | DTA v2 evaluation | What exact three replay held-out variants and three no-action/ambiguous cases are frozen after the Portfolio Demo without reusing development tuning evidence? | No |
+| OQ-015 | observation_needed | DTA v2 Agent | What Provider-turn, token, and latency distribution results from the four-dispatch tool budget under the future model lock? | No |
 
 ## Resolution rules
 

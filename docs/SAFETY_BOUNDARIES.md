@@ -5,8 +5,10 @@ This document owns operational safety rules. Architectural rationale belongs in
 in [DECISIONS.md](DECISIONS.md).
 
 This document provides the normative safety detail for `DEC-004`, `DEC-007`,
-and `DEC-012`. `DEC-012` takes effect only in Phase 3 and does not authorize a
-Phase 0 executor or write path.
+`DEC-012`, and the offline-only `DEC-034` design. `DEC-012` first takes effect in
+Phase 3 and does not authorize a Phase 0 executor or write path. `DEC-034`
+narrowly replaces only its one-forward limit for the exact future DTA v2 Email
+transaction; it creates no Live authority.
 
 ## Authorization boundary
 
@@ -168,6 +170,47 @@ The attempt stops immediately when a precondition is false, a write partially
 fails, verification times out, the business SLO does not recover, a regression
 appears, rollback fails, or resource state becomes uncertain. It must not issue
 a second forward mutation.
+
+## Diagnosis-to-Action v2 design boundary
+
+`DEC-033` and `DEC-034` preserve every historical Phase 0, Phase 3, R3, and
+LOCAL_DEMO contract. The new `ecomsre.dta_v2` package is offline-only until a
+separate live Goal authorizes a versioned runtime. Contracts, registry loading,
+candidate filtering, tests, and documentation do not authorize Docker,
+Provider, fault injection, remediation, or cleanup.
+
+The Agent may use only bounded read tools and may emit only a typed
+`ActionProposal`. It cannot set risk, executor, verifier, shell, argv, path,
+URL, container ID, ownership, authorization, or mutation limits. The trusted
+Runbook Registry owns those fields. Candidate filtering and operational
+admission may read observer-visible evidence and current owned-resource state;
+they must not import or read evaluator ground truth.
+
+The v2 MVP permits three write Runbooks in design only:
+
+- `ROLLBACK_CONFIGURATION`: LOW, one forward step;
+- `RESTART_SERVICE`: LOW, one forward step;
+- `MITIGATE_MEMORY_LEAK`: MEDIUM, exactly two maximum forward steps.
+
+The two-step exception narrowly supersedes the `DEC-012` one-forward limit only
+for the versioned Email memory-leak Runbook. Every other `DEC-012` restriction
+and every historical or non-Email Runbook limit remains unchanged.
+It is one proposal and one policy decision with separately validated and
+persisted step receipts: disable the exact leak flag, then restart the exact
+owned Email service. A partial failure cannot trigger a third step, an alternate
+Runbook, automatic re-enablement of the leak flag, compensation of the safer
+completed step, or any second unknown write. If flag disable succeeds and
+restart fails, the completed flag-disable step remains in place and the Runbook
+terminates `PARTIALLY_APPLIED / ESCALATE_HUMAN`. PR-B must persist an individual
+`StepReceipt` for every attempted step. Fault injection, remediation steps, and
+later safety cleanup have separate counters; cleanup cannot upgrade a failed
+Runbook to success.
+
+LOW standing authorization, if later created, must bind the exact local
+environment, scenario, Runbook, target, parameters, registry/candidate/plan
+digests, limits, and expiry. MEDIUM always requires an exact per-run human
+record. This design decision is not itself a standing record or live execution
+authorization. HIGH risk Runbooks remain outside the MVP.
 
 ## Terminal safety states
 

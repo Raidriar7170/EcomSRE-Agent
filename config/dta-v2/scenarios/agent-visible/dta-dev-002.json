@@ -1,0 +1,19 @@
+{
+  "schema_version": "dta-v2.scenario.v1",
+  "scenario_id": "dta-dev-002",
+  "alert_summary": "Product recommendation requests became unavailable in the bounded window.",
+  "candidate_services": [
+    "frontend",
+    "product-catalog",
+    "recommendation"
+  ],
+  "allowed_read_tools": [
+    "query_metrics",
+    "search_logs",
+    "query_trace_neighborhood",
+    "inspect_service_runtime",
+    "inspect_resource_usage"
+  ],
+  "maximum_read_tool_dispatches": 4,
+  "maximum_repeated_identical_calls": 0
+}
