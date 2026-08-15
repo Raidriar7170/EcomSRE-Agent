@@ -44,6 +44,8 @@ conflicts with this register, this register wins.
 | DEC-027 | Multi-Agent diagnosis quality repair | accepted | Phase 5A only | `DECISIONS.md` | Roadmap, Open Questions, Phase 5A implementation and tests | No — visible development evaluation only |
 | DEC-028 | Frozen hidden paired evaluation protocol | accepted | Phase 5B v1 | `DECISIONS.md` | Roadmap, Open Questions, Phase 5B protocol and tests | No — protocol freeze does not enter execution |
 | DEC-029 | Hidden-pack seal control plane | accepted | Phase 5B-1 only | `DECISIONS.md` | Roadmap, Open Questions, seal tooling and evidence | No — out-of-band build and verification only |
+| DEC-033 | DTA v2 namespaced offline architecture | accepted | DTA v2 PR-0/PR-A offline only | `DECISIONS.md` | Architecture, Safety, DTA v2 design and tests | No — no Live authority or Phase 0 dependency |
+| DEC-034 | DTA v2 bounded multi-step policy | accepted | DTA v2 design only; Live requires a later Goal | `DECISIONS.md` | Safety, DTA v2 design and contracts | No — design does not authorize execution |
 
 ## DEC-001 — Supported host baseline
 
@@ -180,6 +182,11 @@ verification, and necessary compensating rollback do not consume that limit.
 Human approval is the default; auto-approval exists only in an explicitly
 marked local test mode. Unsafe, failed, or uncertain state terminates without a
 second forward mutation.
+
+This is the default restricted-write limit. A later Decision Record may replace
+it only by naming an exact versioned Runbook and preserving every other safety
+term. `DEC-034` does so only for the future DTA v2 Email transaction; it does not
+change Phase 3, LOCAL_DEMO, or any other Runbook.
 
 ## DEC-025 — Phase 3 Agile Restricted Remediation Replay MVP
 
@@ -573,6 +580,69 @@ unknown or non-owned resources, arbitrary model-generated actions or shell,
 Kubernetes, production, merge, release, tag, and deployment remain outside
 this decision. A positive result may claim only the bounded local regression
 demo and its observed fault-to-recovery chain.
+
+## DEC-033 — Diagnosis-to-Action v2 Namespaced Offline Architecture
+
+**Status: `accepted` for local documentation, contracts, registries, candidate
+filtering, and offline tests only.**
+
+Diagnosis-to-Action v2 is a versioned successor, not a rewrite of Phase 1,
+Phase 3, Phase 5A `DiagnosisResultV2`, R3, or LOCAL_DEMO. Its Python namespace is
+`ecomsre.dta_v2` and its schemas use the `dta-v2.*` prefix. Existing tool and
+diagnosis contracts may be reused only through explicit adapters.
+
+The target architecture is one Tool-Using Strong Single identity with bounded
+read tools, one typed `DtaDiagnosis`, deterministic Runbook candidate filtering,
+a second same-Agent action-selection stage, deterministic operational admission
+and authorization policy, typed execution, step receipts, and Runbook-specific
+verification. Conditional Reviewer, `RECREATE_SERVICE`, arbitrary Shell, model
+write tools, remote Docker, Kubernetes, and production remain outside the MVP.
+
+The MVP scenario scope is Payment configuration failure, Recommendation service
+stopped, and Email memory leak. Agent-visible scenario files are opaque and
+separate from evaluator truth. The runtime Gate cannot read expected root,
+mechanism, Runbook, injected fault, or other gold labels. The default Agent
+budget is four read-tool dispatches, zero identical normalized repeats, one
+diagnosis terminal, and one candidate-bound ActionProposal. Provider turns and
+semantic terminals are counted separately; this decision does not claim that a
+four-tool investigation uses only two Provider HTTP calls.
+
+The delivery order is Portfolio Demo first, then a separately frozen replay
+held-out evaluation. Held-out evaluates diagnosis, evidence, Runbook selection,
+no-action, escalation, and cost without executing live writes. The later three
+known-scenario live closures are engineering Demo evidence, not held-out
+Recovery Accuracy.
+
+## DEC-034 — v2 Bounded Multi-step Safety and Authorization Policy
+
+**Status: `accepted` as a design contract only; no Live authority is created.**
+
+The Payment `ROLLBACK_CONFIGURATION` and Recommendation `RESTART_SERVICE`
+Runbooks are LOW risk and permit one forward step. The Email
+`MITIGATE_MEMORY_LEAK` Runbook is MEDIUM risk and permits at most two fixed
+forward steps under one proposal and one Policy decision: disable the exact
+leak flag, then restart the exact owned Email service. Every step has its own
+precondition, state binding, and receipt. A partial failure stops without a
+third step or alternate Runbook and escalates to a human.
+
+For `ecomsre.dta_v2` only, this record narrowly supersedes the `DEC-012`
+one-forward-mutation limit for that exact versioned Email Runbook transaction.
+Both ordered steps, the logical target `email`, parameter schema, preconditions,
+executor/verifier identities, and step cap are frozen in the trusted Registry.
+All other `DEC-012` restrictions remain in force. Payment, Recommendation,
+Phase 3, DEC-031, DEC-032/LOCAL_DEMO, and every historical runtime retain their
+one-forward-mutation limit.
+
+LOW may later use a semantic-scope-bound standing authorization only when the
+environment, scenario, Runbook, target, parameters, digests, limits, and expiry
+match exactly. MEDIUM requires a fresh exact human approval for every live run.
+HIGH is denied. These rules do not alter the historical one-forward-mutation
+contracts in Phase 3, DEC-031, or DEC-032.
+
+This decision authorizes no Docker start/stop/restart, Provider call, fault
+injection, remediation, held-out execution, commit, push, PR, merge, release,
+or deployment. Each protected action retains its independent authorization
+boundary.
 
 ## Upstream references
 

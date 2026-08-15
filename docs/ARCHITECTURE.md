@@ -2,11 +2,15 @@
 
 ## Status and purpose
 
-This document describes accepted system boundaries. Only the Phase 0 contract
-is currently actionable; later components remain deferred.
+This document describes durable cross-phase system boundaries. Phase 0
+canonical acceptance remains incomplete, while later replay, evaluation, and
+the separately bounded LOCAL_DEMO successor have their own accepted decisions
+and evidence. A green later-phase result does not rewrite Phase 0.
 
 Decision references: `DEC-002`, `DEC-003`, `DEC-007`, `DEC-008`, `DEC-010`,
-and `DEC-011`.
+`DEC-011`, `DEC-031`, and `DEC-032` govern the historical paths described below.
+`DEC-033` and `DEC-034` govern the separately versioned Diagnosis-to-Action v2
+offline contracts and proposed future runtime.
 
 ## Logical planes
 
@@ -47,11 +51,19 @@ flowchart LR
   V -->|fail| R["Compensating rollback"]
 ```
 
-Phase 0 Environment, Scenario control, Observation readiness, and deterministic
-evaluation portions have an offline implementation under bounded live repair.
-They are not formally accepted. No agent or remediation component is
-implemented. The complete exclusion list is owned by
-[PROJECT_CHARTER.md](PROJECT_CHARTER.md).
+The diagram above is the historical Dynamic Multi-Agent path, not a claim that
+every repository workflow uses it. Phase 1 contains a read-only Single-Agent
+tool loop; Phase 2 contains Fixed and Dynamic Multi-Agent replay; Phase 3
+contains replay-only restricted remediation; and the LOCAL_DEMO successor used
+one Strong Single diagnosis plus one exact allowlisted local configuration
+restoration. Its strict R3 diagnosis remained negative because of a fault-class
+mismatch. Exact evidence and claim limits live in the result documents.
+
+Diagnosis-to-Action v2 does not replace those paths. It adds the namespaced
+offline contracts described in
+[diagnosis-to-action-v2.md](design/diagnosis-to-action-v2.md). No v2 Agent,
+Executor, Docker action, Provider call, held-out result, or live acceptance is
+established by the contract/registry slice.
 
 ## Phase 0 environment boundary
 
@@ -117,5 +129,6 @@ Multi-agent value is an empirical result, not an architectural assumption.
 - Replay consumes captured tool responses and state transitions without
   exposing evaluator-only truth.
 
-Exact schemas remain deferred to Phase 1 and are tracked in
+The original Phase 1 schemas and the independent `dta-v2.*` schemas are
+versioned separately. Remaining observation-owned decisions are tracked in
 [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md).

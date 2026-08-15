@@ -1,0 +1,36 @@
+{
+  "schema_version": "dta-v2.runbook-spec.v1",
+  "runbook_id": "ROLLBACK_CONFIGURATION",
+  "version": "v1",
+  "supported_fault_domains": [
+    "CONFIGURATION"
+  ],
+  "supported_mechanisms": [
+    "CONFIGURATION_ERROR"
+  ],
+  "target_services": [
+    "payment"
+  ],
+  "risk_level": "LOW",
+  "required_evidence_sources": [
+    "METRICS",
+    "TRACES"
+  ],
+  "parameters": [],
+  "preconditions": [
+    "LOCAL_DOCKER_ONLY",
+    "OWNED_SERVICE",
+    "CONFIGURATION_DRIFT_VISIBLE",
+    "BASELINE_HASH_BOUND"
+  ],
+  "forward_steps": [
+    {
+      "step_id": "RESTORE_BASELINE_CONFIGURATION",
+      "parameter_names": []
+    }
+  ],
+  "executor_id": "FeatureFlagRollbackExecutor",
+  "verifier_id": "ConfigurationRecoveryVerifier",
+  "maximum_forward_steps": 1,
+  "failure_policy": "ESCALATE_HUMAN"
+}

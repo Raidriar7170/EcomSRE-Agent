@@ -1,0 +1,46 @@
+{
+  "schema_version": "dta-v2.runbook-spec.v1",
+  "runbook_id": "RESTART_SERVICE",
+  "version": "v1",
+  "supported_fault_domains": [
+    "SERVICE_RUNTIME"
+  ],
+  "supported_mechanisms": [
+    "SERVICE_UNAVAILABLE"
+  ],
+  "target_services": [
+    "recommendation"
+  ],
+  "risk_level": "LOW",
+  "required_evidence_sources": [
+    "METRICS",
+    "RUNTIME"
+  ],
+  "parameters": [
+    {
+      "name": "wait_for_health_seconds",
+      "parameter_type": "INTEGER",
+      "required": true,
+      "minimum": 5,
+      "maximum": 120,
+      "allowed_values": []
+    }
+  ],
+  "preconditions": [
+    "LOCAL_DOCKER_ONLY",
+    "OWNED_SERVICE",
+    "SERVICE_NOT_HEALTHY"
+  ],
+  "forward_steps": [
+    {
+      "step_id": "RESTART_OWNED_SERVICE",
+      "parameter_names": [
+        "wait_for_health_seconds"
+      ]
+    }
+  ],
+  "executor_id": "DockerServiceRestartExecutor",
+  "verifier_id": "ServiceRecoveryVerifier",
+  "maximum_forward_steps": 1,
+  "failure_policy": "ESCALATE_HUMAN"
+}

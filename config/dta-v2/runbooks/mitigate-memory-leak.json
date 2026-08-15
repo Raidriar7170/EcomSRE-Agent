@@ -1,0 +1,51 @@
+{
+  "schema_version": "dta-v2.runbook-spec.v1",
+  "runbook_id": "MITIGATE_MEMORY_LEAK",
+  "version": "v1",
+  "supported_fault_domains": [
+    "LOCAL_RESOURCE"
+  ],
+  "supported_mechanisms": [
+    "MEMORY_LEAK"
+  ],
+  "target_services": [
+    "email"
+  ],
+  "risk_level": "MEDIUM",
+  "required_evidence_sources": [
+    "METRICS",
+    "RUNTIME",
+    "RESOURCES"
+  ],
+  "parameters": [
+    {
+      "name": "wait_for_health_seconds",
+      "parameter_type": "INTEGER",
+      "required": true,
+      "minimum": 5,
+      "maximum": 120,
+      "allowed_values": []
+    }
+  ],
+  "preconditions": [
+    "LOCAL_DOCKER_ONLY",
+    "OWNED_SERVICE",
+    "LEAK_FLAG_ACTIVE"
+  ],
+  "forward_steps": [
+    {
+      "step_id": "DISABLE_LEAK_FLAG",
+      "parameter_names": []
+    },
+    {
+      "step_id": "RESTART_OWNED_SERVICE",
+      "parameter_names": [
+        "wait_for_health_seconds"
+      ]
+    }
+  ],
+  "executor_id": "MemoryLeakMitigationExecutor",
+  "verifier_id": "MemoryLeakRecoveryVerifier",
+  "maximum_forward_steps": 2,
+  "failure_policy": "ESCALATE_HUMAN"
+}
