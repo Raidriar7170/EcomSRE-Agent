@@ -1,0 +1,21 @@
+{
+  "jaeger": {
+    "path": "/jaeger/ui/api/traces",
+    "published_port": 11686,
+    "target_port": 16686
+  },
+  "opensearch": {
+    "index": "otel-logs-*",
+    "published_port": 19200,
+    "target_port": 9200
+  },
+  "prometheus": {
+    "error_query": "sum(increase(traces_span_metrics_calls_total{service_name=\"payment\",status_code=\"STATUS_CODE_ERROR\"}[30s]))",
+    "health_query": "count(target_info{service_name=\"payment\"})",
+    "p95_query": "histogram_quantile(0.95,sum(rate(traces_span_metrics_duration_milliseconds_bucket{service_name=\"payment\"}[30s])) by (le))",
+    "published_port": 19090,
+    "target_port": 9090,
+    "total_query": "sum(increase(traces_span_metrics_calls_total{service_name=\"payment\"}[30s]))"
+  },
+  "schema_version": "live-sandbox.telemetry.v1"
+}

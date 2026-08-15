@@ -1,0 +1,22 @@
+{
+  "schema_version": "live-e2e.fault-projection.v5",
+  "visible_entity_minimum": 3,
+  "visible_entity_maximum": 8,
+  "metric_candidate_limit": 4,
+  "log_raw_hit_limit": 50,
+  "log_evidence_limit": 16,
+  "log_per_service_limit": 4,
+  "trace_query_limit": 3,
+  "trace_evidence_limit": 20,
+  "trace_neighborhood_hops": 2,
+  "maximum_serialized_context_bytes": 98304,
+  "service_ordering_policy": "SUPPORT_THEN_METRICS_THEN_EARLIEST_THEN_NAME",
+  "evidence_ordering_policy": "SOURCE_SCORE_TIME_SERVICE_HASH",
+  "alert_title": "Observed purchase-flow request error-rate increase",
+  "diagnostic_admission_policy": "METRICS_PLUS_LOGS_OR_TRACES",
+  "metric_diagnostic_policy": "POSITIVE_ERROR_OR_LATENCY_DELTA",
+  "log_diagnostic_policy": "WARN_OR_HIGHER_OR_ERROR_TEXT",
+  "trace_diagnostic_policy": "ERROR_ONLY",
+  "empty_source_projection_status": "SOURCE_UNAVAILABLE",
+  "summary_write_policy": "PRIVATE_CREATE_ONCE_BEFORE_A0_BUILDER"
+}

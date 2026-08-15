@@ -136,12 +136,67 @@ forward action.
 Human approval is required by default. Automatic approval is legal only in an
 explicit local test mode with the same allowlist and ownership checks.
 
+### LOCAL_DEMO standing-authorization boundary
+
+`DEC-032` is the explicit local-test successor to the default human-approval
+path. Its standing authorization is not automatic approval and is not Codex
+self-approval: it is the user's explicit Goal-scoped authorization, persisted
+as one private semantic-scope-bound record with
+`codex_autonomous_self_approval = false`.
+
+The LOCAL_DEMO Policy Gate may use that record only when all of these remain
+exact: local Unix Docker, frozen sandbox and payment scenario, target key
+`paymentFailure.defaultVariant`, frozen baseline hash, action
+`RESTORE_FROZEN_SERVICE_CONFIGURATION`, dual ownership labels, zero prior
+forward mutations in the attempt, one-forward limit, and at-most-one rollback
+limit. The model cannot supply or broaden any of these fields.
+
+The strict Diagnosis Gate remains an audit surface. The separate LOCAL_DEMO
+Gate may admit a fault-class mismatch only when root, resolver-backed evidence,
+Metrics plus Logs/Traces coverage, one-call shape, context binding, and
+control-truth isolation all pass. The mismatch must remain visible as a
+warning. Any other LOCAL_DEMO Gate failure denies mutation.
+
+There is no global attempt budget, but every attempt is individually bounded
+and must end with the baseline restored, owned containers/networks/volumes at
+zero, and non-owned resources unchanged. A retry requires a real source,
+configuration, Prompt, test, transport, or runtime change; identical reruns are
+forbidden. Baseline uncertainty, failed rollback, unknown ownership, a changed
+non-owned resource, or incomplete cleanup stops automatic continuation.
+
 The attempt stops immediately when a precondition is false, a write partially
 fails, verification times out, the business SLO does not recover, a regression
 appears, rollback fails, or resource state becomes uncertain. It must not issue
 a second forward mutation.
 
 ## Terminal safety states
+
+## Live local sandbox successor
+
+`DEC-031` authorizes only the Compose project `ecomsre-live-sandbox-v1` on a
+local Unix Docker endpoint. Every container, network, and volume must carry the
+exact Compose project label and the exact `io.ecomsre.sandbox.id` value before
+it can be inspected as owned or changed. Only five frozen loopback ports may be
+published. Host root, Docker socket, remote endpoint, privileged mode, host
+networking, unregistered bind writes, image pulls, builds, and upstream source
+changes are prohibited.
+
+The sandbox controller may submit only one of two frozen whole flag documents.
+An HTTP acknowledgement is not mutation proof; the private file, flag UI read
+API, and direct OFREP value and variant must agree. Invocation A forbids fault
+injection. Invocation B requires the exact unexpired create-once human approval
+record and permits one forward baseline-restore mutation plus at most one exact
+compensating rollback. The restricted executor exposes no command or argv
+field.
+
+The successor private image lock does not replace or rewrite the Phase 0 lock.
+All raw live material remains outside Git under `0700` roots and `0600` files.
+Cleanup may target only resources freshly proven by both labels; any unknown or
+non-owned change blocks automated continuation and never broadens cleanup.
+
+The historical Phase 0 and Phase 3 safety states remain authoritative for their
+own runtimes. A local sandbox demonstration is not production or autonomous
+remediation evidence.
 
 | Marker | Meaning |
 |---|---|

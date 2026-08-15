@@ -1,0 +1,11 @@
+{
+  "architecture": "A0",
+  "decision": "STRONG_SINGLE_HIERARCHICAL",
+  "max_completion_tokens": 2048,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "output_schema_sha256": "26ea69ec4708d5c30d18be4928807ab460200d3372fd17b7cbc333a8b88f7ded",
+  "prompt_sha256": "65497603adf2884e837c70b9a874eb172eba3d582f10061026716ef15a4a7fc5",
+  "schema_version": "live-sandbox.diagnosis.v1",
+  "specialist_calls": 0,
+  "fusion_calls": 0
+}

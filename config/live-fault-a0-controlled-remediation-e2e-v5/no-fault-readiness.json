@@ -1,0 +1,15 @@
+{
+  "schema_version": "live-e2e.no-fault-readiness-policy.v5",
+  "required_services_healthy": 25,
+  "baseline_configuration_policy": "EXACT_FROZEN_DOCUMENT_HASH",
+  "required_source_status": "AVAILABLE",
+  "required_target_record_minimum": 1,
+  "required_broad_metric_service_minimum": 3,
+  "logs_query_contract": "COMPLETED",
+  "traces_query_contract": "COMPLETED",
+  "evidence_ref_policy": "ALL_RESOLVE_ZERO_INVALID",
+  "private_permission_policy": "EXACT_0700_DIRECTORIES_0600_FILES",
+  "control_truth_policy": "ZERO_FINDINGS",
+  "anomaly_evidence_required": false,
+  "a0_context_allowed": false
+}

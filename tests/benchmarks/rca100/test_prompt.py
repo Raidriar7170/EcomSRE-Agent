@@ -6,6 +6,7 @@ from typing import Mapping
 import pytest
 
 from ecomsre.model.gateway import OpenAICompatibleConfig
+from ecomsre_live_sandbox.contracts import canonical_sha256
 from ecomsre_rca100.contracts import RCA100InitialDiagnosis
 from ecomsre_rca100.prompt import (
     OpenAICompatibleRCA100Provider,
@@ -86,6 +87,7 @@ class _Transport:
     def __init__(self, arguments: Mapping[str, object]) -> None:
         self.arguments = arguments
         self.payloads: list[Mapping[str, object]] = []
+        self.last_retry_count = 0
 
     def post_json(
         self,
@@ -178,6 +180,54 @@ def test_provider_accepts_only_visible_entity_and_evidence() -> None:
     assert provider.calls == 1
     assert provider.last_usage_tokens == 125
     assert provider.usage_known is True
+    assert provider.last_transport_retries == 0
+
+
+def test_provider_exposes_one_bounded_transport_retry_without_extra_call() -> None:
+    transport = _Transport(_diagnosis())
+    transport.last_retry_count = 1
+    provider = OpenAICompatibleRCA100Provider(
+        config=OpenAICompatibleConfig(
+            base_url="https://provider.example/v1",
+            api_key="secret",
+            model="strong-single-snapshot",
+        ),
+        expected_model="strong-single-snapshot",
+        timeout_seconds=90.0,
+        max_completion_tokens=1600,
+        transport=transport,
+    )
+
+    provider.diagnose(_context())
+
+    assert provider.calls == 1
+    assert provider.last_transport_retries == 1
+
+
+def test_provider_retains_private_diagnosis_lineage_without_credentials() -> None:
+    transport = _Transport(_diagnosis())
+    provider = OpenAICompatibleRCA100Provider(
+        config=OpenAICompatibleConfig(
+            base_url="https://provider.example/v1",
+            api_key="secret",
+            model="strong-single-snapshot",
+        ),
+        expected_model="strong-single-snapshot",
+        timeout_seconds=90.0,
+        max_completion_tokens=1600,
+        transport=transport,
+    )
+
+    diagnosis = provider.diagnose(_context())
+
+    assert provider.last_raw_response is not None
+    assert provider.last_raw_response["model"] == "strong-single-snapshot"
+    assert provider.last_tool_arguments == _diagnosis()
+    assert provider.last_initial_diagnosis == diagnosis
+    assert provider.last_context_sha256 == canonical_sha256(
+        _context().model_dump(mode="json")
+    )
+    assert "secret" not in json.dumps(provider.last_raw_response, sort_keys=True)
 
 
 def test_provider_rejects_unseen_entity_without_semantic_retry() -> None:
@@ -199,3 +249,6 @@ def test_provider_rejects_unseen_entity_without_semantic_retry() -> None:
         provider.diagnose(_context())
 
     assert provider.calls == 1
+    assert provider.last_raw_response is not None
+    assert provider.last_tool_arguments == invalid
+    assert provider.last_initial_diagnosis is not None

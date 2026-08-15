@@ -139,6 +139,10 @@ class OpenAICompatibleRCA100Provider:
         self._usage_total = 0
         self._usage_known = True
         self._last_request_sha256: str | None = None
+        self._last_context_sha256: str | None = None
+        self._last_raw_response: Mapping[str, object] | None = None
+        self._last_tool_arguments: Mapping[str, object] | None = None
+        self._last_initial_diagnosis: RCA100InitialDiagnosis | None = None
 
     @property
     def calls(self) -> int:
@@ -156,7 +160,34 @@ class OpenAICompatibleRCA100Provider:
     def last_request_sha256(self) -> str | None:
         return self._last_request_sha256
 
+    @property
+    def last_context_sha256(self) -> str | None:
+        return self._last_context_sha256
+
+    @property
+    def last_raw_response(self) -> Mapping[str, object] | None:
+        return self._last_raw_response
+
+    @property
+    def last_tool_arguments(self) -> Mapping[str, object] | None:
+        return self._last_tool_arguments
+
+    @property
+    def last_initial_diagnosis(self) -> RCA100InitialDiagnosis | None:
+        return self._last_initial_diagnosis
+
+    @property
+    def last_transport_retries(self) -> int:
+        value = getattr(self._transport, "last_retry_count", 0)
+        return value if type(value) is int and 0 <= value <= 1 else 0
+
     def diagnose(self, context: RCA100AgentContext) -> RCA100InitialDiagnosis:
+        self._last_raw_response = None
+        self._last_tool_arguments = None
+        self._last_initial_diagnosis = None
+        self._last_context_sha256 = hashlib.sha256(
+            canonical_json_bytes(context.model_dump(mode="json")) + b"\n"
+        ).hexdigest()
         payload = build_request_payload(
             model=self._config.model,
             context=context,
@@ -176,6 +207,9 @@ class OpenAICompatibleRCA100Provider:
             timeout_seconds=self._timeout,
         )
         response = _mapping(raw, "Provider response")
+        self._last_raw_response = json.loads(
+            json.dumps(response, allow_nan=False, ensure_ascii=False)
+        )
         usage = response.get("usage")
         if usage is None:
             self._usage_known = False
@@ -223,6 +257,8 @@ class OpenAICompatibleRCA100Provider:
                     ValueError(f"invalid constant: {value}")
                 ),
             )
+            if isinstance(parsed, Mapping):
+                self._last_tool_arguments = parsed
             diagnosis = RCA100InitialDiagnosis.model_validate_json(
                 json.dumps(
                     parsed,
@@ -231,6 +267,7 @@ class OpenAICompatibleRCA100Provider:
                     separators=(",", ":"),
                 )
             )
+            self._last_initial_diagnosis = diagnosis
         except (json.JSONDecodeError, RecursionError, ValidationError, ValueError) as error:
             raise ValueError("Provider diagnosis is invalid") from error
         visible_entities = {item.entity_ref for item in context.visible_entities}

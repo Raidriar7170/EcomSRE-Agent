@@ -1,0 +1,21 @@
+# Sandbox-only final collector layer. It removes host/docker receivers because
+# the live sandbox never mounts the host root or Docker socket.
+connectors:
+  span_metrics:
+    metrics_flush_interval: 5s
+
+# The inherited host receiver is not in any sandbox pipeline, but its config is
+# still validated at process start. Point validation at the container root; no
+# host filesystem is mounted into this sandbox.
+receivers:
+  host_metrics:
+    root_path: /
+
+processors:
+  resourcedetection:
+    detectors: [env, system]
+
+service:
+  pipelines:
+    metrics:
+      receivers: [http_check/frontend-proxy, nginx, otlp, redis, postgresql, prometheus/ad, span_metrics]

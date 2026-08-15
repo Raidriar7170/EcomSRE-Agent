@@ -132,6 +132,7 @@ jobs:
           src/ecomsre/phase5b
           src/ecomsre/tools
           src/ecomsre/demo
+          src/ecomsre_live_sandbox
           src/ecomsre_rcaeval
           eval/phase1/run.py
           eval/phase2/compare.py
@@ -139,4 +140,5 @@ jobs:
           eval/phase5a/runner.py
           eval/phase5b/runner.py
           scripts/rcaeval
+          scripts/live_sandbox
           tests/phase5b

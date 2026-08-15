@@ -1,0 +1,16 @@
+{
+  "compose_files": [
+    "third_party/opentelemetry-demo/compose.yaml",
+    "third_party/opentelemetry-demo/compose.observability.yaml",
+    "config/live-telemetry-controlled-remediation-v1/compose.sandbox.yaml"
+  ],
+  "compose_project": "ecomsre-live-sandbox-v1",
+  "docker_endpoint_scheme": "unix",
+  "environment_id": "opentelemetry-demo-local-v1",
+  "platform": "linux/arm64",
+  "sandbox_id": "5a632b10-c146-41e9-9fbf-3d0aa8d00081",
+  "sandbox_label_key": "io.ecomsre.sandbox.id",
+  "schema_version": "live-sandbox.environment.v1",
+  "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+  "upstream_tag": "3.0.0"
+}

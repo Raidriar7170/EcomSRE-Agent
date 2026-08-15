@@ -1,0 +1,21 @@
+{
+  "baseline_document_sha256": "14bd13734d46566828779fd61b16e654cc260274a0e30ae9948371a9dbba5beb",
+  "baseline_value": 0,
+  "baseline_variant": "off",
+  "cleanup_policy": "RESTORE_BASELINE_THEN_OWNED_COMPOSE_DOWN",
+  "expected_fault_class": "APPLICATION",
+  "expected_root_service": "payment",
+  "fault_controller_type": "FLAGD_UI_WHOLE_DOCUMENT_HTTP_V1",
+  "fault_document_sha256": "d4799dd1571661246bf3425c2611dd64563b42d3a332ca53d1978bbe493c82d4",
+  "fault_observation_window_seconds": 30,
+  "fault_value": 1,
+  "fault_variant": "100%",
+  "impact_sli": "REQUEST_ERROR_RATE",
+  "load_generator_vus": 25,
+  "scenario_id": "37f142fc-9cde-4839-8184-88f2288ceced",
+  "schema_version": "live-sandbox.scenario.v1",
+  "target_configuration_key": "paymentFailure.defaultVariant",
+  "target_flag": "paymentFailure",
+  "target_service": "payment",
+  "verification_window_seconds": 30
+}

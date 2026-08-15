@@ -1,0 +1,12 @@
+{
+  "schema_version": "live-telemetry.readiness.v2",
+  "capture_window_seconds": 30,
+  "ingestion_grace_seconds": 15,
+  "poll_interval_seconds": 5,
+  "maximum_readiness_seconds": 45,
+  "maximum_probe_attempts": 7,
+  "query_range_step_seconds": 5,
+  "minimum_required_samples": 3,
+  "development_stabilization_seconds": 30,
+  "canonical_stabilization_seconds": 90
+}

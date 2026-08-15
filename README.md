@@ -135,6 +135,76 @@ it cannot expand the Policy Gate or Executor authority.
 | Phase 4 | `PHASE4_OFFLINE_ECOMMERCE_DOMAIN_REPLAY_MVP_READY`; deterministic offline replay verified, real-provider gate `SKIPPED_NOT_CONFIGURED` |
 | Phase 5A | `PHASE5A_MULTI_AGENT_QUALITY_REPAIR_READY`; offline quality repair `PASS`; provider protocol 9/9, semantic pilot 8/9, real-provider 9/9 gate `NOT PASSED`; no superiority claim |
 | Phase 5B | `PHASE5B_V2_FINAL_REPORT_FROZEN`; v1 completed 180/180 frozen main runs and was irreversibly unblinded, v1 scoring terminated on a metadata-contract mismatch, and v2 analysis-only scoring reused the same records with Provider/Agent/scored-run reruns `0`; final claim `NO_PREREGISTERED_ADVANTAGE_SUPPORTED` |
+| E2E v6 original | `BLOCKED_E2E_V6_UNCLASSIFIED_RUNTIME_FAILURE`; Provider preflight passed, but the run ended before Compose start; fault/model/mutation counts `0/0/0`; the original result remains preserved |
+| E2E v6 `V6_REPRO_1` | One accepted local run injected the frozen payment fault and passed Fault Impact plus Metrics/Logs/Traces availability, then stopped before A0 because the diagnostic journal rejected a backward stage transition; final public terminal `BLOCKED_PUBLIC_RESULT_VERIFICATION`; A0/model/forward mutation `0/0/0`; baseline restored and cleanup `CLEAN` |
+| E2E v6 `V6_REPRO_2` | One accepted local run proved the repaired ordered source-stage transition and reached `MULTISERVICE_PROJECTION_COMPLETED`, where a typed projection runtime failure stopped the run before diagnosis; final public terminal `BLOCKED_PUBLIC_RESULT_VERIFICATION`; A0 builder/model/forward mutation `1/0/0`; baseline restored and cleanup `CLEAN` |
+| E2E v6 `V6_REPRO_3` | One accepted local run completed the bounded projection and one A0 model diagnosis, but the diagnosis was incorrect; terminal `LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION`; forward/rollback mutation `0/0`; baseline restored and cleanup `CLEAN` |
+| LOCAL_DEMO successor | `LOCAL_DEMO_E2E_PASSED_READY_FOR_REVIEW`; the fourth retained attempt completed one frozen local payment restoration, two recovery windows, independent verification, exact baseline restoration, and `CLEAN` cleanup |
+
+### V6_REPRO_2 accepted-run boundary
+
+| Gate | Status |
+| --- | --- |
+| 25-service Sandbox | Completed |
+| Human approval | Completed with a new exact R2 record |
+| Fault injection | Completed once with the frozen payment fault |
+| Fault Impact | Passed |
+| Metrics / Logs / Traces | `AVAILABLE / AVAILABLE / AVAILABLE`; counts `5 / 40 / 18`; invalid refs `0` |
+| Ordered source-stage repair | Passed; `SOURCE_AVAILABILITY_GATE_EVALUATED` was followed by `MULTISERVICE_PROJECTION_STARTED` without replaying source stages |
+| Last reached stage | `MULTISERVICE_PROJECTION_COMPLETED` failed; bounded projection recorded diagnostic counts `8 / 0 / 12` for Metrics / Logs / Traces |
+| A0 diagnosis | Not reached; live model calls `0` |
+| Restricted remediation | Not reached; forward mutations `0` |
+| Recovery verification | Not reached |
+| Cleanup | Completed; baseline restored and owned resources `0 / 0 / 0` |
+| Production autonomy | Not claimed |
+
+### V6_REPRO_3 accepted-run boundary
+
+| Gate | Status |
+| --- | --- |
+| 25-service Sandbox | Completed |
+| Human approval | Completed with a new exact R3 record |
+| Fault injection | Completed once with the frozen payment fault |
+| Fault Impact | Passed |
+| Metrics / Logs / Traces | `AVAILABLE / AVAILABLE / AVAILABLE`; source counts `5 / 24 / 12`; invalid refs `0` |
+| Bounded projection | Completed; diagnostic counts `8 / 0 / 14`, visible services `4`, and all selected refs resolved |
+| A0 diagnosis | Executed once from the sealed fault-time context; Diagnosis Gate failed because the diagnosis was incorrect |
+| Restricted remediation | Not entered; forward mutations `0` |
+| Recovery verification | Not reached |
+| Cleanup | Completed; baseline restored and owned resources `0 / 0 / 0` |
+| Terminal | `LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION`; preserved as a legal negative result |
+| Production autonomy | Not claimed |
+
+### LOCAL_DEMO successor boundary
+
+| Surface | Result |
+| --- | --- |
+| Strict diagnosis audit | Root correct; fault class mismatch; mutation blocked in the preserved R3 result |
+| Local engineering demo | Root/evidence Gate passed; one allowlisted restoration executed; two recovery windows passed; cleanup completed |
+| Production autonomy | Not claimed |
+
+LOCAL_DEMO preserves the strict Diagnosis Gate as a fault-class audit while
+using a separate injected Gate to admit the frozen local restoration only when
+the root is `payment`, cited evidence is resolver-backed and covers Metrics plus
+Logs or Traces, the Strong Single call shape is exact, and the Provider input is
+bound to the sealed model context. A class mismatch is retained as
+`FAULT_CLASS_MISMATCH_WARNING`; it is not silently changed into the expected
+answer.
+
+The single entry point is:
+
+```bash
+uv run --with pyarrow python -m scripts.live_sandbox.local_e2e_demo_v1 \
+  --private-root "$HOME/.ecomsre/private/local-e2e-demo-v1" run
+```
+
+It is authorized only for the frozen project-owned local Sandbox, the known
+payment fault, and the exact allowlisted baseline-restoration action. The
+successful fourth retained attempt is reported in the
+[structured result](docs/results/local-e2e-demo-v1.json),
+[concise report](docs/results/local-e2e-demo-v1.md), and
+[Human Brief](docs/results/local-e2e-demo-v1-human-brief.md). It is one known
+post-failure regression demo, not held-out or production evidence.
 
 The authoritative detail lives in the [Roadmap](docs/ROADMAP.md),
 [Decision Register](docs/DECISIONS.md),
@@ -174,6 +244,9 @@ The phases intentionally make different claims:
 | Phase 5B v1 frozen execution | 6 public anchors + 6 opaque hidden slots × 5 paired seeds × 3 arms = 180/180 terminal main records; 38/38 frozen ablation-gap records; all failures retained; irreversibly unblinded |
 | Phase 5B v2 analysis-only result | Identical immutable v1 records; hidden-only Dynamic/Single Decision Accuracy 63.3%/53.3%, difference +10.0 pp with 95% hierarchical paired CI [−16.7 pp, +36.7 pp]; Provider/Agent/scored-run reruns 0; `NO_PREREGISTERED_ADVANTAGE_SUPPORTED` |
 | Phase 5B mock dry run | 2 synthetic templates × 2 seeds × 3 arms; `NOT_MODEL_EVIDENCE`; Provider calls 0 |
+| Live E2E v6 R1 | One local accepted fault-time run; Provider preflight 1, fault injection 1, fault impact PASS, Metrics/Logs/Traces 5/32/16, A0/model/mutation 0/0/0, cleanup `CLEAN`; exact negative result in [the R1 public report](docs/results/live-fault-a0-controlled-remediation-e2e-v6-repro-1.md) |
+| Live E2E v6 R3 | One local accepted fault-time run; Provider preflight PASS, fault injection 1, fault impact PASS, Metrics/Logs/Traces 5/24/12, A0/model/forward mutation 1/1/0, Diagnosis Gate false, cleanup `CLEAN`; exact legal negative result in [the R3 public report](docs/results/live-fault-a0-controlled-remediation-e2e-v6-repro-3.md) |
+| LOCAL_DEMO successor | One known local post-failure regression demo with dual strict/LOCAL_DEMO Gates and Goal-scoped standing authorization; attempt 4 executed one allowlisted restoration, passed two recovery windows and independent verification, restored the exact baseline, and finished `CLEAN`; not held-out or production evidence |
 | Agent Mainline V1 demo | One deterministic scripted replay integration case; not an evaluation or provider result |
 
 The Phase 1 real-provider result is **not** 7/7.

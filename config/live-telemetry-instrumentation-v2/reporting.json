@@ -1,0 +1,15 @@
+{
+  "schema_version": "live-telemetry.reporting.v2",
+  "public_result_json": "docs/results/live-telemetry-instrumentation-v2.json",
+  "public_result_markdown": "docs/results/live-telemetry-instrumentation-v2.md",
+  "public_human_brief": "docs/results/live-telemetry-instrumentation-v2-human-brief.md",
+  "claim_boundary": [
+    "LIVE_LOCAL_SANDBOX_INSTRUMENTATION",
+    "NO_FAULT_INJECTION",
+    "NO_PROVIDER_CALL",
+    "NO_MODEL_QUALITY_CLAIM",
+    "NO_REMEDIATION",
+    "NOT_PRODUCTION",
+    "NOT_EXTERNAL_BENCHMARK"
+  ]
+}

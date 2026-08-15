@@ -1,0 +1,23 @@
+{
+  "schema_version": "live-e2e.image-authority-policy.v3",
+  "authority_path": "control/image-authority.json",
+  "run_verification_paths": [
+    "diagnostics/probe-01/image-verification.json",
+    "canonical/invocation-a/image-verification.json",
+    "live-run/invocation-b/image-verification.json"
+  ],
+  "authority_lifecycle": "CREATE_ONCE_THEN_VALIDATE_WITHOUT_REWRITE",
+  "run_verification_lifecycle": "INDEPENDENT_CREATE_ONCE_PER_RUN",
+  "mismatch_policy": "FAIL_CLOSED",
+  "forbidden_shared_fields": [
+    "run_id",
+    "run_timestamp",
+    "private_path",
+    "flagd_bind_path",
+    "resolved_compose_instance_sha256",
+    "docker_container_id",
+    "docker_resource_id",
+    "command_artifact_path",
+    "raw_daemon_id"
+  ]
+}
