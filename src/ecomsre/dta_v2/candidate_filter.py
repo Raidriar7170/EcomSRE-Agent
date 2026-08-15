@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from ecomsre.dta_v2.contracts import (
-    CandidateRunbook,
     CandidateSet,
     DtaDiagnosis,
     ResolvedDiagnosisEvidenceView,
     Terminal,
+    build_candidate_runbook,
     build_candidate_set,
     semantic_sha256,
 )
@@ -54,13 +54,7 @@ def filter_runbook_candidates(
         for reference in diagnosis.supporting_evidence_refs
     }
     candidates = tuple(
-        CandidateRunbook(
-            runbook_id=runbook.runbook_id,
-            runbook_sha256=semantic_sha256(runbook.model_dump(mode="json")),
-            target_service=root_service,
-            risk_level=runbook.risk_level,
-            parameter_names=tuple(parameter.name for parameter in runbook.parameters),
-        )
+        build_candidate_runbook(runbook=runbook, target_service=root_service)
         for runbook in registry.runbooks
         if mechanism in runbook.supported_mechanisms
         and fault_domain in runbook.supported_fault_domains

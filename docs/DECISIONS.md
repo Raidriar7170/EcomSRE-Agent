@@ -47,6 +47,7 @@ conflicts with this register, this register wins.
 | DEC-033 | DTA v2 namespaced offline architecture | accepted | DTA v2 PR-0/PR-A offline only | `DECISIONS.md` | Architecture, Safety, DTA v2 design and tests | No — no Live authority or Phase 0 dependency |
 | DEC-034 | DTA v2 bounded multi-step policy | accepted | DTA v2 design only; Live requires a later Goal | `DECISIONS.md` | Safety, DTA v2 design and contracts | No — design does not authorize execution |
 | DEC-035 | DTA v2 Master Authorization delegation | accepted | DTA v2 PR-B onward under `dta-v2-master-v1` | `DECISIONS.md` | Safety, DTA v2 design, admission and authorization tests | No — the record alone creates no Docker or Provider action |
+| DEC-036 | DTA v2 provisional Agent identity and Provider development gate | accepted | DTA v2 PR-D under `dta-v2-master-v1` | `DECISIONS.md` | Architecture, Safety, DTA v2 design and Agent tests | No — development Provider evidence creates no write authority |
 
 ## DEC-001 — Supported host baseline
 
@@ -688,6 +689,36 @@ The PR-B implementation and its fake backends remain offline evidence only.
 This Decision Record does not itself start Docker, call a Provider, inject a
 fault, or perform a real mutation. Any later action is additionally bounded by
 the active Goal's exact protected-action authority.
+
+## DEC-036 — DTA v2 Provisional Agent Identity and Provider Development Gate
+
+**Status: `accepted` for PR-D under the user-designated
+`dta-v2-master-v1` Goal only.**
+
+PR-D freezes one provisional Tool-Using Strong Single identity in
+`config/dta-v2/agent-identity.v1.json`. It binds the preferred model
+`gpt-5.4-mini-2026-03-17`, temperature zero, the two system prompts, ordered
+read-tool schemas, Diagnosis schema, Action Selection schema, ActionProposal
+schema, and Provider-adapter version. Investigation may dispatch at most four
+runtime-owned read tools with zero identical normalized repeats. A separate
+Action Selection turn receives only Runbook ID, target, Registry-owned risk,
+typed parameter constraints, required evidence sources, and non-write
+dispositions; it receives no implementation, command, path, container identity,
+authorization, or evaluator truth.
+
+The active Goal authorized bounded real Provider development calls with
+fake/replay read tools. Three retained attempts terminated
+`FAIL / PROVIDER_PROTOCOL_FAILURE`; the subsequent attempt
+`4d07fee0c13e440db6d78c9bd3180286` completed the PR-D development gate `PASS`
+with two read dispatches and a candidate-bound Payment rollback proposal. All
+four attempts recorded zero Docker, fault injection, Runbook execution,
+Executor, Verifier, forward/configuration/service mutation, and public writes.
+Raw Provider responses and credentials remain private.
+
+This record does not authorize another Provider call, Docker action, fault
+injection, real Runbook execution, held-out evaluation, live remediation,
+release, or deployment. Those actions require their exact later-stage Goal
+authority. The PR-D result is development compatibility evidence only.
 
 ## Upstream references
 

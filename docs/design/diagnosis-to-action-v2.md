@@ -1,8 +1,8 @@
 # Diagnosis-to-Action v2 Frozen Design
 
-Status: `PR_C_READ_TOOL_RUNTIME_IMPLEMENTED / READ_ONLY_GATE_PASS / CLEAN`
+Status: `PR_D_AGENT_IMPLEMENTED / PROVIDER_DEVELOPMENT_GATE_PASS / ZERO_WRITES`
 
-Decision owners: `DEC-033`, `DEC-034`, `DEC-035`
+Decision owners: `DEC-033`, `DEC-034`, `DEC-035`, `DEC-036`
 Safety owner: [SAFETY_BOUNDARIES.md](../SAFETY_BOUNDARIES.md)
 
 ## Claim boundary
@@ -94,12 +94,15 @@ The current implementation provides the structural contracts through
 `ActionProposal`, explicit Registry and selected-Runbook digest binding,
 deterministic Operational Admission, Master and attempt Authorization records,
 fixed-step fake Executors, per-step receipts, fake Verifiers, five typed
-read-only adapters, and a full run-scoped Evidence Store. Prometheus,
+read-only adapters, a full run-scoped Evidence Store, and the bounded PR-D
+Tool-Using Strong Single plus candidate-bound Action Selection. Prometheus,
 OpenSearch, and Jaeger use fixed loopback-only queries; runtime and resource
 inspection use GET-only Docker Engine HTTP over a local Unix socket with exact
 ownership labels. Fake/replay backends remain available for deterministic
 tests. No Provider, fault injection, Runbook execution, or service mutation is
-part of the PR-C read-tool runtime.
+part of the PR-C read-tool runtime. PR-D separately permits real Provider
+development calls over fake/replay reads only; it creates no execution or write
+authority.
 
 Fresh authorized no-fault read-only Smoke `f8532f3a6ab5242ab5bba2f8ae1a6caf`
 completed terminal `PASS`, read-tool terminal `PASS`, unchanged baseline, and
@@ -184,6 +187,35 @@ Investigation can require an initial Provider turn, up to four tool
 continuations, and a diagnosis terminal. Action Selection is one later turn.
 Provider turns, tool dispatches, and semantic terminals must be reported as
 separate counters.
+
+## Agent identity and PR-D Provider development gate
+
+The provisional Agent identity is frozen in
+`config/dta-v2/agent-identity.v1.json` with model
+`gpt-5.4-mini-2026-03-17`, temperature `0`, prompt SHA-256
+`98ec7f7e7c65e9f9f442c33e229e9be5faa3883b32c5229fdd752e13d909e162`,
+and tool-schema SHA-256
+`6b968f29201ce7c87fe56099788ff34abc93dea895c56e553e4c007b22218192`.
+The identity also binds the Diagnosis, Action Selection, ActionProposal schema,
+and Provider-adapter hashes. Runtime tests recompute the complete identity and
+reject drift.
+
+Development Smoke `4d07fee0c13e440db6d78c9bd3180286` completed `PASS` after
+four Provider turns and two successful replay-only read dispatches. It produced
+`payment / CONFIGURATION / CONFIGURATION_ERROR` and a candidate-bound
+`ROLLBACK_CONFIGURATION` proposal. Report SHA-256 is
+`8cd1d905ded1b5a1d13f707465036573da79f8f0a6c0950a50450077098ca305`;
+Agent-result SHA-256 is
+`c9744aec45e6e6fcec441e7bcbd3f24779ada5b48fab0fc1906ae99a02daa82b`;
+private evidence-manifest semantic SHA-256 is
+`f774045d9b9bdbf6515de139f787c1b237c983e7d9baa97eddcfdddd80ac5779`.
+The three prior attempts remain `FAIL / PROVIDER_PROTOCOL_FAILURE` with report
+SHA-256 values `36a52b2995b9f0ec91b7c6bf6beae2ac18db188f86bdb9718d0165dd05ddddd2`,
+`ac5d916f439720fb047a51a2a52fee8d178221e81729382ec3cc66f8decb80b4`,
+and `7b34d8318b3e0d61f46aaa16f891ea6a517a39ae614df1ce652b298f0814e617`.
+Every attempt recorded all prohibited-action counters at zero. The result is a
+development compatibility gate, not held-out evidence, a real Runbook
+execution, live remediation, or Live acceptance.
 
 ## Scenario and Runbook matrix
 

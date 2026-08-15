@@ -141,7 +141,7 @@ it cannot expand the Policy Gate or Executor authority.
 | E2E v6 `V6_REPRO_2` | One accepted local run proved the repaired ordered source-stage transition and reached `MULTISERVICE_PROJECTION_COMPLETED`, where a typed projection runtime failure stopped the run before diagnosis; final public terminal `BLOCKED_PUBLIC_RESULT_VERIFICATION`; A0 builder/model/forward mutation `1/0/0`; baseline restored and cleanup `CLEAN` |
 | E2E v6 `V6_REPRO_3` | One accepted local run completed the bounded projection and one A0 model diagnosis, but the diagnosis was incorrect; terminal `LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION`; forward/rollback mutation `0/0`; baseline restored and cleanup `CLEAN` |
 | LOCAL_DEMO successor | `LOCAL_DEMO_E2E_PASSED_READY_FOR_REVIEW`; the fourth retained attempt completed one frozen local payment restoration, two recovery windows, independent verification, exact baseline restoration, and `CLEAN` cleanup |
-| Diagnosis-to-Action v2 | `PR_C_READ_TOOL_RUNTIME_IMPLEMENTED / READ_ONLY_GATE_PASS / CLEAN`; fresh authorized Smoke `f8532f3a6ab5242ab5bba2f8ae1a6caf` completed terminal `PASS`, read-tool terminal `PASS`, unchanged baseline, and `CLEAN` cleanup; all five tools returned `SUCCESS` in exactly one dispatch each, owned containers/networks/volumes ended at `0/0/0`, no non-owned resources changed, and every prohibited-action counter remained zero; the first retained attempt remains `FAIL / READ_TOOL_FAILED / CLEANUP_BLOCKED` |
+| Diagnosis-to-Action v2 | `PR_D_AGENT_IMPLEMENTED / PROVIDER_DEVELOPMENT_GATE_PASS / ZERO_WRITES`; PR-C read-only Smoke `f8532f3a6ab5242ab5bba2f8ae1a6caf` remains `PASS / CLEAN`; PR-D replay-only Provider Smoke `4d07fee0c13e440db6d78c9bd3180286` passed with the preferred model, Payment Diagnosis, and candidate-bound rollback proposal after two reads; three prior PR-D failures remain retained; every PR-D prohibited-action counter was zero |
 
 ### V6_REPRO_2 accepted-run boundary
 
@@ -361,7 +361,7 @@ src/ecomsre/phase2/   Fixed/Dynamic workflows, Commander, Specialists, Judge
 src/ecomsre/phase3/   Planner, Policy Gate, replay executor, verifier, rollback
 src/ecomsre/phase4/   Search/Recommendation Domain RCA, evaluation, provider gate
 src/ecomsre/phase5a/  Capability-parity v2 diagnosis policy and evaluation
-src/ecomsre/dta_v2/   DTA v2 contracts, bounded read tools/store, admission, and fake transactions
+src/ecomsre/dta_v2/   DTA v2 contracts, bounded Agent/read tools/store, admission, and fake transactions
 src/ecomsre/demo/     Thin public Phase 2 → Phase 3 offline integration
 config/phase1/        Frozen seven-case observer-visible replay baseline
 config/phase4/        Five independent domain replay cases
@@ -384,10 +384,16 @@ tests/                 Contract, replay, isolation, and regression checks
   read-only gate `PASS / CLEAN`; the first failed attempt remains retained as
   `FAIL / READ_TOOL_FAILED / CLEANUP_BLOCKED`, with zero owned resources
   afterward. Both attempts recorded zero prohibited actions and no non-owned
-  resource drift. This gate used no fault injection, Agent or Provider call,
-  Runbook execution, or service/configuration mutation; it is not live
-  remediation or Live acceptance and establishes no real Executor, held-out,
-  or Provider result.
+  resource drift. That PR-C gate used no fault injection, Agent or Provider
+  call, Runbook execution, or service/configuration mutation. PR-D now adds one
+  bounded Tool-Using Strong Single, separate candidate-bound Action Selection,
+  and a replay-only real-Provider development Smoke. The successful attempt
+  `4d07fee0c13e440db6d78c9bd3180286` diagnosed Payment configuration failure
+  and proposed `ROLLBACK_CONFIGURATION` after two read dispatches; three prior
+  failed development attempts remain retained. Every attempt recorded zero
+  Docker, fault, Runbook, Executor, Verifier, forward/configuration/service, and
+  public writes. This is not live remediation, held-out evaluation, or Live
+  acceptance and establishes no real Executor.
 - The public demo uses an evidence-driven deterministic scripted backend. It
   exercises integration behavior but does not replace the frozen Phase 2
   comparison baseline or the bounded real-provider gate.

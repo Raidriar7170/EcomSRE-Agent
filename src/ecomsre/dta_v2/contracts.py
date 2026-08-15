@@ -325,22 +325,62 @@ class ActionDisposition(str, Enum):
     NO_ACTION = "NO_ACTION"
 
 
+class RunbookParameterType(str, Enum):
+    STRING = "STRING"
+    INTEGER = "INTEGER"
+
+
+class RunbookParameterSpec(DtaModel):
+    name: Identifier
+    parameter_type: RunbookParameterType
+    required: StrictBool = True
+    minimum: StrictInt | None = None
+    maximum: StrictInt | None = None
+    allowed_values: tuple[str, ...] = Field(default=(), max_length=16)
+
+    @field_validator("name")
+    @classmethod
+    def reject_authority_names(cls, value: str) -> str:
+        if value.casefold() in _UNSAFE_PARAMETER_NAMES:
+            raise ValueError("forbidden parameter name")
+        return value
+
+    @model_validator(mode="after")
+    def require_type_bounds(self) -> RunbookParameterSpec:
+        if self.parameter_type is RunbookParameterType.INTEGER:
+            if self.allowed_values:
+                raise ValueError("integer parameter cannot declare string values")
+            if self.minimum is not None and self.maximum is not None:
+                if self.minimum > self.maximum:
+                    raise ValueError("parameter minimum exceeds maximum")
+        elif self.minimum is not None or self.maximum is not None:
+            raise ValueError("string parameter cannot declare numeric bounds")
+        return self
+
+
 class CandidateRunbook(DtaModel):
+    schema_version: Literal["dta-v2.candidate-runbook.v1"]
     runbook_id: RunbookId
     runbook_sha256: Sha256
     target_service: Identifier
     risk_level: RiskLevel
-    parameter_names: tuple[Identifier, ...] = Field(max_length=8)
+    parameters: tuple[RunbookParameterSpec, ...] = Field(max_length=8)
+    required_evidence_sources: tuple[EvidenceSource, ...] = Field(min_length=1)
 
     @model_validator(mode="after")
-    def require_unique_parameter_names(self) -> CandidateRunbook:
-        if len(self.parameter_names) != len(set(self.parameter_names)):
+    def require_unique_safe_contract_items(self) -> CandidateRunbook:
+        parameter_names = tuple(parameter.name for parameter in self.parameters)
+        if len(parameter_names) != len(set(parameter_names)):
             raise ValueError("candidate parameter names contain duplicates")
+        if len(self.required_evidence_sources) != len(
+            set(self.required_evidence_sources)
+        ):
+            raise ValueError("candidate evidence sources contain duplicates")
         return self
 
 
 class CandidateSet(DtaModel):
-    schema_version: Literal["dta-v2.candidate-set.v2"]
+    schema_version: Literal["dta-v2.candidate-set.v3"]
     run_id: RunId
     diagnosis_sha256: Sha256
     resolved_evidence_sha256: Sha256
@@ -387,7 +427,7 @@ def build_candidate_set(
         ActionDisposition.NO_ACTION,
     )
     typed_payload: dict[str, object] = {
-        "schema_version": "dta-v2.candidate-set.v2",
+        "schema_version": "dta-v2.candidate-set.v3",
         "run_id": run_id,
         "diagnosis_sha256": diagnosis_sha256,
         "resolved_evidence_sha256": resolved_evidence_sha256,
@@ -415,13 +455,24 @@ class DtaDiagnosis(DtaModel):
     run_id: RunId
     terminal: Terminal
     root_service: Identifier | None = None
-    root_entity_ref: Identifier | None = None
+    root_entity_ref: Identifier | None = Field(
+        default=None,
+        description=(
+            "For COMPLETED, exactly service:<root_service>; otherwise null."
+        ),
+    )
     fault_domain: FaultDomain | None = None
     mechanism: FaultMechanism | None = None
     confidence: StrictFloat | None = Field(default=None, ge=0, le=1)
     supporting_evidence_refs: tuple[str, ...] = Field(max_length=32)
     contradicting_evidence_refs: tuple[str, ...] = Field(max_length=32)
-    evidence_source_types: tuple[EvidenceSource, ...] = Field(max_length=6)
+    evidence_source_types: tuple[EvidenceSource, ...] = Field(
+        max_length=6,
+        description=(
+            "Canonical union of sources in supporting and contradicting evidence "
+            "references, ordered METRICS, LOGS, TRACES, RUNTIME, RESOURCES, CHANGES."
+        ),
+    )
     uncertainties: tuple[str, ...] = Field(max_length=16)
     summary: str = Field(min_length=1, max_length=1000)
 
@@ -493,39 +544,6 @@ class DtaDiagnosis(DtaModel):
         return self
 
 
-class RunbookParameterType(str, Enum):
-    STRING = "STRING"
-    INTEGER = "INTEGER"
-
-
-class RunbookParameterSpec(DtaModel):
-    name: Identifier
-    parameter_type: RunbookParameterType
-    required: StrictBool = True
-    minimum: StrictInt | None = None
-    maximum: StrictInt | None = None
-    allowed_values: tuple[str, ...] = Field(default=(), max_length=16)
-
-    @field_validator("name")
-    @classmethod
-    def reject_authority_names(cls, value: str) -> str:
-        if value.casefold() in _UNSAFE_PARAMETER_NAMES:
-            raise ValueError("forbidden parameter name")
-        return value
-
-    @model_validator(mode="after")
-    def require_type_bounds(self) -> RunbookParameterSpec:
-        if self.parameter_type is RunbookParameterType.INTEGER:
-            if self.allowed_values:
-                raise ValueError("integer parameter cannot declare string values")
-            if self.minimum is not None and self.maximum is not None:
-                if self.minimum > self.maximum:
-                    raise ValueError("parameter minimum exceeds maximum")
-        elif self.minimum is not None or self.maximum is not None:
-            raise ValueError("string parameter cannot declare numeric bounds")
-        return self
-
-
 class RunbookStepSpec(DtaModel):
     step_id: RunbookStepId
     parameter_names: tuple[Identifier, ...] = Field(max_length=8)
@@ -591,6 +609,27 @@ class RunbookSpec(DtaModel):
         return self
 
 
+def build_candidate_runbook(
+    *,
+    runbook: RunbookSpec,
+    target_service: str,
+) -> CandidateRunbook:
+    """Project only model-safe selection fields from one trusted runbook."""
+
+    runbook = RunbookSpec.model_validate(runbook.model_dump(mode="python"))
+    if target_service not in runbook.target_services:
+        raise ValueError("candidate target is outside the trusted runbook")
+    return CandidateRunbook(
+        schema_version="dta-v2.candidate-runbook.v1",
+        runbook_id=runbook.runbook_id,
+        runbook_sha256=semantic_sha256(runbook.model_dump(mode="json")),
+        target_service=target_service,
+        risk_level=runbook.risk_level,
+        parameters=runbook.parameters,
+        required_evidence_sources=runbook.required_evidence_sources,
+    )
+
+
 class ActionParameter(DtaModel):
     name: Identifier
     value: str | StrictInt | StrictFloat | StrictBool
@@ -616,7 +655,7 @@ class ActionParameter(DtaModel):
 
 
 class ActionProposal(DtaModel):
-    schema_version: Literal["dta-v2.action-proposal.v2"]
+    schema_version: Literal["dta-v2.action-proposal.v3"]
     run_id: RunId
     disposition: ActionDisposition
     candidate_set_sha256: Sha256
@@ -692,7 +731,7 @@ def build_action_proposal(
         sorted(supporting_evidence_refs, key=_evidence_ref_order)
     )
     typed_payload: dict[str, object] = {
-        "schema_version": "dta-v2.action-proposal.v2",
+        "schema_version": "dta-v2.action-proposal.v3",
         "run_id": diagnosis.run_id,
         "disposition": disposition,
         "candidate_set_sha256": candidate_set.candidate_set_sha256,
@@ -810,7 +849,7 @@ def validate_action_proposal_binding(
             raise ValueError("proposal disposition is outside the candidate set")
         return
 
-    if proposal.runbook_id is None:
+    if proposal.runbook_id is None or proposal.target_service is None:
         raise ValueError("execute proposal does not identify a runbook")
     runbook = registry.require(proposal.runbook_id)
     runbook_sha256 = semantic_sha256(runbook.model_dump(mode="json"))
@@ -825,10 +864,12 @@ def validate_action_proposal_binding(
     if len(matching) != 1:
         raise ValueError("proposal runbook and target are outside the candidate set")
     candidate = matching[0]
-    if candidate.runbook_sha256 != runbook_sha256:
-        raise ValueError("candidate runbook digest is not authoritative")
-    if candidate.risk_level is not runbook.risk_level:
-        raise ValueError("candidate risk differs from the trusted runbook")
+    expected_candidate = build_candidate_runbook(
+        runbook=runbook,
+        target_service=proposal.target_service,
+    )
+    if candidate != expected_candidate:
+        raise ValueError("candidate safe projection differs from the trusted runbook")
     if (
         diagnosis.root_service != proposal.target_service
         or proposal.target_service not in runbook.target_services
@@ -836,9 +877,6 @@ def validate_action_proposal_binding(
         or diagnosis.mechanism not in runbook.supported_mechanisms
     ):
         raise ValueError("proposal target is incompatible with the diagnosis")
-    expected_names = tuple(parameter.name for parameter in runbook.parameters)
-    if candidate.parameter_names != expected_names:
-        raise ValueError("candidate parameters differ from the trusted runbook")
     proposal_sources = {
         resolved_by_ref[reference].source
         for reference in proposal.supporting_evidence_refs

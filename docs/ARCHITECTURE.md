@@ -9,8 +9,9 @@ and evidence. A green later-phase result does not rewrite Phase 0.
 
 Decision references: `DEC-002`, `DEC-003`, `DEC-007`, `DEC-008`, `DEC-010`,
 `DEC-011`, `DEC-031`, and `DEC-032` govern the historical paths described below.
-`DEC-033` through `DEC-035` govern the separately versioned Diagnosis-to-Action
-v2 contracts, admission, authorization, and bounded read-only runtime.
+`DEC-033` through `DEC-036` govern the separately versioned Diagnosis-to-Action
+v2 contracts, admission, authorization, bounded read-only runtime, and PR-D
+development Agent identity.
 
 ## Logical planes
 
@@ -73,9 +74,22 @@ endpoints, and ownership labels. The full revalidated authority context and
 canonical request resolver envelopes persist in the run-scoped store separately
 from the diagnosis-cited view.
 The observation plane never exposes raw container, trace, or span identities.
-No v2 Agent, real Executor, Docker mutation,
-Provider call, held-out result, or live acceptance is established by these
-slices. Fresh authorized no-fault Smoke
+PR-D adds a bounded two-stage Agent: investigation may dispatch at most four
+read tools and must end in a typed Diagnosis; a separate semantic call sees only
+the safe candidate projection and produces a non-authorizing selection that the
+trusted runtime binds into an ActionProposal. The provisionally frozen identity
+is `config/dta-v2/agent-identity.v1.json`.
+
+Fresh replay-only Provider development Smoke
+`4d07fee0c13e440db6d78c9bd3180286` passed with the preferred model, four
+Provider turns, two successful read dispatches, a Payment configuration
+Diagnosis, and a candidate-bound `ROLLBACK_CONFIGURATION` proposal. Three
+failed attempts remain retained. All four attempts recorded zero Docker, fault,
+Runbook, Executor, Verifier, forward/configuration/service, and public writes.
+This establishes the PR-D development Provider gate only: no real Executor,
+Docker mutation, held-out result, live remediation, or live acceptance.
+
+Fresh authorized no-fault PR-C Smoke
 `f8532f3a6ab5242ab5bba2f8ae1a6caf` closed the PR-C read-only gate
 `PASS / CLEAN` with all five tools successful and all prohibited-action
 counters zero; this does not establish live remediation or Live acceptance.
