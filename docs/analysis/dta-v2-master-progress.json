@@ -2,19 +2,20 @@
   "schema_version": "dta-v2-master-progress.v1",
   "goal_version": "dta-v2-master-v1",
   "starting_pr": 43,
-  "completed_stage": "PR-B",
-  "current_stage": "PR-C",
-  "main_head": "3766c5b1f080fe4b20df20303b1654b02dd6f6a4",
-  "active_branch": "codex/dta-v2-pr-c-read-tools",
-  "active_pr": 45,
+  "completed_stage": "PR-C",
+  "current_stage": "PR-D",
+  "main_head": "262256c14fbb1a9c01d62fa4860fe8c6a1ac21b0",
+  "active_branch": "codex/dta-v2-pr-d-tool-using-agent",
+  "active_pr": null,
   "merged_prs": [
     43,
-    44
+    44,
+    45
   ],
   "preferred_model": "gpt-5.4-mini-2026-03-17",
-  "frozen_model": null,
-  "frozen_prompt_sha256": null,
-  "frozen_tool_schema_sha256": null,
+  "frozen_model": "gpt-5.4-mini-2026-03-17",
+  "frozen_prompt_sha256": "98ec7f7e7c65e9f9f442c33e229e9be5faa3883b32c5229fdd752e13d909e162",
+  "frozen_tool_schema_sha256": "6b968f29201ce7c87fe56099788ff34abc93dea895c56e553e4c007b22218192",
   "held_out_seal_sha256": null,
   "live_demo_terminal": null
 }

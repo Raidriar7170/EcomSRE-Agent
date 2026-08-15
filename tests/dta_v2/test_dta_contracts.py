@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from pathlib import Path
 
 import pytest
@@ -11,6 +12,7 @@ from ecomsre.dta_v2.contracts import (
     ActionDisposition,
     ActionParameter,
     ActionProposal,
+    CandidateRunbook,
     DtaDiagnosis,
     EvidenceSource,
     FaultDomain,
@@ -28,6 +30,7 @@ from ecomsre.dta_v2.contracts import (
     ScenarioSpec,
     Terminal,
     build_action_proposal,
+    build_candidate_set,
     build_resolved_diagnosis_evidence_view,
     semantic_sha256,
     validate_action_proposal_binding,
@@ -139,6 +142,167 @@ def action_fixture(runbook_id: RunbookId):
         diagnosis_evidence=evidence,
     )
     return diagnosis, evidence, registry, candidate_set, parameters
+
+
+@pytest.mark.parametrize(
+    ("runbook_id", "expected_parameters", "expected_sources"),
+    (
+        (
+            RunbookId.ROLLBACK_CONFIGURATION,
+            (),
+            (EvidenceSource.METRICS, EvidenceSource.TRACES),
+        ),
+        (
+            RunbookId.RESTART_SERVICE,
+            (
+                {
+                    "name": "wait_for_health_seconds",
+                    "parameter_type": "INTEGER",
+                    "required": True,
+                    "minimum": 5,
+                    "maximum": 120,
+                    "allowed_values": [],
+                },
+            ),
+            (EvidenceSource.METRICS, EvidenceSource.RUNTIME),
+        ),
+        (
+            RunbookId.MITIGATE_MEMORY_LEAK,
+            (
+                {
+                    "name": "wait_for_health_seconds",
+                    "parameter_type": "INTEGER",
+                    "required": True,
+                    "minimum": 5,
+                    "maximum": 120,
+                    "allowed_values": [],
+                },
+            ),
+            (
+                EvidenceSource.METRICS,
+                EvidenceSource.RUNTIME,
+                EvidenceSource.RESOURCES,
+            ),
+        ),
+    ),
+)
+def test_candidate_safe_projection_exposes_exact_trusted_selection_contract(
+    runbook_id: RunbookId,
+    expected_parameters: tuple[dict[str, object], ...],
+    expected_sources: tuple[EvidenceSource, ...],
+) -> None:
+    _, _, registry, candidate_set, _ = action_fixture(runbook_id)
+    trusted = registry.require(runbook_id)
+    candidate = candidate_set.write_candidates[0]
+    surface = candidate.model_dump(mode="json")
+
+    assert candidate.schema_version == "dta-v2.candidate-runbook.v1"
+    assert candidate.runbook_id is runbook_id
+    assert candidate.runbook_sha256 == semantic_sha256(
+        trusted.model_dump(mode="json")
+    )
+    assert candidate.target_service == trusted.target_services[0]
+    assert candidate.risk_level is trusted.risk_level
+    assert candidate.parameters == trusted.parameters
+    assert tuple(item.model_dump(mode="json") for item in candidate.parameters) == (
+        expected_parameters
+    )
+    assert candidate.required_evidence_sources == expected_sources
+    assert candidate.required_evidence_sources == trusted.required_evidence_sources
+    assert set(surface) == {
+        "schema_version",
+        "runbook_id",
+        "runbook_sha256",
+        "target_service",
+        "risk_level",
+        "parameters",
+        "required_evidence_sources",
+    }
+    serialized = json.dumps(surface, sort_keys=True).casefold()
+    forbidden_fields = (
+        "preconditions",
+        "forward_steps",
+        "executor_id",
+        "verifier_id",
+        "path",
+        "command",
+    )
+    assert not any(field in serialized for field in forbidden_fields)
+    with pytest.raises(ValidationError, match="extra"):
+        CandidateRunbook.model_validate({**surface, "preconditions": []})
+
+
+def test_candidate_projection_versions_and_nested_digest_are_v3_bound() -> None:
+    diagnosis, evidence, registry, candidate_set, parameters = action_fixture(
+        RunbookId.RESTART_SERVICE
+    )
+    assert candidate_set.schema_version == "dta-v2.candidate-set.v3"
+    proposal = build_action_proposal(
+        candidate_set=candidate_set,
+        diagnosis=diagnosis,
+        registry=registry,
+        diagnosis_evidence=evidence,
+        disposition=ActionDisposition.EXECUTE_RUNBOOK,
+        runbook_id=RunbookId.RESTART_SERVICE,
+        target_service="recommendation",
+        parameters=parameters,
+        supporting_evidence_refs=diagnosis.supporting_evidence_refs,
+        rationale="The exact safe candidate contract selects the bounded runbook.",
+    )
+    assert proposal.schema_version == "dta-v2.action-proposal.v3"
+
+    drifted_payload = candidate_set.model_dump(mode="python")
+    drifted_parameter = drifted_payload["write_candidates"][0]["parameters"][0]
+    drifted_parameter["minimum"] = 0
+    with pytest.raises(ValidationError, match="candidate set digest"):
+        type(candidate_set).model_validate(drifted_payload)
+
+
+def test_forged_candidate_safe_projection_is_rejected_against_registry() -> None:
+    diagnosis, evidence, registry, candidate_set, parameters = action_fixture(
+        RunbookId.RESTART_SERVICE
+    )
+    proposal = build_action_proposal(
+        candidate_set=candidate_set,
+        diagnosis=diagnosis,
+        registry=registry,
+        diagnosis_evidence=evidence,
+        disposition=ActionDisposition.EXECUTE_RUNBOOK,
+        runbook_id=RunbookId.RESTART_SERVICE,
+        target_service="recommendation",
+        parameters=parameters,
+        supporting_evidence_refs=diagnosis.supporting_evidence_refs,
+        rationale="The trusted safe candidate contract selects the bounded runbook.",
+    )
+    trusted_candidate = candidate_set.write_candidates[0]
+    forged_parameter = trusted_candidate.parameters[0].model_copy(
+        update={"minimum": 0}
+    )
+    forged_candidate = CandidateRunbook(
+        schema_version="dta-v2.candidate-runbook.v1",
+        runbook_id=trusted_candidate.runbook_id,
+        runbook_sha256=trusted_candidate.runbook_sha256,
+        target_service=trusted_candidate.target_service,
+        risk_level=trusted_candidate.risk_level,
+        parameters=(forged_parameter,),
+        required_evidence_sources=trusted_candidate.required_evidence_sources,
+    )
+    forged_candidate_set = build_candidate_set(
+        run_id=candidate_set.run_id,
+        diagnosis_sha256=candidate_set.diagnosis_sha256,
+        resolved_evidence_sha256=candidate_set.resolved_evidence_sha256,
+        registry_sha256=candidate_set.registry_sha256,
+        write_candidates=(forged_candidate,),
+    )
+
+    with pytest.raises(ValueError, match="frozen registry"):
+        validate_action_proposal_binding(
+            proposal=proposal,
+            candidate_set=forged_candidate_set,
+            diagnosis=diagnosis,
+            registry=registry,
+            diagnosis_evidence=evidence,
+        )
 
 
 @pytest.mark.parametrize(
@@ -300,6 +464,29 @@ def test_completed_diagnosis_binds_root_entity_and_canonical_evidence() -> None:
             }
         )
 
+
+@pytest.mark.parametrize(
+    "unsafe_summary",
+    (
+        "The checkout->payment relation localizes the failure.",
+        "Redirect checkout > payment output.",
+        "cat checkout->payment",
+        "cat checkout->payment | sh",
+    ),
+)
+def test_diagnosis_rejects_arrow_and_command_contexts(
+    unsafe_summary: str,
+) -> None:
+    diagnosis = completed_diagnosis()
+
+    with pytest.raises(ValidationError, match="executable text"):
+        DtaDiagnosis.model_validate(
+            {
+                **diagnosis.model_dump(),
+                "summary": unsafe_summary,
+            }
+        )
+
     with pytest.raises(ValidationError, match="canonically ordered"):
         DtaDiagnosis.model_validate(
             {
@@ -338,7 +525,7 @@ def test_action_proposal_binds_candidate_and_rejects_authority_fields() -> None:
 
     assert proposal.proposal_sha256
     assert proposal.runbook_id is RunbookId.ROLLBACK_CONFIGURATION
-    assert proposal.schema_version == "dta-v2.action-proposal.v2"
+    assert proposal.schema_version == "dta-v2.action-proposal.v3"
     assert proposal.registry_sha256 == registry.registry_sha256
     assert proposal.resolved_evidence_sha256 == evidence.resolved_evidence_sha256
     assert proposal.runbook_sha256 == semantic_sha256(
