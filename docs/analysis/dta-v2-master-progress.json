@@ -6,7 +6,7 @@
   "current_stage": "PR-C",
   "main_head": "3766c5b1f080fe4b20df20303b1654b02dd6f6a4",
   "active_branch": "codex/dta-v2-pr-c-read-tools",
-  "active_pr": null,
+  "active_pr": 45,
   "merged_prs": [
     43,
     44
