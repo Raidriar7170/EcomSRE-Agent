@@ -6,7 +6,7 @@
   "current_stage": "PR-D",
   "main_head": "262256c14fbb1a9c01d62fa4860fe8c6a1ac21b0",
   "active_branch": "codex/dta-v2-pr-d-tool-using-agent",
-  "active_pr": null,
+  "active_pr": 46,
   "merged_prs": [
     43,
     44,
