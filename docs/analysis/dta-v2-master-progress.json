@@ -6,7 +6,7 @@
   "current_stage": "PR-E",
   "main_head": "ab12d02531bd0faabb6720ba1f2b58914c4b0aab",
   "active_branch": "codex/dta-v2-pr-e-evaluation",
-  "active_pr": null,
+  "active_pr": 47,
   "merged_prs": [
     43,
     44,
