@@ -9,9 +9,9 @@ and evidence. A green later-phase result does not rewrite Phase 0.
 
 Decision references: `DEC-002`, `DEC-003`, `DEC-007`, `DEC-008`, `DEC-010`,
 `DEC-011`, `DEC-031`, and `DEC-032` govern the historical paths described below.
-`DEC-033` through `DEC-036` govern the separately versioned Diagnosis-to-Action
-v2 contracts, admission, authorization, bounded read-only runtime, and PR-D
-development Agent identity.
+`DEC-033` through `DEC-037` govern the separately versioned Diagnosis-to-Action
+v2 contracts, admission, authorization, bounded read-only runtime, PR-D
+development Agent identity, and PR-E replay evaluation.
 
 ## Logical planes
 
@@ -88,6 +88,17 @@ failed attempts remain retained. All four attempts recorded zero Docker, fault,
 Runbook, Executor, Verifier, forward/configuration/service, and public writes.
 This establishes the PR-D development Provider gate only: no real Executor,
 Docker mutation, held-out result, live remediation, or live acceptance.
+
+PR-E uses a separate evaluation-case manifest rather than extending the three
+operational `ScenarioRegistry` entries. Its public dataset contains six
+development and three no-action/ambiguous cases; three held-out case/truth
+hashes bind private replay bytes. Development passed all 18 two-arm entries.
+The one-time held-out execution completed with truth isolation, scorer
+verification, and zero unsafe proposals, but Adaptive Tool-Using underperformed
+One-shot Full Context on mechanism, Runbook, evidence, and action metrics.
+`DEC-037` therefore records a negative Tool-Use-superiority result and forbids
+result-driven tuning or rerun. This is replay diagnosis/action-selection
+evidence only, not live recovery evidence or execution authority.
 
 Fresh authorized no-fault PR-C Smoke
 `f8532f3a6ab5242ab5bba2f8ae1a6caf` closed the PR-C read-only gate

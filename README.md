@@ -141,7 +141,7 @@ it cannot expand the Policy Gate or Executor authority.
 | E2E v6 `V6_REPRO_2` | One accepted local run proved the repaired ordered source-stage transition and reached `MULTISERVICE_PROJECTION_COMPLETED`, where a typed projection runtime failure stopped the run before diagnosis; final public terminal `BLOCKED_PUBLIC_RESULT_VERIFICATION`; A0 builder/model/forward mutation `1/0/0`; baseline restored and cleanup `CLEAN` |
 | E2E v6 `V6_REPRO_3` | One accepted local run completed the bounded projection and one A0 model diagnosis, but the diagnosis was incorrect; terminal `LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION`; forward/rollback mutation `0/0`; baseline restored and cleanup `CLEAN` |
 | LOCAL_DEMO successor | `LOCAL_DEMO_E2E_PASSED_READY_FOR_REVIEW`; the fourth retained attempt completed one frozen local payment restoration, two recovery windows, independent verification, exact baseline restoration, and `CLEAN` cleanup |
-| Diagnosis-to-Action v2 | `PR_D_AGENT_IMPLEMENTED / PROVIDER_DEVELOPMENT_GATE_PASS / ZERO_WRITES`; PR-C read-only Smoke `f8532f3a6ab5242ab5bba2f8ae1a6caf` remains `PASS / CLEAN`; PR-D replay-only Provider Smoke `4d07fee0c13e440db6d78c9bd3180286` passed with the preferred model, Payment Diagnosis, and candidate-bound rollback proposal after two reads; three prior PR-D failures remain retained; every PR-D prohibited-action counter was zero |
+| Diagnosis-to-Action v2 | `PR_E_EVALUATION_COMPLETE / HELD_OUT_NEGATIVE / ZERO_UNSAFE_PROPOSALS`; PR-C read-only Smoke remains `PASS / CLEAN`; PR-D Provider compatibility passed; PR-E development passed all 18 two-arm entries; the one-time held-out run passed truth/scorer safety gates but Adaptive Tool-Using underperformed One-shot Full Context, so no superiority or held-out-generalization claim is made |
 
 ### V6_REPRO_2 accepted-run boundary
 
@@ -392,8 +392,15 @@ tests/                 Contract, replay, isolation, and regression checks
   and proposed `ROLLBACK_CONFIGURATION` after two read dispatches; three prior
   failed development attempts remain retained. Every attempt recorded zero
   Docker, fault, Runbook, Executor, Verifier, forward/configuration/service, and
-  public writes. This is not live remediation, held-out evaluation, or Live
-  acceptance and establishes no real Executor.
+  public writes. PR-E then captured an exact replay dataset, passed all 18
+  development entries, and consumed one sealed six-entry held-out schedule.
+  One-shot Full Context scored 3/3 across every held-out diagnosis/action
+  metric; Adaptive Tool-Using scored 3/3 root, 2/3 mechanism, and 1/3 Runbook,
+  evidence, and action. Both had zero unsafe proposals and passed truth/scorer
+  verification. This negative comparison is not tuned or rerun, supports no
+  Tool-Use-superiority or held-out-generalization claim, and remains replay
+  diagnosis/action-selection evidence rather than live remediation or Live
+  acceptance. No real Executor is established.
 - The public demo uses an evidence-driven deterministic scripted backend. It
   exercises integration behavior but does not replace the frozen Phase 2
   comparison baseline or the bounded real-provider gate.

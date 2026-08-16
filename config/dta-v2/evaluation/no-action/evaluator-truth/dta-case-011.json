@@ -1,0 +1,18 @@
+{
+  "case_id": "dta-case-011",
+  "expected_disposition": null,
+  "expected_evidence_sources": [],
+  "expected_fault_domain": null,
+  "expected_mechanism": null,
+  "expected_root_service": null,
+  "expected_runbook": null,
+  "expected_terminal": "NEED_MORE_EVIDENCE",
+  "meaningful_observation_differences": [
+    "conflicting_evidence",
+    "timing_window"
+  ],
+  "scenario_family": "CONFLICTING_EVIDENCE",
+  "schema_version": "dta-v2.evaluator-case-truth.v1",
+  "split": "NO_ACTION",
+  "truth_sha256": "aaa391dc8a2347650241500669dd56cdc3b843768c89801f372380fc4e889223"
+}

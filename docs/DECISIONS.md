@@ -48,6 +48,7 @@ conflicts with this register, this register wins.
 | DEC-034 | DTA v2 bounded multi-step policy | accepted | DTA v2 design only; Live requires a later Goal | `DECISIONS.md` | Safety, DTA v2 design and contracts | No — design does not authorize execution |
 | DEC-035 | DTA v2 Master Authorization delegation | accepted | DTA v2 PR-B onward under `dta-v2-master-v1` | `DECISIONS.md` | Safety, DTA v2 design, admission and authorization tests | No — the record alone creates no Docker or Provider action |
 | DEC-036 | DTA v2 provisional Agent identity and Provider development gate | accepted | DTA v2 PR-D under `dta-v2-master-v1` | `DECISIONS.md` | Architecture, Safety, DTA v2 design and Agent tests | No — development Provider evidence creates no write authority |
+| DEC-037 | DTA v2 PR-E replay evaluation protocol and result | accepted | DTA v2 PR-E under `dta-v2-master-v1` | `DECISIONS.md` | Architecture, Safety, DTA v2 design and evaluation tests | No — evaluation creates no remediation or later-stage authority |
 
 ## DEC-001 — Supported host baseline
 
@@ -719,6 +720,61 @@ This record does not authorize another Provider call, Docker action, fault
 injection, real Runbook execution, held-out evaluation, live remediation,
 release, or deployment. Those actions require their exact later-stage Goal
 authority. The PR-D result is development compatibility evidence only.
+
+## DEC-037 — DTA v2 PR-E Replay Evaluation Protocol and Result
+
+**Status: `accepted` for PR-E under the user-designated
+`dta-v2-master-v1` Goal only.**
+
+PR-E used a separate evaluation-case manifest rather than broadening the three
+operational scenario IDs frozen by `ScenarioRegistry` and `DEC-035`. The public
+dataset contains six development cases and three no-action/ambiguous cases;
+only the hashes of three private replay-held-out cases and their evaluator
+truth are public. Agent-visible case bytes remain separate from evaluator
+truth throughout capture, replay, and scoring.
+
+The Goal-authorized owned capture campaign
+`00af08e75935b1c9eb52081311592818` completed `PASS`: it selected the measurable
+bounded `1000x` Email variant, restored the exact baseline, completed `CLEAN`
+cleanup, left owned containers/networks/volumes at `0/0/0`, changed no
+non-owned resource, and recorded zero Agent, Provider, Runbook, Executor,
+Verifier, or remediation-write calls. Its closure SHA-256 is
+`62263e5bcfc5c4698ec6de44dd1a1b0cf43b7a1b9ddcee8e4dc50931359a61d8`.
+Capture was evaluator-controlled dataset generation, not Agent remediation.
+
+Before the held-out seal, the Goal-permitted compatible configured model was
+changed to `gpt-5.4-2026-03-05`; the frozen Agent identity SHA-256 is
+`aa08b5869aaac7e4ad4b1084367fc99a01c6dd05521ea933fddf9b5fb364ca61`.
+Development campaign `4334dc61fdb48f3abfbe51bf1814c860` then completed
+`PASS` across 18 entries: both arms correctly completed all six fault cases and
+all three no-action/ambiguous cases, with zero unsafe proposal attempts. Truth
+isolation and scorer verification passed, all prohibited-action counters were
+zero, and the report SHA-256 is
+`8b138049bb911e991c9ccc0b9e9fb3493613fd26f835f3726d9e6304fd410871`.
+
+The held-out seal
+`0f944e79f0958f285006c3bdc3cf8f82b8a71731d8d96d02b474f254a54e247a`
+binds exact code head `2c683a6fe8ac682678064e0ba2b2ab856dc607c3`, model,
+Agent identity, both prompts, tools, budgets, schemas, Registry, Candidate
+Filter, scorer, and three case/truth hash pairs. Execution
+`f187b6214c8313f829b047f7b8dbd461` consumed the six-entry A/B schedule once and
+terminated `COMPLETED`, with truth isolation and scorer verification passing,
+zero unsafe proposal attempts, and every prohibited-action counter zero. The
+One-shot Full-Context arm scored 3/3 on root, mechanism, Runbook Top-1,
+evidence validity, and action precision. The Adaptive Tool-Using arm scored
+3/3 root, 2/3 mechanism, and 1/3 on Runbook Top-1, evidence validity, and action
+precision. The held-out set contained no no-action/escalation cases, so those
+two held-out denominators are zero. Report SHA-256 is
+`26b4002fe0232a2d8b03295e98b3c023e9409ae30eaba3b2e21ae1d1523524e6`.
+
+This is a negative result for Tool Use superiority. It supports neither a
+Tool-Use advantage nor held-out generalization and must not be tuned against or
+rerun after result inspection. It is replay diagnosis/action-selection
+evidence for the exact frozen head only, not live recovery evidence. DEC-036's
+PR-D call authority remains closed; this record does not authorize another
+Provider call, Docker action, fault injection, Runbook execution, remediation,
+release, or deployment. PR-F actions require their separate exact Goal
+authority.
 
 ## Upstream references
 

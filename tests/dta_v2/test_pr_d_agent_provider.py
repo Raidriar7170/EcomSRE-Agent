@@ -14,6 +14,7 @@ from ecomsre.dta_v2.agent_contracts import (
     build_candidate_action_view,
 )
 from ecomsre.dta_v2.agent_provider import (
+    ACTION_SELECTION_SYSTEM_PROMPT,
     ACTION_SELECTION_FUNCTION,
     DIAGNOSIS_FUNCTION,
     INVESTIGATION_SYSTEM_PROMPT,
@@ -46,7 +47,7 @@ ROOT = Path(__file__).resolve().parents[2]
 RUN_ID = "b" * 32
 START = datetime(2026, 8, 16, 5, 0, tzinfo=timezone.utc)
 END = START + timedelta(minutes=5)
-MODEL = "gpt-5.4-mini-2026-03-17"
+MODEL = "gpt-5.4-2026-03-05"
 FROZEN_IDENTITY = ROOT / "config/dta-v2/agent-identity.v1.json"
 
 
@@ -205,10 +206,116 @@ def test_diagnosis_prompt_and_schema_expose_cross_field_canonical_constraints() 
     assert "first_error_location=true" in INVESTIGATION_SYSTEM_PROMPT
     assert "record's service field" in INVESTIGATION_SYSTEM_PROMPT
     assert "word 'to' instead of the symbol '->'" in INVESTIGATION_SYSTEM_PROMPT
+    assert "Never cite a FAILURE observation" in INVESTIGATION_SYSTEM_PROMPT
+    assert "Order each evidence reference tuple" in INVESTIGATION_SYSTEM_PROMPT
+    assert "RUNNING and HEALTHY" in INVESTIGATION_SYSTEM_PROMPT
+    assert "CONFIGURATION_ERROR requires fault_domain CONFIGURATION" in (
+        INVESTIGATION_SYSTEM_PROMPT
+    )
+    assert "local resource pressure" in INVESTIGATION_SYSTEM_PROMPT
+    assert "ABSTAIN rather than NEED_MORE_EVIDENCE" in INVESTIGATION_SYSTEM_PROMPT
+    assert "exactly 20 seconds and 5 samples" in INVESTIGATION_SYSTEM_PROMPT
+    assert "exactly one service per runtime or resource call" in (
+        INVESTIGATION_SYSTEM_PROMPT
+    )
+    assert "historical trace ERROR" in INVESTIGATION_SYSTEM_PROMPT
+    assert "Never place evidence_ref values in summary or uncertainties" in (
+        INVESTIGATION_SYSTEM_PROMPT
+    )
+    assert "at least 100000 bytes per second" in INVESTIGATION_SYSTEM_PROMPT
+    assert "downstream Payment candidate" in INVESTIGATION_SYSTEM_PROMPT
+    assert "zero request support is the consequence" in INVESTIGATION_SYSTEM_PROMPT
+    assert "ERROR_RATE greater than zero" in INVESTIGATION_SYSTEM_PROMPT
+    assert "ERROR_RATE equals zero" in INVESTIGATION_SYSTEM_PROMPT
+    assert "never cite runtime as supporting or contradicting" in (
+        INVESTIGATION_SYSTEM_PROMPT
+    )
+    assert "set root_service, root_entity_ref, fault_domain, and mechanism to null" in (
+        INVESTIGATION_SYSTEM_PROMPT
+    )
+    assert "parameters=[]" in ACTION_SELECTION_SYSTEM_PROMPT
+    assert "Do not use semicolons" in ACTION_SELECTION_SYSTEM_PROMPT
+    assert "Use generic evidence language in rationale" in ACTION_SELECTION_SYSTEM_PROMPT
     assert "service:<root_service>" in properties["root_entity_ref"]["description"]
     assert "supporting and contradicting" in (
         properties["evidence_source_types"]["description"]
     )
+
+
+def test_provider_canonicalizes_diagnosis_set_order_but_retains_raw_arguments() -> None:
+    metrics_ref = f"evidence://{RUN_ID}/metrics/0002"
+    runtime_ref = f"evidence://{RUN_ID}/runtime/0001"
+    arguments = {
+        "schema_version": "dta-v2.diagnosis.v1",
+        "run_id": RUN_ID,
+        "terminal": "COMPLETED",
+        "root_service": "recommendation",
+        "root_entity_ref": "service:recommendation",
+        "fault_domain": "SERVICE_RUNTIME",
+        "mechanism": "SERVICE_UNAVAILABLE",
+        "confidence": 0.9,
+        "supporting_evidence_refs": [runtime_ref, metrics_ref],
+        "contradicting_evidence_refs": [],
+        "evidence_source_types": ["RUNTIME", "METRICS"],
+        "uncertainties": [],
+        "summary": "Recommendation is unavailable in the bounded window.",
+    }
+    provider = _provider(
+        RecordingTransport([_response(DIAGNOSIS_FUNCTION, arguments)])
+    )
+
+    turn = provider.investigation_turn(
+        context=_context(), transcript=(), read_tools_enabled=False
+    )
+
+    assert turn.raw_arguments["supporting_evidence_refs"] == [
+        runtime_ref,
+        metrics_ref,
+    ]
+    assert turn.diagnosis is not None
+    assert turn.diagnosis.supporting_evidence_refs == (metrics_ref, runtime_ref)
+    assert turn.diagnosis.evidence_source_types == (
+        EvidenceSource.METRICS,
+        EvidenceSource.RUNTIME,
+    )
+
+
+def test_provider_clears_noncompleted_hypothesis_fields_but_retains_raw_arguments() -> None:
+    metrics_ref = f"evidence://{RUN_ID}/metrics/0002"
+    traces_ref = f"evidence://{RUN_ID}/traces/0003"
+    runtime_ref = f"evidence://{RUN_ID}/runtime/0001"
+    arguments = {
+        "schema_version": "dta-v2.diagnosis.v1",
+        "run_id": RUN_ID,
+        "terminal": "NEED_MORE_EVIDENCE",
+        "root_service": "payment",
+        "root_entity_ref": None,
+        "fault_domain": "CONFIGURATION",
+        "mechanism": "CONFIGURATION_ERROR",
+        "confidence": 0.67,
+        "supporting_evidence_refs": [metrics_ref, traces_ref],
+        "contradicting_evidence_refs": [runtime_ref],
+        "evidence_source_types": ["METRICS", "TRACES", "RUNTIME"],
+        "uncertainties": ["Current and historical sources conflict."],
+        "summary": "Current health conflicts with a historical localized error.",
+    }
+    provider = _provider(
+        RecordingTransport([_response(DIAGNOSIS_FUNCTION, arguments)])
+    )
+
+    turn = provider.investigation_turn(
+        context=_context(), transcript=(), read_tools_enabled=False
+    )
+
+    assert turn.raw_arguments["root_service"] == "payment"
+    assert turn.raw_arguments["fault_domain"] == "CONFIGURATION"
+    assert turn.raw_arguments["mechanism"] == "CONFIGURATION_ERROR"
+    assert turn.diagnosis is not None
+    assert turn.diagnosis.terminal is Terminal.NEED_MORE_EVIDENCE
+    assert turn.diagnosis.root_service is None
+    assert turn.diagnosis.root_entity_ref is None
+    assert turn.diagnosis.fault_domain is None
+    assert turn.diagnosis.mechanism is None
 
 
 def test_schema_rejected_safe_response_is_retained_for_private_failure_evidence() -> None:

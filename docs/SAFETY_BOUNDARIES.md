@@ -5,7 +5,7 @@ This document owns operational safety rules. Architectural rationale belongs in
 in [DECISIONS.md](DECISIONS.md).
 
 This document provides the normative safety detail for `DEC-004`, `DEC-007`,
-`DEC-012`, and `DEC-034` through `DEC-036`. `DEC-012` first takes effect in
+`DEC-012`, and `DEC-034` through `DEC-037`. `DEC-012` first takes effect in
 Phase 3 and does not authorize a Phase 0 executor or write path. `DEC-034`
 narrowly replaces only its one-forward limit for the exact future DTA v2 Email
 transaction; it creates no Live authority.
@@ -173,7 +173,7 @@ a second forward mutation.
 
 ## Diagnosis-to-Action v2 design boundary
 
-`DEC-033` through `DEC-036` preserve every historical Phase 0, Phase 3, R3, and
+`DEC-033` through `DEC-037` preserve every historical Phase 0, Phase 3, R3, and
 LOCAL_DEMO contract. The new `ecomsre.dta_v2` package remains offline unless an
 exact user Goal separately authorizes a versioned runtime. Contracts, registry
 loading, candidate filtering, tests, and documentation do not themselves
@@ -184,6 +184,14 @@ replay-only Provider development gate recorded by `DEC-036`. It authorized no
 Docker action, fault injection, Runbook execution, Executor/Verifier call,
 service/configuration mutation, or public write. The passing development result
 does not extend that authority or establish held-out or Live evidence.
+
+For PR-E only, the same exact Goal separately authorized owned evaluator-side
+capture, bounded development Provider calls, and one sealed six-entry held-out
+schedule. Capture could inject and restore only the exact dataset scenarios;
+it created no Agent remediation authority. The held-out execution is consumed
+and may not be rerun or used for result-driven tuning. Its negative comparative
+result does not broaden any Agent, Provider, Docker, Runbook, or later-stage
+authority. PR-F retains its own exact admission and execution boundary.
 
 The Agent may use only bounded read tools and may emit only a typed
 `ActionProposal`. It cannot set risk, executor, verifier, shell, argv, path,

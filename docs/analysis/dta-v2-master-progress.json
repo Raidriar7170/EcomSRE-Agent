@@ -2,20 +2,21 @@
   "schema_version": "dta-v2-master-progress.v1",
   "goal_version": "dta-v2-master-v1",
   "starting_pr": 43,
-  "completed_stage": "PR-C",
-  "current_stage": "PR-D",
-  "main_head": "262256c14fbb1a9c01d62fa4860fe8c6a1ac21b0",
-  "active_branch": "codex/dta-v2-pr-d-tool-using-agent",
-  "active_pr": 46,
+  "completed_stage": "PR-D",
+  "current_stage": "PR-E",
+  "main_head": "ab12d02531bd0faabb6720ba1f2b58914c4b0aab",
+  "active_branch": "codex/dta-v2-pr-e-evaluation",
+  "active_pr": 47,
   "merged_prs": [
     43,
     44,
-    45
+    45,
+    46
   ],
   "preferred_model": "gpt-5.4-mini-2026-03-17",
-  "frozen_model": "gpt-5.4-mini-2026-03-17",
-  "frozen_prompt_sha256": "98ec7f7e7c65e9f9f442c33e229e9be5faa3883b32c5229fdd752e13d909e162",
+  "frozen_model": "gpt-5.4-2026-03-05",
+  "frozen_prompt_sha256": "42c21be36772f9ae7a6d0dcf6d910e6cdb58b5e5a08a9807487b4ee54f84bcce",
   "frozen_tool_schema_sha256": "6b968f29201ce7c87fe56099788ff34abc93dea895c56e553e4c007b22218192",
-  "held_out_seal_sha256": null,
+  "held_out_seal_sha256": "0f944e79f0958f285006c3bdc3cf8f82b8a71731d8d96d02b474f254a54e247a",
   "live_demo_terminal": null
 }

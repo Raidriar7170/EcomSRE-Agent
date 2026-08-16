@@ -10,6 +10,7 @@ from ecomsre.dta_v2.read_tools import InvestigationReadTools
 from ecomsre.dta_v2.telemetry_adapters import (
     LocalReadBackendConfig,
     LocalSandboxReadBackend,
+    _parse_prometheus_vector,
 )
 from ecomsre.dta_v2.tool_contracts import (
     MetricKind,
@@ -232,3 +233,135 @@ def test_live_backend_projects_all_five_sources_without_raw_identities() -> None
     )
     assert log_observation.result_count == 1
     assert "redacted-identity" in log_observation.model_dump_json()
+
+
+def test_trace_projection_retains_anchor_service_and_deepest_error_under_cap() -> None:
+    backend = LocalSandboxReadBackend(
+        config=_config(), http=StubHttp(), docker=StubDocker(), sleep=lambda _: None
+    )
+    request = build_trace_neighborhood_request(
+        run_id=RUN_ID,
+        service="payment",
+        started_at=START,
+        ended_at=END,
+        max_spans=1,
+    )
+
+    observation = InvestigationReadTools(run_id=RUN_ID, backend=backend).dispatch(
+        request
+    )
+
+    assert observation.status is ObservationStatus.SUCCESS
+    assert observation.result_count == 1
+    assert observation.results[0].service == "payment"
+    assert observation.results[0].first_error_location is True
+
+
+def test_trace_projection_prioritizes_target_error_across_returned_traces() -> None:
+    class HealthyThenErrorHttp(StubHttp):
+        def request_json(
+            self,
+            *,
+            base_url: str,
+            path: str,
+            method: str,
+            payload: object | None,
+        ) -> object:
+            if "/jaeger/ui/api/traces?" not in path:
+                return super().request_json(
+                    base_url=base_url,
+                    path=path,
+                    method=method,
+                    payload=payload,
+                )
+            process = {"p1": {"serviceName": "payment"}}
+            return {
+                "data": [
+                    {
+                        "processes": process,
+                        "spans": [
+                            {
+                                "spanID": "a" * 16,
+                                "processID": "p1",
+                                "operationName": "healthy-charge",
+                                "startTime": 2_000_000,
+                                "duration": 1_000,
+                                "tags": [],
+                                "references": [],
+                            }
+                        ],
+                    },
+                    {
+                        "processes": process,
+                        "spans": [
+                            {
+                                "spanID": "b" * 16,
+                                "processID": "p1",
+                                "operationName": "failed-charge",
+                                "startTime": 1_000_000,
+                                "duration": 1_000,
+                                "tags": [{"key": "error", "value": True}],
+                                "references": [],
+                            }
+                        ],
+                    },
+                ]
+            }
+
+    backend = LocalSandboxReadBackend(
+        config=_config(),
+        http=HealthyThenErrorHttp(),
+        docker=StubDocker(),
+        sleep=lambda _: None,
+    )
+    request = build_trace_neighborhood_request(
+        run_id=RUN_ID,
+        service="payment",
+        started_at=START,
+        ended_at=END,
+        max_spans=1,
+    )
+
+    observation = InvestigationReadTools(run_id=RUN_ID, backend=backend).dispatch(
+        request
+    )
+
+    assert observation.status is ObservationStatus.SUCCESS
+    assert observation.result_count == 1
+    assert observation.results[0].operation == "failed-charge"
+    assert observation.results[0].first_error_location is True
+
+
+def test_prometheus_nan_no_sample_is_empty_but_infinity_is_invalid() -> None:
+    no_sample = {
+        "status": "success",
+        "data": {
+            "resultType": "vector",
+            "result": [
+                {
+                    "metric": {"service_name": "recommendation"},
+                    "value": [END.timestamp(), "NaN"],
+                }
+            ],
+        },
+    }
+    value, sample_count = _parse_prometheus_vector(
+        no_sample, expected_service="recommendation"
+    )
+    assert value == 0.0
+    assert sample_count == 0
+
+    infinite = {
+        **no_sample,
+        "data": {
+            **no_sample["data"],
+            "result": [
+                {
+                    "metric": {"service_name": "recommendation"},
+                    "value": [END.timestamp(), "+Inf"],
+                }
+            ],
+        },
+    }
+    with pytest.raises(ValueError, match="finite"):
+        _parse_prometheus_vector(infinite, expected_service="recommendation")

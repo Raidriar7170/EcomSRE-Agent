@@ -423,6 +423,14 @@ class LocalSandboxReadBackend:
             elif isinstance(request, TraceNeighborhoodRequest):
                 records = self._query_traces(request)
                 limit = request.max_spans
+                truncated = len(records) > limit
+                selected = tuple(
+                    sorted(
+                        records[:limit],
+                        key=_trace_canonical_key,
+                    )
+                )
+                return BackendResult(records=selected, truncated=truncated)
             elif isinstance(request, InspectServiceRuntimeRequest):
                 records = self.docker.inspect_runtime(request)
                 limit = request.max_results
@@ -604,7 +612,9 @@ class LocalSandboxReadBackend:
         traces = payload.get("data")
         if not isinstance(traces, list):
             raise ValueError("Jaeger trace list is invalid")
-        output: list[TraceNeighborhoodRecord] = []
+        ranked_traces: list[
+            tuple[tuple[object, ...], list[TraceNeighborhoodRecord]]
+        ] = []
         for raw_trace in traces:
             trace = _mapping(raw_trace, "Jaeger trace")
             processes = _mapping(trace.get("processes", {}), "Jaeger processes")
@@ -634,17 +644,25 @@ class LocalSandboxReadBackend:
                 tags = _tags(span.get("tags"))
                 errors[span_id] = _span_status(tags) is SpanStatus.ERROR
                 starts[span_id] = _finite_number(span.get("startTime", 0), "span start")
-            first_error = min(
+            first_error = max(
                 (identity for identity, is_error in errors.items() if is_error),
-                key=lambda identity: starts[identity],
+                key=lambda identity: (
+                    len(
+                        _service_path(
+                            identity, services=services, parents=parents
+                        )
+                    ),
+                    -starts[identity],
+                ),
                 default=None,
             )
-            for span_id, span in sorted(spans.items(), key=lambda item: starts[item[0]]):
+            trace_output: list[TraceNeighborhoodRecord] = []
+            for span_id, span in spans.items():
                 parent_id = parents[span_id]
                 parent_service = services.get(parent_id or "")
                 tags = _tags(span.get("tags"))
                 duration_us = _finite_number(span.get("duration", 0), "span duration")
-                output.append(
+                trace_output.append(
                     TraceNeighborhoodRecord(
                         anchor_service=request.service,
                         service_path=_service_path(
@@ -665,25 +683,59 @@ class LocalSandboxReadBackend:
                         first_error_location=span_id == first_error,
                     )
                 )
-                if len(output) >= request.max_spans + 1:
-                    break
-            if len(output) >= request.max_spans + 1:
-                break
-        return tuple(
-            sorted(
-                output,
+            trace_output.sort(
                 key=lambda item: (
-                    item.service_path,
-                    item.service,
-                    item.relationship.value,
-                    item.parent_service or "",
-                    item.operation,
-                    item.status.value,
-                    item.duration_ms,
-                    item.first_error_location,
-                ),
+                    item.service != request.service,
+                    not item.first_error_location,
+                    item.status is not SpanStatus.ERROR,
+                    -len(item.service_path),
+                    _trace_canonical_key(item),
+                )
             )
-        )
+            ranked_traces.append(
+                (
+                    (
+                        not any(
+                            item.service == request.service
+                            and item.status is SpanStatus.ERROR
+                            and item.first_error_location
+                            for item in trace_output
+                        ),
+                        not any(
+                            item.service == request.service
+                            and item.status is SpanStatus.ERROR
+                            for item in trace_output
+                        ),
+                        not any(
+                            item.status is SpanStatus.ERROR
+                            for item in trace_output
+                        ),
+                        -max(starts.values(), default=0.0),
+                        tuple(_trace_canonical_key(item) for item in trace_output),
+                    ),
+                    trace_output,
+                )
+            )
+        output: list[TraceNeighborhoodRecord] = []
+        for _, trace_output in sorted(ranked_traces, key=lambda item: item[0]):
+            for record in trace_output:
+                output.append(record)
+                if len(output) >= request.max_spans + 1:
+                    return tuple(output)
+        return tuple(output)
+
+
+def _trace_canonical_key(item: TraceNeighborhoodRecord) -> tuple[object, ...]:
+    return (
+        item.service_path,
+        item.service,
+        item.relationship.value,
+        item.parent_service or "",
+        item.operation,
+        item.status.value,
+        item.duration_ms,
+        item.first_error_location,
+    )
 
 
 def _prometheus_query(
@@ -746,6 +798,8 @@ def _parse_prometheus_vector(
         if not isinstance(sample, list) or len(sample) != 2:
             raise ValueError("Prometheus sample is invalid")
         number = float(sample[1])
+        if math.isnan(number):
+            continue
         if not math.isfinite(number):
             raise ValueError("Prometheus sample is not finite")
         total += number

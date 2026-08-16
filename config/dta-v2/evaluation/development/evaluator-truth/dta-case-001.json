@@ -1,0 +1,20 @@
+{
+  "case_id": "dta-case-001",
+  "expected_disposition": "EXECUTE_RUNBOOK",
+  "expected_evidence_sources": [
+    "METRICS",
+    "TRACES"
+  ],
+  "expected_fault_domain": "CONFIGURATION",
+  "expected_mechanism": "CONFIGURATION_ERROR",
+  "expected_root_service": "payment",
+  "expected_runbook": "ROLLBACK_CONFIGURATION",
+  "expected_terminal": "COMPLETED",
+  "meaningful_observation_differences": [
+    "fault_strength"
+  ],
+  "scenario_family": "PAYMENT",
+  "schema_version": "dta-v2.evaluator-case-truth.v1",
+  "split": "DEVELOPMENT",
+  "truth_sha256": "0ac87ed909fd2ed4613fb305a3d9ca3d4cebb0eb18868709afd08e7765372697"
+}

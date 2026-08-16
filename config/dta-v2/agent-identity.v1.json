@@ -1,12 +1,12 @@
 {
   "schema_version": "dta-v2.agent-identity.v1",
-  "model_id": "gpt-5.4-mini-2026-03-17",
+  "model_id": "gpt-5.4-2026-03-05",
   "temperature": 0.0,
   "provider_adapter_version": "dta-v2.openai-compatible-agent.v1",
-  "prompt_sha256": "98ec7f7e7c65e9f9f442c33e229e9be5faa3883b32c5229fdd752e13d909e162",
+  "prompt_sha256": "42c21be36772f9ae7a6d0dcf6d910e6cdb58b5e5a08a9807487b4ee54f84bcce",
   "tool_schema_sha256": "6b968f29201ce7c87fe56099788ff34abc93dea895c56e553e4c007b22218192",
   "diagnosis_schema_sha256": "9efa9b31705d325e3501f16ae73d1cf11333034631a745c959a9cc8ce4960d18",
   "action_selection_schema_sha256": "3be7c2aa77d714876641b76b0ff6c5508ed1942632de350fc4ea272f22516c65",
   "action_proposal_schema_sha256": "b406c42f2aa4de3af6a0bf1f81ba43cc72bdd3a68c426e2ca35dde70f303a850",
-  "identity_sha256": "1759bfea0ffefba61557a8fa4ad5932f4c0945daf2a2da5886b853c933bc3296"
+  "identity_sha256": "aa08b5869aaac7e4ad4b1084367fc99a01c6dd05521ea933fddf9b5fb364ca61"
 }

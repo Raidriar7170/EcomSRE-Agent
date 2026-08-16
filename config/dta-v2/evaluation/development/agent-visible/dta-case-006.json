@@ -1,0 +1,711 @@
+{
+  "captured_ended_at": "2026-08-16T04:37:58.051938Z",
+  "captured_started_at": "2026-08-16T04:37:38.051938Z",
+  "case_id": "dta-case-006",
+  "case_sha256": "df0cc66ca200a3d69b3557cbdb1cf969d07d0a3597d618eb033d76775753c98e",
+  "full_context_tools": [
+    "inspect_resource_usage",
+    "inspect_service_runtime",
+    "query_metrics",
+    "search_logs"
+  ],
+  "observations": [
+    {
+      "error_code": null,
+      "fixture_sha256": "8e8a9f09c38014083a28b2b233c9425812bd7aa0dee57249e2ff1cf7153dcaf1",
+      "records": [
+        {
+          "logical_service": "email",
+          "memory_slope_bytes_per_second": 1954406.4,
+          "samples": [
+            {
+              "cpu_percent": 1.336601746138348,
+              "memory_bytes": 56528896,
+              "offset_ms": 0
+            },
+            {
+              "cpu_percent": 1.5490981963927855,
+              "memory_bytes": 70549504,
+              "offset_ms": 5000
+            },
+            {
+              "cpu_percent": 0.08558588548601864,
+              "memory_bytes": 88457216,
+              "offset_ms": 10000
+            },
+            {
+              "cpu_percent": 2.219820717131474,
+              "memory_bytes": 104452096,
+              "offset_ms": 15000
+            },
+            {
+              "cpu_percent": 5.721442885771543,
+              "memory_bytes": 95617024,
+              "offset_ms": 20000
+            }
+          ],
+          "sampling_window_seconds": 20
+        }
+      ],
+      "schema_version": "dta-v2.replay-observation-fixture.v1",
+      "service_scope": [
+        "email"
+      ],
+      "tool": "inspect_resource_usage",
+      "truncated": false
+    },
+    {
+      "error_code": null,
+      "fixture_sha256": "683c68317121ad860a510643cfa5488f38898afe6480fbd92bc7825a54b1bdad",
+      "records": [
+        {
+          "endpoint_probe_performed": false,
+          "endpoint_state": "UNKNOWN",
+          "exit_code": 0,
+          "health": "HEALTHY",
+          "logical_service": "email",
+          "owned_container_present": true,
+          "restart_count": 0,
+          "state": "RUNNING"
+        }
+      ],
+      "schema_version": "dta-v2.replay-observation-fixture.v1",
+      "service_scope": [
+        "email"
+      ],
+      "tool": "inspect_service_runtime",
+      "truncated": false
+    },
+    {
+      "error_code": null,
+      "fixture_sha256": "6d4dd1370620142bc37e24b2957668ec0295b002c85e85946bcdc57fca9fa6e2",
+      "records": [
+        {
+          "metric_kind": "CPU_PERCENT",
+          "sample_count": 0,
+          "service": "email",
+          "unit": "PERCENT",
+          "value": 0.0
+        },
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 0,
+          "service": "email",
+          "unit": "RATIO",
+          "value": 0.0
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 1,
+          "service": "email",
+          "unit": "MILLISECONDS",
+          "value": 45.354838709677416
+        },
+        {
+          "metric_kind": "MEMORY_BYTES",
+          "sample_count": 0,
+          "service": "email",
+          "unit": "BYTES",
+          "value": 0.0
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 1,
+          "service": "email",
+          "unit": "COUNT",
+          "value": 86.40345613824553
+        }
+      ],
+      "schema_version": "dta-v2.replay-observation-fixture.v1",
+      "service_scope": [
+        "email"
+      ],
+      "tool": "query_metrics",
+      "truncated": false
+    },
+    {
+      "error_code": null,
+      "fixture_sha256": "4ff129e1255a632b756dcdc82203c7fff59645c6d9fbdff837c6600c580b14e8",
+      "records": [
+        {
+          "anchor_service": "email",
+          "duration_ms": 13.096,
+          "first_error_location": false,
+          "operation": "POST /send_order_confirmation",
+          "parent_service": null,
+          "relationship": "CHILD",
+          "service": "email",
+          "service_path": [
+            "email"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 13.421,
+          "first_error_location": false,
+          "operation": "POST /send_order_confirmation",
+          "parent_service": null,
+          "relationship": "CHILD",
+          "service": "email",
+          "service_path": [
+            "email"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 15.068,
+          "first_error_location": false,
+          "operation": "POST /send_order_confirmation",
+          "parent_service": null,
+          "relationship": "CHILD",
+          "service": "email",
+          "service_path": [
+            "email"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 11.753,
+          "first_error_location": false,
+          "operation": "send_email",
+          "parent_service": "email",
+          "relationship": "CHILD",
+          "service": "email",
+          "service_path": [
+            "email",
+            "email"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 11.816,
+          "first_error_location": false,
+          "operation": "send_email",
+          "parent_service": "email",
+          "relationship": "CHILD",
+          "service": "email",
+          "service_path": [
+            "email",
+            "email"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 14.027,
+          "first_error_location": false,
+          "operation": "send_email",
+          "parent_service": "email",
+          "relationship": "CHILD",
+          "service": "email",
+          "service_path": [
+            "email",
+            "email"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.133,
+          "first_error_location": false,
+          "operation": "sinatra.render_template",
+          "parent_service": "email",
+          "relationship": "CHILD",
+          "service": "email",
+          "service_path": [
+            "email",
+            "email",
+            "email"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.252,
+          "first_error_location": false,
+          "operation": "sinatra.render_template",
+          "parent_service": "email",
+          "relationship": "CHILD",
+          "service": "email",
+          "service_path": [
+            "email",
+            "email",
+            "email"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.387,
+          "first_error_location": false,
+          "operation": "sinatra.render_template",
+          "parent_service": "email",
+          "relationship": "CHILD",
+          "service": "email",
+          "service_path": [
+            "email",
+            "email",
+            "email"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.039,
+          "first_error_location": false,
+          "operation": "sinatra.render_template",
+          "parent_service": "email",
+          "relationship": "CHILD",
+          "service": "email",
+          "service_path": [
+            "email",
+            "email",
+            "email",
+            "email"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.046,
+          "first_error_location": false,
+          "operation": "sinatra.render_template",
+          "parent_service": "email",
+          "relationship": "CHILD",
+          "service": "email",
+          "service_path": [
+            "email",
+            "email",
+            "email",
+            "email"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.047,
+          "first_error_location": false,
+          "operation": "sinatra.render_template",
+          "parent_service": "email",
+          "relationship": "CHILD",
+          "service": "email",
+          "service_path": [
+            "email",
+            "email",
+            "email",
+            "email"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.064,
+          "first_error_location": false,
+          "operation": "sinatra.render_template",
+          "parent_service": "email",
+          "relationship": "CHILD",
+          "service": "email",
+          "service_path": [
+            "email",
+            "email",
+            "email",
+            "email"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.051,
+          "first_error_location": false,
+          "operation": "flagd.evaluation.v2.Service/ResolveFloat",
+          "parent_service": null,
+          "relationship": "CHILD",
+          "service": "flagd",
+          "service_path": [
+            "flagd"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.055,
+          "first_error_location": false,
+          "operation": "flagd.evaluation.v2.Service/ResolveFloat",
+          "parent_service": null,
+          "relationship": "CHILD",
+          "service": "flagd",
+          "service_path": [
+            "flagd"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.079,
+          "first_error_location": false,
+          "operation": "flagd.evaluation.v2.Service/ResolveFloat",
+          "parent_service": null,
+          "relationship": "CHILD",
+          "service": "flagd",
+          "service_path": [
+            "flagd"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.036,
+          "first_error_location": false,
+          "operation": "resolveFloat",
+          "parent_service": "flagd",
+          "relationship": "CHILD",
+          "service": "flagd",
+          "service_path": [
+            "flagd",
+            "flagd"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.042,
+          "first_error_location": false,
+          "operation": "resolveFloat",
+          "parent_service": "flagd",
+          "relationship": "CHILD",
+          "service": "flagd",
+          "service_path": [
+            "flagd",
+            "flagd"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.06,
+          "first_error_location": false,
+          "operation": "resolveFloat",
+          "parent_service": "flagd",
+          "relationship": "CHILD",
+          "service": "flagd",
+          "service_path": [
+            "flagd",
+            "flagd"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.005,
+          "first_error_location": false,
+          "operation": "resolveFloat",
+          "parent_service": "flagd",
+          "relationship": "CHILD",
+          "service": "flagd",
+          "service_path": [
+            "flagd",
+            "flagd",
+            "flagd"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.005,
+          "first_error_location": false,
+          "operation": "resolveFloat",
+          "parent_service": "flagd",
+          "relationship": "CHILD",
+          "service": "flagd",
+          "service_path": [
+            "flagd",
+            "flagd",
+            "flagd"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.01,
+          "first_error_location": false,
+          "operation": "resolveFloat",
+          "parent_service": "flagd",
+          "relationship": "CHILD",
+          "service": "flagd",
+          "service_path": [
+            "flagd",
+            "flagd",
+            "flagd"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 3.738,
+          "first_error_location": false,
+          "operation": "GET",
+          "parent_service": null,
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 5.967,
+          "first_error_location": false,
+          "operation": "GET",
+          "parent_service": null,
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 7.064,
+          "first_error_location": false,
+          "operation": "GET",
+          "parent_service": null,
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 3.309,
+          "first_error_location": false,
+          "operation": "POST",
+          "parent_service": null,
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 3.66,
+          "first_error_location": false,
+          "operation": "POST",
+          "parent_service": null,
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 4.124,
+          "first_error_location": false,
+          "operation": "POST",
+          "parent_service": null,
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 25.71,
+          "first_error_location": false,
+          "operation": "POST",
+          "parent_service": null,
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 29.164,
+          "first_error_location": false,
+          "operation": "POST",
+          "parent_service": null,
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 31.666,
+          "first_error_location": false,
+          "operation": "POST",
+          "parent_service": null,
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 3.231,
+          "first_error_location": false,
+          "operation": "router frontend egress",
+          "parent_service": "frontend-proxy",
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy",
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 3.54,
+          "first_error_location": false,
+          "operation": "router frontend egress",
+          "parent_service": "frontend-proxy",
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy",
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 3.557,
+          "first_error_location": false,
+          "operation": "router frontend egress",
+          "parent_service": "frontend-proxy",
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy",
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 3.998,
+          "first_error_location": false,
+          "operation": "router frontend egress",
+          "parent_service": "frontend-proxy",
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy",
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 5.751,
+          "first_error_location": false,
+          "operation": "router frontend egress",
+          "parent_service": "frontend-proxy",
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy",
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 6.789,
+          "first_error_location": false,
+          "operation": "router frontend egress",
+          "parent_service": "frontend-proxy",
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy",
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 25.633,
+          "first_error_location": false,
+          "operation": "router frontend egress",
+          "parent_service": "frontend-proxy",
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy",
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 29.072,
+          "first_error_location": false,
+          "operation": "router frontend egress",
+          "parent_service": "frontend-proxy",
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy",
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 31.477,
+          "first_error_location": false,
+          "operation": "router frontend egress",
+          "parent_service": "frontend-proxy",
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-proxy",
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        }
+      ],
+      "schema_version": "dta-v2.replay-observation-fixture.v1",
+      "service_scope": [
+        "email"
+      ],
+      "tool": "query_trace_neighborhood",
+      "truncated": true
+    },
+    {
+      "error_code": null,
+      "fixture_sha256": "8650bea4237c3401540df7c088502c7f114b9ecc0d21ab4b10c13ec5632b4166",
+      "records": [],
+      "schema_version": "dta-v2.replay-observation-fixture.v1",
+      "service_scope": [
+        "email"
+      ],
+      "tool": "search_logs",
+      "truncated": false
+    }
+  ],
+  "scenario_id": "dta-dev-003",
+  "schema_version": "dta-v2.agent-visible-replay-case.v1"
+}
