@@ -12,11 +12,10 @@
   "expected_runbook": "MITIGATE_MEMORY_LEAK",
   "expected_terminal": "COMPLETED",
   "meaningful_observation_differences": [
-    "fault_strength",
     "timing_window"
   ],
   "scenario_family": "EMAIL",
   "schema_version": "dta-v2.evaluator-case-truth.v1",
   "split": "DEVELOPMENT",
-  "truth_sha256": "8ad0da52e42cfbf5fc9d1ff920261fa11c7ad19221162a12f4f7dd8b3d7cb99d"
+  "truth_sha256": "5f7ff13a0adf9c9492518c9f532dc15ed91cdc15d9135e31a5fbf45dc286d19d"
 }

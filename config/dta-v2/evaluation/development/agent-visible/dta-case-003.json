@@ -1,8 +1,8 @@
 {
-  "captured_ended_at": "2026-08-16T01:00:29.290568Z",
-  "captured_started_at": "2026-08-16T00:59:59.290568Z",
+  "captured_ended_at": "2026-08-16T02:27:19.813814Z",
+  "captured_started_at": "2026-08-16T02:26:49.813814Z",
   "case_id": "dta-case-003",
-  "case_sha256": "d66d6c2fc5eb2dfecdbc633ca95a2a462dc4fd4b284b2a5b15959d9c8c6438d7",
+  "case_sha256": "5f8b4e139f2b4c7957d0ca5599308174bf246ace8279bb058eb384b815b72daf",
   "full_context_tools": [
     "inspect_service_runtime",
     "query_metrics",
@@ -44,9 +44,45 @@
       "truncated": false
     },
     {
-      "error_code": "SOURCE_SCHEMA_INVALID",
-      "fixture_sha256": "b0caea6d170e47c5826bb988bd23c4be1314c11355aebd9a61a4086db74c6d29",
-      "records": [],
+      "error_code": null,
+      "fixture_sha256": "96ee41a97b9fae5df7b3ca24cc87bf1acd9e5a9c0c10e3748832467d0fec2794",
+      "records": [
+        {
+          "metric_kind": "CPU_PERCENT",
+          "sample_count": 0,
+          "service": "recommendation",
+          "unit": "PERCENT",
+          "value": 0.0
+        },
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 0,
+          "service": "recommendation",
+          "unit": "RATIO",
+          "value": 0.0
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 0,
+          "service": "recommendation",
+          "unit": "MILLISECONDS",
+          "value": 0.0
+        },
+        {
+          "metric_kind": "MEMORY_BYTES",
+          "sample_count": 1,
+          "service": "recommendation",
+          "unit": "BYTES",
+          "value": 71794688.0
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 1,
+          "service": "recommendation",
+          "unit": "COUNT",
+          "value": 0.0
+        }
+      ],
       "schema_version": "dta-v2.replay-observation-fixture.v1",
       "service_scope": [
         "recommendation"

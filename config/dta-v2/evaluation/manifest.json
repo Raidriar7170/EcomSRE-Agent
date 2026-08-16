@@ -1,22 +1,22 @@
 {
-  "capture_closure_sha256": "49cc5e6d75bc04d06fa50fa9fc240bf8bdbd5c64c3058facc28b18f1a943321a",
-  "capture_head": "9f398f07946c135fb1928892b5fdce28fa29ea0e",
+  "capture_closure_sha256": "3a5b875648625b9ca1aba6d8d2005fe03f0086f205dd1fbc757e003e6061635c",
+  "capture_head": "aad1b9a7c594967e212f4ca8c5df882df4e870de",
   "held_out_case_sha256s": [
-    "546e463431ee4924c379dfb83a768f0ff5d1b6e50acefe36bf5a73294ddc1909",
-    "5bebcecff55ad98358ff851beb6c851bbc5db5135bba25964bc45f86d70cb89a",
-    "e5cae2ae2d4904ce1481e84347a6a9c5a226ba5a15a1951603be3a633cae205b"
+    "1e118c484fc7002dd878e03c023d2a37cdcf1711453e916d3b7454bcf356af1a",
+    "65b0e5c6fcb451c4c3a987878f7beff52934a01c0cc89c7f26dd193cb05b723e",
+    "ca99b3ebe64dca93f2a56f3a58b783bcdf8e7278977100deaae4d2fba6562251"
   ],
   "held_out_truth_sha256s": [
     "9104dfdd86bf0410210e31f1fe6cdae9d586b344aa6fd96bb0388739f7ee3fc0",
     "e52d2f36d8b1e3b7fb2030a0bb7589b0ce66e4e243e598978166ead2c476ad43",
     "f32cbf7866d930df6e2bac44e3ef8d949904ef48950ab6808ff0a2ee9288ef63"
   ],
-  "manifest_sha256": "a40327fdabb1653f0a933bb4a51db92e08a7ea79da16bc868532813959d90ed5",
+  "manifest_sha256": "36a8c6e568dd7f9f5f1c089369ea6f4b4b7299014fdcfe1627b0056745b579da",
   "public_cases": [
     {
       "agent_visible_path": "development/agent-visible/dta-case-001.json",
       "case_id": "dta-case-001",
-      "case_sha256": "f0b86451570f1b60b1799a0e9d965a0e7905140ed4ade1243d38bcc2bb098e51",
+      "case_sha256": "6a8b6435070a4577d806181a4c9a8bc24dcf941eb7ffd20081417f210945dab6",
       "evaluator_truth_path": "development/evaluator-truth/dta-case-001.json",
       "schema_version": "dta-v2.public-evaluation-case-binding.v1",
       "split": "DEVELOPMENT",
@@ -25,7 +25,7 @@
     {
       "agent_visible_path": "development/agent-visible/dta-case-002.json",
       "case_id": "dta-case-002",
-      "case_sha256": "4305d71d6dffeef3e28c306b6be0b6d748a2f84dca217d3dea054a11ef88f8ac",
+      "case_sha256": "b88f8fbec86951cd1ca291b8615613378c6ac9afed4fde9feb8c26d00eecc848",
       "evaluator_truth_path": "development/evaluator-truth/dta-case-002.json",
       "schema_version": "dta-v2.public-evaluation-case-binding.v1",
       "split": "DEVELOPMENT",
@@ -34,7 +34,7 @@
     {
       "agent_visible_path": "development/agent-visible/dta-case-003.json",
       "case_id": "dta-case-003",
-      "case_sha256": "d66d6c2fc5eb2dfecdbc633ca95a2a462dc4fd4b284b2a5b15959d9c8c6438d7",
+      "case_sha256": "5f8b4e139f2b4c7957d0ca5599308174bf246ace8279bb058eb384b815b72daf",
       "evaluator_truth_path": "development/evaluator-truth/dta-case-003.json",
       "schema_version": "dta-v2.public-evaluation-case-binding.v1",
       "split": "DEVELOPMENT",
@@ -43,7 +43,7 @@
     {
       "agent_visible_path": "development/agent-visible/dta-case-004.json",
       "case_id": "dta-case-004",
-      "case_sha256": "dcc304117cc98108747fa8eafcbff4165ee46836df6f2d3e624ee799fafe2d9a",
+      "case_sha256": "5e7eba522dcbfdb9a14b40aa842c1051e13b004b0c7308401bd7cb60b2667000",
       "evaluator_truth_path": "development/evaluator-truth/dta-case-004.json",
       "schema_version": "dta-v2.public-evaluation-case-binding.v1",
       "split": "DEVELOPMENT",
@@ -52,25 +52,25 @@
     {
       "agent_visible_path": "development/agent-visible/dta-case-005.json",
       "case_id": "dta-case-005",
-      "case_sha256": "56c4cd6134e772fbdac680f09f34bef4e58306adc99b7e17646810120b5a6700",
+      "case_sha256": "bb9e8aaf53a213cc9e422a30508641f60244b49deff2716df821a8a0c339065f",
       "evaluator_truth_path": "development/evaluator-truth/dta-case-005.json",
       "schema_version": "dta-v2.public-evaluation-case-binding.v1",
       "split": "DEVELOPMENT",
-      "truth_sha256": "5cb668819efc52ff4b02b778a4b2626bf9aa0ef8f9b009df50a0f630e603290f"
+      "truth_sha256": "dd738cbff71972ffb0eb3af0a233e69b55cf8c78de5a0a6bd957974674cba6a5"
     },
     {
       "agent_visible_path": "development/agent-visible/dta-case-006.json",
       "case_id": "dta-case-006",
-      "case_sha256": "0fdd936c01816deb2b2e0c6a2bb561822b29009ff693cb7fce3f6ef69971b941",
+      "case_sha256": "c7e0d82c5e97e3ad0190cc2ee31d12b3ede993ce77f86295d02c77f5ed087a8c",
       "evaluator_truth_path": "development/evaluator-truth/dta-case-006.json",
       "schema_version": "dta-v2.public-evaluation-case-binding.v1",
       "split": "DEVELOPMENT",
-      "truth_sha256": "8ad0da52e42cfbf5fc9d1ff920261fa11c7ad19221162a12f4f7dd8b3d7cb99d"
+      "truth_sha256": "5f7ff13a0adf9c9492518c9f532dc15ed91cdc15d9135e31a5fbf45dc286d19d"
     },
     {
       "agent_visible_path": "no-action/agent-visible/dta-case-010.json",
       "case_id": "dta-case-010",
-      "case_sha256": "c9ceca9adc35fced684b9023e8d06d33906a53004568e4c90dd2a38e8282fc0c",
+      "case_sha256": "eacd0967441776d9cb47071fd1c0b822af8cf2701478d2d5cb13a1ebe8a690d2",
       "evaluator_truth_path": "no-action/evaluator-truth/dta-case-010.json",
       "schema_version": "dta-v2.public-evaluation-case-binding.v1",
       "split": "NO_ACTION",
@@ -79,7 +79,7 @@
     {
       "agent_visible_path": "no-action/agent-visible/dta-case-011.json",
       "case_id": "dta-case-011",
-      "case_sha256": "f1843e7ac0a94b6d5cbf052f0fbc346ae569217580d489570322fcaf900e9449",
+      "case_sha256": "3cd9e3184cc228f7a6f88f5f225421f6ce38c2dd2a4476b1219499d4c8577be0",
       "evaluator_truth_path": "no-action/evaluator-truth/dta-case-011.json",
       "schema_version": "dta-v2.public-evaluation-case-binding.v1",
       "split": "NO_ACTION",
@@ -88,7 +88,7 @@
     {
       "agent_visible_path": "no-action/agent-visible/dta-case-012.json",
       "case_id": "dta-case-012",
-      "case_sha256": "b954b21ed3af02b6096b0058aabff83f71e1dffb487895c6bfff0c9f47034a98",
+      "case_sha256": "8d2719d7a0812b9e4244075e7d995b647e51f0a652b3b0b3cd42ca592d4e6fa6",
       "evaluator_truth_path": "no-action/evaluator-truth/dta-case-012.json",
       "schema_version": "dta-v2.public-evaluation-case-binding.v1",
       "split": "NO_ACTION",
