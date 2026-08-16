@@ -224,6 +224,10 @@ def test_diagnosis_prompt_and_schema_expose_cross_field_canonical_constraints() 
     )
     assert "at least 100000 bytes per second" in INVESTIGATION_SYSTEM_PROMPT
     assert "downstream Payment candidate" in INVESTIGATION_SYSTEM_PROMPT
+    assert "zero request support is the consequence" in INVESTIGATION_SYSTEM_PROMPT
+    assert "set root_service, root_entity_ref, fault_domain, and mechanism to null" in (
+        INVESTIGATION_SYSTEM_PROMPT
+    )
     assert "parameters=[]" in ACTION_SELECTION_SYSTEM_PROMPT
     assert "Do not use semicolons" in ACTION_SELECTION_SYSTEM_PROMPT
     assert "Use generic evidence language in rationale" in ACTION_SELECTION_SYSTEM_PROMPT
@@ -269,6 +273,44 @@ def test_provider_canonicalizes_diagnosis_set_order_but_retains_raw_arguments() 
         EvidenceSource.METRICS,
         EvidenceSource.RUNTIME,
     )
+
+
+def test_provider_clears_noncompleted_hypothesis_fields_but_retains_raw_arguments() -> None:
+    metrics_ref = f"evidence://{RUN_ID}/metrics/0002"
+    traces_ref = f"evidence://{RUN_ID}/traces/0003"
+    runtime_ref = f"evidence://{RUN_ID}/runtime/0001"
+    arguments = {
+        "schema_version": "dta-v2.diagnosis.v1",
+        "run_id": RUN_ID,
+        "terminal": "NEED_MORE_EVIDENCE",
+        "root_service": "payment",
+        "root_entity_ref": None,
+        "fault_domain": "CONFIGURATION",
+        "mechanism": "CONFIGURATION_ERROR",
+        "confidence": 0.67,
+        "supporting_evidence_refs": [metrics_ref, traces_ref],
+        "contradicting_evidence_refs": [runtime_ref],
+        "evidence_source_types": ["METRICS", "TRACES", "RUNTIME"],
+        "uncertainties": ["Current and historical sources conflict."],
+        "summary": "Current health conflicts with a historical localized error.",
+    }
+    provider = _provider(
+        RecordingTransport([_response(DIAGNOSIS_FUNCTION, arguments)])
+    )
+
+    turn = provider.investigation_turn(
+        context=_context(), transcript=(), read_tools_enabled=False
+    )
+
+    assert turn.raw_arguments["root_service"] == "payment"
+    assert turn.raw_arguments["fault_domain"] == "CONFIGURATION"
+    assert turn.raw_arguments["mechanism"] == "CONFIGURATION_ERROR"
+    assert turn.diagnosis is not None
+    assert turn.diagnosis.terminal is Terminal.NEED_MORE_EVIDENCE
+    assert turn.diagnosis.root_service is None
+    assert turn.diagnosis.root_entity_ref is None
+    assert turn.diagnosis.fault_domain is None
+    assert turn.diagnosis.mechanism is None
 
 
 def test_schema_rejected_safe_response_is_retained_for_private_failure_evidence() -> None:

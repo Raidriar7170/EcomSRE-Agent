@@ -79,6 +79,9 @@ INVESTIGATION_SYSTEM_PROMPT = (
     "Checkout-facing trace has no first error, inspect the downstream Payment "
     "candidate's metrics and runtime before concluding. For service "
     "unavailability inspect runtime and metrics on the function-matching candidate. "
+    "For an explicit request-unavailability alert, EXITED or ABSENT runtime plus "
+    "zero request support is the consequence of the unavailable service and is "
+    "sufficient for SERVICE_UNAVAILABLE. "
     "For local resource pressure inspect resource usage, runtime, and metrics on "
     "the function-matching candidate before spending budget on trace. During "
     "frozen replay request resource usage for local Email pressure with exactly "
@@ -88,6 +91,8 @@ INVESTIGATION_SYSTEM_PROMPT = (
     "In summaries and uncertainties, describe service relationships with the "
     "word 'to' instead of the symbol '->' or other shell-like punctuation. "
     "For COMPLETED set root_entity_ref exactly to service:<root_service>. "
+    "For NEED_MORE_EVIDENCE or ABSTAIN set root_service, root_entity_ref, "
+    "fault_domain, and mechanism to null. "
     "evidence_source_types must be the canonical union of sources in both "
     "supporting and contradicting evidence references, ordered METRICS, LOGS, "
     "TRACES, RUNTIME, RESOURCES, CHANGES. A COMPLETED diagnosis requires a "
@@ -412,7 +417,7 @@ def _parse_arguments(value: object) -> tuple[dict[str, Any], str]:
 def _canonicalize_diagnosis_set_order(
     arguments: dict[str, Any],
 ) -> dict[str, Any]:
-    """Canonicalize order-only diagnosis sets while retaining raw arguments."""
+    """Canonicalize safe diagnosis shape while retaining raw arguments."""
 
     output = dict(arguments)
     for field in (
@@ -436,6 +441,14 @@ def _canonicalize_diagnosis_set_order(
             sources,
             key=source_order.__getitem__,
         )
+    if output.get("terminal") in {"NEED_MORE_EVIDENCE", "ABSTAIN"}:
+        for field in (
+            "root_service",
+            "root_entity_ref",
+            "fault_domain",
+            "mechanism",
+        ):
+            output[field] = None
     return output
 
 
