@@ -26,6 +26,7 @@ from ecomsre.dta_v2.docker_read_adapters import DockerReadAdapter
 from ecomsre.dta_v2.evaluation_contracts import EvaluationSplit
 from ecomsre.dta_v2.owned_capture import (
     OwnedCaptureLifecycle,
+    OwnedEmailController,
     OwnedRecommendationController,
     build_capture_flag_document,
     build_evaluator_truth,
@@ -34,6 +35,7 @@ from ecomsre.dta_v2.owned_capture import (
 from ecomsre.dta_v2.evaluation_contracts import AgentVisibleReplayCase
 from ecomsre.dta_v2.read_tools import ReadBackendFailure
 from ecomsre.dta_v2.tool_contracts import (
+    RuntimeState,
     ToolErrorCode,
     build_inspect_resource_usage_request,
 )
@@ -337,6 +339,52 @@ class _StopFailsOnceRecommendation:
         self.ensure_calls += 1
 
 
+class _EmailRestartRecorder:
+    def __init__(self) -> None:
+        self.restart_calls = 0
+
+    def restart(self) -> None:
+        self.restart_calls += 1
+
+
+class _OwnedEmailDocker:
+    def _owned_container_identity(self, service: str) -> str | None:
+        assert service == "email"
+        return "b" * 64
+
+    def _runtime_for(self, service: str):
+        assert service == "email"
+        return SimpleNamespace(
+            state=RuntimeState.RUNNING,
+            health=SimpleNamespace(value="HEALTHY"),
+        )
+
+
+class _RecordingMutationClient:
+    def __init__(self) -> None:
+        self.paths: list[str] = []
+
+    def post(self, path: str) -> None:
+        self.paths.append(path)
+
+
+def test_owned_email_restart_uses_exact_owned_container_endpoint() -> None:
+    backend = SimpleNamespace(
+        config=SimpleNamespace(
+            docker_endpoint="unix:///private/tmp/never-used.sock",
+            timeout_seconds=1.0,
+        ),
+        docker=_OwnedEmailDocker(),
+    )
+    controller = OwnedEmailController(backend)  # type: ignore[arg-type]
+    client = _RecordingMutationClient()
+    controller.client = client  # type: ignore[assignment]
+
+    controller.restart()
+
+    assert client.paths == [f"/containers/{'b' * 64}/restart?t=15"]
+
+
 def test_owned_case_registers_restore_authority_before_first_mutation(
     tmp_path: Path,
 ) -> None:
@@ -368,6 +416,40 @@ def test_owned_case_registers_restore_authority_before_first_mutation(
     assert lifecycle.active_condition is None
     assert recommendation.ensure_calls == 1
     assert flags.applied == 2
+
+
+def test_email_fault_restore_restarts_owned_email_after_baseline_flags(
+    tmp_path: Path,
+) -> None:
+    plan = build_default_capture_plan(base_head="a" * 40)
+    lifecycle = OwnedCaptureLifecycle(
+        repository_root=ROOT,
+        private_root=tmp_path,
+        plan=plan,
+        stabilization_seconds=0,
+    )
+    upstream = json.loads(
+        (
+            ROOT / "third_party/opentelemetry-demo/src/flagd/demo.flagd.json"
+        ).read_text(encoding="utf-8")
+    )
+    lifecycle.upstream_flag = upstream
+    lifecycle.baseline_document = build_capture_flag_document(upstream, load_vus=25)
+    flags = _RecordingFlags()
+    recommendation = _StopFailsOnceRecommendation()
+    email = _EmailRestartRecorder()
+    lifecycle.flag_controller = flags  # type: ignore[assignment]
+    lifecycle.recommendation = recommendation  # type: ignore[assignment]
+    lifecycle.email = email  # type: ignore[attr-defined]
+    lifecycle.active_condition = "calibration:1000x"
+    lifecycle.email_restart_required = True  # type: ignore[attr-defined]
+
+    lifecycle.restore_baseline()
+
+    assert lifecycle.active_condition is None
+    assert flags.applied == 1
+    assert recommendation.ensure_calls == 1
+    assert email.restart_calls == 1
 
 
 class _OwnedIdentityDocker:

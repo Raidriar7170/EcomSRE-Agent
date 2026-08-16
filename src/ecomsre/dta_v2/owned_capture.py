@@ -405,6 +405,55 @@ class OwnedRecommendationController:
         raise RuntimeError("owned recommendation state transition timed out")
 
 
+class OwnedEmailController:
+    """Exact owned Email restart used only to reset capture memory state."""
+
+    def __init__(self, backend: LocalSandboxReadBackend) -> None:
+        self.backend = backend
+        self.client = _UnixSocketDockerMutationClient(
+            backend.config.docker_endpoint.removeprefix("unix://"),
+            timeout_seconds=max(45.0, backend.config.timeout_seconds),
+        )
+
+    def restart(self) -> None:
+        try:
+            identity = self.backend.docker._owned_container_identity("email")
+            if identity is None or any(
+                item not in "0123456789abcdef" for item in identity.casefold()
+            ):
+                raise RuntimeError("owned Email identity is invalid")
+        except Exception as error:
+            raise CaptureOperationFailure(
+                CaptureFailureOperation.EMAIL_IDENTITY
+            ) from error
+        try:
+            self.client.post(f"/containers/{identity}/restart?t=15")
+        except Exception as error:
+            raise CaptureOperationFailure(
+                CaptureFailureOperation.EMAIL_RESTART_POST,
+                http_status=(
+                    error.status_code
+                    if isinstance(error, _DockerMutationHTTPError)
+                    else None
+                ),
+            ) from error
+        deadline = time.monotonic() + 60
+        try:
+            while time.monotonic() < deadline:
+                record = self.backend.docker._runtime_for("email")
+                if record.state is RuntimeState.RUNNING and record.health.value in {
+                    "HEALTHY",
+                    "NOT_CONFIGURED",
+                }:
+                    return
+                time.sleep(1)
+            raise RuntimeError("owned Email restart timed out")
+        except Exception as error:
+            raise CaptureOperationFailure(
+                CaptureFailureOperation.EMAIL_WAIT_RUNNING
+            ) from error
+
+
 class OwnedCaptureLifecycle(CaptureLifecycle):
     """One owned Sandbox, one active capture condition, exact reset and cleanup."""
 
@@ -425,11 +474,13 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
         self.backend: LocalSandboxReadBackend | None = None
         self.flag_controller: ExactFlagDocumentController | None = None
         self.recommendation: OwnedRecommendationController | None = None
+        self.email: OwnedEmailController | None = None
         self.upstream_flag: dict[str, object] | None = None
         self.baseline_document: dict[str, object] | None = None
         self.flag_file: Path | None = None
         self.admitted_resolved_sha256: str | None = None
         self.active_condition: str | None = None
+        self.email_restart_required = False
 
     def admit(self) -> None:
         if self.repository_root == Path("/") or self.private_root == Path("/"):
@@ -504,17 +555,20 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
             upstream=self._upstream(),
         )
         self.recommendation = OwnedRecommendationController(backend)
+        self.email = OwnedEmailController(backend)
 
     def observe_baseline_memory(self) -> EmailMemoryObservation:
         return self._observe_email_memory(window_seconds=10, sample_count=3)
 
     def apply_email_calibration(self, variant: str) -> None:
         self._require_idle()
+        # Retain exact reset authority before the flag write can partially apply.
+        self.active_condition = f"calibration:{variant}"
+        self.email_restart_required = True
         document = build_capture_flag_document(
             self._upstream(), load_vus=25, email_variant=variant
         )
         self._flags().apply(document)
-        self.active_condition = f"calibration:{variant}"
 
     def observe_email_calibration(self, variant: str) -> EmailMemoryObservation:
         if self.active_condition != f"calibration:{variant}":
@@ -529,6 +583,9 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
         # Record exact restore authority before the first flag or Docker write.
         # A partially applied condition must remain recoverable.
         self.active_condition = case.case_id
+        self.email_restart_required = (
+            case.condition is CaptureCondition.EMAIL_LEAK
+        )
         payment_variant = "off"
         email_variant = "off"
         if case.condition is CaptureCondition.PAYMENT_FLAG:
@@ -654,10 +711,13 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
                 raise CaptureOperationFailure(
                     CaptureFailureOperation.RESTORE_FLAGS
                 ) from error
+            if self.email_restart_required:
+                self._email().restart()
         except Exception:
             raise
         else:
             self.active_condition = None
+            self.email_restart_required = False
 
     def verify_baseline(self) -> None:
         self._flags().verify(self._baseline())
@@ -766,6 +826,11 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
         if self.recommendation is None:
             raise RuntimeError("capture recommendation controller is unavailable")
         return self.recommendation
+
+    def _email(self) -> OwnedEmailController:
+        if self.email is None:
+            raise RuntimeError("capture Email controller is unavailable")
+        return self.email
 
     def _upstream(self) -> dict[str, object]:
         if self.upstream_flag is None:
@@ -957,6 +1022,7 @@ def main(argv: list[str] | None = None) -> int:
 __all__ = [
     "ExactFlagDocumentController",
     "OwnedCaptureLifecycle",
+    "OwnedEmailController",
     "require_capture_case_quality",
     "OwnedRecommendationController",
     "build_capture_flag_document",
