@@ -118,14 +118,24 @@ def _encoded(value: object) -> bytes:
     ).encode("utf-8")
 
 
-def _write_once(path: Path, value: object) -> None:
+def _write_once(
+    path: Path,
+    value: object,
+    *,
+    replace_existing: bool = False,
+) -> None:
     encoded = _encoded(value)
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.is_symlink():
         raise ValueError("public evaluation target is a symbolic link")
     if path.exists():
-        if not path.is_file() or path.read_bytes() != encoded:
+        if not path.is_file():
             raise FileExistsError("public evaluation target already differs")
+        if path.read_bytes() == encoded:
+            return
+        if not replace_existing:
+            raise FileExistsError("public evaluation target already differs")
+        path.write_bytes(encoded)
         return
     path.write_bytes(encoded)
 
@@ -135,8 +145,13 @@ def promote_public_evaluation_dataset(
     capture_root: Path,
     output_root: Path,
     capture_head: str,
+    replace_existing: bool = False,
 ) -> PublicEvaluationDatasetManifest:
-    """Promote dev/no-action only; held-out projects to hashes and counts."""
+    """Promote dev/no-action only; held-out projects to hashes and counts.
+
+    Replacement is explicit and remains limited to the generated public case,
+    truth, and manifest paths selected by this function.
+    """
 
     source = Path(capture_root).resolve()
     target = Path(output_root).resolve()
@@ -183,8 +198,16 @@ def promote_public_evaluation_dataset(
             agent_visible_path=case_relative,
             evaluator_truth_path=truth_relative,
         )
-        _write_once(target / case_relative, case)
-        _write_once(target / truth_relative, truth)
+        _write_once(
+            target / case_relative,
+            case,
+            replace_existing=replace_existing,
+        )
+        _write_once(
+            target / truth_relative,
+            truth,
+            replace_existing=replace_existing,
+        )
         public.append(binding)
     if (
         len(seen_capture_hashes) != 12
@@ -206,7 +229,11 @@ def promote_public_evaluation_dataset(
     manifest = PublicEvaluationDatasetManifest.model_validate(
         {**payload, "manifest_sha256": semantic_sha256(payload)}
     )
-    _write_once(target / "manifest.json", manifest)
+    _write_once(
+        target / "manifest.json",
+        manifest,
+        replace_existing=replace_existing,
+    )
     return manifest
 
 

@@ -50,9 +50,15 @@ from ecomsre.dta_v2.telemetry_adapters import (
 )
 from ecomsre.dta_v2.tool_contracts import (
     MetricKind,
+    MetricRecord,
     ReadToolRequest,
     ResourceUsageRecord,
+    RuntimeRecord,
+    RuntimeState,
+    SpanStatus,
+    ToolName,
     ToolErrorCode,
+    TraceNeighborhoodRecord,
     build_inspect_resource_usage_request,
     build_inspect_service_runtime_request,
     build_query_metrics_request,
@@ -76,6 +82,66 @@ from ecomsre_live_sandbox.environment import SandboxEnvironment
 _PAYMENT_VARIANTS = {"off", "10%", "25%", "50%", "75%", "90%", "100%"}
 _EMAIL_VARIANTS = {"off", "10x", "100x", "1000x"}
 _LOAD_VARIANTS = {"5", "10", "25", "50"}
+
+
+def require_capture_case_quality(
+    case: CaptureCasePlan,
+    fixtures: tuple[ReplayObservationFixture, ...],
+) -> None:
+    """Fail capture unless positive truth has nonempty mechanism evidence."""
+
+    if case.operational_family is OperationalFamily.NO_ACTION:
+        return
+    by_tool = {item.tool: item for item in fixtures}
+
+    def successful(tool: ToolName) -> ReplayObservationFixture:
+        fixture = by_tool.get(tool)
+        if fixture is None or fixture.error_code is not None or not fixture.records:
+            raise ValueError(f"capture required source is unavailable: {tool.value}")
+        return fixture
+
+    metrics = successful(ToolName.QUERY_METRICS)
+    runtime = successful(ToolName.INSPECT_SERVICE_RUNTIME)
+    expected_service = {
+        OperationalFamily.PAYMENT: "payment",
+        OperationalFamily.RECOMMENDATION: "recommendation",
+        OperationalFamily.EMAIL: "email",
+    }[case.operational_family]
+    if not any(
+        type(item) is MetricRecord and item.service == expected_service
+        for item in metrics.records
+    ) or not any(
+        type(item) is RuntimeRecord and item.logical_service == expected_service
+        for item in runtime.records
+    ):
+        raise ValueError("capture required evidence targets another service")
+    if case.operational_family is OperationalFamily.PAYMENT:
+        traces = successful(ToolName.QUERY_TRACE_NEIGHBORHOOD)
+        if not any(
+            type(item) is TraceNeighborhoodRecord
+            and item.service == "payment"
+            and item.status is SpanStatus.ERROR
+            and item.first_error_location
+            for item in traces.records
+        ):
+            raise ValueError("payment capture lacks a localized error span")
+    elif case.operational_family is OperationalFamily.RECOMMENDATION:
+        if not any(
+            type(item) is RuntimeRecord
+            and item.logical_service == "recommendation"
+            and item.state is RuntimeState.EXITED
+            for item in runtime.records
+        ):
+            raise ValueError("recommendation capture is not stopped")
+    else:
+        resources = successful(ToolName.INSPECT_RESOURCE_USAGE)
+        if not any(
+            type(item) is ResourceUsageRecord
+            and item.logical_service == "email"
+            and item.memory_slope_bytes_per_second >= 100_000.0
+            for item in resources.records
+        ):
+            raise ValueError("email capture lacks positive bounded memory growth")
 
 
 def build_capture_flag_document(
@@ -534,6 +600,7 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
                 key=lambda item: item.tool.value,
             )
         )
+        require_capture_case_quality(case, fixtures)
         payload: dict[str, Any] = {
             "schema_version": "dta-v2.agent-visible-replay-case.v1",
             "case_id": case.case_id,
@@ -873,6 +940,7 @@ def main(argv: list[str] | None = None) -> int:
 __all__ = [
     "ExactFlagDocumentController",
     "OwnedCaptureLifecycle",
+    "require_capture_case_quality",
     "OwnedRecommendationController",
     "build_capture_flag_document",
     "build_evaluator_truth",

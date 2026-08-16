@@ -27,7 +27,9 @@ from ecomsre.dta_v2.owned_capture import (
     OwnedRecommendationController,
     build_capture_flag_document,
     build_evaluator_truth,
+    require_capture_case_quality,
 )
+from ecomsre.dta_v2.evaluation_contracts import AgentVisibleReplayCase
 from ecomsre.dta_v2.read_tools import ReadBackendFailure
 from ecomsre.dta_v2.tool_contracts import (
     ToolErrorCode,
@@ -140,6 +142,7 @@ def test_default_capture_plan_freezes_exact_matrix_and_meaningful_held_out() -> 
     assert sum(item.split is EvaluationSplit.HELD_OUT for item in plan.cases) == 3
     assert sum(item.split is EvaluationSplit.NO_ACTION for item in plan.cases) == 3
     assert len({item.case_id for item in plan.cases}) == 12
+    assert next(item for item in plan.cases if item.case_id == "dta-case-005").fault_variant == "SELECTED"
     for held_out in (item for item in plan.cases if item.split is EvaluationSplit.HELD_OUT):
         same_family_dev = [
             item
@@ -523,3 +526,18 @@ def test_default_plan_builds_exact_evaluator_truth_without_safe_case_coupling() 
     assert truths[9].expected_terminal.value == "ABSTAIN"
     assert truths[10].expected_terminal.value == "NEED_MORE_EVIDENCE"
     assert truths[11].expected_terminal.value == "ABSTAIN"
+
+
+def test_promoted_positive_cases_meet_mechanism_specific_capture_quality() -> None:
+    plan = build_default_capture_plan(base_head="a" * 40)
+    by_id = {item.case_id: item for item in plan.cases}
+    for index in range(1, 7):
+        case_id = f"dta-case-{index:03d}"
+        case = AgentVisibleReplayCase.model_validate_json(
+            (
+                ROOT
+                / "config/dta-v2/evaluation/development/agent-visible"
+                / f"{case_id}.json"
+            ).read_text(encoding="utf-8")
+        )
+        require_capture_case_quality(by_id[case_id], case.observations)

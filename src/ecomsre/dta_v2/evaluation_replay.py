@@ -15,6 +15,7 @@ from ecomsre.dta_v2.tool_contracts import (
     DiagnosticLogRecord,
     InspectResourceUsageRequest,
     InspectServiceRuntimeRequest,
+    MetricKind,
     MetricRecord,
     QueryMetricsRequest,
     ReadToolRequest,
@@ -80,13 +81,33 @@ class ReplayCaseReadBackend:
             )
         if isinstance(request, TraceNeighborhoodRequest):
             trace_records = tuple(
-                item
+                TraceNeighborhoodRecord.model_validate(
+                    {
+                        **item.model_dump(mode="python"),
+                        "anchor_service": request.service,
+                    }
+                )
                 for item in fixture.records
                 if type(item) is TraceNeighborhoodRecord
-                and item.anchor_service == request.service
+                and request.service in item.service_path
             )
             if not trace_records:
                 raise ReadBackendFailure(ToolErrorCode.SOURCE_UNAVAILABLE)
+            trace_records = tuple(
+                sorted(
+                    trace_records,
+                    key=lambda item: (
+                        item.service_path,
+                        item.service,
+                        item.relationship.value,
+                        item.parent_service or "",
+                        item.operation,
+                        item.status.value,
+                        item.duration_ms,
+                        item.first_error_location,
+                    ),
+                )
+            )
             return BackendResult(
                 trace_records[: request.max_spans],
                 fixture.truncated or len(trace_records) > request.max_spans,
@@ -138,6 +159,8 @@ def build_materialization_request(
         kinds = tuple(
             item.metric_kind for item in fixture.records if type(item) is MetricRecord
         )
+        if not kinds:
+            kinds = (MetricKind.ERROR_RATE,)
         return build_query_metrics_request(
             run_id=run_id,
             service=service,
@@ -171,7 +194,12 @@ def build_materialization_request(
         item for item in fixture.records if type(item) is ResourceUsageRecord
     )
     if not records:
-        raise ValueError("resource materialization fixture is empty")
+        return build_inspect_resource_usage_request(
+            run_id=run_id,
+            services=fixture.service_scope,
+            sampling_window_seconds=5,
+            sample_count=3,
+        )
     first = records[0]
     return build_inspect_resource_usage_request(
         run_id=run_id,

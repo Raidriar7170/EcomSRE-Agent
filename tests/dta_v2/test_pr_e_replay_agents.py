@@ -54,6 +54,8 @@ from ecomsre.dta_v2.tool_contracts import (
     SpanStatus,
     ToolName,
     TraceNeighborhoodRecord,
+    ToolErrorCode,
+    build_trace_neighborhood_request,
 )
 
 
@@ -282,6 +284,38 @@ def test_replay_backend_materializes_all_five_typed_tools() -> None:
         assert result.records
         assert all(type(item) is type(fixture.records[0]) for item in result.records)
     assert backend.call_count == 5
+
+
+def test_replay_materializes_typed_failure_and_trace_path_anchor() -> None:
+    case = _case()
+    payload = {
+        "schema_version": "dta-v2.replay-observation-fixture.v1",
+        "tool": ToolName.QUERY_METRICS,
+        "service_scope": ("payment",),
+        "records": (),
+        "truncated": False,
+        "error_code": ToolErrorCode.SOURCE_SCHEMA_INVALID,
+    }
+    failed = ReplayObservationFixture.model_validate(
+        {**payload, "fixture_sha256": semantic_sha256(payload)}
+    )
+    request = build_materialization_request(
+        run_id=RUN_ID, case=case, fixture=failed
+    )
+    assert request.tool is ToolName.QUERY_METRICS
+
+    backend = ReplayCaseReadBackend(case)
+    upstream = build_trace_neighborhood_request(
+        run_id=RUN_ID,
+        service="checkout",
+        started_at=case.captured_started_at,
+        ended_at=case.captured_ended_at,
+        max_spans=40,
+    )
+    result = backend.execute(upstream)
+    assert result.records
+    assert all(item.anchor_service == "checkout" for item in result.records)
+    assert all("checkout" in item.service_path for item in result.records)
 
 
 def test_full_context_arm_uses_four_materialized_observations_and_zero_agent_reads() -> None:

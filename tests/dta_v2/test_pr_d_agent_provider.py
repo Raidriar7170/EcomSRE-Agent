@@ -205,6 +205,9 @@ def test_diagnosis_prompt_and_schema_expose_cross_field_canonical_constraints() 
     assert "first_error_location=true" in INVESTIGATION_SYSTEM_PROMPT
     assert "record's service field" in INVESTIGATION_SYSTEM_PROMPT
     assert "word 'to' instead of the symbol '->'" in INVESTIGATION_SYSTEM_PROMPT
+    assert "Never cite a FAILURE observation" in INVESTIGATION_SYSTEM_PROMPT
+    assert "Order each evidence reference tuple" in INVESTIGATION_SYSTEM_PROMPT
+    assert "RUNNING and HEALTHY" in INVESTIGATION_SYSTEM_PROMPT
     assert "service:<root_service>" in properties["root_entity_ref"]["description"]
     assert "supporting and contradicting" in (
         properties["evidence_source_types"]["description"]

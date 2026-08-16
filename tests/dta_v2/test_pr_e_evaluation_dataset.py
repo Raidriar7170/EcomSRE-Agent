@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ecomsre.dta_v2.evaluation_dataset import load_public_evaluation_dataset
+import pytest
+
+from ecomsre.dta_v2.evaluation_dataset import _write_once, load_public_evaluation_dataset
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -24,3 +26,14 @@ def test_promoted_dataset_contains_only_development_and_no_action() -> None:
     assert len(manifest.held_out_truth_sha256s) == 3
     assert not (ROOT / "config/dta-v2/evaluation/held-out").exists()
     assert all(item.case.case_id == item.truth.case_id for item in cases)
+
+
+def test_public_dataset_write_requires_explicit_replacement(tmp_path: Path) -> None:
+    target = tmp_path / "manifest.json"
+    _write_once(target, {"generation": 1})
+
+    with pytest.raises(FileExistsError, match="already differs"):
+        _write_once(target, {"generation": 2})
+
+    _write_once(target, {"generation": 2}, replace_existing=True)
+    assert target.read_text(encoding="utf-8") == '{\n  "generation": 2\n}\n'

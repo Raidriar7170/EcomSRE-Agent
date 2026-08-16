@@ -232,3 +232,25 @@ def test_live_backend_projects_all_five_sources_without_raw_identities() -> None
     )
     assert log_observation.result_count == 1
     assert "redacted-identity" in log_observation.model_dump_json()
+
+
+def test_trace_projection_retains_anchor_service_and_deepest_error_under_cap() -> None:
+    backend = LocalSandboxReadBackend(
+        config=_config(), http=StubHttp(), docker=StubDocker(), sleep=lambda _: None
+    )
+    request = build_trace_neighborhood_request(
+        run_id=RUN_ID,
+        service="payment",
+        started_at=START,
+        ended_at=END,
+        max_spans=1,
+    )
+
+    observation = InvestigationReadTools(run_id=RUN_ID, backend=backend).dispatch(
+        request
+    )
+
+    assert observation.status is ObservationStatus.SUCCESS
+    assert observation.result_count == 1
+    assert observation.results[0].service == "payment"
+    assert observation.results[0].first_error_location is True
