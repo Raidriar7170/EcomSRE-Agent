@@ -225,6 +225,11 @@ def test_diagnosis_prompt_and_schema_expose_cross_field_canonical_constraints() 
     assert "at least 100000 bytes per second" in INVESTIGATION_SYSTEM_PROMPT
     assert "downstream Payment candidate" in INVESTIGATION_SYSTEM_PROMPT
     assert "zero request support is the consequence" in INVESTIGATION_SYSTEM_PROMPT
+    assert "ERROR_RATE greater than zero" in INVESTIGATION_SYSTEM_PROMPT
+    assert "ERROR_RATE equals zero" in INVESTIGATION_SYSTEM_PROMPT
+    assert "never cite runtime as supporting or contradicting" in (
+        INVESTIGATION_SYSTEM_PROMPT
+    )
     assert "set root_service, root_entity_ref, fault_domain, and mechanism to null" in (
         INVESTIGATION_SYSTEM_PROMPT
     )
