@@ -281,6 +281,7 @@ class EvaluationPrediction(DtaModel):
     cited_evidence_sources: tuple[EvidenceSource, ...] = Field(max_length=5)
     evidence_refs_valid: bool
     read_tool_dispatches: StrictInt = Field(ge=0, le=4)
+    context_materialization_reads: StrictInt = Field(default=0, ge=0, le=4)
     provider_turns: StrictInt = Field(ge=0, le=6)
     input_tokens: StrictInt = Field(ge=0)
     output_tokens: StrictInt = Field(ge=0)
@@ -330,6 +331,7 @@ class EvaluationScore(DtaModel):
     no_action_accuracy: bool | None
     escalation_accuracy: bool | None
     read_tool_dispatches: StrictInt = Field(ge=0, le=4)
+    context_materialization_reads: StrictInt = Field(default=0, ge=0, le=4)
     provider_turns: StrictInt = Field(ge=0, le=6)
     input_tokens: StrictInt = Field(ge=0)
     output_tokens: StrictInt = Field(ge=0)
@@ -405,6 +407,9 @@ def build_evaluation_score(
         "no_action_accuracy": terminal_match and action_precision if is_no_action else None,
         "escalation_accuracy": escalation_accuracy,
         "read_tool_dispatches": prediction.read_tool_dispatches,
+        "context_materialization_reads": (
+            prediction.context_materialization_reads
+        ),
         "provider_turns": prediction.provider_turns,
         "input_tokens": prediction.input_tokens,
         "output_tokens": prediction.output_tokens,

@@ -23,7 +23,15 @@ from ecomsre.dta_v2.contracts import (
 from ecomsre.dta_v2.evaluation_agents import run_full_context_agent
 from ecomsre.dta_v2.evaluation_contracts import (
     AgentVisibleReplayCase,
+    EvaluationArm,
+    EvaluationSplit,
+    EvaluatorCaseTruth,
     ReplayObservationFixture,
+    ScenarioFamily,
+)
+from ecomsre.dta_v2.evaluation_runner import (
+    execute_evaluation_arm,
+    score_and_persist_evaluation_execution,
 )
 from ecomsre.dta_v2.evaluation_replay import (
     ReplayCaseReadBackend,
@@ -306,3 +314,73 @@ def test_full_context_arm_uses_four_materialized_observations_and_zero_agent_rea
     assert provider.transcript_lengths == [4]
     assert provider.read_tools_enabled == [False]
     assert provider.attempted_calls == 2
+
+
+def test_evaluation_runner_scores_after_agent_execution_and_persists_private(
+    tmp_path: Path,
+) -> None:
+    case = _case()
+    scenario = next(
+        item
+        for item in load_scenario_registry(
+            ROOT / "config/dta-v2/scenarios/agent-visible"
+        ).scenarios
+        if item.scenario_id == case.scenario_id
+    )
+    context = build_alert_context(
+        scenario=scenario,
+        run_id=RUN_ID,
+        started_at=case.captured_started_at,
+        ended_at=case.captured_ended_at,
+    )
+    truth_payload = {
+        "schema_version": "dta-v2.evaluator-case-truth.v1",
+        "case_id": case.case_id,
+        "split": EvaluationSplit.DEVELOPMENT,
+        "scenario_family": ScenarioFamily.PAYMENT,
+        "meaningful_observation_differences": ("fault_strength",),
+        "expected_terminal": Terminal.COMPLETED,
+        "expected_root_service": "payment",
+        "expected_fault_domain": FaultDomain.CONFIGURATION,
+        "expected_mechanism": FaultMechanism.CONFIGURATION_ERROR,
+        "expected_disposition": ActionDisposition.EXECUTE_RUNBOOK,
+        "expected_runbook": RunbookId.ROLLBACK_CONFIGURATION,
+        "expected_evidence_sources": (
+            EvidenceSource.METRICS,
+            EvidenceSource.TRACES,
+        ),
+    }
+    truth = EvaluatorCaseTruth.model_validate(
+        {**truth_payload, "truth_sha256": semantic_sha256(truth_payload)}
+    )
+
+    execution = execute_evaluation_arm(
+        case=case,
+        context=context,
+        arm=EvaluationArm.ONE_SHOT_FULL_CONTEXT,
+        registry=load_runbook_registry(ROOT / "config/dta-v2/runbooks"),
+        provider=FullContextProvider(),
+    )
+    entry = score_and_persist_evaluation_execution(
+        execution=execution,
+        truth=truth,
+        execution_id="b" * 32,
+        private_root=tmp_path,
+    )
+
+    assert entry.score.root_exact_match is True
+    assert entry.score.runbook_top1_accuracy is True
+    assert entry.prediction.read_tool_dispatches == 0
+    assert entry.prediction.context_materialization_reads == 4
+    assert entry.prohibited_action_counters.model_dump() == {
+        "docker_calls": 0,
+        "fault_injections": 0,
+        "runbook_executions": 0,
+        "executor_calls": 0,
+        "verifier_calls": 0,
+        "forward_writes": 0,
+        "configuration_mutations": 0,
+        "service_mutations": 0,
+        "public_writes": 0,
+    }
+    assert (tmp_path / "agent/manifest.json").stat().st_mode & 0o777 == 0o600
