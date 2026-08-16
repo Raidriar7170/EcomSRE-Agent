@@ -678,7 +678,7 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
                 time.sleep(remaining_seconds)
             return
         elif case.condition is CaptureCondition.RECOVERY_TRANSITION:
-            time.sleep(min(10, case.observation_window_seconds // 2))
+            time.sleep(case.observation_window_seconds)
             trace_ended_at = datetime.now(timezone.utc)
             trace_started_at = self.recovery_started_at
             if trace_started_at is None:

@@ -455,6 +455,54 @@ def test_email_capture_quality_enforces_memory_safety_ceiling() -> None:
     )
 
 
+def test_recovery_conflict_uses_full_fault_then_fresh_healthy_window(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan = build_default_capture_plan(base_head="a" * 40)
+    lifecycle = OwnedCaptureLifecycle(
+        repository_root=ROOT,
+        private_root=tmp_path,
+        plan=plan,
+        stabilization_seconds=0,
+    )
+    lifecycle.upstream_flag = json.loads(
+        (
+            ROOT / "third_party/opentelemetry-demo/src/flagd/demo.flagd.json"
+        ).read_text(encoding="utf-8")
+    )
+    flags = _RecordingFlags()
+    fixture = next(
+        item
+        for item in AgentVisibleReplayCase.model_validate_json(
+            (
+                ROOT
+                / "config/dta-v2/evaluation/development/agent-visible/dta-case-001.json"
+            ).read_text(encoding="utf-8")
+        ).observations
+        if item.tool.value == "query_trace_neighborhood"
+    )
+    sleeps = []
+    requests = []
+    lifecycle.flag_controller = flags  # type: ignore[assignment]
+    monkeypatch.setattr(
+        owned_capture_module.time, "sleep", lambda seconds: sleeps.append(seconds)
+    )
+    monkeypatch.setattr(
+        lifecycle,
+        "_capture_fixture",
+        lambda request: requests.append(request) or fixture,
+    )
+    case = next(item for item in plan.cases if item.case_id == "dta-case-011")
+
+    lifecycle.apply_case(case, selected_email_variant="1000x")
+
+    assert flags.applied == 2
+    assert sleeps == [30, 35]
+    assert lifecycle.recovery_trace_fixture == fixture
+    assert len(requests) == 1
+    assert requests[0].tool.value == "query_trace_neighborhood"
+
+
 class _OwnedEmailDocker:
     def _owned_container_identity(self, service: str) -> str | None:
         assert service == "email"
