@@ -1,8 +1,8 @@
 # Diagnosis-to-Action v2 Frozen Design
 
-Status: `PR_D_AGENT_IMPLEMENTED / PROVIDER_DEVELOPMENT_GATE_PASS / ZERO_WRITES`
+Status: `PR_E_EVALUATION_COMPLETE / HELD_OUT_NEGATIVE / ZERO_UNSAFE_PROPOSALS`
 
-Decision owners: `DEC-033`, `DEC-034`, `DEC-035`, `DEC-036`
+Decision owners: `DEC-033`, `DEC-034`, `DEC-035`, `DEC-036`, `DEC-037`
 Safety owner: [SAFETY_BOUNDARIES.md](../SAFETY_BOUNDARIES.md)
 
 ## Claim boundary
@@ -101,7 +101,9 @@ inspection use GET-only Docker Engine HTTP over a local Unix socket with exact
 ownership labels. Fake/replay backends remain available for deterministic
 tests. No Provider, fault injection, Runbook execution, or service mutation is
 part of the PR-C read-tool runtime. PR-D separately permits real Provider
-development calls over fake/replay reads only; it creates no execution or write
+development calls over fake/replay reads only; PR-E adds a separate
+evaluation-case manifest, owned evidence capture, two-arm replay evaluation,
+and a one-time held-out seal. Neither phase creates execution or write
 authority.
 
 Fresh authorized no-fault read-only Smoke `f8532f3a6ab5242ab5bba2f8ae1a6caf`
@@ -190,12 +192,15 @@ separate counters.
 
 ## Agent identity and PR-D Provider development gate
 
-The provisional Agent identity is frozen in
-`config/dta-v2/agent-identity.v1.json` with model
-`gpt-5.4-mini-2026-03-17`, temperature `0`, prompt SHA-256
-`98ec7f7e7c65e9f9f442c33e229e9be5faa3883b32c5229fdd752e13d909e162`,
-and tool-schema SHA-256
-`6b968f29201ce7c87fe56099788ff34abc93dea895c56e553e4c007b22218192`.
+PR-D froze a provisional identity for its compatibility gate. Before PR-E
+held-out sealing, development evidence selected the Goal-permitted compatible
+configured model `gpt-5.4-2026-03-05`. The current frozen identity in
+`config/dta-v2/agent-identity.v1.json` uses temperature `0`, prompt SHA-256
+`42c21be36772f9ae7a6d0dcf6d910e6cdb58b5e5a08a9807487b4ee54f84bcce`,
+tool-schema SHA-256
+`6b968f29201ce7c87fe56099788ff34abc93dea895c56e553e4c007b22218192`, and
+identity SHA-256
+`aa08b5869aaac7e4ad4b1084367fc99a01c6dd05521ea933fddf9b5fb364ca61`.
 The identity also binds the Diagnosis, Action Selection, ActionProposal schema,
 and Provider-adapter hashes. Runtime tests recompute the complete identity and
 reject drift.
@@ -216,6 +221,53 @@ and `7b34d8318b3e0d61f46aaa16f891ea6a517a39ae614df1ce652b298f0814e617`.
 Every attempt recorded all prohibited-action counters at zero. The result is a
 development compatibility gate, not held-out evidence, a real Runbook
 execution, live remediation, or Live acceptance.
+
+## PR-E capture, development, and held-out result
+
+The public evaluation manifest SHA-256 is
+`9ae255ea385a8bfc486032bdb26c6bf76b8bcc9cfa2a06417282cb2287542d92`.
+It exposes six development plus three no-action/ambiguous case/truth bindings;
+the three replay-held-out cases remain private and are represented publicly
+only by case and truth hashes. Evaluation cases are not operational
+`ScenarioRegistry` entries and do not broaden Master Authorization.
+
+Owned capture `00af08e75935b1c9eb52081311592818` completed `PASS`, selected
+the bounded measurable `1000x` Email variant, restored the exact baseline, and
+finished `CLEAN` with owned resources `0/0/0`, no non-owned drift, and all
+Agent/Provider/Runbook/Executor/Verifier/remediation counters zero. Closure
+SHA-256 is
+`62263e5bcfc5c4698ec6de44dd1a1b0cf43b7a1b9ddcee8e4dc50931359a61d8`.
+This was evaluator-controlled dataset capture, not Agent remediation.
+
+Development campaign `4334dc61fdb48f3abfbe51bf1814c860` passed all 18
+two-arm entries: six fault cases and three no-action/ambiguous cases per arm.
+Both arms were exact on every applicable development metric, unsafe proposal
+attempts were zero, and truth isolation plus scorer verification passed. Its
+report SHA-256 is
+`8b138049bb911e991c9ccc0b9e9fb3493613fd26f835f3726d9e6304fd410871`.
+
+Held-out seal
+`0f944e79f0958f285006c3bdc3cf8f82b8a71731d8d96d02b474f254a54e247a`
+binds exact code head `2c683a6fe8ac682678064e0ba2b2ab856dc607c3`, model,
+identity, prompts, tools, budgets, schemas, Registry, Candidate Filter, scorer,
+and three private case/truth hash pairs. One-time execution
+`f187b6214c8313f829b047f7b8dbd461` terminated `COMPLETED`; truth isolation and
+scorer verification passed, unsafe proposal attempts were zero, and all
+prohibited-action counters were zero. One-shot Full Context scored 3/3 on root,
+mechanism, Runbook Top-1, evidence validity, and action precision. Adaptive
+Tool-Using scored 3/3 root, 2/3 mechanism, and 1/3 on Runbook Top-1, evidence
+validity, and action precision. Its 9 read dispatches, 15 Provider turns,
+42,986 input tokens, 1,422 output tokens, and 27,481 ms total latency exceeded
+the One-shot arm's 0 semantic dispatches plus 12 deterministic context reads,
+6 Provider turns, 12,898 input tokens, 1,152 output tokens, and 13,269 ms. The
+held-out set has zero no-action/escalation denominators; those paths were
+evaluated only in development. Report SHA-256 is
+`26b4002fe0232a2d8b03295e98b3c023e9409ae30eaba3b2e21ae1d1523524e6`.
+
+The held-out result is negative for Tool Use superiority. It must not be tuned
+against or rerun, and it supports neither Tool-Use advantage nor held-out
+generalization. It is replay diagnosis/action-selection evidence for its exact
+frozen head, not live recovery or Live acceptance.
 
 ## Scenario and Runbook matrix
 
