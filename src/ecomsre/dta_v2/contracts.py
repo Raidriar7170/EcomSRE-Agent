@@ -58,7 +58,7 @@ _UNSAFE_PARAMETER_NAMES = {
     "verifier",
 }
 _EXECUTABLE_TEXT_RE = re.compile(
-    r"(?i)(?:&&|\|\||[;`$<>])|"
+    r"(?i)(?:&&|\|\||[`$<>])|"
     r"\b(?:sudo|bash|zsh|docker|kubectl|curl|wget|terraform|ansible)\b|"
     r"\b(?:query_metrics|search_logs|query_trace_neighborhood|"
     r"inspect_service_runtime|inspect_resource_usage)\s*\("

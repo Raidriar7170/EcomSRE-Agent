@@ -22,6 +22,7 @@ from ecomsre.dta_v2.tool_contracts import (
     ResourceUsageRecord,
     RuntimeRecord,
     SearchLogsRequest,
+    SpanStatus,
     ToolErrorCode,
     ToolName,
     TraceNeighborhoodRecord,
@@ -80,7 +81,7 @@ class ReplayCaseReadBackend:
                 fixture.truncated or len(log_records) > request.max_records,
             )
         if isinstance(request, TraceNeighborhoodRequest):
-            trace_records = tuple(
+            trace_records: tuple[TraceNeighborhoodRecord, ...] = tuple(
                 TraceNeighborhoodRecord.model_validate(
                     {
                         **item.model_dump(mode="python"),
@@ -93,23 +94,28 @@ class ReplayCaseReadBackend:
             )
             if not trace_records:
                 raise ReadBackendFailure(ToolErrorCode.SOURCE_UNAVAILABLE)
-            trace_records = tuple(
+            selected: tuple[TraceNeighborhoodRecord, ...] = tuple(
                 sorted(
                     trace_records,
                     key=lambda item: (
-                        item.service_path,
-                        item.service,
-                        item.relationship.value,
-                        item.parent_service or "",
-                        item.operation,
-                        item.status.value,
-                        item.duration_ms,
-                        item.first_error_location,
+                        not (
+                            item.service == request.service
+                            and item.first_error_location
+                            and item.status is SpanStatus.ERROR
+                        ),
+                        not item.first_error_location,
+                        item.service != request.service,
+                        item.status is not SpanStatus.ERROR,
+                        -len(item.service_path),
+                        _trace_canonical_key(item),
                     ),
-                )
+                )[: request.max_spans]
+            )
+            ordered: tuple[TraceNeighborhoodRecord, ...] = tuple(
+                sorted(selected, key=_trace_canonical_key)
             )
             return BackendResult(
-                trace_records[: request.max_spans],
+                ordered,
                 fixture.truncated or len(trace_records) > request.max_spans,
             )
         if isinstance(request, InspectServiceRuntimeRequest):
@@ -136,6 +142,19 @@ class ReplayCaseReadBackend:
         return BackendResult(
             tuple(resource_by_service[item] for item in request.services)
         )
+
+
+def _trace_canonical_key(item: TraceNeighborhoodRecord) -> tuple[object, ...]:
+    return (
+        item.service_path,
+        item.service,
+        item.relationship.value,
+        item.parent_service or "",
+        item.operation,
+        item.status.value,
+        item.duration_ms,
+        item.first_error_location,
+    )
 
 
 def _single_service(fixture: ReplayObservationFixture) -> str:

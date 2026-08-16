@@ -142,6 +142,17 @@ def _case() -> AgentVisibleReplayCase:
                             duration_ms=12.0,
                             first_error_location=True,
                         ),
+                        TraceNeighborhoodRecord(
+                            anchor_service="payment",
+                            service_path=("checkout",),
+                            relationship=SpanRelationship.ROOT,
+                            service="checkout",
+                            parent_service=None,
+                            operation="place-order",
+                            status=SpanStatus.OK,
+                            duration_ms=8.0,
+                            first_error_location=False,
+                        ),
                     ),
                 ),
                 _fixture(
@@ -310,12 +321,14 @@ def test_replay_materializes_typed_failure_and_trace_path_anchor() -> None:
         service="checkout",
         started_at=case.captured_started_at,
         ended_at=case.captured_ended_at,
-        max_spans=40,
+        max_spans=1,
     )
     result = backend.execute(upstream)
     assert result.records
     assert all(item.anchor_service == "checkout" for item in result.records)
     assert all("checkout" in item.service_path for item in result.records)
+    assert result.records[0].service == "payment"
+    assert result.records[0].first_error_location is True
 
 
 def test_full_context_arm_uses_four_materialized_observations_and_zero_agent_reads() -> None:

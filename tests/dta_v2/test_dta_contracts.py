@@ -498,6 +498,19 @@ def test_diagnosis_rejects_arrow_and_command_contexts(
         )
 
 
+def test_diagnosis_allows_descriptive_semicolon_without_command_text() -> None:
+    diagnosis = completed_diagnosis()
+
+    updated = DtaDiagnosis.model_validate(
+        {
+            **diagnosis.model_dump(),
+            "summary": "Payment is the localized service; evidence remains bounded.",
+        }
+    )
+
+    assert updated.summary.endswith("evidence remains bounded.")
+
+
 def test_action_proposal_binds_candidate_and_rejects_authority_fields() -> None:
     diagnosis = completed_diagnosis()
     evidence = resolved_view(diagnosis)
