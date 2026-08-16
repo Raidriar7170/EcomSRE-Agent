@@ -90,7 +90,10 @@ class ReplayCaseReadBackend:
                 )
                 for item in fixture.records
                 if type(item) is TraceNeighborhoodRecord
-                and request.service in item.service_path
+                and (
+                    item.anchor_service == request.service
+                    or request.service in item.service_path
+                )
             )
             if not trace_records:
                 raise ReadBackendFailure(ToolErrorCode.SOURCE_UNAVAILABLE)

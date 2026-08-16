@@ -214,11 +214,54 @@ def test_diagnosis_prompt_and_schema_expose_cross_field_canonical_constraints() 
     )
     assert "local resource pressure" in INVESTIGATION_SYSTEM_PROMPT
     assert "ABSTAIN rather than NEED_MORE_EVIDENCE" in INVESTIGATION_SYSTEM_PROMPT
+    assert "exactly 5 seconds and 3 samples" in INVESTIGATION_SYSTEM_PROMPT
+    assert "exactly one service per runtime or resource call" in (
+        INVESTIGATION_SYSTEM_PROMPT
+    )
+    assert "historical trace ERROR" in INVESTIGATION_SYSTEM_PROMPT
     assert "parameters=[]" in ACTION_SELECTION_SYSTEM_PROMPT
     assert "Do not use semicolons" in ACTION_SELECTION_SYSTEM_PROMPT
     assert "service:<root_service>" in properties["root_entity_ref"]["description"]
     assert "supporting and contradicting" in (
         properties["evidence_source_types"]["description"]
+    )
+
+
+def test_provider_canonicalizes_diagnosis_set_order_but_retains_raw_arguments() -> None:
+    metrics_ref = f"evidence://{RUN_ID}/metrics/0002"
+    runtime_ref = f"evidence://{RUN_ID}/runtime/0001"
+    arguments = {
+        "schema_version": "dta-v2.diagnosis.v1",
+        "run_id": RUN_ID,
+        "terminal": "COMPLETED",
+        "root_service": "recommendation",
+        "root_entity_ref": "service:recommendation",
+        "fault_domain": "SERVICE_RUNTIME",
+        "mechanism": "SERVICE_UNAVAILABLE",
+        "confidence": 0.9,
+        "supporting_evidence_refs": [runtime_ref, metrics_ref],
+        "contradicting_evidence_refs": [],
+        "evidence_source_types": ["RUNTIME", "METRICS"],
+        "uncertainties": [],
+        "summary": "Recommendation is unavailable in the bounded window.",
+    }
+    provider = _provider(
+        RecordingTransport([_response(DIAGNOSIS_FUNCTION, arguments)])
+    )
+
+    turn = provider.investigation_turn(
+        context=_context(), transcript=(), read_tools_enabled=False
+    )
+
+    assert turn.raw_arguments["supporting_evidence_refs"] == [
+        runtime_ref,
+        metrics_ref,
+    ]
+    assert turn.diagnosis is not None
+    assert turn.diagnosis.supporting_evidence_refs == (metrics_ref, runtime_ref)
+    assert turn.diagnosis.evidence_source_types == (
+        EvidenceSource.METRICS,
+        EvidenceSource.RUNTIME,
     )
 
 

@@ -33,6 +33,8 @@ from ecomsre.dta_v2.evaluation_runner import (
     execute_evaluation_arm,
     score_and_persist_evaluation_execution,
 )
+from ecomsre.dta_v2.evaluation_dataset import load_public_evaluation_dataset
+from ecomsre.dta_v2.read_tools import InvestigationReadTools
 from ecomsre.dta_v2.evaluation_replay import (
     ReplayCaseReadBackend,
     build_materialization_request,
@@ -55,6 +57,7 @@ from ecomsre.dta_v2.tool_contracts import (
     ToolName,
     TraceNeighborhoodRecord,
     ToolErrorCode,
+    ObservationStatus,
     build_trace_neighborhood_request,
 )
 
@@ -329,6 +332,30 @@ def test_replay_materializes_typed_failure_and_trace_path_anchor() -> None:
     assert all("checkout" in item.service_path for item in result.records)
     assert result.records[0].service == "payment"
     assert result.records[0].first_error_location is True
+
+
+def test_promoted_payment_full_context_trace_replays_without_schema_drift() -> None:
+    _, loaded = load_public_evaluation_dataset(ROOT / "config/dta-v2/evaluation")
+    case = next(item.case for item in loaded if item.case.case_id == "dta-case-001")
+    fixture = next(
+        item
+        for item in case.observations
+        if item.tool is ToolName.QUERY_TRACE_NEIGHBORHOOD
+    )
+    request = build_materialization_request(
+        run_id=RUN_ID,
+        case=case,
+        fixture=fixture,
+    )
+
+    observation = InvestigationReadTools(
+        run_id=RUN_ID,
+        backend=ReplayCaseReadBackend(case),
+    ).dispatch(request)
+
+    assert observation.status is ObservationStatus.SUCCESS
+    assert observation.error_code is None
+    assert any(item.first_error_location for item in observation.results)
 
 
 def test_full_context_arm_uses_four_materialized_observations_and_zero_agent_reads() -> None:

@@ -23,6 +23,8 @@ from ecomsre.dta_v2.contracts import (
     ActionProposal,
     DtaDiagnosis,
     DtaModel,
+    EvidenceSource,
+    _evidence_ref_order,
     semantic_sha256,
 )
 from ecomsre.dta_v2.tool_contracts import (
@@ -75,7 +77,9 @@ INVESTIGATION_SYSTEM_PROMPT = (
     "early and pivot to the service marked first_error_location=true. For service "
     "unavailability inspect runtime and metrics on the function-matching candidate. "
     "For local resource pressure inspect resource usage, runtime, and metrics on "
-    "the function-matching candidate before spending budget on trace. "
+    "the function-matching candidate before spending budget on trace. During "
+    "frozen replay request resource usage with exactly 5 seconds and 3 samples. "
+    "Inspect exactly one service per runtime or resource call. "
     "In summaries and uncertainties, describe service relationships with the "
     "word 'to' instead of the symbol '->' or other shell-like punctuation. "
     "For COMPLETED set root_entity_ref exactly to service:<root_service>. "
@@ -95,7 +99,9 @@ INVESTIGATION_SYSTEM_PROMPT = (
     "interpret positive memory slope with RUNNING runtime as memory leak. "
     "insufficient or actively contradictory return NEED_MORE_EVIDENCE. If current "
     "metrics, runtime, and resource evidence show no active fault, return ABSTAIN "
-    "rather than NEED_MORE_EVIDENCE even when another read source failed. Return "
+    "rather than NEED_MORE_EVIDENCE even when another read source failed. A "
+    "historical trace ERROR against healthy current metrics and runtime is active "
+    "contradiction, so return NEED_MORE_EVIDENCE and never ABSTAIN. Return "
     "only typed function arguments and a concise summary, never "
     "hidden chain-of-thought or private reasoning."
 )
@@ -393,6 +399,36 @@ def _parse_arguments(value: object) -> tuple[dict[str, Any], str]:
     return parsed, _canonical_json(parsed)
 
 
+def _canonicalize_diagnosis_set_order(
+    arguments: dict[str, Any],
+) -> dict[str, Any]:
+    """Canonicalize order-only diagnosis sets while retaining raw arguments."""
+
+    output = dict(arguments)
+    for field in (
+        "supporting_evidence_refs",
+        "contradicting_evidence_refs",
+    ):
+        values = output.get(field)
+        if isinstance(values, list) and all(isinstance(item, str) for item in values):
+            try:
+                output[field] = sorted(values, key=_evidence_ref_order)
+            except ValueError:
+                pass
+    sources = output.get("evidence_source_types")
+    source_order = {item.value: index for index, item in enumerate(EvidenceSource)}
+    if (
+        isinstance(sources, list)
+        and all(isinstance(item, str) for item in sources)
+        and all(item in source_order for item in sources)
+    ):
+        output["evidence_source_types"] = sorted(
+            sources,
+            key=source_order.__getitem__,
+        )
+    return output
+
+
 def _serialize_transcript(transcript: tuple[object, ...]) -> list[object]:
     output: list[object] = []
     for item in transcript:
@@ -496,7 +532,9 @@ class OpenAICompatibleDtaAgentProvider:
         if function_name == DIAGNOSIS_FUNCTION:
             try:
                 diagnosis = DtaDiagnosis.model_validate_json(
-                    _canonical_json(arguments)
+                    _canonical_json(
+                        _canonicalize_diagnosis_set_order(arguments)
+                    )
                 )
             except ValidationError as error:
                 raise ProviderProtocolError("Provider diagnosis is invalid") from error
