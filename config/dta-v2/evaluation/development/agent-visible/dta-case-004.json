@@ -1,8 +1,8 @@
 {
-  "captured_ended_at": "2026-08-16T02:28:01.537029Z",
-  "captured_started_at": "2026-08-16T02:27:41.537029Z",
+  "captured_ended_at": "2026-08-16T04:36:32.477976Z",
+  "captured_started_at": "2026-08-16T04:36:12.477976Z",
   "case_id": "dta-case-004",
-  "case_sha256": "5e7eba522dcbfdb9a14b40aa842c1051e13b004b0c7308401bd7cb60b2667000",
+  "case_sha256": "7c8bc7115e40798856f2fb9226198868b9501c9db573483e095fef9fe11179fd",
   "full_context_tools": [
     "inspect_service_runtime",
     "query_metrics",
@@ -45,7 +45,7 @@
     },
     {
       "error_code": null,
-      "fixture_sha256": "d9908b811c800abfdceec40afdd49977f9d1e26357c7cb861a76f96e50359b95",
+      "fixture_sha256": "e193953a88274d351696e0d384cc8c178cc87aaf35ea66439f79f0e63f72f3fb",
       "records": [
         {
           "metric_kind": "CPU_PERCENT",
@@ -66,21 +66,21 @@
           "sample_count": 1,
           "service": "recommendation",
           "unit": "MILLISECONDS",
-          "value": 5.408916910605718
+          "value": 5.4
         },
         {
           "metric_kind": "MEMORY_BYTES",
           "sample_count": 1,
           "service": "recommendation",
           "unit": "BYTES",
-          "value": 71794688.0
+          "value": 71729152.0
         },
         {
           "metric_kind": "REQUEST_SUPPORT",
           "sample_count": 1,
           "service": "recommendation",
           "unit": "COUNT",
-          "value": 107.85455999999999
+          "value": 28.802304184334744
         }
       ],
       "schema_version": "dta-v2.replay-observation-fixture.v1",

@@ -1,8 +1,8 @@
 {
-  "captured_ended_at": "2026-08-16T02:34:36.286364Z",
-  "captured_started_at": "2026-08-16T02:34:06.286364Z",
+  "captured_ended_at": "2026-08-16T04:44:00.914515Z",
+  "captured_started_at": "2026-08-16T04:43:30.914515Z",
   "case_id": "dta-case-012",
-  "case_sha256": "8d2719d7a0812b9e4244075e7d995b647e51f0a652b3b0b3cd42ca592d4e6fa6",
+  "case_sha256": "96aaa029f4817638d0e8a82fc20594b4624d1d5226a27c4913f24ba4dacc56e6",
   "full_context_tools": [
     "inspect_resource_usage",
     "inspect_service_runtime",
@@ -12,29 +12,39 @@
   "observations": [
     {
       "error_code": null,
-      "fixture_sha256": "cf688a569e62ce59b9258a4a144dd9dc26e4e807f2b077ffd6749fb1e93963f7",
+      "fixture_sha256": "3724b4f2b607f7ef6f5694a2a423ec649986bc20d7b65c5a399333b9491c32b1",
       "records": [
         {
           "logical_service": "email",
-          "memory_slope_bytes_per_second": -131891.2,
+          "memory_slope_bytes_per_second": 95641.6,
           "samples": [
             {
-              "cpu_percent": 0.136,
-              "memory_bytes": 52994048,
+              "cpu_percent": 3.2386999999999997,
+              "memory_bytes": 50524160,
               "offset_ms": 0
             },
             {
-              "cpu_percent": 0.261798128342246,
-              "memory_bytes": 52740096,
-              "offset_ms": 2500
+              "cpu_percent": 0.18132530120481927,
+              "memory_bytes": 51564544,
+              "offset_ms": 5000
             },
             {
-              "cpu_percent": 0.4550729442970822,
-              "memory_bytes": 52334592,
-              "offset_ms": 5000
+              "cpu_percent": 0.4858299595141701,
+              "memory_bytes": 51933184,
+              "offset_ms": 10000
+            },
+            {
+              "cpu_percent": 0.5302139037433156,
+              "memory_bytes": 52387840,
+              "offset_ms": 15000
+            },
+            {
+              "cpu_percent": 0.14275793650793653,
+              "memory_bytes": 52436992,
+              "offset_ms": 20000
             }
           ],
-          "sampling_window_seconds": 5
+          "sampling_window_seconds": 20
         }
       ],
       "schema_version": "dta-v2.replay-observation-fixture.v1",
@@ -68,7 +78,7 @@
     },
     {
       "error_code": null,
-      "fixture_sha256": "73b6b037b024682a8f0c3e3238ebda48700c177f946efb720f2edb28a6bd2cf4",
+      "fixture_sha256": "208802670b71eb57372fdfdf9df8084a9c9fa44fe9affe5b5a8f8774b2bb8e66",
       "records": [
         {
           "metric_kind": "CPU_PERCENT",
@@ -89,7 +99,7 @@
           "sample_count": 1,
           "service": "email",
           "unit": "MILLISECONDS",
-          "value": 3.199999999999999
+          "value": 3.3999999999999995
         },
         {
           "metric_kind": "MEMORY_BYTES",
@@ -103,7 +113,7 @@
           "sample_count": 1,
           "service": "email",
           "unit": "COUNT",
-          "value": 19.2
+          "value": 14.400576023040921
         }
       ],
       "schema_version": "dta-v2.replay-observation-fixture.v1",
@@ -115,11 +125,11 @@
     },
     {
       "error_code": null,
-      "fixture_sha256": "8dae40e84c8614abfe94d4efce7aee394129b632574b1c0cfc7c3692ad70eef4",
+      "fixture_sha256": "309ea43523d7b8e6d21dc8a845dc552df137103dd61f597e0a8f8de66794cf8a",
       "records": [
         {
           "anchor_service": "email",
-          "duration_ms": 0.014,
+          "duration_ms": 0.005,
           "first_error_location": false,
           "operation": "resolveFloat",
           "parent_service": "flagd",
@@ -143,7 +153,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.008,
+          "duration_ms": 0.011,
           "first_error_location": false,
           "operation": "calculate-quote",
           "parent_service": "quote",
@@ -167,7 +177,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.041,
+          "duration_ms": 0.033,
           "first_error_location": false,
           "operation": "resolveFloat",
           "parent_service": "flagd",
@@ -191,7 +201,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.096,
+          "duration_ms": 0.104,
           "first_error_location": false,
           "operation": "{closure}",
           "parent_service": "quote",
@@ -215,7 +225,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.054,
+          "duration_ms": 0.044,
           "first_error_location": false,
           "operation": "flagd.evaluation.v2.Service/ResolveFloat",
           "parent_service": "cart",
@@ -239,7 +249,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.157,
+          "duration_ms": 0.175,
           "first_error_location": false,
           "operation": "POST /getquote",
           "parent_service": "shipping",
@@ -263,7 +273,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.039,
+          "duration_ms": 0.088,
           "first_error_location": false,
           "operation": "sinatra.render_template",
           "parent_service": "email",
@@ -287,91 +297,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.463,
-          "first_error_location": false,
-          "operation": "POST",
-          "parent_service": "checkout",
-          "relationship": "CHILD",
-          "service": "checkout",
-          "service_path": [
-            "load-generator",
-            "frontend-proxy",
-            "frontend-proxy",
-            "frontend",
-            "frontend",
-            "frontend",
-            "frontend",
-            "checkout",
-            "checkout"
-          ],
-          "status": "UNSET"
-        },
-        {
-          "anchor_service": "email",
-          "duration_ms": 2.33,
-          "first_error_location": false,
-          "operation": "POST",
-          "parent_service": "checkout",
-          "relationship": "CHILD",
-          "service": "checkout",
-          "service_path": [
-            "load-generator",
-            "frontend-proxy",
-            "frontend-proxy",
-            "frontend",
-            "frontend",
-            "frontend",
-            "frontend",
-            "checkout",
-            "checkout"
-          ],
-          "status": "UNSET"
-        },
-        {
-          "anchor_service": "email",
-          "duration_ms": 1.768,
-          "first_error_location": false,
-          "operation": "oteldemo.CartService/EmptyCart",
-          "parent_service": "checkout",
-          "relationship": "CHILD",
-          "service": "checkout",
-          "service_path": [
-            "load-generator",
-            "frontend-proxy",
-            "frontend-proxy",
-            "frontend",
-            "frontend",
-            "frontend",
-            "frontend",
-            "checkout",
-            "checkout"
-          ],
-          "status": "UNSET"
-        },
-        {
-          "anchor_service": "email",
-          "duration_ms": 1.036,
-          "first_error_location": false,
-          "operation": "oteldemo.PaymentService/Charge",
-          "parent_service": "checkout",
-          "relationship": "CHILD",
-          "service": "checkout",
-          "service_path": [
-            "load-generator",
-            "frontend-proxy",
-            "frontend-proxy",
-            "frontend",
-            "frontend",
-            "frontend",
-            "frontend",
-            "checkout",
-            "checkout"
-          ],
-          "status": "UNSET"
-        },
-        {
-          "anchor_service": "email",
-          "duration_ms": 1.09,
+          "duration_ms": 0.982,
           "first_error_location": false,
           "operation": "POST /oteldemo.CartService/EmptyCart",
           "parent_service": "checkout",
@@ -393,7 +319,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.528,
+          "duration_ms": 0.53,
           "first_error_location": false,
           "operation": "flagd.evaluation.v2.Service/ResolveFloat",
           "parent_service": "cart",
@@ -416,7 +342,53 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.463,
+          "duration_ms": 0.143,
+          "first_error_location": false,
+          "operation": "valkey-cart:6379",
+          "parent_service": "cart",
+          "relationship": "CHILD",
+          "service": "cart",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "checkout",
+            "checkout",
+            "cart",
+            "cart"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.17,
+          "first_error_location": false,
+          "operation": "valkey-cart:6379",
+          "parent_service": "cart",
+          "relationship": "CHILD",
+          "service": "cart",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "checkout",
+            "checkout",
+            "cart",
+            "cart"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.452,
           "first_error_location": false,
           "operation": "POST",
           "parent_service": "cart",
@@ -440,7 +412,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 2.967,
+          "duration_ms": 1.366,
           "first_error_location": false,
           "operation": "POST",
           "parent_service": "checkout",
@@ -462,7 +434,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.491,
+          "duration_ms": 0.429,
           "first_error_location": false,
           "operation": "oteldemo.CartService/GetCart",
           "parent_service": "checkout",
@@ -484,7 +456,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.312,
+          "duration_ms": 0.198,
           "first_error_location": false,
           "operation": "oteldemo.CurrencyService/Convert",
           "parent_service": "checkout",
@@ -506,7 +478,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.363,
+          "duration_ms": 0.218,
           "first_error_location": false,
           "operation": "oteldemo.CurrencyService/Convert",
           "parent_service": "checkout",
@@ -528,7 +500,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.677,
+          "duration_ms": 0.257,
           "first_error_location": false,
           "operation": "oteldemo.CurrencyService/Convert",
           "parent_service": "checkout",
@@ -550,7 +522,29 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 1.431,
+          "duration_ms": 0.364,
+          "first_error_location": false,
+          "operation": "oteldemo.CurrencyService/Convert",
+          "parent_service": "checkout",
+          "relationship": "CHILD",
+          "service": "checkout",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "checkout",
+            "checkout",
+            "checkout"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.552,
           "first_error_location": false,
           "operation": "oteldemo.ProductCatalogService/GetProduct",
           "parent_service": "checkout",
@@ -572,7 +566,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 2.779,
+          "duration_ms": 0.734,
           "first_error_location": false,
           "operation": "oteldemo.ProductCatalogService/GetProduct",
           "parent_service": "checkout",
@@ -594,7 +588,29 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.248,
+          "duration_ms": 1.269,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/GetProduct",
+          "parent_service": "checkout",
+          "relationship": "CHILD",
+          "service": "checkout",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "checkout",
+            "checkout",
+            "checkout"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.206,
           "first_error_location": false,
           "operation": "POST /oteldemo.CartService/GetCart",
           "parent_service": "checkout",
@@ -617,7 +633,31 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.019,
+          "duration_ms": 0.15,
+          "first_error_location": false,
+          "operation": "valkey-cart:6379",
+          "parent_service": "cart",
+          "relationship": "CHILD",
+          "service": "cart",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "checkout",
+            "checkout",
+            "checkout",
+            "cart",
+            "cart"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.01,
           "first_error_location": false,
           "operation": "oteldemo.CurrencyService/Convert",
           "parent_service": "checkout",
@@ -640,7 +680,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.021,
+          "duration_ms": 0.01,
           "first_error_location": false,
           "operation": "oteldemo.CurrencyService/Convert",
           "parent_service": "checkout",
@@ -663,7 +703,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.024,
+          "duration_ms": 0.012,
           "first_error_location": false,
           "operation": "oteldemo.CurrencyService/Convert",
           "parent_service": "checkout",
@@ -683,6 +723,75 @@
             "currency"
           ],
           "status": "OK"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.025,
+          "first_error_location": false,
+          "operation": "oteldemo.CurrencyService/Convert",
+          "parent_service": "checkout",
+          "relationship": "CHILD",
+          "service": "currency",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "checkout",
+            "checkout",
+            "checkout",
+            "currency"
+          ],
+          "status": "OK"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.411,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/GetProduct",
+          "parent_service": "checkout",
+          "relationship": "CHILD",
+          "service": "product-catalog",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "checkout",
+            "checkout",
+            "checkout",
+            "product-catalog"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 0.544,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/GetProduct",
+          "parent_service": "checkout",
+          "relationship": "CHILD",
+          "service": "product-catalog",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "checkout",
+            "checkout",
+            "checkout",
+            "product-catalog"
+          ],
+          "status": "UNSET"
         },
         {
           "anchor_service": "email",
@@ -709,30 +818,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 2.329,
-          "first_error_location": false,
-          "operation": "oteldemo.ProductCatalogService/GetProduct",
-          "parent_service": "checkout",
-          "relationship": "CHILD",
-          "service": "product-catalog",
-          "service_path": [
-            "load-generator",
-            "frontend-proxy",
-            "frontend-proxy",
-            "frontend",
-            "frontend",
-            "frontend",
-            "frontend",
-            "checkout",
-            "checkout",
-            "checkout",
-            "product-catalog"
-          ],
-          "status": "UNSET"
-        },
-        {
-          "anchor_service": "email",
-          "duration_ms": 0.253,
+          "duration_ms": 0.161,
           "first_error_location": false,
           "operation": "astronomy-db",
           "parent_service": "product-catalog",
@@ -756,7 +842,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 1.464,
+          "duration_ms": 0.238,
           "first_error_location": false,
           "operation": "astronomy-db",
           "parent_service": "product-catalog",
@@ -780,7 +866,31 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 1.127,
+          "duration_ms": 0.273,
+          "first_error_location": false,
+          "operation": "astronomy-db",
+          "parent_service": "product-catalog",
+          "relationship": "CHILD",
+          "service": "product-catalog",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "checkout",
+            "checkout",
+            "checkout",
+            "product-catalog",
+            "product-catalog"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "email",
+          "duration_ms": 1.151,
           "first_error_location": false,
           "operation": "POST /get-quote",
           "parent_service": "checkout",
@@ -803,7 +913,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.879,
+          "duration_ms": 1.059,
           "first_error_location": false,
           "operation": "POST",
           "parent_service": "shipping",
@@ -827,7 +937,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 1.83,
+          "duration_ms": 1.742,
           "first_error_location": false,
           "operation": "POST /send_order_confirmation",
           "parent_service": "checkout",
@@ -849,7 +959,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 1.365,
+          "duration_ms": 1.303,
           "first_error_location": false,
           "operation": "send_email",
           "parent_service": "email",
@@ -872,7 +982,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.12,
+          "duration_ms": 0.173,
           "first_error_location": false,
           "operation": "sinatra.render_template",
           "parent_service": "email",
@@ -896,7 +1006,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.348,
+          "duration_ms": 0.345,
           "first_error_location": false,
           "operation": "oteldemo.PaymentService/Charge",
           "parent_service": "checkout",
@@ -918,7 +1028,7 @@
         },
         {
           "anchor_service": "email",
-          "duration_ms": 0.213,
+          "duration_ms": 0.192,
           "first_error_location": false,
           "operation": "charge",
           "parent_service": "payment",
@@ -936,94 +1046,6 @@
             "checkout",
             "payment",
             "payment"
-          ],
-          "status": "UNSET"
-        },
-        {
-          "anchor_service": "email",
-          "duration_ms": 0.044,
-          "first_error_location": false,
-          "operation": "POST /ship-order",
-          "parent_service": "checkout",
-          "relationship": "CHILD",
-          "service": "shipping",
-          "service_path": [
-            "load-generator",
-            "frontend-proxy",
-            "frontend-proxy",
-            "frontend",
-            "frontend",
-            "frontend",
-            "frontend",
-            "checkout",
-            "checkout",
-            "shipping"
-          ],
-          "status": "UNSET"
-        },
-        {
-          "anchor_service": "email",
-          "duration_ms": 0.297,
-          "first_error_location": false,
-          "operation": "astronomy-db",
-          "parent_service": "product-catalog",
-          "relationship": "CHILD",
-          "service": "product-catalog",
-          "service_path": [
-            "load-generator",
-            "load-generator",
-            "frontend-proxy",
-            "frontend-proxy",
-            "frontend",
-            "frontend",
-            "frontend",
-            "frontend",
-            "product-catalog",
-            "product-catalog"
-          ],
-          "status": "UNSET"
-        },
-        {
-          "anchor_service": "email",
-          "duration_ms": 0.335,
-          "first_error_location": false,
-          "operation": "astronomy-db",
-          "parent_service": "product-catalog",
-          "relationship": "CHILD",
-          "service": "product-catalog",
-          "service_path": [
-            "load-generator",
-            "load-generator",
-            "frontend-proxy",
-            "frontend-proxy",
-            "frontend",
-            "frontend",
-            "frontend",
-            "frontend",
-            "product-catalog",
-            "product-catalog"
-          ],
-          "status": "UNSET"
-        },
-        {
-          "anchor_service": "email",
-          "duration_ms": 1.425,
-          "first_error_location": false,
-          "operation": "astronomy-db",
-          "parent_service": "product-catalog",
-          "relationship": "CHILD",
-          "service": "product-catalog",
-          "service_path": [
-            "load-generator",
-            "load-generator",
-            "frontend-proxy",
-            "frontend-proxy",
-            "frontend",
-            "frontend",
-            "frontend",
-            "frontend",
-            "product-catalog",
-            "product-catalog"
           ],
           "status": "UNSET"
         }

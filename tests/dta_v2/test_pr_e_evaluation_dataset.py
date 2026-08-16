@@ -15,9 +15,9 @@ def test_promoted_dataset_contains_only_development_and_no_action() -> None:
         ROOT / "config/dta-v2/evaluation"
     )
 
-    assert manifest.capture_head == "aad1b9a7c594967e212f4ca8c5df882df4e870de"
+    assert manifest.capture_head == "ad07fafff4be14cc78602aeaa14efa60e83ac3c3"
     assert manifest.capture_closure_sha256 == (
-        "3a5b875648625b9ca1aba6d8d2005fe03f0086f205dd1fbc757e003e6061635c"
+        "62263e5bcfc5c4698ec6de44dd1a1b0cf43b7a1b9ddcee8e4dc50931359a61d8"
     )
     assert len(cases) == 9
     assert sum(item.truth.split.value == "DEVELOPMENT" for item in cases) == 6

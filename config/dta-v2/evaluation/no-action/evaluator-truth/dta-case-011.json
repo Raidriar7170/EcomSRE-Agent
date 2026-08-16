@@ -8,10 +8,11 @@
   "expected_runbook": null,
   "expected_terminal": "NEED_MORE_EVIDENCE",
   "meaningful_observation_differences": [
-    "conflicting_evidence"
+    "conflicting_evidence",
+    "timing_window"
   ],
   "scenario_family": "CONFLICTING_EVIDENCE",
   "schema_version": "dta-v2.evaluator-case-truth.v1",
   "split": "NO_ACTION",
-  "truth_sha256": "e84fff21caeddd7328cb0f975ddb6e90056d00ee204c51ef241ddab00c08cc84"
+  "truth_sha256": "aaa391dc8a2347650241500669dd56cdc3b843768c89801f372380fc4e889223"
 }

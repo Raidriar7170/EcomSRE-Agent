@@ -1,8 +1,8 @@
 {
-  "captured_ended_at": "2026-08-16T02:27:19.813814Z",
-  "captured_started_at": "2026-08-16T02:26:49.813814Z",
+  "captured_ended_at": "2026-08-16T04:35:50.645006Z",
+  "captured_started_at": "2026-08-16T04:35:20.645006Z",
   "case_id": "dta-case-003",
-  "case_sha256": "5f8b4e139f2b4c7957d0ca5599308174bf246ace8279bb058eb384b815b72daf",
+  "case_sha256": "baa8fede13aae518e13647e09583fa2882262c40731d31803f89df7f3b7c9c85",
   "full_context_tools": [
     "inspect_service_runtime",
     "query_metrics",
@@ -45,7 +45,7 @@
     },
     {
       "error_code": null,
-      "fixture_sha256": "96ee41a97b9fae5df7b3ca24cc87bf1acd9e5a9c0c10e3748832467d0fec2794",
+      "fixture_sha256": "95fff4a56e947488931ee449877fce300b313adb132e103be6c06aed23cea17b",
       "records": [
         {
           "metric_kind": "CPU_PERCENT",
@@ -73,7 +73,7 @@
           "sample_count": 1,
           "service": "recommendation",
           "unit": "BYTES",
-          "value": 71794688.0
+          "value": 71729152.0
         },
         {
           "metric_kind": "REQUEST_SUPPORT",
