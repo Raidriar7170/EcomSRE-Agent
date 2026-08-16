@@ -47,7 +47,7 @@ ROOT = Path(__file__).resolve().parents[2]
 RUN_ID = "b" * 32
 START = datetime(2026, 8, 16, 5, 0, tzinfo=timezone.utc)
 END = START + timedelta(minutes=5)
-MODEL = "gpt-5.4-mini-2026-03-17"
+MODEL = "gpt-5.4-2026-03-05"
 FROZEN_IDENTITY = ROOT / "config/dta-v2/agent-identity.v1.json"
 
 
