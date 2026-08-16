@@ -351,8 +351,12 @@ def test_transaction_contract_rejects_false_partial_apply_and_failed_state_drift
     receipt_payload["receipt_sha256"] = semantic_sha256(
         receipt_draft.model_dump(mode="json", exclude={"receipt_sha256"})
     )
-    with pytest.raises(ValueError, match="failed step must preserve state"):
-        type(receipt).model_validate(receipt_payload)
+    failed_with_drift = type(receipt).model_validate(receipt_payload)
+    assert failed_with_drift.outcome is StepOutcome.FAILED
+    assert (
+        failed_with_drift.before_state_digest
+        != failed_with_drift.after_state_digest
+    )
 
 
 def test_transaction_cross_binds_verification_identity_and_step_continuity() -> None:

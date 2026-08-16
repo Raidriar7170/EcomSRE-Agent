@@ -10,6 +10,7 @@ from ecomsre.dta_v2.authorization import (
     action_parameters_sha256,
     runbook_parameter_schema_sha256,
 )
+from ecomsre.dta_v2.agent import AgentRunTerminal, DtaAgentRunResult
 from ecomsre.dta_v2.contracts import (
     ActionDisposition,
     ActionProposal,
@@ -32,6 +33,7 @@ from ecomsre.dta_v2.operational_contracts import (
     build_operational_admission,
 )
 from ecomsre.dta_v2.registry import RunbookRegistry
+from ecomsre.dta_v2.live_contracts import TerminalNonwriteAdmission
 
 
 def _require_utc(value: datetime) -> None:
@@ -243,4 +245,112 @@ def evaluate_operational_admission(
         registry=registry,
         runbook_sha256=runbook_sha256,
         authorization=attempt_authorization,
+    )
+
+
+def evaluate_nonwrite_operational_admission(
+    *,
+    registry: RunbookRegistry,
+    candidate_set: CandidateSet,
+    diagnosis: DtaDiagnosis,
+    diagnosis_evidence: ResolvedDiagnosisEvidenceView,
+    proposal: ActionProposal,
+    current_state: CurrentStateSnapshot,
+    master_authorization: MasterAuthorizationRecord,
+    as_of: datetime,
+) -> OperationalAdmission:
+    """Seal a non-write DENY without minting a run-bound write authority."""
+
+    _require_utc(as_of)
+    registry = RunbookRegistry.model_validate(registry.model_dump(mode="python"))
+    candidate_set = CandidateSet.model_validate(
+        candidate_set.model_dump(mode="python")
+    )
+    diagnosis = DtaDiagnosis.model_validate(diagnosis.model_dump(mode="python"))
+    diagnosis_evidence = ResolvedDiagnosisEvidenceView.model_validate(
+        diagnosis_evidence.model_dump(mode="python")
+    )
+    proposal = ActionProposal.model_validate(proposal.model_dump(mode="python"))
+    current_state = CurrentStateSnapshot.model_validate(
+        current_state.model_dump(mode="python")
+    )
+    master_authorization = MasterAuthorizationRecord.model_validate(
+        master_authorization.model_dump(mode="python")
+    )
+    validate_action_proposal_binding(
+        proposal=proposal,
+        candidate_set=candidate_set,
+        diagnosis=diagnosis,
+        registry=registry,
+        diagnosis_evidence=diagnosis_evidence,
+    )
+    if proposal.disposition is ActionDisposition.EXECUTE_RUNBOOK:
+        raise ValueError("non-write admission cannot accept an execute proposal")
+    if master_authorization.registry_sha256 != registry.registry_sha256:
+        raise ValueError("Master Authorization differs from the trusted Registry")
+    if current_state.run_id != proposal.run_id:
+        raise ValueError("non-write admission artifacts belong to different runs")
+    if current_state.sandbox_identity != master_authorization.sandbox_identity:
+        raise ValueError("non-write state differs from the authorized Sandbox")
+    if as_of < master_authorization.issued_at:
+        raise ValueError("non-write admission predates Master Authorization")
+    return build_operational_admission(
+        verdict=AdmissionVerdict.DENY,
+        reason_codes=(AdmissionReasonCode.NONWRITE_ACTION_PROPOSAL,),
+        current_state_sha256=current_state.snapshot_sha256,
+        proposal_sha256=proposal.proposal_sha256,
+        candidate_set_sha256=candidate_set.candidate_set_sha256,
+        resolved_evidence_sha256=diagnosis_evidence.resolved_evidence_sha256,
+        registry_sha256=registry.registry_sha256,
+        runbook_sha256="0" * 64,
+        authorization_sha256=master_authorization.authorization_sha256,
+    )
+
+
+def evaluate_terminal_nonwrite_admission(
+    *,
+    registry: RunbookRegistry,
+    agent_result: DtaAgentRunResult,
+    current_state: CurrentStateSnapshot,
+    master_authorization: MasterAuthorizationRecord,
+    as_of: datetime,
+) -> TerminalNonwriteAdmission:
+    """Seal ABSTAIN as DENY without fabricating candidate/proposal/child records."""
+
+    _require_utc(as_of)
+    registry = RunbookRegistry.model_validate(registry.model_dump(mode="python"))
+    result = DtaAgentRunResult.model_validate(agent_result.model_dump(mode="python"))
+    state = CurrentStateSnapshot.model_validate(current_state.model_dump(mode="python"))
+    master = MasterAuthorizationRecord.model_validate(
+        master_authorization.model_dump(mode="python")
+    )
+    if (
+        result.terminal is not AgentRunTerminal.ABSTAIN
+        or result.diagnosis is None
+        or result.action_proposal is not None
+        or result.candidate_set is not None
+        or result.resolved_evidence is not None
+    ):
+        raise ValueError("terminal non-write admission requires exact ABSTAIN artifacts")
+    if result.run_id != state.run_id:
+        raise ValueError("terminal non-write admission artifacts belong to different runs")
+    if master.registry_sha256 != registry.registry_sha256:
+        raise ValueError("terminal non-write Registry differs from authorization")
+    if state.sandbox_identity != master.sandbox_identity:
+        raise ValueError("terminal non-write state differs from authorized Sandbox")
+    if as_of < master.issued_at:
+        raise ValueError("terminal non-write admission predates Master Authorization")
+    payload: dict[str, object] = {
+        "schema_version": "dta-v2.terminal-nonwrite-admission.v1",
+        "verdict": AdmissionVerdict.DENY,
+        "reason_code": "NONWRITE_AGENT_TERMINAL",
+        "run_id": result.run_id,
+        "agent_result_sha256": result.result_sha256,
+        "diagnosis_sha256": semantic_sha256(result.diagnosis.model_dump(mode="json")),
+        "current_state_sha256": state.snapshot_sha256,
+        "registry_sha256": registry.registry_sha256,
+        "master_authorization_sha256": master.authorization_sha256,
+    }
+    return TerminalNonwriteAdmission.model_validate(
+        {**payload, "admission_sha256": semantic_sha256(payload)}
     )
