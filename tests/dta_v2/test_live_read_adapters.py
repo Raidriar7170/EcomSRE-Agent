@@ -257,6 +257,81 @@ def test_trace_projection_retains_anchor_service_and_deepest_error_under_cap() -
     assert observation.results[0].first_error_location is True
 
 
+def test_trace_projection_prioritizes_target_error_across_returned_traces() -> None:
+    class HealthyThenErrorHttp(StubHttp):
+        def request_json(
+            self,
+            *,
+            base_url: str,
+            path: str,
+            method: str,
+            payload: object | None,
+        ) -> object:
+            if "/jaeger/ui/api/traces?" not in path:
+                return super().request_json(
+                    base_url=base_url,
+                    path=path,
+                    method=method,
+                    payload=payload,
+                )
+            process = {"p1": {"serviceName": "payment"}}
+            return {
+                "data": [
+                    {
+                        "processes": process,
+                        "spans": [
+                            {
+                                "spanID": "a" * 16,
+                                "processID": "p1",
+                                "operationName": "healthy-charge",
+                                "startTime": 2_000_000,
+                                "duration": 1_000,
+                                "tags": [],
+                                "references": [],
+                            }
+                        ],
+                    },
+                    {
+                        "processes": process,
+                        "spans": [
+                            {
+                                "spanID": "b" * 16,
+                                "processID": "p1",
+                                "operationName": "failed-charge",
+                                "startTime": 1_000_000,
+                                "duration": 1_000,
+                                "tags": [{"key": "error", "value": True}],
+                                "references": [],
+                            }
+                        ],
+                    },
+                ]
+            }
+
+    backend = LocalSandboxReadBackend(
+        config=_config(),
+        http=HealthyThenErrorHttp(),
+        docker=StubDocker(),
+        sleep=lambda _: None,
+    )
+    request = build_trace_neighborhood_request(
+        run_id=RUN_ID,
+        service="payment",
+        started_at=START,
+        ended_at=END,
+        max_spans=1,
+    )
+
+    observation = InvestigationReadTools(run_id=RUN_ID, backend=backend).dispatch(
+        request
+    )
+
+    assert observation.status is ObservationStatus.SUCCESS
+    assert observation.result_count == 1
+    assert observation.results[0].operation == "failed-charge"
+    assert observation.results[0].first_error_location is True
+
+
 def test_prometheus_nan_no_sample_is_empty_but_infinity_is_invalid() -> None:
     no_sample = {
         "status": "success",

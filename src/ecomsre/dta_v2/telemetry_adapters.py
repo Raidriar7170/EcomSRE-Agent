@@ -612,7 +612,9 @@ class LocalSandboxReadBackend:
         traces = payload.get("data")
         if not isinstance(traces, list):
             raise ValueError("Jaeger trace list is invalid")
-        output: list[TraceNeighborhoodRecord] = []
+        ranked_traces: list[
+            tuple[tuple[object, ...], list[TraceNeighborhoodRecord]]
+        ] = []
         for raw_trace in traces:
             trace = _mapping(raw_trace, "Jaeger trace")
             processes = _mapping(trace.get("processes", {}), "Jaeger processes")
@@ -690,12 +692,36 @@ class LocalSandboxReadBackend:
                     _trace_canonical_key(item),
                 )
             )
+            ranked_traces.append(
+                (
+                    (
+                        not any(
+                            item.service == request.service
+                            and item.status is SpanStatus.ERROR
+                            and item.first_error_location
+                            for item in trace_output
+                        ),
+                        not any(
+                            item.service == request.service
+                            and item.status is SpanStatus.ERROR
+                            for item in trace_output
+                        ),
+                        not any(
+                            item.status is SpanStatus.ERROR
+                            for item in trace_output
+                        ),
+                        -max(starts.values(), default=0.0),
+                        tuple(_trace_canonical_key(item) for item in trace_output),
+                    ),
+                    trace_output,
+                )
+            )
+        output: list[TraceNeighborhoodRecord] = []
+        for _, trace_output in sorted(ranked_traces, key=lambda item: item[0]):
             for record in trace_output:
                 output.append(record)
                 if len(output) >= request.max_spans + 1:
-                    break
-            if len(output) >= request.max_spans + 1:
-                break
+                    return tuple(output)
         return tuple(output)
 
 
