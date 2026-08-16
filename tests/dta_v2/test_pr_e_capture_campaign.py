@@ -661,6 +661,7 @@ def test_capture_flag_builder_changes_only_three_exact_upstream_fields() -> None
 def test_default_plan_builds_exact_evaluator_truth_without_safe_case_coupling() -> None:
     plan = build_default_capture_plan(base_head="a" * 40)
     truths = tuple(build_evaluator_truth(item) for item in plan.cases)
+    conflict = next(item for item in plan.cases if item.case_id == "dta-case-011")
 
     assert len(truths) == 12
     assert truths[0].expected_root_service == "payment"
@@ -669,6 +670,38 @@ def test_default_plan_builds_exact_evaluator_truth_without_safe_case_coupling() 
     assert truths[9].expected_terminal.value == "ABSTAIN"
     assert truths[10].expected_terminal.value == "NEED_MORE_EVIDENCE"
     assert truths[11].expected_terminal.value == "ABSTAIN"
+    assert conflict.scenario_id == "dta-dev-001"
+    assert conflict.fault_variant == "100%"
+
+
+def test_no_action_capture_quality_rejects_missing_conflict_and_promotes_exact_matrix() -> None:
+    assert (
+        CaptureCaseQualityFailureCode.CONFLICTING_EVIDENCE_MISSING.value
+        == "CONFLICTING_EVIDENCE_MISSING"
+    )
+    plan = build_default_capture_plan(base_head="a" * 40)
+    by_id = {item.case_id: item for item in plan.cases}
+    cases = {
+        case_id: AgentVisibleReplayCase.model_validate_json(
+            (
+                ROOT
+                / "config/dta-v2/evaluation/no-action/agent-visible"
+                / f"{case_id}.json"
+            ).read_text(encoding="utf-8")
+        )
+        for case_id in ("dta-case-010", "dta-case-011", "dta-case-012")
+    }
+
+    with pytest.raises(CaptureCaseQualityFailure) as caught:
+        require_capture_case_quality(
+            by_id["dta-case-011"], cases["dta-case-010"].observations
+        )
+    assert caught.value.code is (
+        CaptureCaseQualityFailureCode.CONFLICTING_EVIDENCE_MISSING
+    )
+
+    for case_id, replay_case in cases.items():
+        require_capture_case_quality(by_id[case_id], replay_case.observations)
 
 
 def test_promoted_positive_cases_meet_mechanism_specific_capture_quality() -> None:

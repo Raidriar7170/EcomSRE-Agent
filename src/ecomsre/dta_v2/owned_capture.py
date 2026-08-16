@@ -54,6 +54,7 @@ from ecomsre.dta_v2.telemetry_adapters import (
 from ecomsre.dta_v2.tool_contracts import (
     MetricKind,
     MetricRecord,
+    HealthState,
     ReadToolRequest,
     ResourceUsageRecord,
     RuntimeRecord,
@@ -93,8 +94,6 @@ def require_capture_case_quality(
 ) -> None:
     """Fail capture unless positive truth has nonempty mechanism evidence."""
 
-    if case.operational_family is OperationalFamily.NO_ACTION:
-        return
     by_tool = {item.tool: item for item in fixtures}
 
     def successful(tool: ToolName) -> ReplayObservationFixture:
@@ -104,6 +103,45 @@ def require_capture_case_quality(
                 CaptureCaseQualityFailureCode.REQUIRED_SOURCE_UNAVAILABLE
             )
         return fixture
+
+    if case.operational_family is OperationalFamily.NO_ACTION:
+        if case.evaluator_family is not ScenarioFamily.CONFLICTING_EVIDENCE:
+            return
+        metrics = successful(ToolName.QUERY_METRICS)
+        runtime = successful(ToolName.INSPECT_SERVICE_RUNTIME)
+        traces = successful(ToolName.QUERY_TRACE_NEIGHBORHOOD)
+        service = "payment"
+        current_metrics_are_healthy = any(
+            type(item) is MetricRecord
+            and item.service == service
+            and item.metric_kind is MetricKind.ERROR_RATE
+            and item.sample_count > 0
+            and item.value == 0.0
+            for item in metrics.records
+        )
+        current_runtime_is_healthy = any(
+            type(item) is RuntimeRecord
+            and item.logical_service == service
+            and item.state is RuntimeState.RUNNING
+            and item.health is HealthState.HEALTHY
+            for item in runtime.records
+        )
+        historical_trace_has_localized_error = any(
+            type(item) is TraceNeighborhoodRecord
+            and item.service == service
+            and item.status is SpanStatus.ERROR
+            and item.first_error_location
+            for item in traces.records
+        )
+        if not (
+            current_metrics_are_healthy
+            and current_runtime_is_healthy
+            and historical_trace_has_localized_error
+        ):
+            raise CaptureCaseQualityFailure(
+                CaptureCaseQualityFailureCode.CONFLICTING_EVIDENCE_MISSING
+            )
+        return
 
     metrics = successful(ToolName.QUERY_METRICS)
     runtime = successful(ToolName.INSPECT_SERVICE_RUNTIME)
@@ -480,6 +518,8 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
         self.admitted_resolved_sha256: str | None = None
         self.active_condition: str | None = None
         self.email_restart_required = False
+        self.recovery_started_at: datetime | None = None
+        self.recovery_trace_fixture: ReplayObservationFixture | None = None
 
     def admit(self) -> None:
         if self.repository_root == Path("/") or self.private_root == Path("/"):
@@ -589,6 +629,10 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
         email_variant = "off"
         if case.condition is CaptureCondition.PAYMENT_FLAG:
             payment_variant = case.fault_variant
+        elif case.condition is CaptureCondition.RECOVERY_TRANSITION:
+            payment_variant = case.fault_variant
+            self.recovery_started_at = datetime.now(timezone.utc)
+            self.recovery_trace_fixture = None
         elif case.condition is CaptureCondition.EMAIL_LEAK:
             email_variant = (
                 selected_email_variant
@@ -605,9 +649,27 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
         if case.condition is CaptureCondition.RECOMMENDATION_STOP:
             self._recommendation().stop()
         elif case.condition is CaptureCondition.RECOVERY_TRANSITION:
-            self._recommendation().stop()
             time.sleep(min(10, case.observation_window_seconds // 2))
-            self._recommendation().start()
+            trace_ended_at = datetime.now(timezone.utc)
+            trace_started_at = self.recovery_started_at
+            if trace_started_at is None:
+                raise RuntimeError("recovery capture start is unavailable")
+            self.recovery_trace_fixture = self._capture_fixture(
+                build_trace_neighborhood_request(
+                    run_id=secrets.token_hex(16),
+                    service="payment",
+                    started_at=trace_started_at,
+                    ended_at=trace_ended_at,
+                    max_spans=40,
+                )
+            )
+            self._flags().apply(
+                build_capture_flag_document(
+                    self._upstream(), load_vus=case.load_vus
+                )
+            )
+            time.sleep(case.observation_window_seconds + 5)
+            return
         time.sleep(case.observation_window_seconds)
 
     def capture_case(self, case: CaptureCasePlan) -> str:
@@ -619,9 +681,16 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
             "dta-dev-003": "email",
         }[case.scenario_id]
         ended_at = datetime.now(timezone.utc)
-        started_at = ended_at - timedelta(
+        current_started_at = ended_at - timedelta(
             seconds=case.observation_window_seconds
         )
+        started_at = (
+            self.recovery_started_at
+            if case.condition is CaptureCondition.RECOVERY_TRANSITION
+            else current_started_at
+        )
+        if started_at is None:
+            raise RuntimeError("capture start is unavailable")
         run_id = secrets.token_hex(16)
         requests: tuple[ReadToolRequest, ...] = (
             build_inspect_resource_usage_request(
@@ -636,7 +705,7 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
             build_query_metrics_request(
                 run_id=run_id,
                 service=service,
-                started_at=started_at,
+                started_at=current_started_at,
                 ended_at=ended_at,
                 metric_kinds=(
                     MetricKind.CPU_PERCENT,
@@ -650,24 +719,30 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
             build_trace_neighborhood_request(
                 run_id=run_id,
                 service=service,
-                started_at=started_at,
+                started_at=current_started_at,
                 ended_at=ended_at,
                 max_spans=40,
             ),
             build_search_logs_request(
                 run_id=run_id,
                 service=service,
-                started_at=started_at,
+                started_at=current_started_at,
                 ended_at=ended_at,
                 max_records=20,
             ),
         )
-        fixtures = tuple(
-            sorted(
-                (self._capture_fixture(request) for request in requests),
-                key=lambda item: item.tool.value,
-            )
-        )
+        captured = []
+        for request in requests:
+            if (
+                request.tool is ToolName.QUERY_TRACE_NEIGHBORHOOD
+                and case.condition is CaptureCondition.RECOVERY_TRANSITION
+            ):
+                if self.recovery_trace_fixture is None:
+                    raise RuntimeError("recovery trace evidence is unavailable")
+                captured.append(self.recovery_trace_fixture)
+            else:
+                captured.append(self._capture_fixture(request))
+        fixtures = tuple(sorted(captured, key=lambda item: item.tool.value))
         require_capture_case_quality(case, fixtures)
         payload: dict[str, Any] = {
             "schema_version": "dta-v2.agent-visible-replay-case.v1",
@@ -717,6 +792,8 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
         else:
             self.active_condition = None
             self.email_restart_required = False
+            self.recovery_started_at = None
+            self.recovery_trace_fixture = None
 
     def verify_baseline(self) -> None:
         self._flags().verify(self._baseline())

@@ -221,6 +221,7 @@ def test_diagnosis_prompt_and_schema_expose_cross_field_canonical_constraints() 
     assert "historical trace ERROR" in INVESTIGATION_SYSTEM_PROMPT
     assert "parameters=[]" in ACTION_SELECTION_SYSTEM_PROMPT
     assert "Do not use semicolons" in ACTION_SELECTION_SYSTEM_PROMPT
+    assert "Use generic evidence language in rationale" in ACTION_SELECTION_SYSTEM_PROMPT
     assert "service:<root_service>" in properties["root_entity_ref"]["description"]
     assert "supporting and contradicting" in (
         properties["evidence_source_types"]["description"]

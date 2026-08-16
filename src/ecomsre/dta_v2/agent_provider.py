@@ -99,7 +99,8 @@ INVESTIGATION_SYSTEM_PROMPT = (
     "interpret positive memory slope with RUNNING runtime as memory leak. "
     "insufficient or actively contradictory return NEED_MORE_EVIDENCE. If current "
     "metrics, runtime, and resource evidence show no active fault, return ABSTAIN "
-    "rather than NEED_MORE_EVIDENCE even when another read source failed. A "
+    "rather than NEED_MORE_EVIDENCE even when another read source failed or a "
+    "trace result is truncated without a first error location. A "
     "historical trace ERROR against healthy current metrics and runtime is active "
     "contradiction, so return NEED_MORE_EVIDENCE and never ABSTAIN. Return "
     "only typed function arguments and a concise summary, never "
@@ -119,7 +120,9 @@ ACTION_SELECTION_SYSTEM_PROMPT = (
     "use semicolons, backticks, dollar signs, angle brackets, command text, or "
     "tool-call syntax in rationale. Do not invent risk, authority, implementation, preconditions, "
     "steps, executor, verifier, commands, paths, URLs, container identities, or "
-    "another Runbook. Return only the typed decision and a concise rationale, "
+    "another Runbook. Use generic evidence language in rationale and do not "
+    "concatenate or restate service and mechanism names. Return only the typed "
+    "decision and a concise rationale, "
     "never hidden chain-of-thought or private reasoning."
 )
 

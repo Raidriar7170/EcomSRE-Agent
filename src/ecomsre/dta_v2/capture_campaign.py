@@ -60,6 +60,7 @@ class CaptureCaseQualityFailureCode(str, Enum):
     PAYMENT_LOCALIZED_ERROR_MISSING = "PAYMENT_LOCALIZED_ERROR_MISSING"
     RECOMMENDATION_NOT_STOPPED = "RECOMMENDATION_NOT_STOPPED"
     EMAIL_MEMORY_GROWTH_MISSING = "EMAIL_MEMORY_GROWTH_MISSING"
+    CONFLICTING_EVIDENCE_MISSING = "CONFLICTING_EVIDENCE_MISSING"
 
 
 class CaptureCaseQualityFailure(RuntimeError):
@@ -274,7 +275,7 @@ def build_default_capture_plan(*, base_head: str) -> CaptureCampaignPlan:
         ("dta-case-008", "dta-dev-002", EvaluationSplit.HELD_OUT, OperationalFamily.RECOMMENDATION, ScenarioFamily.RECOMMENDATION, CaptureCondition.RECOMMENDATION_STOP, "STOPPED", 5, 40, ("load_level", "timing_window"), _RECOMMENDATION_CONTEXT),
         ("dta-case-009", "dta-dev-003", EvaluationSplit.HELD_OUT, OperationalFamily.EMAIL, ScenarioFamily.EMAIL, CaptureCondition.EMAIL_LEAK, "SELECTED", 5, 40, ("load_level", "timing_window"), _EMAIL_CONTEXT),
         ("dta-case-010", "dta-dev-001", EvaluationSplit.NO_ACTION, OperationalFamily.NO_ACTION, ScenarioFamily.NO_REAL_FAULT, CaptureCondition.NO_FAULT, "BASELINE", 5, 30, ("no_real_fault",), _PAYMENT_CONTEXT),
-        ("dta-case-011", "dta-dev-002", EvaluationSplit.NO_ACTION, OperationalFamily.NO_ACTION, ScenarioFamily.CONFLICTING_EVIDENCE, CaptureCondition.RECOVERY_TRANSITION, "RECOVERY", 10, 30, ("conflicting_evidence",), _RECOMMENDATION_CONTEXT),
+        ("dta-case-011", "dta-dev-001", EvaluationSplit.NO_ACTION, OperationalFamily.NO_ACTION, ScenarioFamily.CONFLICTING_EVIDENCE, CaptureCondition.RECOVERY_TRANSITION, "100%", 10, 30, ("conflicting_evidence", "timing_window"), _PAYMENT_CONTEXT),
         ("dta-case-012", "dta-dev-003", EvaluationSplit.NO_ACTION, OperationalFamily.NO_ACTION, ScenarioFamily.UNKNOWN_MECHANISM, CaptureCondition.OBSERVER_UNKNOWN, "UNKNOWN", 5, 30, ("unknown_mechanism",), _EMAIL_CONTEXT),
     )
     cases = tuple(
