@@ -15,6 +15,8 @@ import time
 from typing import Any
 
 from ecomsre.dta_v2.capture_campaign import (
+    CaptureCaseQualityFailure,
+    CaptureCaseQualityFailureCode,
     CaptureCampaignClosure,
     CaptureCasePlan,
     CaptureCondition,
@@ -97,7 +99,9 @@ def require_capture_case_quality(
     def successful(tool: ToolName) -> ReplayObservationFixture:
         fixture = by_tool.get(tool)
         if fixture is None or fixture.error_code is not None or not fixture.records:
-            raise ValueError(f"capture required source is unavailable: {tool.value}")
+            raise CaptureCaseQualityFailure(
+                CaptureCaseQualityFailureCode.REQUIRED_SOURCE_UNAVAILABLE
+            )
         return fixture
 
     metrics = successful(ToolName.QUERY_METRICS)
@@ -114,7 +118,9 @@ def require_capture_case_quality(
         type(item) is RuntimeRecord and item.logical_service == expected_service
         for item in runtime.records
     ):
-        raise ValueError("capture required evidence targets another service")
+        raise CaptureCaseQualityFailure(
+            CaptureCaseQualityFailureCode.REQUIRED_TARGET_MISSING
+        )
     if case.operational_family is OperationalFamily.PAYMENT:
         traces = successful(ToolName.QUERY_TRACE_NEIGHBORHOOD)
         if not any(
@@ -124,7 +130,9 @@ def require_capture_case_quality(
             and item.first_error_location
             for item in traces.records
         ):
-            raise ValueError("payment capture lacks a localized error span")
+            raise CaptureCaseQualityFailure(
+                CaptureCaseQualityFailureCode.PAYMENT_LOCALIZED_ERROR_MISSING
+            )
     elif case.operational_family is OperationalFamily.RECOMMENDATION:
         if not any(
             type(item) is RuntimeRecord
@@ -132,7 +140,9 @@ def require_capture_case_quality(
             and item.state is RuntimeState.EXITED
             for item in runtime.records
         ):
-            raise ValueError("recommendation capture is not stopped")
+            raise CaptureCaseQualityFailure(
+                CaptureCaseQualityFailureCode.RECOMMENDATION_NOT_STOPPED
+            )
     else:
         resources = successful(ToolName.INSPECT_RESOURCE_USAGE)
         if not any(
@@ -141,7 +151,9 @@ def require_capture_case_quality(
             and item.memory_slope_bytes_per_second >= 100_000.0
             for item in resources.records
         ):
-            raise ValueError("email capture lacks positive bounded memory growth")
+            raise CaptureCaseQualityFailure(
+                CaptureCaseQualityFailureCode.EMAIL_MEMORY_GROWTH_MISSING
+            )
 
 
 def build_capture_flag_document(
@@ -926,6 +938,11 @@ def main(argv: list[str] | None = None) -> int:
                     closure.recovery_failure_http_status
                 ),
                 "failed_case_id": closure.failed_case_id,
+                "quality_failure_code": (
+                    None
+                    if closure.quality_failure_code is None
+                    else closure.quality_failure_code.value
+                ),
                 "selected_email_variant": closure.selected_email_variant,
                 "captured_case_count": len(closure.captured_case_sha256s),
                 "cleanup_verdict": closure.cleanup_verdict,

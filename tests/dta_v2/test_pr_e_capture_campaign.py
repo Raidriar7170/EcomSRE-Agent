@@ -10,6 +10,8 @@ import pytest
 import ecomsre.dta_v2.owned_capture as owned_capture_module
 
 from ecomsre.dta_v2.capture_campaign import (
+    CaptureCaseQualityFailure,
+    CaptureCaseQualityFailureCode,
     CaptureCampaignClosure,
     CaptureFailureCode,
     CaptureFailureOperation,
@@ -45,6 +47,7 @@ class FakeCaptureLifecycle:
     calibration: dict[str, EmailMemoryObservation]
     fail_restore_case: str | None = None
     fail_capture_case: str | None = None
+    fail_quality_case: str | None = None
 
     def __post_init__(self) -> None:
         self.events: list[str] = []
@@ -86,6 +89,10 @@ class FakeCaptureLifecycle:
     def capture_case(self, case):
         assert self.active_condition == case.case_id
         self.events.append(f"capture:{case.case_id}")
+        if case.case_id == self.fail_quality_case:
+            raise CaptureCaseQualityFailure(
+                CaptureCaseQualityFailureCode.REQUIRED_SOURCE_UNAVAILABLE
+            )
         if case.case_id == self.fail_capture_case:
             raise RuntimeError("typed capture failure")
         return f"{int(case.case_id[-3:]):064x}"
@@ -233,6 +240,26 @@ def test_case_capture_failure_restores_baseline_before_cleaning_up() -> None:
     assert closure.baseline_restored is True
     assert closure.cleanup_verdict == "CLEAN"
     assert closure.cleanup_failure_code is None
+
+
+def test_case_quality_failure_is_typed_without_backend_text() -> None:
+    lifecycle = FakeCaptureLifecycle(
+        _safe_calibration(), fail_quality_case="dta-case-002"
+    )
+    closure = run_capture_campaign_attempt(
+        plan=build_default_capture_plan(base_head="a" * 40),
+        lifecycle=lifecycle,
+    )
+
+    assert closure.terminal is CaptureTerminal.BLOCKED
+    assert closure.failure_code is CaptureFailureCode.CASE_CAPTURE_FAILED
+    assert closure.failure_operation is CaptureFailureOperation.CAPTURE_CASE
+    assert closure.failed_case_id == "dta-case-002"
+    assert closure.quality_failure_code is (
+        CaptureCaseQualityFailureCode.REQUIRED_SOURCE_UNAVAILABLE
+    )
+    assert closure.baseline_restored is True
+    assert closure.cleanup_verdict == "CLEAN"
 
 
 def test_legacy_capture_closure_and_round_trip_keep_original_digest() -> None:

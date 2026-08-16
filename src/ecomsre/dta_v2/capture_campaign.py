@@ -51,6 +51,22 @@ class CaptureFailureOperation(str, Enum):
     CLEANUP = "CLEANUP"
 
 
+class CaptureCaseQualityFailureCode(str, Enum):
+    REQUIRED_SOURCE_UNAVAILABLE = "REQUIRED_SOURCE_UNAVAILABLE"
+    REQUIRED_TARGET_MISSING = "REQUIRED_TARGET_MISSING"
+    PAYMENT_LOCALIZED_ERROR_MISSING = "PAYMENT_LOCALIZED_ERROR_MISSING"
+    RECOMMENDATION_NOT_STOPPED = "RECOMMENDATION_NOT_STOPPED"
+    EMAIL_MEMORY_GROWTH_MISSING = "EMAIL_MEMORY_GROWTH_MISSING"
+
+
+class CaptureCaseQualityFailure(RuntimeError):
+    """Fixed evidence-grade failure marker without backend text."""
+
+    def __init__(self, code: CaptureCaseQualityFailureCode) -> None:
+        super().__init__(code.value)
+        self.code = code
+
+
 class CaptureOperationFailure(RuntimeError):
     """Fixed safe operation marker; never retains backend exception text."""
 
@@ -332,6 +348,7 @@ class CaptureCampaignClosure(DtaModel):
     failed_case_id: str | None = Field(
         default=None, pattern=r"^dta-case-[0-9]{3}$"
     )
+    quality_failure_code: CaptureCaseQualityFailureCode | None = None
     baseline_memory: EmailMemoryObservation | None
     calibration_observations: tuple[EmailCalibrationTrial, ...]
     selected_email_variant: Literal["10x", "100x", "1000x"] | None
@@ -348,6 +365,12 @@ class CaptureCampaignClosure(DtaModel):
 
     @model_validator(mode="after")
     def require_closure(self) -> CaptureCampaignClosure:
+        if self.quality_failure_code is not None and (
+            self.failure_code is not CaptureFailureCode.CASE_CAPTURE_FAILED
+            or self.failure_operation is not CaptureFailureOperation.CAPTURE_CASE
+            or self.failed_case_id is None
+        ):
+            raise ValueError("capture quality failure lacks exact case binding")
         passed = (
             self.failure_code is None
             and self.cleanup_failure_code is None
@@ -366,16 +389,19 @@ class CaptureCampaignClosure(DtaModel):
         full_payload = self.model_dump(
             mode="json", exclude={"closure_sha256"}
         )
+        compatibility_exclude = {
+            "closure_sha256",
+            "failure_operation",
+            "recovery_failure_operation",
+            "failed_case_id",
+            "failure_http_status",
+            "recovery_failure_http_status",
+        }
+        if "quality_failure_code" not in self.model_fields_set:
+            compatibility_exclude.add("quality_failure_code")
         legacy_payload = self.model_dump(
             mode="json",
-            exclude={
-                "closure_sha256",
-                "failure_operation",
-                "recovery_failure_operation",
-                "failed_case_id",
-                "failure_http_status",
-                "recovery_failure_http_status",
-            },
+            exclude=compatibility_exclude,
         )
         expected_digests = {
             semantic_sha256(full_payload),
@@ -415,6 +441,7 @@ def run_capture_campaign_attempt(
     failure_http_status: int | None = None
     recovery_failure_http_status: int | None = None
     failed_case_id: str | None = None
+    quality_failure_code: CaptureCaseQualityFailureCode | None = None
     started = False
     baseline_restored = False
     baseline_memory: EmailMemoryObservation | None = None
@@ -549,10 +576,12 @@ def run_capture_campaign_attempt(
                     ):
                         raise ValueError("capture case digest is invalid")
                     captured.append(digest)
-                except Exception:
+                except Exception as error:
                     failure = CaptureFailureCode.CASE_CAPTURE_FAILED
                     failure_operation = CaptureFailureOperation.CAPTURE_CASE
                     failed_case_id = case.case_id
+                    if isinstance(error, CaptureCaseQualityFailure):
+                        quality_failure_code = error.code
                     break
                 try:
                     lifecycle.restore_baseline()
@@ -613,6 +642,7 @@ def run_capture_campaign_attempt(
         "failure_http_status": failure_http_status,
         "recovery_failure_http_status": recovery_failure_http_status,
         "failed_case_id": failed_case_id,
+        "quality_failure_code": quality_failure_code,
         "baseline_memory": baseline_memory,
         "calibration_observations": tuple(trials),
         "selected_email_variant": selected,
