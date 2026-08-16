@@ -35,6 +35,7 @@ from ecomsre.dta_v2.owned_capture import (
 from ecomsre.dta_v2.evaluation_contracts import AgentVisibleReplayCase
 from ecomsre.dta_v2.read_tools import ReadBackendFailure
 from ecomsre.dta_v2.tool_contracts import (
+    ResourceUsageRecord,
     RuntimeState,
     ToolErrorCode,
     build_inspect_resource_usage_request,
@@ -720,3 +721,32 @@ def test_promoted_positive_cases_meet_mechanism_specific_capture_quality() -> No
             ).read_text(encoding="utf-8")
         )
         require_capture_case_quality(by_id[case_id], case.observations)
+
+
+@pytest.mark.parametrize(
+    ("split", "case_id"),
+    (
+        ("development", "dta-case-005"),
+        ("development", "dta-case-006"),
+        ("no-action", "dta-case-012"),
+    ),
+)
+def test_promoted_email_cases_use_stable_resource_window(
+    split: str, case_id: str
+) -> None:
+    case = AgentVisibleReplayCase.model_validate_json(
+        (
+            ROOT
+            / f"config/dta-v2/evaluation/{split}/agent-visible/{case_id}.json"
+        ).read_text(encoding="utf-8")
+    )
+    records = tuple(
+        record
+        for fixture in case.observations
+        for record in fixture.records
+        if type(record) is ResourceUsageRecord
+    )
+
+    assert len(records) == 1
+    assert records[0].sampling_window_seconds == 20
+    assert len(records[0].samples) == 5

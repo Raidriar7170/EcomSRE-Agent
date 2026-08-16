@@ -3,10 +3,10 @@
   "model_id": "gpt-5.4-2026-03-05",
   "temperature": 0.0,
   "provider_adapter_version": "dta-v2.openai-compatible-agent.v1",
-  "prompt_sha256": "68162ee876f3be0e9f25ff9f0712bf523f91bf016c4d0020f8cf4099a7f483b6",
+  "prompt_sha256": "c79d85cd683acac01271a3b29fb021a18db0bb5d6cc39ee4ce17b1b2a1c45bb2",
   "tool_schema_sha256": "6b968f29201ce7c87fe56099788ff34abc93dea895c56e553e4c007b22218192",
   "diagnosis_schema_sha256": "9efa9b31705d325e3501f16ae73d1cf11333034631a745c959a9cc8ce4960d18",
   "action_selection_schema_sha256": "3be7c2aa77d714876641b76b0ff6c5508ed1942632de350fc4ea272f22516c65",
   "action_proposal_schema_sha256": "b406c42f2aa4de3af6a0bf1f81ba43cc72bdd3a68c426e2ca35dde70f303a850",
-  "identity_sha256": "ec195a704a9de22bce33fcff2c736836e7fcf209d4972d048a698344d214041b"
+  "identity_sha256": "a7a6942c6cb0fe39291104cfaebe29551ac443b70cdf0ae6c33257a14f2d3baf"
 }

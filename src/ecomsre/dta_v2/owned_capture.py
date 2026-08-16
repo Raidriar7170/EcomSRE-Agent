@@ -692,12 +692,14 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
         if started_at is None:
             raise RuntimeError("capture start is unavailable")
         run_id = secrets.token_hex(16)
+        resource_window_seconds = 20 if service == "email" else 5
+        resource_sample_count = 5 if service == "email" else 3
         requests: tuple[ReadToolRequest, ...] = (
             build_inspect_resource_usage_request(
                 run_id=run_id,
                 services=(service,),
-                sampling_window_seconds=5,
-                sample_count=3,
+                sampling_window_seconds=resource_window_seconds,
+                sample_count=resource_sample_count,
             ),
             build_inspect_service_runtime_request(
                 run_id=run_id, services=(service,), max_results=1

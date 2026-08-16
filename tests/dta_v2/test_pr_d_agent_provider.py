@@ -214,7 +214,7 @@ def test_diagnosis_prompt_and_schema_expose_cross_field_canonical_constraints() 
     )
     assert "local resource pressure" in INVESTIGATION_SYSTEM_PROMPT
     assert "ABSTAIN rather than NEED_MORE_EVIDENCE" in INVESTIGATION_SYSTEM_PROMPT
-    assert "exactly 5 seconds and 3 samples" in INVESTIGATION_SYSTEM_PROMPT
+    assert "exactly 20 seconds and 5 samples" in INVESTIGATION_SYSTEM_PROMPT
     assert "exactly one service per runtime or resource call" in (
         INVESTIGATION_SYSTEM_PROMPT
     )
