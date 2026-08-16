@@ -112,9 +112,6 @@ def test_provider_env_permissions_and_frozen_identity_fail_closed(
 @pytest.mark.parametrize(
     "payload",
     (
-        "export ECOMSRE_LLM_BASE_URL=https://provider.example/v1\n"
-        "ECOMSRE_LLM_API_KEY=private-test-key\n"
-        "ECOMSRE_LLM_MODEL=model\n",
         "ECOMSRE_LLM_BASE_URL=https://provider.example/v1\n"
         "ECOMSRE_LLM_API_KEY=$(unsafe)\n"
         "ECOMSRE_LLM_MODEL=model\n",
@@ -137,6 +134,28 @@ def test_dta_provider_env_parser_rejects_shell_duplicate_and_extra_keys(
 
     with pytest.raises(ValueError):
         load_private_provider_env(path)
+
+
+def test_dta_provider_env_parser_accepts_exact_export_assignments(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "provider.env"
+    path.write_text(
+        "export ECOMSRE_LLM_BASE_URL=https://provider.example/v1\n"
+        "export ECOMSRE_LLM_MODEL=ignored-by-frozen-config\n"
+        "export ECOMSRE_LLM_API_KEY=private-test-key\n",
+        encoding="utf-8",
+    )
+    os.chmod(path, 0o600)
+
+    values = load_private_provider_env(path)
+
+    assert set(values) == {
+        "ECOMSRE_LLM_BASE_URL",
+        "ECOMSRE_LLM_API_KEY",
+        "ECOMSRE_LLM_MODEL",
+    }
+    assert values["ECOMSRE_LLM_MODEL"] == "ignored-by-frozen-config"
 
 
 def test_owned_lifecycle_surface_has_no_generic_command_or_mutation_entrypoint() -> None:

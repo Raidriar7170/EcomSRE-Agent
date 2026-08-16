@@ -54,7 +54,9 @@ def load_private_provider_env(path: Path) -> dict[str, str]:
         line = raw_line.strip()
         if not line or line.startswith("#"):
             continue
-        if line.startswith("export ") or "=" not in line:
+        if line.startswith("export "):
+            line = line.removeprefix("export ")
+        if "=" not in line:
             raise ValueError("Provider env contains unsupported shell syntax")
         key, value = line.split("=", 1)
         if (
