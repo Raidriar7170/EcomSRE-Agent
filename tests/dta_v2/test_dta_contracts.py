@@ -511,6 +511,27 @@ def test_diagnosis_allows_descriptive_semicolon_without_command_text() -> None:
     assert updated.summary.endswith("evidence remains bounded.")
 
 
+@pytest.mark.parametrize(
+    "unsafe_summary",
+    (
+        "Payment evidence; rm -rf /tmp/x",
+        "Payment evidence; cat /etc/passwd",
+        "Payment evidence; sh -c id",
+        "Payment evidence; echo owned",
+    ),
+)
+def test_diagnosis_rejects_semicolon_command_sequence(unsafe_summary: str) -> None:
+    diagnosis = completed_diagnosis()
+
+    with pytest.raises(ValidationError, match="executable text"):
+        DtaDiagnosis.model_validate(
+            {
+                **diagnosis.model_dump(),
+                "summary": unsafe_summary,
+            }
+        )
+
+
 def test_action_proposal_binds_candidate_and_rejects_authority_fields() -> None:
     diagnosis = completed_diagnosis()
     evidence = resolved_view(diagnosis)

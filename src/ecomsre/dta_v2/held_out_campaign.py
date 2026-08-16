@@ -7,7 +7,7 @@ import hashlib
 from importlib import import_module
 import json
 from pathlib import Path
-from typing import Any, Callable, Literal, Protocol, cast
+from typing import Any, Literal, Protocol, cast
 
 from pydantic import Field, StrictInt, model_validator
 
@@ -24,7 +24,9 @@ from ecomsre.dta_v2.capture_campaign import CaptureCampaignClosure, CaptureTermi
 from ecomsre.dta_v2.contracts import DtaModel, Sha256, semantic_sha256
 from ecomsre.dta_v2.evaluation_campaign import (
     DevelopmentCampaignReport,
+    MeanCostMetrics,
     MetricCount,
+    build_mean_cost_metrics,
 )
 from ecomsre.dta_v2.evaluation_contracts import (
     AgentVisibleReplayCase,
@@ -156,6 +158,20 @@ class HeldOutArmAggregate(DtaModel):
     output_tokens_total: StrictInt = Field(ge=0)
     latency_ms_total: StrictInt = Field(ge=0)
     unsafe_proposal_attempts: StrictInt = Field(ge=0)
+
+    @property
+    def mean_costs(self) -> MeanCostMetrics:
+        return build_mean_cost_metrics(
+            entry_count=self.entry_count,
+            read_tool_dispatches_total=self.read_tool_dispatches_total,
+            context_materialization_reads_total=(
+                self.context_materialization_reads_total
+            ),
+            provider_turns_total=self.provider_turns_total,
+            input_tokens_total=self.input_tokens_total,
+            output_tokens_total=self.output_tokens_total,
+            latency_ms_total=self.latency_ms_total,
+        )
 
 
 class HeldOutCampaignReport(DtaModel):
@@ -320,7 +336,7 @@ def _verify_exact_clean_head(
     if head != base_head:
         raise ValueError("held-out base HEAD differs")
     status_result = runner.run(
-        ("git", "status", "--porcelain", "--untracked-files=no"),
+        ("git", "status", "--porcelain"),
         timeout_seconds=30.0,
     )
     if status_result.exit_code != 0:
@@ -579,6 +595,41 @@ def _entry_claim_payload(
     return {**payload, "claim_sha256": semantic_sha256(payload)}
 
 
+def _require_sealed_execution_identity(
+    *,
+    seal: HeldOutSeal,
+    model_id: str,
+    identity_sha256: str,
+) -> None:
+    if (
+        model_id != seal.model_id
+        or identity_sha256 != seal.agent_identity_sha256
+    ):
+        raise ValueError("held-out execution differs from sealed Provider identity")
+
+
+def _require_report_schedule_and_identity(
+    *,
+    report: HeldOutCampaignReport,
+    schedule: HeldOutSchedule,
+    seal: HeldOutSeal,
+) -> None:
+    for expected, actual in zip(schedule.entries, report.entries, strict=True):
+        if (
+            actual.execution_id != expected.execution_id
+            or actual.case_sha256 != expected.case_sha256
+            or actual.truth_sha256 != expected.truth_sha256
+            or actual.split is not EvaluationSplit.HELD_OUT
+            or actual.arm is not expected.arm
+        ):
+            raise ValueError("held-out report entry differs from sealed schedule")
+        _require_sealed_execution_identity(
+            seal=seal,
+            model_id=actual.model_id,
+            identity_sha256=actual.identity_sha256,
+        )
+
+
 def run_frozen_held_out_campaign(
     *,
     repository_root: Path,
@@ -587,7 +638,6 @@ def run_frozen_held_out_campaign(
     development_report_path: Path,
     base_head: str,
     config: OpenAICompatibleConfig,
-    provider_factory: Callable[[], OpenAICompatibleDtaAgentProvider] | None = None,
 ) -> HeldOutCampaignReport:
     repository = Path(repository_root).resolve()
     root = Path(private_root).resolve()
@@ -630,6 +680,11 @@ def run_frozen_held_out_campaign(
             or existing_report.schedule_sha256 != schedule.schedule_sha256
         ):
             raise ValueError("existing held-out report differs")
+        _require_report_schedule_and_identity(
+            report=existing_report,
+            schedule=schedule,
+            seal=seal,
+        )
         return existing_report
     claim = persist_held_out_execution_claim(
         root / "held-out-execution-claim.json",
@@ -677,14 +732,15 @@ def run_frozen_held_out_campaign(
             started_at=case.captured_started_at,
             ended_at=case.captured_ended_at,
         )
-        provider = (
-            provider_factory()
-            if provider_factory is not None
-            else OpenAICompatibleDtaAgentProvider(
-                config=config,
-                timeout_seconds=120.0,
-                max_completion_tokens=2048,
-            )
+        provider = OpenAICompatibleDtaAgentProvider(
+            config=config,
+            timeout_seconds=120.0,
+            max_completion_tokens=2048,
+        )
+        _require_sealed_execution_identity(
+            seal=seal,
+            model_id=provider.identity.model_id,
+            identity_sha256=provider.identity.identity_sha256,
         )
         execution = execute_evaluation_arm(
             case=case,
@@ -692,6 +748,11 @@ def run_frozen_held_out_campaign(
             arm=scheduled.arm,
             registry=registry,
             provider=provider,
+        )
+        _require_sealed_execution_identity(
+            seal=seal,
+            model_id=execution.agent_result.identity.model_id,
+            identity_sha256=execution.agent_result.identity.identity_sha256,
         )
         entry = score_and_persist_evaluation_execution(
             execution=execution,
@@ -714,6 +775,11 @@ def run_frozen_held_out_campaign(
         schedule=schedule,
         claim_sha256=claim.claim_sha256,
         entries=tuple(results),
+    )
+    _require_report_schedule_and_identity(
+        report=report,
+        schedule=schedule,
+        seal=seal,
     )
     _write_private_json(report_path, report)
     return report

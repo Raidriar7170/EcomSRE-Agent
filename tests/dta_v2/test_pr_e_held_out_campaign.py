@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from collections import Counter
+from inspect import signature
 from pathlib import Path
 
 import pytest
 
+import ecomsre.dta_v2.held_out_campaign as held_out_campaign
 from ecomsre.dta_v2.evaluation_contracts import EvaluationArm, build_held_out_seal
 from ecomsre.dta_v2.held_out_campaign import (
     _verify_exact_clean_head,
@@ -114,7 +116,7 @@ def test_frozen_input_hashes_bind_distinct_arms_and_source_contracts() -> None:
 
 def test_exact_clean_head_uses_central_command_runner() -> None:
     head_command = ("git", "rev-parse", "HEAD")
-    status_command = ("git", "status", "--porcelain", "--untracked-files=no")
+    status_command = ("git", "status", "--porcelain")
     runner = _FakeGitRunner(
         (
             _git_result(head_command, stdout=f"{'a' * 40}\n"),
@@ -142,7 +144,7 @@ def test_exact_clean_head_uses_central_command_runner() -> None:
             (
                 _git_result(("git", "rev-parse", "HEAD"), stdout=f"{'a' * 40}\n"),
                 _git_result(
-                    ("git", "status", "--porcelain", "--untracked-files=no"),
+                    ("git", "status", "--porcelain"),
                     stdout="",
                     exit_code=1,
                 ),
@@ -153,7 +155,7 @@ def test_exact_clean_head_uses_central_command_runner() -> None:
             (
                 _git_result(("git", "rev-parse", "HEAD"), stdout=f"{'a' * 40}\n"),
                 _git_result(
-                    ("git", "status", "--porcelain", "--untracked-files=no"),
+                    ("git", "status", "--porcelain"),
                     stdout=" M src/ecomsre/dta_v2/held_out_campaign.py\n",
                 ),
             ),
@@ -169,4 +171,23 @@ def test_exact_clean_head_fails_closed(
         _verify_exact_clean_head(
             "a" * 40,
             runner=_FakeGitRunner(responses),
+        )
+
+
+def test_production_held_out_runner_has_no_provider_injection_and_binds_identity() -> None:
+    seal = _seal()
+
+    assert "provider_factory" not in signature(
+        held_out_campaign.run_frozen_held_out_campaign
+    ).parameters
+    held_out_campaign._require_sealed_execution_identity(
+        seal=seal,
+        model_id=seal.model_id,
+        identity_sha256=seal.agent_identity_sha256,
+    )
+    with pytest.raises(ValueError, match="sealed Provider identity"):
+        held_out_campaign._require_sealed_execution_identity(
+            seal=seal,
+            model_id="different-model",
+            identity_sha256=seal.agent_identity_sha256,
         )

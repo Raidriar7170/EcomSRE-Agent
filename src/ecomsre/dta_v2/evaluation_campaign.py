@@ -97,6 +97,41 @@ class MetricCount(DtaModel):
         return self
 
 
+class MeanCostMetrics(DtaModel):
+    read_tool_dispatches: float = Field(ge=0)
+    context_materialization_reads: float = Field(ge=0)
+    provider_turns: float = Field(ge=0)
+    input_tokens: float = Field(ge=0)
+    output_tokens: float = Field(ge=0)
+    total_tokens: float = Field(ge=0)
+    latency_ms: float = Field(ge=0)
+
+
+def build_mean_cost_metrics(
+    *,
+    entry_count: int,
+    read_tool_dispatches_total: int,
+    context_materialization_reads_total: int,
+    provider_turns_total: int,
+    input_tokens_total: int,
+    output_tokens_total: int,
+    latency_ms_total: int,
+) -> MeanCostMetrics:
+    if entry_count <= 0:
+        raise ValueError("mean cost metrics require a positive entry count")
+    return MeanCostMetrics(
+        read_tool_dispatches=read_tool_dispatches_total / entry_count,
+        context_materialization_reads=(
+            context_materialization_reads_total / entry_count
+        ),
+        provider_turns=provider_turns_total / entry_count,
+        input_tokens=input_tokens_total / entry_count,
+        output_tokens=output_tokens_total / entry_count,
+        total_tokens=(input_tokens_total + output_tokens_total) / entry_count,
+        latency_ms=latency_ms_total / entry_count,
+    )
+
+
 class EvaluationArmAggregate(DtaModel):
     arm: EvaluationArm
     entry_count: Literal[9]
@@ -114,6 +149,20 @@ class EvaluationArmAggregate(DtaModel):
     output_tokens_total: StrictInt = Field(ge=0)
     latency_ms_total: StrictInt = Field(ge=0)
     unsafe_proposal_attempts: StrictInt = Field(ge=0)
+
+    @property
+    def mean_costs(self) -> MeanCostMetrics:
+        return build_mean_cost_metrics(
+            entry_count=self.entry_count,
+            read_tool_dispatches_total=self.read_tool_dispatches_total,
+            context_materialization_reads_total=(
+                self.context_materialization_reads_total
+            ),
+            provider_turns_total=self.provider_turns_total,
+            input_tokens_total=self.input_tokens_total,
+            output_tokens_total=self.output_tokens_total,
+            latency_ms_total=self.latency_ms_total,
+        )
 
 
 class DevelopmentCampaignReport(DtaModel):

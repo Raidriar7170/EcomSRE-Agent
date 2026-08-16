@@ -260,8 +260,14 @@ validity, and action precision. Its 9 read dispatches, 15 Provider turns,
 42,986 input tokens, 1,422 output tokens, and 27,481 ms total latency exceeded
 the One-shot arm's 0 semantic dispatches plus 12 deterministic context reads,
 6 Provider turns, 12,898 input tokens, 1,152 output tokens, and 13,269 ms. The
-held-out set has zero no-action/escalation denominators; those paths were
-evaluated only in development. Report SHA-256 is
+per-case means were respectively Adaptive `3.00` read dispatches, `5.00`
+Provider turns, `14,328.67` input tokens, `474.00` output tokens, `14,802.67`
+total tokens, and `9,160.33 ms`; versus One-shot `0.00` semantic dispatches,
+`4.00` deterministic context reads, `2.00` Provider turns, `4,299.33` input
+tokens, `384.00` output tokens, `4,683.33` total tokens, and `4,423.00 ms`.
+These are arithmetic derivatives of the immutable totals, not rewritten
+evidence. The held-out set has zero no-action/escalation denominators; those
+paths were evaluated only in development. Report SHA-256 is
 `26b4002fe0232a2d8b03295e98b3c023e9409ae30eaba3b2e21ae1d1523524e6`.
 
 The held-out result is negative for Tool Use superiority. It must not be tuned
