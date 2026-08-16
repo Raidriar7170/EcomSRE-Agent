@@ -6,7 +6,7 @@
   "current_stage": "PR-F",
   "main_head": "e089e80f26239c0ecb1e68fca373488378310d44",
   "active_branch": "codex/dta-v2-pr-f-live-demo",
-  "active_pr": null,
+  "active_pr": 48,
   "merged_prs": [
     43,
     44,
