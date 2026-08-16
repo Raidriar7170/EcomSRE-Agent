@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+from importlib import import_module
 import json
 from pathlib import Path
-import subprocess
-from typing import Any, Callable, Literal
+from typing import Any, Callable, Literal, Protocol, cast
 
 from pydantic import Field, StrictInt, model_validator
 
@@ -49,6 +49,40 @@ from ecomsre.dta_v2.evaluation_runner import (
 from ecomsre.dta_v2.provider_development_smoke import ProhibitedActionCounters
 from ecomsre.dta_v2.registry import load_runbook_registry, load_scenario_registry
 from ecomsre.model.gateway import OpenAICompatibleConfig
+
+
+class _GitCommandResult(Protocol):
+    exit_code: int
+    stdout: str
+
+
+class _GitCommandRunner(Protocol):
+    def run(
+        self,
+        arguments: tuple[str, ...],
+        *,
+        timeout_seconds: float,
+    ) -> _GitCommandResult: ...
+
+
+def _audited_git_runner(
+    *,
+    repository: Path,
+    artifacts_root: Path,
+    run_id: str,
+) -> _GitCommandRunner:
+    runner_type = getattr(
+        import_module("ecomsre.environment.command_runner"),
+        "AuditedSubprocessRunner",
+    )
+    return cast(
+        _GitCommandRunner,
+        runner_type(
+            project_root=repository,
+            artifacts_root=artifacts_root,
+            run_id=run_id,
+        ),
+    )
 
 
 class FrozenInputHashes(DtaModel):
@@ -271,24 +305,27 @@ def build_held_out_schedule(
     )
 
 
-def _verify_exact_clean_head(repository: Path, base_head: str) -> None:
-    head = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=repository,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
+def _verify_exact_clean_head(
+    base_head: str,
+    *,
+    runner: _GitCommandRunner,
+) -> None:
+    head_result = runner.run(
+        ("git", "rev-parse", "HEAD"),
+        timeout_seconds=30.0,
+    )
+    if head_result.exit_code != 0:
+        raise ValueError("held-out HEAD verification failed")
+    head = head_result.stdout.strip()
     if head != base_head:
         raise ValueError("held-out base HEAD differs")
-    status = subprocess.run(
-        ["git", "status", "--porcelain", "--untracked-files=no"],
-        cwd=repository,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout
-    if status:
+    status_result = runner.run(
+        ("git", "status", "--porcelain", "--untracked-files=no"),
+        timeout_seconds=30.0,
+    )
+    if status_result.exit_code != 0:
+        raise ValueError("held-out worktree verification failed")
+    if status_result.stdout:
         raise ValueError("held-out worktree has tracked changes")
 
 
@@ -366,12 +403,13 @@ def _build_current_seal(
     development_report_path: Path,
     base_head: str,
     model_id: str,
+    runner: _GitCommandRunner,
 ) -> tuple[
     HeldOutSeal,
     tuple[CaseBinding, CaseBinding, CaseBinding],
     dict[str, tuple[AgentVisibleReplayCase, EvaluatorCaseTruth]],
 ]:
-    _verify_exact_clean_head(repository, base_head)
+    _verify_exact_clean_head(base_head, runner=runner)
     identity = build_provider_identity(model_id)
     _load_development_pass(
         development_report_path,
@@ -417,19 +455,25 @@ def freeze_held_out_campaign(
     model_id: str,
 ) -> tuple[HeldOutSeal, HeldOutSchedule]:
     repository = Path(repository_root).resolve()
+    root = Path(private_root).resolve()
+    runner = _audited_git_runner(
+        repository=repository,
+        artifacts_root=root / "git-audit",
+        run_id=execution_id,
+    )
     seal, bindings, _ = _build_current_seal(
         repository=repository,
         capture_root=capture_root,
         development_report_path=development_report_path,
         base_head=base_head,
         model_id=model_id,
+        runner=runner,
     )
     schedule = build_held_out_schedule(
         execution_id=execution_id,
         seal=seal,
         case_bindings=bindings,
     )
-    root = Path(private_root).resolve()
     _write_private_json(root / "held-out-seal.json", seal)
     _write_private_json(root / "schedule.json", schedule)
     return seal, schedule
@@ -553,12 +597,18 @@ def run_frozen_held_out_campaign(
     schedule = HeldOutSchedule.model_validate_json(
         (root / "schedule.json").read_text(encoding="utf-8")
     )
+    runner = _audited_git_runner(
+        repository=repository,
+        artifacts_root=root / "git-audit",
+        run_id=schedule.execution_id,
+    )
     current, bindings, loaded = _build_current_seal(
         repository=repository,
         capture_root=capture_root,
         development_report_path=development_report_path,
         base_head=base_head,
         model_id=config.model,
+        runner=runner,
     )
     if current != seal or schedule.seal_sha256 != seal.seal_sha256:
         raise ValueError("held-out frozen inputs differ")

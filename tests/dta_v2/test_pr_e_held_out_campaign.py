@@ -7,12 +7,40 @@ import pytest
 
 from ecomsre.dta_v2.evaluation_contracts import EvaluationArm, build_held_out_seal
 from ecomsre.dta_v2.held_out_campaign import (
+    _verify_exact_clean_head,
     build_frozen_input_hashes,
     build_held_out_schedule,
 )
+from ecomsre.environment.preflight import CommandResult
 
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+class _FakeGitRunner:
+    def __init__(self, responses: tuple[CommandResult, ...]) -> None:
+        self.responses = list(responses)
+        self.calls: list[tuple[str, ...]] = []
+
+    def run(
+        self,
+        arguments: tuple[str, ...],
+        *,
+        timeout_seconds: float,
+    ) -> CommandResult:
+        assert timeout_seconds == 30.0
+        self.calls.append(arguments)
+        return self.responses.pop(0)
+
+
+def _git_result(arguments: tuple[str, ...], *, stdout: str, exit_code: int = 0):
+    return CommandResult(
+        arguments=arguments,
+        exit_code=exit_code,
+        stdout=stdout,
+        stderr="",
+        process_exit_code=exit_code,
+    )
 
 
 def _seal():
@@ -82,3 +110,63 @@ def test_frozen_input_hashes_bind_distinct_arms_and_source_contracts() -> None:
     assert frozen.candidate_filter_sha256 != "0" * 64
     assert frozen.scorer_sha256 != "0" * 64
     assert frozen.budgets_sha256 != "0" * 64
+
+
+def test_exact_clean_head_uses_central_command_runner() -> None:
+    head_command = ("git", "rev-parse", "HEAD")
+    status_command = ("git", "status", "--porcelain", "--untracked-files=no")
+    runner = _FakeGitRunner(
+        (
+            _git_result(head_command, stdout=f"{'a' * 40}\n"),
+            _git_result(status_command, stdout=""),
+        )
+    )
+
+    _verify_exact_clean_head("a" * 40, runner=runner)
+
+    assert runner.calls == [head_command, status_command]
+
+
+@pytest.mark.parametrize(
+    ("responses", "message"),
+    (
+        (
+            (_git_result(("git", "rev-parse", "HEAD"), stdout="", exit_code=1),),
+            "HEAD verification failed",
+        ),
+        (
+            (_git_result(("git", "rev-parse", "HEAD"), stdout=f"{'b' * 40}\n"),),
+            "base HEAD differs",
+        ),
+        (
+            (
+                _git_result(("git", "rev-parse", "HEAD"), stdout=f"{'a' * 40}\n"),
+                _git_result(
+                    ("git", "status", "--porcelain", "--untracked-files=no"),
+                    stdout="",
+                    exit_code=1,
+                ),
+            ),
+            "worktree verification failed",
+        ),
+        (
+            (
+                _git_result(("git", "rev-parse", "HEAD"), stdout=f"{'a' * 40}\n"),
+                _git_result(
+                    ("git", "status", "--porcelain", "--untracked-files=no"),
+                    stdout=" M src/ecomsre/dta_v2/held_out_campaign.py\n",
+                ),
+            ),
+            "worktree has tracked changes",
+        ),
+    ),
+)
+def test_exact_clean_head_fails_closed(
+    responses: tuple[CommandResult, ...],
+    message: str,
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        _verify_exact_clean_head(
+            "a" * 40,
+            runner=_FakeGitRunner(responses),
+        )
