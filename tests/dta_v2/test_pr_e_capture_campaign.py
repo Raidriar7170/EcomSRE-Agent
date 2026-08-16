@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 from types import SimpleNamespace
+import os
 
 import pytest
 import ecomsre.dta_v2.owned_capture as owned_capture_module
@@ -415,6 +416,43 @@ def test_exact_docker_mutation_accepts_2xx_only_then_requires_state_wait(
     )
 
     client.post(f"/containers/{'a' * 64}/stop?t=15")
+
+
+class _CleanEnvironment:
+    def cleanup(self, *, baseline_restored: bool):
+        assert baseline_restored is True
+        return SimpleNamespace(
+            model_dump=lambda **_: {
+                "baseline_restored": True,
+                "owned_containers": 0,
+                "owned_networks": 0,
+                "owned_volumes": 0,
+                "non_owned_resources_changed": False,
+                "verdict": "CLEAN",
+            }
+        )
+
+
+def test_owned_cleanup_restricts_runtime_flag_after_container_shutdown(
+    tmp_path: Path,
+) -> None:
+    flag = tmp_path / "runtime" / "flagd" / "demo.flagd.json"
+    flag.parent.mkdir(parents=True)
+    flag.write_text("{}", encoding="utf-8")
+    flag.chmod(0o644)
+    lifecycle = OwnedCaptureLifecycle(
+        repository_root=ROOT,
+        private_root=tmp_path,
+        plan=build_default_capture_plan(base_head="a" * 40),
+        stabilization_seconds=0,
+    )
+    lifecycle.environment = _CleanEnvironment()  # type: ignore[assignment]
+    lifecycle.flag_file = flag
+
+    result = lifecycle.cleanup(baseline_restored=True)
+
+    assert result["verdict"] == "CLEAN"
+    assert os.stat(flag).st_mode & 0o777 == 0o600
 
 
 class _ExitedOwnedDocker:

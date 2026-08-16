@@ -590,6 +590,10 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
 
     def cleanup(self, *, baseline_restored: bool) -> dict[str, object]:
         result = self._environment().cleanup(baseline_restored=baseline_restored)
+        # The flag-control container needs a readable bind while it is alive
+        # and may replace mode bits asynchronously. Once owned shutdown is
+        # complete, seal the retained private control artifact again.
+        _restore_private_flag_mode(self._flag_file())
         return result.model_dump(mode="json")
 
     def _capture_fixture(self, request: ReadToolRequest) -> ReplayObservationFixture:
