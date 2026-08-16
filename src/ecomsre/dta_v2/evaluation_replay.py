@@ -81,6 +81,16 @@ class ReplayCaseReadBackend:
                 fixture.truncated or len(log_records) > request.max_records,
             )
         if isinstance(request, TraceNeighborhoodRequest):
+            captured_records = tuple(
+                item
+                for item in fixture.records
+                if type(item) is TraceNeighborhoodRecord
+            )
+            request_is_in_captured_neighborhood = any(
+                item.anchor_service == request.service
+                or request.service in item.service_path
+                for item in captured_records
+            )
             trace_records: tuple[TraceNeighborhoodRecord, ...] = tuple(
                 TraceNeighborhoodRecord.model_validate(
                     {
@@ -88,12 +98,8 @@ class ReplayCaseReadBackend:
                         "anchor_service": request.service,
                     }
                 )
-                for item in fixture.records
-                if type(item) is TraceNeighborhoodRecord
-                and (
-                    item.anchor_service == request.service
-                    or request.service in item.service_path
-                )
+                for item in captured_records
+                if request_is_in_captured_neighborhood
             )
             if not trace_records:
                 raise ReadBackendFailure(ToolErrorCode.SOURCE_UNAVAILABLE)

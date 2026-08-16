@@ -219,6 +219,11 @@ def test_diagnosis_prompt_and_schema_expose_cross_field_canonical_constraints() 
         INVESTIGATION_SYSTEM_PROMPT
     )
     assert "historical trace ERROR" in INVESTIGATION_SYSTEM_PROMPT
+    assert "Never place evidence_ref values in summary or uncertainties" in (
+        INVESTIGATION_SYSTEM_PROMPT
+    )
+    assert "at least 100000 bytes per second" in INVESTIGATION_SYSTEM_PROMPT
+    assert "downstream Payment candidate" in INVESTIGATION_SYSTEM_PROMPT
     assert "parameters=[]" in ACTION_SELECTION_SYSTEM_PROMPT
     assert "Do not use semicolons" in ACTION_SELECTION_SYSTEM_PROMPT
     assert "Use generic evidence language in rationale" in ACTION_SELECTION_SYSTEM_PROMPT

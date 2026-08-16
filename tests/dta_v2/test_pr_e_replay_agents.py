@@ -358,6 +358,29 @@ def test_promoted_payment_full_context_trace_replays_without_schema_drift() -> N
     assert any(item.first_error_location for item in observation.results)
 
 
+def test_promoted_payment_alert_anchor_fills_truncated_request_without_schema_drift() -> None:
+    _, loaded = load_public_evaluation_dataset(ROOT / "config/dta-v2/evaluation")
+    case = next(item.case for item in loaded if item.case.case_id == "dta-case-002")
+    request = build_trace_neighborhood_request(
+        run_id=RUN_ID,
+        service="checkout",
+        started_at=case.captured_started_at,
+        ended_at=case.captured_ended_at,
+        max_spans=40,
+    )
+
+    observation = InvestigationReadTools(
+        run_id=RUN_ID,
+        backend=ReplayCaseReadBackend(case),
+    ).dispatch(request)
+
+    assert observation.status is ObservationStatus.SUCCESS
+    assert observation.error_code is None
+    assert observation.result_count == 40
+    assert observation.truncated is True
+    assert any(item.first_error_location for item in observation.results)
+
+
 def test_full_context_arm_uses_four_materialized_observations_and_zero_agent_reads() -> None:
     case = _case()
     scenario = next(item for item in load_scenario_registry(
