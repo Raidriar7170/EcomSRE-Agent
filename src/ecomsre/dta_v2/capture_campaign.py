@@ -31,6 +31,20 @@ class CaptureFailureCode(str, Enum):
     CLEANUP_BLOCKED = "CLEANUP_BLOCKED"
 
 
+class CaptureFailureOperation(str, Enum):
+    ADMIT = "ADMIT"
+    START = "START"
+    WAIT_READY = "WAIT_READY"
+    VERIFY_BASELINE = "VERIFY_BASELINE"
+    OBSERVE_BASELINE_MEMORY = "OBSERVE_BASELINE_MEMORY"
+    APPLY_EMAIL_CALIBRATION = "APPLY_EMAIL_CALIBRATION"
+    OBSERVE_EMAIL_CALIBRATION = "OBSERVE_EMAIL_CALIBRATION"
+    APPLY_CASE = "APPLY_CASE"
+    CAPTURE_CASE = "CAPTURE_CASE"
+    RESTORE_BASELINE = "RESTORE_BASELINE"
+    CLEANUP = "CLEANUP"
+
+
 class OperationalFamily(str, Enum):
     PAYMENT = "PAYMENT"
     RECOMMENDATION = "RECOMMENDATION"
@@ -279,6 +293,11 @@ class CaptureCampaignClosure(DtaModel):
     terminal: CaptureTerminal
     failure_code: CaptureFailureCode | None
     cleanup_failure_code: CaptureFailureCode | None
+    failure_operation: CaptureFailureOperation | None = None
+    recovery_failure_operation: CaptureFailureOperation | None = None
+    failed_case_id: str | None = Field(
+        default=None, pattern=r"^dta-case-[0-9]{3}$"
+    )
     baseline_memory: EmailMemoryObservation | None
     calibration_observations: tuple[EmailCalibrationTrial, ...]
     selected_email_variant: Literal["10x", "100x", "1000x"] | None
@@ -310,10 +329,23 @@ class CaptureCampaignClosure(DtaModel):
         )
         if (self.terminal is CaptureTerminal.PASS) != passed:
             raise ValueError("capture campaign terminal differs from closure state")
-        expected = semantic_sha256(
-            self.model_dump(mode="json", exclude={"closure_sha256"})
+        full_payload = self.model_dump(
+            mode="json", exclude={"closure_sha256"}
         )
-        if self.closure_sha256 != expected:
+        legacy_payload = self.model_dump(
+            mode="json",
+            exclude={
+                "closure_sha256",
+                "failure_operation",
+                "recovery_failure_operation",
+                "failed_case_id",
+            },
+        )
+        expected_digests = {
+            semantic_sha256(full_payload),
+            semantic_sha256(legacy_payload),
+        }
+        if self.closure_sha256 not in expected_digests:
             raise ValueError("capture campaign closure digest differs")
         return self
 
@@ -342,6 +374,9 @@ def run_capture_campaign_attempt(
     plan = CaptureCampaignPlan.model_validate(plan.model_dump())
     failure: CaptureFailureCode | None = None
     cleanup_failure: CaptureFailureCode | None = None
+    failure_operation: CaptureFailureOperation | None = None
+    recovery_failure_operation: CaptureFailureOperation | None = None
+    failed_case_id: str | None = None
     started = False
     baseline_restored = False
     baseline_memory: EmailMemoryObservation | None = None
@@ -361,31 +396,58 @@ def run_capture_campaign_attempt(
             lifecycle.admit()
         except Exception:
             failure = CaptureFailureCode.ADMISSION_FAILED
+            failure_operation = CaptureFailureOperation.ADMIT
         if failure is None:
             try:
                 # A start call may have mutated owned state before raising.
                 # Once dispatch begins, cleanup authority must be retained.
                 started = True
                 lifecycle.start()
+            except Exception:
+                failure = CaptureFailureCode.START_FAILED
+                failure_operation = CaptureFailureOperation.START
+        if failure is None:
+            try:
                 lifecycle.wait_ready()
+            except Exception:
+                failure = CaptureFailureCode.START_FAILED
+                failure_operation = CaptureFailureOperation.WAIT_READY
+        if failure is None:
+            try:
                 lifecycle.verify_baseline()
                 baseline_restored = True
             except Exception:
                 failure = CaptureFailureCode.START_FAILED
+                failure_operation = CaptureFailureOperation.VERIFY_BASELINE
 
         if failure is None:
-            baseline_memory = EmailMemoryObservation.model_validate(
-                lifecycle.observe_baseline_memory().model_dump()
-            )
+            try:
+                baseline_memory = EmailMemoryObservation.model_validate(
+                    lifecycle.observe_baseline_memory().model_dump()
+                )
+            except Exception:
+                failure = CaptureFailureCode.EMAIL_CALIBRATION_FAILED
+                failure_operation = CaptureFailureOperation.OBSERVE_BASELINE_MEMORY
+        if failure is None:
             for variant in plan.email_calibration_variants:
                 baseline_restored = False
                 try:
                     lifecycle.apply_email_calibration(variant)
+                except Exception:
+                    failure = CaptureFailureCode.EMAIL_CALIBRATION_FAILED
+                    failure_operation = (
+                        CaptureFailureOperation.APPLY_EMAIL_CALIBRATION
+                    )
+                    break
+                try:
                     observation = EmailMemoryObservation.model_validate(
                         lifecycle.observe_email_calibration(variant).model_dump()
                     )
                 except Exception:
                     failure = CaptureFailureCode.EMAIL_CALIBRATION_FAILED
+                    failure_operation = (
+                        CaptureFailureOperation.OBSERVE_EMAIL_CALIBRATION
+                    )
                     break
                 safe = (
                     observation.maximum_memory_bytes
@@ -413,6 +475,7 @@ def run_capture_campaign_attempt(
                     baseline_restored = True
                 except Exception:
                     failure = CaptureFailureCode.BASELINE_RESTORE_FAILED
+                    failure_operation = CaptureFailureOperation.RESTORE_BASELINE
                     break
                 if not safe:
                     break
@@ -429,6 +492,12 @@ def run_capture_campaign_attempt(
                     lifecycle.apply_case(
                         case, selected_email_variant=selected
                     )
+                except Exception:
+                    failure = CaptureFailureCode.CASE_CAPTURE_FAILED
+                    failure_operation = CaptureFailureOperation.APPLY_CASE
+                    failed_case_id = case.case_id
+                    break
+                try:
                     digest = lifecycle.capture_case(case)
                     if (
                         not isinstance(digest, str)
@@ -439,6 +508,8 @@ def run_capture_campaign_attempt(
                     captured.append(digest)
                 except Exception:
                     failure = CaptureFailureCode.CASE_CAPTURE_FAILED
+                    failure_operation = CaptureFailureOperation.CAPTURE_CASE
+                    failed_case_id = case.case_id
                     break
                 try:
                     lifecycle.restore_baseline()
@@ -446,6 +517,8 @@ def run_capture_campaign_attempt(
                     baseline_restored = True
                 except Exception:
                     failure = CaptureFailureCode.BASELINE_RESTORE_FAILED
+                    failure_operation = CaptureFailureOperation.RESTORE_BASELINE
+                    failed_case_id = case.case_id
                     break
     finally:
         if started:
@@ -456,6 +529,9 @@ def run_capture_campaign_attempt(
                     baseline_restored = True
                 except Exception:
                     baseline_restored = False
+                    recovery_failure_operation = (
+                        CaptureFailureOperation.RESTORE_BASELINE
+                    )
             cleanup_attempted = True
             try:
                 cleanup = lifecycle.cleanup(
@@ -465,6 +541,8 @@ def run_capture_campaign_attempt(
                     cleanup_failure = CaptureFailureCode.CLEANUP_BLOCKED
             except Exception:
                 cleanup_failure = CaptureFailureCode.CLEANUP_FAILED
+                if failure_operation is None:
+                    failure_operation = CaptureFailureOperation.CLEANUP
                 cleanup = {
                     "verdict": "BLOCKED",
                     "owned_containers": None,
@@ -483,6 +561,9 @@ def run_capture_campaign_attempt(
         ),
         "failure_code": failure,
         "cleanup_failure_code": cleanup_failure,
+        "failure_operation": failure_operation,
+        "recovery_failure_operation": recovery_failure_operation,
+        "failed_case_id": failed_case_id,
         "baseline_memory": baseline_memory,
         "calibration_observations": tuple(trials),
         "selected_email_variant": selected,
@@ -517,6 +598,7 @@ __all__ = [
     "CaptureCasePlan",
     "CaptureCondition",
     "CaptureFailureCode",
+    "CaptureFailureOperation",
     "CaptureProhibitedActionCounters",
     "CaptureTerminal",
     "EmailCalibrationTrial",

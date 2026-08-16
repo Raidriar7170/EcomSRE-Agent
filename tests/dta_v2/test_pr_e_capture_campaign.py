@@ -7,15 +7,19 @@ from pathlib import Path
 import pytest
 
 from ecomsre.dta_v2.capture_campaign import (
+    CaptureCampaignClosure,
     CaptureFailureCode,
+    CaptureFailureOperation,
     CaptureTerminal,
     EmailMemoryObservation,
     build_default_capture_plan,
     run_capture_campaign_attempt,
 )
+from ecomsre.dta_v2.contracts import semantic_sha256
 from ecomsre.dta_v2.docker_read_adapters import DockerReadAdapter
 from ecomsre.dta_v2.evaluation_contracts import EvaluationSplit
 from ecomsre.dta_v2.owned_capture import (
+    OwnedCaptureLifecycle,
     build_capture_flag_document,
     build_evaluator_truth,
 )
@@ -210,6 +214,8 @@ def test_case_capture_failure_restores_baseline_before_cleaning_up() -> None:
 
     assert closure.terminal is CaptureTerminal.BLOCKED
     assert closure.failure_code is CaptureFailureCode.CASE_CAPTURE_FAILED
+    assert closure.failure_operation is CaptureFailureOperation.CAPTURE_CASE
+    assert closure.failed_case_id == "dta-case-003"
     assert len(closure.captured_case_sha256s) == 2
     assert lifecycle.events[-3:] == [
         "restore:dta-case-003",
@@ -219,6 +225,57 @@ def test_case_capture_failure_restores_baseline_before_cleaning_up() -> None:
     assert closure.baseline_restored is True
     assert closure.cleanup_verdict == "CLEAN"
     assert closure.cleanup_failure_code is None
+
+
+def test_legacy_capture_closure_and_round_trip_keep_original_digest() -> None:
+    current = run_capture_campaign_attempt(
+        plan=build_default_capture_plan(base_head="a" * 40),
+        lifecycle=FakeCaptureLifecycle(_safe_calibration()),
+    )
+    legacy = current.model_dump(
+        mode="json",
+        exclude={
+            "failure_operation",
+            "recovery_failure_operation",
+            "failed_case_id",
+            "closure_sha256",
+        },
+    )
+    legacy["closure_sha256"] = semantic_sha256(legacy)
+
+    parsed = CaptureCampaignClosure.model_validate_json(json.dumps(legacy))
+    assert parsed.closure_sha256 == legacy["closure_sha256"]
+    assert CaptureCampaignClosure.model_validate_json(
+        parsed.model_dump_json()
+    ).closure_sha256 == legacy["closure_sha256"]
+
+
+class _UnexpectedBackend:
+    def execute(self, request):
+        raise RuntimeError("dynamic container identity must never be retained")
+
+
+def test_capture_fixture_maps_unexpected_backend_error_to_fixed_safe_code(
+    tmp_path: Path,
+) -> None:
+    lifecycle = OwnedCaptureLifecycle(
+        repository_root=ROOT,
+        private_root=tmp_path,
+        plan=build_default_capture_plan(base_head="a" * 40),
+        stabilization_seconds=0,
+    )
+    lifecycle.backend = _UnexpectedBackend()  # type: ignore[assignment]
+    request = build_inspect_resource_usage_request(
+        run_id="a" * 32,
+        services=("recommendation",),
+        sampling_window_seconds=5,
+        sample_count=3,
+    )
+
+    fixture = lifecycle._capture_fixture(request)
+    assert fixture.error_code is ToolErrorCode.INTERNAL_CONTRACT_VIOLATION
+    assert fixture.records == ()
+    assert "dynamic container" not in fixture.model_dump_json()
 
 
 class _ExitedOwnedDocker:

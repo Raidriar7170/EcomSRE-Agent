@@ -544,6 +544,14 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
             truncated = result.truncated
         except ReadBackendFailure as failure:
             error = failure.error_code
+        except TimeoutError:
+            error = ToolErrorCode.SOURCE_TIMEOUT
+        except (TypeError, ValueError):
+            error = ToolErrorCode.SOURCE_SCHEMA_INVALID
+        except Exception:
+            # Mirror the public dispatcher boundary: dynamic backend exception
+            # text and resource identities are never retained in replay data.
+            error = ToolErrorCode.INTERNAL_CONTRACT_VIOLATION
         service_scope = (
             (request.service,)
             if hasattr(request, "service")
@@ -774,6 +782,17 @@ def main(argv: list[str] | None = None) -> int:
                     if closure.cleanup_failure_code is None
                     else closure.cleanup_failure_code.value
                 ),
+                "failure_operation": (
+                    None
+                    if closure.failure_operation is None
+                    else closure.failure_operation.value
+                ),
+                "recovery_failure_operation": (
+                    None
+                    if closure.recovery_failure_operation is None
+                    else closure.recovery_failure_operation.value
+                ),
+                "failed_case_id": closure.failed_case_id,
                 "selected_email_variant": closure.selected_email_variant,
                 "captured_case_count": len(closure.captured_case_sha256s),
                 "cleanup_verdict": closure.cleanup_verdict,
