@@ -364,6 +364,7 @@ def test_recommendation_stop_post_failure_exposes_only_fixed_operation() -> None
         docker=_OwnedIdentityDocker(),
     )
     controller = OwnedRecommendationController(backend)  # type: ignore[arg-type]
+    assert controller.client.timeout_seconds == 45.0
     controller.client = _PostFails()  # type: ignore[assignment]
 
     with pytest.raises(CaptureOperationFailure) as caught:

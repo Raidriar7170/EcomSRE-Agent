@@ -244,7 +244,10 @@ class OwnedRecommendationController:
         self.backend = backend
         self.client = _UnixSocketDockerMutationClient(
             backend.config.docker_endpoint.removeprefix("unix://"),
-            timeout_seconds=backend.config.timeout_seconds,
+            # The exact stop request carries a 15-second grace period. The
+            # transport must remain open long enough to receive its terminal
+            # response; state is still independently re-read below.
+            timeout_seconds=max(45.0, backend.config.timeout_seconds),
         )
 
     def stop(self) -> None:
