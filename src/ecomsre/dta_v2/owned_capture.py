@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 import http.client
 import json
 from pathlib import Path
+import re
 import secrets
 import socket
 import time
@@ -277,13 +278,11 @@ class _UnixSocketDockerMutationClient:
         self.timeout_seconds = timeout_seconds
 
     def post(self, path: str) -> None:
-        if (
-            not path.startswith("/containers/")
-            or not (path.endswith("/start") or "/stop?t=" in path)
-            or ".." in path
-            or "\x00" in path
+        if not re.fullmatch(
+            r"/containers/[0-9a-f]{64}/(?:start|stop\?t=15|restart\?t=15)",
+            path,
         ):
-            raise ValueError("Docker mutation path is outside exact start/stop")
+            raise ValueError("Docker mutation path is outside exact service transition")
         connection = _UnixSocketHTTPConnection(
             self.socket_path, timeout=self.timeout_seconds
         )

@@ -515,6 +515,12 @@ class _SuccessConnection:
         pass
 
 
+class _RestartSuccessConnection(_SuccessConnection):
+    def request(self, method: str, path: str, *, headers) -> None:
+        assert method == "POST"
+        assert path == f"/containers/{'b' * 64}/restart?t=15"
+
+
 def test_exact_docker_mutation_accepts_2xx_only_then_requires_state_wait(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -528,6 +534,28 @@ def test_exact_docker_mutation_accepts_2xx_only_then_requires_state_wait(
     )
 
     client.post(f"/containers/{'a' * 64}/stop?t=15")
+
+
+def test_exact_docker_mutation_accepts_only_fixed_owned_restart(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        owned_capture_module,
+        "_UnixSocketHTTPConnection",
+        _RestartSuccessConnection,
+    )
+    client = owned_capture_module._UnixSocketDockerMutationClient(
+        "/private/tmp/fake-docker.sock", timeout_seconds=1.0
+    )
+
+    client.post(f"/containers/{'b' * 64}/restart?t=15")
+    for path in (
+        f"/containers/{'b' * 64}/restart",
+        f"/containers/{'b' * 64}/restart?t=1",
+        "/containers/email/restart?t=15",
+    ):
+        with pytest.raises(ValueError, match="outside exact"):
+            client.post(path)
 
 
 class _CleanEnvironment:
