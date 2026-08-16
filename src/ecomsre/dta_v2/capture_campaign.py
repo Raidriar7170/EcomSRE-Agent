@@ -363,8 +363,10 @@ def run_capture_campaign_attempt(
             failure = CaptureFailureCode.ADMISSION_FAILED
         if failure is None:
             try:
-                lifecycle.start()
+                # A start call may have mutated owned state before raising.
+                # Once dispatch begins, cleanup authority must be retained.
                 started = True
+                lifecycle.start()
                 lifecycle.wait_ready()
                 lifecycle.verify_baseline()
                 baseline_restored = True
@@ -447,6 +449,13 @@ def run_capture_campaign_attempt(
                     break
     finally:
         if started:
+            if not baseline_restored:
+                try:
+                    lifecycle.restore_baseline()
+                    lifecycle.verify_baseline()
+                    baseline_restored = True
+                except Exception:
+                    baseline_restored = False
             cleanup_attempted = True
             try:
                 cleanup = lifecycle.cleanup(

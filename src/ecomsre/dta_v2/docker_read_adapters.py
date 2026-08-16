@@ -97,6 +97,11 @@ class DockerReadAdapter:
     ) -> tuple[ResourceUsageRecord, ...]:
         identities: dict[str, str] = {}
         for service in request.services:
+            runtime = self._runtime_for(service)
+            if not runtime.owned_container_present:
+                raise ReadBackendFailure(ToolErrorCode.OWNERSHIP_NOT_PROVEN)
+            if runtime.state is not RuntimeState.RUNNING:
+                raise ReadBackendFailure(ToolErrorCode.SOURCE_UNAVAILABLE)
             identity = self._owned_container_identity(service)
             if identity is None:
                 raise ReadBackendFailure(ToolErrorCode.OWNERSHIP_NOT_PROVEN)

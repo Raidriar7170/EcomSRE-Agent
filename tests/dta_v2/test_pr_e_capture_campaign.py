@@ -13,10 +13,16 @@ from ecomsre.dta_v2.capture_campaign import (
     build_default_capture_plan,
     run_capture_campaign_attempt,
 )
+from ecomsre.dta_v2.docker_read_adapters import DockerReadAdapter
 from ecomsre.dta_v2.evaluation_contracts import EvaluationSplit
 from ecomsre.dta_v2.owned_capture import (
     build_capture_flag_document,
     build_evaluator_truth,
+)
+from ecomsre.dta_v2.read_tools import ReadBackendFailure
+from ecomsre.dta_v2.tool_contracts import (
+    ToolErrorCode,
+    build_inspect_resource_usage_request,
 )
 
 
@@ -27,6 +33,7 @@ ROOT = Path(__file__).resolve().parents[2]
 class FakeCaptureLifecycle:
     calibration: dict[str, EmailMemoryObservation]
     fail_restore_case: str | None = None
+    fail_capture_case: str | None = None
 
     def __post_init__(self) -> None:
         self.events: list[str] = []
@@ -68,6 +75,8 @@ class FakeCaptureLifecycle:
     def capture_case(self, case):
         assert self.active_condition == case.case_id
         self.events.append(f"capture:{case.case_id}")
+        if case.case_id == self.fail_capture_case:
+            raise RuntimeError("typed capture failure")
         return f"{int(case.case_id[-3:]):064x}"
 
     def restore_baseline(self) -> None:
@@ -188,6 +197,66 @@ def test_restore_failure_stops_campaign_and_cleanup_remains_attempted() -> None:
     assert len(closure.captured_case_sha256s) == 3
     assert lifecycle.cleanup_calls == 1
     assert closure.cleanup_verdict == "BLOCKED"
+
+
+def test_case_capture_failure_restores_baseline_before_cleaning_up() -> None:
+    lifecycle = FakeCaptureLifecycle(
+        _safe_calibration(), fail_capture_case="dta-case-003"
+    )
+    closure = run_capture_campaign_attempt(
+        plan=build_default_capture_plan(base_head="a" * 40),
+        lifecycle=lifecycle,
+    )
+
+    assert closure.terminal is CaptureTerminal.BLOCKED
+    assert closure.failure_code is CaptureFailureCode.CASE_CAPTURE_FAILED
+    assert len(closure.captured_case_sha256s) == 2
+    assert lifecycle.events[-3:] == [
+        "restore:dta-case-003",
+        "verify-baseline",
+        "cleanup:True",
+    ]
+    assert closure.baseline_restored is True
+    assert closure.cleanup_verdict == "CLEAN"
+    assert closure.cleanup_failure_code is None
+
+
+class _ExitedOwnedDocker:
+    def get_json(self, path: str) -> object:
+        labels = {
+            "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+            "io.ecomsre.sandbox.id": "ecomsre-live-v1",
+            "com.docker.compose.service": "recommendation",
+        }
+        if path.startswith("/containers/json?"):
+            return [{"Id": "a" * 64, "Labels": labels}]
+        if path == f"/containers/{'a' * 64}/json":
+            return {
+                "Config": {"Labels": labels},
+                "State": {"Status": "exited", "ExitCode": 0},
+                "RestartCount": 0,
+            }
+        raise AssertionError(f"stopped-container stats must not be read: {path}")
+
+
+def test_stopped_owned_container_resource_read_is_typed_unavailable() -> None:
+    adapter = DockerReadAdapter(
+        docker=_ExitedOwnedDocker(),
+        compose_project="ecomsre-live-sandbox-v1",
+        sandbox_label_key="io.ecomsre.sandbox.id",
+        sandbox_label_value="ecomsre-live-v1",
+        sleep=lambda _: None,
+    )
+    request = build_inspect_resource_usage_request(
+        run_id="a" * 32,
+        services=("recommendation",),
+        sampling_window_seconds=5,
+        sample_count=3,
+    )
+
+    with pytest.raises(ReadBackendFailure) as caught:
+        adapter.inspect_resources(request)
+    assert caught.value.error_code is ToolErrorCode.SOURCE_UNAVAILABLE
 
 
 def test_capture_flag_builder_changes_only_three_exact_upstream_fields() -> None:
