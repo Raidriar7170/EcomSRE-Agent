@@ -157,12 +157,18 @@ def test_default_capture_plan_freezes_exact_matrix_and_meaningful_held_out() -> 
     email_timing = next(
         item for item in plan.cases if item.case_id == "dta-case-006"
     )
+    email_held_out = next(
+        item for item in plan.cases if item.case_id == "dta-case-009"
+    )
     assert email_timing.load_vus == 50
     assert email_timing.observation_window_seconds == 20
     assert email_timing.meaningful_observation_differences == (
         "load_level",
         "timing_window",
     )
+    assert email_held_out.load_vus == 25
+    assert email_held_out.observation_window_seconds == 40
+    assert email_held_out.meaningful_observation_differences == ("timing_window",)
     for held_out in (item for item in plan.cases if item.split is EvaluationSplit.HELD_OUT):
         same_family_dev = [
             item
