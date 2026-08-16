@@ -152,6 +152,12 @@ def test_default_capture_plan_freezes_exact_matrix_and_meaningful_held_out() -> 
     assert sum(item.split is EvaluationSplit.NO_ACTION for item in plan.cases) == 3
     assert len({item.case_id for item in plan.cases}) == 12
     assert next(item for item in plan.cases if item.case_id == "dta-case-005").fault_variant == "SELECTED"
+    email_timing = next(
+        item for item in plan.cases if item.case_id == "dta-case-006"
+    )
+    assert email_timing.load_vus == 25
+    assert email_timing.observation_window_seconds == 20
+    assert email_timing.meaningful_observation_differences == ("timing_window",)
     for held_out in (item for item in plan.cases if item.split is EvaluationSplit.HELD_OUT):
         same_family_dev = [
             item
