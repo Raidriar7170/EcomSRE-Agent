@@ -18,7 +18,9 @@ from ecomsre.dta_v2.capture_campaign import (
     CaptureCampaignClosure,
     CaptureCasePlan,
     CaptureCondition,
+    CaptureFailureOperation,
     CaptureLifecycle,
+    CaptureOperationFailure,
     CaptureTerminal,
     EmailMemoryObservation,
     OperationalFamily,
@@ -240,14 +242,44 @@ class OwnedRecommendationController:
         )
 
     def stop(self) -> None:
-        identity = self._identity()
-        self.client.post(f"/containers/{identity}/stop?t=15")
-        self._wait_for(running=False)
+        try:
+            identity = self._identity()
+        except Exception as error:
+            raise CaptureOperationFailure(
+                CaptureFailureOperation.RECOMMENDATION_IDENTITY
+            ) from error
+        try:
+            self.client.post(f"/containers/{identity}/stop?t=15")
+        except Exception as error:
+            raise CaptureOperationFailure(
+                CaptureFailureOperation.RECOMMENDATION_STOP_POST
+            ) from error
+        try:
+            self._wait_for(running=False)
+        except Exception as error:
+            raise CaptureOperationFailure(
+                CaptureFailureOperation.RECOMMENDATION_WAIT_STOPPED
+            ) from error
 
     def start(self) -> None:
-        identity = self._identity()
-        self.client.post(f"/containers/{identity}/start")
-        self._wait_for(running=True)
+        try:
+            identity = self._identity()
+        except Exception as error:
+            raise CaptureOperationFailure(
+                CaptureFailureOperation.RECOMMENDATION_IDENTITY
+            ) from error
+        try:
+            self.client.post(f"/containers/{identity}/start")
+        except Exception as error:
+            raise CaptureOperationFailure(
+                CaptureFailureOperation.RECOMMENDATION_START_POST
+            ) from error
+        try:
+            self._wait_for(running=True)
+        except Exception as error:
+            raise CaptureOperationFailure(
+                CaptureFailureOperation.RECOMMENDATION_WAIT_RUNNING
+            ) from error
 
     def ensure_running(self) -> None:
         record = self.backend.docker._runtime_for("recommendation")
@@ -397,6 +429,9 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
         self, case: CaptureCasePlan, *, selected_email_variant: str
     ) -> None:
         self._require_idle()
+        # Record exact restore authority before the first flag or Docker write.
+        # A partially applied condition must remain recoverable.
+        self.active_condition = case.case_id
         payment_variant = "off"
         email_variant = "off"
         if case.condition is CaptureCondition.PAYMENT_FLAG:
@@ -420,7 +455,6 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
             self._recommendation().stop()
             time.sleep(min(10, case.observation_window_seconds // 2))
             self._recommendation().start()
-        self.active_condition = case.case_id
         time.sleep(case.observation_window_seconds)
 
     def capture_case(self, case: CaptureCasePlan) -> str:
@@ -516,7 +550,12 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
             raise RuntimeError("capture reset lacks an active condition")
         try:
             self._recommendation().ensure_running()
-            self._flags().apply(self._baseline())
+            try:
+                self._flags().apply(self._baseline())
+            except Exception as error:
+                raise CaptureOperationFailure(
+                    CaptureFailureOperation.RESTORE_FLAGS
+                ) from error
         except Exception:
             raise
         else:

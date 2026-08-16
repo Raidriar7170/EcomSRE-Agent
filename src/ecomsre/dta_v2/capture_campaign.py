@@ -41,8 +41,28 @@ class CaptureFailureOperation(str, Enum):
     OBSERVE_EMAIL_CALIBRATION = "OBSERVE_EMAIL_CALIBRATION"
     APPLY_CASE = "APPLY_CASE"
     CAPTURE_CASE = "CAPTURE_CASE"
+    RECOMMENDATION_IDENTITY = "RECOMMENDATION_IDENTITY"
+    RECOMMENDATION_STOP_POST = "RECOMMENDATION_STOP_POST"
+    RECOMMENDATION_WAIT_STOPPED = "RECOMMENDATION_WAIT_STOPPED"
+    RECOMMENDATION_START_POST = "RECOMMENDATION_START_POST"
+    RECOMMENDATION_WAIT_RUNNING = "RECOMMENDATION_WAIT_RUNNING"
+    RESTORE_FLAGS = "RESTORE_FLAGS"
     RESTORE_BASELINE = "RESTORE_BASELINE"
     CLEANUP = "CLEANUP"
+
+
+class CaptureOperationFailure(RuntimeError):
+    """Fixed safe operation marker; never retains backend exception text."""
+
+    def __init__(self, operation: CaptureFailureOperation) -> None:
+        super().__init__(operation.value)
+        self.operation = operation
+
+
+def _failure_operation(
+    error: Exception, *, default: CaptureFailureOperation
+) -> CaptureFailureOperation:
+    return error.operation if isinstance(error, CaptureOperationFailure) else default
 
 
 class OperationalFamily(str, Enum):
@@ -473,9 +493,11 @@ def run_capture_campaign_attempt(
                     lifecycle.restore_baseline()
                     lifecycle.verify_baseline()
                     baseline_restored = True
-                except Exception:
+                except Exception as error:
                     failure = CaptureFailureCode.BASELINE_RESTORE_FAILED
-                    failure_operation = CaptureFailureOperation.RESTORE_BASELINE
+                    failure_operation = _failure_operation(
+                        error, default=CaptureFailureOperation.RESTORE_BASELINE
+                    )
                     break
                 if not safe:
                     break
@@ -492,9 +514,11 @@ def run_capture_campaign_attempt(
                     lifecycle.apply_case(
                         case, selected_email_variant=selected
                     )
-                except Exception:
+                except Exception as error:
                     failure = CaptureFailureCode.CASE_CAPTURE_FAILED
-                    failure_operation = CaptureFailureOperation.APPLY_CASE
+                    failure_operation = _failure_operation(
+                        error, default=CaptureFailureOperation.APPLY_CASE
+                    )
                     failed_case_id = case.case_id
                     break
                 try:
@@ -515,9 +539,11 @@ def run_capture_campaign_attempt(
                     lifecycle.restore_baseline()
                     lifecycle.verify_baseline()
                     baseline_restored = True
-                except Exception:
+                except Exception as error:
                     failure = CaptureFailureCode.BASELINE_RESTORE_FAILED
-                    failure_operation = CaptureFailureOperation.RESTORE_BASELINE
+                    failure_operation = _failure_operation(
+                        error, default=CaptureFailureOperation.RESTORE_BASELINE
+                    )
                     failed_case_id = case.case_id
                     break
     finally:
@@ -527,10 +553,11 @@ def run_capture_campaign_attempt(
                     lifecycle.restore_baseline()
                     lifecycle.verify_baseline()
                     baseline_restored = True
-                except Exception:
+                except Exception as error:
                     baseline_restored = False
-                    recovery_failure_operation = (
-                        CaptureFailureOperation.RESTORE_BASELINE
+                    recovery_failure_operation = _failure_operation(
+                        error,
+                        default=CaptureFailureOperation.RESTORE_BASELINE,
                     )
             cleanup_attempted = True
             try:
@@ -599,6 +626,7 @@ __all__ = [
     "CaptureCondition",
     "CaptureFailureCode",
     "CaptureFailureOperation",
+    "CaptureOperationFailure",
     "CaptureProhibitedActionCounters",
     "CaptureTerminal",
     "EmailCalibrationTrial",

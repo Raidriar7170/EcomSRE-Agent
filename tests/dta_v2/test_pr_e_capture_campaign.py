@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -10,6 +11,7 @@ from ecomsre.dta_v2.capture_campaign import (
     CaptureCampaignClosure,
     CaptureFailureCode,
     CaptureFailureOperation,
+    CaptureOperationFailure,
     CaptureTerminal,
     EmailMemoryObservation,
     build_default_capture_plan,
@@ -20,6 +22,7 @@ from ecomsre.dta_v2.docker_read_adapters import DockerReadAdapter
 from ecomsre.dta_v2.evaluation_contracts import EvaluationSplit
 from ecomsre.dta_v2.owned_capture import (
     OwnedCaptureLifecycle,
+    OwnedRecommendationController,
     build_capture_flag_document,
     build_evaluator_truth,
 )
@@ -276,6 +279,89 @@ def test_capture_fixture_maps_unexpected_backend_error_to_fixed_safe_code(
     assert fixture.error_code is ToolErrorCode.INTERNAL_CONTRACT_VIOLATION
     assert fixture.records == ()
     assert "dynamic container" not in fixture.model_dump_json()
+
+
+class _RecordingFlags:
+    def __init__(self) -> None:
+        self.applied = 0
+
+    def apply(self, document):
+        self.applied += 1
+        return "a" * 64
+
+
+class _StopFailsOnceRecommendation:
+    def __init__(self) -> None:
+        self.stop_calls = 0
+        self.ensure_calls = 0
+
+    def stop(self) -> None:
+        self.stop_calls += 1
+        raise RuntimeError("safe fixed stop failure")
+
+    def ensure_running(self) -> None:
+        self.ensure_calls += 1
+
+
+def test_owned_case_registers_restore_authority_before_first_mutation(
+    tmp_path: Path,
+) -> None:
+    plan = build_default_capture_plan(base_head="a" * 40)
+    lifecycle = OwnedCaptureLifecycle(
+        repository_root=ROOT,
+        private_root=tmp_path,
+        plan=plan,
+        stabilization_seconds=0,
+    )
+    upstream = json.loads(
+        (
+            ROOT / "third_party/opentelemetry-demo/src/flagd/demo.flagd.json"
+        ).read_text(encoding="utf-8")
+    )
+    lifecycle.upstream_flag = upstream
+    lifecycle.baseline_document = build_capture_flag_document(upstream, load_vus=25)
+    flags = _RecordingFlags()
+    recommendation = _StopFailsOnceRecommendation()
+    lifecycle.flag_controller = flags  # type: ignore[assignment]
+    lifecycle.recommendation = recommendation  # type: ignore[assignment]
+    case = next(item for item in plan.cases if item.case_id == "dta-case-003")
+
+    with pytest.raises(RuntimeError):
+        lifecycle.apply_case(case, selected_email_variant="1000x")
+    assert lifecycle.active_condition == case.case_id
+
+    lifecycle.restore_baseline()
+    assert lifecycle.active_condition is None
+    assert recommendation.ensure_calls == 1
+    assert flags.applied == 2
+
+
+class _OwnedIdentityDocker:
+    def _owned_container_identity(self, service: str) -> str | None:
+        assert service == "recommendation"
+        return "a" * 64
+
+
+class _PostFails:
+    def post(self, path: str) -> None:
+        raise RuntimeError(f"dynamic identity must not escape: {path}")
+
+
+def test_recommendation_stop_post_failure_exposes_only_fixed_operation() -> None:
+    backend = SimpleNamespace(
+        config=SimpleNamespace(
+            docker_endpoint="unix:///private/tmp/never-used.sock",
+            timeout_seconds=1.0,
+        ),
+        docker=_OwnedIdentityDocker(),
+    )
+    controller = OwnedRecommendationController(backend)  # type: ignore[arg-type]
+    controller.client = _PostFails()  # type: ignore[assignment]
+
+    with pytest.raises(CaptureOperationFailure) as caught:
+        controller.stop()
+    assert str(caught.value) == "RECOMMENDATION_STOP_POST"
+    assert "dynamic identity" not in str(caught.value)
 
 
 class _ExitedOwnedDocker:
