@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import hashlib
 import json
 import os
@@ -28,7 +29,12 @@ from ecomsre.dta_v2.live_owned import (
 )
 from ecomsre.dta_v2.provider_env import load_private_provider_env
 from ecomsre.dta_v2.registry import load_runbook_registry
-from ecomsre.dta_v2.tool_contracts import HealthState, RuntimeState
+from ecomsre.dta_v2.tool_contracts import (
+    EndpointState,
+    HealthState,
+    RuntimeRecord,
+    RuntimeState,
+)
 from ecomsre_live_sandbox.contracts import write_private_json
 
 from test_admission_policy import master_authorization
@@ -177,6 +183,69 @@ def test_owned_lifecycle_surface_has_no_generic_command_or_mutation_entrypoint()
         "restore_baseline",
         "cleanup_owned",
     }.issubset(public)
+
+
+def test_current_state_uses_semantic_compose_identity_without_weakening_ownership() -> None:
+    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v1.json")
+    registry = load_runbook_registry(ROOT / "config/dta-v2/runbooks")
+    scenario = next(
+        item for item in config.scenarios if item.scenario is LiveScenario.PAYMENT
+    )
+    authority = SimpleNamespace(
+        docker_context_sha256="1" * 64,
+        daemon_identity_sha256="2" * 64,
+        ownership_scope_sha256="3" * 64,
+    )
+    environment = SimpleNamespace(
+        compose_project="ecomsre-live-sandbox-v1",
+        sandbox_id="11111111-1111-1111-1111-111111111111",
+    )
+    baseline = {"checkoutService": {"enabled": True}}
+    fault = {"checkoutService": {"enabled": False}}
+    capture = SimpleNamespace(
+        _bundle=lambda: SimpleNamespace(environment=environment),
+        _baseline=lambda: baseline,
+    )
+    lifecycle = object.__new__(OwnedSandboxLiveLifecycle)
+    lifecycle.preflight = SimpleNamespace(capture=capture)
+    lifecycle.scenario = scenario
+    lifecycle.registry = registry
+    lifecycle._active_fault_document = fault
+    lifecycle._utc_now = lambda: datetime(2026, 8, 16, tzinfo=timezone.utc)
+    lifecycle._refresh_backend = lambda: SimpleNamespace(authority=authority)
+    lifecycle._runtime = lambda service: RuntimeRecord(
+        logical_service=service,
+        owned_container_present=True,
+        state=RuntimeState.RUNNING,
+        health=HealthState.HEALTHY,
+        restart_count=0,
+        exit_code=None,
+        endpoint_probe_performed=True,
+        endpoint_state=EndpointState.READY,
+    )
+    lifecycle._require_flags = lambda: SimpleNamespace(
+        verify=lambda document: semantic_sha256(document)
+    )
+    validated: list[object] = []
+
+    def require_execution_snapshot(snapshot):
+        validated.append(snapshot)
+        return "4" * 64
+
+    lifecycle._require_execution_snapshot = require_execution_snapshot
+
+    snapshot = lifecycle.current_state(
+        scenario=scenario,
+        agent_result=_positive_agent(LiveScenario.PAYMENT),
+        attempt_id="owned-payment-attempt",
+    )
+
+    assert snapshot.sandbox_identity == environment.compose_project
+    assert snapshot.sandbox_identity != environment.sandbox_id
+    assert snapshot.docker_context_identity == authority.docker_context_sha256
+    assert snapshot.daemon_identity == authority.daemon_identity_sha256
+    assert snapshot.ownership_digest == authority.ownership_scope_sha256
+    assert validated == [snapshot]
 
 
 def test_generic_caller_cannot_construct_owned_live_lifecycle(tmp_path: Path) -> None:

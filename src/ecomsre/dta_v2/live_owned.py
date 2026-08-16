@@ -771,7 +771,7 @@ class OwnedSandboxLiveLifecycle:
             docker_boundary=DockerBoundary.LOCAL_UNIX,
             docker_context_identity=str(authority.docker_context_sha256),
             daemon_identity=str(authority.daemon_identity_sha256),
-            sandbox_identity=self.capture._bundle().environment.sandbox_id,
+            sandbox_identity=self.capture._bundle().environment.compose_project,
             ownership_digest=authority.ownership_scope_sha256,
             ownership_status=OwnershipStatus.PROVEN,
             target_logical_service=target,

@@ -58,12 +58,13 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     )
     closures = run_owned_live_campaign(campaign)
     report = build_public_live_campaign_report(closures)
-    if arguments.public_result_root is not None:
+    accepted = report.terminal == "DTA_V2_LIVE_DEMO_ACCEPTANCE_PASS"
+    if accepted and arguments.public_result_root is not None:
         write_public_live_campaign_artifacts(
             result_root=arguments.public_result_root,
             report=report,
         )
-    return 0 if report.terminal == "DTA_V2_LIVE_DEMO_ACCEPTANCE_PASS" else 2
+    return 0 if accepted else 2
 
 
 if __name__ == "__main__":  # pragma: no cover - exercised by the module CLI
