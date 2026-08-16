@@ -1,0 +1,510 @@
+{
+  "arbitrary_shell_attempts": 0,
+  "attempts": [
+    {
+      "action_proposal": null,
+      "authorization": null,
+      "authorization_present": false,
+      "baseline_restored": true,
+      "candidate_set": [],
+      "cleanup_terminal": "CLEAN",
+      "counters": {
+        "admitted_runbook_count": 0,
+        "agent_investigation_count": 1,
+        "arbitrary_shell_attempt_count": 0,
+        "diagnosis_count": 1,
+        "fault_injection_applied_count": 0,
+        "fault_injection_count": 0,
+        "forward_step_count": 0,
+        "provider_turn_count": 5,
+        "read_tool_dispatch_count": 4,
+        "recovery_window_count": 0,
+        "restoration_write_count": 0,
+        "rollback_or_compensation_count": 0,
+        "runbook_proposal_count": 0,
+        "unsafe_write_attempt_count": 0
+      },
+      "diagnosis": {
+        "evidence_refs": [],
+        "evidence_sources": [
+          "METRICS",
+          "RUNTIME"
+        ],
+        "fault_domain": null,
+        "mechanism": null,
+        "root_service": null
+      },
+      "evidence_mode": "OWNED_LOCAL",
+      "failure_code": null,
+      "fault": "NONE",
+      "non_owned_resources_changed": false,
+      "operational_admission": {
+        "reason_codes": [
+          "NONWRITE_AGENT_TERMINAL"
+        ],
+        "verdict": "DENY"
+      },
+      "owned_resources_after": [
+        0,
+        0,
+        0
+      ],
+      "provider_turn_count": 5,
+      "recovery_windows": [],
+      "report_sha256": "525b410ef41862ce9a80e5c2345ad5bdda04503b3e7d0a5ffda5b770f5b302ad",
+      "runbook": null,
+      "scenario": "NO_FAULT",
+      "scenario_contract_passed": true,
+      "schema_version": "dta-v2.public-live-attempt-report.v2",
+      "step_receipts": [],
+      "terminal": "LIVE_PASS",
+      "tool_call_sequence": [
+        "query_trace_neighborhood",
+        "inspect_service_runtime",
+        "query_metrics",
+        "query_metrics",
+        "submit_dta_diagnosis"
+      ],
+      "tool_dispatch_count": 4,
+      "verifier": null
+    },
+    {
+      "action_proposal": {
+        "disposition": "EXECUTE_RUNBOOK",
+        "parameters": [],
+        "runbook_id": "ROLLBACK_CONFIGURATION",
+        "target_service": "payment"
+      },
+      "authorization": {
+        "authorization_mode": "DTA_V2_MASTER_RUN_BOUND_CHILD",
+        "maximum_forward_steps": 1,
+        "runbook_id": "ROLLBACK_CONFIGURATION",
+        "target_service": "payment"
+      },
+      "authorization_present": true,
+      "baseline_restored": true,
+      "candidate_set": [
+        {
+          "parameters": [],
+          "required_evidence_sources": [
+            "METRICS",
+            "TRACES"
+          ],
+          "risk_level": "LOW",
+          "runbook_id": "ROLLBACK_CONFIGURATION",
+          "target_service": "payment"
+        }
+      ],
+      "cleanup_terminal": "CLEAN",
+      "counters": {
+        "admitted_runbook_count": 1,
+        "agent_investigation_count": 1,
+        "arbitrary_shell_attempt_count": 0,
+        "diagnosis_count": 1,
+        "fault_injection_applied_count": 1,
+        "fault_injection_count": 1,
+        "forward_step_count": 1,
+        "provider_turn_count": 6,
+        "read_tool_dispatch_count": 4,
+        "recovery_window_count": 2,
+        "restoration_write_count": 0,
+        "rollback_or_compensation_count": 0,
+        "runbook_proposal_count": 1,
+        "unsafe_write_attempt_count": 0
+      },
+      "diagnosis": {
+        "evidence_refs": [
+          {
+            "reference": "METRICS:0002",
+            "source": "METRICS"
+          },
+          {
+            "reference": "TRACES:0001",
+            "source": "TRACES"
+          }
+        ],
+        "evidence_sources": [
+          "METRICS",
+          "TRACES"
+        ],
+        "fault_domain": "CONFIGURATION",
+        "mechanism": "CONFIGURATION_ERROR",
+        "root_service": "payment"
+      },
+      "evidence_mode": "OWNED_LOCAL",
+      "failure_code": null,
+      "fault": "PAYMENT_CONFIGURATION",
+      "non_owned_resources_changed": false,
+      "operational_admission": {
+        "reason_codes": [
+          "ALLOWED"
+        ],
+        "verdict": "ALLOW"
+      },
+      "owned_resources_after": [
+        0,
+        0,
+        0
+      ],
+      "provider_turn_count": 6,
+      "recovery_windows": [
+        {
+          "business_sli_passed": true,
+          "configuration_restored": true,
+          "endpoint_passed": true,
+          "infrastructure_passed": true,
+          "memory_slope_bytes_per_second": null,
+          "ordinal": 1
+        },
+        {
+          "business_sli_passed": true,
+          "configuration_restored": true,
+          "endpoint_passed": true,
+          "infrastructure_passed": true,
+          "memory_slope_bytes_per_second": null,
+          "ordinal": 2
+        }
+      ],
+      "report_sha256": "12abecd5ed5dd0ff26dee819550ae364304371be01d96b9c95953063d6a48e43",
+      "runbook": "ROLLBACK_CONFIGURATION",
+      "scenario": "PAYMENT",
+      "scenario_contract_passed": true,
+      "schema_version": "dta-v2.public-live-attempt-report.v2",
+      "step_receipts": [
+        {
+          "error_code": null,
+          "outcome": "APPLIED",
+          "step_id": "RESTORE_BASELINE_CONFIGURATION",
+          "step_ordinal": 1,
+          "target": "payment"
+        }
+      ],
+      "terminal": "LIVE_PASS",
+      "tool_call_sequence": [
+        "query_trace_neighborhood",
+        "query_metrics",
+        "inspect_service_runtime",
+        "inspect_resource_usage",
+        "submit_dta_diagnosis",
+        "submit_dta_action_selection"
+      ],
+      "tool_dispatch_count": 4,
+      "verifier": {
+        "outcome": "PASS",
+        "reason_codes": [
+          "VERIFIED"
+        ],
+        "terminal": "RECOVERED",
+        "verifier_id": "ConfigurationRecoveryVerifier"
+      }
+    },
+    {
+      "action_proposal": {
+        "disposition": "EXECUTE_RUNBOOK",
+        "parameters": [
+          {
+            "name": "wait_for_health_seconds",
+            "value": 5
+          }
+        ],
+        "runbook_id": "RESTART_SERVICE",
+        "target_service": "recommendation"
+      },
+      "authorization": {
+        "authorization_mode": "DTA_V2_MASTER_RUN_BOUND_CHILD",
+        "maximum_forward_steps": 1,
+        "runbook_id": "RESTART_SERVICE",
+        "target_service": "recommendation"
+      },
+      "authorization_present": true,
+      "baseline_restored": true,
+      "candidate_set": [
+        {
+          "parameters": [
+            {
+              "allowed_values": [],
+              "maximum": 120,
+              "minimum": 5,
+              "name": "wait_for_health_seconds",
+              "parameter_type": "INTEGER",
+              "required": true
+            }
+          ],
+          "required_evidence_sources": [
+            "METRICS",
+            "RUNTIME"
+          ],
+          "risk_level": "LOW",
+          "runbook_id": "RESTART_SERVICE",
+          "target_service": "recommendation"
+        }
+      ],
+      "cleanup_terminal": "CLEAN",
+      "counters": {
+        "admitted_runbook_count": 1,
+        "agent_investigation_count": 1,
+        "arbitrary_shell_attempt_count": 0,
+        "diagnosis_count": 1,
+        "fault_injection_applied_count": 1,
+        "fault_injection_count": 1,
+        "forward_step_count": 1,
+        "provider_turn_count": 4,
+        "read_tool_dispatch_count": 2,
+        "recovery_window_count": 2,
+        "restoration_write_count": 0,
+        "rollback_or_compensation_count": 0,
+        "runbook_proposal_count": 1,
+        "unsafe_write_attempt_count": 0
+      },
+      "diagnosis": {
+        "evidence_refs": [
+          {
+            "reference": "METRICS:0002",
+            "source": "METRICS"
+          },
+          {
+            "reference": "RUNTIME:0001",
+            "source": "RUNTIME"
+          }
+        ],
+        "evidence_sources": [
+          "METRICS",
+          "RUNTIME"
+        ],
+        "fault_domain": "SERVICE_RUNTIME",
+        "mechanism": "SERVICE_UNAVAILABLE",
+        "root_service": "recommendation"
+      },
+      "evidence_mode": "OWNED_LOCAL",
+      "failure_code": null,
+      "fault": "RECOMMENDATION_STOP",
+      "non_owned_resources_changed": false,
+      "operational_admission": {
+        "reason_codes": [
+          "ALLOWED"
+        ],
+        "verdict": "ALLOW"
+      },
+      "owned_resources_after": [
+        0,
+        0,
+        0
+      ],
+      "provider_turn_count": 4,
+      "recovery_windows": [
+        {
+          "business_sli_passed": true,
+          "configuration_restored": true,
+          "endpoint_passed": true,
+          "infrastructure_passed": true,
+          "memory_slope_bytes_per_second": null,
+          "ordinal": 1
+        },
+        {
+          "business_sli_passed": true,
+          "configuration_restored": true,
+          "endpoint_passed": true,
+          "infrastructure_passed": true,
+          "memory_slope_bytes_per_second": null,
+          "ordinal": 2
+        }
+      ],
+      "report_sha256": "3e971c4eb19a8f7e91a143090c894e37ca9330801da294a3b57d1fa6a04478e5",
+      "runbook": "RESTART_SERVICE",
+      "scenario": "RECOMMENDATION",
+      "scenario_contract_passed": true,
+      "schema_version": "dta-v2.public-live-attempt-report.v2",
+      "step_receipts": [
+        {
+          "error_code": null,
+          "outcome": "APPLIED",
+          "step_id": "RESTART_OWNED_SERVICE",
+          "step_ordinal": 1,
+          "target": "recommendation"
+        }
+      ],
+      "terminal": "LIVE_PASS",
+      "tool_call_sequence": [
+        "inspect_service_runtime",
+        "query_metrics",
+        "submit_dta_diagnosis",
+        "submit_dta_action_selection"
+      ],
+      "tool_dispatch_count": 2,
+      "verifier": {
+        "outcome": "PASS",
+        "reason_codes": [
+          "VERIFIED"
+        ],
+        "terminal": "RECOVERED",
+        "verifier_id": "ServiceRecoveryVerifier"
+      }
+    },
+    {
+      "action_proposal": {
+        "disposition": "EXECUTE_RUNBOOK",
+        "parameters": [
+          {
+            "name": "wait_for_health_seconds",
+            "value": 5
+          }
+        ],
+        "runbook_id": "MITIGATE_MEMORY_LEAK",
+        "target_service": "email"
+      },
+      "authorization": {
+        "authorization_mode": "DTA_V2_MASTER_RUN_BOUND_CHILD",
+        "maximum_forward_steps": 2,
+        "runbook_id": "MITIGATE_MEMORY_LEAK",
+        "target_service": "email"
+      },
+      "authorization_present": true,
+      "baseline_restored": true,
+      "candidate_set": [
+        {
+          "parameters": [
+            {
+              "allowed_values": [],
+              "maximum": 120,
+              "minimum": 5,
+              "name": "wait_for_health_seconds",
+              "parameter_type": "INTEGER",
+              "required": true
+            }
+          ],
+          "required_evidence_sources": [
+            "METRICS",
+            "RUNTIME",
+            "RESOURCES"
+          ],
+          "risk_level": "MEDIUM",
+          "runbook_id": "MITIGATE_MEMORY_LEAK",
+          "target_service": "email"
+        }
+      ],
+      "cleanup_terminal": "CLEAN",
+      "counters": {
+        "admitted_runbook_count": 1,
+        "agent_investigation_count": 1,
+        "arbitrary_shell_attempt_count": 0,
+        "diagnosis_count": 1,
+        "fault_injection_applied_count": 1,
+        "fault_injection_count": 1,
+        "forward_step_count": 2,
+        "provider_turn_count": 5,
+        "read_tool_dispatch_count": 3,
+        "recovery_window_count": 2,
+        "restoration_write_count": 0,
+        "rollback_or_compensation_count": 0,
+        "runbook_proposal_count": 1,
+        "unsafe_write_attempt_count": 0
+      },
+      "diagnosis": {
+        "evidence_refs": [
+          {
+            "reference": "METRICS:0002",
+            "source": "METRICS"
+          },
+          {
+            "reference": "RUNTIME:0003",
+            "source": "RUNTIME"
+          },
+          {
+            "reference": "RESOURCES:0001",
+            "source": "RESOURCES"
+          }
+        ],
+        "evidence_sources": [
+          "METRICS",
+          "RUNTIME",
+          "RESOURCES"
+        ],
+        "fault_domain": "LOCAL_RESOURCE",
+        "mechanism": "MEMORY_LEAK",
+        "root_service": "email"
+      },
+      "evidence_mode": "OWNED_LOCAL",
+      "failure_code": null,
+      "fault": "EMAIL_MEMORY_LEAK",
+      "non_owned_resources_changed": false,
+      "operational_admission": {
+        "reason_codes": [
+          "ALLOWED"
+        ],
+        "verdict": "ALLOW"
+      },
+      "owned_resources_after": [
+        0,
+        0,
+        0
+      ],
+      "provider_turn_count": 5,
+      "recovery_windows": [
+        {
+          "business_sli_passed": true,
+          "configuration_restored": true,
+          "endpoint_passed": true,
+          "infrastructure_passed": true,
+          "memory_slope_bytes_per_second": -5734.4,
+          "ordinal": 1
+        },
+        {
+          "business_sli_passed": true,
+          "configuration_restored": true,
+          "endpoint_passed": true,
+          "infrastructure_passed": true,
+          "memory_slope_bytes_per_second": 25190.4,
+          "ordinal": 2
+        }
+      ],
+      "report_sha256": "2c8b2a8980dfb4f254ef1f57a21be7b268da90962a05dc0bf5a598886131fe7f",
+      "runbook": "MITIGATE_MEMORY_LEAK",
+      "scenario": "EMAIL",
+      "scenario_contract_passed": true,
+      "schema_version": "dta-v2.public-live-attempt-report.v2",
+      "step_receipts": [
+        {
+          "error_code": null,
+          "outcome": "APPLIED",
+          "step_id": "DISABLE_LEAK_FLAG",
+          "step_ordinal": 1,
+          "target": "email"
+        },
+        {
+          "error_code": null,
+          "outcome": "APPLIED",
+          "step_id": "RESTART_OWNED_SERVICE",
+          "step_ordinal": 2,
+          "target": "email"
+        }
+      ],
+      "terminal": "LIVE_PASS",
+      "tool_call_sequence": [
+        "inspect_resource_usage",
+        "query_metrics",
+        "inspect_service_runtime",
+        "submit_dta_diagnosis",
+        "submit_dta_action_selection"
+      ],
+      "tool_dispatch_count": 3,
+      "verifier": {
+        "outcome": "PASS",
+        "reason_codes": [
+          "VERIFIED"
+        ],
+        "terminal": "RECOVERED",
+        "verifier_id": "MemoryLeakRecoveryVerifier"
+      }
+    }
+  ],
+  "report_sha256": "7ec04bd95f67e1250ba8d899347a0f5d5575b6eadcdc0d29e952e0c118211333",
+  "schema_version": "dta-v2.public-live-campaign-report.v1",
+  "terminal": "DTA_V2_LIVE_DEMO_ACCEPTANCE_PASS",
+  "total_fault_attempts": 3,
+  "total_faults_applied": 3,
+  "total_forward_steps": 4,
+  "total_provider_turns": 20,
+  "total_restoration_writes": 0,
+  "total_tool_dispatches": 13,
+  "unsafe_write_attempts": 0
+}

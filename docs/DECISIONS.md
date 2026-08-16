@@ -49,6 +49,7 @@ conflicts with this register, this register wins.
 | DEC-035 | DTA v2 Master Authorization delegation | accepted | DTA v2 PR-B onward under `dta-v2-master-v1` | `DECISIONS.md` | Safety, DTA v2 design, admission and authorization tests | No — the record alone creates no Docker or Provider action |
 | DEC-036 | DTA v2 provisional Agent identity and Provider development gate | accepted | DTA v2 PR-D under `dta-v2-master-v1` | `DECISIONS.md` | Architecture, Safety, DTA v2 design and Agent tests | No — development Provider evidence creates no write authority |
 | DEC-037 | DTA v2 PR-E replay evaluation protocol and result | accepted | DTA v2 PR-E under `dta-v2-master-v1` | `DECISIONS.md` | Architecture, Safety, DTA v2 design and evaluation tests | No — evaluation creates no remediation or later-stage authority |
+| DEC-038 | DTA v2 PR-F known-scenario local live Demo result | accepted | DTA v2 PR-F under `dta-v2-master-v1` | `DECISIONS.md` | Architecture, Safety, DTA v2 design and live reports | No — consumed local Demo authority creates no production or continuing write authority |
 
 ## DEC-001 — Supported host baseline
 
@@ -188,7 +189,7 @@ second forward mutation.
 
 This is the default restricted-write limit. A later Decision Record may replace
 it only by naming an exact versioned Runbook and preserving every other safety
-term. `DEC-034` does so only for the future DTA v2 Email transaction; it does not
+term. `DEC-034` does so only for the exact versioned DTA v2 Email transaction; it does not
 change Phase 3, LOCAL_DEMO, or any other Runbook.
 
 ## DEC-025 — Phase 3 Agile Restricted Remediation Replay MVP
@@ -774,6 +775,58 @@ evidence for the exact frozen head only, not live recovery evidence. DEC-036's
 PR-D call authority remains closed; this record does not authorize another
 Provider call, Docker action, fault injection, Runbook execution, remediation,
 release, or deployment. PR-F actions require their separate exact Goal
+authority.
+
+## DEC-038 — DTA v2 PR-F Known-scenario Local Live Demo Result
+
+**Status: `accepted` for PR-F under the user-designated
+`dta-v2-master-v1` Goal only.**
+
+PR-F exercised one exact four-slot campaign against the project-owned local
+25-service Sandbox: no fault, Payment configuration failure, Recommendation
+service stopped, and the bounded `1000x` Email memory-leak variant. A one-shot
+campaign capability bound the exact claim and schedule, current Agent/model/
+Prompt/tools, Registry, Candidate Filter, admission and authorization policies,
+typed controls, Executors, Verifiers, reporting, frozen Compose/image authority,
+and cleanup. Operational code did not read scenario-to-gold diagnosis or
+Runbook labels.
+
+The accepted campaign completed `LIVE_PASS` for all four slots. No-fault
+produced a non-write terminal, Admission `DENY`, and zero forward writes.
+Payment diagnosed `CONFIGURATION / CONFIGURATION_ERROR`, selected
+`ROLLBACK_CONFIGURATION`, and applied one configuration-restoration step.
+Recommendation diagnosed `SERVICE_RUNTIME / SERVICE_UNAVAILABLE`, selected
+`RESTART_SERVICE`, and applied one owned-service restart. Email diagnosed
+`LOCAL_RESOURCE / MEMORY_LEAK`, selected `MITIGATE_MEMORY_LEAK`, and applied
+the exact ordered `DISABLE_LEAK_FLAG` then `RESTART_OWNED_SERVICE` steps.
+
+The Email verifier used live-config schema v2 with an exact 60-second
+post-restart settle interval, 20-second resource windows, five samples per
+window, and the unchanged `100000.0 B/s` ceiling. Its two canonical recovery
+slopes were `-5734.4` and `25190.4 B/s`. All three positive scenarios passed
+two recovery windows and Runbook-specific verification. Every slot restored
+baseline, finished cleanup `CLEAN`, ended with owned containers/networks/
+volumes `0/0/0`, and changed no non-owned resource.
+
+Aggregate counters were 13 read-tool dispatches, 20 Provider turns, three
+faults attempted and applied, four forward steps, zero restoration writes,
+zero unsafe write attempts, zero rollback/compensation writes, and zero
+arbitrary-shell attempts. The public report semantic SHA-256 is
+`7ec04bd95f67e1250ba8d899347a0f5d5575b6eadcdc0d29e952e0c118211333`.
+Failed predecessor campaigns remain immutable and are not upgraded by this
+later result.
+
+PR-F narrowed the investigation Prompt after PR-E, so PR-E's one-time held-out
+negative remains bound only to historical identity
+`aa08b5869aaac7e4ad4b1084367fc99a01c6dd05521ea933fddf9b5fb364ca61`.
+It was not rerun, and it does not become held-out evidence for current PR-F
+identity `6efc26c6e5fab6190be9e63c0bec318c6e94fa29196e6693eb63b2845c6ad0a4`.
+
+This record supports `DTA_V2_LIVE_DEMO_ACCEPTANCE_PASS` only for the known
+local Portfolio scenarios. It is not production, deployment, release,
+arbitrary autonomous remediation, held-out recovery accuracy, Tool Use
+superiority, or Multi-Agent superiority. The campaign capability is consumed;
+this record creates no continuing Provider, Docker, fault, or mutation
 authority.
 
 ## Upstream references

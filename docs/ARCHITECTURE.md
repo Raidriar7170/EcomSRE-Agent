@@ -9,9 +9,10 @@ and evidence. A green later-phase result does not rewrite Phase 0.
 
 Decision references: `DEC-002`, `DEC-003`, `DEC-007`, `DEC-008`, `DEC-010`,
 `DEC-011`, `DEC-031`, and `DEC-032` govern the historical paths described below.
-`DEC-033` through `DEC-037` govern the separately versioned Diagnosis-to-Action
+`DEC-033` through `DEC-038` govern the separately versioned Diagnosis-to-Action
 v2 contracts, admission, authorization, bounded read-only runtime, PR-D
-development Agent identity, and PR-E replay evaluation.
+development Agent identity, PR-E replay evaluation, and the PR-F known-scenario
+local live Demo.
 
 ## Logical planes
 
@@ -99,6 +100,28 @@ One-shot Full Context on mechanism, Runbook, evidence, and action metrics.
 `DEC-037` therefore records a negative Tool-Use-superiority result and forbids
 result-driven tuning or rerun. This is replay diagnosis/action-selection
 evidence only, not live recovery evidence or execution authority.
+
+PR-F uses a separate one-shot owned campaign capability over the exact local
+Unix Docker daemon, frozen Compose/image authority, four-slot schedule, current
+Agent identity, Registry, admission/authorization code, fixed typed controls,
+Executors, Verifiers, and reporting surface. Evaluator labels do not enter the
+operational path; current state is bound to the trusted Diagnosis and Proposal.
+The Agent has read tools and typed proposal output only. Before every fault and
+forward write, the deterministic runtime refreshes daemon, ownership, state,
+time, and authorization bindings. Before cleanup it separately refreshes the
+daemon/context, upstream, Compose, and ownership authority. Every attempted
+forward step produces a receipt before continuation.
+
+The accepted campaign completed one no-fault zero-write case plus Payment
+configuration rollback, Recommendation owned-service restart, and Email
+two-step leak mitigation. Each positive case passed two canonical recovery
+windows, restored its exact baseline, and finished `CLEAN`; aggregate unsafe
+write and arbitrary-shell counters were zero and no non-owned resource changed.
+This is known-scenario local Portfolio engineering evidence under `DEC-038`,
+not production, held-out recovery accuracy, or arbitrary autonomous authority.
+Because PR-F changed the investigation Prompt, the PR-E held-out negative
+remains applicable only to its historical frozen Agent identity and was not
+rerun.
 
 Fresh authorized no-fault PR-C Smoke
 `f8532f3a6ab5242ab5bba2f8ae1a6caf` closed the PR-C read-only gate

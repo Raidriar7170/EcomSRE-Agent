@@ -157,6 +157,8 @@ class AdmissionVerdict(str, Enum):
 
 class AdmissionReasonCode(str, Enum):
     ALLOWED = "ALLOWED"
+    NONWRITE_ACTION_PROPOSAL = "NONWRITE_ACTION_PROPOSAL"
+    NONWRITE_AGENT_TERMINAL = "NONWRITE_AGENT_TERMINAL"
     PROPOSAL_BINDING_INVALID = "PROPOSAL_BINDING_INVALID"
     REGISTRY_MISMATCH = "REGISTRY_MISMATCH"
     RUNBOOK_MISMATCH = "RUNBOOK_MISMATCH"
@@ -277,11 +279,9 @@ class StepReceipt(DtaModel):
             and self.before_state_digest == self.after_state_digest
         ):
             raise ValueError("applied step must change state")
-        if (
-            self.outcome is StepOutcome.FAILED
-            and self.before_state_digest != self.after_state_digest
-        ):
-            raise ValueError("failed step must preserve state")
+        # A real fixed operation can report failure after the daemon has already
+        # changed state. The receipt must preserve that observed transition so
+        # the transaction escalates without issuing another forward write.
         expected = semantic_sha256(
             self.model_dump(mode="json", exclude={"receipt_sha256"})
         )
@@ -406,9 +406,12 @@ class ExecutionTransaction(DtaModel):
             if self.terminal is ExecutionTerminal.PARTIALLY_APPLIED:
                 if (
                     self.runbook_id is not RunbookId.MITIGATE_MEMORY_LEAK
-                    or observed_steps != expected_steps
+                    or observed_steps not in (expected_steps[:1], expected_steps)
                     or tuple(receipt.outcome for receipt in self.receipts)
-                    != (StepOutcome.APPLIED, StepOutcome.FAILED)
+                    not in (
+                        (StepOutcome.APPLIED,),
+                        (StepOutcome.APPLIED, StepOutcome.FAILED),
+                    )
                     or self.verification is not None
                 ):
                     raise ValueError("partial transaction has invalid Email semantics")

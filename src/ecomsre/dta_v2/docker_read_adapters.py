@@ -230,6 +230,26 @@ class DockerReadAdapter:
             raise ReadBackendFailure(ToolErrorCode.AMBIGUOUS_OWNED_RUNTIME)
         return owned[0] if owned else None
 
+    def _owned_container_started_at(self, service: str, identity: str) -> str:
+        if self._owned_container_identity(service) != identity:
+            raise ReadBackendFailure(ToolErrorCode.OWNERSHIP_NOT_PROVEN)
+        inspect = _mapping(
+            self.docker.get_json(f"/containers/{identity}/json"),
+            "Docker inspect response",
+        )
+        config = _mapping(inspect.get("Config", {}), "Docker inspect config")
+        labels = _string_mapping(config.get("Labels", {}), "Docker inspect labels")
+        self._require_labels(labels, service=service)
+        state = _mapping(inspect.get("State"), "Docker inspect state")
+        started_at = state.get("StartedAt")
+        if (
+            not isinstance(started_at, str)
+            or started_at != started_at.strip()
+            or not 20 <= len(started_at) <= 64
+        ):
+            raise ValueError("Docker StartedAt is invalid")
+        return started_at
+
     def _require_labels(self, labels: Mapping[str, str], *, service: str) -> None:
         expected = {
             "com.docker.compose.project": self.compose_project,

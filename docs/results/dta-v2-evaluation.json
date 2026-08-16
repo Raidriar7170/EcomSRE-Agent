@@ -1,0 +1,134 @@
+{
+  "adaptive_tool_using": {
+    "action_precision": {
+      "correct": 1,
+      "denominator": 3
+    },
+    "context_materialization_reads_total": 0,
+    "entry_count": 3,
+    "escalation_accuracy": {
+      "correct": 0,
+      "denominator": 0
+    },
+    "evidence_validity": {
+      "correct": 1,
+      "denominator": 3
+    },
+    "input_tokens_total": 42986,
+    "latency_ms_total": 27481,
+    "mean_costs": {
+      "context_materialization_reads": 0.0,
+      "input_tokens": 14328.666666666666,
+      "latency_ms": 9160.333333333334,
+      "output_tokens": 474.0,
+      "provider_turns": 5.0,
+      "read_tool_dispatches": 3.0,
+      "total_tokens": 14802.666666666666
+    },
+    "mechanism_accuracy": {
+      "correct": 2,
+      "denominator": 3
+    },
+    "no_action_accuracy": {
+      "correct": 0,
+      "denominator": 0
+    },
+    "output_tokens_total": 1422,
+    "provider_turns_total": 15,
+    "read_tool_dispatches_total": 9,
+    "root_exact_match": {
+      "correct": 3,
+      "denominator": 3
+    },
+    "runbook_top1_accuracy": {
+      "correct": 1,
+      "denominator": 3
+    },
+    "unsafe_proposal_attempts": 0
+  },
+  "claim_boundary": {
+    "held_out_generalization_supported": false,
+    "live_recovery_evidence": false,
+    "no_action_and_escalation_held_out_denominators": 0,
+    "production_evidence": false,
+    "tool_use_superiority_supported": false
+  },
+  "freeze": {
+    "action_schema_sha256": "b406c42f2aa4de3af6a0bf1f81ba43cc72bdd3a68c426e2ca35dde70f303a850",
+    "adaptive_prompt_sha256": "8081c827dae3ee48d26da9d499ff0e3a1ebcdec8fa811f67c7a939c7544d80c5",
+    "agent_identity_sha256": "aa08b5869aaac7e4ad4b1084367fc99a01c6dd05521ea933fddf9b5fb364ca61",
+    "base_head": "2c683a6fe8ac682678064e0ba2b2ab856dc607c3",
+    "budgets_sha256": "18efc320df8c7de6043c57b4e07dfe85f8f2e5af6060b42b4981bd182d215414",
+    "candidate_filter_sha256": "3e9173ee6e3c5b2064b5b8fbd8c2737006ee5bc0094188ba64d83f8953bc43a4",
+    "diagnosis_schema_sha256": "9efa9b31705d325e3501f16ae73d1cf11333034631a745c959a9cc8ce4960d18",
+    "model": "gpt-5.4-2026-03-05",
+    "one_shot_prompt_sha256": "0017abcb067f1ed4c40c15484fbc9fcc994d69def08f533b920ca1bad109c74d",
+    "runbook_registry_sha256": "9f1395caa3dbd4abb9b969edb1ee2046cb72861e7df13ffedd160d3a4873be5d",
+    "scorer_sha256": "6fdadaecb4feffc68bacefc19e118b3468383a140331077241d1132f9c33f85d",
+    "seal_sha256": "0f944e79f0958f285006c3bdc3cf8f82b8a71731d8d96d02b474f254a54e247a",
+    "tool_schema_sha256": "6b968f29201ce7c87fe56099788ff34abc93dea895c56e553e4c007b22218192"
+  },
+  "one_shot_full_context": {
+    "action_precision": {
+      "correct": 3,
+      "denominator": 3
+    },
+    "context_materialization_reads_total": 12,
+    "entry_count": 3,
+    "escalation_accuracy": {
+      "correct": 0,
+      "denominator": 0
+    },
+    "evidence_validity": {
+      "correct": 3,
+      "denominator": 3
+    },
+    "input_tokens_total": 12898,
+    "latency_ms_total": 13269,
+    "mean_costs": {
+      "context_materialization_reads": 4.0,
+      "input_tokens": 4299.333333333333,
+      "latency_ms": 4423.0,
+      "output_tokens": 384.0,
+      "provider_turns": 2.0,
+      "read_tool_dispatches": 0.0,
+      "total_tokens": 4683.333333333333
+    },
+    "mechanism_accuracy": {
+      "correct": 3,
+      "denominator": 3
+    },
+    "no_action_accuracy": {
+      "correct": 0,
+      "denominator": 0
+    },
+    "output_tokens_total": 1152,
+    "provider_turns_total": 6,
+    "read_tool_dispatches_total": 0,
+    "root_exact_match": {
+      "correct": 3,
+      "denominator": 3
+    },
+    "runbook_top1_accuracy": {
+      "correct": 3,
+      "denominator": 3
+    },
+    "unsafe_proposal_attempts": 0
+  },
+  "prohibited_action_counters": {
+    "configuration_mutations": 0,
+    "docker_calls": 0,
+    "executor_calls": 0,
+    "fault_injections": 0,
+    "forward_writes": 0,
+    "public_writes": 0,
+    "runbook_executions": 0,
+    "service_mutations": 0,
+    "verifier_calls": 0
+  },
+  "result": "COMPLETED_HELD_OUT_NEGATIVE",
+  "schema_version": "dta-v2.public-evaluation-report.v1",
+  "scorer_verification_pass": true,
+  "source_report_sha256": "26b4002fe0232a2d8b03295e98b3c023e9409ae30eaba3b2e21ae1d1523524e6",
+  "truth_isolation_pass": true
+}

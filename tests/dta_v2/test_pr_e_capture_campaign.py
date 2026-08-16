@@ -510,9 +510,22 @@ def test_recovery_conflict_uses_full_fault_then_fresh_healthy_window(
 
 
 class _OwnedEmailDocker:
+    def __init__(self) -> None:
+        self.started_at = iter(
+            (
+                "2026-08-16T08:30:00.000000000Z",
+                "2026-08-16T08:31:00.000000000Z",
+            )
+        )
+
     def _owned_container_identity(self, service: str) -> str | None:
         assert service == "email"
         return "b" * 64
+
+    def _owned_container_started_at(self, service: str, identity: str) -> str:
+        assert service == "email"
+        assert identity == "b" * 64
+        return next(self.started_at)
 
     def _runtime_for(self, service: str):
         assert service == "email"
@@ -542,9 +555,11 @@ def test_owned_email_restart_uses_exact_owned_container_endpoint() -> None:
     client = _RecordingMutationClient()
     controller.client = client  # type: ignore[assignment]
 
-    controller.restart()
+    proof = controller.restart()
 
     assert client.paths == [f"/containers/{'b' * 64}/restart?t=15"]
+    assert proof.logical_service == "email"
+    assert "b" * 64 not in proof.model_dump_json()
 
 
 def test_owned_case_registers_restore_authority_before_first_mutation(
