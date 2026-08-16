@@ -697,7 +697,7 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
                     self._upstream(), load_vus=case.load_vus
                 )
             )
-            time.sleep(case.observation_window_seconds + 5)
+            time.sleep(case.observation_window_seconds * 2 + 15)
             return
         time.sleep(case.observation_window_seconds)
 

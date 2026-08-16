@@ -503,7 +503,7 @@ def test_recovery_conflict_uses_full_fault_then_fresh_healthy_window(
     lifecycle.apply_case(case, selected_email_variant="1000x")
 
     assert flags.applied == 2
-    assert sleeps == [30, 35]
+    assert sleeps == [30, 75]
     assert lifecycle.recovery_trace_fixture == fixture
     assert len(requests) == 1
     assert requests[0].tool.value == "query_trace_neighborhood"
