@@ -10,7 +10,9 @@ from types import SimpleNamespace
 import pytest
 
 from ecomsre.dta_v2.agent_provider import build_provider_identity
-from ecomsre.dta_v2.contracts import semantic_sha256
+from ecomsre.dta_v2.capture_campaign import CaptureOperationFailure
+from ecomsre.dta_v2.contracts import RunbookId, semantic_sha256
+from ecomsre.dta_v2.live_controls import OwnedLiveControls
 from ecomsre.dta_v2.live_contracts import (
     LiveAttemptClosure,
     LiveAttemptMode,
@@ -27,6 +29,7 @@ from ecomsre.dta_v2.live_owned import (
     _clean_semantic_manifest,
     build_frozen_provider_config,
 )
+from ecomsre.dta_v2.owned_capture import OwnedEmailController
 from ecomsre.dta_v2.provider_env import load_private_provider_env
 from ecomsre.dta_v2.registry import load_runbook_registry
 from ecomsre.dta_v2.tool_contracts import (
@@ -38,11 +41,58 @@ from ecomsre.dta_v2.tool_contracts import (
 from ecomsre_live_sandbox.contracts import write_private_json
 
 from test_admission_policy import master_authorization
+from test_admission_policy import current_state as admitted_current_state
 from test_pr_f_live_runner import FakeLifecycle, _no_fault_agent, _positive_agent, _run
 
 
 ROOT = Path(__file__).resolve().parents[2]
 FROZEN_MODEL = "gpt-5.4-2026-03-05"
+_OWNED_EMAIL_IDENTITY = "e" * 64
+_EMAIL_STARTED_BEFORE = "2026-08-16T08:30:00.000000000Z"
+_EMAIL_STARTED_AFTER = "2026-08-16T08:31:00.000000000Z"
+
+
+class _EmailRestartDocker:
+    def __init__(self, started_at: tuple[str, ...]) -> None:
+        self._started_at = iter(started_at)
+
+    def _owned_container_identity(self, service: str) -> str:
+        assert service == "email"
+        return _OWNED_EMAIL_IDENTITY
+
+    def _owned_container_started_at(self, service: str, identity: str) -> str:
+        assert service == "email"
+        assert identity == _OWNED_EMAIL_IDENTITY
+        return next(self._started_at)
+
+    def _runtime_for(self, service: str) -> RuntimeRecord:
+        assert service == "email"
+        return RuntimeRecord(
+            logical_service="email",
+            owned_container_present=True,
+            state=RuntimeState.RUNNING,
+            health=HealthState.HEALTHY,
+            restart_count=0,
+            exit_code=None,
+            endpoint_probe_performed=True,
+            endpoint_state=EndpointState.READY,
+        )
+
+
+def _email_restart_controller(
+    started_at: tuple[str, ...],
+) -> tuple[OwnedEmailController, list[str]]:
+    backend = SimpleNamespace(
+        config=SimpleNamespace(
+            docker_endpoint="unix:///var/run/docker.sock",
+            timeout_seconds=1.0,
+        ),
+        docker=_EmailRestartDocker(started_at),
+    )
+    controller = OwnedEmailController(backend)  # type: ignore[arg-type]
+    posts: list[str] = []
+    controller.client = SimpleNamespace(post=posts.append)  # type: ignore[assignment]
+    return controller, posts
 
 
 def _freeze():
@@ -183,6 +233,75 @@ def test_owned_lifecycle_surface_has_no_generic_command_or_mutation_entrypoint()
         "restore_baseline",
         "cleanup_owned",
     }.issubset(public)
+
+
+def test_owned_email_restart_returns_safe_started_at_mutation_proof() -> None:
+    controller, posts = _email_restart_controller(
+        (_EMAIL_STARTED_BEFORE, _EMAIL_STARTED_AFTER)
+    )
+
+    proof = controller.restart()
+
+    assert proof.logical_service == "email"
+    assert proof.owned_container_identity_sha256 == semantic_sha256(
+        {"owned_container_identity": _OWNED_EMAIL_IDENTITY}
+    )
+    assert proof.before_started_at == _EMAIL_STARTED_BEFORE
+    assert proof.after_started_at == _EMAIL_STARTED_AFTER
+    assert proof.proof_sha256 == semantic_sha256(
+        proof.model_dump(mode="json", exclude={"proof_sha256"})
+    )
+    assert _OWNED_EMAIL_IDENTITY not in proof.model_dump_json()
+    assert posts == [f"/containers/{_OWNED_EMAIL_IDENTITY}/restart?t=15"]
+
+
+def test_owned_email_restart_rejects_unchanged_docker_started_at() -> None:
+    controller, posts = _email_restart_controller(
+        (_EMAIL_STARTED_BEFORE, _EMAIL_STARTED_BEFORE)
+    )
+
+    with pytest.raises(CaptureOperationFailure) as captured:
+        controller.restart()
+
+    assert captured.value.operation.value == "EMAIL_RESTART_NOT_OBSERVED"
+    assert posts == [f"/containers/{_OWNED_EMAIL_IDENTITY}/restart?t=15"]
+
+
+def test_owned_controls_bind_email_restart_proof_into_post_operation_state() -> None:
+    registry = load_runbook_registry(ROOT / "config/dta-v2/runbooks")
+    snapshot = admitted_current_state(registry, RunbookId.MITIGATE_MEMORY_LEAK)
+    controller, _ = _email_restart_controller(
+        (_EMAIL_STARTED_BEFORE, _EMAIL_STARTED_AFTER)
+    )
+    base_digest = semantic_sha256({"live_state": "email-flag-off"})
+    controls = OwnedLiveControls(
+        current_state=snapshot,
+        flag_controller=SimpleNamespace(apply=lambda document: base_digest),
+        baseline_flag_document={"flags": {"emailMemoryLeak": {"value": "off"}}},
+        email_disabled_flag_document={
+            "flags": {"emailMemoryLeak": {"value": "off"}}
+        },
+        recommendation_controller=SimpleNamespace(start=lambda: None),
+        email_controller=controller,
+        state_digest=lambda: base_digest,
+        admitted_state_digest=base_digest,
+        revalidate_before_write=lambda authorization, observed_at: None,
+    )
+
+    before = controls.state_digest()
+    controls.restart_email_service()
+    after = controls.state_digest()
+
+    proof = controls.email_restart_mutation_proof
+    assert proof is not None
+    assert after == semantic_sha256(
+        {
+            "trusted_live_state_sha256": before,
+            "email_restart_mutation_proof_sha256": proof.proof_sha256,
+        }
+    )
+    assert after != before
+    assert _OWNED_EMAIL_IDENTITY not in proof.model_dump_json()
 
 
 def test_current_state_uses_semantic_compose_identity_without_weakening_ownership() -> None:

@@ -46,6 +46,10 @@ from ecomsre.dta_v2.evaluation_contracts import (
     ReplayObservationFixture,
     ScenarioFamily,
 )
+from ecomsre.dta_v2.live_controls import (
+    EmailRestartMutationProof,
+    build_email_restart_mutation_proof,
+)
 from ecomsre.dta_v2.read_tools import ReadBackendFailure
 from ecomsre.dta_v2.telemetry_adapters import (
     LocalSandboxReadBackend,
@@ -465,13 +469,16 @@ class OwnedEmailController:
             timeout_seconds=max(45.0, backend.config.timeout_seconds),
         )
 
-    def restart(self) -> None:
+    def restart(self) -> EmailRestartMutationProof:
         try:
             identity = self.backend.docker._owned_container_identity("email")
             if identity is None or any(
                 item not in "0123456789abcdef" for item in identity.casefold()
             ):
                 raise RuntimeError("owned Email identity is invalid")
+            before_started_at = self.backend.docker._owned_container_started_at(
+                "email", identity
+            )
         except Exception as error:
             raise CaptureOperationFailure(
                 CaptureFailureOperation.EMAIL_IDENTITY
@@ -495,12 +502,26 @@ class OwnedEmailController:
                     "HEALTHY",
                     "NOT_CONFIGURED",
                 }:
-                    return
+                    break
                 time.sleep(1)
-            raise RuntimeError("owned Email restart timed out")
+            else:
+                raise RuntimeError("owned Email restart timed out")
         except Exception as error:
             raise CaptureOperationFailure(
                 CaptureFailureOperation.EMAIL_WAIT_RUNNING
+            ) from error
+        try:
+            after_started_at = self.backend.docker._owned_container_started_at(
+                "email", identity
+            )
+            return build_email_restart_mutation_proof(
+                owned_container_identity=identity,
+                before_started_at=before_started_at,
+                after_started_at=after_started_at,
+            )
+        except Exception as error:
+            raise CaptureOperationFailure(
+                CaptureFailureOperation.EMAIL_RESTART_NOT_OBSERVED
             ) from error
 
 

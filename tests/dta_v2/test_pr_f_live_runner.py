@@ -855,10 +855,17 @@ def test_failure_matrix_always_closes_and_cleans_started_attempts(
         assert lifecycle.calls.index("restore") < lifecycle.calls.index("cleanup")
 
 
-def test_pr_e_frozen_bytes_are_unchanged() -> None:
+def test_agent_rebuild_is_not_pr_e_applicable_and_preserves_evaluation_bytes() -> None:
+    identity = build_provider_identity(FROZEN_MODEL)
+    assert identity.identity_sha256 == (
+        "6efc26c6e5fab6190be9e63c0bec318c6e94fa29196e6693eb63b2845c6ad0a4"
+    )
+    assert identity.identity_sha256 != (
+        "aa08b5869aaac7e4ad4b1084367fc99a01c6dd05521ea933fddf9b5fb364ca61"
+    )
     expected = {
         ROOT / "config/dta-v2/agent-identity.v1.json": (
-            "e5608f6dc2f40e8026b42468ed437daa562661abde02cbaf0a880fd00a456a6e"
+            "81a792ee545229fa12f9e1965395b6cef787000c1aedde924e08a241d98f2edb"
         ),
         ROOT / "config/dta-v2/evaluation/manifest.json": (
             "f6ff2f222a725377f664b1ae70c7a300c6c2c4f9bfacc8420e3c5861ddcf697e"

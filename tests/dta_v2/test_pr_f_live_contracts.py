@@ -46,11 +46,11 @@ def test_pre_live_freeze_binds_every_trusted_identity_and_rejects_drift() -> Non
     freeze = build_pre_live_freeze(
         code_head="b" * 40,
         agent_identity_sha256=(
-            "aa08b5869aaac7e4ad4b1084367fc99a01c6dd05521ea933fddf9b5fb364ca61"
+            "6efc26c6e5fab6190be9e63c0bec318c6e94fa29196e6693eb63b2845c6ad0a4"
         ),
         model_id="gpt-5.4-2026-03-05",
         prompt_sha256=(
-            "42c21be36772f9ae7a6d0dcf6d910e6cdb58b5e5a08a9807487b4ee54f84bcce"
+            "d5d1fa24d4d70f8023cc5ffd3cf1a08c3bfd5ded55039e2bd02d24be0bcf09af"
         ),
         tool_schema_sha256=(
             "6b968f29201ce7c87fe56099788ff34abc93dea895c56e553e4c007b22218192"
@@ -75,7 +75,7 @@ def test_pre_live_freeze_binds_every_trusted_identity_and_rejects_drift() -> Non
 
     assert freeze.freeze_sha256
     assert freeze.agent_identity_sha256 == (
-        "aa08b5869aaac7e4ad4b1084367fc99a01c6dd05521ea933fddf9b5fb364ca61"
+        "6efc26c6e5fab6190be9e63c0bec318c6e94fa29196e6693eb63b2845c6ad0a4"
     )
     with pytest.raises(ValidationError, match="freeze digest"):
         type(freeze).model_validate(

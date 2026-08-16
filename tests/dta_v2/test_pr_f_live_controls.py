@@ -3,7 +3,10 @@ from __future__ import annotations
 import pytest
 
 from ecomsre.dta_v2.contracts import RunbookId, semantic_sha256
-from ecomsre.dta_v2.live_controls import OwnedLiveControls
+from ecomsre.dta_v2.live_controls import (
+    OwnedLiveControls,
+    build_email_restart_mutation_proof,
+)
 
 from test_admission_policy import RUNBOOK_ROOT, current_state
 from ecomsre.dta_v2.registry import load_runbook_registry
@@ -30,8 +33,38 @@ class Email:
     def __init__(self) -> None:
         self.restarts = 0
 
-    def restart(self) -> None:
+    def restart(self):
         self.restarts += 1
+        return build_email_restart_mutation_proof(
+            owned_container_identity="e" * 64,
+            before_started_at="2026-08-16T08:30:00.000000000Z",
+            after_started_at="2026-08-16T08:31:00.000000000Z",
+        )
+
+
+@pytest.mark.parametrize(
+    ("before_started_at", "after_started_at"),
+    (
+        (
+            "2026-08-16T08:30:00.0Z",
+            "2026-08-16T08:30:00.000Z",
+        ),
+        (
+            "2026-08-16T08:31:00.000000000Z",
+            "2026-08-16T08:30:00.000000000Z",
+        ),
+    ),
+)
+def test_email_restart_proof_requires_strictly_later_docker_started_at(
+    before_started_at: str,
+    after_started_at: str,
+) -> None:
+    with pytest.raises(ValueError, match="StartedAt"):
+        build_email_restart_mutation_proof(
+            owned_container_identity="e" * 64,
+            before_started_at=before_started_at,
+            after_started_at=after_started_at,
+        )
 
 
 def test_owned_controls_expose_only_fixed_registry_operations() -> None:

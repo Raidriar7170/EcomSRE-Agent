@@ -6,7 +6,7 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from ecomsre.dta_v2.read_tools import InvestigationReadTools
+from ecomsre.dta_v2.read_tools import InvestigationReadTools, ReadBackendFailure
 from ecomsre.dta_v2.telemetry_adapters import (
     LocalReadBackendConfig,
     LocalSandboxReadBackend,
@@ -128,6 +128,7 @@ class StubDocker:
                 "State": {
                     "Status": "running",
                     "Running": True,
+                    "StartedAt": "2026-08-16T08:30:00.000000000Z",
                     "ExitCode": 0,
                     "Restarting": False,
                     "Health": {"Status": "healthy"},
@@ -182,6 +183,18 @@ def test_config_rejects_remote_or_arbitrary_endpoints() -> None:
         LocalReadBackendConfig.model_validate(
             {**payload, "docker_endpoint": "tcp://127.0.0.1:2375"}
         )
+
+
+def test_docker_started_at_read_rebinds_exact_owned_container_identity() -> None:
+    backend = LocalSandboxReadBackend(
+        config=_config(), http=StubHttp(), docker=StubDocker(), sleep=lambda _: None
+    )
+
+    assert backend.docker._owned_container_started_at("payment", "c" * 64) == (
+        "2026-08-16T08:30:00.000000000Z"
+    )
+    with pytest.raises(ReadBackendFailure):
+        backend.docker._owned_container_started_at("payment", "d" * 64)
 
 
 def test_live_backend_projects_all_five_sources_without_raw_identities() -> None:

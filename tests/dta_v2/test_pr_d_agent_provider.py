@@ -170,6 +170,34 @@ def test_investigation_read_call_injects_runtime_bindings() -> None:
     assert "normalized_request_sha256" not in json.dumps(query_schema)
 
 
+def test_trace_pivot_cannot_request_first_error_service_outside_alert_candidates() -> None:
+    context = _context()
+    assert context.candidate_services == ("checkout", "frontend", "payment")
+    provider = _provider(
+        RecordingTransport(
+            [
+                _response(
+                    "query_metrics",
+                    {
+                        "service": "frontend-proxy",
+                        "metric_kinds": ["ERROR_RATE", "REQUEST_SUPPORT"],
+                        "max_results": 6,
+                    },
+                )
+            ]
+        )
+    )
+
+    with pytest.raises(ProviderProtocolError, match="out-of-scope service"):
+        provider.investigation_turn(
+            context=context,
+            transcript=(),
+            read_tools_enabled=True,
+        )
+
+    assert provider.accepted_calls == ()
+
+
 def test_after_four_dispatches_provider_can_only_submit_diagnosis() -> None:
     diagnosis = {
         "schema_version": "dta-v2.diagnosis.v1",
@@ -205,6 +233,14 @@ def test_diagnosis_prompt_and_schema_expose_cross_field_canonical_constraints() 
     assert "supporting and contradicting" in INVESTIGATION_SYSTEM_PROMPT
     assert "first_error_location=true" in INVESTIGATION_SYSTEM_PROMPT
     assert "record's service field" in INVESTIGATION_SYSTEM_PROMPT
+    assert "Every read-tool service argument and every item in a services argument" in (
+        INVESTIGATION_SYSTEM_PROMPT
+    )
+    assert "only from alert_context.candidate_services" in INVESTIGATION_SYSTEM_PROMPT
+    assert "nearest candidate service in that trace relationship" in (
+        INVESTIGATION_SYSTEM_PROMPT
+    )
+    assert "never request the out-of-candidate service" in INVESTIGATION_SYSTEM_PROMPT
     assert "word 'to' instead of the symbol '->'" in INVESTIGATION_SYSTEM_PROMPT
     assert "Never cite a FAILURE observation" in INVESTIGATION_SYSTEM_PROMPT
     assert "Order each evidence reference tuple" in INVESTIGATION_SYSTEM_PROMPT

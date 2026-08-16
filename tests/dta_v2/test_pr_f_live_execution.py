@@ -4,8 +4,13 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
+from ecomsre.dta_v2.capture_campaign import (
+    CaptureFailureOperation,
+    CaptureOperationFailure,
+)
 from ecomsre.dta_v2.contracts import RunbookId, RunbookStepId, semantic_sha256
 from ecomsre.dta_v2.live_contracts import ForwardExecutionTerminal
+from ecomsre.dta_v2.live_controls import OwnedLiveControls
 from ecomsre.dta_v2.live_execution import (
     LiveExecutionError,
     PartialExecutionError,
@@ -181,6 +186,70 @@ def test_email_restart_failure_preserves_flag_off_and_stops_after_two_receipts()
     )
     assert "untrusted secret detail" not in result.model_dump_json()
     assert len(journal.receipts) == 2
+
+
+def test_unchanged_email_started_at_seals_partial_with_no_third_write() -> None:
+    registry, artifacts, snapshot, authorization, admission, _ = admitted_case(
+        RunbookId.MITIGATE_MEMORY_LEAK
+    )
+    state = {"email_flag_off": False}
+
+    class StatefulFlags:
+        def apply(self, document):
+            del document
+            state["email_flag_off"] = True
+            return semantic_sha256(state)
+
+    class UnchangedStartedAtEmail:
+        attempts = 0
+
+        def restart(self):
+            self.attempts += 1
+            raise CaptureOperationFailure(
+                CaptureFailureOperation.EMAIL_RESTART_NOT_OBSERVED
+            )
+
+    email = UnchangedStartedAtEmail()
+    admitted_state_digest = semantic_sha256(state)
+    controls = OwnedLiveControls(
+        current_state=snapshot,
+        flag_controller=StatefulFlags(),
+        baseline_flag_document={"flags": {"emailMemoryLeak": {"value": "off"}}},
+        email_disabled_flag_document={
+            "flags": {"emailMemoryLeak": {"value": "off"}}
+        },
+        recommendation_controller=type(
+            "UnusedRecommendation", (), {"start": lambda self: None}
+        )(),
+        email_controller=email,
+        state_digest=lambda: semantic_sha256(state),
+        admitted_state_digest=admitted_state_digest,
+        revalidate_before_write=lambda child, observed_at: None,
+    )
+    journal = RecordingReceiptJournal()
+
+    result = execute_live_forward_steps(
+        registry=registry,
+        proposal=artifacts.proposal,
+        current_state=snapshot,
+        admission=admission,
+        authorization=authorization,
+        controls=controls,
+        receipt_journal=journal,
+        utc_now=_clock(),
+    )
+
+    assert result.terminal is ForwardExecutionTerminal.PARTIALLY_APPLIED
+    assert result.escalation_required is True
+    assert state["email_flag_off"] is True
+    assert controls.email_restart_mutation_proof is None
+    assert controls.forward_write_count == 2
+    assert email.attempts == 1
+    assert len(result.receipts) == len(journal.receipts) == 2
+    assert tuple(item.outcome for item in result.receipts) == (
+        StepOutcome.APPLIED,
+        StepOutcome.FAILED,
+    )
 
 
 def test_live_executor_rejects_binding_drift_before_any_write() -> None:
