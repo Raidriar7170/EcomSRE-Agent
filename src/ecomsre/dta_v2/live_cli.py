@@ -42,7 +42,7 @@ def main(argv: tuple[str, ...] | None = None) -> int:
     arguments = _parser().parse_args(argv)
     repository_root = arguments.repository_root.resolve()
     config = load_live_demo_config(
-        repository_root / "config/dta-v2/live-demo.v1.json"
+        repository_root / "config/dta-v2/live-demo.v2.json"
     )
     registry = load_runbook_registry(repository_root / "config/dta-v2/runbooks")
     master = load_master_authorization(arguments.master_authorization)

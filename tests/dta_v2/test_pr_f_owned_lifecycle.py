@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 import os
@@ -11,21 +11,29 @@ import pytest
 
 from ecomsre.dta_v2.agent_provider import build_provider_identity
 from ecomsre.dta_v2.capture_campaign import CaptureOperationFailure
-from ecomsre.dta_v2.contracts import RunbookId, semantic_sha256
-from ecomsre.dta_v2.live_controls import OwnedLiveControls
+from ecomsre.dta_v2.contracts import RunbookId, RunbookStepId, semantic_sha256
+from ecomsre.dta_v2.live_controls import (
+    OwnedLiveControls,
+    build_email_restart_mutation_proof,
+)
 from ecomsre.dta_v2.live_contracts import (
+    ForwardExecution,
+    ForwardExecutionTerminal,
     LiveAttemptClosure,
     LiveAttemptMode,
     LiveAttemptTerminal,
     LiveScenario,
     build_live_campaign_attempt_claim,
     build_pre_live_freeze,
+    build_recovery_window,
     load_live_demo_config,
 )
+from ecomsre.dta_v2.live_execution import execute_live_forward_steps
 from ecomsre.dta_v2.live_owned import (
     OwnedLiveCampaign,
     OwnedLivePreflight,
     OwnedSandboxLiveLifecycle,
+    _SEMANTIC_FILES,
     _clean_semantic_manifest,
     build_frozen_provider_config,
 )
@@ -35,13 +43,22 @@ from ecomsre.dta_v2.registry import load_runbook_registry
 from ecomsre.dta_v2.tool_contracts import (
     EndpointState,
     HealthState,
+    ResourceSample,
+    ResourceUsageRecord,
     RuntimeRecord,
     RuntimeState,
 )
+from ecomsre.dta_v2.operational_contracts import StepOutcome
 from ecomsre_live_sandbox.contracts import write_private_json
 
 from test_admission_policy import master_authorization
 from test_admission_policy import current_state as admitted_current_state
+from test_fake_execution import admitted_case
+from test_pr_f_live_execution import (
+    FakeOwnedControls,
+    RecordingReceiptJournal,
+    _clock,
+)
 from test_pr_f_live_runner import FakeLifecycle, _no_fault_agent, _positive_agent, _run
 
 
@@ -50,6 +67,11 @@ FROZEN_MODEL = "gpt-5.4-2026-03-05"
 _OWNED_EMAIL_IDENTITY = "e" * 64
 _EMAIL_STARTED_BEFORE = "2026-08-16T08:30:00.000000000Z"
 _EMAIL_STARTED_AFTER = "2026-08-16T08:31:00.000000000Z"
+
+
+def test_current_semantic_manifest_binds_v2_and_not_historical_v1() -> None:
+    assert "config/dta-v2/live-demo.v2.json" in _SEMANTIC_FILES
+    assert "config/dta-v2/live-demo.v1.json" not in _SEMANTIC_FILES
 
 
 class _EmailRestartDocker:
@@ -95,8 +117,58 @@ def _email_restart_controller(
     return controller, posts
 
 
+def _applied_forward(
+    runbook_id: RunbookId,
+) -> tuple[ForwardExecution, OwnedLiveControls | FakeOwnedControls]:
+    registry, artifacts, snapshot, authorization, admission, _ = admitted_case(
+        runbook_id
+    )
+    journal = RecordingReceiptJournal()
+    if runbook_id is RunbookId.MITIGATE_MEMORY_LEAK:
+        state = {"email_flag_off": False}
+
+        class Flags:
+            def apply(self, document):
+                del document
+                state["email_flag_off"] = True
+                return semantic_sha256(state)
+
+        proof = build_email_restart_mutation_proof(
+            owned_container_identity=_OWNED_EMAIL_IDENTITY,
+            before_started_at=_EMAIL_STARTED_BEFORE,
+            after_started_at=_EMAIL_STARTED_AFTER,
+        )
+        controls: OwnedLiveControls | FakeOwnedControls = OwnedLiveControls(
+            current_state=snapshot,
+            flag_controller=Flags(),
+            baseline_flag_document={"flags": {"emailMemoryLeak": {"value": "off"}}},
+            email_disabled_flag_document={
+                "flags": {"emailMemoryLeak": {"value": "off"}}
+            },
+            recommendation_controller=SimpleNamespace(start=lambda: None),
+            email_controller=SimpleNamespace(restart=lambda: proof),
+            state_digest=lambda: semantic_sha256(state),
+            admitted_state_digest=semantic_sha256(state),
+            revalidate_before_write=lambda child, observed_at: None,
+        )
+    else:
+        controls = FakeOwnedControls(snapshot, journal)
+    forward = execute_live_forward_steps(
+        registry=registry,
+        proposal=artifacts.proposal,
+        current_state=snapshot,
+        admission=admission,
+        authorization=authorization,
+        controls=controls,
+        receipt_journal=journal,
+        utc_now=_clock(),
+    )
+    assert forward.terminal is ForwardExecutionTerminal.APPLIED
+    return forward, controls
+
+
 def _freeze():
-    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v1.json")
+    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v2.json")
     registry = load_runbook_registry(ROOT / "config/dta-v2/runbooks")
     identity = build_provider_identity(FROZEN_MODEL)
     return build_pre_live_freeze(
@@ -304,8 +376,313 @@ def test_owned_controls_bind_email_restart_proof_into_post_operation_state() -> 
     assert _OWNED_EMAIL_IDENTITY not in proof.model_dump_json()
 
 
+def test_email_recovery_waits_to_receipt_boundary_then_refreshes_authority() -> None:
+    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v2.json")
+    scenario = next(
+        item for item in config.scenarios if item.scenario is LiveScenario.EMAIL
+    )
+    forward, controls = _applied_forward(RunbookId.MITIGATE_MEMORY_LEAK)
+    assert type(controls) is OwnedLiveControls
+    boundary = forward.receipts[-1].end_time + timedelta(seconds=60)
+    clock = iter((boundary - timedelta(seconds=25), boundary))
+    events: list[str] = []
+    sleeps: list[float] = []
+    lifecycle = object.__new__(OwnedSandboxLiveLifecycle)
+    lifecycle.config = config
+    lifecycle.scenario = scenario
+    lifecycle._last_controls = controls
+
+    def utc_now() -> datetime:
+        events.append("clock")
+        return next(clock)
+
+    def sleep(seconds: float) -> None:
+        events.append("sleep")
+        sleeps.append(seconds)
+
+    def refresh_backend() -> object:
+        events.append("refresh_authority")
+        return object()
+
+    def capture_window(ordinal: int, *, target: str):
+        events.append(f"window_{ordinal}")
+        assert target == "email"
+        started_at = boundary + timedelta(seconds=ordinal - 1)
+        return (
+            build_recovery_window(
+                ordinal=ordinal,  # type: ignore[arg-type]
+                started_at=started_at,
+                ended_at=started_at + timedelta(seconds=20),
+                infrastructure_passed=True,
+                business_sli_passed=True,
+                endpoint_passed=True,
+                configuration_restored=True,
+                memory_slope_bytes_per_second=90_000.0,
+            ),
+            0.0,
+        )
+
+    lifecycle._utc_now = utc_now
+    lifecycle._sleep = sleep
+    lifecycle._refresh_backend = refresh_backend
+    lifecycle._capture_window = capture_window
+
+    windows = lifecycle.capture_recovery_windows(forward)
+
+    assert sleeps == [25.0]
+    assert events == [
+        "clock",
+        "sleep",
+        "clock",
+        "refresh_authority",
+        "window_1",
+        "window_2",
+    ]
+    assert windows[0].started_at >= boundary
+    assert tuple(item.memory_slope_bytes_per_second for item in windows) == (
+        90_000.0,
+        90_000.0,
+    )
+
+
+def test_email_recovery_dump_revalidates_nested_restart_proof_before_capture() -> None:
+    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v2.json")
+    scenario = next(
+        item for item in config.scenarios if item.scenario is LiveScenario.EMAIL
+    )
+    forward, controls = _applied_forward(RunbookId.MITIGATE_MEMORY_LEAK)
+    assert type(controls) is OwnedLiveControls
+    proof = controls.email_restart_mutation_proof
+    assert proof is not None
+    forged_proofs = (
+        proof.model_copy(update={"after_started_at": proof.before_started_at}),
+        proof.model_copy(update={"proof_sha256": "f" * 64}),
+    )
+    for forged_proof in forged_proofs:
+        controls.email_restart_mutation_proof = forged_proof
+        lifecycle = object.__new__(OwnedSandboxLiveLifecycle)
+        lifecycle.config = config
+        lifecycle.scenario = scenario
+        lifecycle._last_controls = controls
+        lifecycle._utc_now = lambda: pytest.fail("forged proof reached clock")
+        lifecycle._sleep = lambda seconds: pytest.fail("forged proof reached sleep")
+        lifecycle._refresh_backend = lambda: pytest.fail(
+            "forged proof refreshed authority"
+        )
+        lifecycle._capture_window = lambda ordinal, target: pytest.fail(
+            "forged proof captured recovery"
+        )
+
+        with pytest.raises(
+            (ValueError, RuntimeError), match="StartedAt|digest|proof|mutation"
+        ):
+            lifecycle.capture_recovery_windows(forward)
+
+
+def test_email_recovery_rejects_window_before_settle_boundary() -> None:
+    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v2.json")
+    scenario = next(
+        item for item in config.scenarios if item.scenario is LiveScenario.EMAIL
+    )
+    forward, controls = _applied_forward(RunbookId.MITIGATE_MEMORY_LEAK)
+    assert type(controls) is OwnedLiveControls
+    boundary = forward.receipts[-1].end_time + timedelta(seconds=60)
+    lifecycle = object.__new__(OwnedSandboxLiveLifecycle)
+    lifecycle.config = config
+    lifecycle.scenario = scenario
+    lifecycle._last_controls = controls
+    lifecycle._utc_now = lambda: boundary
+    lifecycle._sleep = lambda seconds: pytest.fail("settled recovery must not sleep")
+    lifecycle._refresh_backend = lambda: object()
+    lifecycle._capture_window = lambda ordinal, target: (
+        build_recovery_window(
+            ordinal=ordinal,
+            started_at=boundary - timedelta(seconds=1),
+            ended_at=boundary + timedelta(seconds=20),
+            infrastructure_passed=True,
+            business_sli_passed=True,
+            endpoint_passed=True,
+            configuration_restored=True,
+            memory_slope_bytes_per_second=90_000.0,
+        ),
+        0.0,
+    )
+
+    with pytest.raises(RuntimeError, match="settle boundary"):
+        lifecycle.capture_recovery_windows(forward)
+
+
+def test_email_recovery_requires_restart_receipt_and_owned_mutation_proof() -> None:
+    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v2.json")
+    scenario = next(
+        item for item in config.scenarios if item.scenario is LiveScenario.EMAIL
+    )
+    applied, controls = _applied_forward(RunbookId.MITIGATE_MEMORY_LEAK)
+    assert type(controls) is OwnedLiveControls
+    prefix_payload = applied.model_dump(
+        mode="python", exclude={"forward_execution_sha256"}
+    )
+    prefix_payload.update(
+        {
+            "forward_step_count": 1,
+            "receipts": applied.receipts[:1],
+            "terminal": ForwardExecutionTerminal.PARTIALLY_APPLIED,
+            "escalation_required": True,
+        }
+    )
+    prefix = ForwardExecution.model_validate(
+        {
+            **prefix_payload,
+            "forward_execution_sha256": semantic_sha256(
+                {
+                    **prefix_payload,
+                    "receipts": tuple(
+                        receipt.model_dump(mode="json")
+                        for receipt in applied.receipts[:1]
+                    ),
+                    "terminal": ForwardExecutionTerminal.PARTIALLY_APPLIED.value,
+                }
+            ),
+        }
+    )
+    wrong_final = applied.model_copy(
+        update={
+            "receipts": (
+                applied.receipts[0],
+                applied.receipts[1].model_copy(
+                    update={"step_id": RunbookStepId.DISABLE_LEAK_FLAG}
+                ),
+            )
+        }
+    )
+    registry, artifacts, snapshot, authorization, admission, _ = admitted_case(
+        RunbookId.MITIGATE_MEMORY_LEAK
+    )
+    failed_journal = RecordingReceiptJournal()
+    failed_controls = FakeOwnedControls(snapshot, failed_journal)
+    failed_controls.fail_operation = "restart_email"
+    failed_final = execute_live_forward_steps(
+        registry=registry,
+        proposal=artifacts.proposal,
+        current_state=snapshot,
+        admission=admission,
+        authorization=authorization,
+        controls=failed_controls,
+        receipt_journal=failed_journal,
+        utc_now=_clock(),
+    )
+    assert failed_final.terminal is ForwardExecutionTerminal.PARTIALLY_APPLIED
+    assert failed_final.receipts[-1].outcome is StepOutcome.FAILED
+    cases = (
+        (prefix, controls),
+        (failed_final, controls),
+        (wrong_final, controls),
+        (
+            applied,
+            SimpleNamespace(email_restart_mutation_proof=None),
+        ),
+    )
+    for forward, candidate_controls in cases:
+        lifecycle = object.__new__(OwnedSandboxLiveLifecycle)
+        lifecycle.config = config
+        lifecycle.scenario = scenario
+        lifecycle._last_controls = candidate_controls
+        lifecycle._utc_now = lambda: pytest.fail("invalid recovery reached clock")
+        lifecycle._sleep = lambda seconds: pytest.fail("invalid recovery reached sleep")
+        lifecycle._refresh_backend = lambda: pytest.fail(
+            "invalid recovery refreshed authority"
+        )
+        lifecycle._capture_window = lambda ordinal, target: pytest.fail(
+            "invalid recovery captured a window"
+        )
+
+        with pytest.raises((ValueError, RuntimeError)):
+            lifecycle.capture_recovery_windows(forward)
+
+
+@pytest.mark.parametrize(
+    ("scenario_name", "runbook_id"),
+    (
+        (LiveScenario.PAYMENT, RunbookId.ROLLBACK_CONFIGURATION),
+        (LiveScenario.RECOMMENDATION, RunbookId.RESTART_SERVICE),
+    ),
+)
+def test_non_email_recovery_has_no_email_settle(
+    scenario_name: LiveScenario,
+    runbook_id: RunbookId,
+) -> None:
+    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v2.json")
+    scenario = next(item for item in config.scenarios if item.scenario is scenario_name)
+    forward, _ = _applied_forward(runbook_id)
+    calls: list[int] = []
+    lifecycle = object.__new__(OwnedSandboxLiveLifecycle)
+    lifecycle.config = config
+    lifecycle.scenario = scenario
+    lifecycle._last_controls = None
+    lifecycle._utc_now = lambda: pytest.fail("non-Email recovery read settle clock")
+    lifecycle._sleep = lambda seconds: pytest.fail("non-Email recovery slept")
+    lifecycle._refresh_backend = lambda: pytest.fail(
+        "non-Email recovery performed settle refresh"
+    )
+
+    def capture_window(ordinal: int, *, target: str):
+        calls.append(ordinal)
+        started_at = datetime(2026, 8, 16, 9, ordinal, tzinfo=timezone.utc)
+        return (
+            build_recovery_window(
+                ordinal=ordinal,  # type: ignore[arg-type]
+                started_at=started_at,
+                ended_at=started_at + timedelta(seconds=30),
+                infrastructure_passed=True,
+                business_sli_passed=True,
+                endpoint_passed=True,
+                configuration_restored=True,
+                memory_slope_bytes_per_second=None,
+            ),
+            0.0,
+        )
+
+    lifecycle._capture_window = capture_window
+
+    assert len(lifecycle.capture_recovery_windows(forward)) == 2
+    assert calls == [1, 2]
+
+
+def test_all_owned_email_measurements_use_frozen_v2_resource_window() -> None:
+    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v2.json")
+    requests: list[object] = []
+    record = ResourceUsageRecord(
+        logical_service="email",
+        sampling_window_seconds=20,
+        samples=tuple(
+            ResourceSample(
+                offset_ms=offset,
+                cpu_percent=1.0,
+                memory_bytes=1_000_000 + offset,
+            )
+            for offset in (0, 5_000, 10_000, 15_000, 20_000)
+        ),
+        memory_slope_bytes_per_second=1_000.0,
+    )
+
+    class Backend:
+        def execute(self, request):
+            requests.append(request)
+            return SimpleNamespace(records=(record,))
+
+    lifecycle = object.__new__(OwnedSandboxLiveLifecycle)
+    lifecycle.config = config
+    lifecycle._require_backend = lambda: Backend()
+
+    assert lifecycle._email_resource() == record
+    assert len(requests) == 1
+    request = requests[0]
+    assert request.sampling_window_seconds == 20
+    assert request.sample_count == 5
+
+
 def test_current_state_uses_semantic_compose_identity_without_weakening_ownership() -> None:
-    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v1.json")
+    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v2.json")
     registry = load_runbook_registry(ROOT / "config/dta-v2/runbooks")
     scenario = next(
         item for item in config.scenarios if item.scenario is LiveScenario.PAYMENT
@@ -368,7 +745,7 @@ def test_current_state_uses_semantic_compose_identity_without_weakening_ownershi
 
 
 def test_generic_caller_cannot_construct_owned_live_lifecycle(tmp_path: Path) -> None:
-    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v1.json")
+    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v2.json")
     registry = load_runbook_registry(ROOT / "config/dta-v2/runbooks")
     with pytest.raises(TypeError, match="campaign-issued"):
         OwnedSandboxLiveLifecycle(
@@ -441,7 +818,7 @@ def test_environment_admission_reverifies_images_without_rewriting_create_once_l
 def test_pre_live_freeze_rejects_untracked_or_tracked_dirty_state_before_hashing(
     tmp_path: Path,
 ) -> None:
-    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v1.json")
+    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v2.json")
 
     class Result:
         stdout = "?? unsafe-untracked-file\n"
@@ -492,7 +869,7 @@ def test_pre_fault_start_failure_can_prove_unchanged_baseline_without_write(
 
 
 def test_owned_fault_revalidation_rejects_actual_baseline_state_drift() -> None:
-    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v1.json")
+    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v2.json")
     payment = next(
         item for item in config.scenarios if item.scenario is LiveScenario.PAYMENT
     )
@@ -508,7 +885,7 @@ def test_owned_fault_revalidation_rejects_actual_baseline_state_drift() -> None:
 
 
 def test_email_partial_failure_never_issues_a_third_restoration_write() -> None:
-    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v1.json")
+    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v2.json")
     email_spec = next(item for item in config.scenarios if item.scenario.value == "EMAIL")
 
     class Flags:
@@ -575,7 +952,7 @@ def _campaign_with_prior_closure(
     monkeypatch: pytest.MonkeyPatch,
     closure: LiveAttemptClosure,
 ):
-    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v1.json")
+    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v2.json")
     registry = load_runbook_registry(ROOT / "config/dta-v2/runbooks")
     change_sha256 = "c" * 64
     monkeypatch.setattr(

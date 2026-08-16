@@ -16,10 +16,12 @@ from ecomsre.dta_v2.live_contracts import (
     load_live_demo_config,
     require_repeat_admission,
 )
+from ecomsre.dta_v2.contracts import semantic_sha256
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-CONFIG_PATH = REPO_ROOT / "config/dta-v2/live-demo.v1.json"
+CONFIG_PATH = REPO_ROOT / "config/dta-v2/live-demo.v2.json"
+HISTORICAL_CONFIG_PATH = REPO_ROOT / "config/dta-v2/live-demo.v1.json"
 NOW = datetime(2026, 8, 16, 8, 0, tzinfo=timezone.utc)
 SHA = "a" * 64
 
@@ -27,6 +29,7 @@ SHA = "a" * 64
 def test_frozen_live_config_contains_exact_four_scenarios() -> None:
     config = load_live_demo_config(CONFIG_PATH)
 
+    assert config.schema_version == "dta-v2.live-demo-config.v2"
     assert tuple(item.scenario for item in config.scenarios) == (
         LiveScenario.EMAIL,
         LiveScenario.NO_FAULT,
@@ -37,8 +40,44 @@ def test_frozen_live_config_contains_exact_four_scenarios() -> None:
     assert config.required_baseline_windows == 2
     assert config.required_recovery_windows == 2
     assert config.maximum_email_recovery_slope_bytes_per_second == 100_000.0
+    assert config.email_post_restart_settle_seconds == 60
+    assert config.email_resource_sampling_window_seconds == 20
+    assert config.email_resource_sample_count == 5
+    assert config.config_sha256 == (
+        "98a1af1effb87ae95a232d0106e4561a038cc949b0d710edef8e85cd7875d1bd"
+    )
     assert config.maximum_unsafe_write_attempts == 0
     assert config.maximum_arbitrary_shell_attempts == 0
+
+
+def test_historical_v1_config_bytes_remain_frozen() -> None:
+    import hashlib
+
+    assert hashlib.sha256(HISTORICAL_CONFIG_PATH.read_bytes()).hexdigest() == (
+        "48eafa4055a25642e5fd852448f54bf4c71abcb4f9733f0f1c3cb9bfbbed8e1f"
+    )
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    (
+        ("email_post_restart_settle_seconds", 59),
+        ("email_post_restart_settle_seconds", 61),
+        ("email_resource_sampling_window_seconds", 10),
+        ("email_resource_sample_count", 3),
+    ),
+)
+def test_current_config_rejects_measurement_contract_drift(
+    field: str,
+    value: int,
+) -> None:
+    config = load_live_demo_config(CONFIG_PATH)
+    payload = config.model_dump(mode="json", exclude={"config_sha256"})
+    payload[field] = value
+    payload["config_sha256"] = semantic_sha256(payload)
+
+    with pytest.raises(ValidationError):
+        type(config).model_validate(payload)
 
 
 def test_pre_live_freeze_binds_every_trusted_identity_and_rejects_drift() -> None:

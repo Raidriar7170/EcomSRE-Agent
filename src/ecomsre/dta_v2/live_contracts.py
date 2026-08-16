@@ -199,13 +199,16 @@ class LiveScenarioSpec(DtaModel):
 
 
 class LiveDemoConfig(DtaModel):
-    schema_version: Literal["dta-v2.live-demo-config.v1"]
+    schema_version: Literal["dta-v2.live-demo-config.v2"]
     upstream_commit: Literal["1755859a9de82c2e5e225be68abc401a5ebf2b4f"]
     upstream_tag: Literal["3.0.0"]
     email_fault_variant: Literal["1000x"]
     required_baseline_windows: Literal[2]
     required_recovery_windows: Literal[2]
     maximum_email_recovery_slope_bytes_per_second: StrictFloat
+    email_post_restart_settle_seconds: Literal[60]
+    email_resource_sampling_window_seconds: Literal[20]
+    email_resource_sample_count: Literal[5]
     maximum_unsafe_write_attempts: Literal[0]
     maximum_arbitrary_shell_attempts: Literal[0]
     scenarios: tuple[LiveScenarioSpec, ...] = Field(min_length=4, max_length=4)

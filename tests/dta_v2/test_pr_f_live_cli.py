@@ -36,7 +36,13 @@ def test_review_required_campaign_does_not_publish_success_artifacts(
 ) -> None:
     public_root = tmp_path / "public"
     writes: list[object] = []
-    monkeypatch.setattr(live_cli, "load_live_demo_config", lambda path: object())
+    config_paths: list[Path] = []
+
+    def load_config(path: Path) -> object:
+        config_paths.append(path)
+        return object()
+
+    monkeypatch.setattr(live_cli, "load_live_demo_config", load_config)
     monkeypatch.setattr(live_cli, "load_runbook_registry", lambda path: object())
     monkeypatch.setattr(live_cli, "load_master_authorization", lambda path: object())
     monkeypatch.setattr(live_cli, "OwnedLiveCampaign", lambda **kwargs: object())
@@ -72,5 +78,6 @@ def test_review_required_campaign_does_not_publish_success_artifacts(
     )
 
     assert exit_code == 2
+    assert config_paths == [ROOT / "config/dta-v2/live-demo.v2.json"]
     assert writes == []
     assert not public_root.exists()

@@ -24,11 +24,17 @@ from ecomsre.dta_v2.authorization import (
     AttemptAuthorizationRecord,
     MasterAuthorizationRecord,
 )
-from ecomsre.dta_v2.contracts import Precondition, semantic_sha256
+from ecomsre.dta_v2.contracts import (
+    Precondition,
+    RunbookId,
+    RunbookStepId,
+    semantic_sha256,
+)
 from ecomsre.dta_v2.live_contracts import (
     BaselineEvidence,
     CleanupTerminal,
     ForwardExecution,
+    ForwardExecutionTerminal,
     LiveAttemptMode,
     LiveAttemptClosure,
     LiveCampaignAttemptClaim,
@@ -46,13 +52,17 @@ from ecomsre.dta_v2.live_capability import (
     _OWNED_CAMPAIGN_TOKEN,
     issue_owned_live_execution_grant,
 )
-from ecomsre.dta_v2.live_controls import OwnedLiveControls
+from ecomsre.dta_v2.live_controls import (
+    EmailRestartMutationProof,
+    OwnedLiveControls,
+)
 from ecomsre.dta_v2.operational_contracts import (
     CurrentStateSnapshot,
     DockerBoundary,
     OwnershipStatus,
     PreconditionObservation,
     ServiceRuntimeState,
+    StepOutcome,
     build_current_state_snapshot,
 )
 from ecomsre.dta_v2.owned_capture import (
@@ -106,7 +116,7 @@ _SOURCE_FILES = {
 }
 _SEMANTIC_FILES = (
     "config/dta-v2/agent-identity.v1.json",
-    "config/dta-v2/live-demo.v1.json",
+    "config/dta-v2/live-demo.v2.json",
     "config/live-telemetry-controlled-remediation-v1/budget.json",
     "config/live-telemetry-controlled-remediation-v1/compose.sandbox.yaml",
     "config/live-telemetry-controlled-remediation-v1/sandbox.json",
@@ -516,8 +526,10 @@ class OwnedSandboxLiveLifecycle:
             build_inspect_resource_usage_request(
                 run_id="d" * 32,
                 services=("email",),
-                sampling_window_seconds=10,
-                sample_count=3,
+                sampling_window_seconds=(
+                    self.config.email_resource_sampling_window_seconds
+                ),
+                sample_count=self.config.email_resource_sample_count,
             )
         )
         if len(result.records) != 1 or type(result.records[0]) is not ResourceUsageRecord:
@@ -933,7 +945,52 @@ class OwnedSandboxLiveLifecycle:
         forward = ForwardExecution.model_validate(
             forward_execution.model_dump(mode="python")
         )
+        settle_boundary: datetime | None = None
+        if self.scenario.scenario is LiveScenario.EMAIL:
+            controls = self._last_controls
+            if (
+                type(controls) is not OwnedLiveControls
+                or controls.email_restart_mutation_proof is None
+            ):
+                raise RuntimeError(
+                    "Email recovery lacks the exact applied restart mutation proof"
+                )
+            mutation_proof = EmailRestartMutationProof.model_validate(
+                controls.email_restart_mutation_proof.model_dump(mode="python")
+            )
+            final_receipt = forward.receipts[-1]
+            if (
+                forward.runbook_id is not RunbookId.MITIGATE_MEMORY_LEAK
+                or forward.target != "email"
+                or forward.terminal is not ForwardExecutionTerminal.APPLIED
+                or len(forward.receipts) != 2
+                or final_receipt.step_id is not RunbookStepId.RESTART_OWNED_SERVICE
+                or final_receipt.outcome is not StepOutcome.APPLIED
+                or type(controls) is not OwnedLiveControls
+                or controls.run_id != forward.run_id
+                or controls.attempt_id != forward.attempt_id
+                or controls.target != forward.target
+                or mutation_proof.proof_sha256
+                != controls.email_restart_mutation_proof.proof_sha256
+                or final_receipt.after_state_digest != controls.state_digest()
+            ):
+                raise RuntimeError(
+                    "Email recovery lacks the exact applied restart mutation proof"
+                )
+            settle_boundary = final_receipt.end_time + timedelta(
+                seconds=self.config.email_post_restart_settle_seconds
+            )
+            observed_at = self._utc_now()
+            remaining_seconds = (settle_boundary - observed_at).total_seconds()
+            if remaining_seconds > 0:
+                self._sleep(remaining_seconds)
+                observed_at = self._utc_now()
+            if observed_at < settle_boundary:
+                raise RuntimeError("Email recovery settle boundary was not reached")
+            self._refresh_backend()
         first, _ = self._capture_window(1, target=forward.target)
+        if settle_boundary is not None and first.started_at < settle_boundary:
+            raise RuntimeError("Email recovery window precedes settle boundary")
         second, _ = self._capture_window(2, target=forward.target)
         return first, second
 

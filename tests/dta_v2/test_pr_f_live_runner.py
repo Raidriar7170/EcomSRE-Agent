@@ -421,7 +421,7 @@ class FakeLifecycle:
 
 
 def _run(tmp_path, scenario, lifecycle, *, owned_claim=None):
-    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v1.json")
+    config = load_live_demo_config(ROOT / "config/dta-v2/live-demo.v2.json")
     spec = next(item for item in config.scenarios if item.scenario is scenario)
     registry = load_runbook_registry(RUNBOOK_ROOT)
     clock_tick = 0

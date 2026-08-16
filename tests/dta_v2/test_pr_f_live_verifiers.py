@@ -102,6 +102,29 @@ def test_email_memory_or_window_failure_escalates_without_more_writes() -> None:
     assert transaction.verification.reason_codes == ("MEMORY_SLOPE_NOT_RECOVERED",)
 
 
+def test_retained_email_slopes_fail_without_retry_averaging_or_threshold_drift() -> None:
+    registry, forward = _forward(RunbookId.MITIGATE_MEMORY_LEAK)
+    windows = (_windows(slope=163_020.8)[0], _windows(slope=90_521.6)[1])
+
+    transaction = finalize_live_execution(
+        registry=registry,
+        forward_execution=forward,
+        recovery_windows=windows,
+        email_leak_flag_off=True,
+        maximum_email_memory_slope_bytes_per_second=100_000.0,
+    )
+
+    assert len(windows) == 2
+    assert tuple(item.memory_slope_bytes_per_second for item in windows) == (
+        163_020.8,
+        90_521.6,
+    )
+    assert transaction.terminal is ExecutionTerminal.VERIFICATION_FAILED
+    assert transaction.final_disposition is ActionDisposition.ESCALATE_HUMAN
+    assert transaction.verification is not None
+    assert transaction.verification.reason_codes == ("MEMORY_SLOPE_NOT_RECOVERED",)
+
+
 def test_partial_email_is_sealed_without_verification_or_compensation() -> None:
     registry, forward = _forward(
         RunbookId.MITIGATE_MEMORY_LEAK,

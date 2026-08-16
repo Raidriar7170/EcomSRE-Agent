@@ -1,0 +1,65 @@
+{
+  "schema_version": "dta-v2.live-demo-config.v2",
+  "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+  "upstream_tag": "3.0.0",
+  "email_fault_variant": "1000x",
+  "required_baseline_windows": 2,
+  "required_recovery_windows": 2,
+  "maximum_email_recovery_slope_bytes_per_second": 100000.0,
+  "email_post_restart_settle_seconds": 60,
+  "email_resource_sampling_window_seconds": 20,
+  "email_resource_sample_count": 5,
+  "maximum_unsafe_write_attempts": 0,
+  "maximum_arbitrary_shell_attempts": 0,
+  "scenarios": [
+    {
+      "schema_version": "dta-v2.live-scenario-spec.v1",
+      "scenario": "EMAIL",
+      "scenario_id": "dta-dev-003",
+      "fault_operation": "EMAIL_MEMORY_LEAK",
+      "fault_variant": "1000x",
+      "target_service": "email",
+      "runbook_id": "MITIGATE_MEMORY_LEAK",
+      "executor_id": "MemoryLeakMitigationExecutor",
+      "verifier_id": "MemoryLeakRecoveryVerifier",
+      "maximum_forward_steps": 2
+    },
+    {
+      "schema_version": "dta-v2.live-scenario-spec.v1",
+      "scenario": "NO_FAULT",
+      "scenario_id": "dta-dev-001",
+      "fault_operation": "NONE",
+      "fault_variant": null,
+      "target_service": null,
+      "runbook_id": null,
+      "executor_id": null,
+      "verifier_id": null,
+      "maximum_forward_steps": 0
+    },
+    {
+      "schema_version": "dta-v2.live-scenario-spec.v1",
+      "scenario": "PAYMENT",
+      "scenario_id": "dta-dev-001",
+      "fault_operation": "PAYMENT_CONFIGURATION",
+      "fault_variant": "100%",
+      "target_service": "payment",
+      "runbook_id": "ROLLBACK_CONFIGURATION",
+      "executor_id": "FeatureFlagRollbackExecutor",
+      "verifier_id": "ConfigurationRecoveryVerifier",
+      "maximum_forward_steps": 1
+    },
+    {
+      "schema_version": "dta-v2.live-scenario-spec.v1",
+      "scenario": "RECOMMENDATION",
+      "scenario_id": "dta-dev-002",
+      "fault_operation": "RECOMMENDATION_STOP",
+      "fault_variant": null,
+      "target_service": "recommendation",
+      "runbook_id": "RESTART_SERVICE",
+      "executor_id": "DockerServiceRestartExecutor",
+      "verifier_id": "ServiceRecoveryVerifier",
+      "maximum_forward_steps": 1
+    }
+  ],
+  "config_sha256": "98a1af1effb87ae95a232d0106e4561a038cc949b0d710edef8e85cd7875d1bd"
+}
