@@ -25,6 +25,7 @@ from ecomsre.dta_v2.capture_campaign import (
     CaptureLifecycle,
     CaptureOperationFailure,
     CaptureTerminal,
+    EMAIL_CAPTURE_MAXIMUM_MEMORY_BYTES,
     EmailMemoryObservation,
     OperationalFamily,
     build_default_capture_plan,
@@ -184,11 +185,23 @@ def require_capture_case_quality(
             )
     else:
         resources = successful(ToolName.INSPECT_RESOURCE_USAGE)
-        if not any(
-            type(item) is ResourceUsageRecord
-            and item.logical_service == "email"
-            and item.memory_slope_bytes_per_second >= 100_000.0
+        email_records = tuple(
+            item
             for item in resources.records
+            if type(item) is ResourceUsageRecord
+            and item.logical_service == "email"
+        )
+        if any(
+            sample.memory_bytes > EMAIL_CAPTURE_MAXIMUM_MEMORY_BYTES
+            for item in email_records
+            for sample in item.samples
+        ):
+            raise CaptureCaseQualityFailure(
+                CaptureCaseQualityFailureCode.EMAIL_MEMORY_SAFETY_CEILING_EXCEEDED
+            )
+        if not any(
+            item.memory_slope_bytes_per_second >= 100_000.0
+            for item in email_records
         ):
             raise CaptureCaseQualityFailure(
                 CaptureCaseQualityFailureCode.EMAIL_MEMORY_GROWTH_MISSING
@@ -518,6 +531,7 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
         self.admitted_resolved_sha256: str | None = None
         self.active_condition: str | None = None
         self.email_restart_required = False
+        self.email_resource_fixture: ReplayObservationFixture | None = None
         self.recovery_started_at: datetime | None = None
         self.recovery_trace_fixture: ReplayObservationFixture | None = None
 
@@ -625,6 +639,7 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
         self.email_restart_required = (
             case.condition is CaptureCondition.EMAIL_LEAK
         )
+        self.email_resource_fixture = None
         payment_variant = "off"
         email_variant = "off"
         if case.condition is CaptureCondition.PAYMENT_FLAG:
@@ -648,6 +663,20 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
         self._flags().apply(document)
         if case.condition is CaptureCondition.RECOMMENDATION_STOP:
             self._recommendation().stop()
+        elif case.condition is CaptureCondition.EMAIL_LEAK:
+            self._email().restart()
+            self.email_resource_fixture = self._capture_fixture(
+                build_inspect_resource_usage_request(
+                    run_id=secrets.token_hex(16),
+                    services=("email",),
+                    sampling_window_seconds=20,
+                    sample_count=5,
+                )
+            )
+            remaining_seconds = case.observation_window_seconds - 20
+            if remaining_seconds > 0:
+                time.sleep(remaining_seconds)
+            return
         elif case.condition is CaptureCondition.RECOVERY_TRANSITION:
             time.sleep(min(10, case.observation_window_seconds // 2))
             trace_ended_at = datetime.now(timezone.utc)
@@ -736,6 +765,13 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
         captured = []
         for request in requests:
             if (
+                request.tool is ToolName.INSPECT_RESOURCE_USAGE
+                and case.condition is CaptureCondition.EMAIL_LEAK
+            ):
+                if self.email_resource_fixture is None:
+                    raise RuntimeError("Email resource evidence is unavailable")
+                captured.append(self.email_resource_fixture)
+            elif (
                 request.tool is ToolName.QUERY_TRACE_NEIGHBORHOOD
                 and case.condition is CaptureCondition.RECOVERY_TRANSITION
             ):
@@ -794,6 +830,7 @@ class OwnedCaptureLifecycle(CaptureLifecycle):
         else:
             self.active_condition = None
             self.email_restart_required = False
+            self.email_resource_fixture = None
             self.recovery_started_at = None
             self.recovery_trace_fixture = None
 

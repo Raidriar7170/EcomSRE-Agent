@@ -16,6 +16,9 @@ from ecomsre.dta_v2.evaluation_contracts import (
 from ecomsre.dta_v2.tool_contracts import ToolName
 
 
+EMAIL_CAPTURE_MAXIMUM_MEMORY_BYTES = 512_000_000
+
+
 class CaptureTerminal(str, Enum):
     PASS = "PASS"
     BLOCKED = "BLOCKED"
@@ -60,6 +63,9 @@ class CaptureCaseQualityFailureCode(str, Enum):
     PAYMENT_LOCALIZED_ERROR_MISSING = "PAYMENT_LOCALIZED_ERROR_MISSING"
     RECOMMENDATION_NOT_STOPPED = "RECOMMENDATION_NOT_STOPPED"
     EMAIL_MEMORY_GROWTH_MISSING = "EMAIL_MEMORY_GROWTH_MISSING"
+    EMAIL_MEMORY_SAFETY_CEILING_EXCEEDED = (
+        "EMAIL_MEMORY_SAFETY_CEILING_EXCEEDED"
+    )
     CONFLICTING_EVIDENCE_MISSING = "CONFLICTING_EVIDENCE_MISSING"
 
 
@@ -298,7 +304,7 @@ def build_default_capture_plan(*, base_head: str) -> CaptureCampaignPlan:
         "schema_version": "dta-v2.capture-campaign-plan.v1",
         "base_head": base_head,
         "email_calibration_variants": ("10x", "100x", "1000x"),
-        "email_maximum_memory_bytes": 512_000_000,
+        "email_maximum_memory_bytes": EMAIL_CAPTURE_MAXIMUM_MEMORY_BYTES,
         "email_maximum_delta_bytes": 256_000_000,
         "email_maximum_slope_bytes_per_second": 20_000_000.0,
         "email_minimum_measurable_delta_bytes": 1_000_000,

@@ -36,6 +36,7 @@ from ecomsre.dta_v2.evaluation_contracts import AgentVisibleReplayCase
 from ecomsre.dta_v2.read_tools import ReadBackendFailure
 from ecomsre.dta_v2.tool_contracts import (
     ResourceUsageRecord,
+    ResourceSample,
     RuntimeState,
     ToolErrorCode,
     build_inspect_resource_usage_request,
@@ -355,6 +356,103 @@ class _EmailRestartRecorder:
 
     def restart(self) -> None:
         self.restart_calls += 1
+
+
+def test_email_fault_samples_immediately_after_owned_restart(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan = build_default_capture_plan(base_head="a" * 40)
+    lifecycle = OwnedCaptureLifecycle(
+        repository_root=ROOT,
+        private_root=tmp_path,
+        plan=plan,
+        stabilization_seconds=0,
+    )
+    lifecycle.upstream_flag = json.loads(
+        (
+            ROOT / "third_party/opentelemetry-demo/src/flagd/demo.flagd.json"
+        ).read_text(encoding="utf-8")
+    )
+    flags = _RecordingFlags()
+    email = _EmailRestartRecorder()
+    fixture = next(
+        item
+        for item in AgentVisibleReplayCase.model_validate_json(
+            (
+                ROOT
+                / "config/dta-v2/evaluation/development/agent-visible/dta-case-005.json"
+            ).read_text(encoding="utf-8")
+        ).observations
+        if item.tool.value == "inspect_resource_usage"
+    )
+    requests = []
+    lifecycle.flag_controller = flags  # type: ignore[assignment]
+    lifecycle.email = email  # type: ignore[assignment]
+    monkeypatch.setattr(owned_capture_module.time, "sleep", lambda _: None)
+    monkeypatch.setattr(
+        lifecycle,
+        "_capture_fixture",
+        lambda request: requests.append(request) or fixture,
+    )
+    case = next(item for item in plan.cases if item.case_id == "dta-case-005")
+
+    lifecycle.apply_case(case, selected_email_variant="1000x")
+
+    assert flags.applied == 1
+    assert email.restart_calls == 1
+    assert lifecycle.email_resource_fixture == fixture
+    assert len(requests) == 1
+    assert requests[0].sampling_window_seconds == 20
+    assert requests[0].sample_count == 5
+
+
+def test_email_capture_quality_enforces_memory_safety_ceiling() -> None:
+    plan = build_default_capture_plan(base_head="a" * 40)
+    case = next(item for item in plan.cases if item.case_id == "dta-case-005")
+    replay = AgentVisibleReplayCase.model_validate_json(
+        (
+            ROOT
+            / "config/dta-v2/evaluation/development/agent-visible/dta-case-005.json"
+        ).read_text(encoding="utf-8")
+    )
+    fixtures = list(replay.observations)
+    index = next(
+        index
+        for index, item in enumerate(fixtures)
+        if item.tool.value == "inspect_resource_usage"
+    )
+    original = fixtures[index]
+    record = ResourceUsageRecord(
+        logical_service="email",
+        sampling_window_seconds=20,
+        samples=(
+            ResourceSample(offset_ms=0, cpu_percent=1.0, memory_bytes=500_000_000),
+            ResourceSample(offset_ms=5000, cpu_percent=1.0, memory_bytes=520_000_000),
+            ResourceSample(offset_ms=10000, cpu_percent=1.0, memory_bytes=540_000_000),
+            ResourceSample(offset_ms=15000, cpu_percent=1.0, memory_bytes=560_000_000),
+            ResourceSample(offset_ms=20000, cpu_percent=1.0, memory_bytes=580_000_000),
+        ),
+        memory_slope_bytes_per_second=4_000_000.0,
+    )
+    payload = {
+        **original.model_dump(mode="python", exclude={"fixture_sha256"}),
+        "records": (record,),
+    }
+    draft = type(original).model_construct(**payload, fixture_sha256="0" * 64)
+    fixtures[index] = type(original).model_validate(
+        {
+            **payload,
+            "fixture_sha256": semantic_sha256(
+                draft.model_dump(mode="json", exclude={"fixture_sha256"})
+            ),
+        }
+    )
+
+    with pytest.raises(CaptureCaseQualityFailure) as caught:
+        require_capture_case_quality(case, tuple(fixtures))
+    assert caught.value.code is (
+        CaptureCaseQualityFailureCode.EMAIL_MEMORY_SAFETY_CEILING_EXCEEDED
+    )
 
 
 class _OwnedEmailDocker:
