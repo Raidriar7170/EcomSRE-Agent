@@ -10,6 +10,7 @@ from ecomsre.dta_v2.read_tools import InvestigationReadTools
 from ecomsre.dta_v2.telemetry_adapters import (
     LocalReadBackendConfig,
     LocalSandboxReadBackend,
+    _parse_prometheus_vector,
 )
 from ecomsre.dta_v2.tool_contracts import (
     MetricKind,
@@ -254,3 +255,38 @@ def test_trace_projection_retains_anchor_service_and_deepest_error_under_cap() -
     assert observation.result_count == 1
     assert observation.results[0].service == "payment"
     assert observation.results[0].first_error_location is True
+
+
+def test_prometheus_nan_no_sample_is_empty_but_infinity_is_invalid() -> None:
+    no_sample = {
+        "status": "success",
+        "data": {
+            "resultType": "vector",
+            "result": [
+                {
+                    "metric": {"service_name": "recommendation"},
+                    "value": [END.timestamp(), "NaN"],
+                }
+            ],
+        },
+    }
+    value, sample_count = _parse_prometheus_vector(
+        no_sample, expected_service="recommendation"
+    )
+    assert value == 0.0
+    assert sample_count == 0
+
+    infinite = {
+        **no_sample,
+        "data": {
+            **no_sample["data"],
+            "result": [
+                {
+                    "metric": {"service_name": "recommendation"},
+                    "value": [END.timestamp(), "+Inf"],
+                }
+            ],
+        },
+    }
+    with pytest.raises(ValueError, match="finite"):
+        _parse_prometheus_vector(infinite, expected_service="recommendation")

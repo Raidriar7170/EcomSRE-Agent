@@ -772,6 +772,8 @@ def _parse_prometheus_vector(
         if not isinstance(sample, list) or len(sample) != 2:
             raise ValueError("Prometheus sample is invalid")
         number = float(sample[1])
+        if math.isnan(number):
+            continue
         if not math.isfinite(number):
             raise ValueError("Prometheus sample is not finite")
         total += number
