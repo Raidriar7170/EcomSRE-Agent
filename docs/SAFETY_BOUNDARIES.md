@@ -5,10 +5,10 @@ This document owns operational safety rules. Architectural rationale belongs in
 in [DECISIONS.md](DECISIONS.md).
 
 This document provides the normative safety detail for `DEC-004`, `DEC-007`,
-`DEC-012`, and `DEC-034` through `DEC-037`. `DEC-012` first takes effect in
+`DEC-012`, and `DEC-034` through `DEC-038`. `DEC-012` first takes effect in
 Phase 3 and does not authorize a Phase 0 executor or write path. `DEC-034`
-narrowly replaces only its one-forward limit for the exact future DTA v2 Email
-transaction; it creates no Live authority.
+narrowly replaces only its one-forward limit for the exact versioned DTA v2
+Email transaction; that design record alone creates no Live authority.
 
 ## Authorization boundary
 
@@ -173,7 +173,7 @@ a second forward mutation.
 
 ## Diagnosis-to-Action v2 design boundary
 
-`DEC-033` through `DEC-037` preserve every historical Phase 0, Phase 3, R3, and
+`DEC-033` through `DEC-038` preserve every historical Phase 0, Phase 3, R3, and
 LOCAL_DEMO contract. The new `ecomsre.dta_v2` package remains offline unless an
 exact user Goal separately authorizes a versioned runtime. Contracts, registry
 loading, candidate filtering, tests, and documentation do not themselves
@@ -192,6 +192,33 @@ it created no Agent remediation authority. The held-out execution is consumed
 and may not be rerun or used for result-driven tuning. Its negative comparative
 result does not broaden any Agent, Provider, Docker, Runbook, or later-stage
 authority. PR-F retains its own exact admission and execution boundary.
+
+For PR-F only, the same Goal authorized one exact four-slot owned local
+campaign at a time. A create-once capability binds the claim, scenario order,
+current Agent/model/Prompt/tools, Registry, Candidate Filter, admission and
+authorization policies, typed fault controls, Executors, Verifiers, reporting,
+Compose/image authority, and cleanup behavior. The generic lifecycle cannot
+mint `LIVE_PASS`; only the exact campaign claim can do so, and a consumed slot
+cannot be rerun. A repeat after failure requires a real semantic change, a new
+campaign, retained prior evidence, restored baseline, and `CLEAN` cleanup.
+
+The owned runtime must freshly reauthenticate the local Unix daemon, Docker
+context, ownership labels, current state, child authorization, and UTC expiry
+immediately before every fault and forward write. Before cleanup it must
+separately refresh the daemon/context, upstream, Compose, and ownership
+authority. Each attempted write is journaled before any next step. Email remains capped at
+two ordered forward attempts; any second-step authorization, continuity,
+mutation-proof, receipt-persistence, or restart failure retains the first
+receipt, keeps the leak flag off, stops without a third write or compensation,
+and escalates. Verification may observe and request safe restoration but cannot
+upgrade a failed transaction or rewrite a retained closure.
+
+The accepted PR-F result creates no continuing authority. It records a local
+known-scenario Demo only; the campaign capability is consumed, private attempts
+remain create-once, and public reports expose only bounded semantic projections.
+No API key, raw Provider response, raw log/trace identity, private path,
+container identity, run/attempt identifier, or approval secret may be
+published.
 
 The Agent may use only bounded read tools and may emit only a typed
 `ActionProposal`. It cannot set risk, executor, verifier, shell, argv, path,

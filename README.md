@@ -141,7 +141,7 @@ it cannot expand the Policy Gate or Executor authority.
 | E2E v6 `V6_REPRO_2` | One accepted local run proved the repaired ordered source-stage transition and reached `MULTISERVICE_PROJECTION_COMPLETED`, where a typed projection runtime failure stopped the run before diagnosis; final public terminal `BLOCKED_PUBLIC_RESULT_VERIFICATION`; A0 builder/model/forward mutation `1/0/0`; baseline restored and cleanup `CLEAN` |
 | E2E v6 `V6_REPRO_3` | One accepted local run completed the bounded projection and one A0 model diagnosis, but the diagnosis was incorrect; terminal `LIVE_DIAGNOSIS_GATE_NOT_PASSED_NO_REMEDIATION`; forward/rollback mutation `0/0`; baseline restored and cleanup `CLEAN` |
 | LOCAL_DEMO successor | `LOCAL_DEMO_E2E_PASSED_READY_FOR_REVIEW`; the fourth retained attempt completed one frozen local payment restoration, two recovery windows, independent verification, exact baseline restoration, and `CLEAN` cleanup |
-| Diagnosis-to-Action v2 | `PR_E_EVALUATION_COMPLETE / HELD_OUT_NEGATIVE / ZERO_UNSAFE_PROPOSALS`; PR-C read-only Smoke remains `PASS / CLEAN`; PR-D Provider compatibility passed; PR-E development passed all 18 two-arm entries; the one-time held-out run passed truth/scorer safety gates but Adaptive Tool-Using underperformed One-shot Full Context, so no superiority or held-out-generalization claim is made |
+| Diagnosis-to-Action v2 | `DTA_V2_LIVE_DEMO_ACCEPTANCE_PASS`; one no-fault case produced zero writes and three known local scenarios completed typed Runbook recovery with two verification windows, restored baselines, `CLEAN` cleanup, zero unsafe writes, and no non-owned drift. The separate one-time PR-E held-out result remains negative for Tool Use superiority and applies only to its historical frozen identity |
 
 ### V6_REPRO_2 accepted-run boundary
 
@@ -207,6 +207,31 @@ successful fourth retained attempt is reported in the
 [concise report](docs/results/local-e2e-demo-v1.md), and
 [Human Brief](docs/results/local-e2e-demo-v1-human-brief.md). It is one known
 post-failure regression demo, not held-out or production evidence.
+
+### Diagnosis-to-Action v2 local portfolio Demo
+
+The DTA v2 Agent dynamically queried bounded Metrics, Traces, service-runtime,
+and resource tools, diagnosed three distinct known failure
+mechanisms, selected three different typed Runbooks, and completed local
+configuration rollback, owned-service restart, and memory-leak mitigation with
+Runbook-specific recovery verification. A fourth no-fault case terminated
+without a write. Across the accepted four-slot campaign, the runtime recorded
+13 read-tool dispatches, 20 Provider turns, three applied controlled faults,
+four forward steps, zero unsafe write attempts, zero arbitrary-shell attempts,
+restored every baseline, and completed project-owned cleanup `CLEAN` with no
+non-owned drift.
+
+The bounded public evidence is the [structured result](docs/results/dta-v2-live-demo.json),
+[concise report](docs/results/dta-v2-live-demo.md), and
+[Human Brief](docs/results/dta-v2-live-demo-human-brief.md). This is a local
+25-service Portfolio engineering Demo over known scenarios. It is not
+production evidence, arbitrary autonomous remediation, held-out recovery
+accuracy, Tool Use superiority, or Multi-Agent superiority. The one-time PR-E
+held-out negative remains preserved for its historical Agent identity and was
+not rerun after the PR-F Prompt changed.
+Its separate immutable aggregate is published as
+[evaluation JSON](docs/results/dta-v2-evaluation.json) and
+[evaluation Markdown](docs/results/dta-v2-evaluation.md).
 
 The authoritative detail lives in the [Roadmap](docs/ROADMAP.md),
 [Decision Register](docs/DECISIONS.md),
@@ -361,7 +386,7 @@ src/ecomsre/phase2/   Fixed/Dynamic workflows, Commander, Specialists, Judge
 src/ecomsre/phase3/   Planner, Policy Gate, replay executor, verifier, rollback
 src/ecomsre/phase4/   Search/Recommendation Domain RCA, evaluation, provider gate
 src/ecomsre/phase5a/  Capability-parity v2 diagnosis policy and evaluation
-src/ecomsre/dta_v2/   DTA v2 contracts, bounded Agent/read tools/store, admission, and fake transactions
+src/ecomsre/dta_v2/   DTA v2 contracts, bounded Agent/read tools/store, admission, typed local execution, and verification
 src/ecomsre/demo/     Thin public Phase 2 → Phase 3 offline integration
 config/phase1/        Frozen seven-case observer-visible replay baseline
 config/phase4/        Five independent domain replay cases
@@ -399,8 +424,13 @@ tests/                 Contract, replay, isolation, and regression checks
   evidence, and action. Both had zero unsafe proposals and passed truth/scorer
   verification. This negative comparison is not tuned or rerun, supports no
   Tool-Use-superiority or held-out-generalization claim, and remains replay
-  diagnosis/action-selection evidence rather than live remediation or Live
-  acceptance. No real Executor is established.
+  diagnosis/action-selection evidence for its historical frozen identity.
+  PR-F separately completed one exact four-slot local campaign: the no-fault
+  case made zero writes, and Payment, Recommendation, and Email each completed
+  the candidate-bound Runbook, two recovery windows, baseline restoration, and
+  `CLEAN` cleanup. The aggregate recorded zero unsafe writes, zero arbitrary
+  shell attempts, and no non-owned drift. This is known-scenario local Demo
+  evidence only, not production, broad autonomy, or held-out recovery accuracy.
 - The public demo uses an evidence-driven deterministic scripted backend. It
   exercises integration behavior but does not replace the frozen Phase 2
   comparison baseline or the bounded real-provider gate.

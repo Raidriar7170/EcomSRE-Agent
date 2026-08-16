@@ -19,5 +19,5 @@
   "frozen_prompt_sha256": "d5d1fa24d4d70f8023cc5ffd3cf1a08c3bfd5ded55039e2bd02d24be0bcf09af",
   "frozen_tool_schema_sha256": "6b968f29201ce7c87fe56099788ff34abc93dea895c56e553e4c007b22218192",
   "held_out_seal_sha256": "0f944e79f0958f285006c3bdc3cf8f82b8a71731d8d96d02b474f254a54e247a",
-  "live_demo_terminal": null
+  "live_demo_terminal": "DTA_V2_LIVE_DEMO_ACCEPTANCE_PASS"
 }

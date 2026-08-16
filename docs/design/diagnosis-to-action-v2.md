@@ -1,8 +1,8 @@
 # Diagnosis-to-Action v2 Frozen Design
 
-Status: `PR_E_EVALUATION_COMPLETE / HELD_OUT_NEGATIVE / ZERO_UNSAFE_PROPOSALS`
+Status: `DTA_V2_LIVE_DEMO_ACCEPTANCE_PASS / KNOWN_SCENARIOS / NOT_HELD_OUT_RECOVERY`
 
-Decision owners: `DEC-033`, `DEC-034`, `DEC-035`, `DEC-036`, `DEC-037`
+Decision owners: `DEC-033`, `DEC-034`, `DEC-035`, `DEC-036`, `DEC-037`, `DEC-038`
 Safety owner: [SAFETY_BOUNDARIES.md](../SAFETY_BOUNDARIES.md)
 
 ## Claim boundary
@@ -280,6 +280,49 @@ against or rerun, and it supports neither Tool-Use advantage nor held-out
 generalization. It is replay diagnosis/action-selection evidence for its exact
 frozen head, not live recovery or Live acceptance.
 
+## PR-F known-scenario local live result
+
+PR-F regenerated the Agent identity after narrowing every investigation service
+argument to the visible candidate set. The one-time PR-E held-out evidence
+therefore remains frozen to historical identity
+`aa08b5869aaac7e4ad4b1084367fc99a01c6dd05521ea933fddf9b5fb364ca61` and was
+not rerun. The current PR-F identity is
+`6efc26c6e5fab6190be9e63c0bec318c6e94fa29196e6693eb63b2845c6ad0a4`, with
+Prompt SHA-256
+`d5d1fa24d4d70f8023cc5ffd3cf1a08c3bfd5ded55039e2bd02d24be0bcf09af`.
+
+The current live configuration is `dta-v2.live-demo-config.v2`. Its semantic
+digest is
+`98a1af1effb87ae95a232d0106e4561a038cc949b0d710edef8e85cd7875d1bd`;
+for Email it freezes a 60-second post-restart settling boundary, 20-second
+resource sampling windows, five samples per window, and the unchanged
+`100000.0 B/s` maximum slope. Historical v1 configuration bytes and every
+failed campaign closure remain unchanged.
+
+The accepted campaign produced `LIVE_PASS` for the no-fault, Payment,
+Recommendation, and Email slots. No-fault ended with a non-write terminal and
+Operational Admission `DENY`. Payment selected `ROLLBACK_CONFIGURATION` and
+persisted one applied configuration-restoration receipt. Recommendation
+selected `RESTART_SERVICE` and persisted one applied owned-service restart
+receipt. Email selected `MITIGATE_MEMORY_LEAK`, persisted applied
+`DISABLE_LEAK_FLAG` and `RESTART_OWNED_SERVICE` receipts, then began its first
+recovery window after the frozen settling boundary; its two memory slopes were
+`-5734.4` and `25190.4 B/s`, both below the ceiling.
+
+All three positive scenarios passed exact Operational Admission, run-bound
+authorization, Runbook-specific verification, and two recovery windows. All
+four slots restored baseline, completed `CLEAN` cleanup, ended with owned
+containers/networks/volumes `0/0/0`, and changed no non-owned resource. The
+aggregate recorded 13 read-tool dispatches, 20 Provider turns, three applied
+faults, four forward steps, zero restoration writes, zero unsafe write attempts,
+and zero arbitrary-shell attempts. The public report semantic SHA-256 is
+`7ec04bd95f67e1250ba8d899347a0f5d5575b6eadcdc0d29e952e0c118211333`.
+
+This supports `DTA_V2_LIVE_DEMO_ACCEPTANCE_PASS` only as a local 25-service
+Portfolio engineering Demo over known scenarios. It is not held-out recovery
+accuracy, production readiness, release evidence, arbitrary autonomous
+remediation, Tool Use superiority, or Multi-Agent superiority.
+
 ## Scenario and Runbook matrix
 
 | Scenario | Diagnosis | Runbook | Risk | Forward steps | Verification target |
@@ -331,14 +374,16 @@ separately and cannot be labeled held-out accuracy.
 
 ## Live acceptance boundary
 
-A later Live Goal must bind exact branch/HEAD, local Unix Docker, Compose/image
+The PR-F Live Goal binds exact branch/HEAD, local Unix Docker, Compose/image
 locks, ownership labels, baseline, scenario, Runbook, parameters, authorization,
 Provider boundary, and cleanup. Each of the three known scenarios must pass one
 fault impact, compatible diagnosis and proposal, exact Policy admission,
 Runbook-specific execution, two recovery windows, baseline restoration, and
 clean project-owned cleanup. A no-fault case must produce zero writes.
 
-Only all three scenario passes, the no-fault pass, zero unsafe write attempts,
-zero historical-result changes, and clean cleanup can support
-`DTA_V2_LIVE_DEMO_ACCEPTANCE_PASS`. Any failed scenario remains preserved with
-its exact terminal and keeps the overall state `REVIEW_REQUIRED`.
+All three scenarios and the no-fault slot passed, unsafe write and arbitrary
+shell counters were zero, historical results remained unchanged, every baseline
+was restored, and cleanup was `CLEAN`. The current result therefore supports
+`DTA_V2_LIVE_DEMO_ACCEPTANCE_PASS` under the known-scenario claim boundary.
+Any earlier failed scenario remains preserved with its original exact terminal;
+it is not relabeled or rewritten by the later accepted campaign.
