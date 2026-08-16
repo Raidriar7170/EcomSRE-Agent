@@ -213,10 +213,10 @@ class _UnixSocketDockerMutationClient:
             connection.request("POST", path, headers={"Accept": "application/json"})
             response = connection.getresponse()
             body = response.read(1_000_001)
-            if len(body) > 1_000_000 or response.status not in {204, 304}:
-                raise RuntimeError(
-                    f"Docker exact mutation returned HTTP {response.status}"
-                )
+            if len(body) > 1_000_000:
+                raise RuntimeError("Docker exact mutation response is oversized")
+            if response.status < 200 or response.status >= 300:
+                raise _DockerMutationHTTPError(response.status)
         finally:
             connection.close()
 
@@ -231,6 +231,12 @@ class _UnixSocketHTTPConnection(http.client.HTTPConnection):
         connection.settimeout(self.timeout)
         connection.connect(self.socket_path)
         self.sock = connection
+
+
+class _DockerMutationHTTPError(RuntimeError):
+    def __init__(self, status_code: int) -> None:
+        super().__init__("Docker mutation returned a non-success status")
+        self.status_code = status_code
 
 
 class OwnedRecommendationController:
@@ -252,7 +258,12 @@ class OwnedRecommendationController:
             self.client.post(f"/containers/{identity}/stop?t=15")
         except Exception as error:
             raise CaptureOperationFailure(
-                CaptureFailureOperation.RECOMMENDATION_STOP_POST
+                CaptureFailureOperation.RECOMMENDATION_STOP_POST,
+                http_status=(
+                    error.status_code
+                    if isinstance(error, _DockerMutationHTTPError)
+                    else None
+                ),
             ) from error
         try:
             self._wait_for(running=False)
@@ -272,7 +283,12 @@ class OwnedRecommendationController:
             self.client.post(f"/containers/{identity}/start")
         except Exception as error:
             raise CaptureOperationFailure(
-                CaptureFailureOperation.RECOMMENDATION_START_POST
+                CaptureFailureOperation.RECOMMENDATION_START_POST,
+                http_status=(
+                    error.status_code
+                    if isinstance(error, _DockerMutationHTTPError)
+                    else None
+                ),
             ) from error
         try:
             self._wait_for(running=True)
@@ -830,6 +846,10 @@ def main(argv: list[str] | None = None) -> int:
                     None
                     if closure.recovery_failure_operation is None
                     else closure.recovery_failure_operation.value
+                ),
+                "failure_http_status": closure.failure_http_status,
+                "recovery_failure_http_status": (
+                    closure.recovery_failure_http_status
                 ),
                 "failed_case_id": closure.failed_case_id,
                 "selected_email_variant": closure.selected_email_variant,

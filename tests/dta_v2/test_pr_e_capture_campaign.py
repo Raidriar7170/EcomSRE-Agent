@@ -6,6 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import ecomsre.dta_v2.owned_capture as owned_capture_module
 
 from ecomsre.dta_v2.capture_campaign import (
     CaptureCampaignClosure,
@@ -241,6 +242,8 @@ def test_legacy_capture_closure_and_round_trip_keep_original_digest() -> None:
             "failure_operation",
             "recovery_failure_operation",
             "failed_case_id",
+            "failure_http_status",
+            "recovery_failure_http_status",
             "closure_sha256",
         },
     )
@@ -347,6 +350,11 @@ class _PostFails:
         raise RuntimeError(f"dynamic identity must not escape: {path}")
 
 
+class _PostRejected:
+    def post(self, path: str) -> None:
+        raise owned_capture_module._DockerMutationHTTPError(409)
+
+
 def test_recommendation_stop_post_failure_exposes_only_fixed_operation() -> None:
     backend = SimpleNamespace(
         config=SimpleNamespace(
@@ -362,6 +370,50 @@ def test_recommendation_stop_post_failure_exposes_only_fixed_operation() -> None
         controller.stop()
     assert str(caught.value) == "RECOMMENDATION_STOP_POST"
     assert "dynamic identity" not in str(caught.value)
+
+    controller.client = _PostRejected()  # type: ignore[assignment]
+    with pytest.raises(CaptureOperationFailure) as rejected:
+        controller.stop()
+    assert rejected.value.http_status == 409
+
+
+class _SuccessResponse:
+    status = 200
+
+    def read(self, limit: int) -> bytes:
+        assert limit == 1_000_001
+        return b""
+
+
+class _SuccessConnection:
+    def __init__(self, socket_path: str, *, timeout: float) -> None:
+        self.socket_path = socket_path
+        self.timeout = timeout
+
+    def request(self, method: str, path: str, *, headers) -> None:
+        assert method == "POST"
+        assert path.endswith("/stop?t=15")
+
+    def getresponse(self) -> _SuccessResponse:
+        return _SuccessResponse()
+
+    def close(self) -> None:
+        pass
+
+
+def test_exact_docker_mutation_accepts_2xx_only_then_requires_state_wait(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        owned_capture_module,
+        "_UnixSocketHTTPConnection",
+        _SuccessConnection,
+    )
+    client = owned_capture_module._UnixSocketDockerMutationClient(
+        "/private/tmp/fake-docker.sock", timeout_seconds=1.0
+    )
+
+    client.post(f"/containers/{'a' * 64}/stop?t=15")
 
 
 class _ExitedOwnedDocker:

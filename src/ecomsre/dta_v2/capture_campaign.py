@@ -54,15 +54,25 @@ class CaptureFailureOperation(str, Enum):
 class CaptureOperationFailure(RuntimeError):
     """Fixed safe operation marker; never retains backend exception text."""
 
-    def __init__(self, operation: CaptureFailureOperation) -> None:
+    def __init__(
+        self,
+        operation: CaptureFailureOperation,
+        *,
+        http_status: int | None = None,
+    ) -> None:
         super().__init__(operation.value)
         self.operation = operation
+        self.http_status = http_status
 
 
 def _failure_operation(
     error: Exception, *, default: CaptureFailureOperation
 ) -> CaptureFailureOperation:
     return error.operation if isinstance(error, CaptureOperationFailure) else default
+
+
+def _failure_http_status(error: Exception) -> int | None:
+    return error.http_status if isinstance(error, CaptureOperationFailure) else None
 
 
 class OperationalFamily(str, Enum):
@@ -315,6 +325,10 @@ class CaptureCampaignClosure(DtaModel):
     cleanup_failure_code: CaptureFailureCode | None
     failure_operation: CaptureFailureOperation | None = None
     recovery_failure_operation: CaptureFailureOperation | None = None
+    failure_http_status: StrictInt | None = Field(default=None, ge=100, le=599)
+    recovery_failure_http_status: StrictInt | None = Field(
+        default=None, ge=100, le=599
+    )
     failed_case_id: str | None = Field(
         default=None, pattern=r"^dta-case-[0-9]{3}$"
     )
@@ -359,6 +373,8 @@ class CaptureCampaignClosure(DtaModel):
                 "failure_operation",
                 "recovery_failure_operation",
                 "failed_case_id",
+                "failure_http_status",
+                "recovery_failure_http_status",
             },
         )
         expected_digests = {
@@ -396,6 +412,8 @@ def run_capture_campaign_attempt(
     cleanup_failure: CaptureFailureCode | None = None
     failure_operation: CaptureFailureOperation | None = None
     recovery_failure_operation: CaptureFailureOperation | None = None
+    failure_http_status: int | None = None
+    recovery_failure_http_status: int | None = None
     failed_case_id: str | None = None
     started = False
     baseline_restored = False
@@ -519,6 +537,7 @@ def run_capture_campaign_attempt(
                     failure_operation = _failure_operation(
                         error, default=CaptureFailureOperation.APPLY_CASE
                     )
+                    failure_http_status = _failure_http_status(error)
                     failed_case_id = case.case_id
                     break
                 try:
@@ -559,6 +578,7 @@ def run_capture_campaign_attempt(
                         error,
                         default=CaptureFailureOperation.RESTORE_BASELINE,
                     )
+                    recovery_failure_http_status = _failure_http_status(error)
             cleanup_attempted = True
             try:
                 cleanup = lifecycle.cleanup(
@@ -590,6 +610,8 @@ def run_capture_campaign_attempt(
         "cleanup_failure_code": cleanup_failure,
         "failure_operation": failure_operation,
         "recovery_failure_operation": recovery_failure_operation,
+        "failure_http_status": failure_http_status,
+        "recovery_failure_http_status": recovery_failure_http_status,
         "failed_case_id": failed_case_id,
         "baseline_memory": baseline_memory,
         "calibration_observations": tuple(trials),
