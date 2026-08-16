@@ -1,0 +1,17 @@
+{
+  "case_id": "dta-case-010",
+  "expected_disposition": null,
+  "expected_evidence_sources": [],
+  "expected_fault_domain": null,
+  "expected_mechanism": null,
+  "expected_root_service": null,
+  "expected_runbook": null,
+  "expected_terminal": "ABSTAIN",
+  "meaningful_observation_differences": [
+    "no_real_fault"
+  ],
+  "scenario_family": "NO_REAL_FAULT",
+  "schema_version": "dta-v2.evaluator-case-truth.v1",
+  "split": "NO_ACTION",
+  "truth_sha256": "4e0a8c525ca85a495c08c0fa3b52bc643f9175d721194ca8ce8f3ef772e6aaa9"
+}

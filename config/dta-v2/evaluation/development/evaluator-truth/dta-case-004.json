@@ -1,0 +1,21 @@
+{
+  "case_id": "dta-case-004",
+  "expected_disposition": "EXECUTE_RUNBOOK",
+  "expected_evidence_sources": [
+    "METRICS",
+    "RUNTIME"
+  ],
+  "expected_fault_domain": "SERVICE_RUNTIME",
+  "expected_mechanism": "SERVICE_UNAVAILABLE",
+  "expected_root_service": "recommendation",
+  "expected_runbook": "RESTART_SERVICE",
+  "expected_terminal": "COMPLETED",
+  "meaningful_observation_differences": [
+    "load_level",
+    "timing_window"
+  ],
+  "scenario_family": "RECOMMENDATION",
+  "schema_version": "dta-v2.evaluator-case-truth.v1",
+  "split": "DEVELOPMENT",
+  "truth_sha256": "2056fd68a5abb63c37dc8e65a65ecb7e5bd7b0988d25c40cf09a65128a5691bb"
+}

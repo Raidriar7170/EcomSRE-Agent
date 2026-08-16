@@ -1,0 +1,898 @@
+{
+  "captured_ended_at": "2026-08-16T01:06:46.689809Z",
+  "captured_started_at": "2026-08-16T01:06:16.689809Z",
+  "case_id": "dta-case-011",
+  "case_sha256": "f1843e7ac0a94b6d5cbf052f0fbc346ae569217580d489570322fcaf900e9449",
+  "full_context_tools": [
+    "inspect_service_runtime",
+    "query_metrics",
+    "query_trace_neighborhood",
+    "search_logs"
+  ],
+  "observations": [
+    {
+      "error_code": null,
+      "fixture_sha256": "3235975cf8e48293332fb9a91bb0bab9b22caa2b57aaea86959c7e199356c86f",
+      "records": [
+        {
+          "logical_service": "recommendation",
+          "memory_slope_bytes_per_second": 819.2,
+          "samples": [
+            {
+              "cpu_percent": 2.4191,
+              "memory_bytes": 46514176,
+              "offset_ms": 0
+            },
+            {
+              "cpu_percent": 1.5183489304812832,
+              "memory_bytes": 46505984,
+              "offset_ms": 2500
+            },
+            {
+              "cpu_percent": 0.5567558528428094,
+              "memory_bytes": 46518272,
+              "offset_ms": 5000
+            }
+          ],
+          "sampling_window_seconds": 5
+        }
+      ],
+      "schema_version": "dta-v2.replay-observation-fixture.v1",
+      "service_scope": [
+        "recommendation"
+      ],
+      "tool": "inspect_resource_usage",
+      "truncated": false
+    },
+    {
+      "error_code": null,
+      "fixture_sha256": "56ad74cc1a37637af0c3a3db29d1152a1e943ba2260185721083720670e73453",
+      "records": [
+        {
+          "endpoint_probe_performed": false,
+          "endpoint_state": "UNKNOWN",
+          "exit_code": 0,
+          "health": "HEALTHY",
+          "logical_service": "recommendation",
+          "owned_container_present": true,
+          "restart_count": 0,
+          "state": "RUNNING"
+        }
+      ],
+      "schema_version": "dta-v2.replay-observation-fixture.v1",
+      "service_scope": [
+        "recommendation"
+      ],
+      "tool": "inspect_service_runtime",
+      "truncated": false
+    },
+    {
+      "error_code": null,
+      "fixture_sha256": "cfceb381981ac0ec55f2160df6c8c85db87e3a9fb51e3f9a3282fcd6d8546be9",
+      "records": [
+        {
+          "metric_kind": "CPU_PERCENT",
+          "sample_count": 0,
+          "service": "recommendation",
+          "unit": "PERCENT",
+          "value": 0.0
+        },
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 0,
+          "service": "recommendation",
+          "unit": "RATIO",
+          "value": 0.0
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 1,
+          "service": "recommendation",
+          "unit": "MILLISECONDS",
+          "value": 5.866666666666667
+        },
+        {
+          "metric_kind": "MEMORY_BYTES",
+          "sample_count": 1,
+          "service": "recommendation",
+          "unit": "BYTES",
+          "value": 144584704.0
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 1,
+          "service": "recommendation",
+          "unit": "COUNT",
+          "value": 52.79738379070326
+        }
+      ],
+      "schema_version": "dta-v2.replay-observation-fixture.v1",
+      "service_scope": [
+        "recommendation"
+      ],
+      "tool": "query_metrics",
+      "truncated": false
+    },
+    {
+      "error_code": null,
+      "fixture_sha256": "d01170cc59fdc80d12c711a6dfa7a24368a91bfdf0d71c5e99eda22ff6c2d408",
+      "records": [
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 13.0,
+          "first_error_location": false,
+          "operation": "GET",
+          "parent_service": null,
+          "relationship": "ROOT",
+          "service": "frontend-web",
+          "service_path": [
+            "frontend-web"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 12.007,
+          "first_error_location": false,
+          "operation": "GET",
+          "parent_service": "frontend-web",
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-web",
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 11.843,
+          "first_error_location": false,
+          "operation": "router frontend egress",
+          "parent_service": "frontend-proxy",
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "frontend-web",
+            "frontend-proxy",
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 11.645,
+          "first_error_location": false,
+          "operation": "GET /api/recommendations",
+          "parent_service": "frontend-proxy",
+          "relationship": "CHILD",
+          "service": "frontend",
+          "service_path": [
+            "frontend-web",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 11.337,
+          "first_error_location": false,
+          "operation": "GET /api/recommendations",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "frontend",
+          "service_path": [
+            "frontend-web",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 11.042,
+          "first_error_location": false,
+          "operation": "executing api route (pages) /api/recommendations",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "frontend",
+          "service_path": [
+            "frontend-web",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 2.038,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/GetProduct",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "frontend",
+          "service_path": [
+            "frontend-web",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 2.317,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/GetProduct",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "frontend",
+          "service_path": [
+            "frontend-web",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 6.716,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/GetProduct",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "frontend",
+          "service_path": [
+            "frontend-web",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 7.205,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/GetProduct",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "frontend",
+          "service_path": [
+            "frontend-web",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 2.777,
+          "first_error_location": false,
+          "operation": "oteldemo.RecommendationService/ListRecommendations",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "frontend",
+          "service_path": [
+            "frontend-web",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 1.138,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/GetProduct",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "product-catalog",
+          "service_path": [
+            "frontend-web",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "product-catalog"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 1.833,
+          "first_error_location": false,
+          "operation": "oteldemo.RecommendationService/ListRecommendations",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "service_path": [
+            "frontend-web",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 1.641,
+          "first_error_location": false,
+          "operation": "get_product_list",
+          "parent_service": "recommendation",
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "service_path": [
+            "frontend-web",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation",
+            "recommendation"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 1.513,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/ListProducts",
+          "parent_service": "recommendation",
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "service_path": [
+            "frontend-web",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation",
+            "recommendation",
+            "recommendation"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 0.801,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/ListProducts",
+          "parent_service": "recommendation",
+          "relationship": "CHILD",
+          "service": "product-catalog",
+          "service_path": [
+            "frontend-web",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation",
+            "recommendation",
+            "recommendation",
+            "product-catalog"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 0.28,
+          "first_error_location": false,
+          "operation": "astronomy-db",
+          "parent_service": "product-catalog",
+          "relationship": "CHILD",
+          "service": "product-catalog",
+          "service_path": [
+            "frontend-web",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation",
+            "recommendation",
+            "recommendation",
+            "product-catalog",
+            "product-catalog"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 26.713,
+          "first_error_location": false,
+          "operation": "user_get_recommendations",
+          "parent_service": null,
+          "relationship": "ROOT",
+          "service": "load-generator",
+          "service_path": [
+            "load-generator"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 26.027,
+          "first_error_location": false,
+          "operation": "GET",
+          "parent_service": "load-generator",
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 25.727,
+          "first_error_location": false,
+          "operation": "router frontend egress",
+          "parent_service": "frontend-proxy",
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 24.938,
+          "first_error_location": false,
+          "operation": "GET /api/recommendations",
+          "parent_service": "frontend-proxy",
+          "relationship": "CHILD",
+          "service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 24.283,
+          "first_error_location": false,
+          "operation": "GET /api/recommendations",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 23.291,
+          "first_error_location": false,
+          "operation": "executing api route (pages) /api/recommendations",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 4.913,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/GetProduct",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 4.932,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/GetProduct",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 12.668,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/GetProduct",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 12.674,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/GetProduct",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 9.656,
+          "first_error_location": false,
+          "operation": "oteldemo.RecommendationService/ListRecommendations",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 3.22,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/GetProduct",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "product-catalog",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "product-catalog"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 3.716,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/GetProduct",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "product-catalog",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "product-catalog"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 8.552,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/GetProduct",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "product-catalog",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "product-catalog"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 8.768,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/GetProduct",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "product-catalog",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "product-catalog"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 0.516,
+          "first_error_location": false,
+          "operation": "astronomy-db",
+          "parent_service": "product-catalog",
+          "relationship": "CHILD",
+          "service": "product-catalog",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "product-catalog",
+            "product-catalog"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 0.568,
+          "first_error_location": false,
+          "operation": "astronomy-db",
+          "parent_service": "product-catalog",
+          "relationship": "CHILD",
+          "service": "product-catalog",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "product-catalog",
+            "product-catalog"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 0.673,
+          "first_error_location": false,
+          "operation": "astronomy-db",
+          "parent_service": "product-catalog",
+          "relationship": "CHILD",
+          "service": "product-catalog",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "product-catalog",
+            "product-catalog"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 0.686,
+          "first_error_location": false,
+          "operation": "astronomy-db",
+          "parent_service": "product-catalog",
+          "relationship": "CHILD",
+          "service": "product-catalog",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "product-catalog",
+            "product-catalog"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 6.481,
+          "first_error_location": false,
+          "operation": "oteldemo.RecommendationService/ListRecommendations",
+          "parent_service": "frontend",
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 5.996,
+          "first_error_location": false,
+          "operation": "get_product_list",
+          "parent_service": "recommendation",
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation",
+            "recommendation"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 5.554,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/ListProducts",
+          "parent_service": "recommendation",
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation",
+            "recommendation",
+            "recommendation"
+          ],
+          "status": "UNSET"
+        },
+        {
+          "anchor_service": "recommendation",
+          "duration_ms": 1.864,
+          "first_error_location": false,
+          "operation": "oteldemo.ProductCatalogService/ListProducts",
+          "parent_service": "recommendation",
+          "relationship": "CHILD",
+          "service": "product-catalog",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation",
+            "recommendation",
+            "recommendation",
+            "product-catalog"
+          ],
+          "status": "UNSET"
+        }
+      ],
+      "schema_version": "dta-v2.replay-observation-fixture.v1",
+      "service_scope": [
+        "recommendation"
+      ],
+      "tool": "query_trace_neighborhood",
+      "truncated": true
+    },
+    {
+      "error_code": null,
+      "fixture_sha256": "34fb97cb58e8168d548f2dbbc53c19cfd9ef54c6077b6ce69db8f2bfa833b039",
+      "records": [],
+      "schema_version": "dta-v2.replay-observation-fixture.v1",
+      "service_scope": [
+        "recommendation"
+      ],
+      "tool": "search_logs",
+      "truncated": false
+    }
+  ],
+  "scenario_id": "dta-dev-002",
+  "schema_version": "dta-v2.agent-visible-replay-case.v1"
+}

@@ -1,0 +1,100 @@
+{
+  "capture_closure_sha256": "49cc5e6d75bc04d06fa50fa9fc240bf8bdbd5c64c3058facc28b18f1a943321a",
+  "capture_head": "9f398f07946c135fb1928892b5fdce28fa29ea0e",
+  "held_out_case_sha256s": [
+    "546e463431ee4924c379dfb83a768f0ff5d1b6e50acefe36bf5a73294ddc1909",
+    "5bebcecff55ad98358ff851beb6c851bbc5db5135bba25964bc45f86d70cb89a",
+    "e5cae2ae2d4904ce1481e84347a6a9c5a226ba5a15a1951603be3a633cae205b"
+  ],
+  "held_out_truth_sha256s": [
+    "9104dfdd86bf0410210e31f1fe6cdae9d586b344aa6fd96bb0388739f7ee3fc0",
+    "e52d2f36d8b1e3b7fb2030a0bb7589b0ce66e4e243e598978166ead2c476ad43",
+    "f32cbf7866d930df6e2bac44e3ef8d949904ef48950ab6808ff0a2ee9288ef63"
+  ],
+  "manifest_sha256": "a40327fdabb1653f0a933bb4a51db92e08a7ea79da16bc868532813959d90ed5",
+  "public_cases": [
+    {
+      "agent_visible_path": "development/agent-visible/dta-case-001.json",
+      "case_id": "dta-case-001",
+      "case_sha256": "f0b86451570f1b60b1799a0e9d965a0e7905140ed4ade1243d38bcc2bb098e51",
+      "evaluator_truth_path": "development/evaluator-truth/dta-case-001.json",
+      "schema_version": "dta-v2.public-evaluation-case-binding.v1",
+      "split": "DEVELOPMENT",
+      "truth_sha256": "0ac87ed909fd2ed4613fb305a3d9ca3d4cebb0eb18868709afd08e7765372697"
+    },
+    {
+      "agent_visible_path": "development/agent-visible/dta-case-002.json",
+      "case_id": "dta-case-002",
+      "case_sha256": "4305d71d6dffeef3e28c306b6be0b6d748a2f84dca217d3dea054a11ef88f8ac",
+      "evaluator_truth_path": "development/evaluator-truth/dta-case-002.json",
+      "schema_version": "dta-v2.public-evaluation-case-binding.v1",
+      "split": "DEVELOPMENT",
+      "truth_sha256": "e628e0127409dea2633790206be9bb03fc326d797fa787c3679b3ea221739b2a"
+    },
+    {
+      "agent_visible_path": "development/agent-visible/dta-case-003.json",
+      "case_id": "dta-case-003",
+      "case_sha256": "d66d6c2fc5eb2dfecdbc633ca95a2a462dc4fd4b284b2a5b15959d9c8c6438d7",
+      "evaluator_truth_path": "development/evaluator-truth/dta-case-003.json",
+      "schema_version": "dta-v2.public-evaluation-case-binding.v1",
+      "split": "DEVELOPMENT",
+      "truth_sha256": "2907087a6391671b985c271c26be4a0b423dc501503b50018d0ad1071377ef77"
+    },
+    {
+      "agent_visible_path": "development/agent-visible/dta-case-004.json",
+      "case_id": "dta-case-004",
+      "case_sha256": "dcc304117cc98108747fa8eafcbff4165ee46836df6f2d3e624ee799fafe2d9a",
+      "evaluator_truth_path": "development/evaluator-truth/dta-case-004.json",
+      "schema_version": "dta-v2.public-evaluation-case-binding.v1",
+      "split": "DEVELOPMENT",
+      "truth_sha256": "2056fd68a5abb63c37dc8e65a65ecb7e5bd7b0988d25c40cf09a65128a5691bb"
+    },
+    {
+      "agent_visible_path": "development/agent-visible/dta-case-005.json",
+      "case_id": "dta-case-005",
+      "case_sha256": "56c4cd6134e772fbdac680f09f34bef4e58306adc99b7e17646810120b5a6700",
+      "evaluator_truth_path": "development/evaluator-truth/dta-case-005.json",
+      "schema_version": "dta-v2.public-evaluation-case-binding.v1",
+      "split": "DEVELOPMENT",
+      "truth_sha256": "5cb668819efc52ff4b02b778a4b2626bf9aa0ef8f9b009df50a0f630e603290f"
+    },
+    {
+      "agent_visible_path": "development/agent-visible/dta-case-006.json",
+      "case_id": "dta-case-006",
+      "case_sha256": "0fdd936c01816deb2b2e0c6a2bb561822b29009ff693cb7fce3f6ef69971b941",
+      "evaluator_truth_path": "development/evaluator-truth/dta-case-006.json",
+      "schema_version": "dta-v2.public-evaluation-case-binding.v1",
+      "split": "DEVELOPMENT",
+      "truth_sha256": "8ad0da52e42cfbf5fc9d1ff920261fa11c7ad19221162a12f4f7dd8b3d7cb99d"
+    },
+    {
+      "agent_visible_path": "no-action/agent-visible/dta-case-010.json",
+      "case_id": "dta-case-010",
+      "case_sha256": "c9ceca9adc35fced684b9023e8d06d33906a53004568e4c90dd2a38e8282fc0c",
+      "evaluator_truth_path": "no-action/evaluator-truth/dta-case-010.json",
+      "schema_version": "dta-v2.public-evaluation-case-binding.v1",
+      "split": "NO_ACTION",
+      "truth_sha256": "4e0a8c525ca85a495c08c0fa3b52bc643f9175d721194ca8ce8f3ef772e6aaa9"
+    },
+    {
+      "agent_visible_path": "no-action/agent-visible/dta-case-011.json",
+      "case_id": "dta-case-011",
+      "case_sha256": "f1843e7ac0a94b6d5cbf052f0fbc346ae569217580d489570322fcaf900e9449",
+      "evaluator_truth_path": "no-action/evaluator-truth/dta-case-011.json",
+      "schema_version": "dta-v2.public-evaluation-case-binding.v1",
+      "split": "NO_ACTION",
+      "truth_sha256": "e84fff21caeddd7328cb0f975ddb6e90056d00ee204c51ef241ddab00c08cc84"
+    },
+    {
+      "agent_visible_path": "no-action/agent-visible/dta-case-012.json",
+      "case_id": "dta-case-012",
+      "case_sha256": "b954b21ed3af02b6096b0058aabff83f71e1dffb487895c6bfff0c9f47034a98",
+      "evaluator_truth_path": "no-action/evaluator-truth/dta-case-012.json",
+      "schema_version": "dta-v2.public-evaluation-case-binding.v1",
+      "split": "NO_ACTION",
+      "truth_sha256": "27300c6146ef9f527357c5561746d2a0a5f90e00136b95564fb6da25b61bba27"
+    }
+  ],
+  "schema_version": "dta-v2.public-evaluation-dataset.v1",
+  "selected_email_variant": "1000x"
+}
