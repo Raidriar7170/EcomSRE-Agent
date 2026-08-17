@@ -1,0 +1,21 @@
+{
+  "schema_version": "dta-v21.agent-identity.v1",
+  "arm": "EVIDENCE_GUIDED_PLANNER",
+  "model_id": "gpt-5.4-mini-2026-03-17",
+  "temperature": 0.0,
+  "provider_adapter_version": "dta-v21.openai-compatible-agent.v1",
+  "system_prompt_sha256": "7c7989845c4a85fa12e45c4fbfb832e0cd48e645893fb557332871b9ba8cbbbd",
+  "tool_schema_sha256": "fedf0172fe146583030cb6e0a31f0b72148e14c3e85c23191c5608f97c8ba732",
+  "planner_schema_sha256": "c7973d40155cbe1b8b0bb7312bc2341ba7bbb66fbf59d50e055e4989b2be3869",
+  "diagnosis_schema_sha256": "69f54538276594b2145f7af446c60ae5bd0e840feb378baa5a22a57dc00bab9d",
+  "action_selection_schema_sha256": "e3b63486b1b735c6d028331124e607c56c50d5c710e26b10069b1edb408fe337",
+  "action_proposal_schema_sha256": "4c999d5d07d3478a962062c0df93980060a5f0a2285f30945644e5e2063fef66",
+  "context_projection_source_sha256": "c0d8f395ff625f2624f9c93173203d72731eac94fba79ca4f23945aac1fc2307",
+  "agent_contracts_source_sha256": "bebf429d586dd9d4145f5a0ace49a4c1f25e7855fde6a3e91e998ad41652fc21",
+  "agent_runtime_source_sha256": "996235b48672e77c78994b71f4636249c60ad880e623d893c9869877ea61437a",
+  "provider_adapter_source_sha256": "96c7e74613352f2a17ff7644c8370cb1cbe073cf07a40d82c332975b3def4cf5",
+  "registry_sha256": "02bbcddba67da53c10324624dc770c9f73056e0126469567c8e70a79710047e9",
+  "candidate_filter_source_sha256": "c31b4654dacb8fac3a84dffae7f647c4d6e9c4954024e7bb5f9ed52af78cbdfb",
+  "max_completion_tokens": 1600,
+  "identity_sha256": "18b76dc667e61fddbe48db698851f28b3afe11d859b8394bcd5fa1b95775201b"
+}

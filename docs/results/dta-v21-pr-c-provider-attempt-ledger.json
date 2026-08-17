@@ -1,0 +1,38 @@
+{
+  "schema_version": "dta-v21.provider-smoke-public-ledger.v1",
+  "legacy_unbound_attempt_count": 6,
+  "verified_attempts": [
+    {
+      "schema_version": "dta-v21.provider-smoke-attempt-receipt.v1",
+      "attempt_id": "82acb237aec22064597d5931ab61f89f",
+      "attempt_manifest_sha256": "9cd35ccd12d87ca43fc29db4f8e7d5f732ce70ea6d4b39f7c3a2cc86ccd05539",
+      "status": "BLOCKED_DTA_V21_PROVIDER",
+      "provider_attempt_count": 1,
+      "raw_response_sha256": [
+        "9041c483a3e55b0c855556e0c53a88f102c793deeb5c8d48dbb3384e743c6d19"
+      ],
+      "agent_result_sha256": "fb72095d59417be08c721d2aba7ce2e1cccc6b3b8f182ba1caa2064bc38158cb",
+      "provider_report_sha256": "56d8f6a3b206991b750821e4a8ecbad2d485317629f89f156f257d5b11b46e54",
+      "agent_result_file_sha256": "c453bea17fdb172969bbf1c455b6b631457beeac11809dcdb88d40925b6a4a29",
+      "provider_report_file_sha256": "64db44c9e41df31b32276b3d3dd00dde71bf9c0018bea2a3f76209c3d2475445",
+      "receipt_sha256": "f107a48012146a438047d79ebdce753697de5e18a5e9e335afd6f6563721519e"
+    },
+    {
+      "schema_version": "dta-v21.provider-smoke-attempt-receipt.v1",
+      "attempt_id": "d1f9d2a360381f4c4a02c462c88d7869",
+      "attempt_manifest_sha256": "13dc01efa3b7e016001648fd4a20c4f8878b0f93635031ce0a2a7fb7aa488cdf",
+      "status": "BLOCKED_DTA_V21_PROVIDER",
+      "provider_attempt_count": 3,
+      "raw_response_sha256": [
+        "553319e34e38af744925637d38763a7def37a7a05f2848d4772fcf9ca7c64881",
+        "49779d1eaffb8fa0ea1fae904888c9b87c28bfaff9c3d3a19da8727a77bc47c3"
+      ],
+      "agent_result_sha256": "62dfafbd8d8cf4f1cc8821344c576dbdd09897aa5ab65bbc23a6b839fff6c70f",
+      "provider_report_sha256": "23ebf228a0fb738762c681f38a9fff8aa88e827245e77f7b9983ef087a88d95b",
+      "agent_result_file_sha256": "cc47b7c978886ba73e0f3f5446eccfd37af95216ef96e45b3387f255811fc964",
+      "provider_report_file_sha256": "a8aa59bc76efc6297bd2acd34187d6077cb2211604b682afabf70b4f5b7ba798",
+      "receipt_sha256": "fd9f7feb84ee96f78f6e9d1f3e925764459aaf22c3b184e1ddba90a1c03e1e62"
+    }
+  ],
+  "ledger_sha256": "a7f5116cfa5a33b009a21257960930a39c3fcb08f57ca7fa912edfb6138e51b5"
+}
