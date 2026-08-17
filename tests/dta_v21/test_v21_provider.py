@@ -360,6 +360,8 @@ def test_prompts_define_null_keys_success_only_citations_and_no_repeats() -> Non
     assert "compare every requested field against prior_requests" in common
     assert "retain at least one active hypothesis" in planner
     assert "at least one unresolved evidence source" in planner
+    assert "when remaining_read_dispatches is zero" in planner
+    assert "summary and uncertainties as plain incident prose" in common
 
 
 def test_rejected_provider_response_still_exposes_only_its_raw_hash() -> None:

@@ -233,6 +233,30 @@ def _safe_validation_codes_v21(
                 "request requires at least one active hypothesis": (
                     "planner_request_without_active_hypothesis"
                 ),
+                "request plan has an invalid semantic output": (
+                    "planner_request_output_shape"
+                ),
+                "Planner hypotheses are not canonical and unique": (
+                    "planner_hypotheses_not_canonical"
+                ),
+                "Planner evidence gaps are not canonical and unique": (
+                    "planner_gaps_not_canonical"
+                ),
+                "submit plan must carry exactly one Diagnosis": (
+                    "planner_submit_output_shape"
+                ),
+                "Planner Diagnosis belongs to another run": (
+                    "planner_diagnosis_cross_run"
+                ),
+                "submit plan must carry a completed Diagnosis": (
+                    "planner_submit_not_completed"
+                ),
+                "abstain plan cannot carry a request or Diagnosis": (
+                    "planner_abstain_output_shape"
+                ),
+                "abstain plan must name an active unresolved evidence gap": (
+                    "planner_abstain_missing_active_gap"
+                ),
                 "rejected hypothesis retains unresolved evidence gaps": (
                     "rejected_hypothesis_has_gaps"
                 ),
