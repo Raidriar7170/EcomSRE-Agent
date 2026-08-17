@@ -17,7 +17,7 @@
   "agent_runtime_source_sha256": "16aee6d1d59a9aff3c51d7fb5062427e18cab91a2063d05fb8c75e80d2e0196d",
   "provider_adapter_source_sha256": "628763ece02b174e96f66da310e2a37d004a22b8265f63f85dc1fe31aca7fbbe",
   "registry_sha256": "02bbcddba67da53c10324624dc770c9f73056e0126469567c8e70a79710047e9",
-  "candidate_filter_source_sha256": "c31b4654dacb8fac3a84dffae7f647c4d6e9c4954024e7bb5f9ed52af78cbdfb",
+  "candidate_filter_source_sha256": "7323e1aaef28b936aaed71cd6cb606cfe6ec1cddd3fcef4da524176397064023",
   "max_completion_tokens": 1600,
-  "identity_sha256": "b48acb18cf35d481010f05b3e6f711bc7682306ef58f8298e19dc1714a2ca9a5"
+  "identity_sha256": "b8723ad4b67afee0c0f9962c5a6868c50974f43f1203b011061fbbf3097d6941"
 }

@@ -116,8 +116,8 @@ def filter_runbook_candidates(
     support = tuple(
         resolved_by_ref[reference] for reference in diagnosis.supporting_evidence_refs
     )
-    if any(root not in item.service_scope for item in support):
-        raise CandidateFilterError("supporting evidence is outside the exact target")
+    if not any(root in item.service_scope for item in support):
+        raise CandidateFilterError("supporting evidence lacks the exact target")
     available_sources = {item.source for item in support}
     candidates = tuple(
         CandidateRunbookV21(

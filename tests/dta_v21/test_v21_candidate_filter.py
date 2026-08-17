@@ -12,8 +12,10 @@ from ecomsre.dta_v2.v21.candidate_filter import (
 from ecomsre.dta_v2.v21.contracts import (
     FaultDomainV21,
     FaultMechanismV21,
+    ResolvedEvidenceV21,
     RunbookIdV21,
     TerminalV21,
+    build_resolved_diagnosis_evidence_view_v21,
 )
 from ecomsre.dta_v2.v21.registry import load_default_runbook_registry
 from ecomsre.dta_v2.v21.replay import build_replay_diagnosis
@@ -180,3 +182,61 @@ def test_availability_candidates_require_target_specific_evidence() -> None:
         exact_target="product-catalog",
     )
     assert product_candidates.write_candidates == ()
+
+
+def test_candidate_filter_allows_affected_service_evidence_with_root_binding() -> None:
+    diagnosis, original = build_replay_diagnosis(
+        run_id="f" * 32,
+        terminal=TerminalV21.COMPLETED,
+        root_service="shipping",
+        fault_domain=FaultDomainV21.DEPENDENCY,
+        mechanism=FaultMechanismV21.DEPENDENCY_LATENCY,
+        evidence_sources=("METRICS", "TRACES"),
+    )
+    evidence = build_resolved_diagnosis_evidence_view_v21(
+        run_id=diagnosis.run_id,
+        evidence=tuple(
+            ResolvedEvidenceV21(
+                evidence_ref=item.evidence_ref,
+                source=item.source,
+                service_scope=(
+                    ("checkout",)
+                    if item.source.value == "METRICS"
+                    else ("checkout", "shipping")
+                ),
+                artifact_sha256=item.artifact_sha256,
+            )
+            for item in original.evidence
+        ),
+    )
+
+    candidates = filter_runbook_candidates(
+        diagnosis=diagnosis,
+        diagnosis_evidence=evidence,
+        registry=load_default_runbook_registry(REPO_ROOT),
+        exact_target="shipping",
+    )
+
+    assert [item.runbook_id for item in candidates.write_candidates] == [
+        RunbookIdV21.RESTORE_DEPENDENCY_LATENCY
+    ]
+
+    affected_only = build_resolved_diagnosis_evidence_view_v21(
+        run_id=diagnosis.run_id,
+        evidence=tuple(
+            ResolvedEvidenceV21(
+                evidence_ref=item.evidence_ref,
+                source=item.source,
+                service_scope=("checkout",),
+                artifact_sha256=item.artifact_sha256,
+            )
+            for item in original.evidence
+        ),
+    )
+    with pytest.raises(CandidateFilterError, match="lacks the exact target"):
+        filter_runbook_candidates(
+            diagnosis=diagnosis,
+            diagnosis_evidence=affected_only,
+            registry=load_default_runbook_registry(REPO_ROOT),
+            exact_target="shipping",
+        )
