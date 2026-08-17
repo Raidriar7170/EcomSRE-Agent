@@ -7,7 +7,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_master_progress_tracks_exact_pr_b_stage() -> None:
+def test_master_progress_tracks_exact_pr_c_stage() -> None:
     progress = json.loads(
         (REPO_ROOT / "docs/analysis/dta-v21-p0-master-progress.json").read_text(
             encoding="utf-8"
@@ -26,17 +26,23 @@ def test_master_progress_tracks_exact_pr_b_stage() -> None:
         "actual_starting_main": (
             "925d23994888d1b83e57fc1bbdd1944e57a1bfff"
         ),
-        "completed_stage": "PR-A",
-        "current_stage": "PR-B",
-        "main_head": "ff1b52f01e5d980d7a94a258d7f2a06614dd9f75",
-        "active_branch": "codex/dta-v21-p0-pr-b-fault-matrix",
-        "active_pr": 51,
-        "merged_prs": [50],
+        "completed_stage": "PR-B",
+        "current_stage": "PR-C",
+        "main_head": "a4792daeeb186351ff3952649f5ec59ccf20fd27",
+        "active_branch": "codex/dta-v21-p0-pr-c-evidence-planner",
+        "active_pr": None,
+        "merged_prs": [50, 51],
         "preferred_model": "gpt-5.4-2026-03-05",
-        "frozen_model": None,
-        "flat_adaptive_identity_sha256": None,
-        "planner_identity_sha256": None,
-        "one_shot_identity_sha256": None,
+        "frozen_model": "gpt-5.4-mini-2026-03-17",
+        "flat_adaptive_identity_sha256": (
+            "cef657a0917c0a853dad2cb1b0aca80cc57e2868c127a8f1e520ed4ab5b0f710"
+        ),
+        "planner_identity_sha256": (
+            "c28962b68339294091bbda2d0be3051ef478e6befb36b434ad77e8f56d8e7080"
+        ),
+        "one_shot_identity_sha256": (
+            "10895dca1c6dcc4928d8b3718d25ba2494d3f03d0d20d89d0f10632090fef2a2"
+        ),
         "development_report_sha256": None,
         "held_out_seal_sha256": None,
         "held_out_execution_id": None,

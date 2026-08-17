@@ -1,0 +1,44 @@
+{
+  "schema_version": "dta-v21.pr-c-development-smoke.v1",
+  "status": "PASS",
+  "replay_fake": {
+    "test_file": "tests/dta_v21/test_v21_agent_arms.py",
+    "cases": [
+      "CPU_PLANNER",
+      "SAME_SERVICE_EMAIL_UNAVAILABLE_FLAT",
+      "DEPENDENCY_LATENCY_TRACES_LED_PLANNER",
+      "NO_ACTION_ONE_SHOT"
+    ],
+    "duplicate_call_typed_failure": "PASS",
+    "fifth_read_pre_backend_rejection": "PASS",
+    "one_shot_context_materialization": "PASS"
+  },
+  "provider": {
+    "formal_persisted_attempts": 6,
+    "failed_attempts_retained": 5,
+    "final_status": "PASS",
+    "model_id": "gpt-5.4-mini-2026-03-17",
+    "selection_reason": "preferred model was not configured; the sole configured compatible model was selected before identity freeze",
+    "arm": "EVIDENCE_GUIDED_PLANNER",
+    "agent_terminal": "COMPLETED",
+    "provider_turn_count": 3,
+    "read_tool_dispatch_count": 1,
+    "diagnosis_terminal": "COMPLETED",
+    "candidate_count": 0,
+    "action_disposition": "NO_ACTION",
+    "total_input_tokens": 6083,
+    "total_output_tokens": 963,
+    "total_latency_ms": 9072,
+    "raw_response_sha256": [
+      "6eacdf7890d0994245ca63a81b8c907b53f36efc5586e668b836b584cacbed39",
+      "a6d44030272e543dd324a7ad4fb260bd6f29aa3b65183182798fd8a6bc2da09e",
+      "efbd3650a7b6c7a31a2c4c2d81c974a3b22b61e4ccdf3bce58dea077068bfe75"
+    ],
+    "agent_result_sha256": "129957d6c0e670e7b0c4638486846ac0b5f89c0e30ec381e8bd4f9b6440eccdb",
+    "provider_report_sha256": "c456ee992d72ba26a8ebdde5575bd72e7fdab467a028f0b3378930feb5a608cc"
+  },
+  "live_docker_actions": 0,
+  "runbook_executions": 0,
+  "held_out_executions": 0,
+  "report_sha256": "52da7b2d16734716decf18537599be78315e5f7ef8ce1ba1be2b5d2ce961b8d9"
+}
