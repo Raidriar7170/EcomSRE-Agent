@@ -907,6 +907,16 @@ def run_flat_adaptive_agent_v21(
             observations=tuple(
                 build_agent_visible_observation(item) for item in snapshot.observations
             ),
+            successful_evidence_refs=tuple(
+                item.evidence_ref
+                for item in snapshot.observations
+                if item.status is ObservationStatus.SUCCESS
+            ),
+            failed_evidence_refs=tuple(
+                item.evidence_ref
+                for item in snapshot.observations
+                if item.status is ObservationStatus.FAILURE
+            ),
             prior_requests=build_prior_request_history_v21(snapshot),
             prior_normalized_request_sha256=tuple(
                 item.request_sha256 for item in snapshot.observations
@@ -1065,6 +1075,16 @@ def run_one_shot_agent_v21(
         alert_context=context,
         observations=tuple(
             build_agent_visible_observation(item) for item in snapshot.observations
+        ),
+        successful_evidence_refs=tuple(
+            item.evidence_ref
+            for item in snapshot.observations
+            if item.status is ObservationStatus.SUCCESS
+        ),
+        failed_evidence_refs=tuple(
+            item.evidence_ref
+            for item in snapshot.observations
+            if item.status is ObservationStatus.FAILURE
         ),
         context_materialization_reads=snapshot.dispatch_count,
     )

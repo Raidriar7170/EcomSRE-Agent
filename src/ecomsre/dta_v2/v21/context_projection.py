@@ -130,6 +130,8 @@ class InvestigationStateViewV21(DtaModelV21):
     hypotheses: tuple[DiagnosticHypothesisV21, ...] = Field(max_length=3)
     evidence_index: EvidenceIndexV21
     newest_observation: AgentVisibleObservation | None
+    successful_evidence_refs: tuple[str, ...] = Field(max_length=4)
+    failed_evidence_refs: tuple[str, ...] = Field(max_length=4)
     prior_tools: tuple[ToolName, ...] = Field(max_length=4)
     prior_requests: tuple[ReadToolRequest, ...] = Field(max_length=4)
     prior_normalized_request_sha256: tuple[Sha256V21, ...] = Field(max_length=4)
@@ -158,6 +160,16 @@ class InvestigationStateViewV21(DtaModelV21):
             raise ValueError("investigation request history differs")
         if self.remaining_read_dispatches != 4 - len(self.prior_tools):
             raise ValueError("investigation read budget accounting differs")
+        if self.successful_evidence_refs != tuple(
+            item.evidence_ref
+            for item in self.evidence_index.entries
+            if item.status is ObservationStatus.SUCCESS
+        ) or self.failed_evidence_refs != tuple(
+            item.evidence_ref
+            for item in self.evidence_index.entries
+            if item.status is ObservationStatus.FAILURE
+        ):
+            raise ValueError("investigation evidence partitions differ")
         if self.next_turn_ordinal != 6 - self.remaining_provider_investigation_turns:
             raise ValueError("investigation next turn ordinal differs")
         if self.newest_observation is None:
@@ -188,6 +200,8 @@ class NoCompactionInvestigationStateViewV21(DtaModelV21):
     hypotheses: tuple[DiagnosticHypothesisV21, ...] = Field(max_length=3)
     evidence_index: EvidenceIndexV21
     observations: tuple[AgentVisibleObservation, ...] = Field(max_length=4)
+    successful_evidence_refs: tuple[str, ...] = Field(max_length=4)
+    failed_evidence_refs: tuple[str, ...] = Field(max_length=4)
     prior_tools: tuple[ToolName, ...] = Field(max_length=4)
     prior_requests: tuple[ReadToolRequest, ...] = Field(max_length=4)
     prior_normalized_request_sha256: tuple[Sha256V21, ...] = Field(max_length=4)
@@ -218,6 +232,16 @@ class NoCompactionInvestigationStateViewV21(DtaModelV21):
             raise ValueError("no-compaction request history differs")
         if self.remaining_read_dispatches != 4 - len(self.prior_tools):
             raise ValueError("no-compaction read budget accounting differs")
+        if self.successful_evidence_refs != tuple(
+            item.evidence_ref
+            for item in self.evidence_index.entries
+            if item.status is ObservationStatus.SUCCESS
+        ) or self.failed_evidence_refs != tuple(
+            item.evidence_ref
+            for item in self.evidence_index.entries
+            if item.status is ObservationStatus.FAILURE
+        ):
+            raise ValueError("no-compaction evidence partitions differ")
         if self.next_turn_ordinal != 6 - self.remaining_provider_investigation_turns:
             raise ValueError("no-compaction next turn ordinal differs")
         expected = semantic_sha256(
@@ -384,12 +408,23 @@ def build_investigation_state_view_v21(
     )
     if turns < 0 or turns > 5:
         raise ValueError("completed Provider turns are outside the budget")
+    evidence_index = build_evidence_index_v21(snapshot)
     payload: dict[str, object] = {
         "schema_version": "dta-v21.investigation-state-view.v1",
         "alert_context": context,
         "hypotheses": tuple(sorted(hypotheses, key=lambda item: item.hypothesis_id)),
-        "evidence_index": build_evidence_index_v21(snapshot),
+        "evidence_index": evidence_index,
         "newest_observation": visible,
+        "successful_evidence_refs": tuple(
+            item.evidence_ref
+            for item in evidence_index.entries
+            if item.status is ObservationStatus.SUCCESS
+        ),
+        "failed_evidence_refs": tuple(
+            item.evidence_ref
+            for item in evidence_index.entries
+            if item.status is ObservationStatus.FAILURE
+        ),
         "prior_tools": tuple(item.tool for item in snapshot.observations),
         "prior_requests": build_prior_request_history_v21(snapshot),
         "prior_normalized_request_sha256": tuple(
@@ -450,13 +485,24 @@ def build_no_compaction_investigation_state_view_v21(
     )
     if turns < 0 or turns > 5:
         raise ValueError("completed Provider turns are outside the budget")
+    evidence_index = build_evidence_index_v21(snapshot)
     payload: dict[str, object] = {
         "schema_version": "dta-v21.no-compaction-investigation-state-view.v1",
         "alert_context": context,
         "hypotheses": tuple(sorted(hypotheses, key=lambda item: item.hypothesis_id)),
-        "evidence_index": build_evidence_index_v21(snapshot),
+        "evidence_index": evidence_index,
         "observations": tuple(
             build_agent_visible_observation(item) for item in snapshot.observations
+        ),
+        "successful_evidence_refs": tuple(
+            item.evidence_ref
+            for item in evidence_index.entries
+            if item.status is ObservationStatus.SUCCESS
+        ),
+        "failed_evidence_refs": tuple(
+            item.evidence_ref
+            for item in evidence_index.entries
+            if item.status is ObservationStatus.FAILURE
         ),
         "prior_tools": tuple(item.tool for item in snapshot.observations),
         "prior_requests": build_prior_request_history_v21(snapshot),

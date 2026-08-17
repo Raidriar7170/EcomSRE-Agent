@@ -468,6 +468,8 @@ def test_flat_adaptive_discriminates_same_service_email_unavailability() -> None
     assert provider.visible_states[-1].prior_normalized_request_sha256 == tuple(
         item.normalized_request_sha256 for item in requests
     )
+    assert provider.visible_states[-1].successful_evidence_refs == refs
+    assert provider.visible_states[-1].failed_evidence_refs == ()
 
 
 def test_planner_dependency_case_is_traces_led_and_candidate_bound() -> None:
@@ -553,6 +555,10 @@ def test_one_shot_materializes_four_reads_and_selects_no_action() -> None:
     assert result.context_materialization_read_count == 4
     assert result.action_proposal is not None
     assert result.action_proposal.disposition is ActionDispositionV21.NO_ACTION
+    assert provider.visible_states[-1].successful_evidence_refs == tuple(
+        item.evidence_ref for item in result.evidence_store.observations
+    )
+    assert provider.visible_states[-1].failed_evidence_refs == ()
 
 
 def test_duplicate_read_is_terminally_rejected_without_backend_repeat() -> None:

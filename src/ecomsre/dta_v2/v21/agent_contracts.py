@@ -17,7 +17,7 @@ from pydantic import (
 )
 
 from ecomsre.dta_v2.agent_contracts import AgentVisibleObservation
-from ecomsre.dta_v2.tool_contracts import ReadToolRequest, ToolName
+from ecomsre.dta_v2.tool_contracts import ObservationStatus, ReadToolRequest, ToolName
 from ecomsre.dta_v2.v21.contracts import (
     ActionDispositionV21,
     ActionParameterV21,
@@ -122,6 +122,8 @@ class FlatInvestigationStateViewV21(DtaModelV21):
     schema_version: Literal["dta-v21.flat-investigation-state-view.v1"]
     alert_context: AlertContextV21
     observations: tuple[AgentVisibleObservation, ...] = Field(max_length=4)
+    successful_evidence_refs: tuple[str, ...] = Field(max_length=4)
+    failed_evidence_refs: tuple[str, ...] = Field(max_length=4)
     prior_requests: tuple[ReadToolRequest, ...] = Field(max_length=4)
     prior_normalized_request_sha256: tuple[Sha256V21, ...] = Field(max_length=4)
     remaining_read_dispatches: StrictInt = Field(ge=0, le=4)
@@ -147,6 +149,16 @@ class FlatInvestigationStateViewV21(DtaModelV21):
             raise ValueError("flat investigation request history differs")
         if self.remaining_read_dispatches != 4 - len(self.observations):
             raise ValueError("flat investigation read budget differs")
+        if self.successful_evidence_refs != tuple(
+            item.evidence_ref
+            for item in self.observations
+            if item.status is ObservationStatus.SUCCESS
+        ) or self.failed_evidence_refs != tuple(
+            item.evidence_ref
+            for item in self.observations
+            if item.status is ObservationStatus.FAILURE
+        ):
+            raise ValueError("flat investigation evidence partitions differ")
         return self
 
 
@@ -156,12 +168,24 @@ class OneShotFullContextViewV21(DtaModelV21):
     observations: tuple[AgentVisibleObservation, ...] = Field(
         min_length=1, max_length=4
     )
+    successful_evidence_refs: tuple[str, ...] = Field(max_length=4)
+    failed_evidence_refs: tuple[str, ...] = Field(max_length=4)
     context_materialization_reads: StrictInt = Field(ge=1, le=4)
 
     @model_validator(mode="after")
     def require_materialization_count(self) -> OneShotFullContextViewV21:
         if self.context_materialization_reads != len(self.observations):
             raise ValueError("one-shot materialization count differs")
+        if self.successful_evidence_refs != tuple(
+            item.evidence_ref
+            for item in self.observations
+            if item.status is ObservationStatus.SUCCESS
+        ) or self.failed_evidence_refs != tuple(
+            item.evidence_ref
+            for item in self.observations
+            if item.status is ObservationStatus.FAILURE
+        ):
+            raise ValueError("one-shot evidence partitions differ")
         return self
 
 

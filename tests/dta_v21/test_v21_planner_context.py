@@ -256,6 +256,11 @@ def test_compact_state_is_deterministic_bounded_and_keeps_canonical_refs() -> No
     assert view.prior_normalized_request_sha256 == tuple(
         item.normalized_request_sha256 for item in view.prior_requests
     )
+    assert view.successful_evidence_refs == (
+        metrics.evidence_ref,
+        runtime.evidence_ref,
+    )
+    assert view.failed_evidence_refs == ()
 
 
 def test_planner_rejects_unresolved_hypothesis_citations_and_empty_abstain_gap() -> (

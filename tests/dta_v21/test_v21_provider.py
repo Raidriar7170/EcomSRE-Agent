@@ -356,6 +356,10 @@ def test_prompts_define_null_keys_success_only_citations_and_no_repeats() -> Non
     assert "include both read_request and diagnosis keys" in flat
     assert "exactly one must be non-null" in flat
     assert "exact distinct sources encoded by all cited evidence_ref values" in planner
+    assert "subset of successful_evidence_refs" in common
+    assert "compare every requested field against prior_requests" in common
+    assert "retain at least one active hypothesis" in planner
+    assert "at least one unresolved evidence source" in planner
 
 
 def test_rejected_provider_response_still_exposes_only_its_raw_hash() -> None:

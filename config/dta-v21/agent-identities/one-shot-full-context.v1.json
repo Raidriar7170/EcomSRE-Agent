@@ -4,7 +4,7 @@
   "model_id": "gpt-5.4-mini-2026-03-17",
   "temperature": 0.0,
   "provider_adapter_version": "dta-v21.openai-compatible-agent.v1",
-  "system_prompt_sha256": "ea12d0be2282d39327e8593adc42587d9fdc495f66bff8d7f387ef0e64503c2c",
+  "system_prompt_sha256": "a201f9957741392064f75bd41f08ecb7989b9d3608da0b7d4c40e1f2ceb8045e",
   "tool_schema_sha256": "fedf0172fe146583030cb6e0a31f0b72148e14c3e85c23191c5608f97c8ba732",
   "planner_schema_sha256": null,
   "planner_contracts_source_sha256": null,
@@ -12,12 +12,12 @@
   "diagnosis_schema_sha256": "69f54538276594b2145f7af446c60ae5bd0e840feb378baa5a22a57dc00bab9d",
   "action_selection_schema_sha256": "e3b63486b1b735c6d028331124e607c56c50d5c710e26b10069b1edb408fe337",
   "action_proposal_schema_sha256": "4c999d5d07d3478a962062c0df93980060a5f0a2285f30945644e5e2063fef66",
-  "context_projection_source_sha256": "2c44f24071637283e1518d7ec7399f0424389e969584de6592040c19b6fc8521",
-  "agent_contracts_source_sha256": "30381217194d7da850ca467b021d660bdd00adcff315160b4cf455bff7aed29f",
-  "agent_runtime_source_sha256": "c09a02e48b78e2639a55bce67c5dc9e272de0dfefe77a1eda37bff4249bbf86b",
+  "context_projection_source_sha256": "37ca49c93954915a7ef31261454cf0ce8b75974d455f25b61fa5cc6351be736d",
+  "agent_contracts_source_sha256": "22b0ed05433b26ef507ac8f91cbfd33dea1c5094b853cc938ab33c0cde4ca4a8",
+  "agent_runtime_source_sha256": "7b700c0b1f00194f279c8a4c9de429bd05c0f4dd31362e69b99b845b147eee0c",
   "provider_adapter_source_sha256": "d095757cfb3f1fd080ba838a2c765987fe0786b9fe7b8d99da27b6af24003b0e",
   "registry_sha256": "02bbcddba67da53c10324624dc770c9f73056e0126469567c8e70a79710047e9",
   "candidate_filter_source_sha256": "7323e1aaef28b936aaed71cd6cb606cfe6ec1cddd3fcef4da524176397064023",
   "max_completion_tokens": 1600,
-  "identity_sha256": "0ff2cf3542f5e30771bcaad85b2e4ffde59250a038db0e9b9f89afe7428d71dd"
+  "identity_sha256": "612d9fe5b68ac643eba4922b4a0e166f1d0064dd9dd3ddce8bc2eb7b5ebbabc8"
 }
