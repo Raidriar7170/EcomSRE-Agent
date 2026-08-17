@@ -18,7 +18,7 @@ def test_checked_in_development_evaluation_is_bound_and_safe() -> None:
     result = verify_public_evaluation(REPO_ROOT, require_freeze=False)
 
     assert result["development_report_sha256"] == (
-        "27d25478a733107c92549e3016a494a20317c9e63513e05c9a9ce767238e013b"
+        "e7b31098a7a8e4e0ac7efdd31f085a3bc510290510ea1601a560372418e0fd80"
     )
     assert result["development_entry_count"] == 40
     assert result["held_out_case_count"] == 8
