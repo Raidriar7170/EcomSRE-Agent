@@ -8,7 +8,7 @@
   "current_stage": "PR-B",
   "main_head": "ff1b52f01e5d980d7a94a258d7f2a06614dd9f75",
   "active_branch": "codex/dta-v21-p0-pr-b-fault-matrix",
-  "active_pr": null,
+  "active_pr": 51,
   "merged_prs": [50],
   "preferred_model": "gpt-5.4-2026-03-05",
   "frozen_model": null,
