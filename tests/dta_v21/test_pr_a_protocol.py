@@ -30,7 +30,7 @@ def test_master_progress_tracks_exact_pr_c_stage() -> None:
         "current_stage": "PR-C",
         "main_head": "a4792daeeb186351ff3952649f5ec59ccf20fd27",
         "active_branch": "codex/dta-v21-p0-pr-c-evidence-planner",
-        "active_pr": None,
+        "active_pr": 52,
         "merged_prs": [50, 51],
         "preferred_model": "gpt-5.4-2026-03-05",
         "frozen_model": "gpt-5.4-mini-2026-03-17",
