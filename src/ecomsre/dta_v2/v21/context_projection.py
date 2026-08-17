@@ -148,11 +148,55 @@ class InvestigationStateViewV21(DtaModelV21):
         return self
 
 
-def _service_scope(request: object, observation: ReadToolObservation) -> tuple[str, ...]:
+class NoCompactionInvestigationStateViewV21(DtaModelV21):
+    """Development-only ablation view retaining every full typed observation."""
+
+    schema_version: Literal["dta-v21.no-compaction-investigation-state-view.v1"]
+    alert_context: AlertContextV21
+    hypotheses: tuple[DiagnosticHypothesisV21, ...] = Field(max_length=3)
+    evidence_index: EvidenceIndexV21
+    observations: tuple[AgentVisibleObservation, ...] = Field(max_length=4)
+    prior_tools: tuple[ToolName, ...] = Field(max_length=4)
+    prior_normalized_request_sha256: tuple[Sha256V21, ...] = Field(max_length=4)
+    remaining_read_dispatches: StrictInt = Field(ge=0, le=4)
+    remaining_provider_investigation_turns: StrictInt = Field(ge=0, le=5)
+    next_turn_ordinal: StrictInt = Field(ge=1, le=5)
+    serialized_size_bytes: StrictInt = Field(ge=1, le=256_000)
+    state_sha256: Sha256V21
+
+    @model_validator(mode="after")
+    def require_state_binding(self) -> NoCompactionInvestigationStateViewV21:
+        if self.alert_context.run_id != self.evidence_index.run_id:
+            raise ValueError("no-compaction state contains another run")
+        if len(self.observations) != len(self.evidence_index.entries):
+            raise ValueError("no-compaction observations differ from Evidence Index")
+        if len(self.prior_tools) != len(self.prior_normalized_request_sha256):
+            raise ValueError("no-compaction request history is partial")
+        if self.remaining_read_dispatches != 4 - len(self.prior_tools):
+            raise ValueError("no-compaction read budget accounting differs")
+        if self.next_turn_ordinal != 6 - self.remaining_provider_investigation_turns:
+            raise ValueError("no-compaction next turn ordinal differs")
+        expected = semantic_sha256(
+            self.model_dump(mode="json", exclude={"state_sha256"})
+        )
+        if self.state_sha256 != expected:
+            raise ValueError("no-compaction state digest differs")
+        if self.serialized_size_bytes != len(self.model_dump_json().encode("utf-8")):
+            raise ValueError("no-compaction state byte count differs")
+        return self
+
+
+def _service_scope(
+    request: object, observation: ReadToolObservation
+) -> tuple[str, ...]:
     services: set[str] = set()
-    if isinstance(request, (QueryMetricsRequest, SearchLogsRequest, TraceNeighborhoodRequest)):
+    if isinstance(
+        request, (QueryMetricsRequest, SearchLogsRequest, TraceNeighborhoodRequest)
+    ):
         services.add(request.service)
-    elif isinstance(request, (InspectServiceRuntimeRequest, InspectResourceUsageRequest)):
+    elif isinstance(
+        request, (InspectServiceRuntimeRequest, InspectResourceUsageRequest)
+    ):
         services.update(request.services)
     for record in observation.results:
         for field in ("service", "logical_service", "anchor_service", "parent_service"):
@@ -196,7 +240,11 @@ def _fact(record: object) -> EvidenceIndexFactV21:
         return EvidenceIndexFactV21(
             fact_kind="RUNTIME_STATE",
             service=record.logical_service,
-            labels=(record.state.value, record.health.value, record.endpoint_state.value),
+            labels=(
+                record.state.value,
+                record.health.value,
+                record.endpoint_state.value,
+            ),
             numeric_values=(
                 float(record.restart_count),
                 float(record.exit_code) if record.exit_code is not None else -1.0,
@@ -275,7 +323,9 @@ def build_investigation_state_view_v21(
     completed_provider_turns: int | None = None,
 ) -> InvestigationStateViewV21:
     context = AlertContextV21.model_validate(context.model_dump(mode="python"))
-    snapshot = EvidenceStoreSnapshot.model_validate_json(evidence_store.model_dump_json())
+    snapshot = EvidenceStoreSnapshot.model_validate_json(
+        evidence_store.model_dump_json()
+    )
     if context.run_id != snapshot.run_id:
         raise ValueError("context and Evidence Store runs differ")
     visible = None
@@ -283,7 +333,11 @@ def build_investigation_state_view_v21(
         visible = build_agent_visible_observation(
             revalidate_observation(newest_observation)
         )
-    turns = len(snapshot.observations) if completed_provider_turns is None else completed_provider_turns
+    turns = (
+        len(snapshot.observations)
+        if completed_provider_turns is None
+        else completed_provider_turns
+    )
     if turns < 0 or turns > 5:
         raise ValueError("completed Provider turns are outside the budget")
     payload: dict[str, object] = {
@@ -329,12 +383,79 @@ def build_investigation_state_view_v21(
     )
 
 
+def build_no_compaction_investigation_state_view_v21(
+    *,
+    context: AlertContextV21,
+    hypotheses: tuple[DiagnosticHypothesisV21, ...],
+    evidence_store: EvidenceStoreSnapshot,
+    newest_observation: ReadToolObservation | None,
+    completed_provider_turns: int | None = None,
+) -> NoCompactionInvestigationStateViewV21:
+    del newest_observation
+    context = AlertContextV21.model_validate(context.model_dump(mode="python"))
+    snapshot = EvidenceStoreSnapshot.model_validate_json(
+        evidence_store.model_dump_json()
+    )
+    if context.run_id != snapshot.run_id:
+        raise ValueError("context and Evidence Store runs differ")
+    turns = (
+        len(snapshot.observations)
+        if completed_provider_turns is None
+        else completed_provider_turns
+    )
+    if turns < 0 or turns > 5:
+        raise ValueError("completed Provider turns are outside the budget")
+    payload: dict[str, object] = {
+        "schema_version": "dta-v21.no-compaction-investigation-state-view.v1",
+        "alert_context": context,
+        "hypotheses": tuple(sorted(hypotheses, key=lambda item: item.hypothesis_id)),
+        "evidence_index": build_evidence_index_v21(snapshot),
+        "observations": tuple(
+            build_agent_visible_observation(item) for item in snapshot.observations
+        ),
+        "prior_tools": tuple(item.tool for item in snapshot.observations),
+        "prior_normalized_request_sha256": tuple(
+            item.request_sha256 for item in snapshot.observations
+        ),
+        "remaining_read_dispatches": 4 - snapshot.dispatch_count,
+        "remaining_provider_investigation_turns": 5 - turns,
+        "next_turn_ordinal": turns + 1,
+    }
+    size = 1
+    for _ in range(8):
+        draft = cast(Any, NoCompactionInvestigationStateViewV21).model_construct(
+            **payload,
+            serialized_size_bytes=size,
+            state_sha256="0" * 64,
+        )
+        observed = len(draft.model_dump_json().encode("utf-8"))
+        if observed == size:
+            break
+        size = observed
+    digest_draft = cast(Any, NoCompactionInvestigationStateViewV21).model_construct(
+        **payload,
+        serialized_size_bytes=size,
+        state_sha256="0" * 64,
+    )
+    return NoCompactionInvestigationStateViewV21.model_validate(
+        {
+            **payload,
+            "serialized_size_bytes": size,
+            "state_sha256": semantic_sha256(
+                digest_draft.model_dump(mode="json", exclude={"state_sha256"})
+            ),
+        }
+    )
+
+
 __all__ = (
     "EvidenceIndexEntryV21",
     "EvidenceIndexFactV21",
     "EvidenceIndexV21",
     "InvestigationStateViewV21",
     "MAX_INVESTIGATION_STATE_BYTES",
+    "NoCompactionInvestigationStateViewV21",
     "build_evidence_index_v21",
     "build_investigation_state_view_v21",
+    "build_no_compaction_investigation_state_view_v21",
 )

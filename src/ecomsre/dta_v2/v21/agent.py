@@ -7,7 +7,10 @@ from typing import Any, Literal, Protocol, cast
 
 from pydantic import Field, StrictInt, model_validator
 
-from ecomsre.dta_v2.agent_contracts import ProviderUsage, build_agent_visible_observation
+from ecomsre.dta_v2.agent_contracts import (
+    ProviderUsage,
+    build_agent_visible_observation,
+)
 from ecomsre.dta_v2.evidence_store import EvidenceStoreSnapshot
 from ecomsre.dta_v2.read_tools import InvestigationReadTools, ReadBackend
 from ecomsre.dta_v2.tool_contracts import (
@@ -36,8 +39,11 @@ from ecomsre.dta_v2.v21.agent_provider import ProviderProtocolError, ProviderTur
 from ecomsre.dta_v2.v21.candidate_filter import filter_runbook_candidates
 from ecomsre.dta_v2.v21.context_projection import (
     EvidenceIndexV21,
+    InvestigationStateViewV21,
+    NoCompactionInvestigationStateViewV21,
     build_evidence_index_v21,
     build_investigation_state_view_v21,
+    build_no_compaction_investigation_state_view_v21,
 )
 from ecomsre.dta_v2.v21.contracts import (
     ActionProposalV21,
@@ -197,19 +203,28 @@ class DtaAgentRunResultV21(DtaModelV21):
     def require_result_shape(self) -> DtaAgentRunResultV21:
         if self.identity.arm is not self.arm:
             raise ValueError("Agent result identity differs from the arm")
-        if self.evidence_store.run_id != self.run_id or self.evidence_index.run_id != self.run_id:
+        if (
+            self.evidence_store.run_id != self.run_id
+            or self.evidence_index.run_id != self.run_id
+        ):
             raise ValueError("Agent result evidence belongs to another run")
         if self.diagnosis is not None and self.diagnosis.run_id != self.run_id:
             raise ValueError("Agent result Diagnosis belongs to another run")
         if self.arm is AgentArmV21.ONE_SHOT_FULL_CONTEXT:
             if self.semantic_read_tool_dispatch_count != 0:
                 raise ValueError("one-shot result reports semantic reads")
-            if self.context_materialization_read_count != self.evidence_store.dispatch_count:
+            if (
+                self.context_materialization_read_count
+                != self.evidence_store.dispatch_count
+            ):
                 raise ValueError("one-shot materialization accounting differs")
         else:
             if self.context_materialization_read_count != 0:
                 raise ValueError("adaptive arm reports context materialization reads")
-            if self.semantic_read_tool_dispatch_count != self.evidence_store.dispatch_count:
+            if (
+                self.semantic_read_tool_dispatch_count
+                != self.evidence_store.dispatch_count
+            ):
                 raise ValueError("adaptive read accounting differs")
         if self.arm is AgentArmV21.EVIDENCE_GUIDED_PLANNER:
             if len(self.planner_trace) > 5:
@@ -223,16 +238,20 @@ class DtaAgentRunResultV21(DtaModelV21):
             self.action_proposal,
         )
         if self.terminal is AgentRunTerminalV21.COMPLETED:
-            if self.failure_code is not None or self.diagnosis is None or any(
-                item is None for item in stage_two
+            if (
+                self.failure_code is not None
+                or self.diagnosis is None
+                or any(item is None for item in stage_two)
             ):
                 raise ValueError("completed Agent result lacks Stage 2 artifacts")
         elif self.terminal in (
             AgentRunTerminalV21.NEED_MORE_EVIDENCE,
             AgentRunTerminalV21.ABSTAIN,
         ):
-            if self.failure_code is not None or self.diagnosis is None or any(
-                item is not None for item in stage_two
+            if (
+                self.failure_code is not None
+                or self.diagnosis is None
+                or any(item is not None for item in stage_two)
             ):
                 raise ValueError("noncompleted Agent result has Stage 2 artifacts")
         elif self.failure_code is None or self.action_proposal is not None:
@@ -337,8 +356,12 @@ def _build_result(
     action_proposal: ActionProposalV21 | None = None,
 ) -> DtaAgentRunResultV21:
     snapshot = tools.snapshot()
-    materialized = snapshot.dispatch_count if arm is AgentArmV21.ONE_SHOT_FULL_CONTEXT else 0
-    semantic_reads = 0 if arm is AgentArmV21.ONE_SHOT_FULL_CONTEXT else snapshot.dispatch_count
+    materialized = (
+        snapshot.dispatch_count if arm is AgentArmV21.ONE_SHOT_FULL_CONTEXT else 0
+    )
+    semantic_reads = (
+        0 if arm is AgentArmV21.ONE_SHOT_FULL_CONTEXT else snapshot.dispatch_count
+    )
     payload: dict[str, object] = {
         "schema_version": "dta-v21.agent-run-result.v1",
         "arm": arm,
@@ -550,7 +573,13 @@ def _finish_diagnosis(
     except Exception as error:
         if not isinstance(
             error,
-            (ProviderProtocolError, ConnectionError, TimeoutError, TypeError, ValueError),
+            (
+                ProviderProtocolError,
+                ConnectionError,
+                TimeoutError,
+                TypeError,
+                ValueError,
+            ),
         ):
             raise
         failure = (
@@ -596,6 +625,7 @@ def run_evidence_guided_agent_v21(
     backend: ReadBackend,
     registry: RunbookRegistryV21,
     provider: AgentProviderV21,
+    compact_context: bool = True,
 ) -> DtaAgentRunResultV21:
     context = AlertContextV21.model_validate(context.model_dump(mode="python"))
     registry = RunbookRegistryV21.model_validate(registry.model_dump(mode="python"))
@@ -609,13 +639,23 @@ def run_evidence_guided_agent_v21(
     diagnosis: DtaDiagnosisV21 | None = None
 
     while diagnosis is None:
-        state = build_investigation_state_view_v21(
-            context=context,
-            hypotheses=hypotheses,
-            evidence_store=tools.snapshot(),
-            newest_observation=newest,
-            completed_provider_turns=len(trace),
-        )
+        state: InvestigationStateViewV21 | NoCompactionInvestigationStateViewV21
+        if compact_context:
+            state = build_investigation_state_view_v21(
+                context=context,
+                hypotheses=hypotheses,
+                evidence_store=tools.snapshot(),
+                newest_observation=newest,
+                completed_provider_turns=len(trace),
+            )
+        else:
+            state = build_no_compaction_investigation_state_view_v21(
+                context=context,
+                hypotheses=hypotheses,
+                evidence_store=tools.snapshot(),
+                newest_observation=newest,
+                completed_provider_turns=len(trace),
+            )
         try:
             turn = provider.investigation_turn(
                 context=context,
@@ -991,9 +1031,7 @@ def run_one_shot_agent_v21(
             tools=tools,
             turns=tuple(turns),
         )
-    diagnosis = DtaDiagnosisV21.model_validate(
-        turn.diagnosis.model_dump(mode="python")
-    )
+    diagnosis = DtaDiagnosisV21.model_validate(turn.diagnosis.model_dump(mode="python"))
     turns.append(
         _turn_evidence(
             turn=turn,
