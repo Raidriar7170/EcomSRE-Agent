@@ -101,6 +101,18 @@ jobs:
           uv run --frozen --no-sync python -m
           scripts.ci.verify_phase5b_historical_bindings
 
+      - name: DTA v2 historical bindings for v2.1
+        run: make dta-v21-historical-verify
+
+      - name: DTA v2.1 focused tests
+        run: make dta-v21-test
+
+      - name: Phase 5B execution historical bindings for successors
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_phase5b_execution_historical_bindings
+
       - name: Verify Phase 5B protocol
         run: make phase5b-protocol-verify
 
@@ -147,3 +159,4 @@ jobs:
           scripts/ci
           scripts/live_sandbox
           tests/phase5b
+          tests/dta_v21

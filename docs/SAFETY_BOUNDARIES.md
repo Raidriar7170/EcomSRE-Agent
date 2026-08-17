@@ -297,3 +297,28 @@ remediation evidence.
 
 Any terminal safety state forbids another forward mutation. An LLM may explain
 the state but may not expand authority.
+
+## DTA v2.1 P0 successor boundary
+
+Under `DEC-039` through `DEC-043`, DTA v2.1 is independent from the frozen v2
+portfolio and must pass the historical binding verifier before successor
+evidence is accepted. The exact user-designated `dta-v21-p0-master-v1` Goal is
+the only standing authority for its later Provider, owned local Docker,
+capture, evaluation, and live operations. These Decision Records do not create
+generic or continuing authority outside that Goal.
+
+The v2.1 model may emit only a typed evidence plan, Diagnosis, and
+candidate-bound Action Selection. It never receives or emits commands, shell,
+paths, URLs, Docker identities, feature-flag keys or values, executor or
+verifier implementations, authorization records, or raw write APIs. Evaluator
+truth cannot enter planning, Candidate filtering, Operational Admission, or
+model-visible evidence.
+
+The only P0 live Agent write semantics are one exact owned Ad CPU baseline
+restoration and one exact owned Email or Product Catalog service start, each
+after fresh ownership, state, evidence, CandidateSet, and run-bound
+authorization checks. `MITIGATE_CPU_SATURATION` risk is frozen as `LOW`.
+Dependency-latency remediation is replay-only. A no-fault case has zero writes.
+Any mismatch, unsafe proposal, unknown resource, step-cap breach, failed
+recovery, baseline-restoration failure, non-owned drift, or unclean cleanup
+terminates without another forward mutation.

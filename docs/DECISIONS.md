@@ -50,6 +50,11 @@ conflicts with this register, this register wins.
 | DEC-036 | DTA v2 provisional Agent identity and Provider development gate | accepted | DTA v2 PR-D under `dta-v2-master-v1` | `DECISIONS.md` | Architecture, Safety, DTA v2 design and Agent tests | No — development Provider evidence creates no write authority |
 | DEC-037 | DTA v2 PR-E replay evaluation protocol and result | accepted | DTA v2 PR-E under `dta-v2-master-v1` | `DECISIONS.md` | Architecture, Safety, DTA v2 design and evaluation tests | No — evaluation creates no remediation or later-stage authority |
 | DEC-038 | DTA v2 PR-F known-scenario local live Demo result | accepted | DTA v2 PR-F under `dta-v2-master-v1` | `DECISIONS.md` | Architecture, Safety, DTA v2 design and live reports | No — consumed local Demo authority creates no production or continuing write authority |
+| DEC-039 | DTA v2.1 versioned successor and immutable v2 bindings | accepted | DTA v2.1 P0 under `dta-v21-p0-master-v1` | `DECISIONS.md` | Architecture, Safety, DTA v2.1 design and historical verifier | Yes — any historical binding drift blocks the successor |
+| DEC-040 | DTA v2.1 crossed service and mechanism matrix | accepted | DTA v2.1 P0 | `DECISIONS.md` | DTA v2.1 design, scenario registry, evaluator | Yes — shortcut-prone or incomplete matrices block evaluation |
+| DEC-041 | DTA v2.1 evidence-guided planner and compact state | accepted | DTA v2.1 P0 | `DECISIONS.md` | Architecture, Safety, planner and projection contracts | Yes — truth routing, duplicate reads, or invalid evidence blocks the run |
+| DEC-042 | DTA v2.1 frozen three-arm evaluation and honest claim gate | accepted | DTA v2.1 PR-D/PR-E | `DECISIONS.md` | DTA v2.1 design, freeze, scorer, reports | Yes — protocol drift or a failed threshold forbids an advantage claim |
+| DEC-043 | DTA v2.1 bounded local portfolio and zero model write authority | accepted | DTA v2.1 PR-F under `dta-v21-p0-master-v1` | `DECISIONS.md` | Architecture, Safety, live contracts and reports | Yes — authority, ownership, recovery, or cleanup mismatch blocks live continuation |
 
 ## DEC-001 — Supported host baseline
 
@@ -828,6 +833,97 @@ arbitrary autonomous remediation, held-out recovery accuracy, Tool Use
 superiority, or Multi-Agent superiority. The campaign capability is consumed;
 this record creates no continuing Provider, Docker, fault, or mutation
 authority.
+
+## DEC-039 — DTA v2.1 Versioned Successor and Immutable DTA v2 Bindings
+
+**Status: `accepted` for the user-designated `dta-v21-p0-master-v1` Goal.**
+
+DTA v2.1 is an independent successor under `ecomsre.dta_v2.v21`, schema prefix
+`dta-v21.`, configuration root `config/dta-v21`, and test root
+`tests/dta_v21`. It does not extend frozen v2 enums or schema literals in
+place. Stable low-level primitives may be reused only through narrow typed
+adapters that preserve v2 behavior and evaluator-truth isolation.
+
+The 11 files in `historical-v2-bindings.v1.json`, current v2 Agent identity,
+held-out seal, negative held-out result, and live terminal are immutable. Every
+v2.1 stage runs the deterministic historical verifier. The old held-out set is
+not rerun or relabeled, and its claim does not transfer to any v2.1 identity.
+Any mismatch terminates `BLOCKED_DTA_V21_BASELINE_HISTORY_DRIFT`.
+
+## DEC-040 — DTA v2.1 Crossed Service and Fault-mechanism Matrix
+
+**Status: `accepted` for DTA v2.1 P0.**
+
+Service and mechanism must not remain one-to-one. The versioned matrix includes
+Email with memory leak and service unavailable, service unavailable across
+Recommendation, Email, and Product Catalog, Ad CPU saturation, Shipping
+dependency latency, no fault, and missing or conflicting evidence. Candidate
+sets overlap and observer alerts contain no answer semantics.
+
+The dependency label is `DEPENDENCY_LATENCY`. It may not become timeout after
+model output; only independent pre-freeze calibration plus a prior Decision
+Record may establish typed timeout semantics. Deterministic anti-shortcut tests
+and per-service and per-mechanism confusion matrices are required.
+
+## DEC-041 — DTA v2.1 Evidence-guided Planner and Compact Deterministic State
+
+**Status: `accepted` for DTA v2.1 P0.**
+
+The Planner explicitly records up to three typed hypotheses, supporting and
+contradicting evidence, unresolved evidence-source gaps, and exactly one next
+semantic action. The runtime enforces candidate scope, tool allowlists, four
+read dispatches, zero identical normalized repeats, evidence references, and
+typed failures. It may reject inconsistency but may not use evaluator truth to
+choose a tool for the model.
+
+Full evidence remains in the private run-bound store. Subsequent Provider turns
+receive a deterministic Evidence Index plus only the newest full bounded
+observation, not the accumulated raw transcript. The default pre-freeze state
+ceiling is 24,000 UTF-8 bytes. No LLM summarizer is admitted. Confidence cannot
+expand candidates, Runbooks, risk, steps, authorization, or write scope.
+
+## DEC-042 — DTA v2.1 Frozen Three-arm Evaluation and Honest Claim Gate
+
+**Status: `accepted` for DTA v2.1 PR-D and PR-E.**
+
+The frozen arms are `ONE_SHOT_FULL_CONTEXT`, `FLAT_ADAPTIVE`, and
+`EVIDENCE_GUIDED_PLANNER`, with Planner versus Flat Adaptive as the primary
+comparison and One-shot as a descriptive anchor. One model and temperature,
+independent arm identities, a 12-case visible development set, an eight-case
+private held-out set, a 24-entry one-time schedule, a deterministic scorer, and
+preregistered thresholds are frozen before execution.
+
+The advantage terminal is legal only if every preregistered quality, evidence,
+action, token, tool, latency, and safety threshold passes. Otherwise the exact
+terminal is `DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED`. That
+negative is valid engineering evidence and must not be tuned away or rerun.
+Engineering acceptance remains independently possible when all protocol,
+safety, live, verification, and cleanup gates pass.
+
+## DEC-043 — DTA v2.1 Bounded Local Portfolio and Zero Model Write Authority
+
+**Status: `accepted` only under the exact user-designated
+`dta-v21-p0-master-v1` Goal.**
+
+The final local portfolio is no fault, Ad CPU saturation, Email unavailable,
+and Product Catalog unavailable. The active Goal authorizes only its exact
+evaluator-controlled local faults, one-step `MITIGATE_CPU_SATURATION` on owned
+Ad with risk frozen as `LOW`, and one-step `RESTORE_SERVICE_AVAILABILITY` on
+exact owned Email or Product Catalog. `RESTORE_DEPENDENCY_LATENCY` is
+replay-only. No-fault performs zero writes.
+
+The model emits planning, Diagnosis, and candidate-bound Action Selection
+semantics only. It never receives or emits shell, commands, paths, URLs, Docker
+identities, feature-flag keys, executor/verifier implementations,
+authorization, or raw write APIs. Trusted code resolves candidates, verifies
+fresh ownership and run-bound authority, executes one fixed admitted step, and
+independently verifies two recovery windows, baseline restoration, cleanup,
+and no non-owned drift.
+
+This record creates no generic authority outside the exact Goal. P1 tooling,
+training, new Multi-Agent orchestration, Computer Use, Kubernetes, cloud,
+generic shell, generic feature-flag writes, generic service restart, UI work,
+production, release, and deployment remain excluded.
 
 ## Upstream references
 

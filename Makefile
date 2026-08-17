@@ -283,3 +283,15 @@ AGENT_DEMO_REPORT ?= $(PROJECT_ROOT)/artifacts/demo/agent-mainline-v1-report.jso
 
 agent-demo: phase1-prerequisites
 	$(AGENT_DEMO_CLI) run --output "$(AGENT_DEMO_REPORT)"
+
+# BEGIN DTA_V21_SUCCESSOR_TARGETS
+DTA_V21_HISTORICAL_BINDINGS_CLI := env PYTHONPATH="$(PROJECT_ROOT):$(PYTHONPATH)" uv run --frozen --no-sync python -m scripts.ci.verify_dta_v2_historical_bindings
+
+.PHONY: dta-v21-historical-verify dta-v21-test
+
+dta-v21-historical-verify: phase1-prerequisites
+	$(DTA_V21_HISTORICAL_BINDINGS_CLI)
+
+dta-v21-test: dta-v21-historical-verify
+	env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync pytest tests/dta_v21 -q
+# END DTA_V21_SUCCESSOR_TARGETS
