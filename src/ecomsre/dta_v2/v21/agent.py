@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 from enum import Enum
+import re
 from typing import Any, Literal, Protocol, cast
 
 from pydantic import Field, StrictInt, model_validator
 
-from ecomsre.dta_v2.agent_contracts import ProviderUsage, build_agent_visible_observation
+from ecomsre.dta_v2.agent_contracts import (
+    ProviderUsage,
+    build_agent_visible_observation,
+)
 from ecomsre.dta_v2.evidence_store import EvidenceStoreSnapshot
 from ecomsre.dta_v2.read_tools import InvestigationReadTools, ReadBackend
 from ecomsre.dta_v2.tool_contracts import (
@@ -36,8 +40,12 @@ from ecomsre.dta_v2.v21.agent_provider import ProviderProtocolError, ProviderTur
 from ecomsre.dta_v2.v21.candidate_filter import filter_runbook_candidates
 from ecomsre.dta_v2.v21.context_projection import (
     EvidenceIndexV21,
+    InvestigationStateViewV21,
+    NoCompactionInvestigationStateViewV21,
     build_evidence_index_v21,
     build_investigation_state_view_v21,
+    build_no_compaction_investigation_state_view_v21,
+    build_prior_request_history_v21,
 )
 from ecomsre.dta_v2.v21.contracts import (
     ActionProposalV21,
@@ -77,6 +85,12 @@ class AgentFailureCodeV21(str, Enum):
     DIAGNOSIS_BINDING_FAILURE = "DIAGNOSIS_BINDING_FAILURE"
     ACTION_SELECTION_BINDING_FAILURE = "ACTION_SELECTION_BINDING_FAILURE"
     INTERNAL_CONTRACT_FAILURE = "INTERNAL_CONTRACT_FAILURE"
+
+
+class DiagnosisBindingFailureCodeV21(str, Enum):
+    RUN_ID_MISMATCH = "RUN_ID_MISMATCH"
+    EVIDENCE_RESOLUTION_FAILURE = "EVIDENCE_RESOLUTION_FAILURE"
+    CANDIDATE_FILTER_FAILURE = "CANDIDATE_FILTER_FAILURE"
 
 
 class ProviderStageV21(str, Enum):
@@ -178,6 +192,8 @@ class DtaAgentRunResultV21(DtaModelV21):
     run_id: str = Field(pattern=r"^[0-9a-f]{32}$")
     terminal: AgentRunTerminalV21
     failure_code: AgentFailureCodeV21 | None
+    provider_failure_codes: tuple[str, ...] = Field(max_length=16)
+    diagnosis_binding_failure_code: DiagnosisBindingFailureCodeV21 | None
     identity: AgentIdentityManifestV21
     provider_turn_count: StrictInt = Field(ge=0, le=6)
     semantic_read_tool_dispatch_count: StrictInt = Field(ge=0, le=4)
@@ -195,21 +211,48 @@ class DtaAgentRunResultV21(DtaModelV21):
 
     @model_validator(mode="after")
     def require_result_shape(self) -> DtaAgentRunResultV21:
+        if (
+            self.provider_failure_codes != tuple(sorted(set(self.provider_failure_codes)))
+            or any(
+                re.fullmatch(r"[a-z][a-z0-9_]{0,63}:[a-z][a-z0-9_]{0,63}", code)
+                is None
+                for code in self.provider_failure_codes
+            )
+        ):
+            raise ValueError("Agent result Provider failure codes are not safe")
+        if self.provider_failure_codes and (
+            self.terminal is not AgentRunTerminalV21.FAILED
+            or self.failure_code is not AgentFailureCodeV21.PROVIDER_PROTOCOL_FAILURE
+        ):
+            raise ValueError("Agent result carries Provider codes outside a protocol failure")
+        if (
+            self.diagnosis_binding_failure_code is None
+        ) != (self.failure_code is not AgentFailureCodeV21.DIAGNOSIS_BINDING_FAILURE):
+            raise ValueError("Agent result Diagnosis binding detail differs")
         if self.identity.arm is not self.arm:
             raise ValueError("Agent result identity differs from the arm")
-        if self.evidence_store.run_id != self.run_id or self.evidence_index.run_id != self.run_id:
+        if (
+            self.evidence_store.run_id != self.run_id
+            or self.evidence_index.run_id != self.run_id
+        ):
             raise ValueError("Agent result evidence belongs to another run")
         if self.diagnosis is not None and self.diagnosis.run_id != self.run_id:
             raise ValueError("Agent result Diagnosis belongs to another run")
         if self.arm is AgentArmV21.ONE_SHOT_FULL_CONTEXT:
             if self.semantic_read_tool_dispatch_count != 0:
                 raise ValueError("one-shot result reports semantic reads")
-            if self.context_materialization_read_count != self.evidence_store.dispatch_count:
+            if (
+                self.context_materialization_read_count
+                != self.evidence_store.dispatch_count
+            ):
                 raise ValueError("one-shot materialization accounting differs")
         else:
             if self.context_materialization_read_count != 0:
                 raise ValueError("adaptive arm reports context materialization reads")
-            if self.semantic_read_tool_dispatch_count != self.evidence_store.dispatch_count:
+            if (
+                self.semantic_read_tool_dispatch_count
+                != self.evidence_store.dispatch_count
+            ):
                 raise ValueError("adaptive read accounting differs")
         if self.arm is AgentArmV21.EVIDENCE_GUIDED_PLANNER:
             if len(self.planner_trace) > 5:
@@ -223,16 +266,20 @@ class DtaAgentRunResultV21(DtaModelV21):
             self.action_proposal,
         )
         if self.terminal is AgentRunTerminalV21.COMPLETED:
-            if self.failure_code is not None or self.diagnosis is None or any(
-                item is None for item in stage_two
+            if (
+                self.failure_code is not None
+                or self.diagnosis is None
+                or any(item is None for item in stage_two)
             ):
                 raise ValueError("completed Agent result lacks Stage 2 artifacts")
         elif self.terminal in (
             AgentRunTerminalV21.NEED_MORE_EVIDENCE,
             AgentRunTerminalV21.ABSTAIN,
         ):
-            if self.failure_code is not None or self.diagnosis is None or any(
-                item is not None for item in stage_two
+            if (
+                self.failure_code is not None
+                or self.diagnosis is None
+                or any(item is not None for item in stage_two)
             ):
                 raise ValueError("noncompleted Agent result has Stage 2 artifacts")
         elif self.failure_code is None or self.action_proposal is not None:
@@ -329,6 +376,8 @@ def _build_result(
     failure_code: AgentFailureCodeV21 | None,
     tools: InvestigationReadTools,
     turns: tuple[ProviderTurnEvidenceV21, ...],
+    provider_failure_codes: tuple[str, ...] = (),
+    diagnosis_binding_failure_code: DiagnosisBindingFailureCodeV21 | None = None,
     planner_trace: tuple[PlannerTraceEntryV21, ...] = (),
     diagnosis: DtaDiagnosisV21 | None = None,
     resolved_evidence: ResolvedDiagnosisEvidenceViewV21 | None = None,
@@ -337,14 +386,20 @@ def _build_result(
     action_proposal: ActionProposalV21 | None = None,
 ) -> DtaAgentRunResultV21:
     snapshot = tools.snapshot()
-    materialized = snapshot.dispatch_count if arm is AgentArmV21.ONE_SHOT_FULL_CONTEXT else 0
-    semantic_reads = 0 if arm is AgentArmV21.ONE_SHOT_FULL_CONTEXT else snapshot.dispatch_count
+    materialized = (
+        snapshot.dispatch_count if arm is AgentArmV21.ONE_SHOT_FULL_CONTEXT else 0
+    )
+    semantic_reads = (
+        0 if arm is AgentArmV21.ONE_SHOT_FULL_CONTEXT else snapshot.dispatch_count
+    )
     payload: dict[str, object] = {
         "schema_version": "dta-v21.agent-run-result.v1",
         "arm": arm,
         "run_id": context.run_id,
         "terminal": terminal,
         "failure_code": failure_code,
+        "provider_failure_codes": provider_failure_codes,
+        "diagnosis_binding_failure_code": diagnosis_binding_failure_code,
         "identity": provider.identity,
         "provider_turn_count": provider.attempted_calls,
         "semantic_read_tool_dispatch_count": semantic_reads,
@@ -376,6 +431,22 @@ def _provider_failure(error: Exception) -> AgentFailureCodeV21:
     if isinstance(error, (ConnectionError, TimeoutError)):
         return AgentFailureCodeV21.PROVIDER_TRANSPORT_FAILURE
     return AgentFailureCodeV21.PROVIDER_PROTOCOL_FAILURE
+
+
+def _provider_failure_codes(error: Exception) -> tuple[str, ...]:
+    if not isinstance(error, ProviderProtocolError):
+        return ()
+    match = re.search(r"\[codes=([a-z0-9_:,]+)\]$", str(error))
+    if match is None:
+        return ()
+    codes = tuple(sorted(set(match.group(1).split(","))))
+    if len(codes) > 16 or any(
+        re.fullmatch(r"[a-z][a-z0-9_]{0,63}:[a-z][a-z0-9_]{0,63}", code)
+        is None
+        for code in codes
+    ):
+        return ()
+    return codes
 
 
 def _request_services(request: ReadToolRequest) -> tuple[str, ...]:
@@ -470,6 +541,9 @@ def _finish_diagnosis(
             provider=provider,
             terminal=AgentRunTerminalV21.FAILED,
             failure_code=AgentFailureCodeV21.DIAGNOSIS_BINDING_FAILURE,
+            diagnosis_binding_failure_code=(
+                DiagnosisBindingFailureCodeV21.RUN_ID_MISMATCH
+            ),
             tools=tools,
             turns=tuple(turns),
             planner_trace=tuple(planner_trace),
@@ -485,6 +559,9 @@ def _finish_diagnosis(
                     provider=provider,
                     terminal=AgentRunTerminalV21.FAILED,
                     failure_code=AgentFailureCodeV21.DIAGNOSIS_BINDING_FAILURE,
+                    diagnosis_binding_failure_code=(
+                        DiagnosisBindingFailureCodeV21.EVIDENCE_RESOLUTION_FAILURE
+                    ),
                     tools=tools,
                     turns=tuple(turns),
                     planner_trace=tuple(planner_trace),
@@ -504,6 +581,23 @@ def _finish_diagnosis(
 
     try:
         resolved = _resolve_evidence(snapshot, diagnosis)
+    except (TypeError, ValueError):
+        return _build_result(
+            arm=arm,
+            context=context,
+            provider=provider,
+            terminal=AgentRunTerminalV21.FAILED,
+            failure_code=AgentFailureCodeV21.DIAGNOSIS_BINDING_FAILURE,
+            diagnosis_binding_failure_code=(
+                DiagnosisBindingFailureCodeV21.EVIDENCE_RESOLUTION_FAILURE
+            ),
+            tools=tools,
+            turns=tuple(turns),
+            planner_trace=tuple(planner_trace),
+            diagnosis=diagnosis,
+        )
+
+    try:
         candidates = filter_runbook_candidates(
             diagnosis=diagnosis,
             diagnosis_evidence=resolved,
@@ -518,6 +612,9 @@ def _finish_diagnosis(
             provider=provider,
             terminal=AgentRunTerminalV21.FAILED,
             failure_code=AgentFailureCodeV21.DIAGNOSIS_BINDING_FAILURE,
+            diagnosis_binding_failure_code=(
+                DiagnosisBindingFailureCodeV21.CANDIDATE_FILTER_FAILURE
+            ),
             tools=tools,
             turns=tuple(turns),
             planner_trace=tuple(planner_trace),
@@ -550,7 +647,13 @@ def _finish_diagnosis(
     except Exception as error:
         if not isinstance(
             error,
-            (ProviderProtocolError, ConnectionError, TimeoutError, TypeError, ValueError),
+            (
+                ProviderProtocolError,
+                ConnectionError,
+                TimeoutError,
+                TypeError,
+                ValueError,
+            ),
         ):
             raise
         failure = (
@@ -564,6 +667,7 @@ def _finish_diagnosis(
             provider=provider,
             terminal=AgentRunTerminalV21.FAILED,
             failure_code=failure,
+            provider_failure_codes=_provider_failure_codes(error),
             tools=tools,
             turns=tuple(turns),
             planner_trace=tuple(planner_trace),
@@ -596,6 +700,7 @@ def run_evidence_guided_agent_v21(
     backend: ReadBackend,
     registry: RunbookRegistryV21,
     provider: AgentProviderV21,
+    compact_context: bool = True,
 ) -> DtaAgentRunResultV21:
     context = AlertContextV21.model_validate(context.model_dump(mode="python"))
     registry = RunbookRegistryV21.model_validate(registry.model_dump(mode="python"))
@@ -609,13 +714,23 @@ def run_evidence_guided_agent_v21(
     diagnosis: DtaDiagnosisV21 | None = None
 
     while diagnosis is None:
-        state = build_investigation_state_view_v21(
-            context=context,
-            hypotheses=hypotheses,
-            evidence_store=tools.snapshot(),
-            newest_observation=newest,
-            completed_provider_turns=len(trace),
-        )
+        state: InvestigationStateViewV21 | NoCompactionInvestigationStateViewV21
+        if compact_context:
+            state = build_investigation_state_view_v21(
+                context=context,
+                hypotheses=hypotheses,
+                evidence_store=tools.snapshot(),
+                newest_observation=newest,
+                completed_provider_turns=len(trace),
+            )
+        else:
+            state = build_no_compaction_investigation_state_view_v21(
+                context=context,
+                hypotheses=hypotheses,
+                evidence_store=tools.snapshot(),
+                newest_observation=newest,
+                completed_provider_turns=len(trace),
+            )
         try:
             turn = provider.investigation_turn(
                 context=context,
@@ -634,6 +749,7 @@ def run_evidence_guided_agent_v21(
                 provider=provider,
                 terminal=AgentRunTerminalV21.FAILED,
                 failure_code=_provider_failure(error),
+                provider_failure_codes=_provider_failure_codes(error),
                 tools=tools,
                 turns=tuple(turns),
                 planner_trace=tuple(trace),
@@ -791,6 +907,17 @@ def run_flat_adaptive_agent_v21(
             observations=tuple(
                 build_agent_visible_observation(item) for item in snapshot.observations
             ),
+            successful_evidence_refs=tuple(
+                item.evidence_ref
+                for item in snapshot.observations
+                if item.status is ObservationStatus.SUCCESS
+            ),
+            failed_evidence_refs=tuple(
+                item.evidence_ref
+                for item in snapshot.observations
+                if item.status is ObservationStatus.FAILURE
+            ),
+            prior_requests=build_prior_request_history_v21(snapshot),
             prior_normalized_request_sha256=tuple(
                 item.request_sha256 for item in snapshot.observations
             ),
@@ -814,6 +941,7 @@ def run_flat_adaptive_agent_v21(
                 provider=provider,
                 terminal=AgentRunTerminalV21.FAILED,
                 failure_code=_provider_failure(error),
+                provider_failure_codes=_provider_failure_codes(error),
                 tools=tools,
                 turns=tuple(turns),
             )
@@ -948,6 +1076,16 @@ def run_one_shot_agent_v21(
         observations=tuple(
             build_agent_visible_observation(item) for item in snapshot.observations
         ),
+        successful_evidence_refs=tuple(
+            item.evidence_ref
+            for item in snapshot.observations
+            if item.status is ObservationStatus.SUCCESS
+        ),
+        failed_evidence_refs=tuple(
+            item.evidence_ref
+            for item in snapshot.observations
+            if item.status is ObservationStatus.FAILURE
+        ),
         context_materialization_reads=snapshot.dispatch_count,
     )
     turns: list[ProviderTurnEvidenceV21] = []
@@ -969,6 +1107,7 @@ def run_one_shot_agent_v21(
             provider=provider,
             terminal=AgentRunTerminalV21.FAILED,
             failure_code=_provider_failure(error),
+            provider_failure_codes=_provider_failure_codes(error),
             tools=tools,
             turns=(),
         )
@@ -991,9 +1130,7 @@ def run_one_shot_agent_v21(
             tools=tools,
             turns=tuple(turns),
         )
-    diagnosis = DtaDiagnosisV21.model_validate(
-        turn.diagnosis.model_dump(mode="python")
-    )
+    diagnosis = DtaDiagnosisV21.model_validate(turn.diagnosis.model_dump(mode="python"))
     turns.append(
         _turn_evidence(
             turn=turn,
@@ -1017,6 +1154,7 @@ __all__ = (
     "AgentFailureCodeV21",
     "AgentProviderV21",
     "AgentRunTerminalV21",
+    "DiagnosisBindingFailureCodeV21",
     "DtaAgentRunResultV21",
     "ProviderStageV21",
     "ProviderTurnEvidenceV21",

@@ -1,0 +1,151 @@
+{
+  "schema_version": "dta-v21.agent-visible-replay-case.v1",
+  "case_id": "dta21-case-012",
+  "scenario_id": "dta21-dev-006",
+  "captured_started_at": "2026-08-17T20:20:45.474532Z",
+  "captured_ended_at": "2026-08-17T20:21:36.066893Z",
+  "observations": [
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "inspect_resource_usage",
+      "service_scope": [
+        "email"
+      ],
+      "records": [
+        {
+          "logical_service": "email",
+          "sampling_window_seconds": 20,
+          "samples": [
+            {
+              "offset_ms": 0,
+              "cpu_percent": 2.928732581287326,
+              "memory_bytes": 47161344
+            },
+            {
+              "offset_ms": 5000,
+              "cpu_percent": 0.04943181818181818,
+              "memory_bytes": 47222784
+            },
+            {
+              "offset_ms": 10000,
+              "cpu_percent": 0.07374749498997997,
+              "memory_bytes": 47419392
+            },
+            {
+              "offset_ms": 15000,
+              "cpu_percent": 0.04857332448573325,
+              "memory_bytes": 48013312
+            },
+            {
+              "offset_ms": 20000,
+              "cpu_percent": 3.830585106382979,
+              "memory_bytes": 48156672
+            }
+          ],
+          "memory_slope_bytes_per_second": 49766.4
+        }
+      ],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "25f95abcd6d2f89fd07129bd47c2d539d04e27fc82d1bad835a3af5b28c6927d"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "inspect_service_runtime",
+      "service_scope": [
+        "email"
+      ],
+      "records": [
+        {
+          "logical_service": "email",
+          "owned_container_present": true,
+          "state": "RUNNING",
+          "health": "HEALTHY",
+          "restart_count": 0,
+          "exit_code": 0,
+          "endpoint_probe_performed": false,
+          "endpoint_state": "UNKNOWN"
+        }
+      ],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "18ca8c750d015d0af1f2bddc4525b7761525354c9f0a6978b5e1d1e70d644b29"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "query_metrics",
+      "service_scope": [
+        "email"
+      ],
+      "records": [
+        {
+          "service": "email",
+          "metric_kind": "CPU_PERCENT",
+          "value": 0.0,
+          "unit": "PERCENT",
+          "sample_count": 0
+        },
+        {
+          "service": "email",
+          "metric_kind": "ERROR_RATE",
+          "value": 0.0,
+          "unit": "RATIO",
+          "sample_count": 0
+        },
+        {
+          "service": "email",
+          "metric_kind": "LATENCY_P95_MS",
+          "value": 37.999999999999986,
+          "unit": "MILLISECONDS",
+          "sample_count": 1
+        },
+        {
+          "service": "email",
+          "metric_kind": "MEMORY_BYTES",
+          "value": 0.0,
+          "unit": "BYTES",
+          "sample_count": 0
+        },
+        {
+          "service": "email",
+          "metric_kind": "REQUEST_SUPPORT",
+          "value": 14.399999999999999,
+          "unit": "COUNT",
+          "sample_count": 1
+        }
+      ],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "3b3bc31516e22e369b2bc7c751fba3c097836a956af087d8f6c49a9427f6e48a"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "query_trace_neighborhood",
+      "service_scope": [
+        "email"
+      ],
+      "records": [],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "5a1e3f70f5f3b3fafb68a78c45bc64ccc21c508e5654aa6f58c1a31b15549bc7"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "search_logs",
+      "service_scope": [
+        "email"
+      ],
+      "records": [],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "391bc42abc426834430d937fe638fb3b3e064df78c84104116b669d7f513a59d"
+    }
+  ],
+  "full_context_tools": [
+    "inspect_service_runtime",
+    "query_metrics",
+    "query_trace_neighborhood",
+    "search_logs"
+  ],
+  "case_sha256": "4e49176dc2fb53169f1cc8a0048c8eb5f8436077cf18108c6d097831b0ab3ebc"
+}

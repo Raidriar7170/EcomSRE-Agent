@@ -6,10 +6,18 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Annotated, Literal
 
-from pydantic import Field, Strict, StrictFloat, StrictInt, StringConstraints, field_validator, model_validator
+from pydantic import (
+    Field,
+    Strict,
+    StrictFloat,
+    StrictInt,
+    StringConstraints,
+    field_validator,
+    model_validator,
+)
 
 from ecomsre.dta_v2.agent_contracts import AgentVisibleObservation
-from ecomsre.dta_v2.tool_contracts import ToolName
+from ecomsre.dta_v2.tool_contracts import ObservationStatus, ReadToolRequest, ToolName
 from ecomsre.dta_v2.v21.contracts import (
     ActionDispositionV21,
     ActionParameterV21,
@@ -90,7 +98,9 @@ def build_alert_context_v21(
         scenario_id=scenario.scenario_id,
         alert_summary=scenario.alert_summary,
         candidate_services=scenario.candidate_services,
-        allowed_read_tools=tuple(ToolName(item) for item in scenario.allowed_read_tools),
+        allowed_read_tools=tuple(
+            ToolName(item) for item in scenario.allowed_read_tools
+        ),
         maximum_read_tool_dispatches=scenario.maximum_read_tool_dispatches,
         maximum_repeated_identical_calls=scenario.maximum_repeated_identical_calls,
         maximum_provider_investigation_turns=5,
@@ -112,28 +122,70 @@ class FlatInvestigationStateViewV21(DtaModelV21):
     schema_version: Literal["dta-v21.flat-investigation-state-view.v1"]
     alert_context: AlertContextV21
     observations: tuple[AgentVisibleObservation, ...] = Field(max_length=4)
+    successful_evidence_refs: tuple[str, ...] = Field(max_length=4)
+    failed_evidence_refs: tuple[str, ...] = Field(max_length=4)
+    prior_requests: tuple[ReadToolRequest, ...] = Field(max_length=4)
     prior_normalized_request_sha256: tuple[Sha256V21, ...] = Field(max_length=4)
     remaining_read_dispatches: StrictInt = Field(ge=0, le=4)
 
     @model_validator(mode="after")
     def require_flat_budget(self) -> FlatInvestigationStateViewV21:
-        if len(self.observations) != len(self.prior_normalized_request_sha256):
+        if not (
+            len(self.observations)
+            == len(self.prior_requests)
+            == len(self.prior_normalized_request_sha256)
+        ):
             raise ValueError("flat investigation request history is partial")
+        if (
+            tuple(item.normalized_request_sha256 for item in self.prior_requests)
+            != self.prior_normalized_request_sha256
+            or tuple(item.tool for item in self.prior_requests)
+            != tuple(item.tool for item in self.observations)
+            or any(
+                item.run_id != self.alert_context.run_id
+                for item in self.prior_requests
+            )
+        ):
+            raise ValueError("flat investigation request history differs")
         if self.remaining_read_dispatches != 4 - len(self.observations):
             raise ValueError("flat investigation read budget differs")
+        if self.successful_evidence_refs != tuple(
+            item.evidence_ref
+            for item in self.observations
+            if item.status is ObservationStatus.SUCCESS
+        ) or self.failed_evidence_refs != tuple(
+            item.evidence_ref
+            for item in self.observations
+            if item.status is ObservationStatus.FAILURE
+        ):
+            raise ValueError("flat investigation evidence partitions differ")
         return self
 
 
 class OneShotFullContextViewV21(DtaModelV21):
     schema_version: Literal["dta-v21.one-shot-full-context-view.v1"]
     alert_context: AlertContextV21
-    observations: tuple[AgentVisibleObservation, ...] = Field(min_length=1, max_length=4)
+    observations: tuple[AgentVisibleObservation, ...] = Field(
+        min_length=1, max_length=4
+    )
+    successful_evidence_refs: tuple[str, ...] = Field(max_length=4)
+    failed_evidence_refs: tuple[str, ...] = Field(max_length=4)
     context_materialization_reads: StrictInt = Field(ge=1, le=4)
 
     @model_validator(mode="after")
     def require_materialization_count(self) -> OneShotFullContextViewV21:
         if self.context_materialization_reads != len(self.observations):
             raise ValueError("one-shot materialization count differs")
+        if self.successful_evidence_refs != tuple(
+            item.evidence_ref
+            for item in self.observations
+            if item.status is ObservationStatus.SUCCESS
+        ) or self.failed_evidence_refs != tuple(
+            item.evidence_ref
+            for item in self.observations
+            if item.status is ObservationStatus.FAILURE
+        ):
+            raise ValueError("one-shot evidence partitions differ")
         return self
 
 
@@ -208,7 +260,11 @@ class ActionSelectionDecisionV21(DtaModelV21):
                 raise ValueError("execute decision lacks a Runbook or target")
             if not self.supporting_evidence_refs:
                 raise ValueError("execute decision lacks cited evidence")
-        elif self.runbook_id is not None or self.target_service is not None or self.parameters:
+        elif (
+            self.runbook_id is not None
+            or self.target_service is not None
+            or self.parameters
+        ):
             raise ValueError("nonwrite decision carries write authority")
         return self
 
@@ -313,7 +369,10 @@ def build_action_proposal_v21(
             raise ValueError("action parameters differ from the visible candidate")
         for name, parameter in supplied.items():
             _validate_parameter_value(parameter, specifications[name])
-        if candidate.runbook_sha256 != registry.require(candidate.runbook_id).semantic_sha256:
+        if (
+            candidate.runbook_sha256
+            != registry.require(candidate.runbook_id).semantic_sha256
+        ):
             raise ValueError("candidate Runbook differs from the trusted registry")
 
     payload: dict[str, object] = {
@@ -351,6 +410,8 @@ class AgentIdentityManifestV21(DtaModelV21):
     system_prompt_sha256: Sha256V21
     tool_schema_sha256: Sha256V21
     planner_schema_sha256: Sha256V21 | None
+    planner_contracts_source_sha256: Sha256V21 | None
+    planner_runtime_source_sha256: Sha256V21 | None
     diagnosis_schema_sha256: Sha256V21
     action_selection_schema_sha256: Sha256V21
     action_proposal_schema_sha256: Sha256V21
@@ -365,10 +426,16 @@ class AgentIdentityManifestV21(DtaModelV21):
 
     @model_validator(mode="after")
     def require_identity_digest(self) -> AgentIdentityManifestV21:
-        if (
-            self.arm is AgentArmV21.EVIDENCE_GUIDED_PLANNER
-        ) != (self.planner_schema_sha256 is not None):
-            raise ValueError("planner schema identity differs from the Agent arm")
+        is_planner = self.arm is AgentArmV21.EVIDENCE_GUIDED_PLANNER
+        planner_bindings = (
+            self.planner_schema_sha256,
+            self.planner_contracts_source_sha256,
+            self.planner_runtime_source_sha256,
+        )
+        if any(item is not None for item in planner_bindings) != is_planner or (
+            is_planner and any(item is None for item in planner_bindings)
+        ):
+            raise ValueError("planner identity bindings differ from the Agent arm")
         expected = semantic_sha256(
             self.model_dump(mode="json", exclude={"identity_sha256"})
         )

@@ -17,6 +17,7 @@ from ecomsre.dta_v2.tool_contracts import (
 from ecomsre.dta_v2.v21.agent import (
     AgentFailureCodeV21,
     AgentRunTerminalV21,
+    DiagnosisBindingFailureCodeV21,
     run_evidence_guided_agent_v21,
     run_flat_adaptive_agent_v21,
     run_one_shot_agent_v21,
@@ -50,6 +51,7 @@ from ecomsre.dta_v2.v21.registry import (
     load_default_runbook_registry,
     load_default_scenario_registries,
 )
+from ecomsre.model.gateway import ProviderProtocolError
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -77,6 +79,8 @@ class ScriptedProviderV21:
         self.visible_states.append(visible_state)
         self.attempted_calls += 1
         value = self.investigation.pop(0)
+        if isinstance(value, Exception):
+            raise value
         response = {"id": f"scripted-{self.attempted_calls}"}
         return ProviderTurnV21(
             function_name="scripted_investigation",
@@ -118,6 +122,52 @@ def _context(run_id: str, scenario_index: int):
         started_at=START,
         ended_at=END,
     )
+
+
+def test_provider_protocol_failure_retains_only_fixed_safe_validation_codes() -> None:
+    run_id = "8" * 32
+    provider = ScriptedProviderV21(
+        arm=AgentArmV21.FLAT_ADAPTIVE,
+        investigation=[
+            ProviderProtocolError(
+                "Provider investigation output is invalid "
+                "[codes=diagnosis:missing,output:planner_gap_mismatch]"
+            )
+        ],
+    )
+
+    result = run_flat_adaptive_agent_v21(
+        context=_context(run_id, 1),
+        backend=FakeReadBackend.healthy(),
+        registry=load_default_runbook_registry(ROOT),
+        provider=provider,
+    )
+
+    assert result.terminal is AgentRunTerminalV21.FAILED
+    assert result.failure_code is AgentFailureCodeV21.PROVIDER_PROTOCOL_FAILURE
+    assert result.provider_failure_codes == (
+        "diagnosis:missing",
+        "output:planner_gap_mismatch",
+    )
+
+
+def test_provider_protocol_failure_does_not_retain_unstructured_detail() -> None:
+    run_id = "7" * 32
+    private_value = "private-provider-output-must-not-leak"
+    provider = ScriptedProviderV21(
+        arm=AgentArmV21.FLAT_ADAPTIVE,
+        investigation=[ProviderProtocolError(private_value)],
+    )
+
+    result = run_flat_adaptive_agent_v21(
+        context=_context(run_id, 1),
+        backend=FakeReadBackend.healthy(),
+        registry=load_default_runbook_registry(ROOT),
+        provider=provider,
+    )
+
+    assert result.provider_failure_codes == ()
+    assert private_value not in result.model_dump_json()
 
 
 def _metrics(run_id: str, service: str):
@@ -286,7 +336,38 @@ def test_flat_and_one_shot_reject_empty_ref_diagnosis_from_another_run() -> None
     for result in (flat, one_shot):
         assert result.terminal is AgentRunTerminalV21.FAILED
         assert result.failure_code is AgentFailureCodeV21.DIAGNOSIS_BINDING_FAILURE
+        assert (
+            result.diagnosis_binding_failure_code
+            is DiagnosisBindingFailureCodeV21.RUN_ID_MISMATCH
+        )
         assert result.diagnosis is None
+
+
+def test_completed_diagnosis_with_unresolved_ref_is_typed_binding_failure() -> None:
+    run_id = "c" * 32
+    diagnosis = _diagnosis(
+        run_id=run_id,
+        service="ad",
+        domain=FaultDomainV21.LOCAL_RESOURCE,
+        mechanism=FaultMechanismV21.CPU_SATURATION,
+        refs=(f"evidence://{run_id}/metrics/0001",),
+        sources=(EvidenceSourceV21.METRICS,),
+    )
+    result = run_flat_adaptive_agent_v21(
+        context=_context(run_id, 0),
+        backend=FakeReadBackend.healthy(),
+        registry=load_default_runbook_registry(ROOT),
+        provider=ScriptedProviderV21(
+            arm=AgentArmV21.FLAT_ADAPTIVE,
+            investigation=[diagnosis],
+        ),
+    )
+
+    assert result.failure_code is AgentFailureCodeV21.DIAGNOSIS_BINDING_FAILURE
+    assert (
+        result.diagnosis_binding_failure_code
+        is DiagnosisBindingFailureCodeV21.EVIDENCE_RESOLUTION_FAILURE
+    )
 
 
 def test_planner_arm_runs_cpu_case_with_compact_state_and_early_stop() -> None:
@@ -383,6 +464,12 @@ def test_flat_adaptive_discriminates_same_service_email_unavailability() -> None
     assert result.diagnosis.mechanism is FaultMechanismV21.SERVICE_UNAVAILABLE
     assert result.action_proposal is not None
     assert result.action_proposal.runbook_id is RunbookIdV21.RESTORE_SERVICE_AVAILABILITY
+    assert provider.visible_states[-1].prior_requests == requests
+    assert provider.visible_states[-1].prior_normalized_request_sha256 == tuple(
+        item.normalized_request_sha256 for item in requests
+    )
+    assert provider.visible_states[-1].successful_evidence_refs == refs
+    assert provider.visible_states[-1].failed_evidence_refs == ()
 
 
 def test_planner_dependency_case_is_traces_led_and_candidate_bound() -> None:
@@ -468,6 +555,10 @@ def test_one_shot_materializes_four_reads_and_selects_no_action() -> None:
     assert result.context_materialization_read_count == 4
     assert result.action_proposal is not None
     assert result.action_proposal.disposition is ActionDispositionV21.NO_ACTION
+    assert provider.visible_states[-1].successful_evidence_refs == tuple(
+        item.evidence_ref for item in result.evidence_store.observations
+    )
+    assert provider.visible_states[-1].failed_evidence_refs == ()
 
 
 def test_duplicate_read_is_terminally_rejected_without_backend_repeat() -> None:

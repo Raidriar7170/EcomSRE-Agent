@@ -204,6 +204,122 @@ def _definition(name: str, description: str, model: type[DtaModelV21]) -> dict[s
     }
 
 
+def _safe_validation_codes_v21(
+    error: Exception, *, model: type[DtaModelV21]
+) -> tuple[str, ...]:
+    """Return bounded schema-owned locations and fixed semantic reason codes only."""
+
+    if not isinstance(error, ValidationError):
+        return (f"output:{type(error).__name__}",)
+    allowed_roots = frozenset(model.model_fields)
+    codes: set[str] = set()
+    for item in error.errors(include_input=False, include_url=False):
+        location = item.get("loc")
+        root = location[0] if isinstance(location, tuple) and location else None
+        safe_root = root if isinstance(root, str) and root in allowed_roots else "output"
+        kind = item.get("type")
+        safe_kind = kind if isinstance(kind, str) else "validation_error"
+        codes.add(f"{safe_root}:{safe_kind}")
+        message = item.get("msg")
+        if isinstance(message, str):
+            normalized_message = message.removeprefix("Value error, ")
+            safe_reason = {
+                "Planner evidence gaps differ from active hypotheses": (
+                    "planner_gap_mismatch"
+                ),
+                "request source is not an active unresolved gap": (
+                    "planner_request_source_not_active_gap"
+                ),
+                "request requires at least one active hypothesis": (
+                    "planner_request_without_active_hypothesis"
+                ),
+                "request plan has an invalid semantic output": (
+                    "planner_request_output_shape"
+                ),
+                "Planner hypotheses are not canonical and unique": (
+                    "planner_hypotheses_not_canonical"
+                ),
+                "Planner evidence gaps are not canonical and unique": (
+                    "planner_gaps_not_canonical"
+                ),
+                "submit plan must carry exactly one Diagnosis": (
+                    "planner_submit_output_shape"
+                ),
+                "Planner Diagnosis belongs to another run": (
+                    "planner_diagnosis_cross_run"
+                ),
+                "submit plan must carry a completed Diagnosis": (
+                    "planner_submit_not_completed"
+                ),
+                "abstain plan cannot carry a request or Diagnosis": (
+                    "planner_abstain_output_shape"
+                ),
+                "abstain plan must name an active unresolved evidence gap": (
+                    "planner_abstain_missing_active_gap"
+                ),
+                "rejected hypothesis retains unresolved evidence gaps": (
+                    "rejected_hypothesis_has_gaps"
+                ),
+                "evidence cannot both support and contradict a diagnosis": (
+                    "diagnosis_evidence_overlap"
+                ),
+                "evidence source accounting does not match references": (
+                    "diagnosis_source_accounting_mismatch"
+                ),
+                "evidence source accounting is not canonical": (
+                    "diagnosis_source_accounting_not_canonical"
+                ),
+                "completed diagnosis requires supporting evidence": (
+                    "diagnosis_missing_support"
+                ),
+                "completed diagnosis has a partial fault claim": (
+                    "diagnosis_partial_fault_claim"
+                ),
+                "root entity must bind the diagnosed service": (
+                    "diagnosis_root_entity_mismatch"
+                ),
+                "fault diagnosis requires confidence telemetry": (
+                    "diagnosis_missing_confidence"
+                ),
+                "no-fault diagnosis cannot report fault confidence": (
+                    "diagnosis_no_fault_confidence"
+                ),
+                "noncompleted diagnosis cannot claim a fault": (
+                    "diagnosis_noncompleted_fault_claim"
+                ),
+                "noncompleted diagnosis requires an uncertainty": (
+                    "diagnosis_noncompleted_missing_uncertainty"
+                ),
+                "supporting evidence contains duplicate evidence references": (
+                    "diagnosis_support_duplicate"
+                ),
+                "supporting evidence contains an invalid evidence reference": (
+                    "diagnosis_support_invalid_ref"
+                ),
+                "supporting evidence is outside the current run": (
+                    "diagnosis_support_cross_run"
+                ),
+                "supporting evidence is not canonically ordered": (
+                    "diagnosis_support_not_canonical"
+                ),
+                "contradicting evidence contains duplicate evidence references": (
+                    "diagnosis_contradiction_duplicate"
+                ),
+                "contradicting evidence contains an invalid evidence reference": (
+                    "diagnosis_contradiction_invalid_ref"
+                ),
+                "contradicting evidence is outside the current run": (
+                    "diagnosis_contradiction_cross_run"
+                ),
+                "contradicting evidence is not canonically ordered": (
+                    "diagnosis_contradiction_not_canonical"
+                ),
+            }.get(normalized_message)
+            if safe_reason is not None:
+                codes.add(f"{safe_root}:{safe_reason}")
+    return tuple(sorted(codes))[:16] or ("output:validation_error",)
+
+
 def _sort_evidence_refs(values: object) -> object:
     if not isinstance(values, list) or not all(isinstance(item, str) for item in values):
         return values
@@ -237,6 +353,23 @@ def _canonicalize_diagnosis(value: object) -> object:
     result["contradicting_evidence_refs"] = _sort_evidence_refs(
         result.get("contradicting_evidence_refs")
     )
+    supporting = result.get("supporting_evidence_refs")
+    contradicting = result.get("contradicting_evidence_refs")
+    if (
+        isinstance(supporting, list)
+        and isinstance(contradicting, list)
+        and all(isinstance(item, str) for item in supporting + contradicting)
+    ):
+        try:
+            derived_sources = {
+                evidence_source_from_ref(item) for item in supporting + contradicting
+            }
+        except ValueError:
+            pass
+        else:
+            result["evidence_source_types"] = [
+                item.value for item in sorted(derived_sources, key=_SOURCE_ORDER.__getitem__)
+            ]
     sources = result.get("evidence_source_types")
     if isinstance(sources, list) and all(isinstance(item, str) for item in sources):
         try:
@@ -368,24 +501,27 @@ class OpenAICompatibleDtaAgentProviderV21:
         visible = cast(Any, visible_state).model_dump(mode="json")
         if self._arm is AgentArmV21.EVIDENCE_GUIDED_PLANNER:
             function_name = PLANNER_FUNCTION_V21
+            output_model: type[DtaModelV21] = PlannerProviderOutputV21
             definition = _definition(
                 function_name,
                 "Submit one evidence-guided plan decision and its admitted output.",
-                PlannerProviderOutputV21,
+                output_model,
             )
         elif self._arm is AgentArmV21.FLAT_ADAPTIVE:
             function_name = FLAT_FUNCTION_V21
+            output_model = FlatProviderOutputV21
             definition = _definition(
                 function_name,
                 "Submit one flat read request or one final Diagnosis.",
-                FlatProviderOutputV21,
+                output_model,
             )
         else:
             function_name = DIAGNOSIS_FUNCTION_V21
+            output_model = DtaDiagnosisV21
             definition = _definition(
                 function_name,
                 "Submit exactly one Diagnosis from the frozen full context.",
-                DtaDiagnosisV21,
+                output_model,
             )
         arguments, raw_sha, tool_call_id, usage, latency = self._complete(
             system_prompt=_PROMPT_BY_ARM[self._arm],
@@ -465,7 +601,12 @@ class OpenAICompatibleDtaAgentProviderV21:
         except ProviderProtocolError:
             raise
         except (TypeError, ValidationError, ValueError) as error:
-            raise ProviderProtocolError("Provider investigation output is invalid") from error
+            codes = ",".join(
+                _safe_validation_codes_v21(error, model=output_model)
+            )
+            raise ProviderProtocolError(
+                f"Provider investigation output is invalid [codes={codes}]"
+            ) from error
         self._accepted_calls.append(turn)
         return turn
 
@@ -506,7 +647,14 @@ class OpenAICompatibleDtaAgentProviderV21:
                 _canonical_json(normalized)
             )
         except (TypeError, ValidationError, ValueError) as error:
-            raise ProviderProtocolError("Provider Action Selection is invalid") from error
+            codes = ",".join(
+                _safe_validation_codes_v21(
+                    error, model=ActionSelectionDecisionV21
+                )
+            )
+            raise ProviderProtocolError(
+                f"Provider Action Selection is invalid [codes={codes}]"
+            ) from error
         turn = ProviderTurnV21(
             function_name=ACTION_SELECTION_FUNCTION_V21,
             tool_call_id=tool_call_id,

@@ -1,0 +1,22 @@
+{
+  "schema_version": "dta-v21.evaluator-case-truth.v1",
+  "case_id": "dta21-case-002",
+  "split": "DEVELOPMENT",
+  "scenario_family": "PAYMENT_CONFIGURATION",
+  "generalization_slice": "SEEN_SERVICE_SEEN_MECHANISM",
+  "meaningful_observation_differences": [
+    "fault_strength",
+    "load_level"
+  ],
+  "expected_terminal": "COMPLETED",
+  "expected_root_service": "payment",
+  "expected_fault_domain": "CONFIGURATION",
+  "expected_mechanism": "CONFIGURATION_ERROR",
+  "expected_disposition": "EXECUTE_RUNBOOK",
+  "expected_runbook": "ROLLBACK_CONFIGURATION",
+  "expected_evidence_sources": [
+    "METRICS",
+    "TRACES"
+  ],
+  "truth_sha256": "4895b5a093a685d8fdacbd65218c8b03a05ce0ae5d8405747b83ed523f3491ab"
+}

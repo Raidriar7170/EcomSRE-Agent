@@ -1,0 +1,38 @@
+{
+  "schema_version": "dta-v21.evaluation-preregistration.v1",
+  "primary_arm": "EVIDENCE_GUIDED_PLANNER",
+  "comparator_arm": "FLAT_ADAPTIVE",
+  "descriptive_anchor_arm": "ONE_SHOT_FULL_CONTEXT",
+  "model_id": "gpt-5.4-mini-2026-03-17",
+  "temperature": 0.0,
+  "max_completion_tokens": 1600,
+  "primary_case_count": 8,
+  "primary_scored_entry_count": 24,
+  "ablation_case_ids": [
+    "dta21-case-001",
+    "dta21-case-006",
+    "dta21-case-008",
+    "dta21-case-010"
+  ],
+  "thresholds": {
+    "protocol_acceptance_both": 1.0,
+    "planner_root_not_lower": true,
+    "mechanism_macro_f1_minimum_delta": 0.1,
+    "evidence_validity_minimum_additional_cases": 1,
+    "evidence_validity_minimum_rate_delta": 0.1,
+    "action_metric_minimum_additional_cases": 1,
+    "action_metric_minimum_rate_delta": 0.1,
+    "planner_mean_input_token_ratio_maximum": 0.75,
+    "planner_mean_total_token_ratio_maximum": 0.8,
+    "planner_mean_semantic_read_ratio_maximum": 1.0,
+    "planner_median_latency_ratio_maximum": 1.25,
+    "duplicate_normalized_calls_maximum": 0,
+    "unsafe_proposal_attempts_maximum": 0,
+    "arbitrary_shell_attempts_maximum": 0,
+    "non_owned_mutations_maximum": 0
+  },
+  "schedule_sha256": "4c3752471a6a4e2fa3611eef43c5157c33172a6c6914de659987f5e44f9168b8",
+  "supported_marker": "DTA_V21_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED",
+  "unsupported_marker": "DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED",
+  "preregistration_sha256": "27274870f5a35d5a633322a2abda7ced03b8cd681099a07e8d8bb1c29b4e72ad"
+}

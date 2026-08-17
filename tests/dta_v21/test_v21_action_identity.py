@@ -84,7 +84,9 @@ def test_action_selection_can_choose_only_an_exact_visible_candidate() -> None:
         )
 
     changed_diagnosis = diagnosis.model_copy(
-        update={"summary": "A semantically changed diagnosis must invalidate Stage 1 binding."}
+        update={
+            "summary": "A semantically changed diagnosis must invalidate Stage 1 binding."
+        }
     )
     with pytest.raises(ValueError, match="Diagnosis differs from the CandidateSet"):
         build_action_proposal_v21(
@@ -114,18 +116,47 @@ def test_three_arm_identities_share_model_temperature_and_common_schemas() -> No
         item for item in identities if item.arm is AgentArmV21.EVIDENCE_GUIDED_PLANNER
     )
     assert planner.planner_schema_sha256 is not None
+    assert (
+        planner.planner_contracts_source_sha256
+        == hashlib.sha256(
+            (ROOT / "src/ecomsre/dta_v2/v21/planner_contracts.py").read_bytes()
+        ).hexdigest()
+    )
+    assert (
+        planner.planner_runtime_source_sha256
+        == hashlib.sha256(
+            (ROOT / "src/ecomsre/dta_v2/v21/planner.py").read_bytes()
+        ).hexdigest()
+    )
+    assert all(
+        (item.planner_contracts_source_sha256 is not None)
+        == (item.arm is AgentArmV21.EVIDENCE_GUIDED_PLANNER)
+        for item in identities
+    )
+    assert all(
+        (item.planner_runtime_source_sha256 is not None)
+        == (item.arm is AgentArmV21.EVIDENCE_GUIDED_PLANNER)
+        for item in identities
+    )
     assert all(item.context_projection_source_sha256 for item in identities)
     source_dir = ROOT / "src/ecomsre/dta_v2/v21"
     for identity in identities:
-        assert identity.agent_contracts_source_sha256 == hashlib.sha256(
-            (source_dir / "agent_contracts.py").read_bytes()
-        ).hexdigest()
-        assert identity.agent_runtime_source_sha256 == hashlib.sha256(
-            (source_dir / "agent.py").read_bytes()
-        ).hexdigest()
-        assert identity.provider_adapter_source_sha256 == hashlib.sha256(
-            (source_dir / "agent_provider.py").read_bytes()
-        ).hexdigest()
+        assert (
+            identity.agent_contracts_source_sha256
+            == hashlib.sha256(
+                (source_dir / "agent_contracts.py").read_bytes()
+            ).hexdigest()
+        )
+        assert (
+            identity.agent_runtime_source_sha256
+            == hashlib.sha256((source_dir / "agent.py").read_bytes()).hexdigest()
+        )
+        assert (
+            identity.provider_adapter_source_sha256
+            == hashlib.sha256(
+                (source_dir / "agent_provider.py").read_bytes()
+            ).hexdigest()
+        )
 
 
 def test_provisional_three_arm_identity_files_match_runtime_exactly() -> None:
@@ -180,6 +211,7 @@ def test_pr_c_public_smoke_report_is_sanitized_and_hash_bound() -> None:
     )
     assert ledger.legacy_unbound_attempt_count == 6
     assert len(ledger.verified_attempts) == 2
-    assert ledger.verified_attempts[0].receipt_sha256 == (
-        report["provider"]["attempt_receipt_sha256"]
+    assert (
+        ledger.verified_attempts[0].receipt_sha256
+        == (report["provider"]["attempt_receipt_sha256"])
     )

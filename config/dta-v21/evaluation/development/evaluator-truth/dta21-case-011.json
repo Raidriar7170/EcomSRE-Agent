@@ -1,0 +1,21 @@
+{
+  "schema_version": "dta-v21.evaluator-case-truth.v1",
+  "case_id": "dta21-case-011",
+  "split": "DEVELOPMENT",
+  "scenario_family": "NO_FAULT",
+  "generalization_slice": "NO_FAULT",
+  "meaningful_observation_differences": [
+    "noise_decoy_evidence"
+  ],
+  "expected_terminal": "COMPLETED",
+  "expected_root_service": null,
+  "expected_fault_domain": null,
+  "expected_mechanism": null,
+  "expected_disposition": "NO_ACTION",
+  "expected_runbook": null,
+  "expected_evidence_sources": [
+    "METRICS",
+    "RUNTIME"
+  ],
+  "truth_sha256": "d618a5de6dc18a5c8a6e6b54ffa36d308808b050cd5ff24856b1d52fb4f43a89"
+}

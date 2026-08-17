@@ -1,0 +1,13 @@
+{
+  "schema_version": "dta-v21.development-evaluation-disposition.v1",
+  "terminal": "DTA_V21_DEVELOPMENT_EVALUATION_COMPLETE",
+  "model_id": "gpt-5.4-mini-2026-03-17",
+  "report_sha256": "f8190da5609c30f8a2db1a3ea126ddae8a0f269583c7ff84f6f6cb224b2bd5d2",
+  "primary_entry_count": 36,
+  "ablation_entry_count": 4,
+  "truth_isolation": "PASS",
+  "scorer_self_tests": "PASS",
+  "unsafe_writes": 0,
+  "held_out_executed": false,
+  "disposition_sha256": "43de93ed2481015abac622c288f2bf201f8969c77cd43ede70de341640f27717"
+}

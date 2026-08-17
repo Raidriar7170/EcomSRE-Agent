@@ -332,6 +332,38 @@ def test_prompts_require_selective_grounded_reasoning_without_truth_mappings() -
         assert forbidden not in combined
 
 
+def test_planner_prompt_defines_exact_gap_union_and_request_membership() -> None:
+    prompt = PLANNER_SYSTEM_PROMPT_V21.casefold()
+
+    assert "exact union" in prompt
+    assert "all active hypotheses" in prompt
+    assert "read-request source must be a member" in prompt
+
+
+def test_prompts_define_null_keys_success_only_citations_and_no_repeats() -> None:
+    common = "\n".join(
+        (
+            PLANNER_SYSTEM_PROMPT_V21,
+            FLAT_ADAPTIVE_SYSTEM_PROMPT_V21,
+            ONE_SHOT_SYSTEM_PROMPT_V21,
+        )
+    ).casefold()
+    flat = FLAT_ADAPTIVE_SYSTEM_PROMPT_V21.casefold()
+    planner = PLANNER_SYSTEM_PROMPT_V21.casefold()
+
+    assert "only successful observations" in common
+    assert "whether the prior observation succeeded or failed" in common
+    assert "include both read_request and diagnosis keys" in flat
+    assert "exactly one must be non-null" in flat
+    assert "exact distinct sources encoded by all cited evidence_ref values" in planner
+    assert "subset of successful_evidence_refs" in common
+    assert "compare every requested field against prior_requests" in common
+    assert "retain at least one active hypothesis" in planner
+    assert "at least one unresolved evidence source" in planner
+    assert "when remaining_read_dispatches is zero" in planner
+    assert "summary and uncertainties as plain incident prose" in common
+
+
 def test_rejected_provider_response_still_exposes_only_its_raw_hash() -> None:
     raw = _response("wrong_function", {}, index=7)
     transport = RecordingTransport([raw])
@@ -352,6 +384,141 @@ def test_rejected_provider_response_still_exposes_only_its_raw_hash() -> None:
         )
 
     assert provider.raw_response_sha256_by_attempt == (semantic_sha256(raw),)
+
+
+def test_invalid_provider_output_reports_only_safe_validation_codes() -> None:
+    private_value = "private-invalid-provider-value"
+    raw = _response(
+        PLANNER_FUNCTION_V21,
+        {
+            "turn_ordinal": 1,
+            "bounded_rationale": private_value,
+        },
+        index=8,
+    )
+    provider = _provider(RecordingTransport([raw]))
+    context = _context()
+    state = build_investigation_state_view_v21(
+        context=context,
+        hypotheses=(),
+        evidence_store=InvestigationReadTools(
+            run_id=RUN_ID, backend=FakeReadBackend.healthy()
+        ).snapshot(),
+        newest_observation=None,
+    )
+
+    with pytest.raises(Exception) as captured:
+        provider.investigation_turn(
+            context=context, visible_state=state, read_tools_enabled=True
+        )
+
+    message = str(captured.value)
+    assert "hypotheses:missing" in message
+    assert "next_step:missing" in message
+    assert private_value not in message
+
+
+def test_planner_semantic_failure_reports_fixed_safe_reason_without_input() -> None:
+    private_value = "private-planner-rationale-must-not-leak"
+    raw = _response(
+        PLANNER_FUNCTION_V21,
+        {
+            "turn_ordinal": 1,
+            "hypotheses": [
+                {
+                    "hypothesis_id": "h1",
+                    "root_service": "payment",
+                    "fault_domain": "CONFIGURATION",
+                    "fault_mechanism": "CONFIGURATION_ERROR",
+                    "status": "ACTIVE",
+                    "supporting_evidence_refs": [],
+                    "contradicting_evidence_refs": [],
+                    "unresolved_evidence_sources": ["METRICS"],
+                }
+            ],
+            "next_step": "REQUEST_EVIDENCE",
+            "evidence_gap_sources": ["LOGS"],
+            "read_request": {
+                "tool": "search_logs",
+                "service": "payment",
+                "max_records": 10,
+            },
+            "diagnosis": None,
+            "bounded_rationale": private_value,
+        },
+        index=9,
+    )
+    provider = _provider(RecordingTransport([raw]))
+    context = _context()
+    state = build_investigation_state_view_v21(
+        context=context,
+        hypotheses=(),
+        evidence_store=InvestigationReadTools(
+            run_id=RUN_ID, backend=FakeReadBackend.healthy()
+        ).snapshot(),
+        newest_observation=None,
+    )
+
+    with pytest.raises(Exception) as captured:
+        provider.investigation_turn(
+            context=context, visible_state=state, read_tools_enabled=True
+        )
+
+    message = str(captured.value)
+    assert "output:planner_gap_mismatch" in message
+    assert private_value not in message
+
+
+def test_diagnosis_source_accounting_is_derived_from_cited_refs() -> None:
+    raw = _response(
+        PLANNER_FUNCTION_V21,
+        {
+            "turn_ordinal": 1,
+            "hypotheses": [],
+            "next_step": "SUBMIT_DIAGNOSIS",
+            "evidence_gap_sources": [],
+            "read_request": None,
+            "diagnosis": {
+                "schema_version": "dta-v21.diagnosis.v1",
+                "run_id": RUN_ID,
+                "terminal": "COMPLETED",
+                "root_service": "payment",
+                "root_entity_ref": "service:payment",
+                "fault_domain": "CONFIGURATION",
+                "mechanism": "CONFIGURATION_ERROR",
+                "confidence": 0.9,
+                "supporting_evidence_refs": [
+                    f"evidence://{RUN_ID}/metrics/0001"
+                ],
+                "contradicting_evidence_refs": [],
+                "evidence_source_types": ["LOGS"],
+                "uncertainties": [],
+                "summary": "The cited metric supports the bounded diagnosis.",
+            },
+            "bounded_rationale": "Submit the typed diagnosis.",
+        },
+        index=10,
+    )
+    provider = _provider(RecordingTransport([raw]))
+    context = _context()
+    state = build_investigation_state_view_v21(
+        context=context,
+        hypotheses=(),
+        evidence_store=InvestigationReadTools(
+            run_id=RUN_ID, backend=FakeReadBackend.healthy()
+        ).snapshot(),
+        newest_observation=None,
+    )
+
+    turn = provider.investigation_turn(
+        context=context, visible_state=state, read_tools_enabled=True
+    )
+
+    assert turn.plan_decision is not None
+    assert turn.plan_decision.diagnosis is not None
+    assert tuple(
+        item.value for item in turn.plan_decision.diagnosis.evidence_source_types
+    ) == ("METRICS",)
 
 
 def test_provider_smoke_manifest_is_predeclared_and_blocks_identical_rerun(

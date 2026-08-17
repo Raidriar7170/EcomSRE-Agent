@@ -18,7 +18,11 @@ from ecomsre.dta_v2.v21.agent_contracts import (
     AgentIdentityManifestV21,
     PROVIDER_ADAPTER_VERSION_V21,
 )
-from ecomsre.dta_v2.v21.contracts import ActionProposalV21, DtaDiagnosisV21, semantic_sha256
+from ecomsre.dta_v2.v21.contracts import (
+    ActionProposalV21,
+    DtaDiagnosisV21,
+    semantic_sha256,
+)
 from ecomsre.dta_v2.v21.planner_contracts import EvidencePlanDecisionV21
 from ecomsre.dta_v2.v21.prompts import (
     ACTION_SELECTION_SYSTEM_PROMPT_V21,
@@ -74,6 +78,10 @@ def build_three_arm_identities_v21(
     planner_schema = semantic_sha256(
         EvidencePlanDecisionV21.model_json_schema(mode="validation")
     )
+    planner_contracts_source = _source_sha256(
+        Path(__file__).with_name("planner_contracts.py")
+    )
+    planner_runtime_source = _source_sha256(Path(__file__).with_name("planner.py"))
     context_source = _source_sha256(Path(__file__).with_name("context_projection.py"))
     agent_contracts_source = _source_sha256(
         Path(__file__).with_name("agent_contracts.py")
@@ -100,7 +108,15 @@ def build_three_arm_identities_v21(
             ),
             "tool_schema_sha256": common_tool_schema,
             "planner_schema_sha256": (
-                planner_schema
+                planner_schema if arm is AgentArmV21.EVIDENCE_GUIDED_PLANNER else None
+            ),
+            "planner_contracts_source_sha256": (
+                planner_contracts_source
+                if arm is AgentArmV21.EVIDENCE_GUIDED_PLANNER
+                else None
+            ),
+            "planner_runtime_source_sha256": (
+                planner_runtime_source
                 if arm is AgentArmV21.EVIDENCE_GUIDED_PLANNER
                 else None
             ),

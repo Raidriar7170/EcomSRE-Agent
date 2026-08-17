@@ -1,0 +1,141 @@
+{
+  "schema_version": "dta-v21.agent-visible-replay-case.v1",
+  "case_id": "dta21-case-006",
+  "scenario_id": "dta21-dev-001",
+  "captured_started_at": "2026-08-17T20:17:10.958619Z",
+  "captured_ended_at": "2026-08-17T20:17:41.235034Z",
+  "observations": [
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "inspect_resource_usage",
+      "service_scope": [
+        "ad"
+      ],
+      "records": [
+        {
+          "logical_service": "ad",
+          "sampling_window_seconds": 5,
+          "samples": [
+            {
+              "offset_ms": 0,
+              "cpu_percent": 399.8384283819629,
+              "memory_bytes": 228302848
+            },
+            {
+              "offset_ms": 2500,
+              "cpu_percent": 400.45938123752495,
+              "memory_bytes": 228376576
+            },
+            {
+              "offset_ms": 5000,
+              "cpu_percent": 399.82303664921466,
+              "memory_bytes": 228392960
+            }
+          ],
+          "memory_slope_bytes_per_second": 18022.4
+        }
+      ],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "dce45aae6d67009eee16915829d4ece3c53a28a25766ec74d5924532b92fad20"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "inspect_service_runtime",
+      "service_scope": [
+        "ad"
+      ],
+      "records": [
+        {
+          "logical_service": "ad",
+          "owned_container_present": true,
+          "state": "RUNNING",
+          "health": "HEALTHY",
+          "restart_count": 0,
+          "exit_code": 0,
+          "endpoint_probe_performed": false,
+          "endpoint_state": "UNKNOWN"
+        }
+      ],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "e971ee61eedf9479e5ec91175941239b36832a0738b8fb111578c0c9556d788d"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "query_metrics",
+      "service_scope": [
+        "ad"
+      ],
+      "records": [
+        {
+          "service": "ad",
+          "metric_kind": "CPU_PERCENT",
+          "value": 0.0,
+          "unit": "PERCENT",
+          "sample_count": 0
+        },
+        {
+          "service": "ad",
+          "metric_kind": "ERROR_RATE",
+          "value": 0.0,
+          "unit": "RATIO",
+          "sample_count": 0
+        },
+        {
+          "service": "ad",
+          "metric_kind": "LATENCY_P95_MS",
+          "value": 2.5999999999999996,
+          "unit": "MILLISECONDS",
+          "sample_count": 1
+        },
+        {
+          "service": "ad",
+          "metric_kind": "MEMORY_BYTES",
+          "value": 0.0,
+          "unit": "BYTES",
+          "sample_count": 0
+        },
+        {
+          "service": "ad",
+          "metric_kind": "REQUEST_SUPPORT",
+          "value": 33.6,
+          "unit": "COUNT",
+          "sample_count": 1
+        }
+      ],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "43bdc610bfec01d040096d2ad479e2018526724390457cb534602c8bf7a865c2"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "query_trace_neighborhood",
+      "service_scope": [
+        "ad"
+      ],
+      "records": [],
+      "truncated": false,
+      "error_code": "TRUTH_ISOLATION_VIOLATION",
+      "fixture_sha256": "ecd0e1acddce0d05c802d12758922520d0109741a566a503893a3909c4c2267b"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "search_logs",
+      "service_scope": [
+        "ad"
+      ],
+      "records": [],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "b5b86f2e3fca2752370776787b12b691a288f7af2fc2d2ba9b18e4a4fc2fd96d"
+    }
+  ],
+  "full_context_tools": [
+    "inspect_resource_usage",
+    "inspect_service_runtime",
+    "query_metrics",
+    "search_logs"
+  ],
+  "case_sha256": "2887ce31e8b18800cf0836a328d09bf68574dd1594cd5860dcabab438f7c37f2"
+}

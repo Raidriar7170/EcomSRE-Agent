@@ -1,0 +1,21 @@
+{
+  "schema_version": "dta-v21.evaluator-case-truth.v1",
+  "case_id": "dta21-case-008",
+  "split": "DEVELOPMENT",
+  "scenario_family": "EMAIL_UNAVAILABLE",
+  "generalization_slice": "SAME_SERVICE_MULTIPLE_MECHANISMS",
+  "meaningful_observation_differences": [
+    "service_symptom_distribution"
+  ],
+  "expected_terminal": "COMPLETED",
+  "expected_root_service": "email",
+  "expected_fault_domain": "SERVICE_RUNTIME",
+  "expected_mechanism": "SERVICE_UNAVAILABLE",
+  "expected_disposition": "EXECUTE_RUNBOOK",
+  "expected_runbook": "RESTORE_SERVICE_AVAILABILITY",
+  "expected_evidence_sources": [
+    "METRICS",
+    "RUNTIME"
+  ],
+  "truth_sha256": "d3140c21711b2c823ebfaa15fcdd902b85c1bc18a32cc7ef9e58b57e1429ea3c"
+}

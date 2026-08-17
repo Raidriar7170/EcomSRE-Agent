@@ -5,7 +5,11 @@ from pathlib import Path
 
 import pytest
 
-from ecomsre.dta_v2.read_tools import BackendResult, FakeReadBackend, InvestigationReadTools
+from ecomsre.dta_v2.read_tools import (
+    BackendResult,
+    FakeReadBackend,
+    InvestigationReadTools,
+)
 from ecomsre.dta_v2.tool_contracts import (
     MetricKind,
     SpanRelationship,
@@ -21,6 +25,7 @@ from ecomsre.dta_v2.v21.context_projection import (
     MAX_INVESTIGATION_STATE_BYTES,
     build_evidence_index_v21,
     build_investigation_state_view_v21,
+    build_no_compaction_investigation_state_view_v21,
 )
 from ecomsre.dta_v2.v21.contracts import (
     DtaDiagnosisV21,
@@ -68,7 +73,9 @@ def _hypothesis(*, unresolved=(EvidenceSourceV21.METRICS,)):
     )
 
 
-def test_planner_request_requires_an_active_matching_gap_and_exact_context_scope() -> None:
+def test_planner_request_requires_an_active_matching_gap_and_exact_context_scope() -> (
+    None
+):
     context = _context()
     request = build_query_metrics_request(
         run_id=RUN_ID,
@@ -89,17 +96,20 @@ def test_planner_request_requires_an_active_matching_gap_and_exact_context_scope
         bounded_rationale="Metrics can distinguish the active configuration hypothesis.",
     )
 
-    assert validate_plan_decision_v21(
-        decision=decision,
-        context=context,
-        evidence_index=build_evidence_index_v21(
-            InvestigationReadTools(
-                run_id=RUN_ID, backend=FakeReadBackend.healthy()
-            ).snapshot()
-        ),
-        seen_request_sha256=(),
-        completed_read_dispatches=0,
-    ) == decision
+    assert (
+        validate_plan_decision_v21(
+            decision=decision,
+            context=context,
+            evidence_index=build_evidence_index_v21(
+                InvestigationReadTools(
+                    run_id=RUN_ID, backend=FakeReadBackend.healthy()
+                ).snapshot()
+            ),
+            seen_request_sha256=(),
+            completed_read_dispatches=0,
+        )
+        == decision
+    )
 
     with pytest.raises(ValueError, match="active unresolved gap"):
         build_evidence_plan_decision_v21(
@@ -145,7 +155,9 @@ def test_planner_request_requires_an_active_matching_gap_and_exact_context_scope
         )
 
 
-def test_duplicate_is_detected_and_budget_exhaustion_is_rejected_before_backend() -> None:
+def test_duplicate_is_detected_and_budget_exhaustion_is_rejected_before_backend() -> (
+    None
+):
     context = _context()
     request = build_query_metrics_request(
         run_id=RUN_ID,
@@ -237,9 +249,23 @@ def test_compact_state_is_deterministic_bounded_and_keeps_canonical_refs() -> No
         newest_observation=runtime,
     )
     assert ToolName.QUERY_METRICS in view.prior_tools
+    assert tuple(item.normalized_request_sha256 for item in view.prior_requests) == (
+        metrics.request_sha256,
+        runtime.request_sha256,
+    )
+    assert view.prior_normalized_request_sha256 == tuple(
+        item.normalized_request_sha256 for item in view.prior_requests
+    )
+    assert view.successful_evidence_refs == (
+        metrics.evidence_ref,
+        runtime.evidence_ref,
+    )
+    assert view.failed_evidence_refs == ()
 
 
-def test_planner_rejects_unresolved_hypothesis_citations_and_empty_abstain_gap() -> None:
+def test_planner_rejects_unresolved_hypothesis_citations_and_empty_abstain_gap() -> (
+    None
+):
     context = _context()
     tools = InvestigationReadTools(run_id=RUN_ID, backend=FakeReadBackend.healthy())
     fabricated = f"evidence://{RUN_ID}/metrics/9999"
@@ -373,9 +399,7 @@ def test_compact_state_near_ceiling_remains_exactly_size_bound() -> None:
             )
 
     context = _context()
-    tools = InvestigationReadTools(
-        run_id=RUN_ID, backend=NearCeilingTraceBackend()
-    )
+    tools = InvestigationReadTools(run_id=RUN_ID, backend=NearCeilingTraceBackend())
     observation = tools.dispatch(
         build_trace_neighborhood_request(
             run_id=RUN_ID,
@@ -395,6 +419,17 @@ def test_compact_state_near_ceiling_remains_exactly_size_bound() -> None:
     assert MAX_INVESTIGATION_STATE_BYTES - 5_000 <= view.serialized_size_bytes
     assert view.serialized_size_bytes <= MAX_INVESTIGATION_STATE_BYTES
     assert view.serialized_size_bytes == len(view.model_dump_json().encode("utf-8"))
+
+    no_compaction = build_no_compaction_investigation_state_view_v21(
+        context=context,
+        hypotheses=(),
+        evidence_store=tools.snapshot(),
+        newest_observation=observation,
+    )
+    assert no_compaction.serialized_size_bytes > view.serialized_size_bytes
+    assert no_compaction.serialized_size_bytes == len(
+        no_compaction.model_dump_json().encode("utf-8")
+    )
 
     with pytest.raises(ValueError, match="unresolved evidence gap"):
         build_evidence_plan_decision_v21(

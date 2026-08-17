@@ -1,0 +1,23 @@
+{
+  "schema_version": "dta-v21.evaluator-case-truth.v1",
+  "case_id": "dta21-case-007",
+  "split": "DEVELOPMENT",
+  "scenario_family": "AD_CPU_SATURATION",
+  "generalization_slice": "NEW_SERVICE_NEW_MECHANISM",
+  "meaningful_observation_differences": [
+    "load_level",
+    "time_window"
+  ],
+  "expected_terminal": "COMPLETED",
+  "expected_root_service": "ad",
+  "expected_fault_domain": "LOCAL_RESOURCE",
+  "expected_mechanism": "CPU_SATURATION",
+  "expected_disposition": "EXECUTE_RUNBOOK",
+  "expected_runbook": "MITIGATE_CPU_SATURATION",
+  "expected_evidence_sources": [
+    "METRICS",
+    "RUNTIME",
+    "RESOURCES"
+  ],
+  "truth_sha256": "da65f71443315f4c92a676bb105eea881d14a714ca9dced815758c903aeb60b1"
+}
