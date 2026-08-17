@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import Counter
 
 import pytest
+from pydantic import ValidationError
 
 from ecomsre.dta_v2.v21.capture_campaign import (
     CalibrationKindV21,
@@ -266,3 +267,20 @@ def test_calibration_failure_records_only_typed_stage_and_detail_hash() -> None:
     assert "private dynamic failure" not in closure.model_dump_json()
     assert closure.baseline_restored
     assert closure.cleanup_verdict == "CLEAN"
+
+
+def test_calibration_validation_error_retains_safe_field_codes() -> None:
+    with pytest.raises(ValidationError) as captured:
+        CaptureCalibrationObservationV21.model_validate({})
+
+    failure = CaptureCalibrationFailureV21(
+        kind=CalibrationKindV21.AD_CPU,
+        target_service="ad",
+        variant="on",
+        step="BUSINESS_METRIC",
+        cause=captured.value,
+    )
+
+    assert failure.validation_codes
+    assert all(":" in item for item in failure.validation_codes)
+    assert "input" not in " ".join(failure.validation_codes).casefold()

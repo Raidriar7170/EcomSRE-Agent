@@ -6,7 +6,7 @@ from collections import Counter
 from enum import Enum
 from typing import Any, Literal, Protocol, cast
 
-from pydantic import Field, StrictFloat, StrictInt, model_validator
+from pydantic import Field, StrictFloat, StrictInt, ValidationError, model_validator
 
 from ecomsre.dta_v2.tool_contracts import ToolName
 from ecomsre.dta_v2.v21.contracts import DtaModelV21, Sha256V21, semantic_sha256
@@ -84,6 +84,22 @@ class CaptureCalibrationFailureV21(RuntimeError):
                 "cause_type": self.cause_type,
                 "cause_message": str(cause),
             }
+        )
+        self.validation_codes = (
+            tuple(
+                sorted(
+                    {
+                        f"{'.'.join(str(part) for part in item['loc'])}:{item['type']}"
+                        for item in cause.errors(
+                            include_url=False,
+                            include_context=False,
+                            include_input=False,
+                        )
+                    }
+                )
+            )
+            if isinstance(cause, ValidationError)
+            else ()
         )
 
 
@@ -327,6 +343,7 @@ class CaptureCampaignClosureV21(DtaModelV21):
         default=None, pattern=r"^[A-Za-z][A-Za-z0-9_]{0,63}$"
     )
     failure_detail_sha256: Sha256V21 | None = None
+    failure_validation_codes: tuple[str, ...] = Field(default=(), max_length=8)
     failed_case_id: str | None = Field(default=None, pattern=r"^dta21-case-[0-9]{3}$")
     selected_email_variant: Literal["10x", "100x", "1000x"] | None
     selected_ad_cpu_variant: Literal["on"] | None
@@ -365,10 +382,27 @@ class CaptureCampaignClosureV21(DtaModelV21):
             self.failure_cause_type,
             self.failure_detail_sha256,
         )
-        if (self.failure_code is None) != all(item is None for item in failure_details):
+        has_no_details = all(item is None for item in failure_details)
+        has_complete_details = all(item is not None for item in failure_details)
+        if self.failure_code is None and (
+            not has_no_details or self.failure_validation_codes
+        ):
             raise ValueError("capture campaign failure detail differs from terminal")
+        if self.failure_code is not None and not (
+            has_no_details or has_complete_details
+        ):
+            raise ValueError("capture campaign failure detail is incomplete")
+        digest_exclusions = {"closure_sha256"}
+        for field in (
+            "failure_stage",
+            "failure_cause_type",
+            "failure_detail_sha256",
+            "failure_validation_codes",
+        ):
+            if field not in self.model_fields_set:
+                digest_exclusions.add(field)
         expected = semantic_sha256(
-            self.model_dump(mode="json", exclude={"closure_sha256"})
+            self.model_dump(mode="json", exclude=digest_exclusions)
         )
         if self.closure_sha256 != expected:
             raise ValueError("capture campaign closure digest differs")
@@ -753,6 +787,7 @@ def run_capture_campaign_attempt_v21(
     failure_stage: str | None = None
     failure_cause_type: str | None = None
     failure_detail_sha256: str | None = None
+    failure_validation_codes: tuple[str, ...] = ()
     failed_case_id: str | None = None
     started = False
     baseline_restored = False
@@ -773,12 +808,14 @@ def run_capture_campaign_attempt_v21(
     def record_failure(
         code: CaptureFailureCodeV21, *, stage: str, error: Exception
     ) -> None:
-        nonlocal failure, failure_stage, failure_cause_type, failure_detail_sha256
+        nonlocal failure, failure_stage, failure_cause_type
+        nonlocal failure_detail_sha256, failure_validation_codes
         failure = code
         if isinstance(error, CaptureCalibrationFailureV21):
             failure_stage = error.stage
             failure_cause_type = error.cause_type
             failure_detail_sha256 = error.detail_sha256
+            failure_validation_codes = error.validation_codes
             return
         failure_stage = stage
         failure_cause_type = type(error).__name__
@@ -789,6 +826,7 @@ def run_capture_campaign_attempt_v21(
                 "cause_message": str(error),
             }
         )
+        failure_validation_codes = ()
 
     def restore() -> None:
         nonlocal baseline_restored
@@ -996,6 +1034,7 @@ def run_capture_campaign_attempt_v21(
         "failure_stage": failure_stage,
         "failure_cause_type": failure_cause_type,
         "failure_detail_sha256": failure_detail_sha256,
+        "failure_validation_codes": failure_validation_codes,
         "failed_case_id": failed_case_id,
         "selected_email_variant": selected_email,
         "selected_ad_cpu_variant": selected_ad,
