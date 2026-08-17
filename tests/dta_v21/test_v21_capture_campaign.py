@@ -6,6 +6,7 @@ import pytest
 
 from ecomsre.dta_v2.v21.capture_campaign import (
     CalibrationKindV21,
+    CaptureCalibrationFailureV21,
     CaptureCalibrationObservationV21,
     CaptureConditionV21,
     CaptureFailureCodeV21,
@@ -137,8 +138,11 @@ def _calibration(kind, service, variant):
 
 
 class _FakeCaptureLifecycleV21:
-    def __init__(self, *, fail_case: str | None = None) -> None:
+    def __init__(
+        self, *, fail_case: str | None = None, fail_ad_calibration: bool = False
+    ) -> None:
         self.fail_case = fail_case
+        self.fail_ad_calibration = fail_ad_calibration
         self.active = False
         self.restores = 0
         self.verifications = 0
@@ -159,6 +163,18 @@ class _FakeCaptureLifecycleV21:
     def calibrate(self, *, kind, target_service, variant):
         assert not self.active
         self.active = True
+        if (
+            self.fail_ad_calibration
+            and kind is CalibrationKindV21.AD_CPU
+            and variant == "on"
+        ):
+            raise CaptureCalibrationFailureV21(
+                kind=kind,
+                target_service=target_service,
+                variant=variant,
+                step="BUSINESS_METRIC",
+                cause=RuntimeError("private dynamic failure"),
+            )
         return _calibration(kind, target_service, variant)
 
     def apply_case(self, case, *, selected_email_variant, selected_shipping_variant):
@@ -231,5 +247,22 @@ def test_capture_failure_restores_before_clean_owned_shutdown() -> None:
     assert closure.terminal is CaptureTerminalV21.BLOCKED
     assert closure.failure_code is CaptureFailureCodeV21.CASE_CAPTURE_FAILED
     assert closure.failed_case_id == "dta21-case-004"
+    assert closure.baseline_restored
+    assert closure.cleanup_verdict == "CLEAN"
+
+
+def test_calibration_failure_records_only_typed_stage_and_detail_hash() -> None:
+    lifecycle = _FakeCaptureLifecycleV21(fail_ad_calibration=True)
+    closure = run_capture_campaign_attempt_v21(
+        plan=build_default_capture_plan_v21(base_head=BASE_HEAD),
+        lifecycle=lifecycle,
+    )
+
+    assert closure.terminal is CaptureTerminalV21.BLOCKED
+    assert closure.failure_code is CaptureFailureCodeV21.CALIBRATION_FAILED
+    assert closure.failure_stage == "CALIBRATION:AD_CPU:ad:on:BUSINESS_METRIC"
+    assert closure.failure_cause_type == "RuntimeError"
+    assert closure.failure_detail_sha256
+    assert "private dynamic failure" not in closure.model_dump_json()
     assert closure.baseline_restored
     assert closure.cleanup_verdict == "CLEAN"

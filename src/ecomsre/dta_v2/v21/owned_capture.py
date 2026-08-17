@@ -42,6 +42,7 @@ from ecomsre.dta_v2.tool_contracts import (
 )
 from ecomsre.dta_v2.v21.capture_campaign import (
     CalibrationKindV21,
+    CaptureCalibrationFailureV21,
     CaptureCalibrationObservationV21,
     CaptureCampaignClosureV21,
     CaptureCampaignPlanV21,
@@ -250,6 +251,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         self.email_resource_fixture_v21: ReplayObservationFixtureV21 | None = None
         self.fault_operation_count = 0
         self.email_restart_required_v21 = False
+        self.calibration_step_v21 = "BEGIN"
 
     def admit(self) -> None:
         super().admit()
@@ -277,18 +279,40 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
     def calibrate(
         self, *, kind: CalibrationKindV21, target_service: str, variant: str
     ) -> CaptureCalibrationObservationV21:
+        self.calibration_step_v21 = "BEGIN"
+        try:
+            return self._calibrate_impl(
+                kind=kind, target_service=target_service, variant=variant
+            )
+        except CaptureCalibrationFailureV21:
+            raise
+        except Exception as error:
+            raise CaptureCalibrationFailureV21(
+                kind=kind,
+                target_service=target_service,
+                variant=variant,
+                step=self.calibration_step_v21,
+                cause=error,
+            ) from error
+
+    def _calibrate_impl(
+        self, *, kind: CalibrationKindV21, target_service: str, variant: str
+    ) -> CaptureCalibrationObservationV21:
         self._require_idle()
         self.active_condition = f"calibration:{kind.value}:{target_service}:{variant}"
         now = datetime.now(timezone.utc)
         if kind is CalibrationKindV21.EMAIL_MEMORY:
             self.email_restart_required_v21 = True
+            self.calibration_step_v21 = "FLAG_APPLY"
             self._flags().apply(
                 build_capture_flag_document_v21(
                     self._upstream(), load_vus=25, email_variant=variant
                 )
             )
+            self.calibration_step_v21 = "SERVICE_RESTART"
             self._email_v21().restart()
             time.sleep(5)
+            self.calibration_step_v21 = "RESOURCE_USAGE"
             resource = self._resource_record(
                 service="email", window_seconds=10, sample_count=3
             )
@@ -311,16 +335,19 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
                 measurable=delta >= 1_000_000,
             )
         if kind is CalibrationKindV21.AD_CPU:
+            self.calibration_step_v21 = "FLAG_APPLY"
             self._flags().apply(
                 build_capture_flag_document_v21(
                     self._upstream(), load_vus=25, ad_cpu_variant=variant
                 )
             )
             time.sleep(10)
+            self.calibration_step_v21 = "RESOURCE_USAGE"
             resource = self._resource_record(
                 service="ad", window_seconds=10, sample_count=5
             )
             cpus = tuple(item.cpu_percent for item in resource.samples)
+            self.calibration_step_v21 = "BUSINESS_METRIC"
             latency = self._metric_value(
                 service="ad", kind=MetricKind.LATENCY_P95_MS, started_at=now
             )
@@ -337,6 +364,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
                 measurable=variant == "on" and p95 >= 60.0,
             )
         if kind is CalibrationKindV21.SHIPPING_LATENCY:
+            self.calibration_step_v21 = "FLAG_APPLY"
             self._flags().apply(
                 build_capture_flag_document_v21(
                     self._upstream(), load_vus=25, shipping_variant=variant
@@ -344,12 +372,14 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
             )
             time.sleep(15)
             ended = datetime.now(timezone.utc)
+            self.calibration_step_v21 = "BUSINESS_METRIC"
             latency = self._metric_value(
                 service="shipping",
                 kind=MetricKind.LATENCY_P95_MS,
                 started_at=now,
                 ended_at=ended,
             )
+            self.calibration_step_v21 = "TRACE_ATTRIBUTION"
             traces = self._trace_records(
                 service="shipping", started_at=now, ended_at=ended
             )
@@ -368,11 +398,14 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         if kind is not CalibrationKindV21.SERVICE_UNAVAILABLE:
             raise ValueError("capture calibration kind is unsupported")
         controller = self._service(target_service)
+        self.calibration_step_v21 = "SERVICE_STOP"
         controller.stop()
         self.fault_operation_count = 1
         time.sleep(10)
+        self.calibration_step_v21 = "RUNTIME_OBSERVATION"
         runtime = self._runtime_record(target_service)
         ended = datetime.now(timezone.utc)
+        self.calibration_step_v21 = "TRACE_OBSERVATION"
         traces = self._trace_records(
             service=target_service, started_at=now, ended_at=ended
         )
@@ -380,6 +413,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
             item.status is SpanStatus.ERROR and item.first_error_location
             for item in traces
         )
+        self.calibration_step_v21 = "BUSINESS_METRIC"
         error_rate = self._metric_value(
             service=target_service,
             kind=MetricKind.ERROR_RATE,

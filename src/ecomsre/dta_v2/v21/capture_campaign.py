@@ -63,6 +63,30 @@ class CalibrationKindV21(str, Enum):
     SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE"
 
 
+class CaptureCalibrationFailureV21(RuntimeError):
+    """Sanitized typed calibration failure propagated across the lifecycle."""
+
+    def __init__(
+        self,
+        *,
+        kind: CalibrationKindV21,
+        target_service: str,
+        variant: str,
+        step: str,
+        cause: Exception,
+    ) -> None:
+        super().__init__("capture calibration step failed")
+        self.stage = f"CALIBRATION:{kind.value}:{target_service}:{variant}:{step}"
+        self.cause_type = type(cause).__name__
+        self.detail_sha256 = semantic_sha256(
+            {
+                "stage": self.stage,
+                "cause_type": self.cause_type,
+                "cause_message": str(cause),
+            }
+        )
+
+
 _ALLOWED_VARIANTS = {
     CaptureConditionV21.PAYMENT_FLAG: {"50%", "75%", "100%"},
     CaptureConditionV21.EMAIL_MEMORY_LEAK: {"SELECTED"},
@@ -298,6 +322,11 @@ class CaptureCampaignClosureV21(DtaModelV21):
     plan_sha256: Sha256V21
     terminal: CaptureTerminalV21
     failure_code: CaptureFailureCodeV21 | None
+    failure_stage: str | None = Field(default=None, pattern=r"^[A-Za-z0-9:_-]{1,160}$")
+    failure_cause_type: str | None = Field(
+        default=None, pattern=r"^[A-Za-z][A-Za-z0-9_]{0,63}$"
+    )
+    failure_detail_sha256: Sha256V21 | None = None
     failed_case_id: str | None = Field(default=None, pattern=r"^dta21-case-[0-9]{3}$")
     selected_email_variant: Literal["10x", "100x", "1000x"] | None
     selected_ad_cpu_variant: Literal["on"] | None
@@ -331,6 +360,13 @@ class CaptureCampaignClosureV21(DtaModelV21):
         )
         if (self.terminal is CaptureTerminalV21.PASS) != passed:
             raise ValueError("capture campaign terminal differs from closure evidence")
+        failure_details = (
+            self.failure_stage,
+            self.failure_cause_type,
+            self.failure_detail_sha256,
+        )
+        if (self.failure_code is None) != all(item is None for item in failure_details):
+            raise ValueError("capture campaign failure detail differs from terminal")
         expected = semantic_sha256(
             self.model_dump(mode="json", exclude={"closure_sha256"})
         )
@@ -714,6 +750,9 @@ def run_capture_campaign_attempt_v21(
 
     plan = CaptureCampaignPlanV21.model_validate(plan.model_dump(mode="python"))
     failure: CaptureFailureCodeV21 | None = None
+    failure_stage: str | None = None
+    failure_cause_type: str | None = None
+    failure_detail_sha256: str | None = None
     failed_case_id: str | None = None
     started = False
     baseline_restored = False
@@ -730,6 +769,26 @@ def run_capture_campaign_attempt_v21(
         "owned_volumes": None,
         "non_owned_resources_changed": None,
     }
+
+    def record_failure(
+        code: CaptureFailureCodeV21, *, stage: str, error: Exception
+    ) -> None:
+        nonlocal failure, failure_stage, failure_cause_type, failure_detail_sha256
+        failure = code
+        if isinstance(error, CaptureCalibrationFailureV21):
+            failure_stage = error.stage
+            failure_cause_type = error.cause_type
+            failure_detail_sha256 = error.detail_sha256
+            return
+        failure_stage = stage
+        failure_cause_type = type(error).__name__
+        failure_detail_sha256 = semantic_sha256(
+            {
+                "stage": stage,
+                "cause_type": failure_cause_type,
+                "cause_message": str(error),
+            }
+        )
 
     def restore() -> None:
         nonlocal baseline_restored
@@ -753,16 +812,35 @@ def run_capture_campaign_attempt_v21(
             or observation.target_service != service
             or observation.variant != variant
         ):
-            raise ValueError("capture calibration response differs from request")
-        restore()
+            raise CaptureCalibrationFailureV21(
+                kind=kind,
+                target_service=service,
+                variant=variant,
+                step="RESPONSE_VALIDATION",
+                cause=ValueError("capture calibration response differs from request"),
+            )
+        try:
+            restore()
+        except Exception as error:
+            raise CaptureCalibrationFailureV21(
+                kind=kind,
+                target_service=service,
+                variant=variant,
+                step="BASELINE_RESTORE",
+                cause=error,
+            ) from error
         calibrations.append(observation)
         return observation
 
     try:
         try:
             lifecycle.admit()
-        except Exception:
-            failure = CaptureFailureCodeV21.ADMISSION_FAILED
+        except Exception as error:
+            record_failure(
+                CaptureFailureCodeV21.ADMISSION_FAILED,
+                stage="ADMISSION",
+                error=error,
+            )
         if failure is None:
             try:
                 started = True
@@ -770,8 +848,12 @@ def run_capture_campaign_attempt_v21(
                 lifecycle.wait_ready()
                 lifecycle.verify_baseline()
                 baseline_restored = True
-            except Exception:
-                failure = CaptureFailureCodeV21.START_FAILED
+            except Exception as error:
+                record_failure(
+                    CaptureFailureCodeV21.START_FAILED,
+                    stage="START_AND_READINESS",
+                    error=error,
+                )
 
         if failure is None:
             try:
@@ -832,9 +914,17 @@ def run_capture_campaign_attempt_v21(
                     or selected_shipping is None
                     or not all(item.safe and item.measurable for item in unavailable)
                 ):
-                    failure = CaptureFailureCodeV21.CALIBRATION_FAILED
-            except Exception:
-                failure = CaptureFailureCodeV21.CALIBRATION_FAILED
+                    record_failure(
+                        CaptureFailureCodeV21.CALIBRATION_FAILED,
+                        stage="CALIBRATION:SELECTION",
+                        error=ValueError("calibration threshold selection failed"),
+                    )
+            except Exception as error:
+                record_failure(
+                    CaptureFailureCodeV21.CALIBRATION_FAILED,
+                    stage="CALIBRATION:UNCLASSIFIED",
+                    error=error,
+                )
 
         if failure is None:
             assert selected_email is not None
@@ -853,8 +943,12 @@ def run_capture_campaign_attempt_v21(
                     )
                     restore()
                     receipts.append(_capture_receipt(case=case, artifact=artifact))
-                except Exception:
-                    failure = CaptureFailureCodeV21.CASE_CAPTURE_FAILED
+                except Exception as error:
+                    record_failure(
+                        CaptureFailureCodeV21.CASE_CAPTURE_FAILED,
+                        stage=f"CASE:{case.case_id}",
+                        error=error,
+                    )
                     failed_case_id = case.case_id
                     break
     finally:
@@ -862,16 +956,28 @@ def run_capture_campaign_attempt_v21(
             if not baseline_restored:
                 try:
                     restore()
-                except Exception:
-                    failure = CaptureFailureCodeV21.BASELINE_RESTORE_FAILED
+                except Exception as error:
+                    record_failure(
+                        CaptureFailureCodeV21.BASELINE_RESTORE_FAILED,
+                        stage="FINAL_BASELINE_RESTORE",
+                        error=error,
+                    )
                     baseline_restored = False
             cleanup_attempted = True
             try:
                 cleanup = lifecycle.cleanup(baseline_restored=baseline_restored)
                 if cleanup.get("verdict") != "CLEAN":
-                    failure = CaptureFailureCodeV21.CLEANUP_BLOCKED
-            except Exception:
-                failure = CaptureFailureCodeV21.CLEANUP_FAILED
+                    record_failure(
+                        CaptureFailureCodeV21.CLEANUP_BLOCKED,
+                        stage="CLEANUP_VERDICT",
+                        error=ValueError("owned cleanup verdict is not CLEAN"),
+                    )
+            except Exception as error:
+                record_failure(
+                    CaptureFailureCodeV21.CLEANUP_FAILED,
+                    stage="CLEANUP_EXECUTION",
+                    error=error,
+                )
                 cleanup = {
                     "verdict": "BLOCKED",
                     "owned_containers": None,
@@ -887,6 +993,9 @@ def run_capture_campaign_attempt_v21(
             CaptureTerminalV21.PASS if failure is None else CaptureTerminalV21.BLOCKED
         ),
         "failure_code": failure,
+        "failure_stage": failure_stage,
+        "failure_cause_type": failure_cause_type,
+        "failure_detail_sha256": failure_detail_sha256,
         "failed_case_id": failed_case_id,
         "selected_email_variant": selected_email,
         "selected_ad_cpu_variant": selected_ad,
@@ -916,6 +1025,7 @@ def run_capture_campaign_attempt_v21(
 
 __all__ = (
     "CalibrationKindV21",
+    "CaptureCalibrationFailureV21",
     "CaptureCalibrationObservationV21",
     "CaptureCampaignClosureV21",
     "CaptureCampaignPlanV21",
