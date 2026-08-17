@@ -90,8 +90,8 @@ def test_private_entry_projection_rejects_standalone_score_tamper() -> None:
     with pytest.raises(ValueError, match="standalone prediction or score"):
         _require_entry_projection_bindings(
             entry,
-            prediction=marker,
-            score=object(),
+            prediction=marker,  # type: ignore[arg-type]
+            score=object(),  # type: ignore[arg-type]
         )
 
 
