@@ -6,6 +6,12 @@
   "supported_mechanisms": ["MEMORY_LEAK"],
   "target_services": ["email"],
   "required_evidence_sources": ["METRICS", "RUNTIME", "RESOURCES"],
+  "target_evidence_requirements": [
+    {
+      "target_service": "email",
+      "required_evidence_sources": ["METRICS", "RUNTIME", "RESOURCES"]
+    }
+  ],
   "risk_level": "MEDIUM",
   "parameters": [
     {
@@ -39,5 +45,5 @@
     "step_receipt_required": true
   },
   "backend": "REPLAY_ONLY",
-  "semantic_sha256": "1503aa9c7ed1e09bd12fa9dd49caaec1712c4d13bf63893a75cbe613085f1079"
+  "semantic_sha256": "52e77d58b8b331e36f51d74763031b374d5bb25b828a3763378120c7e07ec030"
 }

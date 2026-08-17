@@ -454,6 +454,26 @@ class RunbookStepSpecV21(DtaModelV21):
         return self
 
 
+class TargetEvidenceRequirementV21(DtaModelV21):
+    target_service: IdentifierV21
+    required_evidence_sources: tuple[EvidenceSourceV21, ...] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def require_unique_canonical_sources(self) -> TargetEvidenceRequirementV21:
+        if len(self.required_evidence_sources) != len(
+            set(self.required_evidence_sources)
+        ):
+            raise ValueError("target evidence sources contain duplicates")
+        if self.required_evidence_sources != tuple(
+            sorted(
+                self.required_evidence_sources,
+                key=lambda item: _EVIDENCE_SOURCE_ORDER[item],
+            )
+        ):
+            raise ValueError("target evidence sources are not canonical")
+        return self
+
+
 class RunbookFailurePolicyV21(DtaModelV21):
     terminal: Literal["ESCALATE_HUMAN"]
     preserve_completed_steps: Literal[True]
@@ -469,6 +489,9 @@ class RunbookSpecV21(DtaModelV21):
     supported_mechanisms: tuple[FaultMechanismV21, ...] = Field(min_length=1)
     target_services: tuple[IdentifierV21, ...] = Field(min_length=1)
     required_evidence_sources: tuple[EvidenceSourceV21, ...] = Field(min_length=1)
+    target_evidence_requirements: tuple[TargetEvidenceRequirementV21, ...] = Field(
+        min_length=1
+    )
     risk_level: RiskLevelV21
     parameters: tuple[RunbookParameterSpecV21, ...] = Field(max_length=8)
     preconditions: tuple[PreconditionV21, ...] = Field(min_length=1, max_length=8)
@@ -493,6 +516,27 @@ class RunbookSpecV21(DtaModelV21):
                 raise ValueError(f"{label} contains duplicates")
         if self.target_services != tuple(sorted(self.target_services)):
             raise ValueError("target services are not canonical")
+        requirement_targets = tuple(
+            item.target_service for item in self.target_evidence_requirements
+        )
+        if requirement_targets != self.target_services:
+            raise ValueError(
+                "target evidence requirements differ from the exact target set"
+            )
+        evidence_union = tuple(
+            sorted(
+                {
+                    source
+                    for item in self.target_evidence_requirements
+                    for source in item.required_evidence_sources
+                },
+                key=lambda item: _EVIDENCE_SOURCE_ORDER[item],
+            )
+        )
+        if self.required_evidence_sources != evidence_union:
+            raise ValueError(
+                "Runbook evidence sources differ from target requirement union"
+            )
         parameter_names = tuple(item.name for item in self.parameters)
         if len(parameter_names) != len(set(parameter_names)):
             raise ValueError("runbook parameter names contain duplicates")
@@ -507,6 +551,14 @@ class RunbookSpecV21(DtaModelV21):
         if self.semantic_sha256 != expected:
             raise ValueError("runbook semantic hash does not bind the contract")
         return self
+
+    def required_evidence_for_target(
+        self, target_service: str
+    ) -> tuple[EvidenceSourceV21, ...]:
+        for requirement in self.target_evidence_requirements:
+            if requirement.target_service == target_service:
+                return requirement.required_evidence_sources
+        raise KeyError(target_service)
 
 
 class CandidateRunbookV21(DtaModelV21):
@@ -768,6 +820,7 @@ __all__ = (
     "ScenarioSpecV21",
     "Sha256V21",
     "TerminalV21",
+    "TargetEvidenceRequirementV21",
     "build_resolved_diagnosis_evidence_view_v21",
     "canonical_json_bytes",
     "evidence_source_from_ref",

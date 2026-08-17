@@ -6,6 +6,12 @@
   "supported_mechanisms": ["DEPENDENCY_LATENCY"],
   "target_services": ["shipping"],
   "required_evidence_sources": ["METRICS", "TRACES"],
+  "target_evidence_requirements": [
+    {
+      "target_service": "shipping",
+      "required_evidence_sources": ["METRICS", "TRACES"]
+    }
+  ],
   "risk_level": "MEDIUM",
   "parameters": [],
   "preconditions": ["CAUSAL_DEPENDENCY_EVIDENCE", "BASELINE_HASH_BOUND"],
@@ -25,5 +31,5 @@
     "step_receipt_required": true
   },
   "backend": "REPLAY_ONLY",
-  "semantic_sha256": "13604f9ec9828c6670eab5b89e7b06aaa64a0992e05af9c9ef4f6420ce9157f0"
+  "semantic_sha256": "1480ed6c94ee8ee912b359f554fdc46e39cd642e8401a16b15f96eac2a00d515"
 }

@@ -213,19 +213,19 @@ def resolve_replay_case(
 ) -> ReplayResolutionV21:
     """Resolve a typed replay case without reading scenario or evaluator truth."""
 
-    if diagnosis.terminal is not TerminalV21.COMPLETED:
-        return _build_resolution(
-            run_id=diagnosis.run_id,
-            terminal=diagnosis.terminal,
-            candidate_set=None,
-            proposal=None,
-        )
     candidate_set = filter_runbook_candidates(
         diagnosis=diagnosis,
         diagnosis_evidence=diagnosis_evidence,
         registry=registry,
         exact_target=exact_target,
     )
+    if diagnosis.terminal is not TerminalV21.COMPLETED:
+        return _build_resolution(
+            run_id=diagnosis.run_id,
+            terminal=diagnosis.terminal,
+            candidate_set=candidate_set,
+            proposal=None,
+        )
     if diagnosis.root_service is None:
         proposal = _build_action_proposal(
             diagnosis=diagnosis,

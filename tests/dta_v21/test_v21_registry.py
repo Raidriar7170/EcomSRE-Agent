@@ -35,8 +35,16 @@ def test_trusted_runbook_registry_binds_exact_p0_semantics() -> None:
     assert registry.require(
         RunbookIdV21.RESTORE_SERVICE_AVAILABILITY
     ).target_services == ("email", "product-catalog")
+    availability = registry.require(RunbookIdV21.RESTORE_SERVICE_AVAILABILITY)
+    assert tuple(
+        source.value for source in availability.required_evidence_for_target("email")
+    ) == ("METRICS", "RUNTIME")
+    assert tuple(
+        source.value
+        for source in availability.required_evidence_for_target("product-catalog")
+    ) == ("TRACES", "RUNTIME")
     assert registry.registry_sha256 == (
-        "826935b4c664aa22c4a95392bab6e7672b1ee8524558aed9f2345a8353179faf"
+        "02bbcddba67da53c10324624dc770c9f73056e0126469567c8e70a79710047e9"
     )
     for runbook in registry.runbooks:
         assert runbook.target_services

@@ -5,7 +5,17 @@
   "supported_fault_domains": ["SERVICE_RUNTIME"],
   "supported_mechanisms": ["SERVICE_UNAVAILABLE"],
   "target_services": ["email", "product-catalog"],
-  "required_evidence_sources": ["RUNTIME"],
+  "required_evidence_sources": ["METRICS", "TRACES", "RUNTIME"],
+  "target_evidence_requirements": [
+    {
+      "target_service": "email",
+      "required_evidence_sources": ["METRICS", "RUNTIME"]
+    },
+    {
+      "target_service": "product-catalog",
+      "required_evidence_sources": ["TRACES", "RUNTIME"]
+    }
+  ],
   "risk_level": "MEDIUM",
   "parameters": [
     {
@@ -35,5 +45,5 @@
     "step_receipt_required": true
   },
   "backend": "LIVE_ALLOWED",
-  "semantic_sha256": "2ae741455b81a210b55e99da398f37a46c6d9865c814c3bb0f4879bf00b45a78"
+  "semantic_sha256": "b6155b97560a4fd4bb45557cbebd941f95fe4cf34c2bc75f06baaf6cc0a4d193"
 }

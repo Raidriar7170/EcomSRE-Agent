@@ -128,13 +128,13 @@ def filter_runbook_candidates(
             risk_level=runbook.risk_level,
             backend=runbook.backend,
             parameters=runbook.parameters,
-            required_evidence_sources=runbook.required_evidence_sources,
+            required_evidence_sources=runbook.required_evidence_for_target(root),
         )
         for runbook in registry.runbooks
         if domain in runbook.supported_fault_domains
         and mechanism in runbook.supported_mechanisms
         and root in runbook.target_services
-        and set(runbook.required_evidence_sources).issubset(available_sources)
+        and set(runbook.required_evidence_for_target(root)).issubset(available_sources)
     )
     return _build_candidate_set(
         diagnosis=diagnosis,

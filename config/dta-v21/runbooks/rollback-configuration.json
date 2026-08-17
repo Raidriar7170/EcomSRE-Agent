@@ -6,6 +6,12 @@
   "supported_mechanisms": ["CONFIGURATION_ERROR"],
   "target_services": ["payment"],
   "required_evidence_sources": ["METRICS", "TRACES"],
+  "target_evidence_requirements": [
+    {
+      "target_service": "payment",
+      "required_evidence_sources": ["METRICS", "TRACES"]
+    }
+  ],
   "risk_level": "LOW",
   "parameters": [],
   "preconditions": [
@@ -30,5 +36,5 @@
     "step_receipt_required": true
   },
   "backend": "REPLAY_ONLY",
-  "semantic_sha256": "b8017bc9bcfa9b1510bbe89a019561ff0cffb3ca441fb4af2cf70a8a9d57b882"
+  "semantic_sha256": "39b7928ecbdbe3acf23f676358cb2697268e9aa21b63dc9b28545770add84955"
 }

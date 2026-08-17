@@ -6,15 +6,24 @@ import pytest
 
 from ecomsre.dta_v2.v21.contracts import (
     ActionDispositionV21,
+    ActionParameterV21,
+    ActionProposalV21,
     ExecutionBackendV21,
     FaultDomainV21,
     FaultMechanismV21,
     RunbookIdV21,
     TerminalV21,
+    semantic_sha256,
 )
-from ecomsre.dta_v2.v21.registry import load_default_runbook_registry
+from ecomsre.dta_v2.v21.registry import (
+    RunbookRegistryV21,
+    load_default_runbook_registry,
+)
 from ecomsre.dta_v2.v21.replay import build_replay_diagnosis, resolve_replay_case
 from ecomsre.dta_v2.v21.replay_execution import (
+    FixedReplayExecutorV21,
+    FixedReplayVerifierV21,
+    ReplayExecutionReceiptV21,
     admit_runbook_backend,
     execute_and_verify_replay_only,
 )
@@ -164,3 +173,111 @@ def test_no_fault_completes_with_no_action_and_missing_evidence_stops() -> None:
     )
     assert unresolved_result.terminal is TerminalV21.NEED_MORE_EVIDENCE
     assert unresolved_result.proposal is None
+
+
+def test_unresolved_replay_rejects_run_and_target_drift() -> None:
+    diagnosis, evidence = build_replay_diagnosis(
+        run_id="d" * 32,
+        terminal=TerminalV21.NEED_MORE_EVIDENCE,
+        root_service=None,
+        fault_domain=None,
+        mechanism=None,
+        evidence_sources=("METRICS",),
+    )
+    _, foreign_evidence = build_replay_diagnosis(
+        run_id="e" * 32,
+        terminal=TerminalV21.NEED_MORE_EVIDENCE,
+        root_service=None,
+        fault_domain=None,
+        mechanism=None,
+        evidence_sources=("METRICS",),
+    )
+    registry = load_default_runbook_registry(REPO_ROOT)
+
+    with pytest.raises(ValueError, match="another run"):
+        resolve_replay_case(
+            diagnosis=diagnosis,
+            diagnosis_evidence=foreign_evidence,
+            registry=registry,
+            exact_target=None,
+        )
+    with pytest.raises(ValueError, match="exact target"):
+        resolve_replay_case(
+            diagnosis=diagnosis,
+            diagnosis_evidence=evidence,
+            registry=registry,
+            exact_target="shipping",
+        )
+
+
+def _memory_leak_replay() -> tuple[ActionProposalV21, RunbookRegistryV21]:
+    registry = load_default_runbook_registry(REPO_ROOT)
+    diagnosis, evidence = build_replay_diagnosis(
+        run_id="f" * 32,
+        terminal=TerminalV21.COMPLETED,
+        root_service="email",
+        fault_domain=FaultDomainV21.LOCAL_RESOURCE,
+        mechanism=FaultMechanismV21.MEMORY_LEAK,
+        evidence_sources=("METRICS", "RUNTIME", "RESOURCES"),
+    )
+    resolution = resolve_replay_case(
+        diagnosis=diagnosis,
+        diagnosis_evidence=evidence,
+        registry=registry,
+        exact_target="email",
+    )
+    assert resolution.proposal is not None
+    return resolution.proposal, registry
+
+
+def test_replay_executor_rejects_out_of_range_typed_parameter() -> None:
+    proposal, registry = _memory_leak_replay()
+    runbook = registry.require(RunbookIdV21.MITIGATE_MEMORY_LEAK)
+    python_payload = proposal.model_dump(mode="python", exclude={"proposal_sha256"})
+    json_payload = proposal.model_dump(mode="json", exclude={"proposal_sha256"})
+    parameter = ActionParameterV21(name="wait_for_health_seconds", value=999)
+    python_payload["parameters"] = (parameter,)
+    json_payload["parameters"] = [parameter.model_dump(mode="json")]
+    tampered = ActionProposalV21.model_validate(
+        {
+            **python_payload,
+            "proposal_sha256": semantic_sha256(json_payload),
+        }
+    )
+
+    with pytest.raises(ValueError, match="maximum"):
+        FixedReplayExecutorV21().execute(proposal=tampered, runbook=runbook)
+
+
+def test_replay_verifier_rejects_forged_target_and_proposal_drift() -> None:
+    proposal, registry = _memory_leak_replay()
+    runbook = registry.require(RunbookIdV21.MITIGATE_MEMORY_LEAK)
+    receipt = FixedReplayExecutorV21().execute(proposal=proposal, runbook=runbook)
+    python_payload = receipt.model_dump(mode="python", exclude={"receipt_sha256"})
+    json_payload = receipt.model_dump(mode="json", exclude={"receipt_sha256"})
+    python_payload["target_service"] = "product-catalog"
+    json_payload["target_service"] = "product-catalog"
+    forged = ReplayExecutionReceiptV21.model_validate(
+        {**python_payload, "receipt_sha256": semantic_sha256(json_payload)}
+    )
+
+    with pytest.raises(ValueError, match="target"):
+        FixedReplayVerifierV21().verify(
+            receipt=forged,
+            proposal=proposal,
+            runbook=runbook,
+        )
+
+    python_payload = receipt.model_dump(mode="python", exclude={"receipt_sha256"})
+    json_payload = receipt.model_dump(mode="json", exclude={"receipt_sha256"})
+    python_payload["proposal_sha256"] = "0" * 64
+    json_payload["proposal_sha256"] = "0" * 64
+    forged_continuity = ReplayExecutionReceiptV21.model_validate(
+        {**python_payload, "receipt_sha256": semantic_sha256(json_payload)}
+    )
+    with pytest.raises(ValueError, match="bound proposal"):
+        FixedReplayVerifierV21().verify(
+            receipt=forged_continuity,
+            proposal=proposal,
+            runbook=runbook,
+        )

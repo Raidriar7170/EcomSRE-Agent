@@ -145,3 +145,22 @@ def test_model_confidence_cannot_change_candidate_authority() -> None:
     )
 
     assert low.write_candidates == high.write_candidates
+
+
+def test_availability_candidates_require_target_specific_evidence() -> None:
+    diagnosis, evidence = build_replay_diagnosis(
+        run_id="d" * 32,
+        terminal=TerminalV21.COMPLETED,
+        root_service="email",
+        fault_domain=FaultDomainV21.SERVICE_RUNTIME,
+        mechanism=FaultMechanismV21.SERVICE_UNAVAILABLE,
+        evidence_sources=("RUNTIME",),
+    )
+    candidates = filter_runbook_candidates(
+        diagnosis=diagnosis,
+        diagnosis_evidence=evidence,
+        registry=load_default_runbook_registry(REPO_ROOT),
+        exact_target="email",
+    )
+
+    assert candidates.write_candidates == ()

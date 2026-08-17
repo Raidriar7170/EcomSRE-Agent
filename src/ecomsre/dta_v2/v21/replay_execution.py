@@ -13,6 +13,7 @@ from ecomsre.dta_v2.v21.contracts import (
     ExecutionBackendV21,
     RunbookBackendV21,
     RunbookIdV21,
+    RunbookParameterTypeV21,
     RunbookSpecV21,
     RunbookStepIdV21,
     Sha256V21,
@@ -96,7 +97,11 @@ class ReplayExecutorV21(Protocol):
 
 class ReplayVerifierV21(Protocol):
     def verify(
-        self, *, receipt: ReplayExecutionReceiptV21, runbook: RunbookSpecV21
+        self,
+        *,
+        receipt: ReplayExecutionReceiptV21,
+        proposal: ActionProposalV21,
+        runbook: RunbookSpecV21,
     ) -> ReplayVerificationV21: ...
 
 
@@ -146,6 +151,7 @@ class FixedReplayExecutorV21:
             raise ValueError("proposal Runbook hash differs from the trusted registry")
         if proposal.target_service not in runbook.target_services:
             raise ValueError("proposal target is outside the trusted Runbook")
+        _validate_proposal_parameters(proposal=proposal, runbook=runbook)
         payload: dict[str, object] = {
             "schema_version": "dta-v21.replay-execution-receipt.v1",
             "run_id": proposal.run_id,
@@ -172,14 +178,27 @@ class FixedReplayVerifierV21:
     """Verify the fixed ordered replay receipt against the trusted Runbook."""
 
     def verify(
-        self, *, receipt: ReplayExecutionReceiptV21, runbook: RunbookSpecV21
+        self,
+        *,
+        receipt: ReplayExecutionReceiptV21,
+        proposal: ActionProposalV21,
+        runbook: RunbookSpecV21,
     ) -> ReplayVerificationV21:
+        if receipt.proposal_sha256 != proposal.proposal_sha256:
+            raise ValueError("receipt differs from the bound proposal")
+        if receipt.run_id != proposal.run_id:
+            raise ValueError("receipt run differs from the bound proposal")
         if receipt.runbook_id is not runbook.runbook_id:
             raise ValueError("receipt Runbook differs from the trusted registry")
         if receipt.runbook_sha256 != runbook.semantic_sha256:
             raise ValueError("receipt Runbook hash differs from the trusted registry")
         if receipt.executor_id != runbook.executor_id:
             raise ValueError("receipt executor differs from the trusted Runbook")
+        if receipt.target_service != proposal.target_service:
+            raise ValueError("receipt target differs from the bound proposal")
+        if receipt.target_service not in runbook.target_services:
+            raise ValueError("receipt target is outside the trusted Runbook")
+        _validate_proposal_parameters(proposal=proposal, runbook=runbook)
         if receipt.ordered_steps != tuple(
             item.step_id for item in runbook.forward_steps
         ):
@@ -209,8 +228,46 @@ def execute_and_verify_replay_only(
     if not admission.admitted:
         raise ValueError("trusted replay backend denied the Runbook")
     receipt = FixedReplayExecutorV21().execute(proposal=proposal, runbook=runbook)
-    verification = FixedReplayVerifierV21().verify(receipt=receipt, runbook=runbook)
+    verification = FixedReplayVerifierV21().verify(
+        receipt=receipt,
+        proposal=proposal,
+        runbook=runbook,
+    )
     return receipt, verification
+
+
+def _validate_proposal_parameters(
+    *, proposal: ActionProposalV21, runbook: RunbookSpecV21
+) -> None:
+    supplied = {item.name: item.value for item in proposal.parameters}
+    specifications = {item.name: item for item in runbook.parameters}
+    unknown = set(supplied) - set(specifications)
+    if unknown:
+        raise ValueError("proposal contains an unknown Runbook parameter")
+    missing = {
+        name
+        for name, specification in specifications.items()
+        if specification.required and name not in supplied
+    }
+    if missing:
+        raise ValueError("proposal omits a required Runbook parameter")
+    for name, value in supplied.items():
+        specification = specifications[name]
+        if specification.parameter_type is RunbookParameterTypeV21.INTEGER:
+            if isinstance(value, bool) or not isinstance(value, int):
+                raise ValueError("proposal parameter has the wrong type")
+            if specification.minimum is not None and value < specification.minimum:
+                raise ValueError("proposal parameter is below its minimum")
+            if specification.maximum is not None and value > specification.maximum:
+                raise ValueError("proposal parameter exceeds its maximum")
+        else:
+            if not isinstance(value, str):
+                raise ValueError("proposal parameter has the wrong type")
+            if (
+                specification.allowed_values
+                and value not in specification.allowed_values
+            ):
+                raise ValueError("proposal parameter is outside allowed values")
 
 
 __all__ = (

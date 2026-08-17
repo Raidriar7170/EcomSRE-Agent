@@ -6,6 +6,12 @@
   "supported_mechanisms": ["SERVICE_UNAVAILABLE"],
   "target_services": ["recommendation"],
   "required_evidence_sources": ["METRICS", "RUNTIME"],
+  "target_evidence_requirements": [
+    {
+      "target_service": "recommendation",
+      "required_evidence_sources": ["METRICS", "RUNTIME"]
+    }
+  ],
   "risk_level": "LOW",
   "parameters": [
     {
@@ -35,5 +41,5 @@
     "step_receipt_required": true
   },
   "backend": "REPLAY_ONLY",
-  "semantic_sha256": "369d43f534602f1455b3e95549242491aad9e0eb3c566b62c26c40fc6f8290a8"
+  "semantic_sha256": "96946b9dedbc14983f5d12260811876e4807616e36775f8bf156c545cb61e3e7"
 }

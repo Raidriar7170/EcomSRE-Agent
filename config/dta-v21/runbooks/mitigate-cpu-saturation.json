@@ -6,6 +6,12 @@
   "supported_mechanisms": ["CPU_SATURATION"],
   "target_services": ["ad"],
   "required_evidence_sources": ["METRICS", "RUNTIME", "RESOURCES"],
+  "target_evidence_requirements": [
+    {
+      "target_service": "ad",
+      "required_evidence_sources": ["METRICS", "RUNTIME", "RESOURCES"]
+    }
+  ],
   "risk_level": "LOW",
   "parameters": [],
   "preconditions": [
@@ -30,5 +36,5 @@
     "step_receipt_required": true
   },
   "backend": "LIVE_ALLOWED",
-  "semantic_sha256": "c07cb7d9425330226ae992c9f9bed930b161b9b190c3a7ea282cdcdb3b75c173"
+  "semantic_sha256": "b779c6ed51a867702c54ea653429aeb993e8794a2ad987ac4370e089c36dc04c"
 }

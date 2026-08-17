@@ -89,7 +89,7 @@ The trusted Runbook registry binds exact domains, mechanisms, targets, evidence
 sources, risk, typed parameters, preconditions, ordered steps, executor and
 verifier identities, step caps, failure policy, execution backend, and a
 per-Runbook semantic hash. Its frozen PR-B registry digest is
-`826935b4c664aa22c4a95392bab6e7672b1ee8524558aed9f2345a8353179faf`.
+`02bbcddba67da53c10324624dc770c9f73056e0126469567c8e70a79710047e9`.
 The observer and evaluator scenario registry digests are respectively
 `632835d1a96a260064704e9a3e0ae193c61ed696115c92c81fa9a1905a3f8621`
 and `760f1125352c0bcce885cbbb874a638efe943362773a37a0a9031f4f07527bc9`.
