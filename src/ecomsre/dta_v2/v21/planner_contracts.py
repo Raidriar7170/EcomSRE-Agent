@@ -116,6 +116,13 @@ class EvidencePlanDecisionV21(DtaModelV21):
         active = tuple(
             item for item in self.hypotheses if item.status is HypothesisStatusV21.ACTIVE
         )
+        active_gaps = {
+            source
+            for hypothesis in active
+            for source in hypothesis.unresolved_evidence_sources
+        }
+        if set(self.evidence_gap_sources) != active_gaps:
+            raise ValueError("Planner evidence gaps differ from active hypotheses")
         if self.next_step is PlannerNextStepV21.REQUEST_EVIDENCE:
             if not active:
                 raise ValueError("request requires at least one active hypothesis")
@@ -136,9 +143,7 @@ class EvidencePlanDecisionV21(DtaModelV21):
         else:
             if self.read_request is not None or self.diagnosis is not None:
                 raise ValueError("abstain plan cannot carry a request or Diagnosis")
-            if not active or not self.evidence_gap_sources or not any(
-                item.unresolved_evidence_sources for item in active
-            ):
+            if not active or not self.evidence_gap_sources:
                 raise ValueError("abstain plan must name an active unresolved evidence gap")
         expected = semantic_sha256(
             self.model_dump(mode="json", exclude={"decision_sha256"})

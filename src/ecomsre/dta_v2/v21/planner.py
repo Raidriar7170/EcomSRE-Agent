@@ -50,6 +50,11 @@ def validate_plan_decision_v21(
         raise ValueError("Planner decision belongs to another run")
     if evidence_index.run_id != context.run_id:
         raise ValueError("Planner EvidenceIndex belongs to another run")
+    if (
+        decision.read_request is not None
+        and decision.read_request.run_id != context.run_id
+    ):
+        raise ValueError("Planner read request belongs to another run")
     if decision.turn_ordinal < 1 or decision.turn_ordinal > 5:
         raise ValueError("Planner turn is outside the investigation budget")
     for hypothesis in decision.hypotheses:

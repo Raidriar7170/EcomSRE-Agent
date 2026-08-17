@@ -156,10 +156,10 @@ def test_pr_c_public_smoke_report_is_sanitized_and_hash_bound() -> None:
 
     assert digest == semantic_sha256(report)
     assert report["status"] == "BLOCKED_DTA_V21_PROVIDER"
-    assert report["provider"]["verified_attempts"] == 1
+    assert report["provider"]["verified_attempts"] == 2
     assert report["provider"]["legacy_unbound_attempts_retained"] == 6
     assert report["provider"]["final_status"] == "BLOCKED_DTA_V21_PROVIDER"
-    assert report["provider"]["failure_code"] == "PROVIDER_TRANSPORT_FAILURE"
+    assert report["provider"]["failure_code"] == "PROVIDER_PROTOCOL_FAILURE"
     assert report["live_docker_actions"] == 0
     assert report["runbook_executions"] == 0
     assert report["held_out_executions"] == 0
@@ -179,7 +179,7 @@ def test_pr_c_public_smoke_report_is_sanitized_and_hash_bound() -> None:
         )
     )
     assert ledger.legacy_unbound_attempt_count == 6
-    assert len(ledger.verified_attempts) == 1
+    assert len(ledger.verified_attempts) == 2
     assert ledger.verified_attempts[0].receipt_sha256 == (
         report["provider"]["attempt_receipt_sha256"]
     )

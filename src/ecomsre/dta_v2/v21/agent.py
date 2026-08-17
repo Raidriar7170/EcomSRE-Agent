@@ -73,6 +73,7 @@ class AgentFailureCodeV21(str, Enum):
     PROVIDER_TRANSPORT_FAILURE = "PROVIDER_TRANSPORT_FAILURE"
     PLANNER_CONTRACT_FAILURE = "PLANNER_CONTRACT_FAILURE"
     READ_BUDGET_EXHAUSTED = "READ_BUDGET_EXHAUSTED"
+    DUPLICATE_READ_REQUEST = "DUPLICATE_READ_REQUEST"
     DIAGNOSIS_BINDING_FAILURE = "DIAGNOSIS_BINDING_FAILURE"
     ACTION_SELECTION_BINDING_FAILURE = "ACTION_SELECTION_BINDING_FAILURE"
     INTERNAL_CONTRACT_FAILURE = "INTERNAL_CONTRACT_FAILURE"
@@ -677,7 +678,11 @@ def run_evidence_guided_agent_v21(
                 failure = (
                     AgentFailureCodeV21.READ_BUDGET_EXHAUSTED
                     if "budget" in str(error).casefold()
-                    else AgentFailureCodeV21.PLANNER_CONTRACT_FAILURE
+                    else (
+                        AgentFailureCodeV21.DUPLICATE_READ_REQUEST
+                        if "duplicate" in str(error).casefold()
+                        else AgentFailureCodeV21.PLANNER_CONTRACT_FAILURE
+                    )
                 )
                 turns.append(
                     _turn_evidence(
@@ -852,6 +857,27 @@ def run_flat_adaptive_agent_v21(
         assert request is not None
         try:
             request = _admit_read_request(request=request, context=context)
+            if request.normalized_request_sha256 in {
+                item.request_sha256 for item in snapshot.observations
+            }:
+                failure = AgentFailureCodeV21.DUPLICATE_READ_REQUEST
+                turns.append(
+                    _turn_evidence(
+                        turn=turn,
+                        stage=ProviderStageV21.INVESTIGATION,
+                        ordinal=len(turns) + 1,
+                        protocol_failure=failure,
+                    )
+                )
+                return _build_result(
+                    arm=AgentArmV21.FLAT_ADAPTIVE,
+                    context=context,
+                    provider=provider,
+                    terminal=AgentRunTerminalV21.FAILED,
+                    failure_code=failure,
+                    tools=tools,
+                    turns=tuple(turns),
+                )
             observation = tools.dispatch(request)
         except (TypeError, ValueError):
             failure = AgentFailureCodeV21.PROVIDER_PROTOCOL_FAILURE

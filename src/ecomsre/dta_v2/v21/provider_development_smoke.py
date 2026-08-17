@@ -322,7 +322,65 @@ def _load_attempt_manifests(
     revisions = tuple(item.protocol_revision_sha256 for item in manifests)
     if len(revisions) != len(set(revisions)):
         raise ValueError("Provider Smoke ledger contains an identical rerun")
-    return tuple(sorted(manifests, key=lambda item: (item.created_at, item.attempt_id)))
+    ordered = tuple(
+        sorted(manifests, key=lambda item: (item.created_at, item.attempt_id))
+    )
+    for index, manifest in enumerate(ordered):
+        expected_previous = None if index == 0 else ordered[index - 1].manifest_sha256
+        if manifest.previous_attempt_manifest_sha256 != expected_previous:
+            raise ValueError("Provider Smoke attempt manifest chain differs")
+    return ordered
+
+
+def verify_provider_smoke_attempt_receipt_v21(
+    attempt_root: Path,
+) -> ProviderSmokeAttemptReceiptV21:
+    if attempt_root.is_symlink() or not attempt_root.is_dir():
+        raise ValueError("Provider Smoke attempt root is missing or unsafe")
+    manifest_path = attempt_root / "attempt-manifest.json"
+    receipt_path = attempt_root / "attempt-receipt.json"
+    agent_result_path = attempt_root / "agent-result.json"
+    report_path = attempt_root / "sanitized-report.json"
+    manifest = ProviderSmokeAttemptManifestV21.model_validate_json(
+        manifest_path.read_text(encoding="utf-8")
+    )
+    receipt = ProviderSmokeAttemptReceiptV21.model_validate_json(
+        receipt_path.read_text(encoding="utf-8")
+    )
+    if manifest.attempt_id != attempt_root.name or receipt.attempt_id != manifest.attempt_id:
+        raise ValueError("Provider Smoke receipt attempt binding differs")
+    if receipt.attempt_manifest_sha256 != manifest.manifest_sha256:
+        raise ValueError("Provider Smoke receipt manifest binding differs")
+    if receipt.agent_result_file_sha256 != _file_sha256(agent_result_path):
+        raise ValueError("Provider Smoke Agent result file digest differs")
+    if receipt.provider_report_file_sha256 != _file_sha256(report_path):
+        raise ValueError("Provider Smoke report file digest differs")
+    agent_result = json.loads(agent_result_path.read_text(encoding="utf-8"))
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    if not isinstance(agent_result, dict) or not isinstance(report, dict):
+        raise ValueError("Provider Smoke private evidence is not an object")
+    if agent_result.get("result_sha256") != receipt.agent_result_sha256:
+        raise ValueError("Provider Smoke Agent result binding differs")
+    if report.get("report_sha256") != receipt.provider_report_sha256:
+        raise ValueError("Provider Smoke report semantic binding differs")
+    if report.get("status") != receipt.status.value:
+        raise ValueError("Provider Smoke receipt status differs")
+    if tuple(report.get("raw_response_sha256", ())) != receipt.raw_response_sha256:
+        raise ValueError("Provider Smoke response hash binding differs")
+    return receipt
+
+
+def verify_provider_smoke_private_ledger_v21(
+    private_root: Path,
+) -> tuple[ProviderSmokeAttemptReceiptV21, ...]:
+    attempt_parent = private_root / "pr-c" / "provider-smoke"
+    manifests = _load_attempt_manifests(attempt_parent)
+    return tuple(
+        verify_provider_smoke_attempt_receipt_v21(
+            attempt_parent / manifest.attempt_id
+        )
+        for manifest in manifests
+    )
 
 
 def _start_provider_smoke_attempt_v21(
@@ -568,4 +626,6 @@ __all__ = (
     "ProviderSmokeAttemptReceiptV21",
     "ProviderSmokePublicLedgerV21",
     "run_provider_development_smoke_v21",
+    "verify_provider_smoke_attempt_receipt_v21",
+    "verify_provider_smoke_private_ledger_v21",
 )

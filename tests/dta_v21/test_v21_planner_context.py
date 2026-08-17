@@ -23,9 +23,11 @@ from ecomsre.dta_v2.v21.context_projection import (
     build_investigation_state_view_v21,
 )
 from ecomsre.dta_v2.v21.contracts import (
+    DtaDiagnosisV21,
     EvidenceSourceV21,
     FaultDomainV21,
     FaultMechanismV21,
+    TerminalV21,
 )
 from ecomsre.dta_v2.v21.planner import validate_plan_decision_v21
 from ecomsre.dta_v2.v21.planner_contracts import (
@@ -269,6 +271,79 @@ def test_planner_rejects_unresolved_hypothesis_citations_and_empty_abstain_gap()
             evidence_index=build_evidence_index_v21(tools.snapshot()),
             seen_request_sha256=(),
             completed_read_dispatches=0,
+        )
+
+
+def test_planner_rejects_cross_run_read_and_incoherent_terminal_gaps() -> None:
+    context = _context()
+    wrong_run_request = build_query_metrics_request(
+        run_id="b" * 32,
+        service="payment",
+        started_at=START,
+        ended_at=END,
+        metric_kinds=(MetricKind.ERROR_RATE,),
+        max_results=4,
+    )
+    cross_run = build_evidence_plan_decision_v21(
+        run_id=RUN_ID,
+        turn_ordinal=1,
+        hypotheses=(_hypothesis(),),
+        next_step=PlannerNextStepV21.REQUEST_EVIDENCE,
+        evidence_gap_sources=(EvidenceSourceV21.METRICS,),
+        read_request=wrong_run_request,
+        diagnosis=None,
+        bounded_rationale="A cross-run request must be rejected before dispatch.",
+    )
+    with pytest.raises(ValueError, match="read request belongs to another run"):
+        validate_plan_decision_v21(
+            decision=cross_run,
+            context=context,
+            evidence_index=build_evidence_index_v21(
+                InvestigationReadTools(
+                    run_id=RUN_ID, backend=FakeReadBackend.healthy()
+                ).snapshot()
+            ),
+            seen_request_sha256=(),
+            completed_read_dispatches=0,
+        )
+
+    with pytest.raises(ValueError, match="gaps differ from active hypotheses"):
+        build_evidence_plan_decision_v21(
+            run_id=RUN_ID,
+            turn_ordinal=1,
+            hypotheses=(_hypothesis(),),
+            next_step=PlannerNextStepV21.ABSTAIN,
+            evidence_gap_sources=(EvidenceSourceV21.TRACES,),
+            read_request=None,
+            diagnosis=None,
+            bounded_rationale="The declared gap must match the active hypothesis.",
+        )
+
+    diagnosis = DtaDiagnosisV21(
+        schema_version="dta-v21.diagnosis.v1",
+        run_id=RUN_ID,
+        terminal=TerminalV21.COMPLETED,
+        root_service="payment",
+        root_entity_ref="service:payment",
+        fault_domain=FaultDomainV21.CONFIGURATION,
+        mechanism=FaultMechanismV21.CONFIGURATION_ERROR,
+        confidence=0.8,
+        supporting_evidence_refs=(f"evidence://{RUN_ID}/metrics/0001",),
+        contradicting_evidence_refs=(),
+        evidence_source_types=(EvidenceSourceV21.METRICS,),
+        uncertainties=(),
+        summary="A completed diagnosis cannot hide an active evidence gap.",
+    )
+    with pytest.raises(ValueError, match="gaps differ from active hypotheses"):
+        build_evidence_plan_decision_v21(
+            run_id=RUN_ID,
+            turn_ordinal=2,
+            hypotheses=(_hypothesis(),),
+            next_step=PlannerNextStepV21.SUBMIT_DIAGNOSIS,
+            evidence_gap_sources=(),
+            read_request=None,
+            diagnosis=diagnosis,
+            bounded_rationale="A diagnosis cannot conceal an unresolved active gap.",
         )
 
 

@@ -34,8 +34,13 @@ from ecomsre.dta_v2.v21.prompts import (
     PLANNER_SYSTEM_PROMPT_V21,
 )
 from ecomsre.dta_v2.v21.provider_development_smoke import (
+    ProviderDevelopmentSmokeStatusV21,
     ProviderSmokeAttemptManifestV21,
+    ProviderSmokeAttemptReceiptV21,
+    _file_sha256,
+    _load_attempt_manifests,
     _start_provider_smoke_attempt_v21,
+    verify_provider_smoke_private_ledger_v21,
 )
 from ecomsre.dta_v2.v21.registry import (
     load_default_runbook_registry,
@@ -388,3 +393,107 @@ def test_provider_smoke_manifest_is_predeclared_and_blocks_identical_rerun(
             timeout_seconds=60.0,
             max_completion_tokens=1600,
         )
+
+
+def test_provider_smoke_manifest_chain_and_private_receipt_are_verifiable(
+    tmp_path: Path,
+) -> None:
+    config = OpenAICompatibleConfig(
+        base_url="https://provider.invalid/v1",
+        api_key="private-provider-test-secret",
+        model=MODEL,
+    )
+    identity = _provider(RecordingTransport([])).identity
+    private_root = tmp_path / "private"
+    first, first_root = _start_provider_smoke_attempt_v21(
+        repository_root=ROOT,
+        private_root=private_root,
+        attempt_id="e" * 32,
+        created_at=START,
+        identity=identity,
+        config=config,
+        timeout_seconds=60.0,
+        max_completion_tokens=1600,
+    )
+    agent_result = {"result_sha256": "a" * 64}
+    report = {
+        "status": "PASS",
+        "raw_response_sha256": ["b" * 64],
+        "report_sha256": "c" * 64,
+    }
+    agent_result_path = first_root / "agent-result.json"
+    report_path = first_root / "sanitized-report.json"
+    agent_result_path.write_text(json.dumps(agent_result), encoding="utf-8")
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+    receipt_payload = {
+        "schema_version": "dta-v21.provider-smoke-attempt-receipt.v1",
+        "attempt_id": first.attempt_id,
+        "attempt_manifest_sha256": first.manifest_sha256,
+        "status": ProviderDevelopmentSmokeStatusV21.PASS,
+        "provider_attempt_count": 1,
+        "raw_response_sha256": tuple(report["raw_response_sha256"]),
+        "agent_result_sha256": agent_result["result_sha256"],
+        "provider_report_sha256": report["report_sha256"],
+        "agent_result_file_sha256": _file_sha256(agent_result_path),
+        "provider_report_file_sha256": _file_sha256(report_path),
+    }
+    receipt = ProviderSmokeAttemptReceiptV21.model_validate(
+        {
+            **receipt_payload,
+            "receipt_sha256": semantic_sha256(
+                {
+                    **receipt_payload,
+                    "status": "PASS",
+                    "raw_response_sha256": report["raw_response_sha256"],
+                }
+            ),
+        }
+    )
+    (first_root / "attempt-receipt.json").write_text(
+        receipt.model_dump_json(), encoding="utf-8"
+    )
+
+    verified = verify_provider_smoke_private_ledger_v21(private_root)
+    assert verified[0] == receipt
+
+    agent_result_path.write_text(
+        json.dumps({"result_sha256": "d" * 64}), encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="Agent result file digest"):
+        verify_provider_smoke_private_ledger_v21(private_root)
+    agent_result_path.write_text(json.dumps(agent_result), encoding="utf-8")
+
+    second, _ = _start_provider_smoke_attempt_v21(
+        repository_root=ROOT,
+        private_root=private_root,
+        attempt_id="f" * 32,
+        created_at=START + timedelta(seconds=1),
+        identity=identity,
+        config=config,
+        timeout_seconds=60.0,
+        max_completion_tokens=1601,
+    )
+    assert second.previous_attempt_manifest_sha256 == first.manifest_sha256
+    assert _load_attempt_manifests(private_root / "pr-c" / "provider-smoke") == (
+        first,
+        second,
+    )
+    second_path = (
+        private_root
+        / "pr-c"
+        / "provider-smoke"
+        / second.attempt_id
+        / "attempt-manifest.json"
+    )
+    broken_chain = json.loads(second_path.read_text(encoding="utf-8"))
+    broken_chain["previous_attempt_manifest_sha256"] = None
+    broken_chain["manifest_sha256"] = semantic_sha256(
+        {
+            key: value
+            for key, value in broken_chain.items()
+            if key != "manifest_sha256"
+        }
+    )
+    second_path.write_text(json.dumps(broken_chain), encoding="utf-8")
+    with pytest.raises(ValueError, match="manifest chain differs"):
+        _load_attempt_manifests(private_root / "pr-c" / "provider-smoke")

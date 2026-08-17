@@ -502,7 +502,7 @@ def test_duplicate_read_is_terminally_rejected_without_backend_repeat() -> None:
     )
 
     assert result.terminal is AgentRunTerminalV21.FAILED
-    assert result.failure_code is AgentFailureCodeV21.PLANNER_CONTRACT_FAILURE
+    assert result.failure_code is AgentFailureCodeV21.DUPLICATE_READ_REQUEST
     assert result.evidence_store.dispatch_count == 1
     assert backend.call_count == 1
     assert result.provider_turn_count == 2
@@ -510,9 +510,79 @@ def test_duplicate_read_is_terminally_rejected_without_backend_repeat() -> None:
     assert result.provider_turns[-1].observation is None
     assert (
         result.provider_turns[-1].protocol_failure
-        is AgentFailureCodeV21.PLANNER_CONTRACT_FAILURE
+        is AgentFailureCodeV21.DUPLICATE_READ_REQUEST
     )
     assert len(result.planner_trace) == 1
+
+
+def test_planner_cross_run_read_is_typed_failure_without_backend_call() -> None:
+    run_id = "7" * 32
+    wrong_run_id = "8" * 32
+    hypothesis = _hypothesis(
+        "payment",
+        FaultDomainV21.CONFIGURATION,
+        FaultMechanismV21.CONFIGURATION_ERROR,
+        (EvidenceSourceV21.METRICS,),
+    )
+    provider = ScriptedProviderV21(
+        arm=AgentArmV21.EVIDENCE_GUIDED_PLANNER,
+        investigation=[
+            _request_plan(
+                run_id=run_id,
+                turn=1,
+                hypothesis=hypothesis,
+                source=EvidenceSourceV21.METRICS,
+                request=_metrics(wrong_run_id, "payment"),
+            )
+        ],
+    )
+    backend = FakeReadBackend.healthy()
+
+    result = run_evidence_guided_agent_v21(
+        context=_context(run_id, 4),
+        backend=backend,
+        registry=load_default_runbook_registry(ROOT),
+        provider=provider,
+    )
+
+    assert result.terminal is AgentRunTerminalV21.FAILED
+    assert result.failure_code is AgentFailureCodeV21.PLANNER_CONTRACT_FAILURE
+    assert result.evidence_store.dispatch_count == 0
+    assert backend.call_count == 0
+    assert result.provider_turn_count == 1
+    assert result.provider_turns[-1].observation is None
+    assert (
+        result.provider_turns[-1].protocol_failure
+        is AgentFailureCodeV21.PLANNER_CONTRACT_FAILURE
+    )
+
+
+def test_flat_duplicate_read_is_terminally_rejected_without_backend_repeat() -> None:
+    run_id = "6" * 32
+    request = _metrics(run_id, "payment")
+    provider = ScriptedProviderV21(
+        arm=AgentArmV21.FLAT_ADAPTIVE,
+        investigation=[request, request, _abstain(run_id=run_id)],
+    )
+    backend = FakeReadBackend.healthy()
+
+    result = run_flat_adaptive_agent_v21(
+        context=_context(run_id, 4),
+        backend=backend,
+        registry=load_default_runbook_registry(ROOT),
+        provider=provider,
+    )
+
+    assert result.terminal is AgentRunTerminalV21.FAILED
+    assert result.failure_code is AgentFailureCodeV21.DUPLICATE_READ_REQUEST
+    assert result.evidence_store.dispatch_count == 1
+    assert backend.call_count == 1
+    assert result.provider_turn_count == 2
+    assert result.provider_turns[-1].observation is None
+    assert (
+        result.provider_turns[-1].protocol_failure
+        is AgentFailureCodeV21.DUPLICATE_READ_REQUEST
+    )
 
 
 def test_fifth_flat_read_is_typed_budget_failure_without_backend_call() -> None:
