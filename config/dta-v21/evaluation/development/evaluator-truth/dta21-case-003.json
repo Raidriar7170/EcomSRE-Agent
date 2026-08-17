@@ -1,0 +1,22 @@
+{
+  "schema_version": "dta-v21.evaluator-case-truth.v1",
+  "case_id": "dta21-case-003",
+  "split": "DEVELOPMENT",
+  "scenario_family": "EMAIL_MEMORY_LEAK",
+  "generalization_slice": "SEEN_SERVICE_SEEN_MECHANISM",
+  "meaningful_observation_differences": [
+    "load_level"
+  ],
+  "expected_terminal": "COMPLETED",
+  "expected_root_service": "email",
+  "expected_fault_domain": "LOCAL_RESOURCE",
+  "expected_mechanism": "MEMORY_LEAK",
+  "expected_disposition": "EXECUTE_RUNBOOK",
+  "expected_runbook": "MITIGATE_MEMORY_LEAK",
+  "expected_evidence_sources": [
+    "METRICS",
+    "RUNTIME",
+    "RESOURCES"
+  ],
+  "truth_sha256": "31b3b79d9f7a341a031bb4d19135669232cb610e78bc3ddb9f6ad4c218dd690b"
+}

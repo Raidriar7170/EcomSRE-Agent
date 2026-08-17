@@ -1,0 +1,141 @@
+{
+  "schema_version": "dta-v21.agent-visible-replay-case.v1",
+  "case_id": "dta21-case-007",
+  "scenario_id": "dta21-dev-001",
+  "captured_started_at": "2026-08-17T20:17:52.557541Z",
+  "captured_ended_at": "2026-08-17T20:18:12.818311Z",
+  "observations": [
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "inspect_resource_usage",
+      "service_scope": [
+        "ad"
+      ],
+      "records": [
+        {
+          "logical_service": "ad",
+          "sampling_window_seconds": 5,
+          "samples": [
+            {
+              "offset_ms": 0,
+              "cpu_percent": 399.94291417165664,
+              "memory_bytes": 229232640
+            },
+            {
+              "offset_ms": 2500,
+              "cpu_percent": 400.3150166112956,
+              "memory_bytes": 229240832
+            },
+            {
+              "offset_ms": 5000,
+              "cpu_percent": 400.5001941747573,
+              "memory_bytes": 229306368
+            }
+          ],
+          "memory_slope_bytes_per_second": 14745.6
+        }
+      ],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "5664433cd853b4354a1d83815e73558c2018f86077be7660dc2acde18d5a1875"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "inspect_service_runtime",
+      "service_scope": [
+        "ad"
+      ],
+      "records": [
+        {
+          "logical_service": "ad",
+          "owned_container_present": true,
+          "state": "RUNNING",
+          "health": "HEALTHY",
+          "restart_count": 0,
+          "exit_code": 0,
+          "endpoint_probe_performed": false,
+          "endpoint_state": "UNKNOWN"
+        }
+      ],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "e971ee61eedf9479e5ec91175941239b36832a0738b8fb111578c0c9556d788d"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "query_metrics",
+      "service_scope": [
+        "ad"
+      ],
+      "records": [
+        {
+          "service": "ad",
+          "metric_kind": "CPU_PERCENT",
+          "value": 0.0,
+          "unit": "PERCENT",
+          "sample_count": 0
+        },
+        {
+          "service": "ad",
+          "metric_kind": "ERROR_RATE",
+          "value": 0.0,
+          "unit": "RATIO",
+          "sample_count": 0
+        },
+        {
+          "service": "ad",
+          "metric_kind": "LATENCY_P95_MS",
+          "value": 3.625,
+          "unit": "MILLISECONDS",
+          "sample_count": 1
+        },
+        {
+          "service": "ad",
+          "metric_kind": "MEMORY_BYTES",
+          "value": 0.0,
+          "unit": "BYTES",
+          "sample_count": 0
+        },
+        {
+          "service": "ad",
+          "metric_kind": "REQUEST_SUPPORT",
+          "value": 42.0,
+          "unit": "COUNT",
+          "sample_count": 1
+        }
+      ],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "a487352b7b1ca61f58484aa42e6bac3fd5aa56ccb88f1c2c0223fb70c63fcf7b"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "query_trace_neighborhood",
+      "service_scope": [
+        "ad"
+      ],
+      "records": [],
+      "truncated": false,
+      "error_code": "TRUTH_ISOLATION_VIOLATION",
+      "fixture_sha256": "ecd0e1acddce0d05c802d12758922520d0109741a566a503893a3909c4c2267b"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "search_logs",
+      "service_scope": [
+        "ad"
+      ],
+      "records": [],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "b5b86f2e3fca2752370776787b12b691a288f7af2fc2d2ba9b18e4a4fc2fd96d"
+    }
+  ],
+  "full_context_tools": [
+    "inspect_resource_usage",
+    "inspect_service_runtime",
+    "query_metrics",
+    "search_logs"
+  ],
+  "case_sha256": "b9ca782506e032f598481465949b97d22ab61350d6b824c927056ff1bca8aefb"
+}

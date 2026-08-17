@@ -1,0 +1,819 @@
+{
+  "schema_version": "dta-v21.agent-visible-replay-case.v1",
+  "case_id": "dta21-case-009",
+  "scenario_id": "dta21-dev-003",
+  "captured_started_at": "2026-08-17T20:18:59.110849Z",
+  "captured_ended_at": "2026-08-17T20:19:29.250856Z",
+  "observations": [
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "inspect_resource_usage",
+      "service_scope": [
+        "product-catalog"
+      ],
+      "records": [],
+      "truncated": false,
+      "error_code": "SOURCE_UNAVAILABLE",
+      "fixture_sha256": "def4a61dd418ccfb7c4f2f7ad3ff4b59040632e0667c84a167716d81fef31bbc"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "inspect_service_runtime",
+      "service_scope": [
+        "product-catalog"
+      ],
+      "records": [
+        {
+          "logical_service": "product-catalog",
+          "owned_container_present": true,
+          "state": "EXITED",
+          "health": "UNHEALTHY",
+          "restart_count": 0,
+          "exit_code": 0,
+          "endpoint_probe_performed": false,
+          "endpoint_state": "UNKNOWN"
+        }
+      ],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "11994e9b3f0b0a8d36fa67f944a28f3fae370af1d9116a7b3fc62856e9f4caca"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "query_metrics",
+      "service_scope": [
+        "frontend"
+      ],
+      "records": [
+        {
+          "service": "frontend",
+          "metric_kind": "CPU_PERCENT",
+          "value": 0.0,
+          "unit": "PERCENT",
+          "sample_count": 0
+        },
+        {
+          "service": "frontend",
+          "metric_kind": "ERROR_RATE",
+          "value": 0.24675324675324672,
+          "unit": "RATIO",
+          "sample_count": 1
+        },
+        {
+          "service": "frontend",
+          "metric_kind": "LATENCY_P95_MS",
+          "value": 15000.0,
+          "unit": "MILLISECONDS",
+          "sample_count": 1
+        },
+        {
+          "service": "frontend",
+          "metric_kind": "MEMORY_BYTES",
+          "value": 0.0,
+          "unit": "BYTES",
+          "sample_count": 0
+        },
+        {
+          "service": "frontend",
+          "metric_kind": "REQUEST_SUPPORT",
+          "value": 184.79260829566817,
+          "unit": "COUNT",
+          "sample_count": 1
+        }
+      ],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "ae22cd768b8119326a0131e0dafd0556618079b1f9bc950ce0131c7816d0e768"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "query_trace_neighborhood",
+      "service_scope": [
+        "frontend"
+      ],
+      "records": [
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator"
+          ],
+          "relationship": "ROOT",
+          "service": "load-generator",
+          "parent_service": null,
+          "operation": "user_get_recommendations",
+          "status": "UNSET",
+          "duration_ms": 6.413,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator"
+          ],
+          "relationship": "ROOT",
+          "service": "load-generator",
+          "parent_service": null,
+          "operation": "user_get_recommendations",
+          "status": "UNSET",
+          "duration_ms": 406.114,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator"
+          ],
+          "relationship": "ROOT",
+          "service": "load-generator",
+          "parent_service": null,
+          "operation": "user_get_recommendations",
+          "status": "UNSET",
+          "duration_ms": 15000.199,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator"
+          ],
+          "relationship": "ROOT",
+          "service": "load-generator",
+          "parent_service": null,
+          "operation": "user_get_recommendations",
+          "status": "UNSET",
+          "duration_ms": 15002.532,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "parent_service": "load-generator",
+          "operation": "GET",
+          "status": "ERROR",
+          "duration_ms": 6.128,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "parent_service": "load-generator",
+          "operation": "GET",
+          "status": "ERROR",
+          "duration_ms": 405.756,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "parent_service": "load-generator",
+          "operation": "GET",
+          "status": "ERROR",
+          "duration_ms": 14999.822,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "parent_service": "load-generator",
+          "operation": "GET",
+          "status": "ERROR",
+          "duration_ms": 15002.19,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "parent_service": "frontend-proxy",
+          "operation": "router frontend egress",
+          "status": "ERROR",
+          "duration_ms": 5.803,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "parent_service": "frontend-proxy",
+          "operation": "router frontend egress",
+          "status": "ERROR",
+          "duration_ms": 405.616,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "parent_service": "frontend-proxy",
+          "operation": "router frontend egress",
+          "status": "ERROR",
+          "duration_ms": 14999.65,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend-proxy",
+          "parent_service": "frontend-proxy",
+          "operation": "router frontend egress",
+          "status": "ERROR",
+          "duration_ms": 15002.022,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend",
+          "parent_service": "frontend-proxy",
+          "operation": "GET /api/recommendations",
+          "status": "ERROR",
+          "duration_ms": 5.327,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend",
+          "parent_service": "frontend-proxy",
+          "operation": "GET /api/recommendations",
+          "status": "ERROR",
+          "duration_ms": 405.113,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend",
+          "parent_service": "frontend-proxy",
+          "operation": "GET /api/recommendations",
+          "status": "UNSET",
+          "duration_ms": 14999.714,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend",
+          "parent_service": "frontend-proxy",
+          "operation": "GET /api/recommendations",
+          "status": "UNSET",
+          "duration_ms": 15001.654,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend",
+          "parent_service": "frontend",
+          "operation": "GET /api/recommendations",
+          "status": "ERROR",
+          "duration_ms": 5.121,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend",
+          "parent_service": "frontend",
+          "operation": "GET /api/recommendations",
+          "status": "ERROR",
+          "duration_ms": 404.907,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend",
+          "parent_service": "frontend",
+          "operation": "GET /api/recommendations",
+          "status": "ERROR",
+          "duration_ms": 15684.309,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend",
+          "parent_service": "frontend",
+          "operation": "GET /api/recommendations",
+          "status": "ERROR",
+          "duration_ms": 17307.415,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend",
+          "parent_service": "frontend",
+          "operation": "executing api route (pages) /api/recommendations",
+          "status": "ERROR",
+          "duration_ms": 4.775,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend",
+          "parent_service": "frontend",
+          "operation": "executing api route (pages) /api/recommendations",
+          "status": "ERROR",
+          "duration_ms": 404.641,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend",
+          "parent_service": "frontend",
+          "operation": "executing api route (pages) /api/recommendations",
+          "status": "ERROR",
+          "duration_ms": 15683.888,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend",
+          "parent_service": "frontend",
+          "operation": "executing api route (pages) /api/recommendations",
+          "status": "ERROR",
+          "duration_ms": 17307.126,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend",
+          "parent_service": "frontend",
+          "operation": "oteldemo.RecommendationService/ListRecommendations",
+          "status": "ERROR",
+          "duration_ms": 4.277,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend",
+          "parent_service": "frontend",
+          "operation": "oteldemo.RecommendationService/ListRecommendations",
+          "status": "ERROR",
+          "duration_ms": 404.323,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend",
+          "parent_service": "frontend",
+          "operation": "oteldemo.RecommendationService/ListRecommendations",
+          "status": "ERROR",
+          "duration_ms": 15683.427,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend"
+          ],
+          "relationship": "CHILD",
+          "service": "frontend",
+          "parent_service": "frontend",
+          "operation": "oteldemo.RecommendationService/ListRecommendations",
+          "status": "ERROR",
+          "duration_ms": 17306.701,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation"
+          ],
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "parent_service": "frontend",
+          "operation": "oteldemo.RecommendationService/ListRecommendations",
+          "status": "UNSET",
+          "duration_ms": 2.011,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation"
+          ],
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "parent_service": "frontend",
+          "operation": "oteldemo.RecommendationService/ListRecommendations",
+          "status": "UNSET",
+          "duration_ms": 8.012,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation"
+          ],
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "parent_service": "frontend",
+          "operation": "oteldemo.RecommendationService/ListRecommendations",
+          "status": "UNSET",
+          "duration_ms": 15663.375,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation"
+          ],
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "parent_service": "frontend",
+          "operation": "oteldemo.RecommendationService/ListRecommendations",
+          "status": "UNSET",
+          "duration_ms": 17287.399,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation",
+            "recommendation"
+          ],
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "parent_service": "recommendation",
+          "operation": "get_product_list",
+          "status": "ERROR",
+          "duration_ms": 1.07,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation",
+            "recommendation"
+          ],
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "parent_service": "recommendation",
+          "operation": "get_product_list",
+          "status": "ERROR",
+          "duration_ms": 7.112,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation",
+            "recommendation"
+          ],
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "parent_service": "recommendation",
+          "operation": "get_product_list",
+          "status": "ERROR",
+          "duration_ms": 15657.924,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation",
+            "recommendation"
+          ],
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "parent_service": "recommendation",
+          "operation": "get_product_list",
+          "status": "ERROR",
+          "duration_ms": 17271.827,
+          "first_error_location": false
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation",
+            "recommendation",
+            "recommendation"
+          ],
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "parent_service": "recommendation",
+          "operation": "oteldemo.ProductCatalogService/ListProducts",
+          "status": "ERROR",
+          "duration_ms": 0.503,
+          "first_error_location": true
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation",
+            "recommendation",
+            "recommendation"
+          ],
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "parent_service": "recommendation",
+          "operation": "oteldemo.ProductCatalogService/ListProducts",
+          "status": "ERROR",
+          "duration_ms": 2.05,
+          "first_error_location": true
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation",
+            "recommendation",
+            "recommendation"
+          ],
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "parent_service": "recommendation",
+          "operation": "oteldemo.ProductCatalogService/ListProducts",
+          "status": "ERROR",
+          "duration_ms": 15649.089,
+          "first_error_location": true
+        },
+        {
+          "anchor_service": "frontend",
+          "service_path": [
+            "load-generator",
+            "frontend-proxy",
+            "frontend-proxy",
+            "frontend",
+            "frontend",
+            "frontend",
+            "frontend",
+            "recommendation",
+            "recommendation",
+            "recommendation"
+          ],
+          "relationship": "CHILD",
+          "service": "recommendation",
+          "parent_service": "recommendation",
+          "operation": "oteldemo.ProductCatalogService/ListProducts",
+          "status": "ERROR",
+          "duration_ms": 17269.985,
+          "first_error_location": true
+        }
+      ],
+      "truncated": true,
+      "error_code": null,
+      "fixture_sha256": "ebfaa339b259166ee43434b78f4576a9ba3a92480ce5a76508edf0cfed7fe617"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "search_logs",
+      "service_scope": [
+        "product-catalog"
+      ],
+      "records": [],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "b68990c9d30bab9306403bf3cd07b1a0d6c455c798b8305a1984a48a0935b9c2"
+    }
+  ],
+  "full_context_tools": [
+    "inspect_service_runtime",
+    "query_metrics",
+    "query_trace_neighborhood",
+    "search_logs"
+  ],
+  "case_sha256": "1338290de604f140b75f26edf154e3614d2af2cdb698e951165ada72686e2e4c"
+}

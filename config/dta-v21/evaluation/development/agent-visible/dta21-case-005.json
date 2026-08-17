@@ -1,0 +1,118 @@
+{
+  "schema_version": "dta-v21.agent-visible-replay-case.v1",
+  "case_id": "dta21-case-005",
+  "scenario_id": "dta21-legacy-recommendation",
+  "captured_started_at": "2026-08-17T20:16:19.892681Z",
+  "captured_ended_at": "2026-08-17T20:17:05.057240Z",
+  "observations": [
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "inspect_resource_usage",
+      "service_scope": [
+        "recommendation"
+      ],
+      "records": [],
+      "truncated": false,
+      "error_code": "SOURCE_UNAVAILABLE",
+      "fixture_sha256": "7b5562a54b9fa09076c654cb83995af1b8acb4fbeb935f4819e4cb113188d315"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "inspect_service_runtime",
+      "service_scope": [
+        "recommendation"
+      ],
+      "records": [
+        {
+          "logical_service": "recommendation",
+          "owned_container_present": true,
+          "state": "EXITED",
+          "health": "UNHEALTHY",
+          "restart_count": 0,
+          "exit_code": 137,
+          "endpoint_probe_performed": false,
+          "endpoint_state": "UNKNOWN"
+        }
+      ],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "038d6ef030c1717baa871b3bbae89c2f775acbb37e151c1b5fac4f472e7e15db"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "query_metrics",
+      "service_scope": [
+        "recommendation"
+      ],
+      "records": [
+        {
+          "service": "recommendation",
+          "metric_kind": "CPU_PERCENT",
+          "value": 0.0,
+          "unit": "PERCENT",
+          "sample_count": 0
+        },
+        {
+          "service": "recommendation",
+          "metric_kind": "ERROR_RATE",
+          "value": 0.0,
+          "unit": "RATIO",
+          "sample_count": 1
+        },
+        {
+          "service": "recommendation",
+          "metric_kind": "LATENCY_P95_MS",
+          "value": 0.0,
+          "unit": "MILLISECONDS",
+          "sample_count": 0
+        },
+        {
+          "service": "recommendation",
+          "metric_kind": "MEMORY_BYTES",
+          "value": 71606272.0,
+          "unit": "BYTES",
+          "sample_count": 1
+        },
+        {
+          "service": "recommendation",
+          "metric_kind": "REQUEST_SUPPORT",
+          "value": 0.0,
+          "unit": "COUNT",
+          "sample_count": 1
+        }
+      ],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "7d9f01de84b4e47b53d1055bee755c2a264db11d72a1b88e1a649185262da5ad"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "query_trace_neighborhood",
+      "service_scope": [
+        "recommendation"
+      ],
+      "records": [],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "45a7be073a5730c793b3b26d4456663715d91ae72b312b46fc13a4710493b232"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "search_logs",
+      "service_scope": [
+        "recommendation"
+      ],
+      "records": [],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "e55d67c6fd3b786e5129e73ab9ca8a7fed686636dbccab7d7b25a61793bf90bb"
+    }
+  ],
+  "full_context_tools": [
+    "inspect_service_runtime",
+    "query_metrics",
+    "query_trace_neighborhood",
+    "search_logs"
+  ],
+  "case_sha256": "3316e19b842aa73504ac2bdb9bc9e23a94f5898dd38dc5686b441ee3d9640369"
+}

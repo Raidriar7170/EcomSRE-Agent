@@ -1,0 +1,21 @@
+{
+  "schema_version": "dta-v21.evaluator-case-truth.v1",
+  "case_id": "dta21-case-010",
+  "split": "DEVELOPMENT",
+  "scenario_family": "SHIPPING_DEPENDENCY_LATENCY",
+  "generalization_slice": "NEW_SERVICE_NEW_MECHANISM",
+  "meaningful_observation_differences": [
+    "load_level"
+  ],
+  "expected_terminal": "COMPLETED",
+  "expected_root_service": "shipping",
+  "expected_fault_domain": "DEPENDENCY",
+  "expected_mechanism": "DEPENDENCY_LATENCY",
+  "expected_disposition": "EXECUTE_RUNBOOK",
+  "expected_runbook": "RESTORE_DEPENDENCY_LATENCY",
+  "expected_evidence_sources": [
+    "METRICS",
+    "TRACES"
+  ],
+  "truth_sha256": "13fc6e7cbb2bfcaa1ed70a95bc1786839801326a1980a21960868243a948f6c4"
+}

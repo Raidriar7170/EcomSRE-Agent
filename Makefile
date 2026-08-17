@@ -286,12 +286,39 @@ agent-demo: phase1-prerequisites
 
 # BEGIN DTA_V21_SUCCESSOR_TARGETS
 DTA_V21_HISTORICAL_BINDINGS_CLI := env PYTHONPATH="$(PROJECT_ROOT):$(PYTHONPATH)" uv run --frozen --no-sync python -m scripts.ci.verify_dta_v2_historical_bindings
+DTA_V21_EVALUATION_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.dta_v2.v21.evaluation_cli
+DTA_V21_EVALUATION_VERIFY_CLI := env PYTHONPATH="$(PROJECT_ROOT):$(PYTHONPATH)" uv run --frozen --no-sync python -m scripts.ci.verify_dta_v21_evaluation_freeze
+DTA_V21_EVALUATION_ROOT := $(PROJECT_ROOT)/config/dta-v21/evaluation
 
-.PHONY: dta-v21-historical-verify dta-v21-test
+.PHONY: dta-v21-historical-verify dta-v21-test dta-v21-replay-verify \
+	dta-v21-development-eval dta-v21-development-verify
 
 dta-v21-historical-verify: phase1-prerequisites
 	$(DTA_V21_HISTORICAL_BINDINGS_CLI)
 
 dta-v21-test: dta-v21-historical-verify
 	env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync pytest tests/dta_v21 -q
+
+dta-v21-replay-verify: dta-v21-historical-verify
+	env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync pytest tests/dta_v21/test_v21_replay_execution.py -q
+
+dta-v21-development-eval: phase1-prerequisites
+	@test -n "$(DTA_V21_PROVIDER_ENV)" || { echo "DTA_V21_PROVIDER_ENV is required" >&2; exit 2; }
+	@test -n "$(DTA_V21_DEVELOPMENT_ROOT)" || { echo "DTA_V21_DEVELOPMENT_ROOT is required" >&2; exit 2; }
+	@test -n "$(DTA_V21_ATTEMPTS_ROOT)" || { echo "DTA_V21_ATTEMPTS_ROOT is required" >&2; exit 2; }
+	@test -n "$(DTA_V21_ATTEMPT_ID)" || { echo "DTA_V21_ATTEMPT_ID is required" >&2; exit 2; }
+	$(DTA_V21_EVALUATION_CLI) \
+		--repository-root "$(PROJECT_ROOT)" \
+		--provider-env "$(DTA_V21_PROVIDER_ENV)" \
+		--development-root "$(DTA_V21_DEVELOPMENT_ROOT)" \
+		--private-attempts-root "$(DTA_V21_ATTEMPTS_ROOT)" \
+		--attempt-id "$(DTA_V21_ATTEMPT_ID)" \
+		--public-manifest "$(DTA_V21_EVALUATION_ROOT)/public-case-bindings.v1.json" \
+		--schedule "$(DTA_V21_EVALUATION_ROOT)/schedule.v1.json" \
+		--preregistration "$(DTA_V21_EVALUATION_ROOT)/preregistration.v1.json" \
+		--public-report "$(PROJECT_ROOT)/docs/results/dta-v21-development-evaluation.json" \
+		--public-disposition "$(PROJECT_ROOT)/docs/review-evidence/dta-v21-evaluation-freeze/current-disposition.json"
+
+dta-v21-development-verify: dta-v21-historical-verify
+	$(DTA_V21_EVALUATION_VERIFY_CLI) --project-root "$(PROJECT_ROOT)"
 # END DTA_V21_SUCCESSOR_TARGETS

@@ -107,6 +107,12 @@ jobs:
       - name: DTA v2.1 focused tests
         run: make dta-v21-test
 
+      - name: DTA v2.1 deterministic replay verification
+        run: make dta-v21-replay-verify
+
+      - name: DTA v2.1 public development evaluation verification
+        run: make dta-v21-development-verify
+
       - name: Phase 5B execution historical bindings for successors
         run: >-
           env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"

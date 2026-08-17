@@ -1,0 +1,455 @@
+{
+  "schema_version": "dta-v21.evaluation-schedule.v1",
+  "seed_sha256": "28bfb4d374b65402602fdb4940a3c9eac23723f7ab52469a3316fcf82812cbfb",
+  "entries": [
+    {
+      "ordinal": 1,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-007",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 2,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-005",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 3,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-006",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 4,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-002",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 5,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-010",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 6,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-012",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 7,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-004",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 8,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-011",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 9,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-001",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 10,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-010",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 11,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-009",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 12,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-008",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 13,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-009",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 14,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-012",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 15,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-008",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 16,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-005",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 17,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-003",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 18,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-011",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 19,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-011",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 20,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-009",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 21,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-002",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 22,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-001",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 23,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-005",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 24,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-006",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 25,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-008",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 26,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-012",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 27,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-010",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 28,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-002",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 29,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-006",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 30,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-004",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 31,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-004",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 32,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-007",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 33,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-003",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 34,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-007",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 35,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-001",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 36,
+      "phase": "DEVELOPMENT_PRIMARY",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-003",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 37,
+      "phase": "DEVELOPMENT_ABLATION",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-006",
+      "arm": "EVIDENCE_GUIDED_PLANNER_NO_COMPACTION"
+    },
+    {
+      "ordinal": 38,
+      "phase": "DEVELOPMENT_ABLATION",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-001",
+      "arm": "EVIDENCE_GUIDED_PLANNER_NO_COMPACTION"
+    },
+    {
+      "ordinal": 39,
+      "phase": "DEVELOPMENT_ABLATION",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-010",
+      "arm": "EVIDENCE_GUIDED_PLANNER_NO_COMPACTION"
+    },
+    {
+      "ordinal": 40,
+      "phase": "DEVELOPMENT_ABLATION",
+      "split": "DEVELOPMENT",
+      "case_id": "dta21-case-008",
+      "arm": "EVIDENCE_GUIDED_PLANNER_NO_COMPACTION"
+    },
+    {
+      "ordinal": 41,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-016",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 42,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-015",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 43,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-020",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 44,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-014",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 45,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-015",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 46,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-013",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 47,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-013",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 48,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-019",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 49,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-015",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 50,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-014",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 51,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-020",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 52,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-017",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 53,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-017",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 54,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-019",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 55,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-018",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 56,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-014",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 57,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-018",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 58,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-018",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 59,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-016",
+      "arm": "EVIDENCE_GUIDED_PLANNER"
+    },
+    {
+      "ordinal": 60,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-016",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 61,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-013",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 62,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-017",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    },
+    {
+      "ordinal": 63,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-019",
+      "arm": "FLAT_ADAPTIVE"
+    },
+    {
+      "ordinal": 64,
+      "phase": "HELD_OUT_PRIMARY",
+      "split": "HELD_OUT",
+      "case_id": "dta21-case-020",
+      "arm": "ONE_SHOT_FULL_CONTEXT"
+    }
+  ],
+  "schedule_sha256": "4c3752471a6a4e2fa3611eef43c5157c33172a6c6914de659987f5e44f9168b8"
+}

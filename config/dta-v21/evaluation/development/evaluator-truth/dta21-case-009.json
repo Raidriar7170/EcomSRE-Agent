@@ -1,0 +1,21 @@
+{
+  "schema_version": "dta-v21.evaluator-case-truth.v1",
+  "case_id": "dta21-case-009",
+  "split": "DEVELOPMENT",
+  "scenario_family": "PRODUCT_CATALOG_UNAVAILABLE",
+  "generalization_slice": "NEW_SERVICE_SEEN_MECHANISM",
+  "meaningful_observation_differences": [
+    "service_symptom_distribution"
+  ],
+  "expected_terminal": "COMPLETED",
+  "expected_root_service": "product-catalog",
+  "expected_fault_domain": "SERVICE_RUNTIME",
+  "expected_mechanism": "SERVICE_UNAVAILABLE",
+  "expected_disposition": "EXECUTE_RUNBOOK",
+  "expected_runbook": "RESTORE_SERVICE_AVAILABILITY",
+  "expected_evidence_sources": [
+    "TRACES",
+    "RUNTIME"
+  ],
+  "truth_sha256": "e5d74fc427a2de890d633c96c68d3d9d8cf531d6491d8d8aee8205b8f7c7a545"
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": "dta-v21.evaluator-case-truth.v1",
+  "case_id": "dta21-case-005",
+  "split": "DEVELOPMENT",
+  "scenario_family": "RECOMMENDATION_UNAVAILABLE",
+  "generalization_slice": "SEEN_SERVICE_SEEN_MECHANISM",
+  "meaningful_observation_differences": [
+    "load_level"
+  ],
+  "expected_terminal": "COMPLETED",
+  "expected_root_service": "recommendation",
+  "expected_fault_domain": "SERVICE_RUNTIME",
+  "expected_mechanism": "SERVICE_UNAVAILABLE",
+  "expected_disposition": "EXECUTE_RUNBOOK",
+  "expected_runbook": "RESTART_SERVICE",
+  "expected_evidence_sources": [
+    "METRICS",
+    "RUNTIME"
+  ],
+  "truth_sha256": "fa41f066f3f6c9f9b51cbfea1ccb9a1a72ad69a4d634048c6ec05ac11d532936"
+}

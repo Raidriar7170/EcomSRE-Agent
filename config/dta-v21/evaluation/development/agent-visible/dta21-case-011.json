@@ -1,0 +1,141 @@
+{
+  "schema_version": "dta-v21.agent-visible-replay-case.v1",
+  "case_id": "dta21-case-011",
+  "scenario_id": "dta21-dev-005",
+  "captured_started_at": "2026-08-17T20:20:15.863670Z",
+  "captured_ended_at": "2026-08-17T20:20:36.142631Z",
+  "observations": [
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "inspect_resource_usage",
+      "service_scope": [
+        "payment"
+      ],
+      "records": [
+        {
+          "logical_service": "payment",
+          "sampling_window_seconds": 5,
+          "samples": [
+            {
+              "offset_ms": 0,
+              "cpu_percent": 16.734930139720557,
+              "memory_bytes": 91955200
+            },
+            {
+              "offset_ms": 2500,
+              "cpu_percent": 0.36205882352941177,
+              "memory_bytes": 91873280
+            },
+            {
+              "offset_ms": 5000,
+              "cpu_percent": 0.3411177644710579,
+              "memory_bytes": 91873280
+            }
+          ],
+          "memory_slope_bytes_per_second": -16384.0
+        }
+      ],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "0c02453f0dc64cf2aa1b3c44a9bc7cfcfcc2b223b1384f460fffe9a53600f8e2"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "inspect_service_runtime",
+      "service_scope": [
+        "payment"
+      ],
+      "records": [
+        {
+          "logical_service": "payment",
+          "owned_container_present": true,
+          "state": "RUNNING",
+          "health": "HEALTHY",
+          "restart_count": 0,
+          "exit_code": 0,
+          "endpoint_probe_performed": false,
+          "endpoint_state": "UNKNOWN"
+        }
+      ],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "e1d37602c087d3eb561868522e26b29146b5ca8e3c8fe3aa2070d68cad3e0cf4"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "query_metrics",
+      "service_scope": [
+        "payment"
+      ],
+      "records": [
+        {
+          "service": "payment",
+          "metric_kind": "CPU_PERCENT",
+          "value": 0.0,
+          "unit": "PERCENT",
+          "sample_count": 0
+        },
+        {
+          "service": "payment",
+          "metric_kind": "ERROR_RATE",
+          "value": 0.0,
+          "unit": "RATIO",
+          "sample_count": 1
+        },
+        {
+          "service": "payment",
+          "metric_kind": "LATENCY_P95_MS",
+          "value": 0.0,
+          "unit": "MILLISECONDS",
+          "sample_count": 0
+        },
+        {
+          "service": "payment",
+          "metric_kind": "MEMORY_BYTES",
+          "value": 0.0,
+          "unit": "BYTES",
+          "sample_count": 0
+        },
+        {
+          "service": "payment",
+          "metric_kind": "REQUEST_SUPPORT",
+          "value": 0.0,
+          "unit": "COUNT",
+          "sample_count": 1
+        }
+      ],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "9b15c79bca99e4e83ac2d2d907bdb9486f3cb3e1f0e8c188a5991a2f75d02e22"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "query_trace_neighborhood",
+      "service_scope": [
+        "payment"
+      ],
+      "records": [],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "931388e88c6b7440cf3914bc00f1d399f7950310aa59f4f1d7482493fb64a918"
+    },
+    {
+      "schema_version": "dta-v21.replay-observation-fixture.v1",
+      "tool": "search_logs",
+      "service_scope": [
+        "payment"
+      ],
+      "records": [],
+      "truncated": false,
+      "error_code": null,
+      "fixture_sha256": "255999f4c668364f496b7ec0c4f4a9716d49821c870140d5aecd90a7893fe62d"
+    }
+  ],
+  "full_context_tools": [
+    "inspect_service_runtime",
+    "query_metrics",
+    "query_trace_neighborhood",
+    "search_logs"
+  ],
+  "case_sha256": "bc145c18b630b2aa7dd0e5f42f4f9506dfc61bca808c0277af3062dcca47f983"
+}
