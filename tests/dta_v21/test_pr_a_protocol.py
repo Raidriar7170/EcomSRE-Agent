@@ -7,7 +7,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_master_progress_tracks_exact_pr_c_stage() -> None:
+def test_master_progress_tracks_exact_pr_d_freeze_stage() -> None:
     progress = json.loads(
         (REPO_ROOT / "docs/analysis/dta-v21-p0-master-progress.json").read_text(
             encoding="utf-8"
@@ -42,7 +42,9 @@ def test_master_progress_tracks_exact_pr_c_stage() -> None:
         "development_report_sha256": (
             "ed624890b655f10598310daefb574eaea0ca74085183ba70cbc31cb05a812a43"
         ),
-        "held_out_seal_sha256": None,
+        "held_out_seal_sha256": (
+            "9a7c8e56400e99c693c8bddc26007b1dd26e0dcee2167b07cf3fba00fd22fbd7"
+        ),
         "held_out_execution_id": None,
         "held_out_claim": None,
         "live_demo_terminal": None,
