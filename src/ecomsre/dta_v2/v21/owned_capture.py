@@ -77,6 +77,10 @@ _LOAD_VARIANTS = {"5", "10", "25", "50"}
 _AD_CPU_VARIANTS = {"off", "on"}
 _SHIPPING_VARIANTS = {"off", "5sec", "10sec"}
 _OWNED_STOP_SERVICES = {"email", "product-catalog", "recommendation"}
+AD_CPU_MEASURABLE_PERCENT_V21 = 60.0
+AD_CPU_SAFETY_CAPACITY_RATIO_MAXIMUM_V21 = 0.5
+AD_CPU_BUSINESS_LATENCY_RATIO_MINIMUM_V21 = 2.0
+AD_CPU_BUSINESS_LATENCY_DELTA_MS_MINIMUM_V21 = 5.0
 
 
 def build_capture_flag_document_v21(
@@ -214,6 +218,9 @@ def _calibration_observation(**payload: object) -> CaptureCalibrationObservation
         "memory_slope_bytes_per_second": None,
         "cpu_p50_percent": None,
         "cpu_p95_percent": None,
+        "cpu_capacity_percent": None,
+        "cpu_p95_capacity_ratio": None,
+        "cpu_safety_ceiling_ratio": None,
         "business_error_rate": None,
         "business_latency_p95_ms": None,
         "business_impact_observed": None,
@@ -252,6 +259,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         self.fault_operation_count = 0
         self.email_restart_required_v21 = False
         self.calibration_step_v21 = "BEGIN"
+        self.ad_baseline_latency_p95_ms_v21: float | None = None
 
     def admit(self) -> None:
         super().admit()
@@ -353,15 +361,35 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
             )
             p50 = float(statistics.median(cpus))
             p95 = max(cpus)
+            capacity = self._cpu_capacity_percent("ad")
+            capacity_ratio = p95 / capacity
+            if variant == "off":
+                self.ad_baseline_latency_p95_ms_v21 = latency
+            baseline_latency = self.ad_baseline_latency_p95_ms_v21
+            business_impact = (
+                variant == "on"
+                and baseline_latency is not None
+                and latency
+                >= baseline_latency + AD_CPU_BUSINESS_LATENCY_DELTA_MS_MINIMUM_V21
+                and latency
+                >= baseline_latency * AD_CPU_BUSINESS_LATENCY_RATIO_MINIMUM_V21
+            )
             return _calibration_observation(
                 kind=kind,
                 target_service=target_service,
                 variant=variant,
                 cpu_p50_percent=p50,
                 cpu_p95_percent=p95,
+                cpu_capacity_percent=capacity,
+                cpu_p95_capacity_ratio=capacity_ratio,
+                cpu_safety_ceiling_ratio=(AD_CPU_SAFETY_CAPACITY_RATIO_MAXIMUM_V21),
                 business_latency_p95_ms=latency,
-                safe=p95 <= 98.5,
-                measurable=variant == "on" and p95 >= 60.0,
+                safe=(capacity_ratio <= AD_CPU_SAFETY_CAPACITY_RATIO_MAXIMUM_V21),
+                measurable=(
+                    variant == "on"
+                    and p95 >= AD_CPU_MEASURABLE_PERCENT_V21
+                    and business_impact
+                ),
             )
         if kind is CalibrationKindV21.SHIPPING_LATENCY:
             self.calibration_step_v21 = "FLAG_APPLY"
@@ -706,6 +734,22 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         ):
             raise RuntimeError("capture resource calibration is invalid")
         return result.records[0]
+
+    def _cpu_capacity_percent(self, service: str) -> float:
+        docker = self._backend().docker
+        identity = docker._owned_container_identity(service)
+        if identity is None:
+            raise RuntimeError("capture CPU capacity lacks owned service")
+        raw = docker.docker.get_json(f"/containers/{identity}/stats?stream=false")
+        if not isinstance(raw, Mapping):
+            raise RuntimeError("capture CPU capacity response is invalid")
+        cpu = raw.get("cpu_stats")
+        if not isinstance(cpu, Mapping):
+            raise RuntimeError("capture CPU capacity stats are invalid")
+        online = cpu.get("online_cpus")
+        if isinstance(online, bool) or not isinstance(online, int) or online < 1:
+            raise RuntimeError("capture CPU online capacity is invalid")
+        return float(online * 100)
 
     def _runtime_record(self, service: str) -> RuntimeRecord:
         result = self._backend().execute(

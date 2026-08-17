@@ -3,6 +3,8 @@ from __future__ import annotations
 from copy import deepcopy
 import json
 from pathlib import Path
+from types import SimpleNamespace
+from typing import Any, cast
 
 import pytest
 
@@ -19,6 +21,7 @@ from ecomsre.dta_v2.v21.contracts import (
 from ecomsre.dta_v2.v21.evaluation_contracts import EvaluationSplitV21
 from ecomsre.dta_v2.v21.owned_capture import (
     ExactFlagDocumentControllerV21,
+    OwnedCaptureLifecycleV21,
     build_capture_flag_document_v21,
     build_evaluator_truth_v21,
 )
@@ -114,3 +117,23 @@ def test_evaluator_truth_maps_every_family_without_entering_visible_case() -> No
         ).operational_family
         is OperationalFamilyV21.RECOMMENDATION_UNAVAILABLE
     )
+
+
+def test_ad_cpu_capacity_uses_exact_owned_container_online_cpus() -> None:
+    class _DockerApi:
+        def get_json(self, path: str) -> dict[str, object]:
+            assert path == "/containers/owned-ad-container/stats?stream=false"
+            return {"cpu_stats": {"online_cpus": 12}}
+
+    docker = SimpleNamespace(
+        docker=_DockerApi(),
+        _owned_container_identity=lambda service: (
+            "owned-ad-container" if service == "ad" else None
+        ),
+    )
+    lifecycle = OwnedCaptureLifecycleV21.__new__(OwnedCaptureLifecycleV21)
+    lifecycle.backend = cast(Any, SimpleNamespace(docker=docker))
+
+    assert lifecycle._cpu_capacity_percent("ad") == 1200.0
+    with pytest.raises(RuntimeError, match="lacks owned service"):
+        lifecycle._cpu_capacity_percent("unknown")

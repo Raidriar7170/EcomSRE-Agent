@@ -260,8 +260,11 @@ class CaptureCalibrationObservationV21(DtaModelV21):
     maximum_memory_bytes: StrictInt | None = Field(default=None, ge=0)
     memory_delta_bytes: StrictInt | None = None
     memory_slope_bytes_per_second: StrictFloat | None = None
-    cpu_p50_percent: StrictFloat | None = Field(default=None, ge=0.0, le=100.0)
-    cpu_p95_percent: StrictFloat | None = Field(default=None, ge=0.0, le=100.0)
+    cpu_p50_percent: StrictFloat | None = Field(default=None, ge=0.0)
+    cpu_p95_percent: StrictFloat | None = Field(default=None, ge=0.0)
+    cpu_capacity_percent: StrictFloat | None = Field(default=None, ge=100.0)
+    cpu_p95_capacity_ratio: StrictFloat | None = Field(default=None, ge=0.0)
+    cpu_safety_ceiling_ratio: StrictFloat | None = Field(default=None, ge=0.0, le=1.0)
     business_error_rate: StrictFloat | None = Field(default=None, ge=0.0, le=1.0)
     business_latency_p95_ms: StrictFloat | None = Field(default=None, ge=0.0)
     business_impact_observed: bool | None = None
@@ -295,9 +298,31 @@ class CaptureCalibrationObservationV21(DtaModelV21):
         }[self.kind]
         if any(item is None for item in required):
             raise ValueError("capture calibration observation lacks required measures")
-        expected = semantic_sha256(
-            self.model_dump(mode="json", exclude={"observation_sha256"})
+        cpu_capacity_fields = (
+            "cpu_capacity_percent",
+            "cpu_p95_capacity_ratio",
+            "cpu_safety_ceiling_ratio",
         )
+        if self.kind is CalibrationKindV21.AD_CPU and any(
+            field in self.model_fields_set for field in cpu_capacity_fields
+        ):
+            if any(getattr(self, field) is None for field in cpu_capacity_fields):
+                raise ValueError("Ad CPU calibration lacks host-capacity evidence")
+            assert self.cpu_capacity_percent is not None
+            assert self.cpu_p95_percent is not None
+            assert self.cpu_p95_capacity_ratio is not None
+            assert self.cpu_safety_ceiling_ratio is not None
+            expected_ratio = self.cpu_p95_percent / self.cpu_capacity_percent
+            if abs(self.cpu_p95_capacity_ratio - expected_ratio) > 1e-9:
+                raise ValueError("Ad CPU host-capacity ratio differs")
+            if self.cpu_safety_ceiling_ratio != 0.5:
+                raise ValueError("Ad CPU safety ceiling differs")
+        digest_exclusions = {"observation_sha256"}
+        for field in cpu_capacity_fields:
+            if field not in self.model_fields_set:
+                digest_exclusions.add(field)
+        digest_payload = self.model_dump(mode="json", exclude=digest_exclusions)
+        expected = semantic_sha256(digest_payload)
         if self.observation_sha256 != expected:
             raise ValueError("capture calibration observation digest differs")
         return self
@@ -359,6 +384,32 @@ class CaptureCampaignClosureV21(DtaModelV21):
     non_owned_resources_changed: bool | None
     closure_sha256: Sha256V21
 
+    def _digest_payload(self) -> dict[str, Any]:
+        digest_exclusions = {"closure_sha256"}
+        for field in (
+            "failure_stage",
+            "failure_cause_type",
+            "failure_detail_sha256",
+            "failure_validation_codes",
+        ):
+            if field not in self.model_fields_set:
+                digest_exclusions.add(field)
+        digest_payload = self.model_dump(mode="json", exclude=digest_exclusions)
+        if any(
+            field not in observation.model_fields_set
+            for observation in self.calibrations
+            for field in (
+                "cpu_capacity_percent",
+                "cpu_p95_capacity_ratio",
+                "cpu_safety_ceiling_ratio",
+            )
+        ):
+            digest_payload["calibrations"] = [
+                observation.model_dump(mode="json", exclude_unset=True)
+                for observation in self.calibrations
+            ]
+        return digest_payload
+
     @model_validator(mode="after")
     def require_closure(self) -> CaptureCampaignClosureV21:
         passed = (
@@ -392,18 +443,7 @@ class CaptureCampaignClosureV21(DtaModelV21):
             has_no_details or has_complete_details
         ):
             raise ValueError("capture campaign failure detail is incomplete")
-        digest_exclusions = {"closure_sha256"}
-        for field in (
-            "failure_stage",
-            "failure_cause_type",
-            "failure_detail_sha256",
-            "failure_validation_codes",
-        ):
-            if field not in self.model_fields_set:
-                digest_exclusions.add(field)
-        expected = semantic_sha256(
-            self.model_dump(mode="json", exclude=digest_exclusions)
-        )
+        expected = semantic_sha256(self._digest_payload())
         if self.closure_sha256 != expected:
             raise ValueError("capture campaign closure digest differs")
         return self
@@ -842,8 +882,8 @@ def run_capture_campaign_attempt_v21(
         observation = lifecycle.calibrate(
             kind=kind, target_service=service, variant=variant
         )
-        observation = CaptureCalibrationObservationV21.model_validate(
-            observation.model_dump(mode="python")
+        observation = CaptureCalibrationObservationV21.model_validate_json(
+            observation.model_dump_json(exclude_unset=True)
         )
         if (
             observation.kind is not kind
@@ -1055,9 +1095,7 @@ def run_capture_campaign_attempt_v21(
     return CaptureCampaignClosureV21.model_validate(
         {
             **payload,
-            "closure_sha256": semantic_sha256(
-                draft.model_dump(mode="json", exclude={"closure_sha256"})
-            ),
+            "closure_sha256": semantic_sha256(draft._digest_payload()),
         }
     )
 

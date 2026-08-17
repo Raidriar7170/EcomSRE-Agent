@@ -96,6 +96,46 @@ def test_capture_plan_rejects_undeclared_fault_variant() -> None:
         )
 
 
+def test_ad_cpu_calibration_accepts_multicore_percent_and_binds_host_ratio() -> None:
+    payload = {
+        "schema_version": "dta-v21.capture-calibration-observation.v1",
+        "kind": CalibrationKindV21.AD_CPU,
+        "target_service": "ad",
+        "variant": "on",
+        "maximum_memory_bytes": None,
+        "memory_delta_bytes": None,
+        "memory_slope_bytes_per_second": None,
+        "cpu_p50_percent": 180.0,
+        "cpu_p95_percent": 240.0,
+        "cpu_capacity_percent": 1200.0,
+        "cpu_p95_capacity_ratio": 0.2,
+        "cpu_safety_ceiling_ratio": 0.5,
+        "business_error_rate": None,
+        "business_latency_p95_ms": 20.0,
+        "business_impact_observed": None,
+        "attributable_trace_latency_ms": None,
+        "target_runtime_stopped": None,
+        "safe": True,
+        "measurable": True,
+    }
+    observation = CaptureCalibrationObservationV21.model_validate(
+        {**payload, "observation_sha256": semantic_sha256(payload)}
+    )
+
+    assert observation.cpu_p95_percent == 240.0
+    assert observation.cpu_p95_capacity_ratio == 0.2
+    with pytest.raises(ValueError, match="host-capacity ratio"):
+        CaptureCalibrationObservationV21.model_validate(
+            {
+                **payload,
+                "cpu_p95_capacity_ratio": 0.3,
+                "observation_sha256": semantic_sha256(
+                    {**payload, "cpu_p95_capacity_ratio": 0.3}
+                ),
+            }
+        )
+
+
 def _calibration(kind, service, variant):
     payload = {
         "schema_version": "dta-v21.capture-calibration-observation.v1",
