@@ -207,7 +207,7 @@ def _definition(name: str, description: str, model: type[DtaModelV21]) -> dict[s
 def _safe_validation_codes_v21(
     error: Exception, *, model: type[DtaModelV21]
 ) -> tuple[str, ...]:
-    """Return bounded schema-owned locations and Pydantic error types only."""
+    """Return bounded schema-owned locations and fixed semantic reason codes only."""
 
     if not isinstance(error, ValidationError):
         return (f"output:{type(error).__name__}",)
@@ -220,6 +220,25 @@ def _safe_validation_codes_v21(
         kind = item.get("type")
         safe_kind = kind if isinstance(kind, str) else "validation_error"
         codes.add(f"{safe_root}:{safe_kind}")
+        message = item.get("msg")
+        if isinstance(message, str):
+            normalized_message = message.removeprefix("Value error, ")
+            safe_reason = {
+                "Planner evidence gaps differ from active hypotheses": (
+                    "planner_gap_mismatch"
+                ),
+                "request source is not an active unresolved gap": (
+                    "planner_request_source_not_active_gap"
+                ),
+                "request requires at least one active hypothesis": (
+                    "planner_request_without_active_hypothesis"
+                ),
+                "rejected hypothesis retains unresolved evidence gaps": (
+                    "rejected_hypothesis_has_gaps"
+                ),
+            }.get(normalized_message)
+            if safe_reason is not None:
+                codes.add(f"{safe_root}:{safe_reason}")
     return tuple(sorted(codes))[:16] or ("output:validation_error",)
 
 

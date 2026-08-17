@@ -386,6 +386,57 @@ def test_invalid_provider_output_reports_only_safe_validation_codes() -> None:
     assert private_value not in message
 
 
+def test_planner_semantic_failure_reports_fixed_safe_reason_without_input() -> None:
+    private_value = "private-planner-rationale-must-not-leak"
+    raw = _response(
+        PLANNER_FUNCTION_V21,
+        {
+            "turn_ordinal": 1,
+            "hypotheses": [
+                {
+                    "hypothesis_id": "h1",
+                    "root_service": "payment",
+                    "fault_domain": "CONFIGURATION",
+                    "fault_mechanism": "CONFIGURATION_ERROR",
+                    "status": "ACTIVE",
+                    "supporting_evidence_refs": [],
+                    "contradicting_evidence_refs": [],
+                    "unresolved_evidence_sources": ["METRICS"],
+                }
+            ],
+            "next_step": "REQUEST_EVIDENCE",
+            "evidence_gap_sources": ["LOGS"],
+            "read_request": {
+                "tool": "search_logs",
+                "service": "payment",
+                "max_records": 10,
+            },
+            "diagnosis": None,
+            "bounded_rationale": private_value,
+        },
+        index=9,
+    )
+    provider = _provider(RecordingTransport([raw]))
+    context = _context()
+    state = build_investigation_state_view_v21(
+        context=context,
+        hypotheses=(),
+        evidence_store=InvestigationReadTools(
+            run_id=RUN_ID, backend=FakeReadBackend.healthy()
+        ).snapshot(),
+        newest_observation=None,
+    )
+
+    with pytest.raises(Exception) as captured:
+        provider.investigation_turn(
+            context=context, visible_state=state, read_tools_enabled=True
+        )
+
+    message = str(captured.value)
+    assert "output:planner_gap_mismatch" in message
+    assert private_value not in message
+
+
 def test_provider_smoke_manifest_is_predeclared_and_blocks_identical_rerun(
     tmp_path: Path,
 ) -> None:
