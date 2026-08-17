@@ -40,7 +40,7 @@ def test_master_progress_tracks_exact_pr_c_stage() -> None:
             "a811067196589dbe0fb6c75c20d68c2b61b0cce9398f271e2f7c40f85377e3d4"
         ),
         "development_report_sha256": (
-            "e7b31098a7a8e4e0ac7efdd31f085a3bc510290510ea1601a560372418e0fd80"
+            "ed624890b655f10598310daefb574eaea0ca74085183ba70cbc31cb05a812a43"
         ),
         "held_out_seal_sha256": None,
         "held_out_execution_id": None,

@@ -2,12 +2,12 @@
   "schema_version": "dta-v21.development-evaluation-disposition.v1",
   "terminal": "DTA_V21_DEVELOPMENT_EVALUATION_COMPLETE",
   "model_id": "gpt-5.4-mini-2026-03-17",
-  "report_sha256": "ed624890b655f10598310daefb574eaea0ca74085183ba70cbc31cb05a812a43",
+  "report_sha256": "e7b31098a7a8e4e0ac7efdd31f085a3bc510290510ea1601a560372418e0fd80",
   "primary_entry_count": 36,
   "ablation_entry_count": 4,
   "truth_isolation": "PASS",
   "scorer_self_tests": "PASS",
   "unsafe_writes": 0,
   "held_out_executed": false,
-  "disposition_sha256": "fc5a413d27587b2f7c31f81a0815de501cc6abc72490fbac5f5be1b52383a0eb"
+  "disposition_sha256": "4623e33d1be2d4f23f0ef4083172f59c1610d497df786bf40a6861801c4fb661"
 }
