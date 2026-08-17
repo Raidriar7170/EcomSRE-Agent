@@ -9,6 +9,7 @@ from typing import Any, cast
 import pytest
 
 from ecomsre.dta_v2.v21.capture_campaign import (
+    CalibrationKindV21,
     CaptureConditionV21,
     OperationalFamilyV21,
     build_default_capture_plan_v21,
@@ -22,9 +23,12 @@ from ecomsre.dta_v2.v21.evaluation_contracts import EvaluationSplitV21
 from ecomsre.dta_v2.v21.owned_capture import (
     ExactFlagDocumentControllerV21,
     OwnedCaptureLifecycleV21,
+    _ad_cpu_fault_measurable_v21,
+    _shipping_fault_measurable_v21,
     build_capture_flag_document_v21,
     build_evaluator_truth_v21,
 )
+from ecomsre.dta_v2.tool_contracts import RuntimeState, SpanStatus
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -137,3 +141,67 @@ def test_ad_cpu_capacity_uses_exact_owned_container_online_cpus() -> None:
     assert lifecycle._cpu_capacity_percent("ad") == 1200.0
     with pytest.raises(RuntimeError, match="lacks owned service"):
         lifecycle._cpu_capacity_percent("unknown")
+
+
+def test_calibration_impact_thresholds_bind_distribution_separation() -> None:
+    assert _ad_cpu_fault_measurable_v21(baseline_p95=1.8, fault_p95=412.0)
+    assert not _ad_cpu_fault_measurable_v21(baseline_p95=20.0, fault_p95=60.0)
+    assert _shipping_fault_measurable_v21(
+        baseline_business_latency_ms=2.0,
+        fault_business_latency_ms=5_750.0,
+        baseline_trace_latency_ms=50.0,
+        fault_trace_latency_ms=5_100.0,
+    )
+    assert not _shipping_fault_measurable_v21(
+        baseline_business_latency_ms=2.0,
+        fault_business_latency_ms=5_750.0,
+        baseline_trace_latency_ms=50.0,
+        fault_trace_latency_ms=130.0,
+    )
+
+
+def test_service_unavailable_calibration_binds_caller_impact(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    lifecycle = OwnedCaptureLifecycleV21.__new__(OwnedCaptureLifecycleV21)
+    lifecycle.active_condition = None
+    lifecycle.calibration_step_v21 = "BEGIN"
+    lifecycle.fault_operation_count = 0
+    lifecycle.unavailable_business_anchor_v21 = {}
+    controller = SimpleNamespace(stop=lambda: None)
+    monkeypatch.setattr(lifecycle, "_service", lambda service: controller)
+    monkeypatch.setattr(
+        lifecycle,
+        "_runtime_record",
+        lambda service: SimpleNamespace(state=RuntimeState.EXITED),
+    )
+    monkeypatch.setattr(
+        lifecycle,
+        "_trace_records",
+        lambda *, service, started_at, ended_at: (
+            (
+                SimpleNamespace(
+                    status=SpanStatus.ERROR,
+                    first_error_location=True,
+                ),
+            )
+            if service == "checkout"
+            else ()
+        ),
+    )
+    monkeypatch.setattr(lifecycle, "_metric_value", lambda **kwargs: 0.0)
+    monkeypatch.setattr(
+        "ecomsre.dta_v2.v21.owned_capture.time.sleep", lambda seconds: None
+    )
+
+    observation = lifecycle.calibrate(
+        kind=CalibrationKindV21.SERVICE_UNAVAILABLE,
+        target_service="email",
+        variant="STOPPED",
+    )
+
+    assert observation.target_runtime_stopped is True
+    assert observation.business_impact_observed is True
+    assert observation.business_impact_service == "checkout"
+    assert observation.measurable is True
+    assert lifecycle.unavailable_business_anchor_v21 == {"email": "checkout"}

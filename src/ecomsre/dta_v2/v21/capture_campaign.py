@@ -268,6 +268,9 @@ class CaptureCalibrationObservationV21(DtaModelV21):
     business_error_rate: StrictFloat | None = Field(default=None, ge=0.0, le=1.0)
     business_latency_p95_ms: StrictFloat | None = Field(default=None, ge=0.0)
     business_impact_observed: bool | None = None
+    business_impact_service: str | None = Field(
+        default=None, pattern=r"^[a-z][a-z0-9-]*$"
+    )
     attributable_trace_latency_ms: StrictFloat | None = Field(default=None, ge=0.0)
     target_runtime_stopped: bool | None = None
     safe: bool
@@ -298,11 +301,13 @@ class CaptureCalibrationObservationV21(DtaModelV21):
         }[self.kind]
         if any(item is None for item in required):
             raise ValueError("capture calibration observation lacks required measures")
-        cpu_capacity_fields = (
+        additive_fields = (
             "cpu_capacity_percent",
             "cpu_p95_capacity_ratio",
             "cpu_safety_ceiling_ratio",
+            "business_impact_service",
         )
+        cpu_capacity_fields = additive_fields[:3]
         if self.kind is CalibrationKindV21.AD_CPU and any(
             field in self.model_fields_set for field in cpu_capacity_fields
         ):
@@ -317,8 +322,26 @@ class CaptureCalibrationObservationV21(DtaModelV21):
                 raise ValueError("Ad CPU host-capacity ratio differs")
             if self.cpu_safety_ceiling_ratio != 0.5:
                 raise ValueError("Ad CPU safety ceiling differs")
+            if (
+                "business_impact_service" in self.model_fields_set
+                and self.business_impact_observed is None
+            ):
+                raise ValueError("Ad CPU calibration lacks business-impact observation")
+        if (
+            self.kind is CalibrationKindV21.SERVICE_UNAVAILABLE
+            and "business_impact_service" in self.model_fields_set
+            and self.business_impact_observed is True
+            and self.business_impact_service is None
+        ):
+            raise ValueError("service-unavailable calibration lacks impact service")
+        if (
+            self.kind is CalibrationKindV21.SERVICE_UNAVAILABLE
+            and self.business_impact_observed is False
+            and self.business_impact_service is not None
+        ):
+            raise ValueError("service-unavailable impact service lacks observed impact")
         digest_exclusions = {"observation_sha256"}
-        for field in cpu_capacity_fields:
+        for field in additive_fields:
             if field not in self.model_fields_set:
                 digest_exclusions.add(field)
         digest_payload = self.model_dump(mode="json", exclude=digest_exclusions)
@@ -402,6 +425,7 @@ class CaptureCampaignClosureV21(DtaModelV21):
                 "cpu_capacity_percent",
                 "cpu_p95_capacity_ratio",
                 "cpu_safety_ceiling_ratio",
+                "business_impact_service",
             )
         ):
             digest_payload["calibrations"] = [

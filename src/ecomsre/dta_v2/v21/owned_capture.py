@@ -78,9 +78,44 @@ _AD_CPU_VARIANTS = {"off", "on"}
 _SHIPPING_VARIANTS = {"off", "5sec", "10sec"}
 _OWNED_STOP_SERVICES = {"email", "product-catalog", "recommendation"}
 AD_CPU_MEASURABLE_PERCENT_V21 = 60.0
+AD_CPU_FAULT_DELTA_PERCENT_MINIMUM_V21 = 50.0
+AD_CPU_FAULT_TO_BASELINE_RATIO_MINIMUM_V21 = 5.0
 AD_CPU_SAFETY_CAPACITY_RATIO_MAXIMUM_V21 = 0.5
 AD_CPU_BUSINESS_LATENCY_RATIO_MINIMUM_V21 = 2.0
 AD_CPU_BUSINESS_LATENCY_DELTA_MS_MINIMUM_V21 = 5.0
+SHIPPING_CALIBRATION_WINDOW_SECONDS_V21 = 30
+SHIPPING_BUSINESS_LATENCY_DELTA_MS_MINIMUM_V21 = 1_000.0
+SHIPPING_TRACE_LATENCY_DELTA_MS_MINIMUM_V21 = 1_000.0
+SERVICE_UNAVAILABLE_CALIBRATION_WINDOW_SECONDS_V21 = 20
+_UNAVAILABLE_BUSINESS_ANCHORS_V21 = {
+    "email": ("checkout", "frontend"),
+    "product-catalog": ("frontend", "checkout"),
+}
+
+
+def _ad_cpu_fault_measurable_v21(*, baseline_p95: float, fault_p95: float) -> bool:
+    return (
+        fault_p95 >= AD_CPU_MEASURABLE_PERCENT_V21
+        and fault_p95 - baseline_p95 >= AD_CPU_FAULT_DELTA_PERCENT_MINIMUM_V21
+        and fault_p95
+        >= max(baseline_p95, 1.0) * AD_CPU_FAULT_TO_BASELINE_RATIO_MINIMUM_V21
+    )
+
+
+def _shipping_fault_measurable_v21(
+    *,
+    baseline_business_latency_ms: float,
+    fault_business_latency_ms: float,
+    baseline_trace_latency_ms: float,
+    fault_trace_latency_ms: float,
+) -> bool:
+    return (
+        fault_business_latency_ms
+        >= baseline_business_latency_ms
+        + SHIPPING_BUSINESS_LATENCY_DELTA_MS_MINIMUM_V21
+        and fault_trace_latency_ms
+        >= baseline_trace_latency_ms + SHIPPING_TRACE_LATENCY_DELTA_MS_MINIMUM_V21
+    )
 
 
 def build_capture_flag_document_v21(
@@ -224,6 +259,7 @@ def _calibration_observation(**payload: object) -> CaptureCalibrationObservation
         "business_error_rate": None,
         "business_latency_p95_ms": None,
         "business_impact_observed": None,
+        "business_impact_service": None,
         "attributable_trace_latency_ms": None,
         "target_runtime_stopped": None,
         **payload,
@@ -259,7 +295,11 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         self.fault_operation_count = 0
         self.email_restart_required_v21 = False
         self.calibration_step_v21 = "BEGIN"
+        self.ad_baseline_cpu_p95_percent_v21: float | None = None
         self.ad_baseline_latency_p95_ms_v21: float | None = None
+        self.shipping_baseline_latency_p95_ms_v21: float | None = None
+        self.shipping_baseline_trace_latency_ms_v21: float | None = None
+        self.unavailable_business_anchor_v21: dict[str, str] = {}
 
     def admit(self) -> None:
         super().admit()
@@ -364,7 +404,9 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
             capacity = self._cpu_capacity_percent("ad")
             capacity_ratio = p95 / capacity
             if variant == "off":
+                self.ad_baseline_cpu_p95_percent_v21 = p95
                 self.ad_baseline_latency_p95_ms_v21 = latency
+            baseline_cpu = self.ad_baseline_cpu_p95_percent_v21
             baseline_latency = self.ad_baseline_latency_p95_ms_v21
             business_impact = (
                 variant == "on"
@@ -384,11 +426,14 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
                 cpu_p95_capacity_ratio=capacity_ratio,
                 cpu_safety_ceiling_ratio=(AD_CPU_SAFETY_CAPACITY_RATIO_MAXIMUM_V21),
                 business_latency_p95_ms=latency,
+                business_impact_observed=business_impact,
                 safe=(capacity_ratio <= AD_CPU_SAFETY_CAPACITY_RATIO_MAXIMUM_V21),
                 measurable=(
                     variant == "on"
-                    and p95 >= AD_CPU_MEASURABLE_PERCENT_V21
-                    and business_impact
+                    and baseline_cpu is not None
+                    and _ad_cpu_fault_measurable_v21(
+                        baseline_p95=baseline_cpu, fault_p95=p95
+                    )
                 ),
             )
         if kind is CalibrationKindV21.SHIPPING_LATENCY:
@@ -398,7 +443,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
                     self._upstream(), load_vus=25, shipping_variant=variant
                 )
             )
-            time.sleep(15)
+            time.sleep(SHIPPING_CALIBRATION_WINDOW_SECONDS_V21)
             ended = datetime.now(timezone.utc)
             self.calibration_step_v21 = "BUSINESS_METRIC"
             latency = self._metric_value(
@@ -411,7 +456,19 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
             traces = self._trace_records(
                 service="shipping", started_at=now, ended_at=ended
             )
-            attributable = max((item.duration_ms for item in traces), default=0.0)
+            attributable = max(
+                (
+                    item.duration_ms
+                    for item in traces
+                    if "shipping" in item.service_path
+                ),
+                default=0.0,
+            )
+            if variant == "off":
+                self.shipping_baseline_latency_p95_ms_v21 = latency
+                self.shipping_baseline_trace_latency_ms_v21 = attributable
+            baseline_latency = self.shipping_baseline_latency_p95_ms_v21
+            baseline_trace = self.shipping_baseline_trace_latency_ms_v21
             return _calibration_observation(
                 kind=kind,
                 target_service=target_service,
@@ -420,7 +477,15 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
                 attributable_trace_latency_ms=attributable,
                 safe=latency <= 15_000.0 and attributable <= 15_000.0,
                 measurable=(
-                    variant != "off" and latency >= 1_000.0 and attributable >= 1_000.0
+                    variant != "off"
+                    and baseline_latency is not None
+                    and baseline_trace is not None
+                    and _shipping_fault_measurable_v21(
+                        baseline_business_latency_ms=baseline_latency,
+                        fault_business_latency_ms=latency,
+                        baseline_trace_latency_ms=baseline_trace,
+                        fault_trace_latency_ms=attributable,
+                    )
                 ),
             )
         if kind is not CalibrationKindV21.SERVICE_UNAVAILABLE:
@@ -429,35 +494,50 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         self.calibration_step_v21 = "SERVICE_STOP"
         controller.stop()
         self.fault_operation_count = 1
-        time.sleep(10)
+        time.sleep(SERVICE_UNAVAILABLE_CALIBRATION_WINDOW_SECONDS_V21)
         self.calibration_step_v21 = "RUNTIME_OBSERVATION"
         runtime = self._runtime_record(target_service)
         ended = datetime.now(timezone.utc)
-        self.calibration_step_v21 = "TRACE_OBSERVATION"
-        traces = self._trace_records(
-            service=target_service, started_at=now, ended_at=ended
-        )
-        impact = any(
-            item.status is SpanStatus.ERROR and item.first_error_location
-            for item in traces
-        )
-        self.calibration_step_v21 = "BUSINESS_METRIC"
-        error_rate = self._metric_value(
-            service=target_service,
-            kind=MetricKind.ERROR_RATE,
-            started_at=now,
-            ended_at=ended,
-        )
+        selected_anchor: str | None = None
+        selected_error_rate = 0.0
+        for anchor in _UNAVAILABLE_BUSINESS_ANCHORS_V21[target_service]:
+            self.calibration_step_v21 = "TRACE_OBSERVATION"
+            traces = self._trace_records(
+                service=anchor, started_at=now, ended_at=ended
+            )
+            trace_impact = any(
+                item.status is SpanStatus.ERROR and item.first_error_location
+                for item in traces
+            )
+            self.calibration_step_v21 = "BUSINESS_METRIC"
+            error_rate = self._metric_value(
+                service=anchor,
+                kind=MetricKind.ERROR_RATE,
+                started_at=now,
+                ended_at=ended,
+            )
+            impact_proven = (
+                trace_impact
+                if target_service == "product-catalog"
+                else trace_impact or error_rate > 0.0
+            )
+            if impact_proven:
+                selected_anchor = anchor
+                selected_error_rate = error_rate
+                break
         stopped = runtime.state is RuntimeState.EXITED
+        if selected_anchor is not None:
+            self.unavailable_business_anchor_v21[target_service] = selected_anchor
         return _calibration_observation(
             kind=kind,
             target_service=target_service,
             variant=variant,
-            business_error_rate=min(1.0, max(0.0, error_rate)),
-            business_impact_observed=impact or error_rate > 0.0,
+            business_error_rate=min(1.0, max(0.0, selected_error_rate)),
+            business_impact_observed=selected_anchor is not None,
+            business_impact_service=selected_anchor,
             target_runtime_stopped=stopped,
             safe=True,
-            measurable=stopped and (impact or error_rate > 0.0),
+            measurable=stopped and selected_anchor is not None,
         )
 
     def apply_case(  # type: ignore[override]
@@ -552,6 +632,15 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         if self.active_condition != case.case_id:
             raise RuntimeError("capture case condition is not active")
         service = _service_for_family(case.operational_family)
+        business_service = (
+            self._unavailable_business_anchor(service)
+            if case.condition
+            in {
+                CaptureConditionV21.EMAIL_STOP,
+                CaptureConditionV21.PRODUCT_CATALOG_STOP,
+            }
+            else service
+        )
         ended_at = datetime.now(timezone.utc)
         started_at = self._case_start()
         current_started_at = max(
@@ -572,7 +661,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
             ),
             build_query_metrics_request(
                 run_id=run_id,
-                service=service,
+                service=business_service,
                 started_at=current_started_at,
                 ended_at=ended_at,
                 metric_kinds=(
@@ -586,7 +675,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
             ),
             build_trace_neighborhood_request(
                 run_id=run_id,
-                service=service,
+                service=business_service,
                 started_at=current_started_at,
                 ended_at=ended_at,
                 max_spans=40,
@@ -810,6 +899,14 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
             raise RuntimeError("owned Email controller is unavailable")
         return self.email_v21
 
+    def _unavailable_business_anchor(self, service: str) -> str:
+        try:
+            return self.unavailable_business_anchor_v21[service]
+        except KeyError as error:
+            raise RuntimeError(
+                "service-unavailable business anchor is unavailable"
+            ) from error
+
     def _case_start(self) -> datetime:
         if self.case_started_at is None:
             raise RuntimeError("capture case start is unavailable")
@@ -893,8 +990,17 @@ def require_capture_case_quality_v21(
     metrics = successful(ToolName.QUERY_METRICS)
     runtime = successful(ToolName.INSPECT_SERVICE_RUNTIME)
     service = _service_for_family(case.operational_family)
+    expected_metric_services = (
+        frozenset(_UNAVAILABLE_BUSINESS_ANCHORS_V21[service])
+        if case.condition
+        in {
+            CaptureConditionV21.EMAIL_STOP,
+            CaptureConditionV21.PRODUCT_CATALOG_STOP,
+        }
+        else frozenset((service,))
+    )
     if not any(
-        type(item) is MetricRecord and item.service == service
+        type(item) is MetricRecord and item.service in expected_metric_services
         for item in metrics.records
     ):
         raise ValueError("capture metrics lack the exact target")
@@ -911,6 +1017,29 @@ def require_capture_case_quality_v21(
         CaptureConditionV21.PRODUCT_CATALOG_STOP,
     } and not any(item.state is RuntimeState.EXITED for item in runtime_records):
         raise ValueError("service-unavailable capture target is not stopped")
+    if case.condition in {
+        CaptureConditionV21.EMAIL_STOP,
+        CaptureConditionV21.PRODUCT_CATALOG_STOP,
+    }:
+        traces = by_tool.get(ToolName.QUERY_TRACE_NEIGHBORHOOD)
+        has_trace_impact = any(
+            type(item) is TraceNeighborhoodRecord
+            and item.status is SpanStatus.ERROR
+            and item.first_error_location
+            for item in (() if traces is None else traces.records)
+        )
+        has_metric_impact = any(
+            type(item) is MetricRecord
+            and item.metric_kind is MetricKind.ERROR_RATE
+            and item.value > 0.0
+            for item in metrics.records
+        )
+        if case.condition is CaptureConditionV21.PRODUCT_CATALOG_STOP and not (
+            has_trace_impact
+        ):
+            raise ValueError("Product Catalog unavailable capture lacks trace impact")
+        if not (has_trace_impact or has_metric_impact):
+            raise ValueError("service-unavailable capture lacks business impact")
     if case.condition in {
         CaptureConditionV21.EMAIL_MEMORY_LEAK,
         CaptureConditionV21.AD_HIGH_CPU,

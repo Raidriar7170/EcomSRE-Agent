@@ -112,7 +112,7 @@ def test_ad_cpu_calibration_accepts_multicore_percent_and_binds_host_ratio() -> 
         "cpu_safety_ceiling_ratio": 0.5,
         "business_error_rate": None,
         "business_latency_p95_ms": 20.0,
-        "business_impact_observed": None,
+        "business_impact_observed": False,
         "attributable_trace_latency_ms": None,
         "target_runtime_stopped": None,
         "safe": True,
