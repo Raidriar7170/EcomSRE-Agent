@@ -77,6 +77,32 @@ answer key. The matrix must contain same-service multiple mechanisms, the same
 mechanism on at least three services, a new service with a known mechanism, new
 mechanisms, overlapping candidate sets, no-action, and conflicting evidence.
 
+### PR-B contract freeze
+
+PR-B represents the six observer-visible scenarios separately from their
+evaluator contracts. Only the observer registry may enter Agent context. The
+crossed-matrix validator joins the registries in evaluator code and uses four
+raw-SHA-256-bound historical v2 development anchors; candidate filtering never
+receives either registry.
+
+The trusted Runbook registry binds exact domains, mechanisms, targets, evidence
+sources, risk, typed parameters, preconditions, ordered steps, executor and
+verifier identities, step caps, failure policy, execution backend, and a
+per-Runbook semantic hash. Its frozen PR-B registry digest is
+`826935b4c664aa22c4a95392bab6e7672b1ee8524558aed9f2345a8353179faf`.
+The observer and evaluator scenario registry digests are respectively
+`632835d1a96a260064704e9a3e0ae193c61ed696115c92c81fa9a1905a3f8621`
+and `760f1125352c0bcce885cbbb874a638efe943362773a37a0a9031f4f07527bc9`.
+
+Candidate eligibility uses only a schema-validated Diagnosis, its exact
+resolved evidence, the trusted Runbook registry, and the exact target. Model
+confidence is bound as non-authorizing telemetry but cannot change candidate
+eligibility. Evaluator truth, scenario controls, fault operations, and split
+identity are absent from the filter interface. Every `REPLAY_ONLY` Runbook is
+deterministically denied for a requested live backend; replay receipts contain
+an explicit `no_live_mutation: true` assertion and are checked against fixed
+ordered steps by an independent typed replay verifier.
+
 ## Evidence-guided planner
 
 The planner maintains at most three typed hypotheses. Each hypothesis binds a

@@ -1,0 +1,39 @@
+{
+  "schema_version": "dta-v21.runbook-spec.v1",
+  "runbook_id": "RESTORE_SERVICE_AVAILABILITY",
+  "version": "v1",
+  "supported_fault_domains": ["SERVICE_RUNTIME"],
+  "supported_mechanisms": ["SERVICE_UNAVAILABLE"],
+  "target_services": ["email", "product-catalog"],
+  "required_evidence_sources": ["RUNTIME"],
+  "risk_level": "MEDIUM",
+  "parameters": [
+    {
+      "name": "wait_for_health_seconds",
+      "parameter_type": "INTEGER",
+      "required": true,
+      "minimum": 5,
+      "maximum": 120,
+      "allowed_values": [],
+      "default_value": 30
+    }
+  ],
+  "preconditions": ["LOCAL_DOCKER_ONLY", "OWNED_SERVICE", "SERVICE_NOT_HEALTHY"],
+  "forward_steps": [
+    {
+      "step_id": "START_OWNED_SERVICE",
+      "parameter_names": ["wait_for_health_seconds"]
+    }
+  ],
+  "executor_id": "OwnedServiceStartExecutorV21",
+  "verifier_id": "OwnedServiceRecoveryVerifierV21",
+  "maximum_forward_steps": 1,
+  "failure_policy": {
+    "terminal": "ESCALATE_HUMAN",
+    "preserve_completed_steps": true,
+    "additional_forward_write_allowed": false,
+    "step_receipt_required": true
+  },
+  "backend": "LIVE_ALLOWED",
+  "semantic_sha256": "2ae741455b81a210b55e99da398f37a46c6d9865c814c3bb0f4879bf00b45a78"
+}

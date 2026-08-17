@@ -1,0 +1,29 @@
+{
+  "schema_version": "dta-v21.runbook-spec.v1",
+  "runbook_id": "RESTORE_DEPENDENCY_LATENCY",
+  "version": "v1",
+  "supported_fault_domains": ["DEPENDENCY"],
+  "supported_mechanisms": ["DEPENDENCY_LATENCY"],
+  "target_services": ["shipping"],
+  "required_evidence_sources": ["METRICS", "TRACES"],
+  "risk_level": "MEDIUM",
+  "parameters": [],
+  "preconditions": ["CAUSAL_DEPENDENCY_EVIDENCE", "BASELINE_HASH_BOUND"],
+  "forward_steps": [
+    {
+      "step_id": "RESTORE_DEPENDENCY_LATENCY_REPLAY",
+      "parameter_names": []
+    }
+  ],
+  "executor_id": "DependencyLatencyReplayExecutorV21",
+  "verifier_id": "DependencyLatencyReplayVerifierV21",
+  "maximum_forward_steps": 1,
+  "failure_policy": {
+    "terminal": "ESCALATE_HUMAN",
+    "preserve_completed_steps": true,
+    "additional_forward_write_allowed": false,
+    "step_receipt_required": true
+  },
+  "backend": "REPLAY_ONLY",
+  "semantic_sha256": "13604f9ec9828c6670eab5b89e7b06aaa64a0992e05af9c9ef4f6420ce9157f0"
+}

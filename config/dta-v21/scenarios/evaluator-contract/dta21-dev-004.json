@@ -1,0 +1,13 @@
+{
+  "schema_version": "dta-v21.scenario-evaluation-contract.v1",
+  "scenario_id": "dta21-dev-004",
+  "terminal": "COMPLETED",
+  "root_service": "shipping",
+  "fault_domain": "DEPENDENCY",
+  "fault_mechanism": "DEPENDENCY_LATENCY",
+  "required_evaluator_evidence": ["METRICS", "TRACES"],
+  "expected_runbook": "RESTORE_DEPENDENCY_LATENCY",
+  "runbook_backend": "REPLAY_ONLY",
+  "live_required": false,
+  "forward_writes": 0
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "dta-v21.scenario.v1",
+  "scenario_id": "dta21-dev-002",
+  "alert_summary": "Order confirmations stopped reaching customers during the bounded window.",
+  "candidate_services": ["checkout", "email", "frontend"],
+  "allowed_read_tools": [
+    "query_metrics",
+    "search_logs",
+    "query_trace_neighborhood",
+    "inspect_service_runtime",
+    "inspect_resource_usage"
+  ],
+  "maximum_read_tool_dispatches": 4,
+  "maximum_repeated_identical_calls": 0
+}

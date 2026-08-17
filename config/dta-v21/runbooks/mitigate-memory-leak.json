@@ -1,0 +1,43 @@
+{
+  "schema_version": "dta-v21.runbook-spec.v1",
+  "runbook_id": "MITIGATE_MEMORY_LEAK",
+  "version": "v1",
+  "supported_fault_domains": ["LOCAL_RESOURCE"],
+  "supported_mechanisms": ["MEMORY_LEAK"],
+  "target_services": ["email"],
+  "required_evidence_sources": ["METRICS", "RUNTIME", "RESOURCES"],
+  "risk_level": "MEDIUM",
+  "parameters": [
+    {
+      "name": "wait_for_health_seconds",
+      "parameter_type": "INTEGER",
+      "required": true,
+      "minimum": 5,
+      "maximum": 120,
+      "allowed_values": [],
+      "default_value": 30
+    }
+  ],
+  "preconditions": ["LOCAL_DOCKER_ONLY", "OWNED_SERVICE", "LEAK_FLAG_ACTIVE"],
+  "forward_steps": [
+    {
+      "step_id": "DISABLE_LEAK_FLAG",
+      "parameter_names": []
+    },
+    {
+      "step_id": "RESTART_OWNED_SERVICE",
+      "parameter_names": ["wait_for_health_seconds"]
+    }
+  ],
+  "executor_id": "MemoryLeakMitigationReplayExecutorV21",
+  "verifier_id": "MemoryLeakRecoveryReplayVerifierV21",
+  "maximum_forward_steps": 2,
+  "failure_policy": {
+    "terminal": "ESCALATE_HUMAN",
+    "preserve_completed_steps": true,
+    "additional_forward_write_allowed": false,
+    "step_receipt_required": true
+  },
+  "backend": "REPLAY_ONLY",
+  "semantic_sha256": "1503aa9c7ed1e09bd12fa9dd49caaec1712c4d13bf63893a75cbe613085f1079"
+}
