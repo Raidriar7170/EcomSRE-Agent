@@ -12,12 +12,12 @@
   "diagnosis_schema_sha256": "69f54538276594b2145f7af446c60ae5bd0e840feb378baa5a22a57dc00bab9d",
   "action_selection_schema_sha256": "e3b63486b1b735c6d028331124e607c56c50d5c710e26b10069b1edb408fe337",
   "action_proposal_schema_sha256": "4c999d5d07d3478a962062c0df93980060a5f0a2285f30945644e5e2063fef66",
-  "context_projection_source_sha256": "e9b914dee7c971a5fd458759426eb4c670c2f5ad510677a50e3e287eae3bb140",
-  "agent_contracts_source_sha256": "9f6be96545de1c5eb0049214f67240807d647fb5c8af2ea1ee2a6921440ae9cf",
-  "agent_runtime_source_sha256": "2de78e4ffd1f1abc1a655dcca5ab4cefddcd3bd8efe4c15ec7d4b73c5af73733",
-  "provider_adapter_source_sha256": "edd00bf7006318788f71407aeecfadad1ef57fcae16fe2606de6b553bf8b1a48",
+  "context_projection_source_sha256": "2c44f24071637283e1518d7ec7399f0424389e969584de6592040c19b6fc8521",
+  "agent_contracts_source_sha256": "30381217194d7da850ca467b021d660bdd00adcff315160b4cf455bff7aed29f",
+  "agent_runtime_source_sha256": "e780c3bc89dfda4838d0627133390943ae1ea73ab3feb17ef6d86965d12ba24a",
+  "provider_adapter_source_sha256": "d095757cfb3f1fd080ba838a2c765987fe0786b9fe7b8d99da27b6af24003b0e",
   "registry_sha256": "02bbcddba67da53c10324624dc770c9f73056e0126469567c8e70a79710047e9",
   "candidate_filter_source_sha256": "7323e1aaef28b936aaed71cd6cb606cfe6ec1cddd3fcef4da524176397064023",
   "max_completion_tokens": 1600,
-  "identity_sha256": "c84e9901df315557f2b39e42b0674d34cb85fd987deaba776c1519abbe58cd01"
+  "identity_sha256": "1cca314360cbc19924be18b85d13a771455e3eb1da1f8f488068b7e5531ceae5"
 }

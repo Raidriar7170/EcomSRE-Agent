@@ -432,6 +432,10 @@ def test_flat_adaptive_discriminates_same_service_email_unavailability() -> None
     assert result.diagnosis.mechanism is FaultMechanismV21.SERVICE_UNAVAILABLE
     assert result.action_proposal is not None
     assert result.action_proposal.runbook_id is RunbookIdV21.RESTORE_SERVICE_AVAILABILITY
+    assert provider.visible_states[-1].prior_requests == requests
+    assert provider.visible_states[-1].prior_normalized_request_sha256 == tuple(
+        item.normalized_request_sha256 for item in requests
+    )
 
 
 def test_planner_dependency_case_is_traces_led_and_candidate_bound() -> None:

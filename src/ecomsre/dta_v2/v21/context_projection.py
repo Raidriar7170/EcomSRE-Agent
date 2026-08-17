@@ -18,6 +18,7 @@ from ecomsre.dta_v2.tool_contracts import (
     MetricRecord,
     ObservationStatus,
     QueryMetricsRequest,
+    ReadToolRequest,
     ReadToolObservation,
     ResourceUsageRecord,
     RuntimeRecord,
@@ -48,6 +49,25 @@ _SOURCE_MAP = {
     "CHANGES": EvidenceSourceV21.CHANGES,
 }
 _SOURCE_ORDER = {source: index for index, source in enumerate(EvidenceSourceV21)}
+
+
+def build_prior_request_history_v21(
+    evidence_store: EvidenceStoreSnapshot,
+) -> tuple[ReadToolRequest, ...]:
+    snapshot = EvidenceStoreSnapshot.model_validate_json(
+        evidence_store.model_dump_json()
+    )
+    requests_by_sha = {
+        envelope.request_sha256: envelope.resolve()
+        for envelope in snapshot.request_envelopes
+    }
+    try:
+        return tuple(
+            requests_by_sha[observation.request_sha256]
+            for observation in snapshot.observations
+        )
+    except KeyError as error:
+        raise ValueError("request history lacks a resolver-backed request") from error
 
 
 class EvidenceIndexFactV21(DtaModelV21):
@@ -111,6 +131,7 @@ class InvestigationStateViewV21(DtaModelV21):
     evidence_index: EvidenceIndexV21
     newest_observation: AgentVisibleObservation | None
     prior_tools: tuple[ToolName, ...] = Field(max_length=4)
+    prior_requests: tuple[ReadToolRequest, ...] = Field(max_length=4)
     prior_normalized_request_sha256: tuple[Sha256V21, ...] = Field(max_length=4)
     remaining_read_dispatches: StrictInt = Field(ge=0, le=4)
     remaining_provider_investigation_turns: StrictInt = Field(ge=0, le=5)
@@ -122,8 +143,19 @@ class InvestigationStateViewV21(DtaModelV21):
     def require_state_binding(self) -> InvestigationStateViewV21:
         if self.alert_context.run_id != self.evidence_index.run_id:
             raise ValueError("investigation state contains another run")
-        if len(self.prior_tools) != len(self.prior_normalized_request_sha256):
+        if not (
+            len(self.prior_tools)
+            == len(self.prior_requests)
+            == len(self.prior_normalized_request_sha256)
+        ):
             raise ValueError("investigation request history is partial")
+        if (
+            tuple(item.tool for item in self.prior_requests) != self.prior_tools
+            or tuple(item.normalized_request_sha256 for item in self.prior_requests)
+            != self.prior_normalized_request_sha256
+            or any(item.run_id != self.alert_context.run_id for item in self.prior_requests)
+        ):
+            raise ValueError("investigation request history differs")
         if self.remaining_read_dispatches != 4 - len(self.prior_tools):
             raise ValueError("investigation read budget accounting differs")
         if self.next_turn_ordinal != 6 - self.remaining_provider_investigation_turns:
@@ -157,6 +189,7 @@ class NoCompactionInvestigationStateViewV21(DtaModelV21):
     evidence_index: EvidenceIndexV21
     observations: tuple[AgentVisibleObservation, ...] = Field(max_length=4)
     prior_tools: tuple[ToolName, ...] = Field(max_length=4)
+    prior_requests: tuple[ReadToolRequest, ...] = Field(max_length=4)
     prior_normalized_request_sha256: tuple[Sha256V21, ...] = Field(max_length=4)
     remaining_read_dispatches: StrictInt = Field(ge=0, le=4)
     remaining_provider_investigation_turns: StrictInt = Field(ge=0, le=5)
@@ -170,8 +203,19 @@ class NoCompactionInvestigationStateViewV21(DtaModelV21):
             raise ValueError("no-compaction state contains another run")
         if len(self.observations) != len(self.evidence_index.entries):
             raise ValueError("no-compaction observations differ from Evidence Index")
-        if len(self.prior_tools) != len(self.prior_normalized_request_sha256):
+        if not (
+            len(self.prior_tools)
+            == len(self.prior_requests)
+            == len(self.prior_normalized_request_sha256)
+        ):
             raise ValueError("no-compaction request history is partial")
+        if (
+            tuple(item.tool for item in self.prior_requests) != self.prior_tools
+            or tuple(item.normalized_request_sha256 for item in self.prior_requests)
+            != self.prior_normalized_request_sha256
+            or any(item.run_id != self.alert_context.run_id for item in self.prior_requests)
+        ):
+            raise ValueError("no-compaction request history differs")
         if self.remaining_read_dispatches != 4 - len(self.prior_tools):
             raise ValueError("no-compaction read budget accounting differs")
         if self.next_turn_ordinal != 6 - self.remaining_provider_investigation_turns:
@@ -347,6 +391,7 @@ def build_investigation_state_view_v21(
         "evidence_index": build_evidence_index_v21(snapshot),
         "newest_observation": visible,
         "prior_tools": tuple(item.tool for item in snapshot.observations),
+        "prior_requests": build_prior_request_history_v21(snapshot),
         "prior_normalized_request_sha256": tuple(
             item.request_sha256 for item in snapshot.observations
         ),
@@ -414,6 +459,7 @@ def build_no_compaction_investigation_state_view_v21(
             build_agent_visible_observation(item) for item in snapshot.observations
         ),
         "prior_tools": tuple(item.tool for item in snapshot.observations),
+        "prior_requests": build_prior_request_history_v21(snapshot),
         "prior_normalized_request_sha256": tuple(
             item.request_sha256 for item in snapshot.observations
         ),
@@ -458,4 +504,5 @@ __all__ = (
     "build_evidence_index_v21",
     "build_investigation_state_view_v21",
     "build_no_compaction_investigation_state_view_v21",
+    "build_prior_request_history_v21",
 )

@@ -266,6 +266,30 @@ def _safe_validation_codes_v21(
                 "noncompleted diagnosis requires an uncertainty": (
                     "diagnosis_noncompleted_missing_uncertainty"
                 ),
+                "supporting evidence contains duplicate evidence references": (
+                    "diagnosis_support_duplicate"
+                ),
+                "supporting evidence contains an invalid evidence reference": (
+                    "diagnosis_support_invalid_ref"
+                ),
+                "supporting evidence is outside the current run": (
+                    "diagnosis_support_cross_run"
+                ),
+                "supporting evidence is not canonically ordered": (
+                    "diagnosis_support_not_canonical"
+                ),
+                "contradicting evidence contains duplicate evidence references": (
+                    "diagnosis_contradiction_duplicate"
+                ),
+                "contradicting evidence contains an invalid evidence reference": (
+                    "diagnosis_contradiction_invalid_ref"
+                ),
+                "contradicting evidence is outside the current run": (
+                    "diagnosis_contradiction_cross_run"
+                ),
+                "contradicting evidence is not canonically ordered": (
+                    "diagnosis_contradiction_not_canonical"
+                ),
             }.get(normalized_message)
             if safe_reason is not None:
                 codes.add(f"{safe_root}:{safe_reason}")

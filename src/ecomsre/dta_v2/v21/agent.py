@@ -45,6 +45,7 @@ from ecomsre.dta_v2.v21.context_projection import (
     build_evidence_index_v21,
     build_investigation_state_view_v21,
     build_no_compaction_investigation_state_view_v21,
+    build_prior_request_history_v21,
 )
 from ecomsre.dta_v2.v21.contracts import (
     ActionProposalV21,
@@ -867,6 +868,7 @@ def run_flat_adaptive_agent_v21(
             observations=tuple(
                 build_agent_visible_observation(item) for item in snapshot.observations
             ),
+            prior_requests=build_prior_request_history_v21(snapshot),
             prior_normalized_request_sha256=tuple(
                 item.request_sha256 for item in snapshot.observations
             ),

@@ -249,6 +249,13 @@ def test_compact_state_is_deterministic_bounded_and_keeps_canonical_refs() -> No
         newest_observation=runtime,
     )
     assert ToolName.QUERY_METRICS in view.prior_tools
+    assert tuple(item.normalized_request_sha256 for item in view.prior_requests) == (
+        metrics.request_sha256,
+        runtime.request_sha256,
+    )
+    assert view.prior_normalized_request_sha256 == tuple(
+        item.normalized_request_sha256 for item in view.prior_requests
+    )
 
 
 def test_planner_rejects_unresolved_hypothesis_citations_and_empty_abstain_gap() -> (

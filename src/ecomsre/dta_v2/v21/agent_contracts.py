@@ -17,7 +17,7 @@ from pydantic import (
 )
 
 from ecomsre.dta_v2.agent_contracts import AgentVisibleObservation
-from ecomsre.dta_v2.tool_contracts import ToolName
+from ecomsre.dta_v2.tool_contracts import ReadToolRequest, ToolName
 from ecomsre.dta_v2.v21.contracts import (
     ActionDispositionV21,
     ActionParameterV21,
@@ -122,13 +122,29 @@ class FlatInvestigationStateViewV21(DtaModelV21):
     schema_version: Literal["dta-v21.flat-investigation-state-view.v1"]
     alert_context: AlertContextV21
     observations: tuple[AgentVisibleObservation, ...] = Field(max_length=4)
+    prior_requests: tuple[ReadToolRequest, ...] = Field(max_length=4)
     prior_normalized_request_sha256: tuple[Sha256V21, ...] = Field(max_length=4)
     remaining_read_dispatches: StrictInt = Field(ge=0, le=4)
 
     @model_validator(mode="after")
     def require_flat_budget(self) -> FlatInvestigationStateViewV21:
-        if len(self.observations) != len(self.prior_normalized_request_sha256):
+        if not (
+            len(self.observations)
+            == len(self.prior_requests)
+            == len(self.prior_normalized_request_sha256)
+        ):
             raise ValueError("flat investigation request history is partial")
+        if (
+            tuple(item.normalized_request_sha256 for item in self.prior_requests)
+            != self.prior_normalized_request_sha256
+            or tuple(item.tool for item in self.prior_requests)
+            != tuple(item.tool for item in self.observations)
+            or any(
+                item.run_id != self.alert_context.run_id
+                for item in self.prior_requests
+            )
+        ):
+            raise ValueError("flat investigation request history differs")
         if self.remaining_read_dispatches != 4 - len(self.observations):
             raise ValueError("flat investigation read budget differs")
         return self
