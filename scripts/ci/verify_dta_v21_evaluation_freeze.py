@@ -27,6 +27,8 @@ from ecomsre.dta_v2.v21.evaluation_agents import EvaluationEntryResultV21
 from ecomsre.dta_v2.v21.evaluation_contracts import (
     AgentVisibleReplayCaseV21,
     EvaluationSplitV21,
+    EvaluationPredictionV21,
+    EvaluationScoreV21,
     EvaluatorCaseTruthV21,
     PublicEvaluationManifestV21,
 )
@@ -69,6 +71,44 @@ def _sha256(path: Path, *, description: str) -> str:
     return hashlib.sha256(
         _regular_file(path, description=description).read_bytes()
     ).hexdigest()
+
+
+def _require_exact_directory(
+    path: Path,
+    *,
+    files: set[str],
+    directories: set[str],
+    description: str,
+) -> None:
+    try:
+        details = path.lstat()
+    except FileNotFoundError as error:
+        raise ValueError(f"{description} is missing") from error
+    if stat.S_ISLNK(details.st_mode) or not stat.S_ISDIR(details.st_mode):
+        raise ValueError(f"{description} must be a regular non-symlink directory")
+    observed = {child.name: child for child in path.iterdir()}
+    if set(observed) != files | directories:
+        raise ValueError(f"{description} contains an undeclared entry")
+    for name in files:
+        _regular_file(observed[name], description=f"{description} file {name}")
+    for name in directories:
+        child_details = observed[name].lstat()
+        if stat.S_ISLNK(child_details.st_mode) or not stat.S_ISDIR(
+            child_details.st_mode
+        ):
+            raise ValueError(
+                f"{description} directory {name} must be a regular non-symlink directory"
+            )
+
+
+def _require_entry_projection_bindings(
+    entry: EvaluationEntryResultV21,
+    *,
+    prediction: EvaluationPredictionV21,
+    score: EvaluationScoreV21,
+) -> None:
+    if entry.prediction != prediction or entry.score != score:
+        raise ValueError("private development standalone prediction or score differs")
 
 
 def verify_development_report_files(
@@ -301,6 +341,16 @@ def verify_private_development_attempt(
     attempt_root: Path,
     development_root: Path,
 ) -> DevelopmentAttemptReceiptV21:
+    _require_exact_directory(
+        attempt_root,
+        files={
+            "attempt-manifest.json",
+            "attempt-receipt.json",
+            "development-report.json",
+        },
+        directories={"entries"},
+        description="private development attempt root",
+    )
     manifest = DevelopmentAttemptManifestV21.model_validate_json(
         _read_text(
             attempt_root / "attempt-manifest.json",
@@ -337,6 +387,9 @@ def verify_private_development_attempt(
         raise ValueError("private development scorer/manifest binding differs")
 
     public, schedule, preregistration = _verify_public_dataset(root)
+    development_bindings = {
+        item.case_id: item for item in public.development_cases
+    }
     if (
         manifest.model_id != preregistration.model_id
         or manifest.public_case_manifest_sha256 != public.manifest_sha256
@@ -345,10 +398,24 @@ def verify_private_development_attempt(
     ):
         raise ValueError("private development attempt differs from public protocol")
     scheduled = tuple(item for item in schedule.entries if item.split.value == "DEVELOPMENT")
-    entry_roots = sorted(
-        path
-        for path in (attempt_root / "entries").iterdir()
-        if path.is_dir() and not path.is_symlink()
+    expected_entry_names = {
+        (
+            f"{item.ordinal:02d}-{item.case_id}-"
+            f"{item.arm.value.lower()}"
+        )
+        for item in scheduled
+    }
+    _require_exact_directory(
+        attempt_root / "entries",
+        files=set(),
+        directories=expected_entry_names,
+        description="private development entries root",
+    )
+    entry_roots = tuple(
+        attempt_root
+        / "entries"
+        / f"{item.ordinal:02d}-{item.case_id}-{item.arm.value.lower()}"
+        for item in scheduled
     )
     if len(entry_roots) != 40 or len(scheduled) != 40:
         raise ValueError("private development attempt cardinality differs")
@@ -357,6 +424,17 @@ def verify_private_development_attempt(
     for index, (scheduled_entry, entry_root) in enumerate(
         zip(scheduled, entry_roots, strict=True)
     ):
+        _require_exact_directory(
+            entry_root,
+            files={
+                "agent-result.json",
+                "entry-result.json",
+                "prediction.json",
+                "score.json",
+            },
+            directories=set(),
+            description="private development entry root",
+        )
         entry = EvaluationEntryResultV21.model_validate_json(
             _read_text(
                 entry_root / "entry-result.json",
@@ -369,6 +447,23 @@ def verify_private_development_attempt(
                 description="private development Agent result",
             )
         )
+        prediction = EvaluationPredictionV21.model_validate_json(
+            _read_text(
+                entry_root / "prediction.json",
+                description="private development standalone prediction",
+            )
+        )
+        score = EvaluationScoreV21.model_validate_json(
+            _read_text(
+                entry_root / "score.json",
+                description="private development standalone score",
+            )
+        )
+        _require_entry_projection_bindings(
+            entry,
+            prediction=prediction,
+            score=score,
+        )
         truth = EvaluatorCaseTruthV21.model_validate_json(
             _read_text(
                 development_root
@@ -377,11 +472,18 @@ def verify_private_development_attempt(
                 description="private development evaluator truth",
             )
         )
+        binding = development_bindings.get(scheduled_entry.case_id)
         if (
             entry.prediction.case_id != scheduled_entry.case_id
             or entry.arm is not scheduled_entry.arm
+            or binding is None
+            or entry.case_sha256 != binding.case_sha256
             or entry.truth_sha256 != truth.truth_sha256
+            or entry.truth_sha256 != binding.truth_sha256
+            or truth.split is not EvaluationSplitV21.DEVELOPMENT
             or entry.agent_result_sha256 != agent_result.result_sha256
+            or entry.model_id != agent_result.identity.model_id
+            or entry.identity_sha256 != agent_result.identity.identity_sha256
             or receipt.entry_sha256s[index] != entry.entry_sha256
         ):
             raise ValueError("private development entry binding differs")
@@ -391,6 +493,12 @@ def verify_private_development_attempt(
         model_id=preregistration.model_id,
         max_completion_tokens=preregistration.max_completion_tokens,
     )
+    if (
+        receipt.attempt_id != manifest.attempt_id
+        or manifest.identity_sha256s
+        != tuple(item.identity_sha256 for item in identities)
+    ):
+        raise ValueError("private development attempt identity differs")
     rebuilt = build_development_report_v21(
         entries=tuple(entries), truths=truths, identities=identities
     )

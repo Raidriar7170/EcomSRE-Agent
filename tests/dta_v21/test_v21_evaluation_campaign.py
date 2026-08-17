@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import subprocess
+from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
@@ -34,6 +35,25 @@ from ecomsre.dta_v2.v21.owned_capture import build_evaluator_truth_v21
 
 
 MODEL = "gpt-5.4-mini-2026-03-17"
+
+
+class _TestGitRunner:
+    def __init__(self, repository_root: Path) -> None:
+        self.repository_root = repository_root
+
+    def run(self, arguments: tuple[str, ...], *, timeout_seconds: float):
+        completed = subprocess.run(
+            arguments,
+            cwd=self.repository_root,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+        )
+        return SimpleNamespace(
+            exit_code=completed.returncode,
+            stdout=completed.stdout,
+        )
 
 
 def test_schedule_freezes_36_primary_4_ablation_and_24_held_out_entries() -> None:
@@ -133,6 +153,7 @@ def test_freeze_manifest_binds_exact_sources_identities_and_answer_free_cases() 
     )
 
     repository_root = Path(__file__).resolve().parents[2]
+    git_runner = _TestGitRunner(repository_root)
     base_code_head = subprocess.run(
         ["git", "rev-parse", "HEAD"],
         cwd=repository_root,
@@ -148,6 +169,7 @@ def test_freeze_manifest_binds_exact_sources_identities_and_answer_free_cases() 
         public_case_manifest=public,
         schedule=schedule,
         preregistration=preregistration,
+        git_runner=git_runner,
     )
 
     assert len(manifest.agent_identities) == 3
@@ -177,6 +199,7 @@ def test_freeze_manifest_binds_exact_sources_identities_and_answer_free_cases() 
             public_case_manifest=public,
             schedule=schedule,
             preregistration=preregistration,
+            git_runner=git_runner,
         )
 
 
@@ -234,6 +257,28 @@ def _entry(case, arm, identity):
         "score": score,
     }
     draft = EvaluationEntryResultV21.model_construct(**payload, entry_sha256="0" * 64)
+    return EvaluationEntryResultV21.model_validate(
+        {
+            **payload,
+            "entry_sha256": semantic_sha256(
+                draft.model_dump(mode="json", exclude={"entry_sha256"})
+            ),
+        }
+    )
+
+
+def _replace_entry(
+    entry: EvaluationEntryResultV21, **updates: object
+) -> EvaluationEntryResultV21:
+    payload = {
+        name: getattr(entry, name)
+        for name in type(entry).model_fields
+        if name != "entry_sha256"
+    }
+    payload.update(updates)
+    draft = EvaluationEntryResultV21.model_construct(
+        **payload, entry_sha256="0" * 64
+    )
     return EvaluationEntryResultV21.model_validate(
         {
             **payload,
@@ -328,12 +373,28 @@ def test_held_out_report_has_exact_primary_aggregates_and_frozen_decision() -> N
         max_completion_tokens=1600,
         schedule_sha256=schedule.schedule_sha256,
     )
+    case_bindings = {
+        case.case_id: PublicCaseBindingV21(
+            case_id=case.case_id,
+            case_sha256=next(
+                item.case_sha256
+                for item in entries
+                if item.prediction.case_id == case.case_id
+            ),
+            truth_sha256=truths[case.case_id].truth_sha256,
+            split_sha256=semantic_sha256("HELD_OUT"),
+        )
+        for case in held_out
+    }
 
     report = build_held_out_report_v21(
         entries=entries,
         truths=truths,
+        case_bindings=case_bindings,
         identities=identities,
         preregistration=preregistration,
+        truth_isolation_verified=True,
+        scorer_verified=True,
     )
 
     assert report.primary_entry_count == 24
@@ -344,3 +405,58 @@ def test_held_out_report_has_exact_primary_aggregates_and_frozen_decision() -> N
     assert next(
         item for item in report.aggregates if item.group_type == "SPLIT"
     ).group_value == "HELD_OUT"
+
+    with pytest.raises(ValueError, match="crossed matrix"):
+        build_held_out_report_v21(
+            entries=(*entries[:-1], entries[0]),
+            truths=truths,
+            case_bindings=case_bindings,
+            identities=identities,
+            preregistration=preregistration,
+            truth_isolation_verified=True,
+            scorer_verified=True,
+        )
+
+    mismatched_bindings = dict(case_bindings)
+    first_case_id = held_out[0].case_id
+    mismatched_bindings[first_case_id] = PublicCaseBindingV21(
+        case_id=first_case_id,
+        case_sha256="0" * 64,
+        truth_sha256=truths[first_case_id].truth_sha256,
+        split_sha256=semantic_sha256("HELD_OUT"),
+    )
+    with pytest.raises(ValueError, match="case or truth binding"):
+        build_held_out_report_v21(
+            entries=entries,
+            truths=truths,
+            case_bindings=mismatched_bindings,
+            identities=identities,
+            preregistration=preregistration,
+            truth_isolation_verified=True,
+            scorer_verified=True,
+        )
+
+    with pytest.raises(ValueError, match="verified gates"):
+        build_held_out_report_v21(
+            entries=entries,
+            truths=truths,
+            case_bindings=case_bindings,
+            identities=identities,
+            preregistration=preregistration,
+            truth_isolation_verified=False,
+            scorer_verified=True,
+        )
+
+    with pytest.raises(ValueError, match="entry identity"):
+        build_held_out_report_v21(
+            entries=(
+                _replace_entry(entries[0], identity_sha256="0" * 64),
+                *entries[1:],
+            ),
+            truths=truths,
+            case_bindings=case_bindings,
+            identities=identities,
+            preregistration=preregistration,
+            truth_isolation_verified=True,
+            scorer_verified=True,
+        )

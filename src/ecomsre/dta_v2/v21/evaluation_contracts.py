@@ -407,8 +407,8 @@ class EvaluationScoreV21(DtaModelV21):
     fault_domain_accuracy: bool | None
     mechanism_accuracy: bool | None
     runbook_top1_accuracy: bool | None
-    evidence_reference_validity: bool | None = None
-    expected_source_coverage: bool | None = None
+    evidence_reference_validity: bool | None
+    expected_source_coverage: bool | None
     evidence_validity: bool
     action_precision: bool
     no_action_accuracy: bool | None

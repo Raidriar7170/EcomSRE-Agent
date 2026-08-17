@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 
 from scripts.ci.verify_dta_v21_evaluation_freeze import (
+    _require_entry_projection_bindings,
+    _require_exact_directory,
     verify_development_report_files,
     verify_public_evaluation,
 )
@@ -47,6 +49,50 @@ def test_development_report_verifier_rejects_unsafe_write_drift(
 
     with pytest.raises(ValueError):
         verify_development_report_files(report_path, disposition_path)
+
+
+def test_private_attempt_tree_rejects_undeclared_files_and_symlinks(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "expected.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "entries").mkdir()
+    _require_exact_directory(
+        tmp_path,
+        files={"expected.json"},
+        directories={"entries"},
+        description="test tree",
+    )
+
+    (tmp_path / "undeclared.json").write_text("{}", encoding="utf-8")
+    with pytest.raises(ValueError, match="undeclared"):
+        _require_exact_directory(
+            tmp_path,
+            files={"expected.json"},
+            directories={"entries"},
+            description="test tree",
+        )
+    (tmp_path / "undeclared.json").unlink()
+    (tmp_path / "entries").rmdir()
+    (tmp_path / "entries").symlink_to(tmp_path / "expected.json")
+    with pytest.raises(ValueError, match="non-symlink"):
+        _require_exact_directory(
+            tmp_path,
+            files={"expected.json"},
+            directories={"entries"},
+            description="test tree",
+        )
+
+
+def test_private_entry_projection_rejects_standalone_score_tamper() -> None:
+    marker = object()
+    entry = type("Entry", (), {"prediction": marker, "score": marker})()
+
+    with pytest.raises(ValueError, match="standalone prediction or score"):
+        _require_entry_projection_bindings(
+            entry,
+            prediction=marker,
+            score=object(),
+        )
 
 
 def test_public_evaluation_requires_freeze_manifest_when_requested() -> None:

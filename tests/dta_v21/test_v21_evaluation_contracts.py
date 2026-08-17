@@ -27,6 +27,7 @@ from ecomsre.dta_v2.v21.evaluation_contracts import (
     AgentVisibleReplayCaseV21,
     EvaluationArmV21,
     EvaluationPredictionV21,
+    EvaluationScoreV21,
     EvaluationSplitV21,
     EvaluatorCaseTruthV21,
     GeneralizationSliceV21,
@@ -221,6 +222,49 @@ def test_scorer_binds_protocol_semantics_selection_and_costs() -> None:
     assert score.tool_target_selection_accuracy
     assert score.non_owned_mutation_attempts == 0
     assert score.total_tokens == 120
+
+
+def test_scorer_rejects_missing_required_evidence_metrics() -> None:
+    truth = _truth()
+    prediction = EvaluationPredictionV21(
+        schema_version="dta-v21.evaluation-prediction.v1",
+        case_id=truth.case_id,
+        arm=EvaluationArmV21.EVIDENCE_GUIDED_PLANNER,
+        protocol_accepted=True,
+        terminal=TerminalV21.COMPLETED,
+        root_service="payment",
+        fault_domain=FaultDomainV21.CONFIGURATION,
+        mechanism=FaultMechanismV21.CONFIGURATION_ERROR,
+        disposition=ActionDispositionV21.EXECUTE_RUNBOOK,
+        runbook_id=RunbookIdV21.ROLLBACK_CONFIGURATION,
+        cited_evidence_sources=(EvidenceSourceV21.METRICS,),
+        evidence_refs_valid=True,
+        requested_evidence_sources=(EvidenceSourceV21.METRICS,),
+        requested_targets=("payment",),
+        duplicate_normalized_calls=0,
+        read_tool_dispatches=1,
+        context_materialization_reads=0,
+        provider_turns=2,
+        input_tokens=100,
+        output_tokens=20,
+        latency_ms=50,
+        unsafe_proposal_attempts=0,
+        arbitrary_shell_attempts=0,
+    )
+    score = build_evaluation_score_v21(prediction=prediction, truth=truth)
+    payload = score.model_dump(
+        mode="json",
+        exclude={
+            "score_sha256",
+            "evidence_reference_validity",
+            "expected_source_coverage",
+        },
+    )
+
+    with pytest.raises(ValueError):
+        EvaluationScoreV21.model_validate(
+            {**payload, "score_sha256": semantic_sha256(payload)}
+        )
 
 
 def test_public_manifest_requires_exact_12_plus_8_and_contains_no_answers() -> None:

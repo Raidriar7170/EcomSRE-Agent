@@ -9,8 +9,7 @@ import hashlib
 from pathlib import Path
 import random
 import statistics
-import subprocess
-from typing import Any, Literal, Mapping, cast
+from typing import Any, Literal, Mapping, Protocol, cast
 
 from pydantic import Field, StrictFloat, StrictInt, model_validator
 
@@ -26,6 +25,7 @@ from ecomsre.dta_v2.v21.evaluation_contracts import (
     EvaluationArmV21,
     EvaluationSplitV21,
     EvaluatorCaseTruthV21,
+    PublicCaseBindingV21,
     PublicEvaluationManifestV21,
 )
 from ecomsre.dta_v2.v21.evaluation_scenarios import (
@@ -61,6 +61,20 @@ _REQUIRED_SOURCE_BINDINGS = (
     "planner_contracts.py",
     "prompts.py",
 )
+
+
+class _GitCommandResult(Protocol):
+    exit_code: int
+    stdout: str
+
+
+class _GitCommandRunner(Protocol):
+    def run(
+        self,
+        arguments: tuple[str, ...],
+        *,
+        timeout_seconds: float,
+    ) -> _GitCommandResult: ...
 
 
 class EvaluationSchedulePhaseV21(str, Enum):
@@ -353,14 +367,21 @@ def _source_sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _require_exact_repository_head(repository_root: Path, base_code_head: str) -> None:
-    completed = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=repository_root,
-        check=True,
-        capture_output=True,
-        text=True,
+def _require_exact_repository_head(
+    repository_root: Path,
+    base_code_head: str,
+    *,
+    runner: _GitCommandRunner | None,
+) -> None:
+    del repository_root
+    if runner is None:
+        raise ValueError("freeze requires an audited Git runner")
+    completed = runner.run(
+        ("git", "rev-parse", "HEAD"),
+        timeout_seconds=30.0,
     )
+    if completed.exit_code != 0:
+        raise ValueError("freeze current HEAD verification failed")
     if completed.stdout.strip() != base_code_head:
         raise ValueError("freeze base code head differs from current HEAD")
 
@@ -371,14 +392,18 @@ def _require_source_matches_head(
     base_code_head: str,
     relative: str,
     observed_sha256: str,
+    runner: _GitCommandRunner | None,
 ) -> None:
-    completed = subprocess.run(
-        ["git", "show", f"{base_code_head}:{relative}"],
-        cwd=repository_root,
-        check=True,
-        capture_output=True,
+    del repository_root
+    if runner is None:
+        raise ValueError("freeze requires an audited Git runner")
+    completed = runner.run(
+        ("git", "show", f"{base_code_head}:{relative}"),
+        timeout_seconds=30.0,
     )
-    if hashlib.sha256(completed.stdout).hexdigest() != observed_sha256:
+    if completed.exit_code != 0:
+        raise ValueError(f"freeze source Git verification failed: {relative}")
+    if hashlib.sha256(completed.stdout.encode("utf-8")).hexdigest() != observed_sha256:
         raise ValueError(f"freeze source differs from current HEAD: {relative}")
 
 
@@ -391,8 +416,13 @@ def build_evaluation_freeze_manifest_v21(
     public_case_manifest: PublicEvaluationManifestV21,
     schedule: EvaluationScheduleV21,
     preregistration: EvaluationPreregistrationV21,
+    git_runner: _GitCommandRunner | None = None,
 ) -> EvaluationFreezeManifestV21:
-    _require_exact_repository_head(repository_root, base_code_head)
+    _require_exact_repository_head(
+        repository_root,
+        base_code_head,
+        runner=git_runner,
+    )
     source_root = repository_root / "src/ecomsre/dta_v2/v21"
     bindings = tuple(
         EvaluationSourceBindingV21(
@@ -406,6 +436,7 @@ def build_evaluation_freeze_manifest_v21(
             base_code_head=base_code_head,
             relative=f"src/ecomsre/dta_v2/v21/{binding.name}",
             observed_sha256=binding.source_sha256,
+            runner=git_runner,
         )
     identities = build_three_arm_identities_v21(
         model_id=model_id, max_completion_tokens=max_completion_tokens
@@ -872,6 +903,8 @@ def _build_advantage_decision_v21(
     entries: tuple[EvaluationEntryResultV21, ...],
     truths: Mapping[str, EvaluatorCaseTruthV21],
     preregistration: EvaluationPreregistrationV21,
+    truth_isolation_verified: bool,
+    scorer_verified: bool,
 ) -> PlannerAdvantageDecisionV21:
     planner_entries = [
         item
@@ -910,8 +943,8 @@ def _build_advantage_decision_v21(
         "protocol_acceptance_both": all(
             item.protocol_acceptance for item in (*planner_scores, *flat_scores)
         ),
-        "truth_isolation": True,
-        "scorer_verification": True,
+        "truth_isolation": truth_isolation_verified,
+        "scorer_verification": scorer_verified,
         "root_not_lower": (
             planner_root is not None
             and flat_root is not None
@@ -997,16 +1030,60 @@ def build_held_out_report_v21(
     *,
     entries: tuple[EvaluationEntryResultV21, ...],
     truths: Mapping[str, EvaluatorCaseTruthV21],
+    case_bindings: Mapping[str, PublicCaseBindingV21],
     identities: tuple[AgentIdentityManifestV21, ...],
     preregistration: EvaluationPreregistrationV21,
+    truth_isolation_verified: bool,
+    scorer_verified: bool,
 ) -> HeldOutEvaluationReportV21:
+    if not truth_isolation_verified or not scorer_verified:
+        raise ValueError("held-out report requires explicit verified gates")
     if len(entries) != 24 or any(item.arm not in PRIMARY_ARMS_V21 for item in entries):
         raise ValueError("held-out report requires exact 24 primary entries")
-    case_ids = {item.prediction.case_id for item in entries}
-    if len(case_ids) != 8 or set(truths) != case_ids or any(
+    case_ids = {f"dta21-case-{index:03d}" for index in range(13, 21)}
+    observed_pairs = {(item.prediction.case_id, item.arm) for item in entries}
+    expected_pairs = {
+        (case_id, arm) for case_id in case_ids for arm in PRIMARY_ARMS_V21
+    }
+    if observed_pairs != expected_pairs:
+        raise ValueError("held-out report crossed matrix differs")
+    if set(truths) != case_ids or set(case_bindings) != case_ids or any(
         truth.split is not EvaluationSplitV21.HELD_OUT for truth in truths.values()
     ):
         raise ValueError("held-out report case/truth set differs")
+    ordered_identities = tuple(
+        sorted(identities, key=lambda item: list(AgentArmV21).index(item.arm))
+    )
+    if (
+        len(ordered_identities) != 3
+        or len({item.arm for item in ordered_identities}) != 3
+        or {item.model_id for item in ordered_identities}
+        != {preregistration.model_id}
+    ):
+        raise ValueError("held-out report Agent identities differ")
+    identity_by_arm = {
+        EvaluationArmV21(item.arm.value): item for item in ordered_identities
+    }
+    held_out_split_sha256 = semantic_sha256(EvaluationSplitV21.HELD_OUT.value)
+    for entry in entries:
+        case_id = entry.prediction.case_id
+        truth = truths[case_id]
+        binding = case_bindings[case_id]
+        identity = identity_by_arm[entry.arm]
+        if (
+            truth.case_id != case_id
+            or binding.case_id != case_id
+            or entry.case_sha256 != binding.case_sha256
+            or entry.truth_sha256 != binding.truth_sha256
+            or binding.truth_sha256 != truth.truth_sha256
+            or binding.split_sha256 != held_out_split_sha256
+        ):
+            raise ValueError("held-out report case or truth binding differs")
+        if (
+            entry.model_id != identity.model_id
+            or entry.identity_sha256 != identity.identity_sha256
+        ):
+            raise ValueError("held-out report entry identity differs")
     by_arm: dict[str, list[EvaluationEntryResultV21]] = defaultdict(list)
     by_mechanism: dict[str, list[EvaluationEntryResultV21]] = defaultdict(list)
     by_slice: dict[str, list[EvaluationEntryResultV21]] = defaultdict(list)
@@ -1048,19 +1125,12 @@ def build_held_out_report_v21(
                 )
             )
     aggregates.sort(key=lambda item: (item.group_type, item.group_value))
-    ordered_identities = tuple(
-        sorted(identities, key=lambda item: list(AgentArmV21).index(item.arm))
-    )
-    if (
-        len(ordered_identities) != 3
-        or {item.model_id for item in ordered_identities}
-        != {preregistration.model_id}
-    ):
-        raise ValueError("held-out report Agent identities differ")
     decision = _build_advantage_decision_v21(
         entries=entries,
         truths=truths,
         preregistration=preregistration,
+        truth_isolation_verified=truth_isolation_verified,
+        scorer_verified=scorer_verified,
     )
     payload: dict[str, object] = {
         "schema_version": "dta-v21.held-out-evaluation-report.v1",

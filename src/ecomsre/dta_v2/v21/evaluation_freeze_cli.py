@@ -6,6 +6,7 @@ import argparse
 from pathlib import Path
 
 from ecomsre.dta_v2.v21.contracts import semantic_sha256
+from ecomsre.environment.command_runner import AuditedSubprocessRunner
 from ecomsre.dta_v2.v21.evaluation_campaign import (
     EvaluationFreezeManifestV21,
     EvaluationPreregistrationV21,
@@ -55,6 +56,7 @@ def freeze_evaluation_v21(
     schedule_path: Path,
     preregistration_path: Path,
     output_path: Path,
+    git_audit_root: Path,
 ) -> EvaluationFreezeManifestV21:
     public = PublicEvaluationManifestV21.model_validate_json(
         _read_regular(public_manifest_path)
@@ -62,6 +64,13 @@ def freeze_evaluation_v21(
     schedule = EvaluationScheduleV21.model_validate_json(_read_regular(schedule_path))
     preregistration = EvaluationPreregistrationV21.model_validate_json(
         _read_regular(preregistration_path)
+    )
+    git_runner = AuditedSubprocessRunner(
+        project_root=repository_root,
+        artifacts_root=git_audit_root,
+        run_id=semantic_sha256(
+            {"purpose": "dta-v21-evaluation-freeze", "base_code_head": base_code_head}
+        )[:32],
     )
     manifest = build_evaluation_freeze_manifest_v21(
         repository_root=repository_root,
@@ -71,6 +80,7 @@ def freeze_evaluation_v21(
         public_case_manifest=public,
         schedule=schedule,
         preregistration=preregistration,
+        git_runner=git_runner,
     )
     write_public_model_create_once_v21(output_path, manifest)
     return manifest
@@ -100,6 +110,7 @@ def _parser() -> argparse.ArgumentParser:
     freeze.add_argument("--schedule", type=Path, required=True)
     freeze.add_argument("--preregistration", type=Path, required=True)
     freeze.add_argument("--output", type=Path, required=True)
+    freeze.add_argument("--git-audit-root", type=Path, required=True)
 
     seal = subparsers.add_parser("seal")
     seal.add_argument("--held-out-pack-root", type=Path, required=True)
@@ -130,6 +141,7 @@ def main(argv: list[str] | None = None) -> int:
             schedule_path=args.schedule.resolve(),
             preregistration_path=args.preregistration.resolve(),
             output_path=args.output.resolve(),
+            git_audit_root=args.git_audit_root.resolve(),
         )
         print(manifest.model_dump_json(indent=2))
         return 0
