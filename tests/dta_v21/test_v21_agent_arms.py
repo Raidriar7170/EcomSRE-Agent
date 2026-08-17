@@ -50,6 +50,7 @@ from ecomsre.dta_v2.v21.registry import (
     load_default_runbook_registry,
     load_default_scenario_registries,
 )
+from ecomsre.model.gateway import ProviderProtocolError
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -77,6 +78,8 @@ class ScriptedProviderV21:
         self.visible_states.append(visible_state)
         self.attempted_calls += 1
         value = self.investigation.pop(0)
+        if isinstance(value, Exception):
+            raise value
         response = {"id": f"scripted-{self.attempted_calls}"}
         return ProviderTurnV21(
             function_name="scripted_investigation",
@@ -118,6 +121,52 @@ def _context(run_id: str, scenario_index: int):
         started_at=START,
         ended_at=END,
     )
+
+
+def test_provider_protocol_failure_retains_only_fixed_safe_validation_codes() -> None:
+    run_id = "8" * 32
+    provider = ScriptedProviderV21(
+        arm=AgentArmV21.FLAT_ADAPTIVE,
+        investigation=[
+            ProviderProtocolError(
+                "Provider investigation output is invalid "
+                "[codes=diagnosis:missing,output:planner_gap_mismatch]"
+            )
+        ],
+    )
+
+    result = run_flat_adaptive_agent_v21(
+        context=_context(run_id, 1),
+        backend=FakeReadBackend.healthy(),
+        registry=load_default_runbook_registry(ROOT),
+        provider=provider,
+    )
+
+    assert result.terminal is AgentRunTerminalV21.FAILED
+    assert result.failure_code is AgentFailureCodeV21.PROVIDER_PROTOCOL_FAILURE
+    assert result.provider_failure_codes == (
+        "diagnosis:missing",
+        "output:planner_gap_mismatch",
+    )
+
+
+def test_provider_protocol_failure_does_not_retain_unstructured_detail() -> None:
+    run_id = "7" * 32
+    private_value = "private-provider-output-must-not-leak"
+    provider = ScriptedProviderV21(
+        arm=AgentArmV21.FLAT_ADAPTIVE,
+        investigation=[ProviderProtocolError(private_value)],
+    )
+
+    result = run_flat_adaptive_agent_v21(
+        context=_context(run_id, 1),
+        backend=FakeReadBackend.healthy(),
+        registry=load_default_runbook_registry(ROOT),
+        provider=provider,
+    )
+
+    assert result.provider_failure_codes == ()
+    assert private_value not in result.model_dump_json()
 
 
 def _metrics(run_id: str, service: str):

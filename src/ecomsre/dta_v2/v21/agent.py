@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
+import re
 from typing import Any, Literal, Protocol, cast
 
 from pydantic import Field, StrictInt, model_validator
@@ -184,6 +185,7 @@ class DtaAgentRunResultV21(DtaModelV21):
     run_id: str = Field(pattern=r"^[0-9a-f]{32}$")
     terminal: AgentRunTerminalV21
     failure_code: AgentFailureCodeV21 | None
+    provider_failure_codes: tuple[str, ...] = Field(max_length=16)
     identity: AgentIdentityManifestV21
     provider_turn_count: StrictInt = Field(ge=0, le=6)
     semantic_read_tool_dispatch_count: StrictInt = Field(ge=0, le=4)
@@ -201,6 +203,20 @@ class DtaAgentRunResultV21(DtaModelV21):
 
     @model_validator(mode="after")
     def require_result_shape(self) -> DtaAgentRunResultV21:
+        if (
+            self.provider_failure_codes != tuple(sorted(set(self.provider_failure_codes)))
+            or any(
+                re.fullmatch(r"[a-z][a-z0-9_]{0,63}:[a-z][a-z0-9_]{0,63}", code)
+                is None
+                for code in self.provider_failure_codes
+            )
+        ):
+            raise ValueError("Agent result Provider failure codes are not safe")
+        if self.provider_failure_codes and (
+            self.terminal is not AgentRunTerminalV21.FAILED
+            or self.failure_code is not AgentFailureCodeV21.PROVIDER_PROTOCOL_FAILURE
+        ):
+            raise ValueError("Agent result carries Provider codes outside a protocol failure")
         if self.identity.arm is not self.arm:
             raise ValueError("Agent result identity differs from the arm")
         if (
@@ -348,6 +364,7 @@ def _build_result(
     failure_code: AgentFailureCodeV21 | None,
     tools: InvestigationReadTools,
     turns: tuple[ProviderTurnEvidenceV21, ...],
+    provider_failure_codes: tuple[str, ...] = (),
     planner_trace: tuple[PlannerTraceEntryV21, ...] = (),
     diagnosis: DtaDiagnosisV21 | None = None,
     resolved_evidence: ResolvedDiagnosisEvidenceViewV21 | None = None,
@@ -368,6 +385,7 @@ def _build_result(
         "run_id": context.run_id,
         "terminal": terminal,
         "failure_code": failure_code,
+        "provider_failure_codes": provider_failure_codes,
         "identity": provider.identity,
         "provider_turn_count": provider.attempted_calls,
         "semantic_read_tool_dispatch_count": semantic_reads,
@@ -399,6 +417,22 @@ def _provider_failure(error: Exception) -> AgentFailureCodeV21:
     if isinstance(error, (ConnectionError, TimeoutError)):
         return AgentFailureCodeV21.PROVIDER_TRANSPORT_FAILURE
     return AgentFailureCodeV21.PROVIDER_PROTOCOL_FAILURE
+
+
+def _provider_failure_codes(error: Exception) -> tuple[str, ...]:
+    if not isinstance(error, ProviderProtocolError):
+        return ()
+    match = re.search(r"\[codes=([a-z0-9_:,]+)\]$", str(error))
+    if match is None:
+        return ()
+    codes = tuple(sorted(set(match.group(1).split(","))))
+    if len(codes) > 16 or any(
+        re.fullmatch(r"[a-z][a-z0-9_]{0,63}:[a-z][a-z0-9_]{0,63}", code)
+        is None
+        for code in codes
+    ):
+        return ()
+    return codes
 
 
 def _request_services(request: ReadToolRequest) -> tuple[str, ...]:
@@ -593,6 +627,7 @@ def _finish_diagnosis(
             provider=provider,
             terminal=AgentRunTerminalV21.FAILED,
             failure_code=failure,
+            provider_failure_codes=_provider_failure_codes(error),
             tools=tools,
             turns=tuple(turns),
             planner_trace=tuple(planner_trace),
@@ -674,6 +709,7 @@ def run_evidence_guided_agent_v21(
                 provider=provider,
                 terminal=AgentRunTerminalV21.FAILED,
                 failure_code=_provider_failure(error),
+                provider_failure_codes=_provider_failure_codes(error),
                 tools=tools,
                 turns=tuple(turns),
                 planner_trace=tuple(trace),
@@ -854,6 +890,7 @@ def run_flat_adaptive_agent_v21(
                 provider=provider,
                 terminal=AgentRunTerminalV21.FAILED,
                 failure_code=_provider_failure(error),
+                provider_failure_codes=_provider_failure_codes(error),
                 tools=tools,
                 turns=tuple(turns),
             )
@@ -1009,6 +1046,7 @@ def run_one_shot_agent_v21(
             provider=provider,
             terminal=AgentRunTerminalV21.FAILED,
             failure_code=_provider_failure(error),
+            provider_failure_codes=_provider_failure_codes(error),
             tools=tools,
             turns=(),
         )
