@@ -11,6 +11,8 @@ from ecomsre.dta_v2.tool_contracts import (
     MetricRecord,
     MetricUnit,
     ToolName,
+    TruthIsolationError,
+    assert_truth_isolated,
 )
 from ecomsre.dta_v2.v21.contracts import (
     ActionDispositionV21,
@@ -32,6 +34,7 @@ from ecomsre.dta_v2.v21.evaluation_contracts import (
     PublicEvaluationManifestV21,
     ReplayObservationFixtureV21,
     ScenarioFamilyV21,
+    _truth_isolation_case_projection_v21,
     build_evaluation_score_v21,
 )
 
@@ -134,6 +137,25 @@ def test_case_is_truth_free_hash_bound_and_rejects_answer_semantics() -> None:
                     AgentVisibleReplayCaseV21, bad_payload, "case_sha256"
                 ),
             }
+        )
+
+
+def test_case_truth_projection_does_not_concatenate_typed_ad_service_names() -> None:
+    payload = {
+        "observations": [
+            {"service_scope": ["ad"], "records": [{"service": "ad"}]}
+            for _ in range(9)
+        ]
+    }
+    with pytest.raises(TruthIsolationError, match="opaque identity"):
+        assert_truth_isolated(payload)
+
+    assert_truth_isolated(_truth_isolation_case_projection_v21(payload))
+    with pytest.raises(TruthIsolationError, match="evaluator truth"):
+        assert_truth_isolated(
+            _truth_isolation_case_projection_v21(
+                {**payload, "message": "expected root ad"}
+            )
         )
 
 

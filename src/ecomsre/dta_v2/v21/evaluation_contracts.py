@@ -89,6 +89,41 @@ _MEANINGFUL_DIFFERENCES = {
     "record_truncation",
     "tool_source_partial_failure",
 }
+_SERVICE_IDENTITY_KEYS_V21 = {
+    "anchor_service",
+    "logical_service",
+    "parent_service",
+    "service",
+    "service_path",
+    "service_scope",
+}
+
+
+def _truth_isolation_case_projection_v21(
+    value: object, *, service_labeled: bool = False
+) -> object:
+    """Preserve truth checks without concatenating typed service names as IDs."""
+
+    if isinstance(value, str):
+        return f"logical-service:{value}" if service_labeled else value
+    if isinstance(value, dict):
+        return {
+            key: _truth_isolation_case_projection_v21(
+                member,
+                service_labeled=(
+                    service_labeled or str(key) in _SERVICE_IDENTITY_KEYS_V21
+                ),
+            )
+            for key, member in value.items()
+        }
+    if isinstance(value, (list, tuple)):
+        return [
+            _truth_isolation_case_projection_v21(
+                member, service_labeled=service_labeled
+            )
+            for member in value
+        ]
+    return value
 
 
 class ReplayObservationFixtureV21(DtaModelV21):
@@ -164,26 +199,28 @@ class AgentVisibleReplayCaseV21(DtaModelV21):
             raise ValueError("full-context tool projection is invalid")
         try:
             assert_truth_isolated(
-                {
-                    "case_id": self.case_id,
-                    "scenario_id": self.scenario_id,
-                    "captured_started_at": self.captured_started_at.isoformat(),
-                    "captured_ended_at": self.captured_ended_at.isoformat(),
-                    "full_context_tools": self.full_context_tools,
-                    "observations": [
-                        {
-                            "tool": item.tool,
-                            "service_scope": item.service_scope,
-                            "records": [
-                                record.model_dump(mode="json")
-                                for record in item.records
-                            ],
-                            "truncated": item.truncated,
-                            "error_code": item.error_code,
-                        }
-                        for item in self.observations
-                    ],
-                }
+                _truth_isolation_case_projection_v21(
+                    {
+                        "case_id": self.case_id,
+                        "scenario_id": self.scenario_id,
+                        "captured_started_at": self.captured_started_at.isoformat(),
+                        "captured_ended_at": self.captured_ended_at.isoformat(),
+                        "full_context_tools": self.full_context_tools,
+                        "observations": [
+                            {
+                                "tool": item.tool,
+                                "service_scope": item.service_scope,
+                                "records": [
+                                    record.model_dump(mode="json")
+                                    for record in item.records
+                                ],
+                                "truncated": item.truncated,
+                                "error_code": item.error_code,
+                            }
+                            for item in self.observations
+                        ],
+                    }
+                )
             )
         except ValueError as error:
             raise ValueError("replay case truth-isolation failed") from error
