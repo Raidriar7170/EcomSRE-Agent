@@ -12,6 +12,7 @@ import pytest
 from ecomsre.dta_v2.read_tools import BackendResult
 from ecomsre.dta_v2.v21.capture_campaign import (
     CalibrationKindV21,
+    CaptureCaseFailureV21,
     CaptureConditionV21,
     OperationalFamilyV21,
     build_default_capture_plan_v21,
@@ -307,6 +308,36 @@ def test_service_unavailable_calibration_binds_caller_impact(
     assert observation.business_impact_service == "checkout"
     assert observation.measurable is True
     assert lifecycle.unavailable_business_anchor_v21 == {"email": "checkout"}
+
+
+def test_apply_case_types_flag_write_failure_without_exposing_detail(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    case = build_default_capture_plan_v21(base_head=BASE_HEAD).cases[0]
+    lifecycle = OwnedCaptureLifecycleV21.__new__(OwnedCaptureLifecycleV21)
+    lifecycle.active_condition = None
+    lifecycle.case_apply_step_v21 = "BEGIN"
+    monkeypatch.setattr(lifecycle, "_upstream", _upstream)
+    monkeypatch.setattr(
+        lifecycle,
+        "_flags",
+        lambda: SimpleNamespace(
+            apply=lambda document: (_ for _ in ()).throw(
+                RuntimeError("private flag mutation failure")
+            )
+        ),
+    )
+
+    with pytest.raises(CaptureCaseFailureV21) as captured:
+        lifecycle.apply_case(
+            case,
+            selected_email_variant="1000x",
+            selected_shipping_variant="5sec",
+        )
+
+    assert captured.value.stage == f"CASE:{case.case_id}:APPLY:FLAGS"
+    assert captured.value.cause_type == "RuntimeError"
+    assert "private flag mutation failure" not in str(captured.value)
 
 
 def test_capture_fixture_fails_closed_on_truth_isolation() -> None:

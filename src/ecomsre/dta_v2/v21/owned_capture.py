@@ -328,6 +328,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         self.fault_operation_count = 0
         self.email_restart_required_v21 = False
         self.calibration_step_v21 = "BEGIN"
+        self.case_apply_step_v21 = "BEGIN"
         self.case_capture_step_v21 = "BEGIN"
         self.ad_baseline_cpu_p95_percent_v21: float | None = None
         self.ad_baseline_latency_p95_ms_v21: float | None = None
@@ -592,6 +593,29 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         selected_email_variant: str,
         selected_shipping_variant: str,
     ) -> None:
+        self.case_apply_step_v21 = "BEGIN"
+        try:
+            self._apply_case_impl(
+                case,
+                selected_email_variant=selected_email_variant,
+                selected_shipping_variant=selected_shipping_variant,
+            )
+        except CaptureCaseFailureV21:
+            raise
+        except Exception as error:
+            raise CaptureCaseFailureV21(
+                case_id=case.case_id,
+                step=self.case_apply_step_v21,
+                cause=error,
+            ) from error
+
+    def _apply_case_impl(
+        self,
+        case: CaptureCasePlanV21,
+        *,
+        selected_email_variant: str,
+        selected_shipping_variant: str,
+    ) -> None:
         self._require_idle()
         self.active_condition = case.case_id
         self.case_started_at = datetime.now(timezone.utc)
@@ -613,6 +637,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
             ad_cpu = "on"
         elif case.condition is CaptureConditionV21.SHIPPING_SLOWDOWN:
             shipping = selected_shipping_variant
+        self.case_apply_step_v21 = "APPLY:FLAGS"
         self._flags().apply(
             build_capture_flag_document_v21(
                 self._upstream(),
@@ -631,15 +656,19 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         }:
             self.fault_operation_count = 1
         if case.condition is CaptureConditionV21.RECOMMENDATION_STOP:
+            self.case_apply_step_v21 = "APPLY:SERVICE_STOP"
             self._service("recommendation").stop()
             self.fault_operation_count = 1
         elif case.condition is CaptureConditionV21.EMAIL_STOP:
+            self.case_apply_step_v21 = "APPLY:SERVICE_STOP"
             self._service("email").stop()
             self.fault_operation_count = 1
         elif case.condition is CaptureConditionV21.PRODUCT_CATALOG_STOP:
+            self.case_apply_step_v21 = "APPLY:SERVICE_STOP"
             self._service("product-catalog").stop()
             self.fault_operation_count = 1
         elif case.condition is CaptureConditionV21.EMAIL_MEMORY_LEAK:
+            self.case_apply_step_v21 = "APPLY:EMAIL_RESOURCE"
             self._email_v21().restart()
             self.email_resource_fixture_v21 = self._capture_fixture_v21(
                 build_inspect_resource_usage_request(
@@ -654,6 +683,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
                 time.sleep(remaining)
             return
         elif case.condition is CaptureConditionV21.RECOVERY_TRANSITION:
+            self.case_apply_step_v21 = "APPLY:RECOVERY"
             self._service("email").stop()
             self.fault_operation_count = 1
             time.sleep(case.observation_window_seconds)
@@ -671,6 +701,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
             time.sleep(15)
             return
         elif case.condition is CaptureConditionV21.SHIPPING_SLOWDOWN:
+            self.case_apply_step_v21 = "APPLY:SHIPPING_PROBE"
             case_window_started = time.monotonic()
             time.sleep(SHIPPING_FLAG_SETTLE_SECONDS_V21)
             self.shipping_probe_started_at_v21 = datetime.now(timezone.utc)
@@ -682,6 +713,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
             if shipping_remaining > 0:
                 time.sleep(shipping_remaining)
             return
+        self.case_apply_step_v21 = "APPLY:WAIT"
         time.sleep(case.observation_window_seconds)
 
     def capture_case(  # type: ignore[override]
