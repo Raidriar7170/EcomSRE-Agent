@@ -1,0 +1,65 @@
+{
+  "schema_version": "dta-v21.historical-v2-bindings.v1",
+  "base_commit": "925d23994888d1b83e57fc1bbdd1944e57a1bfff",
+  "expected_historical_terminal": "DTA_V2_LIVE_DEMO_ACCEPTANCE_PASS",
+  "expected_evaluation_result": "COMPLETED_HELD_OUT_NEGATIVE",
+  "expected_agent_identity_sha256": "6efc26c6e5fab6190be9e63c0bec318c6e94fa29196e6693eb63b2845c6ad0a4",
+  "expected_held_out_seal_sha256": "0f944e79f0958f285006c3bdc3cf8f82b8a71731d8d96d02b474f254a54e247a",
+  "files": [
+    {
+      "path": "config/dta-v2/agent-identity.v1.json",
+      "raw_sha256": "81a792ee545229fa12f9e1965395b6cef787000c1aedde924e08a241d98f2edb",
+      "semantic_sha256": "ee89e40123bc0e236a339f7056f9f3606f23be7fe3fe4285d9eb832059b25626"
+    },
+    {
+      "path": "config/dta-v2/live-demo.v1.json",
+      "raw_sha256": "48eafa4055a25642e5fd852448f54bf4c71abcb4f9733f0f1c3cb9bfbbed8e1f",
+      "semantic_sha256": "1311c93077f78dc2e20a9770d1ca97d03a80e8cb09157e1e677d6467a84ba116"
+    },
+    {
+      "path": "config/dta-v2/live-demo.v2.json",
+      "raw_sha256": "90631c28e4d4215d080f66faeed2b65951cce5a99c7b79a7f34ef66f68ff0c8d",
+      "semantic_sha256": "3676168c9508ba8ffbf1e3d2c85e74ab7908bb8e6da34bf029a3caff7b69ac7b"
+    },
+    {
+      "path": "config/dta-v2/evaluation/manifest.json",
+      "raw_sha256": "f6ff2f222a725377f664b1ae70c7a300c6c2c4f9bfacc8420e3c5861ddcf697e",
+      "semantic_sha256": "ecad0ed1ff33b8c65aacc94f262abe39dd4347f41c58371009cdc49d41d41200"
+    },
+    {
+      "path": "docs/analysis/dta-v2-master-progress.json",
+      "raw_sha256": "5a9fe8a5f44eca9b9a7f9cf5d1a7dc95f850de0e4eb1ef3f7d4f028f44513f6f",
+      "semantic_sha256": "40f611c5bce16f4748b8bd2507262f54cffa3251acfcede21ee71032c3c98385"
+    },
+    {
+      "path": "docs/design/diagnosis-to-action-v2.md",
+      "raw_sha256": "a3cb6ae5b36173c8d372921aaf6a29d0fbec1f89ccd3f992e45e1745c999e24a",
+      "semantic_sha256": null
+    },
+    {
+      "path": "docs/results/dta-v2-evaluation.json",
+      "raw_sha256": "59062eba68e0723d22d9844de807088640f03110b1d3fd5b4044f4a53ef10846",
+      "semantic_sha256": "7a8d70ab7c25096f90e8f9b2ebdf5d5cffc3cb14bda6e8b20eba9c545d9944d0"
+    },
+    {
+      "path": "docs/results/dta-v2-evaluation.md",
+      "raw_sha256": "4f5ed888c5e90ee55a264d22049f8bf54c1eebc444f5a539fb79087a9d62b2c2",
+      "semantic_sha256": null
+    },
+    {
+      "path": "docs/results/dta-v2-live-demo.json",
+      "raw_sha256": "8c1d0c70a2c32c5cbd4e9f06649cec3ca447f20cf4e66de248a37240112d98e7",
+      "semantic_sha256": "0213ddb9d817a6db70a54cb46fed9d19e6f41a579cb21ff377e95b11ba490bd2"
+    },
+    {
+      "path": "docs/results/dta-v2-live-demo.md",
+      "raw_sha256": "eb666f5d6995d8ee17d82bc377c8d74143fe4fe5d98a285b093706ba3393b6ce",
+      "semantic_sha256": null
+    },
+    {
+      "path": "docs/results/dta-v2-live-demo-human-brief.md",
+      "raw_sha256": "16bf1966e0c897b70729ede345e7a36eb6618d9fe97d26a6d7395f7e04e3b1e5",
+      "semantic_sha256": null
+    }
+  ]
+}

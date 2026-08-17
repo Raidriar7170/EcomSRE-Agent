@@ -45,10 +45,18 @@ def _adapt_historical_phase5b_preflight_for_successor_tests(
     from scripts.ci.verify_phase5b_historical_bindings import (
         verify_historical_bindings,
     )
+    from scripts.ci.verify_phase5b_execution_historical_bindings import (
+        verify_historical_execution_bindings,
+    )
     from scripts.phase5b_execution import cli as execution_cli
 
     monkeypatch.setattr(
         execution_cli,
         "verify_freeze_manifest",
         verify_historical_bindings,
+    )
+    monkeypatch.setattr(
+        execution_cli,
+        "verify_execution_freeze_manifest",
+        verify_historical_execution_bindings,
     )

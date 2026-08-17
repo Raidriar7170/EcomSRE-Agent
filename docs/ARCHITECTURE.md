@@ -13,6 +13,10 @@ Decision references: `DEC-002`, `DEC-003`, `DEC-007`, `DEC-008`, `DEC-010`,
 v2 contracts, admission, authorization, bounded read-only runtime, PR-D
 development Agent identity, PR-E replay evaluation, and the PR-F known-scenario
 local live Demo.
+`DEC-039` through `DEC-043` govern the independent DTA v2.1 P0 successor,
+crossed service and mechanism matrix, evidence-guided planner, compact
+deterministic context, frozen three-arm evaluation, and exact bounded local
+portfolio.
 
 ## Logical planes
 
@@ -122,6 +126,18 @@ not production, held-out recovery accuracy, or arbitrary autonomous authority.
 Because PR-F changed the investigation Prompt, the PR-E held-out negative
 remains applicable only to its historical frozen Agent identity and was not
 rerun.
+
+Diagnosis-to-Action v2.1 is a second independent namespace described in
+[diagnosis-to-action-v2.1-p0.md](design/diagnosis-to-action-v2.1-p0.md). It
+preserves the entire v2 portfolio by exact historical bindings, then crosses
+services and mechanisms so service identity cannot stand in for diagnosis.
+Its Strong Single Agent explicitly tracks hypotheses and evidence gaps, while
+the runtime projects a reproducible bounded Evidence Index instead of resending
+the complete accumulated transcript. Investigation and candidate-bound Action
+Selection remain separate. The model has zero executable authority; trusted
+runtime code owns candidate construction, admission, authorization, fixed
+execution, and verification. PR-A freezes only this protocol and namespace;
+later runtime, evaluation, and live claims require their own exact stage gates.
 
 Fresh authorized no-fault PR-C Smoke
 `f8532f3a6ab5242ab5bba2f8ae1a6caf` closed the PR-C read-only gate
