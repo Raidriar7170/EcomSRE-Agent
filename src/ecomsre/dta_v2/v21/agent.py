@@ -198,6 +198,8 @@ class DtaAgentRunResultV21(DtaModelV21):
             raise ValueError("Agent result identity differs from the arm")
         if self.evidence_store.run_id != self.run_id or self.evidence_index.run_id != self.run_id:
             raise ValueError("Agent result evidence belongs to another run")
+        if self.diagnosis is not None and self.diagnosis.run_id != self.run_id:
+            raise ValueError("Agent result Diagnosis belongs to another run")
         if self.arm is AgentArmV21.ONE_SHOT_FULL_CONTEXT:
             if self.semantic_read_tool_dispatch_count != 0:
                 raise ValueError("one-shot result reports semantic reads")
@@ -460,6 +462,17 @@ def _finish_diagnosis(
     diagnosis: DtaDiagnosisV21,
 ) -> DtaAgentRunResultV21:
     snapshot = tools.snapshot()
+    if diagnosis.run_id != context.run_id:
+        return _build_result(
+            arm=arm,
+            context=context,
+            provider=provider,
+            terminal=AgentRunTerminalV21.FAILED,
+            failure_code=AgentFailureCodeV21.DIAGNOSIS_BINDING_FAILURE,
+            tools=tools,
+            turns=tuple(turns),
+            planner_trace=tuple(planner_trace),
+        )
     if diagnosis.terminal is not TerminalV21.COMPLETED:
         if diagnosis.supporting_evidence_refs or diagnosis.contradicting_evidence_refs:
             try:
@@ -650,19 +663,13 @@ def run_evidence_guided_agent_v21(
         if plan.next_step is PlannerNextStepV21.REQUEST_EVIDENCE:
             request = plan.read_request
             assert request is not None
-            duplicate = request.normalized_request_sha256 in {
-                item.request_sha256 for item in tools.snapshot().observations
-            }
             try:
                 validate_plan_decision_v21(
                     decision=plan,
                     context=context,
-                    seen_request_sha256=(
-                        ()
-                        if duplicate
-                        else tuple(
-                            item.request_sha256 for item in tools.snapshot().observations
-                        )
+                    evidence_index=state.evidence_index,
+                    seen_request_sha256=tuple(
+                        item.request_sha256 for item in tools.snapshot().observations
                     ),
                     completed_read_dispatches=tools.snapshot().dispatch_count,
                 )
@@ -697,6 +704,7 @@ def run_evidence_guided_agent_v21(
                 validate_plan_decision_v21(
                     decision=plan,
                     context=context,
+                    evidence_index=state.evidence_index,
                     seen_request_sha256=tuple(
                         item.request_sha256 for item in tools.snapshot().observations
                     ),

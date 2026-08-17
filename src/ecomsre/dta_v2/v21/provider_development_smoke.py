@@ -5,10 +5,10 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timedelta, timezone
 from enum import Enum
+import hashlib
 import json
 import os
 from pathlib import Path
-import secrets
 from typing import Any, Literal, cast
 
 from pydantic import Field, StrictInt, model_validator
@@ -41,7 +41,11 @@ from ecomsre.dta_v2.v21.agent import (
     DtaAgentRunResultV21,
     run_evidence_guided_agent_v21,
 )
-from ecomsre.dta_v2.v21.agent_contracts import AgentArmV21, build_alert_context_v21
+from ecomsre.dta_v2.v21.agent_contracts import (
+    AgentArmV21,
+    AgentIdentityManifestV21,
+    build_alert_context_v21,
+)
 from ecomsre.dta_v2.v21.agent_provider import OpenAICompatibleDtaAgentProviderV21
 from ecomsre.dta_v2.v21.contracts import DtaModelV21, Sha256V21, semantic_sha256
 from ecomsre.dta_v2.v21.registry import (
@@ -86,6 +90,86 @@ class ProviderDevelopmentSmokeReportV21(DtaModelV21):
         )
         if self.report_sha256 != expected:
             raise ValueError("Provider Smoke report digest differs")
+        return self
+
+
+class ProviderSmokeAttemptManifestV21(DtaModelV21):
+    schema_version: Literal["dta-v21.provider-smoke-attempt-manifest.v1"]
+    attempt_id: str = Field(pattern=r"^[0-9a-f]{32}$")
+    created_at: datetime
+    identity_sha256: Sha256V21
+    fixture_source_sha256: Sha256V21
+    provider_configuration_sha256: Sha256V21
+    protocol_revision_sha256: Sha256V21
+    previous_attempt_manifest_sha256: Sha256V21 | None
+    manifest_sha256: Sha256V21
+
+    @model_validator(mode="after")
+    def require_manifest_binding(self) -> ProviderSmokeAttemptManifestV21:
+        if self.created_at.tzinfo is None or self.created_at.utcoffset() != timedelta(0):
+            raise ValueError("Provider Smoke attempt timestamp must use UTC")
+        revision = semantic_sha256(
+            {
+                "identity_sha256": self.identity_sha256,
+                "fixture_source_sha256": self.fixture_source_sha256,
+                "provider_configuration_sha256": self.provider_configuration_sha256,
+            }
+        )
+        if self.protocol_revision_sha256 != revision:
+            raise ValueError("Provider Smoke protocol revision differs")
+        expected = semantic_sha256(
+            self.model_dump(mode="json", exclude={"manifest_sha256"})
+        )
+        if self.manifest_sha256 != expected:
+            raise ValueError("Provider Smoke attempt manifest digest differs")
+        return self
+
+
+class ProviderSmokeAttemptReceiptV21(DtaModelV21):
+    schema_version: Literal["dta-v21.provider-smoke-attempt-receipt.v1"]
+    attempt_id: str = Field(pattern=r"^[0-9a-f]{32}$")
+    attempt_manifest_sha256: Sha256V21
+    status: ProviderDevelopmentSmokeStatusV21
+    provider_attempt_count: StrictInt = Field(ge=0, le=6)
+    raw_response_sha256: tuple[Sha256V21, ...] = Field(max_length=6)
+    agent_result_sha256: Sha256V21
+    provider_report_sha256: Sha256V21
+    agent_result_file_sha256: Sha256V21
+    provider_report_file_sha256: Sha256V21
+    receipt_sha256: Sha256V21
+
+    @model_validator(mode="after")
+    def require_receipt_binding(self) -> ProviderSmokeAttemptReceiptV21:
+        if len(self.raw_response_sha256) > self.provider_attempt_count:
+            raise ValueError("Provider Smoke response hashes exceed attempts")
+        expected = semantic_sha256(
+            self.model_dump(mode="json", exclude={"receipt_sha256"})
+        )
+        if self.receipt_sha256 != expected:
+            raise ValueError("Provider Smoke attempt receipt digest differs")
+        return self
+
+
+class ProviderSmokePublicLedgerV21(DtaModelV21):
+    schema_version: Literal["dta-v21.provider-smoke-public-ledger.v1"]
+    legacy_unbound_attempt_count: StrictInt = Field(ge=0)
+    verified_attempts: tuple[ProviderSmokeAttemptReceiptV21, ...] = Field(
+        min_length=1
+    )
+    ledger_sha256: Sha256V21
+
+    @model_validator(mode="after")
+    def require_public_ledger_binding(self) -> ProviderSmokePublicLedgerV21:
+        attempt_ids = tuple(item.attempt_id for item in self.verified_attempts)
+        if attempt_ids != tuple(sorted(attempt_ids)) or len(attempt_ids) != len(
+            set(attempt_ids)
+        ):
+            raise ValueError("Provider Smoke public attempts are not canonical")
+        expected = semantic_sha256(
+            self.model_dump(mode="json", exclude={"ledger_sha256"})
+        )
+        if self.ledger_sha256 != expected:
+            raise ValueError("Provider Smoke public ledger digest differs")
         return self
 
 
@@ -213,8 +297,106 @@ def _write_create_once(path: Path, value: object) -> None:
     path.chmod(0o600)
 
 
+def _file_sha256(path: Path) -> str:
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("Provider Smoke evidence file is missing or unsafe")
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _load_attempt_manifests(
+    attempt_parent: Path,
+) -> tuple[ProviderSmokeAttemptManifestV21, ...]:
+    if not attempt_parent.exists():
+        return ()
+    if attempt_parent.is_symlink() or not attempt_parent.is_dir():
+        raise ValueError("Provider Smoke attempt parent is unsafe")
+    manifests: list[ProviderSmokeAttemptManifestV21] = []
+    for path in sorted(attempt_parent.glob("*/attempt-manifest.json")):
+        if path.is_symlink() or not path.is_file():
+            raise ValueError("Provider Smoke attempt manifest is unsafe")
+        manifests.append(
+            ProviderSmokeAttemptManifestV21.model_validate_json(
+                path.read_text(encoding="utf-8")
+            )
+        )
+    revisions = tuple(item.protocol_revision_sha256 for item in manifests)
+    if len(revisions) != len(set(revisions)):
+        raise ValueError("Provider Smoke ledger contains an identical rerun")
+    return tuple(sorted(manifests, key=lambda item: (item.created_at, item.attempt_id)))
+
+
+def _start_provider_smoke_attempt_v21(
+    *,
+    repository_root: Path,
+    private_root: Path,
+    attempt_id: str,
+    created_at: datetime,
+    identity: AgentIdentityManifestV21,
+    config: OpenAICompatibleConfig,
+    timeout_seconds: float,
+    max_completion_tokens: int,
+) -> tuple[ProviderSmokeAttemptManifestV21, Path]:
+    attempt_parent = private_root / "pr-c" / "provider-smoke"
+    previous = _load_attempt_manifests(attempt_parent)
+    expected_source = (
+        repository_root / "src/ecomsre/dta_v2/v21/provider_development_smoke.py"
+    ).resolve()
+    if expected_source != Path(__file__).resolve():
+        raise ValueError("Provider Smoke source is outside the repository")
+    fixture_source_sha256 = _file_sha256(expected_source)
+    provider_configuration_sha256 = semantic_sha256(
+        {
+            "base_url_sha256": semantic_sha256(config.base_url),
+            "model": config.model,
+            "timeout_seconds": timeout_seconds,
+            "max_completion_tokens": max_completion_tokens,
+        }
+    )
+    revision = semantic_sha256(
+        {
+            "identity_sha256": identity.identity_sha256,
+            "fixture_source_sha256": fixture_source_sha256,
+            "provider_configuration_sha256": provider_configuration_sha256,
+        }
+    )
+    if any(item.protocol_revision_sha256 == revision for item in previous):
+        raise ValueError("identical Provider Smoke rerun is forbidden")
+    payload: dict[str, object] = {
+        "schema_version": "dta-v21.provider-smoke-attempt-manifest.v1",
+        "attempt_id": attempt_id,
+        "created_at": created_at,
+        "identity_sha256": identity.identity_sha256,
+        "fixture_source_sha256": fixture_source_sha256,
+        "provider_configuration_sha256": provider_configuration_sha256,
+        "protocol_revision_sha256": revision,
+        "previous_attempt_manifest_sha256": (
+            None if not previous else previous[-1].manifest_sha256
+        ),
+    }
+    draft = cast(Any, ProviderSmokeAttemptManifestV21).model_construct(
+        **payload, manifest_sha256="0" * 64
+    )
+    manifest = ProviderSmokeAttemptManifestV21.model_validate(
+        {
+            **payload,
+            "manifest_sha256": semantic_sha256(
+                draft.model_dump(mode="json", exclude={"manifest_sha256"})
+            ),
+        }
+    )
+    attempt_root = attempt_parent / manifest.attempt_id
+    _write_create_once(
+        attempt_root / "attempt-manifest.json", manifest.model_dump(mode="json")
+    )
+    return manifest, attempt_root
+
+
 def _build_report(
-    *, result: DtaAgentRunResultV21, model_id: str, selection_reason: str
+    *,
+    result: DtaAgentRunResultV21,
+    model_id: str,
+    selection_reason: str,
+    raw_response_sha256: tuple[str, ...],
 ) -> ProviderDevelopmentSmokeReportV21:
     payload: dict[str, object] = {
         "schema_version": "dta-v21.provider-development-smoke.v1",
@@ -249,9 +431,7 @@ def _build_report(
         "total_latency_ms": sum(
             item.monotonic_latency_ms for item in result.provider_turns
         ),
-        "raw_response_sha256": tuple(
-            item.raw_response_sha256 for item in result.provider_turns
-        ),
+        "raw_response_sha256": raw_response_sha256,
         "agent_result_sha256": result.result_sha256,
     }
     draft = cast(Any, ProviderDevelopmentSmokeReportV21).model_construct(
@@ -268,7 +448,11 @@ def _build_report(
 
 
 def run_provider_development_smoke_v21(
-    *, repository_root: Path, provider_env_path: Path, private_root: Path
+    *,
+    repository_root: Path,
+    provider_env_path: Path,
+    private_root: Path,
+    attempt_id: str,
 ) -> ProviderDevelopmentSmokeReportV21:
     values = load_private_provider_env(provider_env_path)
     config = OpenAICompatibleConfig.from_environment(values)
@@ -280,16 +464,25 @@ def run_provider_development_smoke_v21(
         else "preferred model is not configured; selected the sole configured compatible model"
     )
     now = datetime.now(timezone.utc).replace(microsecond=0)
-    run_id = secrets.token_hex(16)
     scenarios, _, _ = load_default_scenario_registries(repository_root)
     context = build_alert_context_v21(
         scenario=scenarios.scenarios[0],
-        run_id=run_id,
+        run_id=attempt_id,
         started_at=now - timedelta(minutes=5),
         ended_at=now,
     )
     provider = OpenAICompatibleDtaAgentProviderV21(
         arm=AgentArmV21.EVIDENCE_GUIDED_PLANNER,
+        config=config,
+        timeout_seconds=60.0,
+        max_completion_tokens=1600,
+    )
+    attempt_manifest, attempt_root = _start_provider_smoke_attempt_v21(
+        repository_root=repository_root,
+        private_root=private_root,
+        attempt_id=attempt_id,
+        created_at=now,
+        identity=provider.identity,
         config=config,
         timeout_seconds=60.0,
         max_completion_tokens=1600,
@@ -304,13 +497,41 @@ def run_provider_development_smoke_v21(
         result=result,
         model_id=config.model,
         selection_reason=selected_reason,
+        raw_response_sha256=tuple(
+            item
+            for item in provider.raw_response_sha256_by_attempt
+            if item is not None
+        ),
     )
-    attempt_root = private_root / "pr-c" / "provider-smoke" / run_id
-    _write_create_once(
-        attempt_root / "agent-result.json", result.model_dump(mode="json")
+    agent_result_path = attempt_root / "agent-result.json"
+    report_path = attempt_root / "sanitized-report.json"
+    _write_create_once(agent_result_path, result.model_dump(mode="json"))
+    _write_create_once(report_path, report.model_dump(mode="json"))
+    receipt_payload: dict[str, object] = {
+        "schema_version": "dta-v21.provider-smoke-attempt-receipt.v1",
+        "attempt_id": attempt_id,
+        "attempt_manifest_sha256": attempt_manifest.manifest_sha256,
+        "status": report.status,
+        "provider_attempt_count": provider.attempted_calls,
+        "raw_response_sha256": report.raw_response_sha256,
+        "agent_result_sha256": result.result_sha256,
+        "provider_report_sha256": report.report_sha256,
+        "agent_result_file_sha256": _file_sha256(agent_result_path),
+        "provider_report_file_sha256": _file_sha256(report_path),
+    }
+    receipt_draft = cast(Any, ProviderSmokeAttemptReceiptV21).model_construct(
+        **receipt_payload, receipt_sha256="0" * 64
+    )
+    receipt = ProviderSmokeAttemptReceiptV21.model_validate(
+        {
+            **receipt_payload,
+            "receipt_sha256": semantic_sha256(
+                receipt_draft.model_dump(mode="json", exclude={"receipt_sha256"})
+            ),
+        }
     )
     _write_create_once(
-        attempt_root / "sanitized-report.json", report.model_dump(mode="json")
+        attempt_root / "attempt-receipt.json", receipt.model_dump(mode="json")
     )
     return report
 
@@ -320,6 +541,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--repository-root", type=Path, required=True)
     parser.add_argument("--provider-env", type=Path, required=True)
     parser.add_argument("--private-root", type=Path, required=True)
+    parser.add_argument("--attempt-id", required=True)
     return parser
 
 
@@ -329,6 +551,7 @@ def main(argv: list[str] | None = None) -> int:
         repository_root=arguments.repository_root.resolve(),
         provider_env_path=arguments.provider_env,
         private_root=arguments.private_root,
+        attempt_id=arguments.attempt_id,
     )
     print(report.model_dump_json(indent=2))
     return 0 if report.status is ProviderDevelopmentSmokeStatusV21.PASS else 2
@@ -341,5 +564,8 @@ if __name__ == "__main__":
 __all__ = (
     "ProviderDevelopmentSmokeReportV21",
     "ProviderDevelopmentSmokeStatusV21",
+    "ProviderSmokeAttemptManifestV21",
+    "ProviderSmokeAttemptReceiptV21",
+    "ProviderSmokePublicLedgerV21",
     "run_provider_development_smoke_v21",
 )

@@ -5,6 +5,8 @@ from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
 
+import pytest
+
 from ecomsre.dta_v2.read_tools import FakeReadBackend, InvestigationReadTools
 from ecomsre.dta_v2.v21.agent_contracts import (
     AgentArmV21,
@@ -23,12 +25,17 @@ from ecomsre.dta_v2.v21.contracts import (
     FaultMechanismV21,
     RunbookIdV21,
     TerminalV21,
+    semantic_sha256,
 )
 from ecomsre.dta_v2.v21.prompts import (
     ACTION_SELECTION_SYSTEM_PROMPT_V21,
     FLAT_ADAPTIVE_SYSTEM_PROMPT_V21,
     ONE_SHOT_SYSTEM_PROMPT_V21,
     PLANNER_SYSTEM_PROMPT_V21,
+)
+from ecomsre.dta_v2.v21.provider_development_smoke import (
+    ProviderSmokeAttemptManifestV21,
+    _start_provider_smoke_attempt_v21,
 )
 from ecomsre.dta_v2.v21.registry import (
     load_default_runbook_registry,
@@ -318,3 +325,66 @@ def test_prompts_require_selective_grounded_reasoning_without_truth_mappings() -
         "held-out family",
     ):
         assert forbidden not in combined
+
+
+def test_rejected_provider_response_still_exposes_only_its_raw_hash() -> None:
+    raw = _response("wrong_function", {}, index=7)
+    transport = RecordingTransport([raw])
+    provider = _provider(transport)
+    context = _context()
+    state = build_investigation_state_view_v21(
+        context=context,
+        hypotheses=(),
+        evidence_store=InvestigationReadTools(
+            run_id=RUN_ID, backend=FakeReadBackend.healthy()
+        ).snapshot(),
+        newest_observation=None,
+    )
+
+    with pytest.raises(Exception, match="required function"):
+        provider.investigation_turn(
+            context=context, visible_state=state, read_tools_enabled=True
+        )
+
+    assert provider.raw_response_sha256_by_attempt == (semantic_sha256(raw),)
+
+
+def test_provider_smoke_manifest_is_predeclared_and_blocks_identical_rerun(
+    tmp_path: Path,
+) -> None:
+    config = OpenAICompatibleConfig(
+        base_url="https://provider.invalid/v1",
+        api_key="private-provider-test-secret",
+        model=MODEL,
+    )
+    identity = _provider(RecordingTransport([])).identity
+    private_root = tmp_path / "private"
+
+    manifest, attempt_root = _start_provider_smoke_attempt_v21(
+        repository_root=ROOT,
+        private_root=private_root,
+        attempt_id="c" * 32,
+        created_at=START,
+        identity=identity,
+        config=config,
+        timeout_seconds=60.0,
+        max_completion_tokens=1600,
+    )
+
+    manifest_path = attempt_root / "attempt-manifest.json"
+    assert manifest_path.is_file()
+    assert ProviderSmokeAttemptManifestV21.model_validate_json(
+        manifest_path.read_text(encoding="utf-8")
+    ) == manifest
+    assert not (attempt_root / "agent-result.json").exists()
+    with pytest.raises(ValueError, match="identical Provider Smoke rerun"):
+        _start_provider_smoke_attempt_v21(
+            repository_root=ROOT,
+            private_root=private_root,
+            attempt_id="d" * 32,
+            created_at=START + timedelta(seconds=1),
+            identity=identity,
+            config=config,
+            timeout_seconds=60.0,
+            max_completion_tokens=1600,
+        )

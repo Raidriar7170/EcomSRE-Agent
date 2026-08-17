@@ -8,7 +8,6 @@ from ecomsre.dta_v2.read_tools import FakeReadBackend
 from ecomsre.dta_v2.tool_contracts import (
     MetricKind,
     ReadToolRequest,
-    ToolErrorCode,
     build_inspect_resource_usage_request,
     build_inspect_service_runtime_request,
     build_query_metrics_request,
@@ -236,6 +235,60 @@ def _action(*, disposition, runbook=None, service=None, parameters=(), refs=()):
     )
 
 
+def _abstain(*, run_id: str) -> DtaDiagnosisV21:
+    return DtaDiagnosisV21(
+        schema_version="dta-v21.diagnosis.v1",
+        run_id=run_id,
+        terminal=TerminalV21.ABSTAIN,
+        root_service=None,
+        root_entity_ref=None,
+        fault_domain=None,
+        mechanism=None,
+        confidence=None,
+        supporting_evidence_refs=(),
+        contradicting_evidence_refs=(),
+        evidence_source_types=(),
+        uncertainties=("The bounded evidence is insufficient.",),
+        summary="The bounded investigation abstained.",
+    )
+
+
+def test_flat_and_one_shot_reject_empty_ref_diagnosis_from_another_run() -> None:
+    run_id = "a" * 32
+    wrong_run = "b" * 32
+    registry = load_default_runbook_registry(ROOT)
+
+    flat = run_flat_adaptive_agent_v21(
+        context=_context(run_id, 0),
+        backend=FakeReadBackend.healthy(),
+        registry=registry,
+        provider=ScriptedProviderV21(
+            arm=AgentArmV21.FLAT_ADAPTIVE,
+            investigation=[_abstain(run_id=wrong_run)],
+        ),
+    )
+    one_shot = run_one_shot_agent_v21(
+        context=_context(run_id, 0),
+        backend=FakeReadBackend.healthy(),
+        registry=registry,
+        provider=ScriptedProviderV21(
+            arm=AgentArmV21.ONE_SHOT_FULL_CONTEXT,
+            investigation=[_abstain(run_id=wrong_run)],
+        ),
+        materialization_requests=(
+            _metrics(run_id, "ad"),
+            _runtime(run_id, "ad"),
+            _resources(run_id, "ad"),
+            _logs(run_id, "ad"),
+        ),
+    )
+
+    for result in (flat, one_shot):
+        assert result.terminal is AgentRunTerminalV21.FAILED
+        assert result.failure_code is AgentFailureCodeV21.DIAGNOSIS_BINDING_FAILURE
+        assert result.diagnosis is None
+
+
 def test_planner_arm_runs_cpu_case_with_compact_state_and_early_stop() -> None:
     run_id = "3" * 32
     requests = (_metrics(run_id, "ad"), _runtime(run_id, "ad"), _resources(run_id, "ad"))
@@ -417,7 +470,7 @@ def test_one_shot_materializes_four_reads_and_selects_no_action() -> None:
     assert result.action_proposal.disposition is ActionDispositionV21.NO_ACTION
 
 
-def test_duplicate_read_is_preserved_as_typed_failure_without_backend_repeat() -> None:
+def test_duplicate_read_is_terminally_rejected_without_backend_repeat() -> None:
     run_id = "7" * 32
     request = _metrics(run_id, "payment")
     hypothesis = _hypothesis("payment", FaultDomainV21.CONFIGURATION, FaultMechanismV21.CONFIGURATION_ERROR, (EvidenceSourceV21.METRICS,))
@@ -448,10 +501,18 @@ def test_duplicate_read_is_preserved_as_typed_failure_without_backend_repeat() -
         provider=provider,
     )
 
-    assert result.terminal is AgentRunTerminalV21.ABSTAIN
-    assert result.evidence_store.dispatch_count == 2
+    assert result.terminal is AgentRunTerminalV21.FAILED
+    assert result.failure_code is AgentFailureCodeV21.PLANNER_CONTRACT_FAILURE
+    assert result.evidence_store.dispatch_count == 1
     assert backend.call_count == 1
-    assert result.evidence_store.observations[-1].error_code is ToolErrorCode.DUPLICATE_REQUEST
+    assert result.provider_turn_count == 2
+    assert len(result.provider_turns) == 2
+    assert result.provider_turns[-1].observation is None
+    assert (
+        result.provider_turns[-1].protocol_failure
+        is AgentFailureCodeV21.PLANNER_CONTRACT_FAILURE
+    )
+    assert len(result.planner_trace) == 1
 
 
 def test_fifth_flat_read_is_typed_budget_failure_without_backend_call() -> None:

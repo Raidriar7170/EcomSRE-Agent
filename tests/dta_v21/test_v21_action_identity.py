@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import hashlib
 import json
 
 import pytest
@@ -24,6 +25,9 @@ from ecomsre.dta_v2.v21.identity import build_three_arm_identities_v21
 from ecomsre.dta_v2.v21.candidate_filter import filter_runbook_candidates
 from ecomsre.dta_v2.v21.registry import load_default_runbook_registry
 from ecomsre.dta_v2.v21.replay import build_replay_diagnosis
+from ecomsre.dta_v2.v21.provider_development_smoke import (
+    ProviderSmokePublicLedgerV21,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -79,6 +83,19 @@ def test_action_selection_can_choose_only_an_exact_visible_candidate() -> None:
             ),
         )
 
+    changed_diagnosis = diagnosis.model_copy(
+        update={"summary": "A semantically changed diagnosis must invalidate Stage 1 binding."}
+    )
+    with pytest.raises(ValueError, match="Diagnosis differs from the CandidateSet"):
+        build_action_proposal_v21(
+            diagnosis=changed_diagnosis,
+            resolved_evidence=evidence,
+            candidate_set=candidates,
+            candidate_view=visible,
+            registry=registry,
+            decision=decision,
+        )
+
 
 def test_three_arm_identities_share_model_temperature_and_common_schemas() -> None:
     identities = build_three_arm_identities_v21(
@@ -98,6 +115,17 @@ def test_three_arm_identities_share_model_temperature_and_common_schemas() -> No
     )
     assert planner.planner_schema_sha256 is not None
     assert all(item.context_projection_source_sha256 for item in identities)
+    source_dir = ROOT / "src/ecomsre/dta_v2/v21"
+    for identity in identities:
+        assert identity.agent_contracts_source_sha256 == hashlib.sha256(
+            (source_dir / "agent_contracts.py").read_bytes()
+        ).hexdigest()
+        assert identity.agent_runtime_source_sha256 == hashlib.sha256(
+            (source_dir / "agent.py").read_bytes()
+        ).hexdigest()
+        assert identity.provider_adapter_source_sha256 == hashlib.sha256(
+            (source_dir / "agent_provider.py").read_bytes()
+        ).hexdigest()
 
 
 def test_provisional_three_arm_identity_files_match_runtime_exactly() -> None:
@@ -127,10 +155,11 @@ def test_pr_c_public_smoke_report_is_sanitized_and_hash_bound() -> None:
     digest = report.pop("report_sha256")
 
     assert digest == semantic_sha256(report)
-    assert report["status"] == "PASS"
-    assert report["provider"]["formal_persisted_attempts"] == 6
-    assert report["provider"]["failed_attempts_retained"] == 5
-    assert report["provider"]["final_status"] == "PASS"
+    assert report["status"] == "BLOCKED_DTA_V21_PROVIDER"
+    assert report["provider"]["verified_attempts"] == 1
+    assert report["provider"]["legacy_unbound_attempts_retained"] == 6
+    assert report["provider"]["final_status"] == "BLOCKED_DTA_V21_PROVIDER"
+    assert report["provider"]["failure_code"] == "PROVIDER_TRANSPORT_FAILURE"
     assert report["live_docker_actions"] == 0
     assert report["runbook_executions"] == 0
     assert report["held_out_executions"] == 0
@@ -143,3 +172,14 @@ def test_pr_c_public_smoke_report_is_sanitized_and_hash_bound() -> None:
         "chain_of_thought",
     ):
         assert forbidden not in serialized
+
+    ledger = ProviderSmokePublicLedgerV21.model_validate_json(
+        (ROOT / "docs/results/dta-v21-pr-c-provider-attempt-ledger.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert ledger.legacy_unbound_attempt_count == 6
+    assert len(ledger.verified_attempts) == 1
+    assert ledger.verified_attempts[0].receipt_sha256 == (
+        report["provider"]["attempt_receipt_sha256"]
+    )

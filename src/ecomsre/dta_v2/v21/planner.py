@@ -10,6 +10,7 @@ from ecomsre.dta_v2.tool_contracts import (
     TraceNeighborhoodRequest,
 )
 from ecomsre.dta_v2.v21.agent_contracts import AlertContextV21
+from ecomsre.dta_v2.v21.context_projection import EvidenceIndexV21
 from ecomsre.dta_v2.v21.planner_contracts import (
     EvidencePlanDecisionV21,
     PlannerNextStepV21,
@@ -34,6 +35,7 @@ def validate_plan_decision_v21(
     *,
     decision: EvidencePlanDecisionV21,
     context: AlertContextV21,
+    evidence_index: EvidenceIndexV21,
     seen_request_sha256: tuple[str, ...],
     completed_read_dispatches: int,
 ) -> EvidencePlanDecisionV21:
@@ -41,13 +43,25 @@ def validate_plan_decision_v21(
         decision.model_dump(mode="python")
     )
     context = AlertContextV21.model_validate(context.model_dump(mode="python"))
+    evidence_index = EvidenceIndexV21.model_validate(
+        evidence_index.model_dump(mode="python")
+    )
     if decision.run_id != context.run_id:
         raise ValueError("Planner decision belongs to another run")
+    if evidence_index.run_id != context.run_id:
+        raise ValueError("Planner EvidenceIndex belongs to another run")
     if decision.turn_ordinal < 1 or decision.turn_ordinal > 5:
         raise ValueError("Planner turn is outside the investigation budget")
     for hypothesis in decision.hypotheses:
         if hypothesis.root_service not in context.candidate_services:
             raise ValueError("Planner hypothesis is outside candidate services")
+        available_refs = {item.evidence_ref for item in evidence_index.entries}
+        cited_refs = set(
+            hypothesis.supporting_evidence_refs
+            + hypothesis.contradicting_evidence_refs
+        )
+        if not cited_refs.issubset(available_refs):
+            raise ValueError("Planner hypothesis cites evidence outside the EvidenceIndex")
     if decision.next_step is not PlannerNextStepV21.REQUEST_EVIDENCE:
         return decision
     request = decision.read_request

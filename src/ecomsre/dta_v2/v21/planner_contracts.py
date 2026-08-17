@@ -133,8 +133,13 @@ class EvidencePlanDecisionV21(DtaModelV21):
                 raise ValueError("Planner Diagnosis belongs to another run")
             if self.diagnosis.terminal is not TerminalV21.COMPLETED:
                 raise ValueError("submit plan must carry a completed Diagnosis")
-        elif self.read_request is not None or self.diagnosis is not None:
-            raise ValueError("abstain plan cannot carry a request or Diagnosis")
+        else:
+            if self.read_request is not None or self.diagnosis is not None:
+                raise ValueError("abstain plan cannot carry a request or Diagnosis")
+            if not active or not self.evidence_gap_sources or not any(
+                item.unresolved_evidence_sources for item in active
+            ):
+                raise ValueError("abstain plan must name an active unresolved evidence gap")
         expected = semantic_sha256(
             self.model_dump(mode="json", exclude={"decision_sha256"})
         )

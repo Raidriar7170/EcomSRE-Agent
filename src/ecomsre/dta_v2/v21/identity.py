@@ -75,6 +75,13 @@ def build_three_arm_identities_v21(
         EvidencePlanDecisionV21.model_json_schema(mode="validation")
     )
     context_source = _source_sha256(Path(__file__).with_name("context_projection.py"))
+    agent_contracts_source = _source_sha256(
+        Path(__file__).with_name("agent_contracts.py")
+    )
+    agent_runtime_source = _source_sha256(Path(__file__).with_name("agent.py"))
+    provider_adapter_source = _source_sha256(
+        Path(__file__).with_name("agent_provider.py")
+    )
     candidate_source = _source_sha256(Path(__file__).with_name("candidate_filter.py"))
 
     identities: list[AgentIdentityManifestV21] = []
@@ -101,6 +108,9 @@ def build_three_arm_identities_v21(
             "action_selection_schema_sha256": action_selection_schema,
             "action_proposal_schema_sha256": action_proposal_schema,
             "context_projection_source_sha256": context_source,
+            "agent_contracts_source_sha256": agent_contracts_source,
+            "agent_runtime_source_sha256": agent_runtime_source,
+            "provider_adapter_source_sha256": provider_adapter_source,
             "registry_sha256": registry.registry_sha256,
             "candidate_filter_source_sha256": candidate_source,
             "max_completion_tokens": max_completion_tokens,

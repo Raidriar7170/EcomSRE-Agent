@@ -256,6 +256,25 @@ def build_action_proposal_v21(
     )
     if candidate_view != build_candidate_action_view_v21(candidate_set):
         raise ValueError("candidate view differs from the trusted candidate set")
+    diagnosis_sha256 = semantic_sha256(diagnosis.model_dump(mode="json"))
+    if candidate_set.run_id != diagnosis.run_id:
+        raise ValueError("CandidateSet belongs to another run")
+    if candidate_set.diagnosis_sha256 != diagnosis_sha256:
+        raise ValueError("Diagnosis differs from the CandidateSet")
+    if resolved_evidence.run_id != diagnosis.run_id:
+        raise ValueError("resolved evidence belongs to another run")
+    if (
+        candidate_set.resolved_evidence_sha256
+        != resolved_evidence.resolved_evidence_sha256
+    ):
+        raise ValueError("resolved evidence differs from the CandidateSet")
+    if candidate_set.registry_sha256 != registry.registry_sha256:
+        raise ValueError("registry differs from the CandidateSet")
+    diagnosis_refs = set(
+        diagnosis.supporting_evidence_refs + diagnosis.contradicting_evidence_refs
+    )
+    if {item.evidence_ref for item in resolved_evidence.evidence} != diagnosis_refs:
+        raise ValueError("Stage 1 Diagnosis evidence is not exactly resolved")
     validate_evidence_refs(
         decision.supporting_evidence_refs,
         run_id=diagnosis.run_id,
@@ -302,7 +321,7 @@ def build_action_proposal_v21(
         "run_id": diagnosis.run_id,
         "disposition": decision.disposition,
         "candidate_set_sha256": candidate_set.candidate_set_sha256,
-        "diagnosis_sha256": candidate_set.diagnosis_sha256,
+        "diagnosis_sha256": diagnosis_sha256,
         "resolved_evidence_sha256": resolved_evidence.resolved_evidence_sha256,
         "registry_sha256": registry.registry_sha256,
         "runbook_id": None if candidate is None else candidate.runbook_id,
@@ -336,6 +355,9 @@ class AgentIdentityManifestV21(DtaModelV21):
     action_selection_schema_sha256: Sha256V21
     action_proposal_schema_sha256: Sha256V21
     context_projection_source_sha256: Sha256V21
+    agent_contracts_source_sha256: Sha256V21
+    agent_runtime_source_sha256: Sha256V21
+    provider_adapter_source_sha256: Sha256V21
     registry_sha256: Sha256V21
     candidate_filter_source_sha256: Sha256V21
     max_completion_tokens: StrictInt = Field(ge=1, le=100_000)

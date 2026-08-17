@@ -325,6 +325,7 @@ class OpenAICompatibleDtaAgentProviderV21:
         self._transport = transport or StdlibOpenAICompatibleTransport()
         self._attempted_calls = 0
         self._accepted_calls: list[ProviderTurnV21] = []
+        self._raw_response_sha256_by_attempt: list[str | None] = []
         self._identity = next(
             item
             for item in build_three_arm_identities_v21(
@@ -341,6 +342,12 @@ class OpenAICompatibleDtaAgentProviderV21:
     @property
     def attempted_calls(self) -> int:
         return self._attempted_calls
+
+    @property
+    def raw_response_sha256_by_attempt(self) -> tuple[str | None, ...]:
+        """Return one safe digest slot per transport attempt, including rejects."""
+
+        return tuple(self._raw_response_sha256_by_attempt)
 
     @property
     def accepted_calls(self) -> tuple[ProviderTurnV21, ...]:
@@ -536,6 +543,7 @@ class OpenAICompatibleDtaAgentProviderV21:
             "tools": [definition],
         }
         self._attempted_calls += 1
+        self._raw_response_sha256_by_attempt.append(None)
         started = time.monotonic_ns()
         try:
             raw_value = self._transport.post_json(
@@ -553,6 +561,10 @@ class OpenAICompatibleDtaAgentProviderV21:
             raise TimeoutError("DTA v2.1 Provider request timed out") from None
         except Exception:
             raise ConnectionError("DTA v2.1 Provider request failed") from None
+        try:
+            self._raw_response_sha256_by_attempt[-1] = semantic_sha256(raw_value)
+        except (TypeError, ValueError) as error:
+            raise ProviderProtocolError("Provider response is not hashable JSON") from error
         latency = max(0, (time.monotonic_ns() - started) // 1_000_000)
         response = _mapping(raw_value, "Provider response")
         _require_bounded_json(response)

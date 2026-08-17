@@ -11,8 +11,11 @@
   "action_selection_schema_sha256": "e3b63486b1b735c6d028331124e607c56c50d5c710e26b10069b1edb408fe337",
   "action_proposal_schema_sha256": "4c999d5d07d3478a962062c0df93980060a5f0a2285f30945644e5e2063fef66",
   "context_projection_source_sha256": "c0d8f395ff625f2624f9c93173203d72731eac94fba79ca4f23945aac1fc2307",
+  "agent_contracts_source_sha256": "bebf429d586dd9d4145f5a0ace49a4c1f25e7855fde6a3e91e998ad41652fc21",
+  "agent_runtime_source_sha256": "c628669dcb48adaaf7b05acb1570e40bcb30c3784fcd1aad128116f4874b781c",
+  "provider_adapter_source_sha256": "96c7e74613352f2a17ff7644c8370cb1cbe073cf07a40d82c332975b3def4cf5",
   "registry_sha256": "02bbcddba67da53c10324624dc770c9f73056e0126469567c8e70a79710047e9",
   "candidate_filter_source_sha256": "c31b4654dacb8fac3a84dffae7f647c4d6e9c4954024e7bb5f9ed52af78cbdfb",
   "max_completion_tokens": 1600,
-  "identity_sha256": "10895dca1c6dcc4928d8b3718d25ba2494d3f03d0d20d89d0f10632090fef2a2"
+  "identity_sha256": "fcc5b695f756f83693b40f53c6b7ababb0bbfe22e7435ba9e13f5c71d96aecfb"
 }
