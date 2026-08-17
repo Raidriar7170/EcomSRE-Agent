@@ -332,6 +332,14 @@ def test_prompts_require_selective_grounded_reasoning_without_truth_mappings() -
         assert forbidden not in combined
 
 
+def test_planner_prompt_defines_exact_gap_union_and_request_membership() -> None:
+    prompt = PLANNER_SYSTEM_PROMPT_V21.casefold()
+
+    assert "exact union" in prompt
+    assert "all active hypotheses" in prompt
+    assert "read-request source must be a member" in prompt
+
+
 def test_rejected_provider_response_still_exposes_only_its_raw_hash() -> None:
     raw = _response("wrong_function", {}, index=7)
     transport = RecordingTransport([raw])
