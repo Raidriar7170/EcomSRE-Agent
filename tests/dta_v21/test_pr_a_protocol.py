@@ -30,7 +30,7 @@ def test_master_progress_starts_exact_pr_a_stage() -> None:
         "current_stage": "PR-A",
         "main_head": "925d23994888d1b83e57fc1bbdd1944e57a1bfff",
         "active_branch": "codex/dta-v21-p0-pr-a-protocol",
-        "active_pr": None,
+        "active_pr": 50,
         "merged_prs": [],
         "preferred_model": "gpt-5.4-2026-03-05",
         "frozen_model": None,
