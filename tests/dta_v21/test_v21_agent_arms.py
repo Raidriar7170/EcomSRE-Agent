@@ -17,6 +17,7 @@ from ecomsre.dta_v2.tool_contracts import (
 from ecomsre.dta_v2.v21.agent import (
     AgentFailureCodeV21,
     AgentRunTerminalV21,
+    DiagnosisBindingFailureCodeV21,
     run_evidence_guided_agent_v21,
     run_flat_adaptive_agent_v21,
     run_one_shot_agent_v21,
@@ -335,7 +336,38 @@ def test_flat_and_one_shot_reject_empty_ref_diagnosis_from_another_run() -> None
     for result in (flat, one_shot):
         assert result.terminal is AgentRunTerminalV21.FAILED
         assert result.failure_code is AgentFailureCodeV21.DIAGNOSIS_BINDING_FAILURE
+        assert (
+            result.diagnosis_binding_failure_code
+            is DiagnosisBindingFailureCodeV21.RUN_ID_MISMATCH
+        )
         assert result.diagnosis is None
+
+
+def test_completed_diagnosis_with_unresolved_ref_is_typed_binding_failure() -> None:
+    run_id = "c" * 32
+    diagnosis = _diagnosis(
+        run_id=run_id,
+        service="ad",
+        domain=FaultDomainV21.LOCAL_RESOURCE,
+        mechanism=FaultMechanismV21.CPU_SATURATION,
+        refs=(f"evidence://{run_id}/metrics/0001",),
+        sources=(EvidenceSourceV21.METRICS,),
+    )
+    result = run_flat_adaptive_agent_v21(
+        context=_context(run_id, 0),
+        backend=FakeReadBackend.healthy(),
+        registry=load_default_runbook_registry(ROOT),
+        provider=ScriptedProviderV21(
+            arm=AgentArmV21.FLAT_ADAPTIVE,
+            investigation=[diagnosis],
+        ),
+    )
+
+    assert result.failure_code is AgentFailureCodeV21.DIAGNOSIS_BINDING_FAILURE
+    assert (
+        result.diagnosis_binding_failure_code
+        is DiagnosisBindingFailureCodeV21.EVIDENCE_RESOLUTION_FAILURE
+    )
 
 
 def test_planner_arm_runs_cpu_case_with_compact_state_and_early_stop() -> None:

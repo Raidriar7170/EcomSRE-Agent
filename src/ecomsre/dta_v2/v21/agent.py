@@ -87,6 +87,12 @@ class AgentFailureCodeV21(str, Enum):
     INTERNAL_CONTRACT_FAILURE = "INTERNAL_CONTRACT_FAILURE"
 
 
+class DiagnosisBindingFailureCodeV21(str, Enum):
+    RUN_ID_MISMATCH = "RUN_ID_MISMATCH"
+    EVIDENCE_RESOLUTION_FAILURE = "EVIDENCE_RESOLUTION_FAILURE"
+    CANDIDATE_FILTER_FAILURE = "CANDIDATE_FILTER_FAILURE"
+
+
 class ProviderStageV21(str, Enum):
     INVESTIGATION = "INVESTIGATION"
     ACTION_SELECTION = "ACTION_SELECTION"
@@ -187,6 +193,7 @@ class DtaAgentRunResultV21(DtaModelV21):
     terminal: AgentRunTerminalV21
     failure_code: AgentFailureCodeV21 | None
     provider_failure_codes: tuple[str, ...] = Field(max_length=16)
+    diagnosis_binding_failure_code: DiagnosisBindingFailureCodeV21 | None
     identity: AgentIdentityManifestV21
     provider_turn_count: StrictInt = Field(ge=0, le=6)
     semantic_read_tool_dispatch_count: StrictInt = Field(ge=0, le=4)
@@ -218,6 +225,10 @@ class DtaAgentRunResultV21(DtaModelV21):
             or self.failure_code is not AgentFailureCodeV21.PROVIDER_PROTOCOL_FAILURE
         ):
             raise ValueError("Agent result carries Provider codes outside a protocol failure")
+        if (
+            self.diagnosis_binding_failure_code is None
+        ) != (self.failure_code is not AgentFailureCodeV21.DIAGNOSIS_BINDING_FAILURE):
+            raise ValueError("Agent result Diagnosis binding detail differs")
         if self.identity.arm is not self.arm:
             raise ValueError("Agent result identity differs from the arm")
         if (
@@ -366,6 +377,7 @@ def _build_result(
     tools: InvestigationReadTools,
     turns: tuple[ProviderTurnEvidenceV21, ...],
     provider_failure_codes: tuple[str, ...] = (),
+    diagnosis_binding_failure_code: DiagnosisBindingFailureCodeV21 | None = None,
     planner_trace: tuple[PlannerTraceEntryV21, ...] = (),
     diagnosis: DtaDiagnosisV21 | None = None,
     resolved_evidence: ResolvedDiagnosisEvidenceViewV21 | None = None,
@@ -387,6 +399,7 @@ def _build_result(
         "terminal": terminal,
         "failure_code": failure_code,
         "provider_failure_codes": provider_failure_codes,
+        "diagnosis_binding_failure_code": diagnosis_binding_failure_code,
         "identity": provider.identity,
         "provider_turn_count": provider.attempted_calls,
         "semantic_read_tool_dispatch_count": semantic_reads,
@@ -528,6 +541,9 @@ def _finish_diagnosis(
             provider=provider,
             terminal=AgentRunTerminalV21.FAILED,
             failure_code=AgentFailureCodeV21.DIAGNOSIS_BINDING_FAILURE,
+            diagnosis_binding_failure_code=(
+                DiagnosisBindingFailureCodeV21.RUN_ID_MISMATCH
+            ),
             tools=tools,
             turns=tuple(turns),
             planner_trace=tuple(planner_trace),
@@ -543,6 +559,9 @@ def _finish_diagnosis(
                     provider=provider,
                     terminal=AgentRunTerminalV21.FAILED,
                     failure_code=AgentFailureCodeV21.DIAGNOSIS_BINDING_FAILURE,
+                    diagnosis_binding_failure_code=(
+                        DiagnosisBindingFailureCodeV21.EVIDENCE_RESOLUTION_FAILURE
+                    ),
                     tools=tools,
                     turns=tuple(turns),
                     planner_trace=tuple(planner_trace),
@@ -562,6 +581,23 @@ def _finish_diagnosis(
 
     try:
         resolved = _resolve_evidence(snapshot, diagnosis)
+    except (TypeError, ValueError):
+        return _build_result(
+            arm=arm,
+            context=context,
+            provider=provider,
+            terminal=AgentRunTerminalV21.FAILED,
+            failure_code=AgentFailureCodeV21.DIAGNOSIS_BINDING_FAILURE,
+            diagnosis_binding_failure_code=(
+                DiagnosisBindingFailureCodeV21.EVIDENCE_RESOLUTION_FAILURE
+            ),
+            tools=tools,
+            turns=tuple(turns),
+            planner_trace=tuple(planner_trace),
+            diagnosis=diagnosis,
+        )
+
+    try:
         candidates = filter_runbook_candidates(
             diagnosis=diagnosis,
             diagnosis_evidence=resolved,
@@ -576,6 +612,9 @@ def _finish_diagnosis(
             provider=provider,
             terminal=AgentRunTerminalV21.FAILED,
             failure_code=AgentFailureCodeV21.DIAGNOSIS_BINDING_FAILURE,
+            diagnosis_binding_failure_code=(
+                DiagnosisBindingFailureCodeV21.CANDIDATE_FILTER_FAILURE
+            ),
             tools=tools,
             turns=tuple(turns),
             planner_trace=tuple(planner_trace),
@@ -1095,6 +1134,7 @@ __all__ = (
     "AgentFailureCodeV21",
     "AgentProviderV21",
     "AgentRunTerminalV21",
+    "DiagnosisBindingFailureCodeV21",
     "DtaAgentRunResultV21",
     "ProviderStageV21",
     "ProviderTurnEvidenceV21",
