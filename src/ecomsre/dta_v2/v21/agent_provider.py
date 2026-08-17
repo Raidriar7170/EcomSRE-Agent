@@ -204,6 +204,25 @@ def _definition(name: str, description: str, model: type[DtaModelV21]) -> dict[s
     }
 
 
+def _safe_validation_codes_v21(
+    error: Exception, *, model: type[DtaModelV21]
+) -> tuple[str, ...]:
+    """Return bounded schema-owned locations and Pydantic error types only."""
+
+    if not isinstance(error, ValidationError):
+        return (f"output:{type(error).__name__}",)
+    allowed_roots = frozenset(model.model_fields)
+    codes: set[str] = set()
+    for item in error.errors(include_input=False, include_url=False):
+        location = item.get("loc")
+        root = location[0] if isinstance(location, tuple) and location else None
+        safe_root = root if isinstance(root, str) and root in allowed_roots else "output"
+        kind = item.get("type")
+        safe_kind = kind if isinstance(kind, str) else "validation_error"
+        codes.add(f"{safe_root}:{safe_kind}")
+    return tuple(sorted(codes))[:16] or ("output:validation_error",)
+
+
 def _sort_evidence_refs(values: object) -> object:
     if not isinstance(values, list) or not all(isinstance(item, str) for item in values):
         return values
@@ -368,24 +387,27 @@ class OpenAICompatibleDtaAgentProviderV21:
         visible = cast(Any, visible_state).model_dump(mode="json")
         if self._arm is AgentArmV21.EVIDENCE_GUIDED_PLANNER:
             function_name = PLANNER_FUNCTION_V21
+            output_model: type[DtaModelV21] = PlannerProviderOutputV21
             definition = _definition(
                 function_name,
                 "Submit one evidence-guided plan decision and its admitted output.",
-                PlannerProviderOutputV21,
+                output_model,
             )
         elif self._arm is AgentArmV21.FLAT_ADAPTIVE:
             function_name = FLAT_FUNCTION_V21
+            output_model = FlatProviderOutputV21
             definition = _definition(
                 function_name,
                 "Submit one flat read request or one final Diagnosis.",
-                FlatProviderOutputV21,
+                output_model,
             )
         else:
             function_name = DIAGNOSIS_FUNCTION_V21
+            output_model = DtaDiagnosisV21
             definition = _definition(
                 function_name,
                 "Submit exactly one Diagnosis from the frozen full context.",
-                DtaDiagnosisV21,
+                output_model,
             )
         arguments, raw_sha, tool_call_id, usage, latency = self._complete(
             system_prompt=_PROMPT_BY_ARM[self._arm],
@@ -465,7 +487,12 @@ class OpenAICompatibleDtaAgentProviderV21:
         except ProviderProtocolError:
             raise
         except (TypeError, ValidationError, ValueError) as error:
-            raise ProviderProtocolError("Provider investigation output is invalid") from error
+            codes = ",".join(
+                _safe_validation_codes_v21(error, model=output_model)
+            )
+            raise ProviderProtocolError(
+                f"Provider investigation output is invalid [codes={codes}]"
+            ) from error
         self._accepted_calls.append(turn)
         return turn
 
@@ -506,7 +533,14 @@ class OpenAICompatibleDtaAgentProviderV21:
                 _canonical_json(normalized)
             )
         except (TypeError, ValidationError, ValueError) as error:
-            raise ProviderProtocolError("Provider Action Selection is invalid") from error
+            codes = ",".join(
+                _safe_validation_codes_v21(
+                    error, model=ActionSelectionDecisionV21
+                )
+            )
+            raise ProviderProtocolError(
+                f"Provider Action Selection is invalid [codes={codes}]"
+            ) from error
         turn = ProviderTurnV21(
             function_name=ACTION_SELECTION_FUNCTION_V21,
             tool_call_id=tool_call_id,

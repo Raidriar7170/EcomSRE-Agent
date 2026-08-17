@@ -354,6 +354,38 @@ def test_rejected_provider_response_still_exposes_only_its_raw_hash() -> None:
     assert provider.raw_response_sha256_by_attempt == (semantic_sha256(raw),)
 
 
+def test_invalid_provider_output_reports_only_safe_validation_codes() -> None:
+    private_value = "private-invalid-provider-value"
+    raw = _response(
+        PLANNER_FUNCTION_V21,
+        {
+            "turn_ordinal": 1,
+            "bounded_rationale": private_value,
+        },
+        index=8,
+    )
+    provider = _provider(RecordingTransport([raw]))
+    context = _context()
+    state = build_investigation_state_view_v21(
+        context=context,
+        hypotheses=(),
+        evidence_store=InvestigationReadTools(
+            run_id=RUN_ID, backend=FakeReadBackend.healthy()
+        ).snapshot(),
+        newest_observation=None,
+    )
+
+    with pytest.raises(Exception) as captured:
+        provider.investigation_turn(
+            context=context, visible_state=state, read_tools_enabled=True
+        )
+
+    message = str(captured.value)
+    assert "hypotheses:missing" in message
+    assert "next_step:missing" in message
+    assert private_value not in message
+
+
 def test_provider_smoke_manifest_is_predeclared_and_blocks_identical_rerun(
     tmp_path: Path,
 ) -> None:
