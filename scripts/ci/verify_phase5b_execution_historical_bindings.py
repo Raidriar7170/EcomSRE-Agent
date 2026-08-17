@@ -22,6 +22,9 @@ SUCCESSOR_BASE_COMMIT = "925d23994888d1b83e57fc1bbdd1944e57a1bfff"
 HISTORICAL_EXECUTION_MANIFEST_SHA256 = (
     "36a96ddf089c1ca49720fa73651ecc50472a19279e846c776a2d88f055e4a615"
 )
+SUCCESSOR_MAKEFILE_SHA256 = (
+    "2522b379f10119894105571b47abd28a62e4521c791d06ccc7ec4c9476290ab8"
+)
 SUCCESSOR_BLOCK_START = "# BEGIN DTA_V21_SUCCESSOR_TARGETS"
 SUCCESSOR_BLOCK_END = "# END DTA_V21_SUCCESSOR_TARGETS"
 
@@ -63,16 +66,18 @@ def _historical_git_blob(project_root: Path, relative: str) -> bytes:
     return completed.stdout
 
 
-def _verify_successor_makefile(project_root: Path, expected_sha256: str) -> str:
-    historical = _historical_git_blob(project_root, "Makefile")
+def _verify_successor_makefile_bytes(
+    historical: bytes,
+    current: bytes,
+    *,
+    expected_historical_sha256: str,
+    expected_current_sha256: str,
+) -> str:
     observed_historical_sha256 = hashlib.sha256(historical).hexdigest()
-    if observed_historical_sha256 != expected_sha256:
+    if observed_historical_sha256 != expected_historical_sha256:
         raise ValueError("historical execution harness drift detected: Makefile")
-
-    current = _regular_file(
-        project_root / "Makefile",
-        description="successor Makefile",
-    ).read_bytes()
+    if hashlib.sha256(current).hexdigest() != expected_current_sha256:
+        raise ValueError("successor Makefile bytes changed")
     if not current.startswith(historical):
         raise ValueError("successor Makefile changed the historical byte prefix")
     try:
@@ -85,20 +90,21 @@ def _verify_successor_makefile(project_root: Path, expected_sha256: str) -> str:
         or not successor.rstrip().endswith(SUCCESSOR_BLOCK_END)
     ):
         raise ValueError("successor Makefile block markers differ")
-    for line in successor.splitlines():
-        if not line or line.startswith("#") or line.startswith("\t"):
-            continue
-        if line.startswith("DTA_V21_") and ":=" in line:
-            continue
-        if line.startswith(".PHONY:") and all(
-            target.startswith("dta-v21-")
-            for target in line.removeprefix(".PHONY:").split()
-        ):
-            continue
-        if line.startswith("dta-v21-") and ":" in line:
-            continue
-        raise ValueError(f"unexpected successor Makefile declaration: {line}")
     return observed_historical_sha256
+
+
+def _verify_successor_makefile(project_root: Path, expected_sha256: str) -> str:
+    historical = _historical_git_blob(project_root, "Makefile")
+    current = _regular_file(
+        project_root / "Makefile",
+        description="successor Makefile",
+    ).read_bytes()
+    return _verify_successor_makefile_bytes(
+        historical,
+        current,
+        expected_historical_sha256=expected_sha256,
+        expected_current_sha256=SUCCESSOR_MAKEFILE_SHA256,
+    )
 
 
 def verify_historical_execution_bindings(
