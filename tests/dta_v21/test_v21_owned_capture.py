@@ -24,6 +24,7 @@ from ecomsre.dta_v2.v21.owned_capture import (
     ExactFlagDocumentControllerV21,
     OwnedCaptureLifecycleV21,
     _ad_cpu_fault_measurable_v21,
+    _international_checkout_payload_v21,
     _shipping_fault_measurable_v21,
     build_capture_flag_document_v21,
     build_evaluator_truth_v21,
@@ -158,6 +159,98 @@ def test_calibration_impact_thresholds_bind_distribution_separation() -> None:
         baseline_trace_latency_ms=50.0,
         fault_trace_latency_ms=130.0,
     )
+
+
+def test_shipping_probe_uses_exact_upstream_canada_checkout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    payload = _international_checkout_payload_v21(
+        repository_root=ROOT, user_id="dta21-test-user"
+    )
+    assert payload["userId"] == "dta21-test-user"
+    address = payload["address"]
+    assert isinstance(address, dict)
+    assert address["country"] == "Canada"
+
+    lifecycle = OwnedCaptureLifecycleV21.__new__(OwnedCaptureLifecycleV21)
+    lifecycle.repository_root = ROOT
+    requests: list[tuple[str, dict[str, object], float]] = []
+    monkeypatch.setattr(
+        lifecycle,
+        "_post_frontend_json",
+        lambda *, path, payload, timeout_seconds: requests.append(
+            (path, dict(payload), timeout_seconds)
+        ),
+    )
+    monotonic = iter((100.0, 105.25))
+    monkeypatch.setattr(
+        "ecomsre.dta_v2.v21.owned_capture.time.monotonic",
+        lambda: next(monotonic),
+    )
+
+    assert lifecycle._international_checkout_probe() == 5_250.0
+    assert [item[0] for item in requests] == ["/api/cart", "/api/checkout"]
+    checkout_address = requests[1][1]["address"]
+    assert isinstance(checkout_address, dict)
+    assert checkout_address["country"] == "Canada"
+
+    unpatched = OwnedCaptureLifecycleV21.__new__(OwnedCaptureLifecycleV21)
+    with pytest.raises(ValueError, match="outside the allowlist"):
+        unpatched._post_frontend_json(
+            path="/api/products", payload={}, timeout_seconds=1.0
+        )
+
+
+def test_shipping_probe_http_is_loopback_path_and_size_bounded(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    requests: list[tuple[str, str, bytes, dict[str, str]]] = []
+
+    class _Response:
+        status = 200
+
+        def read(self, maximum: int) -> bytes:
+            assert maximum == 1_000_001
+            return b"{}"
+
+    class _Connection:
+        def __init__(self, host: str, port: int, timeout: float) -> None:
+            assert (host, port, timeout) == ("127.0.0.1", 18080, 20.0)
+
+        def request(
+            self, method: str, path: str, body: bytes, headers: dict[str, str]
+        ) -> None:
+            requests.append((method, path, body, headers))
+
+        def getresponse(self) -> _Response:
+            return _Response()
+
+        def close(self) -> None:
+            pass
+
+    lifecycle = OwnedCaptureLifecycleV21.__new__(OwnedCaptureLifecycleV21)
+    lifecycle.flag_controller = cast(
+        Any,
+        SimpleNamespace(
+            endpoints=SimpleNamespace(frontend="http://127.0.0.1:18080")
+        ),
+    )
+    monkeypatch.setattr(
+        "ecomsre.dta_v2.v21.owned_capture.http.client.HTTPConnection", _Connection
+    )
+
+    lifecycle._post_frontend_json(
+        path="/api/checkout", payload={"userId": "bounded"}, timeout_seconds=20.0
+    )
+
+    assert requests == [
+        (
+            "POST",
+            "/api/checkout",
+            b'{"userId":"bounded"}',
+            {"Accept": "application/json", "Content-Type": "application/json"},
+        )
+    ]
 
 
 def test_service_unavailable_calibration_binds_caller_impact(

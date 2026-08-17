@@ -267,6 +267,7 @@ class CaptureCalibrationObservationV21(DtaModelV21):
     cpu_safety_ceiling_ratio: StrictFloat | None = Field(default=None, ge=0.0, le=1.0)
     business_error_rate: StrictFloat | None = Field(default=None, ge=0.0, le=1.0)
     business_latency_p95_ms: StrictFloat | None = Field(default=None, ge=0.0)
+    business_latency_sample_count: StrictInt | None = Field(default=None, ge=1)
     business_impact_observed: bool | None = None
     business_impact_service: str | None = Field(
         default=None, pattern=r"^[a-z][a-z0-9-]*$"
@@ -305,6 +306,7 @@ class CaptureCalibrationObservationV21(DtaModelV21):
             "cpu_capacity_percent",
             "cpu_p95_capacity_ratio",
             "cpu_safety_ceiling_ratio",
+            "business_latency_sample_count",
             "business_impact_service",
         )
         cpu_capacity_fields = additive_fields[:3]
@@ -340,6 +342,12 @@ class CaptureCalibrationObservationV21(DtaModelV21):
             and self.business_impact_service is not None
         ):
             raise ValueError("service-unavailable impact service lacks observed impact")
+        if (
+            self.kind is CalibrationKindV21.SHIPPING_LATENCY
+            and "business_latency_sample_count" in self.model_fields_set
+            and self.business_latency_sample_count != 3
+        ):
+            raise ValueError("Shipping calibration sample count differs")
         digest_exclusions = {"observation_sha256"}
         for field in additive_fields:
             if field not in self.model_fields_set:
@@ -425,6 +433,7 @@ class CaptureCampaignClosureV21(DtaModelV21):
                 "cpu_capacity_percent",
                 "cpu_p95_capacity_ratio",
                 "cpu_safety_ceiling_ratio",
+                "business_latency_sample_count",
                 "business_impact_service",
             )
         ):

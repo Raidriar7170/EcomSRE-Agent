@@ -6,11 +6,14 @@ import argparse
 from collections.abc import Mapping
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
+import http.client
+import json
 from pathlib import Path
 import secrets
 import statistics
 import time
 from typing import Any, cast
+from urllib.parse import urlsplit
 
 from ecomsre.dta_v2.owned_capture import (
     EMAIL_CAPTURE_MAXIMUM_MEMORY_BYTES,
@@ -60,6 +63,7 @@ from ecomsre.dta_v2.v21.contracts import (
     FaultMechanismV21,
     RunbookIdV21,
     TerminalV21,
+    canonical_json_bytes,
     semantic_sha256,
 )
 from ecomsre.dta_v2.v21.evaluation_contracts import (
@@ -83,7 +87,9 @@ AD_CPU_FAULT_TO_BASELINE_RATIO_MINIMUM_V21 = 5.0
 AD_CPU_SAFETY_CAPACITY_RATIO_MAXIMUM_V21 = 0.5
 AD_CPU_BUSINESS_LATENCY_RATIO_MINIMUM_V21 = 2.0
 AD_CPU_BUSINESS_LATENCY_DELTA_MS_MINIMUM_V21 = 5.0
-SHIPPING_CALIBRATION_WINDOW_SECONDS_V21 = 30
+SHIPPING_FLAG_SETTLE_SECONDS_V21 = 3
+SHIPPING_TELEMETRY_SETTLE_SECONDS_V21 = 10
+SHIPPING_CHECKOUT_PROBE_SAMPLE_COUNT_V21 = 3
 SHIPPING_BUSINESS_LATENCY_DELTA_MS_MINIMUM_V21 = 1_000.0
 SHIPPING_TRACE_LATENCY_DELTA_MS_MINIMUM_V21 = 1_000.0
 SERVICE_UNAVAILABLE_CALIBRATION_WINDOW_SECONDS_V21 = 20
@@ -116,6 +122,29 @@ def _shipping_fault_measurable_v21(
         and fault_trace_latency_ms
         >= baseline_trace_latency_ms + SHIPPING_TRACE_LATENCY_DELTA_MS_MINIMUM_V21
     )
+
+
+def _international_checkout_payload_v21(
+    *, repository_root: Path, user_id: str
+) -> dict[str, object]:
+    raw = json.loads(
+        (
+            repository_root
+            / "third_party/opentelemetry-demo/src/load-generator/people.json"
+        ).read_text(encoding="utf-8")
+    )
+    if not isinstance(raw, list):
+        raise ValueError("upstream checkout people fixture is invalid")
+    candidates = tuple(
+        item
+        for item in raw
+        if isinstance(item, dict)
+        and isinstance(item.get("address"), dict)
+        and item["address"].get("country") == "Canada"
+    )
+    if len(candidates) != 1:
+        raise ValueError("upstream checkout fixture lacks exact Canada candidate")
+    return {**deepcopy(candidates[0]), "userId": user_id}
 
 
 def build_capture_flag_document_v21(
@@ -258,6 +287,7 @@ def _calibration_observation(**payload: object) -> CaptureCalibrationObservation
         "cpu_safety_ceiling_ratio": None,
         "business_error_rate": None,
         "business_latency_p95_ms": None,
+        "business_latency_sample_count": None,
         "business_impact_observed": None,
         "business_impact_service": None,
         "attributable_trace_latency_ms": None,
@@ -299,6 +329,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         self.ad_baseline_latency_p95_ms_v21: float | None = None
         self.shipping_baseline_latency_p95_ms_v21: float | None = None
         self.shipping_baseline_trace_latency_ms_v21: float | None = None
+        self.shipping_probe_started_at_v21: datetime | None = None
         self.unavailable_business_anchor_v21: dict[str, str] = {}
 
     def admit(self) -> None:
@@ -443,18 +474,24 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
                     self._upstream(), load_vus=25, shipping_variant=variant
                 )
             )
-            time.sleep(SHIPPING_CALIBRATION_WINDOW_SECONDS_V21)
-            ended = datetime.now(timezone.utc)
-            self.calibration_step_v21 = "BUSINESS_METRIC"
-            latency = self._metric_value(
-                service="shipping",
-                kind=MetricKind.LATENCY_P95_MS,
-                started_at=now,
-                ended_at=ended,
-            )
+            time.sleep(SHIPPING_FLAG_SETTLE_SECONDS_V21)
+            self.calibration_step_v21 = "INTERNATIONAL_CHECKOUT_PROBE"
+            probe_starts: list[datetime] = []
+            latencies: list[float] = []
+            for _ in range(SHIPPING_CHECKOUT_PROBE_SAMPLE_COUNT_V21):
+                probe_starts.append(datetime.now(timezone.utc))
+                latencies.append(self._international_checkout_probe())
+            latency = max(latencies)
+            time.sleep(SHIPPING_TELEMETRY_SETTLE_SECONDS_V21)
             self.calibration_step_v21 = "TRACE_ATTRIBUTION"
-            traces = self._trace_records(
-                service="shipping", started_at=now, ended_at=ended
+            traces = tuple(
+                record
+                for probe_started in probe_starts
+                for record in self._trace_records(
+                    service="shipping",
+                    started_at=probe_started - timedelta(seconds=1),
+                    ended_at=probe_started + timedelta(seconds=2),
+                )
             )
             attributable = max(
                 (
@@ -474,6 +511,10 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
                 target_service=target_service,
                 variant=variant,
                 business_latency_p95_ms=latency,
+                business_latency_sample_count=(
+                    SHIPPING_CHECKOUT_PROBE_SAMPLE_COUNT_V21
+                ),
+                business_impact_service="checkout",
                 attributable_trace_latency_ms=attributable,
                 safe=latency <= 15_000.0 and attributable <= 15_000.0,
                 measurable=(
@@ -552,6 +593,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         self.case_started_at = datetime.now(timezone.utc)
         self.recovery_trace_fixture_v21 = None
         self.email_resource_fixture_v21 = None
+        self.shipping_probe_started_at_v21 = None
         self.email_restart_required_v21 = False
         self.fault_operation_count = 0
         payment = "off"
@@ -624,6 +666,18 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
             self._service("email").start()
             time.sleep(15)
             return
+        elif case.condition is CaptureConditionV21.SHIPPING_SLOWDOWN:
+            case_window_started = time.monotonic()
+            time.sleep(SHIPPING_FLAG_SETTLE_SECONDS_V21)
+            self.shipping_probe_started_at_v21 = datetime.now(timezone.utc)
+            self._international_checkout_probe()
+            time.sleep(SHIPPING_TELEMETRY_SETTLE_SECONDS_V21)
+            shipping_remaining = case.observation_window_seconds - (
+                time.monotonic() - case_window_started
+            )
+            if shipping_remaining > 0:
+                time.sleep(shipping_remaining)
+            return
         time.sleep(case.observation_window_seconds)
 
     def capture_case(  # type: ignore[override]
@@ -632,20 +686,27 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         if self.active_condition != case.case_id:
             raise RuntimeError("capture case condition is not active")
         service = _service_for_family(case.operational_family)
-        business_service = (
-            self._unavailable_business_anchor(service)
-            if case.condition
-            in {
-                CaptureConditionV21.EMAIL_STOP,
-                CaptureConditionV21.PRODUCT_CATALOG_STOP,
-            }
-            else service
-        )
+        if case.condition in {
+            CaptureConditionV21.EMAIL_STOP,
+            CaptureConditionV21.PRODUCT_CATALOG_STOP,
+        }:
+            business_service = self._unavailable_business_anchor(service)
+        elif case.condition is CaptureConditionV21.SHIPPING_SLOWDOWN:
+            business_service = "checkout"
+        else:
+            business_service = service
         ended_at = datetime.now(timezone.utc)
         started_at = self._case_start()
         current_started_at = max(
             started_at, ended_at - timedelta(seconds=case.observation_window_seconds)
         )
+        trace_started_at = current_started_at
+        trace_ended_at = ended_at
+        if case.condition is CaptureConditionV21.SHIPPING_SLOWDOWN:
+            if self.shipping_probe_started_at_v21 is None:
+                raise RuntimeError("shipping capture probe window is unavailable")
+            trace_started_at = self.shipping_probe_started_at_v21 - timedelta(seconds=1)
+            trace_ended_at = self.shipping_probe_started_at_v21 + timedelta(seconds=2)
         run_id = secrets.token_hex(16)
         resource_window = 20 if service == "email" else 5
         resource_samples = 5 if service == "email" else 3
@@ -676,8 +737,8 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
             build_trace_neighborhood_request(
                 run_id=run_id,
                 service=business_service,
-                started_at=current_started_at,
-                ended_at=ended_at,
+                started_at=trace_started_at,
+                ended_at=trace_ended_at,
                 max_spans=40,
             ),
             build_search_logs_request(
@@ -763,6 +824,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         self.email_restart_required_v21 = False
         self.email_resource_fixture_v21 = None
         self.recovery_trace_fixture_v21 = None
+        self.shipping_probe_started_at_v21 = None
         self.case_started_at = None
         self.fault_operation_count = 0
 
@@ -839,6 +901,63 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         if isinstance(online, bool) or not isinstance(online, int) or online < 1:
             raise RuntimeError("capture CPU online capacity is invalid")
         return float(online * 100)
+
+    def _international_checkout_probe(self) -> float:
+        user_id = f"dta21-{secrets.token_hex(12)}"
+        self._post_frontend_json(
+            path="/api/cart",
+            payload={
+                "item": {"productId": "0PUK6V6EV0", "quantity": 1},
+                "userId": user_id,
+            },
+            timeout_seconds=10.0,
+        )
+        checkout_payload = _international_checkout_payload_v21(
+            repository_root=self.repository_root,
+            user_id=user_id,
+        )
+        started = time.monotonic()
+        self._post_frontend_json(
+            path="/api/checkout",
+            payload=checkout_payload,
+            timeout_seconds=20.0,
+        )
+        return (time.monotonic() - started) * 1_000.0
+
+    def _post_frontend_json(
+        self, *, path: str, payload: Mapping[str, object], timeout_seconds: float
+    ) -> None:
+        if path not in {"/api/cart", "/api/checkout"}:
+            raise ValueError("capture checkout probe path is outside the allowlist")
+        parsed = urlsplit(self._flags().endpoints.frontend)
+        if (
+            parsed.scheme != "http"
+            or parsed.hostname != "127.0.0.1"
+            or parsed.port != 18080
+            or parsed.path not in {"", "/"}
+        ):
+            raise RuntimeError("capture checkout probe origin drifted")
+        connection = http.client.HTTPConnection(
+            parsed.hostname, parsed.port, timeout=timeout_seconds
+        )
+        try:
+            connection.request(
+                "POST",
+                path,
+                body=canonical_json_bytes(payload).rstrip(b"\n"),
+                headers={
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                },
+            )
+            response = connection.getresponse()
+            body = response.read(1_000_001)
+            if not 200 <= response.status < 300:
+                raise RuntimeError("capture checkout probe returned non-success")
+            if len(body) > 1_000_000:
+                raise RuntimeError("capture checkout probe response exceeds bound")
+        finally:
+            connection.close()
 
     def _runtime_record(self, service: str) -> RuntimeRecord:
         result = self._backend().execute(
@@ -990,15 +1109,17 @@ def require_capture_case_quality_v21(
     metrics = successful(ToolName.QUERY_METRICS)
     runtime = successful(ToolName.INSPECT_SERVICE_RUNTIME)
     service = _service_for_family(case.operational_family)
-    expected_metric_services = (
-        frozenset(_UNAVAILABLE_BUSINESS_ANCHORS_V21[service])
-        if case.condition
-        in {
-            CaptureConditionV21.EMAIL_STOP,
-            CaptureConditionV21.PRODUCT_CATALOG_STOP,
-        }
-        else frozenset((service,))
-    )
+    if case.condition in {
+        CaptureConditionV21.EMAIL_STOP,
+        CaptureConditionV21.PRODUCT_CATALOG_STOP,
+    }:
+        expected_metric_services = frozenset(
+            _UNAVAILABLE_BUSINESS_ANCHORS_V21[service]
+        )
+    elif case.condition is CaptureConditionV21.SHIPPING_SLOWDOWN:
+        expected_metric_services = frozenset(("checkout",))
+    else:
+        expected_metric_services = frozenset((service,))
     if not any(
         type(item) is MetricRecord and item.service in expected_metric_services
         for item in metrics.records
