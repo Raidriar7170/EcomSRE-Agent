@@ -353,6 +353,23 @@ def _canonicalize_diagnosis(value: object) -> object:
     result["contradicting_evidence_refs"] = _sort_evidence_refs(
         result.get("contradicting_evidence_refs")
     )
+    supporting = result.get("supporting_evidence_refs")
+    contradicting = result.get("contradicting_evidence_refs")
+    if (
+        isinstance(supporting, list)
+        and isinstance(contradicting, list)
+        and all(isinstance(item, str) for item in supporting + contradicting)
+    ):
+        try:
+            derived_sources = {
+                evidence_source_from_ref(item) for item in supporting + contradicting
+            }
+        except ValueError:
+            pass
+        else:
+            result["evidence_source_types"] = [
+                item.value for item in sorted(derived_sources, key=_SOURCE_ORDER.__getitem__)
+            ]
     sources = result.get("evidence_source_types")
     if isinstance(sources, list) and all(isinstance(item, str) for item in sources):
         try:

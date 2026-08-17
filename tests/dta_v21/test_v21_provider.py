@@ -469,8 +469,7 @@ def test_planner_semantic_failure_reports_fixed_safe_reason_without_input() -> N
     assert private_value not in message
 
 
-def test_diagnosis_semantic_failure_reports_fixed_safe_reason_without_input() -> None:
-    private_value = "private-diagnosis-summary-must-not-leak"
+def test_diagnosis_source_accounting_is_derived_from_cited_refs() -> None:
     raw = _response(
         PLANNER_FUNCTION_V21,
         {
@@ -494,7 +493,7 @@ def test_diagnosis_semantic_failure_reports_fixed_safe_reason_without_input() ->
                 "contradicting_evidence_refs": [],
                 "evidence_source_types": ["LOGS"],
                 "uncertainties": [],
-                "summary": private_value,
+                "summary": "The cited metric supports the bounded diagnosis.",
             },
             "bounded_rationale": "Submit the typed diagnosis.",
         },
@@ -511,14 +510,15 @@ def test_diagnosis_semantic_failure_reports_fixed_safe_reason_without_input() ->
         newest_observation=None,
     )
 
-    with pytest.raises(Exception) as captured:
-        provider.investigation_turn(
-            context=context, visible_state=state, read_tools_enabled=True
-        )
+    turn = provider.investigation_turn(
+        context=context, visible_state=state, read_tools_enabled=True
+    )
 
-    message = str(captured.value)
-    assert "diagnosis:diagnosis_source_accounting_mismatch" in message
-    assert private_value not in message
+    assert turn.plan_decision is not None
+    assert turn.plan_decision.diagnosis is not None
+    assert tuple(
+        item.value for item in turn.plan_decision.diagnosis.evidence_source_types
+    ) == ("METRICS",)
 
 
 def test_provider_smoke_manifest_is_predeclared_and_blocks_identical_rerun(

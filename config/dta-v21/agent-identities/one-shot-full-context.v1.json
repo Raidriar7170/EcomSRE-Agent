@@ -15,9 +15,9 @@
   "context_projection_source_sha256": "37ca49c93954915a7ef31261454cf0ce8b75974d455f25b61fa5cc6351be736d",
   "agent_contracts_source_sha256": "22b0ed05433b26ef507ac8f91cbfd33dea1c5094b853cc938ab33c0cde4ca4a8",
   "agent_runtime_source_sha256": "7b700c0b1f00194f279c8a4c9de429bd05c0f4dd31362e69b99b845b147eee0c",
-  "provider_adapter_source_sha256": "dbc024fbaf605e75cee179d51a07c80907ad916148c3e6464082c773b34753ac",
+  "provider_adapter_source_sha256": "97cd5634a1fde719301bbd52b7a5476fa101ddb963da63dda247401477c1d2f4",
   "registry_sha256": "02bbcddba67da53c10324624dc770c9f73056e0126469567c8e70a79710047e9",
   "candidate_filter_source_sha256": "7323e1aaef28b936aaed71cd6cb606cfe6ec1cddd3fcef4da524176397064023",
   "max_completion_tokens": 1600,
-  "identity_sha256": "857f1362ecd2548647a28bc7610a7386f056600123c3cd4518269425a064d7e4"
+  "identity_sha256": "a811067196589dbe0fb6c75c20d68c2b61b0cce9398f271e2f7c40f85377e3d4"
 }
