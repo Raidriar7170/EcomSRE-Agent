@@ -93,6 +93,8 @@ AD_CPU_BUSINESS_LATENCY_DELTA_MS_MINIMUM_V21 = 5.0
 SHIPPING_FLAG_SETTLE_SECONDS_V21 = 3
 SHIPPING_TELEMETRY_SETTLE_SECONDS_V21 = 10
 SHIPPING_CHECKOUT_PROBE_SAMPLE_COUNT_V21 = 3
+SHIPPING_CHECKOUT_PROBE_ATTEMPTS_V21 = 3
+SHIPPING_CHECKOUT_PROBE_RETRY_SECONDS_V21 = 2.0
 SHIPPING_BUSINESS_LATENCY_DELTA_MS_MINIMUM_V21 = 1_000.0
 SHIPPING_TRACE_LATENCY_DELTA_MS_MINIMUM_V21 = 1_000.0
 SERVICE_UNAVAILABLE_CALIBRATION_WINDOW_SECONDS_V21 = 20
@@ -100,6 +102,10 @@ _UNAVAILABLE_BUSINESS_ANCHORS_V21 = {
     "email": ("checkout", "frontend"),
     "product-catalog": ("frontend", "checkout"),
 }
+
+
+class _CheckoutProbeNonSuccessV21(RuntimeError):
+    """Retryable bounded frontend response for the owned checkout probe."""
 
 
 def _ad_cpu_fault_measurable_v21(*, baseline_p95: float, fault_p95: float) -> bool:
@@ -970,6 +976,16 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         return float(online * 100)
 
     def _international_checkout_probe(self) -> float:
+        for attempt in range(SHIPPING_CHECKOUT_PROBE_ATTEMPTS_V21):
+            try:
+                return self._international_checkout_probe_once()
+            except _CheckoutProbeNonSuccessV21:
+                if attempt == SHIPPING_CHECKOUT_PROBE_ATTEMPTS_V21 - 1:
+                    raise
+                time.sleep(SHIPPING_CHECKOUT_PROBE_RETRY_SECONDS_V21)
+        raise AssertionError("checkout probe retry loop exhausted without terminal")
+
+    def _international_checkout_probe_once(self) -> float:
         user_id = f"dta21-{secrets.token_hex(12)}"
         self._post_frontend_json(
             path="/api/cart",
@@ -1020,7 +1036,9 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
             response = connection.getresponse()
             body = response.read(1_000_001)
             if not 200 <= response.status < 300:
-                raise RuntimeError("capture checkout probe returned non-success")
+                raise _CheckoutProbeNonSuccessV21(
+                    "capture checkout probe returned non-success"
+                )
             if len(body) > 1_000_000:
                 raise RuntimeError("capture checkout probe response exceeds bound")
         finally:

@@ -26,6 +26,7 @@ from ecomsre.dta_v2.v21.evaluation_contracts import EvaluationSplitV21
 from ecomsre.dta_v2.v21.owned_capture import (
     ExactFlagDocumentControllerV21,
     OwnedCaptureLifecycleV21,
+    _CheckoutProbeNonSuccessV21,
     _ad_cpu_fault_measurable_v21,
     _international_checkout_payload_v21,
     _shipping_fault_measurable_v21,
@@ -261,6 +262,91 @@ def test_shipping_probe_http_is_loopback_path_and_size_bounded(
             {"Accept": "application/json", "Content-Type": "application/json"},
         )
     ]
+
+
+def test_shipping_probe_retries_only_bounded_non_success_transaction(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    statuses = iter((200, 503, 200, 200))
+    requests: list[str] = []
+
+    class _Response:
+        def __init__(self) -> None:
+            self.status = next(statuses)
+
+        def read(self, maximum: int) -> bytes:
+            assert maximum == 1_000_001
+            return b"{}"
+
+    class _Connection:
+        def __init__(self, host: str, port: int, timeout: float) -> None:
+            assert (host, port) == ("127.0.0.1", 18080)
+            assert timeout in {10.0, 20.0}
+
+        def request(
+            self, method: str, path: str, body: bytes, headers: dict[str, str]
+        ) -> None:
+            assert method == "POST"
+            assert body
+            assert headers["Content-Type"] == "application/json"
+            requests.append(path)
+
+        def getresponse(self) -> _Response:
+            return _Response()
+
+        def close(self) -> None:
+            pass
+
+    lifecycle = OwnedCaptureLifecycleV21.__new__(OwnedCaptureLifecycleV21)
+    lifecycle.repository_root = ROOT
+    lifecycle.flag_controller = cast(
+        Any,
+        SimpleNamespace(
+            endpoints=SimpleNamespace(frontend="http://127.0.0.1:18080")
+        ),
+    )
+    sleeps: list[float] = []
+    monotonic = iter((100.0, 200.0, 205.0))
+    monkeypatch.setattr(
+        "ecomsre.dta_v2.v21.owned_capture.http.client.HTTPConnection", _Connection
+    )
+    monkeypatch.setattr(
+        "ecomsre.dta_v2.v21.owned_capture.time.monotonic",
+        lambda: next(monotonic),
+    )
+    monkeypatch.setattr(
+        "ecomsre.dta_v2.v21.owned_capture.time.sleep", sleeps.append
+    )
+
+    assert lifecycle._international_checkout_probe() == 5_000.0
+    assert requests == ["/api/cart", "/api/checkout", "/api/cart", "/api/checkout"]
+    assert sleeps == [2.0]
+
+
+def test_shipping_probe_stops_after_three_non_success_transactions(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    lifecycle = OwnedCaptureLifecycleV21.__new__(OwnedCaptureLifecycleV21)
+    attempts = 0
+    sleeps: list[float] = []
+
+    def fail_once() -> float:
+        nonlocal attempts
+        attempts += 1
+        raise _CheckoutProbeNonSuccessV21(
+            "capture checkout probe returned non-success"
+        )
+
+    monkeypatch.setattr(lifecycle, "_international_checkout_probe_once", fail_once)
+    monkeypatch.setattr(
+        "ecomsre.dta_v2.v21.owned_capture.time.sleep", sleeps.append
+    )
+
+    with pytest.raises(_CheckoutProbeNonSuccessV21):
+        lifecycle._international_checkout_probe()
+
+    assert attempts == 3
+    assert sleeps == [2.0, 2.0]
 
 
 def test_service_unavailable_calibration_binds_caller_impact(
