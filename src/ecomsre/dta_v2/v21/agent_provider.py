@@ -236,6 +236,36 @@ def _safe_validation_codes_v21(
                 "rejected hypothesis retains unresolved evidence gaps": (
                     "rejected_hypothesis_has_gaps"
                 ),
+                "evidence cannot both support and contradict a diagnosis": (
+                    "diagnosis_evidence_overlap"
+                ),
+                "evidence source accounting does not match references": (
+                    "diagnosis_source_accounting_mismatch"
+                ),
+                "evidence source accounting is not canonical": (
+                    "diagnosis_source_accounting_not_canonical"
+                ),
+                "completed diagnosis requires supporting evidence": (
+                    "diagnosis_missing_support"
+                ),
+                "completed diagnosis has a partial fault claim": (
+                    "diagnosis_partial_fault_claim"
+                ),
+                "root entity must bind the diagnosed service": (
+                    "diagnosis_root_entity_mismatch"
+                ),
+                "fault diagnosis requires confidence telemetry": (
+                    "diagnosis_missing_confidence"
+                ),
+                "no-fault diagnosis cannot report fault confidence": (
+                    "diagnosis_no_fault_confidence"
+                ),
+                "noncompleted diagnosis cannot claim a fault": (
+                    "diagnosis_noncompleted_fault_claim"
+                ),
+                "noncompleted diagnosis requires an uncertainty": (
+                    "diagnosis_noncompleted_missing_uncertainty"
+                ),
             }.get(normalized_message)
             if safe_reason is not None:
                 codes.add(f"{safe_root}:{safe_reason}")

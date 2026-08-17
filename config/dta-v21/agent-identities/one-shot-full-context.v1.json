@@ -4,7 +4,7 @@
   "model_id": "gpt-5.4-mini-2026-03-17",
   "temperature": 0.0,
   "provider_adapter_version": "dta-v21.openai-compatible-agent.v1",
-  "system_prompt_sha256": "0be1262831573206bac9b6ebc58dbeb2341a999d73b98ec5530ddcade16c9ed3",
+  "system_prompt_sha256": "ea12d0be2282d39327e8593adc42587d9fdc495f66bff8d7f387ef0e64503c2c",
   "tool_schema_sha256": "fedf0172fe146583030cb6e0a31f0b72148e14c3e85c23191c5608f97c8ba732",
   "planner_schema_sha256": null,
   "planner_contracts_source_sha256": null,
@@ -15,9 +15,9 @@
   "context_projection_source_sha256": "e9b914dee7c971a5fd458759426eb4c670c2f5ad510677a50e3e287eae3bb140",
   "agent_contracts_source_sha256": "9f6be96545de1c5eb0049214f67240807d647fb5c8af2ea1ee2a6921440ae9cf",
   "agent_runtime_source_sha256": "2de78e4ffd1f1abc1a655dcca5ab4cefddcd3bd8efe4c15ec7d4b73c5af73733",
-  "provider_adapter_source_sha256": "2ddedce87b8e1d8f409f5ac361f900c386b0d1d3f61cca3ab6bb6532f219dd78",
+  "provider_adapter_source_sha256": "edd00bf7006318788f71407aeecfadad1ef57fcae16fe2606de6b553bf8b1a48",
   "registry_sha256": "02bbcddba67da53c10324624dc770c9f73056e0126469567c8e70a79710047e9",
   "candidate_filter_source_sha256": "7323e1aaef28b936aaed71cd6cb606cfe6ec1cddd3fcef4da524176397064023",
   "max_completion_tokens": 1600,
-  "identity_sha256": "d23fe247d0dd47fd727b4dab57122d34e38a35b2e47d463ba2119a81a7a1dc3e"
+  "identity_sha256": "15b749dcca9532322b8d0ea63002854dac27f18e3f1f784b4a862c6434e50a97"
 }

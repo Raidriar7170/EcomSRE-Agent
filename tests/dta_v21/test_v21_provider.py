@@ -340,6 +340,24 @@ def test_planner_prompt_defines_exact_gap_union_and_request_membership() -> None
     assert "read-request source must be a member" in prompt
 
 
+def test_prompts_define_null_keys_success_only_citations_and_no_repeats() -> None:
+    common = "\n".join(
+        (
+            PLANNER_SYSTEM_PROMPT_V21,
+            FLAT_ADAPTIVE_SYSTEM_PROMPT_V21,
+            ONE_SHOT_SYSTEM_PROMPT_V21,
+        )
+    ).casefold()
+    flat = FLAT_ADAPTIVE_SYSTEM_PROMPT_V21.casefold()
+    planner = PLANNER_SYSTEM_PROMPT_V21.casefold()
+
+    assert "only successful observations" in common
+    assert "whether the prior observation succeeded or failed" in common
+    assert "include both read_request and diagnosis keys" in flat
+    assert "exactly one must be non-null" in flat
+    assert "exact distinct sources encoded by all cited evidence_ref values" in planner
+
+
 def test_rejected_provider_response_still_exposes_only_its_raw_hash() -> None:
     raw = _response("wrong_function", {}, index=7)
     transport = RecordingTransport([raw])
@@ -442,6 +460,58 @@ def test_planner_semantic_failure_reports_fixed_safe_reason_without_input() -> N
 
     message = str(captured.value)
     assert "output:planner_gap_mismatch" in message
+    assert private_value not in message
+
+
+def test_diagnosis_semantic_failure_reports_fixed_safe_reason_without_input() -> None:
+    private_value = "private-diagnosis-summary-must-not-leak"
+    raw = _response(
+        PLANNER_FUNCTION_V21,
+        {
+            "turn_ordinal": 1,
+            "hypotheses": [],
+            "next_step": "SUBMIT_DIAGNOSIS",
+            "evidence_gap_sources": [],
+            "read_request": None,
+            "diagnosis": {
+                "schema_version": "dta-v21.diagnosis.v1",
+                "run_id": RUN_ID,
+                "terminal": "COMPLETED",
+                "root_service": "payment",
+                "root_entity_ref": "service:payment",
+                "fault_domain": "CONFIGURATION",
+                "mechanism": "CONFIGURATION_ERROR",
+                "confidence": 0.9,
+                "supporting_evidence_refs": [
+                    f"evidence://{RUN_ID}/metrics/0001"
+                ],
+                "contradicting_evidence_refs": [],
+                "evidence_source_types": ["LOGS"],
+                "uncertainties": [],
+                "summary": private_value,
+            },
+            "bounded_rationale": "Submit the typed diagnosis.",
+        },
+        index=10,
+    )
+    provider = _provider(RecordingTransport([raw]))
+    context = _context()
+    state = build_investigation_state_view_v21(
+        context=context,
+        hypotheses=(),
+        evidence_store=InvestigationReadTools(
+            run_id=RUN_ID, backend=FakeReadBackend.healthy()
+        ).snapshot(),
+        newest_observation=None,
+    )
+
+    with pytest.raises(Exception) as captured:
+        provider.investigation_turn(
+            context=context, visible_state=state, read_tools_enabled=True
+        )
+
+    message = str(captured.value)
+    assert "diagnosis:diagnosis_source_accounting_mismatch" in message
     assert private_value not in message
 
 
