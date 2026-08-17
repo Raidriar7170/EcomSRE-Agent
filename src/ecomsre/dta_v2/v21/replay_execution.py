@@ -184,6 +184,10 @@ class FixedReplayVerifierV21:
         proposal: ActionProposalV21,
         runbook: RunbookSpecV21,
     ) -> ReplayVerificationV21:
+        if proposal.runbook_id is not runbook.runbook_id:
+            raise ValueError("proposal Runbook differs from the trusted registry")
+        if proposal.runbook_sha256 != runbook.semantic_sha256:
+            raise ValueError("proposal Runbook hash differs from the trusted registry")
         if receipt.proposal_sha256 != proposal.proposal_sha256:
             raise ValueError("receipt differs from the bound proposal")
         if receipt.run_id != proposal.run_id:
@@ -192,6 +196,10 @@ class FixedReplayVerifierV21:
             raise ValueError("receipt Runbook differs from the trusted registry")
         if receipt.runbook_sha256 != runbook.semantic_sha256:
             raise ValueError("receipt Runbook hash differs from the trusted registry")
+        if receipt.runbook_id is not proposal.runbook_id:
+            raise ValueError("receipt Runbook differs from the bound proposal")
+        if receipt.runbook_sha256 != proposal.runbook_sha256:
+            raise ValueError("receipt Runbook hash differs from the bound proposal")
         if receipt.executor_id != runbook.executor_id:
             raise ValueError("receipt executor differs from the trusted Runbook")
         if receipt.target_service != proposal.target_service:

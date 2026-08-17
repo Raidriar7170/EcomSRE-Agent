@@ -164,3 +164,19 @@ def test_availability_candidates_require_target_specific_evidence() -> None:
     )
 
     assert candidates.write_candidates == ()
+
+    product_diagnosis, product_evidence = build_replay_diagnosis(
+        run_id="e" * 32,
+        terminal=TerminalV21.COMPLETED,
+        root_service="product-catalog",
+        fault_domain=FaultDomainV21.SERVICE_RUNTIME,
+        mechanism=FaultMechanismV21.SERVICE_UNAVAILABLE,
+        evidence_sources=("METRICS", "RUNTIME"),
+    )
+    product_candidates = filter_runbook_candidates(
+        diagnosis=product_diagnosis,
+        diagnosis_evidence=product_evidence,
+        registry=load_default_runbook_registry(REPO_ROOT),
+        exact_target="product-catalog",
+    )
+    assert product_candidates.write_candidates == ()

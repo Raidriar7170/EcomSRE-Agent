@@ -249,6 +249,29 @@ def test_replay_executor_rejects_out_of_range_typed_parameter() -> None:
         FixedReplayExecutorV21().execute(proposal=tampered, runbook=runbook)
 
 
+def test_replay_executor_rejects_unknown_and_missing_parameters() -> None:
+    proposal, registry = _memory_leak_replay()
+    runbook = registry.require(RunbookIdV21.MITIGATE_MEMORY_LEAK)
+    for parameters, message in (
+        ((ActionParameterV21(name="unknown_delay", value=30),), "unknown"),
+        ((), "required"),
+    ):
+        python_payload = proposal.model_dump(mode="python", exclude={"proposal_sha256"})
+        json_payload = proposal.model_dump(mode="json", exclude={"proposal_sha256"})
+        python_payload["parameters"] = parameters
+        json_payload["parameters"] = [
+            item.model_dump(mode="json") for item in parameters
+        ]
+        tampered = ActionProposalV21.model_validate(
+            {
+                **python_payload,
+                "proposal_sha256": semantic_sha256(json_payload),
+            }
+        )
+        with pytest.raises(ValueError, match=message):
+            FixedReplayExecutorV21().execute(proposal=tampered, runbook=runbook)
+
+
 def test_replay_verifier_rejects_forged_target_and_proposal_drift() -> None:
     proposal, registry = _memory_leak_replay()
     runbook = registry.require(RunbookIdV21.MITIGATE_MEMORY_LEAK)
@@ -279,5 +302,43 @@ def test_replay_verifier_rejects_forged_target_and_proposal_drift() -> None:
         FixedReplayVerifierV21().verify(
             receipt=forged_continuity,
             proposal=proposal,
+            runbook=runbook,
+        )
+
+
+def test_replay_verifier_rejects_forged_proposal_runbook_identity() -> None:
+    proposal, registry = _memory_leak_replay()
+    runbook = registry.require(RunbookIdV21.MITIGATE_MEMORY_LEAK)
+    other = registry.require(RunbookIdV21.RESTORE_SERVICE_AVAILABILITY)
+    receipt = FixedReplayExecutorV21().execute(proposal=proposal, runbook=runbook)
+
+    proposal_python = proposal.model_dump(mode="python", exclude={"proposal_sha256"})
+    proposal_json = proposal.model_dump(mode="json", exclude={"proposal_sha256"})
+    proposal_python["runbook_id"] = other.runbook_id
+    proposal_python["runbook_sha256"] = other.semantic_sha256
+    proposal_json["runbook_id"] = other.runbook_id.value
+    proposal_json["runbook_sha256"] = other.semantic_sha256
+    forged_proposal = ActionProposalV21.model_validate(
+        {
+            **proposal_python,
+            "proposal_sha256": semantic_sha256(proposal_json),
+        }
+    )
+
+    receipt_python = receipt.model_dump(mode="python", exclude={"receipt_sha256"})
+    receipt_json = receipt.model_dump(mode="json", exclude={"receipt_sha256"})
+    receipt_python["proposal_sha256"] = forged_proposal.proposal_sha256
+    receipt_json["proposal_sha256"] = forged_proposal.proposal_sha256
+    rebound_receipt = ReplayExecutionReceiptV21.model_validate(
+        {
+            **receipt_python,
+            "receipt_sha256": semantic_sha256(receipt_json),
+        }
+    )
+
+    with pytest.raises(ValueError, match="proposal Runbook"):
+        FixedReplayVerifierV21().verify(
+            receipt=rebound_receipt,
+            proposal=forged_proposal,
             runbook=runbook,
         )
