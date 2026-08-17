@@ -432,10 +432,17 @@ class EvaluationScoreV21(DtaModelV21):
     def require_score(self) -> EvaluationScoreV21:
         if self.total_tokens != self.input_tokens + self.output_tokens:
             raise ValueError("evaluation total tokens differ")
-        expected = semantic_sha256(
-            self.model_dump(mode="json", exclude={"score_sha256"})
-        )
-        if self.score_sha256 != expected:
+        expected = {
+            semantic_sha256(self.model_dump(mode="json", exclude={"score_sha256"})),
+            semantic_sha256(
+                self.model_dump(
+                    mode="json",
+                    exclude={"score_sha256"},
+                    exclude_unset=True,
+                )
+            ),
+        }
+        if self.score_sha256 not in expected:
             raise ValueError("evaluation score digest differs")
         return self
 

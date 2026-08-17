@@ -101,10 +101,17 @@ class EvaluationEntryResultV21(DtaModelV21):
             or self.score.arm is not self.arm
         ):
             raise ValueError("evaluation entry prediction and score differ")
-        expected = semantic_sha256(
-            self.model_dump(mode="json", exclude={"entry_sha256"})
-        )
-        if self.entry_sha256 != expected:
+        expected = {
+            semantic_sha256(self.model_dump(mode="json", exclude={"entry_sha256"})),
+            semantic_sha256(
+                self.model_dump(
+                    mode="json",
+                    exclude={"entry_sha256"},
+                    exclude_unset=True,
+                )
+            ),
+        }
+        if self.entry_sha256 not in expected:
             raise ValueError("evaluation entry digest differs")
         return self
 

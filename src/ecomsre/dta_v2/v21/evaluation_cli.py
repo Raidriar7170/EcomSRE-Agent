@@ -90,10 +90,19 @@ class DevelopmentAttemptManifestV21(DtaModelV21):
         revision = semantic_sha256(revision_payload)
         if self.protocol_revision_sha256 != revision:
             raise ValueError("development attempt protocol revision differs")
-        expected = semantic_sha256(
-            self.model_dump(mode="json", exclude={"manifest_sha256"})
-        )
-        if self.manifest_sha256 != expected:
+        expected = {
+            semantic_sha256(
+                self.model_dump(mode="json", exclude={"manifest_sha256"})
+            ),
+            semantic_sha256(
+                self.model_dump(
+                    mode="json",
+                    exclude={"manifest_sha256"},
+                    exclude_unset=True,
+                )
+            ),
+        }
+        if self.manifest_sha256 not in expected:
             raise ValueError("development attempt manifest digest differs")
         return self
 

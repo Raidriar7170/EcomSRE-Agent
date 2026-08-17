@@ -519,10 +519,17 @@ class DevelopmentEvaluationReportV21(DtaModelV21):
         keys = tuple((item.group_type, item.group_value) for item in self.aggregates)
         if keys != tuple(sorted(keys)) or len(keys) != len(set(keys)):
             raise ValueError("development report groups are not canonical")
-        expected = semantic_sha256(
-            self.model_dump(mode="json", exclude={"report_sha256"})
-        )
-        if self.report_sha256 != expected:
+        expected = {
+            semantic_sha256(self.model_dump(mode="json", exclude={"report_sha256"})),
+            semantic_sha256(
+                self.model_dump(
+                    mode="json",
+                    exclude={"report_sha256"},
+                    exclude_unset=True,
+                )
+            ),
+        }
+        if self.report_sha256 not in expected:
             raise ValueError("development report digest differs")
         return self
 
