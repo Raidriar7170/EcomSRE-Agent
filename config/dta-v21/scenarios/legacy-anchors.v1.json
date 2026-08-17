@@ -1,0 +1,46 @@
+{
+  "schema_version": "dta-v21.legacy-development-anchor-registry.v1",
+  "anchors": [
+    {
+      "schema_version": "dta-v21.legacy-development-anchor.v1",
+      "anchor_id": "dta-v2-email-memory-leak",
+      "source_path": "config/dta-v2/scenarios/agent-visible/dta-dev-003.json",
+      "source_sha256": "9e185db019a76ef8e523c2f3bdfd1326ace4adbcbd8ae384de9a87c67bfd6407",
+      "root_service": "email",
+      "fault_domain": "LOCAL_RESOURCE",
+      "fault_mechanism": "MEMORY_LEAK",
+      "expected_runbook": "MITIGATE_MEMORY_LEAK"
+    },
+    {
+      "schema_version": "dta-v21.legacy-development-anchor.v1",
+      "anchor_id": "dta-v2-no-fault",
+      "source_path": "config/dta-v2/evaluation/no-action/agent-visible/dta-case-010.json",
+      "source_sha256": "11f5514667c4247dea1f459e986584b5d19178a6ee39f3cb689260685e1d547e",
+      "root_service": null,
+      "fault_domain": null,
+      "fault_mechanism": null,
+      "expected_runbook": null
+    },
+    {
+      "schema_version": "dta-v21.legacy-development-anchor.v1",
+      "anchor_id": "dta-v2-payment-configuration",
+      "source_path": "config/dta-v2/scenarios/agent-visible/dta-dev-001.json",
+      "source_sha256": "80345f511f763f4617d59ae33dbabbc2b9beaeec0fd6b5fb37a471295b5ea956",
+      "root_service": "payment",
+      "fault_domain": "CONFIGURATION",
+      "fault_mechanism": "CONFIGURATION_ERROR",
+      "expected_runbook": "ROLLBACK_CONFIGURATION"
+    },
+    {
+      "schema_version": "dta-v21.legacy-development-anchor.v1",
+      "anchor_id": "dta-v2-recommendation-unavailable",
+      "source_path": "config/dta-v2/scenarios/agent-visible/dta-dev-002.json",
+      "source_sha256": "e268087dfb77d6ca459c1f8e31ba5bfb836d7387a17ec87380428e02c1ae65e0",
+      "root_service": "recommendation",
+      "fault_domain": "SERVICE_RUNTIME",
+      "fault_mechanism": "SERVICE_UNAVAILABLE",
+      "expected_runbook": "RESTART_SERVICE"
+    }
+  ],
+  "registry_sha256": "61d1d2d8ec10f11d0f84bc138692ce13dfbc30d087f9f6ad8019b46b3b4ebac0"
+}

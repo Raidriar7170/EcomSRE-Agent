@@ -1,0 +1,13 @@
+{
+  "schema_version": "dta-v21.scenario-evaluation-contract.v1",
+  "scenario_id": "dta21-dev-005",
+  "terminal": "COMPLETED",
+  "root_service": null,
+  "fault_domain": null,
+  "fault_mechanism": null,
+  "required_evaluator_evidence": ["METRICS", "RUNTIME"],
+  "expected_runbook": null,
+  "runbook_backend": null,
+  "live_required": true,
+  "forward_writes": 0
+}

@@ -1,0 +1,40 @@
+{
+  "schema_version": "dta-v21.runbook-spec.v1",
+  "runbook_id": "ROLLBACK_CONFIGURATION",
+  "version": "v1",
+  "supported_fault_domains": ["CONFIGURATION"],
+  "supported_mechanisms": ["CONFIGURATION_ERROR"],
+  "target_services": ["payment"],
+  "required_evidence_sources": ["METRICS", "TRACES"],
+  "target_evidence_requirements": [
+    {
+      "target_service": "payment",
+      "required_evidence_sources": ["METRICS", "TRACES"]
+    }
+  ],
+  "risk_level": "LOW",
+  "parameters": [],
+  "preconditions": [
+    "LOCAL_DOCKER_ONLY",
+    "OWNED_SERVICE",
+    "CONFIGURATION_DRIFT_VISIBLE",
+    "BASELINE_HASH_BOUND"
+  ],
+  "forward_steps": [
+    {
+      "step_id": "RESTORE_BASELINE_CONFIGURATION",
+      "parameter_names": []
+    }
+  ],
+  "executor_id": "ConfigurationRollbackReplayExecutorV21",
+  "verifier_id": "ConfigurationRecoveryReplayVerifierV21",
+  "maximum_forward_steps": 1,
+  "failure_policy": {
+    "terminal": "ESCALATE_HUMAN",
+    "preserve_completed_steps": true,
+    "additional_forward_write_allowed": false,
+    "step_receipt_required": true
+  },
+  "backend": "REPLAY_ONLY",
+  "semantic_sha256": "39b7928ecbdbe3acf23f676358cb2697268e9aa21b63dc9b28545770add84955"
+}

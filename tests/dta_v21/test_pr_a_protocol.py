@@ -7,7 +7,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_master_progress_starts_exact_pr_a_stage() -> None:
+def test_master_progress_tracks_exact_pr_b_stage() -> None:
     progress = json.loads(
         (REPO_ROOT / "docs/analysis/dta-v21-p0-master-progress.json").read_text(
             encoding="utf-8"
@@ -26,12 +26,12 @@ def test_master_progress_starts_exact_pr_a_stage() -> None:
         "actual_starting_main": (
             "925d23994888d1b83e57fc1bbdd1944e57a1bfff"
         ),
-        "completed_stage": None,
-        "current_stage": "PR-A",
-        "main_head": "925d23994888d1b83e57fc1bbdd1944e57a1bfff",
-        "active_branch": "codex/dta-v21-p0-pr-a-protocol",
-        "active_pr": 50,
-        "merged_prs": [],
+        "completed_stage": "PR-A",
+        "current_stage": "PR-B",
+        "main_head": "ff1b52f01e5d980d7a94a258d7f2a06614dd9f75",
+        "active_branch": "codex/dta-v21-p0-pr-b-fault-matrix",
+        "active_pr": 51,
+        "merged_prs": [50],
         "preferred_model": "gpt-5.4-2026-03-05",
         "frozen_model": None,
         "flat_adaptive_identity_sha256": None,
