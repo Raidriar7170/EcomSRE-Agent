@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -8,6 +9,7 @@ from typing import Any, cast
 
 import pytest
 
+from ecomsre.dta_v2.read_tools import BackendResult
 from ecomsre.dta_v2.v21.capture_campaign import (
     CalibrationKindV21,
     CaptureConditionV21,
@@ -29,7 +31,14 @@ from ecomsre.dta_v2.v21.owned_capture import (
     build_capture_flag_document_v21,
     build_evaluator_truth_v21,
 )
-from ecomsre.dta_v2.tool_contracts import RuntimeState, SpanStatus
+from ecomsre.dta_v2.tool_contracts import (
+    DiagnosticLogRecord,
+    LogSeverity,
+    RuntimeState,
+    SpanStatus,
+    ToolErrorCode,
+    build_search_logs_request,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -298,3 +307,37 @@ def test_service_unavailable_calibration_binds_caller_impact(
     assert observation.business_impact_service == "checkout"
     assert observation.measurable is True
     assert lifecycle.unavailable_business_anchor_v21 == {"email": "checkout"}
+
+
+def test_capture_fixture_fails_closed_on_truth_isolation() -> None:
+    now = datetime.now(timezone.utc)
+    request = build_search_logs_request(
+        run_id="a" * 32,
+        service="ad",
+        started_at=now - timedelta(seconds=30),
+        ended_at=now,
+        max_records=5,
+    )
+    leak = "expected root ad"
+    lifecycle = OwnedCaptureLifecycleV21.__new__(OwnedCaptureLifecycleV21)
+    lifecycle.backend = cast(
+        Any,
+        SimpleNamespace(
+            execute=lambda request: BackendResult(
+                records=(
+                    DiagnosticLogRecord(
+                        observed_at=now,
+                        service="ad",
+                        severity=LogSeverity.ERROR,
+                        message=leak,
+                    ),
+                )
+            )
+        ),
+    )
+
+    fixture = lifecycle._capture_fixture_v21(request)
+
+    assert fixture.error_code is ToolErrorCode.TRUTH_ISOLATION_VIOLATION
+    assert fixture.records == ()
+    assert leak not in fixture.model_dump_json()

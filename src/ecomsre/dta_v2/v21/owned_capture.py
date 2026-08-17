@@ -34,9 +34,11 @@ from ecomsre.dta_v2.tool_contracts import (
     RuntimeRecord,
     RuntimeState,
     SpanStatus,
+    TruthIsolationError,
     ToolErrorCode,
     ToolName,
     TraceNeighborhoodRecord,
+    assert_truth_isolated,
     build_inspect_resource_usage_request,
     build_inspect_service_runtime_request,
     build_query_metrics_request,
@@ -49,6 +51,7 @@ from ecomsre.dta_v2.v21.capture_campaign import (
     CaptureCalibrationObservationV21,
     CaptureCampaignClosureV21,
     CaptureCampaignPlanV21,
+    CaptureCaseFailureV21,
     CaptureCasePlanV21,
     CaptureConditionV21,
     CapturedCaseArtifactV21,
@@ -325,6 +328,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         self.fault_operation_count = 0
         self.email_restart_required_v21 = False
         self.calibration_step_v21 = "BEGIN"
+        self.case_capture_step_v21 = "BEGIN"
         self.ad_baseline_cpu_p95_percent_v21: float | None = None
         self.ad_baseline_latency_p95_ms_v21: float | None = None
         self.shipping_baseline_latency_p95_ms_v21: float | None = None
@@ -683,6 +687,21 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
     def capture_case(  # type: ignore[override]
         self, case: CaptureCasePlanV21
     ) -> CapturedCaseArtifactV21:
+        self.case_capture_step_v21 = "BEGIN"
+        try:
+            return self._capture_case_impl(case)
+        except CaptureCaseFailureV21:
+            raise
+        except Exception as error:
+            raise CaptureCaseFailureV21(
+                case_id=case.case_id,
+                step=self.case_capture_step_v21,
+                cause=error,
+            ) from error
+
+    def _capture_case_impl(
+        self, case: CaptureCasePlanV21
+    ) -> CapturedCaseArtifactV21:
         if self.active_condition != case.case_id:
             raise RuntimeError("capture case condition is not active")
         service = _service_for_family(case.operational_family)
@@ -751,6 +770,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         )
         captured: list[ReplayObservationFixtureV21] = []
         for request in requests:
+            self.case_capture_step_v21 = f"SOURCE:{request.tool.value}"
             if (
                 request.tool is ToolName.INSPECT_RESOURCE_USAGE
                 and case.condition is CaptureConditionV21.EMAIL_MEMORY_LEAK
@@ -778,6 +798,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
                 fixture = self._capture_fixture_v21(request)
             captured.append(fixture)
         fixtures = tuple(sorted(captured, key=lambda item: item.tool.value))
+        self.case_capture_step_v21 = "QUALITY"
         require_capture_case_quality_v21(case, fixtures)
         case_payload: dict[str, object] = {
             "schema_version": "dta-v21.agent-visible-replay-case.v1",
@@ -791,6 +812,7 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
         case_draft = cast(Any, AgentVisibleReplayCaseV21).model_construct(
             **case_payload, case_sha256="0" * 64
         )
+        self.case_capture_step_v21 = "ASSEMBLY"
         replay_case = AgentVisibleReplayCaseV21.model_validate(
             {
                 **case_payload,
@@ -799,8 +821,10 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
                 ),
             }
         )
+        self.case_capture_step_v21 = "TRUTH"
         truth = build_evaluator_truth_v21(case)
         case_root = self.private_root / "cases" / case.case_id
+        self.case_capture_step_v21 = "WRITE"
         write_private_json(
             case_root / "agent-visible.json", replay_case, create_once=True
         )
@@ -860,6 +884,17 @@ class OwnedCaptureLifecycleV21(OwnedCaptureLifecycle):
             if hasattr(request, "service")
             else tuple(request.services)
         )
+        if error is None:
+            try:
+                assert_truth_isolated(
+                    [record.model_dump(mode="json") for record in records]
+                )
+            except TruthIsolationError:
+                return _failed_fixture_v21(
+                    tool=request.tool,
+                    service_scope=tuple(sorted(scope)),
+                    error_code=ToolErrorCode.TRUTH_ISOLATION_VIOLATION,
+                )
         return _fixture_v21(
             tool=request.tool,
             service_scope=tuple(sorted(scope)),

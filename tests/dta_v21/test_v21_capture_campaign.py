@@ -9,6 +9,7 @@ from ecomsre.dta_v2.v21.capture_campaign import (
     CalibrationKindV21,
     CaptureCalibrationFailureV21,
     CaptureCalibrationObservationV21,
+    CaptureCaseFailureV21,
     CaptureConditionV21,
     CaptureFailureCodeV21,
     CaptureTerminalV21,
@@ -323,4 +324,19 @@ def test_calibration_validation_error_retains_safe_field_codes() -> None:
 
     assert failure.validation_codes
     assert all(":" in item for item in failure.validation_codes)
+    assert "input" not in " ".join(failure.validation_codes).casefold()
+
+
+def test_case_validation_error_retains_safe_stage_and_field_codes() -> None:
+    with pytest.raises(ValidationError) as captured:
+        CaptureCalibrationObservationV21.model_validate({})
+
+    failure = CaptureCaseFailureV21(
+        case_id="dta21-case-006",
+        step="SOURCE:search_logs",
+        cause=captured.value,
+    )
+
+    assert failure.stage == "CASE:dta21-case-006:SOURCE:search_logs"
+    assert failure.validation_codes
     assert "input" not in " ".join(failure.validation_codes).casefold()

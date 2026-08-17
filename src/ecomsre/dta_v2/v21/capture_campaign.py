@@ -63,6 +63,23 @@ class CalibrationKindV21(str, Enum):
     SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE"
 
 
+def _safe_validation_codes(error: Exception) -> tuple[str, ...]:
+    if not isinstance(error, ValidationError):
+        return ()
+    return tuple(
+        sorted(
+            {
+                f"{'.'.join(str(part) for part in item['loc'])}:{item['type']}"
+                for item in error.errors(
+                    include_url=False,
+                    include_context=False,
+                    include_input=False,
+                )
+            }
+        )
+    )
+
+
 class CaptureCalibrationFailureV21(RuntimeError):
     """Sanitized typed calibration failure propagated across the lifecycle."""
 
@@ -85,22 +102,24 @@ class CaptureCalibrationFailureV21(RuntimeError):
                 "cause_message": str(cause),
             }
         )
-        self.validation_codes = (
-            tuple(
-                sorted(
-                    {
-                        f"{'.'.join(str(part) for part in item['loc'])}:{item['type']}"
-                        for item in cause.errors(
-                            include_url=False,
-                            include_context=False,
-                            include_input=False,
-                        )
-                    }
-                )
-            )
-            if isinstance(cause, ValidationError)
-            else ()
+        self.validation_codes = _safe_validation_codes(cause)
+
+
+class CaptureCaseFailureV21(RuntimeError):
+    """Sanitized typed case-capture failure with a bounded source stage."""
+
+    def __init__(self, *, case_id: str, step: str, cause: Exception) -> None:
+        super().__init__("capture case step failed")
+        self.stage = f"CASE:{case_id}:{step}"
+        self.cause_type = type(cause).__name__
+        self.detail_sha256 = semantic_sha256(
+            {
+                "stage": self.stage,
+                "cause_type": self.cause_type,
+                "cause_message": str(cause),
+            }
         )
+        self.validation_codes = _safe_validation_codes(cause)
 
 
 _ALLOWED_VARIANTS = {
@@ -884,7 +903,7 @@ def run_capture_campaign_attempt_v21(
         nonlocal failure, failure_stage, failure_cause_type
         nonlocal failure_detail_sha256, failure_validation_codes
         failure = code
-        if isinstance(error, CaptureCalibrationFailureV21):
+        if isinstance(error, (CaptureCalibrationFailureV21, CaptureCaseFailureV21)):
             failure_stage = error.stage
             failure_cause_type = error.cause_type
             failure_detail_sha256 = error.detail_sha256
@@ -1137,6 +1156,7 @@ __all__ = (
     "CalibrationKindV21",
     "CaptureCalibrationFailureV21",
     "CaptureCalibrationObservationV21",
+    "CaptureCaseFailureV21",
     "CaptureCampaignClosureV21",
     "CaptureCampaignPlanV21",
     "CaptureCaseReceiptV21",
