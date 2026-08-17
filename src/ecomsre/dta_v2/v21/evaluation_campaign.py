@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from collections import defaultdict
 from enum import Enum
 import hashlib
 from pathlib import Path
 import random
 import statistics
+import subprocess
 from typing import Any, Literal, Mapping, cast
 
 from pydantic import Field, StrictFloat, StrictInt, model_validator
@@ -351,6 +353,35 @@ def _source_sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _require_exact_repository_head(repository_root: Path, base_code_head: str) -> None:
+    completed = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repository_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    if completed.stdout.strip() != base_code_head:
+        raise ValueError("freeze base code head differs from current HEAD")
+
+
+def _require_source_matches_head(
+    repository_root: Path,
+    *,
+    base_code_head: str,
+    relative: str,
+    observed_sha256: str,
+) -> None:
+    completed = subprocess.run(
+        ["git", "show", f"{base_code_head}:{relative}"],
+        cwd=repository_root,
+        check=True,
+        capture_output=True,
+    )
+    if hashlib.sha256(completed.stdout).hexdigest() != observed_sha256:
+        raise ValueError(f"freeze source differs from current HEAD: {relative}")
+
+
 def build_evaluation_freeze_manifest_v21(
     *,
     repository_root: Path,
@@ -361,6 +392,7 @@ def build_evaluation_freeze_manifest_v21(
     schedule: EvaluationScheduleV21,
     preregistration: EvaluationPreregistrationV21,
 ) -> EvaluationFreezeManifestV21:
+    _require_exact_repository_head(repository_root, base_code_head)
     source_root = repository_root / "src/ecomsre/dta_v2/v21"
     bindings = tuple(
         EvaluationSourceBindingV21(
@@ -368,6 +400,13 @@ def build_evaluation_freeze_manifest_v21(
         )
         for name in _REQUIRED_SOURCE_BINDINGS
     )
+    for binding in bindings:
+        _require_source_matches_head(
+            repository_root,
+            base_code_head=base_code_head,
+            relative=f"src/ecomsre/dta_v2/v21/{binding.name}",
+            observed_sha256=binding.source_sha256,
+        )
     identities = build_three_arm_identities_v21(
         model_id=model_id, max_completion_tokens=max_completion_tokens
     )
@@ -418,7 +457,9 @@ class PerClassMetricV21(DtaModelV21):
 
 
 class EvaluationAggregateV21(DtaModelV21):
-    group_type: Literal["OVERALL", "ARM", "MECHANISM", "GENERALIZATION_SLICE"]
+    group_type: Literal[
+        "OVERALL", "ARM", "SPLIT", "MECHANISM", "GENERALIZATION_SLICE"
+    ]
     group_value: str
     scored_entries: StrictInt = Field(ge=1)
     protocol_acceptance_rate: StrictFloat = Field(ge=0.0, le=1.0)
@@ -427,6 +468,9 @@ class EvaluationAggregateV21(DtaModelV21):
     mechanism_accuracy: StrictFloat | None = Field(default=None, ge=0.0, le=1.0)
     mechanism_macro_f1: StrictFloat | None = Field(default=None, ge=0.0, le=1.0)
     per_class: tuple[PerClassMetricV21, ...]
+    evidence_reference_validity_rate: StrictFloat | None = Field(
+        default=None, ge=0.0, le=1.0
+    )
     evidence_validity_rate: StrictFloat = Field(ge=0.0, le=1.0)
     expected_source_coverage_rate: StrictFloat | None = Field(
         default=None, ge=0.0, le=1.0
@@ -452,6 +496,7 @@ class EvaluationAggregateV21(DtaModelV21):
     median_latency_ms: StrictFloat = Field(ge=0.0)
     unsafe_proposal_attempts: StrictInt = Field(ge=0)
     arbitrary_shell_attempts: Literal[0]
+    non_owned_mutations: Literal[0] = 0
 
 
 class DevelopmentEvaluationReportV21(DtaModelV21):
@@ -464,6 +509,9 @@ class DevelopmentEvaluationReportV21(DtaModelV21):
     truth_isolation: Literal["PASS"]
     scorer_self_tests: Literal["PASS"]
     unsafe_writes: Literal[0]
+    scorer_source_sha256: Sha256V21 | None = None
+    reporting_source_sha256: Sha256V21 | None = None
+    primary_aggregate_entry_count: Literal[36] | None = None
     report_sha256: Sha256V21
 
     @model_validator(mode="after")
@@ -538,7 +586,9 @@ def _classification(
 
 def _aggregate(
     *,
-    group_type: Literal["OVERALL", "ARM", "MECHANISM", "GENERALIZATION_SLICE"],
+    group_type: Literal[
+        "OVERALL", "ARM", "SPLIT", "MECHANISM", "GENERALIZATION_SLICE"
+    ],
     group_value: str,
     entries: list[EvaluationEntryResultV21],
     truths: Mapping[str, EvaluatorCaseTruthV21],
@@ -557,11 +607,14 @@ def _aggregate(
         mechanism_accuracy=_rate([item.mechanism_accuracy for item in scores]),
         mechanism_macro_f1=macro,
         per_class=per_class,
+        evidence_reference_validity_rate=_rate(
+            [item.evidence_reference_validity for item in scores]
+        ),
         evidence_validity_rate=statistics.fmean(
             item.evidence_validity for item in scores
         ),
         expected_source_coverage_rate=_rate(
-            [item.tool_source_selection_accuracy for item in scores]
+            [item.expected_source_coverage for item in scores]
         ),
         runbook_top1_accuracy=_rate([item.runbook_top1_accuracy for item in scores]),
         action_precision=statistics.fmean(item.action_precision for item in scores),
@@ -590,6 +643,9 @@ def _aggregate(
         median_latency_ms=statistics.median(item.latency_ms for item in scores),
         unsafe_proposal_attempts=sum(item.unsafe_proposal_attempts for item in scores),
         arbitrary_shell_attempts=0,
+        non_owned_mutations=sum(
+            item.non_owned_mutation_attempts for item in scores
+        ),
     )
 
 
@@ -616,6 +672,337 @@ def build_development_report_v21(
     by_arm: dict[str, list[EvaluationEntryResultV21]] = defaultdict(list)
     by_mechanism: dict[str, list[EvaluationEntryResultV21]] = defaultdict(list)
     by_slice: dict[str, list[EvaluationEntryResultV21]] = defaultdict(list)
+    for entry in primary:
+        truth = truths[entry.prediction.case_id]
+        by_arm[entry.arm.value].append(entry)
+        by_mechanism[
+            "NONE"
+            if truth.expected_mechanism is None
+            else truth.expected_mechanism.value
+        ].append(entry)
+        by_slice[truth.generalization_slice.value].append(entry)
+    aggregates: list[EvaluationAggregateV21] = [
+        _aggregate(
+            group_type="OVERALL",
+            group_value="DEVELOPMENT",
+            entries=primary,
+            truths=truths,
+        ),
+        _aggregate(
+            group_type="SPLIT",
+            group_value=EvaluationSplitV21.DEVELOPMENT.value,
+            entries=primary,
+            truths=truths,
+        ),
+    ]
+    for group_type, groups in (
+        ("ARM", by_arm),
+        ("MECHANISM", by_mechanism),
+        ("GENERALIZATION_SLICE", by_slice),
+    ):
+        for value, grouped in groups.items():
+            aggregates.append(
+                _aggregate(
+                    group_type=cast(Any, group_type),
+                    group_value=value,
+                    entries=grouped,
+                    truths=truths,
+                )
+            )
+    aggregates.append(
+        _aggregate(
+            group_type="ARM",
+            group_value=EvaluationArmV21.EVIDENCE_GUIDED_PLANNER_NO_COMPACTION.value,
+            entries=ablation,
+            truths=truths,
+        )
+    )
+    aggregates.sort(key=lambda item: (item.group_type, item.group_value))
+    ordered_identities = tuple(
+        sorted(identities, key=lambda item: list(AgentArmV21).index(item.arm))
+    )
+    if len(ordered_identities) != 3:
+        raise ValueError("development report requires three Agent identities")
+    payload: dict[str, object] = {
+        "schema_version": "dta-v21.development-evaluation-report.v1",
+        "model_id": ordered_identities[0].model_id,
+        "identity_sha256s": tuple(item.identity_sha256 for item in ordered_identities),
+        "primary_entry_count": 36,
+        "ablation_entry_count": 4,
+        "aggregates": tuple(aggregates),
+        "truth_isolation": "PASS",
+        "scorer_self_tests": "PASS",
+        "unsafe_writes": 0,
+        "scorer_source_sha256": _source_sha256(
+            Path(__file__).with_name("evaluation_contracts.py")
+        ),
+        "reporting_source_sha256": _source_sha256(Path(__file__)),
+        "primary_aggregate_entry_count": 36,
+    }
+    draft = cast(Any, DevelopmentEvaluationReportV21).model_construct(
+        **payload, report_sha256="0" * 64
+    )
+    return DevelopmentEvaluationReportV21.model_validate(
+        {
+            **payload,
+            "report_sha256": semantic_sha256(
+                draft.model_dump(mode="json", exclude={"report_sha256"})
+            ),
+        }
+    )
+
+
+class PlannerAdvantageDecisionV21(DtaModelV21):
+    schema_version: Literal["dta-v21.planner-advantage-decision.v1"]
+    preregistration_sha256: Sha256V21
+    protocol_acceptance_both: bool
+    truth_isolation: bool
+    scorer_verification: bool
+    root_not_lower: bool
+    mechanism_macro_f1_delta: bool
+    evidence_validity_advantage: bool
+    action_metric_advantage: bool
+    mean_input_token_ratio: bool
+    mean_total_token_ratio: bool
+    mean_semantic_read_ratio: bool
+    median_latency_ratio: bool
+    duplicate_normalized_calls_zero: bool
+    unsafe_proposal_attempts_zero: bool
+    arbitrary_shell_attempts_zero: bool
+    non_owned_mutations_zero: bool
+    marker: Literal[
+        "DTA_V21_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED",
+        "DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED",
+    ]
+    decision_sha256: Sha256V21
+
+    @model_validator(mode="after")
+    def require_decision(self) -> PlannerAdvantageDecisionV21:
+        conditions = (
+            self.protocol_acceptance_both,
+            self.truth_isolation,
+            self.scorer_verification,
+            self.root_not_lower,
+            self.mechanism_macro_f1_delta,
+            self.evidence_validity_advantage,
+            self.action_metric_advantage,
+            self.mean_input_token_ratio,
+            self.mean_total_token_ratio,
+            self.mean_semantic_read_ratio,
+            self.median_latency_ratio,
+            self.duplicate_normalized_calls_zero,
+            self.unsafe_proposal_attempts_zero,
+            self.arbitrary_shell_attempts_zero,
+            self.non_owned_mutations_zero,
+        )
+        expected_marker = (
+            "DTA_V21_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED"
+            if all(conditions)
+            else "DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED"
+        )
+        if self.marker != expected_marker:
+            raise ValueError("planner advantage marker differs from threshold decision")
+        expected = semantic_sha256(
+            self.model_dump(mode="json", exclude={"decision_sha256"})
+        )
+        if self.decision_sha256 != expected:
+            raise ValueError("planner advantage decision digest differs")
+        return self
+
+
+class HeldOutEvaluationReportV21(DtaModelV21):
+    schema_version: Literal["dta-v21.held-out-evaluation-report.v1"]
+    model_id: str = Field(min_length=1, max_length=128)
+    identity_sha256s: tuple[Sha256V21, Sha256V21, Sha256V21]
+    primary_entry_count: Literal[24]
+    aggregates: tuple[EvaluationAggregateV21, ...] = Field(min_length=1)
+    truth_isolation: Literal["PASS"]
+    scorer_self_tests: Literal["PASS"]
+    unsafe_writes: Literal[0]
+    non_owned_mutations: Literal[0]
+    scorer_source_sha256: Sha256V21
+    reporting_source_sha256: Sha256V21
+    claim_decision: PlannerAdvantageDecisionV21
+    report_sha256: Sha256V21
+
+    @model_validator(mode="after")
+    def require_report(self) -> HeldOutEvaluationReportV21:
+        keys = tuple((item.group_type, item.group_value) for item in self.aggregates)
+        if keys != tuple(sorted(keys)) or len(keys) != len(set(keys)):
+            raise ValueError("held-out report groups are not canonical")
+        expected = semantic_sha256(
+            self.model_dump(mode="json", exclude={"report_sha256"})
+        )
+        if self.report_sha256 != expected:
+            raise ValueError("held-out report digest differs")
+        return self
+
+
+def _minimum_ratio(numerator: float, denominator: float, maximum: float) -> bool:
+    return numerator == 0.0 if denominator == 0.0 else numerator / denominator <= maximum
+
+
+def _additional_correct_with_rate_delta(
+    planner: Sequence[bool | None],
+    flat: Sequence[bool | None],
+    *,
+    minimum_additional: int,
+    minimum_rate_delta: float,
+) -> bool:
+    planner_applicable = [item for item in planner if item is not None]
+    flat_applicable = [item for item in flat if item is not None]
+    if not planner_applicable or not flat_applicable:
+        return False
+    return (
+        sum(planner_applicable) >= sum(flat_applicable) + minimum_additional
+        and sum(planner_applicable) / len(planner_applicable)
+        >= sum(flat_applicable) / len(flat_applicable) + minimum_rate_delta
+    )
+
+
+def _build_advantage_decision_v21(
+    *,
+    entries: tuple[EvaluationEntryResultV21, ...],
+    truths: Mapping[str, EvaluatorCaseTruthV21],
+    preregistration: EvaluationPreregistrationV21,
+) -> PlannerAdvantageDecisionV21:
+    planner_entries = [
+        item
+        for item in entries
+        if item.arm is EvaluationArmV21.EVIDENCE_GUIDED_PLANNER
+    ]
+    flat_entries = [
+        item for item in entries if item.arm is EvaluationArmV21.FLAT_ADAPTIVE
+    ]
+    if len(planner_entries) != 8 or len(flat_entries) != 8:
+        raise ValueError("held-out primary comparison cardinality differs")
+    planner_scores = [item.score for item in planner_entries]
+    flat_scores = [item.score for item in flat_entries]
+    planner_root = _rate([item.root_exact_match for item in planner_scores])
+    flat_root = _rate([item.root_exact_match for item in flat_scores])
+    _, planner_macro = _classification(planner_entries, truths)
+    _, flat_macro = _classification(flat_entries, truths)
+    thresholds = preregistration.thresholds
+    planner_evidence = [item.evidence_validity for item in planner_scores]
+    flat_evidence = [item.evidence_validity for item in flat_scores]
+    runbook_advantage = _additional_correct_with_rate_delta(
+        [item.runbook_top1_accuracy for item in planner_scores],
+        [item.runbook_top1_accuracy for item in flat_scores],
+        minimum_additional=thresholds.action_metric_minimum_additional_cases,
+        minimum_rate_delta=thresholds.action_metric_minimum_rate_delta,
+    )
+    action_advantage = _additional_correct_with_rate_delta(
+        [item.action_precision for item in planner_scores],
+        [item.action_precision for item in flat_scores],
+        minimum_additional=thresholds.action_metric_minimum_additional_cases,
+        minimum_rate_delta=thresholds.action_metric_minimum_rate_delta,
+    )
+    condition_payload: dict[str, object] = {
+        "schema_version": "dta-v21.planner-advantage-decision.v1",
+        "preregistration_sha256": preregistration.preregistration_sha256,
+        "protocol_acceptance_both": all(
+            item.protocol_acceptance for item in (*planner_scores, *flat_scores)
+        ),
+        "truth_isolation": True,
+        "scorer_verification": True,
+        "root_not_lower": (
+            planner_root is not None
+            and flat_root is not None
+            and planner_root >= flat_root
+        ),
+        "mechanism_macro_f1_delta": (
+            planner_macro is not None
+            and flat_macro is not None
+            and planner_macro
+            >= flat_macro + thresholds.mechanism_macro_f1_minimum_delta
+        ),
+        "evidence_validity_advantage": _additional_correct_with_rate_delta(
+            planner_evidence,
+            flat_evidence,
+            minimum_additional=thresholds.evidence_validity_minimum_additional_cases,
+            minimum_rate_delta=thresholds.evidence_validity_minimum_rate_delta,
+        ),
+        "action_metric_advantage": runbook_advantage or action_advantage,
+        "mean_input_token_ratio": _minimum_ratio(
+            statistics.fmean(item.input_tokens for item in planner_scores),
+            statistics.fmean(item.input_tokens for item in flat_scores),
+            thresholds.planner_mean_input_token_ratio_maximum,
+        ),
+        "mean_total_token_ratio": _minimum_ratio(
+            statistics.fmean(item.total_tokens for item in planner_scores),
+            statistics.fmean(item.total_tokens for item in flat_scores),
+            thresholds.planner_mean_total_token_ratio_maximum,
+        ),
+        "mean_semantic_read_ratio": _minimum_ratio(
+            statistics.fmean(item.read_tool_dispatches for item in planner_scores),
+            statistics.fmean(item.read_tool_dispatches for item in flat_scores),
+            thresholds.planner_mean_semantic_read_ratio_maximum,
+        ),
+        "median_latency_ratio": _minimum_ratio(
+            statistics.median(item.latency_ms for item in planner_scores),
+            statistics.median(item.latency_ms for item in flat_scores),
+            thresholds.planner_median_latency_ratio_maximum,
+        ),
+        "duplicate_normalized_calls_zero": sum(
+            item.duplicate_normalized_calls for item in (*planner_scores, *flat_scores)
+        )
+        == thresholds.duplicate_normalized_calls_maximum,
+        "unsafe_proposal_attempts_zero": sum(
+            item.score.unsafe_proposal_attempts for item in entries
+        )
+        == thresholds.unsafe_proposal_attempts_maximum,
+        "arbitrary_shell_attempts_zero": sum(
+            item.score.arbitrary_shell_attempts for item in entries
+        )
+        == thresholds.arbitrary_shell_attempts_maximum,
+        "non_owned_mutations_zero": sum(
+            item.score.non_owned_mutation_attempts for item in entries
+        )
+        == thresholds.non_owned_mutations_maximum,
+    }
+    supported = all(
+        bool(value)
+        for key, value in condition_payload.items()
+        if key not in {"schema_version", "preregistration_sha256"}
+    )
+    payload = {
+        **condition_payload,
+        "marker": (
+            preregistration.supported_marker
+            if supported
+            else preregistration.unsupported_marker
+        ),
+    }
+    draft = cast(Any, PlannerAdvantageDecisionV21).model_construct(
+        **payload, decision_sha256="0" * 64
+    )
+    return PlannerAdvantageDecisionV21.model_validate(
+        {
+            **payload,
+            "decision_sha256": semantic_sha256(
+                draft.model_dump(mode="json", exclude={"decision_sha256"})
+            ),
+        }
+    )
+
+
+def build_held_out_report_v21(
+    *,
+    entries: tuple[EvaluationEntryResultV21, ...],
+    truths: Mapping[str, EvaluatorCaseTruthV21],
+    identities: tuple[AgentIdentityManifestV21, ...],
+    preregistration: EvaluationPreregistrationV21,
+) -> HeldOutEvaluationReportV21:
+    if len(entries) != 24 or any(item.arm not in PRIMARY_ARMS_V21 for item in entries):
+        raise ValueError("held-out report requires exact 24 primary entries")
+    case_ids = {item.prediction.case_id for item in entries}
+    if len(case_ids) != 8 or set(truths) != case_ids or any(
+        truth.split is not EvaluationSplitV21.HELD_OUT for truth in truths.values()
+    ):
+        raise ValueError("held-out report case/truth set differs")
+    by_arm: dict[str, list[EvaluationEntryResultV21]] = defaultdict(list)
+    by_mechanism: dict[str, list[EvaluationEntryResultV21]] = defaultdict(list)
+    by_slice: dict[str, list[EvaluationEntryResultV21]] = defaultdict(list)
     for entry in entries:
         truth = truths[entry.prediction.case_id]
         by_arm[entry.arm.value].append(entry)
@@ -625,13 +1012,19 @@ def build_development_report_v21(
             else truth.expected_mechanism.value
         ].append(entry)
         by_slice[truth.generalization_slice.value].append(entry)
-    aggregates = [
+    aggregates: list[EvaluationAggregateV21] = [
         _aggregate(
             group_type="OVERALL",
-            group_value="DEVELOPMENT",
+            group_value="HELD_OUT",
             entries=list(entries),
             truths=truths,
-        )
+        ),
+        _aggregate(
+            group_type="SPLIT",
+            group_value=EvaluationSplitV21.HELD_OUT.value,
+            entries=list(entries),
+            truths=truths,
+        ),
     ]
     for group_type, groups in (
         ("ARM", by_arm),
@@ -651,23 +1044,37 @@ def build_development_report_v21(
     ordered_identities = tuple(
         sorted(identities, key=lambda item: list(AgentArmV21).index(item.arm))
     )
-    if len(ordered_identities) != 3:
-        raise ValueError("development report requires three Agent identities")
+    if (
+        len(ordered_identities) != 3
+        or {item.model_id for item in ordered_identities}
+        != {preregistration.model_id}
+    ):
+        raise ValueError("held-out report Agent identities differ")
+    decision = _build_advantage_decision_v21(
+        entries=entries,
+        truths=truths,
+        preregistration=preregistration,
+    )
     payload: dict[str, object] = {
-        "schema_version": "dta-v21.development-evaluation-report.v1",
-        "model_id": ordered_identities[0].model_id,
+        "schema_version": "dta-v21.held-out-evaluation-report.v1",
+        "model_id": preregistration.model_id,
         "identity_sha256s": tuple(item.identity_sha256 for item in ordered_identities),
-        "primary_entry_count": 36,
-        "ablation_entry_count": 4,
+        "primary_entry_count": 24,
         "aggregates": tuple(aggregates),
         "truth_isolation": "PASS",
         "scorer_self_tests": "PASS",
         "unsafe_writes": 0,
+        "non_owned_mutations": 0,
+        "scorer_source_sha256": _source_sha256(
+            Path(__file__).with_name("evaluation_contracts.py")
+        ),
+        "reporting_source_sha256": _source_sha256(Path(__file__)),
+        "claim_decision": decision,
     }
-    draft = cast(Any, DevelopmentEvaluationReportV21).model_construct(
+    draft = cast(Any, HeldOutEvaluationReportV21).model_construct(
         **payload, report_sha256="0" * 64
     )
-    return DevelopmentEvaluationReportV21.model_validate(
+    return HeldOutEvaluationReportV21.model_validate(
         {
             **payload,
             "report_sha256": semantic_sha256(
@@ -689,7 +1096,10 @@ __all__ = (
     "EvaluationSourceBindingV21",
     "PRIMARY_ARMS_V21",
     "PlannerAdvantageThresholdsV21",
+    "HeldOutEvaluationReportV21",
+    "PlannerAdvantageDecisionV21",
     "build_development_report_v21",
+    "build_held_out_report_v21",
     "build_evaluation_freeze_manifest_v21",
     "build_evaluation_preregistration_v21",
     "build_evaluation_schedule_v21",

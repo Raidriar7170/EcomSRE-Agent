@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+import ecomsre.dta_v2.v21.evaluation_campaign as evaluation_campaign_module
 from ecomsre.dta_v2.tool_contracts import (
     MetricKind,
     MetricRecord,
@@ -118,7 +119,19 @@ def _public_manifest_and_pack(tmp_path: Path):
     )
 
 
-def test_seal_is_create_once_and_detects_post_seal_byte_drift(tmp_path: Path) -> None:
+def test_seal_is_create_once_and_detects_post_seal_byte_drift(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        evaluation_campaign_module,
+        "_require_exact_repository_head",
+        lambda *_args, **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        evaluation_campaign_module,
+        "_require_source_matches_head",
+        lambda *_args, **_kwargs: None,
+    )
     public, pack = _public_manifest_and_pack(tmp_path)
     schedule = build_evaluation_schedule_v21(
         seed_sha256=semantic_sha256("seal test schedule")
@@ -171,7 +184,18 @@ def test_seal_is_create_once_and_detects_post_seal_byte_drift(tmp_path: Path) ->
 
 def test_seal_rejects_private_bytes_that_differ_from_public_binding(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(
+        evaluation_campaign_module,
+        "_require_exact_repository_head",
+        lambda *_args, **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        evaluation_campaign_module,
+        "_require_source_matches_head",
+        lambda *_args, **_kwargs: None,
+    )
     public, pack = _public_manifest_and_pack(tmp_path)
     schedule = build_evaluation_schedule_v21(
         seed_sha256=semantic_sha256("seal mismatch schedule")

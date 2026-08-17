@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import subprocess
 from typing import Any, cast
 
 import pytest
@@ -13,6 +14,7 @@ from ecomsre.dta_v2.v21.evaluation_campaign import (
     PlannerAdvantageThresholdsV21,
     build_development_report_v21,
     build_evaluation_freeze_manifest_v21,
+    build_held_out_report_v21,
     build_evaluation_preregistration_v21,
     build_evaluation_schedule_v21,
 )
@@ -130,9 +132,17 @@ def test_freeze_manifest_binds_exact_sources_identities_and_answer_free_cases() 
         }
     )
 
+    repository_root = Path(__file__).resolve().parents[2]
+    base_code_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repository_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
     manifest = build_evaluation_freeze_manifest_v21(
-        repository_root=Path(__file__).resolve().parents[2],
-        base_code_head="b" * 40,
+        repository_root=repository_root,
+        base_code_head=base_code_head,
         model_id=MODEL,
         max_completion_tokens=1600,
         public_case_manifest=public,
@@ -150,6 +160,24 @@ def test_freeze_manifest_binds_exact_sources_identities_and_answer_free_cases() 
     }
     assert not manifest.held_out_executed
     assert "scenario_family" not in manifest.public_case_manifest.model_dump_json()
+
+    older_head = subprocess.run(
+        ["git", "rev-parse", "HEAD^"],
+        cwd=repository_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    with pytest.raises(ValueError, match="current HEAD"):
+        build_evaluation_freeze_manifest_v21(
+            repository_root=repository_root,
+            base_code_head=older_head,
+            model_id=MODEL,
+            max_completion_tokens=1600,
+            public_case_manifest=public,
+            schedule=schedule,
+            preregistration=preregistration,
+        )
 
 
 def _entry(case, arm, identity):
@@ -251,10 +279,68 @@ def test_development_report_covers_all_required_groups_and_ablation() -> None:
     assert {item.group_type for item in report.aggregates} == {
         "OVERALL",
         "ARM",
+        "SPLIT",
         "MECHANISM",
         "GENERALIZATION_SLICE",
     }
     overall = next(item for item in report.aggregates if item.group_type == "OVERALL")
+    split = next(item for item in report.aggregates if item.group_type == "SPLIT")
+    assert overall.scored_entries == 36
+    assert split.group_value == "DEVELOPMENT"
+    assert split.scored_entries == 36
+    assert sum(
+        item.scored_entries
+        for item in report.aggregates
+        if item.group_type == "MECHANISM"
+    ) == 36
+    assert sum(
+        item.scored_entries
+        for item in report.aggregates
+        if item.group_type == "GENERALIZATION_SLICE"
+    ) == 36
     assert overall.protocol_acceptance_rate == 1.0
     assert overall.unsafe_proposal_attempts == 0
     assert all(item.action_precision for item in report.aggregates)
+
+
+def test_held_out_report_has_exact_primary_aggregates_and_frozen_decision() -> None:
+    plan = build_default_capture_plan_v21(base_head="a" * 40)
+    held_out = tuple(case for case in plan.cases if int(case.case_id[-3:]) >= 13)
+    truths = {case.case_id: build_evaluator_truth_v21(case) for case in held_out}
+    identities = build_three_arm_identities_v21(
+        model_id=MODEL, max_completion_tokens=1600
+    )
+    identity_by_arm = {item.arm.value: item for item in identities}
+    entries = tuple(
+        _entry(case, arm, identity_by_arm[arm.value])
+        for case in held_out
+        for arm in (
+            EvaluationArmV21.ONE_SHOT_FULL_CONTEXT,
+            EvaluationArmV21.FLAT_ADAPTIVE,
+            EvaluationArmV21.EVIDENCE_GUIDED_PLANNER,
+        )
+    )
+    schedule = build_evaluation_schedule_v21(
+        seed_sha256=semantic_sha256("held-out report schedule")
+    )
+    preregistration = build_evaluation_preregistration_v21(
+        model_id=MODEL,
+        max_completion_tokens=1600,
+        schedule_sha256=schedule.schedule_sha256,
+    )
+
+    report = build_held_out_report_v21(
+        entries=entries,
+        truths=truths,
+        identities=identities,
+        preregistration=preregistration,
+    )
+
+    assert report.primary_entry_count == 24
+    assert report.claim_decision.marker == (
+        "DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED"
+    )
+    assert report.claim_decision.non_owned_mutations_zero
+    assert next(
+        item for item in report.aggregates if item.group_type == "SPLIT"
+    ).group_value == "HELD_OUT"

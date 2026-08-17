@@ -159,6 +159,25 @@ def test_case_truth_projection_does_not_concatenate_typed_ad_service_names() -> 
         )
 
 
+@pytest.mark.parametrize("fault_flag", ("adHighCpu", "intlShippingSlowdown"))
+def test_case_rejects_v21_fault_flag_markers(fault_flag: str) -> None:
+    case = _case()
+    payload = {
+        **case.model_dump(mode="python", exclude={"case_sha256"}),
+        "observations": (_fixture((fault_flag,)),),
+    }
+
+    with pytest.raises(ValueError, match="truth-isolation"):
+        AgentVisibleReplayCaseV21.model_validate(
+            {
+                **payload,
+                "case_sha256": _digest(
+                    AgentVisibleReplayCaseV21, payload, "case_sha256"
+                ),
+            }
+        )
+
+
 def test_scorer_binds_protocol_semantics_selection_and_costs() -> None:
     truth = _truth()
     prediction = EvaluationPredictionV21(
@@ -193,11 +212,14 @@ def test_scorer_binds_protocol_semantics_selection_and_costs() -> None:
     assert score.root_exact_match
     assert score.fault_domain_accuracy
     assert score.mechanism_accuracy
+    assert score.evidence_reference_validity
+    assert score.expected_source_coverage
     assert score.evidence_validity
     assert score.runbook_top1_accuracy
     assert score.action_precision
     assert score.tool_source_selection_accuracy
     assert score.tool_target_selection_accuracy
+    assert score.non_owned_mutation_attempts == 0
     assert score.total_tokens == 120
 
 

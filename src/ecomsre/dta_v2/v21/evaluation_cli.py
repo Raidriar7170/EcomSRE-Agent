@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
+import hashlib
 from pathlib import Path
 from typing import Any, Literal, cast
 
@@ -57,6 +58,8 @@ class DevelopmentAttemptManifestV21(DtaModelV21):
     public_case_manifest_sha256: Sha256V21
     schedule_sha256: Sha256V21
     preregistration_sha256: Sha256V21
+    scorer_source_sha256: Sha256V21 | None = None
+    reporting_source_sha256: Sha256V21 | None = None
     protocol_revision_sha256: Sha256V21
     manifest_sha256: Sha256V21
 
@@ -66,15 +69,25 @@ class DevelopmentAttemptManifestV21(DtaModelV21):
             0
         ):
             raise ValueError("development attempt time must use UTC")
-        revision = semantic_sha256(
-            {
-                "model_id": self.model_id,
-                "identity_sha256s": self.identity_sha256s,
-                "public_case_manifest_sha256": self.public_case_manifest_sha256,
-                "schedule_sha256": self.schedule_sha256,
-                "preregistration_sha256": self.preregistration_sha256,
-            }
-        )
+        revision_payload: dict[str, object] = {
+            "model_id": self.model_id,
+            "identity_sha256s": self.identity_sha256s,
+            "public_case_manifest_sha256": self.public_case_manifest_sha256,
+            "schedule_sha256": self.schedule_sha256,
+            "preregistration_sha256": self.preregistration_sha256,
+        }
+        if (self.scorer_source_sha256 is None) != (
+            self.reporting_source_sha256 is None
+        ):
+            raise ValueError("development attempt scorer bindings are incomplete")
+        if self.scorer_source_sha256 is not None:
+            revision_payload.update(
+                {
+                    "scorer_source_sha256": self.scorer_source_sha256,
+                    "reporting_source_sha256": self.reporting_source_sha256,
+                }
+            )
+        revision = semantic_sha256(revision_payload)
         if self.protocol_revision_sha256 != revision:
             raise ValueError("development attempt protocol revision differs")
         expected = semantic_sha256(
@@ -175,6 +188,12 @@ def _default_provider_factory(
     )
 
 
+def _file_sha256(path: Path) -> str:
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("development scorer source is missing or unsafe")
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def run_development_evaluation_v21(
     *,
     repository_root: Path,
@@ -206,6 +225,12 @@ def run_development_evaluation_v21(
     development_bindings = {
         item.case_id: item for item in public_manifest.development_cases
     }
+    scorer_source_sha256 = _file_sha256(
+        Path(__file__).with_name("evaluation_contracts.py")
+    )
+    reporting_source_sha256 = _file_sha256(
+        Path(__file__).with_name("evaluation_campaign.py")
+    )
     revision = semantic_sha256(
         {
             "model_id": config.model,
@@ -213,6 +238,8 @@ def run_development_evaluation_v21(
             "public_case_manifest_sha256": public_manifest.manifest_sha256,
             "schedule_sha256": schedule.schedule_sha256,
             "preregistration_sha256": preregistration.preregistration_sha256,
+            "scorer_source_sha256": scorer_source_sha256,
+            "reporting_source_sha256": reporting_source_sha256,
         }
     )
     _reject_repeated_revision(private_attempts_root, revision)
@@ -226,6 +253,8 @@ def run_development_evaluation_v21(
         "public_case_manifest_sha256": public_manifest.manifest_sha256,
         "schedule_sha256": schedule.schedule_sha256,
         "preregistration_sha256": preregistration.preregistration_sha256,
+        "scorer_source_sha256": scorer_source_sha256,
+        "reporting_source_sha256": reporting_source_sha256,
         "protocol_revision_sha256": revision,
     }
     manifest_draft = cast(Any, DevelopmentAttemptManifestV21).model_construct(

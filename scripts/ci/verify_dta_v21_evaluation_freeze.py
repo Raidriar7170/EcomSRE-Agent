@@ -15,10 +15,15 @@ from ecomsre.dta_v2.v21.evaluation_campaign import (
     EvaluationFreezeManifestV21,
     EvaluationPreregistrationV21,
     EvaluationScheduleV21,
+    build_development_report_v21,
 )
 from ecomsre.dta_v2.v21.evaluation_cli import (
+    DevelopmentAttemptManifestV21,
+    DevelopmentAttemptReceiptV21,
     DevelopmentEvaluationDispositionV21,
 )
+from ecomsre.dta_v2.v21.agent import DtaAgentRunResultV21
+from ecomsre.dta_v2.v21.evaluation_agents import EvaluationEntryResultV21
 from ecomsre.dta_v2.v21.evaluation_contracts import (
     AgentVisibleReplayCaseV21,
     EvaluationSplitV21,
@@ -191,6 +196,18 @@ def _require_git_commit(root: Path, commit: str) -> None:
         raise ValueError("freeze base code head is not a repository commit")
 
 
+def _git_blob_sha256(root: Path, commit: str, relative: str) -> str:
+    completed = subprocess.run(
+        ["git", "show", f"{commit}:{relative}"],
+        cwd=root,
+        check=False,
+        capture_output=True,
+    )
+    if completed.returncode != 0:
+        raise ValueError(f"frozen source is absent from base code head: {relative}")
+    return hashlib.sha256(completed.stdout).hexdigest()
+
+
 def _verify_freeze_manifest(
     root: Path,
     *,
@@ -216,11 +233,18 @@ def _verify_freeze_manifest(
         raise ValueError("freeze manifest differs from preregistered evaluation")
     source_root = root / "src/ecomsre/dta_v2/v21"
     for binding in manifest.source_bindings:
+        relative = f"src/ecomsre/dta_v2/v21/{binding.name}"
         if _sha256(
             source_root / binding.name,
             description=f"frozen evaluation source {binding.name}",
         ) != binding.source_sha256:
             raise ValueError(f"frozen evaluation source changed: {binding.name}")
+        if _git_blob_sha256(root, manifest.base_code_head, relative) != (
+            binding.source_sha256
+        ):
+            raise ValueError(
+                f"frozen evaluation source differs from base code head: {binding.name}"
+            )
     if _sha256(
         root / "config/dta-v21/historical-v2-bindings.v1.json",
         description="historical DTA v2 binding manifest",
@@ -271,6 +295,120 @@ def verify_private_held_out_seal(
     return seal
 
 
+def verify_private_development_attempt(
+    root: Path,
+    *,
+    attempt_root: Path,
+    development_root: Path,
+) -> DevelopmentAttemptReceiptV21:
+    manifest = DevelopmentAttemptManifestV21.model_validate_json(
+        _read_text(
+            attempt_root / "attempt-manifest.json",
+            description="private development attempt manifest",
+        )
+    )
+    receipt = DevelopmentAttemptReceiptV21.model_validate_json(
+        _read_text(
+            attempt_root / "attempt-receipt.json",
+            description="private development attempt receipt",
+        )
+    )
+    report = DevelopmentEvaluationReportV21.model_validate_json(
+        _read_text(
+            attempt_root / "development-report.json",
+            description="private development report",
+        )
+    )
+    scorer_sha256 = _sha256(
+        root / "src/ecomsre/dta_v2/v21/evaluation_contracts.py",
+        description="development scorer source",
+    )
+    reporting_sha256 = _sha256(
+        root / "src/ecomsre/dta_v2/v21/evaluation_campaign.py",
+        description="development reporting source",
+    )
+    if (
+        receipt.attempt_manifest_sha256 != manifest.manifest_sha256
+        or manifest.scorer_source_sha256 != scorer_sha256
+        or manifest.reporting_source_sha256 != reporting_sha256
+        or report.scorer_source_sha256 != scorer_sha256
+        or report.reporting_source_sha256 != reporting_sha256
+    ):
+        raise ValueError("private development scorer/manifest binding differs")
+
+    public, schedule, preregistration = _verify_public_dataset(root)
+    if (
+        manifest.model_id != preregistration.model_id
+        or manifest.public_case_manifest_sha256 != public.manifest_sha256
+        or manifest.schedule_sha256 != schedule.schedule_sha256
+        or manifest.preregistration_sha256 != preregistration.preregistration_sha256
+    ):
+        raise ValueError("private development attempt differs from public protocol")
+    scheduled = tuple(item for item in schedule.entries if item.split.value == "DEVELOPMENT")
+    entry_roots = sorted(
+        path
+        for path in (attempt_root / "entries").iterdir()
+        if path.is_dir() and not path.is_symlink()
+    )
+    if len(entry_roots) != 40 or len(scheduled) != 40:
+        raise ValueError("private development attempt cardinality differs")
+    entries: list[EvaluationEntryResultV21] = []
+    truths: dict[str, EvaluatorCaseTruthV21] = {}
+    for index, (scheduled_entry, entry_root) in enumerate(
+        zip(scheduled, entry_roots, strict=True)
+    ):
+        entry = EvaluationEntryResultV21.model_validate_json(
+            _read_text(
+                entry_root / "entry-result.json",
+                description="private development entry result",
+            )
+        )
+        agent_result = DtaAgentRunResultV21.model_validate_json(
+            _read_text(
+                entry_root / "agent-result.json",
+                description="private development Agent result",
+            )
+        )
+        truth = EvaluatorCaseTruthV21.model_validate_json(
+            _read_text(
+                development_root
+                / "evaluator-truth"
+                / f"{scheduled_entry.case_id}.json",
+                description="private development evaluator truth",
+            )
+        )
+        if (
+            entry.prediction.case_id != scheduled_entry.case_id
+            or entry.arm is not scheduled_entry.arm
+            or entry.truth_sha256 != truth.truth_sha256
+            or entry.agent_result_sha256 != agent_result.result_sha256
+            or receipt.entry_sha256s[index] != entry.entry_sha256
+        ):
+            raise ValueError("private development entry binding differs")
+        entries.append(entry)
+        truths[truth.case_id] = truth
+    identities = build_three_arm_identities_v21(
+        model_id=preregistration.model_id,
+        max_completion_tokens=preregistration.max_completion_tokens,
+    )
+    rebuilt = build_development_report_v21(
+        entries=tuple(entries), truths=truths, identities=identities
+    )
+    public_report = DevelopmentEvaluationReportV21.model_validate_json(
+        _read_text(
+            root / DEVELOPMENT_REPORT_RELATIVE,
+            description="public development report",
+        )
+    )
+    if (
+        rebuilt != report
+        or public_report != report
+        or receipt.report_sha256 != report.report_sha256
+    ):
+        raise ValueError("private development report rebuild differs")
+    return receipt
+
+
 def verify_public_evaluation(
     project_root: Path,
     *,
@@ -292,6 +430,16 @@ def verify_public_evaluation(
         != tuple(item.identity_sha256 for item in expected_identities)
     ):
         raise ValueError("development report identity differs from preregistration")
+    scorer_source = root / "src/ecomsre/dta_v2/v21/evaluation_contracts.py"
+    reporting_source = root / "src/ecomsre/dta_v2/v21/evaluation_campaign.py"
+    if (
+        report.scorer_source_sha256
+        != _sha256(scorer_source, description="development scorer source")
+        or report.reporting_source_sha256
+        != _sha256(reporting_source, description="development reporting source")
+        or report.primary_aggregate_entry_count != 36
+    ):
+        raise ValueError("development report lacks exact scorer/source bindings")
 
     manifest_path = root / FREEZE_MANIFEST_RELATIVE
     manifest: EvaluationFreezeManifestV21 | None = None
@@ -336,6 +484,8 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--require-freeze", action="store_true")
     parser.add_argument("--held-out-pack-root", type=Path)
+    parser.add_argument("--private-development-attempt-root", type=Path)
+    parser.add_argument("--development-root", type=Path)
     return parser
 
 
@@ -343,6 +493,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     root = args.project_root.resolve(strict=True)
     result = verify_public_evaluation(root, require_freeze=args.require_freeze)
+    if (args.private_development_attempt_root is None) != (
+        args.development_root is None
+    ):
+        raise ValueError(
+            "private development attempt and development root are required together"
+        )
+    if args.private_development_attempt_root is not None:
+        assert args.development_root is not None
+        receipt = verify_private_development_attempt(
+            root,
+            attempt_root=args.private_development_attempt_root.resolve(strict=True),
+            development_root=args.development_root.resolve(strict=True),
+        )
+        result["development_attempt_id"] = receipt.attempt_id
+        result["private_development_verified"] = True
     if args.held_out_pack_root is not None:
         seal = verify_private_held_out_seal(
             root,
@@ -360,6 +525,7 @@ if __name__ == "__main__":
 
 __all__ = (
     "verify_development_report_files",
+    "verify_private_development_attempt",
     "verify_private_held_out_seal",
     "verify_public_evaluation",
 )
