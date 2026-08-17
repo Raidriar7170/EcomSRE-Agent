@@ -8,7 +8,7 @@
   "current_stage": "PR-D",
   "main_head": "c0a541fec48f11b02dc2cd6ba41673a777e55eee",
   "active_branch": "codex/dta-v21-p0-pr-d-evaluation-freeze",
-  "active_pr": null,
+  "active_pr": 53,
   "merged_prs": [50, 51, 52],
   "preferred_model": "gpt-5.4-2026-03-05",
   "frozen_model": "gpt-5.4-mini-2026-03-17",
