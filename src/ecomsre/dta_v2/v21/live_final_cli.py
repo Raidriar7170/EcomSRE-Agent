@@ -517,13 +517,27 @@ def _verify_open_progress(
 
 
 def _read_disposition(path: Path) -> dict[str, object]:
-    value = json.loads(_read_regular(path, label="disposition"))
+    raw = _read_regular(path, label="disposition")
+    value = json.loads(raw)
     if not isinstance(value, dict):
         raise ValueError("v4 disposition is invalid")
     digest = value.pop("disposition_sha256", None)
     if digest != semantic_sha256(value):
         raise ValueError("v4 disposition SHA-256 differs")
+    canonical = json.dumps(
+        {**value, "disposition_sha256": digest}, indent=2, ensure_ascii=False
+    ) + "\n"
+    if raw != canonical:
+        raise ValueError("v4 disposition is not canonical")
     return value
+
+
+def _read_public_report(path: Path) -> PublicLiveCapabilityCloseoutReportV4:
+    raw = _read_regular(path, label="v4 closeout report")
+    report = PublicLiveCapabilityCloseoutReportV4.model_validate_json(raw)
+    if raw != report.model_dump_json(indent=2) + "\n":
+        raise ValueError("v4 closeout report is not canonical")
+    return report
 
 
 def _verify_final_disposition(
@@ -595,9 +609,7 @@ def _load_verified_public_projection(
     report_path, claims, disposition_path, readme_path, progress_path = (
         _verify_report_file_set(root)
     )
-    report = PublicLiveCapabilityCloseoutReportV4.model_validate_json(
-        _read_regular(report_path, label="v4 closeout report")
-    )
+    report = _read_public_report(report_path)
     expected_claims = (
         render_public_live_markdown_v4(report),
         render_public_final_summary_v4(report),
@@ -790,9 +802,7 @@ def run_final_closeout(*, repository_root: Path, exact_main_ci_sha: str) -> str:
     report_path, _claims, disposition_path, _readme, _progress = (
         _verify_report_file_set(root)
     )
-    report = PublicLiveCapabilityCloseoutReportV4.model_validate_json(
-        _read_regular(report_path, label="v4 closeout report")
-    )
+    report = _read_public_report(report_path)
     disposition = _read_disposition(disposition_path)
     (
         merged_main_head,

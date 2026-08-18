@@ -10,6 +10,8 @@ from ecomsre.dta_v2.v21.contracts import semantic_sha256
 from ecomsre.dta_v2.v21.live_final_cli import (
     _load_verified_public_projection,
     _pending_disposition,
+    _read_disposition,
+    _read_public_report,
     _read_regular,
     _render_final_progress,
     _verify_finalize_state,
@@ -112,6 +114,36 @@ def test_v4_primary_report_mode_is_verified(
 
     with pytest.raises(ValueError, match="closeout report.*mode"):
         _load_verified_public_projection(tmp_path)
+
+
+def test_v4_json_surfaces_reject_duplicate_keys(tmp_path: Path) -> None:
+    repository = Path(__file__).resolve().parents[2]
+    report_raw = (
+        repository / "docs/results/dta-v21-live-capability-closeout.json"
+    ).read_text(encoding="utf-8")
+    report = tmp_path / "report.json"
+    report.write_text(
+        '{\n  "closeout_source_code_head": "/Users/private/provider.env",\n'
+        + report_raw[2:],
+        encoding="utf-8",
+    )
+    report.chmod(0o644)
+    with pytest.raises(ValueError, match="canonical"):
+        _read_public_report(report)
+
+    disposition_raw = (
+        repository
+        / "docs/review-evidence/dta-v21-live/current-disposition.json"
+    ).read_text(encoding="utf-8")
+    disposition = tmp_path / "disposition.json"
+    disposition.write_text(
+        '{\n  "terminal": "PRIVATE_PATH_/Users/private/provider.env",\n'
+        + disposition_raw[2:],
+        encoding="utf-8",
+    )
+    disposition.chmod(0o644)
+    with pytest.raises(ValueError, match="canonical"):
+        _read_disposition(disposition)
 
 
 def test_ad_duplicate_read_contract_is_failure_with_safe_restoration() -> None:
