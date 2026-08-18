@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 from datetime import datetime, timezone
+import json
 import os
 from pathlib import Path
 
@@ -14,10 +15,12 @@ from ecomsre.dta_v2.v21.live_reconciliation import (
     IndependentRetryReviewV1,
     PostTerminalReconciliationV1,
     RetryAdmissionV1,
+    RETRY_CONSUMPTION_FILENAME_V1,
     build_resolved_compose_identity_v1,
     build_retry_admission_v1,
     consume_retry_admission_v1,
     verify_historical_blocker_eligibility_v1,
+    verify_retry_consumption_v1,
     verify_cross_context_compose_identity_v1,
 )
 from ecomsre.dta_v2.v21.live_contracts import LiveReadinessV2
@@ -394,9 +397,10 @@ def test_retry_consumption_is_atomic_and_second_campaign_is_exhausted(
     )
     attempts = tmp_path / "pr-f/attempts"
     (attempts / BLOCKED_ATTEMPT_ID_V1).mkdir(parents=True)
+    current_admission = {"value": admission}
     monkeypatch.setattr(
         "ecomsre.dta_v2.v21.live_reconciliation.verify_retry_admission_v1",
-        lambda **_values: admission,
+        lambda **_values: current_admission["value"],
     )
 
     first = consume_retry_admission_v1(
@@ -406,12 +410,51 @@ def test_retry_consumption_is_atomic_and_second_campaign_is_exhausted(
         consumed_at=datetime(2026, 8, 18, tzinfo=timezone.utc),
     )
     assert first.maximum_additional_campaigns == 0
+
+    alternate_payload = _reconciliation().model_dump(
+        mode="python", exclude={"reconciliation_sha256"}
+    )
+    alternate_payload["current_quiescence_observation_sha256"] = "2" * 64
+    alternate_reconciliation = PostTerminalReconciliationV1.model_validate(
+        {
+            **alternate_payload,
+            "reconciliation_sha256": semantic_sha256(alternate_payload),
+        }
+    )
+    current_admission["value"] = build_retry_admission_v1(
+        new_code_head=head,
+        reconciliation=alternate_reconciliation,
+        readiness=_readiness_v2(head=head),
+        review=review,
+    )
     with pytest.raises(RuntimeError, match="BLOCKED_DTA_V21_PRF_RETRY_EXHAUSTED"):
         consume_retry_admission_v1(
             repository_root=tmp_path,
             private_root=tmp_path,
             new_code_head=head,
             consumed_at=datetime(2026, 8, 18, tzinfo=timezone.utc),
+        )
+
+    current_admission["value"] = admission
+    forged_payload = first.model_dump(mode="json", exclude={"consumption_sha256"})
+    forged_payload["reconciliation_sha256"] = "f" * 64
+    forged = type(first).model_validate_json(
+        json.dumps(
+            {
+            **forged_payload,
+            "consumption_sha256": semantic_sha256(forged_payload),
+            }
+        )
+    )
+    consumption_path = (
+        tmp_path / "pr-f/retry-consumptions" / RETRY_CONSUMPTION_FILENAME_V1
+    )
+    consumption_path.write_text(forged.model_dump_json(), encoding="utf-8")
+    with pytest.raises(ValueError, match="retry consumption binding differs"):
+        verify_retry_consumption_v1(
+            repository_root=tmp_path,
+            private_root=tmp_path,
+            new_code_head=head,
         )
 
 

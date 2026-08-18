@@ -43,6 +43,7 @@ BLOCKED_ATTEMPT_ID_V1 = "dta-v21-prf-01-no-fault-422f015451fd"
 AD_PROTOCOL_SHA256_V1 = (
     "c983b9be95b532cdbb8fb5358af92055e633fd767693e9dc65743b3e80a77517"
 )
+RETRY_CONSUMPTION_FILENAME_V1 = "one-retry.v1.json"
 
 _IMMUTABLE_RAW_SHA256 = {
     "readiness": "fdd353be56e60e223bfb9272347f6a57076f929a97bdce12fc2eda0d946dad4c",
@@ -1016,7 +1017,7 @@ def consume_retry_admission_v1(
     path = (
         Path(private_root)
         / "pr-f/retry-consumptions"
-        / f"{admission.reconciliation_sha256}.json"
+        / RETRY_CONSUMPTION_FILENAME_V1
     )
     _write_exclusive_private_json(path, consumption)
     return consumption
@@ -1033,11 +1034,12 @@ def verify_retry_consumption_v1(
     path = (
         Path(private_root)
         / "pr-f/retry-consumptions"
-        / f"{admission.reconciliation_sha256}.json"
+        / RETRY_CONSUMPTION_FILENAME_V1
     )
     value = RetryConsumptionV1.model_validate_json(path.read_text(encoding="utf-8"))
     if (
-        value.retry_admission_sha256 != admission.admission_sha256
+        value.reconciliation_sha256 != admission.reconciliation_sha256
+        or value.retry_admission_sha256 != admission.admission_sha256
         or value.consumed_by_code_head != new_code_head
     ):
         raise ValueError("retry consumption binding differs")
@@ -1056,6 +1058,7 @@ __all__ = (
     "IndependentRetryReviewV1",
     "NormalizedComposeBindingV1",
     "PostTerminalReconciliationV1",
+    "RETRY_CONSUMPTION_FILENAME_V1",
     "ResolvedComposeIdentityV1",
     "RetryAdmissionV1",
     "RetryConsumptionV1",
