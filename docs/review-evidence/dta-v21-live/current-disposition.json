@@ -1,0 +1,13 @@
+{
+  "schema_version": "dta-v21.pr-f-final-capability-closeout-disposition.v1",
+  "terminal": "DTA_V21_PR_F_FINAL_CAPABILITY_CLOSEOUT_REVIEW_PENDING",
+  "final_terminal": "DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_FROZEN_AGENT_CAPABILITY_LIMITATIONS",
+  "report_sha256": "24d5fda0f10029817afa4146a99f4d1d19e99e7c6902d84c88dd377a74d7c48f",
+  "private_closeout_sha256": "58190a67688b8cec75b45ae912272901957a2f1903cedc00155d82d0c7167083",
+  "closeout_source_code_head": "cc26b724a817190e30950b24878b87bbf40e2408",
+  "candidate_scope_sha256": "c3988b4ba18ec471c681638caa2074f4690c3fd3fae93ba268b282a150feb7dd",
+  "exact_head_ci": "PENDING",
+  "independent_review": "PENDING",
+  "claim_accuracy": "PENDING",
+  "disposition_sha256": "0226a05395195c5296c2800362d537f040ac4fd4d94e26fde846db6ab4f014fd"
+}

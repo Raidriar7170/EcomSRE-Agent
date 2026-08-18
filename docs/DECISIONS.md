@@ -925,6 +925,157 @@ training, new Multi-Agent orchestration, Computer Use, Kubernetes, cloud,
 generic shell, generic feature-flag writes, generic service restart, UI work,
 production, release, and deployment remain excluded.
 
+## DEC-044 — DTA v2.1 PR-F Ad CPU Resource-Only Recovery Protocol
+
+**Status: `accepted` only under the user-designated
+`dta-v21-p0-prf-ad-cpu-resource-recovery-v1` amendment.**
+
+The binding fields are:
+
+```text
+effective scope: DTA v2.1 P0 PR-F only
+fault: adHighCpu off -> on on the exact owned Ad service
+fault_impact_kind: RESOURCE_ONLY
+resource_fault_observed: true
+business_impact_observed: false
+business_sli_role: NON_REGRESSION_GUARDRAIL
+required recovery claim: RESOURCE_STATE_RECOVERED
+forbidden recovery claims: BUSINESS_SLI_RECOVERED, USER_IMPACT_RECOVERED,
+  CUSTOMER_IMPACT_RECOVERED
+held-out effect: none
+PR-D effect: none; accepted calibration remains immutable
+PR-E effect: none; seal, execution, score, and negative claim remain immutable
+```
+
+This amendment was accepted before the first PR-F live attempt. It prevents
+post-hoc oracle changes; it does not enable them.
+
+The PR-F Ad CPU slot is classified as `RESOURCE_ONLY`. Its recovery oracle is
+two consecutive fresh ten-second post-mitigation windows from the same run and
+attempt, using the accepted PR-D five-sample Ad CPU-percent query and unit. In
+each window CPU p95 must be at or below `11.162%`, the lower of accepted
+baseline `1.162% + 10` percentage points and ten percent of accepted fault
+`406.326%`; CPU capacity ratio must also be at or below `0.5`.
+
+The accepted PR-D Ad calibration observed no business impact. Therefore the
+business latency SLI is a `NON_REGRESSION_GUARDRAIL`, never a recovery oracle.
+The frozen substantive predicate remains latency p95 at least baseline plus
+`5 ms` and at least twice baseline. Both post-mitigation windows must report
+that predicate false, service health `PASS`, and the endpoint reachable. The
+only positive Ad terminal is `AD_CPU_RESOURCE_RECOVERY_PASS`; public evidence
+must keep `business_impact_observed=false` and
+`user_visible_recovery_claimed=false`.
+
+The typed protocol binds the accepted PR-D closure raw and semantic hashes,
+both selected Ad observation hashes, the calibration-limitations bytes, and
+the exact accepted measurement source. This amendment changes only the Ad CPU
+business-impact and recovery oracle. PR-D, PR-E, the held-out seal, execution,
+result, and negative planner-advantage claim remain immutable and may not be
+rerun or relabeled.
+
+## DEC-045 — DTA v2.1 PR-F Closed-World Compose Identity and Reconciled Retry Admission
+
+**Status: `accepted` only under the user-designated
+`dta-v21-p0-prf-compose-identity-reconciliation-v1` amendment.**
+
+The effective scope is DTA v2.1 P0 PR-F only. The historical attempt
+`dta-v21-prf-01-no-fault-422f015451fd` remains the immutable
+`BLOCKED_DTA_V21_PRF_SAFETY` terminal at `READY` on code HEAD
+`422f015451fd0a37f1442aa770fcffff75336aaa`.
+
+The blocker arose because the raw resolved Compose document includes the
+authorized private host bind-source path for each context's flag directory.
+Preflight and a live attempt intentionally use different private roots, so raw
+document hashes differ even when every executable Compose property is
+otherwise identical.
+
+Raw Compose hashes remain the exact provenance identities. PR-F additionally
+uses a versioned execution identity that replaces only the exact `flagd`
+`/etc/flagd` and `flagd-ui` `/app/data` attempt-local bind-source values with
+`private://dta-v21-prf/attempt-local-flagd` before canonical hashing. The
+complete raw safety contract must pass before this closed-world normalization.
+
+The historical disposition does not change: `baseline_restored=false` and
+`cleanup=BLOCKED` remain immutable. An append-only reconciliation may prove
+that it stopped before baseline evidence, fault, Provider use, or forward
+action; that its complete raw Compose difference is exactly the two admitted
+source fields; and that fresh owned-resource quiescence exists. This proof may
+admit one new campaign, but it cannot relabel the old attempt.
+
+Exactly one new campaign may start from Slot 1 under a new code HEAD after
+fresh CI, independent review, v2 preflight, reconciliation, and retry
+admission. Failure of that campaign exhausts this amendment. This decision has
+no effect on PR-D, PR-E, DEC-044, the held-out result, the Agent or Provider
+identity, Runbooks, live slots, or fault and recovery oracles.
+
+## DEC-046 — DTA v2.1 PR-F No-Fault Capability-Miss Preservation and Positive-Slot Continuation
+
+**Status: `accepted` only under the user-designated
+`dta-v21-p0-prf-capability-closeout-v1` amendment.**
+
+The frozen PR-E planner returned a safe `NO_ACTION` disposition on the PR-F
+No-Fault slot but made a non-null false-positive Diagnosis. The existing
+No-Fault verifier correctly rejected that output. The attempt restored baseline,
+cleaned all owned resources, and performed no fault or forward write.
+
+The result is therefore a diagnosis capability miss with successful no-write
+safety, not a live-slot pass and not a safety incident. No additional No-Fault
+sample is authorized. The model output, verifier, Prompt, identity, Provider
+configuration, CandidateSet behavior, and evaluator oracle remain unchanged.
+The consumed retry's campaign-level terminal remains
+`BLOCKED_DTA_V21_PRF_RETRY_EXHAUSTED`; this limitation closeout does not delete,
+replace, or relabel it.
+
+One append-only continuation may execute only the three unattempted positive
+slots, in the fixed order Ad CPU, Email unavailable, Product Catalog
+unavailable. If all three pass, PR-F may close with
+`DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_NO_FAULT_DIAGNOSIS_MISS`.
+`DTA_V21_P0_ENGINEERING_ACCEPTANCE_PASS` is not supported and must not be
+minted.
+
+This decision is conservative: it preserves a failure rather than converting it
+to success; removes repeated sampling rather than adding another chance; narrows
+the final claim rather than weakening the oracle; and separates diagnosis
+quality from write safety and recovery execution.
+
+The bound Amendment-3 raw SHA-256 is
+`24cc236c1892c9992b6d36da377608c34fb22c2bc270f99349e5e8a4e0a0498a`.
+This decision changes none of PR-D, PR-E, DEC-044, DEC-045, the held-out
+artifacts or conclusion, the Agent/Provider identity, any Runbook, live slot,
+or positive fault and recovery oracle.
+
+## DEC-047 — DTA v2.1 PR-F Frozen-Agent Capability-Limitations Closeout
+
+**Status: `accepted` only under the user-designated
+`dta-v21-p0-prf-final-capability-closeout-v1` amendment.**
+
+No further Provider or Docker execution is authorized for DTA v2.1 PR-F. The
+live No-Fault false-positive Diagnosis remains a capability failure with safe
+`NO_ACTION`. The Ad CPU attempt remains
+`AD_CPU_PLANNER_DUPLICATE_READ_PROTOCOL_FAILURE_SAFE_RESTORATION`: the frozen
+Planner failed with `DUPLICATE_READ_REQUEST` after three Provider turns, before
+a complete Diagnosis, CandidateSet, ActionProposal, or Agent remediation. One
+evaluator fault operation occurred, while Agent forward writes remained zero.
+The bounded runtime restored baseline and completed clean owned-resource
+cleanup; that restoration is not an Ad recovery result.
+
+Email service unavailable and Product Catalog service unavailable remain
+`NOT_ATTEMPTED`. No recovery PASS is claimed for any positive slot in the
+consumed continuation. The historical READY blocker, valid No-Fault capability
+miss, Ad protocol failure, both consumption records, PR-D, PR-E, DEC-044,
+DEC-045, DEC-046, Prompt, model, identity, tool schemas, planner schemas,
+Runbooks, CandidateSet semantics, and evaluator truth remain immutable.
+
+The original four-slot acceptance terminal is not minted. DTA v2.1 closes only
+with
+`DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_FROZEN_AGENT_CAPABILITY_LIMITATIONS`,
+preserving the negative held-out and live evidence. Future capability repair
+belongs to a separately versioned v2.2 identity with new development data and a
+new preregistered evaluation; it cannot retroactively rewrite v2.1.
+
+The bound Amendment-4 raw SHA-256 is
+`bf9484483583202a198e7699d57ee92f94c8a3ed2207cac3489601542645be1e`.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)
