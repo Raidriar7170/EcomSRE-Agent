@@ -15,6 +15,8 @@ from ecomsre.dta_v2.v21.live_protocol import (
     verify_accepted_ad_cpu_calibration_binding,
     verify_public_ad_cpu_claim_text,
 )
+from ecomsre.dta_v2.v21.contracts import semantic_sha256
+from ecomsre.dta_v2.v21.live_capability_reporting import PublicLiveReportV3
 from scripts.ci.verify_dta_v21_evaluation_freeze import verify_public_evaluation
 from scripts.ci.verify_dta_v21_held_out import verify_public_held_out_report_v21
 from scripts.ci.verify_dta_v2_historical_bindings import verify_historical_bindings
@@ -160,6 +162,24 @@ def verify_pr_f_protocol(
             raise ValueError("open PR-F progress carries a final terminal")
     elif stage == ("PR-F", "COMPLETE_WITH_LIMITATION"):
         merged_prs = progress.get("merged_prs")
+        report_path = root / "docs/results/dta-v21-live-demo.json"
+        disposition_path = (
+            root / "docs/review-evidence/dta-v21-live/current-disposition.json"
+        )
+        if (
+            report_path.is_symlink()
+            or not report_path.is_file()
+            or disposition_path.is_symlink()
+            or not disposition_path.is_file()
+        ):
+            raise ValueError("closed PR-F public evidence is missing or unsafe")
+        report = PublicLiveReportV3.model_validate_json(
+            report_path.read_text(encoding="utf-8")
+        )
+        disposition = json.loads(disposition_path.read_text(encoding="utf-8"))
+        if not isinstance(disposition, dict):
+            raise ValueError("closed PR-F disposition is invalid")
+        disposition_sha256 = disposition.pop("disposition_sha256", None)
         if (
             progress.get("live_demo_terminal")
             != "DTA_V21_PR_F_POSITIVE_PORTFOLIO_PASS_WITH_NO_FAULT_DIAGNOSIS_MISS"
@@ -169,24 +189,19 @@ def verify_pr_f_protocol(
             or progress.get("active_pr") is not None
             or progress.get("positive_continuation_status") != "PASS"
             or progress.get("positive_slots_passed") != 3
-            or not isinstance(merged_prs, list)
-            or merged_prs[:5] != [50, 51, 52, 53, 54]
-            or len(merged_prs) != 6
-            or not isinstance(merged_prs[-1], int)
-            or isinstance(merged_prs[-1], bool)
-            or merged_prs[-1] < 55
+            or merged_prs != [50, 51, 52, 53, 54, 55]
             or re.fullmatch(r"[0-9a-f]{40}", str(progress.get("main_head"))) is None
-            or re.fullmatch(r"[0-9a-f]{64}", str(progress.get("live_report_sha256")))
-            is None
-            or re.fullmatch(
-                r"[0-9a-f]{40}", str(progress.get("live_execution_code_head"))
-            )
-            is None
-            or re.fullmatch(
-                r"[0-9a-f]{64}",
-                str(progress.get("live_execution_scope_sha256")),
-            )
-            is None
+            or progress.get("live_report_sha256") != report.report_sha256
+            or progress.get("live_execution_code_head")
+            != report.live_execution_code_head
+            or disposition_sha256 != semantic_sha256(disposition)
+            or disposition.get("merged_pr") != 55
+            or disposition.get("merged_main_head") != progress.get("main_head")
+            or disposition.get("report_sha256") != report.report_sha256
+            or disposition.get("live_execution_code_head")
+            != report.live_execution_code_head
+            or disposition.get("candidate_independent_review_head")
+            != disposition.get("acceptance_candidate_head")
         ):
             raise ValueError("closed PR-F progress differs from limitation closeout")
     else:

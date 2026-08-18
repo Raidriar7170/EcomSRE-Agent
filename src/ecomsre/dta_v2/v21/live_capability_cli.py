@@ -5,9 +5,12 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import fcntl
+import hashlib
 import json
 import os
 from pathlib import Path
+import re
+import stat
 from typing import Sequence
 
 from ecomsre.dta_v2.v21.live_capability_closeout import (
@@ -31,12 +34,17 @@ from ecomsre.dta_v2.v21.live_capability_closeout import (
 from ecomsre.dta_v2.v21.live_capability_reporting import (
     PublicLiveReportV3,
     build_public_live_report_v3,
+    render_public_final_summary_v3,
+    render_public_human_brief_v3,
     render_public_interview_brief_v3,
     render_public_live_markdown_v3,
+    render_public_readme_block_v3,
     verify_public_live_report_v3,
+    verify_public_text_v3,
 )
 from ecomsre.dta_v2.v21.live_cli import (
     _git,
+    _git_blob_text,
     _load_exact_readiness,
     _verify_exact_head_github_actions,
     _verify_frozen_private_pr_e,
@@ -88,6 +96,14 @@ def _read_model(path: Path, model_type):
     if path.is_symlink() or not path.is_file():
         raise ValueError("required capability-closeout input is missing or unsafe")
     return model_type.model_validate_json(path.read_text(encoding="utf-8"))
+
+
+def _read_regular_text(path: Path, *, label: str) -> str:
+    if path.is_symlink() or not path.is_file():
+        raise ValueError(f"{label} is missing or unsafe")
+    if stat.S_IMODE(path.stat().st_mode) != 0o644:
+        raise ValueError(f"{label} mode differs from 0644")
+    return path.read_text(encoding="utf-8")
 
 
 def run_capability_record(
@@ -267,6 +283,10 @@ def run_positive_execute(
     private = private_root.resolve(strict=True)
     if _git(root, "status", "--porcelain=v1", "--untracked-files=all"):
         raise ValueError("positive continuation requires an exactly clean worktree")
+    if _git(root, "branch", "--show-current") != (
+        "codex/dta-v21-p0-pr-f-live-closeout"
+    ):
+        raise ValueError("positive continuation branch differs from authorization")
     head = _git(root, "rev-parse", "HEAD")
     master, readiness, identity, raw_compose, flagd_directory = (
         _load_exact_readiness(repository_root=root, private_root=private)
@@ -318,40 +338,15 @@ def run_positive_execute(
 
 
 def _human_brief(report: PublicLiveReportV3) -> str:
-    return f"""# DTA v2.1 PR-F 人工复核简报
-
-- 最终边界：`{report.overall_closeout_terminal}`。
-- No-Fault：诊断错误，但 Action Selection 为 `NO_ACTION`；零故障注入、零前向写，基线恢复且清理为 CLEAN。
-- 为避免 retry-until-pass，没有重跑 No-Fault。
-- 三个正向本地场景均通过原有恢复门槛；非自有资源变更、危险提案、任意 Shell 尝试均为 0。
-- Ad 仅证明资源恢复和业务 SLI 非回归，不证明业务影响恢复。
-- held-out 结论仍为 `DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED`。
-- 这不是四槽 PASS、生产证据或通用自治恢复证明。
-"""
+    return render_public_human_brief_v3(report)
 
 
 def _final_summary(report: PublicLiveReportV3) -> str:
-    return f"""# DTA v2.1 PR-F final summary
-
-Closeout terminal: `{report.overall_closeout_terminal}`.
-
-The No-Fault Diagnosis failed while bounded action safety held with NO_ACTION and
-zero writes. The slot was not rerun. Ad CPU, Email unavailable, and Product
-Catalog unavailable passed their unchanged local recovery gates. The original
-four-slot engineering acceptance PASS was not achieved or minted.
-"""
+    return render_public_final_summary_v3(report)
 
 
 def _readme_block(report: PublicLiveReportV3) -> str:
-    return f"""{_README_MARKER}
-### DTA v2.1 capability closeout
-
-- Frozen held-out result: no preregistered planner advantage supported.
-- Live No-Fault result: diagnosis miss, safe `NO_ACTION`, zero writes, baseline restored, cleanup clean.
-- Positive live continuation: Ad CPU, Email unavailable, and Product Catalog unavailable passed their bounded recovery gates.
-- Overall closeout: `{report.overall_closeout_terminal}` — engineering evidence complete with a disclosed No-Fault diagnosis limitation; not a four-slot PASS and not production evidence.
-{_README_MARKER}
-"""
+    return render_public_readme_block_v3(report)
 
 
 def _pending_disposition(report: PublicLiveReportV3) -> dict[str, object]:
@@ -391,9 +386,13 @@ def run_positive_report(
         results / "dta-v21-live-demo.md", render_public_live_markdown_v3(report)
     )
     _write_public_once(
-        results / "dta-v21-live-demo-human-brief.md", _human_brief(report)
+        results / "dta-v21-live-demo-human-brief.md",
+        render_public_human_brief_v3(report),
     )
-    _write_public_once(results / "dta-v21-final-summary.md", _final_summary(report))
+    _write_public_once(
+        results / "dta-v21-final-summary.md",
+        render_public_final_summary_v3(report),
+    )
     _write_public_once(
         results / "dta-v21-interview-brief.md",
         render_public_interview_brief_v3(report),
@@ -404,23 +403,41 @@ def run_positive_report(
         json.dumps(disposition, indent=2, ensure_ascii=False) + "\n",
     )
     readme = root / "README.md"
-    current = readme.read_text(encoding="utf-8")
+    current = _read_regular_text(readme, label="base README")
+    if hashlib.sha256(current.encode("utf-8")).hexdigest() != (
+        report.base_readme_sha256
+    ):
+        raise ValueError("base README digest differs from report")
     if _README_MARKER in current:
         raise ValueError("README capability-closeout block already exists")
-    readme.write_text(current.rstrip() + "\n\n" + _readme_block(report), encoding="utf-8")
+    readme.write_text(
+        current.rstrip() + "\n\n" + render_public_readme_block_v3(report),
+        encoding="utf-8",
+    )
     return report
 
 
 def run_positive_verify(*, repository_root: Path) -> str:
     root = repository_root.resolve(strict=True)
     report_path = root / "docs/results/dta-v21-live-demo.json"
+    disposition_path = (
+        root / "docs/review-evidence/dta-v21-live/current-disposition.json"
+    )
     paths = (
         root / "docs/results/dta-v21-live-demo.md",
         root / "docs/results/dta-v21-live-demo-human-brief.md",
         root / "docs/results/dta-v21-final-summary.md",
         root / "docs/results/dta-v21-interview-brief.md",
     )
-    present = (report_path.exists(), *(path.exists() for path in paths))
+    readme_path = root / "README.md"
+    readme_text = _read_regular_text(readme_path, label="public README")
+    readme_block_present = _README_MARKER in readme_text
+    present = (
+        report_path.exists() or report_path.is_symlink(),
+        *(path.exists() or path.is_symlink() for path in paths),
+        disposition_path.exists() or disposition_path.is_symlink(),
+        readme_block_present,
+    )
     if not any(present):
         return "DTA_V21_PR_F_CAPABILITY_CLOSEOUT_REPORT_PENDING"
     if not all(present):
@@ -428,12 +445,24 @@ def run_positive_verify(*, repository_root: Path) -> str:
     report = verify_public_live_report_v3(
         report_path=report_path, claim_paths=paths
     )
-    readme = (root / "README.md").read_text(encoding="utf-8")
-    if _readme_block(report) not in readme:
-        raise ValueError("README capability-closeout wording differs")
-    disposition_path = (
-        root / "docs/review-evidence/dta-v21-live/current-disposition.json"
+    base_readme = _git_blob_text(
+        root,
+        treeish=report.live_execution_code_head,
+        relative_path="README.md",
     )
+    if hashlib.sha256(base_readme.encode("utf-8")).hexdigest() != (
+        report.base_readme_sha256
+    ):
+        raise ValueError("bound base README digest differs")
+    expected_readme = (
+        base_readme.rstrip()
+        + "\n\n"
+        + render_public_readme_block_v3(report)
+    )
+    readme = readme_text
+    if readme != expected_readme:
+        raise ValueError("README capability-closeout wording differs")
+    verify_public_text_v3(readme)
     if disposition_path.is_symlink() or not disposition_path.is_file():
         raise ValueError("capability-closeout disposition is missing or unsafe")
     disposition = json.loads(disposition_path.read_text(encoding="utf-8"))
@@ -449,8 +478,30 @@ def run_positive_verify(*, repository_root: Path) -> str:
     candidate = disposition.get("acceptance_candidate_head")
     merge_head = disposition.get("merged_main_head")
     active_pr = disposition.get("merged_pr")
+    expected_disposition_fields = {
+        "schema_version",
+        "terminal",
+        "report_sha256",
+        "live_execution_code_head",
+        "final_terminal",
+        "merged_pr",
+        "merged_pr_url",
+        "acceptance_candidate_head",
+        "merged_main_head",
+        "candidate_exact_head_ci",
+        "candidate_exact_head_ci_run_id",
+        "candidate_exact_head_ci_run_url",
+        "candidate_independent_review",
+        "candidate_independent_review_head",
+        "candidate_claim_accuracy",
+        "post_merge_exact_head_ci",
+        "post_merge_independent_review",
+    }
     if (
-        disposition.get("terminal")
+        set(disposition) != expected_disposition_fields
+        or disposition.get("schema_version")
+        != "dta-v21.pr-f-capability-closeout-disposition.v1"
+        or disposition.get("terminal")
         != "DTA_V21_PR_F_POST_MERGE_LIMITATION_CLOSEOUT_PROJECTED"
         or disposition.get("report_sha256") != report.report_sha256
         or disposition.get("live_execution_code_head")
@@ -461,16 +512,27 @@ def run_positive_verify(*, repository_root: Path) -> str:
         or disposition.get("candidate_independent_review")
         != "MUST_FIX_0_SHOULD_FIX_0"
         or disposition.get("candidate_claim_accuracy") != "PASS"
+        or disposition.get("candidate_independent_review_head") != candidate
         or disposition.get("post_merge_exact_head_ci")
         != "REQUIRED_AFTER_CLOSEOUT_COMMIT"
         or disposition.get("post_merge_independent_review")
         != "REQUIRED_AFTER_CLOSEOUT_COMMIT"
         or not isinstance(candidate, str)
-        or len(candidate) != 40
+        or re.fullmatch(r"[0-9a-f]{40}", candidate) is None
         or not isinstance(merge_head, str)
-        or len(merge_head) != 40
-        or not isinstance(active_pr, int)
-        or isinstance(active_pr, bool)
+        or re.fullmatch(r"[0-9a-f]{40}", merge_head) is None
+        or active_pr != 55
+        or disposition.get("merged_pr_url")
+        != "https://github.com/raidriar/EcomSRE-Agent/pull/55"
+        or not isinstance(disposition.get("candidate_exact_head_ci_run_id"), int)
+        or isinstance(disposition.get("candidate_exact_head_ci_run_id"), bool)
+        or int(disposition["candidate_exact_head_ci_run_id"]) < 1
+        or not isinstance(disposition.get("candidate_exact_head_ci_run_url"), str)
+        or re.fullmatch(
+            r"https://github\.com/.+/actions/runs/[0-9]+",
+            str(disposition["candidate_exact_head_ci_run_url"]),
+        )
+        is None
     ):
         raise ValueError("final capability-closeout disposition differs")
     progress = json.loads(
@@ -483,11 +545,16 @@ def run_positive_verify(*, repository_root: Path) -> str:
         or progress.get("current_stage") != "COMPLETE_WITH_LIMITATION"
         or progress.get("active_branch") is not None
         or progress.get("active_pr") is not None
+        or progress.get("main_head") != merge_head
+        or progress.get("merged_prs") != [50, 51, 52, 53, 54, 55]
         or progress.get("no_fault_diagnosis_passed") is not False
         or progress.get("no_fault_no_write_safety_passed") is not True
         or progress.get("positive_continuation_status") != "PASS"
         or progress.get("positive_slots_passed") != 3
         or progress.get("four_slot_acceptance_passed") is not False
+        or progress.get("live_report_sha256") != report.report_sha256
+        or progress.get("live_execution_code_head")
+        != report.live_execution_code_head
         or progress.get("live_demo_terminal")
         != "DTA_V21_PR_F_POSITIVE_PORTFOLIO_PASS_WITH_NO_FAULT_DIAGNOSIS_MISS"
         or progress.get("final_engineering_terminal")
@@ -500,11 +567,102 @@ def run_positive_verify(*, repository_root: Path) -> str:
 def _verify_public_only_candidate_delta(
     *, root: Path, execution_head: str, candidate_head: str
 ) -> None:
-    changed = _git(
-        root, "diff", "--name-only", execution_head, candidate_head, "--"
+    records = _git(
+        root, "diff", "--name-status", execution_head, candidate_head, "--"
     ).splitlines()
-    if not changed or any(path not in _PUBLIC_PATHS for path in changed):
+    parsed: list[tuple[str, str]] = []
+    for record in records:
+        parts = record.split("\t")
+        if len(parts) != 2:
+            raise ValueError("post-execution candidate contains a rename or copy")
+        parsed.append((parts[0], parts[1]))
+    expected_changed = _PUBLIC_PATHS - {
+        "docs/analysis/dta-v21-p0-master-progress.json"
+    }
+    if (
+        {path for _, path in parsed} != expected_changed
+        or any(status not in {"A", "M"} for status, _ in parsed)
+    ):
         raise ValueError("post-execution candidate delta is not public-only")
+    for relative_path in _PUBLIC_PATHS:
+        entry = _git(
+            root,
+            "ls-tree",
+            candidate_head,
+            "--",
+            relative_path,
+        )
+        if not entry.startswith("100644 blob ") or not entry.endswith(
+            f"\t{relative_path}"
+        ):
+            raise ValueError("public candidate file mode or type differs")
+
+
+def _allow_only_resumable_finalize_delta(root: Path) -> None:
+    allowed = {
+        "docs/analysis/dta-v21-p0-master-progress.json",
+        "docs/review-evidence/dta-v21-live/current-disposition.json",
+        (
+            "docs/analysis/"
+            "dta-v21-p0-master-progress.json.dta-v21-finalize.tmp"
+        ),
+        (
+            "docs/review-evidence/dta-v21-live/"
+            "current-disposition.json.dta-v21-finalize.tmp"
+        ),
+    }
+    for record in _git(
+        root, "status", "--porcelain=v1", "--untracked-files=all"
+    ).splitlines():
+        if " -> " in record or len(record) < 4 or record[3:] not in allowed:
+            raise ValueError("post-merge limitation-closeout worktree differs")
+
+
+def _replace_regular_text_resumably(
+    path: Path, *, previous: str, expected: str
+) -> None:
+    current = _read_regular_text(path, label=path.name)
+    if current == expected:
+        return
+    if current != previous:
+        raise ValueError("post-merge closeout file is neither previous nor expected")
+    temporary = path.with_name(f"{path.name}.dta-v21-finalize.tmp")
+    payload = expected.encode("utf-8")
+    if temporary.exists() or temporary.is_symlink():
+        if (
+            temporary.is_symlink()
+            or not temporary.is_file()
+            or stat.S_IMODE(temporary.stat().st_mode) != 0o644
+        ):
+            raise ValueError("post-merge closeout temporary file differs")
+        if temporary.read_bytes() != payload:
+            descriptor = os.open(temporary, os.O_WRONLY | os.O_TRUNC)
+            try:
+                with os.fdopen(descriptor, "wb", closefd=False) as handle:
+                    handle.write(payload)
+                    handle.flush()
+                    os.fsync(handle.fileno())
+            finally:
+                os.close(descriptor)
+    else:
+        descriptor = os.open(
+            temporary,
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+            0o644,
+        )
+        try:
+            with os.fdopen(descriptor, "wb", closefd=False) as handle:
+                handle.write(payload)
+                handle.flush()
+                os.fsync(handle.fileno())
+        finally:
+            os.close(descriptor)
+    os.replace(temporary, path)
+    parent_descriptor = os.open(path.parent, os.O_RDONLY)
+    try:
+        os.fsync(parent_descriptor)
+    finally:
+        os.close(parent_descriptor)
 
 
 def run_positive_finalize(
@@ -521,9 +679,9 @@ def run_positive_finalize(
         or independent_review_confirmation != _FINAL_REVIEW_CONFIRMATION
         or active_pr != 55
         or _git(root, "branch", "--show-current") != "main"
-        or _git(root, "status", "--porcelain=v1", "--untracked-files=all")
     ):
         raise ValueError("post-merge limitation-closeout gates differ")
+    _allow_only_resumable_finalize_delta(root)
     merged_main_head = _git(root, "rev-parse", "HEAD")
     merged_pr = _verify_merged_pr(root, active_pr=active_pr)
     if (
@@ -534,6 +692,8 @@ def run_positive_finalize(
     ci = _verify_exact_head_github_actions(
         root, head=exact_head_ci_sha, required_event="pull_request"
     )
+    if ci.get("head_sha") != exact_head_ci_sha:
+        raise ValueError("candidate exact-head CI binding differs")
     report = verify_public_live_report_v3(
         report_path=root / "docs/results/dta-v21-live-demo.json",
         claim_paths=(
@@ -550,17 +710,32 @@ def run_positive_finalize(
     )
     if _git(root, "diff", "--quiet", exact_head_ci_sha, merged_main_head) != "":
         raise ValueError("merged PR tree differs from its accepted candidate")
-    progress_path = root / "docs/analysis/dta-v21-p0-master-progress.json"
-    progress = json.loads(progress_path.read_text(encoding="utf-8"))
+    progress_relative = "docs/analysis/dta-v21-p0-master-progress.json"
+    disposition_relative = (
+        "docs/review-evidence/dta-v21-live/current-disposition.json"
+    )
+    progress_path = root / progress_relative
+    disposition_path = root / disposition_relative
+    previous_progress_text = _git_blob_text(
+        root, treeish=exact_head_ci_sha, relative_path=progress_relative
+    )
+    previous_disposition_text = _git_blob_text(
+        root, treeish=exact_head_ci_sha, relative_path=disposition_relative
+    )
+    progress = json.loads(previous_progress_text)
+    previous_disposition = json.loads(previous_disposition_text)
     if (
         progress.get("completed_stage") != "PR-E"
         or progress.get("current_stage") != "PR-F"
+        or progress.get("active_branch")
+        != "codex/dta-v21-p0-pr-f-live-closeout"
         or progress.get("active_pr") != active_pr
         or progress.get("positive_continuation_status") != "PENDING"
+        or previous_disposition != _pending_disposition(report)
     ):
         raise ValueError("pre-closeout Master Progress differs")
     merged_prs = progress.get("merged_prs")
-    if not isinstance(merged_prs, list) or active_pr in merged_prs:
+    if merged_prs != [50, 51, 52, 53, 54]:
         raise ValueError("pre-closeout merged PR history differs")
     progress.update(
         {
@@ -609,15 +784,21 @@ def run_positive_finalize(
         **final_payload,
         "disposition_sha256": semantic_sha256(final_payload),
     }
-    progress_path.write_text(
-        json.dumps(progress, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
+    expected_progress_text = json.dumps(
+        progress, indent=2, ensure_ascii=False
+    ) + "\n"
+    expected_disposition_text = json.dumps(
+        disposition, indent=2, ensure_ascii=False
+    ) + "\n"
+    _replace_regular_text_resumably(
+        progress_path,
+        previous=previous_progress_text,
+        expected=expected_progress_text,
     )
-    (
-        root / "docs/review-evidence/dta-v21-live/current-disposition.json"
-    ).write_text(
-        json.dumps(disposition, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
+    _replace_regular_text_resumably(
+        disposition_path,
+        previous=previous_disposition_text,
+        expected=expected_disposition_text,
     )
     if run_positive_verify(repository_root=root) != (
         "DTA_V21_PR_F_POST_MERGE_LIMITATION_CLOSEOUT_PROJECTED"
@@ -647,9 +828,43 @@ def run_positive_closeout(
         "DTA_V21_PR_F_POST_MERGE_LIMITATION_CLOSEOUT_PROJECTED"
     ):
         raise ValueError("post-merge limitation projection is not verified")
-    _verify_exact_head_github_actions(
+    disposition_path = (
+        root / "docs/review-evidence/dta-v21-live/current-disposition.json"
+    )
+    disposition = json.loads(
+        _read_regular_text(
+            disposition_path, label="final capability-closeout disposition"
+        )
+    )
+    if not isinstance(disposition, dict):
+        raise ValueError("final capability-closeout disposition is invalid")
+    disposition_digest = disposition.pop("disposition_sha256", None)
+    if disposition_digest != semantic_sha256(disposition):
+        raise ValueError("final capability-closeout disposition SHA-256 differs")
+    candidate = str(disposition.get("acceptance_candidate_head"))
+    merged_main = str(disposition.get("merged_main_head"))
+    merged_pr = _verify_merged_pr(root, active_pr=55)
+    candidate_ci = _verify_exact_head_github_actions(
+        root, head=candidate, required_event="pull_request"
+    )
+    if (
+        disposition.get("merged_pr") != 55
+        or merged_pr.get("head_sha") != candidate
+        or merged_pr.get("merge_sha") != merged_main
+        or merged_pr.get("url") != disposition.get("merged_pr_url")
+        or candidate_ci.get("run_id")
+        != disposition.get("candidate_exact_head_ci_run_id")
+        or candidate_ci.get("url")
+        != disposition.get("candidate_exact_head_ci_run_url")
+        or candidate_ci.get("head_sha") != candidate
+    ):
+        raise ValueError("final merged PR or candidate CI evidence differs")
+    _git(root, "merge-base", "--is-ancestor", merged_main, head)
+    final_ci = _verify_exact_head_github_actions(
         root, head=head, required_event="workflow_dispatch"
     )
+    if final_ci.get("head_sha") != head:
+        raise ValueError("post-merge exact-head CI evidence differs")
     return "DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_NO_FAULT_DIAGNOSIS_MISS"
 
 

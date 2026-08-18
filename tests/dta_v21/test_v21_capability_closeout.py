@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import hashlib
 import os
 from pathlib import Path
 import json
@@ -36,6 +37,8 @@ from ecomsre.dta_v2.v21.live_capability_reporting import (
     PublicLiveReportV3,
     PublicNoFaultCapabilityMissV3,
     PublicPositiveAttemptV3,
+    render_public_final_summary_v3,
+    render_public_human_brief_v3,
     render_public_interview_brief_v3,
     render_public_live_markdown_v3,
     verify_public_live_report_v3,
@@ -44,6 +47,7 @@ from ecomsre.dta_v2.v21.live_capability_cli import (
     _pending_disposition,
     _readme_block,
     run_positive_closeout,
+    run_positive_execute,
     run_positive_finalize,
     run_positive_verify,
 )
@@ -520,7 +524,10 @@ def test_exact_private_no_fault_miss_is_eligible_without_relabeling() -> None:
     assert record.forward_step_count == 0
 
 
-def _public_report(execution_head: str = "a" * 40) -> PublicLiveReportV3:
+def _public_report(
+    execution_head: str = "a" * 40,
+    base_readme_sha256: str = "a" * 64,
+) -> PublicLiveReportV3:
     historical = PublicHistoricalReadyBlockerV3(
         kind="RECONCILED_PRE_BASELINE_BLOCKED_ATTEMPT",
         stage="READY",
@@ -590,6 +597,7 @@ def _public_report(execution_head: str = "a" * 40) -> PublicLiveReportV3:
         portfolio_kind="LOCAL_KNOWN_SCENARIO_ENGINEERING_EVIDENCE",
         held_out_claim="DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED",
         live_execution_code_head=execution_head,
+        base_readme_sha256=base_readme_sha256,
         capability_miss=capability,
         historical_ready_blocker=historical,
         positive_attempts=positive,
@@ -635,17 +643,99 @@ def test_v3_report_preserves_limitation_and_rejects_unbound_prose(
 
     report_path = tmp_path / "dta-v21-live-demo.json"
     claim_path = tmp_path / "dta-v21-live-demo.md"
+    human_path = tmp_path / "dta-v21-live-demo-human-brief.md"
+    summary_path = tmp_path / "dta-v21-final-summary.md"
+    interview_path = tmp_path / "dta-v21-interview-brief.md"
     report_path.write_text(report.model_dump_json(indent=2) + "\n", encoding="utf-8")
     claim_path.write_text(markdown, encoding="utf-8")
+    human_path.write_text(render_public_human_brief_v3(report), encoding="utf-8")
+    summary_path.write_text(
+        render_public_final_summary_v3(report), encoding="utf-8"
+    )
+    interview_path.write_text(
+        render_public_interview_brief_v3(report), encoding="utf-8"
+    )
+    claims = (claim_path, human_path, summary_path, interview_path)
     assert verify_public_live_report_v3(
-        report_path=report_path, claim_paths=(claim_path,)
+        report_path=report_path, claim_paths=claims
     ) == report
 
-    claim_path.write_text("No-Fault passed.\n", encoding="utf-8")
-    with pytest.raises(ValueError):
+    for path, false_claim in (
+        (claim_path, "No-Fault passed.\n"),
+        (human_path, "DTA_V21_P0_ENGINEERING_ACCEPTANCE_PASS was achieved.\n"),
+        (summary_path, "Every live slot passed.\n"),
+        (interview_path, "Production-ready autonomous recovery.\n"),
+    ):
+        original = path.read_text(encoding="utf-8")
+        path.write_text(false_claim, encoding="utf-8")
+        with pytest.raises(ValueError):
+            verify_public_live_report_v3(
+                report_path=report_path, claim_paths=claims
+            )
+        path.write_text(original, encoding="utf-8")
+
+    human_path.write_text("/Users/private/evidence\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="not bound|leaks"):
         verify_public_live_report_v3(
-            report_path=report_path, claim_paths=(claim_path,)
+            report_path=report_path, claim_paths=claims
         )
+
+
+def test_positive_execute_rejects_wrong_branch_before_live_effects(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repository = tmp_path / "repository"
+    private = tmp_path / "private"
+    repository.mkdir()
+    private.mkdir()
+    subprocess.run(
+        ("git", "init", "-b", "wrong-branch"),
+        cwd=repository,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ("git", "config", "user.name", "DTA v2.1 test"),
+        cwd=repository,
+        check=True,
+    )
+    subprocess.run(
+        ("git", "config", "user.email", "dta-v21@example.invalid"),
+        cwd=repository,
+        check=True,
+    )
+    (repository / "README.md").write_text("test\n", encoding="utf-8")
+    subprocess.run(("git", "add", "."), cwd=repository, check=True)
+    subprocess.run(
+        ("git", "commit", "-m", "test"), cwd=repository, check=True
+    )
+    monkeypatch.setenv(
+        "DTA_V21_POSITIVE_CONTINUATION_EXECUTE",
+        "USER_EXPLICIT_DTA_V21_PRF_CAPABILITY_CLOSEOUT_AND_POSITIVE_CONTINUATION",
+    )
+
+    with pytest.raises(ValueError, match="branch differs"):
+        run_positive_execute(
+            repository_root=repository,
+            private_root=private,
+            provider_env_path=tmp_path / "unused-provider.env",
+        )
+
+
+def test_v3_verify_rejects_partial_public_projection(tmp_path: Path) -> None:
+    repository = tmp_path / "repository"
+    repository.mkdir()
+    (repository / "README.md").write_text("# Test\n", encoding="utf-8")
+    disposition = (
+        repository
+        / "docs/review-evidence/dta-v21-live/current-disposition.json"
+    )
+    disposition.parent.mkdir(parents=True)
+    disposition.write_text("{}\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="outputs are partial"):
+        run_positive_verify(repository_root=repository)
 
 
 def test_post_merge_closeout_mints_only_limitation_terminal(
@@ -694,7 +784,10 @@ def test_post_merge_closeout_mints_only_limitation_terminal(
     git("add", ".")
     git("commit", "-m", "execution source")
     execution_head = git("rev-parse", "HEAD")
-    report = _public_report(execution_head)
+    report = _public_report(
+        execution_head,
+        hashlib.sha256(b"# Test\n").hexdigest(),
+    )
     results = repository / "docs/results"
     results.mkdir(parents=True)
     (results / "dta-v21-live-demo.json").write_text(
@@ -704,10 +797,10 @@ def test_post_merge_closeout_mints_only_limitation_terminal(
         render_public_live_markdown_v3(report), encoding="utf-8"
     )
     (results / "dta-v21-live-demo-human-brief.md").write_text(
-        "Known local evidence with a disclosed diagnosis miss.\n", encoding="utf-8"
+        render_public_human_brief_v3(report), encoding="utf-8"
     )
     (results / "dta-v21-final-summary.md").write_text(
-        "Limitation closeout; not production evidence.\n", encoding="utf-8"
+        render_public_final_summary_v3(report), encoding="utf-8"
     )
     (results / "dta-v21-interview-brief.md").write_text(
         render_public_interview_brief_v3(report), encoding="utf-8"
@@ -725,6 +818,14 @@ def test_post_merge_closeout_mints_only_limitation_terminal(
         + _readme_block(report),
         encoding="utf-8",
     )
+    assert run_positive_verify(repository_root=repository) == (
+        "DTA_V21_PR_F_LIMITATION_CLOSEOUT_FINAL_REVIEW_PENDING"
+    )
+    expected_readme = readme.read_text(encoding="utf-8")
+    readme.write_text("Unbound prefix.\n" + expected_readme, encoding="utf-8")
+    with pytest.raises(ValueError, match="README"):
+        run_positive_verify(repository_root=repository)
+    readme.write_text(expected_readme, encoding="utf-8")
     git("add", ".")
     git("commit", "-m", "public limitation report")
     candidate_head = git("rev-parse", "HEAD")
@@ -741,13 +842,16 @@ def test_post_merge_closeout_mints_only_limitation_terminal(
             "url": "https://github.com/example/repo/actions/runs/123",
         },
     )
-    monkeypatch.setattr(
-        "ecomsre.dta_v2.v21.live_capability_cli._verify_merged_pr",
-        lambda _root, *, active_pr: {
+    def verified_merge(_root: Path, *, active_pr: int) -> dict[str, object]:
+        return {
             "head_sha": candidate_head,
             "merge_sha": merged_head,
-            "url": f"https://github.com/example/repo/pull/{active_pr}",
-        },
+            "url": f"https://github.com/raidriar/EcomSRE-Agent/pull/{active_pr}",
+        }
+
+    monkeypatch.setattr(
+        "ecomsre.dta_v2.v21.live_capability_cli._verify_merged_pr",
+        verified_merge,
     )
     assert run_positive_finalize(
         repository_root=repository,
@@ -761,9 +865,60 @@ def test_post_merge_closeout_mints_only_limitation_terminal(
     assert run_positive_verify(repository_root=repository) == (
         "DTA_V21_PR_F_POST_MERGE_LIMITATION_CLOSEOUT_PROJECTED"
     )
+
+    original_disposition = disposition.read_text(encoding="utf-8")
+    for field, false_value in (
+        ("merged_pr", 99),
+        ("candidate_independent_review_head", "b" * 40),
+    ):
+        value = json.loads(original_disposition)
+        value[field] = false_value
+        value.pop("disposition_sha256")
+        value["disposition_sha256"] = semantic_sha256(value)
+        disposition.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
+        with pytest.raises(ValueError, match="disposition"):
+            run_positive_verify(repository_root=repository)
+        disposition.write_text(original_disposition, encoding="utf-8")
+
+    original_progress = progress_path.read_text(encoding="utf-8")
+    for field, false_value in (
+        ("main_head", "c" * 40),
+        ("live_report_sha256", "d" * 64),
+        ("live_execution_code_head", "e" * 40),
+    ):
+        value = json.loads(original_progress)
+        value[field] = false_value
+        progress_path.write_text(
+            json.dumps(value, indent=2) + "\n", encoding="utf-8"
+        )
+        with pytest.raises(ValueError, match="progress"):
+            run_positive_verify(repository_root=repository)
+        progress_path.write_text(original_progress, encoding="utf-8")
+
     git("add", ".")
     git("commit", "-m", "post-merge limitation projection")
     final_head = git("rev-parse", "HEAD")
+    monkeypatch.setattr(
+        "ecomsre.dta_v2.v21.live_capability_cli._verify_merged_pr",
+        lambda _root, *, active_pr: {
+            "head_sha": "f" * 40,
+            "merge_sha": merged_head,
+            "url": f"https://github.com/raidriar/EcomSRE-Agent/pull/{active_pr}",
+        },
+    )
+    with pytest.raises(ValueError, match="merged PR"):
+        run_positive_closeout(
+            repository_root=repository,
+            exact_head_ci_sha=final_head,
+            independent_review_head=final_head,
+            independent_review_confirmation=(
+                "MUST_FIX_0_SHOULD_FIX_0_CLAIM_ACCURACY_PASS"
+            ),
+        )
+    monkeypatch.setattr(
+        "ecomsre.dta_v2.v21.live_capability_cli._verify_merged_pr",
+        verified_merge,
+    )
     assert run_positive_closeout(
         repository_root=repository,
         exact_head_ci_sha=final_head,
@@ -772,5 +927,3 @@ def test_post_merge_closeout_mints_only_limitation_terminal(
             "MUST_FIX_0_SHOULD_FIX_0_CLAIM_ACCURACY_PASS"
         ),
     ) == "DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_NO_FAULT_DIAGNOSIS_MISS"
-    LivePositiveContinuationClosureV1,
-    render_public_interview_brief_v3,
