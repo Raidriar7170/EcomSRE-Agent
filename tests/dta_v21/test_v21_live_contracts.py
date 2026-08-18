@@ -11,6 +11,7 @@ import pytest
 from pydantic_core import to_jsonable_python
 
 from ecomsre.dta_v2.v21 import live_cli as live_cli_module
+from ecomsre.dta_v2.v21 import live_reconciliation as live_reconciliation_module
 from ecomsre.dta_v2.v21 import live_reporting as live_reporting_module
 from ecomsre.dta_v2.read_tools import FakeReadBackend, InvestigationReadTools
 from ecomsre.dta_v2.v21.agent import (
@@ -109,6 +110,26 @@ CONFIG_PATH = REPO_ROOT / "config/dta-v21/live/live-demo.v1.json"
 def _bound_reconciliation_for_public_projection(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    def accept_pytest_private_root(
+        *,
+        expected: Path,
+        accepted_private_prf_root: Path,
+        repository_root: Path,
+    ) -> Path:
+        del repository_root
+        if expected.is_symlink() or not expected.is_dir():
+            raise ValueError("expected flag directory must be a non-symlink directory")
+        resolved = expected.resolve(strict=True)
+        accepted = accepted_private_prf_root.resolve(strict=True)
+        if not resolved.is_relative_to(accepted):
+            raise ValueError("expected flag directory is outside synthetic private root")
+        return resolved
+
+    monkeypatch.setattr(
+        live_reconciliation_module,
+        "_validate_flagd_directory",
+        accept_pytest_private_root,
+    )
     reconciliation = SimpleNamespace(
         reconciliation_sha256="a" * 64,
         retry_eligible=True,
