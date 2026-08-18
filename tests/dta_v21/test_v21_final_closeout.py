@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import hashlib
 import os
 from pathlib import Path
 
 import pytest
 
 from ecomsre.dta_v2.v21.live_final_cli import (
+    _verify_readme_projection,
     run_final_closeout,
     run_final_finalize,
 )
@@ -28,6 +30,7 @@ from ecomsre.dta_v2.v21.live_final_reporting import (
     render_public_human_brief_v4,
     render_public_interview_brief_v4,
     render_public_live_markdown_v4,
+    render_public_readme_block_v4,
     verify_public_text_v4,
 )
 from ecomsre_live_sandbox.contracts import write_private_json
@@ -242,6 +245,26 @@ def test_public_v4_report_rebuilds_deterministically_from_accepted_private() -> 
 def test_public_v4_rejects_pass_overclaims_and_private_paths(claim: str) -> None:
     with pytest.raises(ValueError):
         verify_public_text_v4(claim)
+
+
+def test_readme_projection_scans_only_hash_bound_v4_block() -> None:
+    base = (
+        "# Existing docs\n\nConfigure `provider.env` outside the repo.\n\n"
+        "## One-command offline demo\n"
+    )
+    report = PublicLiveCapabilityCloseoutReportV4.model_construct(
+        terminal=(
+            "DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_FROZEN_AGENT_"
+            "CAPABILITY_LIMITATIONS"
+        ),
+        base_readme_sha256=hashlib.sha256(base.encode()).hexdigest(),
+    )
+    projected = base.replace(
+        "## One-command offline demo",
+        render_public_readme_block_v4(report) + "\n## One-command offline demo",
+    )
+
+    _verify_readme_projection(current=projected, report=report)
 
 
 def test_make_live_entrypoint_checks_closeout_before_provider_inputs() -> None:

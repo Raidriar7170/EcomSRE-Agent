@@ -501,6 +501,13 @@ def _recover_base_readme(
     return base
 
 
+def _verify_readme_projection(
+    *, current: str, report: PublicLiveCapabilityCloseoutReportV4
+) -> None:
+    _recover_base_readme(current=current, report=report)
+    verify_public_text_v4(render_public_readme_block_v4(report))
+
+
 def _verify_open_progress(
     *, text: str, report: PublicLiveCapabilityCloseoutReportV4
 ) -> None:
@@ -594,8 +601,7 @@ def run_final_verify(*, repository_root: Path) -> str:
             raise ValueError(f"public v4 claim differs: {path.name}")
         verify_public_text_v4(actual)
     readme = _read_regular(readme_path, label="README")
-    _recover_base_readme(current=readme, report=report)
-    verify_public_text_v4(readme)
+    _verify_readme_projection(current=readme, report=report)
     if _candidate_scope_sha256(root, treeish="HEAD") != report.candidate_scope_sha256:
         raise ValueError("candidate non-public source scope differs")
     progress_text = _read_regular(progress_path, label="Master Progress")
