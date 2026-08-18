@@ -45,6 +45,8 @@ from ecomsre.dta_v2.v21.live_capability_reporting import (
     verify_public_live_report_v3,
 )
 from ecomsre.dta_v2.v21.live_capability_cli import (
+    _OPEN_PROGRESS_KEYS_V3,
+    _OPEN_PROGRESS_REQUIRED_V3,
     _pending_disposition,
     _readme_block,
     run_positive_closeout,
@@ -61,6 +63,18 @@ from ecomsre.dta_v2.v21.live_runner import (
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _v3_base_progress_text() -> str:
+    value = json.loads(
+        (REPO_ROOT / "docs/analysis/dta-v21-p0-master-progress.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    value = {key: value[key] for key in _OPEN_PROGRESS_KEYS_V3 if key in value}
+    value.update(_OPEN_PROGRESS_REQUIRED_V3)
+    assert set(value) == _OPEN_PROGRESS_KEYS_V3
+    return json.dumps(value, indent=2, ensure_ascii=False) + "\n"
 
 
 def _capability() -> NoFaultCapabilityMissV1:
@@ -746,9 +760,7 @@ def test_positive_report_resumes_after_readme_write_and_rejects_other_dirt(
     source.write_text("VALUE = 1\n", encoding="utf-8")
     progress = repository / "docs/analysis/dta-v21-p0-master-progress.json"
     progress.parent.mkdir(parents=True)
-    base_progress_text = (
-        REPO_ROOT / "docs/analysis/dta-v21-p0-master-progress.json"
-    ).read_text(encoding="utf-8")
+    base_progress_text = _v3_base_progress_text()
     progress.write_text(base_progress_text, encoding="utf-8")
     git("add", ".")
     git("commit", "-m", "execution source")
@@ -887,9 +899,7 @@ def test_post_merge_closeout_mints_only_limitation_terminal(
     source.write_text("VALUE = 1\n", encoding="utf-8")
     progress_path = repository / "docs/analysis/dta-v21-p0-master-progress.json"
     progress_path.parent.mkdir(parents=True)
-    base_progress_text = (
-        REPO_ROOT / "docs/analysis/dta-v21-p0-master-progress.json"
-    ).read_text(encoding="utf-8")
+    base_progress_text = _v3_base_progress_text()
     progress_path.write_text(base_progress_text, encoding="utf-8")
     git("add", ".")
     git("commit", "-m", "execution source")

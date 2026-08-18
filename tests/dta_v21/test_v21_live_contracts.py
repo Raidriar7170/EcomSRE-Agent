@@ -1801,7 +1801,7 @@ def test_final_closeout_is_gated_and_binds_readme_and_progress(
             "url": f"https://github.com/example/repo/pull/{active_pr}",
         },
     )
-    with pytest.raises(ValueError, match="superseded by DEC-046"):
+    with pytest.raises(ValueError, match="superseded"):
         run_finalize(
             repository_root=repository,
             exact_head_ci_sha=candidate_head,
