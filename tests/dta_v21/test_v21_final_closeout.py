@@ -8,12 +8,14 @@ import pytest
 
 from ecomsre.dta_v2.v21.live_final_cli import (
     _pending_disposition,
+    _read_regular,
     _render_final_progress,
     _verify_finalize_state,
     _verify_readme_projection,
     run_final_closeout,
     run_final_finalize,
 )
+from ecomsre.dta_v2.v21.live_cli import _write_public_once
 from ecomsre.dta_v2.v21.live_final_closeout import (
     AD_CPU_ATTEMPT_ID_V1,
     AD_CPU_CODE_HEAD_V1,
@@ -69,6 +71,22 @@ def _closeout(ad: AdCpuPlannerProtocolFailureV1) -> PrfFrozenAgentCapabilityClos
         amendment2_retry_consumption_sha256="0" * 64,
         amendment3_positive_continuation_consumption_sha256="1" * 64,
     )
+
+
+def test_v4_public_files_have_exact_public_mode(tmp_path: Path) -> None:
+    output = tmp_path / "report.json"
+    previous_umask = os.umask(0o077)
+    try:
+        _write_public_once(output, "{}\n")
+    finally:
+        os.umask(previous_umask)
+
+    assert output.stat().st_mode & 0o777 == 0o644
+    assert _read_regular(output, label="report") == "{}\n"
+
+    output.chmod(0o600)
+    with pytest.raises(ValueError, match="mode"):
+        _read_regular(output, label="report")
 
 
 def test_ad_duplicate_read_contract_is_failure_with_safe_restoration() -> None:

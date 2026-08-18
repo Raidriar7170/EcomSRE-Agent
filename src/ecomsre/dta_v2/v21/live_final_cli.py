@@ -182,6 +182,8 @@ def _verify_exact_head_workflow(
 def _read_regular(path: Path, *, label: str) -> str:
     if path.is_symlink() or not path.is_file():
         raise ValueError(f"{label} is missing or unsafe")
+    if path.stat().st_mode & 0o777 != 0o644:
+        raise ValueError(f"{label} has an unsafe mode")
     return path.read_text(encoding="utf-8")
 
 

@@ -224,11 +224,16 @@ def _write_public_once(path: Path, value: str) -> None:
     if path.is_symlink():
         raise FileExistsError(f"public closure output is unsafe: {path.name}")
     if path.is_file() and path.read_text(encoding="utf-8") == value:
+        if path.stat().st_mode & 0o777 != 0o644:
+            raise FileExistsError(
+                f"public closure output has an unsafe mode: {path.name}"
+            )
         return
     if path.exists():
         raise FileExistsError(f"public closure output already exists: {path.name}")
     descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
     try:
+        os.fchmod(descriptor, 0o644)
         with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
             handle.write(value)
             handle.flush()
