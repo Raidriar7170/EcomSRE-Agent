@@ -581,8 +581,15 @@ def _verify_final_disposition(
     )
 
 
-def run_final_verify(*, repository_root: Path) -> str:
-    root = Path(repository_root).resolve(strict=True)
+def _load_verified_public_projection(
+    root: Path,
+) -> tuple[
+    PublicLiveCapabilityCloseoutReportV4,
+    str,
+    dict[str, object],
+    Path,
+    Path,
+]:
     report_path, claims, disposition_path, readme_path, progress_path = (
         _verify_report_file_set(root)
     )
@@ -606,6 +613,52 @@ def run_final_verify(*, repository_root: Path) -> str:
         raise ValueError("candidate non-public source scope differs")
     progress_text = _read_regular(progress_path, label="Master Progress")
     disposition = _read_disposition(disposition_path)
+    return report, progress_text, disposition, disposition_path, progress_path
+
+
+def _verify_finalize_state(
+    *,
+    progress_text: str,
+    disposition: dict[str, object],
+    report: PublicLiveCapabilityCloseoutReportV4,
+    merged_main_head: str,
+) -> str:
+    expected_disposition = _pending_disposition(report)
+    expected_disposition.pop("disposition_sha256")
+    if disposition == expected_disposition:
+        try:
+            _verify_open_progress(text=progress_text, report=report)
+        except ValueError:
+            try:
+                _recover_final_progress(
+                    text=progress_text,
+                    report=report,
+                    merged_main_head=merged_main_head,
+                )
+            except ValueError as final_error:
+                raise ValueError(
+                    "v4 finalization progress/disposition state differs"
+                ) from final_error
+            return "FINAL_PROGRESS_PENDING_DISPOSITION"
+        return "OPEN_PROGRESS_PENDING_DISPOSITION"
+    disposition_merged_head, *_ = _verify_final_disposition(
+        value=disposition, report=report
+    )
+    if disposition_merged_head != merged_main_head:
+        raise ValueError("v4 finalization merged-main binding differs")
+    _recover_final_progress(
+        text=progress_text,
+        report=report,
+        merged_main_head=merged_main_head,
+    )
+    return "FINAL_PROGRESS_FINAL_DISPOSITION"
+
+
+def run_final_verify(*, repository_root: Path) -> str:
+    root = Path(repository_root).resolve(strict=True)
+    report, progress_text, disposition, _disposition_path, _progress_path = (
+        _load_verified_public_projection(root)
+    )
     expected_disposition = _pending_disposition(report)
     expected_disposition.pop("disposition_sha256")
     if disposition == expected_disposition:
@@ -660,25 +713,35 @@ def run_final_finalize(
         workflow="rcaeval-v2-dev.yml",
         required_event="pull_request",
     )
-    if run_final_verify(repository_root=root) != (
-        "DTA_V21_PR_F_FINAL_CAPABILITY_CLOSEOUT_REVIEW_PENDING"
-    ):
-        raise ValueError("v4 closeout report is not pending final projection")
-    report_path, _claims, disposition_path, _readme, progress_path = (
-        _verify_report_file_set(root)
-    )
-    report = PublicLiveCapabilityCloseoutReportV4.model_validate_json(
-        report_path.read_text(encoding="utf-8")
-    )
-    if _candidate_scope_sha256(root, treeish="HEAD") != report.candidate_scope_sha256:
-        raise ValueError("accepted candidate non-public source scope differs")
-    previous_progress = _read_regular(progress_path, label="Master Progress")
-    previous_disposition = _read_regular(disposition_path, label="disposition")
-    expected_progress = _render_final_progress(
-        open_progress_text=previous_progress,
+    (
+        report,
+        previous_progress,
+        previous_disposition_value,
+        disposition_path,
+        progress_path,
+    ) = _load_verified_public_projection(root)
+    state = _verify_finalize_state(
+        progress_text=previous_progress,
+        disposition=previous_disposition_value,
         report=report,
         merged_main_head=merged_main_head,
     )
+    if _candidate_scope_sha256(root, treeish="HEAD") != report.candidate_scope_sha256:
+        raise ValueError("accepted candidate non-public source scope differs")
+    previous_disposition = _read_regular(disposition_path, label="disposition")
+    if state == "OPEN_PROGRESS_PENDING_DISPOSITION":
+        expected_progress = _render_final_progress(
+            open_progress_text=previous_progress,
+            report=report,
+            merged_main_head=merged_main_head,
+        )
+    else:
+        _recover_final_progress(
+            text=previous_progress,
+            report=report,
+            merged_main_head=merged_main_head,
+        )
+        expected_progress = previous_progress
     expected_disposition = json.dumps(
         _final_disposition(
             report=report,

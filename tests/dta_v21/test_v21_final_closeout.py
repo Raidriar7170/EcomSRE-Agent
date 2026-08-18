@@ -7,6 +7,9 @@ from pathlib import Path
 import pytest
 
 from ecomsre.dta_v2.v21.live_final_cli import (
+    _pending_disposition,
+    _render_final_progress,
+    _verify_finalize_state,
     _verify_readme_projection,
     run_final_closeout,
     run_final_finalize,
@@ -314,3 +317,36 @@ def test_final_terminal_requires_exact_clean_main(
             repository_root=tmp_path,
             exact_main_ci_sha="2" * 40,
         )
+
+
+def test_final_projection_accepts_only_resumable_state_sequence() -> None:
+    repository = Path(__file__).resolve().parents[2]
+    report = PublicLiveCapabilityCloseoutReportV4.model_validate_json(
+        (repository / "docs/results/dta-v21-live-capability-closeout.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    open_progress = (
+        repository / "docs/analysis/dta-v21-p0-master-progress.json"
+    ).read_text(encoding="utf-8")
+    pending = _pending_disposition(report)
+    pending.pop("disposition_sha256")
+    merged_head = "1" * 40
+    final_progress = _render_final_progress(
+        open_progress_text=open_progress,
+        report=report,
+        merged_main_head=merged_head,
+    )
+
+    assert _verify_finalize_state(
+        progress_text=open_progress,
+        disposition=pending,
+        report=report,
+        merged_main_head=merged_head,
+    ) == "OPEN_PROGRESS_PENDING_DISPOSITION"
+    assert _verify_finalize_state(
+        progress_text=final_progress,
+        disposition=pending,
+        report=report,
+        merged_main_head=merged_head,
+    ) == "FINAL_PROGRESS_PENDING_DISPOSITION"
