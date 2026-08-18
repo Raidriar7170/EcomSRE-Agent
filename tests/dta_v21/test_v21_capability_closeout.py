@@ -7,6 +7,7 @@ from pathlib import Path
 import json
 import subprocess
 from types import SimpleNamespace
+from typing import Any, cast
 
 import pytest
 
@@ -415,16 +416,18 @@ def test_positive_runner_dispatches_only_exact_positive_order(
         repository_root=tmp_path,
         prf_private_root=prf_root,
         provider_env_path=tmp_path / "provider.env",
-        config=SimpleNamespace(planner_identity_sha256=(
+        config=cast(Any, SimpleNamespace(planner_identity_sha256=(
             "80506a41847d705f048f521b06d63035b4a5b47526eddc501c794b370528300d"
-        )),
-        registry=SimpleNamespace(),
-        protocol=SimpleNamespace(),
-        master_authorization=SimpleNamespace(authorization_sha256="6" * 64),
-        readiness=SimpleNamespace(readiness_sha256="1" * 64),
+        ))),
+        registry=cast(Any, SimpleNamespace()),
+        protocol=cast(Any, SimpleNamespace()),
+        master_authorization=cast(
+            Any, SimpleNamespace(authorization_sha256="6" * 64)
+        ),
+        readiness=cast(Any, SimpleNamespace(readiness_sha256="1" * 64)),
         v3_readiness=readiness_v3,
         capability_miss=capability,
-        readiness_identity=SimpleNamespace(),
+        readiness_identity=cast(Any, SimpleNamespace()),
         readiness_raw_compose={},
         readiness_flagd_directory=tmp_path / "flagd",
         code_head=head,
@@ -488,14 +491,18 @@ def test_positive_runner_stops_after_first_failed_positive_slot(
             repository_root=tmp_path,
             prf_private_root=prf_root,
             provider_env_path=tmp_path / "provider.env",
-            config=SimpleNamespace(planner_identity_sha256="8" * 64),
-            registry=SimpleNamespace(),
-            protocol=SimpleNamespace(),
-            master_authorization=SimpleNamespace(authorization_sha256="6" * 64),
-            readiness=SimpleNamespace(readiness_sha256="1" * 64),
+            config=cast(
+                Any, SimpleNamespace(planner_identity_sha256="8" * 64)
+            ),
+            registry=cast(Any, SimpleNamespace()),
+            protocol=cast(Any, SimpleNamespace()),
+            master_authorization=cast(
+                Any, SimpleNamespace(authorization_sha256="6" * 64)
+            ),
+            readiness=cast(Any, SimpleNamespace(readiness_sha256="1" * 64)),
             v3_readiness=readiness_v3,
             capability_miss=capability,
-            readiness_identity=SimpleNamespace(),
+            readiness_identity=cast(Any, SimpleNamespace()),
             readiness_raw_compose={},
             readiness_flagd_directory=tmp_path / "flagd",
             code_head=head,
@@ -543,8 +550,8 @@ def _public_report(
         kind="NO_FAULT_FALSE_POSITIVE_DIAGNOSIS_SAFE_NO_ACTION",
         scenario=LiveScenarioV21.NO_FAULT,
         stage="AGENT",
-        code_head=CAPABILITY_MISS_CODE_HEAD_V1,
-        attempt_id=CAPABILITY_MISS_ATTEMPT_ID_V1,
+        code_head="a167285a6a1d691709f229b26d167a7cd7c10fa0",
+        attempt_id="dta-v21-prf-01-no-fault-a167285a6a1d",
         agent_terminal="COMPLETED",
         diagnosis_root_service="checkout",
         diagnosis_fault_domain="APPLICATION",
