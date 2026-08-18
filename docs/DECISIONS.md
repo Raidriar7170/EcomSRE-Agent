@@ -1044,6 +1044,38 @@ This decision changes none of PR-D, PR-E, DEC-044, DEC-045, the held-out
 artifacts or conclusion, the Agent/Provider identity, any Runbook, live slot,
 or positive fault and recovery oracle.
 
+## DEC-047 — DTA v2.1 PR-F Frozen-Agent Capability-Limitations Closeout
+
+**Status: `accepted` only under the user-designated
+`dta-v21-p0-prf-final-capability-closeout-v1` amendment.**
+
+No further Provider or Docker execution is authorized for DTA v2.1 PR-F. The
+live No-Fault false-positive Diagnosis remains a capability failure with safe
+`NO_ACTION`. The Ad CPU attempt remains
+`AD_CPU_PLANNER_DUPLICATE_READ_PROTOCOL_FAILURE_SAFE_RESTORATION`: the frozen
+Planner failed with `DUPLICATE_READ_REQUEST` after three Provider turns, before
+a complete Diagnosis, CandidateSet, ActionProposal, or Agent remediation. One
+evaluator fault operation occurred, while Agent forward writes remained zero.
+The bounded runtime restored baseline and completed clean owned-resource
+cleanup; that restoration is not an Ad recovery result.
+
+Email service unavailable and Product Catalog service unavailable remain
+`NOT_ATTEMPTED`. No recovery PASS is claimed for any positive slot in the
+consumed continuation. The historical READY blocker, valid No-Fault capability
+miss, Ad protocol failure, both consumption records, PR-D, PR-E, DEC-044,
+DEC-045, DEC-046, Prompt, model, identity, tool schemas, planner schemas,
+Runbooks, CandidateSet semantics, and evaluator truth remain immutable.
+
+The original four-slot acceptance terminal is not minted. DTA v2.1 closes only
+with
+`DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_FROZEN_AGENT_CAPABILITY_LIMITATIONS`,
+preserving the negative held-out and live evidence. Future capability repair
+belongs to a separately versioned v2.2 identity with new development data and a
+new preregistered evaluation; it cannot retroactively rewrite v2.1.
+
+The bound Amendment-4 raw SHA-256 is
+`bf9484483583202a198e7699d57ee92f94c8a3ed2207cac3489601542645be1e`.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)

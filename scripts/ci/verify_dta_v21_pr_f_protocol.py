@@ -16,7 +16,14 @@ from ecomsre.dta_v2.v21.live_protocol import (
     verify_public_ad_cpu_claim_text,
 )
 from ecomsre.dta_v2.v21.contracts import semantic_sha256
-from ecomsre.dta_v2.v21.live_capability_reporting import PublicLiveReportV3
+from ecomsre.dta_v2.v21.live_final_closeout import (
+    FINAL_CLOSEOUT_RELATIVE_V1,
+    verify_final_capability_closeout_v1,
+)
+from ecomsre.dta_v2.v21.live_final_cli import run_final_verify
+from ecomsre.dta_v2.v21.live_final_reporting import (
+    PublicLiveCapabilityCloseoutReportV4,
+)
 from scripts.ci.verify_dta_v21_evaluation_freeze import verify_public_evaluation
 from scripts.ci.verify_dta_v21_held_out import verify_public_held_out_report_v21
 from scripts.ci.verify_dta_v2_historical_bindings import verify_historical_bindings
@@ -31,6 +38,9 @@ RECONCILIATION_SOURCE_RELATIVE = Path(
 )
 CAPABILITY_SOURCE_RELATIVE = Path(
     "src/ecomsre/dta_v2/v21/live_capability_closeout.py"
+)
+FINAL_CLOSEOUT_SOURCE_RELATIVE = Path(
+    "src/ecomsre/dta_v2/v21/live_final_closeout.py"
 )
 _CAPABILITY_FROZEN_PATHS = (
     "src/ecomsre/dta_v2/v21/prompts.py",
@@ -53,6 +63,7 @@ _CAPABILITY_FROZEN_SCOPE_SHA256 = (
 _DECISION_SECTION_SHA256 = {
     "DEC-044": "17c25a166656a9ab39006e72110faf382dea6ecb8774a0ad05e589db7a0483b0",
     "DEC-045": "d1acb0950fdc00b6fcdb3f20b4bb8fbee33561b421a5d8404806bcc631a8d17b",
+    "DEC-046": "0c079ac679c3c8b1e1e8f4a56d221ca8b2756111bf7979c55d8a0e5d2fac9796",
 }
 
 
@@ -205,11 +216,6 @@ def verify_pr_f_protocol(
         raise ValueError("DTA v2.1 master progress must be a regular file")
     progress = json.loads(progress_path.read_text(encoding="utf-8"))
     required_progress = {
-        "active_amendment_version": "dta-v21-p0-prf-capability-closeout-v1",
-        "active_amendment_sha256": (
-            "24cc236c1892c9992b6d36da377608c34fb22c2bc270f99349e5e8a4e0a0498a"
-        ),
-        "active_decision_id": "DEC-046",
         "held_out_seal_sha256": (
             "9a7c8e56400e99c693c8bddc26007b1dd26e0dcee2167b07cf3fba00fd22fbd7"
         ),
@@ -239,19 +245,46 @@ def verify_pr_f_protocol(
             )
     stage = (progress.get("completed_stage"), progress.get("current_stage"))
     if stage == ("PR-E", "PR-F"):
+        preprojection = (
+            progress.get("active_amendment_version")
+            == "dta-v21-p0-prf-capability-closeout-v1"
+            and progress.get("active_amendment_sha256")
+            == "24cc236c1892c9992b6d36da377608c34fb22c2bc270f99349e5e8a4e0a0498a"
+            and progress.get("active_decision_id") == "DEC-046"
+            and progress.get("positive_continuation_status") == "PENDING"
+        )
+        projected = (
+            progress.get("active_amendment_version")
+            == "dta-v21-p0-prf-final-capability-closeout-v1"
+            and progress.get("active_amendment_sha256")
+            == "bf9484483583202a198e7699d57ee92f94c8a3ed2207cac3489601542645be1e"
+            and progress.get("active_decision_id") == "DEC-047"
+            and progress.get("positive_continuation_status") == "CONSUMED_FAILED"
+            and progress.get("ad_cpu_agent_terminal") == "FAILED"
+            and progress.get("ad_cpu_agent_failure_code")
+            == "DUPLICATE_READ_REQUEST"
+            and progress.get("ad_cpu_recovery_tested") is False
+            and progress.get("positive_slots_attempted") == 1
+            and progress.get("email_slot_status") == "NOT_ATTEMPTED"
+            and progress.get("product_catalog_slot_status") == "NOT_ATTEMPTED"
+            and progress.get("agent_forward_writes_observed") == 0
+            and progress.get("remaining_live_execution_authority") == 0
+        )
         if (
-            progress.get("live_demo_terminal") is not None
+            not (preprojection or projected)
+            or progress.get("live_demo_terminal") is not None
             or progress.get("final_engineering_terminal") is not None
             or progress.get("active_branch")
             != "codex/dta-v21-p0-pr-f-live-closeout"
             or progress.get("active_pr") != 55
-            or progress.get("positive_continuation_status") != "PENDING"
             or progress.get("positive_slots_passed") != 0
         ):
             raise ValueError("open PR-F progress carries a final terminal")
-    elif stage == ("PR-F", "COMPLETE_WITH_LIMITATION"):
+    elif stage == ("PR-F", "COMPLETE_WITH_CAPABILITY_LIMITATIONS"):
         merged_prs = progress.get("merged_prs")
-        report_path = root / "docs/results/dta-v21-live-demo.json"
+        report_path = (
+            root / "docs/results/dta-v21-live-capability-closeout.json"
+        )
         disposition_path = (
             root / "docs/review-evidence/dta-v21-live/current-disposition.json"
         )
@@ -262,7 +295,7 @@ def verify_pr_f_protocol(
             or not disposition_path.is_file()
         ):
             raise ValueError("closed PR-F public evidence is missing or unsafe")
-        report = PublicLiveReportV3.model_validate_json(
+        report = PublicLiveCapabilityCloseoutReportV4.model_validate_json(
             report_path.read_text(encoding="utf-8")
         )
         disposition = json.loads(disposition_path.read_text(encoding="utf-8"))
@@ -270,31 +303,42 @@ def verify_pr_f_protocol(
             raise ValueError("closed PR-F disposition is invalid")
         disposition_sha256 = disposition.pop("disposition_sha256", None)
         if (
-            progress.get("live_demo_terminal")
-            != "DTA_V21_PR_F_POSITIVE_PORTFOLIO_PASS_WITH_NO_FAULT_DIAGNOSIS_MISS"
+            progress.get("live_demo_terminal") is not None
             or progress.get("final_engineering_terminal")
-            != "DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_NO_FAULT_DIAGNOSIS_MISS"
+            != "DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_FROZEN_AGENT_CAPABILITY_LIMITATIONS"
             or progress.get("active_branch") is not None
             or progress.get("active_pr") is not None
-            or progress.get("positive_continuation_status") != "PASS"
-            or progress.get("positive_slots_passed") != 3
+            or progress.get("positive_continuation_status") != "CONSUMED_FAILED"
+            or progress.get("ad_cpu_agent_terminal") != "FAILED"
+            or progress.get("ad_cpu_agent_failure_code")
+            != "DUPLICATE_READ_REQUEST"
+            or progress.get("ad_cpu_recovery_tested") is not False
+            or progress.get("positive_slots_attempted") != 1
+            or progress.get("positive_slots_passed") != 0
+            or progress.get("email_slot_status") != "NOT_ATTEMPTED"
+            or progress.get("product_catalog_slot_status") != "NOT_ATTEMPTED"
+            or progress.get("agent_forward_writes_observed") != 0
+            or progress.get("remaining_live_execution_authority") != 0
             or merged_prs != [50, 51, 52, 53, 54, 55]
             or re.fullmatch(r"[0-9a-f]{40}", str(progress.get("main_head"))) is None
-            or progress.get("live_report_sha256") != report.report_sha256
-            or progress.get("live_execution_code_head")
-            != report.live_execution_code_head
-            or progress.get("live_execution_scope_sha256")
-            != report.live_execution_scope_sha256
+            or progress.get("capability_closeout_report_sha256")
+            != report.report_sha256
+            or progress.get("capability_closeout_source_code_head")
+            != report.closeout_source_code_head
+            or progress.get("capability_closeout_candidate_scope_sha256")
+            != report.candidate_scope_sha256
             or disposition_sha256 != semantic_sha256(disposition)
             or disposition.get("merged_pr") != 55
             or disposition.get("merged_main_head") != progress.get("main_head")
             or disposition.get("report_sha256") != report.report_sha256
-            or disposition.get("live_execution_code_head")
-            != report.live_execution_code_head
             or disposition.get("candidate_independent_review_head")
             != disposition.get("acceptance_candidate_head")
         ):
             raise ValueError("closed PR-F progress differs from limitation closeout")
+        if run_final_verify(repository_root=root) != (
+            "DTA_V21_PR_F_POST_MERGE_FINAL_CAPABILITY_CLOSEOUT_PROJECTED"
+        ):
+            raise ValueError("closed PR-F public v4 projection differs")
     else:
         raise ValueError("master progress stage differs from PR-F protocol")
 
@@ -336,6 +380,18 @@ def verify_pr_f_protocol(
     ):
         if marker not in decisions:
             raise ValueError(f"DEC-046 is missing {marker}")
+    if decisions.count("## DEC-047 —") != 1:
+        raise ValueError("DEC-047 must appear exactly once")
+    for marker in (
+        "Frozen-Agent Capability-Limitations Closeout",
+        "AD_CPU_PLANNER_DUPLICATE_READ_PROTOCOL_FAILURE_SAFE_RESTORATION",
+        "Email service unavailable and Product Catalog service unavailable remain",
+        "NOT_ATTEMPTED",
+        "DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_FROZEN_AGENT_CAPABILITY_LIMITATIONS",
+        "bf9484483583202a198e7699d57ee92f94c8a3ed2207cac3489601542645be1e",
+    ):
+        if marker not in decisions:
+            raise ValueError(f"DEC-047 is missing {marker}")
 
     reconciliation_source = root / RECONCILIATION_SOURCE_RELATIVE
     if reconciliation_source.is_symlink() or not reconciliation_source.is_file():
@@ -366,6 +422,20 @@ def verify_pr_f_protocol(
         if marker not in capability_text:
             raise ValueError(f"PR-F capability-closeout source is missing {marker}")
 
+    final_source = root / FINAL_CLOSEOUT_SOURCE_RELATIVE
+    if final_source.is_symlink() or not final_source.is_file():
+        raise ValueError("PR-F final-closeout source is missing or unsafe")
+    final_text = final_source.read_text(encoding="utf-8")
+    for marker in (
+        "dta-v21.pr-f-ad-cpu-planner-protocol-failure.v1",
+        "AD_CPU_PLANNER_DUPLICATE_READ_PROTOCOL_FAILURE_SAFE_RESTORATION",
+        "dta-v21.pr-f-frozen-agent-capability-closeout.v1",
+        "BLOCKED_DTA_V21_PRF_LIVE_EXECUTION_CLOSED",
+        "DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_FROZEN_AGENT_CAPABILITY_LIMITATIONS",
+    ):
+        if marker not in final_text:
+            raise ValueError(f"PR-F final-closeout source is missing {marker}")
+
     _verify_capability_frozen_scope(root)
 
     verify_public_held_out_report_v21(
@@ -391,6 +461,7 @@ def verify_pr_f_protocol(
     )
 
     for relative in (
+        "docs/results/dta-v21-live-capability-closeout.md",
         "docs/results/dta-v21-live-demo.md",
         "docs/results/dta-v21-live-demo-human-brief.md",
         "docs/results/dta-v21-final-summary.md",
@@ -408,6 +479,11 @@ def verify_pr_f_protocol(
             repository_root=root,
             private_root=private_root,
         )
+        final_record = Path(private_root) / FINAL_CLOSEOUT_RELATIVE_V1
+        if final_record.exists() or final_record.is_symlink():
+            verify_final_capability_closeout_v1(
+                repository_root=root, private_root=private_root
+            )
     return protocol
 
 

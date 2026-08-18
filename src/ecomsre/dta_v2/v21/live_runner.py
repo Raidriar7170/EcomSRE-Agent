@@ -41,6 +41,9 @@ from ecomsre.dta_v2.v21.live_execution import (
     deny_no_fault_live_action_v21,
     execute_fixed_live_step_v21,
 )
+from ecomsre.dta_v2.v21.live_final_closeout import (
+    assert_prf_live_execution_open_v1,
+)
 from ecomsre.dta_v2.v21.live_owned import OwnedLiveAttemptV21
 from ecomsre.dta_v2.v21.live_protocol import (
     AdCpuResourceRecoveryProtocolV1,
@@ -233,6 +236,7 @@ def run_owned_live_attempt_v21(
 ) -> LiveAttemptClosureV21:
     """Run one exact slot and always attempt idempotent restoration and cleanup."""
 
+    assert_prf_live_execution_open_v1(private_root=prf_private_root.parent)
     spec = config.require_scenario(scenario)
     execution_lease.assert_exclusive()
     attempt_id = _attempt_id(scenario=scenario, code_head=code_head)
@@ -602,6 +606,7 @@ def run_owned_live_campaign_v21(
 ) -> LiveCampaignClosureV2:
     """Execute the exact four slots once, stopping after any failed cleanup."""
 
+    assert_prf_live_execution_open_v1(private_root=prf_private_root.parent)
     ensure_private_directory(prf_private_root / "attempts")
     write_private_json(
         prf_private_root / "master-authorization.json",
@@ -693,6 +698,7 @@ def run_owned_live_positive_continuation_v1(
 ) -> LivePositiveContinuationClosureV1:
     """Consume and execute the one Amendment-3 positive-only continuation."""
 
+    assert_prf_live_execution_open_v1(private_root=prf_private_root.parent)
     admission = verify_positive_continuation_admission_v1(
         repository_root=repository_root,
         private_root=prf_private_root.parent,

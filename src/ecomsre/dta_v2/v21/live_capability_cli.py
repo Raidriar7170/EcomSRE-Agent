@@ -42,6 +42,9 @@ from ecomsre.dta_v2.v21.live_capability_reporting import (
     verify_public_live_report_v3,
     verify_public_text_v3,
 )
+from ecomsre.dta_v2.v21.live_final_closeout import (
+    assert_prf_live_execution_open_v1,
+)
 from ecomsre.dta_v2.v21.live_cli import (
     _execution_scope_sha256,
     _git,
@@ -227,6 +230,7 @@ def run_positive_preflight(
     provider_env_path: Path,
     exact_head_ci_sha: str,
 ) -> PositiveContinuationReadinessV3:
+    assert_prf_live_execution_open_v1(private_root=private_root)
     root = repository_root.resolve(strict=True)
     private = private_root.resolve(strict=True)
     base_value = run_preflight(
@@ -294,6 +298,7 @@ def run_positive_preflight(
 def run_record_positive_review(
     *, repository_root: Path, private_root: Path, reviewer: str
 ) -> PositiveContinuationReviewV1:
+    assert_prf_live_execution_open_v1(private_root=private_root)
     root = repository_root.resolve(strict=True)
     if _git(root, "status", "--porcelain=v1", "--untracked-files=all"):
         raise ValueError("positive review requires an exactly clean worktree")
@@ -314,6 +319,7 @@ def run_record_positive_review(
 def run_positive_admit(
     *, repository_root: Path, private_root: Path
 ):
+    assert_prf_live_execution_open_v1(private_root=private_root)
     root = repository_root.resolve(strict=True)
     private = private_root.resolve(strict=True)
     head = _git(root, "rev-parse", "HEAD")
@@ -366,6 +372,7 @@ def run_positive_admit(
 def run_positive_execute(
     *, repository_root: Path, private_root: Path, provider_env_path: Path
 ) -> None:
+    assert_prf_live_execution_open_v1(private_root=private_root)
     if os.environ.get("DTA_V21_POSITIVE_CONTINUATION_EXECUTE") != (
         _EXECUTION_CONFIRMATION
     ):
@@ -608,6 +615,7 @@ def _verify_public_git_path_modes_v3(root: Path) -> None:
 def run_positive_report(
     *, repository_root: Path, private_root: Path
 ) -> PublicLiveReportV3:
+    assert_prf_live_execution_open_v1(private_root=private_root)
     root = repository_root.resolve(strict=True)
     private = private_root.resolve(strict=True)
     _allow_only_resumable_positive_report_delta(root)

@@ -515,7 +515,7 @@ def test_positive_runner_stops_after_first_failed_positive_slot(
     assert observed == [LiveScenarioV21.AD_CPU_SATURATION]
 
 
-def test_exact_private_no_fault_miss_is_eligible_without_relabeling() -> None:
+def test_exact_private_no_fault_miss_remains_eligible_after_positive_failure() -> None:
     configured = os.environ.get("DTA_V21_ACCEPTED_PRIVATE_ROOT")
     if configured is None:
         pytest.skip("DTA_V21_ACCEPTED_PRIVATE_ROOT is not configured")
@@ -523,7 +523,7 @@ def test_exact_private_no_fault_miss_is_eligible_without_relabeling() -> None:
     record = verify_no_fault_capability_miss_eligibility_v1(
         repository_root=REPO_ROOT,
         private_root=Path(configured),
-        require_no_positive_attempts=True,
+        require_no_positive_attempts=False,
     )
 
     assert record.classification == (

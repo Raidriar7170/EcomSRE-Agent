@@ -22,6 +22,9 @@ from ecomsre.dta_v2.v21.live_contracts import (
     load_live_demo_config_v21,
 )
 from ecomsre.dta_v2.v21.live_execution import LiveMasterAuthorizationV21
+from ecomsre.dta_v2.v21.live_final_closeout import (
+    assert_prf_live_execution_open_v1,
+)
 from ecomsre.dta_v2.v21.live_protocol import (
     load_ad_cpu_resource_recovery_protocol_v1,
     verify_accepted_ad_cpu_calibration_binding,
@@ -347,6 +350,7 @@ def _verify_execution_lease_is_free(prf_root: Path) -> None:
 def run_reconcile(*, repository_root: Path, private_root: Path) -> dict[str, object]:
     """Create the one append-only reconciliation after fresh read-only checks."""
 
+    assert_prf_live_execution_open_v1(private_root=private_root)
     root = repository_root.resolve(strict=True)
     private = private_root.resolve(strict=True)
     prf = private / "pr-f"
@@ -430,6 +434,7 @@ def run_record_retry_review(
 def run_retry_admit(
     *, repository_root: Path, private_root: Path
 ) -> dict[str, object]:
+    assert_prf_live_execution_open_v1(private_root=private_root)
     root = repository_root.resolve(strict=True)
     private = private_root.resolve(strict=True)
     head = _git(root, "rev-parse", "HEAD")
@@ -468,6 +473,7 @@ def run_preflight(
     provider_env_path: Path,
     exact_head_ci_sha: str,
 ) -> dict[str, object]:
+    assert_prf_live_execution_open_v1(private_root=private_root)
     root = repository_root.resolve(strict=True)
     private = private_root.resolve(strict=True)
     if private.is_relative_to(root):
@@ -679,6 +685,7 @@ def _load_exact_readiness(
 def run_execute(
     *, repository_root: Path, private_root: Path, provider_env_path: Path
 ) -> None:
+    assert_prf_live_execution_open_v1(private_root=private_root)
     root = repository_root.resolve(strict=True)
     private = private_root.resolve(strict=True)
     if os.environ.get("DTA_V21_LIVE_EXECUTE") != _EXECUTION_CONFIRMATION:
@@ -1041,6 +1048,7 @@ def _verify_closeout_surfaces(
 
 
 def run_report(*, repository_root: Path, private_root: Path) -> None:
+    assert_prf_live_execution_open_v1(private_root=private_root)
     root = repository_root.resolve(strict=True)
     private = private_root.resolve(strict=True)
     verify_private_tree_permissions(private / "pr-f")
