@@ -22,6 +22,7 @@ from ecomsre.dta_v2.v21.live_contracts import (
     LIVE_CAMPAIGN_ORDER_V21,
     LiveCampaignClosureV21,
     LiveReadinessV21,
+    LiveReadinessV2,
     LiveScenarioV21,
     load_live_demo_config_v21,
 )
@@ -30,6 +31,7 @@ from ecomsre.dta_v2.v21.live_owned import OwnedLiveAttemptV21
 from ecomsre.dta_v2.v21.live_protocol import (
     load_ad_cpu_resource_recovery_protocol_v1,
 )
+from ecomsre.dta_v2.v21.live_reconciliation import ResolvedComposeIdentityV1
 from ecomsre.dta_v2.v21.live_reporting import (
     PublicAdRecoveryWindowV21,
     PublicServiceRecoveryWindowV21,
@@ -91,6 +93,76 @@ def _readiness(
         private_permissions="0700_DIRECTORIES_0600_FILES",
         master_authorization_sha256=master.authorization_sha256,
     )
+
+
+def _runner_readiness(
+    *, code_head: str, master: LiveMasterAuthorizationV21, flagd: Path
+) -> tuple[LiveReadinessV2, ResolvedComposeIdentityV1, dict[str, object], Path]:
+    identity_payload: dict[str, object] = {
+        "schema_version": "dta-v21.pr-f-resolved-compose-identity.v1",
+        "raw_compose_sha256": "1" * 64,
+        "execution_compose_sha256": "3" * 64,
+        "normalization_policy_id": (
+            "DTA_V21_PRF_ATTEMPT_LOCAL_FLAGD_BIND_SOURCE_V1"
+        ),
+        "normalized_bind_count": 2,
+        "normalized_bindings": (
+            {
+                "service": "flagd",
+                "mount_type": "bind",
+                "target": "/etc/flagd",
+                "read_only": True,
+                "json_pointer": "/services/flagd/volumes/0/source",
+                "normalized_source": (
+                    "private://dta-v21-prf/attempt-local-flagd"
+                ),
+            },
+            {
+                "service": "flagd-ui",
+                "mount_type": "bind",
+                "target": "/app/data",
+                "read_only": False,
+                "json_pointer": "/services/flagd-ui/volumes/0/source",
+                "normalized_source": (
+                    "private://dta-v21-prf/attempt-local-flagd"
+                ),
+            },
+        ),
+        "raw_flagd_source_sha256": "4" * 64,
+        "raw_flagd_ui_source_sha256": "4" * 64,
+        "resolved_service_inventory_sha256": "5" * 64,
+    }
+    identity = ResolvedComposeIdentityV1.model_validate(
+        {**identity_payload, "identity_sha256": semantic_sha256(identity_payload)}
+    )
+    config = _config()
+    readiness = LiveReadinessV2.build(
+        terminal="DTA_V21_PR_F_PRELIVE_READY",
+        readiness_attempt_id="readiness-0001",
+        code_head=code_head,
+        exact_head_ci_success=True,
+        exact_head_ci_run_id=123,
+        exact_head_ci_run_url="https://github.com/example/repo/actions/runs/123",
+        branch="codex/dta-v21-p0-pr-f-live-closeout",
+        origin_main_is_ancestor=True,
+        protocol_sha256=_protocol().protocol_sha256,
+        live_config_sha256=config.config_sha256,
+        planner_identity_sha256=config.planner_identity_sha256,
+        provider_model=config.provider_model,
+        pr_e_claim="DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED",
+        docker_boundary="LOCAL_UNIX_DOCKER",
+        raw_compose_sha256=identity.raw_compose_sha256,
+        execution_compose_sha256=identity.execution_compose_sha256,
+        compose_identity_sha256=identity.identity_sha256,
+        normalization_policy_id=identity.normalization_policy_id,
+        baseline_flag_document_sha256="2" * 64,
+        owned_resource_collisions=0,
+        required_ports_available=True,
+        cleanup_readiness="OWNED_SCOPE_ADMITTED",
+        private_permissions="0700_DIRECTORIES_0600_FILES",
+        master_authorization_sha256=master.authorization_sha256,
+    )
+    return readiness, identity, {}, flagd
 
 
 def test_live_verify_is_safe_and_pending_without_public_live_evidence(
@@ -586,6 +658,12 @@ def test_start_failure_still_attempts_restoration_and_owned_cleanup(
     )
     private = tmp_path / "private"
     private.mkdir(mode=0o700)
+    master = LiveMasterAuthorizationV21.build(
+        issued_at=datetime(2026, 8, 18, tzinfo=timezone.utc)
+    )
+    readiness, identity, raw_compose, flagd = _runner_readiness(
+        code_head="f" * 40, master=master, flagd=tmp_path / "flagd"
+    )
 
     with pytest.raises(LiveCampaignBlockedV21, match="BLOCKED_DTA_V21_PRF_SAFETY"):
         with LiveExecutionLeaseV21(private) as execution_lease:
@@ -597,15 +675,11 @@ def test_start_failure_still_attempts_restoration_and_owned_cleanup(
                 scenario=LiveScenarioV21.NO_FAULT,
                 registry=load_default_runbook_registry(REPO_ROOT),
                 protocol=_protocol(),
-                master_authorization=LiveMasterAuthorizationV21.build(
-                    issued_at=datetime(2026, 8, 18, tzinfo=timezone.utc)
-                ),
-                readiness=_readiness(
-                    code_head="f" * 40,
-                    master=LiveMasterAuthorizationV21.build(
-                        issued_at=datetime(2026, 8, 18, tzinfo=timezone.utc)
-                    ),
-                ),
+                master_authorization=master,
+                readiness=readiness,
+                readiness_identity=identity,
+                readiness_raw_compose=raw_compose,
+                readiness_flagd_directory=flagd,
                 code_head="f" * 40,
                 execution_lease=execution_lease,
             )
@@ -686,7 +760,17 @@ def test_campaign_closures_are_immutable_and_code_head_qualified(
     monkeypatch.setattr(
         "ecomsre.dta_v2.v21.live_runner.run_owned_live_attempt_v21", fake_attempt
     )
+    monkeypatch.setattr(
+        "ecomsre.dta_v2.v21.live_runner.consume_retry_admission_v1",
+        lambda **_values: SimpleNamespace(
+            retry_admission_sha256="9" * 64,
+            consumption_sha256="a" * 64,
+        ),
+    )
     for code_head in ("a" * 40, "b" * 40):
+        readiness, identity, raw_compose, flagd = _runner_readiness(
+            code_head=code_head, master=master, flagd=tmp_path / "flagd"
+        )
         run_owned_live_campaign_v21(
             repository_root=REPO_ROOT,
             prf_private_root=private,
@@ -695,7 +779,10 @@ def test_campaign_closures_are_immutable_and_code_head_qualified(
             registry=load_default_runbook_registry(REPO_ROOT),
             protocol=_protocol(),
             master_authorization=master,
-            readiness=_readiness(code_head=code_head, master=master),
+            readiness=readiness,
+            readiness_identity=identity,
+            readiness_raw_compose=raw_compose,
+            readiness_flagd_directory=flagd,
             code_head=code_head,
         )
 
@@ -741,6 +828,12 @@ def test_restoration_failure_still_attempts_cleanup_and_persists_terminal(
     )
     private = tmp_path / "private"
     private.mkdir(mode=0o700)
+    master = LiveMasterAuthorizationV21.build(
+        issued_at=datetime(2026, 8, 18, tzinfo=timezone.utc)
+    )
+    readiness, identity, raw_compose, flagd = _runner_readiness(
+        code_head="e" * 40, master=master, flagd=tmp_path / "flagd"
+    )
     with pytest.raises(LiveCampaignBlockedV21, match="BLOCKED_DTA_V21_PRF_SAFETY"):
         with LiveExecutionLeaseV21(private) as execution_lease:
             run_owned_live_attempt_v21(
@@ -751,15 +844,11 @@ def test_restoration_failure_still_attempts_cleanup_and_persists_terminal(
                 scenario=LiveScenarioV21.NO_FAULT,
                 registry=load_default_runbook_registry(REPO_ROOT),
                 protocol=_protocol(),
-                master_authorization=LiveMasterAuthorizationV21.build(
-                    issued_at=datetime(2026, 8, 18, tzinfo=timezone.utc)
-                ),
-                readiness=_readiness(
-                    code_head="e" * 40,
-                    master=LiveMasterAuthorizationV21.build(
-                        issued_at=datetime(2026, 8, 18, tzinfo=timezone.utc)
-                    ),
-                ),
+                master_authorization=master,
+                readiness=readiness,
+                readiness_identity=identity,
+                readiness_raw_compose=raw_compose,
+                readiness_flagd_directory=flagd,
                 code_head="e" * 40,
                 execution_lease=execution_lease,
             )
@@ -803,6 +892,12 @@ def test_prestart_failure_records_baseline_preserved_clean_cleanup(
     )
     private = tmp_path / "private"
     private.mkdir(mode=0o700)
+    master = LiveMasterAuthorizationV21.build(
+        issued_at=datetime(2026, 8, 18, tzinfo=timezone.utc)
+    )
+    readiness, identity, raw_compose, flagd = _runner_readiness(
+        code_head="d" * 40, master=master, flagd=tmp_path / "flagd"
+    )
     with pytest.raises(LiveCampaignBlockedV21):
         with LiveExecutionLeaseV21(private) as execution_lease:
             run_owned_live_attempt_v21(
@@ -813,15 +908,11 @@ def test_prestart_failure_records_baseline_preserved_clean_cleanup(
                 scenario=LiveScenarioV21.NO_FAULT,
                 registry=load_default_runbook_registry(REPO_ROOT),
                 protocol=_protocol(),
-                master_authorization=LiveMasterAuthorizationV21.build(
-                    issued_at=datetime(2026, 8, 18, tzinfo=timezone.utc)
-                ),
-                readiness=_readiness(
-                    code_head="d" * 40,
-                    master=LiveMasterAuthorizationV21.build(
-                        issued_at=datetime(2026, 8, 18, tzinfo=timezone.utc)
-                    ),
-                ),
+                master_authorization=master,
+                readiness=readiness,
+                readiness_identity=identity,
+                readiness_raw_compose=raw_compose,
+                readiness_flagd_directory=flagd,
                 code_head="d" * 40,
                 execution_lease=execution_lease,
             )

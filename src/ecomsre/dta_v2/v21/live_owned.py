@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 import http.client
+import json
 import math
 from pathlib import Path
 import secrets
@@ -42,9 +43,9 @@ from ecomsre.dta_v2.v21.live_contracts import (
     LiveBusinessBaselineWindowV21,
     LiveCurrentStateV21,
     LiveDemoConfigV21,
-    LiveEnvironmentAdmissionV21,
+    LiveEnvironmentAdmissionV2,
     LiveFaultImpactEvidenceV21,
-    LiveReadinessV21,
+    LiveReadinessV2,
     LiveScenarioSpecV21,
     LiveScenarioV21,
     ServiceRecoveryWindowV21,
@@ -61,6 +62,11 @@ from ecomsre.dta_v2.v21.live_protocol import (
     AdCpuResourceWindow,
     build_ad_cpu_business_guardrail_result,
     build_ad_cpu_resource_window,
+)
+from ecomsre.dta_v2.v21.live_reconciliation import (
+    ResolvedComposeIdentityV1,
+    build_resolved_compose_identity_v1,
+    verify_cross_context_compose_identity_v1,
 )
 from ecomsre.dta_v2.v21.owned_capture import (
     AD_CPU_FAULT_DELTA_PERCENT_MINIMUM_V21,
@@ -100,6 +106,7 @@ class OwnedLiveAttemptV21(FixedLiveControlsV21):
         *,
         repository_root: Path,
         private_root: Path,
+        accepted_private_prf_root: Path,
         attempt_id: str,
         config: LiveDemoConfigV21,
         scenario: LiveScenarioSpecV21,
@@ -111,6 +118,7 @@ class OwnedLiveAttemptV21(FixedLiveControlsV21):
     ) -> None:
         self.repository_root = Path(repository_root).resolve()
         self.private_root = Path(private_root).resolve()
+        self.accepted_private_prf_root = Path(accepted_private_prf_root).resolve()
         self.attempt_id = attempt_id
         self.config = LiveDemoConfigV21.model_validate(config.model_dump(mode="python"))
         self.scenario = LiveScenarioSpecV21.model_validate(
@@ -147,6 +155,8 @@ class OwnedLiveAttemptV21(FixedLiveControlsV21):
         self._fault_document: dict[str, object] | None = None
         self._target_identity: str | None = None
         self._unrelated_owned_drift_detected = False
+        self._admitted_raw_compose: dict[str, object] | None = None
+        self._admitted_compose_identity: ResolvedComposeIdentityV1 | None = None
 
     def _assert_exclusive(self) -> None:
         self._concurrency_guard()
@@ -167,8 +177,27 @@ class OwnedLiveAttemptV21(FixedLiveControlsV21):
             raise RuntimeError("live mitigation timestamp is unavailable")
         return self._mitigation_started_at
 
+    @property
+    def admitted_compose_identity(self) -> ResolvedComposeIdentityV1:
+        if self._admitted_compose_identity is None:
+            raise RuntimeError("live admitted Compose identity is unavailable")
+        return self._admitted_compose_identity
+
     def admit_environment(self) -> None:
         self.capture.admit()
+        admitted_path = self.private_root / "control/resolved-compose.json"
+        raw_value = json.loads(admitted_path.read_text(encoding="utf-8"))
+        if not isinstance(raw_value, dict):
+            raise ValueError("admitted live Compose document is not an object")
+        environment = self.capture._environment()
+        self._admitted_raw_compose = raw_value
+        self._admitted_compose_identity = build_resolved_compose_identity_v1(
+            raw_value,
+            expected_flagd_directory=environment.flagd_directory,
+            accepted_private_prf_root=self.accepted_private_prf_root,
+            repository_root=self.repository_root,
+            raw_contract_verifier=environment._verify_resolved_contract,
+        )
         values = load_private_provider_env(self.provider_env_path)
         provider_config = OpenAICompatibleConfig.from_environment(values)
         if (
@@ -220,17 +249,46 @@ class OwnedLiveAttemptV21(FixedLiveControlsV21):
         self._require_non_owned_unchanged()
 
     def environment_admission(
-        self, *, readiness: LiveReadinessV21
-    ) -> LiveEnvironmentAdmissionV21:
+        self,
+        *,
+        readiness: LiveReadinessV2,
+        readiness_raw_compose: dict[str, object],
+        readiness_identity: ResolvedComposeIdentityV1,
+        readiness_flagd_directory: Path,
+    ) -> LiveEnvironmentAdmissionV2:
         """Bind the live attempt to the exact preflight and owned read authority."""
 
         self._assert_exclusive()
         backend = self._refresh_backend()
         environment = self.capture._environment()
-        resolved, _ = environment.resolve()
+        _resolved, fresh_raw = environment.resolve()
+        fresh_identity = build_resolved_compose_identity_v1(
+            fresh_raw,
+            expected_flagd_directory=environment.flagd_directory,
+            accepted_private_prf_root=self.accepted_private_prf_root,
+            repository_root=self.repository_root,
+            raw_contract_verifier=environment._verify_resolved_contract,
+        )
+        admitted_identity = self._admitted_compose_identity
+        admitted_raw = self._admitted_raw_compose
+        if admitted_identity is None or admitted_raw is None:
+            raise RuntimeError("live admitted Compose identity is unavailable")
+        if fresh_identity != admitted_identity:
+            raise RuntimeError("same-context live Compose identities differ")
+        verify_cross_context_compose_identity_v1(
+            first_raw=readiness_raw_compose,
+            first_identity=readiness_identity,
+            first_expected_flagd_directory=readiness_flagd_directory,
+            second_raw=admitted_raw,
+            second_identity=admitted_identity,
+            second_expected_flagd_directory=environment.flagd_directory,
+        )
         baseline_flag_sha256 = self.capture._flags().verify(self.capture._baseline())
         if (
-            resolved.compose_sha256 != readiness.resolved_compose_sha256
+            fresh_identity.raw_compose_sha256 != admitted_identity.raw_compose_sha256
+            or fresh_identity.execution_compose_sha256
+            != readiness.execution_compose_sha256
+            or readiness.compose_identity_sha256 != readiness_identity.identity_sha256
             or baseline_flag_sha256 != readiness.baseline_flag_document_sha256
         ):
             raise RuntimeError("live environment differs from exact-head readiness")
@@ -256,13 +314,16 @@ class OwnedLiveAttemptV21(FixedLiveControlsV21):
         )
         if any(item is None for item in required):
             raise RuntimeError("live environment authority is incomplete")
-        return LiveEnvironmentAdmissionV21.build(
+        return LiveEnvironmentAdmissionV2.build(
             run_id=self.run_id,
             attempt_id=self.attempt_id,
             scenario=self.scenario.scenario,
             code_head=readiness.code_head,
             readiness_sha256=readiness.readiness_sha256,
-            resolved_compose_sha256=resolved.compose_sha256,
+            raw_compose_sha256=fresh_identity.raw_compose_sha256,
+            execution_compose_sha256=fresh_identity.execution_compose_sha256,
+            compose_identity_sha256=fresh_identity.identity_sha256,
+            normalization_policy_id=fresh_identity.normalization_policy_id,
             baseline_flag_document_sha256=baseline_flag_sha256,
             docker_boundary="LOCAL_UNIX_DOCKER",
             daemon_identity_sha256=cast(str, authority.daemon_identity_sha256),
@@ -454,7 +515,7 @@ class OwnedLiveAttemptV21(FixedLiveControlsV21):
         )
 
     def capture_baseline(
-        self, *, environment_admission: LiveEnvironmentAdmissionV21
+        self, *, environment_admission: LiveEnvironmentAdmissionV2
     ) -> LiveBaselineEvidenceV21:
         started_at = datetime.now(timezone.utc)
         self._verify_exact_baseline_read_only()
@@ -589,7 +650,7 @@ class OwnedLiveAttemptV21(FixedLiveControlsV21):
     def verify_fault_impact(
         self,
         *,
-        environment_admission: LiveEnvironmentAdmissionV21,
+        environment_admission: LiveEnvironmentAdmissionV2,
         baseline: LiveBaselineEvidenceV21,
     ) -> LiveFaultImpactEvidenceV21:
         scenario = self.scenario.scenario

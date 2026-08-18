@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime, timezone
+import fcntl
 import hashlib
 import json
 import os
@@ -17,13 +18,26 @@ from ecomsre.dta_v2.v21.agent_contracts import AgentArmV21
 from ecomsre.dta_v2.v21.agent_provider import OpenAICompatibleDtaAgentProviderV21
 from ecomsre.dta_v2.v21.contracts import semantic_sha256
 from ecomsre.dta_v2.v21.live_contracts import (
-    LiveReadinessV21,
+    LiveReadinessV2,
     load_live_demo_config_v21,
 )
 from ecomsre.dta_v2.v21.live_execution import LiveMasterAuthorizationV21
 from ecomsre.dta_v2.v21.live_protocol import (
     load_ad_cpu_resource_recovery_protocol_v1,
     verify_accepted_ad_cpu_calibration_binding,
+)
+from ecomsre.dta_v2.v21.live_reconciliation import (
+    BLOCKED_ATTEMPT_ID_V1,
+    BLOCKED_CODE_HEAD_V1,
+    CurrentResourceQuiescenceV1,
+    IndependentRetryReviewV1,
+    ResolvedComposeIdentityV1,
+    build_resolved_compose_identity_v1,
+    verify_post_terminal_reconciliation_v1,
+    verify_retry_admission_v1,
+    write_independent_retry_review_v1,
+    write_post_terminal_reconciliation_v1,
+    write_retry_admission_v1,
 )
 from ecomsre.dta_v2.v21.live_reporting import (
     PublicLiveReportV21,
@@ -40,13 +54,17 @@ from ecomsre.dta_v2.v21.registry import load_default_runbook_registry
 from ecomsre.model.gateway import OpenAICompatibleConfig
 from ecomsre_live_sandbox.contracts import (
     ensure_private_directory,
+    load_bundle,
     verify_private_tree_permissions,
     write_private_json,
 )
-from ecomsre_live_sandbox.environment import ExactCommandRunner
+from ecomsre_live_sandbox.environment import ExactCommandRunner, SandboxEnvironment
 
 
 _EXECUTION_CONFIRMATION = "USER_EXPLICIT_DTA_V21_PRF_RESOURCE_RECOVERY_AMENDMENT"
+_RETRY_EXECUTION_CONFIRMATION = (
+    "USER_EXPLICIT_DTA_V21_PRF_APPEND_ONLY_RECONCILIATION_AND_ONE_RETRY"
+)
 _FINAL_REVIEW_CONFIRMATION = "MUST_FIX_0_CLAIM_ACCURACY_PASS"
 _COMMAND_RUNNER = ExactCommandRunner()
 _ModelT = TypeVar("_ModelT", bound=BaseModel)
@@ -311,6 +329,138 @@ def _claim_readiness_attempt(head_root: Path) -> tuple[str, Path]:
     raise ValueError("exact-head readiness attempt space is exhausted")
 
 
+def _verify_execution_lease_is_free(prf_root: Path) -> None:
+    path = prf_root / "execution.lock"
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("PR-F execution lease file is missing or unsafe")
+    descriptor = os.open(path, os.O_RDWR)
+    try:
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as error:
+            raise ValueError("PR-F execution lease is held") from error
+        fcntl.flock(descriptor, fcntl.LOCK_UN)
+    finally:
+        os.close(descriptor)
+
+
+def run_reconcile(*, repository_root: Path, private_root: Path) -> dict[str, object]:
+    """Create the one append-only reconciliation after fresh read-only checks."""
+
+    root = repository_root.resolve(strict=True)
+    private = private_root.resolve(strict=True)
+    prf = private / "pr-f"
+    if private.is_relative_to(root):
+        raise ValueError("PR-F private evidence must remain outside the repository")
+    if _git(root, "status", "--porcelain=v1", "--untracked-files=all"):
+        raise ValueError("PR-F reconciliation requires an exactly clean worktree")
+    verify_private_tree_permissions(prf)
+    protocol = load_ad_cpu_resource_recovery_protocol_v1(
+        root / "config/dta-v21/live/ad-cpu-resource-recovery.v1.json"
+    )
+    verify_accepted_ad_cpu_calibration_binding(
+        protocol=protocol, repository_root=root, private_root=private
+    )
+    _verify_private_protocol_freeze(
+        private_root=private, protocol_sha256=protocol.protocol_sha256
+    )
+    _verify_frozen_private_pr_e(private)
+    _verify_execution_lease_is_free(prf)
+
+    probe_root = prf / "reconciliations" / BLOCKED_ATTEMPT_ID_V1 / "quiescence-probe"
+    flagd_directory = probe_root / "flagd"
+    ensure_private_directory(flagd_directory)
+    environment = SandboxEnvironment(
+        repository_root=root,
+        bundle=load_bundle(
+            root / "config/live-telemetry-controlled-remediation-v1"
+        ),
+        flagd_directory=flagd_directory,
+    )
+    environment.verify_local_docker()
+    environment.verify_upstream()
+    environment.resolve()
+    counts = environment.verify_owned_resources(require_complete=False)
+    if counts != {"container": 0, "network": 0, "volume": 0}:
+        raise ValueError("BLOCKED_DTA_V21_PRF_RECONCILIATION_QUIESCENCE")
+    environment.verify_ports_available()
+    quiescence = CurrentResourceQuiescenceV1.build(
+        observed_at=datetime.now(timezone.utc),
+        docker_boundary="LOCAL_UNIX_DOCKER",
+        owned_container_count=0,
+        owned_network_count=0,
+        owned_volume_count=0,
+        required_ports_available=True,
+        execution_lease_held=False,
+        private_permissions_verified=True,
+        source_worktree_clean=True,
+        pr_d_frozen_bindings_verified=True,
+        pr_e_frozen_bindings_verified=True,
+    )
+    record = write_post_terminal_reconciliation_v1(
+        repository_root=root, private_root=private, quiescence=quiescence
+    )
+    verify_private_tree_permissions(prf)
+    return record.model_dump(mode="json")
+
+
+def run_record_retry_review(
+    *, repository_root: Path, private_root: Path, reviewer: str
+) -> dict[str, object]:
+    root = repository_root.resolve(strict=True)
+    private = private_root.resolve(strict=True)
+    head = _git(root, "rev-parse", "HEAD")
+    if head == BLOCKED_CODE_HEAD_V1:
+        raise ValueError("independent retry review requires a corrected code HEAD")
+    if _git(root, "status", "--porcelain=v1", "--untracked-files=all"):
+        raise ValueError("independent retry review recording requires a clean worktree")
+    review = IndependentRetryReviewV1.build(
+        code_head=head,
+        reviewer=reviewer,
+        reviewed_at=datetime.now(timezone.utc),
+        must_fix_count=0,
+        should_fix_count=0,
+        claim_accuracy="PASS",
+    )
+    write_independent_retry_review_v1(private_root=private, review=review)
+    verify_private_tree_permissions(private / "pr-f")
+    return review.model_dump(mode="json")
+
+
+def run_retry_admit(
+    *, repository_root: Path, private_root: Path
+) -> dict[str, object]:
+    root = repository_root.resolve(strict=True)
+    private = private_root.resolve(strict=True)
+    head = _git(root, "rev-parse", "HEAD")
+    if head == BLOCKED_CODE_HEAD_V1:
+        raise ValueError("retry admission requires a new code HEAD")
+    _git(root, "merge-base", "--is-ancestor", BLOCKED_CODE_HEAD_V1, head)
+    if _git(root, "status", "--porcelain=v1", "--untracked-files=all"):
+        raise ValueError("retry admission requires an exactly clean worktree")
+    _load_exact_readiness(repository_root=root, private_root=private)
+    verify_post_terminal_reconciliation_v1(
+        repository_root=root, private_root=private
+    )
+    admission = write_retry_admission_v1(
+        repository_root=root,
+        private_root=private,
+        new_code_head=head,
+    )
+    verify_private_tree_permissions(private / "pr-f")
+    return admission.model_dump(mode="json")
+
+
+def run_verify_reconciliation(
+    *, repository_root: Path, private_root: Path
+) -> dict[str, object]:
+    record, _quiescence = verify_post_terminal_reconciliation_v1(
+        repository_root=repository_root.resolve(strict=True),
+        private_root=private_root.resolve(strict=True),
+    )
+    return record.model_dump(mode="json")
+
+
 def run_preflight(
     *,
     repository_root: Path,
@@ -333,6 +483,7 @@ def run_preflight(
     ):
         raise ValueError("PR-F preflight branch differs")
     _git(root, "merge-base", "--is-ancestor", "origin/main", "HEAD")
+    _git(root, "merge-base", "--is-ancestor", BLOCKED_CODE_HEAD_V1, "HEAD")
     protocol = load_ad_cpu_resource_recovery_protocol_v1(
         root / "config/dta-v21/live/ad-cpu-resource-recovery.v1.json"
     )
@@ -386,7 +537,27 @@ def run_preflight(
         if any(environment.verify_owned_resources(require_complete=False).values()):
             raise ValueError("owned PR-F resources already exist before live execution")
         environment.verify_ports_available()
-        resolved, _ = environment.resolve()
+        admitted_compose_path = (
+            readiness_attempt_root / "owned-preflight/control/resolved-compose.json"
+        )
+        admitted_raw = _read_json(admitted_compose_path)
+        admitted_identity = build_resolved_compose_identity_v1(
+            admitted_raw,
+            expected_flagd_directory=environment.flagd_directory,
+            accepted_private_prf_root=private / "pr-f",
+            repository_root=root,
+            raw_contract_verifier=environment._verify_resolved_contract,
+        )
+        _resolved, fresh_raw = environment.resolve()
+        fresh_identity = build_resolved_compose_identity_v1(
+            fresh_raw,
+            expected_flagd_directory=environment.flagd_directory,
+            accepted_private_prf_root=private / "pr-f",
+            repository_root=root,
+            raw_contract_verifier=environment._verify_resolved_contract,
+        )
+        if admitted_identity != fresh_identity:
+            raise ValueError("same-context preflight Compose identities differ")
         baseline_sha = semantic_sha256(capture._baseline())
         master_path = private / "pr-f/master-authorization.json"
         if master_path.exists() or master_path.is_symlink():
@@ -396,7 +567,7 @@ def run_preflight(
                 issued_at=datetime.now(timezone.utc)
             )
             write_private_json(master_path, master, create_once=True)
-        record = LiveReadinessV21.build(
+        record = LiveReadinessV2.build(
             terminal="DTA_V21_PR_F_PRELIVE_READY",
             readiness_attempt_id=readiness_attempt_id,
             code_head=head,
@@ -411,7 +582,10 @@ def run_preflight(
             provider_model=config.provider_model,
             pr_e_claim="DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED",
             docker_boundary="LOCAL_UNIX_DOCKER",
-            resolved_compose_sha256=resolved.compose_sha256,
+            raw_compose_sha256=admitted_identity.raw_compose_sha256,
+            execution_compose_sha256=admitted_identity.execution_compose_sha256,
+            compose_identity_sha256=admitted_identity.identity_sha256,
+            normalization_policy_id=admitted_identity.normalization_policy_id,
             baseline_flag_document_sha256=baseline_sha,
             owned_resource_collisions=0,
             required_ports_available=True,
@@ -421,6 +595,11 @@ def run_preflight(
         )
         write_private_json(
             readiness_attempt_root / "readiness.json", record, create_once=True
+        )
+        write_private_json(
+            readiness_attempt_root / "compose-identity.json",
+            admitted_identity,
+            create_once=True,
         )
         write_private_json(readiness_root / "readiness.json", record, create_once=True)
         verify_private_tree_permissions(private / "pr-f")
@@ -445,7 +624,13 @@ def run_preflight(
 
 def _load_exact_readiness(
     *, repository_root: Path, private_root: Path
-) -> tuple[LiveMasterAuthorizationV21, LiveReadinessV21]:
+) -> tuple[
+    LiveMasterAuthorizationV21,
+    LiveReadinessV2,
+    ResolvedComposeIdentityV1,
+    dict[str, object],
+    Path,
+]:
     head = _git(repository_root, "rev-parse", "HEAD")
     config = load_live_demo_config_v21(
         repository_root / "config/dta-v21/live/live-demo.v1.json"
@@ -454,11 +639,19 @@ def _load_exact_readiness(
         repository_root / "config/dta-v21/live/ad-cpu-resource-recovery.v1.json"
     )
     readiness_root = private_root / "pr-f/readiness" / head
-    readiness = _read_model(readiness_root / "readiness.json", LiveReadinessV21)
+    readiness = _read_model(readiness_root / "readiness.json", LiveReadinessV2)
+    attempt_root = readiness_root / "attempts" / readiness.readiness_attempt_id
     attempt_copy = _read_model(
-        readiness_root / "attempts" / readiness.readiness_attempt_id / "readiness.json",
-        LiveReadinessV21,
+        attempt_root / "readiness.json",
+        LiveReadinessV2,
     )
+    identity = _read_model(
+        attempt_root / "compose-identity.json", ResolvedComposeIdentityV1
+    )
+    raw_compose = _read_json(
+        attempt_root / "owned-preflight/control/resolved-compose.json"
+    )
+    flagd_directory = attempt_root / "owned-preflight/runtime/flagd"
     master = _read_model(
         private_root / "pr-f/master-authorization.json",
         LiveMasterAuthorizationV21,
@@ -474,9 +667,13 @@ def _load_exact_readiness(
         or readiness.planner_identity_sha256 != config.planner_identity_sha256
         or readiness.provider_model != config.provider_model
         or readiness.master_authorization_sha256 != master.authorization_sha256
+        or readiness.raw_compose_sha256 != identity.raw_compose_sha256
+        or readiness.execution_compose_sha256 != identity.execution_compose_sha256
+        or readiness.compose_identity_sha256 != identity.identity_sha256
+        or semantic_sha256(raw_compose) != readiness.raw_compose_sha256
     ):
         raise ValueError("PR-F readiness record differs from exact HEAD")
-    return master, readiness
+    return master, readiness, identity, raw_compose, flagd_directory
 
 
 def run_execute(
@@ -486,6 +683,8 @@ def run_execute(
     private = private_root.resolve(strict=True)
     if os.environ.get("DTA_V21_LIVE_EXECUTE") != _EXECUTION_CONFIRMATION:
         raise ValueError("DTA v2.1 live execution confirmation is missing")
+    if os.environ.get("DTA_V21_RETRY_EXECUTE") != _RETRY_EXECUTION_CONFIRMATION:
+        raise ValueError("DTA v2.1 one-retry execution confirmation is missing")
     if private.is_relative_to(root):
         raise ValueError("PR-F private evidence must remain outside the repository")
     verify_private_tree_permissions(private / "pr-f")
@@ -496,8 +695,11 @@ def run_execute(
     ):
         raise ValueError("PR-F live execution branch differs")
     _git(root, "merge-base", "--is-ancestor", "origin/main", "HEAD")
-    master, readiness = _load_exact_readiness(
+    _git(root, "merge-base", "--is-ancestor", BLOCKED_CODE_HEAD_V1, "HEAD")
+    master, readiness, readiness_identity, readiness_raw, readiness_flagd = (
+        _load_exact_readiness(
         repository_root=root, private_root=private
+        )
     )
     config = load_live_demo_config_v21(root / "config/dta-v21/live/live-demo.v1.json")
     protocol = load_ad_cpu_resource_recovery_protocol_v1(
@@ -513,6 +715,11 @@ def run_execute(
     )
     _verify_frozen_private_pr_e(private)
     head = _git(root, "rev-parse", "HEAD")
+    verify_retry_admission_v1(
+        repository_root=root,
+        private_root=private,
+        new_code_head=head,
+    )
     run_owned_live_campaign_v21(
         repository_root=root,
         prf_private_root=private / "pr-f",
@@ -522,6 +729,9 @@ def run_execute(
         protocol=protocol,
         master_authorization=master,
         readiness=readiness,
+        readiness_identity=readiness_identity,
+        readiness_raw_compose=readiness_raw,
+        readiness_flagd_directory=readiness_flagd,
         code_head=head,
     )
 
@@ -582,7 +792,12 @@ def _render_final_progress_v21(
         or value.get("current_stage") != "PR-F"
         or value.get("main_head") != "1c763eb815764e971855a5d6730981b9a2e5858a"
         or value.get("active_branch") != "codex/dta-v21-p0-pr-f-live-closeout"
-        or value.get("active_pr") is not None
+        or value.get("active_pr") != 55
+        or value.get("active_amendment_version")
+        != "dta-v21-p0-prf-compose-identity-reconciliation-v1"
+        or value.get("active_amendment_sha256")
+        != "ea6740bce0ba63e093cda2807aea886d4ca48907702a2bf41ad1eedd0e2ab164"
+        or value.get("active_decision_id") != "DEC-045"
         or value.get("merged_prs") != [50, 51, 52, 53, 54]
         or value.get("held_out_claim") != report.held_out_claim
         or value.get("ad_cpu_resource_recovery_protocol_sha256")
@@ -611,7 +826,7 @@ def _render_final_progress_v21(
 
 def _base_disposition_payload(report: PublicLiveReportV21) -> dict[str, object]:
     return {
-        "schema_version": "dta-v21.live-disposition.v1",
+        "schema_version": "dta-v21.live-disposition.v2",
         "report_sha256": report.report_sha256,
         "protocol_sha256": report.protocol_sha256,
         "held_out_claim": report.held_out_claim,
@@ -619,11 +834,15 @@ def _base_disposition_payload(report: PublicLiveReportV21) -> dict[str, object]:
         "live_execution_scope_sha256": report.live_execution_scope_sha256,
         "readiness_sha256": report.readiness_sha256,
         "private_campaign_sha256": report.private_campaign_sha256,
-        "attempt_count": 4,
-        "failed_attempt_count": report.failed_attempt_count,
-        "all_baselines_restored": True,
-        "all_cleanup_clean": True,
-        "non_owned_changes": 0,
+        "reconciliation_sha256": report.reconciliation_sha256,
+        "retry_admission_sha256": report.retry_admission_sha256,
+        "retry_consumption_sha256": report.retry_consumption_sha256,
+        "successful_campaign_attempt_count": 4,
+        "successful_campaign_all_baselines_restored": True,
+        "successful_campaign_all_cleanup_clean": True,
+        "successful_campaign_non_owned_changes": 0,
+        "historical_blocked_attempt_count": 1,
+        "historical_all_cleanup_clean": False,
         "unsafe_proposal_attempts": 0,
         "arbitrary_shell_attempts": 0,
     }
@@ -699,7 +918,7 @@ def _recover_base_closeout_text(
             "current_stage": "PR-F",
             "main_head": "1c763eb815764e971855a5d6730981b9a2e5858a",
             "active_branch": "codex/dta-v21-p0-pr-f-live-closeout",
-            "active_pr": None,
+            "active_pr": 55,
             "merged_prs": [50, 51, 52, 53, 54],
             "live_demo_terminal": None,
             "final_engineering_terminal": None,
@@ -797,7 +1016,7 @@ def _verify_closeout_surfaces(
             "current_stage": "PR-F",
             "main_head": "1c763eb815764e971855a5d6730981b9a2e5858a",
             "active_branch": "codex/dta-v21-p0-pr-f-live-closeout",
-            "active_pr": None,
+            "active_pr": 55,
             "merged_prs": [50, 51, 52, 53, 54],
             "live_demo_terminal": None,
             "final_engineering_terminal": None,
@@ -853,6 +1072,7 @@ def run_report(*, repository_root: Path, private_root: Path) -> None:
     if not isinstance(base_progress_value, dict):
         raise ValueError("Master Progress source is not an object")
     report = build_public_live_report_v21(
+        repository_root=root,
         prf_private_root=private / "pr-f",
         protocol=protocol,
         config=config,
@@ -1149,6 +1369,19 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument("--provider-env", type=Path, required=True)
         if name == "preflight":
             command.add_argument("--exact-head-ci-sha", required=True)
+    reconcile = subparsers.add_parser("reconcile")
+    reconcile.add_argument("--repository-root", type=Path, required=True)
+    reconcile.add_argument("--private-root", type=Path, required=True)
+    review = subparsers.add_parser("record-retry-review")
+    review.add_argument("--repository-root", type=Path, required=True)
+    review.add_argument("--private-root", type=Path, required=True)
+    review.add_argument("--reviewer", required=True)
+    retry_admit = subparsers.add_parser("retry-admit")
+    retry_admit.add_argument("--repository-root", type=Path, required=True)
+    retry_admit.add_argument("--private-root", type=Path, required=True)
+    verify_reconciliation = subparsers.add_parser("verify-reconciliation")
+    verify_reconciliation.add_argument("--repository-root", type=Path, required=True)
+    verify_reconciliation.add_argument("--private-root", type=Path, required=True)
     report = subparsers.add_parser("report")
     report.add_argument("--repository-root", type=Path, required=True)
     report.add_argument("--private-root", type=Path, required=True)
@@ -1185,6 +1418,31 @@ def main(argv: Sequence[str] | None = None) -> int:
             provider_env_path=args.provider_env,
         )
         print("DTA_V21_PR_F_LIVE_PORTFOLIO_PASS")
+    elif args.command == "reconcile":
+        record = run_reconcile(
+            repository_root=args.repository_root,
+            private_root=args.private_root,
+        )
+        print(record["classification"])
+    elif args.command == "record-retry-review":
+        record = run_record_retry_review(
+            repository_root=args.repository_root,
+            private_root=args.private_root,
+            reviewer=args.reviewer,
+        )
+        print(f"MUST_FIX_{record['must_fix_count']}_CLAIM_ACCURACY_{record['claim_accuracy']}")
+    elif args.command == "retry-admit":
+        record = run_retry_admit(
+            repository_root=args.repository_root,
+            private_root=args.private_root,
+        )
+        print(record["verdict"])
+    elif args.command == "verify-reconciliation":
+        record = run_verify_reconciliation(
+            repository_root=args.repository_root,
+            private_root=args.private_root,
+        )
+        print(record["reconciliation_sha256"])
     elif args.command == "report":
         run_report(repository_root=args.repository_root, private_root=args.private_root)
         print("DTA_V21_PR_F_FINAL_ACCEPTANCE_PENDING")

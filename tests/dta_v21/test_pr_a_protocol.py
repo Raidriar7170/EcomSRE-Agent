@@ -21,18 +21,19 @@ def test_master_progress_tracks_exact_pr_f_live_stage() -> None:
             "3c91e7777395e46f088695640991c17da1f70285bd844739391346b56f168daf"
         ),
         "active_amendment_version": (
-            "dta-v21-p0-prf-ad-cpu-resource-recovery-v1"
+            "dta-v21-p0-prf-compose-identity-reconciliation-v1"
         ),
         "active_amendment_sha256": (
-            "be221d322b21d2845c135b85fb8bb26e5ecb9f56b49392760e64a050686762a9"
+            "ea6740bce0ba63e093cda2807aea886d4ca48907702a2bf41ad1eedd0e2ab164"
         ),
+        "active_decision_id": "DEC-045",
         "inspected_starting_main": ("925d23994888d1b83e57fc1bbdd1944e57a1bfff"),
         "actual_starting_main": ("925d23994888d1b83e57fc1bbdd1944e57a1bfff"),
         "completed_stage": "PR-E",
         "current_stage": "PR-F",
         "main_head": "1c763eb815764e971855a5d6730981b9a2e5858a",
         "active_branch": "codex/dta-v21-p0-pr-f-live-closeout",
-        "active_pr": None,
+        "active_pr": 55,
         "merged_prs": [50, 51, 52, 53, 54],
         "preferred_model": "gpt-5.4-2026-03-05",
         "frozen_model": "gpt-5.4-mini-2026-03-17",
@@ -58,6 +59,12 @@ def test_master_progress_tracks_exact_pr_f_live_stage() -> None:
         "ad_cpu_resource_recovery_protocol_sha256": (
             "c983b9be95b532cdbb8fb5358af92055e633fd767693e9dc65743b3e80a77517"
         ),
+        "historical_blocked_attempt_id": (
+            "dta-v21-prf-01-no-fault-422f015451fd"
+        ),
+        "historical_blocked_attempt_terminal": "BLOCKED_DTA_V21_PRF_SAFETY",
+        "historical_blocked_attempt_baseline_restored": False,
+        "historical_blocked_attempt_cleanup": "BLOCKED",
         "live_demo_terminal": None,
         "final_engineering_terminal": None,
     }
@@ -66,7 +73,7 @@ def test_master_progress_tracks_exact_pr_f_live_stage() -> None:
 def test_decision_register_contains_exact_v21_protocol_records() -> None:
     decisions = (REPO_ROOT / "docs/DECISIONS.md").read_text(encoding="utf-8")
 
-    for decision_id in range(39, 45):
+    for decision_id in range(39, 46):
         marker = f"## DEC-{decision_id:03d} —"
         assert decisions.count(marker) == 1
     assert "DEPENDENCY_LATENCY" in decisions

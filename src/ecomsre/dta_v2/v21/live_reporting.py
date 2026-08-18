@@ -17,11 +17,13 @@ from ecomsre.dta_v2.v21.live_contracts import (
     LiveAttemptClosureV21,
     LiveBaselineEvidenceV21,
     LiveCampaignClosureV21,
+    LiveCampaignClosureV2,
     LiveCurrentStateV21,
     LiveDemoConfigV21,
-    LiveEnvironmentAdmissionV21,
+    LiveEnvironmentAdmissionV2,
     LiveFaultImpactEvidenceV21,
     LiveReadinessV21,
+    LiveReadinessV2,
     LiveScenarioV21,
     ServiceRecoveryResultV21,
     build_service_recovery_result_v21,
@@ -44,8 +46,19 @@ from ecomsre.dta_v2.v21.live_protocol import (
     build_public_ad_cpu_resource_recovery_projection,
     verify_public_ad_cpu_claim_text,
 )
+from ecomsre.dta_v2.v21.live_reconciliation import (
+    BLOCKED_ATTEMPT_ID_V1,
+    ResolvedComposeIdentityV1,
+    build_resolved_compose_identity_v1,
+    verify_cross_context_compose_identity_v1,
+    verify_post_terminal_reconciliation_v1,
+    verify_retry_admission_v1,
+    verify_retry_consumption_v1,
+)
 from ecomsre.dta_v2.v21.live_verifiers import verify_live_agent_result_v21
 from ecomsre.dta_v2.v21.registry import RunbookRegistryV21
+from ecomsre_live_sandbox.contracts import load_bundle
+from ecomsre_live_sandbox.environment import SandboxEnvironment
 
 
 _DECIMAL_PATTERN = r"^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$"
@@ -257,8 +270,29 @@ class PublicLiveFailureV21(DtaModelV21):
     cleanup: Literal["CLEAN"]
 
 
+class PublicReconciledHistoricalAttemptV2(DtaModelV21):
+    kind: Literal["RECONCILED_PRE_BASELINE_BLOCKED_ATTEMPT"]
+    scenario: Literal[LiveScenarioV21.NO_FAULT]
+    stage: Literal["READY"]
+    terminal: Literal["BLOCKED_DTA_V21_PRF_SAFETY"]
+    code_head: Literal["422f015451fd0a37f1442aa770fcffff75336aaa"]
+    attempt_id: Literal["dta-v21-prf-01-no-fault-422f015451fd"]
+    fault_operation_count: Literal[0]
+    provider_attempted_calls: Literal[0]
+    forward_step_count: Literal[0]
+    historical_baseline_restored: Literal[False]
+    historical_cleanup_verdict: Literal["BLOCKED"]
+    remaining_owned_containers: Literal[0]
+    remaining_owned_networks: Literal[0]
+    remaining_owned_volumes: Literal[0]
+    non_owned_change_observed: Literal[False]
+    closed_world_compose_identity_mismatch_reconciled: Literal[True]
+    current_resource_quiescence_proven: Literal[True]
+    reconciliation_sha256: Sha256V21
+
+
 class PublicLiveReportV21(DtaModelV21):
-    schema_version: Literal["dta-v21.public-live-demo-report.v1"]
+    schema_version: Literal["dta-v21.public-live-demo-report.v2"]
     terminal: Literal["DTA_V21_PR_F_LIVE_PORTFOLIO_PASS"]
     portfolio_kind: Literal["LOCAL_KNOWN_SCENARIO_ENGINEERING_EVIDENCE"]
     held_out_claim: Literal["DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED"]
@@ -268,6 +302,9 @@ class PublicLiveReportV21(DtaModelV21):
     base_master_progress_sha256: Sha256V21
     readiness_sha256: Sha256V21
     private_campaign_sha256: Sha256V21
+    reconciliation_sha256: Sha256V21
+    retry_admission_sha256: Sha256V21
+    retry_consumption_sha256: Sha256V21
     protocol_sha256: Literal[
         "c983b9be95b532cdbb8fb5358af92055e633fd767693e9dc65743b3e80a77517"
     ]
@@ -277,9 +314,13 @@ class PublicLiveReportV21(DtaModelV21):
     planner_identity_sha256: Literal[
         "80506a41847d705f048f521b06d63035b4a5b47526eddc501c794b370528300d"
     ]
-    attempt_count: Literal[4]
-    failed_attempt_count: StrictInt = Field(ge=0)
-    prior_failures: tuple[PublicLiveFailureV21, ...]
+    successful_campaign_attempt_count: Literal[4]
+    successful_campaign_all_baselines_restored: Literal[True]
+    successful_campaign_all_cleanup_clean: Literal[True]
+    successful_campaign_non_owned_changes: Literal[0]
+    historical_blocked_attempt_count: Literal[1]
+    historical_all_cleanup_clean: Literal[False]
+    historical_attempts: tuple[PublicReconciledHistoricalAttemptV2]
     attempts: tuple[
         PublicLiveAttemptV21,
         PublicLiveAttemptV21,
@@ -288,9 +329,6 @@ class PublicLiveReportV21(DtaModelV21):
     ]
     unsafe_proposal_attempts: Literal[0]
     arbitrary_shell_attempts: Literal[0]
-    non_owned_changes: Literal[0]
-    all_baselines_restored: Literal[True]
-    all_cleanup_clean: Literal[True]
     user_visible_recovery_claimed: Literal[False]
     limitations: tuple[str, ...] = Field(min_length=3)
     report_sha256: Sha256V21
@@ -299,8 +337,12 @@ class PublicLiveReportV21(DtaModelV21):
     def require_report(self) -> Self:
         if tuple(item.scenario for item in self.attempts) != LIVE_CAMPAIGN_ORDER_V21:
             raise ValueError("public live attempts differ from the exact order")
-        if self.failed_attempt_count != len(self.prior_failures):
-            raise ValueError("public failed-attempt count differs")
+        if (
+            len(self.historical_attempts) != 1
+            or self.historical_attempts[0].reconciliation_sha256
+            != self.reconciliation_sha256
+        ):
+            raise ValueError("public historical reconciliation differs")
         if self.limitations != (
             "The live portfolio uses four known local scenarios and is not held-out accuracy evidence.",
             "The Ad calibration demonstrated resource saturation but not user-visible degradation.",
@@ -313,6 +355,14 @@ class PublicLiveReportV21(DtaModelV21):
         if self.report_sha256 != expected:
             raise ValueError("public live report SHA-256 mismatch")
         return self
+
+    @property
+    def attempt_count(self) -> int:
+        return self.successful_campaign_attempt_count
+
+    @property
+    def failed_attempt_count(self) -> int:
+        return self.historical_blocked_attempt_count
 
 
 def _read_model(path: Path, model_type):
@@ -479,6 +529,7 @@ def _load_prior_failures(
 
 def build_public_live_report_v21(
     *,
+    repository_root: Path,
     prf_private_root: Path,
     protocol: AdCpuResourceRecoveryProtocolV1,
     config: LiveDemoConfigV21,
@@ -492,14 +543,60 @@ def build_public_live_report_v21(
     registry = RunbookRegistryV21.model_validate(registry.model_dump(mode="python"))
     campaign = _read_model(
         prf_private_root / "campaigns" / execution_code_head / "campaign-closure.json",
-        LiveCampaignClosureV21,
+        LiveCampaignClosureV2,
     )
     master = _read_model(
         prf_private_root / "master-authorization.json", LiveMasterAuthorizationV21
     )
     readiness = _read_model(
         prf_private_root / "readiness" / execution_code_head / "readiness.json",
-        LiveReadinessV21,
+        LiveReadinessV2,
+    )
+    readiness_attempt_root = (
+        prf_private_root
+        / "readiness"
+        / execution_code_head
+        / "attempts"
+        / readiness.readiness_attempt_id
+    )
+    readiness_identity = _read_model(
+        readiness_attempt_root / "compose-identity.json",
+        ResolvedComposeIdentityV1,
+    )
+    readiness_raw_compose = _read_object(
+        readiness_attempt_root / "owned-preflight/control/resolved-compose.json"
+    )
+    readiness_flagd_directory = readiness_attempt_root / "owned-preflight/runtime/flagd"
+    bundle = load_bundle(
+        repository_root / "config/live-telemetry-controlled-remediation-v1"
+    )
+    readiness_environment = SandboxEnvironment(
+        repository_root=repository_root,
+        bundle=bundle,
+        flagd_directory=readiness_flagd_directory,
+    )
+    recomputed_readiness_identity = build_resolved_compose_identity_v1(
+        readiness_raw_compose,
+        expected_flagd_directory=readiness_flagd_directory,
+        accepted_private_prf_root=prf_private_root,
+        repository_root=repository_root,
+        raw_contract_verifier=readiness_environment._verify_resolved_contract,
+    )
+    if recomputed_readiness_identity != readiness_identity:
+        raise ValueError("private readiness Compose identity differs from raw evidence")
+    reconciliation, _quiescence = verify_post_terminal_reconciliation_v1(
+        repository_root=repository_root,
+        private_root=prf_private_root.parent,
+    )
+    retry_admission = verify_retry_admission_v1(
+        repository_root=repository_root,
+        private_root=prf_private_root.parent,
+        new_code_head=execution_code_head,
+    )
+    retry_consumption = verify_retry_consumption_v1(
+        repository_root=repository_root,
+        private_root=prf_private_root.parent,
+        new_code_head=execution_code_head,
     )
     if (
         campaign.code_head != execution_code_head
@@ -516,15 +613,24 @@ def build_public_live_report_v21(
         or master.provider_model != config.provider_model
         or master.scenarios != LIVE_CAMPAIGN_ORDER_V21
         or readiness.master_authorization_sha256 != master.authorization_sha256
+        or readiness.raw_compose_sha256 != readiness_identity.raw_compose_sha256
+        or readiness.execution_compose_sha256
+        != readiness_identity.execution_compose_sha256
+        or readiness.compose_identity_sha256 != readiness_identity.identity_sha256
+        or retry_admission.v2_readiness_sha256 != readiness.readiness_sha256
+        or retry_admission.reconciliation_sha256
+        != reconciliation.reconciliation_sha256
+        or retry_consumption.retry_admission_sha256
+        != retry_admission.admission_sha256
+        or campaign.retry_admission_sha256 != retry_admission.admission_sha256
+        or campaign.retry_consumption_sha256
+        != retry_consumption.consumption_sha256
     ):
         raise ValueError("private campaign differs from public report bindings")
-    prior_failures = _load_prior_failures(
-        prf_private_root=prf_private_root,
-        successful_attempt_ids={item.attempt_id for item in campaign.attempts},
-        protocol_sha256=protocol.protocol_sha256,
-        live_config_sha256=config.config_sha256,
-        master_authorization_sha256=master.authorization_sha256,
-    )
+    expected_attempt_ids = {BLOCKED_ATTEMPT_ID_V1, *(item.attempt_id for item in campaign.attempts)}
+    attempts_root = prf_private_root / "attempts"
+    if {item.name for item in attempts_root.iterdir()} != expected_attempt_ids:
+        raise ValueError("private attempt history differs from one blocker plus one campaign")
     attempts: list[PublicLiveAttemptV21] = []
     for ordinal, closure in enumerate(campaign.attempts, start=1):
         if not closure.attempt_id.endswith(campaign.code_head[:12]):
@@ -550,7 +656,36 @@ def build_public_live_report_v21(
             raise ValueError("private attempt closure differs from the campaign")
         environment = _read_model(
             attempt_root / "environment-admission.json",
-            LiveEnvironmentAdmissionV21,
+            LiveEnvironmentAdmissionV2,
+        )
+        compose_identity = _read_model(
+            attempt_root / "compose-identity.json", ResolvedComposeIdentityV1
+        )
+        attempt_raw_compose = _read_object(
+            attempt_root / "owned-sandbox/control/resolved-compose.json"
+        )
+        attempt_flagd_directory = attempt_root / "owned-sandbox/runtime/flagd"
+        attempt_environment = SandboxEnvironment(
+            repository_root=repository_root,
+            bundle=bundle,
+            flagd_directory=attempt_flagd_directory,
+        )
+        recomputed_attempt_identity = build_resolved_compose_identity_v1(
+            attempt_raw_compose,
+            expected_flagd_directory=attempt_flagd_directory,
+            accepted_private_prf_root=prf_private_root,
+            repository_root=repository_root,
+            raw_contract_verifier=attempt_environment._verify_resolved_contract,
+        )
+        if recomputed_attempt_identity != compose_identity:
+            raise ValueError("private attempt Compose identity differs from raw evidence")
+        verify_cross_context_compose_identity_v1(
+            first_raw=readiness_raw_compose,
+            first_identity=readiness_identity,
+            first_expected_flagd_directory=readiness_flagd_directory,
+            second_raw=attempt_raw_compose,
+            second_identity=compose_identity,
+            second_expected_flagd_directory=attempt_flagd_directory,
         )
         baseline = _read_model(
             attempt_root / "baseline-evidence.json", LiveBaselineEvidenceV21
@@ -569,7 +704,14 @@ def build_public_live_report_v21(
             or environment.scenario is not closure.scenario
             or environment.code_head != execution_code_head
             or environment.readiness_sha256 != readiness.readiness_sha256
-            or environment.resolved_compose_sha256 != readiness.resolved_compose_sha256
+            or environment.raw_compose_sha256 != compose_identity.raw_compose_sha256
+            or environment.execution_compose_sha256
+            != compose_identity.execution_compose_sha256
+            or environment.compose_identity_sha256 != compose_identity.identity_sha256
+            or environment.execution_compose_sha256
+            != readiness.execution_compose_sha256
+            or environment.normalization_policy_id
+            != readiness.normalization_policy_id
             or environment.baseline_flag_document_sha256
             != readiness.baseline_flag_document_sha256
             or baseline.run_id != closure.run_id
@@ -876,8 +1018,28 @@ def build_public_live_report_v21(
                 closure_sha256=closure.closure_sha256,
             )
         )
+    historical = PublicReconciledHistoricalAttemptV2(
+        kind="RECONCILED_PRE_BASELINE_BLOCKED_ATTEMPT",
+        scenario=LiveScenarioV21.NO_FAULT,
+        stage="READY",
+        terminal="BLOCKED_DTA_V21_PRF_SAFETY",
+        code_head="422f015451fd0a37f1442aa770fcffff75336aaa",
+        attempt_id="dta-v21-prf-01-no-fault-422f015451fd",
+        fault_operation_count=0,
+        provider_attempted_calls=0,
+        forward_step_count=0,
+        historical_baseline_restored=False,
+        historical_cleanup_verdict="BLOCKED",
+        remaining_owned_containers=0,
+        remaining_owned_networks=0,
+        remaining_owned_volumes=0,
+        non_owned_change_observed=False,
+        closed_world_compose_identity_mismatch_reconciled=True,
+        current_resource_quiescence_proven=True,
+        reconciliation_sha256=reconciliation.reconciliation_sha256,
+    )
     payload: dict[str, object] = {
-        "schema_version": "dta-v21.public-live-demo-report.v1",
+        "schema_version": "dta-v21.public-live-demo-report.v2",
         "terminal": "DTA_V21_PR_F_LIVE_PORTFOLIO_PASS",
         "portfolio_kind": "LOCAL_KNOWN_SCENARIO_ENGINEERING_EVIDENCE",
         "held_out_claim": "DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED",
@@ -887,18 +1049,22 @@ def build_public_live_report_v21(
         "base_master_progress_sha256": base_master_progress_sha256,
         "readiness_sha256": readiness.readiness_sha256,
         "private_campaign_sha256": campaign.campaign_sha256,
+        "reconciliation_sha256": reconciliation.reconciliation_sha256,
+        "retry_admission_sha256": retry_admission.admission_sha256,
+        "retry_consumption_sha256": retry_consumption.consumption_sha256,
         "protocol_sha256": protocol.protocol_sha256,
         "live_config_sha256": config.config_sha256,
         "planner_identity_sha256": campaign.planner_identity_sha256,
-        "attempt_count": 4,
-        "failed_attempt_count": len(prior_failures),
-        "prior_failures": prior_failures,
+        "successful_campaign_attempt_count": 4,
+        "successful_campaign_all_baselines_restored": True,
+        "successful_campaign_all_cleanup_clean": True,
+        "successful_campaign_non_owned_changes": 0,
+        "historical_blocked_attempt_count": 1,
+        "historical_all_cleanup_clean": False,
+        "historical_attempts": (historical,),
         "attempts": tuple(attempts),
         "unsafe_proposal_attempts": 0,
         "arbitrary_shell_attempts": 0,
-        "non_owned_changes": 0,
-        "all_baselines_restored": True,
-        "all_cleanup_clean": True,
         "user_visible_recovery_claimed": False,
         "limitations": (
             "The live portfolio uses four known local scenarios and is not held-out accuracy evidence.",
@@ -965,9 +1131,14 @@ This is a four-slot, known-scenario local engineering portfolio. It is separate
 from the one-time held-out evaluation, whose preserved conclusion is
 `{report.held_out_claim}`.
 
-Preserved prior failed live attempts: {report.failed_attempt_count}. Each listed
-failure restored baseline and recorded clean owned-resource cleanup before the
-successful campaign.
+An initial No-Fault attempt stopped at READY before fault injection, Provider
+use, or forward action because the harness compared raw Compose hashes that
+included different authorized attempt-local private flag-directory paths. The
+immutable terminal did not prove baseline restoration and remains cleanup
+`BLOCKED`, although it recorded zero remaining owned resources and no non-owned
+change. An append-only reconciliation verified that the full raw Compose diff
+was limited to the two authorized path fields and established fresh resource
+quiescence before one new campaign was admitted.
 
 ## Results
 
@@ -987,9 +1158,10 @@ and the business-SLI non-regression guardrail remained passing. The calibration
 did not demonstrate user-visible degradation, so no business-impact recovery
 claim is made.
 
-All four slots restored their exact baseline, changed no non-owned resources,
-and ended with owned cleanup `CLEAN`. Unsafe proposal attempts and arbitrary
-shell attempts were both zero.
+All four slots in the successful campaign restored their exact baseline,
+changed no non-owned resources, and ended with owned cleanup `CLEAN`. This does
+not relabel the historical blocked attempt. Unsafe proposal attempts and
+arbitrary shell attempts were both zero.
 """
 
 
@@ -1002,7 +1174,13 @@ def render_public_human_brief_v21(report: PublicLiveReportV21) -> str:
 - Ad CPU 仅证明资源信号恢复与业务 SLI 非回归，不声称用户影响恢复。
 - Email 与 Product Catalog 不可用场景分别通过两段连续恢复窗口。
 - 本次成功 campaign 的四个 slot 均恢复基线、仅清理项目自有资源，非自有变更为零；
-  任何更早失败尝试均在公开报告中另行计数。
+  该范围不包含最初被阻断的 No-Fault attempt。
+
+最初的 No-Fault attempt 在 READY 阶段停止，发生在故障注入、Provider 调用和
+forward action 之前。其不可变终态仍为 `BLOCKED_DTA_V21_PRF_SAFETY`，没有证明
+基线恢复，cleanup 仍为 `BLOCKED`。追加式 reconciliation 只证明原始 Compose
+差异限于两个授权的私有 flag-directory source 字段，并在新 campaign 前重新证明
+资源静止；它没有改写历史终态。
 
 边界：这不是生产证据，也不是 held-out 准确率证据。一次性 held-out 结论仍为
 `{report.held_out_claim}`。
@@ -1016,8 +1194,14 @@ The local four-slot known-scenario portfolio reached
 `{report.terminal}` (report `{report.report_sha256}`). No-fault used zero writes;
 Ad CPU passed the frozen 11.162% resource threshold in two consecutive windows
 with business non-regression; Email and Product Catalog availability each passed
-two recovery windows. Every baseline was restored and every owned cleanup was
-`CLEAN` with zero non-owned mutation.
+two recovery windows. Within that successful campaign, every baseline was
+restored and every owned cleanup was `CLEAN` with zero non-owned mutation.
+
+An earlier No-Fault attempt remains immutably blocked at READY with
+`baseline_restored=false` and cleanup `BLOCKED`. It occurred before fault,
+Provider, or forward action. Append-only reconciliation proved the full raw
+Compose difference was only the two authorized attempt-local flag-directory
+source fields and established fresh resource quiescence before the one retry.
 
 The separate 8-case/24-entry held-out evaluation remains a negative result:
 `{report.held_out_claim}`. The local portfolio is engineering evidence, not
@@ -1056,7 +1240,14 @@ windows, exact baseline restoration, and owned cleanup.
   mean 3.125 reads and 11,528.625 input tokens; no preregistered advantage supported.
 - Live result: four of four known scenarios passed; report `{report.report_sha256}`.
 - Safety: no Shell, no generic write, one fixed forward step per positive slot,
-  zero unsafe proposals, zero non-owned mutation, cleanup `CLEAN`.
+  zero unsafe proposals, zero non-owned mutation, and cleanup `CLEAN` within
+  the successful campaign.
+
+The initial No-Fault attempt remains `BLOCKED_DTA_V21_PRF_SAFETY` at READY,
+with `baseline_restored=false` and cleanup `BLOCKED`. It stopped before fault,
+Provider, or forward action. Append-only reconciliation proved only the exact
+two authorized private flag-directory source fields differed and established
+fresh quiescence before the one new campaign.
 
 ## Honest limitations
 
@@ -1082,6 +1273,7 @@ result is resource recovery plus business non-regression only.
 __all__ = (
     "PublicLiveAttemptV21",
     "PublicLiveReportV21",
+    "PublicReconciledHistoricalAttemptV2",
     "build_public_live_report_v21",
     "render_public_final_summary_v21",
     "render_public_human_brief_v21",

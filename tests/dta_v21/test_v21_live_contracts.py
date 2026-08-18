@@ -5,11 +5,13 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+from types import SimpleNamespace
 
 import pytest
 from pydantic_core import to_jsonable_python
 
 from ecomsre.dta_v2.v21 import live_cli as live_cli_module
+from ecomsre.dta_v2.v21 import live_reporting as live_reporting_module
 from ecomsre.dta_v2.read_tools import FakeReadBackend, InvestigationReadTools
 from ecomsre.dta_v2.v21.agent import (
     AgentRunTerminalV21,
@@ -40,10 +42,13 @@ from ecomsre.dta_v2.v21.live_contracts import (
     LiveBaselineEvidenceV21,
     LiveBusinessBaselineWindowV21,
     LiveCampaignClosureV21,
+    LiveCampaignClosureV2,
     LiveCurrentStateV21,
     LiveEnvironmentAdmissionV21,
+    LiveEnvironmentAdmissionV2,
     LiveFaultImpactEvidenceV21,
     LiveReadinessV21,
+    LiveReadinessV2,
     LiveScenarioV21,
     ServiceRecoveryWindowV21,
     build_service_recovery_result_v21,
@@ -74,6 +79,10 @@ from ecomsre.dta_v2.v21.live_protocol import (
     build_ad_cpu_resource_window,
     load_ad_cpu_resource_recovery_protocol_v1,
 )
+from ecomsre.dta_v2.v21.live_reconciliation import (
+    ResolvedComposeIdentityV1,
+    build_resolved_compose_identity_v1,
+)
 from ecomsre.dta_v2.v21.live_reporting import (
     build_public_live_report_v21,
     render_public_final_summary_v21,
@@ -89,10 +98,145 @@ from ecomsre.dta_v2.v21.registry import (
     load_default_scenario_registries,
 )
 from ecomsre.dta_v2.v21.replay import build_replay_diagnosis
+from ecomsre_live_sandbox.environment import SandboxEnvironment
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CONFIG_PATH = REPO_ROOT / "config/dta-v21/live/live-demo.v1.json"
+
+
+@pytest.fixture(autouse=True)
+def _bound_reconciliation_for_public_projection(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    reconciliation = SimpleNamespace(
+        reconciliation_sha256="a" * 64,
+        retry_eligible=True,
+    )
+    quiescence = SimpleNamespace(
+        owned_container_count=0,
+        owned_network_count=0,
+        owned_volume_count=0,
+    )
+
+    def admission(*, private_root: Path, new_code_head: str, **_values: object):
+        readiness = LiveReadinessV2.model_validate_json(
+            (
+                private_root
+                / "pr-f/readiness"
+                / new_code_head
+                / "readiness.json"
+            ).read_text(encoding="utf-8")
+        )
+        return SimpleNamespace(
+            admission_sha256="b" * 64,
+            reconciliation_sha256="a" * 64,
+            v2_readiness_sha256=readiness.readiness_sha256,
+        )
+
+    monkeypatch.setattr(
+        live_reporting_module,
+        "verify_post_terminal_reconciliation_v1",
+        lambda **_values: (reconciliation, quiescence),
+    )
+    monkeypatch.setattr(
+        live_reporting_module, "verify_retry_admission_v1", admission
+    )
+    monkeypatch.setattr(
+        live_reporting_module,
+        "verify_retry_consumption_v1",
+        lambda **_values: SimpleNamespace(
+            retry_admission_sha256="b" * 64,
+            consumption_sha256="c" * 64,
+        ),
+    )
+    monkeypatch.setattr(
+        SandboxEnvironment,
+        "_verify_resolved_contract",
+        lambda _self, _value: None,
+    )
+
+
+def _compose_identity() -> ResolvedComposeIdentityV1:
+    payload: dict[str, object] = {
+        "schema_version": "dta-v21.pr-f-resolved-compose-identity.v1",
+        "raw_compose_sha256": "1" * 64,
+        "execution_compose_sha256": "2" * 64,
+        "normalization_policy_id": (
+            "DTA_V21_PRF_ATTEMPT_LOCAL_FLAGD_BIND_SOURCE_V1"
+        ),
+        "normalized_bind_count": 2,
+        "normalized_bindings": (
+            {
+                "service": "flagd",
+                "mount_type": "bind",
+                "target": "/etc/flagd",
+                "read_only": True,
+                "json_pointer": "/services/flagd/volumes/0/source",
+                "normalized_source": "private://dta-v21-prf/attempt-local-flagd",
+            },
+            {
+                "service": "flagd-ui",
+                "mount_type": "bind",
+                "target": "/app/data",
+                "read_only": False,
+                "json_pointer": "/services/flagd-ui/volumes/0/source",
+                "normalized_source": "private://dta-v21-prf/attempt-local-flagd",
+            },
+        ),
+        "raw_flagd_source_sha256": "3" * 64,
+        "raw_flagd_ui_source_sha256": "3" * 64,
+        "resolved_service_inventory_sha256": "4" * 64,
+    }
+    return ResolvedComposeIdentityV1.model_validate(
+        {**payload, "identity_sha256": semantic_sha256(payload)}
+    )
+
+
+def _raw_compose_for_flagd(flagd_directory: Path) -> dict[str, object]:
+    return {
+        "services": {
+            "flagd": {
+                "image": "flagd@sha256:" + "1" * 64,
+                "volumes": [
+                    {
+                        "type": "bind",
+                        "source": str(flagd_directory),
+                        "target": "/etc/flagd",
+                        "read_only": True,
+                    }
+                ],
+            },
+            "flagd-ui": {
+                "image": "flagd-ui@sha256:" + "2" * 64,
+                "volumes": [
+                    {
+                        "type": "bind",
+                        "source": str(flagd_directory),
+                        "target": "/app/data",
+                    }
+                ],
+            },
+        },
+        "networks": {"default": {"name": "owned"}},
+        "volumes": {},
+    }
+
+
+def _bound_compose_identity(
+    *, flagd_directory: Path, private: Path
+) -> tuple[dict[str, object], ResolvedComposeIdentityV1]:
+    flagd_directory.mkdir(parents=True, mode=0o700)
+    flagd_directory.chmod(0o700)
+    raw = _raw_compose_for_flagd(flagd_directory)
+    identity = build_resolved_compose_identity_v1(
+        raw,
+        expected_flagd_directory=flagd_directory,
+        accepted_private_prf_root=private,
+        repository_root=REPO_ROOT,
+        raw_contract_verifier=lambda _value: None,
+    )
+    return raw, identity
 
 
 class _BoundProvider:
@@ -324,6 +468,46 @@ def _readiness(
     )
 
 
+def _readiness_v2(
+    *,
+    code_head: str,
+    master: LiveMasterAuthorizationV21,
+    identity: ResolvedComposeIdentityV1 | None = None,
+) -> tuple[LiveReadinessV2, ResolvedComposeIdentityV1]:
+    config = load_live_demo_config_v21(CONFIG_PATH)
+    protocol = load_ad_cpu_resource_recovery_protocol_v1(
+        REPO_ROOT / "config/dta-v21/live/ad-cpu-resource-recovery.v1.json"
+    )
+    identity = identity or _compose_identity()
+    return (
+        LiveReadinessV2.build(
+            terminal="DTA_V21_PR_F_PRELIVE_READY",
+            readiness_attempt_id="readiness-0001",
+            code_head=code_head,
+            exact_head_ci_success=True,
+            exact_head_ci_run_id=123,
+            exact_head_ci_run_url="https://github.com/example/repo/actions/runs/123",
+            branch="codex/dta-v21-p0-pr-f-live-closeout",
+            origin_main_is_ancestor=True,
+            protocol_sha256=protocol.protocol_sha256,
+            live_config_sha256=config.config_sha256,
+            planner_identity_sha256=config.planner_identity_sha256,
+            provider_model=config.provider_model,
+            pr_e_claim="DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED",
+            docker_boundary="LOCAL_UNIX_DOCKER",
+            raw_compose_sha256=identity.raw_compose_sha256,
+            execution_compose_sha256=identity.execution_compose_sha256,
+            compose_identity_sha256=identity.identity_sha256,
+            normalization_policy_id=identity.normalization_policy_id,
+            baseline_flag_document_sha256="2" * 64,
+            owned_resource_collisions=0,
+            required_ports_available=True,
+            cleanup_readiness="OWNED_SCOPE_ADMITTED",
+            private_permissions="0700_DIRECTORIES_0600_FILES",
+            master_authorization_sha256=master.authorization_sha256,
+        ),
+        identity,
+    )
 def test_live_config_freezes_exact_four_slot_order_and_source_bindings() -> None:
     config = load_live_demo_config_v21(CONFIG_PATH)
 
@@ -666,6 +850,74 @@ def test_fixed_executor_does_not_mutate_when_dispatch_intent_cannot_persist() ->
 def test_public_projection_reverifies_agent_identity_before_projecting(
     tmp_path: Path,
 ) -> None:
+    private = tmp_path / "pr-f"
+    code_head, attempts = _build_valid_private_campaign(private, code_head="c" * 40)
+    attempt_root = private / "attempts" / attempts[LiveScenarioV21.NO_FAULT]
+    result_path = attempt_root / "agent-result.json"
+    result = DtaAgentRunResultV21.model_validate_json(
+        result_path.read_text(encoding="utf-8")
+    )
+    wrong_identity = next(
+        item
+        for item in build_three_arm_identities_v21(
+            model_id="different-frozen-model", max_completion_tokens=1600
+        )
+        if item.arm is AgentArmV21.EVIDENCE_GUIDED_PLANNER
+    )
+    result_payload = result.model_dump(mode="python", exclude={"result_sha256"})
+    result_payload["identity"] = wrong_identity
+    forged_result = DtaAgentRunResultV21.model_validate(
+        {
+            **result_payload,
+            "result_sha256": semantic_sha256(to_jsonable_python(result_payload)),
+        }
+    )
+    _write_model(result_path, forged_result)
+    closure_path = attempt_root / "attempt-terminal.json"
+    closure = LiveAttemptClosureV21.model_validate_json(
+        closure_path.read_text(encoding="utf-8")
+    )
+    closure_payload = closure.model_dump(mode="python", exclude={"closure_sha256"})
+    closure_payload["agent_result_sha256"] = forged_result.result_sha256
+    forged_closure = LiveAttemptClosureV21.model_validate(
+        {
+            **closure_payload,
+            "closure_sha256": semantic_sha256(to_jsonable_python(closure_payload)),
+        }
+    )
+    _write_model(closure_path, forged_closure)
+    campaign_path = private / "campaigns" / code_head / "campaign-closure.json"
+    campaign = LiveCampaignClosureV2.model_validate_json(
+        campaign_path.read_text(encoding="utf-8")
+    )
+    campaign_payload = campaign.model_dump(mode="python", exclude={"campaign_sha256"})
+    campaign_payload["attempts"] = tuple(
+        forged_closure if item.attempt_id == forged_closure.attempt_id else item
+        for item in campaign.attempts
+    )
+    forged_campaign = LiveCampaignClosureV2.model_validate(
+        {
+            **campaign_payload,
+            "campaign_sha256": semantic_sha256(to_jsonable_python(campaign_payload)),
+        }
+    )
+    _write_model(campaign_path, forged_campaign)
+    with pytest.raises(ValueError, match="identity differs"):
+        build_public_live_report_v21(
+            repository_root=REPO_ROOT,
+            prf_private_root=private,
+            protocol=load_ad_cpu_resource_recovery_protocol_v1(
+                REPO_ROOT / "config/dta-v21/live/ad-cpu-resource-recovery.v1.json"
+            ),
+            config=load_live_demo_config_v21(CONFIG_PATH),
+            registry=load_default_runbook_registry(REPO_ROOT),
+            execution_code_head=code_head,
+            execution_scope_sha256="e" * 64,
+            base_readme_sha256="f" * 64,
+            base_master_progress_sha256="9" * 64,
+        )
+    return
+
     config = load_live_demo_config_v21(CONFIG_PATH)
     registry = load_default_runbook_registry(REPO_ROOT)
     protocol = load_ad_cpu_resource_recovery_protocol_v1(
@@ -892,6 +1144,7 @@ def test_public_projection_reverifies_agent_identity_before_projecting(
 
     with pytest.raises(ValueError, match="identity differs"):
         build_public_live_report_v21(
+            repository_root=REPO_ROOT,
             prf_private_root=private,
             protocol=protocol,
             config=config,
@@ -917,9 +1170,31 @@ def _build_valid_private_campaign(
         REPO_ROOT / "config/dta-v21/live/ad-cpu-resource-recovery.v1.json"
     )
     master = _master()
-    readiness = _readiness(code_head=code_head, master=master)
+    readiness_attempt_root = (
+        private / "readiness" / code_head / "attempts/readiness-0001"
+    )
+    readiness_raw, compose_identity = _bound_compose_identity(
+        flagd_directory=readiness_attempt_root / "owned-preflight/runtime/flagd",
+        private=private,
+    )
+    readiness, compose_identity = _readiness_v2(
+        code_head=code_head,
+        master=master,
+        identity=compose_identity,
+    )
     _write_model(private / "master-authorization.json", master)
     _write_model(private / "readiness" / code_head / "readiness.json", readiness)
+    _write_model(
+        readiness_attempt_root / "compose-identity.json",
+        compose_identity,
+    )
+    (readiness_attempt_root / "owned-preflight/control").mkdir(parents=True)
+    (readiness_attempt_root / "owned-preflight/control/resolved-compose.json").write_text(
+        json.dumps(readiness_raw), encoding="utf-8"
+    )
+    (private / "attempts/dta-v21-prf-01-no-fault-422f015451fd").mkdir(
+        parents=True
+    )
     observed = datetime(2026, 8, 18, 3, 0, tzinfo=timezone.utc)
     cleanup = {
         "baseline_restored": True,
@@ -944,6 +1219,14 @@ def _build_valid_private_campaign(
         attempt_id = attempt_ids[scenario]
         attempt_root = private / "attempts" / attempt_id
         attempt_root.mkdir(parents=True)
+        attempt_raw, attempt_identity = _bound_compose_identity(
+            flagd_directory=attempt_root / "owned-sandbox/runtime/flagd",
+            private=private,
+        )
+        (attempt_root / "owned-sandbox/control").mkdir(parents=True)
+        (attempt_root / "owned-sandbox/control/resolved-compose.json").write_text(
+            json.dumps(attempt_raw), encoding="utf-8"
+        )
         (attempt_root / "attempt-claim.json").write_text(
             json.dumps(
                 {
@@ -960,13 +1243,16 @@ def _build_valid_private_campaign(
             ),
             encoding="utf-8",
         )
-        environment = LiveEnvironmentAdmissionV21.build(
+        environment = LiveEnvironmentAdmissionV2.build(
             run_id="a" * 32,
             attempt_id=attempt_id,
             scenario=scenario,
             code_head=code_head,
             readiness_sha256=readiness.readiness_sha256,
-            resolved_compose_sha256=readiness.resolved_compose_sha256,
+            raw_compose_sha256=attempt_identity.raw_compose_sha256,
+            execution_compose_sha256=attempt_identity.execution_compose_sha256,
+            compose_identity_sha256=attempt_identity.identity_sha256,
+            normalization_policy_id=attempt_identity.normalization_policy_id,
             baseline_flag_document_sha256=(readiness.baseline_flag_document_sha256),
             docker_boundary="LOCAL_UNIX_DOCKER",
             daemon_identity_sha256="f" * 64,
@@ -984,6 +1270,7 @@ def _build_valid_private_campaign(
             admitted_at=observed,
         )
         _write_model(attempt_root / "environment-admission.json", environment)
+        _write_model(attempt_root / "compose-identity.json", attempt_identity)
         baseline_windows: tuple[
             LiveAdBaselineWindowV21 | LiveBusinessBaselineWindowV21, ...
         ]
@@ -1287,13 +1574,15 @@ def _build_valid_private_campaign(
         _write_model(attempt_root / "attempt-terminal.json", closure)
         closures.append(closure)
     campaign_payload = {
-        "schema_version": "dta-v21.live-campaign-closure.v1",
+        "schema_version": "dta-v21.live-campaign-closure.v2",
         "terminal": "DTA_V21_PR_F_LIVE_PORTFOLIO_PASS",
         "code_head": code_head,
         "protocol_sha256": protocol.protocol_sha256,
         "live_config_sha256": config.config_sha256,
         "planner_identity_sha256": config.planner_identity_sha256,
         "readiness_sha256": readiness.readiness_sha256,
+        "retry_admission_sha256": "b" * 64,
+        "retry_consumption_sha256": "c" * 64,
         "attempts": tuple(closures),
         "unsafe_proposal_attempts": 0,
         "arbitrary_shell_attempts": 0,
@@ -1301,7 +1590,7 @@ def _build_valid_private_campaign(
         "all_baselines_restored": True,
         "all_cleanup_clean": True,
     }
-    campaign = LiveCampaignClosureV21.model_validate(
+    campaign = LiveCampaignClosureV2.model_validate(
         {
             **campaign_payload,
             "campaign_sha256": semantic_sha256(to_jsonable_python(campaign_payload)),
@@ -1317,6 +1606,7 @@ def test_public_projection_accepts_one_fully_bound_four_slot_campaign(
     private = tmp_path / "pr-f"
     code_head, _ = _build_valid_private_campaign(private)
     report = build_public_live_report_v21(
+        repository_root=REPO_ROOT,
         prf_private_root=private,
         protocol=load_ad_cpu_resource_recovery_protocol_v1(
             REPO_ROOT / "config/dta-v21/live/ad-cpu-resource-recovery.v1.json"
@@ -1332,13 +1622,18 @@ def test_public_projection_accepts_one_fully_bound_four_slot_campaign(
     assert report.terminal == "DTA_V21_PR_F_LIVE_PORTFOLIO_PASS"
     assert report.live_execution_code_head == code_head
     assert tuple(item.scenario for item in report.attempts) == LIVE_CAMPAIGN_ORDER_V21
-    assert report.failed_attempt_count == 0
+    assert report.successful_campaign_attempt_count == 4
+    assert report.historical_blocked_attempt_count == 1
+    assert report.historical_all_cleanup_clean is False
+    assert report.historical_attempts[0].historical_baseline_restored is False
+    assert report.historical_attempts[0].historical_cleanup_verdict == "BLOCKED"
 
 
 def test_public_prose_is_exactly_bound_to_the_verified_report(tmp_path: Path) -> None:
     private = tmp_path / "pr-f"
     code_head, _ = _build_valid_private_campaign(private)
     report = build_public_live_report_v21(
+        repository_root=REPO_ROOT,
         prf_private_root=private,
         protocol=load_ad_cpu_resource_recovery_protocol_v1(
             REPO_ROOT / "config/dta-v21/live/ad-cpu-resource-recovery.v1.json"
@@ -1407,6 +1702,7 @@ def test_final_closeout_is_gated_and_binds_readme_and_progress(
     private = tmp_path / "private/pr-f"
     _build_valid_private_campaign(private, code_head=execution_head)
     report = build_public_live_report_v21(
+        repository_root=REPO_ROOT,
         prf_private_root=private,
         protocol=load_ad_cpu_resource_recovery_protocol_v1(
             REPO_ROOT / "config/dta-v21/live/ad-cpu-resource-recovery.v1.json"
@@ -1601,7 +1897,7 @@ def test_public_projection_rejects_forged_closure_agent_accounting(
     _write_model(attempt_root / "attempt-terminal.json", forged)
 
     campaign_path = private / "campaigns" / code_head / "campaign-closure.json"
-    campaign = LiveCampaignClosureV21.model_validate_json(
+    campaign = LiveCampaignClosureV2.model_validate_json(
         campaign_path.read_text(encoding="utf-8")
     )
     campaign_payload = campaign.model_dump(mode="python", exclude={"campaign_sha256"})
@@ -1609,7 +1905,7 @@ def test_public_projection_rejects_forged_closure_agent_accounting(
         forged if item.attempt_id == forged.attempt_id else item
         for item in campaign.attempts
     )
-    forged_campaign = LiveCampaignClosureV21.model_validate(
+    forged_campaign = LiveCampaignClosureV2.model_validate(
         {
             **campaign_payload,
             "campaign_sha256": semantic_sha256(to_jsonable_python(campaign_payload)),
@@ -1619,6 +1915,7 @@ def test_public_projection_rejects_forged_closure_agent_accounting(
 
     with pytest.raises(ValueError, match="Agent result differs"):
         build_public_live_report_v21(
+            repository_root=REPO_ROOT,
             prf_private_root=private,
             protocol=load_ad_cpu_resource_recovery_protocol_v1(
                 REPO_ROOT / "config/dta-v21/live/ad-cpu-resource-recovery.v1.json"
@@ -1636,7 +1933,15 @@ def test_public_projection_rejects_forged_closure_agent_accounting(
     ("scenario", "relative"),
     (
         (None, "readiness/{head}/readiness.json"),
+        (
+            None,
+            "readiness/{head}/attempts/readiness-0001/owned-preflight/control/resolved-compose.json",
+        ),
         (LiveScenarioV21.NO_FAULT, "attempt-claim.json"),
+        (
+            LiveScenarioV21.NO_FAULT,
+            "owned-sandbox/control/resolved-compose.json",
+        ),
         (LiveScenarioV21.NO_FAULT, "baseline-evidence.json"),
         (LiveScenarioV21.AD_CPU_SATURATION, "operational-admission.json"),
         (LiveScenarioV21.AD_CPU_SATURATION, "step-dispatch-intent.json"),
@@ -1658,6 +1963,38 @@ def test_public_projection_rejects_a_missing_private_chain_edge(
 
     with pytest.raises(ValueError, match="missing"):
         build_public_live_report_v21(
+            repository_root=REPO_ROOT,
+            prf_private_root=private,
+            protocol=load_ad_cpu_resource_recovery_protocol_v1(
+                REPO_ROOT / "config/dta-v21/live/ad-cpu-resource-recovery.v1.json"
+            ),
+            config=load_live_demo_config_v21(CONFIG_PATH),
+            registry=load_default_runbook_registry(REPO_ROOT),
+            execution_code_head=code_head,
+            execution_scope_sha256="e" * 64,
+            base_readme_sha256="f" * 64,
+            base_master_progress_sha256="9" * 64,
+        )
+
+
+def test_public_projection_rejects_raw_compose_drift_behind_typed_identity(
+    tmp_path: Path,
+) -> None:
+    private = tmp_path / "pr-f"
+    code_head, attempts = _build_valid_private_campaign(private)
+    raw_path = (
+        private
+        / "attempts"
+        / attempts[LiveScenarioV21.NO_FAULT]
+        / "owned-sandbox/control/resolved-compose.json"
+    )
+    raw = json.loads(raw_path.read_text(encoding="utf-8"))
+    raw["services"]["flagd"]["image"] = "drift@sha256:" + "f" * 64
+    raw_path.write_text(json.dumps(raw), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="differs from raw evidence"):
+        build_public_live_report_v21(
+            repository_root=REPO_ROOT,
             prf_private_root=private,
             protocol=load_ad_cpu_resource_recovery_protocol_v1(
                 REPO_ROOT / "config/dta-v21/live/ad-cpu-resource-recovery.v1.json"

@@ -215,6 +215,51 @@ class LiveReadinessV21(DtaModelV21):
         return self
 
 
+class LiveReadinessV2(DtaModelV21):
+    schema_version: Literal["dta-v21.pr-f-readiness.v2"]
+    terminal: Literal["DTA_V21_PR_F_PRELIVE_READY"]
+    readiness_attempt_id: str = Field(pattern=r"^readiness-[0-9]{4}$")
+    code_head: str = Field(pattern=r"^[0-9a-f]{40}$")
+    exact_head_ci_success: Literal[True]
+    exact_head_ci_run_id: StrictInt = Field(ge=1)
+    exact_head_ci_run_url: str = Field(pattern=r"^https://github\.com/.+")
+    branch: Literal["codex/dta-v21-p0-pr-f-live-closeout"]
+    origin_main_is_ancestor: Literal[True]
+    protocol_sha256: Sha256V21
+    live_config_sha256: Sha256V21
+    planner_identity_sha256: Sha256V21
+    provider_model: Literal["gpt-5.4-mini-2026-03-17"]
+    pr_e_claim: Literal["DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED"]
+    docker_boundary: Literal["LOCAL_UNIX_DOCKER"]
+    raw_compose_sha256: Sha256V21
+    execution_compose_sha256: Sha256V21
+    compose_identity_sha256: Sha256V21
+    normalization_policy_id: Literal[
+        "DTA_V21_PRF_ATTEMPT_LOCAL_FLAGD_BIND_SOURCE_V1"
+    ]
+    baseline_flag_document_sha256: Sha256V21
+    owned_resource_collisions: Literal[0]
+    required_ports_available: Literal[True]
+    cleanup_readiness: Literal["OWNED_SCOPE_ADMITTED"]
+    private_permissions: Literal["0700_DIRECTORIES_0600_FILES"]
+    master_authorization_sha256: Sha256V21
+    readiness_sha256: Sha256V21
+
+    @classmethod
+    def build(cls, **values: object) -> Self:
+        payload = {"schema_version": "dta-v21.pr-f-readiness.v2", **values}
+        return cls.model_validate({**payload, "readiness_sha256": _semantic(payload)})
+
+    @model_validator(mode="after")
+    def require_digest(self) -> Self:
+        expected = semantic_sha256(
+            self.model_dump(mode="json", exclude={"readiness_sha256"})
+        )
+        if self.readiness_sha256 != expected:
+            raise ValueError("PR-F v2 readiness SHA-256 mismatch")
+        return self
+
+
 class LiveEnvironmentAdmissionV21(DtaModelV21):
     schema_version: Literal["dta-v21.live-environment-admission.v1"]
     run_id: str = Field(pattern=r"^[0-9a-f]{32}$")
@@ -261,6 +306,60 @@ class LiveEnvironmentAdmissionV21(DtaModelV21):
         )
         if self.environment_admission_sha256 != expected:
             raise ValueError("live environment admission SHA-256 mismatch")
+        return self
+
+
+class LiveEnvironmentAdmissionV2(DtaModelV21):
+    schema_version: Literal["dta-v21.live-environment-admission.v2"]
+    run_id: str = Field(pattern=r"^[0-9a-f]{32}$")
+    attempt_id: str = Field(min_length=1, max_length=128)
+    scenario: LiveScenarioV21
+    code_head: str = Field(pattern=r"^[0-9a-f]{40}$")
+    readiness_sha256: Sha256V21
+    raw_compose_sha256: Sha256V21
+    execution_compose_sha256: Sha256V21
+    compose_identity_sha256: Sha256V21
+    normalization_policy_id: Literal[
+        "DTA_V21_PRF_ATTEMPT_LOCAL_FLAGD_BIND_SOURCE_V1"
+    ]
+    baseline_flag_document_sha256: Sha256V21
+    docker_boundary: Literal["LOCAL_UNIX_DOCKER"]
+    daemon_identity_sha256: Sha256V21
+    docker_context_sha256: Sha256V21
+    config_bundle_sha256: Sha256V21
+    resolved_sandbox_sha256: Sha256V21
+    resolved_endpoints_sha256: Sha256V21
+    ownership_scope_sha256: Sha256V21
+    read_authority_sha256: Sha256V21
+    owned_inventory_sha256: Sha256V21
+    non_owned_baseline_snapshot_sha256: Sha256V21
+    owned_container_count: Literal[25]
+    owned_network_count: Literal[1]
+    owned_volume_count: Literal[3]
+    admitted_at: datetime
+    environment_admission_sha256: Sha256V21
+
+    @classmethod
+    def build(cls, **values: object) -> Self:
+        payload = {
+            "schema_version": "dta-v21.live-environment-admission.v2",
+            **values,
+        }
+        return cls.model_validate(
+            {**payload, "environment_admission_sha256": _semantic(payload)}
+        )
+
+    @model_validator(mode="after")
+    def require_admission(self) -> Self:
+        if self.admitted_at.tzinfo is None or self.admitted_at.utcoffset() != timedelta(
+            0
+        ):
+            raise ValueError("live environment admission timestamp requires UTC")
+        expected = semantic_sha256(
+            self.model_dump(mode="json", exclude={"environment_admission_sha256"})
+        )
+        if self.environment_admission_sha256 != expected:
+            raise ValueError("live v2 environment admission SHA-256 mismatch")
         return self
 
 
@@ -815,6 +914,41 @@ class LiveCampaignClosureV21(DtaModelV21):
         return self
 
 
+class LiveCampaignClosureV2(DtaModelV21):
+    schema_version: Literal["dta-v21.live-campaign-closure.v2"]
+    terminal: Literal["DTA_V21_PR_F_LIVE_PORTFOLIO_PASS"]
+    code_head: str = Field(pattern=r"^[0-9a-f]{40}$")
+    protocol_sha256: Sha256V21
+    live_config_sha256: Sha256V21
+    planner_identity_sha256: Sha256V21
+    readiness_sha256: Sha256V21
+    retry_admission_sha256: Sha256V21
+    retry_consumption_sha256: Sha256V21
+    attempts: tuple[
+        LiveAttemptClosureV21,
+        LiveAttemptClosureV21,
+        LiveAttemptClosureV21,
+        LiveAttemptClosureV21,
+    ]
+    unsafe_proposal_attempts: Literal[0]
+    arbitrary_shell_attempts: Literal[0]
+    non_owned_changes: Literal[0]
+    all_baselines_restored: Literal[True]
+    all_cleanup_clean: Literal[True]
+    campaign_sha256: Sha256V21
+
+    @model_validator(mode="after")
+    def require_campaign(self) -> Self:
+        if tuple(item.scenario for item in self.attempts) != LIVE_CAMPAIGN_ORDER_V21:
+            raise ValueError("live v2 campaign attempts differ from the exact order")
+        expected = semantic_sha256(
+            self.model_dump(mode="json", exclude={"campaign_sha256"})
+        )
+        if self.campaign_sha256 != expected:
+            raise ValueError("live v2 campaign closure SHA-256 mismatch")
+        return self
+
+
 def build_service_recovery_result_v21(
     *,
     windows: tuple[ServiceRecoveryWindowV21, ...],
@@ -889,11 +1023,14 @@ __all__ = (
     "LiveBaselineEvidenceV21",
     "LiveBusinessBaselineWindowV21",
     "LiveEnvironmentAdmissionV21",
+    "LiveEnvironmentAdmissionV2",
     "LiveFaultImpactEvidenceV21",
     "LiveAttemptClosureV21",
     "LiveCampaignClosureV21",
+    "LiveCampaignClosureV2",
     "LiveDemoConfigV21",
     "LiveReadinessV21",
+    "LiveReadinessV2",
     "LiveScenarioSpecV21",
     "LiveScenarioV21",
     "ServiceRecoveryResultV21",

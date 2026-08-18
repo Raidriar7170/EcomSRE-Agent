@@ -973,6 +973,41 @@ business-impact and recovery oracle. PR-D, PR-E, the held-out seal, execution,
 result, and negative planner-advantage claim remain immutable and may not be
 rerun or relabeled.
 
+## DEC-045 — DTA v2.1 PR-F Closed-World Compose Identity and Reconciled Retry Admission
+
+**Status: `accepted` only under the user-designated
+`dta-v21-p0-prf-compose-identity-reconciliation-v1` amendment.**
+
+The effective scope is DTA v2.1 P0 PR-F only. The historical attempt
+`dta-v21-prf-01-no-fault-422f015451fd` remains the immutable
+`BLOCKED_DTA_V21_PRF_SAFETY` terminal at `READY` on code HEAD
+`422f015451fd0a37f1442aa770fcffff75336aaa`.
+
+The blocker arose because the raw resolved Compose document includes the
+authorized private host bind-source path for each context's flag directory.
+Preflight and a live attempt intentionally use different private roots, so raw
+document hashes differ even when every executable Compose property is
+otherwise identical.
+
+Raw Compose hashes remain the exact provenance identities. PR-F additionally
+uses a versioned execution identity that replaces only the exact `flagd`
+`/etc/flagd` and `flagd-ui` `/app/data` attempt-local bind-source values with
+`private://dta-v21-prf/attempt-local-flagd` before canonical hashing. The
+complete raw safety contract must pass before this closed-world normalization.
+
+The historical disposition does not change: `baseline_restored=false` and
+`cleanup=BLOCKED` remain immutable. An append-only reconciliation may prove
+that it stopped before baseline evidence, fault, Provider use, or forward
+action; that its complete raw Compose difference is exactly the two admitted
+source fields; and that fresh owned-resource quiescence exists. This proof may
+admit one new campaign, but it cannot relabel the old attempt.
+
+Exactly one new campaign may start from Slot 1 under a new code HEAD after
+fresh CI, independent review, v2 preflight, reconciliation, and retry
+admission. Failure of that campaign exhausts this amendment. This decision has
+no effect on PR-D, PR-E, DEC-044, the held-out result, the Agent or Provider
+identity, Runbooks, live slots, or fault and recovery oracles.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)

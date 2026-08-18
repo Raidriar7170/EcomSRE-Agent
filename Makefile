@@ -300,6 +300,8 @@ DTA_V21_EVALUATION_ROOT := $(PROJECT_ROOT)/config/dta-v21/evaluation
 	dta-v21-held-out-execute dta-v21-held-out-score \
 	dta-v21-held-out-report-verify dta-v21-pr-f-protocol-verify \
 	dta-v21-pr-f-protocol-private-verify dta-v21-live-preflight \
+	dta-v21-live-reconcile dta-v21-live-record-retry-review \
+	dta-v21-live-retry-admit dta-v21-pr-f-reconciliation-private-verify \
 	dta-v21-live-demo dta-v21-live-report dta-v21-live-finalize \
 	dta-v21-live-closeout \
 	dta-v21-live-verify \
@@ -398,10 +400,33 @@ dta-v21-live-preflight: dta-v21-pr-f-protocol-private-verify
 		--provider-env "$(DTA_V21_PROVIDER_ENV)" \
 		--exact-head-ci-sha "$(DTA_V21_EXACT_HEAD_CI_SHA)"
 
+dta-v21-live-reconcile: dta-v21-pr-f-protocol-private-verify
+	$(DTA_V21_LIVE_CLI) reconcile \
+		--repository-root "$(PROJECT_ROOT)" \
+		--private-root "$(DTA_V21_ACCEPTED_PRIVATE_ROOT)"
+
+dta-v21-live-record-retry-review: dta-v21-pr-f-protocol-private-verify
+	@test -n "$(DTA_V21_REVIEWER)" || { echo "DTA_V21_REVIEWER is required" >&2; exit 2; }
+	$(DTA_V21_LIVE_CLI) record-retry-review \
+		--repository-root "$(PROJECT_ROOT)" \
+		--private-root "$(DTA_V21_ACCEPTED_PRIVATE_ROOT)" \
+		--reviewer "$(DTA_V21_REVIEWER)"
+
+dta-v21-live-retry-admit: dta-v21-pr-f-protocol-private-verify
+	$(DTA_V21_LIVE_CLI) retry-admit \
+		--repository-root "$(PROJECT_ROOT)" \
+		--private-root "$(DTA_V21_ACCEPTED_PRIVATE_ROOT)"
+
+dta-v21-pr-f-reconciliation-private-verify: dta-v21-pr-f-protocol-private-verify
+	$(DTA_V21_LIVE_CLI) verify-reconciliation \
+		--repository-root "$(PROJECT_ROOT)" \
+		--private-root "$(DTA_V21_ACCEPTED_PRIVATE_ROOT)"
+
 dta-v21-live-demo: dta-v21-historical-verify
 	@test -n "$(DTA_V21_ACCEPTED_PRIVATE_ROOT)" || { echo "DTA_V21_ACCEPTED_PRIVATE_ROOT is required" >&2; exit 2; }
 	@test -n "$(DTA_V21_PROVIDER_ENV)" || { echo "DTA_V21_PROVIDER_ENV is required" >&2; exit 2; }
 	@test "$(DTA_V21_LIVE_EXECUTE)" = "USER_EXPLICIT_DTA_V21_PRF_RESOURCE_RECOVERY_AMENDMENT" || { echo "exact DTA_V21_LIVE_EXECUTE confirmation is required" >&2; exit 2; }
+	@test "$(DTA_V21_RETRY_EXECUTE)" = "USER_EXPLICIT_DTA_V21_PRF_APPEND_ONLY_RECONCILIATION_AND_ONE_RETRY" || { echo "exact DTA_V21_RETRY_EXECUTE confirmation is required" >&2; exit 2; }
 	$(DTA_V21_LIVE_CLI) execute \
 		--repository-root "$(PROJECT_ROOT)" \
 		--private-root "$(DTA_V21_ACCEPTED_PRIVATE_ROOT)" \

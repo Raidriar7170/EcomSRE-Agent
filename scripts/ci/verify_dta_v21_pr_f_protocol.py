@@ -23,6 +23,9 @@ PROTOCOL_RELATIVE = Path("config/dta-v21/live/ad-cpu-resource-recovery.v1.json")
 PROGRESS_RELATIVE = Path("docs/analysis/dta-v21-p0-master-progress.json")
 DECISIONS_RELATIVE = Path("docs/DECISIONS.md")
 HISTORICAL_BINDINGS_RELATIVE = Path("config/dta-v21/historical-v2-bindings.v1.json")
+RECONCILIATION_SOURCE_RELATIVE = Path(
+    "src/ecomsre/dta_v2/v21/live_reconciliation.py"
+)
 
 
 def _verify_pr_f_targets_do_not_reach_held_out_execution(makefile: str) -> None:
@@ -106,13 +109,25 @@ def verify_pr_f_protocol(
         raise ValueError("DTA v2.1 master progress must be a regular file")
     progress = json.loads(progress_path.read_text(encoding="utf-8"))
     required_progress = {
-        "active_amendment_version": protocol.amendment_version,
+        "active_amendment_version": (
+            "dta-v21-p0-prf-compose-identity-reconciliation-v1"
+        ),
+        "active_amendment_sha256": (
+            "ea6740bce0ba63e093cda2807aea886d4ca48907702a2bf41ad1eedd0e2ab164"
+        ),
+        "active_decision_id": "DEC-045",
         "held_out_seal_sha256": (
             "9a7c8e56400e99c693c8bddc26007b1dd26e0dcee2167b07cf3fba00fd22fbd7"
         ),
         "held_out_execution_id": "53615cdd78b348b68496f64102c0b4de",
         "held_out_claim": ("DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED"),
         "ad_cpu_resource_recovery_protocol_sha256": protocol.protocol_sha256,
+        "historical_blocked_attempt_id": (
+            "dta-v21-prf-01-no-fault-422f015451fd"
+        ),
+        "historical_blocked_attempt_terminal": "BLOCKED_DTA_V21_PRF_SAFETY",
+        "historical_blocked_attempt_baseline_restored": False,
+        "historical_blocked_attempt_cleanup": "BLOCKED",
     }
     for field, expected in required_progress.items():
         if progress.get(field) != expected:
@@ -124,6 +139,9 @@ def verify_pr_f_protocol(
         if (
             progress.get("live_demo_terminal") is not None
             or progress.get("final_engineering_terminal") is not None
+            or progress.get("active_branch")
+            != "codex/dta-v21-p0-pr-f-live-closeout"
+            or progress.get("active_pr") != 55
         ):
             raise ValueError("open PR-F progress carries a final terminal")
     elif stage == ("PR-F", "COMPLETE"):
@@ -173,6 +191,32 @@ def verify_pr_f_protocol(
     ):
         if marker not in decisions:
             raise ValueError(f"DEC-044 is missing {marker}")
+    if decisions.count("## DEC-045 —") != 1:
+        raise ValueError("DEC-045 must appear exactly once")
+    for marker in (
+        "Closed-World Compose Identity and Reconciled Retry Admission",
+        "baseline_restored=false",
+        "cleanup=BLOCKED",
+        "private://dta-v21-prf/attempt-local-flagd",
+        "Exactly one new campaign may start from Slot 1",
+    ):
+        if marker not in decisions:
+            raise ValueError(f"DEC-045 is missing {marker}")
+
+    reconciliation_source = root / RECONCILIATION_SOURCE_RELATIVE
+    if reconciliation_source.is_symlink() or not reconciliation_source.is_file():
+        raise ValueError("PR-F reconciliation source is missing or unsafe")
+    source = reconciliation_source.read_text(encoding="utf-8")
+    for marker in (
+        "dta-v21.pr-f-resolved-compose-identity.v1",
+        "DTA_V21_PRF_ATTEMPT_LOCAL_FLAGD_BIND_SOURCE_V1",
+        "dta-v21.pr-f-post-terminal-reconciliation.v1",
+        "dta-v21.pr-f-retry-admission.v1",
+        "dta-v21.pr-f-retry-consumption.v1",
+        "BLOCKED_DTA_V21_PRF_RETRY_EXHAUSTED",
+    ):
+        if marker not in source:
+            raise ValueError(f"PR-F reconciliation source is missing {marker}")
 
     verify_public_held_out_report_v21(
         public_evaluation_json=root / "docs/results/dta-v21-evaluation.json",

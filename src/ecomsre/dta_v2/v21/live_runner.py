@@ -15,11 +15,11 @@ from ecomsre.dta_v2.v21.live_contracts import (
     LIVE_CAMPAIGN_ORDER_V21,
     LiveAttemptClosureV21,
     LiveBaselineEvidenceV21,
-    LiveCampaignClosureV21,
+    LiveCampaignClosureV2,
     LiveDemoConfigV21,
-    LiveEnvironmentAdmissionV21,
+    LiveEnvironmentAdmissionV2,
     LiveFaultImpactEvidenceV21,
-    LiveReadinessV21,
+    LiveReadinessV2,
     LiveScenarioV21,
     build_service_recovery_result_v21,
 )
@@ -37,6 +37,10 @@ from ecomsre.dta_v2.v21.live_owned import OwnedLiveAttemptV21
 from ecomsre.dta_v2.v21.live_protocol import (
     AdCpuResourceRecoveryProtocolV1,
     build_ad_cpu_resource_recovery_result,
+)
+from ecomsre.dta_v2.v21.live_reconciliation import (
+    ResolvedComposeIdentityV1,
+    consume_retry_admission_v1,
 )
 from ecomsre.dta_v2.v21.live_verifiers import verify_live_agent_result_v21
 from ecomsre.dta_v2.v21.registry import RunbookRegistryV21
@@ -212,7 +216,10 @@ def run_owned_live_attempt_v21(
     registry: RunbookRegistryV21,
     protocol: AdCpuResourceRecoveryProtocolV1,
     master_authorization: LiveMasterAuthorizationV21,
-    readiness: LiveReadinessV21,
+    readiness: LiveReadinessV2,
+    readiness_identity: ResolvedComposeIdentityV1,
+    readiness_raw_compose: dict[str, object],
+    readiness_flagd_directory: Path,
     code_head: str,
     execution_lease: LiveExecutionLeaseV21,
 ) -> LiveAttemptClosureV21:
@@ -253,7 +260,7 @@ def run_owned_live_attempt_v21(
     recovery_result_sha256: str | None = None
     operational_admission_sha256: str | None = None
     run_authorization_sha256: str | None = None
-    environment_admission: LiveEnvironmentAdmissionV21 | None = None
+    environment_admission: LiveEnvironmentAdmissionV2 | None = None
     baseline: LiveBaselineEvidenceV21 | None = None
     fault_impact: LiveFaultImpactEvidenceV21 | None = None
     restoration_operation_failed = False
@@ -261,6 +268,7 @@ def run_owned_live_attempt_v21(
         owned = OwnedLiveAttemptV21(
             repository_root=repository_root,
             private_root=attempt_root / "owned-sandbox",
+            accepted_private_prf_root=prf_private_root,
             attempt_id=attempt_id,
             config=config,
             scenario=spec,
@@ -275,10 +283,20 @@ def run_owned_live_attempt_v21(
         owned.start()
         stage = "READY"
         owned.wait_ready()
-        environment_admission = owned.environment_admission(readiness=readiness)
+        environment_admission = owned.environment_admission(
+            readiness=readiness,
+            readiness_raw_compose=readiness_raw_compose,
+            readiness_identity=readiness_identity,
+            readiness_flagd_directory=readiness_flagd_directory,
+        )
         write_private_json(
             attempt_root / "environment-admission.json",
             environment_admission,
+            create_once=True,
+        )
+        write_private_json(
+            attempt_root / "compose-identity.json",
+            owned.admitted_compose_identity,
             create_once=True,
         )
         stage = "BASELINE"
@@ -568,9 +586,12 @@ def run_owned_live_campaign_v21(
     registry: RunbookRegistryV21,
     protocol: AdCpuResourceRecoveryProtocolV1,
     master_authorization: LiveMasterAuthorizationV21,
-    readiness: LiveReadinessV21,
+    readiness: LiveReadinessV2,
+    readiness_identity: ResolvedComposeIdentityV1,
+    readiness_raw_compose: dict[str, object],
+    readiness_flagd_directory: Path,
     code_head: str,
-) -> LiveCampaignClosureV21:
+) -> LiveCampaignClosureV2:
     """Execute the exact four slots once, stopping after any failed cleanup."""
 
     ensure_private_directory(prf_private_root / "attempts")
@@ -589,6 +610,12 @@ def run_owned_live_campaign_v21(
     ):
         raise LiveCampaignBlockedV21("BLOCKED_DTA_V21_PRF_EXACT_HEAD_ACCEPTANCE")
     with LiveExecutionLeaseV21(prf_private_root) as execution_lease:
+        retry_consumption = consume_retry_admission_v1(
+            repository_root=repository_root,
+            private_root=prf_private_root.parent,
+            new_code_head=code_head,
+            consumed_at=datetime.now(timezone.utc),
+        )
         attempts = tuple(
             run_owned_live_attempt_v21(
                 repository_root=repository_root,
@@ -600,19 +627,24 @@ def run_owned_live_campaign_v21(
                 protocol=protocol,
                 master_authorization=master_authorization,
                 readiness=readiness,
+                readiness_identity=readiness_identity,
+                readiness_raw_compose=readiness_raw_compose,
+                readiness_flagd_directory=readiness_flagd_directory,
                 code_head=code_head,
                 execution_lease=execution_lease,
             )
             for scenario in LIVE_CAMPAIGN_ORDER_V21
         )
     payload: dict[str, object] = {
-        "schema_version": "dta-v21.live-campaign-closure.v1",
+        "schema_version": "dta-v21.live-campaign-closure.v2",
         "terminal": "DTA_V21_PR_F_LIVE_PORTFOLIO_PASS",
         "code_head": code_head,
         "protocol_sha256": protocol.protocol_sha256,
         "live_config_sha256": config.config_sha256,
         "planner_identity_sha256": config.planner_identity_sha256,
         "readiness_sha256": readiness.readiness_sha256,
+        "retry_admission_sha256": retry_consumption.retry_admission_sha256,
+        "retry_consumption_sha256": retry_consumption.consumption_sha256,
         "attempts": attempts,
         "unsafe_proposal_attempts": 0,
         "arbitrary_shell_attempts": 0,
@@ -622,7 +654,7 @@ def run_owned_live_campaign_v21(
     }
     from ecomsre.dta_v2.v21.contracts import semantic_sha256
 
-    campaign = LiveCampaignClosureV21.model_validate(
+    campaign = LiveCampaignClosureV2.model_validate(
         {**payload, "campaign_sha256": semantic_sha256(to_jsonable_python(payload))}
     )
     campaign_root = prf_private_root / "campaigns" / code_head
