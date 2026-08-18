@@ -288,10 +288,14 @@ agent-demo: phase1-prerequisites
 DTA_V21_HISTORICAL_BINDINGS_CLI := env PYTHONPATH="$(PROJECT_ROOT):$(PYTHONPATH)" uv run --frozen --no-sync python -m scripts.ci.verify_dta_v2_historical_bindings
 DTA_V21_EVALUATION_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.dta_v2.v21.evaluation_cli
 DTA_V21_EVALUATION_VERIFY_CLI := env PYTHONPATH="$(PROJECT_ROOT):$(PYTHONPATH)" uv run --frozen --no-sync python -m scripts.ci.verify_dta_v21_evaluation_freeze
+DTA_V21_HELD_OUT_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.dta_v2.v21.held_out_cli
+DTA_V21_HELD_OUT_VERIFY_CLI := env PYTHONPATH="$(PROJECT_ROOT):$(PYTHONPATH)" uv run --frozen --no-sync python -m scripts.ci.verify_dta_v21_held_out
 DTA_V21_EVALUATION_ROOT := $(PROJECT_ROOT)/config/dta-v21/evaluation
 
 .PHONY: dta-v21-historical-verify dta-v21-test dta-v21-replay-verify \
-	dta-v21-development-eval dta-v21-development-verify
+	dta-v21-development-eval dta-v21-development-verify \
+	dta-v21-held-out-execute dta-v21-held-out-score \
+	dta-v21-held-out-report-verify
 
 dta-v21-historical-verify: phase1-prerequisites
 	$(DTA_V21_HISTORICAL_BINDINGS_CLI)
@@ -321,4 +325,50 @@ dta-v21-development-eval: phase1-prerequisites
 
 dta-v21-development-verify: dta-v21-historical-verify
 	$(DTA_V21_EVALUATION_VERIFY_CLI) --project-root "$(PROJECT_ROOT)"
+
+dta-v21-held-out-execute: dta-v21-development-verify
+	@test -n "$(DTA_V21_PROVIDER_ENV)" || { echo "DTA_V21_PROVIDER_ENV is required" >&2; exit 2; }
+	@test -n "$(DTA_V21_HELD_OUT_PACK_ROOT)" || { echo "DTA_V21_HELD_OUT_PACK_ROOT is required" >&2; exit 2; }
+	@test -n "$(DTA_V21_PRIVATE_EXECUTION_ROOT)" || { echo "DTA_V21_PRIVATE_EXECUTION_ROOT is required" >&2; exit 2; }
+	@test -n "$(DTA_V21_EXECUTION_ID)" || { echo "DTA_V21_EXECUTION_ID is required" >&2; exit 2; }
+	@test -n "$(DTA_V21_EXECUTION_CODE_HEAD)" || { echo "DTA_V21_EXECUTION_CODE_HEAD is required" >&2; exit 2; }
+	$(DTA_V21_HELD_OUT_CLI) execute \
+		--repository-root "$(PROJECT_ROOT)" \
+		--provider-env "$(DTA_V21_PROVIDER_ENV)" \
+		--held-out-pack-root "$(DTA_V21_HELD_OUT_PACK_ROOT)" \
+		--private-execution-root "$(DTA_V21_PRIVATE_EXECUTION_ROOT)" \
+		--execution-id "$(DTA_V21_EXECUTION_ID)" \
+		--execution-code-head "$(DTA_V21_EXECUTION_CODE_HEAD)" \
+		--git-audit-root "$(DTA_V21_PRIVATE_EXECUTION_ROOT)-git-audit" \
+		--freeze-manifest "$(DTA_V21_EVALUATION_ROOT)/manifest.json" \
+		--schedule "$(DTA_V21_EVALUATION_ROOT)/schedule.v1.json" \
+		--preregistration "$(DTA_V21_EVALUATION_ROOT)/preregistration.v1.json" \
+		--held-out-pack-seal "$(DTA_V21_HELD_OUT_PACK_ROOT)/held-out-seal.v1.json"
+
+dta-v21-held-out-score: phase1-prerequisites
+	@test -n "$(DTA_V21_HELD_OUT_PACK_ROOT)" || { echo "DTA_V21_HELD_OUT_PACK_ROOT is required" >&2; exit 2; }
+	@test -n "$(DTA_V21_PRIVATE_EXECUTION_ROOT)" || { echo "DTA_V21_PRIVATE_EXECUTION_ROOT is required" >&2; exit 2; }
+	@test -n "$(DTA_V21_PRIVATE_UNBLINDING_ROOT)" || { echo "DTA_V21_PRIVATE_UNBLINDING_ROOT is required" >&2; exit 2; }
+	@test -n "$(DTA_V21_DEVELOPMENT_ATTEMPT_ROOT)" || { echo "DTA_V21_DEVELOPMENT_ATTEMPT_ROOT is required" >&2; exit 2; }
+	@test -n "$(DTA_V21_DEVELOPMENT_DATASET_ROOT)" || { echo "DTA_V21_DEVELOPMENT_DATASET_ROOT is required" >&2; exit 2; }
+	$(DTA_V21_HELD_OUT_CLI) score \
+		--repository-root "$(PROJECT_ROOT)" \
+		--held-out-pack-root "$(DTA_V21_HELD_OUT_PACK_ROOT)" \
+		--private-execution-root "$(DTA_V21_PRIVATE_EXECUTION_ROOT)" \
+		--private-unblinding-root "$(DTA_V21_PRIVATE_UNBLINDING_ROOT)" \
+		--development-attempt-root "$(DTA_V21_DEVELOPMENT_ATTEMPT_ROOT)" \
+		--development-dataset-root "$(DTA_V21_DEVELOPMENT_DATASET_ROOT)" \
+		--public-development-report "$(PROJECT_ROOT)/docs/results/dta-v21-development-evaluation.json" \
+		--freeze-manifest "$(DTA_V21_EVALUATION_ROOT)/manifest.json" \
+		--schedule "$(DTA_V21_EVALUATION_ROOT)/schedule.v1.json" \
+		--preregistration "$(DTA_V21_EVALUATION_ROOT)/preregistration.v1.json" \
+		--held-out-pack-seal "$(DTA_V21_HELD_OUT_PACK_ROOT)/held-out-seal.v1.json" \
+		--public-evaluation-json "$(PROJECT_ROOT)/docs/results/dta-v21-evaluation.json" \
+		--public-evaluation-markdown "$(PROJECT_ROOT)/docs/results/dta-v21-evaluation.md" \
+		--public-ablation-json "$(PROJECT_ROOT)/docs/results/dta-v21-ablation.json" \
+		--public-ablation-markdown "$(PROJECT_ROOT)/docs/results/dta-v21-ablation.md" \
+		--public-disposition "$(PROJECT_ROOT)/docs/review-evidence/dta-v21-held-out/current-disposition.json"
+
+dta-v21-held-out-report-verify: dta-v21-historical-verify
+	$(DTA_V21_HELD_OUT_VERIFY_CLI) --project-root "$(PROJECT_ROOT)"
 # END DTA_V21_SUCCESSOR_TARGETS
