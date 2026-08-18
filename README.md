@@ -11,17 +11,6 @@ LOCAL_DEMO successor proved one known local Payment configuration restoration;
 its strict R3 diagnosis remained negative because of a fault-class mismatch.
 That bounded result is not general live-remediation or production evidence.
 
-<!-- dta-v21-pr-f-final-capability-closeout -->
-### DTA v2.1 frozen-Agent capability closeout
-
-DTA v2.1 preserved a negative held-out result and two valid live Agent
-capability failures. No-Fault produced a false-positive Diagnosis but safe
-`NO_ACTION`. Ad CPU terminated on a duplicate read request before Diagnosis or
-Action Selection. No Agent write occurred, all valid attempts restored baseline
-and cleaned owned resources, and no further execution was performed. The result
-is `DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_FROZEN_AGENT_CAPABILITY_LIMITATIONS`, not a live recovery success.
-<!-- /dta-v21-pr-f-final-capability-closeout -->
-
 ## One-command offline demo
 
 ```bash
