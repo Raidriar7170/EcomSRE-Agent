@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from ecomsre.dta_v2.v21.live_final_cli import (
+    _load_verified_public_projection,
     _pending_disposition,
     _read_regular,
     _render_final_progress,
@@ -87,6 +88,29 @@ def test_v4_public_files_have_exact_public_mode(tmp_path: Path) -> None:
     output.chmod(0o600)
     with pytest.raises(ValueError, match="mode"):
         _read_regular(output, label="report")
+
+
+def test_v4_primary_report_mode_is_verified(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repository = Path(__file__).resolve().parents[2]
+    report = tmp_path / "closeout.json"
+    report.write_text(
+        (
+            repository
+            / "docs/results/dta-v21-live-capability-closeout.json"
+        ).read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    report.chmod(0o600)
+    missing = tmp_path / "missing"
+    monkeypatch.setattr(
+        "ecomsre.dta_v2.v21.live_final_cli._verify_report_file_set",
+        lambda _root: (report, (), missing, missing, missing),
+    )
+
+    with pytest.raises(ValueError, match="closeout report.*mode"):
+        _load_verified_public_projection(tmp_path)
 
 
 def test_ad_duplicate_read_contract_is_failure_with_safe_restoration() -> None:

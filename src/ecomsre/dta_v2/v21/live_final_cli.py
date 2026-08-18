@@ -596,7 +596,7 @@ def _load_verified_public_projection(
         _verify_report_file_set(root)
     )
     report = PublicLiveCapabilityCloseoutReportV4.model_validate_json(
-        report_path.read_text(encoding="utf-8")
+        _read_regular(report_path, label="v4 closeout report")
     )
     expected_claims = (
         render_public_live_markdown_v4(report),
@@ -791,7 +791,7 @@ def run_final_closeout(*, repository_root: Path, exact_main_ci_sha: str) -> str:
         _verify_report_file_set(root)
     )
     report = PublicLiveCapabilityCloseoutReportV4.model_validate_json(
-        report_path.read_text(encoding="utf-8")
+        _read_regular(report_path, label="v4 closeout report")
     )
     disposition = _read_disposition(disposition_path)
     (
