@@ -1,0 +1,54 @@
+{
+  "schema_version": "dta-v21.ad-cpu-resource-recovery-protocol.v1",
+  "amendment_version": "dta-v21-p0-prf-ad-cpu-resource-recovery-v1",
+  "accepted_before_first_prf_live_attempt": true,
+  "decision_id": "DEC-044",
+  "source_commit": "377723c624d8de80f78af306ea29c5a6e0103d6c",
+  "fault_impact_kind": "RESOURCE_ONLY",
+  "business_sli_role": "NON_REGRESSION_GUARDRAIL",
+  "target_logical_service": "ad",
+  "resource_query_id": "DTA_V21_AD_CPU_RESOURCE_USAGE_V1",
+  "resource_metric": "CPU_PERCENT",
+  "resource_unit": "CPU_PERCENT",
+  "aggregation": "MAX_OF_FIVE_SAMPLES_AS_ACCEPTED_P95",
+  "measurement_window_seconds": 10,
+  "minimum_sample_count": 5,
+  "resource_fault_observed": true,
+  "resource_recovery_windows_required": 2,
+  "baseline_cpu_p95_percent": "1.162",
+  "calibration_fault_cpu_p95_percent": "406.326",
+  "baseline_plus_10pp_cpu_p95_percent": "11.162",
+  "ten_percent_fault_cpu_p95_percent": "40.6326",
+  "resource_recovery_threshold_cpu_p95_percent": "11.162",
+  "resource_recovery_formula_id": "BASELINE_PLUS_10PP_AND_90_PERCENT_FAULT_REDUCTION_V1",
+  "calibration_capacity_ratio": "0.2709",
+  "capacity_ratio_ceiling": "0.5",
+  "business_metric": "LATENCY_P95_MS",
+  "baseline_business_latency_p95_ms": "3.386",
+  "calibration_fault_business_latency_p95_ms": "3.296",
+  "business_delta_threshold_ms": "5.0",
+  "business_ratio_threshold": "2.0",
+  "business_guardrail_binding_sha256": "5bab6c7f05b2147b7eef304749c22d6db4fdb6d0c9ba68d794fda8fdfb6a7781",
+  "business_impact_observed": false,
+  "user_visible_recovery_claimed": false,
+  "baseline_observation_sha256": "2ef6cab642f59edb1a232d8962d05884ded5cc107c8da5956bba33466f5fb799",
+  "fault_observation_sha256": "5df265c78152c76fd94bfeaa338aa154b721cfacc1e0e2a52ca485aa48c41299",
+  "calibration_source_artifacts": [
+    {
+      "logical_path": "private://dta-v21-p0-master-v1/pr-d/captures/7d5e988b133f1a46bd04c82d9cfabd04/capture-campaign-closure.json",
+      "raw_sha256": "264346ba1b49bd02743a2ef1b308992fcdfdf9a63085db20e1226466215cf0d2",
+      "semantic_sha256": "ae2f447b468c8640d539f8193ff8c7b0800bf00edf8cee6b254c9df3c843d706"
+    },
+    {
+      "logical_path": "repo://docs/review-evidence/dta-v21-evaluation-freeze/capture-calibration-limitations.md",
+      "raw_sha256": "277caa488575bd55890ad9dc2575e6320e91ca124cadea78755875673e1ae31a",
+      "semantic_sha256": null
+    },
+    {
+      "logical_path": "repo://src/ecomsre/dta_v2/v21/owned_capture.py",
+      "raw_sha256": "9901b6a120af0f74892118d3c4da6a9d93ab6e98c268943aa85c2b3889d988bc",
+      "semantic_sha256": null
+    }
+  ],
+  "protocol_sha256": "c983b9be95b532cdbb8fb5358af92055e633fd767693e9dc65743b3e80a77517"
+}

@@ -116,6 +116,9 @@ jobs:
       - name: DTA v2.1 public held-out evaluation verification
         run: make dta-v21-held-out-report-verify
 
+      - name: DTA v2.1 PR-F resource-recovery protocol verification
+        run: make dta-v21-pr-f-protocol-verify
+
       - name: Phase 5B execution historical bindings for successors
         run: >-
           env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"

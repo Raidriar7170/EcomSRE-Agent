@@ -290,12 +290,14 @@ DTA_V21_EVALUATION_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sy
 DTA_V21_EVALUATION_VERIFY_CLI := env PYTHONPATH="$(PROJECT_ROOT):$(PYTHONPATH)" uv run --frozen --no-sync python -m scripts.ci.verify_dta_v21_evaluation_freeze
 DTA_V21_HELD_OUT_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.dta_v2.v21.held_out_cli
 DTA_V21_HELD_OUT_VERIFY_CLI := env PYTHONPATH="$(PROJECT_ROOT):$(PYTHONPATH)" uv run --frozen --no-sync python -m scripts.ci.verify_dta_v21_held_out
+DTA_V21_PR_F_PROTOCOL_VERIFY_CLI := env PYTHONPATH="$(PROJECT_ROOT):$(PYTHONPATH)" uv run --frozen --no-sync python -m scripts.ci.verify_dta_v21_pr_f_protocol
 DTA_V21_EVALUATION_ROOT := $(PROJECT_ROOT)/config/dta-v21/evaluation
 
 .PHONY: dta-v21-historical-verify dta-v21-test dta-v21-replay-verify \
 	dta-v21-development-eval dta-v21-development-verify \
 	dta-v21-held-out-execute dta-v21-held-out-score \
-	dta-v21-held-out-report-verify
+	dta-v21-held-out-report-verify dta-v21-pr-f-protocol-verify \
+	dta-v21-pr-f-protocol-private-verify
 
 dta-v21-historical-verify: phase1-prerequisites
 	$(DTA_V21_HISTORICAL_BINDINGS_CLI)
@@ -371,4 +373,13 @@ dta-v21-held-out-score: phase1-prerequisites
 
 dta-v21-held-out-report-verify: dta-v21-historical-verify
 	$(DTA_V21_HELD_OUT_VERIFY_CLI) --project-root "$(PROJECT_ROOT)"
+
+dta-v21-pr-f-protocol-verify: dta-v21-historical-verify
+	$(DTA_V21_PR_F_PROTOCOL_VERIFY_CLI) --project-root "$(PROJECT_ROOT)"
+
+dta-v21-pr-f-protocol-private-verify: dta-v21-historical-verify
+	@test -n "$(DTA_V21_ACCEPTED_PRIVATE_ROOT)" || { echo "DTA_V21_ACCEPTED_PRIVATE_ROOT is required" >&2; exit 2; }
+	$(DTA_V21_PR_F_PROTOCOL_VERIFY_CLI) \
+		--project-root "$(PROJECT_ROOT)" \
+		--private-root "$(DTA_V21_ACCEPTED_PRIVATE_ROOT)"
 # END DTA_V21_SUCCESSOR_TARGETS

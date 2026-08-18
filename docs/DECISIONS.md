@@ -925,6 +925,54 @@ training, new Multi-Agent orchestration, Computer Use, Kubernetes, cloud,
 generic shell, generic feature-flag writes, generic service restart, UI work,
 production, release, and deployment remain excluded.
 
+## DEC-044 — DTA v2.1 PR-F Ad CPU Resource-Only Recovery Protocol
+
+**Status: `accepted` only under the user-designated
+`dta-v21-p0-prf-ad-cpu-resource-recovery-v1` amendment.**
+
+The binding fields are:
+
+```text
+effective scope: DTA v2.1 P0 PR-F only
+fault: adHighCpu off -> on on the exact owned Ad service
+fault_impact_kind: RESOURCE_ONLY
+resource_fault_observed: true
+business_impact_observed: false
+business_sli_role: NON_REGRESSION_GUARDRAIL
+required recovery claim: RESOURCE_STATE_RECOVERED
+forbidden recovery claims: BUSINESS_SLI_RECOVERED, USER_IMPACT_RECOVERED,
+  CUSTOMER_IMPACT_RECOVERED
+held-out effect: none
+PR-D effect: none; accepted calibration remains immutable
+PR-E effect: none; seal, execution, score, and negative claim remain immutable
+```
+
+This amendment was accepted before the first PR-F live attempt. It prevents
+post-hoc oracle changes; it does not enable them.
+
+The PR-F Ad CPU slot is classified as `RESOURCE_ONLY`. Its recovery oracle is
+two consecutive fresh ten-second post-mitigation windows from the same run and
+attempt, using the accepted PR-D five-sample Ad CPU-percent query and unit. In
+each window CPU p95 must be at or below `11.162%`, the lower of accepted
+baseline `1.162% + 10` percentage points and ten percent of accepted fault
+`406.326%`; CPU capacity ratio must also be at or below `0.5`.
+
+The accepted PR-D Ad calibration observed no business impact. Therefore the
+business latency SLI is a `NON_REGRESSION_GUARDRAIL`, never a recovery oracle.
+The frozen substantive predicate remains latency p95 at least baseline plus
+`5 ms` and at least twice baseline. Both post-mitigation windows must report
+that predicate false, service health `PASS`, and the endpoint reachable. The
+only positive Ad terminal is `AD_CPU_RESOURCE_RECOVERY_PASS`; public evidence
+must keep `business_impact_observed=false` and
+`user_visible_recovery_claimed=false`.
+
+The typed protocol binds the accepted PR-D closure raw and semantic hashes,
+both selected Ad observation hashes, the calibration-limitations bytes, and
+the exact accepted measurement source. This amendment changes only the Ad CPU
+business-impact and recovery oracle. PR-D, PR-E, the held-out seal, execution,
+result, and negative planner-advantage claim remain immutable and may not be
+rerun or relabeled.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)
