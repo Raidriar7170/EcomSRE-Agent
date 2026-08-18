@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 from typing import Literal
 
-from pydantic import model_validator
+from pydantic import Field, model_validator
 from pydantic_core import to_jsonable_python
 from typing_extensions import Self
 
@@ -154,7 +154,7 @@ class PublicLiveCapabilityCloseoutReportV4(DtaModelV21):
     terminal: Literal[
         "DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_FROZEN_AGENT_CAPABILITY_LIMITATIONS"
     ]
-    closeout_source_code_head: str
+    closeout_source_code_head: str = Field(pattern=r"^[0-9a-f]{40}$")
     candidate_scope_sha256: Sha256V21
     base_readme_sha256: Sha256V21
     base_progress_raw_sha256: Sha256V21

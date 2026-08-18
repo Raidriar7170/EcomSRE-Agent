@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from ecomsre.dta_v2.v21.contracts import semantic_sha256
 from ecomsre.dta_v2.v21.live_final_cli import (
     _load_verified_public_projection,
     _pending_disposition,
@@ -290,6 +291,24 @@ def test_public_v4_report_rebuilds_deterministically_from_accepted_private() -> 
 def test_public_v4_rejects_pass_overclaims_and_private_paths(claim: str) -> None:
     with pytest.raises(ValueError):
         verify_public_text_v4(claim)
+
+
+def test_public_v4_rejects_private_path_in_source_head() -> None:
+    repository = Path(__file__).resolve().parents[2]
+    report = PublicLiveCapabilityCloseoutReportV4.model_validate_json(
+        (
+            repository
+            / "docs/results/dta-v21-live-capability-closeout.json"
+        ).read_text(encoding="utf-8")
+    )
+    payload = report.model_dump(mode="json")
+    payload["closeout_source_code_head"] = "/Users/private/provider.env"
+    payload["report_sha256"] = semantic_sha256(
+        {key: value for key, value in payload.items() if key != "report_sha256"}
+    )
+
+    with pytest.raises(ValueError, match="closeout_source_code_head"):
+        PublicLiveCapabilityCloseoutReportV4.model_validate(payload)
 
 
 def test_readme_projection_scans_only_hash_bound_v4_block() -> None:
