@@ -175,4 +175,3 @@ jobs:
           scripts/live_sandbox
           tests/dta_v21
           tests/phase5b
-          tests/dta_v21
