@@ -291,13 +291,19 @@ DTA_V21_EVALUATION_VERIFY_CLI := env PYTHONPATH="$(PROJECT_ROOT):$(PYTHONPATH)" 
 DTA_V21_HELD_OUT_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.dta_v2.v21.held_out_cli
 DTA_V21_HELD_OUT_VERIFY_CLI := env PYTHONPATH="$(PROJECT_ROOT):$(PYTHONPATH)" uv run --frozen --no-sync python -m scripts.ci.verify_dta_v21_held_out
 DTA_V21_PR_F_PROTOCOL_VERIFY_CLI := env PYTHONPATH="$(PROJECT_ROOT):$(PYTHONPATH)" uv run --frozen --no-sync python -m scripts.ci.verify_dta_v21_pr_f_protocol
+DTA_V21_LIVE_CLI := env PYTHONPATH="$(PYTHONPATH)" uv run --frozen --no-sync python -m ecomsre.dta_v2.v21.live_cli
+DTA_V21_LIVE_VERIFY_CLI := env PYTHONPATH="$(PROJECT_ROOT):$(PYTHONPATH)" uv run --frozen --no-sync python -m scripts.ci.verify_dta_v21_live
 DTA_V21_EVALUATION_ROOT := $(PROJECT_ROOT)/config/dta-v21/evaluation
 
 .PHONY: dta-v21-historical-verify dta-v21-test dta-v21-replay-verify \
 	dta-v21-development-eval dta-v21-development-verify \
 	dta-v21-held-out-execute dta-v21-held-out-score \
 	dta-v21-held-out-report-verify dta-v21-pr-f-protocol-verify \
-	dta-v21-pr-f-protocol-private-verify
+	dta-v21-pr-f-protocol-private-verify dta-v21-live-preflight \
+	dta-v21-live-demo dta-v21-live-report dta-v21-live-finalize \
+	dta-v21-live-closeout \
+	dta-v21-live-verify \
+	dta-v21-demo dta-v21-verify
 
 dta-v21-historical-verify: phase1-prerequisites
 	$(DTA_V21_HISTORICAL_BINDINGS_CLI)
@@ -382,4 +388,61 @@ dta-v21-pr-f-protocol-private-verify: dta-v21-historical-verify
 	$(DTA_V21_PR_F_PROTOCOL_VERIFY_CLI) \
 		--project-root "$(PROJECT_ROOT)" \
 		--private-root "$(DTA_V21_ACCEPTED_PRIVATE_ROOT)"
+
+dta-v21-live-preflight: dta-v21-pr-f-protocol-private-verify
+	@test -n "$(DTA_V21_PROVIDER_ENV)" || { echo "DTA_V21_PROVIDER_ENV is required" >&2; exit 2; }
+	@test -n "$(DTA_V21_EXACT_HEAD_CI_SHA)" || { echo "DTA_V21_EXACT_HEAD_CI_SHA is required" >&2; exit 2; }
+	$(DTA_V21_LIVE_CLI) preflight \
+		--repository-root "$(PROJECT_ROOT)" \
+		--private-root "$(DTA_V21_ACCEPTED_PRIVATE_ROOT)" \
+		--provider-env "$(DTA_V21_PROVIDER_ENV)" \
+		--exact-head-ci-sha "$(DTA_V21_EXACT_HEAD_CI_SHA)"
+
+dta-v21-live-demo: dta-v21-historical-verify
+	@test -n "$(DTA_V21_ACCEPTED_PRIVATE_ROOT)" || { echo "DTA_V21_ACCEPTED_PRIVATE_ROOT is required" >&2; exit 2; }
+	@test -n "$(DTA_V21_PROVIDER_ENV)" || { echo "DTA_V21_PROVIDER_ENV is required" >&2; exit 2; }
+	@test "$(DTA_V21_LIVE_EXECUTE)" = "USER_EXPLICIT_DTA_V21_PRF_RESOURCE_RECOVERY_AMENDMENT" || { echo "exact DTA_V21_LIVE_EXECUTE confirmation is required" >&2; exit 2; }
+	$(DTA_V21_LIVE_CLI) execute \
+		--repository-root "$(PROJECT_ROOT)" \
+		--private-root "$(DTA_V21_ACCEPTED_PRIVATE_ROOT)" \
+		--provider-env "$(DTA_V21_PROVIDER_ENV)"
+
+dta-v21-live-report: dta-v21-historical-verify
+	@test -n "$(DTA_V21_ACCEPTED_PRIVATE_ROOT)" || { echo "DTA_V21_ACCEPTED_PRIVATE_ROOT is required" >&2; exit 2; }
+	$(DTA_V21_LIVE_CLI) report \
+		--repository-root "$(PROJECT_ROOT)" \
+		--private-root "$(DTA_V21_ACCEPTED_PRIVATE_ROOT)"
+
+dta-v21-live-finalize: dta-v21-live-verify
+	@test -n "$(DTA_V21_EXACT_HEAD_CI_SHA)" || { echo "DTA_V21_EXACT_HEAD_CI_SHA is required" >&2; exit 2; }
+	@test -n "$(DTA_V21_INDEPENDENT_REVIEW_HEAD)" || { echo "DTA_V21_INDEPENDENT_REVIEW_HEAD is required" >&2; exit 2; }
+	@test "$(DTA_V21_INDEPENDENT_REVIEW_CONFIRMATION)" = "MUST_FIX_0_CLAIM_ACCURACY_PASS" || { echo "exact independent review confirmation is required" >&2; exit 2; }
+	@test -n "$(DTA_V21_ACTIVE_PR)" || { echo "DTA_V21_ACTIVE_PR is required" >&2; exit 2; }
+	$(DTA_V21_LIVE_CLI) finalize \
+		--repository-root "$(PROJECT_ROOT)" \
+		--exact-head-ci-sha "$(DTA_V21_EXACT_HEAD_CI_SHA)" \
+		--independent-review-head "$(DTA_V21_INDEPENDENT_REVIEW_HEAD)" \
+		--independent-review-confirmation "$(DTA_V21_INDEPENDENT_REVIEW_CONFIRMATION)" \
+		--active-pr "$(DTA_V21_ACTIVE_PR)"
+
+dta-v21-live-closeout: dta-v21-live-verify
+	@test -n "$(DTA_V21_EXACT_HEAD_CI_SHA)" || { echo "DTA_V21_EXACT_HEAD_CI_SHA is required" >&2; exit 2; }
+	@test -n "$(DTA_V21_INDEPENDENT_REVIEW_HEAD)" || { echo "DTA_V21_INDEPENDENT_REVIEW_HEAD is required" >&2; exit 2; }
+	@test "$(DTA_V21_INDEPENDENT_REVIEW_CONFIRMATION)" = "MUST_FIX_0_CLAIM_ACCURACY_PASS" || { echo "exact independent review confirmation is required" >&2; exit 2; }
+	$(DTA_V21_LIVE_CLI) closeout \
+		--repository-root "$(PROJECT_ROOT)" \
+		--exact-head-ci-sha "$(DTA_V21_EXACT_HEAD_CI_SHA)" \
+		--independent-review-head "$(DTA_V21_INDEPENDENT_REVIEW_HEAD)" \
+		--independent-review-confirmation "$(DTA_V21_INDEPENDENT_REVIEW_CONFIRMATION)"
+
+dta-v21-live-verify: dta-v21-pr-f-protocol-verify
+	$(DTA_V21_LIVE_VERIFY_CLI) --project-root "$(PROJECT_ROOT)"
+
+# Safe public surface: deterministic replay plus checked-in report verification.
+# It never invokes the Provider or local Docker execution commands above.
+dta-v21-demo: dta-v21-replay-verify dta-v21-live-verify
+
+dta-v21-verify: dta-v21-test dta-v21-replay-verify \
+	dta-v21-development-verify dta-v21-held-out-report-verify \
+	dta-v21-pr-f-protocol-verify dta-v21-live-verify
 # END DTA_V21_SUCCESSOR_TARGETS

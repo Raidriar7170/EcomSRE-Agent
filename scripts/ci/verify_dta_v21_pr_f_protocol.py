@@ -22,13 +22,24 @@ from scripts.ci.verify_dta_v2_historical_bindings import verify_historical_bindi
 PROTOCOL_RELATIVE = Path("config/dta-v21/live/ad-cpu-resource-recovery.v1.json")
 PROGRESS_RELATIVE = Path("docs/analysis/dta-v21-p0-master-progress.json")
 DECISIONS_RELATIVE = Path("docs/DECISIONS.md")
-HISTORICAL_BINDINGS_RELATIVE = Path(
-    "config/dta-v21/historical-v2-bindings.v1.json"
-)
+HISTORICAL_BINDINGS_RELATIVE = Path("config/dta-v21/historical-v2-bindings.v1.json")
 
 
 def _verify_pr_f_targets_do_not_reach_held_out_execution(makefile: str) -> None:
-    lines = makefile.splitlines()
+    lines: list[str] = []
+    logical_pending = ""
+    for physical in makefile.splitlines():
+        if logical_pending:
+            logical_pending += physical.lstrip()
+        else:
+            logical_pending = physical
+        if logical_pending.rstrip().endswith("\\"):
+            logical_pending = logical_pending.rstrip()[:-1] + " "
+            continue
+        lines.append(logical_pending)
+        logical_pending = ""
+    if logical_pending:
+        lines.append(logical_pending)
     prerequisites: dict[str, set[str]] = {}
     recipes: dict[str, list[str]] = {}
     current_targets: tuple[str, ...] = ()
@@ -48,33 +59,35 @@ def _verify_pr_f_targets_do_not_reach_held_out_execution(makefile: str) -> None:
             current_targets = ()
 
     roots = tuple(
-        target for target in prerequisites if target.startswith("dta-v21-pr-f-")
+        target
+        for target in prerequisites
+        if target.startswith(("dta-v21-pr-f-", "dta-v21-live-"))
+        or target in {"dta-v21-demo", "dta-v21-verify"}
     )
     if not roots:
         raise ValueError("no PR-F Make target is defined")
     forbidden_target = re.compile(r"dta-v21-held-out-(?:execute|score)", re.I)
     forbidden_recipe = re.compile(
-        r"(?:dta[_-]v21[_-]held[_-]out[_-]cli|held[_-]out[_-]cli)"
+        r"(?:dta[_.-]v21[_.-]held[_.-]out(?:[_.-]cli)?|"
+        r"held[_.-]out(?:[_.-]cli)?)"
         r"[^\n]*(?:execute|score)",
         re.I,
     )
     for root in roots:
-        pending = [root]
+        pending_targets = [root]
         visited: set[str] = set()
-        while pending:
-            target = pending.pop()
+        while pending_targets:
+            target = pending_targets.pop()
             if target in visited:
                 continue
             visited.add(target)
-            recipe = re.sub(
-                r"\\\n[ \t]*", " ", "\n".join(recipes.get(target, ()))
-            )
+            recipe = re.sub(r"\\\n[ \t]*", " ", "\n".join(recipes.get(target, ())))
             if forbidden_target.search(target) or forbidden_recipe.search(recipe):
                 raise ValueError("a PR-F target reaches held-out execution or scoring")
             dependencies = prerequisites.get(target, ())
             if any(forbidden_target.search(item) for item in dependencies):
                 raise ValueError("a PR-F target reaches held-out execution or scoring")
-            pending.extend(
+            pending_targets.extend(
                 dependency for dependency in dependencies if dependency in prerequisites
             )
 
@@ -94,20 +107,56 @@ def verify_pr_f_protocol(
     progress = json.loads(progress_path.read_text(encoding="utf-8"))
     required_progress = {
         "active_amendment_version": protocol.amendment_version,
-        "completed_stage": "PR-E",
-        "current_stage": "PR-F",
         "held_out_seal_sha256": (
             "9a7c8e56400e99c693c8bddc26007b1dd26e0dcee2167b07cf3fba00fd22fbd7"
         ),
         "held_out_execution_id": "53615cdd78b348b68496f64102c0b4de",
-        "held_out_claim": (
-            "DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED"
-        ),
+        "held_out_claim": ("DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED"),
         "ad_cpu_resource_recovery_protocol_sha256": protocol.protocol_sha256,
     }
     for field, expected in required_progress.items():
         if progress.get(field) != expected:
-            raise ValueError(f"master progress field {field} differs from PR-F protocol")
+            raise ValueError(
+                f"master progress field {field} differs from PR-F protocol"
+            )
+    stage = (progress.get("completed_stage"), progress.get("current_stage"))
+    if stage == ("PR-E", "PR-F"):
+        if (
+            progress.get("live_demo_terminal") is not None
+            or progress.get("final_engineering_terminal") is not None
+        ):
+            raise ValueError("open PR-F progress carries a final terminal")
+    elif stage == ("PR-F", "COMPLETE"):
+        merged_prs = progress.get("merged_prs")
+        if (
+            progress.get("live_demo_terminal")
+            != "DTA_V21_P0_ENGINEERING_ACCEPTANCE_PASS"
+            or progress.get("final_engineering_terminal")
+            != "DTA_V21_P0_ENGINEERING_ACCEPTANCE_PASS"
+            or progress.get("active_branch") is not None
+            or progress.get("active_pr") is not None
+            or not isinstance(merged_prs, list)
+            or merged_prs[:5] != [50, 51, 52, 53, 54]
+            or len(merged_prs) != 6
+            or not isinstance(merged_prs[-1], int)
+            or isinstance(merged_prs[-1], bool)
+            or merged_prs[-1] < 55
+            or re.fullmatch(r"[0-9a-f]{40}", str(progress.get("main_head"))) is None
+            or re.fullmatch(r"[0-9a-f]{64}", str(progress.get("live_report_sha256")))
+            is None
+            or re.fullmatch(
+                r"[0-9a-f]{40}", str(progress.get("live_execution_code_head"))
+            )
+            is None
+            or re.fullmatch(
+                r"[0-9a-f]{64}",
+                str(progress.get("live_execution_scope_sha256")),
+            )
+            is None
+        ):
+            raise ValueError("closed PR-F progress differs from final acceptance")
+    else:
+        raise ValueError("master progress stage differs from PR-F protocol")
 
     decisions_path = root / DECISIONS_RELATIVE
     if decisions_path.is_symlink() or not decisions_path.is_file():
@@ -173,9 +222,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--project-root", type=Path, required=True)
     parser.add_argument("--private-root", type=Path)
     args = parser.parse_args(argv)
-    protocol = verify_pr_f_protocol(
-        args.project_root, private_root=args.private_root
-    )
+    protocol = verify_pr_f_protocol(args.project_root, private_root=args.private_root)
     print(
         "DTA_V21_PR_F_PROTOCOL_VERIFIED "
         f"protocol_sha256={protocol.protocol_sha256} "
