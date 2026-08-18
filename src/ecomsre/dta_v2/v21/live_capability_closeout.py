@@ -268,6 +268,7 @@ class NoFaultCapabilityMissV1(DtaModelV21):
     scenario: Literal[LiveScenarioV21.NO_FAULT]
     stage: Literal["AGENT"]
     attempt_terminal: Literal["BLOCKED_DTA_V21_PRF_SAFETY"]
+    campaign_terminal: Literal["BLOCKED_DTA_V21_PRF_RETRY_EXHAUSTED"]
     agent_terminal: Literal["COMPLETED"]
     diagnosis_root_service: Literal["checkout"]
     diagnosis_root_entity_ref: Literal["service:checkout"]
@@ -604,6 +605,7 @@ def verify_no_fault_capability_miss_eligibility_v1(
         scenario=LiveScenarioV21.NO_FAULT,
         stage="AGENT",
         attempt_terminal="BLOCKED_DTA_V21_PRF_SAFETY",
+        campaign_terminal="BLOCKED_DTA_V21_PRF_RETRY_EXHAUSTED",
         agent_terminal=result.terminal.value,
         diagnosis_root_service=diagnosis.root_service,
         diagnosis_root_entity_ref=diagnosis.root_entity_ref,

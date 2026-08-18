@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import re
-import subprocess
 from typing import Sequence
 
 from ecomsre.dta_v2.v21.live_protocol import (
@@ -32,7 +32,96 @@ RECONCILIATION_SOURCE_RELATIVE = Path(
 CAPABILITY_SOURCE_RELATIVE = Path(
     "src/ecomsre/dta_v2/v21/live_capability_closeout.py"
 )
-CAPABILITY_BASE_HEAD = "a167285a6a1d691709f229b26d167a7cd7c10fa0"
+_CAPABILITY_FROZEN_PATHS = (
+    "src/ecomsre/dta_v2/v21/prompts.py",
+    "src/ecomsre/dta_v2/v21/live_protocol.py",
+    "config/dta-v21/agent-identities",
+    "config/dta-v21/scenarios/agent-visible/dta21-dev-005.json",
+    "config/dta-v21/scenarios/evaluator-contract/dta21-dev-005.json",
+    "config/dta-v21/live/ad-cpu-resource-recovery.v1.json",
+    "config/dta-v21/live/live-demo.v1.json",
+    "config/dta-v21/runbooks",
+    "config/dta-v21/evaluation",
+    "docs/results/dta-v21-evaluation.json",
+    "docs/results/dta-v21-evaluation.md",
+    "docs/results/dta-v21-ablation.json",
+    "docs/results/dta-v21-ablation.md",
+)
+_CAPABILITY_FROZEN_SCOPE_SHA256 = (
+    "d53c5b295ca2288348effc0fa18719ba966097f605f32e2c33bc1dea2983adfc"
+)
+_DECISION_SECTION_SHA256 = {
+    "DEC-044": "17c25a166656a9ab39006e72110faf382dea6ecb8774a0ad05e589db7a0483b0",
+    "DEC-045": "d1acb0950fdc00b6fcdb3f20b4bb8fbee33561b421a5d8404806bcc631a8d17b",
+}
+
+
+def _decision_section(text: str, decision_id: str) -> str:
+    marker = f"## {decision_id} —"
+    if text.count(marker) != 1:
+        raise ValueError(f"{decision_id} must appear exactly once")
+    start = text.index(marker)
+    end = text.find("\n## ", start + len(marker))
+    return text[start:] if end < 0 else text[start : end + 1]
+
+
+def _decision_section_sha256(text: str, decision_id: str) -> str:
+    return hashlib.sha256(
+        _decision_section(text, decision_id).encode("utf-8")
+    ).hexdigest()
+
+
+def _capability_frozen_scope_sha256(
+    root: Path, *, frozen_paths: tuple[str, ...] = _CAPABILITY_FROZEN_PATHS
+) -> str:
+    entries: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for relative in frozen_paths:
+        path = root / relative
+        if path.is_symlink() or not path.exists():
+            raise ValueError(f"frozen capability path is missing or unsafe: {relative}")
+        candidates = tuple(sorted(path.rglob("*"))) if path.is_dir() else (path,)
+        for candidate in candidates:
+            if candidate.is_symlink():
+                raise ValueError("frozen capability scope contains a symlink")
+            if candidate.is_dir():
+                continue
+            if not candidate.is_file():
+                raise ValueError("frozen capability scope contains a special file")
+            candidate_relative = candidate.relative_to(root).as_posix()
+            if candidate_relative in seen:
+                continue
+            seen.add(candidate_relative)
+            entries.append(
+                (
+                    candidate_relative,
+                    hashlib.sha256(candidate.read_bytes()).hexdigest(),
+                )
+            )
+    if not entries:
+        raise ValueError("frozen capability scope is empty")
+    return semantic_sha256(tuple(sorted(entries)))
+
+
+def _verify_capability_frozen_scope(
+    root: Path,
+    *,
+    frozen_paths: tuple[str, ...] = _CAPABILITY_FROZEN_PATHS,
+    expected_scope_sha256: str = _CAPABILITY_FROZEN_SCOPE_SHA256,
+    expected_decision_sections: dict[str, str] = _DECISION_SECTION_SHA256,
+) -> None:
+    if (
+        _capability_frozen_scope_sha256(root, frozen_paths=frozen_paths)
+        != expected_scope_sha256
+    ):
+        raise ValueError("Amendment-3 frozen Agent, oracle, or evaluation scope changed")
+    decisions_path = root / DECISIONS_RELATIVE
+    if decisions_path.is_symlink() or not decisions_path.is_file():
+        raise ValueError("Decision Register must be a regular file")
+    decisions = decisions_path.read_text(encoding="utf-8")
+    for decision_id, expected in expected_decision_sections.items():
+        if _decision_section_sha256(decisions, decision_id) != expected:
+            raise ValueError(f"{decision_id} changed after Amendment-3 freeze")
 
 
 def _verify_pr_f_targets_do_not_reach_held_out_execution(makefile: str) -> None:
@@ -194,6 +283,8 @@ def verify_pr_f_protocol(
             or progress.get("live_report_sha256") != report.report_sha256
             or progress.get("live_execution_code_head")
             != report.live_execution_code_head
+            or progress.get("live_execution_scope_sha256")
+            != report.live_execution_scope_sha256
             or disposition_sha256 != semantic_sha256(disposition)
             or disposition.get("merged_pr") != 55
             or disposition.get("merged_main_head") != progress.get("main_head")
@@ -239,6 +330,7 @@ def verify_pr_f_protocol(
         "No-Fault Capability-Miss Preservation and Positive-Slot Continuation",
         "diagnosis capability miss with successful no-write",
         "No additional No-Fault",
+        "BLOCKED_DTA_V21_PRF_RETRY_EXHAUSTED",
         "DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_NO_FAULT_DIAGNOSIS_MISS",
         "24cc236c1892c9992b6d36da377608c34fb22c2bc270f99349e5e8a4e0a0498a",
     ):
@@ -274,25 +366,7 @@ def verify_pr_f_protocol(
         if marker not in capability_text:
             raise ValueError(f"PR-F capability-closeout source is missing {marker}")
 
-    protected_paths = (
-        "src/ecomsre/dta_v2/v21/prompts.py",
-        "src/ecomsre/dta_v2/v21/live_protocol.py",
-        "config/dta-v21/live/ad-cpu-resource-recovery.v1.json",
-        "config/dta-v21/live/live-demo.v1.json",
-        "config/dta-v21/runbooks",
-        "config/dta-v21/evaluation",
-        "docs/results/dta-v21-evaluation.json",
-        "docs/results/dta-v21-evaluation.md",
-        "docs/results/dta-v21-ablation.json",
-        "docs/results/dta-v21-ablation.md",
-    )
-    frozen = subprocess.run(
-        ("git", "diff", "--quiet", CAPABILITY_BASE_HEAD, "--", *protected_paths),
-        cwd=root,
-        check=False,
-    )
-    if frozen.returncode != 0:
-        raise ValueError("Amendment-3 frozen Agent, oracle, or evaluation scope changed")
+    _verify_capability_frozen_scope(root)
 
     verify_public_held_out_report_v21(
         public_evaluation_json=root / "docs/results/dta-v21-evaluation.json",

@@ -1022,6 +1022,9 @@ The result is therefore a diagnosis capability miss with successful no-write
 safety, not a live-slot pass and not a safety incident. No additional No-Fault
 sample is authorized. The model output, verifier, Prompt, identity, Provider
 configuration, CandidateSet behavior, and evaluator oracle remain unchanged.
+The consumed retry's campaign-level terminal remains
+`BLOCKED_DTA_V21_PRF_RETRY_EXHAUSTED`; this limitation closeout does not delete,
+replace, or relabel it.
 
 One append-only continuation may execute only the three unattempted positive
 slots, in the fixed order Ad CPU, Email unavailable, Product Catalog

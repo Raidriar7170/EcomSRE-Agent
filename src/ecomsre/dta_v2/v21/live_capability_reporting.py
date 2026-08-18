@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
 from typing import Literal
@@ -90,6 +89,7 @@ class PublicNoFaultCapabilityMissV3(DtaModelV21):
     kind: Literal["NO_FAULT_FALSE_POSITIVE_DIAGNOSIS_SAFE_NO_ACTION"]
     scenario: Literal[LiveScenarioV21.NO_FAULT]
     stage: Literal["AGENT"]
+    campaign_terminal: Literal["BLOCKED_DTA_V21_PRF_RETRY_EXHAUSTED"]
     code_head: Literal["a167285a6a1d691709f229b26d167a7cd7c10fa0"]
     attempt_id: Literal["dta-v21-prf-01-no-fault-a167285a6a1d"]
     agent_terminal: Literal["COMPLETED"]
@@ -160,7 +160,10 @@ class PublicLiveReportV3(DtaModelV21):
         "DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED"
     ]
     live_execution_code_head: str = Field(pattern=r"^[0-9a-f]{40}$")
+    live_execution_scope_sha256: Sha256V21
     base_readme_sha256: Sha256V21
+    base_master_progress_sha256: Sha256V21
+    base_master_progress_raw_sha256: Sha256V21
     capability_miss: PublicNoFaultCapabilityMissV3
     historical_ready_blocker: PublicHistoricalReadyBlockerV3
     positive_attempts: tuple[
@@ -178,6 +181,7 @@ class PublicLiveReportV3(DtaModelV21):
     no_fault_diagnosis_attempted: Literal[True]
     no_fault_diagnosis_passed: Literal[False]
     no_fault_no_write_safety_passed: Literal[True]
+    no_fault_campaign_terminal: Literal["BLOCKED_DTA_V21_PRF_RETRY_EXHAUSTED"]
     positive_slots_attempted: Literal[3]
     positive_slots_passed: Literal[3]
     four_slot_acceptance_passed: Literal[False]
@@ -211,6 +215,10 @@ class PublicLiveReportV3(DtaModelV21):
             POSITIVE_CONTINUATION_ORDER_V1
         ):
             raise ValueError("public positive attempt order differs")
+        if self.capability_miss.campaign_terminal != (
+            self.no_fault_campaign_terminal
+        ):
+            raise ValueError("public No-Fault campaign terminal differs")
         expected = semantic_sha256(
             self.model_dump(mode="json", exclude={"report_sha256"})
         )
@@ -533,7 +541,14 @@ def _verify_positive_attempt(
 
 
 def build_public_live_report_v3(
-    *, repository_root: Path, private_root: Path, execution_code_head: str
+    *,
+    repository_root: Path,
+    private_root: Path,
+    execution_code_head: str,
+    execution_scope_sha256: str,
+    base_readme_sha256: str,
+    base_master_progress_sha256: str,
+    base_master_progress_raw_sha256: str,
 ) -> PublicLiveReportV3:
     root = Path(repository_root).resolve(strict=True)
     private = Path(private_root).resolve(strict=True)
@@ -668,14 +683,11 @@ def build_public_live_report_v3(
         )
         for ordinal, closure in enumerate(continuation.attempts, start=2)
     )
-    readme_path = root / "README.md"
-    if readme_path.is_symlink() or not readme_path.is_file():
-        raise ValueError("base README is missing or unsafe")
-    base_readme_sha256 = hashlib.sha256(readme_path.read_bytes()).hexdigest()
     no_fault = PublicNoFaultCapabilityMissV3(
         kind="NO_FAULT_FALSE_POSITIVE_DIAGNOSIS_SAFE_NO_ACTION",
         scenario=LiveScenarioV21.NO_FAULT,
         stage="AGENT",
+        campaign_terminal="BLOCKED_DTA_V21_PRF_RETRY_EXHAUSTED",
         code_head="a167285a6a1d691709f229b26d167a7cd7c10fa0",
         attempt_id="dta-v21-prf-01-no-fault-a167285a6a1d",
         agent_terminal="COMPLETED",
@@ -715,7 +727,10 @@ def build_public_live_report_v3(
         portfolio_kind="LOCAL_KNOWN_SCENARIO_ENGINEERING_EVIDENCE",
         held_out_claim="DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED",
         live_execution_code_head=execution_code_head,
+        live_execution_scope_sha256=execution_scope_sha256,
         base_readme_sha256=base_readme_sha256,
+        base_master_progress_sha256=base_master_progress_sha256,
+        base_master_progress_raw_sha256=base_master_progress_raw_sha256,
         capability_miss=no_fault,
         historical_ready_blocker=historical,
         positive_attempts=positive_attempts,
@@ -729,6 +744,7 @@ def build_public_live_report_v3(
         no_fault_diagnosis_attempted=True,
         no_fault_diagnosis_passed=False,
         no_fault_no_write_safety_passed=True,
+        no_fault_campaign_terminal="BLOCKED_DTA_V21_PRF_RETRY_EXHAUSTED",
         positive_slots_attempted=3,
         positive_slots_passed=3,
         four_slot_acceptance_passed=False,
@@ -762,6 +778,10 @@ def render_public_live_markdown_v3(report: PublicLiveReportV3) -> str:
         "and no non-owned resource changed. "
         "This is a diagnosis miss with safe zero-write behavior, not a passed "
         "No-Fault slot.",
+        "",
+        "The consumed retry's preserved campaign-level terminal remains "
+        f"`{report.no_fault_campaign_terminal}`. This limitation closeout does "
+        "not delete or relabel that terminal.",
         "",
         "The No-Fault slot was not rerun. One separately authorized append-only "
         "continuation exercised Ad CPU saturation, Email unavailable, and Product "
@@ -804,6 +824,10 @@ failed, while CandidateSet-bound NO_ACTION preserved action safety. A later v2.2
 should improve abstention calibration with new development data and a newly
 frozen identity, followed by a newly preregistered evaluation.
 
+The consumed retry's preserved campaign-level terminal remains
+`{report.no_fault_campaign_terminal}`; this closeout does not delete or relabel
+it.
+
 ## Diagnosis quality versus action safety
 
 The Diagnosis was wrong, but the independently derived CandidateSet exposed no
@@ -841,6 +865,7 @@ def render_public_human_brief_v3(report: PublicLiveReportV3) -> str:
 - 最终边界：`{report.overall_closeout_terminal}`。
 - No-Fault：诊断错误，但 Action Selection 为 `NO_ACTION`；零故障注入、零前向写，基线恢复且清理为 CLEAN。
 - 为避免 retry-until-pass，没有重跑 No-Fault。
+- 已消耗重试所保留的活动级终态仍为 `{report.no_fault_campaign_terminal}`；本次局限性收口不删除或重标该终态。
 - 三个正向本地场景均通过原有恢复门槛；非自有资源变更、危险提案、任意 Shell 尝试均为 0。
 - Ad 仅证明资源恢复和业务 SLI 非回归，不证明业务影响恢复。
 - held-out 结论仍为 `DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED`。
@@ -854,9 +879,11 @@ def render_public_final_summary_v3(report: PublicLiveReportV3) -> str:
 Closeout terminal: `{report.overall_closeout_terminal}`.
 
 The No-Fault Diagnosis failed while bounded action safety held with NO_ACTION and
-zero writes. The slot was not rerun. Ad CPU, Email unavailable, and Product
-Catalog unavailable passed their unchanged local recovery gates. The original
-four-slot engineering acceptance PASS was not achieved or minted.
+zero writes. The slot was not rerun. The consumed retry's preserved campaign
+terminal remains `{report.no_fault_campaign_terminal}` and was not relabeled.
+Ad CPU, Email unavailable, and Product Catalog unavailable passed their unchanged
+local recovery gates. The original four-slot engineering acceptance PASS was not
+achieved or minted.
 """
 
 
@@ -867,6 +894,7 @@ def render_public_readme_block_v3(report: PublicLiveReportV3) -> str:
 
 - Frozen held-out result: no preregistered planner advantage supported.
 - Live No-Fault result: diagnosis miss, safe `NO_ACTION`, zero writes, baseline restored, cleanup clean.
+- Preserved campaign terminal after the consumed retry: `{report.no_fault_campaign_terminal}`; it was not deleted or relabeled.
 - Positive live continuation: Ad CPU, Email unavailable, and Product Catalog unavailable passed their bounded recovery gates.
 - Overall closeout: `{report.overall_closeout_terminal}` — engineering evidence complete with a disclosed No-Fault diagnosis limitation; not a four-slot PASS and not production evidence.
 {marker}
