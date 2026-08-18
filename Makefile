@@ -339,7 +339,7 @@ dta-v21-held-out-execute: dta-v21-development-verify
 		--private-execution-root "$(DTA_V21_PRIVATE_EXECUTION_ROOT)" \
 		--execution-id "$(DTA_V21_EXECUTION_ID)" \
 		--execution-code-head "$(DTA_V21_EXECUTION_CODE_HEAD)" \
-		--git-audit-root "$(DTA_V21_PRIVATE_EXECUTION_ROOT)/git-audit" \
+		--git-audit-root "$(DTA_V21_PRIVATE_EXECUTION_ROOT)-git-audit" \
 		--freeze-manifest "$(DTA_V21_EVALUATION_ROOT)/manifest.json" \
 		--schedule "$(DTA_V21_EVALUATION_ROOT)/schedule.v1.json" \
 		--preregistration "$(DTA_V21_EVALUATION_ROOT)/preregistration.v1.json" \

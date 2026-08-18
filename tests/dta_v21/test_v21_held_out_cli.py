@@ -117,15 +117,16 @@ def _visible_case(case_id: str, scenario_id: str) -> AgentVisibleReplayCaseV21:
 
 
 class _GitRunner:
-    def __init__(self, head: str) -> None:
+    def __init__(self, head: str, *, status: str = "") -> None:
         self.head = head
+        self.status = status
 
     def run(self, arguments: tuple[str, ...], *, timeout_seconds: float):
         del timeout_seconds
         if arguments == ("git", "rev-parse", "HEAD"):
             return SimpleNamespace(exit_code=0, stdout=f"{self.head}\n")
         if arguments == ("git", "status", "--porcelain"):
-            return SimpleNamespace(exit_code=0, stdout="")
+            return SimpleNamespace(exit_code=0, stdout=self.status)
         if arguments[:2] == ("git", "show"):
             relative = arguments[2].split(":", 1)[1]
             return SimpleNamespace(
@@ -281,6 +282,13 @@ class _TransportFailureProvider(_AlwaysAbstainProvider):
         raise ConnectionError("synthetic external transport failure")
 
 
+class _ProtocolFailureProvider(_AlwaysAbstainProvider):
+    def investigation_turn(self, *, context, visible_state, read_tools_enabled):
+        del context, visible_state, read_tools_enabled
+        self.attempted_calls += 1
+        raise ValueError("synthetic external protocol failure")
+
+
 def test_execution_seals_exact_24_without_semantic_unblinding(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -300,6 +308,7 @@ def test_execution_seals_exact_24_without_semantic_unblinding(
         lambda *_args, **_kwargs: pytest.fail("truth semantics were unblinded"),
     )
     execution_root = tmp_path / "execution"
+    authoritative_claim = tmp_path / "claims" / f"{seal.seal_sha256}.json"
     execution = execute_held_out_evaluation_v21(
         repository_root=ROOT,
         provider_env_path=provider_env,
@@ -318,6 +327,7 @@ def test_execution_seals_exact_24_without_semantic_unblinding(
             else pytest.fail("invalid Provider config")
         ),
         created_at=START,
+        authoritative_claim_path=authoritative_claim,
     )
     monkeypatch.setattr(
         evaluation_contracts_module.EvaluatorCaseTruthV21,
@@ -332,6 +342,7 @@ def test_execution_seals_exact_24_without_semantic_unblinding(
             private_execution_root=execution_root,
             held_out_pack_seal=seal,
             schedule=schedule,
+            authoritative_claim_path=authoritative_claim,
         )
         == execution
     )
@@ -351,11 +362,70 @@ def test_execution_seals_exact_24_without_semantic_unblinding(
             git_runner=_GitRunner("c" * 40),
             provider_factory=lambda arm, config: _AlwaysAbstainProvider(arm),
             created_at=START,
+            authoritative_claim_path=authoritative_claim,
+        )
+    with pytest.raises(FileExistsError, match="already claimed"):
+        execute_held_out_evaluation_v21(
+            repository_root=ROOT,
+            provider_env_path=provider_env,
+            held_out_pack_root=pack,
+            private_execution_root=tmp_path / "alternate-execution",
+            execution_id="9" * 32,
+            execution_code_head="c" * 40,
+            freeze_manifest=freeze,
+            schedule=schedule,
+            preregistration=preregistration,
+            held_out_pack_seal=seal,
+            git_runner=_GitRunner("c" * 40),
+            provider_factory=lambda arm, config: _AlwaysAbstainProvider(arm),
+            created_at=START + timedelta(minutes=1),
+            authoritative_claim_path=authoritative_claim,
+        )
+
+    entry_claim = next(execution_root.glob("entries/*/entry-claim.json"))
+    entry_claim_bytes = entry_claim.read_bytes()
+    entry_claim.unlink()
+    with pytest.raises(ValueError, match="entry tree differs"):
+        verify_held_out_execution_seal_v21(
+            private_execution_root=execution_root,
+            held_out_pack_seal=seal,
+            schedule=schedule,
+            authoritative_claim_path=authoritative_claim,
+        )
+    entry_claim.write_bytes(entry_claim_bytes)
+    entry_claim.chmod(0o600)
+    unexpected = entry_claim.parent / "unexpected.json"
+    unexpected.write_text("{}\n", encoding="utf-8")
+    unexpected.chmod(0o600)
+    with pytest.raises(ValueError, match="entry tree differs"):
+        verify_held_out_execution_seal_v21(
+            private_execution_root=execution_root,
+            held_out_pack_seal=seal,
+            schedule=schedule,
+            authoritative_claim_path=authoritative_claim,
         )
 
 
-def test_transport_failures_are_typed_sealed_and_cannot_be_rerun(
+@pytest.mark.parametrize(
+    ("provider_type", "failure_code", "private_message"),
+    (
+        (
+            _TransportFailureProvider,
+            "PROVIDER_TRANSPORT_FAILURE",
+            "synthetic external transport failure",
+        ),
+        (
+            _ProtocolFailureProvider,
+            "PROVIDER_PROTOCOL_FAILURE",
+            "synthetic external protocol failure",
+        ),
+    ),
+)
+def test_provider_failures_are_typed_sealed_and_cannot_be_rerun(
     tmp_path: Path,
+    provider_type,
+    failure_code: str,
+    private_message: str,
 ) -> None:
     pack, freeze, schedule, preregistration, seal = _frozen_pack(tmp_path)
     provider_env = tmp_path / "provider.env"
@@ -367,6 +437,7 @@ def test_transport_failures_are_typed_sealed_and_cannot_be_rerun(
     )
     provider_env.chmod(0o600)
     execution_root = tmp_path / "execution"
+    authoritative_claim = tmp_path / "claims" / f"{seal.seal_sha256}.json"
     arguments = {
         "repository_root": ROOT,
         "provider_env_path": provider_env,
@@ -379,8 +450,9 @@ def test_transport_failures_are_typed_sealed_and_cannot_be_rerun(
         "preregistration": preregistration,
         "held_out_pack_seal": seal,
         "git_runner": _GitRunner("1" * 40),
-        "provider_factory": lambda arm, config: _TransportFailureProvider(arm),
+        "provider_factory": lambda arm, config: provider_type(arm),
         "created_at": START,
+        "authoritative_claim_path": authoritative_claim,
     }
     execution = execute_held_out_evaluation_v21(**arguments)
 
@@ -391,12 +463,52 @@ def test_transport_failures_are_typed_sealed_and_cannot_be_rerun(
     ]
     assert len(agent_results) == 24
     assert all('"terminal":"FAILED"' in item for item in agent_results)
-    assert all(
-        '"failure_code":"PROVIDER_TRANSPORT_FAILURE"' in item for item in agent_results
-    )
-    assert all("synthetic external" not in item for item in agent_results)
+    assert all(f'"failure_code":"{failure_code}"' in item for item in agent_results)
+    assert all(private_message not in item for item in agent_results)
     with pytest.raises(FileExistsError, match="already claimed"):
         execute_held_out_evaluation_v21(**arguments)
+
+
+@pytest.mark.parametrize(
+    ("runner", "message"),
+    (
+        (_GitRunner("3" * 40), "code HEAD differs"),
+        (_GitRunner("2" * 40, status=" M tracked.py\n"), "worktree is not clean"),
+    ),
+)
+def test_execution_rejects_head_mismatch_and_dirty_worktree_before_claim(
+    tmp_path: Path,
+    runner: _GitRunner,
+    message: str,
+) -> None:
+    pack, freeze, schedule, preregistration, seal = _frozen_pack(tmp_path)
+    provider_env = tmp_path / "provider.env"
+    provider_env.write_text(
+        "ECOMSRE_LLM_BASE_URL=https://example.com/v1\n"
+        "ECOMSRE_LLM_API_KEY=test-key\n"
+        f"ECOMSRE_LLM_MODEL={MODEL}\n",
+        encoding="utf-8",
+    )
+    provider_env.chmod(0o600)
+    authoritative_claim = tmp_path / "claims" / f"{seal.seal_sha256}.json"
+    with pytest.raises(ValueError, match=message):
+        execute_held_out_evaluation_v21(
+            repository_root=ROOT,
+            provider_env_path=provider_env,
+            held_out_pack_root=pack,
+            private_execution_root=tmp_path / "execution",
+            execution_id="8" * 32,
+            execution_code_head="2" * 40,
+            freeze_manifest=freeze,
+            schedule=schedule,
+            preregistration=preregistration,
+            held_out_pack_seal=seal,
+            git_runner=runner,
+            provider_factory=lambda arm, config: _AlwaysAbstainProvider(arm),
+            created_at=START,
+            authoritative_claim_path=authoritative_claim,
+        )
+    assert not authoritative_claim.exists()
 
 
 def test_unblinding_scores_once_and_publishes_bounded_reports(
@@ -412,6 +524,7 @@ def test_unblinding_scores_once_and_publishes_bounded_reports(
     )
     provider_env.chmod(0o600)
     execution_root = tmp_path / "execution"
+    authoritative_claim = tmp_path / "claims" / f"{seal.seal_sha256}.json"
     execution = execute_held_out_evaluation_v21(
         repository_root=ROOT,
         provider_env_path=provider_env,
@@ -426,6 +539,7 @@ def test_unblinding_scores_once_and_publishes_bounded_reports(
         git_runner=_GitRunner("e" * 40),
         provider_factory=lambda arm, config: _AlwaysAbstainProvider(arm),
         created_at=START,
+        authoritative_claim_path=authoritative_claim,
     )
     public_root = tmp_path / "public"
     unblinding_root = tmp_path / "unblinding"
@@ -454,6 +568,7 @@ def test_unblinding_scores_once_and_publishes_bounded_reports(
         public_evaluation_markdown=public_root / "dta-v21-evaluation.md",
         public_disposition_path=public_root / "current-disposition.json",
         unblinded_at=START + timedelta(minutes=1),
+        authoritative_claim_path=authoritative_claim,
     )
     monkeypatch.setattr(
         evaluation_contracts_module.EvaluatorCaseTruthV21,
@@ -503,6 +618,7 @@ def test_unblinding_scores_once_and_publishes_bounded_reports(
             preregistration=preregistration,
             held_out_pack_seal=seal,
             public_report=report,
+            authoritative_claim_path=authoritative_claim,
         ).report_sha256
         == report.evaluation.report_sha256
     )
@@ -521,4 +637,5 @@ def test_unblinding_scores_once_and_publishes_bounded_reports(
             public_evaluation_markdown=public_root / "again.md",
             public_disposition_path=public_root / "again-disposition.json",
             unblinded_at=START + timedelta(minutes=2),
+            authoritative_claim_path=authoritative_claim,
         )

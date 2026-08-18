@@ -63,10 +63,14 @@ from ecomsre.dta_v2.v21.identity import build_three_arm_identities_v21
 from ecomsre.dta_v2.v21.registry import load_default_runbook_registry
 from ecomsre.model.gateway import OpenAICompatibleConfig
 from ecomsre.environment.command_runner import AuditedSubprocessRunner
-from ecomsre_live_sandbox.contracts import write_private_json
+from ecomsre_live_sandbox.contracts import (
+    verify_private_tree_permissions,
+    write_private_json,
+)
 
 
 ProviderFactoryV21 = Callable[[AgentArmV21, OpenAICompatibleConfig], AgentProviderV21]
+PROTOCOL_VERSION_V21 = "dta-v21-p0-master-v1"
 
 
 class _GitCommandResult(Protocol):
@@ -95,6 +99,7 @@ class HeldOutExecutionManifestV21(DtaModelV21):
     execution_code_head: str = Field(pattern=r"^[0-9a-f]{40}$")
     model_id: str = Field(min_length=1, max_length=128)
     identity_sha256s: tuple[Sha256V21, Sha256V21, Sha256V21]
+    authoritative_claim_sha256: Sha256V21
     freeze_manifest_sha256: Sha256V21
     held_out_pack_seal_sha256: Sha256V21
     public_case_manifest_sha256: Sha256V21
@@ -114,6 +119,52 @@ class HeldOutExecutionManifestV21(DtaModelV21):
         return self
 
 
+class HeldOutExecutionClaimV21(DtaModelV21):
+    schema_version: Literal["dta-v21.held-out-execution-claim.v1"]
+    protocol_version: Literal["dta-v21-p0-master-v1"]
+    execution_id: str = Field(pattern=r"^[0-9a-f]{32}$")
+    claimed_at: datetime
+    execution_code_head: str = Field(pattern=r"^[0-9a-f]{40}$")
+    held_out_pack_seal_sha256: Sha256V21
+    freeze_manifest_sha256: Sha256V21
+    schedule_sha256: Sha256V21
+    preregistration_sha256: Sha256V21
+    claim_sha256: Sha256V21
+
+    @model_validator(mode="after")
+    def require_claim(self) -> HeldOutExecutionClaimV21:
+        _require_utc(self.claimed_at, "held-out execution claim time")
+        expected = semantic_sha256(
+            self.model_dump(mode="json", exclude={"claim_sha256"})
+        )
+        if self.claim_sha256 != expected:
+            raise ValueError("held-out execution claim digest differs")
+        return self
+
+
+class HeldOutExecutionEntryClaimV21(DtaModelV21):
+    schema_version: Literal["dta-v21.held-out-execution-entry-claim.v1"]
+    execution_id: str = Field(pattern=r"^[0-9a-f]{32}$")
+    entry_execution_id: str = Field(pattern=r"^[0-9a-f]{32}$")
+    ordinal: StrictInt = Field(ge=41, le=64)
+    case_id: str = Field(pattern=r"^dta21-case-0(?:1[3-9]|20)$")
+    case_sha256: Sha256V21
+    truth_sha256: Sha256V21
+    arm: EvaluationArmV21
+    claim_sha256: Sha256V21
+
+    @model_validator(mode="after")
+    def require_claim(self) -> HeldOutExecutionEntryClaimV21:
+        if self.arm is EvaluationArmV21.EVIDENCE_GUIDED_PLANNER_NO_COMPACTION:
+            raise ValueError("held-out execution claim carries ablation arm")
+        expected = semantic_sha256(
+            self.model_dump(mode="json", exclude={"claim_sha256"})
+        )
+        if self.claim_sha256 != expected:
+            raise ValueError("held-out execution entry claim digest differs")
+        return self
+
+
 class HeldOutExecutionEntryReceiptV21(DtaModelV21):
     schema_version: Literal["dta-v21.held-out-execution-entry-receipt.v1"]
     execution_id: str = Field(pattern=r"^[0-9a-f]{32}$")
@@ -125,6 +176,7 @@ class HeldOutExecutionEntryReceiptV21(DtaModelV21):
     arm: EvaluationArmV21
     model_id: str = Field(min_length=1, max_length=128)
     identity_sha256: Sha256V21
+    entry_claim_sha256: Sha256V21
     agent_result_sha256: Sha256V21
     prediction_sha256: Sha256V21
     receipt_sha256: Sha256V21
@@ -146,6 +198,7 @@ class HeldOutExecutionSealV21(DtaModelV21):
     execution_id: str = Field(pattern=r"^[0-9a-f]{32}$")
     sealed_at: datetime
     execution_manifest_sha256: Sha256V21
+    authoritative_claim_sha256: Sha256V21
     held_out_pack_seal_sha256: Sha256V21
     schedule_sha256: Sha256V21
     entry_count: Literal[24]
@@ -426,6 +479,148 @@ def _entry_execution_id(
     )[:32]
 
 
+def _default_authoritative_claim_path(
+    held_out_pack_seal: HeldOutPackSealV21,
+) -> Path:
+    return (
+        Path.home()
+        / ".ecomsre"
+        / "private"
+        / PROTOCOL_VERSION_V21
+        / "pr-e"
+        / "one-time-claims"
+        / f"{held_out_pack_seal.seal_sha256}.json"
+    )
+
+
+def _resolved_authoritative_claim_path(
+    *,
+    held_out_pack_seal: HeldOutPackSealV21,
+    authoritative_claim_path: Path | None,
+    provider_factory: ProviderFactoryV21 | None = None,
+) -> Path:
+    if authoritative_claim_path is not None:
+        if provider_factory is _default_provider_factory:
+            raise ValueError(
+                "production held-out execution claim path cannot be overridden"
+            )
+        return authoritative_claim_path
+    return _default_authoritative_claim_path(held_out_pack_seal)
+
+
+def _build_execution_claim(
+    *,
+    execution_id: str,
+    claimed_at: datetime,
+    execution_code_head: str,
+    freeze_manifest: EvaluationFreezeManifestV21,
+    schedule: EvaluationScheduleV21,
+    preregistration: EvaluationPreregistrationV21,
+    held_out_pack_seal: HeldOutPackSealV21,
+) -> HeldOutExecutionClaimV21:
+    payload: dict[str, object] = {
+        "schema_version": "dta-v21.held-out-execution-claim.v1",
+        "protocol_version": PROTOCOL_VERSION_V21,
+        "execution_id": execution_id,
+        "claimed_at": claimed_at,
+        "execution_code_head": execution_code_head,
+        "held_out_pack_seal_sha256": held_out_pack_seal.seal_sha256,
+        "freeze_manifest_sha256": freeze_manifest.manifest_sha256,
+        "schedule_sha256": schedule.schedule_sha256,
+        "preregistration_sha256": preregistration.preregistration_sha256,
+    }
+    return cast(
+        HeldOutExecutionClaimV21,
+        _with_digest(HeldOutExecutionClaimV21, payload, "claim_sha256"),
+    )
+
+
+def _load_authoritative_claim(
+    *,
+    authoritative_claim_path: Path,
+    manifest: HeldOutExecutionManifestV21,
+    seal: HeldOutExecutionSealV21,
+    held_out_pack_seal: HeldOutPackSealV21,
+    schedule: EvaluationScheduleV21,
+) -> HeldOutExecutionClaimV21:
+    verify_private_tree_permissions(authoritative_claim_path.parent)
+    claim = HeldOutExecutionClaimV21.model_validate_json(
+        _read_regular(authoritative_claim_path)
+    )
+    if (
+        claim.execution_id != manifest.execution_id
+        or claim.claimed_at != manifest.created_at
+        or claim.execution_code_head != manifest.execution_code_head
+        or claim.held_out_pack_seal_sha256 != held_out_pack_seal.seal_sha256
+        or claim.freeze_manifest_sha256 != manifest.freeze_manifest_sha256
+        or claim.schedule_sha256 != schedule.schedule_sha256
+        or claim.preregistration_sha256 != manifest.preregistration_sha256
+        or claim.claim_sha256 != manifest.authoritative_claim_sha256
+        or claim.claim_sha256 != seal.authoritative_claim_sha256
+    ):
+        raise ValueError("held-out authoritative execution claim differs")
+    return claim
+
+
+def _build_entry_claim(
+    *,
+    execution_id: str,
+    ordinal: int,
+    case_id: str,
+    case_sha256: str,
+    truth_sha256: str,
+    arm: EvaluationArmV21,
+) -> HeldOutExecutionEntryClaimV21:
+    payload: dict[str, object] = {
+        "schema_version": "dta-v21.held-out-execution-entry-claim.v1",
+        "execution_id": execution_id,
+        "entry_execution_id": _entry_execution_id(execution_id, ordinal, case_id, arm),
+        "ordinal": ordinal,
+        "case_id": case_id,
+        "case_sha256": case_sha256,
+        "truth_sha256": truth_sha256,
+        "arm": arm,
+    }
+    return cast(
+        HeldOutExecutionEntryClaimV21,
+        _with_digest(HeldOutExecutionEntryClaimV21, payload, "claim_sha256"),
+    )
+
+
+def _require_exact_sealed_execution_tree(
+    *, private_execution_root: Path, schedule: EvaluationScheduleV21
+) -> None:
+    verify_private_tree_permissions(private_execution_root)
+    root_entries = {path.name for path in private_execution_root.iterdir()}
+    if root_entries != {"execution-manifest.json", "execution-seal.json", "entries"}:
+        raise ValueError("held-out sealed execution root tree differs")
+    entries_root = private_execution_root / "entries"
+    if entries_root.is_symlink() or not entries_root.is_dir():
+        raise ValueError("held-out sealed execution entries root is unsafe")
+    held_out_schedule = tuple(
+        item
+        for item in schedule.entries
+        if item.phase is EvaluationSchedulePhaseV21.HELD_OUT_PRIMARY
+    )
+    expected_entry_names = {
+        _entry_name(item.ordinal, item.case_id, item.arm) for item in held_out_schedule
+    }
+    if {path.name for path in entries_root.iterdir()} != expected_entry_names:
+        raise ValueError("held-out sealed execution entry directory set differs")
+    expected_files = {
+        "entry-claim.json",
+        "agent-result.json",
+        "prediction.json",
+        "entry-receipt.json",
+    }
+    for entry_name in expected_entry_names:
+        entry_root = entries_root / entry_name
+        if entry_root.is_symlink() or not entry_root.is_dir():
+            raise ValueError("held-out sealed execution entry root is unsafe")
+        if {path.name for path in entry_root.iterdir()} != expected_files:
+            raise ValueError("held-out sealed execution entry tree differs")
+
+
 def execute_held_out_evaluation_v21(
     *,
     repository_root: Path,
@@ -441,12 +636,18 @@ def execute_held_out_evaluation_v21(
     git_runner: _GitCommandRunner,
     provider_factory: ProviderFactoryV21 = _default_provider_factory,
     created_at: datetime | None = None,
+    authoritative_claim_path: Path | None = None,
 ) -> HeldOutExecutionSealV21:
     """Execute 24 frozen arms without semantically loading evaluator truth."""
 
     manifest_path = private_execution_root / "execution-manifest.json"
     if manifest_path.exists() or manifest_path.is_symlink():
         raise FileExistsError("held-out execution was already claimed")
+    resolved_claim_path = _resolved_authoritative_claim_path(
+        held_out_pack_seal=held_out_pack_seal,
+        authoritative_claim_path=authoritative_claim_path,
+        provider_factory=provider_factory,
+    )
     _require_exact_clean_head(execution_code_head, runner=git_runner)
     _verify_frozen_inputs(
         repository_root=repository_root,
@@ -479,6 +680,18 @@ def execute_held_out_evaluation_v21(
         for item in freeze_manifest.public_case_manifest.held_out_cases
     }
     now = (created_at or datetime.now(timezone.utc)).replace(microsecond=0)
+    claim = _build_execution_claim(
+        execution_id=execution_id,
+        claimed_at=now,
+        execution_code_head=execution_code_head,
+        freeze_manifest=freeze_manifest,
+        schedule=schedule,
+        preregistration=preregistration,
+        held_out_pack_seal=held_out_pack_seal,
+    )
+    if resolved_claim_path.exists() or resolved_claim_path.is_symlink():
+        raise FileExistsError("held-out execution was already claimed")
+    write_private_json(resolved_claim_path, claim, create_once=True)
     manifest_payload: dict[str, object] = {
         "schema_version": "dta-v21.held-out-execution-manifest.v1",
         "execution_id": execution_id,
@@ -486,6 +699,7 @@ def execute_held_out_evaluation_v21(
         "execution_code_head": execution_code_head,
         "model_id": config.model,
         "identity_sha256s": tuple(item.identity_sha256 for item in identities),
+        "authoritative_claim_sha256": claim.claim_sha256,
         "freeze_manifest_sha256": freeze_manifest.manifest_sha256,
         "held_out_pack_seal_sha256": held_out_pack_seal.seal_sha256,
         "public_case_manifest_sha256": (
@@ -519,37 +733,16 @@ def execute_held_out_evaluation_v21(
         binding = bindings.get(scheduled.case_id)
         if binding is None:
             raise ValueError("held-out schedule case lacks a public binding")
-        entry_id = _entry_execution_id(
-            execution_id,
-            scheduled.ordinal,
-            scheduled.case_id,
-            scheduled.arm,
+        entry_claim = _build_entry_claim(
+            execution_id=execution_id,
+            ordinal=scheduled.ordinal,
+            case_id=scheduled.case_id,
+            case_sha256=binding.case_sha256,
+            truth_sha256=binding.truth_sha256,
+            arm=scheduled.arm,
         )
-        write_private_json(
-            claim_path,
-            {
-                "schema_version": "dta-v21.held-out-execution-entry-claim.v1",
-                "execution_id": execution_id,
-                "entry_execution_id": entry_id,
-                "ordinal": scheduled.ordinal,
-                "case_id": scheduled.case_id,
-                "case_sha256": binding.case_sha256,
-                "truth_sha256": binding.truth_sha256,
-                "arm": scheduled.arm.value,
-                "claim_sha256": semantic_sha256(
-                    {
-                        "execution_id": execution_id,
-                        "entry_execution_id": entry_id,
-                        "ordinal": scheduled.ordinal,
-                        "case_id": scheduled.case_id,
-                        "case_sha256": binding.case_sha256,
-                        "truth_sha256": binding.truth_sha256,
-                        "arm": scheduled.arm.value,
-                    }
-                ),
-            },
-            create_once=True,
-        )
+        entry_id = entry_claim.entry_execution_id
+        write_private_json(claim_path, entry_claim, create_once=True)
         case = AgentVisibleReplayCaseV21.model_validate_json(
             _read_regular(
                 held_out_pack_root / "cases" / scheduled.case_id / "agent-visible.json"
@@ -610,6 +803,7 @@ def execute_held_out_evaluation_v21(
             "arm": scheduled.arm,
             "model_id": execution.agent_result.identity.model_id,
             "identity_sha256": execution.agent_result.identity.identity_sha256,
+            "entry_claim_sha256": entry_claim.claim_sha256,
             "agent_result_sha256": execution.agent_result.result_sha256,
             "prediction_sha256": semantic_sha256(prediction.model_dump(mode="json")),
         }
@@ -632,6 +826,7 @@ def execute_held_out_evaluation_v21(
             else datetime.now(timezone.utc).replace(microsecond=0)
         ),
         "execution_manifest_sha256": manifest.manifest_sha256,
+        "authoritative_claim_sha256": claim.claim_sha256,
         "held_out_pack_seal_sha256": held_out_pack_seal.seal_sha256,
         "schedule_sha256": schedule.schedule_sha256,
         "entry_count": 24,
@@ -650,12 +845,18 @@ def execute_held_out_evaluation_v21(
     write_private_json(
         private_execution_root / "execution-seal.json", seal, create_once=True
     )
-    return seal
+    return verify_held_out_execution_seal_v21(
+        private_execution_root=private_execution_root,
+        held_out_pack_seal=held_out_pack_seal,
+        schedule=schedule,
+        authoritative_claim_path=resolved_claim_path,
+    )
 
 
 def _load_execution_entry(
     private_execution_root: Path,
     receipt: HeldOutExecutionEntryReceiptV21,
+    expected_claim: HeldOutExecutionEntryClaimV21,
 ) -> tuple[DtaAgentRunResultV21, EvaluationPredictionV21]:
     root = (
         private_execution_root
@@ -671,8 +872,13 @@ def _load_execution_entry(
     persisted = HeldOutExecutionEntryReceiptV21.model_validate_json(
         _read_regular(root / "entry-receipt.json")
     )
+    persisted_claim = HeldOutExecutionEntryClaimV21.model_validate_json(
+        _read_regular(root / "entry-claim.json")
+    )
     if (
         persisted != receipt
+        or persisted_claim != expected_claim
+        or persisted_claim.claim_sha256 != receipt.entry_claim_sha256
         or agent_result.result_sha256 != receipt.agent_result_sha256
         or semantic_sha256(prediction.model_dump(mode="json"))
         != receipt.prediction_sha256
@@ -690,7 +896,11 @@ def verify_held_out_execution_seal_v21(
     private_execution_root: Path,
     held_out_pack_seal: HeldOutPackSealV21,
     schedule: EvaluationScheduleV21,
+    authoritative_claim_path: Path | None = None,
 ) -> HeldOutExecutionSealV21:
+    _require_exact_sealed_execution_tree(
+        private_execution_root=private_execution_root, schedule=schedule
+    )
     seal = HeldOutExecutionSealV21.model_validate_json(
         _read_regular(private_execution_root / "execution-seal.json")
     )
@@ -703,20 +913,52 @@ def verify_held_out_execution_seal_v21(
         if item.phase is EvaluationSchedulePhaseV21.HELD_OUT_PRIMARY
     )
     if (
-        seal.execution_manifest_sha256 != manifest.manifest_sha256
+        seal.execution_id != manifest.execution_id
+        or seal.execution_manifest_sha256 != manifest.manifest_sha256
+        or seal.authoritative_claim_sha256 != manifest.authoritative_claim_sha256
         or seal.held_out_pack_seal_sha256 != held_out_pack_seal.seal_sha256
+        or manifest.held_out_pack_seal_sha256 != held_out_pack_seal.seal_sha256
         or seal.schedule_sha256 != schedule.schedule_sha256
+        or manifest.schedule_sha256 != schedule.schedule_sha256
         or len(held_out_schedule) != 24
     ):
         raise ValueError("held-out execution seal protocol binding differs")
+    resolved_claim_path = _resolved_authoritative_claim_path(
+        held_out_pack_seal=held_out_pack_seal,
+        authoritative_claim_path=authoritative_claim_path,
+    )
+    _load_authoritative_claim(
+        authoritative_claim_path=resolved_claim_path,
+        manifest=manifest,
+        seal=seal,
+        held_out_pack_seal=held_out_pack_seal,
+        schedule=schedule,
+    )
+    pack_bindings = {item.case_id: item for item in held_out_pack_seal.cases}
     for scheduled, receipt in zip(held_out_schedule, seal.entries, strict=True):
+        binding = pack_bindings.get(scheduled.case_id)
+        if binding is None:
+            raise ValueError("held-out execution schedule case lacks sealed binding")
+        expected_claim = _build_entry_claim(
+            execution_id=manifest.execution_id,
+            ordinal=scheduled.ordinal,
+            case_id=scheduled.case_id,
+            case_sha256=binding.case_sha256,
+            truth_sha256=binding.truth_sha256,
+            arm=scheduled.arm,
+        )
         if (
             receipt.ordinal != scheduled.ordinal
             or receipt.case_id != scheduled.case_id
             or receipt.arm is not scheduled.arm
+            or receipt.execution_id != manifest.execution_id
+            or receipt.entry_execution_id != expected_claim.entry_execution_id
+            or receipt.case_sha256 != binding.case_sha256
+            or receipt.truth_sha256 != binding.truth_sha256
+            or receipt.entry_claim_sha256 != expected_claim.claim_sha256
         ):
             raise ValueError("held-out execution seal schedule differs")
-        _load_execution_entry(private_execution_root, receipt)
+        _load_execution_entry(private_execution_root, receipt, expected_claim)
     return seal
 
 
@@ -743,6 +985,19 @@ def _build_entry_result(
     return cast(
         EvaluationEntryResultV21,
         _with_digest(EvaluationEntryResultV21, payload, "entry_sha256"),
+    )
+
+
+def _entry_claim_from_receipt(
+    receipt: HeldOutExecutionEntryReceiptV21,
+) -> HeldOutExecutionEntryClaimV21:
+    return _build_entry_claim(
+        execution_id=receipt.execution_id,
+        ordinal=receipt.ordinal,
+        case_id=receipt.case_id,
+        case_sha256=receipt.case_sha256,
+        truth_sha256=receipt.truth_sha256,
+        arm=receipt.arm,
     )
 
 
@@ -976,6 +1231,7 @@ def score_held_out_evaluation_v21(
     public_evaluation_markdown: Path,
     public_disposition_path: Path,
     unblinded_at: datetime | None = None,
+    authoritative_claim_path: Path | None = None,
 ) -> tuple[HeldOutPublicEvaluationReportV21, HeldOutEvaluationDispositionV21]:
     """Unblind once after the complete execution seal, then score deterministically."""
 
@@ -994,6 +1250,7 @@ def score_held_out_evaluation_v21(
         private_execution_root=private_execution_root,
         held_out_pack_seal=held_out_pack_seal,
         schedule=schedule,
+        authoritative_claim_path=authoritative_claim_path,
     )
     if verified != execution_seal:
         raise ValueError("held-out execution seal argument differs from disk")
@@ -1037,7 +1294,7 @@ def score_held_out_evaluation_v21(
     entries: list[EvaluationEntryResultV21] = []
     for receipt in execution_seal.entries:
         agent_result, prediction = _load_execution_entry(
-            private_execution_root, receipt
+            private_execution_root, receipt, _entry_claim_from_receipt(receipt)
         )
         entry = _build_entry_result(
             receipt=receipt,
@@ -1116,6 +1373,7 @@ def verify_private_held_out_evaluation_v21(
     preregistration: EvaluationPreregistrationV21,
     held_out_pack_seal: HeldOutPackSealV21,
     public_report: HeldOutPublicEvaluationReportV21,
+    authoritative_claim_path: Path | None = None,
 ) -> HeldOutEvaluationReportV21:
     """Verify sealed predictions and deterministic scores without a Provider call."""
 
@@ -1131,6 +1389,7 @@ def verify_private_held_out_evaluation_v21(
         private_execution_root=private_execution_root,
         held_out_pack_seal=held_out_pack_seal,
         schedule=schedule,
+        authoritative_claim_path=authoritative_claim_path,
     )
     unblinding = HeldOutUnblindingReceiptV21.model_validate_json(
         _read_regular(private_unblinding_root / "unblinding-receipt.json")
@@ -1164,7 +1423,7 @@ def verify_private_held_out_evaluation_v21(
     entries: list[EvaluationEntryResultV21] = []
     for receipt in execution_seal.entries:
         agent_result, prediction = _load_execution_entry(
-            private_execution_root, receipt
+            private_execution_root, receipt, _entry_claim_from_receipt(receipt)
         )
         entry_root = (
             private_unblinding_root
@@ -1502,6 +1761,8 @@ if __name__ == "__main__":
 __all__ = (
     "DevelopmentAblationReportV21",
     "HeldOutEvaluationDispositionV21",
+    "HeldOutExecutionClaimV21",
+    "HeldOutExecutionEntryClaimV21",
     "HeldOutExecutionEntryReceiptV21",
     "HeldOutExecutionManifestV21",
     "HeldOutExecutionSealV21",
