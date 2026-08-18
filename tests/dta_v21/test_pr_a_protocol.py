@@ -20,13 +20,11 @@ def test_master_progress_tracks_exact_pr_f_live_stage() -> None:
         "goal_sha256": (
             "3c91e7777395e46f088695640991c17da1f70285bd844739391346b56f168daf"
         ),
-        "active_amendment_version": (
-            "dta-v21-p0-prf-compose-identity-reconciliation-v1"
-        ),
+        "active_amendment_version": "dta-v21-p0-prf-capability-closeout-v1",
         "active_amendment_sha256": (
-            "ea6740bce0ba63e093cda2807aea886d4ca48907702a2bf41ad1eedd0e2ab164"
+            "24cc236c1892c9992b6d36da377608c34fb22c2bc270f99349e5e8a4e0a0498a"
         ),
-        "active_decision_id": "DEC-045",
+        "active_decision_id": "DEC-046",
         "inspected_starting_main": ("925d23994888d1b83e57fc1bbdd1944e57a1bfff"),
         "actual_starting_main": ("925d23994888d1b83e57fc1bbdd1944e57a1bfff"),
         "completed_stage": "PR-E",
@@ -65,6 +63,17 @@ def test_master_progress_tracks_exact_pr_f_live_stage() -> None:
         "historical_blocked_attempt_terminal": "BLOCKED_DTA_V21_PRF_SAFETY",
         "historical_blocked_attempt_baseline_restored": False,
         "historical_blocked_attempt_cleanup": "BLOCKED",
+        "no_fault_capability_attempt_id": (
+            "dta-v21-prf-01-no-fault-a167285a6a1d"
+        ),
+        "no_fault_capability_classification": (
+            "NO_FAULT_FALSE_POSITIVE_DIAGNOSIS_SAFE_NO_ACTION"
+        ),
+        "no_fault_diagnosis_passed": False,
+        "no_fault_no_write_safety_passed": True,
+        "positive_continuation_status": "PENDING",
+        "positive_slots_passed": 0,
+        "four_slot_acceptance_passed": False,
         "live_demo_terminal": None,
         "final_engineering_terminal": None,
     }
@@ -73,7 +82,7 @@ def test_master_progress_tracks_exact_pr_f_live_stage() -> None:
 def test_decision_register_contains_exact_v21_protocol_records() -> None:
     decisions = (REPO_ROOT / "docs/DECISIONS.md").read_text(encoding="utf-8")
 
-    for decision_id in range(39, 46):
+    for decision_id in range(39, 47):
         marker = f"## DEC-{decision_id:03d} —"
         assert decisions.count(marker) == 1
     assert "DEPENDENCY_LATENCY" in decisions

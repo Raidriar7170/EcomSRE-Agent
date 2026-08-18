@@ -10,7 +10,6 @@ from types import SimpleNamespace
 import pytest
 from pydantic_core import to_jsonable_python
 
-from ecomsre.dta_v2.v21 import live_cli as live_cli_module
 from ecomsre.dta_v2.v21 import live_reconciliation as live_reconciliation_module
 from ecomsre.dta_v2.v21 import live_reporting as live_reporting_module
 from ecomsre.dta_v2.read_tools import FakeReadBackend, InvestigationReadTools
@@ -69,7 +68,6 @@ from ecomsre.dta_v2.v21.live_execution import (
 from ecomsre.dta_v2.v21.live_cli import (
     _execution_scope_sha256,
     _pending_disposition_payload,
-    run_closeout,
     run_finalize,
     run_verify,
 )
@@ -1803,24 +1801,7 @@ def test_final_closeout_is_gated_and_binds_readme_and_progress(
             "url": f"https://github.com/example/repo/pull/{active_pr}",
         },
     )
-    exact_replace = live_cli_module._replace_public_text_exact
-    replacement_count = 0
-
-    def interrupt_second_replacement(
-        path: Path, *, expected: str, replacement: str
-    ) -> None:
-        nonlocal replacement_count
-        replacement_count += 1
-        if replacement_count == 2:
-            raise OSError("simulated interruption")
-        exact_replace(path, expected=expected, replacement=replacement)
-
-    monkeypatch.setattr(
-        live_cli_module,
-        "_replace_public_text_exact",
-        interrupt_second_replacement,
-    )
-    with pytest.raises(OSError, match="simulated interruption"):
+    with pytest.raises(ValueError, match="superseded by DEC-046"):
         run_finalize(
             repository_root=repository,
             exact_head_ci_sha=candidate_head,
@@ -1828,37 +1809,6 @@ def test_final_closeout_is_gated_and_binds_readme_and_progress(
             independent_review_confirmation="MUST_FIX_0_CLAIM_ACCURACY_PASS",
             active_pr=55,
         )
-    monkeypatch.setattr(live_cli_module, "_replace_public_text_exact", exact_replace)
-
-    assert (
-        run_finalize(
-            repository_root=repository,
-            exact_head_ci_sha=candidate_head,
-            independent_review_head=candidate_head,
-            independent_review_confirmation="MUST_FIX_0_CLAIM_ACCURACY_PASS",
-            active_pr=55,
-        )
-        == "DTA_V21_PR_F_POST_MERGE_CLOSEOUT_PROJECTED"
-    )
-    assert run_verify(repository_root=repository) == (
-        "DTA_V21_PR_F_POST_MERGE_CLOSEOUT_PROJECTED"
-    )
-    git("add", ".")
-    git("commit", "-m", "project post-merge closeout")
-    final_head = git("rev-parse", "HEAD")
-    assert (
-        run_closeout(
-            repository_root=repository,
-            exact_head_ci_sha=final_head,
-            independent_review_head=final_head,
-            independent_review_confirmation="MUST_FIX_0_CLAIM_ACCURACY_PASS",
-        )
-        == "DTA_V21_P0_ENGINEERING_ACCEPTANCE_PASS"
-    )
-    with (repository / "README.md").open("a", encoding="utf-8") as handle:
-        handle.write("\nThe held-out mechanism accuracy was 99 percent.\n")
-    with pytest.raises(ValueError, match="README or Master Progress differs"):
-        run_verify(repository_root=repository)
 
 
 def test_execution_scope_binds_git_mode_changes(tmp_path: Path) -> None:

@@ -1208,6 +1208,9 @@ def run_finalize(
     active_pr: int,
 ) -> str:
     root = repository_root.resolve(strict=True)
+    progress = _read_json(root / "docs/analysis/dta-v21-p0-master-progress.json")
+    if progress.get("active_decision_id") == "DEC-046":
+        raise ValueError("legacy four-slot finalization is superseded by DEC-046")
     merged_main_head = _git(root, "rev-parse", "HEAD")
     if (
         exact_head_ci_sha != independent_review_head
@@ -1320,6 +1323,9 @@ def run_closeout(
     independent_review_confirmation: str,
 ) -> str:
     root = repository_root.resolve(strict=True)
+    progress = _read_json(root / "docs/analysis/dta-v21-p0-master-progress.json")
+    if progress.get("active_decision_id") == "DEC-046":
+        raise ValueError("legacy four-slot closeout is superseded by DEC-046")
     if _git(root, "status", "--porcelain=v1", "--untracked-files=all"):
         raise ValueError("PR-F final closeout requires an exactly clean main HEAD")
     head = _git(root, "rev-parse", "HEAD")

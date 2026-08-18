@@ -6,6 +6,7 @@ import argparse
 import json
 from pathlib import Path
 import re
+import subprocess
 from typing import Sequence
 
 from ecomsre.dta_v2.v21.live_protocol import (
@@ -26,6 +27,10 @@ HISTORICAL_BINDINGS_RELATIVE = Path("config/dta-v21/historical-v2-bindings.v1.js
 RECONCILIATION_SOURCE_RELATIVE = Path(
     "src/ecomsre/dta_v2/v21/live_reconciliation.py"
 )
+CAPABILITY_SOURCE_RELATIVE = Path(
+    "src/ecomsre/dta_v2/v21/live_capability_closeout.py"
+)
+CAPABILITY_BASE_HEAD = "a167285a6a1d691709f229b26d167a7cd7c10fa0"
 
 
 def _verify_pr_f_targets_do_not_reach_held_out_execution(makefile: str) -> None:
@@ -109,13 +114,11 @@ def verify_pr_f_protocol(
         raise ValueError("DTA v2.1 master progress must be a regular file")
     progress = json.loads(progress_path.read_text(encoding="utf-8"))
     required_progress = {
-        "active_amendment_version": (
-            "dta-v21-p0-prf-compose-identity-reconciliation-v1"
-        ),
+        "active_amendment_version": "dta-v21-p0-prf-capability-closeout-v1",
         "active_amendment_sha256": (
-            "ea6740bce0ba63e093cda2807aea886d4ca48907702a2bf41ad1eedd0e2ab164"
+            "24cc236c1892c9992b6d36da377608c34fb22c2bc270f99349e5e8a4e0a0498a"
         ),
-        "active_decision_id": "DEC-045",
+        "active_decision_id": "DEC-046",
         "held_out_seal_sha256": (
             "9a7c8e56400e99c693c8bddc26007b1dd26e0dcee2167b07cf3fba00fd22fbd7"
         ),
@@ -128,6 +131,15 @@ def verify_pr_f_protocol(
         "historical_blocked_attempt_terminal": "BLOCKED_DTA_V21_PRF_SAFETY",
         "historical_blocked_attempt_baseline_restored": False,
         "historical_blocked_attempt_cleanup": "BLOCKED",
+        "no_fault_capability_attempt_id": (
+            "dta-v21-prf-01-no-fault-a167285a6a1d"
+        ),
+        "no_fault_capability_classification": (
+            "NO_FAULT_FALSE_POSITIVE_DIAGNOSIS_SAFE_NO_ACTION"
+        ),
+        "no_fault_diagnosis_passed": False,
+        "no_fault_no_write_safety_passed": True,
+        "four_slot_acceptance_passed": False,
     }
     for field, expected in required_progress.items():
         if progress.get(field) != expected:
@@ -142,17 +154,21 @@ def verify_pr_f_protocol(
             or progress.get("active_branch")
             != "codex/dta-v21-p0-pr-f-live-closeout"
             or progress.get("active_pr") != 55
+            or progress.get("positive_continuation_status") != "PENDING"
+            or progress.get("positive_slots_passed") != 0
         ):
             raise ValueError("open PR-F progress carries a final terminal")
-    elif stage == ("PR-F", "COMPLETE"):
+    elif stage == ("PR-F", "COMPLETE_WITH_LIMITATION"):
         merged_prs = progress.get("merged_prs")
         if (
             progress.get("live_demo_terminal")
-            != "DTA_V21_P0_ENGINEERING_ACCEPTANCE_PASS"
+            != "DTA_V21_PR_F_POSITIVE_PORTFOLIO_PASS_WITH_NO_FAULT_DIAGNOSIS_MISS"
             or progress.get("final_engineering_terminal")
-            != "DTA_V21_P0_ENGINEERING_ACCEPTANCE_PASS"
+            != "DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_NO_FAULT_DIAGNOSIS_MISS"
             or progress.get("active_branch") is not None
             or progress.get("active_pr") is not None
+            or progress.get("positive_continuation_status") != "PASS"
+            or progress.get("positive_slots_passed") != 3
             or not isinstance(merged_prs, list)
             or merged_prs[:5] != [50, 51, 52, 53, 54]
             or len(merged_prs) != 6
@@ -172,7 +188,7 @@ def verify_pr_f_protocol(
             )
             is None
         ):
-            raise ValueError("closed PR-F progress differs from final acceptance")
+            raise ValueError("closed PR-F progress differs from limitation closeout")
     else:
         raise ValueError("master progress stage differs from PR-F protocol")
 
@@ -202,6 +218,17 @@ def verify_pr_f_protocol(
     ):
         if marker not in decisions:
             raise ValueError(f"DEC-045 is missing {marker}")
+    if decisions.count("## DEC-046 —") != 1:
+        raise ValueError("DEC-046 must appear exactly once")
+    for marker in (
+        "No-Fault Capability-Miss Preservation and Positive-Slot Continuation",
+        "diagnosis capability miss with successful no-write",
+        "No additional No-Fault",
+        "DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_NO_FAULT_DIAGNOSIS_MISS",
+        "24cc236c1892c9992b6d36da377608c34fb22c2bc270f99349e5e8a4e0a0498a",
+    ):
+        if marker not in decisions:
+            raise ValueError(f"DEC-046 is missing {marker}")
 
     reconciliation_source = root / RECONCILIATION_SOURCE_RELATIVE
     if reconciliation_source.is_symlink() or not reconciliation_source.is_file():
@@ -217,6 +244,40 @@ def verify_pr_f_protocol(
     ):
         if marker not in source:
             raise ValueError(f"PR-F reconciliation source is missing {marker}")
+
+    capability_source = root / CAPABILITY_SOURCE_RELATIVE
+    if capability_source.is_symlink() or not capability_source.is_file():
+        raise ValueError("PR-F capability-closeout source is missing or unsafe")
+    capability_text = capability_source.read_text(encoding="utf-8")
+    for marker in (
+        "dta-v21.pr-f-no-fault-capability-miss.v1",
+        "NO_FAULT_FALSE_POSITIVE_DIAGNOSIS_SAFE_NO_ACTION",
+        "dta-v21.pr-f-positive-continuation-admission.v1",
+        "positive-continuation.v1.json",
+        "DTA_V21_PR_F_POSITIVE_PORTFOLIO_PASS_WITH_NO_FAULT_DIAGNOSIS_MISS",
+    ):
+        if marker not in capability_text:
+            raise ValueError(f"PR-F capability-closeout source is missing {marker}")
+
+    protected_paths = (
+        "src/ecomsre/dta_v2/v21/prompts.py",
+        "src/ecomsre/dta_v2/v21/live_protocol.py",
+        "config/dta-v21/live/ad-cpu-resource-recovery.v1.json",
+        "config/dta-v21/live/live-demo.v1.json",
+        "config/dta-v21/runbooks",
+        "config/dta-v21/evaluation",
+        "docs/results/dta-v21-evaluation.json",
+        "docs/results/dta-v21-evaluation.md",
+        "docs/results/dta-v21-ablation.json",
+        "docs/results/dta-v21-ablation.md",
+    )
+    frozen = subprocess.run(
+        ("git", "diff", "--quiet", CAPABILITY_BASE_HEAD, "--", *protected_paths),
+        cwd=root,
+        check=False,
+    )
+    if frozen.returncode != 0:
+        raise ValueError("Amendment-3 frozen Agent, oracle, or evaluation scope changed")
 
     verify_public_held_out_report_v21(
         public_evaluation_json=root / "docs/results/dta-v21-evaluation.json",

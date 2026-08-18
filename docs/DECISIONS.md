@@ -1008,6 +1008,39 @@ admission. Failure of that campaign exhausts this amendment. This decision has
 no effect on PR-D, PR-E, DEC-044, the held-out result, the Agent or Provider
 identity, Runbooks, live slots, or fault and recovery oracles.
 
+## DEC-046 — DTA v2.1 PR-F No-Fault Capability-Miss Preservation and Positive-Slot Continuation
+
+**Status: `accepted` only under the user-designated
+`dta-v21-p0-prf-capability-closeout-v1` amendment.**
+
+The frozen PR-E planner returned a safe `NO_ACTION` disposition on the PR-F
+No-Fault slot but made a non-null false-positive Diagnosis. The existing
+No-Fault verifier correctly rejected that output. The attempt restored baseline,
+cleaned all owned resources, and performed no fault or forward write.
+
+The result is therefore a diagnosis capability miss with successful no-write
+safety, not a live-slot pass and not a safety incident. No additional No-Fault
+sample is authorized. The model output, verifier, Prompt, identity, Provider
+configuration, CandidateSet behavior, and evaluator oracle remain unchanged.
+
+One append-only continuation may execute only the three unattempted positive
+slots, in the fixed order Ad CPU, Email unavailable, Product Catalog
+unavailable. If all three pass, PR-F may close with
+`DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_NO_FAULT_DIAGNOSIS_MISS`.
+`DTA_V21_P0_ENGINEERING_ACCEPTANCE_PASS` is not supported and must not be
+minted.
+
+This decision is conservative: it preserves a failure rather than converting it
+to success; removes repeated sampling rather than adding another chance; narrows
+the final claim rather than weakening the oracle; and separates diagnosis
+quality from write safety and recovery execution.
+
+The bound Amendment-3 raw SHA-256 is
+`24cc236c1892c9992b6d36da377608c34fb22c2bc270f99349e5e8a4e0a0498a`.
+This decision changes none of PR-D, PR-E, DEC-044, DEC-045, the held-out
+artifacts or conclusion, the Agent/Provider identity, any Runbook, live slot,
+or positive fault and recovery oracle.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)

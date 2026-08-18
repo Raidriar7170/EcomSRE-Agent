@@ -11,6 +11,14 @@ import re
 from pydantic_core import to_jsonable_python
 
 from ecomsre.dta_v2.v21.agent import AgentRunTerminalV21
+from ecomsre.dta_v2.v21.live_capability_closeout import (
+    POSITIVE_CONTINUATION_ORDER_V1,
+    LivePositiveContinuationClosureV1,
+    NoFaultCapabilityMissV1,
+    PositiveContinuationReadinessV3,
+    consume_positive_continuation_v1,
+    verify_positive_continuation_admission_v1,
+)
 from ecomsre.dta_v2.v21.live_contracts import (
     LIVE_CAMPAIGN_ORDER_V21,
     LiveAttemptClosureV21,
@@ -666,10 +674,124 @@ def run_owned_live_campaign_v21(
     return campaign
 
 
+def run_owned_live_positive_continuation_v1(
+    *,
+    repository_root: Path,
+    prf_private_root: Path,
+    provider_env_path: Path,
+    config: LiveDemoConfigV21,
+    registry: RunbookRegistryV21,
+    protocol: AdCpuResourceRecoveryProtocolV1,
+    master_authorization: LiveMasterAuthorizationV21,
+    readiness: LiveReadinessV2,
+    v3_readiness: PositiveContinuationReadinessV3,
+    capability_miss: NoFaultCapabilityMissV1,
+    readiness_identity: ResolvedComposeIdentityV1,
+    readiness_raw_compose: dict[str, object],
+    readiness_flagd_directory: Path,
+    code_head: str,
+) -> LivePositiveContinuationClosureV1:
+    """Consume and execute the one Amendment-3 positive-only continuation."""
+
+    admission = verify_positive_continuation_admission_v1(
+        repository_root=repository_root,
+        private_root=prf_private_root.parent,
+        new_code_head=code_head,
+    )
+    if (
+        admission.v3_readiness_sha256 != v3_readiness.readiness_sha256
+        or admission.capability_miss_record_sha256
+        != capability_miss.classification_sha256
+        or v3_readiness.base_v2_readiness_sha256 != readiness.readiness_sha256
+        or v3_readiness.master_authorization_sha256
+        != master_authorization.authorization_sha256
+        or tuple(admission.continuation_scenarios)
+        != POSITIVE_CONTINUATION_ORDER_V1
+    ):
+        raise LiveCampaignBlockedV21(
+            "BLOCKED_DTA_V21_PRF_POSITIVE_CONTINUATION_NOT_ADMITTED"
+        )
+    with LiveExecutionLeaseV21(prf_private_root) as execution_lease:
+        consumption = consume_positive_continuation_v1(
+            repository_root=repository_root,
+            private_root=prf_private_root.parent,
+            new_code_head=code_head,
+            consumed_at=datetime.now(timezone.utc),
+        )
+        attempts: list[LiveAttemptClosureV21] = []
+        try:
+            for scenario in POSITIVE_CONTINUATION_ORDER_V1:
+                attempts.append(
+                    run_owned_live_attempt_v21(
+                        repository_root=repository_root,
+                        prf_private_root=prf_private_root,
+                        provider_env_path=provider_env_path,
+                        config=config,
+                        scenario=scenario,
+                        registry=registry,
+                        protocol=protocol,
+                        master_authorization=master_authorization,
+                        readiness=readiness,
+                        readiness_identity=readiness_identity,
+                        readiness_raw_compose=readiness_raw_compose,
+                        readiness_flagd_directory=readiness_flagd_directory,
+                        code_head=code_head,
+                        execution_lease=execution_lease,
+                    )
+                )
+        except LiveCampaignBlockedV21 as error:
+            terminal = {
+                "schema_version": (
+                    "dta-v21.live-positive-continuation-failure.v1"
+                ),
+                "terminal": (
+                    "BLOCKED_DTA_V21_PRF_POSITIVE_CONTINUATION_EXHAUSTED"
+                ),
+                "failed_slot_terminal": error.terminal,
+                "code_head": code_head,
+                "admission_sha256": admission.admission_sha256,
+                "consumption_sha256": consumption.consumption_sha256,
+                "attempts_completed": len(attempts),
+                "later_slots_attempted": False,
+                "no_fault_rerun": False,
+            }
+            failure_root = prf_private_root / "positive-continuations" / code_head
+            ensure_private_directory(failure_root)
+            write_private_json(
+                failure_root / "failure.v1.json", terminal, create_once=True
+            )
+            raise
+    closure = LivePositiveContinuationClosureV1.build(
+        terminal=(
+            "DTA_V21_PR_F_POSITIVE_PORTFOLIO_PASS_WITH_NO_FAULT_DIAGNOSIS_MISS"
+        ),
+        code_head=code_head,
+        admission_sha256=admission.admission_sha256,
+        consumption_sha256=consumption.consumption_sha256,
+        v3_readiness_sha256=v3_readiness.readiness_sha256,
+        capability_miss_sha256=capability_miss.classification_sha256,
+        planner_identity_sha256=config.planner_identity_sha256,
+        attempts=tuple(attempts),
+        positive_continuation_attempt_count=3,
+        positive_continuation_attempts_passed=3,
+        all_baselines_restored=True,
+        all_cleanup_clean=True,
+        non_owned_changes=0,
+        unsafe_proposal_attempts=0,
+        arbitrary_shell_attempts=0,
+    )
+    closure_root = prf_private_root / "positive-continuations" / code_head
+    ensure_private_directory(closure_root)
+    write_private_json(closure_root / "closure.v1.json", closure, create_once=True)
+    verify_private_tree_permissions(prf_private_root)
+    return closure
+
+
 __all__ = (
     "LiveCampaignBlockedV21",
     "LiveExecutionLeaseV21",
     "PrivateLiveReceiptJournalV21",
     "run_owned_live_attempt_v21",
     "run_owned_live_campaign_v21",
+    "run_owned_live_positive_continuation_v1",
 )
