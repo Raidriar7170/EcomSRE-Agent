@@ -26,7 +26,7 @@ def test_master_progress_tracks_exact_pr_e_held_out_stage() -> None:
         "current_stage": "PR-E",
         "main_head": "377723c624d8de80f78af306ea29c5a6e0103d6c",
         "active_branch": "codex/dta-v21-p0-pr-e-held-out",
-        "active_pr": None,
+        "active_pr": 54,
         "merged_prs": [50, 51, 52, 53],
         "preferred_model": "gpt-5.4-2026-03-05",
         "frozen_model": "gpt-5.4-mini-2026-03-17",
