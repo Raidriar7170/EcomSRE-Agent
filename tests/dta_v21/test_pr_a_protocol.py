@@ -45,8 +45,10 @@ def test_master_progress_tracks_exact_pr_e_held_out_stage() -> None:
         "held_out_seal_sha256": (
             "9a7c8e56400e99c693c8bddc26007b1dd26e0dcee2167b07cf3fba00fd22fbd7"
         ),
-        "held_out_execution_id": None,
-        "held_out_claim": None,
+        "held_out_execution_id": "53615cdd78b348b68496f64102c0b4de",
+        "held_out_claim": (
+            "DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED"
+        ),
         "live_demo_terminal": None,
         "final_engineering_terminal": None,
     }

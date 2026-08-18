@@ -1,0 +1,16 @@
+{
+  "schema_version": "dta-v21.held-out-evaluation-disposition.v1",
+  "terminal": "DTA_V21_PR_E_HELD_OUT_COMPLETED",
+  "claim": "DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED",
+  "execution_id": "53615cdd78b348b68496f64102c0b4de",
+  "held_out_case_count": 8,
+  "scored_entry_count": 24,
+  "held_out_pack_seal_sha256": "9a7c8e56400e99c693c8bddc26007b1dd26e0dcee2167b07cf3fba00fd22fbd7",
+  "execution_seal_sha256": "04b4fb176d332d4ad84734a7fe3ab740becea97cbd2bf4df4272c984aca39caa",
+  "unblinding_receipt_sha256": "95783ed94e3eac790969e56224d85a4e1ad48da86951b21cf2af5bdc9da187af",
+  "report_sha256": "c11c190909871851ff132d5102fb7d215afcd89a2af0a5495a103075614f2299",
+  "truth_isolation": "PASS",
+  "scorer_verification": "PASS",
+  "no_agent_provider_rerun_during_analysis": true,
+  "disposition_sha256": "1514da33ac2ef2e816f9a68cc15e8fc210ccdcdebe759fb11e8baa424162fe80"
+}

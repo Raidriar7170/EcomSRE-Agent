@@ -1,0 +1,158 @@
+{
+  "schema_version": "dta-v21.development-ablation-report.v1",
+  "development_attempt_id": "13e4ce169073f811c875ec0f0e049aa7",
+  "development_report_sha256": "ed624890b655f10598310daefb574eaea0ca74085183ba70cbc31cb05a812a43",
+  "matched_case_ids": [
+    "dta21-case-001",
+    "dta21-case-006",
+    "dta21-case-008",
+    "dta21-case-010"
+  ],
+  "compact_context": {
+    "group_type": "ARM",
+    "group_value": "EVIDENCE_GUIDED_PLANNER",
+    "scored_entries": 4,
+    "protocol_acceptance_rate": 0.25,
+    "root_exact_match_rate": 0.25,
+    "fault_domain_accuracy": 0.25,
+    "mechanism_accuracy": 0.25,
+    "mechanism_macro_f1": 0.25,
+    "per_class": [
+      {
+        "mechanism": "CONFIGURATION_ERROR",
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      {
+        "mechanism": "CPU_SATURATION",
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      {
+        "mechanism": "DEPENDENCY_LATENCY",
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      {
+        "mechanism": "SERVICE_UNAVAILABLE",
+        "true_positive": 1,
+        "false_positive": 0,
+        "false_negative": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    ],
+    "evidence_reference_validity_rate": 0.25,
+    "evidence_validity_rate": 0.0,
+    "expected_source_coverage_rate": 0.0,
+    "runbook_top1_accuracy": 0.0,
+    "action_precision": 0.0,
+    "no_action_accuracy": null,
+    "escalation_accuracy": null,
+    "tool_source_selection_accuracy": 0.75,
+    "tool_target_selection_accuracy": 0.5,
+    "duplicate_normalized_calls": 0,
+    "mean_read_tool_dispatches": 3.75,
+    "mean_context_materialization_reads": 0.0,
+    "mean_provider_turns": 5.0,
+    "mean_input_tokens": 14195.0,
+    "mean_output_tokens": 1452.25,
+    "mean_total_tokens": 15647.25,
+    "mean_latency_ms": 11405.0,
+    "median_latency_ms": 10274.0,
+    "unsafe_proposal_attempts": 0,
+    "arbitrary_shell_attempts": 0,
+    "non_owned_mutations": 0
+  },
+  "no_compaction": {
+    "group_type": "ARM",
+    "group_value": "EVIDENCE_GUIDED_PLANNER_NO_COMPACTION",
+    "scored_entries": 4,
+    "protocol_acceptance_rate": 0.5,
+    "root_exact_match_rate": 0.25,
+    "fault_domain_accuracy": 0.25,
+    "mechanism_accuracy": 0.25,
+    "mechanism_macro_f1": 0.25,
+    "per_class": [
+      {
+        "mechanism": "CONFIGURATION_ERROR",
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      {
+        "mechanism": "CPU_SATURATION",
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      {
+        "mechanism": "DEPENDENCY_LATENCY",
+        "true_positive": 0,
+        "false_positive": 1,
+        "false_negative": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      {
+        "mechanism": "SERVICE_UNAVAILABLE",
+        "true_positive": 1,
+        "false_positive": 0,
+        "false_negative": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    ],
+    "evidence_reference_validity_rate": 0.5,
+    "evidence_validity_rate": 0.0,
+    "expected_source_coverage_rate": 0.0,
+    "runbook_top1_accuracy": 0.0,
+    "action_precision": 0.0,
+    "no_action_accuracy": null,
+    "escalation_accuracy": null,
+    "tool_source_selection_accuracy": 0.75,
+    "tool_target_selection_accuracy": 0.75,
+    "duplicate_normalized_calls": 0,
+    "mean_read_tool_dispatches": 3.0,
+    "mean_context_materialization_reads": 0.0,
+    "mean_provider_turns": 4.5,
+    "mean_input_tokens": 14013.5,
+    "mean_output_tokens": 1442.5,
+    "mean_total_tokens": 15456.0,
+    "mean_latency_ms": 11076.75,
+    "median_latency_ms": 10831.5,
+    "unsafe_proposal_attempts": 0,
+    "arbitrary_shell_attempts": 0,
+    "non_owned_mutations": 0
+  },
+  "mean_input_token_ratio": 1.0129517964819639,
+  "mean_total_token_ratio": 1.0123738354037266,
+  "mean_semantic_read_ratio": 1.25,
+  "compact_context_reduced_mean_input_tokens": false,
+  "limitations": [
+    "This ablation uses four visible development cases only.",
+    "It is not part of the held-out planner-advantage claim."
+  ],
+  "report_sha256": "9f90b12dbe32437269ff0c918a8bfcb42a6830930bd21ff9ed8323c9959ab642"
+}
