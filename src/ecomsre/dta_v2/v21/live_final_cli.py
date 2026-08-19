@@ -43,6 +43,91 @@ from ecomsre_live_sandbox.environment import ExactCommandRunner
 
 _COMMAND_RUNNER = ExactCommandRunner()
 _README_MARKER = "<!-- dta-v21-pr-f-final-capability-closeout -->"
+_ADMINISTRATIVE_ATTESTATION_RELATIVE = (
+    "docs/review-evidence/dta-v21-live/administrative-test-repair.v1.json"
+)
+_PR55_MERGE_HEAD = "4442dda6cf7d54e163b34355dad2e8235d3957c1"
+_FROZEN_REPORT_SHA256 = (
+    "24d5fda0f10029817afa4146a99f4d1d19e99e7c6902d84c88dd377a74d7c48f"
+)
+_FROZEN_CANDIDATE_SCOPE_SHA256 = (
+    "c3988b4ba18ec471c681638caa2074f4690c3fd3fae93ba268b282a150feb7dd"
+)
+_FROZEN_PRIVATE_CLOSEOUT_SHA256 = (
+    "58190a67688b8cec75b45ae912272901957a2f1903cedc00155d82d0c7167083"
+)
+_AMENDMENT_6_SHA256 = (
+    "d7537afaf51fe9d84ce9d9abc7eb6d60dba277d1221738aba34f2cb0f9e20375"
+)
+_FOUR_PATH_REPAIR_EVIDENCE_SHA256 = (
+    "a63e952580746dc5eea7a9b3738f822a47856ccf3c8c693871bc4447702fe813"
+)
+_DEC048_NON_PUBLIC_CHANGED_PATHS = (
+    "docs/DECISIONS.md",
+    "src/ecomsre/dta_v2/v21/live_final_cli.py",
+    "tests/dta_v21/test_pr_a_protocol.py",
+    "tests/dta_v21/test_v21_final_closeout.py",
+    "tests/dta_v21/test_v21_pr_f_protocol_verifier.py",
+)
+_DEC048_PUBLIC_CHANGED_PATHS = (
+    "docs/analysis/dta-v21-p0-master-progress.json",
+    "docs/review-evidence/dta-v21-live/current-disposition.json",
+    _ADMINISTRATIVE_ATTESTATION_RELATIVE,
+)
+_DEC048_CHANGED_PATHS = frozenset(
+    (*_DEC048_NON_PUBLIC_CHANGED_PATHS, *_DEC048_PUBLIC_CHANGED_PATHS)
+)
+_DEC048_RESULT_PATHS = (
+    "docs/results/dta-v21-live-capability-closeout.json",
+    "docs/results/dta-v21-live-capability-closeout.md",
+    "docs/results/dta-v21-final-summary.md",
+    "docs/results/dta-v21-interview-brief.md",
+    "docs/results/dta-v21-live-demo-human-brief.md",
+    "README.md",
+)
+_DEC048_PROTECTED_PATHS = (
+    "src/ecomsre/dta_v2/v21/agent.py",
+    "src/ecomsre/dta_v2/v21/agent_provider.py",
+    "src/ecomsre/dta_v2/v21/prompts.py",
+    "src/ecomsre/dta_v2/v21/planner.py",
+    "src/ecomsre/dta_v2/v21/context_projection.py",
+    "src/ecomsre/dta_v2/v21/live_runner.py",
+    "src/ecomsre/dta_v2/v21/live_owned.py",
+)
+_DEC048_PROTECTED_PREFIXES = (
+    "config/dta-v21/evaluation/",
+    "config/dta-v21/live/",
+    "config/dta-v21/runbooks/",
+)
+_DEC048_ATTESTATION_KEYS = (
+    "schema_version",
+    "amendment_version",
+    "amendment_sha256",
+    "decision_id",
+    "repository",
+    "pr_number",
+    "branch",
+    "base_main_head",
+    "frozen_report_sha256",
+    "frozen_candidate_scope_sha256",
+    "private_closeout_sha256",
+    "pre_attestation_candidate_head",
+    "successor_candidate_scope_sha256",
+    "non_public_changed_paths",
+    "public_changed_paths",
+    "blob_sha256_by_path",
+    "four_path_repair_evidence_sha256",
+    "provider_called",
+    "docker_called",
+    "held_out_rerun",
+    "scenario_executed",
+    "fault_injected",
+    "runbook_executed",
+    "private_evidence_changed",
+    "public_result_changed",
+    "report_rebound",
+    "record_sha256",
+)
 _PUBLIC_PATHS = frozenset(
     {
         "README.md",
@@ -53,6 +138,7 @@ _PUBLIC_PATHS = frozenset(
         "docs/results/dta-v21-interview-brief.md",
         "docs/results/dta-v21-live-demo-human-brief.md",
         "docs/review-evidence/dta-v21-live/current-disposition.json",
+        _ADMINISTRATIVE_ATTESTATION_RELATIVE,
     }
 )
 _GENERATED_PATHS = _PUBLIC_PATHS - {
@@ -127,6 +213,324 @@ def _candidate_scope_sha256(root: Path, *, treeish: str) -> str:
     if not entries:
         raise ValueError("final-closeout Git scope is empty")
     return semantic_sha256(tuple(entries))
+
+
+def _git_tree_entry(
+    root: Path, *, treeish: str, relative: str
+) -> tuple[str, str, str] | None:
+    value = _git(root, "ls-tree", treeish, "--", relative)
+    if not value:
+        return None
+    lines = value.splitlines()
+    if len(lines) != 1:
+        raise ValueError("administrative successor Git entry is ambiguous")
+    try:
+        metadata, actual_path = lines[0].split("\t", 1)
+        mode, object_type, object_sha = metadata.split(" ", 2)
+    except ValueError as error:
+        raise ValueError("administrative successor Git entry is invalid") from error
+    if actual_path != relative:
+        raise ValueError("administrative successor Git entry path differs")
+    return mode, object_type, object_sha
+
+
+def _git_file_sha256(root: Path, *, treeish: str, relative: str) -> str:
+    entry = _git_tree_entry(root, treeish=treeish, relative=relative)
+    if entry is None or entry[:2] != ("100644", "blob"):
+        raise ValueError(f"administrative successor file is unsafe: {relative}")
+    return hashlib.sha256(
+        _git_blob_text(root, treeish=treeish, relative=relative).encode("utf-8")
+    ).hexdigest()
+
+
+def _git_changed_paths(root: Path, *, head: str) -> dict[str, str]:
+    value = _git(
+        root,
+        "diff",
+        "--name-status",
+        "--no-renames",
+        _PR55_MERGE_HEAD,
+        head,
+        "--",
+    )
+    changed: dict[str, str] = {}
+    for line in value.splitlines():
+        try:
+            status, relative = line.split("\t", 1)
+        except ValueError as error:
+            raise ValueError("administrative successor changed path is invalid") from error
+        if status not in {"A", "M"} or relative in changed:
+            raise ValueError("administrative successor change kind differs")
+        changed[relative] = status
+    return changed
+
+
+def _verify_dec048_result_and_protected_paths(root: Path, *, head: str) -> None:
+    for relative in _DEC048_RESULT_PATHS:
+        if _git_tree_entry(root, treeish=_PR55_MERGE_HEAD, relative=relative) != (
+            _git_tree_entry(root, treeish=head, relative=relative)
+        ):
+            raise ValueError(f"public result changed: {relative}")
+    changed = frozenset(_git_changed_paths(root, head=head))
+    if any(
+        relative in _DEC048_PROTECTED_PATHS
+        or any(relative.startswith(prefix) for prefix in _DEC048_PROTECTED_PREFIXES)
+        for relative in changed
+    ):
+        raise ValueError("protected Agent, runtime, Runbook, or evaluation path changed")
+
+
+def _verify_frozen_report_scope_against_pr55_merge_tree(
+    *,
+    repository_root: Path,
+    report: PublicLiveCapabilityCloseoutReportV4,
+) -> None:
+    root = Path(repository_root).resolve(strict=True)
+    if report.report_sha256 != _FROZEN_REPORT_SHA256:
+        raise ValueError("frozen report SHA-256 differs")
+    if report.candidate_scope_sha256 != _FROZEN_CANDIDATE_SCOPE_SHA256:
+        raise ValueError("frozen candidate scope SHA-256 differs")
+    if report.private_closeout_sha256 != _FROZEN_PRIVATE_CLOSEOUT_SHA256:
+        raise ValueError("frozen private closeout SHA-256 differs")
+    if (
+        _candidate_scope_sha256(root, treeish=_PR55_MERGE_HEAD)
+        != _FROZEN_CANDIDATE_SCOPE_SHA256
+    ):
+        raise ValueError("PR #55 merge tree differs from the frozen candidate scope")
+
+
+def _canonical_json_object(raw: str, *, label: str) -> dict[str, object]:
+    def reject_duplicates(pairs: list[tuple[str, object]]) -> dict[str, object]:
+        value: dict[str, object] = {}
+        for key, item in pairs:
+            if key in value:
+                raise ValueError(f"{label} contains a duplicate key")
+            value[key] = item
+        return value
+
+    try:
+        parsed: object = json.loads(raw, object_pairs_hook=reject_duplicates)
+    except json.JSONDecodeError as error:
+        raise ValueError(f"{label} is not valid JSON") from error
+    if not isinstance(parsed, dict):
+        raise ValueError(f"{label} is not a JSON object")
+    if raw != json.dumps(parsed, indent=2, ensure_ascii=False) + "\n":
+        raise ValueError(f"{label} is not canonical")
+    return parsed
+
+
+def _build_administrative_successor_attestation(
+    *, repository_root: Path, pre_attestation_candidate_head: str
+) -> dict[str, object]:
+    root = Path(repository_root).resolve(strict=True)
+    if (
+        re.fullmatch(r"[0-9a-f]{40}", pre_attestation_candidate_head) is None
+        or _git(root, "rev-parse", "HEAD") != pre_attestation_candidate_head
+        or _git(root, "branch", "--show-current")
+        != "codex/dta-v21-p0-pr-f-final-metadata"
+    ):
+        raise ValueError("pre-attestation candidate identity differs")
+    if _git_tree_entry(
+        root,
+        treeish=pre_attestation_candidate_head,
+        relative=_ADMINISTRATIVE_ATTESTATION_RELATIVE,
+    ) is not None or (root / _ADMINISTRATIVE_ATTESTATION_RELATIVE).exists():
+        raise ValueError("administrative successor attestation already exists")
+    _git(root, "merge-base", "--is-ancestor", _PR55_MERGE_HEAD, "HEAD")
+    expected_before_attestation = _DEC048_CHANGED_PATHS - {
+        _ADMINISTRATIVE_ATTESTATION_RELATIVE
+    }
+    if frozenset(_git_changed_paths(root, head="HEAD")) != expected_before_attestation:
+        raise ValueError("pre-attestation changed path set differs")
+    _verify_dec048_result_and_protected_paths(root, head="HEAD")
+    report = _read_public_report(
+        root / "docs/results/dta-v21-live-capability-closeout.json"
+    )
+    _verify_frozen_report_scope_against_pr55_merge_tree(
+        repository_root=root, report=report
+    )
+    payload: dict[str, object] = {
+        "schema_version": "dta-v21.pr-f-administrative-successor-scope.v1",
+        "amendment_version": (
+            "dta-v21-p0-prf-administrative-successor-scope-v1"
+        ),
+        "amendment_sha256": _AMENDMENT_6_SHA256,
+        "decision_id": "DEC-048",
+        "repository": "Raidriar7170/EcomSRE-Agent",
+        "pr_number": 56,
+        "branch": "codex/dta-v21-p0-pr-f-final-metadata",
+        "base_main_head": _PR55_MERGE_HEAD,
+        "frozen_report_sha256": _FROZEN_REPORT_SHA256,
+        "frozen_candidate_scope_sha256": _FROZEN_CANDIDATE_SCOPE_SHA256,
+        "private_closeout_sha256": _FROZEN_PRIVATE_CLOSEOUT_SHA256,
+        "pre_attestation_candidate_head": pre_attestation_candidate_head,
+        "successor_candidate_scope_sha256": _candidate_scope_sha256(
+            root, treeish="HEAD"
+        ),
+        "non_public_changed_paths": list(_DEC048_NON_PUBLIC_CHANGED_PATHS),
+        "public_changed_paths": list(_DEC048_PUBLIC_CHANGED_PATHS),
+        "blob_sha256_by_path": {
+            relative: _git_file_sha256(root, treeish="HEAD", relative=relative)
+            for relative in _DEC048_NON_PUBLIC_CHANGED_PATHS
+        },
+        "four_path_repair_evidence_sha256": (
+            _FOUR_PATH_REPAIR_EVIDENCE_SHA256
+        ),
+        "provider_called": False,
+        "docker_called": False,
+        "held_out_rerun": False,
+        "scenario_executed": False,
+        "fault_injected": False,
+        "runbook_executed": False,
+        "private_evidence_changed": False,
+        "public_result_changed": False,
+        "report_rebound": False,
+    }
+    return {**payload, "record_sha256": semantic_sha256(payload)}
+
+
+def _read_administrative_successor_attestation(root: Path) -> dict[str, object]:
+    path = root / _ADMINISTRATIVE_ATTESTATION_RELATIVE
+    raw = _read_regular(path, label="administrative successor attestation")
+    value = _canonical_json_object(raw, label="administrative successor attestation")
+    verify_public_text_v4(raw)
+    if tuple(value) != _DEC048_ATTESTATION_KEYS:
+        raise ValueError("administrative successor attestation fields differ")
+    record_sha256 = value.get("record_sha256")
+    payload = dict(value)
+    payload.pop("record_sha256")
+    if (
+        not isinstance(record_sha256, str)
+        or re.fullmatch(r"[0-9a-f]{64}", record_sha256) is None
+        or record_sha256 != semantic_sha256(payload)
+    ):
+        raise ValueError("administrative successor attestation SHA-256 differs")
+    if _git_blob_text(
+        root, treeish="HEAD", relative=_ADMINISTRATIVE_ATTESTATION_RELATIVE
+    ) != raw:
+        raise ValueError("administrative successor attestation is not committed")
+    entry = _git_tree_entry(
+        root, treeish="HEAD", relative=_ADMINISTRATIVE_ATTESTATION_RELATIVE
+    )
+    if entry is None or entry[:2] != ("100644", "blob"):
+        raise ValueError("administrative successor attestation is unsafe")
+    return value
+
+
+def verify_frozen_report_and_administrative_successor(
+    *,
+    repository_root: Path,
+    report: PublicLiveCapabilityCloseoutReportV4,
+) -> None:
+    root = Path(repository_root).resolve(strict=True)
+    _verify_frozen_report_scope_against_pr55_merge_tree(
+        repository_root=root, report=report
+    )
+    current_scope = _candidate_scope_sha256(root, treeish="HEAD")
+    if current_scope == report.candidate_scope_sha256:
+        return
+    _git(root, "merge-base", "--is-ancestor", _PR55_MERGE_HEAD, "HEAD")
+    value = _read_administrative_successor_attestation(root)
+    expected_static: dict[str, object] = {
+        "schema_version": "dta-v21.pr-f-administrative-successor-scope.v1",
+        "amendment_version": (
+            "dta-v21-p0-prf-administrative-successor-scope-v1"
+        ),
+        "amendment_sha256": _AMENDMENT_6_SHA256,
+        "decision_id": "DEC-048",
+        "repository": "Raidriar7170/EcomSRE-Agent",
+        "pr_number": 56,
+        "branch": "codex/dta-v21-p0-pr-f-final-metadata",
+        "base_main_head": _PR55_MERGE_HEAD,
+        "frozen_report_sha256": _FROZEN_REPORT_SHA256,
+        "frozen_candidate_scope_sha256": _FROZEN_CANDIDATE_SCOPE_SHA256,
+        "private_closeout_sha256": _FROZEN_PRIVATE_CLOSEOUT_SHA256,
+        "four_path_repair_evidence_sha256": (
+            _FOUR_PATH_REPAIR_EVIDENCE_SHA256
+        ),
+    }
+    if any(value.get(key) != expected for key, expected in expected_static.items()):
+        raise ValueError("administrative successor attestation binding differs")
+    pre_attestation_head = value.get("pre_attestation_candidate_head")
+    successor_scope = value.get("successor_candidate_scope_sha256")
+    if (
+        not isinstance(pre_attestation_head, str)
+        or re.fullmatch(r"[0-9a-f]{40}", pre_attestation_head) is None
+    ):
+        raise ValueError("pre-attestation candidate head differs")
+    if successor_scope != current_scope:
+        raise ValueError("successor candidate scope differs")
+    if value.get("non_public_changed_paths") != list(
+        _DEC048_NON_PUBLIC_CHANGED_PATHS
+    ):
+        raise ValueError("administrative successor non-public changed paths differ")
+    if value.get("public_changed_paths") != list(_DEC048_PUBLIC_CHANGED_PATHS):
+        raise ValueError("administrative successor public changed paths differ")
+    for field in (
+        "provider_called",
+        "docker_called",
+        "held_out_rerun",
+        "scenario_executed",
+        "fault_injected",
+        "runbook_executed",
+        "private_evidence_changed",
+        "public_result_changed",
+        "report_rebound",
+    ):
+        if value.get(field) is not False:
+            raise ValueError(f"administrative successor {field} differs")
+    changed = _git_changed_paths(root, head="HEAD")
+    if frozenset(changed) != _DEC048_CHANGED_PATHS:
+        raise ValueError("administrative successor changed path set differs")
+    if changed.get(_ADMINISTRATIVE_ATTESTATION_RELATIVE) != "A":
+        raise ValueError("administrative successor attestation is not append-only")
+    blob_hashes = value.get("blob_sha256_by_path")
+    if not isinstance(blob_hashes, dict) or tuple(blob_hashes) != (
+        _DEC048_NON_PUBLIC_CHANGED_PATHS
+    ):
+        raise ValueError("administrative successor blob SHA-256 paths differ")
+    for relative in _DEC048_NON_PUBLIC_CHANGED_PATHS:
+        if blob_hashes.get(relative) != _git_file_sha256(
+            root, treeish="HEAD", relative=relative
+        ):
+            raise ValueError(f"administrative successor blob SHA-256 differs: {relative}")
+    _verify_dec048_result_and_protected_paths(root, head="HEAD")
+    commit_count = int(
+        _git(root, "rev-list", "--count", f"{_PR55_MERGE_HEAD}..HEAD")
+    )
+    if commit_count < 1:
+        raise ValueError("administrative successor commit history differs")
+    if commit_count > 1:
+        if _git(root, "rev-parse", "HEAD^") != pre_attestation_head:
+            raise ValueError("administrative successor attestation is not last")
+        if frozenset(
+            _git_changed_paths_between(root, before="HEAD^", after="HEAD")
+        ) != {_ADMINISTRATIVE_ATTESTATION_RELATIVE}:
+            raise ValueError("administrative successor attestation commit differs")
+
+
+def _git_changed_paths_between(
+    root: Path, *, before: str, after: str
+) -> dict[str, str]:
+    value = _git(
+        root,
+        "diff",
+        "--name-status",
+        "--no-renames",
+        before,
+        after,
+        "--",
+    )
+    changed: dict[str, str] = {}
+    for line in value.splitlines():
+        try:
+            status, relative = line.split("\t", 1)
+        except ValueError as error:
+            raise ValueError("administrative successor commit path is invalid") from error
+        if status not in {"A", "M"} or relative in changed:
+            raise ValueError("administrative successor commit kind differs")
+        changed[relative] = status
+    return changed
 
 
 def _verify_exact_head_workflow(
@@ -623,8 +1027,10 @@ def _load_verified_public_projection(
         verify_public_text_v4(actual)
     readme = _read_regular(readme_path, label="README")
     _verify_readme_projection(current=readme, report=report)
-    if _candidate_scope_sha256(root, treeish="HEAD") != report.candidate_scope_sha256:
-        raise ValueError("candidate non-public source scope differs")
+    verify_frozen_report_and_administrative_successor(
+        repository_root=root,
+        report=report,
+    )
     progress_text = _read_regular(progress_path, label="Master Progress")
     disposition = _read_disposition(disposition_path)
     return report, progress_text, disposition, disposition_path, progress_path
@@ -740,8 +1146,6 @@ def run_final_finalize(
         report=report,
         merged_main_head=merged_main_head,
     )
-    if _candidate_scope_sha256(root, treeish="HEAD") != report.candidate_scope_sha256:
-        raise ValueError("accepted candidate non-public source scope differs")
     previous_disposition = _read_regular(disposition_path, label="disposition")
     if state == "OPEN_PROGRESS_PENDING_DISPOSITION":
         expected_progress = _render_final_progress(

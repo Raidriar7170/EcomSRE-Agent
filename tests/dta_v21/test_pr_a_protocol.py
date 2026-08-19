@@ -114,7 +114,7 @@ def test_master_progress_tracks_exact_pr_f_final_capability_closeout() -> None:
 def test_decision_register_contains_exact_v21_protocol_records() -> None:
     decisions = (REPO_ROOT / "docs/DECISIONS.md").read_text(encoding="utf-8")
 
-    for decision_id in range(39, 48):
+    for decision_id in range(39, 49):
         marker = f"## DEC-{decision_id:03d} —"
         assert decisions.count(marker) == 1
     assert "DEPENDENCY_LATENCY" in decisions
