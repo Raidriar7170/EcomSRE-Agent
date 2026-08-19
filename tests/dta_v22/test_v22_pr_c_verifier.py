@@ -23,6 +23,26 @@ def test_pr_c_verifier_closes_memory_predicate_and_diagnosis_gates() -> None:
             encoding="utf-8"
         )
     )
+    if (
+        progress.get("current_stage") == "PR-D"
+        and progress.get("final_engineering_terminal")
+        == "BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE"
+    ):
+        assert verify_pr_c_protocol(REPO_ROOT) == {
+            "schema_version": "dta-v22-pr-c-verification.v1",
+            "status": "PASS",
+            "historical_bindings": "PASS",
+            "pr_b_successor_gate": "PASS",
+            "pr_c_successor_gate": "NOT_APPLICABLE_BLOCKED",
+            "public_scan_mode": "SUCCESSOR_BLOCKED_PR_D",
+            "secret_private_path_scan": "PASS",
+            "truth_isolation": "PASS",
+            "memory_contract": "PASS",
+            "predicate_policy": "PASS",
+            "diagnosis_candidate_filter": "PASS",
+            "terminal": "DTA_V22_PR_C_MEMORY_PREDICATES_READY",
+        }
+        return
     if progress.get("current_stage") != "PR-C":
         pytest.skip(
             "frozen PR-C closed-surface assertion is exercised persistently by successors"

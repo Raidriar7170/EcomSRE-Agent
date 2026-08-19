@@ -51,6 +51,7 @@ PR_C_LEGACY_SUCCESSOR_ATTESTATION = Path(
 PR_C_SUCCESSOR_ATTESTATION = Path(
     "config/dta-v22/pr-c-successor-attestation.v2.json"
 )
+BLOCKED_PR_D_TERMINAL = "BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE"
 EXPECTED_MANIFEST_SHA256 = (
     "c8f37b945375c83de6ce1ab6766d8f51c8a48b2cf94438f72679ac6c79ca83e8"
 )
@@ -81,6 +82,9 @@ PERSISTENT_PR_C_ARTIFACTS = (
     Path("src/ecomsre/dta_v2/v22/predicates.py"),
     Path("tests/dta_v22/conftest.py"),
     Path("tests/dta_v22/test_v22_memory_predicates_diagnosis.py"),
+)
+BLOCKED_PR_D_PERSISTENT_PR_C_ARTIFACTS = tuple(
+    path for path in PERSISTENT_PR_C_ARTIFACTS if path != PR_C_SUCCESSOR_ATTESTATION
 )
 EXPECTED_ARTIFACT_PATHS = (
     "src/ecomsre/dta_v2/v22/diagnosis.py",
@@ -285,8 +289,40 @@ def _public_scan_plan(
     if progress.get("current_stage") == "PR-C":
         _verify_progress(progress)
         return "PR_C_CLOSED_SURFACE", EXPECTED_PR_C_CHANGED_PATHS
+    if (
+        progress.get("current_stage") == "PR-D"
+        and progress.get("final_engineering_terminal") == BLOCKED_PR_D_TERMINAL
+    ):
+        _require_blocked_pr_d_progress(root, progress)
+        return "SUCCESSOR_BLOCKED_PR_D", BLOCKED_PR_D_PERSISTENT_PR_C_ARTIFACTS
     _require_pr_c_successor_progress(root, progress)
     return "SUCCESSOR_PERSISTENT_ARTIFACTS", PERSISTENT_PR_C_ARTIFACTS
+
+
+def _require_blocked_pr_d_progress(root: Path, progress: dict[str, Any]) -> None:
+    if (
+        progress.get("completed_stage") != "PR-C"
+        or progress.get("active_branch") != "codex/dta-v22-p0-pr-d-planner-lite"
+        or progress.get("active_pr") != 60
+        or progress.get("primary_model") != "gpt-5.4-mini-2026-03-17"
+        or progress.get("provider_mode") is not None
+        or progress.get("final_engineering_terminal") != BLOCKED_PR_D_TERMINAL
+    ):
+        raise ValueError("blocked PR-D progress differs at PR-C boundary")
+    merged = progress.get("merged_prs")
+    if not isinstance(merged, list) or len(merged) != 3:
+        raise ValueError("blocked PR-D progress lacks exact PR-C merge sequence")
+    pr_c = _validate_stage_record(merged[2], stage="PR-C")
+    if (
+        pr_c["pr"] != 59
+        or pr_c["head_sha"] != "de0f0b39bdd51e75925d75580401bab15a04ec66"
+        or pr_c["merge_commit"] != "145d152c2c2d1367e7dac2f0229e2b369fbe55dc"
+    ):
+        raise ValueError("blocked PR-D progress lacks exact PR-C merge provenance")
+    for relative in (PR_C_LEGACY_SUCCESSOR_ATTESTATION, PR_C_SUCCESSOR_ATTESTATION):
+        path = root / relative
+        if path.exists() or path.is_symlink():
+            raise ValueError("blocked PR-D must not publish PR-C successor attestation")
 
 
 def _require_pr_c_successor_progress(root: Path, progress: dict[str, Any]) -> None:
@@ -777,7 +813,7 @@ def verify_pr_c_protocol(root: Path) -> dict[str, object]:
     prior = verify_pr_b_protocol(root)
     verify_pr_c_bindings(root)
     _verify_runtime_contracts()
-    return {
+    result: dict[str, object] = {
         "schema_version": "dta-v22-pr-c-verification.v1",
         "status": "PASS",
         "historical_bindings": prior["historical_bindings"],
@@ -790,6 +826,9 @@ def verify_pr_c_protocol(root: Path) -> dict[str, object]:
         "diagnosis_candidate_filter": "PASS",
         "terminal": "DTA_V22_PR_C_MEMORY_PREDICATES_READY",
     }
+    if mode == "SUCCESSOR_BLOCKED_PR_D":
+        result["pr_c_successor_gate"] = "NOT_APPLICABLE_BLOCKED"
+    return result
 
 
 def _build_parser() -> argparse.ArgumentParser:
