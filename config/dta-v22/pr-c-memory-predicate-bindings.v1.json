@@ -1,0 +1,155 @@
+{
+  "schema_version": "dta-v22-pr-c-memory-predicate-bindings.v1",
+  "goal_version": "dta-v22-p0-master-v1",
+  "stage": "PR-C",
+  "base_main": "8e42b6d212e24ddc94ac4097da7e3e3aae57da98",
+  "terminal": "DTA_V22_PR_C_MEMORY_PREDICATES_READY",
+  "artifacts": [
+    {
+      "path": "src/ecomsre/dta_v2/v22/diagnosis.py",
+      "sha256": "2db234280d04e2e0a406160fe4a9ca34ca27fb7a25f5355c0b272480da5227a2"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/memory.py",
+      "sha256": "9d39cdcae48efef684dd97689f3ffd96ff5d974e74300bbe473250eef2de9a81"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/memory_benchmark.py",
+      "sha256": "6abf04c7f3370ac2276982459c19700ad55521bddac0ae328ff69402e94f98ee"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/predicates.py",
+      "sha256": "bf41aa49484caf686d7f3305a8ba56e2eff9b53d5c92970329cfdd3698333a56"
+    },
+    {
+      "path": "tests/dta_v22/test_v22_memory_predicates_diagnosis.py",
+      "sha256": "84ad06775bf94ff44e810563f7ca11e842de2b65b52cfa9429e1eaf1cc741d20"
+    }
+  ],
+  "predicate_thresholds": {
+    "schema_version": "dta-v22.predicate-thresholds.v1",
+    "error_rate_strong_ratio": 2.0,
+    "error_rate_strong_delta": 0.05,
+    "latency_strong_ratio": 2.0,
+    "latency_strong_delta_ms": 5.0,
+    "trace_latency_strong_ratio": 2.0,
+    "trace_latency_strong_delta_ms": 5.0,
+    "cpu_strong_p95_percent": 80.0,
+    "cpu_strong_baseline_ratio": 2.0,
+    "memory_growth_strong_bytes_per_second": 1.0,
+    "restart_pressure_count": 2,
+    "recent_change_seconds": 900,
+    "thresholds_sha256": "5872568ded2519f9134a7a0ba7ffbbe5b5d8303532ed7d1e5c3e81abc51f3729"
+  },
+  "support_policy_sha256": "40328bf7b7fb3d514da43773995d0e626ad4867d09dab5bf404725ca9474c5b3",
+  "support_clause_ids": [
+    "configuration:change-and-error-metric",
+    "configuration:change-and-log",
+    "cpu-saturation:resource-and-healthy",
+    "dependency-latency:trace-and-metric",
+    "memory-leak:growth-and-log",
+    "memory-leak:growth-and-memory-metric",
+    "memory-leak:growth-and-restarts",
+    "service-unavailable:not-running",
+    "service-unavailable:unhealthy-error-metric",
+    "service-unavailable:unhealthy-first-error"
+  ],
+  "memory_contract": {
+    "salient_retains_all_evidence_refs": true,
+    "salient_retains_all_predicates": true,
+    "salient_top_k_min": 1,
+    "salient_top_k_max": 256,
+    "mandatory_fact_classes": [
+      "ALL_SUPPORTED_CORE_METRICS",
+      "ALL_BOUNDED_RUNTIME_STATE"
+    ],
+    "full_memory_payload": [
+      "FULL_TYPED_OBSERVATIONS",
+      "MINIMAL_REF_STATUS_INDEX",
+      "RUNTIME_DETAILS"
+    ],
+    "runtime_detail_fields": [
+      "state",
+      "healthy",
+      "endpoint",
+      "restart_count",
+      "exit_code"
+    ],
+    "benchmark_provider_calls": 0
+  },
+  "diagnosis_terminals": [
+    "DIAGNOSED",
+    "NO_INCIDENT",
+    "ABSTAIN",
+    "FAILED"
+  ],
+  "truth_isolation": {
+    "predicate_reads_evaluator_truth": false,
+    "predicate_reads_fixture_content": false,
+    "predicate_reads_expected_mechanism": false,
+    "predicate_uses_case_threshold": false,
+    "candidate_filter_allows_live_backend": false,
+    "benchmark_calls_provider": false
+  },
+  "successor_attestation_contract": {
+    "path": "config/dta-v22/pr-c-successor-attestation.v1.json",
+    "schema_version": "dta-v22-pr-c-successor-attestation.v1",
+    "decision_id": "DEC-055",
+    "source_stage": "PR-C",
+    "successor_stage": "PR-D",
+    "successor_branch": "codex/dta-v22-p0-pr-d-planner-lite",
+    "pull_ref_namespace": "refs/remotes/dta-pr/{pr}",
+    "required_fields": [
+      "schema_version",
+      "goal_version",
+      "decision_id",
+      "repository",
+      "source_stage",
+      "source_pr",
+      "source_candidate_head",
+      "source_candidate_tree",
+      "source_merge_commit",
+      "source_merge_tree",
+      "successor_stage",
+      "successor_pr",
+      "successor_branch",
+      "base_main_head",
+      "successor_head",
+      "successor_tree",
+      "changed_paths",
+      "raw_sha256_by_path",
+      "provider_called",
+      "docker_called",
+      "held_out_executed",
+      "scenario_executed",
+      "fault_injected",
+      "runbook_executed",
+      "private_evidence_changed",
+      "public_result_changed",
+      "execution_report_rebound",
+      "record_sha256"
+    ],
+    "git_proofs": [
+      "source_candidate_matches_pull_ref",
+      "source_candidate_tree_matches_single_parent_squash_tree",
+      "source_candidate_is_not_merge_ancestor",
+      "source_merge_is_current_ancestor_and_subject_binds_pr",
+      "source_candidate_and_merge_trees_bind_manifest",
+      "successor_head_tree_and_changed_paths_match_base_diff",
+      "every_successor_changed_file_matches_raw_sha256",
+      "attestation_commit_is_single_file_child",
+      "successor_final_head_matches_pull_ref"
+    ],
+    "required_false_activity_fields": [
+      "provider_called",
+      "docker_called",
+      "held_out_executed",
+      "scenario_executed",
+      "fault_injected",
+      "runbook_executed",
+      "private_evidence_changed",
+      "public_result_changed",
+      "execution_report_rebound"
+    ]
+  }
+}
