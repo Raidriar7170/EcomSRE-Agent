@@ -1076,6 +1076,35 @@ new preregistered evaluation; it cannot retroactively rewrite v2.1.
 The bound Amendment-4 raw SHA-256 is
 `bf9484483583202a198e7699d57ee92f94c8a3ed2207cac3489601542645be1e`.
 
+## DEC-048 — DTA v2.1 PR-F Frozen Report Scope and Administrative Successor Attestation
+
+**Status: `accepted` only under the user-designated
+`dta-v21-p0-prf-administrative-successor-scope-v1` amendment.**
+
+The immutable v4 capability-closeout report continues to bind the accepted PR
+#55 capability tree at merge SHA
+`4442dda6cf7d54e163b34355dad2e8235d3957c1`. Its report SHA-256
+`24d5fda0f10029817afa4146a99f4d1d19e99e7c6902d84c88dd377a74d7c48f`
+and candidate scope SHA-256
+`c3988b4ba18ec471c681638caa2074f4690c3fd3fae93ba268b282a150feb7dd`
+remain frozen. A later administrative repair may not rewrite or rebind that
+report scope.
+
+PR #56 instead carries one append-only, versioned administrative-successor
+attestation. It binds the frozen report and original scope, exact base main
+tree, exact successor non-public tree scope, exact changed path set, and exact
+raw SHA-256 of every authorized non-public changed file. It also records that
+Provider, Docker, held-out, scenario, fault, and Runbook execution did not
+occur, and proves the public results and private evidence were not changed.
+
+This attestation applies only to the closed PR #56 post-merge metadata and
+deterministic test-contract repair. It creates no wildcard, ignore-list, or
+reusable exception. Any future non-public change requires a new Decision Record
+and a new successor attestation; DEC-048 cannot be reused.
+
+The bound Amendment-6 raw SHA-256 is
+`d7537afaf51fe9d84ce9d9abc7eb6d60dba277d1221738aba34f2cb0f9e20375`.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)

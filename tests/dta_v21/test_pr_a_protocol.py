@@ -8,7 +8,7 @@ import re
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_master_progress_tracks_exact_pr_f_live_stage() -> None:
+def test_master_progress_tracks_exact_pr_f_final_capability_closeout() -> None:
     progress = json.loads(
         (REPO_ROOT / "docs/analysis/dta-v21-p0-master-progress.json").read_text(
             encoding="utf-8"
@@ -46,12 +46,12 @@ def test_master_progress_tracks_exact_pr_f_live_stage() -> None:
         "active_decision_id": "DEC-047",
         "inspected_starting_main": ("925d23994888d1b83e57fc1bbdd1944e57a1bfff"),
         "actual_starting_main": ("925d23994888d1b83e57fc1bbdd1944e57a1bfff"),
-        "completed_stage": "PR-E",
-        "current_stage": "PR-F",
-        "main_head": "1c763eb815764e971855a5d6730981b9a2e5858a",
-        "active_branch": "codex/dta-v21-p0-pr-f-live-closeout",
-        "active_pr": 55,
-        "merged_prs": [50, 51, 52, 53, 54],
+        "completed_stage": "PR-F",
+        "current_stage": "COMPLETE_WITH_CAPABILITY_LIMITATIONS",
+        "main_head": "4442dda6cf7d54e163b34355dad2e8235d3957c1",
+        "active_branch": None,
+        "active_pr": None,
+        "merged_prs": [50, 51, 52, 53, 54, 55],
         "preferred_model": "gpt-5.4-2026-03-05",
         "frozen_model": "gpt-5.4-mini-2026-03-17",
         "flat_adaptive_identity_sha256": (
@@ -94,7 +94,10 @@ def test_master_progress_tracks_exact_pr_f_live_stage() -> None:
         "positive_slots_passed": 0,
         "four_slot_acceptance_passed": False,
         "live_demo_terminal": None,
-        "final_engineering_terminal": None,
+        "final_engineering_terminal": (
+            "DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_FROZEN_AGENT_"
+            "CAPABILITY_LIMITATIONS"
+        ),
         "ad_cpu_agent_terminal": "FAILED",
         "ad_cpu_agent_failure_code": "DUPLICATE_READ_REQUEST",
         "ad_cpu_recovery_tested": False,
@@ -111,7 +114,7 @@ def test_master_progress_tracks_exact_pr_f_live_stage() -> None:
 def test_decision_register_contains_exact_v21_protocol_records() -> None:
     decisions = (REPO_ROOT / "docs/DECISIONS.md").read_text(encoding="utf-8")
 
-    for decision_id in range(39, 47):
+    for decision_id in range(39, 49):
         marker = f"## DEC-{decision_id:03d} —"
         assert decisions.count(marker) == 1
     assert "DEPENDENCY_LATENCY" in decisions
