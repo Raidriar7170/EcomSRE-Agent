@@ -18,6 +18,15 @@ from pydantic import (
     model_validator,
 )
 
+from ecomsre.dta_v2.v22.action_catalog import EvidenceActionV22
+from ecomsre.dta_v2.tool_contracts import (
+    EndpointState,
+    HealthState,
+    ObservationStatus,
+    ReadToolObservation,
+    RuntimeRecord,
+    ToolName,
+)
 from ecomsre.dta_v2.v22.read_contracts import (
     ChangeCategoryV22,
     DtaModelV22,
@@ -31,6 +40,7 @@ from ecomsre.dta_v2.v22.read_contracts import (
     RecentChangeRecordV22,
     ResourceUsageRecordV22,
     RolloutStateV22,
+    RuntimeRecordV22,
     RuntimeStateV22,
     Sha256V22,
     SpanStatusV22,
@@ -303,44 +313,42 @@ class RuntimeSalientPayloadV22(DtaModelV22):
     schema_version: Literal["dta-v22.salient-runtime.v1"]
     state: RuntimeStateV22
     healthy: StrictBool
-    endpoint: str = Field(
-        min_length=1,
-        max_length=256,
-        pattern=r"^[a-z][a-z0-9+.-]*://[^?#\s]+$",
-    )
+    endpoint: EndpointState
     restart_count: StrictInt = Field(ge=0)
     exit_code: StrictInt | None = Field(default=None, ge=0, le=255)
 
     @model_validator(mode="after")
     def require_exit_semantics(self) -> RuntimeSalientPayloadV22:
-        if self.state is RuntimeStateV22.RUNNING and self.exit_code is not None:
-            raise ValueError("running runtime fact cannot contain an exit code")
-        if self.state is not RuntimeStateV22.RUNNING and self.exit_code is None:
-            raise ValueError("non-running runtime fact requires an exit code")
+        if (
+            self.state is RuntimeStateV22.RUNNING
+            and self.exit_code not in {None, 0}
+        ):
+            raise ValueError("running runtime fact has an impossible exit code")
+        if self.state is not RuntimeStateV22.RUNNING and self.healthy:
+            raise ValueError("non-running runtime fact cannot be healthy")
         return self
 
 
 class RuntimeObservationV22(DtaModelV22):
-    """Complete runtime record whose enrichment is part of the outcome digest."""
+    """Bounded runtime projection whose provenance is part of the outcome digest."""
 
     schema_version: Literal["dta-v22.runtime-observation.v1"]
     service: str = Field(pattern=r"^[a-z][a-z0-9-]*$")
     state: RuntimeStateV22
     healthy: StrictBool
-    endpoint: str = Field(
-        min_length=1,
-        max_length=256,
-        pattern=r"^[a-z][a-z0-9+.-]*://[^?#\s]+$",
-    )
+    endpoint: EndpointState
     restart_count: StrictInt = Field(ge=0)
     exit_code: StrictInt | None = Field(default=None, ge=0, le=255)
 
     @model_validator(mode="after")
     def require_exit_semantics(self) -> RuntimeObservationV22:
-        if self.state is RuntimeStateV22.RUNNING and self.exit_code is not None:
-            raise ValueError("running runtime observation cannot contain an exit code")
-        if self.state is not RuntimeStateV22.RUNNING and self.exit_code is None:
-            raise ValueError("non-running runtime observation requires an exit code")
+        if (
+            self.state is RuntimeStateV22.RUNNING
+            and self.exit_code not in {None, 0}
+        ):
+            raise ValueError("running runtime observation has an impossible exit code")
+        if self.state is not RuntimeStateV22.RUNNING and self.healthy:
+            raise ValueError("non-running runtime observation cannot be healthy")
         return self
 
 
@@ -352,7 +360,7 @@ _FAILURE_STATUSES_V22 = {
 
 
 class RuntimeReadOutcomeV22(DtaModelV22):
-    """PR-C runtime outcome; endpoint and exit code share its authority boundary."""
+    """Canonical PR-B runtime outcome projected into the PR-C memory schema."""
 
     schema_version: Literal["dta-v22.runtime-read-outcome.v1"]
     action_id: str
@@ -361,7 +369,57 @@ class RuntimeReadOutcomeV22(DtaModelV22):
     status: ReadSourceStatusV22
     records: tuple[RuntimeObservationV22, ...]
     truncated: StrictBool
+    action: EvidenceActionV22
+    source_outcome: ReadOutcomeV22
+    source_observation: ReadToolObservation
+    projection_policy: Literal[
+        "dta-v22.runtime-projection.from-pr-b-and-v2-authority.v1"
+    ]
     outcome_sha256: Sha256V22
+
+    @classmethod
+    def from_pr_b(
+        cls,
+        *,
+        action: EvidenceActionV22,
+        source_outcome: ReadOutcomeV22,
+        source_observation: ReadToolObservation,
+    ) -> RuntimeReadOutcomeV22:
+        action = EvidenceActionV22.model_validate(action.model_dump(mode="python"))
+        source_outcome = ReadOutcomeV22.model_validate(
+            source_outcome.model_dump(mode="python")
+        )
+        source_observation = ReadToolObservation.model_validate(
+            source_observation.model_dump(mode="python")
+        )
+        records = _project_pr_b_runtime_records(
+            source_outcome,
+            source_observation,
+        )
+        payload: dict[str, Any] = {
+            "schema_version": "dta-v22.runtime-read-outcome.v1",
+            "action_id": source_outcome.action_id,
+            "source": EvidenceSourceV22.RUNTIME,
+            "request_sha256": source_outcome.request_sha256,
+            "status": source_outcome.status,
+            "records": records,
+            "truncated": source_outcome.truncated,
+            "action": action,
+            "source_outcome": source_outcome,
+            "source_observation": source_observation,
+            "projection_policy": (
+                "dta-v22.runtime-projection.from-pr-b-and-v2-authority.v1"
+            ),
+        }
+        draft = cls.model_construct(**payload, outcome_sha256="0" * 64)
+        return cls.model_validate(
+            {
+                **payload,
+                "outcome_sha256": semantic_sha256_v22(
+                    draft.model_dump(mode="json", exclude={"outcome_sha256"})
+                ),
+            }
+        )
 
     @model_validator(mode="after")
     def require_outcome(self) -> RuntimeReadOutcomeV22:
@@ -374,6 +432,29 @@ class RuntimeReadOutcomeV22(DtaModelV22):
         services = tuple(item.service for item in self.records)
         if len(services) != len(set(services)):
             raise ValueError("runtime outcome contains duplicate services")
+        if (
+            self.action.source is not EvidenceSourceV22.RUNTIME
+            or self.source_outcome.source is not EvidenceSourceV22.RUNTIME
+            or self.source_observation.tool is not ToolName.INSPECT_SERVICE_RUNTIME
+            or self.source_observation.source.value != EvidenceSourceV22.RUNTIME.value
+            or self.action_id != self.action.action_id
+            or self.action_id != self.source_outcome.action_id
+            or self.request_sha256 != self.action.request_sha256
+            or self.request_sha256 != self.source_outcome.request_sha256
+            or self.status is not self.source_outcome.status
+            or self.truncated != self.source_outcome.truncated
+            or self.records
+            != _project_pr_b_runtime_records(
+                self.source_outcome,
+                self.source_observation,
+            )
+            or (
+                bool(self.records)
+                and tuple(item.service for item in self.records)
+                != self.action.target_services
+            )
+        ):
+            raise ValueError("runtime outcome differs from canonical PR-B authority")
         expected = semantic_sha256_v22(
             self.model_dump(mode="json", exclude={"outcome_sha256"})
         )
@@ -488,8 +569,11 @@ class MemoryLossEntryV22(DtaModelV22):
 
     @model_validator(mode="after")
     def require_counts(self) -> MemoryLossEntryV22:
-        if self.retained_fact_count + self.omitted_record_count != self.original_record_count:
-            raise ValueError("memory loss counts do not reconcile")
+        if (
+            self.retained_fact_count > self.original_record_count
+            or self.omitted_record_count > self.original_record_count
+        ):
+            raise ValueError("memory loss counts exceed original records")
         if self.omitted_field_categories != tuple(
             sorted(set(self.omitted_field_categories))
         ):
@@ -654,11 +738,18 @@ class SalientEvidenceMemoryV22(DtaModelV22):
             raise ValueError("loss ledger and observation summaries differ")
         for outcome_sha256, summary in summaries_by_outcome.items():
             entry = ledger_by_outcome[outcome_sha256]
+            retained_refs = {
+                ref
+                for fact_id in summary.retained_fact_ids
+                for ref in facts_by_id[fact_id].evidence_refs
+            }
             if (
                 entry.action_id != summary.action_id
                 or entry.source is not summary.source
                 or entry.original_record_count != len(summary.evidence_refs)
                 or entry.retained_fact_count != len(summary.retained_fact_ids)
+                or entry.omitted_record_count
+                != len(summary.evidence_refs) - len(retained_refs)
                 or entry.omitted_field_categories != _OMITTED_FIELDS[summary.source]
             ):
                 raise ValueError("memory loss entry differs from observation summary")
@@ -724,6 +815,10 @@ class SalientEvidenceMemoryV22(DtaModelV22):
             facts=material.all_facts,
             top_k=context["top_k"],
         )
+        expected_projection = _build_memory_projection(
+            material=material,
+            selected=expected_facts,
+        )
         from ecomsre.dta_v2.v22.predicates import PredicateExtractorV22
 
         expected_predicates = PredicateExtractorV22(
@@ -735,6 +830,10 @@ class SalientEvidenceMemoryV22(DtaModelV22):
             raise ValueError("salient facts differ from authoritative provenance")
         if self.predicates != expected_predicates:
             raise ValueError("salient predicates differ from authoritative predicate provenance")
+        if self.observation_summaries != expected_projection.summaries:
+            raise ValueError("observation summaries differ from authoritative provenance")
+        if self.loss_ledger != expected_projection.loss_ledger:
+            raise ValueError("memory loss ledger differs from authoritative provenance")
         expected = semantic_sha256_v22(
             self.model_dump(mode="json", exclude={"memory_sha256"})
         )
@@ -788,6 +887,63 @@ def _require_utc(value: datetime) -> None:
         raise ValueError("memory timestamp must be timezone-aware UTC")
 
 
+def _project_pr_b_runtime_records(
+    source_outcome: ReadOutcomeV22,
+    source_observation: ReadToolObservation,
+) -> tuple[RuntimeObservationV22, ...]:
+    if source_outcome.source is not EvidenceSourceV22.RUNTIME:
+        raise ValueError("runtime projection requires a PR-B runtime outcome")
+    expected_observation_status = (
+        ObservationStatus.SUCCESS
+        if source_outcome.status
+        in {
+            ReadSourceStatusV22.SUCCESS_NONEMPTY,
+            ReadSourceStatusV22.SUCCESS_EMPTY,
+        }
+        else ObservationStatus.FAILURE
+    )
+    if (
+        source_observation.tool is not ToolName.INSPECT_SERVICE_RUNTIME
+        or source_observation.source.value != EvidenceSourceV22.RUNTIME.value
+        or source_observation.status is not expected_observation_status
+    ):
+        raise ValueError("runtime projection source lacks approved read authority")
+    source_records = tuple(
+        item for item in source_observation.results if isinstance(item, RuntimeRecord)
+    )
+    if len(source_records) != len(source_observation.results):
+        raise ValueError("runtime projection source contains a non-runtime record")
+    source_by_service = {item.logical_service: item for item in source_records}
+    if len(source_by_service) != len(source_records):
+        raise ValueError("runtime projection source contains duplicate services")
+    records: list[RuntimeObservationV22] = []
+    for record in source_outcome.records:
+        if not isinstance(record, RuntimeRecordV22):
+            raise ValueError("runtime projection source contains a non-runtime record")
+        source = source_by_service.get(record.service)
+        if (
+            source is None
+            or source.state.value != record.state.value
+            or (source.health is HealthState.HEALTHY) != record.healthy
+            or source.restart_count != record.restart_count
+        ):
+            raise ValueError("runtime projection differs from approved read observation")
+        records.append(
+            RuntimeObservationV22(
+                schema_version="dta-v22.runtime-observation.v1",
+                service=record.service,
+                state=record.state,
+                healthy=record.healthy,
+                endpoint=source.endpoint_state,
+                restart_count=record.restart_count,
+                exit_code=source.exit_code,
+            )
+        )
+    if set(source_by_service) != {item.service for item in records}:
+        raise ValueError("runtime projection source service set differs")
+    return tuple(records)
+
+
 def _ratio(value: float, baseline: float) -> float | None:
     if baseline == 0:
         return None
@@ -827,8 +983,9 @@ def _metric_strength(
 def _normalize_log(message: str) -> str:
     normalized = message.casefold()
     normalized = re.sub(
-        r"\b(?:authorization|api[_-]?key|token|secret|password|passwd|cookie)"
-        r"\s*[:=]\s*[^\s,;]+",
+        r"\b(?:authorization|api[_-]?key|access[_-]?token|token|client[_-]?secret|"
+        r"secret|password|passwd|cookie|session[_-]?id)"
+        r"\s*(?::|=|\s)\s*[^\s,;]+",
         "credential=<redacted>",
         normalized,
         flags=re.IGNORECASE,
@@ -838,6 +995,11 @@ def _normalize_log(message: str) -> str:
         "bearer <redacted>",
         normalized,
         flags=re.IGNORECASE,
+    )
+    normalized = re.sub(
+        r"(['\"])[^'\"\r\n]+\1",
+        "<quoted>",
+        normalized,
     )
     normalized = re.sub(
         r"\b[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@"
@@ -875,6 +1037,12 @@ def _normalize_log(message: str) -> str:
         r"\b(?=[a-z0-9_-]{20,}\b)(?=[a-z0-9_-]*[a-z])"
         r"(?=[a-z0-9_-]*[0-9])[a-z0-9_-]+\b",
         "<opaque>",
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    normalized = re.sub(
+        r"\b([a-z][a-z0-9_-]{1,40})\s*[:=]\s*(?!<)[^\s,;]+",
+        r"\1=<value>",
         normalized,
         flags=re.IGNORECASE,
     )
@@ -1287,6 +1455,13 @@ class _MemoryMaterialV22:
     all_facts: tuple[SalientFactV22, ...]
 
 
+@dataclass(frozen=True)
+class _MemoryProjectionV22:
+    summaries: tuple[ObservationSummaryV22, ...]
+    loss_ledger: MemoryLossLedgerV22
+    minimal_index: tuple[MinimalObservationIndexV22, ...]
+
+
 def _validate_memory_outcomes(
     outcomes: tuple[MemoryReadOutcomeV22, ...],
 ) -> tuple[MemoryReadOutcomeV22, ...]:
@@ -1416,6 +1591,79 @@ def _select_salient_facts(
     )
 
 
+def _build_memory_projection(
+    *,
+    material: _MemoryMaterialV22,
+    selected: tuple[SalientFactV22, ...],
+) -> _MemoryProjectionV22:
+    selected_ids = {item.fact_id for item in selected}
+    summaries: list[ObservationSummaryV22] = []
+    loss_entries: list[MemoryLossEntryV22] = []
+    minimal: list[MinimalObservationIndexV22] = []
+    for outcome in material.outcomes:
+        outcome_refs = tuple(
+            item.evidence_ref
+            for item in material.refs_by_outcome[outcome.outcome_sha256]
+        )
+        outcome_facts = material.facts_by_outcome[outcome.outcome_sha256]
+        retained = tuple(
+            item.fact_id for item in outcome_facts if item.fact_id in selected_ids
+        )
+        retained_refs = {
+            ref
+            for fact in outcome_facts
+            if fact.fact_id in selected_ids
+            for ref in fact.evidence_refs
+        }
+        summaries.append(_summary(outcome, outcome_refs, retained))
+        loss_entries.append(
+            MemoryLossEntryV22(
+                schema_version="dta-v22.memory-loss-entry.v1",
+                action_id=outcome.action_id,
+                source=outcome.source,
+                outcome_sha256=outcome.outcome_sha256,
+                original_record_count=len(outcome.records),
+                retained_fact_count=len(retained),
+                omitted_record_count=len(outcome.records) - len(retained_refs),
+                omitted_field_categories=_OMITTED_FIELDS[outcome.source],
+                truncated=outcome.truncated,
+                artifact_sha256=outcome.outcome_sha256,
+            )
+        )
+        minimal.append(
+            MinimalObservationIndexV22(
+                schema_version="dta-v22.minimal-observation-index.v1",
+                action_id=outcome.action_id,
+                source=outcome.source,
+                status=outcome.status,
+                request_sha256=outcome.request_sha256,
+                outcome_sha256=outcome.outcome_sha256,
+                evidence_refs=outcome_refs,
+            )
+        )
+    ledger_payload: dict[str, Any] = {
+        "schema_version": "dta-v22.memory-loss-ledger.v1",
+        "entries": tuple(loss_entries),
+    }
+    ledger_draft = MemoryLossLedgerV22.model_construct(
+        **ledger_payload,
+        ledger_sha256="0" * 64,
+    )
+    ledger = MemoryLossLedgerV22.model_validate(
+        {
+            **ledger_payload,
+            "ledger_sha256": semantic_sha256_v22(
+                ledger_draft.model_dump(mode="json", exclude={"ledger_sha256"})
+            ),
+        }
+    )
+    return _MemoryProjectionV22(
+        summaries=tuple(summaries),
+        loss_ledger=ledger,
+        minimal_index=tuple(minimal),
+    )
+
+
 def build_memory_views_v22(
     *,
     outcomes: tuple[MemoryReadOutcomeV22, ...],
@@ -1434,67 +1682,10 @@ def build_memory_views_v22(
         thresholds=thresholds,
     )
     validated = material.outcomes
-    refs_by_outcome = material.refs_by_outcome
-    facts_by_outcome = material.facts_by_outcome
     all_refs = material.all_refs
     all_facts = material.all_facts
     selected = _select_salient_facts(facts=all_facts, top_k=top_k)
-    selected_ids = {item.fact_id for item in selected}
-    summaries: list[ObservationSummaryV22] = []
-    loss_entries: list[MemoryLossEntryV22] = []
-    minimal: list[MinimalObservationIndexV22] = []
-    for outcome in validated:
-        outcome_refs = tuple(
-            item.evidence_ref for item in refs_by_outcome[outcome.outcome_sha256]
-        )
-        retained = tuple(
-            item.fact_id
-            for item in facts_by_outcome[outcome.outcome_sha256]
-            if item.fact_id in selected_ids
-        )
-        summaries.append(_summary(outcome, outcome_refs, retained))
-        loss_entries.append(
-            MemoryLossEntryV22(
-                schema_version="dta-v22.memory-loss-entry.v1",
-                action_id=outcome.action_id,
-                source=outcome.source,
-                outcome_sha256=outcome.outcome_sha256,
-                original_record_count=len(outcome.records),
-                retained_fact_count=len(retained),
-                omitted_record_count=len(outcome.records) - len(retained),
-                omitted_field_categories=_OMITTED_FIELDS[outcome.source],
-                truncated=outcome.truncated,
-                artifact_sha256=outcome.outcome_sha256,
-            )
-        )
-        minimal.append(
-            MinimalObservationIndexV22(
-                schema_version="dta-v22.minimal-observation-index.v1",
-                action_id=outcome.action_id,
-                source=outcome.source,
-                status=outcome.status,
-                request_sha256=outcome.request_sha256,
-                outcome_sha256=outcome.outcome_sha256,
-                evidence_refs=outcome_refs,
-            )
-        )
-
-    ledger_payload: dict[str, Any] = {
-        "schema_version": "dta-v22.memory-loss-ledger.v1",
-        "entries": tuple(loss_entries),
-    }
-    ledger_draft = MemoryLossLedgerV22.model_construct(
-        **ledger_payload,
-        ledger_sha256="0" * 64,
-    )
-    ledger = MemoryLossLedgerV22.model_validate(
-        {
-            **ledger_payload,
-            "ledger_sha256": semantic_sha256_v22(
-                ledger_draft.model_dump(mode="json", exclude={"ledger_sha256"})
-            ),
-        }
-    )
+    projection = _build_memory_projection(material=material, selected=selected)
 
     # Local import keeps the shared predicate contract in this module while the
     # deterministic extractor remains independently testable.
@@ -1509,10 +1700,10 @@ def build_memory_views_v22(
         "thresholds_sha256": thresholds.thresholds_sha256,
         "observed_at": observed_at,
         "evidence_refs": tuple(sorted(all_refs, key=lambda item: item.evidence_ref)),
-        "observation_summaries": tuple(summaries),
+        "observation_summaries": projection.summaries,
         "predicates": predicates,
         "salient_facts": selected,
-        "loss_ledger": ledger,
+        "loss_ledger": projection.loss_ledger,
     }
     salient_draft = SalientEvidenceMemoryV22.model_construct(
         **salient_payload,
@@ -1532,7 +1723,7 @@ def build_memory_views_v22(
         "schema_version": "dta-v22.full-evidence-memory.v1",
         "baseline_sha256": baseline.baseline_sha256,
         "observed_at": observed_at,
-        "minimal_index": tuple(minimal),
+        "minimal_index": projection.minimal_index,
         "full_observations": validated,
     }
     full_draft = FullEvidenceMemoryV22.model_construct(

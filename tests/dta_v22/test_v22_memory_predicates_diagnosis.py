@@ -2,10 +2,28 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 import inspect
+import json
 from typing import Any
 
 import pytest
 
+from ecomsre.dta_v2.tool_contracts import (
+    EndpointState,
+    HealthState,
+    ObservationStatus,
+    ReadToolObservation,
+    RuntimeRecord,
+    RuntimeState as RuntimeStateV2,
+    ToolCounters,
+    build_fake_read_authority,
+    build_inspect_service_runtime_request,
+    build_read_tool_observation,
+)
+from ecomsre.dta_v2.v22.action_catalog import (
+    StaticTopologyV22,
+    build_action_catalog_v22,
+    build_default_tool_capability_registry_v22,
+)
 from ecomsre.dta_v2.v22.diagnosis import (
     CandidateActionV22,
     CandidateSetV22,
@@ -29,6 +47,7 @@ from ecomsre.dta_v2.v22.memory import (
     RuntimeObservationV22,
     RuntimeReadOutcomeV22,
     RuntimeSalientPayloadV22,
+    SalientFactV22,
     SalientEvidenceMemoryV22,
     SignalStrengthV22,
     TraceSalientPayloadV22,
@@ -63,10 +82,64 @@ from ecomsre.dta_v2.v22.read_contracts import (
     TraceSpanV22,
     semantic_sha256_v22,
 )
-from ecomsre.dta_v2.v22.replay import ReadOutcomeV22
+from ecomsre.dta_v2.v22.replay import (
+    QuerySpecificReplayBackendV22,
+    ReadOutcomeV22,
+    ReplayCaptureV22,
+)
 
 
 NOW = datetime(2026, 8, 20, 0, 0, tzinfo=timezone.utc)
+RUN_ID = "1" * 32
+
+
+def _runtime_source_observation(
+    records: tuple[RuntimeRecordV22, ...],
+) -> ReadToolObservation:
+    source_records = tuple(
+        RuntimeRecord(
+            logical_service=record.service,
+            owned_container_present=record.state is not RuntimeStateV22.ABSENT,
+            state=RuntimeStateV2(record.state.value),
+            health=(HealthState.HEALTHY if record.healthy else HealthState.UNHEALTHY),
+            restart_count=record.restart_count,
+            exit_code=(0 if record.state is RuntimeStateV22.RUNNING else 137),
+            endpoint_probe_performed=record.state is RuntimeStateV22.RUNNING,
+            endpoint_state=(
+                EndpointState.READY
+                if record.healthy
+                else (
+                    EndpointState.NOT_READY
+                    if record.state is RuntimeStateV22.RUNNING
+                    else EndpointState.NOT_APPLICABLE
+                )
+            ),
+        )
+        for record in records
+    )
+    request = build_inspect_service_runtime_request(
+        run_id=RUN_ID,
+        services=tuple(item.service for item in records),
+        max_results=len(records),
+    )
+    return build_read_tool_observation(
+        request=request,
+        authority=build_fake_read_authority(),
+        duplicate_of_request_sha256=None,
+        status=ObservationStatus.SUCCESS,
+        error_code=None,
+        results=source_records,
+        truncated=False,
+        observed_at_start=NOW,
+        observed_at_end=NOW,
+        monotonic_latency_ms=0,
+        counters=ToolCounters(
+            dispatch_ordinal=1,
+            backend_call_count=1,
+            success_count=1,
+            failure_count=0,
+        ),
+    )
 
 
 def _outcome(
@@ -77,27 +150,32 @@ def _outcome(
 ) -> MemoryReadOutcomeV22:
     if source is EvidenceSourceV22.RUNTIME:
         runtime_records = tuple(
-            RuntimeObservationV22(
-                schema_version="dta-v22.runtime-observation.v1",
-                service=record.service,
-                state=record.state,
-                healthy=record.healthy,
-                endpoint=f"http://{record.service}:8080/healthz",
-                restart_count=record.restart_count,
-                exit_code=(
-                    None if record.state is RuntimeStateV22.RUNNING else 137
-                ),
-            )
-            for record in records
-            if isinstance(record, RuntimeRecordV22)
+            record for record in records if isinstance(record, RuntimeRecordV22)
         )
-        if len(runtime_records) != len(records):
+        if len(runtime_records) != len(records) or not runtime_records:
             raise TypeError("runtime helper received a non-runtime record")
-        runtime_payload: dict[str, Any] = {
-            "schema_version": "dta-v22.runtime-read-outcome.v1",
+        services = tuple(sorted(item.service for item in runtime_records))
+        topology = StaticTopologyV22.build(services=services, edges=())
+        catalog = build_action_catalog_v22(
+            candidate_services=services,
+            topology=topology,
+            capability_registry=build_default_tool_capability_registry_v22(),
+            executed_action_ids=(),
+            remaining_budget=20.0,
+        )
+        action = next(
+            item
+            for item in catalog.registry_actions
+            if item.source is EvidenceSourceV22.RUNTIME
+            and item.target_services == services
+        )
+        if action.action_id != action_id:
+            raise ValueError("runtime test action ID is not canonical")
+        source_payload: dict[str, Any] = {
+            "schema_version": "dta-v22.read-outcome.v1",
             "action_id": action_id,
             "source": EvidenceSourceV22.RUNTIME,
-            "request_sha256": semantic_sha256_v22({"action_id": action_id}),
+            "request_sha256": action.request_sha256,
             "status": (
                 ReadSourceStatusV22.SUCCESS_NONEMPTY
                 if runtime_records
@@ -106,18 +184,23 @@ def _outcome(
             "records": runtime_records,
             "truncated": False,
         }
-        runtime_draft = RuntimeReadOutcomeV22.model_construct(
-            **runtime_payload, outcome_sha256="0" * 64
+        source_draft = ReadOutcomeV22.model_construct(
+            **source_payload, outcome_sha256="0" * 64
         )
-        return RuntimeReadOutcomeV22.model_validate(
+        source_outcome = ReadOutcomeV22.model_validate(
             {
-                **runtime_payload,
+                **source_payload,
                 "outcome_sha256": semantic_sha256_v22(
-                    runtime_draft.model_dump(
+                    source_draft.model_dump(
                         mode="json", exclude={"outcome_sha256"}
                     )
                 ),
             }
+        )
+        return RuntimeReadOutcomeV22.from_pr_b(
+            action=action,
+            source_outcome=source_outcome,
+            source_observation=_runtime_source_observation(runtime_records),
         )
     payload: dict[str, Any] = {
         "schema_version": "dta-v22.read-outcome.v1",
@@ -436,8 +519,8 @@ def test_salient_memory_preserves_log_template_trace_path_and_unsupported_metric
         for fact in salient.salient_facts
         if isinstance(fact.payload, RuntimeSalientPayloadV22)
     )
-    assert runtime.endpoint == "http://payment:8080/healthz"
-    assert runtime.exit_code is None
+    assert runtime.endpoint is EndpointState.READY
+    assert runtime.exit_code == 0
     runtime_outcome = next(
         item
         for item in full.full_observations
@@ -461,11 +544,20 @@ def test_all_refs_resolve_and_loss_ledger_is_exact() -> None:
         for predicate in salient.predicates
     )
     entries = {item.outcome_sha256: item for item in salient.loss_ledger.entries}
+    summaries = {
+        item.outcome_sha256: item for item in salient.observation_summaries
+    }
+    facts = {item.fact_id: item for item in salient.salient_facts}
     for outcome in outcomes:
         entry = entries[outcome.outcome_sha256]
+        retained_refs = {
+            ref
+            for fact_id in summaries[outcome.outcome_sha256].retained_fact_ids
+            for ref in facts[fact_id].evidence_refs
+        }
         assert entry.original_record_count == len(outcome.records)
         assert entry.omitted_record_count == (
-            entry.original_record_count - entry.retained_fact_count
+            entry.original_record_count - len(retained_refs)
         )
         assert entry.artifact_sha256 == outcome.outcome_sha256
     assert sum(item.retained_fact_count for item in entries.values()) == 3
@@ -481,6 +573,147 @@ def test_all_refs_resolve_and_loss_ledger_is_exact() -> None:
     } == {MetricKindV22.LATENCY_P95_MS, MetricKindV22.REQUEST_SUPPORT}
     with pytest.raises(ValueError, match="mandatory salient facts"):
         _memory(outcomes, top_k=2)
+
+
+def test_pr_b_runtime_backend_is_adapted_through_canonical_authority() -> None:
+    template = next(
+        item
+        for item in _incident_outcomes()
+        if isinstance(item, RuntimeReadOutcomeV22)
+    )
+    capture = ReplayCaptureV22(
+        schema_version="dta-v22.replay-capture.v1",
+        captured_at=NOW,
+        metrics=(),
+        logs=(),
+        traces=(),
+        runtime=template.source_outcome.records,
+        resources=(),
+        changes=(),
+        source_failures=(),
+    )
+    source_outcome = QuerySpecificReplayBackendV22(capture).execute(template.action)
+    enriched = RuntimeReadOutcomeV22.from_pr_b(
+        action=template.action,
+        source_outcome=source_outcome,
+        source_observation=template.source_observation,
+    )
+    assert enriched.source_outcome == source_outcome
+    assert enriched.request_sha256 == template.action.request_sha256
+    assert enriched.records[0].endpoint is EndpointState.READY
+    assert enriched.records[0].exit_code == 0
+    salient, full = _memory((enriched,), top_k=1)
+    assert full.full_observations == (enriched,)
+    assert salient.salient_facts[0].evidence_refs == (
+        salient.evidence_refs[0].evidence_ref,
+    )
+
+    wrong_request_draft = source_outcome.model_copy(
+        update={"request_sha256": "f" * 64}
+    )
+    wrong_request = ReadOutcomeV22.model_validate(
+        wrong_request_draft.model_copy(
+            update={
+                "outcome_sha256": semantic_sha256_v22(
+                    wrong_request_draft.model_dump(
+                        mode="json",
+                        exclude={"outcome_sha256"},
+                    )
+                )
+            }
+        ).model_dump(mode="python")
+    )
+    with pytest.raises(ValueError, match="canonical PR-B authority"):
+        RuntimeReadOutcomeV22.from_pr_b(
+            action=template.action,
+            source_outcome=wrong_request,
+            source_observation=template.source_observation,
+        )
+
+
+@pytest.mark.parametrize(
+    "endpoint",
+    (
+        "http://user:secret@payment:8080/healthz",
+        "file:///" + "Users/alice/private/customer.csv",
+        "http://checkout:8080/healthz",
+        "http://payment:8080/" + "users/alice/private/customer.csv",
+        "https://payment:8080/healthz",
+    ),
+)
+def test_runtime_endpoint_rejects_urls_credentials_and_private_paths(
+    endpoint: str,
+) -> None:
+    with pytest.raises(ValueError):
+        RuntimeObservationV22(
+            schema_version="dta-v22.runtime-observation.v1",
+            service="payment",
+            state=RuntimeStateV22.RUNNING,
+            healthy=True,
+            endpoint=endpoint,
+            restart_count=0,
+            exit_code=None,
+        )
+
+
+def test_non_running_runtime_cannot_claim_healthy_or_emit_healthy_predicate() -> None:
+    with pytest.raises(ValueError, match="cannot be healthy"):
+        RuntimeObservationV22(
+            schema_version="dta-v22.runtime-observation.v1",
+            service="payment",
+            state=RuntimeStateV22.EXITED,
+            healthy=True,
+            endpoint=EndpointState.NOT_APPLICABLE,
+            restart_count=0,
+            exit_code=0,
+        )
+
+    stopped = RuntimeObservationV22(
+        schema_version="dta-v22.runtime-observation.v1",
+        service="payment",
+        state=RuntimeStateV22.EXITED,
+        healthy=False,
+        endpoint=EndpointState.NOT_APPLICABLE,
+        restart_count=0,
+        exit_code=0,
+    )
+    template = next(
+        item
+        for item in _incident_outcomes()
+        if isinstance(item, RuntimeReadOutcomeV22)
+    )
+    fact = next(
+        item
+        for item in _memory((template,), top_k=1)[0].salient_facts
+        if isinstance(item.payload, RuntimeSalientPayloadV22)
+    )
+    stopped_payload = fact.payload.model_copy(
+        update={
+            "state": stopped.state,
+            "healthy": stopped.healthy,
+            "exit_code": stopped.exit_code,
+        }
+    )
+    stopped_fact_draft = fact.model_copy(update={"payload": stopped_payload})
+    stopped_fact = SalientFactV22.model_validate(
+        stopped_fact_draft.model_copy(
+            update={
+                "fact_sha256": semantic_sha256_v22(
+                    stopped_fact_draft.model_dump(
+                        mode="json",
+                        exclude={"fact_sha256"},
+                    )
+                )
+            }
+        ).model_dump(mode="python")
+    )
+    predicates = PredicateExtractorV22(
+        thresholds=PredicateThresholdsV22.frozen()
+    ).extract(facts=(stopped_fact,))
+    kinds = {item.predicate_kind for item in predicates}
+    assert PredicateKindV22.RUNTIME_NOT_RUNNING in kinds
+    assert PredicateKindV22.RUNTIME_UNHEALTHY in kinds
+    assert PredicateKindV22.RUNTIME_HEALTHY not in kinds
 
 
 def test_predicates_are_deterministic_and_have_no_truth_input() -> None:
@@ -536,8 +769,26 @@ def test_alternative_support_clause_accepts_and_irrelevant_refs_are_rejected() -
         evidence_source_unavailable=False,
         conflicting_evidence=False,
     )
-    assert result.terminal is DiagnosisTerminalV22.ABSTAIN
+    assert result.terminal is DiagnosisTerminalV22.FAILED
     assert result.result_code == "IRRELEVANT_SUPPORTING_REF"
+
+    incomplete = RawSemanticDiagnosisProposalV22.build(
+        hypothesis_id=hypothesis.hypothesis_id,
+        supporting_evidence_refs=support.supporting_evidence_refs[:1],
+        contradicting_evidence_refs=(),
+    )
+    incomplete_result = admit_diagnosis_v22(
+        proposal=incomplete,
+        hypotheses=(hypothesis,),
+        memory=memory,
+        policy=policy,
+        candidate_services=("checkout", "payment"),
+        budget_exhausted=False,
+        evidence_source_unavailable=False,
+        conflicting_evidence=False,
+    )
+    assert incomplete_result.terminal is DiagnosisTerminalV22.FAILED
+    assert incomplete_result.result_code == "SUPPORTING_REFS_INCOMPLETE"
 
 
 @pytest.mark.parametrize(
@@ -776,7 +1027,8 @@ def test_frozen_thresholds_and_support_policy_reject_semantic_rehashes() -> None
 
 
 def test_memory_models_reject_rehashed_cross_field_forgeries() -> None:
-    salient, full = _memory(_incident_outcomes(), top_k=32)
+    outcomes = _incident_outcomes()
+    salient, full = _memory(outcomes, top_k=32)
 
     forged_index = full.minimal_index[0].model_copy(
         update={"action_id": "a:logs:forged"}
@@ -794,39 +1046,38 @@ def test_memory_models_reject_rehashed_cross_field_forgeries() -> None:
     with pytest.raises(ValueError, match="index does not bind"):
         FullEvidenceMemoryV22.model_validate(forged_full.model_dump(mode="python"))
 
-    runtime_index, runtime_outcome = next(
-        (index, item)
+    runtime_index = next(
+        index
         for index, item in enumerate(full.full_observations)
         if isinstance(item, RuntimeReadOutcomeV22)
     )
-    endpoint_draft = runtime_outcome.records[0].model_copy(
-        update={"endpoint": "http://forged.invalid:9999/healthz"}
-    )
-    forged_runtime_outcome = runtime_outcome.model_copy(
-        update={"records": (endpoint_draft, *runtime_outcome.records[1:])}
-    )
-    endpoint_memory_draft = full.model_copy(
-        update={
-            "full_observations": (
-                *full.full_observations[:runtime_index],
-                forged_runtime_outcome,
-                *full.full_observations[runtime_index + 1 :],
-            )
+    endpoint_memory = full.model_dump(mode="json")
+    full_observations = list(endpoint_memory["full_observations"])
+    forged_runtime_outcome = dict(full_observations[runtime_index])
+    forged_runtime_records = list(forged_runtime_outcome["records"])
+    forged_runtime_records[0] = {
+        **forged_runtime_records[0],
+        "endpoint": EndpointState.NOT_READY.value,
+    }
+    forged_runtime_outcome["records"] = tuple(forged_runtime_records)
+    forged_runtime_outcome["outcome_sha256"] = semantic_sha256_v22(
+        {
+            key: value
+            for key, value in forged_runtime_outcome.items()
+            if key != "outcome_sha256"
         }
     )
-    endpoint_memory = endpoint_memory_draft.model_copy(
-        update={
-            "memory_sha256": semantic_sha256_v22(
-                endpoint_memory_draft.model_dump(
-                    mode="json", exclude={"memory_sha256"}
-                )
-            )
+    full_observations[runtime_index] = forged_runtime_outcome
+    endpoint_memory["full_observations"] = tuple(full_observations)
+    endpoint_memory["memory_sha256"] = semantic_sha256_v22(
+        {
+            key: value
+            for key, value in endpoint_memory.items()
+            if key != "memory_sha256"
         }
     )
-    with pytest.raises(ValueError, match="runtime outcome digest"):
-        FullEvidenceMemoryV22.model_validate(
-            endpoint_memory.model_dump(mode="python")
-        )
+    with pytest.raises(ValueError, match="canonical PR-B authority"):
+        FullEvidenceMemoryV22.model_validate_json(json.dumps(endpoint_memory))
 
     first_entry = salient.loss_ledger.entries[0]
     forged_entry = first_entry.model_copy(
@@ -871,6 +1122,42 @@ def test_memory_models_reject_rehashed_cross_field_forgeries() -> None:
     with pytest.raises(ValueError, match="authoritative predicate provenance"):
         SalientEvidenceMemoryV22.model_validate(
             missing_predicates.model_dump(mode="python")
+        )
+
+    summary_draft = salient.observation_summaries[0].model_copy(
+        update={
+            "status": ReadSourceStatusV22.FAILURE_TIMEOUT,
+            "request_sha256": "f" * 64,
+        }
+    )
+    forged_summary = summary_draft.model_copy(
+        update={
+            "summary_sha256": semantic_sha256_v22(
+                summary_draft.model_dump(mode="json", exclude={"summary_sha256"})
+            )
+        }
+    )
+    summary_memory_draft = salient.model_copy(
+        update={
+            "observation_summaries": (
+                forged_summary,
+                *salient.observation_summaries[1:],
+            )
+        }
+    )
+    summary_memory = summary_memory_draft.model_copy(
+        update={
+            "memory_sha256": semantic_sha256_v22(
+                summary_memory_draft.model_dump(
+                    mode="json", exclude={"memory_sha256"}
+                )
+            )
+        }
+    )
+    with pytest.raises(ValueError, match="authoritative provenance"):
+        SalientEvidenceMemoryV22.model_validate(
+            summary_memory.model_dump(mode="python"),
+            context={"outcomes": outcomes, "baseline": _baseline(), "top_k": 32},
         )
 
 
@@ -1034,16 +1321,14 @@ def test_log_templates_redact_sensitive_values_and_aggregate_counts() -> None:
             message=message,
         ),
     )
-    memory, _ = _memory(
-        (
-            _outcome(
-                action_id="a:logs:sanitization",
-                source=EvidenceSourceV22.LOGS,
-                records=logs,
-            ),
+    log_outcomes = (
+        _outcome(
+            action_id="a:logs:sanitization",
+            source=EvidenceSourceV22.LOGS,
+            records=logs,
         ),
-        top_k=1,
     )
+    memory, _ = _memory(log_outcomes, top_k=1)
     payload = memory.salient_facts[0].payload
     assert isinstance(payload, LogSalientPayloadV22)
     assert payload.count == 2
@@ -1054,6 +1339,69 @@ def test_log_templates_redact_sensitive_values_and_aggregate_counts() -> None:
         "private.example.test",
     ):
         assert forbidden.casefold() not in payload.normalized_template
+    retained_entry = memory.loss_ledger.entries[0]
+    assert retained_entry.original_record_count == 2
+    assert retained_entry.retained_fact_count == 1
+    assert retained_entry.omitted_record_count == 0
+    forged_entry = retained_entry.model_copy(update={"omitted_record_count": 1})
+    ledger_draft = memory.loss_ledger.model_copy(update={"entries": (forged_entry,)})
+    forged_ledger = ledger_draft.model_copy(
+        update={
+            "ledger_sha256": semantic_sha256_v22(
+                ledger_draft.model_dump(mode="json", exclude={"ledger_sha256"})
+            )
+        }
+    )
+    forged_memory_draft = memory.model_copy(update={"loss_ledger": forged_ledger})
+    forged_memory = forged_memory_draft.model_copy(
+        update={
+            "memory_sha256": semantic_sha256_v22(
+                forged_memory_draft.model_dump(
+                    mode="json", exclude={"memory_sha256"}
+                )
+            )
+        }
+    )
+    with pytest.raises(ValueError, match="memory loss"):
+        SalientEvidenceMemoryV22.model_validate(
+            forged_memory.model_dump(mode="python"),
+            context={
+                "outcomes": log_outcomes,
+                "baseline": _baseline(),
+                "top_k": 1,
+            },
+        )
+
+    omitted_memory, _ = _memory(
+        (
+            _outcome(
+                action_id="a:logs:loss-ledger",
+                source=EvidenceSourceV22.LOGS,
+                records=(
+                    *logs,
+                    LogRecordV22(
+                        schema_version="dta-v22.log-record.v1",
+                        observed_at=NOW,
+                        service="payment",
+                        severity="WARN",
+                        message="routine diagnostic heartbeat",
+                    ),
+                    LogRecordV22(
+                        schema_version="dta-v22.log-record.v1",
+                        observed_at=NOW,
+                        service="payment",
+                        severity="WARN",
+                        message="routine diagnostic heartbeat",
+                    ),
+                ),
+            ),
+        ),
+        top_k=1,
+    )
+    omitted_entry = omitted_memory.loss_ledger.entries[0]
+    assert omitted_entry.original_record_count == 4
+    assert omitted_entry.retained_fact_count == 1
+    assert omitted_entry.omitted_record_count == 2
 
 
 def test_candidate_registry_rejects_semantically_rehashed_fabrication() -> None:
@@ -1102,6 +1450,29 @@ def test_candidate_registry_rejects_semantically_rehashed_fabrication() -> None:
                 **set_payload,
                 "candidate_set_sha256": semantic_sha256_v22(
                     set_draft.model_dump(
+                        mode="json", exclude={"candidate_set_sha256"}
+                    )
+                ),
+            }
+        )
+
+    canonical = registry.candidates[0]
+    wrong_registry_payload: dict[str, Any] = {
+        "schema_version": "dta-v22.candidate-set.v1",
+        "diagnosis_sha256": "d" * 64,
+        "registry_sha256": "f" * 64,
+        "candidates": (canonical,),
+    }
+    wrong_registry_draft = CandidateSetV22.model_construct(
+        **wrong_registry_payload,
+        candidate_set_sha256="0" * 64,
+    )
+    with pytest.raises(ValueError, match="registry differs from trusted authority"):
+        CandidateSetV22.model_validate(
+            {
+                **wrong_registry_payload,
+                "candidate_set_sha256": semantic_sha256_v22(
+                    wrong_registry_draft.model_dump(
                         mode="json", exclude={"candidate_set_sha256"}
                     )
                 ),

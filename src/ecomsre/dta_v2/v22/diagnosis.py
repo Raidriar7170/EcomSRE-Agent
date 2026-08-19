@@ -388,6 +388,8 @@ class CandidateSetV22(DtaModelV22):
             raise ValueError("candidate set is not canonical and unique")
         if any(item.backend_mode != "REPLAY_ONLY" for item in self.candidates):
             raise ValueError("candidate set contains a live action")
+        if self.registry_sha256 != TrustedCandidateRegistryV22.build().registry_sha256:
+            raise ValueError("candidate set registry differs from trusted authority")
         trusted = set(_trusted_candidates_v22())
         if any(item not in trusted for item in self.candidates):
             raise ValueError("candidate set contains an action outside trusted authority")
@@ -540,14 +542,14 @@ def admit_diagnosis_v22(
     if proposed - required:
         return _result(
             proposal=proposal,
-            terminal=DiagnosisTerminalV22.ABSTAIN,
+            terminal=DiagnosisTerminalV22.FAILED,
             admitted=None,
             result_code="IRRELEVANT_SUPPORTING_REF",
         )
     if required - proposed:
         return _result(
             proposal=proposal,
-            terminal=DiagnosisTerminalV22.ABSTAIN,
+            terminal=DiagnosisTerminalV22.FAILED,
             admitted=None,
             result_code="SUPPORTING_REFS_INCOMPLETE",
         )

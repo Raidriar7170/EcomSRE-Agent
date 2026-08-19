@@ -21,6 +21,7 @@ from ecomsre.dta_v2.v22.diagnosis import (
 from ecomsre.dta_v2.v22.memory import (
     FullEvidenceMemoryV22,
     PredicateThresholdsV22,
+    RuntimeObservationV22,
     RuntimeReadOutcomeV22,
     RuntimeSalientPayloadV22,
     SalientEvidenceMemoryV22,
@@ -45,7 +46,7 @@ PR_C_SUCCESSOR_ATTESTATION = Path(
     "config/dta-v22/pr-c-successor-attestation.v1.json"
 )
 EXPECTED_MANIFEST_SHA256 = (
-    "3849763418c028e291fb7cea3f875d1e130d08795b6b793ebb648551856930d4"
+    "842527ac9ef08a62bf246a89ecc9fe172dc5a2cef4df7e401e58b9223e43f228"
 )
 EXPECTED_PR_C_CHANGED_PATHS = (
     Path(".github/workflows/agent-mainline.yml"),
@@ -536,6 +537,9 @@ def verify_pr_c_bindings(
         "salient_retains_all_evidence_refs": True,
         "salient_retains_all_predicates": True,
         "salient_predicates_require_authoritative_provenance": True,
+        "salient_summaries_require_authoritative_provenance": True,
+        "salient_loss_ledger_requires_authoritative_provenance": True,
+        "loss_ledger_omitted_count_basis": "UNREPRESENTED_EVIDENCE_REFS",
         "salient_top_k_min": 1,
         "salient_top_k_max": 256,
         "mandatory_fact_classes": [
@@ -545,7 +549,7 @@ def verify_pr_c_bindings(
         "full_memory_payload": [
             "FULL_TYPED_OBSERVATIONS",
             "MINIMAL_REF_STATUS_INDEX",
-            "RUNTIME_OUTCOME_BOUND_ENRICHMENT",
+            "RUNTIME_ACTION_SOURCE_OUTCOME_AND_V2_AUTHORITY_PROJECTION",
         ],
         "runtime_observation_fields": [
             "state",
@@ -554,6 +558,12 @@ def verify_pr_c_bindings(
             "restart_count",
             "exit_code",
         ],
+        "runtime_projection_policy": (
+            "dta-v22.runtime-projection.from-pr-b-and-v2-authority.v1"
+        ),
+        "runtime_endpoint_policy": "DTA_V2_ENDPOINT_STATE_ENUM",
+        "runtime_exit_code_source": "DTA_V2_READ_TOOL_OBSERVATION",
+        "runtime_state_health_coherent": True,
         "trace_top_k_priority": [
             "FIRST_ERROR",
             "ERROR_SPAN",
@@ -561,6 +571,7 @@ def verify_pr_c_bindings(
         ],
         "log_templates_sanitized": True,
         "duplicate_log_templates_aggregated": True,
+        "malformed_support_refs_terminal": "FAILED",
         "benchmark_provider_calls": 0,
     }:
         raise ValueError("PR-C memory contract differs")
@@ -570,6 +581,7 @@ def verify_pr_c_bindings(
             "02bbcddba67da53c10324624dc770c9f73056e0126469567c8e70a79710047e9"
         ),
         "caller_declared_trust_allowed": False,
+        "candidate_set_registry_sha256_exact": True,
         "backend_mode": "REPLAY_ONLY",
     }:
         raise ValueError("PR-C trusted candidate registry binding differs")
@@ -584,6 +596,13 @@ def verify_pr_c_bindings(
         }
     ):
         raise ValueError("PR-C candidate registry does not bind exact v2.1 Runbooks")
+    if manifest.get("verifier_trust_boundary") != {
+        "current_stage_anchor": "EXACT_GIT_COMMIT_AND_EXACT_HEAD_CI",
+        "self_hash_claim": False,
+        "persistent_scan_includes_verifier": True,
+        "successor_binding": "PR_D_ATTESTATION_FROM_PR_C_MERGE_TREE",
+    }:
+        raise ValueError("PR-C verifier trust boundary differs")
     contract = manifest.get("successor_attestation_contract")
     if not isinstance(contract, dict) or (
         contract.get("path") != PR_C_SUCCESSOR_ATTESTATION.as_posix()
@@ -633,6 +652,16 @@ def _verify_runtime_contracts() -> None:
         "exit_code",
     ):
         raise ValueError("runtime salient detail fields differ")
+    if tuple(RuntimeObservationV22.model_fields) != (
+        "schema_version",
+        "service",
+        "state",
+        "healthy",
+        "endpoint",
+        "restart_count",
+        "exit_code",
+    ):
+        raise ValueError("runtime projection fields differ")
     if "full_observations" not in FullEvidenceMemoryV22.model_fields:
         raise ValueError("Full Memory lacks typed observations")
     if "full_observations" in SalientEvidenceMemoryV22.model_fields:
@@ -658,9 +687,23 @@ def _verify_runtime_contracts() -> None:
         "status",
         "records",
         "truncated",
+        "action",
+        "source_outcome",
+        "source_observation",
+        "projection_policy",
         "outcome_sha256",
     ):
         raise ValueError("authoritative runtime outcome fields differ")
+    if tuple(inspect.signature(RuntimeReadOutcomeV22.from_pr_b).parameters) != (
+        "action",
+        "source_outcome",
+        "source_observation",
+    ):
+        raise ValueError("runtime projection lacks PR-B and v2 authority inputs")
+    if get_args(
+        RuntimeReadOutcomeV22.model_fields["projection_policy"].annotation
+    ) != ("dta-v22.runtime-projection.from-pr-b-and-v2-authority.v1",):
+        raise ValueError("runtime projection policy differs")
 
 
 def verify_pr_c_protocol(root: Path) -> dict[str, object]:

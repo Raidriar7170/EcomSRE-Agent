@@ -7,11 +7,11 @@
   "artifacts": [
     {
       "path": "src/ecomsre/dta_v2/v22/diagnosis.py",
-      "sha256": "ee43adf25b8efcc56c5cf7610a1e4231fda1133aeefc29886b12b3d8800612e2"
+      "sha256": "75dadc55ce4a91bc911db892b36ab9c1de3a034c98b2b048884a0defdf84c8bc"
     },
     {
       "path": "src/ecomsre/dta_v2/v22/memory.py",
-      "sha256": "5a2f1f2e6ca1ce301e3814c445b27870aaff425f9020830decd9d85537a59746"
+      "sha256": "5b710f84eed06621c184ac9333e5f2a4734117ebc75b43d958c5633377f61b58"
     },
     {
       "path": "src/ecomsre/dta_v2/v22/memory_benchmark.py",
@@ -19,7 +19,7 @@
     },
     {
       "path": "src/ecomsre/dta_v2/v22/predicates.py",
-      "sha256": "bf41aa49484caf686d7f3305a8ba56e2eff9b53d5c92970329cfdd3698333a56"
+      "sha256": "d7be8a2c364b4c99970d9ae56a2937bcf1691faaea03cd1e7babdfe2f338fbe8"
     },
     {
       "path": "tests/dta_v22/conftest.py",
@@ -27,7 +27,7 @@
     },
     {
       "path": "tests/dta_v22/test_v22_memory_predicates_diagnosis.py",
-      "sha256": "0c940cd6916f5956d94ac636b77501a44e22749ad74680d4fd28e68ca944330e"
+      "sha256": "3ce0e338bd733826ef0b113a055ecf757034756cba6e25376aff8aed6f81e0e7"
     }
   ],
   "predicate_thresholds": {
@@ -62,6 +62,9 @@
     "salient_retains_all_evidence_refs": true,
     "salient_retains_all_predicates": true,
     "salient_predicates_require_authoritative_provenance": true,
+    "salient_summaries_require_authoritative_provenance": true,
+    "salient_loss_ledger_requires_authoritative_provenance": true,
+    "loss_ledger_omitted_count_basis": "UNREPRESENTED_EVIDENCE_REFS",
     "salient_top_k_min": 1,
     "salient_top_k_max": 256,
     "mandatory_fact_classes": [
@@ -71,7 +74,7 @@
     "full_memory_payload": [
       "FULL_TYPED_OBSERVATIONS",
       "MINIMAL_REF_STATUS_INDEX",
-      "RUNTIME_OUTCOME_BOUND_ENRICHMENT"
+      "RUNTIME_ACTION_SOURCE_OUTCOME_AND_V2_AUTHORITY_PROJECTION"
     ],
     "runtime_observation_fields": [
       "state",
@@ -80,6 +83,10 @@
       "restart_count",
       "exit_code"
     ],
+    "runtime_projection_policy": "dta-v22.runtime-projection.from-pr-b-and-v2-authority.v1",
+    "runtime_endpoint_policy": "DTA_V2_ENDPOINT_STATE_ENUM",
+    "runtime_exit_code_source": "DTA_V2_READ_TOOL_OBSERVATION",
+    "runtime_state_health_coherent": true,
     "trace_top_k_priority": [
       "FIRST_ERROR",
       "ERROR_SPAN",
@@ -87,12 +94,14 @@
     ],
     "log_templates_sanitized": true,
     "duplicate_log_templates_aggregated": true,
+    "malformed_support_refs_terminal": "FAILED",
     "benchmark_provider_calls": 0
   },
   "candidate_registry": {
     "source": "DTA_V21_EXACT_RUNBOOK_REGISTRY",
     "source_registry_sha256": "02bbcddba67da53c10324624dc770c9f73056e0126469567c8e70a79710047e9",
     "caller_declared_trust_allowed": false,
+    "candidate_set_registry_sha256_exact": true,
     "backend_mode": "REPLAY_ONLY"
   },
   "diagnosis_terminals": [
@@ -108,6 +117,12 @@
     "predicate_uses_case_threshold": false,
     "candidate_filter_allows_live_backend": false,
     "benchmark_calls_provider": false
+  },
+  "verifier_trust_boundary": {
+    "current_stage_anchor": "EXACT_GIT_COMMIT_AND_EXACT_HEAD_CI",
+    "self_hash_claim": false,
+    "persistent_scan_includes_verifier": true,
+    "successor_binding": "PR_D_ATTESTATION_FROM_PR_C_MERGE_TREE"
   },
   "successor_attestation_contract": {
     "path": "config/dta-v22/pr-c-successor-attestation.v1.json",

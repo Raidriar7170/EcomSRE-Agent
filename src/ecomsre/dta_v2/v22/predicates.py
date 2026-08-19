@@ -340,7 +340,7 @@ class PredicateExtractorV22:
                     kinds.append((PredicateKindV22.RUNTIME_NOT_RUNNING, None))
                 if not payload.healthy:
                     kinds.append((PredicateKindV22.RUNTIME_UNHEALTHY, None))
-                else:
+                elif payload.state is RuntimeStateV22.RUNNING:
                     kinds.append((PredicateKindV22.RUNTIME_HEALTHY, None))
                 if payload.restart_count >= self.thresholds.restart_pressure_count:
                     kinds.append((PredicateKindV22.RUNTIME_RESTART_PRESSURE, None))
