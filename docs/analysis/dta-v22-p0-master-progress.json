@@ -3,10 +3,10 @@
   "goal_version": "dta-v22-p0-master-v1",
   "inspected_starting_main": "9da92d54a4fb470c5452cee36a731e81529d05a5",
   "actual_starting_main": "9da92d54a4fb470c5452cee36a731e81529d05a5",
-  "completed_stage": "PR-B",
-  "current_stage": "PR-C",
-  "active_branch": "codex/dta-v22-p0-pr-c-memory-predicates-diagnosis",
-  "active_pr": 59,
+  "completed_stage": "PR-C",
+  "current_stage": "PR-D",
+  "active_branch": "codex/dta-v22-p0-pr-d-planner-lite",
+  "active_pr": null,
   "merged_prs": [
     {
       "stage": "PR-A",
@@ -19,6 +19,12 @@
       "pr": 58,
       "head_sha": "1dc968cedd5f08d2a490256d658efd84c191c3a6",
       "merge_commit": "8e42b6d212e24ddc94ac4097da7e3e3aae57da98"
+    },
+    {
+      "stage": "PR-C",
+      "pr": 59,
+      "head_sha": "de0f0b39bdd51e75925d75580401bab15a04ec66",
+      "merge_commit": "145d152c2c2d1367e7dac2f0229e2b369fbe55dc"
     }
   ],
   "primary_model": "gpt-5.4-mini-2026-03-17",
