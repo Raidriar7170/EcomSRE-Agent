@@ -31,6 +31,11 @@ jobs:
       - name: Fetch pinned upstream tag metadata
         run: git -C third_party/opentelemetry-demo fetch origin tag 3.0.0
 
+      - name: Fetch immutable pull-request heads for successor attestations
+        run: >-
+          git fetch --no-tags --force origin
+          '+refs/pull/*/head:refs/remotes/dta-pr/*'
+
       - name: Install Python
         uses: actions/setup-python@v5
         with:
@@ -120,6 +125,11 @@ jobs:
         run: >-
           env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
           uv run --frozen --no-sync python -m scripts.ci.verify_dta_v22_pr_a
+
+      - name: DTA v2.2 PR-B action catalog and query verification
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync python -m scripts.ci.verify_dta_v22_pr_b
 
       - name: DTA v2.2 focused tests
         run: >-

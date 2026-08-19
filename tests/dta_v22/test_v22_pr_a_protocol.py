@@ -26,36 +26,29 @@ def test_v22_namespace_is_versioned_and_independent() -> None:
     assert v22.PR_A_TERMINAL == "DTA_V22_PR_A_PROTOCOL_READY"
 
 
-def test_master_progress_starts_at_exact_pr_a_boundary() -> None:
+def test_master_progress_preserves_exact_start_and_monotonic_stage() -> None:
     progress = json.loads(
         (REPO_ROOT / "docs/analysis/dta-v22-p0-master-progress.json").read_text(
             encoding="utf-8"
         )
     )
 
-    assert progress == {
-        "schema_version": "dta-v22-p0-master-progress.v1",
-        "goal_version": "dta-v22-p0-master-v1",
-        "inspected_starting_main": "9da92d54a4fb470c5452cee36a731e81529d05a5",
-        "actual_starting_main": "9da92d54a4fb470c5452cee36a731e81529d05a5",
-        "completed_stage": None,
-        "current_stage": "PR-A",
-        "active_branch": "codex/dta-v22-p0-pr-a-protocol-audit",
-        "active_pr": 57,
-        "merged_prs": [],
-        "primary_model": "gpt-5.4-mini-2026-03-17",
-        "provider_mode": None,
-        "flat_identity_sha256": None,
-        "planner_identity_sha256": None,
-        "router_identity_sha256": None,
-        "one_shot_identity_sha256": None,
-        "development_report_sha256": None,
-        "held_out_seal_sha256": None,
-        "held_out_execution_id": None,
-        "planner_claim": None,
-        "memory_claim": None,
-        "final_engineering_terminal": None,
-    }
+    assert progress["schema_version"] == "dta-v22-p0-master-progress.v1"
+    assert progress["goal_version"] == "dta-v22-p0-master-v1"
+    assert progress["inspected_starting_main"] == (
+        "9da92d54a4fb470c5452cee36a731e81529d05a5"
+    )
+    assert progress["actual_starting_main"] == (
+        "9da92d54a4fb470c5452cee36a731e81529d05a5"
+    )
+    stages = ("PR-A", "PR-B", "PR-C", "PR-D", "PR-E", "PR-F")
+    current_index = stages.index(progress["current_stage"])
+    assert progress["completed_stage"] == (
+        None if current_index == 0 else stages[current_index - 1]
+    )
+    assert len(progress["merged_prs"]) == current_index
+    assert progress["active_branch"].startswith("codex/dta-v22-p0-")
+    assert progress["primary_model"] == "gpt-5.4-mini-2026-03-17"
 
 
 def test_pr_a_documents_freeze_the_protocol_without_claiming_results() -> None:
@@ -106,7 +99,7 @@ def test_pr_a_protocol_verifier_passes_truth_and_publication_gates() -> None:
     result = verify_pr_a_protocol(REPO_ROOT)
 
     assert result["historical_bindings"] == "PASS"
-    assert result["public_scan_mode"] == "PR_A_CLOSED_SURFACE"
+    assert result["public_scan_mode"] == "SUCCESSOR_PERSISTENT_ARTIFACTS"
     assert result["truth_isolation"] == "PASS"
     assert result["secret_private_path_scan"] == "PASS"
 

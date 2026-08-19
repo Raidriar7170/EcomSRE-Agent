@@ -1,0 +1,153 @@
+{
+  "schema_version": "dta-v22-pr-b-action-catalog-bindings.v1",
+  "goal_version": "dta-v22-p0-master-v1",
+  "stage": "PR-B",
+  "base_main": "9d53002c3d86208a67b73d271c5eaf6e2f45b8b7",
+  "terminal": "DTA_V22_PR_B_ACTION_CATALOG_READY",
+  "artifacts": [
+    {
+      "path": "src/ecomsre/dta_v2/v22/action_catalog.py",
+      "sha256": "621c1481e689771ac7492f88d308e9739fc79e9dc5fa4227faa3fda12d035e80"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/read_contracts.py",
+      "sha256": "fa485a9311b379b6758f506768f50bf20feef7390d793995eabd80576f5a86cf"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/replay.py",
+      "sha256": "64f6a15fe13e93314888a2a4dc0dfc8c3c94ac3a668ac67ef5c2f0ad2ce6acc3"
+    },
+    {
+      "path": "tests/dta_v22/test_v22_action_catalog.py",
+      "sha256": "2eff304d8c55de1fb2d6ea07eeed1437266efe54ee076d6355a971428c51864b"
+    },
+    {
+      "path": "tests/dta_v22/test_v22_query_replay.py",
+      "sha256": "f4126c270131993ea50583dac228e631d19761feab98f152fe4281fccdafc725"
+    }
+  ],
+  "canonical_request_profile": {
+    "metrics": {
+      "metric_kinds": [
+        "ERROR_RATE",
+        "LATENCY_P95_MS",
+        "REQUEST_SUPPORT"
+      ],
+      "lookback_seconds": 300,
+      "max_results": 3
+    },
+    "logs": {
+      "lookback_seconds": 300,
+      "max_records": 12
+    },
+    "traces": {
+      "lookback_seconds": 300,
+      "max_spans": 12,
+      "neighborhood_hops": 1
+    },
+    "runtime": {
+      "max_results": "exact_target_count"
+    },
+    "resources": {
+      "sampling_window_seconds": 10,
+      "sample_count": 5
+    },
+    "changes": {
+      "lookback_seconds": 3600,
+      "max_records": 12
+    }
+  },
+  "source_statuses": [
+    "SUCCESS_NONEMPTY",
+    "SUCCESS_EMPTY",
+    "FAILURE_UNAVAILABLE",
+    "FAILURE_TIMEOUT",
+    "FAILURE_SCHEMA"
+  ],
+  "mask_reasons": [
+    "EXECUTED",
+    "COVERED",
+    "SOURCE_UNAVAILABLE",
+    "OVER_BUDGET",
+    "DOMINATED"
+  ],
+  "changes_public_fields": [
+    "schema_version",
+    "opaque_change_id",
+    "service",
+    "observed_at",
+    "category",
+    "rollout_state",
+    "revision_digest"
+  ],
+  "truth_isolation": {
+    "catalog_reads_evaluator_truth": false,
+    "catalog_reads_fixture_content": false,
+    "catalog_reads_expected_mechanism": false,
+    "catalog_reads_expected_source": false,
+    "catalog_reads_fault_controller": false,
+    "recent_changes_contains_fault_flag": false,
+    "recent_changes_contains_injected_variant": false,
+    "recent_changes_contains_expected_runbook": false
+  },
+  "successor_attestation_contract": {
+    "path": "config/dta-v22/pr-b-successor-attestation.v1.json",
+    "schema_version": "dta-v22-pr-b-successor-attestation.v1",
+    "required_fields": [
+      "schema_version",
+      "goal_version",
+      "decision_id",
+      "repository",
+      "source_stage",
+      "source_pr",
+      "source_candidate_head",
+      "source_candidate_tree",
+      "source_merge_commit",
+      "source_merge_tree",
+      "successor_stage",
+      "successor_pr",
+      "successor_branch",
+      "base_main_head",
+      "successor_head",
+      "successor_tree",
+      "changed_paths",
+      "raw_sha256_by_path",
+      "provider_called",
+      "docker_called",
+      "held_out_executed",
+      "scenario_executed",
+      "fault_injected",
+      "runbook_executed",
+      "private_evidence_changed",
+      "public_result_changed",
+      "execution_report_rebound",
+      "record_sha256"
+    ],
+    "decision_id": "DEC-055",
+    "source_stage": "PR-B",
+    "successor_stage": "PR-C",
+    "pull_ref_namespace": "refs/remotes/dta-pr/{pr}",
+    "git_proofs": [
+      "source_candidate_matches_pull_ref",
+      "source_candidate_tree_matches_single_parent_squash_tree",
+      "source_candidate_is_not_merge_ancestor",
+      "source_merge_is_current_ancestor_and_subject_binds_pr",
+      "source_candidate_and_merge_trees_bind_manifest",
+      "successor_head_tree_and_changed_paths_match_base_diff",
+      "every_successor_changed_file_matches_raw_sha256",
+      "attestation_commit_is_single_file_child",
+      "successor_final_head_matches_pull_ref"
+    ],
+    "required_false_activity_fields": [
+      "provider_called",
+      "docker_called",
+      "held_out_executed",
+      "scenario_executed",
+      "fault_injected",
+      "runbook_executed",
+      "private_evidence_changed",
+      "public_result_changed",
+      "execution_report_rebound"
+    ]
+  }
+}
