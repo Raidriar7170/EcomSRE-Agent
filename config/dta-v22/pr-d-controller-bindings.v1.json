@@ -1,0 +1,226 @@
+{
+  "schema_version": "dta-v22-pr-d-controller-bindings.v1",
+  "goal_version": "dta-v22-p0-master-v1",
+  "stage": "PR-D",
+  "base_main": "145d152c2c2d1367e7dac2f0229e2b369fbe55dc",
+  "terminal": "DTA_V22_PR_D_CONTROLLER_READY",
+  "artifacts": [
+    {
+      "path": "docs/analysis/dta-v22-pr-d-provider-protocol-summary.json",
+      "sha256": "58eef7f931d9b7dd39df6b99d1351d4b3d6f66c2d34eb72ca5ca2e1f30c36748"
+    },
+    {
+      "path": "scripts/dta_v22/run_pr_d_provider_protocol.py",
+      "sha256": "8b21be8ba683fabfdae5b63898176ddca54ef5fdfe195b2a29e3599663997024"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/controller_contracts.py",
+      "sha256": "9b47619d3098bab4fbbe6b5a5839836c424a82fbf3f4c12978e144887a999e07"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/controller_inputs.py",
+      "sha256": "d73ae69fc435af4bb36446ab25e4144cb298c0b3f303d81afcd1adb79f9bfa17"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/controller_modes.py",
+      "sha256": "c3553b6f8082879da959eb222d1dd8866fecf574f60ac5d9e4a6a70e0a393038"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/controller_provider.py",
+      "sha256": "89553657b3c3529f19695ae0602ce3006fffafe1faf20b58e4451ffa78178d28"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/controller_runtime.py",
+      "sha256": "0064832c714f2266c3806ff811b5dfcaef1ba233da35ccac06b6530de4b7ea96"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/protocol_suite.py",
+      "sha256": "5c2d21490dd9db0a6472fb5f578ff099d5be760816a0ab462724f79a3fa91385"
+    },
+    {
+      "path": "tests/dta_v22/test_v22_controller_contracts.py",
+      "sha256": "f758d54646d51d8e937eb32112d24655e1ae88ea90626320e6a068a864f0e724"
+    },
+    {
+      "path": "tests/dta_v22/test_v22_controller_modes.py",
+      "sha256": "f6c4b6a848f4ef222c380fd091b26bd31d2e73cf1da8cd8e3c82982caba1e38c"
+    },
+    {
+      "path": "tests/dta_v22/test_v22_controller_provider.py",
+      "sha256": "3264f5063b2afe8a1f2a0414de37d1d2217498fbfb3207d05c3ae3f67c8095b6"
+    },
+    {
+      "path": "tests/dta_v22/test_v22_controller_runtime.py",
+      "sha256": "6b882fa9142828b8567690338b8a70ca099f717107def3527463991662087f3b"
+    },
+    {
+      "path": "tests/dta_v22/test_v22_pr_d_provider_execution.py",
+      "sha256": "292d70acbb96fd464e7ed28299832fdc6a1d3f7bb25a12165e279c52c13451a7"
+    },
+    {
+      "path": "tests/dta_v22/test_v22_protocol_suite.py",
+      "sha256": "da5a8a94079f452e6eb6a54e3abede3fca9bb92ef817dac997dbdce825b82ce6"
+    },
+    {
+      "path": "tests/dta_v22/test_v22_provider_protocol_suite.py",
+      "sha256": "9455174abe791c15935426e70f9c984cba55b466b8022b1504a558003c68185a"
+    }
+  ],
+  "shared_controller_contract": {
+    "required_fields": [
+      "decision",
+      "working_hypothesis_id",
+      "action_id",
+      "supporting_evidence_refs",
+      "contradicting_evidence_refs"
+    ],
+    "decision_values": [
+      "READ",
+      "COMMIT",
+      "NO_INCIDENT",
+      "ABSTAIN"
+    ],
+    "non_read_action_sentinel": "NONE",
+    "no_incident_hypothesis_sentinel": "h:none:no_incident",
+    "abstain_hypothesis_sentinel": "h:none:unresolved",
+    "runtime_injected_fields_are_model_output": false
+  },
+  "controller_inputs": {
+    "common_bootstrap_weighted_cost": 1.0,
+    "common_bootstrap_surfaces": [
+      "CANDIDATE_RUNTIME",
+      "CORE_METRICS",
+      "BASELINE_RELATIVE_FEATURES",
+      "CANDIDATE_SUBGRAPH",
+      "SOURCE_AVAILABILITY"
+    ],
+    "flat_receives_persistent_belief_ledger": false,
+    "planner_receives_persistent_belief_ledger": true,
+    "hypothesis_catalog_truth_independent": true,
+    "maximum_candidate_services": 4,
+    "initial_weighted_evidence_budget": 3.0,
+    "maximum_read_dispatches": 3,
+    "maximum_provider_turns": 5
+  },
+  "controller_identities": {
+    "provider_mode": "STRICT_STRUCTURED_OUTPUT",
+    "flat_identity_sha256": "f1c69ba0cd2d2d107748ab2bd66833a7ac0293ddaa1857b37227a1681e9b1ce8",
+    "planner_identity_sha256": "f9236c3939866d0c41c93b67fa0811b4f1c3cb6364a68e7b7e17c4ff88eb5176",
+    "router_identity_sha256": "754e649a792919baf6cb2827f7787411c47e9b9af08324210db20b5e335e37cc",
+    "one_shot_identity_sha256": "bafbbbed13fa98e1bfaef754ecd1fcbff3ffb485d3840f6bbdfca72c906b4b37"
+  },
+  "provider_protocol_gate": {
+    "public_summary_sha256": "8911b46de9c0cbd2c063e5af94ca42c153c92d9de4888bf5da0220b573416bf1",
+    "private_report_sha256": "088b9febb807af46fd0708cd1a0a6cdb2ed7b943a1f44ec615173a53302bbdb8",
+    "model": "gpt-5.4-mini-2026-03-17",
+    "selected_mode": "STRICT_STRUCTURED_OUTPUT",
+    "transition_count": 50,
+    "first_pass_protocol_acceptance": 0.96,
+    "post_correction_protocol_acceptance": 1.0,
+    "invalid_dispatches": 0,
+    "provider_probe_calls": 1,
+    "provider_protocol_calls": 52,
+    "terminal": "PROVIDER_PROTOCOL_GATE_PASS"
+  },
+  "bounded_correction": {
+    "maximum_per_run": 1,
+    "consumes_provider_turn_and_tokens": true,
+    "read_dispatches": 0,
+    "write_authority": 0,
+    "second_invalid_terminal": "FAILED"
+  },
+  "secondary_anchors": {
+    "deterministic_router_policy": "GENERIC_VERSIONED_CANONICAL_ACTION_ORDER",
+    "deterministic_router_reads_evaluator_truth": false,
+    "one_shot_role": "ORACLE_CONTEXT_UPPER_BOUND",
+    "one_shot_counts_full_materialization": true,
+    "one_shot_model_tool_selection_metric": "N/A"
+  },
+  "truth_isolation": {
+    "bootstrap_reads_evaluator_truth": false,
+    "hypothesis_catalog_reads_fixture_truth": false,
+    "router_reads_case_id": false,
+    "router_reads_expected_mechanism": false,
+    "provider_suite_reads_real_rca_truth": false,
+    "raw_provider_content_published": false
+  },
+  "safety_activity": {
+    "provider_called": true,
+    "private_evidence_changed": true,
+    "public_result_changed": true,
+    "agent_read_dispatches_executed": 0,
+    "agent_write_calls": 0,
+    "docker_called": false,
+    "held_out_executed": false,
+    "scenario_executed": false,
+    "fault_injected": false,
+    "runbook_executed": false
+  },
+  "verifier_trust_boundary": {
+    "current_stage_anchor": "EXACT_GIT_COMMIT_AND_EXACT_HEAD_CI",
+    "self_hash_claim": false,
+    "persistent_scan_includes_verifier": true,
+    "successor_binding": "PR_E_ATTESTATION_FROM_PR_D_MERGE_TREE"
+  },
+  "successor_attestation_contract": {
+    "path": "config/dta-v22/pr-d-successor-attestation.v1.json",
+    "schema_version": "dta-v22-pr-d-successor-attestation.v1",
+    "decision_id": "DEC-055",
+    "source_stage": "PR-D",
+    "successor_stage": "PR-E",
+    "successor_branch": "codex/dta-v22-p0-pr-e-capture-freeze",
+    "pull_ref_namespace": "refs/remotes/dta-pr/{pr}",
+    "required_fields": [
+      "schema_version",
+      "goal_version",
+      "decision_id",
+      "repository",
+      "source_stage",
+      "source_pr",
+      "source_candidate_head",
+      "source_candidate_tree",
+      "source_merge_commit",
+      "source_merge_tree",
+      "successor_stage",
+      "successor_pr",
+      "successor_branch",
+      "base_main_head",
+      "successor_head",
+      "successor_tree",
+      "changed_paths",
+      "raw_sha256_by_path",
+      "provider_called",
+      "docker_called",
+      "held_out_executed",
+      "scenario_executed",
+      "fault_injected",
+      "runbook_executed",
+      "private_evidence_changed",
+      "public_result_changed",
+      "execution_report_rebound",
+      "record_sha256"
+    ],
+    "activity_expectations": {
+      "provider_called": false,
+      "docker_called": true,
+      "held_out_executed": false,
+      "scenario_executed": true,
+      "fault_injected": true,
+      "runbook_executed": false,
+      "private_evidence_changed": true,
+      "public_result_changed": true,
+      "execution_report_rebound": false
+    },
+    "git_proofs": [
+      "source_candidate_matches_pull_ref",
+      "source_candidate_tree_matches_single_parent_squash_tree",
+      "source_candidate_is_not_merge_ancestor",
+      "source_merge_is_current_ancestor_and_subject_binds_pr",
+      "source_candidate_and_merge_trees_bind_manifest",
+      "successor_head_tree_and_changed_paths_match_base_diff",
+      "every_successor_changed_file_matches_raw_sha256",
+      "attestation_commit_is_single_file_child",
+      "successor_final_head_matches_pull_ref"
+    ]
+  }
+}

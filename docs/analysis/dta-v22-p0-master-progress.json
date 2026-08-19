@@ -6,7 +6,7 @@
   "completed_stage": "PR-C",
   "current_stage": "PR-D",
   "active_branch": "codex/dta-v22-p0-pr-d-planner-lite",
-  "active_pr": null,
+  "active_pr": 60,
   "merged_prs": [
     {
       "stage": "PR-A",
@@ -28,11 +28,11 @@
     }
   ],
   "primary_model": "gpt-5.4-mini-2026-03-17",
-  "provider_mode": null,
-  "flat_identity_sha256": null,
-  "planner_identity_sha256": null,
-  "router_identity_sha256": null,
-  "one_shot_identity_sha256": null,
+  "provider_mode": "STRICT_STRUCTURED_OUTPUT",
+  "flat_identity_sha256": "f1c69ba0cd2d2d107748ab2bd66833a7ac0293ddaa1857b37227a1681e9b1ce8",
+  "planner_identity_sha256": "f9236c3939866d0c41c93b67fa0811b4f1c3cb6364a68e7b7e17c4ff88eb5176",
+  "router_identity_sha256": "754e649a792919baf6cb2827f7787411c47e9b9af08324210db20b5e335e37cc",
+  "one_shot_identity_sha256": "bafbbbed13fa98e1bfaef754ecd1fcbff3ffb485d3840f6bbdfca72c906b4b37",
   "development_report_sha256": null,
   "held_out_seal_sha256": null,
   "held_out_execution_id": null,
