@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 import json
 import time
@@ -439,6 +439,9 @@ class OpenAICompatibleControllerProviderV22:
         config: OpenAICompatibleConfig,
         timeout_seconds: float,
         max_completion_tokens: int,
+        min_request_interval_seconds: float = 0.0,
+        throttle_monotonic_ns: Callable[[], int] = time.monotonic_ns,
+        throttle_sleep: Callable[[float], None] = time.sleep,
         transport: ControllerProviderTransportV22 | None = None,
     ) -> None:
         if config.model != PRIMARY_MODEL_V22:
@@ -447,15 +450,39 @@ class OpenAICompatibleControllerProviderV22:
             raise ValueError("Provider timeout must be a positive float")
         if type(max_completion_tokens) is not int or max_completion_tokens <= 0:
             raise ValueError("Provider completion limit must be positive")
+        if (
+            type(min_request_interval_seconds) is not float
+            or min_request_interval_seconds < 0
+        ):
+            raise ValueError("Provider request interval must be a non-negative float")
         self._config = config
         self._timeout_seconds = timeout_seconds
         self._max_completion_tokens = max_completion_tokens
+        self._min_request_interval_ns = int(
+            min_request_interval_seconds * 1_000_000_000
+        )
+        self._throttle_monotonic_ns = throttle_monotonic_ns
+        self._throttle_sleep = throttle_sleep
+        self._last_request_started_ns: int | None = None
         self._transport = transport or StdlibControllerProviderTransportV22()
         self._attempted_calls = 0
 
     @property
     def attempted_calls(self) -> int:
         return self._attempted_calls
+
+    def _wait_for_request_slot_v22(self) -> None:
+        now = self._throttle_monotonic_ns()
+        if self._last_request_started_ns is not None:
+            wait_ns = (
+                self._last_request_started_ns
+                + self._min_request_interval_ns
+                - now
+            )
+            if wait_ns > 0:
+                self._throttle_sleep(wait_ns / 1_000_000_000)
+                now = self._throttle_monotonic_ns()
+        self._last_request_started_ns = now
 
     def probe_output_mode(
         self,
@@ -590,6 +617,7 @@ class OpenAICompatibleControllerProviderV22:
             system_prompt=system_prompt,
             visible_state=visible_state,
         )
+        self._wait_for_request_slot_v22()
         self._attempted_calls += 1
         started = time.monotonic_ns()
         response = self._transport.post_json(

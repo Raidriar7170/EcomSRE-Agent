@@ -262,6 +262,7 @@ def main() -> int:
         config=config,
         timeout_seconds=60.0,
         max_completion_tokens=256,
+        min_request_interval_seconds=1.5,
     )
     probe = probe_provider_output_mode_v22(probe=provider.probe_output_mode)
     report = run_provider_protocol_capability_suite_v22(

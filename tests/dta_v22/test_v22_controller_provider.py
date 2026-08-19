@@ -403,3 +403,40 @@ def test_router_final_turn_rejects_another_read() -> None:
                 ProviderOutputModeV22.STRICT_STRUCTURED_OUTPUT
             )
         )
+
+
+def test_provider_applies_fixed_start_interval_without_http_retry() -> None:
+    clock_ns = [0]
+    sleeps: list[float] = []
+
+    def monotonic_ns() -> int:
+        return clock_ns[0]
+
+    def sleep(seconds: float) -> None:
+        sleeps.append(seconds)
+        clock_ns[0] += int(seconds * 1_000_000_000)
+
+    transport = RecordingTransport(
+        [
+            _strict_response(api_key="private-provider-test-value"),
+            _strict_response(api_key="private-provider-test-value"),
+        ]
+    )
+    provider = OpenAICompatibleControllerProviderV22(
+        config=OpenAICompatibleConfig(
+            base_url="https://provider.example/v1",
+            api_key="private-provider-test-value",
+            model=PRIMARY_MODEL_V22,
+        ),
+        timeout_seconds=30.0,
+        max_completion_tokens=256,
+        min_request_interval_seconds=1.5,
+        throttle_monotonic_ns=monotonic_ns,
+        throttle_sleep=sleep,
+        transport=transport,
+    )
+    request = _request(ProviderOutputModeV22.STRICT_STRUCTURED_OUTPUT)
+    provider.complete_controller_turn(request=request)
+    provider.complete_controller_turn(request=request)
+    assert sleeps == [1.5]
+    assert provider.attempted_calls == 2
