@@ -41,7 +41,7 @@ def test_master_progress_starts_at_exact_pr_a_boundary() -> None:
         "completed_stage": None,
         "current_stage": "PR-A",
         "active_branch": "codex/dta-v22-p0-pr-a-protocol-audit",
-        "active_pr": None,
+        "active_pr": 57,
         "merged_prs": [],
         "primary_model": "gpt-5.4-mini-2026-03-17",
         "provider_mode": None,

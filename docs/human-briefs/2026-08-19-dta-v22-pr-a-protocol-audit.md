@@ -21,6 +21,7 @@ Planner-Lite、Provider 调用、Docker capture 或 held-out evaluation。
 ## 当前真实状态
 
 - `origin/main` 与 Goal 检查过的 `9da92d5...` 完全一致；
+- Draft PR #57 是当前 PR-A，GitHub exact-head CI 尚未完成；
 - DTA v2/v2.1 frozen scope 未发生字节变化；
 - PR-A focused tests、Ruff、mypy、historical verifier 已通过；
 - closed-world 17-path scan、truth isolation 与 secret/private-path gate 已通过；
