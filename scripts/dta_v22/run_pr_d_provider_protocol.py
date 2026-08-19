@@ -41,6 +41,7 @@ _PRIVATE_EVIDENCE_ROOT = (
 _PUBLIC_SUMMARY_RELATIVE = Path(
     "docs/analysis/dta-v22-pr-d-provider-protocol-summary.json"
 )
+_FORMAL_MIN_REQUEST_INTERVAL_SECONDS = 3.0
 
 
 def _parse_provider_env(path: Path) -> dict[str, str]:
@@ -262,7 +263,7 @@ def main() -> int:
         config=config,
         timeout_seconds=60.0,
         max_completion_tokens=256,
-        min_request_interval_seconds=1.5,
+        min_request_interval_seconds=_FORMAL_MIN_REQUEST_INTERVAL_SECONDS,
     )
     probe = probe_provider_output_mode_v22(probe=provider.probe_output_mode)
     report = run_provider_protocol_capability_suite_v22(

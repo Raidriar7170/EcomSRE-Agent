@@ -1,0 +1,23 @@
+{
+  "schema_version": "dta-v22-pr-d-provider-protocol-invalid-attempt.v1",
+  "goal_version": "dta-v22-p0-master-v1",
+  "attempt_ordinal": 4,
+  "disposition": "INVALID_PROVIDER_RATE_LIMIT_ABORT",
+  "invalid_reason": "PROVIDER_HTTP_429",
+  "implementation_commit": "a5a9a12755679130e6bb0e2c3c26b1f9c59f7a59",
+  "implementation_tree": "d632be8cf82450b95ec13f37dc7e40641a63fdef",
+  "failure_recorded_at": "2026-08-19T21:24:56Z",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "provider_call_count_exact": null,
+  "provider_call_count_lower_bound": 2,
+  "minimum_request_interval_seconds": 1.5,
+  "http_retry_count": 0,
+  "private_report_created": false,
+  "public_summary_created": false,
+  "agent_read_dispatches_executed": 0,
+  "agent_write_calls": 0,
+  "runbook_executions": 0,
+  "docker_calls": 0,
+  "eligible_as_pr_d_gate_evidence": false,
+  "preservation_rule": "PRESERVE_ATTEMPT_DO_NOT_RELABEL_OR_DELETE"
+}

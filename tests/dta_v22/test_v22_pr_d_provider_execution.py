@@ -6,6 +6,7 @@ import pytest
 
 from ecomsre.dta_v2.v22.controller_modes import PRIMARY_MODEL_V22
 from scripts.dta_v22.run_pr_d_provider_protocol import (
+    _FORMAL_MIN_REQUEST_INTERVAL_SECONDS,
     _parse_provider_env,
     _validate_output_paths,
 )
@@ -96,3 +97,7 @@ def test_provider_outputs_require_exact_private_root_and_public_contract(
             implementation_commit=commit,
             private_root=private_root,
         )
+
+
+def test_formal_provider_execution_uses_conservative_fixed_pacing() -> None:
+    assert _FORMAL_MIN_REQUEST_INTERVAL_SECONDS == 3.0
