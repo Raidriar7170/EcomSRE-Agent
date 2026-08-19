@@ -3,11 +3,18 @@
   "goal_version": "dta-v22-p0-master-v1",
   "inspected_starting_main": "9da92d54a4fb470c5452cee36a731e81529d05a5",
   "actual_starting_main": "9da92d54a4fb470c5452cee36a731e81529d05a5",
-  "completed_stage": null,
-  "current_stage": "PR-A",
-  "active_branch": "codex/dta-v22-p0-pr-a-protocol-audit",
-  "active_pr": 57,
-  "merged_prs": [],
+  "completed_stage": "PR-A",
+  "current_stage": "PR-B",
+  "active_branch": "codex/dta-v22-p0-pr-b-action-catalog",
+  "active_pr": 58,
+  "merged_prs": [
+    {
+      "stage": "PR-A",
+      "pr": 57,
+      "head_sha": "57bc106ef181d4ca8bafb3eb00372c1084bd0c60",
+      "merge_commit": "9d53002c3d86208a67b73d271c5eaf6e2f45b8b7"
+    }
+  ],
   "primary_model": "gpt-5.4-mini-2026-03-17",
   "provider_mode": null,
   "flat_identity_sha256": null,
