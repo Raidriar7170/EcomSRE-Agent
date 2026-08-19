@@ -18,7 +18,7 @@ answer-free request。Deterministic Router 在动作耗尽后必须回到相同�
 - DTA v2.2 focused：138 passed，1 个 predecessor closed-surface test 按设计
   skipped；
 - Ruff：PASS；
-- mypy Agent mainline scope（222 source files）：PASS；
+- mypy Agent mainline scope（322 source files）：PASS；
 - local 50-transition harness：48/50 first-pass、50/50 post-correction、0 invalid
   dispatches；它只证明本地协议路径，不代替 Provider gate；
 - 全仓测试在实现锁定前为 4636 passed、7 skipped；唯一失败是 dirty-worktree
