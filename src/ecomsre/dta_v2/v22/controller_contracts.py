@@ -5,7 +5,14 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Literal
 
-from pydantic import Field, StrictBool, StrictInt, ValidationInfo, model_validator
+from pydantic import (
+    Field,
+    StrictBool,
+    StrictFloat,
+    StrictInt,
+    ValidationInfo,
+    model_validator,
+)
 
 from ecomsre.dta_v2.v22.action_catalog import ActionCatalogV22
 from ecomsre.dta_v2.v22.diagnosis import FaultDomainV22
@@ -35,6 +42,14 @@ class BeliefStatusV22(str, Enum):
     PARTIALLY_SUPPORTED = "PARTIALLY_SUPPORTED"
     SUPPORTED = "SUPPORTED"
     CONTRADICTED = "CONTRADICTED"
+
+
+class ControllerProtocolErrorCodeV22(str, Enum):
+    INVALID_ACTION_ID = "INVALID_ACTION_ID"
+    STALE_ACTION_ID = "STALE_ACTION_ID"
+    INVALID_EVIDENCE_REF = "INVALID_EVIDENCE_REF"
+    ACTION_NO_LONGER_AVAILABLE = "ACTION_NO_LONGER_AVAILABLE"
+    INVALID_DECISION_SHAPE = "INVALID_DECISION_SHAPE"
 
 
 class HypothesisCatalogEntryV22(DtaModelV22):
@@ -212,6 +227,7 @@ class BeliefTurnRecordV22(DtaModelV22):
     supporting_evidence_refs: tuple[str, ...]
     contradicting_evidence_refs: tuple[str, ...]
     executed_coverage_keys: tuple[str, ...]
+    executed_weighted_cost: StrictFloat = Field(ge=0, le=10)
     record_sha256: Sha256V22
 
     @model_validator(mode="after")
@@ -227,6 +243,10 @@ class BeliefTurnRecordV22(DtaModelV22):
             self.executed_coverage_keys
         ):
             raise ValueError("belief READ coverage differs")
+        if (self.decision is ControllerDecisionKindV22.READ) != (
+            self.executed_weighted_cost > 0
+        ):
+            raise ValueError("belief READ weighted cost differs")
         expected = semantic_sha256_v22(
             self.model_dump(mode="json", exclude={"record_sha256"})
         )
@@ -240,6 +260,7 @@ def _turn_record_v22(
     turn_ordinal: int,
     decision: ControllerDecisionV22,
     coverage_keys: tuple[str, ...],
+    weighted_cost: float,
 ) -> BeliefTurnRecordV22:
     payload: dict[str, Any] = {
         "schema_version": "dta-v22.belief-turn-record.v1",
@@ -250,6 +271,7 @@ def _turn_record_v22(
         "supporting_evidence_refs": decision.supporting_evidence_refs,
         "contradicting_evidence_refs": decision.contradicting_evidence_refs,
         "executed_coverage_keys": coverage_keys,
+        "executed_weighted_cost": float(weighted_cost),
     }
     return BeliefTurnRecordV22.model_validate(
         {**payload, "record_sha256": semantic_sha256_v22(payload)}
@@ -263,8 +285,9 @@ class BeliefLedgerV22(DtaModelV22):
     selected_hypothesis_ids: tuple[str, ...]
     executed_action_ids: tuple[str, ...]
     covered_capability_keys: tuple[str, ...]
+    weighted_evidence_cost: StrictFloat = Field(ge=0, le=30)
     correction_used: StrictBool
-    correction_error_code: str | None
+    correction_error_code: ControllerProtocolErrorCodeV22 | None
     turn_records: tuple[BeliefTurnRecordV22, ...] = Field(max_length=6)
     ledger_sha256: Sha256V22
 
@@ -293,6 +316,7 @@ class BeliefLedgerV22(DtaModelV22):
                 }
             )
         )
+        weighted_cost = sum(item.executed_weighted_cost for item in self.turn_records)
         current = (
             self.turn_records[-1].working_hypothesis_id
             if self.turn_records
@@ -303,6 +327,7 @@ class BeliefLedgerV22(DtaModelV22):
             or self.selected_hypothesis_ids != selected
             or self.executed_action_ids != executed
             or self.covered_capability_keys != covered
+            or self.weighted_evidence_cost != weighted_cost
             or self.correction_used != (self.correction_error_code is not None)
         ):
             raise ValueError("belief ledger differs from derived turn state")
@@ -320,7 +345,7 @@ def _build_ledger_v22(
     *,
     hypothesis_catalog_sha256: str,
     turn_records: tuple[BeliefTurnRecordV22, ...],
-    correction_error_code: str | None,
+    correction_error_code: ControllerProtocolErrorCodeV22 | None,
 ) -> BeliefLedgerV22:
     payload: dict[str, Any] = {
         "schema_version": "dta-v22.belief-ledger.v1",
@@ -347,6 +372,9 @@ def _build_ledger_v22(
                 }
             )
         ),
+        "weighted_evidence_cost": sum(
+            item.executed_weighted_cost for item in turn_records
+        ),
         "correction_used": correction_error_code is not None,
         "correction_error_code": correction_error_code,
         "turn_records": turn_records,
@@ -371,6 +399,21 @@ def initialize_belief_ledger_v22(*, catalog: HypothesisCatalogV22) -> BeliefLedg
         hypothesis_catalog_sha256=catalog.catalog_sha256,
         turn_records=(),
         correction_error_code=None,
+    )
+
+
+def record_belief_correction_v22(
+    *,
+    ledger: BeliefLedgerV22,
+    error_code: ControllerProtocolErrorCodeV22,
+) -> BeliefLedgerV22:
+    ledger = BeliefLedgerV22.model_validate(ledger.model_dump(mode="python"))
+    if ledger.correction_used:
+        raise ValueError("belief ledger correction is already consumed")
+    return _build_ledger_v22(
+        hypothesis_catalog_sha256=ledger.hypothesis_catalog_sha256,
+        turn_records=ledger.turn_records,
+        correction_error_code=error_code,
     )
 
 
@@ -400,6 +443,7 @@ def record_belief_turn_v22(
     if not observed.issubset(known):
         raise ValueError("controller evidence ref is outside current memory")
     coverage: tuple[str, ...] = ()
+    weighted_cost = 0.0
     if decision.decision is ControllerDecisionKindV22.READ:
         if decision.action_id in set(ledger.executed_action_ids):
             raise ValueError("controller action was already executed")
@@ -414,10 +458,12 @@ def record_belief_turn_v22(
         if action is None:
             raise ValueError("controller action is not available in the current catalog")
         coverage = action.coverage_keys
+        weighted_cost = action.weighted_cost
     record = _turn_record_v22(
         turn_ordinal=len(ledger.turn_records) + 1,
         decision=decision,
         coverage_keys=coverage,
+        weighted_cost=weighted_cost,
     )
     return _build_ledger_v22(
         hypothesis_catalog_sha256=hypothesis_catalog.catalog_sha256,
@@ -562,6 +608,7 @@ __all__ = (
     "BeliefTurnRecordV22",
     "ControllerDecisionKindV22",
     "ControllerDecisionV22",
+    "ControllerProtocolErrorCodeV22",
     "HypothesisBeliefV22",
     "HypothesisCatalogEntryV22",
     "HypothesisCatalogV22",
@@ -569,4 +616,5 @@ __all__ = (
     "build_hypothesis_catalog_v22",
     "initialize_belief_ledger_v22",
     "record_belief_turn_v22",
+    "record_belief_correction_v22",
 )

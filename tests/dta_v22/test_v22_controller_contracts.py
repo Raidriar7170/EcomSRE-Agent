@@ -24,7 +24,29 @@ from ecomsre.dta_v2.v22.controller_contracts import (
     initialize_belief_ledger_v22,
     record_belief_turn_v22,
 )
-from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
+from ecomsre.dta_v2.v22.controller_inputs import (
+    ControllerArmV22,
+    ControllerRuntimeContextV22,
+    TriageSnapshotV22,
+    build_common_triage_snapshot_v22,
+    build_controller_turn_input_v22,
+)
+from ecomsre.dta_v2.v22.memory import (
+    MetricSalientPayloadV22,
+    RuntimeSalientPayloadV22,
+    SalientEvidenceMemoryV22,
+    SalientFactV22,
+    SignalStrengthV22,
+)
+from ecomsre.dta_v2.v22.read_contracts import (
+    EvidenceSourceV22,
+    MetricKindV22,
+    MetricSupportStatusV22,
+    MetricUnitV22,
+    RuntimeStateV22,
+    semantic_sha256_v22,
+)
+from ecomsre.dta_v2.tool_contracts import EndpointState
 
 
 def _catalog():
@@ -55,6 +77,95 @@ def _decision(
         action_id=action_id,
         supporting_evidence_refs=support,
         contradicting_evidence_refs=contradict,
+    )
+
+
+def _salient_fact(
+    *,
+    source: EvidenceSourceV22,
+    service: str,
+    suffix: str,
+    payload: MetricSalientPayloadV22 | RuntimeSalientPayloadV22,
+) -> SalientFactV22:
+    fact_payload: dict[str, Any] = {
+        "schema_version": "dta-v22.salient-fact.v1",
+        "fact_id": f"f:{source.value.casefold()}:{suffix:0>16}",
+        "source": source,
+        "service": service,
+        "evidence_refs": (f"e:a:{source.value.casefold()}:{service}:0:{suffix:0>12}",),
+        "signal_strength": SignalStrengthV22.NONE,
+        "payload": payload,
+    }
+    draft = SalientFactV22.model_construct(
+        **fact_payload,
+        fact_sha256="0" * 64,
+    )
+    return SalientFactV22.model_validate(
+        {
+            **fact_payload,
+            "fact_sha256": semantic_sha256_v22(
+                draft.model_dump(mode="json", exclude={"fact_sha256"})
+            ),
+        }
+    )
+
+
+def _bootstrap_memory() -> SalientEvidenceMemoryV22:
+    facts: list[SalientFactV22] = []
+    ordinal = 1
+    for service in ("checkout", "payment"):
+        facts.append(
+            _salient_fact(
+                source=EvidenceSourceV22.RUNTIME,
+                service=service,
+                suffix=f"{ordinal:x}",
+                payload=RuntimeSalientPayloadV22(
+                    schema_version="dta-v22.salient-runtime.v1",
+                    state=RuntimeStateV22.RUNNING,
+                    healthy=True,
+                    endpoint=EndpointState.READY,
+                    restart_count=0,
+                    exit_code=0,
+                ),
+            )
+        )
+        ordinal += 1
+        for kind, value, unit in (
+            (MetricKindV22.ERROR_RATE, 0.01, MetricUnitV22.RATIO),
+            (MetricKindV22.LATENCY_P95_MS, 100.0, MetricUnitV22.MILLISECONDS),
+            (MetricKindV22.REQUEST_SUPPORT, 1000.0, MetricUnitV22.COUNT),
+        ):
+            facts.append(
+                _salient_fact(
+                    source=EvidenceSourceV22.METRICS,
+                    service=service,
+                    suffix=f"{ordinal:x}",
+                    payload=MetricSalientPayloadV22(
+                        schema_version="dta-v22.salient-metric.v1",
+                        metric_kind=kind,
+                        support_status=MetricSupportStatusV22.SUPPORTED,
+                        sample_count=20,
+                        value=value,
+                        unit=unit,
+                        baseline_value=value,
+                        baseline_ratio=1.0,
+                        delta=0.0,
+                        z_score=0.0,
+                    ),
+                )
+            )
+            ordinal += 1
+    return SalientEvidenceMemoryV22.model_construct(
+        schema_version="dta-v22.salient-evidence-memory.v1",
+        baseline_sha256="1" * 64,
+        thresholds_sha256="2" * 64,
+        observed_at=None,
+        evidence_refs=(),
+        observation_summaries=(),
+        predicates=(),
+        salient_facts=tuple(facts),
+        loss_ledger=None,
+        memory_sha256="3" * 64,
     )
 
 
@@ -263,4 +374,112 @@ def test_belief_turn_rejects_stale_actions_unknown_refs_and_unknown_hypotheses()
                 action_id=action.action_id,
             ),
             known_evidence_refs=(),
+        )
+
+
+def test_common_bootstrap_and_primary_turn_inputs_differ_only_by_belief_view() -> None:
+    memory = _bootstrap_memory()
+    topology = StaticTopologyV22.build(
+        services=("checkout", "payment"),
+        edges=(("checkout", "payment"),),
+    )
+    capabilities = build_default_tool_capability_registry_v22()
+    actions = _catalog()
+    hypotheses = build_hypothesis_catalog_v22(
+        candidate_services=("checkout", "payment")
+    )
+    ledger = initialize_belief_ledger_v22(catalog=hypotheses)
+    view = build_belief_ledger_view_v22(
+        ledger=ledger,
+        hypothesis_catalog=hypotheses,
+    )
+    bootstrap = build_common_triage_snapshot_v22(
+        memory=memory,
+        candidate_services=("checkout", "payment"),
+        topology=topology,
+        capability_registry=capabilities,
+    )
+    assert len(bootstrap.runtime_fact_ids) == 2
+    assert len(bootstrap.core_metric_fact_ids) == 6
+    assert bootstrap.bootstrap_weighted_cost == 1.0
+    assert set(inspect.signature(build_common_triage_snapshot_v22).parameters) == {
+        "memory",
+        "candidate_services",
+        "topology",
+        "capability_registry",
+    }
+    context = ControllerRuntimeContextV22.build(
+        run_id="4" * 32,
+        turn_ordinal=1,
+        controller_identity_sha256="5" * 64,
+        remaining_evidence_budget=3.0,
+        remaining_provider_turns=5,
+        correction_remaining=True,
+    )
+    flat = build_controller_turn_input_v22(
+        arm=ControllerArmV22.FLAT_CANONICAL,
+        runtime_context=context,
+        bootstrap=bootstrap,
+        hypothesis_catalog=hypotheses,
+        action_catalog=actions,
+        salient_memory=memory,
+        belief_ledger_view=None,
+    )
+    planner = build_controller_turn_input_v22(
+        arm=ControllerArmV22.PLANNER_LITE,
+        runtime_context=context,
+        bootstrap=bootstrap,
+        hypothesis_catalog=hypotheses,
+        action_catalog=actions,
+        salient_memory=memory,
+        belief_ledger_view=view,
+    )
+    assert flat.bootstrap == planner.bootstrap
+    assert flat.hypothesis_catalog == planner.hypothesis_catalog
+    assert flat.action_catalog == planner.action_catalog
+    assert flat.salient_memory == planner.salient_memory
+    assert flat.belief_ledger_view is None
+    assert planner.belief_ledger_view == view
+
+    with pytest.raises(ValueError, match="Flat cannot receive"):
+        build_controller_turn_input_v22(
+            arm=ControllerArmV22.FLAT_CANONICAL,
+            runtime_context=context,
+            bootstrap=bootstrap,
+            hypothesis_catalog=hypotheses,
+            action_catalog=actions,
+            salient_memory=memory,
+            belief_ledger_view=view,
+        )
+    with pytest.raises(ValueError, match="Planner-Lite requires"):
+        build_controller_turn_input_v22(
+            arm=ControllerArmV22.PLANNER_LITE,
+            runtime_context=context,
+            bootstrap=bootstrap,
+            hypothesis_catalog=hypotheses,
+            action_catalog=actions,
+            salient_memory=memory,
+            belief_ledger_view=None,
+        )
+
+    forged_draft = bootstrap.model_copy(
+        update={"runtime_fact_ids": bootstrap.runtime_fact_ids[:-1]}
+    )
+    with pytest.raises(ValueError, match="authoritative bootstrap"):
+        TriageSnapshotV22.model_validate(
+            forged_draft.model_copy(
+                update={
+                    "snapshot_sha256": semantic_sha256_v22(
+                        forged_draft.model_dump(
+                            mode="json",
+                            exclude={"snapshot_sha256"},
+                        )
+                    )
+                }
+            ).model_dump(mode="python"),
+            context={
+                "memory": memory,
+                "topology": topology,
+                "capability_registry": capabilities,
+            },
         )
