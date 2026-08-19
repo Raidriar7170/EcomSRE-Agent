@@ -76,7 +76,10 @@ def test_protocol_gate_thresholds_are_machine_enforced() -> None:
     bad_transitions = []
     for transition in report.transitions[:2]:
         bad_transition = transition.model_copy(
-            update={"post_correction_accepted": False}
+            update={
+                "first_pass_accepted": False,
+                "post_correction_accepted": False,
+            }
         )
         bad_transitions.append(
             type(bad_transition).model_validate(
@@ -96,6 +99,8 @@ def test_protocol_gate_thresholds_are_machine_enforced() -> None:
     forged_draft = report.model_copy(
         update={
             "transitions": transitions,
+            "first_pass_accepted_count": 46,
+            "first_pass_protocol_acceptance": 0.92,
             "post_correction_accepted_count": 48,
             "post_correction_protocol_acceptance": 0.96,
         }

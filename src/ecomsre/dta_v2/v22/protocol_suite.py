@@ -772,7 +772,12 @@ class SyntheticTransitionResultV22(DtaModelV22):
         }
         if (
             self.correction_used != correction_category
-            or self.first_pass_accepted == correction_category
+            or self.first_pass_accepted
+            != (
+                False
+                if correction_category
+                else self.post_correction_accepted
+            )
             or (self.first_error_code is not None) != correction_category
         ):
             raise ValueError("synthetic transition correction semantics differ")
@@ -1034,7 +1039,8 @@ class ProviderSyntheticTransitionResultV22(DtaModelV22):
             or self.provider_turn.visible_input_sha256
             != semantic_sha256_v22(self.provider_request.visible_state())
             or self.correction_used != correction
-            or self.first_pass_accepted == correction
+            or self.first_pass_accepted
+            != (False if correction else self.post_correction_accepted)
             or (self.first_error_code is not None) != correction
         ):
             raise ValueError("Provider synthetic transition binding differs")

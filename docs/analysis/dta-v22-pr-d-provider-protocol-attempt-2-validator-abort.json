@@ -1,0 +1,21 @@
+{
+  "schema_version": "dta-v22-pr-d-provider-protocol-invalid-attempt.v1",
+  "goal_version": "dta-v22-p0-master-v1",
+  "attempt_ordinal": 2,
+  "disposition": "INVALID_LOCAL_VALIDATOR_ABORT",
+  "invalid_reason": "NON_CORRECTION_PROTOCOL_FAILURE_REJECTED_AS_REPORT_SHAPE_ERROR",
+  "implementation_commit": "60c096d178b2e01ade880f694237a3154177afef",
+  "implementation_tree": "6a87f4013de935d3898246e0d8c69545914238ad",
+  "failure_recorded_at": "2026-08-19T21:19:16Z",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "provider_call_count_exact": null,
+  "provider_call_count_lower_bound": 2,
+  "private_report_created": false,
+  "public_summary_created": false,
+  "agent_read_dispatches_executed": 0,
+  "agent_write_calls": 0,
+  "runbook_executions": 0,
+  "docker_calls": 0,
+  "eligible_as_pr_d_gate_evidence": false,
+  "preservation_rule": "PRESERVE_ATTEMPT_DO_NOT_RELABEL_OR_DELETE"
+}

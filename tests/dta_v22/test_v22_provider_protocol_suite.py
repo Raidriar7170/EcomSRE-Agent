@@ -93,8 +93,9 @@ def _decision(request: ProviderTurnRequestV22) -> ControllerDecisionV22:
 
 
 class ScriptedProtocolProvider:
-    def __init__(self) -> None:
+    def __init__(self, *, fail_first: bool = False) -> None:
         self.calls = 0
+        self.fail_first = fail_first
 
     def complete(
         self,
@@ -102,7 +103,17 @@ class ScriptedProtocolProvider:
         request: ProviderTurnRequestV22,
     ) -> ProviderControllerTurnV22:
         self.calls += 1
-        decision = _decision(request)
+        decision = (
+            ControllerDecisionV22(
+                decision=ControllerDecisionKindV22.ABSTAIN,
+                working_hypothesis_id=ABSTAIN_HYPOTHESIS_ID_V22,
+                action_id=NO_ACTION_ID_V22,
+                supporting_evidence_refs=(),
+                contradicting_evidence_refs=(),
+            )
+            if self.fail_first and self.calls == 1
+            else _decision(request)
+        )
         visible_state = request.visible_state()
         payload: dict[str, Any] = {
             "schema_version": "dta-v22.provider-controller-turn.v1",
@@ -249,3 +260,17 @@ def test_provider_protocol_report_rejects_wrong_mode_and_fake_gate_counts() -> N
                 )
             }
         ).require_report()
+
+
+def test_provider_protocol_suite_records_a_semantic_failure_without_crashing() -> None:
+    report = run_provider_protocol_capability_suite_v22(
+        provider_probe=_probe(),
+        complete=ScriptedProtocolProvider(fail_first=True).complete,
+    )
+    assert report.transition_count == 50
+    assert report.first_pass_accepted_count == 47
+    assert report.post_correction_accepted_count == 49
+    assert report.provider_gate_eligible is False
+    assert report.terminal is (
+        ProviderProtocolSuiteTerminalV22.BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE
+    )
