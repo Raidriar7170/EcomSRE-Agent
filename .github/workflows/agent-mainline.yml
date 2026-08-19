@@ -116,11 +116,15 @@ jobs:
       - name: DTA v2.1 public held-out evaluation verification
         run: make dta-v21-held-out-report-verify
 
-      - name: DTA v2.1 PR-F resource-recovery protocol verification
-        run: make dta-v21-pr-f-protocol-verify
+      - name: DTA v2.2 PR-A protocol and historical verification
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync python -m scripts.ci.verify_dta_v22_pr_a
 
-      - name: DTA v2.1 public live report verification when present
-        run: make dta-v21-live-verify
+      - name: DTA v2.2 focused tests
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync pytest tests/dta_v22 -q
 
       - name: Phase 5B execution historical bindings for successors
         run: >-

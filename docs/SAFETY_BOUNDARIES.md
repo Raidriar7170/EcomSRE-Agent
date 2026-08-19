@@ -5,7 +5,7 @@ This document owns operational safety rules. Architectural rationale belongs in
 in [DECISIONS.md](DECISIONS.md).
 
 This document provides the normative safety detail for `DEC-004`, `DEC-007`,
-`DEC-012`, and `DEC-034` through `DEC-038`. `DEC-012` first takes effect in
+`DEC-012`, `DEC-034` through `DEC-038`, and `DEC-054`. `DEC-012` first takes effect in
 Phase 3 and does not authorize a Phase 0 executor or write path. `DEC-034`
 narrowly replaces only its one-forward limit for the exact versioned DTA v2
 Email transaction; that design record alone creates no Live authority.
@@ -322,3 +322,31 @@ Dependency-latency remediation is replay-only. A no-fault case has zero writes.
 Any mismatch, unsafe proposal, unknown resource, step-cap breach, failed
 recovery, baseline-restoration failure, non-owned drift, or unclean cleanup
 terminates without another forward mutation.
+
+## DTA v2.2 P0 successor boundary
+
+Under `DEC-049` through `DEC-055`, DTA v2.2 is independent from frozen DTA v2
+and v2.1. Historical binding verification is mandatory before successor
+evidence is accepted. No v2 or v2.1 Provider, Docker, held-out, or report action
+is authorized.
+
+The v2.2 model receives only observer-visible typed evidence, a closed
+hypothesis catalog, and a runtime-built canonical action catalog. It may select
+an action ID or semantic terminal but cannot provide query parameters, shell,
+commands, paths, URLs, runtime identities, authorization, executor/verifier
+details, or a write target. Evaluator truth and fault-controller state cannot
+enter bootstrap, catalog generation, memory, planning, predicates, Diagnosis
+admission, Candidate filtering, or Action Selection.
+
+P0 Agent live write authority and live Runbook execution are zero. All action
+evaluation is replay-only. The active Goal's evaluator-controlled local capture
+authority is separate from Agent authority and is limited to the exact listed
+project-owned mutations. During capture, Agent, Provider, Runbook, and Agent
+forward-write counts remain zero. Every applicable fault is one exact evaluator
+operation followed by baseline restoration and project-owned `CLEAN` cleanup.
+
+Unknown ownership, non-owned drift, truth leakage, a mutation outside the
+allowlist, failed restoration, or unclean cleanup terminates
+`BLOCKED_DTA_V22_SAFETY`. No failure broadens cleanup, creates a second fault
+operation, or authorizes Agent remediation. A later live v2.2 campaign requires
+a separately designated Goal.
