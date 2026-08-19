@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 from pathlib import Path
 
@@ -13,6 +14,7 @@ from ecomsre.dta_v2.v21.live_final_cli import (
     _read_disposition,
     _read_public_report,
     _read_regular,
+    _recover_final_progress,
     _render_final_progress,
     _verify_finalize_state,
     _verify_readme_projection,
@@ -419,17 +421,51 @@ def test_final_projection_accepts_only_resumable_state_sequence() -> None:
             encoding="utf-8"
         )
     )
-    open_progress = (
+    checked_in_final_progress = (
         repository / "docs/analysis/dta-v21-p0-master-progress.json"
     ).read_text(encoding="utf-8")
+    merged_head = "4442dda6cf7d54e163b34355dad2e8235d3957c1"
+    _recover_final_progress(
+        text=checked_in_final_progress,
+        report=report,
+        merged_main_head=merged_head,
+    )
+
+    final_value = json.loads(checked_in_final_progress)
+    open_value = dict(final_value)
+    open_value.update(
+        {
+            "completed_stage": "PR-E",
+            "current_stage": "PR-F",
+            "main_head": "1c763eb815764e971855a5d6730981b9a2e5858a",
+            "active_branch": "codex/dta-v21-p0-pr-f-live-closeout",
+            "active_pr": 55,
+            "merged_prs": [50, 51, 52, 53, 54],
+            "final_engineering_terminal": None,
+        }
+    )
+    open_progress = json.dumps(open_value, indent=2, ensure_ascii=False) + "\n"
     pending = _pending_disposition(report)
     pending.pop("disposition_sha256")
-    merged_head = "1" * 40
     final_progress = _render_final_progress(
         open_progress_text=open_progress,
         report=report,
         merged_main_head=merged_head,
     )
+
+    transition_fields = {
+        "completed_stage",
+        "current_stage",
+        "main_head",
+        "active_branch",
+        "active_pr",
+        "merged_prs",
+        "final_engineering_terminal",
+    }
+    assert {
+        key for key in final_value if final_value[key] != open_value[key]
+    } == transition_fields
+    assert final_progress == checked_in_final_progress
 
     assert _verify_finalize_state(
         progress_text=open_progress,
@@ -438,7 +474,7 @@ def test_final_projection_accepts_only_resumable_state_sequence() -> None:
         merged_main_head=merged_head,
     ) == "OPEN_PROGRESS_PENDING_DISPOSITION"
     assert _verify_finalize_state(
-        progress_text=final_progress,
+        progress_text=checked_in_final_progress,
         disposition=pending,
         report=report,
         merged_main_head=merged_head,
