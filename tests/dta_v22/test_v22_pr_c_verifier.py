@@ -36,7 +36,7 @@ def test_pr_c_verifier_closes_memory_predicate_and_diagnosis_gates() -> None:
 def test_pr_c_binding_manifest_is_raw_and_artifact_hash_bound(tmp_path: Path) -> None:
     manifest = verify_pr_c_bindings(REPO_ROOT)
     assert manifest["terminal"] == "DTA_V22_PR_C_MEMORY_PREDICATES_READY"
-    assert len(manifest["artifacts"]) == 5
+    assert len(manifest["artifacts"]) == 6
 
     source = REPO_ROOT / "config/dta-v22/pr-c-memory-predicate-bindings.v1.json"
     payload = json.loads(source.read_text(encoding="utf-8"))

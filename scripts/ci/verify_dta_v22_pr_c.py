@@ -41,7 +41,7 @@ PR_C_SUCCESSOR_ATTESTATION = Path(
     "config/dta-v22/pr-c-successor-attestation.v1.json"
 )
 EXPECTED_MANIFEST_SHA256 = (
-    "016a7361104d53326215c15c79a7442f8390dfbf5a7d367593e5222aa51432b1"
+    "a6d4d2bdc73c9e6c3711e9327f07d418703b882397248a9bc05ffc899eacfc9d"
 )
 EXPECTED_PR_C_CHANGED_PATHS = (
     Path(".github/workflows/agent-mainline.yml"),
@@ -55,6 +55,7 @@ EXPECTED_PR_C_CHANGED_PATHS = (
     Path("src/ecomsre/dta_v2/v22/memory.py"),
     Path("src/ecomsre/dta_v2/v22/memory_benchmark.py"),
     Path("src/ecomsre/dta_v2/v22/predicates.py"),
+    Path("tests/dta_v22/conftest.py"),
     Path("tests/dta_v22/test_v22_memory_predicates_diagnosis.py"),
     Path("tests/dta_v22/test_v22_pr_c_verifier.py"),
 )
@@ -66,6 +67,7 @@ PERSISTENT_PR_C_ARTIFACTS = (
     Path("src/ecomsre/dta_v2/v22/memory.py"),
     Path("src/ecomsre/dta_v2/v22/memory_benchmark.py"),
     Path("src/ecomsre/dta_v2/v22/predicates.py"),
+    Path("tests/dta_v22/conftest.py"),
     Path("tests/dta_v22/test_v22_memory_predicates_diagnosis.py"),
 )
 EXPECTED_ARTIFACT_PATHS = (
@@ -73,6 +75,7 @@ EXPECTED_ARTIFACT_PATHS = (
     "src/ecomsre/dta_v2/v22/memory.py",
     "src/ecomsre/dta_v2/v22/memory_benchmark.py",
     "src/ecomsre/dta_v2/v22/predicates.py",
+    "tests/dta_v22/conftest.py",
     "tests/dta_v22/test_v22_memory_predicates_diagnosis.py",
 )
 EXPECTED_FALSE_ACTIVITY_FIELDS = (

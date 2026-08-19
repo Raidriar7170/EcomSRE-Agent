@@ -6,6 +6,8 @@
 
 由于冻结的 PR-B `RuntimeRecordV22` 仅含 state、health 与 restart count，本 PR 使用独立且哈希绑定的 `RuntimeObservationDetailV22` 补充 endpoint 与 exit code；两种 memory 表示必须绑定同一份明细，未提供、错配或重哈希伪造均 fail closed。PR-B 文件保持字节不变。
 
+冻结的 PR-B 测试有一条一次性断言硬编码 `PR_B_CLOSED_SURFACE`；PR-C 以后 verifier 正确进入 persistent-artifact 模式。为保持该测试与 PR-B manifest 字节不变，本 PR 仅在后续 stage 跳过这条旧标签断言，PR-C verifier 仍实际执行并要求 PR-B gate PASS。
+
 安全与证据边界：
 
 - Provider、Docker、held-out、scenario、fault、Runbook 均未执行；

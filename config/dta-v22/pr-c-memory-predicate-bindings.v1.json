@@ -22,6 +22,10 @@
       "sha256": "bf41aa49484caf686d7f3305a8ba56e2eff9b53d5c92970329cfdd3698333a56"
     },
     {
+      "path": "tests/dta_v22/conftest.py",
+      "sha256": "3437295bb8b6252ea93c5ce0d1ffe0dd32d92fcd71a7de11b9f086a1d6988815"
+    },
+    {
       "path": "tests/dta_v22/test_v22_memory_predicates_diagnosis.py",
       "sha256": "84ad06775bf94ff44e810563f7ca11e842de2b65b52cfa9429e1eaf1cc741d20"
     }
