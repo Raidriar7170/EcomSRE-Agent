@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 from collections import Counter
 from datetime import UTC, datetime
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -33,6 +34,12 @@ _ENVIRONMENT_NAMES = frozenset(
         "ECOMSRE_LLM_API_KEY",
         "ECOMSRE_LLM_MODEL",
     }
+)
+_PRIVATE_EVIDENCE_ROOT = (
+    Path.home() / ".ecomsre" / "private" / "dta-v22-p0-master-v1"
+)
+_PUBLIC_SUMMARY_RELATIVE = Path(
+    "docs/analysis/dta-v22-pr-d-provider-protocol-summary.json"
 )
 
 
@@ -81,6 +88,35 @@ def _canonical_json(value: object) -> str:
     return json.dumps(value, indent=2, ensure_ascii=False, sort_keys=False) + "\n"
 
 
+def _validate_output_paths(
+    *,
+    private_report: Path,
+    public_summary: Path,
+    repository_root: Path,
+    implementation_commit: str,
+    private_root: Path = _PRIVATE_EVIDENCE_ROOT,
+) -> tuple[Path, Path]:
+    root = repository_root.resolve(strict=True)
+    expected_private = private_root.resolve(strict=False)
+    private_path = private_report.resolve(strict=False)
+    public_path = public_summary.resolve(strict=False)
+    expected_name = f"dta-v22-pr-d-provider-protocol-{implementation_commit[:12]}.json"
+    if private_path.parent != expected_private or private_path.name != expected_name:
+        raise ValueError("private Provider report path differs from exact Goal root")
+    if private_path.is_relative_to(root):
+        raise ValueError("private Provider report cannot be written inside repository")
+    if private_path.exists() or private_path.is_symlink():
+        raise FileExistsError("private Provider report is create-once")
+    expected_public = (root / _PUBLIC_SUMMARY_RELATIVE).resolve(strict=False)
+    if public_path != expected_public:
+        raise ValueError("public summary path differs from PR-D contract")
+    if not public_path.parent.resolve(strict=True).is_relative_to(root):
+        raise ValueError("public summary parent escapes repository")
+    if public_path.exists() or public_path.is_symlink():
+        raise FileExistsError("public summary is create-once")
+    return private_path, public_path
+
+
 def _prepare_private_parent(path: Path, *, repository_root: Path) -> None:
     parent = path.parent
     parent.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -96,16 +132,38 @@ def _prepare_private_parent(path: Path, *, repository_root: Path) -> None:
         raise FileExistsError("private Provider report is create-once")
 
 
-def _write_create_once(path: Path, value: object, *, mode: int) -> None:
-    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, mode)
+def _write_pair_create_once(
+    *,
+    private_path: Path,
+    private_text: str,
+    public_path: Path,
+    public_text: str,
+) -> None:
+    private_descriptor = os.open(
+        private_path,
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+        0o600,
+    )
     try:
-        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
-            handle.write(_canonical_json(value))
-            handle.flush()
-            os.fsync(handle.fileno())
-        path.chmod(mode)
+        public_descriptor = os.open(
+            public_path,
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+            0o644,
+        )
     except Exception:
+        os.close(private_descriptor)
+        private_path.unlink(missing_ok=True)
         raise
+    with os.fdopen(private_descriptor, "w", encoding="utf-8") as private_handle:
+        private_handle.write(private_text)
+        private_handle.flush()
+        os.fsync(private_handle.fileno())
+    with os.fdopen(public_descriptor, "w", encoding="utf-8") as public_handle:
+        public_handle.write(public_text)
+        public_handle.flush()
+        os.fsync(public_handle.fileno())
+    private_path.chmod(0o600)
+    public_path.chmod(0o644)
 
 
 def _public_summary(
@@ -114,11 +172,12 @@ def _public_summary(
     implementation_commit: str,
     implementation_tree: str,
     executed_at: str,
+    private_evidence_raw_sha256: str,
+    private_evidence_semantic_sha256: str,
 ) -> dict[str, Any]:
     response_digests = sorted(
-        turn.raw_response_sha256
+        transition.provider_turn.raw_response_sha256
         for transition in report.transitions
-        for turn in transition.provider_turns
     )
     categories = Counter(item.category.value for item in report.transitions)
     arms = Counter(item.arm.value for item in report.transitions)
@@ -136,6 +195,9 @@ def _public_summary(
         "controller_schema_sha256": report.provider_probe.controller_schema_sha256,
         "provider_probe_report_sha256": report.provider_probe.report_sha256,
         "provider_protocol_report_sha256": report.report_sha256,
+        "private_evidence_raw_sha256": private_evidence_raw_sha256,
+        "private_evidence_semantic_sha256": private_evidence_semantic_sha256,
+        "private_evidence_location_class": "DTA_V22_PRIVATE_ROOT",
         "controller_identity_sha256s": list(report.controller_identity_sha256s),
         "transition_count": report.transition_count,
         "transition_category_counts": dict(sorted(categories.items())),
@@ -185,6 +247,13 @@ def main() -> int:
         raise ValueError("formal Provider protocol run requires a clean worktree")
     implementation_commit = _git_text(root, "rev-parse", "HEAD")
     implementation_tree = _git_text(root, "rev-parse", "HEAD^{tree}")
+    private_path, public_path = _validate_output_paths(
+        private_report=args.private_report,
+        public_summary=args.public_summary,
+        repository_root=root,
+        implementation_commit=implementation_commit,
+    )
+    _prepare_private_parent(private_path, repository_root=root)
     values = _parse_provider_env(args.provider_env)
     config = OpenAICompatibleConfig.from_environment(values)
     if config is None:
@@ -203,25 +272,29 @@ def main() -> int:
         raise RuntimeError("BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE")
     executed_at = datetime.now(UTC).isoformat()
     private_payload: dict[str, Any] = {
-        "schema_version": "dta-v22-pr-d-private-provider-protocol-evidence.v1",
+        "schema_version": "dta-v22-pr-d-private-provider-protocol-evidence.v2",
         "implementation_commit": implementation_commit,
         "implementation_tree": implementation_tree,
         "executed_at": executed_at,
         "report": report.model_dump(mode="json"),
     }
     private_payload["evidence_sha256"] = semantic_sha256_v22(private_payload)
-    _prepare_private_parent(args.private_report, repository_root=root)
-    public_path = args.public_summary.resolve(strict=False)
-    if not public_path.is_relative_to(root) or public_path.exists():
-        raise ValueError("public summary must be a new repository path")
-    _write_create_once(args.private_report, private_payload, mode=0o600)
+    private_text = _canonical_json(private_payload)
+    private_raw_sha256 = hashlib.sha256(private_text.encode("utf-8")).hexdigest()
     summary = _public_summary(
         report=report,
         implementation_commit=implementation_commit,
         implementation_tree=implementation_tree,
         executed_at=executed_at,
+        private_evidence_raw_sha256=private_raw_sha256,
+        private_evidence_semantic_sha256=private_payload["evidence_sha256"],
     )
-    _write_create_once(public_path, summary, mode=0o644)
+    _write_pair_create_once(
+        private_path=private_path,
+        private_text=private_text,
+        public_path=public_path,
+        public_text=_canonical_json(summary),
+    )
     print(
         json.dumps(
             {

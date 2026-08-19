@@ -227,6 +227,24 @@ def _git_text(root: Path, *args: str) -> str:
     ).stdout.strip()
 
 
+def _require_single_parent_commit(
+    root: Path,
+    commit: str,
+    *,
+    label: str,
+) -> None:
+    parents = _git_text(
+        root,
+        "rev-list",
+        "--parents",
+        "-n",
+        "1",
+        commit,
+    ).split()
+    if len(parents) != 2:
+        raise ValueError(f"{label} is not single-parent")
+
+
 def _git_paths(root: Path, *args: str) -> set[Path]:
     return {Path(item) for item in _git_text(root, *args).splitlines() if item}
 
@@ -430,8 +448,11 @@ def _verify_successor_git_provenance(
             or candidate == merge
         ):
             raise ValueError("PR-D squash tree identity differs")
-        if len(_git_text(root, "rev-list", "--parents", "-n", "1", merge).split()) != 2:
-            raise ValueError("PR-D squash merge is not single-parent")
+        _require_single_parent_commit(
+            root,
+            merge,
+            label="PR-D squash merge",
+        )
         ancestor = subprocess.run(
             ("git", "-C", str(root), "merge-base", "--is-ancestor", candidate, merge),
             check=False,
@@ -472,6 +493,11 @@ def _verify_successor_git_provenance(
             successor_final_head = pr_e["head_sha"]
         if _git_text(root, "rev-parse", "--verify", successor_ref) != successor_final_head:
             raise ValueError("PR-E final head does not match pull ref")
+        _require_single_parent_commit(
+            root,
+            successor_final_head,
+            label="PR-E final attestation commit",
+        )
         successor_head = attestation["successor_head"]
         if _git_text(root, "rev-parse", f"{successor_final_head}^") != successor_head:
             raise ValueError("PR-E attestation commit is not final single-file child")
@@ -770,7 +796,7 @@ def _verify_runtime_contracts() -> None:
         is not EvaluationArmV22.PLANNER_LITE_SALIENT
     ):
         raise ValueError("PR-D identity reconstruction differs")
-    local = run_local_protocol_capability_suite_v22()
+    local = run_local_protocol_capability_suite_v22(provider_probe=probe)
     if (
         local.transition_count != 50
         or local.first_pass_protocol_acceptance != 0.96

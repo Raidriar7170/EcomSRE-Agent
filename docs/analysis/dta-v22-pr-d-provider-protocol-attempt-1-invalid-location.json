@@ -1,0 +1,21 @@
+{
+  "schema_version": "dta-v22-pr-d-provider-protocol-invalid-attempt.v1",
+  "goal_version": "dta-v22-p0-master-v1",
+  "attempt_ordinal": 1,
+  "disposition": "INVALID_NON_AUTHORITATIVE_PRIVATE_LOCATION",
+  "invalid_reason": "PRIVATE_EVIDENCE_ROOT_MISMATCH",
+  "implementation_commit": "b60f164df1409422110e7a72cff682ac59cf66f0",
+  "implementation_tree": "5715e24e52c27dc25cae0100164b407213ac2994",
+  "executed_at": "2026-08-19T19:57:02.898435+00:00",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "provider_protocol_report_sha256": "088b9febb807af46fd0708cd1a0a6cdb2ed7b943a1f44ec615173a53302bbdb8",
+  "original_public_summary_sha256": "8911b46de9c0cbd2c063e5af94ca42c153c92d9de4888bf5da0220b573416bf1",
+  "transition_count": 50,
+  "first_pass_accepted_count": 48,
+  "post_correction_accepted_count": 50,
+  "invalid_dispatches": 0,
+  "provider_protocol_calls": 52,
+  "raw_provider_content_published": false,
+  "eligible_as_pr_d_gate_evidence": false,
+  "preservation_rule": "PRESERVE_ATTEMPT_DO_NOT_RELABEL_OR_DELETE"
+}

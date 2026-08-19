@@ -26,11 +26,23 @@ from ecomsre.dta_v2.v22.controller_modes import (
     probe_provider_output_mode_v22,
     select_deterministic_router_decision_v22,
 )
-from ecomsre.dta_v2.v22.memory import FullEvidenceMemoryV22
-from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
+from ecomsre.dta_v2.v22.memory import FullEvidenceMemoryV22, build_memory_views_v22
+from ecomsre.dta_v2.v22.protocol_suite import (
+    _action_v22,
+    _baseline_v22,
+    _memory_v22,
+    _outcome_v22,
+)
+from ecomsre.dta_v2.v22.read_contracts import (
+    EvidenceSourceV22,
+    ReadSourceStatusV22,
+    semantic_sha256_v22,
+)
 
 
-def _actions(*, executed_action_ids: tuple[str, ...] = ()):
+def _actions(
+    *, executed_action_ids: tuple[str, ...] = (), remaining_budget: float = 3.0
+):
     topology = StaticTopologyV22.build(
         services=("checkout", "payment"),
         edges=(("checkout", "payment"),),
@@ -40,7 +52,7 @@ def _actions(*, executed_action_ids: tuple[str, ...] = ()):
         topology=topology,
         capability_registry=build_default_tool_capability_registry_v22(),
         executed_action_ids=executed_action_ids,
-        remaining_budget=3.0,
+        remaining_budget=remaining_budget,
     )
 
 
@@ -64,6 +76,33 @@ def _empty_full_memory() -> FullEvidenceMemoryV22:
             ),
         }
     )
+
+
+def _complete_full_memory() -> FullEvidenceMemoryV22:
+    actions = _actions()
+    _, partial = _memory_v22(anomaly=False)
+    outcomes = list(partial.full_observations)
+    for source in (
+        EvidenceSourceV22.LOGS,
+        EvidenceSourceV22.TRACES,
+        EvidenceSourceV22.RESOURCES,
+        EvidenceSourceV22.CHANGES,
+    ):
+        action = _action_v22(actions, source=source, targets=("payment",))
+        outcomes.append(
+            _outcome_v22(
+                action=action,
+                status=ReadSourceStatusV22.SUCCESS_EMPTY,
+                records=(),
+            )
+        )
+    _, full = build_memory_views_v22(
+        outcomes=tuple(outcomes),
+        baseline=_baseline_v22(),
+        observed_at=datetime(2026, 8, 20, tzinfo=timezone.utc),
+        top_k=64,
+    )
+    return full
 
 
 def test_provider_probe_prefers_strict_and_uses_the_same_lightweight_schema() -> None:
@@ -188,10 +227,23 @@ def test_deterministic_router_is_generic_stable_and_never_dispatches_masked_acti
     )
     assert next_decision.action_id != first.action_id
 
+    exhausted = _actions(
+        executed_action_ids=tuple(item.action_id for item in actions.registry_actions),
+        remaining_budget=0.0,
+    )
+    with pytest.raises(
+        RuntimeError,
+        match="DETERMINISTIC_ROUTER_FINAL_MODEL_REQUIRED",
+    ):
+        select_deterministic_router_decision_v22(
+            action_catalog=exhausted,
+            hypothesis_catalog=hypotheses,
+        )
+
 
 def test_one_shot_oracle_context_counts_full_materialization_and_has_no_tool_metric() -> None:
     actions = _actions()
-    memory = _empty_full_memory()
+    memory = _complete_full_memory()
     context = build_one_shot_oracle_context_v22(
         full_memory=memory,
         action_catalog=actions,
@@ -221,4 +273,12 @@ def test_one_shot_oracle_context_counts_full_materialization_and_has_no_tool_met
                 }
             ).model_dump(mode="python"),
             context={"full_memory": memory, "action_catalog": actions},
+        )
+
+
+def test_one_shot_oracle_context_rejects_partial_materialization() -> None:
+    with pytest.raises(ValueError, match="lacks all canonical enabled sources"):
+        build_one_shot_oracle_context_v22(
+            full_memory=_empty_full_memory(),
+            action_catalog=_actions(),
         )

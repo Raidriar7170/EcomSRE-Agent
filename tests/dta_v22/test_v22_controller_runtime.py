@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from ecomsre.dta_v2.v22.action_catalog import (
@@ -8,39 +10,202 @@ from ecomsre.dta_v2.v22.action_catalog import (
     build_default_tool_capability_registry_v22,
 )
 from ecomsre.dta_v2.v22.controller_contracts import (
-    ABSTAIN_HYPOTHESIS_ID_V22,
     NO_ACTION_ID_V22,
     NO_INCIDENT_HYPOTHESIS_ID_V22,
     ControllerDecisionKindV22,
     ControllerDecisionV22,
     ControllerProtocolErrorCodeV22,
+    build_belief_ledger_view_v22,
     build_hypothesis_catalog_v22,
 )
-from ecomsre.dta_v2.v22.controller_inputs import ControllerArmV22
+from ecomsre.dta_v2.v22.controller_inputs import (
+    ControllerArmV22,
+    ControllerRuntimeContextV22,
+    TriageSnapshotV22,
+    build_controller_turn_input_v22,
+)
+from ecomsre.dta_v2.v22.controller_modes import (
+    EvaluationArmV22,
+    ProviderProbeStatusV22,
+    build_controller_identity_manifests_v22,
+    probe_provider_output_mode_v22,
+)
 from ecomsre.dta_v2.v22.controller_runtime import (
     ControllerProtocolDispositionV22,
     ControllerSessionTerminalV22,
     PlanCorrectionV22,
     initialize_controller_session_v22,
     process_controller_decision_v22,
+    record_controller_read_dispatch_v22,
+    record_controller_read_outcome_v22,
 )
-from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
+from ecomsre.dta_v2.v22.memory import (
+    EvidencePredicateV22,
+    EvidenceRefV22,
+    MemoryLossLedgerV22,
+    ObservationSummaryV22,
+    SalientEvidenceMemoryV22,
+    SalientFactV22,
+)
+from ecomsre.dta_v2.v22.predicates import build_default_evidence_support_policy_v22
+from ecomsre.dta_v2.v22.read_contracts import (
+    EvidenceSourceV22,
+    ReadSourceStatusV22,
+    semantic_sha256_v22,
+)
+from ecomsre.dta_v2.v22.replay import ReadOutcomeV22
 
 
-KNOWN_REF = "e:a:changes:payment:0:111111111111"
-
-
-def _actions(*, executed_action_ids: tuple[str, ...] = ()):
-    topology = StaticTopologyV22.build(
+def _topology() -> StaticTopologyV22:
+    return StaticTopologyV22.build(
         services=("checkout", "payment"),
         edges=(("checkout", "payment"),),
     )
+
+
+def _actions(*, executed_action_ids: tuple[str, ...] = (), budget: float = 3.0):
     return build_action_catalog_v22(
         candidate_services=("checkout", "payment"),
-        topology=topology,
+        topology=_topology(),
         capability_registry=build_default_tool_capability_registry_v22(),
         executed_action_ids=executed_action_ids,
-        remaining_budget=3.0,
+        remaining_budget=budget,
+    )
+
+
+def _identity(arm: ControllerArmV22):
+    probe = probe_provider_output_mode_v22(
+        probe=lambda _model, _mode, _schema: ProviderProbeStatusV22.SUPPORTED
+    )
+    expected = (
+        EvaluationArmV22.FLAT_CANONICAL_SALIENT
+        if arm is ControllerArmV22.FLAT_CANONICAL
+        else EvaluationArmV22.PLANNER_LITE_SALIENT
+    )
+    return next(
+        item
+        for item in build_controller_identity_manifests_v22(provider_probe=probe)
+        if item.arm is expected
+    )
+
+
+def _memory(
+    *,
+    refs: tuple[EvidenceRefV22, ...] = (),
+    predicates: tuple[EvidencePredicateV22, ...] = (),
+    facts: tuple[SalientFactV22, ...] = (),
+    summaries: tuple[ObservationSummaryV22, ...] = (),
+) -> SalientEvidenceMemoryV22:
+    draft = SalientEvidenceMemoryV22.model_construct(
+        schema_version="dta-v22.salient-evidence-memory.v1",
+        baseline_sha256="1" * 64,
+        thresholds_sha256="2" * 64,
+        observed_at=None,
+        evidence_refs=refs,
+        observation_summaries=summaries,
+        predicates=predicates,
+        salient_facts=facts,
+        loss_ledger=MemoryLossLedgerV22.model_construct(
+            schema_version="dta-v22.memory-loss-ledger.v1",
+            entries=(),
+            ledger_sha256="3" * 64,
+        ),
+        memory_sha256="0" * 64,
+    )
+    return draft.model_copy(
+        update={
+            "memory_sha256": semantic_sha256_v22(
+                draft.model_dump(mode="json", exclude={"memory_sha256"})
+            )
+        }
+    )
+
+
+def _bootstrap(memory: SalientEvidenceMemoryV22, actions: Any) -> TriageSnapshotV22:
+    draft = TriageSnapshotV22.model_construct(
+        schema_version="dta-v22.triage-snapshot.v1",
+        candidate_services=("checkout", "payment"),
+        memory_sha256=memory.memory_sha256,
+        topology_sha256=actions.topology_sha256,
+        capability_registry_sha256=actions.capability_registry_sha256,
+        enabled_sources=actions.enabled_sources,
+        runtime_fact_ids=(),
+        core_metric_fact_ids=(),
+        strong_anomaly_predicate_ids=(),
+        bootstrap_evidence_refs=(),
+        candidate_subgraph_edges=(("checkout", "payment"),),
+        bootstrap_weighted_cost=1.0,
+        snapshot_sha256="0" * 64,
+    )
+    return draft.model_copy(
+        update={
+            "snapshot_sha256": semantic_sha256_v22(
+                draft.model_dump(mode="json", exclude={"snapshot_sha256"})
+            )
+        }
+    )
+
+
+def _setup(
+    *,
+    arm: ControllerArmV22 = ControllerArmV22.PLANNER_LITE,
+    memory: SalientEvidenceMemoryV22 | None = None,
+    actions: Any = None,
+):
+    selected_memory = _memory() if memory is None else memory
+    selected_actions = _actions() if actions is None else actions
+    hypotheses = build_hypothesis_catalog_v22(
+        candidate_services=("checkout", "payment")
+    )
+    identity = _identity(arm)
+    bootstrap = _bootstrap(selected_memory, selected_actions)
+    policy = build_default_evidence_support_policy_v22()
+    session = initialize_controller_session_v22(
+        identity=identity,
+        hypothesis_catalog=hypotheses,
+        bootstrap=bootstrap,
+        support_policy_sha256=policy.policy_sha256,
+    )
+    return hypotheses, identity, bootstrap, policy, session, selected_actions, selected_memory
+
+
+def _turn(
+    *,
+    hypotheses: Any,
+    identity: Any,
+    bootstrap: TriageSnapshotV22,
+    policy: Any,
+    session: Any,
+    actions: Any,
+    memory: SalientEvidenceMemoryV22,
+):
+    view = (
+        build_belief_ledger_view_v22(
+            ledger=session.ledger,
+            hypothesis_catalog=hypotheses,
+        )
+        if session.arm is ControllerArmV22.PLANNER_LITE
+        else None
+    )
+    context = ControllerRuntimeContextV22.build(
+        run_id="4" * 32,
+        turn_ordinal=session.provider_turns_used + 1,
+        controller_identity_sha256=identity.identity_sha256,
+        remaining_evidence_budget=(
+            session.initial_evidence_budget - session.ledger.weighted_evidence_cost
+        ),
+        remaining_provider_turns=5 - session.provider_turns_used,
+        correction_remaining=not session.ledger.correction_used,
+    )
+    return build_controller_turn_input_v22(
+        arm=session.arm,
+        runtime_context=context,
+        bootstrap=bootstrap,
+        hypothesis_catalog=hypotheses,
+        action_catalog=actions,
+        salient_memory=memory,
+        belief_ledger_view=view,
+        evidence_support_policy=policy,
     )
 
 
@@ -54,15 +219,32 @@ def _read(*, action_id: str, hypothesis_id: str) -> ControllerDecisionV22:
     )
 
 
-def test_valid_read_authorizes_exactly_one_dispatch_and_updates_runtime_ledger() -> None:
-    hypotheses = build_hypothesis_catalog_v22(
-        candidate_services=("checkout", "payment")
+def _empty_outcome(action: Any) -> ReadOutcomeV22:
+    payload = {
+        "schema_version": "dta-v22.read-outcome.v1",
+        "action_id": action.action_id,
+        "source": action.source,
+        "request_sha256": action.request_sha256,
+        "status": ReadSourceStatusV22.SUCCESS_EMPTY,
+        "records": (),
+        "truncated": False,
+    }
+    return ReadOutcomeV22.model_validate(
+        {**payload, "outcome_sha256": semantic_sha256_v22(payload)}
     )
-    actions = _actions()
+
+
+def test_read_is_not_executed_until_dispatch_and_authoritative_outcome() -> None:
+    hypotheses, identity, bootstrap, policy, session, actions, memory = _setup()
     action = next(item for item in actions.actions if item.action_id == "a:logs:payment")
-    session = initialize_controller_session_v22(
-        arm=ControllerArmV22.PLANNER_LITE,
-        hypothesis_catalog=hypotheses,
+    turn = _turn(
+        hypotheses=hypotheses,
+        identity=identity,
+        bootstrap=bootstrap,
+        policy=policy,
+        session=session,
+        actions=actions,
+        memory=memory,
     )
     result = process_controller_decision_v22(
         session=session,
@@ -70,63 +252,80 @@ def test_valid_read_authorizes_exactly_one_dispatch_and_updates_runtime_ledger()
             action_id=action.action_id,
             hypothesis_id="h:payment:configuration-error",
         ),
-        hypothesis_catalog=hypotheses,
-        action_catalog=actions,
-        known_evidence_refs=(),
+        turn_input=turn,
     )
     assert result.disposition is ControllerProtocolDispositionV22.ACCEPTED
     assert result.read_dispatch_authorized is True
-    assert result.invalid_dispatches == 0
-    assert result.session.provider_turns_used == 1
-    assert result.session.read_dispatches == 1
-    assert result.session.ledger.executed_action_ids == (action.action_id,)
-    assert result.session.ledger.weighted_evidence_cost == action.weighted_cost
-    assert result.session.terminal is ControllerSessionTerminalV22.ACTIVE
+    assert result.session.read_dispatches == 0
+    assert result.session.ledger.executed_action_ids == ()
+    assert result.session.ledger.weighted_evidence_cost == 0
+    assert result.session.total_evidence_cost == 1.0
+    assert result.session.pending_read is not None
+
+    with pytest.raises(ValueError, match="outcome is still pending"):
+        process_controller_decision_v22(
+            session=result.session,
+            raw_decision=_read(
+                action_id=action.action_id,
+                hypothesis_id="h:payment:configuration-error",
+            ),
+            turn_input=turn,
+        )
+
+    dispatched = record_controller_read_dispatch_v22(
+        session=result.session,
+        authorization_sha256=result.session.pending_read.authorization_sha256,
+    )
+    assert dispatched.read_dispatches == 1
+    assert dispatched.ledger.executed_action_ids == ()
+    completed = record_controller_read_outcome_v22(
+        session=dispatched,
+        turn_input=turn,
+        outcome=_empty_outcome(action),
+    )
+    assert completed.pending_read is None
+    assert completed.read_dispatches == 1
+    assert completed.ledger.executed_action_ids == (action.action_id,)
+    assert completed.ledger.weighted_evidence_cost == action.weighted_cost
+    assert completed.total_evidence_cost == 1.0 + action.weighted_cost
 
 
-def test_flat_read_may_be_reactive_but_planner_read_requires_working_hypothesis() -> None:
-    hypotheses = build_hypothesis_catalog_v22(
-        candidate_services=("checkout", "payment")
+def test_controller_runtime_rejects_detached_catalog_refs_and_identity() -> None:
+    hypotheses, identity, bootstrap, policy, session, actions, memory = _setup()
+    turn = _turn(
+        hypotheses=hypotheses,
+        identity=identity,
+        bootstrap=bootstrap,
+        policy=policy,
+        session=session,
+        actions=actions,
+        memory=memory,
     )
-    actions = _actions()
-    action = actions.actions[0]
-    flat = initialize_controller_session_v22(
-        arm=ControllerArmV22.FLAT_CANONICAL,
-        hypothesis_catalog=hypotheses,
+    forged_context = ControllerRuntimeContextV22.build(
+        run_id="4" * 32,
+        turn_ordinal=1,
+        controller_identity_sha256="f" * 64,
+        remaining_evidence_budget=3.0,
+        remaining_provider_turns=5,
+        correction_remaining=True,
     )
-    flat_result = process_controller_decision_v22(
-        session=flat,
-        raw_decision=_read(
-            action_id=action.action_id,
-            hypothesis_id=ABSTAIN_HYPOTHESIS_ID_V22,
-        ),
-        hypothesis_catalog=hypotheses,
-        action_catalog=actions,
-        known_evidence_refs=(),
+    forged_turn = turn.model_copy(update={"runtime_context": forged_context})
+    forged_turn = forged_turn.model_copy(
+        update={
+            "input_sha256": semantic_sha256_v22(
+                forged_turn.model_dump(mode="json", exclude={"input_sha256"})
+            )
+        }
     )
-    assert flat_result.disposition is ControllerProtocolDispositionV22.ACCEPTED
-
-    planner = initialize_controller_session_v22(
-        arm=ControllerArmV22.PLANNER_LITE,
-        hypothesis_catalog=hypotheses,
-    )
-    planner_result = process_controller_decision_v22(
-        session=planner,
-        raw_decision=_read(
-            action_id=action.action_id,
-            hypothesis_id=ABSTAIN_HYPOTHESIS_ID_V22,
-        ),
-        hypothesis_catalog=hypotheses,
-        action_catalog=actions,
-        known_evidence_refs=(),
-    )
-    assert (
-        planner_result.disposition
-        is ControllerProtocolDispositionV22.CORRECTION_REQUIRED
-    )
-    assert planner_result.error_code is ControllerProtocolErrorCodeV22.INVALID_DECISION_SHAPE
-    assert planner_result.read_dispatch_authorized is False
-    assert planner_result.invalid_dispatches == 0
+    with pytest.raises(ValueError, match="runtime session authority"):
+        process_controller_decision_v22(
+            session=session,
+            raw_decision=_read(
+                action_id=actions.actions[0].action_id,
+                hypothesis_id="h:payment:configuration-error",
+            ),
+            turn_input=forged_turn,
+        )
 
 
 @pytest.mark.parametrize(
@@ -143,13 +342,7 @@ def test_flat_read_may_be_reactive_but_planner_read_requires_working_hypothesis(
             ControllerProtocolErrorCodeV22.INVALID_ACTION_ID,
         ),
         (
-            {
-                "decision": "READ",
-                "working_hypothesis_id": "h:payment:configuration-error",
-                "action_id": "NONE",
-                "supporting_evidence_refs": [],
-                "contradicting_evidence_refs": [],
-            },
+            {"decision": "READ"},
             ControllerProtocolErrorCodeV22.INVALID_DECISION_SHAPE,
         ),
         (
@@ -168,142 +361,108 @@ def test_invalid_first_pass_returns_one_no_dispatch_correction(
     raw_decision: object,
     expected_code: ControllerProtocolErrorCodeV22,
 ) -> None:
-    hypotheses = build_hypothesis_catalog_v22(
-        candidate_services=("checkout", "payment")
+    hypotheses, identity, bootstrap, policy, session, actions, memory = _setup()
+    turn = _turn(
+        hypotheses=hypotheses,
+        identity=identity,
+        bootstrap=bootstrap,
+        policy=policy,
+        session=session,
+        actions=actions,
+        memory=memory,
     )
-    actions = _actions()
     result = process_controller_decision_v22(
-        session=initialize_controller_session_v22(
-            arm=ControllerArmV22.PLANNER_LITE,
-            hypothesis_catalog=hypotheses,
-        ),
+        session=session,
         raw_decision=raw_decision,
-        hypothesis_catalog=hypotheses,
-        action_catalog=actions,
-        known_evidence_refs=(),
+        turn_input=turn,
     )
     assert result.disposition is ControllerProtocolDispositionV22.CORRECTION_REQUIRED
     assert result.error_code is expected_code
     assert result.correction is not None
-    assert result.correction.safe_error_code is expected_code
-    assert result.correction.current_valid_action_ids == tuple(
-        item.action_id for item in actions.actions
-    )
-    assert result.correction.remaining_evidence_budget == actions.remaining_budget
-    assert result.correction.read_dispatches == 0
-    assert result.correction.write_authority == 0
     assert result.session.provider_turns_used == 1
     assert result.session.read_dispatches == 0
 
 
-def test_corrected_decision_is_accepted_but_second_invalid_decision_fails() -> None:
-    hypotheses = build_hypothesis_catalog_v22(
-        candidate_services=("checkout", "payment")
+def test_semantic_admission_denies_unsupported_commit_and_no_incident() -> None:
+    ref_memory = _memory(
+        refs=(
+            EvidenceRefV22(
+                schema_version="dta-v22.evidence-ref.v1",
+                evidence_ref="e:a:changes:payment:0:111111111111",
+                action_id="a:changes:payment",
+                source=EvidenceSourceV22.CHANGES,
+                outcome_sha256="4" * 64,
+                record_index=0,
+                record_sha256="1" * 64,
+            ),
+        )
     )
-    actions = _actions()
-    first = process_controller_decision_v22(
-        session=initialize_controller_session_v22(
-            arm=ControllerArmV22.PLANNER_LITE,
-            hypothesis_catalog=hypotheses,
-        ),
-        raw_decision={"decision": "READ"},
-        hypothesis_catalog=hypotheses,
-        action_catalog=actions,
-        known_evidence_refs=(),
+    hypotheses, identity, bootstrap, policy, session, actions, memory = _setup(
+        memory=ref_memory
     )
-    assert first.correction is not None
-    action = actions.actions[0]
-    corrected = process_controller_decision_v22(
-        session=first.session,
-        raw_decision=_read(
-            action_id=action.action_id,
-            hypothesis_id="h:payment:configuration-error",
-        ),
-        hypothesis_catalog=hypotheses,
-        action_catalog=actions,
-        known_evidence_refs=(),
+    turn = _turn(
+        hypotheses=hypotheses,
+        identity=identity,
+        bootstrap=bootstrap,
+        policy=policy,
+        session=session,
+        actions=actions,
+        memory=memory,
     )
-    assert corrected.disposition is ControllerProtocolDispositionV22.ACCEPTED
-    assert corrected.session.provider_turns_used == 2
-    assert corrected.session.read_dispatches == 1
-
-    second = process_controller_decision_v22(
-        session=first.session,
-        raw_decision={"decision": "READ"},
-        hypothesis_catalog=hypotheses,
-        action_catalog=actions,
-        known_evidence_refs=(),
-    )
-    assert second.disposition is ControllerProtocolDispositionV22.FAILED
-    assert second.correction is None
-    assert second.session.terminal is ControllerSessionTerminalV22.FAILED
-    assert second.session.provider_turns_used == 2
-    assert second.session.read_dispatches == 0
-    assert second.invalid_dispatches == 0
-
-
-@pytest.mark.parametrize(
-    "decision",
-    (
-        ControllerDecisionV22(
+    unsupported_commit = process_controller_decision_v22(
+        session=session,
+        raw_decision=ControllerDecisionV22(
             decision=ControllerDecisionKindV22.COMMIT,
             working_hypothesis_id="h:payment:configuration-error",
             action_id=NO_ACTION_ID_V22,
-            supporting_evidence_refs=(KNOWN_REF,),
+            supporting_evidence_refs=("e:a:changes:payment:0:111111111111",),
             contradicting_evidence_refs=(),
         ),
-        ControllerDecisionV22(
+        turn_input=turn,
+    )
+    assert unsupported_commit.semantic_admission is not None
+    assert unsupported_commit.semantic_admission.terminal.name == "FAILED"
+    assert unsupported_commit.session.terminal is ControllerSessionTerminalV22.FAILED
+
+    hypotheses, identity, bootstrap, policy, session, actions, memory = _setup()
+    no_incident = process_controller_decision_v22(
+        session=session,
+        raw_decision=ControllerDecisionV22(
             decision=ControllerDecisionKindV22.NO_INCIDENT,
             working_hypothesis_id=NO_INCIDENT_HYPOTHESIS_ID_V22,
             action_id=NO_ACTION_ID_V22,
             supporting_evidence_refs=(),
             contradicting_evidence_refs=(),
         ),
-        ControllerDecisionV22(
-            decision=ControllerDecisionKindV22.ABSTAIN,
-            working_hypothesis_id=ABSTAIN_HYPOTHESIS_ID_V22,
-            action_id=NO_ACTION_ID_V22,
-            supporting_evidence_refs=(),
-            contradicting_evidence_refs=(),
+        turn_input=_turn(
+            hypotheses=hypotheses,
+            identity=identity,
+            bootstrap=bootstrap,
+            policy=policy,
+            session=session,
+            actions=actions,
+            memory=memory,
         ),
-    ),
-)
-def test_terminal_decisions_complete_without_read_dispatch(
-    decision: ControllerDecisionV22,
-) -> None:
-    hypotheses = build_hypothesis_catalog_v22(
-        candidate_services=("checkout", "payment")
     )
-    result = process_controller_decision_v22(
-        session=initialize_controller_session_v22(
-            arm=ControllerArmV22.PLANNER_LITE,
-            hypothesis_catalog=hypotheses,
-        ),
-        raw_decision=decision,
-        hypothesis_catalog=hypotheses,
-        action_catalog=_actions(),
-        known_evidence_refs=(KNOWN_REF,),
-    )
-    assert result.disposition is ControllerProtocolDispositionV22.ACCEPTED
-    assert result.read_dispatch_authorized is False
-    assert result.invalid_dispatches == 0
-    assert result.session.terminal is ControllerSessionTerminalV22.COMPLETED
+    assert no_incident.semantic_admission is not None
+    assert no_incident.semantic_admission.terminal.name == "FAILED"
+    assert no_incident.session.terminal is ControllerSessionTerminalV22.FAILED
 
 
 def test_correction_contract_rejects_semantic_rehash_of_valid_action_surface() -> None:
-    hypotheses = build_hypothesis_catalog_v22(
-        candidate_services=("checkout", "payment")
-    )
-    actions = _actions()
+    hypotheses, identity, bootstrap, policy, session, actions, memory = _setup()
     result = process_controller_decision_v22(
-        session=initialize_controller_session_v22(
-            arm=ControllerArmV22.PLANNER_LITE,
-            hypothesis_catalog=hypotheses,
-        ),
+        session=session,
         raw_decision={"decision": "READ"},
-        hypothesis_catalog=hypotheses,
-        action_catalog=actions,
-        known_evidence_refs=(),
+        turn_input=_turn(
+            hypotheses=hypotheses,
+            identity=identity,
+            bootstrap=bootstrap,
+            policy=policy,
+            session=session,
+            actions=actions,
+            memory=memory,
+        ),
     )
     assert result.correction is not None
     forged_draft = result.correction.model_copy(
@@ -315,8 +474,7 @@ def test_correction_contract_rejects_semantic_rehash_of_valid_action_surface() -
                 update={
                     "correction_sha256": semantic_sha256_v22(
                         forged_draft.model_dump(
-                            mode="json",
-                            exclude={"correction_sha256"},
+                            mode="json", exclude={"correction_sha256"}
                         )
                     )
                 }

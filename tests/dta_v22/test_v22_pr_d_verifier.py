@@ -8,6 +8,7 @@ import pytest
 from scripts.ci.verify_dta_v22_pr_d import (
     EXPECTED_PR_E_ACTIVITY,
     PR_C_SUCCESSOR_ATTESTATION,
+    _require_single_parent_commit,
     _verify_runtime_contracts,
     verify_pr_d_bindings,
     verify_pr_d_protocol,
@@ -85,3 +86,18 @@ def test_pr_e_successor_activity_contract_is_stage_specific() -> None:
         "public_result_changed": True,
         "execution_report_rebound": False,
     }
+
+
+def test_successor_final_attestation_commit_must_be_single_parent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "scripts.ci.verify_dta_v22_pr_d._git_text",
+        lambda _root, *_args: "head parent-a parent-b",
+    )
+    with pytest.raises(ValueError, match="PR-E final attestation commit"):
+        _require_single_parent_commit(
+            REPO_ROOT,
+            "f" * 40,
+            label="PR-E final attestation commit",
+        )

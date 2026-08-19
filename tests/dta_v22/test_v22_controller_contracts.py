@@ -175,6 +175,7 @@ def test_hypothesis_catalog_is_closed_truth_independent_and_complete() -> None:
     )
     assert len(catalog.hypotheses) == 12
     assert catalog.hypotheses[-2].hypothesis_id == NO_INCIDENT_HYPOTHESIS_ID_V22
+    assert NO_INCIDENT_HYPOTHESIS_ID_V22 == "h:none:no_incident"
     assert catalog.hypotheses[-1].hypothesis_id == ABSTAIN_HYPOTHESIS_ID_V22
     assert {
         item.hypothesis_id
@@ -283,6 +284,8 @@ def test_belief_ledger_derives_history_coverage_and_status_from_turns() -> None:
         action_catalog=actions,
         decision=read,
         known_evidence_refs=("e:a:changes:payment:0:111111111111",),
+        read_outcome_sha256="9" * 64,
+        semantic_admitted=False,
     )
     assert ledger.current_working_hypothesis_id == read.working_hypothesis_id
     assert ledger.selected_hypothesis_ids == (read.working_hypothesis_id,)
@@ -336,6 +339,8 @@ def test_belief_turn_rejects_stale_actions_unknown_refs_and_unknown_hypotheses()
             action_catalog=actions,
             decision=unknown_ref,
             known_evidence_refs=(),
+            read_outcome_sha256="9" * 64,
+            semantic_admitted=False,
         )
 
     unknown_hypothesis = _decision(
@@ -350,6 +355,8 @@ def test_belief_turn_rejects_stale_actions_unknown_refs_and_unknown_hypotheses()
             action_catalog=actions,
             decision=unknown_hypothesis,
             known_evidence_refs=(),
+            read_outcome_sha256="9" * 64,
+            semantic_admitted=False,
         )
 
     accepted = record_belief_turn_v22(
@@ -362,6 +369,8 @@ def test_belief_turn_rejects_stale_actions_unknown_refs_and_unknown_hypotheses()
             action_id=action.action_id,
         ),
         known_evidence_refs=(),
+        read_outcome_sha256="9" * 64,
+        semantic_admitted=False,
     )
     with pytest.raises(ValueError, match="already executed"):
         record_belief_turn_v22(
@@ -374,6 +383,8 @@ def test_belief_turn_rejects_stale_actions_unknown_refs_and_unknown_hypotheses()
                 action_id=action.action_id,
             ),
             known_evidence_refs=(),
+            read_outcome_sha256="8" * 64,
+            semantic_admitted=False,
         )
 
 
@@ -440,6 +451,28 @@ def test_common_bootstrap_and_primary_turn_inputs_differ_only_by_belief_view() -
     assert flat.salient_memory == planner.salient_memory
     assert flat.belief_ledger_view is None
     assert planner.belief_ledger_view == view
+
+    mismatched_topology = StaticTopologyV22.build(
+        services=("checkout", "payment"),
+        edges=(),
+    )
+    mismatched_actions = build_action_catalog_v22(
+        candidate_services=("checkout", "payment"),
+        topology=mismatched_topology,
+        capability_registry=capabilities,
+        executed_action_ids=(),
+        remaining_budget=3.0,
+    )
+    with pytest.raises(ValueError, match="runtime surfaces differ"):
+        build_controller_turn_input_v22(
+            arm=ControllerArmV22.FLAT_CANONICAL,
+            runtime_context=context,
+            bootstrap=bootstrap,
+            hypothesis_catalog=hypotheses,
+            action_catalog=mismatched_actions,
+            salient_memory=memory,
+            belief_ledger_view=None,
+        )
 
     with pytest.raises(ValueError, match="Flat cannot receive"):
         build_controller_turn_input_v22(

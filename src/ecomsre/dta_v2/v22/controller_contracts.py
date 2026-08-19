@@ -26,7 +26,7 @@ from ecomsre.dta_v2.v22.read_contracts import (
 
 
 NO_ACTION_ID_V22 = "NONE"
-NO_INCIDENT_HYPOTHESIS_ID_V22 = "h:none:no-incident"
+NO_INCIDENT_HYPOTHESIS_ID_V22 = "h:none:no_incident"
 ABSTAIN_HYPOTHESIS_ID_V22 = "h:none:unresolved"
 
 
@@ -53,7 +53,7 @@ class ControllerProtocolErrorCodeV22(str, Enum):
 
 
 class HypothesisCatalogEntryV22(DtaModelV22):
-    hypothesis_id: str = Field(pattern=r"^h:[a-z0-9-]+:[a-z0-9-]+$")
+    hypothesis_id: str = Field(pattern=r"^h:[a-z0-9-]+:[a-z0-9_-]+$")
     target_service: LogicalServiceV22 | None
     fault_domain: FaultDomainV22
     mechanism: MechanismV22
@@ -175,7 +175,7 @@ class ControllerDecisionV22(DtaModelV22):
     """The complete model-owned output; runtime metadata is deliberately absent."""
 
     decision: ControllerDecisionKindV22
-    working_hypothesis_id: str = Field(pattern=r"^h:[a-z0-9-]+:[a-z0-9-]+$")
+    working_hypothesis_id: str = Field(pattern=r"^h:[a-z0-9-]+:[a-z0-9_-]+$")
     action_id: str = Field(pattern=r"^(?:NONE|a:[a-z0-9][a-z0-9:+-]*)$")
     supporting_evidence_refs: tuple[str, ...] = Field(max_length=40)
     contradicting_evidence_refs: tuple[str, ...] = Field(max_length=40)
@@ -226,8 +226,10 @@ class BeliefTurnRecordV22(DtaModelV22):
     action_id: str
     supporting_evidence_refs: tuple[str, ...]
     contradicting_evidence_refs: tuple[str, ...]
+    read_outcome_sha256: Sha256V22 | None
     executed_coverage_keys: tuple[str, ...]
     executed_weighted_cost: StrictFloat = Field(ge=0, le=10)
+    semantic_admitted: StrictBool
     record_sha256: Sha256V22
 
     @model_validator(mode="after")
@@ -239,14 +241,15 @@ class BeliefTurnRecordV22(DtaModelV22):
         ):
             if values != tuple(sorted(set(values))):
                 raise ValueError("belief turn values are not canonical")
-        if (self.decision is ControllerDecisionKindV22.READ) != bool(
-            self.executed_coverage_keys
-        ):
+        is_read = self.decision is ControllerDecisionKindV22.READ
+        if is_read != bool(self.executed_coverage_keys):
             raise ValueError("belief READ coverage differs")
-        if (self.decision is ControllerDecisionKindV22.READ) != (
-            self.executed_weighted_cost > 0
-        ):
+        if is_read != (self.executed_weighted_cost > 0):
             raise ValueError("belief READ weighted cost differs")
+        if is_read != (self.read_outcome_sha256 is not None):
+            raise ValueError("belief READ outcome binding differs")
+        if is_read and self.semantic_admitted:
+            raise ValueError("belief READ cannot be semantically terminal")
         expected = semantic_sha256_v22(
             self.model_dump(mode="json", exclude={"record_sha256"})
         )
@@ -261,6 +264,8 @@ def _turn_record_v22(
     decision: ControllerDecisionV22,
     coverage_keys: tuple[str, ...],
     weighted_cost: float,
+    read_outcome_sha256: str | None,
+    semantic_admitted: bool,
 ) -> BeliefTurnRecordV22:
     payload: dict[str, Any] = {
         "schema_version": "dta-v22.belief-turn-record.v1",
@@ -270,8 +275,10 @@ def _turn_record_v22(
         "action_id": decision.action_id,
         "supporting_evidence_refs": decision.supporting_evidence_refs,
         "contradicting_evidence_refs": decision.contradicting_evidence_refs,
+        "read_outcome_sha256": read_outcome_sha256,
         "executed_coverage_keys": coverage_keys,
         "executed_weighted_cost": float(weighted_cost),
+        "semantic_admitted": semantic_admitted,
     }
     return BeliefTurnRecordV22.model_validate(
         {**payload, "record_sha256": semantic_sha256_v22(payload)}
@@ -424,6 +431,8 @@ def record_belief_turn_v22(
     action_catalog: ActionCatalogV22,
     decision: ControllerDecisionV22,
     known_evidence_refs: tuple[str, ...],
+    read_outcome_sha256: str | None,
+    semantic_admitted: bool,
 ) -> BeliefLedgerV22:
     hypothesis_catalog = HypothesisCatalogV22.model_validate(
         hypothesis_catalog.model_dump(mode="python")
@@ -445,6 +454,8 @@ def record_belief_turn_v22(
     coverage: tuple[str, ...] = ()
     weighted_cost = 0.0
     if decision.decision is ControllerDecisionKindV22.READ:
+        if read_outcome_sha256 is None:
+            raise ValueError("READ belief turn requires an authoritative outcome")
         if decision.action_id in set(ledger.executed_action_ids):
             raise ValueError("controller action was already executed")
         action = next(
@@ -459,11 +470,15 @@ def record_belief_turn_v22(
             raise ValueError("controller action is not available in the current catalog")
         coverage = action.coverage_keys
         weighted_cost = action.weighted_cost
+    elif read_outcome_sha256 is not None:
+        raise ValueError("terminal belief turn cannot bind a read outcome")
     record = _turn_record_v22(
         turn_ordinal=len(ledger.turn_records) + 1,
         decision=decision,
         coverage_keys=coverage,
         weighted_cost=weighted_cost,
+        read_outcome_sha256=read_outcome_sha256,
+        semantic_admitted=semantic_admitted,
     )
     return _build_ledger_v22(
         hypothesis_catalog_sha256=hypothesis_catalog.catalog_sha256,
@@ -544,11 +559,7 @@ def _belief_view_payload_v22(
         )
         if contradict:
             status = BeliefStatusV22.CONTRADICTED
-        elif any(
-            item.decision
-            in {ControllerDecisionKindV22.COMMIT, ControllerDecisionKindV22.NO_INCIDENT}
-            for item in records
-        ):
+        elif any(item.semantic_admitted for item in records):
             status = BeliefStatusV22.SUPPORTED
         elif support:
             status = BeliefStatusV22.PARTIALLY_SUPPORTED

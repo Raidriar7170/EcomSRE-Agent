@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import pytest
 
+from ecomsre.dta_v2.v22.controller_modes import (
+    ProviderProbeStatusV22,
+    probe_provider_output_mode_v22,
+)
 from ecomsre.dta_v2.v22.protocol_suite import (
     ProtocolCapabilitySuiteReportV22,
     ProtocolSuiteTerminalV22,
@@ -11,8 +15,14 @@ from ecomsre.dta_v2.v22.protocol_suite import (
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 
 
+def _probe():
+    return probe_provider_output_mode_v22(
+        probe=lambda _model, _mode, _schema: ProviderProbeStatusV22.SUPPORTED
+    )
+
+
 def test_protocol_capability_suite_covers_fifty_transitions_and_meets_gate() -> None:
-    report = run_local_protocol_capability_suite_v22()
+    report = run_local_protocol_capability_suite_v22(provider_probe=_probe())
     assert report.transition_count == 50
     assert report.first_pass_accepted_count == 48
     assert report.post_correction_accepted_count == 50
@@ -30,7 +40,7 @@ def test_protocol_capability_suite_covers_fifty_transitions_and_meets_gate() -> 
 
 
 def test_protocol_report_rejects_rehashed_entry_omission_and_fake_provider_gate() -> None:
-    report = run_local_protocol_capability_suite_v22()
+    report = run_local_protocol_capability_suite_v22(provider_probe=_probe())
     forged_draft = report.model_copy(
         update={
             "transitions": report.transitions[:-1],
@@ -56,14 +66,13 @@ def test_protocol_report_rejects_rehashed_entry_omission_and_fake_provider_gate(
             report.model_copy(
                 update={
                     "provider_gate_eligible": True,
-                    "terminal": ProtocolSuiteTerminalV22.PROVIDER_PROTOCOL_GATE_PASS,
                 }
             ).model_dump(mode="python")
         )
 
 
 def test_protocol_gate_thresholds_are_machine_enforced() -> None:
-    report = run_local_protocol_capability_suite_v22()
+    report = run_local_protocol_capability_suite_v22(provider_probe=_probe())
     bad_transitions = []
     for transition in report.transitions[:2]:
         bad_transition = transition.model_copy(

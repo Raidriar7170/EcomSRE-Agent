@@ -30,6 +30,10 @@ from ecomsre.dta_v2.v22.memory import (
     RuntimeSalientPayloadV22,
     SalientEvidenceMemoryV22,
 )
+from ecomsre.dta_v2.v22.predicates import (
+    EvidenceSupportPolicyV22,
+    build_default_evidence_support_policy_v22,
+)
 from ecomsre.dta_v2.v22.read_contracts import (
     DtaModelV22,
     EvidenceSourceV22,
@@ -264,6 +268,7 @@ class ControllerTurnInputV22(DtaModelV22):
     hypothesis_catalog: HypothesisCatalogV22
     action_catalog: ActionCatalogV22
     salient_memory: InstanceOf[SalientEvidenceMemoryV22]
+    evidence_support_policy: EvidenceSupportPolicyV22
     belief_ledger_view: InstanceOf[BeliefLedgerViewV22] | None
     input_sha256: Sha256V22
 
@@ -287,6 +292,7 @@ class ControllerTurnInputV22(DtaModelV22):
             raise ValueError("controller input candidate surfaces differ")
         if (
             self.bootstrap.memory_sha256 != self.salient_memory.memory_sha256
+            or self.bootstrap.topology_sha256 != self.action_catalog.topology_sha256
             or self.bootstrap.capability_registry_sha256
             != self.action_catalog.capability_registry_sha256
             or self.bootstrap.enabled_sources != self.action_catalog.enabled_sources
@@ -305,6 +311,11 @@ class ControllerTurnInputV22(DtaModelV22):
                 != self.action_catalog.action_coverage.covered_capability_keys
             ):
                 raise ValueError("Planner-Lite view differs from current action state")
+        if (
+            self.evidence_support_policy
+            != build_default_evidence_support_policy_v22()
+        ):
+            raise ValueError("controller input support policy is not the frozen default")
         expected = semantic_sha256_v22(
             self.model_dump(mode="json", exclude={"input_sha256"})
         )
@@ -322,6 +333,7 @@ def build_controller_turn_input_v22(
     action_catalog: ActionCatalogV22,
     salient_memory: SalientEvidenceMemoryV22,
     belief_ledger_view: BeliefLedgerViewV22 | None,
+    evidence_support_policy: EvidenceSupportPolicyV22 | None = None,
 ) -> ControllerTurnInputV22:
     payload: dict[str, Any] = {
         "schema_version": "dta-v22.controller-turn-input.v1",
@@ -331,6 +343,11 @@ def build_controller_turn_input_v22(
         "hypothesis_catalog": hypothesis_catalog,
         "action_catalog": action_catalog,
         "salient_memory": salient_memory,
+        "evidence_support_policy": (
+            build_default_evidence_support_policy_v22()
+            if evidence_support_policy is None
+            else evidence_support_policy
+        ),
         "belief_ledger_view": belief_ledger_view,
     }
     draft = ControllerTurnInputV22.model_construct(
