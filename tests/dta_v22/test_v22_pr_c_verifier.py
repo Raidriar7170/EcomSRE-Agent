@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 
 from scripts.ci.verify_dta_v22_pr_c import (
+    EXPECTED_PR_D_ACTIVITY,
+    _require_pr_d_activity_flags,
     _verify_runtime_contracts,
     verify_pr_c_bindings,
     verify_pr_c_protocol,
@@ -16,6 +18,15 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_pr_c_verifier_closes_memory_predicate_and_diagnosis_gates() -> None:
+    progress = json.loads(
+        (REPO_ROOT / "docs/analysis/dta-v22-p0-master-progress.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    if progress.get("current_stage") != "PR-C":
+        pytest.skip(
+            "frozen PR-C closed-surface assertion is exercised persistently by successors"
+        )
     result = verify_pr_c_protocol(REPO_ROOT)
 
     assert result == {
@@ -49,3 +60,12 @@ def test_pr_c_binding_manifest_is_raw_and_artifact_hash_bound(tmp_path: Path) ->
 
 def test_pr_c_runtime_contract_markers_are_bound() -> None:
     _verify_runtime_contracts()
+
+
+def test_pr_c_successor_requires_truthful_pr_d_activity_flags() -> None:
+    _require_pr_d_activity_flags(dict(EXPECTED_PR_D_ACTIVITY))
+
+    forged = dict(EXPECTED_PR_D_ACTIVITY)
+    forged["provider_called"] = False
+    with pytest.raises(ValueError, match="actual PR-D activity"):
+        _require_pr_d_activity_flags(forged)

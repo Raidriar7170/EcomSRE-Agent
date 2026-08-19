@@ -67,6 +67,7 @@ conflicts with this register, this register wins.
 | DEC-053 | DTA v2.2 factorial development and paired held-out evaluation | accepted | DTA v2.2 PR-D through PR-F | `DECISIONS.md` | Protocol gate, preregistration, scorer, reports | Yes — gate, seal, truth-isolation, or scorer drift blocks held-out |
 | DEC-054 | DTA v2.2 P0 zero live Agent write authority | accepted | DTA v2.2 P0 | `DECISIONS.md` | Safety, capture, replay, reports | Yes — any Agent write or non-owned mutation is a safety blocker |
 | DEC-055 | DTA v2.2 execution report and administrative successor provenance | accepted | DTA v2.2 PR-A through PR-F | `DECISIONS.md` | Frozen reports, exact-head acceptance, successor attestations | Yes — provenance mismatch blocks closure |
+| DEC-056 | DTA v2.2 PR-C successor activity attestation correction | accepted | DTA v2.2 PR-D administrative closure | `DECISIONS.md` | PR-C successor verifier and PR-D attestation | Yes — false activity flags block PR-D closure |
 
 ## DEC-001 — Supported host baseline
 
@@ -1273,6 +1274,45 @@ all v2.2 diagnostics remain enabled. Historical drift makes this exception
 invalid through the v2.2 verifier. That verifier also requires this to be the
 only v2.1 override, with exactly `disable_error_code = arg-type`, and rejects a
 v2.1 wildcard or global mypy bypass.
+
+## DEC-056 — DTA v2.2 PR-C Successor Activity Attestation Correction
+
+**Status: `accepted` for the PR-C to PR-D administrative successor only.**
+
+The frozen PR-C manifest accidentally classified every PR-D successor activity
+field as required false. That derived template conflicts with the active Goal,
+which requires a bounded PR-D Provider protocol suite before PR-E, and with
+DEC-055, which requires successor attestations to record activity truthfully.
+It cannot be satisfied without falsely claiming that no Provider or evidence
+activity occurred.
+
+The append-only `dta-v22-pr-c-successor-attestation.v2` supersedes only that
+mistaken activity template. It retains the exact source candidate/merge tree,
+base, successor head/tree, changed-path, per-file raw SHA-256, single-file-child,
+pull-ref, and squash-provenance requirements. For PR-D it requires these exact
+activity values:
+
+```text
+provider_called = true
+private_evidence_changed = true
+public_result_changed = true
+docker_called = false
+held_out_executed = false
+scenario_executed = false
+fault_injected = false
+runbook_executed = false
+execution_report_rebound = false
+```
+
+The PR-D Provider activity is protocol-only synthetic evaluation under the
+active Goal. It executes no Agent evidence read, no Agent write, no Runbook,
+and no Docker or scenario operation. The private report is create-once and the
+public result is a bounded aggregate binding with no raw Provider content.
+
+The frozen PR-C manifest remains byte-identical evidence of its original
+claim. PR-D may change only the successor verifier and stage-routing test under
+this record, and the v2 attestation must bind those exact file hashes. This
+record is not reusable by PR-E or any later successor.
 
 ## Upstream references
 

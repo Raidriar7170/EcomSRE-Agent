@@ -45,8 +45,11 @@ from scripts.ci.verify_dta_v22_pr_b import verify_pr_b_protocol
 
 PR_C_BASE = "8e42b6d212e24ddc94ac4097da7e3e3aae57da98"
 PR_C_MANIFEST = Path("config/dta-v22/pr-c-memory-predicate-bindings.v1.json")
-PR_C_SUCCESSOR_ATTESTATION = Path(
+PR_C_LEGACY_SUCCESSOR_ATTESTATION = Path(
     "config/dta-v22/pr-c-successor-attestation.v1.json"
+)
+PR_C_SUCCESSOR_ATTESTATION = Path(
+    "config/dta-v22/pr-c-successor-attestation.v2.json"
 )
 EXPECTED_MANIFEST_SHA256 = (
     "c8f37b945375c83de6ce1ab6766d8f51c8a48b2cf94438f72679ac6c79ca83e8"
@@ -98,6 +101,17 @@ EXPECTED_FALSE_ACTIVITY_FIELDS = (
     "public_result_changed",
     "execution_report_rebound",
 )
+EXPECTED_PR_D_ACTIVITY = {
+    "provider_called": True,
+    "docker_called": False,
+    "held_out_executed": False,
+    "scenario_executed": False,
+    "fault_injected": False,
+    "runbook_executed": False,
+    "private_evidence_changed": True,
+    "public_result_changed": True,
+    "execution_report_rebound": False,
+}
 EXPECTED_SUCCESSOR_ATTESTATION_FIELDS = (
     "schema_version",
     "goal_version",
@@ -231,6 +245,14 @@ def _validate_stage_record(value: object, *, stage: str) -> dict[str, Any]:
     return value
 
 
+def _require_pr_d_activity_flags(attestation: dict[str, Any]) -> None:
+    if any(
+        attestation.get(field) is not expected
+        for field, expected in EXPECTED_PR_D_ACTIVITY.items()
+    ):
+        raise ValueError("PR-C successor activity flags differ from actual PR-D activity")
+
+
 def _verify_progress(progress: dict[str, Any]) -> None:
     if progress.get("current_stage") != "PR-C":
         raise ValueError("PR-C verifier requires current PR-C progress")
@@ -295,9 +317,9 @@ def _require_pr_c_successor_progress(root: Path, progress: dict[str, Any]) -> No
     record_sha256 = payload.pop("record_sha256")
     if (
         attestation.get("schema_version")
-        != "dta-v22-pr-c-successor-attestation.v1"
+        != "dta-v22-pr-c-successor-attestation.v2"
         or attestation.get("goal_version") != "dta-v22-p0-master-v1"
-        or attestation.get("decision_id") != "DEC-055"
+        or attestation.get("decision_id") != "DEC-056"
         or attestation.get("repository") != "Raidriar7170/EcomSRE-Agent"
         or attestation.get("source_stage") != "PR-C"
         or attestation.get("source_pr") != pr_c["pr"]
@@ -314,9 +336,9 @@ def _require_pr_c_successor_progress(root: Path, progress: dict[str, Any]) -> No
         or not _is_sha(attestation.get("successor_tree"), 40)
         or not _is_sha(record_sha256, 64)
         or record_sha256 != semantic_sha256_v22(payload)
-        or any(attestation.get(field) is not False for field in EXPECTED_FALSE_ACTIVITY_FIELDS)
     ):
         raise ValueError("PR-C successor attestation differs")
+    _require_pr_d_activity_flags(attestation)
     changed_paths = attestation.get("changed_paths")
     raw_hashes = attestation.get("raw_sha256_by_path")
     if (
@@ -617,7 +639,7 @@ def verify_pr_c_bindings(
         raise ValueError("PR-C verifier trust boundary differs")
     contract = manifest.get("successor_attestation_contract")
     if not isinstance(contract, dict) or (
-        contract.get("path") != PR_C_SUCCESSOR_ATTESTATION.as_posix()
+        contract.get("path") != PR_C_LEGACY_SUCCESSOR_ATTESTATION.as_posix()
         or contract.get("schema_version")
         != "dta-v22-pr-c-successor-attestation.v1"
         or contract.get("decision_id") != "DEC-055"
