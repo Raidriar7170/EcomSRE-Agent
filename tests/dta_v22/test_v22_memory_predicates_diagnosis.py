@@ -8,6 +8,7 @@ import pytest
 
 from ecomsre.dta_v2.v22.diagnosis import (
     CandidateActionV22,
+    CandidateSetV22,
     DiagnosisTerminalV22,
     FaultDomainV22,
     HypothesisDefinitionV22,
@@ -22,9 +23,11 @@ from ecomsre.dta_v2.v22.memory import (
     EvidencePredicateV22,
     FullEvidenceMemoryV22,
     LogSalientPayloadV22,
+    MemoryReadOutcomeV22,
     MetricSalientPayloadV22,
     PredicateThresholdsV22,
-    RuntimeObservationDetailV22,
+    RuntimeObservationV22,
+    RuntimeReadOutcomeV22,
     RuntimeSalientPayloadV22,
     SalientEvidenceMemoryV22,
     SignalStrengthV22,
@@ -71,7 +74,51 @@ def _outcome(
     action_id: str,
     source: EvidenceSourceV22,
     records: tuple[ReadRecordV22, ...],
-) -> ReadOutcomeV22:
+) -> MemoryReadOutcomeV22:
+    if source is EvidenceSourceV22.RUNTIME:
+        runtime_records = tuple(
+            RuntimeObservationV22(
+                schema_version="dta-v22.runtime-observation.v1",
+                service=record.service,
+                state=record.state,
+                healthy=record.healthy,
+                endpoint=f"http://{record.service}:8080/healthz",
+                restart_count=record.restart_count,
+                exit_code=(
+                    None if record.state is RuntimeStateV22.RUNNING else 137
+                ),
+            )
+            for record in records
+            if isinstance(record, RuntimeRecordV22)
+        )
+        if len(runtime_records) != len(records):
+            raise TypeError("runtime helper received a non-runtime record")
+        runtime_payload: dict[str, Any] = {
+            "schema_version": "dta-v22.runtime-read-outcome.v1",
+            "action_id": action_id,
+            "source": EvidenceSourceV22.RUNTIME,
+            "request_sha256": semantic_sha256_v22({"action_id": action_id}),
+            "status": (
+                ReadSourceStatusV22.SUCCESS_NONEMPTY
+                if runtime_records
+                else ReadSourceStatusV22.SUCCESS_EMPTY
+            ),
+            "records": runtime_records,
+            "truncated": False,
+        }
+        runtime_draft = RuntimeReadOutcomeV22.model_construct(
+            **runtime_payload, outcome_sha256="0" * 64
+        )
+        return RuntimeReadOutcomeV22.model_validate(
+            {
+                **runtime_payload,
+                "outcome_sha256": semantic_sha256_v22(
+                    runtime_draft.model_dump(
+                        mode="json", exclude={"outcome_sha256"}
+                    )
+                ),
+            }
+        )
     payload: dict[str, Any] = {
         "schema_version": "dta-v22.read-outcome.v1",
         "action_id": action_id,
@@ -149,36 +196,13 @@ def _baseline() -> BaselineProfileV22:
     )
 
 
-def _runtime_details(
-    outcomes: tuple[ReadOutcomeV22, ...],
-) -> tuple[RuntimeObservationDetailV22, ...]:
-    details: list[RuntimeObservationDetailV22] = []
-    for outcome in outcomes:
-        for index, record in enumerate(outcome.records):
-            if isinstance(record, RuntimeRecordV22):
-                details.append(
-                    RuntimeObservationDetailV22.build(
-                        outcome=outcome,
-                        record_index=index,
-                        endpoint=f"http://{record.service}:8080/healthz",
-                        exit_code=(
-                            None
-                            if record.state is RuntimeStateV22.RUNNING
-                            else 137
-                        ),
-                    )
-                )
-    return tuple(details)
-
-
 def _memory(
-    outcomes: tuple[ReadOutcomeV22, ...],
+    outcomes: tuple[MemoryReadOutcomeV22, ...],
     *,
     top_k: int,
 ) -> tuple[SalientEvidenceMemoryV22, FullEvidenceMemoryV22]:
     return build_memory_views_v22(
         outcomes=outcomes,
-        runtime_details=_runtime_details(outcomes),
         baseline=_baseline(),
         observed_at=NOW,
         top_k=top_k,
@@ -227,7 +251,7 @@ def _predicate(
     )
 
 
-def _incident_outcomes() -> tuple[ReadOutcomeV22, ...]:
+def _incident_outcomes() -> tuple[MemoryReadOutcomeV22, ...]:
     return (
         _outcome(
             action_id="a:metrics:payment:core",
@@ -336,8 +360,10 @@ def _incident_outcomes() -> tuple[ReadOutcomeV22, ...]:
     )
 
 
-def _no_incident_outcomes(*, include_payment_metrics: bool = True) -> tuple[ReadOutcomeV22, ...]:
-    outcomes: list[ReadOutcomeV22] = []
+def _no_incident_outcomes(
+    *, include_payment_metrics: bool = True
+) -> tuple[MemoryReadOutcomeV22, ...]:
+    outcomes: list[MemoryReadOutcomeV22] = []
     for service in ("checkout", "payment"):
         outcomes.append(
             _outcome(
@@ -412,7 +438,13 @@ def test_salient_memory_preserves_log_template_trace_path_and_unsupported_metric
     )
     assert runtime.endpoint == "http://payment:8080/healthz"
     assert runtime.exit_code is None
-    assert full.runtime_details == _runtime_details(outcomes)
+    runtime_outcome = next(
+        item
+        for item in full.full_observations
+        if isinstance(item, RuntimeReadOutcomeV22)
+    )
+    assert runtime_outcome.records[0].endpoint == runtime.endpoint
+    assert runtime_outcome.records[0].exit_code == runtime.exit_code
 
 
 def test_all_refs_resolve_and_loss_ledger_is_exact() -> None:
@@ -694,28 +726,7 @@ def test_candidate_filter_requires_admitted_clause_trust_and_exact_target() -> N
         evidence_source_unavailable=False,
         conflicting_evidence=False,
     )
-    registry = TrustedCandidateRegistryV22.build(
-        candidates=(
-            CandidateActionV22(
-                action_candidate_id="candidate:config:payment",
-                target_service="payment",
-                fault_domain=FaultDomainV22.CONFIGURATION,
-                mechanism=MechanismV22.CONFIGURATION_ERROR,
-                runbook_id="runbook:restore-config",
-                trusted=True,
-                backend_mode="REPLAY_ONLY",
-            ),
-            CandidateActionV22(
-                action_candidate_id="candidate:config:checkout",
-                target_service="checkout",
-                fault_domain=FaultDomainV22.CONFIGURATION,
-                mechanism=MechanismV22.CONFIGURATION_ERROR,
-                runbook_id="runbook:restore-config",
-                trusted=True,
-                backend_mode="REPLAY_ONLY",
-            ),
-        )
-    )
+    registry = TrustedCandidateRegistryV22.build()
     candidate_set = filter_candidates_v22(
         admission=admitted,
         registry=registry,
@@ -729,8 +740,7 @@ def test_candidate_filter_requires_admitted_clause_trust_and_exact_target() -> N
 
 def test_fixed_trajectory_benchmark_keeps_actions_fixed_and_counts_cost() -> None:
     report = benchmark_fixed_trajectory_v22(
-        outcomes=(outcomes := _incident_outcomes()),
-        runtime_details=_runtime_details(outcomes),
+        outcomes=_incident_outcomes(),
         baseline=_baseline(),
         observed_at=NOW,
         top_k=4,
@@ -784,28 +794,39 @@ def test_memory_models_reject_rehashed_cross_field_forgeries() -> None:
     with pytest.raises(ValueError, match="index does not bind"):
         FullEvidenceMemoryV22.model_validate(forged_full.model_dump(mode="python"))
 
-    detail_draft = full.runtime_details[0].model_copy(update={"service": "checkout"})
-    forged_detail = detail_draft.model_copy(
+    runtime_index, runtime_outcome = next(
+        (index, item)
+        for index, item in enumerate(full.full_observations)
+        if isinstance(item, RuntimeReadOutcomeV22)
+    )
+    endpoint_draft = runtime_outcome.records[0].model_copy(
+        update={"endpoint": "http://forged.invalid:9999/healthz"}
+    )
+    forged_runtime_outcome = runtime_outcome.model_copy(
+        update={"records": (endpoint_draft, *runtime_outcome.records[1:])}
+    )
+    endpoint_memory_draft = full.model_copy(
         update={
-            "detail_sha256": semantic_sha256_v22(
-                detail_draft.model_dump(mode="json", exclude={"detail_sha256"})
+            "full_observations": (
+                *full.full_observations[:runtime_index],
+                forged_runtime_outcome,
+                *full.full_observations[runtime_index + 1 :],
             )
         }
     )
-    full_with_detail_draft = full.model_copy(
-        update={"runtime_details": (forged_detail, *full.runtime_details[1:])}
-    )
-    full_with_detail = full_with_detail_draft.model_copy(
+    endpoint_memory = endpoint_memory_draft.model_copy(
         update={
             "memory_sha256": semantic_sha256_v22(
-                full_with_detail_draft.model_dump(
+                endpoint_memory_draft.model_dump(
                     mode="json", exclude={"memory_sha256"}
                 )
             )
         }
     )
-    with pytest.raises(ValueError, match="runtime detail binding"):
-        FullEvidenceMemoryV22.model_validate(full_with_detail.model_dump(mode="python"))
+    with pytest.raises(ValueError, match="runtime outcome digest"):
+        FullEvidenceMemoryV22.model_validate(
+            endpoint_memory.model_dump(mode="python")
+        )
 
     first_entry = salient.loss_ledger.entries[0]
     forged_entry = first_entry.model_copy(
@@ -835,6 +856,21 @@ def test_memory_models_reject_rehashed_cross_field_forgeries() -> None:
     with pytest.raises(ValueError, match="loss entry differs"):
         SalientEvidenceMemoryV22.model_validate(
             forged_salient.model_dump(mode="python")
+        )
+
+    missing_predicates_draft = salient.model_copy(update={"predicates": ()})
+    missing_predicates = missing_predicates_draft.model_copy(
+        update={
+            "memory_sha256": semantic_sha256_v22(
+                missing_predicates_draft.model_dump(
+                    mode="json", exclude={"memory_sha256"}
+                )
+            )
+        }
+    )
+    with pytest.raises(ValueError, match="authoritative predicate provenance"):
+        SalientEvidenceMemoryV22.model_validate(
+            missing_predicates.model_dump(mode="python")
         )
 
 
@@ -881,3 +917,256 @@ def test_abstain_requires_an_explicit_insufficiency_condition() -> None:
         conflicting_evidence=False,
     )
     assert exhausted.terminal is DiagnosisTerminalV22.ABSTAIN
+
+
+def test_no_incident_coverage_denial_requires_explicit_insufficiency_to_abstain() -> None:
+    outcomes = _no_incident_outcomes(include_payment_metrics=False)
+    memory, _ = _memory(outcomes, top_k=32)
+    hypothesis = HypothesisDefinitionV22.build(
+        hypothesis_id="h:no-incident:payment",
+        target_service="payment",
+        root_service="payment",
+        fault_domain=FaultDomainV22.NO_INCIDENT,
+        mechanism=MechanismV22.NO_INCIDENT,
+        root_entity_ref="service:payment",
+    )
+    proposal = RawSemanticDiagnosisProposalV22.build(
+        hypothesis_id=hypothesis.hypothesis_id,
+        supporting_evidence_refs=(),
+        contradicting_evidence_refs=(),
+    )
+
+    without_reason = admit_diagnosis_v22(
+        proposal=proposal,
+        hypotheses=(hypothesis,),
+        memory=memory,
+        policy=build_default_evidence_support_policy_v22(),
+        candidate_services=("checkout", "payment"),
+        budget_exhausted=False,
+        evidence_source_unavailable=False,
+        conflicting_evidence=False,
+    )
+    assert without_reason.terminal is DiagnosisTerminalV22.FAILED
+
+    unavailable = admit_diagnosis_v22(
+        proposal=proposal,
+        hypotheses=(hypothesis,),
+        memory=memory,
+        policy=build_default_evidence_support_policy_v22(),
+        candidate_services=("checkout", "payment"),
+        budget_exhausted=False,
+        evidence_source_unavailable=True,
+        conflicting_evidence=False,
+    )
+    assert unavailable.terminal is DiagnosisTerminalV22.ABSTAIN
+
+
+def test_trace_top_k_prefers_error_spans_then_slowest_edges() -> None:
+    error = TraceSpanV22(
+        schema_version="dta-v22.trace-span.v1",
+        observed_at=NOW,
+        service_path=("checkout", "payment"),
+        service="payment",
+        parent_service="checkout",
+        operation="ErrorOp",
+        status=SpanStatusV22.ERROR,
+        duration_ms=10.0,
+        first_error_location=False,
+    )
+    slow = error.model_copy(
+        update={
+            "operation": "SlowOkOp",
+            "status": SpanStatusV22.OK,
+            "duration_ms": 200.0,
+        }
+    )
+    fast = slow.model_copy(update={"operation": "FastOkOp", "duration_ms": 20.0})
+    memory, _ = _memory(
+        (
+            _outcome(
+                action_id="a:traces:priority",
+                source=EvidenceSourceV22.TRACES,
+                records=(slow, error, fast),
+            ),
+        ),
+        top_k=1,
+    )
+    retained = memory.salient_facts[0].payload
+    assert isinstance(retained, TraceSalientPayloadV22)
+    assert retained.operation == "ErrorOp"
+
+    slow_memory, _ = _memory(
+        (
+            _outcome(
+                action_id="a:traces:latency-priority",
+                source=EvidenceSourceV22.TRACES,
+                records=(fast, slow),
+            ),
+        ),
+        top_k=1,
+    )
+    slow_retained = slow_memory.salient_facts[0].payload
+    assert isinstance(slow_retained, TraceSalientPayloadV22)
+    assert slow_retained.operation == "SlowOkOp"
+
+
+def test_log_templates_redact_sensitive_values_and_aggregate_counts() -> None:
+    credential_value = "s" + "k-live-1234567890abcdef"
+    absolute_path = "/" + "Users/alice/private/customer.csv"
+    message = (
+        f"invalid configuration token={credential_value} "
+        f"email=alice@example.com path={absolute_path} "
+        "url=https://private.example.test/customer?id=42 downstream=payment"
+    )
+    logs = (
+        LogRecordV22(
+            schema_version="dta-v22.log-record.v1",
+            observed_at=NOW,
+            service="payment",
+            severity="ERROR",
+            message=message,
+        ),
+        LogRecordV22(
+            schema_version="dta-v22.log-record.v1",
+            observed_at=NOW,
+            service="payment",
+            severity="ERROR",
+            message=message,
+        ),
+    )
+    memory, _ = _memory(
+        (
+            _outcome(
+                action_id="a:logs:sanitization",
+                source=EvidenceSourceV22.LOGS,
+                records=logs,
+            ),
+        ),
+        top_k=1,
+    )
+    payload = memory.salient_facts[0].payload
+    assert isinstance(payload, LogSalientPayloadV22)
+    assert payload.count == 2
+    for forbidden in (
+        "s" + "k-live",
+        "alice@example.com",
+        "/" + "Users/alice",
+        "private.example.test",
+    ):
+        assert forbidden.casefold() not in payload.normalized_template
+
+
+def test_candidate_registry_rejects_semantically_rehashed_fabrication() -> None:
+    registry = TrustedCandidateRegistryV22.build()
+    evil = CandidateActionV22(
+        action_candidate_id="candidate:evil:payment",
+        target_service="payment",
+        fault_domain=FaultDomainV22.CONFIGURATION,
+        mechanism=MechanismV22.CONFIGURATION_ERROR,
+        runbook_id="runbook:evil",
+        source_runbook_sha256="e" * 64,
+        backend_mode="REPLAY_ONLY",
+    )
+    draft = registry.model_copy(
+        update={
+            "candidates": tuple(
+                sorted(
+                    (*registry.candidates, evil),
+                    key=lambda item: item.action_candidate_id,
+                )
+            )
+        }
+    )
+    forged = draft.model_copy(
+        update={
+            "registry_sha256": semantic_sha256_v22(
+                draft.model_dump(mode="json", exclude={"registry_sha256"})
+            )
+        }
+    )
+    with pytest.raises(ValueError, match="trusted v2.1 authority"):
+        TrustedCandidateRegistryV22.model_validate(forged.model_dump(mode="python"))
+
+    set_payload: dict[str, Any] = {
+        "schema_version": "dta-v22.candidate-set.v1",
+        "diagnosis_sha256": "d" * 64,
+        "registry_sha256": registry.registry_sha256,
+        "candidates": (evil,),
+    }
+    set_draft = CandidateSetV22.model_construct(
+        **set_payload, candidate_set_sha256="0" * 64
+    )
+    with pytest.raises(ValueError, match="outside trusted authority"):
+        CandidateSetV22.model_validate(
+            {
+                **set_payload,
+                "candidate_set_sha256": semantic_sha256_v22(
+                    set_draft.model_dump(
+                        mode="json", exclude={"candidate_set_sha256"}
+                    )
+                ),
+            }
+        )
+
+
+def test_hypothesis_root_identity_is_exactly_bound_to_target() -> None:
+    with pytest.raises(ValueError, match="root service differs from exact target"):
+        HypothesisDefinitionV22.build(
+            hypothesis_id="h:configuration:payment",
+            target_service="payment",
+            root_service="checkout",
+            fault_domain=FaultDomainV22.CONFIGURATION,
+            mechanism=MechanismV22.CONFIGURATION_ERROR,
+            root_entity_ref="service:checkout",
+        )
+    with pytest.raises(ValueError, match="root entity differs from root service"):
+        HypothesisDefinitionV22.build(
+            hypothesis_id="h:configuration:payment",
+            target_service="payment",
+            root_service="payment",
+            fault_domain=FaultDomainV22.CONFIGURATION,
+            mechanism=MechanismV22.CONFIGURATION_ERROR,
+            root_entity_ref="opaque:forged",
+        )
+
+
+def test_contradicting_refs_block_diagnosis_without_silent_ignore() -> None:
+    memory, _ = _memory(_incident_outcomes(), top_k=32)
+    policy = build_default_evidence_support_policy_v22()
+    support = evaluate_support_v22(
+        policy=policy,
+        mechanism=MechanismV22.CONFIGURATION_ERROR,
+        target_service="payment",
+        parent_service=None,
+        predicates=memory.predicates,
+    )
+    contradictory = next(
+        ref.evidence_ref
+        for ref in memory.evidence_refs
+        if ref.evidence_ref not in set(support.supporting_evidence_refs)
+    )
+    hypothesis = HypothesisDefinitionV22.build(
+        hypothesis_id="h:configuration:payment",
+        target_service="payment",
+        root_service="payment",
+        fault_domain=FaultDomainV22.CONFIGURATION,
+        mechanism=MechanismV22.CONFIGURATION_ERROR,
+        root_entity_ref="service:payment",
+    )
+    proposal = RawSemanticDiagnosisProposalV22.build(
+        hypothesis_id=hypothesis.hypothesis_id,
+        supporting_evidence_refs=support.supporting_evidence_refs,
+        contradicting_evidence_refs=(contradictory,),
+    )
+    result = admit_diagnosis_v22(
+        proposal=proposal,
+        hypotheses=(hypothesis,),
+        memory=memory,
+        policy=policy,
+        candidate_services=("payment",),
+        budget_exhausted=False,
+        evidence_source_unavailable=False,
+        conflicting_evidence=False,
+    )
+    assert result.terminal is DiagnosisTerminalV22.FAILED
+    assert result.result_code == "CONTRADICTING_EVIDENCE_PRESENT"

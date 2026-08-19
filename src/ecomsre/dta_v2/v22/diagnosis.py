@@ -5,7 +5,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Literal
 
-from pydantic import Field, StrictBool, model_validator
+from pydantic import Field, model_validator
 
 from ecomsre.dta_v2.v22.memory import SalientEvidenceMemoryV22
 from ecomsre.dta_v2.v22.predicates import (
@@ -97,6 +97,10 @@ class HypothesisDefinitionV22(DtaModelV22):
             self.mechanism is MechanismV22.DEPENDENCY_LATENCY
         ) != (self.parent_service is not None):
             raise ValueError("dependency hypothesis parent binding differs")
+        if self.root_service != self.target_service:
+            raise ValueError("hypothesis root service differs from exact target")
+        if self.root_entity_ref != f"service:{self.root_service}":
+            raise ValueError("hypothesis root entity differs from root service")
         expected = semantic_sha256_v22(
             self.model_dump(mode="json", exclude={"hypothesis_sha256"})
         )
@@ -182,6 +186,10 @@ class AdmittedDiagnosisV22(DtaModelV22):
             self.mechanism is MechanismV22.DEPENDENCY_LATENCY
         ) != (self.parent_service is not None):
             raise ValueError("admitted dependency parent binding differs")
+        if self.root_service != self.target_service:
+            raise ValueError("admitted root service differs from exact target")
+        if self.root_entity_ref != f"service:{self.root_service}":
+            raise ValueError("admitted root entity differs from root service")
         if self.supporting_evidence_refs != tuple(
             sorted(set(self.supporting_evidence_refs))
         ):
@@ -227,25 +235,116 @@ class CandidateActionV22(DtaModelV22):
     fault_domain: FaultDomainV22
     mechanism: MechanismV22
     runbook_id: str = Field(pattern=r"^runbook:[a-z0-9-]+$")
-    trusted: StrictBool
+    source_runbook_sha256: Sha256V22
     backend_mode: Literal["REPLAY_ONLY"]
+
+
+_V21_RUNBOOK_REGISTRY_SHA256 = (
+    "02bbcddba67da53c10324624dc770c9f73056e0126469567c8e70a79710047e9"
+)
+_TRUSTED_CANDIDATE_SPECS_V22: tuple[
+    tuple[str, str, FaultDomainV22, MechanismV22, str, str], ...
+] = (
+    (
+        "candidate:cpu-saturation:ad",
+        "ad",
+        FaultDomainV22.RESOURCE,
+        MechanismV22.CPU_SATURATION,
+        "runbook:mitigate-cpu-saturation",
+        "b779c6ed51a867702c54ea653429aeb993e8794a2ad987ac4370e089c36dc04c",
+    ),
+    (
+        "candidate:memory-leak:email",
+        "email",
+        FaultDomainV22.RESOURCE,
+        MechanismV22.MEMORY_LEAK,
+        "runbook:mitigate-memory-leak",
+        "52e77d58b8b331e36f51d74763031b374d5bb25b828a3763378120c7e07ec030",
+    ),
+    (
+        "candidate:service-unavailable:recommendation",
+        "recommendation",
+        FaultDomainV22.RUNTIME,
+        MechanismV22.SERVICE_UNAVAILABLE,
+        "runbook:restart-service",
+        "96946b9dedbc14983f5d12260811876e4807616e36775f8bf156c545cb61e3e7",
+    ),
+    (
+        "candidate:dependency-latency:shipping",
+        "shipping",
+        FaultDomainV22.DEPENDENCY,
+        MechanismV22.DEPENDENCY_LATENCY,
+        "runbook:restore-dependency-latency",
+        "1480ed6c94ee8ee912b359f554fdc46e39cd642e8401a16b15f96eac2a00d515",
+    ),
+    (
+        "candidate:service-unavailable:email",
+        "email",
+        FaultDomainV22.RUNTIME,
+        MechanismV22.SERVICE_UNAVAILABLE,
+        "runbook:restore-service-availability",
+        "b6155b97560a4fd4bb45557cbebd941f95fe4cf34c2bc75f06baaf6cc0a4d193",
+    ),
+    (
+        "candidate:service-unavailable:product-catalog",
+        "product-catalog",
+        FaultDomainV22.RUNTIME,
+        MechanismV22.SERVICE_UNAVAILABLE,
+        "runbook:restore-service-availability",
+        "b6155b97560a4fd4bb45557cbebd941f95fe4cf34c2bc75f06baaf6cc0a4d193",
+    ),
+    (
+        "candidate:config:payment",
+        "payment",
+        FaultDomainV22.CONFIGURATION,
+        MechanismV22.CONFIGURATION_ERROR,
+        "runbook:rollback-configuration",
+        "39b7928ecbdbe3acf23f676358cb2697268e9aa21b63dc9b28545770add84955",
+    ),
+)
+
+
+def _trusted_candidates_v22() -> tuple[CandidateActionV22, ...]:
+    return tuple(
+        sorted(
+            (
+                CandidateActionV22(
+                    action_candidate_id=action_candidate_id,
+                    target_service=target_service,
+                    fault_domain=fault_domain,
+                    mechanism=mechanism,
+                    runbook_id=runbook_id,
+                    source_runbook_sha256=source_runbook_sha256,
+                    backend_mode="REPLAY_ONLY",
+                )
+                for (
+                    action_candidate_id,
+                    target_service,
+                    fault_domain,
+                    mechanism,
+                    runbook_id,
+                    source_runbook_sha256,
+                ) in _TRUSTED_CANDIDATE_SPECS_V22
+            ),
+            key=lambda item: item.action_candidate_id,
+        )
+    )
 
 
 class TrustedCandidateRegistryV22(DtaModelV22):
     schema_version: Literal["dta-v22.trusted-candidate-registry.v1"]
+    source_registry_sha256: Sha256V22
     candidates: tuple[CandidateActionV22, ...]
     registry_sha256: Sha256V22
 
     @classmethod
     def build(
         cls,
-        *,
-        candidates: tuple[CandidateActionV22, ...],
     ) -> TrustedCandidateRegistryV22:
-        canonical = tuple(sorted(candidates, key=lambda item: item.action_candidate_id))
         payload: dict[str, Any] = {
             "schema_version": "dta-v22.trusted-candidate-registry.v1",
-            "candidates": canonical,
+            "source_registry_sha256": _V21_RUNBOOK_REGISTRY_SHA256,
+            "candidates": _trusted_candidates_v22(),
         }
         draft = cls.model_construct(**payload, registry_sha256="0" * 64)
         return cls.model_validate(
@@ -262,6 +361,11 @@ class TrustedCandidateRegistryV22(DtaModelV22):
         ids = tuple(item.action_candidate_id for item in self.candidates)
         if ids != tuple(sorted(set(ids))):
             raise ValueError("candidate registry is not canonical and unique")
+        if (
+            self.source_registry_sha256 != _V21_RUNBOOK_REGISTRY_SHA256
+            or self.candidates != _trusted_candidates_v22()
+        ):
+            raise ValueError("candidate registry differs from trusted v2.1 authority")
         expected = semantic_sha256_v22(
             self.model_dump(mode="json", exclude={"registry_sha256"})
         )
@@ -282,8 +386,11 @@ class CandidateSetV22(DtaModelV22):
         ids = tuple(item.action_candidate_id for item in self.candidates)
         if ids != tuple(sorted(set(ids))):
             raise ValueError("candidate set is not canonical and unique")
-        if any(not item.trusted or item.backend_mode != "REPLAY_ONLY" for item in self.candidates):
-            raise ValueError("candidate set contains untrusted or live action")
+        if any(item.backend_mode != "REPLAY_ONLY" for item in self.candidates):
+            raise ValueError("candidate set contains a live action")
+        trusted = set(_trusted_candidates_v22())
+        if any(item not in trusted for item in self.candidates):
+            raise ValueError("candidate set contains an action outside trusted authority")
         expected = semantic_sha256_v22(
             self.model_dump(mode="json", exclude={"candidate_set_sha256"})
         )
@@ -360,6 +467,17 @@ def admit_diagnosis_v22(
             admitted=None,
             result_code="UNKNOWN_OR_OUT_OF_SCOPE_HYPOTHESIS",
         )
+    if proposal.contradicting_evidence_refs:
+        return _result(
+            proposal=proposal,
+            terminal=(
+                DiagnosisTerminalV22.ABSTAIN
+                if conflicting_evidence
+                else DiagnosisTerminalV22.FAILED
+            ),
+            admitted=None,
+            result_code="CONTRADICTING_EVIDENCE_PRESENT",
+        )
     if hypothesis.mechanism is MechanismV22.UNKNOWN:
         return _result(
             proposal=proposal,
@@ -387,7 +505,13 @@ def admit_diagnosis_v22(
             )
         return _result(
             proposal=proposal,
-            terminal=DiagnosisTerminalV22.ABSTAIN,
+            terminal=(
+                DiagnosisTerminalV22.ABSTAIN
+                if budget_exhausted
+                or evidence_source_unavailable
+                or conflicting_evidence
+                else DiagnosisTerminalV22.FAILED
+            ),
             admitted=None,
             result_code="NO_INCIDENT_COVERAGE_DENIED",
         )
@@ -496,8 +620,7 @@ def filter_candidates_v22(
     candidates = tuple(
         item
         for item in registry.candidates
-        if item.trusted
-        and item.backend_mode == "REPLAY_ONLY"
+        if item.backend_mode == "REPLAY_ONLY"
         and item.target_service == diagnosis.target_service
         and item.fault_domain is diagnosis.fault_domain
         and item.mechanism is diagnosis.mechanism

@@ -11,13 +11,17 @@ import stat
 import subprocess
 from typing import Any, get_args, Sequence
 
+from ecomsre.dta_v2.v21.registry import load_runbook_registry
 from ecomsre.dta_v2.v22.diagnosis import (
+    CandidateActionV22,
     DiagnosisTerminalV22,
+    TrustedCandidateRegistryV22,
     filter_candidates_v22,
 )
 from ecomsre.dta_v2.v22.memory import (
     FullEvidenceMemoryV22,
     PredicateThresholdsV22,
+    RuntimeReadOutcomeV22,
     RuntimeSalientPayloadV22,
     SalientEvidenceMemoryV22,
     build_memory_views_v22,
@@ -41,7 +45,7 @@ PR_C_SUCCESSOR_ATTESTATION = Path(
     "config/dta-v22/pr-c-successor-attestation.v1.json"
 )
 EXPECTED_MANIFEST_SHA256 = (
-    "a6d4d2bdc73c9e6c3711e9327f07d418703b882397248a9bc05ffc899eacfc9d"
+    "3849763418c028e291fb7cea3f875d1e130d08795b6b793ebb648551856930d4"
 )
 EXPECTED_PR_C_CHANGED_PATHS = (
     Path(".github/workflows/agent-mainline.yml"),
@@ -63,6 +67,7 @@ PERSISTENT_PR_C_ARTIFACTS = (
     PR_C_MANIFEST,
     PR_C_SUCCESSOR_ATTESTATION,
     Path("docs/human-briefs/2026-08-20-dta-v22-pr-c-memory-predicates.md"),
+    Path("scripts/ci/verify_dta_v22_pr_c.py"),
     Path("src/ecomsre/dta_v2/v22/diagnosis.py"),
     Path("src/ecomsre/dta_v2/v22/memory.py"),
     Path("src/ecomsre/dta_v2/v22/memory_benchmark.py"),
@@ -527,6 +532,58 @@ def verify_pr_c_bindings(
         != [item.value for item in DiagnosisTerminalV22]
     ):
         raise ValueError("PR-C policy or terminal binding differs")
+    if manifest.get("memory_contract") != {
+        "salient_retains_all_evidence_refs": True,
+        "salient_retains_all_predicates": True,
+        "salient_predicates_require_authoritative_provenance": True,
+        "salient_top_k_min": 1,
+        "salient_top_k_max": 256,
+        "mandatory_fact_classes": [
+            "ALL_SUPPORTED_CORE_METRICS",
+            "ALL_BOUNDED_RUNTIME_STATE",
+        ],
+        "full_memory_payload": [
+            "FULL_TYPED_OBSERVATIONS",
+            "MINIMAL_REF_STATUS_INDEX",
+            "RUNTIME_OUTCOME_BOUND_ENRICHMENT",
+        ],
+        "runtime_observation_fields": [
+            "state",
+            "healthy",
+            "endpoint",
+            "restart_count",
+            "exit_code",
+        ],
+        "trace_top_k_priority": [
+            "FIRST_ERROR",
+            "ERROR_SPAN",
+            "SLOWEST_CAUSAL_EDGE",
+        ],
+        "log_templates_sanitized": True,
+        "duplicate_log_templates_aggregated": True,
+        "benchmark_provider_calls": 0,
+    }:
+        raise ValueError("PR-C memory contract differs")
+    if manifest.get("candidate_registry") != {
+        "source": "DTA_V21_EXACT_RUNBOOK_REGISTRY",
+        "source_registry_sha256": (
+            "02bbcddba67da53c10324624dc770c9f73056e0126469567c8e70a79710047e9"
+        ),
+        "caller_declared_trust_allowed": False,
+        "backend_mode": "REPLAY_ONLY",
+    }:
+        raise ValueError("PR-C trusted candidate registry binding differs")
+    source_registry = load_runbook_registry(root / "config/dta-v21/runbooks")
+    trusted_candidates = TrustedCandidateRegistryV22.build()
+    if (
+        source_registry.registry_sha256
+        != trusted_candidates.source_registry_sha256
+        or {item.semantic_sha256 for item in source_registry.runbooks}
+        != {
+            item.source_runbook_sha256 for item in trusted_candidates.candidates
+        }
+    ):
+        raise ValueError("PR-C candidate registry does not bind exact v2.1 Runbooks")
     contract = manifest.get("successor_attestation_contract")
     if not isinstance(contract, dict) or (
         contract.get("path") != PR_C_SUCCESSOR_ATTESTATION.as_posix()
@@ -560,6 +617,13 @@ def _verify_runtime_contracts() -> None:
         "policy",
     }:
         raise ValueError("candidate filter lacks predicate bindings")
+    registry = TrustedCandidateRegistryV22.build()
+    if (
+        "trusted" in CandidateActionV22.model_fields
+        or len(registry.candidates) != 7
+        or {item.backend_mode for item in registry.candidates} != {"REPLAY_ONLY"}
+    ):
+        raise ValueError("candidate registry allows caller-declared trust or live action")
     if tuple(RuntimeSalientPayloadV22.model_fields) != (
         "schema_version",
         "state",
@@ -584,8 +648,19 @@ def _verify_runtime_contracts() -> None:
         FixedTrajectoryMemoryBenchmarkV22.model_fields["provider_calls"].annotation
     ) != (0,):
         raise ValueError("memory benchmark Provider count differs")
-    if "runtime_details" not in inspect.signature(benchmark_fixed_trajectory_v22).parameters:
-        raise ValueError("memory benchmark omits runtime detail binding")
+    if "runtime_details" in inspect.signature(benchmark_fixed_trajectory_v22).parameters:
+        raise ValueError("memory benchmark still exposes a mutable runtime sidecar")
+    if tuple(RuntimeReadOutcomeV22.model_fields) != (
+        "schema_version",
+        "action_id",
+        "source",
+        "request_sha256",
+        "status",
+        "records",
+        "truncated",
+        "outcome_sha256",
+    ):
+        raise ValueError("authoritative runtime outcome fields differ")
 
 
 def verify_pr_c_protocol(root: Path) -> dict[str, object]:

@@ -10,11 +10,10 @@ from pydantic import Field, StrictInt, model_validator
 
 from ecomsre.dta_v2.v22.memory import (
     BaselineProfileV22,
-    RuntimeObservationDetailV22,
+    MemoryReadOutcomeV22,
     build_memory_views_v22,
 )
 from ecomsre.dta_v2.v22.read_contracts import DtaModelV22, Sha256V22, semantic_sha256_v22
-from ecomsre.dta_v2.v22.replay import ReadOutcomeV22
 
 
 class MemoryTrajectoryCostV22(DtaModelV22):
@@ -99,8 +98,7 @@ def _cost(
 
 def benchmark_fixed_trajectory_v22(
     *,
-    outcomes: tuple[ReadOutcomeV22, ...],
-    runtime_details: tuple[RuntimeObservationDetailV22, ...],
+    outcomes: tuple[MemoryReadOutcomeV22, ...],
     baseline: BaselineProfileV22,
     observed_at: datetime,
     top_k: int,
@@ -114,14 +112,8 @@ def benchmark_fixed_trajectory_v22(
     salient_bytes: list[int] = []
     for turn in range(1, len(outcomes) + 1):
         prefix = outcomes[:turn]
-        prefix_outcome_sha256 = {item.outcome_sha256 for item in prefix}
         salient, full = build_memory_views_v22(
             outcomes=prefix,
-            runtime_details=tuple(
-                item
-                for item in runtime_details
-                if item.outcome_sha256 in prefix_outcome_sha256
-            ),
             baseline=baseline,
             observed_at=observed_at,
             top_k=top_k,

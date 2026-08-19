@@ -7,15 +7,15 @@
   "artifacts": [
     {
       "path": "src/ecomsre/dta_v2/v22/diagnosis.py",
-      "sha256": "2db234280d04e2e0a406160fe4a9ca34ca27fb7a25f5355c0b272480da5227a2"
+      "sha256": "ee43adf25b8efcc56c5cf7610a1e4231fda1133aeefc29886b12b3d8800612e2"
     },
     {
       "path": "src/ecomsre/dta_v2/v22/memory.py",
-      "sha256": "9d39cdcae48efef684dd97689f3ffd96ff5d974e74300bbe473250eef2de9a81"
+      "sha256": "5a2f1f2e6ca1ce301e3814c445b27870aaff425f9020830decd9d85537a59746"
     },
     {
       "path": "src/ecomsre/dta_v2/v22/memory_benchmark.py",
-      "sha256": "6abf04c7f3370ac2276982459c19700ad55521bddac0ae328ff69402e94f98ee"
+      "sha256": "d80d86a17dabb5e3e6e1560d80fa87138255290cc40ed9bc9a13eaeaaed1fb98"
     },
     {
       "path": "src/ecomsre/dta_v2/v22/predicates.py",
@@ -27,7 +27,7 @@
     },
     {
       "path": "tests/dta_v22/test_v22_memory_predicates_diagnosis.py",
-      "sha256": "84ad06775bf94ff44e810563f7ca11e842de2b65b52cfa9429e1eaf1cc741d20"
+      "sha256": "0c940cd6916f5956d94ac636b77501a44e22749ad74680d4fd28e68ca944330e"
     }
   ],
   "predicate_thresholds": {
@@ -61,6 +61,7 @@
   "memory_contract": {
     "salient_retains_all_evidence_refs": true,
     "salient_retains_all_predicates": true,
+    "salient_predicates_require_authoritative_provenance": true,
     "salient_top_k_min": 1,
     "salient_top_k_max": 256,
     "mandatory_fact_classes": [
@@ -70,16 +71,29 @@
     "full_memory_payload": [
       "FULL_TYPED_OBSERVATIONS",
       "MINIMAL_REF_STATUS_INDEX",
-      "RUNTIME_DETAILS"
+      "RUNTIME_OUTCOME_BOUND_ENRICHMENT"
     ],
-    "runtime_detail_fields": [
+    "runtime_observation_fields": [
       "state",
       "healthy",
       "endpoint",
       "restart_count",
       "exit_code"
     ],
+    "trace_top_k_priority": [
+      "FIRST_ERROR",
+      "ERROR_SPAN",
+      "SLOWEST_CAUSAL_EDGE"
+    ],
+    "log_templates_sanitized": true,
+    "duplicate_log_templates_aggregated": true,
     "benchmark_provider_calls": 0
+  },
+  "candidate_registry": {
+    "source": "DTA_V21_EXACT_RUNBOOK_REGISTRY",
+    "source_registry_sha256": "02bbcddba67da53c10324624dc770c9f73056e0126469567c8e70a79710047e9",
+    "caller_declared_trust_allowed": false,
+    "backend_mode": "REPLAY_ONLY"
   },
   "diagnosis_terminals": [
     "DIAGNOSED",

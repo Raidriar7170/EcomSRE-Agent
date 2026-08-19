@@ -2,13 +2,21 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 import math
 import re
-from typing import Any, Literal
+from typing import Any, Literal, TypeAlias
 
-from pydantic import Field, StrictBool, StrictFloat, StrictInt, model_validator
+from pydantic import (
+    Field,
+    StrictBool,
+    StrictFloat,
+    StrictInt,
+    ValidationInfo,
+    model_validator,
+)
 
 from ecomsre.dta_v2.v22.read_contracts import (
     ChangeCategoryV22,
@@ -23,7 +31,6 @@ from ecomsre.dta_v2.v22.read_contracts import (
     RecentChangeRecordV22,
     ResourceUsageRecordV22,
     RolloutStateV22,
-    RuntimeRecordV22,
     RuntimeStateV22,
     Sha256V22,
     SpanStatusV22,
@@ -313,67 +320,69 @@ class RuntimeSalientPayloadV22(DtaModelV22):
         return self
 
 
-class RuntimeObservationDetailV22(DtaModelV22):
-    """PR-C enrichment for runtime fields absent from the frozen PR-B read shape."""
+class RuntimeObservationV22(DtaModelV22):
+    """Complete runtime record whose enrichment is part of the outcome digest."""
 
-    schema_version: Literal["dta-v22.runtime-observation-detail.v1"]
-    evidence_ref: str = Field(pattern=r"^e:[a-z0-9:+-]+:[0-9]+:[0-9a-f]{12}$")
-    outcome_sha256: Sha256V22
-    record_index: StrictInt = Field(ge=0)
+    schema_version: Literal["dta-v22.runtime-observation.v1"]
     service: str = Field(pattern=r"^[a-z][a-z0-9-]*$")
+    state: RuntimeStateV22
+    healthy: StrictBool
     endpoint: str = Field(
         min_length=1,
         max_length=256,
         pattern=r"^[a-z][a-z0-9+.-]*://[^?#\s]+$",
     )
+    restart_count: StrictInt = Field(ge=0)
     exit_code: StrictInt | None = Field(default=None, ge=0, le=255)
-    detail_sha256: Sha256V22
-
-    @classmethod
-    def build(
-        cls,
-        *,
-        outcome: ReadOutcomeV22,
-        record_index: int,
-        endpoint: str,
-        exit_code: int | None,
-    ) -> RuntimeObservationDetailV22:
-        if outcome.source is not EvidenceSourceV22.RUNTIME:
-            raise ValueError("runtime detail requires a runtime outcome")
-        try:
-            record = outcome.records[record_index]
-        except IndexError as exc:
-            raise ValueError("runtime detail record index is outside outcome") from exc
-        if not isinstance(record, RuntimeRecordV22):
-            raise ValueError("runtime detail does not bind a runtime record")
-        reference = _evidence_ref(outcome, record_index, record)
-        payload: dict[str, Any] = {
-            "schema_version": "dta-v22.runtime-observation-detail.v1",
-            "evidence_ref": reference.evidence_ref,
-            "outcome_sha256": outcome.outcome_sha256,
-            "record_index": record_index,
-            "service": record.service,
-            "endpoint": endpoint,
-            "exit_code": exit_code,
-        }
-        draft = cls.model_construct(**payload, detail_sha256="0" * 64)
-        return cls.model_validate(
-            {
-                **payload,
-                "detail_sha256": semantic_sha256_v22(
-                    draft.model_dump(mode="json", exclude={"detail_sha256"})
-                ),
-            }
-        )
 
     @model_validator(mode="after")
-    def require_detail(self) -> RuntimeObservationDetailV22:
-        expected = semantic_sha256_v22(
-            self.model_dump(mode="json", exclude={"detail_sha256"})
-        )
-        if self.detail_sha256 != expected:
-            raise ValueError("runtime observation detail digest differs")
+    def require_exit_semantics(self) -> RuntimeObservationV22:
+        if self.state is RuntimeStateV22.RUNNING and self.exit_code is not None:
+            raise ValueError("running runtime observation cannot contain an exit code")
+        if self.state is not RuntimeStateV22.RUNNING and self.exit_code is None:
+            raise ValueError("non-running runtime observation requires an exit code")
         return self
+
+
+_FAILURE_STATUSES_V22 = {
+    ReadSourceStatusV22.FAILURE_UNAVAILABLE,
+    ReadSourceStatusV22.FAILURE_TIMEOUT,
+    ReadSourceStatusV22.FAILURE_SCHEMA,
+}
+
+
+class RuntimeReadOutcomeV22(DtaModelV22):
+    """PR-C runtime outcome; endpoint and exit code share its authority boundary."""
+
+    schema_version: Literal["dta-v22.runtime-read-outcome.v1"]
+    action_id: str
+    source: Literal[EvidenceSourceV22.RUNTIME]
+    request_sha256: Sha256V22
+    status: ReadSourceStatusV22
+    records: tuple[RuntimeObservationV22, ...]
+    truncated: StrictBool
+    outcome_sha256: Sha256V22
+
+    @model_validator(mode="after")
+    def require_outcome(self) -> RuntimeReadOutcomeV22:
+        if self.status is ReadSourceStatusV22.SUCCESS_NONEMPTY and not self.records:
+            raise ValueError("nonempty runtime outcome has no records")
+        if self.status is not ReadSourceStatusV22.SUCCESS_NONEMPTY and self.records:
+            raise ValueError("empty or failed runtime outcome contains records")
+        if self.status in _FAILURE_STATUSES_V22 and self.truncated:
+            raise ValueError("failed runtime outcome cannot be truncated")
+        services = tuple(item.service for item in self.records)
+        if len(services) != len(set(services)):
+            raise ValueError("runtime outcome contains duplicate services")
+        expected = semantic_sha256_v22(
+            self.model_dump(mode="json", exclude={"outcome_sha256"})
+        )
+        if self.outcome_sha256 != expected:
+            raise ValueError("runtime outcome digest does not bind observations")
+        return self
+
+
+MemoryReadOutcomeV22: TypeAlias = ReadOutcomeV22 | RuntimeReadOutcomeV22
 
 
 class ResourceSalientPayloadV22(DtaModelV22):
@@ -580,14 +589,13 @@ class SalientEvidenceMemoryV22(DtaModelV22):
     observed_at: datetime
     evidence_refs: tuple[EvidenceRefV22, ...]
     observation_summaries: tuple[ObservationSummaryV22, ...]
-    runtime_details: tuple[RuntimeObservationDetailV22, ...]
     predicates: tuple[EvidencePredicateV22, ...]
     salient_facts: tuple[SalientFactV22, ...]
     loss_ledger: MemoryLossLedgerV22
     memory_sha256: Sha256V22
 
     @model_validator(mode="after")
-    def require_memory(self) -> SalientEvidenceMemoryV22:
+    def require_memory(self, info: ValidationInfo) -> SalientEvidenceMemoryV22:
         _require_utc(self.observed_at)
         if self.thresholds_sha256 != PredicateThresholdsV22.frozen().thresholds_sha256:
             raise ValueError("salient memory thresholds are not frozen")
@@ -654,11 +662,6 @@ class SalientEvidenceMemoryV22(DtaModelV22):
                 or entry.omitted_field_categories != _OMITTED_FIELDS[summary.source]
             ):
                 raise ValueError("memory loss entry differs from observation summary")
-        detail_refs = tuple(item.evidence_ref for item in self.runtime_details)
-        if detail_refs != tuple(sorted(set(detail_refs))):
-            raise ValueError("runtime observation details are not canonical")
-        if not set(detail_refs).issubset(ref_set):
-            raise ValueError("runtime observation detail contains an unresolved ref")
         if any(not set(item.evidence_refs).issubset(ref_set) for item in self.salient_facts):
             raise ValueError("salient fact contains an unresolved evidence ref")
         if any(not set(item.evidence_refs).issubset(ref_set) for item in self.predicates):
@@ -695,27 +698,43 @@ class SalientEvidenceMemoryV22(DtaModelV22):
             }
             if selected_sources and selected_sources != {predicate.service}:
                 raise ValueError("predicate service differs from retained fact")
-        runtime_facts = {
-            item.evidence_refs[0]: item.payload
-            for item in self.salient_facts
-            if isinstance(item.payload, RuntimeSalientPayloadV22)
-        }
-        if set(runtime_facts) != set(detail_refs):
-            raise ValueError("salient runtime facts and details differ")
-        for detail in self.runtime_details:
-            payload = runtime_facts[detail.evidence_ref]
-            if (
-                detail.service
-                != next(
-                    item.service
-                    for item in self.salient_facts
-                    if item.evidence_refs == (detail.evidence_ref,)
-                )
-                or
-                payload.endpoint != detail.endpoint
-                or payload.exit_code != detail.exit_code
-            ):
-                raise ValueError("salient runtime fact differs from bound detail")
+        context = info.context if isinstance(info.context, dict) else None
+        if (
+            context is None
+            or not isinstance(context.get("baseline"), BaselineProfileV22)
+            or not isinstance(context.get("outcomes"), tuple)
+            or not isinstance(context.get("top_k"), int)
+        ):
+            raise ValueError("salient memory requires authoritative predicate provenance")
+        baseline = BaselineProfileV22.model_validate(
+            context["baseline"].model_dump(mode="python")
+        )
+        if baseline.baseline_sha256 != self.baseline_sha256:
+            raise ValueError("salient memory baseline differs from provenance")
+        material = _materialize_trajectory(
+            outcomes=context["outcomes"],
+            baseline=baseline,
+            observed_at=self.observed_at,
+            thresholds=PredicateThresholdsV22.frozen(),
+        )
+        expected_authoritative_refs = tuple(
+            sorted(material.all_refs, key=lambda item: item.evidence_ref)
+        )
+        expected_facts = _select_salient_facts(
+            facts=material.all_facts,
+            top_k=context["top_k"],
+        )
+        from ecomsre.dta_v2.v22.predicates import PredicateExtractorV22
+
+        expected_predicates = PredicateExtractorV22(
+            thresholds=PredicateThresholdsV22.frozen()
+        ).extract(facts=tuple(sorted(material.all_facts, key=lambda item: item.fact_id)))
+        if self.evidence_refs != expected_authoritative_refs:
+            raise ValueError("salient evidence refs differ from authoritative provenance")
+        if self.salient_facts != expected_facts:
+            raise ValueError("salient facts differ from authoritative provenance")
+        if self.predicates != expected_predicates:
+            raise ValueError("salient predicates differ from authoritative predicate provenance")
         expected = semantic_sha256_v22(
             self.model_dump(mode="json", exclude={"memory_sha256"})
         )
@@ -729,8 +748,7 @@ class FullEvidenceMemoryV22(DtaModelV22):
     baseline_sha256: Sha256V22
     observed_at: datetime
     minimal_index: tuple[MinimalObservationIndexV22, ...]
-    runtime_details: tuple[RuntimeObservationDetailV22, ...]
-    full_observations: tuple[ReadOutcomeV22, ...]
+    full_observations: tuple[MemoryReadOutcomeV22, ...]
     memory_sha256: Sha256V22
 
     @model_validator(mode="after")
@@ -738,10 +756,6 @@ class FullEvidenceMemoryV22(DtaModelV22):
         _require_utc(self.observed_at)
         if len(self.minimal_index) != len(self.full_observations):
             raise ValueError("full memory index and observations differ")
-        detail_by_ref = {item.evidence_ref: item for item in self.runtime_details}
-        if len(detail_by_ref) != len(self.runtime_details):
-            raise ValueError("full memory contains duplicate runtime details")
-        expected_runtime_refs: set[str] = set()
         for index, outcome in zip(self.minimal_index, self.full_observations):
             expected_refs = tuple(
                 _evidence_ref(outcome, ordinal, record).evidence_ref
@@ -756,22 +770,11 @@ class FullEvidenceMemoryV22(DtaModelV22):
                 or index.evidence_refs != expected_refs
             ):
                 raise ValueError("full memory index does not bind observation")
-            for ordinal, record in enumerate(outcome.records):
-                if isinstance(record, RuntimeRecordV22):
-                    ref = expected_refs[ordinal]
-                    expected_runtime_refs.add(ref)
-                    detail = detail_by_ref.get(ref)
-                    if detail is None or (
-                        detail.outcome_sha256 != outcome.outcome_sha256
-                        or detail.record_index != ordinal
-                        or detail.service != record.service
-                        or (record.state is RuntimeStateV22.RUNNING)
-                        != (detail.exit_code is None)
-                    ):
-                        raise ValueError("full memory runtime detail binding differs")
-        detail_refs = tuple(item.evidence_ref for item in self.runtime_details)
-        if detail_refs != tuple(sorted(expected_runtime_refs)):
-            raise ValueError("full memory runtime details differ from observations")
+            if (
+                outcome.source is EvidenceSourceV22.RUNTIME
+                and not isinstance(outcome, RuntimeReadOutcomeV22)
+            ):
+                raise ValueError("full memory lacks an authoritative runtime observation")
         expected = semantic_sha256_v22(
             self.model_dump(mode="json", exclude={"memory_sha256"})
         )
@@ -822,14 +825,71 @@ def _metric_strength(
 
 
 def _normalize_log(message: str) -> str:
+    normalized = message.casefold()
+    normalized = re.sub(
+        r"\b(?:authorization|api[_-]?key|token|secret|password|passwd|cookie)"
+        r"\s*[:=]\s*[^\s,;]+",
+        "credential=<redacted>",
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    normalized = re.sub(
+        r"\bbearer\s+[^\s,;]+",
+        "bearer <redacted>",
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    normalized = re.sub(
+        r"\b[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@"
+        r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?"
+        r"(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+\b",
+        "<email>",
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    normalized = re.sub(
+        r"\b[a-z][a-z0-9+.-]*://[^\s,;]+",
+        "<url>",
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    normalized = re.sub(
+        r"(?<![a-z0-9])(?:/[a-z0-9._-]+){2,}(?:/[^\s,;]*)?",
+        "<path>",
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    normalized = re.sub(
+        r"\b[a-z]:\\(?:[^\\\s]+\\)+[^\s,;]+",
+        "<path>",
+        normalized,
+        flags=re.IGNORECASE,
+    )
     normalized = re.sub(
         r"\b[0-9a-f]{8,}\b",
         "<hex>",
-        message.casefold(),
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    normalized = re.sub(
+        r"\b(?=[a-z0-9_-]{20,}\b)(?=[a-z0-9_-]*[a-z])"
+        r"(?=[a-z0-9_-]*[0-9])[a-z0-9_-]+\b",
+        "<opaque>",
+        normalized,
         flags=re.IGNORECASE,
     )
     normalized = re.sub(r"\b\d+(?:\.\d+)?\b", "<num>", normalized)
-    return " ".join(normalized.split())
+    normalized = " ".join(normalized.split())
+    residual_sensitive = (
+        r"[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9.-]+",
+        r"[a-z][a-z0-9+.-]*://",
+        r"(?:^|\s)/(?:users|home|private|var|tmp)/",
+        r"\b(?:api[_-]?key|token|secret|password|passwd|cookie)\s*[:=]"
+        r"\s*(?!<redacted>)",
+    )
+    if any(re.search(pattern, normalized, flags=re.IGNORECASE) for pattern in residual_sensitive):
+        return "<redacted-log-template>"
+    return normalized
 
 
 def _log_category(template: str) -> LogCategoryV22:
@@ -853,7 +913,11 @@ def _nearest_rank(values: tuple[float, ...], percentile: float) -> float:
     return ordered[index]
 
 
-def _evidence_ref(outcome: ReadOutcomeV22, index: int, record: DtaModelV22) -> EvidenceRefV22:
+def _evidence_ref(
+    outcome: MemoryReadOutcomeV22,
+    index: int,
+    record: DtaModelV22,
+) -> EvidenceRefV22:
     record_sha = semantic_sha256_v22(record.model_dump(mode="json"))
     return EvidenceRefV22(
         schema_version="dta-v22.evidence-ref.v1",
@@ -905,13 +969,12 @@ def _build_fact(
 
 def _materialize_record(
     *,
-    outcome: ReadOutcomeV22,
+    outcome: MemoryReadOutcomeV22,
     record: DtaModelV22,
     evidence_ref: EvidenceRefV22,
     baseline: BaselineProfileV22,
     observed_at: datetime,
     thresholds: PredicateThresholdsV22,
-    runtime_detail: RuntimeObservationDetailV22 | None,
 ) -> SalientFactV22:
     reference = (evidence_ref.evidence_ref,)
     if isinstance(record, MetricFactV22):
@@ -985,6 +1048,7 @@ def _materialize_record(
         strength = (
             SignalStrengthV22.STRONG
             if record.first_error_location
+            or record.status is SpanStatusV22.ERROR
             or (
                 ratio is not None
                 and delta is not None
@@ -1012,16 +1076,7 @@ def _materialize_record(
             signal_strength=strength,
             payload=trace_payload,
         )
-    if isinstance(record, RuntimeRecordV22):
-        if runtime_detail is None:
-            raise ValueError("runtime record lacks endpoint and exit-code detail")
-        if (
-            runtime_detail.evidence_ref != evidence_ref.evidence_ref
-            or runtime_detail.outcome_sha256 != outcome.outcome_sha256
-            or runtime_detail.record_index != evidence_ref.record_index
-            or runtime_detail.service != record.service
-        ):
-            raise ValueError("runtime observation detail binding differs")
+    if isinstance(record, RuntimeObservationV22):
         strength = (
             SignalStrengthV22.STRONG
             if record.state is not RuntimeStateV22.RUNNING
@@ -1033,9 +1088,9 @@ def _materialize_record(
             schema_version="dta-v22.salient-runtime.v1",
             state=record.state,
             healthy=record.healthy,
-            endpoint=runtime_detail.endpoint,
+            endpoint=record.endpoint,
             restart_count=record.restart_count,
-            exit_code=runtime_detail.exit_code,
+            exit_code=record.exit_code,
         )
         return _build_fact(
             source=outcome.source,
@@ -1120,6 +1175,51 @@ def _materialize_record(
     )
 
 
+def _materialize_log_group(
+    *,
+    outcome: MemoryReadOutcomeV22,
+    records_and_refs: tuple[tuple[LogRecordV22, EvidenceRefV22], ...],
+) -> SalientFactV22:
+    first = records_and_refs[0][0]
+    template = _normalize_log(first.message)
+    category = _log_category(template)
+    downstream = _downstream(first.message)
+    expected_key = (first.service, first.severity, template, category, downstream)
+    if any(
+        (
+            record.service,
+            record.severity,
+            _normalize_log(record.message),
+            _log_category(_normalize_log(record.message)),
+            _downstream(record.message),
+        )
+        != expected_key
+        for record, _reference in records_and_refs
+    ):
+        raise ValueError("log aggregation group is not semantically identical")
+    payload = LogSalientPayloadV22(
+        schema_version="dta-v22.salient-log.v1",
+        severity=first.severity,
+        normalized_template=template,
+        category=category,
+        downstream_service=downstream,
+        count=len(records_and_refs),
+    )
+    return _build_fact(
+        source=outcome.source,
+        service=first.service,
+        evidence_refs=tuple(
+            reference.evidence_ref for _record, reference in records_and_refs
+        ),
+        signal_strength=(
+            SignalStrengthV22.STRONG
+            if category is not LogCategoryV22.OTHER
+            else SignalStrengthV22.NONE
+        ),
+        payload=payload,
+    )
+
+
 _OMITTED_FIELDS = {
     EvidenceSourceV22.METRICS: ("absolute_window_timestamps",),
     EvidenceSourceV22.LOGS: ("absolute_timestamp", "raw_message"),
@@ -1131,13 +1231,21 @@ _OMITTED_FIELDS = {
 
 
 def _fact_order(item: SalientFactV22) -> tuple[object, ...]:
-    first_error = (
-        isinstance(item.payload, TraceSalientPayloadV22)
-        and item.payload.first_error_location
+    trace = item.payload if isinstance(item.payload, TraceSalientPayloadV22) else None
+    trace_priority = (
+        0
+        if trace is not None and trace.first_error_location
+        else 1
+        if trace is not None and trace.status is SpanStatusV22.ERROR
+        else 2
+        if trace is not None
+        else 3
     )
+    trace_latency = -(trace.baseline_ratio or trace.duration_ms) if trace else 0.0
     return (
         -_SIGNAL_RANK[item.signal_strength],
-        not first_error,
+        trace_priority,
+        trace_latency,
         item.source.value,
         item.service,
         item.fact_id,
@@ -1145,7 +1253,7 @@ def _fact_order(item: SalientFactV22) -> tuple[object, ...]:
 
 
 def _summary(
-    outcome: ReadOutcomeV22,
+    outcome: MemoryReadOutcomeV22,
     refs: tuple[str, ...],
     retained: tuple[str, ...],
 ) -> ObservationSummaryV22:
@@ -1170,41 +1278,47 @@ def _summary(
     )
 
 
-def build_memory_views_v22(
-    *,
-    outcomes: tuple[ReadOutcomeV22, ...],
-    runtime_details: tuple[RuntimeObservationDetailV22, ...],
-    baseline: BaselineProfileV22,
-    observed_at: datetime,
-    top_k: int,
-) -> tuple[SalientEvidenceMemoryV22, FullEvidenceMemoryV22]:
-    """Build paired representations from one fixed outcome trajectory."""
+@dataclass(frozen=True)
+class _MemoryMaterialV22:
+    outcomes: tuple[MemoryReadOutcomeV22, ...]
+    refs_by_outcome: dict[str, tuple[EvidenceRefV22, ...]]
+    facts_by_outcome: dict[str, tuple[SalientFactV22, ...]]
+    all_refs: tuple[EvidenceRefV22, ...]
+    all_facts: tuple[SalientFactV22, ...]
 
-    _require_utc(observed_at)
-    if not 1 <= top_k <= 256:
-        raise ValueError("salient top_k must be between one and 256")
-    validated = tuple(
-        ReadOutcomeV22.model_validate(item.model_dump(mode="python"))
-        for item in outcomes
-    )
+
+def _validate_memory_outcomes(
+    outcomes: tuple[MemoryReadOutcomeV22, ...],
+) -> tuple[MemoryReadOutcomeV22, ...]:
+    validated: list[MemoryReadOutcomeV22] = []
+    for item in outcomes:
+        if isinstance(item, RuntimeReadOutcomeV22):
+            validated.append(
+                RuntimeReadOutcomeV22.model_validate(item.model_dump(mode="python"))
+            )
+        elif isinstance(item, ReadOutcomeV22):
+            read = ReadOutcomeV22.model_validate(item.model_dump(mode="python"))
+            if read.source is EvidenceSourceV22.RUNTIME:
+                raise ValueError(
+                    "runtime memory requires an authoritative runtime observation"
+                )
+            validated.append(read)
+        else:
+            raise TypeError("memory trajectory contains an unsupported outcome")
     outcome_ids = tuple(item.outcome_sha256 for item in validated)
     if len(outcome_ids) != len(set(outcome_ids)):
         raise ValueError("memory trajectory contains duplicate outcomes")
-    thresholds = PredicateThresholdsV22.frozen()
-    validated_details = tuple(
-        sorted(
-            (
-                RuntimeObservationDetailV22.model_validate(
-                    item.model_dump(mode="python")
-                )
-                for item in runtime_details
-            ),
-            key=lambda item: item.evidence_ref,
-        )
-    )
-    details_by_ref = {item.evidence_ref: item for item in validated_details}
-    if len(details_by_ref) != len(validated_details):
-        raise ValueError("runtime observation details contain duplicate refs")
+    return tuple(validated)
+
+
+def _materialize_trajectory(
+    *,
+    outcomes: tuple[MemoryReadOutcomeV22, ...],
+    baseline: BaselineProfileV22,
+    observed_at: datetime,
+    thresholds: PredicateThresholdsV22,
+) -> _MemoryMaterialV22:
+    validated = _validate_memory_outcomes(outcomes)
     refs_by_outcome: dict[str, tuple[EvidenceRefV22, ...]] = {}
     facts_by_outcome: dict[str, tuple[SalientFactV22, ...]] = {}
     all_refs: list[EvidenceRefV22] = []
@@ -1212,32 +1326,64 @@ def build_memory_views_v22(
     for outcome in validated:
         refs: list[EvidenceRefV22] = []
         facts: list[SalientFactV22] = []
+        log_groups: dict[
+            tuple[str, str, str, LogCategoryV22, str | None],
+            list[tuple[LogRecordV22, EvidenceRefV22]],
+        ] = {}
         for index, record in enumerate(outcome.records):
             reference = _evidence_ref(outcome, index, record)
-            fact = _materialize_record(
-                outcome=outcome,
-                record=record,
-                evidence_ref=reference,
-                baseline=baseline,
-                observed_at=observed_at,
-                thresholds=thresholds,
-                runtime_detail=details_by_ref.get(reference.evidence_ref),
-            )
             refs.append(reference)
-            facts.append(fact)
+            if isinstance(record, LogRecordV22):
+                template = _normalize_log(record.message)
+                key = (
+                    record.service,
+                    record.severity,
+                    template,
+                    _log_category(template),
+                    _downstream(record.message),
+                )
+                log_groups.setdefault(key, []).append((record, reference))
+            else:
+                facts.append(
+                    _materialize_record(
+                        outcome=outcome,
+                        record=record,
+                        evidence_ref=reference,
+                        baseline=baseline,
+                        observed_at=observed_at,
+                        thresholds=thresholds,
+                    )
+                )
+        for group_key in sorted(
+            log_groups,
+            key=lambda item: tuple(str(value) for value in item),
+        ):
+            facts.append(
+                _materialize_log_group(
+                    outcome=outcome,
+                    records_and_refs=tuple(log_groups[group_key]),
+                )
+            )
         refs_by_outcome[outcome.outcome_sha256] = tuple(refs)
         facts_by_outcome[outcome.outcome_sha256] = tuple(facts)
         all_refs.extend(refs)
         all_facts.extend(facts)
+    return _MemoryMaterialV22(
+        outcomes=validated,
+        refs_by_outcome=refs_by_outcome,
+        facts_by_outcome=facts_by_outcome,
+        all_refs=tuple(all_refs),
+        all_facts=tuple(all_facts),
+    )
 
-    expected_runtime_refs = {
-        item.evidence_ref
-        for item in all_refs
-        if item.source is EvidenceSourceV22.RUNTIME
-    }
-    if set(details_by_ref) != expected_runtime_refs:
-        raise ValueError("runtime observation details differ from runtime records")
 
+def _select_salient_facts(
+    *,
+    facts: tuple[SalientFactV22, ...],
+    top_k: int,
+) -> tuple[SalientFactV22, ...]:
+    if not 1 <= top_k <= 256:
+        raise ValueError("salient top_k must be between one and 256")
     core_metrics = {
         MetricKindV22.ERROR_RATE,
         MetricKindV22.LATENCY_P95_MS,
@@ -1247,7 +1393,7 @@ def build_memory_views_v22(
         sorted(
             (
                 item
-                for item in all_facts
+                for item in facts
                 if isinstance(item.payload, RuntimeSalientPayloadV22)
                 or (
                     isinstance(item.payload, MetricSalientPayloadV22)
@@ -1263,13 +1409,36 @@ def build_memory_views_v22(
         raise ValueError("top_k is smaller than mandatory salient facts")
     mandatory_ids = {item.fact_id for item in mandatory}
     optional = tuple(
-        item
-        for item in sorted(all_facts, key=_fact_order)
-        if item.fact_id not in mandatory_ids
+        item for item in sorted(facts, key=_fact_order) if item.fact_id not in mandatory_ids
     )
-    selected = tuple(
+    return tuple(
         sorted((*mandatory, *optional[: top_k - len(mandatory)]), key=_fact_order)
     )
+
+
+def build_memory_views_v22(
+    *,
+    outcomes: tuple[MemoryReadOutcomeV22, ...],
+    baseline: BaselineProfileV22,
+    observed_at: datetime,
+    top_k: int,
+) -> tuple[SalientEvidenceMemoryV22, FullEvidenceMemoryV22]:
+    """Build paired representations from one fixed outcome trajectory."""
+
+    _require_utc(observed_at)
+    thresholds = PredicateThresholdsV22.frozen()
+    material = _materialize_trajectory(
+        outcomes=outcomes,
+        baseline=baseline,
+        observed_at=observed_at,
+        thresholds=thresholds,
+    )
+    validated = material.outcomes
+    refs_by_outcome = material.refs_by_outcome
+    facts_by_outcome = material.facts_by_outcome
+    all_refs = material.all_refs
+    all_facts = material.all_facts
+    selected = _select_salient_facts(facts=all_facts, top_k=top_k)
     selected_ids = {item.fact_id for item in selected}
     summaries: list[ObservationSummaryV22] = []
     loss_entries: list[MemoryLossEntryV22] = []
@@ -1341,7 +1510,6 @@ def build_memory_views_v22(
         "observed_at": observed_at,
         "evidence_refs": tuple(sorted(all_refs, key=lambda item: item.evidence_ref)),
         "observation_summaries": tuple(summaries),
-        "runtime_details": validated_details,
         "predicates": predicates,
         "salient_facts": selected,
         "loss_ledger": ledger,
@@ -1356,7 +1524,8 @@ def build_memory_views_v22(
             "memory_sha256": semantic_sha256_v22(
                 salient_draft.model_dump(mode="json", exclude={"memory_sha256"})
             ),
-        }
+        },
+        context={"outcomes": outcomes, "baseline": baseline, "top_k": top_k},
     )
 
     full_payload: dict[str, Any] = {
@@ -1364,7 +1533,6 @@ def build_memory_views_v22(
         "baseline_sha256": baseline.baseline_sha256,
         "observed_at": observed_at,
         "minimal_index": tuple(minimal),
-        "runtime_details": validated_details,
         "full_observations": validated,
     }
     full_draft = FullEvidenceMemoryV22.model_construct(
@@ -1390,14 +1558,16 @@ __all__ = (
     "FullEvidenceMemoryV22",
     "LogCategoryV22",
     "LogSalientPayloadV22",
+    "MemoryReadOutcomeV22",
     "MemoryLossLedgerV22",
     "MetricSalientPayloadV22",
     "ObservationSummaryV22",
     "PredicateKindV22",
     "PredicateThresholdsV22",
     "ResourceSalientPayloadV22",
+    "RuntimeObservationV22",
+    "RuntimeReadOutcomeV22",
     "RuntimeSalientPayloadV22",
-    "RuntimeObservationDetailV22",
     "SalientEvidenceMemoryV22",
     "SalientFactV22",
     "SignalStrengthV22",
