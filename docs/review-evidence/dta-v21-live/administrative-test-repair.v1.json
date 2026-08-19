@@ -1,0 +1,45 @@
+{
+  "schema_version": "dta-v21.pr-f-administrative-successor-scope.v1",
+  "amendment_version": "dta-v21-p0-prf-administrative-successor-scope-v1",
+  "amendment_sha256": "d7537afaf51fe9d84ce9d9abc7eb6d60dba277d1221738aba34f2cb0f9e20375",
+  "decision_id": "DEC-048",
+  "repository": "Raidriar7170/EcomSRE-Agent",
+  "pr_number": 56,
+  "branch": "codex/dta-v21-p0-pr-f-final-metadata",
+  "base_main_head": "4442dda6cf7d54e163b34355dad2e8235d3957c1",
+  "frozen_report_sha256": "24d5fda0f10029817afa4146a99f4d1d19e99e7c6902d84c88dd377a74d7c48f",
+  "frozen_candidate_scope_sha256": "c3988b4ba18ec471c681638caa2074f4690c3fd3fae93ba268b282a150feb7dd",
+  "private_closeout_sha256": "58190a67688b8cec75b45ae912272901957a2f1903cedc00155d82d0c7167083",
+  "pre_attestation_candidate_head": "5ffd801844ce0ef33a71d1ce736ae5749ffdc580",
+  "successor_candidate_scope_sha256": "0f150bfe8006b24b46d96b2c7405cf89429f47bb968a88b7558e2137f25315b7",
+  "non_public_changed_paths": [
+    "docs/DECISIONS.md",
+    "src/ecomsre/dta_v2/v21/live_final_cli.py",
+    "tests/dta_v21/test_pr_a_protocol.py",
+    "tests/dta_v21/test_v21_final_closeout.py",
+    "tests/dta_v21/test_v21_pr_f_protocol_verifier.py"
+  ],
+  "public_changed_paths": [
+    "docs/analysis/dta-v21-p0-master-progress.json",
+    "docs/review-evidence/dta-v21-live/current-disposition.json",
+    "docs/review-evidence/dta-v21-live/administrative-test-repair.v1.json"
+  ],
+  "blob_sha256_by_path": {
+    "docs/DECISIONS.md": "dd558099c80d66668de69b3dec4d65a9ce8a88baa9273b15813fad07a5b270ef",
+    "src/ecomsre/dta_v2/v21/live_final_cli.py": "0140114f0754aa7fb4d5482805d4ecdb8715a996c57e41111c85c2ad5586f031",
+    "tests/dta_v21/test_pr_a_protocol.py": "b0eed629812d0fee832acf85f8030fcae55d53678215cedc75db120218772c3a",
+    "tests/dta_v21/test_v21_final_closeout.py": "bf6a566a3e5b9f2307b785d20a09a21f49216bc0ab6c212888140a59baaa93ab",
+    "tests/dta_v21/test_v21_pr_f_protocol_verifier.py": "04066fd8e02728baa7728d1c7290c661ff1b6ce0bb2440b707e8d47910bd5db3"
+  },
+  "four_path_repair_evidence_sha256": "a63e952580746dc5eea7a9b3738f822a47856ccf3c8c693871bc4447702fe813",
+  "provider_called": false,
+  "docker_called": false,
+  "held_out_rerun": false,
+  "scenario_executed": false,
+  "fault_injected": false,
+  "runbook_executed": false,
+  "private_evidence_changed": false,
+  "public_result_changed": false,
+  "report_rebound": false,
+  "record_sha256": "f889204ef2c7ce88fe49d8a26b2f6dfaee8231a762a992bd62d8815c521491b4"
+}
