@@ -1,56 +1,49 @@
 # DTA v2.2 PR-D Human Brief
 
-状态：`REVIEW_PENDING`
+状态：`BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE`
 
-本 PR 在 PR-C 的 Salient Memory、Evidence Predicates 与 Diagnosis admission
-之上，实现 Runtime 管理的共同 bootstrap、封闭 Hypothesis Catalog、持久
-Belief Ledger、Flat Canonical、Planner-Lite、Deterministic Router、One-shot
-Oracle Context、共享轻量 `ControllerDecisionV22`、一次 bounded correction、
-Provider output-mode probe、四个 identity manifest，以及 protocol-only
-synthetic capability suite。
+PR-D 仍是 Draft，未达到 `DTA_V22_PR_D_CONTROLLER_READY`，不得合并或进入
+PR-E capture/freeze。
 
-Provider protocol gate 使用冻结模型 `gpt-5.4-mini-2026-03-17`。正式执行先以
-相同的五字段 Controller schema 探测 strict structured output；首个探测成功，
-因此四个 arms 全部冻结为 `STRICT_STRUCTURED_OUTPUT`，没有 fallback 或静默换模。
-正式 suite 覆盖 50 个 state transitions，Flat 与 Planner-Lite 各 25 个：
+本轮修复把 READ 拆成模型选择、runtime 授权、真实 dispatch 和权威 outcome
+四段；只有 outcome 到达后才更新 Belief Ledger、coverage 与 evidence cost。
+COMMIT、NO_INCIDENT 和 ABSTAIN 都重新经过 PR-C Diagnosis admission，不能靠模型
+终态字段绕过 semantic evidence policy。Provider 只接受绑定 identity、prompt、
+ControllerTurnInput、Action Catalog、Salient Memory 和 request digest 的 typed
+answer-free request。Deterministic Router 在动作耗尽后必须回到相同冻结模型完成
+最终诊断，One-shot 必须物化全部 enabled sources。
 
-- first-pass protocol acceptance：48/50 = 0.96；
-- post-correction protocol acceptance：50/50 = 1.00；
-- correction：2/50 = 0.04，分别是 stale action 与 invalid ref；
-- invalid dispatches：0；
-- Provider protocol calls：52，另有 1 个 mode probe call；
-- terminal：`PROVIDER_PROTOCOL_GATE_PASS`。
+本地确定性边界：
 
-安全与证据边界：
+- DTA v2.2 focused：130 passed，2 个 successor-stage tests 按设计 skipped；
+- Ruff：PASS；
+- mypy v2.2 scope：PASS；
+- local 50-transition harness：48/50 first-pass、50/50 post-correction、0 invalid
+  dispatches；它只证明本地协议路径，不代替 Provider gate；
+- 全仓测试在实现锁定前为 4636 passed、7 skipped；唯一失败是 dirty-worktree
+  guard，提交后该 guard 单测通过。
 
-- suite 只执行 synthetic protocol state，不是 RCA development/held-out；
-- 没有 Agent evidence read dispatch、Agent write、Runbook、Docker、scenario、
-  fault injection 或 held-out activity；
-- correction 消耗 Provider turn/tokens，但产生 0 read dispatch、0 write authority；
-- 第二次 invalid decision 明确终止为 `FAILED`；
-- public summary 只保留 aggregate counts、identity/schema/report digests、token
-  accounting 与 terminal，不公开原始 Provider content；
-- 完整 typed report 是 repository 外的 create-once `0600` private evidence，
-  public summary 通过 exact report hash 与 response-digest-set hash 绑定它；
-- formal runner 绑定执行前 clean implementation commit/tree，拒绝非 `0600`
-  provider env、shell expansion、非目标模型与 repository 内 private report；
-- Flat 与 Planner-Lite 的 schema、model、bootstrap、Action Catalog、Salient
-  Memory、预算与 correction 完全相同；只有 Planner-Lite 收到持久
-  `BeliefLedgerView`；
-- Deterministic Router 只从 canonical hypotheses/actions 运行 generic policy，
-  不接收 truth、fixture、case ID 或 expected mechanism；
-- One-shot 明确标为 context upper bound，完整 materialization bytes/tokens 计入，
-  model tool-selection metric 为 `N/A`。
+正式 Provider 尝试全部保留，不能删除或重标为通过：
 
-PR-C 冻结 manifest 曾误把 PR-D 所有 successor activity flags 都要求为 false，
-这与本 Goal 要求的 Provider protocol gate 及 DEC-055 的真实活动记录冲突。
-DEC-056 仅对 PR-C→PR-D attestation 做 append-only 修正：`provider_called`、
-`private_evidence_changed`、`public_result_changed` 为 true；Docker、held-out、
-scenario、fault、Runbook 与 execution-report rebinding 均为 false。原 PR-C
-manifest 保持 byte-identical，不得用 false flag 伪造无活动历史。
+1. attempt 1 的 Provider 语义指标通过，但 private evidence 写入了错误根目录，
+   因此不是有效 gate evidence；
+2. attempt 2 暴露本地 transition validator 会把普通 protocol failure 误判成
+   报告结构损坏，未产出报告；
+3. attempt 3 在无节流下收到 HTTP 429；
+4. attempt 4 在 1.5 秒请求间隔下仍收到 HTTP 429；
+5. attempt 5 在固定 3.0 秒请求间隔下完成 50 个 protocol calls，随后本地 gate
+   返回 `provider_gate_eligible = false` 并抛出精确 blocker。
 
-合并前仍需：PR-C successor v2 attestation、PR-D manifest/verifier、exact-head
-GitHub Actions、独立 reviewer `Must Fix = 0 / Should Fix = 0 / Claim Accuracy =
-PASS`，以及 historical binding、truth-isolation、secret/private-path gates 全部
-PASS。满足前不得宣称 `DTA_V22_PR_D_CONTROLLER_READY`，也不得进入 PR-E
-capture/freeze。
+attempt 5 未执行自动 HTTP retry、未换模型、未执行 Agent evidence dispatch、
+Agent write、Runbook 或 Docker。由于 runner 在负面 gate 后先抛错、后写证据，
+该次精确 first-pass/post-correction counts 未持久化；因此不得用推测数字补写
+summary，也不得把旧 attempt 1 的 48/50、50/50 冒充为当前结果。
+
+当前公开事实仅支持：
+
+```text
+BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE
+```
+
+解除 blocker 需要新的、显式授权的 Provider 计划和对负面报告持久化缺口的协议
+修订；不能通过继续重试、静默换模型或放宽 gate 完成。
