@@ -55,6 +55,18 @@ conflicts with this register, this register wins.
 | DEC-041 | DTA v2.1 evidence-guided planner and compact state | accepted | DTA v2.1 P0 | `DECISIONS.md` | Architecture, Safety, planner and projection contracts | Yes — truth routing, duplicate reads, or invalid evidence blocks the run |
 | DEC-042 | DTA v2.1 frozen three-arm evaluation and honest claim gate | accepted | DTA v2.1 PR-D/PR-E | `DECISIONS.md` | DTA v2.1 design, freeze, scorer, reports | Yes — protocol drift or a failed threshold forbids an advantage claim |
 | DEC-043 | DTA v2.1 bounded local portfolio and zero model write authority | accepted | DTA v2.1 PR-F under `dta-v21-p0-master-v1` | `DECISIONS.md` | Architecture, Safety, live contracts and reports | Yes — authority, ownership, recovery, or cleanup mismatch blocks live continuation |
+| DEC-044 | DTA v2.1 Ad CPU resource-only recovery protocol | accepted | DTA v2.1 PR-F amendment | `DECISIONS.md` | Safety, live protocol, capability report | Yes — frozen resource/recovery semantics cannot drift |
+| DEC-045 | DTA v2.1 closed-world Compose identity and retry admission | accepted | DTA v2.1 PR-F amendment | `DECISIONS.md` | Safety, live admission, reconciliation | Yes — identity or retry mismatch blocks continuation |
+| DEC-046 | DTA v2.1 No-Fault capability-miss preservation | accepted | DTA v2.1 PR-F amendment | `DECISIONS.md` | Capability closeout and reports | Yes — the miss cannot be relabeled or rerun |
+| DEC-047 | DTA v2.1 frozen-Agent capability-limitations closeout | accepted | DTA v2.1 PR-F closeout | `DECISIONS.md` | Master Progress and capability report | Yes — no further v2.1 Provider or Docker execution |
+| DEC-048 | DTA v2.1 administrative successor attestation | accepted | DTA v2.1 PR-F post-merge metadata | `DECISIONS.md` | Historical binding and administrative attestation | Yes — future changes require a new record |
+| DEC-049 | DTA v2.2 versioned successor and v2.1 immutability | accepted | DTA v2.2 P0 under `dta-v22-p0-master-v1` | `DECISIONS.md` | DTA v2.2 design, historical verifier, Master Progress | Yes — history drift blocks v2.2 |
+| DEC-050 | DTA v2.2 runtime-owned state and shared controller schema | accepted | DTA v2.2 P0 | `DECISIONS.md` | Planner-Lite, Flat Canonical, controller contracts | Yes — arm/schema asymmetry invalidates the primary comparison |
+| DEC-051 | DTA v2.2 canonical action catalog and query semantics | accepted | DTA v2.2 PR-B onward | `DECISIONS.md` | Action catalog, replay, read contracts | Yes — truth-dependent catalogs or ambiguous query semantics block evaluation |
+| DEC-052 | DTA v2.2 semantic evidence predicates and alternative clauses | accepted | DTA v2.2 PR-C onward | `DECISIONS.md` | Memory, Diagnosis, Candidate Filter, scorer | Yes — truth-dependent predicates or unsupported admission block evaluation |
+| DEC-053 | DTA v2.2 factorial development and paired held-out evaluation | accepted | DTA v2.2 PR-D through PR-F | `DECISIONS.md` | Protocol gate, preregistration, scorer, reports | Yes — gate, seal, truth-isolation, or scorer drift blocks held-out |
+| DEC-054 | DTA v2.2 P0 zero live Agent write authority | accepted | DTA v2.2 P0 | `DECISIONS.md` | Safety, capture, replay, reports | Yes — any Agent write or non-owned mutation is a safety blocker |
+| DEC-055 | DTA v2.2 execution report and administrative successor provenance | accepted | DTA v2.2 PR-A through PR-F | `DECISIONS.md` | Frozen reports, exact-head acceptance, successor attestations | Yes — provenance mismatch blocks closure |
 
 ## DEC-001 — Supported host baseline
 
@@ -1104,6 +1116,163 @@ and a new successor attestation; DEC-048 cannot be reused.
 
 The bound Amendment-6 raw SHA-256 is
 `d7537afaf51fe9d84ce9d9abc7eb6d60dba277d1221738aba34f2cb0f9e20375`.
+
+## DEC-049 — DTA v2.2 Versioned Successor and v2.1 Immutability
+
+**Status: `accepted` for the user-designated `dta-v22-p0-master-v1` Goal.**
+
+DTA v2.2 is an independent successor under `ecomsre.dta_v2.v22`, schema prefix
+`dta-v22.`, configuration root `config/dta-v22`, and public result prefix
+`dta-v22-`. It does not modify or reuse `src/ecomsre/dta_v2/v21` as its
+implementation namespace.
+
+The exact v2.2 starting main is
+`9da92d54a4fb470c5452cee36a731e81529d05a5`. The historical manifest binds the
+frozen DTA v2 portfolio, v2.1 design, identities, held-out execution and seal,
+capability-closeout report, PR #55 capability merge and tree, and PR #56
+administrative merge, tree, and attestation. The v2 verifier remains part of
+the v2.2 gate. Any byte, semantic, identity, claim, terminal, commit, tree, or
+ancestry drift stops v2.2 with `BLOCKED_DTA_V22_BASELINE_HISTORY_DRIFT`.
+
+No v2 or v2.1 Provider call, Docker execution, held-out rerun, report rewrite,
+or failed-evidence deletion is permitted. The aggregate v2.1 private failure
+taxonomy may publish bounded counts only; raw Provider content, case mappings,
+private paths, and credentials remain private.
+
+## DEC-050 — DTA v2.2 Runtime-Owned State and Shared Controller Schema
+
+**Status: `accepted` for DTA v2.2 P0.**
+
+The model chooses only one closed hypothesis, one available evidence action, or
+one semantic terminal. Runtime owns run identity, turn ordinal, hashes, canonical
+ordering, hypothesis IDs, belief status, gaps, action mask, duplicate and
+dominance elimination, budgets, and correction usage.
+
+`FLAT_CANONICAL` and `PLANNER_LITE` use the same required
+`ControllerDecisionV22` schema, common bootstrap, action catalog, selected
+memory mode, read and correction budgets, Diagnosis admission, CandidateSet,
+and Action Selection. The primary treatment difference is that Planner-Lite
+receives a persistent runtime-owned `BeliefLedgerViewV22`; Flat does not.
+`NO_INCIDENT` and `UNRESOLVED` are first-class hypotheses. A model may not
+create a service, domain, mechanism, hypothesis ID, budget, digest, or terminal.
+
+One no-tool correction is allowed only for an enumerated, side-effect-free
+decision-shape error. It consumes one Provider turn, dispatches no read, grants
+no write authority, and cannot be repeated. First-pass and post-correction
+protocol acceptance remain separate metrics.
+
+## DEC-051 — DTA v2.2 Canonical Action Catalog and Query Semantics
+
+**Status: `accepted` for DTA v2.2 PR-B onward.**
+
+The model selects an `action_id`; it never generates result limits, metric
+subsets, service tuples, sampling windows, sample counts, paths, URLs, commands,
+or runtime identities. Every action binds a versioned canonical request, exact
+target set, source, coverage key, weighted cost, and digest. Catalog generation
+may use only alert context, candidates, static topology, capability registry,
+executed coverage, and budget. Evaluator truth, fixture content, expected
+mechanism/source/action, and fault-controller state are prohibited inputs.
+
+Executed, dominated, unavailable, and over-budget actions are removed before
+the next turn, making exact duplicate dispatch structurally impossible. Read
+outcomes distinguish success with records, success empty, unavailable, timeout,
+and schema failure. Unsupported metrics are not numeric zero. Trace queries
+return a bounded connected neighborhood without rewriting the complete fixture
+to a new anchor. The read-only Changes source contains only sanitized opaque
+change metadata and may include decoys in every family.
+
+Query-semantic or catalog truth-isolation failure stops with
+`BLOCKED_DTA_V22_QUERY_SEMANTICS` or `BLOCKED_DTA_V22_TRUTH_ISOLATION`.
+
+## DEC-052 — DTA v2.2 Semantic Evidence Predicates and Alternative Clauses
+
+**Status: `accepted` for DTA v2.2 PR-C onward.**
+
+Evidence predicates are source-local, generic, deterministic, versioned, and
+frozen from visible development thresholds. They may not read evaluator truth
+or use case-specific thresholds. Salient Memory retains all evidence refs and
+predicates, bounded typed facts, and an exact loss ledger; Full Memory is a
+development reference representation.
+
+Diagnosis admission uses versioned alternative clauses rather than a fixed
+source set. Runtime clauses admit or deny a model-selected closed hypothesis;
+they do not choose the hypothesis. The raw semantic proposal and admitted
+Diagnosis are recorded separately. Candidate filtering requires resolved
+predicates, one acceptable clause, trusted Registry, and the exact target.
+No-Incident requires broad candidate coverage, healthy runtime, sufficient
+metric support, and no strong anomaly. A completed UNKNOWN fault is forbidden.
+
+## DEC-053 — DTA v2.2 Factorial Development and Paired Held-out Evaluation
+
+**Status: `accepted` for DTA v2.2 PR-D through PR-F.**
+
+Before capture or freeze, at least 40 synthetic protocol transitions must meet
+first-pass acceptance >=95%, post-correction acceptance >=98%, and zero invalid
+dispatches. Visible development uses 24 cases across the 2x2 controller x
+memory factorial plus Deterministic Router and One-shot Oracle anchors. Fixed
+trajectories separately measure Full versus Salient representation without a
+Provider or policy change.
+
+Held-out uses 24 private cases across Flat Salient, Planner-Lite Salient,
+Deterministic Router Salient, and One-shot Oracle: exactly 96 entries, one seal,
+one execution, one unblinding, and no post-unblinding Prompt/schema/scorer/gate
+change or retry. One-shot is `ORACLE_CONTEXT_UPPER_BOUND`; tool selection is
+not applicable and materialization cost is fully counted.
+
+End-to-end success includes protocol, semantic Diagnosis, acceptable evidence,
+and applicable action correctness. Actions use an applicability denominator;
+null equality cannot create success. Costs per correct are
+`INFINITY / NOT_ESTIMABLE` when an arm has zero correct results. The exact
+Planner and memory terminals follow their preregistered gates. A negative
+advantage result is valid engineering evidence, not a blocker.
+
+## DEC-054 — DTA v2.2 P0 Zero Live Agent Write Authority
+
+**Status: `accepted` for DTA v2.2 P0 under the active Goal.**
+
+Agent live write authority, live Runbook execution, generic model shell,
+production, cloud, Kubernetes, remote Docker, and non-owned mutation are all
+zero. P0 action evaluation is replay-only. The model may emit only typed
+semantic controller choices and candidate-bound Action Selection.
+
+The active Goal separately authorizes evaluator-controlled project-owned local
+capture using only its exact mutation allowlist. Capture is dataset generation:
+Agent calls, Provider calls, Runbook executions, and Agent forward writes are
+zero; every case has one exact allowlisted fault operation where applicable,
+baseline restoration, `CLEAN` project-owned cleanup, and zero non-owned change.
+An authority, ownership, restoration, cleanup, or isolation mismatch stops with
+`BLOCKED_DTA_V22_SAFETY` and never broadens cleanup.
+
+No Decision Record alone starts Docker, calls a Provider, injects a fault,
+executes held-out, publishes a PR, or creates later-stage authority. Those
+actions remain bounded by the exact active Goal and current stage gate.
+
+## DEC-055 — DTA v2.2 Execution Report and Administrative Successor Provenance
+
+**Status: `accepted` for DTA v2.2 PR-A through PR-F.**
+
+Every execution report binds the exact pre-merge candidate code head and its
+declared evidence scope. A merge or later metadata repair does not rewrite or
+rebind a frozen report. Post-merge metadata uses one versioned, append-only
+administrative-successor attestation that names the base, successor head/tree,
+exact changed path set, and raw SHA-256 for every authorized changed file.
+
+Each attestation records whether Provider, Docker, held-out, scenario, fault,
+Runbook, private evidence, or public result activity occurred. It is valid only
+for the named PR and cannot create a wildcard or reusable exception. Later
+changes require a new Decision Record and successor attestation. Exact-head CI,
+fresh review with Must Fix zero, claim accuracy, and the stage's historical,
+truth-isolation, and secret-scan gates are required before merge. Provenance or
+exact-head mismatch stops with `BLOCKED_DTA_V22_EXACT_HEAD_ACCEPTANCE`.
+
+The starting main has one pre-existing mypy `arg-type` diagnostic in frozen
+`ecomsre.dta_v2.v21.live_final_cli`. v2.2 does not modify that module. Its exact
+raw bytes are added to the v2.2 historical manifest, and `mypy.ini`
+disables only `arg-type` for that exact module. All other v2.1 diagnostics and
+all v2.2 diagnostics remain enabled. Historical drift makes this exception
+invalid through the v2.2 verifier. That verifier also requires this to be the
+only v2.1 override, with exactly `disable_error_code = arg-type`, and rejects a
+v2.1 wildcard or global mypy bypass.
 
 ## Upstream references
 

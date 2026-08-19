@@ -1,0 +1,113 @@
+{
+  "schema_version": "dta-v22.historical-bindings.v1",
+  "inspected_starting_main": "9da92d54a4fb470c5452cee36a731e81529d05a5",
+  "v21_capability_merge_commit": "4442dda6cf7d54e163b34355dad2e8235d3957c1",
+  "v21_capability_tree_sha1": "b6b5e5df5ba0cdd45bc97d1990bbe1abe83c2675",
+  "v21_administrative_merge_commit": "9da92d54a4fb470c5452cee36a731e81529d05a5",
+  "v21_administrative_tree_sha1": "65877cf9061bab3e30c6f127fdbe1da59b3b95a6",
+  "expected_v2_terminal": "DTA_V2_LIVE_DEMO_ACCEPTANCE_PASS",
+  "expected_v2_evaluation_result": "COMPLETED_HELD_OUT_NEGATIVE",
+  "expected_v21_held_out_execution_id": "53615cdd78b348b68496f64102c0b4de",
+  "expected_v21_held_out_seal_sha256": "9a7c8e56400e99c693c8bddc26007b1dd26e0dcee2167b07cf3fba00fd22fbd7",
+  "expected_v21_planner_identity_sha256": "80506a41847d705f048f521b06d63035b4a5b47526eddc501c794b370528300d",
+  "expected_v21_held_out_claim": "DTA_V21_NO_PREREGISTERED_PLANNER_ADVANTAGE_SUPPORTED",
+  "expected_v21_capability_report_sha256": "24d5fda0f10029817afa4146a99f4d1d19e99e7c6902d84c88dd377a74d7c48f",
+  "expected_v21_terminal": "DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_FROZEN_AGENT_CAPABILITY_LIMITATIONS",
+  "files": [
+    {
+      "path": "config/dta-v21/historical-v2-bindings.v1.json",
+      "raw_sha256": "dc715cfad0738d33c4662543f539b179e61812bc85a6b5d6e137f2bafb1b0695",
+      "semantic_sha256": "4403e2d0ae0a3630bc31cb398ff492394b27674620f9b7d0e335a63bd17bc745"
+    },
+    {
+      "path": "config/dta-v2/agent-identity.v1.json",
+      "raw_sha256": "81a792ee545229fa12f9e1965395b6cef787000c1aedde924e08a241d98f2edb",
+      "semantic_sha256": "ee89e40123bc0e236a339f7056f9f3606f23be7fe3fe4285d9eb832059b25626"
+    },
+    {
+      "path": "docs/analysis/dta-v2-master-progress.json",
+      "raw_sha256": "5a9fe8a5f44eca9b9a7f9cf5d1a7dc95f850de0e4eb1ef3f7d4f028f44513f6f",
+      "semantic_sha256": "40f611c5bce16f4748b8bd2507262f54cffa3251acfcede21ee71032c3c98385"
+    },
+    {
+      "path": "docs/results/dta-v2-evaluation.json",
+      "raw_sha256": "59062eba68e0723d22d9844de807088640f03110b1d3fd5b4044f4a53ef10846",
+      "semantic_sha256": "7a8d70ab7c25096f90e8f9b2ebdf5d5cffc3cb14bda6e8b20eba9c545d9944d0"
+    },
+    {
+      "path": "docs/results/dta-v2-evaluation.md",
+      "raw_sha256": "4f5ed888c5e90ee55a264d22049f8bf54c1eebc444f5a539fb79087a9d62b2c2",
+      "semantic_sha256": null
+    },
+    {
+      "path": "docs/results/dta-v2-live-demo.json",
+      "raw_sha256": "8c1d0c70a2c32c5cbd4e9f06649cec3ca447f20cf4e66de248a37240112d98e7",
+      "semantic_sha256": "0213ddb9d817a6db70a54cb46fed9d19e6f41a579cb21ff377e95b11ba490bd2"
+    },
+    {
+      "path": "docs/results/dta-v2-live-demo.md",
+      "raw_sha256": "eb666f5d6995d8ee17d82bc377c8d74143fe4fe5d98a285b093706ba3393b6ce",
+      "semantic_sha256": null
+    },
+    {
+      "path": "docs/design/diagnosis-to-action-v2.1-p0.md",
+      "raw_sha256": "ef438f171a7788ccada0e58d79923fc1c4025218c498f215c55d6618b8b929ae",
+      "semantic_sha256": null
+    },
+    {
+      "path": "docs/analysis/dta-v21-p0-master-progress.json",
+      "raw_sha256": "b7a86868b45ba96420b57361a68a1d39ef88f5e16dbaddadb8e9ebb85ab17ef1",
+      "semantic_sha256": "851ee1b8fc61ca9417e3e94fb6a82c6eee426a5e66cee533310517183c018b75"
+    },
+    {
+      "path": "config/dta-v21/evaluation/manifest.json",
+      "raw_sha256": "a93a418b18b507fe9fc4e94b86dee02b82edfb6468d31dcc33c0e2f0c38ec7ee",
+      "semantic_sha256": "881aa2bc989c48e5cf5783214c62bc71d713548568f50e5b34691c3857e0b9be"
+    },
+    {
+      "path": "config/dta-v21/evaluation/preregistration.v1.json",
+      "raw_sha256": "c4ea0e6b00c320469ff3b94b1875fbd77df1a9d8e37eae9365684a257aa71eff",
+      "semantic_sha256": "d52109507a4ac24933bdddcde2c85a46ea7a242f3e2ed07875fd47487171aeae"
+    },
+    {
+      "path": "config/dta-v21/evaluation/public-case-bindings.v1.json",
+      "raw_sha256": "7590135a666fc9f63b4eeab52a12cdeddb72f066a702751b3d76f9ad6a5f1e94",
+      "semantic_sha256": "eb554d0f4b1e807f43ee8416c0376e0e9d0d5625b1fd28c3f6681b37faddc7d2"
+    },
+    {
+      "path": "config/dta-v21/agent-identities/evidence-guided-planner.v1.json",
+      "raw_sha256": "c3d1ffd77fbf1b797a52a1f308b97a65c96e494391d8c2488b3804945a267ed5",
+      "semantic_sha256": "5be5710da4ff98f36e134c10d6a5d0e7e8ae74b9b0919ae902caf877622168a0"
+    },
+    {
+      "path": "docs/results/dta-v21-evaluation.json",
+      "raw_sha256": "e164036ecb3ba5fe8a69c68c890979164742312e49afc23ee9e91d3f30523408",
+      "semantic_sha256": "39613ead3b986ee2a74817ceed63eead241dfd9a97c0f10b027719d68dafd873"
+    },
+    {
+      "path": "docs/results/dta-v21-evaluation.md",
+      "raw_sha256": "1875bc30fd4d7462123696915a9a003c5b8b868af6c28f0123d90aa9d0733e2a",
+      "semantic_sha256": null
+    },
+    {
+      "path": "docs/results/dta-v21-live-capability-closeout.json",
+      "raw_sha256": "66ad09364c5a50976fd92992e9847b0e5f6e0a4c968e4d416818571c9d2bcc19",
+      "semantic_sha256": "cb6e7a0352af0d727a8802bd5111e35f64f810a2e8214b9fc04c3bc57fdef94c"
+    },
+    {
+      "path": "docs/results/dta-v21-live-capability-closeout.md",
+      "raw_sha256": "45815a49df89e3765a78b96153c5b0a1a33a2bac236030c2ebb8e25627be9078",
+      "semantic_sha256": null
+    },
+    {
+      "path": "docs/review-evidence/dta-v21-live/administrative-test-repair.v1.json",
+      "raw_sha256": "5db16771b298e37c9dab742f9cf40781c5eb5b7a501eb736a6550854bf974df2",
+      "semantic_sha256": "262566e8f1a624565c9d7d8958f26b402df04293409ae206f47b38b301e5b6c7"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v21/live_final_cli.py",
+      "raw_sha256": "0140114f0754aa7fb4d5482805d4ecdb8715a996c57e41111c85c2ad5586f031",
+      "semantic_sha256": null
+    }
+  ]
+}

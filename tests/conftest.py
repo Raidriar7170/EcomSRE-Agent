@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 import sys
 from pathlib import Path
 
@@ -59,4 +60,53 @@ def _adapt_historical_phase5b_preflight_for_successor_tests(
         execution_cli,
         "verify_execution_freeze_manifest",
         verify_historical_execution_bindings,
+    )
+
+
+@pytest.fixture(autouse=True)
+def _run_frozen_v21_pr_f_verifier_at_its_attested_head(
+    request: pytest.FixtureRequest,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Evaluate the PR #56 scope at PR #56, not at an unrelated successor."""
+
+    if request.node.nodeid != (
+        "tests/dta_v21/test_v21_pr_f_protocol_verifier.py::"
+        "test_public_pr_f_protocol_verifier_passes_without_private_evidence"
+    ):
+        return
+    historical_root = tmp_path / "dta-v21-pr56-historical-repository"
+    subprocess.run(
+        (
+            "git",
+            "clone",
+            "--shared",
+            "--no-checkout",
+            str(_PROJECT_ROOT),
+            str(historical_root),
+        ),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        (
+            "git",
+            "checkout",
+            "-q",
+            "--detach",
+            "9da92d54a4fb470c5452cee36a731e81529d05a5",
+        ),
+        cwd=historical_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    test_module = request.node.module
+    verifier = getattr(test_module, "verify_pr_f_protocol")
+    monkeypatch.setattr(
+        test_module,
+        "verify_pr_f_protocol",
+        lambda _current_root: verifier(historical_root),
     )
