@@ -6,7 +6,7 @@
   "completed_stage": "PR-A",
   "current_stage": "PR-B",
   "active_branch": "codex/dta-v22-p0-pr-b-action-catalog",
-  "active_pr": null,
+  "active_pr": 58,
   "merged_prs": [
     {
       "stage": "PR-A",
