@@ -7,6 +7,7 @@ from typing import Any
 
 import pytest
 
+from ecomsre.dta_v2.contracts import semantic_sha256
 from ecomsre.dta_v2.tool_contracts import (
     EndpointState,
     HealthState,
@@ -283,10 +284,11 @@ def _memory(
     outcomes: tuple[MemoryReadOutcomeV22, ...],
     *,
     top_k: int,
+    baseline: BaselineProfileV22 | None = None,
 ) -> tuple[SalientEvidenceMemoryV22, FullEvidenceMemoryV22]:
     return build_memory_views_v22(
         outcomes=outcomes,
-        baseline=_baseline(),
+        baseline=_baseline() if baseline is None else baseline,
         observed_at=NOW,
         top_k=top_k,
     )
@@ -444,7 +446,9 @@ def _incident_outcomes() -> tuple[MemoryReadOutcomeV22, ...]:
 
 
 def _no_incident_outcomes(
-    *, include_payment_metrics: bool = True
+    *,
+    include_payment_metrics: bool = True,
+    error_rate_value: float = 0.01,
 ) -> tuple[MemoryReadOutcomeV22, ...]:
     outcomes: list[MemoryReadOutcomeV22] = []
     for service in ("checkout", "payment"):
@@ -470,7 +474,12 @@ def _no_incident_outcomes(
                 action_id=f"a:metrics:{service}:core",
                 source=EvidenceSourceV22.METRICS,
                 records=(
-                    _metric(service, MetricKindV22.ERROR_RATE, value=0.01, sample_count=20),
+                    _metric(
+                        service,
+                        MetricKindV22.ERROR_RATE,
+                        value=error_rate_value,
+                        sample_count=20,
+                    ),
                     _metric(service, MetricKindV22.LATENCY_P95_MS, value=100.0, sample_count=20),
                     _metric(service, MetricKindV22.REQUEST_SUPPORT, value=1000.0, sample_count=20),
                 ),
@@ -630,6 +639,28 @@ def test_pr_b_runtime_backend_is_adapted_through_canonical_authority() -> None:
             source_observation=template.source_observation,
         )
 
+    forged_observation_draft = template.source_observation.model_copy(
+        update={"request_sha256": "f" * 64}
+    )
+    forged_observation = ReadToolObservation.model_validate(
+        forged_observation_draft.model_copy(
+            update={
+                "artifact_sha256": semantic_sha256(
+                    forged_observation_draft.model_dump(
+                        mode="json",
+                        exclude={"artifact_sha256"},
+                    )
+                )
+            }
+        ).model_dump(mode="python")
+    )
+    with pytest.raises(ValueError, match="canonical PR-B authority"):
+        RuntimeReadOutcomeV22.from_pr_b(
+            action=template.action,
+            source_outcome=template.source_outcome,
+            source_observation=forged_observation,
+        )
+
 
 @pytest.mark.parametrize(
     "endpoint",
@@ -723,6 +754,49 @@ def test_predicates_are_deterministic_and_have_no_truth_input() -> None:
     assert first.predicates == second.predicates
     forbidden = {"truth", "fixture", "expected_mechanism", "case_id"}
     assert forbidden.isdisjoint(inspect.signature(PredicateExtractorV22.extract).parameters)
+
+
+def test_support_policy_excludes_unreachable_memory_metric_clause() -> None:
+    assert "METRIC_MEMORY_STRONG" not in PredicateKindV22.__members__
+    assert "memory-leak:growth-and-memory-metric" not in {
+        clause.clause_id for clause in build_default_evidence_support_policy_v22().clauses
+    }
+
+
+@pytest.mark.parametrize(
+    ("rollout_state", "expected"),
+    (
+        (RolloutStateV22.PLANNED, False),
+        (RolloutStateV22.CANCELLED, False),
+        (RolloutStateV22.IN_PROGRESS, True),
+        (RolloutStateV22.COMPLETED, True),
+        (RolloutStateV22.ROLLED_BACK, True),
+    ),
+)
+def test_recent_change_predicate_requires_an_applied_rollout_state(
+    rollout_state: RolloutStateV22,
+    expected: bool,
+) -> None:
+    outcome = _outcome(
+        action_id="a:changes:payment",
+        source=EvidenceSourceV22.CHANGES,
+        records=(
+            RecentChangeRecordV22(
+                schema_version="dta-v22.recent-change-record.v1",
+                opaque_change_id="chg_0123456789abcdef",
+                service="payment",
+                observed_at=NOW - timedelta(seconds=30),
+                category=ChangeCategoryV22.DEPLOYMENT,
+                rollout_state=rollout_state,
+                revision_digest="4" * 64,
+            ),
+        ),
+    )
+    memory, _ = _memory((outcome,), top_k=1)
+    assert (
+        PredicateKindV22.CHANGE_RECENT_ROLLOUT
+        in {item.predicate_kind for item in memory.predicates}
+    ) is expected
 
 
 def test_alternative_support_clause_accepts_and_irrelevant_refs_are_rejected() -> None:
@@ -913,6 +987,64 @@ def test_no_incident_requires_broad_runtime_and_metric_coverage() -> None:
         memory=with_decoy,
         candidate_services=("checkout", "payment"),
     ).accepted is True
+
+
+def test_no_incident_requires_anomaly_evaluable_baselines() -> None:
+    missing_baseline = BaselineProfileV22.build(
+        metric_stats=(),
+        trace_stats=(),
+        resource_stats=(),
+    )
+    missing, _ = _memory(
+        _no_incident_outcomes(error_rate_value=0.9),
+        top_k=32,
+        baseline=missing_baseline,
+    )
+    denied_missing = evaluate_no_incident_v22(
+        memory=missing,
+        candidate_services=("checkout", "payment"),
+    )
+    assert denied_missing.accepted is False
+    assert denied_missing.anomaly_evaluable_services == ()
+    assert "METRIC_BASELINE_COVERAGE_INCOMPLETE" in denied_missing.denial_reasons
+
+    zero_baseline = BaselineProfileV22.build(
+        metric_stats=tuple(
+            (service, kind, mean, 0.0)
+            for service in ("checkout", "payment")
+            for kind, mean in (
+                (MetricKindV22.ERROR_RATE, 0.0),
+                (MetricKindV22.LATENCY_P95_MS, 100.0),
+                (MetricKindV22.REQUEST_SUPPORT, 1000.0),
+            )
+        ),
+        trace_stats=(),
+        resource_stats=(),
+    )
+    anomalous, _ = _memory(
+        _no_incident_outcomes(error_rate_value=0.9),
+        top_k=32,
+        baseline=zero_baseline,
+    )
+    denied_zero = evaluate_no_incident_v22(
+        memory=anomalous,
+        candidate_services=("checkout", "payment"),
+    )
+    assert denied_zero.anomaly_evaluable_services == ("checkout", "payment")
+    assert denied_zero.accepted is False
+    assert "STRONG_ANOMALY_PRESENT" in denied_zero.denial_reasons
+
+    normal, _ = _memory(
+        _no_incident_outcomes(error_rate_value=0.0),
+        top_k=32,
+        baseline=zero_baseline,
+    )
+    admitted_zero = evaluate_no_incident_v22(
+        memory=normal,
+        candidate_services=("checkout", "payment"),
+    )
+    assert admitted_zero.anomaly_evaluable_services == ("checkout", "payment")
+    assert admitted_zero.accepted is True
 
 
 def test_unknown_hypothesis_cannot_become_diagnosed() -> None:

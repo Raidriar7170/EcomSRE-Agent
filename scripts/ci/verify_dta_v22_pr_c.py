@@ -32,7 +32,10 @@ from ecomsre.dta_v2.v22.memory_benchmark import (
     benchmark_fixed_trajectory_v22,
 )
 from ecomsre.dta_v2.v22.predicates import (
+    NoIncidentCoverageDecisionV22,
     PredicateExtractorV22,
+    PredicateKindV22,
+    _ELIGIBLE_RECENT_ROLLOUT_STATES_V22,
     build_default_evidence_support_policy_v22,
 )
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
@@ -46,7 +49,7 @@ PR_C_SUCCESSOR_ATTESTATION = Path(
     "config/dta-v22/pr-c-successor-attestation.v1.json"
 )
 EXPECTED_MANIFEST_SHA256 = (
-    "842527ac9ef08a62bf246a89ecc9fe172dc5a2cef4df7e401e58b9223e43f228"
+    "c8f37b945375c83de6ce1ab6766d8f51c8a48b2cf94438f72679ac6c79ca83e8"
 )
 EXPECTED_PR_C_CHANGED_PATHS = (
     Path(".github/workflows/agent-mainline.yml"),
@@ -563,7 +566,16 @@ def verify_pr_c_bindings(
         ),
         "runtime_endpoint_policy": "DTA_V2_ENDPOINT_STATE_ENUM",
         "runtime_exit_code_source": "DTA_V2_READ_TOOL_OBSERVATION",
+        "runtime_v2_request_envelope_exact": True,
         "runtime_state_health_coherent": True,
+        "no_incident_requires_anomaly_evaluable_baseline": True,
+        "zero_baseline_anomaly_policy": "ABSOLUTE_DELTA_THRESHOLD",
+        "eligible_recent_rollout_states": [
+            "IN_PROGRESS",
+            "COMPLETED",
+            "ROLLED_BACK",
+        ],
+        "memory_metric_clause_policy": "OMITTED_UNREACHABLE_PR_B_SOURCE",
         "trace_top_k_priority": [
             "FIRST_ERROR",
             "ERROR_SPAN",
@@ -662,6 +674,27 @@ def _verify_runtime_contracts() -> None:
         "exit_code",
     ):
         raise ValueError("runtime projection fields differ")
+    if tuple(NoIncidentCoverageDecisionV22.model_fields) != (
+        "schema_version",
+        "candidate_services",
+        "accepted",
+        "runtime_covered_services",
+        "metric_covered_services",
+        "anomaly_evaluable_services",
+        "denial_reasons",
+        "decision_sha256",
+    ):
+        raise ValueError("No-Incident anomaly-evaluable coverage fields differ")
+    if "METRIC_MEMORY_STRONG" in PredicateKindV22.__members__:
+        raise ValueError("unreachable PR-B memory metric predicate remains")
+    if tuple(
+        item.value
+        for item in sorted(
+            _ELIGIBLE_RECENT_ROLLOUT_STATES_V22,
+            key=lambda item: item.value,
+        )
+    ) != ("COMPLETED", "IN_PROGRESS", "ROLLED_BACK"):
+        raise ValueError("recent rollout eligibility differs")
     if "full_observations" not in FullEvidenceMemoryV22.model_fields:
         raise ValueError("Full Memory lacks typed observations")
     if "full_observations" in SalientEvidenceMemoryV22.model_fields:

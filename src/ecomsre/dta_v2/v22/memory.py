@@ -26,6 +26,7 @@ from ecomsre.dta_v2.tool_contracts import (
     ReadToolObservation,
     RuntimeRecord,
     ToolName,
+    build_inspect_service_runtime_request,
 )
 from ecomsre.dta_v2.v22.read_contracts import (
     ChangeCategoryV22,
@@ -432,6 +433,11 @@ class RuntimeReadOutcomeV22(DtaModelV22):
         services = tuple(item.service for item in self.records)
         if len(services) != len(set(services)):
             raise ValueError("runtime outcome contains duplicate services")
+        canonical_source_request = build_inspect_service_runtime_request(
+            run_id=self.source_observation.run_id,
+            services=self.action.target_services,
+            max_results=len(self.action.target_services),
+        )
         if (
             self.action.source is not EvidenceSourceV22.RUNTIME
             or self.source_outcome.source is not EvidenceSourceV22.RUNTIME
@@ -441,6 +447,8 @@ class RuntimeReadOutcomeV22(DtaModelV22):
             or self.action_id != self.source_outcome.action_id
             or self.request_sha256 != self.action.request_sha256
             or self.request_sha256 != self.source_outcome.request_sha256
+            or self.source_observation.request_sha256
+            != canonical_source_request.normalized_request_sha256
             or self.status is not self.source_outcome.status
             or self.truncated != self.source_outcome.truncated
             or self.records
@@ -614,7 +622,6 @@ class MinimalObservationIndexV22(DtaModelV22):
 class PredicateKindV22(str, Enum):
     METRIC_ERROR_RATE_STRONG = "METRIC_ERROR_RATE_STRONG"
     METRIC_LATENCY_STRONG = "METRIC_LATENCY_STRONG"
-    METRIC_MEMORY_STRONG = "METRIC_MEMORY_STRONG"
     RUNTIME_NOT_RUNNING = "RUNTIME_NOT_RUNNING"
     RUNTIME_UNHEALTHY = "RUNTIME_UNHEALTHY"
     RUNTIME_HEALTHY = "RUNTIME_HEALTHY"
@@ -760,7 +767,6 @@ class SalientEvidenceMemoryV22(DtaModelV22):
         source_by_predicate = {
             PredicateKindV22.METRIC_ERROR_RATE_STRONG: EvidenceSourceV22.METRICS,
             PredicateKindV22.METRIC_LATENCY_STRONG: EvidenceSourceV22.METRICS,
-            PredicateKindV22.METRIC_MEMORY_STRONG: EvidenceSourceV22.METRICS,
             PredicateKindV22.RUNTIME_NOT_RUNNING: EvidenceSourceV22.RUNTIME,
             PredicateKindV22.RUNTIME_UNHEALTHY: EvidenceSourceV22.RUNTIME,
             PredicateKindV22.RUNTIME_HEALTHY: EvidenceSourceV22.RUNTIME,
@@ -965,15 +971,25 @@ def _metric_strength(
     delta = record.value - baseline.mean
     if record.metric_kind is MetricKindV22.ERROR_RATE:
         if (
-            ratio is not None
-            and ratio >= thresholds.error_rate_strong_ratio
+            (
+                baseline.mean == 0
+                or (
+                    ratio is not None
+                    and ratio >= thresholds.error_rate_strong_ratio
+                )
+            )
             and delta >= thresholds.error_rate_strong_delta
         ):
             return SignalStrengthV22.STRONG
     elif record.metric_kind is MetricKindV22.LATENCY_P95_MS:
         if (
-            ratio is not None
-            and ratio >= thresholds.latency_strong_ratio
+            (
+                baseline.mean == 0
+                or (
+                    ratio is not None
+                    and ratio >= thresholds.latency_strong_ratio
+                )
+            )
             and delta >= thresholds.latency_strong_delta_ms
         ):
             return SignalStrengthV22.STRONG

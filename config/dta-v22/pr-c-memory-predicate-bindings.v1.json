@@ -11,7 +11,7 @@
     },
     {
       "path": "src/ecomsre/dta_v2/v22/memory.py",
-      "sha256": "5b710f84eed06621c184ac9333e5f2a4734117ebc75b43d958c5633377f61b58"
+      "sha256": "5158fb9205f953f24a7825f485a315249c1e5780ae37a85436968ea374753150"
     },
     {
       "path": "src/ecomsre/dta_v2/v22/memory_benchmark.py",
@@ -19,7 +19,7 @@
     },
     {
       "path": "src/ecomsre/dta_v2/v22/predicates.py",
-      "sha256": "d7be8a2c364b4c99970d9ae56a2937bcf1691faaea03cd1e7babdfe2f338fbe8"
+      "sha256": "c56a1c4168d224f369cdac02289ec02d95ac61b5bc2f5938adbc9b599bea8c7f"
     },
     {
       "path": "tests/dta_v22/conftest.py",
@@ -27,7 +27,7 @@
     },
     {
       "path": "tests/dta_v22/test_v22_memory_predicates_diagnosis.py",
-      "sha256": "3ce0e338bd733826ef0b113a055ecf757034756cba6e25376aff8aed6f81e0e7"
+      "sha256": "c0cdc964b76fca28ae97a547a0c4ffb1560ace9046b1667bb82c306698705803"
     }
   ],
   "predicate_thresholds": {
@@ -45,14 +45,13 @@
     "recent_change_seconds": 900,
     "thresholds_sha256": "5872568ded2519f9134a7a0ba7ffbbe5b5d8303532ed7d1e5c3e81abc51f3729"
   },
-  "support_policy_sha256": "40328bf7b7fb3d514da43773995d0e626ad4867d09dab5bf404725ca9474c5b3",
+  "support_policy_sha256": "06681ea6f3b6624b7913f9817f759fdc793a62c1760038d2f341d17704173e2b",
   "support_clause_ids": [
     "configuration:change-and-error-metric",
     "configuration:change-and-log",
     "cpu-saturation:resource-and-healthy",
     "dependency-latency:trace-and-metric",
     "memory-leak:growth-and-log",
-    "memory-leak:growth-and-memory-metric",
     "memory-leak:growth-and-restarts",
     "service-unavailable:not-running",
     "service-unavailable:unhealthy-error-metric",
@@ -86,7 +85,16 @@
     "runtime_projection_policy": "dta-v22.runtime-projection.from-pr-b-and-v2-authority.v1",
     "runtime_endpoint_policy": "DTA_V2_ENDPOINT_STATE_ENUM",
     "runtime_exit_code_source": "DTA_V2_READ_TOOL_OBSERVATION",
+    "runtime_v2_request_envelope_exact": true,
     "runtime_state_health_coherent": true,
+    "no_incident_requires_anomaly_evaluable_baseline": true,
+    "zero_baseline_anomaly_policy": "ABSOLUTE_DELTA_THRESHOLD",
+    "eligible_recent_rollout_states": [
+      "IN_PROGRESS",
+      "COMPLETED",
+      "ROLLED_BACK"
+    ],
+    "memory_metric_clause_policy": "OMITTED_UNREACHABLE_PR_B_SOURCE",
     "trace_top_k_priority": [
       "FIRST_ERROR",
       "ERROR_SPAN",

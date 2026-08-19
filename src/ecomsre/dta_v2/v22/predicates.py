@@ -27,6 +27,7 @@ from ecomsre.dta_v2.v22.read_contracts import (
     EvidenceSourceV22,
     MetricKindV22,
     MetricSupportStatusV22,
+    RolloutStateV22,
     RuntimeStateV22,
     Sha256V22,
     semantic_sha256_v22,
@@ -87,14 +88,6 @@ _FROZEN_SUPPORT_POLICY_V22 = (
         (
             (PredicateKindV22.RESOURCE_MEMORY_GROWTH_STRONG, RequirementServiceBindingV22.TARGET, False),
             (PredicateKindV22.LOG_MEMORY_PRESSURE, RequirementServiceBindingV22.TARGET, False),
-        ),
-    ),
-    (
-        "memory-leak:growth-and-memory-metric",
-        MechanismV22.MEMORY_LEAK,
-        (
-            (PredicateKindV22.RESOURCE_MEMORY_GROWTH_STRONG, RequirementServiceBindingV22.TARGET, False),
-            (PredicateKindV22.METRIC_MEMORY_STRONG, RequirementServiceBindingV22.TARGET, False),
         ),
     ),
     (
@@ -221,6 +214,7 @@ class NoIncidentCoverageDecisionV22(DtaModelV22):
     accepted: StrictBool
     runtime_covered_services: tuple[str, ...]
     metric_covered_services: tuple[str, ...]
+    anomaly_evaluable_services: tuple[str, ...]
     denial_reasons: tuple[str, ...]
     decision_sha256: Sha256V22
 
@@ -228,6 +222,25 @@ class NoIncidentCoverageDecisionV22(DtaModelV22):
     def require_decision(self) -> NoIncidentCoverageDecisionV22:
         if self.accepted == bool(self.denial_reasons):
             raise ValueError("No-Incident acceptance and denials are inconsistent")
+        candidates = set(self.candidate_services)
+        for values in (
+            self.candidate_services,
+            self.runtime_covered_services,
+            self.metric_covered_services,
+            self.anomaly_evaluable_services,
+            self.denial_reasons,
+        ):
+            if values != tuple(sorted(set(values))):
+                raise ValueError("No-Incident decision values are not canonical")
+        if any(
+            not set(values).issubset(candidates)
+            for values in (
+                self.runtime_covered_services,
+                self.metric_covered_services,
+                self.anomaly_evaluable_services,
+            )
+        ):
+            raise ValueError("No-Incident coverage escapes candidate services")
         expected = semantic_sha256_v22(
             self.model_dump(mode="json", exclude={"decision_sha256"})
         )
@@ -277,6 +290,15 @@ def _build_predicate(
     )
 
 
+_ELIGIBLE_RECENT_ROLLOUT_STATES_V22 = frozenset(
+    {
+        RolloutStateV22.IN_PROGRESS,
+        RolloutStateV22.COMPLETED,
+        RolloutStateV22.ROLLED_BACK,
+    }
+)
+
+
 class PredicateExtractorV22:
     """Extract only source-local predicates from typed salient facts."""
 
@@ -300,8 +322,6 @@ class PredicateExtractorV22:
                         kinds.append((PredicateKindV22.METRIC_ERROR_RATE_STRONG, None))
                     elif payload.metric_kind is MetricKindV22.LATENCY_P95_MS:
                         kinds.append((PredicateKindV22.METRIC_LATENCY_STRONG, None))
-                    elif payload.metric_kind is MetricKindV22.MEMORY_BYTES:
-                        kinds.append((PredicateKindV22.METRIC_MEMORY_STRONG, None))
             elif isinstance(payload, LogSalientPayloadV22):
                 kind_by_category = {
                     LogCategoryV22.CONFIGURATION_ERROR: (
@@ -361,7 +381,10 @@ class PredicateExtractorV22:
                         (PredicateKindV22.RESOURCE_MEMORY_GROWTH_STRONG, None)
                     )
             elif isinstance(payload, ChangeSalientPayloadV22):
-                if payload.relative_seconds <= self.thresholds.recent_change_seconds:
+                if (
+                    payload.relative_seconds <= self.thresholds.recent_change_seconds
+                    and payload.rollout_state in _ELIGIBLE_RECENT_ROLLOUT_STATES_V22
+                ):
                     kinds.append((PredicateKindV22.CHANGE_RECENT_ROLLOUT, None))
             for kind, parent in kinds:
                 predicates.append(
@@ -438,14 +461,6 @@ def build_default_evidence_support_policy_v22() -> EvidenceSupportPolicyV22:
                     requirements=(
                         _requirement(PredicateKindV22.RESOURCE_CPU_STRONG),
                         _requirement(PredicateKindV22.RUNTIME_HEALTHY),
-                    ),
-                ),
-                SupportClauseV22(
-                    clause_id="memory-leak:growth-and-memory-metric",
-                    mechanism=MechanismV22.MEMORY_LEAK,
-                    requirements=(
-                        _requirement(PredicateKindV22.RESOURCE_MEMORY_GROWTH_STRONG),
-                        _requirement(PredicateKindV22.METRIC_MEMORY_STRONG),
                     ),
                 ),
                 SupportClauseV22(
@@ -624,6 +639,9 @@ def evaluate_no_incident_v22(
         raise ValueError("No-Incident candidates are not canonical")
     runtime_covered: set[str] = set()
     metric_kinds: dict[str, set[MetricKindV22]] = {item: set() for item in candidates}
+    anomaly_evaluable_kinds: dict[str, set[MetricKindV22]] = {
+        item: set() for item in candidates
+    }
     for fact in memory.salient_facts:
         if fact.service not in metric_kinds:
             continue
@@ -634,8 +652,22 @@ def evaluate_no_incident_v22(
             isinstance(fact.payload, MetricSalientPayloadV22)
             and fact.payload.support_status is MetricSupportStatusV22.SUPPORTED
             and fact.payload.sample_count > 0
+            and fact.payload.value is not None
         ):
             metric_kinds[fact.service].add(fact.payload.metric_kind)
+            if (
+                fact.payload.metric_kind
+                in {MetricKindV22.ERROR_RATE, MetricKindV22.LATENCY_P95_MS}
+                and fact.payload.baseline_value is not None
+                and fact.payload.delta is not None
+                and (
+                    fact.payload.baseline_value == 0
+                    or fact.payload.baseline_ratio is not None
+                )
+            ):
+                anomaly_evaluable_kinds[fact.service].add(
+                    fact.payload.metric_kind
+                )
     core = {
         MetricKindV22.ERROR_RATE,
         MetricKindV22.LATENCY_P95_MS,
@@ -644,11 +676,22 @@ def evaluate_no_incident_v22(
     metric_covered = {
         service for service, kinds in metric_kinds.items() if core.issubset(kinds)
     }
+    anomaly_core = {
+        MetricKindV22.ERROR_RATE,
+        MetricKindV22.LATENCY_P95_MS,
+    }
+    anomaly_evaluable = {
+        service
+        for service, kinds in anomaly_evaluable_kinds.items()
+        if anomaly_core.issubset(kinds)
+    }
     reasons: list[str] = []
     if runtime_covered != set(candidates):
         reasons.append("RUNTIME_COVERAGE_OR_HEALTH_INCOMPLETE")
     if metric_covered != set(candidates):
         reasons.append("METRIC_COVERAGE_INCOMPLETE")
+    if anomaly_evaluable != set(candidates):
+        reasons.append("METRIC_BASELINE_COVERAGE_INCOMPLETE")
     if any(
         item.service in set(candidates)
         and item.predicate_kind in _ANOMALY_PREDICATES
@@ -661,6 +704,7 @@ def evaluate_no_incident_v22(
         "accepted": not reasons,
         "runtime_covered_services": tuple(sorted(runtime_covered)),
         "metric_covered_services": tuple(sorted(metric_covered)),
+        "anomaly_evaluable_services": tuple(sorted(anomaly_evaluable)),
         "denial_reasons": tuple(sorted(reasons)),
     }
     draft = NoIncidentCoverageDecisionV22.model_construct(
