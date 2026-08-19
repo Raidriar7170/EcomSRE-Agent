@@ -1,0 +1,196 @@
+{
+  "schema_version": "dta-v22-pr-c-memory-predicate-bindings.v1",
+  "goal_version": "dta-v22-p0-master-v1",
+  "stage": "PR-C",
+  "base_main": "8e42b6d212e24ddc94ac4097da7e3e3aae57da98",
+  "terminal": "DTA_V22_PR_C_MEMORY_PREDICATES_READY",
+  "artifacts": [
+    {
+      "path": "src/ecomsre/dta_v2/v22/diagnosis.py",
+      "sha256": "75dadc55ce4a91bc911db892b36ab9c1de3a034c98b2b048884a0defdf84c8bc"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/memory.py",
+      "sha256": "5158fb9205f953f24a7825f485a315249c1e5780ae37a85436968ea374753150"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/memory_benchmark.py",
+      "sha256": "d80d86a17dabb5e3e6e1560d80fa87138255290cc40ed9bc9a13eaeaaed1fb98"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/predicates.py",
+      "sha256": "c56a1c4168d224f369cdac02289ec02d95ac61b5bc2f5938adbc9b599bea8c7f"
+    },
+    {
+      "path": "tests/dta_v22/conftest.py",
+      "sha256": "3437295bb8b6252ea93c5ce0d1ffe0dd32d92fcd71a7de11b9f086a1d6988815"
+    },
+    {
+      "path": "tests/dta_v22/test_v22_memory_predicates_diagnosis.py",
+      "sha256": "c0cdc964b76fca28ae97a547a0c4ffb1560ace9046b1667bb82c306698705803"
+    }
+  ],
+  "predicate_thresholds": {
+    "schema_version": "dta-v22.predicate-thresholds.v1",
+    "error_rate_strong_ratio": 2.0,
+    "error_rate_strong_delta": 0.05,
+    "latency_strong_ratio": 2.0,
+    "latency_strong_delta_ms": 5.0,
+    "trace_latency_strong_ratio": 2.0,
+    "trace_latency_strong_delta_ms": 5.0,
+    "cpu_strong_p95_percent": 80.0,
+    "cpu_strong_baseline_ratio": 2.0,
+    "memory_growth_strong_bytes_per_second": 1.0,
+    "restart_pressure_count": 2,
+    "recent_change_seconds": 900,
+    "thresholds_sha256": "5872568ded2519f9134a7a0ba7ffbbe5b5d8303532ed7d1e5c3e81abc51f3729"
+  },
+  "support_policy_sha256": "06681ea6f3b6624b7913f9817f759fdc793a62c1760038d2f341d17704173e2b",
+  "support_clause_ids": [
+    "configuration:change-and-error-metric",
+    "configuration:change-and-log",
+    "cpu-saturation:resource-and-healthy",
+    "dependency-latency:trace-and-metric",
+    "memory-leak:growth-and-log",
+    "memory-leak:growth-and-restarts",
+    "service-unavailable:not-running",
+    "service-unavailable:unhealthy-error-metric",
+    "service-unavailable:unhealthy-first-error"
+  ],
+  "memory_contract": {
+    "salient_retains_all_evidence_refs": true,
+    "salient_retains_all_predicates": true,
+    "salient_predicates_require_authoritative_provenance": true,
+    "salient_summaries_require_authoritative_provenance": true,
+    "salient_loss_ledger_requires_authoritative_provenance": true,
+    "loss_ledger_omitted_count_basis": "UNREPRESENTED_EVIDENCE_REFS",
+    "salient_top_k_min": 1,
+    "salient_top_k_max": 256,
+    "mandatory_fact_classes": [
+      "ALL_SUPPORTED_CORE_METRICS",
+      "ALL_BOUNDED_RUNTIME_STATE"
+    ],
+    "full_memory_payload": [
+      "FULL_TYPED_OBSERVATIONS",
+      "MINIMAL_REF_STATUS_INDEX",
+      "RUNTIME_ACTION_SOURCE_OUTCOME_AND_V2_AUTHORITY_PROJECTION"
+    ],
+    "runtime_observation_fields": [
+      "state",
+      "healthy",
+      "endpoint",
+      "restart_count",
+      "exit_code"
+    ],
+    "runtime_projection_policy": "dta-v22.runtime-projection.from-pr-b-and-v2-authority.v1",
+    "runtime_endpoint_policy": "DTA_V2_ENDPOINT_STATE_ENUM",
+    "runtime_exit_code_source": "DTA_V2_READ_TOOL_OBSERVATION",
+    "runtime_v2_request_envelope_exact": true,
+    "runtime_state_health_coherent": true,
+    "no_incident_requires_anomaly_evaluable_baseline": true,
+    "zero_baseline_anomaly_policy": "ABSOLUTE_DELTA_THRESHOLD",
+    "eligible_recent_rollout_states": [
+      "IN_PROGRESS",
+      "COMPLETED",
+      "ROLLED_BACK"
+    ],
+    "memory_metric_clause_policy": "OMITTED_UNREACHABLE_PR_B_SOURCE",
+    "trace_top_k_priority": [
+      "FIRST_ERROR",
+      "ERROR_SPAN",
+      "SLOWEST_CAUSAL_EDGE"
+    ],
+    "log_templates_sanitized": true,
+    "duplicate_log_templates_aggregated": true,
+    "malformed_support_refs_terminal": "FAILED",
+    "benchmark_provider_calls": 0
+  },
+  "candidate_registry": {
+    "source": "DTA_V21_EXACT_RUNBOOK_REGISTRY",
+    "source_registry_sha256": "02bbcddba67da53c10324624dc770c9f73056e0126469567c8e70a79710047e9",
+    "caller_declared_trust_allowed": false,
+    "candidate_set_registry_sha256_exact": true,
+    "backend_mode": "REPLAY_ONLY"
+  },
+  "diagnosis_terminals": [
+    "DIAGNOSED",
+    "NO_INCIDENT",
+    "ABSTAIN",
+    "FAILED"
+  ],
+  "truth_isolation": {
+    "predicate_reads_evaluator_truth": false,
+    "predicate_reads_fixture_content": false,
+    "predicate_reads_expected_mechanism": false,
+    "predicate_uses_case_threshold": false,
+    "candidate_filter_allows_live_backend": false,
+    "benchmark_calls_provider": false
+  },
+  "verifier_trust_boundary": {
+    "current_stage_anchor": "EXACT_GIT_COMMIT_AND_EXACT_HEAD_CI",
+    "self_hash_claim": false,
+    "persistent_scan_includes_verifier": true,
+    "successor_binding": "PR_D_ATTESTATION_FROM_PR_C_MERGE_TREE"
+  },
+  "successor_attestation_contract": {
+    "path": "config/dta-v22/pr-c-successor-attestation.v1.json",
+    "schema_version": "dta-v22-pr-c-successor-attestation.v1",
+    "decision_id": "DEC-055",
+    "source_stage": "PR-C",
+    "successor_stage": "PR-D",
+    "successor_branch": "codex/dta-v22-p0-pr-d-planner-lite",
+    "pull_ref_namespace": "refs/remotes/dta-pr/{pr}",
+    "required_fields": [
+      "schema_version",
+      "goal_version",
+      "decision_id",
+      "repository",
+      "source_stage",
+      "source_pr",
+      "source_candidate_head",
+      "source_candidate_tree",
+      "source_merge_commit",
+      "source_merge_tree",
+      "successor_stage",
+      "successor_pr",
+      "successor_branch",
+      "base_main_head",
+      "successor_head",
+      "successor_tree",
+      "changed_paths",
+      "raw_sha256_by_path",
+      "provider_called",
+      "docker_called",
+      "held_out_executed",
+      "scenario_executed",
+      "fault_injected",
+      "runbook_executed",
+      "private_evidence_changed",
+      "public_result_changed",
+      "execution_report_rebound",
+      "record_sha256"
+    ],
+    "git_proofs": [
+      "source_candidate_matches_pull_ref",
+      "source_candidate_tree_matches_single_parent_squash_tree",
+      "source_candidate_is_not_merge_ancestor",
+      "source_merge_is_current_ancestor_and_subject_binds_pr",
+      "source_candidate_and_merge_trees_bind_manifest",
+      "successor_head_tree_and_changed_paths_match_base_diff",
+      "every_successor_changed_file_matches_raw_sha256",
+      "attestation_commit_is_single_file_child",
+      "successor_final_head_matches_pull_ref"
+    ],
+    "required_false_activity_fields": [
+      "provider_called",
+      "docker_called",
+      "held_out_executed",
+      "scenario_executed",
+      "fault_injected",
+      "runbook_executed",
+      "private_evidence_changed",
+      "public_result_changed",
+      "execution_report_rebound"
+    ]
+  }
+}
