@@ -154,7 +154,7 @@ def _public_summary(
         "input_tokens": report.input_tokens,
         "output_tokens": report.output_tokens,
         "total_tokens": report.total_tokens,
-        "provider_response_digest_set_sha256": semantic_sha256_v22(response_digests),
+        "response_digest_set_sha256": semantic_sha256_v22(response_digests),
         "provider_gate_eligible": report.provider_gate_eligible,
         "terminal": report.terminal.value,
         "raw_provider_content_published": False,
