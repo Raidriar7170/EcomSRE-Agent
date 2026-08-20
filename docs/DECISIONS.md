@@ -1446,6 +1446,68 @@ authorize PR-E. It does not relabel the preserved v3 blocker and does not
 authorize Docker, scenarios, faults, Agent evidence dispatch, Agent writes,
 Runbooks, held-out execution, or any work in PR-E.
 
+## DEC-059 — DTA v2.2 PR-D Final Provider Compatibility Variant: Static Alias Schema and Local Fail-Closed Function Mode
+
+**Status: `accepted` for the final PR #60 Provider campaign only.**
+
+Goal Amendment 3 preserves Attempts 1–5 and every v3/v4 public and private
+artifact, manifest, Human Brief, terminal, and hash exactly. The v4 HTTP 400
+strict-probe result remains a valid compatibility blocker with one Provider
+call, no selected mode, and no replicate. It is not semantic Planner-Lite
+evidence and cannot be rerun or reused as a v5 call.
+
+Provider Compatibility v5 uses exactly `LOCAL_FAIL_CLOSED_JSON`: one forced
+function call, `parallel_tool_calls=false`, `strict=false`, temperature zero,
+and one immutable conservative parameter schema. It never sends
+`response_format`, never tries strict mode first, and has no fallback. The
+static Provider schema contains only type, properties, required,
+additionalProperties, items, and the four-value decision enum. Request-specific
+H/A/E membership and stronger collection constraints remain private local
+validation.
+
+The Provider selects short H/A/E aliases only. The request-bound immutable
+alias table resolves them into the exact unchanged `ControllerDecisionV22`.
+Unknown, stale, wrong-kind, duplicated, overlapping, or decision-inconsistent
+aliases fail closed before dispatch. Evidence-reference validity and the
+unchanged controller runtime admission remain mandatory; local mode is an
+adapter compatibility choice, not new Agent, write, Runbook, Docker, or fault
+authority. Public evidence contains bounded hashes and safe failure fields,
+never raw Provider content.
+
+The one final v5 campaign contains one local-mode ABSTAIN-sentinel probe and
+two different preregistered 24-transition replicates. Each replicate has 20
+ordinary transitions and four correction envelopes, split evenly across Flat
+and Planner-Lite with stale-action and invalid-ref correction on both arms.
+Replicate B still runs after a transport-complete semantic block in A and does
+not run after an A transport abort. Request starts are at least 12 seconds
+apart, the inter-replicate cooldown is at least 120 seconds, the complete
+campaign maximum is exactly 49 Provider calls, and HTTP retry, semantic retry,
+replacement replicate, and additional campaign counts are zero.
+
+Each replicate independently requires 19/20 ordinary acceptance overall and
+9/10 per arm, 4/4 correction and 2/2 per arm, 23/24 final acceptance, 24/24
+bounded responses, known input usage within 4,000 mean and 5,500 maximum, and
+zero unsafe dispatch. Request rejection, rate limit, server error, timeout,
+connection error, and response-protocol failure remain distinct safe classes.
+Planned, attempted, completed, unattempted, parse, alias-resolution,
+runtime-admission, intent-mismatch, and accepted counts are persisted
+separately.
+
+Commit A freezes DEC-059, the static adapter, protocol, runner, manifest,
+stage-aware verifier/tests, CI route, and Master Progress state
+`V5_PRE_EXECUTION_READY`. No Provider call is allowed until that exact head has
+green CI and independent Must Fix 0 / Claim Accuracy PASS. After a call starts,
+Commit B may contain only the declared public results, progress, Human Brief,
+review disposition, administrative successor attestation, and PR-body state.
+The same verifier entry point accepts exactly `V5_PRE_EXECUTION_READY`,
+`V5_COMPLETE_PASS`, or `V5_COMPLETE_BLOCKED` and rejects mixed states.
+
+Only two independently passing v5 replicates mint
+`DTA_V22_PR_D_CONTROLLER_READY`. Any other durable v5 result ends
+`BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE`, keeps PR #60 Draft, forbids PR-E,
+and exhausts this Goal chain. No v6 campaign or amendment is authorized merely
+to retry.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)
