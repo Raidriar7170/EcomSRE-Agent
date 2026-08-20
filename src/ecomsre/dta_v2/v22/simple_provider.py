@@ -29,6 +29,9 @@ from ecomsre.dta_v2.v22.controller_inputs import (
     ControllerArmV22,
     ControllerTurnInputV22,
 )
+from ecomsre.dta_v2.v22.evidence_acquisition_v221 import (
+    TerminalExplorationPolicyV221,
+)
 from ecomsre.dta_v2.v22.read_contracts import DtaModelV22
 from ecomsre.model.gateway import OpenAICompatibleConfig
 
@@ -97,6 +100,12 @@ SHARED_SYSTEM_PROMPT_V22 = (
     "service unavailable uses not-running runtime, or unhealthy runtime plus an error "
     "metric or first-error trace. READ when the minimum clause is not yet present. "
     "There is no write, shell, remediation, Docker, or Runbook authority."
+)
+SHARED_SYSTEM_PROMPT_V221 = (
+    SHARED_SYSTEM_PROMPT_V22
+    + " When terminal_exploration_policy requires evidence acquisition, ABSTAIN before "
+    "the first adaptive read will be rejected while an executable evidence action "
+    "remains. Select one bounded READ unless another terminal is already supported."
 )
 
 
@@ -468,6 +477,9 @@ def build_provider_turn_request_v22(
     turn_input: ControllerTurnInputV22,
     *,
     system_prompt: str = SHARED_SYSTEM_PROMPT_V22,
+    terminal_exploration_policy: TerminalExplorationPolicyV221 | None = None,
+    adaptive_reads_so_far: int = 0,
+    policy_redirect_remaining: bool = False,
 ) -> ProviderTurnRequestV22:
     if not isinstance(turn_input, ControllerTurnInputV22):
         raise TypeError("controller turn input is invalid")
@@ -524,6 +536,16 @@ def build_provider_turn_request_v22(
         "remaining_read_budget": turn_input.runtime_context.remaining_evidence_budget,
         "remaining_provider_turns": turn_input.runtime_context.remaining_provider_turns,
     }
+    if terminal_exploration_policy is not None:
+        if type(adaptive_reads_so_far) is not int or not 0 <= adaptive_reads_so_far <= 3:
+            raise ValueError("adaptive read count is invalid")
+        if type(policy_redirect_remaining) is not bool:
+            raise TypeError("policy redirect state is invalid")
+        state.update(
+            terminal_exploration_policy=terminal_exploration_policy.value,
+            adaptive_reads_so_far=adaptive_reads_so_far,
+            policy_redirect_remaining=policy_redirect_remaining,
+        )
     if turn_input.belief_ledger_view is not None:
         view = turn_input.belief_ledger_view
         state["planner"] = {
@@ -562,6 +584,61 @@ def build_provider_turn_request_v22(
         arm=turn_input.arm,
         system_prompt=system_prompt,
         aliases=aliases,
+        visible_state=state,
+        serialized_visible_state_bytes=len(serialized),
+    )
+
+
+def build_policy_redirect_request_v221(
+    turn_input: ControllerTurnInputV22,
+    *,
+    safe_error_code: str,
+    system_prompt: str = SHARED_SYSTEM_PROMPT_V221,
+    terminal_exploration_policy: TerminalExplorationPolicyV221,
+    adaptive_reads_so_far: int,
+    policy_redirect_remaining: bool,
+) -> ProviderTurnRequestV22:
+    if safe_error_code != "PREMATURE_ABSTENTION":
+        raise ValueError("policy feedback error code is invalid")
+    if (
+        terminal_exploration_policy
+        is not TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+        or adaptive_reads_so_far != 0
+        or policy_redirect_remaining
+    ):
+        raise ValueError("policy feedback state is invalid")
+    base = build_provider_turn_request_v22(
+        turn_input,
+        system_prompt=system_prompt,
+        terminal_exploration_policy=terminal_exploration_policy,
+        adaptive_reads_so_far=adaptive_reads_so_far,
+        policy_redirect_remaining=policy_redirect_remaining,
+    )
+    state: dict[str, object] = {
+        "safe_error_code": safe_error_code,
+        "current_hypothesis_aliases": [
+            item.alias for item in base.aliases.hypotheses
+        ],
+        "current_executable_action_aliases": [
+            item.alias for item in base.aliases.actions
+        ],
+        "current_evidence_aliases": [item.alias for item in base.aliases.evidence],
+        "remaining_evidence_budget": turn_input.runtime_context.remaining_evidence_budget,
+        "instruction": (
+            "select one bounded READ or another semantically admissible terminal"
+        ),
+    }
+    serialized = json.dumps(
+        state,
+        ensure_ascii=False,
+        allow_nan=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return ProviderTurnRequestV22(
+        arm=base.arm,
+        system_prompt=base.system_prompt,
+        aliases=base.aliases,
         visible_state=state,
         serialized_visible_state_bytes=len(serialized),
     )
@@ -797,6 +874,19 @@ class SimpleProviderV22:
             turn_input,
             system_prompt=system_prompt,
         )
+        return self._complete_request(
+            request=request,
+            run_id=run_id,
+            allow_semantic_repair=allow_semantic_repair,
+        )
+
+    def _complete_request(
+        self,
+        *,
+        request: ProviderTurnRequestV22,
+        run_id: str,
+        allow_semantic_repair: bool,
+    ) -> ProviderTurnOutcomeV22:
         responses: list[Mapping[str, object]] = []
         total_retries = 0
         total_latency = 0.0
@@ -905,6 +995,57 @@ class SimpleProviderV22:
             latency_ms=total_latency,
         )
 
+    def complete_turn_v221(
+        self,
+        *,
+        turn_input: ControllerTurnInputV22,
+        run_id: str,
+        system_prompt: str = SHARED_SYSTEM_PROMPT_V221,
+        allow_semantic_repair: bool = True,
+        terminal_exploration_policy: TerminalExplorationPolicyV221,
+        adaptive_reads_so_far: int,
+        policy_redirect_remaining: bool,
+    ) -> ProviderTurnOutcomeV22:
+        request = build_provider_turn_request_v22(
+            turn_input,
+            system_prompt=system_prompt,
+            terminal_exploration_policy=terminal_exploration_policy,
+            adaptive_reads_so_far=adaptive_reads_so_far,
+            policy_redirect_remaining=policy_redirect_remaining,
+        )
+        return self._complete_request(
+            request=request,
+            run_id=run_id,
+            allow_semantic_repair=allow_semantic_repair,
+        )
+
+    def complete_policy_redirect_turn_v221(
+        self,
+        *,
+        turn_input: ControllerTurnInputV22,
+        run_id: str,
+        safe_error_code: str,
+        system_prompt: str = SHARED_SYSTEM_PROMPT_V221,
+        terminal_exploration_policy: TerminalExplorationPolicyV221,
+        adaptive_reads_so_far: int,
+        policy_redirect_remaining: bool,
+    ) -> ProviderTurnOutcomeV22:
+        """Send exactly one policy-feedback call without opening a repair frontier."""
+
+        request = build_policy_redirect_request_v221(
+            turn_input,
+            safe_error_code=safe_error_code,
+            system_prompt=system_prompt,
+            terminal_exploration_policy=terminal_exploration_policy,
+            adaptive_reads_so_far=adaptive_reads_so_far,
+            policy_redirect_remaining=policy_redirect_remaining,
+        )
+        return self._complete_request(
+            request=request,
+            run_id=run_id,
+            allow_semantic_repair=False,
+        )
+
     def complete_repair_turn(
         self,
         *,
@@ -979,8 +1120,10 @@ __all__ = (
     "ProviderTurnOutcomeV22",
     "ProviderTurnRequestV22",
     "SHARED_SYSTEM_PROMPT_V22",
+    "SHARED_SYSTEM_PROMPT_V221",
     "SimpleProviderV22",
     "StdlibProviderTransportV22",
+    "build_policy_redirect_request_v221",
     "build_provider_turn_request_v22",
     "parse_provider_response_v22",
 )

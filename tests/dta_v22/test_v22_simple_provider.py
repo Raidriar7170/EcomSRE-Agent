@@ -23,6 +23,9 @@ from ecomsre.dta_v2.v22.controller_inputs import (
     ControllerRuntimeContextV22,
     ControllerTurnInputV22,
 )
+from ecomsre.dta_v2.v22.evidence_acquisition_v221 import (
+    TerminalExplorationPolicyV221,
+)
 from ecomsre.dta_v2.v22.memory import (
     ChangeSalientPayloadV22,
     EvidenceRefV22,
@@ -38,6 +41,7 @@ from ecomsre.dta_v2.v22.simple_provider import (
     FUNCTION_NAME_V22,
     ProviderProtocolFailureV22,
     ProviderTransportErrorV22,
+    SHARED_SYSTEM_PROMPT_V221,
     SimpleProviderV22,
     StdlibProviderTransportV22,
     build_provider_turn_request_v22,
@@ -200,6 +204,103 @@ def test_flat_and_planner_provider_state_differs_only_by_compact_ledger() -> Non
         "evidence_support_policy",
     ):
         assert forbidden not in serialized.casefold()
+
+
+def test_v221_projection_adds_only_bounded_policy_state_for_both_arms() -> None:
+    flat = build_provider_turn_request_v22(
+        _turn(ControllerArmV22.FLAT_CANONICAL),
+        terminal_exploration_policy=(
+            TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+        ),
+        adaptive_reads_so_far=0,
+        policy_redirect_remaining=True,
+    )
+    planner = build_provider_turn_request_v22(
+        _turn(ControllerArmV22.PLANNER_LITE),
+        terminal_exploration_policy=(
+            TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+        ),
+        adaptive_reads_so_far=0,
+        policy_redirect_remaining=True,
+    )
+
+    assert flat.visible_state["terminal_exploration_policy"] == (
+        "MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN"
+    )
+    assert flat.visible_state["adaptive_reads_so_far"] == 0
+    assert flat.visible_state["policy_redirect_remaining"] is True
+    planner_without_ledger = dict(planner.visible_state)
+    planner_without_ledger.pop("planner")
+    assert planner_without_ledger == flat.visible_state
+    assert "bootstrap_insufficient_expected" not in json.dumps(
+        planner.visible_state, sort_keys=True
+    )
+
+
+def test_v221_prompt_file_matches_the_versioned_shared_prompt() -> None:
+    prompt = Path("config/dta-v22-1/prompt.txt").read_text(encoding="utf-8").strip()
+
+    assert prompt == SHARED_SYSTEM_PROMPT_V221
+
+
+def test_policy_feedback_is_one_nonrepair_call_with_only_bounded_alias_state(
+    tmp_path: Path,
+) -> None:
+    transport = RecordingTransport([_tool_response()])
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    result = provider.complete_policy_redirect_turn_v221(
+        turn_input=_turn(ControllerArmV22.FLAT_CANONICAL),
+        run_id="7" * 32,
+        safe_error_code="PREMATURE_ABSTENTION",
+        terminal_exploration_policy=(
+            TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+        ),
+        adaptive_reads_so_far=0,
+        policy_redirect_remaining=False,
+    )
+
+    assert result.provider_calls == 1
+    assert result.semantic_repair_used is False
+    assert len(transport.calls) == 1
+    payload = transport.calls[0]["payload"]
+    assert isinstance(payload, dict)
+    messages = payload["messages"]
+    assert isinstance(messages, list)
+    user = json.loads(messages[1]["content"])
+    state = user["visible_state"]
+    assert set(state) == {
+        "safe_error_code",
+        "current_hypothesis_aliases",
+        "current_executable_action_aliases",
+        "current_evidence_aliases",
+        "remaining_evidence_budget",
+        "instruction",
+    }
+    assert state["safe_error_code"] == "PREMATURE_ABSTENTION"
+    assert state["remaining_evidence_budget"] == 3.0
+    assert "bootstrap_insufficient_expected" not in json.dumps(state, sort_keys=True)
+
+
+def test_policy_feedback_never_opens_a_nested_semantic_repair(tmp_path: Path) -> None:
+    transport = RecordingTransport(
+        [_tool_response(hypothesis="BAD"), _tool_response()]
+    )
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    with pytest.raises(ProviderProtocolFailureV22):
+        provider.complete_policy_redirect_turn_v221(
+            turn_input=_turn(ControllerArmV22.FLAT_CANONICAL),
+            run_id="8" * 32,
+            safe_error_code="PREMATURE_ABSTENTION",
+            terminal_exploration_policy=(
+                TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+            ),
+            adaptive_reads_so_far=0,
+            policy_redirect_remaining=False,
+        )
+
+    assert len(transport.calls) == 1
 
 
 def test_change_fact_projection_removes_nested_revision_digest() -> None:

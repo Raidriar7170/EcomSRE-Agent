@@ -136,6 +136,12 @@ jobs:
           env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
           uv run --frozen --no-sync python -m scripts.ci.verify_dta_v22_pr_c
 
+      - name: DTA v2.2.1 merged Practical result byte verification
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_dta_v221_historical_practical_results
+
       - name: DTA v2.2 focused tests
         run: >-
           env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"

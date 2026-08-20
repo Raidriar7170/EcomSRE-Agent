@@ -1,0 +1,34 @@
+{
+  "schema_version": "dta-v22.1.historical-practical-results.v1",
+  "base_commit": "fceadc924d4909ca1457b35f268429f0272427ce",
+  "files": [
+    {
+      "path": "docs/results/dta-v22-practical-development.json",
+      "sha256": "6b5c93c0ee12331213f5c5d71666f05cb2a1ea836b7d06cec8006fa7113e3c77"
+    },
+    {
+      "path": "docs/results/dta-v22-practical-development.md",
+      "sha256": "cb7b46fd97ec26f9ec2fa362b5d114682a20aa371069e42d37ca5e933982c7c3"
+    },
+    {
+      "path": "docs/results/dta-v22-practical-error-analysis.md",
+      "sha256": "0232b3dfc27b564cf372b499a11eaccefeeee25c1870ffbc5a51b4cd1409bce5"
+    },
+    {
+      "path": "docs/results/dta-v22-practical-evaluation.json",
+      "sha256": "6323cd0135cb1de8199b6041ac428244e50c9df2acc914f95c47c01191f09669"
+    },
+    {
+      "path": "docs/results/dta-v22-practical-evaluation.md",
+      "sha256": "ee8aa03a0ae42f30b3ec64b0bc1d3e709b58f0086375cbb5db21989bce7f7ad6"
+    },
+    {
+      "path": "docs/results/dta-v22-practical-final-summary.md",
+      "sha256": "c8b8018df05d9a40ac655fb11eba7c73ee965ef5a59d616e7144ceb1b05216fc"
+    },
+    {
+      "path": "docs/results/dta-v22-practical-interview-brief.md",
+      "sha256": "a6fd515d401d92f17c97c1eeddfff403aaefc540922777faf76b4d000d890386"
+    }
+  ]
+}
