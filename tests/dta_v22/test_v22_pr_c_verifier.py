@@ -23,7 +23,7 @@ def test_pr_c_verifier_closes_memory_predicate_and_diagnosis_gates() -> None:
         "status": "PASS",
         "historical_bindings": "PASS",
         "pr_b_successor_gate": "PASS",
-        "public_scan_mode": "PR_C_CLOSED_SURFACE",
+        "public_scan_mode": "PUBLISHED_PR_C_PERSISTENT_ARTIFACTS",
         "secret_private_path_scan": "PASS",
         "truth_isolation": "PASS",
         "memory_contract": "PASS",

@@ -1,0 +1,27 @@
+{
+  "schema_version": "dta-v22.practical-evaluation-manifest.v1",
+  "frozen_files": [
+    {
+      "path": "config/dta-v22-sprint/prompt.txt",
+      "sha256": "bedb72395325800fe2c069f09ece1ca58777090fe049e373cc79a79dd254d3fe"
+    },
+    {
+      "path": "config/dta-v22-sprint/evaluation/cases.json",
+      "sha256": "243e7231dbd9e4aa5ed59cddfed2fb354a2c2bb552c02bf279cefddbec7f3204"
+    },
+    {
+      "path": "config/dta-v22-sprint/evaluation/truth.json",
+      "sha256": "c1597f11627b89cd15fa6ca22d558b3f431ccbd338f3725e0ed1a899fbfb2ed3"
+    }
+  ],
+  "case_count": 12,
+  "arms": [
+    "FLAT_CANONICAL",
+    "PLANNER_LITE"
+  ],
+  "schedule": "case-order; even cases FLAT_CANONICAL first; odd cases PLANNER_LITE first",
+  "truth_load_boundary": "after both arms complete for all cases",
+  "same_case_bytes_both_arms_required": true,
+  "provider_run_policy": "single fixed evaluation; exact-request transport retry only",
+  "private_seal": false
+}

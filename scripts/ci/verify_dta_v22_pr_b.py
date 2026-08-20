@@ -453,7 +453,37 @@ def _require_pr_b_successor_progress(root: Path, progress: dict[str, Any]) -> No
                 or progress.get("active_branch") != attestation["successor_branch"]
             ):
                 raise ValueError("active PR-C identity differs from attestation")
-            successor_final_head = _git_text(root, "rev-parse", "HEAD")
+            successor_final_head = _git_text(
+                root,
+                "rev-parse",
+                "--verify",
+                successor_pull_ref,
+            )
+            head = _git_text(root, "rev-parse", "HEAD")
+            if head != successor_final_head:
+                successor_tree = _git_text(
+                    root,
+                    "rev-parse",
+                    f"{successor_final_head}^{{tree}}",
+                )
+                squash_candidates = tuple(
+                    commit
+                    for commit in _git_text(
+                        root,
+                        "rev-list",
+                        "--ancestry-path",
+                        f"{attestation['base_main_head']}..HEAD",
+                    ).splitlines()
+                    if _git_text(root, "rev-parse", f"{commit}^")
+                    == attestation["base_main_head"]
+                    and _git_text(root, "rev-parse", f"{commit}^{{tree}}")
+                    == successor_tree
+                    and _git_text(root, "show", "-s", "--format=%s", commit).endswith(
+                        f"(#{successor_pr})"
+                    )
+                )
+                if len(squash_candidates) != 1:
+                    raise ValueError("PR-C squash merge tree is absent from HEAD ancestry")
         else:
             pr_c = merged[2]
             if (

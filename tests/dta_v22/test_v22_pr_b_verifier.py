@@ -219,6 +219,35 @@ def test_pr_b_gate_has_a_successor_safe_persistent_mode(tmp_path: Path) -> None:
         )
 
 
+def test_pr_b_successor_gate_accepts_pr_c_squash_merge_tree(tmp_path: Path) -> None:
+    root, pr_a, pr_b, pr_c = _successor_repo(tmp_path)
+    tree = _git(root, "rev-parse", f"{pr_c['head_sha']}^{{tree}}")
+    squash = _git(
+        root,
+        "commit-tree",
+        tree,
+        "-p",
+        str(pr_b["merge_commit"]),
+        "-m",
+        "DTA v2.2 P0 PR-C: memory predicates and diagnosis (#59)",
+    )
+    _git(root, "checkout", "--detach", squash)
+
+    mode, paths = _public_scan_plan(
+        root,
+        {
+            "current_stage": "PR-C",
+            "completed_stage": "PR-B",
+            "active_branch": "codex/dta-v22-p0-pr-c-memory-predicates-diagnosis",
+            "active_pr": 59,
+            "merged_prs": [pr_a, pr_b],
+        },
+    )
+
+    assert mode == "SUCCESSOR_PERSISTENT_ARTIFACTS"
+    assert paths == PERSISTENT_PR_B_ARTIFACTS
+
+
 def test_pr_b_successor_gate_rejects_fake_shas(tmp_path: Path) -> None:
     root, pr_a, pr_b, _pr_c = _successor_repo(tmp_path)
     pr_b["head_sha"] = "1" * 40

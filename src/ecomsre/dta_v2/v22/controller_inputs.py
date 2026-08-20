@@ -291,8 +291,7 @@ class ControllerTurnInputV22(DtaModelV22):
         ):
             raise ValueError("controller input candidate surfaces differ")
         if (
-            self.bootstrap.memory_sha256 != self.salient_memory.memory_sha256
-            or self.bootstrap.topology_sha256 != self.action_catalog.topology_sha256
+            self.bootstrap.topology_sha256 != self.action_catalog.topology_sha256
             or self.bootstrap.capability_registry_sha256
             != self.action_catalog.capability_registry_sha256
             or self.bootstrap.enabled_sources != self.action_catalog.enabled_sources

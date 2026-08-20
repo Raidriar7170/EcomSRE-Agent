@@ -41,9 +41,9 @@ from ecomsre.dta_v2.v22.diagnosis import (
     DiagnosisTerminalV22,
     HypothesisDefinitionV22,
     RawSemanticDiagnosisProposalV22,
-    admit_diagnosis_v22,
 )
 from ecomsre.dta_v2.v22.memory import MemoryReadOutcomeV22, RuntimeReadOutcomeV22
+from ecomsre.dta_v2.v22.practical_admission import admit_practical_diagnosis_v22
 from ecomsre.dta_v2.v22.predicates import MechanismV22
 from ecomsre.dta_v2.v22.read_contracts import (
     DtaModelV22,
@@ -512,8 +512,17 @@ def _decision_error_v22(
     hypotheses = turn_input.hypothesis_catalog
     actions = turn_input.action_catalog
     try:
-        hypotheses.require(decision.working_hypothesis_id)
+        selected_hypothesis = hypotheses.require(decision.working_hypothesis_id)
     except ValueError:
+        return ControllerProtocolErrorCodeV22.INVALID_DECISION_SHAPE
+    if (
+        selected_hypothesis.mechanism is MechanismV22.DEPENDENCY_LATENCY
+        and selected_hypothesis.target_service is not None
+        and not any(
+            selected_hypothesis.target_service in edge
+            for edge in turn_input.bootstrap.candidate_subgraph_edges
+        )
+    ):
         return ControllerProtocolErrorCodeV22.INVALID_DECISION_SHAPE
     if (
         session.arm is ControllerArmV22.PLANNER_LITE
@@ -592,7 +601,7 @@ def _admit_terminal_v22(
         item.status in _FAILED_SOURCE_STATUSES_V22
         for item in turn_input.salient_memory.observation_summaries
     )
-    return admit_diagnosis_v22(
+    return admit_practical_diagnosis_v22(
         proposal=proposal,
         hypotheses=(hypothesis,),
         memory=turn_input.salient_memory,
@@ -731,6 +740,67 @@ def process_controller_decision_v22(
         admission = None
     else:
         admission = _admit_terminal_v22(decision=decision, turn_input=turn_input)
+        if admission.terminal is DiagnosisTerminalV22.FAILED:
+            semantic_error = (
+                ControllerProtocolErrorCodeV22.SEMANTIC_ADMISSION_FAILED
+            )
+            invalid_codes = (*session.invalid_attempt_codes, semantic_error)
+            if not session.ledger.correction_used:
+                ledger = record_belief_correction_v22(
+                    ledger=session.ledger,
+                    error_code=semantic_error,
+                )
+                updated = _build_session_v22(
+                    arm=session.arm,
+                    candidate_services=session.candidate_services,
+                    hypothesis_catalog_sha256=session.hypothesis_catalog_sha256,
+                    bootstrap_sha256=session.bootstrap_sha256,
+                    topology_sha256=session.topology_sha256,
+                    capability_registry_sha256=session.capability_registry_sha256,
+                    support_policy_sha256=session.support_policy_sha256,
+                    controller_identity_sha256=session.controller_identity_sha256,
+                    ledger=ledger,
+                    accepted_input_sha256s=input_hashes,
+                    invalid_attempt_codes=invalid_codes,
+                    pending_read=None,
+                    terminal_admission=None,
+                )
+                return _build_result_v22(
+                    disposition=(
+                        ControllerProtocolDispositionV22.CORRECTION_REQUIRED
+                    ),
+                    error_code=semantic_error,
+                    accepted_decision=None,
+                    correction=_build_correction_v22(
+                        error_code=semantic_error,
+                        action_catalog=turn_input.action_catalog,
+                    ),
+                    semantic_admission=None,
+                    session=updated,
+                )
+            updated = _build_session_v22(
+                arm=session.arm,
+                candidate_services=session.candidate_services,
+                hypothesis_catalog_sha256=session.hypothesis_catalog_sha256,
+                bootstrap_sha256=session.bootstrap_sha256,
+                topology_sha256=session.topology_sha256,
+                capability_registry_sha256=session.capability_registry_sha256,
+                support_policy_sha256=session.support_policy_sha256,
+                controller_identity_sha256=session.controller_identity_sha256,
+                ledger=session.ledger,
+                accepted_input_sha256s=input_hashes,
+                invalid_attempt_codes=invalid_codes,
+                pending_read=None,
+                terminal_admission=None,
+            )
+            return _build_result_v22(
+                disposition=ControllerProtocolDispositionV22.FAILED,
+                error_code=semantic_error,
+                accepted_decision=None,
+                correction=None,
+                semantic_admission=None,
+                session=updated,
+            )
         ledger = record_belief_turn_v22(
             ledger=session.ledger,
             hypothesis_catalog=turn_input.hypothesis_catalog,

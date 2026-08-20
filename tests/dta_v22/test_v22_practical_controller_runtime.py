@@ -403,9 +403,52 @@ def test_semantic_admission_denies_unsupported_commit_and_no_incident() -> None:
         ),
         turn_input=turn,
     )
-    assert unsupported_commit.semantic_admission is not None
-    assert unsupported_commit.semantic_admission.terminal.name == "FAILED"
-    assert unsupported_commit.session.terminal is ControllerSessionTerminalV22.FAILED
+    assert unsupported_commit.semantic_admission is None
+    assert unsupported_commit.disposition is ControllerProtocolDispositionV22.CORRECTION_REQUIRED
+    assert unsupported_commit.error_code is ControllerProtocolErrorCodeV22.SEMANTIC_ADMISSION_FAILED
+    assert unsupported_commit.session.terminal is ControllerSessionTerminalV22.ACTIVE
+    assert unsupported_commit.session.read_dispatches == 0
+
+    edge_free_bootstrap_draft = bootstrap.model_copy(
+        update={"candidate_subgraph_edges": (), "snapshot_sha256": "0" * 64}
+    )
+    edge_free_bootstrap = edge_free_bootstrap_draft.model_copy(
+        update={
+            "snapshot_sha256": semantic_sha256_v22(
+                edge_free_bootstrap_draft.model_dump(
+                    mode="json", exclude={"snapshot_sha256"}
+                )
+            )
+        }
+    )
+    edge_free_session = initialize_controller_session_v22(
+        arm=session.arm,
+        controller_identity_sha256=identity,
+        hypothesis_catalog=hypotheses,
+        bootstrap=edge_free_bootstrap,
+        support_policy_sha256=policy.policy_sha256,
+    )
+    invalid_dependency = process_controller_decision_v22(
+        session=edge_free_session,
+        raw_decision=ControllerDecisionV22(
+            decision=ControllerDecisionKindV22.COMMIT,
+            working_hypothesis_id="h:payment:dependency-latency",
+            action_id=NO_ACTION_ID_V22,
+            supporting_evidence_refs=("e:a:changes:payment:0:111111111111",),
+            contradicting_evidence_refs=(),
+        ),
+        turn_input=_turn(
+            hypotheses=hypotheses,
+            identity=identity,
+            bootstrap=edge_free_bootstrap,
+            policy=policy,
+            session=edge_free_session,
+            actions=actions,
+            memory=memory,
+        ),
+    )
+    assert invalid_dependency.disposition is ControllerProtocolDispositionV22.CORRECTION_REQUIRED
+    assert invalid_dependency.error_code is ControllerProtocolErrorCodeV22.INVALID_DECISION_SHAPE
 
     hypotheses, identity, bootstrap, policy, session, actions, memory = _setup()
     no_incident = process_controller_decision_v22(
@@ -427,9 +470,11 @@ def test_semantic_admission_denies_unsupported_commit_and_no_incident() -> None:
             memory=memory,
         ),
     )
-    assert no_incident.semantic_admission is not None
-    assert no_incident.semantic_admission.terminal.name == "FAILED"
-    assert no_incident.session.terminal is ControllerSessionTerminalV22.FAILED
+    assert no_incident.semantic_admission is None
+    assert no_incident.disposition is ControllerProtocolDispositionV22.CORRECTION_REQUIRED
+    assert no_incident.error_code is ControllerProtocolErrorCodeV22.SEMANTIC_ADMISSION_FAILED
+    assert no_incident.session.terminal is ControllerSessionTerminalV22.ACTIVE
+    assert no_incident.session.read_dispatches == 0
 
 
 def test_correction_contract_rejects_semantic_rehash_of_valid_action_surface() -> None:

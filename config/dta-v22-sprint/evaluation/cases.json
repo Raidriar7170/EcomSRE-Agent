@@ -1,0 +1,125 @@
+{
+  "schema_version": "dta-v22.practical-case-set.v1",
+  "cases": [
+    {
+      "case_id": "e01",
+      "source_path": "config/dta-v21/evaluation/development/agent-visible/dta21-case-001.json",
+      "source_sha256": "2386ffd0c07b5adf1b2670e6c56b9115b89b804abea2f124350a1a4ad40a13db",
+      "capture_kind": "REAL_PUBLIC_REPLAY",
+      "modifier": "NONE",
+      "derivation": null,
+      "counterfactual_pair_ids": ["cf1", "cf2"],
+      "bootstrap_insufficient_expected": true
+    },
+    {
+      "case_id": "e02",
+      "source_path": "config/dta-v21/evaluation/development/agent-visible/dta21-case-002.json",
+      "source_sha256": "2f926ff5bbbd48bafcd980b272511104f747bd3d6a334a0c803c5dfe38bb81b5",
+      "capture_kind": "REAL_PUBLIC_REPLAY",
+      "modifier": "NONE",
+      "derivation": null,
+      "counterfactual_pair_ids": ["cf1"],
+      "bootstrap_insufficient_expected": true
+    },
+    {
+      "case_id": "e03",
+      "source_path": "config/dta-v21/evaluation/development/agent-visible/dta21-case-005.json",
+      "source_sha256": "c20e98e072c924f0c566f3772145d57c86f4abf6e6afc42e4fbb34b14c7d8498",
+      "capture_kind": "REAL_PUBLIC_REPLAY",
+      "modifier": "NONE",
+      "derivation": null,
+      "counterfactual_pair_ids": [],
+      "bootstrap_insufficient_expected": false
+    },
+    {
+      "case_id": "e04",
+      "source_path": "config/dta-v21/evaluation/development/agent-visible/dta21-case-009.json",
+      "source_sha256": "345748a1c007502be5af2cbfe40f94d75a7af84aaf70df797a6d974453184b47",
+      "capture_kind": "REAL_PUBLIC_REPLAY",
+      "modifier": "NONE",
+      "derivation": null,
+      "counterfactual_pair_ids": [],
+      "bootstrap_insufficient_expected": false
+    },
+    {
+      "case_id": "e05",
+      "source_path": "config/dta-v21/evaluation/development/agent-visible/dta21-case-004.json",
+      "source_sha256": "f4ed89ed9a4862a53bc17e204bb79d1fd745b947223f95f3fc9ad99fc52438b9",
+      "capture_kind": "REAL_PUBLIC_REPLAY",
+      "modifier": "NONE",
+      "derivation": null,
+      "counterfactual_pair_ids": [],
+      "bootstrap_insufficient_expected": true
+    },
+    {
+      "case_id": "e06",
+      "source_path": "config/dta-v21/evaluation/development/agent-visible/dta21-case-007.json",
+      "source_sha256": "b70649f9e6e6c71abc741f579249f1367eb10e8064fec8571f5d9aab74ef00e0",
+      "capture_kind": "REAL_PUBLIC_REPLAY",
+      "modifier": "NONE",
+      "derivation": null,
+      "counterfactual_pair_ids": [],
+      "bootstrap_insufficient_expected": true
+    },
+    {
+      "case_id": "e07",
+      "source_path": "config/dta-v21/evaluation/development/agent-visible/dta21-case-010.json",
+      "source_sha256": "9db325bb5ade1c3974d066703c2371db3ffbca42851633d5ce838e9ffbd519f5",
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "modifier": "SHIPPING_DEPENDENCY_DERIVED",
+      "derivation": "derived from public v21 case 010 with frozen latency values and shared source topology",
+      "counterfactual_pair_ids": ["cf3"],
+      "bootstrap_insufficient_expected": true
+    },
+    {
+      "case_id": "e08",
+      "source_path": null,
+      "source_sha256": null,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "modifier": "PAYMENT_DEPENDENCY_FIXTURE",
+      "derivation": "fixture-derived payment dependency using only latency metric trace and healthy runtime",
+      "counterfactual_pair_ids": [],
+      "bootstrap_insufficient_expected": true
+    },
+    {
+      "case_id": "e09",
+      "source_path": "config/dta-v21/evaluation/development/agent-visible/dta21-case-011.json",
+      "source_sha256": "110bf48699a70fcffb09c3852ff6f91d952d82e4ab4f1db406d73480a5f52066",
+      "capture_kind": "REAL_PUBLIC_REPLAY",
+      "modifier": "NONE",
+      "derivation": null,
+      "counterfactual_pair_ids": ["cf2"],
+      "bootstrap_insufficient_expected": false
+    },
+    {
+      "case_id": "e10",
+      "source_path": "config/dta-v21/evaluation/development/agent-visible/dta21-case-010.json",
+      "source_sha256": "9db325bb5ade1c3974d066703c2371db3ffbca42851633d5ce838e9ffbd519f5",
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "modifier": "SHIPPING_HEALTHY_COUNTERFACTUAL",
+      "derivation": "counterfactual healthy projection of the e07 shipping and checkout base",
+      "counterfactual_pair_ids": ["cf3"],
+      "bootstrap_insufficient_expected": false
+    },
+    {
+      "case_id": "e11",
+      "source_path": "config/dta-v21/evaluation/development/agent-visible/dta21-case-012.json",
+      "source_sha256": "c4e0a0674e2b5798382a116728271e48752cc14164799e3ecfb69345b2728234",
+      "capture_kind": "REAL_PUBLIC_REPLAY",
+      "modifier": "NONE",
+      "derivation": null,
+      "counterfactual_pair_ids": ["cf4"],
+      "bootstrap_insufficient_expected": true
+    },
+    {
+      "case_id": "e12",
+      "source_path": "config/dta-v2/evaluation/no-action/agent-visible/dta-case-012.json",
+      "source_sha256": "70304b5843b87d75e631cd3a0badfeb2f5ab4e9c10579270ba3893ad0163f9c1",
+      "capture_kind": "REAL_PUBLIC_REPLAY",
+      "modifier": "NONE",
+      "derivation": null,
+      "counterfactual_pair_ids": ["cf4"],
+      "bootstrap_insufficient_expected": true
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "schema_version": "dta-v22.practical-truth-set.v1",
+  "truths": [
+    {"case_id": "d01", "expected_terminal": "DIAGNOSED", "expected_root_service": "payment", "expected_mechanism": "CONFIGURATION_ERROR", "evidence_applicable": true},
+    {"case_id": "d02", "expected_terminal": "DIAGNOSED", "expected_root_service": "recommendation", "expected_mechanism": "SERVICE_UNAVAILABLE", "evidence_applicable": true},
+    {"case_id": "d03", "expected_terminal": "DIAGNOSED", "expected_root_service": "email", "expected_mechanism": "MEMORY_LEAK", "evidence_applicable": true},
+    {"case_id": "d04", "expected_terminal": "DIAGNOSED", "expected_root_service": "ad", "expected_mechanism": "CPU_SATURATION", "evidence_applicable": true},
+    {"case_id": "d05", "expected_terminal": "DIAGNOSED", "expected_root_service": "email", "expected_mechanism": "SERVICE_UNAVAILABLE", "evidence_applicable": true},
+    {"case_id": "d06", "expected_terminal": "DIAGNOSED", "expected_root_service": "shipping", "expected_mechanism": "DEPENDENCY_LATENCY", "evidence_applicable": true},
+    {"case_id": "d07", "expected_terminal": "NO_INCIDENT", "expected_root_service": null, "expected_mechanism": null, "evidence_applicable": false},
+    {"case_id": "d08", "expected_terminal": "ABSTAIN", "expected_root_service": null, "expected_mechanism": null, "evidence_applicable": false}
+  ]
+}

@@ -209,6 +209,11 @@ def test_one_semantic_repair_uses_only_safe_alias_frontier(tmp_path: Path) -> No
         "allowed_evidence",
         "required_shape",
     }
+    assert {item["role"] for item in repair["repair"]["allowed_hypotheses"]} == {
+        "INCIDENT",
+        "NO_INCIDENT",
+        "UNRESOLVED",
+    }
     debug = (tmp_path / ("a" * 32) / "provider-failure.json").read_text()
     assert "super-secret-provider-key" not in debug
     assert "Authorization" not in debug
@@ -227,6 +232,22 @@ def test_second_semantic_failure_is_terminal_without_a_third_call(tmp_path: Path
         )
     assert captured.value.safe_code == "PROTOCOL_FAILED"
     assert len(transport.calls) == 2
+
+
+def test_case_level_repair_budget_can_disable_a_later_automatic_repair(
+    tmp_path: Path,
+) -> None:
+    transport = RecordingTransport([_tool_response(hypothesis="H99")])
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    with pytest.raises(ProviderProtocolFailureV22):
+        provider.complete_turn(
+            turn_input=_turn(ControllerArmV22.FLAT_CANONICAL),
+            run_id="c" * 32,
+            allow_semantic_repair=False,
+        )
+
+    assert len(transport.calls) == 1
 
 
 def test_only_retryable_transport_failures_use_the_fixed_two_retries(
