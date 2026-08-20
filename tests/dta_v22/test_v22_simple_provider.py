@@ -23,6 +23,9 @@ from ecomsre.dta_v2.v22.controller_inputs import (
     ControllerRuntimeContextV22,
     ControllerTurnInputV22,
 )
+from ecomsre.dta_v2.v22.evidence_acquisition_v221 import (
+    TerminalExplorationPolicyV221,
+)
 from ecomsre.dta_v2.v22.memory import (
     ChangeSalientPayloadV22,
     EvidenceRefV22,
@@ -37,7 +40,9 @@ from ecomsre.dta_v2.v22.read_contracts import (
 from ecomsre.dta_v2.v22.simple_provider import (
     FUNCTION_NAME_V22,
     ProviderProtocolFailureV22,
+    ProviderProtocolFailureV221,
     ProviderTransportErrorV22,
+    SHARED_SYSTEM_PROMPT_V221,
     SimpleProviderV22,
     StdlibProviderTransportV22,
     build_provider_turn_request_v22,
@@ -202,6 +207,210 @@ def test_flat_and_planner_provider_state_differs_only_by_compact_ledger() -> Non
         assert forbidden not in serialized.casefold()
 
 
+def test_v221_projection_adds_only_bounded_policy_state_for_both_arms() -> None:
+    flat = build_provider_turn_request_v22(
+        _turn(ControllerArmV22.FLAT_CANONICAL),
+        terminal_exploration_policy=(
+            TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+        ),
+        adaptive_reads_so_far=0,
+        policy_redirect_remaining=True,
+    )
+    planner = build_provider_turn_request_v22(
+        _turn(ControllerArmV22.PLANNER_LITE),
+        terminal_exploration_policy=(
+            TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+        ),
+        adaptive_reads_so_far=0,
+        policy_redirect_remaining=True,
+    )
+
+    assert flat.visible_state["terminal_exploration_policy"] == (
+        "MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN"
+    )
+    assert flat.visible_state["adaptive_reads_so_far"] == 0
+    assert flat.visible_state["policy_redirect_remaining"] is True
+    planner_without_ledger = dict(planner.visible_state)
+    planner_without_ledger.pop("planner")
+    assert planner_without_ledger == flat.visible_state
+    assert "bootstrap_insufficient_expected" not in json.dumps(
+        planner.visible_state, sort_keys=True
+    )
+
+
+def test_v221_prompt_file_matches_the_versioned_shared_prompt() -> None:
+    prompt = Path("config/dta-v22-1/prompt.txt").read_text(encoding="utf-8").strip()
+
+    assert prompt == SHARED_SYSTEM_PROMPT_V221
+
+
+def test_policy_feedback_is_one_nonrepair_call_with_only_bounded_alias_state(
+    tmp_path: Path,
+) -> None:
+    transport = RecordingTransport([_tool_response()])
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    result = provider.complete_policy_redirect_turn_v221(
+        turn_input=_turn(ControllerArmV22.FLAT_CANONICAL),
+        run_id="7" * 32,
+        safe_error_code="PREMATURE_ABSTENTION",
+        terminal_exploration_policy=(
+            TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+        ),
+        adaptive_reads_so_far=0,
+        policy_redirect_remaining=False,
+    )
+
+    assert result.provider_calls == 1
+    assert result.semantic_repair_used is False
+    assert len(transport.calls) == 1
+    payload = transport.calls[0]["payload"]
+    assert isinstance(payload, dict)
+    messages = payload["messages"]
+    assert isinstance(messages, list)
+    user = json.loads(messages[1]["content"])
+    state = user["visible_state"]
+    assert set(state) == {
+        "safe_error_code",
+        "current_hypothesis_aliases",
+        "current_executable_action_aliases",
+        "current_evidence_aliases",
+        "remaining_evidence_budget",
+        "instruction",
+    }
+    assert state["safe_error_code"] == "PREMATURE_ABSTENTION"
+    assert state["remaining_evidence_budget"] == 3.0
+    assert "bootstrap_insufficient_expected" not in json.dumps(state, sort_keys=True)
+
+
+def test_policy_feedback_never_opens_a_nested_semantic_repair(tmp_path: Path) -> None:
+    transport = RecordingTransport(
+        [_tool_response(hypothesis="BAD"), _tool_response()]
+    )
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    with pytest.raises(ProviderProtocolFailureV22):
+        provider.complete_policy_redirect_turn_v221(
+            turn_input=_turn(ControllerArmV22.FLAT_CANONICAL),
+            run_id="8" * 32,
+            safe_error_code="PREMATURE_ABSTENTION",
+            terminal_exploration_policy=(
+                TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+            ),
+            adaptive_reads_so_far=0,
+            policy_redirect_remaining=False,
+        )
+
+    assert len(transport.calls) == 1
+
+
+def test_policy_feedback_failure_preserves_call_token_and_latency_accounting(
+    tmp_path: Path,
+) -> None:
+    transport = RecordingTransport([_tool_response(hypothesis="BAD")])
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    with pytest.raises(ProviderProtocolFailureV221) as captured:
+        provider.complete_policy_redirect_turn_v221(
+            turn_input=_turn(ControllerArmV22.FLAT_CANONICAL),
+            run_id="9" * 32,
+            safe_error_code="PREMATURE_ABSTENTION",
+            terminal_exploration_policy=(
+                TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+            ),
+            adaptive_reads_so_far=0,
+            policy_redirect_remaining=False,
+        )
+
+    assert captured.value.provider_calls == 1
+    assert captured.value.input_tokens == 100
+    assert captured.value.output_tokens == 20
+    assert captured.value.total_tokens == 120
+    assert captured.value.latency_ms >= 0
+
+
+def test_v221_initial_transport_failure_counts_one_logical_provider_call(
+    tmp_path: Path,
+) -> None:
+    transport = RecordingTransport(
+        [
+            ProviderTransportErrorV22("HTTP_503", status_code=503),
+            ProviderTransportErrorV22("HTTP_503", status_code=503),
+            ProviderTransportErrorV22("HTTP_503", status_code=503),
+        ]
+    )
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    with pytest.raises(ProviderProtocolFailureV221) as captured:
+        provider.complete_turn_v221(
+            turn_input=_turn(ControllerArmV22.FLAT_CANONICAL),
+            run_id="3" * 32,
+            terminal_exploration_policy=(
+                TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+            ),
+            adaptive_reads_so_far=0,
+            policy_redirect_remaining=True,
+        )
+
+    assert captured.value.safe_code == "TRANSPORT_FAILED"
+    assert captured.value.provider_calls == 1
+    assert captured.value.transport_retry_count == 2
+    assert len(transport.calls) == 3
+
+
+def test_v221_repair_transport_failure_counts_both_logical_provider_calls(
+    tmp_path: Path,
+) -> None:
+    transport = RecordingTransport(
+        [
+            _tool_response(hypothesis="H99"),
+            ProviderTransportErrorV22("HTTP_400", status_code=400),
+        ]
+    )
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    with pytest.raises(ProviderProtocolFailureV221) as captured:
+        provider.complete_turn_v221(
+            turn_input=_turn(ControllerArmV22.FLAT_CANONICAL),
+            run_id="4" * 32,
+            terminal_exploration_policy=(
+                TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+            ),
+            adaptive_reads_so_far=0,
+            policy_redirect_remaining=True,
+        )
+
+    assert captured.value.safe_code == "TRANSPORT_FAILED"
+    assert captured.value.provider_calls == 2
+    assert captured.value.input_tokens == 100
+    assert captured.value.semantic_repair_used is True
+
+
+def test_v221_policy_feedback_transport_failure_counts_its_logical_call(
+    tmp_path: Path,
+) -> None:
+    transport = RecordingTransport(
+        [ProviderTransportErrorV22("HTTP_400", status_code=400)]
+    )
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    with pytest.raises(ProviderProtocolFailureV221) as captured:
+        provider.complete_policy_redirect_turn_v221(
+            turn_input=_turn(ControllerArmV22.FLAT_CANONICAL),
+            run_id="5" * 32,
+            safe_error_code="PREMATURE_ABSTENTION",
+            terminal_exploration_policy=(
+                TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+            ),
+            adaptive_reads_so_far=0,
+            policy_redirect_remaining=False,
+        )
+
+    assert captured.value.safe_code == "TRANSPORT_FAILED"
+    assert captured.value.provider_calls == 1
+    assert captured.value.semantic_repair_used is False
+
+
 def test_change_fact_projection_removes_nested_revision_digest() -> None:
     revision_digest = "a" * 64
     evidence_ref = EvidenceRefV22.model_construct(
@@ -281,6 +490,62 @@ def test_one_semantic_repair_uses_only_safe_alias_frontier(tmp_path: Path) -> No
     ).read_text()
     assert "super-secret-provider-key" not in debug
     assert "Authorization" not in debug
+
+
+def test_v221_semantic_repair_retains_only_bounded_policy_state(
+    tmp_path: Path,
+) -> None:
+    transport = RecordingTransport(
+        [_tool_response(hypothesis="H99"), _tool_response()]
+    )
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    outcome = provider.complete_turn_v221(
+        turn_input=_turn(ControllerArmV22.FLAT_CANONICAL),
+        run_id="1" * 32,
+        terminal_exploration_policy=(
+            TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+        ),
+        adaptive_reads_so_far=0,
+        policy_redirect_remaining=True,
+    )
+
+    repair = json.loads(transport.calls[1]["payload"]["messages"][1]["content"])[
+        "repair"
+    ]
+    assert outcome.semantic_repair_used is True
+    assert repair["terminal_exploration_policy"] == (
+        "MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN"
+    )
+    assert repair["adaptive_reads_so_far"] == 0
+    assert repair["policy_redirect_remaining"] is True
+    assert "bootstrap_insufficient_expected" not in json.dumps(repair, sort_keys=True)
+
+
+def test_v221_controller_repair_retains_policy_state_and_accounting(
+    tmp_path: Path,
+) -> None:
+    transport = RecordingTransport([_tool_response()])
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    outcome = provider.complete_repair_turn_v221(
+        turn_input=_turn(ControllerArmV22.PLANNER_LITE),
+        run_id="2" * 32,
+        safe_error_code="UNKNOWN_E_ALIAS",
+        terminal_exploration_policy=(
+            TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+        ),
+        adaptive_reads_so_far=1,
+        policy_redirect_remaining=False,
+    )
+
+    repair = json.loads(transport.calls[0]["payload"]["messages"][1]["content"])[
+        "repair"
+    ]
+    assert outcome.semantic_repair_used is True
+    assert outcome.provider_calls == 1
+    assert repair["adaptive_reads_so_far"] == 1
+    assert repair["policy_redirect_remaining"] is False
 
 
 def test_second_semantic_failure_is_terminal_without_a_third_call(tmp_path: Path) -> None:

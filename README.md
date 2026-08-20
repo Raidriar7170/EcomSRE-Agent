@@ -35,6 +35,15 @@ or production claim. See the [fixed evaluation](docs/results/dta-v22-practical-e
 [error analysis](docs/results/dta-v22-practical-error-analysis.md), and
 [interview brief](docs/results/dta-v22-practical-interview-brief.md).
 
+DTA v2.2.1 then tested one narrow premature-abstention gate in a single fixed
+12-case × 4-combination study. Gate variants read more, but neither gated arm
+met every preregistered acquisition threshold, no read produced a correct
+Diagnosis, and no Planner-specific interaction was established. The result is
+`DTA_V22_1_NO_EVIDENCE_ACQUISITION_EFFECT_OBSERVED`; all 48 runs were
+represented with zero Agent writes. See the [study](docs/results/dta-v22-1-evidence-acquisition-study.md),
+[error analysis](docs/results/dta-v22-1-evidence-acquisition-error-analysis.md),
+and [interview brief](docs/results/dta-v22-1-evidence-acquisition-interview-brief.md).
+
 ## One-command offline demo
 
 ```bash
