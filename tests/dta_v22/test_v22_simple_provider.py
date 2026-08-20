@@ -329,6 +329,88 @@ def test_policy_feedback_failure_preserves_call_token_and_latency_accounting(
     assert captured.value.latency_ms >= 0
 
 
+def test_v221_initial_transport_failure_counts_one_logical_provider_call(
+    tmp_path: Path,
+) -> None:
+    transport = RecordingTransport(
+        [
+            ProviderTransportErrorV22("HTTP_503", status_code=503),
+            ProviderTransportErrorV22("HTTP_503", status_code=503),
+            ProviderTransportErrorV22("HTTP_503", status_code=503),
+        ]
+    )
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    with pytest.raises(ProviderProtocolFailureV221) as captured:
+        provider.complete_turn_v221(
+            turn_input=_turn(ControllerArmV22.FLAT_CANONICAL),
+            run_id="3" * 32,
+            terminal_exploration_policy=(
+                TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+            ),
+            adaptive_reads_so_far=0,
+            policy_redirect_remaining=True,
+        )
+
+    assert captured.value.safe_code == "TRANSPORT_FAILED"
+    assert captured.value.provider_calls == 1
+    assert captured.value.transport_retry_count == 2
+    assert len(transport.calls) == 3
+
+
+def test_v221_repair_transport_failure_counts_both_logical_provider_calls(
+    tmp_path: Path,
+) -> None:
+    transport = RecordingTransport(
+        [
+            _tool_response(hypothesis="H99"),
+            ProviderTransportErrorV22("HTTP_400", status_code=400),
+        ]
+    )
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    with pytest.raises(ProviderProtocolFailureV221) as captured:
+        provider.complete_turn_v221(
+            turn_input=_turn(ControllerArmV22.FLAT_CANONICAL),
+            run_id="4" * 32,
+            terminal_exploration_policy=(
+                TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+            ),
+            adaptive_reads_so_far=0,
+            policy_redirect_remaining=True,
+        )
+
+    assert captured.value.safe_code == "TRANSPORT_FAILED"
+    assert captured.value.provider_calls == 2
+    assert captured.value.input_tokens == 100
+    assert captured.value.semantic_repair_used is True
+
+
+def test_v221_policy_feedback_transport_failure_counts_its_logical_call(
+    tmp_path: Path,
+) -> None:
+    transport = RecordingTransport(
+        [ProviderTransportErrorV22("HTTP_400", status_code=400)]
+    )
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    with pytest.raises(ProviderProtocolFailureV221) as captured:
+        provider.complete_policy_redirect_turn_v221(
+            turn_input=_turn(ControllerArmV22.FLAT_CANONICAL),
+            run_id="5" * 32,
+            safe_error_code="PREMATURE_ABSTENTION",
+            terminal_exploration_policy=(
+                TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+            ),
+            adaptive_reads_so_far=0,
+            policy_redirect_remaining=False,
+        )
+
+    assert captured.value.safe_code == "TRANSPORT_FAILED"
+    assert captured.value.provider_calls == 1
+    assert captured.value.semantic_repair_used is False
+
+
 def test_change_fact_projection_removes_nested_revision_digest() -> None:
     revision_digest = "a" * 64
     evidence_ref = EvidenceRefV22.model_construct(

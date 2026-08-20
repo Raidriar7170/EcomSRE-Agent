@@ -929,6 +929,7 @@ class SimpleProviderV22:
         failure_class: type[ProviderProtocolFailureV22] = ProviderProtocolFailureV22,
     ) -> ProviderTurnOutcomeV22:
         responses: list[Mapping[str, object]] = []
+        provider_calls = 0
         total_retries = 0
         total_latency = 0.0
         usages: list[tuple[int, int, int]] = []
@@ -940,7 +941,7 @@ class SimpleProviderV22:
             reported_total = sum(item[2] for item in usages)
             return failure_class(
                 safe_code,
-                provider_calls=len(responses),
+                provider_calls=provider_calls,
                 transport_retry_count=total_retries,
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
@@ -955,6 +956,7 @@ class SimpleProviderV22:
             repair_code=None,
             max_completion_tokens=self.max_completion_tokens,
         )
+        provider_calls += 1
         try:
             first_response, retries, latency = self._post(first_payload)
         except ProviderTransportErrorV22 as error:
@@ -1000,6 +1002,7 @@ class SimpleProviderV22:
                 repair_code=first_error.safe_code,
                 max_completion_tokens=self.max_completion_tokens,
             )
+            provider_calls += 1
             try:
                 repair_response, retries, latency = self._post(repair_payload)
             except ProviderTransportErrorV22 as error:
@@ -1050,7 +1053,7 @@ class SimpleProviderV22:
             first_pass_protocol_success=first_pass,
             post_repair_protocol_success=True,
             semantic_repair_used=repaired,
-            provider_calls=len(responses),
+            provider_calls=provider_calls,
             transport_retry_count=total_retries,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
@@ -1140,6 +1143,7 @@ class SimpleProviderV22:
             )
             raise failure_class(
                 "TRANSPORT_FAILED",
+                provider_calls=1,
                 transport_retry_count=error.retry_count,
                 latency_ms=error.latency_ms,
                 semantic_repair_used=True,

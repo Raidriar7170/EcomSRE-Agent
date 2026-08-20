@@ -1,6 +1,6 @@
 {
   "schema_version": "dta-v22.1.evidence-acquisition-progress.v1",
-  "status": "FINAL_STUDY_READY",
+  "status": "MEASURED_RESULTS_FROZEN",
   "base_commit": "fceadc924d4909ca1457b35f268429f0272427ce",
   "implementation_commit": "6988a730763fc08506c8c70c76518e47f90b05e2",
   "provider_model": "gpt-5.4-mini-2026-03-17",
@@ -18,12 +18,35 @@
     "artifact_sha256": "93b3c981f172bc89bdb90f55ae973509965f17a6402d6d10463dbcb842ac8685"
   },
   "final_study": {
-    "execution_count": 0,
+    "execution_count": 1,
     "expected_execution_count": 1,
     "expected_cases": 12,
     "expected_arm_policy_runs": 48,
-    "output": "docs/results/dta-v22-1-evidence-acquisition-study.json"
+    "represented_arm_policy_runs": 48,
+    "output": "docs/results/dta-v22-1-evidence-acquisition-study.json",
+    "artifact_sha256": "047cab366a9f431a0eb097e79b0c48cdff1c143f63e88676601f9ba9e1f47a39",
+    "same_case_bytes_all_combinations": true,
+    "same_normalized_case_all_combinations": true,
+    "truth_loaded_after_all_combinations": true,
+    "uncaught_exceptions": 0,
+    "agent_writes": 0,
+    "policy_terminal": "DTA_V22_1_NO_EVIDENCE_ACQUISITION_EFFECT_OBSERVED"
   },
+  "committed_evidence": {
+    "partial_jsonl_sha256": "d69fb7d88eaa2ca37b27095d44d2511cc4fb2c701d38f820a8a094a745082e20",
+    "study_report_sha256": "ed9c014fe96289b1ea52f301e434c1adc5126b7040fcb730f0e5d74dc3ab1fe6",
+    "error_analysis_sha256": "be21e9d6f194b1a35066ae5e7c2f8a9f6012264cd61ea12d7eebad15de9f27ae",
+    "interview_brief_sha256": "ef2921e1e27d86e4064f646456480e360d51c3b98c4a9ba909064e34b46bac6b"
+  },
+  "post_study_non_evaluative_fixes": [
+    {
+      "issue": "terminal transport failure omitted its logical Provider call before response append",
+      "decision_behavior_changed": false,
+      "affected_final_study_runs": 0,
+      "final_study_reruns": 0,
+      "verification": "initial, semantic-repair, and policy-feedback transport failure accounting tests"
+    }
+  ],
   "safety": {
     "docker_calls": 0,
     "runbook_executions": 0,
