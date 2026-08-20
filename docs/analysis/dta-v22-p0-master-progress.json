@@ -48,12 +48,12 @@
   "provider_boundary_v4_replicate_a_sha256": null,
   "provider_boundary_v4_replicate_b_sha256": null,
   "provider_boundary_v4_campaign_sha256": "1837365119ac0cf1fcd2ddbd50199387c47bdf6dfd88cf3f0e4b87382453fc3a",
-  "provider_compatibility_v5_state": "V5_PRE_EXECUTION_READY",
+  "provider_compatibility_v5_state": "V5_COMPLETE_BLOCKED",
   "provider_compatibility_v5_manifest_sha256": "ab0a13648e5c91d1f02ce6d6ec72319ae9ed73eebcb2a11251653a5f4ba8e28d",
-  "provider_compatibility_v5_implementation_commit": null,
-  "provider_compatibility_v5_implementation_tree": null,
+  "provider_compatibility_v5_implementation_commit": "da25e24437e8ad6cb356f539fb501d07c0d86d9a",
+  "provider_compatibility_v5_implementation_tree": "8f17f11cd2d0350c6ab1526a3f614d3a2a543315",
   "provider_compatibility_v5_replicate_a_sha256": null,
   "provider_compatibility_v5_replicate_b_sha256": null,
-  "provider_compatibility_v5_campaign_sha256": null,
-  "final_engineering_terminal": null
+  "provider_compatibility_v5_campaign_sha256": "9b1d36604d89b3ffc0e433b23c0f98c047f8d0e00aedae13e70b8d2087687cb3",
+  "final_engineering_terminal": "BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE"
 }

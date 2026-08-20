@@ -1,0 +1,31 @@
+{
+  "schema_version": "dta-v22-pr-d-provider-compatibility-v5-probe-result.v1",
+  "executed_at": "2026-08-20T11:10:31.879725+00:00",
+  "implementation_commit": "da25e24437e8ad6cb356f539fb501d07c0d86d9a",
+  "implementation_tree": "8f17f11cd2d0350c6ab1526a3f614d3a2a543315",
+  "manifest_sha256": "ab0a13648e5c91d1f02ce6d6ec72319ae9ed73eebcb2a11251653a5f4ba8e28d",
+  "supported": false,
+  "provider_calls": 1,
+  "selected_mode": null,
+  "provider_request_sha256": null,
+  "static_schema_sha256": null,
+  "prompt_sha256": null,
+  "probe_report_sha256": null,
+  "failure_class": "PROVIDER_RESPONSE_PROTOCOL_FAILURE",
+  "safe_failure": {
+    "schema_version": "dta-v22.safe-provider-failure.v5",
+    "failure_class": "PROVIDER_RESPONSE_PROTOCOL_FAILURE",
+    "status": null,
+    "safe_code": "PROBE_LOCAL_VALIDATION_ABORT",
+    "safe_type": null,
+    "safe_param": null,
+    "failure_stage": "PROBE",
+    "request_payload_sha256": "e85b822eda43a318ff708742513740ff9ced4ae3c4e32201984c02ee5ebf0dbb",
+    "failure_sha256": "06ee9582ccf59a4efbf6e26ca5bd7af6c9f085b9fc878a986388861ed29d8d26"
+  },
+  "private_raw_sha256": "9340cae56dae3746528a873b0fc39a5558fd4cee69c8281528c7ecc045a2754c",
+  "private_semantic_sha256": "13d48a41ba18e501d35f36e311a6a19ba9f4acec5ee8a61e3b0c4163a13080ff",
+  "manifest_binding_raw_sha256": "c1051fd1652b25b1ef3135b1e156577f7d83dcb6e036bef9ab9298db8f0294a8",
+  "manifest_binding_semantic_sha256": "9d22e8206079c62334f82144bb466632f49b338d5219d07abdddc6669477ccf5",
+  "result_sha256": "d8386aa571327d2571b389c32f578ce3bd9ad8a03a9592235d9a4e788d816698"
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": "dta-v22-pr-d-provider-compatibility-v5.current-disposition.v1",
+  "goal_version": "dta-v22-p0-master-v1",
+  "amendment_version": "dta-v22-pr-d-provider-compatibility-v5-amendment-v1",
+  "decision_id": "DEC-059",
+  "implementation_commit": "da25e24437e8ad6cb356f539fb501d07c0d86d9a",
+  "implementation_tree": "8f17f11cd2d0350c6ab1526a3f614d3a2a543315",
+  "manifest_sha256": "ab0a13648e5c91d1f02ce6d6ec72319ae9ed73eebcb2a11251653a5f4ba8e28d",
+  "campaign_sha256": "9b1d36604d89b3ffc0e433b23c0f98c047f8d0e00aedae13e70b8d2087687cb3",
+  "pre_execution_exact_head_ci_head": "da25e24437e8ad6cb356f539fb501d07c0d86d9a",
+  "pre_execution_exact_head_ci_run_id": 32361075725,
+  "pre_execution_exact_head_ci_run_url": "https://github.com/Raidriar7170/EcomSRE-Agent/actions/runs/32361075725",
+  "pre_execution_exact_head_ci_status": "PASS",
+  "pre_execution_independent_review_head": "da25e24437e8ad6cb356f539fb501d07c0d86d9a",
+  "pre_execution_independent_review_must_fix_count": 0,
+  "pre_execution_claim_accuracy": "PASS",
+  "terminal": "BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE",
+  "merge_ready": false,
+  "disposition_sha256": "3c0fb817375600ff55850de9296df77376da017c508a06ccda3e92adf225d5ec"
+}
