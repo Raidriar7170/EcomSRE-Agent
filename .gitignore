@@ -7,6 +7,7 @@ __pycache__/
 *.py[cod]
 .ecomsre-cache/
 .ecomsre-tmp/
+.local/
 .env
 .env.*
 !.env.example
