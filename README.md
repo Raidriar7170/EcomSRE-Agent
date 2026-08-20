@@ -22,6 +22,19 @@ and cleaned owned resources, and no further execution was performed. The result
 is `DTA_V21_P0_ENGINEERING_CLOSEOUT_WITH_FROZEN_AGENT_CAPABILITY_LIMITATIONS`, not a live recovery success.
 <!-- /dta-v21-pr-f-final-capability-closeout -->
 
+### DTA v2.2 practical controller evaluation
+
+DTA v2.2 recovered the runtime-owned controller core behind the blocked strict
+research PR #60, added a simple H/A/E Provider adapter, and completed one fixed
+12-case replay comparison without Docker, Runbooks, live remediation, or Agent
+writes. Planner-Lite produced 3/12 end-to-end exact outcomes versus Flat's 1/12
+and met the small practical threshold (mechanism Macro-F1 0.1333 versus 0.0,
+equal mean reads, post-repair protocol success 1.0). Absolute quality remained
+weak, so this is an interview portfolio result—not a research, generalization,
+or production claim. See the [fixed evaluation](docs/results/dta-v22-practical-evaluation.md),
+[error analysis](docs/results/dta-v22-practical-error-analysis.md), and
+[interview brief](docs/results/dta-v22-practical-interview-brief.md).
+
 ## One-command offline demo
 
 ```bash

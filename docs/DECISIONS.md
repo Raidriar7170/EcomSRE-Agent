@@ -67,6 +67,7 @@ conflicts with this register, this register wins.
 | DEC-053 | DTA v2.2 factorial development and paired held-out evaluation | accepted | DTA v2.2 PR-D through PR-F | `DECISIONS.md` | Protocol gate, preregistration, scorer, reports | Yes — gate, seal, truth-isolation, or scorer drift blocks held-out |
 | DEC-054 | DTA v2.2 P0 zero live Agent write authority | accepted | DTA v2.2 P0 | `DECISIONS.md` | Safety, capture, replay, reports | Yes — any Agent write or non-owned mutation is a safety blocker |
 | DEC-055 | DTA v2.2 execution report and administrative successor provenance | accepted | DTA v2.2 PR-A through PR-F | `DECISIONS.md` | Frozen reports, exact-head acceptance, successor attestations | Yes — provenance mismatch blocks closure |
+| DEC-056 | DTA v2.2 practical completion successor | accepted | Practical successor only | `DECISIONS.md` | Simple Provider adapter, legacy replay clauses, 8/12 paired evaluation | Yes — truth leakage, Provider instability, or nonzero Agent writes block practical closure |
 
 ## DEC-001 — Supported host baseline
 
@@ -1273,6 +1274,41 @@ all v2.2 diagnostics remain enabled. Historical drift makes this exception
 invalid through the v2.2 verifier. That verifier also requires this to be the
 only v2.1 override, with exactly `disable_error_code = arg-type`, and rejects a
 v2.1 wildcard or global mypy bypass.
+
+## DEC-056 — DTA v2.2 Practical Completion Successor
+
+**Status: `accepted` for the user-designated practical completion Goal only.**
+
+The strict PR #60 research path remains blocked and is not merged. For the
+practical successor, DEC-053's 40-transition/24-case/96-entry private campaign
+and DEC-055's PR-D-through-PR-F Provider protocol and successor-attestation
+machinery are not acceptance requirements. The practical experiment instead
+uses one static forced-function Provider adapter, request-local H/A/E aliases,
+one repair frontier, bounded transport retries, one 8-case public development
+campaign, and one paired 12-case fixed replay evaluation. The same adapter,
+Prompt, scorer, case bytes, read budget, and turn budget apply to Flat Canonical
+and Planner-Lite. No private seal, output-mode probe, identity manifest, attempt
+artifact, campaign verifier, Docker capture, Agent write, or Runbook execution
+is created.
+
+The frozen PR-C support policy remains unchanged. The practical runtime first
+evaluates it, then permits only three declared legacy replay compatibility
+shapes: configuration error-rate plus first-error trace; memory growth plus
+healthy runtime; and bounded No-Incident coverage with healthy runtime,
+supported error/request metrics, and no strong anomaly when a legacy capture
+lacks supported latency. These clauses are truth-independent and may not
+fabricate Changes, logs, restarts, metrics, or labels. Unsupported legacy
+metrics remain typed `UNSUPPORTED`. Resource samples may be deterministically
+resampled to the canonical read window, and visible missing dependency-neighbor
+bootstrap facts may be filled from the frozen healthy baseline; both derivations
+must be disclosed.
+
+The fixed set is represented honestly as nine public replay cases plus three
+synthetic/derived cases because the repository has only one unique public
+dependency-latency capture. Synthetic cases record their source and derivation
+and are not described as independent empirical captures. Evaluator truth is
+loaded only after both arms complete. Practical completion makes no online SRE,
+production, or research-scale claim and does not require Planner superiority.
 
 ## Upstream references
 

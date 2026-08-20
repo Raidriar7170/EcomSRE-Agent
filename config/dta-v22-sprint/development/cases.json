@@ -1,0 +1,85 @@
+{
+  "schema_version": "dta-v22.practical-case-set.v1",
+  "cases": [
+    {
+      "case_id": "d01",
+      "source_path": "config/dta-v2/evaluation/development/agent-visible/dta-case-001.json",
+      "source_sha256": "258c80a419ae4b7760205f05d8c5cf44ca192effb98ea891c5a3bd99d5fdfeff",
+      "capture_kind": "REAL_PUBLIC_REPLAY",
+      "modifier": "NONE",
+      "derivation": null,
+      "counterfactual_pair_ids": [],
+      "bootstrap_insufficient_expected": true
+    },
+    {
+      "case_id": "d02",
+      "source_path": "config/dta-v2/evaluation/development/agent-visible/dta-case-003.json",
+      "source_sha256": "caaf2eb08f89262d0486496c91429894992177104be6fe4b928e2891d445e6e1",
+      "capture_kind": "REAL_PUBLIC_REPLAY",
+      "modifier": "NONE",
+      "derivation": null,
+      "counterfactual_pair_ids": [],
+      "bootstrap_insufficient_expected": false
+    },
+    {
+      "case_id": "d03",
+      "source_path": "config/dta-v2/evaluation/development/agent-visible/dta-case-005.json",
+      "source_sha256": "9f18d9ddbc2e26e81fbddc4ec1cd07c6df225cf73f3593d0291e89fce0e0072f",
+      "capture_kind": "REAL_PUBLIC_REPLAY",
+      "modifier": "NONE",
+      "derivation": null,
+      "counterfactual_pair_ids": [],
+      "bootstrap_insufficient_expected": true
+    },
+    {
+      "case_id": "d04",
+      "source_path": "config/dta-v21/evaluation/development/agent-visible/dta21-case-006.json",
+      "source_sha256": "eff5a151cd238baed4fa701cbc2aa4e92dc7ad864956c7e63206c7e97333e9f2",
+      "capture_kind": "REAL_PUBLIC_REPLAY",
+      "modifier": "NONE",
+      "derivation": null,
+      "counterfactual_pair_ids": [],
+      "bootstrap_insufficient_expected": true
+    },
+    {
+      "case_id": "d05",
+      "source_path": "config/dta-v21/evaluation/development/agent-visible/dta21-case-008.json",
+      "source_sha256": "fa5e6887549e9fbb0f57d6116da83bd0bebc319eca80e61a14793ba411b9dde4",
+      "capture_kind": "REAL_PUBLIC_REPLAY",
+      "modifier": "NONE",
+      "derivation": null,
+      "counterfactual_pair_ids": [],
+      "bootstrap_insufficient_expected": false
+    },
+    {
+      "case_id": "d06",
+      "source_path": "config/dta-v21/evaluation/development/agent-visible/dta21-case-010.json",
+      "source_sha256": "9db325bb5ade1c3974d066703c2371db3ffbca42851633d5ce838e9ffbd519f5",
+      "capture_kind": "REAL_PUBLIC_REPLAY",
+      "modifier": "NONE",
+      "derivation": null,
+      "counterfactual_pair_ids": [],
+      "bootstrap_insufficient_expected": true
+    },
+    {
+      "case_id": "d07",
+      "source_path": "config/dta-v2/evaluation/no-action/agent-visible/dta-case-010.json",
+      "source_sha256": "11f5514667c4247dea1f459e986584b5d19178a6ee39f3cb689260685e1d547e",
+      "capture_kind": "REAL_PUBLIC_REPLAY",
+      "modifier": "NONE",
+      "derivation": null,
+      "counterfactual_pair_ids": [],
+      "bootstrap_insufficient_expected": false
+    },
+    {
+      "case_id": "d08",
+      "source_path": "config/dta-v2/evaluation/no-action/agent-visible/dta-case-011.json",
+      "source_sha256": "ecd1fd00e2f0ae7de171d9dfd6ea952917139bc480086de9d806765d78446bef",
+      "capture_kind": "REAL_PUBLIC_REPLAY",
+      "modifier": "NONE",
+      "derivation": null,
+      "counterfactual_pair_ids": [],
+      "bootstrap_insufficient_expected": true
+    }
+  ]
+}

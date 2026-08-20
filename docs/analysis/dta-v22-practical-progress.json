@@ -1,0 +1,49 @@
+{
+  "schema_version": "dta-v22.practical-progress.v1",
+  "status": "LOCAL_EVALUATION_COMPLETE_AWAITING_FINAL_CI_AND_MERGE",
+  "base": "145d152c2c2d1367e7dac2f0229e2b369fbe55dc",
+  "branch": "codex/dta-v22-practical-completion",
+  "pr": 61,
+  "strict_research_pr": {
+    "pr": 60,
+    "status": "BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE",
+    "merged": false,
+    "supersession_comment_posted": true,
+    "close_only_after_practical_ci": true
+  },
+  "commits": {
+    "controller_and_adapter": "4c2b71fb09e33530f7fc72e327eeced565e71658",
+    "runner_and_fixed_sets": "e492b2e384d7ee8b310a9a8ab85b10b189855a76",
+    "measured_results": "COMMIT_3_SELF"
+  },
+  "smoke": {
+    "passed": true,
+    "post_repair_valid": "8/8",
+    "uncaught_exceptions": 0,
+    "agent_writes": 0
+  },
+  "development": {
+    "complete": true,
+    "cases": 8,
+    "arms": 2,
+    "uncaught_exceptions": 0,
+    "agent_writes": 0
+  },
+  "fixed_evaluation": {
+    "execution_count": 1,
+    "complete": true,
+    "cases": 12,
+    "arms": 2,
+    "uncaught_exceptions": 0,
+    "agent_writes": 0,
+    "planner_advantage_observed_under_practical_rule": true
+  },
+  "protected_non_actions": {
+    "docker_calls": 0,
+    "agent_writes": 0,
+    "runbooks_executed": 0,
+    "live_remediation_runs": 0,
+    "pr_60_merged": false
+  },
+  "terminal": null
+}

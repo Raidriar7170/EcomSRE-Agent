@@ -79,6 +79,9 @@ PERSISTENT_PR_C_ARTIFACTS = (
     Path("tests/dta_v22/conftest.py"),
     Path("tests/dta_v22/test_v22_memory_predicates_diagnosis.py"),
 )
+PUBLISHED_PR_C_ARTIFACTS = tuple(
+    item for item in PERSISTENT_PR_C_ARTIFACTS if item != PR_C_SUCCESSOR_ATTESTATION
+)
 EXPECTED_ARTIFACT_PATHS = (
     "src/ecomsre/dta_v2/v22/diagnosis.py",
     "src/ecomsre/dta_v2/v22/memory.py",
@@ -262,9 +265,67 @@ def _public_scan_plan(
 ) -> tuple[str, tuple[Path, ...]]:
     if progress.get("current_stage") == "PR-C":
         _verify_progress(progress)
-        return "PR_C_CLOSED_SURFACE", EXPECTED_PR_C_CHANGED_PATHS
+        source_pull_ref = f"refs/remotes/dta-pr/{progress['active_pr']}"
+        source_head = _git_text(root, "rev-parse", "--verify", source_pull_ref)
+        if _git_text(root, "rev-parse", "HEAD") == source_head:
+            return "PR_C_CLOSED_SURFACE", EXPECTED_PR_C_CHANGED_PATHS
+        _require_published_pr_c_ancestry(
+            root=root,
+            source_head=source_head,
+            source_pr=progress["active_pr"],
+        )
+        return "PUBLISHED_PR_C_PERSISTENT_ARTIFACTS", PUBLISHED_PR_C_ARTIFACTS
     _require_pr_c_successor_progress(root, progress)
     return "SUCCESSOR_PERSISTENT_ARTIFACTS", PERSISTENT_PR_C_ARTIFACTS
+
+
+def _require_published_pr_c_ancestry(
+    *,
+    root: Path,
+    source_head: str,
+    source_pr: int,
+) -> None:
+    source_tree = _git_text(root, "rev-parse", f"{source_head}^{{tree}}")
+    observed_paths = _git_paths(
+        root,
+        "diff",
+        "--name-only",
+        PR_C_BASE,
+        source_head,
+        "--",
+    )
+    if observed_paths != set(EXPECTED_PR_C_CHANGED_PATHS):
+        raise ValueError("published PR-C candidate surface differs")
+    squash_candidates = tuple(
+        commit
+        for commit in _git_text(
+            root,
+            "rev-list",
+            "--ancestry-path",
+            f"{PR_C_BASE}..HEAD",
+        ).splitlines()
+        if _git_text(root, "rev-parse", f"{commit}^") == PR_C_BASE
+        and _git_text(root, "rev-parse", f"{commit}^{{tree}}") == source_tree
+        and _git_text(root, "show", "-s", "--format=%s", commit).startswith(
+            "DTA v2.2 P0 PR-C:"
+        )
+        and _git_text(root, "show", "-s", "--format=%s", commit).endswith(
+            f"(#{source_pr})"
+        )
+    )
+    if len(squash_candidates) != 1:
+        raise ValueError("published PR-C squash merge tree is absent from HEAD ancestry")
+    squash = squash_candidates[0]
+    if source_head == squash:
+        raise ValueError("published PR-C candidate and squash merge are identical")
+    for commit in (source_head, squash):
+        manifest = subprocess.run(
+            ("git", "-C", str(root), "show", f"{commit}:{PR_C_MANIFEST}"),
+            check=True,
+            capture_output=True,
+        ).stdout
+        if hashlib.sha256(manifest).hexdigest() != EXPECTED_MANIFEST_SHA256:
+            raise ValueError("published PR-C Git tree does not bind frozen manifest")
 
 
 def _require_pr_c_successor_progress(root: Path, progress: dict[str, Any]) -> None:
