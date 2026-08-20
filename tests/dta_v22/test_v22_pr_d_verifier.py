@@ -22,6 +22,7 @@ from scripts.ci.verify_dta_v22_pr_d import (
     verify_pr_d_protocol,
     verify_provider_summary,
     verify_provider_v3_preregistration,
+    verify_pr_c_stage_aware_gate,
 )
 
 
@@ -102,6 +103,37 @@ def test_pr_d_cli_exits_zero_but_is_not_merge_ready(
     assert output["status"] == "EXECUTION_READY"
     assert output["merge_ready"] is False
     assert output["terminal"] == EXECUTION_READY_PR_D_TERMINAL
+
+
+def test_pr_c_stage_gate_does_not_require_successor_attestation_before_pr_d_merge(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    expected = {
+        "schema_version": "dta-v22-pr-c-stage-aware-verification.v1",
+        "status": "PASS",
+        "mode": "PR_D_STAGE_FROZEN_BINDINGS",
+        "successor_attestation": "NOT_APPLICABLE_UNMERGED_PR_D",
+    }
+    assert verify_pr_c_stage_aware_gate(REPO_ROOT) == expected
+    assert main(("--root", str(REPO_ROOT), "--stage-aware-pr-c")) == 0
+    assert json.loads(capsys.readouterr().out) == expected
+
+
+def test_pr_c_stage_gate_restores_full_successor_verifier_after_pr_d(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "scripts.ci.verify_dta_v22_pr_d._load_json",
+        lambda _path: {"current_stage": "PR-E"},
+    )
+    monkeypatch.setattr(
+        "scripts.ci.verify_dta_v22_pr_d.verify_pr_c_protocol",
+        lambda _root: {"status": "PASS", "mode": "FULL_SUCCESSOR_PROVENANCE"},
+    )
+    assert verify_pr_c_stage_aware_gate(REPO_ROOT) == {
+        "status": "PASS",
+        "mode": "FULL_SUCCESSOR_PROVENANCE",
+    }
 
 
 def test_pr_d_runtime_contract_markers_are_bound() -> None:

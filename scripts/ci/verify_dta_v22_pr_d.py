@@ -53,6 +53,7 @@ from scripts.ci.verify_dta_v22_pr_b import verify_pr_b_protocol
 from scripts.ci.verify_dta_v22_pr_c import (
     _verify_runtime_contracts as _verify_pr_c_runtime_contracts,
     verify_pr_c_bindings,
+    verify_pr_c_protocol,
 )
 from scripts.dta_v22.run_pr_d_provider_protocol import (
     _FORMAL_HTTP_AUTO_RETRY_COUNT,
@@ -1290,15 +1291,43 @@ def verify_pr_d_protocol(root: Path) -> dict[str, object]:
     }
 
 
+def verify_pr_c_stage_aware_gate(root: Path) -> dict[str, object]:
+    """Route PR-C provenance according to whether PR-D has merged yet."""
+
+    root = root.resolve(strict=True)
+    progress = _load_json(root / "docs/analysis/dta-v22-p0-master-progress.json")
+    if progress.get("current_stage") == "PR-D":
+        if (
+            progress.get("completed_stage") != "PR-C"
+            or progress.get("active_pr") != PR_D_PR
+            or progress.get("active_branch") != PR_D_BRANCH
+        ):
+            raise ValueError("PR-D stage identity differs for PR-C predecessor gate")
+        verify_pr_c_bindings(root)
+        _verify_pr_c_runtime_contracts()
+        return {
+            "schema_version": "dta-v22-pr-c-stage-aware-verification.v1",
+            "status": "PASS",
+            "mode": "PR_D_STAGE_FROZEN_BINDINGS",
+            "successor_attestation": "NOT_APPLICABLE_UNMERGED_PR_D",
+        }
+    return verify_pr_c_protocol(root)
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
+    parser.add_argument("--stage-aware-pr-c", action="store_true")
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
-    result = verify_pr_d_protocol(args.root)
+    result = (
+        verify_pr_c_stage_aware_gate(args.root)
+        if args.stage_aware_pr_c
+        else verify_pr_d_protocol(args.root)
+    )
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
 

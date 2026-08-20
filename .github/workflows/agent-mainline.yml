@@ -134,7 +134,8 @@ jobs:
       - name: DTA v2.2 PR-C memory, predicates, and diagnosis verification
         run: >-
           env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
-          uv run --frozen --no-sync python -m scripts.ci.verify_dta_v22_pr_c
+          uv run --frozen --no-sync python -m scripts.ci.verify_dta_v22_pr_d
+          --stage-aware-pr-c
 
       - name: DTA v2.2 PR-D controller and Provider protocol verification
         run: >-
