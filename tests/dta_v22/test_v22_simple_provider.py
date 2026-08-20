@@ -40,6 +40,7 @@ from ecomsre.dta_v2.v22.read_contracts import (
 from ecomsre.dta_v2.v22.simple_provider import (
     FUNCTION_NAME_V22,
     ProviderProtocolFailureV22,
+    ProviderProtocolFailureV221,
     ProviderTransportErrorV22,
     SHARED_SYSTEM_PROMPT_V221,
     SimpleProviderV22,
@@ -303,6 +304,31 @@ def test_policy_feedback_never_opens_a_nested_semantic_repair(tmp_path: Path) ->
     assert len(transport.calls) == 1
 
 
+def test_policy_feedback_failure_preserves_call_token_and_latency_accounting(
+    tmp_path: Path,
+) -> None:
+    transport = RecordingTransport([_tool_response(hypothesis="BAD")])
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    with pytest.raises(ProviderProtocolFailureV221) as captured:
+        provider.complete_policy_redirect_turn_v221(
+            turn_input=_turn(ControllerArmV22.FLAT_CANONICAL),
+            run_id="9" * 32,
+            safe_error_code="PREMATURE_ABSTENTION",
+            terminal_exploration_policy=(
+                TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+            ),
+            adaptive_reads_so_far=0,
+            policy_redirect_remaining=False,
+        )
+
+    assert captured.value.provider_calls == 1
+    assert captured.value.input_tokens == 100
+    assert captured.value.output_tokens == 20
+    assert captured.value.total_tokens == 120
+    assert captured.value.latency_ms >= 0
+
+
 def test_change_fact_projection_removes_nested_revision_digest() -> None:
     revision_digest = "a" * 64
     evidence_ref = EvidenceRefV22.model_construct(
@@ -382,6 +408,62 @@ def test_one_semantic_repair_uses_only_safe_alias_frontier(tmp_path: Path) -> No
     ).read_text()
     assert "super-secret-provider-key" not in debug
     assert "Authorization" not in debug
+
+
+def test_v221_semantic_repair_retains_only_bounded_policy_state(
+    tmp_path: Path,
+) -> None:
+    transport = RecordingTransport(
+        [_tool_response(hypothesis="H99"), _tool_response()]
+    )
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    outcome = provider.complete_turn_v221(
+        turn_input=_turn(ControllerArmV22.FLAT_CANONICAL),
+        run_id="1" * 32,
+        terminal_exploration_policy=(
+            TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+        ),
+        adaptive_reads_so_far=0,
+        policy_redirect_remaining=True,
+    )
+
+    repair = json.loads(transport.calls[1]["payload"]["messages"][1]["content"])[
+        "repair"
+    ]
+    assert outcome.semantic_repair_used is True
+    assert repair["terminal_exploration_policy"] == (
+        "MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN"
+    )
+    assert repair["adaptive_reads_so_far"] == 0
+    assert repair["policy_redirect_remaining"] is True
+    assert "bootstrap_insufficient_expected" not in json.dumps(repair, sort_keys=True)
+
+
+def test_v221_controller_repair_retains_policy_state_and_accounting(
+    tmp_path: Path,
+) -> None:
+    transport = RecordingTransport([_tool_response()])
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    outcome = provider.complete_repair_turn_v221(
+        turn_input=_turn(ControllerArmV22.PLANNER_LITE),
+        run_id="2" * 32,
+        safe_error_code="UNKNOWN_E_ALIAS",
+        terminal_exploration_policy=(
+            TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+        ),
+        adaptive_reads_so_far=1,
+        policy_redirect_remaining=False,
+    )
+
+    repair = json.loads(transport.calls[0]["payload"]["messages"][1]["content"])[
+        "repair"
+    ]
+    assert outcome.semantic_repair_used is True
+    assert outcome.provider_calls == 1
+    assert repair["adaptive_reads_so_far"] == 1
+    assert repair["policy_redirect_remaining"] is False
 
 
 def test_second_semantic_failure_is_terminal_without_a_third_call(tmp_path: Path) -> None:

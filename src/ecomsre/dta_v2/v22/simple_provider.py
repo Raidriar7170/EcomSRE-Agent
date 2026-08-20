@@ -119,9 +119,31 @@ class ProviderSemanticErrorV22(ValueError):
 
 
 class ProviderProtocolFailureV22(RuntimeError):
-    def __init__(self, safe_code: str) -> None:
+    def __init__(
+        self,
+        safe_code: str,
+        *,
+        provider_calls: int = 0,
+        transport_retry_count: int = 0,
+        input_tokens: int = 0,
+        output_tokens: int = 0,
+        total_tokens: int = 0,
+        latency_ms: float = 0.0,
+        semantic_repair_used: bool = False,
+    ) -> None:
         self.safe_code = safe_code
+        self.provider_calls = provider_calls
+        self.transport_retry_count = transport_retry_count
+        self.input_tokens = input_tokens
+        self.output_tokens = output_tokens
+        self.total_tokens = total_tokens
+        self.latency_ms = latency_ms
+        self.semantic_repair_used = semantic_repair_used
         super().__init__(safe_code)
+
+
+class ProviderProtocolFailureV221(ProviderProtocolFailureV22):
+    """A v2.2.1 failure that preserves bounded study cost accounting."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -129,6 +151,8 @@ class ProviderTransportErrorV22(Exception):
     safe_code: str
     status_code: int | None = None
     raw_body: str | None = None
+    retry_count: int = 0
+    latency_ms: float = 0.0
 
     @property
     def retryable(self) -> bool:
@@ -657,26 +681,36 @@ def _request_payload_v22(
             "required_shape": _STATIC_DECISION_SHAPE_V22,
         }
     else:
+        repair_state: dict[str, object] = {
+            "safe_error_code": repair_code,
+            "allowed_hypotheses": [
+                {
+                    "alias": item.alias,
+                    "role": (
+                        "NO_INCIDENT"
+                        if item.canonical_id == NO_INCIDENT_HYPOTHESIS_ID_V22
+                        else "UNRESOLVED"
+                        if item.canonical_id == ABSTAIN_HYPOTHESIS_ID_V22
+                        else "INCIDENT"
+                    ),
+                }
+                for item in request.aliases.hypotheses
+            ],
+            "allowed_actions": [item.alias for item in request.aliases.actions],
+            "allowed_evidence": [item.alias for item in request.aliases.evidence],
+            "required_shape": _STATIC_DECISION_SHAPE_V22,
+        }
+        policy_keys = (
+            "terminal_exploration_policy",
+            "adaptive_reads_so_far",
+            "policy_redirect_remaining",
+        )
+        if all(key in request.visible_state for key in policy_keys):
+            repair_state.update(
+                {key: request.visible_state[key] for key in policy_keys}
+            )
         user_payload = {
-            "repair": {
-                "safe_error_code": repair_code,
-                "allowed_hypotheses": [
-                    {
-                        "alias": item.alias,
-                        "role": (
-                            "NO_INCIDENT"
-                            if item.canonical_id == NO_INCIDENT_HYPOTHESIS_ID_V22
-                            else "UNRESOLVED"
-                            if item.canonical_id == ABSTAIN_HYPOTHESIS_ID_V22
-                            else "INCIDENT"
-                        ),
-                    }
-                    for item in request.aliases.hypotheses
-                ],
-                "allowed_actions": [item.alias for item in request.aliases.actions],
-                "allowed_evidence": [item.alias for item in request.aliases.evidence],
-                "required_shape": _STATIC_DECISION_SHAPE_V22,
-            }
+            "repair": repair_state,
         }
     return {
         "model": config.model,
@@ -774,7 +808,13 @@ class SimpleProviderV22:
                 if not error.retryable or retry_count >= len(
                     TRANSPORT_RETRY_BACKOFF_SECONDS_V22
                 ):
-                    raise
+                    raise ProviderTransportErrorV22(
+                        safe_code=error.safe_code,
+                        status_code=error.status_code,
+                        raw_body=error.raw_body,
+                        retry_count=retry_count,
+                        latency_ms=latency_ms,
+                    ) from error
                 self.sleeper(TRANSPORT_RETRY_BACKOFF_SECONDS_V22[retry_count])
                 retry_count += 1
                 continue
@@ -886,11 +926,29 @@ class SimpleProviderV22:
         request: ProviderTurnRequestV22,
         run_id: str,
         allow_semantic_repair: bool,
+        failure_class: type[ProviderProtocolFailureV22] = ProviderProtocolFailureV22,
     ) -> ProviderTurnOutcomeV22:
         responses: list[Mapping[str, object]] = []
         total_retries = 0
         total_latency = 0.0
         usages: list[tuple[int, int, int]] = []
+        repair_attempted = False
+
+        def failure(safe_code: str) -> ProviderProtocolFailureV22:
+            input_tokens = sum(item[0] for item in usages)
+            output_tokens = sum(item[1] for item in usages)
+            reported_total = sum(item[2] for item in usages)
+            return failure_class(
+                safe_code,
+                provider_calls=len(responses),
+                transport_retry_count=total_retries,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                total_tokens=reported_total or input_tokens + output_tokens,
+                latency_ms=total_latency,
+                semantic_repair_used=repair_attempted,
+            )
+
         first_payload = _request_payload_v22(
             config=self.config,
             request=request,
@@ -900,6 +958,8 @@ class SimpleProviderV22:
         try:
             first_response, retries, latency = self._post(first_payload)
         except ProviderTransportErrorV22 as error:
+            total_retries += error.retry_count
+            total_latency += error.latency_ms
             self._debug_record(
                 run_id=run_id,
                 request=request,
@@ -910,7 +970,7 @@ class SimpleProviderV22:
                 parsed=None,
                 local_validation_error="TRANSPORT_FAILURE",
             )
-            raise ProviderProtocolFailureV22("TRANSPORT_FAILED") from error
+            raise failure("TRANSPORT_FAILED") from error
         responses.append(first_response)
         total_retries += retries
         total_latency += latency
@@ -932,7 +992,8 @@ class SimpleProviderV22:
                 local_validation_error=first_error.safe_code,
             )
             if not allow_semantic_repair:
-                raise ProviderProtocolFailureV22("PROTOCOL_FAILED") from first_error
+                raise failure("PROTOCOL_FAILED") from first_error
+            repair_attempted = True
             repair_payload = _request_payload_v22(
                 config=self.config,
                 request=request,
@@ -942,6 +1003,8 @@ class SimpleProviderV22:
             try:
                 repair_response, retries, latency = self._post(repair_payload)
             except ProviderTransportErrorV22 as error:
+                total_retries += error.retry_count
+                total_latency += error.latency_ms
                 self._debug_record(
                     run_id=run_id,
                     request=request,
@@ -952,7 +1015,7 @@ class SimpleProviderV22:
                     parsed=None,
                     local_validation_error="REPAIR_TRANSPORT_FAILURE",
                 )
-                raise ProviderProtocolFailureV22("TRANSPORT_FAILED") from error
+                raise failure("TRANSPORT_FAILED") from error
             responses.append(repair_response)
             total_retries += retries
             total_latency += latency
@@ -973,7 +1036,7 @@ class SimpleProviderV22:
                     parsed=repair_error.parsed,
                     local_validation_error=repair_error.safe_code,
                 )
-                raise ProviderProtocolFailureV22("PROTOCOL_FAILED") from repair_error
+                raise failure("PROTOCOL_FAILED") from repair_error
             first_pass = False
             repaired = True
         else:
@@ -1017,6 +1080,7 @@ class SimpleProviderV22:
             request=request,
             run_id=run_id,
             allow_semantic_repair=allow_semantic_repair,
+            failure_class=ProviderProtocolFailureV221,
         )
 
     def complete_policy_redirect_turn_v221(
@@ -1044,22 +1108,17 @@ class SimpleProviderV22:
             request=request,
             run_id=run_id,
             allow_semantic_repair=False,
+            failure_class=ProviderProtocolFailureV221,
         )
 
-    def complete_repair_turn(
+    def _complete_repair_request(
         self,
         *,
-        turn_input: ControllerTurnInputV22,
+        request: ProviderTurnRequestV22,
         run_id: str,
         safe_error_code: str,
-        system_prompt: str = SHARED_SYSTEM_PROMPT_V22,
+        failure_class: type[ProviderProtocolFailureV22],
     ) -> ProviderTurnOutcomeV22:
-        """Send the one safe repair frontier without permitting a second repair."""
-
-        request = build_provider_turn_request_v22(
-            turn_input,
-            system_prompt=system_prompt,
-        )
         payload = _request_payload_v22(
             config=self.config,
             request=request,
@@ -1079,7 +1138,13 @@ class SimpleProviderV22:
                 parsed=None,
                 local_validation_error="REPAIR_TRANSPORT_FAILURE",
             )
-            raise ProviderProtocolFailureV22("TRANSPORT_FAILED") from error
+            raise failure_class(
+                "TRANSPORT_FAILED",
+                transport_retry_count=error.retry_count,
+                latency_ms=error.latency_ms,
+                semantic_repair_used=True,
+            ) from error
+        input_tokens, output_tokens, total_tokens = _usage(response)
         try:
             decision = parse_provider_response_v22(response, aliases=request.aliases)
         except ProviderSemanticErrorV22 as error:
@@ -1093,8 +1158,16 @@ class SimpleProviderV22:
                 parsed=error.parsed,
                 local_validation_error=error.safe_code,
             )
-            raise ProviderProtocolFailureV22("PROTOCOL_FAILED") from error
-        input_tokens, output_tokens, total_tokens = _usage(response)
+            raise failure_class(
+                "PROTOCOL_FAILED",
+                provider_calls=1,
+                transport_retry_count=retries,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                total_tokens=total_tokens or input_tokens + output_tokens,
+                latency_ms=latency,
+                semantic_repair_used=True,
+            ) from error
         return ProviderTurnOutcomeV22(
             decision=decision,
             first_pass_protocol_success=False,
@@ -1108,6 +1181,52 @@ class SimpleProviderV22:
             latency_ms=latency,
         )
 
+    def complete_repair_turn(
+        self,
+        *,
+        turn_input: ControllerTurnInputV22,
+        run_id: str,
+        safe_error_code: str,
+        system_prompt: str = SHARED_SYSTEM_PROMPT_V22,
+    ) -> ProviderTurnOutcomeV22:
+        """Send the one safe repair frontier without permitting a second repair."""
+
+        request = build_provider_turn_request_v22(
+            turn_input,
+            system_prompt=system_prompt,
+        )
+        return self._complete_repair_request(
+            request=request,
+            run_id=run_id,
+            safe_error_code=safe_error_code,
+            failure_class=ProviderProtocolFailureV22,
+        )
+
+    def complete_repair_turn_v221(
+        self,
+        *,
+        turn_input: ControllerTurnInputV22,
+        run_id: str,
+        safe_error_code: str,
+        system_prompt: str = SHARED_SYSTEM_PROMPT_V221,
+        terminal_exploration_policy: TerminalExplorationPolicyV221,
+        adaptive_reads_so_far: int,
+        policy_redirect_remaining: bool,
+    ) -> ProviderTurnOutcomeV22:
+        request = build_provider_turn_request_v22(
+            turn_input,
+            system_prompt=system_prompt,
+            terminal_exploration_policy=terminal_exploration_policy,
+            adaptive_reads_so_far=adaptive_reads_so_far,
+            policy_redirect_remaining=policy_redirect_remaining,
+        )
+        return self._complete_repair_request(
+            request=request,
+            run_id=run_id,
+            safe_error_code=safe_error_code,
+            failure_class=ProviderProtocolFailureV221,
+        )
+
 
 __all__ = (
     "AliasTableV22",
@@ -1115,6 +1234,7 @@ __all__ = (
     "FUNCTION_NAME_V22",
     "MAX_VISIBLE_STATE_BYTES_V22",
     "ProviderProtocolFailureV22",
+    "ProviderProtocolFailureV221",
     "ProviderSemanticErrorV22",
     "ProviderTransportErrorV22",
     "ProviderTurnOutcomeV22",

@@ -138,6 +138,18 @@ class PracticalProviderV221(PracticalProviderV22, Protocol):
         policy_redirect_remaining: bool,
     ) -> ProviderTurnOutcomeV22: ...
 
+    def complete_repair_turn_v221(
+        self,
+        *,
+        turn_input: ControllerTurnInputV22,
+        run_id: str,
+        safe_error_code: str,
+        system_prompt: str,
+        terminal_exploration_policy: TerminalExplorationPolicyV221,
+        adaptive_reads_so_far: int,
+        policy_redirect_remaining: bool,
+    ) -> ProviderTurnOutcomeV22: ...
+
 class PracticalCaseRunV22(DtaModelV22):
     schema_version: str = Field(pattern=r"^dta-v22\.practical-case-run\.v1$")
     case_id: str
@@ -656,12 +668,29 @@ def _execute_practical_case(
                         ),
                     )
             else:
-                provider_outcome = provider.complete_repair_turn(
-                    turn_input=turn_input,
-                    run_id=run_id,
-                    safe_error_code=pending_repair,
-                    system_prompt=system_prompt,
-                )
+                if terminal_exploration_policy is None:
+                    provider_outcome = provider.complete_repair_turn(
+                        turn_input=turn_input,
+                        run_id=run_id,
+                        safe_error_code=pending_repair,
+                        system_prompt=system_prompt,
+                    )
+                else:
+                    provider_outcome = cast(
+                        PracticalProviderV221, provider
+                    ).complete_repair_turn_v221(
+                        turn_input=turn_input,
+                        run_id=run_id,
+                        safe_error_code=pending_repair,
+                        system_prompt=system_prompt,
+                        terminal_exploration_policy=terminal_exploration_policy,
+                        adaptive_reads_so_far=session.read_dispatches,
+                        policy_redirect_remaining=(
+                            terminal_exploration_policy
+                            is TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+                            and not bool(policy_redirects)
+                        ),
+                    )
                 pending_repair = None
             account_provider_outcome(provider_outcome)
             if terminal_exploration_policy is not None:
@@ -876,6 +905,14 @@ def _execute_practical_case(
                 )
             )
     except ProviderProtocolFailureV22 as error:
+        if terminal_exploration_policy is not None:
+            provider_calls += error.provider_calls
+            repairs += int(error.semantic_repair_used)
+            input_tokens += error.input_tokens
+            output_tokens += error.output_tokens
+            total_tokens += error.total_tokens
+            latency_ms += error.latency_ms
+            retries += error.transport_retry_count
         status = (
             PracticalRunStatusV22.TRANSPORT_FAILED
             if error.safe_code == "TRANSPORT_FAILED"

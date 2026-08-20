@@ -25,7 +25,10 @@ from ecomsre.dta_v2.v22.practical_runner import (
     execute_practical_case_v221,
 )
 from ecomsre.dta_v2.v22.read_contracts import EvidenceSourceV22
-from ecomsre.dta_v2.v22.simple_provider import ProviderTurnOutcomeV22
+from ecomsre.dta_v2.v22.simple_provider import (
+    ProviderProtocolFailureV221,
+    ProviderTurnOutcomeV22,
+)
 from ecomsre.dta_v2.v22.evidence_acquisition_v221 import (
     TerminalExplorationDispositionV221,
     TerminalExplorationPolicyV221,
@@ -197,6 +200,10 @@ class _RedirectToReadScript:
             )
         )
 
+    def complete_turn(self, **kwargs: object) -> ProviderTurnOutcomeV22:
+        del kwargs
+        raise AssertionError("v2.2.1 execution must use the policy-aware turn")
+
     def complete_policy_redirect_turn_v221(
         self, *, turn_input: object, **kwargs: object
     ) -> ProviderTurnOutcomeV22:
@@ -227,6 +234,10 @@ class _RedirectToReadScript:
         del kwargs
         raise AssertionError("policy redirect must not use semantic repair")
 
+    def complete_repair_turn_v221(self, **kwargs: object) -> ProviderTurnOutcomeV22:
+        del kwargs
+        raise AssertionError("test script must not require controller repair")
+
 
 class _RedirectToNoIncidentScript(_RedirectToReadScript):
     def complete_policy_redirect_turn_v221(
@@ -254,6 +265,21 @@ class _RepeatedAbstentionScript(_RedirectToReadScript):
         self.feedback_calls += 1
         self.feedback_input_sha256 = turn_input.input_sha256  # type: ignore[attr-defined]
         return _outcome(_abstain())
+
+
+class _InvalidPolicyFeedbackScript(_RedirectToReadScript):
+    def complete_policy_redirect_turn_v221(
+        self, *, turn_input: object, **kwargs: object
+    ) -> ProviderTurnOutcomeV22:
+        del turn_input, kwargs
+        raise ProviderProtocolFailureV221(
+            "PROTOCOL_FAILED",
+            provider_calls=1,
+            input_tokens=101,
+            output_tokens=9,
+            total_tokens=110,
+            latency_ms=12.5,
+        )
 
 
 @pytest.mark.parametrize("arm", tuple(ControllerArmV22))
@@ -326,3 +352,21 @@ def test_repeated_premature_abstention_fails_once_without_a_loop() -> None:
     assert result.provider_turns == 0
     assert provider.normal_calls == 1
     assert provider.feedback_calls == 1
+
+
+def test_failed_policy_feedback_is_still_in_case_cost_accounting() -> None:
+    result = execute_practical_case_v221(
+        case=_case("d01"),
+        arm=ControllerArmV22.FLAT_CANONICAL,
+        provider=_InvalidPolicyFeedbackScript(),
+        terminal_exploration_policy=(
+            TerminalExplorationPolicyV221.MIN_ONE_ADAPTIVE_READ_BEFORE_ABSTAIN
+        ),
+    )
+
+    assert result.status is PracticalRunStatusV22.PROTOCOL_FAILED
+    assert result.provider_calls == 2
+    assert result.input_tokens == 111
+    assert result.output_tokens == 14
+    assert result.total_tokens == 125
+    assert result.latency_ms == 13.5
