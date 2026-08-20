@@ -1,0 +1,147 @@
+{
+  "schema_version": "dta-v22-pr-d-provider-protocol-v3-replicate-summary.v1",
+  "goal_version": "dta-v22-p0-master-v1",
+  "amendment_version": "dta-v22-pr-d-provider-protocol-replicated-gate-v1",
+  "replicate_id": "B",
+  "implementation_commit": "f9625cd45a1ed5a8ae38b56aac9e08dc99972902",
+  "implementation_tree": "fac6a7f2db96e3705a5fbd5e7973fe20d25161c2",
+  "preregistration_sha256": "3ef35bc80a151e90c4bc21f27f061e496819a916e12020ff20dcd65719d03a8f",
+  "executed_at": "2026-08-20T03:13:44.022753+00:00",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "temperature": 0,
+  "selected_mode": "STRICT_STRUCTURED_OUTPUT",
+  "provider_probe_report_sha256": "e43cb0dc1bb070898cad08ad0bf78aa59297fb3035225da25951013b8425e775",
+  "provider_probe_evidence_sha256": "f5c22d1d864a5a83a63979610a13237c4a5a74c1c7db0a36c77563f5e8076035",
+  "controller_schema_sha256": "46ec7840b93789e1cae477d7f9569c8f30df072de247d564586c402e650ee6f0",
+  "controller_identity_sha256s": [
+    "9b0ee4e2ad384d51e6cc6ab6426f5d2dca0f351618ab1518e2e124246fd85836",
+    "e188d6e73e18ca8d552f436d42431fdfd4bee626bad16abd0f0b7edd73ba2920",
+    "8d2906f62dd6680ea942f8d7e27ce6f5fb413eb8b67143aeac47289878eaaf30",
+    "35b63334e485ceef7a1d4c55165851fc95bf4097594e73ae73da82693d8666e8"
+  ],
+  "controller_prompt_sha256s": [
+    "68fc684f217ba7200b82654a46a2f96a18b12fe0d9feab4291f9f9bf6299c6c4",
+    "fbec445184f2f4732db2f6267b951c831730ff7090c81aa3097d9c0bc9953fe0",
+    "7e76d33c6569e075568878a95a673d1d671e5a936493f153892ac673bccdf211",
+    "577150ee5e76a8715d509cce7e8b94ba77b42391dbd63f6c307ed70417936517"
+  ],
+  "outcome_sha256": "57caf68b427e5095dbabcbfa5b066e795e592fdfbc2edeab397b9a5c67d6a5d7",
+  "transition_count": 52,
+  "parsed_decision_count": 1,
+  "runtime_protocol_admitted_count": 1,
+  "semantic_category_accepted_count": 1,
+  "ordinary_transition_count": 48,
+  "ordinary_first_pass_accepted_count": 1,
+  "ordinary_first_pass_protocol_acceptance": 0.020833333333333332,
+  "ordinary_first_pass_by_arm": {
+    "FLAT_CANONICAL": {
+      "transition_count": 24,
+      "accepted_count": 0,
+      "acceptance": 0.0
+    },
+    "PLANNER_LITE": {
+      "transition_count": 24,
+      "accepted_count": 1,
+      "acceptance": 0.041666666666666664
+    }
+  },
+  "ordinary_first_pass_by_category": {
+    "VALID_READ": {
+      "transition_count": 8,
+      "accepted_count": 1,
+      "acceptance": 0.125
+    },
+    "VALID_COMMIT": {
+      "transition_count": 8,
+      "accepted_count": 0,
+      "acceptance": 0.0
+    },
+    "VALID_NO_INCIDENT": {
+      "transition_count": 8,
+      "accepted_count": 0,
+      "acceptance": 0.0
+    },
+    "VALID_ABSTAIN": {
+      "transition_count": 8,
+      "accepted_count": 0,
+      "acceptance": 0.0
+    },
+    "BUDGET_EXHAUSTION": {
+      "transition_count": 6,
+      "accepted_count": 0,
+      "acceptance": 0.0
+    },
+    "EMPTY_SOURCE": {
+      "transition_count": 5,
+      "accepted_count": 0,
+      "acceptance": 0.0
+    },
+    "UNAVAILABLE_SOURCE": {
+      "transition_count": 5,
+      "accepted_count": 0,
+      "acceptance": 0.0
+    }
+  },
+  "correction_transition_count": 4,
+  "correction_envelope_accepted_count": 0,
+  "correction_envelope_acceptance": 0.0,
+  "correction_acceptance_by_arm": {
+    "FLAT_CANONICAL": {
+      "transition_count": 2,
+      "accepted_count": 0,
+      "acceptance": 0.0
+    },
+    "PLANNER_LITE": {
+      "transition_count": 2,
+      "accepted_count": 0,
+      "acceptance": 0.0
+    }
+  },
+  "correction_acceptance_by_error_class": {
+    "STALE_ACTION_CORRECTION": {
+      "transition_count": 2,
+      "accepted_count": 0,
+      "acceptance": 0.0
+    },
+    "INVALID_REF_CORRECTION": {
+      "transition_count": 2,
+      "accepted_count": 0,
+      "acceptance": 0.0
+    }
+  },
+  "final_accepted_count": 1,
+  "final_protocol_acceptance": 0.019230769230769232,
+  "provider_calls": 3,
+  "input_tokens": 27494,
+  "output_tokens": 296,
+  "total_tokens": 27790,
+  "latency": {
+    "total_ms": 5734,
+    "maximum_ms": 3182
+  },
+  "failure_taxonomy": {
+    "PARSE_SHAPE_REJECTED": 1,
+    "RUNTIME_PROTOCOL_REJECTED": 0,
+    "SEMANTIC_CATEGORY_MISMATCH": 0,
+    "CORRECTION_NOT_RECOVERED": 0,
+    "PROVIDER_TRANSPORT_ABORT": 50,
+    "PROVIDER_PROBE_FAILED": 0
+  },
+  "invalid_dispatches": 0,
+  "http_auto_retry_count": 0,
+  "provider_gate_eligible": false,
+  "terminal": "BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE",
+  "private_evidence_raw_sha256": "1807a8746b2fc533cfd3dd0b613a44d97d3f0f044e2ec93e2d8cbe144bdd427e",
+  "private_evidence_semantic_sha256": "e26d33f2a69568b55f911431125e9d1687c03742be3aad5ac265523371edfb6f",
+  "private_evidence_location_class": "DTA_V22_PRIVATE_ROOT",
+  "raw_provider_content_published": false,
+  "private_paths_published": false,
+  "agent_read_dispatches_executed": 0,
+  "agent_write_calls": 0,
+  "runbook_executions": 0,
+  "docker_calls": 0,
+  "held_out_executions": 0,
+  "scenario_executions": 0,
+  "fault_injections": 0,
+  "summary_sha256": "c04f6ecd1fc305fcb21ec8bfc9dfcbbfa049adf27499d91b14b63c4b5815ae40"
+}

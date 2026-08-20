@@ -136,6 +136,52 @@ EXPECTED_V3_FROZEN_PATHS = (
     Path("src/ecomsre/dta_v2/v22/predicates.py"),
     Path("src/ecomsre/dta_v2/v22/diagnosis.py"),
 )
+EXPECTED_V3_IMPLEMENTATION_COMMIT = (
+    "f9625cd45a1ed5a8ae38b56aac9e08dc99972902"
+)
+EXPECTED_V3_IMPLEMENTATION_TREE = "fac6a7f2db96e3705a5fbd5e7973fe20d25161c2"
+EXPECTED_V3_REPLICATE_RAW_SHA256S = (
+    "109ecbdf18651467bf6cc4f902accfc6d1fdca881692a0dc4326ab00eb4804e6",
+    "7ee47877a313ac38641a5fc37f7799957301e1162f03cdd764e841dcda071363",
+)
+EXPECTED_V3_REPLICATE_SEMANTIC_SHA256S = (
+    "17d714fb238f0968bbaf1cea49b39ed0e7db0c3261554a75d39eb0c79e2e6788",
+    "c04f6ecd1fc305fcb21ec8bfc9dfcbbfa049adf27499d91b14b63c4b5815ae40",
+)
+EXPECTED_V3_CAMPAIGN_RAW_SHA256 = (
+    "ddf1cc0f8eaaca2b7fefa81242f06581bdf69dddd78a0a082d6d312b028c5586"
+)
+EXPECTED_V3_CAMPAIGN_SEMANTIC_SHA256 = (
+    "b23184d23ad5d6fc801e85efca268d5c7e7ad951ee004b8221fe2a5889211170"
+)
+EXPECTED_V3_PREREGISTRATION_SHA256 = (
+    "3ef35bc80a151e90c4bc21f27f061e496819a916e12020ff20dcd65719d03a8f"
+)
+EXPECTED_V3_PROBE_REPORT_SHA256 = (
+    "e43cb0dc1bb070898cad08ad0bf78aa59297fb3035225da25951013b8425e775"
+)
+EXPECTED_V3_PROBE_EVIDENCE_SHA256 = (
+    "f5c22d1d864a5a83a63979610a13237c4a5a74c1c7db0a36c77563f5e8076035"
+)
+EXPECTED_V3_CONTROLLER_SCHEMA_SHA256 = (
+    "46ec7840b93789e1cae477d7f9569c8f30df072de247d564586c402e650ee6f0"
+)
+EXPECTED_V3_CONTROLLER_IDENTITY_SHA256S = (
+    "9b0ee4e2ad384d51e6cc6ab6426f5d2dca0f351618ab1518e2e124246fd85836",
+    "e188d6e73e18ca8d552f436d42431fdfd4bee626bad16abd0f0b7edd73ba2920",
+    "8d2906f62dd6680ea942f8d7e27ce6f5fb413eb8b67143aeac47289878eaaf30",
+    "35b63334e485ceef7a1d4c55165851fc95bf4097594e73ae73da82693d8666e8",
+)
+EXPECTED_V3_CONTROLLER_PROMPT_SHA256S = (
+    "68fc684f217ba7200b82654a46a2f96a18b12fe0d9feab4291f9f9bf6299c6c4",
+    "fbec445184f2f4732db2f6267b951c831730ff7090c81aa3097d9c0bc9953fe0",
+    "7e76d33c6569e075568878a95a673d1d671e5a936493f153892ac673bccdf211",
+    "577150ee5e76a8715d509cce7e8b94ba77b42391dbd63f6c307ed70417936517",
+)
+EXPECTED_V3_OUTCOME_SHA256S = (
+    "2906c1436f0c981694bceaf19b973c5efbf98e08d930d76649a2cd40f2123761",
+    "57caf68b427e5095dbabcbfa5b066e795e592fdfbc2edeab397b9a5c67d6a5d7",
+)
 EXPECTED_MANIFEST_SHA256 = (
     "4a8ad04967009af871d6f8ed51d68464218f36e3a64895a47387fdc0193cf7bb"
 )
@@ -179,6 +225,14 @@ EXPECTED_PR_D_CHANGED_PATHS = (
     Path("tests/dta_v22/test_v22_protocol_suite.py"),
     Path("tests/dta_v22/test_v22_provider_protocol_suite.py"),
     PROVIDER_V3_PREREGISTRATION,
+    *PROVIDER_V3_REPLICATE_SUMMARIES,
+    PROVIDER_V3_CAMPAIGN_SUMMARY,
+)
+EXPECTED_PR_D_PRE_EXECUTION_CHANGED_PATHS = tuple(
+    relative
+    for relative in EXPECTED_PR_D_CHANGED_PATHS
+    if relative
+    not in (*PROVIDER_V3_REPLICATE_SUMMARIES, PROVIDER_V3_CAMPAIGN_SUMMARY)
 )
 PERSISTENT_PR_D_ARTIFACTS = (
     PR_D_MANIFEST,
@@ -193,6 +247,9 @@ PERSISTENT_PR_D_ARTIFACTS = (
     Path("src/ecomsre/dta_v2/v22/controller_provider.py"),
     Path("src/ecomsre/dta_v2/v22/controller_runtime.py"),
     Path("src/ecomsre/dta_v2/v22/protocol_suite.py"),
+    PROVIDER_V3_PREREGISTRATION,
+    *PROVIDER_V3_REPLICATE_SUMMARIES,
+    PROVIDER_V3_CAMPAIGN_SUMMARY,
 )
 EXPECTED_ARTIFACT_PATHS = (
     "docs/analysis/dta-v22-pr-d-provider-protocol-summary.json",
@@ -352,10 +409,14 @@ def _changed_text(root: Path, relative: Path) -> str:
     )
 
 
-def _verify_closed_changed_surface(root: Path) -> None:
+def _verify_closed_changed_surface(
+    root: Path,
+    *,
+    expected_paths: tuple[Path, ...],
+) -> None:
     observed = _git_paths(root, "diff", "--name-only", PR_D_BASE, "--")
     observed.update(_git_paths(root, "ls-files", "--others", "--exclude-standard"))
-    expected = set(EXPECTED_PR_D_CHANGED_PATHS)
+    expected = set(expected_paths)
     if observed != expected:
         raise ValueError(
             "PR-D changed surface differs: "
@@ -377,7 +438,11 @@ def _validate_stage_record(value: object, *, stage: str) -> dict[str, Any]:
     return value
 
 
-def _require_pr_d_progress(progress: dict[str, Any]) -> None:
+def _require_pr_d_progress(
+    progress: dict[str, Any],
+    *,
+    expected_terminal: str,
+) -> None:
     if (
         set(progress)
         != {
@@ -430,10 +495,9 @@ def _require_pr_d_progress(progress: dict[str, Any]) -> None:
             )
         )
         != (None,) * 10
-        or progress.get("final_engineering_terminal")
-        != EXECUTION_READY_PR_D_TERMINAL
+        or progress.get("final_engineering_terminal") != expected_terminal
     ):
-        raise ValueError("PR-D execution-ready progress identity differs")
+        raise ValueError("PR-D progress identity or terminal differs")
     merged = progress.get("merged_prs")
     if not isinstance(merged, list) or len(merged) != 3:
         raise ValueError("PR-D merged sequence differs")
@@ -673,8 +737,23 @@ def _public_scan_plan(
     progress: dict[str, Any],
 ) -> tuple[str, tuple[Path, ...]]:
     if progress.get("current_stage") == "PR-D":
-        _require_pr_d_progress(progress)
-        return "PR_D_V3_EXECUTION_READY_SURFACE", EXPECTED_PR_D_CHANGED_PATHS
+        terminal = progress.get("final_engineering_terminal")
+        if terminal == EXECUTION_READY_PR_D_TERMINAL:
+            _require_pr_d_progress(
+                progress,
+                expected_terminal=EXECUTION_READY_PR_D_TERMINAL,
+            )
+            return (
+                "PR_D_V3_EXECUTION_READY_SURFACE",
+                EXPECTED_PR_D_PRE_EXECUTION_CHANGED_PATHS,
+            )
+        if terminal == BLOCKED_PR_D_TERMINAL:
+            _require_pr_d_progress(
+                progress,
+                expected_terminal=BLOCKED_PR_D_TERMINAL,
+            )
+            return "PR_D_V3_POST_EXECUTION_SURFACE", EXPECTED_PR_D_CHANGED_PATHS
+        raise ValueError("PR-D pre/post-execution terminal differs")
     _require_pr_d_successor_progress(root, progress)
     return "SUCCESSOR_PERSISTENT_ARTIFACTS", PERSISTENT_PR_D_ARTIFACTS
 
@@ -941,6 +1020,286 @@ def verify_provider_v3_preregistration(root: Path) -> dict[str, Any]:
             raise ValueError(f"PR-D historical attempt bytes changed: {relative}")
     _assert_no_pr_d_public_leak(raw)
     return preregistration
+
+
+def _verify_provider_v3_public_json(
+    root: Path,
+    *,
+    relative: Path,
+    raw_sha256: str,
+    semantic_field: str,
+    semantic_sha256: str,
+) -> dict[str, Any]:
+    path = _regular_file(root, relative)
+    raw_bytes = path.read_bytes()
+    raw = raw_bytes.decode("utf-8")
+    value = _load_json(path)
+    if (
+        hashlib.sha256(raw_bytes).hexdigest() != raw_sha256
+        or raw != json.dumps(value, indent=2, ensure_ascii=False) + "\n"
+        or value.get(semantic_field) != semantic_sha256
+        or semantic_sha256_v22(
+            {key: item for key, item in value.items() if key != semantic_field}
+        )
+        != semantic_sha256
+    ):
+        raise ValueError(f"PR-D Provider v3 public result differs: {relative}")
+    _assert_no_pr_d_public_leak(raw)
+    return value
+
+
+def verify_provider_v3_campaign_results(root: Path) -> dict[str, Any]:
+    preregistration = verify_provider_v3_preregistration(root)
+    if (
+        preregistration.get("preregistration_sha256")
+        != EXPECTED_V3_PREREGISTRATION_SHA256
+    ):
+        raise ValueError("PR-D Provider v3 result preregistration binding differs")
+    summaries = tuple(
+        _verify_provider_v3_public_json(
+            root,
+            relative=relative,
+            raw_sha256=raw_sha256,
+            semantic_field="summary_sha256",
+            semantic_sha256=semantic_sha256,
+        )
+        for relative, raw_sha256, semantic_sha256 in zip(
+            PROVIDER_V3_REPLICATE_SUMMARIES,
+            EXPECTED_V3_REPLICATE_RAW_SHA256S,
+            EXPECTED_V3_REPLICATE_SEMANTIC_SHA256S,
+            strict=True,
+        )
+    )
+    expected_taxonomies = (
+        {
+            "PARSE_SHAPE_REJECTED": 6,
+            "RUNTIME_PROTOCOL_REJECTED": 0,
+            "SEMANTIC_CATEGORY_MISMATCH": 5,
+            "CORRECTION_NOT_RECOVERED": 0,
+            "PROVIDER_TRANSPORT_ABORT": 35,
+            "PROVIDER_PROBE_FAILED": 0,
+        },
+        {
+            "PARSE_SHAPE_REJECTED": 1,
+            "RUNTIME_PROTOCOL_REJECTED": 0,
+            "SEMANTIC_CATEGORY_MISMATCH": 0,
+            "CORRECTION_NOT_RECOVERED": 0,
+            "PROVIDER_TRANSPORT_ABORT": 50,
+            "PROVIDER_PROBE_FAILED": 0,
+        },
+    )
+    expected_ordinary = (6, 1)
+    expected_final = (6, 1)
+    expected_calls = (18, 3)
+    for index, summary in enumerate(summaries):
+        replicate_id = ("A", "B")[index]
+        ordinary_by_arm = summary.get("ordinary_first_pass_by_arm")
+        correction_by_arm = summary.get("correction_acceptance_by_arm")
+        correction_by_error = summary.get("correction_acceptance_by_error_class")
+        if (
+            summary.get("schema_version")
+            != "dta-v22-pr-d-provider-protocol-v3-replicate-summary.v1"
+            or summary.get("goal_version") != "dta-v22-p0-master-v1"
+            or summary.get("amendment_version")
+            != "dta-v22-pr-d-provider-protocol-replicated-gate-v1"
+            or summary.get("replicate_id") != replicate_id
+            or summary.get("implementation_commit")
+            != EXPECTED_V3_IMPLEMENTATION_COMMIT
+            or summary.get("implementation_tree") != EXPECTED_V3_IMPLEMENTATION_TREE
+            or summary.get("preregistration_sha256")
+            != EXPECTED_V3_PREREGISTRATION_SHA256
+            or summary.get("model") != PRIMARY_MODEL_V22
+            or summary.get("temperature") != 0
+            or summary.get("selected_mode") != "STRICT_STRUCTURED_OUTPUT"
+            or summary.get("provider_probe_report_sha256")
+            != EXPECTED_V3_PROBE_REPORT_SHA256
+            or summary.get("provider_probe_evidence_sha256")
+            != EXPECTED_V3_PROBE_EVIDENCE_SHA256
+            or summary.get("controller_schema_sha256")
+            != EXPECTED_V3_CONTROLLER_SCHEMA_SHA256
+            or tuple(summary.get("controller_identity_sha256s", ()))
+            != EXPECTED_V3_CONTROLLER_IDENTITY_SHA256S
+            or tuple(summary.get("controller_prompt_sha256s", ()))
+            != EXPECTED_V3_CONTROLLER_PROMPT_SHA256S
+            or summary.get("outcome_sha256") != EXPECTED_V3_OUTCOME_SHA256S[index]
+            or summary.get("transition_count") != 52
+            or summary.get("ordinary_transition_count") != 48
+            or summary.get("ordinary_first_pass_accepted_count")
+            != expected_ordinary[index]
+            or summary.get("ordinary_first_pass_protocol_acceptance")
+            != expected_ordinary[index] / 48
+            or not isinstance(ordinary_by_arm, dict)
+            or {
+                arm: cell.get("transition_count")
+                for arm, cell in ordinary_by_arm.items()
+                if isinstance(cell, dict)
+            }
+            != {"FLAT_CANONICAL": 24, "PLANNER_LITE": 24}
+            or sum(
+                cell.get("accepted_count", -1)
+                for cell in ordinary_by_arm.values()
+                if isinstance(cell, dict)
+            )
+            != expected_ordinary[index]
+            or summary.get("correction_transition_count") != 4
+            or summary.get("correction_envelope_accepted_count") != 0
+            or summary.get("correction_envelope_acceptance") != 0.0
+            or not isinstance(correction_by_arm, dict)
+            or {
+                arm: cell.get("transition_count")
+                for arm, cell in correction_by_arm.items()
+                if isinstance(cell, dict)
+            }
+            != {"FLAT_CANONICAL": 2, "PLANNER_LITE": 2}
+            or not isinstance(correction_by_error, dict)
+            or {
+                error: cell.get("transition_count")
+                for error, cell in correction_by_error.items()
+                if isinstance(cell, dict)
+            }
+            != {"STALE_ACTION_CORRECTION": 2, "INVALID_REF_CORRECTION": 2}
+            or summary.get("final_accepted_count") != expected_final[index]
+            or summary.get("final_protocol_acceptance") != expected_final[index] / 52
+            or summary.get("provider_calls") != expected_calls[index]
+            or summary.get("failure_taxonomy") != expected_taxonomies[index]
+            or sum(expected_taxonomies[index].values()) + expected_final[index] != 52
+            or summary.get("invalid_dispatches") != 0
+            or summary.get("http_auto_retry_count") != 0
+            or summary.get("provider_gate_eligible") is not False
+            or summary.get("terminal") != BLOCKED_PR_D_TERMINAL
+            or summary.get("private_evidence_location_class")
+            != "DTA_V22_PRIVATE_ROOT"
+            or summary.get("raw_provider_content_published") is not False
+            or summary.get("private_paths_published") is not False
+            or summary.get("total_tokens")
+            != summary.get("input_tokens", -1) + summary.get("output_tokens", -2)
+            or any(
+                summary.get(field) != 0
+                for field in (
+                    "agent_read_dispatches_executed",
+                    "agent_write_calls",
+                    "runbook_executions",
+                    "docker_calls",
+                    "held_out_executions",
+                    "scenario_executions",
+                    "fault_injections",
+                )
+            )
+            or not _is_sha(summary.get("private_evidence_raw_sha256"), 64)
+            or not _is_sha(summary.get("private_evidence_semantic_sha256"), 64)
+        ):
+            raise ValueError(f"PR-D Provider v3 replicate {replicate_id} differs")
+
+    campaign = _verify_provider_v3_public_json(
+        root,
+        relative=PROVIDER_V3_CAMPAIGN_SUMMARY,
+        raw_sha256=EXPECTED_V3_CAMPAIGN_RAW_SHA256,
+        semantic_field="campaign_sha256",
+        semantic_sha256=EXPECTED_V3_CAMPAIGN_SEMANTIC_SHA256,
+    )
+    bindings = campaign.get("replicate_bindings")
+    expected_aggregate = {
+        failure: sum(taxonomy[failure] for taxonomy in expected_taxonomies)
+        for failure in expected_taxonomies[0]
+    }
+    if (
+        campaign.get("schema_version")
+        != "dta-v22-pr-d-provider-protocol-v3-campaign-summary.v1"
+        or campaign.get("goal_version") != "dta-v22-p0-master-v1"
+        or campaign.get("amendment_version")
+        != "dta-v22-pr-d-provider-protocol-replicated-gate-v1"
+        or campaign.get("implementation_commit") != EXPECTED_V3_IMPLEMENTATION_COMMIT
+        or campaign.get("implementation_tree") != EXPECTED_V3_IMPLEMENTATION_TREE
+        or campaign.get("preregistration_sha256")
+        != EXPECTED_V3_PREREGISTRATION_SHA256
+        or campaign.get("probe_evidence_sha256")
+        != EXPECTED_V3_PROBE_EVIDENCE_SHA256
+        or campaign.get("replicate_ids") != ["A", "B"]
+        or campaign.get("replicate_outcome_sha256s")
+        != list(EXPECTED_V3_OUTCOME_SHA256S)
+        or campaign.get("replicate_terminals")
+        != [BLOCKED_PR_D_TERMINAL, BLOCKED_PR_D_TERMINAL]
+        or campaign.get("failure_taxonomy_by_replicate")
+        != {"A": expected_taxonomies[0], "B": expected_taxonomies[1]}
+        or campaign.get("aggregate_failure_taxonomy") != expected_aggregate
+        or not isinstance(bindings, list)
+        or len(bindings) != 2
+        or any(not isinstance(binding, dict) for binding in bindings)
+        or any(
+            binding.get("replicate_id") != ("A", "B")[index]
+            or binding.get("private_raw_sha256")
+            != summaries[index].get("private_evidence_raw_sha256")
+            or binding.get("private_semantic_sha256")
+            != summaries[index].get("private_evidence_semantic_sha256")
+            or binding.get("public_raw_sha256")
+            != EXPECTED_V3_REPLICATE_RAW_SHA256S[index]
+            or binding.get("public_semantic_sha256")
+            != EXPECTED_V3_REPLICATE_SEMANTIC_SHA256S[index]
+            or binding.get("verified") is not True
+            for index, binding in enumerate(bindings)
+            if isinstance(binding, dict)
+        )
+        or campaign.get("both_replicates_independently_passed") is not False
+        or campaign.get("implementation_and_controller_bindings_equal") is not False
+        or campaign.get("provider_probe_calls") != 1
+        or campaign.get("replicate_provider_calls") != [18, 3]
+        or campaign.get("expected_provider_calls") != 22
+        or campaign.get("observed_provider_calls") != 22
+        or campaign.get("undeclared_provider_calls") != 0
+        or campaign.get("provider_call_accounting_exact") is not True
+        or campaign.get("invalid_dispatches") != 0
+        or campaign.get("http_auto_retry_count") != 0
+        or campaign.get("campaign_gate_eligible") is not False
+        or campaign.get("terminal") != BLOCKED_PR_D_TERMINAL
+        or campaign.get("private_evidence_location_class")
+        != "DTA_V22_PRIVATE_ROOT"
+        or not _is_sha(campaign.get("private_evidence_raw_sha256"), 64)
+        or not _is_sha(campaign.get("private_evidence_semantic_sha256"), 64)
+        or any(
+            campaign.get(field) != 0
+            for field in (
+                "agent_read_dispatches_executed",
+                "agent_write_calls",
+                "runbook_executions",
+                "docker_calls",
+                "held_out_executions",
+                "scenario_executions",
+                "fault_injections",
+            )
+        )
+    ):
+        raise ValueError("PR-D Provider v3 campaign result differs")
+    try:
+        if (
+            _git_text(
+                root,
+                "rev-parse",
+                f"{EXPECTED_V3_IMPLEMENTATION_COMMIT}^{{tree}}",
+            )
+            != EXPECTED_V3_IMPLEMENTATION_TREE
+        ):
+            raise ValueError("PR-D Provider v3 implementation tree differs")
+        subprocess.run(
+            (
+                "git",
+                "-C",
+                str(root),
+                "merge-base",
+                "--is-ancestor",
+                EXPECTED_V3_IMPLEMENTATION_COMMIT,
+                "HEAD",
+            ),
+            check=True,
+            capture_output=True,
+        )
+    except subprocess.CalledProcessError as error:
+        raise ValueError("PR-D Provider v3 implementation provenance differs") from error
+    return {
+        **campaign,
+        "replicate_summary_sha256s": list(
+            EXPECTED_V3_REPLICATE_SEMANTIC_SHA256S
+        ),
+    }
 
 
 def verify_provider_summary(
@@ -1256,8 +1615,11 @@ def verify_pr_d_protocol(root: Path) -> dict[str, object]:
     root = root.resolve(strict=True)
     progress = _load_json(root / "docs/analysis/dta-v22-p0-master-progress.json")
     mode, paths = _public_scan_plan(root, progress)
-    if mode == "PR_D_V3_EXECUTION_READY_SURFACE":
-        _verify_closed_changed_surface(root)
+    if mode in {
+        "PR_D_V3_EXECUTION_READY_SURFACE",
+        "PR_D_V3_POST_EXECUTION_SURFACE",
+    }:
+        _verify_closed_changed_surface(root, expected_paths=paths)
     for relative in paths:
         text = (
             _changed_text(root, relative)
@@ -1270,24 +1632,49 @@ def verify_pr_d_protocol(root: Path) -> dict[str, object]:
     _verify_pr_c_runtime_contracts()
     verify_blocked_provider_attempts(root)
     preregistration = verify_provider_v3_preregistration(root)
-    for relative in (*PROVIDER_V3_REPLICATE_SUMMARIES, PROVIDER_V3_CAMPAIGN_SUMMARY):
-        _require_absent(root, relative)
     _verify_runtime_contracts()
+    if mode == "PR_D_V3_EXECUTION_READY_SURFACE":
+        for relative in (
+            *PROVIDER_V3_REPLICATE_SUMMARIES,
+            PROVIDER_V3_CAMPAIGN_SUMMARY,
+        ):
+            _require_absent(root, relative)
+        return {
+            "schema_version": "dta-v22-pr-d-verification.v2",
+            "status": "EXECUTION_READY",
+            "historical_bindings": prior["historical_bindings"],
+            "pr_c_successor_gate": "NOT_APPLICABLE_PRE_EXECUTION",
+            "public_scan_mode": mode,
+            "secret_private_path_scan": "PASS",
+            "truth_isolation": "PASS",
+            "shared_controller_schema": "PASS",
+            "bounded_correction": "PASS_V3_CROSS_ARM",
+            "identity_manifests": "CONSTRUCTION_FROZEN_MODE_PENDING",
+            "provider_protocol_gate": "NOT_EXECUTED",
+            "preregistration_sha256": preregistration["preregistration_sha256"],
+            "merge_ready": False,
+            "terminal": EXECUTION_READY_PR_D_TERMINAL,
+        }
+    results = verify_provider_v3_campaign_results(root)
     return {
         "schema_version": "dta-v22-pr-d-verification.v2",
-        "status": "EXECUTION_READY",
+        "status": "BLOCKED",
         "historical_bindings": prior["historical_bindings"],
-        "pr_c_successor_gate": "NOT_APPLICABLE_PRE_EXECUTION",
+        "pr_c_successor_gate": "NOT_APPLICABLE_UNMERGED_PR_D",
         "public_scan_mode": mode,
         "secret_private_path_scan": "PASS",
         "truth_isolation": "PASS",
         "shared_controller_schema": "PASS",
         "bounded_correction": "PASS_V3_CROSS_ARM",
-        "identity_manifests": "CONSTRUCTION_FROZEN_MODE_PENDING",
-        "provider_protocol_gate": "NOT_EXECUTED",
+        "identity_manifests": "FROZEN_PARTIAL_RECEIPTS_BOUND",
+        "provider_protocol_gate": "BLOCKED",
         "preregistration_sha256": preregistration["preregistration_sha256"],
+        "replicate_summary_sha256s": list(
+            EXPECTED_V3_REPLICATE_SEMANTIC_SHA256S
+        ),
+        "campaign_sha256": results["campaign_sha256"],
         "merge_ready": False,
-        "terminal": EXECUTION_READY_PR_D_TERMINAL,
+        "terminal": BLOCKED_PR_D_TERMINAL,
     }
 
 

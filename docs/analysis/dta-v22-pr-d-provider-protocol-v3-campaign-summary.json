@@ -1,0 +1,91 @@
+{
+  "schema_version": "dta-v22-pr-d-provider-protocol-v3-campaign-summary.v1",
+  "goal_version": "dta-v22-p0-master-v1",
+  "amendment_version": "dta-v22-pr-d-provider-protocol-replicated-gate-v1",
+  "implementation_commit": "f9625cd45a1ed5a8ae38b56aac9e08dc99972902",
+  "implementation_tree": "fac6a7f2db96e3705a5fbd5e7973fe20d25161c2",
+  "preregistration_sha256": "3ef35bc80a151e90c4bc21f27f061e496819a916e12020ff20dcd65719d03a8f",
+  "probe_evidence_sha256": "f5c22d1d864a5a83a63979610a13237c4a5a74c1c7db0a36c77563f5e8076035",
+  "replicate_ids": [
+    "A",
+    "B"
+  ],
+  "replicate_outcome_sha256s": [
+    "2906c1436f0c981694bceaf19b973c5efbf98e08d930d76649a2cd40f2123761",
+    "57caf68b427e5095dbabcbfa5b066e795e592fdfbc2edeab397b9a5c67d6a5d7"
+  ],
+  "replicate_terminals": [
+    "BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE",
+    "BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE"
+  ],
+  "failure_taxonomy_by_replicate": {
+    "A": {
+      "PARSE_SHAPE_REJECTED": 6,
+      "RUNTIME_PROTOCOL_REJECTED": 0,
+      "SEMANTIC_CATEGORY_MISMATCH": 5,
+      "CORRECTION_NOT_RECOVERED": 0,
+      "PROVIDER_TRANSPORT_ABORT": 35,
+      "PROVIDER_PROBE_FAILED": 0
+    },
+    "B": {
+      "PARSE_SHAPE_REJECTED": 1,
+      "RUNTIME_PROTOCOL_REJECTED": 0,
+      "SEMANTIC_CATEGORY_MISMATCH": 0,
+      "CORRECTION_NOT_RECOVERED": 0,
+      "PROVIDER_TRANSPORT_ABORT": 50,
+      "PROVIDER_PROBE_FAILED": 0
+    }
+  },
+  "aggregate_failure_taxonomy": {
+    "PARSE_SHAPE_REJECTED": 7,
+    "RUNTIME_PROTOCOL_REJECTED": 0,
+    "SEMANTIC_CATEGORY_MISMATCH": 5,
+    "CORRECTION_NOT_RECOVERED": 0,
+    "PROVIDER_TRANSPORT_ABORT": 85,
+    "PROVIDER_PROBE_FAILED": 0
+  },
+  "replicate_bindings": [
+    {
+      "replicate_id": "A",
+      "private_raw_sha256": "5dfe80b3d071b3caeb0a0b766ff94678131ec55f8e99e35002ec65709c2c3ece",
+      "private_semantic_sha256": "269600a9f293244927a049b2f62292298d873cdfab2d7ba17a5b38b6f7705adf",
+      "public_raw_sha256": "109ecbdf18651467bf6cc4f902accfc6d1fdca881692a0dc4326ab00eb4804e6",
+      "public_semantic_sha256": "17d714fb238f0968bbaf1cea49b39ed0e7db0c3261554a75d39eb0c79e2e6788",
+      "verified": true
+    },
+    {
+      "replicate_id": "B",
+      "private_raw_sha256": "1807a8746b2fc533cfd3dd0b613a44d97d3f0f044e2ec93e2d8cbe144bdd427e",
+      "private_semantic_sha256": "e26d33f2a69568b55f911431125e9d1687c03742be3aad5ac265523371edfb6f",
+      "public_raw_sha256": "7ee47877a313ac38641a5fc37f7799957301e1162f03cdd764e841dcda071363",
+      "public_semantic_sha256": "c04f6ecd1fc305fcb21ec8bfc9dfcbbfa049adf27499d91b14b63c4b5815ae40",
+      "verified": true
+    }
+  ],
+  "both_replicates_independently_passed": false,
+  "implementation_and_controller_bindings_equal": false,
+  "provider_probe_calls": 1,
+  "replicate_provider_calls": [
+    18,
+    3
+  ],
+  "expected_provider_calls": 22,
+  "observed_provider_calls": 22,
+  "undeclared_provider_calls": 0,
+  "provider_call_accounting_exact": true,
+  "invalid_dispatches": 0,
+  "agent_read_dispatches_executed": 0,
+  "agent_write_calls": 0,
+  "runbook_executions": 0,
+  "docker_calls": 0,
+  "held_out_executions": 0,
+  "scenario_executions": 0,
+  "fault_injections": 0,
+  "http_auto_retry_count": 0,
+  "campaign_gate_eligible": false,
+  "terminal": "BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE",
+  "campaign_sha256": "b23184d23ad5d6fc801e85efca268d5c7e7ad951ee004b8221fe2a5889211170",
+  "private_evidence_raw_sha256": "4f2ccf4a8cd529be1d048a7cb74c1c0b3d1b305c28b0189b9cd713f121994bf7",
+  "private_evidence_semantic_sha256": "22c3733336367c090737da6cf18b66e2fa2fcb3d9cda9a773c802766b79c5b0c",
+  "private_evidence_location_class": "DTA_V22_PRIVATE_ROOT"
+}
