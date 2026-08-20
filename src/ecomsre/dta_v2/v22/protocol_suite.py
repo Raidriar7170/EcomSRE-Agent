@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 from enum import Enum
-from typing import Any, Literal, Protocol
+from typing import Any, Callable, Literal, Protocol
 
 from pydantic import Field, StrictBool, StrictFloat, StrictInt, model_validator
 
@@ -58,6 +58,7 @@ from ecomsre.dta_v2.v22.controller_modes import (
 )
 from ecomsre.dta_v2.v22.controller_provider import (
     ProviderControllerTurnV22,
+    ProviderHttpErrorV22,
     ProviderTurnRequestV22,
     build_provider_turn_request_v22,
 )
@@ -507,8 +508,9 @@ def _setup_transition_v22(
     ordinal: int,
     category: SyntheticTransitionCategoryV22,
     probe: ProviderModeCapabilityReportV22,
+    arm_override: ControllerArmV22 | None = None,
 ) -> _TransitionSetupV22:
-    arm = _arm_v22(ordinal)
+    arm = arm_override or _arm_v22(ordinal)
     identity = _identity_v22(probe=probe, arm=arm)
     hypotheses = build_hypothesis_catalog_v22(
         candidate_services=("checkout", "payment")
@@ -1284,14 +1286,994 @@ def run_provider_protocol_capability_suite_v22(
     )
 
 
+class ProviderProtocolFailureClassV3(str, Enum):
+    PARSE_SHAPE_REJECTED = "PARSE_SHAPE_REJECTED"
+    RUNTIME_PROTOCOL_REJECTED = "RUNTIME_PROTOCOL_REJECTED"
+    SEMANTIC_CATEGORY_MISMATCH = "SEMANTIC_CATEGORY_MISMATCH"
+    CORRECTION_NOT_RECOVERED = "CORRECTION_NOT_RECOVERED"
+    PROVIDER_TRANSPORT_ABORT = "PROVIDER_TRANSPORT_ABORT"
+    PROVIDER_PROBE_FAILED = "PROVIDER_PROBE_FAILED"
+
+
+class ProviderProtocolGateCodeV3(str, Enum):
+    ORDINARY_OVERALL_MINIMUM = "ORDINARY_OVERALL_MINIMUM"
+    FLAT_ORDINARY_MINIMUM = "FLAT_ORDINARY_MINIMUM"
+    PLANNER_ORDINARY_MINIMUM = "PLANNER_ORDINARY_MINIMUM"
+    CORRECTION_ALL_REQUIRED = "CORRECTION_ALL_REQUIRED"
+    FLAT_CORRECTION_ALL_REQUIRED = "FLAT_CORRECTION_ALL_REQUIRED"
+    PLANNER_CORRECTION_ALL_REQUIRED = "PLANNER_CORRECTION_ALL_REQUIRED"
+    STALE_ACTION_CORRECTION_ALL_REQUIRED = (
+        "STALE_ACTION_CORRECTION_ALL_REQUIRED"
+    )
+    INVALID_REF_CORRECTION_ALL_REQUIRED = (
+        "INVALID_REF_CORRECTION_ALL_REQUIRED"
+    )
+    FINAL_MINIMUM = "FINAL_MINIMUM"
+    INVALID_DISPATCH = "INVALID_DISPATCH"
+
+
+class ProviderProtocolSuiteTerminalV3(str, Enum):
+    PROVIDER_PROTOCOL_GATE_PASS = "PROVIDER_PROTOCOL_GATE_PASS"
+    BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE = (
+        "BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE"
+    )
+
+
+_ORDINARY_CATEGORIES_V3 = _CANONICAL_CATEGORIES_V22[:48]
+_CORRECTION_MATRIX_V3 = (
+    (
+        SyntheticTransitionCategoryV22.STALE_ACTION_CORRECTION,
+        ControllerArmV22.FLAT_CANONICAL,
+    ),
+    (
+        SyntheticTransitionCategoryV22.STALE_ACTION_CORRECTION,
+        ControllerArmV22.PLANNER_LITE,
+    ),
+    (
+        SyntheticTransitionCategoryV22.INVALID_REF_CORRECTION,
+        ControllerArmV22.FLAT_CANONICAL,
+    ),
+    (
+        SyntheticTransitionCategoryV22.INVALID_REF_CORRECTION,
+        ControllerArmV22.PLANNER_LITE,
+    ),
+)
+_PROVIDER_PROTOCOL_MATRIX_V3 = (
+    *(
+        (category, _arm_v22(ordinal))
+        for ordinal, category in enumerate(_ORDINARY_CATEGORIES_V3, start=1)
+    ),
+    *_CORRECTION_MATRIX_V3,
+)
+
+
+class ProtocolAcceptanceCellV3(DtaModelV22):
+    transition_count: StrictInt = Field(ge=0)
+    accepted_count: StrictInt = Field(ge=0)
+    acceptance: StrictFloat = Field(ge=0, le=1)
+
+    @model_validator(mode="after")
+    def require_cell(self) -> ProtocolAcceptanceCellV3:
+        expected = (
+            self.accepted_count / self.transition_count
+            if self.transition_count
+            else 0.0
+        )
+        if (
+            self.accepted_count > self.transition_count
+            or self.acceptance != expected
+        ):
+            raise ValueError("protocol acceptance cell differs")
+        return self
+
+
+class ProviderLatencySummaryV3(DtaModelV22):
+    total_ms: StrictInt = Field(ge=0)
+    maximum_ms: StrictInt = Field(ge=0)
+
+
+def _v3_transition_kind(
+    category: SyntheticTransitionCategoryV22,
+) -> Literal["ORDINARY", "CORRECTION_ENVELOPE"]:
+    return (
+        "CORRECTION_ENVELOPE"
+        if category
+        in {
+            SyntheticTransitionCategoryV22.STALE_ACTION_CORRECTION,
+            SyntheticTransitionCategoryV22.INVALID_REF_CORRECTION,
+        }
+        else "ORDINARY"
+    )
+
+
+def _v3_failure_classification(
+    *,
+    parsed: bool,
+    runtime_admitted: bool,
+    semantic_accepted: bool,
+    transition_kind: str,
+) -> ProviderProtocolFailureClassV3 | None:
+    if semantic_accepted:
+        return None
+    if not parsed:
+        return ProviderProtocolFailureClassV3.PARSE_SHAPE_REJECTED
+    if not runtime_admitted:
+        return ProviderProtocolFailureClassV3.RUNTIME_PROTOCOL_REJECTED
+    if transition_kind == "CORRECTION_ENVELOPE":
+        return ProviderProtocolFailureClassV3.CORRECTION_NOT_RECOVERED
+    return ProviderProtocolFailureClassV3.SEMANTIC_CATEGORY_MISMATCH
+
+
+class ProviderSyntheticTransitionResultV3(DtaModelV22):
+    schema_version: Literal["dta-v22.provider-synthetic-transition-result.v3"]
+    transition_id: str = Field(pattern=r"^dta-v22-protocol-v3-[0-9]{3}$")
+    replicate_id: Literal["A", "B"]
+    category: SyntheticTransitionCategoryV22
+    arm: ControllerArmV22
+    transition_kind: Literal["ORDINARY", "CORRECTION_ENVELOPE"]
+    session_before: ControllerSessionStateV22
+    provider_request: ProviderTurnRequestV22
+    provider_turn: ProviderControllerTurnV22
+    parsed_decision: StrictBool
+    runtime_protocol_admitted: StrictBool
+    semantic_category_accepted: StrictBool
+    ordinary_first_pass_accepted: StrictBool | None
+    correction_envelope_accepted: StrictBool | None
+    final_accepted: StrictBool
+    correction_error_class: ControllerProtocolErrorCodeV22 | None
+    failure_classification: ProviderProtocolFailureClassV3 | None
+    invalid_dispatches: StrictInt = Field(ge=0)
+    transition_sha256: Sha256V22
+
+    @model_validator(mode="after")
+    def require_transition(self) -> ProviderSyntheticTransitionResultV3:
+        self.provider_request.require_request()  # type: ignore[operator]
+        kind = _v3_transition_kind(self.category)
+        if (
+            self.provider_request.execution_mode != "PROTOCOL_ONLY"
+            or self.provider_request.controller_input.arm is not self.arm
+            or self.provider_turn.provider_request_sha256
+            != self.provider_request.request_sha256
+            or self.provider_turn.mode
+            is not self.provider_request.identity.provider_output_mode
+            or self.provider_turn.controller_identity_sha256
+            != self.provider_request.identity.identity_sha256
+            or self.provider_turn.prompt_sha256
+            != self.provider_request.identity.prompt_sha256
+            or self.provider_turn.visible_input_sha256
+            != semantic_sha256_v22(self.provider_request.visible_state())
+            or self.transition_kind != kind
+            or self.parsed_decision != (self.provider_turn.decision is not None)
+        ):
+            raise ValueError("Provider v3 transition binding differs")
+        raw: ControllerDecisionV22 | dict[str, object] = (
+            self.provider_turn.decision or {}
+        )
+        result = process_controller_decision_v22(
+            session=self.session_before,
+            raw_decision=raw,
+            turn_input=self.provider_request.controller_input,
+        )
+        runtime_admitted = (
+            result.disposition is ControllerProtocolDispositionV22.ACCEPTED
+        )
+        semantic_accepted = _acceptable_result_v22(
+            category=self.category,
+            result=result,
+        )
+        expected_error = (
+            self.provider_request.plan_correction.safe_error_code
+            if self.provider_request.plan_correction is not None
+            else None
+        )
+        expected_failure = _v3_failure_classification(
+            parsed=self.parsed_decision,
+            runtime_admitted=runtime_admitted,
+            semantic_accepted=semantic_accepted,
+            transition_kind=kind,
+        )
+        if (
+            self.runtime_protocol_admitted != runtime_admitted
+            or self.semantic_category_accepted != semantic_accepted
+            or self.final_accepted != semantic_accepted
+            or self.correction_error_class != expected_error
+            or self.failure_classification is not expected_failure
+            or (
+                kind == "ORDINARY"
+                and (
+                    self.ordinary_first_pass_accepted != semantic_accepted
+                    or self.correction_envelope_accepted is not None
+                    or expected_error is not None
+                )
+            )
+            or (
+                kind == "CORRECTION_ENVELOPE"
+                and (
+                    self.ordinary_first_pass_accepted is not None
+                    or self.correction_envelope_accepted != semantic_accepted
+                    or expected_error is None
+                )
+            )
+        ):
+            raise ValueError("Provider v3 transition semantics differ")
+        expected = semantic_sha256_v22(
+            self.model_dump(mode="json", exclude={"transition_sha256"})
+        )
+        if self.transition_sha256 != expected:
+            raise ValueError("Provider v3 transition digest differs")
+        return self
+
+
+def _acceptance_cell_v3(
+    transitions: tuple[ProviderSyntheticTransitionResultV3, ...],
+    *,
+    accepted_field: str,
+) -> ProtocolAcceptanceCellV3:
+    accepted = sum(
+        bool(getattr(transition, accepted_field)) for transition in transitions
+    )
+    count = len(transitions)
+    return ProtocolAcceptanceCellV3(
+        transition_count=count,
+        accepted_count=accepted,
+        acceptance=accepted / count if count else 0.0,
+    )
+
+
+def _gate_codes_v3(
+    *,
+    ordinary: int,
+    ordinary_by_arm: dict[str, ProtocolAcceptanceCellV3],
+    correction: int,
+    correction_by_arm: dict[str, ProtocolAcceptanceCellV3],
+    correction_by_error: dict[str, ProtocolAcceptanceCellV3],
+    final: int,
+    invalid: int,
+) -> tuple[ProviderProtocolGateCodeV3, ...]:
+    failed: list[ProviderProtocolGateCodeV3] = []
+    if ordinary < 46:
+        failed.append(ProviderProtocolGateCodeV3.ORDINARY_OVERALL_MINIMUM)
+    if ordinary_by_arm[ControllerArmV22.FLAT_CANONICAL.value].accepted_count < 23:
+        failed.append(ProviderProtocolGateCodeV3.FLAT_ORDINARY_MINIMUM)
+    if ordinary_by_arm[ControllerArmV22.PLANNER_LITE.value].accepted_count < 23:
+        failed.append(ProviderProtocolGateCodeV3.PLANNER_ORDINARY_MINIMUM)
+    if correction != 4:
+        failed.append(ProviderProtocolGateCodeV3.CORRECTION_ALL_REQUIRED)
+    if correction_by_arm[ControllerArmV22.FLAT_CANONICAL.value].accepted_count != 2:
+        failed.append(ProviderProtocolGateCodeV3.FLAT_CORRECTION_ALL_REQUIRED)
+    if correction_by_arm[ControllerArmV22.PLANNER_LITE.value].accepted_count != 2:
+        failed.append(ProviderProtocolGateCodeV3.PLANNER_CORRECTION_ALL_REQUIRED)
+    if (
+        correction_by_error[
+            SyntheticTransitionCategoryV22.STALE_ACTION_CORRECTION.value
+        ].accepted_count
+        != 2
+    ):
+        failed.append(
+            ProviderProtocolGateCodeV3.STALE_ACTION_CORRECTION_ALL_REQUIRED
+        )
+    if (
+        correction_by_error[
+            SyntheticTransitionCategoryV22.INVALID_REF_CORRECTION.value
+        ].accepted_count
+        != 2
+    ):
+        failed.append(
+            ProviderProtocolGateCodeV3.INVALID_REF_CORRECTION_ALL_REQUIRED
+        )
+    if final < 51:
+        failed.append(ProviderProtocolGateCodeV3.FINAL_MINIMUM)
+    if invalid != 0:
+        failed.append(ProviderProtocolGateCodeV3.INVALID_DISPATCH)
+    return tuple(failed)
+
+
+class ProviderProtocolCapabilityReportV3(DtaModelV22):
+    schema_version: Literal["dta-v22.provider-protocol-capability-report.v3"]
+    execution_mode: Literal["PROVIDER_PROTOCOL_V3_REPLICATE"]
+    replicate_id: Literal["A", "B"]
+    implementation_commit: str = Field(pattern=r"^[0-9a-f]{40}$")
+    implementation_tree: str = Field(pattern=r"^[0-9a-f]{40}$")
+    preregistration_sha256: Sha256V22
+    model: str
+    temperature: Literal[0]
+    selected_mode: ProviderOutputModeV22
+    provider_probe: ProviderModeCapabilityReportV22
+    controller_schema_sha256: Sha256V22
+    controller_identity_sha256s: tuple[Sha256V22, ...] = Field(
+        min_length=4, max_length=4
+    )
+    controller_prompt_sha256s: tuple[Sha256V22, ...] = Field(
+        min_length=4, max_length=4
+    )
+    answer_free_state: Literal[True]
+    transitions: tuple[ProviderSyntheticTransitionResultV3, ...] = Field(
+        min_length=52, max_length=52
+    )
+    transition_count: Literal[52]
+    parsed_decision_count: StrictInt = Field(ge=0, le=52)
+    runtime_protocol_admitted_count: StrictInt = Field(ge=0, le=52)
+    semantic_category_accepted_count: StrictInt = Field(ge=0, le=52)
+    ordinary_transition_count: Literal[48]
+    ordinary_first_pass_accepted_count: StrictInt = Field(ge=0, le=48)
+    ordinary_first_pass_protocol_acceptance: StrictFloat = Field(ge=0, le=1)
+    ordinary_first_pass_by_arm: dict[str, ProtocolAcceptanceCellV3]
+    ordinary_first_pass_by_category: dict[str, ProtocolAcceptanceCellV3]
+    correction_transition_count: Literal[4]
+    correction_envelope_accepted_count: StrictInt = Field(ge=0, le=4)
+    correction_envelope_acceptance: StrictFloat = Field(ge=0, le=1)
+    correction_acceptance_by_arm: dict[str, ProtocolAcceptanceCellV3]
+    correction_acceptance_by_error_class: dict[str, ProtocolAcceptanceCellV3]
+    final_accepted_count: StrictInt = Field(ge=0, le=52)
+    final_protocol_acceptance: StrictFloat = Field(ge=0, le=1)
+    failure_taxonomy: dict[str, StrictInt]
+    invalid_dispatches: StrictInt = Field(ge=0)
+    provider_calls: Literal[52]
+    input_tokens: StrictInt = Field(ge=0)
+    output_tokens: StrictInt = Field(ge=0)
+    total_tokens: StrictInt = Field(ge=0)
+    latency: ProviderLatencySummaryV3
+    http_auto_retry_count: Literal[0]
+    provider_gate_eligible: StrictBool
+    failed_gate_codes: tuple[ProviderProtocolGateCodeV3, ...]
+    terminal: ProviderProtocolSuiteTerminalV3
+    report_sha256: Sha256V22
+
+    @model_validator(mode="after")
+    def require_report(self) -> ProviderProtocolCapabilityReportV3:
+        for transition in self.transitions:
+            transition.require_transition()  # type: ignore[operator]
+        expected_ids = tuple(
+            f"dta-v22-protocol-v3-{index:03d}" for index in range(1, 53)
+        )
+        expected_identities = build_controller_identity_manifests_v22(
+            provider_probe=self.provider_probe
+        )
+        if (
+            tuple(item.transition_id for item in self.transitions) != expected_ids
+            or tuple((item.category, item.arm) for item in self.transitions)
+            != _PROVIDER_PROTOCOL_MATRIX_V3
+            or any(item.replicate_id != self.replicate_id for item in self.transitions)
+            or self.model != PRIMARY_MODEL_V22
+            or self.provider_probe.model != PRIMARY_MODEL_V22
+            or self.selected_mode is not self.provider_probe.selected_mode
+            or self.controller_schema_sha256
+            != self.provider_probe.controller_schema_sha256
+            or self.controller_identity_sha256s
+            != tuple(item.identity_sha256 for item in expected_identities)
+            or self.controller_prompt_sha256s
+            != tuple(item.prompt_sha256 for item in expected_identities)
+        ):
+            raise ValueError("Provider protocol v3 identity or matrix differs")
+        turns = tuple(item.provider_turn for item in self.transitions)
+        if (
+            len({turn.turn_sha256 for turn in turns}) != len(turns)
+            or len({item.provider_request.request_sha256 for item in self.transitions})
+            != len(self.transitions)
+        ):
+            raise ValueError("Provider protocol v3 call evidence is not unique")
+        ordinary = tuple(
+            item for item in self.transitions if item.transition_kind == "ORDINARY"
+        )
+        corrections = tuple(
+            item
+            for item in self.transitions
+            if item.transition_kind == "CORRECTION_ENVELOPE"
+        )
+        ordinary_accepted = sum(
+            bool(item.ordinary_first_pass_accepted) for item in ordinary
+        )
+        correction_accepted = sum(
+            bool(item.correction_envelope_accepted) for item in corrections
+        )
+        final_accepted = sum(item.final_accepted for item in self.transitions)
+        invalid = sum(item.invalid_dispatches for item in self.transitions)
+        ordinary_by_arm = {
+            arm.value: _acceptance_cell_v3(
+                tuple(item for item in ordinary if item.arm is arm),
+                accepted_field="ordinary_first_pass_accepted",
+            )
+            for arm in ControllerArmV22
+        }
+        ordinary_categories = tuple(dict.fromkeys(_ORDINARY_CATEGORIES_V3))
+        ordinary_by_category = {
+            category.value: _acceptance_cell_v3(
+                tuple(item for item in ordinary if item.category is category),
+                accepted_field="ordinary_first_pass_accepted",
+            )
+            for category in ordinary_categories
+        }
+        correction_by_arm = {
+            arm.value: _acceptance_cell_v3(
+                tuple(item for item in corrections if item.arm is arm),
+                accepted_field="correction_envelope_accepted",
+            )
+            for arm in ControllerArmV22
+        }
+        correction_by_error = {
+            category.value: _acceptance_cell_v3(
+                tuple(item for item in corrections if item.category is category),
+                accepted_field="correction_envelope_accepted",
+            )
+            for category, _arm in _CORRECTION_MATRIX_V3[::2]
+        }
+        taxonomy = {
+            item.value: sum(
+                transition.failure_classification is item
+                for transition in self.transitions
+            )
+            for item in ProviderProtocolFailureClassV3
+        }
+        failed = _gate_codes_v3(
+            ordinary=ordinary_accepted,
+            ordinary_by_arm=ordinary_by_arm,
+            correction=correction_accepted,
+            correction_by_arm=correction_by_arm,
+            correction_by_error=correction_by_error,
+            final=final_accepted,
+            invalid=invalid,
+        )
+        terminal = (
+            ProviderProtocolSuiteTerminalV3.PROVIDER_PROTOCOL_GATE_PASS
+            if not failed
+            else ProviderProtocolSuiteTerminalV3.BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE
+        )
+        latency = ProviderLatencySummaryV3(
+            total_ms=sum(turn.monotonic_latency_ms for turn in turns),
+            maximum_ms=max(turn.monotonic_latency_ms for turn in turns),
+        )
+        if (
+            self.parsed_decision_count
+            != sum(item.parsed_decision for item in self.transitions)
+            or self.runtime_protocol_admitted_count
+            != sum(item.runtime_protocol_admitted for item in self.transitions)
+            or self.semantic_category_accepted_count != final_accepted
+            or self.ordinary_first_pass_accepted_count != ordinary_accepted
+            or self.ordinary_first_pass_protocol_acceptance
+            != ordinary_accepted / 48
+            or self.ordinary_first_pass_by_arm != ordinary_by_arm
+            or self.ordinary_first_pass_by_category != ordinary_by_category
+            or self.correction_envelope_accepted_count != correction_accepted
+            or self.correction_envelope_acceptance != correction_accepted / 4
+            or self.correction_acceptance_by_arm != correction_by_arm
+            or self.correction_acceptance_by_error_class != correction_by_error
+            or self.final_accepted_count != final_accepted
+            or self.final_protocol_acceptance != final_accepted / 52
+            or self.failure_taxonomy != taxonomy
+            or self.invalid_dispatches != invalid
+            or self.input_tokens != sum(turn.input_tokens for turn in turns)
+            or self.output_tokens != sum(turn.output_tokens for turn in turns)
+            or self.total_tokens != sum(turn.total_tokens for turn in turns)
+            or self.latency != latency
+            or self.provider_gate_eligible != (not failed)
+            or self.failed_gate_codes != failed
+            or self.terminal is not terminal
+        ):
+            raise ValueError("Provider protocol v3 gate metrics differ")
+        expected = semantic_sha256_v22(
+            self.model_dump(mode="json", exclude={"report_sha256"})
+        )
+        if self.report_sha256 != expected:
+            raise ValueError("Provider protocol v3 report digest differs")
+        return self
+
+
+class ProviderProtocolPartialFailureReceiptV3(DtaModelV22):
+    """Typed, hash-bound receipt for a replicate stopped by Provider transport."""
+
+    schema_version: Literal[
+        "dta-v22.provider-protocol-partial-failure-receipt.v3"
+    ]
+    execution_mode: Literal["PROVIDER_PROTOCOL_V3_REPLICATE"]
+    replicate_id: Literal["A", "B"]
+    implementation_commit: str = Field(pattern=r"^[0-9a-f]{40}$")
+    implementation_tree: str = Field(pattern=r"^[0-9a-f]{40}$")
+    preregistration_sha256: Sha256V22
+    model: str
+    temperature: Literal[0]
+    selected_mode: ProviderOutputModeV22
+    provider_probe: ProviderModeCapabilityReportV22
+    controller_schema_sha256: Sha256V22
+    controller_identity_sha256s: tuple[Sha256V22, ...] = Field(
+        min_length=4, max_length=4
+    )
+    controller_prompt_sha256s: tuple[Sha256V22, ...] = Field(
+        min_length=4, max_length=4
+    )
+    planned_transition_count: Literal[52]
+    completed_transitions: tuple[ProviderSyntheticTransitionResultV3, ...] = Field(
+        max_length=51
+    )
+    completed_transition_count: StrictInt = Field(ge=0, le=51)
+    parsed_decision_count: StrictInt = Field(ge=0, le=51)
+    runtime_protocol_admitted_count: StrictInt = Field(ge=0, le=51)
+    semantic_category_accepted_count: StrictInt = Field(ge=0, le=51)
+    invalid_dispatches: StrictInt = Field(ge=0)
+    provider_calls: StrictInt = Field(ge=1, le=52)
+    input_tokens: StrictInt = Field(ge=0)
+    output_tokens: StrictInt = Field(ge=0)
+    total_tokens: StrictInt = Field(ge=0)
+    latency: ProviderLatencySummaryV3
+    failure_classification: Literal[
+        ProviderProtocolFailureClassV3.PROVIDER_TRANSPORT_ABORT
+    ]
+    failure_reason_code: Literal[
+        "HTTP_ERROR",
+        "CONNECTION_ERROR",
+        "TIMEOUT",
+        "PROVIDER_RESPONSE_REJECTED",
+    ]
+    failure_taxonomy: dict[str, StrictInt]
+    http_auto_retry_count: Literal[0]
+    provider_gate_eligible: Literal[False]
+    terminal: Literal[
+        ProviderProtocolSuiteTerminalV3.BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE
+    ]
+    receipt_sha256: Sha256V22
+
+    @model_validator(mode="after")
+    def require_receipt(self) -> ProviderProtocolPartialFailureReceiptV3:
+        for transition in self.completed_transitions:
+            transition.require_transition()  # type: ignore[operator]
+        identities = build_controller_identity_manifests_v22(
+            provider_probe=self.provider_probe
+        )
+        completed = len(self.completed_transitions)
+        taxonomy = {
+            item.value: sum(
+                transition.failure_classification is item
+                for transition in self.completed_transitions
+            )
+            for item in ProviderProtocolFailureClassV3
+        }
+        taxonomy[ProviderProtocolFailureClassV3.PROVIDER_TRANSPORT_ABORT.value] += (
+            52 - completed
+        )
+        if (
+            self.model != PRIMARY_MODEL_V22
+            or self.provider_probe.model != PRIMARY_MODEL_V22
+            or self.selected_mode is not self.provider_probe.selected_mode
+            or self.controller_schema_sha256
+            != self.provider_probe.controller_schema_sha256
+            or self.controller_identity_sha256s
+            != tuple(item.identity_sha256 for item in identities)
+            or self.controller_prompt_sha256s
+            != tuple(item.prompt_sha256 for item in identities)
+            or tuple(
+                (transition.category, transition.arm)
+                for transition in self.completed_transitions
+            )
+            != _PROVIDER_PROTOCOL_MATRIX_V3[:completed]
+            or any(
+                transition.replicate_id != self.replicate_id
+                for transition in self.completed_transitions
+            )
+            or self.completed_transition_count != completed
+            or self.provider_calls != completed + 1
+            or self.parsed_decision_count
+            != sum(item.parsed_decision for item in self.completed_transitions)
+            or self.runtime_protocol_admitted_count
+            != sum(
+                item.runtime_protocol_admitted
+                for item in self.completed_transitions
+            )
+            or self.semantic_category_accepted_count
+            != sum(
+                item.semantic_category_accepted
+                for item in self.completed_transitions
+            )
+            or self.invalid_dispatches
+            != sum(item.invalid_dispatches for item in self.completed_transitions)
+            or self.input_tokens
+            != sum(
+                item.provider_turn.input_tokens
+                for item in self.completed_transitions
+            )
+            or self.output_tokens
+            != sum(
+                item.provider_turn.output_tokens
+                for item in self.completed_transitions
+            )
+            or self.total_tokens
+            != sum(
+                item.provider_turn.total_tokens
+                for item in self.completed_transitions
+            )
+            or self.latency
+            != ProviderLatencySummaryV3(
+                total_ms=sum(
+                    item.provider_turn.monotonic_latency_ms
+                    for item in self.completed_transitions
+                ),
+                maximum_ms=max(
+                    (
+                        item.provider_turn.monotonic_latency_ms
+                        for item in self.completed_transitions
+                    ),
+                    default=0,
+                ),
+            )
+            or self.failure_taxonomy != taxonomy
+        ):
+            raise ValueError("Provider protocol v3 partial receipt differs")
+        expected = semantic_sha256_v22(
+            self.model_dump(mode="json", exclude={"receipt_sha256"})
+        )
+        if self.receipt_sha256 != expected:
+            raise ValueError("Provider protocol v3 partial receipt digest differs")
+        return self
+
+
+def run_provider_protocol_capability_suite_v3(
+    *,
+    provider_probe: ProviderModeCapabilityReportV22,
+    complete: ProviderCompleteCallableV22,
+    replicate_id: Literal["A", "B"],
+    implementation_commit: str,
+    implementation_tree: str,
+    preregistration_sha256: str,
+    on_transition: Callable[[ProviderSyntheticTransitionResultV3], None]
+    | None = None,
+) -> ProviderProtocolCapabilityReportV3:
+    probe = ProviderModeCapabilityReportV22.model_validate(
+        provider_probe.model_dump(mode="python")
+    )
+    transitions: list[ProviderSyntheticTransitionResultV3] = []
+    for ordinal, (category, arm) in enumerate(
+        _PROVIDER_PROTOCOL_MATRIX_V3,
+        start=1,
+    ):
+        setup = _setup_transition_v22(
+            ordinal=ordinal,
+            category=category,
+            probe=probe,
+            arm_override=arm,
+        )
+        turn = complete(request=setup.request)
+        result = process_controller_decision_v22(
+            session=setup.session,
+            raw_decision=turn.decision or {},
+            turn_input=setup.request.controller_input,
+        )
+        parsed = turn.decision is not None
+        runtime_admitted = (
+            result.disposition is ControllerProtocolDispositionV22.ACCEPTED
+        )
+        semantic_accepted = _acceptable_result_v22(
+            category=category,
+            result=result,
+        )
+        kind = _v3_transition_kind(category)
+        transition_payload: dict[str, Any] = {
+            "schema_version": "dta-v22.provider-synthetic-transition-result.v3",
+            "transition_id": f"dta-v22-protocol-v3-{ordinal:03d}",
+            "replicate_id": replicate_id,
+            "category": category,
+            "arm": arm,
+            "transition_kind": kind,
+            "session_before": setup.session,
+            "provider_request": setup.request,
+            "provider_turn": turn,
+            "parsed_decision": parsed,
+            "runtime_protocol_admitted": runtime_admitted,
+            "semantic_category_accepted": semantic_accepted,
+            "ordinary_first_pass_accepted": (
+                semantic_accepted if kind == "ORDINARY" else None
+            ),
+            "correction_envelope_accepted": (
+                semantic_accepted if kind == "CORRECTION_ENVELOPE" else None
+            ),
+            "final_accepted": semantic_accepted,
+            "correction_error_class": setup.injected_error,
+            "failure_classification": _v3_failure_classification(
+                parsed=parsed,
+                runtime_admitted=runtime_admitted,
+                semantic_accepted=semantic_accepted,
+                transition_kind=kind,
+            ),
+            "invalid_dispatches": result.invalid_dispatches,
+        }
+        transition_draft = ProviderSyntheticTransitionResultV3.model_construct(
+            **transition_payload,
+            transition_sha256="0" * 64,
+        )
+        transition = ProviderSyntheticTransitionResultV3.model_validate(
+                {
+                    **transition_payload,
+                    "transition_sha256": semantic_sha256_v22(
+                        transition_draft.model_dump(
+                            mode="json",
+                            exclude={"transition_sha256"},
+                        )
+                    ),
+                }
+            )
+        transitions.append(transition)
+        if on_transition is not None:
+            on_transition(transition)
+    values = tuple(transitions)
+    identities = build_controller_identity_manifests_v22(provider_probe=probe)
+    ordinary = tuple(item for item in values if item.transition_kind == "ORDINARY")
+    corrections = tuple(
+        item for item in values if item.transition_kind == "CORRECTION_ENVELOPE"
+    )
+    ordinary_by_arm = {
+        arm.value: _acceptance_cell_v3(
+            tuple(item for item in ordinary if item.arm is arm),
+            accepted_field="ordinary_first_pass_accepted",
+        )
+        for arm in ControllerArmV22
+    }
+    ordinary_categories = tuple(dict.fromkeys(_ORDINARY_CATEGORIES_V3))
+    ordinary_by_category = {
+        category.value: _acceptance_cell_v3(
+            tuple(item for item in ordinary if item.category is category),
+            accepted_field="ordinary_first_pass_accepted",
+        )
+        for category in ordinary_categories
+    }
+    correction_by_arm = {
+        arm.value: _acceptance_cell_v3(
+            tuple(item for item in corrections if item.arm is arm),
+            accepted_field="correction_envelope_accepted",
+        )
+        for arm in ControllerArmV22
+    }
+    correction_by_error = {
+        category.value: _acceptance_cell_v3(
+            tuple(item for item in corrections if item.category is category),
+            accepted_field="correction_envelope_accepted",
+        )
+        for category in (
+            SyntheticTransitionCategoryV22.STALE_ACTION_CORRECTION,
+            SyntheticTransitionCategoryV22.INVALID_REF_CORRECTION,
+        )
+    }
+    ordinary_accepted = sum(
+        bool(item.ordinary_first_pass_accepted) for item in ordinary
+    )
+    correction_accepted = sum(
+        bool(item.correction_envelope_accepted) for item in corrections
+    )
+    final_accepted = sum(item.final_accepted for item in values)
+    invalid = sum(item.invalid_dispatches for item in values)
+    failed = _gate_codes_v3(
+        ordinary=ordinary_accepted,
+        ordinary_by_arm=ordinary_by_arm,
+        correction=correction_accepted,
+        correction_by_arm=correction_by_arm,
+        correction_by_error=correction_by_error,
+        final=final_accepted,
+        invalid=invalid,
+    )
+    turns = tuple(item.provider_turn for item in values)
+    report_payload: dict[str, Any] = {
+        "schema_version": "dta-v22.provider-protocol-capability-report.v3",
+        "execution_mode": "PROVIDER_PROTOCOL_V3_REPLICATE",
+        "replicate_id": replicate_id,
+        "implementation_commit": implementation_commit,
+        "implementation_tree": implementation_tree,
+        "preregistration_sha256": preregistration_sha256,
+        "model": PRIMARY_MODEL_V22,
+        "temperature": 0,
+        "selected_mode": probe.selected_mode,
+        "provider_probe": probe,
+        "controller_schema_sha256": probe.controller_schema_sha256,
+        "controller_identity_sha256s": tuple(
+            item.identity_sha256 for item in identities
+        ),
+        "controller_prompt_sha256s": tuple(item.prompt_sha256 for item in identities),
+        "answer_free_state": True,
+        "transitions": values,
+        "transition_count": 52,
+        "parsed_decision_count": sum(item.parsed_decision for item in values),
+        "runtime_protocol_admitted_count": sum(
+            item.runtime_protocol_admitted for item in values
+        ),
+        "semantic_category_accepted_count": final_accepted,
+        "ordinary_transition_count": 48,
+        "ordinary_first_pass_accepted_count": ordinary_accepted,
+        "ordinary_first_pass_protocol_acceptance": ordinary_accepted / 48,
+        "ordinary_first_pass_by_arm": ordinary_by_arm,
+        "ordinary_first_pass_by_category": ordinary_by_category,
+        "correction_transition_count": 4,
+        "correction_envelope_accepted_count": correction_accepted,
+        "correction_envelope_acceptance": correction_accepted / 4,
+        "correction_acceptance_by_arm": correction_by_arm,
+        "correction_acceptance_by_error_class": correction_by_error,
+        "final_accepted_count": final_accepted,
+        "final_protocol_acceptance": final_accepted / 52,
+        "failure_taxonomy": {
+            item.value: sum(
+                transition.failure_classification is item for transition in values
+            )
+            for item in ProviderProtocolFailureClassV3
+        },
+        "invalid_dispatches": invalid,
+        "provider_calls": 52,
+        "input_tokens": sum(turn.input_tokens for turn in turns),
+        "output_tokens": sum(turn.output_tokens for turn in turns),
+        "total_tokens": sum(turn.total_tokens for turn in turns),
+        "latency": ProviderLatencySummaryV3(
+            total_ms=sum(turn.monotonic_latency_ms for turn in turns),
+            maximum_ms=max(turn.monotonic_latency_ms for turn in turns),
+        ),
+        "http_auto_retry_count": 0,
+        "provider_gate_eligible": not failed,
+        "failed_gate_codes": failed,
+        "terminal": (
+            ProviderProtocolSuiteTerminalV3.PROVIDER_PROTOCOL_GATE_PASS
+            if not failed
+            else ProviderProtocolSuiteTerminalV3.BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE
+        ),
+    }
+    report_draft = ProviderProtocolCapabilityReportV3.model_construct(
+        **report_payload,
+        report_sha256="0" * 64,
+    )
+    return ProviderProtocolCapabilityReportV3.model_validate(
+        {
+            **report_payload,
+            "report_sha256": semantic_sha256_v22(
+                report_draft.model_dump(mode="json", exclude={"report_sha256"})
+            ),
+        }
+    )
+
+
+def _transport_failure_reason_v3(error: Exception) -> str:
+    if isinstance(error, ProviderHttpErrorV22):
+        return "HTTP_ERROR"
+    if isinstance(error, TimeoutError):
+        return "TIMEOUT"
+    if isinstance(error, ConnectionError):
+        return "CONNECTION_ERROR"
+    return "PROVIDER_RESPONSE_REJECTED"
+
+
+def run_provider_protocol_replicate_v3(
+    *,
+    provider_probe: ProviderModeCapabilityReportV22,
+    complete: ProviderCompleteCallableV22,
+    attempted_calls: Callable[[], int],
+    replicate_id: Literal["A", "B"],
+    implementation_commit: str,
+    implementation_tree: str,
+    preregistration_sha256: str,
+) -> ProviderProtocolCapabilityReportV3 | ProviderProtocolPartialFailureReceiptV3:
+    """Run one frozen replicate and convert a transport abort into durable data."""
+
+    captured: list[ProviderSyntheticTransitionResultV3] = []
+    calls_before = attempted_calls()
+    try:
+        return run_provider_protocol_capability_suite_v3(
+            provider_probe=provider_probe,
+            complete=complete,
+            replicate_id=replicate_id,
+            implementation_commit=implementation_commit,
+            implementation_tree=implementation_tree,
+            preregistration_sha256=preregistration_sha256,
+            on_transition=captured.append,
+        )
+    except (
+        ProviderHttpErrorV22,
+        ConnectionError,
+        TimeoutError,
+        TypeError,
+        ValueError,
+    ) as error:
+        provider_calls = attempted_calls() - calls_before
+        if len(captured) >= 52 or provider_calls != len(captured) + 1:
+            raise
+        identities = build_controller_identity_manifests_v22(
+            provider_probe=provider_probe
+        )
+        taxonomy = {
+            item.value: sum(
+                transition.failure_classification is item
+                for transition in captured
+            )
+            for item in ProviderProtocolFailureClassV3
+        }
+        taxonomy[ProviderProtocolFailureClassV3.PROVIDER_TRANSPORT_ABORT.value] += (
+            52 - len(captured)
+        )
+        payload: dict[str, Any] = {
+            "schema_version": (
+                "dta-v22.provider-protocol-partial-failure-receipt.v3"
+            ),
+            "execution_mode": "PROVIDER_PROTOCOL_V3_REPLICATE",
+            "replicate_id": replicate_id,
+            "implementation_commit": implementation_commit,
+            "implementation_tree": implementation_tree,
+            "preregistration_sha256": preregistration_sha256,
+            "model": PRIMARY_MODEL_V22,
+            "temperature": 0,
+            "selected_mode": provider_probe.selected_mode,
+            "provider_probe": provider_probe,
+            "controller_schema_sha256": provider_probe.controller_schema_sha256,
+            "controller_identity_sha256s": tuple(
+                item.identity_sha256 for item in identities
+            ),
+            "controller_prompt_sha256s": tuple(
+                item.prompt_sha256 for item in identities
+            ),
+            "planned_transition_count": 52,
+            "completed_transitions": tuple(captured),
+            "completed_transition_count": len(captured),
+            "parsed_decision_count": sum(item.parsed_decision for item in captured),
+            "runtime_protocol_admitted_count": sum(
+                item.runtime_protocol_admitted for item in captured
+            ),
+            "semantic_category_accepted_count": sum(
+                item.semantic_category_accepted for item in captured
+            ),
+            "invalid_dispatches": sum(item.invalid_dispatches for item in captured),
+            "provider_calls": provider_calls,
+            "input_tokens": sum(
+                item.provider_turn.input_tokens for item in captured
+            ),
+            "output_tokens": sum(
+                item.provider_turn.output_tokens for item in captured
+            ),
+            "total_tokens": sum(
+                item.provider_turn.total_tokens for item in captured
+            ),
+            "latency": ProviderLatencySummaryV3(
+                total_ms=sum(
+                    item.provider_turn.monotonic_latency_ms for item in captured
+                ),
+                maximum_ms=max(
+                    (
+                        item.provider_turn.monotonic_latency_ms
+                        for item in captured
+                    ),
+                    default=0,
+                ),
+            ),
+            "failure_classification": (
+                ProviderProtocolFailureClassV3.PROVIDER_TRANSPORT_ABORT
+            ),
+            "failure_reason_code": _transport_failure_reason_v3(error),
+            "failure_taxonomy": taxonomy,
+            "http_auto_retry_count": 0,
+            "provider_gate_eligible": False,
+            "terminal": (
+                ProviderProtocolSuiteTerminalV3.BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE
+            ),
+        }
+        draft = ProviderProtocolPartialFailureReceiptV3.model_construct(
+            **payload,
+            receipt_sha256="0" * 64,
+        )
+        return ProviderProtocolPartialFailureReceiptV3.model_validate(
+            {
+                **payload,
+                "receipt_sha256": semantic_sha256_v22(
+                    draft.model_dump(mode="json", exclude={"receipt_sha256"})
+                ),
+            }
+        )
+
+
 __all__ = (
     "ProtocolCapabilitySuiteReportV22",
     "ProtocolSuiteTerminalV22",
+    "ProtocolAcceptanceCellV3",
+    "ProviderLatencySummaryV3",
+    "ProviderProtocolCapabilityReportV3",
+    "ProviderProtocolFailureClassV3",
+    "ProviderProtocolGateCodeV3",
+    "ProviderProtocolPartialFailureReceiptV3",
     "ProviderProtocolCapabilityReportV22",
     "ProviderProtocolSuiteTerminalV22",
+    "ProviderProtocolSuiteTerminalV3",
     "ProviderSyntheticTransitionResultV22",
+    "ProviderSyntheticTransitionResultV3",
     "SyntheticTransitionCategoryV22",
     "SyntheticTransitionResultV22",
     "run_local_protocol_capability_suite_v22",
     "run_provider_protocol_capability_suite_v22",
+    "run_provider_protocol_capability_suite_v3",
+    "run_provider_protocol_replicate_v3",
 )

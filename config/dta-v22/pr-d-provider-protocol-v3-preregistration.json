@@ -1,0 +1,108 @@
+{
+  "schema_version": "dta-v22-pr-d-provider-protocol-v3-preregistration.v1",
+  "goal_version": "dta-v22-p0-master-v1",
+  "amendment_version": "dta-v22-pr-d-provider-protocol-replicated-gate-v1",
+  "decision_id": "DEC-057",
+  "stage": "PR-D",
+  "pr": 60,
+  "branch": "codex/dta-v22-p0-pr-d-planner-lite",
+  "base_main": "145d152c2c2d1367e7dac2f0229e2b369fbe55dc",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "temperature": 0,
+  "protocol_report_schema": "dta-v22.provider-protocol-capability-report.v3",
+  "replicate_ids": [
+    "A",
+    "B"
+  ],
+  "replicate_count": 2,
+  "transition_count_per_replicate": 52,
+  "ordinary_transition_count_per_replicate": 48,
+  "ordinary_transition_count_by_arm": {
+    "FLAT_CANONICAL": 24,
+    "PLANNER_LITE": 24
+  },
+  "correction_transition_count_per_replicate": 4,
+  "correction_transition_count_by_arm": {
+    "FLAT_CANONICAL": 2,
+    "PLANNER_LITE": 2
+  },
+  "correction_error_classes": {
+    "INVALID_REF_CORRECTION": [
+      "FLAT_CANONICAL",
+      "PLANNER_LITE"
+    ],
+    "STALE_ACTION_CORRECTION": [
+      "FLAT_CANONICAL",
+      "PLANNER_LITE"
+    ]
+  },
+  "ordinary_first_pass_gate": {
+    "overall_minimum": 46,
+    "overall_denominator": 48,
+    "per_arm_minimum": 23,
+    "per_arm_denominator": 24
+  },
+  "correction_gate": {
+    "overall_required": 4,
+    "per_arm_required": 2
+  },
+  "final_gate": {
+    "minimum": 51,
+    "denominator": 52,
+    "invalid_dispatches": 0
+  },
+  "minimum_request_start_interval_seconds": 4.0,
+  "inter_replicate_cooldown_seconds": 60.0,
+  "http_auto_retry_count": 0,
+  "third_replicate_allowed": false,
+  "run_b_after_a_semantic_failure": true,
+  "provider_output_mode_rule": "ONE_FROZEN_PROBE_SHARED_BY_BOTH_REPLICATES",
+  "implementation_identity_rule": "ONE_EXACT_PHASE_I_HEAD_AND_TREE_SHARED_BY_BOTH_REPLICATES",
+  "durable_persistence_order": [
+    "PRIVATE_CREATE_ONCE",
+    "PRIVATE_VERIFY",
+    "PUBLIC_CREATE_ONCE",
+    "PUBLIC_VERIFY",
+    "CAMPAIGN_CREATE_ONCE",
+    "CAMPAIGN_VERIFY",
+    "TERMINAL"
+  ],
+  "private_evidence_location_class": "DTA_V22_PRIVATE_ROOT_PR_D_PROVIDER_PROTOCOL_V3",
+  "public_summary_paths": {
+    "replicate_a": "docs/analysis/dta-v22-pr-d-provider-protocol-v3-replicate-a-summary.json",
+    "replicate_b": "docs/analysis/dta-v22-pr-d-provider-protocol-v3-replicate-b-summary.json",
+    "campaign": "docs/analysis/dta-v22-pr-d-provider-protocol-v3-campaign-summary.json"
+  },
+  "historical_attempt_raw_sha256_by_path": {
+    "docs/analysis/dta-v22-pr-d-provider-protocol-attempt-1-invalid-location.json": "aa956933027cdd2902ebcc9a8c3b0df076df69b61ae37a1019bacbc8742a7552",
+    "docs/analysis/dta-v22-pr-d-provider-protocol-attempt-2-validator-abort.json": "6510bf827dd8b2348ee0aab0560e404a41d34ce42adc3a719dfa901200c8f57e",
+    "docs/analysis/dta-v22-pr-d-provider-protocol-attempt-3-rate-limited.json": "391973adb861c7ec5e93e2c59b38726680435c4f93a04fda7551014a9096d15f",
+    "docs/analysis/dta-v22-pr-d-provider-protocol-attempt-4-rate-limited.json": "b2051cf6f06c2121e98f4c56defa651755dea7842a97dbefa6c056b41b23c0bf",
+    "docs/analysis/dta-v22-pr-d-provider-protocol-attempt-5-gate-blocked.json": "ada22ef182f721e586a2d6e61e8f2138a9ae33d6fca6062830a63265852eee5a"
+  },
+  "frozen_raw_sha256_by_path": {
+    "scripts/dta_v22/run_pr_d_provider_protocol.py": "9bfbda13f0e552d2e6b4cfb968e8b02f346edcd9e07387777633e564f03fd417",
+    "src/ecomsre/dta_v2/v22/protocol_suite.py": "c764877f958585925a1f04b885df239a2f87a4f76e02c8e96f467d868feac1b2",
+    "src/ecomsre/dta_v2/v22/controller_contracts.py": "14536944f99a6342f88d9a2eea9bf2973994e2083d6eefb9318503c25add5fcf",
+    "src/ecomsre/dta_v2/v22/controller_inputs.py": "3bc1b491d1f7755ec71c4cf8ba69caf8de4818b2e98343476691421cd64e7f10",
+    "src/ecomsre/dta_v2/v22/controller_modes.py": "95447bc81ddea2d93d0a9da53552157822566100d6ac77b58b3369e7f8303ff4",
+    "src/ecomsre/dta_v2/v22/controller_provider.py": "452f61066a602598d34eaf785952419630da4c7cdead5b70a36b664f8c2ee351",
+    "src/ecomsre/dta_v2/v22/controller_runtime.py": "e415dab65de06ff852dee99105ec5e02a1df7f1013e374ac42d4e122b7d7a62b",
+    "src/ecomsre/dta_v2/v22/action_catalog.py": "621c1481e689771ac7492f88d308e9739fc79e9dc5fa4227faa3fda12d035e80",
+    "src/ecomsre/dta_v2/v22/memory.py": "5158fb9205f953f24a7825f485a315249c1e5780ae37a85436968ea374753150",
+    "src/ecomsre/dta_v2/v22/predicates.py": "c56a1c4168d224f369cdac02289ec02d95ac61b5bc2f5938adbc9b599bea8c7f",
+    "src/ecomsre/dta_v2/v22/diagnosis.py": "75dadc55ce4a91bc911db892b36ab9c1de3a034c98b2b048884a0defdf84c8bc"
+  },
+  "protected_activity": {
+    "agent_evidence_dispatches": 0,
+    "agent_writes": 0,
+    "docker_calls": 0,
+    "fault_injections": 0,
+    "held_out_executions": 0,
+    "runbook_executions": 0,
+    "scenario_executions": 0
+  },
+  "phase_i_state": "DTA_V22_PR_D_PROVIDER_PROTOCOL_V3_EXECUTION_READY",
+  "merge_ready": false,
+  "preregistration_sha256": "3ef35bc80a151e90c4bc21f27f061e496819a916e12020ff20dcd65719d03a8f"
+}

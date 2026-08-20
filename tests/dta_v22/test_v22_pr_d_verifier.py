@@ -7,9 +7,13 @@ import pytest
 
 from scripts.ci.verify_dta_v22_pr_d import (
     BLOCKED_PR_D_TERMINAL,
+    EXECUTION_READY_PR_D_TERMINAL,
     EXPECTED_PR_E_ACTIVITY,
     PR_D_MANIFEST,
     PROVIDER_SUMMARY,
+    PROVIDER_V3_CAMPAIGN_SUMMARY,
+    PROVIDER_V3_PREREGISTRATION,
+    PROVIDER_V3_REPLICATE_SUMMARIES,
     _require_single_parent_commit,
     _verify_runtime_contracts,
     main,
@@ -17,30 +21,39 @@ from scripts.ci.verify_dta_v22_pr_d import (
     verify_pr_d_bindings,
     verify_pr_d_protocol,
     verify_provider_summary,
+    verify_provider_v3_preregistration,
 )
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_pr_d_verifier_binds_exact_provider_protocol_blocker() -> None:
+def test_pr_d_verifier_binds_exact_provider_protocol_v3_execution_ready() -> None:
+    preregistration = verify_provider_v3_preregistration(REPO_ROOT)
     assert verify_pr_d_protocol(REPO_ROOT) == {
-        "schema_version": "dta-v22-pr-d-verification.v1",
-        "status": "BLOCKED",
+        "schema_version": "dta-v22-pr-d-verification.v2",
+        "status": "EXECUTION_READY",
         "historical_bindings": "PASS",
-        "pr_c_successor_gate": "NOT_APPLICABLE_BLOCKED",
-        "public_scan_mode": "PR_D_BLOCKED_SURFACE",
+        "pr_c_successor_gate": "NOT_APPLICABLE_PRE_EXECUTION",
+        "public_scan_mode": "PR_D_V3_EXECUTION_READY_SURFACE",
         "secret_private_path_scan": "PASS",
         "truth_isolation": "PASS",
         "shared_controller_schema": "PASS",
-        "bounded_correction": "PASS",
-        "identity_manifests": "NOT_FROZEN",
-        "provider_protocol_gate": "BLOCKED",
-        "terminal": BLOCKED_PR_D_TERMINAL,
+        "bounded_correction": "PASS_V3_CROSS_ARM",
+        "identity_manifests": "CONSTRUCTION_FROZEN_MODE_PENDING",
+        "provider_protocol_gate": "NOT_EXECUTED",
+        "preregistration_sha256": preregistration["preregistration_sha256"],
+        "merge_ready": False,
+        "terminal": EXECUTION_READY_PR_D_TERMINAL,
     }
 
 
-def test_pr_d_pass_artifacts_are_absent_while_blocked() -> None:
+def test_pr_d_result_artifacts_are_absent_while_execution_ready() -> None:
+    assert (REPO_ROOT / PROVIDER_V3_PREREGISTRATION).is_file()
+    assert all(
+        not (REPO_ROOT / relative).exists()
+        for relative in (*PROVIDER_V3_REPLICATE_SUMMARIES, PROVIDER_V3_CAMPAIGN_SUMMARY)
+    )
     assert not (REPO_ROOT / PR_D_MANIFEST).exists()
     assert not (REPO_ROOT / PROVIDER_SUMMARY).exists()
     with pytest.raises(FileNotFoundError):
@@ -81,12 +94,14 @@ def test_pr_d_blocked_attempts_are_exactly_bound(tmp_path: Path) -> None:
         )
 
 
-def test_pr_d_cli_fails_with_exact_blocker(capsys: pytest.CaptureFixture[str]) -> None:
-    with pytest.raises(RuntimeError, match=f"^{BLOCKED_PR_D_TERMINAL}$"):
-        main(("--root", str(REPO_ROOT)))
+def test_pr_d_cli_exits_zero_but_is_not_merge_ready(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    assert main(("--root", str(REPO_ROOT))) == 0
     output = json.loads(capsys.readouterr().out)
-    assert output["status"] == "BLOCKED"
-    assert output["terminal"] == BLOCKED_PR_D_TERMINAL
+    assert output["status"] == "EXECUTION_READY"
+    assert output["merge_ready"] is False
+    assert output["terminal"] == EXECUTION_READY_PR_D_TERMINAL
 
 
 def test_pr_d_runtime_contract_markers_are_bound() -> None:

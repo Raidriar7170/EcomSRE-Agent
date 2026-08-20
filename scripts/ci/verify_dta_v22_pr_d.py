@@ -41,8 +41,12 @@ from ecomsre.dta_v2.v22.controller_runtime import (
     process_controller_decision_v22,
 )
 from ecomsre.dta_v2.v22.protocol_suite import (
+    ProviderProtocolCapabilityReportV3,
+    ProviderProtocolPartialFailureReceiptV3,
     run_local_protocol_capability_suite_v22,
     run_provider_protocol_capability_suite_v22,
+    run_provider_protocol_capability_suite_v3,
+    run_provider_protocol_replicate_v3,
 )
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 from scripts.ci.verify_dta_v22_pr_b import verify_pr_b_protocol
@@ -50,12 +54,21 @@ from scripts.ci.verify_dta_v22_pr_c import (
     _verify_runtime_contracts as _verify_pr_c_runtime_contracts,
     verify_pr_c_bindings,
 )
+from scripts.dta_v22.run_pr_d_provider_protocol import (
+    _FORMAL_HTTP_AUTO_RETRY_COUNT,
+    _FORMAL_INTER_REPLICATE_COOLDOWN_SECONDS,
+    _FORMAL_MIN_REQUEST_INTERVAL_SECONDS,
+    _FORMAL_REPLICATE_IDS,
+)
 
 
 PR_D_BASE = "145d152c2c2d1367e7dac2f0229e2b369fbe55dc"
 PR_D_PR = 60
 PR_D_BRANCH = "codex/dta-v22-p0-pr-d-planner-lite"
 BLOCKED_PR_D_TERMINAL = "BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE"
+EXECUTION_READY_PR_D_TERMINAL = (
+    "DTA_V22_PR_D_PROVIDER_PROTOCOL_V3_EXECUTION_READY"
+)
 PR_D_MANIFEST = Path("config/dta-v22/pr-d-controller-bindings.v1.json")
 PR_D_SUCCESSOR_ATTESTATION = Path(
     "config/dta-v22/pr-d-successor-attestation.v1.json"
@@ -65,6 +78,20 @@ PR_C_SUCCESSOR_ATTESTATION = Path(
 )
 PROVIDER_SUMMARY = Path(
     "docs/analysis/dta-v22-pr-d-provider-protocol-summary.json"
+)
+PROVIDER_V3_PREREGISTRATION = Path(
+    "config/dta-v22/pr-d-provider-protocol-v3-preregistration.json"
+)
+PROVIDER_V3_REPLICATE_SUMMARIES = (
+    Path(
+        "docs/analysis/dta-v22-pr-d-provider-protocol-v3-replicate-a-summary.json"
+    ),
+    Path(
+        "docs/analysis/dta-v22-pr-d-provider-protocol-v3-replicate-b-summary.json"
+    ),
+)
+PROVIDER_V3_CAMPAIGN_SUMMARY = Path(
+    "docs/analysis/dta-v22-pr-d-provider-protocol-v3-campaign-summary.json"
 )
 PROVIDER_ATTEMPT_PATHS = (
     Path(
@@ -87,6 +114,26 @@ PROVIDER_ATTEMPT_PATHS = (
         "docs/analysis/"
         "dta-v22-pr-d-provider-protocol-attempt-5-gate-blocked.json"
     ),
+)
+EXPECTED_PROVIDER_ATTEMPT_RAW_SHA256S = (
+    "aa956933027cdd2902ebcc9a8c3b0df076df69b61ae37a1019bacbc8742a7552",
+    "6510bf827dd8b2348ee0aab0560e404a41d34ce42adc3a719dfa901200c8f57e",
+    "391973adb861c7ec5e93e2c59b38726680435c4f93a04fda7551014a9096d15f",
+    "b2051cf6f06c2121e98f4c56defa651755dea7842a97dbefa6c056b41b23c0bf",
+    "ada22ef182f721e586a2d6e61e8f2138a9ae33d6fca6062830a63265852eee5a",
+)
+EXPECTED_V3_FROZEN_PATHS = (
+    Path("scripts/dta_v22/run_pr_d_provider_protocol.py"),
+    Path("src/ecomsre/dta_v2/v22/protocol_suite.py"),
+    Path("src/ecomsre/dta_v2/v22/controller_contracts.py"),
+    Path("src/ecomsre/dta_v2/v22/controller_inputs.py"),
+    Path("src/ecomsre/dta_v2/v22/controller_modes.py"),
+    Path("src/ecomsre/dta_v2/v22/controller_provider.py"),
+    Path("src/ecomsre/dta_v2/v22/controller_runtime.py"),
+    Path("src/ecomsre/dta_v2/v22/action_catalog.py"),
+    Path("src/ecomsre/dta_v2/v22/memory.py"),
+    Path("src/ecomsre/dta_v2/v22/predicates.py"),
+    Path("src/ecomsre/dta_v2/v22/diagnosis.py"),
 )
 EXPECTED_MANIFEST_SHA256 = (
     "4a8ad04967009af871d6f8ed51d68464218f36e3a64895a47387fdc0193cf7bb"
@@ -130,6 +177,7 @@ EXPECTED_PR_D_CHANGED_PATHS = (
     Path("tests/dta_v22/test_v22_pr_d_verifier.py"),
     Path("tests/dta_v22/test_v22_protocol_suite.py"),
     Path("tests/dta_v22/test_v22_provider_protocol_suite.py"),
+    PROVIDER_V3_PREREGISTRATION,
 )
 PERSISTENT_PR_D_ARTIFACTS = (
     PR_D_MANIFEST,
@@ -381,9 +429,10 @@ def _require_pr_d_progress(progress: dict[str, Any]) -> None:
             )
         )
         != (None,) * 10
-        or progress.get("final_engineering_terminal") != BLOCKED_PR_D_TERMINAL
+        or progress.get("final_engineering_terminal")
+        != EXECUTION_READY_PR_D_TERMINAL
     ):
-        raise ValueError("PR-D blocked progress identity differs")
+        raise ValueError("PR-D execution-ready progress identity differs")
     merged = progress.get("merged_prs")
     if not isinstance(merged, list) or len(merged) != 3:
         raise ValueError("PR-D merged sequence differs")
@@ -624,7 +673,7 @@ def _public_scan_plan(
 ) -> tuple[str, tuple[Path, ...]]:
     if progress.get("current_stage") == "PR-D":
         _require_pr_d_progress(progress)
-        return "PR_D_BLOCKED_SURFACE", EXPECTED_PR_D_CHANGED_PATHS
+        return "PR_D_V3_EXECUTION_READY_SURFACE", EXPECTED_PR_D_CHANGED_PATHS
     _require_pr_d_successor_progress(root, progress)
     return "SUCCESSOR_PERSISTENT_ARTIFACTS", PERSISTENT_PR_D_ARTIFACTS
 
@@ -787,6 +836,110 @@ def verify_blocked_provider_attempts(
             ) from error
         observed.append(attempt)
     return tuple(observed)
+
+
+def verify_provider_v3_preregistration(root: Path) -> dict[str, Any]:
+    path = _regular_file(root, PROVIDER_V3_PREREGISTRATION)
+    raw = path.read_text(encoding="utf-8")
+    preregistration = _load_json(path)
+    if raw != json.dumps(preregistration, indent=2, ensure_ascii=False) + "\n":
+        raise ValueError("PR-D Provider v3 preregistration is not canonical JSON")
+    payload = dict(preregistration)
+    preregistration_sha256 = payload.pop("preregistration_sha256", None)
+    expected_attempts = {
+        relative.as_posix(): raw_sha
+        for relative, raw_sha in zip(
+            PROVIDER_ATTEMPT_PATHS,
+            EXPECTED_PROVIDER_ATTEMPT_RAW_SHA256S,
+            strict=True,
+        )
+    }
+    expected_public = {
+        "replicate_a": PROVIDER_V3_REPLICATE_SUMMARIES[0].as_posix(),
+        "replicate_b": PROVIDER_V3_REPLICATE_SUMMARIES[1].as_posix(),
+        "campaign": PROVIDER_V3_CAMPAIGN_SUMMARY.as_posix(),
+    }
+    if (
+        preregistration_sha256 != semantic_sha256_v22(payload)
+        or preregistration.get("schema_version")
+        != "dta-v22-pr-d-provider-protocol-v3-preregistration.v1"
+        or preregistration.get("goal_version") != "dta-v22-p0-master-v1"
+        or preregistration.get("amendment_version")
+        != "dta-v22-pr-d-provider-protocol-replicated-gate-v1"
+        or preregistration.get("decision_id") != "DEC-057"
+        or preregistration.get("stage") != "PR-D"
+        or preregistration.get("pr") != PR_D_PR
+        or preregistration.get("branch") != PR_D_BRANCH
+        or preregistration.get("base_main") != PR_D_BASE
+        or preregistration.get("model") != PRIMARY_MODEL_V22
+        or preregistration.get("temperature") != 0
+        or preregistration.get("protocol_report_schema")
+        != "dta-v22.provider-protocol-capability-report.v3"
+        or preregistration.get("replicate_ids") != ["A", "B"]
+        or preregistration.get("replicate_count") != 2
+        or preregistration.get("transition_count_per_replicate") != 52
+        or preregistration.get("ordinary_transition_count_per_replicate") != 48
+        or preregistration.get("ordinary_transition_count_by_arm")
+        != {"FLAT_CANONICAL": 24, "PLANNER_LITE": 24}
+        or preregistration.get("correction_transition_count_per_replicate") != 4
+        or preregistration.get("correction_transition_count_by_arm")
+        != {"FLAT_CANONICAL": 2, "PLANNER_LITE": 2}
+        or preregistration.get("correction_error_classes")
+        != {
+            "INVALID_REF_CORRECTION": ["FLAT_CANONICAL", "PLANNER_LITE"],
+            "STALE_ACTION_CORRECTION": ["FLAT_CANONICAL", "PLANNER_LITE"],
+        }
+        or preregistration.get("ordinary_first_pass_gate")
+        != {
+            "overall_minimum": 46,
+            "overall_denominator": 48,
+            "per_arm_minimum": 23,
+            "per_arm_denominator": 24,
+        }
+        or preregistration.get("correction_gate")
+        != {"overall_required": 4, "per_arm_required": 2}
+        or preregistration.get("final_gate")
+        != {"minimum": 51, "denominator": 52, "invalid_dispatches": 0}
+        or preregistration.get("minimum_request_start_interval_seconds") != 4.0
+        or preregistration.get("inter_replicate_cooldown_seconds") != 60.0
+        or preregistration.get("http_auto_retry_count") != 0
+        or preregistration.get("third_replicate_allowed") is not False
+        or preregistration.get("run_b_after_a_semantic_failure") is not True
+        or preregistration.get("private_evidence_location_class")
+        != "DTA_V22_PRIVATE_ROOT_PR_D_PROVIDER_PROTOCOL_V3"
+        or preregistration.get("public_summary_paths") != expected_public
+        or preregistration.get("historical_attempt_raw_sha256_by_path")
+        != expected_attempts
+        or preregistration.get("protected_activity")
+        != {
+            "agent_evidence_dispatches": 0,
+            "agent_writes": 0,
+            "docker_calls": 0,
+            "fault_injections": 0,
+            "held_out_executions": 0,
+            "runbook_executions": 0,
+            "scenario_executions": 0,
+        }
+    ):
+        raise ValueError("PR-D Provider v3 preregistration contract differs")
+    frozen = preregistration.get("frozen_raw_sha256_by_path")
+    if not isinstance(frozen, dict) or tuple(frozen) != tuple(
+        item.as_posix() for item in EXPECTED_V3_FROZEN_PATHS
+    ):
+        raise ValueError("PR-D Provider v3 frozen path surface differs")
+    for relative in EXPECTED_V3_FROZEN_PATHS:
+        observed = hashlib.sha256(_regular_file(root, relative).read_bytes()).hexdigest()
+        if frozen.get(relative.as_posix()) != observed:
+            raise ValueError(f"PR-D Provider v3 frozen raw SHA-256 differs: {relative}")
+    for relative, expected_sha in zip(
+        PROVIDER_ATTEMPT_PATHS,
+        EXPECTED_PROVIDER_ATTEMPT_RAW_SHA256S,
+        strict=True,
+    ):
+        if hashlib.sha256(_regular_file(root, relative).read_bytes()).hexdigest() != expected_sha:
+            raise ValueError(f"PR-D historical attempt bytes changed: {relative}")
+    _assert_no_pr_d_public_leak(raw)
+    return preregistration
 
 
 def verify_provider_summary(
@@ -1050,18 +1203,64 @@ def _verify_runtime_contracts() -> None:
         or "raw_response" in ProviderControllerTurnV22.model_fields
     ):
         raise ValueError("PR-D typed privacy or truth boundary differs")
+    required_v3_report_fields = {
+        "transition_count",
+        "parsed_decision_count",
+        "runtime_protocol_admitted_count",
+        "semantic_category_accepted_count",
+        "ordinary_transition_count",
+        "ordinary_first_pass_accepted_count",
+        "ordinary_first_pass_protocol_acceptance",
+        "ordinary_first_pass_by_arm",
+        "ordinary_first_pass_by_category",
+        "correction_transition_count",
+        "correction_envelope_accepted_count",
+        "correction_envelope_acceptance",
+        "correction_acceptance_by_arm",
+        "correction_acceptance_by_error_class",
+        "final_accepted_count",
+        "final_protocol_acceptance",
+        "failure_taxonomy",
+        "invalid_dispatches",
+        "provider_calls",
+        "input_tokens",
+        "output_tokens",
+        "total_tokens",
+        "latency",
+        "http_auto_retry_count",
+    }
+    if (
+        not required_v3_report_fields.issubset(
+            ProviderProtocolCapabilityReportV3.model_fields
+        )
+        or "completed_transitions"
+        not in ProviderProtocolPartialFailureReceiptV3.model_fields
+        or "failure_taxonomy"
+        not in ProviderProtocolPartialFailureReceiptV3.model_fields
+        or "on_transition"
+        not in inspect.signature(
+            run_provider_protocol_capability_suite_v3
+        ).parameters
+        or "attempted_calls"
+        not in inspect.signature(run_provider_protocol_replicate_v3).parameters
+        or _FORMAL_REPLICATE_IDS != ("A", "B")
+        or _FORMAL_MIN_REQUEST_INTERVAL_SECONDS != 4.0
+        or _FORMAL_INTER_REPLICATE_COOLDOWN_SECONDS != 60.0
+        or _FORMAL_HTTP_AUTO_RETRY_COUNT != 0
+    ):
+        raise ValueError("PR-D Provider protocol v3 runtime contract differs")
 
 
 def verify_pr_d_protocol(root: Path) -> dict[str, object]:
     root = root.resolve(strict=True)
     progress = _load_json(root / "docs/analysis/dta-v22-p0-master-progress.json")
     mode, paths = _public_scan_plan(root, progress)
-    if mode == "PR_D_BLOCKED_SURFACE":
+    if mode == "PR_D_V3_EXECUTION_READY_SURFACE":
         _verify_closed_changed_surface(root)
     for relative in paths:
         text = (
             _changed_text(root, relative)
-            if mode == "PR_D_BLOCKED_SURFACE"
+            if mode == "PR_D_V3_EXECUTION_READY_SURFACE"
             else _regular_file(root, relative).read_text(encoding="utf-8")
         )
         _assert_no_pr_d_public_leak(text)
@@ -1069,20 +1268,25 @@ def verify_pr_d_protocol(root: Path) -> dict[str, object]:
     verify_pr_c_bindings(root)
     _verify_pr_c_runtime_contracts()
     verify_blocked_provider_attempts(root)
+    preregistration = verify_provider_v3_preregistration(root)
+    for relative in (*PROVIDER_V3_REPLICATE_SUMMARIES, PROVIDER_V3_CAMPAIGN_SUMMARY):
+        _require_absent(root, relative)
     _verify_runtime_contracts()
     return {
-        "schema_version": "dta-v22-pr-d-verification.v1",
-        "status": "BLOCKED",
+        "schema_version": "dta-v22-pr-d-verification.v2",
+        "status": "EXECUTION_READY",
         "historical_bindings": prior["historical_bindings"],
-        "pr_c_successor_gate": "NOT_APPLICABLE_BLOCKED",
+        "pr_c_successor_gate": "NOT_APPLICABLE_PRE_EXECUTION",
         "public_scan_mode": mode,
         "secret_private_path_scan": "PASS",
         "truth_isolation": "PASS",
         "shared_controller_schema": "PASS",
-        "bounded_correction": "PASS",
-        "identity_manifests": "NOT_FROZEN",
-        "provider_protocol_gate": "BLOCKED",
-        "terminal": BLOCKED_PR_D_TERMINAL,
+        "bounded_correction": "PASS_V3_CROSS_ARM",
+        "identity_manifests": "CONSTRUCTION_FROZEN_MODE_PENDING",
+        "provider_protocol_gate": "NOT_EXECUTED",
+        "preregistration_sha256": preregistration["preregistration_sha256"],
+        "merge_ready": False,
+        "terminal": EXECUTION_READY_PR_D_TERMINAL,
     }
 
 
@@ -1096,7 +1300,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     result = verify_pr_d_protocol(args.root)
     print(json.dumps(result, indent=2, sort_keys=True))
-    raise RuntimeError(BLOCKED_PR_D_TERMINAL)
+    return 0
 
 
 if __name__ == "__main__":

@@ -1314,6 +1314,47 @@ claim. PR-D may change only the successor verifier and stage-routing test under
 this record, and the v2 attestation must bind those exact file hashes. This
 record is not reusable by PR-E or any later successor.
 
+## DEC-057 — DTA v2.2 PR-D Replicated Provider Protocol v3 Gate
+
+**Status: `accepted` for PR #60 only.**
+
+The existing v2 protocol report and all five earlier PR-D Provider attempts are
+immutable historical evidence. Attempt 1 remains invalid because its private
+evidence location was not authoritative, and no earlier attempt is a replicate
+in this record.
+
+Provider protocol v3 retains the existing 48 ordinary transition instances,
+balanced 24/24 across `FLAT_CANONICAL` and `PLANNER_LITE`. It adds four explicit
+correction-envelope transitions so stale-action and invalid-ref correction are
+each exercised on both arms. Correction envelopes are excluded from the
+ordinary first-pass denominator and instead have their own 4/4 overall and 2/2
+per-arm gates. Each replicate independently requires at least 46/48 ordinary,
+at least 23/24 ordinary per arm, 4/4 correction, at least 51/52 final, and zero
+invalid dispatches.
+
+One preregistered campaign executes one output-mode probe, replicate A, a fixed
+60-second cooldown, and replicate B from one frozen implementation head/tree.
+Every request uses a minimum 4.0-second request-start interval and zero HTTP
+auto-retry. Replicate B runs even if A fails semantically; an ineligible result
+is never replaced and a third replicate is forbidden. Model, Prompt,
+`ControllerDecisionV22` schema, controller runtime, Provider-visible payload,
+controller identities, Action Catalog, Memory, predicates, and Diagnosis
+admission remain frozen.
+
+Every complete report or typed partial failure receipt is written create-once
+to the authoritative private location and verified before its bounded public
+summary is written and verified. The aggregate campaign is persisted and
+verified before either terminal is returned. Only two independently passing
+replicates mint `DTA_V22_PR_D_CONTROLLER_READY`; any other completed campaign
+preserves its evidence and ends `BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE`.
+
+Before Provider execution, a hash-valid preregistration plus all offline gates
+may mint the Draft-only
+`DTA_V22_PR_D_PROVIDER_PROTOCOL_V3_EXECUTION_READY` state. That state exits zero
+for CI but is explicitly not merge-ready and cannot authorize PR-E. This record
+does not authorize Docker, scenarios, faults, Agent evidence dispatch, Agent
+writes, Runbooks, held-out execution, or any work in PR-E.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)

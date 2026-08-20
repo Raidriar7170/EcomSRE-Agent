@@ -38,5 +38,5 @@
   "held_out_execution_id": null,
   "planner_claim": null,
   "memory_claim": null,
-  "final_engineering_terminal": "BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE"
+  "final_engineering_terminal": "DTA_V22_PR_D_PROVIDER_PROTOCOL_V3_EXECUTION_READY"
 }
