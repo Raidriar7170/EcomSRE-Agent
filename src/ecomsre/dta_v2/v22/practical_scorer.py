@@ -96,6 +96,9 @@ def _outcome(
     terminal_correct: bool,
     root_correct: bool | None,
     mechanism_correct: bool | None,
+    evidence_ref_valid: bool | None,
+    semantic_clause_valid: bool | None,
+    evidence_applicable: bool,
 ) -> ScoredOutcomeV22:
     if run.status is PracticalRunStatusV22.TRANSPORT_FAILED:
         return ScoredOutcomeV22.TRANSPORT_FAILED
@@ -104,7 +107,10 @@ def _outcome(
     if run.status is PracticalRunStatusV22.RUNNER_EXCEPTION:
         return ScoredOutcomeV22.RUNNER_EXCEPTION
     exact = terminal_correct and root_correct is not False and mechanism_correct is not False
-    if exact and run.evidence_ref_valid and run.semantic_clause_valid:
+    evidence_valid = not evidence_applicable or (
+        evidence_ref_valid is True and semantic_clause_valid is True
+    )
+    if exact and evidence_valid:
         return ScoredOutcomeV22.COMPLETED_CORRECT
     return ScoredOutcomeV22.SEMANTICALLY_WRONG
 
@@ -174,6 +180,21 @@ def score_practical_runs_v22(
         mechanism_correct = (
             run.mechanism == truth.expected_mechanism if incident else None
         )
+        evidence_ref_valid = (
+            run.status is PracticalRunStatusV22.VALID_TERMINAL
+            and run.terminal == "DIAGNOSED"
+            and bool(run.supporting_evidence_refs)
+            and run.evidence_ref_valid
+            if incident
+            else None
+        )
+        semantic_clause_valid = (
+            run.status is PracticalRunStatusV22.VALID_TERMINAL
+            and run.terminal == "DIAGNOSED"
+            and run.semantic_clause_valid
+            if incident
+            else None
+        )
         scored.append(
             ScoredPracticalRunV22(
                 case_id=run.case_id,
@@ -183,14 +204,15 @@ def score_practical_runs_v22(
                     terminal_correct=terminal_correct,
                     root_correct=root_correct,
                     mechanism_correct=mechanism_correct,
+                    evidence_ref_valid=evidence_ref_valid,
+                    semantic_clause_valid=semantic_clause_valid,
+                    evidence_applicable=truth.evidence_applicable,
                 ),
                 terminal_correct=terminal_correct,
                 root_correct=root_correct,
                 mechanism_correct=mechanism_correct,
-                evidence_ref_valid=run.evidence_ref_valid if incident else None,
-                semantic_clause_valid=(
-                    run.semantic_clause_valid if incident else None
-                ),
+                evidence_ref_valid=evidence_ref_valid,
+                semantic_clause_valid=semantic_clause_valid,
             )
         )
     incident_runs = tuple(
@@ -204,6 +226,7 @@ def score_practical_runs_v22(
     abstention_runs = tuple(
         run for run in runs if truth_by_id[run.case_id].expected_terminal == "ABSTAIN"
     )
+    scored_by_id = {item.case_id: item for item in scored}
     observed_logical_turns = tuple(
         max(
             item.provider_turns,
@@ -223,8 +246,8 @@ def score_practical_runs_v22(
         abstention_denominator=len(abstention_runs),
         evidence_denominator=len(incident_runs),
         run_completion_rate=_ratio(
-            sum(item.status is PracticalRunStatusV22.VALID_TERMINAL for item in runs),
-            len(runs),
+            sum(item.outcome is ScoredOutcomeV22.COMPLETED_CORRECT for item in scored),
+            len(scored),
         ),
         first_pass_protocol_success=_ratio(
             sum(item.first_pass_protocol_successes for item in runs), logical_turns
@@ -267,16 +290,22 @@ def score_practical_runs_v22(
             len(abstention_runs),
         ),
         evidence_ref_validity=_ratio(
-            sum(item.evidence_ref_valid for item in incident_runs),
+            sum(
+                scored_by_id[item.case_id].evidence_ref_valid is True
+                for item in incident_runs
+            ),
             len(incident_runs),
         ),
         semantic_evidence_clause_validity=_ratio(
-            sum(item.semantic_clause_valid for item in incident_runs),
+            sum(
+                scored_by_id[item.case_id].semantic_clause_valid is True
+                for item in incident_runs
+            ),
             len(incident_runs),
         ),
         mean_adaptive_reads=fmean(item.adaptive_reads for item in runs),
         duplicate_read_attempts=sum(item.duplicate_read_attempts for item in runs),
-        mean_provider_turns=fmean(observed_logical_turns),
+        mean_provider_turns=fmean(item.provider_calls for item in runs),
         input_tokens=sum(item.input_tokens for item in runs),
         output_tokens=sum(item.output_tokens for item in runs),
         total_tokens=sum(item.total_tokens for item in runs),

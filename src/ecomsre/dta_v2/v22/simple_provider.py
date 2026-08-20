@@ -10,6 +10,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 import json
 from pathlib import Path
+import re
 import time
 from typing import Protocol, cast
 import urllib.error
@@ -37,6 +38,14 @@ MAX_VISIBLE_STATE_BYTES_V22 = 16_000
 TARGET_VISIBLE_STATE_BYTES_V22 = 10_000
 DEFAULT_MINIMUM_REQUEST_INTERVAL_SECONDS_V22 = 6.0
 TRANSPORT_RETRY_BACKOFF_SECONDS_V22 = (10.0, 30.0)
+MAX_PROVIDER_HTTP_BODY_BYTES_V22 = 65_536
+MAX_DEBUG_VALUE_BYTES_V22 = 8_192
+
+_CREDENTIAL_ECHO_PATTERN_V22 = re.compile(
+    r"(?i)(authorization[\"'\s]*:|bearer\s+[^\s,}\]]+|"
+    r"api[-_ ]?key[\"'\s]*:|credential[\"'\s]*:|secret[\"'\s]*:|"
+    r"(?:access[-_ ]?|refresh[-_ ]?)?token[\"'\s]*:|password[\"'\s]*:)"
+)
 
 _DECISION_FIELDS_V22 = {
     "decision",
@@ -170,9 +179,16 @@ class StdlibProviderTransportV22:
                 _ReadableHttpResponse,
                 self._opener(request, timeout=timeout_seconds),
             )
-            raw = response.read()
+            raw = response.read(MAX_PROVIDER_HTTP_BODY_BYTES_V22 + 1)
+            if len(raw) > MAX_PROVIDER_HTTP_BODY_BYTES_V22:
+                raise ProviderTransportErrorV22(
+                    safe_code="HTTP_BODY_TOO_LARGE",
+                    status_code=cast(int, getattr(response, "status", 200)),
+                )
         except urllib.error.HTTPError as error:
-            raw_error = error.read(65_537)[:65_536]
+            raw_error = error.read(MAX_PROVIDER_HTTP_BODY_BYTES_V22 + 1)[
+                :MAX_PROVIDER_HTTP_BODY_BYTES_V22
+            ]
             raise ProviderTransportErrorV22(
                 safe_code=f"HTTP_{error.code}",
                 status_code=error.code,
@@ -442,6 +458,9 @@ def _fact_projection(fact: object) -> dict[str, object]:
     )
     if not isinstance(dumped, dict):
         raise TypeError("salient fact projection is invalid")
+    payload = dumped.get("payload")
+    if isinstance(payload, dict):
+        payload.pop("revision_digest", None)
     return cast(dict[str, object], dumped)
 
 
@@ -691,21 +710,80 @@ class SimpleProviderV22:
         run_id: str,
         request: ProviderTurnRequestV22,
         safe_error_code: str,
+        http_status: int | None,
+        raw_response_body: object | None,
         response: Mapping[str, object] | None,
         parsed: object | None,
+        local_validation_error: str,
     ) -> None:
         target = self.debug_root / run_id
         target.mkdir(parents=True, exist_ok=True)
+
+        def safe_text(value: object | None) -> str | None:
+            if value is None:
+                return None
+            raw = (
+                value
+                if isinstance(value, str)
+                else json.dumps(
+                    value,
+                    ensure_ascii=False,
+                    allow_nan=False,
+                    separators=(",", ":"),
+                    sort_keys=True,
+                )
+            )
+            encoded = raw.encode("utf-8")
+            if (
+                len(encoded) > MAX_DEBUG_VALUE_BYTES_V22
+                or self.config.api_key in raw
+                or _CREDENTIAL_ECHO_PATTERN_V22.search(raw) is not None
+            ):
+                return None
+            return raw
+
+        response_body = safe_text(
+            raw_response_body if raw_response_body is not None else response
+        )
+        parsed_text = safe_text(parsed)
         record = {
             "request_alias_projection": request.aliases.model_dump(mode="json"),
-            "safe_error_code": safe_error_code,
-            "raw_response": response,
-            "parsed_intermediate": parsed,
+            "http_status": http_status,
+            "safe_error_metadata": {
+                "code": safe_error_code,
+                "raw_response_body_omitted": (
+                    (raw_response_body is not None or response is not None)
+                    and response_body is None
+                ),
+                "parsed_intermediate_omitted": parsed is not None and parsed_text is None,
+            },
+            "raw_response_body": response_body,
+            "parsed_intermediate": (
+                None
+                if parsed_text is None
+                else parsed
+                if isinstance(parsed, str)
+                else json.loads(parsed_text)
+            ),
+            "local_validation_error": local_validation_error,
         }
         raw = json.dumps(record, indent=2, ensure_ascii=False, allow_nan=False)
-        if self.config.api_key in raw:
-            raise ValueError("debug record contains the Provider API key")
-        (target / "provider-failure.json").write_text(raw + "\n", encoding="utf-8")
+        if (
+            self.config.api_key in raw
+            or _CREDENTIAL_ECHO_PATTERN_V22.search(raw) is not None
+        ):
+            raise ValueError("debug record contains Provider credentials")
+        for ordinal in range(1, 100):
+            debug_path = target / (
+                f"provider-failure-{request.arm.value.casefold()}-{ordinal:02d}.json"
+            )
+            try:
+                with debug_path.open("x", encoding="utf-8") as handle:
+                    handle.write(raw + "\n")
+            except FileExistsError:
+                continue
+            return
+        raise RuntimeError("Provider debug record ordinal is exhausted")
 
     def complete_turn(
         self,
@@ -736,8 +814,11 @@ class SimpleProviderV22:
                 run_id=run_id,
                 request=request,
                 safe_error_code=error.safe_code,
+                http_status=error.status_code,
+                raw_response_body=error.raw_body,
                 response=None,
                 parsed=None,
+                local_validation_error="TRANSPORT_FAILURE",
             )
             raise ProviderProtocolFailureV22("TRANSPORT_FAILED") from error
         responses.append(first_response)
@@ -754,8 +835,11 @@ class SimpleProviderV22:
                 run_id=run_id,
                 request=request,
                 safe_error_code=first_error.safe_code,
+                http_status=200,
+                raw_response_body=None,
                 response=first_response,
                 parsed=first_error.parsed,
+                local_validation_error=first_error.safe_code,
             )
             if not allow_semantic_repair:
                 raise ProviderProtocolFailureV22("PROTOCOL_FAILED") from first_error
@@ -768,6 +852,16 @@ class SimpleProviderV22:
             try:
                 repair_response, retries, latency = self._post(repair_payload)
             except ProviderTransportErrorV22 as error:
+                self._debug_record(
+                    run_id=run_id,
+                    request=request,
+                    safe_error_code=error.safe_code,
+                    http_status=error.status_code,
+                    raw_response_body=error.raw_body,
+                    response=None,
+                    parsed=None,
+                    local_validation_error="REPAIR_TRANSPORT_FAILURE",
+                )
                 raise ProviderProtocolFailureV22("TRANSPORT_FAILED") from error
             responses.append(repair_response)
             total_retries += retries
@@ -783,8 +877,11 @@ class SimpleProviderV22:
                     run_id=run_id,
                     request=request,
                     safe_error_code=repair_error.safe_code,
+                    http_status=200,
+                    raw_response_body=None,
                     response=repair_response,
                     parsed=repair_error.parsed,
+                    local_validation_error=repair_error.safe_code,
                 )
                 raise ProviderProtocolFailureV22("PROTOCOL_FAILED") from repair_error
             first_pass = False
@@ -835,8 +932,11 @@ class SimpleProviderV22:
                 run_id=run_id,
                 request=request,
                 safe_error_code=error.safe_code,
+                http_status=error.status_code,
+                raw_response_body=error.raw_body,
                 response=None,
                 parsed=None,
+                local_validation_error="REPAIR_TRANSPORT_FAILURE",
             )
             raise ProviderProtocolFailureV22("TRANSPORT_FAILED") from error
         try:
@@ -846,8 +946,11 @@ class SimpleProviderV22:
                 run_id=run_id,
                 request=request,
                 safe_error_code=error.safe_code,
+                http_status=200,
+                raw_response_body=None,
                 response=response,
                 parsed=error.parsed,
+                local_validation_error=error.safe_code,
             )
             raise ProviderProtocolFailureV22("PROTOCOL_FAILED") from error
         input_tokens, output_tokens, total_tokens = _usage(response)

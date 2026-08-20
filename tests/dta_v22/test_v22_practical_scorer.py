@@ -127,7 +127,47 @@ def test_scorer_uses_explicit_applicability_and_partial_run_taxonomy() -> None:
     assert report.no_incident_denominator == 1
     assert report.abstention_denominator == 1
     assert report.evidence_denominator == 2
+    assert report.run_completion_rate == 0.5
+    assert report.evidence_ref_validity == 0.5
+    assert report.semantic_evidence_clause_validity == 0.5
+    assert report.mean_provider_turns == 2.0
     assert report.root_service_accuracy == 0.5
     assert report.no_incident_accuracy == 1.0
     assert report.abstention_accuracy == 0.0
     assert not hasattr(report, "action_success")
+
+
+def test_incident_abstention_does_not_count_as_valid_cited_evidence() -> None:
+    truth = (
+        PracticalTruthV22(
+            case_id="incident",
+            expected_terminal="DIAGNOSED",
+            expected_root_service="payment",
+            expected_mechanism="CONFIGURATION_ERROR",
+            evidence_applicable=True,
+        ),
+    )
+    misleading = _run(
+        case_id="incident",
+        status=PracticalRunStatusV22.VALID_TERMINAL,
+        terminal="ABSTAIN",
+        root=None,
+        mechanism="UNKNOWN",
+    ).model_copy(
+        update={
+            "supporting_evidence_refs": (),
+            "evidence_ref_valid": True,
+            "semantic_clause_valid": True,
+            "provider_turns": 1,
+            "provider_calls": 2,
+        }
+    )
+
+    report = score_practical_runs_v22(runs=(misleading,), truths=truth)
+
+    assert report.run_completion_rate == 0.0
+    assert report.evidence_ref_validity == 0.0
+    assert report.semantic_evidence_clause_validity == 0.0
+    assert report.mean_provider_turns == 2.0
+    assert report.scored_runs[0].evidence_ref_valid is False
+    assert report.scored_runs[0].semantic_clause_valid is False

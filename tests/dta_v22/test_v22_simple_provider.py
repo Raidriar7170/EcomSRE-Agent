@@ -23,17 +23,33 @@ from ecomsre.dta_v2.v22.controller_inputs import (
     ControllerRuntimeContextV22,
     ControllerTurnInputV22,
 )
+from ecomsre.dta_v2.v22.memory import (
+    ChangeSalientPayloadV22,
+    EvidenceRefV22,
+    SalientFactV22,
+    SignalStrengthV22,
+)
+from ecomsre.dta_v2.v22.read_contracts import (
+    ChangeCategoryV22,
+    EvidenceSourceV22,
+    RolloutStateV22,
+)
 from ecomsre.dta_v2.v22.simple_provider import (
     FUNCTION_NAME_V22,
     ProviderProtocolFailureV22,
     ProviderTransportErrorV22,
     SimpleProviderV22,
+    StdlibProviderTransportV22,
     build_provider_turn_request_v22,
 )
 from ecomsre.model.gateway import OpenAICompatibleConfig
 
 
-def _turn(arm: ControllerArmV22) -> ControllerTurnInputV22:
+def _turn(
+    arm: ControllerArmV22,
+    *,
+    salient_memory: object | None = None,
+) -> ControllerTurnInputV22:
     hypotheses = build_hypothesis_catalog_v22(
         candidate_services=("checkout", "payment")
     )
@@ -66,7 +82,11 @@ def _turn(arm: ControllerArmV22) -> ControllerTurnInputV22:
         bootstrap=SimpleNamespace(candidate_services=("checkout", "payment")),
         hypothesis_catalog=hypotheses,
         action_catalog=actions,
-        salient_memory=SimpleNamespace(evidence_refs=(), salient_facts=()),
+        salient_memory=(
+            SimpleNamespace(evidence_refs=(), salient_facts=())
+            if salient_memory is None
+            else salient_memory
+        ),
         evidence_support_policy=None,
         belief_ledger_view=(view if arm is ControllerArmV22.PLANNER_LITE else None),
         input_sha256="6" * 64,
@@ -182,6 +202,48 @@ def test_flat_and_planner_provider_state_differs_only_by_compact_ledger() -> Non
         assert forbidden not in serialized.casefold()
 
 
+def test_change_fact_projection_removes_nested_revision_digest() -> None:
+    revision_digest = "a" * 64
+    evidence_ref = EvidenceRefV22.model_construct(
+        schema_version="dta-v22.evidence-ref.v1",
+        evidence_ref="e:a:changes:payment:0:111111111111",
+        action_id="a:changes:payment",
+        source=EvidenceSourceV22.CHANGES,
+        outcome_sha256="2" * 64,
+        record_index=0,
+        record_sha256="1" * 64,
+    )
+    fact = SalientFactV22.model_construct(
+        schema_version="dta-v22.salient-fact.v1",
+        fact_id="f:changes:1111111111111111",
+        source=EvidenceSourceV22.CHANGES,
+        service="payment",
+        evidence_refs=(evidence_ref.evidence_ref,),
+        signal_strength=SignalStrengthV22.STRONG,
+        payload=ChangeSalientPayloadV22(
+            schema_version="dta-v22.salient-change.v1",
+            category=ChangeCategoryV22.CONFIGURATION,
+            relative_seconds=30,
+            rollout_state=RolloutStateV22.COMPLETED,
+            revision_digest=revision_digest,
+        ),
+        fact_sha256="3" * 64,
+    )
+    request = build_provider_turn_request_v22(
+        _turn(
+            ControllerArmV22.FLAT_CANONICAL,
+            salient_memory=SimpleNamespace(
+                evidence_refs=(evidence_ref,), salient_facts=(fact,)
+            ),
+        )
+    )
+
+    serialized = json.dumps(request.visible_state, sort_keys=True)
+    assert revision_digest not in serialized
+    assert "revision_digest" not in serialized
+    assert "sha256" not in serialized.casefold()
+
+
 def test_one_semantic_repair_uses_only_safe_alias_frontier(tmp_path: Path) -> None:
     transport = RecordingTransport(
         [_tool_response(hypothesis="H99"), _tool_response()]
@@ -214,7 +276,9 @@ def test_one_semantic_repair_uses_only_safe_alias_frontier(tmp_path: Path) -> No
         "NO_INCIDENT",
         "UNRESOLVED",
     }
-    debug = (tmp_path / ("a" * 32) / "provider-failure.json").read_text()
+    debug = next(
+        (tmp_path / ("a" * 32)).glob("provider-failure-*.json")
+    ).read_text()
     assert "super-secret-provider-key" not in debug
     assert "Authorization" not in debug
 
@@ -298,5 +362,100 @@ def test_nonretryable_http_error_is_safe_and_does_not_log_credentials(
         )
     assert captured.value.safe_code == "TRANSPORT_FAILED"
     assert len(transport.calls) == 1
-    persisted = (tmp_path / ("d" * 32) / "provider-failure.json").read_text()
+    persisted_path = next(
+        (tmp_path / ("d" * 32)).glob("provider-failure-*.json")
+    )
+    persisted = persisted_path.read_text()
     assert "super-secret-provider-key" not in persisted
+    record = json.loads(persisted)
+    assert record["http_status"] == 400
+    assert record["raw_response_body"] == "bad"
+    assert record["local_validation_error"] == "TRANSPORT_FAILURE"
+
+
+def test_debug_record_omits_echoed_credentials_and_keeps_safe_metadata(
+    tmp_path: Path,
+) -> None:
+    transport = RecordingTransport(
+        [
+            ProviderTransportErrorV22(
+                "HTTP_400",
+                status_code=400,
+                raw_body='{"Authorization":"Bearer stolen-credential"}',
+            )
+        ]
+    )
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    with pytest.raises(ProviderProtocolFailureV22):
+        provider.complete_turn(
+            turn_input=_turn(ControllerArmV22.FLAT_CANONICAL),
+            run_id="e" * 32,
+        )
+
+    persisted = next(
+        (tmp_path / ("e" * 32)).glob("provider-failure-*.json")
+    ).read_text()
+    assert "stolen-credential" not in persisted
+    assert "Bearer" not in persisted
+    assert "Authorization" not in persisted
+    record = json.loads(persisted)
+    assert record["http_status"] == 400
+    assert record["raw_response_body"] is None
+    assert record["safe_error_metadata"]["raw_response_body_omitted"] is True
+
+
+def test_repair_transport_failure_gets_a_distinct_debug_record(
+    tmp_path: Path,
+) -> None:
+    transport = RecordingTransport(
+        [
+            _tool_response(hypothesis="H99"),
+            ProviderTransportErrorV22(
+                "HTTP_400", status_code=400, raw_body="repair rejected"
+            ),
+        ]
+    )
+    provider = _provider(transport=transport, debug_root=tmp_path)
+
+    with pytest.raises(ProviderProtocolFailureV22) as captured:
+        provider.complete_turn(
+            turn_input=_turn(ControllerArmV22.PLANNER_LITE),
+            run_id="f" * 32,
+        )
+
+    assert captured.value.safe_code == "TRANSPORT_FAILED"
+    records = [
+        json.loads(path.read_text())
+        for path in sorted((tmp_path / ("f" * 32)).glob("provider-failure-*.json"))
+    ]
+    assert len(records) == 2
+    assert {item["http_status"] for item in records} == {200, 400}
+    assert {item["local_validation_error"] for item in records} == {
+        "UNKNOWN_H_ALIAS",
+        "REPAIR_TRANSPORT_FAILURE",
+    }
+
+
+def test_stdlib_transport_rejects_an_unbounded_success_body() -> None:
+    class HugeResponse:
+        status = 200
+
+        def read(self, amount: int | None = None) -> bytes:
+            assert amount == 65_537
+            return b"x" * amount
+
+    transport = StdlibProviderTransportV22(
+        opener=lambda _request, timeout: HugeResponse()
+    )
+
+    with pytest.raises(ProviderTransportErrorV22) as captured:
+        transport.post_json(
+            url="https://provider.invalid/v1/chat/completions",
+            headers={},
+            payload={},
+            timeout_seconds=1.0,
+        )
+
+    assert captured.value.safe_code == "HTTP_BODY_TOO_LARGE"
+    assert captured.value.status_code == 200
