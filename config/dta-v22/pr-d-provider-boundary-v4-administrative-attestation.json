@@ -1,0 +1,42 @@
+{
+  "schema_version": "dta-v22-pr-d-provider-boundary-v4-administrative-attestation.v1",
+  "goal_version": "dta-v22-p0-master-v1",
+  "amendment_version": "dta-v22-pr-d-provider-boundary-v4-amendment-v1",
+  "decision_id": "DEC-058",
+  "repository": "Raidriar7170/EcomSRE-Agent",
+  "pr": 60,
+  "starting_head": "23f6cd5c8a47fc1f91d3ac71829878fa1d1396bc",
+  "starting_tree": "ce4bd6e652a0c39753c08e2512cd8e26b61da2f1",
+  "implementation_commit": "ffdb8da89a8c5b96e13affc2b40394dab3b86b9c",
+  "implementation_tree": "e6ede890ceccb07b5d55bc9ef692dd4217b22a80",
+  "commit_b_parent": "ffdb8da89a8c5b96e13affc2b40394dab3b86b9c",
+  "changed_paths": [
+    "config/dta-v22/pr-d-provider-boundary-v4-administrative-attestation.json",
+    "docs/analysis/dta-v22-p0-master-progress.json",
+    "docs/analysis/dta-v22-pr-d-provider-boundary-v4-campaign.json",
+    "docs/human-briefs/2026-08-20-dta-v22-pr-d-provider-boundary-v4.md",
+    "docs/review-evidence/dta-v22-pr-d-provider-boundary-v4/current-disposition.json"
+  ],
+  "artifact_raw_sha256_by_path": {
+    "docs/analysis/dta-v22-p0-master-progress.json": "9b06c15398de5f099101a6e5dc4d577e44f097954fcc533c9e1f7054979294ee",
+    "docs/analysis/dta-v22-pr-d-provider-boundary-v4-campaign.json": "1df781493e8d9c6fb952c6f9dc8bf4626d1eb85e0aae645c4d4951c6a30687ed",
+    "docs/human-briefs/2026-08-20-dta-v22-pr-d-provider-boundary-v4.md": "4b5f9561b1f3eb1a5439c434a0511d9aeabcd2c546dec5174d6f2a470d302a45",
+    "docs/review-evidence/dta-v22-pr-d-provider-boundary-v4/current-disposition.json": "e79533467f8424c79bb1351bc4a381f431222990bd4c505a0c437d2f53ae5e48"
+  },
+  "provider_called": true,
+  "provider_call_count": 1,
+  "docker_called": false,
+  "held_out_executed": false,
+  "scenario_executed": false,
+  "fault_injected": false,
+  "agent_evidence_dispatched": false,
+  "agent_write_executed": false,
+  "runbook_executed": false,
+  "private_evidence_changed": true,
+  "public_result_changed": true,
+  "third_v3_replicate_executed": false,
+  "execution_report_rebound": false,
+  "campaign_sha256": "1837365119ac0cf1fcd2ddbd50199387c47bdf6dfd88cf3f0e4b87382453fc3a",
+  "terminal": "BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE",
+  "record_sha256": "dcd58fd70758377e946af9264207a70a3318eef5a47d4e4ea0ebaff89e9466cb"
+}
