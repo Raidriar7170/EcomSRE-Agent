@@ -1348,12 +1348,103 @@ verified before either terminal is returned. Only two independently passing
 replicates mint `DTA_V22_PR_D_CONTROLLER_READY`; any other completed campaign
 preserves its evidence and ends `BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE`.
 
-Before Provider execution, a hash-valid preregistration plus all offline gates
-may mint the Draft-only
-`DTA_V22_PR_D_PROVIDER_PROTOCOL_V3_EXECUTION_READY` state. That state exits zero
-for CI but is explicitly not merge-ready and cannot authorize PR-E. This record
-does not authorize Docker, scenarios, faults, Agent evidence dispatch, Agent
-writes, Runbooks, held-out execution, or any work in PR-E.
+## DEC-058 — DTA v2.2 PR-D Provider Boundary v4 Protocol/Semantic Split
+
+**Status: `accepted` for PR #60 only.**
+
+Goal Amendment 2 preserves Attempts 1–5, the complete Provider protocol v3
+preregistration and private/public campaign evidence, the v3 Human Brief, and
+their implementation, Prompt, schema, identity, and model bindings exactly.
+No third v3 replicate is permitted. The v3 negative terminal remains valid
+historical evidence and is not relabeled or rescored.
+
+Provider Boundary v4 separates protocol conformance from semantic RCA quality.
+PR-D is gated only by the Layer A v4 protocol contract. Semantic Diagnosis
+quality, evidence quality, action quality, and Planner advantage remain PR-E
+evaluation concerns and cannot make a runtime-valid v4 protocol decision fail
+PR-D merely because it differs from one evaluator-preferred answer.
+
+The Provider receives a minimal bounded projection with turn-local `H00`,
+`A00`, and `E00` aliases. The private request binding retains the exact
+canonical controller input and resolves a successful alias response back into
+the unchanged `ControllerDecisionV22`, after which the unchanged runtime
+admission executes. Action aliases are assigned over the complete canonical
+registry, while only currently available aliases enter the dynamic schema, so
+masked or executed actions fail as stale instead of being silently remapped.
+Unknown, stale, wrong-kind, or duplicate aliases fail before runtime dispatch.
+
+`protocol_intent` exists only in `PROTOCOL_CONFORMANCE_ONLY`. It is forbidden
+in semantic development, held-out, actual RCA, and live execution. Each v4
+request uses an exact alias-constrained dynamic schema and binds that schema,
+the minimal projection, the private canonical input, and its position in one
+of two fixed stratified permutations.
+
+The one logical mode probe first tries strict structured output. Only an exact
+typed `STRICT_SCHEMA_UNSUPPORTED` response may select the already admitted
+`LOCAL_FAIL_CLOSED_JSON` mode; every local response is validated against the
+same request-specific dynamic schema before alias resolution. The probe
+therefore consumes exactly one Provider call when strict mode is selected and
+exactly two when the typed local fallback is selected. This selection is not
+an HTTP retry and is bound into the probe, replicate reports, campaign, and
+post-execution verifier.
+
+The one v4 campaign contains one actual v4 alias-schema mode probe, replicate
+A with 24 transitions, a minimum 120-second cooldown, then replicate B with 24
+transitions. Each replicate contains 20 ordinary first-pass transitions and
+four correction-envelope transitions, with stale-action and invalid-ref
+correction on both Flat and Planner-Lite. Every contiguous block of four has
+both arms, at least two protocol intents, and no more than one correction.
+Replicate B runs after any semantic failure in A; a transport abort is a
+campaign abort and all later transitions are separately recorded as
+`NOT_ATTEMPTED_AFTER_ABORT` rather than additional abort events.
+An HTTP, connection, or timeout failure is an actual transport abort. A bounded
+Provider response that violates response metadata, usage, parse, alias,
+runtime, or protocol-intent rules remains a completed response with one frozen,
+mutually exclusive primary taxonomy class and cannot be relabeled as transport
+failure. Reports bind parsed, alias-resolved, runtime-admitted, and
+protocol-intent-conformant counts, mean and maximum input tokens, and exact
+counts by arm and protocol category. A response whose Provider usage cannot be
+validated remains a completed response, but its token totals, mean, and maximum
+are explicitly unknown and the transport-efficiency gate is ineligible; an
+unknown value is never represented as zero.
+
+Each replicate independently requires at least 19/20 ordinary first-pass
+acceptance, at least 9/10 on each arm, 4/4 correction acceptance and 2/2 per
+arm, at least 23/24 final acceptance, 24/24 bounded responses, and zero alias,
+invalid-evidence, Agent, write, or Runbook dispatch. Provider-visible canonical
+JSON is capped at 12,000 bytes per request and 8,000 bytes mean. Formal input
+tokens are capped at 5,500 per request and 4,000 mean. Before any call all 48
+requests are materialized and their projected rate is admitted against 30,000
+input tokens per minute. The frozen minimum request-start interval is 12
+seconds; HTTP retry, semantic retry, replacement replicate, and third v3
+replicate counts are zero.
+
+Every positive or negative probe, replicate, and campaign artifact is written
+create-once to the authoritative v4 private root and verified before its public
+result or terminal is returned. The frozen manifest lives at
+`config/dta-v22/provider-gate/pr-d-provider-boundary-v4-manifest.json`. The
+implementation, matrices, projection,
+schemas, gates, pacing, persistence order, and pre/post verifier are frozen in
+Commit A and pass exact-head CI plus independent review before the first v4
+Provider call. Commit B may add only the declared results, progress, Human
+Brief, review disposition, administrative binding, and PR-body state; it may
+not modify v4 source, Prompt, schema, tests, or verifier. Commit A is the exact
+single-parent child of the inspected v3 head, Commit B is the exact
+single-parent child of Commit A, and the runner rechecks the frozen head/tree
+plus the exact allowed result-only dirty set after aggregate persistence and
+before returning either terminal.
+
+Only two independently passing v4 replicates mint
+`DTA_V22_PR_D_CONTROLLER_READY`. Every other durable result ends
+`BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE`, keeps PR #60 Draft, forbids a new
+campaign, and blocks PR-E.
+
+Before Provider execution, a hash-valid v4 manifest plus all offline gates may
+enter the Draft-only `V4_EXECUTION_READY` verifier state with `terminal: null`.
+That state exits zero for CI but is explicitly not merge-ready and cannot
+authorize PR-E. It does not relabel the preserved v3 blocker and does not
+authorize Docker, scenarios, faults, Agent evidence dispatch, Agent writes,
+Runbooks, held-out execution, or any work in PR-E.
 
 ## Upstream references
 

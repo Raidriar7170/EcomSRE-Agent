@@ -140,7 +140,7 @@ jobs:
       - name: DTA v2.2 PR-D controller and Provider protocol verification
         run: >-
           env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
-          uv run --frozen --no-sync python -m scripts.ci.verify_dta_v22_pr_d
+          uv run --frozen --no-sync python -m scripts.ci.verify_dta_v22_pr_d_v4
 
       - name: DTA v2.2 focused tests
         run: >-

@@ -38,5 +38,15 @@
   "held_out_execution_id": null,
   "planner_claim": null,
   "memory_claim": null,
-  "final_engineering_terminal": "BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE"
+  "provider_boundary_version": "v4",
+  "provider_boundary_v3_terminal": "BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE",
+  "provider_boundary_v3_campaign_sha256": "b23184d23ad5d6fc801e85efca268d5c7e7ad951ee004b8221fe2a5889211170",
+  "provider_boundary_v4_state": "PREREGISTERED_NOT_EXECUTED",
+  "provider_boundary_v4_manifest_sha256": "4d20e2341655fa0d1ece1ad2fe8dbc63db570580e113c2aa8e1c5864827c7c44",
+  "provider_boundary_v4_implementation_commit": null,
+  "provider_boundary_v4_implementation_tree": null,
+  "provider_boundary_v4_replicate_a_sha256": null,
+  "provider_boundary_v4_replicate_b_sha256": null,
+  "provider_boundary_v4_campaign_sha256": null,
+  "final_engineering_terminal": null
 }

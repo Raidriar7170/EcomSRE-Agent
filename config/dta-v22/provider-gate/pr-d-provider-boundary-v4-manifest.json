@@ -1,0 +1,873 @@
+{
+  "schema_version": "dta-v22-pr-d-provider-boundary-v4-manifest.v1",
+  "goal_version": "dta-v22-p0-master-v1",
+  "parent_goal_sha256": "cc176cc3eb63e96c6af7e4fda0022a7517776e7a3bfbe7c2f684966ffdb5a23c",
+  "amendment_1_sha256": "ee38fd3fdb706cd59ea80a8b2c1be268b03f8d6435469852d607b3cb332e2c81",
+  "amendment_2_sha256": "83e3fa80a8c5fd327460827f66d37cc3db3d6ee42e91d9539c609b31fd263d5b",
+  "decision_id": "DEC-058",
+  "stage": "PR-D",
+  "pr": 60,
+  "branch": "codex/dta-v22-p0-pr-d-planner-lite",
+  "base_main": "145d152c2c2d1367e7dac2f0229e2b369fbe55dc",
+  "starting_head": "23f6cd5c8a47fc1f91d3ac71829878fa1d1396bc",
+  "starting_tree": "ce4bd6e652a0c39753c08e2512cd8e26b61da2f1",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "temperature": 0,
+  "execution_mode": "PROTOCOL_CONFORMANCE_ONLY",
+  "provider_boundary_schema": "dta-v22.provider-boundary-request.v4",
+  "provider_protocol_report_schema": "dta-v22.provider-protocol-replicate-report.v4",
+  "replicate_ids": [
+    "A",
+    "B"
+  ],
+  "replicate_count": 2,
+  "transition_count_per_replicate": 24,
+  "first_pass_count_per_replicate": 20,
+  "first_pass_count_by_arm": {
+    "FLAT_CANONICAL": 10,
+    "PLANNER_LITE": 10
+  },
+  "correction_count_per_replicate": 4,
+  "correction_count_by_arm": {
+    "FLAT_CANONICAL": 2,
+    "PLANNER_LITE": 2
+  },
+  "correction_classes_by_arm": {
+    "FLAT_CANONICAL": [
+      "STALE",
+      "INVALID_REF"
+    ],
+    "PLANNER_LITE": [
+      "STALE",
+      "INVALID_REF"
+    ]
+  },
+  "ordinary_first_pass_gate": {
+    "overall_minimum": 19,
+    "overall_denominator": 20,
+    "per_arm_minimum": 9,
+    "per_arm_denominator": 10
+  },
+  "correction_gate": {
+    "overall_required": 4,
+    "per_arm_required": 2
+  },
+  "final_gate": {
+    "minimum": 23,
+    "denominator": 24
+  },
+  "transport_completeness_gate": {
+    "bounded_responses_required": 24,
+    "actual_transport_abort_events": 0
+  },
+  "dispatch_safety_gate": {
+    "unknown_alias_dispatches": 0,
+    "stale_alias_dispatches": 0,
+    "invalid_evidence_dispatches": 0,
+    "agent_dispatches": 0,
+    "write_dispatches": 0,
+    "runbook_dispatches": 0
+  },
+  "projection_max_bytes": 12000,
+  "projection_mean_bytes": 8000,
+  "formal_input_token_mean_max": 4000,
+  "formal_input_token_request_max": 5500,
+  "token_estimator": {
+    "package": "tiktoken",
+    "version": "0.13.0",
+    "encoding": "o200k_base",
+    "scope": "FULL_PROVIDER_REQUEST_PAYLOAD_WORST_OF_ADMITTED_MODES",
+    "offline_asset_path": "config/phase2/tokenizers/o200k_base.tiktoken",
+    "offline_asset_sha256": "446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d"
+  },
+  "projected_requests_per_minute": 5.0,
+  "projected_input_tokens_per_minute_max": 30000,
+  "minimum_request_start_interval_seconds": 12.0,
+  "inter_replicate_cooldown_seconds": 120.0,
+  "http_auto_retry_count": 0,
+  "semantic_retry_count": 0,
+  "replacement_replicate_count": 0,
+  "provider_probe_count": 1,
+  "run_b_after_a_semantic_failure": true,
+  "run_b_after_a_transport_abort": false,
+  "third_v3_replicate_allowed": false,
+  "v4_additional_campaign_allowed": false,
+  "implementation_identity_rule": "ONE_CLEAN_EXACT_COMMIT_A_HEAD_AND_TREE_SHARED_BY_PROBE_AND_BOTH_REPLICATES",
+  "durable_persistence_order": [
+    "MANIFEST_BINDING_PRIVATE_CREATE_ONCE",
+    "PROBE_PRIVATE_CREATE_ONCE",
+    "REPLICATE_A_PRIVATE_VERIFY",
+    "REPLICATE_A_PUBLIC_VERIFY",
+    "COOLDOWN",
+    "REPLICATE_B_PRIVATE_VERIFY",
+    "REPLICATE_B_PUBLIC_VERIFY",
+    "CAMPAIGN_PRIVATE_VERIFY",
+    "CAMPAIGN_PUBLIC_VERIFY",
+    "TERMINAL"
+  ],
+  "private_evidence_location_class": "DTA_V22_PRIVATE_ROOT_PR_D_PROVIDER_BOUNDARY_V4",
+  "private_artifact_roles": [
+    "manifest-binding.json",
+    "provider-mode-probe.json",
+    "replicate-a.json",
+    "replicate-b.json",
+    "campaign.json"
+  ],
+  "public_result_paths": {
+    "replicate_a": "docs/analysis/dta-v22-pr-d-provider-boundary-v4-replicate-a.json",
+    "replicate_b": "docs/analysis/dta-v22-pr-d-provider-boundary-v4-replicate-b.json",
+    "campaign": "docs/analysis/dta-v22-pr-d-provider-boundary-v4-campaign.json"
+  },
+  "historical_public_raw_sha256_by_path": {
+    "docs/analysis/dta-v22-pr-d-provider-protocol-attempt-1-invalid-location.json": "aa956933027cdd2902ebcc9a8c3b0df076df69b61ae37a1019bacbc8742a7552",
+    "docs/analysis/dta-v22-pr-d-provider-protocol-attempt-2-validator-abort.json": "6510bf827dd8b2348ee0aab0560e404a41d34ce42adc3a719dfa901200c8f57e",
+    "docs/analysis/dta-v22-pr-d-provider-protocol-attempt-3-rate-limited.json": "391973adb861c7ec5e93e2c59b38726680435c4f93a04fda7551014a9096d15f",
+    "docs/analysis/dta-v22-pr-d-provider-protocol-attempt-4-rate-limited.json": "b2051cf6f06c2121e98f4c56defa651755dea7842a97dbefa6c056b41b23c0bf",
+    "docs/analysis/dta-v22-pr-d-provider-protocol-attempt-5-gate-blocked.json": "ada22ef182f721e586a2d6e61e8f2138a9ae33d6fca6062830a63265852eee5a",
+    "config/dta-v22/pr-d-provider-protocol-v3-preregistration.json": "0df94383805fe00c08c4b2f89e79d9d68ffa9c35d622203a941a6f7bb73a4175",
+    "docs/analysis/dta-v22-pr-d-provider-protocol-v3-replicate-a-summary.json": "109ecbdf18651467bf6cc4f902accfc6d1fdca881692a0dc4326ab00eb4804e6",
+    "docs/analysis/dta-v22-pr-d-provider-protocol-v3-replicate-b-summary.json": "7ee47877a313ac38641a5fc37f7799957301e1162f03cdd764e841dcda071363",
+    "docs/analysis/dta-v22-pr-d-provider-protocol-v3-campaign-summary.json": "ddf1cc0f8eaaca2b7fefa81242f06581bdf69dddd78a0a082d6d312b028c5586",
+    "docs/human-briefs/2026-08-20-dta-v22-pr-d-controller-protocol.md": "dd8c09b927add55503151d5f6f4cec7830d82c6a9141af5fe1e665fcfb2806b2"
+  },
+  "historical_private_raw_sha256_by_role": {
+    "provider-mode-probe.json": "07bce87d85a69dda3eba78cac13f70246295e159353b698245d3d544b305a0c5",
+    "replicate-a.json": "5dfe80b3d071b3caeb0a0b766ff94678131ec55f8e99e35002ec65709c2c3ece",
+    "replicate-b.json": "1807a8746b2fc533cfd3dd0b613a44d97d3f0f044e2ec93e2d8cbe144bdd427e",
+    "campaign.json": "4f2ccf4a8cd529be1d048a7cb74c1c0b3d1b305c28b0189b9cd713f121994bf7"
+  },
+  "historical_private_semantic_sha256_by_role": {
+    "provider-mode-probe.json": "f3f4d8691439fd94191728fe3b5771df9929ae362c91cdaaad2ead8162fcedfc",
+    "replicate-a.json": "e2cb542173217d76ed557917e3b7ca694e24becc03375a1d9d19fa6cb422f5f7",
+    "replicate-b.json": "3f2b0039f508ef908967a64c2fc96fbd01ed97752289a1b4976d43fdce8cecd3",
+    "campaign.json": "c534e799f23645afa316cc6451c39b2367e5b4011a522e3d78018f979883afd8"
+  },
+  "frozen_raw_sha256_by_path": {
+    ".github/workflows/agent-mainline.yml": "b1c154870c035cb9361917c24886a3134cdbcc28ec1820e9e829ea35fdc9c76e",
+    "config/phase2/token-policy-core.json": "caf9da4037393c35d33354aae2426e2b3d46bc58933d8add4548b8ea0397c465",
+    "config/phase2/tokenizers/o200k_base.tiktoken": "446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d",
+    "docs/DECISIONS.md": "8f6e5bdf091520842c553a01c7e93a7393fdcb8be3d4b1aee36d2877b7b0542d",
+    "pyproject.toml": "ba0cfad443a789d555d888d6bdf659ab1d4dfd483ab911260a81942d839e1bd7",
+    "scripts/ci/verify_dta_v22_pr_d.py": "0443d48f62951ea2f98556e2f30611f0cdad5aa13f1baf8366c5600048dcb32c",
+    "scripts/ci/verify_dta_v22_pr_d_v4.py": "340c031a82429f7295659b2c9529d010b470d75b60b0d8ec300b140f0d12f0e0",
+    "scripts/dta_v22/run_pr_d_provider_boundary_v4.py": "a72f4a231db19c6d16eff1a1b72f5ce83ac02d2e96d3f5fd09c54409aea64aca",
+    "scripts/dta_v22/run_pr_d_provider_protocol.py": "9bfbda13f0e552d2e6b4cfb968e8b02f346edcd9e07387777633e564f03fd417",
+    "src/ecomsre/dta_v2/v22/action_catalog.py": "621c1481e689771ac7492f88d308e9739fc79e9dc5fa4227faa3fda12d035e80",
+    "src/ecomsre/dta_v2/v22/controller_contracts.py": "14536944f99a6342f88d9a2eea9bf2973994e2083d6eefb9318503c25add5fcf",
+    "src/ecomsre/dta_v2/v22/controller_inputs.py": "3bc1b491d1f7755ec71c4cf8ba69caf8de4818b2e98343476691421cd64e7f10",
+    "src/ecomsre/dta_v2/v22/controller_modes.py": "95447bc81ddea2d93d0a9da53552157822566100d6ac77b58b3369e7f8303ff4",
+    "src/ecomsre/dta_v2/v22/controller_provider.py": "452f61066a602598d34eaf785952419630da4c7cdead5b70a36b664f8c2ee351",
+    "src/ecomsre/dta_v2/v22/controller_runtime.py": "e415dab65de06ff852dee99105ec5e02a1df7f1013e374ac42d4e122b7d7a62b",
+    "src/ecomsre/dta_v2/v22/diagnosis.py": "75dadc55ce4a91bc911db892b36ab9c1de3a034c98b2b048884a0defdf84c8bc",
+    "src/ecomsre/dta_v2/v22/memory.py": "5158fb9205f953f24a7825f485a315249c1e5780ae37a85436968ea374753150",
+    "src/ecomsre/dta_v2/v22/predicates.py": "c56a1c4168d224f369cdac02289ec02d95ac61b5bc2f5938adbc9b599bea8c7f",
+    "src/ecomsre/dta_v2/v22/protocol_suite.py": "c764877f958585925a1f04b885df239a2f87a4f76e02c8e96f467d868feac1b2",
+    "src/ecomsre/dta_v2/v22/protocol_suite_v4.py": "788c548277a63442422ff8495330c823009e1abc3477b5a9404c016a04471db5",
+    "src/ecomsre/dta_v2/v22/provider_boundary_v4.py": "af8e0fdc34602a5a8eb01b2b7598a3c3177c7634ab8069515c39010668f8482a",
+    "src/ecomsre/dta_v2/v22/provider_protocol_v4.py": "24fa26282133aeab0951465622a0bc2fb884779b34e2b7c02cd1b2b382be9280",
+    "src/ecomsre/phase2/token_policy.py": "18ca37a2afb4acf5a59c678db7754d72725d6841a95606135d9f0a89b494bd12",
+    "tests/dta_v22/test_v22_pr_d_provider_boundary_v4_execution.py": "a2ba623c7b17b2f886333ee7d414e60605fab6874dd0ba24f6f82f8e86aa2b4f",
+    "tests/dta_v22/test_v22_pr_d_v4_verifier.py": "117a11d12cf50862680202d9aca389e6f50a9b1269e74ecf095d63a924f69693",
+    "tests/dta_v22/test_v22_pr_d_verifier.py": "3de6636048aeb13fad72c48c8a668e5a04f18c9309245674efba441a6da4ff8b",
+    "tests/dta_v22/test_v22_provider_adapter_v4.py": "868c9dd44db4a0803e58b542a7aaab1a38b0c6a1ff7c41dbbdc658bd92b440e3",
+    "tests/dta_v22/test_v22_provider_boundary_v4.py": "6b204f31dfaea2a55113a7b218c68cc5ea63058be3b2de99bdf26e1cfaa996ac",
+    "tests/dta_v22/test_v22_provider_protocol_suite.py": "29fb452d7e6a60583d1c5bc545c12c3cfc964426a60b700a92a32869d47e0c43",
+    "tests/dta_v22/test_v22_provider_protocol_v4.py": "36e3505e6e2f04300f18eb0ca34fad60c3c006d514ca33dce5893842c7fe9130",
+    "uv.lock": "25a1be6732074a97f6099735c83615c4ddf74d800c5016652de394ac20f43881"
+  },
+  "replicate_transition_specs": {
+    "A": [
+      {
+        "transition_id": "dta-v22-v4-a-01",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "READ",
+        "protocol_category": "STALE_ACTION_CORRECTION",
+        "transition_kind": "CORRECTION_ENVELOPE",
+        "correction_class": "STALE"
+      },
+      {
+        "transition_id": "dta-v22-v4-a-02",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "ABSTAIN",
+        "protocol_category": "ABSTAIN",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-03",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "COMMIT",
+        "protocol_category": "COMMIT",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-04",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "NO_INCIDENT",
+        "protocol_category": "NO_INCIDENT",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-05",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "READ",
+        "protocol_category": "STALE_ACTION_CORRECTION",
+        "transition_kind": "CORRECTION_ENVELOPE",
+        "correction_class": "STALE"
+      },
+      {
+        "transition_id": "dta-v22-v4-a-06",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "ABSTAIN",
+        "protocol_category": "ABSTAIN",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-07",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "COMMIT",
+        "protocol_category": "COMMIT",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-08",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "NO_INCIDENT",
+        "protocol_category": "NO_INCIDENT",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-09",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "READ",
+        "protocol_category": "INVALID_REF_CORRECTION",
+        "transition_kind": "CORRECTION_ENVELOPE",
+        "correction_class": "INVALID_REF"
+      },
+      {
+        "transition_id": "dta-v22-v4-a-10",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "ABSTAIN",
+        "protocol_category": "ABSTAIN",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-11",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "COMMIT",
+        "protocol_category": "COMMIT",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-12",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "NO_INCIDENT",
+        "protocol_category": "NO_INCIDENT",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-13",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "READ",
+        "protocol_category": "INVALID_REF_CORRECTION",
+        "transition_kind": "CORRECTION_ENVELOPE",
+        "correction_class": "INVALID_REF"
+      },
+      {
+        "transition_id": "dta-v22-v4-a-14",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "ABSTAIN",
+        "protocol_category": "ABSTAIN",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-15",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "COMMIT",
+        "protocol_category": "COMMIT",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-16",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "NO_INCIDENT",
+        "protocol_category": "NO_INCIDENT",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-17",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "READ",
+        "protocol_category": "READ",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-18",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "ABSTAIN",
+        "protocol_category": "BUDGET_EXHAUSTED",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-19",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "READ",
+        "protocol_category": "READ",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-20",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "ABSTAIN",
+        "protocol_category": "SOURCE_UNAVAILABLE",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-21",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "READ",
+        "protocol_category": "READ",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-22",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "ABSTAIN",
+        "protocol_category": "SOURCE_UNAVAILABLE",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-23",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "READ",
+        "protocol_category": "READ",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-a-24",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "ABSTAIN",
+        "protocol_category": "BUDGET_EXHAUSTED",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      }
+    ],
+    "B": [
+      {
+        "transition_id": "dta-v22-v4-b-01",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "READ",
+        "protocol_category": "STALE_ACTION_CORRECTION",
+        "transition_kind": "CORRECTION_ENVELOPE",
+        "correction_class": "STALE"
+      },
+      {
+        "transition_id": "dta-v22-v4-b-02",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "NO_INCIDENT",
+        "protocol_category": "NO_INCIDENT",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-03",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "ABSTAIN",
+        "protocol_category": "ABSTAIN",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-04",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "COMMIT",
+        "protocol_category": "COMMIT",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-05",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "READ",
+        "protocol_category": "INVALID_REF_CORRECTION",
+        "transition_kind": "CORRECTION_ENVELOPE",
+        "correction_class": "INVALID_REF"
+      },
+      {
+        "transition_id": "dta-v22-v4-b-06",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "NO_INCIDENT",
+        "protocol_category": "NO_INCIDENT",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-07",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "ABSTAIN",
+        "protocol_category": "ABSTAIN",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-08",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "COMMIT",
+        "protocol_category": "COMMIT",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-09",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "READ",
+        "protocol_category": "INVALID_REF_CORRECTION",
+        "transition_kind": "CORRECTION_ENVELOPE",
+        "correction_class": "INVALID_REF"
+      },
+      {
+        "transition_id": "dta-v22-v4-b-10",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "NO_INCIDENT",
+        "protocol_category": "NO_INCIDENT",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-11",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "ABSTAIN",
+        "protocol_category": "ABSTAIN",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-12",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "COMMIT",
+        "protocol_category": "COMMIT",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-13",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "READ",
+        "protocol_category": "STALE_ACTION_CORRECTION",
+        "transition_kind": "CORRECTION_ENVELOPE",
+        "correction_class": "STALE"
+      },
+      {
+        "transition_id": "dta-v22-v4-b-14",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "NO_INCIDENT",
+        "protocol_category": "NO_INCIDENT",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-15",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "ABSTAIN",
+        "protocol_category": "ABSTAIN",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-16",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "COMMIT",
+        "protocol_category": "COMMIT",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-17",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "READ",
+        "protocol_category": "READ",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-18",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "ABSTAIN",
+        "protocol_category": "SOURCE_UNAVAILABLE",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-19",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "READ",
+        "protocol_category": "READ",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-20",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "ABSTAIN",
+        "protocol_category": "BUDGET_EXHAUSTED",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-21",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "READ",
+        "protocol_category": "READ",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-22",
+        "arm": "FLAT_CANONICAL",
+        "protocol_intent": "ABSTAIN",
+        "protocol_category": "BUDGET_EXHAUSTED",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-23",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "READ",
+        "protocol_category": "READ",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      },
+      {
+        "transition_id": "dta-v22-v4-b-24",
+        "arm": "PLANNER_LITE",
+        "protocol_intent": "ABSTAIN",
+        "protocol_category": "SOURCE_UNAVAILABLE",
+        "transition_kind": "ORDINARY",
+        "correction_class": null
+      }
+    ]
+  },
+  "request_sha256_commitment_by_replicate": {
+    "A": "3752759b51bcb2fbbe2ea3fec2b5ff68f7307a6d9b583c4114a7a24671dca491",
+    "B": "982a0ef00cd493bdb47eecb3934ae322d680e38ef5291de29d7d1f98207b72a6"
+  },
+  "projection_sha256_commitment_by_replicate": {
+    "A": "4126cc38768cd4d581a16cbb6d6c0a28ab8d8e2492fca1c429fb2545311d2b53",
+    "B": "f554ea1f6d07fc6baf4c528e45482fde90fcb800b218356b5af424cc8182d317"
+  },
+  "dynamic_schema_sha256_commitment_by_replicate": {
+    "A": "ec22d99c1940d05739aa8fa8e280478f90d29ab007fab8efa90666620650bd7d",
+    "B": "adac00eb035c10ffe9498c326868dda87a0f736723c44e9a490ffdb4bb011373"
+  },
+  "projection_bytes_by_replicate": {
+    "A": [
+      4645,
+      4575,
+      6099,
+      5722,
+      5789,
+      5718,
+      4956,
+      4579,
+      4738,
+      4575,
+      6099,
+      5722,
+      5881,
+      5718,
+      4956,
+      4579,
+      4569,
+      3627,
+      5712,
+      5718,
+      4569,
+      4575,
+      5712,
+      4771
+    ],
+    "B": [
+      4645,
+      4579,
+      5718,
+      6099,
+      5881,
+      5722,
+      4575,
+      4956,
+      4738,
+      4579,
+      5718,
+      6099,
+      5789,
+      5722,
+      4575,
+      4956,
+      4569,
+      4575,
+      5712,
+      4771,
+      4569,
+      3627,
+      5712,
+      5718
+    ]
+  },
+  "projected_input_tokens_by_replicate": {
+    "A": [
+      1809,
+      1729,
+      2221,
+      2075,
+      2158,
+      2076,
+      1874,
+      1728,
+      1843,
+      1729,
+      2221,
+      2075,
+      2190,
+      2076,
+      1874,
+      1728,
+      1781,
+      1428,
+      2128,
+      2076,
+      1781,
+      1729,
+      2128,
+      1777
+    ],
+    "B": [
+      1809,
+      1728,
+      2076,
+      2221,
+      2190,
+      2075,
+      1729,
+      1874,
+      1843,
+      1728,
+      2076,
+      2221,
+      2158,
+      2075,
+      1729,
+      1874,
+      1781,
+      1729,
+      2128,
+      1777,
+      1781,
+      1428,
+      2128,
+      2076
+    ]
+  },
+  "projection_max_bytes_observed": 6099,
+  "projection_mean_bytes_observed": 5150.166666666667,
+  "projected_input_token_max": 2221,
+  "projected_input_token_mean": 1926.4166666666667,
+  "projected_input_tokens_per_minute": 9632.083333333334,
+  "protected_activity": {
+    "docker_calls": 0,
+    "scenario_executions": 0,
+    "fault_injections": 0,
+    "agent_evidence_dispatches": 0,
+    "agent_writes": 0,
+    "runbook_executions": 0,
+    "held_out_executions": 0
+  },
+  "commit_a_allowed_activity": {
+    "provider_calls": 0,
+    "private_v4_artifacts_created": 0,
+    "public_v4_results_created": 0
+  },
+  "pre_execution_state": "V4_EXECUTION_READY",
+  "success_terminal": "DTA_V22_PR_D_CONTROLLER_READY",
+  "failure_terminal": "BLOCKED_DTA_V22_PROVIDER_PROTOCOL_GATE",
+  "merge_ready": false,
+  "amendment_version": "dta-v22-pr-d-provider-boundary-v4-amendment-v1",
+  "provider_output_mode_rule": "STRICT_THEN_LOCAL_ONLY_ON_EXACT_STRICT_SCHEMA_UNSUPPORTED",
+  "provider_output_mode_candidates": [
+    "STRICT_STRUCTURED_OUTPUT",
+    "LOCAL_FAIL_CLOSED_JSON"
+  ],
+  "provider_probe_provider_call_minimum": 1,
+  "provider_probe_provider_call_maximum": 2,
+  "formal_provider_call_count_range": [
+    49,
+    50
+  ],
+  "failure_taxonomy_classes": [
+    "ACCEPTED",
+    "INVALID_ALIAS_DECISION_SHAPE",
+    "LOCAL_DYNAMIC_SCHEMA_REJECTED",
+    "UNKNOWN_ALIAS",
+    "STALE_ALIAS",
+    "WRONG_KIND_ALIAS",
+    "DUPLICATE_ALIAS",
+    "RUNTIME_REJECTED",
+    "INTENT_MISMATCH",
+    "PROVIDER_RESPONSE_PROTOCOL_FAILURE",
+    "PROVIDER_TRANSPORT_ABORT",
+    "NOT_ATTEMPTED_AFTER_ABORT",
+    "NOT_ATTEMPTED_AFTER_PROBE_FAILURE"
+  ],
+  "required_replicate_aggregate_fields": [
+    "parsed_output_count",
+    "alias_resolved_output_count",
+    "runtime_admitted_output_count",
+    "protocol_intent_accepted_output_count",
+    "completed_response_with_known_usage_count",
+    "completed_response_with_unknown_usage_count",
+    "mean_input_tokens",
+    "max_input_tokens",
+    "counts_by_arm",
+    "counts_by_category"
+  ],
+  "post_execution_required_public_artifacts": [
+    "docs/analysis/dta-v22-pr-d-provider-boundary-v4-campaign.json",
+    "docs/human-briefs/2026-08-20-dta-v22-pr-d-provider-boundary-v4.md",
+    "docs/review-evidence/dta-v22-pr-d-provider-boundary-v4/current-disposition.json",
+    "config/dta-v22/pr-d-provider-boundary-v4-administrative-attestation.json"
+  ],
+  "projected_input_tokens_by_mode_and_replicate": {
+    "STRICT_STRUCTURED_OUTPUT": {
+      "A": [
+        1770,
+        1690,
+        2182,
+        2036,
+        2119,
+        2037,
+        1835,
+        1689,
+        1804,
+        1690,
+        2182,
+        2036,
+        2151,
+        2037,
+        1835,
+        1689,
+        1742,
+        1389,
+        2089,
+        2037,
+        1742,
+        1690,
+        2089,
+        1738
+      ],
+      "B": [
+        1770,
+        1689,
+        2037,
+        2182,
+        2151,
+        2036,
+        1690,
+        1835,
+        1804,
+        1689,
+        2037,
+        2182,
+        2119,
+        2036,
+        1690,
+        1835,
+        1742,
+        1690,
+        2089,
+        1738,
+        1742,
+        1389,
+        2089,
+        2037
+      ]
+    },
+    "LOCAL_FAIL_CLOSED_JSON": {
+      "A": [
+        1809,
+        1729,
+        2221,
+        2075,
+        2158,
+        2076,
+        1874,
+        1728,
+        1843,
+        1729,
+        2221,
+        2075,
+        2190,
+        2076,
+        1874,
+        1728,
+        1781,
+        1428,
+        2128,
+        2076,
+        1781,
+        1729,
+        2128,
+        1777
+      ],
+      "B": [
+        1809,
+        1728,
+        2076,
+        2221,
+        2190,
+        2075,
+        1729,
+        1874,
+        1843,
+        1728,
+        2076,
+        2221,
+        2158,
+        2075,
+        1729,
+        1874,
+        1781,
+        1729,
+        2128,
+        1777,
+        1781,
+        1428,
+        2128,
+        2076
+      ]
+    }
+  },
+  "historical_private_evidence_sha256_by_role": {
+    "provider-mode-probe.json": "f5c22d1d864a5a83a63979610a13237c4a5a74c1c7db0a36c77563f5e8076035",
+    "replicate-a.json": "269600a9f293244927a049b2f62292298d873cdfab2d7ba17a5b38b6f7705adf",
+    "replicate-b.json": "e26d33f2a69568b55f911431125e9d1687c03742be3aad5ac265523371edfb6f",
+    "campaign.json": "22c3733336367c090737da6cf18b66e2fa2fcb3d9cda9a773c802766b79c5b0c"
+  },
+  "manifest_sha256": "4d20e2341655fa0d1ece1ad2fe8dbc63db570580e113c2aa8e1c5864827c7c44"
+}
