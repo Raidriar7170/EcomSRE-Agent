@@ -1,0 +1,32 @@
+{
+  "schema_version": "dta-v22.1.evidence-acquisition-progress.v1",
+  "status": "FINAL_STUDY_READY",
+  "base_commit": "fceadc924d4909ca1457b35f268429f0272427ce",
+  "implementation_commit": "6988a730763fc08506c8c70c76518e47f90b05e2",
+  "provider_model": "gpt-5.4-mini-2026-03-17",
+  "development": {
+    "changed_iterations_used": 1,
+    "maximum_changed_iterations": 2,
+    "gate_passed": true,
+    "cases": 8,
+    "arm_runs": 16,
+    "uncaught_exceptions": 0,
+    "transport_failures": 0,
+    "agent_writes": 0,
+    "adaptive_reads": 12,
+    "policy_redirects": 1,
+    "artifact_sha256": "93b3c981f172bc89bdb90f55ae973509965f17a6402d6d10463dbcb842ac8685"
+  },
+  "final_study": {
+    "execution_count": 0,
+    "expected_execution_count": 1,
+    "expected_cases": 12,
+    "expected_arm_policy_runs": 48,
+    "output": "docs/results/dta-v22-1-evidence-acquisition-study.json"
+  },
+  "safety": {
+    "docker_calls": 0,
+    "runbook_executions": 0,
+    "agent_writes": 0
+  }
+}

@@ -10,6 +10,12 @@ from ecomsre.dta_v2.v22.evidence_acquisition_manifest_v221 import (
     load_and_verify_study_manifest_v221,
 )
 from ecomsre.dta_v2.v22.evidence_acquisition_v221 import StudyCombinationV221
+from scripts.ci.verify_dta_v221_study_manifest import (
+    verify_dta_v221_study_manifest,
+)
+
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def _binding(root: Path, relative: str) -> dict[str, str]:
@@ -95,3 +101,12 @@ def test_study_manifest_rejects_a_second_execution_shape(tmp_path: Path) -> None
             repository_root=tmp_path,
             configured_model="gpt-test",
         )
+
+
+def test_frozen_repository_study_manifest_is_provider_free_and_commit_bound() -> None:
+    verified = verify_dta_v221_study_manifest(repository_root=ROOT)
+
+    assert verified["implementation_commit"] == (
+        "6988a730763fc08506c8c70c76518e47f90b05e2"
+    )
+    assert verified["expected_arm_policy_runs"] == 48

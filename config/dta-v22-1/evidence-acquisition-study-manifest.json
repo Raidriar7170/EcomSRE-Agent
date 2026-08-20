@@ -1,0 +1,41 @@
+{
+  "schema_version": "dta-v22.1.evidence-acquisition-study-manifest.v1",
+  "base_commit": "fceadc924d4909ca1457b35f268429f0272427ce",
+  "implementation_commit": "6988a730763fc08506c8c70c76518e47f90b05e2",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "prompt": {
+    "path": "config/dta-v22-1/prompt.txt",
+    "sha256": "c8db99b471763de9c65baae2fca76543ebcea787116f5da3785e591e56790076"
+  },
+  "case_set": {
+    "path": "config/dta-v22-sprint/evaluation/cases.json",
+    "sha256": "243e7231dbd9e4aa5ed59cddfed2fb354a2c2bb552c02bf279cefddbec7f3204"
+  },
+  "truth_set": {
+    "path": "config/dta-v22-sprint/evaluation/truth.json",
+    "sha256": "c1597f11627b89cd15fa6ca22d558b3f431ccbd338f3725e0ed1a899fbfb2ed3"
+  },
+  "policy_source": {
+    "path": "src/ecomsre/dta_v2/v22/evidence_acquisition_v221.py",
+    "sha256": "f53be6abb2015769e5190a74e8294cad63456bab9088540c4088ea67b86a4ce6"
+  },
+  "scorer_source": {
+    "path": "src/ecomsre/dta_v2/v22/evidence_acquisition_scorer_v221.py",
+    "sha256": "19cb1fdb262921e9d510ed6732dc5dca54e335393756fc59b84de33c26f130c9"
+  },
+  "historical_results_manifest": {
+    "path": "config/dta-v22-1/historical-practical-results.v1.json",
+    "sha256": "9c8e5920b215f26567281cdd666bb714e657e8e4e7e60f7e1df985dbf01be43f"
+  },
+  "combinations": [
+    "FLAT_LEGACY",
+    "FLAT_GATE",
+    "PLANNER_LEGACY",
+    "PLANNER_GATE"
+  ],
+  "expected_cases": 12,
+  "expected_arm_policy_runs": 48,
+  "single_execution_rule": "EXACTLY_ONE_FULL_STUDY_EXECUTION",
+  "schedule_rule": "DETERMINISTIC_BALANCED_ROTATION_INTERLEAVED_BY_CASE",
+  "truth_isolation_rule": "LOAD_ONLY_AFTER_ALL_ARM_POLICY_EXECUTIONS"
+}
