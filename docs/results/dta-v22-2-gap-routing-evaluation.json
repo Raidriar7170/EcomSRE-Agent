@@ -4099,7 +4099,7 @@
       "uncaught_exceptions": 0
     },
     "interpretation": {
-      "engineering_terminal": "DTA_V22_2_GAP_ROUTING_QUALITY_EFFECT_OBSERVED",
+      "measured_result_terminal": "DTA_V22_2_GAP_ROUTING_QUALITY_EFFECT_OBSERVED",
       "flat_diagnosis_improvement": 0.4444444444444444,
       "flat_macro_f1_improvement": 0.4,
       "planner_diagnosis_improvement": 0.15384615384615385,

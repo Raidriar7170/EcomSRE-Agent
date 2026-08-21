@@ -10,9 +10,11 @@ admissible path. Gap top-4 recall was 10/10 at turn zero and 64/64 across
 feasible post-first-read states. Truth was loaded only after the four runs for
 each case completed. The study executed exactly once.
 
-The preregistered engineering terminal is
-`DTA_V22_2_GAP_ROUTING_QUALITY_EFFECT_OBSERVED`. That terminal is valid under
-the fixed rule, but it does not erase the absolute failures described below.
+The preregistered measured result terminal is
+`DTA_V22_2_GAP_ROUTING_QUALITY_EFFECT_OBSERVED`. That measured terminal is valid
+under the fixed rule, but it does not erase the absolute failures described
+below. The separate engineering completion terminal is
+`DTA_V22_2_GAP_ROUTING_STUDY_COMPLETE`.
 
 ## Combination results
 
@@ -121,6 +123,18 @@ proves the squash mainline descends from the frozen base and that every bound
 implementation byte at HEAD equals the frozen feature-commit byte. This changed
 no v2.2.2 routing, admission, Provider, case, truth, score, or measured run; the
 final study rerun count remains zero.
+
+Independent review then found that the evaluated Post-Read Delta compared
+ephemeral T aliases rather than stable terminal IDs and built the next action
+frontier before recording the just-completed read in Negative Coverage. The
+post-study implementation now compares terminal IDs, projects their current T
+aliases, records the read before rebuilding routing/admission, and has
+regressions for T-alias reuse and negative-penalty ordering. This is a real
+post-study behavior repair and is not represented as evaluated: the 64 frozen
+runs, Provider responses, numeric scores, and measured terminal were not
+changed or rerun. Review also corrected the result schema and reports to call
+the three effect markers measured result terminals, reserving
+`DTA_V22_2_GAP_ROUTING_STUDY_COMPLETE` for engineering completion.
 
 ## Defensible conclusion
 

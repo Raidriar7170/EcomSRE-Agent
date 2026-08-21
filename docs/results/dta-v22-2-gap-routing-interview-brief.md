@@ -45,7 +45,7 @@ a premature No-Incident admission flaw, so the claim stays narrow.
 | Total tokens | 50,104 | 44,810 | 52,828 | 66,723 |
 | Agent writes | 0 | 0 | 0 | 0 |
 
-The final terminal is
+The measured result terminal is
 `DTA_V22_2_GAP_ROUTING_QUALITY_EFFECT_OBSERVED`. Planner Gap satisfied the
 rule by gaining exactly two exact cases, improving Macro-F1 by 0.2667 and
 diagnosis-after-read by 0.1538, with no control-accuracy drop.

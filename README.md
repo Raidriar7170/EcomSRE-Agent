@@ -47,7 +47,7 @@ and [interview brief](docs/results/dta-v22-1-evidence-acquisition-interview-brie
 DTA v2.2.2 replaced that gate experiment with source-aware predicate-gap
 routing and ran one new 16-case × 4-combination synthetic/derived replay study.
 Exact completion was Flat Broad 6/16, Flat Gap 10/16, Planner Broad 6/16, and
-Planner Gap 8/16. The preregistered result is
+Planner Gap 8/16. The preregistered measured result terminal is
 `DTA_V22_2_GAP_ROUTING_QUALITY_EFFECT_OBSERVED`: Planner Gap gained two exact
 cases, mechanism Macro-F1 rose from 0 to 0.2667, diagnosis-after-read rose from
 0 to 0.1538, and combined No-Incident/abstention accuracy stayed at 1.0.

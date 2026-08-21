@@ -26,7 +26,7 @@
 - Development-threshold comparison: `false` (reported diagnostically; the
   development gate was passed before freeze and is not a final-study terminal)
 
-## Result terminal
+## Measured result terminal
 
 `DTA_V22_2_GAP_ROUTING_QUALITY_EFFECT_OBSERVED`
 

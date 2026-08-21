@@ -136,9 +136,9 @@ def _markdown(artifact: GapStudyArtifactV222) -> str:
     if artifact.scores.interpretation is not None:
         lines.extend(
             [
-                "## Result terminal",
+                "## Measured result terminal",
                 "",
-                f"`{artifact.scores.interpretation.engineering_terminal}`",
+                f"`{artifact.scores.interpretation.measured_result_terminal}`",
                 "",
                 "- Planner interaction observed: "
                 f"`{str(artifact.scores.interpretation.planner_interaction_observed).lower()}`",
@@ -297,10 +297,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "runs": len(campaign.runs),
                     "development_gate_passed": scores.development_gate.gate_passed,
                     "execution_count": artifact.execution_count,
-                    "engineering_terminal": (
+                    "measured_result_terminal": (
                         None
                         if scores.interpretation is None
-                        else scores.interpretation.engineering_terminal
+                        else scores.interpretation.measured_result_terminal
                     ),
                     "uncaught_exceptions": artifact.uncaught_exceptions,
                     "agent_writes": artifact.agent_writes,

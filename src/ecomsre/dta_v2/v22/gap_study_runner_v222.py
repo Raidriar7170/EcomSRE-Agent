@@ -589,6 +589,24 @@ def execute_gap_study_case_v222(
                 if arm is ControllerArmV22.PLANNER_LITE
                 else None
             )
+            post_graph_before_negative = build_gap_graph_v222(
+                policy=build_effective_support_policy_v222(),
+                hypothesis_catalog=build_hypothesis_catalog_v22(
+                    candidate_services=case.candidate_services
+                ),
+                memory=post_memory,
+                topology_edges=case.topology_edges,
+                planner_focus_hypothesis_id=post_focus,
+                prior_negative_coverage=negative.empty_source_target_keys,
+            )
+            after_gap = _minimum_gap(post_graph_before_negative, selected_focus)
+            negative = record_negative_coverage_v222(
+                ledger=negative,
+                action=action,
+                utility=utility,
+                minimum_gap_before=before_gap,
+                minimum_gap_after=after_gap,
+            )
             post_request, _, post_graph, post_routing, post_terminals = _build_turn(
                 case=case,
                 arm=arm,
@@ -610,22 +628,14 @@ def execute_gap_study_case_v222(
                     }
                 ),
             )
-            after_gap = _minimum_gap(post_graph, selected_focus)
-            negative = record_negative_coverage_v222(
-                ledger=negative,
-                action=action,
-                utility=utility,
-                minimum_gap_before=before_gap,
-                minimum_gap_after=after_gap,
-            )
             last_delta = build_post_read_delta_v222(
                 action_alias=decision.selection_alias,
                 action=action,
                 utility=utility,
                 minimum_gap_before=before_gap,
                 minimum_gap_after=after_gap,
-                before_terminal_aliases=tuple(
-                    item.terminal_alias for item in terminals.candidates
+                before_terminal_ids=tuple(
+                    item.terminal_id for item in terminals.candidates
                 ),
                 after_terminal_catalog=post_terminals,
                 remaining_top_gaps=post_graph,

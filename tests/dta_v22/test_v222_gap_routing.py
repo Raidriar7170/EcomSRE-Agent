@@ -65,6 +65,7 @@ from ecomsre.dta_v2.v22.gap_study_campaign_v222 import (
     balanced_combination_order_v222,
 )
 from ecomsre.dta_v2.v22.gap_study_scorer_v222 import score_gap_study_v222
+from ecomsre.dta_v2.v22.gap_study_cli_v222 import GapStudyArtifactV222
 from ecomsre.dta_v2.v22.practical_campaign import load_practical_truth_set_v22
 from ecomsre.model.gateway import OpenAICompatibleConfig
 
@@ -302,8 +303,14 @@ def test_development_top_four_routing_recall_gate_passes() -> None:
     assert gate.oracle_visible_to_provider is False
 
 
-def _state(case_id: str):
-    spec, case = _development_case(case_id)
+def _state(
+    case_id: str,
+    *,
+    case_set_path: Path = ROOT / "config/dta-v22-sprint/evaluation/cases.json",
+):
+    case_set = load_practical_case_set_v22(case_set_path)
+    spec = next(item for item in case_set.cases if item.case_id == case_id)
+    case = materialize_practical_case_v22(spec=spec, repository_root=ROOT)
     topology = StaticTopologyV22.build(
         services=case.candidate_services,
         edges=case.topology_edges,
@@ -471,7 +478,7 @@ def test_terminal_catalog_exposes_supported_t_alias_and_no_early_abstain() -> No
         utility=utility,
         minimum_gap_before=1,
         minimum_gap_after=0,
-        before_terminal_aliases=(),
+        before_terminal_ids=(),
         after_terminal_catalog=after,
         remaining_top_gaps=post_graph,
         ranked_next_action_aliases=tuple(
@@ -486,6 +493,116 @@ def test_terminal_catalog_exposes_supported_t_alias_and_no_early_abstain() -> No
     assert delta.newly_available_terminal_aliases == (diagnosed.terminal_alias,)
     assert delta.minimum_missing_gap_before == 1
     assert delta.minimum_missing_gap_after == 0
+
+
+def test_post_read_delta_uses_terminal_ids_when_t_alias_is_reused() -> None:
+    (
+        _,
+        before_case,
+        _,
+        before_outcomes,
+        before_memory,
+        before_catalog,
+        policy,
+        hypotheses,
+        before_graph,
+        before_routing,
+    ) = _state(
+        "e05",
+        case_set_path=ROOT / "config/dta-v22-2/evaluation/cases.json",
+    )
+    before_terminals = build_terminal_catalog_v222(
+        policy=policy,
+        hypothesis_catalog=hypotheses,
+        memory=before_memory,
+        gap_graph=before_graph,
+        routed_actions=before_routing,
+        candidate_services=before_case.candidate_services,
+        topology_edges=before_case.topology_edges,
+        budget_exhausted=False,
+        required_source_unavailable=False,
+        conflicting_evidence=False,
+    )
+    assert tuple(
+        (item.terminal_alias, item.terminal_id) for item in before_terminals.candidates
+    ) == (("T00", "terminal:no-incident"),)
+
+    action, read, _, after_memory = _read(
+        before_case,
+        before_outcomes,
+        before_catalog,
+        "a:resources:recommendation",
+    )
+    after_graph = build_gap_graph_v222(
+        policy=policy,
+        hypothesis_catalog=hypotheses,
+        memory=after_memory,
+        topology_edges=before_case.topology_edges,
+        planner_focus_hypothesis_id=None,
+        prior_negative_coverage=(),
+    )
+    after_routing = route_gap_aware_actions_v222(
+        mode=GapRouterModeV222.GAP_RANKED_TOP_K,
+        catalog=before_catalog,
+        gap_graph=after_graph,
+        prior_negative_coverage=(),
+        top_k=4,
+    )
+    after_terminals = build_terminal_catalog_v222(
+        policy=policy,
+        hypothesis_catalog=hypotheses,
+        memory=after_memory,
+        gap_graph=after_graph,
+        routed_actions=after_routing,
+        candidate_services=before_case.candidate_services,
+        topology_edges=before_case.topology_edges,
+        budget_exhausted=False,
+        required_source_unavailable=False,
+        conflicting_evidence=False,
+    )
+    assert after_terminals.candidates[0].terminal_alias == "T00"
+    assert after_terminals.candidates[0].terminal_id != "terminal:no-incident"
+
+    delta = build_post_read_delta_v222(
+        action_alias="A00",
+        action=action,
+        utility=classify_read_utility_v222(
+            before_memory=before_memory,
+            after_memory=after_memory,
+            read_outcome=read,
+        ),
+        minimum_gap_before=2,
+        minimum_gap_after=0,
+        before_terminal_ids=tuple(
+            item.terminal_id for item in before_terminals.candidates
+        ),
+        after_terminal_catalog=after_terminals,
+        remaining_top_gaps=after_graph,
+        ranked_next_action_aliases=(),
+        evidence_aliases={
+            ref.evidence_ref: f"E{index:02d}"
+            for index, ref in enumerate(after_memory.evidence_refs)
+        },
+    )
+    assert delta.newly_available_terminal_aliases == ("T00",)
+
+
+def test_negative_coverage_penalty_orders_an_equally_useful_peer_first() -> None:
+    _, _, _, _, _, catalog, _, _, graph, _ = _state("e07")
+    rerouted = route_gap_aware_actions_v222(
+        mode=GapRouterModeV222.GAP_RANKED_TOP_K,
+        catalog=catalog,
+        gap_graph=graph,
+        prior_negative_coverage=("LOGS:checkout",),
+        top_k=4,
+    )
+    by_id = {item.action.action_id: item for item in rerouted.ranking}
+    assert by_id["a:logs:checkout"].prior_empty_penalty is True
+    assert by_id["a:logs:shipping"].prior_empty_penalty is False
+    assert (
+        by_id["a:logs:shipping"].rank_ordinal
+        < by_id["a:logs:checkout"].rank_ordinal
+    )
 
 
 def test_terminal_catalog_exposes_no_incident_for_complete_healthy_replay() -> None:
@@ -749,6 +866,46 @@ def test_four_combination_scorer_emits_frozen_effect_interpretation() -> None:
     assert len(scored.control_regressions) == 2
     assert scored.interpretation is not None
     assert (
-        scored.interpretation.engineering_terminal
+        scored.interpretation.measured_result_terminal
         == "DTA_V22_2_NO_GAP_ROUTING_EFFECT_OBSERVED"
     )
+
+
+def test_frozen_metric_rates_use_their_declared_applicability_denominators() -> None:
+    artifact = GapStudyArtifactV222.model_validate_json(
+        ROOT.joinpath(
+            "docs/results/dta-v22-2-gap-routing-evaluation.json"
+        ).read_bytes()
+    )
+    runs_by_combination = {
+        combination: tuple(
+            run
+            for run in artifact.campaign.runs
+            if run.arm is combination.arm and run.router_mode is combination.router_mode
+        )
+        for combination in StudyCombinationV222
+    }
+    for metrics in artifact.scores.combinations:
+        runs = runs_by_combination[metrics.combination]
+        events = tuple(
+            event for run in runs for event in run.adaptive_read_events
+        )
+        read_bearing = tuple(run for run in runs if run.adaptive_reads > 0)
+        diagnosed_after_read = tuple(
+            run for run in read_bearing if run.terminal == "DIAGNOSED"
+        )
+        assert metrics.total_runs == len(runs) == 16
+        assert metrics.incident_denominator == 10
+        assert metrics.no_incident_denominator == 3
+        assert metrics.abstention_denominator == 3
+        assert metrics.read_bearing_runs == len(read_bearing)
+        assert metrics.empty_read_rate == (
+            sum(
+                event.outcome_class is ReadUtilityClassV222.EMPTY_CAPTURED
+                for event in events
+            )
+            / len(events)
+        )
+        assert metrics.diagnosis_after_read_rate == (
+            len(diagnosed_after_read) / len(read_bearing)
+        )

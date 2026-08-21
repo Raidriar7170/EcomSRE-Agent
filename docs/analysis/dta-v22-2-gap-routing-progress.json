@@ -67,17 +67,17 @@
     "transport_retries": 4,
     "uncaught_exceptions": 0,
     "agent_writes": 0,
-    "engineering_terminal": "DTA_V22_2_GAP_ROUTING_QUALITY_EFFECT_OBSERVED",
+    "measured_result_terminal": "DTA_V22_2_GAP_ROUTING_QUALITY_EFFECT_OBSERVED",
     "planner_interaction_observed": false,
-    "artifact_sha256": "711a883b50816431ba58af9c3cf11427642fec5ead24493832d24d8c2bb70596",
+    "artifact_sha256": "586aad7294ac0bf21374f1c4290936b828d0559dd7ca92ebc5c3d628fcb18258",
     "partial_jsonl_sha256": "8ea4220a9cb5b411b1509bbed287d164909c671a49f32762a1afa76ea3b45226"
   },
   "reported_evidence": {
-    "study_markdown_sha256": "28540fba691d49bfe0cc6405c5cc4969c6db5a1263dbe949a9b434fdac2a12e2",
-    "error_analysis_sha256": "3f2a77b914824b25210e48dd04c0954cc7c42c8c0b896dd07765ed2fe15c5302",
-    "interview_brief_sha256": "e57fd8ee419d321d1c4d07c138be2fcd878e2ceca8bb8a42c24f6fe362f3a444"
+    "study_markdown_sha256": "d651aed3702ab22f0ed005cb1f082199f6b4094cce8a0b1416a421b46defe265",
+    "error_analysis_sha256": "779d0f9ef10f58ad1eead1e1eddad023e89d3f9bcc98e217e68045e69a42a13f",
+    "interview_brief_sha256": "b0abcc9f20e55d88333a7abc699d1af228c3d717b8fe9d935a0998de1153a2af"
   },
-  "post_study_behavior_changes": 0,
+  "post_study_behavior_changes": 1,
   "post_study_non_evaluative_fixes": [
     {
       "issue": "v2.2.1 verifier assumed feature-commit ancestry after squash merge",
@@ -85,6 +85,20 @@
       "affected_final_study_runs": 0,
       "final_study_reruns": 0,
       "verification": "bind merged HEAD to frozen base and exact implementation bytes"
+    },
+    {
+      "issue": "Post-Read Delta used ephemeral terminal aliases and rebuilt routing before recording the current read",
+      "decision_behavior_changed": true,
+      "affected_final_study_runs": 0,
+      "final_study_reruns": 0,
+      "verification": "stable terminal-ID delta plus current-read negative-penalty regressions; post-study fix is explicitly not represented as evaluated"
+    },
+    {
+      "issue": "measured effect markers were mislabeled as the engineering completion terminal",
+      "decision_behavior_changed": false,
+      "affected_final_study_runs": 0,
+      "final_study_reruns": 0,
+      "verification": "measured_result_terminal schema and report wording reserve DTA_V22_2_GAP_ROUTING_STUDY_COMPLETE for engineering completion"
     }
   ],
   "final_study_reruns": 0,

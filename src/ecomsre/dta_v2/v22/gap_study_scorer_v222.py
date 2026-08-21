@@ -124,7 +124,7 @@ class PooledRoutingEffectV222(DtaModelV22):
 
 class GapStudyInterpretationV222(DtaModelV22):
     schema_version: Literal["dta-v22.2.gap-study-interpretation.v1"]
-    engineering_terminal: Literal[
+    measured_result_terminal: Literal[
         "DTA_V22_2_GAP_ROUTING_QUALITY_EFFECT_OBSERVED",
         "DTA_V22_2_ROUTING_EFFECT_WITHOUT_QUALITY",
         "DTA_V22_2_NO_GAP_ROUTING_EFFECT_OBSERVED",
@@ -518,7 +518,7 @@ def _interpretation(
     )
     return GapStudyInterpretationV222(
         schema_version="dta-v22.2.gap-study-interpretation.v1",
-        engineering_terminal=terminal,
+        measured_result_terminal=terminal,
         quality_exact_case_condition=exact_condition,
         quality_macro_f1_condition=macro_condition,
         quality_diagnosis_after_read_condition=diagnosis_condition,

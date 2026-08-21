@@ -47,13 +47,13 @@ def build_post_read_delta_v222(
     utility: ReadUtilityV222,
     minimum_gap_before: int,
     minimum_gap_after: int,
-    before_terminal_aliases: tuple[str, ...],
+    before_terminal_ids: tuple[str, ...],
     after_terminal_catalog: TerminalCatalogV222,
     remaining_top_gaps: GapGraphV222,
     ranked_next_action_aliases: tuple[str, ...],
     evidence_aliases: Mapping[str, str],
 ) -> PostReadDeltaV222:
-    before = set(before_terminal_aliases)
+    before = set(before_terminal_ids)
     gaps = tuple(
         sorted(
             (
@@ -102,7 +102,7 @@ def build_post_read_delta_v222(
         newly_available_terminal_aliases=tuple(
             item.terminal_alias
             for item in after_terminal_catalog.candidates
-            if item.terminal_alias not in before
+            if item.terminal_id not in before
         ),
         remaining_top_gaps=gaps,
         ranked_next_action_aliases=ranked_next_action_aliases,
