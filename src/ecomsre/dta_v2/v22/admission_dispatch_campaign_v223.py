@@ -494,6 +494,7 @@ def execute_admission_dispatch_case_v223(
     input_tokens = output_tokens = total_tokens = 0
     latency_ms = 0.0
     closure_required_count = withheld_count = 0
+    closure_required_seen = False
     no_incident_first_open_turn: int | None = None
     terminal_after_read = False
     turn_zero_top4: tuple[str, ...] = ()
@@ -587,7 +588,9 @@ def execute_admission_dispatch_case_v223(
                 for item in turn.terminals.candidates
             ) and no_incident_first_open_turn is None:
                 no_incident_first_open_turn = turn_index
-            closure_required_count += int(closure.closure_required)
+            if closure.closure_required and not closure_required_seen:
+                closure_required_count += 1
+                closure_required_seen = True
             withheld_count += int(closure.no_incident_withheld)
             if not turn.request.aliases.actions and not turn.request.aliases.terminals:
                 return result(

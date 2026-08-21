@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Mapping
 
 import pytest
 
@@ -44,9 +46,16 @@ from ecomsre.dta_v2.v22.offline_simulation_v223 import (
 from ecomsre.dta_v2.v22.predicates import RequirementServiceBindingV22
 from ecomsre.dta_v2.v22.read_contracts import EvidenceSourceV22
 from ecomsre.dta_v2.v22.selection_provider_v222 import (
+    FUNCTION_NAME_V222,
+    SelectionAliasTableV222,
     SelectionDecisionV222,
     SelectionProviderOutcomeV222,
+    SelectionProviderProtocolFailureV222,
+    SelectionTurnRequestV222,
 )
+from ecomsre.dta_v2.v22.selection_provider_v223 import SelectionProviderV223
+from ecomsre.dta_v2.v22.simple_provider import ProviderTransportErrorV22
+from ecomsre.model.gateway import OpenAICompatibleConfig
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -450,3 +459,115 @@ def test_v223_factorial_grid_denominators_and_effects_are_bound() -> None:
     assert scores.interpretation is not None
     assert scores.interpretation.admission_main_effect.extra_mean_reads >= 0
     assert scores.interpretation.dispatch_main_effect.provider_call_change <= 0
+
+
+class _RecordingTransportV223:
+    def __init__(self, outcomes: list[Mapping[str, object] | Exception]) -> None:
+        self.outcomes = outcomes
+        self.payloads: list[Mapping[str, object]] = []
+
+    def post_json(self, *, url, headers, payload, timeout_seconds):
+        del url, headers, timeout_seconds
+        self.payloads.append(payload)
+        outcome = self.outcomes.pop(0)
+        if isinstance(outcome, Exception):
+            raise outcome
+        return outcome
+
+
+def _provider_response_v223(selection: str, focus: str) -> dict[str, object]:
+    return {
+        "choices": [
+            {
+                "message": {
+                    "tool_calls": [
+                        {
+                            "function": {
+                                "name": FUNCTION_NAME_V222,
+                                "arguments": json.dumps(
+                                    {"selection": selection, "focus": focus}
+                                ),
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+
+
+def _provider_request_v223() -> SelectionTurnRequestV222:
+    return SelectionTurnRequestV222.build(
+        system_prompt="read-only v2.2.3 smoke",
+        aliases=SelectionAliasTableV222.build(
+            hypothesis_ids=("h:payment:configuration-error",),
+            action_ids=("a:traces:payment",),
+            terminal_ids=("terminal:no-incident", "terminal:abstain"),
+            evidence_refs=(),
+        ),
+        visible_state={"actions": ["A00"], "terminals": ["T00", "T01"]},
+    )
+
+
+def _selection_provider_v223(transport, sleeps: list[float] | None = None):
+    return SelectionProviderV223(
+        config=OpenAICompatibleConfig(
+            base_url="https://provider.invalid/v1",
+            api_key="test-secret",
+            model="test-model",
+        ),
+        transport=transport,
+        sleeper=(lambda _: None) if sleeps is None else sleeps.append,
+        minimum_request_interval_seconds=0,
+    )
+
+
+def test_v223_two_repairs_three_retries_and_valid_wrong_terminal_are_bounded() -> None:
+    repaired = _RecordingTransportV223(
+        [
+            _provider_response_v223("BAD", "H00"),
+            _provider_response_v223("BAD", "H00"),
+            _provider_response_v223("A00", "H00"),
+        ]
+    )
+    outcome = _selection_provider_v223(repaired).complete_turn(
+        request=_provider_request_v223(), run_id="1" * 32
+    )
+    assert outcome.protocol_repairs == 2
+    assert outcome.provider_calls == 3
+
+    sleeps: list[float] = []
+    retried = _RecordingTransportV223(
+        [
+            ProviderTransportErrorV22("HTTP_429", status_code=429),
+            ProviderTransportErrorV22("HTTP_503", status_code=503),
+            ProviderTransportErrorV22("CONNECTION_ERROR"),
+            _provider_response_v223("T00", "NONE"),
+        ]
+    )
+    retry_outcome = _selection_provider_v223(retried, sleeps).complete_turn(
+        request=_provider_request_v223(), run_id="2" * 32
+    )
+    assert retry_outcome.transport_retry_count == 3
+    assert sleeps == [5.0, 15.0, 30.0]
+    assert all(payload == retried.payloads[0] for payload in retried.payloads)
+
+    valid_wrong = _RecordingTransportV223(
+        [_provider_response_v223("T00", "NONE")]
+    )
+    wrong_outcome = _selection_provider_v223(valid_wrong).complete_turn(
+        request=_provider_request_v223(), run_id="3" * 32
+    )
+    assert wrong_outcome.decision.terminal_id == "terminal:no-incident"
+    assert wrong_outcome.provider_calls == 1
+    assert wrong_outcome.protocol_repairs == 0
+
+    exhausted = _RecordingTransportV223(
+        [_provider_response_v223("BAD", "H00")] * 3
+    )
+    with pytest.raises(SelectionProviderProtocolFailureV222) as captured:
+        _selection_provider_v223(exhausted).complete_turn(
+            request=_provider_request_v223(), run_id="4" * 32
+        )
+    assert captured.value.protocol_repairs == 2
+    assert captured.value.provider_calls == 3
