@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+from collections.abc import Mapping
+import json
 
 import pytest
 
@@ -24,6 +26,13 @@ from ecomsre.dta_v2.v22.gap_router_v222 import (
     route_gap_aware_actions_v222,
 )
 from ecomsre.dta_v2.v22.memory import build_memory_views_v22
+from ecomsre.dta_v2.v22.negative_coverage_v222 import (
+    NegativeCoverageLedgerV222,
+    ReadUtilityClassV222,
+    classify_read_utility_v222,
+    record_negative_coverage_v222,
+)
+from ecomsre.dta_v2.v22.post_read_delta_v222 import build_post_read_delta_v222
 from ecomsre.dta_v2.v22.practical_dataset import (
     load_practical_case_set_v22,
     materialize_practical_case_v22,
@@ -35,6 +44,22 @@ from ecomsre.dta_v2.v22.replay_capabilities_v222 import (
     build_source_aware_action_catalog_v222,
 )
 from ecomsre.dta_v2.v22.read_contracts import EvidenceSourceV22
+from ecomsre.dta_v2.v22.replay import QuerySpecificReplayBackendV22
+from ecomsre.dta_v2.v22.practical_runner import _memory_outcome
+from ecomsre.dta_v2.v22.selection_provider_v222 import (
+    FUNCTION_NAME_V222,
+    SelectionAliasTableV222,
+    SelectionProviderV222,
+    SelectionProviderProtocolFailureV222,
+    SelectionTurnRequestV222,
+)
+from ecomsre.dta_v2.v22.simple_provider import ProviderTransportErrorV22
+from ecomsre.dta_v2.v22.terminal_catalog_v222 import build_terminal_catalog_v222
+from ecomsre.dta_v2.v22.gap_study_runner_v222 import (
+    SHARED_SELECTION_SYSTEM_PROMPT_V222,
+    run_oracle_simulation_v222,
+)
+from ecomsre.model.gateway import OpenAICompatibleConfig
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -268,3 +293,344 @@ def test_development_top_four_routing_recall_gate_passes() -> None:
     assert gate.post_first_read_recall >= 0.75
     assert gate.gate_passed is True
     assert gate.oracle_visible_to_provider is False
+
+
+def _state(case_id: str):
+    spec, case = _development_case(case_id)
+    topology = StaticTopologyV22.build(
+        services=case.candidate_services,
+        edges=case.topology_edges,
+    )
+    outcomes, _, _, _ = _bootstrap(case=case, topology=topology, run_id="0" * 32)
+    memory, _ = build_memory_views_v22(
+        outcomes=outcomes,
+        baseline=_baseline(case),
+        observed_at=case.capture.captured_at,
+        top_k=64,
+    )
+    capabilities = build_replay_capabilities_v222(spec=spec, repository_root=ROOT)
+    catalog = build_source_aware_action_catalog_v222(
+        candidate_services=case.candidate_services,
+        topology=topology,
+        replay_capabilities=capabilities,
+        executed_action_ids=tuple(item.action_id for item in outcomes),
+        covered_capability_keys=(),
+        remaining_budget=3.0,
+    )
+    policy = build_effective_support_policy_v222()
+    hypotheses = build_hypothesis_catalog_v22(candidate_services=case.candidate_services)
+    graph = build_gap_graph_v222(
+        policy=policy,
+        hypothesis_catalog=hypotheses,
+        memory=memory,
+        topology_edges=case.topology_edges,
+        planner_focus_hypothesis_id=None,
+        prior_negative_coverage=(),
+    )
+    routing = route_gap_aware_actions_v222(
+        mode=GapRouterModeV222.GAP_RANKED_TOP_K,
+        catalog=catalog,
+        gap_graph=graph,
+        prior_negative_coverage=(),
+        top_k=4,
+    )
+    return spec, case, topology, outcomes, memory, catalog, policy, hypotheses, graph, routing
+
+
+def _read(case, outcomes, catalog, action_id: str):
+    action = next(item for item in catalog.actions if item.action_id == action_id)
+    source_outcome = QuerySpecificReplayBackendV22(case.capture).execute(action)
+    projected = _memory_outcome(
+        action=action,
+        outcome=source_outcome,
+        run_id="0" * 32,
+        dispatch_ordinal=len(outcomes) + 1,
+        observed_at=case.capture.captured_at,
+    )
+    post_outcomes = (*outcomes, projected)
+    post_memory, _ = build_memory_views_v22(
+        outcomes=post_outcomes,
+        baseline=_baseline(case),
+        observed_at=case.capture.captured_at,
+        top_k=64,
+    )
+    return action, source_outcome, post_outcomes, post_memory
+
+
+def test_empty_and_nonpredicate_reads_become_negative_coverage_not_contradictions() -> None:
+    _, case, _, outcomes, memory, catalog, _, _, graph, _ = _state("e01")
+    action, read, _, after = _read(case, outcomes, catalog, "a:logs:payment")
+    utility = classify_read_utility_v222(
+        before_memory=memory,
+        after_memory=after,
+        read_outcome=read,
+    )
+    assert utility.outcome_class is ReadUtilityClassV222.EMPTY_CAPTURED
+    ledger = record_negative_coverage_v222(
+        ledger=NegativeCoverageLedgerV222.empty(),
+        action=action,
+        utility=utility,
+        minimum_gap_before=min(item.minimum_missing_count for item in graph.hypotheses),
+        minimum_gap_after=min(item.minimum_missing_count for item in graph.hypotheses),
+    )
+    assert ledger.entries[0].outcome_class is ReadUtilityClassV222.EMPTY_CAPTURED
+    assert ledger.entries[0].hypothesis_contradicted is False
+    assert ledger.empty_source_target_keys == ("LOGS:payment",)
+
+    _, case2, _, outcomes2, memory2, catalog2, _, _, _, _ = _state("e02")
+    _, read2, _, after2 = _read(case2, outcomes2, catalog2, "a:resources:payment")
+    utility2 = classify_read_utility_v222(
+        before_memory=memory2,
+        after_memory=after2,
+        read_outcome=read2,
+    )
+    assert utility2.outcome_class is ReadUtilityClassV222.NONEMPTY_NO_PREDICATE
+
+
+def test_terminal_catalog_exposes_supported_t_alias_and_no_early_abstain() -> None:
+    _, case, topology, outcomes, memory, catalog, policy, hypotheses, graph, routing = _state("e01")
+    before = build_terminal_catalog_v222(
+        policy=policy,
+        hypothesis_catalog=hypotheses,
+        memory=memory,
+        gap_graph=graph,
+        routed_actions=routing,
+        candidate_services=case.candidate_services,
+        topology_edges=case.topology_edges,
+        budget_exhausted=False,
+        required_source_unavailable=False,
+        conflicting_evidence=False,
+    )
+    assert not any(item.terminal_kind.value == "ABSTAIN" for item in before.candidates)
+    assert not any(item.terminal_kind.value == "DIAGNOSED" for item in before.candidates)
+
+    action, read, post_outcomes, post_memory = _read(
+        case, outcomes, catalog, "a:traces:payment"
+    )
+    post_catalog = build_source_aware_action_catalog_v222(
+        candidate_services=case.candidate_services,
+        topology=topology,
+        replay_capabilities=build_replay_capabilities_v222(
+            spec=_development_case("e01")[0], repository_root=ROOT
+        ),
+        executed_action_ids=tuple(
+            sorted({*(item.action_id for item in outcomes), action.action_id})
+        ),
+        remaining_budget=3.0 - action.weighted_cost,
+    )
+    post_graph = build_gap_graph_v222(
+        policy=policy,
+        hypothesis_catalog=hypotheses,
+        memory=post_memory,
+        topology_edges=case.topology_edges,
+        planner_focus_hypothesis_id=None,
+        prior_negative_coverage=(),
+    )
+    post_routing = route_gap_aware_actions_v222(
+        mode=GapRouterModeV222.GAP_RANKED_TOP_K,
+        catalog=post_catalog,
+        gap_graph=post_graph,
+        prior_negative_coverage=(),
+        top_k=4,
+    )
+    after = build_terminal_catalog_v222(
+        policy=policy,
+        hypothesis_catalog=hypotheses,
+        memory=post_memory,
+        gap_graph=post_graph,
+        routed_actions=post_routing,
+        candidate_services=case.candidate_services,
+        topology_edges=case.topology_edges,
+        budget_exhausted=False,
+        required_source_unavailable=False,
+        conflicting_evidence=False,
+    )
+    diagnosed = next(
+        item for item in after.candidates if item.terminal_kind.value == "DIAGNOSED"
+    )
+    assert diagnosed.terminal_alias.startswith("T")
+    assert diagnosed.root_service == "payment"
+    assert diagnosed.mechanism.value == "CONFIGURATION_ERROR"
+    assert diagnosed.supporting_evidence_refs
+
+    utility = classify_read_utility_v222(
+        before_memory=memory,
+        after_memory=post_memory,
+        read_outcome=read,
+    )
+    delta = build_post_read_delta_v222(
+        action_alias="A00",
+        action=action,
+        utility=utility,
+        minimum_gap_before=1,
+        minimum_gap_after=0,
+        before_terminal_aliases=(),
+        after_terminal_catalog=after,
+        remaining_top_gaps=post_graph,
+        ranked_next_action_aliases=tuple(
+            f"A{index:02d}" for index, _ in enumerate(post_routing.actions)
+        ),
+        evidence_aliases={
+            ref.evidence_ref: f"E{index:02d}"
+            for index, ref in enumerate(post_memory.evidence_refs)
+        },
+    )
+    assert delta.outcome_class is ReadUtilityClassV222.PREDICATE_YIELD
+    assert delta.newly_available_terminal_aliases == (diagnosed.terminal_alias,)
+    assert delta.minimum_missing_gap_before == 1
+    assert delta.minimum_missing_gap_after == 0
+
+
+class _RecordingTransport:
+    def __init__(self, outcomes: list[object]) -> None:
+        self.outcomes = list(outcomes)
+        self.calls: list[dict[str, object]] = []
+
+    def post_json(
+        self,
+        *,
+        url: str,
+        headers: Mapping[str, str],
+        payload: Mapping[str, object],
+        timeout_seconds: float,
+    ) -> Mapping[str, object]:
+        self.calls.append({"url": url, "payload": dict(payload)})
+        outcome = self.outcomes.pop(0)
+        if isinstance(outcome, Exception):
+            raise outcome
+        assert isinstance(outcome, Mapping)
+        return outcome
+
+
+def _selection_response(selection: str, focus: str) -> dict[str, object]:
+    return {
+        "choices": [
+            {
+                "message": {
+                    "tool_calls": [
+                        {
+                            "function": {
+                                "name": FUNCTION_NAME_V222,
+                                "arguments": json.dumps(
+                                    {"selection": selection, "focus": focus}
+                                ),
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "usage": {"prompt_tokens": 10, "completion_tokens": 2, "total_tokens": 12},
+    }
+
+
+def _selection_request() -> SelectionTurnRequestV222:
+    aliases = SelectionAliasTableV222.build(
+        hypothesis_ids=("h:payment:configuration-error",),
+        action_ids=("a:traces:payment",),
+        terminal_ids=("terminal:diagnosed:payment",),
+        evidence_refs=(),
+    )
+    return SelectionTurnRequestV222.build(
+        system_prompt="read-only selection",
+        aliases=aliases,
+        visible_state={"actions": ["A00"], "terminals": ["T00"]},
+    )
+
+
+def _selection_provider(transport, sleeps: list[float] | None = None):
+    return SelectionProviderV222(
+        config=OpenAICompatibleConfig(
+            base_url="https://provider.invalid/v1",
+            api_key="secret",
+            model="configured-model",
+        ),
+        transport=transport,
+        sleeper=(lambda _: None) if sleeps is None else sleeps.append,
+        minimum_request_interval_seconds=0,
+        debug_root=ROOT / ".local/dta-v22-2-debug-tests",
+    )
+
+
+def test_selection_provider_allows_two_repairs_and_three_exact_request_retries() -> None:
+    transport = _RecordingTransport(
+        [
+            _selection_response("BAD", "H00"),
+            _selection_response("BAD", "H00"),
+            _selection_response("A00", "H00"),
+        ]
+    )
+    outcome = _selection_provider(transport).complete_turn(
+        request=_selection_request(), run_id="1" * 32
+    )
+    assert outcome.protocol_repairs == 2
+    assert outcome.provider_calls == 3
+    assert outcome.decision.action_id == "a:traces:payment"
+
+    sleeps: list[float] = []
+    retry_transport = _RecordingTransport(
+        [
+            ProviderTransportErrorV22("HTTP_429", status_code=429),
+            ProviderTransportErrorV22("HTTP_503", status_code=503),
+            ProviderTransportErrorV22("CONNECTION_ERROR"),
+            _selection_response("T00", "NONE"),
+        ]
+    )
+    retry_outcome = _selection_provider(retry_transport, sleeps).complete_turn(
+        request=_selection_request(), run_id="2" * 32
+    )
+    assert retry_outcome.transport_retry_count == 3
+    assert sleeps == [5.0, 15.0, 30.0]
+    assert all(
+        item["payload"] == retry_transport.calls[0]["payload"]
+        for item in retry_transport.calls
+    )
+    assert retry_outcome.provider_calls == 1
+    assert retry_outcome.decision.terminal_id == "terminal:diagnosed:payment"
+
+
+def test_valid_terminal_selection_is_not_retried_and_repairs_are_bounded() -> None:
+    valid = _RecordingTransport([_selection_response("T00", "NONE")])
+    outcome = _selection_provider(valid).complete_turn(
+        request=_selection_request(), run_id="3" * 32
+    )
+    assert outcome.provider_calls == 1
+    assert outcome.protocol_repairs == 0
+
+    invalid = _RecordingTransport(
+        [
+            _selection_response("BAD", "H00"),
+            _selection_response("BAD", "H00"),
+            _selection_response("BAD", "H00"),
+            _selection_response("A00", "H00"),
+        ]
+    )
+    with pytest.raises(SelectionProviderProtocolFailureV222) as captured:
+        _selection_provider(invalid).complete_turn(
+            request=_selection_request(), run_id="4" * 32
+        )
+    assert captured.value.protocol_repairs == 2
+    assert captured.value.provider_calls == 3
+    assert len(invalid.calls) == 3
+
+
+def test_oracle_simulation_completes_every_feasible_development_incident() -> None:
+    report = run_oracle_simulation_v222(
+        repository_root=ROOT,
+        case_set_path=ROOT / "config/dta-v22-sprint/evaluation/cases.json",
+        truth_path=ROOT / "config/dta-v22-sprint/evaluation/truth.json",
+    )
+    assert report.feasible_incident_cases == 8
+    assert report.completed_incident_cases == 8
+    assert report.completion_rate == 1.0
+    assert report.agent_writes == 0
+    assert report.oracle_result is True
+
+
+def test_v222_prompt_file_matches_short_selection_prompt() -> None:
+    assert (
+        ROOT.joinpath("config/dta-v22-2/prompt.txt")
+        .read_text(encoding="utf-8")
+        .strip()
+        == SHARED_SELECTION_SYSTEM_PROMPT_V222
+    )
