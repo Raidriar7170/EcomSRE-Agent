@@ -1,0 +1,3203 @@
+{
+  "agent_writes": 0,
+  "campaign": {
+    "agent_writes": 0,
+    "cases_materialized": 12,
+    "combinations_per_case": 4,
+    "runs": [
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:payment",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "payment"
+            ]
+          },
+          {
+            "action_id": "a:traces:payment",
+            "minimum_gap_after": 0,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [
+              "TRACE_FIRST_ERROR"
+            ],
+            "ordinal": 2,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "TRACES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "payment"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "61bb728ab180ac2a0c123ebbbf2fe66f6bf53955533042e47fd824077facd7a7",
+        "case_id": "e01",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2852,
+        "latency_ms": 4309.0757910104,
+        "matched_clause_id": "configuration:error-metric-and-first-error-trace",
+        "mechanism": "CONFIGURATION_ERROR",
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": "payment",
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:metrics:payment:core:0:3669f1d74cd9",
+          "e:a:traces:payment:0:491c15adba54"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 2926,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:payment",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "payment"
+            ]
+          },
+          {
+            "action_id": "a:traces:payment",
+            "minimum_gap_after": 0,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [
+              "TRACE_FIRST_ERROR"
+            ],
+            "ordinal": 2,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "TRACES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "payment"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "61bb728ab180ac2a0c123ebbbf2fe66f6bf53955533042e47fd824077facd7a7",
+        "case_id": "e01",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2852,
+        "latency_ms": 5535.753875010414,
+        "matched_clause_id": "configuration:error-metric-and-first-error-trace",
+        "mechanism": "CONFIGURATION_ERROR",
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": "payment",
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:metrics:payment:core:0:3669f1d74cd9",
+          "e:a:traces:payment:0:491c15adba54"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 2926,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:payment",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "payment"
+            ]
+          },
+          {
+            "action_id": "a:traces:payment",
+            "minimum_gap_after": 0,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [
+              "TRACE_FIRST_ERROR"
+            ],
+            "ordinal": 2,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "TRACES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "payment"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "61bb728ab180ac2a0c123ebbbf2fe66f6bf53955533042e47fd824077facd7a7",
+        "case_id": "e01",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2960,
+        "latency_ms": 5527.729000983527,
+        "matched_clause_id": "configuration:error-metric-and-first-error-trace",
+        "mechanism": "CONFIGURATION_ERROR",
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": "payment",
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:metrics:payment:core:0:3669f1d74cd9",
+          "e:a:traces:payment:0:491c15adba54"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3034,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:payment",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "payment"
+            ]
+          },
+          {
+            "action_id": "a:traces:payment",
+            "minimum_gap_after": 0,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [
+              "TRACE_FIRST_ERROR"
+            ],
+            "ordinal": 2,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "TRACES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "payment"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "61bb728ab180ac2a0c123ebbbf2fe66f6bf53955533042e47fd824077facd7a7",
+        "case_id": "e01",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2960,
+        "latency_ms": 8101.292209001258,
+        "matched_clause_id": "configuration:error-metric-and-first-error-trace",
+        "mechanism": "CONFIGURATION_ERROR",
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": "payment",
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:metrics:payment:core:0:3669f1d74cd9",
+          "e:a:traces:payment:0:491c15adba54"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3034,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:payment",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "payment"
+            ]
+          },
+          {
+            "action_id": "a:traces:payment",
+            "minimum_gap_after": 0,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [
+              "TRACE_FIRST_ERROR"
+            ],
+            "ordinal": 2,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "TRACES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "payment"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "73b3c17e72d1a635a39502f71e0855fc9a249aff49976cf849e7cbcdfb3b6c54",
+        "case_id": "e02",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2852,
+        "latency_ms": 5849.068167008227,
+        "matched_clause_id": "configuration:error-metric-and-first-error-trace",
+        "mechanism": "CONFIGURATION_ERROR",
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": "payment",
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:metrics:payment:core:0:6aacef1eed8a",
+          "e:a:traces:payment:0:c2106105f26c"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 2926,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:payment",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "payment"
+            ]
+          },
+          {
+            "action_id": "a:traces:payment",
+            "minimum_gap_after": 0,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [
+              "TRACE_FIRST_ERROR"
+            ],
+            "ordinal": 2,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "TRACES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "payment"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "73b3c17e72d1a635a39502f71e0855fc9a249aff49976cf849e7cbcdfb3b6c54",
+        "case_id": "e02",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2960,
+        "latency_ms": 3881.4766660070745,
+        "matched_clause_id": "configuration:error-metric-and-first-error-trace",
+        "mechanism": "CONFIGURATION_ERROR",
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": "payment",
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:metrics:payment:core:0:6aacef1eed8a",
+          "e:a:traces:payment:0:c2106105f26c"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3034,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:payment",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "payment"
+            ]
+          },
+          {
+            "action_id": "a:traces:payment",
+            "minimum_gap_after": 0,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [
+              "TRACE_FIRST_ERROR"
+            ],
+            "ordinal": 2,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "TRACES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "payment"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "73b3c17e72d1a635a39502f71e0855fc9a249aff49976cf849e7cbcdfb3b6c54",
+        "case_id": "e02",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2960,
+        "latency_ms": 11350.755249994108,
+        "matched_clause_id": "configuration:error-metric-and-first-error-trace",
+        "mechanism": "CONFIGURATION_ERROR",
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": "payment",
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:metrics:payment:core:0:6aacef1eed8a",
+          "e:a:traces:payment:0:c2106105f26c"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3034,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:payment",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "payment"
+            ]
+          },
+          {
+            "action_id": "a:traces:payment",
+            "minimum_gap_after": 0,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [
+              "TRACE_FIRST_ERROR"
+            ],
+            "ordinal": 2,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "TRACES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "payment"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "73b3c17e72d1a635a39502f71e0855fc9a249aff49976cf849e7cbcdfb3b6c54",
+        "case_id": "e02",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2852,
+        "latency_ms": 4006.8019589962205,
+        "matched_clause_id": "configuration:error-metric-and-first-error-trace",
+        "mechanism": "CONFIGURATION_ERROR",
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": "payment",
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:metrics:payment:core:0:6aacef1eed8a",
+          "e:a:traces:payment:0:c2106105f26c"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 2926,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [],
+        "adaptive_reads": 0,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "5ba2ddb5b5ac0c916475b5ee1fad65f2a19bc72cf184a250eb120c27bdc477c7",
+        "case_id": "e03",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 1,
+        "input_tokens": 821,
+        "latency_ms": 1419.4823339930736,
+        "matched_clause_id": "service-unavailable:not-running",
+        "mechanism": "SERVICE_UNAVAILABLE",
+        "negative_coverage_count": 0,
+        "output_tokens": 24,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 1,
+        "protocol_repairs": 0,
+        "provider_calls": 1,
+        "provider_turns": 1,
+        "root_service": "recommendation",
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:runtime:recommendation:0:0da676ad3a55"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": false,
+        "total_tokens": 845,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [],
+        "adaptive_reads": 0,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "5ba2ddb5b5ac0c916475b5ee1fad65f2a19bc72cf184a250eb120c27bdc477c7",
+        "case_id": "e03",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 1,
+        "input_tokens": 821,
+        "latency_ms": 3053.3912910032086,
+        "matched_clause_id": "service-unavailable:not-running",
+        "mechanism": "SERVICE_UNAVAILABLE",
+        "negative_coverage_count": 0,
+        "output_tokens": 24,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 1,
+        "protocol_repairs": 0,
+        "provider_calls": 1,
+        "provider_turns": 1,
+        "root_service": "recommendation",
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:runtime:recommendation:0:0da676ad3a55"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": false,
+        "total_tokens": 845,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [],
+        "adaptive_reads": 0,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "5ba2ddb5b5ac0c916475b5ee1fad65f2a19bc72cf184a250eb120c27bdc477c7",
+        "case_id": "e03",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 1,
+        "input_tokens": 805,
+        "latency_ms": 1503.4537500032457,
+        "matched_clause_id": "service-unavailable:not-running",
+        "mechanism": "SERVICE_UNAVAILABLE",
+        "negative_coverage_count": 0,
+        "output_tokens": 24,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 1,
+        "protocol_repairs": 0,
+        "provider_calls": 1,
+        "provider_turns": 1,
+        "root_service": "recommendation",
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:runtime:recommendation:0:0da676ad3a55"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": false,
+        "total_tokens": 829,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [],
+        "adaptive_reads": 0,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "5ba2ddb5b5ac0c916475b5ee1fad65f2a19bc72cf184a250eb120c27bdc477c7",
+        "case_id": "e03",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 1,
+        "input_tokens": 805,
+        "latency_ms": 1336.8992500036256,
+        "matched_clause_id": "service-unavailable:not-running",
+        "mechanism": "SERVICE_UNAVAILABLE",
+        "negative_coverage_count": 0,
+        "output_tokens": 24,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 1,
+        "protocol_repairs": 0,
+        "provider_calls": 1,
+        "provider_turns": 1,
+        "root_service": "recommendation",
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:runtime:recommendation:0:0da676ad3a55"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": false,
+        "total_tokens": 829,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [],
+        "adaptive_reads": 0,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "abc427ac00709d1fdb92da9cc3e62c5629f8cdcdfa3b0bd435ceb534cc332c39",
+        "case_id": "e04",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 1,
+        "input_tokens": 1148,
+        "latency_ms": 1332.515959002194,
+        "matched_clause_id": "service-unavailable:not-running",
+        "mechanism": "SERVICE_UNAVAILABLE",
+        "negative_coverage_count": 0,
+        "output_tokens": 24,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 1,
+        "protocol_repairs": 0,
+        "provider_calls": 1,
+        "provider_turns": 1,
+        "root_service": "product-catalog",
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:runtime:all-candidates:c684c52d1f79:1:fba727fd8a6b"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": false,
+        "total_tokens": 1172,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [],
+        "adaptive_reads": 0,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "abc427ac00709d1fdb92da9cc3e62c5629f8cdcdfa3b0bd435ceb534cc332c39",
+        "case_id": "e04",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 1,
+        "input_tokens": 1216,
+        "latency_ms": 2540.4567910009064,
+        "matched_clause_id": "service-unavailable:not-running",
+        "mechanism": "SERVICE_UNAVAILABLE",
+        "negative_coverage_count": 0,
+        "output_tokens": 24,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 1,
+        "protocol_repairs": 0,
+        "provider_calls": 1,
+        "provider_turns": 1,
+        "root_service": "product-catalog",
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:runtime:all-candidates:c684c52d1f79:1:fba727fd8a6b"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": false,
+        "total_tokens": 1240,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [],
+        "adaptive_reads": 0,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "abc427ac00709d1fdb92da9cc3e62c5629f8cdcdfa3b0bd435ceb534cc332c39",
+        "case_id": "e04",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 1,
+        "input_tokens": 1132,
+        "latency_ms": 2565.9929999965243,
+        "matched_clause_id": "service-unavailable:not-running",
+        "mechanism": "SERVICE_UNAVAILABLE",
+        "negative_coverage_count": 0,
+        "output_tokens": 24,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 1,
+        "protocol_repairs": 0,
+        "provider_calls": 1,
+        "provider_turns": 1,
+        "root_service": "product-catalog",
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:runtime:all-candidates:c684c52d1f79:1:fba727fd8a6b"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": false,
+        "total_tokens": 1156,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [],
+        "adaptive_reads": 0,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "abc427ac00709d1fdb92da9cc3e62c5629f8cdcdfa3b0bd435ceb534cc332c39",
+        "case_id": "e04",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 1,
+        "input_tokens": 1232,
+        "latency_ms": 1251.933250008733,
+        "matched_clause_id": "service-unavailable:not-running",
+        "mechanism": "SERVICE_UNAVAILABLE",
+        "negative_coverage_count": 0,
+        "output_tokens": 24,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 1,
+        "protocol_repairs": 0,
+        "provider_calls": 1,
+        "provider_turns": 1,
+        "root_service": "product-catalog",
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:runtime:all-candidates:c684c52d1f79:1:fba727fd8a6b"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": false,
+        "total_tokens": 1256,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:resources:email",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [
+              "RESOURCE_MEMORY_GROWTH_STRONG"
+            ],
+            "ordinal": 1,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "RESOURCES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "email"
+            ]
+          }
+        ],
+        "adaptive_reads": 1,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "bf42f360b998d62789ffc84505307f0f63a892af6b11abc4e421a14ca66f9452",
+        "case_id": "e05",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 2,
+        "input_tokens": 1859,
+        "latency_ms": 2780.1712499785936,
+        "matched_clause_id": "memory-leak:growth-and-healthy",
+        "mechanism": "MEMORY_LEAK",
+        "negative_coverage_count": 1,
+        "output_tokens": 49,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 2,
+        "protocol_repairs": 0,
+        "provider_calls": 2,
+        "provider_turns": 2,
+        "root_service": "email",
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:resources:email:0:e0c303d5161b",
+          "e:a:runtime:email:0:5a4db2712766"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 1908,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:email",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "email"
+            ]
+          },
+          {
+            "action_id": "a:resources:email",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [
+              "RESOURCE_MEMORY_GROWTH_STRONG"
+            ],
+            "ordinal": 2,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "RESOURCES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "email"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "bf42f360b998d62789ffc84505307f0f63a892af6b11abc4e421a14ca66f9452",
+        "case_id": "e05",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2859,
+        "latency_ms": 10494.257250000373,
+        "matched_clause_id": "memory-leak:growth-and-healthy",
+        "mechanism": "MEMORY_LEAK",
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": "email",
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:resources:email:0:e0c303d5161b",
+          "e:a:runtime:email:0:5a4db2712766"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 2933,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:email",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "email"
+            ]
+          },
+          {
+            "action_id": "a:traces:email",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "NONEMPTY_NO_PREDICATE",
+            "source": "TRACES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "email"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "bf42f360b998d62789ffc84505307f0f63a892af6b11abc4e421a14ca66f9452",
+        "case_id": "e05",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2963,
+        "latency_ms": 6357.576666996465,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "ABSTAIN",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3037,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:email",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "email"
+            ]
+          },
+          {
+            "action_id": "a:resources:email",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [
+              "RESOURCE_MEMORY_GROWTH_STRONG"
+            ],
+            "ordinal": 2,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "RESOURCES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "email"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "bf42f360b998d62789ffc84505307f0f63a892af6b11abc4e421a14ca66f9452",
+        "case_id": "e05",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2967,
+        "latency_ms": 3839.567458984675,
+        "matched_clause_id": "memory-leak:growth-and-healthy",
+        "mechanism": "MEMORY_LEAK",
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": "email",
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:resources:email:0:e0c303d5161b",
+          "e:a:runtime:email:0:5a4db2712766"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3041,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:ad",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "ad"
+            ]
+          },
+          {
+            "action_id": "a:resources:ad",
+            "minimum_gap_after": 0,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [
+              "RESOURCE_CPU_STRONG",
+              "RESOURCE_MEMORY_GROWTH_STRONG"
+            ],
+            "ordinal": 2,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "RESOURCES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "ad"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "c4acb33db02715a398cdbfa2b20ff087847cc6f0439a891c5af1a004916d4759",
+        "case_id": "e06",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2848,
+        "latency_ms": 7688.320417015348,
+        "matched_clause_id": "cpu-saturation:resource-and-healthy",
+        "mechanism": "CPU_SATURATION",
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": "ad",
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:resources:ad:0:b4521be68a35",
+          "e:a:runtime:ad:0:a492d721642d"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 2922,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:ad",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "ad"
+            ]
+          },
+          {
+            "action_id": "a:traces:ad",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "SOURCE_FAILURE",
+            "source": "TRACES",
+            "status": "FAILURE_SCHEMA",
+            "targets": [
+              "ad"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "c4acb33db02715a398cdbfa2b20ff087847cc6f0439a891c5af1a004916d4759",
+        "case_id": "e06",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2941,
+        "latency_ms": 6042.113209012314,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "ABSTAIN",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3015,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:ad",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "ad"
+            ]
+          },
+          {
+            "action_id": "a:resources:ad",
+            "minimum_gap_after": 0,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [
+              "RESOURCE_CPU_STRONG",
+              "RESOURCE_MEMORY_GROWTH_STRONG"
+            ],
+            "ordinal": 2,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "RESOURCES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "ad"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "c4acb33db02715a398cdbfa2b20ff087847cc6f0439a891c5af1a004916d4759",
+        "case_id": "e06",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2956,
+        "latency_ms": 5572.905916997115,
+        "matched_clause_id": "cpu-saturation:resource-and-healthy",
+        "mechanism": "CPU_SATURATION",
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": "ad",
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:resources:ad:0:b4521be68a35",
+          "e:a:runtime:ad:0:a492d721642d"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3030,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:ad",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "ad"
+            ]
+          },
+          {
+            "action_id": "a:traces:ad",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "SOURCE_FAILURE",
+            "source": "TRACES",
+            "status": "FAILURE_SCHEMA",
+            "targets": [
+              "ad"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "c4acb33db02715a398cdbfa2b20ff087847cc6f0439a891c5af1a004916d4759",
+        "case_id": "e06",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2837,
+        "latency_ms": 3659.126707992982,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "ABSTAIN",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 2911,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:checkout",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "checkout"
+            ]
+          },
+          {
+            "action_id": "a:logs:shipping",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "shipping"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "d76155f8b721e68bafff5990308a109fef15d9873f6ca5041a89ce2245b4a645",
+        "case_id": "e07",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 3986,
+        "latency_ms": 4535.0793760153465,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "ABSTAIN",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 4060,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:traces:checkout",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [
+              "TRACE_DEPENDENCY_LATENCY"
+            ],
+            "ordinal": 1,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "TRACES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "checkout"
+            ]
+          },
+          {
+            "action_id": "a:logs:checkout",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "checkout"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "d76155f8b721e68bafff5990308a109fef15d9873f6ca5041a89ce2245b4a645",
+        "case_id": "e07",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 3964,
+        "latency_ms": 7557.156124996254,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "ABSTAIN",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 4038,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:checkout",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "checkout"
+            ]
+          },
+          {
+            "action_id": "a:logs:shipping",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "shipping"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "d76155f8b721e68bafff5990308a109fef15d9873f6ca5041a89ce2245b4a645",
+        "case_id": "e07",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 3881,
+        "latency_ms": 4065.5437509703916,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "ABSTAIN",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3955,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:resources:checkout",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "RESOURCES",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "checkout"
+            ]
+          },
+          {
+            "action_id": "a:logs:checkout",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "checkout"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "d76155f8b721e68bafff5990308a109fef15d9873f6ca5041a89ce2245b4a645",
+        "case_id": "e07",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 3755,
+        "latency_ms": 9773.146000996348,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "ABSTAIN",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3829,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:traces:checkout",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [
+              "TRACE_DEPENDENCY_LATENCY"
+            ],
+            "ordinal": 1,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "TRACES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "checkout"
+            ]
+          }
+        ],
+        "adaptive_reads": 1,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "167c5ea5e687c6451eba79529d48bbb57c808ce84212bb161e697b22b60f7ada",
+        "case_id": "e08",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 2,
+        "input_tokens": 2348,
+        "latency_ms": 3013.4944999881554,
+        "matched_clause_id": "dependency-latency:trace-and-metric",
+        "mechanism": "DEPENDENCY_LATENCY",
+        "negative_coverage_count": 1,
+        "output_tokens": 49,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 2,
+        "protocol_repairs": 0,
+        "provider_calls": 2,
+        "provider_turns": 2,
+        "root_service": "payment",
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:metrics:checkout:core:1:b32e3832916f",
+          "e:a:traces:checkout:0:a7707b61d305"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 2397,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:traces:checkout",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [
+              "TRACE_DEPENDENCY_LATENCY"
+            ],
+            "ordinal": 1,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "TRACES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "checkout"
+            ]
+          }
+        ],
+        "adaptive_reads": 1,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "167c5ea5e687c6451eba79529d48bbb57c808ce84212bb161e697b22b60f7ada",
+        "case_id": "e08",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 2,
+        "input_tokens": 2293,
+        "latency_ms": 3252.1832909988007,
+        "matched_clause_id": "dependency-latency:trace-and-metric",
+        "mechanism": "DEPENDENCY_LATENCY",
+        "negative_coverage_count": 1,
+        "output_tokens": 49,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 2,
+        "protocol_repairs": 0,
+        "provider_calls": 2,
+        "provider_turns": 2,
+        "root_service": "payment",
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:metrics:checkout:core:1:b32e3832916f",
+          "e:a:traces:checkout:0:a7707b61d305"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 2342,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:traces:checkout",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [
+              "TRACE_DEPENDENCY_LATENCY"
+            ],
+            "ordinal": 1,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "TRACES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "checkout"
+            ]
+          }
+        ],
+        "adaptive_reads": 1,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "167c5ea5e687c6451eba79529d48bbb57c808ce84212bb161e697b22b60f7ada",
+        "case_id": "e08",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 2,
+        "input_tokens": 2293,
+        "latency_ms": 3341.0349580080947,
+        "matched_clause_id": "dependency-latency:trace-and-metric",
+        "mechanism": "DEPENDENCY_LATENCY",
+        "negative_coverage_count": 1,
+        "output_tokens": 49,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 2,
+        "protocol_repairs": 0,
+        "provider_calls": 2,
+        "provider_turns": 2,
+        "root_service": "payment",
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:metrics:checkout:core:1:b32e3832916f",
+          "e:a:traces:checkout:0:a7707b61d305"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 2342,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:traces:checkout",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [
+              "TRACE_DEPENDENCY_LATENCY"
+            ],
+            "ordinal": 1,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "TRACES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "checkout"
+            ]
+          }
+        ],
+        "adaptive_reads": 1,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "167c5ea5e687c6451eba79529d48bbb57c808ce84212bb161e697b22b60f7ada",
+        "case_id": "e08",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 2,
+        "input_tokens": 2348,
+        "latency_ms": 3404.993417003425,
+        "matched_clause_id": "dependency-latency:trace-and-metric",
+        "mechanism": "DEPENDENCY_LATENCY",
+        "negative_coverage_count": 1,
+        "output_tokens": 49,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 2,
+        "protocol_repairs": 0,
+        "provider_calls": 2,
+        "provider_turns": 2,
+        "root_service": "payment",
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:metrics:checkout:core:1:b32e3832916f",
+          "e:a:traces:checkout:0:a7707b61d305"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 2397,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:payment",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "payment"
+            ]
+          },
+          {
+            "action_id": "a:resources:payment",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "NONEMPTY_NO_PREDICATE",
+            "source": "RESOURCES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "payment"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "9582565b075dad454c1e2428ec7cb37945de0e3ec2ec5a1f2f2337728764564b",
+        "case_id": "e09",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 2,
+        "input_tokens": 3234,
+        "latency_ms": 5891.549458028749,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 99,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 1,
+        "provider_calls": 4,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "NO_INCIDENT",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3333,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:payment",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "payment"
+            ]
+          },
+          {
+            "action_id": "a:resources:payment",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "NONEMPTY_NO_PREDICATE",
+            "source": "RESOURCES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "payment"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "9582565b075dad454c1e2428ec7cb37945de0e3ec2ec5a1f2f2337728764564b",
+        "case_id": "e09",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 2,
+        "input_tokens": 3234,
+        "latency_ms": 5915.732289999141,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 99,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 1,
+        "provider_calls": 4,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "NO_INCIDENT",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3333,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:payment",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "payment"
+            ]
+          },
+          {
+            "action_id": "a:traces:payment",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "TRACES",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "payment"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "9582565b075dad454c1e2428ec7cb37945de0e3ec2ec5a1f2f2337728764564b",
+        "case_id": "e09",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 2,
+        "input_tokens": 3331,
+        "latency_ms": 10281.871500003035,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 99,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 1,
+        "provider_calls": 4,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "NO_INCIDENT",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3430,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:payment",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "payment"
+            ]
+          },
+          {
+            "action_id": "a:resources:payment",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "NONEMPTY_NO_PREDICATE",
+            "source": "RESOURCES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "payment"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "9582565b075dad454c1e2428ec7cb37945de0e3ec2ec5a1f2f2337728764564b",
+        "case_id": "e09",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 2,
+        "input_tokens": 3343,
+        "latency_ms": 10100.30879099213,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 99,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 1,
+        "provider_calls": 4,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "NO_INCIDENT",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3442,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:resources:checkout",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "RESOURCES",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "checkout"
+            ]
+          },
+          {
+            "action_id": "a:logs:checkout",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "checkout"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "acabec70a5d4c4b4b38c6a00bf6a6b52f0bd230bab394dd5ba31c00219d59ee8",
+        "case_id": "e10",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 2,
+        "input_tokens": 4110,
+        "latency_ms": 6066.81624900375,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 99,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 1,
+        "provider_calls": 4,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "NO_INCIDENT",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 4209,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [],
+        "adaptive_reads": 0,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "acabec70a5d4c4b4b38c6a00bf6a6b52f0bd230bab394dd5ba31c00219d59ee8",
+        "case_id": "e10",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 1,
+        "input_tokens": 1152,
+        "latency_ms": 1306.448959003319,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 0,
+        "output_tokens": 24,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 1,
+        "protocol_repairs": 0,
+        "provider_calls": 1,
+        "provider_turns": 1,
+        "root_service": null,
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "NO_INCIDENT",
+        "terminal_candidate_available_after_read": false,
+        "total_tokens": 1176,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:resources:checkout",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "RESOURCES",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "checkout"
+            ]
+          },
+          {
+            "action_id": "a:logs:checkout",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "checkout"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "acabec70a5d4c4b4b38c6a00bf6a6b52f0bd230bab394dd5ba31c00219d59ee8",
+        "case_id": "e10",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 2,
+        "input_tokens": 4215,
+        "latency_ms": 5011.448293007561,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 99,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 1,
+        "provider_calls": 4,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "NO_INCIDENT",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 4314,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [],
+        "adaptive_reads": 0,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "acabec70a5d4c4b4b38c6a00bf6a6b52f0bd230bab394dd5ba31c00219d59ee8",
+        "case_id": "e10",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 1,
+        "input_tokens": 1136,
+        "latency_ms": 1295.3056669939542,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 0,
+        "output_tokens": 24,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 1,
+        "protocol_repairs": 0,
+        "provider_calls": 1,
+        "provider_turns": 1,
+        "root_service": null,
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "NO_INCIDENT",
+        "terminal_candidate_available_after_read": false,
+        "total_tokens": 1160,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:traces:email",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "TRACES",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "email"
+            ]
+          },
+          {
+            "action_id": "a:logs:email",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "email"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "e5688d1431abd850e7a0caa4979357bc074b7f60eb2b1842879cc521f4062d17",
+        "case_id": "e11",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2992,
+        "latency_ms": 4163.778665999416,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "ABSTAIN",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3066,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:email",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "email"
+            ]
+          },
+          {
+            "action_id": "a:traces:email",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "TRACES",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "email"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "e5688d1431abd850e7a0caa4979357bc074b7f60eb2b1842879cc521f4062d17",
+        "case_id": "e11",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2992,
+        "latency_ms": 3734.6008750027977,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "ABSTAIN",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3066,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:email",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "email"
+            ]
+          },
+          {
+            "action_id": "a:traces:email",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "TRACES",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "email"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "e5688d1431abd850e7a0caa4979357bc074b7f60eb2b1842879cc521f4062d17",
+        "case_id": "e11",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2887,
+        "latency_ms": 5565.602831993601,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "ABSTAIN",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 2961,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:email",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "email"
+            ]
+          },
+          {
+            "action_id": "a:traces:email",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "TRACES",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "email"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "e5688d1431abd850e7a0caa4979357bc074b7f60eb2b1842879cc521f4062d17",
+        "case_id": "e11",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2887,
+        "latency_ms": 4435.967249999521,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "ABSTAIN",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 2961,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:email",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "email"
+            ]
+          },
+          {
+            "action_id": "a:resources:email",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [
+              "RESOURCE_MEMORY_GROWTH_STRONG"
+            ],
+            "ordinal": 2,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "RESOURCES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "email"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "2cb68a43e657181a818fe5cbe8052aa389e706a158a06308a4b93a9c432df197",
+        "case_id": "e12",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2967,
+        "latency_ms": 34571.40433398308,
+        "matched_clause_id": "memory-leak:growth-and-healthy",
+        "mechanism": "MEMORY_LEAK",
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": "email",
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:resources:email:0:8925e8e186ed",
+          "e:a:runtime:email:0:5a4db2712766"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3041,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:email",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "email"
+            ]
+          },
+          {
+            "action_id": "a:traces:email",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "NONEMPTY_NO_PREDICATE",
+            "source": "TRACES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "email"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "2cb68a43e657181a818fe5cbe8052aa389e706a158a06308a4b93a9c432df197",
+        "case_id": "e12",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2854,
+        "latency_ms": 4660.846667014994,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "ABSTAIN",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 2928,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:email",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "email"
+            ]
+          },
+          {
+            "action_id": "a:resources:email",
+            "minimum_gap_after": 1,
+            "minimum_gap_before": 1,
+            "new_predicate_kinds": [
+              "RESOURCE_MEMORY_GROWTH_STRONG"
+            ],
+            "ordinal": 2,
+            "outcome_class": "PREDICATE_YIELD",
+            "source": "RESOURCES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "email"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "FLAT_CANONICAL",
+        "case_bytes_sha256": "2cb68a43e657181a818fe5cbe8052aa389e706a158a06308a4b93a9c432df197",
+        "case_id": "e12",
+        "diagnosis_after_read": true,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2859,
+        "latency_ms": 3980.6591250089696,
+        "matched_clause_id": "memory-leak:growth-and-healthy",
+        "mechanism": "MEMORY_LEAK",
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": false,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": "email",
+        "router_mode": "GAP_RANKED_TOP_K",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [
+          "e:a:resources:email:0:8925e8e186ed",
+          "e:a:runtime:email:0:5a4db2712766"
+        ],
+        "terminal": "DIAGNOSED",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 2933,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      },
+      {
+        "adaptive_read_events": [
+          {
+            "action_id": "a:logs:email",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [],
+            "ordinal": 1,
+            "outcome_class": "EMPTY_CAPTURED",
+            "source": "LOGS",
+            "status": "SUCCESS_EMPTY",
+            "targets": [
+              "email"
+            ]
+          },
+          {
+            "action_id": "a:traces:email",
+            "minimum_gap_after": 2,
+            "minimum_gap_before": 2,
+            "new_predicate_kinds": [],
+            "ordinal": 2,
+            "outcome_class": "NONEMPTY_NO_PREDICATE",
+            "source": "TRACES",
+            "status": "SUCCESS_NONEMPTY",
+            "targets": [
+              "email"
+            ]
+          }
+        ],
+        "adaptive_reads": 2,
+        "agent_writes": 0,
+        "arm": "PLANNER_LITE",
+        "case_bytes_sha256": "2cb68a43e657181a818fe5cbe8052aa389e706a158a06308a4b93a9c432df197",
+        "case_id": "e12",
+        "diagnosis_after_read": false,
+        "first_pass_protocol_successes": 3,
+        "input_tokens": 2963,
+        "latency_ms": 5409.1682490106905,
+        "matched_clause_id": null,
+        "mechanism": null,
+        "negative_coverage_count": 2,
+        "output_tokens": 74,
+        "planner_ledger_visible": true,
+        "post_repair_protocol_successes": 3,
+        "protocol_repairs": 0,
+        "provider_calls": 3,
+        "provider_turns": 3,
+        "root_service": null,
+        "router_mode": "BROAD_CATALOG",
+        "safe_error_code": null,
+        "schema_version": "dta-v22.2.gap-study-case-run.v1",
+        "status": "VALID_TERMINAL",
+        "supporting_evidence_refs": [],
+        "terminal": "ABSTAIN",
+        "terminal_candidate_available_after_read": true,
+        "total_tokens": 3037,
+        "transport_retry_count": 0,
+        "uncaught_exceptions": 0
+      }
+    ],
+    "same_case_bytes_all_combinations": true,
+    "schedule": [
+      {
+        "case_id": "e01",
+        "combination": "FLAT_BROAD",
+        "execution_position": 1
+      },
+      {
+        "case_id": "e01",
+        "combination": "FLAT_GAP",
+        "execution_position": 2
+      },
+      {
+        "case_id": "e01",
+        "combination": "PLANNER_BROAD",
+        "execution_position": 3
+      },
+      {
+        "case_id": "e01",
+        "combination": "PLANNER_GAP",
+        "execution_position": 4
+      },
+      {
+        "case_id": "e02",
+        "combination": "FLAT_GAP",
+        "execution_position": 1
+      },
+      {
+        "case_id": "e02",
+        "combination": "PLANNER_BROAD",
+        "execution_position": 2
+      },
+      {
+        "case_id": "e02",
+        "combination": "PLANNER_GAP",
+        "execution_position": 3
+      },
+      {
+        "case_id": "e02",
+        "combination": "FLAT_BROAD",
+        "execution_position": 4
+      },
+      {
+        "case_id": "e03",
+        "combination": "PLANNER_BROAD",
+        "execution_position": 1
+      },
+      {
+        "case_id": "e03",
+        "combination": "PLANNER_GAP",
+        "execution_position": 2
+      },
+      {
+        "case_id": "e03",
+        "combination": "FLAT_BROAD",
+        "execution_position": 3
+      },
+      {
+        "case_id": "e03",
+        "combination": "FLAT_GAP",
+        "execution_position": 4
+      },
+      {
+        "case_id": "e04",
+        "combination": "PLANNER_GAP",
+        "execution_position": 1
+      },
+      {
+        "case_id": "e04",
+        "combination": "FLAT_BROAD",
+        "execution_position": 2
+      },
+      {
+        "case_id": "e04",
+        "combination": "FLAT_GAP",
+        "execution_position": 3
+      },
+      {
+        "case_id": "e04",
+        "combination": "PLANNER_BROAD",
+        "execution_position": 4
+      },
+      {
+        "case_id": "e05",
+        "combination": "FLAT_BROAD",
+        "execution_position": 1
+      },
+      {
+        "case_id": "e05",
+        "combination": "FLAT_GAP",
+        "execution_position": 2
+      },
+      {
+        "case_id": "e05",
+        "combination": "PLANNER_BROAD",
+        "execution_position": 3
+      },
+      {
+        "case_id": "e05",
+        "combination": "PLANNER_GAP",
+        "execution_position": 4
+      },
+      {
+        "case_id": "e06",
+        "combination": "FLAT_GAP",
+        "execution_position": 1
+      },
+      {
+        "case_id": "e06",
+        "combination": "PLANNER_BROAD",
+        "execution_position": 2
+      },
+      {
+        "case_id": "e06",
+        "combination": "PLANNER_GAP",
+        "execution_position": 3
+      },
+      {
+        "case_id": "e06",
+        "combination": "FLAT_BROAD",
+        "execution_position": 4
+      },
+      {
+        "case_id": "e07",
+        "combination": "PLANNER_BROAD",
+        "execution_position": 1
+      },
+      {
+        "case_id": "e07",
+        "combination": "PLANNER_GAP",
+        "execution_position": 2
+      },
+      {
+        "case_id": "e07",
+        "combination": "FLAT_BROAD",
+        "execution_position": 3
+      },
+      {
+        "case_id": "e07",
+        "combination": "FLAT_GAP",
+        "execution_position": 4
+      },
+      {
+        "case_id": "e08",
+        "combination": "PLANNER_GAP",
+        "execution_position": 1
+      },
+      {
+        "case_id": "e08",
+        "combination": "FLAT_BROAD",
+        "execution_position": 2
+      },
+      {
+        "case_id": "e08",
+        "combination": "FLAT_GAP",
+        "execution_position": 3
+      },
+      {
+        "case_id": "e08",
+        "combination": "PLANNER_BROAD",
+        "execution_position": 4
+      },
+      {
+        "case_id": "e09",
+        "combination": "FLAT_BROAD",
+        "execution_position": 1
+      },
+      {
+        "case_id": "e09",
+        "combination": "FLAT_GAP",
+        "execution_position": 2
+      },
+      {
+        "case_id": "e09",
+        "combination": "PLANNER_BROAD",
+        "execution_position": 3
+      },
+      {
+        "case_id": "e09",
+        "combination": "PLANNER_GAP",
+        "execution_position": 4
+      },
+      {
+        "case_id": "e10",
+        "combination": "FLAT_GAP",
+        "execution_position": 1
+      },
+      {
+        "case_id": "e10",
+        "combination": "PLANNER_BROAD",
+        "execution_position": 2
+      },
+      {
+        "case_id": "e10",
+        "combination": "PLANNER_GAP",
+        "execution_position": 3
+      },
+      {
+        "case_id": "e10",
+        "combination": "FLAT_BROAD",
+        "execution_position": 4
+      },
+      {
+        "case_id": "e11",
+        "combination": "PLANNER_BROAD",
+        "execution_position": 1
+      },
+      {
+        "case_id": "e11",
+        "combination": "PLANNER_GAP",
+        "execution_position": 2
+      },
+      {
+        "case_id": "e11",
+        "combination": "FLAT_BROAD",
+        "execution_position": 3
+      },
+      {
+        "case_id": "e11",
+        "combination": "FLAT_GAP",
+        "execution_position": 4
+      },
+      {
+        "case_id": "e12",
+        "combination": "PLANNER_GAP",
+        "execution_position": 1
+      },
+      {
+        "case_id": "e12",
+        "combination": "FLAT_BROAD",
+        "execution_position": 2
+      },
+      {
+        "case_id": "e12",
+        "combination": "FLAT_GAP",
+        "execution_position": 3
+      },
+      {
+        "case_id": "e12",
+        "combination": "PLANNER_BROAD",
+        "execution_position": 4
+      }
+    ],
+    "schema_version": "dta-v22.2.gap-study-campaign.v1",
+    "truth_load_count": 1,
+    "truth_loaded_after_all_four_runs_per_case": true,
+    "truths": [
+      {
+        "case_id": "e01",
+        "evidence_applicable": true,
+        "expected_mechanism": "CONFIGURATION_ERROR",
+        "expected_root_service": "payment",
+        "expected_terminal": "DIAGNOSED"
+      },
+      {
+        "case_id": "e02",
+        "evidence_applicable": true,
+        "expected_mechanism": "CONFIGURATION_ERROR",
+        "expected_root_service": "payment",
+        "expected_terminal": "DIAGNOSED"
+      },
+      {
+        "case_id": "e03",
+        "evidence_applicable": true,
+        "expected_mechanism": "SERVICE_UNAVAILABLE",
+        "expected_root_service": "recommendation",
+        "expected_terminal": "DIAGNOSED"
+      },
+      {
+        "case_id": "e04",
+        "evidence_applicable": true,
+        "expected_mechanism": "SERVICE_UNAVAILABLE",
+        "expected_root_service": "product-catalog",
+        "expected_terminal": "DIAGNOSED"
+      },
+      {
+        "case_id": "e05",
+        "evidence_applicable": true,
+        "expected_mechanism": "MEMORY_LEAK",
+        "expected_root_service": "email",
+        "expected_terminal": "DIAGNOSED"
+      },
+      {
+        "case_id": "e06",
+        "evidence_applicable": true,
+        "expected_mechanism": "CPU_SATURATION",
+        "expected_root_service": "ad",
+        "expected_terminal": "DIAGNOSED"
+      },
+      {
+        "case_id": "e07",
+        "evidence_applicable": true,
+        "expected_mechanism": "DEPENDENCY_LATENCY",
+        "expected_root_service": "shipping",
+        "expected_terminal": "DIAGNOSED"
+      },
+      {
+        "case_id": "e08",
+        "evidence_applicable": true,
+        "expected_mechanism": "DEPENDENCY_LATENCY",
+        "expected_root_service": "payment",
+        "expected_terminal": "DIAGNOSED"
+      },
+      {
+        "case_id": "e09",
+        "evidence_applicable": false,
+        "expected_mechanism": null,
+        "expected_root_service": null,
+        "expected_terminal": "NO_INCIDENT"
+      },
+      {
+        "case_id": "e10",
+        "evidence_applicable": false,
+        "expected_mechanism": null,
+        "expected_root_service": null,
+        "expected_terminal": "NO_INCIDENT"
+      },
+      {
+        "case_id": "e11",
+        "evidence_applicable": false,
+        "expected_mechanism": null,
+        "expected_root_service": null,
+        "expected_terminal": "ABSTAIN"
+      },
+      {
+        "case_id": "e12",
+        "evidence_applicable": false,
+        "expected_mechanism": null,
+        "expected_root_service": null,
+        "expected_terminal": "ABSTAIN"
+      }
+    ],
+    "uncaught_exceptions": 0
+  },
+  "case_set_sha256": "243e7231dbd9e4aa5ed59cddfed2fb354a2c2bb552c02bf279cefddbec7f3204",
+  "development_iteration": 1,
+  "execution_count": 0,
+  "phase": "DEVELOPMENT",
+  "prompt_sha256": "0c813425e7ab3196ef4a621baec81aceda092694681405337328fc89c94602ab",
+  "provider_model": "gpt-5.4-mini-2026-03-17",
+  "schema_version": "dta-v22.2.gap-study-artifact.v1",
+  "scores": {
+    "combinations": [
+      {
+        "abstain_after_read": 4,
+        "abstention_accuracy": 1.0,
+        "abstention_denominator": 2,
+        "adaptive_read_rate": 0.75,
+        "agent_writes": 0,
+        "clause_completion_rate": 0.125,
+        "combination": "FLAT_BROAD",
+        "combined_no_incident_abstention_accuracy": 1.0,
+        "correct_diagnosis_after_read": 4,
+        "diagnosis_after_read_rate": 0.4444444444444444,
+        "empty_read_rate": 0.5625,
+        "end_to_end_exact_completion": 0.8333333333333334,
+        "evidence_ref_validity": 1.0,
+        "exact_completion_cases": 10,
+        "first_pass_protocol_success": 0.9642857142857143,
+        "gap_closure_rate": 0.125,
+        "incident_denominator": 8,
+        "input_tokens": 28706,
+        "latency_ms": 43530.11791498284,
+        "mean_adaptive_reads": 1.3333333333333333,
+        "mechanism_accuracy": 0.75,
+        "mechanism_macro_f1": 0.7333333333333333,
+        "negative_coverage_count": 16,
+        "no_incident_accuracy": 1.0,
+        "no_incident_after_read": 1,
+        "no_incident_denominator": 2,
+        "nonempty_read_rate": 0.375,
+        "output_tokens": 713,
+        "post_repair_protocol_success": 1.0,
+        "predicate_yield_rate": 0.25,
+        "protocol_failure_after_read": 0,
+        "protocol_failure_rate": 0.0,
+        "provider_calls": 29,
+        "read_bearing_runs": 9,
+        "read_bearing_runs_ending_diagnosis": 4,
+        "repair_count": 1,
+        "root_service_accuracy": 0.75,
+        "schema_version": "dta-v22.2.combination-metrics.v1",
+        "semantic_clause_validity": 1.0,
+        "source_distribution": {
+          "LOGS": 8,
+          "RESOURCES": 2,
+          "TRACES": 6
+        },
+        "terminal_candidate_availability_after_read": 1.0,
+        "terminal_candidate_selection_accuracy": 0.7777777777777778,
+        "tokens_per_correct_case": 2941.9,
+        "total_runs": 12,
+        "total_tokens": 29419,
+        "transport_retries": 0,
+        "uncaught_exceptions": 0,
+        "unnecessary_read_rate": 0.75,
+        "valid_terminal_rate": 1.0,
+        "wrong_diagnosis_after_read": 0
+      },
+      {
+        "abstain_after_read": 2,
+        "abstention_accuracy": 0.5,
+        "abstention_denominator": 2,
+        "adaptive_read_rate": 0.8333333333333334,
+        "agent_writes": 0,
+        "clause_completion_rate": 0.15789473684210525,
+        "combination": "FLAT_GAP",
+        "combined_no_incident_abstention_accuracy": 0.75,
+        "correct_diagnosis_after_read": 5,
+        "diagnosis_after_read_rate": 0.6,
+        "empty_read_rate": 0.631578947368421,
+        "end_to_end_exact_completion": 0.8333333333333334,
+        "evidence_ref_validity": 1.0,
+        "exact_completion_cases": 10,
+        "first_pass_protocol_success": 0.9354838709677419,
+        "gap_closure_rate": 0.15789473684210525,
+        "incident_denominator": 8,
+        "input_tokens": 32486,
+        "latency_ms": 66983.64783205034,
+        "mean_adaptive_reads": 1.5833333333333333,
+        "mechanism_accuracy": 0.875,
+        "mechanism_macro_f1": 0.8666666666666666,
+        "negative_coverage_count": 19,
+        "no_incident_accuracy": 1.0,
+        "no_incident_after_read": 2,
+        "no_incident_denominator": 2,
+        "nonempty_read_rate": 0.3684210526315789,
+        "output_tokens": 813,
+        "post_repair_protocol_success": 1.0,
+        "predicate_yield_rate": 0.3157894736842105,
+        "protocol_failure_after_read": 0,
+        "protocol_failure_rate": 0.0,
+        "provider_calls": 33,
+        "read_bearing_runs": 10,
+        "read_bearing_runs_ending_diagnosis": 6,
+        "repair_count": 2,
+        "root_service_accuracy": 0.875,
+        "schema_version": "dta-v22.2.combination-metrics.v1",
+        "semantic_clause_validity": 1.0,
+        "source_distribution": {
+          "LOGS": 9,
+          "RESOURCES": 6,
+          "TRACES": 4
+        },
+        "terminal_candidate_availability_after_read": 1.0,
+        "terminal_candidate_selection_accuracy": 0.8,
+        "tokens_per_correct_case": 3329.9,
+        "total_runs": 12,
+        "total_tokens": 33299,
+        "transport_retries": 0,
+        "uncaught_exceptions": 0,
+        "unnecessary_read_rate": 1.0,
+        "valid_terminal_rate": 1.0,
+        "wrong_diagnosis_after_read": 1
+      },
+      {
+        "abstain_after_read": 5,
+        "abstention_accuracy": 1.0,
+        "abstention_denominator": 2,
+        "adaptive_read_rate": 0.75,
+        "agent_writes": 0,
+        "clause_completion_rate": 0.11764705882352941,
+        "combination": "PLANNER_BROAD",
+        "combined_no_incident_abstention_accuracy": 1.0,
+        "correct_diagnosis_after_read": 3,
+        "diagnosis_after_read_rate": 0.3333333333333333,
+        "empty_read_rate": 0.6470588235294118,
+        "end_to_end_exact_completion": 0.75,
+        "evidence_ref_validity": 1.0,
+        "exact_completion_cases": 9,
+        "first_pass_protocol_success": 0.9655172413793104,
+        "gap_closure_rate": 0.11764705882352941,
+        "incident_denominator": 8,
+        "input_tokens": 30649,
+        "latency_ms": 53581.65129403642,
+        "mean_adaptive_reads": 1.4166666666666667,
+        "mechanism_accuracy": 0.625,
+        "mechanism_macro_f1": 0.5333333333333333,
+        "negative_coverage_count": 17,
+        "no_incident_accuracy": 1.0,
+        "no_incident_after_read": 1,
+        "no_incident_denominator": 2,
+        "nonempty_read_rate": 0.29411764705882354,
+        "output_tokens": 738,
+        "post_repair_protocol_success": 1.0,
+        "predicate_yield_rate": 0.17647058823529413,
+        "protocol_failure_after_read": 0,
+        "protocol_failure_rate": 0.0,
+        "provider_calls": 30,
+        "read_bearing_runs": 9,
+        "read_bearing_runs_ending_diagnosis": 3,
+        "repair_count": 1,
+        "root_service_accuracy": 0.625,
+        "schema_version": "dta-v22.2.combination-metrics.v1",
+        "semantic_clause_validity": 1.0,
+        "source_distribution": {
+          "LOGS": 9,
+          "TRACES": 8
+        },
+        "terminal_candidate_availability_after_read": 1.0,
+        "terminal_candidate_selection_accuracy": 0.6666666666666666,
+        "tokens_per_correct_case": 3487.4444444444443,
+        "total_runs": 12,
+        "total_tokens": 31387,
+        "transport_retries": 0,
+        "uncaught_exceptions": 0,
+        "unnecessary_read_rate": 0.75,
+        "valid_terminal_rate": 1.0,
+        "wrong_diagnosis_after_read": 0
+      },
+      {
+        "abstain_after_read": 2,
+        "abstention_accuracy": 0.5,
+        "abstention_denominator": 2,
+        "adaptive_read_rate": 0.8333333333333334,
+        "agent_writes": 0,
+        "clause_completion_rate": 0.15789473684210525,
+        "combination": "PLANNER_GAP",
+        "combined_no_incident_abstention_accuracy": 0.75,
+        "correct_diagnosis_after_read": 5,
+        "diagnosis_after_read_rate": 0.6,
+        "empty_read_rate": 0.5789473684210527,
+        "end_to_end_exact_completion": 0.8333333333333334,
+        "evidence_ref_validity": 1.0,
+        "exact_completion_cases": 10,
+        "first_pass_protocol_success": 0.9354838709677419,
+        "gap_closure_rate": 0.15789473684210525,
+        "incident_denominator": 8,
+        "input_tokens": 33641,
+        "latency_ms": 97238.84100295254,
+        "mean_adaptive_reads": 1.5833333333333333,
+        "mechanism_accuracy": 0.875,
+        "mechanism_macro_f1": 0.8666666666666666,
+        "negative_coverage_count": 19,
+        "no_incident_accuracy": 1.0,
+        "no_incident_after_read": 2,
+        "no_incident_denominator": 2,
+        "nonempty_read_rate": 0.42105263157894735,
+        "output_tokens": 813,
+        "post_repair_protocol_success": 1.0,
+        "predicate_yield_rate": 0.3684210526315789,
+        "protocol_failure_after_read": 0,
+        "protocol_failure_rate": 0.0,
+        "provider_calls": 33,
+        "read_bearing_runs": 10,
+        "read_bearing_runs_ending_diagnosis": 6,
+        "repair_count": 2,
+        "root_service_accuracy": 0.875,
+        "schema_version": "dta-v22.2.combination-metrics.v1",
+        "semantic_clause_validity": 1.0,
+        "source_distribution": {
+          "LOGS": 9,
+          "RESOURCES": 5,
+          "TRACES": 5
+        },
+        "terminal_candidate_availability_after_read": 1.0,
+        "terminal_candidate_selection_accuracy": 0.8,
+        "tokens_per_correct_case": 3445.4,
+        "total_runs": 12,
+        "total_tokens": 34454,
+        "transport_retries": 0,
+        "uncaught_exceptions": 0,
+        "unnecessary_read_rate": 1.0,
+        "valid_terminal_rate": 1.0,
+        "wrong_diagnosis_after_read": 1
+      }
+    ],
+    "development_gate": {
+      "agent_writes": 0,
+      "gap_runs": 24,
+      "gate_passed": false,
+      "nonempty_or_predicate_yield_read_rate": 0.39473684210526316,
+      "predicate_yield_read_rate": 0.34210526315789475,
+      "protocol_failure_rate": 0.0,
+      "read_bearing_diagnosed_runs": 12,
+      "schema_version": "dta-v22.2.development-utility-gate.v1",
+      "uncaught_exceptions": 0
+    },
+    "schema_version": "dta-v22.2.gap-study-score-bundle.v1"
+  },
+  "truth_set_sha256": "c1597f11627b89cd15fa6ca22d558b3f431ccbd338f3725e0ed1a899fbfb2ed3",
+  "uncaught_exceptions": 0
+}

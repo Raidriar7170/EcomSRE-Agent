@@ -51,10 +51,14 @@ def verify_dta_v221_study_manifest(
         manifest.implementation_commit,
         repository_root=repository_root,
     )
+    # PR #62 was squash-merged, so its implementation commit is intentionally
+    # not an ancestor of the merged mainline commit. Bind HEAD to the same base
+    # and exact frozen implementation bytes instead of requiring impossible
+    # feature-branch ancestry after the squash.
     _git(
         "merge-base",
         "--is-ancestor",
-        manifest.implementation_commit,
+        manifest.base_commit,
         "HEAD",
         repository_root=repository_root,
     )
@@ -73,6 +77,13 @@ def verify_dta_v221_study_manifest(
         )
         if hashlib.sha256(committed).hexdigest() != binding.sha256:
             raise ValueError(f"implementation commit binding drift: {binding.path}")
+        merged = _git(
+            "show",
+            f"HEAD:{binding.path}",
+            repository_root=repository_root,
+        )
+        if hashlib.sha256(merged).hexdigest() != binding.sha256:
+            raise ValueError(f"merged implementation binding drift: {binding.path}")
     if verify_historical_practical_results_v221(repository_root=repository_root) != 7:
         raise ValueError("historical Practical result scope differs")
     progress = cast(

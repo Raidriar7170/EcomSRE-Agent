@@ -1,0 +1,137 @@
+{
+  "agent_visible_sources": [
+    {
+      "path": "config/dta-v22-2/evaluation/agent-visible/e01.json",
+      "sha256": "c96abe468793b1dc4bdc1dab57bf864b3ec750f55360c95c1bf6a8e484a0d916"
+    },
+    {
+      "path": "config/dta-v22-2/evaluation/agent-visible/e02.json",
+      "sha256": "4c0be4fd8f16b12f7c6c54a5ea0d0e423eef174f7a798676ecb670595db82b45"
+    },
+    {
+      "path": "config/dta-v22-2/evaluation/agent-visible/e03.json",
+      "sha256": "9da57898ec6eb997ec294d3aaec137e9656c0ca0a230e4bab120066b385e0fba"
+    },
+    {
+      "path": "config/dta-v22-2/evaluation/agent-visible/e04.json",
+      "sha256": "69cf6b601149bc2583e525a7086cf64a6ec9ebb5c37b0bf0fe0c40fb6e338af3"
+    },
+    {
+      "path": "config/dta-v22-2/evaluation/agent-visible/e05.json",
+      "sha256": "2188eb473d6b83ebdc68ea21f45c4726223c362cf7aa0d0e541d206851d31a67"
+    },
+    {
+      "path": "config/dta-v22-2/evaluation/agent-visible/e06.json",
+      "sha256": "1407189d60ca3de7d68188fa2539ca8c22852e9f505a7270e3789c256dbd1952"
+    },
+    {
+      "path": "config/dta-v22-2/evaluation/agent-visible/e07.json",
+      "sha256": "8c0cdaa22dafaa56acc9569a4beb997974b8368121bfc7d2a67aba2ac6dbd119"
+    },
+    {
+      "path": "config/dta-v22-2/evaluation/agent-visible/e08.json",
+      "sha256": "df6bdf87d0fb6c4a00d40d65155724f244b053781efab6c989ccab2022e63283"
+    },
+    {
+      "path": "config/dta-v22-2/evaluation/agent-visible/e09.json",
+      "sha256": "e9f91492c78be04d30bf836d8fa3b0beb118ec288efbcfa700e845d402f6ecb6"
+    },
+    {
+      "path": "config/dta-v22-2/evaluation/agent-visible/e10.json",
+      "sha256": "d6013631e60b26696bc58b0a3858b885460355c26da60c17731ce98c2da55abc"
+    },
+    {
+      "path": "config/dta-v22-2/evaluation/agent-visible/e11.json",
+      "sha256": "343f42281a7c976c8143795e342552c30c1ef77f46ab83ca62faa3aa1773c82a"
+    },
+    {
+      "path": "config/dta-v22-2/evaluation/agent-visible/e12.json",
+      "sha256": "24e070dc7127d4c3eb5182427ebac83b401d99041c2ee5eb903639be89fe34d2"
+    },
+    {
+      "path": "config/dta-v22-2/evaluation/agent-visible/e13.json",
+      "sha256": "591653fdbeb77eb5ef073c28dd33589fc22c0ca700475bc2585919e9faace7b1"
+    },
+    {
+      "path": "config/dta-v22-2/evaluation/agent-visible/e14.json",
+      "sha256": "51045fc354b6e262953363693b59b054a8b20fbadce296654acaac1cd8efb21e"
+    },
+    {
+      "path": "config/dta-v22-2/evaluation/agent-visible/e15.json",
+      "sha256": "89cb54f1d1c866c3f29330eff57b4ec01a5b27430b86761cc602d9900f45c894"
+    },
+    {
+      "path": "config/dta-v22-2/evaluation/agent-visible/e16.json",
+      "sha256": "1e1cf054a6779fbaa6022ffc3ac9553a5d15a2d1f2f1add760cc91a6fc3ba5a1"
+    }
+  ],
+  "agent_writes": 0,
+  "base_commit": "b1418ff202831d809f85a2902e28b169a38e73d2",
+  "case_set": {
+    "path": "config/dta-v22-2/evaluation/cases.json",
+    "sha256": "6f65f4854d49ac74ea0f4ca3fb283ea327852b7bdb22efc08c1f8af7eeb34947"
+  },
+  "combinations": [
+    "FLAT_BROAD",
+    "FLAT_GAP",
+    "PLANNER_BROAD",
+    "PLANNER_GAP"
+  ],
+  "core_incident_path_1_or_2": 10,
+  "counterfactual_pairs": 4,
+  "development_result": {
+    "path": "docs/results/dta-v22-2-gap-routing-development.json",
+    "sha256": "f8b52f3850d43ee2f9d001100beae40f5d584ab8b79f4bb0262ee7d1942abf46"
+  },
+  "docker_calls": 0,
+  "expected_cases": 16,
+  "expected_runs": 64,
+  "historical_results_manifest": {
+    "path": "config/dta-v22-2/historical-results.v1.json",
+    "sha256": "d6f47322b5ec867e285737c969e3dc36fa358a3dcc35ad5825b8ba0cd67ee996"
+  },
+  "implementation_commit": "0ccf1ec6850fd2a27596cd8b0743be7937527076",
+  "maximum_protocol_repairs_per_turn": 2,
+  "maximum_transport_retries_per_request": 3,
+  "minimum_request_interval_seconds": 4,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "non_byte_identical_to_previous": 16,
+  "policy_source": {
+    "path": "src/ecomsre/dta_v2/v22/effective_policy_v222.py",
+    "sha256": "cdd97960fe4ee45b45fc80f62ae5dd629fbe160fd79d9f7eac07539bdc61cd92"
+  },
+  "prompt": {
+    "path": "config/dta-v22-2/prompt.txt",
+    "sha256": "202395860c00ff0a5029e7a42ce48a4fb08d5f08e8c42aaf81842d98033c9937"
+  },
+  "router_source": {
+    "path": "src/ecomsre/dta_v2/v22/gap_router_v222.py",
+    "sha256": "87742444209237d58f42ff794993c9bfbcde075ca2105f7fbf086d527c80408d"
+  },
+  "runbook_calls": 0,
+  "runner_source": {
+    "path": "src/ecomsre/dta_v2/v22/gap_study_runner_v222.py",
+    "sha256": "f4296d0ecbe78ee1717778534cb59e94a9f96490a7c7a0cf35f1724711e6acb7"
+  },
+  "schedule_rule": "DETERMINISTIC_BALANCED_ROTATION_INTERLEAVED_BY_CASE",
+  "schema_version": "dta-v22.2.gap-routing-evaluation-manifest.v1",
+  "scorer_source": {
+    "path": "src/ecomsre/dta_v2/v22/gap_study_scorer_v222.py",
+    "sha256": "a167943fed91a1635cb0a6c76d3a5c35dec24c84d41e4ec192ddeab7fb9257f4"
+  },
+  "selection_source": {
+    "path": "src/ecomsre/dta_v2/v22/selection_provider_v222.py",
+    "sha256": "d14ca203c973e098f2d76a5f301b54c0afb3cf6c1f9637d24e0015e42246135b"
+  },
+  "single_execution_rule": "EXACTLY_ONE_FULL_STUDY_EXECUTION",
+  "tempting_empty_cases": 16,
+  "truth_isolation_rule": "LOAD_ONLY_AFTER_ALL_FOUR_CASE_RUNS",
+  "truth_set": {
+    "path": "config/dta-v22-2/evaluation/truth.json",
+    "sha256": "50defbd32791e342ff53e699ba4b21d3d35d09fea7e35838032a93c2d4cf0196"
+  },
+  "utility_audit": {
+    "path": "config/dta-v22-2/evaluation/utility-audit.json",
+    "sha256": "ffa7e3480136bb2d5954bf7498dd490ae929219bbafcc7ec5d0a526aad2bd20b"
+  }
+}

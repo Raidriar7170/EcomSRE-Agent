@@ -1,0 +1,96 @@
+{
+  "schema_version": "dta-v22.2.gap-routing-progress.v1",
+  "status": "MEASURED_RESULTS_FROZEN",
+  "base_commit": "b1418ff202831d809f85a2902e28b169a38e73d2",
+  "implementation_commit": "0ccf1ec6850fd2a27596cd8b0743be7937527076",
+  "provider_model": "gpt-5.4-mini-2026-03-17",
+  "d0_feasibility": {
+    "development_incident_cases": 8,
+    "feasible_incident_cases": 8,
+    "infeasible_incident_cases": 0,
+    "turn_zero_top4_recall": 1.0,
+    "post_first_read_top4_recall": 1.0,
+    "oracle_visible_to_provider": false
+  },
+  "provider_smoke": {
+    "gate_passed": true,
+    "formal_smoke_runs": 6,
+    "logical_turns": 20,
+    "actual_http_requests": 21,
+    "post_repair_protocol_success": 1.0,
+    "provider_smoke_fixes_used": 1,
+    "maximum_provider_smoke_fixes": 2,
+    "uncaught_exceptions": 0,
+    "agent_writes": 0
+  },
+  "development": {
+    "portfolio": "MERGED_V22_V221_12_CASE_DEVELOPMENT_ONLY",
+    "campaign_executions": 2,
+    "runs_per_execution": 48,
+    "changed_iterations_used": 1,
+    "maximum_changed_iterations": 2,
+    "final_iteration": 2,
+    "gate_passed": true,
+    "predicate_yield_read_rate": 0.4642857142857143,
+    "nonempty_or_predicate_yield_read_rate": 0.4642857142857143,
+    "read_bearing_diagnosed_runs": 13,
+    "protocol_failure_rate": 0.0,
+    "uncaught_exceptions": 0,
+    "agent_writes": 0,
+    "iteration_1_artifact_sha256": "e23033dfd150ff1540fdd334164c862e3a9e3c93d1b937b946acae3410f64a99",
+    "iteration_1_partial_sha256": "e63810b6195642ccfe975f1e815c66d07682076fdaa6550f625e3c3ccc34b8ed",
+    "passing_artifact_sha256": "f8b52f3850d43ee2f9d001100beae40f5d584ab8b79f4bb0262ee7d1942abf46",
+    "passing_partial_sha256": "39e8961b5e4170641b3898ac2c2ae62219424a854fa7a85f501265083dccd5f0"
+  },
+  "evaluation_freeze": {
+    "cases": 16,
+    "core_incident_path_1_or_2": 10,
+    "counterfactual_pairs": 4,
+    "tempting_empty_cases": 16,
+    "non_byte_identical_to_previous": 16,
+    "infeasible_incident_cases": 0,
+    "turn_zero_top4_recall": 1.0,
+    "post_first_read_top4_recall": 1.0,
+    "manifest_sha256": "ab3090690dd22aeb497fce4f6d205a16fb2a39c6c37d1229cdf9ba59d05c0e68"
+  },
+  "final_study": {
+    "execution_count": 1,
+    "expected_execution_count": 1,
+    "expected_cases": 16,
+    "expected_runs": 64,
+    "represented_runs": 64,
+    "same_case_bytes_all_combinations": true,
+    "truth_loaded_after_all_four_case_runs": true,
+    "schedule_rule": "DETERMINISTIC_BALANCED_ROTATION_INTERLEAVED_BY_CASE",
+    "minimum_request_interval_seconds": 4,
+    "protocol_repairs": 2,
+    "transport_retries": 4,
+    "uncaught_exceptions": 0,
+    "agent_writes": 0,
+    "engineering_terminal": "DTA_V22_2_GAP_ROUTING_QUALITY_EFFECT_OBSERVED",
+    "planner_interaction_observed": false,
+    "artifact_sha256": "711a883b50816431ba58af9c3cf11427642fec5ead24493832d24d8c2bb70596",
+    "partial_jsonl_sha256": "8ea4220a9cb5b411b1509bbed287d164909c671a49f32762a1afa76ea3b45226"
+  },
+  "reported_evidence": {
+    "study_markdown_sha256": "28540fba691d49bfe0cc6405c5cc4969c6db5a1263dbe949a9b434fdac2a12e2",
+    "error_analysis_sha256": "3f2a77b914824b25210e48dd04c0954cc7c42c8c0b896dd07765ed2fe15c5302",
+    "interview_brief_sha256": "e57fd8ee419d321d1c4d07c138be2fcd878e2ceca8bb8a42c24f6fe362f3a444"
+  },
+  "post_study_behavior_changes": 0,
+  "post_study_non_evaluative_fixes": [
+    {
+      "issue": "v2.2.1 verifier assumed feature-commit ancestry after squash merge",
+      "decision_behavior_changed": false,
+      "affected_final_study_runs": 0,
+      "final_study_reruns": 0,
+      "verification": "bind merged HEAD to frozen base and exact implementation bytes"
+    }
+  ],
+  "final_study_reruns": 0,
+  "safety": {
+    "docker_calls": 0,
+    "runbook_executions": 0,
+    "agent_writes": 0
+  }
+}

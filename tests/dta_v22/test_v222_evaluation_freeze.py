@@ -25,6 +25,9 @@ from ecomsre.dta_v2.v22.replay_capabilities_v222 import (
     ReplaySourceAvailabilityV222,
     build_replay_capabilities_v222,
 )
+from scripts.ci.verify_dta_v222_gap_routing_study import (
+    verify_gap_routing_study_v222,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -157,3 +160,15 @@ def test_v222_evaluation_manifest_binds_all_final_inputs(tmp_path: Path) -> None
     )
     assert verified.expected_runs == 64
     assert verified.single_execution_rule == "EXACTLY_ONE_FULL_STUDY_EXECUTION"
+
+
+def test_v222_single_final_study_evidence_verifies() -> None:
+    summary = verify_gap_routing_study_v222()
+    assert summary == {
+        "status": "DTA_V22_2_GAP_ROUTING_STUDY_VERIFIED",
+        "execution_count": 1,
+        "runs": 64,
+        "terminal": "DTA_V22_2_GAP_ROUTING_QUALITY_EFFECT_OBSERVED",
+        "uncaught_exceptions": 0,
+        "agent_writes": 0,
+    }

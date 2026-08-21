@@ -44,6 +44,20 @@ represented with zero Agent writes. See the [study](docs/results/dta-v22-1-evide
 [error analysis](docs/results/dta-v22-1-evidence-acquisition-error-analysis.md),
 and [interview brief](docs/results/dta-v22-1-evidence-acquisition-interview-brief.md).
 
+DTA v2.2.2 replaced that gate experiment with source-aware predicate-gap
+routing and ran one new 16-case × 4-combination synthetic/derived replay study.
+Exact completion was Flat Broad 6/16, Flat Gap 10/16, Planner Broad 6/16, and
+Planner Gap 8/16. The preregistered result is
+`DTA_V22_2_GAP_ROUTING_QUALITY_EFFECT_OBSERVED`: Planner Gap gained two exact
+cases, mechanism Macro-F1 rose from 0 to 0.2667, diagnosis-after-read rose from
+0 to 0.1538, and combined No-Incident/abstention accuracy stayed at 1.0.
+Planner-specific interaction was not established. Absolute incident quality
+remained weak, and CPU/memory cases exposed premature `NO_INCIDENT` admission
+before unread resource evidence, so this is bounded replay evidence—not a
+generalization, live-operation, or production claim. See the [fixed study](docs/results/dta-v22-2-gap-routing-evaluation.md),
+[error analysis](docs/results/dta-v22-2-gap-routing-error-analysis.md), and
+[interview brief](docs/results/dta-v22-2-gap-routing-interview-brief.md).
+
 ## One-command offline demo
 
 ```bash
