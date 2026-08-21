@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from typing import Literal
 
 from pydantic import Field, StrictBool, StrictFloat, StrictInt, model_validator
@@ -59,6 +60,7 @@ class RankedActionV223(DtaModelV22):
     active_hypotheses_reduced: StrictInt = Field(ge=0)
     prior_empty_penalty: StrictBool
     weighted_cost: StrictFloat
+    canonical_tie_break_sha256: str
     rank_ordinal: StrictInt = Field(ge=1)
 
 
@@ -86,7 +88,7 @@ class GapRoutingResultV223(DtaModelV22):
         return self
 
 
-def _action_can_observe_gap(
+def action_can_observe_gap_v223(
     *, action: EvidenceActionV22, gap: PredicateGapV222
 ) -> bool:
     if gap.predicate_kind not in SOURCE_PREDICATE_CAPABILITIES_V222[action.source]:
@@ -145,7 +147,7 @@ def route_gap_aware_actions_v223(
                 hits = tuple(
                     gap
                     for gap in clause.missing_requirements
-                    if _action_can_observe_gap(action=action, gap=gap)
+                    if action_can_observe_gap_v223(action=action, gap=gap)
                 )
                 for gap in hits:
                     observable.add(
@@ -174,6 +176,12 @@ def route_gap_aware_actions_v223(
             for target in action.target_services
         )
         active_prior = max(active_priors, default=0.0)
+        # A raw lexical action-ID tie systematically favors alphabetically early
+        # service names.  The versioned digest preserves a canonical total order
+        # without using case identity, evaluator truth, or future read outcomes.
+        tie_break = hashlib.sha256(
+            f"dta-v223|{action.action_id}".encode("utf-8")
+        ).hexdigest()
         ranked = RankedActionV223(
             action=action,
             active_shortest_clauses_completable=active_completable,
@@ -183,6 +191,7 @@ def route_gap_aware_actions_v223(
             active_hypotheses_reduced=len(reduced_hypotheses),
             prior_empty_penalty=penalty,
             weighted_cost=action.weighted_cost,
+            canonical_tie_break_sha256=tie_break,
             rank_ordinal=1,
         )
         key = (
@@ -193,6 +202,7 @@ def route_gap_aware_actions_v223(
             -len(reduced_hypotheses),
             penalty,
             action.weighted_cost,
+            tie_break,
             action.action_id,
         )
         scored.append((key, ranked))
@@ -230,5 +240,6 @@ __all__ = (
     "GapRoutingResultV223",
     "PredicateYieldPriorV223",
     "RankedActionV223",
+    "action_can_observe_gap_v223",
     "route_gap_aware_actions_v223",
 )

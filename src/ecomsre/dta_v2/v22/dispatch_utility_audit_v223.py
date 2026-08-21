@@ -80,7 +80,7 @@ class DispatchUtilityAuditReportV223(DtaModelV22):
     predicate_yield_priors: tuple[PredicateYieldPriorV223, ...]
     states: tuple[Top1AuditStateV223, ...]
     gate: DevelopmentTop1GateV223
-    ranking_repairs_used: Literal[1]
+    ranking_repairs_used: Literal[2]
     oracle_visible_to_runtime: Literal[False]
     oracle_visible_to_provider: Literal[False]
     report_sha256: str
@@ -371,7 +371,7 @@ def audit_development_top1_v223(
         "predicate_yield_priors": tuple(item.model_dump(mode="json") for item in priors),
         "states": tuple(item.model_dump(mode="json") for item in states),
         "gate": gate.model_dump(mode="json"),
-        "ranking_repairs_used": 1,
+        "ranking_repairs_used": 2,
         "oracle_visible_to_runtime": False,
         "oracle_visible_to_provider": False,
     }
@@ -382,7 +382,7 @@ def audit_development_top1_v223(
         predicate_yield_priors=priors,
         states=tuple(states),
         gate=gate,
-        ranking_repairs_used=1,
+        ranking_repairs_used=2,
         oracle_visible_to_runtime=False,
         oracle_visible_to_provider=False,
         report_sha256=semantic_sha256_v22(payload),
