@@ -1,0 +1,3310 @@
+{
+  "case_set_sha256": "6b8be046690c2fd1bb2c3d1ce4300969c96e2b10127d5a82fd7859187d206024",
+  "cases": [
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:catalog",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "catalog"
+          ]
+        },
+        {
+          "action_id": "a:changes:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:logs:catalog",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "catalog"
+          ]
+        },
+        {
+          "action_id": "a:logs:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:metrics:catalog:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "catalog"
+          ]
+        },
+        {
+          "action_id": "a:metrics:frontend:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:resources:catalog",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "catalog"
+          ]
+        },
+        {
+          "action_id": "a:resources:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:b395e489fce8",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "catalog",
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:runtime:catalog",
+          "new_evidence_refs": [
+            "e:a:runtime:catalog:0:98cc1d7dacf9"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "catalog"
+          ]
+        },
+        {
+          "action_id": "a:runtime:frontend",
+          "new_evidence_refs": [
+            "e:a:runtime:frontend:0:f0ba356e6e49"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:traces:catalog",
+          "new_evidence_refs": [
+            "e:a:traces:catalog:0:9e52d03e1a5f"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "catalog"
+          ]
+        },
+        {
+          "action_id": "a:traces:frontend",
+          "new_evidence_refs": [
+            "e:a:traces:frontend:0:9e52d03e1a5f"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "frontend"
+          ]
+        }
+      ],
+      "case_id": "e01",
+      "expected_mechanism": "CONFIGURATION_ERROR",
+      "expected_root_service": "catalog",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:traces:catalog"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:changes:gateway",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "gateway"
+          ]
+        },
+        {
+          "action_id": "a:logs:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:logs:gateway",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "gateway"
+          ]
+        },
+        {
+          "action_id": "a:metrics:checkout:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:metrics:gateway:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "gateway"
+          ]
+        },
+        {
+          "action_id": "a:resources:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:resources:gateway",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "gateway"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:529e61317fec",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout",
+            "gateway"
+          ]
+        },
+        {
+          "action_id": "a:runtime:checkout",
+          "new_evidence_refs": [
+            "e:a:runtime:checkout:0:dff903af06ed"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:runtime:gateway",
+          "new_evidence_refs": [
+            "e:a:runtime:gateway:0:547fafa312fe"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "gateway"
+          ]
+        },
+        {
+          "action_id": "a:traces:checkout",
+          "new_evidence_refs": [
+            "e:a:traces:checkout:0:b5a394570345"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:traces:gateway",
+          "new_evidence_refs": [
+            "e:a:traces:gateway:0:b5a394570345"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "gateway"
+          ]
+        }
+      ],
+      "case_id": "e02",
+      "expected_mechanism": "CONFIGURATION_ERROR",
+      "expected_root_service": "checkout",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:traces:checkout"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:changes:inventory",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "inventory"
+          ]
+        },
+        {
+          "action_id": "a:logs:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:logs:inventory",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "inventory"
+          ]
+        },
+        {
+          "action_id": "a:metrics:frontend:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:metrics:inventory:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "inventory"
+          ]
+        },
+        {
+          "action_id": "a:resources:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:resources:inventory",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "inventory"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:324dea7a83fb",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend",
+            "inventory"
+          ]
+        },
+        {
+          "action_id": "a:runtime:frontend",
+          "new_evidence_refs": [
+            "e:a:runtime:frontend:0:f0ba356e6e49"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:runtime:inventory",
+          "new_evidence_refs": [
+            "e:a:runtime:inventory:0:32c3dca93f44"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_UNHEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "inventory"
+          ]
+        },
+        {
+          "action_id": "a:traces:frontend",
+          "new_evidence_refs": [
+            "e:a:traces:frontend:0:323d10567bc6"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:traces:inventory",
+          "new_evidence_refs": [
+            "e:a:traces:inventory:0:323d10567bc6"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "inventory"
+          ]
+        }
+      ],
+      "case_id": "e03",
+      "expected_mechanism": "SERVICE_UNAVAILABLE",
+      "expected_root_service": "inventory",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:traces:frontend"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:changes:payment",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "payment"
+          ]
+        },
+        {
+          "action_id": "a:logs:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:logs:payment",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "payment"
+          ]
+        },
+        {
+          "action_id": "a:metrics:checkout:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:metrics:payment:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "payment"
+          ]
+        },
+        {
+          "action_id": "a:resources:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:resources:payment",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "payment"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:1b139c7e8f80",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout",
+            "payment"
+          ]
+        },
+        {
+          "action_id": "a:runtime:checkout",
+          "new_evidence_refs": [
+            "e:a:runtime:checkout:0:dff903af06ed"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:runtime:payment",
+          "new_evidence_refs": [
+            "e:a:runtime:payment:0:cff41d7caa6b"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_UNHEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "payment"
+          ]
+        },
+        {
+          "action_id": "a:traces:checkout",
+          "new_evidence_refs": [
+            "e:a:traces:checkout:0:ed877c39f9e3"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:traces:payment",
+          "new_evidence_refs": [
+            "e:a:traces:payment:0:ed877c39f9e3"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "payment"
+          ]
+        }
+      ],
+      "case_id": "e04",
+      "expected_mechanism": "SERVICE_UNAVAILABLE",
+      "expected_root_service": "payment",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:traces:checkout"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:changes:recommendation",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "recommendation"
+          ]
+        },
+        {
+          "action_id": "a:logs:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:logs:recommendation",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "recommendation"
+          ]
+        },
+        {
+          "action_id": "a:metrics:frontend:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:metrics:recommendation:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "recommendation"
+          ]
+        },
+        {
+          "action_id": "a:resources:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:resources:recommendation",
+          "new_evidence_refs": [
+            "e:a:resources:recommendation:0:621f5300e4fe"
+          ],
+          "new_predicate_kinds": [
+            "RESOURCE_CPU_STRONG"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "recommendation"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:4c3df0be08cf",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend",
+            "recommendation"
+          ]
+        },
+        {
+          "action_id": "a:runtime:frontend",
+          "new_evidence_refs": [
+            "e:a:runtime:frontend:0:f0ba356e6e49"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:runtime:recommendation",
+          "new_evidence_refs": [
+            "e:a:runtime:recommendation:0:4e81f236104a"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "recommendation"
+          ]
+        },
+        {
+          "action_id": "a:traces:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:traces:recommendation",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "recommendation"
+          ]
+        }
+      ],
+      "case_id": "e05",
+      "expected_mechanism": "CPU_SATURATION",
+      "expected_root_service": "recommendation",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:resources:recommendation"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:ad",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "ad"
+          ]
+        },
+        {
+          "action_id": "a:changes:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:logs:ad",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "ad"
+          ]
+        },
+        {
+          "action_id": "a:logs:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:metrics:ad:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "ad"
+          ]
+        },
+        {
+          "action_id": "a:metrics:frontend:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:resources:ad",
+          "new_evidence_refs": [
+            "e:a:resources:ad:0:160dd7f0ca51"
+          ],
+          "new_predicate_kinds": [
+            "RESOURCE_CPU_STRONG"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "ad"
+          ]
+        },
+        {
+          "action_id": "a:resources:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:runtime:ad",
+          "new_evidence_refs": [
+            "e:a:runtime:ad:0:a492d721642d"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "ad"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:9e85b1341c71",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "ad",
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:runtime:frontend",
+          "new_evidence_refs": [
+            "e:a:runtime:frontend:0:f0ba356e6e49"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:traces:ad",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "ad"
+          ]
+        },
+        {
+          "action_id": "a:traces:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        }
+      ],
+      "case_id": "e06",
+      "expected_mechanism": "CPU_SATURATION",
+      "expected_root_service": "ad",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:resources:ad"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:changes:email",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "email"
+          ]
+        },
+        {
+          "action_id": "a:logs:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:logs:email",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "email"
+          ]
+        },
+        {
+          "action_id": "a:metrics:checkout:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:metrics:email:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "email"
+          ]
+        },
+        {
+          "action_id": "a:resources:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:resources:email",
+          "new_evidence_refs": [
+            "e:a:resources:email:0:2508c25b5742"
+          ],
+          "new_predicate_kinds": [
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "email"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:187f290aa482",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout",
+            "email"
+          ]
+        },
+        {
+          "action_id": "a:runtime:checkout",
+          "new_evidence_refs": [
+            "e:a:runtime:checkout:0:dff903af06ed"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:runtime:email",
+          "new_evidence_refs": [
+            "e:a:runtime:email:0:5a4db2712766"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "email"
+          ]
+        },
+        {
+          "action_id": "a:traces:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:traces:email",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "email"
+          ]
+        }
+      ],
+      "case_id": "e07",
+      "expected_mechanism": "MEMORY_LEAK",
+      "expected_root_service": "email",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:resources:email"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:cart",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "cart"
+          ]
+        },
+        {
+          "action_id": "a:changes:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:logs:cart",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "cart"
+          ]
+        },
+        {
+          "action_id": "a:logs:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:metrics:cart:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "cart"
+          ]
+        },
+        {
+          "action_id": "a:metrics:frontend:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:resources:cart",
+          "new_evidence_refs": [
+            "e:a:resources:cart:0:9baaca9d0f18"
+          ],
+          "new_predicate_kinds": [
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "cart"
+          ]
+        },
+        {
+          "action_id": "a:resources:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:69c92e5cf249",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "cart",
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:runtime:cart",
+          "new_evidence_refs": [
+            "e:a:runtime:cart:0:a5bef3a52174"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "cart"
+          ]
+        },
+        {
+          "action_id": "a:runtime:frontend",
+          "new_evidence_refs": [
+            "e:a:runtime:frontend:0:f0ba356e6e49"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:traces:cart",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "cart"
+          ]
+        },
+        {
+          "action_id": "a:traces:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        }
+      ],
+      "case_id": "e08",
+      "expected_mechanism": "MEMORY_LEAK",
+      "expected_root_service": "cart",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:resources:cart"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:changes:shipping",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "shipping"
+          ]
+        },
+        {
+          "action_id": "a:logs:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:logs:shipping",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "shipping"
+          ]
+        },
+        {
+          "action_id": "a:metrics:checkout:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:metrics:shipping:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "shipping"
+          ]
+        },
+        {
+          "action_id": "a:resources:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:resources:shipping",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "shipping"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:f7af3c8d6142",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout",
+            "shipping"
+          ]
+        },
+        {
+          "action_id": "a:runtime:checkout",
+          "new_evidence_refs": [
+            "e:a:runtime:checkout:0:dff903af06ed"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:runtime:shipping",
+          "new_evidence_refs": [
+            "e:a:runtime:shipping:0:1f26dd172f18"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "shipping"
+          ]
+        },
+        {
+          "action_id": "a:traces:checkout",
+          "new_evidence_refs": [
+            "e:a:traces:checkout:0:531fdb103241"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_DEPENDENCY_LATENCY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:traces:shipping",
+          "new_evidence_refs": [
+            "e:a:traces:shipping:0:531fdb103241"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_DEPENDENCY_LATENCY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "shipping"
+          ]
+        }
+      ],
+      "case_id": "e09",
+      "expected_mechanism": "DEPENDENCY_LATENCY",
+      "expected_root_service": "shipping",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:traces:checkout"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:changes:currency",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "currency"
+          ]
+        },
+        {
+          "action_id": "a:logs:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:logs:currency",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "currency"
+          ]
+        },
+        {
+          "action_id": "a:metrics:checkout:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:metrics:currency:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "currency"
+          ]
+        },
+        {
+          "action_id": "a:resources:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:resources:currency",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "currency"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:123882ac607c",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout",
+            "currency"
+          ]
+        },
+        {
+          "action_id": "a:runtime:checkout",
+          "new_evidence_refs": [
+            "e:a:runtime:checkout:0:dff903af06ed"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:runtime:currency",
+          "new_evidence_refs": [
+            "e:a:runtime:currency:0:c69e04ac8f6c"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "currency"
+          ]
+        },
+        {
+          "action_id": "a:traces:checkout",
+          "new_evidence_refs": [
+            "e:a:traces:checkout:0:74fb6142a1d5"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_DEPENDENCY_LATENCY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:traces:currency",
+          "new_evidence_refs": [
+            "e:a:traces:currency:0:74fb6142a1d5"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_DEPENDENCY_LATENCY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "currency"
+          ]
+        }
+      ],
+      "case_id": "e10",
+      "expected_mechanism": "DEPENDENCY_LATENCY",
+      "expected_root_service": "currency",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:traces:checkout"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:catalog",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "catalog"
+          ]
+        },
+        {
+          "action_id": "a:changes:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:logs:catalog",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "catalog"
+          ]
+        },
+        {
+          "action_id": "a:logs:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:metrics:catalog:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "catalog"
+          ]
+        },
+        {
+          "action_id": "a:metrics:frontend:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:resources:catalog",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "catalog"
+          ]
+        },
+        {
+          "action_id": "a:resources:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:b395e489fce8",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "catalog",
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:runtime:catalog",
+          "new_evidence_refs": [
+            "e:a:runtime:catalog:0:98cc1d7dacf9"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "catalog"
+          ]
+        },
+        {
+          "action_id": "a:runtime:frontend",
+          "new_evidence_refs": [
+            "e:a:runtime:frontend:0:f0ba356e6e49"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:traces:catalog",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "catalog"
+          ]
+        },
+        {
+          "action_id": "a:traces:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        }
+      ],
+      "case_id": "e11",
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "NO_INCIDENT",
+      "shortest_action_ids": [],
+      "shortest_admissible_path": "0"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:changes:inventory",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "inventory"
+          ]
+        },
+        {
+          "action_id": "a:logs:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:logs:inventory",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "inventory"
+          ]
+        },
+        {
+          "action_id": "a:metrics:frontend:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:metrics:inventory:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "inventory"
+          ]
+        },
+        {
+          "action_id": "a:resources:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:resources:inventory",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "inventory"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:324dea7a83fb",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend",
+            "inventory"
+          ]
+        },
+        {
+          "action_id": "a:runtime:frontend",
+          "new_evidence_refs": [
+            "e:a:runtime:frontend:0:f0ba356e6e49"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:runtime:inventory",
+          "new_evidence_refs": [
+            "e:a:runtime:inventory:0:e6caa03725a1"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "inventory"
+          ]
+        },
+        {
+          "action_id": "a:traces:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:traces:inventory",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "inventory"
+          ]
+        }
+      ],
+      "case_id": "e12",
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "NO_INCIDENT",
+      "shortest_action_ids": [],
+      "shortest_admissible_path": "0"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:changes:recommendation",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "recommendation"
+          ]
+        },
+        {
+          "action_id": "a:logs:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:logs:recommendation",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "recommendation"
+          ]
+        },
+        {
+          "action_id": "a:metrics:frontend:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:metrics:recommendation:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "recommendation"
+          ]
+        },
+        {
+          "action_id": "a:resources:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:resources:recommendation",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "recommendation"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:4c3df0be08cf",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend",
+            "recommendation"
+          ]
+        },
+        {
+          "action_id": "a:runtime:frontend",
+          "new_evidence_refs": [
+            "e:a:runtime:frontend:0:f0ba356e6e49"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:runtime:recommendation",
+          "new_evidence_refs": [
+            "e:a:runtime:recommendation:0:4e81f236104a"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "recommendation"
+          ]
+        },
+        {
+          "action_id": "a:traces:frontend",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "frontend"
+          ]
+        },
+        {
+          "action_id": "a:traces:recommendation",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "recommendation"
+          ]
+        }
+      ],
+      "case_id": "e13",
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "NO_INCIDENT",
+      "shortest_action_ids": [],
+      "shortest_admissible_path": "0"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:changes:shipping",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "shipping"
+          ]
+        },
+        {
+          "action_id": "a:logs:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:logs:shipping",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "shipping"
+          ]
+        },
+        {
+          "action_id": "a:metrics:checkout:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:metrics:shipping:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "shipping"
+          ]
+        },
+        {
+          "action_id": "a:resources:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:resources:shipping",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "shipping"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:f7af3c8d6142",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout",
+            "shipping"
+          ]
+        },
+        {
+          "action_id": "a:runtime:checkout",
+          "new_evidence_refs": [
+            "e:a:runtime:checkout:0:dff903af06ed"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:runtime:shipping",
+          "new_evidence_refs": [
+            "e:a:runtime:shipping:0:1f26dd172f18"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "shipping"
+          ]
+        },
+        {
+          "action_id": "a:traces:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:traces:shipping",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "shipping"
+          ]
+        }
+      ],
+      "case_id": "e14",
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "ABSTAIN",
+      "shortest_action_ids": [],
+      "shortest_admissible_path": "0"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:changes:email",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "email"
+          ]
+        },
+        {
+          "action_id": "a:logs:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:logs:email",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "email"
+          ]
+        },
+        {
+          "action_id": "a:metrics:checkout:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:metrics:email:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "email"
+          ]
+        },
+        {
+          "action_id": "a:resources:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:resources:email",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "email"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:187f290aa482",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout",
+            "email"
+          ]
+        },
+        {
+          "action_id": "a:runtime:checkout",
+          "new_evidence_refs": [
+            "e:a:runtime:checkout:0:dff903af06ed"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:runtime:email",
+          "new_evidence_refs": [
+            "e:a:runtime:email:0:5a4db2712766"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "email"
+          ]
+        },
+        {
+          "action_id": "a:traces:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:traces:email",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "email"
+          ]
+        }
+      ],
+      "case_id": "e15",
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "ABSTAIN",
+      "shortest_action_ids": [],
+      "shortest_admissible_path": "0"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:changes:payment",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "payment"
+          ]
+        },
+        {
+          "action_id": "a:logs:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:logs:payment",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "payment"
+          ]
+        },
+        {
+          "action_id": "a:metrics:checkout:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:metrics:payment:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "payment"
+          ]
+        },
+        {
+          "action_id": "a:resources:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:resources:payment",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "payment"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:1b139c7e8f80",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout",
+            "payment"
+          ]
+        },
+        {
+          "action_id": "a:runtime:checkout",
+          "new_evidence_refs": [
+            "e:a:runtime:checkout:0:dff903af06ed"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:runtime:payment",
+          "new_evidence_refs": [
+            "e:a:runtime:payment:0:f978e8a100b9"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "payment"
+          ]
+        },
+        {
+          "action_id": "a:traces:checkout",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "checkout"
+          ]
+        },
+        {
+          "action_id": "a:traces:payment",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "payment"
+          ]
+        }
+      ],
+      "case_id": "e16",
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "ABSTAIN",
+      "shortest_action_ids": [],
+      "shortest_admissible_path": "0"
+    }
+  ],
+  "infeasible_incident_cases": 0,
+  "oracle_visible_to_provider": false,
+  "report_sha256": "47f91ac147691255896f6d09ded643cfbc282704c5b1dca5c47f15ecd8e60e4c",
+  "schema_version": "dta-v22.2.evidence-utility-audit.v1",
+  "truth_set_sha256": "870f1e3d61105dfdf65ef51141645b8f5b4db3eca73c094176c41da81ffff456"
+}

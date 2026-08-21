@@ -15,7 +15,11 @@ from ecomsre.dta_v2.v22.action_catalog import (
     build_action_catalog_v22,
     build_tool_capability_registry_v22,
 )
-from ecomsre.dta_v2.v22.practical_dataset import PracticalCaseSpecV22
+from ecomsre.dta_v2.v22.practical_dataset import (
+    PracticalCaseModifierV22,
+    PracticalCaseSpecV22,
+    load_synthetic_evaluation_source_v222,
+)
 from ecomsre.dta_v2.v22.read_contracts import (
     DtaModelV22,
     EvidenceSourceV22,
@@ -80,6 +84,13 @@ def captured_sources_from_case_spec_v222(
             EvidenceSourceV22.TRACES,
             EvidenceSourceV22.RUNTIME,
         }
+    elif spec.modifier is PracticalCaseModifierV22.V222_EVALUATION_FIXTURE:
+        captured = set(
+            load_synthetic_evaluation_source_v222(
+                spec=spec,
+                repository_root=repository_root,
+            ).captured_sources
+        )
     else:
         raw = cast(
             Mapping[str, object],
@@ -108,32 +119,27 @@ def build_replay_capabilities_v222(
             repository_root=repository_root,
         )
     )
-    payload = {
+    sources = tuple(
+        ReplaySourceCapabilityV222(
+            source=source,
+            availability=(
+                ReplaySourceAvailabilityV222.CAPTURED
+                if source in captured
+                else ReplaySourceAvailabilityV222.NOT_CAPTURED
+            ),
+        )
+        for source in EvidenceSourceV22
+    )
+    digest_payload = {
         "schema_version": "dta-v22.2.replay-capabilities.v1",
-        "sources": tuple(
-            ReplaySourceCapabilityV222(
-                source=source,
-                availability=(
-                    ReplaySourceAvailabilityV222.CAPTURED
-                    if source in captured
-                    else ReplaySourceAvailabilityV222.NOT_CAPTURED
-                ),
-            )
-            for source in EvidenceSourceV22
-        ),
+        "sources": tuple(item.model_dump(mode="json") for item in sources),
         "derived_from_capture_metadata": True,
     }
-    draft = ReplayCapabilitiesV222.model_construct(
-        **payload,
-        capabilities_sha256="0" * 64,
-    )
-    return ReplayCapabilitiesV222.model_validate(
-        {
-            **payload,
-            "capabilities_sha256": semantic_sha256_v22(
-                draft.model_dump(mode="json", exclude={"capabilities_sha256"})
-            ),
-        }
+    return ReplayCapabilitiesV222(
+        schema_version="dta-v22.2.replay-capabilities.v1",
+        sources=sources,
+        derived_from_capture_metadata=True,
+        capabilities_sha256=semantic_sha256_v22(digest_payload),
     )
 
 

@@ -444,31 +444,30 @@ def audit_case_set_v222(
                 shortest_action_ids=shortest_ids,
             )
         )
-    payload = {
+    infeasible = sum(
+        item.expected_terminal == "DIAGNOSED"
+        and item.shortest_admissible_path is ShortestAdmissiblePathV222.INFEASIBLE
+        for item in case_audits
+    )
+    cases = tuple(case_audits)
+    case_set_sha256 = semantic_sha256_v22(json.loads(case_set_path.read_bytes()))
+    truth_set_sha256 = semantic_sha256_v22(json.loads(truth_path.read_bytes()))
+    digest_payload = {
         "schema_version": "dta-v22.2.evidence-utility-audit.v1",
-        "case_set_sha256": semantic_sha256_v22(
-            json.loads(case_set_path.read_bytes())
-        ),
-        "truth_set_sha256": semantic_sha256_v22(json.loads(truth_path.read_bytes())),
-        "cases": tuple(case_audits),
-        "infeasible_incident_cases": sum(
-            item.expected_terminal == "DIAGNOSED"
-            and item.shortest_admissible_path is ShortestAdmissiblePathV222.INFEASIBLE
-            for item in case_audits
-        ),
+        "case_set_sha256": case_set_sha256,
+        "truth_set_sha256": truth_set_sha256,
+        "cases": tuple(item.model_dump(mode="json") for item in cases),
+        "infeasible_incident_cases": infeasible,
         "oracle_visible_to_provider": False,
     }
-    draft = EvidenceUtilityAuditReportV222.model_construct(
-        **payload,
-        report_sha256="0" * 64,
-    )
-    return EvidenceUtilityAuditReportV222.model_validate(
-        {
-            **payload,
-            "report_sha256": semantic_sha256_v22(
-                draft.model_dump(mode="json", exclude={"report_sha256"})
-            ),
-        }
+    return EvidenceUtilityAuditReportV222(
+        schema_version="dta-v22.2.evidence-utility-audit.v1",
+        case_set_sha256=case_set_sha256,
+        truth_set_sha256=truth_set_sha256,
+        cases=cases,
+        infeasible_incident_cases=infeasible,
+        oracle_visible_to_provider=False,
+        report_sha256=semantic_sha256_v22(digest_payload),
     )
 
 

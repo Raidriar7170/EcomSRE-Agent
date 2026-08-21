@@ -17,6 +17,7 @@ from ecomsre.dta_v2.v22.evidence_utility_audit_v222 import (
 )
 from ecomsre.dta_v2.v22.action_catalog import StaticTopologyV22
 from ecomsre.dta_v2.v22.controller_contracts import build_hypothesis_catalog_v22
+from ecomsre.dta_v2.v22.controller_inputs import ControllerArmV22
 from ecomsre.dta_v2.v22.effective_policy_v222 import (
     build_effective_support_policy_v222,
 )
@@ -59,6 +60,12 @@ from ecomsre.dta_v2.v22.gap_study_runner_v222 import (
     SHARED_SELECTION_SYSTEM_PROMPT_V222,
     run_oracle_simulation_v222,
 )
+from ecomsre.dta_v2.v22.gap_study_campaign_v222 import (
+    StudyCombinationV222,
+    balanced_combination_order_v222,
+)
+from ecomsre.dta_v2.v22.gap_study_scorer_v222 import score_gap_study_v222
+from ecomsre.dta_v2.v22.practical_campaign import load_practical_truth_set_v22
 from ecomsre.model.gateway import OpenAICompatibleConfig
 
 
@@ -481,6 +488,25 @@ def test_terminal_catalog_exposes_supported_t_alias_and_no_early_abstain() -> No
     assert delta.minimum_missing_gap_after == 0
 
 
+def test_terminal_catalog_exposes_no_incident_for_complete_healthy_replay() -> None:
+    _, case, _, _, memory, _, policy, hypotheses, graph, routing = _state("e09")
+    catalog = build_terminal_catalog_v222(
+        policy=policy,
+        hypothesis_catalog=hypotheses,
+        memory=memory,
+        gap_graph=graph,
+        routed_actions=routing,
+        candidate_services=case.candidate_services,
+        topology_edges=case.topology_edges,
+        budget_exhausted=False,
+        required_source_unavailable=False,
+        conflicting_evidence=False,
+    )
+    assert tuple(item.terminal_kind.value for item in catalog.candidates) == (
+        "NO_INCIDENT",
+    )
+
+
 class _RecordingTransport:
     def __init__(self, outcomes: list[object]) -> None:
         self.outcomes = list(outcomes)
@@ -633,4 +659,96 @@ def test_v222_prompt_file_matches_short_selection_prompt() -> None:
         .read_text(encoding="utf-8")
         .strip()
         == SHARED_SELECTION_SYSTEM_PROMPT_V222
+    )
+
+
+def test_four_combination_schedule_rotates_every_execution_position() -> None:
+    positions = {combination: [] for combination in StudyCombinationV222}
+    for index in range(4):
+        order = balanced_combination_order_v222(index)
+        assert len(order) == 4
+        assert set(order) == set(StudyCombinationV222)
+        for position, combination in enumerate(order, start=1):
+            positions[combination].append(position)
+    assert all(sorted(values) == [1, 2, 3, 4] for values in positions.values())
+
+
+def test_oracle_runs_satisfy_development_gap_utility_gate() -> None:
+    oracle = run_oracle_simulation_v222(
+        repository_root=ROOT,
+        case_set_path=ROOT / "config/dta-v22-sprint/evaluation/cases.json",
+        truth_path=ROOT / "config/dta-v22-sprint/evaluation/truth.json",
+    )
+    gap_runs = tuple(
+        run.model_copy(
+            update={
+                "arm": arm,
+                "router_mode": GapRouterModeV222.GAP_RANKED_TOP_K,
+                "planner_ledger_visible": arm is ControllerArmV22.PLANNER_LITE,
+            }
+        )
+        for run in oracle.runs
+        for arm in (ControllerArmV22.FLAT_CANONICAL, ControllerArmV22.PLANNER_LITE)
+    )
+    truths = load_practical_truth_set_v22(
+        ROOT / "config/dta-v22-sprint/evaluation/truth.json"
+    ).truths
+    scored = score_gap_study_v222(runs=gap_runs, truths=truths)
+    assert scored.development_gate.predicate_yield_read_rate == 1.0
+    assert scored.development_gate.read_bearing_diagnosed_runs >= 2
+    assert scored.development_gate.protocol_failure_rate == 0.0
+    assert scored.development_gate.gate_passed is True
+
+
+def test_four_combination_scorer_emits_frozen_effect_interpretation() -> None:
+    oracle = run_oracle_simulation_v222(
+        repository_root=ROOT,
+        case_set_path=ROOT / "config/dta-v22-sprint/evaluation/cases.json",
+        truth_path=ROOT / "config/dta-v22-sprint/evaluation/truth.json",
+    )
+    combinations = (
+        (ControllerArmV22.FLAT_CANONICAL, GapRouterModeV222.BROAD_CATALOG),
+        (ControllerArmV22.FLAT_CANONICAL, GapRouterModeV222.GAP_RANKED_TOP_K),
+        (ControllerArmV22.PLANNER_LITE, GapRouterModeV222.BROAD_CATALOG),
+        (ControllerArmV22.PLANNER_LITE, GapRouterModeV222.GAP_RANKED_TOP_K),
+    )
+    runs = tuple(
+        run.model_copy(
+            update={
+                "arm": arm,
+                "router_mode": mode,
+                "planner_ledger_visible": arm is ControllerArmV22.PLANNER_LITE,
+            }
+        )
+        for run in oracle.runs
+        for arm, mode in combinations
+    )
+    cases = ROOT / "config/dta-v22-sprint/evaluation/cases.json"
+    truth = ROOT / "config/dta-v22-sprint/evaluation/truth.json"
+    scored = score_gap_study_v222(
+        runs=runs,
+        truths=load_practical_truth_set_v22(truth).truths,
+        utility_audit=audit_case_set_v222(
+            repository_root=ROOT,
+            case_set_path=cases,
+            truth_path=truth,
+        ),
+        routing_gate=evaluate_development_routing_gate_v222(
+            repository_root=ROOT,
+            case_set_path=cases,
+            truth_path=truth,
+        ),
+        include_interpretation=True,
+    )
+    assert all(
+        item.oracle_shortest_path_action_hit_rate == 1.0
+        for item in scored.combinations
+    )
+    assert scored.top_k_useful_action_recall_turn_zero == 1.0
+    assert scored.top_k_useful_action_recall_post_first_read == 1.0
+    assert len(scored.control_regressions) == 2
+    assert scored.interpretation is not None
+    assert (
+        scored.interpretation.engineering_terminal
+        == "DTA_V22_2_NO_GAP_ROUTING_EFFECT_OBSERVED"
     )

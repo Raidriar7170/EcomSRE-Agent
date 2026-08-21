@@ -1,0 +1,181 @@
+{
+  "cases": [
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e01",
+      "counterfactual_pair_ids": [
+        "cf-config"
+      ],
+      "derivation": "Deterministic synthetic/derived v2.2.2 replay fixture from a truth-isolated evaluator blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-2/evaluation/agent-visible/e01.json",
+      "source_sha256": "c96abe468793b1dc4bdc1dab57bf864b3ec750f55360c95c1bf6a8e484a0d916"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "e02",
+      "counterfactual_pair_ids": [],
+      "derivation": "Deterministic synthetic/derived v2.2.2 replay fixture from a truth-isolated evaluator blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-2/evaluation/agent-visible/e02.json",
+      "source_sha256": "4c0be4fd8f16b12f7c6c54a5ea0d0e423eef174f7a798676ecb670595db82b45"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e03",
+      "counterfactual_pair_ids": [
+        "cf-service"
+      ],
+      "derivation": "Deterministic synthetic/derived v2.2.2 replay fixture from a truth-isolated evaluator blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-2/evaluation/agent-visible/e03.json",
+      "source_sha256": "9da57898ec6eb997ec294d3aaec137e9656c0ca0a230e4bab120066b385e0fba"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "e04",
+      "counterfactual_pair_ids": [],
+      "derivation": "Deterministic synthetic/derived v2.2.2 replay fixture from a truth-isolated evaluator blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-2/evaluation/agent-visible/e04.json",
+      "source_sha256": "69cf6b601149bc2583e525a7086cf64a6ec9ebb5c37b0bf0fe0c40fb6e338af3"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e05",
+      "counterfactual_pair_ids": [
+        "cf-cpu"
+      ],
+      "derivation": "Deterministic synthetic/derived v2.2.2 replay fixture from a truth-isolated evaluator blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-2/evaluation/agent-visible/e05.json",
+      "source_sha256": "2188eb473d6b83ebdc68ea21f45c4726223c362cf7aa0d0e541d206851d31a67"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "e06",
+      "counterfactual_pair_ids": [],
+      "derivation": "Deterministic synthetic/derived v2.2.2 replay fixture from a truth-isolated evaluator blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-2/evaluation/agent-visible/e06.json",
+      "source_sha256": "1407189d60ca3de7d68188fa2539ca8c22852e9f505a7270e3789c256dbd1952"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "e07",
+      "counterfactual_pair_ids": [],
+      "derivation": "Deterministic synthetic/derived v2.2.2 replay fixture from a truth-isolated evaluator blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-2/evaluation/agent-visible/e07.json",
+      "source_sha256": "8c0cdaa22dafaa56acc9569a4beb997974b8368121bfc7d2a67aba2ac6dbd119"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "e08",
+      "counterfactual_pair_ids": [],
+      "derivation": "Deterministic synthetic/derived v2.2.2 replay fixture from a truth-isolated evaluator blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-2/evaluation/agent-visible/e08.json",
+      "source_sha256": "df6bdf87d0fb6c4a00d40d65155724f244b053781efab6c989ccab2022e63283"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e09",
+      "counterfactual_pair_ids": [
+        "cf-dependency"
+      ],
+      "derivation": "Deterministic synthetic/derived v2.2.2 replay fixture from a truth-isolated evaluator blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-2/evaluation/agent-visible/e09.json",
+      "source_sha256": "e9f91492c78be04d30bf836d8fa3b0beb118ec288efbcfa700e845d402f6ecb6"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "e10",
+      "counterfactual_pair_ids": [],
+      "derivation": "Deterministic synthetic/derived v2.2.2 replay fixture from a truth-isolated evaluator blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-2/evaluation/agent-visible/e10.json",
+      "source_sha256": "d6013631e60b26696bc58b0a3858b885460355c26da60c17731ce98c2da55abc"
+    },
+    {
+      "bootstrap_insufficient_expected": false,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e11",
+      "counterfactual_pair_ids": [
+        "cf-config"
+      ],
+      "derivation": "Deterministic synthetic/derived v2.2.2 replay fixture from a truth-isolated evaluator blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-2/evaluation/agent-visible/e11.json",
+      "source_sha256": "343f42281a7c976c8143795e342552c30c1ef77f46ab83ca62faa3aa1773c82a"
+    },
+    {
+      "bootstrap_insufficient_expected": false,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e12",
+      "counterfactual_pair_ids": [
+        "cf-service"
+      ],
+      "derivation": "Deterministic synthetic/derived v2.2.2 replay fixture from a truth-isolated evaluator blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-2/evaluation/agent-visible/e12.json",
+      "source_sha256": "24e070dc7127d4c3eb5182427ebac83b401d99041c2ee5eb903639be89fe34d2"
+    },
+    {
+      "bootstrap_insufficient_expected": false,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e13",
+      "counterfactual_pair_ids": [
+        "cf-cpu"
+      ],
+      "derivation": "Deterministic synthetic/derived v2.2.2 replay fixture from a truth-isolated evaluator blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-2/evaluation/agent-visible/e13.json",
+      "source_sha256": "591653fdbeb77eb5ef073c28dd33589fc22c0ca700475bc2585919e9faace7b1"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e14",
+      "counterfactual_pair_ids": [
+        "cf-dependency"
+      ],
+      "derivation": "Deterministic synthetic/derived v2.2.2 replay fixture from a truth-isolated evaluator blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-2/evaluation/agent-visible/e14.json",
+      "source_sha256": "51045fc354b6e262953363693b59b054a8b20fbadce296654acaac1cd8efb21e"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "e15",
+      "counterfactual_pair_ids": [],
+      "derivation": "Deterministic synthetic/derived v2.2.2 replay fixture from a truth-isolated evaluator blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-2/evaluation/agent-visible/e15.json",
+      "source_sha256": "89cb54f1d1c866c3f29330eff57b4ec01a5b27430b86761cc602d9900f45c894"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "e16",
+      "counterfactual_pair_ids": [],
+      "derivation": "Deterministic synthetic/derived v2.2.2 replay fixture from a truth-isolated evaluator blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-2/evaluation/agent-visible/e16.json",
+      "source_sha256": "1e1cf054a6779fbaa6022ffc3ac9553a5d15a2d1f2f1add760cc91a6fc3ba5a1"
+    }
+  ],
+  "schema_version": "dta-v22.practical-case-set.v1"
+}

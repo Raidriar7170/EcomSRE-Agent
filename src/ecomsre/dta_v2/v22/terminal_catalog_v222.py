@@ -15,6 +15,7 @@ from ecomsre.dta_v2.v22.controller_contracts import (
 from ecomsre.dta_v2.v22.effective_policy_v222 import (
     EffectiveSupportPolicyV222,
     evaluate_effective_support_v222,
+    evaluate_replay_no_incident_coverage_v222,
 )
 from ecomsre.dta_v2.v22.gap_graph_v222 import GapGraphV222
 from ecomsre.dta_v2.v22.gap_router_v222 import GapRoutingResultV222
@@ -130,7 +131,10 @@ def build_terminal_catalog_v222(
         memory=memory,
         candidate_services=candidate_services,
     )
-    if no_incident.accepted:
+    if no_incident.accepted or evaluate_replay_no_incident_coverage_v222(
+        memory=memory,
+        candidate_services=candidate_services,
+    ):
         raw.append(
             {
                 "terminal_id": "terminal:no-incident",
@@ -173,32 +177,28 @@ def build_terminal_catalog_v222(
         )
     )
     candidates = tuple(
-        TerminalCandidateV222(
-            terminal_alias=f"T{index:02d}",
-            **item,
+        TerminalCandidateV222.model_validate(
+            {"terminal_alias": f"T{index:02d}", **item}
         )
         for index, item in enumerate(ordered)
     )
-    payload = {
+    early_abstain = any(
+        item.terminal_kind is TerminalKindV222.ABSTAIN for item in candidates
+    )
+    digest_payload = {
         "schema_version": "dta-v22.2.terminal-catalog.v1",
         "policy_sha256": policy.policy_sha256,
         "memory_sha256": memory.memory_sha256,
-        "candidates": candidates,
-        "early_abstain_exposed": any(
-            item.terminal_kind is TerminalKindV222.ABSTAIN for item in candidates
-        ),
+        "candidates": tuple(item.model_dump(mode="json") for item in candidates),
+        "early_abstain_exposed": early_abstain,
     }
-    draft = TerminalCatalogV222.model_construct(
-        **payload,
-        catalog_sha256="0" * 64,
-    )
-    return TerminalCatalogV222.model_validate(
-        {
-            **payload,
-            "catalog_sha256": semantic_sha256_v22(
-                draft.model_dump(mode="json", exclude={"catalog_sha256"})
-            ),
-        }
+    return TerminalCatalogV222(
+        schema_version="dta-v22.2.terminal-catalog.v1",
+        policy_sha256=policy.policy_sha256,
+        memory_sha256=memory.memory_sha256,
+        candidates=candidates,
+        early_abstain_exposed=early_abstain,
+        catalog_sha256=semantic_sha256_v22(digest_payload),
     )
 
 

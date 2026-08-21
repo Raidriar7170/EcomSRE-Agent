@@ -211,27 +211,26 @@ def route_gap_aware_actions_v222(
             by_id[action.action_id].model_copy(update={"rank_ordinal": index})
             for index, action in enumerate(catalog.actions, start=1)
         )
-    payload = {
+    digest_payload = {
         "schema_version": "dta-v22.2.gap-routing-result.v1",
-        "mode": mode,
+        "mode": mode.value,
         "catalog_sha256": catalog.catalog_sha256,
         "gap_graph_sha256": gap_graph.graph_sha256,
-        "actions": actions,
-        "ranking": ranking,
+        "actions": tuple(item.model_dump(mode="json") for item in actions),
+        "ranking": tuple(item.model_dump(mode="json") for item in ranking),
         "top_k": top_k,
         "truth_consulted": False,
     }
-    draft = GapRoutingResultV222.model_construct(
-        **payload,
-        routing_sha256="0" * 64,
-    )
-    return GapRoutingResultV222.model_validate(
-        {
-            **payload,
-            "routing_sha256": semantic_sha256_v22(
-                draft.model_dump(mode="json", exclude={"routing_sha256"})
-            ),
-        }
+    return GapRoutingResultV222(
+        schema_version="dta-v22.2.gap-routing-result.v1",
+        mode=mode,
+        catalog_sha256=catalog.catalog_sha256,
+        gap_graph_sha256=gap_graph.graph_sha256,
+        actions=actions,
+        ranking=ranking,
+        top_k=top_k,
+        truth_consulted=False,
+        routing_sha256=semantic_sha256_v22(digest_payload),
     )
 
 

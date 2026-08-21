@@ -198,23 +198,26 @@ def build_gap_graph_v222(
                 planner_focus=entry.hypothesis_id == planner_focus_hypothesis_id,
             )
         )
-    payload = {
+    ordered_states = tuple(sorted(states, key=lambda item: item.hypothesis_id))
+    negative_coverage = tuple(sorted(set(prior_negative_coverage)))
+    digest_payload = {
         "schema_version": "dta-v22.2.predicate-gap-graph.v1",
         "policy_sha256": policy.policy_sha256,
         "memory_sha256": memory.memory_sha256,
-        "hypotheses": tuple(sorted(states, key=lambda item: item.hypothesis_id)),
+        "hypotheses": tuple(item.model_dump(mode="json") for item in ordered_states),
         "planner_focus_hypothesis_id": planner_focus_hypothesis_id,
-        "prior_negative_coverage": tuple(sorted(set(prior_negative_coverage))),
+        "prior_negative_coverage": negative_coverage,
         "truth_consulted": False,
     }
-    draft = GapGraphV222.model_construct(**payload, graph_sha256="0" * 64)
-    return GapGraphV222.model_validate(
-        {
-            **payload,
-            "graph_sha256": semantic_sha256_v22(
-                draft.model_dump(mode="json", exclude={"graph_sha256"})
-            ),
-        }
+    return GapGraphV222(
+        schema_version="dta-v22.2.predicate-gap-graph.v1",
+        policy_sha256=policy.policy_sha256,
+        memory_sha256=memory.memory_sha256,
+        hypotheses=ordered_states,
+        planner_focus_hypothesis_id=planner_focus_hypothesis_id,
+        prior_negative_coverage=negative_coverage,
+        truth_consulted=False,
+        graph_sha256=semantic_sha256_v22(digest_payload),
     )
 
 

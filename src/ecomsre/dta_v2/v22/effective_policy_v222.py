@@ -6,7 +6,12 @@ from typing import Literal
 
 from pydantic import StrictBool, model_validator
 
-from ecomsre.dta_v2.v22.memory import EvidencePredicateV22, PredicateKindV22
+from ecomsre.dta_v2.v22.memory import (
+    EvidencePredicateV22,
+    MetricSalientPayloadV22,
+    PredicateKindV22,
+    SalientEvidenceMemoryV22,
+)
 from ecomsre.dta_v2.v22.predicates import (
     MechanismV22,
     PredicateRequirementV22,
@@ -14,7 +19,12 @@ from ecomsre.dta_v2.v22.predicates import (
     SupportClauseV22,
     build_default_evidence_support_policy_v22,
 )
-from ecomsre.dta_v2.v22.read_contracts import DtaModelV22, semantic_sha256_v22
+from ecomsre.dta_v2.v22.read_contracts import (
+    DtaModelV22,
+    MetricKindV22,
+    MetricSupportStatusV22,
+    semantic_sha256_v22,
+)
 
 
 class EffectiveSupportPolicyV222(DtaModelV22):
@@ -109,22 +119,16 @@ def build_effective_support_policy_v222() -> EffectiveSupportPolicyV222:
             key=lambda item: item.clause_id,
         )
     )
-    payload = {
+    digest_payload = {
         "schema_version": "dta-v22.2.effective-support-policy.v1",
         "frozen_policy_sha256": frozen.policy_sha256,
-        "clauses": clauses,
+        "clauses": tuple(item.model_dump(mode="json") for item in clauses),
     }
-    draft = EffectiveSupportPolicyV222.model_construct(
-        **payload,
-        policy_sha256="0" * 64,
-    )
-    return EffectiveSupportPolicyV222.model_validate(
-        {
-            **payload,
-            "policy_sha256": semantic_sha256_v22(
-                draft.model_dump(mode="json", exclude={"policy_sha256"})
-            ),
-        }
+    return EffectiveSupportPolicyV222(
+        schema_version="dta-v22.2.effective-support-policy.v1",
+        frozen_policy_sha256=frozen.policy_sha256,
+        clauses=clauses,
+        policy_sha256=semantic_sha256_v22(digest_payload),
     )
 
 
@@ -183,37 +187,79 @@ def evaluate_effective_support_v222(
             matched_clause = clause.clause_id
             matched_predicates = tuple(selected)
             break
-    payload = {
+    supporting_predicate_ids = tuple(
+        sorted(item.predicate_id for item in matched_predicates)
+    )
+    supporting_evidence_refs = tuple(
+        sorted(
+            {
+                ref
+                for item in matched_predicates
+                for ref in item.evidence_refs
+            }
+        )
+    )
+    digest_payload = {
         "schema_version": "dta-v22.2.effective-support-decision.v1",
-        "mechanism": mechanism,
+        "mechanism": mechanism.value,
         "target_service": target_service,
         "parent_service": parent_service,
         "accepted": matched_clause is not None,
         "matched_clause_id": matched_clause,
-        "supporting_predicate_ids": tuple(
-            sorted(item.predicate_id for item in matched_predicates)
-        ),
-        "supporting_evidence_refs": tuple(
-            sorted(
-                {
-                    ref
-                    for item in matched_predicates
-                    for ref in item.evidence_refs
-                }
-            )
-        ),
+        "supporting_predicate_ids": supporting_predicate_ids,
+        "supporting_evidence_refs": supporting_evidence_refs,
     }
-    draft = EffectiveSupportDecisionV222.model_construct(
-        **payload,
-        decision_sha256="0" * 64,
+    return EffectiveSupportDecisionV222(
+        schema_version="dta-v22.2.effective-support-decision.v1",
+        mechanism=mechanism,
+        target_service=target_service,
+        parent_service=parent_service,
+        accepted=matched_clause is not None,
+        matched_clause_id=matched_clause,
+        supporting_predicate_ids=supporting_predicate_ids,
+        supporting_evidence_refs=supporting_evidence_refs,
+        decision_sha256=semantic_sha256_v22(digest_payload),
     )
-    return EffectiveSupportDecisionV222.model_validate(
-        {
-            **payload,
-            "decision_sha256": semantic_sha256_v22(
-                draft.model_dump(mode="json", exclude={"decision_sha256"})
-            ),
-        }
+
+
+def evaluate_replay_no_incident_coverage_v222(
+    *, memory: SalientEvidenceMemoryV22, candidate_services: tuple[str, ...]
+) -> bool:
+    """Accept only complete healthy runtime and supported request/error coverage."""
+
+    runtime_healthy = {
+        item.service
+        for item in memory.predicates
+        if item.predicate_kind is PredicateKindV22.RUNTIME_HEALTHY
+    }
+    metric_coverage: dict[str, set[MetricKindV22]] = {
+        service: set() for service in candidate_services
+    }
+    for fact in memory.salient_facts:
+        if (
+            fact.service in metric_coverage
+            and isinstance(fact.payload, MetricSalientPayloadV22)
+            and fact.payload.support_status is MetricSupportStatusV22.SUPPORTED
+            and fact.payload.metric_kind
+            in {MetricKindV22.ERROR_RATE, MetricKindV22.REQUEST_SUPPORT}
+        ):
+            metric_coverage[fact.service].add(fact.payload.metric_kind)
+    anomaly_kinds = set(PredicateKindV22) - {
+        PredicateKindV22.RUNTIME_HEALTHY,
+        PredicateKindV22.CHANGE_RECENT_ROLLOUT,
+    }
+    return (
+        bool(candidate_services)
+        and set(candidate_services).issubset(runtime_healthy)
+        and all(
+            {MetricKindV22.ERROR_RATE, MetricKindV22.REQUEST_SUPPORT}.issubset(
+                metric_coverage[service]
+            )
+            for service in candidate_services
+        )
+        and not any(
+            item.predicate_kind in anomaly_kinds for item in memory.predicates
+        )
     )
 
 
@@ -222,5 +268,6 @@ __all__ = (
     "EffectiveSupportPolicyV222",
     "build_effective_support_policy_v222",
     "evaluate_effective_support_v222",
+    "evaluate_replay_no_incident_coverage_v222",
     "predicate_matches_requirement_v222",
 )
