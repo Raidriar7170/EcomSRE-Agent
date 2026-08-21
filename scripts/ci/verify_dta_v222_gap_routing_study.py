@@ -37,6 +37,7 @@ STUDY_MARKDOWN = Path("docs/results/dta-v22-2-gap-routing-evaluation.md")
 ERROR_ANALYSIS = Path("docs/results/dta-v22-2-gap-routing-error-analysis.md")
 INTERVIEW_BRIEF = Path("docs/results/dta-v22-2-gap-routing-interview-brief.md")
 PROGRESS = Path("docs/analysis/dta-v22-2-gap-routing-progress.json")
+V222_SQUASH_MERGE = "bb85500fd4aa1777e2ac186f04b4b887c3a1023b"
 
 
 def _json(path: Path) -> dict[str, object]:
@@ -62,9 +63,13 @@ def _load_frozen_manifest() -> EvaluationManifestV222:
     manifest = EvaluationManifestV222.model_validate_json(
         (REPOSITORY_ROOT / MANIFEST).read_bytes()
     )
+    # PR #63 was squash-merged, so its feature implementation commit is not an
+    # ancestor of mainline. Verify both sides against the common base, then
+    # require the published squash merge itself to remain in HEAD's ancestry.
     for older, newer, label in (
         (manifest.base_commit, manifest.implementation_commit, "base to implementation"),
-        (manifest.implementation_commit, "HEAD", "implementation to HEAD"),
+        (manifest.base_commit, V222_SQUASH_MERGE, "base to squash merge"),
+        (V222_SQUASH_MERGE, "HEAD", "squash merge to HEAD"),
     ):
         ancestry = subprocess.run(
             ["git", "merge-base", "--is-ancestor", older, newer],
@@ -83,10 +88,10 @@ def _load_frozen_manifest() -> EvaluationManifestV222:
         manifest.selection_source,
     )
     for binding in implementation_bindings:
-        actual = hashlib.sha256(
+        implementation_sha256 = hashlib.sha256(
             _git_bytes(manifest.implementation_commit, binding.path)
         ).hexdigest()
-        if actual != binding.sha256:
+        if implementation_sha256 != binding.sha256:
             raise ValueError(f"frozen implementation binding differs: {binding.path}")
 
     current_bindings = (
