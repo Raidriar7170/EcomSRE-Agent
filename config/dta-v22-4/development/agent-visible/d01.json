@@ -1,0 +1,140 @@
+{
+  "captured_sources": [
+    "METRICS",
+    "LOGS",
+    "TRACES",
+    "RUNTIME",
+    "RESOURCES",
+    "CHANGES"
+  ],
+  "normalized_case": {
+    "candidate_services": [
+      "pair-config-a",
+      "pair-config-b"
+    ],
+    "capture": {
+      "captured_at": "2026-08-21T00:01:00Z",
+      "changes": [],
+      "logs": [],
+      "metrics": [
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "pair-config-a",
+          "support_status": "SUPPORTED",
+          "unit": "RATIO",
+          "value": 0.45,
+          "window_ended_at": "2026-08-21T00:01:00Z",
+          "window_started_at": "2026-08-20T23:56:00Z"
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "pair-config-a",
+          "support_status": "SUPPORTED",
+          "unit": "MILLISECONDS",
+          "value": 10.0,
+          "window_ended_at": "2026-08-21T00:01:00Z",
+          "window_started_at": "2026-08-20T23:56:00Z"
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "pair-config-a",
+          "support_status": "SUPPORTED",
+          "unit": "COUNT",
+          "value": 100.0,
+          "window_ended_at": "2026-08-21T00:01:00Z",
+          "window_started_at": "2026-08-20T23:56:00Z"
+        },
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "pair-config-b",
+          "support_status": "SUPPORTED",
+          "unit": "RATIO",
+          "value": 0.01,
+          "window_ended_at": "2026-08-21T00:01:00Z",
+          "window_started_at": "2026-08-20T23:56:00Z"
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "pair-config-b",
+          "support_status": "SUPPORTED",
+          "unit": "MILLISECONDS",
+          "value": 10.0,
+          "window_ended_at": "2026-08-21T00:01:00Z",
+          "window_started_at": "2026-08-20T23:56:00Z"
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "pair-config-b",
+          "support_status": "SUPPORTED",
+          "unit": "COUNT",
+          "value": 100.0,
+          "window_ended_at": "2026-08-21T00:01:00Z",
+          "window_started_at": "2026-08-20T23:56:00Z"
+        }
+      ],
+      "resources": [],
+      "runtime": [
+        {
+          "healthy": true,
+          "restart_count": 0,
+          "schema_version": "dta-v22.runtime-record.v1",
+          "service": "pair-config-a",
+          "state": "RUNNING"
+        },
+        {
+          "healthy": true,
+          "restart_count": 0,
+          "schema_version": "dta-v22.runtime-record.v1",
+          "service": "pair-config-b",
+          "state": "RUNNING"
+        }
+      ],
+      "schema_version": "dta-v22.replay-capture.v1",
+      "source_failures": [],
+      "traces": [
+        {
+          "duration_ms": 10.0,
+          "first_error_location": true,
+          "observed_at": "2026-08-21T00:01:00Z",
+          "operation": "observe-e01",
+          "parent_service": "pair-config-b",
+          "schema_version": "dta-v22.trace-span.v1",
+          "service": "pair-config-a",
+          "service_path": [
+            "pair-config-b",
+            "pair-config-a"
+          ],
+          "status": "ERROR"
+        }
+      ]
+    },
+    "case_id": "d01",
+    "normalization_notes": [
+      "Synthetic/derived DTA v2.2.3 evaluation fixture; no Docker capture.",
+      "Service identities deterministically rebound from prior development blueprint e01.",
+      "Synthetic/derived DTA v2.2.4 development copy; no Docker capture.",
+      "Healthy candidate Resources targets use explicit normal records."
+    ],
+    "schema_version": "dta-v22.practical-normalized-case.v1",
+    "source_bytes_sha256": "5ce60b4c941a37b730eb534c8ad2f6bd558570b91fe5ca4111245606cbcbee93",
+    "topology_edges": [
+      [
+        "pair-config-a",
+        "pair-config-b"
+      ]
+    ]
+  },
+  "schema_version": "dta-v22.2.synthetic-evaluation-source.v1"
+}

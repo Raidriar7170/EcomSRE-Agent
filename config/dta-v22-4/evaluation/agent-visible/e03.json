@@ -1,0 +1,191 @@
+{
+  "captured_sources": [
+    "METRICS",
+    "LOGS",
+    "TRACES",
+    "RUNTIME",
+    "RESOURCES",
+    "CHANGES"
+  ],
+  "normalized_case": {
+    "candidate_services": [
+      "eval-cpu-two-a",
+      "eval-cpu-two-b"
+    ],
+    "capture": {
+      "captured_at": "2026-08-21T00:05:00Z",
+      "changes": [],
+      "logs": [],
+      "metrics": [
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "eval-cpu-two-a",
+          "support_status": "SUPPORTED",
+          "unit": "RATIO",
+          "value": 0.01,
+          "window_ended_at": "2026-08-21T00:05:00Z",
+          "window_started_at": "2026-08-21T00:00:00Z"
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "eval-cpu-two-a",
+          "support_status": "SUPPORTED",
+          "unit": "MILLISECONDS",
+          "value": 10.0,
+          "window_ended_at": "2026-08-21T00:05:00Z",
+          "window_started_at": "2026-08-21T00:00:00Z"
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "eval-cpu-two-a",
+          "support_status": "SUPPORTED",
+          "unit": "COUNT",
+          "value": 100.0,
+          "window_ended_at": "2026-08-21T00:05:00Z",
+          "window_started_at": "2026-08-21T00:00:00Z"
+        },
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "eval-cpu-two-b",
+          "support_status": "SUPPORTED",
+          "unit": "RATIO",
+          "value": 0.01,
+          "window_ended_at": "2026-08-21T00:05:00Z",
+          "window_started_at": "2026-08-21T00:00:00Z"
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "eval-cpu-two-b",
+          "support_status": "SUPPORTED",
+          "unit": "MILLISECONDS",
+          "value": 10.0,
+          "window_ended_at": "2026-08-21T00:05:00Z",
+          "window_started_at": "2026-08-21T00:00:00Z"
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "eval-cpu-two-b",
+          "support_status": "SUPPORTED",
+          "unit": "COUNT",
+          "value": 100.0,
+          "window_ended_at": "2026-08-21T00:05:00Z",
+          "window_started_at": "2026-08-21T00:00:00Z"
+        }
+      ],
+      "resources": [
+        {
+          "memory_slope_bytes_per_second": 0.0,
+          "samples": [
+            {
+              "cpu_percent": 20.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 0
+            },
+            {
+              "cpu_percent": 20.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 2500
+            },
+            {
+              "cpu_percent": 20.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 5000
+            },
+            {
+              "cpu_percent": 20.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 7500
+            },
+            {
+              "cpu_percent": 20.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 10000
+            }
+          ],
+          "sampling_window_seconds": 10,
+          "schema_version": "dta-v22.resource-usage-record.v1",
+          "service": "eval-cpu-two-a"
+        },
+        {
+          "memory_slope_bytes_per_second": 0.0,
+          "samples": [
+            {
+              "cpu_percent": 96.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 0
+            },
+            {
+              "cpu_percent": 96.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 2500
+            },
+            {
+              "cpu_percent": 96.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 5000
+            },
+            {
+              "cpu_percent": 96.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 7500
+            },
+            {
+              "cpu_percent": 96.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 10000
+            }
+          ],
+          "sampling_window_seconds": 10,
+          "schema_version": "dta-v22.resource-usage-record.v1",
+          "service": "eval-cpu-two-b"
+        }
+      ],
+      "runtime": [
+        {
+          "healthy": true,
+          "restart_count": 0,
+          "schema_version": "dta-v22.runtime-record.v1",
+          "service": "eval-cpu-two-a",
+          "state": "RUNNING"
+        },
+        {
+          "healthy": true,
+          "restart_count": 0,
+          "schema_version": "dta-v22.runtime-record.v1",
+          "service": "eval-cpu-two-b",
+          "state": "RUNNING"
+        }
+      ],
+      "schema_version": "dta-v22.replay-capture.v1",
+      "source_failures": [],
+      "traces": []
+    },
+    "case_id": "e03",
+    "normalization_notes": [
+      "Synthetic/derived DTA v2.2.4 fixed evaluation fixture; no Docker capture.",
+      "Every candidate has an explicit normal or anomalous ResourceUsageRecord.",
+      "Bootstrap runtime and metric coverage are symmetric across candidates."
+    ],
+    "schema_version": "dta-v22.practical-normalized-case.v1",
+    "source_bytes_sha256": "73a3bdaa7cee6e54dcdbf36871812bc47cb251467946d6585462296b1bdd9b53",
+    "topology_edges": [
+      [
+        "eval-cpu-two-a",
+        "eval-cpu-two-b"
+      ]
+    ]
+  },
+  "schema_version": "dta-v22.2.synthetic-evaluation-source.v1"
+}

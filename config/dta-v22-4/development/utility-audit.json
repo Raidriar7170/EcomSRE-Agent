@@ -1,0 +1,3322 @@
+{
+  "case_set_sha256": "483086c57951e82d4cce57496128c0c61bc46068fb0395919354fdec3fc81cb7",
+  "cases": [
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:pair-config-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:pair-config-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:pair-config-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:pair-config-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:pair-config-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:pair-config-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:pair-config-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:pair-config-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:dab4f19f7679",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-a",
+            "pair-config-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:pair-config-a",
+          "new_evidence_refs": [
+            "e:a:runtime:pair-config-a:0:da021445cb2c"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:pair-config-b",
+          "new_evidence_refs": [
+            "e:a:runtime:pair-config-b:0:a8b38e645213"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:pair-config-a",
+          "new_evidence_refs": [
+            "e:a:traces:pair-config-a:0:da5b8646742f"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "pair-config-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:pair-config-b",
+          "new_evidence_refs": [
+            "e:a:traces:pair-config-b:0:da5b8646742f"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "pair-config-b"
+          ]
+        }
+      ],
+      "case_id": "d01",
+      "expected_mechanism": "CONFIGURATION_ERROR",
+      "expected_root_service": "pair-config-a",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:traces:pair-config-a"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:case-d02-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d02-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:case-d02-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d02-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:case-d02-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d02-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:case-d02-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d02-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:case-d02-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d02-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:case-d02-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d02-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:case-d02-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d02-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:case-d02-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d02-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:00ce55adbd8a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d02-a",
+            "case-d02-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:case-d02-a",
+          "new_evidence_refs": [
+            "e:a:runtime:case-d02-a:0:ff7320e75875"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d02-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:case-d02-b",
+          "new_evidence_refs": [
+            "e:a:runtime:case-d02-b:0:7759be10072a"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d02-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:case-d02-a",
+          "new_evidence_refs": [
+            "e:a:traces:case-d02-a:0:caeb10bf15a8"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "case-d02-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:case-d02-b",
+          "new_evidence_refs": [
+            "e:a:traces:case-d02-b:0:caeb10bf15a8"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "case-d02-b"
+          ]
+        }
+      ],
+      "case_id": "d02",
+      "expected_mechanism": "CONFIGURATION_ERROR",
+      "expected_root_service": "case-d02-a",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:traces:case-d02-a"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:pair-service-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:pair-service-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:pair-service-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:pair-service-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:pair-service-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:pair-service-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:pair-service-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:pair-service-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:b58280beda91",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-a",
+            "pair-service-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:pair-service-a",
+          "new_evidence_refs": [
+            "e:a:runtime:pair-service-a:0:bca783cb24af"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:pair-service-b",
+          "new_evidence_refs": [
+            "e:a:runtime:pair-service-b:0:18d7a71d3bf1"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_UNHEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:pair-service-a",
+          "new_evidence_refs": [
+            "e:a:traces:pair-service-a:0:551cb108d9d6"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "pair-service-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:pair-service-b",
+          "new_evidence_refs": [
+            "e:a:traces:pair-service-b:0:551cb108d9d6"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "pair-service-b"
+          ]
+        }
+      ],
+      "case_id": "d03",
+      "expected_mechanism": "SERVICE_UNAVAILABLE",
+      "expected_root_service": "pair-service-b",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:traces:pair-service-a"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:case-d04-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d04-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:case-d04-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d04-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:case-d04-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d04-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:case-d04-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d04-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:case-d04-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d04-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:case-d04-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d04-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:case-d04-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d04-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:case-d04-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d04-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:9af7e114a5db",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d04-a",
+            "case-d04-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:case-d04-a",
+          "new_evidence_refs": [
+            "e:a:runtime:case-d04-a:0:84b7e223ff5f"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d04-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:case-d04-b",
+          "new_evidence_refs": [
+            "e:a:runtime:case-d04-b:0:21a1646ba78e"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_UNHEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d04-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:case-d04-a",
+          "new_evidence_refs": [
+            "e:a:traces:case-d04-a:0:477f04da93c3"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "case-d04-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:case-d04-b",
+          "new_evidence_refs": [
+            "e:a:traces:case-d04-b:0:477f04da93c3"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "case-d04-b"
+          ]
+        }
+      ],
+      "case_id": "d04",
+      "expected_mechanism": "SERVICE_UNAVAILABLE",
+      "expected_root_service": "case-d04-b",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:traces:case-d04-a"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:pair-resource-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:pair-resource-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:pair-resource-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:pair-resource-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:pair-resource-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:pair-resource-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:pair-resource-a",
+          "new_evidence_refs": [
+            "e:a:resources:pair-resource-a:0:3816b332a430"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:pair-resource-b",
+          "new_evidence_refs": [
+            "e:a:resources:pair-resource-b:0:81aae7641c13"
+          ],
+          "new_predicate_kinds": [
+            "RESOURCE_CPU_STRONG"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "pair-resource-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:6e0dc8e9aae9",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-a",
+            "pair-resource-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:pair-resource-a",
+          "new_evidence_refs": [
+            "e:a:runtime:pair-resource-a:0:13d161806206"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:pair-resource-b",
+          "new_evidence_refs": [
+            "e:a:runtime:pair-resource-b:0:a2c7ad738030"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:pair-resource-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:pair-resource-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-b"
+          ]
+        }
+      ],
+      "case_id": "d05",
+      "expected_mechanism": "CPU_SATURATION",
+      "expected_root_service": "pair-resource-b",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:resources:pair-resource-b"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:case-d06-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d06-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:case-d06-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d06-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:case-d06-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d06-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:case-d06-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d06-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:case-d06-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d06-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:case-d06-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d06-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:case-d06-a",
+          "new_evidence_refs": [
+            "e:a:resources:case-d06-a:0:458a98cb2396"
+          ],
+          "new_predicate_kinds": [
+            "RESOURCE_CPU_STRONG"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "case-d06-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:case-d06-b",
+          "new_evidence_refs": [
+            "e:a:resources:case-d06-b:0:6da4d5f07981"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d06-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:94849427a8b6",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d06-a",
+            "case-d06-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:case-d06-a",
+          "new_evidence_refs": [
+            "e:a:runtime:case-d06-a:0:e5e2cf74fd5b"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d06-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:case-d06-b",
+          "new_evidence_refs": [
+            "e:a:runtime:case-d06-b:0:836422300db9"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d06-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:case-d06-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d06-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:case-d06-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d06-b"
+          ]
+        }
+      ],
+      "case_id": "d06",
+      "expected_mechanism": "CPU_SATURATION",
+      "expected_root_service": "case-d06-a",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:resources:case-d06-a"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:case-d07-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d07-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:case-d07-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d07-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:case-d07-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d07-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:case-d07-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d07-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:case-d07-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d07-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:case-d07-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d07-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:case-d07-a",
+          "new_evidence_refs": [
+            "e:a:resources:case-d07-a:0:bff01d7f6288"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d07-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:case-d07-b",
+          "new_evidence_refs": [
+            "e:a:resources:case-d07-b:0:3a70170af8c1"
+          ],
+          "new_predicate_kinds": [
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "case-d07-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:a60f6d665eee",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d07-a",
+            "case-d07-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:case-d07-a",
+          "new_evidence_refs": [
+            "e:a:runtime:case-d07-a:0:e6e8498cd3ca"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d07-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:case-d07-b",
+          "new_evidence_refs": [
+            "e:a:runtime:case-d07-b:0:3823fbee3c22"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d07-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:case-d07-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d07-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:case-d07-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d07-b"
+          ]
+        }
+      ],
+      "case_id": "d07",
+      "expected_mechanism": "MEMORY_LEAK",
+      "expected_root_service": "case-d07-b",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:resources:case-d07-b"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:case-d08-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d08-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:case-d08-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d08-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:case-d08-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d08-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:case-d08-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d08-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:case-d08-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d08-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:case-d08-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d08-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:case-d08-a",
+          "new_evidence_refs": [
+            "e:a:resources:case-d08-a:0:4deec1c58fdf"
+          ],
+          "new_predicate_kinds": [
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "case-d08-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:case-d08-b",
+          "new_evidence_refs": [
+            "e:a:resources:case-d08-b:0:4f4d0a774b3d"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d08-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:428b768c6318",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d08-a",
+            "case-d08-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:case-d08-a",
+          "new_evidence_refs": [
+            "e:a:runtime:case-d08-a:0:c35733547bbf"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d08-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:case-d08-b",
+          "new_evidence_refs": [
+            "e:a:runtime:case-d08-b:0:231170e52d18"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d08-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:case-d08-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d08-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:case-d08-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d08-b"
+          ]
+        }
+      ],
+      "case_id": "d08",
+      "expected_mechanism": "MEMORY_LEAK",
+      "expected_root_service": "case-d08-a",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:resources:case-d08-a"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:pair-dependency-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:pair-dependency-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:pair-dependency-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:pair-dependency-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:pair-dependency-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:pair-dependency-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:pair-dependency-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:pair-dependency-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:07648f4a9d91",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-a",
+            "pair-dependency-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:pair-dependency-a",
+          "new_evidence_refs": [
+            "e:a:runtime:pair-dependency-a:0:3caad2e24ed2"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:pair-dependency-b",
+          "new_evidence_refs": [
+            "e:a:runtime:pair-dependency-b:0:8ec621e6c4ac"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:pair-dependency-a",
+          "new_evidence_refs": [
+            "e:a:traces:pair-dependency-a:0:649e92a2a95f"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_DEPENDENCY_LATENCY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "pair-dependency-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:pair-dependency-b",
+          "new_evidence_refs": [
+            "e:a:traces:pair-dependency-b:0:649e92a2a95f"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_DEPENDENCY_LATENCY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "pair-dependency-b"
+          ]
+        }
+      ],
+      "case_id": "d09",
+      "expected_mechanism": "DEPENDENCY_LATENCY",
+      "expected_root_service": "pair-dependency-b",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:traces:pair-dependency-a"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:case-d10-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d10-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:case-d10-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d10-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:case-d10-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d10-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:case-d10-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d10-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:case-d10-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d10-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:case-d10-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d10-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:case-d10-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d10-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:case-d10-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d10-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:2f91ed5833b0",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d10-a",
+            "case-d10-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:case-d10-a",
+          "new_evidence_refs": [
+            "e:a:runtime:case-d10-a:0:9dd0c55965ee"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d10-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:case-d10-b",
+          "new_evidence_refs": [
+            "e:a:runtime:case-d10-b:0:f7b9a622ee35"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d10-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:case-d10-a",
+          "new_evidence_refs": [
+            "e:a:traces:case-d10-a:0:e30701b402c8"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_DEPENDENCY_LATENCY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "case-d10-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:case-d10-b",
+          "new_evidence_refs": [
+            "e:a:traces:case-d10-b:0:e30701b402c8"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_DEPENDENCY_LATENCY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "case-d10-b"
+          ]
+        }
+      ],
+      "case_id": "d10",
+      "expected_mechanism": "DEPENDENCY_LATENCY",
+      "expected_root_service": "case-d10-b",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:traces:case-d10-a"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:pair-config-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:pair-config-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:pair-config-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:pair-config-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:pair-config-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:pair-config-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:pair-config-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:pair-config-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:dab4f19f7679",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-a",
+            "pair-config-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:pair-config-a",
+          "new_evidence_refs": [
+            "e:a:runtime:pair-config-a:0:da021445cb2c"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:pair-config-b",
+          "new_evidence_refs": [
+            "e:a:runtime:pair-config-b:0:a8b38e645213"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:pair-config-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:pair-config-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-config-b"
+          ]
+        }
+      ],
+      "case_id": "d11",
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "NO_INCIDENT",
+      "shortest_action_ids": [],
+      "shortest_admissible_path": "0"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:pair-service-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:pair-service-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:pair-service-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:pair-service-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:pair-service-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:pair-service-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:pair-service-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:pair-service-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:b58280beda91",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-a",
+            "pair-service-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:pair-service-a",
+          "new_evidence_refs": [
+            "e:a:runtime:pair-service-a:0:bca783cb24af"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:pair-service-b",
+          "new_evidence_refs": [
+            "e:a:runtime:pair-service-b:0:dd4c6ee6d4b9"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:pair-service-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:pair-service-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-service-b"
+          ]
+        }
+      ],
+      "case_id": "d12",
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "NO_INCIDENT",
+      "shortest_action_ids": [],
+      "shortest_admissible_path": "0"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:pair-resource-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:pair-resource-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:pair-resource-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:pair-resource-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:pair-resource-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:pair-resource-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:pair-resource-a",
+          "new_evidence_refs": [
+            "e:a:resources:pair-resource-a:0:3816b332a430"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:pair-resource-b",
+          "new_evidence_refs": [
+            "e:a:resources:pair-resource-b:0:d6a3bb121193"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:6e0dc8e9aae9",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-a",
+            "pair-resource-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:pair-resource-a",
+          "new_evidence_refs": [
+            "e:a:runtime:pair-resource-a:0:13d161806206"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:pair-resource-b",
+          "new_evidence_refs": [
+            "e:a:runtime:pair-resource-b:0:a2c7ad738030"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:pair-resource-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:pair-resource-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-resource-b"
+          ]
+        }
+      ],
+      "case_id": "d13",
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "NO_INCIDENT",
+      "shortest_action_ids": [],
+      "shortest_admissible_path": "0"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:pair-dependency-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:pair-dependency-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:pair-dependency-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:pair-dependency-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:pair-dependency-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:pair-dependency-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:pair-dependency-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:pair-dependency-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:07648f4a9d91",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-a",
+            "pair-dependency-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:pair-dependency-a",
+          "new_evidence_refs": [
+            "e:a:runtime:pair-dependency-a:0:3caad2e24ed2"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:pair-dependency-b",
+          "new_evidence_refs": [
+            "e:a:runtime:pair-dependency-b:0:8ec621e6c4ac"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:pair-dependency-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:pair-dependency-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "pair-dependency-b"
+          ]
+        }
+      ],
+      "case_id": "d14",
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "ABSTAIN",
+      "shortest_action_ids": [],
+      "shortest_admissible_path": "0"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:case-d15-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d15-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:case-d15-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d15-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:case-d15-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d15-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:case-d15-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d15-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:case-d15-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d15-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:case-d15-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d15-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:case-d15-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d15-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:case-d15-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d15-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:8192cc5359e4",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d15-a",
+            "case-d15-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:case-d15-a",
+          "new_evidence_refs": [
+            "e:a:runtime:case-d15-a:0:bfc2af586a5b"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d15-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:case-d15-b",
+          "new_evidence_refs": [
+            "e:a:runtime:case-d15-b:0:c4dddd23fd76"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d15-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:case-d15-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d15-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:case-d15-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d15-b"
+          ]
+        }
+      ],
+      "case_id": "d15",
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "ABSTAIN",
+      "shortest_action_ids": [],
+      "shortest_admissible_path": "0"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:case-d16-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d16-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:case-d16-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d16-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:case-d16-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d16-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:case-d16-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d16-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:case-d16-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d16-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:case-d16-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d16-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:case-d16-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d16-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:case-d16-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d16-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:905d53e090c7",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d16-a",
+            "case-d16-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:case-d16-a",
+          "new_evidence_refs": [
+            "e:a:runtime:case-d16-a:0:0fc123a0aa7d"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d16-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:case-d16-b",
+          "new_evidence_refs": [
+            "e:a:runtime:case-d16-b:0:f357d0558ec4"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d16-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:case-d16-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d16-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:case-d16-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "case-d16-b"
+          ]
+        }
+      ],
+      "case_id": "d16",
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "ABSTAIN",
+      "shortest_action_ids": [],
+      "shortest_admissible_path": "0"
+    }
+  ],
+  "infeasible_incident_cases": 0,
+  "oracle_visible_to_provider": false,
+  "report_sha256": "a3cb717ab24a3497ee374c5ac61fd921ebeccf808bc47a374c14443ae618599f",
+  "schema_version": "dta-v22.2.evidence-utility-audit.v1",
+  "truth_set_sha256": "3c454231b892335b6643856fa9b98dda504580737293914f2cca87b8bded2d03"
+}

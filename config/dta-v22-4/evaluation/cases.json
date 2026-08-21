@@ -1,0 +1,185 @@
+{
+  "cases": [
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e01",
+      "counterfactual_pair_ids": [
+        "v224-cf-cpu-one"
+      ],
+      "derivation": "New synthetic/derived DTA v2.2.4 fixed resource evaluation case; explicit target-complete Resources records.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/evaluation/agent-visible/e01.json",
+      "source_sha256": "04ef214975a4f20f26ed7e20758535fccb2a7305767ed1cabe61d38e632862d2"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e02",
+      "counterfactual_pair_ids": [
+        "v224-cf-cpu-one"
+      ],
+      "derivation": "New synthetic/derived DTA v2.2.4 fixed resource evaluation case; explicit target-complete Resources records.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/evaluation/agent-visible/e02.json",
+      "source_sha256": "7a302a9abb9d776201244dc65601173e9f02a1192cf0b285603f5297f21ff543"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e03",
+      "counterfactual_pair_ids": [
+        "v224-cf-cpu-two"
+      ],
+      "derivation": "New synthetic/derived DTA v2.2.4 fixed resource evaluation case; explicit target-complete Resources records.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/evaluation/agent-visible/e03.json",
+      "source_sha256": "5f9a10a2750da28e0c6fc6c81ee6ca04c883f29f27b84ba40246e552ad6174d5"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e04",
+      "counterfactual_pair_ids": [
+        "v224-cf-cpu-two"
+      ],
+      "derivation": "New synthetic/derived DTA v2.2.4 fixed resource evaluation case; explicit target-complete Resources records.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/evaluation/agent-visible/e04.json",
+      "source_sha256": "380a5afc42b5b8097177271084cbd83068ceb9b9a065b7aa6722e553941a6157"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e05",
+      "counterfactual_pair_ids": [
+        "v224-cf-memory-one"
+      ],
+      "derivation": "New synthetic/derived DTA v2.2.4 fixed resource evaluation case; explicit target-complete Resources records.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/evaluation/agent-visible/e05.json",
+      "source_sha256": "c751592b2e49abe62288ad9a07df532d7d07c56035b0999358ae64d0f208792b"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e06",
+      "counterfactual_pair_ids": [
+        "v224-cf-memory-one"
+      ],
+      "derivation": "New synthetic/derived DTA v2.2.4 fixed resource evaluation case; explicit target-complete Resources records.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/evaluation/agent-visible/e06.json",
+      "source_sha256": "72d7918e140e01b4a27904272fa00e280fd166727e884f0054ab04a5f74b2dde"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e07",
+      "counterfactual_pair_ids": [
+        "v224-cf-memory-two"
+      ],
+      "derivation": "New synthetic/derived DTA v2.2.4 fixed resource evaluation case; explicit target-complete Resources records.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/evaluation/agent-visible/e07.json",
+      "source_sha256": "08cd89d0118d8da4d3d1d511ff3af3c09f93a9100313109a57de4b3c7b37e7b6"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e08",
+      "counterfactual_pair_ids": [
+        "v224-cf-memory-two"
+      ],
+      "derivation": "New synthetic/derived DTA v2.2.4 fixed resource evaluation case; explicit target-complete Resources records.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/evaluation/agent-visible/e08.json",
+      "source_sha256": "79c17948f60faffc33e100daa29677850ae391214e4d1221720e268c85447ce0"
+    },
+    {
+      "bootstrap_insufficient_expected": false,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e09",
+      "counterfactual_pair_ids": [
+        "v224-resource-normal-one"
+      ],
+      "derivation": "New synthetic/derived DTA v2.2.4 fixed resource evaluation case; explicit target-complete Resources records.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/evaluation/agent-visible/e09.json",
+      "source_sha256": "1ef160ce7370bfed2820b7f26170da4d6b74d023a3dc67613a245a3b78e0f48c"
+    },
+    {
+      "bootstrap_insufficient_expected": false,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e10",
+      "counterfactual_pair_ids": [
+        "v224-resource-normal-two"
+      ],
+      "derivation": "New synthetic/derived DTA v2.2.4 fixed resource evaluation case; explicit target-complete Resources records.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/evaluation/agent-visible/e10.json",
+      "source_sha256": "667836a01d936acb66bb5ab1909ec7a8c05167f0cee1470771e0d4da53d829c4"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e11",
+      "counterfactual_pair_ids": [],
+      "derivation": "New synthetic/derived DTA v2.2.4 fixed nonresource control from development blueprint d14.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/evaluation/agent-visible/e11.json",
+      "source_sha256": "f27de249c967eef906972c8805b9b8a620eedf23f59d8c138b83b39f29c12af6"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "e12",
+      "counterfactual_pair_ids": [],
+      "derivation": "New synthetic/derived DTA v2.2.4 fixed nonresource control from development blueprint d15.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/evaluation/agent-visible/e12.json",
+      "source_sha256": "ae335d919420ce7e43d91b38c19ecb53d33b42c424caf92bcccde8c6677e6324"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e13",
+      "counterfactual_pair_ids": [],
+      "derivation": "New synthetic/derived DTA v2.2.4 fixed nonresource control from development blueprint d01.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/evaluation/agent-visible/e13.json",
+      "source_sha256": "92492ad5088f010873cfbd68d2f88ef8e8df0d5887c1e699d880977854543986"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "e14",
+      "counterfactual_pair_ids": [],
+      "derivation": "New synthetic/derived DTA v2.2.4 fixed nonresource control from development blueprint d02.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/evaluation/agent-visible/e14.json",
+      "source_sha256": "a0f90e6cad0b9b46c804cd87470b2ceab270185f23d3c1694116af1f377fa3e1"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e15",
+      "counterfactual_pair_ids": [],
+      "derivation": "New synthetic/derived DTA v2.2.4 fixed nonresource control from development blueprint d03.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/evaluation/agent-visible/e15.json",
+      "source_sha256": "026e8bfc31feaadd6d6ba723548aa771b01bf840a9a5b936526317df9dea69b4"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "e16",
+      "counterfactual_pair_ids": [],
+      "derivation": "New synthetic/derived DTA v2.2.4 fixed nonresource control from development blueprint d09.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/evaluation/agent-visible/e16.json",
+      "source_sha256": "a78a5fc4353cb4d6a5fa217ecd682131c60d31449654cc11a2ac1398167de34c"
+    }
+  ],
+  "schema_version": "dta-v22.practical-case-set.v1"
+}

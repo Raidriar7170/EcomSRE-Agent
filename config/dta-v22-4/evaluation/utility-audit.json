@@ -1,0 +1,3338 @@
+{
+  "case_set_sha256": "2690c24758d00c5b904384a4c7d504f6c8793b60fd7ca1c0d52217878a28e44e",
+  "cases": [
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:eval-cpu-one-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:eval-cpu-one-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-cpu-one-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-cpu-one-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-cpu-one-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-cpu-one-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-cpu-one-a",
+          "new_evidence_refs": [
+            "e:a:resources:eval-cpu-one-a:0:e46060a873e4"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-cpu-one-b",
+          "new_evidence_refs": [
+            "e:a:resources:eval-cpu-one-b:0:f70cdf5d91e2"
+          ],
+          "new_predicate_kinds": [
+            "RESOURCE_CPU_STRONG"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "eval-cpu-one-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:60ad0ec1621d",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-cpu-one-a",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-cpu-one-a:0:879afc64098c"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-cpu-one-b",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-cpu-one-b:0:63c557ce7d14"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-cpu-one-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-cpu-one-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-b"
+          ]
+        }
+      ],
+      "case_id": "e01",
+      "expected_mechanism": "CPU_SATURATION",
+      "expected_root_service": "eval-cpu-one-b",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:resources:eval-cpu-one-b"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:eval-cpu-one-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:eval-cpu-one-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-cpu-one-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-cpu-one-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-cpu-one-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-cpu-one-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-cpu-one-a",
+          "new_evidence_refs": [
+            "e:a:resources:eval-cpu-one-a:0:e43bf2ba6e8e"
+          ],
+          "new_predicate_kinds": [
+            "RESOURCE_CPU_STRONG"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "eval-cpu-one-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-cpu-one-b",
+          "new_evidence_refs": [
+            "e:a:resources:eval-cpu-one-b:0:b531517ea769"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:60ad0ec1621d",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-cpu-one-a",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-cpu-one-a:0:879afc64098c"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-cpu-one-b",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-cpu-one-b:0:63c557ce7d14"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-cpu-one-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-cpu-one-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-one-b"
+          ]
+        }
+      ],
+      "case_id": "e02",
+      "expected_mechanism": "CPU_SATURATION",
+      "expected_root_service": "eval-cpu-one-a",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:resources:eval-cpu-one-a"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:eval-cpu-two-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:eval-cpu-two-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-cpu-two-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-cpu-two-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-cpu-two-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-cpu-two-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-cpu-two-a",
+          "new_evidence_refs": [
+            "e:a:resources:eval-cpu-two-a:0:c385e7285a69"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-cpu-two-b",
+          "new_evidence_refs": [
+            "e:a:resources:eval-cpu-two-b:0:133f6c8fc0b1"
+          ],
+          "new_predicate_kinds": [
+            "RESOURCE_CPU_STRONG"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "eval-cpu-two-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:64dd3e92c9a4",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-cpu-two-a",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-cpu-two-a:0:3eceec36a3e2"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-cpu-two-b",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-cpu-two-b:0:a9eda35a4c24"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-cpu-two-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-cpu-two-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-b"
+          ]
+        }
+      ],
+      "case_id": "e03",
+      "expected_mechanism": "CPU_SATURATION",
+      "expected_root_service": "eval-cpu-two-b",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:resources:eval-cpu-two-b"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:eval-cpu-two-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:eval-cpu-two-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-cpu-two-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-cpu-two-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-cpu-two-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-cpu-two-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-cpu-two-a",
+          "new_evidence_refs": [
+            "e:a:resources:eval-cpu-two-a:0:34bba7521c8a"
+          ],
+          "new_predicate_kinds": [
+            "RESOURCE_CPU_STRONG"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "eval-cpu-two-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-cpu-two-b",
+          "new_evidence_refs": [
+            "e:a:resources:eval-cpu-two-b:0:55bc1f966d4a"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:64dd3e92c9a4",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-cpu-two-a",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-cpu-two-a:0:3eceec36a3e2"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-cpu-two-b",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-cpu-two-b:0:a9eda35a4c24"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-cpu-two-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-cpu-two-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-cpu-two-b"
+          ]
+        }
+      ],
+      "case_id": "e04",
+      "expected_mechanism": "CPU_SATURATION",
+      "expected_root_service": "eval-cpu-two-a",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:resources:eval-cpu-two-a"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:eval-memory-one-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:eval-memory-one-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-memory-one-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-memory-one-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-memory-one-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-memory-one-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-memory-one-a",
+          "new_evidence_refs": [
+            "e:a:resources:eval-memory-one-a:0:746680d66039"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-memory-one-b",
+          "new_evidence_refs": [
+            "e:a:resources:eval-memory-one-b:0:4f5dfa17bad8"
+          ],
+          "new_predicate_kinds": [
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "eval-memory-one-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:ddaa28962af5",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-memory-one-a",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-memory-one-a:0:132634ef9f3d"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-memory-one-b",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-memory-one-b:0:88b0c998c0ef"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-memory-one-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-memory-one-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-b"
+          ]
+        }
+      ],
+      "case_id": "e05",
+      "expected_mechanism": "MEMORY_LEAK",
+      "expected_root_service": "eval-memory-one-b",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:resources:eval-memory-one-b"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:eval-memory-one-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:eval-memory-one-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-memory-one-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-memory-one-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-memory-one-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-memory-one-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-memory-one-a",
+          "new_evidence_refs": [
+            "e:a:resources:eval-memory-one-a:0:55d48cbca329"
+          ],
+          "new_predicate_kinds": [
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "eval-memory-one-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-memory-one-b",
+          "new_evidence_refs": [
+            "e:a:resources:eval-memory-one-b:0:c09e81a29c0e"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:ddaa28962af5",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-memory-one-a",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-memory-one-a:0:132634ef9f3d"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-memory-one-b",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-memory-one-b:0:88b0c998c0ef"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-memory-one-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-memory-one-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-one-b"
+          ]
+        }
+      ],
+      "case_id": "e06",
+      "expected_mechanism": "MEMORY_LEAK",
+      "expected_root_service": "eval-memory-one-a",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:resources:eval-memory-one-a"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:eval-memory-two-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:eval-memory-two-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-memory-two-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-memory-two-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-memory-two-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-memory-two-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-memory-two-a",
+          "new_evidence_refs": [
+            "e:a:resources:eval-memory-two-a:0:990bd161a69c"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-memory-two-b",
+          "new_evidence_refs": [
+            "e:a:resources:eval-memory-two-b:0:dc5345a53429"
+          ],
+          "new_predicate_kinds": [
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "eval-memory-two-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:5b307610b324",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-memory-two-a",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-memory-two-a:0:329ce2b36289"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-memory-two-b",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-memory-two-b:0:8b740c0b301a"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-memory-two-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-memory-two-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-b"
+          ]
+        }
+      ],
+      "case_id": "e07",
+      "expected_mechanism": "MEMORY_LEAK",
+      "expected_root_service": "eval-memory-two-b",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:resources:eval-memory-two-b"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:eval-memory-two-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:eval-memory-two-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-memory-two-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-memory-two-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-memory-two-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-memory-two-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-memory-two-a",
+          "new_evidence_refs": [
+            "e:a:resources:eval-memory-two-a:0:ec7f6ee7fb4a"
+          ],
+          "new_predicate_kinds": [
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "eval-memory-two-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-memory-two-b",
+          "new_evidence_refs": [
+            "e:a:resources:eval-memory-two-b:0:e4832ae0a945"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:5b307610b324",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-memory-two-a",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-memory-two-a:0:329ce2b36289"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-memory-two-b",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-memory-two-b:0:8b740c0b301a"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-memory-two-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-memory-two-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-memory-two-b"
+          ]
+        }
+      ],
+      "case_id": "e08",
+      "expected_mechanism": "MEMORY_LEAK",
+      "expected_root_service": "eval-memory-two-a",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:resources:eval-memory-two-a"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:eval-resource-normal-one-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-one-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:eval-resource-normal-one-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-one-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-resource-normal-one-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-one-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-resource-normal-one-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-one-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-resource-normal-one-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-one-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-resource-normal-one-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-one-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-resource-normal-one-a",
+          "new_evidence_refs": [
+            "e:a:resources:eval-resource-normal-one-a:0:5e3b130149d8"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-one-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-resource-normal-one-b",
+          "new_evidence_refs": [
+            "e:a:resources:eval-resource-normal-one-b:0:1a52532d4840"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-one-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:8cc9e7ac3849",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-one-a",
+            "eval-resource-normal-one-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-resource-normal-one-a",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-resource-normal-one-a:0:1b310b775103"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-one-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-resource-normal-one-b",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-resource-normal-one-b:0:eb6db1b8e47c"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-one-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-resource-normal-one-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-one-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-resource-normal-one-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-one-b"
+          ]
+        }
+      ],
+      "case_id": "e09",
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "NO_INCIDENT",
+      "shortest_action_ids": [],
+      "shortest_admissible_path": "0"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:eval-resource-normal-two-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-two-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:eval-resource-normal-two-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-two-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-resource-normal-two-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-two-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-resource-normal-two-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-two-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-resource-normal-two-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-two-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-resource-normal-two-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-two-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-resource-normal-two-a",
+          "new_evidence_refs": [
+            "e:a:resources:eval-resource-normal-two-a:0:458e8c5a8109"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-two-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-resource-normal-two-b",
+          "new_evidence_refs": [
+            "e:a:resources:eval-resource-normal-two-b:0:44e8ca3bc63c"
+          ],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-two-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:ee4182e34d84",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-two-a",
+            "eval-resource-normal-two-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-resource-normal-two-a",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-resource-normal-two-a:0:07773bf79443"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-two-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-resource-normal-two-b",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-resource-normal-two-b:0:7e4171f8c320"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-two-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-resource-normal-two-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-two-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-resource-normal-two-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-resource-normal-two-b"
+          ]
+        }
+      ],
+      "case_id": "e10",
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "NO_INCIDENT",
+      "shortest_action_ids": [],
+      "shortest_admissible_path": "0"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:eval-e11-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e11-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:eval-e11-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e11-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-e11-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e11-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-e11-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e11-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-e11-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e11-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-e11-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e11-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-e11-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e11-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-e11-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e11-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:9eab6652e205",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e11-a",
+            "eval-e11-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-e11-a",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-e11-a:0:738414827743"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e11-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-e11-b",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-e11-b:0:1cdff7c439a7"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e11-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-e11-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e11-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-e11-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e11-b"
+          ]
+        }
+      ],
+      "case_id": "e11",
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "ABSTAIN",
+      "shortest_action_ids": [],
+      "shortest_admissible_path": "0"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:eval-e12-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e12-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:eval-e12-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e12-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-e12-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e12-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-e12-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e12-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-e12-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e12-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-e12-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e12-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-e12-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e12-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-e12-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e12-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:30791b5e65f1",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e12-a",
+            "eval-e12-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-e12-a",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-e12-a:0:08e488039059"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e12-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-e12-b",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-e12-b:0:bbac802a0400"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e12-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-e12-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e12-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-e12-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e12-b"
+          ]
+        }
+      ],
+      "case_id": "e12",
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "ABSTAIN",
+      "shortest_action_ids": [],
+      "shortest_admissible_path": "0"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:eval-e13-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e13-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:eval-e13-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e13-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-e13-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e13-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-e13-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e13-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-e13-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e13-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-e13-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e13-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-e13-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e13-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-e13-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e13-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:427956daeb8d",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e13-a",
+            "eval-e13-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-e13-a",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-e13-a:0:46aa6bd1f40a"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e13-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-e13-b",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-e13-b:0:bc1876d6b748"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e13-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-e13-a",
+          "new_evidence_refs": [
+            "e:a:traces:eval-e13-a:0:8af34fb60658"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "eval-e13-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-e13-b",
+          "new_evidence_refs": [
+            "e:a:traces:eval-e13-b:0:8af34fb60658"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "eval-e13-b"
+          ]
+        }
+      ],
+      "case_id": "e13",
+      "expected_mechanism": "CONFIGURATION_ERROR",
+      "expected_root_service": "eval-e13-a",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:traces:eval-e13-a"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:eval-e14-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e14-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:eval-e14-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e14-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-e14-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e14-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-e14-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e14-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-e14-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e14-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-e14-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e14-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-e14-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e14-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-e14-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e14-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:16ecc89a31cd",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e14-a",
+            "eval-e14-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-e14-a",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-e14-a:0:2a866bd91c2f"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e14-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-e14-b",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-e14-b:0:d66ea474bca0"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e14-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-e14-a",
+          "new_evidence_refs": [
+            "e:a:traces:eval-e14-a:0:74cd2d9f02ae"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "eval-e14-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-e14-b",
+          "new_evidence_refs": [
+            "e:a:traces:eval-e14-b:0:74cd2d9f02ae"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "eval-e14-b"
+          ]
+        }
+      ],
+      "case_id": "e14",
+      "expected_mechanism": "CONFIGURATION_ERROR",
+      "expected_root_service": "eval-e14-a",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:traces:eval-e14-a"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:eval-e15-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e15-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:eval-e15-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e15-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-e15-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e15-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-e15-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e15-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-e15-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e15-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-e15-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e15-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-e15-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e15-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-e15-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e15-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:6254d20bf515",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e15-a",
+            "eval-e15-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-e15-a",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-e15-a:0:b4179260cac7"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e15-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-e15-b",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-e15-b:0:541147be7b91"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_UNHEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e15-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-e15-a",
+          "new_evidence_refs": [
+            "e:a:traces:eval-e15-a:0:0d2bbe2d2562"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "eval-e15-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-e15-b",
+          "new_evidence_refs": [
+            "e:a:traces:eval-e15-b:0:0d2bbe2d2562"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "eval-e15-b"
+          ]
+        }
+      ],
+      "case_id": "e15",
+      "expected_mechanism": "SERVICE_UNAVAILABLE",
+      "expected_root_service": "eval-e15-b",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:traces:eval-e15-a"
+      ],
+      "shortest_admissible_path": "1"
+    },
+    {
+      "actions": [
+        {
+          "action_id": "a:changes:eval-e16-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e16-a"
+          ]
+        },
+        {
+          "action_id": "a:changes:eval-e16-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "CHANGES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e16-b"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-e16-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e16-a"
+          ]
+        },
+        {
+          "action_id": "a:logs:eval-e16-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "LOGS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e16-b"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-e16-a:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e16-a"
+          ]
+        },
+        {
+          "action_id": "a:metrics:eval-e16-b:core",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "METRICS",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e16-b"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-e16-a",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e16-a"
+          ]
+        },
+        {
+          "action_id": "a:resources:eval-e16-b",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": false,
+          "read_status": "SUCCESS_EMPTY",
+          "source": "RESOURCES",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e16-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:all-candidates:86eca90bfd4f",
+          "new_evidence_refs": [],
+          "new_predicate_kinds": [],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e16-a",
+            "eval-e16-b"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-e16-a",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-e16-a:0:98b59a9a7aef"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e16-a"
+          ]
+        },
+        {
+          "action_id": "a:runtime:eval-e16-b",
+          "new_evidence_refs": [
+            "e:a:runtime:eval-e16-b:0:5a226e141e6f"
+          ],
+          "new_predicate_kinds": [
+            "RUNTIME_HEALTHY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "RUNTIME",
+          "source_captured": true,
+          "support_clause_became_admissible": false,
+          "support_clause_gaps_closed": 0,
+          "target_services": [
+            "eval-e16-b"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-e16-a",
+          "new_evidence_refs": [
+            "e:a:traces:eval-e16-a:0:727d4e4055dd"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_DEPENDENCY_LATENCY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "eval-e16-a"
+          ]
+        },
+        {
+          "action_id": "a:traces:eval-e16-b",
+          "new_evidence_refs": [
+            "e:a:traces:eval-e16-b:0:727d4e4055dd"
+          ],
+          "new_predicate_kinds": [
+            "TRACE_DEPENDENCY_LATENCY"
+          ],
+          "nonempty": true,
+          "read_status": "SUCCESS_NONEMPTY",
+          "source": "TRACES",
+          "source_captured": true,
+          "support_clause_became_admissible": true,
+          "support_clause_gaps_closed": 1,
+          "target_services": [
+            "eval-e16-b"
+          ]
+        }
+      ],
+      "case_id": "e16",
+      "expected_mechanism": "DEPENDENCY_LATENCY",
+      "expected_root_service": "eval-e16-b",
+      "expected_terminal": "DIAGNOSED",
+      "shortest_action_ids": [
+        "a:traces:eval-e16-a"
+      ],
+      "shortest_admissible_path": "1"
+    }
+  ],
+  "infeasible_incident_cases": 0,
+  "oracle_visible_to_provider": false,
+  "report_sha256": "a717bb11fc93ccbb15ea31a788e706898e71a23e0a5ed2ddc64b35d279af052e",
+  "schema_version": "dta-v22.2.evidence-utility-audit.v1",
+  "truth_set_sha256": "0d379d7a10ba1a06d92790aa10e31459181d7fcea8de92a00cc38aba300bf70d"
+}

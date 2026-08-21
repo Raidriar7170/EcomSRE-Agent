@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from enum import Enum
+from pathlib import Path
 from typing import Literal
 
-from pydantic import model_validator
+from pydantic import Field, model_validator
 
 from ecomsre.dta_v2.v22.read_contracts import (
     DtaModelV22,
@@ -52,6 +53,45 @@ class ReplayTargetCoverageV224(DtaModelV22):
         if self.coverage_sha256 != expected:
             raise ValueError("replay target coverage digest differs")
         return self
+
+
+class ReplayCaseTargetCoverageV224(DtaModelV22):
+    case_id: str
+    sources: tuple[ReplayTargetCoverageV224, ...] = Field(min_length=6, max_length=6)
+
+    @model_validator(mode="after")
+    def require_case(self) -> "ReplayCaseTargetCoverageV224":
+        if tuple(item.source for item in self.sources) != tuple(EvidenceSourceV22):
+            raise ValueError("case target coverage sources are incomplete or noncanonical")
+        candidates = {item.candidate_services for item in self.sources}
+        if len(candidates) != 1:
+            raise ValueError("case target coverage candidate sets differ by source")
+        return self
+
+    def require(self, source: EvidenceSourceV22) -> ReplayTargetCoverageV224:
+        return next(item for item in self.sources if item.source is source)
+
+
+class ReplayTargetCoverageSetV224(DtaModelV22):
+    schema_version: Literal["dta-v22.4.replay-target-coverage-set.v1"]
+    cases: tuple[ReplayCaseTargetCoverageV224, ...] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def require_set(self) -> "ReplayTargetCoverageSetV224":
+        ids = tuple(item.case_id for item in self.cases)
+        if ids != tuple(sorted(set(ids))):
+            raise ValueError("target coverage case set is not canonical")
+        return self
+
+    def require(self, case_id: str) -> ReplayCaseTargetCoverageV224:
+        item = next((item for item in self.cases if item.case_id == case_id), None)
+        if item is None:
+            raise ValueError("target coverage case is absent")
+        return item
+
+
+def load_replay_target_coverage_set_v224(path: Path) -> ReplayTargetCoverageSetV224:
+    return ReplayTargetCoverageSetV224.model_validate_json(path.read_bytes())
 
 
 def build_replay_target_coverage_v224(
@@ -144,10 +184,13 @@ def require_capture_matches_target_coverage_v224(
 
 
 __all__ = (
+    "ReplayCaseTargetCoverageV224",
     "ReplayTargetCoverageModeV224",
+    "ReplayTargetCoverageSetV224",
     "ReplayTargetCoverageV224",
     "build_replay_target_coverage_v224",
     "complete_resource_records_v224",
+    "load_replay_target_coverage_set_v224",
     "normal_resource_record_v224",
     "require_capture_matches_target_coverage_v224",
 )

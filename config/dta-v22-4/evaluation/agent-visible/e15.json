@@ -1,0 +1,138 @@
+{
+  "captured_sources": [
+    "METRICS",
+    "LOGS",
+    "TRACES",
+    "RUNTIME",
+    "RESOURCES",
+    "CHANGES"
+  ],
+  "normalized_case": {
+    "candidate_services": [
+      "eval-e15-a",
+      "eval-e15-b"
+    ],
+    "capture": {
+      "captured_at": "2026-08-21T00:03:00Z",
+      "changes": [],
+      "logs": [],
+      "metrics": [
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "eval-e15-a",
+          "support_status": "SUPPORTED",
+          "unit": "RATIO",
+          "value": 0.01,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "eval-e15-a",
+          "support_status": "SUPPORTED",
+          "unit": "MILLISECONDS",
+          "value": 10.0,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "eval-e15-a",
+          "support_status": "SUPPORTED",
+          "unit": "COUNT",
+          "value": 100.0,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        },
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "eval-e15-b",
+          "support_status": "SUPPORTED",
+          "unit": "RATIO",
+          "value": 0.01,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "eval-e15-b",
+          "support_status": "SUPPORTED",
+          "unit": "MILLISECONDS",
+          "value": 10.0,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "eval-e15-b",
+          "support_status": "SUPPORTED",
+          "unit": "COUNT",
+          "value": 100.0,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        }
+      ],
+      "resources": [],
+      "runtime": [
+        {
+          "healthy": true,
+          "restart_count": 0,
+          "schema_version": "dta-v22.runtime-record.v1",
+          "service": "eval-e15-a",
+          "state": "RUNNING"
+        },
+        {
+          "healthy": false,
+          "restart_count": 0,
+          "schema_version": "dta-v22.runtime-record.v1",
+          "service": "eval-e15-b",
+          "state": "RUNNING"
+        }
+      ],
+      "schema_version": "dta-v22.replay-capture.v1",
+      "source_failures": [],
+      "traces": [
+        {
+          "duration_ms": 10.0,
+          "first_error_location": true,
+          "observed_at": "2026-08-21T00:03:00Z",
+          "operation": "observe-e03",
+          "parent_service": "eval-e15-a",
+          "schema_version": "dta-v22.trace-span.v1",
+          "service": "eval-e15-b",
+          "service_path": [
+            "eval-e15-a",
+            "eval-e15-b"
+          ],
+          "status": "ERROR"
+        }
+      ]
+    },
+    "case_id": "e15",
+    "normalization_notes": [
+      "Synthetic/derived DTA v2.2.4 fixed evaluation fixture; no Docker capture.",
+      "Service identities were deterministically rebound from a development blueprint."
+    ],
+    "schema_version": "dta-v22.practical-normalized-case.v1",
+    "source_bytes_sha256": "5cb009d40fa5c3be292b7a9fdff070fa7aac91b317cd6ef59038c89a8cb1e367",
+    "topology_edges": [
+      [
+        "eval-e15-a",
+        "eval-e15-b"
+      ]
+    ]
+  },
+  "schema_version": "dta-v22.2.synthetic-evaluation-source.v1"
+}

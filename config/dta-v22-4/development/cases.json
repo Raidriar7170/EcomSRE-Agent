@@ -1,0 +1,181 @@
+{
+  "cases": [
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d01",
+      "counterfactual_pair_ids": [
+        "v223-cf-config"
+      ],
+      "derivation": "Normalized synthetic/derived DTA v2.2.4 development copy of the frozen v2.2.3 case d01; explicit target coverage.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/development/agent-visible/d01.json",
+      "source_sha256": "02f75268921bb1ef1fd162efbf962168b9c4c40c05bbcb2845ef83565bcfec21"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "d02",
+      "counterfactual_pair_ids": [],
+      "derivation": "Normalized synthetic/derived DTA v2.2.4 development copy of the frozen v2.2.3 case d02; explicit target coverage.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/development/agent-visible/d02.json",
+      "source_sha256": "118ebb266ef23bb5b25237433c359b455306c791372947b17c8d7ec280d64dae"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d03",
+      "counterfactual_pair_ids": [
+        "v223-cf-service"
+      ],
+      "derivation": "Normalized synthetic/derived DTA v2.2.4 development copy of the frozen v2.2.3 case d03; explicit target coverage.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/development/agent-visible/d03.json",
+      "source_sha256": "86fad758e399bbb2ceb9ae2d43585c96f13e2e426416af0fe1ee5e68da3ef554"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "d04",
+      "counterfactual_pair_ids": [],
+      "derivation": "Normalized synthetic/derived DTA v2.2.4 development copy of the frozen v2.2.3 case d04; explicit target coverage.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/development/agent-visible/d04.json",
+      "source_sha256": "1be8f319962b30242b14a50ecf5c5714cf4ab1ceca1c19f186d972cd2000e2aa"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d05",
+      "counterfactual_pair_ids": [
+        "v223-cf-cpu"
+      ],
+      "derivation": "Normalized synthetic/derived DTA v2.2.4 development copy of the frozen v2.2.3 case d05; explicit target coverage.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/development/agent-visible/d05.json",
+      "source_sha256": "3b371cad2aafab6afbaa199aa2e06693ccfd4cf167d42caed6fe5c50480c8d21"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "d06",
+      "counterfactual_pair_ids": [],
+      "derivation": "Normalized synthetic/derived DTA v2.2.4 development copy of the frozen v2.2.3 case d06; explicit target coverage.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/development/agent-visible/d06.json",
+      "source_sha256": "f2f1315662a407d33583472f609da4f86905e511a5f5aa0a58f8a132320714a8"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "d07",
+      "counterfactual_pair_ids": [],
+      "derivation": "Normalized synthetic/derived DTA v2.2.4 development copy of the frozen v2.2.3 case d07; explicit target coverage.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/development/agent-visible/d07.json",
+      "source_sha256": "3c7a27d648a3d6fa1e5808df2c3b6df19571110202c64f5e9dc84739858192b1"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "d08",
+      "counterfactual_pair_ids": [],
+      "derivation": "Normalized synthetic/derived DTA v2.2.4 development copy of the frozen v2.2.3 case d08; explicit target coverage.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/development/agent-visible/d08.json",
+      "source_sha256": "82b9d13474460756d4101603f2356a63654e0cc42c31b59685b6d92f59db8b47"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d09",
+      "counterfactual_pair_ids": [
+        "v223-cf-dependency"
+      ],
+      "derivation": "Normalized synthetic/derived DTA v2.2.4 development copy of the frozen v2.2.3 case d09; explicit target coverage.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/development/agent-visible/d09.json",
+      "source_sha256": "88cf4065540ec90355b709ce49244a648f864495f2aba7be7614eb358f24828c"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "d10",
+      "counterfactual_pair_ids": [],
+      "derivation": "Normalized synthetic/derived DTA v2.2.4 development copy of the frozen v2.2.3 case d10; explicit target coverage.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/development/agent-visible/d10.json",
+      "source_sha256": "a39b921cee885a667f47fd0eb25f031e865501679b55e71eb71bb04c5f854067"
+    },
+    {
+      "bootstrap_insufficient_expected": false,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d11",
+      "counterfactual_pair_ids": [
+        "v223-cf-config"
+      ],
+      "derivation": "Normalized synthetic/derived DTA v2.2.4 development copy of the frozen v2.2.3 case d11; explicit target coverage.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/development/agent-visible/d11.json",
+      "source_sha256": "c8bf936aefcbf17639dd24c6dd637e90058954d815348984b2c39c1c6a0b7c57"
+    },
+    {
+      "bootstrap_insufficient_expected": false,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d12",
+      "counterfactual_pair_ids": [
+        "v223-cf-service"
+      ],
+      "derivation": "Normalized synthetic/derived DTA v2.2.4 development copy of the frozen v2.2.3 case d12; explicit target coverage.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/development/agent-visible/d12.json",
+      "source_sha256": "cdaa4746bed3e01e2241e2171812101f41fe4dbd957ed2fc60b5a74bb7484120"
+    },
+    {
+      "bootstrap_insufficient_expected": false,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d13",
+      "counterfactual_pair_ids": [
+        "v223-cf-cpu"
+      ],
+      "derivation": "Normalized synthetic/derived DTA v2.2.4 development copy of the frozen v2.2.3 case d13; explicit target coverage.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/development/agent-visible/d13.json",
+      "source_sha256": "cfebb3cab4279a71138ca30578a6fca03a3b3adbd5e805d4e5cc2a5b0c5745d7"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d14",
+      "counterfactual_pair_ids": [
+        "v223-cf-dependency"
+      ],
+      "derivation": "Normalized synthetic/derived DTA v2.2.4 development copy of the frozen v2.2.3 case d14; explicit target coverage.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/development/agent-visible/d14.json",
+      "source_sha256": "37ed16e9c12a47073516924c16782f3aef0c796dc305daccb11954424a775e3f"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "d15",
+      "counterfactual_pair_ids": [],
+      "derivation": "Normalized synthetic/derived DTA v2.2.4 development copy of the frozen v2.2.3 case d15; explicit target coverage.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/development/agent-visible/d15.json",
+      "source_sha256": "19fcdb3060cc3eb0cd049aff02277b3533c008cb3daac1e8e813c1cc2715a2bc"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "d16",
+      "counterfactual_pair_ids": [],
+      "derivation": "Normalized synthetic/derived DTA v2.2.4 development copy of the frozen v2.2.3 case d16; explicit target coverage.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-4/development/agent-visible/d16.json",
+      "source_sha256": "c0ec43f21057e75f8e42bdc5579f9df175b435774cba43acaca81e58bb1fba2a"
+    }
+  ],
+  "schema_version": "dta-v22.practical-case-set.v1"
+}

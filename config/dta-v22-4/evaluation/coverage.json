@@ -1,0 +1,1411 @@
+{
+  "cases": [
+    {
+      "case_id": "e01",
+      "sources": [
+        {
+          "candidate_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "3fcab988f3add94fb29958c6d7aad55791a59d06e63e95d87a3b32e70e6993cd",
+          "covered_target_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "188639c8364c796730e75671c348f10b737653e6e0c43dd7a9d9656d4fa02593",
+          "covered_target_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "61e1e107a1be7fb4cf826ae8078daf30790cfaab8580880a3c3af0c505e11de4",
+          "covered_target_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "d2a53c10ed26d0bd59ddc84c72a237a8ab376a6a871a13ea6571434c97508235",
+          "covered_target_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "bc1efa27d1abccbdf9549f79e8f030ae12245d6875e8afb7807ece74f79a65c1",
+          "covered_target_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "dacaffd7fe7ed91862db5230beb1d1e1d7d9ee832a1b572374be631128f7b189",
+          "covered_target_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "e02",
+      "sources": [
+        {
+          "candidate_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "3fcab988f3add94fb29958c6d7aad55791a59d06e63e95d87a3b32e70e6993cd",
+          "covered_target_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "188639c8364c796730e75671c348f10b737653e6e0c43dd7a9d9656d4fa02593",
+          "covered_target_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "61e1e107a1be7fb4cf826ae8078daf30790cfaab8580880a3c3af0c505e11de4",
+          "covered_target_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "d2a53c10ed26d0bd59ddc84c72a237a8ab376a6a871a13ea6571434c97508235",
+          "covered_target_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "bc1efa27d1abccbdf9549f79e8f030ae12245d6875e8afb7807ece74f79a65c1",
+          "covered_target_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "dacaffd7fe7ed91862db5230beb1d1e1d7d9ee832a1b572374be631128f7b189",
+          "covered_target_services": [
+            "eval-cpu-one-a",
+            "eval-cpu-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "e03",
+      "sources": [
+        {
+          "candidate_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "59684980f33586a00b71de4fee06bfbdeeeb20a2a9a9bde5213eb7500acf6aa2",
+          "covered_target_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "2ffb879f0c8043a2fa9326c3f1877dbd9ed4a383841020d0f90ebbc9c77bcecc",
+          "covered_target_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "5bc4b11c84221e810d5b1936abcaaf3ff941ee6764b9b5315b1d6f99eab60d8d",
+          "covered_target_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "0282f35bad94874f59ee3c1704ee71ab001bbf34c7ae3bd4f7c3bc1338d4a3c0",
+          "covered_target_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "2f1ca6511eface4bfb7fda23d2257dfc685b0fc32ccdb8b7358cc1da24ad34b4",
+          "covered_target_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "aa92a231f1e57e53f5fb924261e9d6667771ccf7dad15709dea52bbe54c8778c",
+          "covered_target_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "e04",
+      "sources": [
+        {
+          "candidate_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "59684980f33586a00b71de4fee06bfbdeeeb20a2a9a9bde5213eb7500acf6aa2",
+          "covered_target_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "2ffb879f0c8043a2fa9326c3f1877dbd9ed4a383841020d0f90ebbc9c77bcecc",
+          "covered_target_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "5bc4b11c84221e810d5b1936abcaaf3ff941ee6764b9b5315b1d6f99eab60d8d",
+          "covered_target_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "0282f35bad94874f59ee3c1704ee71ab001bbf34c7ae3bd4f7c3bc1338d4a3c0",
+          "covered_target_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "2f1ca6511eface4bfb7fda23d2257dfc685b0fc32ccdb8b7358cc1da24ad34b4",
+          "covered_target_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "aa92a231f1e57e53f5fb924261e9d6667771ccf7dad15709dea52bbe54c8778c",
+          "covered_target_services": [
+            "eval-cpu-two-a",
+            "eval-cpu-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "e05",
+      "sources": [
+        {
+          "candidate_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "5f1996ee66212aeddec58d6c2dd05cceb8b6ccefc13ecaf772db7ee690027740",
+          "covered_target_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "42120a885b785549d5aadd1a52dc824f9eac970df3a7ab3e0531f4127baa544d",
+          "covered_target_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "47a480ef742bdb9fcd280f67876627bbc1980bbc519a0cb972a0c4e2cc358a97",
+          "covered_target_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "b9d05cac9cdb2dc66184dd2f1c067a649bf0ca2699a0e9ef6c1c322ea310c7bc",
+          "covered_target_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "1bb2fadfa7a39e6b3798ddd69da9b582cd368bad7e8b89a9cae93029b24992c6",
+          "covered_target_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "ec82a8a2e053aa27f1292fbd3bd594b501b61b3c23558e84602a06dacb93b6dd",
+          "covered_target_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "e06",
+      "sources": [
+        {
+          "candidate_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "5f1996ee66212aeddec58d6c2dd05cceb8b6ccefc13ecaf772db7ee690027740",
+          "covered_target_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "42120a885b785549d5aadd1a52dc824f9eac970df3a7ab3e0531f4127baa544d",
+          "covered_target_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "47a480ef742bdb9fcd280f67876627bbc1980bbc519a0cb972a0c4e2cc358a97",
+          "covered_target_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "b9d05cac9cdb2dc66184dd2f1c067a649bf0ca2699a0e9ef6c1c322ea310c7bc",
+          "covered_target_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "1bb2fadfa7a39e6b3798ddd69da9b582cd368bad7e8b89a9cae93029b24992c6",
+          "covered_target_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "ec82a8a2e053aa27f1292fbd3bd594b501b61b3c23558e84602a06dacb93b6dd",
+          "covered_target_services": [
+            "eval-memory-one-a",
+            "eval-memory-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "e07",
+      "sources": [
+        {
+          "candidate_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "f90be9215db3135cf08627c5e6541aaa2a31daae9704d99d5551341a25dc562e",
+          "covered_target_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "e904807211e28ee79f4a472876c1821d3e47504c306649305540c1a42a738ea7",
+          "covered_target_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "4ebf55710803e5320a0a4d36d9dc83a1a783015dcca296f5667ce23d6bafddc7",
+          "covered_target_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "3d8cde3c7dd613e34ee586e6ee2b57264b1ae964ab663c468183cae9bcef7ff4",
+          "covered_target_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "11575163d33fd648f4011aa17ad3d1108a285e5b2ac1b6a14ca73d778ffeb0c9",
+          "covered_target_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "4e280106acc897e5e8a6fd1a903274fc86d88e147d2561789a5245052b05a309",
+          "covered_target_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "e08",
+      "sources": [
+        {
+          "candidate_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "f90be9215db3135cf08627c5e6541aaa2a31daae9704d99d5551341a25dc562e",
+          "covered_target_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "e904807211e28ee79f4a472876c1821d3e47504c306649305540c1a42a738ea7",
+          "covered_target_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "4ebf55710803e5320a0a4d36d9dc83a1a783015dcca296f5667ce23d6bafddc7",
+          "covered_target_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "3d8cde3c7dd613e34ee586e6ee2b57264b1ae964ab663c468183cae9bcef7ff4",
+          "covered_target_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "11575163d33fd648f4011aa17ad3d1108a285e5b2ac1b6a14ca73d778ffeb0c9",
+          "covered_target_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "4e280106acc897e5e8a6fd1a903274fc86d88e147d2561789a5245052b05a309",
+          "covered_target_services": [
+            "eval-memory-two-a",
+            "eval-memory-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "e09",
+      "sources": [
+        {
+          "candidate_services": [
+            "eval-resource-normal-one-a",
+            "eval-resource-normal-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "e22376230dabec88b14d0e15a9db2a815e9a4418ab824c4b0a7668e4dd4d83b7",
+          "covered_target_services": [
+            "eval-resource-normal-one-a",
+            "eval-resource-normal-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "eval-resource-normal-one-a",
+            "eval-resource-normal-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "86561fb4cac0274488a9364bf8aa268b60d00446c7454f8f5680fc65170b7354",
+          "covered_target_services": [
+            "eval-resource-normal-one-a",
+            "eval-resource-normal-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "eval-resource-normal-one-a",
+            "eval-resource-normal-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "87403770a63a605b32a71af4ffa62d2e8e0772655b9a3e982c0704fb38c1c3d6",
+          "covered_target_services": [
+            "eval-resource-normal-one-a",
+            "eval-resource-normal-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "eval-resource-normal-one-a",
+            "eval-resource-normal-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "b8db4b15498cc845a64c4f8c526e712ba91a5574510cd32453990bdb50e1beaa",
+          "covered_target_services": [
+            "eval-resource-normal-one-a",
+            "eval-resource-normal-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "eval-resource-normal-one-a",
+            "eval-resource-normal-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "14372ec6566d11b84d00576332cdbab261eba21eae6c01a4610b3a6e2c30ecf7",
+          "covered_target_services": [
+            "eval-resource-normal-one-a",
+            "eval-resource-normal-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "eval-resource-normal-one-a",
+            "eval-resource-normal-one-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "48e3711b78930b128ba2966cbf80fb0aa0891d1203fea6081e054a6fcfc76e78",
+          "covered_target_services": [
+            "eval-resource-normal-one-a",
+            "eval-resource-normal-one-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "e10",
+      "sources": [
+        {
+          "candidate_services": [
+            "eval-resource-normal-two-a",
+            "eval-resource-normal-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "0f11dad3f377c0552055b5797d8e87b53c2f546268c11e212741920b708bda92",
+          "covered_target_services": [
+            "eval-resource-normal-two-a",
+            "eval-resource-normal-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "eval-resource-normal-two-a",
+            "eval-resource-normal-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "d657dd7a0a84236c00da3554a1a5e451c282e85a09b53a955d9c569155cce74a",
+          "covered_target_services": [
+            "eval-resource-normal-two-a",
+            "eval-resource-normal-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "eval-resource-normal-two-a",
+            "eval-resource-normal-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "6504ba9b745c6c0bef33bd75f8a754f478f737999a9599a813e6af7ec97132f3",
+          "covered_target_services": [
+            "eval-resource-normal-two-a",
+            "eval-resource-normal-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "eval-resource-normal-two-a",
+            "eval-resource-normal-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "bf4c19ce885b17cdddb9a51acb28e56115c7627158397c5f22f6d2e0b1e95d25",
+          "covered_target_services": [
+            "eval-resource-normal-two-a",
+            "eval-resource-normal-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "eval-resource-normal-two-a",
+            "eval-resource-normal-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "dab13d7043781131d9c084dcba37f5287535e13172cbe67374491b76ac0919a1",
+          "covered_target_services": [
+            "eval-resource-normal-two-a",
+            "eval-resource-normal-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "eval-resource-normal-two-a",
+            "eval-resource-normal-two-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "ccfb1d38971b06b9624a68a33638252120a5d19a09ce25326cc06eb42d3f35a7",
+          "covered_target_services": [
+            "eval-resource-normal-two-a",
+            "eval-resource-normal-two-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "e11",
+      "sources": [
+        {
+          "candidate_services": [
+            "eval-e11-a",
+            "eval-e11-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "82b24ed95b11410a705050bd01b54d82a557ddd8fccc4fc07a1d715afab09233",
+          "covered_target_services": [
+            "eval-e11-a",
+            "eval-e11-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "eval-e11-a",
+            "eval-e11-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "c4e55a4740143089ba03cec885e8cff877f3347b30f0629758ea50af17c4bb81",
+          "covered_target_services": [
+            "eval-e11-a",
+            "eval-e11-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "eval-e11-a",
+            "eval-e11-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "67c7ec929f9cdd2124aa53a43bb05b8e554979abd467e0b75a63f6980136dd18",
+          "covered_target_services": [
+            "eval-e11-a",
+            "eval-e11-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "eval-e11-a",
+            "eval-e11-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "ddc72a11bba512be143cc326e0dd6669019bb621fd7ebe153588d66a658e6606",
+          "covered_target_services": [
+            "eval-e11-a",
+            "eval-e11-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "eval-e11-a",
+            "eval-e11-b"
+          ],
+          "coverage_mode": "TARGET_PARTIAL",
+          "coverage_sha256": "e16c19413c682b90b0f87eb58cec624d0b92984c7dd937e1149db85c8d140b3a",
+          "covered_target_services": [],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "eval-e11-a",
+            "eval-e11-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "ce2305a12f945543a373f4c613873bf40a5e3e27f983598970caa545f610df4c",
+          "covered_target_services": [
+            "eval-e11-a",
+            "eval-e11-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "e12",
+      "sources": [
+        {
+          "candidate_services": [
+            "eval-e12-a",
+            "eval-e12-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "5a0b387f0ea2eecdad8adfc04b03445e9e6c2ef0884b7c9c65a88f9cbc5c07b7",
+          "covered_target_services": [
+            "eval-e12-a",
+            "eval-e12-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "eval-e12-a",
+            "eval-e12-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "212fe307a4642c0a0c454bbe935ce08ec886a8152d91a8151ec53d6841f29bb6",
+          "covered_target_services": [
+            "eval-e12-a",
+            "eval-e12-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "eval-e12-a",
+            "eval-e12-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "7eec3013d29205203edffc85bf5b457d2daa1da9be55b1ae9b0e4933d1a507f3",
+          "covered_target_services": [
+            "eval-e12-a",
+            "eval-e12-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "eval-e12-a",
+            "eval-e12-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "6da9b0f81ed87f9644e2d9a4e54ae3667c931173bd6349dce34d590315d17cf5",
+          "covered_target_services": [
+            "eval-e12-a",
+            "eval-e12-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "eval-e12-a",
+            "eval-e12-b"
+          ],
+          "coverage_mode": "TARGET_PARTIAL",
+          "coverage_sha256": "d9e5c3f9621dc719292d523c6d96b9286cab1e203a7772989c9854d110df3c6d",
+          "covered_target_services": [],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "eval-e12-a",
+            "eval-e12-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "23dbbf1ed6bf24c7b0e6a0ea8f3e26296990f4914e9e64b19a3ee1366efa5142",
+          "covered_target_services": [
+            "eval-e12-a",
+            "eval-e12-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "e13",
+      "sources": [
+        {
+          "candidate_services": [
+            "eval-e13-a",
+            "eval-e13-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "b5b33f30f87e5b212f7bf66d3b618c2d94625b2203547253b1de7ae94bf29653",
+          "covered_target_services": [
+            "eval-e13-a",
+            "eval-e13-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "eval-e13-a",
+            "eval-e13-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "9bd09ea0fbe59937fb57ab5efe570f48216d39babe5524ee479e6b8b433c087b",
+          "covered_target_services": [
+            "eval-e13-a",
+            "eval-e13-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "eval-e13-a",
+            "eval-e13-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "514cef335512158f49ef02eb9f8eb2fe2c28b0409cb4bb4732269dc592da0c30",
+          "covered_target_services": [
+            "eval-e13-a",
+            "eval-e13-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "eval-e13-a",
+            "eval-e13-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "0bf3f4650853845935e242bdd9a07553095c2980e431018ef151a2a0072f6921",
+          "covered_target_services": [
+            "eval-e13-a",
+            "eval-e13-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "eval-e13-a",
+            "eval-e13-b"
+          ],
+          "coverage_mode": "TARGET_PARTIAL",
+          "coverage_sha256": "a635bc64c68978909fa13efba961efdb3f0d0478e4ed46fddc3aec4a41678544",
+          "covered_target_services": [],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "eval-e13-a",
+            "eval-e13-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "c96644a5d256ac67debea89c541b44c9ac5c53a273c14db16bb5bf0e2fcb8a54",
+          "covered_target_services": [
+            "eval-e13-a",
+            "eval-e13-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "e14",
+      "sources": [
+        {
+          "candidate_services": [
+            "eval-e14-a",
+            "eval-e14-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "f7d8936b3bccee16ee50983fa0419b0a95657209fa63e1af2ce1a497754eb80e",
+          "covered_target_services": [
+            "eval-e14-a",
+            "eval-e14-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "eval-e14-a",
+            "eval-e14-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "59a5dbd40374b09e84a5cbb799aba1f650ff5d59876de1ff34ea32fbdbcf09e2",
+          "covered_target_services": [
+            "eval-e14-a",
+            "eval-e14-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "eval-e14-a",
+            "eval-e14-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "4d5a8f18a9318ea525af77bccee9195109c45f393495de7b1dbeb1a566caebbe",
+          "covered_target_services": [
+            "eval-e14-a",
+            "eval-e14-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "eval-e14-a",
+            "eval-e14-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "6b732c28f280732f036087989de8b1d6aeab55f5165cd60733986e99f2cd958d",
+          "covered_target_services": [
+            "eval-e14-a",
+            "eval-e14-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "eval-e14-a",
+            "eval-e14-b"
+          ],
+          "coverage_mode": "TARGET_PARTIAL",
+          "coverage_sha256": "376a3d4f2f71f912ff5a04a76c447b2a7218302d3142796b812f63cb7082e3c5",
+          "covered_target_services": [],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "eval-e14-a",
+            "eval-e14-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "e4907ae8a12a219bb23fdf5be8db0c68a7e8859160da7165662af7c395d5cb11",
+          "covered_target_services": [
+            "eval-e14-a",
+            "eval-e14-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "e15",
+      "sources": [
+        {
+          "candidate_services": [
+            "eval-e15-a",
+            "eval-e15-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "db9fffa614a504de63301499a444224dc1d3e7a20093af4c4e3d740e75d8a0a5",
+          "covered_target_services": [
+            "eval-e15-a",
+            "eval-e15-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "eval-e15-a",
+            "eval-e15-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "f95900c02d6fe60fe51d16524724be0ac3b2c644d2bd8c056d79b7bdb6a67700",
+          "covered_target_services": [
+            "eval-e15-a",
+            "eval-e15-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "eval-e15-a",
+            "eval-e15-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "ad6880fb6d4933816f381a2ff56028732baa548825f75ba77f6b2508aa645582",
+          "covered_target_services": [
+            "eval-e15-a",
+            "eval-e15-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "eval-e15-a",
+            "eval-e15-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "af97653b98ad2d99a313447f0548fbb32e842858748535c300337134afebe2f1",
+          "covered_target_services": [
+            "eval-e15-a",
+            "eval-e15-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "eval-e15-a",
+            "eval-e15-b"
+          ],
+          "coverage_mode": "TARGET_PARTIAL",
+          "coverage_sha256": "c17ede81f980a80a6f67143e16c96c8dbc0e134fd9b23f1e544a1f9e90dc6c30",
+          "covered_target_services": [],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "eval-e15-a",
+            "eval-e15-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "5c8db581d906c1af310c74fb733fe2f96f498e130f0ded2cb71bf4c4f1f049d5",
+          "covered_target_services": [
+            "eval-e15-a",
+            "eval-e15-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "e16",
+      "sources": [
+        {
+          "candidate_services": [
+            "eval-e16-a",
+            "eval-e16-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "ddbad6a79d4dd1ee7c94bc2a1b758ba3e0088d3f200bc10b5c4c3356eb42034d",
+          "covered_target_services": [
+            "eval-e16-a",
+            "eval-e16-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "eval-e16-a",
+            "eval-e16-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "c8aed2ed34ebb3e54452d984273dad2886961b054c9a86afbf1e252453aa02c6",
+          "covered_target_services": [
+            "eval-e16-a",
+            "eval-e16-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "eval-e16-a",
+            "eval-e16-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "96e42d5b5c4aa425fd9d821dc181a13f40661e9b1a1aaa8aac54fe8deb65fb4c",
+          "covered_target_services": [
+            "eval-e16-a",
+            "eval-e16-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "eval-e16-a",
+            "eval-e16-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "3f48ba3cec9febec99cc5f6545bf0d901e728b5de0963f0fe9f08501a47c98e9",
+          "covered_target_services": [
+            "eval-e16-a",
+            "eval-e16-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "eval-e16-a",
+            "eval-e16-b"
+          ],
+          "coverage_mode": "TARGET_PARTIAL",
+          "coverage_sha256": "70933a237380d754ce554a1dde82870e3bb5817a0780d8adfad4bb58230aa88e",
+          "covered_target_services": [],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "eval-e16-a",
+            "eval-e16-b"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "26951a391987ca54bca88ab269ff5a352a9efbf070112a1df89160b5ca1acd3f",
+          "covered_target_services": [
+            "eval-e16-a",
+            "eval-e16-b"
+          ],
+          "schema_version": "dta-v22.4.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    }
+  ],
+  "schema_version": "dta-v22.4.replay-target-coverage-set.v1"
+}

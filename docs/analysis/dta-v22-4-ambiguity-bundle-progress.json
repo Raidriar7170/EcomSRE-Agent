@@ -3,8 +3,8 @@
   "goal_version": "dta-v22-4-ambiguity-bundle-v1",
   "starting_commit": "9c601bd5d802fbe31990348c228e094985044a0b",
   "branch": "codex/dta-v22-4-ambiguity-bundle",
-  "status": "D4_AMBIGUITY_SET_CLOSURE_COMPLETE",
-  "dag_completed": ["D0", "D1", "D2", "D3", "D4"],
+  "status": "D9_FIXED_EVALUATION_READY_FOR_FREEZE",
+  "dag_completed": ["D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"],
   "historical_results": {
     "files_verified": 29,
     "status": "DTA_V22_4_HISTORICAL_RESULT_BYTES_PRESERVED"
@@ -15,9 +15,48 @@
     "ambiguity_audit_passed": true,
     "report_sha256": "6a0950b65e498f87c6816967638cca2f4f6ff3d9e82a76edb6961bd1c7ad426d"
   },
+  "offline_simulation": {
+    "oracle_incident_exact": "10/10",
+    "oracle_control_correct": "6/6",
+    "target_set_resource_ambiguity_accuracy": 1.0,
+    "bundle_set_resource_ambiguity_accuracy": 1.0,
+    "bundle_set_one_read_resource_cases": "5/5",
+    "gate_passed": true,
+    "report_sha256": "c5cd48c8f7f60bdab8492b1baa914e0ffce83d4fc0778dfa12c48408bc00c29c"
+  },
+  "provider_smoke": {
+    "provider_model": "gpt-5.4-mini-2026-03-17",
+    "real_terminal_selection_cases": 12,
+    "valid_terminal_cases": 12,
+    "post_repair_protocol_success_rate": 1.0,
+    "protocol_bound_simulations_passed": true,
+    "uncaught_exceptions": 0,
+    "agent_writes": 0
+  },
+  "development_study": {
+    "iteration": 1,
+    "runs": 64,
+    "gate_passed": true,
+    "target_set_resource_ambiguity_accuracy": 1.0,
+    "bundle_set_resource_ambiguity_accuracy": 1.0,
+    "bundle_set_mean_resources_reads": 1.0,
+    "bundle_set_exact_gain_over_target_one": 3,
+    "bundle_set_macro_f1_gain_over_target_one": 0.2666666666666667,
+    "transport_retries": 1,
+    "uncaught_exceptions": 0,
+    "agent_writes": 0
+  },
+  "fixed_evaluation": {
+    "cases": 16,
+    "resource_cases": 10,
+    "counterfactual_resource_pairs": 4,
+    "non_byte_identical_to_v223": 16,
+    "infeasible_incident_cases": 0,
+    "manifest_state": "NOT_CREATED_UNTIL_IMPLEMENTATION_COMMIT"
+  },
   "offline_implementation_repairs_used": 0,
   "provider_smoke_fixes_used": 0,
-  "changed_development_iterations_used": 0,
+  "changed_development_iterations_used": 1,
   "full_final_study_executions": 0,
   "docker_calls": 0,
   "runbook_calls": 0,

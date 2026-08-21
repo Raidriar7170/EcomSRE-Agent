@@ -9,6 +9,7 @@ from scripts.ci.verify_dta_v224_historical_results import (
     DEFAULT_MANIFEST,
     verify_historical_results_v224,
 )
+from scripts.ci.verify_dta_v224_evaluation import verify_fixed_evaluation_v224
 from ecomsre.dta_v2.v22.ambiguity_audit_v224 import (
     audit_v223_target_ambiguity_v224,
 )
@@ -20,6 +21,18 @@ from ecomsre.dta_v2.v22.ambiguity_dispatch_v224 import (
     dispatch_ambiguity_action_v224,
 )
 from ecomsre.dta_v2.v22.action_catalog import StaticTopologyV22
+from ecomsre.dta_v2.v22.admission_dispatch_campaign_v223 import (
+    load_frozen_predicate_yield_priors_v223,
+)
+from ecomsre.dta_v2.v22.ambiguity_bundle_campaign_v224 import (
+    AmbiguityBundleCaseRunV224,
+    AmbiguityBundleRunStatusV224,
+    StudyCombinationV224,
+    execute_ambiguity_bundle_case_v224,
+)
+from ecomsre.dta_v2.v22.ambiguity_bundle_scorer_v224 import (
+    score_ambiguity_bundle_study_v224,
+)
 from ecomsre.dta_v2.v22.contrastive_actions_v224 import (
     build_contrastive_resource_delta_v224,
     contrastive_resource_action_if_eligible_v224,
@@ -50,18 +63,25 @@ from ecomsre.dta_v2.v22.practical_dataset import (
     load_practical_case_set_v22,
     materialize_practical_case_v22,
 )
+from ecomsre.dta_v2.v22.offline_simulation_v223 import (
+    _EvaluatorSelectionProviderV223,
+)
+from ecomsre.dta_v2.v22.practical_campaign import load_practical_truth_set_v22
+from ecomsre.dta_v2.v22.practical_scorer import PracticalTruthV22
 from ecomsre.dta_v2.v22.practical_runner import _baseline, _bootstrap
 from ecomsre.dta_v2.v22.replay import QuerySpecificReplayBackendV22, ReplayCaptureV22
 from ecomsre.dta_v2.v22.replay_target_coverage_v224 import (
     ReplayTargetCoverageModeV224,
     build_replay_target_coverage_v224,
     complete_resource_records_v224,
+    load_replay_target_coverage_set_v224,
     normal_resource_record_v224,
     require_capture_matches_target_coverage_v224,
 )
 
 
 ROOT = Path(__file__).resolve().parents[2]
+DEVELOPMENT_ROOT = ROOT / "config/dta-v22-4/development"
 
 
 def test_v224_binds_every_merged_v22_through_v223_result_byte() -> None:
@@ -69,6 +89,17 @@ def test_v224_binds_every_merged_v22_through_v223_result_byte() -> None:
         repository_root=ROOT,
         manifest_path=DEFAULT_MANIFEST,
     ) == 29
+
+
+def test_v224_fixed_evaluation_is_new_complete_and_evaluator_feasible() -> None:
+    report = verify_fixed_evaluation_v224(repository_root=ROOT)
+
+    assert report["cases"] == 16
+    assert report["resource_cases"] == 10
+    assert report["counterfactual_resource_pairs"] == 4
+    assert report["non_byte_identical_to_v223"] == 16
+    assert report["infeasible_incident_cases"] == 0
+    assert report["agent_writes"] == 0
 
 
 def test_v224_audit_proves_the_three_frozen_wrong_target_cases_are_symmetric() -> None:
@@ -639,3 +670,125 @@ def test_v224_dispatch_is_sequential_per_target_and_one_read_for_bundle() -> Non
     assert bundled is not None
     assert bundled.action.action_id == bundle.action_id
     assert bundled.action.target_services == case.candidate_services
+
+
+def _development_d05_runs() -> tuple[
+    PracticalTruthV22, tuple[AmbiguityBundleCaseRunV224, ...]
+]:
+    specs = load_practical_case_set_v22(DEVELOPMENT_ROOT / "cases.json")
+    truths = load_practical_truth_set_v22(DEVELOPMENT_ROOT / "truth.json")
+    coverage = load_replay_target_coverage_set_v224(
+        DEVELOPMENT_ROOT / "coverage.json"
+    )
+    priors = load_frozen_predicate_yield_priors_v223(
+        ROOT / "config/dta-v22-3/development-predicate-yield-prior.json"
+    )
+    spec = next(item for item in specs.cases if item.case_id == "d05")
+    truth = next(item for item in truths.truths if item.case_id == "d05")
+    runs = tuple(
+        execute_ambiguity_bundle_case_v224(
+            spec=spec,
+            coverage=coverage.require("d05"),
+            repository_root=ROOT,
+            combination=combination,
+            provider=_EvaluatorSelectionProviderV223(
+                truth=truth,
+                oracle_action_ids=(),
+            ),
+            predicate_yield_priors=priors,
+        )
+        for combination in StudyCombinationV224
+    )
+    return truth, runs
+
+
+def test_v224_development_resource_cases_are_explicitly_target_complete() -> None:
+    specs = load_practical_case_set_v22(DEVELOPMENT_ROOT / "cases.json")
+    coverage = load_replay_target_coverage_set_v224(
+        DEVELOPMENT_ROOT / "coverage.json"
+    )
+    for spec in specs.cases:
+        if spec.case_id not in {"d05", "d06", "d07", "d08", "d13"}:
+            continue
+        case = materialize_practical_case_v22(spec=spec, repository_root=ROOT)
+        resource = coverage.require(spec.case_id).require(EvidenceSourceV22.RESOURCES)
+        assert resource.coverage_mode is ReplayTargetCoverageModeV224.TARGET_COMPLETE
+        assert tuple(item.service for item in case.capture.resources) == (
+            case.candidate_services
+        )
+
+
+def test_v224_four_combinations_change_only_declared_factors() -> None:
+    _, runs = _development_d05_runs()
+
+    assert {run.combination for run in runs} == set(StudyCombinationV224)
+    assert len({run.case_bytes_sha256 for run in runs}) == 1
+    assert {run.action_granularity for run in runs} == {
+        ActionGranularityV224.PER_TARGET,
+        ActionGranularityV224.CONTRASTIVE_BUNDLE,
+    }
+    assert {run.closure_scope for run in runs} == {
+        NoIncidentClosureScopeV224.ONE_TARGET_ATTEMPT,
+        NoIncidentClosureScopeV224.AMBIGUITY_SET_COMPLETE,
+    }
+    assert all(run.provider_calls == 1 for run in runs)
+    assert all(run.provider_terminal_selections == 1 for run in runs)
+    assert all(run.agent_writes == 0 for run in runs)
+
+
+def test_v224_target_set_recovers_and_bundle_set_covers_in_one_read() -> None:
+    truth, runs = _development_d05_runs()
+    by_name = {run.combination: run for run in runs}
+
+    target_one = by_name[StudyCombinationV224.TARGET_ONE]
+    assert target_one.terminal == "NO_INCIDENT"
+    assert target_one.set_complete_before_terminal is False
+
+    target_set = by_name[StudyCombinationV224.TARGET_SET]
+    assert target_set.status is AmbiguityBundleRunStatusV224.VALID_TERMINAL
+    assert target_set.terminal == truth.expected_terminal
+    assert target_set.root_service == truth.expected_root_service
+    assert target_set.individual_resources_reads == 2
+    assert target_set.set_complete_before_terminal is True
+    assert target_set.no_incident_exposed_after_partial_coverage is False
+
+    bundle_set = by_name[StudyCombinationV224.BUNDLE_SET]
+    assert bundle_set.terminal == truth.expected_terminal
+    assert bundle_set.root_service == truth.expected_root_service
+    assert bundle_set.bundle_resources_reads == 1
+    assert bundle_set.individual_resources_reads == 0
+    assert bundle_set.targets_covered_before_terminal == (
+        "pair-resource-a",
+        "pair-resource-b",
+    )
+
+
+def test_v224_factorial_scorer_uses_case_and_resource_denominators() -> None:
+    truth, runs = _development_d05_runs()
+    score = score_ambiguity_bundle_study_v224(
+        runs=runs,
+        truths=(truth,),
+        include_development_gate=False,
+        include_interpretation=True,
+    )
+    by_name = {item.combination: item for item in score.combinations}
+
+    assert by_name[StudyCombinationV224.TARGET_ONE].total_runs == 1
+    assert (
+        by_name[StudyCombinationV224.TARGET_ONE].resource_ambiguity_denominator
+        == 1
+    )
+    assert (
+        by_name[StudyCombinationV224.TARGET_ONE].resource_ambiguity_exact_accuracy
+        == 0.0
+    )
+    assert (
+        by_name[StudyCombinationV224.TARGET_SET].resource_ambiguity_exact_accuracy
+        == 1.0
+    )
+    assert (
+        by_name[StudyCombinationV224.BUNDLE_SET].mean_resources_reads_per_resource_case
+        == 1.0
+    )
+    assert score.interpretation is not None
+    assert score.interpretation.closure_main_effect.resource_ambiguity_accuracy_improvement == 0.5
