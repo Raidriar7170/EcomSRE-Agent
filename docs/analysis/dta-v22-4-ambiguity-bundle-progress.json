@@ -3,7 +3,7 @@
   "goal_version": "dta-v22-4-ambiguity-bundle-v1",
   "starting_commit": "9c601bd5d802fbe31990348c228e094985044a0b",
   "branch": "codex/dta-v22-4-ambiguity-bundle",
-  "status": "D10_FINAL_STUDY_FROZEN",
+  "status": "BLOCKED_DTA_V22_4_REPOSITORY_ACCEPTANCE",
   "dag_completed": ["D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10"],
   "historical_results": {
     "files_verified": 29,
@@ -81,6 +81,19 @@
   "docker_calls": 0,
   "runbook_calls": 0,
   "agent_writes": 0,
-  "measured_terminal": "DTA_V22_4_COMBINED_AMBIGUITY_FIX_EFFECT_OBSERVED",
+  "independent_review": {
+    "reviewed_head": "b7902dc50b575743de07893c37f37132b1c9de17",
+    "verdict": "BLOCKED",
+    "must_fix_count": 3,
+    "claim_accuracy": "FAIL",
+    "truth_isolation_violation": "PROVIDER_VISIBLE_SERVICE_IDENTIFIERS_ENCODE_EVALUATOR_LABELS",
+    "set_closure_budget_semantics": "FAIL_OPEN_ON_INCOMPLETE_UNAFFORDABLE_SET",
+    "final_preflight_binding": "INCOMPLETE",
+    "review_path": "docs/external-reviews/2026-08-22-dta-v22-4-ambiguity-bundle-pro-review.md"
+  },
+  "study_validity": "INVALID",
+  "raw_measured_terminal_retained_for_byte_audit_only": "DTA_V22_4_COMBINED_AMBIGUITY_FIX_EFFECT_OBSERVED",
+  "measured_terminal_claim_status": "RETRACTED_TRUTH_ISOLATION_VIOLATION",
+  "full_study_rerun_authorized": false,
   "engineering_terminal": null
 }

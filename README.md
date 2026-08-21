@@ -72,21 +72,19 @@ See the [fixed study](docs/results/dta-v22-3-admission-dispatch-evaluation.md),
 [error analysis](docs/results/dta-v22-3-admission-dispatch-error-analysis.md),
 and [interview brief](docs/results/dta-v22-3-admission-dispatch-interview-brief.md).
 
-DTA v2.2.4 replaced symmetric one-target guessing with explicit per-source
-target completeness, normal resource records for every candidate, Evidence
-Ambiguity Sets, sequential uncovered-target dispatch, and one-read contrastive
-Resources bundles. One new 16-case × 4-combination synthetic/derived replay
-study represented all 64 runs once with zero Agent writes and zero runner
-exceptions. Exact completion was TARGET_ONE 12/16 and 16/16 for TARGET_SET,
-BUNDLE_ONE, and BUNDLE_SET. BUNDLE_SET localized all 8/8 resource incidents,
-eliminated premature `NO_INCIDENT`, and used 1.0 Resources reads per resource
-case versus TARGET_SET's 1.6. Provider calls did not fall and tokens increased,
-so the result is bounded mechanism evidence rather than a general efficiency or
-production claim. The preregistered terminal is
-`DTA_V22_4_COMBINED_AMBIGUITY_FIX_EFFECT_OBSERVED`. See the
-[fixed study](docs/results/dta-v22-4-ambiguity-bundle-evaluation.md),
-[error analysis](docs/results/dta-v22-4-ambiguity-bundle-error-analysis.md), and
-[interview brief](docs/results/dta-v22-4-ambiguity-bundle-interview-brief.md).
+DTA v2.2.4 is retained as an `INVALID / REVIEW_REQUIRED` study. Its one frozen
+16-case × 4-combination execution represented all 64 runs with zero Agent
+writes and zero runner exceptions, but independent review found that
+Provider-visible service identifiers encoded evaluator labels such as CPU,
+memory, and resource-normal. That truth-isolation violation invalidates the
+effect claim even though the stored arithmetic is internally consistent. The
+raw artifact still contains the originally computed
+`DTA_V22_4_COMBINED_AMBIGUITY_FIX_EFFECT_OBSERVED` terminal for byte-preserving
+audit only; it is retracted and must not be used as evidence of effect. No
+second study was run. See the
+[invalid closeout](docs/results/dta-v22-4-ambiguity-bundle-invalid-closeout.md),
+[frozen study](docs/results/dta-v22-4-ambiguity-bundle-evaluation.md), and
+[independent review](docs/external-reviews/2026-08-22-dta-v22-4-ambiguity-bundle-pro-review.md).
 
 ## One-command offline demo
 
