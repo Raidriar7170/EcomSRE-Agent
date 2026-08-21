@@ -123,7 +123,7 @@ def verify_evaluation_freeze_v223(
     # PR #64 was squash-merged, so the feature implementation commit is not an
     # ancestor of mainline. Bind its content object directly, then require the
     # published squash merge itself to remain in HEAD's ancestry.
-    for older, newer, label in (
+    for older, newer, ancestry_label in (
         (base_commit, implementation_commit, "base to implementation"),
         (base_commit, V223_SQUASH_MERGE, "base to squash merge"),
         (V223_SQUASH_MERGE, "HEAD", "squash merge to HEAD"),
@@ -135,7 +135,9 @@ def verify_evaluation_freeze_v223(
             capture_output=True,
         )
         if ancestry.returncode != 0:
-            raise ValueError(f"v2.2.3 frozen commit ancestry differs: {label}")
+            raise ValueError(
+                f"v2.2.3 frozen commit ancestry differs: {ancestry_label}"
+            )
     for index, item in enumerate(
         cast(list[object], manifest.get("implementation_sources"))
     ):
