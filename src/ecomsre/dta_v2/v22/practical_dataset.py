@@ -16,6 +16,7 @@ from ecomsre.dta_v2.v22.practical_replay import (
 )
 from ecomsre.dta_v2.v22.read_contracts import (
     DtaModelV22,
+    EvidenceSourceV22,
     METRIC_UNIT_BY_KIND_V22,
     MetricFactV22,
     MetricKindV22,
@@ -42,6 +43,21 @@ class PracticalCaseModifierV22(str, Enum):
     SHIPPING_DEPENDENCY_DERIVED = "SHIPPING_DEPENDENCY_DERIVED"
     SHIPPING_HEALTHY_COUNTERFACTUAL = "SHIPPING_HEALTHY_COUNTERFACTUAL"
     PAYMENT_DEPENDENCY_FIXTURE = "PAYMENT_DEPENDENCY_FIXTURE"
+    V222_EVALUATION_FIXTURE = "V222_EVALUATION_FIXTURE"
+
+
+class SyntheticEvaluationSourceV222(DtaModelV22):
+    schema_version: Literal["dta-v22.2.synthetic-evaluation-source.v1"]
+    captured_sources: tuple[EvidenceSourceV22, ...] = Field(min_length=1)
+    normalized_case: NormalizedPracticalCaseV22
+
+    @model_validator(mode="after")
+    def require_capture_metadata(self) -> "SyntheticEvaluationSourceV222":
+        if self.captured_sources != tuple(
+            source for source in EvidenceSourceV22 if source in self.captured_sources
+        ):
+            raise ValueError("synthetic captured sources are not canonical")
+        return self
 
 
 class PracticalCaseSpecV22(DtaModelV22):
@@ -89,6 +105,24 @@ def practical_case_bytes_sha256_v22(spec: PracticalCaseSpecV22) -> str:
 
 def load_practical_case_set_v22(path: Path) -> PracticalCaseSetV22:
     return PracticalCaseSetV22.model_validate_json(path.read_bytes())
+
+
+def load_synthetic_evaluation_source_v222(
+    *, spec: PracticalCaseSpecV22, repository_root: Path
+) -> SyntheticEvaluationSourceV222:
+    if (
+        spec.modifier is not PracticalCaseModifierV22.V222_EVALUATION_FIXTURE
+        or spec.source_path is None
+        or spec.source_sha256 is None
+    ):
+        raise ValueError("case is not a bound v2.2.2 evaluation source")
+    source_bytes = (repository_root / spec.source_path).read_bytes()
+    if hashlib.sha256(source_bytes).hexdigest() != spec.source_sha256:
+        raise ValueError("v2.2.2 evaluation source bytes differ from frozen binding")
+    source = SyntheticEvaluationSourceV222.model_validate_json(source_bytes)
+    if source.normalized_case.case_id != spec.case_id:
+        raise ValueError("v2.2.2 evaluation source case ID differs")
+    return source
 
 
 def _rebuild_case(
@@ -304,6 +338,12 @@ def materialize_practical_case_v22(
 ) -> NormalizedPracticalCaseV22:
     if spec.modifier is PracticalCaseModifierV22.PAYMENT_DEPENDENCY_FIXTURE:
         return _payment_dependency(spec)
+    if spec.modifier is PracticalCaseModifierV22.V222_EVALUATION_FIXTURE:
+        source = load_synthetic_evaluation_source_v222(
+            spec=spec,
+            repository_root=repository_root,
+        ).normalized_case
+        return _rebuild_case(source=source, spec=spec, capture=source.capture)
     assert spec.source_path is not None and spec.source_sha256 is not None
     path = repository_root / spec.source_path
     source_bytes = path.read_bytes()
@@ -328,8 +368,10 @@ __all__ = (
     "PracticalCaseModifierV22",
     "PracticalCaseSetV22",
     "PracticalCaseSpecV22",
+    "SyntheticEvaluationSourceV222",
     "case_set_file_sha256_v22",
     "load_practical_case_set_v22",
+    "load_synthetic_evaluation_source_v222",
     "materialize_practical_case_v22",
     "practical_case_bytes_sha256_v22",
 )
