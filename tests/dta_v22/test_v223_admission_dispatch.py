@@ -7,6 +7,7 @@ from typing import Mapping, cast
 
 import pytest
 
+import scripts.ci.verify_dta_v223_evaluation_freeze as evaluation_freeze_verifier
 from scripts.ci.verify_dta_v223_historical_results import (
     DEFAULT_MANIFEST,
     verify_historical_results_v223,
@@ -98,6 +99,50 @@ def test_v223_new_evaluation_freeze_has_required_properties() -> None:
     assert result["feasible_incidents"] == 10
     assert cast(int, result["action_ambiguity_incidents"]) >= 4
     assert result["resource_silent_incidents"] == 4
+
+
+@pytest.mark.parametrize(
+    ("mutate", "expected_error"),
+    (
+        (
+            lambda artifact: artifact["campaign"]["runs"][0].__setitem__(
+                "case_bytes_sha256", "0" * 64
+            ),
+            "case bytes differ",
+        ),
+        (
+            lambda artifact: artifact["scores"]["combinations"][0].__setitem__(
+                "exact_completion_cases", 0
+            ),
+            "scores do not reproduce",
+        ),
+    ),
+)
+def test_v223_final_verifier_fails_closed_on_tampered_evidence(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    mutate,
+    expected_error: str,
+) -> None:
+    artifact = json.loads(
+        (ROOT / evaluation_freeze_verifier.FINAL_JSON).read_bytes()
+    )
+    mutate(artifact)
+    final_json = tmp_path / "evaluation.json"
+    final_json.write_text(json.dumps(artifact), encoding="utf-8")
+    final_markdown = tmp_path / "evaluation.md"
+    final_markdown.write_bytes(
+        (ROOT / evaluation_freeze_verifier.FINAL_MARKDOWN).read_bytes()
+    )
+    monkeypatch.setattr(evaluation_freeze_verifier, "FINAL_JSON", final_json)
+    monkeypatch.setattr(evaluation_freeze_verifier, "FINAL_MARKDOWN", final_markdown)
+
+    with pytest.raises(ValueError, match=expected_error):
+        evaluation_freeze_verifier.verify_evaluation_freeze_v223(
+            repository_root=ROOT,
+            manifest_path=EVALUATION_MANIFEST,
+            require_pre_execution=False,
+        )
 
 
 def test_v223_development_top1_gate_passes_without_runtime_truth() -> None:

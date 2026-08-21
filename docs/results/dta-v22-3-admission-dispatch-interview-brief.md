@@ -37,7 +37,9 @@ Replay bytes
   -> [Model Top4 | Runtime Top1]
   -> read + Negative Coverage + Post-Read Delta
   -> [Legacy | one-step evidence-closed NO_INCIDENT]
-  -> runtime-admissible T-only terminal selection
+  -> runtime-admissible terminal selection
+       Runtime Top1: T-only once a terminal is exposed
+       Model Top4: shared A/T selection surface
 ```
 
 Only admission mode and dispatch mode vary. Model, prompt, case bytes, policy,

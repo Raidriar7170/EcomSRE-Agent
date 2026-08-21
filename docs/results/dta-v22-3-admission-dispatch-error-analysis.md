@@ -33,14 +33,18 @@ than improving it.
 It improved one case over `MODEL_LEGACY`: exact completion moved from `12/16`
 to `13/16`, Macro-F1 from `0.6000` to `0.7333`, and resource-silent accuracy
 from `0.00` to `0.25`. That gain was below every registered effect threshold.
-Mean reads rose from `0.75` to `1.1875`; all six healthy/insufficient controls
-became read-bearing.
+Mean reads rose from `0.75` to `1.1875`; closure newly made all three healthy
+`NO_INCIDENT` controls read-bearing, while the three insufficient/`ABSTAIN`
+controls were already read-bearing under Legacy.
 
 ### How often did closure add an unnecessary read on healthy controls?
 
-Every time: `6/6` controls in each Closed arm had at least one read, for an
-unnecessary-control-read rate of `1.0`. Control terminal accuracy remained
-`6/6`, so the cost increased without a control regression.
+Every healthy `NO_INCIDENT` control: `3/3` in each Closed arm had at least one
+read, for the scorer's unnecessary-control-read rate of `1.0`; pooled across
+both Closed arms, that is `6/6` healthy control runs. The three `ABSTAIN`
+controls in each arm also had reads, but were already read-bearing under Legacy
+and are outside that rate's denominator. All six control terminals per arm
+remained correct, so the cost increased without a control regression.
 
 ### Did automatic dispatch reduce Provider calls and tokens?
 
