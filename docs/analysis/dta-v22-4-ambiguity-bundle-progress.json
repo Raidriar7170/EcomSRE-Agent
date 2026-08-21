@@ -3,8 +3,8 @@
   "goal_version": "dta-v22-4-ambiguity-bundle-v1",
   "starting_commit": "9c601bd5d802fbe31990348c228e094985044a0b",
   "branch": "codex/dta-v22-4-ambiguity-bundle",
-  "status": "D1_TARGET_COMPLETENESS_CONTRACT_COMPLETE",
-  "dag_completed": ["D0", "D1"],
+  "status": "D4_AMBIGUITY_SET_CLOSURE_COMPLETE",
+  "dag_completed": ["D0", "D1", "D2", "D3", "D4"],
   "historical_results": {
     "files_verified": 29,
     "status": "DTA_V22_4_HISTORICAL_RESULT_BYTES_PRESERVED"

@@ -9,17 +9,19 @@ from typing import Any, Literal, cast
 from pydantic import Field, StrictBool, StrictInt, model_validator
 
 from ecomsre.dta_v2.v22.action_catalog import StaticTopologyV22
+from ecomsre.dta_v2.v22.ambiguity_set_v224 import (
+    resource_target_visibility_signature_v224,
+)
 from ecomsre.dta_v2.v22.controller_contracts import build_hypothesis_catalog_v22
 from ecomsre.dta_v2.v22.effective_policy_v222 import build_effective_support_policy_v222
-from ecomsre.dta_v2.v22.gap_graph_v222 import GapGraphV222, build_gap_graph_v222
+from ecomsre.dta_v2.v22.gap_graph_v222 import build_gap_graph_v222
 from ecomsre.dta_v2.v22.gap_router_v222 import SOURCE_PREDICATE_CAPABILITIES_V222
-from ecomsre.dta_v2.v22.memory import SalientEvidenceMemoryV22, build_memory_views_v22
+from ecomsre.dta_v2.v22.memory import build_memory_views_v22
 from ecomsre.dta_v2.v22.practical_dataset import (
     load_practical_case_set_v22,
     materialize_practical_case_v22,
 )
 from ecomsre.dta_v2.v22.practical_runner import _baseline, _bootstrap
-from ecomsre.dta_v2.v22.predicates import MechanismV22
 from ecomsre.dta_v2.v22.read_contracts import (
     DtaModelV22,
     EvidenceSourceV22,
@@ -35,10 +37,6 @@ SIGNATURE_INPUT_FIELDS_V224 = (
     "current_gap_requirements",
     "negative_coverage",
 )
-_RESOURCE_MECHANISMS = {
-    MechanismV22.CPU_SATURATION,
-    MechanismV22.MEMORY_LEAK,
-}
 _WRONG_TARGET_CASE_IDS = ("d05", "d06", "d08")
 
 
@@ -94,87 +92,6 @@ class TargetAmbiguityAuditReportV224(DtaModelV22):
         return self
 
 
-def _resource_gap_requirements(
-    *, graph: GapGraphV222, service: str
-) -> tuple[dict[str, object], ...]:
-    values: list[dict[str, object]] = []
-    for hypothesis in graph.hypotheses:
-        if hypothesis.target_service != service or hypothesis.mechanism not in _RESOURCE_MECHANISMS:
-            continue
-        for clause in hypothesis.clauses:
-            if clause.missing_count != hypothesis.minimum_missing_count:
-                continue
-            for gap in clause.missing_requirements:
-                values.append(
-                    {
-                        "mechanism": hypothesis.mechanism.value,
-                        "predicate_kind": gap.predicate_kind.value,
-                        "service_binding": gap.service_binding.value,
-                        "require_exact_parent": gap.require_exact_parent,
-                        "target_relation": "SELF",
-                        "parent_relation": None if gap.parent_service is None else "ADJACENT",
-                    }
-                )
-    return tuple(sorted(values, key=lambda item: json.dumps(item, sort_keys=True)))
-
-
-def _visibility_payload(
-    *,
-    service: str,
-    candidate_services: tuple[str, ...],
-    topology_edges: tuple[tuple[str, str], ...],
-    memory: SalientEvidenceMemoryV22,
-    graph: GapGraphV222,
-) -> dict[str, object]:
-    runtime_predicates = tuple(
-        sorted(
-            item.predicate_kind.value
-            for item in memory.predicates
-            if item.service == service and item.source is EvidenceSourceV22.RUNTIME
-        )
-    )
-    metric_facts = tuple(
-        sorted(
-            (
-                {
-                    "signal_strength": item.signal_strength.value,
-                    "payload": item.payload.model_dump(mode="json"),
-                }
-                for item in memory.salient_facts
-                if item.service == service and item.source is EvidenceSourceV22.METRICS
-            ),
-            key=lambda item: json.dumps(item, sort_keys=True),
-        )
-    )
-    neighbors = {
-        right if left == service else left
-        for left, right in topology_edges
-        if service in {left, right}
-    }
-    covered_sources = tuple(
-        source.value
-        for source in EvidenceSourceV22
-        if any(
-            item.service == service and item.source is source
-            for item in memory.salient_facts
-        )
-    )
-    return {
-        "runtime_predicates": runtime_predicates,
-        "metric_predicates_and_support": metric_facts,
-        "topology_role": {
-            "candidate_neighbor_count": len(neighbors.intersection(candidate_services)),
-            "external_neighbor_count": len(neighbors.difference(candidate_services)),
-        },
-        "already_covered_sources": covered_sources,
-        "current_gap_requirements": _resource_gap_requirements(
-            graph=graph,
-            service=service,
-        ),
-        "negative_coverage": (),
-    }
-
-
 def _equivalence_classes(
     *, services: tuple[str, ...], signatures: tuple[str, ...]
 ) -> tuple[tuple[str, ...], ...]:
@@ -217,20 +134,26 @@ def _case_audit(
         planner_focus_hypothesis_id=None,
         prior_negative_coverage=(),
     )
+    resource_predicate_kinds = SOURCE_PREDICATE_CAPABILITIES_V222[
+        EvidenceSourceV22.RESOURCES
+    ]
     resource_hypotheses = tuple(
         item
         for item in graph.hypotheses
-        if not item.complete and item.mechanism in _RESOURCE_MECHANISMS
+        if not item.complete
+        and any(
+            gap.predicate_kind in resource_predicate_kinds
+            for clause in item.clauses
+            for gap in clause.missing_requirements
+        )
     )
     signatures = tuple(
-        semantic_sha256_v22(
-            _visibility_payload(
-                service=service,
-                candidate_services=case.candidate_services,
-                topology_edges=case.topology_edges,
-                memory=memory,
-                graph=graph,
-            )
+        resource_target_visibility_signature_v224(
+            service=service,
+            candidate_services=case.candidate_services,
+            topology_edges=case.topology_edges,
+            memory=memory,
+            gap_graph=graph,
         )
         for service in case.candidate_services
     )

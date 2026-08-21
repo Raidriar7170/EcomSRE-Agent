@@ -35,7 +35,11 @@ def _canonical_weighted_cost(
     targets: tuple[str, ...],
 ) -> float:
     base = _CANONICAL_COST_BY_SOURCE[source]
-    return base * 2 if source is EvidenceSourceV22.RUNTIME and len(targets) > 1 else base
+    if source is EvidenceSourceV22.RUNTIME and len(targets) > 1:
+        return base * 2
+    if source is EvidenceSourceV22.RESOURCES and len(targets) > 1:
+        return min(3.0, base + 0.5 * (len(targets) - 1))
+    return base
 
 
 class StaticTopologyV22(DtaModelV22):
@@ -454,7 +458,10 @@ def _action_id_for_request(request: CanonicalReadRequestV22) -> str:
     source = request.source.value.casefold()
     if request.source is EvidenceSourceV22.METRICS:
         return f"a:{source}:{request.target_services[0]}:core"
-    if request.source is EvidenceSourceV22.RUNTIME and len(request.target_services) > 1:
+    if request.source in {
+        EvidenceSourceV22.RUNTIME,
+        EvidenceSourceV22.RESOURCES,
+    } and len(request.target_services) > 1:
         target_digest = semantic_sha256_v22(list(request.target_services))[:12]
         return f"a:{source}:all-candidates:{target_digest}"
     return f"a:{source}:{request.target_services[0]}"
@@ -526,11 +533,14 @@ def _canonical_dominates_action_ids(
     source: EvidenceSourceV22,
     targets: tuple[str, ...],
 ) -> tuple[str, ...]:
-    if source is not EvidenceSourceV22.RUNTIME or len(targets) <= 1:
+    if source not in {
+        EvidenceSourceV22.RUNTIME,
+        EvidenceSourceV22.RESOURCES,
+    } or len(targets) <= 1:
         return ()
     return tuple(
         sorted(
-            _action_id_for_request(_request_for(EvidenceSourceV22.RUNTIME, (target,)))
+            _action_id_for_request(_request_for(source, (target,)))
             for target in targets
         )
     )
