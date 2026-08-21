@@ -11,6 +11,10 @@ from scripts.ci.verify_dta_v223_historical_results import (
     DEFAULT_MANIFEST,
     verify_historical_results_v223,
 )
+from scripts.ci.verify_dta_v223_evaluation_freeze import (
+    DEFAULT_MANIFEST as EVALUATION_MANIFEST,
+    verify_evaluation_freeze_v223,
+)
 from ecomsre.dta_v2.v22.admission_dispatch_campaign_v223 import (
     StudyCombinationV223,
     balanced_combination_order_v223,
@@ -82,6 +86,18 @@ def test_v223_historical_verifier_fails_closed_on_drift(tmp_path: Path) -> None:
             repository_root=result_root,
             manifest_path=DEFAULT_MANIFEST,
         )
+
+
+def test_v223_new_evaluation_freeze_has_required_properties() -> None:
+    result = verify_evaluation_freeze_v223(
+        repository_root=ROOT,
+        manifest_path=EVALUATION_MANIFEST,
+        require_pre_execution=False,
+    )
+    assert result["cases"] == 16
+    assert result["feasible_incidents"] == 10
+    assert result["action_ambiguity_incidents"] >= 4
+    assert result["resource_silent_incidents"] == 4
 
 
 def test_v223_development_top1_gate_passes_without_runtime_truth() -> None:

@@ -1,0 +1,123 @@
+{
+  "captured_sources": [
+    "METRICS",
+    "LOGS",
+    "TRACES",
+    "RUNTIME",
+    "RESOURCES",
+    "CHANGES"
+  ],
+  "normalized_case": {
+    "candidate_services": [
+      "case-d16-a",
+      "case-d16-b"
+    ],
+    "capture": {
+      "captured_at": "2026-08-21T00:16:00Z",
+      "changes": [],
+      "logs": [],
+      "metrics": [
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "case-d16-a",
+          "support_status": "SUPPORTED",
+          "unit": "RATIO",
+          "value": 0.01,
+          "window_ended_at": "2026-08-21T00:16:00Z",
+          "window_started_at": "2026-08-21T00:11:00Z"
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "case-d16-a",
+          "support_status": "SUPPORTED",
+          "unit": "MILLISECONDS",
+          "value": 10.0,
+          "window_ended_at": "2026-08-21T00:16:00Z",
+          "window_started_at": "2026-08-21T00:11:00Z"
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "case-d16-a",
+          "support_status": "SUPPORTED",
+          "unit": "COUNT",
+          "value": 100.0,
+          "window_ended_at": "2026-08-21T00:16:00Z",
+          "window_started_at": "2026-08-21T00:11:00Z"
+        },
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "case-d16-b",
+          "support_status": "SUPPORTED",
+          "unit": "RATIO",
+          "value": 0.01,
+          "window_ended_at": "2026-08-21T00:16:00Z",
+          "window_started_at": "2026-08-21T00:11:00Z"
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "case-d16-b",
+          "support_status": "SUPPORTED",
+          "unit": "MILLISECONDS",
+          "value": 10.0,
+          "window_ended_at": "2026-08-21T00:16:00Z",
+          "window_started_at": "2026-08-21T00:11:00Z"
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 0,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "case-d16-b",
+          "support_status": "UNSUPPORTED",
+          "unit": "COUNT",
+          "value": null,
+          "window_ended_at": "2026-08-21T00:16:00Z",
+          "window_started_at": "2026-08-21T00:11:00Z"
+        }
+      ],
+      "resources": [],
+      "runtime": [
+        {
+          "healthy": true,
+          "restart_count": 0,
+          "schema_version": "dta-v22.runtime-record.v1",
+          "service": "case-d16-a",
+          "state": "RUNNING"
+        },
+        {
+          "healthy": true,
+          "restart_count": 0,
+          "schema_version": "dta-v22.runtime-record.v1",
+          "service": "case-d16-b",
+          "state": "RUNNING"
+        }
+      ],
+      "schema_version": "dta-v22.replay-capture.v1",
+      "source_failures": [],
+      "traces": []
+    },
+    "case_id": "d16",
+    "normalization_notes": [
+      "Synthetic/derived DTA v2.2.3 evaluation fixture; no Docker capture.",
+      "Service identities deterministically rebound from prior development blueprint e16."
+    ],
+    "schema_version": "dta-v22.practical-normalized-case.v1",
+    "source_bytes_sha256": "c41c02527b0eba66f31e8e0793af5a2b5c638c0cc9e24c88de5876f1e62dcd72",
+    "topology_edges": [
+      [
+        "case-d16-a",
+        "case-d16-b"
+      ]
+    ]
+  },
+  "schema_version": "dta-v22.2.synthetic-evaluation-source.v1"
+}

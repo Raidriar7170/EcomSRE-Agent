@@ -1,0 +1,117 @@
+{
+  "schema_version": "dta-v22.practical-truth-set.v1",
+  "truths": [
+    {
+      "case_id": "d01",
+      "evidence_applicable": true,
+      "expected_mechanism": "CONFIGURATION_ERROR",
+      "expected_root_service": "pair-config-a",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "d02",
+      "evidence_applicable": true,
+      "expected_mechanism": "CONFIGURATION_ERROR",
+      "expected_root_service": "case-d02-a",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "d03",
+      "evidence_applicable": true,
+      "expected_mechanism": "SERVICE_UNAVAILABLE",
+      "expected_root_service": "pair-service-b",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "d04",
+      "evidence_applicable": true,
+      "expected_mechanism": "SERVICE_UNAVAILABLE",
+      "expected_root_service": "case-d04-b",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "d05",
+      "evidence_applicable": true,
+      "expected_mechanism": "CPU_SATURATION",
+      "expected_root_service": "pair-resource-b",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "d06",
+      "evidence_applicable": true,
+      "expected_mechanism": "CPU_SATURATION",
+      "expected_root_service": "case-d06-a",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "d07",
+      "evidence_applicable": true,
+      "expected_mechanism": "MEMORY_LEAK",
+      "expected_root_service": "case-d07-b",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "d08",
+      "evidence_applicable": true,
+      "expected_mechanism": "MEMORY_LEAK",
+      "expected_root_service": "case-d08-a",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "d09",
+      "evidence_applicable": true,
+      "expected_mechanism": "DEPENDENCY_LATENCY",
+      "expected_root_service": "pair-dependency-b",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "d10",
+      "evidence_applicable": true,
+      "expected_mechanism": "DEPENDENCY_LATENCY",
+      "expected_root_service": "case-d10-b",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "d11",
+      "evidence_applicable": false,
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "NO_INCIDENT"
+    },
+    {
+      "case_id": "d12",
+      "evidence_applicable": false,
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "NO_INCIDENT"
+    },
+    {
+      "case_id": "d13",
+      "evidence_applicable": false,
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "NO_INCIDENT"
+    },
+    {
+      "case_id": "d14",
+      "evidence_applicable": false,
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "ABSTAIN"
+    },
+    {
+      "case_id": "d15",
+      "evidence_applicable": false,
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "ABSTAIN"
+    },
+    {
+      "case_id": "d16",
+      "evidence_applicable": false,
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "ABSTAIN"
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+{
+  "action_ambiguity_incidents": 10,
+  "agent_visible_sources": [
+    {
+      "path": "config/dta-v22-3/evaluation/agent-visible/d01.json",
+      "sha256": "b7a96270243438cea6650799c2bffc5775edaf3458f7ae8a32ff95a00cc02301"
+    },
+    {
+      "path": "config/dta-v22-3/evaluation/agent-visible/d02.json",
+      "sha256": "fa13e870cbabaa0787a09f3127a0728ec817bab5e23b094490cb79fe59f4047c"
+    },
+    {
+      "path": "config/dta-v22-3/evaluation/agent-visible/d03.json",
+      "sha256": "df61f4bd0aa5a5d48e085f47ed14de110491119bf7cc0e65ad13143e3253da06"
+    },
+    {
+      "path": "config/dta-v22-3/evaluation/agent-visible/d04.json",
+      "sha256": "5776ca2850d71d03df59225d124657201f84e2a925f7ce948aa49422bde55d08"
+    },
+    {
+      "path": "config/dta-v22-3/evaluation/agent-visible/d05.json",
+      "sha256": "4cbfead4cc7ba833ed8760cd64e28a208af15bc3d677e65d373fdd82ec194283"
+    },
+    {
+      "path": "config/dta-v22-3/evaluation/agent-visible/d06.json",
+      "sha256": "e8abf2083fe1a753092baa9e05f4ca8e386cf19fa36e4a4988a00809b61c2286"
+    },
+    {
+      "path": "config/dta-v22-3/evaluation/agent-visible/d07.json",
+      "sha256": "a430028c49922f739af4a33ebb40d283e4a44f77e6b6924c13c093f6e443f7fd"
+    },
+    {
+      "path": "config/dta-v22-3/evaluation/agent-visible/d08.json",
+      "sha256": "0fef790c1dfdbd337b2bd4c378f9b0076edd811aaaf3399c0421a80ac5e9e624"
+    },
+    {
+      "path": "config/dta-v22-3/evaluation/agent-visible/d09.json",
+      "sha256": "7b80b3b2087526489380be9430c2644ad88c37c1c0a6e74c7ff3ef85e0c18a02"
+    },
+    {
+      "path": "config/dta-v22-3/evaluation/agent-visible/d10.json",
+      "sha256": "24c09b04bd8d17212ebcf80cb4a982389bdce1fd04993b5eb3715607e5323ec0"
+    },
+    {
+      "path": "config/dta-v22-3/evaluation/agent-visible/d11.json",
+      "sha256": "696b5a28174820f88bc68219acc0ee215c8c75c8eaef871719c2b82cfe17441a"
+    },
+    {
+      "path": "config/dta-v22-3/evaluation/agent-visible/d12.json",
+      "sha256": "08f5af13115d01fa2f1f36d40fa6ca1c51894d648b8878bbe0df6ab665cee7c9"
+    },
+    {
+      "path": "config/dta-v22-3/evaluation/agent-visible/d13.json",
+      "sha256": "5fa0e074a05ce65e89c8fd467a20dd3ea3d96ad852b991e377246c3c985d49c1"
+    },
+    {
+      "path": "config/dta-v22-3/evaluation/agent-visible/d14.json",
+      "sha256": "27aa1f280d95ed5d2c2303978da9b95cb8f141ddc22c5f5b166393da5527bfe0"
+    },
+    {
+      "path": "config/dta-v22-3/evaluation/agent-visible/d15.json",
+      "sha256": "e94fef20801830ef3d2fc55b63ad4e56fcf0960ffdb85a8b73c167293fa6967f"
+    },
+    {
+      "path": "config/dta-v22-3/evaluation/agent-visible/d16.json",
+      "sha256": "2580756db8f3c4292a24b514746d2f653fd3fbacf4d3c5299bc94a021338f89d"
+    }
+  ],
+  "agent_writes": 0,
+  "base_commit": "bb85500fd4aa1777e2ac186f04b4b887c3a1023b",
+  "case_set": {
+    "path": "config/dta-v22-3/evaluation/cases.json",
+    "sha256": "f0670059ad9247311e2cb1338b8352f6e9bfc33bd6209e81789a742013d9165e"
+  },
+  "combinations": [
+    "MODEL_LEGACY",
+    "MODEL_CLOSED",
+    "AUTO_LEGACY",
+    "AUTO_CLOSED"
+  ],
+  "composition": {
+    "ABSTAIN": 3,
+    "CONFIGURATION_ERROR": 2,
+    "CPU_SATURATION": 2,
+    "DEPENDENCY_LATENCY": 2,
+    "MEMORY_LEAK": 2,
+    "NO_INCIDENT": 3,
+    "SERVICE_UNAVAILABLE": 2
+  },
+  "counterfactual_pairs": 4,
+  "development_result": {
+    "path": "docs/results/dta-v22-3-admission-dispatch-development.json",
+    "sha256": "3474b0f4a3bc672f0299fbab5e9531b31d8cddfd2a6f33c5918ef134a7eba727"
+  },
+  "docker_calls": 0,
+  "execution_state": "NOT_STARTED",
+  "expected_cases": 16,
+  "expected_runs": 64,
+  "full_study_execution_count": 1,
+  "historical_results_manifest": {
+    "path": "config/dta-v22-3/historical-results.v1.json",
+    "sha256": "e2681a4ef75a4cdcf0852c1aab281d411314ce8e93556b11322d6e7afc461fdb"
+  },
+  "implementation_commit": "cc380b9580c6cf8f7d0b245020c29dbc7d4b5895",
+  "implementation_sources": [
+    {
+      "path": "src/ecomsre/dta_v2/v22/gap_router_v223.py",
+      "sha256": "37c9ad95bad3088618800d9850b2f259b52956a5a6c6e856c55032d20e5a909a"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/no_incident_closure_v223.py",
+      "sha256": "faf03dc8fb9cc5ca03c8e17ad7723e91be2bae329cacb9816b79f8affb78905f"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/dispatch_policy_v223.py",
+      "sha256": "fccf9701ab62971d9a7452d024fc5b03d81ce9d84ce8dcea64ff370ae591abbc"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/admission_dispatch_campaign_v223.py",
+      "sha256": "1f3187a40da412799617d8758430c50643f4f1c22b821c7766db16eed0b971f7"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/admission_dispatch_scorer_v223.py",
+      "sha256": "2698ac9165b1644784bb5c107484755022ba5776d49bc9517b0dbb73b95b0d21"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/selection_provider_v223.py",
+      "sha256": "b574f479751c784bdd146662844e9587e6b212d2d8d1f2e933da1faafe6b62cb"
+    }
+  ],
+  "incident_path_one_or_two": 10,
+  "maximum_protocol_repairs_per_case": 2,
+  "maximum_transport_retries_per_exact_request": 3,
+  "minimum_request_interval_seconds": 0.5,
+  "non_byte_identical_to_previous": 16,
+  "predicate_yield_prior": {
+    "path": "config/dta-v22-3/development-predicate-yield-prior.json",
+    "sha256": "28ae52dfe96ff028ce2014c127464cc914c585b3b3cf2d1eb49809f5e36313bf"
+  },
+  "prompt_sha256": "1f0f5effb2a95a927839bddb4fc25e5f3da064cc85c8be9b8b9b70f599e0f180",
+  "provider_model": "gpt-5.4-mini-2026-03-17",
+  "resource_silent_incidents": 4,
+  "runbook_calls": 0,
+  "schedule_rule": "DETERMINISTIC_BALANCED_ROTATION_INTERLEAVED_BY_CASE",
+  "schema_version": "dta-v22.3.evaluation-manifest.v1",
+  "single_execution_rule": "EXACTLY_ONE_FULL_STUDY_EXECUTION",
+  "truth_isolation_rule": "LOAD_ONLY_AFTER_ALL_FOUR_CASE_RUNS",
+  "truth_set": {
+    "path": "config/dta-v22-3/evaluation/truth.json",
+    "sha256": "fb0079c1be2dd6dc2cecde8b67bfc642f0484951b9d2d33c29afb907b6697557"
+  },
+  "utility_audit": {
+    "path": "config/dta-v22-3/evaluation/utility-audit.json",
+    "sha256": "9c4f8a94cd72c05c30c716e19bb37c133454e70f278a395c6bce7c90be8e7332"
+  }
+}
