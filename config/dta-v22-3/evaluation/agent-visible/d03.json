@@ -1,0 +1,138 @@
+{
+  "captured_sources": [
+    "METRICS",
+    "LOGS",
+    "TRACES",
+    "RUNTIME",
+    "RESOURCES",
+    "CHANGES"
+  ],
+  "normalized_case": {
+    "candidate_services": [
+      "pair-service-a",
+      "pair-service-b"
+    ],
+    "capture": {
+      "captured_at": "2026-08-21T00:03:00Z",
+      "changes": [],
+      "logs": [],
+      "metrics": [
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "pair-service-a",
+          "support_status": "SUPPORTED",
+          "unit": "RATIO",
+          "value": 0.01,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "pair-service-a",
+          "support_status": "SUPPORTED",
+          "unit": "MILLISECONDS",
+          "value": 10.0,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "pair-service-a",
+          "support_status": "SUPPORTED",
+          "unit": "COUNT",
+          "value": 100.0,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        },
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "pair-service-b",
+          "support_status": "SUPPORTED",
+          "unit": "RATIO",
+          "value": 0.01,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "pair-service-b",
+          "support_status": "SUPPORTED",
+          "unit": "MILLISECONDS",
+          "value": 10.0,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "pair-service-b",
+          "support_status": "SUPPORTED",
+          "unit": "COUNT",
+          "value": 100.0,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        }
+      ],
+      "resources": [],
+      "runtime": [
+        {
+          "healthy": true,
+          "restart_count": 0,
+          "schema_version": "dta-v22.runtime-record.v1",
+          "service": "pair-service-a",
+          "state": "RUNNING"
+        },
+        {
+          "healthy": false,
+          "restart_count": 0,
+          "schema_version": "dta-v22.runtime-record.v1",
+          "service": "pair-service-b",
+          "state": "RUNNING"
+        }
+      ],
+      "schema_version": "dta-v22.replay-capture.v1",
+      "source_failures": [],
+      "traces": [
+        {
+          "duration_ms": 10.0,
+          "first_error_location": true,
+          "observed_at": "2026-08-21T00:03:00Z",
+          "operation": "observe-e03",
+          "parent_service": "pair-service-a",
+          "schema_version": "dta-v22.trace-span.v1",
+          "service": "pair-service-b",
+          "service_path": [
+            "pair-service-a",
+            "pair-service-b"
+          ],
+          "status": "ERROR"
+        }
+      ]
+    },
+    "case_id": "d03",
+    "normalization_notes": [
+      "Synthetic/derived DTA v2.2.3 evaluation fixture; no Docker capture.",
+      "Service identities deterministically rebound from prior development blueprint e03."
+    ],
+    "schema_version": "dta-v22.practical-normalized-case.v1",
+    "source_bytes_sha256": "8573e3324a70ac15a0fd1b6bf414ef98e76bcb2b7688f89e3a80b7a7486dd6fd",
+    "topology_edges": [
+      [
+        "pair-service-a",
+        "pair-service-b"
+      ]
+    ]
+  },
+  "schema_version": "dta-v22.2.synthetic-evaluation-source.v1"
+}

@@ -1,0 +1,35 @@
+{
+  "schema_version": "dta-v22.3.development-predicate-yield-prior.v1",
+  "development_case_set_sha256": "6b8be046690c2fd1bb2c3d1ce4300969c96e2b10127d5a82fd7859187d206024",
+  "development_truth_set_sha256": "870f1e3d61105dfdf65ef51141645b8f5b4db3eca73c094176c41da81ffff456",
+  "beta_prior": {"alpha": 1, "beta": 1},
+  "ranking_repairs_used": 2,
+  "canonical_tie_break": "sha256('dta-v223|' + canonical_action_id)",
+  "priors": [
+    {"source": "CHANGES", "predicate_kind": "CHANGE_RECENT_ROLLOUT", "successes": 0, "trials": 32, "alpha": 1, "beta": 1, "posterior_mean": 0.029411764705882353},
+    {"source": "LOGS", "predicate_kind": "LOG_CONFIGURATION_ERROR", "successes": 0, "trials": 32, "alpha": 1, "beta": 1, "posterior_mean": 0.029411764705882353},
+    {"source": "LOGS", "predicate_kind": "LOG_DEPENDENCY_TIMEOUT", "successes": 0, "trials": 32, "alpha": 1, "beta": 1, "posterior_mean": 0.029411764705882353},
+    {"source": "LOGS", "predicate_kind": "LOG_MEMORY_PRESSURE", "successes": 0, "trials": 32, "alpha": 1, "beta": 1, "posterior_mean": 0.029411764705882353},
+    {"source": "METRICS", "predicate_kind": "METRIC_ERROR_RATE_STRONG", "successes": 0, "trials": 32, "alpha": 1, "beta": 1, "posterior_mean": 0.029411764705882353},
+    {"source": "METRICS", "predicate_kind": "METRIC_LATENCY_STRONG", "successes": 0, "trials": 32, "alpha": 1, "beta": 1, "posterior_mean": 0.029411764705882353},
+    {"source": "RESOURCES", "predicate_kind": "RESOURCE_CPU_STRONG", "successes": 2, "trials": 32, "alpha": 1, "beta": 1, "posterior_mean": 0.08823529411764706},
+    {"source": "RESOURCES", "predicate_kind": "RESOURCE_MEMORY_GROWTH_STRONG", "successes": 2, "trials": 32, "alpha": 1, "beta": 1, "posterior_mean": 0.08823529411764706},
+    {"source": "RUNTIME", "predicate_kind": "RUNTIME_HEALTHY", "successes": 30, "trials": 48, "alpha": 1, "beta": 1, "posterior_mean": 0.62},
+    {"source": "RUNTIME", "predicate_kind": "RUNTIME_NOT_RUNNING", "successes": 0, "trials": 48, "alpha": 1, "beta": 1, "posterior_mean": 0.02},
+    {"source": "RUNTIME", "predicate_kind": "RUNTIME_RESTART_PRESSURE", "successes": 0, "trials": 48, "alpha": 1, "beta": 1, "posterior_mean": 0.02},
+    {"source": "RUNTIME", "predicate_kind": "RUNTIME_UNHEALTHY", "successes": 2, "trials": 48, "alpha": 1, "beta": 1, "posterior_mean": 0.06},
+    {"source": "TRACES", "predicate_kind": "TRACE_DEPENDENCY_LATENCY", "successes": 4, "trials": 32, "alpha": 1, "beta": 1, "posterior_mean": 0.14705882352941177},
+    {"source": "TRACES", "predicate_kind": "TRACE_FIRST_ERROR", "successes": 8, "trials": 32, "alpha": 1, "beta": 1, "posterior_mean": 0.2647058823529412}
+  ],
+  "top1_gate": {
+    "schema_version": "dta-v22.3.development-top1-gate.v1",
+    "feasible_turn_zero_states": 10,
+    "turn_zero_hits": 10,
+    "turn_zero_recall": 1.0,
+    "feasible_post_empty_read_states": 64,
+    "post_empty_read_hits": 64,
+    "post_empty_read_recall": 1.0,
+    "gate_passed": true
+  },
+  "audit_report_sha256": "1f116adb0c996a680fe7ddf0f52a8bff3ea3c978e42f272538ac93f3d71dedef"
+}
