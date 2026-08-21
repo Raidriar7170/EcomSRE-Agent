@@ -209,7 +209,17 @@ def _new_set(
         "complete": not remaining,
     }
     draft = EvidenceAmbiguitySetV224.model_construct(
-        **payload,
+        schema_version="dta-v22.4.evidence-ambiguity-set.v1",
+        set_id=set_id,
+        source=EvidenceSourceV22.RESOURCES,
+        predicate_kinds=predicate_kinds,
+        hypothesis_ids=hypothesis_ids,
+        target_services=target_services,
+        individual_action_ids=individual_action_ids,
+        bundle_action_id=bundle_action_id,
+        covered_target_services=covered_target_services,
+        remaining_target_services=remaining,
+        complete=not remaining,
         set_sha256="0" * 64,
     )
     return EvidenceAmbiguitySetV224.model_validate(

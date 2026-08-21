@@ -32,6 +32,7 @@ from scripts.ci.verify_dta_v22_pr_a import (
 
 
 PR_B_BASE = "9d53002c3d86208a67b73d271c5eaf6e2f45b8b7"
+PR_B_SQUASH_MERGE = "8e42b6d212e24ddc94ac4097da7e3e3aae57da98"
 PR_B_MANIFEST = Path("config/dta-v22/pr-b-action-catalog-bindings.v1.json")
 PR_B_SUCCESSOR_ATTESTATION = Path(
     "config/dta-v22/pr-b-successor-attestation.v1.json"
@@ -621,8 +622,23 @@ def verify_pr_b_bindings(
     for item in artifacts:
         if not isinstance(item, dict) or set(item) != {"path", "sha256"}:
             raise ValueError("PR-B artifact binding shape differs")
-        artifact = _regular_file(root, Path(item["path"]))
-        if hashlib.sha256(artifact.read_bytes()).hexdigest() != item["sha256"]:
+        relative_path = Path(item["path"])
+        if relative_path.is_absolute() or ".." in relative_path.parts:
+            raise ValueError("PR-B artifact path escapes the repository")
+        artifact = subprocess.run(
+            (
+                "git",
+                "-C",
+                str(root),
+                "show",
+                f"{PR_B_SQUASH_MERGE}:{relative_path.as_posix()}",
+            ),
+            check=False,
+            capture_output=True,
+        )
+        if artifact.returncode != 0:
+            raise ValueError(f"PR-B artifact object is unavailable: {item['path']}")
+        if hashlib.sha256(artifact.stdout).hexdigest() != item["sha256"]:
             raise ValueError(f"PR-B artifact digest differs: {item['path']}")
     if manifest.get("canonical_request_profile") != EXPECTED_REQUEST_PROFILE:
         raise ValueError("PR-B canonical request profile differs")

@@ -1,0 +1,167 @@
+{
+  "agent_visible_sources": [
+    {
+      "path": "config/dta-v22-4/evaluation/agent-visible/e01.json",
+      "sha256": "04ef214975a4f20f26ed7e20758535fccb2a7305767ed1cabe61d38e632862d2"
+    },
+    {
+      "path": "config/dta-v22-4/evaluation/agent-visible/e02.json",
+      "sha256": "7a302a9abb9d776201244dc65601173e9f02a1192cf0b285603f5297f21ff543"
+    },
+    {
+      "path": "config/dta-v22-4/evaluation/agent-visible/e03.json",
+      "sha256": "5f9a10a2750da28e0c6fc6c81ee6ca04c883f29f27b84ba40246e552ad6174d5"
+    },
+    {
+      "path": "config/dta-v22-4/evaluation/agent-visible/e04.json",
+      "sha256": "380a5afc42b5b8097177271084cbd83068ceb9b9a065b7aa6722e553941a6157"
+    },
+    {
+      "path": "config/dta-v22-4/evaluation/agent-visible/e05.json",
+      "sha256": "c751592b2e49abe62288ad9a07df532d7d07c56035b0999358ae64d0f208792b"
+    },
+    {
+      "path": "config/dta-v22-4/evaluation/agent-visible/e06.json",
+      "sha256": "72d7918e140e01b4a27904272fa00e280fd166727e884f0054ab04a5f74b2dde"
+    },
+    {
+      "path": "config/dta-v22-4/evaluation/agent-visible/e07.json",
+      "sha256": "08cd89d0118d8da4d3d1d511ff3af3c09f93a9100313109a57de4b3c7b37e7b6"
+    },
+    {
+      "path": "config/dta-v22-4/evaluation/agent-visible/e08.json",
+      "sha256": "79c17948f60faffc33e100daa29677850ae391214e4d1221720e268c85447ce0"
+    },
+    {
+      "path": "config/dta-v22-4/evaluation/agent-visible/e09.json",
+      "sha256": "1ef160ce7370bfed2820b7f26170da4d6b74d023a3dc67613a245a3b78e0f48c"
+    },
+    {
+      "path": "config/dta-v22-4/evaluation/agent-visible/e10.json",
+      "sha256": "667836a01d936acb66bb5ab1909ec7a8c05167f0cee1470771e0d4da53d829c4"
+    },
+    {
+      "path": "config/dta-v22-4/evaluation/agent-visible/e11.json",
+      "sha256": "f27de249c967eef906972c8805b9b8a620eedf23f59d8c138b83b39f29c12af6"
+    },
+    {
+      "path": "config/dta-v22-4/evaluation/agent-visible/e12.json",
+      "sha256": "ae335d919420ce7e43d91b38c19ecb53d33b42c424caf92bcccde8c6677e6324"
+    },
+    {
+      "path": "config/dta-v22-4/evaluation/agent-visible/e13.json",
+      "sha256": "92492ad5088f010873cfbd68d2f88ef8e8df0d5887c1e699d880977854543986"
+    },
+    {
+      "path": "config/dta-v22-4/evaluation/agent-visible/e14.json",
+      "sha256": "a0f90e6cad0b9b46c804cd87470b2ceab270185f23d3c1694116af1f377fa3e1"
+    },
+    {
+      "path": "config/dta-v22-4/evaluation/agent-visible/e15.json",
+      "sha256": "026e8bfc31feaadd6d6ba723548aa771b01bf840a9a5b936526317df9dea69b4"
+    },
+    {
+      "path": "config/dta-v22-4/evaluation/agent-visible/e16.json",
+      "sha256": "a78a5fc4353cb4d6a5fa217ecd682131c60d31449654cc11a2ac1398167de34c"
+    }
+  ],
+  "agent_writes": 0,
+  "base_commit": "9c601bd5d802fbe31990348c228e094985044a0b",
+  "case_set": {
+    "path": "config/dta-v22-4/evaluation/cases.json",
+    "sha256": "a93fb56976412801266975211d6e07324d72a2642316beb98f1f9c6241f5d9b2"
+  },
+  "combinations": [
+    "TARGET_ONE",
+    "TARGET_SET",
+    "BUNDLE_ONE",
+    "BUNDLE_SET"
+  ],
+  "composition": {
+    "ABSTAIN": 2,
+    "CONFIGURATION_ERROR": 2,
+    "CPU_SATURATION": 4,
+    "DEPENDENCY_LATENCY": 1,
+    "MEMORY_LEAK": 4,
+    "NO_INCIDENT": 2,
+    "SERVICE_UNAVAILABLE": 1
+  },
+  "counterfactual_resource_pairs": 4,
+  "development_result": {
+    "path": "docs/results/dta-v22-4-ambiguity-bundle-development.json",
+    "sha256": "8a5fa6287d9a951ca928965e64c8c3da22dcf1603f887f2240e52f4628cc057d"
+  },
+  "docker_calls": 0,
+  "execution_state": "NOT_STARTED",
+  "expected_cases": 16,
+  "expected_runs": 64,
+  "full_study_execution_count": 1,
+  "historical_results_manifest": {
+    "path": "config/dta-v22-4/historical-results.v1.json",
+    "sha256": "084bec4c05ed098591f8f0c6ab501e9bbbfcf6e4ebfe7ae9a017edcca34f5451"
+  },
+  "implementation_commit": "0582b996fad8b3e8797aa552228f863ed14469e9",
+  "implementation_sources": [
+    {
+      "path": "src/ecomsre/dta_v2/v22/replay_target_coverage_v224.py",
+      "sha256": "d37a67283ec4d3113ecf96fc296712428dc7c8872aa7f8b6537115034a9caa23"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/contrastive_actions_v224.py",
+      "sha256": "e34f61cdd8c76533d372738490e2d32e6d98a601b99655463547826ad7bf0302"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/ambiguity_set_v224.py",
+      "sha256": "274f9b4f6cef20bf0f6924656078f6ac131a424a3de46de378b0b6d09535f5d7"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/no_incident_set_closure_v224.py",
+      "sha256": "7defad5096a83ba8718a53ef634f234e3fe4b92ac2fa3b239eb9eab2d0fd5915"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/ambiguity_dispatch_v224.py",
+      "sha256": "cb388e5df55b9fd8d712b9a33fc0c925f91a4ee278a7ac8c0d1e4f065e1ae1a6"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/ambiguity_bundle_campaign_v224.py",
+      "sha256": "6134409c00c4d1c629443650311f83859563f25927daada1e31b4db96b2f7a84"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/ambiguity_bundle_scorer_v224.py",
+      "sha256": "b20cbfd829f384863fbf3b4d8412a3a48aa0eb3772537cbb8ac707e9d0bed86a"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/selection_provider_v223.py",
+      "sha256": "b574f479751c784bdd146662844e9587e6b212d2d8d1f2e933da1faafe6b62cb"
+    }
+  ],
+  "maximum_protocol_repairs_per_case": 2,
+  "maximum_transport_retries_per_exact_request": 3,
+  "minimum_request_interval_seconds": 1.0,
+  "non_byte_identical_to_v223": 16,
+  "predicate_yield_prior": {
+    "path": "config/dta-v22-3/development-predicate-yield-prior.json",
+    "sha256": "28ae52dfe96ff028ce2014c127464cc914c585b3b3cf2d1eb49809f5e36313bf"
+  },
+  "prompt_sha256": "b9eb3ad1990991683a6bf7bce09ab4355bdc62e331546a3207a8a5261dfedd0d",
+  "provider_model": "gpt-5.4-mini-2026-03-17",
+  "resource_all_normal_controls": 2,
+  "resource_ambiguity_incidents": 8,
+  "runbook_calls": 0,
+  "schedule_rule": "DETERMINISTIC_BALANCED_ROTATION_INTERLEAVED_BY_CASE",
+  "schema_version": "dta-v22.4.evaluation-manifest.v1",
+  "single_execution_rule": "EXACTLY_ONE_FULL_STUDY_EXECUTION",
+  "target_coverage": {
+    "path": "config/dta-v22-4/evaluation/coverage.json",
+    "sha256": "bc379c92ba6b7e27e22e332b9dbed3ef4bff326846426be1ba917462df651124"
+  },
+  "truth_isolation_rule": "LOAD_ONLY_AFTER_ALL_FOUR_CASE_RUNS",
+  "truth_set": {
+    "path": "config/dta-v22-4/evaluation/truth.json",
+    "sha256": "f198ae7e0f2c65d0579aa83e4b931f0d8f8e3b78114ea0824942b7e9a970318e"
+  },
+  "utility_audit": {
+    "path": "config/dta-v22-4/evaluation/utility-audit.json",
+    "sha256": "4f70c272a7d3e1ad064f4764ca452609c3639c38c9ad327dc210e73d22ec3b53"
+  }
+}

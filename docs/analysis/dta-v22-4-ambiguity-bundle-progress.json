@@ -3,8 +3,8 @@
   "goal_version": "dta-v22-4-ambiguity-bundle-v1",
   "starting_commit": "9c601bd5d802fbe31990348c228e094985044a0b",
   "branch": "codex/dta-v22-4-ambiguity-bundle",
-  "status": "D9_FIXED_EVALUATION_READY_FOR_FREEZE",
-  "dag_completed": ["D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"],
+  "status": "D10_FINAL_STUDY_FROZEN",
+  "dag_completed": ["D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10"],
   "historical_results": {
     "files_verified": 29,
     "status": "DTA_V22_4_HISTORICAL_RESULT_BYTES_PRESERVED"
@@ -52,15 +52,35 @@
     "counterfactual_resource_pairs": 4,
     "non_byte_identical_to_v223": 16,
     "infeasible_incident_cases": 0,
-    "manifest_state": "NOT_CREATED_UNTIL_IMPLEMENTATION_COMMIT"
+    "manifest_state": "FROZEN_NOT_STARTED_PREEXECUTION_BINDING",
+    "manifest_sha256": "c0c2510857354159d3750bc4eab9366afba4de7af78f60ccc65e9d4eb1c8dc55",
+    "frozen_assets_sha256": "df33380d0bea4cd74ae402247dc9d86b887b010437966bf1a9022ddb26fa64f7"
+  },
+  "final_study": {
+    "runs": 64,
+    "execution_count": 1,
+    "target_one_exact": "12/16",
+    "target_set_exact": "16/16",
+    "bundle_one_exact": "16/16",
+    "bundle_set_exact": "16/16",
+    "bundle_set_resource_ambiguity_accuracy": 1.0,
+    "bundle_set_premature_no_incident": 0.0,
+    "bundle_set_mean_resources_reads": 1.0,
+    "target_set_mean_resources_reads": 1.6,
+    "combined_control_accuracy": 1.0,
+    "protocol_repairs": 0,
+    "transport_retries": 1,
+    "uncaught_exceptions": 0,
+    "agent_writes": 0,
+    "evaluation_json_sha256": "ee695c2d2791eb58130b7ba7b9ca400485b7e8773f953a3878faef98281be343"
   },
   "offline_implementation_repairs_used": 0,
   "provider_smoke_fixes_used": 0,
   "changed_development_iterations_used": 1,
-  "full_final_study_executions": 0,
+  "full_final_study_executions": 1,
   "docker_calls": 0,
   "runbook_calls": 0,
   "agent_writes": 0,
-  "measured_terminal": null,
+  "measured_terminal": "DTA_V22_4_COMBINED_AMBIGUITY_FIX_EFFECT_OBSERVED",
   "engineering_terminal": null
 }

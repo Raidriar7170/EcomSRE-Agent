@@ -99,7 +99,19 @@ def _build_contrastive_resource_action_v224(
         ),
     }
     draft = ContrastiveResourceActionV224.model_construct(
-        **payload,
+        schema_version="dta-v22.evidence-action.v1",
+        action_id=f"a:resources:all-candidates:{digest}",
+        source=EvidenceSourceV22.RESOURCES,
+        target_services=candidate_services,
+        request=request,
+        coverage_keys=tuple(
+            f"resources:{service}:read" for service in candidate_services
+        ),
+        weighted_cost=min(3.0, 1.5 + 0.5 * (len(candidate_services) - 1)),
+        request_sha256=request.request_sha256,
+        dominates_action_ids=tuple(
+            f"a:resources:{service}" for service in candidate_services
+        ),
         action_sha256="0" * 64,
     )
     return ContrastiveResourceActionV224.model_validate(

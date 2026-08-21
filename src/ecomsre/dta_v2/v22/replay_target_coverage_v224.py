@@ -116,7 +116,11 @@ def build_replay_target_coverage_v224(
         "coverage_mode": mode,
     }
     return ReplayTargetCoverageV224(
-        **payload,
+        schema_version="dta-v22.4.replay-target-coverage.v1",
+        source=source,
+        candidate_services=candidate_services,
+        covered_target_services=covered_target_services,
+        coverage_mode=mode,
         coverage_sha256=semantic_sha256_v22(payload),
     )
 

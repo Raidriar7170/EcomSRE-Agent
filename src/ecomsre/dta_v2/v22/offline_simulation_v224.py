@@ -212,11 +212,13 @@ def simulate_development_offline_v224(
         "oracle_visible_to_runtime": False,
         "oracle_visible_to_provider_treatment": False,
     }
-    return OfflineSimulationReportV224(
-        **payload,
-        report_sha256=semantic_sha256_v22(
-            {**payload, "score": score.model_dump(mode="json")}
-        ),
+    return OfflineSimulationReportV224.model_validate(
+        {
+            **payload,
+            "report_sha256": semantic_sha256_v22(
+                {**payload, "score": score.model_dump(mode="json")}
+            ),
+        }
     )
 
 

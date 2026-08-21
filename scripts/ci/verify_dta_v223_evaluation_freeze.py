@@ -43,6 +43,7 @@ from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 DEFAULT_MANIFEST = Path("config/dta-v22-3/evaluation/manifest.json")
 FINAL_JSON = Path("docs/results/dta-v22-3-admission-dispatch-evaluation.json")
 FINAL_MARKDOWN = Path("docs/results/dta-v22-3-admission-dispatch-evaluation.md")
+V223_SQUASH_MERGE = "9c601bd5d802fbe31990348c228e094985044a0b"
 
 
 def _sha256(path: Path) -> str:
@@ -65,6 +66,18 @@ def _bound_path(root: Path, item: object, name: str) -> Path:
 
 def _text_sha256(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _git_bytes(root: Path, commit: str, relative: str) -> bytes:
+    completed = subprocess.run(
+        ["git", "show", f"{commit}:{relative}"],
+        cwd=root,
+        check=False,
+        capture_output=True,
+    )
+    if completed.returncode != 0:
+        raise ValueError(f"cannot read frozen implementation object: {relative}")
+    return completed.stdout
 
 
 def verify_evaluation_freeze_v223(
@@ -105,17 +118,37 @@ def verify_evaluation_freeze_v223(
     _bound_path(root, manifest.get("historical_results_manifest"), "historical results")
     for index, item in enumerate(cast(list[object], manifest.get("agent_visible_sources"))):
         _bound_path(root, item, f"agent-visible source {index}")
-    for index, item in enumerate(cast(list[object], manifest.get("implementation_sources"))):
-        _bound_path(root, item, f"implementation source {index}")
-
     implementation_commit = str(manifest.get("implementation_commit"))
-    ancestry = subprocess.run(
-        ["git", "merge-base", "--is-ancestor", implementation_commit, "HEAD"],
-        cwd=root,
-        check=False,
-    )
-    if ancestry.returncode != 0:
-        raise ValueError("v2.2.3 frozen implementation commit is not an ancestor")
+    base_commit = str(manifest.get("base_commit"))
+    # PR #64 was squash-merged, so the feature implementation commit is not an
+    # ancestor of mainline. Bind its content object directly, then require the
+    # published squash merge itself to remain in HEAD's ancestry.
+    for older, newer, label in (
+        (base_commit, implementation_commit, "base to implementation"),
+        (base_commit, V223_SQUASH_MERGE, "base to squash merge"),
+        (V223_SQUASH_MERGE, "HEAD", "squash merge to HEAD"),
+    ):
+        ancestry = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", older, newer],
+            cwd=root,
+            check=False,
+            capture_output=True,
+        )
+        if ancestry.returncode != 0:
+            raise ValueError(f"v2.2.3 frozen commit ancestry differs: {label}")
+    for index, item in enumerate(
+        cast(list[object], manifest.get("implementation_sources"))
+    ):
+        if not isinstance(item, Mapping):
+            raise ValueError(f"v2.2.3 manifest lacks implementation source {index}")
+        relative = Path(str(item.get("path")))
+        if relative.is_absolute() or ".." in relative.parts:
+            raise ValueError("v2.2.3 frozen implementation path escapes the repository")
+        digest = hashlib.sha256(
+            _git_bytes(root, implementation_commit, relative.as_posix())
+        ).hexdigest()
+        if item.get("sha256") != digest:
+            raise ValueError(f"v2.2.3 frozen implementation source {index} differs")
 
     case_set = load_practical_case_set_v22(case_path)
     truth_set = load_practical_truth_set_v22(truth_path)
