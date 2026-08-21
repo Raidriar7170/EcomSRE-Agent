@@ -151,6 +151,9 @@ def _verify_final_manifest(
     truth: Path,
     prior: Path,
     provider_model: str,
+    minimum_request_interval: float,
+    output_json: Path,
+    output_markdown: Path,
 ) -> str:
     raw = json.loads(manifest_path.read_bytes())
     if raw.get("schema_version") != "dta-v22.3.evaluation-manifest.v1":
@@ -173,6 +176,18 @@ def _verify_final_manifest(
         raise ValueError("v2.2.3 manifest prompt binding differs")
     if raw.get("full_study_execution_count") != 1:
         raise ValueError("v2.2.3 final execution count differs")
+    if raw.get("execution_state") != "NOT_STARTED":
+        raise ValueError("v2.2.3 manifest execution state differs")
+    if raw.get("minimum_request_interval_seconds") != minimum_request_interval:
+        raise ValueError("v2.2.3 final Provider pacing differs")
+    expected_outputs = (
+        repository_root / "docs/results/dta-v22-3-admission-dispatch-evaluation.json",
+        repository_root / "docs/results/dta-v22-3-admission-dispatch-evaluation.md",
+    )
+    if (output_json.resolve(), output_markdown.resolve()) != tuple(
+        item.resolve() for item in expected_outputs
+    ):
+        raise ValueError("v2.2.3 final output paths differ")
     return _sha256(manifest_path)
 
 
@@ -209,6 +224,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             truth=args.truth,
             prior=args.prior,
             provider_model=config.model,
+            minimum_request_interval=args.minimum_request_interval,
+            output_json=args.output_json,
+            output_markdown=args.output_markdown,
         )
     provider = SelectionProviderV223(
         config=config,
