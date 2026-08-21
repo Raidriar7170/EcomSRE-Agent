@@ -1,0 +1,27 @@
+{
+  "schema_version": "dta-v22.4.ambiguity-bundle-progress.v1",
+  "goal_version": "dta-v22-4-ambiguity-bundle-v1",
+  "starting_commit": "9c601bd5d802fbe31990348c228e094985044a0b",
+  "branch": "codex/dta-v22-4-ambiguity-bundle",
+  "status": "D1_TARGET_COMPLETENESS_CONTRACT_COMPLETE",
+  "dag_completed": ["D0", "D1"],
+  "historical_results": {
+    "files_verified": 29,
+    "status": "DTA_V22_4_HISTORICAL_RESULT_BYTES_PRESERVED"
+  },
+  "ambiguity_audit": {
+    "wrong_target_case_ids": ["d05", "d06", "d08"],
+    "counterfactual_truth_reversals": 2,
+    "ambiguity_audit_passed": true,
+    "report_sha256": "6a0950b65e498f87c6816967638cca2f4f6ff3d9e82a76edb6961bd1c7ad426d"
+  },
+  "offline_implementation_repairs_used": 0,
+  "provider_smoke_fixes_used": 0,
+  "changed_development_iterations_used": 0,
+  "full_final_study_executions": 0,
+  "docker_calls": 0,
+  "runbook_calls": 0,
+  "agent_writes": 0,
+  "measured_terminal": null,
+  "engineering_terminal": null
+}
