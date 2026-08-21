@@ -1,0 +1,30 @@
+{
+  "schema_version": "dta-v22.3.admission-dispatch-progress.v1",
+  "base_commit": "bb85500fd4aa1777e2ac186f04b4b887c3a1023b",
+  "branch": "codex/dta-v22-3-evidence-closed-dispatch",
+  "dag": {
+    "D0": "COMPLETE",
+    "D1": "COMPLETE",
+    "D2": "COMPLETE",
+    "D3": "COMPLETE",
+    "D4": "COMPLETE",
+    "D5": "COMPLETE",
+    "D6": "COMPLETE",
+    "D7": "COMPLETE",
+    "D8": "COMPLETE",
+    "D9": "IN_PROGRESS"
+  },
+  "historical_result_files_verified": 23,
+  "ranking_repairs_used": 2,
+  "offline_implementation_repairs_used": 1,
+  "provider_smoke_transitions": 20,
+  "development_iterations": 1,
+  "development_runs": 64,
+  "final_cases": 16,
+  "final_runs": 64,
+  "full_study_execution_count": 1,
+  "measured_result_terminal": "DTA_V22_3_NO_FIX_EFFECT_OBSERVED",
+  "uncaught_exceptions": 0,
+  "agent_writes": 0,
+  "completion_marker": null
+}

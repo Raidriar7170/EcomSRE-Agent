@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Mapping
+from typing import Mapping, cast
 
 import pytest
 
@@ -96,7 +96,7 @@ def test_v223_new_evaluation_freeze_has_required_properties() -> None:
     )
     assert result["cases"] == 16
     assert result["feasible_incidents"] == 10
-    assert result["action_ambiguity_incidents"] >= 4
+    assert cast(int, result["action_ambiguity_incidents"]) >= 4
     assert result["resource_silent_incidents"] == 4
 
 
@@ -336,7 +336,13 @@ def test_v223_runtime_top1_fails_closed_if_top_rank_is_masked() -> None:
 
 
 class _CanonicalProviderV223:
-    def complete_turn(self, *, request, run_id: str, max_protocol_repairs: int):
+    def complete_turn(
+        self,
+        *,
+        request: SelectionTurnRequestV222,
+        run_id: str,
+        max_protocol_repairs: int = 2,
+    ) -> SelectionProviderOutcomeV222:
         del run_id, max_protocol_repairs
         if request.aliases.terminals:
             selected = request.aliases.terminals[0]
@@ -392,7 +398,9 @@ def test_v223_factorial_combinations_differ_only_in_declared_factors() -> None:
             NoIncidentClosureModeV223.ONE_GAP_RELEVANT_READ,
         ),
     }
-    positions = {item: [] for item in StudyCombinationV223}
+    positions: dict[StudyCombinationV223, list[int]] = {
+        item: [] for item in StudyCombinationV223
+    }
     for index in range(4):
         for position, item in enumerate(balanced_combination_order_v223(index), 1):
             positions[item].append(position)

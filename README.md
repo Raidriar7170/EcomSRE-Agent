@@ -58,6 +58,20 @@ generalization, live-operation, or production claim. See the [fixed study](docs/
 [error analysis](docs/results/dta-v22-2-gap-routing-error-analysis.md), and
 [interview brief](docs/results/dta-v22-2-gap-routing-interview-brief.md).
 
+DTA v2.2.3 tested two narrower follow-ups on a new 16-case × 4-combination
+synthetic/derived replay set: one gap-relevant read before otherwise-admissible
+`NO_INCIDENT`, and deterministic runtime dispatch of ranking[0]. All 64 runs
+were represented once with zero Agent writes and zero runner exceptions. Closed
+admission improved exact completion only from 12/16 to 13/16; resource-silent
+accuracy reached 1/4 and premature `NO_INCIDENT` remained 3/4. Runtime Top-1
+did not improve exact completion or oracle-path hit over Model Top-4 selection,
+although it removed 46 Provider calls and 33,866 tokens in the pooled dispatch
+comparison. The preregistered result is therefore
+`DTA_V22_3_NO_FIX_EFFECT_OBSERVED`, not a quality or generalization success.
+See the [fixed study](docs/results/dta-v22-3-admission-dispatch-evaluation.md),
+[error analysis](docs/results/dta-v22-3-admission-dispatch-error-analysis.md),
+and [interview brief](docs/results/dta-v22-3-admission-dispatch-interview-brief.md).
+
 ## One-command offline demo
 
 ```bash
