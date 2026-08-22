@@ -13,6 +13,9 @@ from ecomsre.dta_v2.v22.read_contracts import DtaModelV22, semantic_sha256_v22
 _SERVICE = re.compile(r"^svc-[0-9a-f]{10}$")
 _OPERATION = re.compile(r"^op-[0-9a-f]{10}$")
 _CHANGE = re.compile(r"^chg-[0-9a-f]{10}$")
+_ACTION = re.compile(r"^(?:A[0-9]{2}|act-[0-9a-f]{10})$")
+_HYPOTHESIS = re.compile(r"^(?:H[0-9]{2}|hyp-[0-9a-f]{10})$")
+_AMBIGUITY_SET = re.compile(r"^set-[0-9a-f]{10}$")
 _CASE_ID = re.compile(r"^(?:d|e)[0-9]{2}$")
 _FORBIDDEN = re.compile(
     r"(?:cpu|memory|mem|resource|normal|healthy|fault|incident|config|"
@@ -57,6 +60,25 @@ _SERVICE_KEYS = {
 }
 _OPERATION_KEYS = {"operation", "operation_name", "operations"}
 _CHANGE_KEYS = {"change_id", "opaque_change_id", "change_ids"}
+_ACTION_KEYS = {
+    "action_id",
+    "action_ids",
+    "attempted_action_ids",
+    "bundle_action_id",
+    "individual_action_ids",
+    "ranking_action_ids_at_dispatch",
+}
+_HYPOTHESIS_KEYS = {
+    "focus_hypothesis_id",
+    "hypothesis_id",
+    "hypothesis_ids",
+}
+_AMBIGUITY_SET_KEYS = {
+    "ambiguity_set_id",
+    "set_id",
+    "set_ids",
+    "set_ids_covered",
+}
 _EDGE_KEYS = {"edges", "topology_edges"}
 
 
@@ -99,6 +121,16 @@ def _expected_identity_kind(key: str) -> str | None:
         return "operation"
     if normalized in _CHANGE_KEYS or normalized.endswith("_change_id"):
         return "change"
+    if normalized in _ACTION_KEYS or normalized.endswith(("_action_id", "_action_ids")):
+        return "action"
+    if normalized in _HYPOTHESIS_KEYS or normalized.endswith(
+        ("_hypothesis_id", "_hypothesis_ids")
+    ):
+        return "hypothesis"
+    if normalized in _AMBIGUITY_SET_KEYS or normalized.endswith(
+        ("_set_id", "_set_ids")
+    ):
+        return "ambiguity_set"
     if normalized in _EDGE_KEYS:
         return "service"
     return None
@@ -149,6 +181,9 @@ def _lint_payload_v225(
             "service": _SERVICE,
             "operation": _OPERATION,
             "change": _CHANGE,
+            "action": _ACTION,
+            "hypothesis": _HYPOTHESIS,
+            "ambiguity_set": _AMBIGUITY_SET,
         }[identity_kind]
         if not expected.fullmatch(value) or _FORBIDDEN.search(value):
             forbidden.append(value)

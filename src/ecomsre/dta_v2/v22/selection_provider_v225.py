@@ -61,12 +61,12 @@ class SelectionProviderV225(SelectionProviderV223):
             payload_class = "post-bundle-read"
         else:
             closure = request.visible_state.get("closure")
-            attempted = (
-                closure.get("attempted_action_ids", [])
+            read_count = (
+                closure.get("read_count", 0)
                 if isinstance(closure, dict)
-                else []
+                else 0
             )
-            if attempted:
+            if isinstance(read_count, int) and read_count > 0:
                 payload_class = "post-individual-read"
             elif request.visible_state.get("actions") is not None:
                 payload_class = "bootstrap"

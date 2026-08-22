@@ -22,10 +22,14 @@ from ecomsre.dta_v2.v22.ambiguity_dispatch_v225 import (
 )
 from ecomsre.dta_v2.v22.ambiguity_coverage_ledger_v225 import (
     AmbiguityCoverageLedgerV225,
+    forgotten_coverage_event_count_v225,
     rebuild_ambiguity_set_coverage_v225,
     record_ambiguity_coverage_event_v225,
 )
-from ecomsre.dta_v2.v22.ambiguity_set_v225 import build_resource_ambiguity_sets_v225
+from ecomsre.dta_v2.v22.ambiguity_set_v225 import (
+    EvidenceAmbiguitySetV225,
+    build_resource_ambiguity_sets_v225,
+)
 from ecomsre.dta_v2.v22.contrastive_actions_v225 import (
     ContrastiveResourceActionV225,
     ContrastiveResourceDeltaV225,
@@ -200,12 +204,22 @@ class AmbiguityBundleCaseRunV225(DtaModelV22):
     bundle_resources_reads: StrictInt = Field(ge=0)
     no_incident_exposed_after_partial_coverage: StrictBool
     ambiguity_coverage_ledger: AmbiguityCoverageLedgerV225
-    forgotten_preclosure_read_count: Literal[0]
+    forgotten_preclosure_read_count: StrictInt = Field(ge=0)
     closure_state: NoIncidentSetClosureStateV225
     abstain_reason: str | None
     safe_error_code: str | None
     uncaught_exceptions: StrictInt = Field(ge=0, le=1)
     agent_writes: Literal[0]
+
+    @model_validator(mode="after")
+    def require_derived_forgotten_coverage_count(self) -> "AmbiguityBundleCaseRunV225":
+        expected = forgotten_coverage_event_count_v225(
+            ledger=self.ambiguity_coverage_ledger,
+            ambiguity_set=self.closure_state.ambiguity_set,
+        )
+        if self.forgotten_preclosure_read_count != expected:
+            raise ValueError("v2.2.5 forgotten preclosure coverage count differs")
+        return self
 
 
 class StudyScheduleEntryV225(DtaModelV22):
@@ -241,6 +255,48 @@ class AmbiguityBundleCampaignResultV225(DtaModelV22):
         if self.uncaught_exceptions != sum(item.uncaught_exceptions for item in self.runs):
             raise ValueError("v2.2.5 campaign exception accounting differs")
         return self
+
+
+def _provider_ambiguity_projection_v225(
+    ambiguity_set: EvidenceAmbiguitySetV225 | None,
+) -> dict[str, object] | None:
+    if ambiguity_set is None:
+        return None
+    return {
+        "source": ambiguity_set.source.value,
+        "target_services": ambiguity_set.target_services,
+        "covered_target_services": ambiguity_set.covered_target_services,
+        "remaining_target_services": ambiguity_set.remaining_target_services,
+        "complete": ambiguity_set.complete,
+    }
+
+
+def _provider_closure_projection_v225(
+    closure: NoIncidentSetClosureStateV225,
+) -> dict[str, object]:
+    return {
+        "scope": closure.scope.value,
+        "closure_required": closure.closure_required,
+        "closure_satisfied": closure.closure_satisfied,
+        "no_incident_withheld": closure.no_incident_withheld,
+        "read_count": len(closure.attempted_action_ids),
+        "predicate_yield": closure.predicate_yield,
+        "source_failure": closure.source_failure,
+        "closure_disposition": closure.closure_disposition.value,
+        "abstain_reason": closure.abstain_reason,
+    }
+
+
+def _provider_contrast_projection_v225(
+    delta: ContrastiveResourceDeltaV225 | None,
+) -> dict[str, object] | None:
+    if delta is None:
+        return None
+    return {
+        "contrast_rows": tuple(
+            row.model_dump(mode="json") for row in delta.contrast_rows
+        ),
+    }
 
 
 def balanced_combination_order_v225(case_index: int) -> tuple[StudyCombinationV225, ...]:
@@ -373,7 +429,10 @@ def execute_ambiguity_bundle_case_v225(
             bundle_resources_reads=sum(item.bundle for item in events),
             no_incident_exposed_after_partial_coverage=no_incident_after_partial,
             ambiguity_coverage_ledger=coverage_ledger,
-            forgotten_preclosure_read_count=0,
+            forgotten_preclosure_read_count=forgotten_coverage_event_count_v225(
+                ledger=coverage_ledger,
+                ambiguity_set=closure.ambiguity_set,
+            ),
             closure_state=closure,
             abstain_reason=closure.abstain_reason,
             safe_error_code=code,
@@ -564,16 +623,12 @@ def execute_ambiguity_bundle_case_v225(
                             }
                             for item in terminals.candidates
                         ],
-                        "ambiguity_set": (
-                            None
-                            if closure.ambiguity_set is None
-                            else closure.ambiguity_set.model_dump(mode="json")
+                        "ambiguity_set": _provider_ambiguity_projection_v225(
+                            closure.ambiguity_set
                         ),
-                        "closure": closure.model_dump(mode="json"),
-                        "last_contrast": (
-                            None
-                            if not deltas
-                            else deltas[-1].model_dump(mode="json")
+                        "closure": _provider_closure_projection_v225(closure),
+                        "last_contrast": _provider_contrast_projection_v225(
+                            None if not deltas else deltas[-1]
                         ),
                     },
                 )

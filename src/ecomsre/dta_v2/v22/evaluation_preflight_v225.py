@@ -176,6 +176,15 @@ def verify_opaque_lint_report_v225(
         raise ValueError("v2.2.5 rendered Provider payload classes are incomplete")
     if raw.get("evaluation_files_scanned") != 16:
         raise ValueError("v2.2.5 opaque lint evaluation file count differs")
+    required_render_counts = {
+        "evaluation_runs_rendered": 64,
+        "runtime_payloads_rendered": 64,
+        "synthetic_protocol_payloads_rendered": 2,
+    }
+    if any(raw.get(name) != expected for name, expected in required_render_counts.items()):
+        raise ValueError("v2.2.5 opaque lint runtime render count differs")
+    if not isinstance(raw.get("rendered_reports"), list) or len(raw["rendered_reports"]) != 66:
+        raise ValueError("v2.2.5 opaque lint rendered report inventory differs")
     return "OPAQUE_PROVIDER_IDENTITY_LINT_PASS"
 
 

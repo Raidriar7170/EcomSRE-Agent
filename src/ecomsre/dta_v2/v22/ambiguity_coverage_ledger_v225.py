@@ -194,9 +194,29 @@ def source_failures_for_set_v225(
     )
 
 
+def forgotten_coverage_event_count_v225(
+    *,
+    ledger: AmbiguityCoverageLedgerV225,
+    ambiguity_set: "EvidenceAmbiguitySetV225 | None",
+) -> int:
+    """Count successful historical reads missing from the represented set coverage."""
+
+    if ambiguity_set is None:
+        return 0
+    represented = set(ambiguity_set.covered_target_services)
+    return sum(
+        1
+        for event in ledger.events
+        if event.outcome_class is not ReadUtilityClassV222.SOURCE_FAILURE
+        and (matched := set(_matching_targets(event, ambiguity_set)))
+        and not matched.issubset(represented)
+    )
+
+
 __all__ = (
     "AmbiguityCoverageEventV225",
     "AmbiguityCoverageLedgerV225",
+    "forgotten_coverage_event_count_v225",
     "rebuild_ambiguity_set_coverage_v225",
     "record_ambiguity_coverage_event_v225",
     "source_failures_for_set_v225",
