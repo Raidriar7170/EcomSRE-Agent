@@ -10,6 +10,7 @@ from ecomsre.dta_v2.v22.evaluation_manifest_v225 import (
     MANIFEST_PATH_V225,
     write_evaluation_manifest_v225,
 )
+from scripts.dta_v225.git_readonly import ReadOnlyGitQueryV225
 
 
 def _parse_args() -> argparse.Namespace:
@@ -25,6 +26,7 @@ def main() -> int:
         repository_root=root,
         source_freeze_commit=args.source_freeze,
         output_path=root / MANIFEST_PATH_V225,
+        git_query=ReadOnlyGitQueryV225(root),
     )
     print(
         json.dumps(

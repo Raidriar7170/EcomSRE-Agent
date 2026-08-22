@@ -11,6 +11,7 @@ from pydantic import StrictInt
 from ecomsre.dta_v2.v22.evaluation_manifest_v225 import (
     BASE_MAIN_COMMIT_V225,
     EvaluationManifestV225,
+    GitQueryV225,
     PRE_EXECUTION_REVIEW_PATH_V225,
     build_schedule_v225,
     canonical_bindings_sha256_v225,
@@ -21,7 +22,6 @@ from ecomsre.dta_v2.v22.evaluation_manifest_v225 import (
 from ecomsre.dta_v2.v22.evaluation_strata_v225 import EvaluatorStrataV225
 from ecomsre.dta_v2.v22.practical_campaign import load_practical_truth_set_v22
 from ecomsre.dta_v2.v22.read_contracts import DtaModelV22
-from ecomsre.environment.command_runner import run_read_only_git
 
 
 class EvaluationPreflightReportV225(DtaModelV22):
@@ -37,13 +37,6 @@ class EvaluationPreflightReportV225(DtaModelV22):
     opaque_identity_lint_terminal: Literal["OPAQUE_PROVIDER_IDENTITY_LINT_PASS"]
     execution_state: Literal["NOT_STARTED"]
     agent_writes: Literal[0]
-
-
-def _git(repository_root: Path, *args: str, check: bool = True) -> str:
-    result = run_read_only_git(repository_root, tuple(args))
-    if check and result.exit_code != 0:
-        raise ValueError(result.stderr.decode("utf-8", errors="replace").strip())
-    return result.stdout.decode("utf-8").strip()
 
 
 def verify_current_bindings_v225(
@@ -195,26 +188,26 @@ def verify_outputs_absent_v225(
 
 
 def _verify_git_freeze_v225(
-    *, manifest: EvaluationManifestV225, repository_root: Path
+    *,
+    manifest: EvaluationManifestV225,
+    repository_root: Path,
+    git_query: GitQueryV225,
 ) -> str:
-    if _git(repository_root, "status", "--porcelain=v1", "--untracked-files=all"):
+    if git_query.text("status", "--porcelain=v1", "--untracked-files=all"):
         raise ValueError("v2.2.5 execution checkout is not clean")
-    head = _git(repository_root, "rev-parse", "HEAD")
+    head = git_query.text("rev-parse", "HEAD")
     for ancestor, descendant, label in (
         (BASE_MAIN_COMMIT_V225, manifest.source_freeze_commit, "base/source-freeze"),
         (manifest.source_freeze_commit, head, "source-freeze/current HEAD"),
     ):
-        result = run_read_only_git(
-            repository_root,
-            ("merge-base", "--is-ancestor", ancestor, descendant),
-        )
-        if result.exit_code != 0:
+        if not git_query.succeeds(
+            "merge-base", "--is-ancestor", ancestor, descendant
+        ):
             raise ValueError(f"v2.2.5 {label} ancestry differs")
     changed = set(
         filter(
             None,
-            _git(
-                repository_root,
+            git_query.text(
                 "diff",
                 "--name-only",
                 f"{manifest.source_freeze_commit}..{head}",
@@ -231,7 +224,7 @@ def _verify_git_freeze_v225(
     if not required.issubset(changed):
         raise ValueError("v2.2.5 manifest/lint commit is absent after source freeze")
     if source_tree_sha256_v225(
-        repository_root=repository_root,
+        git_query=git_query,
         commit=manifest.source_freeze_commit,
     ) != manifest.source_tree_sha256:
         raise ValueError("v2.2.5 source-freeze tree digest differs")
@@ -266,6 +259,7 @@ def preflight_evaluation_v225(
     predicate_yield_prior_path: Path,
     output_json_path: Path,
     output_markdown_path: Path,
+    git_query: GitQueryV225,
 ) -> EvaluationPreflightReportV225:
     manifest = EvaluationManifestV225.model_validate_json(manifest_path.read_bytes())
     if manifest.provider_model != configured_model:
@@ -288,7 +282,11 @@ def preflight_evaluation_v225(
     for path, relative in supplied:
         if path.resolve() != (repository_root / relative).resolve():
             raise ValueError(f"v2.2.5 supplied execution path differs: {relative}")
-    head = _verify_git_freeze_v225(manifest=manifest, repository_root=repository_root)
+    head = _verify_git_freeze_v225(
+        manifest=manifest,
+        repository_root=repository_root,
+        git_query=git_query,
+    )
     verify_current_bindings_v225(manifest=manifest, repository_root=repository_root)
     current_runtime_paths = tuple(
         path.relative_to(repository_root).as_posix()

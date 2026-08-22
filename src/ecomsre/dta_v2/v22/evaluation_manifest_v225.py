@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path, PurePosixPath
-from typing import Literal
+from typing import Literal, Protocol
 
 from pydantic import Field, StrictFloat, StrictInt, model_validator
 
@@ -14,7 +14,6 @@ from ecomsre.dta_v2.v22.ambiguity_bundle_campaign_v225 import (
     balanced_combination_order_v225,
 )
 from ecomsre.dta_v2.v22.read_contracts import DtaModelV22, semantic_sha256_v22
-from ecomsre.environment.command_runner import run_read_only_git
 
 
 BASE_MAIN_COMMIT_V225 = "9c601bd5d802fbe31990348c228e094985044a0b"
@@ -48,6 +47,14 @@ OUTPUT_MARKDOWN_PATH_V225 = (
     "docs/results/dta-v22-5-opaque-ambiguity-evaluation.md"
 )
 PARTIAL_JOURNAL_PATH_V225 = OUTPUT_JSON_PATH_V225 + ".partial.jsonl"
+
+
+class GitQueryV225(Protocol):
+    def bytes(self, *arguments: str, check: bool = True) -> bytes: ...
+
+    def text(self, *arguments: str, check: bool = True) -> str: ...
+
+    def succeeds(self, *arguments: str) -> bool: ...
 
 
 class FrozenFileBindingV225(DtaModelV22):
@@ -161,32 +168,30 @@ def canonical_bindings_sha256_v225(
     return semantic_sha256_v22([item.model_dump(mode="json") for item in bindings])
 
 
-def _git(repository_root: Path, *args: str) -> str:
-    result = run_read_only_git(repository_root, tuple(args))
-    if result.exit_code != 0:
-        raise ValueError(result.stderr.decode("utf-8", errors="replace").strip())
-    return result.stdout.decode("utf-8").strip()
-
-
-def source_tree_sha256_v225(*, repository_root: Path, commit: str) -> str:
+def source_tree_sha256_v225(*, git_query: GitQueryV225, commit: str) -> str:
     """Freshly SHA-256 every tracked blob in one exact Git tree."""
 
-    paths = tuple(
-        line.split("\t", 1)[1]
-        for line in _git(repository_root, "ls-tree", "-r", "--full-tree", commit).splitlines()
-        if "\t" in line
+    records = tuple(
+        record
+        for record in git_query.bytes(
+            "ls-tree", "-r", "-z", "--full-tree", commit
+        ).split(b"\0")
+        if record
     )
     digest = hashlib.sha256()
-    for relative in paths:
-        result = run_read_only_git(repository_root, ("show", f"{commit}:{relative}"))
-        if result.exit_code != 0:
-            raise ValueError(
-                result.stderr.decode("utf-8", errors="replace").strip()
-            )
-        blob = result.stdout
-        digest.update(relative.encode("utf-8"))
+    for record in records:
+        metadata, relative_bytes = record.split(b"\t", 1)
+        _, object_type, object_id = metadata.split(b" ", 2)
+        relative = relative_bytes.decode("utf-8")
+        if object_type == b"blob":
+            content = git_query.bytes("show", f"{commit}:{relative}")
+        elif object_type == b"commit":
+            content = b"gitlink\0" + object_id
+        else:
+            raise ValueError(f"v2.2.5 unsupported Git tree object: {object_type!r}")
+        digest.update(relative_bytes)
         digest.update(b"\0")
-        digest.update(hashlib.sha256(blob).hexdigest().encode("ascii"))
+        digest.update(hashlib.sha256(content).hexdigest().encode("ascii"))
         digest.update(b"\n")
     return digest.hexdigest()
 
@@ -237,9 +242,12 @@ def _runtime_source_paths(repository_root: Path) -> tuple[str, ...]:
 
 
 def build_evaluation_manifest_v225(
-    *, repository_root: Path, source_freeze_commit: str
+    *,
+    repository_root: Path,
+    source_freeze_commit: str,
+    git_query: GitQueryV225,
 ) -> EvaluationManifestV225:
-    commit = _git(repository_root, "rev-parse", f"{source_freeze_commit}^{{commit}}")
+    commit = git_query.text("rev-parse", f"{source_freeze_commit}^{{commit}}")
     source_paths = tuple(
         f"config/dta-v22-5/evaluation/agent-visible/e{index:02d}.json"
         for index in range(1, 17)
@@ -262,7 +270,7 @@ def build_evaluation_manifest_v225(
         base_main_commit=BASE_MAIN_COMMIT_V225,
         source_freeze_commit=commit,
         source_tree_sha256=source_tree_sha256_v225(
-            repository_root=repository_root, commit=commit
+            git_query=git_query, commit=commit
         ),
         evaluation_execution_id=f"dta-v225-{execution_seed[:24]}",
         provider_model=PROVIDER_MODEL_V225,
@@ -324,11 +332,16 @@ def build_evaluation_manifest_v225(
 
 
 def write_evaluation_manifest_v225(
-    *, repository_root: Path, source_freeze_commit: str, output_path: Path
+    *,
+    repository_root: Path,
+    source_freeze_commit: str,
+    output_path: Path,
+    git_query: GitQueryV225,
 ) -> EvaluationManifestV225:
     manifest = build_evaluation_manifest_v225(
         repository_root=repository_root,
         source_freeze_commit=source_freeze_commit,
+        git_query=git_query,
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("x", encoding="utf-8") as handle:
@@ -340,6 +353,7 @@ def write_evaluation_manifest_v225(
 __all__ = (
     "EvaluationManifestV225",
     "FrozenFileBindingV225",
+    "GitQueryV225",
     "StudyScheduleEntryManifestV225",
     "build_evaluation_manifest_v225",
     "build_schedule_v225",

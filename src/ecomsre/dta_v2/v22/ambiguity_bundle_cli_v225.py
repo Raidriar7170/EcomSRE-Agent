@@ -30,6 +30,7 @@ from ecomsre.dta_v2.v22.evaluation_preflight_v225 import preflight_evaluation_v2
 from ecomsre.dta_v2.v22.read_contracts import DtaModelV22
 from ecomsre.dta_v2.v22.selection_provider_v225 import SelectionProviderV225
 from ecomsre.model.gateway import OpenAICompatibleConfig
+from scripts.dta_v225.git_readonly import ReadOnlyGitQueryV225
 
 
 class AmbiguityBundleStudyArtifactV225(DtaModelV22):
@@ -195,6 +196,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             predicate_yield_prior_path=args.prior,
             output_json_path=args.output_json,
             output_markdown_path=args.output_markdown,
+            git_query=ReadOnlyGitQueryV225(args.repository_root),
         )
         manifest_sha256 = preflight.manifest_sha256
         preflight_status = preflight.status

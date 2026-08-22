@@ -16,6 +16,7 @@ from ecomsre.dta_v2.v22.evaluation_manifest_v225 import (
     canonical_bindings_sha256_v225,
     schedule_sha256_v225,
     sha256_file_v225,
+    source_tree_sha256_v225,
 )
 from ecomsre.dta_v2.v22.evaluation_preflight_v225 import (
     verify_agent_visible_inventory_v225,
@@ -32,6 +33,7 @@ from ecomsre.dta_v2.v22.provider_smoke_v225 import (
 from ecomsre.dta_v2.v22.offline_simulation_v225 import (
     simulate_fail_closed_contracts_v225,
 )
+from scripts.dta_v225.git_readonly import ReadOnlyGitQueryV225
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -72,6 +74,14 @@ def test_v225_schedule_is_balanced_and_digest_is_deterministic() -> None:
     assert schedule_sha256_v225(schedule) == schedule_sha256_v225(
         build_schedule_v225()
     )
+
+
+def test_v225_source_tree_hash_handles_utf8_paths_and_gitlinks() -> None:
+    git_query = ReadOnlyGitQueryV225(ROOT)
+    head = git_query.text("rev-parse", "HEAD")
+    first = source_tree_sha256_v225(git_query=git_query, commit=head)
+    assert len(first) == 64
+    assert source_tree_sha256_v225(git_query=git_query, commit=head) == first
 
 
 def test_v225_static_and_rendered_opaque_lint_covers_all_payload_classes() -> None:
