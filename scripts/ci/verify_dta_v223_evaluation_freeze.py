@@ -109,13 +109,32 @@ def verify_evaluation_freeze_v223(
         _bound_path(root, item, f"implementation source {index}")
 
     implementation_commit = str(manifest.get("implementation_commit"))
+    object_check = subprocess.run(
+        ["git", "cat-file", "-e", f"{implementation_commit}^{{commit}}"],
+        cwd=root,
+        check=False,
+    )
+    if object_check.returncode != 0:
+        raise ValueError("v2.2.3 frozen implementation commit is absent")
     ancestry = subprocess.run(
         ["git", "merge-base", "--is-ancestor", implementation_commit, "HEAD"],
         cwd=root,
         check=False,
     )
     if ancestry.returncode != 0:
-        raise ValueError("v2.2.3 frozen implementation commit is not an ancestor")
+        # GitHub squash-merges do not retain feature commits as ancestors. The
+        # bindings above are the content proof in that topology; still require
+        # the manifest's exact base to be in the current first-party history.
+        base_commit = str(manifest.get("base_commit"))
+        base_ancestry = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", base_commit, "HEAD"],
+            cwd=root,
+            check=False,
+        )
+        if base_ancestry.returncode != 0:
+            raise ValueError(
+                "v2.2.3 frozen implementation is neither ancestral nor content-bound"
+            )
 
     case_set = load_practical_case_set_v22(case_path)
     truth_set = load_practical_truth_set_v22(truth_path)

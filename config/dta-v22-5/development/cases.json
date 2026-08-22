@@ -1,0 +1,185 @@
+{
+  "cases": [
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d01",
+      "counterfactual_pair_ids": [
+        "pair-8d5b70f414"
+      ],
+      "derivation": "DTA v2.2.5 opaque synthetic resource portfolio case from a truth-isolated v2.2.3 blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-5/development/agent-visible/d01.json",
+      "source_sha256": "f9cf0c8a23bf035e9002cab6e2ec93f92c98c4cf85ad3237b2b0f7e23f953ada"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d02",
+      "counterfactual_pair_ids": [
+        "pair-8d5b70f414"
+      ],
+      "derivation": "DTA v2.2.5 opaque synthetic resource portfolio case from a truth-isolated v2.2.3 blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-5/development/agent-visible/d02.json",
+      "source_sha256": "21ddad7b24a3f2880a77a6bd44bbd5a709c6c9a340ccce3211a8a0d45423a6c6"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d03",
+      "counterfactual_pair_ids": [
+        "pair-22fbd14bd5"
+      ],
+      "derivation": "DTA v2.2.5 opaque synthetic resource portfolio case from a truth-isolated v2.2.3 blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-5/development/agent-visible/d03.json",
+      "source_sha256": "a9ede0f339ca9024aa38c9d5e41aa6815aaf9bd20deb7e1799b46beddfd8952a"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d04",
+      "counterfactual_pair_ids": [
+        "pair-22fbd14bd5"
+      ],
+      "derivation": "DTA v2.2.5 opaque synthetic resource portfolio case from a truth-isolated v2.2.3 blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-5/development/agent-visible/d04.json",
+      "source_sha256": "80532614e41f159252bdaf3b1055af1a18bd65981d4de983e3edba256fb93cde"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d05",
+      "counterfactual_pair_ids": [
+        "pair-9ba0fa3aad"
+      ],
+      "derivation": "DTA v2.2.5 opaque synthetic resource portfolio case from a truth-isolated v2.2.3 blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-5/development/agent-visible/d05.json",
+      "source_sha256": "9d90cf8d9f8031c816489ed136669fa4c6cf43341ffda833ea925e9ac7500eec"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d06",
+      "counterfactual_pair_ids": [
+        "pair-9ba0fa3aad"
+      ],
+      "derivation": "DTA v2.2.5 opaque synthetic resource portfolio case from a truth-isolated v2.2.3 blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-5/development/agent-visible/d06.json",
+      "source_sha256": "9d7379ffb309cc60f227c0238947aac120680bfe30262ccd8893282ab6fd28d8"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d07",
+      "counterfactual_pair_ids": [
+        "pair-b374084227"
+      ],
+      "derivation": "DTA v2.2.5 opaque synthetic resource portfolio case from a truth-isolated v2.2.3 blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-5/development/agent-visible/d07.json",
+      "source_sha256": "b507fe2e0b8fe0447a526add42d01f3f0ef49aef0c7ccb83bf53c0f759020556"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d08",
+      "counterfactual_pair_ids": [
+        "pair-b374084227"
+      ],
+      "derivation": "DTA v2.2.5 opaque synthetic resource portfolio case from a truth-isolated v2.2.3 blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-5/development/agent-visible/d08.json",
+      "source_sha256": "7482b813326429c2e3da10cecd5c5aa8e6bc1f82477066061d1ed6bf80cebc72"
+    },
+    {
+      "bootstrap_insufficient_expected": false,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d09",
+      "counterfactual_pair_ids": [
+        "pair-37bc0fbdcc"
+      ],
+      "derivation": "DTA v2.2.5 opaque synthetic resource portfolio case from a truth-isolated v2.2.3 blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-5/development/agent-visible/d09.json",
+      "source_sha256": "46cf9467a5f1b74ed0edbefd0ad74973887c639387b2703d8d33469662ee9ed1"
+    },
+    {
+      "bootstrap_insufficient_expected": false,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d10",
+      "counterfactual_pair_ids": [
+        "pair-7d97e0dc1c"
+      ],
+      "derivation": "DTA v2.2.5 opaque synthetic resource portfolio case from a truth-isolated v2.2.3 blueprint.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-5/development/agent-visible/d10.json",
+      "source_sha256": "a8acb7694462eeec4952a718017ba0b6b66bafab95fb5b20f8ae08a2fb7dc8e9"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d11",
+      "counterfactual_pair_ids": [],
+      "derivation": "DTA v2.2.5 opaque synthetic nonresource portfolio case from truth-isolated blueprint d14.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-5/development/agent-visible/d11.json",
+      "source_sha256": "6a680c101120c60b607f1be3e242900e34bd5f2780fd2309d899c5f71ad0effb"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "d12",
+      "counterfactual_pair_ids": [],
+      "derivation": "DTA v2.2.5 opaque synthetic nonresource portfolio case from truth-isolated blueprint d15.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-5/development/agent-visible/d12.json",
+      "source_sha256": "589b005955fadd03d8f086efe69b485bef09841a12876b7f317a7e0ac22dd95b"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d13",
+      "counterfactual_pair_ids": [],
+      "derivation": "DTA v2.2.5 opaque synthetic nonresource portfolio case from truth-isolated blueprint d01.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-5/development/agent-visible/d13.json",
+      "source_sha256": "2d31276a95c5eb215dc2f916d121e5160c277160df3adf7198c1070b2895da44"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_V22_FIXTURE_DERIVED",
+      "case_id": "d14",
+      "counterfactual_pair_ids": [],
+      "derivation": "DTA v2.2.5 opaque synthetic nonresource portfolio case from truth-isolated blueprint d02.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-5/development/agent-visible/d14.json",
+      "source_sha256": "810e0e356b3c832b48ff558ab09d73bfb33aecc0059b1cd8c7259726d030bff2"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d15",
+      "counterfactual_pair_ids": [],
+      "derivation": "DTA v2.2.5 opaque synthetic nonresource portfolio case from truth-isolated blueprint d03.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-5/development/agent-visible/d15.json",
+      "source_sha256": "41423403338df67bc291278ef827e23961470e53d11477a0d1a5c8944964dbcd"
+    },
+    {
+      "bootstrap_insufficient_expected": true,
+      "capture_kind": "SYNTHETIC_COUNTERFACTUAL_DERIVED",
+      "case_id": "d16",
+      "counterfactual_pair_ids": [],
+      "derivation": "DTA v2.2.5 opaque synthetic nonresource portfolio case from truth-isolated blueprint d09.",
+      "modifier": "V222_EVALUATION_FIXTURE",
+      "source_path": "config/dta-v22-5/development/agent-visible/d16.json",
+      "source_sha256": "794161005074728fdc2fc66e9aefcf5479f5b25fc1c445cf243af6c7e3c4b550"
+    }
+  ],
+  "schema_version": "dta-v22.practical-case-set.v1"
+}

@@ -1,0 +1,117 @@
+{
+  "schema_version": "dta-v22.practical-truth-set.v1",
+  "truths": [
+    {
+      "case_id": "e01",
+      "evidence_applicable": true,
+      "expected_mechanism": "CPU_SATURATION",
+      "expected_root_service": "svc-136fa531b7",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "e02",
+      "evidence_applicable": true,
+      "expected_mechanism": "CPU_SATURATION",
+      "expected_root_service": "svc-071d758b9b",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "e03",
+      "evidence_applicable": true,
+      "expected_mechanism": "CPU_SATURATION",
+      "expected_root_service": "svc-f331050c39",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "e04",
+      "evidence_applicable": true,
+      "expected_mechanism": "CPU_SATURATION",
+      "expected_root_service": "svc-df4616b32a",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "e05",
+      "evidence_applicable": true,
+      "expected_mechanism": "MEMORY_LEAK",
+      "expected_root_service": "svc-ff72713ec9",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "e06",
+      "evidence_applicable": true,
+      "expected_mechanism": "MEMORY_LEAK",
+      "expected_root_service": "svc-b7f2ea79bd",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "e07",
+      "evidence_applicable": true,
+      "expected_mechanism": "MEMORY_LEAK",
+      "expected_root_service": "svc-8759a2f264",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "e08",
+      "evidence_applicable": true,
+      "expected_mechanism": "MEMORY_LEAK",
+      "expected_root_service": "svc-00031ea0fc",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "e09",
+      "evidence_applicable": false,
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "NO_INCIDENT"
+    },
+    {
+      "case_id": "e10",
+      "evidence_applicable": false,
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "NO_INCIDENT"
+    },
+    {
+      "case_id": "e11",
+      "evidence_applicable": false,
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "ABSTAIN"
+    },
+    {
+      "case_id": "e12",
+      "evidence_applicable": false,
+      "expected_mechanism": null,
+      "expected_root_service": null,
+      "expected_terminal": "ABSTAIN"
+    },
+    {
+      "case_id": "e13",
+      "evidence_applicable": true,
+      "expected_mechanism": "CONFIGURATION_ERROR",
+      "expected_root_service": "svc-74db1d20d6",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "e14",
+      "evidence_applicable": true,
+      "expected_mechanism": "CONFIGURATION_ERROR",
+      "expected_root_service": "svc-800dbf6cfc",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "e15",
+      "evidence_applicable": true,
+      "expected_mechanism": "SERVICE_UNAVAILABLE",
+      "expected_root_service": "svc-57fd6471cf",
+      "expected_terminal": "DIAGNOSED"
+    },
+    {
+      "case_id": "e16",
+      "evidence_applicable": true,
+      "expected_mechanism": "DEPENDENCY_LATENCY",
+      "expected_root_service": "svc-d1aeb2523b",
+      "expected_terminal": "DIAGNOSED"
+    }
+  ]
+}

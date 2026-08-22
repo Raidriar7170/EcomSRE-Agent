@@ -1,0 +1,139 @@
+{
+  "captured_sources": [
+    "METRICS",
+    "LOGS",
+    "TRACES",
+    "RUNTIME",
+    "RESOURCES",
+    "CHANGES"
+  ],
+  "normalized_case": {
+    "candidate_services": [
+      "svc-3bb9a12a51",
+      "svc-57fd6471cf"
+    ],
+    "capture": {
+      "captured_at": "2026-08-21T00:03:00Z",
+      "changes": [],
+      "logs": [],
+      "metrics": [
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-3bb9a12a51",
+          "support_status": "SUPPORTED",
+          "unit": "RATIO",
+          "value": 0.01,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-3bb9a12a51",
+          "support_status": "SUPPORTED",
+          "unit": "MILLISECONDS",
+          "value": 10.0,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-3bb9a12a51",
+          "support_status": "SUPPORTED",
+          "unit": "COUNT",
+          "value": 100.0,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        },
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-57fd6471cf",
+          "support_status": "SUPPORTED",
+          "unit": "RATIO",
+          "value": 0.01,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-57fd6471cf",
+          "support_status": "SUPPORTED",
+          "unit": "MILLISECONDS",
+          "value": 10.0,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-57fd6471cf",
+          "support_status": "SUPPORTED",
+          "unit": "COUNT",
+          "value": 100.0,
+          "window_ended_at": "2026-08-21T00:03:00Z",
+          "window_started_at": "2026-08-20T23:58:00Z"
+        }
+      ],
+      "resources": [],
+      "runtime": [
+        {
+          "healthy": true,
+          "restart_count": 0,
+          "schema_version": "dta-v22.runtime-record.v1",
+          "service": "svc-3bb9a12a51",
+          "state": "RUNNING"
+        },
+        {
+          "healthy": false,
+          "restart_count": 0,
+          "schema_version": "dta-v22.runtime-record.v1",
+          "service": "svc-57fd6471cf",
+          "state": "RUNNING"
+        }
+      ],
+      "schema_version": "dta-v22.replay-capture.v1",
+      "source_failures": [],
+      "traces": [
+        {
+          "duration_ms": 10.0,
+          "first_error_location": true,
+          "observed_at": "2026-08-21T00:03:00Z",
+          "operation": "op-f6ca533ad8",
+          "parent_service": "svc-3bb9a12a51",
+          "schema_version": "dta-v22.trace-span.v1",
+          "service": "svc-57fd6471cf",
+          "service_path": [
+            "svc-3bb9a12a51",
+            "svc-57fd6471cf"
+          ],
+          "status": "ERROR"
+        }
+      ]
+    },
+    "case_id": "e15",
+    "normalization_notes": [
+      "Synthetic/derived DTA v2.2.5 opaque replay fixture; no Docker capture.",
+      "Service, operation, and change identities come from a neutral ordinal pool.",
+      "Provider projection excludes case, truth, pair, derivation, and source metadata."
+    ],
+    "schema_version": "dta-v22.practical-normalized-case.v1",
+    "source_bytes_sha256": "28743152351c873ef23ac45c3d2cae086691bf6bf9295cac44f204b77ee6761b",
+    "topology_edges": [
+      [
+        "svc-3bb9a12a51",
+        "svc-57fd6471cf"
+      ]
+    ]
+  },
+  "schema_version": "dta-v22.2.synthetic-evaluation-source.v1"
+}
