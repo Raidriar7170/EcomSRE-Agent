@@ -72,6 +72,21 @@ See the [fixed study](docs/results/dta-v22-3-admission-dispatch-evaluation.md),
 [error analysis](docs/results/dta-v22-3-admission-dispatch-error-analysis.md),
 and [interview brief](docs/results/dta-v22-3-admission-dispatch-interview-brief.md).
 
+DTA v2.2.4 remains a closed, unmerged `INVALID` predecessor on PR #65 because
+its Provider-visible identities, closure accounting, and preflight binding did
+not support a causal claim. DTA v2.2.5 used new opaque case bytes and repaired
+all three boundaries before one independently reviewed 16-case x 4-combination
+successor study. TARGET_ONE completed 12/16 exactly, TARGET_SET 16/16,
+BUNDLE_ONE 16/16, and BUNDLE_SET 15/16; all 64 runs are represented once, with
+zero fail-open `NO_INCIDENT`, forgotten pre-closure reads, runner exceptions,
+or Agent writes. One BUNDLE_SET terminal selection ended in a preserved
+transport failure. The pooled preregistered closure and bundle thresholds did
+not pass, so the measured result is
+`DTA_V22_5_NO_AMBIGUITY_EFFECT_OBSERVED`, not a positive ambiguity,
+generalization, or production claim. See the [fixed study](docs/results/dta-v22-5-opaque-ambiguity-evaluation.md),
+[error analysis](docs/results/dta-v22-5-opaque-ambiguity-error-analysis.md), and
+[interview brief](docs/results/dta-v22-5-opaque-ambiguity-interview-brief.md).
+
 ## One-command offline demo
 
 ```bash
