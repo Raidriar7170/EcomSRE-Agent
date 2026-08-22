@@ -5,6 +5,7 @@
   "source_freeze_commit": "375a39fd291353aeca254d0f5b9a52a05017cac9",
   "manifest_commit": "cb1d0a8f31eba40f11afb6c1185853371f94e779",
   "pre_execution_review_commit": "14d46faf9b6915ba44f6d0e2b25b1f28df13d028",
+  "result_commit": "7ee75cc57a1daa01400bddc697a57b61bcde3316",
   "dag": {
     "D0": "COMPLETE",
     "D1": "COMPLETE",
@@ -18,7 +19,7 @@
     "D9": "COMPLETE",
     "D10": "COMPLETE",
     "D11": "COMPLETE",
-    "D12": "IN_PROGRESS"
+    "D12": "FINAL_REVIEW_COMPLETE_CI_MERGE_PENDING"
   },
   "pre_execution_review": {
     "verdict": "PASS",
@@ -41,7 +42,13 @@
   "transport_retries": 2,
   "uncaught_exceptions": 0,
   "agent_writes": 0,
-  "final_review_status": "PENDING",
+  "final_review": {
+    "verdict": "PASS",
+    "must_fix": 0,
+    "claim_accuracy": "PASS",
+    "reviewed_result_commit": "7ee75cc57a1daa01400bddc697a57b61bcde3316"
+  },
+  "result_head_ci_status": "PASS",
   "successor_pr_merge_status": "PENDING",
   "completion_marker": null
 }
