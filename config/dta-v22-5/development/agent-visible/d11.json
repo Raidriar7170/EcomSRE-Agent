@@ -1,0 +1,124 @@
+{
+  "captured_sources": [
+    "METRICS",
+    "LOGS",
+    "TRACES",
+    "RUNTIME",
+    "RESOURCES",
+    "CHANGES"
+  ],
+  "normalized_case": {
+    "candidate_services": [
+      "svc-280f8547cc",
+      "svc-3c9097a3cd"
+    ],
+    "capture": {
+      "captured_at": "2026-08-21T00:14:00Z",
+      "changes": [],
+      "logs": [],
+      "metrics": [
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-280f8547cc",
+          "support_status": "SUPPORTED",
+          "unit": "RATIO",
+          "value": 0.01,
+          "window_ended_at": "2026-08-21T00:14:00Z",
+          "window_started_at": "2026-08-21T00:09:00Z"
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-280f8547cc",
+          "support_status": "SUPPORTED",
+          "unit": "MILLISECONDS",
+          "value": 10.0,
+          "window_ended_at": "2026-08-21T00:14:00Z",
+          "window_started_at": "2026-08-21T00:09:00Z"
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-280f8547cc",
+          "support_status": "SUPPORTED",
+          "unit": "COUNT",
+          "value": 100.0,
+          "window_ended_at": "2026-08-21T00:14:00Z",
+          "window_started_at": "2026-08-21T00:09:00Z"
+        },
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-3c9097a3cd",
+          "support_status": "SUPPORTED",
+          "unit": "RATIO",
+          "value": 0.01,
+          "window_ended_at": "2026-08-21T00:14:00Z",
+          "window_started_at": "2026-08-21T00:09:00Z"
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-3c9097a3cd",
+          "support_status": "SUPPORTED",
+          "unit": "MILLISECONDS",
+          "value": 10.0,
+          "window_ended_at": "2026-08-21T00:14:00Z",
+          "window_started_at": "2026-08-21T00:09:00Z"
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 0,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-3c9097a3cd",
+          "support_status": "UNSUPPORTED",
+          "unit": "COUNT",
+          "value": null,
+          "window_ended_at": "2026-08-21T00:14:00Z",
+          "window_started_at": "2026-08-21T00:09:00Z"
+        }
+      ],
+      "resources": [],
+      "runtime": [
+        {
+          "healthy": true,
+          "restart_count": 0,
+          "schema_version": "dta-v22.runtime-record.v1",
+          "service": "svc-280f8547cc",
+          "state": "RUNNING"
+        },
+        {
+          "healthy": true,
+          "restart_count": 0,
+          "schema_version": "dta-v22.runtime-record.v1",
+          "service": "svc-3c9097a3cd",
+          "state": "RUNNING"
+        }
+      ],
+      "schema_version": "dta-v22.replay-capture.v1",
+      "source_failures": [],
+      "traces": []
+    },
+    "case_id": "d11",
+    "normalization_notes": [
+      "Synthetic/derived DTA v2.2.5 opaque replay fixture; no Docker capture.",
+      "Service, operation, and change identities come from a neutral ordinal pool.",
+      "Provider projection excludes case, truth, pair, derivation, and source metadata."
+    ],
+    "schema_version": "dta-v22.practical-normalized-case.v1",
+    "source_bytes_sha256": "3779a05099ca03a939c189ace76f7855730ea67ef7bb8d7a8efe9f3d533768f9",
+    "topology_edges": [
+      [
+        "svc-280f8547cc",
+        "svc-3c9097a3cd"
+      ]
+    ]
+  },
+  "schema_version": "dta-v22.2.synthetic-evaluation-source.v1"
+}

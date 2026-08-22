@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import StrictFloat, model_validator
+from pydantic import Field, StrictFloat, model_validator
 
-from ecomsre.dta_v2.v22.action_catalog import EvidenceActionV22
 from ecomsre.dta_v2.v22.memory import (
     PredicateKindV22,
     ResourceSalientPayloadV22,
@@ -15,7 +14,6 @@ from ecomsre.dta_v2.v22.memory import (
 from ecomsre.dta_v2.v22.read_contracts import (
     DtaModelV22,
     EvidenceSourceV22,
-    build_canonical_read_request_v22,
     semantic_sha256_v22,
 )
 from ecomsre.dta_v2.v22.replay_target_coverage_v225 import (
@@ -51,8 +49,41 @@ class ContrastiveResourceDeltaV225(DtaModelV22):
         return self
 
 
-class ContrastiveResourceActionV225(EvidenceActionV22):
+class ContrastiveResourceRequestV225(DtaModelV22):
+    """Versioned multi-target request without changing frozen v2.2 contracts."""
+
+    schema_version: Literal["dta-v22.5.contrastive-resource-request.v1"]
+    source: Literal[EvidenceSourceV22.RESOURCES]
+    target_services: tuple[str, ...] = Field(min_length=2, max_length=4)
+    sampling_window_seconds: Literal[10]
+    sample_count: Literal[5]
+    request_sha256: str
+
+    @model_validator(mode="after")
+    def require_request(self) -> "ContrastiveResourceRequestV225":
+        if self.target_services != tuple(sorted(set(self.target_services))):
+            raise ValueError("contrastive Resources request targets are not canonical")
+        expected = semantic_sha256_v22(
+            self.model_dump(mode="json", exclude={"request_sha256"})
+        )
+        if self.request_sha256 != expected:
+            raise ValueError("contrastive Resources request digest differs")
+        return self
+
+
+class ContrastiveResourceActionV225(DtaModelV22):
     """A versioned Resources action that symmetrically covers every candidate."""
+
+    schema_version: Literal["dta-v22.5.contrastive-resource-action.v1"]
+    action_id: str
+    source: Literal[EvidenceSourceV22.RESOURCES]
+    target_services: tuple[str, ...] = Field(min_length=2, max_length=4)
+    request: ContrastiveResourceRequestV225
+    coverage_keys: tuple[str, ...]
+    weighted_cost: StrictFloat
+    request_sha256: str
+    dominates_action_ids: tuple[str, ...]
+    action_sha256: str
 
     @model_validator(mode="after")
     def require_contrastive_resource_action(self) -> "ContrastiveResourceActionV225":
@@ -70,21 +101,41 @@ class ContrastiveResourceActionV225(EvidenceActionV22):
         )
         if self.dominates_action_ids != expected_dominated:
             raise ValueError("contrastive Resources action dominance differs")
+        if self.request.target_services != self.target_services:
+            raise ValueError("contrastive Resources action request targets differ")
+        if self.request_sha256 != self.request.request_sha256:
+            raise ValueError("contrastive Resources action request digest differs")
+        if self.coverage_keys != tuple(
+            f"resources:{service}:read" for service in self.target_services
+        ):
+            raise ValueError("contrastive Resources action coverage differs")
+        expected = semantic_sha256_v22(
+            self.model_dump(mode="json", exclude={"action_sha256"})
+        )
+        if self.action_sha256 != expected:
+            raise ValueError("contrastive Resources action digest differs")
         return self
 
 
 def _build_contrastive_resource_action_v225(
     *, candidate_services: tuple[str, ...]
 ) -> ContrastiveResourceActionV225:
-    request = build_canonical_read_request_v22(
-        source=EvidenceSourceV22.RESOURCES,
-        target_services=candidate_services,
-        sampling_window_seconds=10,
-        sample_count=5,
+    request_payload = {
+        "schema_version": "dta-v22.5.contrastive-resource-request.v1",
+        "source": EvidenceSourceV22.RESOURCES,
+        "target_services": candidate_services,
+        "sampling_window_seconds": 10,
+        "sample_count": 5,
+    }
+    request = ContrastiveResourceRequestV225.model_validate(
+        {
+            **request_payload,
+            "request_sha256": semantic_sha256_v22(request_payload),
+        }
     )
     digest = semantic_sha256_v22(list(candidate_services))[:12]
     payload = {
-        "schema_version": "dta-v22.evidence-action.v1",
+        "schema_version": "dta-v22.5.contrastive-resource-action.v1",
         "action_id": f"a:resources:all-candidates:{digest}",
         "source": EvidenceSourceV22.RESOURCES,
         "target_services": candidate_services,
@@ -98,16 +149,11 @@ def _build_contrastive_resource_action_v225(
             f"a:resources:{service}" for service in candidate_services
         ),
     }
-    draft = ContrastiveResourceActionV225.model_construct(
-        **payload,
-        action_sha256="0" * 64,
-    )
+    digest_payload = {**payload, "request": request.model_dump(mode="json")}
     return ContrastiveResourceActionV225.model_validate(
         {
             **payload,
-            "action_sha256": semantic_sha256_v22(
-                draft.model_dump(mode="json", exclude={"action_sha256"})
-            ),
+            "action_sha256": semantic_sha256_v22(digest_payload),
         }
     )
 
@@ -204,6 +250,7 @@ def build_contrastive_resource_delta_v225(
 __all__ = (
     "ContrastiveResourceDeltaV225",
     "ContrastiveResourceActionV225",
+    "ContrastiveResourceRequestV225",
     "ResourceContrastRowV225",
     "build_contrastive_resource_delta_v225",
     "contrastive_resource_action_if_eligible_v225",

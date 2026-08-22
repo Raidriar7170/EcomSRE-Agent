@@ -1,0 +1,1411 @@
+{
+  "cases": [
+    {
+      "case_id": "d01",
+      "sources": [
+        {
+          "candidate_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "868dd00c70af8d6974483497ae2133408a126c6336e1bc14dbe9edac927eddfc",
+          "covered_target_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "368b9a4d94fb3610d0a5e07d19cd70ea3f334a57cd674c08a361e0a0efde350d",
+          "covered_target_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "b830fb72fcdb5885452b163fb8eeaa982ebbd361458801c752ad07a0b68ef84b",
+          "covered_target_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "1addc860cd2b81fbfc8eb2143798d468e3c0c43c591765637f041a0abd150e27",
+          "covered_target_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "5ee511269703d0404e74171615c366040fe406573dae5dfd7655080acd90a683",
+          "covered_target_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "8e4e8483b823624ccf631d5885b721e95294c8ac2c1a2cd51049c886a63e211c",
+          "covered_target_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "d02",
+      "sources": [
+        {
+          "candidate_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "868dd00c70af8d6974483497ae2133408a126c6336e1bc14dbe9edac927eddfc",
+          "covered_target_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "368b9a4d94fb3610d0a5e07d19cd70ea3f334a57cd674c08a361e0a0efde350d",
+          "covered_target_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "b830fb72fcdb5885452b163fb8eeaa982ebbd361458801c752ad07a0b68ef84b",
+          "covered_target_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "1addc860cd2b81fbfc8eb2143798d468e3c0c43c591765637f041a0abd150e27",
+          "covered_target_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "5ee511269703d0404e74171615c366040fe406573dae5dfd7655080acd90a683",
+          "covered_target_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "8e4e8483b823624ccf631d5885b721e95294c8ac2c1a2cd51049c886a63e211c",
+          "covered_target_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "d03",
+      "sources": [
+        {
+          "candidate_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "5b36581e582e6e6c8f45652f95684437f559294f58d02bb42b9c96b072f200cd",
+          "covered_target_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "1d9240ec9951f2fab0792580abfcc384cc9e375721059694317a6821466ea958",
+          "covered_target_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "4f81d96a10a9fc727c0720ac9f3d99a44b3461ebf21b7a4cf040ebd108dc9553",
+          "covered_target_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "c8b7e30ba28108f79e2f8ff65f6ed709b27e62fe5d9288ae0abc5b43fcbc61e0",
+          "covered_target_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "75e5191244d578f8811d85d5a1013f4baa92642ed11fe21ed7a52d4c432502a6",
+          "covered_target_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "6a32e58faa6b895261bed37681ace8791905f9922f1cf3a031c3397e1a7ac35b",
+          "covered_target_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "d04",
+      "sources": [
+        {
+          "candidate_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "5b36581e582e6e6c8f45652f95684437f559294f58d02bb42b9c96b072f200cd",
+          "covered_target_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "1d9240ec9951f2fab0792580abfcc384cc9e375721059694317a6821466ea958",
+          "covered_target_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "4f81d96a10a9fc727c0720ac9f3d99a44b3461ebf21b7a4cf040ebd108dc9553",
+          "covered_target_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "c8b7e30ba28108f79e2f8ff65f6ed709b27e62fe5d9288ae0abc5b43fcbc61e0",
+          "covered_target_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "75e5191244d578f8811d85d5a1013f4baa92642ed11fe21ed7a52d4c432502a6",
+          "covered_target_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "6a32e58faa6b895261bed37681ace8791905f9922f1cf3a031c3397e1a7ac35b",
+          "covered_target_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "d05",
+      "sources": [
+        {
+          "candidate_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "fd30d0afd1f5af8cc5f19081cc5586cd14c221c2362effad3a1bde8b2912c153",
+          "covered_target_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "99310ddd386756f4547b1339133cf257508a7a6e3fba3f662f80bf9f1f8ac2cc",
+          "covered_target_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "e93e83c8a382b0706ed7e5f693cc0629319a53a8b6354705caad9ad882e25b00",
+          "covered_target_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "887948d797d00444b65914a700952aee396f11663b139e8bc1ef67ff431b2edc",
+          "covered_target_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "0ffbbf8eedb98680bfbb35d3621150900dd044762e0f79dac0f4561d26afdf42",
+          "covered_target_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "01b843450c07421915ed4d263fdfc0b7e178769220988e657752df856b139ba1",
+          "covered_target_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "d06",
+      "sources": [
+        {
+          "candidate_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "fd30d0afd1f5af8cc5f19081cc5586cd14c221c2362effad3a1bde8b2912c153",
+          "covered_target_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "99310ddd386756f4547b1339133cf257508a7a6e3fba3f662f80bf9f1f8ac2cc",
+          "covered_target_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "e93e83c8a382b0706ed7e5f693cc0629319a53a8b6354705caad9ad882e25b00",
+          "covered_target_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "887948d797d00444b65914a700952aee396f11663b139e8bc1ef67ff431b2edc",
+          "covered_target_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "0ffbbf8eedb98680bfbb35d3621150900dd044762e0f79dac0f4561d26afdf42",
+          "covered_target_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "01b843450c07421915ed4d263fdfc0b7e178769220988e657752df856b139ba1",
+          "covered_target_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "d07",
+      "sources": [
+        {
+          "candidate_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "29f47827482a86b50a5e63f3e4184c320c9f3b121e9f56c61e3528fff02ecbb5",
+          "covered_target_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "ac4920bfd05ba001fbb0d51860d041935402fc7c88849ee6cc32dbf0f802cd7f",
+          "covered_target_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "4d4779afba9ec6cc92143f03ec16776684b45e13dbbb7d8de7c546ce573b8d69",
+          "covered_target_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "0daf765cb43e178f45e8090131f7536c26d320c4b62e7740fe185cc0df966db5",
+          "covered_target_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "918ffd95539687a8c3cf087b15b41c6694a9835f01c8fe7d61594732ff38c9b7",
+          "covered_target_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "9ec65511862ad2d22f2a6f79274a09aaca14e1460328268646490a975019bfd6",
+          "covered_target_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "d08",
+      "sources": [
+        {
+          "candidate_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "29f47827482a86b50a5e63f3e4184c320c9f3b121e9f56c61e3528fff02ecbb5",
+          "covered_target_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "ac4920bfd05ba001fbb0d51860d041935402fc7c88849ee6cc32dbf0f802cd7f",
+          "covered_target_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "4d4779afba9ec6cc92143f03ec16776684b45e13dbbb7d8de7c546ce573b8d69",
+          "covered_target_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "0daf765cb43e178f45e8090131f7536c26d320c4b62e7740fe185cc0df966db5",
+          "covered_target_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "918ffd95539687a8c3cf087b15b41c6694a9835f01c8fe7d61594732ff38c9b7",
+          "covered_target_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "9ec65511862ad2d22f2a6f79274a09aaca14e1460328268646490a975019bfd6",
+          "covered_target_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "d09",
+      "sources": [
+        {
+          "candidate_services": [
+            "svc-4a981330c7",
+            "svc-d84cb4b953"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "541692e9f475efe6102e676b83ec2127de39bc9c17a46b58f3adb14df3cab62e",
+          "covered_target_services": [
+            "svc-4a981330c7",
+            "svc-d84cb4b953"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "svc-4a981330c7",
+            "svc-d84cb4b953"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "23fb5f1049eaedaa03f3735ad45bd1cdfd4af6e91dcc507a882937a75b92b5ec",
+          "covered_target_services": [
+            "svc-4a981330c7",
+            "svc-d84cb4b953"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "svc-4a981330c7",
+            "svc-d84cb4b953"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "bdd3e20605cc2c69559eade95a3e10993735cb45e798375439720fe1bbd562a3",
+          "covered_target_services": [
+            "svc-4a981330c7",
+            "svc-d84cb4b953"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "svc-4a981330c7",
+            "svc-d84cb4b953"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "ceba8feda2165b934920bf0bcfbb17edb161e1fe4e545d31a5708b0f447a74a7",
+          "covered_target_services": [
+            "svc-4a981330c7",
+            "svc-d84cb4b953"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "svc-4a981330c7",
+            "svc-d84cb4b953"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "b2ca4cb823e9eb4e83be9831b57ce31a536e7307479801c9ac54ca8b6c21d836",
+          "covered_target_services": [
+            "svc-4a981330c7",
+            "svc-d84cb4b953"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "svc-4a981330c7",
+            "svc-d84cb4b953"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "cfe60fb069437fcc96f008e25512b44b7457912f3aed329fff5da8d931a423b9",
+          "covered_target_services": [
+            "svc-4a981330c7",
+            "svc-d84cb4b953"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "d10",
+      "sources": [
+        {
+          "candidate_services": [
+            "svc-0ced49f03e",
+            "svc-31dc98026e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "9fcb600856c4101ff116d36d95e9dbdf67310fecc0f9752060d9fa6628454ba7",
+          "covered_target_services": [
+            "svc-0ced49f03e",
+            "svc-31dc98026e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "svc-0ced49f03e",
+            "svc-31dc98026e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "b46ee6d35b1c1636f0938a59bbbe5a826cd4e0f5cbe86745c37468948933a667",
+          "covered_target_services": [
+            "svc-0ced49f03e",
+            "svc-31dc98026e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "svc-0ced49f03e",
+            "svc-31dc98026e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "f88d3b449dc4606c3b9112d9ef21c79ef3ad871909f31c4f359a5801fec289e5",
+          "covered_target_services": [
+            "svc-0ced49f03e",
+            "svc-31dc98026e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "svc-0ced49f03e",
+            "svc-31dc98026e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "5072c6439a0a4ddb82132f4e3ea57bd99dedfc1c5a5fafe59f298ad7469e0582",
+          "covered_target_services": [
+            "svc-0ced49f03e",
+            "svc-31dc98026e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "svc-0ced49f03e",
+            "svc-31dc98026e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "edd3a4facd50fe8579641238019226700f035610500411fd4865c9e8ee833b09",
+          "covered_target_services": [
+            "svc-0ced49f03e",
+            "svc-31dc98026e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "svc-0ced49f03e",
+            "svc-31dc98026e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "db73a5c334ebe3af31b4d165bf5fd3a451a5970c2476aa2924e38ac651064891",
+          "covered_target_services": [
+            "svc-0ced49f03e",
+            "svc-31dc98026e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "d11",
+      "sources": [
+        {
+          "candidate_services": [
+            "svc-280f8547cc",
+            "svc-3c9097a3cd"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "055eed6c54562171034031d05776d82928c34341bc16bc73e3d49d93bac9d435",
+          "covered_target_services": [
+            "svc-280f8547cc",
+            "svc-3c9097a3cd"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "svc-280f8547cc",
+            "svc-3c9097a3cd"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "b93c1a9e6439db3014b461b0268d11a4b0162ac6951403d4ba3656d2ab5adf53",
+          "covered_target_services": [
+            "svc-280f8547cc",
+            "svc-3c9097a3cd"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "svc-280f8547cc",
+            "svc-3c9097a3cd"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "71c8e94323ab80d4fd9e295d6ce6905f1a99a4ff994dad53731cfe0b5b13e282",
+          "covered_target_services": [
+            "svc-280f8547cc",
+            "svc-3c9097a3cd"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "svc-280f8547cc",
+            "svc-3c9097a3cd"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "fbce3b34eb3585fde8cf370c7394d4c86a4867788d634f5ffff182a14e2de593",
+          "covered_target_services": [
+            "svc-280f8547cc",
+            "svc-3c9097a3cd"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "svc-280f8547cc",
+            "svc-3c9097a3cd"
+          ],
+          "coverage_mode": "TARGET_PARTIAL",
+          "coverage_sha256": "42994685158334cf41acf943ceea8fccd22bdbc746ad75c9931f9f7af4432678",
+          "covered_target_services": [],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "svc-280f8547cc",
+            "svc-3c9097a3cd"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "9f2f57e0086b989f34d4c715d7f711bba952be3d72c615b7d87b7ff0949f0b95",
+          "covered_target_services": [
+            "svc-280f8547cc",
+            "svc-3c9097a3cd"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "d12",
+      "sources": [
+        {
+          "candidate_services": [
+            "svc-c0b4e07dee",
+            "svc-cd2b0741e9"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "83213e7f8d41010aa25d2b899d996462122d891100e5675a269d369621ab456f",
+          "covered_target_services": [
+            "svc-c0b4e07dee",
+            "svc-cd2b0741e9"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "svc-c0b4e07dee",
+            "svc-cd2b0741e9"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "06f1a9ddd0482d0fd94e0134ae9b1c36f583f18052e5c2ff12172c2fed9aac22",
+          "covered_target_services": [
+            "svc-c0b4e07dee",
+            "svc-cd2b0741e9"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "svc-c0b4e07dee",
+            "svc-cd2b0741e9"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "71a47c483e1c83b8b36b06676e50780efe591611b465e54c6e872da444584cc9",
+          "covered_target_services": [
+            "svc-c0b4e07dee",
+            "svc-cd2b0741e9"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "svc-c0b4e07dee",
+            "svc-cd2b0741e9"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "40ca93b12a1e875188356ecfbec493a74aeaf4dc6dc6b8190e47f32a77de6902",
+          "covered_target_services": [
+            "svc-c0b4e07dee",
+            "svc-cd2b0741e9"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "svc-c0b4e07dee",
+            "svc-cd2b0741e9"
+          ],
+          "coverage_mode": "TARGET_PARTIAL",
+          "coverage_sha256": "8b811116ba77455cace80953d8835c43be6d5e4555d0f548a9cf2f00987d5a28",
+          "covered_target_services": [],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "svc-c0b4e07dee",
+            "svc-cd2b0741e9"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "88c2e1263340323b8732434f7b5bf5defe0d2e99280b79cc814d815769706c81",
+          "covered_target_services": [
+            "svc-c0b4e07dee",
+            "svc-cd2b0741e9"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "d13",
+      "sources": [
+        {
+          "candidate_services": [
+            "svc-2f8ff658e9",
+            "svc-7669976c4e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "5e8f8e5f72ea50b4f8e7d1703768978b27d1eace3eff2e39ce43d8bf00d790a0",
+          "covered_target_services": [
+            "svc-2f8ff658e9",
+            "svc-7669976c4e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "svc-2f8ff658e9",
+            "svc-7669976c4e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "0b7b54bbb1b7ee2d8694250074572cb9897c07948741e35dd792d46359a01704",
+          "covered_target_services": [
+            "svc-2f8ff658e9",
+            "svc-7669976c4e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "svc-2f8ff658e9",
+            "svc-7669976c4e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "eb3bccae025ea4a68ea9630d10e933c1404b7d94953f7056730331a0ac5b4ffe",
+          "covered_target_services": [
+            "svc-2f8ff658e9",
+            "svc-7669976c4e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "svc-2f8ff658e9",
+            "svc-7669976c4e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "24695649f938f86489d971a3db497e8073d3139b4d201ea5ecb684784348d205",
+          "covered_target_services": [
+            "svc-2f8ff658e9",
+            "svc-7669976c4e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "svc-2f8ff658e9",
+            "svc-7669976c4e"
+          ],
+          "coverage_mode": "TARGET_PARTIAL",
+          "coverage_sha256": "be0300d777a48a412cd9e7e82009ff541c1faa1044276effc6502eccb4f7aa9b",
+          "covered_target_services": [],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "svc-2f8ff658e9",
+            "svc-7669976c4e"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "086fc32b261de92b595e70b099aaf0422bd4829802a81749aad00b019882f513",
+          "covered_target_services": [
+            "svc-2f8ff658e9",
+            "svc-7669976c4e"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "d14",
+      "sources": [
+        {
+          "candidate_services": [
+            "svc-121bb4bbb7",
+            "svc-43bfd3e3bd"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "3e8191c27ca91891de0638ad66cb4e2d2b0a04cbbdf7a4339d2bf660a6b04566",
+          "covered_target_services": [
+            "svc-121bb4bbb7",
+            "svc-43bfd3e3bd"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "svc-121bb4bbb7",
+            "svc-43bfd3e3bd"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "4b42acce7fff1c1de872617a461969874b57fef24caed724a4a6f7b0c3b1c997",
+          "covered_target_services": [
+            "svc-121bb4bbb7",
+            "svc-43bfd3e3bd"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "svc-121bb4bbb7",
+            "svc-43bfd3e3bd"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "d1b71cd431a87d47e616f1b3211bb831e557111f70172e6b2ab059a6fdd0e755",
+          "covered_target_services": [
+            "svc-121bb4bbb7",
+            "svc-43bfd3e3bd"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "svc-121bb4bbb7",
+            "svc-43bfd3e3bd"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "4d19736adaa727ebb1bdde66b118f3dea46ea5dcb2142dc5a994b4ee134035a8",
+          "covered_target_services": [
+            "svc-121bb4bbb7",
+            "svc-43bfd3e3bd"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "svc-121bb4bbb7",
+            "svc-43bfd3e3bd"
+          ],
+          "coverage_mode": "TARGET_PARTIAL",
+          "coverage_sha256": "7ca6f2079260b4fee24c157f0c5fec4ed50c344925fca50e746f03d88db8fe15",
+          "covered_target_services": [],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "svc-121bb4bbb7",
+            "svc-43bfd3e3bd"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "52340c055f93547e02d3f7bb1e3bef9f7256597a963dfb6d0a09bfd96e0f49f7",
+          "covered_target_services": [
+            "svc-121bb4bbb7",
+            "svc-43bfd3e3bd"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "d15",
+      "sources": [
+        {
+          "candidate_services": [
+            "svc-46fe028bb1",
+            "svc-c719afd8ac"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "c6dd6438a87fbc15aa74ea844792397f7a1e66e8aa1f90cebe5c0629564992d7",
+          "covered_target_services": [
+            "svc-46fe028bb1",
+            "svc-c719afd8ac"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "svc-46fe028bb1",
+            "svc-c719afd8ac"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "371b739916d45d18e8f81a796886ef80457c31843e73a0ec0d23afc2b9d7f338",
+          "covered_target_services": [
+            "svc-46fe028bb1",
+            "svc-c719afd8ac"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "svc-46fe028bb1",
+            "svc-c719afd8ac"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "88be023885f67d65a0aadcf9098904e474039ae9b5ca85830fd3864b39c18a7b",
+          "covered_target_services": [
+            "svc-46fe028bb1",
+            "svc-c719afd8ac"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "svc-46fe028bb1",
+            "svc-c719afd8ac"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "a93e4901d97b5c6ffd27006fce1ebb7a60750ac9b76b7129135e032d564080e7",
+          "covered_target_services": [
+            "svc-46fe028bb1",
+            "svc-c719afd8ac"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "svc-46fe028bb1",
+            "svc-c719afd8ac"
+          ],
+          "coverage_mode": "TARGET_PARTIAL",
+          "coverage_sha256": "6ce930ec4f45a5c09b3d373ee4d84badc728083fa41be6c3e690838de45fbbb5",
+          "covered_target_services": [],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "svc-46fe028bb1",
+            "svc-c719afd8ac"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "366ab4b5a423b3baa305c0c82ff204f0caeacc8a312475f669113ac0e6528a44",
+          "covered_target_services": [
+            "svc-46fe028bb1",
+            "svc-c719afd8ac"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    },
+    {
+      "case_id": "d16",
+      "sources": [
+        {
+          "candidate_services": [
+            "svc-b97f98f897",
+            "svc-dd9241c60a"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "158fbf9280b159c4b2f8283e051d12d6ef2675cff87c6261eceed90a9d6fa984",
+          "covered_target_services": [
+            "svc-b97f98f897",
+            "svc-dd9241c60a"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "METRICS"
+        },
+        {
+          "candidate_services": [
+            "svc-b97f98f897",
+            "svc-dd9241c60a"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "297ff67fc07cb3dc117d9126b50187f31d93ebb90746d2b4377d13350b09f825",
+          "covered_target_services": [
+            "svc-b97f98f897",
+            "svc-dd9241c60a"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "LOGS"
+        },
+        {
+          "candidate_services": [
+            "svc-b97f98f897",
+            "svc-dd9241c60a"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "a681e068e6595f1e03731dd19a1c1d12e0c8f6f79f74c9701702bf10f9b27360",
+          "covered_target_services": [
+            "svc-b97f98f897",
+            "svc-dd9241c60a"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "TRACES"
+        },
+        {
+          "candidate_services": [
+            "svc-b97f98f897",
+            "svc-dd9241c60a"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "edc03f15c7fe95883a2a77199bc886491449ed18f0da06126c9ec55ad94ba669",
+          "covered_target_services": [
+            "svc-b97f98f897",
+            "svc-dd9241c60a"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RUNTIME"
+        },
+        {
+          "candidate_services": [
+            "svc-b97f98f897",
+            "svc-dd9241c60a"
+          ],
+          "coverage_mode": "TARGET_PARTIAL",
+          "coverage_sha256": "72cae9a040d9d5046844873e63e282bfb0641500f141b839a90e17fa591ed820",
+          "covered_target_services": [],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "RESOURCES"
+        },
+        {
+          "candidate_services": [
+            "svc-b97f98f897",
+            "svc-dd9241c60a"
+          ],
+          "coverage_mode": "TARGET_COMPLETE",
+          "coverage_sha256": "248857aa84551c9504a7f2477bb2b292a85c2a159df2fabbf977becb1e8562aa",
+          "covered_target_services": [
+            "svc-b97f98f897",
+            "svc-dd9241c60a"
+          ],
+          "schema_version": "dta-v22.5.replay-target-coverage.v1",
+          "source": "CHANGES"
+        }
+      ]
+    }
+  ],
+  "schema_version": "dta-v22.5.replay-target-coverage-set.v1"
+}

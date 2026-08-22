@@ -208,16 +208,10 @@ def build_evidence_ambiguity_set_v225(
         "remaining_target_services": remaining,
         "complete": not remaining,
     }
-    draft = EvidenceAmbiguitySetV225.model_construct(
-        **payload,
-        set_sha256="0" * 64,
-    )
     return EvidenceAmbiguitySetV225.model_validate(
         {
             **payload,
-            "set_sha256": semantic_sha256_v22(
-                draft.model_dump(mode="json", exclude={"set_sha256"})
-            ),
+            "set_sha256": semantic_sha256_v22(payload),
         }
     )
 

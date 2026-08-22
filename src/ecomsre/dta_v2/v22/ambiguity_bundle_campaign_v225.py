@@ -50,6 +50,7 @@ from ecomsre.dta_v2.v22.gap_router_v223 import (
 )
 from ecomsre.dta_v2.v22.memory import MemoryReadOutcomeV22
 from ecomsre.dta_v2.v22.negative_coverage_v222 import (
+    NegativeCoverageEntryV222,
     NegativeCoverageLedgerV222,
     ReadUtilityClassV222,
     classify_read_utility_v222,
@@ -80,7 +81,7 @@ from ecomsre.dta_v2.v22.read_contracts import (
     ReadSourceStatusV22,
     semantic_sha256_v22,
 )
-from ecomsre.dta_v2.v22.replay import QuerySpecificReplayBackendV22
+from ecomsre.dta_v2.v22.replay_bundle_v225 import QuerySpecificReplayBackendV225
 from ecomsre.dta_v2.v22.replay_capabilities_v222 import (
     ReplaySourceAvailabilityV222,
     build_replay_capabilities_v222,
@@ -111,6 +112,7 @@ SHARED_SELECTION_SYSTEM_PROMPT_V225 = (
     "or normal reads cover only their declared targets; NO_INCIDENT appears only "
     "when the runtime admits it. There is no Agent write, shell, remediation, "
     "Docker, or Runbook authority. Return only the forced short shape."
+    "\n"
 )
 
 
@@ -697,13 +699,17 @@ def execute_ambiguity_bundle_case_v225(
                 (_minimum_gap(graph, item.hypothesis_id) for item in graph.hypotheses),
                 default=0,
             )
-            source_outcome = QuerySpecificReplayBackendV22(case.capture).execute(action)
-            projected = _memory_outcome(
-                action=action,
-                outcome=source_outcome,
-                run_id=run_id,
-                dispatch_ordinal=len(outcomes) + 1,
-                observed_at=case.capture.captured_at,
+            source_outcome = QuerySpecificReplayBackendV225(case.capture).execute(action)
+            projected = (
+                source_outcome
+                if isinstance(action, ContrastiveResourceActionV225)
+                else _memory_outcome(
+                    action=action,
+                    outcome=source_outcome,
+                    run_id=run_id,
+                    dispatch_ordinal=len(outcomes) + 1,
+                    observed_at=case.capture.captured_at,
+                )
             )
             post_outcomes = (*outcomes, projected)
             post_memory = _build_memory(case=case, outcomes=post_outcomes)
@@ -739,13 +745,32 @@ def execute_ambiguity_bundle_case_v225(
                 (_minimum_gap(post_graph, item.hypothesis_id) for item in post_graph.hypotheses),
                 default=0,
             )
-            negative = record_negative_coverage_v222(
-                ledger=negative,
-                action=action,
-                utility=utility,
-                minimum_gap_before=before_gap,
-                minimum_gap_after=after_gap,
-            )
+            if isinstance(action, ContrastiveResourceActionV225):
+                negative = NegativeCoverageLedgerV222(
+                    schema_version="dta-v22.2.negative-coverage-ledger.v1",
+                    entries=(
+                        *negative.entries,
+                        NegativeCoverageEntryV222(
+                            action_id=action.action_id,
+                            source=action.source.value,
+                            target_services=action.target_services,
+                            outcome_class=utility.outcome_class,
+                            new_predicate_kinds=utility.new_predicate_kinds,
+                            new_evidence_refs=utility.new_evidence_refs,
+                            queried_capability_keys=action.coverage_keys,
+                            minimum_clause_gap_decreased=after_gap < before_gap,
+                            hypothesis_contradicted=False,
+                        ),
+                    ),
+                )
+            else:
+                negative = record_negative_coverage_v222(
+                    ledger=negative,
+                    action=action,
+                    utility=utility,
+                    minimum_gap_before=before_gap,
+                    minimum_gap_after=after_gap,
+                )
             closure = record_no_incident_set_closure_attempt_v225(
                 state=closure,
                 action=action,

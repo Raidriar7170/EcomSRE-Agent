@@ -1,0 +1,2702 @@
+{
+  "agent_writes": 0,
+  "combinations": [
+    "TARGET_ONE",
+    "TARGET_SET",
+    "BUNDLE_ONE",
+    "BUNDLE_SET"
+  ],
+  "coverage": {
+    "budget_insufficient_abstain": true,
+    "bundle_one": true,
+    "bundle_set": true,
+    "complete_normal_no_incident": true,
+    "exact_request_retry_identity": true,
+    "http_429_retry_simulation": true,
+    "incident_terminal": true,
+    "invalid_alias_repair": true,
+    "opaque_bootstrap_payload": true,
+    "opaque_payload_lint_pass": true,
+    "opaque_post_bundle_read_payload": true,
+    "opaque_post_individual_read_payload": true,
+    "opaque_repair_payload": true,
+    "opaque_terminal_only_payload": true,
+    "source_failure_abstain": true,
+    "stale_alias_repair": true,
+    "target_one": true,
+    "target_set": true,
+    "timeout_retry_simulation": true
+  },
+  "gate_passed": true,
+  "post_repair_protocol_success_rate": 1.0,
+  "protocol_repairs": 0,
+  "provider_calls": 16,
+  "provider_model": "gpt-5.4-mini-2026-03-17",
+  "provider_turns": 16,
+  "real_runs": 16,
+  "recorded_at_utc": "2026-08-22T02:26:17.950526Z",
+  "rendered_lint_reports": [
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-6db724c330",
+        "svc-f1a57dd3c4"
+      ],
+      "payload_class": "post-individual-read",
+      "report_sha256": "2384ce6dc8561e5eee07ba47aff4a60b9546f9b8a05ed11a9d075a60bb362530",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-6db724c330",
+        "svc-f1a57dd3c4"
+      ],
+      "payload_class": "post-individual-read",
+      "report_sha256": "2384ce6dc8561e5eee07ba47aff4a60b9546f9b8a05ed11a9d075a60bb362530",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-73493424a2",
+        "svc-ae0818b567"
+      ],
+      "payload_class": "post-bundle-read",
+      "report_sha256": "d10c14f4386787fe3248af4a7241eb184f44a4e044c03cdb87266105e2277fd2",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-73493424a2",
+        "svc-ae0818b567"
+      ],
+      "payload_class": "post-bundle-read",
+      "report_sha256": "d10c14f4386787fe3248af4a7241eb184f44a4e044c03cdb87266105e2277fd2",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-9cb8e229ce",
+        "svc-cef9b6e38e"
+      ],
+      "payload_class": "post-individual-read",
+      "report_sha256": "e1722fe37dd712f4d84672f3cc9269ada4affec111118ae05b438594b902be61",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-9cb8e229ce",
+        "svc-cef9b6e38e"
+      ],
+      "payload_class": "post-individual-read",
+      "report_sha256": "e1722fe37dd712f4d84672f3cc9269ada4affec111118ae05b438594b902be61",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-64e9ee5a10",
+        "svc-8f9c9dd63c"
+      ],
+      "payload_class": "post-bundle-read",
+      "report_sha256": "7badcf785b2f50a1f47e9ec5f99dc64ef59ca019231680b75820038314f7e8c9",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-64e9ee5a10",
+        "svc-8f9c9dd63c"
+      ],
+      "payload_class": "post-bundle-read",
+      "report_sha256": "7badcf785b2f50a1f47e9ec5f99dc64ef59ca019231680b75820038314f7e8c9",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-4a981330c7",
+        "svc-d84cb4b953"
+      ],
+      "payload_class": "post-individual-read",
+      "report_sha256": "296e105985924f69f5f14cb036f59383085ff32f10ea9c553ac10b3eab3d100d",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-0ced49f03e",
+        "svc-31dc98026e"
+      ],
+      "payload_class": "post-bundle-read",
+      "report_sha256": "d923338e31fa3f86e0282ca49945f44485967e2320eec625e7456bd529f296c7",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-280f8547cc",
+        "svc-3c9097a3cd"
+      ],
+      "payload_class": "terminal-only",
+      "report_sha256": "b1824a460a82c5e3072ce375a23d9f4a920ce197c28b892b8402a295894f6f07",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-c0b4e07dee",
+        "svc-cd2b0741e9"
+      ],
+      "payload_class": "terminal-only",
+      "report_sha256": "327bb0f5fa46ae94ef0edc132616fbada32655cc2faaffb65375592d02d4ad0c",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-2f8ff658e9",
+        "svc-7669976c4e"
+      ],
+      "payload_class": "terminal-only",
+      "report_sha256": "f0e3112295dad9e9de7a1b866c804e01b2093f240ba2ee415bc84e2a682c498f",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-121bb4bbb7",
+        "svc-43bfd3e3bd"
+      ],
+      "payload_class": "terminal-only",
+      "report_sha256": "ec1ac8fc18e96e7e43d561f0046bed8eedf570c6a2b5f95d28d8b7126bb14e6e",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-46fe028bb1",
+        "svc-c719afd8ac"
+      ],
+      "payload_class": "terminal-only",
+      "report_sha256": "64aab393ef106a8764ac7fe04142778e1d95b2a822234d8ff69a4fe3fabd626b",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-b97f98f897",
+        "svc-dd9241c60a"
+      ],
+      "payload_class": "terminal-only",
+      "report_sha256": "2689060ac583aeef77757aeee441fa04d6ec6cf9790444e9083b49730793226d",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    }
+  ],
+  "runs": [
+    {
+      "abstain_reason": null,
+      "action_granularity": "PER_TARGET",
+      "agent_writes": 0,
+      "ambiguity_coverage_ledger": {
+        "covered_targets_by_set": {
+          "eas:resources:0e17d7067d7d4033": [
+            "svc-6db724c330"
+          ]
+        },
+        "events": [
+          {
+            "action_id": "a:resources:svc-6db724c330",
+            "event_sha256": "6022c3c1633e9d95b6be8b5252bf34a98fab57afbb6a658273da2579ee69c2c4",
+            "new_predicate_kinds": [],
+            "outcome_class": "NONEMPTY_NO_PREDICATE",
+            "recorded_at_read_ordinal": 1,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [
+              "eas:resources:0e17d7067d7d4033"
+            ],
+            "source": "RESOURCES",
+            "target_services": [
+              "svc-6db724c330"
+            ]
+          }
+        ],
+        "ledger_sha256": "2064cb417ca509fceb04efa174464e68e1947c86b18cd491d94c79670b34b8c4",
+        "schema_version": "dta-v22.5.ambiguity-coverage-ledger.v1",
+        "source_failures_by_set": {
+          "eas:resources:0e17d7067d7d4033": []
+        }
+      },
+      "ambiguity_set_count": 1,
+      "ambiguity_set_size": 2,
+      "automatic_dispatches": 1,
+      "bundle_dispatch_count": 0,
+      "bundle_eligible": true,
+      "bundle_resources_reads": 0,
+      "case_bytes_sha256": "52786c696b69f2792384339d64567a08d94d2a0139d76cd28a53a69448e7fd9f",
+      "case_id": "d01",
+      "closure_scope": "ONE_TARGET_ATTEMPT",
+      "closure_state": {
+        "abstain_reason": null,
+        "ambiguity_set": {
+          "bundle_action_id": "a:resources:all-candidates:44b4862cdb07",
+          "complete": false,
+          "covered_target_services": [
+            "svc-6db724c330"
+          ],
+          "hypothesis_ids": [
+            "h:svc-6db724c330:cpu-saturation",
+            "h:svc-6db724c330:memory-leak",
+            "h:svc-f1a57dd3c4:cpu-saturation",
+            "h:svc-f1a57dd3c4:memory-leak"
+          ],
+          "individual_action_ids": [
+            "a:resources:svc-6db724c330",
+            "a:resources:svc-f1a57dd3c4"
+          ],
+          "predicate_kinds": [
+            "RESOURCE_CPU_STRONG",
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "remaining_target_services": [
+            "svc-f1a57dd3c4"
+          ],
+          "schema_version": "dta-v22.5.evidence-ambiguity-set.v1",
+          "set_id": "eas:resources:0e17d7067d7d4033",
+          "set_sha256": "f1031348cfc4d6d52eb03b8e3d3101ad80b0704a2df82038696b30310c7b59ed",
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ]
+        },
+        "attempted_action_ids": [
+          "a:resources:svc-6db724c330"
+        ],
+        "closure_disposition": "COMPLETE_NORMAL",
+        "closure_required": false,
+        "closure_satisfied": true,
+        "no_incident_withheld": false,
+        "predicate_yield": false,
+        "schema_version": "dta-v22.5.no-incident-set-closure-state.v1",
+        "scope": "ONE_TARGET_ATTEMPT",
+        "source_failure": false,
+        "state_sha256": "41cb62e1d1b2f07706f451f4afbff469121253f874182e7d79646096cb44b5ce"
+      },
+      "combination": "TARGET_ONE",
+      "contrastive_deltas": [],
+      "first_pass_protocol_successes": 1,
+      "forgotten_preclosure_read_count": 0,
+      "individual_resources_reads": 1,
+      "input_tokens": 988,
+      "latency_ms": 3236.103917006403,
+      "matched_clause_id": null,
+      "mechanism": null,
+      "no_incident_exposed_after_partial_coverage": true,
+      "output_tokens": 24,
+      "post_repair_protocol_successes": 1,
+      "protocol_repairs": 0,
+      "provider_calls": 1,
+      "provider_terminal_selections": 1,
+      "read_events": [
+        {
+          "action_id": "a:resources:svc-6db724c330",
+          "ambiguity_set_id": "eas:resources:0e17d7067d7d4033",
+          "automatic": true,
+          "bundle": false,
+          "covered_targets_after": [
+            "svc-6db724c330"
+          ],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [],
+          "ordinal": 1,
+          "outcome_class": "NONEMPTY_NO_PREDICATE",
+          "ranking_action_ids_at_dispatch": [
+            "a:resources:svc-6db724c330",
+            "a:resources:svc-f1a57dd3c4",
+            "a:traces:svc-6db724c330",
+            "a:traces:svc-f1a57dd3c4",
+            "a:changes:svc-f1a57dd3c4",
+            "a:changes:svc-6db724c330",
+            "a:logs:svc-6db724c330",
+            "a:logs:svc-f1a57dd3c4"
+          ],
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "targets": [
+            "svc-6db724c330"
+          ],
+          "weighted_cost": 1.5
+        }
+      ],
+      "resource_target_complete": true,
+      "root_service": null,
+      "safe_error_code": null,
+      "schema_version": "dta-v22.5.ambiguity-bundle-case-run.v1",
+      "set_complete_before_terminal": false,
+      "status": "VALID_TERMINAL",
+      "supporting_evidence_refs": [],
+      "targets_covered_before_terminal": [
+        "svc-6db724c330"
+      ],
+      "terminal": "NO_INCIDENT",
+      "total_tokens": 1012,
+      "transport_retry_count": 0,
+      "uncaught_exceptions": 0
+    },
+    {
+      "abstain_reason": null,
+      "action_granularity": "PER_TARGET",
+      "agent_writes": 0,
+      "ambiguity_coverage_ledger": {
+        "covered_targets_by_set": {
+          "eas:resources:0e17d7067d7d4033": [
+            "svc-6db724c330"
+          ]
+        },
+        "events": [
+          {
+            "action_id": "a:resources:svc-6db724c330",
+            "event_sha256": "5648fadf2a8ac86df02085d84de0e7b0943deb3cfc3bb9bb40e65c62cf4c0e98",
+            "new_predicate_kinds": [
+              "RESOURCE_CPU_STRONG"
+            ],
+            "outcome_class": "PREDICATE_YIELD",
+            "recorded_at_read_ordinal": 1,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [
+              "eas:resources:0e17d7067d7d4033"
+            ],
+            "source": "RESOURCES",
+            "target_services": [
+              "svc-6db724c330"
+            ]
+          }
+        ],
+        "ledger_sha256": "3007256ae89202586aededd9dbc762cd5e9f13dc941ca9caec50405dca28c763",
+        "schema_version": "dta-v22.5.ambiguity-coverage-ledger.v1",
+        "source_failures_by_set": {
+          "eas:resources:0e17d7067d7d4033": []
+        }
+      },
+      "ambiguity_set_count": 1,
+      "ambiguity_set_size": 2,
+      "automatic_dispatches": 1,
+      "bundle_dispatch_count": 0,
+      "bundle_eligible": true,
+      "bundle_resources_reads": 0,
+      "case_bytes_sha256": "e70d55c85f353bd8fc23b764fee25762f4f8d8a46a00b430cdfd2d58d845e9e5",
+      "case_id": "d02",
+      "closure_scope": "AMBIGUITY_SET_COMPLETE",
+      "closure_state": {
+        "abstain_reason": null,
+        "ambiguity_set": {
+          "bundle_action_id": "a:resources:all-candidates:44b4862cdb07",
+          "complete": false,
+          "covered_target_services": [
+            "svc-6db724c330"
+          ],
+          "hypothesis_ids": [
+            "h:svc-6db724c330:cpu-saturation",
+            "h:svc-6db724c330:memory-leak",
+            "h:svc-f1a57dd3c4:cpu-saturation",
+            "h:svc-f1a57dd3c4:memory-leak"
+          ],
+          "individual_action_ids": [
+            "a:resources:svc-6db724c330",
+            "a:resources:svc-f1a57dd3c4"
+          ],
+          "predicate_kinds": [
+            "RESOURCE_CPU_STRONG",
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "remaining_target_services": [
+            "svc-f1a57dd3c4"
+          ],
+          "schema_version": "dta-v22.5.evidence-ambiguity-set.v1",
+          "set_id": "eas:resources:0e17d7067d7d4033",
+          "set_sha256": "f1031348cfc4d6d52eb03b8e3d3101ad80b0704a2df82038696b30310c7b59ed",
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-6db724c330",
+            "svc-f1a57dd3c4"
+          ]
+        },
+        "attempted_action_ids": [
+          "a:resources:svc-6db724c330"
+        ],
+        "closure_disposition": "INCIDENT_PREDICATE_YIELDED",
+        "closure_required": false,
+        "closure_satisfied": true,
+        "no_incident_withheld": true,
+        "predicate_yield": true,
+        "schema_version": "dta-v22.5.no-incident-set-closure-state.v1",
+        "scope": "AMBIGUITY_SET_COMPLETE",
+        "source_failure": false,
+        "state_sha256": "3b5ad32dbe245b6b40f91a8746111bbbd1d03c4335626f56141b858a3f4ab02e"
+      },
+      "combination": "TARGET_SET",
+      "contrastive_deltas": [],
+      "first_pass_protocol_successes": 1,
+      "forgotten_preclosure_read_count": 0,
+      "individual_resources_reads": 1,
+      "input_tokens": 1015,
+      "latency_ms": 2102.3435830138624,
+      "matched_clause_id": "cpu-saturation:resource-and-healthy",
+      "mechanism": "CPU_SATURATION",
+      "no_incident_exposed_after_partial_coverage": false,
+      "output_tokens": 24,
+      "post_repair_protocol_successes": 1,
+      "protocol_repairs": 0,
+      "provider_calls": 1,
+      "provider_terminal_selections": 1,
+      "read_events": [
+        {
+          "action_id": "a:resources:svc-6db724c330",
+          "ambiguity_set_id": "eas:resources:0e17d7067d7d4033",
+          "automatic": true,
+          "bundle": false,
+          "covered_targets_after": [
+            "svc-6db724c330"
+          ],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [
+            "RESOURCE_CPU_STRONG"
+          ],
+          "ordinal": 1,
+          "outcome_class": "PREDICATE_YIELD",
+          "ranking_action_ids_at_dispatch": [
+            "a:resources:svc-6db724c330",
+            "a:resources:svc-f1a57dd3c4",
+            "a:traces:svc-6db724c330",
+            "a:traces:svc-f1a57dd3c4",
+            "a:changes:svc-f1a57dd3c4",
+            "a:changes:svc-6db724c330",
+            "a:logs:svc-6db724c330",
+            "a:logs:svc-f1a57dd3c4"
+          ],
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "targets": [
+            "svc-6db724c330"
+          ],
+          "weighted_cost": 1.5
+        }
+      ],
+      "resource_target_complete": true,
+      "root_service": "svc-6db724c330",
+      "safe_error_code": null,
+      "schema_version": "dta-v22.5.ambiguity-bundle-case-run.v1",
+      "set_complete_before_terminal": false,
+      "status": "VALID_TERMINAL",
+      "supporting_evidence_refs": [
+        "e:a:resources:svc-6db724c330:0:9319ef3fac43",
+        "e:a:runtime:all-candidates:44b4862cdb07:0:d68d3c1c21d1"
+      ],
+      "targets_covered_before_terminal": [
+        "svc-6db724c330"
+      ],
+      "terminal": "DIAGNOSED",
+      "total_tokens": 1039,
+      "transport_retry_count": 0,
+      "uncaught_exceptions": 0
+    },
+    {
+      "abstain_reason": null,
+      "action_granularity": "CONTRASTIVE_BUNDLE",
+      "agent_writes": 0,
+      "ambiguity_coverage_ledger": {
+        "covered_targets_by_set": {
+          "eas:resources:b7e8fdfdfe7f775c": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ]
+        },
+        "events": [
+          {
+            "action_id": "a:resources:all-candidates:7a01869887aa",
+            "event_sha256": "202a576bf335c4d7be9296665981c5187db588dcf0e7b4d9dce3fe5c124ef1b4",
+            "new_predicate_kinds": [
+              "RESOURCE_CPU_STRONG"
+            ],
+            "outcome_class": "PREDICATE_YIELD",
+            "recorded_at_read_ordinal": 1,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [
+              "eas:resources:b7e8fdfdfe7f775c"
+            ],
+            "source": "RESOURCES",
+            "target_services": [
+              "svc-73493424a2",
+              "svc-ae0818b567"
+            ]
+          }
+        ],
+        "ledger_sha256": "60a307dfe6b66d22bd89bc42aadd3d639d26127c9dd6c7734f70c92fc6057ed2",
+        "schema_version": "dta-v22.5.ambiguity-coverage-ledger.v1",
+        "source_failures_by_set": {
+          "eas:resources:b7e8fdfdfe7f775c": []
+        }
+      },
+      "ambiguity_set_count": 1,
+      "ambiguity_set_size": 2,
+      "automatic_dispatches": 1,
+      "bundle_dispatch_count": 1,
+      "bundle_eligible": true,
+      "bundle_resources_reads": 1,
+      "case_bytes_sha256": "79516b41bc7abc6105fa99f67ad5caae0ce9c1f94e5fbb598ea64a54151f379e",
+      "case_id": "d03",
+      "closure_scope": "ONE_TARGET_ATTEMPT",
+      "closure_state": {
+        "abstain_reason": null,
+        "ambiguity_set": {
+          "bundle_action_id": "a:resources:all-candidates:7a01869887aa",
+          "complete": true,
+          "covered_target_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "hypothesis_ids": [
+            "h:svc-73493424a2:cpu-saturation",
+            "h:svc-73493424a2:memory-leak",
+            "h:svc-ae0818b567:cpu-saturation",
+            "h:svc-ae0818b567:memory-leak"
+          ],
+          "individual_action_ids": [
+            "a:resources:svc-73493424a2",
+            "a:resources:svc-ae0818b567"
+          ],
+          "predicate_kinds": [
+            "RESOURCE_CPU_STRONG",
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "remaining_target_services": [],
+          "schema_version": "dta-v22.5.evidence-ambiguity-set.v1",
+          "set_id": "eas:resources:b7e8fdfdfe7f775c",
+          "set_sha256": "58285b9c751d3ec82f7f268b2646b75f0241e47958269dccb5d8b65b40df9545",
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ]
+        },
+        "attempted_action_ids": [
+          "a:resources:all-candidates:7a01869887aa"
+        ],
+        "closure_disposition": "INCIDENT_PREDICATE_YIELDED",
+        "closure_required": false,
+        "closure_satisfied": true,
+        "no_incident_withheld": true,
+        "predicate_yield": true,
+        "schema_version": "dta-v22.5.no-incident-set-closure-state.v1",
+        "scope": "ONE_TARGET_ATTEMPT",
+        "source_failure": false,
+        "state_sha256": "e4b17b68df12dda8832c978d71bf29078147d76d4dd76277e44bbc155e244d3d"
+      },
+      "combination": "BUNDLE_ONE",
+      "contrastive_deltas": [
+        {
+          "action_id": "a:resources:all-candidates:7a01869887aa",
+          "contrast_rows": [
+            {
+              "cpu_baseline_ratio": 1.0,
+              "cpu_p95_percent": 20.0,
+              "memory_slope_bytes_per_second": 0.0,
+              "new_predicate_kinds": [],
+              "service": "svc-73493424a2"
+            },
+            {
+              "cpu_baseline_ratio": 4.8,
+              "cpu_p95_percent": 96.0,
+              "memory_slope_bytes_per_second": 0.0,
+              "new_predicate_kinds": [
+                "RESOURCE_CPU_STRONG"
+              ],
+              "service": "svc-ae0818b567"
+            }
+          ],
+          "delta_sha256": "d30283b100c97389e19f22a3bbec757c363a7dcca07ca298ced4a55ef3ea5ebc",
+          "schema_version": "dta-v22.5.contrastive-resource-delta.v1"
+        }
+      ],
+      "first_pass_protocol_successes": 1,
+      "forgotten_preclosure_read_count": 0,
+      "individual_resources_reads": 0,
+      "input_tokens": 1165,
+      "latency_ms": 2049.4853330019396,
+      "matched_clause_id": "cpu-saturation:resource-and-healthy",
+      "mechanism": "CPU_SATURATION",
+      "no_incident_exposed_after_partial_coverage": false,
+      "output_tokens": 24,
+      "post_repair_protocol_successes": 1,
+      "protocol_repairs": 0,
+      "provider_calls": 1,
+      "provider_terminal_selections": 1,
+      "read_events": [
+        {
+          "action_id": "a:resources:all-candidates:7a01869887aa",
+          "ambiguity_set_id": "eas:resources:b7e8fdfdfe7f775c",
+          "automatic": true,
+          "bundle": true,
+          "covered_targets_after": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [
+            "RESOURCE_CPU_STRONG"
+          ],
+          "ordinal": 1,
+          "outcome_class": "PREDICATE_YIELD",
+          "ranking_action_ids_at_dispatch": [
+            "a:resources:svc-ae0818b567",
+            "a:resources:svc-73493424a2",
+            "a:traces:svc-73493424a2",
+            "a:traces:svc-ae0818b567",
+            "a:changes:svc-ae0818b567",
+            "a:changes:svc-73493424a2",
+            "a:logs:svc-73493424a2",
+            "a:logs:svc-ae0818b567"
+          ],
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "targets": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "weighted_cost": 2.0
+        }
+      ],
+      "resource_target_complete": true,
+      "root_service": "svc-ae0818b567",
+      "safe_error_code": null,
+      "schema_version": "dta-v22.5.ambiguity-bundle-case-run.v1",
+      "set_complete_before_terminal": true,
+      "status": "VALID_TERMINAL",
+      "supporting_evidence_refs": [
+        "e:a:resources:all-candidates:7a01869887aa:1:b6237737bce6",
+        "e:a:runtime:all-candidates:7a01869887aa:1:b33d5ef14d98"
+      ],
+      "targets_covered_before_terminal": [
+        "svc-73493424a2",
+        "svc-ae0818b567"
+      ],
+      "terminal": "DIAGNOSED",
+      "total_tokens": 1189,
+      "transport_retry_count": 0,
+      "uncaught_exceptions": 0
+    },
+    {
+      "abstain_reason": null,
+      "action_granularity": "CONTRASTIVE_BUNDLE",
+      "agent_writes": 0,
+      "ambiguity_coverage_ledger": {
+        "covered_targets_by_set": {
+          "eas:resources:b7e8fdfdfe7f775c": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ]
+        },
+        "events": [
+          {
+            "action_id": "a:resources:all-candidates:7a01869887aa",
+            "event_sha256": "202a576bf335c4d7be9296665981c5187db588dcf0e7b4d9dce3fe5c124ef1b4",
+            "new_predicate_kinds": [
+              "RESOURCE_CPU_STRONG"
+            ],
+            "outcome_class": "PREDICATE_YIELD",
+            "recorded_at_read_ordinal": 1,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [
+              "eas:resources:b7e8fdfdfe7f775c"
+            ],
+            "source": "RESOURCES",
+            "target_services": [
+              "svc-73493424a2",
+              "svc-ae0818b567"
+            ]
+          }
+        ],
+        "ledger_sha256": "60a307dfe6b66d22bd89bc42aadd3d639d26127c9dd6c7734f70c92fc6057ed2",
+        "schema_version": "dta-v22.5.ambiguity-coverage-ledger.v1",
+        "source_failures_by_set": {
+          "eas:resources:b7e8fdfdfe7f775c": []
+        }
+      },
+      "ambiguity_set_count": 1,
+      "ambiguity_set_size": 2,
+      "automatic_dispatches": 1,
+      "bundle_dispatch_count": 1,
+      "bundle_eligible": true,
+      "bundle_resources_reads": 1,
+      "case_bytes_sha256": "a69df1297da2cb47786db557eeec088c466c284db7d3e10ac5bf5f3409cd12ec",
+      "case_id": "d04",
+      "closure_scope": "AMBIGUITY_SET_COMPLETE",
+      "closure_state": {
+        "abstain_reason": null,
+        "ambiguity_set": {
+          "bundle_action_id": "a:resources:all-candidates:7a01869887aa",
+          "complete": true,
+          "covered_target_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "hypothesis_ids": [
+            "h:svc-73493424a2:cpu-saturation",
+            "h:svc-73493424a2:memory-leak",
+            "h:svc-ae0818b567:cpu-saturation",
+            "h:svc-ae0818b567:memory-leak"
+          ],
+          "individual_action_ids": [
+            "a:resources:svc-73493424a2",
+            "a:resources:svc-ae0818b567"
+          ],
+          "predicate_kinds": [
+            "RESOURCE_CPU_STRONG",
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "remaining_target_services": [],
+          "schema_version": "dta-v22.5.evidence-ambiguity-set.v1",
+          "set_id": "eas:resources:b7e8fdfdfe7f775c",
+          "set_sha256": "58285b9c751d3ec82f7f268b2646b75f0241e47958269dccb5d8b65b40df9545",
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ]
+        },
+        "attempted_action_ids": [
+          "a:resources:all-candidates:7a01869887aa"
+        ],
+        "closure_disposition": "INCIDENT_PREDICATE_YIELDED",
+        "closure_required": false,
+        "closure_satisfied": true,
+        "no_incident_withheld": true,
+        "predicate_yield": true,
+        "schema_version": "dta-v22.5.no-incident-set-closure-state.v1",
+        "scope": "AMBIGUITY_SET_COMPLETE",
+        "source_failure": false,
+        "state_sha256": "c344f882883a9052b5b0b361a364b6306600e44daa18d5f7855e6dc71c1f0133"
+      },
+      "combination": "BUNDLE_SET",
+      "contrastive_deltas": [
+        {
+          "action_id": "a:resources:all-candidates:7a01869887aa",
+          "contrast_rows": [
+            {
+              "cpu_baseline_ratio": 4.8,
+              "cpu_p95_percent": 96.0,
+              "memory_slope_bytes_per_second": 0.0,
+              "new_predicate_kinds": [
+                "RESOURCE_CPU_STRONG"
+              ],
+              "service": "svc-73493424a2"
+            },
+            {
+              "cpu_baseline_ratio": 1.0,
+              "cpu_p95_percent": 20.0,
+              "memory_slope_bytes_per_second": 0.0,
+              "new_predicate_kinds": [],
+              "service": "svc-ae0818b567"
+            }
+          ],
+          "delta_sha256": "7c9f0a211a8b86c0cc1ef5316f34df84fd578439e2b45ba749b01e7f1f5b5541",
+          "schema_version": "dta-v22.5.contrastive-resource-delta.v1"
+        }
+      ],
+      "first_pass_protocol_successes": 1,
+      "forgotten_preclosure_read_count": 0,
+      "individual_resources_reads": 0,
+      "input_tokens": 1175,
+      "latency_ms": 2053.897457983112,
+      "matched_clause_id": "cpu-saturation:resource-and-healthy",
+      "mechanism": "CPU_SATURATION",
+      "no_incident_exposed_after_partial_coverage": false,
+      "output_tokens": 24,
+      "post_repair_protocol_successes": 1,
+      "protocol_repairs": 0,
+      "provider_calls": 1,
+      "provider_terminal_selections": 1,
+      "read_events": [
+        {
+          "action_id": "a:resources:all-candidates:7a01869887aa",
+          "ambiguity_set_id": "eas:resources:b7e8fdfdfe7f775c",
+          "automatic": true,
+          "bundle": true,
+          "covered_targets_after": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [
+            "RESOURCE_CPU_STRONG"
+          ],
+          "ordinal": 1,
+          "outcome_class": "PREDICATE_YIELD",
+          "ranking_action_ids_at_dispatch": [
+            "a:resources:svc-ae0818b567",
+            "a:resources:svc-73493424a2",
+            "a:traces:svc-73493424a2",
+            "a:traces:svc-ae0818b567",
+            "a:changes:svc-ae0818b567",
+            "a:changes:svc-73493424a2",
+            "a:logs:svc-73493424a2",
+            "a:logs:svc-ae0818b567"
+          ],
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "targets": [
+            "svc-73493424a2",
+            "svc-ae0818b567"
+          ],
+          "weighted_cost": 2.0
+        }
+      ],
+      "resource_target_complete": true,
+      "root_service": "svc-73493424a2",
+      "safe_error_code": null,
+      "schema_version": "dta-v22.5.ambiguity-bundle-case-run.v1",
+      "set_complete_before_terminal": true,
+      "status": "VALID_TERMINAL",
+      "supporting_evidence_refs": [
+        "e:a:resources:all-candidates:7a01869887aa:0:b73601189497",
+        "e:a:runtime:all-candidates:7a01869887aa:0:f8f3ae681b65"
+      ],
+      "targets_covered_before_terminal": [
+        "svc-73493424a2",
+        "svc-ae0818b567"
+      ],
+      "terminal": "DIAGNOSED",
+      "total_tokens": 1199,
+      "transport_retry_count": 0,
+      "uncaught_exceptions": 0
+    },
+    {
+      "abstain_reason": null,
+      "action_granularity": "PER_TARGET",
+      "agent_writes": 0,
+      "ambiguity_coverage_ledger": {
+        "covered_targets_by_set": {
+          "eas:resources:3c2c2837447e0e51": [
+            "svc-9cb8e229ce"
+          ]
+        },
+        "events": [
+          {
+            "action_id": "a:resources:svc-9cb8e229ce",
+            "event_sha256": "3e05bf49a367a294ce3bf458451b7d6198f6a2e8843affddcadc66478f03a8b8",
+            "new_predicate_kinds": [],
+            "outcome_class": "NONEMPTY_NO_PREDICATE",
+            "recorded_at_read_ordinal": 1,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [
+              "eas:resources:3c2c2837447e0e51"
+            ],
+            "source": "RESOURCES",
+            "target_services": [
+              "svc-9cb8e229ce"
+            ]
+          }
+        ],
+        "ledger_sha256": "66d4b1f37cdda8f2aefb14d9761b467ffff9ab821f637eda14c043db8dbd8ac6",
+        "schema_version": "dta-v22.5.ambiguity-coverage-ledger.v1",
+        "source_failures_by_set": {
+          "eas:resources:3c2c2837447e0e51": []
+        }
+      },
+      "ambiguity_set_count": 1,
+      "ambiguity_set_size": 2,
+      "automatic_dispatches": 1,
+      "bundle_dispatch_count": 0,
+      "bundle_eligible": true,
+      "bundle_resources_reads": 0,
+      "case_bytes_sha256": "939347adff05120ceaf0d042e3bea0fb51a59c7edea95789d4063dc555f094e8",
+      "case_id": "d05",
+      "closure_scope": "ONE_TARGET_ATTEMPT",
+      "closure_state": {
+        "abstain_reason": null,
+        "ambiguity_set": {
+          "bundle_action_id": "a:resources:all-candidates:f054a5a69236",
+          "complete": false,
+          "covered_target_services": [
+            "svc-9cb8e229ce"
+          ],
+          "hypothesis_ids": [
+            "h:svc-9cb8e229ce:cpu-saturation",
+            "h:svc-9cb8e229ce:memory-leak",
+            "h:svc-cef9b6e38e:cpu-saturation",
+            "h:svc-cef9b6e38e:memory-leak"
+          ],
+          "individual_action_ids": [
+            "a:resources:svc-9cb8e229ce",
+            "a:resources:svc-cef9b6e38e"
+          ],
+          "predicate_kinds": [
+            "RESOURCE_CPU_STRONG",
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "remaining_target_services": [
+            "svc-cef9b6e38e"
+          ],
+          "schema_version": "dta-v22.5.evidence-ambiguity-set.v1",
+          "set_id": "eas:resources:3c2c2837447e0e51",
+          "set_sha256": "da1e9ad8efcf77cd3d2b4d12aa6c1b7da16d82e9ed72e0b9b9ebe74465333189",
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ]
+        },
+        "attempted_action_ids": [
+          "a:resources:svc-9cb8e229ce"
+        ],
+        "closure_disposition": "COMPLETE_NORMAL",
+        "closure_required": false,
+        "closure_satisfied": true,
+        "no_incident_withheld": false,
+        "predicate_yield": false,
+        "schema_version": "dta-v22.5.no-incident-set-closure-state.v1",
+        "scope": "ONE_TARGET_ATTEMPT",
+        "source_failure": false,
+        "state_sha256": "cc536a3210fbbcc9ae2ddefd576c8722a550609e91cf06740e882af906c01e09"
+      },
+      "combination": "TARGET_ONE",
+      "contrastive_deltas": [],
+      "first_pass_protocol_successes": 1,
+      "forgotten_preclosure_read_count": 0,
+      "individual_resources_reads": 1,
+      "input_tokens": 1003,
+      "latency_ms": 1955.755874980241,
+      "matched_clause_id": null,
+      "mechanism": null,
+      "no_incident_exposed_after_partial_coverage": true,
+      "output_tokens": 24,
+      "post_repair_protocol_successes": 1,
+      "protocol_repairs": 0,
+      "provider_calls": 1,
+      "provider_terminal_selections": 1,
+      "read_events": [
+        {
+          "action_id": "a:resources:svc-9cb8e229ce",
+          "ambiguity_set_id": "eas:resources:3c2c2837447e0e51",
+          "automatic": true,
+          "bundle": false,
+          "covered_targets_after": [
+            "svc-9cb8e229ce"
+          ],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [],
+          "ordinal": 1,
+          "outcome_class": "NONEMPTY_NO_PREDICATE",
+          "ranking_action_ids_at_dispatch": [
+            "a:resources:svc-9cb8e229ce",
+            "a:resources:svc-cef9b6e38e",
+            "a:traces:svc-cef9b6e38e",
+            "a:traces:svc-9cb8e229ce",
+            "a:changes:svc-9cb8e229ce",
+            "a:changes:svc-cef9b6e38e",
+            "a:logs:svc-cef9b6e38e",
+            "a:logs:svc-9cb8e229ce"
+          ],
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "targets": [
+            "svc-9cb8e229ce"
+          ],
+          "weighted_cost": 1.5
+        }
+      ],
+      "resource_target_complete": true,
+      "root_service": null,
+      "safe_error_code": null,
+      "schema_version": "dta-v22.5.ambiguity-bundle-case-run.v1",
+      "set_complete_before_terminal": false,
+      "status": "VALID_TERMINAL",
+      "supporting_evidence_refs": [],
+      "targets_covered_before_terminal": [
+        "svc-9cb8e229ce"
+      ],
+      "terminal": "NO_INCIDENT",
+      "total_tokens": 1027,
+      "transport_retry_count": 0,
+      "uncaught_exceptions": 0
+    },
+    {
+      "abstain_reason": null,
+      "action_granularity": "PER_TARGET",
+      "agent_writes": 0,
+      "ambiguity_coverage_ledger": {
+        "covered_targets_by_set": {
+          "eas:resources:3c2c2837447e0e51": [
+            "svc-9cb8e229ce"
+          ]
+        },
+        "events": [
+          {
+            "action_id": "a:resources:svc-9cb8e229ce",
+            "event_sha256": "ce8e3e2a1aaa530246196ce8e531eeadc21ac4c2515e95b5995f7ed774714420",
+            "new_predicate_kinds": [
+              "RESOURCE_MEMORY_GROWTH_STRONG"
+            ],
+            "outcome_class": "PREDICATE_YIELD",
+            "recorded_at_read_ordinal": 1,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [
+              "eas:resources:3c2c2837447e0e51"
+            ],
+            "source": "RESOURCES",
+            "target_services": [
+              "svc-9cb8e229ce"
+            ]
+          }
+        ],
+        "ledger_sha256": "e6f860140d66a1c44f71482a33a2919e8dd54aacaa2bfcdfe934c8071e5faf33",
+        "schema_version": "dta-v22.5.ambiguity-coverage-ledger.v1",
+        "source_failures_by_set": {
+          "eas:resources:3c2c2837447e0e51": []
+        }
+      },
+      "ambiguity_set_count": 1,
+      "ambiguity_set_size": 2,
+      "automatic_dispatches": 1,
+      "bundle_dispatch_count": 0,
+      "bundle_eligible": true,
+      "bundle_resources_reads": 0,
+      "case_bytes_sha256": "f6b3949cb3c39bf43896f1871fc46a6b2916a60a5b2584930a15a0968472efad",
+      "case_id": "d06",
+      "closure_scope": "AMBIGUITY_SET_COMPLETE",
+      "closure_state": {
+        "abstain_reason": null,
+        "ambiguity_set": {
+          "bundle_action_id": "a:resources:all-candidates:f054a5a69236",
+          "complete": false,
+          "covered_target_services": [
+            "svc-9cb8e229ce"
+          ],
+          "hypothesis_ids": [
+            "h:svc-9cb8e229ce:cpu-saturation",
+            "h:svc-9cb8e229ce:memory-leak",
+            "h:svc-cef9b6e38e:cpu-saturation",
+            "h:svc-cef9b6e38e:memory-leak"
+          ],
+          "individual_action_ids": [
+            "a:resources:svc-9cb8e229ce",
+            "a:resources:svc-cef9b6e38e"
+          ],
+          "predicate_kinds": [
+            "RESOURCE_CPU_STRONG",
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "remaining_target_services": [
+            "svc-cef9b6e38e"
+          ],
+          "schema_version": "dta-v22.5.evidence-ambiguity-set.v1",
+          "set_id": "eas:resources:3c2c2837447e0e51",
+          "set_sha256": "da1e9ad8efcf77cd3d2b4d12aa6c1b7da16d82e9ed72e0b9b9ebe74465333189",
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-9cb8e229ce",
+            "svc-cef9b6e38e"
+          ]
+        },
+        "attempted_action_ids": [
+          "a:resources:svc-9cb8e229ce"
+        ],
+        "closure_disposition": "INCIDENT_PREDICATE_YIELDED",
+        "closure_required": false,
+        "closure_satisfied": true,
+        "no_incident_withheld": true,
+        "predicate_yield": true,
+        "schema_version": "dta-v22.5.no-incident-set-closure-state.v1",
+        "scope": "AMBIGUITY_SET_COMPLETE",
+        "source_failure": false,
+        "state_sha256": "254d69d19e3a4c108d1cc7b45b8f31bb52488c9fa740dbca4dc63d7bd1cdec52"
+      },
+      "combination": "TARGET_SET",
+      "contrastive_deltas": [],
+      "first_pass_protocol_successes": 1,
+      "forgotten_preclosure_read_count": 0,
+      "individual_resources_reads": 1,
+      "input_tokens": 1033,
+      "latency_ms": 1745.1799999980722,
+      "matched_clause_id": "memory-leak:growth-and-healthy",
+      "mechanism": "MEMORY_LEAK",
+      "no_incident_exposed_after_partial_coverage": false,
+      "output_tokens": 24,
+      "post_repair_protocol_successes": 1,
+      "protocol_repairs": 0,
+      "provider_calls": 1,
+      "provider_terminal_selections": 1,
+      "read_events": [
+        {
+          "action_id": "a:resources:svc-9cb8e229ce",
+          "ambiguity_set_id": "eas:resources:3c2c2837447e0e51",
+          "automatic": true,
+          "bundle": false,
+          "covered_targets_after": [
+            "svc-9cb8e229ce"
+          ],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "ordinal": 1,
+          "outcome_class": "PREDICATE_YIELD",
+          "ranking_action_ids_at_dispatch": [
+            "a:resources:svc-9cb8e229ce",
+            "a:resources:svc-cef9b6e38e",
+            "a:traces:svc-cef9b6e38e",
+            "a:traces:svc-9cb8e229ce",
+            "a:changes:svc-9cb8e229ce",
+            "a:changes:svc-cef9b6e38e",
+            "a:logs:svc-cef9b6e38e",
+            "a:logs:svc-9cb8e229ce"
+          ],
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "targets": [
+            "svc-9cb8e229ce"
+          ],
+          "weighted_cost": 1.5
+        }
+      ],
+      "resource_target_complete": true,
+      "root_service": "svc-9cb8e229ce",
+      "safe_error_code": null,
+      "schema_version": "dta-v22.5.ambiguity-bundle-case-run.v1",
+      "set_complete_before_terminal": false,
+      "status": "VALID_TERMINAL",
+      "supporting_evidence_refs": [
+        "e:a:resources:svc-9cb8e229ce:0:d7cd8d3863de",
+        "e:a:runtime:all-candidates:f054a5a69236:0:8b83f66bd2b7"
+      ],
+      "targets_covered_before_terminal": [
+        "svc-9cb8e229ce"
+      ],
+      "terminal": "DIAGNOSED",
+      "total_tokens": 1057,
+      "transport_retry_count": 0,
+      "uncaught_exceptions": 0
+    },
+    {
+      "abstain_reason": null,
+      "action_granularity": "CONTRASTIVE_BUNDLE",
+      "agent_writes": 0,
+      "ambiguity_coverage_ledger": {
+        "covered_targets_by_set": {
+          "eas:resources:33f9879e89231d52": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ]
+        },
+        "events": [
+          {
+            "action_id": "a:resources:all-candidates:71cb07fc7518",
+            "event_sha256": "15884c93e5003e9d88bcd4bc5236d22effdc45ed17035d949c8a4435ab2ab9b3",
+            "new_predicate_kinds": [
+              "RESOURCE_MEMORY_GROWTH_STRONG"
+            ],
+            "outcome_class": "PREDICATE_YIELD",
+            "recorded_at_read_ordinal": 1,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [
+              "eas:resources:33f9879e89231d52"
+            ],
+            "source": "RESOURCES",
+            "target_services": [
+              "svc-64e9ee5a10",
+              "svc-8f9c9dd63c"
+            ]
+          }
+        ],
+        "ledger_sha256": "03e6aa05f0f5329ce773e35e7e19aecbb05d4179f4118a9e83ee40957b8cd409",
+        "schema_version": "dta-v22.5.ambiguity-coverage-ledger.v1",
+        "source_failures_by_set": {
+          "eas:resources:33f9879e89231d52": []
+        }
+      },
+      "ambiguity_set_count": 1,
+      "ambiguity_set_size": 2,
+      "automatic_dispatches": 1,
+      "bundle_dispatch_count": 1,
+      "bundle_eligible": true,
+      "bundle_resources_reads": 1,
+      "case_bytes_sha256": "6e9b9c37364e36af308232eccdf587ee1d115b757944fd0f9e0433ceb32e3b77",
+      "case_id": "d07",
+      "closure_scope": "ONE_TARGET_ATTEMPT",
+      "closure_state": {
+        "abstain_reason": null,
+        "ambiguity_set": {
+          "bundle_action_id": "a:resources:all-candidates:71cb07fc7518",
+          "complete": true,
+          "covered_target_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "hypothesis_ids": [
+            "h:svc-64e9ee5a10:cpu-saturation",
+            "h:svc-64e9ee5a10:memory-leak",
+            "h:svc-8f9c9dd63c:cpu-saturation",
+            "h:svc-8f9c9dd63c:memory-leak"
+          ],
+          "individual_action_ids": [
+            "a:resources:svc-64e9ee5a10",
+            "a:resources:svc-8f9c9dd63c"
+          ],
+          "predicate_kinds": [
+            "RESOURCE_CPU_STRONG",
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "remaining_target_services": [],
+          "schema_version": "dta-v22.5.evidence-ambiguity-set.v1",
+          "set_id": "eas:resources:33f9879e89231d52",
+          "set_sha256": "627fc802e0a437bb7cea4251bf404f05a60a707040528e86691d1e99db67b68e",
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ]
+        },
+        "attempted_action_ids": [
+          "a:resources:all-candidates:71cb07fc7518"
+        ],
+        "closure_disposition": "INCIDENT_PREDICATE_YIELDED",
+        "closure_required": false,
+        "closure_satisfied": true,
+        "no_incident_withheld": true,
+        "predicate_yield": true,
+        "schema_version": "dta-v22.5.no-incident-set-closure-state.v1",
+        "scope": "ONE_TARGET_ATTEMPT",
+        "source_failure": false,
+        "state_sha256": "00755db4c414e6a3250033359f9e3ee777601d7749b15d7bc9cbc0e0bbe59109"
+      },
+      "combination": "BUNDLE_ONE",
+      "contrastive_deltas": [
+        {
+          "action_id": "a:resources:all-candidates:71cb07fc7518",
+          "contrast_rows": [
+            {
+              "cpu_baseline_ratio": 1.0,
+              "cpu_p95_percent": 20.0,
+              "memory_slope_bytes_per_second": 0.0,
+              "new_predicate_kinds": [],
+              "service": "svc-64e9ee5a10"
+            },
+            {
+              "cpu_baseline_ratio": 1.0,
+              "cpu_p95_percent": 20.0,
+              "memory_slope_bytes_per_second": 2000000.0,
+              "new_predicate_kinds": [
+                "RESOURCE_MEMORY_GROWTH_STRONG"
+              ],
+              "service": "svc-8f9c9dd63c"
+            }
+          ],
+          "delta_sha256": "41431c2b19db30e6ff796224ddacaec88e2677ef86990b6cc0749a3ed6789b09",
+          "schema_version": "dta-v22.5.contrastive-resource-delta.v1"
+        }
+      ],
+      "first_pass_protocol_successes": 1,
+      "forgotten_preclosure_read_count": 0,
+      "individual_resources_reads": 0,
+      "input_tokens": 1221,
+      "latency_ms": 1743.7102909898385,
+      "matched_clause_id": "memory-leak:growth-and-healthy",
+      "mechanism": "MEMORY_LEAK",
+      "no_incident_exposed_after_partial_coverage": false,
+      "output_tokens": 24,
+      "post_repair_protocol_successes": 1,
+      "protocol_repairs": 0,
+      "provider_calls": 1,
+      "provider_terminal_selections": 1,
+      "read_events": [
+        {
+          "action_id": "a:resources:all-candidates:71cb07fc7518",
+          "ambiguity_set_id": "eas:resources:33f9879e89231d52",
+          "automatic": true,
+          "bundle": true,
+          "covered_targets_after": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "ordinal": 1,
+          "outcome_class": "PREDICATE_YIELD",
+          "ranking_action_ids_at_dispatch": [
+            "a:resources:svc-8f9c9dd63c",
+            "a:resources:svc-64e9ee5a10",
+            "a:traces:svc-8f9c9dd63c",
+            "a:traces:svc-64e9ee5a10",
+            "a:changes:svc-64e9ee5a10",
+            "a:changes:svc-8f9c9dd63c",
+            "a:logs:svc-8f9c9dd63c",
+            "a:logs:svc-64e9ee5a10"
+          ],
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "targets": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "weighted_cost": 2.0
+        }
+      ],
+      "resource_target_complete": true,
+      "root_service": "svc-8f9c9dd63c",
+      "safe_error_code": null,
+      "schema_version": "dta-v22.5.ambiguity-bundle-case-run.v1",
+      "set_complete_before_terminal": true,
+      "status": "VALID_TERMINAL",
+      "supporting_evidence_refs": [
+        "e:a:resources:all-candidates:71cb07fc7518:1:fd86e5d0ab98",
+        "e:a:runtime:all-candidates:71cb07fc7518:1:2029b532d6e3"
+      ],
+      "targets_covered_before_terminal": [
+        "svc-64e9ee5a10",
+        "svc-8f9c9dd63c"
+      ],
+      "terminal": "DIAGNOSED",
+      "total_tokens": 1245,
+      "transport_retry_count": 0,
+      "uncaught_exceptions": 0
+    },
+    {
+      "abstain_reason": null,
+      "action_granularity": "CONTRASTIVE_BUNDLE",
+      "agent_writes": 0,
+      "ambiguity_coverage_ledger": {
+        "covered_targets_by_set": {
+          "eas:resources:33f9879e89231d52": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ]
+        },
+        "events": [
+          {
+            "action_id": "a:resources:all-candidates:71cb07fc7518",
+            "event_sha256": "15884c93e5003e9d88bcd4bc5236d22effdc45ed17035d949c8a4435ab2ab9b3",
+            "new_predicate_kinds": [
+              "RESOURCE_MEMORY_GROWTH_STRONG"
+            ],
+            "outcome_class": "PREDICATE_YIELD",
+            "recorded_at_read_ordinal": 1,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [
+              "eas:resources:33f9879e89231d52"
+            ],
+            "source": "RESOURCES",
+            "target_services": [
+              "svc-64e9ee5a10",
+              "svc-8f9c9dd63c"
+            ]
+          }
+        ],
+        "ledger_sha256": "03e6aa05f0f5329ce773e35e7e19aecbb05d4179f4118a9e83ee40957b8cd409",
+        "schema_version": "dta-v22.5.ambiguity-coverage-ledger.v1",
+        "source_failures_by_set": {
+          "eas:resources:33f9879e89231d52": []
+        }
+      },
+      "ambiguity_set_count": 1,
+      "ambiguity_set_size": 2,
+      "automatic_dispatches": 1,
+      "bundle_dispatch_count": 1,
+      "bundle_eligible": true,
+      "bundle_resources_reads": 1,
+      "case_bytes_sha256": "8940505f65814ee64594331db60101bc1395fd5449208cb14d0f59cf3713662e",
+      "case_id": "d08",
+      "closure_scope": "AMBIGUITY_SET_COMPLETE",
+      "closure_state": {
+        "abstain_reason": null,
+        "ambiguity_set": {
+          "bundle_action_id": "a:resources:all-candidates:71cb07fc7518",
+          "complete": true,
+          "covered_target_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "hypothesis_ids": [
+            "h:svc-64e9ee5a10:cpu-saturation",
+            "h:svc-64e9ee5a10:memory-leak",
+            "h:svc-8f9c9dd63c:cpu-saturation",
+            "h:svc-8f9c9dd63c:memory-leak"
+          ],
+          "individual_action_ids": [
+            "a:resources:svc-64e9ee5a10",
+            "a:resources:svc-8f9c9dd63c"
+          ],
+          "predicate_kinds": [
+            "RESOURCE_CPU_STRONG",
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "remaining_target_services": [],
+          "schema_version": "dta-v22.5.evidence-ambiguity-set.v1",
+          "set_id": "eas:resources:33f9879e89231d52",
+          "set_sha256": "627fc802e0a437bb7cea4251bf404f05a60a707040528e86691d1e99db67b68e",
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ]
+        },
+        "attempted_action_ids": [
+          "a:resources:all-candidates:71cb07fc7518"
+        ],
+        "closure_disposition": "INCIDENT_PREDICATE_YIELDED",
+        "closure_required": false,
+        "closure_satisfied": true,
+        "no_incident_withheld": true,
+        "predicate_yield": true,
+        "schema_version": "dta-v22.5.no-incident-set-closure-state.v1",
+        "scope": "AMBIGUITY_SET_COMPLETE",
+        "source_failure": false,
+        "state_sha256": "e0ddd31e45b4f579e05bf3626b4104135abbead68b0517e4f423a5d86a803e35"
+      },
+      "combination": "BUNDLE_SET",
+      "contrastive_deltas": [
+        {
+          "action_id": "a:resources:all-candidates:71cb07fc7518",
+          "contrast_rows": [
+            {
+              "cpu_baseline_ratio": 1.0,
+              "cpu_p95_percent": 20.0,
+              "memory_slope_bytes_per_second": 2000000.0,
+              "new_predicate_kinds": [
+                "RESOURCE_MEMORY_GROWTH_STRONG"
+              ],
+              "service": "svc-64e9ee5a10"
+            },
+            {
+              "cpu_baseline_ratio": 1.0,
+              "cpu_p95_percent": 20.0,
+              "memory_slope_bytes_per_second": 0.0,
+              "new_predicate_kinds": [],
+              "service": "svc-8f9c9dd63c"
+            }
+          ],
+          "delta_sha256": "544ef8d2b0309d454c83aca1dad4aca9fa1fc21791172a91be4b3fe66dd1af20",
+          "schema_version": "dta-v22.5.contrastive-resource-delta.v1"
+        }
+      ],
+      "first_pass_protocol_successes": 1,
+      "forgotten_preclosure_read_count": 0,
+      "individual_resources_reads": 0,
+      "input_tokens": 1224,
+      "latency_ms": 2524.4908330205362,
+      "matched_clause_id": "memory-leak:growth-and-healthy",
+      "mechanism": "MEMORY_LEAK",
+      "no_incident_exposed_after_partial_coverage": false,
+      "output_tokens": 24,
+      "post_repair_protocol_successes": 1,
+      "protocol_repairs": 0,
+      "provider_calls": 1,
+      "provider_terminal_selections": 1,
+      "read_events": [
+        {
+          "action_id": "a:resources:all-candidates:71cb07fc7518",
+          "ambiguity_set_id": "eas:resources:33f9879e89231d52",
+          "automatic": true,
+          "bundle": true,
+          "covered_targets_after": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "ordinal": 1,
+          "outcome_class": "PREDICATE_YIELD",
+          "ranking_action_ids_at_dispatch": [
+            "a:resources:svc-8f9c9dd63c",
+            "a:resources:svc-64e9ee5a10",
+            "a:traces:svc-8f9c9dd63c",
+            "a:traces:svc-64e9ee5a10",
+            "a:changes:svc-64e9ee5a10",
+            "a:changes:svc-8f9c9dd63c",
+            "a:logs:svc-8f9c9dd63c",
+            "a:logs:svc-64e9ee5a10"
+          ],
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "targets": [
+            "svc-64e9ee5a10",
+            "svc-8f9c9dd63c"
+          ],
+          "weighted_cost": 2.0
+        }
+      ],
+      "resource_target_complete": true,
+      "root_service": "svc-64e9ee5a10",
+      "safe_error_code": null,
+      "schema_version": "dta-v22.5.ambiguity-bundle-case-run.v1",
+      "set_complete_before_terminal": true,
+      "status": "VALID_TERMINAL",
+      "supporting_evidence_refs": [
+        "e:a:resources:all-candidates:71cb07fc7518:0:913099bc8638",
+        "e:a:runtime:all-candidates:71cb07fc7518:0:d5fe9016aad5"
+      ],
+      "targets_covered_before_terminal": [
+        "svc-64e9ee5a10",
+        "svc-8f9c9dd63c"
+      ],
+      "terminal": "DIAGNOSED",
+      "total_tokens": 1248,
+      "transport_retry_count": 0,
+      "uncaught_exceptions": 0
+    },
+    {
+      "abstain_reason": null,
+      "action_granularity": "PER_TARGET",
+      "agent_writes": 0,
+      "ambiguity_coverage_ledger": {
+        "covered_targets_by_set": {
+          "eas:resources:58191afb88f7b686": [
+            "svc-4a981330c7",
+            "svc-d84cb4b953"
+          ]
+        },
+        "events": [
+          {
+            "action_id": "a:resources:svc-d84cb4b953",
+            "event_sha256": "df844f6a6e4a08f89e2ec10f25f7222f922ce51235635f9523a61737e755a7ff",
+            "new_predicate_kinds": [],
+            "outcome_class": "NONEMPTY_NO_PREDICATE",
+            "recorded_at_read_ordinal": 1,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [
+              "eas:resources:58191afb88f7b686"
+            ],
+            "source": "RESOURCES",
+            "target_services": [
+              "svc-d84cb4b953"
+            ]
+          },
+          {
+            "action_id": "a:resources:svc-4a981330c7",
+            "event_sha256": "518ebd0c0ed2b2d058687918931fae6d1bfa1fc68a29c36ac219b7187610e81d",
+            "new_predicate_kinds": [],
+            "outcome_class": "NONEMPTY_NO_PREDICATE",
+            "recorded_at_read_ordinal": 2,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [
+              "eas:resources:58191afb88f7b686"
+            ],
+            "source": "RESOURCES",
+            "target_services": [
+              "svc-4a981330c7"
+            ]
+          }
+        ],
+        "ledger_sha256": "1a65bac3555027efcfc1f64dc601a8fadabdd7ded7c9681be0915f0c7dde6ce6",
+        "schema_version": "dta-v22.5.ambiguity-coverage-ledger.v1",
+        "source_failures_by_set": {
+          "eas:resources:58191afb88f7b686": []
+        }
+      },
+      "ambiguity_set_count": 1,
+      "ambiguity_set_size": 2,
+      "automatic_dispatches": 2,
+      "bundle_dispatch_count": 0,
+      "bundle_eligible": true,
+      "bundle_resources_reads": 0,
+      "case_bytes_sha256": "221a877d51bffea2ba23282571673754fc85c4084f7da78995ff1268a0e0387a",
+      "case_id": "d09",
+      "closure_scope": "AMBIGUITY_SET_COMPLETE",
+      "closure_state": {
+        "abstain_reason": null,
+        "ambiguity_set": {
+          "bundle_action_id": "a:resources:all-candidates:c86a086d6cd1",
+          "complete": true,
+          "covered_target_services": [
+            "svc-4a981330c7",
+            "svc-d84cb4b953"
+          ],
+          "hypothesis_ids": [
+            "h:svc-4a981330c7:cpu-saturation",
+            "h:svc-4a981330c7:memory-leak",
+            "h:svc-d84cb4b953:cpu-saturation",
+            "h:svc-d84cb4b953:memory-leak"
+          ],
+          "individual_action_ids": [
+            "a:resources:svc-4a981330c7",
+            "a:resources:svc-d84cb4b953"
+          ],
+          "predicate_kinds": [
+            "RESOURCE_CPU_STRONG",
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "remaining_target_services": [],
+          "schema_version": "dta-v22.5.evidence-ambiguity-set.v1",
+          "set_id": "eas:resources:58191afb88f7b686",
+          "set_sha256": "1fcee1a1bee5d0e9ef7a03f1230476ce204070b33286760c3f4f0d563092361f",
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-4a981330c7",
+            "svc-d84cb4b953"
+          ]
+        },
+        "attempted_action_ids": [
+          "a:resources:svc-4a981330c7",
+          "a:resources:svc-d84cb4b953"
+        ],
+        "closure_disposition": "COMPLETE_NORMAL",
+        "closure_required": false,
+        "closure_satisfied": true,
+        "no_incident_withheld": false,
+        "predicate_yield": false,
+        "schema_version": "dta-v22.5.no-incident-set-closure-state.v1",
+        "scope": "AMBIGUITY_SET_COMPLETE",
+        "source_failure": false,
+        "state_sha256": "69156b0a2d2b86cc677d50f2969bba9bc7e2d2b0aec0b50d78613a028362d029"
+      },
+      "combination": "TARGET_SET",
+      "contrastive_deltas": [],
+      "first_pass_protocol_successes": 1,
+      "forgotten_preclosure_read_count": 0,
+      "individual_resources_reads": 2,
+      "input_tokens": 988,
+      "latency_ms": 2151.590749999741,
+      "matched_clause_id": null,
+      "mechanism": null,
+      "no_incident_exposed_after_partial_coverage": false,
+      "output_tokens": 24,
+      "post_repair_protocol_successes": 1,
+      "protocol_repairs": 0,
+      "provider_calls": 1,
+      "provider_terminal_selections": 1,
+      "read_events": [
+        {
+          "action_id": "a:resources:svc-d84cb4b953",
+          "ambiguity_set_id": "eas:resources:58191afb88f7b686",
+          "automatic": true,
+          "bundle": false,
+          "covered_targets_after": [
+            "svc-d84cb4b953"
+          ],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [],
+          "ordinal": 1,
+          "outcome_class": "NONEMPTY_NO_PREDICATE",
+          "ranking_action_ids_at_dispatch": [
+            "a:resources:svc-d84cb4b953",
+            "a:resources:svc-4a981330c7",
+            "a:traces:svc-4a981330c7",
+            "a:traces:svc-d84cb4b953",
+            "a:changes:svc-4a981330c7",
+            "a:changes:svc-d84cb4b953",
+            "a:logs:svc-4a981330c7",
+            "a:logs:svc-d84cb4b953"
+          ],
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "targets": [
+            "svc-d84cb4b953"
+          ],
+          "weighted_cost": 1.5
+        },
+        {
+          "action_id": "a:resources:svc-4a981330c7",
+          "ambiguity_set_id": "eas:resources:58191afb88f7b686",
+          "automatic": true,
+          "bundle": false,
+          "covered_targets_after": [
+            "svc-4a981330c7",
+            "svc-d84cb4b953"
+          ],
+          "covered_targets_before": [
+            "svc-d84cb4b953"
+          ],
+          "new_predicate_kinds": [],
+          "ordinal": 2,
+          "outcome_class": "NONEMPTY_NO_PREDICATE",
+          "ranking_action_ids_at_dispatch": [
+            "a:resources:svc-4a981330c7",
+            "a:traces:svc-4a981330c7",
+            "a:traces:svc-d84cb4b953",
+            "a:changes:svc-4a981330c7",
+            "a:changes:svc-d84cb4b953",
+            "a:logs:svc-4a981330c7",
+            "a:logs:svc-d84cb4b953"
+          ],
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "targets": [
+            "svc-4a981330c7"
+          ],
+          "weighted_cost": 1.5
+        }
+      ],
+      "resource_target_complete": true,
+      "root_service": null,
+      "safe_error_code": null,
+      "schema_version": "dta-v22.5.ambiguity-bundle-case-run.v1",
+      "set_complete_before_terminal": true,
+      "status": "VALID_TERMINAL",
+      "supporting_evidence_refs": [],
+      "targets_covered_before_terminal": [
+        "svc-4a981330c7",
+        "svc-d84cb4b953"
+      ],
+      "terminal": "NO_INCIDENT",
+      "total_tokens": 1012,
+      "transport_retry_count": 0,
+      "uncaught_exceptions": 0
+    },
+    {
+      "abstain_reason": null,
+      "action_granularity": "CONTRASTIVE_BUNDLE",
+      "agent_writes": 0,
+      "ambiguity_coverage_ledger": {
+        "covered_targets_by_set": {
+          "eas:resources:94581fe2e503e9e1": [
+            "svc-0ced49f03e",
+            "svc-31dc98026e"
+          ]
+        },
+        "events": [
+          {
+            "action_id": "a:resources:all-candidates:f4f35b259920",
+            "event_sha256": "9e1787c7b872c8989830ba0b2fede1d11a5c329c86a0f543cadcaf4231224450",
+            "new_predicate_kinds": [],
+            "outcome_class": "NONEMPTY_NO_PREDICATE",
+            "recorded_at_read_ordinal": 1,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [
+              "eas:resources:94581fe2e503e9e1"
+            ],
+            "source": "RESOURCES",
+            "target_services": [
+              "svc-0ced49f03e",
+              "svc-31dc98026e"
+            ]
+          }
+        ],
+        "ledger_sha256": "2294f1fe4704812b9e9726091ef4e5ee87edf8e59ef29b9abda8cf423ea7da1a",
+        "schema_version": "dta-v22.5.ambiguity-coverage-ledger.v1",
+        "source_failures_by_set": {
+          "eas:resources:94581fe2e503e9e1": []
+        }
+      },
+      "ambiguity_set_count": 1,
+      "ambiguity_set_size": 2,
+      "automatic_dispatches": 1,
+      "bundle_dispatch_count": 1,
+      "bundle_eligible": true,
+      "bundle_resources_reads": 1,
+      "case_bytes_sha256": "e66329fbfc8870cc45b8a31588eaf5ecf8c518b779b1c4a84ec938102eabd245",
+      "case_id": "d10",
+      "closure_scope": "AMBIGUITY_SET_COMPLETE",
+      "closure_state": {
+        "abstain_reason": null,
+        "ambiguity_set": {
+          "bundle_action_id": "a:resources:all-candidates:f4f35b259920",
+          "complete": true,
+          "covered_target_services": [
+            "svc-0ced49f03e",
+            "svc-31dc98026e"
+          ],
+          "hypothesis_ids": [
+            "h:svc-0ced49f03e:cpu-saturation",
+            "h:svc-0ced49f03e:memory-leak",
+            "h:svc-31dc98026e:cpu-saturation",
+            "h:svc-31dc98026e:memory-leak"
+          ],
+          "individual_action_ids": [
+            "a:resources:svc-0ced49f03e",
+            "a:resources:svc-31dc98026e"
+          ],
+          "predicate_kinds": [
+            "RESOURCE_CPU_STRONG",
+            "RESOURCE_MEMORY_GROWTH_STRONG"
+          ],
+          "remaining_target_services": [],
+          "schema_version": "dta-v22.5.evidence-ambiguity-set.v1",
+          "set_id": "eas:resources:94581fe2e503e9e1",
+          "set_sha256": "10b964fba95227205a8057f2a37ff54800c809f7de0bc761a33d768791872288",
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-0ced49f03e",
+            "svc-31dc98026e"
+          ]
+        },
+        "attempted_action_ids": [
+          "a:resources:all-candidates:f4f35b259920"
+        ],
+        "closure_disposition": "COMPLETE_NORMAL",
+        "closure_required": false,
+        "closure_satisfied": true,
+        "no_incident_withheld": false,
+        "predicate_yield": false,
+        "schema_version": "dta-v22.5.no-incident-set-closure-state.v1",
+        "scope": "AMBIGUITY_SET_COMPLETE",
+        "source_failure": false,
+        "state_sha256": "cc4357895219290dc22eb36c62401e8a4a05ec11544b791e6ef099792fce4ca8"
+      },
+      "combination": "BUNDLE_SET",
+      "contrastive_deltas": [
+        {
+          "action_id": "a:resources:all-candidates:f4f35b259920",
+          "contrast_rows": [
+            {
+              "cpu_baseline_ratio": 1.0,
+              "cpu_p95_percent": 20.0,
+              "memory_slope_bytes_per_second": 0.0,
+              "new_predicate_kinds": [],
+              "service": "svc-0ced49f03e"
+            },
+            {
+              "cpu_baseline_ratio": 1.0,
+              "cpu_p95_percent": 20.0,
+              "memory_slope_bytes_per_second": 0.0,
+              "new_predicate_kinds": [],
+              "service": "svc-31dc98026e"
+            }
+          ],
+          "delta_sha256": "529b6da2b6838eb503c457b048bb1c2c552c8434cd4a6523fe738e55a9b5d7ca",
+          "schema_version": "dta-v22.5.contrastive-resource-delta.v1"
+        }
+      ],
+      "first_pass_protocol_successes": 1,
+      "forgotten_preclosure_read_count": 0,
+      "individual_resources_reads": 0,
+      "input_tokens": 1141,
+      "latency_ms": 1858.6472919851076,
+      "matched_clause_id": null,
+      "mechanism": null,
+      "no_incident_exposed_after_partial_coverage": false,
+      "output_tokens": 24,
+      "post_repair_protocol_successes": 1,
+      "protocol_repairs": 0,
+      "provider_calls": 1,
+      "provider_terminal_selections": 1,
+      "read_events": [
+        {
+          "action_id": "a:resources:all-candidates:f4f35b259920",
+          "ambiguity_set_id": "eas:resources:94581fe2e503e9e1",
+          "automatic": true,
+          "bundle": true,
+          "covered_targets_after": [
+            "svc-0ced49f03e",
+            "svc-31dc98026e"
+          ],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [],
+          "ordinal": 1,
+          "outcome_class": "NONEMPTY_NO_PREDICATE",
+          "ranking_action_ids_at_dispatch": [
+            "a:resources:svc-31dc98026e",
+            "a:resources:svc-0ced49f03e",
+            "a:traces:svc-31dc98026e",
+            "a:traces:svc-0ced49f03e",
+            "a:changes:svc-0ced49f03e",
+            "a:changes:svc-31dc98026e",
+            "a:logs:svc-0ced49f03e",
+            "a:logs:svc-31dc98026e"
+          ],
+          "source": "RESOURCES",
+          "status": "SUCCESS_NONEMPTY",
+          "targets": [
+            "svc-0ced49f03e",
+            "svc-31dc98026e"
+          ],
+          "weighted_cost": 2.0
+        }
+      ],
+      "resource_target_complete": true,
+      "root_service": null,
+      "safe_error_code": null,
+      "schema_version": "dta-v22.5.ambiguity-bundle-case-run.v1",
+      "set_complete_before_terminal": true,
+      "status": "VALID_TERMINAL",
+      "supporting_evidence_refs": [],
+      "targets_covered_before_terminal": [
+        "svc-0ced49f03e",
+        "svc-31dc98026e"
+      ],
+      "terminal": "NO_INCIDENT",
+      "total_tokens": 1165,
+      "transport_retry_count": 0,
+      "uncaught_exceptions": 0
+    },
+    {
+      "abstain_reason": null,
+      "action_granularity": "PER_TARGET",
+      "agent_writes": 0,
+      "ambiguity_coverage_ledger": {
+        "covered_targets_by_set": {},
+        "events": [
+          {
+            "action_id": "a:resources:svc-280f8547cc",
+            "event_sha256": "5216be73218c1ae54169e20da5449e018534ccd315475c0a37735057ed2de9fc",
+            "new_predicate_kinds": [],
+            "outcome_class": "EMPTY_CAPTURED",
+            "recorded_at_read_ordinal": 1,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [],
+            "source": "RESOURCES",
+            "target_services": [
+              "svc-280f8547cc"
+            ]
+          },
+          {
+            "action_id": "a:resources:svc-3c9097a3cd",
+            "event_sha256": "890bde65ca7c5c2eaa9e26c5d2166be4ae675e324b3e634558733768d4cd08c9",
+            "new_predicate_kinds": [],
+            "outcome_class": "EMPTY_CAPTURED",
+            "recorded_at_read_ordinal": 2,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [],
+            "source": "RESOURCES",
+            "target_services": [
+              "svc-3c9097a3cd"
+            ]
+          }
+        ],
+        "ledger_sha256": "0d1690b397fe64882306a8a6d8b9c977acd69d12616a496f70a48efa14eb6429",
+        "schema_version": "dta-v22.5.ambiguity-coverage-ledger.v1",
+        "source_failures_by_set": {}
+      },
+      "ambiguity_set_count": 0,
+      "ambiguity_set_size": 0,
+      "automatic_dispatches": 2,
+      "bundle_dispatch_count": 0,
+      "bundle_eligible": false,
+      "bundle_resources_reads": 0,
+      "case_bytes_sha256": "5edb6d4825af9a4a9eb8a8026b412df68311605a9c1d00f1d1bb4a3d99e34eda",
+      "case_id": "d11",
+      "closure_scope": "AMBIGUITY_SET_COMPLETE",
+      "closure_state": {
+        "abstain_reason": null,
+        "ambiguity_set": null,
+        "attempted_action_ids": [],
+        "closure_disposition": "NOT_APPLICABLE",
+        "closure_required": false,
+        "closure_satisfied": false,
+        "no_incident_withheld": false,
+        "predicate_yield": false,
+        "schema_version": "dta-v22.5.no-incident-set-closure-state.v1",
+        "scope": "AMBIGUITY_SET_COMPLETE",
+        "source_failure": false,
+        "state_sha256": "52a125282c4ec9c8923ee668d2809cd2c14056e54b87f79a11b3587282ac4f69"
+      },
+      "combination": "TARGET_SET",
+      "contrastive_deltas": [],
+      "first_pass_protocol_successes": 1,
+      "forgotten_preclosure_read_count": 0,
+      "individual_resources_reads": 2,
+      "input_tokens": 434,
+      "latency_ms": 2111.4400420046877,
+      "matched_clause_id": null,
+      "mechanism": null,
+      "no_incident_exposed_after_partial_coverage": false,
+      "output_tokens": 24,
+      "post_repair_protocol_successes": 1,
+      "protocol_repairs": 0,
+      "provider_calls": 1,
+      "provider_terminal_selections": 1,
+      "read_events": [
+        {
+          "action_id": "a:resources:svc-280f8547cc",
+          "ambiguity_set_id": null,
+          "automatic": true,
+          "bundle": false,
+          "covered_targets_after": [],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [],
+          "ordinal": 1,
+          "outcome_class": "EMPTY_CAPTURED",
+          "ranking_action_ids_at_dispatch": [
+            "a:resources:svc-280f8547cc",
+            "a:resources:svc-3c9097a3cd",
+            "a:traces:svc-280f8547cc",
+            "a:traces:svc-3c9097a3cd",
+            "a:changes:svc-3c9097a3cd",
+            "a:changes:svc-280f8547cc",
+            "a:logs:svc-3c9097a3cd",
+            "a:logs:svc-280f8547cc"
+          ],
+          "source": "RESOURCES",
+          "status": "SUCCESS_EMPTY",
+          "targets": [
+            "svc-280f8547cc"
+          ],
+          "weighted_cost": 1.5
+        },
+        {
+          "action_id": "a:resources:svc-3c9097a3cd",
+          "ambiguity_set_id": null,
+          "automatic": true,
+          "bundle": false,
+          "covered_targets_after": [],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [],
+          "ordinal": 2,
+          "outcome_class": "EMPTY_CAPTURED",
+          "ranking_action_ids_at_dispatch": [
+            "a:resources:svc-3c9097a3cd",
+            "a:traces:svc-280f8547cc",
+            "a:traces:svc-3c9097a3cd",
+            "a:changes:svc-3c9097a3cd",
+            "a:changes:svc-280f8547cc",
+            "a:logs:svc-3c9097a3cd",
+            "a:logs:svc-280f8547cc"
+          ],
+          "source": "RESOURCES",
+          "status": "SUCCESS_EMPTY",
+          "targets": [
+            "svc-3c9097a3cd"
+          ],
+          "weighted_cost": 1.5
+        }
+      ],
+      "resource_target_complete": false,
+      "root_service": null,
+      "safe_error_code": null,
+      "schema_version": "dta-v22.5.ambiguity-bundle-case-run.v1",
+      "set_complete_before_terminal": false,
+      "status": "VALID_TERMINAL",
+      "supporting_evidence_refs": [],
+      "targets_covered_before_terminal": [],
+      "terminal": "ABSTAIN",
+      "total_tokens": 458,
+      "transport_retry_count": 0,
+      "uncaught_exceptions": 0
+    },
+    {
+      "abstain_reason": null,
+      "action_granularity": "CONTRASTIVE_BUNDLE",
+      "agent_writes": 0,
+      "ambiguity_coverage_ledger": {
+        "covered_targets_by_set": {},
+        "events": [
+          {
+            "action_id": "a:resources:svc-c0b4e07dee",
+            "event_sha256": "91a7a5809e8d6e5f123b8a756fdbad51847b6c330b62ece5ce6fcc811e63601c",
+            "new_predicate_kinds": [],
+            "outcome_class": "EMPTY_CAPTURED",
+            "recorded_at_read_ordinal": 1,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [],
+            "source": "RESOURCES",
+            "target_services": [
+              "svc-c0b4e07dee"
+            ]
+          },
+          {
+            "action_id": "a:resources:svc-cd2b0741e9",
+            "event_sha256": "ceeeb726fd638497b977bc7efdefa36f226669c2ca96b77e717f71ed48ce936f",
+            "new_predicate_kinds": [],
+            "outcome_class": "EMPTY_CAPTURED",
+            "recorded_at_read_ordinal": 2,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [],
+            "source": "RESOURCES",
+            "target_services": [
+              "svc-cd2b0741e9"
+            ]
+          }
+        ],
+        "ledger_sha256": "4e9cfc486502a1ca26aaf3e0d655aeb19c9cbd867fc592e34af2e2294ad9947a",
+        "schema_version": "dta-v22.5.ambiguity-coverage-ledger.v1",
+        "source_failures_by_set": {}
+      },
+      "ambiguity_set_count": 0,
+      "ambiguity_set_size": 0,
+      "automatic_dispatches": 2,
+      "bundle_dispatch_count": 0,
+      "bundle_eligible": false,
+      "bundle_resources_reads": 0,
+      "case_bytes_sha256": "4f532e3727d6a3ce9e04ed3775b1d83b613d03df5d2055ba6e7b5cd40095d938",
+      "case_id": "d12",
+      "closure_scope": "AMBIGUITY_SET_COMPLETE",
+      "closure_state": {
+        "abstain_reason": null,
+        "ambiguity_set": null,
+        "attempted_action_ids": [],
+        "closure_disposition": "NOT_APPLICABLE",
+        "closure_required": false,
+        "closure_satisfied": false,
+        "no_incident_withheld": false,
+        "predicate_yield": false,
+        "schema_version": "dta-v22.5.no-incident-set-closure-state.v1",
+        "scope": "AMBIGUITY_SET_COMPLETE",
+        "source_failure": false,
+        "state_sha256": "52a125282c4ec9c8923ee668d2809cd2c14056e54b87f79a11b3587282ac4f69"
+      },
+      "combination": "BUNDLE_SET",
+      "contrastive_deltas": [],
+      "first_pass_protocol_successes": 1,
+      "forgotten_preclosure_read_count": 0,
+      "individual_resources_reads": 2,
+      "input_tokens": 435,
+      "latency_ms": 2928.2098750118166,
+      "matched_clause_id": null,
+      "mechanism": null,
+      "no_incident_exposed_after_partial_coverage": false,
+      "output_tokens": 24,
+      "post_repair_protocol_successes": 1,
+      "protocol_repairs": 0,
+      "provider_calls": 1,
+      "provider_terminal_selections": 1,
+      "read_events": [
+        {
+          "action_id": "a:resources:svc-c0b4e07dee",
+          "ambiguity_set_id": null,
+          "automatic": true,
+          "bundle": false,
+          "covered_targets_after": [],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [],
+          "ordinal": 1,
+          "outcome_class": "EMPTY_CAPTURED",
+          "ranking_action_ids_at_dispatch": [
+            "a:resources:svc-c0b4e07dee",
+            "a:resources:svc-cd2b0741e9",
+            "a:traces:svc-c0b4e07dee",
+            "a:traces:svc-cd2b0741e9",
+            "a:changes:svc-cd2b0741e9",
+            "a:changes:svc-c0b4e07dee",
+            "a:logs:svc-c0b4e07dee",
+            "a:logs:svc-cd2b0741e9"
+          ],
+          "source": "RESOURCES",
+          "status": "SUCCESS_EMPTY",
+          "targets": [
+            "svc-c0b4e07dee"
+          ],
+          "weighted_cost": 1.5
+        },
+        {
+          "action_id": "a:resources:svc-cd2b0741e9",
+          "ambiguity_set_id": null,
+          "automatic": true,
+          "bundle": false,
+          "covered_targets_after": [],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [],
+          "ordinal": 2,
+          "outcome_class": "EMPTY_CAPTURED",
+          "ranking_action_ids_at_dispatch": [
+            "a:resources:svc-cd2b0741e9",
+            "a:traces:svc-c0b4e07dee",
+            "a:traces:svc-cd2b0741e9",
+            "a:changes:svc-cd2b0741e9",
+            "a:changes:svc-c0b4e07dee",
+            "a:logs:svc-c0b4e07dee",
+            "a:logs:svc-cd2b0741e9"
+          ],
+          "source": "RESOURCES",
+          "status": "SUCCESS_EMPTY",
+          "targets": [
+            "svc-cd2b0741e9"
+          ],
+          "weighted_cost": 1.5
+        }
+      ],
+      "resource_target_complete": false,
+      "root_service": null,
+      "safe_error_code": null,
+      "schema_version": "dta-v22.5.ambiguity-bundle-case-run.v1",
+      "set_complete_before_terminal": false,
+      "status": "VALID_TERMINAL",
+      "supporting_evidence_refs": [],
+      "targets_covered_before_terminal": [],
+      "terminal": "ABSTAIN",
+      "total_tokens": 459,
+      "transport_retry_count": 0,
+      "uncaught_exceptions": 0
+    },
+    {
+      "abstain_reason": null,
+      "action_granularity": "PER_TARGET",
+      "agent_writes": 0,
+      "ambiguity_coverage_ledger": {
+        "covered_targets_by_set": {},
+        "events": [
+          {
+            "action_id": "a:traces:svc-2f8ff658e9",
+            "event_sha256": "7b75ea38e57920966b6aa5f1a15712ecb3495860818e42b29098f33a7eb5bf6b",
+            "new_predicate_kinds": [
+              "TRACE_FIRST_ERROR"
+            ],
+            "outcome_class": "PREDICATE_YIELD",
+            "recorded_at_read_ordinal": 1,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [],
+            "source": "TRACES",
+            "target_services": [
+              "svc-2f8ff658e9"
+            ]
+          }
+        ],
+        "ledger_sha256": "f5a721ec4d25a717332acaf5c696deb174519df59805b6eb63a1df7824643ed3",
+        "schema_version": "dta-v22.5.ambiguity-coverage-ledger.v1",
+        "source_failures_by_set": {}
+      },
+      "ambiguity_set_count": 0,
+      "ambiguity_set_size": 0,
+      "automatic_dispatches": 1,
+      "bundle_dispatch_count": 0,
+      "bundle_eligible": false,
+      "bundle_resources_reads": 0,
+      "case_bytes_sha256": "ca03c42db2ad712f71c00fca6dda67ecaf8767fd73b1ea12aba26d0d944ebe53",
+      "case_id": "d13",
+      "closure_scope": "ONE_TARGET_ATTEMPT",
+      "closure_state": {
+        "abstain_reason": null,
+        "ambiguity_set": null,
+        "attempted_action_ids": [],
+        "closure_disposition": "NOT_APPLICABLE",
+        "closure_required": false,
+        "closure_satisfied": false,
+        "no_incident_withheld": false,
+        "predicate_yield": false,
+        "schema_version": "dta-v22.5.no-incident-set-closure-state.v1",
+        "scope": "ONE_TARGET_ATTEMPT",
+        "source_failure": false,
+        "state_sha256": "1bc07b5c75c2c8c65d82e94fc31b7444f37dab54d955707f029368e1cf6f1873"
+      },
+      "combination": "TARGET_ONE",
+      "contrastive_deltas": [],
+      "first_pass_protocol_successes": 1,
+      "forgotten_preclosure_read_count": 0,
+      "individual_resources_reads": 0,
+      "input_tokens": 453,
+      "latency_ms": 2176.543915993534,
+      "matched_clause_id": "configuration:error-metric-and-first-error-trace",
+      "mechanism": "CONFIGURATION_ERROR",
+      "no_incident_exposed_after_partial_coverage": false,
+      "output_tokens": 24,
+      "post_repair_protocol_successes": 1,
+      "protocol_repairs": 0,
+      "provider_calls": 1,
+      "provider_terminal_selections": 1,
+      "read_events": [
+        {
+          "action_id": "a:traces:svc-2f8ff658e9",
+          "ambiguity_set_id": null,
+          "automatic": true,
+          "bundle": false,
+          "covered_targets_after": [],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "ordinal": 1,
+          "outcome_class": "PREDICATE_YIELD",
+          "ranking_action_ids_at_dispatch": [
+            "a:traces:svc-2f8ff658e9",
+            "a:changes:svc-2f8ff658e9",
+            "a:resources:svc-2f8ff658e9",
+            "a:resources:svc-7669976c4e",
+            "a:traces:svc-7669976c4e",
+            "a:changes:svc-7669976c4e",
+            "a:logs:svc-7669976c4e",
+            "a:logs:svc-2f8ff658e9"
+          ],
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "targets": [
+            "svc-2f8ff658e9"
+          ],
+          "weighted_cost": 1.5
+        }
+      ],
+      "resource_target_complete": false,
+      "root_service": "svc-2f8ff658e9",
+      "safe_error_code": null,
+      "schema_version": "dta-v22.5.ambiguity-bundle-case-run.v1",
+      "set_complete_before_terminal": false,
+      "status": "VALID_TERMINAL",
+      "supporting_evidence_refs": [
+        "e:a:metrics:svc-2f8ff658e9:core:0:63a150c89fd0",
+        "e:a:traces:svc-2f8ff658e9:0:8a9c27f170fc"
+      ],
+      "targets_covered_before_terminal": [],
+      "terminal": "DIAGNOSED",
+      "total_tokens": 477,
+      "transport_retry_count": 0,
+      "uncaught_exceptions": 0
+    },
+    {
+      "abstain_reason": null,
+      "action_granularity": "PER_TARGET",
+      "agent_writes": 0,
+      "ambiguity_coverage_ledger": {
+        "covered_targets_by_set": {},
+        "events": [
+          {
+            "action_id": "a:traces:svc-121bb4bbb7",
+            "event_sha256": "f356cb193965a68a6361a73b307135fece6c619b57a4f3d8ef419c1c068a9253",
+            "new_predicate_kinds": [
+              "TRACE_FIRST_ERROR"
+            ],
+            "outcome_class": "PREDICATE_YIELD",
+            "recorded_at_read_ordinal": 1,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [],
+            "source": "TRACES",
+            "target_services": [
+              "svc-121bb4bbb7"
+            ]
+          }
+        ],
+        "ledger_sha256": "1a8f9fb09372bc1a2211d74d19ada32ba8430f3e1fa5b8a6e7ed4d0bf978598e",
+        "schema_version": "dta-v22.5.ambiguity-coverage-ledger.v1",
+        "source_failures_by_set": {}
+      },
+      "ambiguity_set_count": 0,
+      "ambiguity_set_size": 0,
+      "automatic_dispatches": 1,
+      "bundle_dispatch_count": 0,
+      "bundle_eligible": false,
+      "bundle_resources_reads": 0,
+      "case_bytes_sha256": "5ab1105efb7b549a443f15b3bce4f3a641d4d93bfc234575691e14bca3391851",
+      "case_id": "d14",
+      "closure_scope": "AMBIGUITY_SET_COMPLETE",
+      "closure_state": {
+        "abstain_reason": null,
+        "ambiguity_set": null,
+        "attempted_action_ids": [],
+        "closure_disposition": "NOT_APPLICABLE",
+        "closure_required": false,
+        "closure_satisfied": false,
+        "no_incident_withheld": false,
+        "predicate_yield": false,
+        "schema_version": "dta-v22.5.no-incident-set-closure-state.v1",
+        "scope": "AMBIGUITY_SET_COMPLETE",
+        "source_failure": false,
+        "state_sha256": "52a125282c4ec9c8923ee668d2809cd2c14056e54b87f79a11b3587282ac4f69"
+      },
+      "combination": "TARGET_SET",
+      "contrastive_deltas": [],
+      "first_pass_protocol_successes": 1,
+      "forgotten_preclosure_read_count": 0,
+      "individual_resources_reads": 0,
+      "input_tokens": 448,
+      "latency_ms": 1865.5122079944704,
+      "matched_clause_id": "configuration:error-metric-and-first-error-trace",
+      "mechanism": "CONFIGURATION_ERROR",
+      "no_incident_exposed_after_partial_coverage": false,
+      "output_tokens": 24,
+      "post_repair_protocol_successes": 1,
+      "protocol_repairs": 0,
+      "provider_calls": 1,
+      "provider_terminal_selections": 1,
+      "read_events": [
+        {
+          "action_id": "a:traces:svc-121bb4bbb7",
+          "ambiguity_set_id": null,
+          "automatic": true,
+          "bundle": false,
+          "covered_targets_after": [],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "ordinal": 1,
+          "outcome_class": "PREDICATE_YIELD",
+          "ranking_action_ids_at_dispatch": [
+            "a:traces:svc-121bb4bbb7",
+            "a:changes:svc-121bb4bbb7",
+            "a:resources:svc-43bfd3e3bd",
+            "a:resources:svc-121bb4bbb7",
+            "a:traces:svc-43bfd3e3bd",
+            "a:changes:svc-43bfd3e3bd",
+            "a:logs:svc-43bfd3e3bd",
+            "a:logs:svc-121bb4bbb7"
+          ],
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "targets": [
+            "svc-121bb4bbb7"
+          ],
+          "weighted_cost": 1.5
+        }
+      ],
+      "resource_target_complete": false,
+      "root_service": "svc-121bb4bbb7",
+      "safe_error_code": null,
+      "schema_version": "dta-v22.5.ambiguity-bundle-case-run.v1",
+      "set_complete_before_terminal": false,
+      "status": "VALID_TERMINAL",
+      "supporting_evidence_refs": [
+        "e:a:metrics:svc-121bb4bbb7:core:0:865e17edc9e5",
+        "e:a:traces:svc-121bb4bbb7:0:c0115e8e6d76"
+      ],
+      "targets_covered_before_terminal": [],
+      "terminal": "DIAGNOSED",
+      "total_tokens": 472,
+      "transport_retry_count": 0,
+      "uncaught_exceptions": 0
+    },
+    {
+      "abstain_reason": null,
+      "action_granularity": "CONTRASTIVE_BUNDLE",
+      "agent_writes": 0,
+      "ambiguity_coverage_ledger": {
+        "covered_targets_by_set": {},
+        "events": [
+          {
+            "action_id": "a:traces:svc-c719afd8ac",
+            "event_sha256": "d462024d0809d5647a25687df251355594c639f7cb4dd238ec76b6e972a93717",
+            "new_predicate_kinds": [
+              "TRACE_FIRST_ERROR"
+            ],
+            "outcome_class": "PREDICATE_YIELD",
+            "recorded_at_read_ordinal": 1,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [],
+            "source": "TRACES",
+            "target_services": [
+              "svc-c719afd8ac"
+            ]
+          }
+        ],
+        "ledger_sha256": "41d37db1da797770084aa0b5db10c4c1f0bb864e3a4c96924c3f9dd26b6f53ba",
+        "schema_version": "dta-v22.5.ambiguity-coverage-ledger.v1",
+        "source_failures_by_set": {}
+      },
+      "ambiguity_set_count": 0,
+      "ambiguity_set_size": 0,
+      "automatic_dispatches": 1,
+      "bundle_dispatch_count": 0,
+      "bundle_eligible": false,
+      "bundle_resources_reads": 0,
+      "case_bytes_sha256": "cf73e709a7e3c7a0c5e717d46d5f6a44205724737b1bf496985bffae7a518d8a",
+      "case_id": "d15",
+      "closure_scope": "ONE_TARGET_ATTEMPT",
+      "closure_state": {
+        "abstain_reason": null,
+        "ambiguity_set": null,
+        "attempted_action_ids": [],
+        "closure_disposition": "NOT_APPLICABLE",
+        "closure_required": false,
+        "closure_satisfied": false,
+        "no_incident_withheld": false,
+        "predicate_yield": false,
+        "schema_version": "dta-v22.5.no-incident-set-closure-state.v1",
+        "scope": "ONE_TARGET_ATTEMPT",
+        "source_failure": false,
+        "state_sha256": "1bc07b5c75c2c8c65d82e94fc31b7444f37dab54d955707f029368e1cf6f1873"
+      },
+      "combination": "BUNDLE_ONE",
+      "contrastive_deltas": [],
+      "first_pass_protocol_successes": 1,
+      "forgotten_preclosure_read_count": 0,
+      "individual_resources_reads": 0,
+      "input_tokens": 446,
+      "latency_ms": 1740.7587919733487,
+      "matched_clause_id": "service-unavailable:unhealthy-first-error",
+      "mechanism": "SERVICE_UNAVAILABLE",
+      "no_incident_exposed_after_partial_coverage": false,
+      "output_tokens": 24,
+      "post_repair_protocol_successes": 1,
+      "protocol_repairs": 0,
+      "provider_calls": 1,
+      "provider_terminal_selections": 1,
+      "read_events": [
+        {
+          "action_id": "a:traces:svc-c719afd8ac",
+          "ambiguity_set_id": null,
+          "automatic": true,
+          "bundle": false,
+          "covered_targets_after": [],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [
+            "TRACE_FIRST_ERROR"
+          ],
+          "ordinal": 1,
+          "outcome_class": "PREDICATE_YIELD",
+          "ranking_action_ids_at_dispatch": [
+            "a:traces:svc-c719afd8ac",
+            "a:resources:svc-46fe028bb1",
+            "a:resources:svc-c719afd8ac",
+            "a:traces:svc-46fe028bb1",
+            "a:logs:svc-c719afd8ac",
+            "a:changes:svc-c719afd8ac",
+            "a:changes:svc-46fe028bb1",
+            "a:logs:svc-46fe028bb1"
+          ],
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "targets": [
+            "svc-c719afd8ac"
+          ],
+          "weighted_cost": 1.5
+        }
+      ],
+      "resource_target_complete": false,
+      "root_service": "svc-c719afd8ac",
+      "safe_error_code": null,
+      "schema_version": "dta-v22.5.ambiguity-bundle-case-run.v1",
+      "set_complete_before_terminal": false,
+      "status": "VALID_TERMINAL",
+      "supporting_evidence_refs": [
+        "e:a:runtime:all-candidates:ef6fe9c510c9:1:6fb71a55a6fa",
+        "e:a:traces:svc-c719afd8ac:0:b920799d4ee8"
+      ],
+      "targets_covered_before_terminal": [],
+      "terminal": "DIAGNOSED",
+      "total_tokens": 470,
+      "transport_retry_count": 0,
+      "uncaught_exceptions": 0
+    },
+    {
+      "abstain_reason": null,
+      "action_granularity": "CONTRASTIVE_BUNDLE",
+      "agent_writes": 0,
+      "ambiguity_coverage_ledger": {
+        "covered_targets_by_set": {},
+        "events": [
+          {
+            "action_id": "a:traces:svc-b97f98f897",
+            "event_sha256": "17797a3f0308611afa85d2a9ecbb9d82a78d9d5de2bbbee669a1a5ee0d29f675",
+            "new_predicate_kinds": [
+              "TRACE_DEPENDENCY_LATENCY"
+            ],
+            "outcome_class": "PREDICATE_YIELD",
+            "recorded_at_read_ordinal": 1,
+            "schema_version": "dta-v22.5.ambiguity-coverage-event.v1",
+            "set_ids_covered": [],
+            "source": "TRACES",
+            "target_services": [
+              "svc-b97f98f897"
+            ]
+          }
+        ],
+        "ledger_sha256": "1209320726c42d8df4ab97fbd0c4f738fe210bf10002583cebf0d48384a9396a",
+        "schema_version": "dta-v22.5.ambiguity-coverage-ledger.v1",
+        "source_failures_by_set": {}
+      },
+      "ambiguity_set_count": 0,
+      "ambiguity_set_size": 0,
+      "automatic_dispatches": 1,
+      "bundle_dispatch_count": 0,
+      "bundle_eligible": false,
+      "bundle_resources_reads": 0,
+      "case_bytes_sha256": "9624ddd9d1f34e40976bc6652357aa4e2c2ae589ff037c6e43ab46269ef06291",
+      "case_id": "d16",
+      "closure_scope": "AMBIGUITY_SET_COMPLETE",
+      "closure_state": {
+        "abstain_reason": null,
+        "ambiguity_set": null,
+        "attempted_action_ids": [],
+        "closure_disposition": "NOT_APPLICABLE",
+        "closure_required": false,
+        "closure_satisfied": false,
+        "no_incident_withheld": false,
+        "predicate_yield": false,
+        "schema_version": "dta-v22.5.no-incident-set-closure-state.v1",
+        "scope": "AMBIGUITY_SET_COMPLETE",
+        "source_failure": false,
+        "state_sha256": "52a125282c4ec9c8923ee668d2809cd2c14056e54b87f79a11b3587282ac4f69"
+      },
+      "combination": "BUNDLE_SET",
+      "contrastive_deltas": [],
+      "first_pass_protocol_successes": 1,
+      "forgotten_preclosure_read_count": 0,
+      "individual_resources_reads": 0,
+      "input_tokens": 448,
+      "latency_ms": 1768.0696249881294,
+      "matched_clause_id": "dependency-latency:trace-and-metric",
+      "mechanism": "DEPENDENCY_LATENCY",
+      "no_incident_exposed_after_partial_coverage": false,
+      "output_tokens": 24,
+      "post_repair_protocol_successes": 1,
+      "protocol_repairs": 0,
+      "provider_calls": 1,
+      "provider_terminal_selections": 1,
+      "read_events": [
+        {
+          "action_id": "a:traces:svc-b97f98f897",
+          "ambiguity_set_id": null,
+          "automatic": true,
+          "bundle": false,
+          "covered_targets_after": [],
+          "covered_targets_before": [],
+          "new_predicate_kinds": [
+            "TRACE_DEPENDENCY_LATENCY"
+          ],
+          "ordinal": 1,
+          "outcome_class": "PREDICATE_YIELD",
+          "ranking_action_ids_at_dispatch": [
+            "a:traces:svc-b97f98f897",
+            "a:traces:svc-dd9241c60a",
+            "a:resources:svc-dd9241c60a",
+            "a:resources:svc-b97f98f897",
+            "a:changes:svc-b97f98f897",
+            "a:changes:svc-dd9241c60a",
+            "a:logs:svc-dd9241c60a",
+            "a:logs:svc-b97f98f897"
+          ],
+          "source": "TRACES",
+          "status": "SUCCESS_NONEMPTY",
+          "targets": [
+            "svc-b97f98f897"
+          ],
+          "weighted_cost": 1.5
+        }
+      ],
+      "resource_target_complete": false,
+      "root_service": "svc-dd9241c60a",
+      "safe_error_code": null,
+      "schema_version": "dta-v22.5.ambiguity-bundle-case-run.v1",
+      "set_complete_before_terminal": false,
+      "status": "VALID_TERMINAL",
+      "supporting_evidence_refs": [
+        "e:a:metrics:svc-b97f98f897:core:1:902f5017ad5e",
+        "e:a:traces:svc-b97f98f897:0:65756f051533"
+      ],
+      "targets_covered_before_terminal": [],
+      "terminal": "DIAGNOSED",
+      "total_tokens": 472,
+      "transport_retry_count": 0,
+      "uncaught_exceptions": 0
+    }
+  ],
+  "schema_version": "dta-v22.5.provider-smoke.v1",
+  "transport_retries": 0,
+  "uncaught_exceptions": 0,
+  "valid_terminal_runs": 16
+}

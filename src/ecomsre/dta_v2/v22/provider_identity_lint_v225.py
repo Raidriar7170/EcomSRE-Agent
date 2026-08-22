@@ -13,7 +13,7 @@ from ecomsre.dta_v2.v22.read_contracts import DtaModelV22, semantic_sha256_v22
 _SERVICE = re.compile(r"^svc-[0-9a-f]{10}$")
 _OPERATION = re.compile(r"^op-[0-9a-f]{10}$")
 _CHANGE = re.compile(r"^chg-[0-9a-f]{10}$")
-_CASE_ID = re.compile(r"^(?:d|e)[0-9]{2}$", re.IGNORECASE)
+_CASE_ID = re.compile(r"^(?:d|e)[0-9]{2}$")
 _FORBIDDEN = re.compile(
     r"(?:cpu|memory|mem|resource|normal|healthy|fault|incident|config|"
     r"configuration|dependency|latency|unavailable|service-unavailable|"
@@ -104,8 +104,12 @@ def _expected_identity_kind(key: str) -> str | None:
     return None
 
 
-def lint_provider_payload_v225(
-    payload: object, *, payload_class: str
+def _lint_payload_v225(
+    payload: object,
+    *,
+    payload_class: str,
+    reject_evaluator_metadata: bool,
+    reject_case_ids: bool,
 ) -> ProviderIdentityLintReportV225:
     identities: list[str] = []
     forbidden: list[str] = []
@@ -120,7 +124,8 @@ def lint_provider_payload_v225(
                 child_path = f"{path}.{key}" if path else key
                 if key.casefold() in _EVALUATOR_FIELDS:
                     metadata.append(child_path)
-                    problems.append(child_path)
+                    if reject_evaluator_metadata:
+                        problems.append(child_path)
                 visit(
                     item,
                     path=child_path,
@@ -135,7 +140,8 @@ def lint_provider_payload_v225(
             return
         if _CASE_ID.fullmatch(value):
             case_ids.append(value)
-            problems.append(path)
+            if reject_case_ids:
+                problems.append(path)
         if identity_kind is None:
             return
         identities.append(value)
@@ -167,8 +173,33 @@ def lint_provider_payload_v225(
     return report
 
 
+def lint_provider_payload_v225(
+    payload: object, *, payload_class: str
+) -> ProviderIdentityLintReportV225:
+    return _lint_payload_v225(
+        payload,
+        payload_class=payload_class,
+        reject_evaluator_metadata=True,
+        reject_case_ids=True,
+    )
+
+
+def lint_static_identity_surface_v225(
+    payload: object, *, surface_class: str
+) -> ProviderIdentityLintReportV225:
+    """Lint identity fields in source bytes without treating evaluator fields as payload."""
+
+    return _lint_payload_v225(
+        payload,
+        payload_class=f"static:{surface_class}",
+        reject_evaluator_metadata=False,
+        reject_case_ids=False,
+    )
+
+
 __all__ = (
     "ProviderIdentityLintErrorV225",
     "ProviderIdentityLintReportV225",
     "lint_provider_payload_v225",
+    "lint_static_identity_surface_v225",
 )

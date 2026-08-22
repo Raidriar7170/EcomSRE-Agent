@@ -1,0 +1,44 @@
+{
+  "abstention_controls": [
+    "e11",
+    "e12"
+  ],
+  "configuration_incidents": [
+    "e13",
+    "e14"
+  ],
+  "cpu_incidents": [
+    "e01",
+    "e02",
+    "e03",
+    "e04"
+  ],
+  "dependency_incidents": [
+    "e16"
+  ],
+  "memory_incidents": [
+    "e05",
+    "e06",
+    "e07",
+    "e08"
+  ],
+  "resource_ambiguity_incidents": [
+    "e01",
+    "e02",
+    "e03",
+    "e04",
+    "e05",
+    "e06",
+    "e07",
+    "e08"
+  ],
+  "resource_normal_controls": [
+    "e09",
+    "e10"
+  ],
+  "schema_version": "dta-v22.5.evaluator-strata.v1",
+  "service_unavailable_incidents": [
+    "e15"
+  ],
+  "strata_sha256": "3bc49c755a4ebeef982408365088e063d7dfbf2f2ee24145a848b877adb8c397"
+}

@@ -1,0 +1,191 @@
+{
+  "captured_sources": [
+    "METRICS",
+    "LOGS",
+    "TRACES",
+    "RUNTIME",
+    "RESOURCES",
+    "CHANGES"
+  ],
+  "normalized_case": {
+    "candidate_services": [
+      "svc-427d298ab6",
+      "svc-e427f30ecf"
+    ],
+    "capture": {
+      "captured_at": "2026-08-21T00:05:00Z",
+      "changes": [],
+      "logs": [],
+      "metrics": [
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-427d298ab6",
+          "support_status": "SUPPORTED",
+          "unit": "RATIO",
+          "value": 0.01,
+          "window_ended_at": "2026-08-21T00:05:00Z",
+          "window_started_at": "2026-08-21T00:00:00Z"
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-427d298ab6",
+          "support_status": "SUPPORTED",
+          "unit": "MILLISECONDS",
+          "value": 10.0,
+          "window_ended_at": "2026-08-21T00:05:00Z",
+          "window_started_at": "2026-08-21T00:00:00Z"
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-427d298ab6",
+          "support_status": "SUPPORTED",
+          "unit": "COUNT",
+          "value": 100.0,
+          "window_ended_at": "2026-08-21T00:05:00Z",
+          "window_started_at": "2026-08-21T00:00:00Z"
+        },
+        {
+          "metric_kind": "ERROR_RATE",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-e427f30ecf",
+          "support_status": "SUPPORTED",
+          "unit": "RATIO",
+          "value": 0.01,
+          "window_ended_at": "2026-08-21T00:05:00Z",
+          "window_started_at": "2026-08-21T00:00:00Z"
+        },
+        {
+          "metric_kind": "LATENCY_P95_MS",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-e427f30ecf",
+          "support_status": "SUPPORTED",
+          "unit": "MILLISECONDS",
+          "value": 10.0,
+          "window_ended_at": "2026-08-21T00:05:00Z",
+          "window_started_at": "2026-08-21T00:00:00Z"
+        },
+        {
+          "metric_kind": "REQUEST_SUPPORT",
+          "sample_count": 3,
+          "schema_version": "dta-v22.metric-fact.v1",
+          "service": "svc-e427f30ecf",
+          "support_status": "SUPPORTED",
+          "unit": "COUNT",
+          "value": 100.0,
+          "window_ended_at": "2026-08-21T00:05:00Z",
+          "window_started_at": "2026-08-21T00:00:00Z"
+        }
+      ],
+      "resources": [
+        {
+          "memory_slope_bytes_per_second": 0.0,
+          "samples": [
+            {
+              "cpu_percent": 20.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 0
+            },
+            {
+              "cpu_percent": 20.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 2500
+            },
+            {
+              "cpu_percent": 20.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 5000
+            },
+            {
+              "cpu_percent": 20.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 7500
+            },
+            {
+              "cpu_percent": 20.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 10000
+            }
+          ],
+          "sampling_window_seconds": 10,
+          "schema_version": "dta-v22.resource-usage-record.v1",
+          "service": "svc-427d298ab6"
+        },
+        {
+          "memory_slope_bytes_per_second": 0.0,
+          "samples": [
+            {
+              "cpu_percent": 20.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 0
+            },
+            {
+              "cpu_percent": 20.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 2500
+            },
+            {
+              "cpu_percent": 20.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 5000
+            },
+            {
+              "cpu_percent": 20.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 7500
+            },
+            {
+              "cpu_percent": 20.0,
+              "memory_bytes": 100000000,
+              "offset_ms": 10000
+            }
+          ],
+          "sampling_window_seconds": 10,
+          "schema_version": "dta-v22.resource-usage-record.v1",
+          "service": "svc-e427f30ecf"
+        }
+      ],
+      "runtime": [
+        {
+          "healthy": true,
+          "restart_count": 0,
+          "schema_version": "dta-v22.runtime-record.v1",
+          "service": "svc-427d298ab6",
+          "state": "RUNNING"
+        },
+        {
+          "healthy": true,
+          "restart_count": 0,
+          "schema_version": "dta-v22.runtime-record.v1",
+          "service": "svc-e427f30ecf",
+          "state": "RUNNING"
+        }
+      ],
+      "schema_version": "dta-v22.replay-capture.v1",
+      "source_failures": [],
+      "traces": []
+    },
+    "case_id": "e10",
+    "normalization_notes": [
+      "Synthetic/derived DTA v2.2.5 opaque replay fixture; no Docker capture.",
+      "Service, operation, and change identities come from a neutral ordinal pool.",
+      "Provider projection excludes case, truth, pair, derivation, and source metadata."
+    ],
+    "schema_version": "dta-v22.practical-normalized-case.v1",
+    "source_bytes_sha256": "25c6575670e271e62b8230c23a37f773ed19fd3456374d65882b4c5a1030e153",
+    "topology_edges": [
+      [
+        "svc-427d298ab6",
+        "svc-e427f30ecf"
+      ]
+    ]
+  },
+  "schema_version": "dta-v22.2.synthetic-evaluation-source.v1"
+}

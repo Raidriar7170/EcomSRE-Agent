@@ -29,6 +29,51 @@ _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _REGISTRY_ROUTE_SCHEMA = "phase0.macos-registry-proxy.v1"
 _REGISTRY_ROUTE_SOURCE = "MACOS_SCUTIL"
 _PROXY_KEYS = frozenset({"HTTP_PROXY", "HTTPS_PROXY"})
+_READ_ONLY_GIT_SUBCOMMANDS = frozenset(
+    {"diff", "ls-tree", "merge-base", "rev-parse", "show", "status"}
+)
+
+
+@dataclass(frozen=True)
+class ReadOnlyGitCommandResult:
+    """Byte-preserving output from an allowlisted read-only Git query."""
+
+    exit_code: int
+    stdout: bytes
+    stderr: bytes
+
+
+def run_read_only_git(
+    repository_root: Path,
+    arguments: tuple[str, ...],
+    *,
+    timeout_seconds: float = 30.0,
+) -> ReadOnlyGitCommandResult:
+    """Run one local, read-only Git query through the centralized boundary."""
+
+    if not arguments or arguments[0] not in _READ_ONLY_GIT_SUBCOMMANDS:
+        raise ValueError("Git query is not allowlisted as read-only")
+    if timeout_seconds <= 0:
+        raise ValueError("read-only Git timeout must be positive")
+    completed = subprocess.run(
+        ("git", *arguments),
+        cwd=Path(repository_root).resolve(),
+        env={
+            "PATH": _SAFE_PATH,
+            "LANG": "C.UTF-8",
+            "LC_ALL": "C.UTF-8",
+        },
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        check=False,
+        timeout=timeout_seconds,
+        shell=False,
+    )
+    return ReadOnlyGitCommandResult(
+        exit_code=completed.returncode,
+        stdout=completed.stdout,
+        stderr=completed.stderr,
+    )
 
 
 @dataclass(frozen=True)

@@ -161,13 +161,8 @@ class CanonicalReadRequestV22(DtaModelV22):
     def require_canonical_request(self) -> CanonicalReadRequestV22:
         if self.target_services != tuple(sorted(set(self.target_services))):
             raise ValueError("canonical request targets are not sorted and unique")
-        if self.source not in {
-            EvidenceSourceV22.RUNTIME,
-            EvidenceSourceV22.RESOURCES,
-        } and len(self.target_services) != 1:
-            raise ValueError(
-                "non-runtime/non-resources canonical request requires exactly one target"
-            )
+        if self.source is not EvidenceSourceV22.RUNTIME and len(self.target_services) != 1:
+            raise ValueError("non-runtime canonical request requires exactly one target")
         if self.metric_kinds != tuple(
             sorted(set(self.metric_kinds), key=lambda item: item.value)
         ):

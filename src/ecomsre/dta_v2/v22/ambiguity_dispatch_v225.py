@@ -23,7 +23,7 @@ class ActionGranularityV225(str, Enum):
 class AmbiguityDispatchDecisionV225(DtaModelV22):
     schema_version: Literal["dta-v22.5.ambiguity-dispatch-decision.v1"]
     granularity: ActionGranularityV225
-    action: EvidenceActionV22
+    action: EvidenceActionV22 | ContrastiveResourceActionV225
     reason: Literal["UNCOVERED_TARGET", "CONTRASTIVE_BUNDLE"]
     ranking_action_ids: tuple[str, ...]
     automatic: Literal[True]
@@ -50,7 +50,7 @@ class AmbiguityDispatchDecisionV225(DtaModelV22):
 def _decision(
     *,
     granularity: ActionGranularityV225,
-    action: EvidenceActionV22,
+    action: EvidenceActionV22 | ContrastiveResourceActionV225,
     reason: Literal["UNCOVERED_TARGET", "CONTRASTIVE_BUNDLE"],
     ranked_action_ids: tuple[str, ...],
 ) -> AmbiguityDispatchDecisionV225:

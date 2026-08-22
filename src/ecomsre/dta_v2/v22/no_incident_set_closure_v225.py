@@ -8,6 +8,7 @@ from typing import Literal
 from pydantic import StrictBool, model_validator
 
 from ecomsre.dta_v2.v22.action_catalog import EvidenceActionV22
+from ecomsre.dta_v2.v22.contrastive_actions_v225 import ContrastiveResourceActionV225
 from ecomsre.dta_v2.v22.ambiguity_set_v225 import (
     EvidenceAmbiguitySetV225,
     update_ambiguity_set_coverage_v225,
@@ -149,7 +150,7 @@ def minimum_completion_cost_v225(
     *,
     ambiguity_set: EvidenceAmbiguitySetV225,
     individual_actions: tuple[EvidenceActionV22, ...],
-    bundle_action: EvidenceActionV22 | None,
+    bundle_action: ContrastiveResourceActionV225 | None,
     prefer_bundle: bool,
 ) -> float | None:
     remaining = set(ambiguity_set.remaining_target_services)
@@ -196,14 +197,31 @@ def evaluate_no_incident_set_closure_v225(
         and state.ambiguity_set.set_id != current.set_id
     ):
         raise ValueError("set-closure ambiguity-set identity changed")
-    common = {
-        "scope": state.scope,
-        "ambiguity_set": current,
-        "attempted_action_ids": state.attempted_action_ids,
-    }
-    if state.source_failure:
+    def next_state(
+        *,
+        closure_required: bool,
+        closure_satisfied: bool,
+        no_incident_withheld: bool,
+        predicate_yield: bool,
+        source_failure: bool,
+        closure_disposition: ClosureDispositionV225,
+        abstain_reason: AbstainReasonV225 | None,
+    ) -> NoIncidentSetClosureStateV225:
         return _state(
-            **common,
+            scope=state.scope,
+            closure_required=closure_required,
+            closure_satisfied=closure_satisfied,
+            no_incident_withheld=no_incident_withheld,
+            ambiguity_set=current,
+            attempted_action_ids=state.attempted_action_ids,
+            predicate_yield=predicate_yield,
+            source_failure=source_failure,
+            closure_disposition=closure_disposition,
+            abstain_reason=abstain_reason,
+        )
+
+    if state.source_failure:
+        return next_state(
             closure_required=False,
             closure_satisfied=False,
             no_incident_withheld=True,
@@ -213,8 +231,7 @@ def evaluate_no_incident_set_closure_v225(
             abstain_reason="REQUIRED_AMBIGUITY_SOURCE_FAILURE",
         )
     if state.predicate_yield:
-        return _state(
-            **common,
+        return next_state(
             closure_required=False,
             closure_satisfied=True,
             no_incident_withheld=True,
@@ -224,8 +241,7 @@ def evaluate_no_incident_set_closure_v225(
             abstain_reason=None,
         )
     if not legacy_no_incident_exposed:
-        return _state(
-            **common,
+        return next_state(
             closure_required=False,
             closure_satisfied=state.closure_satisfied,
             no_incident_withheld=False,
@@ -235,8 +251,7 @@ def evaluate_no_incident_set_closure_v225(
             abstain_reason=None,
         )
     if current is None:
-        return _state(
-            **common,
+        return next_state(
             closure_required=False,
             closure_satisfied=False,
             no_incident_withheld=False,
@@ -249,8 +264,7 @@ def evaluate_no_incident_set_closure_v225(
         state.scope is NoIncidentClosureScopeV225.ONE_TARGET_ATTEMPT
         and state.closure_satisfied
     ):
-        return _state(
-            **common,
+        return next_state(
             closure_required=False,
             closure_satisfied=True,
             no_incident_withheld=False,
@@ -260,8 +274,7 @@ def evaluate_no_incident_set_closure_v225(
             abstain_reason=None,
         )
     if not target_complete or minimum_completion_cost is None:
-        return _state(
-            **common,
+        return next_state(
             closure_required=False,
             closure_satisfied=False,
             no_incident_withheld=True,
@@ -271,8 +284,7 @@ def evaluate_no_incident_set_closure_v225(
             abstain_reason="INCOMPLETE_AMBIGUITY_EVIDENCE",
         )
     if remaining_evidence_budget < minimum_completion_cost:
-        return _state(
-            **common,
+        return next_state(
             closure_required=False,
             closure_satisfied=False,
             no_incident_withheld=True,
@@ -281,8 +293,7 @@ def evaluate_no_incident_set_closure_v225(
             closure_disposition=ClosureDispositionV225.BUDGET_INSUFFICIENT,
             abstain_reason="INSUFFICIENT_BUDGET_FOR_AMBIGUITY_CLOSURE",
         )
-    return _state(
-        **common,
+    return next_state(
         closure_required=True,
         closure_satisfied=False,
         no_incident_withheld=True,
@@ -296,7 +307,7 @@ def evaluate_no_incident_set_closure_v225(
 def record_no_incident_set_closure_attempt_v225(
     *,
     state: NoIncidentSetClosureStateV225,
-    action: EvidenceActionV22,
+    action: EvidenceActionV22 | ContrastiveResourceActionV225,
     outcome_class: ReadUtilityClassV222,
 ) -> NoIncidentSetClosureStateV225:
     current = state.ambiguity_set

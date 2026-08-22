@@ -115,9 +115,11 @@ def build_replay_target_coverage_v225(
         "covered_target_services": covered_target_services,
         "coverage_mode": mode,
     }
-    return ReplayTargetCoverageV225(
-        **payload,
-        coverage_sha256=semantic_sha256_v22(payload),
+    return ReplayTargetCoverageV225.model_validate(
+        {
+            **payload,
+            "coverage_sha256": semantic_sha256_v22(payload),
+        }
     )
 
 
