@@ -1,0 +1,339 @@
+{
+  "evaluation_files_scanned": 16,
+  "forbidden_identity_value_count": 0,
+  "provider_case_id_count": 0,
+  "provider_evaluator_metadata_field_count": 0,
+  "rendered_identity_values_scanned": 8,
+  "rendered_payload_classes": [
+    "bootstrap",
+    "post-bundle-read",
+    "post-individual-read",
+    "repair",
+    "terminal-only"
+  ],
+  "rendered_reports": [
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-071d758b9b",
+        "svc-136fa531b7"
+      ],
+      "payload_class": "bootstrap",
+      "report_sha256": "9a4eb977909122eb165f15f079913ba103af215efcf0c6c858d055677ebd3f64",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-071d758b9b",
+        "svc-136fa531b7"
+      ],
+      "payload_class": "post-individual-read",
+      "report_sha256": "f68d0e098318777b3742d2471403e80b52d02282e7ca76d44666086e9c9edafe",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-071d758b9b",
+        "svc-136fa531b7"
+      ],
+      "payload_class": "post-bundle-read",
+      "report_sha256": "11a3a4b3784e415b8d13c2972a31e215f24518c8ae7f75a548fc211a3653dee2",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-071d758b9b",
+        "svc-136fa531b7"
+      ],
+      "payload_class": "terminal-only",
+      "report_sha256": "64cd95ee037ceff077ec8540b802acabe5afafd615329a0ee2fea182ccfe8c13",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [],
+      "evaluator_metadata_fields": [],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [],
+      "payload_class": "repair",
+      "report_sha256": "197c961e2e5841e8462cabe4de9ff251aeb68b37faceba6ecd55ac5fc6bdd276",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    }
+  ],
+  "report_sha256": "4393f360b49bf2991310a21420d3e04c123cedcb7189dea13d56cac617a0fb6a",
+  "schema_version": "dta-v22.5.opaque-provider-payload-lint.v1",
+  "static_identity_values_scanned": 36,
+  "static_reports": [
+    {
+      "case_ids": [
+        "e01"
+      ],
+      "evaluator_metadata_fields": [
+        "payload.normalized_case.case_id"
+      ],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-071d758b9b",
+        "svc-136fa531b7"
+      ],
+      "payload_class": "static:e01.json",
+      "report_sha256": "c9fec12602eda89738b1876ea48362c82f83751aaebd60dc7d45380dff41df6a",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [
+        "e02"
+      ],
+      "evaluator_metadata_fields": [
+        "payload.normalized_case.case_id"
+      ],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-071d758b9b",
+        "svc-136fa531b7"
+      ],
+      "payload_class": "static:e02.json",
+      "report_sha256": "5260053a887ce928915bcea78c880165ec7ca471050ce92fb2f22615cc5c7e3d",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [
+        "e03"
+      ],
+      "evaluator_metadata_fields": [
+        "payload.normalized_case.case_id"
+      ],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-df4616b32a",
+        "svc-f331050c39"
+      ],
+      "payload_class": "static:e03.json",
+      "report_sha256": "14e03fb2e3ba9c14171bc9869521708b0147035fabbcf3acabe431887effaeee",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [
+        "e04"
+      ],
+      "evaluator_metadata_fields": [
+        "payload.normalized_case.case_id"
+      ],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-df4616b32a",
+        "svc-f331050c39"
+      ],
+      "payload_class": "static:e04.json",
+      "report_sha256": "63f80f70af6115df9335b6d1bd1f85e45a00bfbf75d9d16e1ea75029c0ca59e4",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [
+        "e05"
+      ],
+      "evaluator_metadata_fields": [
+        "payload.normalized_case.case_id"
+      ],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-b7f2ea79bd",
+        "svc-ff72713ec9"
+      ],
+      "payload_class": "static:e05.json",
+      "report_sha256": "876dbfc417380463ec15eb6c537e6463519d5bcefde92735ae76477f7a0ceb0d",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [
+        "e06"
+      ],
+      "evaluator_metadata_fields": [
+        "payload.normalized_case.case_id"
+      ],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-b7f2ea79bd",
+        "svc-ff72713ec9"
+      ],
+      "payload_class": "static:e06.json",
+      "report_sha256": "a54863c3d8be6ecae260d60f6749c2e57efc63432e40cfb0d199791d250f638e",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [
+        "e07"
+      ],
+      "evaluator_metadata_fields": [
+        "payload.normalized_case.case_id"
+      ],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-00031ea0fc",
+        "svc-8759a2f264"
+      ],
+      "payload_class": "static:e07.json",
+      "report_sha256": "b8fcd1debe0b26c4b772beb8b613726cffdc248e0cd5cd2844b844d3e07d4c82",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [
+        "e08"
+      ],
+      "evaluator_metadata_fields": [
+        "payload.normalized_case.case_id"
+      ],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-00031ea0fc",
+        "svc-8759a2f264"
+      ],
+      "payload_class": "static:e08.json",
+      "report_sha256": "e7e548f06348e27ac55c7a6e6c0ba615e2fbc876fcfea8550c1df2f2429b38d3",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [
+        "e09"
+      ],
+      "evaluator_metadata_fields": [
+        "payload.normalized_case.case_id"
+      ],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-8d50b39419",
+        "svc-dfd0c8ace1"
+      ],
+      "payload_class": "static:e09.json",
+      "report_sha256": "e93d9bddd4c9dc66a8ab8600bbb022c3e44bc7662cba44bb16a92811efaeffbb",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [
+        "e10"
+      ],
+      "evaluator_metadata_fields": [
+        "payload.normalized_case.case_id"
+      ],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-427d298ab6",
+        "svc-e427f30ecf"
+      ],
+      "payload_class": "static:e10.json",
+      "report_sha256": "b10fdbd959f858fa8fca7407fc188eb9e659699eb6fd0b6facc08bbd54201b08",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [
+        "e11"
+      ],
+      "evaluator_metadata_fields": [
+        "payload.normalized_case.case_id"
+      ],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-6348eb4669",
+        "svc-7ea9813b88"
+      ],
+      "payload_class": "static:e11.json",
+      "report_sha256": "646f0f5e1ff63b6620a9d4eccd5a683031340d4816c891c6987c01839842c052",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [
+        "e12"
+      ],
+      "evaluator_metadata_fields": [
+        "payload.normalized_case.case_id"
+      ],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "svc-1de47681e8",
+        "svc-d7177f0c99"
+      ],
+      "payload_class": "static:e12.json",
+      "report_sha256": "57be47458dcdef9dfd839f32836c92b7d49cfea77a01792fa0c0a10b2fe0c243",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [
+        "e13"
+      ],
+      "evaluator_metadata_fields": [
+        "payload.normalized_case.case_id"
+      ],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "op-4dde2f190f",
+        "svc-74db1d20d6",
+        "svc-a17d7af9b9"
+      ],
+      "payload_class": "static:e13.json",
+      "report_sha256": "6199aa2199e846f9c4f28f646e7107fe0183b53278c14d5174197e67f42995c4",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [
+        "e14"
+      ],
+      "evaluator_metadata_fields": [
+        "payload.normalized_case.case_id"
+      ],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "op-5fa4dc3e4c",
+        "svc-800dbf6cfc",
+        "svc-ee0afadf3c"
+      ],
+      "payload_class": "static:e14.json",
+      "report_sha256": "a409338773f39e56fe2e5c37776f29f75c7f23728bd55b89cd2558bee9c11832",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [
+        "e15"
+      ],
+      "evaluator_metadata_fields": [
+        "payload.normalized_case.case_id"
+      ],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "op-f6ca533ad8",
+        "svc-3bb9a12a51",
+        "svc-57fd6471cf"
+      ],
+      "payload_class": "static:e15.json",
+      "report_sha256": "f081cf5f777508fc0b0f566c9e1ca2bbf6ab4a0e59155b7b4fed7bb88b5f39f7",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    },
+    {
+      "case_ids": [
+        "e16"
+      ],
+      "evaluator_metadata_fields": [
+        "payload.normalized_case.case_id"
+      ],
+      "forbidden_identity_values": [],
+      "identity_values_scanned": [
+        "op-d53e4646f9",
+        "svc-56d1528d11",
+        "svc-d1aeb2523b"
+      ],
+      "payload_class": "static:e16.json",
+      "report_sha256": "c848bfa114265363942e7076e8b072430a25103ccae316a9f1825cb28c480aba",
+      "schema_version": "dta-v22.5.provider-identity-lint-report.v1"
+    }
+  ],
+  "terminal": "OPAQUE_PROVIDER_IDENTITY_LINT_PASS"
+}
