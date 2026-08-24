@@ -16,6 +16,7 @@ from pydantic import model_validator
 
 from ecomsre.dta_v2.provider_env import load_private_provider_env
 from ecomsre.dta_v2.read_tools import ReadBackend
+from ecomsre.environment.command_runner import AuditedSubprocessRunner
 from ecomsre.dta_v2.v21.live_contracts import (
     LiveFaultImpactEvidenceV21,
     LiveScenarioV21,
@@ -61,6 +62,7 @@ from ecomsre.dta_v2.v22.real_fault_live_v225 import RealFaultShadowLifecycleV1
 from ecomsre.dta_v2.v22.real_fault_preflight_v225 import (
     NoHealthyComparatorV225,
     RealFaultStaticPreflightV1,
+    run_read_only_git_v225,
     run_static_preflight_v225,
     select_healthy_comparator_v225,
 )
@@ -431,12 +433,6 @@ class RealFaultStudyArtifactV1(DtaModelV22):
         return self
 
 
-def _git(root: Path, *args: str) -> str:
-    return subprocess.run(
-        ("git", *args), cwd=root, check=True, capture_output=True, text=True
-    ).stdout.strip()
-
-
 def _write_once(path: Path, value: DtaModelV22 | dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     text = (
@@ -580,7 +576,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     if campaign_root.exists() or campaign_root.is_symlink():
         raise FileExistsError("real-fault campaign is write-once")
     ensure_private_directory(campaign_root)
-    head = _git(root, "rev-parse", "HEAD")
+    git_runner = AuditedSubprocessRunner(
+        project_root=root,
+        artifacts_root=campaign_root / "git-audit",
+        run_id=hashlib.sha256(campaign_id.encode()).hexdigest()[:32],
+    )
+    head = run_read_only_git_v225(git_runner, "rev-parse", "HEAD")
     provider_values = load_private_provider_env(args.provider_env)
     provider_config = OpenAICompatibleConfig(
         base_url=provider_values["ECOMSRE_LLM_BASE_URL"],
@@ -647,6 +648,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 provider_env_path=args.provider_env,
                 manifest=pre_live_freeze,
                 alias_maps=maps,
+                git_runner=git_runner,
             )
             write_private_json(
                 campaign_root / "private-alias-maps.json",

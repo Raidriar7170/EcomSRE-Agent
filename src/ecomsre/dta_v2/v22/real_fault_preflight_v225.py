@@ -6,8 +6,7 @@ from datetime import datetime, timezone
 import hashlib
 import math
 from pathlib import Path
-import subprocess
-from typing import Any, Literal, cast
+from typing import Any, Literal, Protocol, cast
 
 from pydantic import Field, model_validator
 
@@ -61,14 +60,27 @@ class NoHealthyComparatorV225(RuntimeError):
     pass
 
 
-def _git(root: Path, *args: str) -> str:
-    return subprocess.run(
-        ("git", *args),
-        cwd=root,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
+class GitCommandResultV225(Protocol):
+    exit_code: int
+    stdout: str
+
+
+class GitCommandRunnerV225(Protocol):
+    def run(
+        self,
+        arguments: tuple[str, ...],
+        *,
+        timeout_seconds: float,
+    ) -> GitCommandResultV225: ...
+
+
+def run_read_only_git_v225(
+    runner: GitCommandRunnerV225, *args: str
+) -> str:
+    result = runner.run(("git", *args), timeout_seconds=30)
+    if result.exit_code != 0:
+        raise RuntimeError("audited read-only git command failed")
+    return result.stdout.strip()
 
 
 def _sha256(path: Path) -> str:
@@ -108,16 +120,24 @@ def run_static_preflight_v225(
     provider_env_path: Path,
     manifest: RealFaultPreLiveFreezeV1,
     alias_maps: RealFaultAliasMapSetV1,
+    git_runner: GitCommandRunnerV225,
 ) -> RealFaultStaticPreflightV1:
     root = repository_root.resolve(strict=True)
-    head = _git(root, "rev-parse", "HEAD")
+    head = run_read_only_git_v225(git_runner, "rev-parse", "HEAD")
     if head != manifest.code_head:
         raise ValueError("real-fault manifest code head differs from current HEAD")
-    if _git(root, "branch", "--show-current") != "codex/dta-v225-real-fault-shadow":
+    if (
+        run_read_only_git_v225(git_runner, "branch", "--show-current")
+        != "codex/dta-v225-real-fault-shadow"
+    ):
         raise ValueError("real-fault preflight branch differs")
-    if _git(root, "status", "--porcelain=v1", "--untracked-files=all"):
+    if run_read_only_git_v225(
+        git_runner, "status", "--porcelain=v1", "--untracked-files=all"
+    ):
         raise ValueError("real-fault preflight requires an exactly clean worktree")
-    _git(root, "merge-base", "--is-ancestor", "origin/main", "HEAD")
+    run_read_only_git_v225(
+        git_runner, "merge-base", "--is-ancestor", "origin/main", "HEAD"
+    )
     provider = load_private_provider_env(provider_env_path)
     if provider["ECOMSRE_LLM_MODEL"] != manifest.provider_model:
         raise ValueError("real-fault Provider model differs from manifest")
