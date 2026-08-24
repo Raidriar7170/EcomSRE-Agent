@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable, Mapping
 from datetime import timedelta
+import time
 from typing import Literal, Protocol
 
-from pydantic import Field, StrictInt, model_validator
+from pydantic import Field, StrictInt, ValidationError, model_validator
 
 from ecomsre.dta_v2.agent_contracts import (
     AgentVisibleObservation,
@@ -24,7 +26,17 @@ from ecomsre.dta_v2.tool_contracts import (
     revalidate_read_tool_request,
 )
 from ecomsre.dta_v2.v21.agent_contracts import AlertContextV21
-from ecomsre.dta_v2.v21.agent_provider import ProviderTurnV21
+from ecomsre.dta_v2.v21.agent_contracts import AgentArmV21
+from ecomsre.dta_v2.v21.agent_provider import (
+    FLAT_FUNCTION_V21,
+    FlatProviderOutputV21,
+    OpenAICompatibleDtaAgentProviderV21,
+    ProviderTurnV21,
+    _canonical_json,
+    _canonicalize_diagnosis,
+    _definition,
+    _safe_validation_codes_v21,
+)
 from ecomsre.dta_v2.v21.context_projection import build_prior_request_history_v21
 from ecomsre.dta_v2.v21.contracts import (
     DtaDiagnosisV21,
@@ -32,6 +44,12 @@ from ecomsre.dta_v2.v21.contracts import (
     FaultDomainV21,
     FaultMechanismV21,
     TerminalV21,
+)
+from ecomsre.dta_v2.v21.prompts import COMMON_INVESTIGATION_RULES_V21
+from ecomsre.dta_v2.v22.simple_provider import (
+    ProviderTransportErrorV22,
+    ProviderTransportV22,
+    StdlibProviderTransportV22,
 )
 from ecomsre.dta_v2.v22.real_capture_backend_v225 import (
     RealCaptureSnapshotBackendV225,
@@ -49,9 +67,155 @@ from ecomsre.dta_v2.v22.real_fault_comparison_contracts_v225 import (
     RealFaultStudyArm,
     build_real_fault_arm_run_v225,
 )
+from ecomsre.model.gateway import (
+    OpenAICompatibleConfig,
+    OpenAICompatibleTransport,
+    ProviderProtocolError,
+)
 
 
-REAL_FAULT_FLAT_SYSTEM_PROMPT_V225 = """You are the v2-style Flat Adaptive diagnosis-only arm using the v2.1 CPU-capable ontology. Choose whether to read, which read-only tool and opaque target set to inspect, or submit one supported Diagnosis. Candidate identifiers are opaque. The generic task is: investigate whether one candidate currently has an operational fault and gather only the evidence needed for a supported terminal. Never propose or execute an action, Runbook, command, remediation, or write."""
+REAL_FAULT_FLAT_SYSTEM_PROMPT_V225 = (
+    "You are the v2-style Flat Adaptive diagnosis-only arm using the closed v2.1 "
+    "CPU-capable ontology. Candidate identifiers are opaque. Choose one allowed "
+    "read-only request over one or multiple visible candidates, or submit one typed "
+    "Diagnosis. Runtime and Resources accept one or multiple candidates. The generic "
+    "task is to investigate whether one candidate currently has an operational fault "
+    "and gather only the evidence needed for a supported terminal. Never propose or "
+    "execute an action, Runbook, command, remediation, or write. "
+    + COMMON_INVESTIGATION_RULES_V21
+)
+
+
+class ExactRequestRetryTransportV225(OpenAICompatibleTransport):
+    """Retry the identical Flat request at most three times on transport-only errors."""
+
+    def __init__(
+        self,
+        *,
+        transport: ProviderTransportV22 | None = None,
+        sleeper: Callable[[float], None] = time.sleep,
+    ) -> None:
+        self.transport = transport or StdlibProviderTransportV22()
+        self.sleeper = sleeper
+        self.transport_retry_count = 0
+
+    def post_json(
+        self,
+        *,
+        url: str,
+        headers: Mapping[str, str],
+        payload: Mapping[str, object],
+        timeout_seconds: float,
+    ) -> Mapping[str, object]:
+        backoff = (5.0, 15.0, 30.0)
+        for attempt in range(4):
+            try:
+                return self.transport.post_json(
+                    url=url,
+                    headers=headers,
+                    payload=payload,
+                    timeout_seconds=timeout_seconds,
+                )
+            except ProviderTransportErrorV22 as error:
+                retryable = error.retryable or error.safe_code == "CONNECTION_ERROR"
+                if not retryable or attempt == 3:
+                    if error.safe_code == "TIMEOUTERROR":
+                        raise TimeoutError("Flat Provider transport failed") from None
+                    raise ConnectionError("Flat Provider transport failed") from None
+                self.transport_retry_count += 1
+                self.sleeper(backoff[attempt])
+        raise AssertionError("unreachable Flat retry state")
+
+
+class RealFaultFlatProviderV225(OpenAICompatibleDtaAgentProviderV21):
+    """v2.1 Flat parser with the comparison-specific prompt and retry transport."""
+
+    def __init__(
+        self,
+        *,
+        config: OpenAICompatibleConfig,
+        timeout_seconds: float = 120.0,
+        max_completion_tokens: int = 1600,
+        transport: ProviderTransportV22 | None = None,
+        sleeper: Callable[[float], None] = time.sleep,
+    ) -> None:
+        self._retry_transport = ExactRequestRetryTransportV225(
+            transport=transport,
+            sleeper=sleeper,
+        )
+        super().__init__(
+            arm=AgentArmV21.FLAT_ADAPTIVE,
+            config=config,
+            timeout_seconds=timeout_seconds,
+            max_completion_tokens=max_completion_tokens,
+            transport=self._retry_transport,
+        )
+
+    @property
+    def transport_retry_count(self) -> int:
+        return self._retry_transport.transport_retry_count
+
+    def investigation_turn(
+        self,
+        *,
+        context: AlertContextV21,
+        visible_state: object,
+        read_tools_enabled: bool,
+    ) -> ProviderTurnV21:
+        context = AlertContextV21.model_validate(context.model_dump(mode="python"))
+        if type(read_tools_enabled) is not bool:
+            raise TypeError("read_tools_enabled must be bool")
+        if not hasattr(visible_state, "model_dump"):
+            raise TypeError("Provider visible state must be a typed model")
+        visible = visible_state.model_dump(mode="json")  # type: ignore[attr-defined]
+        arguments, raw_sha, tool_call_id, usage, latency = self._complete(
+            system_prompt=REAL_FAULT_FLAT_SYSTEM_PROMPT_V225,
+            visible_input=visible,
+            definition=_definition(
+                FLAT_FUNCTION_V21,
+                "Submit one comparison read request or one final Diagnosis.",
+                FlatProviderOutputV21,
+            ),
+            expected_name=FLAT_FUNCTION_V21,
+        )
+        try:
+            parsed = FlatProviderOutputV21.model_validate_json(
+                _canonical_json(
+                    {
+                        **arguments,
+                        "diagnosis": _canonicalize_diagnosis(
+                            arguments.get("diagnosis")
+                        ),
+                    }
+                )
+            )
+            request = (
+                None
+                if parsed.read_request is None
+                else self._build_read_request(parsed.read_request, context)
+            )
+            if not read_tools_enabled and request is not None:
+                raise ProviderProtocolError("Provider requested evidence after budget")
+            turn = ProviderTurnV21(
+                function_name=FLAT_FUNCTION_V21,
+                tool_call_id=tool_call_id,
+                raw_response_sha256=raw_sha,
+                usage=usage,
+                monotonic_latency_ms=latency,
+                read_request=request,
+                diagnosis=parsed.diagnosis,
+            )
+        except ProviderProtocolError:
+            raise
+        except (TypeError, ValidationError, ValueError) as error:
+            codes = ",".join(
+                _safe_validation_codes_v21(error, model=FlatProviderOutputV21)
+            )
+            raise ProviderProtocolError(
+                f"Provider comparison output is invalid [codes={codes}]"
+            ) from error
+        self._accepted_calls.append(turn)
+        return turn
 
 
 class FlatComparisonProviderV225(Protocol):
@@ -400,8 +564,10 @@ def run_v2_style_flat_adaptive_v225(
 
 
 __all__ = (
+    "ExactRequestRetryTransportV225",
     "FlatComparisonProviderV225",
     "REAL_FAULT_FLAT_SYSTEM_PROMPT_V225",
+    "RealFaultFlatProviderV225",
     "RealFaultFlatStateV225",
     "run_v2_style_flat_adaptive_v225",
 )

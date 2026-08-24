@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import hashlib
-from typing import Any, Literal
+from typing import Literal
 
+from ecomsre.dta_v2.read_tools import ReadBackend
 from ecomsre.dta_v2.v22.action_catalog import (
-    EvidenceActionV22,
     StaticTopologyV22,
     build_action_catalog_v22,
     build_default_tool_capability_registry_v22,
@@ -28,7 +28,11 @@ from ecomsre.dta_v2.v22.gap_router_v222 import (
     GapRouterModeV222,
     route_gap_aware_actions_v222,
 )
-from ecomsre.dta_v2.v22.memory import BaselineProfileV22, build_memory_views_v22
+from ecomsre.dta_v2.v22.memory import (
+    BaselineProfileV22,
+    MemoryReadOutcomeV22,
+    build_memory_views_v22,
+)
 from ecomsre.dta_v2.v22.negative_coverage_v222 import (
     ReadUtilityClassV222,
     classify_read_utility_v222,
@@ -45,21 +49,24 @@ from ecomsre.dta_v2.v22.practical_runner import _memory_outcome
 from ecomsre.dta_v2.v22.read_contracts import (
     EvidenceSourceV22,
     ReadSourceStatusV22,
-    semantic_sha256_v22,
 )
 from ecomsre.dta_v2.v22.real_fault_capture_v225 import (
+    RealFaultAliasMapV1,
     RealFaultOpaqueCaptureV1,
     require_provider_payload_opaque_v225,
+)
+from ecomsre.dta_v2.v22.real_fault_action_backend_v225 import (
+    ActionReadBackendV225,
+    RealFaultActionReadBackendV225,
 )
 from ecomsre.dta_v2.v22.real_fault_comparison_contracts_v225 import (
     RealFaultArmRun,
     RealFaultArmStatus,
+    RealFaultLiveShadowRun,
     RealFaultShadowPrediction,
     RealFaultStudyArm,
     build_real_fault_arm_run_v225,
 )
-from ecomsre.dta_v2.v22.replay import ReadOutcomeV22
-from ecomsre.dta_v2.v22.replay_bundle_v225 import QuerySpecificReplayBackendV225
 from ecomsre.dta_v2.v22.replay_target_coverage_v225 import (
     ReplayTargetCoverageModeV225,
     build_replay_target_coverage_v225,
@@ -93,50 +100,6 @@ def _source_failure(
             if item.source is source
         ),
         None,
-    )
-
-
-def _outcome(
-    *,
-    action: EvidenceActionV22,
-    capture: RealFaultOpaqueCaptureV1,
-    records: tuple[Any, ...],
-) -> ReadOutcomeV22:
-    failure = _source_failure(capture=capture, source=action.source)
-    status = (
-        failure
-        if failure is not None
-        else ReadSourceStatusV22.SUCCESS_NONEMPTY
-        if records
-        else ReadSourceStatusV22.SUCCESS_EMPTY
-    )
-    bound_records = () if failure is not None else records
-    payload: dict[str, object] = {
-        "schema_version": "dta-v22.read-outcome.v1",
-        "action_id": action.action_id,
-        "source": action.source,
-        "request_sha256": action.request_sha256,
-        "status": status,
-        "records": bound_records,
-        "truncated": False,
-    }
-    draft = ReadOutcomeV22.model_construct(
-        schema_version="dta-v22.read-outcome.v1",
-        action_id=action.action_id,
-        source=action.source,
-        request_sha256=action.request_sha256,
-        status=status,
-        records=bound_records,
-        truncated=False,
-        outcome_sha256="0" * 64,
-    )
-    return ReadOutcomeV22.model_validate(
-        {
-            **payload,
-            "outcome_sha256": semantic_sha256_v22(
-                draft.model_dump(mode="json", exclude={"outcome_sha256"})
-            ),
-        }
     )
 
 
@@ -180,7 +143,8 @@ def _bootstrap(
     baseline_capture: RealFaultOpaqueCaptureV1,
     topology: StaticTopologyV22,
     run_id: str,
-) -> tuple[tuple[object, ...], tuple[str, ...]]:
+    backend: ActionReadBackendV225,
+) -> tuple[tuple[MemoryReadOutcomeV22, ...], tuple[str, ...]]:
     catalog = build_action_catalog_v22(
         candidate_services=capture.candidate_aliases,
         topology=topology,
@@ -203,12 +167,8 @@ def _bootstrap(
         )
         for service in capture.candidate_aliases
     )
-    source_runtime = _outcome(
-        action=runtime_action,
-        capture=capture,
-        records=capture.capture.runtime,
-    )
-    outcomes: list[object] = [
+    source_runtime = backend.execute(runtime_action)
+    outcomes: list[MemoryReadOutcomeV22] = [
         _memory_outcome(
             action=runtime_action,
             outcome=source_runtime,
@@ -218,17 +178,7 @@ def _bootstrap(
         )
     ]
     for ordinal, action in enumerate(metric_actions, start=2):
-        outcomes.append(
-            _outcome(
-                action=action,
-                capture=capture,
-                records=tuple(
-                    item
-                    for item in capture.capture.metrics
-                    if item.service == action.target_services[0]
-                ),
-            )
-        )
+        outcomes.append(backend.execute(action))
     # Revalidate the derived baseline here so bootstrap construction cannot drift
     # from the paired real baseline capture supplied by the caller.
     _baseline(baseline_capture)
@@ -287,6 +237,7 @@ def run_current_runtime_bundle_v225(
     baseline_capture: RealFaultOpaqueCaptureV1,
     model_id: str,
     provider: SelectionProviderProtocolV223,
+    _action_backend: ActionReadBackendV225 | None = None,
 ) -> RealFaultArmRun:
     """Run the current runtime-owned BUNDLE_ONE path without any write stage."""
 
@@ -297,7 +248,9 @@ def run_current_runtime_bundle_v225(
         services=capture.candidate_aliases,
         edges=(),
     )
-    backend = QuerySpecificReplayBackendV225(capture.capture)
+    backend = _action_backend or RealFaultActionReadBackendV225.snapshot(
+        capture=capture, run_id=run_id
+    )
     provider_calls = retries = input_tokens = output_tokens = total_tokens = 0
     latency_ms = 0.0
     semantic_actions = target_reads = bundle_reads = 0
@@ -312,11 +265,12 @@ def run_current_runtime_bundle_v225(
             baseline_capture=baseline_capture,
             topology=topology,
             run_id=run_id,
+            backend=backend,
         )
         baseline = _baseline(baseline_capture)
         outcomes = tuple(raw_bootstrap)
         memory, _ = build_memory_views_v22(
-            outcomes=outcomes,  # type: ignore[arg-type]
+            outcomes=outcomes,
             baseline=baseline,
             observed_at=capture.capture.captured_at,
             top_k=64,
@@ -431,7 +385,7 @@ def run_current_runtime_bundle_v225(
         bundle_reads = 1
         post_outcomes = (*outcomes, source_outcome)
         post_memory, _ = build_memory_views_v22(
-            outcomes=post_outcomes,  # type: ignore[arg-type]
+            outcomes=post_outcomes,
             baseline=baseline,
             observed_at=capture.capture.captured_at,
             top_k=64,
@@ -620,11 +574,54 @@ def run_current_runtime_bundle_v225(
         latency_ms=latency_ms,
         protocol_failures=int(status is RealFaultArmStatus.PROTOCOL_FAILED),
         transport_retries=retries,
-        duplicate_read_attempts=0,
+        duplicate_read_attempts=backend.duplicate_request_count,
         empty_read_count=empty_reads,
         predicate_yield_count=predicate_yield,
         bundle_resources_reads=bundle_reads,
     )
 
 
-__all__ = ("run_current_runtime_bundle_v225",)
+def run_current_runtime_bundle_live_v225(
+    *,
+    capture: RealFaultOpaqueCaptureV1,
+    baseline_capture: RealFaultOpaqueCaptureV1,
+    alias_map: RealFaultAliasMapV1,
+    live_backend: ReadBackend,
+    model_id: str,
+    provider: SelectionProviderProtocolV223,
+) -> RealFaultLiveShadowRun:
+    """Run one current-arm shadow whose reads go directly to the owned backend."""
+
+    if alias_map.map_name != capture.alias_map_name:
+        raise ValueError("live shadow alias map differs from its public capture")
+    adapter = RealFaultActionReadBackendV225.live(
+        backend=live_backend,
+        run_id=_run_id(capture),
+        source_window=capture.source_window,
+        alias_map=alias_map,
+    )
+    arm_run = run_current_runtime_bundle_v225(
+        capture=capture,
+        baseline_capture=baseline_capture,
+        model_id=model_id,
+        provider=provider,
+        _action_backend=adapter,
+    )
+    return RealFaultLiveShadowRun(
+        schema_version="dta-v225-real-fault.live-shadow-run.v1",
+        backend="LocalSandboxReadBackend",
+        case_kind=(
+            "AD_CPU_FAULT" if capture.case_id.startswith("fault-") else "BASELINE"
+        ),
+        arm_run=arm_run,
+        live_read_only=True,
+        agent_writes=0,
+        action_proposals=0,
+        runbook_executions=0,
+    )
+
+
+__all__ = (
+    "run_current_runtime_bundle_live_v225",
+    "run_current_runtime_bundle_v225",
+)

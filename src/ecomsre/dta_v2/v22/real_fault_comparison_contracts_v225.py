@@ -128,6 +128,74 @@ class RealFaultLiveShadowRun(DtaModelV22):
     runbook_executions: Literal[0]
 
 
+class RealFaultCaseTruthV1(DtaModelV22):
+    schema_version: Literal["dta-v225-real-fault.case-truth.v1"]
+    case_id: str = Field(pattern=r"^(?:fault|baseline)-map-[ab]$")
+    case_kind: Literal["BASELINE", "AD_CPU_FAULT"]
+    expected_root_alias: str | None = Field(
+        default=None, pattern=r"^svc-[0-9a-f]{10}$"
+    )
+    expected_fault_domain: Literal["LOCAL_RESOURCE"] | None
+    expected_mechanism: Literal["CPU_SATURATION"] | None
+
+    @model_validator(mode="after")
+    def require_truth(self) -> RealFaultCaseTruthV1:
+        expected = (
+            self.expected_root_alias,
+            self.expected_fault_domain,
+            self.expected_mechanism,
+        )
+        if self.case_kind == "AD_CPU_FAULT":
+            if any(item is None for item in expected):
+                raise ValueError("fault truth lacks the exact CPU claim")
+        elif any(item is not None for item in expected):
+            raise ValueError("baseline truth carries a fault claim")
+        return self
+
+
+class RealFaultStudyExecutionV1(DtaModelV22):
+    schema_version: Literal["dta-v225-real-fault.study-execution.v1"]
+    schedule: tuple[RealFaultScheduleEntry, ...] = Field(min_length=8, max_length=8)
+    runs: tuple[RealFaultArmRun, ...] = Field(min_length=8, max_length=8)
+    truth_load_after_run_ordinals: tuple[Literal[2, 4, 6, 8], ...] = Field(
+        min_length=4, max_length=4
+    )
+    execution_count: Literal[1]
+    same_case_bytes_both_arms: Literal[True]
+    agent_writes: Literal[0]
+    action_proposals: Literal[0]
+    runbook_executions: Literal[0]
+    execution_sha256: str
+
+    @model_validator(mode="after")
+    def require_execution(self) -> RealFaultStudyExecutionV1:
+        expected_schedule = build_real_fault_schedule_v225()
+        if self.schedule != expected_schedule:
+            raise ValueError("real-fault execution schedule differs")
+        if self.truth_load_after_run_ordinals != (2, 4, 6, 8):
+            raise ValueError("truth was not loaded after each paired case")
+        for entry, run in zip(self.schedule, self.runs, strict=True):
+            if (entry.case_id, entry.arm) != (run.case_id, run.arm):
+                raise ValueError("real-fault run order differs from the frozen schedule")
+        for case_id in sorted({item.case_id for item in self.schedule}):
+            hashes = {
+                item.case_bytes_sha256 for item in self.runs if item.case_id == case_id
+            }
+            if len(hashes) != 1:
+                raise ValueError("paired arms did not receive the same case bytes")
+        if any(
+            item.agent_writes or item.action_proposals or item.runbook_executions
+            for item in self.runs
+        ):
+            raise ValueError("real-fault study crossed the read-only boundary")
+        expected = semantic_sha256_v22(
+            self.model_dump(mode="json", exclude={"execution_sha256"})
+        )
+        if self.execution_sha256 != expected:
+            raise ValueError("real-fault study execution digest differs")
+        return self
+
+
 def build_real_fault_arm_run_v225(**values: object) -> RealFaultArmRun:
     payload: dict[str, object] = {
         "schema_version": "dta-v225-real-fault.arm-run.v1",
@@ -191,13 +259,43 @@ def build_real_fault_schedule_v225() -> tuple[RealFaultScheduleEntry, ...]:
     )
 
 
+def build_real_fault_study_execution_v225(
+    *, runs: tuple[RealFaultArmRun, ...]
+) -> RealFaultStudyExecutionV1:
+    payload: dict[str, object] = {
+        "schema_version": "dta-v225-real-fault.study-execution.v1",
+        "schedule": build_real_fault_schedule_v225(),
+        "runs": runs,
+        "truth_load_after_run_ordinals": (2, 4, 6, 8),
+        "execution_count": 1,
+        "same_case_bytes_both_arms": True,
+        "agent_writes": 0,
+        "action_proposals": 0,
+        "runbook_executions": 0,
+    }
+    draft = cast(Any, RealFaultStudyExecutionV1).model_construct(
+        **payload, execution_sha256="0" * 64
+    )
+    return RealFaultStudyExecutionV1.model_validate(
+        {
+            **payload,
+            "execution_sha256": semantic_sha256_v22(
+                draft.model_dump(mode="json", exclude={"execution_sha256"})
+            ),
+        }
+    )
+
+
 __all__ = (
     "RealFaultArmRun",
     "RealFaultArmStatus",
+    "RealFaultCaseTruthV1",
     "RealFaultLiveShadowRun",
     "RealFaultScheduleEntry",
     "RealFaultShadowPrediction",
     "RealFaultStudyArm",
+    "RealFaultStudyExecutionV1",
     "build_real_fault_arm_run_v225",
     "build_real_fault_schedule_v225",
+    "build_real_fault_study_execution_v225",
 )

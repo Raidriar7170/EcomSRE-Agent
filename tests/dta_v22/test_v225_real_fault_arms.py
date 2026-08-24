@@ -4,8 +4,22 @@ from datetime import datetime, timedelta, timezone
 from typing import cast
 
 from ecomsre.dta_v2.agent_contracts import ProviderUsage
+from ecomsre.dta_v2.read_tools import BackendResult
 from ecomsre.dta_v2.tool_contracts import (
+    EndpointState,
+    HealthState,
+    InspectResourceUsageRequest,
+    InspectServiceRuntimeRequest,
+    METRIC_UNIT_BY_KIND,
+    MetricKind,
+    MetricRecord,
+    SearchLogsRequest,
+    TraceNeighborhoodRequest,
     ResourceUsageRecord,
+    ResourceSample,
+    RuntimeRecord,
+    RuntimeState,
+    build_fake_read_authority,
     build_inspect_resource_usage_request,
 )
 from ecomsre.dta_v2.v21.agent_provider import ProviderTurnV21
@@ -30,6 +44,7 @@ from ecomsre.dta_v2.v22.read_contracts import (
     RuntimeStateV22,
 )
 from ecomsre.dta_v2.v22.real_fault_bundle_arm_v225 import (
+    run_current_runtime_bundle_live_v225,
     run_current_runtime_bundle_v225,
 )
 from ecomsre.dta_v2.v22.real_fault_capture_v225 import (
@@ -40,12 +55,20 @@ from ecomsre.dta_v2.v22.real_fault_capture_v225 import (
     build_source_window_v225,
 )
 from ecomsre.dta_v2.v22.real_fault_comparison_contracts_v225 import (
+    RealFaultCaseTruthV1,
     RealFaultStudyArm,
     build_real_fault_schedule_v225,
 )
 from ecomsre.dta_v2.v22.real_fault_flat_arm_v225 import (
     run_v2_style_flat_adaptive_v225,
 )
+from ecomsre.dta_v2.v22.real_fault_live_v225 import (
+    capture_real_fault_physical_state_v225,
+)
+from ecomsre.dta_v2.v22.real_fault_preflight_v225 import (
+    select_healthy_comparator_v225,
+)
+from ecomsre.dta_v2.v22.real_fault_study_v225 import execute_real_fault_study_v225
 from ecomsre.dta_v2.v22.replay import ReplayCaptureV22
 from ecomsre.dta_v2.v22.selection_provider_v222 import (
     SelectionDecisionV222,
@@ -149,6 +172,46 @@ def _cases():
         ),
         map_a.alias_for("ad"),
     )
+
+
+def _all_cases():
+    aliases = generate_opaque_identity_plan_v225(
+        service_count=2, operation_count=0, change_count=0, pair_count=0
+    ).services
+    map_a, map_b = build_alias_maps_v225(
+        fault_service="ad", comparator_service="recommendation", aliases=aliases
+    )
+    baseline = build_physical_capture_v225(
+        campaign_id="campaign-001",
+        kind=RealFaultCaseKind.BASELINE,
+        fault_service="ad",
+        comparator_service="recommendation",
+        source_window=build_source_window_v225(captured_at=CAPTURED_AT),
+        capture=_capture(ad_cpu=2.0),
+    )
+    fault = build_physical_capture_v225(
+        campaign_id="campaign-001",
+        kind=RealFaultCaseKind.AD_CPU_FAULT,
+        fault_service="ad",
+        comparator_service="recommendation",
+        source_window=build_source_window_v225(captured_at=CAPTURED_AT),
+        capture=_capture(ad_cpu=96.0),
+    )
+    captures = {
+        "fault-map-a": build_opaque_capture_v225(
+            case_id="fault-map-a", physical_capture=fault, alias_map=map_a
+        ),
+        "fault-map-b": build_opaque_capture_v225(
+            case_id="fault-map-b", physical_capture=fault, alias_map=map_b
+        ),
+        "baseline-map-a": build_opaque_capture_v225(
+            case_id="baseline-map-a", physical_capture=baseline, alias_map=map_a
+        ),
+        "baseline-map-b": build_opaque_capture_v225(
+            case_id="baseline-map-b", physical_capture=baseline, alias_map=map_b
+        ),
+    }
+    return captures, map_a, map_b
 
 
 class _VisibleEvidenceFlatProvider:
@@ -261,6 +324,71 @@ class _VisibleTerminalSelectionProvider:
         )
 
 
+class _OwnedPhysicalReadBackend:
+    def __init__(self, *, ad_cpu: float = 96.0) -> None:
+        self.authority = build_fake_read_authority()
+        self.requests: list[object] = []
+        self.ad_cpu = ad_cpu
+
+    def execute(self, request):
+        self.requests.append(request)
+        if isinstance(request, InspectServiceRuntimeRequest):
+            return BackendResult(
+                records=tuple(
+                    RuntimeRecord(
+                        logical_service=service,
+                        owned_container_present=True,
+                        state=RuntimeState.RUNNING,
+                        health=HealthState.HEALTHY,
+                        restart_count=0,
+                        exit_code=0,
+                        endpoint_probe_performed=True,
+                        endpoint_state=EndpointState.READY,
+                    )
+                    for service in request.services
+                )
+            )
+        if isinstance(request, InspectResourceUsageRequest):
+            return BackendResult(
+                records=tuple(
+                    ResourceUsageRecord(
+                        logical_service=service,
+                        sampling_window_seconds=10,
+                        samples=tuple(
+                            ResourceSample(
+                                offset_ms=offset,
+                                cpu_percent=self.ad_cpu if service == "ad" else 2.0,
+                                memory_bytes=100_000_000 + offset,
+                            )
+                            for offset in (0, 2_500, 5_000, 7_500, 10_000)
+                        ),
+                        memory_slope_bytes_per_second=0.0,
+                    )
+                    for service in request.services
+                )
+            )
+        if isinstance(request, (SearchLogsRequest, TraceNeighborhoodRequest)):
+            return BackendResult(records=())
+        return BackendResult(
+            records=tuple(
+                MetricRecord(
+                    service=request.service,
+                    metric_kind=kind,
+                    value=(
+                        0.0
+                        if kind is MetricKind.ERROR_RATE
+                        else 3.0
+                        if kind is MetricKind.LATENCY_P95_MS
+                        else 100.0
+                    ),
+                    unit=METRIC_UNIT_BY_KIND[kind],
+                    sample_count=5,
+                )
+                for kind in request.metric_kinds
+            )
+        )
+
+
 def test_flat_is_diagnosis_only_and_keeps_free_target_selection() -> None:
     baseline, fault, truth_alias = _cases()
     provider = _VisibleEvidenceFlatProvider()
@@ -340,3 +468,110 @@ def test_schedule_is_exact_and_counterbalanced() -> None:
         ("baseline-map-b", "CURRENT_RUNTIME_BUNDLE"),
         ("baseline-map-b", "V2_STYLE_FLAT_ADAPTIVE"),
     )
+
+
+def test_current_live_adapter_reads_physical_backend_and_projects_opaque_targets() -> None:
+    baseline, fault, truth_alias = _cases()
+    aliases = generate_opaque_identity_plan_v225(
+        service_count=2, operation_count=0, change_count=0, pair_count=0
+    ).services
+    map_a, _map_b = build_alias_maps_v225(
+        fault_service="ad", comparator_service="recommendation", aliases=aliases
+    )
+    backend = _OwnedPhysicalReadBackend()
+
+    live = run_current_runtime_bundle_live_v225(
+        capture=fault,
+        baseline_capture=baseline,
+        alias_map=map_a,
+        live_backend=backend,
+        model_id=MODEL_ID,
+        provider=_VisibleTerminalSelectionProvider(),
+    )
+
+    assert live.backend == "LocalSandboxReadBackend"
+    assert live.arm_run.prediction.root_service_alias == truth_alias
+    assert live.arm_run.prediction.mechanism == "CPU_SATURATION"
+    assert live.arm_run.all_candidates_covered is True
+    resource_request = next(
+        item for item in backend.requests if isinstance(item, InspectResourceUsageRequest)
+    )
+    assert resource_request.services == ("ad", "recommendation")
+    assert live.agent_writes == 0
+    assert live.action_proposals == 0
+    assert live.runbook_executions == 0
+
+
+def test_capture_only_successor_collects_one_target_complete_physical_state() -> None:
+    capture = capture_real_fault_physical_state_v225(
+        backend=_OwnedPhysicalReadBackend(),
+        run_id="1" * 32,
+        campaign_id="campaign-001",
+        kind=RealFaultCaseKind.AD_CPU_FAULT,
+        comparator_service="recommendation",
+    )
+
+    assert capture.binding.services == ("ad", "recommendation")
+    assert tuple(item.service for item in capture.capture.runtime) == (
+        "ad",
+        "recommendation",
+    )
+    assert tuple(item.service for item in capture.capture.resources) == (
+        "ad",
+        "recommendation",
+    )
+    assert len(capture.capture.metrics) == 6
+    assert capture.capture.logs == ()
+    assert capture.capture.traces == ()
+
+
+def test_live_preflight_prefers_healthy_target_complete_recommendation() -> None:
+    backend = _OwnedPhysicalReadBackend(ad_cpu=2.0)
+
+    comparator = select_healthy_comparator_v225(
+        backend=backend,
+        run_id="2" * 32,
+    )
+
+    assert comparator == "recommendation"
+    assert any(
+        isinstance(item, InspectResourceUsageRequest)
+        and item.services == ("ad", "recommendation")
+        for item in backend.requests
+    )
+
+
+def test_full_schedule_executes_once_and_loads_truth_after_each_local_pair() -> None:
+    captures, map_a, map_b = _all_cases()
+    truth_loads: list[str] = []
+
+    def load_truth(case_id: str) -> RealFaultCaseTruthV1:
+        truth_loads.append(case_id)
+        fault = case_id.startswith("fault-")
+        alias_map = map_a if case_id.endswith("a") else map_b
+        return RealFaultCaseTruthV1(
+            schema_version="dta-v225-real-fault.case-truth.v1",
+            case_id=case_id,
+            case_kind="AD_CPU_FAULT" if fault else "BASELINE",
+            expected_root_alias=alias_map.alias_for("ad") if fault else None,
+            expected_fault_domain="LOCAL_RESOURCE" if fault else None,
+            expected_mechanism="CPU_SATURATION" if fault else None,
+        )
+
+    execution, truths = execute_real_fault_study_v225(
+        captures=captures,
+        model_id=MODEL_ID,
+        flat_provider_factory=_VisibleEvidenceFlatProvider,
+        current_provider_factory=_VisibleTerminalSelectionProvider,
+        truth_loader=load_truth,
+    )
+
+    assert execution.execution_count == 1
+    assert len(execution.runs) == 8
+    assert truth_loads == [
+        "fault-map-a",
+        "fault-map-b",
+        "baseline-map-a",
+        "baseline-map-b",
+    ]
+    assert tuple(item.case_id for item in truths) == tuple(truth_loads)
