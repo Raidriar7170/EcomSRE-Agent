@@ -56,6 +56,27 @@ class RealFaultAliasMapSetV1(DtaModelV22):
         return self
 
 
+class RealFaultPublicAliasMapSetV1(DtaModelV22):
+    """Public counterfactual declaration without private physical bindings."""
+
+    schema_version: Literal["dta-v225-real-fault.public-alias-map-set.v1"]
+    aliases: tuple[str, str]
+    map_names: tuple[Literal["MAP_A"], Literal["MAP_B"]]
+    exact_two_way_swap: Literal[True]
+    public_set_sha256: str
+
+    @model_validator(mode="after")
+    def require_public_set(self) -> RealFaultPublicAliasMapSetV1:
+        if self.aliases != tuple(sorted(set(self.aliases))):
+            raise ValueError("public alias set is not canonical")
+        expected = semantic_sha256_v22(
+            self.model_dump(mode="json", exclude={"public_set_sha256"})
+        )
+        if self.public_set_sha256 != expected:
+            raise ValueError("public alias-set digest differs")
+        return self
+
+
 class RealFaultCaseBindingV1(DtaModelV22):
     case_id: str = Field(pattern=r"^(?:fault|baseline)-map-[ab]$")
     capture_path: str = Field(
@@ -126,8 +147,8 @@ class RealFaultTruthSetV1(DtaModelV22):
         return self
 
 
-class RealFaultManifestV1(DtaModelV22):
-    schema_version: Literal["dta-v225-real-fault.manifest.v1"]
+class RealFaultPreLiveFreezeV1(DtaModelV22):
+    schema_version: Literal["dta-v225-real-fault.pre-live-freeze.v1"]
     goal_version: Literal["dta-v225-real-fault-shadow-v1"]
     starting_main: Literal["8e4227fb8ac8880f89eadc3d13bf423244b378a7"]
     code_head: str = Field(pattern=r"^[0-9a-f]{40}$")
@@ -147,12 +168,30 @@ class RealFaultManifestV1(DtaModelV22):
     agent_write_authority: Literal[0]
     action_proposal_authority: Literal[0]
     runbook_execution_authority: Literal[0]
+    freeze_sha256: str
+
+    @model_validator(mode="after")
+    def require_freeze(self) -> RealFaultPreLiveFreezeV1:
+        if self.schedule != build_real_fault_schedule_v225():
+            raise ValueError("real-fault pre-live schedule differs")
+        expected = semantic_sha256_v22(
+            self.model_dump(mode="json", exclude={"freeze_sha256"})
+        )
+        if self.freeze_sha256 != expected:
+            raise ValueError("real-fault pre-live freeze digest differs")
+        return self
+
+
+class RealFaultManifestV1(DtaModelV22):
+    schema_version: Literal["dta-v225-real-fault.manifest.v1"]
+    pre_live_freeze: RealFaultPreLiveFreezeV1
+    capture_pair_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    case_set_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    truth_set_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     manifest_sha256: str
 
     @model_validator(mode="after")
     def require_manifest(self) -> RealFaultManifestV1:
-        if self.schedule != build_real_fault_schedule_v225():
-            raise ValueError("real-fault manifest schedule differs")
         expected = semantic_sha256_v22(
             self.model_dump(mode="json", exclude={"manifest_sha256"})
         )
@@ -184,6 +223,26 @@ def build_alias_map_set_v225(
             {
                 "schema_version": "dta-v225-real-fault.alias-map-set.v1",
                 "maps": (map_a, map_b),
+            },
+        ),
+    )
+
+
+def build_public_alias_map_set_v225(
+    *, private_maps: RealFaultAliasMapSetV1
+) -> RealFaultPublicAliasMapSetV1:
+    return cast(
+        RealFaultPublicAliasMapSetV1,
+        _build(
+            RealFaultPublicAliasMapSetV1,
+            "public_set_sha256",
+            {
+                "schema_version": "dta-v225-real-fault.public-alias-map-set.v1",
+                "aliases": tuple(
+                    item.alias for item in private_maps.maps[0].bindings
+                ),
+                "map_names": ("MAP_A", "MAP_B"),
+                "exact_two_way_swap": True,
             },
         ),
     )
@@ -230,7 +289,7 @@ def build_truth_set_v225(
     )
 
 
-def build_manifest_v225(
+def build_pre_live_freeze_v225(
     *,
     code_head: str,
     comparator_service: Literal["email", "product-catalog", "recommendation"],
@@ -238,14 +297,14 @@ def build_manifest_v225(
     flat_prompt_sha256: str,
     current_prompt_sha256: str,
     scorer_sha256: str,
-) -> RealFaultManifestV1:
+) -> RealFaultPreLiveFreezeV1:
     return cast(
-        RealFaultManifestV1,
+        RealFaultPreLiveFreezeV1,
         _build(
-            RealFaultManifestV1,
-            "manifest_sha256",
+            RealFaultPreLiveFreezeV1,
+            "freeze_sha256",
             {
-                "schema_version": "dta-v225-real-fault.manifest.v1",
+                "schema_version": "dta-v225-real-fault.pre-live-freeze.v1",
                 "goal_version": "dta-v225-real-fault-shadow-v1",
                 "starting_main": "8e4227fb8ac8880f89eadc3d13bf423244b378a7",
                 "code_head": code_head,
@@ -265,6 +324,29 @@ def build_manifest_v225(
                 "agent_write_authority": 0,
                 "action_proposal_authority": 0,
                 "runbook_execution_authority": 0,
+            },
+        ),
+    )
+
+
+def build_manifest_v225(
+    *,
+    pre_live_freeze: RealFaultPreLiveFreezeV1,
+    capture_pair_sha256: str,
+    case_set_sha256: str,
+    truth_set_sha256: str,
+) -> RealFaultManifestV1:
+    return cast(
+        RealFaultManifestV1,
+        _build(
+            RealFaultManifestV1,
+            "manifest_sha256",
+            {
+                "schema_version": "dta-v225-real-fault.manifest.v1",
+                "pre_live_freeze": pre_live_freeze,
+                "capture_pair_sha256": capture_pair_sha256,
+                "case_set_sha256": case_set_sha256,
+                "truth_set_sha256": truth_set_sha256,
             },
         ),
     )
@@ -323,10 +405,14 @@ __all__ = (
     "RealFaultCaseBindingV1",
     "RealFaultCaseSetV1",
     "RealFaultManifestV1",
+    "RealFaultPreLiveFreezeV1",
+    "RealFaultPublicAliasMapSetV1",
     "RealFaultTruthSetV1",
     "build_alias_map_set_v225",
     "build_case_set_v225",
     "build_manifest_v225",
+    "build_pre_live_freeze_v225",
+    "build_public_alias_map_set_v225",
     "build_truth_set_v225",
     "execute_real_fault_study_v225",
     "load_opaque_case_v225",

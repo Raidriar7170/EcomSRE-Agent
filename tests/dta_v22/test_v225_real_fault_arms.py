@@ -24,6 +24,7 @@ from ecomsre.dta_v2.tool_contracts import (
     RuntimeState,
     build_fake_read_authority,
     build_inspect_resource_usage_request,
+    build_inspect_service_runtime_request,
 )
 from ecomsre.dta_v2.v21.agent_provider import ProviderTurnV21
 from ecomsre.dta_v2.v21.contracts import (
@@ -230,6 +231,9 @@ class _VisibleEvidenceFlatProvider:
 
     def investigation_turn(self, *, context, visible_state, read_tools_enabled):
         self.attempted_calls += 1
+        assert context.scenario_id.startswith("pair-")
+        assert "fault" not in context.scenario_id
+        assert "baseline" not in context.scenario_id
         usage = ProviderUsage(input_tokens=100, output_tokens=20, total_tokens=120)
         if not visible_state.adaptive_observations:
             assert read_tools_enabled
@@ -329,6 +333,48 @@ class _VisibleTerminalSelectionProvider:
             output_tokens=8,
             total_tokens=88,
             latency_ms=4.0,
+        )
+
+
+class _RuntimeThenResourcesFlatProvider(_VisibleEvidenceFlatProvider):
+    def investigation_turn(self, *, context, visible_state, read_tools_enabled):
+        if not visible_state.adaptive_observations:
+            self.attempted_calls += 1
+            return ProviderTurnV21(
+                function_name="submit_real_fault_flat_turn",
+                tool_call_id=f"call-{self.attempted_calls}",
+                raw_response_sha256="7" * 64,
+                usage=ProviderUsage(
+                    input_tokens=50, output_tokens=10, total_tokens=60
+                ),
+                monotonic_latency_ms=3,
+                read_request=build_inspect_service_runtime_request(
+                    run_id=context.run_id,
+                    services=context.candidate_services,
+                    max_results=2,
+                ),
+            )
+        if len(visible_state.adaptive_observations) == 1:
+            self.attempted_calls += 1
+            return ProviderTurnV21(
+                function_name="submit_real_fault_flat_turn",
+                tool_call_id=f"call-{self.attempted_calls}",
+                raw_response_sha256="8" * 64,
+                usage=ProviderUsage(
+                    input_tokens=50, output_tokens=10, total_tokens=60
+                ),
+                monotonic_latency_ms=3,
+                read_request=build_inspect_resource_usage_request(
+                    run_id=context.run_id,
+                    services=context.candidate_services,
+                    sampling_window_seconds=10,
+                    sample_count=5,
+                ),
+            )
+        return super().investigation_turn(
+            context=context,
+            visible_state=visible_state,
+            read_tools_enabled=read_tools_enabled,
         )
 
 
@@ -461,6 +507,19 @@ def test_both_arms_return_exact_no_incident_on_baseline_capture() -> None:
     assert current.prediction.terminal == "NO_INCIDENT"
     assert flat.prediction.evidence_clause_valid is True
     assert current.prediction.evidence_clause_valid is True
+
+
+def test_flat_first_useful_evidence_reports_actual_adaptive_ordinal() -> None:
+    baseline, fault, _truth_alias = _cases()
+
+    run = run_v2_style_flat_adaptive_v225(
+        capture=fault,
+        baseline_capture=baseline,
+        model_id=MODEL_ID,
+        provider=_RuntimeThenResourcesFlatProvider(),
+    )
+
+    assert run.first_useful_evidence_ordinal == 2
 
 
 def test_schedule_is_exact_and_counterbalanced() -> None:
@@ -660,7 +719,7 @@ def _prepared_live_study() -> PreparedLiveStudyV225:
     return PreparedLiveStudyV225(
         comparator_service="recommendation",
         alias_maps=build_alias_map_set_v225(map_a=map_a, map_b=map_b),
-        manifest=cast(object, SimpleNamespace()),
+        pre_live_freeze=cast(object, SimpleNamespace()),
         preflight=cast(object, SimpleNamespace(preflight_sha256="5" * 64)),
     )
 

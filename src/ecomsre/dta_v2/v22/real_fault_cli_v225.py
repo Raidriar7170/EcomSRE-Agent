@@ -70,9 +70,12 @@ from ecomsre.dta_v2.v22.real_fault_shadow_scorer_v225 import (
 from ecomsre.dta_v2.v22.real_fault_study_v225 import (
     RealFaultAliasMapSetV1,
     RealFaultManifestV1,
+    RealFaultPreLiveFreezeV1,
     build_alias_map_set_v225,
     build_case_set_v225,
     build_manifest_v225,
+    build_pre_live_freeze_v225,
+    build_public_alias_map_set_v225,
     build_truth_set_v225,
     execute_real_fault_study_v225,
 )
@@ -116,7 +119,7 @@ class LiveLifecycleV225(Protocol):
 class PreparedLiveStudyV225:
     comparator_service: Literal["email", "product-catalog", "recommendation"]
     alias_maps: RealFaultAliasMapSetV1
-    manifest: RealFaultManifestV1
+    pre_live_freeze: RealFaultPreLiveFreezeV1
     preflight: RealFaultStaticPreflightV1
 
 
@@ -446,18 +449,90 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--provider-env", type=Path, required=True)
     parser.add_argument("--private-root", type=Path, required=True)
     parser.add_argument("--lease-root", type=Path, required=True)
-    parser.add_argument("--campaign-id", default="campaign-0001")
+    parser.add_argument("--replacement", action="store_true")
     parser.add_argument("--minimum-request-interval", type=float, default=4.0)
     parser.add_argument("--timeout", type=float, default=120.0)
     return parser
+
+
+def _claim_campaign_v225(*, private_root: Path, replacement: bool) -> str:
+    primary = private_root / "campaign-0001"
+    execution_claim = private_root / "final-execution-claim.json"
+    if not replacement:
+        if (private_root / "primary-campaign-claim.json").exists() or primary.exists():
+            raise FileExistsError("real-fault primary campaign was already claimed")
+        write_private_json(
+            private_root / "primary-campaign-claim.json",
+            {
+                "schema_version": "dta-v225-real-fault.primary-campaign-claim.v1",
+                "campaign_id": "campaign-0001",
+                "claimed_at": datetime.now(timezone.utc).isoformat(),
+            },
+            create_once=True,
+        )
+        return "campaign-0001"
+    blocked_path = primary / "blocked-terminal.json"
+    if not blocked_path.is_file() or execution_claim.exists():
+        raise PermissionError("real-fault replacement lacks an eligible primary terminal")
+    blocked = json.loads(blocked_path.read_text(encoding="utf-8"))
+    cleanup = blocked.get("cleanup")
+    eligible = (
+        blocked.get("fault_capture_exists") is False
+        and blocked.get("provider_shadow_exists") is False
+        and blocked.get("baseline_restored") is True
+        and isinstance(cleanup, dict)
+        and cleanup.get("verdict") == "CLEAN"
+        and cleanup.get("non_owned_resources_changed") is False
+        and not (primary / "paired-runs.jsonl").exists()
+    )
+    if not eligible:
+        raise PermissionError("real-fault primary terminal forbids replacement")
+    replacement_root = private_root / "campaign-0002"
+    if (
+        (private_root / "replacement-campaign-claim.json").exists()
+        or replacement_root.exists()
+    ):
+        raise FileExistsError("real-fault replacement campaign was already claimed")
+    write_private_json(
+        private_root / "replacement-campaign-claim.json",
+        {
+            "schema_version": "dta-v225-real-fault.replacement-campaign-claim.v1",
+            "campaign_id": "campaign-0002",
+            "primary_terminal_sha256": hashlib.sha256(blocked_path.read_bytes()).hexdigest(),
+            "claimed_at": datetime.now(timezone.utc).isoformat(),
+        },
+        create_once=True,
+    )
+    return "campaign-0002"
+
+
+def _claim_final_execution_v225(
+    *, private_root: Path, campaign_id: str, manifest: RealFaultManifestV1
+) -> None:
+    if campaign_id not in {"campaign-0001", "campaign-0002"}:
+        raise ValueError("real-fault final execution campaign ID differs")
+    write_private_json(
+        private_root / "final-execution-claim.json",
+        {
+            "schema_version": "dta-v225-real-fault.final-execution-claim.v1",
+            "campaign_id": campaign_id,
+            "manifest_sha256": manifest.manifest_sha256,
+            "claimed_at": datetime.now(timezone.utc).isoformat(),
+            "maximum_execution_count": 1,
+        },
+        create_once=True,
+    )
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     root = args.repository_root.resolve(strict=True)
     private_root = args.private_root.resolve()
-    campaign_root = private_root / args.campaign_id
     ensure_private_directory(private_root)
+    campaign_id = _claim_campaign_v225(
+        private_root=private_root, replacement=args.replacement
+    )
+    campaign_root = private_root / campaign_id
     if campaign_root.exists() or campaign_root.is_symlink():
         raise FileExistsError("real-fault campaign is write-once")
     ensure_private_directory(campaign_root)
@@ -483,7 +558,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             repository_root=root,
             private_root=campaign_root / "owned-sandbox",
             accepted_private_prf_root=private_root,
-            attempt_id=f"dta-v225-real-fault-{args.campaign_id}",
+            attempt_id=f"dta-v225-real-fault-{campaign_id}",
             config=config,
             scenario=config.require_scenario(LiveScenarioV21.AD_CPU_SATURATION),
             registry=registry,
@@ -511,7 +586,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 aliases=cast(tuple[str, str], identity_plan.services),
             )
             maps = build_alias_map_set_v225(map_a=map_a, map_b=map_b)
-            manifest = build_manifest_v225(
+            pre_live_freeze = build_pre_live_freeze_v225(
                 code_head=head,
                 comparator_service=comparator,
                 alias_map_set_sha256=maps.set_sha256,
@@ -526,13 +601,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             preflight = run_static_preflight_v225(
                 repository_root=root,
                 provider_env_path=args.provider_env,
-                manifest=manifest,
+                manifest=pre_live_freeze,
                 alias_maps=maps,
+            )
+            write_private_json(
+                campaign_root / "private-alias-maps.json",
+                maps,
+                create_once=True,
             )
             return PreparedLiveStudyV225(
                 comparator_service=comparator,
                 alias_maps=maps,
-                manifest=manifest,
+                pre_live_freeze=pre_live_freeze,
                 preflight=preflight,
             )
 
@@ -547,7 +627,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         try:
             live = run_live_capture_sequence_v225(
                 lifecycle=lifecycle,
-                campaign_id=args.campaign_id,
+                campaign_id=campaign_id,
                 code_head=head,
                 model_id=provider_config.model,
                 prepare=prepare,
@@ -578,6 +658,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     captures = {item.case_id: item for item in cases}
     truths = _truths(maps=live.prepared.alias_maps)
     truth_by_case = {item.case_id: item for item in truths}
+    case_set = build_case_set_v225(captures=cases)
+    truth_set = build_truth_set_v225(truths=truths)
+    manifest = build_manifest_v225(
+        pre_live_freeze=live.prepared.pre_live_freeze,
+        capture_pair_sha256=live.capture_pair.pair_sha256,
+        case_set_sha256=case_set.case_set_sha256,
+        truth_set_sha256=truth_set.truth_set_sha256,
+    )
+    write_private_json(
+        campaign_root / "final-study-manifest.json", manifest, create_once=True
+    )
+    _claim_final_execution_v225(
+        private_root=private_root, campaign_id=campaign_id, manifest=manifest
+    )
     journal_path = campaign_root / "paired-runs.jsonl"
     journal_handle = journal_path.open("x", encoding="utf-8")
 
@@ -635,8 +729,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         cleanup="CLEAN",
         non_owned_changes=0,
     )
-    case_set = build_case_set_v225(captures=cases)
-    truth_set = build_truth_set_v225(truths=truths)
     payload = {
         "schema_version": "dta-v225-real-fault.study-artifact.v1",
         "recorded_at": datetime.now(timezone.utc),
@@ -644,7 +736,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "shared_physical_captures": 2,
         "shared_capture_semantic_actions": 16,
         "shared_capture_target_equivalent_reads": 20,
-        "manifest": live.prepared.manifest,
+        "manifest": manifest,
         "preflight": live.prepared.preflight,
         "capture_pair_sha256": live.capture_pair.pair_sha256,
         "fault_impact_sha256": live.fault_impact.evidence_sha256,
@@ -680,10 +772,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         }
     )
     output_root = root / "config/dta-v225-real-fault"
-    _write_once(output_root / "alias-maps.json", live.prepared.alias_maps)
+    _write_once(
+        output_root / "alias-maps.json",
+        build_public_alias_map_set_v225(private_maps=live.prepared.alias_maps),
+    )
     _write_once(output_root / "cases.json", case_set)
     _write_once(output_root / "truth.json", truth_set)
-    _write_once(output_root / "manifest.json", live.prepared.manifest)
+    _write_once(output_root / "manifest.json", manifest)
     for capture in cases:
         _write_once(output_root / "captures" / f"{capture.case_id}.json", capture)
     _write_once(

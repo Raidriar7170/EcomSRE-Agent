@@ -274,7 +274,7 @@ def _context(capture: RealFaultOpaqueCaptureV1) -> AlertContextV21:
     return AlertContextV21(
         schema_version="dta-v21.alert-context.v1",
         run_id=_run_id(capture),
-        scenario_id=capture.case_id,
+        scenario_id=f"pair-{capture.opaque_capture_sha256[:12]}",
         alert_summary=(
             "Investigate whether one of the candidate services has a current operational "
             "fault. Gather only the evidence needed for a supported terminal."
@@ -533,7 +533,14 @@ def run_v2_style_flat_adaptive_v225(
         model_id=model_id,
         status=status,
         prediction=prediction,
-        first_useful_evidence_ordinal=(1 if resource_observations else None),
+        first_useful_evidence_ordinal=next(
+            (
+                ordinal
+                for ordinal, observation in enumerate(observations, start=1)
+                if observation.tool is ToolName.INSPECT_RESOURCE_USAGE
+            ),
+            None,
+        ),
         resources_requested=bool(resource_requests),
         resource_read_shape=(
             "NONE"

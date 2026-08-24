@@ -37,7 +37,7 @@ from ecomsre.dta_v2.v22.real_fault_flat_arm_v225 import (
 )
 from ecomsre.dta_v2.v22.real_fault_study_v225 import (
     RealFaultAliasMapSetV1,
-    RealFaultManifestV1,
+    RealFaultPreLiveFreezeV1,
 )
 
 
@@ -102,7 +102,7 @@ def run_static_preflight_v225(
     *,
     repository_root: Path,
     provider_env_path: Path,
-    manifest: RealFaultManifestV1,
+    manifest: RealFaultPreLiveFreezeV1,
     alias_maps: RealFaultAliasMapSetV1,
 ) -> RealFaultStaticPreflightV1:
     root = repository_root.resolve(strict=True)

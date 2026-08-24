@@ -26,9 +26,30 @@ from ecomsre.dta_v2.v22.replay import ReplayCaptureV22
 
 _KNOWN_PHYSICAL_SERVICES = (
     "ad",
+    "astronomy-db",
+    "cart",
+    "checkout",
+    "currency",
     "email",
+    "flagd",
+    "flagd-ui",
+    "frontend",
+    "frontend-proxy",
+    "grafana",
+    "image-provider",
+    "jaeger",
+    "load-generator",
+    "opamp-server",
+    "opensearch",
+    "otel-collector",
+    "payment",
     "product-catalog",
+    "prometheus",
+    "quote",
     "recommendation",
+    "shipping",
+    "telemetry-docs",
+    "valkey-cart",
 )
 
 
@@ -536,6 +557,26 @@ def require_public_capture_opaque_v225(capture: RealFaultOpaqueCaptureV1) -> Non
     for service in _KNOWN_PHYSICAL_SERVICES:
         if re.search(rf"(?<![a-z0-9]){re.escape(service)}(?![a-z0-9])", raw):
             raise ValueError("public capture contains a physical service identity")
+    for value in (
+        *(item.message for item in capture.capture.logs),
+        *(item.operation for item in capture.capture.traces),
+    ):
+        lowered = value.casefold()
+        if (
+            re.search(r"(?:^|[\s=:'\"])(?:/users/|/home/|/var/run/|~/)", lowered)
+            or re.search(r"\b[0-9a-f]{12,64}\b", lowered)
+            or any(
+                marker in lowered
+                for marker in (
+                    "container_id",
+                    "container id",
+                    "docker://",
+                    "private://",
+                    ".ecomsre/",
+                )
+            )
+        ):
+            raise ValueError("public capture text contains a private runtime identity")
 
 
 def require_provider_payload_opaque_v225(value: object) -> None:
@@ -558,6 +599,8 @@ def require_provider_payload_opaque_v225(value: object) -> None:
         "physical service",
         "container_id",
         "private://",
+        "fault-map",
+        "baseline-map",
     ):
         if marker in raw:
             raise ValueError("Provider payload contains evaluator or private material")

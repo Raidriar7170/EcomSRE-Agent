@@ -22,6 +22,7 @@ from ecomsre.dta_v2.v22.read_contracts import (
     MetricKindV22,
     MetricSupportStatusV22,
     MetricUnitV22,
+    LogRecordV22,
     ResourceSampleV22,
     ResourceUsageRecordV22,
     RuntimeRecordV22,
@@ -38,7 +39,12 @@ from ecomsre.dta_v2.v22.real_fault_capture_v225 import (
     build_physical_capture_v225,
     build_source_window_v225,
     require_public_capture_opaque_v225,
+    require_provider_payload_opaque_v225,
     truth_root_alias_v225,
+)
+from ecomsre.dta_v2.v22.real_fault_study_v225 import (
+    build_alias_map_set_v225,
+    build_public_alias_map_set_v225,
 )
 from ecomsre.dta_v2.v22.replay import ReplayCaptureV22
 
@@ -199,6 +205,68 @@ def test_common_bootstrap_is_identical_and_excludes_resources() -> None:
     assert first.runtime == opaque.capture.runtime
     assert first.metrics == opaque.capture.metrics
     assert not hasattr(first, "resources")
+
+
+def test_public_alias_artifact_omits_private_physical_bindings() -> None:
+    aliases = generate_opaque_identity_plan_v225(
+        service_count=2, operation_count=0, change_count=0, pair_count=0
+    ).services
+    map_a, map_b = build_alias_maps_v225(
+        fault_service="ad", comparator_service="recommendation", aliases=aliases
+    )
+
+    public = build_public_alias_map_set_v225(
+        private_maps=build_alias_map_set_v225(map_a=map_a, map_b=map_b)
+    )
+    raw = public.model_dump_json()
+
+    assert public.aliases == aliases
+    assert "physical_service" not in raw
+    assert '"ad"' not in raw
+    assert "recommendation" not in raw
+
+
+def test_public_capture_rejects_private_paths_in_real_log_text() -> None:
+    aliases = generate_opaque_identity_plan_v225(
+        service_count=2, operation_count=0, change_count=0, pair_count=0
+    ).services
+    map_a, _map_b = build_alias_maps_v225(
+        fault_service="ad", comparator_service="recommendation", aliases=aliases
+    )
+    capture = _capture(ad_cpu=96.0).model_copy(
+        update={
+            "logs": (
+                LogRecordV22(
+                    schema_version="dta-v22.log-record.v1",
+                    observed_at=CAPTURED_AT,
+                    service="ad",
+                    severity="ERROR",
+                    message="failed at /Users/private/.ecomsre/runtime.json",
+                ),
+            )
+        }
+    )
+    physical = build_physical_capture_v225(
+        campaign_id="campaign-001",
+        kind=RealFaultCaseKind.AD_CPU_FAULT,
+        fault_service="ad",
+        comparator_service="recommendation",
+        source_window=build_source_window_v225(captured_at=CAPTURED_AT),
+        capture=capture,
+    )
+
+    with pytest.raises(ValueError, match="private runtime identity"):
+        build_opaque_capture_v225(
+            case_id="fault-map-a", physical_capture=physical, alias_map=map_a
+        )
+
+
+@pytest.mark.parametrize("scenario_id", ("fault-map-a", "baseline-map-b"))
+def test_provider_payload_lint_rejects_truth_bearing_case_ids(
+    scenario_id: str,
+) -> None:
+    with pytest.raises(ValueError, match="evaluator or private material"):
+        require_provider_payload_opaque_v225({"scenario_id": scenario_id})
 
 
 def test_snapshot_backend_multi_target_resources_and_accounting() -> None:
