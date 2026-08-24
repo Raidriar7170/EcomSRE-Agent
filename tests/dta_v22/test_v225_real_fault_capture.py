@@ -226,7 +226,16 @@ def test_public_alias_artifact_omits_private_physical_bindings() -> None:
     assert "recommendation" not in raw
 
 
-def test_public_capture_rejects_private_paths_in_real_log_text() -> None:
+@pytest.mark.parametrize(
+    "private_path",
+    (
+        "/Users/private/.ecomsre/runtime.json",
+        "/private/var/folders/runtime.json",
+    ),
+)
+def test_public_capture_rejects_private_paths_in_real_log_text(
+    private_path: str,
+) -> None:
     aliases = generate_opaque_identity_plan_v225(
         service_count=2, operation_count=0, change_count=0, pair_count=0
     ).services
@@ -241,7 +250,7 @@ def test_public_capture_rejects_private_paths_in_real_log_text() -> None:
                     observed_at=CAPTURED_AT,
                     service="ad",
                     severity="ERROR",
-                    message="failed at /Users/private/.ecomsre/runtime.json",
+                    message=f"failed at {private_path}",
                 ),
             )
         }
@@ -267,6 +276,13 @@ def test_provider_payload_lint_rejects_truth_bearing_case_ids(
 ) -> None:
     with pytest.raises(ValueError, match="evaluator or private material"):
         require_provider_payload_opaque_v225({"scenario_id": scenario_id})
+
+
+def test_provider_payload_lint_rejects_concatenated_comparator_identity() -> None:
+    with pytest.raises(ValueError, match="physical service identity"):
+        require_provider_payload_opaque_v225(
+            {"message": "recommendationservice timeout"}
+        )
 
 
 def test_snapshot_backend_multi_target_resources_and_accounting() -> None:

@@ -399,13 +399,29 @@ def build_physical_capture_v225(
 
 def _replace_text(value: str, mapping: dict[str, str]) -> str:
     for physical in sorted(mapping, key=len, reverse=True):
+        escaped = re.escape(physical)
+        pattern = (
+            rf"(?:{escaped}(?=service\b)|(?<![a-z0-9]){escaped}(?![a-z0-9]))"
+            if len(physical) <= 4
+            else escaped
+        )
         value = re.sub(
-            rf"(?<![a-z0-9]){re.escape(physical)}(?![a-z0-9])",
+            pattern,
             mapping[physical],
             value,
             flags=re.IGNORECASE,
         )
     return value
+
+
+def _contains_physical_service(value: str, service: str) -> bool:
+    escaped = re.escape(service)
+    pattern = (
+        rf"(?:{escaped}(?=service\b)|(?<![a-z0-9]){escaped}(?![a-z0-9]))"
+        if len(service) <= 4
+        else escaped
+    )
+    return re.search(pattern, value, flags=re.IGNORECASE) is not None
 
 
 def _render_capture(capture: ReplayCaptureV22, alias_map: RealFaultAliasMapV1) -> ReplayCaptureV22:
@@ -555,7 +571,7 @@ def build_common_bootstrap_v225(capture: RealFaultOpaqueCaptureV1) -> RealFaultB
 def require_public_capture_opaque_v225(capture: RealFaultOpaqueCaptureV1) -> None:
     raw = capture.model_dump_json().casefold()
     for service in _KNOWN_PHYSICAL_SERVICES:
-        if re.search(rf"(?<![a-z0-9]){re.escape(service)}(?![a-z0-9])", raw):
+        if _contains_physical_service(raw, service):
             raise ValueError("public capture contains a physical service identity")
     for value in (
         *(item.message for item in capture.capture.logs),
@@ -563,7 +579,10 @@ def require_public_capture_opaque_v225(capture: RealFaultOpaqueCaptureV1) -> Non
     ):
         lowered = value.casefold()
         if (
-            re.search(r"(?:^|[\s=:'\"])(?:/users/|/home/|/var/run/|~/)", lowered)
+            re.search(
+                r"(?:^|[\s=:'\"])(?:/users/|/home/|/private/|/tmp/|/opt/|/etc/|/var/|~/)",
+                lowered,
+            )
             or re.search(r"\b[0-9a-f]{12,64}\b", lowered)
             or any(
                 marker in lowered
@@ -590,7 +609,7 @@ def require_provider_payload_opaque_v225(value: object) -> None:
         allow_nan=False,
     ).casefold()
     for service in _KNOWN_PHYSICAL_SERVICES:
-        if re.search(rf"(?<![a-z0-9]){re.escape(service)}(?![a-z0-9])", raw):
+        if _contains_physical_service(raw, service):
             raise ValueError("Provider payload contains a physical service identity")
     for marker in (
         "expected root",

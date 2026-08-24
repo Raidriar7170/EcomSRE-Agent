@@ -143,15 +143,19 @@ class RealFaultLiveSequenceError(RuntimeError):
         self,
         *,
         stage: str,
+        baseline_capture_exists: bool,
         fault_capture_exists: bool,
         provider_shadow_exists: bool,
+        replacement_cause: Literal["LOCAL_ENVIRONMENT", "TELEMETRY", "NONE"],
         baseline_restored: bool,
         cleanup: CleanupResult | None,
     ) -> None:
         super().__init__("BLOCKED_DTA_V225_REAL_FAULT_ENVIRONMENT")
         self.stage = stage
+        self.baseline_capture_exists = baseline_capture_exists
         self.fault_capture_exists = fault_capture_exists
         self.provider_shadow_exists = provider_shadow_exists
+        self.replacement_cause = replacement_cause
         self.baseline_restored = baseline_restored
         self.cleanup = cleanup
 
@@ -161,6 +165,23 @@ PrepareCallbackV225 = Callable[
 ]
 PhysicalObserverV225 = Callable[[RealFaultPhysicalCaptureV1], None]
 CurrentProviderFactoryV225 = Callable[[], SelectionProviderV225]
+
+
+def _replacement_cause_v225(
+    *, stage: str, error: BaseException
+) -> Literal["LOCAL_ENVIRONMENT", "TELEMETRY", "NONE"]:
+    if not isinstance(error, Exception):
+        return "NONE"
+    if isinstance(
+        error,
+        (AssertionError, FileExistsError, PermissionError, TypeError, ValueError),
+    ):
+        return "NONE"
+    if stage == "ADMISSION":
+        return "LOCAL_ENVIRONMENT"
+    if stage in {"COMPARATOR_SELECTION", "BASELINE_PROOF"}:
+        return "TELEMETRY"
+    return "NONE"
 
 
 def _render_cases(
@@ -215,13 +236,14 @@ def run_live_capture_sequence_v225(
     cleanup: CleanupResult | None = None
     try:
         lifecycle.admit_start_and_wait()
-        stage = "COMPARATOR_PREFLIGHT"
+        stage = "COMPARATOR_SELECTION"
         comparator = cast(
             Literal["email", "product-catalog", "recommendation"],
             select_healthy_comparator_v225(
                 backend=lifecycle.live_backend(), run_id=lifecycle.run_id
             ),
         )
+        stage = "STATIC_PREFLIGHT"
         prepared = prepare(comparator)
         stage = "BASELINE_PROOF"
         lifecycle.capture_and_prove_baseline(
@@ -297,18 +319,27 @@ def run_live_capture_sequence_v225(
             if primary_error is None:
                 primary_error = cleanup_error
     if primary_error is not None or cleanup is None:
+        replacement_cause = (
+            "NONE"
+            if primary_error is None
+            else _replacement_cause_v225(stage=stage, error=primary_error)
+        )
         raise RealFaultLiveSequenceError(
             stage=stage,
+            baseline_capture_exists=baseline_physical is not None,
             fault_capture_exists=fault_physical is not None,
             provider_shadow_exists=live_baseline is not None or live_fault is not None,
+            replacement_cause=replacement_cause,
             baseline_restored=restored,
             cleanup=cleanup,
         ) from primary_error
     if not restored or cleanup.verdict != "CLEAN" or cleanup.non_owned_resources_changed:
         raise RealFaultLiveSequenceError(
             stage="RESTORE_AND_CLEANUP",
+            baseline_capture_exists=baseline_physical is not None,
             fault_capture_exists=fault_physical is not None,
             provider_shadow_exists=live_baseline is not None or live_fault is not None,
+            replacement_cause="NONE",
             baseline_restored=restored,
             cleanup=cleanup,
         )
@@ -477,8 +508,12 @@ def _claim_campaign_v225(*, private_root: Path, replacement: bool) -> str:
     blocked = json.loads(blocked_path.read_text(encoding="utf-8"))
     cleanup = blocked.get("cleanup")
     eligible = (
-        blocked.get("fault_capture_exists") is False
+        blocked.get("baseline_capture_exists") is False
+        and blocked.get("fault_capture_exists") is False
         and blocked.get("provider_shadow_exists") is False
+        and blocked.get("replacement_cause") in {"LOCAL_ENVIRONMENT", "TELEMETRY"}
+        and blocked.get("stage")
+        in {"ADMISSION", "COMPARATOR_SELECTION", "BASELINE_PROOF"}
         and blocked.get("baseline_restored") is True
         and isinstance(cleanup, dict)
         and cleanup.get("verdict") == "CLEAN"
@@ -641,8 +676,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "schema_version": "dta-v225-real-fault.blocked-terminal.v1",
                     "terminal": str(error),
                     "stage": error.stage,
+                    "baseline_capture_exists": error.baseline_capture_exists,
                     "fault_capture_exists": error.fault_capture_exists,
                     "provider_shadow_exists": error.provider_shadow_exists,
+                    "replacement_cause": error.replacement_cause,
                     "baseline_restored": error.baseline_restored,
                     "cleanup": (
                         None

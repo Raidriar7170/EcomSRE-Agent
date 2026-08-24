@@ -69,8 +69,11 @@ def test_campaign_claim_allows_only_fixed_primary_then_eligible_replacement(
     write_private_json(
         primary / "blocked-terminal.json",
         {
+            "stage": "COMPARATOR_SELECTION",
+            "baseline_capture_exists": False,
             "fault_capture_exists": False,
             "provider_shadow_exists": False,
+            "replacement_cause": "TELEMETRY",
             "baseline_restored": True,
             "cleanup": {
                 "verdict": "CLEAN",
@@ -94,8 +97,40 @@ def test_replacement_is_forbidden_after_any_provider_shadow(tmp_path: Path) -> N
     write_private_json(
         primary / "blocked-terminal.json",
         {
+            "stage": "COMPARATOR_SELECTION",
+            "baseline_capture_exists": False,
             "fault_capture_exists": False,
             "provider_shadow_exists": True,
+            "replacement_cause": "TELEMETRY",
+            "baseline_restored": True,
+            "cleanup": {
+                "verdict": "CLEAN",
+                "non_owned_resources_changed": False,
+            },
+        },
+        create_once=True,
+    )
+
+    with pytest.raises(PermissionError):
+        _claim_campaign_v225(private_root=private, replacement=True)
+
+
+def test_replacement_is_forbidden_for_preflight_or_implementation_failure(
+    tmp_path: Path,
+) -> None:
+    private = tmp_path / "private"
+    ensure_private_directory(private)
+    assert _claim_campaign_v225(private_root=private, replacement=False) == "campaign-0001"
+    primary = private / "campaign-0001"
+    ensure_private_directory(primary)
+    write_private_json(
+        primary / "blocked-terminal.json",
+        {
+            "stage": "STATIC_PREFLIGHT",
+            "baseline_capture_exists": False,
+            "fault_capture_exists": False,
+            "provider_shadow_exists": False,
+            "replacement_cause": "NONE",
             "baseline_restored": True,
             "cleanup": {
                 "verdict": "CLEAN",
