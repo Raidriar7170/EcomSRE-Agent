@@ -57,6 +57,10 @@ _OUTPUTS = (
 )
 
 
+class NoHealthyComparatorV225(RuntimeError):
+    pass
+
+
 def _git(root: Path, *args: str) -> str:
     return subprocess.run(
         ("git", *args),
@@ -223,11 +227,14 @@ def select_healthy_comparator_v225(*, backend: ReadBackend, run_id: str) -> str:
         ):
             continue
         return comparator
-    raise RuntimeError("no comparator satisfies the target-complete baseline preflight")
+    raise NoHealthyComparatorV225(
+        "no comparator satisfies the target-complete baseline preflight"
+    )
 
 
 __all__ = (
     "RealFaultStaticPreflightV1",
+    "NoHealthyComparatorV225",
     "run_static_preflight_v225",
     "select_healthy_comparator_v225",
 )

@@ -9,7 +9,10 @@ from ecomsre.dta_v2.v22.real_fault_cli_v225 import (
     _claim_campaign_v225,
     _claim_final_execution_v225,
     _parser,
+    _replacement_cause_v225,
 )
+from ecomsre.dta_v2.v22.real_fault_preflight_v225 import NoHealthyComparatorV225
+from ecomsre_live_sandbox.environment import DockerBoundaryError
 from ecomsre.dta_v2.v22.real_fault_study_v225 import (
     build_manifest_v225,
     build_pre_live_freeze_v225,
@@ -185,3 +188,29 @@ def test_cli_rejects_arbitrary_campaign_ids() -> None:
                 "campaign-9999",
             ]
         )
+
+
+def test_replacement_cause_requires_explicit_trusted_failure_types() -> None:
+    assert (
+        _replacement_cause_v225(stage="ADMISSION", error=KeyError("bug"))
+        == "NONE"
+    )
+    assert (
+        _replacement_cause_v225(
+            stage="COMPARATOR_SELECTION", error=RuntimeError("bug")
+        )
+        == "NONE"
+    )
+    assert (
+        _replacement_cause_v225(
+            stage="ADMISSION", error=DockerBoundaryError("local Docker unavailable")
+        )
+        == "LOCAL_ENVIRONMENT"
+    )
+    assert (
+        _replacement_cause_v225(
+            stage="COMPARATOR_SELECTION",
+            error=NoHealthyComparatorV225("target-complete telemetry unavailable"),
+        )
+        == "TELEMETRY"
+    )

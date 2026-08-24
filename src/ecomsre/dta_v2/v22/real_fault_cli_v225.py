@@ -59,6 +59,7 @@ from ecomsre.dta_v2.v22.real_fault_flat_arm_v225 import (
 )
 from ecomsre.dta_v2.v22.real_fault_live_v225 import RealFaultShadowLifecycleV1
 from ecomsre.dta_v2.v22.real_fault_preflight_v225 import (
+    NoHealthyComparatorV225,
     RealFaultStaticPreflightV1,
     run_static_preflight_v225,
     select_healthy_comparator_v225,
@@ -85,6 +86,11 @@ from ecomsre_live_sandbox.contracts import (
     CleanupResult,
     ensure_private_directory,
     write_private_json,
+)
+from ecomsre_live_sandbox.environment import (
+    DockerBoundaryError,
+    ResourceOwnershipError,
+    SandboxDriftError,
 )
 
 
@@ -170,16 +176,19 @@ CurrentProviderFactoryV225 = Callable[[], SelectionProviderV225]
 def _replacement_cause_v225(
     *, stage: str, error: BaseException
 ) -> Literal["LOCAL_ENVIRONMENT", "TELEMETRY", "NONE"]:
-    if not isinstance(error, Exception):
-        return "NONE"
-    if isinstance(
+    if stage == "ADMISSION" and isinstance(
         error,
-        (AssertionError, FileExistsError, PermissionError, TypeError, ValueError),
+        (
+            DockerBoundaryError,
+            ResourceOwnershipError,
+            SandboxDriftError,
+            subprocess.TimeoutExpired,
+        ),
     ):
-        return "NONE"
-    if stage == "ADMISSION":
         return "LOCAL_ENVIRONMENT"
-    if stage in {"COMPARATOR_SELECTION", "BASELINE_PROOF"}:
+    if stage == "COMPARATOR_SELECTION" and isinstance(
+        error, NoHealthyComparatorV225
+    ):
         return "TELEMETRY"
     return "NONE"
 
@@ -513,7 +522,7 @@ def _claim_campaign_v225(*, private_root: Path, replacement: bool) -> str:
         and blocked.get("provider_shadow_exists") is False
         and blocked.get("replacement_cause") in {"LOCAL_ENVIRONMENT", "TELEMETRY"}
         and blocked.get("stage")
-        in {"ADMISSION", "COMPARATOR_SELECTION", "BASELINE_PROOF"}
+        in {"ADMISSION", "COMPARATOR_SELECTION"}
         and blocked.get("baseline_restored") is True
         and isinstance(cleanup, dict)
         and cleanup.get("verdict") == "CLEAN"
