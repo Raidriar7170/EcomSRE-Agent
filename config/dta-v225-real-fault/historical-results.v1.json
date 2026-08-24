@@ -1,0 +1,12 @@
+{
+  "schema_version": "dta-v225-real-fault.historical-results.v1",
+  "base_commit": "8e4227fb8ac8880f89eadc3d13bf423244b378a7",
+  "files": [
+    {"path": "docs/results/dta-v2-evaluation.json", "sha256": "59062eba68e0723d22d9844de807088640f03110b1d3fd5b4044f4a53ef10846"},
+    {"path": "docs/results/dta-v2-live-demo.json", "sha256": "8c1d0c70a2c32c5cbd4e9f06649cec3ca447f20cf4e66de248a37240112d98e7"},
+    {"path": "docs/results/dta-v21-live-capability-closeout.json", "sha256": "66ad09364c5a50976fd92992e9847b0e5f6e0a4c968e4d416818571c9d2bcc19"},
+    {"path": "docs/results/dta-v22-2-gap-routing-evaluation.json", "sha256": "586aad7294ac0bf21374f1c4290936b828d0559dd7ca92ebc5c3d628fcb18258"},
+    {"path": "docs/results/dta-v22-5-opaque-ambiguity-error-analysis.md", "sha256": "0a69adddc0781a893edc88a61b737d8775f15ef9bed27238c323cafc23c7223a"},
+    {"path": "docs/results/dta-v22-5-opaque-ambiguity-evaluation.json", "sha256": "a0ddcced88c9e0a60e767fe30a885899a6aa6400efca62cdfacfe8bab792e87f"}
+  ]
+}
