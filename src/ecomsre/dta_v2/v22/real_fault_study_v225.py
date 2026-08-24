@@ -17,6 +17,7 @@ from ecomsre.dta_v2.v22.real_fault_capture_v225 import (
     RealFaultOpaqueCaptureV1,
 )
 from ecomsre.dta_v2.v22.real_fault_comparison_contracts_v225 import (
+    RealFaultArmRun,
     RealFaultCaseTruthV1,
     RealFaultScheduleEntry,
     RealFaultStudyArm,
@@ -286,6 +287,7 @@ def execute_real_fault_study_v225(
     flat_provider_factory: Callable[[], FlatComparisonProviderV225],
     current_provider_factory: Callable[[], SelectionProviderProtocolV223],
     truth_loader: Callable[[str], RealFaultCaseTruthV1],
+    run_observer: Callable[[int, RealFaultArmRun], None] | None = None,
 ) -> tuple[RealFaultStudyExecutionV1, tuple[RealFaultCaseTruthV1, ...]]:
     schedule = build_real_fault_schedule_v225()
     runs = []
@@ -309,6 +311,8 @@ def execute_real_fault_study_v225(
                 provider=current_provider_factory(),
             )
         runs.append(run)
+        if run_observer is not None:
+            run_observer(entry.ordinal, run)
         if entry.case_local_position == 2:
             truths.append(truth_loader(entry.case_id))
     return build_real_fault_study_execution_v225(runs=tuple(runs)), tuple(truths)

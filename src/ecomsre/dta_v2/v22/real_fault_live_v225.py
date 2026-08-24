@@ -165,14 +165,20 @@ class RealFaultShadowLifecycleV1:
 
     def __init__(self, attempt: OwnedLiveAttemptV21) -> None:
         self._attempt = attempt
+        self._start_requested = False
         self._environment_admission: LiveEnvironmentAdmissionV2 | None = None
         self._baseline: LiveBaselineEvidenceV21 | None = None
         self._fault_impact: LiveFaultImpactEvidenceV21 | None = None
 
     def admit_start_and_wait(self) -> None:
         self._attempt.admit_environment()
+        self._start_requested = True
         self._attempt.start()
         self._attempt.wait_ready()
+
+    @property
+    def run_id(self) -> str:
+        return self._attempt.run_id
 
     def _task_admission(
         self, *, code_head: str, preflight_sha256: str
@@ -268,10 +274,19 @@ class RealFaultShadowLifecycleV1:
         )
         return self._fault_impact
 
+    def revalidate_before_fault(self) -> None:
+        """Re-prove the exact baseline and non-owned snapshot before mutation."""
+
+        self._attempt._verify_exact_baseline_read_only()
+        self._attempt._require_non_owned_unchanged()
+
     def live_backend(self) -> ReadBackend:
         return self._attempt._refresh_backend()
 
     def restore_and_cleanup(self) -> tuple[bool, dict[str, object]]:
+        if not self._start_requested:
+            cleanup = self._attempt.cleanup_not_started()
+            return True, cleanup
         restored = self._attempt.restore_baseline_idempotently()
         if restored:
             self._attempt.assert_no_unrelated_owned_drift()

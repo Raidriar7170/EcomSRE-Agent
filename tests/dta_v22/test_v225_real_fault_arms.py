@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+from types import SimpleNamespace
 from typing import cast
+
+import pytest
 
 from ecomsre.dta_v2.agent_contracts import ProviderUsage
 from ecomsre.dta_v2.read_tools import BackendResult
@@ -64,6 +67,11 @@ from ecomsre.dta_v2.v22.real_fault_flat_arm_v225 import (
 )
 from ecomsre.dta_v2.v22.real_fault_live_v225 import (
     capture_real_fault_physical_state_v225,
+)
+from ecomsre.dta_v2.v22.real_fault_cli_v225 import (
+    PreparedLiveStudyV225,
+    RealFaultLiveSequenceError,
+    run_live_capture_sequence_v225,
 )
 from ecomsre.dta_v2.v22.real_fault_preflight_v225 import (
     select_healthy_comparator_v225,
@@ -575,3 +583,130 @@ def test_full_schedule_executes_once_and_loads_truth_after_each_local_pair() -> 
         "baseline-map-b",
     ]
     assert tuple(item.case_id for item in truths) == tuple(truth_loads)
+
+
+class _FakeLiveLifecycle:
+    def __init__(self, *, fail_at_fault: bool = False) -> None:
+        self.events: list[str] = []
+        self.fail_at_fault = fail_at_fault
+        self.backend = _OwnedPhysicalReadBackend(ad_cpu=2.0)
+
+    @property
+    def run_id(self) -> str:
+        return "3" * 32
+
+    def admit_start_and_wait(self) -> None:
+        self.events.append("start")
+
+    def live_backend(self):
+        return self.backend
+
+    def capture_and_prove_baseline(self, *, code_head: str, preflight_sha256: str):
+        assert code_head == "4" * 40
+        assert preflight_sha256 == "5" * 64
+        self.events.append("baseline-proof")
+        return object()
+
+    def capture_state(
+        self,
+        *,
+        campaign_id: str,
+        kind: RealFaultCaseKind,
+        comparator_service: str,
+    ):
+        self.events.append(f"capture-{kind.value}")
+        return build_physical_capture_v225(
+            campaign_id=campaign_id,
+            kind=kind,
+            fault_service="ad",
+            comparator_service=comparator_service,
+            source_window=build_source_window_v225(captured_at=CAPTURED_AT),
+            capture=_capture(
+                ad_cpu=90.0 if kind is RealFaultCaseKind.AD_CPU_FAULT else 2.0
+            ),
+        )
+
+    def revalidate_before_fault(self) -> None:
+        self.events.append("revalidate")
+
+    def inject_and_verify_fault(self):
+        self.events.append("inject")
+        if self.fail_at_fault:
+            raise RuntimeError("synthetic fault failure")
+        self.backend = _OwnedPhysicalReadBackend(ad_cpu=90.0)
+        return cast(object, SimpleNamespace(evidence_sha256="6" * 64))
+
+    def restore_and_cleanup(self):
+        self.events.append("restore-cleanup")
+        return True, {
+            "baseline_restored": True,
+            "owned_containers": 0,
+            "owned_networks": 0,
+            "owned_volumes": 0,
+            "non_owned_resources_changed": False,
+            "verdict": "CLEAN",
+        }
+
+
+def _prepared_live_study() -> PreparedLiveStudyV225:
+    aliases = generate_opaque_identity_plan_v225(
+        service_count=2, operation_count=0, change_count=0, pair_count=0
+    ).services
+    map_a, map_b = build_alias_maps_v225(
+        fault_service="ad", comparator_service="recommendation", aliases=aliases
+    )
+    from ecomsre.dta_v2.v22.real_fault_study_v225 import build_alias_map_set_v225
+
+    return PreparedLiveStudyV225(
+        comparator_service="recommendation",
+        alias_maps=build_alias_map_set_v225(map_a=map_a, map_b=map_b),
+        manifest=cast(object, SimpleNamespace()),
+        preflight=cast(object, SimpleNamespace(preflight_sha256="5" * 64)),
+    )
+
+
+def test_live_sequence_restores_and_cleans_before_returning_capture_pair() -> None:
+    lifecycle = _FakeLiveLifecycle()
+
+    outcome = run_live_capture_sequence_v225(
+        lifecycle=cast(object, lifecycle),
+        campaign_id="campaign-001",
+        code_head="4" * 40,
+        model_id=MODEL_ID,
+        prepare=lambda _comparator: _prepared_live_study(),
+        current_provider_factory=cast(object, _VisibleTerminalSelectionProvider),
+        physical_observer=lambda capture: lifecycle.events.append(
+            f"observe-{capture.kind.value}"
+        ),
+    )
+
+    assert lifecycle.events[-1] == "restore-cleanup"
+    assert outcome.baseline_restored is True
+    assert outcome.cleanup.verdict == "CLEAN"
+    assert tuple(item.case_id for item in outcome.capture_pair.cases) == (
+        "fault-map-a",
+        "fault-map-b",
+        "baseline-map-a",
+        "baseline-map-b",
+    )
+
+
+def test_live_sequence_restores_and_cleans_when_fault_injection_fails() -> None:
+    lifecycle = _FakeLiveLifecycle(fail_at_fault=True)
+
+    with pytest.raises(RealFaultLiveSequenceError) as caught:
+        run_live_capture_sequence_v225(
+            lifecycle=cast(object, lifecycle),
+            campaign_id="campaign-001",
+            code_head="4" * 40,
+            model_id=MODEL_ID,
+            prepare=lambda _comparator: _prepared_live_study(),
+            current_provider_factory=cast(object, _VisibleTerminalSelectionProvider),
+            physical_observer=lambda _capture: None,
+        )
+
+    assert lifecycle.events[-1] == "restore-cleanup"
+    assert caught.value.stage == "FAULT_INJECTION"
+    assert caught.value.baseline_restored is True
+    assert caught.value.cleanup is not None
+    assert caught.value.cleanup.verdict == "CLEAN"

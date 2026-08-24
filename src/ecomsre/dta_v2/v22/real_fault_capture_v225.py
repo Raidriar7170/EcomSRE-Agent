@@ -475,6 +475,36 @@ def build_opaque_capture_v225(
     return result
 
 
+def build_capture_pair_v225(
+    *,
+    baseline: RealFaultPhysicalCaptureV1,
+    fault: RealFaultPhysicalCaptureV1,
+    cases: tuple[
+        RealFaultOpaqueCaptureV1,
+        RealFaultOpaqueCaptureV1,
+        RealFaultOpaqueCaptureV1,
+        RealFaultOpaqueCaptureV1,
+    ],
+) -> RealFaultCapturePairV1:
+    payload = {
+        "schema_version": "dta-v225-real-fault.capture-pair.v1",
+        "baseline_physical_capture_sha256": baseline.physical_capture_sha256,
+        "fault_physical_capture_sha256": fault.physical_capture_sha256,
+        "cases": cases,
+    }
+    draft = cast(Any, RealFaultCapturePairV1).model_construct(
+        **payload, pair_sha256="0" * 64
+    )
+    return RealFaultCapturePairV1.model_validate(
+        {
+            **payload,
+            "pair_sha256": semantic_sha256_v22(
+                draft.model_dump(mode="json", exclude={"pair_sha256"})
+            ),
+        }
+    )
+
+
 def truth_root_alias_v225(*, alias_map: RealFaultAliasMapV1, kind: RealFaultCaseKind) -> str | None:
     return None if kind is RealFaultCaseKind.BASELINE else alias_map.alias_for("ad")
 
@@ -543,6 +573,7 @@ __all__ = (
     "RealFaultPhysicalCaptureV1",
     "RealFaultSourceWindowV1",
     "build_alias_maps_v225",
+    "build_capture_pair_v225",
     "build_common_bootstrap_v225",
     "build_opaque_capture_v225",
     "build_physical_capture_v225",
