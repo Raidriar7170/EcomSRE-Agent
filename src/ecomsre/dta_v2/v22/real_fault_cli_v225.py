@@ -66,6 +66,11 @@ from ecomsre.dta_v2.v22.real_fault_preflight_v225 import (
     run_static_preflight_v225,
     select_healthy_comparator_v225,
 )
+from ecomsre.dta_v2.v22.real_fault_reconciliation_v225 import (
+    load_admission_reconciliation_v225,
+    reconcile_missing_upstream_admission_v225,
+    verify_admission_reconciliation_tree_v225,
+)
 from ecomsre.dta_v2.v22.real_fault_shadow_scorer_v225 import (
     RealFaultStudyScoreV1,
     score_real_fault_study_v225,
@@ -188,9 +193,7 @@ def _replacement_cause_v225(
         ),
     ):
         return "LOCAL_ENVIRONMENT"
-    if stage == "COMPARATOR_SELECTION" and isinstance(
-        error, NoHealthyComparatorV225
-    ):
+    if stage == "COMPARATOR_SELECTION" and isinstance(error, NoHealthyComparatorV225):
         return "TELEMETRY"
     return "NONE"
 
@@ -344,7 +347,11 @@ def run_live_capture_sequence_v225(
             baseline_restored=restored,
             cleanup=cleanup,
         ) from primary_error
-    if not restored or cleanup.verdict != "CLEAN" or cleanup.non_owned_resources_changed:
+    if (
+        not restored
+        or cleanup.verdict != "CLEAN"
+        or cleanup.non_owned_resources_changed
+    ):
         raise RealFaultLiveSequenceError(
             stage="RESTORE_AND_CLEANUP",
             baseline_capture_exists=baseline_physical is not None,
@@ -476,7 +483,15 @@ def _truths(
                 expected_mechanism="CPU_SATURATION" if fault else None,
             )
         )
-    return cast(tuple[RealFaultCaseTruthV1, RealFaultCaseTruthV1, RealFaultCaseTruthV1, RealFaultCaseTruthV1], tuple(rows))
+    return cast(
+        tuple[
+            RealFaultCaseTruthV1,
+            RealFaultCaseTruthV1,
+            RealFaultCaseTruthV1,
+            RealFaultCaseTruthV1,
+        ],
+        tuple(rows),
+    )
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -486,12 +501,15 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--private-root", type=Path, required=True)
     parser.add_argument("--lease-root", type=Path, required=True)
     parser.add_argument("--replacement", action="store_true")
+    parser.add_argument("--reconcile-primary-admission", action="store_true")
     parser.add_argument("--minimum-request-interval", type=float, default=4.0)
     parser.add_argument("--timeout", type=float, default=120.0)
     return parser
 
 
 def _claim_campaign_v225(*, private_root: Path, replacement: bool) -> str:
+    if private_root.is_symlink() or not private_root.is_dir():
+        raise ValueError("real-fault private root is not a regular directory")
     primary = private_root / "campaign-0001"
     execution_claim = private_root / "final-execution-claim.json"
     if not replacement:
@@ -508,39 +526,80 @@ def _claim_campaign_v225(*, private_root: Path, replacement: bool) -> str:
         )
         return "campaign-0001"
     blocked_path = primary / "blocked-terminal.json"
-    if not blocked_path.is_file() or execution_claim.exists():
-        raise PermissionError("real-fault replacement lacks an eligible primary terminal")
+    if (
+        primary.is_symlink()
+        or not primary.is_dir()
+        or blocked_path.is_symlink()
+        or not blocked_path.is_file()
+        or execution_claim.exists()
+    ):
+        raise PermissionError(
+            "real-fault replacement lacks an eligible primary terminal"
+        )
     blocked = json.loads(blocked_path.read_text(encoding="utf-8"))
     cleanup = blocked.get("cleanup")
-    eligible = (
-        blocked.get("baseline_capture_exists") is False
-        and blocked.get("fault_capture_exists") is False
-        and blocked.get("provider_shadow_exists") is False
-        and blocked.get("replacement_cause") in {"LOCAL_ENVIRONMENT", "TELEMETRY"}
-        and blocked.get("stage")
-        in {"ADMISSION", "COMPARATOR_SELECTION"}
+    reconciliation_path = primary / "post-terminal-reconciliation.json"
+    reconciliation = (
+        load_admission_reconciliation_v225(reconciliation_path)
+        if reconciliation_path.is_file() and not reconciliation_path.is_symlink()
+        else None
+    )
+    direct_eligible = (
+        blocked.get("replacement_cause") in {"LOCAL_ENVIRONMENT", "TELEMETRY"}
         and blocked.get("baseline_restored") is True
         and isinstance(cleanup, dict)
         and cleanup.get("verdict") == "CLEAN"
         and cleanup.get("non_owned_resources_changed") is False
+    )
+    reconciled_eligible = False
+    if reconciliation is not None:
+        execution_proof_path = primary / "codex-execution-proof.json"
+        reconciled_eligible = (
+            blocked.get("replacement_cause") == "NONE"
+            and blocked.get("baseline_restored") is False
+            and cleanup is None
+            and reconciliation.primary_terminal_sha256
+            == hashlib.sha256(blocked_path.read_bytes()).hexdigest()
+            and reconciliation.cleanup.verdict == "CLEAN"
+            and not reconciliation.cleanup.non_owned_resources_changed
+            and execution_proof_path.is_file()
+            and not execution_proof_path.is_symlink()
+            and hashlib.sha256(execution_proof_path.read_bytes()).hexdigest()
+            == reconciliation.execution_proof_sha256
+            and verify_admission_reconciliation_tree_v225(
+                primary_root=primary, reconciliation=reconciliation
+            )
+        )
+    eligible = (
+        blocked.get("baseline_capture_exists") is False
+        and blocked.get("fault_capture_exists") is False
+        and blocked.get("provider_shadow_exists") is False
+        and blocked.get("stage") in {"ADMISSION", "COMPARATOR_SELECTION"}
+        and (direct_eligible or reconciled_eligible)
         and not (primary / "paired-runs.jsonl").exists()
     )
     if not eligible:
         raise PermissionError("real-fault primary terminal forbids replacement")
     replacement_root = private_root / "campaign-0002"
     if (
-        (private_root / "replacement-campaign-claim.json").exists()
-        or replacement_root.exists()
-    ):
+        private_root / "replacement-campaign-claim.json"
+    ).exists() or replacement_root.exists():
         raise FileExistsError("real-fault replacement campaign was already claimed")
+    claim_payload: dict[str, object] = {
+        "schema_version": "dta-v225-real-fault.replacement-campaign-claim.v1",
+        "campaign_id": "campaign-0002",
+        "primary_terminal_sha256": hashlib.sha256(
+            blocked_path.read_bytes()
+        ).hexdigest(),
+        "claimed_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if reconciliation is not None:
+        claim_payload["admission_reconciliation_sha256"] = (
+            reconciliation.reconciliation_sha256
+        )
     write_private_json(
         private_root / "replacement-campaign-claim.json",
-        {
-            "schema_version": "dta-v225-real-fault.replacement-campaign-claim.v1",
-            "campaign_id": "campaign-0002",
-            "primary_terminal_sha256": hashlib.sha256(blocked_path.read_bytes()).hexdigest(),
-            "claimed_at": datetime.now(timezone.utc).isoformat(),
-        },
+        claim_payload,
         create_once=True,
     )
     return "campaign-0002"
@@ -565,10 +624,44 @@ def _claim_final_execution_v225(
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    args = _parser().parse_args(argv)
+    parser = _parser()
+    args = parser.parse_args(argv)
+    if args.reconcile_primary_admission:
+        if args.replacement:
+            parser.error("admission reconciliation cannot claim replacement")
     root = args.repository_root.resolve(strict=True)
+    if args.private_root.is_symlink():
+        raise ValueError("real-fault private root is a symbolic link")
     private_root = args.private_root.resolve()
     ensure_private_directory(private_root)
+    if args.reconcile_primary_admission:
+        reconciliation_runner = AuditedSubprocessRunner(
+            project_root=root,
+            artifacts_root=(private_root / "campaign-0001/reconciliation-git-audit"),
+            run_id=hashlib.sha256(
+                b"campaign-0001:admission-reconciliation"
+            ).hexdigest()[:32],
+        )
+        reconciliation = reconcile_missing_upstream_admission_v225(
+            repository_root=root,
+            private_root=private_root,
+            git_runner=reconciliation_runner,
+            provider_env_path=args.provider_env,
+            lease_root=args.lease_root,
+        )
+        print(
+            json.dumps(
+                {
+                    "disposition": reconciliation.disposition,
+                    "docker_boundary_reached": reconciliation.docker_boundary_reached,
+                    "baseline_restored": reconciliation.baseline_restored,
+                    "cleanup": reconciliation.cleanup.verdict,
+                    "non_owned_changes": 0,
+                },
+                sort_keys=True,
+            )
+        )
+        return 0
     campaign_id = _claim_campaign_v225(
         private_root=private_root, replacement=args.replacement
     )
@@ -663,7 +756,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
 
         def observe_physical(capture: RealFaultPhysicalCaptureV1) -> None:
-            label = "baseline" if capture.kind is RealFaultCaseKind.BASELINE else "fault"
+            label = (
+                "baseline" if capture.kind is RealFaultCaseKind.BASELINE else "fault"
+            )
             write_private_json(
                 campaign_root / f"physical-{label}-capture.json",
                 capture,
