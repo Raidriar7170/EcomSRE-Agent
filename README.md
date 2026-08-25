@@ -201,7 +201,8 @@ arms; action-authority violations remained zero. See the
 [artifact report](docs/results/dta-v232-conflict-aware-evaluation.md),
 [error analysis](docs/results/dta-v232-conflict-aware-error-analysis.md),
 [interview brief](docs/results/dta-v232-conflict-aware-interview-brief.md), and
-[pre-execution review](docs/external-reviews/dta-v232-pre-execution-review.md).
+[pre-execution review](docs/external-reviews/dta-v232-pre-execution-review.md),
+plus the [independent final review](docs/external-reviews/dta-v232-final-review.md).
 
 ## One-command offline demo
 

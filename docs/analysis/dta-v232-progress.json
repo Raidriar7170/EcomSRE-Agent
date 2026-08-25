@@ -1,6 +1,6 @@
 {
   "schema_version": "dta-v232.progress.v1",
-  "engineering_state": "POST_EXECUTION_VALIDATION_PENDING",
+  "engineering_state": "FINAL_REVIEW_PASS_READY_FOR_MERGE",
   "preserved_attempts": [
     {
       "terminal": "BLOCKED_DTA_V231_EVALUATION_DATA",
@@ -71,6 +71,13 @@
       "provider_calls": 23,
       "total_tokens": 126357
     }
+  },
+  "final_review": {
+    "reviewed_head": "4d776904a6db83049600bd8e66ea115fd12aa413",
+    "must_fix": 0,
+    "claim_accuracy": "PASS",
+    "local_full_pytest": "4982 passed, 6 skipped",
+    "github_ci_runs": [32878199645, 32878199575]
   },
   "protected_actions": {
     "docker_calls": 0,
