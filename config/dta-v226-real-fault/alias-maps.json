@@ -1,0 +1,14 @@
+{
+  "schema_version": "dta-v226-real-fault.public-alias-map-set.v1",
+  "aliases": [
+    "svc-20e1bc90a8",
+    "svc-d9ca249b54"
+  ],
+  "map_names": [
+    "MAP_A",
+    "MAP_B"
+  ],
+  "exact_two_way_swap": true,
+  "predecessor_aliases_different": true,
+  "public_set_sha256": "d66ddf9fd3dee6eed91cad17662350761be6caa01f70b327b8a56faec9151cc9"
+}

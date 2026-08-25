@@ -1,0 +1,30 @@
+{
+  "schema_version": "dta-v226-real-fault.case-set.v1",
+  "cases": [
+    {
+      "case_id": "fault-map-a",
+      "capture_path": "config/dta-v226-real-fault/captures/fault-map-a.json",
+      "capture_sha256": "5cbd9bfe00c177b23dfef1067c0242200c2d34be71208afdfb6c6285bbee5ab0",
+      "alias_map_name": "MAP_A"
+    },
+    {
+      "case_id": "fault-map-b",
+      "capture_path": "config/dta-v226-real-fault/captures/fault-map-b.json",
+      "capture_sha256": "6e2731bb55dab7e2c8abadb637e99144fb2c2823deeca279dca71825e67d0cdd",
+      "alias_map_name": "MAP_B"
+    },
+    {
+      "case_id": "baseline-map-a",
+      "capture_path": "config/dta-v226-real-fault/captures/baseline-map-a.json",
+      "capture_sha256": "f476ee8ccf0e54d94facd374a5a64e81cedc6990122a87892aadfbdfb3341b17",
+      "alias_map_name": "MAP_A"
+    },
+    {
+      "case_id": "baseline-map-b",
+      "capture_path": "config/dta-v226-real-fault/captures/baseline-map-b.json",
+      "capture_sha256": "aede2ec80a122d6ac0c2a8f1b43a253ce9cb4c2d59a8b67accd12fb0701dc8d2",
+      "alias_map_name": "MAP_B"
+    }
+  ],
+  "case_set_sha256": "8bda22eefabd92915446d502413e13a531cb00b336d877707f504942890545a6"
+}

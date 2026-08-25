@@ -1,0 +1,84 @@
+{
+  "schema_version": "dta-v226-real-fault.manifest.v1",
+  "pre_live_freeze": {
+    "schema_version": "dta-v226-real-fault.pre-live-freeze.v1",
+    "goal_version": "dta-v226-real-fault-transfer-repair-v1",
+    "starting_main": "1c6520d706481f37b63a5b14c1fe8554b52d530b",
+    "code_head": "5a902005bc4588d5edda7a8e940cd9bb77ba33fe",
+    "provider_model": "gpt-5.4-mini-2026-03-17",
+    "temperature": 0,
+    "comparator_service": "recommendation",
+    "alias_map_set_sha256": "9a6da085f9aede578b37b7a7d3c8f7d1de516378ba76665402fc718a9a188eb2",
+    "selection_prompt_sha256": "b3fffdf563646d616af2b0ff0446b5aa1f892d823e224ecb47b9250f6961553a",
+    "terminalizer_sha256": "2301e18f7dcb569351441ce818785793150ad75dd9ce3816799881ea1f135011",
+    "scorer_sha256": "c157f5d33b920c9bbbf83e56b83d8b1d24f92337e708fe31189f7e50293bdc74",
+    "provider_development_summary_sha256": "4b7511df26273c23d6a064bbf123604f58dc675c5fc4102cb5d8bfabc03c5728",
+    "provider_gate_iteration_sha256": "d0ca56b5b6d03faf8135fc7d5dca1568ef911935c6d2655902b1716749e9dbec",
+    "pre_live_review_sha256": "18ef735c86b1e1d4fac7977c881c9ca6761766158b32e38a5fb793c38c84aa5f",
+    "schedule": [
+      {
+        "ordinal": 1,
+        "case_id": "fault-map-a",
+        "case_local_position": 1,
+        "arm": "MODEL_DIRECTED_RETRIEVAL"
+      },
+      {
+        "ordinal": 2,
+        "case_id": "fault-map-a",
+        "case_local_position": 2,
+        "arm": "CURRENT_RUNTIME_BUNDLE"
+      },
+      {
+        "ordinal": 3,
+        "case_id": "fault-map-b",
+        "case_local_position": 1,
+        "arm": "CURRENT_RUNTIME_BUNDLE"
+      },
+      {
+        "ordinal": 4,
+        "case_id": "fault-map-b",
+        "case_local_position": 2,
+        "arm": "MODEL_DIRECTED_RETRIEVAL"
+      },
+      {
+        "ordinal": 5,
+        "case_id": "baseline-map-a",
+        "case_local_position": 1,
+        "arm": "MODEL_DIRECTED_RETRIEVAL"
+      },
+      {
+        "ordinal": 6,
+        "case_id": "baseline-map-a",
+        "case_local_position": 2,
+        "arm": "CURRENT_RUNTIME_BUNDLE"
+      },
+      {
+        "ordinal": 7,
+        "case_id": "baseline-map-b",
+        "case_local_position": 1,
+        "arm": "CURRENT_RUNTIME_BUNDLE"
+      },
+      {
+        "ordinal": 8,
+        "case_id": "baseline-map-b",
+        "case_local_position": 2,
+        "arm": "MODEL_DIRECTED_RETRIEVAL"
+      }
+    ],
+    "maximum_adaptive_semantic_actions": 4,
+    "maximum_target_equivalent_reads": 4,
+    "maximum_protocol_repairs": 2,
+    "maximum_transport_retries": 3,
+    "maximum_final_execution_count": 1,
+    "maximum_accepted_live_campaigns": 1,
+    "agent_write_authority": 0,
+    "action_proposal_authority": 0,
+    "runbook_execution_authority": 0,
+    "freeze_sha256": "f64eac8e510f522aaa78b27b41f74442e7e9f613f565635c45540ca525920be2"
+  },
+  "capture_pair_sha256": "9e0f97b94fa1f2082afdce1a0b7b6880bcf0077ec402a25ba5c2906ff6233e09",
+  "case_set_sha256": "8bda22eefabd92915446d502413e13a531cb00b336d877707f504942890545a6",
+  "truth_set_sha256": "ffb4129fcdc769508b75dce37205e2cdcfbc24820cbca7c639888e1792c94927",
+  "execution_id": "exec-v226-af76f41742395e67",
+  "manifest_sha256": "fed9375b7fbcda5f6f53d35972a8c7e3143c24d67ba5c91bc2e6be9aafc700ce"
+}

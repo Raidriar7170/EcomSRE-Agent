@@ -102,6 +102,23 @@ diagnostic, causal, or statistical advantage. Exact baseline restoration,
 `CLEAN` owned cleanup, zero non-owned changes, and zero Agent writes,
 ActionProposals, or Runbooks were proven.
 
+DTA v2.2.6 preserved that negative result and used its exact real captures only
+as development fixtures. It replaced strict metric-signature ambiguity with a
+target-complete Resource Comparison Set and compared model-directed free
+source/target selection against runtime-guided contrastive acquisition under
+one shared terminalizer. This is not the exact frozen historical v2 Agent. One
+new owned Ad CPU campaign produced two physical states, two opaque swapped maps,
+two exact Current live shadows, and one fixed eight-run paired execution. Both
+arms were 4/4 protocol-valid; Current was 4/4 exact while Model-directed was
+0/4 exact after four valid Abstain terminals. Current used 4 versus 12 Provider
+calls and 2,562 versus 9,116 tokens. The bounded result is
+`DTA_V226_CURRENT_REAL_FAULT_TRANSFER_SUPPORTED` with
+`CURRENT_RUNTIME_ACQUISITION_ADVANTAGE`, exact baseline restoration, `CLEAN`
+cleanup, zero non-owned changes, and zero write authority. See the
+[study](docs/results/dta-v226-real-fault-comparison.md),
+[error analysis](docs/results/dta-v226-real-fault-error-analysis.md), and
+[interview brief](docs/results/dta-v226-real-fault-interview-brief.md).
+
 ## One-command offline demo
 
 ```bash
