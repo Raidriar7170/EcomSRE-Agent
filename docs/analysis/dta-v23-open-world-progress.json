@@ -4,7 +4,7 @@
   "base_commit": "f17688f4c313b1483bfb7c56675c429605faf489",
   "branch": "codex/dta-v23-open-world-discovery",
   "current_increment": 4,
-  "status": "DTA_V23_VALID_FIXED_EVALUATION_COMPLETE_REVIEW_REQUIRED",
+  "status": "DTA_V23_VALID_FIXED_EVALUATION_AND_FINAL_REVIEW_COMPLETE",
   "engineering_terminal": null,
   "measured_result_terminal": "DTA_V23_OPEN_WORLD_DISCOVERY_NOT_OBSERVED",
   "fixed_evaluation_execution_count": 3,
@@ -12,7 +12,7 @@
   "protocol_blocked_predecessor_execution_count": 1,
   "valid_fixed_evaluation_execution_count": 1,
   "evaluation_acceptance": "VALID",
-  "repository_disposition": "Draft / REVIEW_REQUIRED",
+  "repository_disposition": "Ready / FINAL_REVIEW_PASS",
   "invalid_predecessor": {
     "status": "INVALID / REVIEW_REQUIRED",
     "artifact_path": "docs/results/dta-v23-open-world-evaluation-invalid-predecessor.json",
@@ -43,7 +43,12 @@
     "pairs_with_shared_known_admission": 24
   },
   "final_review": {
-    "status": "PENDING_REVIEW_OF_VALID_FIXED_EVALUATION",
+    "status": "PASS",
+    "review_path": "docs/external-reviews/dta-v23-open-world-final-review.md",
+    "reviewed_head": "37f7c94baf959f297c2aeec341265382b1a90db1",
+    "must_fix_count": 0,
+    "should_fix_count": 0,
+    "claim_accuracy": "PASS",
     "invalid_predecessor_review": "docs/external-reviews/dta-v23-open-world-final-review-invalid-predecessor.md",
     "invalid_predecessor_must_fix_count": 3,
     "invalid_predecessor_claim_accuracy": "FAIL"
@@ -87,7 +92,7 @@
     {
       "increment": 4,
       "name": "fixed evaluation and closeout",
-      "status": "VALID_EVALUATION_COMPLETE / REVIEW_REQUIRED",
+      "status": "VALID_EVALUATION_COMPLETE / FINAL_REVIEW_PASS",
       "planned_cases": 24,
       "planned_runs": 48,
       "planned_valid_execution_count": 1,
