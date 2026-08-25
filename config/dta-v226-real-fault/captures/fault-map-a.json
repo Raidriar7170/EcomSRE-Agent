@@ -1,0 +1,196 @@
+{
+  "schema_version": "dta-v225-real-fault.opaque-capture.v1",
+  "case_id": "fault-map-a",
+  "alias_map_name": "MAP_A",
+  "candidate_aliases": [
+    "svc-20e1bc90a8",
+    "svc-d9ca249b54"
+  ],
+  "source_window": {
+    "schema_version": "dta-v225-real-fault.source-window.v1",
+    "captured_at": "2026-08-25T05:21:05.019647Z",
+    "metrics_lookback_seconds": 60,
+    "logs_lookback_seconds": 300,
+    "traces_lookback_seconds": 300,
+    "resources_sampling_window_seconds": 10,
+    "resources_sample_count": 5,
+    "source_window_sha256": "228e3e155e0312288fe0eb035bb7543993f72e5750af4a99031e1bee7d99b935"
+  },
+  "capture": {
+    "schema_version": "dta-v22.replay-capture.v1",
+    "captured_at": "2026-08-25T05:21:05.019647Z",
+    "metrics": [
+      {
+        "schema_version": "dta-v22.metric-fact.v1",
+        "service": "svc-20e1bc90a8",
+        "metric_kind": "ERROR_RATE",
+        "support_status": "UNSUPPORTED",
+        "sample_count": 0,
+        "value": null,
+        "unit": "RATIO",
+        "window_started_at": "2026-08-25T05:20:05.019647Z",
+        "window_ended_at": "2026-08-25T05:21:05.019647Z"
+      },
+      {
+        "schema_version": "dta-v22.metric-fact.v1",
+        "service": "svc-20e1bc90a8",
+        "metric_kind": "LATENCY_P95_MS",
+        "support_status": "SUPPORTED",
+        "sample_count": 1,
+        "value": 3.3699999999999988,
+        "unit": "MILLISECONDS",
+        "window_started_at": "2026-08-25T05:20:05.019647Z",
+        "window_ended_at": "2026-08-25T05:21:05.019647Z"
+      },
+      {
+        "schema_version": "dta-v22.metric-fact.v1",
+        "service": "svc-20e1bc90a8",
+        "metric_kind": "REQUEST_SUPPORT",
+        "support_status": "SUPPORTED",
+        "sample_count": 1,
+        "value": 90.54710085637922,
+        "unit": "COUNT",
+        "window_started_at": "2026-08-25T05:20:05.019647Z",
+        "window_ended_at": "2026-08-25T05:21:05.019647Z"
+      },
+      {
+        "schema_version": "dta-v22.metric-fact.v1",
+        "service": "svc-d9ca249b54",
+        "metric_kind": "ERROR_RATE",
+        "support_status": "UNSUPPORTED",
+        "sample_count": 0,
+        "value": null,
+        "unit": "RATIO",
+        "window_started_at": "2026-08-25T05:20:05.019647Z",
+        "window_ended_at": "2026-08-25T05:21:05.019647Z"
+      },
+      {
+        "schema_version": "dta-v22.metric-fact.v1",
+        "service": "svc-d9ca249b54",
+        "metric_kind": "LATENCY_P95_MS",
+        "support_status": "SUPPORTED",
+        "sample_count": 1,
+        "value": 137.49999999999986,
+        "unit": "MILLISECONDS",
+        "window_started_at": "2026-08-25T05:20:05.019647Z",
+        "window_ended_at": "2026-08-25T05:21:05.019647Z"
+      },
+      {
+        "schema_version": "dta-v22.metric-fact.v1",
+        "service": "svc-d9ca249b54",
+        "metric_kind": "REQUEST_SUPPORT",
+        "support_status": "SUPPORTED",
+        "sample_count": 1,
+        "value": 147.2754050073638,
+        "unit": "COUNT",
+        "window_started_at": "2026-08-25T05:20:05.019647Z",
+        "window_ended_at": "2026-08-25T05:21:05.019647Z"
+      }
+    ],
+    "logs": [],
+    "traces": [
+      {
+        "schema_version": "dta-v22.trace-span.v1",
+        "observed_at": "2026-08-25T05:21:05.019647Z",
+        "service_path": [
+          "svc-20e1bc90a8"
+        ],
+        "service": "svc-20e1bc90a8",
+        "parent_service": null,
+        "operation": "GET /metrics",
+        "status": "UNSET",
+        "duration_ms": 0.753,
+        "first_error_location": false
+      }
+    ],
+    "runtime": [
+      {
+        "schema_version": "dta-v22.runtime-record.v1",
+        "service": "svc-20e1bc90a8",
+        "state": "RUNNING",
+        "healthy": true,
+        "restart_count": 0
+      },
+      {
+        "schema_version": "dta-v22.runtime-record.v1",
+        "service": "svc-d9ca249b54",
+        "state": "RUNNING",
+        "healthy": true,
+        "restart_count": 0
+      }
+    ],
+    "resources": [
+      {
+        "schema_version": "dta-v22.resource-usage-record.v1",
+        "service": "svc-20e1bc90a8",
+        "sampling_window_seconds": 10,
+        "samples": [
+          {
+            "offset_ms": 0,
+            "cpu_percent": 407.6821931589537,
+            "memory_bytes": 267628544
+          },
+          {
+            "offset_ms": 2500,
+            "cpu_percent": 411.6547879616963,
+            "memory_bytes": 267702272
+          },
+          {
+            "offset_ms": 5000,
+            "cpu_percent": 401.8374581939799,
+            "memory_bytes": 267788288
+          },
+          {
+            "offset_ms": 7500,
+            "cpu_percent": 400.7113408939293,
+            "memory_bytes": 267919360
+          },
+          {
+            "offset_ms": 10000,
+            "cpu_percent": 403.52053691275165,
+            "memory_bytes": 267984896
+          }
+        ],
+        "memory_slope_bytes_per_second": 35635.2
+      },
+      {
+        "schema_version": "dta-v22.resource-usage-record.v1",
+        "service": "svc-d9ca249b54",
+        "sampling_window_seconds": 10,
+        "samples": [
+          {
+            "offset_ms": 0,
+            "cpu_percent": 0.762108072048032,
+            "memory_bytes": 79106048
+          },
+          {
+            "offset_ms": 2500,
+            "cpu_percent": 0.743574297188755,
+            "memory_bytes": 79110144
+          },
+          {
+            "offset_ms": 5000,
+            "cpu_percent": 0.6148261758691207,
+            "memory_bytes": 79138816
+          },
+          {
+            "offset_ms": 7500,
+            "cpu_percent": 1.5241356382978724,
+            "memory_bytes": 79175680
+          },
+          {
+            "offset_ms": 10000,
+            "cpu_percent": 2.1164062500000003,
+            "memory_bytes": 79126528
+          }
+        ],
+        "memory_slope_bytes_per_second": 2048.0
+      }
+    ],
+    "changes": [],
+    "source_failures": []
+  },
+  "provenance": "OWNED_LOCAL_CAPTURE",
+  "physical_capture_sha256": "94ebb193e46147b28b527b7b0a85b72f20d9a14a77a0f6400374d7a2a4aa9f87",
+  "opaque_capture_sha256": "5cbd9bfe00c177b23dfef1067c0242200c2d34be71208afdfb6c6285bbee5ab0"
+}

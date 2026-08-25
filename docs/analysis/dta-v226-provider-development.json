@@ -1,0 +1,61 @@
+{
+  "schema_version": "dta-v226-real-fault.provider-development-summary.v1",
+  "development_only": true,
+  "old_pr67_capture_cases": 4,
+  "arms_per_campaign": 2,
+  "campaign_execution_count": 3,
+  "changed_development_iterations": 2,
+  "iterations": [
+    {
+      "ordinal": 1,
+      "report_sha256": "99dc7064732384b176adaac0b3d9b2e6fe57633e05fd38403ed35572aaf01e0c",
+      "valid_terminals": 4,
+      "provider_calls_recorded": 8,
+      "protocol_repairs": 0,
+      "transport_retries": 0,
+      "disposition": "FAILED_UNEXECUTABLE_CHANGES_SOURCE_EXPOSED"
+    },
+    {
+      "ordinal": 2,
+      "report_sha256": "1b044074146876f889817d609e279c1ffe7a0d864e634db19034cb938ec63d06",
+      "valid_terminals": 7,
+      "provider_calls_recorded": 13,
+      "protocol_repairs": 0,
+      "transport_retries_recorded": 1,
+      "disposition": "FAILED_PROVIDER_FAILURE_ACCOUNTING_INCOMPLETE"
+    },
+    {
+      "ordinal": 3,
+      "report_sha256": "d0ca56b5b6d03faf8135fc7d5dca1568ef911935c6d2655902b1716749e9dbec",
+      "valid_terminals": 8,
+      "provider_calls": 16,
+      "protocol_repairs": 0,
+      "transport_retries": 2,
+      "current_bundle_dispatches": 4,
+      "current_provider_terminal_selections": 4,
+      "model_provider_outputs_parsed": 4,
+      "disposition": "DTA_V226_REAL_PROVIDER_OLD_CAPTURE_GATE_PASS"
+    }
+  ],
+  "repairs": [
+    {
+      "ordinal": 1,
+      "kind": "ACTION_SURFACE_AVAILABILITY",
+      "change": "Removed CHANGES from the Model-directed surface because the Goal and read backend expose only Metrics, Logs, Traces, Runtime, and Resources."
+    },
+    {
+      "ordinal": 2,
+      "kind": "FAILURE_ACCOUNTING",
+      "change": "Preserved Provider failure calls, repairs, tokens, latency, exact-request retries, and transport versus protocol status."
+    }
+  ],
+  "prompt_changed_after_first_campaign": false,
+  "terminalizer_changed_during_provider_development": false,
+  "semantic_result_optimization_reruns": 0,
+  "physical_service_names_in_provider_payloads": 0,
+  "agent_writes": 0,
+  "action_proposals": 0,
+  "runbook_executions": 0,
+  "docker_calls": 0,
+  "status": "DTA_V226_REAL_PROVIDER_OLD_CAPTURE_GATE_PASS"
+}

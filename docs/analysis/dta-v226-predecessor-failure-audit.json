@@ -1,0 +1,221 @@
+{
+  "audit_sha256": "6564c222bce35324e41c289ddb13e115317b0b82dab26392c1e09623fa934b37",
+  "current_live_equivalents": [
+    {
+      "equivalent_id": "current-live-baseline-equivalent",
+      "first_failing_stage": "RESOURCE_COMPARISON_SET_BUILD",
+      "safe_error_code": "RESOURCE_COMPARISON_SET_EMPTY",
+      "source_case_id": "baseline-map-a"
+    },
+    {
+      "equivalent_id": "current-live-fault-equivalent",
+      "first_failing_stage": "RESOURCE_COMPARISON_SET_BUILD",
+      "safe_error_code": "RESOURCE_COMPARISON_SET_EMPTY",
+      "source_case_id": "fault-map-a"
+    }
+  ],
+  "current_snapshot_runs": [
+    {
+      "bundle_candidate_exists": true,
+      "capture_sha256": "71af3be5eeb1e54310993ce49cd94cb816ef726d3da62325ebd4f426f85e5104",
+      "case_id": "fault-map-a",
+      "first_failing_stage": "RESOURCE_COMPARISON_SET_BUILD",
+      "legacy_condition": "len(ambiguity_sets) == 1",
+      "legacy_status": "PROTOCOL_FAILED",
+      "metric_payload_sha256_by_target": {
+        "svc-6db724c330": "f4d1ba27f22f84b0006a03075e2390e6627a10c1159df41518b82bae3e8eab73",
+        "svc-f1a57dd3c4": "1661266f0c2ae1bdd4039da10105d937e2f81e634713c462a54e728fd97d1f4b"
+      },
+      "metric_payloads_differ": true,
+      "provider_calls": 0,
+      "resource_observable_gap_hypotheses_by_target": {
+        "svc-6db724c330": 2,
+        "svc-f1a57dd3c4": 2
+      },
+      "resources_recorded": false,
+      "safe_error_code": "RESOURCE_COMPARISON_SET_EMPTY",
+      "strict_ambiguity_set_count": 0,
+      "target_complete": true,
+      "target_visibility_signature_by_target": {
+        "svc-6db724c330": "8cbd1dc4f4f0b97593482def23956695953ee3fa2ea5c2b00efd62951c7440c2",
+        "svc-f1a57dd3c4": "f4326915d12bf77bcad97040d70f2ef2bd035dbe09db1c4a015eca0a2e89b99c"
+      },
+      "target_visibility_signatures_differ": true
+    },
+    {
+      "bundle_candidate_exists": true,
+      "capture_sha256": "7643d000f7af3ebf98528aa8eb3b2b6fd08ee78fce8e1664c461fce097353ee9",
+      "case_id": "fault-map-b",
+      "first_failing_stage": "RESOURCE_COMPARISON_SET_BUILD",
+      "legacy_condition": "len(ambiguity_sets) == 1",
+      "legacy_status": "PROTOCOL_FAILED",
+      "metric_payload_sha256_by_target": {
+        "svc-6db724c330": "dee859cbcfc0362e7c8d74f216747d1b470ba7b1a7f18d0bcd51a5d262d30241",
+        "svc-f1a57dd3c4": "f4d1ba27f22f84b0006a03075e2390e6627a10c1159df41518b82bae3e8eab73"
+      },
+      "metric_payloads_differ": true,
+      "provider_calls": 0,
+      "resource_observable_gap_hypotheses_by_target": {
+        "svc-6db724c330": 2,
+        "svc-f1a57dd3c4": 2
+      },
+      "resources_recorded": false,
+      "safe_error_code": "RESOURCE_COMPARISON_SET_EMPTY",
+      "strict_ambiguity_set_count": 0,
+      "target_complete": true,
+      "target_visibility_signature_by_target": {
+        "svc-6db724c330": "f4326915d12bf77bcad97040d70f2ef2bd035dbe09db1c4a015eca0a2e89b99c",
+        "svc-f1a57dd3c4": "8cbd1dc4f4f0b97593482def23956695953ee3fa2ea5c2b00efd62951c7440c2"
+      },
+      "target_visibility_signatures_differ": true
+    },
+    {
+      "bundle_candidate_exists": true,
+      "capture_sha256": "bffaec028b0d45391ad6b62f1da4a8036328ae2bddcdab2b1ec1fa54a83b1f36",
+      "case_id": "baseline-map-a",
+      "first_failing_stage": "RESOURCE_COMPARISON_SET_BUILD",
+      "legacy_condition": "len(ambiguity_sets) == 1",
+      "legacy_status": "PROTOCOL_FAILED",
+      "metric_payload_sha256_by_target": {
+        "svc-6db724c330": "0625a3b50f39fa1764b8d7d97ddc4c2253ffacbeadc84c7eacd12fcbc1e56df9",
+        "svc-f1a57dd3c4": "ae69adf545a7bc381418da844519d4c6ff1d2f535821ac6af4838a9afa903c1e"
+      },
+      "metric_payloads_differ": true,
+      "provider_calls": 0,
+      "resource_observable_gap_hypotheses_by_target": {
+        "svc-6db724c330": 2,
+        "svc-f1a57dd3c4": 2
+      },
+      "resources_recorded": false,
+      "safe_error_code": "RESOURCE_COMPARISON_SET_EMPTY",
+      "strict_ambiguity_set_count": 0,
+      "target_complete": true,
+      "target_visibility_signature_by_target": {
+        "svc-6db724c330": "cbb1bdcb6d84c307a48dcd33795f3ba95068c7569226ee0c4d1bde4a969889ca",
+        "svc-f1a57dd3c4": "1d70dbfa866b68b6b0ccdd6d6f3ffafb45e776b31a4810bc8240c79ede14c986"
+      },
+      "target_visibility_signatures_differ": true
+    },
+    {
+      "bundle_candidate_exists": true,
+      "capture_sha256": "45c174cdaf0372c92e26f6cfeeb9a684cfd5aa9453513f6d6aa2a4d77adb5b28",
+      "case_id": "baseline-map-b",
+      "first_failing_stage": "RESOURCE_COMPARISON_SET_BUILD",
+      "legacy_condition": "len(ambiguity_sets) == 1",
+      "legacy_status": "PROTOCOL_FAILED",
+      "metric_payload_sha256_by_target": {
+        "svc-6db724c330": "fda790903d0526d18c3dc9c6fcd4592d33242cd3f1c0534535b55fc2e567d0b6",
+        "svc-f1a57dd3c4": "0625a3b50f39fa1764b8d7d97ddc4c2253ffacbeadc84c7eacd12fcbc1e56df9"
+      },
+      "metric_payloads_differ": true,
+      "provider_calls": 0,
+      "resource_observable_gap_hypotheses_by_target": {
+        "svc-6db724c330": 2,
+        "svc-f1a57dd3c4": 2
+      },
+      "resources_recorded": false,
+      "safe_error_code": "RESOURCE_COMPARISON_SET_EMPTY",
+      "strict_ambiguity_set_count": 0,
+      "target_complete": true,
+      "target_visibility_signature_by_target": {
+        "svc-6db724c330": "1d70dbfa866b68b6b0ccdd6d6f3ffafb45e776b31a4810bc8240c79ede14c986",
+        "svc-f1a57dd3c4": "cbb1bdcb6d84c307a48dcd33795f3ba95068c7569226ee0c4d1bde4a969889ca"
+      },
+      "target_visibility_signatures_differ": true
+    }
+  ],
+  "development_fixture_only": true,
+  "docker_invoked": false,
+  "flat_failure_counts": {
+    "diagnosis_evidence_ref_failure": {
+      "confirmed_count": 0,
+      "possible_unresolved_count": 0
+    },
+    "full_diagnosis_parse_failure": {
+      "confirmed_count": 0,
+      "possible_unresolved_count": 4
+    },
+    "read_dispatch_failure": {
+      "confirmed_count": 0,
+      "possible_unresolved_count": 0
+    },
+    "read_request_parse_or_bind_failure": {
+      "confirmed_count": 0,
+      "possible_unresolved_count": 4
+    },
+    "terminal_normalization_failure": {
+      "confirmed_count": 0,
+      "possible_unresolved_count": 0
+    },
+    "unresolved_pre_acceptance_provider_output": 4
+  },
+  "flat_recoverability_boundary": "All four first failures are exactly localized to pre-acceptance Provider output parsing/binding. Preserved bytes exclude read dispatch, Diagnosis evidence-ref validation, and terminal normalization, but do not distinguish read-request parsing from full-Diagnosis parsing.",
+  "flat_recoverability_disposition": "partially confirmed",
+  "flat_snapshot_runs": [
+    {
+      "accepted_provider_turns": 1,
+      "all_accepted_read_turns_dispatched": true,
+      "capture_sha256": "71af3be5eeb1e54310993ce49cd94cb816ef726d3da62325ebd4f426f85e5104",
+      "case_id": "fault-map-a",
+      "failed_before_turn_acceptance": true,
+      "first_failing_stage": "PROVIDER_ACTION_SELECTION",
+      "legacy_status": "PROTOCOL_FAILED",
+      "narrow_subtype": "UNRECOVERABLE_FROM_PRESERVED_BYTES",
+      "narrow_subtype_reason": "raw Provider output and safe parser validation codes were not persisted; the failed pre-acceptance output cannot be identified as a read request or a Diagnosis",
+      "provider_calls": 2,
+      "safe_error_code": "PROVIDER_OUTPUT_INVALID",
+      "semantic_reads": 1
+    },
+    {
+      "accepted_provider_turns": 3,
+      "all_accepted_read_turns_dispatched": true,
+      "capture_sha256": "7643d000f7af3ebf98528aa8eb3b2b6fd08ee78fce8e1664c461fce097353ee9",
+      "case_id": "fault-map-b",
+      "failed_before_turn_acceptance": true,
+      "first_failing_stage": "PROVIDER_ACTION_SELECTION",
+      "legacy_status": "PROTOCOL_FAILED",
+      "narrow_subtype": "UNRECOVERABLE_FROM_PRESERVED_BYTES",
+      "narrow_subtype_reason": "raw Provider output and safe parser validation codes were not persisted; the failed pre-acceptance output cannot be identified as a read request or a Diagnosis",
+      "provider_calls": 4,
+      "safe_error_code": "PROVIDER_OUTPUT_INVALID",
+      "semantic_reads": 3
+    },
+    {
+      "accepted_provider_turns": 3,
+      "all_accepted_read_turns_dispatched": true,
+      "capture_sha256": "bffaec028b0d45391ad6b62f1da4a8036328ae2bddcdab2b1ec1fa54a83b1f36",
+      "case_id": "baseline-map-a",
+      "failed_before_turn_acceptance": true,
+      "first_failing_stage": "PROVIDER_ACTION_SELECTION",
+      "legacy_status": "PROTOCOL_FAILED",
+      "narrow_subtype": "UNRECOVERABLE_FROM_PRESERVED_BYTES",
+      "narrow_subtype_reason": "raw Provider output and safe parser validation codes were not persisted; the failed pre-acceptance output cannot be identified as a read request or a Diagnosis",
+      "provider_calls": 4,
+      "safe_error_code": "PROVIDER_OUTPUT_INVALID",
+      "semantic_reads": 3
+    },
+    {
+      "accepted_provider_turns": 3,
+      "all_accepted_read_turns_dispatched": true,
+      "capture_sha256": "45c174cdaf0372c92e26f6cfeeb9a684cfd5aa9453513f6d6aa2a4d77adb5b28",
+      "case_id": "baseline-map-b",
+      "failed_before_turn_acceptance": true,
+      "first_failing_stage": "PROVIDER_ACTION_SELECTION",
+      "legacy_status": "PROTOCOL_FAILED",
+      "narrow_subtype": "UNRECOVERABLE_FROM_PRESERVED_BYTES",
+      "narrow_subtype_reason": "raw Provider output and safe parser validation codes were not persisted; the failed pre-acceptance output cannot be identified as a read request or a Diagnosis",
+      "provider_calls": 4,
+      "safe_error_code": "PROVIDER_OUTPUT_INVALID",
+      "semantic_reads": 3
+    }
+  ],
+  "historical_result_reinterpreted": false,
+  "predecessor_pull_request": 67,
+  "provider_invoked": false,
+  "schema_version": "dta-v226-real-fault.predecessor-failure-audit.v1",
+  "source_hypothesis": {
+    "confirmed_case_count": 4,
+    "disposition": "confirmed",
+    "statement": "The current arm's strict len(ambiguity_sets) == 1 condition can fail because exact metric payloads differ across candidates although both retain unresolved Resources-observable gaps."
+  }
+}

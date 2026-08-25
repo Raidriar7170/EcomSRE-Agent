@@ -1,0 +1,2393 @@
+{
+  "schema_version": "dta-v226-real-fault.study-artifact.v1",
+  "recorded_at": "2026-08-25T05:24:09.072679Z",
+  "engineering_terminal": "DTA_V226_REAL_FAULT_TRANSFER_REPAIR_STUDY_EXECUTED",
+  "accepted_live_campaigns": 1,
+  "shared_physical_captures": 2,
+  "shared_capture_semantic_actions": 16,
+  "shared_capture_target_equivalent_reads": 20,
+  "pre_live_freeze": {
+    "schema_version": "dta-v226-real-fault.pre-live-freeze.v1",
+    "goal_version": "dta-v226-real-fault-transfer-repair-v1",
+    "starting_main": "1c6520d706481f37b63a5b14c1fe8554b52d530b",
+    "code_head": "5a902005bc4588d5edda7a8e940cd9bb77ba33fe",
+    "provider_model": "gpt-5.4-mini-2026-03-17",
+    "temperature": 0,
+    "comparator_service": "recommendation",
+    "alias_map_set_sha256": "9a6da085f9aede578b37b7a7d3c8f7d1de516378ba76665402fc718a9a188eb2",
+    "selection_prompt_sha256": "b3fffdf563646d616af2b0ff0446b5aa1f892d823e224ecb47b9250f6961553a",
+    "terminalizer_sha256": "2301e18f7dcb569351441ce818785793150ad75dd9ce3816799881ea1f135011",
+    "scorer_sha256": "c157f5d33b920c9bbbf83e56b83d8b1d24f92337e708fe31189f7e50293bdc74",
+    "provider_development_summary_sha256": "4b7511df26273c23d6a064bbf123604f58dc675c5fc4102cb5d8bfabc03c5728",
+    "provider_gate_iteration_sha256": "d0ca56b5b6d03faf8135fc7d5dca1568ef911935c6d2655902b1716749e9dbec",
+    "pre_live_review_sha256": "18ef735c86b1e1d4fac7977c881c9ca6761766158b32e38a5fb793c38c84aa5f",
+    "schedule": [
+      {
+        "ordinal": 1,
+        "case_id": "fault-map-a",
+        "case_local_position": 1,
+        "arm": "MODEL_DIRECTED_RETRIEVAL"
+      },
+      {
+        "ordinal": 2,
+        "case_id": "fault-map-a",
+        "case_local_position": 2,
+        "arm": "CURRENT_RUNTIME_BUNDLE"
+      },
+      {
+        "ordinal": 3,
+        "case_id": "fault-map-b",
+        "case_local_position": 1,
+        "arm": "CURRENT_RUNTIME_BUNDLE"
+      },
+      {
+        "ordinal": 4,
+        "case_id": "fault-map-b",
+        "case_local_position": 2,
+        "arm": "MODEL_DIRECTED_RETRIEVAL"
+      },
+      {
+        "ordinal": 5,
+        "case_id": "baseline-map-a",
+        "case_local_position": 1,
+        "arm": "MODEL_DIRECTED_RETRIEVAL"
+      },
+      {
+        "ordinal": 6,
+        "case_id": "baseline-map-a",
+        "case_local_position": 2,
+        "arm": "CURRENT_RUNTIME_BUNDLE"
+      },
+      {
+        "ordinal": 7,
+        "case_id": "baseline-map-b",
+        "case_local_position": 1,
+        "arm": "CURRENT_RUNTIME_BUNDLE"
+      },
+      {
+        "ordinal": 8,
+        "case_id": "baseline-map-b",
+        "case_local_position": 2,
+        "arm": "MODEL_DIRECTED_RETRIEVAL"
+      }
+    ],
+    "maximum_adaptive_semantic_actions": 4,
+    "maximum_target_equivalent_reads": 4,
+    "maximum_protocol_repairs": 2,
+    "maximum_transport_retries": 3,
+    "maximum_final_execution_count": 1,
+    "maximum_accepted_live_campaigns": 1,
+    "agent_write_authority": 0,
+    "action_proposal_authority": 0,
+    "runbook_execution_authority": 0,
+    "freeze_sha256": "f64eac8e510f522aaa78b27b41f74442e7e9f613f565635c45540ca525920be2"
+  },
+  "preflight": {
+    "schema_version": "dta-v226-real-fault.static-preflight.v1",
+    "status": "DTA_V226_REAL_FAULT_STATIC_PREFLIGHT_PASS",
+    "code_head": "5a902005bc4588d5edda7a8e940cd9bb77ba33fe",
+    "branch": "codex/dta-v226-real-fault-transfer-repair",
+    "worktree_clean": true,
+    "starting_main_is_ancestor": true,
+    "provider_model": "gpt-5.4-mini-2026-03-17",
+    "live_config_loaded": true,
+    "ad_protocol_loaded": true,
+    "provider_old_capture_gate_passed": true,
+    "pre_live_review_passed": true,
+    "prompt_lint_passed": true,
+    "new_aliases_verified": true,
+    "outputs_absent": true,
+    "checked_at": "2026-08-25T05:19:06.654840Z",
+    "preflight_sha256": "745992644d291a2a4887ea6ba23043ce5109df5f34cabc3efcda612027e804a8"
+  },
+  "manifest": {
+    "schema_version": "dta-v226-real-fault.manifest.v1",
+    "pre_live_freeze": {
+      "schema_version": "dta-v226-real-fault.pre-live-freeze.v1",
+      "goal_version": "dta-v226-real-fault-transfer-repair-v1",
+      "starting_main": "1c6520d706481f37b63a5b14c1fe8554b52d530b",
+      "code_head": "5a902005bc4588d5edda7a8e940cd9bb77ba33fe",
+      "provider_model": "gpt-5.4-mini-2026-03-17",
+      "temperature": 0,
+      "comparator_service": "recommendation",
+      "alias_map_set_sha256": "9a6da085f9aede578b37b7a7d3c8f7d1de516378ba76665402fc718a9a188eb2",
+      "selection_prompt_sha256": "b3fffdf563646d616af2b0ff0446b5aa1f892d823e224ecb47b9250f6961553a",
+      "terminalizer_sha256": "2301e18f7dcb569351441ce818785793150ad75dd9ce3816799881ea1f135011",
+      "scorer_sha256": "c157f5d33b920c9bbbf83e56b83d8b1d24f92337e708fe31189f7e50293bdc74",
+      "provider_development_summary_sha256": "4b7511df26273c23d6a064bbf123604f58dc675c5fc4102cb5d8bfabc03c5728",
+      "provider_gate_iteration_sha256": "d0ca56b5b6d03faf8135fc7d5dca1568ef911935c6d2655902b1716749e9dbec",
+      "pre_live_review_sha256": "18ef735c86b1e1d4fac7977c881c9ca6761766158b32e38a5fb793c38c84aa5f",
+      "schedule": [
+        {
+          "ordinal": 1,
+          "case_id": "fault-map-a",
+          "case_local_position": 1,
+          "arm": "MODEL_DIRECTED_RETRIEVAL"
+        },
+        {
+          "ordinal": 2,
+          "case_id": "fault-map-a",
+          "case_local_position": 2,
+          "arm": "CURRENT_RUNTIME_BUNDLE"
+        },
+        {
+          "ordinal": 3,
+          "case_id": "fault-map-b",
+          "case_local_position": 1,
+          "arm": "CURRENT_RUNTIME_BUNDLE"
+        },
+        {
+          "ordinal": 4,
+          "case_id": "fault-map-b",
+          "case_local_position": 2,
+          "arm": "MODEL_DIRECTED_RETRIEVAL"
+        },
+        {
+          "ordinal": 5,
+          "case_id": "baseline-map-a",
+          "case_local_position": 1,
+          "arm": "MODEL_DIRECTED_RETRIEVAL"
+        },
+        {
+          "ordinal": 6,
+          "case_id": "baseline-map-a",
+          "case_local_position": 2,
+          "arm": "CURRENT_RUNTIME_BUNDLE"
+        },
+        {
+          "ordinal": 7,
+          "case_id": "baseline-map-b",
+          "case_local_position": 1,
+          "arm": "CURRENT_RUNTIME_BUNDLE"
+        },
+        {
+          "ordinal": 8,
+          "case_id": "baseline-map-b",
+          "case_local_position": 2,
+          "arm": "MODEL_DIRECTED_RETRIEVAL"
+        }
+      ],
+      "maximum_adaptive_semantic_actions": 4,
+      "maximum_target_equivalent_reads": 4,
+      "maximum_protocol_repairs": 2,
+      "maximum_transport_retries": 3,
+      "maximum_final_execution_count": 1,
+      "maximum_accepted_live_campaigns": 1,
+      "agent_write_authority": 0,
+      "action_proposal_authority": 0,
+      "runbook_execution_authority": 0,
+      "freeze_sha256": "f64eac8e510f522aaa78b27b41f74442e7e9f613f565635c45540ca525920be2"
+    },
+    "capture_pair_sha256": "9e0f97b94fa1f2082afdce1a0b7b6880bcf0077ec402a25ba5c2906ff6233e09",
+    "case_set_sha256": "8bda22eefabd92915446d502413e13a531cb00b336d877707f504942890545a6",
+    "truth_set_sha256": "ffb4129fcdc769508b75dce37205e2cdcfbc24820cbca7c639888e1792c94927",
+    "execution_id": "exec-v226-af76f41742395e67",
+    "manifest_sha256": "fed9375b7fbcda5f6f53d35972a8c7e3143c24d67ba5c91bc2e6be9aafc700ce"
+  },
+  "capture_pair_sha256": "9e0f97b94fa1f2082afdce1a0b7b6880bcf0077ec402a25ba5c2906ff6233e09",
+  "fault_impact_sha256": "c7fae79ec5bb32c2f55338318d2ad6499cf1a36aa3ad5daf86b5caffd3e453b0",
+  "live_baseline": {
+    "schema_version": "dta-v226-real-fault.live-shadow-run.v1",
+    "backend": "LocalSandboxReadBackend",
+    "case_kind": "BASELINE",
+    "arm_run": {
+      "schema_version": "dta-v226-real-fault.arm-run.v1",
+      "case_id": "baseline-map-a",
+      "arm": "CURRENT_RUNTIME_BUNDLE",
+      "case_bytes_sha256": "f476ee8ccf0e54d94facd374a5a64e81cedc6990122a87892aadfbdfb3341b17",
+      "model_id": "gpt-5.4-mini-2026-03-17",
+      "status": "VALID_TERMINAL",
+      "prediction": {
+        "schema_version": "dta-v226-real-fault.prediction.v1",
+        "terminal": "NO_INCIDENT",
+        "terminal_id": "t:v226:no-incident:36a352b4a04c3db7",
+        "root_service_alias": null,
+        "fault_domain": null,
+        "mechanism": null,
+        "supporting_evidence_refs": [
+          "e:a:resources:all-candidates:6281c03ee2cf:0:cf95358e3606",
+          "e:a:resources:all-candidates:6281c03ee2cf:1:db2771cfb01a",
+          "e:a:runtime:all-candidates:6281c03ee2cf:0:d8fb3c3ca2c8",
+          "e:a:runtime:all-candidates:6281c03ee2cf:1:09b8bf36824e"
+        ],
+        "evidence_clause_valid": true
+      },
+      "trace": {
+        "schema_version": "dta-v226-real-fault.run-trace.v1",
+        "arm": "CURRENT_RUNTIME_BUNDLE",
+        "last_completed_stage": "COMPLETE",
+        "failure_stage": null,
+        "safe_error_code": null,
+        "local_exception_class": null,
+        "safe_validation_codes": [],
+        "stage_events": [
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 1,
+            "stage": "INPUT_VALIDATION",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 2,
+            "stage": "BOOTSTRAP_ACTION_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 3,
+            "stage": "BOOTSTRAP_DISPATCH",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 4,
+            "stage": "BOOTSTRAP_MEMORY_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 5,
+            "stage": "BASELINE_PROFILE_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 6,
+            "stage": "HYPOTHESIS_CATALOG_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 7,
+            "stage": "GAP_GRAPH_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 8,
+            "stage": "ACTION_CATALOG_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 9,
+            "stage": "RESOURCE_COMPARISON_SET_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 10,
+            "stage": "BUNDLE_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 11,
+            "stage": "BUNDLE_DISPATCH",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 12,
+            "stage": "POST_READ_MEMORY_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 13,
+            "stage": "POST_READ_GAP_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 14,
+            "stage": "TERMINAL_CATALOG_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 15,
+            "stage": "PROVIDER_TERMINAL_SELECTION",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 16,
+            "stage": "TERMINAL_BIND",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 17,
+            "stage": "COMPLETE",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          }
+        ],
+        "trace_sha256": "088824dcccca49cd0501dfabe2990c1b01b3ea4aa348229527a23adb44c9a05f"
+      },
+      "strictly_ambiguous": false,
+      "comparison_set_size": 2,
+      "bundle_eligible": true,
+      "bundle_dispatched": true,
+      "bundle_target_count": 2,
+      "first_useful_evidence_ordinal": 1,
+      "resources_selected": true,
+      "resource_read_shape": "MULTI_TARGET",
+      "all_candidates_covered": true,
+      "semantic_evidence_actions": 1,
+      "target_equivalent_reads": 2,
+      "shared_capture_reads_charged_to_arm": 0,
+      "predicate_yield_count": 2,
+      "duplicate_read_attempts": 0,
+      "empty_read_count": 0,
+      "provider_turns": 1,
+      "provider_calls": 1,
+      "first_pass_protocol_success": true,
+      "post_repair_protocol_success": true,
+      "protocol_repairs": 0,
+      "input_tokens": 611,
+      "output_tokens": 24,
+      "total_tokens": 635,
+      "latency_ms": 2268.3423329726793,
+      "transport_retries": 0,
+      "protocol_failures": 0,
+      "runner_failures": 0,
+      "transport_failures": 0,
+      "agent_writes": 0,
+      "action_proposals": 0,
+      "runbook_executions": 0,
+      "run_sha256": "5c7dee55fda9e8c931a7ff622397d0a44fb2d3c7ffc76327b53fafcc73d36396"
+    },
+    "backend_identity_verified": true,
+    "resource_request_target_count": 2,
+    "physical_multi_target": true,
+    "opaque_remap_complete": true,
+    "live_read_only": true,
+    "agent_writes": 0,
+    "action_proposals": 0,
+    "runbook_executions": 0
+  },
+  "live_fault": {
+    "schema_version": "dta-v226-real-fault.live-shadow-run.v1",
+    "backend": "LocalSandboxReadBackend",
+    "case_kind": "AD_CPU_FAULT",
+    "arm_run": {
+      "schema_version": "dta-v226-real-fault.arm-run.v1",
+      "case_id": "fault-map-a",
+      "arm": "CURRENT_RUNTIME_BUNDLE",
+      "case_bytes_sha256": "5cbd9bfe00c177b23dfef1067c0242200c2d34be71208afdfb6c6285bbee5ab0",
+      "model_id": "gpt-5.4-mini-2026-03-17",
+      "status": "VALID_TERMINAL",
+      "prediction": {
+        "schema_version": "dta-v226-real-fault.prediction.v1",
+        "terminal": "DIAGNOSED",
+        "terminal_id": "t:v226:cpu-saturation:fdf09db19e01fa1a",
+        "root_service_alias": "svc-20e1bc90a8",
+        "fault_domain": "LOCAL_RESOURCE",
+        "mechanism": "CPU_SATURATION",
+        "supporting_evidence_refs": [
+          "e:a:resources:all-candidates:6281c03ee2cf:0:5e3464468faa",
+          "e:a:runtime:all-candidates:6281c03ee2cf:0:d8fb3c3ca2c8"
+        ],
+        "evidence_clause_valid": true
+      },
+      "trace": {
+        "schema_version": "dta-v226-real-fault.run-trace.v1",
+        "arm": "CURRENT_RUNTIME_BUNDLE",
+        "last_completed_stage": "COMPLETE",
+        "failure_stage": null,
+        "safe_error_code": null,
+        "local_exception_class": null,
+        "safe_validation_codes": [],
+        "stage_events": [
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 1,
+            "stage": "INPUT_VALIDATION",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 2,
+            "stage": "BOOTSTRAP_ACTION_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 3,
+            "stage": "BOOTSTRAP_DISPATCH",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 4,
+            "stage": "BOOTSTRAP_MEMORY_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 5,
+            "stage": "BASELINE_PROFILE_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 6,
+            "stage": "HYPOTHESIS_CATALOG_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 7,
+            "stage": "GAP_GRAPH_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 8,
+            "stage": "ACTION_CATALOG_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 9,
+            "stage": "RESOURCE_COMPARISON_SET_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 10,
+            "stage": "BUNDLE_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 11,
+            "stage": "BUNDLE_DISPATCH",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 12,
+            "stage": "POST_READ_MEMORY_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 13,
+            "stage": "POST_READ_GAP_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 14,
+            "stage": "TERMINAL_CATALOG_BUILD",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 15,
+            "stage": "PROVIDER_TERMINAL_SELECTION",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 16,
+            "stage": "TERMINAL_BIND",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          },
+          {
+            "schema_version": "dta-v226-real-fault.stage-event.v1",
+            "ordinal": 17,
+            "stage": "COMPLETE",
+            "outcome": "COMPLETED",
+            "safe_error_code": null
+          }
+        ],
+        "trace_sha256": "088824dcccca49cd0501dfabe2990c1b01b3ea4aa348229527a23adb44c9a05f"
+      },
+      "strictly_ambiguous": false,
+      "comparison_set_size": 2,
+      "bundle_eligible": true,
+      "bundle_dispatched": true,
+      "bundle_target_count": 2,
+      "first_useful_evidence_ordinal": 1,
+      "resources_selected": true,
+      "resource_read_shape": "MULTI_TARGET",
+      "all_candidates_covered": true,
+      "semantic_evidence_actions": 1,
+      "target_equivalent_reads": 2,
+      "shared_capture_reads_charged_to_arm": 0,
+      "predicate_yield_count": 3,
+      "duplicate_read_attempts": 0,
+      "empty_read_count": 0,
+      "provider_turns": 1,
+      "provider_calls": 1,
+      "first_pass_protocol_success": true,
+      "post_repair_protocol_success": true,
+      "protocol_repairs": 0,
+      "input_tokens": 623,
+      "output_tokens": 24,
+      "total_tokens": 647,
+      "latency_ms": 1565.0622910470702,
+      "transport_retries": 0,
+      "protocol_failures": 0,
+      "runner_failures": 0,
+      "transport_failures": 0,
+      "agent_writes": 0,
+      "action_proposals": 0,
+      "runbook_executions": 0,
+      "run_sha256": "2047f7f3830bcfa1a4819e25daa645f1ac7ee30436e9baa57ab427008607620e"
+    },
+    "backend_identity_verified": true,
+    "resource_request_target_count": 2,
+    "physical_multi_target": true,
+    "opaque_remap_complete": true,
+    "live_read_only": true,
+    "agent_writes": 0,
+    "action_proposals": 0,
+    "runbook_executions": 0
+  },
+  "baseline_restored": true,
+  "cleanup": "CLEAN",
+  "non_owned_changes": 0,
+  "execution": {
+    "schema_version": "dta-v226-real-fault.study-execution.v1",
+    "execution_id": "exec-v226-af76f41742395e67",
+    "schedule": [
+      {
+        "ordinal": 1,
+        "case_id": "fault-map-a",
+        "case_local_position": 1,
+        "arm": "MODEL_DIRECTED_RETRIEVAL"
+      },
+      {
+        "ordinal": 2,
+        "case_id": "fault-map-a",
+        "case_local_position": 2,
+        "arm": "CURRENT_RUNTIME_BUNDLE"
+      },
+      {
+        "ordinal": 3,
+        "case_id": "fault-map-b",
+        "case_local_position": 1,
+        "arm": "CURRENT_RUNTIME_BUNDLE"
+      },
+      {
+        "ordinal": 4,
+        "case_id": "fault-map-b",
+        "case_local_position": 2,
+        "arm": "MODEL_DIRECTED_RETRIEVAL"
+      },
+      {
+        "ordinal": 5,
+        "case_id": "baseline-map-a",
+        "case_local_position": 1,
+        "arm": "MODEL_DIRECTED_RETRIEVAL"
+      },
+      {
+        "ordinal": 6,
+        "case_id": "baseline-map-a",
+        "case_local_position": 2,
+        "arm": "CURRENT_RUNTIME_BUNDLE"
+      },
+      {
+        "ordinal": 7,
+        "case_id": "baseline-map-b",
+        "case_local_position": 1,
+        "arm": "CURRENT_RUNTIME_BUNDLE"
+      },
+      {
+        "ordinal": 8,
+        "case_id": "baseline-map-b",
+        "case_local_position": 2,
+        "arm": "MODEL_DIRECTED_RETRIEVAL"
+      }
+    ],
+    "runs": [
+      {
+        "schema_version": "dta-v226-real-fault.arm-run.v1",
+        "case_id": "fault-map-a",
+        "arm": "MODEL_DIRECTED_RETRIEVAL",
+        "case_bytes_sha256": "5cbd9bfe00c177b23dfef1067c0242200c2d34be71208afdfb6c6285bbee5ab0",
+        "model_id": "gpt-5.4-mini-2026-03-17",
+        "status": "VALID_TERMINAL",
+        "prediction": {
+          "schema_version": "dta-v226-real-fault.prediction.v1",
+          "terminal": "ABSTAIN",
+          "terminal_id": "t:v226:abstain:a1aa742ec8f2852e",
+          "root_service_alias": null,
+          "fault_domain": null,
+          "mechanism": null,
+          "supporting_evidence_refs": [],
+          "evidence_clause_valid": false
+        },
+        "trace": {
+          "schema_version": "dta-v226-real-fault.run-trace.v1",
+          "arm": "MODEL_DIRECTED_RETRIEVAL",
+          "last_completed_stage": "COMPLETE",
+          "failure_stage": null,
+          "safe_error_code": null,
+          "local_exception_class": null,
+          "safe_validation_codes": [],
+          "stage_events": [
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 1,
+              "stage": "INPUT_VALIDATION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 2,
+              "stage": "BOOTSTRAP_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 3,
+              "stage": "ACTION_SURFACE_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 4,
+              "stage": "PROVIDER_ACTION_SELECTION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 5,
+              "stage": "ACTION_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 6,
+              "stage": "READ_DISPATCH",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 7,
+              "stage": "OBSERVATION_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 8,
+              "stage": "MEMORY_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 9,
+              "stage": "TERMINAL_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 10,
+              "stage": "ACTION_SURFACE_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 11,
+              "stage": "PROVIDER_ACTION_SELECTION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 12,
+              "stage": "ACTION_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 13,
+              "stage": "READ_DISPATCH",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 14,
+              "stage": "OBSERVATION_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 15,
+              "stage": "MEMORY_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 16,
+              "stage": "TERMINAL_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 17,
+              "stage": "PROVIDER_TERMINAL_SELECTION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 18,
+              "stage": "TERMINAL_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 19,
+              "stage": "COMPLETE",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            }
+          ],
+          "trace_sha256": "44a26925e846247e2b03e5c83a5e0b02c9f0fab09d82052e15e58019c731acc9"
+        },
+        "strictly_ambiguous": null,
+        "comparison_set_size": 0,
+        "bundle_eligible": false,
+        "bundle_dispatched": false,
+        "bundle_target_count": 0,
+        "first_useful_evidence_ordinal": null,
+        "resources_selected": false,
+        "resource_read_shape": "NONE",
+        "all_candidates_covered": false,
+        "semantic_evidence_actions": 2,
+        "target_equivalent_reads": 2,
+        "shared_capture_reads_charged_to_arm": 0,
+        "predicate_yield_count": 0,
+        "duplicate_read_attempts": 0,
+        "empty_read_count": 2,
+        "provider_turns": 3,
+        "provider_calls": 3,
+        "first_pass_protocol_success": true,
+        "post_repair_protocol_success": true,
+        "protocol_repairs": 0,
+        "input_tokens": 2205,
+        "output_tokens": 74,
+        "total_tokens": 2279,
+        "latency_ms": 9639.409249997698,
+        "transport_retries": 0,
+        "protocol_failures": 0,
+        "runner_failures": 0,
+        "transport_failures": 0,
+        "agent_writes": 0,
+        "action_proposals": 0,
+        "runbook_executions": 0,
+        "run_sha256": "f187afa2eede8111dc94562f753d6982edd9022e81e37a24473bbab4c9054c0c"
+      },
+      {
+        "schema_version": "dta-v226-real-fault.arm-run.v1",
+        "case_id": "fault-map-a",
+        "arm": "CURRENT_RUNTIME_BUNDLE",
+        "case_bytes_sha256": "5cbd9bfe00c177b23dfef1067c0242200c2d34be71208afdfb6c6285bbee5ab0",
+        "model_id": "gpt-5.4-mini-2026-03-17",
+        "status": "VALID_TERMINAL",
+        "prediction": {
+          "schema_version": "dta-v226-real-fault.prediction.v1",
+          "terminal": "DIAGNOSED",
+          "terminal_id": "t:v226:cpu-saturation:bf27a12f1ef1b9a8",
+          "root_service_alias": "svc-20e1bc90a8",
+          "fault_domain": "LOCAL_RESOURCE",
+          "mechanism": "CPU_SATURATION",
+          "supporting_evidence_refs": [
+            "e:a:resources:all-candidates:6281c03ee2cf:0:2bcc66c6bb15",
+            "e:a:runtime:all-candidates:6281c03ee2cf:0:d8fb3c3ca2c8"
+          ],
+          "evidence_clause_valid": true
+        },
+        "trace": {
+          "schema_version": "dta-v226-real-fault.run-trace.v1",
+          "arm": "CURRENT_RUNTIME_BUNDLE",
+          "last_completed_stage": "COMPLETE",
+          "failure_stage": null,
+          "safe_error_code": null,
+          "local_exception_class": null,
+          "safe_validation_codes": [],
+          "stage_events": [
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 1,
+              "stage": "INPUT_VALIDATION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 2,
+              "stage": "BOOTSTRAP_ACTION_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 3,
+              "stage": "BOOTSTRAP_DISPATCH",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 4,
+              "stage": "BOOTSTRAP_MEMORY_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 5,
+              "stage": "BASELINE_PROFILE_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 6,
+              "stage": "HYPOTHESIS_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 7,
+              "stage": "GAP_GRAPH_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 8,
+              "stage": "ACTION_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 9,
+              "stage": "RESOURCE_COMPARISON_SET_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 10,
+              "stage": "BUNDLE_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 11,
+              "stage": "BUNDLE_DISPATCH",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 12,
+              "stage": "POST_READ_MEMORY_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 13,
+              "stage": "POST_READ_GAP_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 14,
+              "stage": "TERMINAL_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 15,
+              "stage": "PROVIDER_TERMINAL_SELECTION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 16,
+              "stage": "TERMINAL_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 17,
+              "stage": "COMPLETE",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            }
+          ],
+          "trace_sha256": "088824dcccca49cd0501dfabe2990c1b01b3ea4aa348229527a23adb44c9a05f"
+        },
+        "strictly_ambiguous": false,
+        "comparison_set_size": 2,
+        "bundle_eligible": true,
+        "bundle_dispatched": true,
+        "bundle_target_count": 2,
+        "first_useful_evidence_ordinal": 1,
+        "resources_selected": true,
+        "resource_read_shape": "MULTI_TARGET",
+        "all_candidates_covered": true,
+        "semantic_evidence_actions": 1,
+        "target_equivalent_reads": 2,
+        "shared_capture_reads_charged_to_arm": 0,
+        "predicate_yield_count": 3,
+        "duplicate_read_attempts": 0,
+        "empty_read_count": 0,
+        "provider_turns": 1,
+        "provider_calls": 1,
+        "first_pass_protocol_success": true,
+        "post_repair_protocol_success": true,
+        "protocol_repairs": 0,
+        "input_tokens": 623,
+        "output_tokens": 24,
+        "total_tokens": 647,
+        "latency_ms": 2289.774916949682,
+        "transport_retries": 0,
+        "protocol_failures": 0,
+        "runner_failures": 0,
+        "transport_failures": 0,
+        "agent_writes": 0,
+        "action_proposals": 0,
+        "runbook_executions": 0,
+        "run_sha256": "814a090a04bc68a3e8453cfc74ede504c7ffdcb144a1a02be8a922200cccc22b"
+      },
+      {
+        "schema_version": "dta-v226-real-fault.arm-run.v1",
+        "case_id": "fault-map-b",
+        "arm": "CURRENT_RUNTIME_BUNDLE",
+        "case_bytes_sha256": "6e2731bb55dab7e2c8abadb637e99144fb2c2823deeca279dca71825e67d0cdd",
+        "model_id": "gpt-5.4-mini-2026-03-17",
+        "status": "VALID_TERMINAL",
+        "prediction": {
+          "schema_version": "dta-v226-real-fault.prediction.v1",
+          "terminal": "DIAGNOSED",
+          "terminal_id": "t:v226:cpu-saturation:5bd0c1e8a79c576e",
+          "root_service_alias": "svc-d9ca249b54",
+          "fault_domain": "LOCAL_RESOURCE",
+          "mechanism": "CPU_SATURATION",
+          "supporting_evidence_refs": [
+            "e:a:resources:all-candidates:6281c03ee2cf:1:363c47211def",
+            "e:a:runtime:all-candidates:6281c03ee2cf:1:09b8bf36824e"
+          ],
+          "evidence_clause_valid": true
+        },
+        "trace": {
+          "schema_version": "dta-v226-real-fault.run-trace.v1",
+          "arm": "CURRENT_RUNTIME_BUNDLE",
+          "last_completed_stage": "COMPLETE",
+          "failure_stage": null,
+          "safe_error_code": null,
+          "local_exception_class": null,
+          "safe_validation_codes": [],
+          "stage_events": [
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 1,
+              "stage": "INPUT_VALIDATION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 2,
+              "stage": "BOOTSTRAP_ACTION_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 3,
+              "stage": "BOOTSTRAP_DISPATCH",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 4,
+              "stage": "BOOTSTRAP_MEMORY_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 5,
+              "stage": "BASELINE_PROFILE_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 6,
+              "stage": "HYPOTHESIS_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 7,
+              "stage": "GAP_GRAPH_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 8,
+              "stage": "ACTION_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 9,
+              "stage": "RESOURCE_COMPARISON_SET_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 10,
+              "stage": "BUNDLE_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 11,
+              "stage": "BUNDLE_DISPATCH",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 12,
+              "stage": "POST_READ_MEMORY_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 13,
+              "stage": "POST_READ_GAP_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 14,
+              "stage": "TERMINAL_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 15,
+              "stage": "PROVIDER_TERMINAL_SELECTION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 16,
+              "stage": "TERMINAL_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 17,
+              "stage": "COMPLETE",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            }
+          ],
+          "trace_sha256": "088824dcccca49cd0501dfabe2990c1b01b3ea4aa348229527a23adb44c9a05f"
+        },
+        "strictly_ambiguous": false,
+        "comparison_set_size": 2,
+        "bundle_eligible": true,
+        "bundle_dispatched": true,
+        "bundle_target_count": 2,
+        "first_useful_evidence_ordinal": 1,
+        "resources_selected": true,
+        "resource_read_shape": "MULTI_TARGET",
+        "all_candidates_covered": true,
+        "semantic_evidence_actions": 1,
+        "target_equivalent_reads": 2,
+        "shared_capture_reads_charged_to_arm": 0,
+        "predicate_yield_count": 3,
+        "duplicate_read_attempts": 0,
+        "empty_read_count": 0,
+        "provider_turns": 1,
+        "provider_calls": 1,
+        "first_pass_protocol_success": true,
+        "post_repair_protocol_success": true,
+        "protocol_repairs": 0,
+        "input_tokens": 621,
+        "output_tokens": 24,
+        "total_tokens": 645,
+        "latency_ms": 1571.1677499930374,
+        "transport_retries": 0,
+        "protocol_failures": 0,
+        "runner_failures": 0,
+        "transport_failures": 0,
+        "agent_writes": 0,
+        "action_proposals": 0,
+        "runbook_executions": 0,
+        "run_sha256": "6c174e3239ef63ea2238698d072cbec3f5083c42fa4ad04df928f0d736fa9820"
+      },
+      {
+        "schema_version": "dta-v226-real-fault.arm-run.v1",
+        "case_id": "fault-map-b",
+        "arm": "MODEL_DIRECTED_RETRIEVAL",
+        "case_bytes_sha256": "6e2731bb55dab7e2c8abadb637e99144fb2c2823deeca279dca71825e67d0cdd",
+        "model_id": "gpt-5.4-mini-2026-03-17",
+        "status": "VALID_TERMINAL",
+        "prediction": {
+          "schema_version": "dta-v226-real-fault.prediction.v1",
+          "terminal": "ABSTAIN",
+          "terminal_id": "t:v226:abstain:a1aa742ec8f2852e",
+          "root_service_alias": null,
+          "fault_domain": null,
+          "mechanism": null,
+          "supporting_evidence_refs": [],
+          "evidence_clause_valid": false
+        },
+        "trace": {
+          "schema_version": "dta-v226-real-fault.run-trace.v1",
+          "arm": "MODEL_DIRECTED_RETRIEVAL",
+          "last_completed_stage": "COMPLETE",
+          "failure_stage": null,
+          "safe_error_code": null,
+          "local_exception_class": null,
+          "safe_validation_codes": [],
+          "stage_events": [
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 1,
+              "stage": "INPUT_VALIDATION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 2,
+              "stage": "BOOTSTRAP_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 3,
+              "stage": "ACTION_SURFACE_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 4,
+              "stage": "PROVIDER_ACTION_SELECTION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 5,
+              "stage": "ACTION_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 6,
+              "stage": "READ_DISPATCH",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 7,
+              "stage": "OBSERVATION_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 8,
+              "stage": "MEMORY_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 9,
+              "stage": "TERMINAL_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 10,
+              "stage": "ACTION_SURFACE_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 11,
+              "stage": "PROVIDER_ACTION_SELECTION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 12,
+              "stage": "ACTION_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 13,
+              "stage": "READ_DISPATCH",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 14,
+              "stage": "OBSERVATION_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 15,
+              "stage": "MEMORY_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 16,
+              "stage": "TERMINAL_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 17,
+              "stage": "PROVIDER_TERMINAL_SELECTION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 18,
+              "stage": "TERMINAL_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 19,
+              "stage": "COMPLETE",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            }
+          ],
+          "trace_sha256": "44a26925e846247e2b03e5c83a5e0b02c9f0fab09d82052e15e58019c731acc9"
+        },
+        "strictly_ambiguous": null,
+        "comparison_set_size": 0,
+        "bundle_eligible": false,
+        "bundle_dispatched": false,
+        "bundle_target_count": 0,
+        "first_useful_evidence_ordinal": null,
+        "resources_selected": false,
+        "resource_read_shape": "NONE",
+        "all_candidates_covered": false,
+        "semantic_evidence_actions": 2,
+        "target_equivalent_reads": 2,
+        "shared_capture_reads_charged_to_arm": 0,
+        "predicate_yield_count": 0,
+        "duplicate_read_attempts": 0,
+        "empty_read_count": 2,
+        "provider_turns": 3,
+        "provider_calls": 3,
+        "first_pass_protocol_success": true,
+        "post_repair_protocol_success": true,
+        "protocol_repairs": 0,
+        "input_tokens": 2205,
+        "output_tokens": 74,
+        "total_tokens": 2279,
+        "latency_ms": 4332.329540979117,
+        "transport_retries": 0,
+        "protocol_failures": 0,
+        "runner_failures": 0,
+        "transport_failures": 0,
+        "agent_writes": 0,
+        "action_proposals": 0,
+        "runbook_executions": 0,
+        "run_sha256": "2c1bc3e3f274ac41d0a09183f06bfe354686d1d76b3120eb0dd9cbe983086be5"
+      },
+      {
+        "schema_version": "dta-v226-real-fault.arm-run.v1",
+        "case_id": "baseline-map-a",
+        "arm": "MODEL_DIRECTED_RETRIEVAL",
+        "case_bytes_sha256": "f476ee8ccf0e54d94facd374a5a64e81cedc6990122a87892aadfbdfb3341b17",
+        "model_id": "gpt-5.4-mini-2026-03-17",
+        "status": "VALID_TERMINAL",
+        "prediction": {
+          "schema_version": "dta-v226-real-fault.prediction.v1",
+          "terminal": "ABSTAIN",
+          "terminal_id": "t:v226:abstain:a1aa742ec8f2852e",
+          "root_service_alias": null,
+          "fault_domain": null,
+          "mechanism": null,
+          "supporting_evidence_refs": [],
+          "evidence_clause_valid": false
+        },
+        "trace": {
+          "schema_version": "dta-v226-real-fault.run-trace.v1",
+          "arm": "MODEL_DIRECTED_RETRIEVAL",
+          "last_completed_stage": "COMPLETE",
+          "failure_stage": null,
+          "safe_error_code": null,
+          "local_exception_class": null,
+          "safe_validation_codes": [],
+          "stage_events": [
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 1,
+              "stage": "INPUT_VALIDATION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 2,
+              "stage": "BOOTSTRAP_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 3,
+              "stage": "ACTION_SURFACE_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 4,
+              "stage": "PROVIDER_ACTION_SELECTION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 5,
+              "stage": "ACTION_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 6,
+              "stage": "READ_DISPATCH",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 7,
+              "stage": "OBSERVATION_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 8,
+              "stage": "MEMORY_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 9,
+              "stage": "TERMINAL_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 10,
+              "stage": "ACTION_SURFACE_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 11,
+              "stage": "PROVIDER_ACTION_SELECTION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 12,
+              "stage": "ACTION_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 13,
+              "stage": "READ_DISPATCH",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 14,
+              "stage": "OBSERVATION_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 15,
+              "stage": "MEMORY_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 16,
+              "stage": "TERMINAL_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 17,
+              "stage": "PROVIDER_TERMINAL_SELECTION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 18,
+              "stage": "TERMINAL_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 19,
+              "stage": "COMPLETE",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            }
+          ],
+          "trace_sha256": "44a26925e846247e2b03e5c83a5e0b02c9f0fab09d82052e15e58019c731acc9"
+        },
+        "strictly_ambiguous": null,
+        "comparison_set_size": 0,
+        "bundle_eligible": false,
+        "bundle_dispatched": false,
+        "bundle_target_count": 0,
+        "first_useful_evidence_ordinal": null,
+        "resources_selected": false,
+        "resource_read_shape": "NONE",
+        "all_candidates_covered": false,
+        "semantic_evidence_actions": 2,
+        "target_equivalent_reads": 2,
+        "shared_capture_reads_charged_to_arm": 0,
+        "predicate_yield_count": 0,
+        "duplicate_read_attempts": 0,
+        "empty_read_count": 2,
+        "provider_turns": 3,
+        "provider_calls": 3,
+        "first_pass_protocol_success": true,
+        "post_repair_protocol_success": true,
+        "protocol_repairs": 0,
+        "input_tokens": 2205,
+        "output_tokens": 74,
+        "total_tokens": 2279,
+        "latency_ms": 10728.769585024565,
+        "transport_retries": 0,
+        "protocol_failures": 0,
+        "runner_failures": 0,
+        "transport_failures": 0,
+        "agent_writes": 0,
+        "action_proposals": 0,
+        "runbook_executions": 0,
+        "run_sha256": "6ce8a4bde3c7ce5495bdbb83a762765cb4d6145d1250356ab3e84080e377d83f"
+      },
+      {
+        "schema_version": "dta-v226-real-fault.arm-run.v1",
+        "case_id": "baseline-map-a",
+        "arm": "CURRENT_RUNTIME_BUNDLE",
+        "case_bytes_sha256": "f476ee8ccf0e54d94facd374a5a64e81cedc6990122a87892aadfbdfb3341b17",
+        "model_id": "gpt-5.4-mini-2026-03-17",
+        "status": "VALID_TERMINAL",
+        "prediction": {
+          "schema_version": "dta-v226-real-fault.prediction.v1",
+          "terminal": "NO_INCIDENT",
+          "terminal_id": "t:v226:no-incident:eac030ad158af4f4",
+          "root_service_alias": null,
+          "fault_domain": null,
+          "mechanism": null,
+          "supporting_evidence_refs": [
+            "e:a:resources:all-candidates:6281c03ee2cf:0:ce5a811ed1d1",
+            "e:a:resources:all-candidates:6281c03ee2cf:1:21818b39b0dd",
+            "e:a:runtime:all-candidates:6281c03ee2cf:0:d8fb3c3ca2c8",
+            "e:a:runtime:all-candidates:6281c03ee2cf:1:09b8bf36824e"
+          ],
+          "evidence_clause_valid": true
+        },
+        "trace": {
+          "schema_version": "dta-v226-real-fault.run-trace.v1",
+          "arm": "CURRENT_RUNTIME_BUNDLE",
+          "last_completed_stage": "COMPLETE",
+          "failure_stage": null,
+          "safe_error_code": null,
+          "local_exception_class": null,
+          "safe_validation_codes": [],
+          "stage_events": [
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 1,
+              "stage": "INPUT_VALIDATION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 2,
+              "stage": "BOOTSTRAP_ACTION_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 3,
+              "stage": "BOOTSTRAP_DISPATCH",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 4,
+              "stage": "BOOTSTRAP_MEMORY_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 5,
+              "stage": "BASELINE_PROFILE_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 6,
+              "stage": "HYPOTHESIS_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 7,
+              "stage": "GAP_GRAPH_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 8,
+              "stage": "ACTION_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 9,
+              "stage": "RESOURCE_COMPARISON_SET_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 10,
+              "stage": "BUNDLE_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 11,
+              "stage": "BUNDLE_DISPATCH",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 12,
+              "stage": "POST_READ_MEMORY_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 13,
+              "stage": "POST_READ_GAP_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 14,
+              "stage": "TERMINAL_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 15,
+              "stage": "PROVIDER_TERMINAL_SELECTION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 16,
+              "stage": "TERMINAL_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 17,
+              "stage": "COMPLETE",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            }
+          ],
+          "trace_sha256": "088824dcccca49cd0501dfabe2990c1b01b3ea4aa348229527a23adb44c9a05f"
+        },
+        "strictly_ambiguous": false,
+        "comparison_set_size": 2,
+        "bundle_eligible": true,
+        "bundle_dispatched": true,
+        "bundle_target_count": 2,
+        "first_useful_evidence_ordinal": 1,
+        "resources_selected": true,
+        "resource_read_shape": "MULTI_TARGET",
+        "all_candidates_covered": true,
+        "semantic_evidence_actions": 1,
+        "target_equivalent_reads": 2,
+        "shared_capture_reads_charged_to_arm": 0,
+        "predicate_yield_count": 2,
+        "duplicate_read_attempts": 0,
+        "empty_read_count": 0,
+        "provider_turns": 1,
+        "provider_calls": 1,
+        "first_pass_protocol_success": true,
+        "post_repair_protocol_success": true,
+        "protocol_repairs": 0,
+        "input_tokens": 611,
+        "output_tokens": 24,
+        "total_tokens": 635,
+        "latency_ms": 1432.1093339822255,
+        "transport_retries": 0,
+        "protocol_failures": 0,
+        "runner_failures": 0,
+        "transport_failures": 0,
+        "agent_writes": 0,
+        "action_proposals": 0,
+        "runbook_executions": 0,
+        "run_sha256": "abe56dde8e21a8bed9d8df63bc37df9ba6296961e861482813f44881e4e7d062"
+      },
+      {
+        "schema_version": "dta-v226-real-fault.arm-run.v1",
+        "case_id": "baseline-map-b",
+        "arm": "CURRENT_RUNTIME_BUNDLE",
+        "case_bytes_sha256": "aede2ec80a122d6ac0c2a8f1b43a253ce9cb4c2d59a8b67accd12fb0701dc8d2",
+        "model_id": "gpt-5.4-mini-2026-03-17",
+        "status": "VALID_TERMINAL",
+        "prediction": {
+          "schema_version": "dta-v226-real-fault.prediction.v1",
+          "terminal": "NO_INCIDENT",
+          "terminal_id": "t:v226:no-incident:08d4d43b41ad48a9",
+          "root_service_alias": null,
+          "fault_domain": null,
+          "mechanism": null,
+          "supporting_evidence_refs": [
+            "e:a:resources:all-candidates:6281c03ee2cf:0:276c055dd6b7",
+            "e:a:resources:all-candidates:6281c03ee2cf:1:b17696e2693c",
+            "e:a:runtime:all-candidates:6281c03ee2cf:0:d8fb3c3ca2c8",
+            "e:a:runtime:all-candidates:6281c03ee2cf:1:09b8bf36824e"
+          ],
+          "evidence_clause_valid": true
+        },
+        "trace": {
+          "schema_version": "dta-v226-real-fault.run-trace.v1",
+          "arm": "CURRENT_RUNTIME_BUNDLE",
+          "last_completed_stage": "COMPLETE",
+          "failure_stage": null,
+          "safe_error_code": null,
+          "local_exception_class": null,
+          "safe_validation_codes": [],
+          "stage_events": [
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 1,
+              "stage": "INPUT_VALIDATION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 2,
+              "stage": "BOOTSTRAP_ACTION_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 3,
+              "stage": "BOOTSTRAP_DISPATCH",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 4,
+              "stage": "BOOTSTRAP_MEMORY_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 5,
+              "stage": "BASELINE_PROFILE_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 6,
+              "stage": "HYPOTHESIS_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 7,
+              "stage": "GAP_GRAPH_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 8,
+              "stage": "ACTION_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 9,
+              "stage": "RESOURCE_COMPARISON_SET_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 10,
+              "stage": "BUNDLE_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 11,
+              "stage": "BUNDLE_DISPATCH",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 12,
+              "stage": "POST_READ_MEMORY_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 13,
+              "stage": "POST_READ_GAP_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 14,
+              "stage": "TERMINAL_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 15,
+              "stage": "PROVIDER_TERMINAL_SELECTION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 16,
+              "stage": "TERMINAL_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 17,
+              "stage": "COMPLETE",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            }
+          ],
+          "trace_sha256": "088824dcccca49cd0501dfabe2990c1b01b3ea4aa348229527a23adb44c9a05f"
+        },
+        "strictly_ambiguous": false,
+        "comparison_set_size": 2,
+        "bundle_eligible": true,
+        "bundle_dispatched": true,
+        "bundle_target_count": 2,
+        "first_useful_evidence_ordinal": 1,
+        "resources_selected": true,
+        "resource_read_shape": "MULTI_TARGET",
+        "all_candidates_covered": true,
+        "semantic_evidence_actions": 1,
+        "target_equivalent_reads": 2,
+        "shared_capture_reads_charged_to_arm": 0,
+        "predicate_yield_count": 2,
+        "duplicate_read_attempts": 0,
+        "empty_read_count": 0,
+        "provider_turns": 1,
+        "provider_calls": 1,
+        "first_pass_protocol_success": true,
+        "post_repair_protocol_success": true,
+        "protocol_repairs": 0,
+        "input_tokens": 611,
+        "output_tokens": 24,
+        "total_tokens": 635,
+        "latency_ms": 1170.6072919769213,
+        "transport_retries": 0,
+        "protocol_failures": 0,
+        "runner_failures": 0,
+        "transport_failures": 0,
+        "agent_writes": 0,
+        "action_proposals": 0,
+        "runbook_executions": 0,
+        "run_sha256": "3f1df2d10579cf2b8cb94cca154805942484278494597030be985d9d384841d1"
+      },
+      {
+        "schema_version": "dta-v226-real-fault.arm-run.v1",
+        "case_id": "baseline-map-b",
+        "arm": "MODEL_DIRECTED_RETRIEVAL",
+        "case_bytes_sha256": "aede2ec80a122d6ac0c2a8f1b43a253ce9cb4c2d59a8b67accd12fb0701dc8d2",
+        "model_id": "gpt-5.4-mini-2026-03-17",
+        "status": "VALID_TERMINAL",
+        "prediction": {
+          "schema_version": "dta-v226-real-fault.prediction.v1",
+          "terminal": "ABSTAIN",
+          "terminal_id": "t:v226:abstain:a1aa742ec8f2852e",
+          "root_service_alias": null,
+          "fault_domain": null,
+          "mechanism": null,
+          "supporting_evidence_refs": [],
+          "evidence_clause_valid": false
+        },
+        "trace": {
+          "schema_version": "dta-v226-real-fault.run-trace.v1",
+          "arm": "MODEL_DIRECTED_RETRIEVAL",
+          "last_completed_stage": "COMPLETE",
+          "failure_stage": null,
+          "safe_error_code": null,
+          "local_exception_class": null,
+          "safe_validation_codes": [],
+          "stage_events": [
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 1,
+              "stage": "INPUT_VALIDATION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 2,
+              "stage": "BOOTSTRAP_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 3,
+              "stage": "ACTION_SURFACE_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 4,
+              "stage": "PROVIDER_ACTION_SELECTION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 5,
+              "stage": "ACTION_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 6,
+              "stage": "READ_DISPATCH",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 7,
+              "stage": "OBSERVATION_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 8,
+              "stage": "MEMORY_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 9,
+              "stage": "TERMINAL_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 10,
+              "stage": "ACTION_SURFACE_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 11,
+              "stage": "PROVIDER_ACTION_SELECTION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 12,
+              "stage": "ACTION_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 13,
+              "stage": "READ_DISPATCH",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 14,
+              "stage": "OBSERVATION_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 15,
+              "stage": "MEMORY_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 16,
+              "stage": "TERMINAL_CATALOG_BUILD",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 17,
+              "stage": "PROVIDER_TERMINAL_SELECTION",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 18,
+              "stage": "TERMINAL_BIND",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            },
+            {
+              "schema_version": "dta-v226-real-fault.stage-event.v1",
+              "ordinal": 19,
+              "stage": "COMPLETE",
+              "outcome": "COMPLETED",
+              "safe_error_code": null
+            }
+          ],
+          "trace_sha256": "44a26925e846247e2b03e5c83a5e0b02c9f0fab09d82052e15e58019c731acc9"
+        },
+        "strictly_ambiguous": null,
+        "comparison_set_size": 0,
+        "bundle_eligible": false,
+        "bundle_dispatched": false,
+        "bundle_target_count": 0,
+        "first_useful_evidence_ordinal": null,
+        "resources_selected": false,
+        "resource_read_shape": "NONE",
+        "all_candidates_covered": false,
+        "semantic_evidence_actions": 2,
+        "target_equivalent_reads": 2,
+        "shared_capture_reads_charged_to_arm": 0,
+        "predicate_yield_count": 0,
+        "duplicate_read_attempts": 0,
+        "empty_read_count": 2,
+        "provider_turns": 3,
+        "provider_calls": 3,
+        "first_pass_protocol_success": true,
+        "post_repair_protocol_success": true,
+        "protocol_repairs": 0,
+        "input_tokens": 2205,
+        "output_tokens": 74,
+        "total_tokens": 2279,
+        "latency_ms": 3992.347206978593,
+        "transport_retries": 0,
+        "protocol_failures": 0,
+        "runner_failures": 0,
+        "transport_failures": 0,
+        "agent_writes": 0,
+        "action_proposals": 0,
+        "runbook_executions": 0,
+        "run_sha256": "f607ee4c6ac20bc21066715ee783fc69b44e82808b467bbae51ce945017423a0"
+      }
+    ],
+    "truth_load_after_run_ordinals": [
+      2,
+      4,
+      6,
+      8
+    ],
+    "execution_count": 1,
+    "arm_run_count": 8,
+    "run_attempts_per_ordinal": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "score_driven_retries": 0,
+    "no_retry_after_valid_terminal": true,
+    "same_case_bytes_both_arms": true,
+    "truth_consulted_during_arm_runs": false,
+    "agent_writes": 0,
+    "action_proposals": 0,
+    "runbook_executions": 0,
+    "execution_sha256": "3c5a5abad33337ecf17414693c371bc3d6d55166be771624b33daa78bd49e218"
+  },
+  "score": {
+    "schema_version": "dta-v226-real-fault.study-score.v1",
+    "execution_id": "exec-v226-af76f41742395e67",
+    "run_scores": [
+      {
+        "case_id": "fault-map-a",
+        "arm": "MODEL_DIRECTED_RETRIEVAL",
+        "valid_terminal": true,
+        "exact": false,
+        "fault_root_correct": false,
+        "mechanism_correct": false,
+        "evidence_clause_valid": false,
+        "correct_fault_target_covered": false,
+        "premature_no_incident": false,
+        "false_positive_fault_on_baseline": false
+      },
+      {
+        "case_id": "fault-map-a",
+        "arm": "CURRENT_RUNTIME_BUNDLE",
+        "valid_terminal": true,
+        "exact": true,
+        "fault_root_correct": true,
+        "mechanism_correct": true,
+        "evidence_clause_valid": true,
+        "correct_fault_target_covered": true,
+        "premature_no_incident": false,
+        "false_positive_fault_on_baseline": false
+      },
+      {
+        "case_id": "fault-map-b",
+        "arm": "CURRENT_RUNTIME_BUNDLE",
+        "valid_terminal": true,
+        "exact": true,
+        "fault_root_correct": true,
+        "mechanism_correct": true,
+        "evidence_clause_valid": true,
+        "correct_fault_target_covered": true,
+        "premature_no_incident": false,
+        "false_positive_fault_on_baseline": false
+      },
+      {
+        "case_id": "fault-map-b",
+        "arm": "MODEL_DIRECTED_RETRIEVAL",
+        "valid_terminal": true,
+        "exact": false,
+        "fault_root_correct": false,
+        "mechanism_correct": false,
+        "evidence_clause_valid": false,
+        "correct_fault_target_covered": false,
+        "premature_no_incident": false,
+        "false_positive_fault_on_baseline": false
+      },
+      {
+        "case_id": "baseline-map-a",
+        "arm": "MODEL_DIRECTED_RETRIEVAL",
+        "valid_terminal": true,
+        "exact": false,
+        "fault_root_correct": false,
+        "mechanism_correct": false,
+        "evidence_clause_valid": false,
+        "correct_fault_target_covered": false,
+        "premature_no_incident": false,
+        "false_positive_fault_on_baseline": false
+      },
+      {
+        "case_id": "baseline-map-a",
+        "arm": "CURRENT_RUNTIME_BUNDLE",
+        "valid_terminal": true,
+        "exact": true,
+        "fault_root_correct": false,
+        "mechanism_correct": false,
+        "evidence_clause_valid": true,
+        "correct_fault_target_covered": false,
+        "premature_no_incident": false,
+        "false_positive_fault_on_baseline": false
+      },
+      {
+        "case_id": "baseline-map-b",
+        "arm": "CURRENT_RUNTIME_BUNDLE",
+        "valid_terminal": true,
+        "exact": true,
+        "fault_root_correct": false,
+        "mechanism_correct": false,
+        "evidence_clause_valid": true,
+        "correct_fault_target_covered": false,
+        "premature_no_incident": false,
+        "false_positive_fault_on_baseline": false
+      },
+      {
+        "case_id": "baseline-map-b",
+        "arm": "MODEL_DIRECTED_RETRIEVAL",
+        "valid_terminal": true,
+        "exact": false,
+        "fault_root_correct": false,
+        "mechanism_correct": false,
+        "evidence_clause_valid": false,
+        "correct_fault_target_covered": false,
+        "premature_no_incident": false,
+        "false_positive_fault_on_baseline": false
+      }
+    ],
+    "arm_scores": [
+      {
+        "arm": "MODEL_DIRECTED_RETRIEVAL",
+        "valid_terminal_count": 4,
+        "valid_terminal_rate": 1.0,
+        "exact_count": 0,
+        "fault_exact_count": 0,
+        "baseline_exact_count": 0,
+        "root_correct_count": 0,
+        "mechanism_correct_count": 0,
+        "evidence_clause_valid_count": 0,
+        "premature_no_incident_count": 0,
+        "false_positive_fault_on_baseline_count": 0,
+        "resources_selected_count": 0,
+        "single_target_resource_read_count": 0,
+        "multi_target_resource_read_count": 0,
+        "all_candidates_covered_count": 0,
+        "semantic_evidence_actions": 8,
+        "target_equivalent_reads": 8,
+        "duplicate_read_attempts": 0,
+        "empty_read_rate": 1.0,
+        "predicate_yield_rate": 0.0,
+        "provider_calls": 12,
+        "input_tokens": 8820,
+        "output_tokens": 296,
+        "total_tokens": 9116,
+        "latency_ms": 28692.855582979973,
+        "transport_retries": 0,
+        "first_pass_protocol_success_count": 4,
+        "post_repair_protocol_success_count": 4,
+        "protocol_repairs": 0,
+        "protocol_failures": 0,
+        "runner_failures": 0,
+        "transport_failures": 0
+      },
+      {
+        "arm": "CURRENT_RUNTIME_BUNDLE",
+        "valid_terminal_count": 4,
+        "valid_terminal_rate": 1.0,
+        "exact_count": 4,
+        "fault_exact_count": 2,
+        "baseline_exact_count": 2,
+        "root_correct_count": 2,
+        "mechanism_correct_count": 2,
+        "evidence_clause_valid_count": 4,
+        "premature_no_incident_count": 0,
+        "false_positive_fault_on_baseline_count": 0,
+        "resources_selected_count": 4,
+        "single_target_resource_read_count": 0,
+        "multi_target_resource_read_count": 4,
+        "all_candidates_covered_count": 4,
+        "semantic_evidence_actions": 4,
+        "target_equivalent_reads": 8,
+        "duplicate_read_attempts": 0,
+        "empty_read_rate": 0.0,
+        "predicate_yield_rate": 2.5,
+        "provider_calls": 4,
+        "input_tokens": 2466,
+        "output_tokens": 96,
+        "total_tokens": 2562,
+        "latency_ms": 6463.659292901866,
+        "transport_retries": 0,
+        "first_pass_protocol_success_count": 4,
+        "post_repair_protocol_success_count": 4,
+        "protocol_repairs": 0,
+        "protocol_failures": 0,
+        "runner_failures": 0,
+        "transport_failures": 0
+      }
+    ],
+    "all_snapshot_runs_valid": true,
+    "current_snapshot_exact_count": 4,
+    "current_live_fault_exact": true,
+    "current_live_baseline_exact": true,
+    "snapshot_live_fault_terminal_agreement": true,
+    "snapshot_live_baseline_terminal_agreement": true,
+    "snapshot_live_fault_evidence_source_agreement": true,
+    "snapshot_live_baseline_evidence_source_agreement": true,
+    "premature_no_incident_count": 0,
+    "false_positive_fault_on_baseline_count": 0,
+    "failure_stage_distribution": {},
+    "safe_error_code_distribution": {},
+    "baseline_restored": true,
+    "cleanup": "CLEAN",
+    "non_owned_changes": 0,
+    "transfer_terminal": "DTA_V226_CURRENT_REAL_FAULT_TRANSFER_SUPPORTED",
+    "comparison_admissible": true,
+    "comparison_disposition": "CURRENT_RUNTIME_ACQUISITION_ADVANTAGE",
+    "statistical_significance_testing_performed": false,
+    "score_driven_retries": 0,
+    "agent_writes": 0,
+    "action_proposals": 0,
+    "runbook_executions": 0,
+    "score_sha256": "47df66b587bc2501d50716fac48e875f832a2fd510a0cf4f79a29d3c9c715c57"
+  },
+  "execution_count": 1,
+  "final_snapshot_arm_runs": 8,
+  "agent_writes": 0,
+  "action_proposals": 0,
+  "runbook_executions": 0,
+  "uncaught_exceptions": 0,
+  "artifact_sha256": "c98e6f3cc0e3c84425266d38e34c358863eaf62e6829b0b6a0cdc232beae748d"
+}

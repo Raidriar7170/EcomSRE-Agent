@@ -1,0 +1,14 @@
+{
+  "schema_version": "dta-v226-real-fault.historical-results.v1",
+  "base_commit": "1c6520d706481f37b63a5b14c1fe8554b52d530b",
+  "predecessor_pr": 67,
+  "preserved_engineering_terminal": "DTA_V225_REAL_FAULT_SHADOW_STUDY_COMPLETE",
+  "preserved_transfer_terminal": "DTA_V225_REAL_FAULT_TRANSFER_NOT_SUPPORTED",
+  "preserved_comparison_disposition": "CURRENT_RUNTIME_DESCRIPTIVE_ADVANTAGE",
+  "files": [
+    {"path": "docs/external-reviews/dta-v225-real-fault-final-review.md", "sha256": "b8648c01ee15399deabd232fc8f042dc91a8e1a485417e6e6015e3bb8e84849a"},
+    {"path": "docs/results/dta-v225-real-fault-shadow-comparison.json", "sha256": "3dde33b920da8cd55e4081e1b2e959a384a04e8279d127a4b7277dcef6856337"},
+    {"path": "docs/results/dta-v225-real-fault-shadow-comparison.md", "sha256": "6170bb6f2b7161568e31b2372d2a30cd1eea5ce8bc8cceda87d8d4abdc53335b"},
+    {"path": "docs/results/dta-v225-real-fault-shadow-error-analysis.md", "sha256": "16cffa748f118a5a9acfe279885388f215afa9c7f3b031b057d66cc72d1c9cf7"}
+  ]
+}

@@ -159,6 +159,12 @@ jobs:
           env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
           uv run --frozen --no-sync pytest tests/dta_v22 -q
 
+      - name: DTA v2.2.6 real-fault result verification
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_dta_v226_real_fault_result
+
       - name: Phase 5B execution historical bindings for successors
         run: >-
           env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
