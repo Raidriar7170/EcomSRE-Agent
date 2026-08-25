@@ -117,7 +117,7 @@ class RealFaultArmRunV226(DtaModelV22):
     output_tokens: StrictInt = Field(ge=0)
     total_tokens: StrictInt = Field(ge=0)
     latency_ms: StrictFloat = Field(ge=0)
-    transport_retries: StrictInt = Field(ge=0, le=3)
+    transport_retries: StrictInt = Field(ge=0, le=15)
     protocol_failures: StrictInt = Field(ge=0, le=1)
     runner_failures: StrictInt = Field(ge=0, le=1)
     transport_failures: StrictInt = Field(ge=0, le=1)

@@ -49,6 +49,9 @@ from ecomsre.dta_v2.v22.real_fault_selection_v226 import (
     RealFaultSelectionProviderV226,
     build_real_fault_selection_surface_v226,
 )
+from ecomsre.dta_v2.v22.real_fault_selection_provider_v226 import (
+    RealFaultSelectionProtocolFailureV226,
+)
 from ecomsre.dta_v2.v22.real_fault_stage_trace_v226 import (
     RealFaultSafeFailureCodeV226,
     RealFaultStageV226,
@@ -442,8 +445,21 @@ def run_current_runtime_bundle_v226(
         if isinstance(error, (KeyboardInterrupt, SystemExit)):
             raise
         code = _failure_code(active)
+        if isinstance(error, RealFaultSelectionProtocolFailureV226):
+            provider_calls += error.provider_calls
+            first_pass = False
+            post_repair = False
+            protocol_repairs += error.protocol_repairs
+            input_tokens += error.input_tokens
+            output_tokens += error.output_tokens
+            total_tokens += error.total_tokens
+            latency_ms += error.latency_ms
+            transport_retries += error.transport_retry_count
         if active is RealFaultStageV226.PROVIDER_TERMINAL_SELECTION:
-            if isinstance(error, (TimeoutError, ConnectionError)):
+            if (
+                isinstance(error, RealFaultSelectionProtocolFailureV226)
+                and error.transport_failure
+            ) or isinstance(error, (TimeoutError, ConnectionError)):
                 code = RealFaultSafeFailureCodeV226.PROVIDER_TRANSPORT_FAILED
                 status = RealFaultArmStatusV226.TRANSPORT_FAILED
                 transport_failures = 1

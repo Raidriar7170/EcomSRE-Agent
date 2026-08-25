@@ -15,6 +15,9 @@ from ecomsre.dta_v2.v22.real_fault_selection_v226 import (
     RealFaultSelectionDecisionV226,
     RealFaultSelectionOutcomeV226,
 )
+from ecomsre.dta_v2.v22.real_fault_selection_provider_v226 import (
+    RealFaultSelectionProtocolFailureV226,
+)
 from ecomsre.dta_v2.v22.real_fault_stage_trace_v226 import RealFaultStageV226
 
 
@@ -124,6 +127,9 @@ def test_model_directed_selects_canonical_resource_action_then_terminal(
     assert run.bundle_dispatched is False
     assert len(provider.requests) == 2
     assert provider.requests[0].terminals == ()
+    assert {
+        item.source.value for item in provider.requests[0].actions
+    }.issubset({"METRICS", "LOGS", "TRACES", "RUNTIME", "RESOURCES"})
     assert provider.requests[1].terminals
     if case_id.startswith("fault-"):
         expected_root = next(
@@ -161,3 +167,34 @@ def test_model_directed_one_read_trace_is_exact() -> None:
         RealFaultStageV226.TERMINAL_BIND,
         RealFaultStageV226.COMPLETE,
     )
+
+
+class _FailedSelectionProvider:
+    def complete_selection(self, **_kwargs):
+        raise RealFaultSelectionProtocolFailureV226(
+            "TRANSPORT_FAILED",
+            provider_calls=1,
+            protocol_repairs=0,
+            transport_retry_count=3,
+            input_tokens=0,
+            output_tokens=0,
+            latency_ms=123.0,
+            transport_failure=True,
+        )
+
+
+def test_model_directed_preserves_failed_provider_accounting() -> None:
+    run = run_model_directed_retrieval_v226(
+        capture=_capture("fault-map-a"),
+        baseline_capture=_capture("baseline-map-a"),
+        model_id="deterministic-v226",
+        provider=_FailedSelectionProvider(),
+    )
+
+    assert run.status.value == "TRANSPORT_FAILED"
+    assert run.provider_turns == 0
+    assert run.provider_calls == 1
+    assert run.transport_retries == 3
+    assert run.transport_failures == 1
+    assert run.protocol_failures == 0
+    assert run.latency_ms == 123.0

@@ -15,6 +15,9 @@ from ecomsre.dta_v2.v22.real_fault_selection_v226 import (
     RealFaultSelectionDecisionV226,
     RealFaultSelectionOutcomeV226,
 )
+from ecomsre.dta_v2.v22.real_fault_selection_provider_v226 import (
+    RealFaultSelectionProtocolFailureV226,
+)
 from ecomsre.dta_v2.v22.real_fault_stage_trace_v226 import RealFaultStageV226
 
 
@@ -159,3 +162,35 @@ def test_current_stage_trace_contains_every_required_transition() -> None:
         RealFaultStageV226.TERMINAL_BIND,
         RealFaultStageV226.COMPLETE,
     )
+
+
+class _ProtocolFailedProvider:
+    def complete_selection(self, **_kwargs):
+        raise RealFaultSelectionProtocolFailureV226(
+            "UNKNOWN_ALIAS_KIND",
+            provider_calls=3,
+            protocol_repairs=2,
+            transport_retry_count=0,
+            input_tokens=60,
+            output_tokens=12,
+            latency_ms=42.0,
+            transport_failure=False,
+        )
+
+
+def test_current_preserves_failed_provider_accounting() -> None:
+    run = run_current_runtime_bundle_v226(
+        capture=_capture("fault-map-a"),
+        baseline_capture=_capture("baseline-map-a"),
+        model_id="deterministic-v226",
+        provider=_ProtocolFailedProvider(),
+    )
+
+    assert run.status.value == "PROTOCOL_FAILED"
+    assert run.provider_turns == 0
+    assert run.provider_calls == 3
+    assert run.protocol_repairs == 2
+    assert run.protocol_failures == 1
+    assert run.transport_failures == 0
+    assert run.total_tokens == 72
+    assert run.latency_ms == 42.0
