@@ -46,9 +46,6 @@ hypothesis ontology, Prompt, terminalizer, truth boundary, and scorer.
 - Non-owned changes: `0`
 - Agent writes / ActionProposals / Runbooks: `0 / 0 / 0`
 
-Post-terminal Docker inspection found zero containers, networks, or volumes
-with the campaign's owned Sandbox label.
-
 ## Fixed paired execution
 
 The counterbalanced schedule ran exactly once: four cases by two arms, eight

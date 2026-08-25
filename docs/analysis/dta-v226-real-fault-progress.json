@@ -111,8 +111,7 @@
     "all_snapshot_runs_valid": true,
     "protocol_failures": 0,
     "runner_failures": 0,
-    "transport_failures": 0,
-    "owned_docker_inventory_after_cleanup": 0
+    "transport_failures": 0
   },
   "final_review": null,
   "exact_head_ci": null,

@@ -11,6 +11,9 @@ from ecomsre.dta_v2.v22.real_fault_capture_v225 import (
     require_public_capture_opaque_v225,
 )
 from ecomsre.dta_v2.v22.real_fault_cli_v226 import RealFaultStudyArtifactV226
+from ecomsre.dta_v2.v22.real_fault_comparison_contracts_v226 import (
+    RealFaultStudyArmV226,
+)
 from ecomsre.dta_v2.v22.real_fault_manifest_v226 import (
     PREDECESSOR_ALIASES_V225,
     RealFaultCaseSetV226,
@@ -23,12 +26,22 @@ from ecomsre.dta_v2.v22.real_fault_scorer_v226 import (
     RealFaultComparisonDispositionV226,
     RealFaultTransferTerminalV226,
 )
+from ecomsre.dta_v2.v22.real_fault_selection_v226 import (
+    REAL_FAULT_SELECTION_SYSTEM_PROMPT_V226,
+)
+
+
+EXPECTED_RESULT_SHA256_V226 = (
+    "f219d21a981789a0d22093273f2220bd94177b6e02249796e098d0f56573b814"
+)
 
 
 def verify_dta_v226_real_fault_result(repository_root: Path) -> dict[str, object]:
     root = repository_root.resolve(strict=True)
     config_root = root / "config/dta-v226-real-fault"
     result_path = root / "docs/results/dta-v226-real-fault-comparison.json"
+    if sha256_file_v226(result_path) != EXPECTED_RESULT_SHA256_V226:
+        raise ValueError("v2.2.6 frozen result bytes differ")
     artifact = RealFaultStudyArtifactV226.model_validate_json(result_path.read_bytes())
     manifest = RealFaultManifestV226.model_validate_json(
         (config_root / "manifest.json").read_bytes()
@@ -74,6 +87,13 @@ def verify_dta_v226_real_fault_result(repository_root: Path) -> dict[str, object
     if len(physical_states) != 2:
         raise ValueError("v2.2.6 public cases do not bind exactly two physical states")
     freeze = manifest.pre_live_freeze
+    if (
+        hashlib.sha256(
+            REAL_FAULT_SELECTION_SYSTEM_PROMPT_V226.encode("utf-8")
+        ).hexdigest()
+        != freeze.selection_prompt_sha256
+    ):
+        raise ValueError("v2.2.6 frozen selection Prompt differs")
     for relative, expected in (
         (
             "src/ecomsre/dta_v2/v22/real_fault_terminalizer_v226.py",
@@ -107,6 +127,19 @@ def verify_dta_v226_real_fault_result(repository_root: Path) -> dict[str, object
         capture_output=True,
     )
     score = artifact.score
+    model_directed_score = next(
+        (
+            item
+            for item in score.arm_scores
+            if item.arm is RealFaultStudyArmV226.MODEL_DIRECTED_RETRIEVAL
+        ),
+        None,
+    )
+    model_directed_runs = tuple(
+        run
+        for run in artifact.execution.runs
+        if run.arm is RealFaultStudyArmV226.MODEL_DIRECTED_RETRIEVAL
+    )
     if (
         artifact.accepted_live_campaigns != 1
         or artifact.shared_physical_captures != 2
@@ -120,6 +153,10 @@ def verify_dta_v226_real_fault_result(repository_root: Path) -> dict[str, object
         or score.comparison_disposition
         is not RealFaultComparisonDispositionV226.CURRENT_ADVANTAGE
         or score.current_snapshot_exact_count != 4
+        or model_directed_score is None
+        or model_directed_score.exact_count != 0
+        or len(model_directed_runs) != 4
+        or any(run.prediction.terminal != "ABSTAIN" for run in model_directed_runs)
         or not score.current_live_fault_exact
         or not score.current_live_baseline_exact
         or artifact.agent_writes
@@ -136,6 +173,8 @@ def verify_dta_v226_real_fault_result(repository_root: Path) -> dict[str, object
         if not path.is_file():
             raise ValueError(f"v2.2.6 result report is absent: {path.name}")
     result_markdown = markdown_paths[0].read_text(encoding="utf-8")
+    if "Post-terminal Docker inspection found zero" in result_markdown:
+        raise ValueError("v2.2.6 result report exceeds frozen cleanup evidence")
     for marker in (
         "DTA_V226_CURRENT_REAL_FAULT_TRANSFER_SUPPORTED",
         "CURRENT_RUNTIME_ACQUISITION_ADVANTAGE",
@@ -155,7 +194,7 @@ def verify_dta_v226_real_fault_result(repository_root: Path) -> dict[str, object
         "baseline_restored": artifact.baseline_restored,
         "cleanup": artifact.cleanup,
         "non_owned_changes": artifact.non_owned_changes,
-        "artifact_sha256": hashlib.sha256(result_path.read_bytes()).hexdigest(),
+        "artifact_sha256": EXPECTED_RESULT_SHA256_V226,
     }
 
 
