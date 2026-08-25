@@ -53,9 +53,8 @@ semantic SHA-256 was
 with `adHighCpu=off` and `loadGeneratorVUs=25`. The lifecycle verified the
 private file and live flag-control readback before cleanup.
 
-After cleanup, owned containers, networks, and volumes were all zero. The five
-declared loopback ports were free, and the three pre-existing non-owned Docker
-volume IDs and three system network IDs were unchanged.
+The frozen artifact records exact baseline restoration, owned cleanup
+`CLEAN`, and `non_owned_changes=0`.
 
 ## Paired snapshot results
 
