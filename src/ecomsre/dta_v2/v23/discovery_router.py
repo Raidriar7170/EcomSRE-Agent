@@ -245,6 +245,7 @@ def build_discovery_plan_v23(
     reads_used: int,
     remaining_weighted_budget: float,
     target_complete_resource_coverage: bool,
+    excluded_action_ids: tuple[str, ...] = (),
 ) -> DiscoveryPlanV23 | None:
     """Return at most three generic choices; never route after the hard read cap."""
 
@@ -252,6 +253,8 @@ def build_discovery_plan_v23(
         raise ValueError("discovery read count is outside the bounded lane")
     if remaining_weighted_budget < 0:
         raise ValueError("discovery remaining budget cannot be negative")
+    if excluded_action_ids != tuple(sorted(set(excluded_action_ids))):
+        raise ValueError("excluded discovery action IDs are not canonical")
     if reads_used == MAX_DISCOVERY_READS_V23 or remaining_weighted_budget == 0:
         return None
     source_priorities, reason, goal = _priority(graph)
@@ -286,6 +289,7 @@ def build_discovery_plan_v23(
         item
         for item in options
         if item.weighted_cost <= remaining_weighted_budget
+        and item.action_id not in set(excluded_action_ids)
         and not negative_coverage.blocks(item)
         and not any(
             entry.source is item.source

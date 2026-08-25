@@ -14,6 +14,7 @@ from ecomsre.dta_v2.v22.read_contracts import (
     semantic_sha256_v22,
 )
 from ecomsre.dta_v2.v23.residual_graph import ResidualEvidenceGraphV23
+from ecomsre.dta_v2.v23.generic_anomalies import GenericAnomalyKindV23
 
 
 class NoveltyDispositionV23(str, Enum):
@@ -22,9 +23,7 @@ class NoveltyDispositionV23(str, Enum):
     INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE"
     CONFLICTING_EVIDENCE = "CONFLICTING_EVIDENCE"
     UNREGISTERED_INCIDENT_SUSPECTED = "UNREGISTERED_INCIDENT_SUSPECTED"
-    KNOWN_DIAGNOSIS_WITH_RESIDUAL_NOVELTY = (
-        "KNOWN_DIAGNOSIS_WITH_RESIDUAL_NOVELTY"
-    )
+    KNOWN_DIAGNOSIS_WITH_RESIDUAL_NOVELTY = "KNOWN_DIAGNOSIS_WITH_RESIDUAL_NOVELTY"
 
 
 class NoveltyGateDecisionV23(DtaModelV22):
@@ -53,6 +52,43 @@ class NoveltyGateDecisionV23(DtaModelV22):
         return self
 
 
+_INTERPRETATION_DOMAIN_V23 = {
+    GenericAnomalyKindV23.RUNTIME_NOT_RUNNING: "RUNTIME",
+    GenericAnomalyKindV23.RUNTIME_UNHEALTHY: "RUNTIME",
+    GenericAnomalyKindV23.RUNTIME_RESTART_ANOMALY: "RUNTIME",
+    GenericAnomalyKindV23.METRIC_ERROR_OUTLIER: "RUNTIME",
+    GenericAnomalyKindV23.METRIC_LATENCY_OUTLIER: "DEPENDENCY",
+    GenericAnomalyKindV23.RESOURCE_CPU_OUTLIER: "RESOURCE",
+    GenericAnomalyKindV23.RESOURCE_MEMORY_TREND: "RESOURCE",
+    GenericAnomalyKindV23.TRACE_ERROR_LOCALIZATION: "DEPENDENCY",
+    GenericAnomalyKindV23.TRACE_LATENCY_OUTLIER: "DEPENDENCY",
+    GenericAnomalyKindV23.RECENT_CHANGE_CORRELATION: "CONFIGURATION",
+    GenericAnomalyKindV23.LOG_UNKNOWN_ERROR_PATTERN: "UNKNOWN",
+}
+
+
+def derive_unresolved_interpretation_conflict_v23(
+    *,
+    graph: ResidualEvidenceGraphV23,
+    bounded_reads_completed: int,
+) -> bool:
+    """Require a post-read graph that still supports incompatible interpretations."""
+
+    if bounded_reads_completed < 1:
+        return False
+    residual_ids = set(graph.residual_anomaly_ids)
+    interpretations = {
+        (item.service, _INTERPRETATION_DOMAIN_V23[item.kind])
+        for item in graph.generic_anomalies
+        if item.anomaly_id in residual_ids and item.strength is SignalStrengthV22.STRONG
+    }
+    if len(interpretations) < 2:
+        return False
+    services = {service for service, _domain in interpretations}
+    domains = {domain for _service, domain in interpretations}
+    return len(services) > 1 or len(domains) > 1
+
+
 def evaluate_novelty_gate_v23(
     *,
     graph: ResidualEvidenceGraphV23,
@@ -70,11 +106,17 @@ def evaluate_novelty_gate_v23(
         if item.anomaly_id in residual_ids
         and item.strength in {SignalStrengthV22.MODERATE, SignalStrengthV22.STRONG}
     )
-    sources = tuple(sorted({item.source for item in residual}, key=lambda item: item.value))
+    sources = tuple(
+        sorted({item.source for item in residual}, key=lambda item: item.value)
+    )
     coverage = {item.source: item for item in graph.source_coverage}
     candidates = set(graph.candidate_services)
-    runtime_ready = set(coverage[EvidenceSourceV22.RUNTIME].covered_services) == candidates
-    metrics_ready = set(coverage[EvidenceSourceV22.METRICS].covered_services) == candidates
+    runtime_ready = (
+        set(coverage[EvidenceSourceV22.RUNTIME].covered_services) == candidates
+    )
+    metrics_ready = (
+        set(coverage[EvidenceSourceV22.METRICS].covered_services) == candidates
+    )
     discriminating_read = any(
         coverage[source].queried
         for source in (
@@ -128,12 +170,8 @@ def evaluate_novelty_gate_v23(
         strong_with_runtime = any(
             item.service in set(graph.healthy_runtime_services) for item in strong
         )
-        supported = (
-            len(residual) >= 2 and len(sources) >= 2
-        ) or (
-            bool(strong)
-            and strong_with_runtime
-            and graph.contrastive_target_present
+        supported = (len(residual) >= 2 and len(sources) >= 2) or (
+            bool(strong) and (strong_with_runtime or graph.contrastive_target_present)
         )
         if supported:
             disposition = NoveltyDispositionV23.UNREGISTERED_INCIDENT_SUSPECTED
@@ -167,5 +205,6 @@ def evaluate_novelty_gate_v23(
 __all__ = (
     "NoveltyDispositionV23",
     "NoveltyGateDecisionV23",
+    "derive_unresolved_interpretation_conflict_v23",
     "evaluate_novelty_gate_v23",
 )

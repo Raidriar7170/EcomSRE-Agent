@@ -14,27 +14,35 @@ from ecomsre.dta_v2.v22.contrastive_actions_v225 import (
 )
 from ecomsre.dta_v2.v22.action_catalog import EvidenceActionV22, StaticTopologyV22
 from ecomsre.dta_v2.v22.diagnosis import AdmittedDiagnosisV22
-from ecomsre.dta_v2.v22.memory import SalientEvidenceMemoryV22, SignalStrengthV22, build_memory_views_v22
+from ecomsre.dta_v2.v22.memory import (
+    SalientEvidenceMemoryV22,
+    SignalStrengthV22,
+    build_memory_views_v22,
+)
 from ecomsre.dta_v2.v22.practical_dataset import (
     load_practical_case_set_v22,
     materialize_practical_case_v22,
 )
 from ecomsre.dta_v2.v22.practical_runner import _baseline, _bootstrap
-from ecomsre.dta_v2.v22.predicates import MechanismV22, evaluate_no_incident_v22
+from ecomsre.dta_v2.v22.predicates import MechanismV22
 from ecomsre.dta_v2.v22.read_contracts import (
     DtaModelV22,
     EvidenceSourceV22,
     ReadSourceStatusV22,
     semantic_sha256_v22,
 )
-from ecomsre.dta_v2.v22.real_fault_action_backend_v225 import RealFaultActionReadBackendV225
+from ecomsre.dta_v2.v22.real_fault_action_backend_v225 import (
+    RealFaultActionReadBackendV225,
+)
 from ecomsre.dta_v2.v22.real_fault_bootstrap_v226 import (
     build_real_fault_baseline_profile_v226,
     build_real_fault_canonical_bootstrap_v226,
     real_fault_run_id_v226,
 )
 from ecomsre.dta_v2.v22.real_fault_capture_v225 import RealFaultOpaqueCaptureV1
-from ecomsre.dta_v2.v22.replay_target_coverage_v225 import build_replay_target_coverage_v225
+from ecomsre.dta_v2.v22.replay_target_coverage_v225 import (
+    build_replay_target_coverage_v225,
+)
 from ecomsre.dta_v2.v22.replay import QuerySpecificReplayBackendV22, ReadOutcomeV22
 from ecomsre.dta_v2.v23.contracts import (
     ProvisionalFaultDomainV23,
@@ -59,12 +67,12 @@ from ecomsre.dta_v2.v23.novelty_gate import (
     NoveltyGateDecisionV23,
     evaluate_novelty_gate_v23,
 )
+from ecomsre.dta_v2.v23.known_admission import build_known_admission_state_v23
 from ecomsre.dta_v2.v23.ontology_view import (
     ActiveOntologyViewV23,
     build_active_ontology_view_v23,
 )
 from ecomsre.dta_v2.v23.residual_graph import (
-    KnownTerminalCandidateV23,
     ResidualEvidenceGraphV23,
     build_known_terminal_candidates_v23,
     build_residual_evidence_graph_v23,
@@ -72,13 +80,13 @@ from ecomsre.dta_v2.v23.residual_graph import (
 
 
 class CpuDevelopmentDemoV23(DtaModelV22):
-    schema_version: Literal["dta-v23.cpu-development-demo.v1"]
+    schema_version: Literal["dta-v23.cpu-development-demo.v2"]
     development_only: Literal[True]
     source_case_id: Literal["fault-map-a"]
     baseline_case_id: Literal["baseline-map-a"]
     hidden_mechanism: MechanismV22 | None
     active_ontology: ActiveOntologyViewV23
-    closed_world_terminal: KnownTerminalCandidateV23 | None
+    closed_world_terminal: AdmittedDiagnosisV22 | None
     no_incident_admissible: bool
     generic_anomalies: tuple[GenericAnomalyV23, ...]
     residual_graph: ResidualEvidenceGraphV23
@@ -142,7 +150,9 @@ class DevelopmentLeaveOneOutRunV23(DtaModelV22):
 
 def _load_capture(repository_root: Path, case_id: str) -> RealFaultOpaqueCaptureV1:
     path = repository_root / f"config/dta-v226-real-fault/captures/{case_id}.json"
-    return RealFaultOpaqueCaptureV1.model_validate_json(path.read_text(encoding="utf-8"))
+    return RealFaultOpaqueCaptureV1.model_validate_json(
+        path.read_text(encoding="utf-8")
+    )
 
 
 def build_cpu_development_memory_v23(
@@ -243,18 +253,18 @@ def run_cpu_development_demo_v23(
     repository_root: Path,
     hide_cpu: bool,
 ) -> CpuDevelopmentDemoV23:
-    capture, memory = build_cpu_development_memory_v23(
-        repository_root=repository_root
-    )
+    capture, memory = build_cpu_development_memory_v23(repository_root=repository_root)
     hidden = (MechanismV22.CPU_SATURATION,) if hide_cpu else ()
     view = build_active_ontology_view_v23(
         candidate_services=capture.candidate_aliases,
         hidden_mechanisms=hidden,
     )
-    known = build_known_terminal_candidates_v23(view=view, memory=memory)
-    no_incident = evaluate_no_incident_v22(
+    admission = build_known_admission_state_v23(
+        view=view,
         memory=memory,
-        candidate_services=capture.candidate_aliases,
+    )
+    known = build_known_terminal_candidates_v23(
+        admitted_diagnoses=admission.admitted_diagnoses
     )
     anomalies = extract_generic_anomalies_v23(
         memory=memory,
@@ -268,8 +278,9 @@ def run_cpu_development_demo_v23(
     )
     novelty = evaluate_novelty_gate_v23(
         graph=graph,
-        no_incident_admissible=no_incident.accepted,
+        no_incident_admissible=admission.no_incident_admissible,
         remaining_budget_before_discovery=3.0,
+        conflicting_evidence=admission.conflicting_evidence,
     )
     report = (
         _build_demo_report(graph=graph, memory=memory)
@@ -277,14 +288,14 @@ def run_cpu_development_demo_v23(
         else None
     )
     payload: dict[str, Any] = {
-        "schema_version": "dta-v23.cpu-development-demo.v1",
+        "schema_version": "dta-v23.cpu-development-demo.v2",
         "development_only": True,
         "source_case_id": "fault-map-a",
         "baseline_case_id": "baseline-map-a",
         "hidden_mechanism": MechanismV22.CPU_SATURATION if hide_cpu else None,
         "active_ontology": view,
-        "closed_world_terminal": known[0] if len(known) == 1 else None,
-        "no_incident_admissible": no_incident.accepted,
+        "closed_world_terminal": admission.admitted_diagnosis,
+        "no_incident_admissible": admission.no_incident_admissible,
         "generic_anomalies": anomalies,
         "residual_graph": graph,
         "novelty": novelty,
@@ -314,9 +325,7 @@ def _build_read_outcome_v23(
     resources = tuple(getattr(capture, "resources"))
     by_service = {item.service: item for item in resources}
     records = tuple(
-        by_service[target]
-        for target in action.target_services
-        if target in by_service
+        by_service[target] for target in action.target_services if target in by_service
     )
     if not records:
         status = ReadSourceStatusV22.SUCCESS_EMPTY
@@ -506,15 +515,19 @@ def run_development_leave_one_out_v23(
     negative = NegativeCoverageLedgerV23.empty()
     reads_used = 0
     remaining_budget = 3.0
-    target_complete_resources = tuple(
-        sorted(item.service for item in case.capture.resources)
-    ) == case.candidate_services
+    target_complete_resources = (
+        tuple(sorted(item.service for item in case.capture.resources))
+        == case.candidate_services
+    )
 
     def state() -> tuple[ResidualEvidenceGraphV23, NoveltyGateDecisionV23]:
-        known = build_known_terminal_candidates_v23(
+        admission = build_known_admission_state_v23(
             view=view,
             memory=memory,
             topology_edges=case.topology_edges,
+        )
+        known = build_known_terminal_candidates_v23(
+            admitted_diagnoses=admission.admitted_diagnoses,
         )
         anomalies = extract_generic_anomalies_v23(
             memory=memory,
@@ -525,10 +538,6 @@ def run_development_leave_one_out_v23(
             generic_anomalies=anomalies,
             known_terminal_candidates=known,
             memory=memory,
-        )
-        no_incident = evaluate_no_incident_v22(
-            memory=memory,
-            candidate_services=case.candidate_services,
         )
         failures = tuple(
             sorted(
@@ -542,9 +551,10 @@ def run_development_leave_one_out_v23(
         )
         decision = evaluate_novelty_gate_v23(
             graph=graph,
-            no_incident_admissible=no_incident.accepted,
+            no_incident_admissible=admission.no_incident_admissible,
             remaining_budget_before_discovery=3.0,
             required_source_failures=failures,
+            conflicting_evidence=admission.conflicting_evidence,
         )
         return graph, decision
 

@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from ecomsre.dta_v2.v22.diagnosis import AdmittedDiagnosisV22
 from ecomsre.dta_v2.v22.memory import (
     LogCategoryV22,
     LogSalientPayloadV22,
@@ -103,7 +104,7 @@ def test_hidden_cpu_real_capture_runs_the_open_world_vertical_slice() -> None:
 def test_full_ontology_preserves_the_known_cpu_terminal() -> None:
     result = run_cpu_development_demo_v23(repository_root=ROOT, hide_cpu=False)
 
-    assert result.closed_world_terminal is not None
+    assert isinstance(result.closed_world_terminal, AdmittedDiagnosisV22)
     assert result.closed_world_terminal.mechanism is MechanismV22.CPU_SATURATION
     assert result.closed_world_terminal.root_service == "svc-20e1bc90a8"
     assert result.novelty.disposition is NoveltyDispositionV23.KNOWN_INCIDENT
@@ -178,6 +179,47 @@ def test_novelty_gate_does_not_turn_budget_or_conflict_into_discovery() -> None:
 
     assert insufficient.disposition is NoveltyDispositionV23.INSUFFICIENT_EVIDENCE
     assert conflicting.disposition is NoveltyDispositionV23.CONFLICTING_EVIDENCE
+
+
+def test_single_strong_source_needs_healthy_runtime_or_contrastive_target() -> None:
+    result = run_cpu_development_demo_v23(repository_root=ROOT, hide_cpu=True)
+    payload = {
+        name: getattr(result.residual_graph, name)
+        for name in type(result.residual_graph).model_fields
+        if name != "graph_sha256"
+    }
+    strong = next(
+        item
+        for item in result.residual_graph.generic_anomalies
+        if item.kind is GenericAnomalyKindV23.RESOURCE_CPU_OUTLIER
+    )
+    payload["generic_anomalies"] = (strong,)
+    payload["explained_anomaly_ids"] = ()
+    payload["residual_anomaly_ids"] = (strong.anomaly_id,)
+    payload["contradicted_anomaly_ids"] = ()
+    payload["explanation_coverage"] = 0.0
+    payload["contrastive_target_present"] = False
+    draft = type(result.residual_graph).model_construct(
+        **payload, graph_sha256="0" * 64
+    )
+    graph = type(result.residual_graph).model_validate(
+        {
+            **payload,
+            "graph_sha256": semantic_sha256_v22(
+                draft.model_dump(mode="json", exclude={"graph_sha256"})
+            ),
+        }
+    )
+
+    decision = evaluate_novelty_gate_v23(
+        graph=graph,
+        no_incident_admissible=False,
+        remaining_budget_before_discovery=3.0,
+    )
+
+    assert decision.disposition is (
+        NoveltyDispositionV23.UNREGISTERED_INCIDENT_SUSPECTED
+    )
 
 
 def test_provisional_report_rejects_an_unknown_evidence_ref() -> None:

@@ -2,9 +2,9 @@
   "schema_version": "dta-v23.evaluation-case-set.v1",
   "cases": [
     {"case_id": "ow-001", "source_split": "EVALUATION", "source_case_id": "e01", "derivation_id": "drv-001"},
-    {"case_id": "ow-002", "source_split": "EVALUATION", "source_case_id": "e02", "derivation_id": "drv-002"},
+    {"case_id": "ow-002", "source_split": "EVALUATION", "source_case_id": "e01", "derivation_id": "drv-002"},
     {"case_id": "ow-003", "source_split": "EVALUATION", "source_case_id": "e03", "derivation_id": "drv-003"},
-    {"case_id": "ow-004", "source_split": "EVALUATION", "source_case_id": "e04", "derivation_id": "drv-004"},
+    {"case_id": "ow-004", "source_split": "EVALUATION", "source_case_id": "e03", "derivation_id": "drv-004"},
     {"case_id": "ow-005", "source_split": "EVALUATION", "source_case_id": "e06", "derivation_id": "drv-005"},
     {"case_id": "ow-006", "source_split": "DEVELOPMENT", "source_case_id": "d04", "derivation_id": "drv-006"},
     {"case_id": "ow-007", "source_split": "EVALUATION", "source_case_id": "e05", "derivation_id": "drv-007"},

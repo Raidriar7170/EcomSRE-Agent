@@ -6,16 +6,13 @@ from typing import Any, Literal
 
 from pydantic import Field, StrictBool, StrictFloat, StrictInt, model_validator
 
+from ecomsre.dta_v2.v22.diagnosis import AdmittedDiagnosisV22
 from ecomsre.dta_v2.v22.memory import (
     RuntimeSalientPayloadV22,
     SalientEvidenceMemoryV22,
     SignalStrengthV22,
 )
-from ecomsre.dta_v2.v22.predicates import (
-    MechanismV22,
-    build_default_evidence_support_policy_v22,
-    evaluate_support_v22,
-)
+from ecomsre.dta_v2.v22.predicates import MechanismV22
 from ecomsre.dta_v2.v22.read_contracts import (
     DtaModelV22,
     EvidenceSourceV22,
@@ -24,7 +21,6 @@ from ecomsre.dta_v2.v22.read_contracts import (
     semantic_sha256_v22,
 )
 from ecomsre.dta_v2.v23.generic_anomalies import GenericAnomalyV23
-from ecomsre.dta_v2.v23.ontology_view import ActiveOntologyViewV23
 
 
 class KnownTerminalCandidateV23(DtaModelV22):
@@ -86,7 +82,11 @@ class ResidualEvidenceGraphV23(DtaModelV22):
             set(self.residual_anomaly_ids),
             set(self.contradicted_anomaly_ids),
         )
-        if any(left.intersection(right) for index, left in enumerate(partitions) for right in partitions[index + 1 :]):
+        if any(
+            left.intersection(right)
+            for index, left in enumerate(partitions)
+            for right in partitions[index + 1 :]
+        ):
             raise ValueError("residual graph anomaly partitions overlap")
         if set().union(*partitions) != set(anomaly_ids):
             raise ValueError("residual graph anomaly partition is incomplete")
@@ -102,62 +102,21 @@ class ResidualEvidenceGraphV23(DtaModelV22):
         return self
 
 
-def _parent_for(
-    *,
-    target: str,
-    mechanism: MechanismV22,
-    topology_edges: tuple[tuple[str, str], ...],
-) -> str | None:
-    if mechanism is not MechanismV22.DEPENDENCY_LATENCY:
-        return None
-    return next(
-        (
-            right if left == target else left
-            for left, right in topology_edges
-            if target in {left, right}
-        ),
-        None,
-    )
-
-
 def build_known_terminal_candidates_v23(
     *,
-    view: ActiveOntologyViewV23,
-    memory: SalientEvidenceMemoryV22,
-    topology_edges: tuple[tuple[str, str], ...] = (),
+    admitted_diagnoses: tuple[AdmittedDiagnosisV22, ...],
 ) -> tuple[KnownTerminalCandidateV23, ...]:
-    """Project only enabled v2.2 base-policy terminals into the v2.3 lane."""
+    """Project only actual v2.2 admissions into the open-world graph."""
 
-    policy = build_default_evidence_support_policy_v22()
-    if policy.policy_sha256 != view.support_policy_sha256:
-        raise ValueError("active ontology view is not bound to the frozen base policy")
     candidates: list[KnownTerminalCandidateV23] = []
-    for hypothesis in view.active_hypotheses:
-        if hypothesis.target_service is None or hypothesis.mechanism in {
-            MechanismV22.NO_INCIDENT,
-            MechanismV22.UNKNOWN,
-        }:
-            continue
-        decision = evaluate_support_v22(
-            policy=policy,
-            mechanism=hypothesis.mechanism,
-            target_service=hypothesis.target_service,
-            parent_service=_parent_for(
-                target=hypothesis.target_service,
-                mechanism=hypothesis.mechanism,
-                topology_edges=topology_edges,
-            ),
-            predicates=memory.predicates,
-        )
-        if not decision.accepted or decision.matched_clause_id is None:
-            continue
+    for diagnosis in admitted_diagnoses:
         payload: dict[str, Any] = {
             "schema_version": "dta-v23.known-terminal-candidate.v1",
-            "hypothesis_id": hypothesis.hypothesis_id,
-            "root_service": hypothesis.target_service,
-            "mechanism": hypothesis.mechanism,
-            "matched_clause_id": decision.matched_clause_id,
-            "supporting_evidence_refs": decision.supporting_evidence_refs,
+            "hypothesis_id": diagnosis.hypothesis_id,
+            "root_service": diagnosis.root_service,
+            "mechanism": diagnosis.mechanism,
+            "matched_clause_id": diagnosis.matched_clause_id,
+            "supporting_evidence_refs": diagnosis.supporting_evidence_refs,
         }
         draft = KnownTerminalCandidateV23.model_construct(
             **payload,
@@ -290,9 +249,11 @@ def build_residual_evidence_graph_v23(
         "contradicted_anomaly_ids": (),
         "source_coverage": coverage,
         "explanation_coverage": (
-            1.0 if total_weight == 0 and known_terminal_candidates else
-            0.0 if total_weight == 0 else
-            explained_weight / total_weight
+            1.0
+            if total_weight == 0 and known_terminal_candidates
+            else 0.0
+            if total_weight == 0
+            else explained_weight / total_weight
         ),
         "healthy_runtime_services": healthy_runtime,
         "contrastive_target_present": contrastive,

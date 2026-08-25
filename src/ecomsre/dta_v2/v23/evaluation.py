@@ -20,14 +20,16 @@ from ecomsre.dta_v2.v22.action_catalog import (
     EvidenceActionV22,
     StaticTopologyV22,
 )
+from ecomsre.dta_v2.v22.diagnosis import AdmittedDiagnosisV22
+from ecomsre.dta_v2.v22.gap_router_v222 import SOURCE_PREDICATE_CAPABILITIES_V222
 from ecomsre.dta_v2.v22.contrastive_actions_v225 import (
     ContrastiveResourceActionV225,
     contrastive_resource_action_if_eligible_v225,
 )
 from ecomsre.dta_v2.v22.memory import (
+    EvidencePredicateV22,
     MemoryReadOutcomeV22,
     SalientEvidenceMemoryV22,
-    SignalStrengthV22,
     build_memory_views_v22,
 )
 from ecomsre.dta_v2.v22.practical_dataset import (
@@ -36,7 +38,12 @@ from ecomsre.dta_v2.v22.practical_dataset import (
 )
 from ecomsre.dta_v2.v22.practical_replay import NormalizedPracticalCaseV22
 from ecomsre.dta_v2.v22.practical_runner import _baseline, _bootstrap
-from ecomsre.dta_v2.v22.predicates import MechanismV22
+from ecomsre.dta_v2.v22.predicates import (
+    MechanismV22,
+    PredicateRequirementV22,
+    RequirementServiceBindingV22,
+    SupportClauseV22,
+)
 from ecomsre.dta_v2.v22.read_contracts import (
     DtaModelV22,
     EvidenceSourceV22,
@@ -84,14 +91,16 @@ from ecomsre.dta_v2.v23.discovery_runtime import (
     _classify_discovery_outcome,
     _deterministic_development_report_v23,
 )
-from ecomsre.dta_v2.v23.generic_anomalies import (
-    GenericAnomalyKindV23,
-    extract_generic_anomalies_v23,
-)
+from ecomsre.dta_v2.v23.generic_anomalies import extract_generic_anomalies_v23
 from ecomsre.dta_v2.v23.novelty_gate import (
     NoveltyDispositionV23,
     NoveltyGateDecisionV23,
+    derive_unresolved_interpretation_conflict_v23,
     evaluate_novelty_gate_v23,
+)
+from ecomsre.dta_v2.v23.known_admission import (
+    KnownAdmissionStateV23,
+    build_known_admission_state_v23,
 )
 from ecomsre.dta_v2.v23.ontology_view import (
     ActiveOntologyViewV23,
@@ -230,7 +239,9 @@ class EvaluationOntologyViewSpecV23(DtaModelV22):
 
 class EvaluationOntologyViewSetV23(DtaModelV22):
     schema_version: Literal["dta-v23.evaluation-ontology-view-set.v1"]
-    views: tuple[EvaluationOntologyViewSpecV23, ...] = Field(min_length=24, max_length=24)
+    views: tuple[EvaluationOntologyViewSpecV23, ...] = Field(
+        min_length=24, max_length=24
+    )
 
     @model_validator(mode="after")
     def require_set(self) -> "EvaluationOntologyViewSetV23":
@@ -278,7 +289,7 @@ class ManifestFileBindingV23(DtaModelV22):
 
 
 class EvaluationManifestV23(DtaModelV22):
-    schema_version: Literal["dta-v23.evaluation-manifest.v1"]
+    schema_version: Literal["dta-v23.evaluation-manifest.v2"]
     base_commit: Literal["f17688f4c313b1483bfb7c56675c429605faf489"]
     branch: Literal["codex/dta-v23-open-world-discovery"]
     provider_model: str
@@ -292,6 +303,10 @@ class EvaluationManifestV23(DtaModelV22):
         min_length=2,
         max_length=2,
     )
+    runtime_sources: tuple[ManifestFileBindingV23, ...] = Field(
+        min_length=10,
+        max_length=16,
+    )
     discovery_system_prompt_sha256: str
     output_json: str
     output_markdown: str
@@ -303,6 +318,9 @@ class EvaluationManifestV23(DtaModelV22):
         paths = tuple(item.path for item in self.source_case_sets)
         if paths != tuple(sorted(set(paths))):
             raise ValueError("manifest source case sets are not canonical")
+        runtime_paths = tuple(item.path for item in self.runtime_sources)
+        if runtime_paths != tuple(sorted(set(runtime_paths))):
+            raise ValueError("manifest runtime sources are not canonical")
         return self
 
 
@@ -331,6 +349,21 @@ def _opaque_service(case_id: str, service: str) -> str:
     return f"svc-{semantic_sha256_v22({'case_id': case_id, 'service': service})[:10]}"
 
 
+_COUNTERFACTUAL_TARGET_LOW_V23 = frozenset({"ow-001", "ow-003", "ow-011", "ow-013"})
+_COUNTERFACTUAL_TARGET_HIGH_V23 = frozenset({"ow-002", "ow-004", "ow-012", "ow-014"})
+
+
+def _counterfactual_control_alias_v23(*, case_id: str, target: str) -> str:
+    target_low = case_id in _COUNTERFACTUAL_TARGET_LOW_V23
+    if not target_low and case_id not in _COUNTERFACTUAL_TARGET_HIGH_V23:
+        raise ValueError("case is not a fixed counterfactual target")
+    for ordinal in range(256):
+        candidate = _opaque_service(case_id, f"counterfactual-control-{ordinal}")
+        if (target < candidate) == target_low:
+            return candidate
+    raise ValueError("cannot construct a bounded opaque counterfactual control")
+
+
 def _replace_service_text(value: str, mapping: dict[str, str]) -> str:
     result = value
     for source in sorted(mapping, key=len, reverse=True):
@@ -348,6 +381,17 @@ def _anonymize_case(
         for service in source.candidate_services
     }
     candidates = tuple(sorted(mapping.values()))
+    control_service: str | None = None
+    if spec.case_id in (
+        _COUNTERFACTUAL_TARGET_LOW_V23 | _COUNTERFACTUAL_TARGET_HIGH_V23
+    ) and spec.case_id in {"ow-001", "ow-002", "ow-003", "ow-004"}:
+        if len(candidates) != 1:
+            raise ValueError("fixed replay counterfactual source is not single-target")
+        control_service = _counterfactual_control_alias_v23(
+            case_id=spec.case_id,
+            target=candidates[0],
+        )
+        candidates = tuple(sorted((*candidates, control_service)))
     capture = source.capture
     resources = tuple(
         ResourceUsageRecordV22(
@@ -366,15 +410,42 @@ def _anonymize_case(
     projected = ReplayCaptureV22(
         schema_version="dta-v22.replay-capture.v1",
         captured_at=capture.captured_at,
-        metrics=tuple(
-            MetricFactV22(
-                **{
-                    **item.model_dump(mode="python"),
-                    "service": mapping[item.service],
-                }
-            )
-            for item in capture.metrics
-            if item.service in mapping
+        metrics=(
+            *tuple(
+                MetricFactV22(
+                    **{
+                        **item.model_dump(mode="python"),
+                        "service": mapping[item.service],
+                    }
+                )
+                for item in capture.metrics
+                if item.service in mapping
+            ),
+            *(
+                tuple(
+                    MetricFactV22(
+                        **{
+                            **item.model_dump(mode="python"),
+                            "service": control_service,
+                            "value": (
+                                None
+                                if item.value is None
+                                else 0.01
+                                if item.metric_kind is MetricKindV22.ERROR_RATE
+                                else 10.0
+                                if item.metric_kind is MetricKindV22.LATENCY_P95_MS
+                                else 100.0
+                                if item.metric_kind is MetricKindV22.REQUEST_SUPPORT
+                                else item.value
+                            ),
+                        }
+                    )
+                    for item in capture.metrics
+                    if item.service in mapping
+                )
+                if control_service is not None
+                else ()
+            ),
         ),
         logs=tuple(
             LogRecordV22(
@@ -391,7 +462,9 @@ def _anonymize_case(
             TraceSpanV22(
                 **{
                     **item.model_dump(mode="python"),
-                    "service_path": tuple(mapping[value] for value in item.service_path),
+                    "service_path": tuple(
+                        mapping[value] for value in item.service_path
+                    ),
                     "service": mapping[item.service],
                     "parent_service": (
                         mapping[item.parent_service]
@@ -406,15 +479,30 @@ def _anonymize_case(
             and all(value in mapping for value in item.service_path)
             and (item.parent_service is None or item.parent_service in mapping)
         ),
-        runtime=tuple(
-            RuntimeRecordV22(
-                **{
-                    **item.model_dump(mode="python"),
-                    "service": mapping[item.service],
-                }
-            )
-            for item in capture.runtime
-            if item.service in mapping
+        runtime=(
+            *tuple(
+                RuntimeRecordV22(
+                    **{
+                        **item.model_dump(mode="python"),
+                        "service": mapping[item.service],
+                    }
+                )
+                for item in capture.runtime
+                if item.service in mapping
+            ),
+            *(
+                (
+                    RuntimeRecordV22(
+                        schema_version="dta-v22.runtime-record.v1",
+                        service=control_service,
+                        state=RuntimeStateV22.RUNNING,
+                        healthy=True,
+                        restart_count=0,
+                    ),
+                )
+                if control_service is not None
+                else ()
+            ),
         ),
         resources=resources,
         changes=tuple(
@@ -440,6 +528,13 @@ def _anonymize_case(
             if left in mapping and right in mapping
         )
     )
+    if control_service is not None:
+        target = next(iter(mapping.values()))
+        edges = (
+            (target, control_service)
+            if target < control_service
+            else (control_service, target),
+        )
     return NormalizedPracticalCaseV22(
         schema_version="dta-v22.practical-normalized-case.v1",
         case_id=spec.case_id,
@@ -466,11 +561,14 @@ def _synthetic_case(spec: EvaluationCaseSpecV23) -> NormalizedPracticalCaseV22:
         raise ValueError("unknown v2.3 synthetic source")
     originals = ("node-a", "node-b")
     mapping = {value: _opaque_service(spec.case_id, value) for value in originals}
-    root_original = "node-a" if spec.source_case_id in {"syn-01", "syn-03"} else "node-b"
-    other_original = "node-b" if root_original == "node-a" else "node-a"
-    root = mapping[root_original]
-    other = mapping[other_original]
     candidates = tuple(sorted(mapping.values()))
+    if spec.case_id in _COUNTERFACTUAL_TARGET_LOW_V23:
+        root = candidates[0]
+    elif spec.case_id in _COUNTERFACTUAL_TARGET_HIGH_V23:
+        root = candidates[1]
+    else:
+        raise ValueError("synthetic evaluation case lacks counterfactual target role")
+    other = next(item for item in candidates if item != root)
     ordinal = int(spec.case_id.split("-")[1])
     captured_at = datetime(2026, 1, 1, tzinfo=timezone.utc) + timedelta(minutes=ordinal)
     window_start = captured_at - timedelta(seconds=300)
@@ -638,7 +736,9 @@ def _all_discriminating_outcomes(
     )
     if resource_action is None:
         raise ValueError("evaluation case lacks target-complete resources")
-    additions.append(_build_read_outcome_v23(action=resource_action, capture=case.capture))
+    additions.append(
+        _build_read_outcome_v23(action=resource_action, capture=case.capture)
+    )
     return (*outcomes, *additions)
 
 
@@ -653,10 +753,13 @@ def verify_unregistered_case_has_no_known_terminal_v23(
         top_k=64,
     )
     view = build_active_ontology_view_v23(candidate_services=case.candidate_services)
-    known = build_known_terminal_candidates_v23(
+    admission = build_known_admission_state_v23(
         view=view,
         memory=memory,
         topology_edges=case.topology_edges,
+    )
+    known = build_known_terminal_candidates_v23(
+        admitted_diagnoses=admission.admitted_diagnoses,
     )
     return not known
 
@@ -706,7 +809,10 @@ def build_evaluation_preflight_v23(
         raise ValueError("evaluation case, truth, and view IDs differ")
     progress_path = repository_root / "docs/analysis/dta-v23-open-world-progress.json"
     progress = json.loads(progress_path.read_text(encoding="utf-8"))
-    execution_count = progress.get("fixed_evaluation_execution_count")
+    execution_count = progress.get(
+        "valid_fixed_evaluation_execution_count",
+        progress.get("fixed_evaluation_execution_count"),
+    )
     if execution_count != 0:
         raise ValueError("fixed evaluation execution count is not zero")
     if not expected_provider_model.strip():
@@ -728,6 +834,10 @@ def build_evaluation_preflight_v23(
             source_path = repository_root / binding.path
             if binding.sha256 != _file_sha256(source_path):
                 raise ValueError("manifest source case-set digest differs")
+        for binding in manifest.runtime_sources:
+            source_path = repository_root / binding.path
+            if binding.sha256 != _file_sha256(source_path):
+                raise ValueError("manifest runtime source digest differs")
         prompt_sha256 = hashlib.sha256(
             DISCOVERY_SYSTEM_PROMPT_V23.encode("utf-8")
         ).hexdigest()
@@ -803,7 +913,7 @@ class ProviderCostV23(DtaModelV22):
 
 
 class EvaluationArmRunV23(DtaModelV22):
-    schema_version: Literal["dta-v23.evaluation-arm-run.v1"]
+    schema_version: Literal["dta-v23.evaluation-arm-run.v2"]
     case_id: str
     arm: EvaluationArmV23
     case_bytes_sha256: str
@@ -813,12 +923,15 @@ class EvaluationArmRunV23(DtaModelV22):
     common_read_count: StrictInt = Field(ge=0, le=2)
     discovery_read_count: StrictInt = Field(ge=0, le=3)
     final_disposition: str
+    known_admission_sha256: str
+    admitted_diagnosis: AdmittedDiagnosisV22 | None
     known_mechanism: MechanismV22 | None
     known_root_service: str | None
     no_incident_admissible: StrictBool
-    residual_graph: ResidualEvidenceGraphV23
+    residual_graph: ResidualEvidenceGraphV23 | None
+    novelty_decision: NoveltyGateDecisionV23 | None
     memory_evidence_refs: tuple[str, ...]
-    negative_coverage: NegativeCoverageLedgerV23
+    negative_coverage: NegativeCoverageLedgerV23 | None
     provisional_report: ProvisionalIncidentReportV23 | None
     provider_error_code: str | None
     provider_cost: ProviderCostV23
@@ -832,6 +945,31 @@ class EvaluationArmRunV23(DtaModelV22):
         if self.arm is EvaluationArmV23.CLOSED_WORLD_ONLY:
             if self.discovery_read_count or self.provisional_report is not None:
                 raise ValueError("closed-world arm received open-world capability")
+            if any(
+                value is not None
+                for value in (
+                    self.residual_graph,
+                    self.novelty_decision,
+                    self.negative_coverage,
+                )
+            ):
+                raise ValueError("closed-world arm received discovery state")
+        elif any(
+            value is None
+            for value in (
+                self.residual_graph,
+                self.novelty_decision,
+                self.negative_coverage,
+            )
+        ):
+            raise ValueError("open-world arm lacks discovery state")
+        if (self.admitted_diagnosis is None) != (self.known_mechanism is None):
+            raise ValueError("known terminal projection differs from v2.2 admission")
+        if self.admitted_diagnosis is not None and (
+            self.known_mechanism is not self.admitted_diagnosis.mechanism
+            or self.known_root_service != self.admitted_diagnosis.root_service
+        ):
+            raise ValueError("known terminal fields differ from v2.2 admission")
         if self.provisional_report is not None:
             if self.provisional_report.action_authority != "NONE":
                 raise ValueError("evaluation report has action authority")
@@ -841,8 +979,10 @@ class EvaluationArmRunV23(DtaModelV22):
             }:
                 raise ValueError("evaluation report differs from disposition")
             cited = set(
-                (*self.provisional_report.supporting_evidence_refs,
-                 *self.provisional_report.contradicting_evidence_refs)
+                (
+                    *self.provisional_report.supporting_evidence_refs,
+                    *self.provisional_report.contradicting_evidence_refs,
+                )
             )
             if not cited.issubset(self.memory_evidence_refs):
                 raise ValueError("evaluation report cites evidence outside memory")
@@ -855,7 +995,7 @@ class EvaluationArmRunV23(DtaModelV22):
 
 
 class EvaluationCasePairV23(DtaModelV22):
-    schema_version: Literal["dta-v23.evaluation-case-pair.v1"]
+    schema_version: Literal["dta-v23.evaluation-case-pair.v2"]
     case_id: str
     closed_world: EvaluationArmRunV23
     open_world: EvaluationArmRunV23
@@ -881,6 +1021,11 @@ class EvaluationCasePairV23(DtaModelV22):
             != self.open_world.common_memory_sha256
         ):
             raise ValueError("evaluation arms use different common evidence")
+        if (
+            self.closed_world.known_admission_sha256
+            != self.open_world.known_admission_sha256
+        ):
+            raise ValueError("evaluation arms use different v2.2 Diagnosis admission")
         return self
 
 
@@ -890,10 +1035,9 @@ class _CommonContextV23:
     view: ActiveOntologyViewV23
     outcomes: tuple[MemoryReadOutcomeV22, ...]
     memory: SalientEvidenceMemoryV22
-    graph: ResidualEvidenceGraphV23
-    decision: NoveltyGateDecisionV23
+    admission: KnownAdmissionStateV23
     catalog: ActionCatalogV22
-    negative_coverage: NegativeCoverageLedgerV23
+    common_action_ids: tuple[str, ...]
     bootstrap_memory_sha256: str
     common_read_count: int
 
@@ -901,14 +1045,12 @@ class _CommonContextV23:
 def _case_state(
     *,
     case: NormalizedPracticalCaseV22,
-    view: ActiveOntologyViewV23,
+    admission: KnownAdmissionStateV23,
     memory: SalientEvidenceMemoryV22,
     negative_coverage: NegativeCoverageLedgerV23,
 ) -> tuple[ResidualEvidenceGraphV23, NoveltyGateDecisionV23]:
     known = build_known_terminal_candidates_v23(
-        view=view,
-        memory=memory,
-        topology_edges=case.topology_edges,
+        admitted_diagnoses=admission.admitted_diagnoses,
     )
     anomalies = extract_generic_anomalies_v23(
         memory=memory,
@@ -919,12 +1061,6 @@ def _case_state(
         generic_anomalies=anomalies,
         known_terminal_candidates=known,
         memory=memory,
-    )
-    from ecomsre.dta_v2.v22.predicates import evaluate_no_incident_v22
-
-    no_incident = evaluate_no_incident_v22(
-        memory=memory,
-        candidate_services=case.candidate_services,
     )
     failures = tuple(
         sorted(
@@ -938,9 +1074,16 @@ def _case_state(
     )
     decision = evaluate_novelty_gate_v23(
         graph=graph,
-        no_incident_admissible=no_incident.accepted,
+        no_incident_admissible=admission.no_incident_admissible,
         remaining_budget_before_discovery=3.0,
         required_source_failures=failures,
+        conflicting_evidence=(
+            admission.conflicting_evidence
+            or derive_unresolved_interpretation_conflict_v23(
+                graph=graph,
+                bounded_reads_completed=len(negative_coverage.entries),
+            )
+        ),
     )
     return graph, decision
 
@@ -960,70 +1103,154 @@ def _option_from_action(action: object) -> DiscoveryActionOptionV23:
 
 def _common_candidate_action(
     *,
-    context_graph: ResidualEvidenceGraphV23,
     view: ActiveOntologyViewV23,
+    memory: SalientEvidenceMemoryV22,
+    topology_edges: tuple[tuple[str, str], ...],
     catalog: ActionCatalogV22,
     executed_action_ids: set[str],
-) -> EvidenceActionV22 | ContrastiveResourceActionV225 | None:
-    anomalies = context_graph.generic_anomalies
+) -> EvidenceActionV22 | None:
+    """Route shared v2.2 reads from support-clause gaps, never v2.3 state."""
 
-    def target(kind: GenericAnomalyKindV23) -> str | None:
-        item = next(
+    def parent_for(target: str, mechanism: MechanismV22) -> str | None:
+        if mechanism is not MechanismV22.DEPENDENCY_LATENCY:
+            return None
+        return next(
             (
-                value
-                for value in anomalies
-                if value.kind is kind and value.strength is SignalStrengthV22.STRONG
+                right if left == target else left
+                for left, right in topology_edges
+                if target in {left, right}
             ),
             None,
         )
-        return None if item is None else item.service
 
-    choices: list[tuple[EvidenceSourceV22, str]] = []
-    error_target = target(GenericAnomalyKindV23.METRIC_ERROR_OUTLIER)
-    latency_target = target(GenericAnomalyKindV23.METRIC_LATENCY_OUTLIER)
-    memory_target = target(GenericAnomalyKindV23.RESOURCE_MEMORY_TREND)
-    if (
-        error_target is not None
-        and MechanismV22.CONFIGURATION_ERROR in view.enabled_mechanisms
-    ):
-        choices.append((EvidenceSourceV22.CHANGES, error_target))
-    if (
-        latency_target is not None
-        and MechanismV22.DEPENDENCY_LATENCY in view.enabled_mechanisms
-    ):
-        choices.append((EvidenceSourceV22.TRACES, latency_target))
-    if (
-        memory_target is not None
-        and MechanismV22.MEMORY_LEAK in view.enabled_mechanisms
-    ):
-        choices.append((EvidenceSourceV22.LOGS, memory_target))
-    for source, service in choices:
-        action = next(
+    def matches(
+        *,
+        predicate: EvidencePredicateV22,
+        requirement: PredicateRequirementV22,
+        target: str,
+        parent: str | None,
+    ) -> bool:
+        if getattr(predicate, "predicate_kind") is not getattr(
+            requirement, "predicate_kind"
+        ):
+            return False
+        allowed = {target}
+        if (
+            getattr(requirement, "service_binding")
+            is RequirementServiceBindingV22.TARGET_OR_PARENT
+            and parent is not None
+        ):
+            allowed.add(parent)
+        if getattr(predicate, "service") not in allowed:
+            return False
+        return (
+            not getattr(requirement, "require_exact_parent")
+            or getattr(predicate, "parent_service") == parent
+        )
+
+    gaps: list[tuple[str, str, PredicateRequirementV22, str, str | None, int]] = []
+    for hypothesis in view.active_hypotheses:
+        target = hypothesis.target_service
+        if target is None or hypothesis.mechanism in {
+            MechanismV22.NO_INCIDENT,
+            MechanismV22.UNKNOWN,
+        }:
+            continue
+        parent = parent_for(target, hypothesis.mechanism)
+        if hypothesis.mechanism is MechanismV22.DEPENDENCY_LATENCY and parent is None:
+            continue
+        clauses = tuple(
             item
-            for item in catalog.registry_actions
-            if item.source is source and item.target_services == (service,)
+            for item in view.active_support_clauses
+            if item.mechanism is hypothesis.mechanism
         )
-        if action.action_id not in executed_action_ids:
-            return action
-    if (
-        MechanismV22.CPU_SATURATION in view.enabled_mechanisms
-        and context_graph.healthy_runtime_services == catalog.candidate_services
-    ):
-        coverage = build_replay_target_coverage_v225(
-            source=EvidenceSourceV22.RESOURCES,
-            candidate_services=catalog.candidate_services,
-            covered_target_services=catalog.candidate_services,
+        clause_gaps: list[
+            tuple[SupportClauseV22, tuple[PredicateRequirementV22, ...], int]
+        ] = []
+        for clause in clauses:
+            matched = tuple(
+                requirement
+                for requirement in clause.requirements
+                if any(
+                    matches(
+                        predicate=predicate,
+                        requirement=requirement,
+                        target=target,
+                        parent=parent,
+                    )
+                    for predicate in memory.predicates
+                )
+            )
+            missing = tuple(
+                requirement
+                for requirement in clause.requirements
+                if requirement not in matched
+            )
+            evidence_score = sum(
+                requirement.predicate_kind.value != "RUNTIME_HEALTHY"
+                for requirement in matched
+            )
+            clause_gaps.append((clause, missing, evidence_score))
+        if not clause_gaps:
+            continue
+        minimum = min(len(missing) for _clause, missing, _score in clause_gaps)
+        for clause, missing, evidence_score in clause_gaps:
+            if len(missing) != minimum or not missing:
+                continue
+            for requirement in missing:
+                gaps.append(
+                    (
+                        hypothesis.hypothesis_id,
+                        str(getattr(clause, "clause_id")),
+                        requirement,
+                        target,
+                        parent,
+                        evidence_score,
+                    )
+                )
+
+    ranked: list[tuple[tuple[object, ...], EvidenceActionV22]] = []
+    for action in catalog.registry_actions:
+        if (
+            action.action_id in executed_action_ids
+            or len(action.target_services) != 1
+            or action.source is EvidenceSourceV22.RUNTIME
+        ):
+            continue
+        hits = tuple(
+            gap
+            for gap in gaps
+            if getattr(gap[2], "predicate_kind")
+            in SOURCE_PREDICATE_CAPABILITIES_V222[action.source]
+            and action.target_services[0]
+            in (
+                {gap[3], gap[4]}
+                if getattr(gap[2], "service_binding")
+                is RequirementServiceBindingV22.TARGET_OR_PARENT
+                else {gap[3]}
+            )
         )
-        bundle = contrastive_resource_action_if_eligible_v225(
-            coverage=coverage,
-            resources_enabled=True,
-            unresolved_resource_hypotheses=len(catalog.candidate_services),
-            remaining_budget=3.0,
-            bundle_mode=True,
+        if not hits:
+            continue
+        completed_clauses = len({(item[0], item[1]) for item in hits})
+        reduced_hypotheses = len({item[0] for item in hits})
+        maximum_evidence_score = max(item[5] for item in hits)
+        total_evidence_score = sum(item[5] for item in hits)
+        ranked.append(
+            (
+                (
+                    -maximum_evidence_score,
+                    -total_evidence_score,
+                    -completed_clauses,
+                    -len(hits),
+                    -reduced_hypotheses,
+                    action.weighted_cost,
+                    action.action_id,
+                ),
+                action,
+            )
         )
-        if bundle is not None and bundle.action_id not in executed_action_ids:
-            return bundle
-    return None
+    return min(ranked, key=lambda item: item[0])[1] if ranked else None
 
 
 def _build_common_context_v23(
@@ -1054,32 +1281,29 @@ def _build_common_context_v23(
         hidden_mechanisms=(hidden_mechanism,) if hidden_mechanism is not None else (),
     )
     backend = QuerySpecificReplayBackendV22(case.capture)
-    negative = NegativeCoverageLedgerV23.empty()
     executed: set[str] = set()
     common_reads = 0
-    graph, decision = _case_state(
-        case=case,
+    admission = build_known_admission_state_v23(
         view=view,
         memory=memory,
-        negative_coverage=negative,
+        topology_edges=case.topology_edges,
     )
-    while common_reads < 2 and decision.disposition not in {
-        NoveltyDispositionV23.KNOWN_INCIDENT,
-        NoveltyDispositionV23.NO_INCIDENT,
-    }:
+    while (
+        common_reads < 2
+        and admission.admitted_diagnosis is None
+        and not admission.no_incident_admissible
+        and not admission.conflicting_evidence
+    ):
         action = _common_candidate_action(
-            context_graph=graph,
             view=view,
+            memory=memory,
+            topology_edges=case.topology_edges,
             catalog=catalog,
             executed_action_ids=executed,
         )
         if action is None:
             break
-        before_ids = {item.anomaly_id for item in graph.generic_anomalies}
-        if isinstance(action, ContrastiveResourceActionV225):
-            outcome = _build_read_outcome_v23(action=action, capture=case.capture)
-        else:
-            outcome = backend.execute(action)
+        outcome = backend.execute(action)
         outcomes = (*outcomes, outcome)
         memory, _ = build_memory_views_v22(
             outcomes=outcomes,
@@ -1087,85 +1311,66 @@ def _build_common_context_v23(
             observed_at=case.capture.captured_at,
             top_k=64,
         )
-        after = extract_generic_anomalies_v23(
-            memory=memory,
-            candidate_services=case.candidate_services,
-        )
-        outcome_class, new_ids = _classify_discovery_outcome(
-            outcome=outcome,
-            before_anomaly_ids=before_ids,
-            after_anomaly_ids={item.anomaly_id for item in after},
-        )
-        negative = record_discovery_outcome_v23(
-            ledger=negative,
-            action=_option_from_action(action),
-            outcome_class=outcome_class,
-            new_anomaly_ids=new_ids,
-        )
         executed.add(action.action_id)
         common_reads += 1
-        graph, decision = _case_state(
-            case=case,
+        admission = build_known_admission_state_v23(
             view=view,
             memory=memory,
-            negative_coverage=negative,
+            topology_edges=case.topology_edges,
         )
     return _CommonContextV23(
         case=case,
         view=view,
         outcomes=outcomes,
         memory=memory,
-        graph=graph,
-        decision=decision,
+        admission=admission,
         catalog=catalog,
-        negative_coverage=negative,
+        common_action_ids=tuple(sorted(executed)),
         bootstrap_memory_sha256=bootstrap_memory_sha256,
         common_read_count=common_reads,
     )
 
 
 def _known_projection(
-    graph: ResidualEvidenceGraphV23,
+    admission: KnownAdmissionStateV23,
 ) -> tuple[MechanismV22 | None, str | None]:
-    if len(graph.known_terminal_candidates) != 1:
+    if admission.admitted_diagnosis is None:
         return None, None
-    value = graph.known_terminal_candidates[0]
+    value = admission.admitted_diagnosis
     return value.mechanism, value.root_service
-
-
-def _no_incident_admissible(decision: NoveltyGateDecisionV23) -> bool:
-    return decision.disposition is NoveltyDispositionV23.NO_INCIDENT
 
 
 def _build_arm_run(
     *,
     context: _CommonContextV23,
     arm: EvaluationArmV23,
-    graph: ResidualEvidenceGraphV23,
-    decision: NoveltyGateDecisionV23,
-    negative: NegativeCoverageLedgerV23,
+    graph: ResidualEvidenceGraphV23 | None,
+    decision: NoveltyGateDecisionV23 | None,
+    negative: NegativeCoverageLedgerV23 | None,
     discovery_reads: int,
     report: ProvisionalIncidentReportV23 | None,
     provider_error_code: str | None,
     provider_cost: ProviderCostV23,
     memory: SalientEvidenceMemoryV22,
 ) -> EvaluationArmRunV23:
-    mechanism, root = _known_projection(graph)
+    mechanism, root = _known_projection(context.admission)
     if provider_error_code is not None:
         final = "PROVIDER_FAILED"
-    elif (
-        arm is EvaluationArmV23.CLOSED_WORLD_ONLY
-        and decision.disposition
-        not in {
-            NoveltyDispositionV23.KNOWN_INCIDENT,
-            NoveltyDispositionV23.NO_INCIDENT,
-        }
-    ):
-        final = NoveltyDispositionV23.INSUFFICIENT_EVIDENCE.value
+    elif arm is EvaluationArmV23.CLOSED_WORLD_ONLY:
+        if context.admission.conflicting_evidence:
+            final = NoveltyDispositionV23.CONFLICTING_EVIDENCE.value
+        elif context.admission.admitted_diagnosis is not None:
+            final = NoveltyDispositionV23.KNOWN_INCIDENT.value
+        elif context.admission.no_incident_admissible:
+            final = NoveltyDispositionV23.NO_INCIDENT.value
+        else:
+            final = NoveltyDispositionV23.INSUFFICIENT_EVIDENCE.value
     else:
+        if decision is None:
+            raise ValueError("open-world arm lacks a Novelty Gate decision")
         final = decision.disposition.value
     payload: dict[str, Any] = {
-        "schema_version": "dta-v23.evaluation-arm-run.v1",
+        "schema_version": "dta-v23.evaluation-arm-run.v2",
         "case_id": context.case.case_id,
         "arm": arm,
         "case_bytes_sha256": context.case.source_bytes_sha256,
@@ -1175,10 +1380,13 @@ def _build_arm_run(
         "common_read_count": context.common_read_count,
         "discovery_read_count": discovery_reads,
         "final_disposition": final,
+        "known_admission_sha256": context.admission.state_sha256,
+        "admitted_diagnosis": context.admission.admitted_diagnosis,
         "known_mechanism": mechanism,
         "known_root_service": root,
-        "no_incident_admissible": _no_incident_admissible(decision),
+        "no_incident_admissible": context.admission.no_incident_admissible,
         "residual_graph": graph,
+        "novelty_decision": decision,
         "memory_evidence_refs": tuple(
             sorted(item.evidence_ref for item in memory.evidence_refs)
         ),
@@ -1205,9 +1413,9 @@ def run_closed_world_arm_v23(context: _CommonContextV23) -> EvaluationArmRunV23:
     return _build_arm_run(
         context=context,
         arm=EvaluationArmV23.CLOSED_WORLD_ONLY,
-        graph=context.graph,
-        decision=context.decision,
-        negative=context.negative_coverage,
+        graph=None,
+        decision=None,
+        negative=None,
         discovery_reads=0,
         report=None,
         provider_error_code=None,
@@ -1238,22 +1446,23 @@ def run_open_world_arm_v23(
 ) -> EvaluationArmRunV23:
     outcomes = context.outcomes
     memory = context.memory
-    graph = context.graph
-    decision = context.decision
-    negative = context.negative_coverage
+    negative = NegativeCoverageLedgerV23.empty()
+    graph, decision = _case_state(
+        case=context.case,
+        admission=context.admission,
+        memory=memory,
+        negative_coverage=negative,
+    )
     backend = QuerySpecificReplayBackendV22(context.case.capture)
     discovery_reads = 0
     remaining_budget = 3.0
-    while (
-        decision.disposition is NoveltyDispositionV23.INSUFFICIENT_EVIDENCE
-        or (
-            discovery_reads == 0
-            and decision.disposition
-            in {
-                NoveltyDispositionV23.UNREGISTERED_INCIDENT_SUSPECTED,
-                NoveltyDispositionV23.KNOWN_DIAGNOSIS_WITH_RESIDUAL_NOVELTY,
-            }
-        )
+    while decision.disposition is NoveltyDispositionV23.INSUFFICIENT_EVIDENCE or (
+        discovery_reads == 0
+        and decision.disposition
+        in {
+            NoveltyDispositionV23.UNREGISTERED_INCIDENT_SUSPECTED,
+            NoveltyDispositionV23.KNOWN_DIAGNOSIS_WITH_RESIDUAL_NOVELTY,
+        }
     ):
         plan = build_discovery_plan_v23(
             catalog=context.catalog,
@@ -1262,6 +1471,7 @@ def run_open_world_arm_v23(
             reads_used=discovery_reads,
             remaining_weighted_budget=remaining_budget,
             target_complete_resource_coverage=True,
+            excluded_action_ids=context.common_action_ids,
         )
         if plan is None:
             break
@@ -1303,10 +1513,12 @@ def run_open_world_arm_v23(
             new_anomaly_ids=new_ids,
         )
         discovery_reads += 1
-        remaining_budget = max(0.0, remaining_budget - plan.selected_action.weighted_cost)
+        remaining_budget = max(
+            0.0, remaining_budget - plan.selected_action.weighted_cost
+        )
         graph, decision = _case_state(
             case=context.case,
-            view=context.view,
+            admission=context.admission,
             memory=memory,
             negative_coverage=negative,
         )
@@ -1580,7 +1792,7 @@ def run_evaluation_case_pair_v23(
     )
     truth = truth_store.load_case_after_both_arms(spec.case_id, arms_completed=2)
     return EvaluationCasePairV23(
-        schema_version="dta-v23.evaluation-case-pair.v1",
+        schema_version="dta-v23.evaluation-case-pair.v2",
         case_id=spec.case_id,
         closed_world=closed,
         open_world=opened,
@@ -1624,7 +1836,7 @@ class EvaluationMetricsV23(DtaModelV22):
 
 
 class FixedEvaluationArtifactV23(DtaModelV22):
-    schema_version: Literal["dta-v23.fixed-evaluation.v1"]
+    schema_version: Literal["dta-v23.fixed-evaluation.v2"]
     execution_count: Literal[1]
     case_count: Literal[24]
     run_count: Literal[48]
@@ -1705,7 +1917,10 @@ def score_evaluation_pairs_v23(
         item
         for item in pairs
         if item.evaluator_truth.category
-        in {EvaluationCategoryV23.NOVEL_HIDDEN, EvaluationCategoryV23.NOVEL_UNREGISTERED}
+        in {
+            EvaluationCategoryV23.NOVEL_HIDDEN,
+            EvaluationCategoryV23.NOVEL_UNREGISTERED,
+        }
     )
     controls = tuple(item for item in pairs if item not in novelty)
     known = tuple(
@@ -1746,6 +1961,8 @@ def score_evaluation_pairs_v23(
     for item in detected:
         report = item.open_world.provisional_report
         assert report is not None
+        graph = item.open_world.residual_graph
+        assert graph is not None
         cited = (
             *report.supporting_evidence_refs,
             *report.contradicting_evidence_refs,
@@ -1754,10 +1971,10 @@ def score_evaluation_pairs_v23(
         valid_cited_count += sum(
             value in set(item.open_world.memory_evidence_refs) for value in cited
         )
-        residual_ids = set(item.open_world.residual_graph.residual_anomaly_ids)
+        residual_ids = set(graph.residual_anomaly_ids)
         residual_refs = {
             ref
-            for anomaly in item.open_world.residual_graph.generic_anomalies
+            for anomaly in graph.generic_anomalies
             if anomaly.anomaly_id in residual_ids
             for ref in anomaly.evidence_refs
         }
@@ -1784,17 +2001,17 @@ def score_evaluation_pairs_v23(
     discovery_entries = tuple(
         entry
         for item in pairs
-        for entry in item.open_world.negative_coverage.entries[
-            item.open_world.common_read_count :
-        ]
+        for ledger in (item.open_world.negative_coverage,)
+        if ledger is not None
+        for entry in ledger.entries
     )
     useful_ordinals = tuple(
         index
         for item in pairs
+        for ledger in (item.open_world.negative_coverage,)
+        if ledger is not None
         for index, entry in enumerate(
-            item.open_world.negative_coverage.entries[
-                item.open_world.common_read_count :
-            ],
+            ledger.entries,
             start=1,
         )
         if entry.outcome_class is DiscoveryReadOutcomeClassV23.ANOMALY_YIELD
@@ -1869,9 +2086,7 @@ def score_evaluation_pairs_v23(
             len(discovery_entries),
         ),
         first_useful_evidence_mean_ordinal=(
-            None
-            if not useful_ordinals
-            else sum(useful_ordinals) / len(useful_ordinals)
+            None if not useful_ordinals else sum(useful_ordinals) / len(useful_ordinals)
         ),
         discovery_source_distribution=dict(sorted(sources.items())),
         negative_coverage_use_count=negative_use,
@@ -1903,7 +2118,7 @@ def _build_fixed_artifact(
         action_authority_violations=metrics.action_authority_violations,
     )
     payload: dict[str, Any] = {
-        "schema_version": "dta-v23.fixed-evaluation.v1",
+        "schema_version": "dta-v23.fixed-evaluation.v2",
         "execution_count": 1,
         "case_count": 24,
         "run_count": 48,

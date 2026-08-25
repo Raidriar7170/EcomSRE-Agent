@@ -1,19 +1,30 @@
 {
-  "schema_version": "dta-v23-open-world.progress.v1",
+  "schema_version": "dta-v23-open-world.progress.v2",
   "goal_version": "dta-v23-open-world-discovery-v1",
   "base_commit": "f17688f4c313b1483bfb7c56675c429605faf489",
   "branch": "codex/dta-v23-open-world-discovery",
   "current_increment": 4,
-  "status": "BLOCKED_DTA_V23_ONTOLOGY_ISOLATION",
+  "status": "DTA_V23_VALID_FIXED_EVALUATION_REFREEZE_READY",
   "engineering_terminal": null,
-  "measured_result_terminal": "DTA_V23_OPEN_WORLD_DISCOVERY_MIXED_RESULT",
+  "measured_result_terminal": null,
   "fixed_evaluation_execution_count": 1,
-  "evaluation_acceptance": "INVALID",
+  "invalid_predecessor_execution_count": 1,
+  "valid_fixed_evaluation_execution_count": 0,
+  "evaluation_acceptance": "PENDING_VALID_EVALUATION",
   "repository_disposition": "Draft / REVIEW_REQUIRED",
+  "invalid_predecessor": {
+    "status": "INVALID / REVIEW_REQUIRED",
+    "artifact_path": "docs/results/dta-v23-open-world-evaluation-invalid-predecessor.json",
+    "file_sha256": "7bd027ab99fcc97b5809e8d17514823fba6f5c2875d19010b66113118ececf83",
+    "artifact_sha256": "e2bd2d41f8d2336225a10a97ae6222a9f3e1a52c00fe849137556f3e717aa9e5",
+    "measured_result_terminal": "DTA_V23_OPEN_WORLD_DISCOVERY_MIXED_RESULT",
+    "reason": "Goal-defined comparison was not implemented: closed arm consumed v2.3 discovery state, Novelty Gate differed, and counterfactual pairs were labels rather than four data-level swaps."
+  },
   "final_review": {
-    "reviewed_head": "19a60852ba9182a1cb83fd1797ef205dd3ea848a",
-    "must_fix_count": 3,
-    "claim_accuracy": "FAIL"
+    "status": "PENDING_REVIEW_OF_VALID_FIXED_EVALUATION",
+    "invalid_predecessor_review": "docs/external-reviews/dta-v23-open-world-final-review-invalid-predecessor.md",
+    "invalid_predecessor_must_fix_count": 3,
+    "invalid_predecessor_claim_accuracy": "FAIL"
   },
   "increments": [
     {
@@ -33,7 +44,7 @@
       "increment": 2,
       "name": "general discovery runtime",
       "status": "COMPLETE",
-      "development_iteration": 1,
+      "development_iteration": 2,
       "leave_one_out_mechanisms_runnable": 5,
       "maximum_discovery_reads": 3,
       "maximum_protocol_repairs": 2,
@@ -54,33 +65,30 @@
     {
       "increment": 4,
       "name": "fixed evaluation and closeout",
-      "status": "INVALID / REVIEW_REQUIRED",
-      "preflight_status": "DTA_V23_FIXED_EVALUATION_FINAL_PREFLIGHT_PASS",
+      "status": "REFREEZE_READY",
       "planned_cases": 24,
       "planned_runs": 48,
-      "planned_execution_count": 1,
-      "fixed_evaluation_execution_count": 1,
-      "actual_cases": 24,
-      "actual_runs": 48,
-      "measured_result_terminal": "DTA_V23_OPEN_WORLD_DISCOVERY_MIXED_RESULT",
-      "artifact_sha256": "e2bd2d41f8d2336225a10a97ae6222a9f3e1a52c00fe849137556f3e717aa9e5",
-      "novelty_recall": 0.7142857142857143,
-      "root_localization": 0.7142857142857143,
-      "broad_domain_accuracy": 0.07142857142857142,
-      "evidence_ref_validity": 1.0,
-      "false_novel_rate": 0.1,
-      "registered_known_accuracy_drop_cases": 0,
-      "no_incident_accuracy_drop_cases": 0,
-      "action_authority_violations": 0,
-      "provider_smoke_status": "DTA_V23_DISCOVERY_PROVIDER_SMOKE_PASS",
-      "provider_smoke_calls": 1
+      "planned_valid_execution_count": 1,
+      "valid_fixed_evaluation_execution_count": 0,
+      "invalid_predecessor_execution_count": 1,
+      "open_world_only_capabilities": [
+        "Generic Anomalies",
+        "Residual Evidence Graph",
+        "Novelty Gate",
+        "generic discovery reads",
+        "ProvisionalIncidentReportV23"
+      ],
+      "shared_known_admission": "AdmittedDiagnosisV22 via admit_diagnosis_v22",
+      "counterfactual_data_level_pairs": 4,
+      "action_authority_violations": 0
     }
   ],
   "draft_pr": "https://github.com/Raidriar7170/EcomSRE-Agent/pull/69",
   "counters": {
     "docker_calls": 0,
     "new_live_faults": 0,
-    "provider_calls": 14,
+    "invalid_predecessor_provider_calls": 14,
+    "valid_fixed_evaluation_provider_calls": 0,
     "agent_writes": 0,
     "runbook_executions": 0
   }
