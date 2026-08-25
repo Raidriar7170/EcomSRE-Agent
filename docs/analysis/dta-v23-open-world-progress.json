@@ -3,8 +3,8 @@
   "goal_version": "dta-v23-open-world-discovery-v1",
   "base_commit": "f17688f4c313b1483bfb7c56675c429605faf489",
   "branch": "codex/dta-v23-open-world-discovery",
-  "current_increment": 2,
-  "status": "INCREMENT_2_COMPLETE",
+  "current_increment": 3,
+  "status": "INCREMENT_3_COMPLETE",
   "engineering_terminal": null,
   "measured_result_terminal": null,
   "fixed_evaluation_execution_count": 0,
@@ -36,7 +36,13 @@
     {
       "increment": 3,
       "name": "human review and shadow registry",
-      "status": "PENDING"
+      "status": "COMPLETE",
+      "automated_reviewer": "TEST_REVIEWER",
+      "automated_review_is_simulation": true,
+      "review_decisions_covered": 5,
+      "shadow_match_top_k": 3,
+      "remediation_authority": "NONE",
+      "remediation_registration": "NOT_INCLUDED"
     },
     {
       "increment": 4,

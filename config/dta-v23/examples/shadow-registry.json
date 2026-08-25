@@ -1,0 +1,40 @@
+{
+  "schema_version": "dta-v23.shadow-fault-registry.v1",
+  "entries": [
+    {
+      "schema_version": "dta-v23.shadow-fault-entry.v1",
+      "shadow_fault_id": "shadow-v23-c534ad2ad91cb59c",
+      "status": "SHADOW",
+      "canonical_label": "compute-resource-pressure",
+      "broad_fault_domain": "RESOURCE",
+      "symptom_signature": [
+        "svc-20e1bc90a8 has a strong compute-resource outlier",
+        "svc-d9ca249b54 has an abnormal LATENCY_P95_MS signal"
+      ],
+      "generic_anomaly_kinds": [
+        "METRIC_LATENCY_OUTLIER",
+        "RESOURCE_CPU_OUTLIER"
+      ],
+      "required_evidence_sources": [
+        "METRICS",
+        "RESOURCES"
+      ],
+      "root_service_roles": [
+        "svc-20e1bc90a8"
+      ],
+      "distinguishing_features": [
+        "One opaque service has a strong target-complete compute-resource outlier while the compared runtime remains healthy.",
+        "svc-20e1bc90a8 has a strong compute-resource outlier",
+        "svc-d9ca249b54 has an abnormal LATENCY_P95_MS signal"
+      ],
+      "confusable_known_mechanisms": [],
+      "positive_report_ids": [
+        "report-v23-0dd5927eb5e0bfdb"
+      ],
+      "review_record_id": "review-v23-4fbff70dd279900b",
+      "remediation_authority": "NONE",
+      "entry_sha256": "246785c4b4744f37a843894aaff4d66a6d33e6512bab29d86a514c0bc3aedcb4"
+    }
+  ],
+  "registry_sha256": "c1b0216add7e21c415788ce13fd937b4cdfbe742b4db92d238b7a8ebb8e2d189"
+}

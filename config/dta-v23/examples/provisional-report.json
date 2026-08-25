@@ -1,0 +1,35 @@
+{
+  "schema_version": "dta-v23.provisional-incident-report.v1",
+  "report_id": "report-v23-0dd5927eb5e0bfdb",
+  "terminal": "UNREGISTERED_INCIDENT_SUSPECTED",
+  "suspected_root_services": [
+    "svc-20e1bc90a8"
+  ],
+  "affected_services": [
+    "svc-20e1bc90a8"
+  ],
+  "broad_fault_domain": "RESOURCE",
+  "provisional_mechanism_label": "sustained-compute-resource-pressure",
+  "mechanism_description": "One opaque service has a strong target-complete compute-resource outlier while the compared runtime remains healthy.",
+  "observed_symptoms": [
+    "svc-d9ca249b54 has an abnormal LATENCY_P95_MS signal",
+    "svc-20e1bc90a8 has a strong compute-resource outlier"
+  ],
+  "supporting_evidence_refs": [
+    "e:a:resources:all-candidates:6281c03ee2cf:0:2bcc66c6bb15"
+  ],
+  "contradicting_evidence_refs": [],
+  "unexplained_anomaly_ids": [
+    "ga:metric-latency-outlier:svc-d9ca249b54:14df9949ee0f",
+    "ga:resource-cpu-outlier:svc-20e1bc90a8:82d280974d44"
+  ],
+  "alternative_hypotheses": [
+    "A transient demand spike could produce a similar resource surface."
+  ],
+  "recommended_next_observations": [
+    "Compare another bounded resource window for the same opaque candidates."
+  ],
+  "confidence": 0.9,
+  "action_authority": "NONE",
+  "report_sha256": "38929869dbbb22b999125b3e3616bfcb55a0b57e9b72f2780e406d06a12464eb"
+}
