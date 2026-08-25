@@ -68,6 +68,7 @@ conflicts with this register, this register wins.
 | DEC-054 | DTA v2.2 P0 zero live Agent write authority | accepted | DTA v2.2 P0 | `DECISIONS.md` | Safety, capture, replay, reports | Yes — any Agent write or non-owned mutation is a safety blocker |
 | DEC-055 | DTA v2.2 execution report and administrative successor provenance | accepted | DTA v2.2 PR-A through PR-F | `DECISIONS.md` | Frozen reports, exact-head acceptance, successor attestations | Yes — provenance mismatch blocks closure |
 | DEC-056 | DTA v2.2 practical completion successor | accepted | Practical successor only | `DECISIONS.md` | Simple Provider adapter, legacy replay clauses, 8/12 paired evaluation | Yes — truth leakage, Provider instability, or nonzero Agent writes block practical closure |
+| DEC-057 | DTA v2.3 open-world provisional discovery lane | accepted | DTA v2.3 under `dta-v23-open-world-discovery-v1` | `DECISIONS.md` | v2.3 ontology view, novelty gate, provisional reports, human review, shadow registry | Yes — ontology leakage, actionable provisional output, or fixed-evaluation drift blocks v2.3 |
 
 ## DEC-001 — Supported host baseline
 
@@ -1309,6 +1310,36 @@ dependency-latency capture. Synthetic cases record their source and derivation
 and are not described as independent empirical captures. Evaluator truth is
 loaded only after both arms complete. Practical completion makes no online SRE,
 production, or research-scale claim and does not require Planner superiority.
+
+## DEC-057 — DTA v2.3 Open-World Provisional Discovery Lane
+
+**Status: `accepted` for the user-designated
+`dta-v23-open-world-discovery-v1` Goal.**
+
+DTA v2.3 adds a separate implementation namespace under
+`ecomsre.dta_v2.v23`. The frozen v2.2 mechanism enum, support policy,
+controller, Diagnosis admission, Candidate Filter, and Runbook surfaces remain
+unchanged. A leave-one-mechanism-out active view may hide one registered
+mechanism from Provider-visible hypotheses, clauses, terminal candidates, and
+metadata for evaluation, but it does not remove or reinterpret that mechanism
+inside the closed-world v2.2 path.
+
+The v2.3 lane may classify sufficiently covered residual evidence as a
+suspected unregistered incident and emit a typed provisional report. A
+provisional mechanism label is free-form evidence-backed review material, not
+an admitted `MechanismV22`, Diagnosis, CandidateSet, Runbook selection, or
+write authorization. Provisional reports and Shadow Registry entries have
+action and remediation authority `NONE`; only an explicit human review record
+may create a shadow entry or registration draft, and neither edits the formal
+ontology or Runbook registry.
+
+Development reuses committed replay data, including the v2.2.6 real CPU
+capture only for the hidden-CPU vertical-slice demo. No Docker call or new live
+fault is authorized. The final v2.3 comparison contains exactly 24 cases and
+two arms, executes exactly once after its data, Prompt, scorer, and source
+bytes are frozen, loads truth only after both arms for each case, and records a
+measured terminal without result-driven reruns. Agent writes and Runbook
+executions remain zero.
 
 ## Upstream references
 

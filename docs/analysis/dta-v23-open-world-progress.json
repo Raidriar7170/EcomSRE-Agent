@@ -1,0 +1,49 @@
+{
+  "schema_version": "dta-v23-open-world.progress.v1",
+  "goal_version": "dta-v23-open-world-discovery-v1",
+  "base_commit": "f17688f4c313b1483bfb7c56675c429605faf489",
+  "branch": "codex/dta-v23-open-world-discovery",
+  "current_increment": 1,
+  "status": "INCREMENT_1_COMPLETE",
+  "engineering_terminal": null,
+  "measured_result_terminal": null,
+  "fixed_evaluation_execution_count": 0,
+  "increments": [
+    {
+      "increment": 1,
+      "name": "open-world vertical slice",
+      "status": "COMPLETE",
+      "demo_command": "python -m ecomsre.dta_v2.v23.cli demo hidden-cpu",
+      "demo_source": "config/dta-v226-real-fault/captures/fault-map-a.json",
+      "closed_world_terminal": null,
+      "no_incident_admissible": false,
+      "novelty_disposition": "UNREGISTERED_INCIDENT_SUSPECTED",
+      "localized_opaque_service": "svc-20e1bc90a8",
+      "broad_fault_domain": "RESOURCE",
+      "action_authority": "NONE"
+    },
+    {
+      "increment": 2,
+      "name": "general discovery runtime",
+      "status": "PENDING"
+    },
+    {
+      "increment": 3,
+      "name": "human review and shadow registry",
+      "status": "PENDING"
+    },
+    {
+      "increment": 4,
+      "name": "fixed evaluation and closeout",
+      "status": "PENDING"
+    }
+  ],
+  "draft_pr": "PENDING_OPEN_AFTER_INCREMENT_1_COMMIT",
+  "counters": {
+    "docker_calls": 0,
+    "new_live_faults": 0,
+    "provider_calls": 0,
+    "agent_writes": 0,
+    "runbook_executions": 0
+  }
+}
