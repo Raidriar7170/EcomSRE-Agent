@@ -1,0 +1,64 @@
+{
+  "schema_version": "dta-v232.keyerror-reproduction.v1",
+  "recorded_at_utc": "2026-08-25T16:42:15Z",
+  "case_id": "vx-113",
+  "arm": "V23_STRICT_CONFLICT_GATE",
+  "case_bytes_sha256": "d11e4e860d7f83f92c2fb08c540d1a442293074ff741bd93a8d2b2625cdeedaa",
+  "active_view_sha256": "580c127e0ecc529d9f22ccdc927a963349f14bc20afa37d160a4168cff6a23d6",
+  "preserved_failure": {
+    "exception_type": "KeyError",
+    "exception_message": "<GenericAnomalyKindV23.LOG_ERROR_CLUSTER: 'LOG_ERROR_CLUSTER'>",
+    "memory_sha256": "d006d4968ef44cbe754f1972977aaf475ad64d0411a88c32a86d9db32133a7bd",
+    "anomaly_ids": [
+      "ga:log-error-cluster:svc-5debd6726e:595a6ab7fe3c",
+      "ga:metric-error-outlier:svc-5debd6726e:3b9ef7100461"
+    ],
+    "anomaly_kinds": [
+      "LOG_ERROR_CLUSTER",
+      "METRIC_ERROR_OUTLIER"
+    ],
+    "anomaly_sha256": [
+      "5874c82e44862bd8b6e140ec5dc4146904604496d2682510f220bcc61cbc6d7e",
+      "953e20d0705c00b7d6562c22c18a3e381f4eeb9fadfa725d354db05a5232417a"
+    ]
+  },
+  "repaired_path": {
+    "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+    "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+    "memory_sha256": "d006d4968ef44cbe754f1972977aaf475ad64d0411a88c32a86d9db32133a7bd",
+    "anomaly_ids": [
+      "ga:log-error-cluster:svc-5debd6726e:595a6ab7fe3c",
+      "ga:metric-error-outlier:svc-5debd6726e:3b9ef7100461"
+    ],
+    "anomaly_kinds": [
+      "LOG_ERROR_CLUSTER",
+      "METRIC_ERROR_OUTLIER"
+    ],
+    "anomaly_sha256": [
+      "5874c82e44862bd8b6e140ec5dc4146904604496d2682510f220bcc61cbc6d7e",
+      "953e20d0705c00b7d6562c22c18a3e381f4eeb9fadfa725d354db05a5232417a"
+    ],
+    "log_error_cluster_interpretation": {
+      "anomaly_id": "ga:log-error-cluster:svc-5debd6726e:595a6ab7fe3c",
+      "anomaly_kind": "LOG_ERROR_CLUSTER",
+      "candidate_domains": ["RESOURCE"],
+      "primary_domain": "RESOURCE",
+      "interpretation_source": "BOUND_LOG_CATEGORY",
+      "reason_codes": ["LOG_CATEGORY_MEMORY_PRESSURE_BOUND"],
+      "interpretation_sha256": "6eed1f9bfd8050d42e85d0a5ab757decd0fe80f76cd7808ae683b478fa879664"
+    },
+    "final_disposition": "CONFLICTING_EVIDENCE",
+    "graph_sha256": "af790e16ac157ba8441e54dbaf71af81defe01c5b144f225f3794d69a5c3f333",
+    "run_sha256": "f1b97540357f13f9e7801f82b6abd05c235b9774e9689a6b7a8d479732d14eed",
+    "provider_calls": 0,
+    "keyerror_count": 0
+  },
+  "same_input_proof": {
+    "case_bytes_equal": true,
+    "active_view_equal": true,
+    "pre_error_memory_equal": true,
+    "pre_error_anomaly_ids_equal": true,
+    "pre_error_anomaly_bytes_equal": true
+  },
+  "metric_eligibility": "DEVELOPMENT_REPRODUCTION_ONLY_NOT_A_FINAL_METRIC"
+}

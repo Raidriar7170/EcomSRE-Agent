@@ -1,0 +1,26 @@
+{
+  "schema_version": "dta-v232.evaluation-truth-shard.v1",
+  "record": {
+    "evaluator_truth": {
+      "case_id": "vx-206",
+      "category": "NOVEL_UNREGISTERED",
+      "expected_disposition": "UNREGISTERED_INCIDENT",
+      "expected_root_service": "svc-74c88cfddc",
+      "expected_broad_domain": "CONCURRENCY",
+      "expected_mechanism": null,
+      "semantic_concepts": [
+        "pool",
+        "queue"
+      ],
+      "counterfactual_pair_id": "v232-cf-03",
+      "requires_discovery_read": true,
+      "empty_or_misleading_action": true,
+      "conflict_prone_novelty": true,
+      "multi_coherent_interpretations": true,
+      "true_irreconcilable_conflict": false
+    },
+    "admission_stratum": "NOVEL_UNREGISTERED",
+    "expected_known_mechanism": null,
+    "counterfactual_target_role": "TARGET_HIGH"
+  }
+}

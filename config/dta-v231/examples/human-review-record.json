@@ -1,0 +1,14 @@
+{
+  "canonical_label": "example-competing-incident",
+  "decision": "ACCEPT_AS_NEW",
+  "merge_target": null,
+  "report_id": "report-v231-bde637db035f0653",
+  "requested_observations": [],
+  "review_note": "Simulated compatibility example only; no ontology or Runbook write.",
+  "review_record_id": "review-v231-4adca9e69cc9ba8f",
+  "review_sha256": "1075ac468bd95588c367296a25c09c475c2265bf977e47d8c15285227d6d9ffa",
+  "reviewed_at": "2026-08-25T13:00:00Z",
+  "reviewer": "TEST_REVIEWER",
+  "schema_version": "dta-v231.human-review-record.v1",
+  "simulation": true
+}

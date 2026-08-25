@@ -1,0 +1,29 @@
+{
+  "schema_version": "dta-v231.historical-results.v1",
+  "base_commit": "7fe2bff7186cca1cedd2513f7984709057fc19e5",
+  "engineering_terminal": "DTA_V23_OPEN_WORLD_DISCOVERY_MVP_COMPLETE",
+  "measured_result_terminal": "DTA_V23_OPEN_WORLD_DISCOVERY_NOT_OBSERVED",
+  "development_only_case_set": "config/dta-v23/evaluation/cases.json",
+  "bindings": [
+    {
+      "path": "docs/external-reviews/dta-v23-open-world-final-review.md",
+      "sha256": "0ea828b7604ab668702e7a021241aeacb24fe95598c9a74185c171d6a9d17640",
+      "size_bytes": 2699
+    },
+    {
+      "path": "docs/results/dta-v23-open-world-error-analysis.md",
+      "sha256": "223682687a5d33db85102f0ae3c118316db087fc77f6f3e5eb4e688c52ebe21f",
+      "size_bytes": 4693
+    },
+    {
+      "path": "docs/results/dta-v23-open-world-evaluation.json",
+      "sha256": "1c6fb59f260c87accd3d11d193461e9f9a2f725f2315209d934e659d8f69e079",
+      "size_bytes": 272028
+    },
+    {
+      "path": "docs/results/dta-v23-open-world-evaluation.md",
+      "sha256": "2ff55aa842108c82dc898fe15e25ea38f7ee0504b0ef98c0b3635a7c1aa0990f",
+      "size_bytes": 1634
+    }
+  ]
+}

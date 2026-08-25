@@ -1,0 +1,8 @@
+{
+  "artifact_sha256": "0b7261322a56a03f072fab1e2d761e2d04f7f07be9bb95e052a035784d134e77",
+  "execution_count": 1,
+  "measured_result_terminal": "DTA_V231_CONFLICT_AWARE_DISCOVERY_NOT_OBSERVED",
+  "output_json_sha256": "70f2bc9dd2e35459c76db37d30100e478c1a1b07bafbb129874a026ba69f6f26",
+  "output_markdown_sha256": "c01e5200d4e7a6057dc25500349aed4fcb7542981d9da8bbf45d83b4a40ece4b",
+  "status": "COMPLETE"
+}

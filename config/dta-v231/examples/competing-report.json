@@ -1,0 +1,99 @@
+{
+  "action_authority": "NONE",
+  "affected_services": [
+    "svc-e3ca83b58b"
+  ],
+  "alternative_hypotheses": [
+    "resource-pressure pattern: svc-e3ca83b58b",
+    "runtime availability failure: svc-e3ca83b58b"
+  ],
+  "broad_fault_domain": "RESOURCE",
+  "competing_hypotheses": [
+    {
+      "broad_fault_domain": "RESOURCE",
+      "contradicting_evidence_refs": [],
+      "discriminating_evidence_goals": [
+        "Resolve RESOURCE support against the competing evidence surface"
+      ],
+      "hypothesis_id": "ch-v231-30098c8d332b1d4c",
+      "hypothesis_sha256": "cc835f18537b9d140d3835344e728226d87766f4b9083ed76492869ef1c5b575",
+      "provisional_label": "resource-pressure pattern",
+      "relative_support_score": 4.1,
+      "schema_version": "dta-v231.competing-hypothesis.v1",
+      "supporting_anomaly_ids": [
+        "ga:metric-error-outlier:svc-e3ca83b58b:9666dc3924eb",
+        "ga:resource-memory-trend:svc-e3ca83b58b:310690b1b457"
+      ],
+      "supporting_evidence_refs": [
+        "e:a:metrics:svc-e3ca83b58b:core:0:4d555fb6206f",
+        "e:a:resources:svc-e3ca83b58b:0:6d1d2a5aae0d"
+      ],
+      "suspected_root_services": [
+        "svc-e3ca83b58b"
+      ],
+      "unexplained_questions": [
+        "Which observation distinguishes resource from the competing interpretations?"
+      ]
+    },
+    {
+      "broad_fault_domain": "RUNTIME",
+      "contradicting_evidence_refs": [],
+      "discriminating_evidence_goals": [
+        "Resolve RUNTIME support against the competing evidence surface"
+      ],
+      "hypothesis_id": "ch-v231-d725d68eaa0991ab",
+      "hypothesis_sha256": "884b273fea8a9d2c41b75242cd5f3d45579686a35bb89acfbe5662645079a9bc",
+      "provisional_label": "runtime availability failure",
+      "relative_support_score": 4.1,
+      "schema_version": "dta-v231.competing-hypothesis.v1",
+      "supporting_anomaly_ids": [
+        "ga:metric-error-outlier:svc-e3ca83b58b:9666dc3924eb",
+        "ga:resource-memory-trend:svc-e3ca83b58b:310690b1b457"
+      ],
+      "supporting_evidence_refs": [
+        "e:a:metrics:svc-e3ca83b58b:core:0:4d555fb6206f",
+        "e:a:resources:svc-e3ca83b58b:0:6d1d2a5aae0d"
+      ],
+      "suspected_root_services": [
+        "svc-e3ca83b58b"
+      ],
+      "unexplained_questions": [
+        "Which observation distinguishes runtime from the competing interpretations?"
+      ]
+    }
+  ],
+  "confidence": 0.6,
+  "confidence_band": "MEDIUM",
+  "conflict_summary": "The visible interpretations are causally coherent alternatives; no explicit contradiction requires a hard conflict terminal.",
+  "contradicting_evidence_refs": [],
+  "mechanism_description": "Strong residual evidence supports one incident surface while multiple causal mechanisms remain plausible.",
+  "observed_symptoms": [
+    "svc-e3ca83b58b has an abnormal ERROR_RATE signal",
+    "svc-e3ca83b58b has an abnormal memory trend"
+  ],
+  "preferred_hypothesis_id": "ch-v231-30098c8d332b1d4c",
+  "provisional_mechanism_label": "resource-pressure pattern",
+  "recommended_discriminating_observations": [],
+  "recommended_next_observations": [],
+  "report_id": "report-v231-bde637db035f0653",
+  "report_sha256": "69a26c53b240951c09cc5521a8d8af4c82225a9eb08468c9869cce6a29601164",
+  "review_recommendation": "REQUEST_MORE_EVIDENCE",
+  "schema_version": "dta-v231.provisional-incident-report.v1",
+  "supporting_evidence_refs": [
+    "e:a:metrics:svc-e3ca83b58b:core:0:4d555fb6206f",
+    "e:a:resources:svc-e3ca83b58b:0:6d1d2a5aae0d"
+  ],
+  "suspected_root_services": [
+    "svc-e3ca83b58b"
+  ],
+  "terminal": "UNREGISTERED_INCIDENT_SUSPECTED",
+  "uncertainty_mode": "COMPETING_HYPOTHESES",
+  "unexplained_anomaly_ids": [
+    "ga:metric-error-outlier:svc-e3ca83b58b:9666dc3924eb",
+    "ga:resource-memory-trend:svc-e3ca83b58b:310690b1b457"
+  ],
+  "unresolved_questions": [
+    "Which observation distinguishes resource from the competing interpretations?",
+    "Which observation distinguishes runtime from the competing interpretations?"
+  ]
+}

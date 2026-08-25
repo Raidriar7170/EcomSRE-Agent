@@ -1,0 +1,54 @@
+{
+  "schema_version": "dta-v232.evaluation-strata.v1",
+  "strata": [
+    {
+      "name": "INSUFFICIENT_IRRECONCILABLE",
+      "case_ids": [
+        "vx-222",
+        "vx-223",
+        "vx-224"
+      ]
+    },
+    {
+      "name": "NOVEL_HIDDEN",
+      "case_ids": [
+        "vx-201",
+        "vx-202",
+        "vx-203",
+        "vx-204",
+        "vx-209",
+        "vx-210",
+        "vx-211",
+        "vx-212",
+        "vx-213",
+        "vx-214"
+      ]
+    },
+    {
+      "name": "NOVEL_UNREGISTERED",
+      "case_ids": [
+        "vx-205",
+        "vx-206",
+        "vx-207",
+        "vx-208"
+      ]
+    },
+    {
+      "name": "NO_INCIDENT",
+      "case_ids": [
+        "vx-219",
+        "vx-220",
+        "vx-221"
+      ]
+    },
+    {
+      "name": "REGISTERED_KNOWN",
+      "case_ids": [
+        "vx-215",
+        "vx-216",
+        "vx-217",
+        "vx-218"
+      ]
+    }
+  ]
+}

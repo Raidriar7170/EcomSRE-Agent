@@ -1,0 +1,88 @@
+{
+  "schema_version": "dta-v232.progress.v1",
+  "engineering_state": "FINAL_REVIEW_PASS_READY_FOR_MERGE",
+  "preserved_attempts": [
+    {
+      "terminal": "BLOCKED_DTA_V231_EVALUATION_DATA",
+      "disposition": "INVALID_FOR_EFFECT / BLOCKED_DATA",
+      "continued": false,
+      "rerun": false
+    },
+    {
+      "terminal": "BLOCKED_DTA_V231_REPOSITORY_ACCEPTANCE",
+      "disposition": "INCOMPLETE / BLOCKED_RUNTIME",
+      "continued": false,
+      "rerun": false
+    }
+  ],
+  "anomaly_interpretation": {
+    "registered_kind_count": 13,
+    "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+    "keyerror_reproduction": "REPRODUCED_BEFORE_REPAIR_AND_CLOSED_AFTER_REPAIR"
+  },
+  "evaluation_data": {
+    "case_count": 24,
+    "status": "DTA_V232_SUCCESSOR_EVALUATION_DATA_PASS",
+    "admission_matrix_sha256": "97269067d744bae260642fba60de35220cd22cea0e8ebc2a7f389b83250686be"
+  },
+  "runtime_totality": {
+    "arm_run_count": 48,
+    "runtime_exceptions": 0,
+    "keyerrors": 0,
+    "unmapped_anomaly_kinds": 0,
+    "provider_calls": 0,
+    "status": "DTA_V232_RUNTIME_TOTALITY_PREFLIGHT_PASS",
+    "preflight_sha256": "8a413361ab8d164f2ed0eeaca3ed0879975a4c33377148dc17d628e803b44069"
+  },
+  "pre_execution_review": {
+    "must_fix": 0,
+    "claim_accuracy": "PASS"
+  },
+  "provider_smoke": {
+    "execution_count": 1,
+    "case_count": 8,
+    "provider_calls": 3,
+    "protocol_repairs": 0,
+    "transport_retries": 0,
+    "action_authority_violations": 0,
+    "status": "DTA_V232_PROVIDER_SMOKE_PASS",
+    "smoke_sha256": "bcbde0a06a67f4de2586d766eb38567c98f935342280796c2c78bf4f32eaf550"
+  },
+  "final_study": {
+    "execution_count": 1,
+    "planned_case_count": 24,
+    "planned_run_count": 48,
+    "study_relation": "INDEPENDENT_SUCCESSOR_NOT_RERUN",
+    "measured_result_terminal": "DTA_V232_CONFLICT_AWARE_DISCOVERY_MIXED_RESULT",
+    "artifact_sha256": "1078ff825674e57d4106be2c182cb5372496bdda89c8eab2e5c1474faa2f57e4",
+    "runtime_exceptions": 0,
+    "unmapped_anomaly_count": 0,
+    "action_authority_violations": 0,
+    "metrics": {
+      "baseline_novelty_recall": 0.2857142857142857,
+      "treatment_novelty_recall": 0.9285714285714286,
+      "conflict_prone_treatment_recall": 0.875,
+      "treatment_root_localization": 0.8571428571428571,
+      "treatment_broad_domain_accuracy": 0.14285714285714285,
+      "treatment_evidence_ref_validity": 1.0,
+      "treatment_false_novel_rate": 0.2,
+      "protocol_repairs": 6,
+      "transport_retries": 0,
+      "provider_calls": 23,
+      "total_tokens": 126357
+    }
+  },
+  "final_review": {
+    "reviewed_head": "4d776904a6db83049600bd8e66ea115fd12aa413",
+    "must_fix": 0,
+    "claim_accuracy": "PASS",
+    "local_full_pytest": "4982 passed, 6 skipped",
+    "github_ci_runs": [32878199645, 32878199575]
+  },
+  "protected_actions": {
+    "docker_calls": 0,
+    "new_live_faults": 0,
+    "agent_writes": 0,
+    "runbook_executions": 0
+  }
+}

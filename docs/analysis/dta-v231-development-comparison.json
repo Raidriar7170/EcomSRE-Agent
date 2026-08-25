@@ -1,0 +1,26 @@
+{
+  "action_authority": "NONE",
+  "agent_writes": 0,
+  "data_role": "OLD_V23_24_CASE_SET_DEVELOPMENT_ONLY",
+  "deterministic_evidence_backed_reports": 8,
+  "docker_calls": 0,
+  "evidence_ref_validity": 1.0,
+  "false_novel_controls": 2,
+  "final_evaluation_execution_count": 0,
+  "new_live_faults": 0,
+  "old_conflict_misses_remaining_hard_conflict": 0,
+  "old_strict_conflict_misses": 8,
+  "provider_backed_old_miss_reports": 3,
+  "provider_failed_old_miss_reports": 3,
+  "provider_failures": {
+    "ow-012": "PROTOCOL_FAILED",
+    "ow-013": "PROTOCOL_FAILED",
+    "ow-014": "TRANSPORT_FAILED:REMOTEDISCONNECTED"
+  },
+  "registered_known_unchanged": 4,
+  "runbook_executions": 0,
+  "schema_version": "dta-v231.development-comparison.v1",
+  "single_leading_local_reports": 2,
+  "successful_provider_reports_schema_valid": true,
+  "unregistered_concurrency_deterministic_reports": 4
+}

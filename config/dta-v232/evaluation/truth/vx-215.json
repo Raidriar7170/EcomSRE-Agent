@@ -1,0 +1,26 @@
+{
+  "schema_version": "dta-v232.evaluation-truth-shard.v1",
+  "record": {
+    "evaluator_truth": {
+      "case_id": "vx-215",
+      "category": "REGISTERED_KNOWN",
+      "expected_disposition": "KNOWN_INCIDENT",
+      "expected_root_service": "svc-ee1eb096e0",
+      "expected_broad_domain": "CONFIGURATION",
+      "expected_mechanism": "CONFIGURATION_ERROR",
+      "semantic_concepts": [
+        "configuration",
+        "setting"
+      ],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": false,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": false
+    },
+    "admission_stratum": "REGISTERED_KNOWN",
+    "expected_known_mechanism": "CONFIGURATION_ERROR",
+    "counterfactual_target_role": null
+  }
+}

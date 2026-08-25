@@ -1,0 +1,26 @@
+{
+  "schema_version": "dta-v232.evaluation-truth-shard.v1",
+  "record": {
+    "evaluator_truth": {
+      "case_id": "vx-211",
+      "category": "NOVEL_HIDDEN",
+      "expected_disposition": "UNREGISTERED_INCIDENT",
+      "expected_root_service": "svc-b36739baf5",
+      "expected_broad_domain": "RESOURCE",
+      "expected_mechanism": "CPU_SATURATION",
+      "semantic_concepts": [
+        "resource",
+        "pressure"
+      ],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": true,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": false
+    },
+    "admission_stratum": "NOVEL_HIDDEN",
+    "expected_known_mechanism": null,
+    "counterfactual_target_role": null
+  }
+}

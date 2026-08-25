@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+"""Execute the gated DTA v2.3.2 fixed successor exactly once."""
+
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+from ecomsre.dta_v2.provider_env import load_private_provider_env
+from ecomsre.dta_v2.v23.evaluation_study_v232 import (
+    EvaluationCasePairV232,
+    run_fixed_evaluation_once_v232,
+)
+from ecomsre.dta_v2.v23.evaluation_v231 import (
+    OpenAICompatibleDiscoveryTransportV231,
+)
+from ecomsre.model.gateway import OpenAICompatibleConfig
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--repository-root", type=Path, default=Path.cwd())
+    parser.add_argument("--provider-env", type=Path, required=True)
+    parser.add_argument(
+        "--execute-once",
+        required=True,
+        choices=("DTA_V232_FINAL_EVALUATION_PREFLIGHT_PASS",),
+    )
+    parser.add_argument("--minimum-request-interval", type=float, default=6.0)
+    parser.add_argument("--timeout", type=float, default=120.0)
+    args = parser.parse_args()
+    root = args.repository_root.resolve()
+    values = load_private_provider_env(args.provider_env)
+    provider = OpenAICompatibleDiscoveryTransportV231(
+        config=OpenAICompatibleConfig(
+            base_url=values["ECOMSRE_LLM_BASE_URL"],
+            api_key=values["ECOMSRE_LLM_API_KEY"],
+            model=values["ECOMSRE_LLM_MODEL"],
+        ),
+        minimum_request_interval_seconds=args.minimum_request_interval,
+        timeout_seconds=args.timeout,
+    )
+
+    def observe(pair: EvaluationCasePairV232) -> None:
+        print(
+            json.dumps(
+                {
+                    "case_id": pair.case_id,
+                    "arm_order": [item.value for item in pair.arm_order],
+                    "strict": pair.strict.final_disposition,
+                    "treatment": pair.treatment.final_disposition,
+                    "strict_reads": pair.strict.discovery_read_count,
+                    "treatment_reads": pair.treatment.discovery_read_count,
+                    "provider_calls": (
+                        pair.strict.provider_cost.provider_calls
+                        + pair.treatment.provider_cost.provider_calls
+                    ),
+                },
+                sort_keys=True,
+            ),
+            flush=True,
+        )
+
+    evaluation_root = root / "config/dta-v232/evaluation"
+    artifact = run_fixed_evaluation_once_v232(
+        repository_root=root,
+        cases_path=evaluation_root / "cases.json",
+        truth_index_path=evaluation_root / "truth.json",
+        ontology_views_path=evaluation_root / "ontology-views.json",
+        manifest_path=evaluation_root / "manifest.json",
+        independent_review_path=(
+            root / "docs/external-reviews/dta-v232-pre-execution-review.md"
+        ),
+        provider_smoke_path=root / "docs/analysis/dta-v232-provider-smoke.json",
+        output_path=(
+            root / "docs/results/dta-v232-conflict-aware-evaluation.json"
+        ),
+        output_markdown_path=(
+            root / "docs/results/dta-v232-conflict-aware-evaluation.md"
+        ),
+        provider_transport=provider,
+        observer=observe,
+    )
+    print(
+        json.dumps(
+            {
+                "execution_count": artifact.execution_count,
+                "case_count": artifact.case_count,
+                "run_count": artifact.run_count,
+                "study_relation": artifact.study_relation,
+                "measured_result_terminal": (
+                    artifact.measured_result_terminal.value
+                ),
+                "artifact_sha256": artifact.artifact_sha256,
+            },
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

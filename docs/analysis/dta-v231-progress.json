@@ -1,0 +1,19 @@
+{
+  "agent_writes": 0,
+  "docker_calls": 0,
+  "artifact_sha256": "0b7261322a56a03f072fab1e2d761e2d04f7f07be9bb95e052a035784d134e77",
+  "evaluation_data_contract": "INVALIDATED_BY_RUNTIME_ADMISSION",
+  "final_evaluation_execution_count": 1,
+  "implementation_repairs_used": 2,
+  "new_live_faults": 0,
+  "old_set_provider_development": "PARTIAL_PROVIDER_FAILURE_PRESERVED",
+  "old_set_provider_failures": {
+    "ow-012": "PROTOCOL_FAILED",
+    "ow-013": "PROTOCOL_FAILED",
+    "ow-014": "TRANSPORT_FAILED:REMOTEDISCONNECTED"
+  },
+  "runbook_executions": 0,
+  "schema_version": "dta-v231.progress.v1",
+  "measured_result_terminal": "DTA_V231_CONFLICT_AWARE_DISCOVERY_NOT_OBSERVED",
+  "status": "BLOCKED_DTA_V231_EVALUATION_DATA"
+}

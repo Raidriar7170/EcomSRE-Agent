@@ -1,0 +1,126 @@
+{
+  "schema_version": "dta-v232.evaluation-truth-index.v1",
+  "shards": [
+    {
+      "case_id": "vx-201",
+      "path": "truth/vx-201.json",
+      "sha256": "9022b48aa9408ec00ef00da034666645a724ae8d1495fb15da287668f5f22bf9"
+    },
+    {
+      "case_id": "vx-202",
+      "path": "truth/vx-202.json",
+      "sha256": "f615f3b87e2539675cc389f572341ef3e8828a51d253599eac9df08c0d214cbe"
+    },
+    {
+      "case_id": "vx-203",
+      "path": "truth/vx-203.json",
+      "sha256": "9cd71fe0c2205b708f8dae13822d0a67e345a615ed51ef28ab1e8d8d95ea4045"
+    },
+    {
+      "case_id": "vx-204",
+      "path": "truth/vx-204.json",
+      "sha256": "50bb0cdd392ef2519440795d8b6ad0081e1ce098ccb7fbc9d1478fd4c994ae0f"
+    },
+    {
+      "case_id": "vx-205",
+      "path": "truth/vx-205.json",
+      "sha256": "01726f8806f26b8a6502e278b7a80a2ae4bcfc953435fbcd7b96b751c3a8912d"
+    },
+    {
+      "case_id": "vx-206",
+      "path": "truth/vx-206.json",
+      "sha256": "18aa8307d32b518bdb9ef74d0e9735bc5a1c8cbcf270c3953c204aacb047d8c7"
+    },
+    {
+      "case_id": "vx-207",
+      "path": "truth/vx-207.json",
+      "sha256": "0c7ec503ee92c3a79194e2a4471d0f22d80635bb7884c690088a8be84fcf2c0e"
+    },
+    {
+      "case_id": "vx-208",
+      "path": "truth/vx-208.json",
+      "sha256": "a766a3a0a018ba179eec48872b1c142b09945d3577987ddd68fa50dfb7542d6d"
+    },
+    {
+      "case_id": "vx-209",
+      "path": "truth/vx-209.json",
+      "sha256": "cbd20a108e056abd4ffdbcc3ac245f4ca3ff1651c98bdd807d5530cc0934c372"
+    },
+    {
+      "case_id": "vx-210",
+      "path": "truth/vx-210.json",
+      "sha256": "df567cf5f36c62e61de7bd2675786bd1f378def5c1fd77899f5e84a472aec41c"
+    },
+    {
+      "case_id": "vx-211",
+      "path": "truth/vx-211.json",
+      "sha256": "6ff45712e18f4fe0f19673a4cb2a3d93ce9a8b4242fe303ee680302f2f1b9e07"
+    },
+    {
+      "case_id": "vx-212",
+      "path": "truth/vx-212.json",
+      "sha256": "5ebb9a5b59527e2859ffed313f522f1d56ffe9fa6d88f5988174ee09b4623299"
+    },
+    {
+      "case_id": "vx-213",
+      "path": "truth/vx-213.json",
+      "sha256": "aed48e8b965a915da6f939b6ab89a3d75f54f5523cfeec0cad2dab221f210072"
+    },
+    {
+      "case_id": "vx-214",
+      "path": "truth/vx-214.json",
+      "sha256": "e791c04ed5050fabd440e86dd32c203dadf08b11d52fa4be4d65ca1095dfb857"
+    },
+    {
+      "case_id": "vx-215",
+      "path": "truth/vx-215.json",
+      "sha256": "1b0eac4f2ea021143887d2a23b53adc99a86528246ec8b75261e77bf7bd6c9e3"
+    },
+    {
+      "case_id": "vx-216",
+      "path": "truth/vx-216.json",
+      "sha256": "88ef1b0f2f38dd1217c48306ad4b2a3a9d44f192887b2da2f09b54113cd7d22d"
+    },
+    {
+      "case_id": "vx-217",
+      "path": "truth/vx-217.json",
+      "sha256": "04174e2663727f34ccbb56c63aedb6c62474cec16c0000e1b01fe5fa6cf4965b"
+    },
+    {
+      "case_id": "vx-218",
+      "path": "truth/vx-218.json",
+      "sha256": "512406b7fcf1a0a0f0a0164e1d264fb3c01b7d1c32e1c2a3335f619769ba54dc"
+    },
+    {
+      "case_id": "vx-219",
+      "path": "truth/vx-219.json",
+      "sha256": "e32190d036e6abbf9a001529a4b327c38fe97a6fe23e7c42eba77c00691008de"
+    },
+    {
+      "case_id": "vx-220",
+      "path": "truth/vx-220.json",
+      "sha256": "e26b0c7f5dfa5c238e0d9f650814ae183fed1365e24f03f9a033b8538344563a"
+    },
+    {
+      "case_id": "vx-221",
+      "path": "truth/vx-221.json",
+      "sha256": "046c4463d5a303c3f2cde1e7cb33e7cdaa551d881dfab9f5e92cc60852619723"
+    },
+    {
+      "case_id": "vx-222",
+      "path": "truth/vx-222.json",
+      "sha256": "10b55ed62c20b9206feb1d76d895aa3ebd92313eb7292952fa27cd2dea1645f1"
+    },
+    {
+      "case_id": "vx-223",
+      "path": "truth/vx-223.json",
+      "sha256": "1d6e39da80b12e2e8390ce570922e24ed74cb3d3add17919e216e4c5111eea4f"
+    },
+    {
+      "case_id": "vx-224",
+      "path": "truth/vx-224.json",
+      "sha256": "77ea4f26db090e47c712c025ddc0ffa9a74271a4962f7d7d127150863104a075"
+    }
+  ],
+  "index_sha256": "6ae1f55ad8ce9266ce1482779353f32f2ac73e6dcae6f2a6c0d7a79f974f873a"
+}

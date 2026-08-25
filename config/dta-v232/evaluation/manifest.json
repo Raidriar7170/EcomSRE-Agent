@@ -1,0 +1,238 @@
+{
+  "schema_version": "dta-v232.evaluation-manifest.v1",
+  "base_commit": "7fe2bff7186cca1cedd2513f7984709057fc19e5",
+  "branch": "codex/dta-v232-anomaly-totality-successor",
+  "provider_model": "gpt-5.4-mini-2026-03-17",
+  "planned_case_count": 24,
+  "planned_run_count": 48,
+  "planned_execution_count": 1,
+  "predecessor_evaluation_data": "BLOCKED_DTA_V231_EVALUATION_DATA",
+  "predecessor_repository_acceptance": "BLOCKED_DTA_V231_REPOSITORY_ACCEPTANCE",
+  "study_relation": "INDEPENDENT_SUCCESSOR_NOT_RERUN",
+  "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+  "history_ledger": {
+    "path": "config/dta-v232/historical-results.v1.json",
+    "sha256": "fd5b00d67537b601e60919320ce2c70cd1da0efd4cc82a993f3b400e9b41028d"
+  },
+  "history_verifier": {
+    "path": "scripts/ci/verify_dta_v232_history.py",
+    "sha256": "993145fd9086332822b9530f8ef665ed03f86dd7359e99e6b7cc7633d1c6694e"
+  },
+  "cases": {
+    "path": "config/dta-v232/evaluation/cases.json",
+    "sha256": "9d61ff238d77051ded62c0e6f80d7009449f27abaa9275f7181cffaab3deecfb"
+  },
+  "truth_index": {
+    "path": "config/dta-v232/evaluation/truth.json",
+    "sha256": "c1352e921e08d235c9faace137363c89b0130cc7cc993b90cdf82c3bfb30fdbb"
+  },
+  "truth_shards": [
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-201.json",
+      "sha256": "9022b48aa9408ec00ef00da034666645a724ae8d1495fb15da287668f5f22bf9"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-202.json",
+      "sha256": "f615f3b87e2539675cc389f572341ef3e8828a51d253599eac9df08c0d214cbe"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-203.json",
+      "sha256": "9cd71fe0c2205b708f8dae13822d0a67e345a615ed51ef28ab1e8d8d95ea4045"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-204.json",
+      "sha256": "50bb0cdd392ef2519440795d8b6ad0081e1ce098ccb7fbc9d1478fd4c994ae0f"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-205.json",
+      "sha256": "01726f8806f26b8a6502e278b7a80a2ae4bcfc953435fbcd7b96b751c3a8912d"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-206.json",
+      "sha256": "18aa8307d32b518bdb9ef74d0e9735bc5a1c8cbcf270c3953c204aacb047d8c7"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-207.json",
+      "sha256": "0c7ec503ee92c3a79194e2a4471d0f22d80635bb7884c690088a8be84fcf2c0e"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-208.json",
+      "sha256": "a766a3a0a018ba179eec48872b1c142b09945d3577987ddd68fa50dfb7542d6d"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-209.json",
+      "sha256": "cbd20a108e056abd4ffdbcc3ac245f4ca3ff1651c98bdd807d5530cc0934c372"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-210.json",
+      "sha256": "df567cf5f36c62e61de7bd2675786bd1f378def5c1fd77899f5e84a472aec41c"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-211.json",
+      "sha256": "6ff45712e18f4fe0f19673a4cb2a3d93ce9a8b4242fe303ee680302f2f1b9e07"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-212.json",
+      "sha256": "5ebb9a5b59527e2859ffed313f522f1d56ffe9fa6d88f5988174ee09b4623299"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-213.json",
+      "sha256": "aed48e8b965a915da6f939b6ab89a3d75f54f5523cfeec0cad2dab221f210072"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-214.json",
+      "sha256": "e791c04ed5050fabd440e86dd32c203dadf08b11d52fa4be4d65ca1095dfb857"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-215.json",
+      "sha256": "1b0eac4f2ea021143887d2a23b53adc99a86528246ec8b75261e77bf7bd6c9e3"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-216.json",
+      "sha256": "88ef1b0f2f38dd1217c48306ad4b2a3a9d44f192887b2da2f09b54113cd7d22d"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-217.json",
+      "sha256": "04174e2663727f34ccbb56c63aedb6c62474cec16c0000e1b01fe5fa6cf4965b"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-218.json",
+      "sha256": "512406b7fcf1a0a0f0a0164e1d264fb3c01b7d1c32e1c2a3335f619769ba54dc"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-219.json",
+      "sha256": "e32190d036e6abbf9a001529a4b327c38fe97a6fe23e7c42eba77c00691008de"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-220.json",
+      "sha256": "e26b0c7f5dfa5c238e0d9f650814ae183fed1365e24f03f9a033b8538344563a"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-221.json",
+      "sha256": "046c4463d5a303c3f2cde1e7cb33e7cdaa551d881dfab9f5e92cc60852619723"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-222.json",
+      "sha256": "10b55ed62c20b9206feb1d76d895aa3ebd92313eb7292952fa27cd2dea1645f1"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-223.json",
+      "sha256": "1d6e39da80b12e2e8390ce570922e24ed74cb3d3add17919e216e4c5111eea4f"
+    },
+    {
+      "path": "config/dta-v232/evaluation/truth/vx-224.json",
+      "sha256": "77ea4f26db090e47c712c025ddc0ffa9a74271a4962f7d7d127150863104a075"
+    }
+  ],
+  "ontology_views": {
+    "path": "config/dta-v232/evaluation/ontology-views.json",
+    "sha256": "5bdf422c98070da643279780606ab50285ace1e6da967095151df8bfa111b3a4"
+  },
+  "strata": {
+    "path": "config/dta-v232/evaluation/strata.json",
+    "sha256": "4cb97104c4397ef8535279f029e7202dcb1cc8e430bdbedcab4d458778100bb6"
+  },
+  "admission_matrix": {
+    "path": "config/dta-v232/evaluation/admission-matrix.json",
+    "sha256": "5880098812101c5eb6dbdca0c230215f02d66e55d87cd5f5e369e5e647a86d82"
+  },
+  "runtime_totality_preflight": {
+    "path": "docs/analysis/dta-v232-runtime-totality-preflight.json",
+    "sha256": "ce83430b3ea0808f7b3976f86ec920dde8dd126c5d6c5654c1b29ef675a12cac"
+  },
+  "fixed_surface_sources": [
+    {
+      "path": "scripts/analysis/build_dta_v232_admission_matrix.py",
+      "sha256": "f905adc8380778350501a61f52be6e43db2fd5615382352b540ddd44cb3266b6"
+    },
+    {
+      "path": "scripts/analysis/build_dta_v232_fixed_set.py",
+      "sha256": "4db444644942fad30a6003a1e0b264e0b8d49dda6c1ca53d1601483bddc26aa4"
+    },
+    {
+      "path": "scripts/analysis/freeze_dta_v232_manifest.py",
+      "sha256": "74b529c59f6ff8eb6f775b7816ba88ad73e4ad327952e5e2a034f9ec1c97d0f7"
+    },
+    {
+      "path": "scripts/analysis/run_dta_v232_evaluation.py",
+      "sha256": "25770ba93af5b2d030fb8343c27678ce77c4a9a2b55a6c3945c4f5572f687a45"
+    },
+    {
+      "path": "scripts/analysis/run_dta_v232_provider_smoke.py",
+      "sha256": "6f213b7ede5d3cfd6e9cfdba8acd31aa94dca3dc8fdd7711226b55116b2136a8"
+    },
+    {
+      "path": "scripts/analysis/run_dta_v232_runtime_totality_preflight.py",
+      "sha256": "eaa40732524ad8c3c03dce67a2da0d8f409770009db20c1ceff9d327e04ab721"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/anomaly_interpretation_v232.py",
+      "sha256": "2b28b356e5725a9810dac270b86e570a8f525aa8d01542bb5f435a846c69de83"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/conflict_model_v232.py",
+      "sha256": "952c08857e78d64bb413f49ee096ece315484dd40dc142171b0a5644e0b4bc65"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/discovery_runtime_v232.py",
+      "sha256": "2510b8c17795bebc0b7c6b912efe3774ba4a8a7a1af2577ccdf5d34c3b9ddedd"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/evaluation_data_v232.py",
+      "sha256": "01f0b359075a317804a7d69af61d077049d415c02ed85eeeba87c58857840fdc"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/evaluation_study_v232.py",
+      "sha256": "ac0ba13ddfa87a516c6d8d7377f210303f5d8ffa22c961b49628dfdaae85264f"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/evaluation_v232.py",
+      "sha256": "daa1d447493cdb4974a0db560cc80d5d1b0c2ae77f0c571afdb2623933459478"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/novelty_gate_v232.py",
+      "sha256": "7f3a8988d7b19d5e70b0991079013c47768cd1bfda337535ee23e6756d2fb1dd"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/runtime_preflight_v232.py",
+      "sha256": "c13906695afcaf0ea893ca3bffa1529ebd35bfbe25e500694694fa4d4eb352d3"
+    }
+  ],
+  "frozen_predecessor_sources": [
+    {
+      "path": "src/ecomsre/dta_v2/v23/conflict_model_v231.py",
+      "sha256": "9d58455910f3e219b1ee338f0f06458a9ed20226cbf04e553f82a68d7a6c1dcd"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/discovery_provider.py",
+      "sha256": "25338e97bc221d6e8e30c50d590db1285ba8739e542c4edac99874ec1c23246a"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/discovery_provider_v231.py",
+      "sha256": "36e125eec2eb33683e6a77739734037cab76bad881e8cee5d77521ca862fc168"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/discovery_runtime_v231.py",
+      "sha256": "74414d2d54afd18c5357c644d5a0887ac64f275ee3a02a41c78fc839f127217d"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/discriminating_router_v231.py",
+      "sha256": "b9e710fd421588aaeee3dca4bc7863afe80833acb4711fe452b8df69954fcdb6"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/evaluation_v231.py",
+      "sha256": "0150d6f8ddae87abea62e77944b03050f63561127e83a4ecb84e8da91adbf911"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/novelty_gate_v231.py",
+      "sha256": "c8d0508289ffe6a459ef4664f6db4377f40070a4948ce02e0d415be803e0f392"
+    }
+  ],
+  "strict_system_prompt_sha256": "f7b6a948908f1f4637508b74e18549576537179e6ac249537af523f8f735d403",
+  "treatment_system_prompt_sha256": "8d1857c56cd3f5960b67c73bfec8f491f3ac0cf9df11a976907fe4b5f9c30229",
+  "provider_smoke_output": "docs/analysis/dta-v232-provider-smoke.json",
+  "output_json": "docs/results/dta-v232-conflict-aware-evaluation.json",
+  "output_markdown": "docs/results/dta-v232-conflict-aware-evaluation.md",
+  "independent_review": "docs/external-reviews/dta-v232-pre-execution-review.md",
+  "fixed_at_utc": "2026-08-25T17:00:27.560733Z"
+}

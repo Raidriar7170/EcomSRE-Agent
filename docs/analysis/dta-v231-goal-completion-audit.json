@@ -1,0 +1,124 @@
+{
+  "schema_version": "dta-v231.goal-completion-audit.v1",
+  "goal_version": "dta-v231-conflict-aware-discovery-v1",
+  "audit_terminal": "BLOCKED_DTA_V231_REPOSITORY_ACCEPTANCE",
+  "engineering_terminal_claimed": false,
+  "measured_result_terminal": null,
+  "branch": "codex/dta-v231-successor-evaluation",
+  "base_commit": "7fe2bff7186cca1cedd2513f7984709057fc19e5",
+  "completion_conditions": [
+    {
+      "condition": "v2.3 history remains unchanged",
+      "status": "PASS",
+      "evidence": "DTA_V231_SUCCESSOR_PREDECESSOR_FREEZE_VERIFIED"
+    },
+    {
+      "condition": "the eight old conflict misses are audited",
+      "status": "PASS",
+      "evidence": "docs/analysis/dta-v231-conflict-audit.json"
+    },
+    {
+      "condition": "typed conflict classification is implemented",
+      "status": "PASS",
+      "evidence": "src/ecomsre/dta_v2/v23/conflict_model_v231.py"
+    },
+    {
+      "condition": "discriminating routing is implemented",
+      "status": "PASS",
+      "evidence": "src/ecomsre/dta_v2/v23/discriminating_router_v231.py"
+    },
+    {
+      "condition": "competing-hypothesis reports are implemented",
+      "status": "PASS",
+      "evidence": "src/ecomsre/dta_v2/v23/contracts_v231.py"
+    },
+    {
+      "condition": "review and Shadow Registry support the new report",
+      "status": "PASS",
+      "evidence": "src/ecomsre/dta_v2/v23/review_registry_v231.py"
+    },
+    {
+      "condition": "one new 24-case x 2-arm study runs exactly once",
+      "status": "FAIL",
+      "evidence": "started_execution_count=1; completed_evaluation_count=0; only 12/24 pairs and 24/48 arms persisted before vx-113 strict failure"
+    },
+    {
+      "condition": "one measured terminal is frozen",
+      "status": "MISSING",
+      "evidence": "scorer requires 24 pairs; final evaluation outputs do not exist"
+    },
+    {
+      "condition": "known-world and No-Incident results are reported",
+      "status": "MISSING",
+      "evidence": "registered-known and No-Incident successor controls were not reached"
+    },
+    {
+      "condition": "action-authority violations = 0",
+      "status": "INCOMPLETE",
+      "evidence": "zero across 12 persisted pairs only; full denominator unavailable"
+    },
+    {
+      "condition": "CI and independent review pass",
+      "status": "FAIL",
+      "evidence": "pre-execution review passed; post-execution review is NO-GO; no PR or GitHub CI exists"
+    },
+    {
+      "condition": "PR is squash merged",
+      "status": "MISSING_NOT_AUTHORIZED",
+      "evidence": "no PR exists for either v2.3.1 branch; commit/push/PR/merge were not authorized"
+    }
+  ],
+  "verification_scope": {
+    "read_scope": [
+      "active Goal text",
+      "src/ecomsre/dta_v2/v23",
+      "tests/dta_v231",
+      "tests/dta_v231_successor",
+      "config/dta-v231",
+      "config/dta-v231-successor",
+      "docs/analysis",
+      "docs/results",
+      "docs/external-reviews",
+      "Git metadata",
+      "GitHub PR metadata"
+    ],
+    "write_scope": [
+      "README.md",
+      "docs/DECISIONS.md",
+      "docs/analysis/dta-v231-goal-completion-audit.json",
+      "docs/analysis/dta-v231-goal-completion-audit.md"
+    ],
+    "frozen_asset_scope": [
+      "config/dta-v231-successor/evaluation/manifest.json and its 35 bindings",
+      ".local/dta-v231-successor/successor-evaluation.started.json",
+      ".local/dta-v231-successor/successor-evaluation.partial.jsonl",
+      "consumed BLOCKED_DTA_V231_EVALUATION_DATA study"
+    ],
+    "final_repository_scope": "NOT_ELIGIBLE_FOR_FINAL_CLOSURE"
+  },
+  "verification_evidence": {
+    "focused_tests": "44 passed",
+    "ruff": "PASS",
+    "mypy": "PASS",
+    "git_diff_check": "PASS",
+    "frozen_binding_count": 35,
+    "frozen_binding_mismatch_count": 0,
+    "started_execution_count": 1,
+    "completed_evaluation_count": 0,
+    "validated_partial_pair_count": 12,
+    "pull_request_count": 0,
+    "docker_calls": 0,
+    "new_live_faults": 0
+  },
+  "blocker": {
+    "case_id": "vx-113",
+    "arm": "V23_STRICT_CONFLICT_GATE",
+    "exception": "KeyError: LOG_ERROR_CLUSTER",
+    "root_cause": "The frozen v2.3 interpretation-domain map omits LOG_ERROR_CLUSTER while the strict arm indexes it.",
+    "repair_permitted_in_frozen_study": false,
+    "rerun_permitted": false
+  },
+  "required_new_authority": "A separately authorized successor version/Goal is required to change the frozen runtime or data and authorize any new evaluation execution.",
+  "audited_at_utc": "2026-08-25T16:09:09.579526Z",
+  "audit_sha256": "87df6e8eb96afe7a900d577517d168962de5ecb265aa0e1887c51aa7c521420c"
+}

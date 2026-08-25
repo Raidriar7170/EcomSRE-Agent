@@ -1,0 +1,161 @@
+{
+  "schema_version": "dta-v231.successor-evaluation-manifest.v1",
+  "base_commit": "7fe2bff7186cca1cedd2513f7984709057fc19e5",
+  "branch": "codex/dta-v231-successor-evaluation",
+  "provider_model": "gpt-5.4-mini-2026-03-17",
+  "planned_case_count": 24,
+  "planned_run_count": 48,
+  "planned_execution_count": 1,
+  "predecessor_study_disposition": "BLOCKED_DTA_V231_EVALUATION_DATA",
+  "study_relation": "INDEPENDENT_SUCCESSOR_NOT_RERUN",
+  "predecessor_freeze": {
+    "path": "config/dta-v231-successor/predecessor-freeze.json",
+    "sha256": "a8e278f7a9764be8ee3ee5dde46b2bc4f53fc07385e8fdd8235d5ac37a5ac9fd"
+  },
+  "predecessor_freeze_verifier": {
+    "path": "scripts/ci/verify_dta_v231_successor_freeze.py",
+    "sha256": "6d38979d1d1193eaa5a8ab6bdacf59cb00a1c27878277d080c4e38304aeb58ac"
+  },
+  "predecessor_runtime_manifest": {
+    "path": "config/dta-v231/evaluation/manifest.json",
+    "sha256": "a1fe21cac29aa33049edd1c8b1410340199da02599430a557f9ab04e098c4d31"
+  },
+  "cases": {
+    "path": "config/dta-v231-successor/evaluation/cases.json",
+    "sha256": "b86d405e89f28b503dd3ba3e1d074a565a10daf153fa6a0efbfaa4664b500936"
+  },
+  "truth_index": {
+    "path": "config/dta-v231-successor/evaluation/truth-index.json",
+    "sha256": "dec9e0284da6abbf2046e9c33e1b0becc2d2057ce3278447eb9fba678f332cbc"
+  },
+  "truth_shards": [
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-101.json",
+      "sha256": "1a92540db162ee76dbd817c1a50e652fb7f364b25f088ac1158ab9164138e747"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-102.json",
+      "sha256": "92b982e1b581d3cc20f4aa38c1e08b8ae90b81809f83be8e344ec4589db238c9"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-103.json",
+      "sha256": "516ab06d445d861eef129217a44da8d0715eaec807b563ca56847466e48a26a1"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-104.json",
+      "sha256": "ce48a2ef485faa97f3d2a5866636275b5380d9931a08849a1beae9600b85c774"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-105.json",
+      "sha256": "ba54ed80a15c7e65017eaca3885d3ef1f496585c480c81ac4dec5a912641248f"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-106.json",
+      "sha256": "9461e4df9856621df51083bb473a8ce76663fc2c600c86e92b10339a95c0c1f4"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-107.json",
+      "sha256": "db4d3e943b0927b1a5377d53445b0143220899bfd6a062c1f2a2b513bdf477b1"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-108.json",
+      "sha256": "5753a0997048dd702c2dfdaf518564e65b7850897c7ef58d0ba7a219c57d2c50"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-109.json",
+      "sha256": "212e6dd108b0b54148b5f17118bc3407b8c437554a77d33d54e800a9c53ee627"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-110.json",
+      "sha256": "2fa42fd3c892c6e1c951b98ee370f7a7cc3b2f2391857eb77fd7fce32112103c"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-111.json",
+      "sha256": "668ca89e54e7bb8e1047db33428fdf3fafe170436f141ab9c48ff8a49412244d"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-112.json",
+      "sha256": "5724e7c8a9357119b581324463558bf7cd6d73a0f82f46eff96441919a9cb1aa"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-113.json",
+      "sha256": "828ad930f70263bc3841d7ef8978466ceac9884d4bbcd74b28604abda8ec2f17"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-114.json",
+      "sha256": "2729a482f2709f214f1ec5a7b7c52667ba154f0d9e35ba4e3cc92e9ebb4ffdd2"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-115.json",
+      "sha256": "362eeb4d987f5136cf17d4d4e68fec916e1b87874538b5c47c810d528e7cac20"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-116.json",
+      "sha256": "a5fa9f6b4bfc9a83a4e06af4aa18bd83ed5c94c3be7a544eb6fcc9bbed0d7397"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-117.json",
+      "sha256": "576e2b99d4a320cfb9359b432fb73b8b588c2a7f9c0761a2c83c2af2a79f6ee6"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-118.json",
+      "sha256": "057dc56be6c5bbafea59026176c9972f9373334ab9c4b298cba2a30bdf596649"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-119.json",
+      "sha256": "5e8cafee63a9e2c4a7060d7d659125b2376496c1264eca4720b0dcd55190c76e"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-120.json",
+      "sha256": "c520c4681c10350c18fa5742ee396ec63f13f1f87e1051cdfebe94d7bbe6c9be"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-121.json",
+      "sha256": "08bdb9b0a72226b8ca52a826cb41580fe1f4aa41ed4e72fe761d4604027d0bc6"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-122.json",
+      "sha256": "460fcada9b646f37531dab43bf0e0124d3605ccd831ad15bfc03bf87ab7e9e69"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-123.json",
+      "sha256": "1438517957bb0be45bccf1a823ccb24182698c479d4ce1d940d0908ba8fc4be9"
+    },
+    {
+      "path": "config/dta-v231-successor/evaluation/truth/vx-124.json",
+      "sha256": "39ff4f794d2be89c291a91ce3e039a34b8ab52b2ec62e57bbf475c1d110269f3"
+    }
+  ],
+  "ontology_views": {
+    "path": "config/dta-v231-successor/evaluation/ontology-views.json",
+    "sha256": "799c1ab851e5d09398ff6c35d0b983e6811bb78bdd15f6621e6fa63649d7dcad"
+  },
+  "admission_matrix": {
+    "path": "config/dta-v231-successor/evaluation/admission-matrix.json",
+    "sha256": "36b96b36dea8d426bb467d11e7df06e4f796617e11c5483397b5edfc68210a54"
+  },
+  "dataset_builder": {
+    "path": "scripts/analysis/build_dta_v231_successor_fixed_set.py",
+    "sha256": "3ab3cf6a6a9712a66d63efaaa975cea3856e2058a75cd777d75c23edf9cf79d6"
+  },
+  "admission_matrix_builder": {
+    "path": "scripts/analysis/build_dta_v231_successor_admission_matrix.py",
+    "sha256": "6ec4c1dc281206bc7f8f5b512373a29565c6928ab26124c022e947a7327dba80"
+  },
+  "successor_runtime_sources": [
+    {
+      "path": "scripts/analysis/run_dta_v231_successor_evaluation.py",
+      "sha256": "158a03379eab1421dfc69954faa07b471774f44532f5563f5be207207f84c96a"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/evaluation_successor_v231.py",
+      "sha256": "9e3eacbac1c6f476751462a88e5a453498ccdaaf8d319390aa015287fe7d3da1"
+    }
+  ],
+  "strict_system_prompt_sha256": "f7b6a948908f1f4637508b74e18549576537179e6ac249537af523f8f735d403",
+  "treatment_system_prompt_sha256": "8d1857c56cd3f5960b67c73bfec8f491f3ac0cf9df11a976907fe4b5f9c30229",
+  "output_json": "docs/results/dta-v231-successor-conflict-aware-evaluation.json",
+  "output_markdown": "docs/results/dta-v231-successor-conflict-aware-evaluation.md",
+  "independent_review": "docs/external-reviews/dta-v231-successor-pre-execution-review.json",
+  "fixed_at_utc": "2026-08-25T15:48:09.654088Z"
+}

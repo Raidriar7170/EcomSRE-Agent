@@ -1,0 +1,101 @@
+{
+  "schema_version": "dta-v231.evaluation-ontology-view-set.v1",
+  "views": [
+    {
+      "case_id": "vx-001",
+      "hidden_mechanism": "CONFIGURATION_ERROR"
+    },
+    {
+      "case_id": "vx-002",
+      "hidden_mechanism": "CONFIGURATION_ERROR"
+    },
+    {
+      "case_id": "vx-003",
+      "hidden_mechanism": "DEPENDENCY_LATENCY"
+    },
+    {
+      "case_id": "vx-004",
+      "hidden_mechanism": "DEPENDENCY_LATENCY"
+    },
+    {
+      "case_id": "vx-005",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-006",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-007",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-008",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-009",
+      "hidden_mechanism": "SERVICE_UNAVAILABLE"
+    },
+    {
+      "case_id": "vx-010",
+      "hidden_mechanism": "SERVICE_UNAVAILABLE"
+    },
+    {
+      "case_id": "vx-011",
+      "hidden_mechanism": "CPU_SATURATION"
+    },
+    {
+      "case_id": "vx-012",
+      "hidden_mechanism": "CPU_SATURATION"
+    },
+    {
+      "case_id": "vx-013",
+      "hidden_mechanism": "MEMORY_LEAK"
+    },
+    {
+      "case_id": "vx-014",
+      "hidden_mechanism": "MEMORY_LEAK"
+    },
+    {
+      "case_id": "vx-015",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-016",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-017",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-018",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-019",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-020",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-021",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-022",
+      "hidden_mechanism": "SERVICE_UNAVAILABLE"
+    },
+    {
+      "case_id": "vx-023",
+      "hidden_mechanism": "SERVICE_UNAVAILABLE"
+    },
+    {
+      "case_id": "vx-024",
+      "hidden_mechanism": "SERVICE_UNAVAILABLE"
+    }
+  ]
+}

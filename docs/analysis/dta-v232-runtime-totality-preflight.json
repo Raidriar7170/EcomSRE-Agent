@@ -1,0 +1,2319 @@
+{
+  "schema_version": "dta-v232.runtime-totality-preflight.v1",
+  "case_count": 24,
+  "arm_run_count": 48,
+  "valid_terminal_or_boundary_count": 48,
+  "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+  "registered_anomaly_kinds": [
+    "LOG_ERROR_CLUSTER",
+    "LOG_UNKNOWN_ERROR_PATTERN",
+    "METRIC_ERROR_OUTLIER",
+    "METRIC_LATENCY_OUTLIER",
+    "RECENT_CHANGE_CORRELATION",
+    "RESOURCE_CPU_OUTLIER",
+    "RESOURCE_MEMORY_TREND",
+    "RUNTIME_NOT_RUNNING",
+    "RUNTIME_RESTART_ANOMALY",
+    "RUNTIME_UNHEALTHY",
+    "SOURCE_COVERAGE_GAP",
+    "TRACE_ERROR_LOCALIZATION",
+    "TRACE_LATENCY_OUTLIER"
+  ],
+  "encountered_anomaly_kinds": [
+    "LOG_ERROR_CLUSTER",
+    "LOG_UNKNOWN_ERROR_PATTERN",
+    "METRIC_ERROR_OUTLIER",
+    "METRIC_LATENCY_OUTLIER",
+    "RESOURCE_MEMORY_TREND",
+    "RUNTIME_NOT_RUNNING",
+    "RUNTIME_UNHEALTHY"
+  ],
+  "conflict_types": [
+    "COHERENT_COMPETITION",
+    "NO_CONFLICT",
+    "RESOLVABLE_CONFLICT",
+    "STRICT_HARD_CONFLICT",
+    "STRICT_NO_HARD_CONFLICT"
+  ],
+  "final_pre_provider_states": [
+    "CONFLICTING_EVIDENCE",
+    "KNOWN_INCIDENT",
+    "NO_INCIDENT",
+    "UNREGISTERED_INCIDENT_SUSPECTED",
+    "UNREGISTERED_INCIDENT_WITH_COMPETING_HYPOTHESES"
+  ],
+  "traces": [
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-201",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "LOG_UNKNOWN_ERROR_PATTERN",
+        "METRIC_ERROR_OUTLIER",
+        "METRIC_LATENCY_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:log-unknown-error-pattern:svc-39904ef061:22ee83083c26",
+          "anomaly_kind": "LOG_UNKNOWN_ERROR_PATTERN",
+          "candidate_domains": [
+            "UNKNOWN"
+          ],
+          "primary_domain": "UNKNOWN",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_LOG_UNKNOWN_ERROR_PATTERN"
+          ],
+          "interpretation_sha256": "35c067321c50a0b40d06ad393d8c50ade5db133bfaa6f691c415d7f42774f5dc"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-39904ef061:112838de11ac",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "b6f9c48c821f663ade8ee1b31ff078bb9f2c732c97591477eeac631dc8351988"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-latency-outlier:svc-513218c397:8ddbd96c8bbc",
+          "anomaly_kind": "METRIC_LATENCY_OUTLIER",
+          "candidate_domains": [
+            "DEPENDENCY"
+          ],
+          "primary_domain": "DEPENDENCY",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_LATENCY_OUTLIER"
+          ],
+          "interpretation_sha256": "f3befc3346efe53ebfed15ac22dcdc93854d7db40ee6d7d80dc0595b50ff5926"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_HARD_CONFLICT",
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "CONFLICTING_EVIDENCE",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "7eda37d5d5ff3d39026eb1a07bf8095dad08b67032559b05e7f85e7e80d9aeb7"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-201",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "LOG_UNKNOWN_ERROR_PATTERN",
+        "METRIC_ERROR_OUTLIER",
+        "METRIC_LATENCY_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:log-unknown-error-pattern:svc-39904ef061:22ee83083c26",
+          "anomaly_kind": "LOG_UNKNOWN_ERROR_PATTERN",
+          "candidate_domains": [
+            "UNKNOWN"
+          ],
+          "primary_domain": "UNKNOWN",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_LOG_UNKNOWN_ERROR_PATTERN"
+          ],
+          "interpretation_sha256": "35c067321c50a0b40d06ad393d8c50ade5db133bfaa6f691c415d7f42774f5dc"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-39904ef061:112838de11ac",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "b6f9c48c821f663ade8ee1b31ff078bb9f2c732c97591477eeac631dc8351988"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-latency-outlier:svc-513218c397:8ddbd96c8bbc",
+          "anomaly_kind": "METRIC_LATENCY_OUTLIER",
+          "candidate_domains": [
+            "DEPENDENCY"
+          ],
+          "primary_domain": "DEPENDENCY",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_LATENCY_OUTLIER"
+          ],
+          "interpretation_sha256": "f3befc3346efe53ebfed15ac22dcdc93854d7db40ee6d7d80dc0595b50ff5926"
+        }
+      ],
+      "conflict_types": [
+        "COHERENT_COMPETITION",
+        "RESOLVABLE_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_WITH_COMPETING_HYPOTHESES",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "df1f2cdee2311e5bafa9af0e50a48a881dabe055611534526d08f3649ef27b38"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-202",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "LOG_UNKNOWN_ERROR_PATTERN",
+        "METRIC_ERROR_OUTLIER",
+        "METRIC_LATENCY_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-7f527eaf14:1e805615e503",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "484c6cc1da8f2bf3d32134a68a8fdf028d72c48d2043c57fbe69b7fd07f46a97"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-latency-outlier:svc-52a4702b32:c53d2a733395",
+          "anomaly_kind": "METRIC_LATENCY_OUTLIER",
+          "candidate_domains": [
+            "DEPENDENCY"
+          ],
+          "primary_domain": "DEPENDENCY",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_LATENCY_OUTLIER"
+          ],
+          "interpretation_sha256": "8ec9a39693e388f2b8a4fa54e906dab68338d5fbab577dbfb83da7552847477c"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:log-unknown-error-pattern:svc-7f527eaf14:5929eead04c6",
+          "anomaly_kind": "LOG_UNKNOWN_ERROR_PATTERN",
+          "candidate_domains": [
+            "UNKNOWN"
+          ],
+          "primary_domain": "UNKNOWN",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_LOG_UNKNOWN_ERROR_PATTERN"
+          ],
+          "interpretation_sha256": "c16c2e89030772486203baaf3b0a474ed23091d1998e752847dc1059a547b223"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_HARD_CONFLICT",
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "CONFLICTING_EVIDENCE",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "3fe10bfc563b658c5689ee185190d61ec7050df3482a0810b3a2679ada0499b3"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-202",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "METRIC_LATENCY_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-7f527eaf14:1e805615e503",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "484c6cc1da8f2bf3d32134a68a8fdf028d72c48d2043c57fbe69b7fd07f46a97"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-latency-outlier:svc-52a4702b32:c53d2a733395",
+          "anomaly_kind": "METRIC_LATENCY_OUTLIER",
+          "candidate_domains": [
+            "DEPENDENCY"
+          ],
+          "primary_domain": "DEPENDENCY",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_LATENCY_OUTLIER"
+          ],
+          "interpretation_sha256": "8ec9a39693e388f2b8a4fa54e906dab68338d5fbab577dbfb83da7552847477c"
+        }
+      ],
+      "conflict_types": [
+        "COHERENT_COMPETITION",
+        "RESOLVABLE_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_WITH_COMPETING_HYPOTHESES",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "d0f5365f992fe88b0c41d01bd2de15889a8835658ad13e5acf82be669875f52d"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-203",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "METRIC_LATENCY_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-a8ec0d6638:f567a04e138e",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "5b0ca3b891451a1e6a7d0bf8a6193e06b3db75c34c513f2554eced69aa4c9439"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-latency-outlier:svc-8a4d0126e0:483982b74f2f",
+          "anomaly_kind": "METRIC_LATENCY_OUTLIER",
+          "candidate_domains": [
+            "DEPENDENCY"
+          ],
+          "primary_domain": "DEPENDENCY",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_LATENCY_OUTLIER"
+          ],
+          "interpretation_sha256": "857d5f625765743fd9925728fae06e1b4178302c1e51598426b01471846788ad"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_HARD_CONFLICT",
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "CONFLICTING_EVIDENCE",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "53521779395d54c3c5b123d590deca05ec7beb61fc37911fcd092e0e07e4f5fb"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-203",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "METRIC_LATENCY_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-a8ec0d6638:f567a04e138e",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "5b0ca3b891451a1e6a7d0bf8a6193e06b3db75c34c513f2554eced69aa4c9439"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-latency-outlier:svc-8a4d0126e0:483982b74f2f",
+          "anomaly_kind": "METRIC_LATENCY_OUTLIER",
+          "candidate_domains": [
+            "DEPENDENCY"
+          ],
+          "primary_domain": "DEPENDENCY",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_LATENCY_OUTLIER"
+          ],
+          "interpretation_sha256": "857d5f625765743fd9925728fae06e1b4178302c1e51598426b01471846788ad"
+        }
+      ],
+      "conflict_types": [
+        "COHERENT_COMPETITION",
+        "RESOLVABLE_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_WITH_COMPETING_HYPOTHESES",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "268f86e85bedbef5b027bd59534f8c66a44ecd085efa809ebe5ee9d285eabce9"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-204",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "METRIC_LATENCY_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-latency-outlier:svc-fdcfbb7d57:5d8266fd6294",
+          "anomaly_kind": "METRIC_LATENCY_OUTLIER",
+          "candidate_domains": [
+            "DEPENDENCY"
+          ],
+          "primary_domain": "DEPENDENCY",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_LATENCY_OUTLIER"
+          ],
+          "interpretation_sha256": "29356f4569f339d9ea71ab62c0c599f96c7b192a6956c42db6c1196f13ab2e7b"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-0e58cf29b2:37b5bcec6a8a",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "e3bc87a3f9c0cca3516f5cd1ac524920928cae1a463459c152760ee862081aa8"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_HARD_CONFLICT",
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "CONFLICTING_EVIDENCE",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "dfced461dfd153f81865ab1872b1971fc6e4156119be42d33f3f556c60122b97"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-204",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "METRIC_LATENCY_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-latency-outlier:svc-fdcfbb7d57:5d8266fd6294",
+          "anomaly_kind": "METRIC_LATENCY_OUTLIER",
+          "candidate_domains": [
+            "DEPENDENCY"
+          ],
+          "primary_domain": "DEPENDENCY",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_LATENCY_OUTLIER"
+          ],
+          "interpretation_sha256": "29356f4569f339d9ea71ab62c0c599f96c7b192a6956c42db6c1196f13ab2e7b"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-0e58cf29b2:37b5bcec6a8a",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "e3bc87a3f9c0cca3516f5cd1ac524920928cae1a463459c152760ee862081aa8"
+        }
+      ],
+      "conflict_types": [
+        "COHERENT_COMPETITION",
+        "RESOLVABLE_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_WITH_COMPETING_HYPOTHESES",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "750789eb233fda6a712f1f89b27569282d964c500a93658dbf94d8526da89ba3"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-205",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "LOG_UNKNOWN_ERROR_PATTERN",
+        "METRIC_ERROR_OUTLIER",
+        "METRIC_LATENCY_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-3296f6737d:3bd8770841a9",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "1b560994adae58bcca101621bc6d1b8d3b681e5f4034f6a07c257e05d8d83ddf"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-latency-outlier:svc-95337fa369:7ccd9d338a62",
+          "anomaly_kind": "METRIC_LATENCY_OUTLIER",
+          "candidate_domains": [
+            "DEPENDENCY"
+          ],
+          "primary_domain": "DEPENDENCY",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_LATENCY_OUTLIER"
+          ],
+          "interpretation_sha256": "26b6a12a1bddb496e2591f4940413b05b28676d62b0a78acbfd186160d3f120b"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:log-unknown-error-pattern:svc-3296f6737d:db4030c0f5b4",
+          "anomaly_kind": "LOG_UNKNOWN_ERROR_PATTERN",
+          "candidate_domains": [
+            "UNKNOWN"
+          ],
+          "primary_domain": "UNKNOWN",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_LOG_UNKNOWN_ERROR_PATTERN"
+          ],
+          "interpretation_sha256": "53a53fd28a47085094946553d978b7e99b67040a82696464a89eff93005873c5"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_HARD_CONFLICT",
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "CONFLICTING_EVIDENCE",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "41dd476dbd2717314da95f8a840f1c7941ff9d2880ba15867b81e8b50f16b198"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-205",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "LOG_UNKNOWN_ERROR_PATTERN",
+        "METRIC_ERROR_OUTLIER",
+        "METRIC_LATENCY_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-3296f6737d:3bd8770841a9",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "1b560994adae58bcca101621bc6d1b8d3b681e5f4034f6a07c257e05d8d83ddf"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-latency-outlier:svc-95337fa369:7ccd9d338a62",
+          "anomaly_kind": "METRIC_LATENCY_OUTLIER",
+          "candidate_domains": [
+            "DEPENDENCY"
+          ],
+          "primary_domain": "DEPENDENCY",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_LATENCY_OUTLIER"
+          ],
+          "interpretation_sha256": "26b6a12a1bddb496e2591f4940413b05b28676d62b0a78acbfd186160d3f120b"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:log-unknown-error-pattern:svc-3296f6737d:db4030c0f5b4",
+          "anomaly_kind": "LOG_UNKNOWN_ERROR_PATTERN",
+          "candidate_domains": [
+            "UNKNOWN"
+          ],
+          "primary_domain": "UNKNOWN",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_LOG_UNKNOWN_ERROR_PATTERN"
+          ],
+          "interpretation_sha256": "53a53fd28a47085094946553d978b7e99b67040a82696464a89eff93005873c5"
+        }
+      ],
+      "conflict_types": [
+        "COHERENT_COMPETITION",
+        "RESOLVABLE_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_WITH_COMPETING_HYPOTHESES",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "d3f3e3a1fff7a5531402fa7f7fa20141f6111c5ce8333f783de635414a9791d0"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-206",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "LOG_UNKNOWN_ERROR_PATTERN",
+        "METRIC_ERROR_OUTLIER",
+        "METRIC_LATENCY_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:log-unknown-error-pattern:svc-74c88cfddc:4798d616afa7",
+          "anomaly_kind": "LOG_UNKNOWN_ERROR_PATTERN",
+          "candidate_domains": [
+            "UNKNOWN"
+          ],
+          "primary_domain": "UNKNOWN",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_LOG_UNKNOWN_ERROR_PATTERN"
+          ],
+          "interpretation_sha256": "20bef2a23d17735701c0563d942eb2f51eee03acdace14a23cfc68192fca46b8"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-latency-outlier:svc-647ae0f29b:af7a28867f2c",
+          "anomaly_kind": "METRIC_LATENCY_OUTLIER",
+          "candidate_domains": [
+            "DEPENDENCY"
+          ],
+          "primary_domain": "DEPENDENCY",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_LATENCY_OUTLIER"
+          ],
+          "interpretation_sha256": "749d141bf4b296ef3df7b1f1b83ba5baebccf072787ec410e50fab50f3399992"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-74c88cfddc:04293bd96ca6",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "81beed8c8773cbeb036aef02c98fee4dd17e5624d199850b90e70414c7ffa7ce"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_HARD_CONFLICT",
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "CONFLICTING_EVIDENCE",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "71bbba68233347c66b2ecab51e648b10b09cc6870183e6de23cbd9d75884a521"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-206",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "LOG_UNKNOWN_ERROR_PATTERN",
+        "METRIC_ERROR_OUTLIER",
+        "METRIC_LATENCY_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-latency-outlier:svc-647ae0f29b:af7a28867f2c",
+          "anomaly_kind": "METRIC_LATENCY_OUTLIER",
+          "candidate_domains": [
+            "DEPENDENCY"
+          ],
+          "primary_domain": "DEPENDENCY",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_LATENCY_OUTLIER"
+          ],
+          "interpretation_sha256": "749d141bf4b296ef3df7b1f1b83ba5baebccf072787ec410e50fab50f3399992"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-74c88cfddc:04293bd96ca6",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "81beed8c8773cbeb036aef02c98fee4dd17e5624d199850b90e70414c7ffa7ce"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:log-unknown-error-pattern:svc-647ae0f29b:e02144900e85",
+          "anomaly_kind": "LOG_UNKNOWN_ERROR_PATTERN",
+          "candidate_domains": [
+            "UNKNOWN"
+          ],
+          "primary_domain": "UNKNOWN",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_LOG_UNKNOWN_ERROR_PATTERN"
+          ],
+          "interpretation_sha256": "aca1ba4e0b966df7a0f832fc5ade3073353daaba58ccbbbb8fe35fc996f870f2"
+        }
+      ],
+      "conflict_types": [
+        "COHERENT_COMPETITION",
+        "RESOLVABLE_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_WITH_COMPETING_HYPOTHESES",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "1674a26999e954d86471686018f73473097dfde598feb7799425f6af25a28fa8"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-207",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "LOG_UNKNOWN_ERROR_PATTERN",
+        "METRIC_ERROR_OUTLIER",
+        "METRIC_LATENCY_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-latency-outlier:svc-4269730bab:2ff3e542e644",
+          "anomaly_kind": "METRIC_LATENCY_OUTLIER",
+          "candidate_domains": [
+            "DEPENDENCY"
+          ],
+          "primary_domain": "DEPENDENCY",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_LATENCY_OUTLIER"
+          ],
+          "interpretation_sha256": "b66444c966e5d53d88579622470c2af74294664a36555a8fd38baceb51541622"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-7a1c06f864:7c625015cafe",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "c8c4e253a97a04d3a72c2e19561a66932bcca89fb6153450f30d2fb143844167"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:log-unknown-error-pattern:svc-7a1c06f864:92bc4636d275",
+          "anomaly_kind": "LOG_UNKNOWN_ERROR_PATTERN",
+          "candidate_domains": [
+            "UNKNOWN"
+          ],
+          "primary_domain": "UNKNOWN",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_LOG_UNKNOWN_ERROR_PATTERN"
+          ],
+          "interpretation_sha256": "e2f177ab8491c4781862bd3e8caef09c16f8c7497ed6c46b6d3445356d6edf52"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_HARD_CONFLICT",
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "CONFLICTING_EVIDENCE",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "9d266333867b3e650b857841e8ecffe8f5df1b176f10ab17cb6ceafb60057adf"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-207",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "LOG_UNKNOWN_ERROR_PATTERN",
+        "METRIC_ERROR_OUTLIER",
+        "METRIC_LATENCY_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:log-unknown-error-pattern:svc-4269730bab:156fefe559e4",
+          "anomaly_kind": "LOG_UNKNOWN_ERROR_PATTERN",
+          "candidate_domains": [
+            "UNKNOWN"
+          ],
+          "primary_domain": "UNKNOWN",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_LOG_UNKNOWN_ERROR_PATTERN"
+          ],
+          "interpretation_sha256": "5cdea1cd3d8ee74a51c19cf08a1c550b3f434391387757b12f4aa30d64daff5c"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-latency-outlier:svc-4269730bab:2ff3e542e644",
+          "anomaly_kind": "METRIC_LATENCY_OUTLIER",
+          "candidate_domains": [
+            "DEPENDENCY"
+          ],
+          "primary_domain": "DEPENDENCY",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_LATENCY_OUTLIER"
+          ],
+          "interpretation_sha256": "b66444c966e5d53d88579622470c2af74294664a36555a8fd38baceb51541622"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-7a1c06f864:7c625015cafe",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "c8c4e253a97a04d3a72c2e19561a66932bcca89fb6153450f30d2fb143844167"
+        }
+      ],
+      "conflict_types": [
+        "COHERENT_COMPETITION",
+        "RESOLVABLE_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_WITH_COMPETING_HYPOTHESES",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "bff98f541f0b2540fcc07a2ba5d423ce39e4dcaee7f412932f68da90e9d75a22"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-208",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "LOG_UNKNOWN_ERROR_PATTERN",
+        "METRIC_ERROR_OUTLIER",
+        "METRIC_LATENCY_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-28e93c1040:e3e82d97971c",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "8cae0cc2bd847d27f670a355f87bac79c961302d5d1472e04f1333889fa1b0a5"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:log-unknown-error-pattern:svc-28e93c1040:bb484c93404e",
+          "anomaly_kind": "LOG_UNKNOWN_ERROR_PATTERN",
+          "candidate_domains": [
+            "UNKNOWN"
+          ],
+          "primary_domain": "UNKNOWN",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_LOG_UNKNOWN_ERROR_PATTERN"
+          ],
+          "interpretation_sha256": "ce9848bef8277f729c8155a89fbde59358a410e51d6249421a571f6b04b4e844"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-latency-outlier:svc-c72a0c8d34:58fc4c4478df",
+          "anomaly_kind": "METRIC_LATENCY_OUTLIER",
+          "candidate_domains": [
+            "DEPENDENCY"
+          ],
+          "primary_domain": "DEPENDENCY",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_LATENCY_OUTLIER"
+          ],
+          "interpretation_sha256": "d0a2ac18e13ea701b4bfd88a3642582dcc085e6808140071ac15d06705a68c51"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_HARD_CONFLICT",
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "CONFLICTING_EVIDENCE",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "7f64b5595e9a0b85c35221292ccc904df76ce3d34622f32aba36b9549b81372a"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-208",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "LOG_UNKNOWN_ERROR_PATTERN",
+        "METRIC_ERROR_OUTLIER",
+        "METRIC_LATENCY_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-28e93c1040:e3e82d97971c",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "8cae0cc2bd847d27f670a355f87bac79c961302d5d1472e04f1333889fa1b0a5"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:log-unknown-error-pattern:svc-28e93c1040:bb484c93404e",
+          "anomaly_kind": "LOG_UNKNOWN_ERROR_PATTERN",
+          "candidate_domains": [
+            "UNKNOWN"
+          ],
+          "primary_domain": "UNKNOWN",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_LOG_UNKNOWN_ERROR_PATTERN"
+          ],
+          "interpretation_sha256": "ce9848bef8277f729c8155a89fbde59358a410e51d6249421a571f6b04b4e844"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-latency-outlier:svc-c72a0c8d34:58fc4c4478df",
+          "anomaly_kind": "METRIC_LATENCY_OUTLIER",
+          "candidate_domains": [
+            "DEPENDENCY"
+          ],
+          "primary_domain": "DEPENDENCY",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_LATENCY_OUTLIER"
+          ],
+          "interpretation_sha256": "d0a2ac18e13ea701b4bfd88a3642582dcc085e6808140071ac15d06705a68c51"
+        }
+      ],
+      "conflict_types": [
+        "COHERENT_COMPETITION",
+        "RESOLVABLE_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_WITH_COMPETING_HYPOTHESES",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "b5863066145e8ddb4837616c8f49e6f9ee9179da041a9ba587bd4b5f5b6a5055"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-209",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "RUNTIME_NOT_RUNNING",
+        "RUNTIME_UNHEALTHY"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:runtime-not-running:svc-39f02c1856:9b4881a4a82a",
+          "anomaly_kind": "RUNTIME_NOT_RUNNING",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_RUNTIME_NOT_RUNNING"
+          ],
+          "interpretation_sha256": "83da94f66e77a7315167dd7292b53afa194449917cfd8c56f9b067526d9b1f4b"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-39f02c1856:be8c7ca84db9",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "b5dfe72a2cdb9d16d100777855c11101800b16a0c449bc9abd5f8ae318a4bd1b"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:runtime-unhealthy:svc-39f02c1856:a18e4f6d0fba",
+          "anomaly_kind": "RUNTIME_UNHEALTHY",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_RUNTIME_UNHEALTHY"
+          ],
+          "interpretation_sha256": "fd742069bfab4cb54ba94d6f01fcf7ec1e936120df40119ce3180a17d63923f3"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_SUSPECTED",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "a63bd8a9ae94cd6d2cd1cff49690016a33127ceba3dd49cec21a1792e30babfe"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-209",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "RUNTIME_NOT_RUNNING",
+        "RUNTIME_UNHEALTHY"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:runtime-not-running:svc-39f02c1856:9b4881a4a82a",
+          "anomaly_kind": "RUNTIME_NOT_RUNNING",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_RUNTIME_NOT_RUNNING"
+          ],
+          "interpretation_sha256": "83da94f66e77a7315167dd7292b53afa194449917cfd8c56f9b067526d9b1f4b"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-39f02c1856:be8c7ca84db9",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "b5dfe72a2cdb9d16d100777855c11101800b16a0c449bc9abd5f8ae318a4bd1b"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:runtime-unhealthy:svc-39f02c1856:a18e4f6d0fba",
+          "anomaly_kind": "RUNTIME_UNHEALTHY",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_RUNTIME_UNHEALTHY"
+          ],
+          "interpretation_sha256": "fd742069bfab4cb54ba94d6f01fcf7ec1e936120df40119ce3180a17d63923f3"
+        }
+      ],
+      "conflict_types": [
+        "NO_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_SUSPECTED",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "02ce5c707d3dc08529615173481ef010f0fc442a1322cb438145b36aa96ea57e"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-210",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "RUNTIME_NOT_RUNNING",
+        "RUNTIME_UNHEALTHY"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:runtime-not-running:svc-8d5dff64a6:eae9a4532efc",
+          "anomaly_kind": "RUNTIME_NOT_RUNNING",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_RUNTIME_NOT_RUNNING"
+          ],
+          "interpretation_sha256": "263c754936321f80d1493297b916c1860ef538db3bb922f41786a27d252a436c"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-8d5dff64a6:6a6c882966f8",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "c30d9bc8cb8157596200f74705f78f8f35858e4a989760c5bd1a1f73e4dc4f8f"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:runtime-unhealthy:svc-8d5dff64a6:5375ee98f510",
+          "anomaly_kind": "RUNTIME_UNHEALTHY",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_RUNTIME_UNHEALTHY"
+          ],
+          "interpretation_sha256": "c5fea2e48c62350d51d81bc64520f3988f0a6b331200957c9faee78923c58958"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_SUSPECTED",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "dff9588d67bae54f9cd0b00ba4c7bc91a37b01505cf8dac93cc5569ece68da5e"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-210",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "RUNTIME_NOT_RUNNING",
+        "RUNTIME_UNHEALTHY"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:runtime-not-running:svc-8d5dff64a6:eae9a4532efc",
+          "anomaly_kind": "RUNTIME_NOT_RUNNING",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_RUNTIME_NOT_RUNNING"
+          ],
+          "interpretation_sha256": "263c754936321f80d1493297b916c1860ef538db3bb922f41786a27d252a436c"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-8d5dff64a6:6a6c882966f8",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "c30d9bc8cb8157596200f74705f78f8f35858e4a989760c5bd1a1f73e4dc4f8f"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:runtime-unhealthy:svc-8d5dff64a6:5375ee98f510",
+          "anomaly_kind": "RUNTIME_UNHEALTHY",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_RUNTIME_UNHEALTHY"
+          ],
+          "interpretation_sha256": "c5fea2e48c62350d51d81bc64520f3988f0a6b331200957c9faee78923c58958"
+        }
+      ],
+      "conflict_types": [
+        "NO_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_SUSPECTED",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "1e7cebd3d0ff2cb87843356895b441a09220492f1b772a83d7c2606b14d90cab"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-211",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-b36739baf5:80460fd54241",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "dd1fcc9b5fa06475cffd6aba961584c1a60f586fd7ea75951c7e45bba6e1f339"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_SUSPECTED",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "db5dfe0832a9bf6081034c9d23bd51627fb3f88d56c47e0c3fa14b4f11eb8098"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-211",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-b36739baf5:80460fd54241",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "dd1fcc9b5fa06475cffd6aba961584c1a60f586fd7ea75951c7e45bba6e1f339"
+        }
+      ],
+      "conflict_types": [
+        "NO_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_SUSPECTED",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "e42386c2ea5740e88f198add86ab4c3b351efcbf75864771d409e4a015548a39"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-212",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-649c3b8a81:d98790ecc897",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "1d25a3505f6348ec0217157cefef0365240aee5128c42e5eee3557a038dc8924"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_SUSPECTED",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "cd5a1ddb40de2d6c2a7a9b259101e52853a9c221be834717c722d83051cf1996"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-212",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-649c3b8a81:d98790ecc897",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "1d25a3505f6348ec0217157cefef0365240aee5128c42e5eee3557a038dc8924"
+        }
+      ],
+      "conflict_types": [
+        "NO_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_SUSPECTED",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "78f1346e6ced47587dcf3fab4f53740496982a35479d3e2e38596510ec137c20"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-213",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "LOG_ERROR_CLUSTER",
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:log-error-cluster:svc-8c6dd0fe03:bd30ace1cef1",
+          "anomaly_kind": "LOG_ERROR_CLUSTER",
+          "candidate_domains": [
+            "RESOURCE"
+          ],
+          "primary_domain": "RESOURCE",
+          "interpretation_source": "BOUND_LOG_CATEGORY",
+          "reason_codes": [
+            "LOG_CATEGORY_MEMORY_PRESSURE_BOUND"
+          ],
+          "interpretation_sha256": "341b94755a44379c65088dfa644b4429cf67e0dd35c8e780231d0b344c9e95bf"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-8c6dd0fe03:5cf3c52021e1",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "e15bb53c93573244a46a20bbc1107cfdc0d791631ce66d8577eeaea8619ca096"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_HARD_CONFLICT",
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "CONFLICTING_EVIDENCE",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "eeb789ad71654ddc3d9df848e834d1e37efd87327a75b039dbe3a919e1ebaf92"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-213",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "LOG_ERROR_CLUSTER",
+        "METRIC_ERROR_OUTLIER",
+        "RESOURCE_MEMORY_TREND"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:log-error-cluster:svc-8c6dd0fe03:bd30ace1cef1",
+          "anomaly_kind": "LOG_ERROR_CLUSTER",
+          "candidate_domains": [
+            "RESOURCE"
+          ],
+          "primary_domain": "RESOURCE",
+          "interpretation_source": "BOUND_LOG_CATEGORY",
+          "reason_codes": [
+            "LOG_CATEGORY_MEMORY_PRESSURE_BOUND"
+          ],
+          "interpretation_sha256": "341b94755a44379c65088dfa644b4429cf67e0dd35c8e780231d0b344c9e95bf"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:resource-memory-trend:svc-8c6dd0fe03:d28dca3b5e80",
+          "anomaly_kind": "RESOURCE_MEMORY_TREND",
+          "candidate_domains": [
+            "RESOURCE"
+          ],
+          "primary_domain": "RESOURCE",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_RESOURCE_MEMORY_TREND"
+          ],
+          "interpretation_sha256": "e010b7db2bb4cd1ff44c833d24dc7404c7e43b0495db1e3e21d413f0935a1db3"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-8c6dd0fe03:5cf3c52021e1",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "e15bb53c93573244a46a20bbc1107cfdc0d791631ce66d8577eeaea8619ca096"
+        }
+      ],
+      "conflict_types": [
+        "COHERENT_COMPETITION",
+        "NO_CONFLICT",
+        "RESOLVABLE_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_WITH_COMPETING_HYPOTHESES",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "45a3557a7e6e785dcf7e2662b0bddac1571112771d5ec3e0a169995e3588d5c0"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-214",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "LOG_ERROR_CLUSTER",
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:log-error-cluster:svc-1f41596004:9d94eff435cb",
+          "anomaly_kind": "LOG_ERROR_CLUSTER",
+          "candidate_domains": [
+            "RESOURCE"
+          ],
+          "primary_domain": "RESOURCE",
+          "interpretation_source": "BOUND_LOG_CATEGORY",
+          "reason_codes": [
+            "LOG_CATEGORY_MEMORY_PRESSURE_BOUND"
+          ],
+          "interpretation_sha256": "68a782f8b2148a44c00efaf3f7cf11ea5ac1b5b951abba49ba6ae9854a954346"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-1f41596004:8d48db439469",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "c01f23f958443f49094ea970d5f49d7412e16d7f01605a88ef327b4df6afee8a"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_HARD_CONFLICT",
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "CONFLICTING_EVIDENCE",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "0e3ed492a2c36342e8b62bdb71ed11d5f0732a62a4c26136be1b5042fd65e027"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-214",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "LOG_ERROR_CLUSTER",
+        "METRIC_ERROR_OUTLIER",
+        "RESOURCE_MEMORY_TREND"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:resource-memory-trend:svc-1f41596004:af89dcfd351a",
+          "anomaly_kind": "RESOURCE_MEMORY_TREND",
+          "candidate_domains": [
+            "RESOURCE"
+          ],
+          "primary_domain": "RESOURCE",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_RESOURCE_MEMORY_TREND"
+          ],
+          "interpretation_sha256": "0b908762031c120fb99bc90b5f54d1a135f1621cd9c2aa1505d4819dbd5fde1c"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:log-error-cluster:svc-1f41596004:9d94eff435cb",
+          "anomaly_kind": "LOG_ERROR_CLUSTER",
+          "candidate_domains": [
+            "RESOURCE"
+          ],
+          "primary_domain": "RESOURCE",
+          "interpretation_source": "BOUND_LOG_CATEGORY",
+          "reason_codes": [
+            "LOG_CATEGORY_MEMORY_PRESSURE_BOUND"
+          ],
+          "interpretation_sha256": "68a782f8b2148a44c00efaf3f7cf11ea5ac1b5b951abba49ba6ae9854a954346"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-1f41596004:8d48db439469",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "c01f23f958443f49094ea970d5f49d7412e16d7f01605a88ef327b4df6afee8a"
+        }
+      ],
+      "conflict_types": [
+        "COHERENT_COMPETITION",
+        "NO_CONFLICT",
+        "RESOLVABLE_CONFLICT"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_WITH_COMPETING_HYPOTHESES",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "7e08316cf666605124604a211171045c2085eee1cef7180be3c5b96473c32cd8"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-215",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [],
+      "interpretations": [],
+      "conflict_types": [
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "KNOWN_INCIDENT",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "c9fbe52f78969c22ab4144a31992742359f482d66b2adfa6b2dab2d62bc2fd5b"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-215",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [],
+      "interpretations": [],
+      "conflict_types": [
+        "NO_CONFLICT"
+      ],
+      "final_pre_provider_state": "KNOWN_INCIDENT",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "45ebe187f1cb373d44d77486a71bebebf3a2901bfec8f5980724f63aff800562"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-216",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-c906aedc6f:b3f6e1b99be2",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "80d86750602a9a3786b8dab2f8affa9f1ae50adbff3b93edaf812099a11c3550"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "KNOWN_INCIDENT",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "4db0ec1b308fffedb98bf98b6349efc60e64a3de4262a1280c8de966c21d32ba"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-216",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-c906aedc6f:b3f6e1b99be2",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "80d86750602a9a3786b8dab2f8affa9f1ae50adbff3b93edaf812099a11c3550"
+        }
+      ],
+      "conflict_types": [
+        "NO_CONFLICT"
+      ],
+      "final_pre_provider_state": "KNOWN_INCIDENT",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "a204d747b67982bd3b7106252463c0c33ce205388ebea0eb9de6765e11e18b4b"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-217",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [],
+      "interpretations": [],
+      "conflict_types": [
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "KNOWN_INCIDENT",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "420457a91c8c37a8d533e81bac3faff6b2963276c6e2f15ece77e0ada92178f5"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-217",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [],
+      "interpretations": [],
+      "conflict_types": [
+        "NO_CONFLICT"
+      ],
+      "final_pre_provider_state": "KNOWN_INCIDENT",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "73393b68cbe5fd07e6d3c1ad801a198e405268e7cee094a4b14d0573ac8451da"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-218",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [],
+      "interpretations": [],
+      "conflict_types": [
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "KNOWN_INCIDENT",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "fdaddaf408b810969f8cc7f12949eb10f81d45bcbd4c170bb7aa458c7949a7aa"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-218",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [],
+      "interpretations": [],
+      "conflict_types": [
+        "NO_CONFLICT"
+      ],
+      "final_pre_provider_state": "KNOWN_INCIDENT",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "73646a28a7ceb73740c07863a03af02535d990091cd9df7c4967ef2c05f9d5d8"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-219",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [],
+      "interpretations": [],
+      "conflict_types": [
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "NO_INCIDENT",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "04c36b7d5a9fd0b99359f5febdf89137e2e350507d9cacd4485864b2a07d66a5"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-219",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [],
+      "interpretations": [],
+      "conflict_types": [
+        "NO_CONFLICT"
+      ],
+      "final_pre_provider_state": "NO_INCIDENT",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "8a59a53db6908c537758e258522c6270a4355d745a3666bdfb8378a90bad9539"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-220",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [],
+      "interpretations": [],
+      "conflict_types": [
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "NO_INCIDENT",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "6d5865193a21649ce508fb366e08ac34afb2dcb1c48b82efe6b80555886110ad"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-220",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [],
+      "interpretations": [],
+      "conflict_types": [
+        "NO_CONFLICT"
+      ],
+      "final_pre_provider_state": "NO_INCIDENT",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "e52193e9fd2ba863e2ca7fb55e4ba55664f3fd1e13e60bcfa08b0cb196e7b6df"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-221",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [],
+      "interpretations": [],
+      "conflict_types": [
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "NO_INCIDENT",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "fc3cfcdabaa5a4e3dccb064b42fd09eb3539a10b466a0b10ff18d82f976da779"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-221",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [],
+      "interpretations": [],
+      "conflict_types": [
+        "NO_CONFLICT"
+      ],
+      "final_pre_provider_state": "NO_INCIDENT",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "098a2361822a81747808b2fe4ddb853705ff690894a3456590b29330a78681be"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-222",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "LOG_ERROR_CLUSTER",
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-ec4f181861:54edbd32f1fa",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "0d7b32564beec77754e2e735301e20cdeb453cbe998c5beafecc84cf87ce526f"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:log-error-cluster:svc-d03a7d8611:3536d7ef3d29",
+          "anomaly_kind": "LOG_ERROR_CLUSTER",
+          "candidate_domains": [
+            "RESOURCE"
+          ],
+          "primary_domain": "RESOURCE",
+          "interpretation_source": "BOUND_LOG_CATEGORY",
+          "reason_codes": [
+            "LOG_CATEGORY_MEMORY_PRESSURE_BOUND"
+          ],
+          "interpretation_sha256": "92c223c997771080d84947b9d1572a3b3a626c419a13636cd0216a3cb3a0fa27"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-d03a7d8611:65c01602060e",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "9fdea6a47102a0ad9c0d1b968f0e651f125d5f1c888147177f1e93155b911a8f"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_HARD_CONFLICT",
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "CONFLICTING_EVIDENCE",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "17b920cb1d1d7a6cabea397021b328092de84127374eec434d6d1d2e405fbe86"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-222",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-ec4f181861:54edbd32f1fa",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "0d7b32564beec77754e2e735301e20cdeb453cbe998c5beafecc84cf87ce526f"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-d03a7d8611:65c01602060e",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "9fdea6a47102a0ad9c0d1b968f0e651f125d5f1c888147177f1e93155b911a8f"
+        }
+      ],
+      "conflict_types": [
+        "COHERENT_COMPETITION"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_WITH_COMPETING_HYPOTHESES",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "39c9c5adc29fe3f6e236923ef8435da6f00533b6ddeb612e2a3c8054301ae903"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-223",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-79f0afeac9:53ad9b05a3d5",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "6206251daa41520430994c188844185bfd7220ac76b19a4c29f8c9e61473c75f"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-fb57d426e8:e2dea2a86918",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "e99ea2098b07dce85bf36df9f4437081ad34897078d8af3851c1d9ad78c518b4"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_HARD_CONFLICT",
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "CONFLICTING_EVIDENCE",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "4e18cb192230c52bf5a4589753a54eb9eac81cd8339ef62f6725215720ef09ef"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-223",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-79f0afeac9:53ad9b05a3d5",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "6206251daa41520430994c188844185bfd7220ac76b19a4c29f8c9e61473c75f"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-fb57d426e8:e2dea2a86918",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "e99ea2098b07dce85bf36df9f4437081ad34897078d8af3851c1d9ad78c518b4"
+        }
+      ],
+      "conflict_types": [
+        "COHERENT_COMPETITION"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_WITH_COMPETING_HYPOTHESES",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "8d48f341439b9ff4f5a20b463a968ad04593bc7c2be0cf4c7d0553163a57f1dd"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-224",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-d4a6430433:443fedd24c0c",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "490017b5a8b6186746edef301c11934b325bd4f159b0853a21fbf285eedb8185"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-6458fadc6f:a22c137d9f2e",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "8eb6ef689d6c3ad5c8091c0b2dbd45c73db4550bb5c2f4e0ec1c4581b5ce7908"
+        }
+      ],
+      "conflict_types": [
+        "STRICT_HARD_CONFLICT",
+        "STRICT_NO_HARD_CONFLICT"
+      ],
+      "final_pre_provider_state": "CONFLICTING_EVIDENCE",
+      "provider_selection_boundary": false,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "f6b08443a907fc2ff0e2e4a128d35871d520f03c0f9db1809157b29ff888a86f"
+    },
+    {
+      "schema_version": "dta-v232.arm-runtime-trace.v1",
+      "case_id": "vx-224",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "registry_sha256": "b53ac4a8ccb107cb146d5aa37158e26ff5da7364833b8f21d72030cceba7d9eb",
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "interpretations": [
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-d4a6430433:443fedd24c0c",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "490017b5a8b6186746edef301c11934b325bd4f159b0853a21fbf285eedb8185"
+        },
+        {
+          "schema_version": "dta-v232.anomaly-interpretation.v1",
+          "anomaly_id": "ga:metric-error-outlier:svc-6458fadc6f:a22c137d9f2e",
+          "anomaly_kind": "METRIC_ERROR_OUTLIER",
+          "candidate_domains": [
+            "RUNTIME"
+          ],
+          "primary_domain": "RUNTIME",
+          "interpretation_source": "STATIC_KIND",
+          "reason_codes": [
+            "STATIC_KIND_METRIC_ERROR_OUTLIER"
+          ],
+          "interpretation_sha256": "8eb6ef689d6c3ad5c8091c0b2dbd45c73db4550bb5c2f4e0ec1c4581b5ce7908"
+        }
+      ],
+      "conflict_types": [
+        "COHERENT_COMPETITION"
+      ],
+      "final_pre_provider_state": "UNREGISTERED_INCIDENT_WITH_COMPETING_HYPOTHESES",
+      "provider_selection_boundary": true,
+      "provider_calls": 0,
+      "runtime_exception_count": 0,
+      "keyerror_count": 0,
+      "unmapped_anomaly_count": 0,
+      "schema_failure_count": 0,
+      "trace_sha256": "e1ad2eb7c12afe45d5db26ec2a1240e2cb07dfc1fb6f13121a2d2c03dd09cf40"
+    }
+  ],
+  "runtime_exceptions": 0,
+  "keyerrors": 0,
+  "unmapped_anomaly_kinds": 0,
+  "schema_failures": 0,
+  "provider_calls": 0,
+  "truth_access_before_both_arms": 0,
+  "action_authority_violations": 0,
+  "status": "DTA_V232_RUNTIME_TOTALITY_PREFLIGHT_PASS",
+  "preflight_sha256": "8a413361ab8d164f2ed0eeaca3ed0879975a4c33377148dc17d628e803b44069"
+}

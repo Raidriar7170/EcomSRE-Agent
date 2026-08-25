@@ -1,0 +1,23 @@
+{
+  "schema_version": "dta-v232.evaluation-truth-shard.v1",
+  "record": {
+    "evaluator_truth": {
+      "case_id": "vx-222",
+      "category": "INSUFFICIENT_CONFLICT",
+      "expected_disposition": "CONFLICTING_EVIDENCE",
+      "expected_root_service": null,
+      "expected_broad_domain": null,
+      "expected_mechanism": null,
+      "semantic_concepts": [],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": false,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": true
+    },
+    "admission_stratum": "INSUFFICIENT_IRRECONCILABLE",
+    "expected_known_mechanism": null,
+    "counterfactual_target_role": null
+  }
+}
