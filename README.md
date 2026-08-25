@@ -128,15 +128,18 @@ registration. Provisional reports have `action_authority = NONE` and cannot
 enter Candidate Filter or Runbook paths; automated review examples use the
 simulated `TEST_REVIEWER` identity.
 
-One 24-case x 2-arm artifact executed exactly once and internally scored
-`DTA_V23_OPEN_WORLD_DISCOVERY_MIXED_RESULT`. Independent final review found
-that its closed arm consumed v2.3 Residual Graph and Novelty Gate state rather
-than the Goal-specified existing Diagnosis admission; it also found a Novelty
-Gate rule mismatch, an unwired conflict path, and only two proven data-level
-counterfactual pairs. The artifact is retained, but the comparison is
-`INVALID / REVIEW_REQUIRED` under `BLOCKED_DTA_V23_ONTOLOGY_ISOLATION`; it does
-not establish known-world preservation, mechanism discovery, production
-autonomy, or remediation authority. See the [artifact report](docs/results/dta-v23-open-world-evaluation.md),
+The valid 24-case × 2-arm comparison executed once after an independent-review
+repair. Closed arms contain no Graph, Gate, Negative Coverage, generic reads,
+or provisional reports; all pairs share the actual v2.2 Diagnosis admission,
+and registered-known accuracy stayed 4/4 in both arms. The measured terminal
+is `DTA_V23_OPEN_WORLD_DISCOVERY_NOT_OBSERVED`: novelty recall and root
+localization were 6/14 (`0.429`), below the frozen mixed-result threshold,
+while evidence-ref validity was `1.000`, false-novel rate was `0.100`, and
+action-authority violations were zero. The earlier mixed artifact remains
+separately preserved as `INVALID / REVIEW_REQUIRED`; a two-pair, zero-Provider
+schedule attempt is retained as `PROTOCOL_BLOCKED / INVALID`. No result
+establishes production autonomy, remediation authority, or general live-fault
+discovery. See the [artifact report](docs/results/dta-v23-open-world-evaluation.md),
 [error analysis](docs/results/dta-v23-open-world-error-analysis.md),
 [interview brief](docs/results/dta-v23-open-world-interview-brief.md), and
 [independent review](docs/external-reviews/dta-v23-open-world-final-review.md).

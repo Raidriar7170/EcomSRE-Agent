@@ -10,6 +10,7 @@ from ecomsre.dta_v2.v22.diagnosis import AdmittedDiagnosisV22
 from ecomsre.dta_v2.v22.predicates import MechanismV22
 from ecomsre.dta_v2.v23.evaluation import (
     EvaluationCategoryV23,
+    FixedEvaluationArtifactV23,
     LazyTruthStoreV23,
     MeasuredResultTerminalV23,
     build_evaluation_preflight_v23,
@@ -480,3 +481,43 @@ def test_invalid_predecessor_is_retained_byte_for_byte() -> None:
     assert artifact["runbook_executions"] == 0
     assert artifact["docker_calls"] == 0
     assert artifact["new_live_faults"] == 0
+
+
+def test_valid_fixed_result_is_frozen_and_executed_once() -> None:
+    result_path = ROOT / "docs/results/dta-v23-open-world-evaluation.json"
+    raw = result_path.read_bytes()
+    artifact = FixedEvaluationArtifactV23.model_validate_json(raw)
+
+    assert hashlib.sha256(raw).hexdigest() == (
+        "1c6fb59f260c87accd3d11d193461e9f9a2f725f2315209d934e659d8f69e079"
+    )
+    assert artifact.execution_count == 1
+    assert artifact.case_count == 24
+    assert artifact.run_count == 48
+    assert artifact.measured_result_terminal is (MeasuredResultTerminalV23.NOT_OBSERVED)
+    assert artifact.artifact_sha256 == (
+        "888d6242743433e02b2aebdaa292b531f1844ffc07f392887634501e882476ea"
+    )
+    assert artifact.metrics.novelty_recall == pytest.approx(6 / 14)
+    assert artifact.metrics.root_localization == pytest.approx(6 / 14)
+    assert artifact.metrics.broad_domain_accuracy == pytest.approx(5 / 14)
+    assert artifact.metrics.evidence_ref_validity == 1.0
+    assert artifact.metrics.false_novel_rate == 0.1
+    assert artifact.metrics.known_accuracy_drop_cases == 0
+    assert artifact.metrics.no_incident_accuracy_drop_cases == 0
+    assert artifact.metrics.action_authority_violations == 0
+    assert all(
+        pair.closed_world.residual_graph is None
+        and pair.closed_world.novelty_decision is None
+        and pair.closed_world.negative_coverage is None
+        for pair in artifact.pairs
+    )
+    assert all(
+        pair.closed_world.known_admission_sha256
+        == pair.open_world.known_admission_sha256
+        for pair in artifact.pairs
+    )
+    assert artifact.agent_writes == 0
+    assert artifact.runbook_executions == 0
+    assert artifact.docker_calls == 0
+    assert artifact.new_live_faults == 0
