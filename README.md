@@ -87,6 +87,21 @@ generalization, or production claim. See the [fixed study](docs/results/dta-v22-
 [error analysis](docs/results/dta-v22-5-opaque-ambiguity-error-analysis.md), and
 [interview brief](docs/results/dta-v22-5-opaque-ambiguity-interview-brief.md).
 
+DTA v2.2.5 then ran one bounded real-fault transfer study comparing the current
+runtime-guided BUNDLE_ONE path with a v2-style Flat Adaptive baseline using the
+v2.1 CPU-capable ontology—not the exact frozen historical v2 identity. One
+owned Sandbox lifecycle produced one baseline and one verified Ad
+CPU-saturation capture, rendered through two opaque swapped maps for four
+paired cases and eight snapshot arm-runs. Both arms finished 0/4 exact and all
+runs were protocol-failed; Current also recorded no successful bundle read in
+its live baseline and live fault shadows, so the frozen transfer terminal is
+`DTA_V225_REAL_FAULT_TRANSFER_NOT_SUPPORTED`.
+`CURRENT_RUNTIME_DESCRIPTIVE_ADVANTAGE` is only the preregistered cost
+disposition caused by fail-closed no-read/no-Provider behavior, not a
+diagnostic, causal, or statistical advantage. Exact baseline restoration,
+`CLEAN` owned cleanup, zero non-owned changes, and zero Agent writes,
+ActionProposals, or Runbooks were proven.
+
 ## One-command offline demo
 
 ```bash

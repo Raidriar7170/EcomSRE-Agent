@@ -16,7 +16,7 @@
     "D9": "COMPLETE",
     "D10": "COMPLETE",
     "D11": "COMPLETE",
-    "D12": "REPORTS_READY_FINAL_REVIEW_CI_MERGE_PENDING"
+    "D12": "FINAL_REVIEW_COMPLETE_EXACT_HEAD_CI_MERGE_PENDING"
   },
   "pre_execution_review": {
     "verdict": "PASS",
@@ -73,12 +73,20 @@
   "runbook_executions": 0,
   "transport_retries": 0,
   "uncaught_exceptions": 0,
-  "result_commit": null,
+  "full_repository_tests": {
+    "passed": 4815,
+    "skipped": 6,
+    "failed": 0
+  },
+  "ruff": "PASS",
+  "mypy": "PASS",
+  "historical_byte_binding": "DTA_V225_REAL_FAULT_HISTORICAL_BYTES_PRESERVED",
+  "result_commit": "f0e0edb1eb355b2f2f48917c26557f9adc404bb9",
   "final_review": {
-    "verdict": "PENDING",
-    "must_fix": null,
-    "claim_accuracy": "PENDING",
-    "reviewed_result_commit": null
+    "verdict": "PASS",
+    "must_fix": 0,
+    "claim_accuracy": "PASS",
+    "reviewed_result_commit": "f0e0edb1eb355b2f2f48917c26557f9adc404bb9"
   },
   "result_head_ci_status": "PENDING",
   "pull_request": 67,
