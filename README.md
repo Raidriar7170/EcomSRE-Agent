@@ -177,6 +177,32 @@ engineering completion. See the [blocked successor evidence](docs/results/dta-v2
 [post-execution review](docs/external-reviews/dta-v231-successor-post-execution-review.md),
 and [Goal completion audit](docs/analysis/dta-v231-goal-completion-audit.md).
 
+### DTA v2.3.2: total interpretation and measured successor
+
+DTA v2.3.2 preserves both consumed v2.3.1 attempts and does not continue or
+rerun them. It adds an enum-total anomaly interpretation registry shared by the
+strict and conflict-aware arms. `LOG_ERROR_CLUSTER` is resolved through bound
+`LogCategoryV22` evidence, while missing categories map to `UNKNOWN` and
+`SOURCE_COVERAGE_GAP` remains coverage state rather than mechanism evidence.
+Fresh 24-case bytes passed `DTA_V232_SUCCESSOR_EVALUATION_DATA_PASS`; all 48
+deterministic dry-run arms then passed
+`DTA_V232_RUNTIME_TOTALITY_PREFLIGHT_PASS` with zero Provider calls, runtime
+exceptions, `KeyError`, unmapped kinds, schema failures, premature truth reads,
+or authority violations.
+
+The new 24-case × 2-arm study executed exactly once and completed. Its frozen
+measured terminal is `DTA_V232_CONFLICT_AWARE_DISCOVERY_MIXED_RESULT`:
+treatment novelty recall rose from `0.286` to `0.929`, conflict-prone recall
+rose from `0.000` to `0.875`, root localization was `0.857`, and evidence-ref
+validity was `1.000`. The result is not positive effect because broad-domain
+accuracy was only `0.143` and two irreconcilable controls were converted to
+novelty. Registered-known and No-Incident accuracy remained perfect in both
+arms; action-authority violations remained zero. See the
+[artifact report](docs/results/dta-v232-conflict-aware-evaluation.md),
+[error analysis](docs/results/dta-v232-conflict-aware-error-analysis.md),
+[interview brief](docs/results/dta-v232-conflict-aware-interview-brief.md), and
+[pre-execution review](docs/external-reviews/dta-v232-pre-execution-review.md).
+
 ## One-command offline demo
 
 ```bash

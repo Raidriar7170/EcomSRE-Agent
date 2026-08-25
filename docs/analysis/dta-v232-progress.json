@@ -1,6 +1,6 @@
 {
   "schema_version": "dta-v232.progress.v1",
-  "engineering_state": "READY_FOR_FIXED_SUCCESSOR_EVALUATION",
+  "engineering_state": "POST_EXECUTION_VALIDATION_PENDING",
   "preserved_attempts": [
     {
       "terminal": "BLOCKED_DTA_V231_EVALUATION_DATA",
@@ -49,11 +49,28 @@
     "smoke_sha256": "bcbde0a06a67f4de2586d766eb38567c98f935342280796c2c78bf4f32eaf550"
   },
   "final_study": {
-    "execution_count": 0,
+    "execution_count": 1,
     "planned_case_count": 24,
     "planned_run_count": 48,
     "study_relation": "INDEPENDENT_SUCCESSOR_NOT_RERUN",
-    "measured_result_terminal": null
+    "measured_result_terminal": "DTA_V232_CONFLICT_AWARE_DISCOVERY_MIXED_RESULT",
+    "artifact_sha256": "1078ff825674e57d4106be2c182cb5372496bdda89c8eab2e5c1474faa2f57e4",
+    "runtime_exceptions": 0,
+    "unmapped_anomaly_count": 0,
+    "action_authority_violations": 0,
+    "metrics": {
+      "baseline_novelty_recall": 0.2857142857142857,
+      "treatment_novelty_recall": 0.9285714285714286,
+      "conflict_prone_treatment_recall": 0.875,
+      "treatment_root_localization": 0.8571428571428571,
+      "treatment_broad_domain_accuracy": 0.14285714285714285,
+      "treatment_evidence_ref_validity": 1.0,
+      "treatment_false_novel_rate": 0.2,
+      "protocol_repairs": 6,
+      "transport_retries": 0,
+      "provider_calls": 23,
+      "total_tokens": 126357
+    }
   },
   "protected_actions": {
     "docker_calls": 0,

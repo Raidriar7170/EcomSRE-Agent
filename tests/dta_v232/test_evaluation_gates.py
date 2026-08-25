@@ -10,7 +10,9 @@ from ecomsre.dta_v2.v23.evaluation_data_v232 import (
     load_evaluation_views_v232,
 )
 from ecomsre.dta_v2.v23.evaluation_study_v232 import (
+    FixedEvaluationArtifactV232,
     LazyTruthStoreV232,
+    MeasuredResultTerminalV232,
     ProviderSmokeArtifactV232,
     run_fixed_evaluation_once_v232,
 )
@@ -99,3 +101,23 @@ def test_final_runner_has_independent_write_once_boundary() -> None:
     assert 'with partial.open("x"' in source
     assert 'with output_path.open("x"' in source
     assert "counterbalanced_arm_order_v232" in source
+
+
+def test_fixed_result_is_the_single_mixed_successor_terminal() -> None:
+    artifact = FixedEvaluationArtifactV232.model_validate_json(
+        (
+            ROOT / "docs/results/dta-v232-conflict-aware-evaluation.json"
+        ).read_bytes()
+    )
+
+    assert artifact.execution_count == 1
+    assert artifact.case_count == 24
+    assert artifact.run_count == 48
+    assert artifact.measured_result_terminal is MeasuredResultTerminalV232.MIXED_RESULT
+    assert artifact.runtime_exceptions == 0
+    assert artifact.unmapped_anomaly_count == 0
+    assert artifact.metrics.action_authority_violations == 0
+    assert artifact.agent_writes == 0
+    assert artifact.runbook_executions == 0
+    assert artifact.docker_calls == 0
+    assert artifact.new_live_faults == 0

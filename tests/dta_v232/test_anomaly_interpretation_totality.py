@@ -113,6 +113,34 @@ def test_unresolved_log_error_cluster_is_typed_unknown_not_exception() -> None:
     assert interpretation.reason_codes == ("LOG_CATEGORY_UNRESOLVED",)
 
 
+def test_source_coverage_gap_is_not_positive_mechanism_evidence() -> None:
+    anomaly = _build_anomaly(
+        kind=GenericAnomalyKindV23.SOURCE_COVERAGE_GAP,
+        source=EvidenceSourceV22.RUNTIME,
+        service="svc-a",
+        related_services=(),
+        strength=SignalStrengthV22.STRONG,
+        summary="runtime coverage is incomplete",
+        evidence_refs=("e:test:runtime:0:000000000000",),
+        observed_values={"missing": 1},
+    )
+    memory = cast(
+        SalientEvidenceMemoryV22,
+        SimpleNamespace(salient_facts=(), predicates=()),
+    )
+
+    interpretation = DEFAULT_ANOMALY_INTERPRETATION_REGISTRY_V232.interpret(
+        anomaly=anomaly,
+        memory=memory,
+    )
+
+    assert interpretation.primary_domain is ProvisionalFaultDomainV23.UNKNOWN
+    assert interpretation.interpretation_source is InterpretationSourceV232.COVERAGE_STATE
+    assert interpretation.reason_codes == (
+        "SOURCE_COVERAGE_GAP_IS_NOT_MECHANISM_EVIDENCE",
+    )
+
+
 def _vx_113() -> tuple[object, object]:
     cases = load_successor_case_set_v231(CASES)
     views = load_successor_views_v231(VIEWS)
