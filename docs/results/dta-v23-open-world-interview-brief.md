@@ -1,5 +1,7 @@
 # DTA v2.3 Open-World Discovery — Interview Brief
 
+Repository acceptance: `INVALID / REVIEW_REQUIRED`
+
 ## 30-second version
 
 DTA v2.3 adds a separate open-world lane beside the unchanged v2.2
@@ -10,12 +12,12 @@ graph, performs at most three generic discovery reads, and can emit a typed
 lets a human review that report and create only a Shadow Registry entry and a
 registration draft; it never edits the formal ontology automatically.
 
-In one fixed 24-case, 48-run comparison executed exactly once, the open-world
-lane detected and localized 10/14 novelty incidents while preserving registered
-and No-Incident behavior. Evidence references were 100% valid and safety
-counters were zero, but broad-domain accuracy was only 1/14 and one conflict
-control became false novelty. The honest terminal is
-`DTA_V23_OPEN_WORLD_DISCOVERY_MIXED_RESULT`.
+One 24-case, 48-run artifact executed exactly once and internally scored
+`DTA_V23_OPEN_WORLD_DISCOVERY_MIXED_RESULT`. Independent review then found that
+the closed arm consumed v2.3 graph/gate state instead of the approved existing
+Diagnosis admission, so this is not an accepted closed/open comparison. The
+artifact is retained, but no known-world-preservation or MVP-completion claim
+is valid.
 
 ## What I built
 
@@ -65,10 +67,19 @@ control produced false novelty. These failures are why the result is mixed and
 why the project claims discovery assistance—not autonomous ontology learning
 or remediation.
 
+More importantly, the final review found three protocol defects: the closed
+arm was not isolated from v2.3 Residual Graph and Novelty Gate state, the
+single-source gate and conflict path differed from the approved rules, and only
+two of four labeled counterfactual pairs were proven at the data level. These
+are `Must Fix` defects, not metric weaknesses. Current disposition is
+`BLOCKED_DTA_V23_ONTOLOGY_ISOLATION`; `DTA_V23_OPEN_WORLD_DISCOVERY_MVP_COMPLETE`
+was not minted.
+
 ## Reproducibility and claim boundary
 
-The fixed cases, truth, ontology views, manifest, Prompt, and source case-set
-hashes were bound before execution. Truth loaded only after both arms completed
-for each case. The study produced 48 runs and `execution_count = 1`; it was not
+The cases, truth, ontology views, manifest, Prompt, and source case-set hashes
+were bound before execution. Truth loaded only after both arms completed for
+each case. The artifact produced 48 runs and `execution_count = 1`; it was not
 rerun after seeing the metrics. The v2.2.6 real CPU capture was used only for
-the Increment-1 development demo and is absent from the fixed evaluation set.
+the Increment-1 development demo and is absent from the evaluation set. These
+integrity properties do not cure the arm-contract defects.

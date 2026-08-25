@@ -4,10 +4,17 @@
   "base_commit": "f17688f4c313b1483bfb7c56675c429605faf489",
   "branch": "codex/dta-v23-open-world-discovery",
   "current_increment": 4,
-  "status": "FIXED_EVALUATION_COMPLETE_AWAITING_CI_REVIEW_MERGE",
+  "status": "BLOCKED_DTA_V23_ONTOLOGY_ISOLATION",
   "engineering_terminal": null,
   "measured_result_terminal": "DTA_V23_OPEN_WORLD_DISCOVERY_MIXED_RESULT",
   "fixed_evaluation_execution_count": 1,
+  "evaluation_acceptance": "INVALID",
+  "repository_disposition": "Draft / REVIEW_REQUIRED",
+  "final_review": {
+    "reviewed_head": "19a60852ba9182a1cb83fd1797ef205dd3ea848a",
+    "must_fix_count": 3,
+    "claim_accuracy": "FAIL"
+  },
   "increments": [
     {
       "increment": 1,
@@ -47,7 +54,7 @@
     {
       "increment": 4,
       "name": "fixed evaluation and closeout",
-      "status": "ENGINEERING_COMPLETE_AWAITING_CI_REVIEW_MERGE",
+      "status": "INVALID / REVIEW_REQUIRED",
       "preflight_status": "DTA_V23_FIXED_EVALUATION_FINAL_PREFLIGHT_PASS",
       "planned_cases": 24,
       "planned_runs": 48,

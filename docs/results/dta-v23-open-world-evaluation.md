@@ -1,5 +1,15 @@
 # DTA v2.3 Open-World Discovery — Fixed Evaluation
 
+Repository acceptance: `INVALID / REVIEW_REQUIRED`
+
+The immutable artifact below is internally self-consistent, but independent
+final review found that its `CLOSED_WORLD_ONLY` arm consumed v2.3 Residual
+Evidence Graph and Novelty Gate state instead of the Goal-specified existing
+known Diagnosis admission. The implementation also differed from the approved
+single-source Novelty Gate rule and did not prove four data-level
+counterfactual service-target pairs. The measured terminal is retained as an
+artifact fact; it is not an accepted result for the Goal-defined comparison.
+
 Measured terminal: `DTA_V23_OPEN_WORLD_DISCOVERY_MIXED_RESULT`
 
 - Execution count: `1`

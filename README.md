@@ -128,15 +128,18 @@ registration. Provisional reports have `action_authority = NONE` and cannot
 enter Candidate Filter or Runbook paths; automated review examples use the
 simulated `TEST_REVIEWER` identity.
 
-One fixed 24-case x 2-arm study executed exactly once. Open-world discovery
-reached 10/14 novelty recall and 10/14 root localization with 100% valid
-evidence references, zero known/No-Incident accuracy drop cases, and zero
-action-authority violations. Broad-domain accuracy was only 1/14 and one of ten
-controls produced false novelty, so the frozen measured terminal is
-`DTA_V23_OPEN_WORLD_DISCOVERY_MIXED_RESULT`, not a reliable mechanism-discovery,
-production-autonomy, or remediation claim. See the [fixed study](docs/results/dta-v23-open-world-evaluation.md),
-[error analysis](docs/results/dta-v23-open-world-error-analysis.md), and
-[interview brief](docs/results/dta-v23-open-world-interview-brief.md).
+One 24-case x 2-arm artifact executed exactly once and internally scored
+`DTA_V23_OPEN_WORLD_DISCOVERY_MIXED_RESULT`. Independent final review found
+that its closed arm consumed v2.3 Residual Graph and Novelty Gate state rather
+than the Goal-specified existing Diagnosis admission; it also found a Novelty
+Gate rule mismatch, an unwired conflict path, and only two proven data-level
+counterfactual pairs. The artifact is retained, but the comparison is
+`INVALID / REVIEW_REQUIRED` under `BLOCKED_DTA_V23_ONTOLOGY_ISOLATION`; it does
+not establish known-world preservation, mechanism discovery, production
+autonomy, or remediation authority. See the [artifact report](docs/results/dta-v23-open-world-evaluation.md),
+[error analysis](docs/results/dta-v23-open-world-error-analysis.md),
+[interview brief](docs/results/dta-v23-open-world-interview-brief.md), and
+[independent review](docs/external-reviews/dta-v23-open-world-final-review.md).
 
 ## One-command offline demo
 

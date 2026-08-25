@@ -1,13 +1,37 @@
 # DTA v2.3 Open-World Discovery — Error Analysis
 
+Repository acceptance: `INVALID / REVIEW_REQUIRED`
+
+Independent final review found three protocol Must Fix items. The immutable
+result bytes and their internally consistent score are retained, but the study
+does not satisfy the Goal-defined arm contract and cannot support repository
+acceptance or the MVP completion terminal.
+
 ## Frozen disposition
 
-The one fixed 24-case comparison executed exactly once and produced
-`DTA_V23_OPEN_WORLD_DISCOVERY_MIXED_RESULT`. The result is valid but does not
-support the positive-effect claim: novelty recall and root localization both
-reached 10/14 (`0.714`), while broad-domain accuracy reached only 1/14
-(`0.071`). Evidence-reference validity was `1.000`, the aggregate false-novel
-rate was 1/10 (`0.100`), and action-authority violations were zero.
+The 24-case artifact executed exactly once and internally scored
+`DTA_V23_OPEN_WORLD_DISCOVERY_MIXED_RESULT`. It does not support an accepted
+effect claim: novelty recall and root localization both reached 10/14
+(`0.714`), while broad-domain accuracy reached only 1/14 (`0.071`).
+Evidence-reference validity was `1.000`, the aggregate false-novel rate was
+1/10 (`0.100`), and action-authority violations were zero.
+
+## Independent review blockers
+
+1. `CLOSED_WORLD_ONLY` consumed v2.3 Generic Anomalies, Residual Evidence
+   Graph, and Novelty Gate state, and projected known terminals from
+   `KnownTerminalCandidateV23` rather than sharing the existing admitted v2.2
+   Diagnosis path. The frozen arms therefore are not the approved comparison.
+2. The implemented single-source strong-anomaly gate required healthy runtime
+   **and** a contrastive target; the Goal required either condition. Runtime
+   conflict detection was also not wired into development or evaluation.
+3. Four `counterfactual_pair_id` labels were present, but only two pairs were
+   proven as data-level service-target mirrors. Pair labels alone do not prove
+   the required counterfactual construction.
+
+Repairing the first two blockers changes evaluated source semantics. The
+one-shot study has already executed, so the artifact must not be overwritten
+or rerun inside this Goal for metric optimization.
 
 This evaluation used committed replay/derived evidence only. It made zero
 Docker calls, created zero live faults, executed zero Runbooks, and granted
@@ -63,9 +87,9 @@ times.
 
 ## Bounded conclusion
 
-The evidence supports a separate, safe open-world discovery MVP that can turn
-some closed-world abstentions into typed provisional reports without weakening
-known-world results. It does not establish reliable broad-domain or mechanism
-discovery, production autonomy, remediation authority, or live-fault
-generalization. The frozen mixed terminal is retained without rerun or metric
-optimization.
+The artifact demonstrates typed provisional reports and zero action authority,
+but it does not establish the Goal-defined closed/open comparison, known-world
+preservation, reliable broad-domain or mechanism discovery, production
+autonomy, remediation authority, or live-fault generalization. The frozen
+mixed terminal is retained without rerun or metric optimization under
+`BLOCKED_DTA_V23_ONTOLOGY_ISOLATION`.
