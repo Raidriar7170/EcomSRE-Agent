@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import timedelta
 import hashlib
 from typing import Any, Literal, cast
@@ -89,6 +90,12 @@ class RealFaultCanonicalBootstrapV226(DtaModelV22):
         return semantic_sha256_v22(
             self.model_dump(mode="json", exclude={"bootstrap_sha256"})
         )
+
+
+@dataclass(frozen=True, slots=True)
+class RealFaultBootstrapPlanV226:
+    run_id: str
+    actions: tuple[EvidenceActionV22, ...]
 
 
 def real_fault_run_id_v226(capture: RealFaultOpaqueCaptureV1) -> str:
@@ -187,12 +194,11 @@ def _normalize_metrics_v226(
     )
 
 
-def build_real_fault_canonical_bootstrap_v226(
+def build_real_fault_bootstrap_plan_v226(
     *,
     capture: RealFaultOpaqueCaptureV1,
     baseline_capture: RealFaultOpaqueCaptureV1,
-    backend: ActionReadBackendV225,
-) -> tuple[RealFaultCanonicalBootstrapV226, tuple[MemoryReadOutcomeV22, ...]]:
+) -> RealFaultBootstrapPlanV226:
     if capture.alias_map_name != baseline_capture.alias_map_name:
         raise ValueError("bootstrap capture and baseline maps differ")
     run_id = real_fault_run_id_v226(capture)
@@ -220,9 +226,30 @@ def build_real_fault_canonical_bootstrap_v226(
         for service in capture.candidate_aliases
     )
     actions = (runtime_action, *metric_actions)
+    return RealFaultBootstrapPlanV226(run_id=run_id, actions=actions)
+
+
+def dispatch_real_fault_bootstrap_v226(
+    *,
+    plan: RealFaultBootstrapPlanV226,
+    backend: ActionReadBackendV225,
+) -> tuple[ReadOutcomeV22, ...]:
+    return tuple(backend.execute(action) for action in plan.actions)
+
+
+def finalize_real_fault_bootstrap_v226(
+    *,
+    capture: RealFaultOpaqueCaptureV1,
+    baseline_capture: RealFaultOpaqueCaptureV1,
+    plan: RealFaultBootstrapPlanV226,
+    source_outcomes: tuple[ReadOutcomeV22, ...],
+) -> tuple[RealFaultCanonicalBootstrapV226, tuple[MemoryReadOutcomeV22, ...]]:
+    if len(source_outcomes) != len(plan.actions):
+        raise ValueError("bootstrap dispatch outcome count differs")
     outcomes: list[MemoryReadOutcomeV22] = []
-    for ordinal, action in enumerate(actions, start=1):
-        source_outcome = backend.execute(action)
+    for ordinal, (action, source_outcome) in enumerate(
+        zip(plan.actions, source_outcomes, strict=True), start=1
+    ):
         normalized = _normalize_metrics_v226(
             action=action,
             outcome=source_outcome,
@@ -232,7 +259,7 @@ def build_real_fault_canonical_bootstrap_v226(
             _memory_outcome(
                 action=action,
                 outcome=normalized,
-                run_id=run_id,
+                run_id=plan.run_id,
                 dispatch_ordinal=ordinal,
                 observed_at=capture.capture.captured_at,
             )
@@ -292,10 +319,36 @@ def build_real_fault_canonical_bootstrap_v226(
     return bootstrap, canonical_outcomes
 
 
+def build_real_fault_canonical_bootstrap_v226(
+    *,
+    capture: RealFaultOpaqueCaptureV1,
+    baseline_capture: RealFaultOpaqueCaptureV1,
+    backend: ActionReadBackendV225,
+) -> tuple[RealFaultCanonicalBootstrapV226, tuple[MemoryReadOutcomeV22, ...]]:
+    plan = build_real_fault_bootstrap_plan_v226(
+        capture=capture,
+        baseline_capture=baseline_capture,
+    )
+    source_outcomes = dispatch_real_fault_bootstrap_v226(
+        plan=plan,
+        backend=backend,
+    )
+    return finalize_real_fault_bootstrap_v226(
+        capture=capture,
+        baseline_capture=baseline_capture,
+        plan=plan,
+        source_outcomes=source_outcomes,
+    )
+
+
 __all__ = (
     "RealFaultBootstrapReadBindingV226",
+    "RealFaultBootstrapPlanV226",
     "RealFaultCanonicalBootstrapV226",
     "build_real_fault_baseline_profile_v226",
+    "build_real_fault_bootstrap_plan_v226",
     "build_real_fault_canonical_bootstrap_v226",
+    "dispatch_real_fault_bootstrap_v226",
+    "finalize_real_fault_bootstrap_v226",
     "real_fault_run_id_v226",
 )

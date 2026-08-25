@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from ecomsre.dta_v2.read_tools import BackendResult
 from ecomsre.dta_v2.tool_contracts import (
     EndpointState,
@@ -23,6 +25,7 @@ from ecomsre.dta_v2.v22.real_fault_capture_v225 import (
 )
 from ecomsre.dta_v2.v22.real_fault_live_shadow_v226 import (
     run_current_runtime_bundle_live_v226,
+    run_current_runtime_bundle_simulated_live_v226,
 )
 from ecomsre.dta_v2.v22.real_fault_selection_v226 import (
     RealFaultSelectionDecisionV226,
@@ -169,7 +172,7 @@ def test_v226_live_adapter_handles_unequal_baseline_and_fault_physical_reads() -
     baseline_provider = _TerminalProvider()
     fault_provider = _TerminalProvider()
 
-    baseline_shadow = run_current_runtime_bundle_live_v226(
+    baseline_shadow = run_current_runtime_bundle_simulated_live_v226(
         capture=baseline,
         baseline_capture=baseline,
         alias_map=map_a,
@@ -177,7 +180,7 @@ def test_v226_live_adapter_handles_unequal_baseline_and_fault_physical_reads() -
         model_id="deterministic-v226",
         provider=baseline_provider,
     )
-    fault_shadow = run_current_runtime_bundle_live_v226(
+    fault_shadow = run_current_runtime_bundle_simulated_live_v226(
         capture=fault,
         baseline_capture=baseline,
         alias_map=map_a,
@@ -193,6 +196,7 @@ def test_v226_live_adapter_handles_unequal_baseline_and_fault_physical_reads() -
     assert fault_shadow.arm_run.prediction.root_service_alias == map_a.alias_for("ad")
     assert fault_shadow.arm_run.prediction.mechanism == "CPU_SATURATION"
     for shadow in (baseline_shadow, fault_shadow):
+        assert shadow.backend == "DETERMINISTIC_FAKE_PHYSICAL_BACKEND"
         assert shadow.arm_run.trace.last_completed_stage.value == "COMPLETE"
         assert shadow.physical_multi_target is True
         assert shadow.resource_request_target_count == 2
@@ -211,3 +215,52 @@ def test_v226_live_adapter_handles_unequal_baseline_and_fault_physical_reads() -
         rendered = provider.requests[0].model_dump_json().casefold()
         assert '"ad"' not in rendered
         assert "recommendation" not in rendered
+
+
+def test_v226_production_live_entrypoint_rejects_unverified_backend_identity() -> None:
+    baseline = _capture("baseline-map-a")
+    map_a, _map_b = build_alias_maps_v225(
+        fault_service="ad",
+        comparator_service="recommendation",
+        aliases=baseline.candidate_aliases,
+    )
+
+    with pytest.raises(TypeError, match="owned LocalSandboxReadBackend"):
+        run_current_runtime_bundle_live_v226(
+            capture=baseline,
+            baseline_capture=baseline,
+            alias_map=map_a,
+            live_backend=_UnequalPhysicalBackend(ad_cpu=3.0),
+            model_id="deterministic-v226",
+            provider=_TerminalProvider(),
+        )
+
+
+class _FailingPhysicalBackend(_UnequalPhysicalBackend):
+    def execute(self, request):
+        self.requests.append(request)
+        raise RuntimeError("injected simulated backend failure")
+
+
+def test_v226_simulated_live_wrapper_preserves_typed_pre_resource_failure() -> None:
+    baseline = _capture("baseline-map-a")
+    map_a, _map_b = build_alias_maps_v225(
+        fault_service="ad",
+        comparator_service="recommendation",
+        aliases=baseline.candidate_aliases,
+    )
+
+    shadow = run_current_runtime_bundle_simulated_live_v226(
+        capture=baseline,
+        baseline_capture=baseline,
+        alias_map=map_a,
+        live_backend=_FailingPhysicalBackend(ad_cpu=3.0),
+        model_id="deterministic-v226",
+        provider=_TerminalProvider(),
+    )
+
+    assert shadow.arm_run.status.value == "RUNNER_FAILED"
+    assert shadow.arm_run.trace.failure_stage.value == "BOOTSTRAP_DISPATCH"
+    assert shadow.resource_request_target_count == 0
+    assert shadow.physical_multi_target is False
+    assert shadow.opaque_remap_complete is False

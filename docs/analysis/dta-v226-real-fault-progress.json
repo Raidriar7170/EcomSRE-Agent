@@ -13,7 +13,7 @@
     "D5": "COMPLETE",
     "D6": "COMPLETE",
     "D7": "COMPLETE",
-    "D8": "SIMULATION_PASS_REVIEW_PENDING",
+    "D8": "REVIEW_FIXES_IMPLEMENTED_REVIEW_PENDING",
     "D9": "PENDING",
     "D10": "PENDING",
     "D11": "PENDING",
@@ -69,9 +69,12 @@
     "stage_trace_complete": true
   },
   "pre_live_review": {
-    "status": "PENDING",
-    "must_fix": null,
-    "claim_accuracy": null
+    "status": "REVIEW_1_FAILED_FIXES_IMPLEMENTED_REVIEW_2_PENDING",
+    "review_1_head": "f0e683d7af094d049e6372c4e48fc0a473a3f395",
+    "review_1_must_fix": 3,
+    "review_1_claim_accuracy": "FAIL",
+    "review_2_must_fix": null,
+    "review_2_claim_accuracy": null
   },
   "accepted_live_campaigns": 0,
   "physical_captures": 0,

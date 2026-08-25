@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+import ecomsre.dta_v2.v22.current_runtime_bundle_v226 as current_module
 from ecomsre.dta_v2.v22.current_runtime_bundle_v226 import (
     run_current_runtime_bundle_v226,
 )
@@ -194,3 +195,66 @@ def test_current_preserves_failed_provider_accounting() -> None:
     assert run.transport_failures == 0
     assert run.total_tokens == 72
     assert run.latency_ms == 42.0
+
+
+class _BootstrapDispatchFailureBackend:
+    duplicate_request_count = 0
+
+    def execute(self, _action):
+        raise RuntimeError("injected bootstrap dispatch failure")
+
+
+def test_current_bootstrap_read_failure_has_exact_dispatch_stage() -> None:
+    run = run_current_runtime_bundle_v226(
+        capture=_capture("fault-map-a"),
+        baseline_capture=_capture("baseline-map-a"),
+        model_id="deterministic-v226",
+        provider=_TerminalSelectingProvider(),
+        _action_backend=_BootstrapDispatchFailureBackend(),
+    )
+
+    assert run.status.value == "RUNNER_FAILED"
+    assert run.trace.last_completed_stage is RealFaultStageV226.BOOTSTRAP_ACTION_BUILD
+    assert run.trace.failure_stage is RealFaultStageV226.BOOTSTRAP_DISPATCH
+    assert run.trace.safe_error_code.value == "BOOTSTRAP_READ_FAILED"
+
+
+def test_current_bootstrap_action_and_memory_failures_keep_exact_stage(
+    monkeypatch,
+) -> None:
+    def fail_action(**_kwargs):
+        raise LookupError("injected bootstrap action failure")
+
+    monkeypatch.setattr(
+        current_module,
+        "build_real_fault_bootstrap_plan_v226",
+        fail_action,
+    )
+    action_run = run_current_runtime_bundle_v226(
+        capture=_capture("fault-map-a"),
+        baseline_capture=_capture("baseline-map-a"),
+        model_id="deterministic-v226",
+        provider=_TerminalSelectingProvider(),
+    )
+    assert action_run.trace.failure_stage is RealFaultStageV226.BOOTSTRAP_ACTION_BUILD
+    assert action_run.trace.safe_error_code.value == "BOOTSTRAP_ACTION_MISSING"
+
+    monkeypatch.undo()
+
+    def fail_memory(**_kwargs):
+        raise RuntimeError("injected bootstrap memory failure")
+
+    monkeypatch.setattr(
+        current_module,
+        "finalize_real_fault_bootstrap_v226",
+        fail_memory,
+    )
+    memory_run = run_current_runtime_bundle_v226(
+        capture=_capture("fault-map-a"),
+        baseline_capture=_capture("baseline-map-a"),
+        model_id="deterministic-v226",
+        provider=_TerminalSelectingProvider(),
+    )
+    assert memory_run.trace.last_completed_stage is RealFaultStageV226.BOOTSTRAP_DISPATCH
+    assert memory_run.trace.failure_stage is RealFaultStageV226.BOOTSTRAP_MEMORY_BUILD
+    assert memory_run.trace.safe_error_code.value == "MEMORY_CONSTRUCTION_FAILED"

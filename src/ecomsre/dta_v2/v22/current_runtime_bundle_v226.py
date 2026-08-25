@@ -31,7 +31,9 @@ from ecomsre.dta_v2.v22.real_fault_action_backend_v225 import (
 )
 from ecomsre.dta_v2.v22.real_fault_bootstrap_v226 import (
     build_real_fault_baseline_profile_v226,
-    build_real_fault_canonical_bootstrap_v226,
+    build_real_fault_bootstrap_plan_v226,
+    dispatch_real_fault_bootstrap_v226,
+    finalize_real_fault_bootstrap_v226,
     real_fault_run_id_v226,
 )
 from ecomsre.dta_v2.v22.real_fault_capture_v225 import (
@@ -199,16 +201,26 @@ def run_current_runtime_bundle_v226(
             edges=(),
         )
         active = RealFaultStageV226.BOOTSTRAP_ACTION_BUILD
-        bootstrap, outcomes = build_real_fault_canonical_bootstrap_v226(
+        bootstrap_plan = build_real_fault_bootstrap_plan_v226(
             capture=capture,
             baseline_capture=baseline_capture,
+        )
+        completed.append(active)
+
+        active = RealFaultStageV226.BOOTSTRAP_DISPATCH
+        bootstrap_source_outcomes = dispatch_real_fault_bootstrap_v226(
+            plan=bootstrap_plan,
             backend=backend,
         )
         completed.append(active)
-        active = RealFaultStageV226.BOOTSTRAP_DISPATCH
-        completed.append(active)
 
         active = RealFaultStageV226.BOOTSTRAP_MEMORY_BUILD
+        bootstrap, outcomes = finalize_real_fault_bootstrap_v226(
+            capture=capture,
+            baseline_capture=baseline_capture,
+            plan=bootstrap_plan,
+            source_outcomes=bootstrap_source_outcomes,
+        )
         baseline = build_real_fault_baseline_profile_v226(baseline_capture)
         memory, _ = build_memory_views_v22(
             outcomes=outcomes,
