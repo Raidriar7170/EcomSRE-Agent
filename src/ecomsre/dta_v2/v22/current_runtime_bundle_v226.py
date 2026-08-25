@@ -214,14 +214,16 @@ def run_current_runtime_bundle_v226(
         )
         completed.append(active)
 
+        active = RealFaultStageV226.BASELINE_PROFILE_BUILD
+        baseline = build_real_fault_baseline_profile_v226(baseline_capture)
+
         active = RealFaultStageV226.BOOTSTRAP_MEMORY_BUILD
         bootstrap, outcomes = finalize_real_fault_bootstrap_v226(
             capture=capture,
-            baseline_capture=baseline_capture,
+            baseline=baseline,
             plan=bootstrap_plan,
             source_outcomes=bootstrap_source_outcomes,
         )
-        baseline = build_real_fault_baseline_profile_v226(baseline_capture)
         memory, _ = build_memory_views_v22(
             outcomes=outcomes,
             baseline=baseline,
@@ -232,6 +234,8 @@ def run_current_runtime_bundle_v226(
             raise ValueError("canonical bootstrap memory differs")
         completed.append(active)
 
+        # The baseline is built before memory while its own failure stage is active,
+        # but its success event remains after memory to preserve the frozen trace order.
         active = RealFaultStageV226.BASELINE_PROFILE_BUILD
         if baseline.baseline_sha256 != bootstrap.baseline_sha256:
             raise ValueError("canonical bootstrap baseline differs")

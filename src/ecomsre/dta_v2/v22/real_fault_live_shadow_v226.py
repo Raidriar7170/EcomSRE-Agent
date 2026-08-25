@@ -57,6 +57,14 @@ class RealFaultLiveShadowRunV226(DtaModelV22):
     def require_live_shadow(self) -> RealFaultLiveShadowRunV226:
         if self.arm_run.arm is not RealFaultStudyArmV226.CURRENT_RUNTIME_BUNDLE:
             raise ValueError("v2.2.6 live shadow is not the Current arm")
+        if self.arm_run.case_id.startswith("fault-"):
+            expected_case_kind = "AD_CPU_FAULT"
+        elif self.arm_run.case_id.startswith("baseline-"):
+            expected_case_kind = "BASELINE"
+        else:
+            raise ValueError("v2.2.6 live shadow case ID has no admitted state role")
+        if self.case_kind != expected_case_kind:
+            raise ValueError("v2.2.6 live shadow case kind differs from case ID")
         if self.resource_request_target_count not in {0, 2}:
             raise ValueError("v2.2.6 live shadow physical target count is invalid")
         if self.physical_multi_target != (self.resource_request_target_count == 2):

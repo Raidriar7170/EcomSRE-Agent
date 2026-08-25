@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from ecomsre.dta_v2.v22.real_fault_capture_v225 import RealFaultOpaqueCaptureV1
 from ecomsre.dta_v2.v22.real_fault_comparison_contracts_v226 import (
     RealFaultStudyArmV226,
@@ -264,3 +266,29 @@ def test_v226_failed_arm_forbids_cost_based_comparison_award() -> None:
     assert score.all_snapshot_runs_valid is False
     assert score.comparison_admissible is False
     assert score.comparison_disposition is None
+
+
+def test_v226_scorer_rejects_swapped_live_state_roles() -> None:
+    execution, truths, _truth_loads = _execution()
+    live_fault = _live_shadow(execution, "fault-map-a")
+    live_baseline = _live_shadow(execution, "baseline-map-a")
+
+    with pytest.raises(ValueError, match="live fault role"):
+        score_real_fault_study_v226(
+            execution=execution,
+            truths=truths,
+            live_fault=live_baseline,
+            live_baseline=live_fault,
+            baseline_restored=True,
+            cleanup="CLEAN",
+            non_owned_changes=0,
+        )
+
+
+def test_v226_live_shadow_model_binds_case_kind_to_case_id() -> None:
+    execution, _truths, _truth_loads = _execution()
+    payload = _live_shadow(execution, "fault-map-a").model_dump()
+    payload["case_kind"] = "BASELINE"
+
+    with pytest.raises(ValueError, match="case kind differs from case ID"):
+        RealFaultLiveShadowRunV226.model_validate(payload)

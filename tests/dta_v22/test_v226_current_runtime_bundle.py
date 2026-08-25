@@ -258,3 +258,24 @@ def test_current_bootstrap_action_and_memory_failures_keep_exact_stage(
     assert memory_run.trace.last_completed_stage is RealFaultStageV226.BOOTSTRAP_DISPATCH
     assert memory_run.trace.failure_stage is RealFaultStageV226.BOOTSTRAP_MEMORY_BUILD
     assert memory_run.trace.safe_error_code.value == "MEMORY_CONSTRUCTION_FAILED"
+
+
+def test_current_baseline_builder_failure_has_exact_profile_stage(monkeypatch) -> None:
+    def fail_baseline(_capture):
+        raise RuntimeError("injected baseline profile failure")
+
+    monkeypatch.setattr(
+        current_module,
+        "build_real_fault_baseline_profile_v226",
+        fail_baseline,
+    )
+    run = run_current_runtime_bundle_v226(
+        capture=_capture("fault-map-a"),
+        baseline_capture=_capture("baseline-map-a"),
+        model_id="deterministic-v226",
+        provider=_TerminalSelectingProvider(),
+    )
+
+    assert run.trace.last_completed_stage is RealFaultStageV226.BOOTSTRAP_DISPATCH
+    assert run.trace.failure_stage is RealFaultStageV226.BASELINE_PROFILE_BUILD
+    assert run.trace.safe_error_code.value == "BASELINE_PROFILE_INVALID"

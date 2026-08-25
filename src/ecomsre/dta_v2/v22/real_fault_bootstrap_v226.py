@@ -240,7 +240,7 @@ def dispatch_real_fault_bootstrap_v226(
 def finalize_real_fault_bootstrap_v226(
     *,
     capture: RealFaultOpaqueCaptureV1,
-    baseline_capture: RealFaultOpaqueCaptureV1,
+    baseline: BaselineProfileV22,
     plan: RealFaultBootstrapPlanV226,
     source_outcomes: tuple[ReadOutcomeV22, ...],
 ) -> tuple[RealFaultCanonicalBootstrapV226, tuple[MemoryReadOutcomeV22, ...]]:
@@ -265,7 +265,6 @@ def finalize_real_fault_bootstrap_v226(
             )
         )
     canonical_outcomes = tuple(outcomes)
-    baseline = build_real_fault_baseline_profile_v226(baseline_capture)
     memory, _ = build_memory_views_v22(
         outcomes=canonical_outcomes,
         baseline=baseline,
@@ -333,9 +332,10 @@ def build_real_fault_canonical_bootstrap_v226(
         plan=plan,
         backend=backend,
     )
+    baseline = build_real_fault_baseline_profile_v226(baseline_capture)
     return finalize_real_fault_bootstrap_v226(
         capture=capture,
-        baseline_capture=baseline_capture,
+        baseline=baseline,
         plan=plan,
         source_outcomes=source_outcomes,
     )

@@ -335,6 +335,16 @@ def score_real_fault_study_v226(
     cleanup: Literal["CLEAN", "NOT_CLEAN"],
     non_owned_changes: int,
 ) -> RealFaultStudyScoreV226:
+    if (
+        live_fault.case_kind != "AD_CPU_FAULT"
+        or not live_fault.arm_run.case_id.startswith("fault-")
+    ):
+        raise ValueError("v2.2.6 live fault role is invalid")
+    if (
+        live_baseline.case_kind != "BASELINE"
+        or not live_baseline.arm_run.case_id.startswith("baseline-")
+    ):
+        raise ValueError("v2.2.6 live baseline role is invalid")
     truth_by_case = {item.case_id: item for item in truths}
     if set(truth_by_case) != {run.case_id for run in execution.runs}:
         raise ValueError("v2.2.6 truth set differs from execution")
