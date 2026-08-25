@@ -116,10 +116,64 @@ Claim Accuracy:
 PASS
 ```
 
-## Review 4 — live orchestration addendum
+## Review 4 — live orchestration addendum — `e48d0e30ca8956a62994d987c870b80761b9ae1e`
 
-Pending on the exact commit that adds the write-once v2.2.6 manifest,
-preflight, and live-sequence orchestration. This addendum does not reopen the
-Review 3 acquisition/terminalization result; Docker will remain unopened until
-the new lifecycle wrapper is also reviewed for ownership, restoration, cleanup,
-single-execution, and no-write enforcement.
+Scope: read-only. Docker, Provider, and network calls: `0 / 0 / 0`.
+
+The exact clean reviewed HEAD used the pinned upstream submodule at
+`1755859a9de82c2e5e225be68abc401a5ebf2b4f`.
+
+Findings:
+
+- The live code constructs only `OwnedLiveAttemptV21` and
+  `RealFaultShadowLifecycleV1`; it adds no Docker environment or fault injector.
+- `campaign-0001` and the final execution are create-once claims. There is no
+  semantic or score-driven rerun path.
+- New aliases `svc-20e1bc90a8` and `svc-d9ca249b54` differ from v2.2.5; MAP_A
+  and MAP_B are exact physical-binding swaps.
+- The pre-live freeze binds HEAD, model, temperature, comparator, alias set,
+  shared Prompt, terminalizer, scorer, old Provider evidence, Review 3 evidence,
+  exact schedule, budgets, one campaign, one execution, and zero write,
+  proposal, or Runbook authority.
+- The live order is baseline proof/capture and Current baseline shadow,
+  revalidation and inherited Ad CPU injection, fault capture and Current fault
+  shadow, then restoration and cleanup.
+- `restore_and_cleanup()` is attempted in `finally`; success requires the exact
+  baseline restored, `CLEAN`, zero owned resources, and zero non-owned changes.
+- Physical captures and complete alias bindings remain private. Public output
+  begins only after cleanup, the one truth-late eight-run execution, and scoring.
+
+Fresh evidence:
+
+- v2.2.6 focused tests: `54 passed`
+- deterministic old-capture gate: `DTA_V226_DETERMINISTIC_OLD_CAPTURE_GATE_PASS`
+- frozen Provider iteration-03 digest matched; `8 / 8 VALID_TERMINAL` and zero
+  protocol, runner, or transport failures
+- Ruff, scoped mypy over 15 v2.2.6 modules, history verifier, and
+  `git diff --check`: `PASS`
+- all twelve prospective public outputs: absent
+- reviewed worktree: clean and synchronized with the remote branch
+
+Seven-question disposition:
+
+1. Resource Comparison Set instead of exact metric equality: `YES`.
+2. Shared terminalizer/baseline/ontology/Prompt/truth/scorer: `YES`.
+3. Accurate Model-directed naming: `YES`.
+4. PR #67 deterministic and real-Provider development: `YES`.
+5. Typed arm stages and safe error codes: `YES`.
+6. One physical two-target Resources read without write authority: `YES`.
+7. One no-score-retry campaign sufficient and enforced: `YES`.
+
+Docker admission may open solely for the authorized bounded v2.2.6 campaign,
+provided the invocation-time clean-HEAD, private-evidence, output-absence,
+ownership, restoration, and cleanup checks still pass. This does not authorize
+a replacement campaign, remediation, Agent writes, ActionProposals, or Runbook
+execution.
+
+```text
+Must Fix:
+0
+
+Claim Accuracy:
+PASS
+```

@@ -13,7 +13,7 @@
     "D5": "COMPLETE",
     "D6": "COMPLETE",
     "D7": "COMPLETE",
-    "D8": "ACQUISITION_REVIEW_PASS_LIVE_ORCHESTRATION_ADDENDUM_PENDING",
+    "D8": "COMPLETE",
     "D9": "PENDING",
     "D10": "PENDING",
     "D11": "PENDING",
@@ -69,7 +69,7 @@
     "stage_trace_complete": true
   },
   "pre_live_review": {
-    "status": "REVIEW_3_PASS_LIVE_ORCHESTRATION_REVIEW_4_PENDING",
+    "status": "MUST_FIX_0_CLAIM_ACCURACY_PASS",
     "review_1_head": "f0e683d7af094d049e6372c4e48fc0a473a3f395",
     "review_1_must_fix": 3,
     "review_1_claim_accuracy": "FAIL",
@@ -79,7 +79,10 @@
     "review_3_head": "02f6512dfda2f25824dd8b8d4a51c6e66d73b163",
     "review_3_must_fix": 0,
     "review_3_claim_accuracy": "PASS",
-    "docker_admission": "HELD_PENDING_LIVE_ORCHESTRATION_ADDENDUM"
+    "review_4_head": "e48d0e30ca8956a62994d987c870b80761b9ae1e",
+    "review_4_must_fix": 0,
+    "review_4_claim_accuracy": "PASS",
+    "docker_admission": "OPEN_FOR_ONE_BOUNDED_V226_CAMPAIGN"
   },
   "accepted_live_campaigns": 0,
   "physical_captures": 0,
@@ -89,6 +92,7 @@
   "final_paired_snapshot_arm_runs": 0,
   "docker_calls_before_pre_live_pass": 0,
   "provider_network_calls_before_d7": 0,
+  "pre_live_full_pytest": "4869_PASSED_6_EXPECTED_SKIPPED",
   "agent_writes": 0,
   "action_proposals": 0,
   "runbook_executions": 0,
