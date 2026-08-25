@@ -1,0 +1,182 @@
+{
+  "schema_version": "dta-v225-real-fault.opaque-capture.v1",
+  "case_id": "baseline-map-a",
+  "alias_map_name": "MAP_A",
+  "candidate_aliases": [
+    "svc-6db724c330",
+    "svc-f1a57dd3c4"
+  ],
+  "source_window": {
+    "schema_version": "dta-v225-real-fault.source-window.v1",
+    "captured_at": "2026-08-25T02:07:00.166082Z",
+    "metrics_lookback_seconds": 60,
+    "logs_lookback_seconds": 300,
+    "traces_lookback_seconds": 300,
+    "resources_sampling_window_seconds": 10,
+    "resources_sample_count": 5,
+    "source_window_sha256": "d768f25213ee815eb9d61a7bcc4a8f7cb5da03edc8207c0a6bc0a49e2ac5448a"
+  },
+  "capture": {
+    "schema_version": "dta-v22.replay-capture.v1",
+    "captured_at": "2026-08-25T02:07:00.166082Z",
+    "metrics": [
+      {
+        "schema_version": "dta-v22.metric-fact.v1",
+        "service": "svc-6db724c330",
+        "metric_kind": "ERROR_RATE",
+        "support_status": "UNSUPPORTED",
+        "sample_count": 0,
+        "value": null,
+        "unit": "RATIO",
+        "window_started_at": "2026-08-25T02:06:00.166082Z",
+        "window_ended_at": "2026-08-25T02:07:00.166082Z"
+      },
+      {
+        "schema_version": "dta-v22.metric-fact.v1",
+        "service": "svc-6db724c330",
+        "metric_kind": "LATENCY_P95_MS",
+        "support_status": "SUPPORTED",
+        "sample_count": 1,
+        "value": 3.188888888888888,
+        "unit": "MILLISECONDS",
+        "window_started_at": "2026-08-25T02:06:00.166082Z",
+        "window_ended_at": "2026-08-25T02:07:00.166082Z"
+      },
+      {
+        "schema_version": "dta-v22.metric-fact.v1",
+        "service": "svc-6db724c330",
+        "metric_kind": "REQUEST_SUPPORT",
+        "support_status": "SUPPORTED",
+        "sample_count": 1,
+        "value": 79.63636363636363,
+        "unit": "COUNT",
+        "window_started_at": "2026-08-25T02:06:00.166082Z",
+        "window_ended_at": "2026-08-25T02:07:00.166082Z"
+      },
+      {
+        "schema_version": "dta-v22.metric-fact.v1",
+        "service": "svc-f1a57dd3c4",
+        "metric_kind": "ERROR_RATE",
+        "support_status": "UNSUPPORTED",
+        "sample_count": 0,
+        "value": null,
+        "unit": "RATIO",
+        "window_started_at": "2026-08-25T02:06:00.166082Z",
+        "window_ended_at": "2026-08-25T02:07:00.166082Z"
+      },
+      {
+        "schema_version": "dta-v22.metric-fact.v1",
+        "service": "svc-f1a57dd3c4",
+        "metric_kind": "LATENCY_P95_MS",
+        "support_status": "SUPPORTED",
+        "sample_count": 1,
+        "value": 51.25000000000007,
+        "unit": "MILLISECONDS",
+        "window_started_at": "2026-08-25T02:06:00.166082Z",
+        "window_ended_at": "2026-08-25T02:07:00.166082Z"
+      },
+      {
+        "schema_version": "dta-v22.metric-fact.v1",
+        "service": "svc-f1a57dd3c4",
+        "metric_kind": "REQUEST_SUPPORT",
+        "support_status": "SUPPORTED",
+        "sample_count": 1,
+        "value": 127.63636363636363,
+        "unit": "COUNT",
+        "window_started_at": "2026-08-25T02:06:00.166082Z",
+        "window_ended_at": "2026-08-25T02:07:00.166082Z"
+      }
+    ],
+    "logs": [],
+    "traces": [],
+    "runtime": [
+      {
+        "schema_version": "dta-v22.runtime-record.v1",
+        "service": "svc-6db724c330",
+        "state": "RUNNING",
+        "healthy": true,
+        "restart_count": 0
+      },
+      {
+        "schema_version": "dta-v22.runtime-record.v1",
+        "service": "svc-f1a57dd3c4",
+        "state": "RUNNING",
+        "healthy": true,
+        "restart_count": 0
+      }
+    ],
+    "resources": [
+      {
+        "schema_version": "dta-v22.resource-usage-record.v1",
+        "service": "svc-6db724c330",
+        "sampling_window_seconds": 10,
+        "samples": [
+          {
+            "offset_ms": 0,
+            "cpu_percent": 1.0729602157788267,
+            "memory_bytes": 278171648
+          },
+          {
+            "offset_ms": 2500,
+            "cpu_percent": 3.4029354207436397,
+            "memory_bytes": 278581248
+          },
+          {
+            "offset_ms": 5000,
+            "cpu_percent": 0.5185248130523454,
+            "memory_bytes": 278626304
+          },
+          {
+            "offset_ms": 7500,
+            "cpu_percent": 0.15383322125084062,
+            "memory_bytes": 278687744
+          },
+          {
+            "offset_ms": 10000,
+            "cpu_percent": 0.12292780748663101,
+            "memory_bytes": 278777856
+          }
+        ],
+        "memory_slope_bytes_per_second": 60620.8
+      },
+      {
+        "schema_version": "dta-v22.resource-usage-record.v1",
+        "service": "svc-f1a57dd3c4",
+        "sampling_window_seconds": 10,
+        "samples": [
+          {
+            "offset_ms": 0,
+            "cpu_percent": 1.0449449793672627,
+            "memory_bytes": 78954496
+          },
+          {
+            "offset_ms": 2500,
+            "cpu_percent": 0.6677223719676549,
+            "memory_bytes": 81031168
+          },
+          {
+            "offset_ms": 5000,
+            "cpu_percent": 0.9559063136456212,
+            "memory_bytes": 81055744
+          },
+          {
+            "offset_ms": 7500,
+            "cpu_percent": 1.3721614227086183,
+            "memory_bytes": 81084416
+          },
+          {
+            "offset_ms": 10000,
+            "cpu_percent": 0.5882056451612904,
+            "memory_bytes": 81113088
+          }
+        ],
+        "memory_slope_bytes_per_second": 215859.2
+      }
+    ],
+    "changes": [],
+    "source_failures": []
+  },
+  "provenance": "OWNED_LOCAL_CAPTURE",
+  "physical_capture_sha256": "bd2f0396955b9df2fd752ab4ad1b0b74345c2a7cbd2158ce279e0108cfe60425",
+  "opaque_capture_sha256": "bffaec028b0d45391ad6b62f1da4a8036328ae2bddcdab2b1ec1fa54a83b1f36"
+}
