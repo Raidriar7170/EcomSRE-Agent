@@ -1281,7 +1281,8 @@ def _build_common_context_v23(
         hidden_mechanisms=(hidden_mechanism,) if hidden_mechanism is not None else (),
     )
     backend = QuerySpecificReplayBackendV22(case.capture)
-    executed: set[str] = set()
+    bootstrap_action_ids = {item.action_id for item in outcomes}
+    common_action_ids: set[str] = set()
     common_reads = 0
     admission = build_known_admission_state_v23(
         view=view,
@@ -1299,7 +1300,7 @@ def _build_common_context_v23(
             memory=memory,
             topology_edges=case.topology_edges,
             catalog=catalog,
-            executed_action_ids=executed,
+            executed_action_ids=bootstrap_action_ids | common_action_ids,
         )
         if action is None:
             break
@@ -1311,7 +1312,7 @@ def _build_common_context_v23(
             observed_at=case.capture.captured_at,
             top_k=64,
         )
-        executed.add(action.action_id)
+        common_action_ids.add(action.action_id)
         common_reads += 1
         admission = build_known_admission_state_v23(
             view=view,
@@ -1325,7 +1326,7 @@ def _build_common_context_v23(
         memory=memory,
         admission=admission,
         catalog=catalog,
-        common_action_ids=tuple(sorted(executed)),
+        common_action_ids=tuple(sorted(common_action_ids)),
         bootstrap_memory_sha256=bootstrap_memory_sha256,
         common_read_count=common_reads,
     )

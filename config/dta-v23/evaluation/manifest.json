@@ -55,7 +55,7 @@
     },
     {
       "path": "src/ecomsre/dta_v2/v23/evaluation.py",
-      "sha256": "f72de1431f4342c7e2688027d4e9a53a890eddff655010a919f7d2c2fac12e45"
+      "sha256": "0afacecb92300e7c506583f4ada6a2e8aa01db1084a968cdbb6fd7bce3ed5387"
     },
     {
       "path": "src/ecomsre/dta_v2/v23/generic_anomalies.py",
@@ -81,5 +81,5 @@
   "discovery_system_prompt_sha256": "f7b6a948908f1f4637508b74e18549576537179e6ac249537af523f8f735d403",
   "output_json": "docs/results/dta-v23-open-world-evaluation.json",
   "output_markdown": "docs/results/dta-v23-open-world-evaluation.md",
-  "fixed_at_utc": "2026-08-25T09:27:23Z"
+  "fixed_at_utc": "2026-08-25T09:40:32Z"
 }

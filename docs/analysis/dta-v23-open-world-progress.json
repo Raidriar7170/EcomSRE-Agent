@@ -4,11 +4,12 @@
   "base_commit": "f17688f4c313b1483bfb7c56675c429605faf489",
   "branch": "codex/dta-v23-open-world-discovery",
   "current_increment": 4,
-  "status": "DTA_V23_VALID_FIXED_EVALUATION_REFREEZE_READY",
+  "status": "DTA_V23_PROTOCOL_REPAIR_REFREEZE_READY",
   "engineering_terminal": null,
   "measured_result_terminal": null,
-  "fixed_evaluation_execution_count": 1,
+  "fixed_evaluation_execution_count": 2,
   "invalid_predecessor_execution_count": 1,
+  "protocol_blocked_predecessor_execution_count": 1,
   "valid_fixed_evaluation_execution_count": 0,
   "evaluation_acceptance": "PENDING_VALID_EVALUATION",
   "repository_disposition": "Draft / REVIEW_REQUIRED",
@@ -19,6 +20,15 @@
     "artifact_sha256": "e2bd2d41f8d2336225a10a97ae6222a9f3e1a52c00fe849137556f3e717aa9e5",
     "measured_result_terminal": "DTA_V23_OPEN_WORLD_DISCOVERY_MIXED_RESULT",
     "reason": "Goal-defined comparison was not implemented: closed arm consumed v2.3 discovery state, Novelty Gate differed, and counterfactual pairs were labels rather than four data-level swaps."
+  },
+  "protocol_blocked_predecessor": {
+    "status": "PROTOCOL_BLOCKED / INVALID",
+    "completed_case_pairs": 2,
+    "provider_calls": 0,
+    "sentinel_sha256": "765f1b2ec08073cead5f9b72dbd3abbe6f2ea0088c85da5ea15a20b43f82196c",
+    "partial_jsonl_sha256": "a911f3e698c3df24692191dffb3f207c5f7c37a4bf38164931b8650c151d60d2",
+    "failure_code": "DUPLICATE_BOOTSTRAP_ACTION_OUTCOME",
+    "reason": "Shared known-evidence routing selected a Metrics action already present in the canonical bootstrap; v2.2 memory validation failed closed before ow-003 completed. No final artifact was produced."
   },
   "final_review": {
     "status": "PENDING_REVIEW_OF_VALID_FIXED_EVALUATION",
@@ -71,6 +81,7 @@
       "planned_valid_execution_count": 1,
       "valid_fixed_evaluation_execution_count": 0,
       "invalid_predecessor_execution_count": 1,
+      "protocol_blocked_predecessor_execution_count": 1,
       "open_world_only_capabilities": [
         "Generic Anomalies",
         "Residual Evidence Graph",
@@ -88,6 +99,7 @@
     "docker_calls": 0,
     "new_live_faults": 0,
     "invalid_predecessor_provider_calls": 14,
+    "protocol_blocked_predecessor_provider_calls": 0,
     "valid_fixed_evaluation_provider_calls": 0,
     "agent_writes": 0,
     "runbook_executions": 0

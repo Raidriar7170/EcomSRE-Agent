@@ -249,6 +249,27 @@ def test_one_case_pair_shares_bytes_view_and_common_evidence_before_truth() -> N
     )
 
 
+def test_all_24_cases_build_offline_without_duplicate_trajectory() -> None:
+    cases = load_evaluation_case_set_v23(EVAL / "cases.json")
+    views = load_evaluation_ontology_views_v23(EVAL / "ontology-views.json")
+
+    pairs = tuple(
+        run_evaluation_case_pair_v23(
+            repository_root=ROOT,
+            spec=spec,
+            view_spec=views.require(spec.case_id),
+            truth_store=LazyTruthStoreV23(EVAL / "truth.json"),
+            provider_transport=None,
+        )
+        for spec in cases.cases
+    )
+
+    assert len(pairs) == 24
+    assert tuple(item.case_id for item in pairs) == tuple(
+        item.case_id for item in cases.cases
+    )
+
+
 def test_closed_arm_uses_v22_admission_without_open_world_state() -> None:
     cases = load_evaluation_case_set_v23(EVAL / "cases.json")
     views = load_evaluation_ontology_views_v23(EVAL / "ontology-views.json")
