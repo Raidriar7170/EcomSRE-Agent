@@ -6,7 +6,11 @@ import argparse
 from pathlib import Path
 from typing import Sequence
 
-from ecomsre.dta_v2.v23.discovery_runtime import run_cpu_development_demo_v23
+from ecomsre.dta_v2.v22.predicates import MechanismV22
+from ecomsre.dta_v2.v23.discovery_runtime import (
+    run_cpu_development_demo_v23,
+    run_development_leave_one_out_v23,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -15,17 +19,41 @@ def build_parser() -> argparse.ArgumentParser:
     demo = subparsers.add_parser("demo")
     demo.add_argument("demo_name", choices=("hidden-cpu",))
     demo.add_argument("--repository-root", type=Path, default=Path.cwd())
+    diagnose = subparsers.add_parser("diagnose")
+    diagnose.add_argument("--case", required=True)
+    diagnose.add_argument(
+        "--hide-mechanism",
+        choices=tuple(item.value for item in MechanismV22 if item not in {
+            MechanismV22.NO_INCIDENT,
+            MechanismV22.UNKNOWN,
+        }),
+    )
+    diagnose.add_argument("--repository-root", type=Path, default=Path.cwd())
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "demo" and args.demo_name == "hidden-cpu":
-        result = run_cpu_development_demo_v23(
+        demo_result = run_cpu_development_demo_v23(
             repository_root=args.repository_root.resolve(),
             hide_cpu=True,
         )
-        print(result.model_dump_json(indent=2))
+        print(demo_result.model_dump_json(indent=2))
+        return 0
+    if args.command == "diagnose":
+        case_value = Path(args.case)
+        case_id = case_value.stem if case_value.suffix == ".json" else args.case
+        diagnosis_result = run_development_leave_one_out_v23(
+            repository_root=args.repository_root.resolve(),
+            case_id=case_id,
+            hidden_mechanism=(
+                MechanismV22(args.hide_mechanism)
+                if args.hide_mechanism is not None
+                else None
+            ),
+        )
+        print(diagnosis_result.model_dump_json(indent=2))
         return 0
     raise AssertionError("unreachable v2.3 CLI command")
 
