@@ -18,7 +18,7 @@
     "D10": "COMPLETE",
     "D11": "COMPLETE",
     "D12": "COMPLETE",
-    "D13": "FINAL_REVIEW_CI_MERGE_PENDING"
+    "D13": "FINAL_REVIEW_PASS_CI_MERGE_PENDING"
   },
   "commit_1": "8d9a708a6d4d349d757664a196ec01a9bfd8eb26",
   "commit_2": "962cd7c9f74249dc6a81406cd5b09f2c4bed169c",
@@ -113,7 +113,15 @@
     "runner_failures": 0,
     "transport_failures": 0
   },
-  "final_review": null,
+  "final_review": {
+    "status": "MUST_FIX_0_CLAIM_ACCURACY_PASS",
+    "review_1_head": "9c12ac7126b5838f4f949a04ec4121709877c2c5",
+    "review_1_must_fix": 2,
+    "review_1_claim_accuracy": "FAIL",
+    "review_2_head": "e198300f7b2a0265c70da526e3c33aebf38000b9",
+    "review_2_must_fix": 0,
+    "review_2_claim_accuracy": "PASS"
+  },
   "exact_head_ci": null,
   "squash_merge_status": "PENDING",
   "completion_marker": null
