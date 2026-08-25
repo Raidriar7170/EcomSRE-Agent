@@ -1,0 +1,26 @@
+{
+  "schema_version": "dta-v231.successor-truth-shard.v1",
+  "record": {
+    "evaluator_truth": {
+      "case_id": "vx-116",
+      "category": "REGISTERED_KNOWN",
+      "expected_disposition": "KNOWN_INCIDENT",
+      "expected_root_service": "svc-b822ef5b21",
+      "expected_broad_domain": "RUNTIME",
+      "expected_mechanism": "SERVICE_UNAVAILABLE",
+      "semantic_concepts": [
+        "runtime",
+        "unavailable"
+      ],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": false,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": false
+    },
+    "admission_stratum": "REGISTERED_KNOWN",
+    "expected_known_mechanism": "SERVICE_UNAVAILABLE",
+    "counterfactual_target_role": null
+  }
+}

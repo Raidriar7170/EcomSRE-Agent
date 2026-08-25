@@ -1,0 +1,585 @@
+{
+  "audit_sha256": "1b70c09a0bf9933f8a8f71c878c0664b2c36cd1abd03d0a9a3673c9677c681d3",
+  "entries": [
+    {
+      "case_id": "ow-001",
+      "conflict_assessment": {
+        "alternative_cluster_ids": [],
+        "assessment_sha256": "04b88253cdd77513f2ea443ea8f0e580af47827d00103a041829567b8c25cf75",
+        "conflict_type": "COHERENT_COMPETITION",
+        "discriminating_sources": [],
+        "interpretation_clusters": [
+          {
+            "anomaly_ids": [
+              "ga:metric-error-outlier:svc-e3ca83b58b:9666dc3924eb",
+              "ga:resource-memory-trend:svc-e3ca83b58b:310690b1b457"
+            ],
+            "broad_domains": [
+              "RESOURCE",
+              "RUNTIME"
+            ],
+            "candidate_root_services": [
+              "svc-e3ca83b58b"
+            ],
+            "cluster_id": "ic-v231-dae88a1ae66b601b",
+            "cluster_strength": 4.0,
+            "coherence_edges": [
+              {
+                "left_id": "ga:metric-error-outlier:svc-e3ca83b58b:9666dc3924eb",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:resource-memory-trend:svc-e3ca83b58b:310690b1b457"
+              }
+            ],
+            "contradiction_edges": [],
+            "evidence_refs": [
+              "e:a:metrics:svc-e3ca83b58b:core:0:4d555fb6206f",
+              "e:a:resources:svc-e3ca83b58b:0:6d1d2a5aae0d"
+            ],
+            "related_services": [],
+            "schema_version": "dta-v231.interpretation-cluster.v1"
+          }
+        ],
+        "leading_cluster_id": "ic-v231-dae88a1ae66b601b",
+        "minimum_additional_reads": 0,
+        "reason_codes": [
+          "COMPETITION_CAN_BE_REPRESENTED_PROVISIONALLY",
+          "MULTIPLE_MATERIAL_INTERPRETATIONS"
+        ],
+        "schema_version": "dta-v231.conflict-assessment.v1",
+        "unresolved_dimensions": [
+          "BROAD_FAULT_DOMAIN",
+          "CAUSAL_MECHANISM"
+        ]
+      },
+      "strict_disposition": "CONFLICTING_EVIDENCE"
+    },
+    {
+      "case_id": "ow-002",
+      "conflict_assessment": {
+        "alternative_cluster_ids": [],
+        "assessment_sha256": "10f0e372eb4c0c6adf4c01d73f92b509ad01b2f8e4c6bac70f8d57e5b1fba894",
+        "conflict_type": "COHERENT_COMPETITION",
+        "discriminating_sources": [],
+        "interpretation_clusters": [
+          {
+            "anomaly_ids": [
+              "ga:metric-error-outlier:svc-a4c65e00cc:71a35f7f42b0",
+              "ga:resource-memory-trend:svc-a4c65e00cc:d6a5ce816492"
+            ],
+            "broad_domains": [
+              "RESOURCE",
+              "RUNTIME"
+            ],
+            "candidate_root_services": [
+              "svc-a4c65e00cc"
+            ],
+            "cluster_id": "ic-v231-2f244bf489aa58ee",
+            "cluster_strength": 4.0,
+            "coherence_edges": [
+              {
+                "left_id": "ga:metric-error-outlier:svc-a4c65e00cc:71a35f7f42b0",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:resource-memory-trend:svc-a4c65e00cc:d6a5ce816492"
+              }
+            ],
+            "contradiction_edges": [],
+            "evidence_refs": [
+              "e:a:metrics:svc-a4c65e00cc:core:0:830282532f29",
+              "e:a:resources:svc-a4c65e00cc:0:76598873b9af"
+            ],
+            "related_services": [],
+            "schema_version": "dta-v231.interpretation-cluster.v1"
+          }
+        ],
+        "leading_cluster_id": "ic-v231-2f244bf489aa58ee",
+        "minimum_additional_reads": 0,
+        "reason_codes": [
+          "COMPETITION_CAN_BE_REPRESENTED_PROVISIONALLY",
+          "MULTIPLE_MATERIAL_INTERPRETATIONS"
+        ],
+        "schema_version": "dta-v231.conflict-assessment.v1",
+        "unresolved_dimensions": [
+          "BROAD_FAULT_DOMAIN",
+          "CAUSAL_MECHANISM"
+        ]
+      },
+      "strict_disposition": "CONFLICTING_EVIDENCE"
+    },
+    {
+      "case_id": "ow-009",
+      "conflict_assessment": {
+        "alternative_cluster_ids": [],
+        "assessment_sha256": "755e9cb1f45fe217aeabfedb9ec30631aa3dbc7440bd1ada1eee9e9e191a0c88",
+        "conflict_type": "COHERENT_COMPETITION",
+        "discriminating_sources": [],
+        "interpretation_clusters": [
+          {
+            "anomaly_ids": [
+              "ga:metric-latency-outlier:svc-d6cd766de9:fe0508fac2a7",
+              "ga:trace-latency-outlier:svc-4a67a8cd51:1f045948a1c4",
+              "ga:trace-latency-outlier:svc-4a67a8cd51:bdd6c7413cc0",
+              "ga:trace-latency-outlier:svc-d6cd766de9:5ff2309df63e"
+            ],
+            "broad_domains": [
+              "DEPENDENCY"
+            ],
+            "candidate_root_services": [
+              "svc-4a67a8cd51",
+              "svc-d6cd766de9"
+            ],
+            "cluster_id": "ic-v231-5e0db500fd2a791e",
+            "cluster_strength": 8.0,
+            "coherence_edges": [
+              {
+                "left_id": "ga:metric-latency-outlier:svc-d6cd766de9:fe0508fac2a7",
+                "reason_code": "SHARED_TRACE_OR_PROPAGATION_PATH",
+                "right_id": "ga:trace-latency-outlier:svc-4a67a8cd51:1f045948a1c4"
+              },
+              {
+                "left_id": "ga:metric-latency-outlier:svc-d6cd766de9:fe0508fac2a7",
+                "reason_code": "SHARED_TRACE_OR_PROPAGATION_PATH",
+                "right_id": "ga:trace-latency-outlier:svc-4a67a8cd51:bdd6c7413cc0"
+              },
+              {
+                "left_id": "ga:metric-latency-outlier:svc-d6cd766de9:fe0508fac2a7",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:trace-latency-outlier:svc-d6cd766de9:5ff2309df63e"
+              },
+              {
+                "left_id": "ga:trace-latency-outlier:svc-4a67a8cd51:1f045948a1c4",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:trace-latency-outlier:svc-4a67a8cd51:bdd6c7413cc0"
+              },
+              {
+                "left_id": "ga:trace-latency-outlier:svc-4a67a8cd51:1f045948a1c4",
+                "reason_code": "SHARED_TRACE_OR_PROPAGATION_PATH",
+                "right_id": "ga:trace-latency-outlier:svc-d6cd766de9:5ff2309df63e"
+              },
+              {
+                "left_id": "ga:trace-latency-outlier:svc-4a67a8cd51:bdd6c7413cc0",
+                "reason_code": "SHARED_TRACE_OR_PROPAGATION_PATH",
+                "right_id": "ga:trace-latency-outlier:svc-d6cd766de9:5ff2309df63e"
+              }
+            ],
+            "contradiction_edges": [],
+            "evidence_refs": [
+              "e:a:metrics:svc-d6cd766de9:core:1:272c9f304b3c",
+              "e:a:traces:svc-d6cd766de9:0:87c223747734",
+              "e:a:traces:svc-d6cd766de9:1:b2cf864a3376",
+              "e:a:traces:svc-d6cd766de9:4:1e3fb07cae62"
+            ],
+            "related_services": [
+              "svc-d6cd766de9"
+            ],
+            "schema_version": "dta-v231.interpretation-cluster.v1"
+          }
+        ],
+        "leading_cluster_id": "ic-v231-5e0db500fd2a791e",
+        "minimum_additional_reads": 0,
+        "reason_codes": [
+          "COMPETITION_CAN_BE_REPRESENTED_PROVISIONALLY",
+          "MULTIPLE_MATERIAL_INTERPRETATIONS"
+        ],
+        "schema_version": "dta-v231.conflict-assessment.v1",
+        "unresolved_dimensions": [
+          "CAUSAL_MECHANISM",
+          "ROOT_SERVICE"
+        ]
+      },
+      "strict_disposition": "CONFLICTING_EVIDENCE"
+    },
+    {
+      "case_id": "ow-010",
+      "conflict_assessment": {
+        "alternative_cluster_ids": [],
+        "assessment_sha256": "e6b8a394d2e6d07dbaccbd98ec2a7643d791e2dfac9d1de40a31c90025a2212a",
+        "conflict_type": "COHERENT_COMPETITION",
+        "discriminating_sources": [],
+        "interpretation_clusters": [
+          {
+            "anomaly_ids": [
+              "ga:metric-latency-outlier:svc-ec646d1505:c59874580c06",
+              "ga:trace-latency-outlier:svc-a05d2b8076:16324191b71c"
+            ],
+            "broad_domains": [
+              "DEPENDENCY"
+            ],
+            "candidate_root_services": [
+              "svc-a05d2b8076",
+              "svc-ec646d1505"
+            ],
+            "cluster_id": "ic-v231-e2e579f0db7f216e",
+            "cluster_strength": 4.0,
+            "coherence_edges": [
+              {
+                "left_id": "ga:metric-latency-outlier:svc-ec646d1505:c59874580c06",
+                "reason_code": "SHARED_TRACE_OR_PROPAGATION_PATH",
+                "right_id": "ga:trace-latency-outlier:svc-a05d2b8076:16324191b71c"
+              }
+            ],
+            "contradiction_edges": [],
+            "evidence_refs": [
+              "e:a:metrics:svc-ec646d1505:core:1:b53c8a3eed97",
+              "e:a:traces:svc-ec646d1505:0:cf601b3fe37e"
+            ],
+            "related_services": [
+              "svc-ec646d1505"
+            ],
+            "schema_version": "dta-v231.interpretation-cluster.v1"
+          }
+        ],
+        "leading_cluster_id": "ic-v231-e2e579f0db7f216e",
+        "minimum_additional_reads": 0,
+        "reason_codes": [
+          "COMPETITION_CAN_BE_REPRESENTED_PROVISIONALLY",
+          "MULTIPLE_MATERIAL_INTERPRETATIONS"
+        ],
+        "schema_version": "dta-v231.conflict-assessment.v1",
+        "unresolved_dimensions": [
+          "CAUSAL_MECHANISM",
+          "ROOT_SERVICE"
+        ]
+      },
+      "strict_disposition": "CONFLICTING_EVIDENCE"
+    },
+    {
+      "case_id": "ow-011",
+      "conflict_assessment": {
+        "alternative_cluster_ids": [],
+        "assessment_sha256": "17dbe75d77a26ce7163052ce7fc75777ca39999e615752e05d85b67d6e9510cd",
+        "conflict_type": "COHERENT_COMPETITION",
+        "discriminating_sources": [],
+        "interpretation_clusters": [
+          {
+            "anomaly_ids": [
+              "ga:log-unknown-error-pattern:svc-46c27b44e9:c9581e963485",
+              "ga:metric-error-outlier:svc-46c27b44e9:2e63f3587aac",
+              "ga:metric-latency-outlier:svc-46c27b44e9:74ec22edcce5",
+              "ga:trace-error-localization:svc-46c27b44e9:dad1e6b3bdfb"
+            ],
+            "broad_domains": [
+              "CONCURRENCY",
+              "DEPENDENCY",
+              "RUNTIME"
+            ],
+            "candidate_root_services": [
+              "svc-46c27b44e9"
+            ],
+            "cluster_id": "ic-v231-af47dac88f27017f",
+            "cluster_strength": 8.0,
+            "coherence_edges": [
+              {
+                "left_id": "ga:log-unknown-error-pattern:svc-46c27b44e9:c9581e963485",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:metric-error-outlier:svc-46c27b44e9:2e63f3587aac"
+              },
+              {
+                "left_id": "ga:log-unknown-error-pattern:svc-46c27b44e9:c9581e963485",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:metric-latency-outlier:svc-46c27b44e9:74ec22edcce5"
+              },
+              {
+                "left_id": "ga:log-unknown-error-pattern:svc-46c27b44e9:c9581e963485",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:trace-error-localization:svc-46c27b44e9:dad1e6b3bdfb"
+              },
+              {
+                "left_id": "ga:metric-error-outlier:svc-46c27b44e9:2e63f3587aac",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:metric-latency-outlier:svc-46c27b44e9:74ec22edcce5"
+              },
+              {
+                "left_id": "ga:metric-error-outlier:svc-46c27b44e9:2e63f3587aac",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:trace-error-localization:svc-46c27b44e9:dad1e6b3bdfb"
+              },
+              {
+                "left_id": "ga:metric-latency-outlier:svc-46c27b44e9:74ec22edcce5",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:trace-error-localization:svc-46c27b44e9:dad1e6b3bdfb"
+              }
+            ],
+            "contradiction_edges": [],
+            "evidence_refs": [
+              "e:a:logs:svc-46c27b44e9:0:19e8d0f8234e",
+              "e:a:metrics:svc-46c27b44e9:core:0:2ff7b7568ac8",
+              "e:a:metrics:svc-46c27b44e9:core:1:9a06c0114b0d",
+              "e:a:traces:svc-46c27b44e9:0:2ceb8318bbd5"
+            ],
+            "related_services": [
+              "svc-90a131dcc4"
+            ],
+            "schema_version": "dta-v231.interpretation-cluster.v1"
+          }
+        ],
+        "leading_cluster_id": "ic-v231-af47dac88f27017f",
+        "minimum_additional_reads": 0,
+        "reason_codes": [
+          "COMPETITION_CAN_BE_REPRESENTED_PROVISIONALLY",
+          "MULTIPLE_MATERIAL_INTERPRETATIONS"
+        ],
+        "schema_version": "dta-v231.conflict-assessment.v1",
+        "unresolved_dimensions": [
+          "BROAD_FAULT_DOMAIN",
+          "CAUSAL_MECHANISM"
+        ]
+      },
+      "strict_disposition": "CONFLICTING_EVIDENCE"
+    },
+    {
+      "case_id": "ow-012",
+      "conflict_assessment": {
+        "alternative_cluster_ids": [],
+        "assessment_sha256": "bc962954abc377e1a3d15198a11436c258c2fc13de6e219ba57893041e1a2801",
+        "conflict_type": "COHERENT_COMPETITION",
+        "discriminating_sources": [],
+        "interpretation_clusters": [
+          {
+            "anomaly_ids": [
+              "ga:log-unknown-error-pattern:svc-c3250d4a78:06925c855f67",
+              "ga:metric-error-outlier:svc-c3250d4a78:0f116c289e30",
+              "ga:metric-latency-outlier:svc-c3250d4a78:7f3d6880a819",
+              "ga:trace-error-localization:svc-c3250d4a78:49d1980685f5"
+            ],
+            "broad_domains": [
+              "CONCURRENCY",
+              "DEPENDENCY",
+              "RUNTIME"
+            ],
+            "candidate_root_services": [
+              "svc-c3250d4a78"
+            ],
+            "cluster_id": "ic-v231-249678360d3d9155",
+            "cluster_strength": 8.0,
+            "coherence_edges": [
+              {
+                "left_id": "ga:log-unknown-error-pattern:svc-c3250d4a78:06925c855f67",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:metric-error-outlier:svc-c3250d4a78:0f116c289e30"
+              },
+              {
+                "left_id": "ga:log-unknown-error-pattern:svc-c3250d4a78:06925c855f67",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:metric-latency-outlier:svc-c3250d4a78:7f3d6880a819"
+              },
+              {
+                "left_id": "ga:log-unknown-error-pattern:svc-c3250d4a78:06925c855f67",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:trace-error-localization:svc-c3250d4a78:49d1980685f5"
+              },
+              {
+                "left_id": "ga:metric-error-outlier:svc-c3250d4a78:0f116c289e30",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:metric-latency-outlier:svc-c3250d4a78:7f3d6880a819"
+              },
+              {
+                "left_id": "ga:metric-error-outlier:svc-c3250d4a78:0f116c289e30",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:trace-error-localization:svc-c3250d4a78:49d1980685f5"
+              },
+              {
+                "left_id": "ga:metric-latency-outlier:svc-c3250d4a78:7f3d6880a819",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:trace-error-localization:svc-c3250d4a78:49d1980685f5"
+              }
+            ],
+            "contradiction_edges": [],
+            "evidence_refs": [
+              "e:a:logs:svc-c3250d4a78:0:8565a79e570d",
+              "e:a:metrics:svc-c3250d4a78:core:0:1531868d44a2",
+              "e:a:metrics:svc-c3250d4a78:core:1:3cbbe1629baa",
+              "e:a:traces:svc-1bba45cec0:0:fcf1bb21ada5"
+            ],
+            "related_services": [
+              "svc-1bba45cec0"
+            ],
+            "schema_version": "dta-v231.interpretation-cluster.v1"
+          }
+        ],
+        "leading_cluster_id": "ic-v231-249678360d3d9155",
+        "minimum_additional_reads": 0,
+        "reason_codes": [
+          "COMPETITION_CAN_BE_REPRESENTED_PROVISIONALLY",
+          "MULTIPLE_MATERIAL_INTERPRETATIONS"
+        ],
+        "schema_version": "dta-v231.conflict-assessment.v1",
+        "unresolved_dimensions": [
+          "BROAD_FAULT_DOMAIN",
+          "CAUSAL_MECHANISM"
+        ]
+      },
+      "strict_disposition": "CONFLICTING_EVIDENCE"
+    },
+    {
+      "case_id": "ow-013",
+      "conflict_assessment": {
+        "alternative_cluster_ids": [],
+        "assessment_sha256": "6d3e00f037b1a1aab7e3bf7afff79f34b78607352474ef1d626ceee684b0b7f6",
+        "conflict_type": "COHERENT_COMPETITION",
+        "discriminating_sources": [],
+        "interpretation_clusters": [
+          {
+            "anomaly_ids": [
+              "ga:log-unknown-error-pattern:svc-5bf9f8e9b6:c870a6db70af",
+              "ga:metric-error-outlier:svc-5bf9f8e9b6:645c26f9b426",
+              "ga:metric-latency-outlier:svc-5bf9f8e9b6:888a83561b27",
+              "ga:trace-error-localization:svc-5bf9f8e9b6:d6e2f82ca2ac"
+            ],
+            "broad_domains": [
+              "CONCURRENCY",
+              "DEPENDENCY",
+              "RUNTIME"
+            ],
+            "candidate_root_services": [
+              "svc-5bf9f8e9b6"
+            ],
+            "cluster_id": "ic-v231-7e95918350339e63",
+            "cluster_strength": 8.0,
+            "coherence_edges": [
+              {
+                "left_id": "ga:log-unknown-error-pattern:svc-5bf9f8e9b6:c870a6db70af",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:metric-error-outlier:svc-5bf9f8e9b6:645c26f9b426"
+              },
+              {
+                "left_id": "ga:log-unknown-error-pattern:svc-5bf9f8e9b6:c870a6db70af",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:metric-latency-outlier:svc-5bf9f8e9b6:888a83561b27"
+              },
+              {
+                "left_id": "ga:log-unknown-error-pattern:svc-5bf9f8e9b6:c870a6db70af",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:trace-error-localization:svc-5bf9f8e9b6:d6e2f82ca2ac"
+              },
+              {
+                "left_id": "ga:metric-error-outlier:svc-5bf9f8e9b6:645c26f9b426",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:metric-latency-outlier:svc-5bf9f8e9b6:888a83561b27"
+              },
+              {
+                "left_id": "ga:metric-error-outlier:svc-5bf9f8e9b6:645c26f9b426",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:trace-error-localization:svc-5bf9f8e9b6:d6e2f82ca2ac"
+              },
+              {
+                "left_id": "ga:metric-latency-outlier:svc-5bf9f8e9b6:888a83561b27",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:trace-error-localization:svc-5bf9f8e9b6:d6e2f82ca2ac"
+              }
+            ],
+            "contradiction_edges": [],
+            "evidence_refs": [
+              "e:a:logs:svc-5bf9f8e9b6:0:077b8b6891ab",
+              "e:a:metrics:svc-5bf9f8e9b6:core:0:23fed64f9e9a",
+              "e:a:metrics:svc-5bf9f8e9b6:core:1:d7b062327a3c",
+              "e:a:traces:svc-5bf9f8e9b6:0:2c20a63c76b8"
+            ],
+            "related_services": [
+              "svc-6c4f4971ed"
+            ],
+            "schema_version": "dta-v231.interpretation-cluster.v1"
+          }
+        ],
+        "leading_cluster_id": "ic-v231-7e95918350339e63",
+        "minimum_additional_reads": 0,
+        "reason_codes": [
+          "COMPETITION_CAN_BE_REPRESENTED_PROVISIONALLY",
+          "MULTIPLE_MATERIAL_INTERPRETATIONS"
+        ],
+        "schema_version": "dta-v231.conflict-assessment.v1",
+        "unresolved_dimensions": [
+          "BROAD_FAULT_DOMAIN",
+          "CAUSAL_MECHANISM"
+        ]
+      },
+      "strict_disposition": "CONFLICTING_EVIDENCE"
+    },
+    {
+      "case_id": "ow-014",
+      "conflict_assessment": {
+        "alternative_cluster_ids": [],
+        "assessment_sha256": "fd88cceaf523b482f41439ae36e3d8f42a21129ae6ac15b98fcb5c5b77b98cba",
+        "conflict_type": "COHERENT_COMPETITION",
+        "discriminating_sources": [],
+        "interpretation_clusters": [
+          {
+            "anomaly_ids": [
+              "ga:log-unknown-error-pattern:svc-5a0ca1dc77:142cf6391a26",
+              "ga:metric-error-outlier:svc-5a0ca1dc77:b42b185d2b68",
+              "ga:metric-latency-outlier:svc-5a0ca1dc77:877217ecd5d9",
+              "ga:trace-error-localization:svc-5a0ca1dc77:0691339beb48"
+            ],
+            "broad_domains": [
+              "CONCURRENCY",
+              "DEPENDENCY",
+              "RUNTIME"
+            ],
+            "candidate_root_services": [
+              "svc-5a0ca1dc77"
+            ],
+            "cluster_id": "ic-v231-89bcc1be55f6c0cb",
+            "cluster_strength": 8.0,
+            "coherence_edges": [
+              {
+                "left_id": "ga:log-unknown-error-pattern:svc-5a0ca1dc77:142cf6391a26",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:metric-error-outlier:svc-5a0ca1dc77:b42b185d2b68"
+              },
+              {
+                "left_id": "ga:log-unknown-error-pattern:svc-5a0ca1dc77:142cf6391a26",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:metric-latency-outlier:svc-5a0ca1dc77:877217ecd5d9"
+              },
+              {
+                "left_id": "ga:log-unknown-error-pattern:svc-5a0ca1dc77:142cf6391a26",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:trace-error-localization:svc-5a0ca1dc77:0691339beb48"
+              },
+              {
+                "left_id": "ga:metric-error-outlier:svc-5a0ca1dc77:b42b185d2b68",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:metric-latency-outlier:svc-5a0ca1dc77:877217ecd5d9"
+              },
+              {
+                "left_id": "ga:metric-error-outlier:svc-5a0ca1dc77:b42b185d2b68",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:trace-error-localization:svc-5a0ca1dc77:0691339beb48"
+              },
+              {
+                "left_id": "ga:metric-latency-outlier:svc-5a0ca1dc77:877217ecd5d9",
+                "reason_code": "SAME_SUSPECTED_ROOT_SERVICE",
+                "right_id": "ga:trace-error-localization:svc-5a0ca1dc77:0691339beb48"
+              }
+            ],
+            "contradiction_edges": [],
+            "evidence_refs": [
+              "e:a:logs:svc-5a0ca1dc77:0:59330cd47c96",
+              "e:a:metrics:svc-5a0ca1dc77:core:0:19e46826803c",
+              "e:a:metrics:svc-5a0ca1dc77:core:1:41affab42dc5",
+              "e:a:traces:svc-3314c999bf:0:a11851a9a86d"
+            ],
+            "related_services": [
+              "svc-3314c999bf"
+            ],
+            "schema_version": "dta-v231.interpretation-cluster.v1"
+          }
+        ],
+        "leading_cluster_id": "ic-v231-89bcc1be55f6c0cb",
+        "minimum_additional_reads": 0,
+        "reason_codes": [
+          "COMPETITION_CAN_BE_REPRESENTED_PROVISIONALLY",
+          "MULTIPLE_MATERIAL_INTERPRETATIONS"
+        ],
+        "schema_version": "dta-v231.conflict-assessment.v1",
+        "unresolved_dimensions": [
+          "BROAD_FAULT_DOMAIN",
+          "CAUSAL_MECHANISM"
+        ]
+      },
+      "strict_disposition": "CONFLICTING_EVIDENCE"
+    }
+  ],
+  "schema_version": "dta-v231.historical-conflict-audit.v1",
+  "source_result_sha256": "1c6fb59f260c87accd3d11d193461e9f9a2f725f2315209d934e659d8f69e079",
+  "strict_conflict_miss_count": 8
+}

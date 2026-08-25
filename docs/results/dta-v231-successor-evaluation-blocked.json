@@ -1,0 +1,90 @@
+{
+  "schema_version": "dta-v231.successor-blocked-evaluation.v1",
+  "terminal": "BLOCKED_DTA_V231_REPOSITORY_ACCEPTANCE",
+  "study_relation": "INDEPENDENT_SUCCESSOR_NOT_RERUN",
+  "predecessor_study_disposition": "BLOCKED_DTA_V231_EVALUATION_DATA",
+  "execution_count": 1,
+  "planned_case_count": 24,
+  "planned_run_count": 48,
+  "completed_case_count": 12,
+  "completed_run_count": 24,
+  "completed_case_ids": [
+    "vx-101",
+    "vx-102",
+    "vx-103",
+    "vx-104",
+    "vx-105",
+    "vx-106",
+    "vx-107",
+    "vx-108",
+    "vx-109",
+    "vx-110",
+    "vx-111",
+    "vx-112"
+  ],
+  "truth_shards_unlocked": [
+    "vx-101",
+    "vx-102",
+    "vx-103",
+    "vx-104",
+    "vx-105",
+    "vx-106",
+    "vx-107",
+    "vx-108",
+    "vx-109",
+    "vx-110",
+    "vx-111",
+    "vx-112"
+  ],
+  "sentinel_status": "STARTED",
+  "sentinel_sha256": "00dae62d32b74e63fac71fe4d70f74e17e171dc3ca91a61709704359d5ca9506",
+  "partial_sha256": "4c9722da29eabeb09892a4fc088ebea5c3a3a4e54bc8560616b84e59503abfe1",
+  "manifest_sha256": "c9c6aeb327f1668825da261a5e149702337dfe2791a699f4b1fff9f9796ab78a",
+  "admission_matrix_sha256": "36b96b36dea8d426bb467d11e7df06e4f796617e11c5483397b5edfc68210a54",
+  "pre_execution_review_sha256": "fba3b2957bfeee1eec938512f2ceb761e607d467bd1e350abe201686ba556ca3",
+  "failure": {
+    "case_id": "vx-113",
+    "arm": "V23_STRICT_CONFLICT_GATE",
+    "exception_type": "KeyError",
+    "exception_value": "LOG_ERROR_CLUSTER",
+    "source_path": "src/ecomsre/dta_v2/v23/novelty_gate.py",
+    "source_line": 81,
+    "reason": "The frozen v2.3 interpretation-domain map omits LOG_ERROR_CLUSTER while the strict arm indexes that anomaly kind."
+  },
+  "provider_cost_before_failure": {
+    "provider_calls": 21,
+    "protocol_repairs": 9,
+    "transport_retries": 0,
+    "input_tokens": 86841,
+    "output_tokens": 37462,
+    "total_tokens": 124303,
+    "latency_ms": 199154.065793904
+  },
+  "observed_partial_dispositions": {
+    "strict": {
+      "CONFLICTING_EVIDENCE": 8,
+      "UNREGISTERED_INCIDENT_SUSPECTED": 4
+    },
+    "treatment": {
+      "PROVIDER_FAILED": 3,
+      "UNREGISTERED_INCIDENT_SUSPECTED": 4,
+      "UNREGISTERED_INCIDENT_WITH_COMPETING_HYPOTHESES": 5
+    }
+  },
+  "provider_failed_case_ids": [
+    "vx-103",
+    "vx-105",
+    "vx-107"
+  ],
+  "complete_metrics_available": false,
+  "measured_result_terminal": null,
+  "final_output_json_created": false,
+  "final_output_markdown_created": false,
+  "frozen_binding_mismatch_count": 0,
+  "post_freeze_algorithm_or_data_modification_count": 0,
+  "rerun_count_after_failure": 0,
+  "docker_calls": 0,
+  "new_live_faults": 0,
+  "recorded_at_utc": "2026-08-25T15:58:20.289102Z",
+  "artifact_sha256": "0f5ce7879f3f2d9a051078dbf249a88db519006dd7e2c82b7ae399ff4b680e68"
+}

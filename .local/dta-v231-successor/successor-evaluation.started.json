@@ -1,0 +1,11 @@
+{
+  "admission_matrix_sha256": "36b96b36dea8d426bb467d11e7df06e4f796617e11c5483397b5edfc68210a54",
+  "cases_sha256": "b86d405e89f28b503dd3ba3e1d074a565a10daf153fa6a0efbfaa4664b500936",
+  "independent_review_sha256": "fba3b2957bfeee1eec938512f2ceb761e607d467bd1e350abe201686ba556ca3",
+  "manifest_sha256": "c9c6aeb327f1668825da261a5e149702337dfe2791a699f4b1fff9f9796ab78a",
+  "planned_execution_count": 1,
+  "status": "STARTED",
+  "study_relation": "INDEPENDENT_SUCCESSOR_NOT_RERUN",
+  "truth_index_sha256": "dec9e0284da6abbf2046e9c33e1b0becc2d2057ce3278447eb9fba678f332cbc",
+  "truth_shard_set_sha256": "af90242923e5c0b9af101dcacd2fe0a1cba695740763fc83db5bf200a7e93acf"
+}

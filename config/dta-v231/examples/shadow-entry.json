@@ -1,0 +1,24 @@
+{
+  "alternative_hypotheses": [
+    "runtime availability failure: svc-e3ca83b58b"
+  ],
+  "broad_fault_domain": "RESOURCE",
+  "canonical_label": "example-competing-incident",
+  "entry_sha256": "a50ae5dcc53239f67f89d95a2a16d2e166ddbf07c3969a1120eb6b53823a5eaa",
+  "leading_hypothesis": "resource-pressure pattern",
+  "leading_hypothesis_id": "ch-v231-30098c8d332b1d4c",
+  "legacy_source_entry_sha256": null,
+  "positive_report_ids": [
+    "report-v231-bde637db035f0653"
+  ],
+  "remediation_authority": "NONE",
+  "review_record_id": "review-v231-4adca9e69cc9ba8f",
+  "schema_version": "dta-v231.shadow-fault-entry.v1",
+  "shadow_fault_id": "shadow-v231-cc5f1988accc2649",
+  "status": "SHADOW",
+  "uncertainty_mode": "COMPETING_HYPOTHESES",
+  "unresolved_dimensions": [
+    "BROAD_FAULT_DOMAIN",
+    "CAUSAL_MECHANISM"
+  ]
+}

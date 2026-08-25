@@ -1,0 +1,419 @@
+{
+  "schema_version": "dta-v231.evaluation-truth-set.v1",
+  "truths": [
+    {
+      "case_id": "vx-001",
+      "category": "NOVEL_HIDDEN",
+      "expected_disposition": "UNREGISTERED_INCIDENT",
+      "expected_root_service": "svc-7a1a1d7058",
+      "expected_broad_domain": "CONFIGURATION",
+      "expected_mechanism": "CONFIGURATION_ERROR",
+      "semantic_concepts": [
+        "configuration",
+        "setting"
+      ],
+      "counterfactual_pair_id": "cf-01",
+      "requires_discovery_read": true,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": true,
+      "multi_coherent_interpretations": true,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-002",
+      "category": "NOVEL_HIDDEN",
+      "expected_disposition": "UNREGISTERED_INCIDENT",
+      "expected_root_service": "svc-c92c012f94",
+      "expected_broad_domain": "CONFIGURATION",
+      "expected_mechanism": "CONFIGURATION_ERROR",
+      "semantic_concepts": [
+        "configuration",
+        "setting"
+      ],
+      "counterfactual_pair_id": "cf-01",
+      "requires_discovery_read": true,
+      "empty_or_misleading_action": true,
+      "conflict_prone_novelty": true,
+      "multi_coherent_interpretations": true,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-003",
+      "category": "NOVEL_HIDDEN",
+      "expected_disposition": "UNREGISTERED_INCIDENT",
+      "expected_root_service": "svc-3d5e63d33d",
+      "expected_broad_domain": "DEPENDENCY",
+      "expected_mechanism": "DEPENDENCY_LATENCY",
+      "semantic_concepts": [
+        "dependency",
+        "latency"
+      ],
+      "counterfactual_pair_id": "cf-02",
+      "requires_discovery_read": true,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": true,
+      "multi_coherent_interpretations": true,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-004",
+      "category": "NOVEL_HIDDEN",
+      "expected_disposition": "UNREGISTERED_INCIDENT",
+      "expected_root_service": "svc-fa17387190",
+      "expected_broad_domain": "DEPENDENCY",
+      "expected_mechanism": "DEPENDENCY_LATENCY",
+      "semantic_concepts": [
+        "dependency",
+        "latency"
+      ],
+      "counterfactual_pair_id": "cf-02",
+      "requires_discovery_read": true,
+      "empty_or_misleading_action": true,
+      "conflict_prone_novelty": true,
+      "multi_coherent_interpretations": true,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-005",
+      "category": "NOVEL_UNREGISTERED",
+      "expected_disposition": "UNREGISTERED_INCIDENT",
+      "expected_root_service": "svc-10f1c3e58c",
+      "expected_broad_domain": "CONCURRENCY",
+      "expected_mechanism": null,
+      "semantic_concepts": [
+        "pool",
+        "queue"
+      ],
+      "counterfactual_pair_id": "cf-03",
+      "requires_discovery_read": true,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": true,
+      "multi_coherent_interpretations": true,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-006",
+      "category": "NOVEL_UNREGISTERED",
+      "expected_disposition": "UNREGISTERED_INCIDENT",
+      "expected_root_service": "svc-af3dce41cb",
+      "expected_broad_domain": "CONCURRENCY",
+      "expected_mechanism": null,
+      "semantic_concepts": [
+        "pool",
+        "queue"
+      ],
+      "counterfactual_pair_id": "cf-03",
+      "requires_discovery_read": true,
+      "empty_or_misleading_action": true,
+      "conflict_prone_novelty": true,
+      "multi_coherent_interpretations": true,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-007",
+      "category": "NOVEL_UNREGISTERED",
+      "expected_disposition": "UNREGISTERED_INCIDENT",
+      "expected_root_service": "svc-61b03f2a13",
+      "expected_broad_domain": "CONCURRENCY",
+      "expected_mechanism": null,
+      "semantic_concepts": [
+        "pool",
+        "queue"
+      ],
+      "counterfactual_pair_id": "cf-04",
+      "requires_discovery_read": true,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": true,
+      "multi_coherent_interpretations": true,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-008",
+      "category": "NOVEL_UNREGISTERED",
+      "expected_disposition": "UNREGISTERED_INCIDENT",
+      "expected_root_service": "svc-f3b7f2d930",
+      "expected_broad_domain": "CONCURRENCY",
+      "expected_mechanism": null,
+      "semantic_concepts": [
+        "pool",
+        "queue"
+      ],
+      "counterfactual_pair_id": "cf-04",
+      "requires_discovery_read": true,
+      "empty_or_misleading_action": true,
+      "conflict_prone_novelty": true,
+      "multi_coherent_interpretations": true,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-009",
+      "category": "NOVEL_HIDDEN",
+      "expected_disposition": "UNREGISTERED_INCIDENT",
+      "expected_root_service": "svc-21390eab69",
+      "expected_broad_domain": "RUNTIME",
+      "expected_mechanism": "SERVICE_UNAVAILABLE",
+      "semantic_concepts": [
+        "runtime",
+        "unavailable"
+      ],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": true,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-010",
+      "category": "NOVEL_HIDDEN",
+      "expected_disposition": "UNREGISTERED_INCIDENT",
+      "expected_root_service": "svc-76d3d7d1ac",
+      "expected_broad_domain": "RUNTIME",
+      "expected_mechanism": "SERVICE_UNAVAILABLE",
+      "semantic_concepts": [
+        "runtime",
+        "unavailable"
+      ],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": true,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-011",
+      "category": "NOVEL_HIDDEN",
+      "expected_disposition": "UNREGISTERED_INCIDENT",
+      "expected_root_service": "svc-451ed1f1d5",
+      "expected_broad_domain": "RESOURCE",
+      "expected_mechanism": "CPU_SATURATION",
+      "semantic_concepts": [
+        "resource",
+        "pressure"
+      ],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": true,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-012",
+      "category": "NOVEL_HIDDEN",
+      "expected_disposition": "UNREGISTERED_INCIDENT",
+      "expected_root_service": "svc-89d17e14de",
+      "expected_broad_domain": "RESOURCE",
+      "expected_mechanism": "CPU_SATURATION",
+      "semantic_concepts": [
+        "resource",
+        "pressure"
+      ],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": true,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-013",
+      "category": "NOVEL_HIDDEN",
+      "expected_disposition": "UNREGISTERED_INCIDENT",
+      "expected_root_service": "svc-4fa2d68720",
+      "expected_broad_domain": "RESOURCE",
+      "expected_mechanism": "MEMORY_LEAK",
+      "semantic_concepts": [
+        "resource",
+        "pressure"
+      ],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": true,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-014",
+      "category": "NOVEL_HIDDEN",
+      "expected_disposition": "UNREGISTERED_INCIDENT",
+      "expected_root_service": "svc-8b96c306ed",
+      "expected_broad_domain": "RESOURCE",
+      "expected_mechanism": "MEMORY_LEAK",
+      "semantic_concepts": [
+        "resource",
+        "pressure"
+      ],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": true,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-015",
+      "category": "REGISTERED_KNOWN",
+      "expected_disposition": "KNOWN_INCIDENT",
+      "expected_root_service": "svc-2b96e37666",
+      "expected_broad_domain": "CONFIGURATION",
+      "expected_mechanism": "CONFIGURATION_ERROR",
+      "semantic_concepts": [
+        "configuration",
+        "setting"
+      ],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": false,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-016",
+      "category": "REGISTERED_KNOWN",
+      "expected_disposition": "KNOWN_INCIDENT",
+      "expected_root_service": "svc-299b1968ff",
+      "expected_broad_domain": "RUNTIME",
+      "expected_mechanism": "SERVICE_UNAVAILABLE",
+      "semantic_concepts": [
+        "runtime",
+        "unavailable"
+      ],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": false,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-017",
+      "category": "REGISTERED_KNOWN",
+      "expected_disposition": "KNOWN_INCIDENT",
+      "expected_root_service": "svc-17893e838e",
+      "expected_broad_domain": "RESOURCE",
+      "expected_mechanism": "CPU_SATURATION",
+      "semantic_concepts": [
+        "resource",
+        "pressure"
+      ],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": false,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-018",
+      "category": "REGISTERED_KNOWN",
+      "expected_disposition": "KNOWN_INCIDENT",
+      "expected_root_service": "svc-e54a729975",
+      "expected_broad_domain": "DEPENDENCY",
+      "expected_mechanism": "DEPENDENCY_LATENCY",
+      "semantic_concepts": [
+        "dependency",
+        "latency"
+      ],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": false,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-019",
+      "category": "NO_INCIDENT",
+      "expected_disposition": "NO_INCIDENT",
+      "expected_root_service": null,
+      "expected_broad_domain": null,
+      "expected_mechanism": null,
+      "semantic_concepts": [],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": false,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-020",
+      "category": "NO_INCIDENT",
+      "expected_disposition": "NO_INCIDENT",
+      "expected_root_service": null,
+      "expected_broad_domain": null,
+      "expected_mechanism": null,
+      "semantic_concepts": [],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": false,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-021",
+      "category": "NO_INCIDENT",
+      "expected_disposition": "NO_INCIDENT",
+      "expected_root_service": null,
+      "expected_broad_domain": null,
+      "expected_mechanism": null,
+      "semantic_concepts": [],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": false,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": false
+    },
+    {
+      "case_id": "vx-022",
+      "category": "INSUFFICIENT_CONFLICT",
+      "expected_disposition": "CONFLICTING_EVIDENCE",
+      "expected_root_service": null,
+      "expected_broad_domain": null,
+      "expected_mechanism": null,
+      "semantic_concepts": [],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": false,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": true
+    },
+    {
+      "case_id": "vx-023",
+      "category": "INSUFFICIENT_CONFLICT",
+      "expected_disposition": "CONFLICTING_EVIDENCE",
+      "expected_root_service": null,
+      "expected_broad_domain": null,
+      "expected_mechanism": null,
+      "semantic_concepts": [],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": false,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": true
+    },
+    {
+      "case_id": "vx-024",
+      "category": "INSUFFICIENT_CONFLICT",
+      "expected_disposition": "CONFLICTING_EVIDENCE",
+      "expected_root_service": null,
+      "expected_broad_domain": null,
+      "expected_mechanism": null,
+      "semantic_concepts": [],
+      "counterfactual_pair_id": null,
+      "requires_discovery_read": false,
+      "empty_or_misleading_action": false,
+      "conflict_prone_novelty": false,
+      "multi_coherent_interpretations": false,
+      "true_irreconcilable_conflict": true
+    }
+  ]
+}

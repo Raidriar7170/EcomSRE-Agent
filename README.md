@@ -144,6 +144,39 @@ discovery. See the [artifact report](docs/results/dta-v23-open-world-evaluation.
 [interview brief](docs/results/dta-v23-open-world-interview-brief.md), and
 [independent review](docs/external-reviews/dta-v23-open-world-final-review.md).
 
+### DTA v2.3.1: conflict-aware novelty resolution
+
+DTA v2.3.1 adds typed interpretation clusters, conflict assessment, one bounded
+discriminating read, evidence-backed competing hypotheses, and compatible
+Human Review / Shadow Registry projections without changing the v2.2 Diagnosis
+path. The new fixed 24-case × 2-arm comparison executed exactly once. Its
+frozen measured terminal is `DTA_V231_CONFLICT_AWARE_DISCOVERY_NOT_OBSERVED`:
+treatment novelty recall rose from `0.429` to `0.643`, but conflict-prone recall
+was only `0.375`; evidence-ref validity remained `1.000`, and action-authority
+violations remained zero.
+
+The execution also exposed an evaluation-data contract failure: the four cases
+designated genuinely unregistered were admitted as registered dependency
+latency, and the three irreconcilable controls were intercepted by the known
+terminal. The one-shot artifact is preserved, but engineering status is
+`BLOCKED_DTA_V231_EVALUATION_DATA`; it is not a clean causal effect claim and
+was not rerun. See the [artifact report](docs/results/dta-v231-conflict-aware-evaluation.md),
+[error analysis](docs/results/dta-v231-conflict-aware-error-analysis.md), and
+[interview brief](docs/results/dta-v231-conflict-aware-interview-brief.md), plus
+the [independent final review](docs/external-reviews/dta-v231-conflict-aware-final-review.md).
+
+A separately authorized independent successor preserved that consumed study,
+froze new evaluation bytes, passed deterministic data admission as
+`DTA_V231_SUCCESSOR_EVALUATION_DATA_PASS`, and passed the required pre-execution
+`Must Fix 0 / Claim Accuracy PASS` review. Its unique write-once execution
+started but did not complete: 12/24 case pairs were persisted before the frozen
+v2.3 strict arm failed on `vx-113` with `KeyError: LOG_ERROR_CLUSTER`. No final
+successor metrics or measured terminal exist, and the exact repository status
+is `BLOCKED_DTA_V231_REPOSITORY_ACCEPTANCE`, not a rerun, effect claim, or
+engineering completion. See the [blocked successor evidence](docs/results/dta-v231-successor-evaluation-blocked.md),
+[post-execution review](docs/external-reviews/dta-v231-successor-post-execution-review.md),
+and [Goal completion audit](docs/analysis/dta-v231-goal-completion-audit.md).
+
 ## One-command offline demo
 
 ```bash

@@ -1341,6 +1341,55 @@ bytes are frozen, loads truth only after both arms for each case, and records a
 measured terminal without result-driven reruns. Agent writes and Runbook
 executions remain zero.
 
+## DEC-058 — DTA v2.3.1 Conflict-Aware Novelty Resolution
+
+**Status: `accepted` for the user-designated
+`dta-v231-conflict-aware-discovery-v1` Goal.**
+
+DTA v2.3.1 preserves the valid v2.3 negative result and the unchanged v2.2
+closed-world Diagnosis, Candidate Filter, and Runbook paths. The separate
+open-world lane now distinguishes coherent competing interpretations,
+conflicts resolvable by one bounded discriminating read, and explicit
+irreconcilable contradictions. Multiple services or broad domains alone are
+not contradictions.
+
+When strong residual evidence supports multiple causally coherent
+interpretations, the lane may emit an evidence-backed competing-hypothesis
+provisional report after at most one conflict-resolution read within the
+existing three-read cap. Every hypothesis binds real anomaly IDs and evidence
+references. Competing reports cap confidence at `0.65`, default to requesting
+more evidence, retain `action_authority = NONE`, and require explicit Human
+Review before any Shadow Registry entry. Shadow entries remain non-remediating
+and do not edit the formal ontology.
+
+The fixed v2.3.1 study compares the exact merged v2.3 strict conflict gate with
+the conflict-aware gate on the same new 24-case opaque fixed set and common
+bootstrap. It executes exactly once, loads evaluator truth only after both
+arms, preserves Provider and protocol failures, and records the measured
+terminal without result-driven reruns. Docker calls, new live faults, Agent
+writes, and Runbook executions remain zero.
+
+The one authorized fixed execution completed with measured terminal
+`DTA_V231_CONFLICT_AWARE_DISCOVERY_NOT_OBSERVED`. Its frozen artifact and costs
+remain evidence, but runtime observation invalidated the evaluation-data
+acceptance boundary: all four cases designated genuinely unregistered were
+admitted as registered dependency latency, and all three designated
+irreconcilable controls were intercepted by the known terminal. The result is
+therefore retained without rerun under `BLOCKED_DTA_V231_EVALUATION_DATA`; it
+does not mint the engineering completion terminal or a conflict-aware causal
+claim.
+
+That terminal belongs to the consumed predecessor study. A separately
+authorized independent successor preserved it, froze new evaluation bytes,
+passed `DTA_V231_SUCCESSOR_EVALUATION_DATA_PASS` and the required independent
+pre-execution review, then started its unique write-once execution. The frozen
+v2.3 strict arm failed on `vx-113` with `KeyError: LOG_ERROR_CLUSTER` after
+12/24 complete case pairs had been persisted. The successor has no final
+24-case metrics or measured terminal and cannot be repaired or rerun within
+that frozen study. Its exact repository status is
+`BLOCKED_DTA_V231_REPOSITORY_ACCEPTANCE`; neither the predecessor nor the
+successor mints `DTA_V231_CONFLICT_AWARE_DISCOVERY_COMPLETE`.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)

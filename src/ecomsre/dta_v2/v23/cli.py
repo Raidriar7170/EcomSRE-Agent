@@ -23,10 +23,25 @@ from ecomsre.dta_v2.v23.review_registry import (
     match_shadow_queue_item_v23,
     match_shadow_report_v23,
 )
+from ecomsre.dta_v2.v23.review_registry_v231 import (
+    LocalReviewStoreV231,
+    render_review_display_v231,
+)
 from ecomsre.dta_v2.v23.evaluation import (
     OpenAICompatibleDiscoveryTransportV23,
     render_evaluation_markdown_v23,
     run_fixed_evaluation_once_v23,
+)
+from ecomsre.dta_v2.v23.conflict_model_v231 import audit_historical_conflicts_v231
+from ecomsre.dta_v2.v23.evaluation_v231 import (
+    EvaluationCaseSpecV231,
+    EvaluationArmRunV231,
+    EvaluationPolicyV231,
+    OpenAICompatibleDiscoveryTransportV231,
+    load_evaluation_case_set_v231,
+    load_evaluation_views_v231,
+    run_evaluation_policy_v231,
+    run_fixed_evaluation_once_v231,
 )
 
 
@@ -49,6 +64,27 @@ def build_parser() -> argparse.ArgumentParser:
         }),
     )
     diagnose.add_argument("--repository-root", type=Path, default=Path.cwd())
+    diagnose.add_argument("--conflict-policy", choices=("strict", "competing"))
+    conflict_audit = subparsers.add_parser("conflict-audit")
+    conflict_audit.add_argument("--repository-root", type=Path, default=Path.cwd())
+    conflict_audit.add_argument(
+        "--split",
+        choices=("v23-fixed",),
+        default="v23-fixed",
+    )
+    conflict_audit.add_argument(
+        "--result",
+        type=Path,
+        default=Path("docs/results/dta-v23-open-world-evaluation.json"),
+    )
+    conflict = subparsers.add_parser("conflict")
+    conflict_commands = conflict.add_subparsers(
+        dest="conflict_command",
+        required=True,
+    )
+    conflict_show = conflict_commands.add_parser("show")
+    conflict_show.add_argument("--case", required=True)
+    conflict_show.add_argument("--repository-root", type=Path, default=Path.cwd())
     review = subparsers.add_parser("review")
     review_commands = review.add_subparsers(dest="review_command", required=True)
     review_list = review_commands.add_parser("list")
@@ -75,7 +111,11 @@ def build_parser() -> argparse.ArgumentParser:
     shadow_match.add_argument("--report", type=Path, required=True)
     shadow_match.add_argument("--local-root", type=Path, default=DEFAULT_LOCAL_ROOT_V23)
     evaluate = subparsers.add_parser("evaluate")
-    evaluate.add_argument("--split", choices=("development", "fixed"), required=True)
+    evaluate.add_argument(
+        "--split",
+        choices=("development", "fixed", "v231-fixed"),
+        required=True,
+    )
     evaluate.add_argument("--repository-root", type=Path, default=Path.cwd())
     evaluate.add_argument("--provider-env", type=Path)
     evaluate.add_argument(
@@ -103,6 +143,40 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(demo_result.model_dump_json(indent=2))
         return 0
     if args.command == "diagnose":
+        if args.conflict_policy is not None:
+            repository_root = args.repository_root.resolve()
+            cases = load_evaluation_case_set_v231(
+                repository_root / "config/dta-v231/evaluation/cases.json"
+            )
+            case_path = Path(args.case)
+            matches = tuple(
+                item for item in cases.cases if item.case_id == args.case
+            )
+            spec: EvaluationCaseSpecV231 | None = (
+                EvaluationCaseSpecV231.model_validate_json(case_path.read_bytes())
+                if case_path.is_file()
+                else matches[0]
+                if matches
+                else None
+            )
+            if spec is None:
+                raise ValueError("policy diagnosis requires a fixed vx case ID or case JSON")
+            views = load_evaluation_views_v231(
+                repository_root / "config/dta-v231/evaluation/ontology-views.json"
+            )
+            selected = run_evaluation_policy_v231(
+                repository_root=repository_root,
+                spec=spec,
+                view_spec=views.require(spec.case_id),
+                policy=(
+                    EvaluationPolicyV231.V23_STRICT_CONFLICT_GATE
+                    if args.conflict_policy == "strict"
+                    else EvaluationPolicyV231.V231_CONFLICT_AWARE_GATE
+                ),
+                provider_transport=None,
+            )
+            print(selected.model_dump_json(indent=2))
+            return 0
         case_value = Path(args.case)
         case_id = case_value.stem if case_value.suffix == ".json" else args.case
         diagnosis_result = run_development_leave_one_out_v23(
@@ -116,16 +190,72 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         print(diagnosis_result.model_dump_json(indent=2))
         return 0
+    if args.command == "conflict-audit":
+        repository_root = args.repository_root.resolve()
+        result = args.result if args.result.is_absolute() else repository_root / args.result
+        print(audit_historical_conflicts_v231(result).model_dump_json(indent=2))
+        return 0
+    if args.command == "conflict" and args.conflict_command == "show":
+        repository_root = args.repository_root.resolve()
+        cases = load_evaluation_case_set_v231(
+            repository_root / "config/dta-v231/evaluation/cases.json"
+        )
+        case_path = Path(args.case)
+        case_matches = tuple(
+            item for item in cases.cases if item.case_id == args.case
+        )
+        spec = (
+            EvaluationCaseSpecV231.model_validate_json(case_path.read_bytes())
+            if case_path.is_file()
+            else case_matches[0]
+            if case_matches
+            else None
+        )
+        if spec is None:
+            raise ValueError("v2.3.1 conflict case is absent")
+        views = load_evaluation_views_v231(
+            repository_root / "config/dta-v231/evaluation/ontology-views.json"
+        )
+        treatment = run_evaluation_policy_v231(
+            repository_root=repository_root,
+            spec=spec,
+            view_spec=views.require(spec.case_id),
+            policy=EvaluationPolicyV231.V231_CONFLICT_AWARE_GATE,
+            provider_transport=None,
+        )
+        if not isinstance(treatment, EvaluationArmRunV231):
+            raise TypeError("v2.3.1 conflict display requires the treatment policy")
+        print(treatment.conflict_assessment.model_dump_json(indent=2))
+        return 0
     if args.command == "review":
         store = LocalReviewStoreV23(args.local_root)
+        store_v231 = LocalReviewStoreV231(args.local_root)
         if args.review_command == "list":
-            print(json.dumps(store.list_report_ids(), indent=2))
+            print(
+                json.dumps(
+                    tuple(sorted((*store.list_report_ids(), *store_v231.list_report_ids()))),
+                    indent=2,
+                )
+            )
             return 0
         if args.review_command == "show":
-            print(store.load_item(args.report_id).model_dump_json(indent=2))
+            if args.report_id.startswith("report-v231-"):
+                print(
+                    json.dumps(
+                        render_review_display_v231(store_v231.load_item(args.report_id)),
+                        indent=2,
+                    )
+                )
+            else:
+                print(store.load_item(args.report_id).model_dump_json(indent=2))
             return 0
         if args.review_command == "decide":
-            result = store.decide(
+            decide_store = (
+                store_v231.decide
+                if args.report_id.startswith("report-v231-")
+                else store.decide
+            )
+            result = decide_store(
                 report_id=args.report_id,
                 decision=HumanReviewDecisionV23(args.decision),
                 reviewer=args.reviewer,
@@ -144,21 +274,26 @@ def main(argv: Sequence[str] | None = None) -> int:
             item = ReviewQueueItemV23.model_validate_json(raw)
         except ValueError:
             report = ProvisionalIncidentReportV23.model_validate_json(raw)
-            matches = match_shadow_report_v23(
+            shadow_matches = match_shadow_report_v23(
                 report=report,
                 registry=store.load_registry(),
             )
         else:
-            matches = match_shadow_queue_item_v23(
+            shadow_matches = match_shadow_queue_item_v23(
                 item=item,
                 registry=store.load_registry(),
             )
-        print(json.dumps([item.model_dump(mode="json") for item in matches], indent=2))
+        print(
+            json.dumps(
+                [item.model_dump(mode="json") for item in shadow_matches],
+                indent=2,
+            )
+        )
         return 0
     if args.command == "evaluate":
         repository_root = args.repository_root.resolve()
         if args.split == "development":
-            cases = (
+            development_cases = (
                 ("d01", MechanismV22.CONFIGURATION_ERROR),
                 ("d02", MechanismV22.SERVICE_UNAVAILABLE),
                 ("d03", MechanismV22.MEMORY_LEAK),
@@ -171,7 +306,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     case_id=case_id,
                     hidden_mechanism=hidden,
                 )
-                for case_id, hidden in cases
+                for case_id, hidden in development_cases
             )
             print(
                 json.dumps(
@@ -202,6 +337,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             if args.output_markdown.is_absolute()
             else repository_root / args.output_markdown
         )
+        if args.split == "v231-fixed":
+            if args.output_json == Path("docs/results/dta-v23-open-world-evaluation.json"):
+                output_json = repository_root / "docs/results/dta-v231-conflict-aware-evaluation.json"
+            if args.output_markdown == Path("docs/results/dta-v23-open-world-evaluation.md"):
+                output_markdown = repository_root / "docs/results/dta-v231-conflict-aware-evaluation.md"
         if output_markdown.exists():
             raise FileExistsError(
                 f"write-once evaluation markdown exists: {output_markdown}"
@@ -212,11 +352,74 @@ def main(argv: Sequence[str] | None = None) -> int:
             api_key=values["ECOMSRE_LLM_API_KEY"],
             model=values["ECOMSRE_LLM_MODEL"],
         )
-        provider = OpenAICompatibleDiscoveryTransportV23(
-            config=config,
-            minimum_request_interval_seconds=args.minimum_request_interval,
-            timeout_seconds=args.timeout,
+        provider = (
+            OpenAICompatibleDiscoveryTransportV231(
+                config=config,
+                minimum_request_interval_seconds=args.minimum_request_interval,
+                timeout_seconds=args.timeout,
+            )
+            if args.split == "v231-fixed"
+            else OpenAICompatibleDiscoveryTransportV23(
+                config=config,
+                minimum_request_interval_seconds=args.minimum_request_interval,
+                timeout_seconds=args.timeout,
+            )
         )
+
+        if args.split == "v231-fixed":
+            def observe_v231(pair: object) -> None:
+                from ecomsre.dta_v2.v23.evaluation_v231 import EvaluationCasePairV231
+
+                if not isinstance(pair, EvaluationCasePairV231):
+                    raise TypeError("v2.3.1 observer received an invalid pair")
+                print(
+                    json.dumps(
+                        {
+                            "case_id": pair.case_id,
+                            "strict": pair.strict.final_disposition,
+                            "treatment": pair.treatment.final_disposition,
+                            "strict_reads": pair.strict.discovery_read_count,
+                            "treatment_reads": pair.treatment.discovery_read_count,
+                            "provider_calls": (
+                                pair.strict.provider_cost.provider_calls
+                                + pair.treatment.provider_cost.provider_calls
+                            ),
+                        },
+                        sort_keys=True,
+                    ),
+                    flush=True,
+                )
+
+            if not isinstance(provider, OpenAICompatibleDiscoveryTransportV231):
+                raise TypeError("v2.3.1 fixed evaluation requires its transport")
+            artifact_v231 = run_fixed_evaluation_once_v231(
+                repository_root=repository_root,
+                cases_path=repository_root / "config/dta-v231/evaluation/cases.json",
+                truth_path=repository_root / "config/dta-v231/evaluation/truth.json",
+                ontology_views_path=repository_root
+                / "config/dta-v231/evaluation/ontology-views.json",
+                manifest_path=repository_root
+                / "config/dta-v231/evaluation/manifest.json",
+                output_path=output_json,
+                output_markdown_path=output_markdown,
+                provider_transport=provider,
+                observer=observe_v231,
+            )
+            print(
+                json.dumps(
+                    {
+                        "execution_count": artifact_v231.execution_count,
+                        "case_count": artifact_v231.case_count,
+                        "run_count": artifact_v231.run_count,
+                        "measured_result_terminal": (
+                            artifact_v231.measured_result_terminal.value
+                        ),
+                        "artifact_sha256": artifact_v231.artifact_sha256,
+                    },
+                    sort_keys=True,
+                )
+            )
+            return 0
 
         def observe(pair: object) -> None:
             from ecomsre.dta_v2.v23.evaluation import EvaluationCasePairV23
