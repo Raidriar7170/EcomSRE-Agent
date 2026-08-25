@@ -121,10 +121,12 @@
   "counters": {
     "docker_calls": 0,
     "new_live_faults": 0,
-    "invalid_predecessor_provider_calls": 14,
+    "invalid_predecessor_provider_calls": 13,
+    "invalid_predecessor_provider_smoke_calls": 1,
     "protocol_blocked_predecessor_provider_calls": 0,
     "valid_fixed_evaluation_provider_calls": 7,
-    "provider_calls_total": 21,
+    "fixed_schedule_provider_calls_total": 20,
+    "all_provider_calls_including_predecessor_smoke": 21,
     "agent_writes": 0,
     "runbook_executions": 0
   }
