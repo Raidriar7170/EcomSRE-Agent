@@ -1,0 +1,79 @@
+{
+  "schema_version": "dta-v225-real-fault.manifest.v1",
+  "pre_live_freeze": {
+    "schema_version": "dta-v225-real-fault.pre-live-freeze.v1",
+    "goal_version": "dta-v225-real-fault-shadow-v1",
+    "starting_main": "8e4227fb8ac8880f89eadc3d13bf423244b378a7",
+    "code_head": "8a039fbfcb2558154687e9860732b9887d9260db",
+    "provider_model": "gpt-5.4-mini-2026-03-17",
+    "temperature": 0,
+    "comparator_service": "recommendation",
+    "alias_map_set_sha256": "afbb48ec09087f160346170939aed41feb8c6e01cd3e2f0cfd034740a5c7b8b8",
+    "flat_prompt_sha256": "d32783550efc80dac8788256f2e63c9f9f7660677d108bc49f3194b4af6a041a",
+    "current_prompt_sha256": "7bbc4300cfeb4197dc6ed08619542861d5695aa91d41c639c98b8dad87371483",
+    "scorer_sha256": "b2a755bebd0e7b78f1651fe0fb7673a5c2b01931acc6acd1bc20f66e44aa332a",
+    "schedule": [
+      {
+        "ordinal": 1,
+        "case_id": "fault-map-a",
+        "case_local_position": 1,
+        "arm": "V2_STYLE_FLAT_ADAPTIVE"
+      },
+      {
+        "ordinal": 2,
+        "case_id": "fault-map-a",
+        "case_local_position": 2,
+        "arm": "CURRENT_RUNTIME_BUNDLE"
+      },
+      {
+        "ordinal": 3,
+        "case_id": "fault-map-b",
+        "case_local_position": 1,
+        "arm": "CURRENT_RUNTIME_BUNDLE"
+      },
+      {
+        "ordinal": 4,
+        "case_id": "fault-map-b",
+        "case_local_position": 2,
+        "arm": "V2_STYLE_FLAT_ADAPTIVE"
+      },
+      {
+        "ordinal": 5,
+        "case_id": "baseline-map-a",
+        "case_local_position": 1,
+        "arm": "V2_STYLE_FLAT_ADAPTIVE"
+      },
+      {
+        "ordinal": 6,
+        "case_id": "baseline-map-a",
+        "case_local_position": 2,
+        "arm": "CURRENT_RUNTIME_BUNDLE"
+      },
+      {
+        "ordinal": 7,
+        "case_id": "baseline-map-b",
+        "case_local_position": 1,
+        "arm": "CURRENT_RUNTIME_BUNDLE"
+      },
+      {
+        "ordinal": 8,
+        "case_id": "baseline-map-b",
+        "case_local_position": 2,
+        "arm": "V2_STYLE_FLAT_ADAPTIVE"
+      }
+    ],
+    "maximum_adaptive_semantic_actions": 4,
+    "maximum_target_equivalent_reads": 4,
+    "maximum_transport_retries": 3,
+    "maximum_final_execution_count": 1,
+    "maximum_accepted_live_campaigns": 1,
+    "agent_write_authority": 0,
+    "action_proposal_authority": 0,
+    "runbook_execution_authority": 0,
+    "freeze_sha256": "dbb22cc39796f674b1ef78b564251c401a55007d548e4cd4dae109a88913b985"
+  },
+  "capture_pair_sha256": "ae207675e7a06a273d4201fec7ff68573316b284e204b4eb4119bf5d5f2b8d7f",
+  "case_set_sha256": "1d08b19b72f3c768c0d73b41d24d816949e3d886fbc955d04775b160ece11f6f",
+  "truth_set_sha256": "471a0c119285d079c46f3af89ce722197e66044580596f5f8066442e1b14f63e",
+  "manifest_sha256": "f7ae817c6cae4cc359729367cbd0c878866b1cc12e34252639392a02adbb583d"
+}

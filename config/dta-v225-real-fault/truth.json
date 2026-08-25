@@ -1,0 +1,38 @@
+{
+  "schema_version": "dta-v225-real-fault.truth-set.v1",
+  "truths": [
+    {
+      "schema_version": "dta-v225-real-fault.case-truth.v1",
+      "case_id": "fault-map-a",
+      "case_kind": "AD_CPU_FAULT",
+      "expected_root_alias": "svc-6db724c330",
+      "expected_fault_domain": "LOCAL_RESOURCE",
+      "expected_mechanism": "CPU_SATURATION"
+    },
+    {
+      "schema_version": "dta-v225-real-fault.case-truth.v1",
+      "case_id": "fault-map-b",
+      "case_kind": "AD_CPU_FAULT",
+      "expected_root_alias": "svc-f1a57dd3c4",
+      "expected_fault_domain": "LOCAL_RESOURCE",
+      "expected_mechanism": "CPU_SATURATION"
+    },
+    {
+      "schema_version": "dta-v225-real-fault.case-truth.v1",
+      "case_id": "baseline-map-a",
+      "case_kind": "BASELINE",
+      "expected_root_alias": null,
+      "expected_fault_domain": null,
+      "expected_mechanism": null
+    },
+    {
+      "schema_version": "dta-v225-real-fault.case-truth.v1",
+      "case_id": "baseline-map-b",
+      "case_kind": "BASELINE",
+      "expected_root_alias": null,
+      "expected_fault_domain": null,
+      "expected_mechanism": null
+    }
+  ],
+  "truth_set_sha256": "471a0c119285d079c46f3af89ce722197e66044580596f5f8066442e1b14f63e"
+}
