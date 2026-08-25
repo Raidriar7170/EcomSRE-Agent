@@ -1,0 +1,147 @@
+{
+  "schema_version": "dta-v232.provider-smoke.v1",
+  "execution_count": 1,
+  "case_count": 8,
+  "arm_run_count": 8,
+  "manifest_sha256": "e062eae672d3132466532c80402a75fc4fe289b3f360e882f3d10a37099573d8",
+  "runs": [
+    {
+      "case_id": "vx-209",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "role": "STRICT_NOVELTY",
+      "final_disposition": "UNREGISTERED_INCIDENT_SUSPECTED",
+      "report_present": true,
+      "competing_report": false,
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "RUNTIME_NOT_RUNNING",
+        "RUNTIME_UNHEALTHY"
+      ],
+      "provider_calls": 1,
+      "protocol_repairs": 0,
+      "transport_retries": 0,
+      "provider_error_code": null,
+      "action_authority_violations": 0
+    },
+    {
+      "case_id": "vx-210",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "role": "STRICT_NOVELTY",
+      "final_disposition": "UNREGISTERED_INCIDENT_SUSPECTED",
+      "report_present": true,
+      "competing_report": false,
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "RUNTIME_NOT_RUNNING",
+        "RUNTIME_UNHEALTHY"
+      ],
+      "provider_calls": 1,
+      "protocol_repairs": 0,
+      "transport_retries": 0,
+      "provider_error_code": null,
+      "action_authority_violations": 0
+    },
+    {
+      "case_id": "vx-211",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "role": "TREATMENT_NOVELTY",
+      "final_disposition": "UNREGISTERED_INCIDENT_SUSPECTED",
+      "report_present": true,
+      "competing_report": false,
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "provider_calls": 0,
+      "protocol_repairs": 0,
+      "transport_retries": 0,
+      "provider_error_code": null,
+      "action_authority_violations": 0
+    },
+    {
+      "case_id": "vx-212",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "role": "TREATMENT_NOVELTY",
+      "final_disposition": "UNREGISTERED_INCIDENT_SUSPECTED",
+      "report_present": true,
+      "competing_report": false,
+      "encountered_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "provider_calls": 0,
+      "protocol_repairs": 0,
+      "transport_retries": 0,
+      "provider_error_code": null,
+      "action_authority_violations": 0
+    },
+    {
+      "case_id": "vx-213",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "role": "COMPETING_HYPOTHESIS",
+      "final_disposition": "UNREGISTERED_INCIDENT_WITH_COMPETING_HYPOTHESES",
+      "report_present": true,
+      "competing_report": true,
+      "encountered_anomaly_kinds": [
+        "LOG_ERROR_CLUSTER",
+        "METRIC_ERROR_OUTLIER",
+        "RESOURCE_MEMORY_TREND"
+      ],
+      "provider_calls": 1,
+      "protocol_repairs": 0,
+      "transport_retries": 0,
+      "provider_error_code": null,
+      "action_authority_violations": 0
+    },
+    {
+      "case_id": "vx-215",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "role": "REGISTERED_KNOWN",
+      "final_disposition": "KNOWN_INCIDENT",
+      "report_present": false,
+      "competing_report": false,
+      "encountered_anomaly_kinds": [],
+      "provider_calls": 0,
+      "protocol_repairs": 0,
+      "transport_retries": 0,
+      "provider_error_code": null,
+      "action_authority_violations": 0
+    },
+    {
+      "case_id": "vx-219",
+      "policy": "V231_CONFLICT_AWARE_GATE_TOTAL",
+      "role": "NO_INCIDENT",
+      "final_disposition": "NO_INCIDENT",
+      "report_present": false,
+      "competing_report": false,
+      "encountered_anomaly_kinds": [],
+      "provider_calls": 0,
+      "protocol_repairs": 0,
+      "transport_retries": 0,
+      "provider_error_code": null,
+      "action_authority_violations": 0
+    },
+    {
+      "case_id": "vx-222",
+      "policy": "V23_STRICT_CONFLICT_GATE_TOTAL",
+      "role": "IRRECONCILABLE",
+      "final_disposition": "CONFLICTING_EVIDENCE",
+      "report_present": false,
+      "competing_report": false,
+      "encountered_anomaly_kinds": [
+        "LOG_ERROR_CLUSTER",
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "provider_calls": 0,
+      "protocol_repairs": 0,
+      "transport_retries": 0,
+      "provider_error_code": null,
+      "action_authority_violations": 0
+    }
+  ],
+  "provider_output_parse_failures": 0,
+  "protocol_failures": 0,
+  "runner_failures": 0,
+  "log_error_cluster_successful_paths": 2,
+  "action_authority_violations": 0,
+  "status": "DTA_V232_PROVIDER_SMOKE_PASS",
+  "smoke_sha256": "bcbde0a06a67f4de2586d766eb38567c98f935342280796c2c78bf4f32eaf550"
+}

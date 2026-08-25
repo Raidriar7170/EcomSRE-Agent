@@ -1,0 +1,26 @@
+{
+  "schema_version": "dta-v232.evaluation-truth-shard.v1",
+  "record": {
+    "evaluator_truth": {
+      "case_id": "vx-202",
+      "category": "NOVEL_HIDDEN",
+      "expected_disposition": "UNREGISTERED_INCIDENT",
+      "expected_root_service": "svc-7f527eaf14",
+      "expected_broad_domain": "CONFIGURATION",
+      "expected_mechanism": "CONFIGURATION_ERROR",
+      "semantic_concepts": [
+        "configuration",
+        "setting"
+      ],
+      "counterfactual_pair_id": "v232-cf-01",
+      "requires_discovery_read": true,
+      "empty_or_misleading_action": true,
+      "conflict_prone_novelty": true,
+      "multi_coherent_interpretations": true,
+      "true_irreconcilable_conflict": false
+    },
+    "admission_stratum": "NOVEL_HIDDEN",
+    "expected_known_mechanism": null,
+    "counterfactual_target_role": "TARGET_HIGH"
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "schema_version": "dta-v232.ontology-view-set.v1",
+  "views": [
+    {
+      "case_id": "vx-201",
+      "hidden_mechanism": "CONFIGURATION_ERROR"
+    },
+    {
+      "case_id": "vx-202",
+      "hidden_mechanism": "CONFIGURATION_ERROR"
+    },
+    {
+      "case_id": "vx-203",
+      "hidden_mechanism": "DEPENDENCY_LATENCY"
+    },
+    {
+      "case_id": "vx-204",
+      "hidden_mechanism": "DEPENDENCY_LATENCY"
+    },
+    {
+      "case_id": "vx-205",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-206",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-207",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-208",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-209",
+      "hidden_mechanism": "SERVICE_UNAVAILABLE"
+    },
+    {
+      "case_id": "vx-210",
+      "hidden_mechanism": "SERVICE_UNAVAILABLE"
+    },
+    {
+      "case_id": "vx-211",
+      "hidden_mechanism": "CPU_SATURATION"
+    },
+    {
+      "case_id": "vx-212",
+      "hidden_mechanism": "CPU_SATURATION"
+    },
+    {
+      "case_id": "vx-213",
+      "hidden_mechanism": "MEMORY_LEAK"
+    },
+    {
+      "case_id": "vx-214",
+      "hidden_mechanism": "MEMORY_LEAK"
+    },
+    {
+      "case_id": "vx-215",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-216",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-217",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-218",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-219",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-220",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-221",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-222",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-223",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-224",
+      "hidden_mechanism": null
+    }
+  ]
+}
