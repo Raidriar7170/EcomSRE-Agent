@@ -3,11 +3,11 @@
   "goal_version": "dta-v23-open-world-discovery-v1",
   "base_commit": "f17688f4c313b1483bfb7c56675c429605faf489",
   "branch": "codex/dta-v23-open-world-discovery",
-  "current_increment": 3,
-  "status": "INCREMENT_3_COMPLETE",
+  "current_increment": 4,
+  "status": "FIXED_EVALUATION_COMPLETE_AWAITING_CI_REVIEW_MERGE",
   "engineering_terminal": null,
-  "measured_result_terminal": null,
-  "fixed_evaluation_execution_count": 0,
+  "measured_result_terminal": "DTA_V23_OPEN_WORLD_DISCOVERY_MIXED_RESULT",
+  "fixed_evaluation_execution_count": 1,
   "increments": [
     {
       "increment": 1,
@@ -47,14 +47,33 @@
     {
       "increment": 4,
       "name": "fixed evaluation and closeout",
-      "status": "PENDING"
+      "status": "ENGINEERING_COMPLETE_AWAITING_CI_REVIEW_MERGE",
+      "preflight_status": "DTA_V23_FIXED_EVALUATION_FINAL_PREFLIGHT_PASS",
+      "planned_cases": 24,
+      "planned_runs": 48,
+      "planned_execution_count": 1,
+      "fixed_evaluation_execution_count": 1,
+      "actual_cases": 24,
+      "actual_runs": 48,
+      "measured_result_terminal": "DTA_V23_OPEN_WORLD_DISCOVERY_MIXED_RESULT",
+      "artifact_sha256": "e2bd2d41f8d2336225a10a97ae6222a9f3e1a52c00fe849137556f3e717aa9e5",
+      "novelty_recall": 0.7142857142857143,
+      "root_localization": 0.7142857142857143,
+      "broad_domain_accuracy": 0.07142857142857142,
+      "evidence_ref_validity": 1.0,
+      "false_novel_rate": 0.1,
+      "registered_known_accuracy_drop_cases": 0,
+      "no_incident_accuracy_drop_cases": 0,
+      "action_authority_violations": 0,
+      "provider_smoke_status": "DTA_V23_DISCOVERY_PROVIDER_SMOKE_PASS",
+      "provider_smoke_calls": 1
     }
   ],
   "draft_pr": "https://github.com/Raidriar7170/EcomSRE-Agent/pull/69",
   "counters": {
     "docker_calls": 0,
     "new_live_faults": 0,
-    "provider_calls": 0,
+    "provider_calls": 14,
     "agent_writes": 0,
     "runbook_executions": 0
   }

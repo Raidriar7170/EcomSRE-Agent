@@ -35,7 +35,12 @@ Never invent evidence references or services. action_authority must be NONE."""
 
 
 class DiscoveryProviderTransportErrorV23(RuntimeError):
-    """A retryable failure before a response body was obtained."""
+    """A bounded transport failure before a response body was obtained."""
+
+    def __init__(self, safe_code: str, *, retryable: bool = True) -> None:
+        self.safe_code = safe_code
+        self.retryable = retryable
+        super().__init__(safe_code)
 
 
 class DiscoveryProviderProtocolFailureV23(RuntimeError):
@@ -287,8 +292,8 @@ def call_discovery_provider_v23(
                 provider_calls += 1
                 raw = transport(body)
                 break
-            except DiscoveryProviderTransportErrorV23:
-                if retry == MAX_EXACT_TRANSPORT_RETRIES_V23:
+            except DiscoveryProviderTransportErrorV23 as exc:
+                if not exc.retryable or retry == MAX_EXACT_TRANSPORT_RETRIES_V23:
                     raise
                 total_transport_retries += 1
         assert raw is not None

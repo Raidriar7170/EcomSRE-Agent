@@ -1,0 +1,29 @@
+{
+  "schema_version": "dta-v23.evaluation-case-set.v1",
+  "cases": [
+    {"case_id": "ow-001", "source_split": "EVALUATION", "source_case_id": "e01", "derivation_id": "drv-001"},
+    {"case_id": "ow-002", "source_split": "EVALUATION", "source_case_id": "e02", "derivation_id": "drv-002"},
+    {"case_id": "ow-003", "source_split": "EVALUATION", "source_case_id": "e03", "derivation_id": "drv-003"},
+    {"case_id": "ow-004", "source_split": "EVALUATION", "source_case_id": "e04", "derivation_id": "drv-004"},
+    {"case_id": "ow-005", "source_split": "EVALUATION", "source_case_id": "e06", "derivation_id": "drv-005"},
+    {"case_id": "ow-006", "source_split": "DEVELOPMENT", "source_case_id": "d04", "derivation_id": "drv-006"},
+    {"case_id": "ow-007", "source_split": "EVALUATION", "source_case_id": "e05", "derivation_id": "drv-007"},
+    {"case_id": "ow-008", "source_split": "DEVELOPMENT", "source_case_id": "d03", "derivation_id": "drv-008"},
+    {"case_id": "ow-009", "source_split": "EVALUATION", "source_case_id": "e07", "derivation_id": "drv-009"},
+    {"case_id": "ow-010", "source_split": "EVALUATION", "source_case_id": "e08", "derivation_id": "drv-010"},
+    {"case_id": "ow-011", "source_split": "SYNTHETIC_DERIVED", "source_case_id": "syn-01", "derivation_id": "drv-011"},
+    {"case_id": "ow-012", "source_split": "SYNTHETIC_DERIVED", "source_case_id": "syn-02", "derivation_id": "drv-012"},
+    {"case_id": "ow-013", "source_split": "SYNTHETIC_DERIVED", "source_case_id": "syn-03", "derivation_id": "drv-013"},
+    {"case_id": "ow-014", "source_split": "SYNTHETIC_DERIVED", "source_case_id": "syn-04", "derivation_id": "drv-014"},
+    {"case_id": "ow-015", "source_split": "EVALUATION", "source_case_id": "e04", "derivation_id": "drv-015"},
+    {"case_id": "ow-016", "source_split": "EVALUATION", "source_case_id": "e03", "derivation_id": "drv-016"},
+    {"case_id": "ow-017", "source_split": "EVALUATION", "source_case_id": "e06", "derivation_id": "drv-017"},
+    {"case_id": "ow-018", "source_split": "EVALUATION", "source_case_id": "e07", "derivation_id": "drv-018"},
+    {"case_id": "ow-019", "source_split": "EVALUATION", "source_case_id": "e09", "derivation_id": "drv-019"},
+    {"case_id": "ow-020", "source_split": "EVALUATION", "source_case_id": "e10", "derivation_id": "drv-020"},
+    {"case_id": "ow-021", "source_split": "DEVELOPMENT", "source_case_id": "d07", "derivation_id": "drv-021"},
+    {"case_id": "ow-022", "source_split": "EVALUATION", "source_case_id": "e11", "derivation_id": "drv-022"},
+    {"case_id": "ow-023", "source_split": "EVALUATION", "source_case_id": "e12", "derivation_id": "drv-023"},
+    {"case_id": "ow-024", "source_split": "DEVELOPMENT", "source_case_id": "d08", "derivation_id": "drv-024"}
+  ]
+}

@@ -34,6 +34,22 @@ from ecomsre.dta_v2.v22.real_fault_selection_v226 import (
 EXPECTED_RESULT_SHA256_V226 = (
     "f219d21a981789a0d22093273f2220bd94177b6e02249796e098d0f56573b814"
 )
+_V226_SQUASH_INTEGRATION_HEAD = "f17688f4c313b1483bfb7c56675c429605faf489"
+
+
+def _require_frozen_code_reachable(root: Path, *, code_head: str) -> None:
+    """Accept the original admission history or its exact squash integration."""
+
+    for trusted_head in (code_head, _V226_SQUASH_INTEGRATION_HEAD):
+        result = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", trusted_head, "HEAD"],
+            cwd=root,
+            check=False,
+            capture_output=True,
+        )
+        if result.returncode == 0:
+            return
+    raise ValueError("v2.2.6 frozen code is not reachable from this checkout")
 
 
 def verify_dta_v226_real_fault_result(repository_root: Path) -> dict[str, object]:
@@ -114,18 +130,7 @@ def verify_dta_v226_real_fault_result(repository_root: Path) -> dict[str, object
     ):
         if sha256_file_v226(root / relative) != expected:
             raise ValueError(f"v2.2.6 frozen binding drifted: {relative}")
-    subprocess.run(
-        [
-            "git",
-            "merge-base",
-            "--is-ancestor",
-            freeze.code_head,
-            "HEAD",
-        ],
-        cwd=root,
-        check=True,
-        capture_output=True,
-    )
+    _require_frozen_code_reachable(root, code_head=freeze.code_head)
     score = artifact.score
     model_directed_score = next(
         (

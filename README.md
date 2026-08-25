@@ -119,6 +119,25 @@ cleanup, zero non-owned changes, and zero write authority. See the
 [error analysis](docs/results/dta-v226-real-fault-error-analysis.md), and
 [interview brief](docs/results/dta-v226-real-fault-interview-brief.md).
 
+### DTA v2.3: separate open-world discovery lane
+
+DTA v2.3 keeps the v2.2 closed-world Diagnosis path unchanged and adds a
+separate replay-only lane for residual anomaly discovery, bounded generic
+reads, typed provisional incident reports, human review, and shadow
+registration. Provisional reports have `action_authority = NONE` and cannot
+enter Candidate Filter or Runbook paths; automated review examples use the
+simulated `TEST_REVIEWER` identity.
+
+One fixed 24-case x 2-arm study executed exactly once. Open-world discovery
+reached 10/14 novelty recall and 10/14 root localization with 100% valid
+evidence references, zero known/No-Incident accuracy drop cases, and zero
+action-authority violations. Broad-domain accuracy was only 1/14 and one of ten
+controls produced false novelty, so the frozen measured terminal is
+`DTA_V23_OPEN_WORLD_DISCOVERY_MIXED_RESULT`, not a reliable mechanism-discovery,
+production-autonomy, or remediation claim. See the [fixed study](docs/results/dta-v23-open-world-evaluation.md),
+[error analysis](docs/results/dta-v23-open-world-error-analysis.md), and
+[interview brief](docs/results/dta-v23-open-world-interview-brief.md).
+
 ## One-command offline demo
 
 ```bash

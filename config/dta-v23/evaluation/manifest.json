@@ -1,0 +1,35 @@
+{
+  "schema_version": "dta-v23.evaluation-manifest.v1",
+  "base_commit": "f17688f4c313b1483bfb7c56675c429605faf489",
+  "branch": "codex/dta-v23-open-world-discovery",
+  "provider_model": "gpt-5.4-mini-2026-03-17",
+  "planned_case_count": 24,
+  "planned_run_count": 48,
+  "planned_execution_count": 1,
+  "cases": {
+    "path": "config/dta-v23/evaluation/cases.json",
+    "sha256": "ab54477a057e063041e3532fde81448e8261468ad077b35aaabc9ce860181cfb"
+  },
+  "truth": {
+    "path": "config/dta-v23/evaluation/truth.json",
+    "sha256": "c8dfa432bb27fef8caff085e197a9b239cee1972cb5f5d3aee45d925d6c82e12"
+  },
+  "ontology_views": {
+    "path": "config/dta-v23/evaluation/ontology-views.json",
+    "sha256": "1962b1a977677caaa9b05430dff4533c2c2e4b5d930b85d393f4fa0e17cef783"
+  },
+  "source_case_sets": [
+    {
+      "path": "config/dta-v22-sprint/development/cases.json",
+      "sha256": "e8e88a9bc424272135a24a737c16785fa0e9eec8feaa1da321892aa7eda2c002"
+    },
+    {
+      "path": "config/dta-v22-sprint/evaluation/cases.json",
+      "sha256": "243e7231dbd9e4aa5ed59cddfed2fb354a2c2bb552c02bf279cefddbec7f3204"
+    }
+  ],
+  "discovery_system_prompt_sha256": "f7b6a948908f1f4637508b74e18549576537179e6ac249537af523f8f735d403",
+  "output_json": "docs/results/dta-v23-open-world-evaluation.json",
+  "output_markdown": "docs/results/dta-v23-open-world-evaluation.md",
+  "fixed_at_utc": "2026-08-25T00:00:00Z"
+}
