@@ -1,0 +1,29 @@
+{
+  "schema_version": "dta-v23.evaluation-ontology-view-set.v1",
+  "views": [
+    {"case_id": "ow-001", "hidden_mechanism": "CONFIGURATION_ERROR"},
+    {"case_id": "ow-002", "hidden_mechanism": "CONFIGURATION_ERROR"},
+    {"case_id": "ow-003", "hidden_mechanism": "SERVICE_UNAVAILABLE"},
+    {"case_id": "ow-004", "hidden_mechanism": "SERVICE_UNAVAILABLE"},
+    {"case_id": "ow-005", "hidden_mechanism": "CPU_SATURATION"},
+    {"case_id": "ow-006", "hidden_mechanism": "CPU_SATURATION"},
+    {"case_id": "ow-007", "hidden_mechanism": "MEMORY_LEAK"},
+    {"case_id": "ow-008", "hidden_mechanism": "MEMORY_LEAK"},
+    {"case_id": "ow-009", "hidden_mechanism": "DEPENDENCY_LATENCY"},
+    {"case_id": "ow-010", "hidden_mechanism": "DEPENDENCY_LATENCY"},
+    {"case_id": "ow-011", "hidden_mechanism": null},
+    {"case_id": "ow-012", "hidden_mechanism": null},
+    {"case_id": "ow-013", "hidden_mechanism": null},
+    {"case_id": "ow-014", "hidden_mechanism": null},
+    {"case_id": "ow-015", "hidden_mechanism": null},
+    {"case_id": "ow-016", "hidden_mechanism": null},
+    {"case_id": "ow-017", "hidden_mechanism": null},
+    {"case_id": "ow-018", "hidden_mechanism": null},
+    {"case_id": "ow-019", "hidden_mechanism": null},
+    {"case_id": "ow-020", "hidden_mechanism": null},
+    {"case_id": "ow-021", "hidden_mechanism": null},
+    {"case_id": "ow-022", "hidden_mechanism": null},
+    {"case_id": "ow-023", "hidden_mechanism": null},
+    {"case_id": "ow-024", "hidden_mechanism": null}
+  ]
+}

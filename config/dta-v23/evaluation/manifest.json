@@ -1,0 +1,85 @@
+{
+  "schema_version": "dta-v23.evaluation-manifest.v2",
+  "base_commit": "f17688f4c313b1483bfb7c56675c429605faf489",
+  "branch": "codex/dta-v23-open-world-discovery",
+  "provider_model": "gpt-5.4-mini-2026-03-17",
+  "planned_case_count": 24,
+  "planned_run_count": 48,
+  "planned_execution_count": 1,
+  "cases": {
+    "path": "config/dta-v23/evaluation/cases.json",
+    "sha256": "28e978376dbd77bf2c3661451fd59f0049630f36b9133579b090e5c6c5fc13fd"
+  },
+  "truth": {
+    "path": "config/dta-v23/evaluation/truth.json",
+    "sha256": "b42cefbc04549e85476b943de27784832ee42d04ad174005b26d67ee962ab325"
+  },
+  "ontology_views": {
+    "path": "config/dta-v23/evaluation/ontology-views.json",
+    "sha256": "1962b1a977677caaa9b05430dff4533c2c2e4b5d930b85d393f4fa0e17cef783"
+  },
+  "source_case_sets": [
+    {
+      "path": "config/dta-v22-sprint/development/cases.json",
+      "sha256": "e8e88a9bc424272135a24a737c16785fa0e9eec8feaa1da321892aa7eda2c002"
+    },
+    {
+      "path": "config/dta-v22-sprint/evaluation/cases.json",
+      "sha256": "243e7231dbd9e4aa5ed59cddfed2fb354a2c2bb552c02bf279cefddbec7f3204"
+    }
+  ],
+  "runtime_sources": [
+    {
+      "path": "src/ecomsre/dta_v2/v22/diagnosis.py",
+      "sha256": "75dadc55ce4a91bc911db892b36ab9c1de3a034c98b2b048884a0defdf84c8bc"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v22/predicates.py",
+      "sha256": "c56a1c4168d224f369cdac02289ec02d95ac61b5bc2f5938adbc9b599bea8c7f"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/contracts.py",
+      "sha256": "4679c8a21a8eefae73f078c33113a93f277cac62c65e4b494eaf018798f42193"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/discovery_provider.py",
+      "sha256": "25338e97bc221d6e8e30c50d590db1285ba8739e542c4edac99874ec1c23246a"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/discovery_router.py",
+      "sha256": "d5f58981b59ae425ca03469c4d84cc2556a23b727fa9abb69993178f751cefd9"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/discovery_runtime.py",
+      "sha256": "2b207a33fee100116212c7c392d6983b0cd999662c06d298e0279e9e8b8de7fb"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/evaluation.py",
+      "sha256": "0afacecb92300e7c506583f4ada6a2e8aa01db1084a968cdbb6fd7bce3ed5387"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/generic_anomalies.py",
+      "sha256": "22a0a4f7b71d30a1cd371944c847b1b5332debb1641fce6f21e25095c1b1ab07"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/known_admission.py",
+      "sha256": "b392a1ffdaded180846a40c81f68d3ae99be8e527d6a11bbb75403b55f503b22"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/novelty_gate.py",
+      "sha256": "9054f3a227720dbe24d0f0526d0e4a05ed9ee3640450f77863d3dd31cb804d4a"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/ontology_view.py",
+      "sha256": "4b8db2cff4a65e0872674c6e83b51137c75f7fdfe2ca7308a7d1592de2b58b09"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/residual_graph.py",
+      "sha256": "610cfc1eb9d821586e4aaeb74b0b890319dde723ec1046e8b92090ad7bc24658"
+    }
+  ],
+  "discovery_system_prompt_sha256": "f7b6a948908f1f4637508b74e18549576537179e6ac249537af523f8f735d403",
+  "output_json": "docs/results/dta-v23-open-world-evaluation.json",
+  "output_markdown": "docs/results/dta-v23-open-world-evaluation.md",
+  "fixed_at_utc": "2026-08-25T09:40:32Z"
+}

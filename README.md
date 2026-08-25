@@ -119,6 +119,31 @@ cleanup, zero non-owned changes, and zero write authority. See the
 [error analysis](docs/results/dta-v226-real-fault-error-analysis.md), and
 [interview brief](docs/results/dta-v226-real-fault-interview-brief.md).
 
+### DTA v2.3: separate open-world discovery lane
+
+DTA v2.3 keeps the v2.2 closed-world Diagnosis path unchanged and adds a
+separate replay-only lane for residual anomaly discovery, bounded generic
+reads, typed provisional incident reports, human review, and shadow
+registration. Provisional reports have `action_authority = NONE` and cannot
+enter Candidate Filter or Runbook paths; automated review examples use the
+simulated `TEST_REVIEWER` identity.
+
+The valid 24-case × 2-arm comparison executed once after an independent-review
+repair. Closed arms contain no Graph, Gate, Negative Coverage, generic reads,
+or provisional reports; all pairs share the actual v2.2 Diagnosis admission,
+and registered-known accuracy stayed 4/4 in both arms. The measured terminal
+is `DTA_V23_OPEN_WORLD_DISCOVERY_NOT_OBSERVED`: novelty recall and root
+localization were 6/14 (`0.429`), below the frozen mixed-result threshold,
+while evidence-ref validity was `1.000`, false-novel rate was `0.100`, and
+action-authority violations were zero. The earlier mixed artifact remains
+separately preserved as `INVALID / REVIEW_REQUIRED`; a two-pair, zero-Provider
+schedule attempt is retained as `PROTOCOL_BLOCKED / INVALID`. No result
+establishes production autonomy, remediation authority, or general live-fault
+discovery. See the [artifact report](docs/results/dta-v23-open-world-evaluation.md),
+[error analysis](docs/results/dta-v23-open-world-error-analysis.md),
+[interview brief](docs/results/dta-v23-open-world-interview-brief.md), and
+[independent review](docs/external-reviews/dta-v23-open-world-final-review.md).
+
 ## One-command offline demo
 
 ```bash

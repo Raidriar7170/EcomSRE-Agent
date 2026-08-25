@@ -1,0 +1,29 @@
+{
+  "schema_version": "dta-v23.development-case-set.v1",
+  "iteration": 1,
+  "maximum_changed_iterations": 3,
+  "source_case_set": {
+    "path": "config/dta-v22-sprint/development/cases.json",
+    "sha256": "e8e88a9bc424272135a24a737c16785fa0e9eec8feaa1da321892aa7eda2c002"
+  },
+  "cases": [
+    {"case_id": "d01", "view": "HIDE_CONFIGURATION_ERROR", "purpose": "LEAVE_ONE_OUT"},
+    {"case_id": "d02", "view": "HIDE_SERVICE_UNAVAILABLE", "purpose": "LEAVE_ONE_OUT"},
+    {"case_id": "d03", "view": "HIDE_MEMORY_LEAK", "purpose": "LEAVE_ONE_OUT"},
+    {"case_id": "d04", "view": "HIDE_CPU_SATURATION", "purpose": "LEAVE_ONE_OUT_AND_INSUFFICIENT"},
+    {"case_id": "d06", "view": "HIDE_DEPENDENCY_LATENCY", "purpose": "LEAVE_ONE_OUT"},
+    {"case_id": "d05", "view": "FULL", "purpose": "KNOWN_ACTIVE"},
+    {"case_id": "d07", "view": "FULL", "purpose": "NO_INCIDENT"},
+    {"case_id": "d08", "view": "FULL", "purpose": "LEGACY_ABSTAIN_CONTROL"}
+  ],
+  "separate_increment_1_demo": {
+    "case_id": "fault-map-a",
+    "baseline_case_id": "baseline-map-a",
+    "view": "HIDE_CPU_SATURATION",
+    "development_only": true,
+    "capture_path": "config/dta-v226-real-fault/captures/fault-map-a.json",
+    "capture_sha256": "1fe31f102cf5490d1709d7d76bb9c8815d88c7067030dcdaea76b0f0bb50d9cc",
+    "baseline_path": "config/dta-v226-real-fault/captures/baseline-map-a.json",
+    "baseline_sha256": "0f113d4fc220af1166e50ecb8463edb745b8762bd9cf28b5ca282c10604ed09e"
+  }
+}

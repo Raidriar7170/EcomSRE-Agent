@@ -1,0 +1,14 @@
+{
+  "schema_version": "dta-v23.human-review-record.v1",
+  "review_record_id": "review-v23-4fbff70dd279900b",
+  "report_id": "report-v23-0dd5927eb5e0bfdb",
+  "decision": "ACCEPT_AS_NEW",
+  "reviewer": "TEST_REVIEWER",
+  "review_note": "Simulated acceptance for the bounded development registration demo.",
+  "canonical_label": "compute-resource-pressure",
+  "merge_target": null,
+  "requested_observations": [],
+  "reviewed_at": "2026-08-25T00:00:00Z",
+  "simulation": true,
+  "review_sha256": "5649ba5e01c43c7edc075fdc610582a0dade8c0ff999b3e1488e9438c8d53f45"
+}

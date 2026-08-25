@@ -1,0 +1,31 @@
+{
+  "schema_version": "dta-v23.registration-draft.v1",
+  "proposed_mechanism_slug": "compute-resource-pressure",
+  "broad_fault_domain": "RESOURCE",
+  "human_definition": "One opaque service has a strong target-complete compute-resource outlier while the compared runtime remains healthy. Human review note: Simulated acceptance for the bounded development registration demo.",
+  "candidate_generic_anomalies": [
+    "METRIC_LATENCY_OUTLIER",
+    "RESOURCE_CPU_OUTLIER"
+  ],
+  "candidate_evidence_sources": [
+    "METRICS",
+    "RESOURCES"
+  ],
+  "candidate_support_clause_description": "Require corroborating generic anomalies from the listed evidence sources; the exact formal predicate clause remains a later human-led decision.",
+  "distinguishing_negative_examples": [
+    "A transient demand spike could produce a similar resource surface."
+  ],
+  "positive_case_ids": [
+    "fault-map-a"
+  ],
+  "required_replay_tests": [
+    "negative-confusable-control",
+    "positive-replay-with-valid-evidence-refs"
+  ],
+  "suggested_formal_files": [
+    "src/ecomsre/dta_v2/v22/predicates.py",
+    "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+  ],
+  "remediation_registration": "NOT_INCLUDED",
+  "draft_sha256": "270f9793a4162bbb44e7d794498ba9aa1433bb99e400187b4493b531902a0348"
+}
