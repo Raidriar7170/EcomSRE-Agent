@@ -74,7 +74,52 @@ Claim Accuracy:
 FAIL
 ```
 
-## Review 3
+## Review 3 — `02f6512dfda2f25824dd8b8d4a51c6e66d73b163`
 
-Pending on the exact second post-fix commit. Docker admission remains closed
-until the independent result is exactly `Must Fix: 0 / Claim Accuracy: PASS`.
+Scope: read-only. Docker and Provider/network calls: `0 / 0`.
+
+Fresh evidence:
+
+- exact clean HEAD: `02f6512dfda2f25824dd8b8d4a51c6e66d73b163`
+- v2.2.6 focused tests: `52 passed`
+- deterministic old-capture gate: `DTA_V226_DETERMINISTIC_OLD_CAPTURE_GATE_PASS`
+- frozen Provider iteration-03 SHA-256 matched its public binding and retained
+  `8 / 8 VALID_TERMINAL` with zero protocol, runner, or transport failures
+- Ruff, scoped mypy, and `git diff --check`: `PASS`
+
+Both Review 2 blockers are closed. Baseline construction failures now retain
+`BOOTSTRAP_DISPATCH` as the last completed stage and fail at
+`BASELINE_PROFILE_BUILD / BASELINE_PROFILE_INVALID`; the successful trace still
+reaches `COMPLETE`. Live-shadow models bind `fault-*` and `baseline-*` case IDs
+to their admitted physical-state roles, and the scorer independently rejects
+swapped live arguments before scoring.
+
+Seven-question disposition:
+
+1. Resource Comparison Set instead of exact metric equality: `YES`.
+2. Shared terminalizer/baseline/ontology/Prompt/truth/scorer: `YES`.
+3. Accurate Model-directed naming: `YES`.
+4. PR #67 deterministic and real-Provider development: `YES`.
+5. Accurate typed stage and safe code for every reviewed failure path: `YES`.
+6. One physical two-target read without writes: `YES`.
+7. One no-score-retry campaign sufficient: `YES`.
+
+Docker admission may open only for the already authorized bounded v2.2.6 live
+campaign under the Goal's ownership, restoration, cleanup, and no-write
+constraints.
+
+```text
+Must Fix:
+0
+
+Claim Accuracy:
+PASS
+```
+
+## Review 4 — live orchestration addendum
+
+Pending on the exact commit that adds the write-once v2.2.6 manifest,
+preflight, and live-sequence orchestration. This addendum does not reopen the
+Review 3 acquisition/terminalization result; Docker will remain unopened until
+the new lifecycle wrapper is also reviewed for ownership, restoration, cleanup,
+single-execution, and no-write enforcement.

@@ -13,7 +13,7 @@
     "D5": "COMPLETE",
     "D6": "COMPLETE",
     "D7": "COMPLETE",
-    "D8": "REVIEW_FIXES_IMPLEMENTED_REVIEW_PENDING",
+    "D8": "ACQUISITION_REVIEW_PASS_LIVE_ORCHESTRATION_ADDENDUM_PENDING",
     "D9": "PENDING",
     "D10": "PENDING",
     "D11": "PENDING",
@@ -69,15 +69,17 @@
     "stage_trace_complete": true
   },
   "pre_live_review": {
-    "status": "REVIEW_2_FAILED_FIXES_IMPLEMENTED_REVIEW_3_PENDING",
+    "status": "REVIEW_3_PASS_LIVE_ORCHESTRATION_REVIEW_4_PENDING",
     "review_1_head": "f0e683d7af094d049e6372c4e48fc0a473a3f395",
     "review_1_must_fix": 3,
     "review_1_claim_accuracy": "FAIL",
     "review_2_head": "9670de64f197e2ae33f7581978313794385a66e7",
     "review_2_must_fix": 2,
     "review_2_claim_accuracy": "FAIL",
-    "review_3_must_fix": null,
-    "review_3_claim_accuracy": null
+    "review_3_head": "02f6512dfda2f25824dd8b8d4a51c6e66d73b163",
+    "review_3_must_fix": 0,
+    "review_3_claim_accuracy": "PASS",
+    "docker_admission": "HELD_PENDING_LIVE_ORCHESTRATION_ADDENDUM"
   },
   "accepted_live_campaigns": 0,
   "physical_captures": 0,
