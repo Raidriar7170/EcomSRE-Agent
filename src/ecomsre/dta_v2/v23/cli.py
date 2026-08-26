@@ -46,9 +46,11 @@ from ecomsre.dta_v2.v23.evaluation_v231 import (
 )
 from ecomsre.dta_v2.v23.domain_audit_v233 import project_development_case_v233
 from ecomsre.dta_v2.v23.evaluation_data_v232 import (
+    AdmissionStratumV232,
     load_evaluation_cases_v232,
     load_evaluation_views_v232,
 )
+from ecomsre.dta_v2.v23.witness_audit_v233 import audit_case_witness_v233
 
 
 DEFAULT_LOCAL_ROOT_V23 = Path(".local/dta-v23")
@@ -74,6 +76,13 @@ def build_parser() -> argparse.ArgumentParser:
     domain_project = subparsers.add_parser("domain-project")
     domain_project.add_argument("--case", required=True)
     domain_project.add_argument("--repository-root", type=Path, default=Path.cwd())
+    conflict_witness = subparsers.add_parser("conflict-witness")
+    conflict_witness.add_argument("--case", required=True)
+    conflict_witness.add_argument(
+        "--repository-root",
+        type=Path,
+        default=Path.cwd(),
+    )
     conflict_audit = subparsers.add_parser("conflict-audit")
     conflict_audit.add_argument("--repository-root", type=Path, default=Path.cwd())
     conflict_audit.add_argument(
@@ -177,6 +186,37 @@ def main(argv: Sequence[str] | None = None) -> int:
             view_spec=domain_view,
         )
         print(projection.model_dump_json(indent=2))
+        return 0
+    if args.command == "conflict-witness":
+        witness_repository_root = args.repository_root.resolve()
+        witness_case_path = Path(args.case)
+        if witness_case_path.is_file():
+            witness_spec = EvaluationCaseSpecV231.model_validate_json(
+                witness_case_path.read_bytes()
+            )
+            witness_view = EvaluationOntologyViewSpecV231(
+                case_id=witness_spec.case_id,
+                hidden_mechanism=None,
+            )
+            witness_stratum = AdmissionStratumV232.NOVEL_HIDDEN
+        else:
+            witness_cases = load_evaluation_cases_v232(
+                witness_repository_root / "config/dta-v232/evaluation/cases.json"
+            )
+            witness_views = load_evaluation_views_v232(
+                witness_repository_root
+                / "config/dta-v232/evaluation/ontology-views.json"
+            )
+            witness_spec = witness_cases.require(args.case)
+            witness_view = witness_views.require(witness_spec.case_id)
+            witness_stratum = AdmissionStratumV232.INSUFFICIENT_IRRECONCILABLE
+        witness_entry = audit_case_witness_v233(
+            repository_root=witness_repository_root,
+            spec=witness_spec,
+            view_spec=witness_view,
+            stratum=witness_stratum,
+        )
+        print(witness_entry.model_dump_json(indent=2))
         return 0
     if args.command == "diagnose":
         if args.conflict_policy is not None:
