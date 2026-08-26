@@ -234,7 +234,8 @@ broad-domain accuracy missed the predeclared `0.650` gate by one case. See the
 [artifact report](docs/results/dta-v233-domain-guard-evaluation.md),
 [error analysis](docs/results/dta-v233-domain-guard-error-analysis.md),
 [interview brief](docs/results/dta-v233-domain-guard-interview-brief.md), and
-[pre-execution review](docs/external-reviews/dta-v233-pre-execution-review.md).
+[pre-execution review](docs/external-reviews/dta-v233-pre-execution-review.md),
+plus the [independent final review](docs/external-reviews/dta-v233-final-review.md).
 
 ## One-command offline demo
 

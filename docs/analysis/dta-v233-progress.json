@@ -2,7 +2,7 @@
   "schema_version": "dta-v233.progress.v1",
   "base_commit": "447e7a8ed4c8b9d592c16d181f5709bdfdc3d4cb",
   "branch": "codex/dta-v233-domain-witness-guard",
-  "status": "FINAL_STUDY_COMPLETE_REVIEW_PENDING",
+  "status": "FINAL_REVIEW_PASS_READY_FOR_MERGE",
   "completed_increments": [
     "DOMAIN_PROJECTION_VERTICAL_SLICE",
     "CONTRADICTION_WITNESS_GUARD_VERTICAL_SLICE",
@@ -111,6 +111,17 @@
       "transport_retries": 0,
       "total_tokens": 252399
     }
+  },
+  "final_review": {
+    "reviewed_head": "6e6dc45435552e7c1f2a812380bb7d591f1e1e97",
+    "must_fix": 0,
+    "claim_accuracy": "PASS",
+    "local_full_pytest": "5015 passed, 6 skipped",
+    "focused_v233_pytest": "33 passed",
+    "github_ci_runs": [
+      32932970599,
+      32932970618
+    ]
   },
   "provider_smoke_execution_count": 1,
   "fixed_evaluation_execution_count": 1,
