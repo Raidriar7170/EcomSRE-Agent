@@ -1,0 +1,40 @@
+{
+  "schema_version": "dta-v233.provider-smoke-repair-totality-addendum.v1",
+  "repair_ordinal": 2,
+  "real_provider_calls": 0,
+  "reason": "PRESERVE_EXACT_V232_BASELINE_TOOL_SCHEMA",
+  "red_evidence": {
+    "legacy_tool_has_uncertainty_mode": false,
+    "legacy_tool_has_suspected_root_services": true,
+    "legacy_tool_property_count": 14
+  },
+  "green_evidence": {
+    "focused_test": "test_v233_transport_preserves_the_v231_legacy_tool_schema",
+    "focused_suite_passed": 32,
+    "ruff": "PASS",
+    "mypy": "PASS"
+  },
+  "scope": {
+    "v233_minimal_schema_unchanged": true,
+    "v231_legacy_schema_preserved": true,
+    "domain_projection_unchanged": true,
+    "witness_guard_unchanged": true,
+    "evaluation_data_unchanged": true,
+    "provider_prompt_unchanged": true,
+    "scorer_unchanged": true,
+    "thresholds_unchanged": true
+  },
+  "source_sha256": {
+    "src/ecomsre/dta_v2/v23/discovery_provider_v233.py": "b79beae0d2d109bbeb9e6b91afa92d09629507af3815aa4e6980eb5df46f9129",
+    "tests/dta_v233/test_provider_report_v233.py": "dbbd64dee3ecc4a2aae0f7c9b1e6598240843c087ea62dd81c4c9848c9194d98"
+  },
+  "preserved_smoke": {
+    "status": "DTA_V233_PROVIDER_SMOKE_PASS",
+    "execution_count": 1,
+    "real_fixes": 2,
+    "smoke_sha256": "6099935ecb15cf536cc8338aea6ebcbe96a83e2b9758b8ca78ddb70970c1238f",
+    "file_sha256": "b934c540dde3581ec1acec0207f0663714c1cfcd5ba5056b942ae52409169f8a"
+  },
+  "superseded_manifest_sha256": "b8c573981d1b0a1dd8e900de7b62df14f7be6900f3eeb3911813f3ceaae19fce",
+  "final_evaluation_execution_count": 0
+}

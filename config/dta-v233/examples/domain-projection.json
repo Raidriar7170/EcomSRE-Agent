@@ -1,0 +1,103 @@
+{
+  "schema_version": "dta-v233.domain-projection.v1",
+  "candidate_root_services": [
+    "svc-39904ef061",
+    "svc-513218c397"
+  ],
+  "selected_root_service": "svc-39904ef061",
+  "domain_scores": [
+    {
+      "domain": "CONCURRENCY",
+      "score": 0.0,
+      "vote_count": 0,
+      "supporting_evidence_refs": [],
+      "contradicting_evidence_refs": []
+    },
+    {
+      "domain": "CONFIGURATION",
+      "score": 3.25,
+      "vote_count": 2,
+      "supporting_evidence_refs": [
+        "e:a:changes:svc-39904ef061:0:e074ee5e7ff1",
+        "e:a:metrics:svc-39904ef061:core:0:44ae29876ee8"
+      ],
+      "contradicting_evidence_refs": []
+    },
+    {
+      "domain": "DATA",
+      "score": 0.0,
+      "vote_count": 0,
+      "supporting_evidence_refs": [],
+      "contradicting_evidence_refs": []
+    },
+    {
+      "domain": "DEPENDENCY",
+      "score": 0.0,
+      "vote_count": 0,
+      "supporting_evidence_refs": [],
+      "contradicting_evidence_refs": []
+    },
+    {
+      "domain": "EXTERNAL",
+      "score": 0.0,
+      "vote_count": 0,
+      "supporting_evidence_refs": [],
+      "contradicting_evidence_refs": []
+    },
+    {
+      "domain": "NETWORK",
+      "score": 0.0,
+      "vote_count": 0,
+      "supporting_evidence_refs": [],
+      "contradicting_evidence_refs": []
+    },
+    {
+      "domain": "RESOURCE",
+      "score": 0.5,
+      "vote_count": 1,
+      "supporting_evidence_refs": [
+        "e:a:metrics:svc-39904ef061:core:0:44ae29876ee8"
+      ],
+      "contradicting_evidence_refs": []
+    },
+    {
+      "domain": "RUNTIME",
+      "score": 0.0,
+      "vote_count": 2,
+      "supporting_evidence_refs": [
+        "e:a:metrics:svc-39904ef061:core:0:44ae29876ee8"
+      ],
+      "contradicting_evidence_refs": [
+        "e:a:runtime:all-candidates:35de44c075f4:0:0174d452f95d"
+      ]
+    },
+    {
+      "domain": "UNKNOWN",
+      "score": 0.0,
+      "vote_count": 0,
+      "supporting_evidence_refs": [],
+      "contradicting_evidence_refs": []
+    }
+  ],
+  "selected_domain": "CONFIGURATION",
+  "runner_up_domain": "RESOURCE",
+  "score_margin": 2.75,
+  "status": "RESOLVED",
+  "supporting_anomaly_ids": [
+    "ga:recent-change-correlation:svc-39904ef061:ca456f37d801"
+  ],
+  "supporting_evidence_refs": [
+    "e:a:changes:svc-39904ef061:0:e074ee5e7ff1",
+    "e:a:metrics:svc-39904ef061:core:0:44ae29876ee8"
+  ],
+  "contradicting_evidence_refs": [
+    "e:a:runtime:all-candidates:35de44c075f4:0:0174d452f95d"
+  ],
+  "reason_codes": [
+    "BASE_RECENT_CHANGE_CORRELATION",
+    "CONFIGURATION_CROSS_SOURCE_COMBINATION",
+    "PROJECTION_RESOLVED",
+    "STRONG_HEALTHY_RUNTIME"
+  ],
+  "projection_sha256": "71455948b71d4fc5b41dc3a3d56af3d9645dc25e8b90f1c22e45964c58c586d6"
+}

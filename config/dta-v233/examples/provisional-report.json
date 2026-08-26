@@ -1,0 +1,167 @@
+{
+  "schema_version": "dta-v233.provisional-incident-report.v1",
+  "report_id": "report-v233-48b10e69bc91dbf5",
+  "terminal": "UNREGISTERED_INCIDENT_SUSPECTED",
+  "runtime_selected_root_service": "svc-39904ef061",
+  "affected_services": [
+    "svc-39904ef061",
+    "svc-513218c397"
+  ],
+  "broad_fault_domain": "CONFIGURATION",
+  "projection_status": "RESOLVED",
+  "domain_candidate_scores": [
+    {
+      "domain": "CONCURRENCY",
+      "score": 0.0,
+      "vote_count": 0,
+      "supporting_evidence_refs": [],
+      "contradicting_evidence_refs": []
+    },
+    {
+      "domain": "CONFIGURATION",
+      "score": 3.25,
+      "vote_count": 2,
+      "supporting_evidence_refs": [
+        "e:a:changes:svc-39904ef061:0:e074ee5e7ff1",
+        "e:a:metrics:svc-39904ef061:core:0:44ae29876ee8"
+      ],
+      "contradicting_evidence_refs": []
+    },
+    {
+      "domain": "DATA",
+      "score": 0.0,
+      "vote_count": 0,
+      "supporting_evidence_refs": [],
+      "contradicting_evidence_refs": []
+    },
+    {
+      "domain": "DEPENDENCY",
+      "score": 0.0,
+      "vote_count": 0,
+      "supporting_evidence_refs": [],
+      "contradicting_evidence_refs": []
+    },
+    {
+      "domain": "EXTERNAL",
+      "score": 0.0,
+      "vote_count": 0,
+      "supporting_evidence_refs": [],
+      "contradicting_evidence_refs": []
+    },
+    {
+      "domain": "NETWORK",
+      "score": 0.0,
+      "vote_count": 0,
+      "supporting_evidence_refs": [],
+      "contradicting_evidence_refs": []
+    },
+    {
+      "domain": "RESOURCE",
+      "score": 0.5,
+      "vote_count": 1,
+      "supporting_evidence_refs": [
+        "e:a:metrics:svc-39904ef061:core:0:44ae29876ee8"
+      ],
+      "contradicting_evidence_refs": []
+    },
+    {
+      "domain": "RUNTIME",
+      "score": 0.0,
+      "vote_count": 2,
+      "supporting_evidence_refs": [
+        "e:a:metrics:svc-39904ef061:core:0:44ae29876ee8"
+      ],
+      "contradicting_evidence_refs": [
+        "e:a:runtime:all-candidates:35de44c075f4:0:0174d452f95d"
+      ]
+    },
+    {
+      "domain": "UNKNOWN",
+      "score": 0.0,
+      "vote_count": 0,
+      "supporting_evidence_refs": [],
+      "contradicting_evidence_refs": []
+    }
+  ],
+  "score_margin": 2.75,
+  "runtime_hypotheses": [
+    {
+      "schema_version": "dta-v233.runtime-hypothesis.v1",
+      "hypothesis_id": "ch-v233-53d3ab7c27eda70d",
+      "provisional_label": "resource pressure",
+      "runtime_selected_root_service": "svc-39904ef061",
+      "candidate_domain": "RESOURCE",
+      "supporting_anomaly_ids": [
+        "ga:metric-error-outlier:svc-39904ef061:112838de11ac"
+      ],
+      "supporting_evidence_refs": [
+        "e:a:metrics:svc-39904ef061:core:0:44ae29876ee8"
+      ],
+      "contradicting_evidence_refs": [],
+      "unresolved_questions": [
+        "What observation separates resource from the remaining domain candidates?"
+      ],
+      "relative_support_score": 0.5,
+      "hypothesis_sha256": "abaa16692a067f1d5fedb5edd6c2538a495cb6c9cf9bdb266e16be00c0eeb0b5"
+    },
+    {
+      "schema_version": "dta-v233.runtime-hypothesis.v1",
+      "hypothesis_id": "ch-v233-fbd419363de04fbd",
+      "provisional_label": "configuration-state inconsistency",
+      "runtime_selected_root_service": "svc-39904ef061",
+      "candidate_domain": "CONFIGURATION",
+      "supporting_anomaly_ids": [
+        "ga:metric-error-outlier:svc-39904ef061:112838de11ac",
+        "ga:recent-change-correlation:svc-39904ef061:ca456f37d801"
+      ],
+      "supporting_evidence_refs": [
+        "e:a:changes:svc-39904ef061:0:e074ee5e7ff1",
+        "e:a:metrics:svc-39904ef061:core:0:44ae29876ee8"
+      ],
+      "contradicting_evidence_refs": [],
+      "unresolved_questions": [
+        "What observation separates configuration from the remaining domain candidates?"
+      ],
+      "relative_support_score": 3.25,
+      "hypothesis_sha256": "002d8a369dd02f6713b435278e13f34bbcb400f95f6b9ca57ff1a7df1f1f1e4a"
+    }
+  ],
+  "preferred_hypothesis_id": "ch-v233-fbd419363de04fbd",
+  "alternative_hypothesis_ids": [
+    "ch-v233-53d3ab7c27eda70d"
+  ],
+  "provisional_mechanism_label": "configuration-state inconsistency",
+  "mechanism_description": "Runtime-bound evidence favors the selected hypothesis while the listed unresolved dimensions remain subject to human review.",
+  "supporting_evidence_refs": [
+    "e:a:changes:svc-39904ef061:0:e074ee5e7ff1",
+    "e:a:metrics:svc-39904ef061:core:0:44ae29876ee8"
+  ],
+  "contradicting_evidence_refs": [
+    "e:a:runtime:all-candidates:35de44c075f4:0:0174d452f95d"
+  ],
+  "residual_anomaly_ids": [
+    "ga:metric-error-outlier:svc-39904ef061:112838de11ac",
+    "ga:metric-latency-outlier:svc-513218c397:8ddbd96c8bbc",
+    "ga:recent-change-correlation:svc-39904ef061:ca456f37d801"
+  ],
+  "guard_disposition": "OPEN",
+  "contradiction_witness_ids": [],
+  "unresolved_dimensions": [
+    "CAUSAL_MECHANISM"
+  ],
+  "unresolved_questions": [
+    "What observation separates configuration from the remaining domain candidates?"
+  ],
+  "recommended_next_observations": [
+    "Collect bounded evidence for causal_mechanism"
+  ],
+  "uncertainty_mode": "COMPETING_HYPOTHESES",
+  "confidence": 0.89,
+  "confidence_band": "HIGH",
+  "review_recommendation": "REQUEST_MORE_EVIDENCE",
+  "action_authority": "NONE",
+  "domain_projection_sha256": "71455948b71d4fc5b41dc3a3d56af3d9645dc25e8b90f1c22e45964c58c586d6",
+  "guard_decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b",
+  "synthesis_request_sha256": "d3f97cf3c5700c1851c24a18d96ce44cb65e934e7274e0245d390603195a31de",
+  "report_sha256": "9795f2e7af5a1f06d80fb624d4a62e58f6df02fd88d6fd5c4bee90c3b26f6ba1"
+}

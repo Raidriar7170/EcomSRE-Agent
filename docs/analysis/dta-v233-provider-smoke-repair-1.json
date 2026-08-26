@@ -1,0 +1,22 @@
+{
+  "schema_version": "dta-v233.provider-smoke-repair.v1",
+  "execution_count": 1,
+  "repair_ordinal": 1,
+  "failure_case_id": "vx-303",
+  "prior_manifest_sha256": "2e9decb5069106866b9fbe4d5086dccc14de25ea99e87487947658b06485e5e6",
+  "prior_sentinel_sha256": "095b0e4e032f917cad1e3132db76aeb0ca52b06cb98b04b58268d4cdb410f40d",
+  "safe_error_code": "REPORT_MISSING_AFTER_PROVIDER",
+  "provider_calls_before_repair": null,
+  "fix_code": "V233_MINIMAL_TOOL_SCHEMA_BINDING",
+  "fix_files": [
+    "scripts/analysis/run_dta_v233_evaluation.py",
+    "scripts/analysis/run_dta_v233_provider_smoke.py",
+    "src/ecomsre/dta_v2/v23/cli.py",
+    "src/ecomsre/dta_v2/v23/discovery_provider_v233.py",
+    "src/ecomsre/dta_v2/v23/evaluation_study_v233.py",
+    "tests/dta_v233/test_provider_report_v233.py"
+  ],
+  "final_execution_count_before_resume": 0,
+  "recorded_at_utc": "2026-08-26T04:09:13.978651Z",
+  "record_sha256": "dd933ce6e6667ee4bf1253cf971c0cc1a6cd842725a925f797ddcbc39a66d4f1"
+}

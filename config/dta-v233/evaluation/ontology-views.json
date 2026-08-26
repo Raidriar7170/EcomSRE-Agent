@@ -1,0 +1,117 @@
+{
+  "schema_version": "dta-v233.ontology-view-set.v1",
+  "views": [
+    {
+      "case_id": "vx-301",
+      "hidden_mechanism": "CONFIGURATION_ERROR"
+    },
+    {
+      "case_id": "vx-302",
+      "hidden_mechanism": "CONFIGURATION_ERROR"
+    },
+    {
+      "case_id": "vx-303",
+      "hidden_mechanism": "DEPENDENCY_LATENCY"
+    },
+    {
+      "case_id": "vx-304",
+      "hidden_mechanism": "DEPENDENCY_LATENCY"
+    },
+    {
+      "case_id": "vx-305",
+      "hidden_mechanism": "SERVICE_UNAVAILABLE"
+    },
+    {
+      "case_id": "vx-306",
+      "hidden_mechanism": "SERVICE_UNAVAILABLE"
+    },
+    {
+      "case_id": "vx-307",
+      "hidden_mechanism": "CPU_SATURATION"
+    },
+    {
+      "case_id": "vx-308",
+      "hidden_mechanism": "CPU_SATURATION"
+    },
+    {
+      "case_id": "vx-309",
+      "hidden_mechanism": "MEMORY_LEAK"
+    },
+    {
+      "case_id": "vx-310",
+      "hidden_mechanism": "MEMORY_LEAK"
+    },
+    {
+      "case_id": "vx-311",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-312",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-313",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-314",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-315",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-316",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-317",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-318",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-319",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-320",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-321",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-322",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-323",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-324",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-325",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-326",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-327",
+      "hidden_mechanism": null
+    },
+    {
+      "case_id": "vx-328",
+      "hidden_mechanism": null
+    }
+  ]
+}

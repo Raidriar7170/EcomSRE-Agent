@@ -1,0 +1,52 @@
+{
+  "schema_version": "dta-v233.provider-smoke-repair-diagnostic.v1",
+  "execution_count": 1,
+  "case_id": "vx-303",
+  "smoke_state": "STARTED",
+  "safe_terminal": "PROVIDER_PROTOCOL_FAILED",
+  "safe_error_code": "PROTOCOL_FAILED",
+  "report_present": false,
+  "diagnostic_transport_observed_calls": 3,
+  "runtime_failure_cost_reported_calls": 0,
+  "protocol_repairs_completed": 2,
+  "transport_retries": 0,
+  "response_field_set": [
+    "alternative_hypothesis_ids",
+    "mechanism_description",
+    "preferred_hypothesis_id",
+    "provisional_mechanism_label",
+    "recommended_next_observations",
+    "review_recommendation",
+    "unresolved_questions"
+  ],
+  "response_types": {
+    "alternative_hypothesis_ids": "list",
+    "mechanism_description": "str",
+    "preferred_hypothesis_id": "str",
+    "provisional_mechanism_label": "str",
+    "recommended_next_observations": "list",
+    "review_recommendation": "str",
+    "unresolved_questions": "list"
+  },
+  "response_summaries": [
+    {
+      "ordinal": 1,
+      "bytes": 1339,
+      "sha256": "5806f80acd59b4225add2137d516b99dd461e59b017fc0034589c1b32c342054"
+    },
+    {
+      "ordinal": 2,
+      "bytes": 1313,
+      "sha256": "0b5ea3d2b49ad0e58e435752b02f76b90414ef1c6169fc7aa250f26dae41a746"
+    },
+    {
+      "ordinal": 3,
+      "bytes": 1065,
+      "sha256": "e12a802962f7a3ab1368fd174690a949658b029c855d48dab3ad7cb2e2f4ef8b"
+    }
+  ],
+  "diagnosis": "PROVIDER_AUTHORED_LISTS_REQUIRE_LOCAL_CANONICALIZATION",
+  "raw_provider_content_persisted": false,
+  "credentials_persisted": false,
+  "final_evaluation_execution_count": 0
+}

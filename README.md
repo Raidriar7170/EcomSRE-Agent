@@ -204,6 +204,39 @@ arms; action-authority violations remained zero. See the
 [pre-execution review](docs/external-reviews/dta-v232-pre-execution-review.md),
 plus the [independent final review](docs/external-reviews/dta-v232-final-review.md).
 
+### DTA v2.3.3: runtime-bound domain projection and witness guard
+
+DTA v2.3.3 targets exactly the two measured v2.3.2 P0 defects. It adds a
+runtime-only domain projection, typed contradiction witnesses, an
+irreconcilable guard with at most one shared-budget directed read, and minimal
+Provider synthesis. Root service, broad domain, evidence references, witness
+state, confidence bounds, and `action_authority = NONE` are rebuilt from
+runtime-owned objects rather than accepted from the Provider. Known and
+No-Incident terminals remain prioritized, while strong coverage-satisfied
+contradictions suppress Provider synthesis.
+
+Fresh opaque 28-case bytes passed `DTA_V233_EVALUATION_DATA_PASS`; the 84-path
+deterministic gate passed `DTA_V233_RUNTIME_PREFLIGHT_PASS` with zero Provider
+calls, runtime exceptions, premature truth reads, or authority violations. The
+12-case Provider smoke passed after two bounded real fixes, with zero
+root/domain/evidence drift. The independent pre-execution review recorded
+`Must Fix 0 / Claim Accuracy PASS`.
+
+The fixed 28-case × 3-arm comparison then executed exactly once. Domain-bound
+accuracy improved from `0.125` to `0.625`, root localization improved from
+`0.938` to `1.000`, and top-two domain recall reached `0.875`. The combined
+witness guard improved irreconcilable-control accuracy from `0/4` to `4/4`,
+reduced false novelty to `0.000`, and blocked no novelty cases. Registered-known
+and No-Incident accuracy remained perfect; action-authority violations remained
+zero. The frozen measured terminal is
+`DTA_V233_DOMAIN_AND_GUARD_MIXED_RESULT`, not positive effect, because exact
+broad-domain accuracy missed the predeclared `0.650` gate by one case. See the
+[artifact report](docs/results/dta-v233-domain-guard-evaluation.md),
+[error analysis](docs/results/dta-v233-domain-guard-error-analysis.md),
+[interview brief](docs/results/dta-v233-domain-guard-interview-brief.md), and
+[pre-execution review](docs/external-reviews/dta-v233-pre-execution-review.md),
+plus the [independent final review](docs/external-reviews/dta-v233-final-review.md).
+
 ## One-command offline demo
 
 ```bash

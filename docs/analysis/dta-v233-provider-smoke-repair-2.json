@@ -1,0 +1,22 @@
+{
+  "schema_version": "dta-v233.provider-smoke-repair.v1",
+  "execution_count": 1,
+  "repair_ordinal": 2,
+  "failure_case_id": "vx-303",
+  "prior_manifest_sha256": "2e9decb5069106866b9fbe4d5086dccc14de25ea99e87487947658b06485e5e6",
+  "prior_sentinel_sha256": "095b0e4e032f917cad1e3132db76aeb0ca52b06cb98b04b58268d4cdb410f40d",
+  "safe_error_code": "REPORT_MISSING_AFTER_PROVIDER",
+  "provider_calls_before_repair": null,
+  "fix_code": "V233_PROVIDER_LIST_CANONICALIZATION",
+  "fix_files": [
+    "src/ecomsre/dta_v2/v23/discovery_provider_v233.py",
+    "src/ecomsre/dta_v2/v23/evaluation_study_v233.py",
+    "tests/dta_v233/test_provider_report_v233.py"
+  ],
+  "prior_repair_record_sha256": "dd933ce6e6667ee4bf1253cf971c0cc1a6cd842725a925f797ddcbc39a66d4f1",
+  "superseded_manifest_sha256": "3535cb6d46d5d89d4a0ac37e93f611aacee1c3af02e997f1b2efa810b7aff85a",
+  "diagnostic_file_sha256": "cff2276c52b24a580599bd44e157fda36d5cc7b291699f7d2079fc747ace38de",
+  "final_execution_count_before_resume": 0,
+  "recorded_at_utc": "2026-08-26T04:19:09.053443Z",
+  "record_sha256": "50d5eeebe0aeac50928565b0127172657c31d95cdd1561271064596fd3868c74"
+}

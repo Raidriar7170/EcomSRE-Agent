@@ -1,0 +1,1048 @@
+{
+  "schema_version": "dta-v233.witness-audit.v1",
+  "development_set": "dta-v232-fixed-24-case",
+  "case_count": 24,
+  "irreconcilable_controls_blocked": 3,
+  "novelty_cases_blocked": 0,
+  "registered_known_unchanged": 4,
+  "no_incident_unchanged": 3,
+  "maximum_discovery_reads": 2,
+  "guard_directed_reads": 3,
+  "provider_calls": 0,
+  "witness_iteration_count": 1,
+  "entries": [
+    {
+      "case_id": "vx-201",
+      "stratum": "NOVEL_HIDDEN",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-202",
+      "stratum": "NOVEL_HIDDEN",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-203",
+      "stratum": "NOVEL_HIDDEN",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-204",
+      "stratum": "NOVEL_HIDDEN",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-205",
+      "stratum": "NOVEL_UNREGISTERED",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-206",
+      "stratum": "NOVEL_UNREGISTERED",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-207",
+      "stratum": "NOVEL_UNREGISTERED",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-208",
+      "stratum": "NOVEL_UNREGISTERED",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-209",
+      "stratum": "NOVEL_HIDDEN",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-210",
+      "stratum": "NOVEL_HIDDEN",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-211",
+      "stratum": "NOVEL_HIDDEN",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-212",
+      "stratum": "NOVEL_HIDDEN",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-213",
+      "stratum": "NOVEL_HIDDEN",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-214",
+      "stratum": "NOVEL_HIDDEN",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-215",
+      "stratum": "REGISTERED_KNOWN",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-216",
+      "stratum": "REGISTERED_KNOWN",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-217",
+      "stratum": "REGISTERED_KNOWN",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-218",
+      "stratum": "REGISTERED_KNOWN",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-219",
+      "stratum": "NO_INCIDENT",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-220",
+      "stratum": "NO_INCIDENT",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-221",
+      "stratum": "NO_INCIDENT",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "OPEN",
+        "witnesses": [],
+        "blocking_witness_ids": [],
+        "resolvable_sources": [],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "NO_CONTRADICTION_WITNESS"
+        ],
+        "decision_sha256": "b996615035eb5e076206f3af72df49cad7639363fce23b0def7592b45359c68b"
+      },
+      "witnesses": [],
+      "reads": [],
+      "guard_read_used": false,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-222",
+      "stratum": "INSUFFICIENT_IRRECONCILABLE",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "IRRECONCILABLE",
+        "witnesses": [
+          {
+            "schema_version": "dta-v233.contradiction-witness.v1",
+            "witness_id": "witness-v233-eba5c1c94d5a286b",
+            "kind": "MUTUALLY_EXCLUSIVE_FIRST_ERROR",
+            "left_claim": {
+              "schema_version": "dta-v233.evidence-claim.v1",
+              "claim_id": "claim-v233-42afac29624fb379",
+              "claim_type": "TRACE_ERROR_LOCALIZATION",
+              "service": "svc-d03a7d8611",
+              "related_services": [
+                "svc-ec4f181861"
+              ],
+              "source": "TRACES",
+              "polarity": "POSITIVE",
+              "observed_values": [
+                {
+                  "key": "operation",
+                  "value": "v232-opaque-beta"
+                }
+              ],
+              "evidence_refs": [
+                "e:a:traces:svc-d03a7d8611:1:3ec1417dcb63"
+              ]
+            },
+            "right_claim": {
+              "schema_version": "dta-v233.evidence-claim.v1",
+              "claim_id": "claim-v233-f72416408458242d",
+              "claim_type": "TRACE_ERROR_LOCALIZATION",
+              "service": "svc-ec4f181861",
+              "related_services": [
+                "svc-d03a7d8611"
+              ],
+              "source": "TRACES",
+              "polarity": "POSITIVE",
+              "observed_values": [
+                {
+                  "key": "operation",
+                  "value": "v232-opaque-alpha"
+                }
+              ],
+              "evidence_refs": [
+                "e:a:traces:svc-d03a7d8611:0:47fda03bddfa"
+              ]
+            },
+            "services": [
+              "svc-d03a7d8611",
+              "svc-ec4f181861"
+            ],
+            "source_set": [
+              "TRACES"
+            ],
+            "left_evidence_refs": [
+              "e:a:traces:svc-d03a7d8611:1:3ec1417dcb63"
+            ],
+            "right_evidence_refs": [
+              "e:a:traces:svc-d03a7d8611:0:47fda03bddfa"
+            ],
+            "observation_scope": "vx-222",
+            "coverage_requirements": [
+              "TRACE_TARGET_COMPLETE"
+            ],
+            "coverage_satisfied": true,
+            "resolvable_sources": [
+              "LOGS"
+            ],
+            "strength": "STRONG",
+            "reason_codes": [
+              "DISTINCT_FIRST_ERRORS_SHARE_ONE_INCIDENT_SURFACE",
+              "OPPOSING_CAUSAL_PATHS_HAVE_NO_PROPAGATION_EDGE"
+            ],
+            "witness_sha256": "2b0f3747eb47e1ded32edbfbe996a9071bbcf6d982b5d33ebbbd1bc8d2b30a1d"
+          }
+        ],
+        "blocking_witness_ids": [
+          "witness-v233-eba5c1c94d5a286b"
+        ],
+        "resolvable_sources": [
+          "LOGS"
+        ],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "ALLOWED_GUARD_READ_DID_NOT_RESOLVE",
+          "STRONG_WITNESS_REMAINS_CLOSED"
+        ],
+        "decision_sha256": "f57be0b2ba7b1c6e88e423f70d9609e7852690856d629cb19937e1c032afd685"
+      },
+      "witnesses": [
+        {
+          "schema_version": "dta-v233.contradiction-witness.v1",
+          "witness_id": "witness-v233-eba5c1c94d5a286b",
+          "kind": "MUTUALLY_EXCLUSIVE_FIRST_ERROR",
+          "left_claim": {
+            "schema_version": "dta-v233.evidence-claim.v1",
+            "claim_id": "claim-v233-42afac29624fb379",
+            "claim_type": "TRACE_ERROR_LOCALIZATION",
+            "service": "svc-d03a7d8611",
+            "related_services": [
+              "svc-ec4f181861"
+            ],
+            "source": "TRACES",
+            "polarity": "POSITIVE",
+            "observed_values": [
+              {
+                "key": "operation",
+                "value": "v232-opaque-beta"
+              }
+            ],
+            "evidence_refs": [
+              "e:a:traces:svc-d03a7d8611:1:3ec1417dcb63"
+            ]
+          },
+          "right_claim": {
+            "schema_version": "dta-v233.evidence-claim.v1",
+            "claim_id": "claim-v233-f72416408458242d",
+            "claim_type": "TRACE_ERROR_LOCALIZATION",
+            "service": "svc-ec4f181861",
+            "related_services": [
+              "svc-d03a7d8611"
+            ],
+            "source": "TRACES",
+            "polarity": "POSITIVE",
+            "observed_values": [
+              {
+                "key": "operation",
+                "value": "v232-opaque-alpha"
+              }
+            ],
+            "evidence_refs": [
+              "e:a:traces:svc-d03a7d8611:0:47fda03bddfa"
+            ]
+          },
+          "services": [
+            "svc-d03a7d8611",
+            "svc-ec4f181861"
+          ],
+          "source_set": [
+            "TRACES"
+          ],
+          "left_evidence_refs": [
+            "e:a:traces:svc-d03a7d8611:1:3ec1417dcb63"
+          ],
+          "right_evidence_refs": [
+            "e:a:traces:svc-d03a7d8611:0:47fda03bddfa"
+          ],
+          "observation_scope": "vx-222",
+          "coverage_requirements": [
+            "TRACE_TARGET_COMPLETE"
+          ],
+          "coverage_satisfied": true,
+          "resolvable_sources": [
+            "LOGS"
+          ],
+          "strength": "STRONG",
+          "reason_codes": [
+            "DISTINCT_FIRST_ERRORS_SHARE_ONE_INCIDENT_SURFACE",
+            "OPPOSING_CAUSAL_PATHS_HAVE_NO_PROPAGATION_EDGE"
+          ],
+          "witness_sha256": "2b0f3747eb47e1ded32edbfbe996a9071bbcf6d982b5d33ebbbd1bc8d2b30a1d"
+        }
+      ],
+      "reads": [
+        {
+          "source": "TRACES",
+          "target_services": [
+            "svc-d03a7d8611"
+          ],
+          "reason": "LOCALIZE_EXCLUSIVE_ROOTS",
+          "guard_directed": false
+        },
+        {
+          "source": "LOGS",
+          "target_services": [
+            "svc-d03a7d8611"
+          ],
+          "reason": "TEST_WITNESS_CLOSURE",
+          "guard_directed": true
+        }
+      ],
+      "guard_read_used": true,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-223",
+      "stratum": "INSUFFICIENT_IRRECONCILABLE",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "IRRECONCILABLE",
+        "witnesses": [
+          {
+            "schema_version": "dta-v233.contradiction-witness.v1",
+            "witness_id": "witness-v233-d52a48cc8619b05a",
+            "kind": "MUTUALLY_EXCLUSIVE_FIRST_ERROR",
+            "left_claim": {
+              "schema_version": "dta-v233.evidence-claim.v1",
+              "claim_id": "claim-v233-0d387210a1b8bba8",
+              "claim_type": "TRACE_ERROR_LOCALIZATION",
+              "service": "svc-79f0afeac9",
+              "related_services": [
+                "svc-fb57d426e8"
+              ],
+              "source": "TRACES",
+              "polarity": "POSITIVE",
+              "observed_values": [
+                {
+                  "key": "operation",
+                  "value": "v232-opaque-alpha"
+                }
+              ],
+              "evidence_refs": [
+                "e:a:traces:svc-79f0afeac9:1:ed8e3941296e"
+              ]
+            },
+            "right_claim": {
+              "schema_version": "dta-v233.evidence-claim.v1",
+              "claim_id": "claim-v233-4252b28b53cc59a0",
+              "claim_type": "TRACE_ERROR_LOCALIZATION",
+              "service": "svc-fb57d426e8",
+              "related_services": [
+                "svc-79f0afeac9"
+              ],
+              "source": "TRACES",
+              "polarity": "POSITIVE",
+              "observed_values": [
+                {
+                  "key": "operation",
+                  "value": "v232-opaque-beta"
+                }
+              ],
+              "evidence_refs": [
+                "e:a:traces:svc-79f0afeac9:0:00d85a509962"
+              ]
+            },
+            "services": [
+              "svc-79f0afeac9",
+              "svc-fb57d426e8"
+            ],
+            "source_set": [
+              "TRACES"
+            ],
+            "left_evidence_refs": [
+              "e:a:traces:svc-79f0afeac9:1:ed8e3941296e"
+            ],
+            "right_evidence_refs": [
+              "e:a:traces:svc-79f0afeac9:0:00d85a509962"
+            ],
+            "observation_scope": "vx-223",
+            "coverage_requirements": [
+              "TRACE_TARGET_COMPLETE"
+            ],
+            "coverage_satisfied": true,
+            "resolvable_sources": [
+              "LOGS"
+            ],
+            "strength": "STRONG",
+            "reason_codes": [
+              "DISTINCT_FIRST_ERRORS_SHARE_ONE_INCIDENT_SURFACE",
+              "OPPOSING_CAUSAL_PATHS_HAVE_NO_PROPAGATION_EDGE"
+            ],
+            "witness_sha256": "302053acf46c750917f92f15012308915f80d3c8475d89120d92dcff6cdfa6f2"
+          }
+        ],
+        "blocking_witness_ids": [
+          "witness-v233-d52a48cc8619b05a"
+        ],
+        "resolvable_sources": [
+          "LOGS"
+        ],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "ALLOWED_GUARD_READ_DID_NOT_RESOLVE",
+          "STRONG_WITNESS_REMAINS_CLOSED"
+        ],
+        "decision_sha256": "3a41d55dc82c0ce03e6c1bf29b8552dfea260a28f4e644c141d6c4ad50637613"
+      },
+      "witnesses": [
+        {
+          "schema_version": "dta-v233.contradiction-witness.v1",
+          "witness_id": "witness-v233-d52a48cc8619b05a",
+          "kind": "MUTUALLY_EXCLUSIVE_FIRST_ERROR",
+          "left_claim": {
+            "schema_version": "dta-v233.evidence-claim.v1",
+            "claim_id": "claim-v233-0d387210a1b8bba8",
+            "claim_type": "TRACE_ERROR_LOCALIZATION",
+            "service": "svc-79f0afeac9",
+            "related_services": [
+              "svc-fb57d426e8"
+            ],
+            "source": "TRACES",
+            "polarity": "POSITIVE",
+            "observed_values": [
+              {
+                "key": "operation",
+                "value": "v232-opaque-alpha"
+              }
+            ],
+            "evidence_refs": [
+              "e:a:traces:svc-79f0afeac9:1:ed8e3941296e"
+            ]
+          },
+          "right_claim": {
+            "schema_version": "dta-v233.evidence-claim.v1",
+            "claim_id": "claim-v233-4252b28b53cc59a0",
+            "claim_type": "TRACE_ERROR_LOCALIZATION",
+            "service": "svc-fb57d426e8",
+            "related_services": [
+              "svc-79f0afeac9"
+            ],
+            "source": "TRACES",
+            "polarity": "POSITIVE",
+            "observed_values": [
+              {
+                "key": "operation",
+                "value": "v232-opaque-beta"
+              }
+            ],
+            "evidence_refs": [
+              "e:a:traces:svc-79f0afeac9:0:00d85a509962"
+            ]
+          },
+          "services": [
+            "svc-79f0afeac9",
+            "svc-fb57d426e8"
+          ],
+          "source_set": [
+            "TRACES"
+          ],
+          "left_evidence_refs": [
+            "e:a:traces:svc-79f0afeac9:1:ed8e3941296e"
+          ],
+          "right_evidence_refs": [
+            "e:a:traces:svc-79f0afeac9:0:00d85a509962"
+          ],
+          "observation_scope": "vx-223",
+          "coverage_requirements": [
+            "TRACE_TARGET_COMPLETE"
+          ],
+          "coverage_satisfied": true,
+          "resolvable_sources": [
+            "LOGS"
+          ],
+          "strength": "STRONG",
+          "reason_codes": [
+            "DISTINCT_FIRST_ERRORS_SHARE_ONE_INCIDENT_SURFACE",
+            "OPPOSING_CAUSAL_PATHS_HAVE_NO_PROPAGATION_EDGE"
+          ],
+          "witness_sha256": "302053acf46c750917f92f15012308915f80d3c8475d89120d92dcff6cdfa6f2"
+        }
+      ],
+      "reads": [
+        {
+          "source": "TRACES",
+          "target_services": [
+            "svc-79f0afeac9"
+          ],
+          "reason": "LOCALIZE_EXCLUSIVE_ROOTS",
+          "guard_directed": false
+        },
+        {
+          "source": "LOGS",
+          "target_services": [
+            "svc-79f0afeac9"
+          ],
+          "reason": "TEST_WITNESS_CLOSURE",
+          "guard_directed": true
+        }
+      ],
+      "guard_read_used": true,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    },
+    {
+      "case_id": "vx-224",
+      "stratum": "INSUFFICIENT_IRRECONCILABLE",
+      "decision": {
+        "schema_version": "dta-v233.irreconcilable-guard-decision.v1",
+        "disposition": "IRRECONCILABLE",
+        "witnesses": [
+          {
+            "schema_version": "dta-v233.contradiction-witness.v1",
+            "witness_id": "witness-v233-f478e76fc5104a96",
+            "kind": "MUTUALLY_EXCLUSIVE_FIRST_ERROR",
+            "left_claim": {
+              "schema_version": "dta-v233.evidence-claim.v1",
+              "claim_id": "claim-v233-bc803794310264b8",
+              "claim_type": "TRACE_ERROR_LOCALIZATION",
+              "service": "svc-6458fadc6f",
+              "related_services": [
+                "svc-d4a6430433"
+              ],
+              "source": "TRACES",
+              "polarity": "POSITIVE",
+              "observed_values": [
+                {
+                  "key": "operation",
+                  "value": "v232-opaque-alpha"
+                }
+              ],
+              "evidence_refs": [
+                "e:a:traces:svc-6458fadc6f:1:5ef70614a969"
+              ]
+            },
+            "right_claim": {
+              "schema_version": "dta-v233.evidence-claim.v1",
+              "claim_id": "claim-v233-6d1f7e9ddb1bea0f",
+              "claim_type": "TRACE_ERROR_LOCALIZATION",
+              "service": "svc-d4a6430433",
+              "related_services": [
+                "svc-6458fadc6f"
+              ],
+              "source": "TRACES",
+              "polarity": "POSITIVE",
+              "observed_values": [
+                {
+                  "key": "operation",
+                  "value": "v232-opaque-beta"
+                }
+              ],
+              "evidence_refs": [
+                "e:a:traces:svc-6458fadc6f:0:30fddaa08737"
+              ]
+            },
+            "services": [
+              "svc-6458fadc6f",
+              "svc-d4a6430433"
+            ],
+            "source_set": [
+              "TRACES"
+            ],
+            "left_evidence_refs": [
+              "e:a:traces:svc-6458fadc6f:1:5ef70614a969"
+            ],
+            "right_evidence_refs": [
+              "e:a:traces:svc-6458fadc6f:0:30fddaa08737"
+            ],
+            "observation_scope": "vx-224",
+            "coverage_requirements": [
+              "TRACE_TARGET_COMPLETE"
+            ],
+            "coverage_satisfied": true,
+            "resolvable_sources": [
+              "LOGS"
+            ],
+            "strength": "STRONG",
+            "reason_codes": [
+              "DISTINCT_FIRST_ERRORS_SHARE_ONE_INCIDENT_SURFACE",
+              "OPPOSING_CAUSAL_PATHS_HAVE_NO_PROPAGATION_EDGE"
+            ],
+            "witness_sha256": "ef9d7c96cc3934d622b3adef7dbabf08f70b523a5a597f110cdd4dffa44fd0c9"
+          }
+        ],
+        "blocking_witness_ids": [
+          "witness-v233-f478e76fc5104a96"
+        ],
+        "resolvable_sources": [
+          "LOGS"
+        ],
+        "required_additional_reads": [],
+        "reason_codes": [
+          "ALLOWED_GUARD_READ_DID_NOT_RESOLVE",
+          "STRONG_WITNESS_REMAINS_CLOSED"
+        ],
+        "decision_sha256": "c3a3aa6610ecb5c22d0c23614e141368c6d1d5f916e39eb622f9bef7e8739dff"
+      },
+      "witnesses": [
+        {
+          "schema_version": "dta-v233.contradiction-witness.v1",
+          "witness_id": "witness-v233-f478e76fc5104a96",
+          "kind": "MUTUALLY_EXCLUSIVE_FIRST_ERROR",
+          "left_claim": {
+            "schema_version": "dta-v233.evidence-claim.v1",
+            "claim_id": "claim-v233-bc803794310264b8",
+            "claim_type": "TRACE_ERROR_LOCALIZATION",
+            "service": "svc-6458fadc6f",
+            "related_services": [
+              "svc-d4a6430433"
+            ],
+            "source": "TRACES",
+            "polarity": "POSITIVE",
+            "observed_values": [
+              {
+                "key": "operation",
+                "value": "v232-opaque-alpha"
+              }
+            ],
+            "evidence_refs": [
+              "e:a:traces:svc-6458fadc6f:1:5ef70614a969"
+            ]
+          },
+          "right_claim": {
+            "schema_version": "dta-v233.evidence-claim.v1",
+            "claim_id": "claim-v233-6d1f7e9ddb1bea0f",
+            "claim_type": "TRACE_ERROR_LOCALIZATION",
+            "service": "svc-d4a6430433",
+            "related_services": [
+              "svc-6458fadc6f"
+            ],
+            "source": "TRACES",
+            "polarity": "POSITIVE",
+            "observed_values": [
+              {
+                "key": "operation",
+                "value": "v232-opaque-beta"
+              }
+            ],
+            "evidence_refs": [
+              "e:a:traces:svc-6458fadc6f:0:30fddaa08737"
+            ]
+          },
+          "services": [
+            "svc-6458fadc6f",
+            "svc-d4a6430433"
+          ],
+          "source_set": [
+            "TRACES"
+          ],
+          "left_evidence_refs": [
+            "e:a:traces:svc-6458fadc6f:1:5ef70614a969"
+          ],
+          "right_evidence_refs": [
+            "e:a:traces:svc-6458fadc6f:0:30fddaa08737"
+          ],
+          "observation_scope": "vx-224",
+          "coverage_requirements": [
+            "TRACE_TARGET_COMPLETE"
+          ],
+          "coverage_satisfied": true,
+          "resolvable_sources": [
+            "LOGS"
+          ],
+          "strength": "STRONG",
+          "reason_codes": [
+            "DISTINCT_FIRST_ERRORS_SHARE_ONE_INCIDENT_SURFACE",
+            "OPPOSING_CAUSAL_PATHS_HAVE_NO_PROPAGATION_EDGE"
+          ],
+          "witness_sha256": "ef9d7c96cc3934d622b3adef7dbabf08f70b523a5a597f110cdd4dffa44fd0c9"
+        }
+      ],
+      "reads": [
+        {
+          "source": "TRACES",
+          "target_services": [
+            "svc-6458fadc6f"
+          ],
+          "reason": "LOCALIZE_EXCLUSIVE_ROOTS",
+          "guard_directed": false
+        },
+        {
+          "source": "LOGS",
+          "target_services": [
+            "svc-6458fadc6f"
+          ],
+          "reason": "TEST_WITNESS_CLOSURE",
+          "guard_directed": true
+        }
+      ],
+      "guard_read_used": true,
+      "report_generated": false,
+      "registered_known_unchanged": true,
+      "no_incident_unchanged": true
+    }
+  ],
+  "audit_sha256": "9c12dc3a0367aed38f25ec711d11bbb441b5db14e3b394e2e42d6a790a8337fe"
+}

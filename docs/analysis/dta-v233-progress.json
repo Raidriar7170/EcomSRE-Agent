@@ -1,0 +1,133 @@
+{
+  "schema_version": "dta-v233.progress.v1",
+  "base_commit": "447e7a8ed4c8b9d592c16d181f5709bdfdc3d4cb",
+  "branch": "codex/dta-v233-domain-witness-guard",
+  "status": "FINAL_REVIEW_PASS_READY_FOR_MERGE",
+  "completed_increments": [
+    "DOMAIN_PROJECTION_VERTICAL_SLICE",
+    "CONTRADICTION_WITNESS_GUARD_VERTICAL_SLICE",
+    "RUNTIME_OWNED_PROVIDER_SYNTHESIS_VERTICAL_SLICE",
+    "NEW_FIXED_EVALUATION_AND_CLOSEOUT"
+  ],
+  "domain_development": {
+    "set": "dta-v232-fixed-24-case",
+    "novelty_case_count": 14,
+    "selected_root_correct": 12,
+    "broad_domain_correct": 10,
+    "evaluator_domain_top_two": 14,
+    "resolved_or_ambiguous": 14,
+    "evidence_ref_validity": 1.0,
+    "maximum_discovery_reads": 3,
+    "provider_calls": 0,
+    "changed_iterations": 1,
+    "heuristics_frozen": true
+  },
+  "guard_development": {
+    "set": "dta-v232-fixed-24-case",
+    "irreconcilable_controls_blocked": 3,
+    "novelty_cases_blocked": 0,
+    "registered_known_unchanged": 4,
+    "no_incident_unchanged": 3,
+    "maximum_discovery_reads": 2,
+    "guard_directed_reads": 3,
+    "provider_calls": 0,
+    "changed_iterations": 1,
+    "heuristics_frozen": true
+  },
+  "provider_development": {
+    "set": "dta-v232-fixed-24-case",
+    "report_eligible_cases": 14,
+    "initial_protocol_valid": 14,
+    "post_repair_success": 14,
+    "root_domain_evidence_drift": 0,
+    "action_authority_violations": 0,
+    "registered_known_unchanged": 4,
+    "no_incident_unchanged": 3,
+    "maximum_discovery_reads": 3,
+    "fixture_provider_calls": 14,
+    "changed_iterations": 1,
+    "provider_boundary_frozen": true
+  },
+  "evaluation_data": {
+    "case_count": 28,
+    "novelty_cases": 16,
+    "registered_known_controls": 4,
+    "no_incident_controls": 3,
+    "irreconcilable_controls": 4,
+    "insufficient_evidence_controls": 1,
+    "status": "DTA_V233_EVALUATION_DATA_PASS",
+    "admission_matrix_sha256": "79e8a977b829003a5c728c276165b7595f8dbe225b81431c054c436128e478ed"
+  },
+  "runtime_preflight": {
+    "arm_run_count": 84,
+    "provider_calls": 0,
+    "runtime_exceptions": 0,
+    "premature_truth_accesses": 0,
+    "action_authority_violations": 0,
+    "status": "DTA_V233_RUNTIME_PREFLIGHT_PASS",
+    "preflight_sha256": "9ea3b8e48ff8493320a8c8aa2ac8a7b93e8a5e92cf83c8a46ebc5e24148d6c22"
+  },
+  "pre_execution_review": {
+    "must_fix": 0,
+    "claim_accuracy": "PASS",
+    "manifest_sha256": "a3bb09cc9e2f0ca976bb5e154ea5749d89c23a6e9effad308040bbe816e1d133"
+  },
+  "provider_smoke": {
+    "execution_count": 1,
+    "case_count": 12,
+    "provider_calls_after_repairs": 9,
+    "protocol_repairs_after_repairs": 2,
+    "real_fixes": 2,
+    "transport_retries": 0,
+    "root_domain_evidence_drift": 0,
+    "irreconcilable_provider_calls": 0,
+    "action_authority_violations": 0,
+    "status": "DTA_V233_PROVIDER_SMOKE_PASS",
+    "smoke_sha256": "6099935ecb15cf536cc8338aea6ebcbe96a83e2b9758b8ca78ddb70970c1238f"
+  },
+  "final_study": {
+    "execution_count": 1,
+    "case_count": 28,
+    "run_count": 84,
+    "truth_load_count": 28,
+    "measured_result_terminal": "DTA_V233_DOMAIN_AND_GUARD_MIXED_RESULT",
+    "artifact_sha256": "ffe1588290ddaf37a3406841d84fe2626af9fe332c5f791f42c80363155dc1fd",
+    "result_json_sha256": "d5050bd96fef008c143b3cc3ec2e0ce0aa2d7ee5d73fbf15e0b478da59c5fdb2",
+    "result_markdown_sha256": "d5dcc42782bbb435a513b3e65a60bc07efb5dd461ca7d1f8d1c51a808f84a8b0",
+    "metrics": {
+      "baseline_root_localization": 0.9375,
+      "combined_root_localization": 1.0,
+      "baseline_broad_domain_accuracy": 0.125,
+      "combined_broad_domain_accuracy": 0.625,
+      "combined_top2_domain_recall": 0.875,
+      "baseline_irreconcilable_control_accuracy": 0.0,
+      "combined_irreconcilable_control_accuracy": 1.0,
+      "combined_novelty_recall": 1.0,
+      "combined_false_novel_rate": 0.0,
+      "combined_evidence_ref_validity": 1.0,
+      "provider_calls": 63,
+      "protocol_repairs": 11,
+      "protocol_failures": 2,
+      "transport_retries": 0,
+      "total_tokens": 252399
+    }
+  },
+  "final_review": {
+    "reviewed_head": "6e6dc45435552e7c1f2a812380bb7d591f1e1e97",
+    "must_fix": 0,
+    "claim_accuracy": "PASS",
+    "local_full_pytest": "5015 passed, 6 skipped",
+    "focused_v233_pytest": "33 passed",
+    "github_ci_runs": [
+      32932970599,
+      32932970618
+    ]
+  },
+  "provider_smoke_execution_count": 1,
+  "fixed_evaluation_execution_count": 1,
+  "agent_writes": 0,
+  "runbook_executions": 0,
+  "docker_calls": 0,
+  "measured_result_terminal": "DTA_V233_DOMAIN_AND_GUARD_MIXED_RESULT",
+  "engineering_terminal": null
+}

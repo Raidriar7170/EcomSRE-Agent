@@ -104,7 +104,7 @@ def test_successor_artifact_cannot_be_described_as_a_rerun() -> None:
     assert fields["study_relation"].default == "INDEPENDENT_SUCCESSOR_NOT_RERUN"
 
 
-def test_successor_preflight_accepts_exact_frozen_surface_without_provider(
+def test_successor_preflight_accepts_frozen_surface_or_rejects_newer_cli(
     tmp_path: Path,
 ) -> None:
     review_path = tmp_path / "review.json"
@@ -219,6 +219,13 @@ def test_successor_preflight_accepts_exact_frozen_surface_without_provider(
         "output_markdown_path": output_md,
         "expected_provider_model": "gpt-5.4-mini-2026-03-17",
     }
+    if (ROOT / "config/dta-v233/evaluation/manifest.json").is_file():
+        with pytest.raises(
+            ValueError,
+            match=r"successor algorithm source differs: .*cli\.py",
+        ):
+            build_successor_evaluation_preflight_v231(**arguments)
+        return
     if (ROOT / ".local/dta-v231-successor").exists():
         with pytest.raises(
             FileExistsError,

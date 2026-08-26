@@ -1,0 +1,93 @@
+{
+  "schema_version": "dta-v233.evaluation-strata.v1",
+  "strata": [
+    {
+      "name": "HIDDEN_CONFIGURATION",
+      "case_ids": [
+        "vx-301",
+        "vx-302"
+      ]
+    },
+    {
+      "name": "HIDDEN_CPU",
+      "case_ids": [
+        "vx-307",
+        "vx-308"
+      ]
+    },
+    {
+      "name": "HIDDEN_DEPENDENCY_LATENCY",
+      "case_ids": [
+        "vx-303",
+        "vx-304"
+      ]
+    },
+    {
+      "name": "HIDDEN_MEMORY",
+      "case_ids": [
+        "vx-309",
+        "vx-310"
+      ]
+    },
+    {
+      "name": "HIDDEN_RUNTIME",
+      "case_ids": [
+        "vx-305",
+        "vx-306"
+      ]
+    },
+    {
+      "name": "INSUFFICIENT_EVIDENCE",
+      "case_ids": [
+        "vx-328"
+      ]
+    },
+    {
+      "name": "IRRECONCILABLE_CONTROL",
+      "case_ids": [
+        "vx-324",
+        "vx-325",
+        "vx-326",
+        "vx-327"
+      ]
+    },
+    {
+      "name": "NO_INCIDENT",
+      "case_ids": [
+        "vx-321",
+        "vx-322",
+        "vx-323"
+      ]
+    },
+    {
+      "name": "REGISTERED_KNOWN",
+      "case_ids": [
+        "vx-317",
+        "vx-318",
+        "vx-319",
+        "vx-320"
+      ]
+    },
+    {
+      "name": "UNREGISTERED_CONCURRENCY",
+      "case_ids": [
+        "vx-311",
+        "vx-312"
+      ]
+    },
+    {
+      "name": "UNREGISTERED_NETWORK_EXTERNAL",
+      "case_ids": [
+        "vx-315",
+        "vx-316"
+      ]
+    },
+    {
+      "name": "UNREGISTERED_QUEUE_BACKLOG",
+      "case_ids": [
+        "vx-313",
+        "vx-314"
+      ]
+    }
+  ]
+}
