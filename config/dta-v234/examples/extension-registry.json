@@ -1,0 +1,206 @@
+{
+  "schema_version": "dta-v234.extension-ontology-registry.v1",
+  "entries": [
+    {
+      "schema_version": "dta-v234.extension-ontology-entry.v1",
+      "registration_id": "registration-v234-bfc78cbf413878c7",
+      "draft_id": "draft-v234-963ab591e6fc850d",
+      "shadow_fault_id": "shadow-v23-cc66640cbeb926c2",
+      "mechanism_slug": "connection-pool-exhaustion",
+      "broad_fault_domain": "CONCURRENCY",
+      "compiled_registration": {
+        "schema_version": "dta-v234.compiled-fault-registration.v1",
+        "registration_id": "registration-v234-bfc78cbf413878c7",
+        "source_draft_id": "draft-v234-963ab591e6fc850d",
+        "source_draft_sha256": "46caa3ed2036ab67e1b81c098dfa193a2591cf193e1e5b82b95d9d3a47946bea",
+        "source_validation_sha256": "5a2396adb94aae69e01ebf93bbe45f2d3d3fb3242feb6f4569431bc13aca16b5",
+        "core_ontology_snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa",
+        "implementation_mode": "DECLARATIVE_READY",
+        "mechanism": {
+          "mechanism_enum_name": "CONNECTION_POOL_EXHAUSTION",
+          "mechanism_slug": "connection-pool-exhaustion",
+          "display_name": "Connection Pool Exhaustion",
+          "broad_fault_domain": "CONCURRENCY",
+          "human_definition": "The connection pool exhaustion mechanism is defined by bounded evidence predicates and canonical support clauses.",
+          "distinguishing_summary": "The connection pool exhaustion mechanism is distinguished by its canonical clauses and evidence bindings.",
+          "confusable_core_mechanisms": [
+            "DEPENDENCY_LATENCY",
+            "SERVICE_UNAVAILABLE"
+          ],
+          "confusable_extension_mechanisms": []
+        },
+        "predicates": [
+          {
+            "schema_version": "dta-v234.extension-predicate-definition.v1",
+            "predicate_name": "CONNECTION_POOL_WAIT_LOG",
+            "predicate_slug": "connection-pool-wait-log",
+            "implementation_mode": "DECLARATIVE_EXTENSION_PREDICATE",
+            "evidence_source": "LOGS",
+            "service_binding": "TARGET",
+            "require_exact_parent": false,
+            "semantic_definition": "The connection pool wait log predicate is defined by its typed extraction rule and accepted evidence binding.",
+            "extraction_rule": {
+              "kind": "LOG_TEMPLATE_CONTAINS_ANY",
+              "literals": [
+                "connection pool exhausted",
+                "pool capacity wait",
+                "worker pool semaphore wait"
+              ],
+              "case_sensitive": false
+            },
+            "threshold_rule": null,
+            "predicate_sha256": "cb31553a31847aca07ff9ddbb402a5503f628f1d4e0ab80d9ad6e0ace610847c"
+          },
+          {
+            "schema_version": "dta-v234.extension-predicate-definition.v1",
+            "predicate_name": "METRIC_ERROR_RATE_STRONG",
+            "predicate_slug": "metric-error-rate-strong",
+            "implementation_mode": "REUSE_CORE_PREDICATE",
+            "evidence_source": "METRICS",
+            "service_binding": "TARGET",
+            "require_exact_parent": false,
+            "semantic_definition": "The metric error rate strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+            "extraction_rule": {
+              "kind": "CORE_PREDICATE_REFERENCE",
+              "predicate_kind": "METRIC_ERROR_RATE_STRONG"
+            },
+            "threshold_rule": null,
+            "predicate_sha256": "cde829aee60ea1b726c9fade6704ba4c6675d7213fcf63ac4732b72996ea51b3"
+          },
+          {
+            "schema_version": "dta-v234.extension-predicate-definition.v1",
+            "predicate_name": "METRIC_LATENCY_STRONG",
+            "predicate_slug": "metric-latency-strong",
+            "implementation_mode": "REUSE_CORE_PREDICATE",
+            "evidence_source": "METRICS",
+            "service_binding": "TARGET",
+            "require_exact_parent": false,
+            "semantic_definition": "The metric latency strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+            "extraction_rule": {
+              "kind": "CORE_PREDICATE_REFERENCE",
+              "predicate_kind": "METRIC_LATENCY_STRONG"
+            },
+            "threshold_rule": null,
+            "predicate_sha256": "a7dadb91f3f0dbf70aafab849eae701095185e5a839966cb574ce2ccb57840f5"
+          }
+        ],
+        "support_clauses": [
+          {
+            "schema_version": "dta-v234.extension-support-clause.v1",
+            "clause_id": "connection-pool-exhaustion:wait-log-and-error-rate",
+            "mechanism_slug": "connection-pool-exhaustion",
+            "requirements": [
+              {
+                "predicate_name": "CONNECTION_POOL_WAIT_LOG",
+                "service_binding": "TARGET",
+                "require_exact_parent": false
+              },
+              {
+                "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                "service_binding": "TARGET",
+                "require_exact_parent": false
+              }
+            ],
+            "rationale": "The clause requires its canonical predicates at their declared service bindings.",
+            "clause_sha256": "7373a4001ba182707d7ef2a489b6ff86a8903fd03cb10de4b664c2cf3b933d29"
+          },
+          {
+            "schema_version": "dta-v234.extension-support-clause.v1",
+            "clause_id": "connection-pool-exhaustion:wait-log-and-latency",
+            "mechanism_slug": "connection-pool-exhaustion",
+            "requirements": [
+              {
+                "predicate_name": "CONNECTION_POOL_WAIT_LOG",
+                "service_binding": "TARGET",
+                "require_exact_parent": false
+              },
+              {
+                "predicate_name": "METRIC_LATENCY_STRONG",
+                "service_binding": "TARGET",
+                "require_exact_parent": false
+              }
+            ],
+            "rationale": "The clause requires its canonical predicates at their declared service bindings.",
+            "clause_sha256": "d4ef60d3aab5fefafc5cded7ee7a60df53dc79c9660f5b563fb5ba3691aca9ec"
+          }
+        ],
+        "test_plan": {
+          "positive_report_ids": [
+            "report-v23-a22e737b9537fe22"
+          ],
+          "positive_case_ids": [
+            "dta-v234-vx-311-connection-pool-development"
+          ],
+          "confusable_core_mechanisms": [
+            "DEPENDENCY_LATENCY",
+            "SERVICE_UNAVAILABLE"
+          ],
+          "required_known_controls": [
+            "known-dependency-latency-control",
+            "known-service-unavailable-control"
+          ],
+          "required_no_incident_controls": [
+            "healthy-connection-pool-control"
+          ],
+          "required_counterfactuals": [
+            "move-pool-wait-log-to-downstream-service"
+          ],
+          "required_source_failure_tests": [
+            "logs-unavailable-fails-closed",
+            "metrics-unavailable-fails-closed"
+          ],
+          "required_clause_binding_tests": [
+            "requirements-bind-same-target-service"
+          ]
+        },
+        "remediation_registration": "NOT_INCLUDED",
+        "action_authority": "NONE",
+        "repository_write_authority": "NONE",
+        "compiled_sha256": "06bf3e5f65eb3a1f0bdc2e96f0667a7f26c2441de560f2a3cba9079c1d0a9c1a"
+      },
+      "test_result_sha256": "b3c45b93c5ca31cabbfba6c4565c34ade928d22da4f2a73d0d40b1a99ddeae08",
+      "promotion_review_record": {
+        "schema_version": "dta-v234.ontology-promotion-review.v1",
+        "review_record_id": "promotion-review-v234-21fd3670b0a43503",
+        "decision": "PROMOTE_TO_EXTENSION_ONTOLOGY",
+        "registration_id": "registration-v234-bfc78cbf413878c7",
+        "draft_id": "draft-v234-963ab591e6fc850d",
+        "draft_sha256": "46caa3ed2036ab67e1b81c098dfa193a2591cf193e1e5b82b95d9d3a47946bea",
+        "validation_sha256": "5a2396adb94aae69e01ebf93bbe45f2d3d3fb3242feb6f4569431bc13aca16b5",
+        "compiled_sha256": "06bf3e5f65eb3a1f0bdc2e96f0667a7f26c2441de560f2a3cba9079c1d0a9c1a",
+        "draft_review_sha256": "56fbed69a34a5971d88902d07df10f9bcb68587f903c0a53718b858df283a58d",
+        "shadow_result_sha256": "b3c45b93c5ca31cabbfba6c4565c34ade928d22da4f2a73d0d40b1a99ddeae08",
+        "reviewer": "TEST_REVIEWER",
+        "review_note": "SIMULATED HUMAN REVIEW: promote the passing development registration.",
+        "reviewed_at": "2026-08-26T07:00:00Z",
+        "simulation": true,
+        "review_sha256": "e9781a2acabe4b172cc14aaee8602aa43e62265f15052b1aa2e256d2cfec5e40"
+      },
+      "promotion_record_sha256": "e9781a2acabe4b172cc14aaee8602aa43e62265f15052b1aa2e256d2cfec5e40",
+      "status": "ACTIVE",
+      "remediation_authority": "NONE",
+      "revocation_record_sha256": null,
+      "entry_sha256": "28418866769c735b8fd32875d1fd12ec2cf4f646bd51ac2d8537fe55d61f7ed3"
+    }
+  ],
+  "transition_commits": [
+    {
+      "schema_version": "dta-v234.extension-registry-commit.v1",
+      "transition_id": "registry-transition-v234-677ace67717ed0fd",
+      "registration_id": "registration-v234-bfc78cbf413878c7",
+      "draft_id": "draft-v234-963ab591e6fc850d",
+      "shadow_fault_id": "shadow-v23-cc66640cbeb926c2",
+      "from_state": "PROMOTION_READY",
+      "to_state": "PROMOTED_EXTENSION",
+      "draft_review_sha256": "56fbed69a34a5971d88902d07df10f9bcb68587f903c0a53718b858df283a58d",
+      "shadow_result_sha256": "b3c45b93c5ca31cabbfba6c4565c34ade928d22da4f2a73d0d40b1a99ddeae08",
+      "decision_review_sha256": "e9781a2acabe4b172cc14aaee8602aa43e62265f15052b1aa2e256d2cfec5e40",
+      "extension_entry_sha256": "28418866769c735b8fd32875d1fd12ec2cf4f646bd51ac2d8537fe55d61f7ed3",
+      "previous_transition_sha256": "33ec510d5daa0698e02a58b3e2b7567cb208462668e2548b1885db40c1d31c49",
+      "transitioned_at": "2026-08-26T07:00:00Z",
+      "simulation": true,
+      "transition_sha256": "dea1c5d5f31ca92ecd1d0ccd139c12f277d6c495771a95a34f54cb74889a2320"
+    }
+  ],
+  "registry_sha256": "463691e12b75a877801f0105b9422a3c35b245d651e68620289f81898adebe65"
+}

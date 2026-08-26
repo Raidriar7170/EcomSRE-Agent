@@ -206,6 +206,14 @@ _ALLOWED_TRANSITIONS_V234 = frozenset(
             OntologyExpansionStateV234.SHADOW_EVALUATION_APPROVED,
         ),
         (
+            OntologyExpansionStateV234.DRAFT_VALIDATED,
+            OntologyExpansionStateV234.REJECTED,
+        ),
+        (
+            OntologyExpansionStateV234.DRAFT_INVALID,
+            OntologyExpansionStateV234.REJECTED,
+        ),
+        (
             OntologyExpansionStateV234.SHADOW_EVALUATION_APPROVED,
             OntologyExpansionStateV234.SHADOW_EVALUATION_FAILED,
         ),

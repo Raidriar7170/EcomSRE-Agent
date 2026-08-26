@@ -47,6 +47,18 @@ from ecomsre.dta_v2.v23.registration_store_v234 import (
 from ecomsre.dta_v2.v23.registration_validator_v234 import (
     validate_registration_draft_v234,
 )
+from ecomsre.dta_v2.v23.extension_registry_v234 import (
+    LocalExtensionOntologyStoreV234,
+    OntologyDraftReviewDecisionV234,
+    OntologyPromotionDecisionV234,
+    build_ontology_draft_review_v234,
+)
+from ecomsre.dta_v2.v23.extension_runtime_v234 import (
+    diagnose_extension_enabled_v234,
+)
+from ecomsre.dta_v2.v23.registration_evaluator_v234 import (
+    evaluate_increment3_development_shadow_v234,
+)
 from ecomsre.dta_v2.v23.evaluation import (
     OpenAICompatibleDiscoveryTransportV23,
     _build_common_context_v23,
@@ -113,7 +125,16 @@ def build_parser() -> argparse.ArgumentParser:
     diagnose.add_argument("--conflict-policy", choices=("strict", "competing"))
     diagnose.add_argument(
         "--policy",
-        choices=("domain-bound", "domain-bound-witness-guard"),
+        choices=(
+            "domain-bound",
+            "domain-bound-witness-guard",
+            "extension-enabled",
+        ),
+    )
+    diagnose.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
     )
     domain_project = subparsers.add_parser("domain-project")
     domain_project.add_argument("--case", required=True)
@@ -210,9 +231,55 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=DEFAULT_LOCAL_ROOT_V234,
     )
+    ontology_validate.add_argument(
+        "--repository-root", type=Path, default=Path.cwd()
+    )
     ontology_render = ontology_commands.add_parser("render-bundle")
     ontology_render.add_argument("draft_id")
     ontology_render.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_review = ontology_commands.add_parser("review-draft")
+    ontology_review.add_argument("draft_id")
+    ontology_review.add_argument(
+        "--decision",
+        required=True,
+        choices=tuple(item.value for item in OntologyDraftReviewDecisionV234),
+    )
+    ontology_review.add_argument("--reviewer", required=True)
+    ontology_review.add_argument("--note", required=True)
+    ontology_review.add_argument("--request-change", action="append", default=[])
+    ontology_review.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_shadow = ontology_commands.add_parser("evaluate-shadow")
+    ontology_shadow.add_argument("draft_id")
+    ontology_shadow.add_argument("--repository-root", type=Path, default=Path.cwd())
+    ontology_shadow.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_promote = ontology_commands.add_parser("promote")
+    ontology_promote.add_argument("draft_id")
+    ontology_promote.add_argument("--reviewer", required=True)
+    ontology_promote.add_argument("--note", required=True)
+    ontology_promote.add_argument("--repository-root", type=Path, default=Path.cwd())
+    ontology_promote.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_revoke = ontology_commands.add_parser("revoke")
+    ontology_revoke.add_argument("registration_id")
+    ontology_revoke.add_argument("--reviewer", required=True)
+    ontology_revoke.add_argument("--note", required=True)
+    ontology_revoke.add_argument("--repository-root", type=Path, default=Path.cwd())
+    ontology_revoke.add_argument(
         "--local-root",
         type=Path,
         default=DEFAULT_LOCAL_ROOT_V234,
@@ -333,8 +400,28 @@ def main(argv: Sequence[str] | None = None) -> int:
                     repository_root=repository_root,
                     spec=policy_spec,
                 ),
-                hidden_mechanism=policy_view.hidden_mechanism,
+                hidden_mechanism=(
+                    None
+                    if args.policy == "extension-enabled"
+                    else policy_view.hidden_mechanism
+                ),
             )
+            if args.policy == "extension-enabled":
+                admitted = context.admission.admitted_diagnosis
+                result_v234 = diagnose_extension_enabled_v234(
+                    repository_root=repository_root,
+                    case_id=policy_spec.case_id,
+                    registry=LocalExtensionOntologyStoreV234(
+                        args.local_root,
+                        repository_root=repository_root,
+                    ).load_registry(),
+                    core_known_diagnosis=(
+                        None if admitted is None else admitted.mechanism
+                    ),
+                    no_incident_admitted=context.admission.no_incident_admissible,
+                )
+                print(result_v234.model_dump_json(indent=2))
+                return 0
             selected_v233 = (
                 run_domain_bound_arm_v233(
                     context=context,
@@ -582,7 +669,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 authorization_context=authorization_context,
                 shadow=shadow,
                 accepted_reports=accepted_reports,
-                promoted_mechanism_slugs=(),
+                promoted_mechanism_slugs=LocalExtensionOntologyStoreV234(
+                    args.local_root,
+                    repository_root=args.repository_root.resolve(),
+                ).active_mechanism_slugs(),
                 shadow_mechanism_slugs=other_shadow_slugs,
             )
             draft_store.save_validation(validation)
@@ -620,6 +710,152 @@ def main(argv: Sequence[str] | None = None) -> int:
                 transitioned_at=datetime.now(timezone.utc),
             )
             print(bundle.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "review-draft":
+            draft_store = LocalRegistrationDraftStoreV234(args.local_root)
+            draft = draft_store.load_draft(args.draft_id)
+            validation = draft_store.load_validation(args.draft_id)
+            review_v234 = build_ontology_draft_review_v234(
+                draft=draft,
+                validation=validation,
+                decision=OntologyDraftReviewDecisionV234(args.decision),
+                reviewer=args.reviewer,
+                review_note=args.note,
+                requested_changes=tuple(sorted(set(args.request_change))),
+                reviewed_at=datetime.now(timezone.utc),
+            )
+            LocalExtensionOntologyStoreV234(args.local_root).save_draft_review(
+                review_v234
+            )
+            print(
+                json.dumps(
+                    {
+                        "review": review_v234.model_dump(mode="json"),
+                        "review_surface": {
+                            "mechanism": draft.mechanism.model_dump(mode="json"),
+                            "broad_domain": draft.mechanism.broad_fault_domain.value,
+                            "predicates": [
+                                item.model_dump(mode="json") for item in draft.predicates
+                            ],
+                            "support_clauses": [
+                                item.model_dump(mode="json")
+                                for item in draft.support_clauses
+                            ],
+                            "evidence_refs": list(
+                                sorted(
+                                    {
+                                        ref
+                                        for predicate in draft.predicates
+                                        for ref in predicate.supporting_report_evidence_refs
+                                    }
+                                )
+                            ),
+                            "confusable_mechanisms": [
+                                item.value
+                                for item in draft.mechanism.confusable_core_mechanisms
+                            ],
+                            "negative_tests": draft.test_plan.model_dump(mode="json"),
+                            "implementation_mode": draft.implementation_mode.value,
+                            "unresolved_engineering_questions": list(
+                                draft.unresolved_engineering_questions
+                            ),
+                            "remediation": draft.remediation_registration,
+                        },
+                    },
+                    indent=2,
+                )
+            )
+            return 0
+        if args.ontology_command == "evaluate-shadow":
+            draft_store = LocalRegistrationDraftStoreV234(args.local_root)
+            draft = draft_store.load_draft(args.draft_id)
+            validation = draft_store.load_validation(args.draft_id)
+            ontology_store = LocalOntologyExpansionStoreV234(args.local_root)
+            authorization_context = ontology_store.load_authorization_result(
+                draft.authorization_id
+            )
+            compiled = compile_registration_v234(
+                draft=draft,
+                validation=validation,
+                snapshot=authorization_context.core_ontology_snapshot,
+            )
+            extension_store = LocalExtensionOntologyStoreV234(args.local_root)
+            review_v234 = extension_store.load_draft_review(args.draft_id)
+            shadow = ontology_store.load_shadow_fault(draft.shadow_fault_id)
+            shadow_result = evaluate_increment3_development_shadow_v234(
+                repository_root=args.repository_root.resolve(),
+                compiled=compiled,
+                draft_review=review_v234,
+                shadow=shadow,
+                accepted_reports=tuple(
+                    LocalReviewStoreV23(args.local_root).load_item(report_id)
+                    for report_id in shadow.positive_report_ids
+                ),
+                evaluated_at=datetime.now(timezone.utc),
+            )
+            extension_store.save_shadow_result(shadow_result)
+            print(shadow_result.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "promote":
+            draft_store = LocalRegistrationDraftStoreV234(args.local_root)
+            draft = draft_store.load_draft(args.draft_id)
+            validation = draft_store.load_validation(args.draft_id)
+            ontology_store = LocalOntologyExpansionStoreV234(args.local_root)
+            authorization_context = ontology_store.load_authorization_result(
+                draft.authorization_id
+            )
+            compiled = compile_registration_v234(
+                draft=draft,
+                validation=validation,
+                snapshot=authorization_context.core_ontology_snapshot,
+            )
+            extension_store = LocalExtensionOntologyStoreV234(
+                args.local_root,
+                repository_root=args.repository_root.resolve(),
+            )
+            shadow = ontology_store.load_shadow_fault(draft.shadow_fault_id)
+            entry, promotion = extension_store.promote(
+                compiled=compiled,
+                validation=validation,
+                draft_review=extension_store.load_draft_review(args.draft_id),
+                shadow_result=extension_store.load_shadow_result(args.draft_id),
+                shadow=shadow,
+                decision=(
+                    OntologyPromotionDecisionV234.PROMOTE_TO_EXTENSION_ONTOLOGY
+                ),
+                reviewer=args.reviewer,
+                review_note=args.note,
+                reviewed_at=datetime.now(timezone.utc),
+            )
+            print(
+                json.dumps(
+                    {
+                        "entry": entry.model_dump(mode="json"),
+                        "promotion": promotion.model_dump(mode="json"),
+                    },
+                    indent=2,
+                )
+            )
+            return 0
+        if args.ontology_command == "revoke":
+            revoked, revocation = LocalExtensionOntologyStoreV234(
+                args.local_root,
+                repository_root=args.repository_root.resolve(),
+            ).revoke(
+                registration_id=args.registration_id,
+                reviewer=args.reviewer,
+                review_note=args.note,
+                reviewed_at=datetime.now(timezone.utc),
+            )
+            print(
+                json.dumps(
+                    {
+                        "entry": revoked.model_dump(mode="json"),
+                        "revocation": revocation.model_dump(mode="json"),
+                    },
+                    indent=2,
+                )
+            )
             return 0
     if args.command == "evaluate":
         repository_root = args.repository_root.resolve()

@@ -180,6 +180,18 @@ def _slug_similarity_v234(left: str, right: str) -> float:
     )
 
 
+def promoted_extension_slug_collides_v234(
+    candidate_slug: str, active_slugs: tuple[str, ...]
+) -> bool:
+    """Apply the frozen extension-name collision threshold at promotion time."""
+
+    return any(
+        _slug_similarity_v234(candidate_slug, existing)
+        >= FROZEN_DUPLICATE_ABSORPTION_POLICY_V234.shadow_extension_similarity_threshold
+        for existing in active_slugs
+    )
+
+
 def _draft_core_clause_signature_v234(
     *,
     clause_requirements: tuple[Any, ...],
@@ -853,6 +865,8 @@ def validate_registration_draft_v234(
 
 __all__ = (
     "DraftValidationStatusV234",
+    "FROZEN_DUPLICATE_ABSORPTION_POLICY_V234",
     "RegistrationDraftValidationV234",
+    "promoted_extension_slug_collides_v234",
     "validate_registration_draft_v234",
 )

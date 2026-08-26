@@ -3,10 +3,11 @@
   "goal_version": "dta-v234-human-ontology-expansion-v1",
   "base_commit": "da423b9104ac532f0bf323f314d37b527671c679",
   "branch": "codex/dta-v234-human-ontology-expansion",
-  "status": "INCREMENT_2_LOCAL_VERIFIED",
+  "status": "INCREMENT_3_COMPLETE",
   "completed_increments": [
     "AUTHORIZATION_AND_CORE_ONTOLOGY_SCHEMA_SNAPSHOT",
-    "FORMAL_DRAFT_VALIDATOR_DECLARATIVE_DSL_AND_COMPILER"
+    "FORMAL_DRAFT_VALIDATOR_DECLARATIVE_DSL_AND_COMPILER",
+    "SHADOW_EVALUATION_EXTENSION_REGISTRY_AND_PROMOTION"
   ],
   "increment_1": {
     "history_status": "DTA_V234_HISTORY_VERIFIED",
@@ -67,6 +68,66 @@
     "focused_pytest": "80 passed",
     "ruff": "PASS",
     "mypy": "PASS"
+  },
+  "increment_3": {
+    "status": "COMPLETE",
+    "development_registration_case": "vx-311",
+    "disjoint_extension_diagnosis_case": "vx-312",
+    "simulated_human_review": true,
+    "human_review_label": "SIMULATED HUMAN REVIEW",
+    "draft_review_sha256": "56fbed69a34a5971d88902d07df10f9bcb68587f903c0a53718b858df283a58d",
+    "shadow_fault_id": "shadow-v23-cc66640cbeb926c2",
+    "shadow_entry_sha256": "a521b821b2b68deffba30ddd957890e8cd838ad88e1c81359704a9c3a9309f89",
+    "accepted_positive_report_ids": [
+      "report-v23-39d307a125e168d8",
+      "report-v23-a22e737b9537fe22"
+    ],
+    "accepted_positive_report_count": 2,
+    "positive_replay_case_count": 1,
+    "shadow_status": "PROMOTION_READY",
+    "shadow_result_sha256": "b3c45b93c5ca31cabbfba6c4565c34ade928d22da4f2a73d0d40b1a99ddeae08",
+    "shadow_strata_count": 7,
+    "positive_recall": 1.0,
+    "false_positive_rate": 0.0,
+    "root_localization": 1.0,
+    "core_known_overlap": 0,
+    "no_incident_regression": 0,
+    "other_extension_destructive_overlap": 0,
+    "evidence_ref_validity": 1.0,
+    "source_reachability": 1.0,
+    "counterfactual_consistency": 1.0,
+    "source_failure_safe": 1.0,
+    "registration_id": "registration-v234-bfc78cbf413878c7",
+    "promotion_review_sha256": "e9781a2acabe4b172cc14aaee8602aa43e62265f15052b1aa2e256d2cfec5e40",
+    "extension_entry_sha256": "28418866769c735b8fd32875d1fd12ec2cf4f646bd51ac2d8537fe55d61f7ed3",
+    "simulated_registry_sha256": "463691e12b75a877801f0105b9422a3c35b245d651e68620289f81898adebe65",
+    "promotion_commit_sha256": "dea1c5d5f31ca92ecd1d0ccd139c12f277d6c495771a95a34f54cb74889a2320",
+    "default_tracked_registry_entry_count": 0,
+    "default_tracked_registry_file_sha256": "1330d4c881d3f43d8422da25ef778a3659345833aec5df68f33b31f07640ee39",
+    "local_lifecycle_states": [
+      "SHADOW_EVALUATION_APPROVED",
+      "PROMOTION_READY"
+    ],
+    "atomic_registry_commit_states": [
+      "PROMOTED_EXTENSION"
+    ],
+    "extension_terminal": "REGISTERED_EXTENSION_DIAGNOSIS",
+    "runtime_priority": [
+      "CORE_KNOWN",
+      "EXTENSION",
+      "NO_INCIDENT",
+      "OPEN_WORLD"
+    ],
+    "open_world_provider_calls": 0,
+    "registration_provider_calls": 0,
+    "focused_pytest": "12 passed",
+    "v23_pytest": "130 passed",
+    "ruff": "PASS",
+    "mypy": "PASS",
+    "history_status": "DTA_V234_HISTORY_VERIFIED",
+    "independent_review_must_fix": 0,
+    "claim_accuracy": "PASS",
+    "fixed_evaluation_executed": false
   },
   "provider_calls": 0,
   "docker_calls": 0,
