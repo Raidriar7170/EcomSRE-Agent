@@ -1,0 +1,18 @@
+{
+  "diagnostic_sha256": "8217fc23136d8e4b171055bbb136e30877a3351a14301aeb78f1ce513c489147",
+  "execution_count": 1,
+  "failed_partial_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "fix_code": "V234_SMOKE_RESUME_ISOLATION",
+  "fix_files": [
+    "scripts/analysis/freeze_dta_v234_manifest.py",
+    "src/ecomsre/dta_v2/v23/evaluation_v234.py"
+  ],
+  "fixed_evaluation_execution_count": 0,
+  "prior_manifest_sha256": "5e992118559dd5b1f51939efa13ed0a37ed7778bd3d6a6c2a0a57a7214e54800",
+  "prior_sentinel_sha256": "b865ffc8acdb75bb1586e280fa972044efd3a2890dc5db8124a2cbbae36c207f",
+  "record_sha256": "5c819e95a17b0f3e7b6e10203d44cce51a54ac94c3e61f7a137abe4f9d21af65",
+  "recorded_at_utc": "2026-08-26T12:56:45.242734+00:00",
+  "repair_ordinal": 2,
+  "schema_version": "dta-v234.provider-smoke-repair.v1",
+  "superseded_manifest_sha256": "5e992118559dd5b1f51939efa13ed0a37ed7778bd3d6a6c2a0a57a7214e54800"
+}

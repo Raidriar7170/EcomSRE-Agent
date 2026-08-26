@@ -237,6 +237,36 @@ broad-domain accuracy missed the predeclared `0.650` gate by one case. See the
 [pre-execution review](docs/external-reviews/dta-v233-pre-execution-review.md),
 plus the [independent final review](docs/external-reviews/dta-v233-final-review.md).
 
+### DTA v2.3.4: human-authorized ontology expansion — Provider blocked
+
+DTA v2.3.4 adds a human-authorized, replay-only path from an Open-World
+provisional report to a formal registration draft, deterministic validation,
+a bounded declarative predicate DSL, an isolated shadow evaluation, and an
+explicitly promoted non-actionable extension Diagnosis. `ACCEPT_AS_NEW` alone
+cannot call the registration Provider, unsupported semantics remain
+`ENGINEERING_REQUIRED`, and promotion requires separate human draft approval
+plus a passing shadow evaluation. Extension diagnoses retain
+`action_authority = NONE` and cannot enter Candidate Filter or Runbook paths.
+
+Fresh 16-task bytes passed `DTA_V234_EVALUATION_DATA_PASS`; all 32 deterministic
+arm paths passed `DTA_V234_RUNTIME_PREFLIGHT_PASS` with zero runtime exceptions,
+premature truth reads, compiler exceptions, or authority violations. The
+independent audit recorded `Must Fix 0 / Claim Accuracy PASS` for the
+engineering and claim boundaries, while explicitly withholding permission for
+the fixed study.
+
+The single Provider-smoke campaign did not pass. It covered all seven required
+roles, preserved 22 requests and 22 responses, and consumed the maximum two
+real fixes. Several formal drafts still exhausted protocol repair or failed
+canonical validation, so no `DTA_V234_PROVIDER_SMOKE_PASS` artifact exists.
+The fixed 16-task × 2-arm study therefore remains unstarted with execution
+count zero. No measured result or engineering terminal exists; the exact state
+is `BLOCKED_DTA_V234_PROVIDER`, and PR #72 remains Draft / `REVIEW_REQUIRED`.
+Another repair or execution would require a separately authorized successor
+protocol. See the [blocked error analysis](docs/results/dta-v234-registration-assistance-error-analysis.md),
+[interview brief](docs/results/dta-v234-registration-assistance-interview-brief.md),
+and [independent pre-execution audit](docs/external-reviews/dta-v234-pre-execution-review.md).
+
 ## One-command offline demo
 
 ```bash

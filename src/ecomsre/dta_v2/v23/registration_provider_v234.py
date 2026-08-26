@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from enum import Enum
 import json
+from pathlib import Path
 import time
 from typing import Any, Literal, cast
 
@@ -80,7 +81,8 @@ predicates, use DNF support clauses, and exclude remediation. Do not emit source
 code, shell commands, diffs, file contents, paths, URLs, network calls, Runbooks,
 credentials, actions, or repository writes. Use Title Case display names, declarative
 sentences beginning with a schema-approved domain lead, diagnostic log literals
-beginning with a schema-approved domain noun, and identifier-only binding fields."""
+beginning with a schema-approved domain noun, and identifier-only binding fields.
+Follow the supplied canonical text templates exactly; do not paraphrase them."""
 
 
 class AcceptedReportProjectionSourceV234(str, Enum):
@@ -621,6 +623,7 @@ def _request_body_v234(
     request: RegistrationDraftProviderRequestV234,
     *,
     repair_ordinal: int,
+    repair_issue_codes: tuple[str, ...] = (),
 ) -> str:
     body: dict[str, Any] = {
         "system": REGISTRATION_DRAFT_SYSTEM_PROMPT_V234,
@@ -635,13 +638,58 @@ def _request_body_v234(
                 "remediation_registration",
                 "repository_write_authority",
             ),
+            "canonical_text_templates": {
+                "mechanism_human_definition": (
+                    "The {mechanism_slug_with_hyphens_replaced_by_spaces} mechanism "
+                    "is defined by bounded evidence predicates and canonical support clauses."
+                ),
+                "mechanism_distinguishing_summary": (
+                    "The {mechanism_slug_with_hyphens_replaced_by_spaces} mechanism "
+                    "is distinguished by its canonical clauses and evidence bindings."
+                ),
+                "predicate_semantic_definition": (
+                    "The {predicate_slug_with_hyphens_replaced_by_spaces} predicate "
+                    "is defined by its typed extraction rule and accepted evidence binding."
+                ),
+                "predicate_positive_example": (
+                    "The {predicate_slug_with_hyphens_replaced_by_spaces} predicate "
+                    "is present in accepted evidence."
+                ),
+                "predicate_negative_example": (
+                    "The {predicate_slug_with_hyphens_replaced_by_spaces} predicate "
+                    "is absent from accepted evidence."
+                ),
+                "support_clause_rationale": (
+                    "The clause requires its canonical predicates at their declared "
+                    "service bindings."
+                ),
+                "engineering_question": (
+                    "Define the bounded engineering gap for {predicate_slug}."
+                ),
+            },
+            "semantic_rules": (
+                "Copy positive report IDs, positive case IDs, and evidence refs exactly from the request.",
+                "Use lowercase hyphenated opaque identifiers for every control reference.",
+                "Use GENERIC_ANOMALY_KIND or a typed threshold for unfamiliar log semantics.",
+                "Use ENGINEERING_REQUIRED with a null extraction rule when ordering or correlation is outside the bounded DSL.",
+                "DUPLICATE_EXISTING and INSUFFICIENT_EVIDENCE must contain no support clauses.",
+            ),
         },
     }
     if repair_ordinal:
         body["protocol_repair"] = {
             "ordinal": repair_ordinal,
-            "safe_issue_code": "PRIOR_RESPONSE_PROTOCOL_INVALID",
-            "instruction": "Return exactly the required fields using only the bounded DSL.",
+            "safe_issue_codes": repair_issue_codes
+            or ("PRIOR_RESPONSE_PROTOCOL_INVALID",),
+            "instruction": (
+                "Regenerate the complete object. Use the exact canonical text templates. "
+                "Display name must be the title-cased enum tokens. Sort every tuple field "
+                "lexicographically. Positive upper-tail thresholds must be greater than zero. "
+                "DECLARATIVE_READY requires predicates and clauses and forbids engineering "
+                "questions. ENGINEERING_REQUIRED requires at least one "
+                "REQUIRES_CODE_IMPLEMENTATION predicate with null extraction rule plus one "
+                "canonical engineering question."
+            ),
         }
     return json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
@@ -668,12 +716,14 @@ class OpenAICompatibleRegistrationDraftTransportV234:
         config: OpenAICompatibleConfig,
         minimum_request_interval_seconds: float = 6.0,
         timeout_seconds: float = 120.0,
+        raw_artifact_dir: Path | None = None,
     ) -> None:
         if minimum_request_interval_seconds < 0:
             raise ValueError("registration Provider request interval cannot be negative")
         self.config = config
         self.minimum_request_interval_seconds = minimum_request_interval_seconds
         self.timeout_seconds = timeout_seconds
+        self.raw_artifact_dir = raw_artifact_dir
         self.transport = StdlibProviderTransportV22()
         self._last_started: float | None = None
         self.input_tokens = 0
@@ -789,6 +839,17 @@ class OpenAICompatibleRegistrationDraftTransportV234:
                 exc.safe_code,
                 retryable=exc.retryable,
             ) from exc
+        if self.raw_artifact_dir is not None:
+            self.raw_artifact_dir.mkdir(parents=True, exist_ok=True)
+            ordinal = len(tuple(self.raw_artifact_dir.glob("request-*.json"))) + 1
+            (self.raw_artifact_dir / f"request-{ordinal:03d}.json").write_text(
+                json.dumps(payload, sort_keys=True, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            (self.raw_artifact_dir / f"response-{ordinal:03d}.json").write_text(
+                json.dumps(response, sort_keys=True, indent=2) + "\n",
+                encoding="utf-8",
+            )
         self.latency_ms += (time.monotonic() - started) * 1000.0
         usage = response.get("usage")
         if isinstance(usage, Mapping):
@@ -811,16 +872,22 @@ class RegistrationDraftProviderV234:
         shadow: ShadowFaultEntryV23,
         accepted_reports: tuple[ReviewQueueItemV23, ...],
         hidden_mechanism: MechanismV22 | None = None,
+        ontology_view: ProviderCoreOntologyViewV234 | None = None,
         confusable_shadow_faults: tuple[ShadowFaultEntryV23, ...] = (),
     ) -> FormalFaultRegistrationDraftV234:
         projections = tuple(
             project_development_report_v234(item)
             for item in sorted(accepted_reports, key=lambda value: value.report.report_id)
         )
-        ontology_view = build_provider_core_ontology_view_v234(
-            snapshot=authorization_context.core_ontology_snapshot,
-            hidden_mechanism=hidden_mechanism,
-        )
+        if ontology_view is not None and hidden_mechanism is not None:
+            raise ValueError(
+                "registration Provider accepts either a frozen ontology view or a hidden mechanism"
+            )
+        if ontology_view is None:
+            ontology_view = build_provider_core_ontology_view_v234(
+                snapshot=authorization_context.core_ontology_snapshot,
+                hidden_mechanism=hidden_mechanism,
+            )
         request = build_registration_draft_provider_request_v234(
             authorization_context=authorization_context,
             shadow_fault=shadow,
@@ -870,8 +937,13 @@ class RegistrationDraftProviderV234:
         assert self.transport is not None
         total_transport_retries = 0
         provider_calls = 0
+        repair_issue_codes: tuple[str, ...] = ()
         for repair_ordinal in range(MAX_PROTOCOL_REPAIRS_V23 + 1):
-            body = _request_body_v234(request, repair_ordinal=repair_ordinal)
+            body = _request_body_v234(
+                request,
+                repair_ordinal=repair_ordinal,
+                repair_issue_codes=repair_issue_codes,
+            )
             raw: str | None = None
             for retry in range(MAX_EXACT_TRANSPORT_RETRIES_V23 + 1):
                 try:
@@ -891,11 +963,35 @@ class RegistrationDraftProviderV234:
                     **authored.model_dump(mode="python"),
                     remediation_registration="NOT_INCLUDED",
                 )
+                if authored.implementation_mode is RegistrationImplementationModeV234.DECLARATIVE_READY:
+                    if (
+                        not authored.predicates
+                        or not authored.support_clauses
+                        or authored.unresolved_engineering_questions
+                        or any(
+                            item.implementation_mode
+                            is PredicateImplementationModeV234.REQUIRES_CODE_IMPLEMENTATION
+                            for item in authored.predicates
+                        )
+                    ):
+                        raise ValueError("DECLARATIVE_MODE_BINDING_INVALID")
+                elif authored.implementation_mode is RegistrationImplementationModeV234.ENGINEERING_REQUIRED:
+                    if (
+                        not authored.unresolved_engineering_questions
+                        or not any(
+                            item.implementation_mode
+                            is PredicateImplementationModeV234.REQUIRES_CODE_IMPLEMENTATION
+                            and item.extraction_rule is None
+                            for item in authored.predicates
+                        )
+                    ):
+                        raise ValueError("ENGINEERING_MODE_BINDING_INVALID")
             except (TypeError, ValueError, KeyError, json.JSONDecodeError) as exc:
                 if repair_ordinal == MAX_PROTOCOL_REPAIRS_V23:
                     raise DiscoveryProviderProtocolFailureV23(
                         "registration Provider exhausted two protocol repairs"
                     ) from exc
+                repair_issue_codes = _safe_protocol_issue_codes_v234(exc)
                 continue
             return (
                 authored,
@@ -904,6 +1000,22 @@ class RegistrationDraftProviderV234:
                 total_transport_retries,
             )
         raise AssertionError("unreachable registration Provider protocol state")
+
+
+def _safe_protocol_issue_codes_v234(exc: Exception) -> tuple[str, ...]:
+    rendered = str(exc).casefold()
+    rules = (
+        ("display name", "DISPLAY_NAME_CANONICALIZATION_REQUIRED"),
+        ("not canonical", "CANONICAL_ORDER_REQUIRED"),
+        ("vacuous metric threshold", "POSITIVE_THRESHOLD_REQUIRED"),
+        ("implementation_mode", "IMPLEMENTATION_MODE_ENUM_REQUIRED"),
+        ("declarative-ready draft", "DECLARATIVE_MODE_BINDING_INVALID"),
+        ("declarative_mode_binding_invalid", "DECLARATIVE_MODE_BINDING_INVALID"),
+        ("engineering-required draft", "ENGINEERING_MODE_BINDING_INVALID"),
+        ("engineering_mode_binding_invalid", "ENGINEERING_MODE_BINDING_INVALID"),
+    )
+    codes = tuple(sorted({code for token, code in rules if token in rendered}))
+    return codes or ("PRIOR_RESPONSE_PROTOCOL_INVALID",)
 
 
 __all__ = (

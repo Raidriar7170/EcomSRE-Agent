@@ -1,0 +1,11 @@
+{
+  "execution_count": 1,
+  "failed_partial_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "failed_roles": [],
+  "fixed_evaluation_execution_count": 0,
+  "prior_manifest_sha256": "5e992118559dd5b1f51939efa13ed0a37ed7778bd3d6a6c2a0a57a7214e54800",
+  "prior_sentinel_sha256": "b865ffc8acdb75bb1586e280fa972044efd3a2890dc5db8124a2cbbae36c207f",
+  "raw_provider_artifacts_scope": ".local/dta-v234/provider-raw/smoke",
+  "repair_ordinal": 2,
+  "schema_version": "dta-v234.provider-smoke-repair-diagnostic.v1"
+}
