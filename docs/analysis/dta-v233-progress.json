@@ -1,0 +1,29 @@
+{
+  "schema_version": "dta-v233.progress.v1",
+  "base_commit": "447e7a8ed4c8b9d592c16d181f5709bdfdc3d4cb",
+  "branch": "codex/dta-v233-domain-witness-guard",
+  "status": "INCREMENT_1_COMPLETE",
+  "completed_increments": [
+    "DOMAIN_PROJECTION_VERTICAL_SLICE"
+  ],
+  "domain_development": {
+    "set": "dta-v232-fixed-24-case",
+    "novelty_case_count": 14,
+    "selected_root_correct": 12,
+    "broad_domain_correct": 10,
+    "evaluator_domain_top_two": 14,
+    "resolved_or_ambiguous": 14,
+    "evidence_ref_validity": 1.0,
+    "maximum_discovery_reads": 3,
+    "provider_calls": 0,
+    "changed_iterations": 1,
+    "heuristics_frozen": true
+  },
+  "provider_smoke_execution_count": 0,
+  "fixed_evaluation_execution_count": 0,
+  "agent_writes": 0,
+  "runbook_executions": 0,
+  "docker_calls": 0,
+  "measured_result_terminal": null,
+  "engineering_terminal": null
+}

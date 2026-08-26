@@ -36,12 +36,18 @@ from ecomsre.dta_v2.v23.conflict_model_v231 import audit_historical_conflicts_v2
 from ecomsre.dta_v2.v23.evaluation_v231 import (
     EvaluationCaseSpecV231,
     EvaluationArmRunV231,
+    EvaluationOntologyViewSpecV231,
     EvaluationPolicyV231,
     OpenAICompatibleDiscoveryTransportV231,
     load_evaluation_case_set_v231,
     load_evaluation_views_v231,
     run_evaluation_policy_v231,
     run_fixed_evaluation_once_v231,
+)
+from ecomsre.dta_v2.v23.domain_audit_v233 import project_development_case_v233
+from ecomsre.dta_v2.v23.evaluation_data_v232 import (
+    load_evaluation_cases_v232,
+    load_evaluation_views_v232,
 )
 
 
@@ -65,6 +71,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     diagnose.add_argument("--repository-root", type=Path, default=Path.cwd())
     diagnose.add_argument("--conflict-policy", choices=("strict", "competing"))
+    domain_project = subparsers.add_parser("domain-project")
+    domain_project.add_argument("--case", required=True)
+    domain_project.add_argument("--repository-root", type=Path, default=Path.cwd())
     conflict_audit = subparsers.add_parser("conflict-audit")
     conflict_audit.add_argument("--repository-root", type=Path, default=Path.cwd())
     conflict_audit.add_argument(
@@ -141,6 +150,33 @@ def main(argv: Sequence[str] | None = None) -> int:
             hide_cpu=True,
         )
         print(demo_result.model_dump_json(indent=2))
+        return 0
+    if args.command == "domain-project":
+        repository_root = args.repository_root.resolve()
+        case_path = Path(args.case)
+        if case_path.is_file():
+            domain_spec = EvaluationCaseSpecV231.model_validate_json(
+                case_path.read_bytes()
+            )
+            domain_view = EvaluationOntologyViewSpecV231(
+                case_id=domain_spec.case_id,
+                hidden_mechanism=None,
+            )
+        else:
+            domain_cases = load_evaluation_cases_v232(
+                repository_root / "config/dta-v232/evaluation/cases.json"
+            )
+            domain_views = load_evaluation_views_v232(
+                repository_root / "config/dta-v232/evaluation/ontology-views.json"
+            )
+            domain_spec = domain_cases.require(args.case)
+            domain_view = domain_views.require(domain_spec.case_id)
+        projection, _memory, _reads = project_development_case_v233(
+            repository_root=repository_root,
+            spec=domain_spec,
+            view_spec=domain_view,
+        )
+        print(projection.model_dump_json(indent=2))
         return 0
     if args.command == "diagnose":
         if args.conflict_policy is not None:

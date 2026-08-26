@@ -1,0 +1,1812 @@
+{
+  "schema_version": "dta-v233.domain-audit.v1",
+  "development_set": "dta-v232-fixed-24-case",
+  "case_count": 14,
+  "selected_root_correct": 12,
+  "broad_domain_correct": 10,
+  "evaluator_domain_top_two": 14,
+  "resolved_or_ambiguous": 14,
+  "evidence_ref_validity": 1.0,
+  "maximum_discovery_reads": 3,
+  "provider_calls": 0,
+  "projection_iteration_count": 1,
+  "entries": [
+    {
+      "case_id": "vx-201",
+      "expected_root_service": "svc-39904ef061",
+      "expected_broad_domain": "CONFIGURATION",
+      "projection": {
+        "schema_version": "dta-v233.domain-projection.v1",
+        "candidate_root_services": [
+          "svc-39904ef061",
+          "svc-513218c397"
+        ],
+        "selected_root_service": "svc-39904ef061",
+        "domain_scores": [
+          {
+            "domain": "CONCURRENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "CONFIGURATION",
+            "score": 3.25,
+            "vote_count": 2,
+            "supporting_evidence_refs": [
+              "e:a:changes:svc-39904ef061:0:e074ee5e7ff1",
+              "e:a:metrics:svc-39904ef061:core:0:44ae29876ee8"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DATA",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DEPENDENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "EXTERNAL",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "NETWORK",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RESOURCE",
+            "score": 0.5,
+            "vote_count": 1,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-39904ef061:core:0:44ae29876ee8"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RUNTIME",
+            "score": 0.0,
+            "vote_count": 2,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-39904ef061:core:0:44ae29876ee8"
+            ],
+            "contradicting_evidence_refs": [
+              "e:a:runtime:all-candidates:35de44c075f4:0:0174d452f95d"
+            ]
+          },
+          {
+            "domain": "UNKNOWN",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          }
+        ],
+        "selected_domain": "CONFIGURATION",
+        "runner_up_domain": "RESOURCE",
+        "score_margin": 2.75,
+        "status": "RESOLVED",
+        "supporting_anomaly_ids": [
+          "ga:recent-change-correlation:svc-39904ef061:ca456f37d801"
+        ],
+        "supporting_evidence_refs": [
+          "e:a:changes:svc-39904ef061:0:e074ee5e7ff1",
+          "e:a:metrics:svc-39904ef061:core:0:44ae29876ee8"
+        ],
+        "contradicting_evidence_refs": [
+          "e:a:runtime:all-candidates:35de44c075f4:0:0174d452f95d"
+        ],
+        "reason_codes": [
+          "BASE_RECENT_CHANGE_CORRELATION",
+          "CONFIGURATION_CROSS_SOURCE_COMBINATION",
+          "PROJECTION_RESOLVED",
+          "STRONG_HEALTHY_RUNTIME"
+        ],
+        "projection_sha256": "71455948b71d4fc5b41dc3a3d56af3d9645dc25e8b90f1c22e45964c58c586d6"
+      },
+      "top_two_domains": [
+        "CONFIGURATION",
+        "RESOURCE"
+      ],
+      "selected_root_correct": true,
+      "broad_domain_correct": true,
+      "evaluator_domain_in_top_two": true,
+      "evidence_refs_valid": true,
+      "discovery_reads": [
+        {
+          "source": "CHANGES",
+          "target_services": [
+            "svc-513218c397"
+          ],
+          "reason": "CORRELATE_RECENT_CHANGE"
+        },
+        {
+          "source": "CHANGES",
+          "target_services": [
+            "svc-39904ef061"
+          ],
+          "reason": "CORRELATE_RECENT_CHANGE"
+        }
+      ]
+    },
+    {
+      "case_id": "vx-202",
+      "expected_root_service": "svc-7f527eaf14",
+      "expected_broad_domain": "CONFIGURATION",
+      "projection": {
+        "schema_version": "dta-v233.domain-projection.v1",
+        "candidate_root_services": [
+          "svc-52a4702b32",
+          "svc-7f527eaf14"
+        ],
+        "selected_root_service": "svc-7f527eaf14",
+        "domain_scores": [
+          {
+            "domain": "CONCURRENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "CONFIGURATION",
+            "score": 3.25,
+            "vote_count": 2,
+            "supporting_evidence_refs": [
+              "e:a:changes:svc-7f527eaf14:0:d59a673e3ffa",
+              "e:a:metrics:svc-7f527eaf14:core:0:cd4549049182"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DATA",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DEPENDENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "EXTERNAL",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "NETWORK",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RESOURCE",
+            "score": 0.5,
+            "vote_count": 1,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-7f527eaf14:core:0:cd4549049182"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RUNTIME",
+            "score": 0.0,
+            "vote_count": 2,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-7f527eaf14:core:0:cd4549049182"
+            ],
+            "contradicting_evidence_refs": [
+              "e:a:runtime:all-candidates:e35df89a038c:1:d64ca194dbba"
+            ]
+          },
+          {
+            "domain": "UNKNOWN",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          }
+        ],
+        "selected_domain": "CONFIGURATION",
+        "runner_up_domain": "RESOURCE",
+        "score_margin": 2.75,
+        "status": "RESOLVED",
+        "supporting_anomaly_ids": [
+          "ga:recent-change-correlation:svc-7f527eaf14:ac4ddd584432"
+        ],
+        "supporting_evidence_refs": [
+          "e:a:changes:svc-7f527eaf14:0:d59a673e3ffa",
+          "e:a:metrics:svc-7f527eaf14:core:0:cd4549049182"
+        ],
+        "contradicting_evidence_refs": [
+          "e:a:runtime:all-candidates:e35df89a038c:1:d64ca194dbba"
+        ],
+        "reason_codes": [
+          "BASE_RECENT_CHANGE_CORRELATION",
+          "CONFIGURATION_CROSS_SOURCE_COMBINATION",
+          "PROJECTION_RESOLVED",
+          "STRONG_HEALTHY_RUNTIME"
+        ],
+        "projection_sha256": "23846f2d49dabe9ccab35f9982c7c430e016f98370c19ed567d464cc6686a073"
+      },
+      "top_two_domains": [
+        "CONFIGURATION",
+        "RESOURCE"
+      ],
+      "selected_root_correct": true,
+      "broad_domain_correct": true,
+      "evaluator_domain_in_top_two": true,
+      "evidence_refs_valid": true,
+      "discovery_reads": [
+        {
+          "source": "CHANGES",
+          "target_services": [
+            "svc-52a4702b32"
+          ],
+          "reason": "CORRELATE_RECENT_CHANGE"
+        },
+        {
+          "source": "CHANGES",
+          "target_services": [
+            "svc-7f527eaf14"
+          ],
+          "reason": "CORRELATE_RECENT_CHANGE"
+        }
+      ]
+    },
+    {
+      "case_id": "vx-203",
+      "expected_root_service": "svc-8a4d0126e0",
+      "expected_broad_domain": "DEPENDENCY",
+      "projection": {
+        "schema_version": "dta-v233.domain-projection.v1",
+        "candidate_root_services": [
+          "svc-8a4d0126e0",
+          "svc-a8ec0d6638"
+        ],
+        "selected_root_service": "svc-8a4d0126e0",
+        "domain_scores": [
+          {
+            "domain": "CONCURRENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "CONFIGURATION",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DATA",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DEPENDENCY",
+            "score": 7.0,
+            "vote_count": 4,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-8a4d0126e0:core:1:dd238ec22172",
+              "e:a:traces:svc-8a4d0126e0:0:b2e0ae2fd32b"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "EXTERNAL",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "NETWORK",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RESOURCE",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RUNTIME",
+            "score": -1.5,
+            "vote_count": 1,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": [
+              "e:a:runtime:all-candidates:f766b6206c74:0:5b3d99f0b8ba"
+            ]
+          },
+          {
+            "domain": "UNKNOWN",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          }
+        ],
+        "selected_domain": "DEPENDENCY",
+        "runner_up_domain": "CONCURRENCY",
+        "score_margin": 7.0,
+        "status": "RESOLVED",
+        "supporting_anomaly_ids": [
+          "ga:metric-latency-outlier:svc-8a4d0126e0:483982b74f2f",
+          "ga:trace-error-localization:svc-8a4d0126e0:4c090b19e6f8",
+          "ga:trace-latency-outlier:svc-8a4d0126e0:7b980ec08194"
+        ],
+        "supporting_evidence_refs": [
+          "e:a:metrics:svc-8a4d0126e0:core:1:dd238ec22172",
+          "e:a:traces:svc-8a4d0126e0:0:b2e0ae2fd32b"
+        ],
+        "contradicting_evidence_refs": [
+          "e:a:runtime:all-candidates:f766b6206c74:0:5b3d99f0b8ba"
+        ],
+        "reason_codes": [
+          "BASE_METRIC_LATENCY_OUTLIER",
+          "BASE_TRACE_ERROR_LOCALIZATION",
+          "BASE_TRACE_LATENCY_OUTLIER",
+          "DEPENDENCY_CROSS_SOURCE_COMBINATION",
+          "PROJECTION_RESOLVED",
+          "STRONG_HEALTHY_RUNTIME"
+        ],
+        "projection_sha256": "297c1f58765317843a1817562c0e0bfdfb1a75ae4de8713ad0e9c5ebbada1680"
+      },
+      "top_two_domains": [
+        "DEPENDENCY",
+        "CONCURRENCY"
+      ],
+      "selected_root_correct": true,
+      "broad_domain_correct": true,
+      "evaluator_domain_in_top_two": true,
+      "evidence_refs_valid": true,
+      "discovery_reads": [
+        {
+          "source": "TRACES",
+          "target_services": [
+            "svc-8a4d0126e0"
+          ],
+          "reason": "LOCALIZE_DEPENDENCY_PATH"
+        }
+      ]
+    },
+    {
+      "case_id": "vx-204",
+      "expected_root_service": "svc-fdcfbb7d57",
+      "expected_broad_domain": "DEPENDENCY",
+      "projection": {
+        "schema_version": "dta-v233.domain-projection.v1",
+        "candidate_root_services": [
+          "svc-0e58cf29b2",
+          "svc-fdcfbb7d57"
+        ],
+        "selected_root_service": "svc-fdcfbb7d57",
+        "domain_scores": [
+          {
+            "domain": "CONCURRENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "CONFIGURATION",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DATA",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DEPENDENCY",
+            "score": 7.0,
+            "vote_count": 4,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-fdcfbb7d57:core:1:ec37f78a1246",
+              "e:a:traces:svc-fdcfbb7d57:0:895320681c2e"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "EXTERNAL",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "NETWORK",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RESOURCE",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RUNTIME",
+            "score": -1.5,
+            "vote_count": 1,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": [
+              "e:a:runtime:all-candidates:f1b8492a1057:1:e0be272b8118"
+            ]
+          },
+          {
+            "domain": "UNKNOWN",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          }
+        ],
+        "selected_domain": "DEPENDENCY",
+        "runner_up_domain": "CONCURRENCY",
+        "score_margin": 7.0,
+        "status": "RESOLVED",
+        "supporting_anomaly_ids": [
+          "ga:metric-latency-outlier:svc-fdcfbb7d57:5d8266fd6294",
+          "ga:trace-error-localization:svc-fdcfbb7d57:efb34bdf2b76",
+          "ga:trace-latency-outlier:svc-fdcfbb7d57:1daa41a08b5f"
+        ],
+        "supporting_evidence_refs": [
+          "e:a:metrics:svc-fdcfbb7d57:core:1:ec37f78a1246",
+          "e:a:traces:svc-fdcfbb7d57:0:895320681c2e"
+        ],
+        "contradicting_evidence_refs": [
+          "e:a:runtime:all-candidates:f1b8492a1057:1:e0be272b8118"
+        ],
+        "reason_codes": [
+          "BASE_METRIC_LATENCY_OUTLIER",
+          "BASE_TRACE_ERROR_LOCALIZATION",
+          "BASE_TRACE_LATENCY_OUTLIER",
+          "DEPENDENCY_CROSS_SOURCE_COMBINATION",
+          "PROJECTION_RESOLVED",
+          "STRONG_HEALTHY_RUNTIME"
+        ],
+        "projection_sha256": "c58665939968677fc5819b9aade7224179952debc2ae47b4326e54bf9c94663b"
+      },
+      "top_two_domains": [
+        "DEPENDENCY",
+        "CONCURRENCY"
+      ],
+      "selected_root_correct": true,
+      "broad_domain_correct": true,
+      "evaluator_domain_in_top_two": true,
+      "evidence_refs_valid": true,
+      "discovery_reads": [
+        {
+          "source": "TRACES",
+          "target_services": [
+            "svc-fdcfbb7d57"
+          ],
+          "reason": "LOCALIZE_DEPENDENCY_PATH"
+        }
+      ]
+    },
+    {
+      "case_id": "vx-205",
+      "expected_root_service": "svc-3296f6737d",
+      "expected_broad_domain": "CONCURRENCY",
+      "projection": {
+        "schema_version": "dta-v233.domain-projection.v1",
+        "candidate_root_services": [
+          "svc-3296f6737d",
+          "svc-95337fa369"
+        ],
+        "selected_root_service": "svc-95337fa369",
+        "domain_scores": [
+          {
+            "domain": "CONCURRENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "CONFIGURATION",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DATA",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DEPENDENCY",
+            "score": 1.5,
+            "vote_count": 1,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-95337fa369:core:1:79bd8cc2483f"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "EXTERNAL",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "NETWORK",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RESOURCE",
+            "score": -3.0,
+            "vote_count": 1,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": [
+              "e:a:resources:all-candidates:c1d0daea96c8:1:df75a7336fa1"
+            ]
+          },
+          {
+            "domain": "RUNTIME",
+            "score": -1.5,
+            "vote_count": 1,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": [
+              "e:a:runtime:all-candidates:c1d0daea96c8:1:1395483b81a0"
+            ]
+          },
+          {
+            "domain": "UNKNOWN",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          }
+        ],
+        "selected_domain": "UNKNOWN",
+        "runner_up_domain": "CONCURRENCY",
+        "score_margin": 1.5,
+        "status": "AMBIGUOUS",
+        "supporting_anomaly_ids": [
+          "ga:metric-latency-outlier:svc-95337fa369:7ccd9d338a62"
+        ],
+        "supporting_evidence_refs": [
+          "e:a:metrics:svc-95337fa369:core:1:79bd8cc2483f"
+        ],
+        "contradicting_evidence_refs": [
+          "e:a:resources:all-candidates:c1d0daea96c8:1:df75a7336fa1",
+          "e:a:runtime:all-candidates:c1d0daea96c8:1:1395483b81a0"
+        ],
+        "reason_codes": [
+          "BASE_METRIC_LATENCY_OUTLIER",
+          "COMPLETE_NORMAL_RESOURCE_COVERAGE",
+          "PROJECTION_AMBIGUOUS",
+          "STRONG_HEALTHY_RUNTIME"
+        ],
+        "projection_sha256": "99d65d2fec28a22d471c6d08682e4bfc4f55ff6cd4a4450ecbee34da4ff1013e"
+      },
+      "top_two_domains": [
+        "DEPENDENCY",
+        "CONCURRENCY"
+      ],
+      "selected_root_correct": false,
+      "broad_domain_correct": false,
+      "evaluator_domain_in_top_two": true,
+      "evidence_refs_valid": true,
+      "discovery_reads": [
+        {
+          "source": "TRACES",
+          "target_services": [
+            "svc-95337fa369"
+          ],
+          "reason": "LOCALIZE_DEPENDENCY_PATH"
+        },
+        {
+          "source": "CHANGES",
+          "target_services": [
+            "svc-95337fa369"
+          ],
+          "reason": "CORRELATE_RECENT_CHANGE"
+        },
+        {
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-3296f6737d",
+            "svc-95337fa369"
+          ],
+          "reason": "CHECK_RESOURCE_STATE"
+        }
+      ]
+    },
+    {
+      "case_id": "vx-206",
+      "expected_root_service": "svc-74c88cfddc",
+      "expected_broad_domain": "CONCURRENCY",
+      "projection": {
+        "schema_version": "dta-v233.domain-projection.v1",
+        "candidate_root_services": [
+          "svc-647ae0f29b",
+          "svc-74c88cfddc"
+        ],
+        "selected_root_service": "svc-647ae0f29b",
+        "domain_scores": [
+          {
+            "domain": "CONCURRENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "CONFIGURATION",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DATA",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DEPENDENCY",
+            "score": 1.5,
+            "vote_count": 1,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-647ae0f29b:core:1:cd26070093a8"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "EXTERNAL",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "NETWORK",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RESOURCE",
+            "score": -3.0,
+            "vote_count": 1,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": [
+              "e:a:resources:all-candidates:c9e7bcc3a81e:0:53dcfbe695ba"
+            ]
+          },
+          {
+            "domain": "RUNTIME",
+            "score": -1.5,
+            "vote_count": 1,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": [
+              "e:a:runtime:all-candidates:c9e7bcc3a81e:0:7103a7536be0"
+            ]
+          },
+          {
+            "domain": "UNKNOWN",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          }
+        ],
+        "selected_domain": "UNKNOWN",
+        "runner_up_domain": "CONCURRENCY",
+        "score_margin": 1.5,
+        "status": "AMBIGUOUS",
+        "supporting_anomaly_ids": [
+          "ga:metric-latency-outlier:svc-647ae0f29b:af7a28867f2c"
+        ],
+        "supporting_evidence_refs": [
+          "e:a:metrics:svc-647ae0f29b:core:1:cd26070093a8"
+        ],
+        "contradicting_evidence_refs": [
+          "e:a:resources:all-candidates:c9e7bcc3a81e:0:53dcfbe695ba",
+          "e:a:runtime:all-candidates:c9e7bcc3a81e:0:7103a7536be0"
+        ],
+        "reason_codes": [
+          "BASE_METRIC_LATENCY_OUTLIER",
+          "COMPLETE_NORMAL_RESOURCE_COVERAGE",
+          "PROJECTION_AMBIGUOUS",
+          "STRONG_HEALTHY_RUNTIME"
+        ],
+        "projection_sha256": "442dcb5e27c415beb3a5165c034a934f6cf8b9b50038e8554b56715b131c5973"
+      },
+      "top_two_domains": [
+        "DEPENDENCY",
+        "CONCURRENCY"
+      ],
+      "selected_root_correct": false,
+      "broad_domain_correct": false,
+      "evaluator_domain_in_top_two": true,
+      "evidence_refs_valid": true,
+      "discovery_reads": [
+        {
+          "source": "TRACES",
+          "target_services": [
+            "svc-74c88cfddc"
+          ],
+          "reason": "LOCALIZE_DEPENDENCY_PATH"
+        },
+        {
+          "source": "CHANGES",
+          "target_services": [
+            "svc-647ae0f29b"
+          ],
+          "reason": "CORRELATE_RECENT_CHANGE"
+        },
+        {
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-647ae0f29b",
+            "svc-74c88cfddc"
+          ],
+          "reason": "CHECK_RESOURCE_STATE"
+        }
+      ]
+    },
+    {
+      "case_id": "vx-207",
+      "expected_root_service": "svc-4269730bab",
+      "expected_broad_domain": "CONCURRENCY",
+      "projection": {
+        "schema_version": "dta-v233.domain-projection.v1",
+        "candidate_root_services": [
+          "svc-4269730bab",
+          "svc-7a1c06f864"
+        ],
+        "selected_root_service": "svc-4269730bab",
+        "domain_scores": [
+          {
+            "domain": "CONCURRENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "CONFIGURATION",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DATA",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DEPENDENCY",
+            "score": 1.5,
+            "vote_count": 1,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-4269730bab:core:1:8baaa05b3507"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "EXTERNAL",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "NETWORK",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RESOURCE",
+            "score": -3.0,
+            "vote_count": 1,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": [
+              "e:a:resources:all-candidates:d2cb0c309a2c:0:22a94b987082"
+            ]
+          },
+          {
+            "domain": "RUNTIME",
+            "score": -1.5,
+            "vote_count": 1,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": [
+              "e:a:runtime:all-candidates:d2cb0c309a2c:0:d9c1a4d57bea"
+            ]
+          },
+          {
+            "domain": "UNKNOWN",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          }
+        ],
+        "selected_domain": "UNKNOWN",
+        "runner_up_domain": "CONCURRENCY",
+        "score_margin": 1.5,
+        "status": "AMBIGUOUS",
+        "supporting_anomaly_ids": [
+          "ga:metric-latency-outlier:svc-4269730bab:2ff3e542e644"
+        ],
+        "supporting_evidence_refs": [
+          "e:a:metrics:svc-4269730bab:core:1:8baaa05b3507"
+        ],
+        "contradicting_evidence_refs": [
+          "e:a:resources:all-candidates:d2cb0c309a2c:0:22a94b987082",
+          "e:a:runtime:all-candidates:d2cb0c309a2c:0:d9c1a4d57bea"
+        ],
+        "reason_codes": [
+          "BASE_METRIC_LATENCY_OUTLIER",
+          "COMPLETE_NORMAL_RESOURCE_COVERAGE",
+          "PROJECTION_AMBIGUOUS",
+          "STRONG_HEALTHY_RUNTIME"
+        ],
+        "projection_sha256": "75c43ff36294b734e8561f8fd426e13105a6dd677dbc36fecc0f39f5912ae22a"
+      },
+      "top_two_domains": [
+        "DEPENDENCY",
+        "CONCURRENCY"
+      ],
+      "selected_root_correct": true,
+      "broad_domain_correct": false,
+      "evaluator_domain_in_top_two": true,
+      "evidence_refs_valid": true,
+      "discovery_reads": [
+        {
+          "source": "TRACES",
+          "target_services": [
+            "svc-7a1c06f864"
+          ],
+          "reason": "LOCALIZE_DEPENDENCY_PATH"
+        },
+        {
+          "source": "CHANGES",
+          "target_services": [
+            "svc-4269730bab"
+          ],
+          "reason": "CORRELATE_RECENT_CHANGE"
+        },
+        {
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-4269730bab",
+            "svc-7a1c06f864"
+          ],
+          "reason": "CHECK_RESOURCE_STATE"
+        }
+      ]
+    },
+    {
+      "case_id": "vx-208",
+      "expected_root_service": "svc-c72a0c8d34",
+      "expected_broad_domain": "CONCURRENCY",
+      "projection": {
+        "schema_version": "dta-v233.domain-projection.v1",
+        "candidate_root_services": [
+          "svc-28e93c1040",
+          "svc-c72a0c8d34"
+        ],
+        "selected_root_service": "svc-c72a0c8d34",
+        "domain_scores": [
+          {
+            "domain": "CONCURRENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "CONFIGURATION",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DATA",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DEPENDENCY",
+            "score": 1.5,
+            "vote_count": 1,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-c72a0c8d34:core:1:f946dcefd70d"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "EXTERNAL",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "NETWORK",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RESOURCE",
+            "score": -3.0,
+            "vote_count": 1,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": [
+              "e:a:resources:all-candidates:1a3d2762b669:1:7bc4bfd3932e"
+            ]
+          },
+          {
+            "domain": "RUNTIME",
+            "score": -1.5,
+            "vote_count": 1,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": [
+              "e:a:runtime:all-candidates:1a3d2762b669:1:070a89f41ae1"
+            ]
+          },
+          {
+            "domain": "UNKNOWN",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          }
+        ],
+        "selected_domain": "UNKNOWN",
+        "runner_up_domain": "CONCURRENCY",
+        "score_margin": 1.5,
+        "status": "AMBIGUOUS",
+        "supporting_anomaly_ids": [
+          "ga:metric-latency-outlier:svc-c72a0c8d34:58fc4c4478df"
+        ],
+        "supporting_evidence_refs": [
+          "e:a:metrics:svc-c72a0c8d34:core:1:f946dcefd70d"
+        ],
+        "contradicting_evidence_refs": [
+          "e:a:resources:all-candidates:1a3d2762b669:1:7bc4bfd3932e",
+          "e:a:runtime:all-candidates:1a3d2762b669:1:070a89f41ae1"
+        ],
+        "reason_codes": [
+          "BASE_METRIC_LATENCY_OUTLIER",
+          "COMPLETE_NORMAL_RESOURCE_COVERAGE",
+          "PROJECTION_AMBIGUOUS",
+          "STRONG_HEALTHY_RUNTIME"
+        ],
+        "projection_sha256": "a5034aac5e54fb05353fa7df61eb2a1bd8cf1b615fd0cc8a1493bb515b74998a"
+      },
+      "top_two_domains": [
+        "DEPENDENCY",
+        "CONCURRENCY"
+      ],
+      "selected_root_correct": true,
+      "broad_domain_correct": false,
+      "evaluator_domain_in_top_two": true,
+      "evidence_refs_valid": true,
+      "discovery_reads": [
+        {
+          "source": "TRACES",
+          "target_services": [
+            "svc-c72a0c8d34"
+          ],
+          "reason": "LOCALIZE_DEPENDENCY_PATH"
+        },
+        {
+          "source": "CHANGES",
+          "target_services": [
+            "svc-c72a0c8d34"
+          ],
+          "reason": "CORRELATE_RECENT_CHANGE"
+        },
+        {
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-28e93c1040",
+            "svc-c72a0c8d34"
+          ],
+          "reason": "CHECK_RESOURCE_STATE"
+        }
+      ]
+    },
+    {
+      "case_id": "vx-209",
+      "expected_root_service": "svc-39f02c1856",
+      "expected_broad_domain": "RUNTIME",
+      "projection": {
+        "schema_version": "dta-v233.domain-projection.v1",
+        "candidate_root_services": [
+          "svc-39f02c1856"
+        ],
+        "selected_root_service": "svc-39f02c1856",
+        "domain_scores": [
+          {
+            "domain": "CONCURRENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "CONFIGURATION",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DATA",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DEPENDENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "EXTERNAL",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "NETWORK",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RESOURCE",
+            "score": 0.5,
+            "vote_count": 1,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-39f02c1856:core:0:60b53440983b"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RUNTIME",
+            "score": 7.5,
+            "vote_count": 3,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-39f02c1856:core:0:60b53440983b",
+              "e:a:runtime:all-candidates:24a43c0eaaa8:0:8e16cc450882"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "UNKNOWN",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          }
+        ],
+        "selected_domain": "RUNTIME",
+        "runner_up_domain": "RESOURCE",
+        "score_margin": 7.0,
+        "status": "RESOLVED",
+        "supporting_anomaly_ids": [
+          "ga:metric-error-outlier:svc-39f02c1856:be8c7ca84db9",
+          "ga:runtime-not-running:svc-39f02c1856:9b4881a4a82a",
+          "ga:runtime-unhealthy:svc-39f02c1856:a18e4f6d0fba"
+        ],
+        "supporting_evidence_refs": [
+          "e:a:metrics:svc-39f02c1856:core:0:60b53440983b",
+          "e:a:runtime:all-candidates:24a43c0eaaa8:0:8e16cc450882"
+        ],
+        "contradicting_evidence_refs": [],
+        "reason_codes": [
+          "BASE_METRIC_ERROR_OUTLIER",
+          "BASE_RUNTIME_NOT_RUNNING",
+          "BASE_RUNTIME_UNHEALTHY",
+          "PROJECTION_RESOLVED"
+        ],
+        "projection_sha256": "baf02d47ffa36314f73fb1facb91fca66749863be35cee58c0a037d4886112cc"
+      },
+      "top_two_domains": [
+        "RUNTIME",
+        "RESOURCE"
+      ],
+      "selected_root_correct": true,
+      "broad_domain_correct": true,
+      "evaluator_domain_in_top_two": true,
+      "evidence_refs_valid": true,
+      "discovery_reads": []
+    },
+    {
+      "case_id": "vx-210",
+      "expected_root_service": "svc-8d5dff64a6",
+      "expected_broad_domain": "RUNTIME",
+      "projection": {
+        "schema_version": "dta-v233.domain-projection.v1",
+        "candidate_root_services": [
+          "svc-8d5dff64a6"
+        ],
+        "selected_root_service": "svc-8d5dff64a6",
+        "domain_scores": [
+          {
+            "domain": "CONCURRENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "CONFIGURATION",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DATA",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DEPENDENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "EXTERNAL",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "NETWORK",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RESOURCE",
+            "score": 0.5,
+            "vote_count": 1,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-8d5dff64a6:core:0:55510128a3ae"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RUNTIME",
+            "score": 7.5,
+            "vote_count": 3,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-8d5dff64a6:core:0:55510128a3ae",
+              "e:a:runtime:all-candidates:716abe2482ba:1:98e907a7acab"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "UNKNOWN",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          }
+        ],
+        "selected_domain": "RUNTIME",
+        "runner_up_domain": "RESOURCE",
+        "score_margin": 7.0,
+        "status": "RESOLVED",
+        "supporting_anomaly_ids": [
+          "ga:metric-error-outlier:svc-8d5dff64a6:6a6c882966f8",
+          "ga:runtime-not-running:svc-8d5dff64a6:eae9a4532efc",
+          "ga:runtime-unhealthy:svc-8d5dff64a6:5375ee98f510"
+        ],
+        "supporting_evidence_refs": [
+          "e:a:metrics:svc-8d5dff64a6:core:0:55510128a3ae",
+          "e:a:runtime:all-candidates:716abe2482ba:1:98e907a7acab"
+        ],
+        "contradicting_evidence_refs": [],
+        "reason_codes": [
+          "BASE_METRIC_ERROR_OUTLIER",
+          "BASE_RUNTIME_NOT_RUNNING",
+          "BASE_RUNTIME_UNHEALTHY",
+          "PROJECTION_RESOLVED"
+        ],
+        "projection_sha256": "636df0d742d3f361f9c3c76edf0f8a94a0ce16a0ed8fc9d8eac3ad7466263735"
+      },
+      "top_two_domains": [
+        "RUNTIME",
+        "RESOURCE"
+      ],
+      "selected_root_correct": true,
+      "broad_domain_correct": true,
+      "evaluator_domain_in_top_two": true,
+      "evidence_refs_valid": true,
+      "discovery_reads": []
+    },
+    {
+      "case_id": "vx-211",
+      "expected_root_service": "svc-b36739baf5",
+      "expected_broad_domain": "RESOURCE",
+      "projection": {
+        "schema_version": "dta-v233.domain-projection.v1",
+        "candidate_root_services": [
+          "svc-b36739baf5"
+        ],
+        "selected_root_service": "svc-b36739baf5",
+        "domain_scores": [
+          {
+            "domain": "CONCURRENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "CONFIGURATION",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DATA",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DEPENDENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "EXTERNAL",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "NETWORK",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RESOURCE",
+            "score": 3.5,
+            "vote_count": 2,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-b36739baf5:core:0:81fd106330ea",
+              "e:a:resources:all-candidates:e8f72449de33:1:7eb3833679b0"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RUNTIME",
+            "score": 0.0,
+            "vote_count": 2,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-b36739baf5:core:0:81fd106330ea"
+            ],
+            "contradicting_evidence_refs": [
+              "e:a:runtime:all-candidates:e8f72449de33:1:d592b6a566b6"
+            ]
+          },
+          {
+            "domain": "UNKNOWN",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          }
+        ],
+        "selected_domain": "RESOURCE",
+        "runner_up_domain": "CONCURRENCY",
+        "score_margin": 3.5,
+        "status": "RESOLVED",
+        "supporting_anomaly_ids": [
+          "ga:metric-error-outlier:svc-b36739baf5:80460fd54241",
+          "ga:resource-cpu-outlier:svc-b36739baf5:76bf33694fe1"
+        ],
+        "supporting_evidence_refs": [
+          "e:a:metrics:svc-b36739baf5:core:0:81fd106330ea",
+          "e:a:resources:all-candidates:e8f72449de33:1:7eb3833679b0"
+        ],
+        "contradicting_evidence_refs": [
+          "e:a:runtime:all-candidates:e8f72449de33:1:d592b6a566b6"
+        ],
+        "reason_codes": [
+          "BASE_METRIC_ERROR_OUTLIER",
+          "BASE_RESOURCE_CPU_OUTLIER",
+          "PROJECTION_RESOLVED",
+          "STRONG_HEALTHY_RUNTIME"
+        ],
+        "projection_sha256": "c257d6b2599b4f04e989e3121cfdb88c256026cacbcf94ffc00729bc80a4667f"
+      },
+      "top_two_domains": [
+        "RESOURCE",
+        "CONCURRENCY"
+      ],
+      "selected_root_correct": true,
+      "broad_domain_correct": true,
+      "evaluator_domain_in_top_two": true,
+      "evidence_refs_valid": true,
+      "discovery_reads": [
+        {
+          "source": "CHANGES",
+          "target_services": [
+            "svc-29ef003605"
+          ],
+          "reason": "CORRELATE_RECENT_CHANGE"
+        },
+        {
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-29ef003605",
+            "svc-b36739baf5"
+          ],
+          "reason": "CHECK_RESOURCE_STATE"
+        }
+      ]
+    },
+    {
+      "case_id": "vx-212",
+      "expected_root_service": "svc-649c3b8a81",
+      "expected_broad_domain": "RESOURCE",
+      "projection": {
+        "schema_version": "dta-v233.domain-projection.v1",
+        "candidate_root_services": [
+          "svc-649c3b8a81"
+        ],
+        "selected_root_service": "svc-649c3b8a81",
+        "domain_scores": [
+          {
+            "domain": "CONCURRENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "CONFIGURATION",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DATA",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DEPENDENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "EXTERNAL",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "NETWORK",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RESOURCE",
+            "score": 3.5,
+            "vote_count": 2,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-649c3b8a81:core:0:ddc00d0540f1",
+              "e:a:resources:all-candidates:3de86d0bb662:0:b16f07e56334"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RUNTIME",
+            "score": 0.0,
+            "vote_count": 2,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-649c3b8a81:core:0:ddc00d0540f1"
+            ],
+            "contradicting_evidence_refs": [
+              "e:a:runtime:all-candidates:3de86d0bb662:0:061d4135aff7"
+            ]
+          },
+          {
+            "domain": "UNKNOWN",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          }
+        ],
+        "selected_domain": "RESOURCE",
+        "runner_up_domain": "CONCURRENCY",
+        "score_margin": 3.5,
+        "status": "RESOLVED",
+        "supporting_anomaly_ids": [
+          "ga:metric-error-outlier:svc-649c3b8a81:d98790ecc897",
+          "ga:resource-cpu-outlier:svc-649c3b8a81:c51d79945850"
+        ],
+        "supporting_evidence_refs": [
+          "e:a:metrics:svc-649c3b8a81:core:0:ddc00d0540f1",
+          "e:a:resources:all-candidates:3de86d0bb662:0:b16f07e56334"
+        ],
+        "contradicting_evidence_refs": [
+          "e:a:runtime:all-candidates:3de86d0bb662:0:061d4135aff7"
+        ],
+        "reason_codes": [
+          "BASE_METRIC_ERROR_OUTLIER",
+          "BASE_RESOURCE_CPU_OUTLIER",
+          "PROJECTION_RESOLVED",
+          "STRONG_HEALTHY_RUNTIME"
+        ],
+        "projection_sha256": "265c0c2692487508b946678c5202972f949aca6036d9e2306a63110930c16a04"
+      },
+      "top_two_domains": [
+        "RESOURCE",
+        "CONCURRENCY"
+      ],
+      "selected_root_correct": true,
+      "broad_domain_correct": true,
+      "evaluator_domain_in_top_two": true,
+      "evidence_refs_valid": true,
+      "discovery_reads": [
+        {
+          "source": "CHANGES",
+          "target_services": [
+            "svc-89c88019d4"
+          ],
+          "reason": "CORRELATE_RECENT_CHANGE"
+        },
+        {
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-649c3b8a81",
+            "svc-89c88019d4"
+          ],
+          "reason": "CHECK_RESOURCE_STATE"
+        }
+      ]
+    },
+    {
+      "case_id": "vx-213",
+      "expected_root_service": "svc-8c6dd0fe03",
+      "expected_broad_domain": "RESOURCE",
+      "projection": {
+        "schema_version": "dta-v233.domain-projection.v1",
+        "candidate_root_services": [
+          "svc-8c6dd0fe03"
+        ],
+        "selected_root_service": "svc-8c6dd0fe03",
+        "domain_scores": [
+          {
+            "domain": "CONCURRENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "CONFIGURATION",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DATA",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DEPENDENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "EXTERNAL",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "NETWORK",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RESOURCE",
+            "score": 3.5,
+            "vote_count": 2,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-8c6dd0fe03:core:0:3f0b02ac78e7",
+              "e:a:resources:all-candidates:dcfc6ceb4cda:0:aed208765431"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RUNTIME",
+            "score": 0.0,
+            "vote_count": 2,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-8c6dd0fe03:core:0:3f0b02ac78e7"
+            ],
+            "contradicting_evidence_refs": [
+              "e:a:runtime:all-candidates:dcfc6ceb4cda:0:cc59ce2f0bf7"
+            ]
+          },
+          {
+            "domain": "UNKNOWN",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          }
+        ],
+        "selected_domain": "RESOURCE",
+        "runner_up_domain": "CONCURRENCY",
+        "score_margin": 3.5,
+        "status": "RESOLVED",
+        "supporting_anomaly_ids": [
+          "ga:metric-error-outlier:svc-8c6dd0fe03:5cf3c52021e1",
+          "ga:resource-memory-trend:svc-8c6dd0fe03:5e8f45d994d7"
+        ],
+        "supporting_evidence_refs": [
+          "e:a:metrics:svc-8c6dd0fe03:core:0:3f0b02ac78e7",
+          "e:a:resources:all-candidates:dcfc6ceb4cda:0:aed208765431"
+        ],
+        "contradicting_evidence_refs": [
+          "e:a:runtime:all-candidates:dcfc6ceb4cda:0:cc59ce2f0bf7"
+        ],
+        "reason_codes": [
+          "BASE_METRIC_ERROR_OUTLIER",
+          "BASE_RESOURCE_MEMORY_TREND",
+          "PROJECTION_RESOLVED",
+          "STRONG_HEALTHY_RUNTIME"
+        ],
+        "projection_sha256": "59ace6ba6ed5c7889883a950c7127d737754e3c47b09cf6caafd32701de8b881"
+      },
+      "top_two_domains": [
+        "RESOURCE",
+        "CONCURRENCY"
+      ],
+      "selected_root_correct": true,
+      "broad_domain_correct": true,
+      "evaluator_domain_in_top_two": true,
+      "evidence_refs_valid": true,
+      "discovery_reads": [
+        {
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-8c6dd0fe03",
+            "svc-a9e48e1128"
+          ],
+          "reason": "CHECK_RESOURCE_STATE"
+        }
+      ]
+    },
+    {
+      "case_id": "vx-214",
+      "expected_root_service": "svc-1f41596004",
+      "expected_broad_domain": "RESOURCE",
+      "projection": {
+        "schema_version": "dta-v233.domain-projection.v1",
+        "candidate_root_services": [
+          "svc-1f41596004"
+        ],
+        "selected_root_service": "svc-1f41596004",
+        "domain_scores": [
+          {
+            "domain": "CONCURRENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "CONFIGURATION",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DATA",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "DEPENDENCY",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "EXTERNAL",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "NETWORK",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RESOURCE",
+            "score": 3.5,
+            "vote_count": 2,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-1f41596004:core:0:79f4c9368eb8",
+              "e:a:resources:all-candidates:83f0eac99314:1:6b85b9e9db9f"
+            ],
+            "contradicting_evidence_refs": []
+          },
+          {
+            "domain": "RUNTIME",
+            "score": 0.0,
+            "vote_count": 2,
+            "supporting_evidence_refs": [
+              "e:a:metrics:svc-1f41596004:core:0:79f4c9368eb8"
+            ],
+            "contradicting_evidence_refs": [
+              "e:a:runtime:all-candidates:83f0eac99314:1:a9c0862b3286"
+            ]
+          },
+          {
+            "domain": "UNKNOWN",
+            "score": 0.0,
+            "vote_count": 0,
+            "supporting_evidence_refs": [],
+            "contradicting_evidence_refs": []
+          }
+        ],
+        "selected_domain": "RESOURCE",
+        "runner_up_domain": "CONCURRENCY",
+        "score_margin": 3.5,
+        "status": "RESOLVED",
+        "supporting_anomaly_ids": [
+          "ga:metric-error-outlier:svc-1f41596004:8d48db439469",
+          "ga:resource-memory-trend:svc-1f41596004:7c28e1ea9e19"
+        ],
+        "supporting_evidence_refs": [
+          "e:a:metrics:svc-1f41596004:core:0:79f4c9368eb8",
+          "e:a:resources:all-candidates:83f0eac99314:1:6b85b9e9db9f"
+        ],
+        "contradicting_evidence_refs": [
+          "e:a:runtime:all-candidates:83f0eac99314:1:a9c0862b3286"
+        ],
+        "reason_codes": [
+          "BASE_METRIC_ERROR_OUTLIER",
+          "BASE_RESOURCE_MEMORY_TREND",
+          "PROJECTION_RESOLVED",
+          "STRONG_HEALTHY_RUNTIME"
+        ],
+        "projection_sha256": "aa3af0158b31032dc60cb4c6c26f44ee57832ec30a49408b58b1571f3c592b8e"
+      },
+      "top_two_domains": [
+        "RESOURCE",
+        "CONCURRENCY"
+      ],
+      "selected_root_correct": true,
+      "broad_domain_correct": true,
+      "evaluator_domain_in_top_two": true,
+      "evidence_refs_valid": true,
+      "discovery_reads": [
+        {
+          "source": "RESOURCES",
+          "target_services": [
+            "svc-1ce6f09e5c",
+            "svc-1f41596004"
+          ],
+          "reason": "CHECK_RESOURCE_STATE"
+        }
+      ]
+    }
+  ],
+  "audit_sha256": "5d51abf8c31f6f33f2efe20f48a15ecef1a85aa6be2de44a8b51a4791da14069"
+}
