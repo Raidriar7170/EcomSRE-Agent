@@ -18,8 +18,10 @@ from ecomsre.dta_v2.v23.contracts_v233 import (
 )
 from ecomsre.dta_v2.v23.discovery_provider import (
     DiscoveryProviderProtocolFailureV23,
+    DiscoveryProviderTransportErrorV23,
 )
 from ecomsre.dta_v2.v23.discovery_provider_v233 import (
+    OpenAICompatibleDiscoveryTransportV233,
     build_discovery_synthesis_request_v233,
     call_discovery_provider_v233,
     deterministic_synthesis_response_v233,
@@ -32,6 +34,7 @@ from ecomsre.dta_v2.v23.evaluation_data_v232 import (
     load_evaluation_views_v232,
 )
 from ecomsre.dta_v2.v23.evaluation_v231 import (
+    OpenAICompatibleDiscoveryTransportV231,
     _residual_graph_v231,
     materialize_evaluation_case_v231,
 )
@@ -99,6 +102,42 @@ def test_provider_response_cannot_emit_runtime_owned_fields() -> None:
         )
 
 
+def test_v233_transport_forces_only_the_minimal_synthesis_schema() -> None:
+    OpenAICompatibleDiscoveryTransportV233._v233_mode = True
+    try:
+        tool = OpenAICompatibleDiscoveryTransportV233._tool()
+    finally:
+        OpenAICompatibleDiscoveryTransportV233._v233_mode = False
+
+    function = cast(dict[str, Any], tool["function"])
+    parameters = cast(dict[str, Any], function["parameters"])
+    properties = cast(dict[str, Any], parameters["properties"])
+    assert set(properties) == set(DiscoverySynthesisResponseV233.model_fields)
+    assert {
+        "runtime_selected_root_service",
+        "broad_fault_domain",
+        "supporting_evidence_refs",
+        "action_authority",
+    }.isdisjoint(properties)
+
+
+def test_v233_transport_preserves_the_v231_legacy_tool_schema() -> None:
+    OpenAICompatibleDiscoveryTransportV233._v233_mode = False
+    OpenAICompatibleDiscoveryTransportV233._v231_mode = True
+    OpenAICompatibleDiscoveryTransportV231._v231_mode = False
+    try:
+        tool = OpenAICompatibleDiscoveryTransportV233._tool()
+    finally:
+        OpenAICompatibleDiscoveryTransportV233._v231_mode = False
+
+    function = cast(dict[str, Any], tool["function"])
+    parameters = cast(dict[str, Any], function["parameters"])
+    properties = cast(dict[str, Any], parameters["properties"])
+    assert "uncertainty_mode" in properties
+    assert "competing_hypotheses" in properties
+    assert "suspected_root_services" in properties
+
+
 def test_two_repairs_parse_minimal_response_without_runtime_drift() -> None:
     graph, projection, guard, _hypotheses, request = _runtime_inputs()
     valid = provider_response_payload_v233(
@@ -129,6 +168,33 @@ def test_two_repairs_parse_minimal_response_without_runtime_drift() -> None:
     assert report.action_authority == "NONE"
 
 
+def test_provider_authored_lists_are_canonicalized_before_strict_validation() -> None:
+    _graph, _projection, _guard, _hypotheses, request = _runtime_inputs()
+    valid = provider_response_payload_v233(
+        deterministic_synthesis_response_v233(request=request)
+    )
+    valid["unresolved_questions"] = ["z-question", "a-question", "z-question"]
+    valid["recommended_next_observations"] = [
+        "z-observation",
+        "a-observation",
+        "z-observation",
+    ]
+
+    outcome = call_discovery_provider_v233(
+        request=request,
+        transport=lambda _body: json.dumps(valid),
+    )
+
+    assert outcome.synthesis.unresolved_questions == (
+        "a-question",
+        "z-question",
+    )
+    assert outcome.synthesis.recommended_next_observations == (
+        "a-observation",
+        "z-observation",
+    )
+
+
 def test_protocol_fails_after_exactly_two_repairs() -> None:
     _graph, _projection, _guard, _hypotheses, request = _runtime_inputs()
     calls = 0
@@ -142,6 +208,27 @@ def test_protocol_fails_after_exactly_two_repairs() -> None:
         call_discovery_provider_v233(request=request, transport=invalid_transport)
 
     assert calls == 3
+
+
+def test_three_exact_transport_retries_are_bounded() -> None:
+    _graph, _projection, _guard, _hypotheses, request = _runtime_inputs()
+    valid = provider_response_payload_v233(
+        deterministic_synthesis_response_v233(request=request)
+    )
+    calls = 0
+
+    def transport(_body: str) -> str:
+        nonlocal calls
+        calls += 1
+        if calls <= 3:
+            raise DiscoveryProviderTransportErrorV23("transient")
+        return json.dumps(valid)
+
+    outcome = call_discovery_provider_v233(request=request, transport=transport)
+
+    assert calls == 4
+    assert outcome.transport_retries == 3
+    assert outcome.protocol_repairs == 0
 
 
 def test_closed_guard_cannot_build_report() -> None:

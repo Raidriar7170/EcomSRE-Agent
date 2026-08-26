@@ -1,0 +1,118 @@
+{
+  "schema_version": "dta-v233.evaluation-manifest.v1",
+  "base_commit": "447e7a8ed4c8b9d592c16d181f5709bdfdc3d4cb",
+  "branch": "codex/dta-v233-domain-witness-guard",
+  "provider_model": "gpt-5.4-mini-2026-03-17",
+  "planned_case_count": 28,
+  "planned_run_count": 84,
+  "planned_execution_count": 1,
+  "policies": [
+    "V232_CONFLICT_AWARE_BASELINE",
+    "V233_DOMAIN_BOUND",
+    "V233_DOMAIN_BOUND_WITNESS_GUARD"
+  ],
+  "frozen_files": [
+    {
+      "path": "config/dta-v233/evaluation/admission-matrix.json",
+      "sha256": "79e8a977b829003a5c728c276165b7595f8dbe225b81431c054c436128e478ed"
+    },
+    {
+      "path": "config/dta-v233/evaluation/cases.json",
+      "sha256": "59dc8ee2ec24ce7a6a4ec3b11032f78af6f4205df59064940cf26c5f196a010a"
+    },
+    {
+      "path": "config/dta-v233/evaluation/ontology-views.json",
+      "sha256": "705072967ffc1d72b9a9c06f8e0c5de9836e3e4edde6a3c54a9779e36e9766ec"
+    },
+    {
+      "path": "config/dta-v233/evaluation/strata.json",
+      "sha256": "385bb7fc750e455902a2a5bf85e2b22f65f513fb2d73233d7f91c600d21a8de3"
+    },
+    {
+      "path": "config/dta-v233/evaluation/truth.json",
+      "sha256": "b0668ef8bf17fdf359f012e0ca427f88f6f0990777189c751a373972afc97975"
+    },
+    {
+      "path": "config/dta-v233/historical-results.v1.json",
+      "sha256": "cbd3716b6c612ce0e21b9ac0504372156125a9595733a4b7728aae78be1a270b"
+    },
+    {
+      "path": "docs/analysis/dta-v233-runtime-preflight.json",
+      "sha256": "9ea3b8e48ff8493320a8c8aa2ac8a7b93e8a5e92cf83c8a46ebc5e24148d6c22"
+    },
+    {
+      "path": "scripts/analysis/build_dta_v233_admission_matrix.py",
+      "sha256": "c8367b2444d24162348bb1c4686976fb3c39e61cfb016bb3dbd54ae3d4efe58b"
+    },
+    {
+      "path": "scripts/analysis/build_dta_v233_fixed_set.py",
+      "sha256": "5e531a0c78e2e07d05458d333d8734271f9f5f287e47626ee7f5580a11fbb5a2"
+    },
+    {
+      "path": "scripts/analysis/freeze_dta_v233_manifest.py",
+      "sha256": "e89c95be2c8fbc46705fd58e63b4d7779ecbebcacbb3c78ab5451b5cab159ecf"
+    },
+    {
+      "path": "scripts/analysis/run_dta_v233_evaluation.py",
+      "sha256": "ffe243b5e430d5e691f4292a8e58eda115b94b0785203c44ce7cd303c769a1ef"
+    },
+    {
+      "path": "scripts/analysis/run_dta_v233_provider_smoke.py",
+      "sha256": "dc01c4bd59508b6a7ac9f4468e165c2482a1426f834ad650d1f6f1105641adf2"
+    },
+    {
+      "path": "scripts/analysis/run_dta_v233_runtime_preflight.py",
+      "sha256": "a9d821fa11cae3d596feba1559effd2bc4564941c2dd83d3be80a41e0b572c7f"
+    },
+    {
+      "path": "scripts/ci/verify_dta_v233_history.py",
+      "sha256": "a57dbd4d4ce844f0c803ae5e4c4df299347fb2ca5be6635e60a1fa67710d1da2"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/contracts_v233.py",
+      "sha256": "b127e94a97889ca5e0ea922f26c303f0343cbbd034a7bf80d17f1b66903bfbba"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/contradiction_witness_v233.py",
+      "sha256": "e3211ca667cc9f0b64cf777ff31e292775ca9c56792c12610efe03a355564a94"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/discovery_provider_v233.py",
+      "sha256": "e58ba7d3c325f3fb82e86c848b43ae50301d42aab931436586949284a11ee40b"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/discovery_runtime_v233.py",
+      "sha256": "090f87ad86f44a2857d144ac2674ee55c91462b959de390dbe3d3831f34e1154"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/domain_projection_v233.py",
+      "sha256": "5ac14b7adfcf7356c46212daa02519a1103e895b1becb07dde214e896a1bf57f"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/evaluation_data_v233.py",
+      "sha256": "63ee53d88f1d1df68535c2c85122f08318067f9e255b5a5e7a1135a19bde9cfb"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/evaluation_study_v233.py",
+      "sha256": "39a28f20d658444305b77312f043e9cb4a3a0fcb08b5b3148e3042d4103a5c5c"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/evaluation_v233.py",
+      "sha256": "f051f70df3bf015347c14ad41657e53f46db406458dc32e8e3f5c353a59f8563"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/irreconcilable_guard_v233.py",
+      "sha256": "81d349a5ecdaaf6452bacdbbedded9bf1530ba3dc652320b75d4f2c2fea21e6e"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/runtime_preflight_v233.py",
+      "sha256": "870a353655469d77c713a6ae8ec46ef0b26e39ebf674581d8f27a1fdd089dca8"
+    }
+  ],
+  "provider_system_prompt_sha256": "9aa42db43279cfaf6595f428b4ddb21b0a836701b5b36ffc26abe3be586b2aed",
+  "provider_smoke_output": "docs/analysis/dta-v233-provider-smoke.json",
+  "output_json": "docs/results/dta-v233-domain-guard-evaluation.json",
+  "output_markdown": "docs/results/dta-v233-domain-guard-evaluation.md",
+  "independent_review": "docs/external-reviews/dta-v233-pre-execution-review.md",
+  "fixed_at_utc": "2026-08-26T03:55:35.049255Z"
+}

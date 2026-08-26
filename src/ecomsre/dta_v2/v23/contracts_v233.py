@@ -416,8 +416,11 @@ def build_provisional_report_v233(
     )
     uncertainty = (
         ReportUncertaintyModeV231.COMPETING_HYPOTHESES
-        if len(request.competing_hypotheses) > 1
-        or projection.status is not DomainProjectionStatusV233.RESOLVED
+        if projection.status is not DomainProjectionStatusV233.RESOLVED
+        or (
+            len(request.competing_hypotheses) > 1
+            and projection.score_margin < 3.0
+        )
         else ReportUncertaintyModeV231.SINGLE_LEADING_HYPOTHESIS
     )
     identity: dict[str, Any] = {

@@ -20,6 +20,9 @@ from ecomsre.dta_v2.v23.discovery_provider import (
     MAX_EXACT_TRANSPORT_RETRIES_V23,
     MAX_PROTOCOL_REPAIRS_V23,
 )
+from ecomsre.dta_v2.v23.evaluation_v231 import (
+    OpenAICompatibleDiscoveryTransportV231,
+)
 from ecomsre.dta_v2.v23.domain_projection_v233 import DomainProjectionV233
 from ecomsre.dta_v2.v23.irreconcilable_guard_v233 import (
     IrreconcilableGuardDecisionV233,
@@ -146,6 +149,54 @@ def provider_response_payload_v233(
 _RESPONSE_FIELDS_V233 = frozenset(DiscoverySynthesisResponseV233.model_fields)
 
 
+class OpenAICompatibleDiscoveryTransportV233(
+    OpenAICompatibleDiscoveryTransportV231
+):
+    """Force the minimal v2.3.3 synthesis schema on its Provider calls."""
+
+    _v233_mode: bool = False
+
+    @staticmethod
+    def _tool() -> dict[str, object]:
+        if not OpenAICompatibleDiscoveryTransportV233._v233_mode:
+            prior_v231_mode = OpenAICompatibleDiscoveryTransportV231._v231_mode
+            OpenAICompatibleDiscoveryTransportV231._v231_mode = (
+                OpenAICompatibleDiscoveryTransportV233._v231_mode
+            )
+            try:
+                return OpenAICompatibleDiscoveryTransportV231._tool()
+            finally:
+                OpenAICompatibleDiscoveryTransportV231._v231_mode = (
+                    prior_v231_mode
+                )
+        schema = DiscoverySynthesisResponseV233.model_json_schema()
+        schema["additionalProperties"] = False
+        return {
+            "type": "function",
+            "function": {
+                "name": "submit_provisional_incident_report",
+                "description": (
+                    "Submit only the minimal runtime-bound v2.3.3 narrative synthesis."
+                ),
+                "strict": False,
+                "parameters": schema,
+            },
+        }
+
+    def __call__(self, body: str) -> str:
+        parsed = json.loads(body)
+        self._v233_mode = (
+            isinstance(parsed, dict)
+            and parsed.get("system") == DISCOVERY_SYNTHESIS_SYSTEM_PROMPT_V233
+        )
+        type(self)._v233_mode = self._v233_mode
+        try:
+            return super().__call__(body)
+        finally:
+            self._v233_mode = False
+            type(self)._v233_mode = False
+
+
 def _request_body(
     request: DiscoverySynthesisRequestV233,
     *,
@@ -193,7 +244,20 @@ def _parse_response(
         raise ValueError("v2.3.3 Provider response is not one JSON object")
     if set(value) != _RESPONSE_FIELDS_V233:
         raise ValueError("v2.3.3 Provider response fields differ")
-    response = DiscoverySynthesisResponseV233.model_validate_json(raw)
+    for field in (
+        "alternative_hypothesis_ids",
+        "unresolved_questions",
+        "recommended_next_observations",
+    ):
+        items = value[field]
+        if not isinstance(items, list) or not all(
+            isinstance(item, str) for item in items
+        ):
+            raise ValueError(f"v2.3.3 Provider response {field} is not text")
+        value[field] = sorted(set(items))
+    response = DiscoverySynthesisResponseV233.model_validate_json(
+        json.dumps(value, sort_keys=True, separators=(",", ":"))
+    )
     ids = {item.hypothesis_id for item in request.competing_hypotheses}
     if response.preferred_hypothesis_id not in ids:
         raise ValueError("v2.3.3 Provider selected an unknown hypothesis")
@@ -244,6 +308,7 @@ def call_discovery_provider_v233(
 
 __all__ = (
     "DISCOVERY_SYNTHESIS_SYSTEM_PROMPT_V233",
+    "OpenAICompatibleDiscoveryTransportV233",
     "build_discovery_synthesis_request_v233",
     "call_discovery_provider_v233",
     "deterministic_synthesis_response_v233",

@@ -29,6 +29,7 @@ from ecomsre.dta_v2.v23.review_registry_v231 import (
 )
 from ecomsre.dta_v2.v23.evaluation import (
     OpenAICompatibleDiscoveryTransportV23,
+    _build_common_context_v23,
     render_evaluation_markdown_v23,
     run_fixed_evaluation_once_v23,
 )
@@ -43,14 +44,30 @@ from ecomsre.dta_v2.v23.evaluation_v231 import (
     load_evaluation_views_v231,
     run_evaluation_policy_v231,
     run_fixed_evaluation_once_v231,
+    materialize_evaluation_case_v231,
 )
 from ecomsre.dta_v2.v23.domain_audit_v233 import project_development_case_v233
+from ecomsre.dta_v2.v23.discovery_provider_v233 import (
+    OpenAICompatibleDiscoveryTransportV233,
+)
 from ecomsre.dta_v2.v23.evaluation_data_v232 import (
     AdmissionStratumV232,
     load_evaluation_cases_v232,
     load_evaluation_views_v232,
 )
 from ecomsre.dta_v2.v23.witness_audit_v233 import audit_case_witness_v233
+from ecomsre.dta_v2.v23.evaluation_data_v233 import (
+    load_evaluation_cases_v233,
+    load_evaluation_views_v233,
+)
+from ecomsre.dta_v2.v23.evaluation_study_v233 import (
+    EvaluationCaseComparisonV233,
+    run_fixed_evaluation_once_v233,
+)
+from ecomsre.dta_v2.v23.evaluation_v233 import (
+    run_combined_arm_v233,
+    run_domain_bound_arm_v233,
+)
 
 
 DEFAULT_LOCAL_ROOT_V23 = Path(".local/dta-v23")
@@ -73,6 +90,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     diagnose.add_argument("--repository-root", type=Path, default=Path.cwd())
     diagnose.add_argument("--conflict-policy", choices=("strict", "competing"))
+    diagnose.add_argument(
+        "--policy",
+        choices=("domain-bound", "domain-bound-witness-guard"),
+    )
     domain_project = subparsers.add_parser("domain-project")
     domain_project.add_argument("--case", required=True)
     domain_project.add_argument("--repository-root", type=Path, default=Path.cwd())
@@ -131,7 +152,7 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate = subparsers.add_parser("evaluate")
     evaluate.add_argument(
         "--split",
-        choices=("development", "fixed", "v231-fixed"),
+        choices=("development", "fixed", "v231-fixed", "v233-fixed"),
         required=True,
     )
     evaluate.add_argument("--repository-root", type=Path, default=Path.cwd())
@@ -219,6 +240,47 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(witness_entry.model_dump_json(indent=2))
         return 0
     if args.command == "diagnose":
+        if args.policy is not None:
+            repository_root = args.repository_root.resolve()
+            cases_v233 = load_evaluation_cases_v233(
+                repository_root / "config/dta-v233/evaluation/cases.json"
+            )
+            views_v233 = load_evaluation_views_v233(
+                repository_root / "config/dta-v233/evaluation/ontology-views.json"
+            )
+            case_path = Path(args.case)
+            if case_path.is_file():
+                policy_spec = EvaluationCaseSpecV231.model_validate_json(
+                    case_path.read_bytes()
+                )
+                policy_view = EvaluationOntologyViewSpecV231(
+                    case_id=policy_spec.case_id,
+                    hidden_mechanism=None,
+                )
+            else:
+                policy_spec = cases_v233.require(args.case)
+                policy_view = views_v233.require(policy_spec.case_id)
+            context = _build_common_context_v23(
+                case=materialize_evaluation_case_v231(
+                    repository_root=repository_root,
+                    spec=policy_spec,
+                ),
+                hidden_mechanism=policy_view.hidden_mechanism,
+            )
+            selected_v233 = (
+                run_domain_bound_arm_v233(
+                    context=context,
+                    provider_transport=None,
+                )
+                if args.policy == "domain-bound"
+                else run_combined_arm_v233(
+                    repository_root=repository_root,
+                    context=context,
+                    provider_transport=None,
+                )
+            )
+            print(selected_v233.model_dump_json(indent=2))
+            return 0
         if args.conflict_policy is not None:
             repository_root = args.repository_root.resolve()
             cases = load_evaluation_case_set_v231(
@@ -418,6 +480,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 output_json = repository_root / "docs/results/dta-v231-conflict-aware-evaluation.json"
             if args.output_markdown == Path("docs/results/dta-v23-open-world-evaluation.md"):
                 output_markdown = repository_root / "docs/results/dta-v231-conflict-aware-evaluation.md"
+        if args.split == "v233-fixed":
+            if args.output_json == Path("docs/results/dta-v23-open-world-evaluation.json"):
+                output_json = repository_root / "docs/results/dta-v233-domain-guard-evaluation.json"
+            if args.output_markdown == Path("docs/results/dta-v23-open-world-evaluation.md"):
+                output_markdown = repository_root / "docs/results/dta-v233-domain-guard-evaluation.md"
         if output_markdown.exists():
             raise FileExistsError(
                 f"write-once evaluation markdown exists: {output_markdown}"
@@ -435,6 +502,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 timeout_seconds=args.timeout,
             )
             if args.split == "v231-fixed"
+            else OpenAICompatibleDiscoveryTransportV233(
+                config=config,
+                minimum_request_interval_seconds=args.minimum_request_interval,
+                timeout_seconds=args.timeout,
+            )
+            if args.split == "v233-fixed"
             else OpenAICompatibleDiscoveryTransportV23(
                 config=config,
                 minimum_request_interval_seconds=args.minimum_request_interval,
@@ -491,6 +564,60 @@ def main(argv: Sequence[str] | None = None) -> int:
                             artifact_v231.measured_result_terminal.value
                         ),
                         "artifact_sha256": artifact_v231.artifact_sha256,
+                    },
+                    sort_keys=True,
+                )
+            )
+            return 0
+
+        if args.split == "v233-fixed":
+            if not isinstance(provider, OpenAICompatibleDiscoveryTransportV233):
+                raise TypeError("v2.3.3 fixed evaluation requires its transport")
+
+            def observe_v233(comparison: EvaluationCaseComparisonV233) -> None:
+                print(
+                    json.dumps(
+                        {
+                            "case_id": comparison.case_id,
+                            "arm_order": [item.value for item in comparison.arm_order],
+                            "dispositions": {
+                                item.policy.value: item.final_disposition
+                                for item in comparison.runs
+                            },
+                            "provider_calls": sum(
+                                item.provider_cost.provider_calls
+                                for item in comparison.runs
+                            ),
+                        },
+                        sort_keys=True,
+                    ),
+                    flush=True,
+                )
+
+            artifact_v233 = run_fixed_evaluation_once_v233(
+                repository_root=repository_root,
+                evaluation_root=repository_root / "config/dta-v233/evaluation",
+                manifest_path=repository_root
+                / "config/dta-v233/evaluation/manifest.json",
+                independent_review_path=repository_root
+                / "docs/external-reviews/dta-v233-pre-execution-review.md",
+                provider_smoke_path=repository_root
+                / "docs/analysis/dta-v233-provider-smoke.json",
+                output_path=output_json,
+                output_markdown_path=output_markdown,
+                provider_transport=provider,
+                observer=observe_v233,
+            )
+            print(
+                json.dumps(
+                    {
+                        "execution_count": artifact_v233.execution_count,
+                        "case_count": artifact_v233.case_count,
+                        "run_count": artifact_v233.run_count,
+                        "measured_result_terminal": (
+                            artifact_v233.measured_result_terminal.value
+                        ),
+                        "artifact_sha256": artifact_v233.artifact_sha256,
                     },
                     sort_keys=True,
                 )
