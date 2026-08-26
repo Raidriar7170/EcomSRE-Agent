@@ -26,6 +26,12 @@ def filter_runbook_candidates(
 ) -> CandidateSet:
     """Return only root-, mechanism-, and evidence-compatible trusted runbooks."""
 
+    if getattr(diagnosis, "schema_version", None) == (
+        "dta-v233.provisional-incident-report.v1"
+    ):
+        raise CandidateFilterError(
+            "candidate filtering rejects a v2.3.3 provisional report"
+        )
     diagnosis = DtaDiagnosis.model_validate(diagnosis.model_dump(mode="python"))
     registry = RunbookRegistry.model_validate(registry.model_dump(mode="python"))
     diagnosis_evidence = ResolvedDiagnosisEvidenceView.model_validate(

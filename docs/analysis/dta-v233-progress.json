@@ -2,10 +2,11 @@
   "schema_version": "dta-v233.progress.v1",
   "base_commit": "447e7a8ed4c8b9d592c16d181f5709bdfdc3d4cb",
   "branch": "codex/dta-v233-domain-witness-guard",
-  "status": "INCREMENT_2_COMPLETE",
+  "status": "INCREMENT_3_COMPLETE",
   "completed_increments": [
     "DOMAIN_PROJECTION_VERTICAL_SLICE",
-    "CONTRADICTION_WITNESS_GUARD_VERTICAL_SLICE"
+    "CONTRADICTION_WITNESS_GUARD_VERTICAL_SLICE",
+    "RUNTIME_OWNED_PROVIDER_SYNTHESIS_VERTICAL_SLICE"
   ],
   "domain_development": {
     "set": "dta-v232-fixed-24-case",
@@ -31,6 +32,20 @@
     "provider_calls": 0,
     "changed_iterations": 1,
     "heuristics_frozen": true
+  },
+  "provider_development": {
+    "set": "dta-v232-fixed-24-case",
+    "report_eligible_cases": 14,
+    "initial_protocol_valid": 14,
+    "post_repair_success": 14,
+    "root_domain_evidence_drift": 0,
+    "action_authority_violations": 0,
+    "registered_known_unchanged": 4,
+    "no_incident_unchanged": 3,
+    "maximum_discovery_reads": 3,
+    "fixture_provider_calls": 14,
+    "changed_iterations": 1,
+    "provider_boundary_frozen": true
   },
   "provider_smoke_execution_count": 0,
   "fixed_evaluation_execution_count": 0,
