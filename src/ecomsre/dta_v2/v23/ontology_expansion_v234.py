@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
+import re
 from typing import Any, Literal, TypeVar, cast
 
 from pydantic import Field, StrictBool, model_validator
@@ -415,6 +416,80 @@ class LocalOntologyExpansionStoreV234:
 
     def list_shadow_faults(self) -> tuple[ShadowFaultEntryV23, ...]:
         return self.review_store.load_registry().entries
+
+    def load_shadow_fault(self, shadow_fault_id: str) -> ShadowFaultEntryV23:
+        shadow = next(
+            (
+                item
+                for item in self.list_shadow_faults()
+                if item.shadow_fault_id == shadow_fault_id
+            ),
+            None,
+        )
+        if shadow is None:
+            raise ValueError("ontology expansion shadow fault is absent")
+        return shadow
+
+    def load_authorization_result(
+        self,
+        authorization_id: str,
+    ) -> DraftGenerationAuthorizationResultV234:
+        if not re.fullmatch(r"authorization-v234-[0-9a-f]{16}", authorization_id):
+            raise ValueError("ontology expansion authorization ID is invalid")
+        authorization_path = self.authorizations_dir / f"{authorization_id}.json"
+        if not authorization_path.is_file():
+            raise ValueError("ontology expansion authorization is absent")
+        authorization = RegistrationGenerationAuthorizationV234.model_validate_json(
+            authorization_path.read_bytes()
+        )
+        seed_path = self.seeds_dir / f"{authorization.shadow_fault_id}.json"
+        if not seed_path.is_file() or not self.snapshot_path.is_file():
+            raise ValueError("ontology expansion authorization context is incomplete")
+        seed = RegistrationSeedV234.model_validate_json(seed_path.read_bytes())
+        snapshot = CoreOntologySchemaSnapshotV234.model_validate_json(
+            self.snapshot_path.read_bytes()
+        )
+        transitions = tuple(
+            transition
+            for transition_id in self.list_transition_ids()
+            for transition in (
+                OntologyExpansionTransitionRecordV234.model_validate_json(
+                    (self.transitions_dir / f"{transition_id}.json").read_bytes()
+                ),
+            )
+            if transition.authorization_sha256 == authorization.authorization_sha256
+            and transition.to_state
+            is OntologyExpansionStateV234.DRAFT_GENERATION_AUTHORIZED
+        )
+        if len(transitions) != 1:
+            raise ValueError("ontology expansion authorization transition is incomplete")
+        return DraftGenerationAuthorizationResultV234(
+            authorization=authorization,
+            registration_seed=seed,
+            core_ontology_snapshot=snapshot,
+            transition=transitions[0],
+        )
+
+    def load_accepted_reports(
+        self,
+        authorization_result: DraftGenerationAuthorizationResultV234,
+    ) -> tuple[ReviewQueueItemV23, ...]:
+        reports = tuple(
+            self.review_store.load_item(report_id)
+            for report_id in authorization_result.registration_seed.positive_report_ids
+        )
+        bindings = {
+            item.report_id: item
+            for item in authorization_result.registration_seed.accepted_report_bindings
+        }
+        if any(
+            bindings[item.report.report_id].report_sha256 != item.report.report_sha256
+            or bindings[item.report.report_id].queue_item_sha256
+            != item.queue_item_sha256
+            for item in reports
+        ):
+            raise ValueError("ontology expansion accepted reports differ from seed")
+        return reports
 
     def _load_source_review(self, review_record_id: str) -> HumanReviewRecordV23:
         path = self.review_store.reviews_dir / f"{review_record_id}.json"

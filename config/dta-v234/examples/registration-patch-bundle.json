@@ -1,0 +1,59 @@
+{
+  "schema_version": "dta-v234.registration-patch-bundle.v1",
+  "bundle_id": "bundle-v234-06bf3e5f65eb3a1f",
+  "registration_id": "registration-v234-bfc78cbf413878c7",
+  "source_draft_id": "draft-v234-963ab591e6fc850d",
+  "source_compiled_sha256": "06bf3e5f65eb3a1f0bdc2e96f0667a7f26c2441de560f2a3cba9079c1d0a9c1a",
+  "files": [
+    {
+      "relative_path": "dnf-support-policy.json",
+      "media_type": "application/json",
+      "content": "{\n  \"clauses\": [\n    {\n      \"clause_id\": \"connection-pool-exhaustion:wait-log-and-error-rate\",\n      \"clause_sha256\": \"7373a4001ba182707d7ef2a489b6ff86a8903fd03cb10de4b664c2cf3b933d29\",\n      \"mechanism_slug\": \"connection-pool-exhaustion\",\n      \"rationale\": \"The clause requires its canonical predicates at their declared service bindings.\",\n      \"requirements\": [\n        {\n          \"predicate_name\": \"CONNECTION_POOL_WAIT_LOG\",\n          \"require_exact_parent\": false,\n          \"service_binding\": \"TARGET\"\n        },\n        {\n          \"predicate_name\": \"METRIC_ERROR_RATE_STRONG\",\n          \"require_exact_parent\": false,\n          \"service_binding\": \"TARGET\"\n        }\n      ],\n      \"schema_version\": \"dta-v234.extension-support-clause.v1\"\n    },\n    {\n      \"clause_id\": \"connection-pool-exhaustion:wait-log-and-latency\",\n      \"clause_sha256\": \"d4ef60d3aab5fefafc5cded7ee7a60df53dc79c9660f5b563fb5ba3691aca9ec\",\n      \"mechanism_slug\": \"connection-pool-exhaustion\",\n      \"rationale\": \"The clause requires its canonical predicates at their declared service bindings.\",\n      \"requirements\": [\n        {\n          \"predicate_name\": \"CONNECTION_POOL_WAIT_LOG\",\n          \"require_exact_parent\": false,\n          \"service_binding\": \"TARGET\"\n        },\n        {\n          \"predicate_name\": \"METRIC_LATENCY_STRONG\",\n          \"require_exact_parent\": false,\n          \"service_binding\": \"TARGET\"\n        }\n      ],\n      \"schema_version\": \"dta-v234.extension-support-clause.v1\"\n    }\n  ],\n  \"dnf_semantics\": \"one clause is AND; multiple clauses are OR\",\n  \"schema_version\": \"dta-v234.extension-support-policy.v1\"\n}\n",
+      "content_sha256": "5f9aaac3ef9d5ad422af8588afe464ea5fa59752247fa1495c7b63f7141b977c"
+    },
+    {
+      "relative_path": "mechanism-definition.json",
+      "media_type": "application/json",
+      "content": "{\n  \"broad_fault_domain\": \"CONCURRENCY\",\n  \"confusable_core_mechanisms\": [\n    \"DEPENDENCY_LATENCY\",\n    \"SERVICE_UNAVAILABLE\"\n  ],\n  \"confusable_extension_mechanisms\": [],\n  \"display_name\": \"Connection Pool Exhaustion\",\n  \"distinguishing_summary\": \"The connection pool exhaustion mechanism is distinguished by its canonical clauses and evidence bindings.\",\n  \"human_definition\": \"The connection pool exhaustion mechanism is defined by bounded evidence predicates and canonical support clauses.\",\n  \"mechanism_enum_name\": \"CONNECTION_POOL_EXHAUSTION\",\n  \"mechanism_slug\": \"connection-pool-exhaustion\"\n}\n",
+      "content_sha256": "338e3ca7d55e7f503598028d2a2776841b8b63d9a7fc0f378aa071e2c6a9d7a1"
+    },
+    {
+      "relative_path": "patch-plan.md",
+      "media_type": "text/markdown",
+      "content": "# DTA v2.3.4 registration patch plan: connection-pool-exhaustion\n\nStatus: declarative bundle preview only. No tracked repository write is authorized.\n\n1. Review the compiled mechanism and bounded predicate definitions.\n2. Run positive, known-control, no-incident, counterfactual, source-failure, and clause-binding tests.\n3. Obtain a separate APPROVE_SHADOW_EVALUATION human record.\n4. Evaluate the immutable draft and compiler hashes in the isolated Shadow lane.\n5. Only a later explicit PROMOTE decision may copy the versioned registration to:\n   - config/dta-v234/extension-ontology/registrations/connection-pool-exhaustion.json\n   - tests/dta_v23/test_extension_registration_connection_pool_exhaustion.py\n   - docs/registrations/connection-pool-exhaustion.md\n\nRemediation registration: NOT_INCLUDED.\nAction authority: NONE.\n",
+      "content_sha256": "43c46708495bb83e9395412eaf7e22d88f867018e71dbb72ec638d398301d8c1"
+    },
+    {
+      "relative_path": "predicate-definitions.json",
+      "media_type": "application/json",
+      "content": "{\n  \"predicates\": [\n    {\n      \"evidence_source\": \"LOGS\",\n      \"extraction_rule\": {\n        \"case_sensitive\": false,\n        \"kind\": \"LOG_TEMPLATE_CONTAINS_ANY\",\n        \"literals\": [\n          \"connection pool exhausted\",\n          \"pool capacity wait\",\n          \"worker pool semaphore wait\"\n        ]\n      },\n      \"implementation_mode\": \"DECLARATIVE_EXTENSION_PREDICATE\",\n      \"predicate_name\": \"CONNECTION_POOL_WAIT_LOG\",\n      \"predicate_sha256\": \"cb31553a31847aca07ff9ddbb402a5503f628f1d4e0ab80d9ad6e0ace610847c\",\n      \"predicate_slug\": \"connection-pool-wait-log\",\n      \"require_exact_parent\": false,\n      \"schema_version\": \"dta-v234.extension-predicate-definition.v1\",\n      \"semantic_definition\": \"The connection pool wait log predicate is defined by its typed extraction rule and accepted evidence binding.\",\n      \"service_binding\": \"TARGET\",\n      \"threshold_rule\": null\n    },\n    {\n      \"evidence_source\": \"METRICS\",\n      \"extraction_rule\": {\n        \"kind\": \"CORE_PREDICATE_REFERENCE\",\n        \"predicate_kind\": \"METRIC_ERROR_RATE_STRONG\"\n      },\n      \"implementation_mode\": \"REUSE_CORE_PREDICATE\",\n      \"predicate_name\": \"METRIC_ERROR_RATE_STRONG\",\n      \"predicate_sha256\": \"cde829aee60ea1b726c9fade6704ba4c6675d7213fcf63ac4732b72996ea51b3\",\n      \"predicate_slug\": \"metric-error-rate-strong\",\n      \"require_exact_parent\": false,\n      \"schema_version\": \"dta-v234.extension-predicate-definition.v1\",\n      \"semantic_definition\": \"The metric error rate strong predicate is defined by its typed extraction rule and accepted evidence binding.\",\n      \"service_binding\": \"TARGET\",\n      \"threshold_rule\": null\n    },\n    {\n      \"evidence_source\": \"METRICS\",\n      \"extraction_rule\": {\n        \"kind\": \"CORE_PREDICATE_REFERENCE\",\n        \"predicate_kind\": \"METRIC_LATENCY_STRONG\"\n      },\n      \"implementation_mode\": \"REUSE_CORE_PREDICATE\",\n      \"predicate_name\": \"METRIC_LATENCY_STRONG\",\n      \"predicate_sha256\": \"a7dadb91f3f0dbf70aafab849eae701095185e5a839966cb574ce2ccb57840f5\",\n      \"predicate_slug\": \"metric-latency-strong\",\n      \"require_exact_parent\": false,\n      \"schema_version\": \"dta-v234.extension-predicate-definition.v1\",\n      \"semantic_definition\": \"The metric latency strong predicate is defined by its typed extraction rule and accepted evidence binding.\",\n      \"service_binding\": \"TARGET\",\n      \"threshold_rule\": null\n    }\n  ],\n  \"schema_version\": \"dta-v234.extension-predicate-set.v1\"\n}\n",
+      "content_sha256": "d4d8da1bfff5d0aa489879129cea11ea9a91023e3c5f1c73614fb690cb2590d5"
+    },
+    {
+      "relative_path": "promotion-checklist.md",
+      "media_type": "text/markdown",
+      "content": "# Promotion checklist\n\n- [ ] Draft `draft-v234-963ab591e6fc850d` remains byte-bound.\n- [ ] Deterministic validation remains VALID.\n- [ ] Shadow evaluation is separately approved by a human record.\n- [ ] Positive and negative controls pass in the isolated extension lane.\n- [ ] Core Known Diagnosis retains priority.\n- [ ] Action authority remains NONE.\n- [ ] Remediation registration remains NOT_INCLUDED.\n- [ ] Promotion writes only versioned extension artifacts.\n",
+      "content_sha256": "b26768ec5abe130579fa9934a064b2ba45c62431cde249b6015f6522149b652b"
+    },
+    {
+      "relative_path": "registration-manifest.json",
+      "media_type": "application/json",
+      "content": "{\n  \"action_authority\": \"NONE\",\n  \"artifact_inventory\": [\n    {\n      \"content_sha256\": \"SELF_EXCLUDED_TO_AVOID_CIRCULAR_DIGEST\",\n      \"relative_path\": \"registration-manifest.json\"\n    },\n    {\n      \"content_sha256\": \"5f9aaac3ef9d5ad422af8588afe464ea5fa59752247fa1495c7b63f7141b977c\",\n      \"media_type\": \"application/json\",\n      \"relative_path\": \"dnf-support-policy.json\"\n    },\n    {\n      \"content_sha256\": \"338e3ca7d55e7f503598028d2a2776841b8b63d9a7fc0f378aa071e2c6a9d7a1\",\n      \"media_type\": \"application/json\",\n      \"relative_path\": \"mechanism-definition.json\"\n    },\n    {\n      \"content_sha256\": \"43c46708495bb83e9395412eaf7e22d88f867018e71dbb72ec638d398301d8c1\",\n      \"media_type\": \"text/markdown\",\n      \"relative_path\": \"patch-plan.md\"\n    },\n    {\n      \"content_sha256\": \"d4d8da1bfff5d0aa489879129cea11ea9a91023e3c5f1c73614fb690cb2590d5\",\n      \"media_type\": \"application/json\",\n      \"relative_path\": \"predicate-definitions.json\"\n    },\n    {\n      \"content_sha256\": \"b26768ec5abe130579fa9934a064b2ba45c62431cde249b6015f6522149b652b\",\n      \"media_type\": \"text/markdown\",\n      \"relative_path\": \"promotion-checklist.md\"\n    },\n    {\n      \"content_sha256\": \"6857d21060e2d90c4b205f3becfad423d25a630012d3add4143fd8ad6734778f\",\n      \"media_type\": \"application/json\",\n      \"relative_path\": \"test-specification.json\"\n    }\n  ],\n  \"automatic_tracked_write\": false,\n  \"bundle_payload_sha256\": \"810e00c7cfae36618bbd139eb6da7d1c53665d6292aac2b5c21f27a93490e1ea\",\n  \"registration_id\": \"registration-v234-bfc78cbf413878c7\",\n  \"remediation_registration\": \"NOT_INCLUDED\",\n  \"schema_version\": \"dta-v234.registration-manifest.v1\",\n  \"source_compiled_sha256\": \"06bf3e5f65eb3a1f0bdc2e96f0667a7f26c2441de560f2a3cba9079c1d0a9c1a\",\n  \"source_draft_id\": \"draft-v234-963ab591e6fc850d\",\n  \"suggested_repository_targets\": [\n    \"config/dta-v234/extension-ontology/registrations/connection-pool-exhaustion.json\",\n    \"docs/registrations/connection-pool-exhaustion.md\",\n    \"tests/dta_v23/test_extension_registration_connection_pool_exhaustion.py\"\n  ]\n}\n",
+      "content_sha256": "e460c22bbb664809d479c873a8a1df640d896327dfc2838ae055f5c9705edf21"
+    },
+    {
+      "relative_path": "test-specification.json",
+      "media_type": "application/json",
+      "content": "{\n  \"confusable_core_mechanisms\": [\n    \"DEPENDENCY_LATENCY\",\n    \"SERVICE_UNAVAILABLE\"\n  ],\n  \"positive_case_ids\": [\n    \"dta-v234-vx-311-connection-pool-development\"\n  ],\n  \"positive_report_ids\": [\n    \"report-v23-a22e737b9537fe22\"\n  ],\n  \"required_clause_binding_tests\": [\n    \"requirements-bind-same-target-service\"\n  ],\n  \"required_counterfactuals\": [\n    \"move-pool-wait-log-to-downstream-service\"\n  ],\n  \"required_known_controls\": [\n    \"known-dependency-latency-control\",\n    \"known-service-unavailable-control\"\n  ],\n  \"required_no_incident_controls\": [\n    \"healthy-connection-pool-control\"\n  ],\n  \"required_source_failure_tests\": [\n    \"logs-unavailable-fails-closed\",\n    \"metrics-unavailable-fails-closed\"\n  ]\n}\n",
+      "content_sha256": "6857d21060e2d90c4b205f3becfad423d25a630012d3add4143fd8ad6734778f"
+    }
+  ],
+  "suggested_repository_targets": [
+    "config/dta-v234/extension-ontology/registrations/connection-pool-exhaustion.json",
+    "docs/registrations/connection-pool-exhaustion.md",
+    "tests/dta_v23/test_extension_registration_connection_pool_exhaustion.py"
+  ],
+  "remediation_registration": "NOT_INCLUDED",
+  "automatic_tracked_write": false,
+  "bundle_sha256": "810e00c7cfae36618bbd139eb6da7d1c53665d6292aac2b5c21f27a93490e1ea"
+}

@@ -3,9 +3,10 @@
   "goal_version": "dta-v234-human-ontology-expansion-v1",
   "base_commit": "da423b9104ac532f0bf323f314d37b527671c679",
   "branch": "codex/dta-v234-human-ontology-expansion",
-  "status": "INCREMENT_1_LOCAL_VERIFIED",
+  "status": "INCREMENT_2_LOCAL_VERIFIED",
   "completed_increments": [
-    "AUTHORIZATION_AND_CORE_ONTOLOGY_SCHEMA_SNAPSHOT"
+    "AUTHORIZATION_AND_CORE_ONTOLOGY_SCHEMA_SNAPSHOT",
+    "FORMAL_DRAFT_VALIDATOR_DECLARATIVE_DSL_AND_COMPILER"
   ],
   "increment_1": {
     "history_status": "DTA_V234_HISTORY_VERIFIED",
@@ -24,6 +25,46 @@
       "RUNTIME_NOT_RUNNING"
     ],
     "focused_pytest": "27 passed",
+    "ruff": "PASS",
+    "mypy": "PASS"
+  },
+  "increment_2": {
+    "development_source_case": "vx-311",
+    "development_report_id": "report-v23-a22e737b9537fe22",
+    "development_evidence_refs": [
+      "e:a:logs:svc-28037ae9fb:0:0cfba90b96b8",
+      "e:a:metrics:svc-28037ae9fb:core:0:887ff5bde1c6",
+      "e:a:metrics:svc-28037ae9fb:core:1:86618e2797ec"
+    ],
+    "simulated_human_review": true,
+    "authorization_id": "authorization-v234-848c0f034da83ab8",
+    "shadow_fault_id": "shadow-v23-cc66640cbeb926c2",
+    "registration_seed_sha256": "73575760805cc5197d0a633e4418478a848e4c87f32859fa907a0fc14f0c0493",
+    "draft_id": "draft-v234-963ab591e6fc850d",
+    "draft_sha256": "46caa3ed2036ab67e1b81c098dfa193a2591cf193e1e5b82b95d9d3a47946bea",
+    "implementation_mode": "DECLARATIVE_READY",
+    "mechanism_slug": "connection-pool-exhaustion",
+    "bounded_dsl_rule_kind_count": 13,
+    "predicate_count": 3,
+    "dnf_clause_count": 2,
+    "validation_status": "VALID",
+    "validation_sha256": "5a2396adb94aae69e01ebf93bbe45f2d3d3fb3242feb6f4569431bc13aca16b5",
+    "duplicate_absorption_policy_sha256": "00520a52953dc3afcc45de8e441890faca853d22af2d08e1a7e5c980e4d9d48b",
+    "compiled_sha256": "06bf3e5f65eb3a1f0bdc2e96f0667a7f26c2441de560f2a3cba9079c1d0a9c1a",
+    "bundle_sha256": "810e00c7cfae36618bbd139eb6da7d1c53665d6292aac2b5c21f27a93490e1ea",
+    "bundle_file_count": 7,
+    "lifecycle_states": [
+      "DRAFT_GENERATED",
+      "DRAFT_VALIDATED",
+      "PATCH_RENDERED"
+    ],
+    "formal_draft_example_file_sha256": "d10e6a3526144f269bcffdc163625d0f586c5ce9955b2a3b7d5dda186b42e083",
+    "patch_bundle_example_file_sha256": "f97985599a6bb8374443f29b0693fced7a96772aa5370a49735a910423fc711b",
+    "max_protocol_repairs": 2,
+    "max_exact_request_transport_retries": 3,
+    "development_registration_provider_calls": 0,
+    "open_world_provider_calls": 0,
+    "focused_pytest": "80 passed",
     "ruff": "PASS",
     "mypy": "PASS"
   },

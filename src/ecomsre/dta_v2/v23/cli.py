@@ -33,6 +33,20 @@ from ecomsre.dta_v2.v23.core_ontology_snapshot_v234 import (
 from ecomsre.dta_v2.v23.ontology_expansion_v234 import (
     LocalOntologyExpansionStoreV234,
 )
+from ecomsre.dta_v2.v23.registration_compiler_v234 import (
+    compile_registration_v234,
+    render_registration_patch_bundle_v234,
+)
+from ecomsre.dta_v2.v23.registration_provider_v234 import (
+    OpenAICompatibleRegistrationDraftTransportV234,
+    RegistrationDraftProviderV234,
+)
+from ecomsre.dta_v2.v23.registration_store_v234 import (
+    LocalRegistrationDraftStoreV234,
+)
+from ecomsre.dta_v2.v23.registration_validator_v234 import (
+    validate_registration_draft_v234,
+)
 from ecomsre.dta_v2.v23.evaluation import (
     OpenAICompatibleDiscoveryTransportV23,
     _build_common_context_v23,
@@ -177,6 +191,32 @@ def build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_LOCAL_ROOT_V234,
     )
     ontology_commands.add_parser("snapshot")
+    ontology_generate = ontology_commands.add_parser("generate-draft")
+    ontology_generate.add_argument("authorization_id")
+    provider_mode = ontology_generate.add_mutually_exclusive_group(required=True)
+    provider_mode.add_argument("--development-fixture", action="store_true")
+    provider_mode.add_argument("--provider-env", type=Path)
+    ontology_generate.add_argument("--minimum-request-interval", type=float, default=6.0)
+    ontology_generate.add_argument("--timeout", type=float, default=120.0)
+    ontology_generate.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_validate = ontology_commands.add_parser("validate-draft")
+    ontology_validate.add_argument("draft_id")
+    ontology_validate.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_render = ontology_commands.add_parser("render-bundle")
+    ontology_render.add_argument("draft_id")
+    ontology_render.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
     evaluate = subparsers.add_parser("evaluate")
     evaluate.add_argument(
         "--split",
@@ -482,6 +522,104 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 0
         if args.ontology_command == "snapshot":
             print(build_core_ontology_schema_snapshot_v234().model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "generate-draft":
+            ontology_store = LocalOntologyExpansionStoreV234(args.local_root)
+            authorization_context = ontology_store.load_authorization_result(
+                args.authorization_id
+            )
+            shadow = ontology_store.load_shadow_fault(
+                authorization_context.authorization.shadow_fault_id
+            )
+            accepted_reports = ontology_store.load_accepted_reports(
+                authorization_context
+            )
+            transport = None
+            if args.provider_env is not None:
+                environment = load_private_provider_env(args.provider_env)
+                config = OpenAICompatibleConfig.from_environment(environment)
+                if config is None:
+                    raise ValueError("Provider environment did not produce a configuration")
+                transport = OpenAICompatibleRegistrationDraftTransportV234(
+                    config=config,
+                    minimum_request_interval_seconds=args.minimum_request_interval,
+                    timeout_seconds=args.timeout,
+                )
+            draft = RegistrationDraftProviderV234(transport=transport).generate(
+                authorization_context=authorization_context,
+                shadow=shadow,
+                accepted_reports=accepted_reports,
+            )
+            draft_store = LocalRegistrationDraftStoreV234(args.local_root)
+            draft_store.save_draft(draft)
+            draft_store.record_draft_generated(
+                context=authorization_context,
+                draft=draft,
+                transitioned_at=datetime.now(timezone.utc),
+            )
+            print(draft.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "validate-draft":
+            draft_store = LocalRegistrationDraftStoreV234(args.local_root)
+            draft = draft_store.load_draft(args.draft_id)
+            ontology_store = LocalOntologyExpansionStoreV234(args.local_root)
+            authorization_context = ontology_store.load_authorization_result(
+                draft.authorization_id
+            )
+            shadow = ontology_store.load_shadow_fault(draft.shadow_fault_id)
+            accepted_reports = ontology_store.load_accepted_reports(
+                authorization_context
+            )
+            other_shadow_slugs = tuple(
+                sorted(
+                    item.canonical_label
+                    for item in ontology_store.list_shadow_faults()
+                    if item.shadow_fault_id != shadow.shadow_fault_id
+                )
+            )
+            validation = validate_registration_draft_v234(
+                draft=draft,
+                authorization_context=authorization_context,
+                shadow=shadow,
+                accepted_reports=accepted_reports,
+                promoted_mechanism_slugs=(),
+                shadow_mechanism_slugs=other_shadow_slugs,
+            )
+            draft_store.save_validation(validation)
+            draft_store.record_validation(
+                context=authorization_context,
+                draft=draft,
+                validation=validation,
+                transitioned_at=datetime.now(timezone.utc),
+            )
+            print(validation.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "render-bundle":
+            draft_store = LocalRegistrationDraftStoreV234(args.local_root)
+            draft = draft_store.load_draft(args.draft_id)
+            validation = draft_store.load_validation(args.draft_id)
+            ontology_store = LocalOntologyExpansionStoreV234(args.local_root)
+            authorization_context = ontology_store.load_authorization_result(
+                draft.authorization_id
+            )
+            compiled = compile_registration_v234(
+                draft=draft,
+                validation=validation,
+                snapshot=authorization_context.core_ontology_snapshot,
+            )
+            bundle = render_registration_patch_bundle_v234(
+                compiled=compiled,
+                output_root=draft_store.bundles_dir,
+            )
+            draft_store.record_patch_rendered(
+                context=authorization_context,
+                draft=draft,
+                validation=validation,
+                compiled=compiled,
+                bundle=bundle,
+                transitioned_at=datetime.now(timezone.utc),
+            )
+            print(bundle.model_dump_json(indent=2))
             return 0
     if args.command == "evaluate":
         repository_root = args.repository_root.resolve()
