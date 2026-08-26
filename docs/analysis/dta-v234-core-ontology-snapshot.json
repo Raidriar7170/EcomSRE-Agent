@@ -1,0 +1,637 @@
+{
+  "schema_version": "dta-v234.core-ontology-schema-snapshot.v1",
+  "frozen_policy_sha256": "06681ea6f3b6624b7913f9817f759fdc793a62c1760038d2f341d17704173e2b",
+  "effective_policy_sha256": "42c951a157b0938b305932e89ea68895217f582feb4e345554672fdfd78f897b",
+  "tool_capability_registry_sha256": "16de28690f9aff2f2b90327338d1205256484834273cce95a1ae586fb5d516d3",
+  "core_mechanisms": [
+    "CONFIGURATION_ERROR",
+    "CPU_SATURATION",
+    "DEPENDENCY_LATENCY",
+    "MEMORY_LEAK",
+    "SERVICE_UNAVAILABLE"
+  ],
+  "core_predicate_kinds": [
+    "CHANGE_RECENT_ROLLOUT",
+    "LOG_CONFIGURATION_ERROR",
+    "LOG_DEPENDENCY_TIMEOUT",
+    "LOG_MEMORY_PRESSURE",
+    "METRIC_ERROR_RATE_STRONG",
+    "METRIC_LATENCY_STRONG",
+    "RESOURCE_CPU_STRONG",
+    "RESOURCE_MEMORY_GROWTH_STRONG",
+    "RUNTIME_HEALTHY",
+    "RUNTIME_NOT_RUNNING",
+    "RUNTIME_RESTART_PRESSURE",
+    "RUNTIME_UNHEALTHY",
+    "TRACE_DEPENDENCY_LATENCY",
+    "TRACE_FIRST_ERROR"
+  ],
+  "frozen_core_support_clauses": [
+    {
+      "clause_id": "configuration:change-and-error-metric",
+      "mechanism": "CONFIGURATION_ERROR",
+      "requirements": [
+        {
+          "predicate_kind": "CHANGE_RECENT_ROLLOUT",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_kind": "METRIC_ERROR_RATE_STRONG",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "configuration:change-and-log",
+      "mechanism": "CONFIGURATION_ERROR",
+      "requirements": [
+        {
+          "predicate_kind": "CHANGE_RECENT_ROLLOUT",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_kind": "LOG_CONFIGURATION_ERROR",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "cpu-saturation:resource-and-healthy",
+      "mechanism": "CPU_SATURATION",
+      "requirements": [
+        {
+          "predicate_kind": "RESOURCE_CPU_STRONG",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_kind": "RUNTIME_HEALTHY",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "dependency-latency:trace-and-metric",
+      "mechanism": "DEPENDENCY_LATENCY",
+      "requirements": [
+        {
+          "predicate_kind": "TRACE_DEPENDENCY_LATENCY",
+          "service_binding": "TARGET",
+          "require_exact_parent": true
+        },
+        {
+          "predicate_kind": "METRIC_LATENCY_STRONG",
+          "service_binding": "TARGET_OR_PARENT",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "memory-leak:growth-and-log",
+      "mechanism": "MEMORY_LEAK",
+      "requirements": [
+        {
+          "predicate_kind": "RESOURCE_MEMORY_GROWTH_STRONG",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_kind": "LOG_MEMORY_PRESSURE",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "memory-leak:growth-and-restarts",
+      "mechanism": "MEMORY_LEAK",
+      "requirements": [
+        {
+          "predicate_kind": "RESOURCE_MEMORY_GROWTH_STRONG",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_kind": "RUNTIME_RESTART_PRESSURE",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "service-unavailable:not-running",
+      "mechanism": "SERVICE_UNAVAILABLE",
+      "requirements": [
+        {
+          "predicate_kind": "RUNTIME_NOT_RUNNING",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "service-unavailable:unhealthy-error-metric",
+      "mechanism": "SERVICE_UNAVAILABLE",
+      "requirements": [
+        {
+          "predicate_kind": "RUNTIME_UNHEALTHY",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_kind": "METRIC_ERROR_RATE_STRONG",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "service-unavailable:unhealthy-first-error",
+      "mechanism": "SERVICE_UNAVAILABLE",
+      "requirements": [
+        {
+          "predicate_kind": "RUNTIME_UNHEALTHY",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_kind": "TRACE_FIRST_ERROR",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    }
+  ],
+  "core_support_clauses": [
+    {
+      "clause_id": "configuration:change-and-error-metric",
+      "mechanism": "CONFIGURATION_ERROR",
+      "requirements": [
+        {
+          "predicate_kind": "CHANGE_RECENT_ROLLOUT",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_kind": "METRIC_ERROR_RATE_STRONG",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "configuration:change-and-log",
+      "mechanism": "CONFIGURATION_ERROR",
+      "requirements": [
+        {
+          "predicate_kind": "CHANGE_RECENT_ROLLOUT",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_kind": "LOG_CONFIGURATION_ERROR",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "configuration:error-metric-and-first-error-trace",
+      "mechanism": "CONFIGURATION_ERROR",
+      "requirements": [
+        {
+          "predicate_kind": "METRIC_ERROR_RATE_STRONG",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_kind": "TRACE_FIRST_ERROR",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "cpu-saturation:resource-and-healthy",
+      "mechanism": "CPU_SATURATION",
+      "requirements": [
+        {
+          "predicate_kind": "RESOURCE_CPU_STRONG",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_kind": "RUNTIME_HEALTHY",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "dependency-latency:trace-and-metric",
+      "mechanism": "DEPENDENCY_LATENCY",
+      "requirements": [
+        {
+          "predicate_kind": "TRACE_DEPENDENCY_LATENCY",
+          "service_binding": "TARGET",
+          "require_exact_parent": true
+        },
+        {
+          "predicate_kind": "METRIC_LATENCY_STRONG",
+          "service_binding": "TARGET_OR_PARENT",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "memory-leak:growth-and-healthy",
+      "mechanism": "MEMORY_LEAK",
+      "requirements": [
+        {
+          "predicate_kind": "RESOURCE_MEMORY_GROWTH_STRONG",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_kind": "RUNTIME_HEALTHY",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "memory-leak:growth-and-log",
+      "mechanism": "MEMORY_LEAK",
+      "requirements": [
+        {
+          "predicate_kind": "RESOURCE_MEMORY_GROWTH_STRONG",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_kind": "LOG_MEMORY_PRESSURE",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "memory-leak:growth-and-restarts",
+      "mechanism": "MEMORY_LEAK",
+      "requirements": [
+        {
+          "predicate_kind": "RESOURCE_MEMORY_GROWTH_STRONG",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_kind": "RUNTIME_RESTART_PRESSURE",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "service-unavailable:not-running",
+      "mechanism": "SERVICE_UNAVAILABLE",
+      "requirements": [
+        {
+          "predicate_kind": "RUNTIME_NOT_RUNNING",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "service-unavailable:unhealthy-error-metric",
+      "mechanism": "SERVICE_UNAVAILABLE",
+      "requirements": [
+        {
+          "predicate_kind": "RUNTIME_UNHEALTHY",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_kind": "METRIC_ERROR_RATE_STRONG",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    },
+    {
+      "clause_id": "service-unavailable:unhealthy-first-error",
+      "mechanism": "SERVICE_UNAVAILABLE",
+      "requirements": [
+        {
+          "predicate_kind": "RUNTIME_UNHEALTHY",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_kind": "TRACE_FIRST_ERROR",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ]
+    }
+  ],
+  "service_binding_options": [
+    "TARGET",
+    "TARGET_OR_PARENT"
+  ],
+  "predicate_source_bindings": [
+    {
+      "predicate_kind": "CHANGE_RECENT_ROLLOUT",
+      "evidence_source": "CHANGES"
+    },
+    {
+      "predicate_kind": "LOG_CONFIGURATION_ERROR",
+      "evidence_source": "LOGS"
+    },
+    {
+      "predicate_kind": "LOG_DEPENDENCY_TIMEOUT",
+      "evidence_source": "LOGS"
+    },
+    {
+      "predicate_kind": "LOG_MEMORY_PRESSURE",
+      "evidence_source": "LOGS"
+    },
+    {
+      "predicate_kind": "METRIC_ERROR_RATE_STRONG",
+      "evidence_source": "METRICS"
+    },
+    {
+      "predicate_kind": "METRIC_LATENCY_STRONG",
+      "evidence_source": "METRICS"
+    },
+    {
+      "predicate_kind": "RESOURCE_CPU_STRONG",
+      "evidence_source": "RESOURCES"
+    },
+    {
+      "predicate_kind": "RESOURCE_MEMORY_GROWTH_STRONG",
+      "evidence_source": "RESOURCES"
+    },
+    {
+      "predicate_kind": "RUNTIME_HEALTHY",
+      "evidence_source": "RUNTIME"
+    },
+    {
+      "predicate_kind": "RUNTIME_NOT_RUNNING",
+      "evidence_source": "RUNTIME"
+    },
+    {
+      "predicate_kind": "RUNTIME_RESTART_PRESSURE",
+      "evidence_source": "RUNTIME"
+    },
+    {
+      "predicate_kind": "RUNTIME_UNHEALTHY",
+      "evidence_source": "RUNTIME"
+    },
+    {
+      "predicate_kind": "TRACE_DEPENDENCY_LATENCY",
+      "evidence_source": "TRACES"
+    },
+    {
+      "predicate_kind": "TRACE_FIRST_ERROR",
+      "evidence_source": "TRACES"
+    }
+  ],
+  "authoritative_single_predicate_allowlist": [
+    "RUNTIME_NOT_RUNNING"
+  ],
+  "representative_examples": [
+    {
+      "mechanism": "CONFIGURATION_ERROR",
+      "support_clauses": [
+        {
+          "clause_id": "configuration:change-and-error-metric",
+          "mechanism": "CONFIGURATION_ERROR",
+          "requirements": [
+            {
+              "predicate_kind": "CHANGE_RECENT_ROLLOUT",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            },
+            {
+              "predicate_kind": "METRIC_ERROR_RATE_STRONG",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            }
+          ]
+        },
+        {
+          "clause_id": "configuration:change-and-log",
+          "mechanism": "CONFIGURATION_ERROR",
+          "requirements": [
+            {
+              "predicate_kind": "CHANGE_RECENT_ROLLOUT",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            },
+            {
+              "predicate_kind": "LOG_CONFIGURATION_ERROR",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            }
+          ]
+        },
+        {
+          "clause_id": "configuration:error-metric-and-first-error-trace",
+          "mechanism": "CONFIGURATION_ERROR",
+          "requirements": [
+            {
+              "predicate_kind": "METRIC_ERROR_RATE_STRONG",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            },
+            {
+              "predicate_kind": "TRACE_FIRST_ERROR",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "mechanism": "CPU_SATURATION",
+      "support_clauses": [
+        {
+          "clause_id": "cpu-saturation:resource-and-healthy",
+          "mechanism": "CPU_SATURATION",
+          "requirements": [
+            {
+              "predicate_kind": "RESOURCE_CPU_STRONG",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            },
+            {
+              "predicate_kind": "RUNTIME_HEALTHY",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "mechanism": "DEPENDENCY_LATENCY",
+      "support_clauses": [
+        {
+          "clause_id": "dependency-latency:trace-and-metric",
+          "mechanism": "DEPENDENCY_LATENCY",
+          "requirements": [
+            {
+              "predicate_kind": "TRACE_DEPENDENCY_LATENCY",
+              "service_binding": "TARGET",
+              "require_exact_parent": true
+            },
+            {
+              "predicate_kind": "METRIC_LATENCY_STRONG",
+              "service_binding": "TARGET_OR_PARENT",
+              "require_exact_parent": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "mechanism": "MEMORY_LEAK",
+      "support_clauses": [
+        {
+          "clause_id": "memory-leak:growth-and-healthy",
+          "mechanism": "MEMORY_LEAK",
+          "requirements": [
+            {
+              "predicate_kind": "RESOURCE_MEMORY_GROWTH_STRONG",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            },
+            {
+              "predicate_kind": "RUNTIME_HEALTHY",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            }
+          ]
+        },
+        {
+          "clause_id": "memory-leak:growth-and-log",
+          "mechanism": "MEMORY_LEAK",
+          "requirements": [
+            {
+              "predicate_kind": "RESOURCE_MEMORY_GROWTH_STRONG",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            },
+            {
+              "predicate_kind": "LOG_MEMORY_PRESSURE",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            }
+          ]
+        },
+        {
+          "clause_id": "memory-leak:growth-and-restarts",
+          "mechanism": "MEMORY_LEAK",
+          "requirements": [
+            {
+              "predicate_kind": "RESOURCE_MEMORY_GROWTH_STRONG",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            },
+            {
+              "predicate_kind": "RUNTIME_RESTART_PRESSURE",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "mechanism": "SERVICE_UNAVAILABLE",
+      "support_clauses": [
+        {
+          "clause_id": "service-unavailable:not-running",
+          "mechanism": "SERVICE_UNAVAILABLE",
+          "requirements": [
+            {
+              "predicate_kind": "RUNTIME_NOT_RUNNING",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            }
+          ]
+        },
+        {
+          "clause_id": "service-unavailable:unhealthy-error-metric",
+          "mechanism": "SERVICE_UNAVAILABLE",
+          "requirements": [
+            {
+              "predicate_kind": "RUNTIME_UNHEALTHY",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            },
+            {
+              "predicate_kind": "METRIC_ERROR_RATE_STRONG",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            }
+          ]
+        },
+        {
+          "clause_id": "service-unavailable:unhealthy-first-error",
+          "mechanism": "SERVICE_UNAVAILABLE",
+          "requirements": [
+            {
+              "predicate_kind": "RUNTIME_UNHEALTHY",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            },
+            {
+              "predicate_kind": "TRACE_FIRST_ERROR",
+              "service_binding": "TARGET",
+              "require_exact_parent": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "source_file_bindings": [
+    {
+      "binding_name": "core-mechanisms-and-support-clauses",
+      "repository_path": "src/ecomsre/dta_v2/v22/predicates.py"
+    },
+    {
+      "binding_name": "effective-support-policy",
+      "repository_path": "src/ecomsre/dta_v2/v22/effective_policy_v222.py"
+    },
+    {
+      "binding_name": "predicate-extraction",
+      "repository_path": "src/ecomsre/dta_v2/v22/predicates.py"
+    },
+    {
+      "binding_name": "salient-memory",
+      "repository_path": "src/ecomsre/dta_v2/v22/memory.py"
+    },
+    {
+      "binding_name": "predicate-source-capabilities",
+      "repository_path": "src/ecomsre/dta_v2/v22/gap_router_v222.py"
+    },
+    {
+      "binding_name": "read-action-capabilities",
+      "repository_path": "src/ecomsre/dta_v2/v22/action_catalog.py"
+    },
+    {
+      "binding_name": "formal-ontology-tests",
+      "repository_path": "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+    }
+  ],
+  "snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa"
+}

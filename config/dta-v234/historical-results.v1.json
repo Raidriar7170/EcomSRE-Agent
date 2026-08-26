@@ -1,0 +1,49 @@
+{
+  "schema_version": "dta-v234.historical-results.v1",
+  "merged_base_commit": "da423b9104ac532f0bf323f314d37b527671c679",
+  "historical_terminals": {
+    "v23": "DTA_V23_OPEN_WORLD_DISCOVERY_NOT_OBSERVED",
+    "v231_evaluation": "BLOCKED_DTA_V231_EVALUATION_DATA",
+    "v231_repository": "BLOCKED_DTA_V231_REPOSITORY_ACCEPTANCE",
+    "v232": "DTA_V232_CONFLICT_AWARE_DISCOVERY_MIXED_RESULT",
+    "v233": "DTA_V233_DOMAIN_AND_GUARD_MIXED_RESULT"
+  },
+  "bindings": [
+    {
+      "path": "config/dta-v233/historical-results.v1.json",
+      "sha256": "cbd3716b6c612ce0e21b9ac0504372156125a9595733a4b7728aae78be1a270b",
+      "size_bytes": 1861,
+      "role": "V233_TRANSITIVE_HISTORY_LEDGER"
+    },
+    {
+      "path": "scripts/ci/verify_dta_v233_history.py",
+      "sha256": "a57dbd4d4ce844f0c803ae5e4c4df299347fb2ca5be6635e60a1fa67710d1da2",
+      "size_bytes": 2748,
+      "role": "V233_TRANSITIVE_HISTORY_VERIFIER"
+    },
+    {
+      "path": "docs/results/dta-v233-domain-guard-evaluation.json",
+      "sha256": "d5050bd96fef008c143b3cc3ec2e0ce0aa2d7ee5d73fbf15e0b478da59c5fdb2",
+      "size_bytes": 665484,
+      "role": "V233_FIXED_RESULT"
+    },
+    {
+      "path": "docs/results/dta-v233-domain-guard-evaluation.md",
+      "sha256": "d5dcc42782bbb435a513b3e65a60bc07efb5dd461ca7d1f8d1c51a808f84a8b0",
+      "size_bytes": 1004,
+      "role": "V233_FIXED_REPORT"
+    },
+    {
+      "path": "docs/results/dta-v233-domain-guard-error-analysis.md",
+      "sha256": "e1862026c7fe053249e8c66ca6e4f25fc189de2326faa27278ed77a9967e171f",
+      "size_bytes": 3627,
+      "role": "V233_ERROR_ANALYSIS"
+    },
+    {
+      "path": "docs/external-reviews/dta-v233-final-review.md",
+      "sha256": "54493dafddf05517a76fa811defa0d72e3b470419f5af57641473b8621c5ec1d",
+      "size_bytes": 6933,
+      "role": "V233_FINAL_REVIEW"
+    }
+  ]
+}

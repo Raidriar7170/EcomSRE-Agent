@@ -27,6 +27,12 @@ from ecomsre.dta_v2.v23.review_registry_v231 import (
     LocalReviewStoreV231,
     render_review_display_v231,
 )
+from ecomsre.dta_v2.v23.core_ontology_snapshot_v234 import (
+    build_core_ontology_schema_snapshot_v234,
+)
+from ecomsre.dta_v2.v23.ontology_expansion_v234 import (
+    LocalOntologyExpansionStoreV234,
+)
 from ecomsre.dta_v2.v23.evaluation import (
     OpenAICompatibleDiscoveryTransportV23,
     _build_common_context_v23,
@@ -71,6 +77,7 @@ from ecomsre.dta_v2.v23.evaluation_v233 import (
 
 
 DEFAULT_LOCAL_ROOT_V23 = Path(".local/dta-v23")
+DEFAULT_LOCAL_ROOT_V234 = Path(".local/dta-v234")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -149,6 +156,27 @@ def build_parser() -> argparse.ArgumentParser:
     shadow_match = shadow_commands.add_parser("match")
     shadow_match.add_argument("--report", type=Path, required=True)
     shadow_match.add_argument("--local-root", type=Path, default=DEFAULT_LOCAL_ROOT_V23)
+    ontology = subparsers.add_parser("ontology")
+    ontology_commands = ontology.add_subparsers(
+        dest="ontology_command",
+        required=True,
+    )
+    ontology_list = ontology_commands.add_parser("list")
+    ontology_list.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_authorize = ontology_commands.add_parser("authorize-draft")
+    ontology_authorize.add_argument("shadow_fault_id")
+    ontology_authorize.add_argument("--reviewer", required=True)
+    ontology_authorize.add_argument("--note", required=True)
+    ontology_authorize.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_commands.add_parser("snapshot")
     evaluate = subparsers.add_parser("evaluate")
     evaluate.add_argument(
         "--split",
@@ -428,6 +456,33 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         )
         return 0
+    if args.command == "ontology":
+        if args.ontology_command == "list":
+            store_v234 = LocalOntologyExpansionStoreV234(args.local_root)
+            print(
+                json.dumps(
+                    [
+                        item.model_dump(mode="json")
+                        for item in store_v234.list_shadow_faults()
+                    ],
+                    indent=2,
+                )
+            )
+            return 0
+        if args.ontology_command == "authorize-draft":
+            authorization = LocalOntologyExpansionStoreV234(
+                args.local_root
+            ).authorize_draft_generation(
+                shadow_fault_id=args.shadow_fault_id,
+                reviewer=args.reviewer,
+                authorization_note=args.note,
+                authorized_at=datetime.now(timezone.utc),
+            )
+            print(authorization.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "snapshot":
+            print(build_core_ontology_schema_snapshot_v234().model_dump_json(indent=2))
+            return 0
     if args.command == "evaluate":
         repository_root = args.repository_root.resolve()
         if args.split == "development":
