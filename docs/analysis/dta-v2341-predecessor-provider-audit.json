@@ -1,0 +1,85 @@
+{
+  "schema_version": "dta-v2341.predecessor-provider-audit.v1",
+  "predecessor_status": "BLOCKED_DTA_V234_PROVIDER",
+  "audit_basis": "TRACKED_SUMMARIES_HASHES_AND_COUNTERS",
+  "raw_provider_payloads_inspected": false,
+  "content_level_limitation": "The predecessor raw request and response payloads were stored below a gitignored .local scope and are not present in this checkout. This audit does not claim direct inspection of those 22 payloads.",
+  "fixed_evaluation_execution_count": 0,
+  "roles": [
+    {
+      "task_id": "rt-001",
+      "role": "HIDDEN_KNOWN",
+      "predecessor_failure": "CORE_MECHANISM_COLLISION_IN_PRODUCTION_VALIDATION",
+      "successor_runtime_owner": "HIDDEN_KNOWN_RECONSTRUCTION_VALIDATION_CONTEXT",
+      "alias_protocol_eliminates_failure_class": true,
+      "catalog_coverage_gap": false
+    },
+    {
+      "task_id": "rt-003",
+      "role": "HIDDEN_KNOWN",
+      "predecessor_failure": "FULL_OBJECT_PROTOCOL_REPAIRS_EXHAUSTED_EXACT_FIELD_UNAVAILABLE",
+      "successor_runtime_owner": "CATALOG_OBJECTS_CANONICALIZATION_AND_ASSEMBLY",
+      "alias_protocol_eliminates_failure_class": true,
+      "catalog_coverage_gap": false
+    },
+    {
+      "task_id": "rt-011",
+      "role": "DECLARATIVE_READY_NEW",
+      "predecessor_failure": "FORMAL_DRAFT_PREDICATE_ORDER_NONCANONICAL",
+      "successor_runtime_owner": "DETERMINISTIC_FINAL_DRAFT_ASSEMBLER",
+      "alias_protocol_eliminates_failure_class": true,
+      "catalog_coverage_gap": false
+    },
+    {
+      "task_id": "rt-012",
+      "role": "DECLARATIVE_READY_NEW",
+      "predecessor_failure": "FULL_OBJECT_VALIDATION_REPAIRS_EXHAUSTED_EXACT_FIELD_UNAVAILABLE",
+      "successor_runtime_owner": "CATALOG_OBJECTS_CANONICALIZATION_AND_ASSEMBLY",
+      "alias_protocol_eliminates_failure_class": true,
+      "catalog_coverage_gap": false
+    },
+    {
+      "task_id": "rt-014",
+      "role": "ENGINEERING_REQUIRED",
+      "predecessor_failure": "FULL_OBJECT_MODE_AND_ENGINEERING_GAP_REPAIRS_EXHAUSTED",
+      "successor_runtime_owner": "ENGINEERING_GAP_CATALOG_AND_CARDINALITY_VALIDATION",
+      "alias_protocol_eliminates_failure_class": true,
+      "catalog_coverage_gap": false
+    },
+    {
+      "task_id": "rt-015",
+      "role": "DUPLICATE_CONTROL",
+      "predecessor_failure": null,
+      "successor_runtime_owner": "DETERMINISTIC_ZERO_CALL_DISPOSITION",
+      "alias_protocol_eliminates_failure_class": true,
+      "catalog_coverage_gap": false
+    },
+    {
+      "task_id": "rt-016",
+      "role": "INSUFFICIENT_CONTROL",
+      "predecessor_failure": null,
+      "successor_runtime_owner": "DETERMINISTIC_ZERO_CALL_DISPOSITION",
+      "alias_protocol_eliminates_failure_class": true,
+      "catalog_coverage_gap": false
+    }
+  ],
+  "provider_smoke_execution_count": 1,
+  "provider_requests": 22,
+  "provider_responses": 22,
+  "protocol_repair_requests": 12,
+  "real_fixes": 2,
+  "maximum_real_fixes": 2,
+  "successor_development_gate": {
+    "terminal": "DTA_V2341_PREDECESSOR_DEVELOPMENT_GATE_PASS",
+    "gate_sha256": "8265957292c184b9330928cddb7dcc6484a74f3ff1d02b6bfdbbf45ba73df47b",
+    "failed_provider_role_count": 5,
+    "protocol_valid_role_count": 5,
+    "hidden_known_reconstruction_pass_count": 2,
+    "declarative_ready_valid_count": 2,
+    "engineering_required_gap_count": 1,
+    "duplicate_control_provider_calls": 0,
+    "insufficient_control_provider_calls": 0,
+    "changed_iteration_count": 1
+  },
+  "action_authority_violations": 0
+}

@@ -1,0 +1,80 @@
+{
+  "schema_version": "dta-v2341.historical-results.v1",
+  "public_main_base": "da423b9104ac532f0bf323f314d37b527671c679",
+  "frozen_predecessor_pr": 72,
+  "frozen_predecessor_branch": "codex/dta-v234-human-ontology-expansion",
+  "frozen_predecessor_head": "edb313655c4be64295012c383cfa19ed48ccb894",
+  "frozen_predecessor_status": "BLOCKED_DTA_V234_PROVIDER",
+  "predecessor_classification": {
+    "engineering_implementation": "PRESENT",
+    "provider_smoke": "FAILED_CONSUMED",
+    "fixed_evaluation": "NOT_STARTED",
+    "measured_result": "ABSENT"
+  },
+  "predecessor_counters": {
+    "provider_smoke_execution_count": 1,
+    "required_role_count": 7,
+    "campaign_requests": 22,
+    "campaign_responses": 22,
+    "protocol_repair_requests": 12,
+    "real_fixes": 2,
+    "maximum_real_fixes": 2,
+    "fixed_evaluation_execution_count": 0,
+    "docker_calls": 0,
+    "new_live_faults": 0,
+    "agent_writes": 0,
+    "runbook_executions": 0,
+    "remediation_registrations": 0,
+    "action_authority_violations": 0
+  },
+  "raw_provider_payloads": {
+    "tracked_in_git": false,
+    "content_audit_claimed": false,
+    "preserved_hashes_and_counts_only": true,
+    "scope_recorded_by_predecessor": ".local/dta-v234/provider-raw/smoke"
+  },
+  "bindings": [
+    {
+      "path": "docs/analysis/dta-v234-provider-blocker.json",
+      "sha256": "b4321a2b07f447818bff8842d3cc4e6dd4f35af59ab0b463e511ad6609039022",
+      "size_bytes": 2858,
+      "role": "FROZEN_PROVIDER_BLOCKER"
+    },
+    {
+      "path": "docs/analysis/dta-v234-provider-smoke-repair-1.json",
+      "sha256": "cd8e5a5930a091640b20eead14013e903a6c61b0cbc7e1746c93add1bb8acab5",
+      "size_bytes": 1062,
+      "role": "FROZEN_PROVIDER_REPAIR_1"
+    },
+    {
+      "path": "docs/analysis/dta-v234-provider-smoke-repair-2.json",
+      "sha256": "e6bce33d25cec443268ea58da4273d720d9f5754c33fddae11894814ba446054",
+      "size_bytes": 935,
+      "role": "FROZEN_PROVIDER_REPAIR_2"
+    },
+    {
+      "path": "docs/results/dta-v234-registration-assistance-error-analysis.md",
+      "sha256": "d202e92c551af6b380970a9adade4f7ee0dc1a400ddfc21a7a94b6ec084215ad",
+      "size_bytes": 3891,
+      "role": "FROZEN_ERROR_ANALYSIS"
+    },
+    {
+      "path": "docs/results/dta-v234-registration-assistance-interview-brief.md",
+      "sha256": "c3bf4c11aa6a1693f9d60ee880dc2bc25851518b7ac7debf8376cb85bbc6c7ac",
+      "size_bytes": 3085,
+      "role": "FROZEN_INTERVIEW_BRIEF"
+    },
+    {
+      "path": "docs/external-reviews/dta-v234-pre-execution-review.md",
+      "sha256": "8f5d44e14528d4e349cc3946f6581a4f24d1b868ec722f6836b43304425a9991",
+      "size_bytes": 3487,
+      "role": "FROZEN_PRE_EXECUTION_REVIEW"
+    },
+    {
+      "path": "config/dta-v234/evaluation/manifest.json",
+      "sha256": "742771eb3f59bddc1b8be4b38eae9614f800a0d984cb639982474636c571edf2",
+      "size_bytes": 5477,
+      "role": "FROZEN_ACTIVE_MANIFEST"
+    }
+  ]
+}

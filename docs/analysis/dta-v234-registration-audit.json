@@ -1,0 +1,17 @@
+{
+  "schema_version": "dta-v234.registration-evaluation-audit.v1",
+  "task_count": 16,
+  "hidden_known_task_count": 10,
+  "unregistered_task_count": 4,
+  "control_task_count": 2,
+  "hidden_view_pass_count": 10,
+  "hidden_identifier_leaks": 0,
+  "unregistered_core_clause_match_count": 0,
+  "duplicate_control_core_match_count": 1,
+  "insufficient_control_evidence_source_count": 0,
+  "truth_evaluator_only": true,
+  "premature_truth_reads": 0,
+  "action_authority_violations": 0,
+  "terminal": "DTA_V234_EVALUATION_DATA_PASS",
+  "audit_sha256": "a8ece1e122bfa0454a75ce8f7ae19c311a5c33d8182386a0ba0d31736d95737c"
+}

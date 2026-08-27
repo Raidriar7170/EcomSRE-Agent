@@ -1,0 +1,109 @@
+{
+  "schema_version": "dta-v234.evaluation-manifest.v1",
+  "base_commit": "da423b9104ac532f0bf323f314d37b527671c679",
+  "branch": "codex/dta-v234-human-ontology-expansion",
+  "provider_model": "gpt-5.4-mini-2026-03-17",
+  "planned_task_count": 16,
+  "planned_run_count": 32,
+  "planned_execution_count": 1,
+  "arms": [
+    "V23_TEMPLATE_REGISTRATION_SEED",
+    "V234_LLM_FORMAL_REGISTRATION"
+  ],
+  "frozen_files": [
+    {
+      "path": "config/dta-v234/evaluation/core-schema-snapshot.json",
+      "sha256": "3ddc3ddf9a882c07dd7cbc4dd7e12107108f4dc717e5bb8daedca688c0d1f455"
+    },
+    {
+      "path": "config/dta-v234/evaluation/tasks.json",
+      "sha256": "f1987f66d2eb515fce32f2ce823a92535b0be3c803a52a5cc425a4b3ed22aaa5"
+    },
+    {
+      "path": "config/dta-v234/evaluation/truth.json",
+      "sha256": "6290bf59fa45e024e8e79769cade692efb89a1b4c392046febddb55c9530263c"
+    },
+    {
+      "path": "config/dta-v234/historical-results.v1.json",
+      "sha256": "1edd8fc6157d8879a8b0274246d898bbc47a10d8dc37d01ba208e58fb8aba832"
+    },
+    {
+      "path": "docs/analysis/dta-v234-core-ontology-snapshot.json",
+      "sha256": "42c18caf91991310a87e5cacbf79d9242500b0f9e19bac6572e2a185aafd5302"
+    },
+    {
+      "path": "docs/analysis/dta-v234-registration-audit.json",
+      "sha256": "e020144642ae35a38d48561f7eeddb1cd50ebd9693e422735a3d32d912645ce9"
+    },
+    {
+      "path": "docs/analysis/dta-v234-runtime-preflight.json",
+      "sha256": "c29a89204aea5274ef1312cca8fd105bdbf957a831cb3ce596ee33a0f0f6fa5a"
+    },
+    {
+      "path": "scripts/analysis/freeze_dta_v234_manifest.py",
+      "sha256": "dbc0383e2e9bcf677c95ee1b0bf562cd4ab789c28da2273902a6c22c7f1e851f"
+    },
+    {
+      "path": "scripts/analysis/generate_dta_v234_evaluation_data.py",
+      "sha256": "c87d9ccc74a383e474a2da76ae30b1d656740eccad5280bc6475601975ca644f"
+    },
+    {
+      "path": "scripts/analysis/run_dta_v234_evaluation.py",
+      "sha256": "56d57cce320d84533ebe8d8a616a027285fba53897042d1fefc979da268a337c"
+    },
+    {
+      "path": "scripts/analysis/run_dta_v234_evaluation_data_audit.py",
+      "sha256": "1f9a4661e249e37582c50038fff9b9e7a577377fd00d9e0596bb2b0aa0457012"
+    },
+    {
+      "path": "scripts/analysis/run_dta_v234_provider_smoke.py",
+      "sha256": "d7676558d7bfa824886bcc920a9ccc267d8cf9426e7fcd9a0a66e3238a5fb745"
+    },
+    {
+      "path": "scripts/analysis/run_dta_v234_runtime_preflight.py",
+      "sha256": "797641a9d147ea422406c0b61e59e2dd32042fab6bfc41b13f411eefbfc556b9"
+    },
+    {
+      "path": "scripts/ci/verify_dta_v234_history.py",
+      "sha256": "bb4582cbce33a8dea472712ca84514d57c0047d41b39f2a5e2d4a18690adb43f"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/core_ontology_snapshot_v234.py",
+      "sha256": "389b6a5e92429e0e733b1c2cdfdc6c799fbbf4f7399faba47e6fbe6385b850e0"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/evaluation_v234.py",
+      "sha256": "b19d229d1b2e7add5f32fc46e83daacc5684578ada8d44907dc6e0f8607379e7"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/ontology_expansion_v234.py",
+      "sha256": "f736e90738e935728800065c8ed05ec8e3507df3809f9a080d1399c9074c9a96"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/registration_compiler_v234.py",
+      "sha256": "32a34f8bc676ad55402b106d47cb8c48402766287232eb210fff8bf40943c2ac"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/registration_contracts_v234.py",
+      "sha256": "0b4f769c33df163a0d2be600209b6b447d2b51bdef854a04c6cc93e425d77c3c"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/registration_provider_v234.py",
+      "sha256": "a058995fe0e20428971c635f5f8f88374dae1e8fd5675d6c71c3cb3ad1bf58c5"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/registration_validator_v234.py",
+      "sha256": "be5a909e31b971fac0618c4394e6a0170e0f0146d3ac6d7be1fb10113e4e7b8a"
+    },
+    {
+      "path": "tests/dta_v23/test_increment4_evaluation_v234.py",
+      "sha256": "20b38cf3c70ab986681bded6a5081f6e5d2b47988e2ef668f641566a79b388b1"
+    }
+  ],
+  "provider_system_prompt_sha256": "3914bea6d62513c5f435b7656c55e8041c805a5743fed5fb5956fa28c69baf0f",
+  "provider_smoke_output": "docs/analysis/dta-v234-provider-smoke.json",
+  "output_json": "docs/results/dta-v234-registration-assistance-evaluation.json",
+  "output_markdown": "docs/results/dta-v234-registration-assistance-evaluation.md",
+  "independent_review": "docs/external-reviews/dta-v234-pre-execution-review.md",
+  "fixed_at_utc": "2026-08-26T12:47:16.961529Z"
+}

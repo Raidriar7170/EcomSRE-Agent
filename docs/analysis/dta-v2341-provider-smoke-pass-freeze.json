@@ -1,0 +1,46 @@
+{
+  "schema_version": "dta-v2341.provider-smoke-pass-freeze.v1",
+  "terminal": "DTA_V2341_PROVIDER_SMOKE_PASS",
+  "execution_count": 1,
+  "real_fix_count": 2,
+  "fixed_evaluation_execution_count": 0,
+  "smoke_manifest_sha256": "1804d14e03c604d8200065d75fe4ad53f72f92ffae5a78744bdd7abb93c3ebea",
+  "smoke_manifest_file_sha256": "ee510ec80563779cc8612002c36f659ae1fb8d2f959a9bfee69a0f23d027058f",
+  "provider_smoke_evidence_sha256": "6291f6a0dad47dd3b75fe0a8fe898782c51d2d601827072c887e53f4c61f4ea6",
+  "provider_smoke_file_sha256": "387da2b62bba3b559fe4439814052e4bbd8cda0ed028d0c08b6797b887ae5c07",
+  "repair_record_sha256": "ea01ea4f156f087f23d647fc4440683af6a3269f1b864b959cf40aaf415ffcd1",
+  "replayed_provider_call_count": 4,
+  "resume_network_provider_call_count": 2,
+  "prior_repair_network_provider_call_count": 1,
+  "cumulative_network_provider_call_count": 10,
+  "protocol_repair_count": 0,
+  "transport_retry_count": 0,
+  "original_blocker_preserved": true,
+  "fix1_blocker_preserved": true,
+  "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw/smoke-fix-2",
+  "raw_bindings": [
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke-fix-2/request-001.json",
+      "sha256": "4533743cda5b5909906744c67181d3ca977b51ed94b41afd3d09de501ec2c9eb"
+    },
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke-fix-2/request-002.json",
+      "sha256": "64a65c9acf766a53bc59dac02d03d9b8bfb40343b91fe8cfafcae07fde77c5e8"
+    },
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke-fix-2/response-001.json",
+      "sha256": "f8ebc6a43be723e94352daebbb07a4f8a8c70f4658cf1d6572b02d7cc895136a"
+    },
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke-fix-2/response-002.json",
+      "sha256": "5a392574249d2f5a0895a98adc37320d987d1ab59e5eb1f7ebc8b67208369198"
+    }
+  ],
+  "raw_bindings_sha256": "bc7424316697eb6b0332667deb05d9d89710d819f6666a5817e932e99d07a3ea",
+  "action_authority_violations": 0,
+  "agent_writes": 0,
+  "runbook_executions": 0,
+  "remediation_registrations": 0,
+  "frozen_at_utc": "2026-08-27T03:39:40Z",
+  "freeze_sha256": "71d19b3701fc4fbdf8c1f7bd03affbd5773fdce10ddc49bad80d9b59cee79e93"
+}

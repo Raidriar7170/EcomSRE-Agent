@@ -1,0 +1,103 @@
+{
+  "schema_version": "dta-v2341.registration-smoke-manifest.v1",
+  "predecessor_head": "edb313655c4be64295012c383cfa19ed48ccb894",
+  "branch": "codex/dta-v2341-registration-alias-protocol",
+  "provider_model": "gpt-5.4-mini-2026-03-17",
+  "planned_task_count": 8,
+  "planned_provider_called_task_count": 6,
+  "planned_execution_count": 1,
+  "current_execution_count": 1,
+  "fixed_evaluation_execution_count": 0,
+  "real_fix_count": 1,
+  "repair_record_path": "docs/analysis/dta-v2341-provider-smoke-repair-1.json",
+  "repair_record_sha256": "ee52efd2e997a4d756c03ab056d3ea3c1fb5094577e13a892a3df7150a1622f5",
+  "prior_manifest_sha256": "0e8d7e0215a854d69d6841552c29fbff3ac5377e70c286136b4e15f3a1f48811",
+  "prior_manifest_file_sha256": "99abb02aba276da24377dfabb7092f16ecc33cd02c0c6ec5136a088dcf787f0f",
+  "frozen_files": [
+    {
+      "path": "config/dta-v2341/smoke/tasks.json",
+      "sha256": "5804ce895af828b4767346b9b675150a95dbe04413280502e0a6e198a8093ad1"
+    },
+    {
+      "path": "config/dta-v2341/smoke/truth.json",
+      "sha256": "69fbaa1c73984f84a3c6438d2dc7c5d0c4826ed9b648884fbb04087fa9657d96"
+    },
+    {
+      "path": "docs/analysis/dta-v2341-catalog-feasibility.json",
+      "sha256": "1ec00ec656e5bc2e3ac022f9d25bf1caaa0a4162a3253a7455763af1b3f71056"
+    },
+    {
+      "path": "docs/analysis/dta-v2341-provider-smoke-blocker.json",
+      "sha256": "416299db95e1590141fbe4d20b048d50aa26cbdee3b21301652049453535fa49"
+    },
+    {
+      "path": "docs/analysis/dta-v2341-provider-smoke-fix1-diagnostic.json",
+      "sha256": "ed861d7fed732ed087068b567e35a0263454d960594b6845943218bc63b2f333"
+    },
+    {
+      "path": "docs/analysis/dta-v2341-provider-smoke-repair-1.json",
+      "sha256": "ef553af5d70b97bb4cef0001b117fb7508295ff41e8dc66445c206d4e458dd3a"
+    },
+    {
+      "path": "docs/analysis/dta-v2341-smoke-manifest-fix1-superseded.json",
+      "sha256": "99abb02aba276da24377dfabb7092f16ecc33cd02c0c6ec5136a088dcf787f0f"
+    },
+    {
+      "path": "scripts/analysis/generate_dta_v2341_smoke_data.py",
+      "sha256": "11ba449aef4538e4d6e41692a37e11e9ead095763f6d65b4da571faacecea7cc"
+    },
+    {
+      "path": "scripts/analysis/run_dta_v2341_catalog_feasibility.py",
+      "sha256": "f87bc9b1b1bdeea3712d7774fe27495732a74fc7a8bf5245e3856a86447beb98"
+    },
+    {
+      "path": "scripts/analysis/run_dta_v2341_provider_smoke.py",
+      "sha256": "6cd063f32570e89d77dcf9fd9d4dae5f879194b7c134b6f1ee21a7a9d66703c6"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/cli.py",
+      "sha256": "8cea58916e0908927bfe9e1bb4e4a92ebe8381b3f1acae469ca04be4d896403b"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/provider_smoke_v2341.py",
+      "sha256": "7741564fbd58f3d45776ab70f41eee818150e705b97a9f741c24dac4ffe5ebd1"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/registration_alias_provider_v2341.py",
+      "sha256": "ebcac1084916838e0f3fd41c98f413ea9306c150ab431b093732e51a6861eb88"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/registration_assembler_v2341.py",
+      "sha256": "63d28003807b0cfb03e00869707466fc61cc652d23cd1de9e0ec68ea6b6db11f"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/registration_catalog_v2341.py",
+      "sha256": "a2218c5bc82b6ac369035bb7d6c4b9ce23a6542e6a2c3d69bb9db4a25d12faa1"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/registration_compiler_v234.py",
+      "sha256": "32a34f8bc676ad55402b106d47cb8c48402766287232eb210fff8bf40943c2ac"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/registration_contracts_v234.py",
+      "sha256": "024f946d76f763e8c297cb73606bc29611370da0350108c4d12c97e26cfc4485"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/registration_validator_v234.py",
+      "sha256": "be5a909e31b971fac0618c4394e6a0170e0f0146d3ac6d7be1fb10113e4e7b8a"
+    },
+    {
+      "path": "tests/dta_v2341/test_provider_smoke_v2341.py",
+      "sha256": "868876b731075cf97129dbd91cec3153c7502b0e2e9db2374948bb5d372958f9"
+    },
+    {
+      "path": "tests/dta_v2341/test_registration_alias_protocol_v2341.py",
+      "sha256": "da90b12af8321ea549eaf81d605566fc75f1ecd58f4efd9e34378e04976a935f"
+    }
+  ],
+  "provider_prompt_sha256": "7fa7f11bd4c77f41eb9d2f0a4fd8feed1c651862dc41a3a98524f467be351bbc",
+  "alias_response_schema_sha256": "2b56d07d02be65cb8445b9869c7373ffda401a7e7e4f367db2466a864909e73e",
+  "output_path": "docs/analysis/dta-v2341-provider-smoke.json",
+  "terminal": "DTA_V2341_SMOKE_SURFACE_FROZEN",
+  "manifest_sha256": "e630e9891573ef83ff73b9186c3b9dc8be3b46f5947fcea4b62543221fa1ccd4"
+}

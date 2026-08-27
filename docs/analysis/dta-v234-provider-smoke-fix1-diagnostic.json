@@ -1,0 +1,37 @@
+{
+  "execution_count": 1,
+  "failed_partial_sha256": "60724b2accb1551af3d0062e3f32c1b6237544d51912f766d8f1d5d084af546d",
+  "failed_roles": [
+    {
+      "provider_error_code": "DiscoveryProviderProtocolFailureV23",
+      "role": "HIDDEN_KNOWN",
+      "task_id": "rt-001"
+    },
+    {
+      "provider_error_code": "DiscoveryProviderProtocolFailureV23",
+      "role": "HIDDEN_KNOWN",
+      "task_id": "rt-003"
+    },
+    {
+      "provider_error_code": "ValidationError",
+      "role": "DECLARATIVE_READY_NEW",
+      "task_id": "rt-011"
+    },
+    {
+      "provider_error_code": "ValidationError",
+      "role": "DECLARATIVE_READY_NEW",
+      "task_id": "rt-012"
+    },
+    {
+      "provider_error_code": "ValidationError",
+      "role": "ENGINEERING_REQUIRED",
+      "task_id": "rt-014"
+    }
+  ],
+  "fixed_evaluation_execution_count": 0,
+  "prior_manifest_sha256": "4dd7291b3722a860320c0b044c70beec1d42df44403b0beb3e14a9ede2074d6e",
+  "prior_sentinel_sha256": "b865ffc8acdb75bb1586e280fa972044efd3a2890dc5db8124a2cbbae36c207f",
+  "raw_provider_artifacts_scope": ".local/dta-v234/provider-raw/smoke",
+  "repair_ordinal": 1,
+  "schema_version": "dta-v234.provider-smoke-repair-diagnostic.v1"
+}

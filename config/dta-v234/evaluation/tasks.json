@@ -1,0 +1,336 @@
+{
+  "schema_version": "dta-v234.registration-task-set.v1",
+  "freeze_id": "dta-v234-registration-assistance-freeze-20260826-a",
+  "tasks": [
+    {
+      "task_id": "rt-001",
+      "source_case_id": "vx-301",
+      "source_case_sha256": "822edf918b33ae10080bf8c125bd608dbb9e159d7b1fd06966d884efa25c915f",
+      "task_class": "HIDDEN_KNOWN",
+      "provider_view_sha256": "d7855120803529d4658be67364af956a86820b95446f38f83d6a45162ef73a23",
+      "selected_root_service": "svc-50b4ddc9a9",
+      "broad_fault_domain": "CONFIGURATION",
+      "provisional_mechanism_label": "recent setting inconsistency",
+      "mechanism_description": "A recent opaque setting change coincides with strong target error evidence.",
+      "observed_symptoms": [
+        "changes show a recent opaque setting rollout",
+        "metrics show a strong target error rate"
+      ],
+      "selected_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "RECENT_CHANGE_CORRELATION"
+      ],
+      "provider_call_expected": true,
+      "task_sha256": "8cee5ec448655612011f7eef75cea57aa89a42d5ffe80588135fffb08403290a"
+    },
+    {
+      "task_id": "rt-002",
+      "source_case_id": "vx-302",
+      "source_case_sha256": "0509fd5f7f35b934bed088aaf5a2203b2da338d21e46c902d978ef703399be0b",
+      "task_class": "HIDDEN_KNOWN",
+      "provider_view_sha256": "d7855120803529d4658be67364af956a86820b95446f38f83d6a45162ef73a23",
+      "selected_root_service": "svc-77d4c9fe68",
+      "broad_fault_domain": "CONFIGURATION",
+      "provisional_mechanism_label": "recent setting inconsistency",
+      "mechanism_description": "A recent opaque setting change coincides with strong target error evidence.",
+      "observed_symptoms": [
+        "changes show a recent opaque setting rollout",
+        "metrics show a strong target error rate"
+      ],
+      "selected_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "RECENT_CHANGE_CORRELATION"
+      ],
+      "provider_call_expected": true,
+      "task_sha256": "e0454665eb0d236924cf8b0d11dc1e15bb6e3ed8175838160935e34b417b5e35"
+    },
+    {
+      "task_id": "rt-003",
+      "source_case_id": "vx-303",
+      "source_case_sha256": "473ca5ea8245d971f1e668ab6cc8efd565c27d76fe5110b80905b5a11e5af3b0",
+      "task_class": "HIDDEN_KNOWN",
+      "provider_view_sha256": "60e2959af8e748ce4c89f2a3befd58f22855e099bb3cd7da3ad5892a0afeb43e",
+      "selected_root_service": "svc-64b3d3907c",
+      "broad_fault_domain": "DEPENDENCY",
+      "provisional_mechanism_label": "dependency path delay",
+      "mechanism_description": "A slow dependency path coincides with strong target latency evidence.",
+      "observed_symptoms": [
+        "metrics show strong target latency",
+        "traces show a slow downstream dependency path"
+      ],
+      "selected_anomaly_kinds": [
+        "METRIC_LATENCY_OUTLIER",
+        "TRACE_LATENCY_OUTLIER"
+      ],
+      "provider_call_expected": true,
+      "task_sha256": "f868fc0c00b1186a1c15ad51178bbd1737229cb2408182685acfb57237d7fa7f"
+    },
+    {
+      "task_id": "rt-004",
+      "source_case_id": "vx-304",
+      "source_case_sha256": "7a94671cc2a86bf961fea78cfa69f910c0eb16e1a0d3edc9cb2fef83ac46e514",
+      "task_class": "HIDDEN_KNOWN",
+      "provider_view_sha256": "60e2959af8e748ce4c89f2a3befd58f22855e099bb3cd7da3ad5892a0afeb43e",
+      "selected_root_service": "svc-c7902c06b9",
+      "broad_fault_domain": "DEPENDENCY",
+      "provisional_mechanism_label": "dependency path delay",
+      "mechanism_description": "A slow dependency path coincides with strong target latency evidence.",
+      "observed_symptoms": [
+        "metrics show strong target latency",
+        "traces show a slow downstream dependency path"
+      ],
+      "selected_anomaly_kinds": [
+        "METRIC_LATENCY_OUTLIER",
+        "TRACE_LATENCY_OUTLIER"
+      ],
+      "provider_call_expected": true,
+      "task_sha256": "fd2b0a7a701e6fcba025c937946a3d8e501b39c3309e0413732850a30bfd8fdb"
+    },
+    {
+      "task_id": "rt-005",
+      "source_case_id": "vx-305",
+      "source_case_sha256": "933a4b5b3b5703ff46453e7c1febcb69e2cdf97182dfd11a49ecf7f4a3f84890",
+      "task_class": "HIDDEN_KNOWN",
+      "provider_view_sha256": "5f24619a25e4d08477baf8ecdec40cc8842dcbaa9e7cc7eca134038810ed9311",
+      "selected_root_service": "svc-8452f9b829",
+      "broad_fault_domain": "RUNTIME",
+      "provisional_mechanism_label": "runtime availability state",
+      "mechanism_description": "The target runtime is absent while target error evidence remains strong.",
+      "observed_symptoms": [
+        "metrics show a strong target error rate",
+        "runtime shows the target is not running"
+      ],
+      "selected_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "RUNTIME_NOT_RUNNING"
+      ],
+      "provider_call_expected": true,
+      "task_sha256": "be69cf99fd5f5627f4d0246d363a3074b95a8df9ff8d7cec851d5d469f9beadd"
+    },
+    {
+      "task_id": "rt-006",
+      "source_case_id": "vx-306",
+      "source_case_sha256": "5a6b9e9fc038ffbeacf16b2b0e1756eccd7fcd0fc2ae1dba4fb78057697b85a9",
+      "task_class": "HIDDEN_KNOWN",
+      "provider_view_sha256": "5f24619a25e4d08477baf8ecdec40cc8842dcbaa9e7cc7eca134038810ed9311",
+      "selected_root_service": "svc-75a0bd2dea",
+      "broad_fault_domain": "RUNTIME",
+      "provisional_mechanism_label": "runtime availability state",
+      "mechanism_description": "The target runtime is absent while target error evidence remains strong.",
+      "observed_symptoms": [
+        "metrics show a strong target error rate",
+        "runtime shows the target is not running"
+      ],
+      "selected_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "RUNTIME_NOT_RUNNING"
+      ],
+      "provider_call_expected": true,
+      "task_sha256": "fa48b35f86d86075debba20901898b0d9d25f18537907a16bb1f73e4f4c0d28c"
+    },
+    {
+      "task_id": "rt-007",
+      "source_case_id": "vx-307",
+      "source_case_sha256": "e30a3915ba1c2b7f239c2bc84faca7a842613077e35b4649e8a007715bd8014d",
+      "task_class": "HIDDEN_KNOWN",
+      "provider_view_sha256": "d17109f6b16f15d5587df0ffcbe69222e988d1d2d54855b15102371116437eb3",
+      "selected_root_service": "svc-c64512f0e1",
+      "broad_fault_domain": "RESOURCE",
+      "provisional_mechanism_label": "compute resource pressure",
+      "mechanism_description": "Sustained target compute utilization coincides with strong error evidence.",
+      "observed_symptoms": [
+        "metrics show a strong target error rate",
+        "resources show sustained target compute utilization"
+      ],
+      "selected_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "RESOURCE_CPU_OUTLIER"
+      ],
+      "provider_call_expected": true,
+      "task_sha256": "2bb7b81466016e073cd836d693ca3391dfbc56af14ea5885786bea1e5275b2d7"
+    },
+    {
+      "task_id": "rt-008",
+      "source_case_id": "vx-308",
+      "source_case_sha256": "a8245471340f3b30fabf6b9ebda6381196b3cba9be1446f991a8fcd65782fdc8",
+      "task_class": "HIDDEN_KNOWN",
+      "provider_view_sha256": "d17109f6b16f15d5587df0ffcbe69222e988d1d2d54855b15102371116437eb3",
+      "selected_root_service": "svc-aee314eeda",
+      "broad_fault_domain": "RESOURCE",
+      "provisional_mechanism_label": "compute resource pressure",
+      "mechanism_description": "Sustained target compute utilization coincides with strong error evidence.",
+      "observed_symptoms": [
+        "metrics show a strong target error rate",
+        "resources show sustained target compute utilization"
+      ],
+      "selected_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "RESOURCE_CPU_OUTLIER"
+      ],
+      "provider_call_expected": true,
+      "task_sha256": "60e3f9df0c3d2a670b7a6eb8d409e8b0a3fc1c0a8172dd7c3f22854ce33a1c69"
+    },
+    {
+      "task_id": "rt-009",
+      "source_case_id": "vx-309",
+      "source_case_sha256": "171de6ed2d55fee081b152681806f11bc391dc5bf3f949dad2dad09c803716f7",
+      "task_class": "HIDDEN_KNOWN",
+      "provider_view_sha256": "4179d60f372e091a266c4cacfee2f8277f76f33f1e2246cee8847a08a9eeffe1",
+      "selected_root_service": "svc-0d7b707a36",
+      "broad_fault_domain": "RESOURCE",
+      "provisional_mechanism_label": "growing memory pressure",
+      "mechanism_description": "Monotonic target memory growth coincides with an error log cluster.",
+      "observed_symptoms": [
+        "logs show a target memory pressure cluster",
+        "resources show monotonic target memory growth"
+      ],
+      "selected_anomaly_kinds": [
+        "LOG_ERROR_CLUSTER",
+        "RESOURCE_MEMORY_TREND"
+      ],
+      "provider_call_expected": true,
+      "task_sha256": "af3d6268e4ddeb677b68dd3df9584014db3de93690b62e479b5a4a0758e51080"
+    },
+    {
+      "task_id": "rt-010",
+      "source_case_id": "vx-310",
+      "source_case_sha256": "0c6a53bcb6d4ec3a1bc09fb4ce3718ec1a385550dad60fd96cc7b5423e8f8f11",
+      "task_class": "HIDDEN_KNOWN",
+      "provider_view_sha256": "4179d60f372e091a266c4cacfee2f8277f76f33f1e2246cee8847a08a9eeffe1",
+      "selected_root_service": "svc-e51b9e1bcc",
+      "broad_fault_domain": "RESOURCE",
+      "provisional_mechanism_label": "growing memory pressure",
+      "mechanism_description": "Monotonic target memory growth coincides with an error log cluster.",
+      "observed_symptoms": [
+        "logs show a target memory pressure cluster",
+        "resources show monotonic target memory growth"
+      ],
+      "selected_anomaly_kinds": [
+        "LOG_ERROR_CLUSTER",
+        "RESOURCE_MEMORY_TREND"
+      ],
+      "provider_call_expected": true,
+      "task_sha256": "6fe44b741304176da8a49e1786aad40ca2c18247236f7984ccd0d704599d164f"
+    },
+    {
+      "task_id": "rt-011",
+      "source_case_id": "vx-311",
+      "source_case_sha256": "1d0a8b503b5858084a988f63267c44c14cbec5e9af866dca266d6b101b880681",
+      "task_class": "UNREGISTERED",
+      "provider_view_sha256": "1f9fae31ed8c36d0ffc41a50e725d296c320267ca72ae64513e54f6ee21c7865",
+      "selected_root_service": "svc-28037ae9fb",
+      "broad_fault_domain": "CONCURRENCY",
+      "provisional_mechanism_label": "worker capacity exhaustion",
+      "mechanism_description": "Concurrent work waits for worker capacity while target errors rise.",
+      "observed_symptoms": [
+        "logs show worker pool semaphore wait under load",
+        "metrics show a strong target error rate"
+      ],
+      "selected_anomaly_kinds": [
+        "LOG_UNKNOWN_ERROR_PATTERN",
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "provider_call_expected": true,
+      "task_sha256": "6dc2dc52cab638e52cc33c17e965499b71188e73cb773c3bae33630bee74f07f"
+    },
+    {
+      "task_id": "rt-012",
+      "source_case_id": "vx-313",
+      "source_case_sha256": "dde67a7d7d486529c6b0379ac1008c82315e26cfbdb915c942d992496019242a",
+      "task_class": "UNREGISTERED",
+      "provider_view_sha256": "1f9fae31ed8c36d0ffc41a50e725d296c320267ca72ae64513e54f6ee21c7865",
+      "selected_root_service": "svc-1dc3d6375c",
+      "broad_fault_domain": "CONCURRENCY",
+      "provisional_mechanism_label": "queue backlog saturation",
+      "mechanism_description": "Queue backlog pressure delays workers while target errors rise.",
+      "observed_symptoms": [
+        "logs show queue backlog worker wait",
+        "metrics show a strong target error rate"
+      ],
+      "selected_anomaly_kinds": [
+        "LOG_UNKNOWN_ERROR_PATTERN",
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "provider_call_expected": true,
+      "task_sha256": "b118398a7e7c180953260286e89f20a76f2a5d97a9909839ed81f310f4f34877"
+    },
+    {
+      "task_id": "rt-013",
+      "source_case_id": "vx-316",
+      "source_case_sha256": "011578c7a4d05702d7c45b1bb14bab80a2ac7d17a03b012d31a00402a36ccde2",
+      "task_class": "UNREGISTERED",
+      "provider_view_sha256": "1f9fae31ed8c36d0ffc41a50e725d296c320267ca72ae64513e54f6ee21c7865",
+      "selected_root_service": "svc-9470751930",
+      "broad_fault_domain": "EXTERNAL",
+      "provisional_mechanism_label": "external quota throttling",
+      "mechanism_description": "External quota responses coincide with strong target error evidence.",
+      "observed_symptoms": [
+        "logs show external rate limit responses",
+        "metrics show a strong target error rate"
+      ],
+      "selected_anomaly_kinds": [
+        "LOG_UNKNOWN_ERROR_PATTERN",
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "provider_call_expected": true,
+      "task_sha256": "69eb2bdfb5aee3d325e9139198c5b24aaca83cfa33c2c9ef136b62f8247b4e40"
+    },
+    {
+      "task_id": "rt-014",
+      "source_case_id": "vx-315",
+      "source_case_sha256": "d6152d6e7a58d85e3e6f7cbc3709612ffde5ae695ed5258bfad7942eccf94ab0",
+      "task_class": "UNREGISTERED",
+      "provider_view_sha256": "1f9fae31ed8c36d0ffc41a50e725d296c320267ca72ae64513e54f6ee21c7865",
+      "selected_root_service": "svc-4c39ea767b",
+      "broad_fault_domain": "NETWORK",
+      "provisional_mechanism_label": "network transport degradation",
+      "mechanism_description": "Ordering sensitive transport resets require correlation beyond the bounded declarative rules.",
+      "observed_symptoms": [
+        "logs show transport reset ordering during reads",
+        "metrics show a strong target error rate"
+      ],
+      "selected_anomaly_kinds": [
+        "LOG_UNKNOWN_ERROR_PATTERN",
+        "METRIC_ERROR_OUTLIER"
+      ],
+      "provider_call_expected": true,
+      "task_sha256": "12fab583433104a23b1a99622f749ed7e1d0ef2ce6fc899e6c77360a71c1c2f2"
+    },
+    {
+      "task_id": "rt-015",
+      "source_case_id": "vx-317",
+      "source_case_sha256": "a3005ae173d2ecef7fa89869e4088107f3cf066a60881aa60b4f7c6faed61116",
+      "task_class": "DUPLICATE_CONTROL",
+      "provider_view_sha256": "1f9fae31ed8c36d0ffc41a50e725d296c320267ca72ae64513e54f6ee21c7865",
+      "selected_root_service": "svc-9e87901b82",
+      "broad_fault_domain": "CONFIGURATION",
+      "provisional_mechanism_label": "known configuration pattern",
+      "mechanism_description": "A recent opaque setting change already satisfies an active core clause.",
+      "observed_symptoms": [
+        "changes show a recent opaque setting rollout",
+        "metrics show a strong target error rate"
+      ],
+      "selected_anomaly_kinds": [],
+      "provider_call_expected": false,
+      "task_sha256": "04165cf18763cc1cff1d12d39de5e74d692bcedb68bef12e55fd2a3929f9aa3f"
+    },
+    {
+      "task_id": "rt-016",
+      "source_case_id": "vx-328",
+      "source_case_sha256": "808abae86f1aa509ec5e67502c9cefd975e2d66b931cb41ac7e4933b361511e3",
+      "task_class": "INSUFFICIENT_CONTROL",
+      "provider_view_sha256": "1f9fae31ed8c36d0ffc41a50e725d296c320267ca72ae64513e54f6ee21c7865",
+      "selected_root_service": "svc-01a294e042",
+      "broad_fault_domain": "UNKNOWN",
+      "provisional_mechanism_label": "weak incident signal",
+      "mechanism_description": "The available observation does not establish a formal incident mechanism.",
+      "observed_symptoms": [
+        "runtime remains healthy with no corroborating anomaly"
+      ],
+      "selected_anomaly_kinds": [],
+      "provider_call_expected": false,
+      "task_sha256": "fa2c455768a1159d9c3bd262e3944701648c4ea3f1dc3f8531b71c3e3f4f6d0a"
+    }
+  ],
+  "task_set_sha256": "264989db1a4491ebb9f54172a3ea58f55660cddbe0f2cd84f310dbb80cdcf35c"
+}

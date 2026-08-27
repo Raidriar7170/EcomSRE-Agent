@@ -1,0 +1,20 @@
+{
+  "diagnostic_sha256": "d50e1e667191162fadafc0424836abda9abfadab80a1dacfe48b50f079210931",
+  "execution_count": 1,
+  "failed_partial_sha256": "60724b2accb1551af3d0062e3f32c1b6237544d51912f766d8f1d5d084af546d",
+  "fix_code": "V234_PROTOCOL_FEEDBACK_AND_MODE_BINDING",
+  "fix_files": [
+    "scripts/analysis/freeze_dta_v234_manifest.py",
+    "scripts/analysis/run_dta_v234_provider_smoke.py",
+    "src/ecomsre/dta_v2/v23/evaluation_v234.py",
+    "src/ecomsre/dta_v2/v23/registration_provider_v234.py"
+  ],
+  "fixed_evaluation_execution_count": 0,
+  "prior_manifest_sha256": "4dd7291b3722a860320c0b044c70beec1d42df44403b0beb3e14a9ede2074d6e",
+  "prior_sentinel_sha256": "b865ffc8acdb75bb1586e280fa972044efd3a2890dc5db8124a2cbbae36c207f",
+  "record_sha256": "93992a5bf1c9996c27bd1ca3dac02369238b33a14723d5cf70ab45bdda5cb29e",
+  "recorded_at_utc": "2026-08-26T12:53:37.229474+00:00",
+  "repair_ordinal": 1,
+  "schema_version": "dta-v234.provider-smoke-repair.v1",
+  "superseded_manifest_sha256": "4dd7291b3722a860320c0b044c70beec1d42df44403b0beb3e14a9ede2074d6e"
+}

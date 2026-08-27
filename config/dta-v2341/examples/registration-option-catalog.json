@@ -1,0 +1,236 @@
+{
+  "schema_version": "dta-v2341.registration-option-catalog.v1",
+  "authorization_id": "authorization-v234-6de3e4554470ca19",
+  "registration_seed_sha256": "1ccc153c2a363eaf01606e5ab80f76ac39a6ecf0ffd0a11c7d46e6dc5d926b77",
+  "source_request_sha256": "d838873fed1859894cf5ef66fe1c198f3344af5baad9e315557510c7b1a6c9df",
+  "human_canonical_label": "connection-pool-exhaustion",
+  "broad_fault_domain": "CONCURRENCY",
+  "disposition_options": [
+    {
+      "disposition_alias": "D00",
+      "disposition": "DECLARATIVE_READY",
+      "semantic_summary": "Evidence supports at least one bounded declarative clause."
+    },
+    {
+      "disposition_alias": "D01",
+      "disposition": "ENGINEERING_REQUIRED",
+      "semantic_summary": "Evidence is meaningful but a required extraction capability is absent."
+    },
+    {
+      "disposition_alias": "D02",
+      "disposition": "DUPLICATE_EXISTING",
+      "semantic_summary": "The accepted evidence matches a visible existing registration."
+    },
+    {
+      "disposition_alias": "D03",
+      "disposition": "INSUFFICIENT_EVIDENCE",
+      "semantic_summary": "The accepted evidence cannot support formal registration."
+    }
+  ],
+  "predicate_options": [
+    {
+      "predicate_alias": "P00",
+      "draft": {
+        "predicate_name": "LOG_UNKNOWN_ERROR_PATTERN_SIGNAL",
+        "predicate_slug": "log-unknown-error-pattern-signal",
+        "implementation_mode": "DECLARATIVE_EXTENSION_PREDICATE",
+        "evidence_source": "LOGS",
+        "service_binding": "TARGET",
+        "require_exact_parent": false,
+        "semantic_definition": "The log unknown error pattern signal predicate is defined by its typed extraction rule and accepted evidence binding.",
+        "extraction_rule": {
+          "kind": "GENERIC_ANOMALY_KIND",
+          "anomaly_kind": "LOG_UNKNOWN_ERROR_PATTERN"
+        },
+        "threshold_rule": null,
+        "supporting_report_evidence_refs": [
+          "e:a:logs:svc-28037ae9fb:0:0cfba90b96b8"
+        ],
+        "positive_examples": [
+          "The log unknown error pattern signal predicate is present in accepted evidence."
+        ],
+        "negative_examples": [
+          "The log unknown error pattern signal predicate is absent from accepted evidence."
+        ]
+      },
+      "semantic_summary": "Log Unknown Error Pattern at the accepted root service.",
+      "evidence_summary": "Concurrent work waits at a worker-pool semaphore while strong target error-rate and latency evidence isolates local pool admission pressure."
+    },
+    {
+      "predicate_alias": "P01",
+      "draft": {
+        "predicate_name": "METRIC_ERROR_RATE_STRONG",
+        "predicate_slug": "metric-error-rate-strong",
+        "implementation_mode": "REUSE_CORE_PREDICATE",
+        "evidence_source": "METRICS",
+        "service_binding": "TARGET",
+        "require_exact_parent": false,
+        "semantic_definition": "The metric error rate strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+        "extraction_rule": {
+          "kind": "CORE_PREDICATE_REFERENCE",
+          "predicate_kind": "METRIC_ERROR_RATE_STRONG"
+        },
+        "threshold_rule": null,
+        "supporting_report_evidence_refs": [
+          "e:a:metrics:svc-28037ae9fb:core:0:887ff5bde1c6"
+        ],
+        "positive_examples": [
+          "The metric error rate strong predicate is present in accepted evidence."
+        ],
+        "negative_examples": [
+          "The metric error rate strong predicate is absent from accepted evidence."
+        ]
+      },
+      "semantic_summary": "Metric Error Outlier at the accepted root service.",
+      "evidence_summary": "Concurrent work waits at a worker-pool semaphore while strong target error-rate and latency evidence isolates local pool admission pressure."
+    },
+    {
+      "predicate_alias": "P02",
+      "draft": {
+        "predicate_name": "METRIC_LATENCY_STRONG",
+        "predicate_slug": "metric-latency-strong",
+        "implementation_mode": "REUSE_CORE_PREDICATE",
+        "evidence_source": "METRICS",
+        "service_binding": "TARGET_OR_PARENT",
+        "require_exact_parent": false,
+        "semantic_definition": "The metric latency strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+        "extraction_rule": {
+          "kind": "CORE_PREDICATE_REFERENCE",
+          "predicate_kind": "METRIC_LATENCY_STRONG"
+        },
+        "threshold_rule": null,
+        "supporting_report_evidence_refs": [
+          "e:a:metrics:svc-28037ae9fb:core:1:86618e2797ec"
+        ],
+        "positive_examples": [
+          "The metric latency strong predicate is present in accepted evidence."
+        ],
+        "negative_examples": [
+          "The metric latency strong predicate is absent from accepted evidence."
+        ]
+      },
+      "semantic_summary": "Metric Latency Outlier at the accepted root service.",
+      "evidence_summary": "Concurrent work waits at a worker-pool semaphore while strong target error-rate and latency evidence isolates local pool admission pressure."
+    }
+  ],
+  "clause_options": [
+    {
+      "clause_alias": "C00",
+      "predicate_aliases": [
+        "P00",
+        "P01",
+        "P02"
+      ],
+      "requirements": [
+        {
+          "predicate_name": "LOG_UNKNOWN_ERROR_PATTERN_SIGNAL",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_name": "METRIC_ERROR_RATE_STRONG",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_name": "METRIC_LATENCY_STRONG",
+          "service_binding": "TARGET_OR_PARENT",
+          "require_exact_parent": false
+        }
+      ],
+      "source_count": 2,
+      "rationale": "The clause requires its canonical predicates at their declared service bindings.",
+      "cross_source_corroboration": true,
+      "authoritative_single_predicate": false,
+      "semantic_summary": "Require log unknown error pattern signal and metric error rate strong and metric latency strong at their Runtime-bound services."
+    },
+    {
+      "clause_alias": "C01",
+      "predicate_aliases": [
+        "P00",
+        "P01"
+      ],
+      "requirements": [
+        {
+          "predicate_name": "LOG_UNKNOWN_ERROR_PATTERN_SIGNAL",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_name": "METRIC_ERROR_RATE_STRONG",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        }
+      ],
+      "source_count": 2,
+      "rationale": "The clause requires its canonical predicates at their declared service bindings.",
+      "cross_source_corroboration": true,
+      "authoritative_single_predicate": false,
+      "semantic_summary": "Require log unknown error pattern signal and metric error rate strong at their Runtime-bound services."
+    },
+    {
+      "clause_alias": "C02",
+      "predicate_aliases": [
+        "P00",
+        "P02"
+      ],
+      "requirements": [
+        {
+          "predicate_name": "LOG_UNKNOWN_ERROR_PATTERN_SIGNAL",
+          "service_binding": "TARGET",
+          "require_exact_parent": false
+        },
+        {
+          "predicate_name": "METRIC_LATENCY_STRONG",
+          "service_binding": "TARGET_OR_PARENT",
+          "require_exact_parent": false
+        }
+      ],
+      "source_count": 2,
+      "rationale": "The clause requires its canonical predicates at their declared service bindings.",
+      "cross_source_corroboration": true,
+      "authoritative_single_predicate": false,
+      "semantic_summary": "Require log unknown error pattern signal and metric latency strong at their Runtime-bound services."
+    }
+  ],
+  "confusable_options": [
+    {
+      "confusable_alias": "M00",
+      "mechanism_kind": "CORE",
+      "core_mechanism": "CONFIGURATION_ERROR",
+      "extension_mechanism_slug": null,
+      "semantic_summary": "Visible core mechanism Configuration Error."
+    },
+    {
+      "confusable_alias": "M01",
+      "mechanism_kind": "CORE",
+      "core_mechanism": "CPU_SATURATION",
+      "extension_mechanism_slug": null,
+      "semantic_summary": "Visible core mechanism Cpu Saturation."
+    },
+    {
+      "confusable_alias": "M02",
+      "mechanism_kind": "CORE",
+      "core_mechanism": "DEPENDENCY_LATENCY",
+      "extension_mechanism_slug": null,
+      "semantic_summary": "Visible core mechanism Dependency Latency."
+    },
+    {
+      "confusable_alias": "M03",
+      "mechanism_kind": "CORE",
+      "core_mechanism": "MEMORY_LEAK",
+      "extension_mechanism_slug": null,
+      "semantic_summary": "Visible core mechanism Memory Leak."
+    },
+    {
+      "confusable_alias": "M04",
+      "mechanism_kind": "CORE",
+      "core_mechanism": "SERVICE_UNAVAILABLE",
+      "extension_mechanism_slug": null,
+      "semantic_summary": "Visible core mechanism Service Unavailable."
+    }
+  ],
+  "engineering_gap_options": [],
+  "provider_calls": 0,
+  "catalog_sha256": "a9aa20edd839acca05149738c7bee9c2a10b82b47d96e4f64d24ccca1770c243"
+}

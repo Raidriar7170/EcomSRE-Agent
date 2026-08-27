@@ -350,3 +350,25 @@ allowlist, failed restoration, or unclean cleanup terminates
 `BLOCKED_DTA_V22_SAFETY`. No failure broadens cleanup, creates a second fault
 operation, or authorizes Agent remediation. A later live v2.2 campaign requires
 a separately designated Goal.
+
+## DTA v2.3.4.1 registration-alias successor boundary
+
+Under `DEC-059`, the frozen v2.3.4 terminal remains
+`BLOCKED_DTA_V234_PROVIDER`; its smoke execution count, repairs, artifacts, and
+PR #72 are predecessor evidence and cannot be rewritten or rerun. The
+v2.3.4.1 successor changes only the formal-registration Provider boundary.
+
+The Provider may return exactly six bounded fields: one disposition alias, one
+short mechanism concept, clause aliases, confusable aliases, engineering-gap
+aliases, and one non-executable rationale. Runtime owns the catalog, complete
+predicate and clause objects, service and evidence bindings, canonical order,
+fixed prose, stable IDs, test plan, hashes, validation, compiler use, and every
+promotion decision. Raw Provider material remains private below
+`.local/dta-v2341`; credentials and raw requests or responses are never tracked.
+
+The successor carries `action_authority = NONE`, repository-write authority
+`NONE`, zero Agent writes, zero Runbook executions, and no remediation
+registration. Hidden-known reconstruction is evaluator-only and never
+promotion-eligible. Duplicate and insufficient controls are resolved with zero
+Provider calls. No Docker, live fault, training, UI, database, or external
+write authority follows from this protocol.

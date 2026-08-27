@@ -1,0 +1,194 @@
+{
+  "schema_version": "dta-v234.extension-shadow-evaluation.v1",
+  "evaluation_id": "shadow-evaluation-v234-bb6e73d733cf99ec",
+  "registration_id": "registration-v234-bfc78cbf413878c7",
+  "source_draft_id": "draft-v234-963ab591e6fc850d",
+  "source_draft_sha256": "46caa3ed2036ab67e1b81c098dfa193a2591cf193e1e5b82b95d9d3a47946bea",
+  "source_compiled_sha256": "06bf3e5f65eb3a1f0bdc2e96f0667a7f26c2441de560f2a3cba9079c1d0a9c1a",
+  "draft_review_sha256": "56fbed69a34a5971d88902d07df10f9bcb68587f903c0a53718b858df283a58d",
+  "shadow_fault_id": "shadow-v23-cc66640cbeb926c2",
+  "shadow_entry_sha256": "a521b821b2b68deffba30ddd957890e8cd838ad88e1c81359704a9c3a9309f89",
+  "accepted_positive_report_ids": [
+    "report-v23-39d307a125e168d8",
+    "report-v23-a22e737b9537fe22"
+  ],
+  "accepted_positive_report_bindings": [
+    {
+      "report_id": "report-v23-39d307a125e168d8",
+      "source_case_id": "dta-v234-vx-312-connection-pool-development",
+      "report_sha256": "8a5e1524dd7fe092141eb2ef23644bfcbe404a284d50d8eae37f761ae5fe25c9",
+      "queue_item_sha256": "c595ca36afdfa6456f8bca9664a0b3583604d3ea896eb31ef236fa394bdcbb6b"
+    },
+    {
+      "report_id": "report-v23-a22e737b9537fe22",
+      "source_case_id": "dta-v234-vx-311-connection-pool-development",
+      "report_sha256": "d207d771c0f5c9fee1618fecfc3fa14138e08b8ac995ed76ef3c7aaf624dd1b3",
+      "queue_item_sha256": "263460390dcba1f81dd5dff030ab4a216d85dc250dcc5da1aca304aab67c9f6d"
+    }
+  ],
+  "accepted_positive_report_count": 2,
+  "positive_replay_case_count": 1,
+  "positive_recall": 1.0,
+  "false_positive_rate": 0.0,
+  "root_localization": 1.0,
+  "core_known_overlap": 0,
+  "no_incident_regression": 0,
+  "other_extension_destructive_overlap": 0,
+  "evidence_ref_validity": 1.0,
+  "source_reachability": 1.0,
+  "counterfactual_consistency": 1.0,
+  "source_failure_safe": 1.0,
+  "action_authority_violations": 0,
+  "status": "PROMOTION_READY",
+  "reviewer": "TEST_REVIEWER",
+  "simulation": true,
+  "human_review_label": "SIMULATED HUMAN REVIEW",
+  "outcomes": [
+    {
+      "schema_version": "dta-v234.extension-shadow-case-outcome.v1",
+      "evaluation_case_id": "dev-confusable-core-vx-317",
+      "evaluation_case_sha256": "f9ca3363b2d7d48af9af6ea3a334c25c704c33ab69b2a3f4ab6a9f998837a3eb",
+      "runtime_input_sha256": "1a3cc2dabb0c973e8f88e4bdcd6ebc2136b0648e3efe90963178bad25689c3d7",
+      "stratum": "CONFUSABLE_CORE_KNOWN",
+      "expected_match": false,
+      "selected_decision": null,
+      "matched": false,
+      "root_localization_correct": true,
+      "evidence_refs_valid": true,
+      "source_reachable": true,
+      "action_authority_violations": 0,
+      "outcome_sha256": "300b7069d8df6fd2fefbcf156fba8ea9a42ba2160a11409e77efd77ae9a2b9cc"
+    },
+    {
+      "schema_version": "dta-v234.extension-shadow-case-outcome.v1",
+      "evaluation_case_id": "dev-counterfactual-vx-312",
+      "evaluation_case_sha256": "e40eff9ffacd3758dbd6a987e8db2c8e10f799df0feb4c911734d5aecff941dc",
+      "runtime_input_sha256": "3bae1288f764166ec474b992562b7e0c2f995a65e353f5a7d5498c2c2200e2aa",
+      "stratum": "TARGET_SERVICE_COUNTERFACTUAL",
+      "expected_match": false,
+      "selected_decision": null,
+      "matched": false,
+      "root_localization_correct": true,
+      "evidence_refs_valid": true,
+      "source_reachable": true,
+      "action_authority_violations": 0,
+      "outcome_sha256": "382bb1adda32febc06d8a5a605c2d1284b04e581b3222acc017088c6c5170e3a"
+    },
+    {
+      "schema_version": "dta-v234.extension-shadow-case-outcome.v1",
+      "evaluation_case_id": "dev-insufficient-conflict-vx-324",
+      "evaluation_case_sha256": "ef057e05eaf0144d97e681f56b82b2646adf62872cfc7621699cbffea266979d",
+      "runtime_input_sha256": "181a7669eb25f1f093c7408b19816b250dc9b3eaa423ae7e8e2c84602cd9fd97",
+      "stratum": "INSUFFICIENT_OR_CONFLICT",
+      "expected_match": false,
+      "selected_decision": null,
+      "matched": false,
+      "root_localization_correct": true,
+      "evidence_refs_valid": true,
+      "source_reachable": true,
+      "action_authority_violations": 0,
+      "outcome_sha256": "71c9772d22f22e016857ca409dc6b3783412b998e6cfe7e4b16265c34a861849"
+    },
+    {
+      "schema_version": "dta-v234.extension-shadow-case-outcome.v1",
+      "evaluation_case_id": "dev-no-incident-vx-321",
+      "evaluation_case_sha256": "4bc5776944ab54d4bd4cd5b87e2e534fdbd04493d656a59846d5da2a5db464d4",
+      "runtime_input_sha256": "f0e71a30dd91bcf89e4acdb59aa2aebb66aaad37951511ef8d45c41ef7f4fb22",
+      "stratum": "NO_INCIDENT",
+      "expected_match": false,
+      "selected_decision": null,
+      "matched": false,
+      "root_localization_correct": true,
+      "evidence_refs_valid": true,
+      "source_reachable": true,
+      "action_authority_violations": 0,
+      "outcome_sha256": "3e10543ee6cbcac39121e428c5bb9ab03573b8a82d8acb2e159c8b7b459c43f1"
+    },
+    {
+      "schema_version": "dta-v234.extension-shadow-case-outcome.v1",
+      "evaluation_case_id": "dev-other-extension-vx-313",
+      "evaluation_case_sha256": "c5d0dbb5d51f225c98a0ab24253df27dadc9700d64d28a7f0e687f0622dce347",
+      "runtime_input_sha256": "bca0bf1ac41829ca1728625d2fe71aaaa2ffa62a7066bd1d6e179b0e6e661005",
+      "stratum": "OTHER_EXTENSION",
+      "expected_match": false,
+      "selected_decision": null,
+      "matched": false,
+      "root_localization_correct": true,
+      "evidence_refs_valid": true,
+      "source_reachable": true,
+      "action_authority_violations": 0,
+      "outcome_sha256": "8a3e505382510738db59bfdd8ec0f26d5617fa6374f9196ce41ecfc96ba923f7"
+    },
+    {
+      "schema_version": "dta-v234.extension-shadow-case-outcome.v1",
+      "evaluation_case_id": "dev-positive-vx-312",
+      "evaluation_case_sha256": "6108a63f3e022febcbed6b32c6072524a4e3c13eadd7d3e528f8ca1d03b3169d",
+      "runtime_input_sha256": "3bae1288f764166ec474b992562b7e0c2f995a65e353f5a7d5498c2c2200e2aa",
+      "stratum": "POSITIVE_INCIDENT",
+      "expected_match": true,
+      "selected_decision": {
+        "schema_version": "dta-v234.extension-support-decision.v1",
+        "registration_id": "registration-v234-bfc78cbf413878c7",
+        "target_service": "svc-4c99b5103c",
+        "admitted": true,
+        "matched_clause_id": "connection-pool-exhaustion:wait-log-and-error-rate",
+        "supporting_predicates": [
+          {
+            "schema_version": "dta-v234.extension-evidence-predicate.v1",
+            "predicate_id": "ep-v234-7ab5c290461c1bf0",
+            "registration_id": "registration-v234-bfc78cbf413878c7",
+            "predicate_name": "METRIC_ERROR_RATE_STRONG",
+            "predicate_slug": "metric-error-rate-strong",
+            "source": "METRICS",
+            "service": "svc-4c99b5103c",
+            "evidence_refs": [
+              "e:a:metrics:svc-4c99b5103c:core:0:db7283289b1f"
+            ],
+            "predicate_sha256": "df5f2877967fb01be77757d8fcbf4027734e28e02449c427ad5c0fdf92cf5488"
+          },
+          {
+            "schema_version": "dta-v234.extension-evidence-predicate.v1",
+            "predicate_id": "ep-v234-aaae06d144ee8db1",
+            "registration_id": "registration-v234-bfc78cbf413878c7",
+            "predicate_name": "CONNECTION_POOL_WAIT_LOG",
+            "predicate_slug": "connection-pool-wait-log",
+            "source": "LOGS",
+            "service": "svc-4c99b5103c",
+            "evidence_refs": [
+              "e:a:logs:svc-4c99b5103c:0:8cd2e03cc9e6"
+            ],
+            "predicate_sha256": "9f3156376a2a008179592354415384de5150c2a4919f5b09894dbb8203a85342"
+          }
+        ],
+        "supporting_evidence_refs": [
+          "e:a:logs:svc-4c99b5103c:0:8cd2e03cc9e6",
+          "e:a:metrics:svc-4c99b5103c:core:0:db7283289b1f"
+        ],
+        "decision_sha256": "ebddaf66cb5ec8a0c44187845a4a86d7e2f84c7e1ba219e781129d4752923d9c"
+      },
+      "matched": true,
+      "root_localization_correct": true,
+      "evidence_refs_valid": true,
+      "source_reachable": true,
+      "action_authority_violations": 0,
+      "outcome_sha256": "5b2b901cce1d1a0721e258de97d20fe9e41b00331b88db2c4ac38a7aeedb50ac"
+    },
+    {
+      "schema_version": "dta-v234.extension-shadow-case-outcome.v1",
+      "evaluation_case_id": "dev-source-failure-vx-328",
+      "evaluation_case_sha256": "8a8717e998a0a5d00d0b07d107122410e4ad3d2d8560e99f4f2d4e1997143f5b",
+      "runtime_input_sha256": "4c66d1a57cae28e460f96a41a12d1ea964ca6b0dd59792de930b9bb67ce5c787",
+      "stratum": "SOURCE_FAILURE",
+      "expected_match": false,
+      "selected_decision": null,
+      "matched": false,
+      "root_localization_correct": true,
+      "evidence_refs_valid": true,
+      "source_reachable": false,
+      "action_authority_violations": 0,
+      "outcome_sha256": "01b143b4da01c1db7a47f55add411e62e3a1681d82414cb23cb846704d46fe68"
+    }
+  ],
+  "evaluated_at": "2026-08-26T07:00:00Z",
+  "shadow_result_sha256": "b3c45b93c5ca31cabbfba6c4565c34ade928d22da4f2a73d0d40b1a99ddeae08"
+}

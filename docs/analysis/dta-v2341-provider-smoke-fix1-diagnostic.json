@@ -1,0 +1,79 @@
+{
+  "schema_version": "dta-v2341.provider-smoke-repair-diagnostic.v1",
+  "repair_ordinal": 1,
+  "execution_count": 1,
+  "fixed_evaluation_execution_count": 0,
+  "failure_task_id": "smoke-v2341-05",
+  "failure_role": "ENGINEERING_REQUIRED",
+  "safe_exception_type": "DiscoveryProviderProtocolFailureV23",
+  "safe_error": "registration alias Provider exhausted two protocol repairs",
+  "fix_code": "V2341_DISPOSITION_GAP_CARDINALITY_BINDING",
+  "prior_manifest_sha256": "0e8d7e0215a854d69d6841552c29fbff3ac5377e70c286136b4e15f3a1f48811",
+  "prior_manifest_file_sha256": "99abb02aba276da24377dfabb7092f16ecc33cd02c0c6ec5136a088dcf787f0f",
+  "prior_sentinel_file_sha256": "27ff3a649e8611f2eb941e25f38ecd7ed7624118f37d6ef734711cf0de6293ac",
+  "blocker_sha256": "6d9d2cc040c2d8b76c8b5bf45333cf932b96264cd699afa161995b5d5d569064",
+  "blocker_file_sha256": "416299db95e1590141fbe4d20b048d50aa26cbdee3b21301652049453535fa49",
+  "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw/smoke",
+  "raw_bindings": [
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke/request-001.json",
+      "sha256": "3a0bfa052cde1def0802327abe285788d3fc27c925eb426df37b6e9f66e2e545"
+    },
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke/request-002.json",
+      "sha256": "529924284ba8a2a61268f52ee83fac7f3b3419d3cadb0fad05870975bbf59baa"
+    },
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke/request-003.json",
+      "sha256": "344f3ec51da33d2c5c2e88ea8ec02c211e783cdda84e500456151e69f37e6ca3"
+    },
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke/request-004.json",
+      "sha256": "9547ad8c7902218fa5012ce9067f93380b6e7f46c2877bbeb8c191e037473558"
+    },
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke/request-005.json",
+      "sha256": "e94326f4615204931c9da8bb33db1ee42bc4b1dd9d47e7e2c21faa6a2959a873"
+    },
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke/request-006.json",
+      "sha256": "710aa05fe8189269ae14620d62a5e0036d0fef22c89900896d20d02f1b123c7d"
+    },
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke/request-007.json",
+      "sha256": "a826080d8ceb27261530094ce18e701231ee6c4ad202e2df6afbe3723bec7917"
+    },
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke/response-001.json",
+      "sha256": "80641a38424ab6ef59f5ba2bf24ddb9a1f9f3fe2a44918876da8622fd491446a"
+    },
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke/response-002.json",
+      "sha256": "4d1ca6642a245c6039178fec10034798be709ca4ccc3f8d377ad40b5d37c4930"
+    },
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke/response-003.json",
+      "sha256": "d86285173a9c32741c87b7c33c4c7bf2fc6a0c435fc5be4704bfd2f18734b6be"
+    },
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke/response-004.json",
+      "sha256": "0e321420e1a0342e2cbc830b57e6cc12673c3d377fe3954eb5f9fb233beb9727"
+    },
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke/response-005.json",
+      "sha256": "c68ec3d5e29e177e39a156dd347241eb85f63ec50f175d69f27284cd2a5b35a2"
+    },
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke/response-006.json",
+      "sha256": "42d61e788eac6daecce7a83fcecbf6767d03924f663abddef97dbd0db92ee9b7"
+    },
+    {
+      "path": ".local/dta-v2341/provider-raw/smoke/response-007.json",
+      "sha256": "f2b75bfda3a080e5d69c36f0f2b7ecb30a83f00f4773e385c6bfcbb8cf04fe17"
+    }
+  ],
+  "raw_bindings_sha256": "98c4a1362223d30dfa7cca630ded3219752bb37081cf7113761ed3a3dcf5c1a2",
+  "original_provider_call_count": 7,
+  "diagnosed_at_utc": "2026-08-27T03:29:21Z",
+  "diagnostic_sha256": "bc95fcb4bbee32617ef5f20ba9311ab3f7079a0d766d2daf3547d7bd827f6c7b"
+}

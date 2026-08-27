@@ -1,0 +1,183 @@
+{
+  "schema_version": "dta-v2341.registration-evaluation-admission.v1",
+  "task_count": 16,
+  "hidden_known_task_count": 10,
+  "genuinely_unregistered_task_count": 4,
+  "control_task_count": 2,
+  "provider_called_task_count": 14,
+  "catalog_feasibility_pass_count": 14,
+  "hidden_view_pass_count": 10,
+  "hidden_identifier_leaks": 0,
+  "unregistered_core_clause_match_count": 0,
+  "duplicate_control_core_match_count": 1,
+  "insufficient_control_evidence_source_count": 0,
+  "task_digest_overlap_count": 0,
+  "truth_evaluator_only": true,
+  "premature_truth_reads": 0,
+  "provider_calls": 0,
+  "action_authority_violations": 0,
+  "tasks": [
+    {
+      "task_id": "rt-101",
+      "role": "HIDDEN_KNOWN_RECONSTRUCTION",
+      "provider_call_expected": true,
+      "target_hidden": true,
+      "catalog_feasibility_pass": true,
+      "hidden_identifier_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "rt-102",
+      "role": "HIDDEN_KNOWN_RECONSTRUCTION",
+      "provider_call_expected": true,
+      "target_hidden": true,
+      "catalog_feasibility_pass": true,
+      "hidden_identifier_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "rt-103",
+      "role": "HIDDEN_KNOWN_RECONSTRUCTION",
+      "provider_call_expected": true,
+      "target_hidden": true,
+      "catalog_feasibility_pass": true,
+      "hidden_identifier_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "rt-104",
+      "role": "HIDDEN_KNOWN_RECONSTRUCTION",
+      "provider_call_expected": true,
+      "target_hidden": true,
+      "catalog_feasibility_pass": true,
+      "hidden_identifier_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "rt-105",
+      "role": "HIDDEN_KNOWN_RECONSTRUCTION",
+      "provider_call_expected": true,
+      "target_hidden": true,
+      "catalog_feasibility_pass": true,
+      "hidden_identifier_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "rt-106",
+      "role": "HIDDEN_KNOWN_RECONSTRUCTION",
+      "provider_call_expected": true,
+      "target_hidden": true,
+      "catalog_feasibility_pass": true,
+      "hidden_identifier_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "rt-107",
+      "role": "HIDDEN_KNOWN_RECONSTRUCTION",
+      "provider_call_expected": true,
+      "target_hidden": true,
+      "catalog_feasibility_pass": true,
+      "hidden_identifier_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "rt-108",
+      "role": "HIDDEN_KNOWN_RECONSTRUCTION",
+      "provider_call_expected": true,
+      "target_hidden": true,
+      "catalog_feasibility_pass": true,
+      "hidden_identifier_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "rt-109",
+      "role": "HIDDEN_KNOWN_RECONSTRUCTION",
+      "provider_call_expected": true,
+      "target_hidden": true,
+      "catalog_feasibility_pass": true,
+      "hidden_identifier_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "rt-110",
+      "role": "HIDDEN_KNOWN_RECONSTRUCTION",
+      "provider_call_expected": true,
+      "target_hidden": true,
+      "catalog_feasibility_pass": true,
+      "hidden_identifier_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "rt-111",
+      "role": "GENUINELY_UNREGISTERED",
+      "provider_call_expected": true,
+      "target_hidden": false,
+      "catalog_feasibility_pass": true,
+      "hidden_identifier_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "rt-112",
+      "role": "GENUINELY_UNREGISTERED",
+      "provider_call_expected": true,
+      "target_hidden": false,
+      "catalog_feasibility_pass": true,
+      "hidden_identifier_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "rt-113",
+      "role": "GENUINELY_UNREGISTERED",
+      "provider_call_expected": true,
+      "target_hidden": false,
+      "catalog_feasibility_pass": true,
+      "hidden_identifier_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "rt-114",
+      "role": "GENUINELY_UNREGISTERED",
+      "provider_call_expected": true,
+      "target_hidden": false,
+      "catalog_feasibility_pass": true,
+      "hidden_identifier_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "rt-115",
+      "role": "DUPLICATE_CONTROL",
+      "provider_call_expected": false,
+      "target_hidden": false,
+      "catalog_feasibility_pass": true,
+      "hidden_identifier_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "rt-116",
+      "role": "INSUFFICIENT_CONTROL",
+      "provider_call_expected": false,
+      "target_hidden": false,
+      "catalog_feasibility_pass": true,
+      "hidden_identifier_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    }
+  ],
+  "terminal": "DTA_V2341_EVALUATION_DATA_PASS",
+  "admission_sha256": "35e165750c0754d2cf6a3cfb0fd0a92875bb1bc17db257cedcb1985ee6684818"
+}

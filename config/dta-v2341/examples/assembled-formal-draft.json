@@ -1,0 +1,204 @@
+{
+  "action_authority": "NONE",
+  "authorization_id": "authorization-v234-6de3e4554470ca19",
+  "core_ontology_snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa",
+  "draft_id": "draft-v234-04032fbcfe5c6f87",
+  "draft_sha256": "2b245d2135dedea6479de7e9ad01291980e6539040fb2362a92de4e35b3f7e30",
+  "implementation_mode": "DECLARATIVE_READY",
+  "mechanism": {
+    "broad_fault_domain": "CONCURRENCY",
+    "confusable_core_mechanisms": [
+      "CONFIGURATION_ERROR",
+      "CPU_SATURATION"
+    ],
+    "confusable_extension_mechanisms": [],
+    "display_name": "Connection Pool Exhaustion",
+    "distinguishing_summary": "The connection pool exhaustion mechanism is distinguished by its canonical clauses and evidence bindings.",
+    "human_definition": "The connection pool exhaustion mechanism is defined by bounded evidence predicates and canonical support clauses.",
+    "mechanism_enum_name": "CONNECTION_POOL_EXHAUSTION",
+    "mechanism_slug": "connection-pool-exhaustion"
+  },
+  "predicates": [
+    {
+      "evidence_source": "LOGS",
+      "extraction_rule": {
+        "anomaly_kind": "LOG_UNKNOWN_ERROR_PATTERN",
+        "kind": "GENERIC_ANOMALY_KIND"
+      },
+      "implementation_mode": "DECLARATIVE_EXTENSION_PREDICATE",
+      "negative_examples": [
+        "The log unknown error pattern signal predicate is absent from accepted evidence."
+      ],
+      "positive_examples": [
+        "The log unknown error pattern signal predicate is present in accepted evidence."
+      ],
+      "predicate_name": "LOG_UNKNOWN_ERROR_PATTERN_SIGNAL",
+      "predicate_slug": "log-unknown-error-pattern-signal",
+      "require_exact_parent": false,
+      "semantic_definition": "The log unknown error pattern signal predicate is defined by its typed extraction rule and accepted evidence binding.",
+      "service_binding": "TARGET",
+      "supporting_report_evidence_refs": [
+        "e:a:logs:svc-28037ae9fb:0:0cfba90b96b8"
+      ],
+      "threshold_rule": null
+    },
+    {
+      "evidence_source": "METRICS",
+      "extraction_rule": {
+        "kind": "CORE_PREDICATE_REFERENCE",
+        "predicate_kind": "METRIC_ERROR_RATE_STRONG"
+      },
+      "implementation_mode": "REUSE_CORE_PREDICATE",
+      "negative_examples": [
+        "The metric error rate strong predicate is absent from accepted evidence."
+      ],
+      "positive_examples": [
+        "The metric error rate strong predicate is present in accepted evidence."
+      ],
+      "predicate_name": "METRIC_ERROR_RATE_STRONG",
+      "predicate_slug": "metric-error-rate-strong",
+      "require_exact_parent": false,
+      "semantic_definition": "The metric error rate strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+      "service_binding": "TARGET",
+      "supporting_report_evidence_refs": [
+        "e:a:metrics:svc-28037ae9fb:core:0:887ff5bde1c6"
+      ],
+      "threshold_rule": null
+    },
+    {
+      "evidence_source": "METRICS",
+      "extraction_rule": {
+        "kind": "CORE_PREDICATE_REFERENCE",
+        "predicate_kind": "METRIC_LATENCY_STRONG"
+      },
+      "implementation_mode": "REUSE_CORE_PREDICATE",
+      "negative_examples": [
+        "The metric latency strong predicate is absent from accepted evidence."
+      ],
+      "positive_examples": [
+        "The metric latency strong predicate is present in accepted evidence."
+      ],
+      "predicate_name": "METRIC_LATENCY_STRONG",
+      "predicate_slug": "metric-latency-strong",
+      "require_exact_parent": false,
+      "semantic_definition": "The metric latency strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+      "service_binding": "TARGET_OR_PARENT",
+      "supporting_report_evidence_refs": [
+        "e:a:metrics:svc-28037ae9fb:core:1:86618e2797ec"
+      ],
+      "threshold_rule": null
+    }
+  ],
+  "provider_trace": {
+    "assembled_content_sha256": "741a7c96225af9ee6b8c157f489f4e412e3154c324820c0ecb53cc2cd5784509",
+    "canonical_selection_sha256": "932ff9de97159072dd7cf65d5ea5db607a0755f206e3a1c43e52932528224667",
+    "max_exact_request_retries": 3,
+    "protocol_repairs": 0,
+    "provider_calls": 1,
+    "provider_mode": "OPENAI_COMPATIBLE",
+    "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw",
+    "raw_response_sha256": "30aafcb6f630e18336637bf219dd9fe1c91b8370901a2a160b3b16bbde867e5c",
+    "request_sha256": "e7b32c0ce1b7e43068079bb308f7924570551fa8ebd3a459eba53265365c3853",
+    "schema_version": "dta-v2341.registration-alias-provider-trace.v1",
+    "semantic_retries": 0,
+    "trace_sha256": "14daeb680d200c144d62a00d40f6567ff74715bc4ba8912958e3f0860e282ffa",
+    "transport_retries": 0
+  },
+  "registration_seed_sha256": "1ccc153c2a363eaf01606e5ab80f76ac39a6ecf0ffd0a11c7d46e6dc5d926b77",
+  "remediation_registration": "NOT_INCLUDED",
+  "repository_write_authority": "NONE",
+  "schema_version": "dta-v234.formal-fault-registration-draft.v1",
+  "shadow_fault_id": "shadow-v23-cc66640cbeb926c2",
+  "support_clauses": [
+    {
+      "clause_id": "connection-pool-exhaustion:clause-01",
+      "mechanism_slug": "connection-pool-exhaustion",
+      "rationale": "The clause requires its canonical predicates at their declared service bindings.",
+      "requirements": [
+        {
+          "predicate_name": "LOG_UNKNOWN_ERROR_PATTERN_SIGNAL",
+          "require_exact_parent": false,
+          "service_binding": "TARGET"
+        },
+        {
+          "predicate_name": "METRIC_ERROR_RATE_STRONG",
+          "require_exact_parent": false,
+          "service_binding": "TARGET"
+        },
+        {
+          "predicate_name": "METRIC_LATENCY_STRONG",
+          "require_exact_parent": false,
+          "service_binding": "TARGET_OR_PARENT"
+        }
+      ]
+    },
+    {
+      "clause_id": "connection-pool-exhaustion:clause-02",
+      "mechanism_slug": "connection-pool-exhaustion",
+      "rationale": "The clause requires its canonical predicates at their declared service bindings.",
+      "requirements": [
+        {
+          "predicate_name": "LOG_UNKNOWN_ERROR_PATTERN_SIGNAL",
+          "require_exact_parent": false,
+          "service_binding": "TARGET"
+        },
+        {
+          "predicate_name": "METRIC_ERROR_RATE_STRONG",
+          "require_exact_parent": false,
+          "service_binding": "TARGET"
+        }
+      ]
+    },
+    {
+      "clause_id": "connection-pool-exhaustion:clause-03",
+      "mechanism_slug": "connection-pool-exhaustion",
+      "rationale": "The clause requires its canonical predicates at their declared service bindings.",
+      "requirements": [
+        {
+          "predicate_name": "LOG_UNKNOWN_ERROR_PATTERN_SIGNAL",
+          "require_exact_parent": false,
+          "service_binding": "TARGET"
+        },
+        {
+          "predicate_name": "METRIC_LATENCY_STRONG",
+          "require_exact_parent": false,
+          "service_binding": "TARGET_OR_PARENT"
+        }
+      ]
+    }
+  ],
+  "test_plan": {
+    "confusable_core_mechanisms": [
+      "CONFIGURATION_ERROR",
+      "CPU_SATURATION"
+    ],
+    "positive_case_ids": [
+      "dta-v234-vx-311-connection-pool-development"
+    ],
+    "positive_report_ids": [
+      "report-v23-a22e737b9537fe22"
+    ],
+    "required_clause_binding_tests": [
+      "clause-01-binding-control",
+      "clause-02-binding-control",
+      "clause-03-binding-control"
+    ],
+    "required_counterfactuals": [
+      "clause-01-target-counterfactual",
+      "clause-02-target-counterfactual",
+      "clause-03-target-counterfactual"
+    ],
+    "required_known_controls": [
+      "known-configuration-error-control",
+      "known-cpu-saturation-control"
+    ],
+    "required_no_incident_controls": [
+      "no-incident-concurrency-control"
+    ],
+    "required_source_failure_tests": [
+      "logs-unavailable-fails-closed",
+      "metrics-unavailable-fails-closed"
+    ]
+  },
+  "unresolved_engineering_questions": []
+}

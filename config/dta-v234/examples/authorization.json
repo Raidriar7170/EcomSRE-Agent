@@ -1,0 +1,12 @@
+{
+  "schema_version": "dta-v234.registration-generation-authorization.v1",
+  "authorization_id": "authorization-v234-832383afd5cd4958",
+  "shadow_fault_id": "shadow-v23-c534ad2ad91cb59c",
+  "source_review_record_id": "review-v23-12feddbdb280d619",
+  "reviewer": "TEST_REVIEWER",
+  "authorization_note": "SIMULATED HUMAN REVIEW: generate a formal draft only.",
+  "authorized_scope": "FORMAL_DRAFT_ONLY",
+  "authorized_at": "2026-08-26T06:00:00Z",
+  "simulation": true,
+  "authorization_sha256": "a23efc84311628769e5249fa3ae69bf141f60446f17dcf8d79f9ee0bb8536487"
+}

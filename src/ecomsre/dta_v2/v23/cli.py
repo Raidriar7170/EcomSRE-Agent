@@ -6,6 +6,7 @@ import argparse
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import tempfile
 from typing import Sequence
 
 from ecomsre.dta_v2.v22.predicates import MechanismV22
@@ -26,6 +27,60 @@ from ecomsre.dta_v2.v23.review_registry import (
 from ecomsre.dta_v2.v23.review_registry_v231 import (
     LocalReviewStoreV231,
     render_review_display_v231,
+)
+from ecomsre.dta_v2.v23.core_ontology_snapshot_v234 import (
+    build_core_ontology_schema_snapshot_v234,
+)
+from ecomsre.dta_v2.v23.ontology_expansion_v234 import (
+    LocalOntologyExpansionStoreV234,
+)
+from ecomsre.dta_v2.v23.registration_compiler_v234 import (
+    compile_registration_v234,
+    render_registration_patch_bundle_v234,
+)
+from ecomsre.dta_v2.v23.registration_provider_v234 import (
+    OpenAICompatibleRegistrationDraftTransportV234,
+    RegistrationDraftProviderV234,
+)
+from ecomsre.dta_v2.v23.registration_alias_provider_v2341 import (
+    OpenAICompatibleRegistrationAliasTransportV2341,
+    RegistrationAliasProviderV2341,
+    build_registration_alias_provider_request_v2341,
+    build_registration_alias_source_request_v2341,
+)
+from ecomsre.dta_v2.v23.registration_assembler_v2341 import (
+    RegistrationValidationContextV2341,
+    assemble_formal_registration_draft_v2341,
+)
+from ecomsre.dta_v2.v23.registration_catalog_v2341 import (
+    build_registration_option_catalog_v2341,
+)
+from ecomsre.dta_v2.v23.registration_store_v2341 import (
+    LocalRegistrationAliasStoreV2341,
+)
+from ecomsre.dta_v2.v23.provider_smoke_v2341 import (
+    RegistrationSmokeModeV2341,
+    load_smoke_tasks_v2341,
+    load_smoke_truth_v2341,
+    run_provider_smoke_v2341,
+)
+from ecomsre.dta_v2.v23.registration_store_v234 import (
+    LocalRegistrationDraftStoreV234,
+)
+from ecomsre.dta_v2.v23.registration_validator_v234 import (
+    validate_registration_draft_v234,
+)
+from ecomsre.dta_v2.v23.extension_registry_v234 import (
+    LocalExtensionOntologyStoreV234,
+    OntologyDraftReviewDecisionV234,
+    OntologyPromotionDecisionV234,
+    build_ontology_draft_review_v234,
+)
+from ecomsre.dta_v2.v23.extension_runtime_v234 import (
+    diagnose_extension_enabled_v234,
+)
+from ecomsre.dta_v2.v23.registration_evaluator_v234 import (
+    evaluate_increment3_development_shadow_v234,
 )
 from ecomsre.dta_v2.v23.evaluation import (
     OpenAICompatibleDiscoveryTransportV23,
@@ -64,6 +119,9 @@ from ecomsre.dta_v2.v23.evaluation_study_v233 import (
     EvaluationCaseComparisonV233,
     run_fixed_evaluation_once_v233,
 )
+from ecomsre.dta_v2.v23.evaluation_study_v2341 import (
+    run_runtime_preflight_v2341,
+)
 from ecomsre.dta_v2.v23.evaluation_v233 import (
     run_combined_arm_v233,
     run_domain_bound_arm_v233,
@@ -71,6 +129,7 @@ from ecomsre.dta_v2.v23.evaluation_v233 import (
 
 
 DEFAULT_LOCAL_ROOT_V23 = Path(".local/dta-v23")
+DEFAULT_LOCAL_ROOT_V234 = Path(".local/dta-v234")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -92,7 +151,16 @@ def build_parser() -> argparse.ArgumentParser:
     diagnose.add_argument("--conflict-policy", choices=("strict", "competing"))
     diagnose.add_argument(
         "--policy",
-        choices=("domain-bound", "domain-bound-witness-guard"),
+        choices=(
+            "domain-bound",
+            "domain-bound-witness-guard",
+            "extension-enabled",
+        ),
+    )
+    diagnose.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
     )
     domain_project = subparsers.add_parser("domain-project")
     domain_project.add_argument("--case", required=True)
@@ -149,6 +217,143 @@ def build_parser() -> argparse.ArgumentParser:
     shadow_match = shadow_commands.add_parser("match")
     shadow_match.add_argument("--report", type=Path, required=True)
     shadow_match.add_argument("--local-root", type=Path, default=DEFAULT_LOCAL_ROOT_V23)
+    ontology = subparsers.add_parser("ontology")
+    ontology_commands = ontology.add_subparsers(
+        dest="ontology_command",
+        required=True,
+    )
+    ontology_list = ontology_commands.add_parser("list")
+    ontology_list.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_authorize = ontology_commands.add_parser("authorize-draft")
+    ontology_authorize.add_argument("shadow_fault_id")
+    ontology_authorize.add_argument("--reviewer", required=True)
+    ontology_authorize.add_argument("--note", required=True)
+    ontology_authorize.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_commands.add_parser("snapshot")
+    ontology_catalog = ontology_commands.add_parser("catalog")
+    ontology_catalog.add_argument("authorization_id")
+    ontology_catalog.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_generate = ontology_commands.add_parser("generate-draft")
+    ontology_generate.add_argument("authorization_id")
+    ontology_generate.add_argument(
+        "--protocol",
+        choices=("alias-v2341", "legacy-v234"),
+        default="alias-v2341",
+    )
+    provider_mode = ontology_generate.add_mutually_exclusive_group(required=True)
+    provider_mode.add_argument("--development-fixture", action="store_true")
+    provider_mode.add_argument("--provider-env", type=Path)
+    ontology_generate.add_argument("--minimum-request-interval", type=float, default=6.0)
+    ontology_generate.add_argument("--timeout", type=float, default=120.0)
+    ontology_generate.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_show_selection = ontology_commands.add_parser("show-selection")
+    ontology_show_selection.add_argument("draft_id")
+    ontology_show_selection.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_assemble = ontology_commands.add_parser("assemble-draft")
+    ontology_assemble.add_argument("selection_id")
+    ontology_assemble.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_smoke = ontology_commands.add_parser("smoke")
+    ontology_smoke.add_argument("--split", choices=("v2341-smoke",), required=True)
+    ontology_smoke.add_argument(
+        "--repository-root",
+        type=Path,
+        default=Path.cwd(),
+    )
+    ontology_evaluate = ontology_commands.add_parser("evaluate")
+    ontology_evaluate.add_argument(
+        "--split",
+        choices=("v2341-fixed",),
+        required=True,
+    )
+    ontology_evaluate.add_argument(
+        "--repository-root",
+        type=Path,
+        default=Path.cwd(),
+    )
+    ontology_validate = ontology_commands.add_parser("validate-draft")
+    ontology_validate.add_argument("draft_id")
+    ontology_validate.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_validate.add_argument(
+        "--repository-root", type=Path, default=Path.cwd()
+    )
+    ontology_render = ontology_commands.add_parser("render-bundle")
+    ontology_render.add_argument("draft_id")
+    ontology_render.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_review = ontology_commands.add_parser("review-draft")
+    ontology_review.add_argument("draft_id")
+    ontology_review.add_argument(
+        "--decision",
+        required=True,
+        choices=tuple(item.value for item in OntologyDraftReviewDecisionV234),
+    )
+    ontology_review.add_argument("--reviewer", required=True)
+    ontology_review.add_argument("--note", required=True)
+    ontology_review.add_argument("--request-change", action="append", default=[])
+    ontology_review.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_shadow = ontology_commands.add_parser("evaluate-shadow")
+    ontology_shadow.add_argument("draft_id")
+    ontology_shadow.add_argument("--repository-root", type=Path, default=Path.cwd())
+    ontology_shadow.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_promote = ontology_commands.add_parser("promote")
+    ontology_promote.add_argument("draft_id")
+    ontology_promote.add_argument("--reviewer", required=True)
+    ontology_promote.add_argument("--note", required=True)
+    ontology_promote.add_argument("--repository-root", type=Path, default=Path.cwd())
+    ontology_promote.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_revoke = ontology_commands.add_parser("revoke")
+    ontology_revoke.add_argument("registration_id")
+    ontology_revoke.add_argument("--reviewer", required=True)
+    ontology_revoke.add_argument("--note", required=True)
+    ontology_revoke.add_argument("--repository-root", type=Path, default=Path.cwd())
+    ontology_revoke.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
     evaluate = subparsers.add_parser("evaluate")
     evaluate.add_argument(
         "--split",
@@ -265,8 +470,28 @@ def main(argv: Sequence[str] | None = None) -> int:
                     repository_root=repository_root,
                     spec=policy_spec,
                 ),
-                hidden_mechanism=policy_view.hidden_mechanism,
+                hidden_mechanism=(
+                    None
+                    if args.policy == "extension-enabled"
+                    else policy_view.hidden_mechanism
+                ),
             )
+            if args.policy == "extension-enabled":
+                admitted = context.admission.admitted_diagnosis
+                result_v234 = diagnose_extension_enabled_v234(
+                    repository_root=repository_root,
+                    case_id=policy_spec.case_id,
+                    registry=LocalExtensionOntologyStoreV234(
+                        args.local_root,
+                        repository_root=repository_root,
+                    ).load_registry(),
+                    core_known_diagnosis=(
+                        None if admitted is None else admitted.mechanism
+                    ),
+                    no_incident_admitted=context.admission.no_incident_admissible,
+                )
+                print(result_v234.model_dump_json(indent=2))
+                return 0
             selected_v233 = (
                 run_domain_bound_arm_v233(
                     context=context,
@@ -428,6 +653,416 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         )
         return 0
+    if args.command == "ontology":
+        if args.ontology_command == "list":
+            store_v234 = LocalOntologyExpansionStoreV234(args.local_root)
+            print(
+                json.dumps(
+                    [
+                        item.model_dump(mode="json")
+                        for item in store_v234.list_shadow_faults()
+                    ],
+                    indent=2,
+                )
+            )
+            return 0
+        if args.ontology_command == "authorize-draft":
+            authorization = LocalOntologyExpansionStoreV234(
+                args.local_root
+            ).authorize_draft_generation(
+                shadow_fault_id=args.shadow_fault_id,
+                reviewer=args.reviewer,
+                authorization_note=args.note,
+                authorized_at=datetime.now(timezone.utc),
+            )
+            print(authorization.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "snapshot":
+            print(build_core_ontology_schema_snapshot_v234().model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "catalog":
+            ontology_store = LocalOntologyExpansionStoreV234(args.local_root)
+            authorization_context = ontology_store.load_authorization_result(
+                args.authorization_id
+            )
+            shadow = ontology_store.load_shadow_fault(
+                authorization_context.authorization.shadow_fault_id
+            )
+            source_request = build_registration_alias_source_request_v2341(
+                authorization_context=authorization_context,
+                shadow=shadow,
+                accepted_reports=ontology_store.load_accepted_reports(
+                    authorization_context
+                ),
+            )
+            catalog = build_registration_option_catalog_v2341(request=source_request)
+            LocalRegistrationAliasStoreV2341(args.local_root).save_catalog(catalog)
+            print(catalog.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "generate-draft":
+            ontology_store = LocalOntologyExpansionStoreV234(args.local_root)
+            authorization_context = ontology_store.load_authorization_result(
+                args.authorization_id
+            )
+            shadow = ontology_store.load_shadow_fault(
+                authorization_context.authorization.shadow_fault_id
+            )
+            accepted_reports = ontology_store.load_accepted_reports(
+                authorization_context
+            )
+            config = None
+            if args.provider_env is not None:
+                environment = load_private_provider_env(args.provider_env)
+                config = OpenAICompatibleConfig.from_environment(environment)
+                if config is None:
+                    raise ValueError("Provider environment did not produce a configuration")
+            if args.protocol == "legacy-v234":
+                legacy_transport = (
+                    OpenAICompatibleRegistrationDraftTransportV234(
+                        config=config,
+                        minimum_request_interval_seconds=args.minimum_request_interval,
+                        timeout_seconds=args.timeout,
+                    )
+                    if config is not None
+                    else None
+                )
+                draft = RegistrationDraftProviderV234(
+                    transport=legacy_transport
+                ).generate(
+                    authorization_context=authorization_context,
+                    shadow=shadow,
+                    accepted_reports=accepted_reports,
+                )
+            else:
+                source_request = build_registration_alias_source_request_v2341(
+                    authorization_context=authorization_context,
+                    shadow=shadow,
+                    accepted_reports=accepted_reports,
+                )
+                catalog = build_registration_option_catalog_v2341(
+                    request=source_request
+                )
+                provider_request = build_registration_alias_provider_request_v2341(
+                    source_request=source_request,
+                    catalog=catalog,
+                )
+                alias_transport = (
+                    OpenAICompatibleRegistrationAliasTransportV2341(
+                        config=config,
+                        minimum_request_interval_seconds=args.minimum_request_interval,
+                        timeout_seconds=args.timeout,
+                        raw_artifact_dir=(
+                            args.local_root.resolve().parent
+                            / "dta-v2341"
+                            / "provider-raw"
+                        ),
+                    )
+                    if config is not None
+                    else None
+                )
+                provider_result = RegistrationAliasProviderV2341(
+                    transport=alias_transport
+                ).select(request=provider_request, catalog=catalog)
+                assembly = assemble_formal_registration_draft_v2341(
+                    authorization_context=authorization_context,
+                    shadow=shadow,
+                    accepted_reports=accepted_reports,
+                    catalog=catalog,
+                    provider_result=provider_result,
+                    validation_context=(
+                        RegistrationValidationContextV2341.PRODUCTION_REGISTRATION
+                    ),
+                )
+                alias_store = LocalRegistrationAliasStoreV2341(args.local_root)
+                alias_store.save_catalog(catalog)
+                alias_store.save_provider_result(provider_result)
+                alias_store.save_assembly(assembly)
+                draft = assembly.formal_draft
+            draft_store = LocalRegistrationDraftStoreV234(args.local_root)
+            draft_store.save_draft(draft)
+            draft_store.record_draft_generated(
+                context=authorization_context,
+                draft=draft,
+                transitioned_at=datetime.now(timezone.utc),
+            )
+            print(draft.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "show-selection":
+            alias_store = LocalRegistrationAliasStoreV2341(args.local_root)
+            assembly = alias_store.load_assembly(args.draft_id)
+            result = alias_store.find_provider_result(
+                assembly.alias_provider_result_sha256
+            )
+            print(result.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "assemble-draft":
+            alias_store = LocalRegistrationAliasStoreV2341(args.local_root)
+            result = alias_store.load_provider_result(args.selection_id)
+            catalog = alias_store.load_catalog(result.authorization_id)
+            ontology_store = LocalOntologyExpansionStoreV234(args.local_root)
+            authorization_context = ontology_store.load_authorization_result(
+                result.authorization_id
+            )
+            shadow = ontology_store.load_shadow_fault(
+                authorization_context.authorization.shadow_fault_id
+            )
+            assembly = assemble_formal_registration_draft_v2341(
+                authorization_context=authorization_context,
+                shadow=shadow,
+                accepted_reports=ontology_store.load_accepted_reports(
+                    authorization_context
+                ),
+                catalog=catalog,
+                provider_result=result,
+                validation_context=(
+                    RegistrationValidationContextV2341.PRODUCTION_REGISTRATION
+                ),
+            )
+            alias_store.save_assembly(assembly)
+            LocalRegistrationDraftStoreV234(args.local_root).save_draft(
+                assembly.formal_draft
+            )
+            print(assembly.formal_draft.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "smoke" and args.split == "v2341-smoke":
+            repository_root = args.repository_root.resolve()
+            smoke_root = repository_root / "config/dta-v2341/smoke"
+            result = run_provider_smoke_v2341(
+                repository_root=repository_root,
+                task_set=load_smoke_tasks_v2341(smoke_root / "tasks.json"),
+                truth_set=load_smoke_truth_v2341(smoke_root / "truth.json"),
+                mode=RegistrationSmokeModeV2341.DETERMINISTIC_FIXTURE,
+            )
+            print(result.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "evaluate" and args.split == "v2341-fixed":
+            repository_root = args.repository_root.resolve()
+            private_root = repository_root / ".local/dta-v2341"
+            private_root.mkdir(parents=True, exist_ok=True)
+            with tempfile.TemporaryDirectory(
+                prefix="cli-runtime-preflight-",
+                dir=private_root,
+            ) as raw:
+                result = run_runtime_preflight_v2341(
+                    repository_root=repository_root,
+                    evaluation_root=(
+                        repository_root / "config/dta-v2341/evaluation"
+                    ),
+                    local_root=Path(raw),
+                )
+            print(result.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "validate-draft":
+            draft_store = LocalRegistrationDraftStoreV234(args.local_root)
+            draft = draft_store.load_draft(args.draft_id)
+            ontology_store = LocalOntologyExpansionStoreV234(args.local_root)
+            authorization_context = ontology_store.load_authorization_result(
+                draft.authorization_id
+            )
+            shadow = ontology_store.load_shadow_fault(draft.shadow_fault_id)
+            accepted_reports = ontology_store.load_accepted_reports(
+                authorization_context
+            )
+            other_shadow_slugs = tuple(
+                sorted(
+                    item.canonical_label
+                    for item in ontology_store.list_shadow_faults()
+                    if item.shadow_fault_id != shadow.shadow_fault_id
+                )
+            )
+            validation = validate_registration_draft_v234(
+                draft=draft,
+                authorization_context=authorization_context,
+                shadow=shadow,
+                accepted_reports=accepted_reports,
+                promoted_mechanism_slugs=LocalExtensionOntologyStoreV234(
+                    args.local_root,
+                    repository_root=args.repository_root.resolve(),
+                ).active_mechanism_slugs(),
+                shadow_mechanism_slugs=other_shadow_slugs,
+            )
+            draft_store.save_validation(validation)
+            draft_store.record_validation(
+                context=authorization_context,
+                draft=draft,
+                validation=validation,
+                transitioned_at=datetime.now(timezone.utc),
+            )
+            print(validation.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "render-bundle":
+            draft_store = LocalRegistrationDraftStoreV234(args.local_root)
+            draft = draft_store.load_draft(args.draft_id)
+            validation = draft_store.load_validation(args.draft_id)
+            ontology_store = LocalOntologyExpansionStoreV234(args.local_root)
+            authorization_context = ontology_store.load_authorization_result(
+                draft.authorization_id
+            )
+            compiled = compile_registration_v234(
+                draft=draft,
+                validation=validation,
+                snapshot=authorization_context.core_ontology_snapshot,
+            )
+            bundle = render_registration_patch_bundle_v234(
+                compiled=compiled,
+                output_root=draft_store.bundles_dir,
+            )
+            draft_store.record_patch_rendered(
+                context=authorization_context,
+                draft=draft,
+                validation=validation,
+                compiled=compiled,
+                bundle=bundle,
+                transitioned_at=datetime.now(timezone.utc),
+            )
+            print(bundle.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "review-draft":
+            draft_store = LocalRegistrationDraftStoreV234(args.local_root)
+            draft = draft_store.load_draft(args.draft_id)
+            validation = draft_store.load_validation(args.draft_id)
+            review_v234 = build_ontology_draft_review_v234(
+                draft=draft,
+                validation=validation,
+                decision=OntologyDraftReviewDecisionV234(args.decision),
+                reviewer=args.reviewer,
+                review_note=args.note,
+                requested_changes=tuple(sorted(set(args.request_change))),
+                reviewed_at=datetime.now(timezone.utc),
+            )
+            LocalExtensionOntologyStoreV234(args.local_root).save_draft_review(
+                review_v234
+            )
+            print(
+                json.dumps(
+                    {
+                        "review": review_v234.model_dump(mode="json"),
+                        "review_surface": {
+                            "mechanism": draft.mechanism.model_dump(mode="json"),
+                            "broad_domain": draft.mechanism.broad_fault_domain.value,
+                            "predicates": [
+                                item.model_dump(mode="json") for item in draft.predicates
+                            ],
+                            "support_clauses": [
+                                item.model_dump(mode="json")
+                                for item in draft.support_clauses
+                            ],
+                            "evidence_refs": list(
+                                sorted(
+                                    {
+                                        ref
+                                        for predicate in draft.predicates
+                                        for ref in predicate.supporting_report_evidence_refs
+                                    }
+                                )
+                            ),
+                            "confusable_mechanisms": [
+                                item.value
+                                for item in draft.mechanism.confusable_core_mechanisms
+                            ],
+                            "negative_tests": draft.test_plan.model_dump(mode="json"),
+                            "implementation_mode": draft.implementation_mode.value,
+                            "unresolved_engineering_questions": list(
+                                draft.unresolved_engineering_questions
+                            ),
+                            "remediation": draft.remediation_registration,
+                        },
+                    },
+                    indent=2,
+                )
+            )
+            return 0
+        if args.ontology_command == "evaluate-shadow":
+            draft_store = LocalRegistrationDraftStoreV234(args.local_root)
+            draft = draft_store.load_draft(args.draft_id)
+            validation = draft_store.load_validation(args.draft_id)
+            ontology_store = LocalOntologyExpansionStoreV234(args.local_root)
+            authorization_context = ontology_store.load_authorization_result(
+                draft.authorization_id
+            )
+            compiled = compile_registration_v234(
+                draft=draft,
+                validation=validation,
+                snapshot=authorization_context.core_ontology_snapshot,
+            )
+            extension_store = LocalExtensionOntologyStoreV234(args.local_root)
+            review_v234 = extension_store.load_draft_review(args.draft_id)
+            shadow = ontology_store.load_shadow_fault(draft.shadow_fault_id)
+            shadow_result = evaluate_increment3_development_shadow_v234(
+                repository_root=args.repository_root.resolve(),
+                compiled=compiled,
+                draft_review=review_v234,
+                shadow=shadow,
+                accepted_reports=tuple(
+                    LocalReviewStoreV23(args.local_root).load_item(report_id)
+                    for report_id in shadow.positive_report_ids
+                ),
+                evaluated_at=datetime.now(timezone.utc),
+            )
+            extension_store.save_shadow_result(shadow_result)
+            print(shadow_result.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "promote":
+            draft_store = LocalRegistrationDraftStoreV234(args.local_root)
+            draft = draft_store.load_draft(args.draft_id)
+            validation = draft_store.load_validation(args.draft_id)
+            ontology_store = LocalOntologyExpansionStoreV234(args.local_root)
+            authorization_context = ontology_store.load_authorization_result(
+                draft.authorization_id
+            )
+            compiled = compile_registration_v234(
+                draft=draft,
+                validation=validation,
+                snapshot=authorization_context.core_ontology_snapshot,
+            )
+            extension_store = LocalExtensionOntologyStoreV234(
+                args.local_root,
+                repository_root=args.repository_root.resolve(),
+            )
+            shadow = ontology_store.load_shadow_fault(draft.shadow_fault_id)
+            entry, promotion = extension_store.promote(
+                compiled=compiled,
+                validation=validation,
+                draft_review=extension_store.load_draft_review(args.draft_id),
+                shadow_result=extension_store.load_shadow_result(args.draft_id),
+                shadow=shadow,
+                decision=(
+                    OntologyPromotionDecisionV234.PROMOTE_TO_EXTENSION_ONTOLOGY
+                ),
+                reviewer=args.reviewer,
+                review_note=args.note,
+                reviewed_at=datetime.now(timezone.utc),
+            )
+            print(
+                json.dumps(
+                    {
+                        "entry": entry.model_dump(mode="json"),
+                        "promotion": promotion.model_dump(mode="json"),
+                    },
+                    indent=2,
+                )
+            )
+            return 0
+        if args.ontology_command == "revoke":
+            revoked, revocation = LocalExtensionOntologyStoreV234(
+                args.local_root,
+                repository_root=args.repository_root.resolve(),
+            ).revoke(
+                registration_id=args.registration_id,
+                reviewer=args.reviewer,
+                review_note=args.note,
+                reviewed_at=datetime.now(timezone.utc),
+            )
+            print(
+                json.dumps(
+                    {
+                        "entry": revoked.model_dump(mode="json"),
+                        "revocation": revocation.model_dump(mode="json"),
+                    },
+                    indent=2,
+                )
+            )
+            return 0
     if args.command == "evaluate":
         repository_root = args.repository_root.resolve()
         if args.split == "development":

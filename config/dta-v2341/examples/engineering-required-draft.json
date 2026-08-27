@@ -1,0 +1,88 @@
+{
+  "action_authority": "NONE",
+  "authorization_id": "authorization-v234-c321e7de648de795",
+  "core_ontology_snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa",
+  "draft_id": "draft-v234-180f8c6ed5ce6736",
+  "draft_sha256": "2b5d7f50220a7ae79ee38f59a13dc5c1544d96fd3ad79c4e9a9769e37b14069a",
+  "implementation_mode": "ENGINEERING_REQUIRED",
+  "mechanism": {
+    "broad_fault_domain": "NETWORK",
+    "confusable_core_mechanisms": [],
+    "confusable_extension_mechanisms": [],
+    "display_name": "Candidate Pattern 014",
+    "distinguishing_summary": "The candidate pattern 014 mechanism is distinguished by its canonical clauses and evidence bindings.",
+    "human_definition": "The candidate pattern 014 mechanism is defined by bounded evidence predicates and canonical support clauses.",
+    "mechanism_enum_name": "CANDIDATE_PATTERN_014",
+    "mechanism_slug": "candidate-pattern-014"
+  },
+  "predicates": [
+    {
+      "evidence_source": "LOGS",
+      "extraction_rule": null,
+      "implementation_mode": "REQUIRES_CODE_IMPLEMENTATION",
+      "negative_examples": [
+        "The network logs extraction signal predicate is absent from accepted evidence."
+      ],
+      "positive_examples": [
+        "The network logs extraction signal predicate is present in accepted evidence."
+      ],
+      "predicate_name": "NETWORK_LOGS_EXTRACTION_SIGNAL",
+      "predicate_slug": "network-logs-extraction-signal",
+      "require_exact_parent": false,
+      "semantic_definition": "The network logs extraction signal predicate is defined by its typed extraction rule and accepted evidence binding.",
+      "service_binding": "TARGET",
+      "supporting_report_evidence_refs": [
+        "e:a:logs:svc-4c39ea767b:0:f617d2873e4a"
+      ],
+      "threshold_rule": null
+    }
+  ],
+  "provider_trace": {
+    "assembled_content_sha256": "0607a04f1dd174f8f281dea90835f41a3064c9a2104cdb5f9b0cb659ac39d4dc",
+    "canonical_selection_sha256": "81778295bc377cf7f6a51fc8060abacc028ec3c3f67eed1b8d6320bf0a45dd30",
+    "max_exact_request_retries": 3,
+    "protocol_repairs": 0,
+    "provider_calls": 1,
+    "provider_mode": "OPENAI_COMPATIBLE",
+    "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw",
+    "raw_response_sha256": "fe8f87609a1416c48c860ff23d6bca1a1b46c78d65fe8f54d7d20f8e83043605",
+    "request_sha256": "7c453cbafe03463de15333d9ae6ca778292406eca581feb0af5cf75fc2798fad",
+    "schema_version": "dta-v2341.registration-alias-provider-trace.v1",
+    "semantic_retries": 0,
+    "trace_sha256": "cbc8f980cc3d54f8863efe759c78fe12360503dfee331d42577c030f3c47c2ae",
+    "transport_retries": 0
+  },
+  "registration_seed_sha256": "385529df5dc334e086e2024f2d61528e919a69018a8a40e35530fbede2f971fe",
+  "remediation_registration": "NOT_INCLUDED",
+  "repository_write_authority": "NONE",
+  "schema_version": "dta-v234.formal-fault-registration-draft.v1",
+  "shadow_fault_id": "shadow-v23-ceac3210f85f5af2",
+  "support_clauses": [],
+  "test_plan": {
+    "confusable_core_mechanisms": [],
+    "positive_case_ids": [
+      "dta-v234-rt-014"
+    ],
+    "positive_report_ids": [
+      "report-v23-650f2f195b33b1d3"
+    ],
+    "required_clause_binding_tests": [
+      "clause-01-binding-control"
+    ],
+    "required_counterfactuals": [
+      "clause-01-target-counterfactual"
+    ],
+    "required_known_controls": [
+      "known-core-control"
+    ],
+    "required_no_incident_controls": [
+      "no-incident-network-control"
+    ],
+    "required_source_failure_tests": [
+      "logs-unavailable-fails-closed"
+    ]
+  },
+  "unresolved_engineering_questions": [
+    "Define the bounded engineering gap for network-logs-extraction."
+  ]
+}

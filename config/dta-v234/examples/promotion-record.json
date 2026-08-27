@@ -1,0 +1,17 @@
+{
+  "schema_version": "dta-v234.ontology-promotion-review.v1",
+  "review_record_id": "promotion-review-v234-21fd3670b0a43503",
+  "decision": "PROMOTE_TO_EXTENSION_ONTOLOGY",
+  "registration_id": "registration-v234-bfc78cbf413878c7",
+  "draft_id": "draft-v234-963ab591e6fc850d",
+  "draft_sha256": "46caa3ed2036ab67e1b81c098dfa193a2591cf193e1e5b82b95d9d3a47946bea",
+  "validation_sha256": "5a2396adb94aae69e01ebf93bbe45f2d3d3fb3242feb6f4569431bc13aca16b5",
+  "compiled_sha256": "06bf3e5f65eb3a1f0bdc2e96f0667a7f26c2441de560f2a3cba9079c1d0a9c1a",
+  "draft_review_sha256": "56fbed69a34a5971d88902d07df10f9bcb68587f903c0a53718b858df283a58d",
+  "shadow_result_sha256": "b3c45b93c5ca31cabbfba6c4565c34ade928d22da4f2a73d0d40b1a99ddeae08",
+  "reviewer": "TEST_REVIEWER",
+  "review_note": "SIMULATED HUMAN REVIEW: promote the passing development registration.",
+  "reviewed_at": "2026-08-26T07:00:00Z",
+  "simulation": true,
+  "review_sha256": "e9781a2acabe4b172cc14aaee8602aa43e62265f15052b1aa2e256d2cfec5e40"
+}
