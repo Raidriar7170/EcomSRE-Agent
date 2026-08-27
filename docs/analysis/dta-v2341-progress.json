@@ -7,7 +7,8 @@
   "frozen_predecessor_status": "BLOCKED_DTA_V234_PROVIDER",
   "completed_increments": [
     "PREDECESSOR_HISTORY_BINDING_AND_RUNTIME_REGISTRATION_OPTION_CATALOG",
-    "SIX_FIELD_ALIAS_PROVIDER_AND_DETERMINISTIC_FINAL_DRAFT_ASSEMBLER"
+    "SIX_FIELD_ALIAS_PROVIDER_AND_DETERMINISTIC_FINAL_DRAFT_ASSEMBLER",
+    "FRESH_SMOKE_ONLY_PROVIDER_CAMPAIGN"
   ],
   "increment_1": {
     "status": "COMPLETE",
@@ -29,14 +30,21 @@
     "insufficient_control_provider_calls": 0
   },
   "increment_3": {
-    "status": "SMOKE_SURFACE_FROZEN",
+    "status": "COMPLETE",
     "task_count": 8,
     "provider_called_task_count": 6,
     "zero_call_control_count": 2,
     "catalog_feasibility_terminal": "DTA_V2341_CATALOG_FEASIBILITY_PASS",
     "deterministic_preflight_terminal": "DTA_V2341_SMOKE_PREFLIGHT_PASS",
-    "smoke_manifest_sha256": "0e8d7e0215a854d69d6841552c29fbff3ac5377e70c286136b4e15f3a1f48811",
-    "provider_smoke_execution_count": 0
+    "smoke_manifest_sha256": "1804d14e03c604d8200065d75fe4ad53f72f92ffae5a78744bdd7abb93c3ebea",
+    "provider_smoke_execution_count": 1,
+    "provider_smoke_real_fix_count": 2,
+    "provider_smoke_terminal": "DTA_V2341_PROVIDER_SMOKE_PASS",
+    "provider_smoke_evidence_sha256": "6291f6a0dad47dd3b75fe0a8fe898782c51d2d601827072c887e53f4c61f4ea6",
+    "provider_smoke_calls": 6,
+    "protocol_repairs": 0,
+    "transport_retries": 0,
+    "canonical_order_failures": 0
   },
   "increment_4": {
     "status": "NOT_STARTED",
