@@ -24,6 +24,10 @@ from ecomsre.dta_v2.v22.read_contracts import (
     semantic_sha256_v22,
 )
 from ecomsre.dta_v2.v23.contracts import ProvisionalFaultDomainV23
+from ecomsre.dta_v2.v23.core_ontology_snapshot_v234 import (
+    CoreOntologySchemaSnapshotV234,
+    build_core_ontology_schema_snapshot_v234,
+)
 from ecomsre.dta_v2.v23.generic_anomalies import GenericAnomalyKindV23
 from ecomsre.dta_v2.v23.registration_contracts_v234 import (
     CorePredicateReferenceRuleV234,
@@ -210,7 +214,6 @@ class RegistrationOptionCatalogV2341(DtaModelV22):
         """Return the only catalog fields that may cross the Provider boundary."""
 
         return {
-            "catalog_sha256": self.catalog_sha256,
             "broad_fault_domain": self.broad_fault_domain.value,
             "dispositions": tuple(
                 {
@@ -238,7 +241,10 @@ class RegistrationOptionCatalogV2341(DtaModelV22):
                     "authoritative_single_predicate": (
                         item.authoritative_single_predicate
                     ),
-                    "summary": item.semantic_summary,
+                    "summary": (
+                        f"Combine {len(item.predicate_aliases)} Runtime-bound evidence "
+                        f"signals across {item.source_count} source(s)."
+                    ),
                 }
                 for item in self.clause_options
             ),
@@ -297,6 +303,9 @@ def _predicate_from_evidence_v2341(
     source: EvidenceSourceV22,
     evidence_refs: tuple[str, ...],
     visible_core_predicates: set[PredicateKindV22],
+    core_service_bindings: dict[
+        PredicateKindV22, tuple[RequirementServiceBindingV22, bool]
+    ],
 ) -> FormalPredicateDraftV234:
     core_kind = _CORE_KIND_BY_ANOMALY_V2341.get(anomaly_kind)
     if core_kind is not None and core_kind in visible_core_predicates:
@@ -318,13 +327,21 @@ def _predicate_from_evidence_v2341(
             PredicateImplementationModeV234.DECLARATIVE_EXTENSION_PREDICATE
         )
     slug = name.casefold().replace("_", "-")
+    service_binding, require_exact_parent = (
+        core_service_bindings.get(
+            core_kind,
+            (RequirementServiceBindingV22.TARGET, False),
+        )
+        if core_kind is not None
+        else (RequirementServiceBindingV22.TARGET, False)
+    )
     return FormalPredicateDraftV234(
         predicate_name=name,
         predicate_slug=slug,
         implementation_mode=implementation_mode,
         evidence_source=source,
-        service_binding=RequirementServiceBindingV22.TARGET,
-        require_exact_parent=(core_kind is PredicateKindV22.TRACE_DEPENDENCY_LATENCY),
+        service_binding=service_binding,
+        require_exact_parent=require_exact_parent,
         semantic_definition=predicate_semantic_definition_v234(slug),
         extraction_rule=rule,
         threshold_rule=None,
@@ -354,6 +371,8 @@ def _visible_core_signatures_v2341(
 
 def _catalog_payload_v2341(
     request: RegistrationDraftProviderRequestV234,
+    *,
+    core_snapshot: CoreOntologySchemaSnapshotV234,
 ) -> dict[str, Any]:
     disposition_options = tuple(
         RegistrationDispositionOptionV2341(
@@ -391,7 +410,22 @@ def _catalog_payload_v2341(
             evidence_by_kind.setdefault(
                 (evidence.anomaly_kind, evidence.source), []
             ).append((evidence.evidence_ref, evidence.summary))
-    visible_core_predicates = set(request.core_ontology_view.visible_predicate_kinds)
+    runtime_core_predicates = {
+        item.predicate_kind for item in core_snapshot.predicate_source_bindings
+    }
+    core_binding_candidates: dict[
+        PredicateKindV22, set[tuple[RequirementServiceBindingV22, bool]]
+    ] = {}
+    for clause in core_snapshot.core_support_clauses:
+        for requirement in clause.requirements:
+            core_binding_candidates.setdefault(requirement.predicate_kind, set()).add(
+                (requirement.service_binding, requirement.require_exact_parent)
+            )
+    core_service_bindings = {
+        kind: next(iter(bindings))
+        for kind, bindings in core_binding_candidates.items()
+        if len(bindings) == 1
+    }
     predicate_candidates: list[tuple[FormalPredicateDraftV234, str, str]] = []
     for (kind, source), values in sorted(
         evidence_by_kind.items(), key=lambda item: (item[0][0].value, item[0][1].value)
@@ -402,7 +436,8 @@ def _catalog_payload_v2341(
             anomaly_kind=kind,
             source=source,
             evidence_refs=refs,
-            visible_core_predicates=visible_core_predicates,
+            visible_core_predicates=runtime_core_predicates,
+            core_service_bindings=core_service_bindings,
         )
         predicate_candidates.append(
             (
@@ -577,9 +612,17 @@ def _catalog_payload_v2341(
 
 
 def build_registration_option_catalog_v2341(
-    *, request: RegistrationDraftProviderRequestV234
+    *,
+    request: RegistrationDraftProviderRequestV234,
+    core_snapshot: CoreOntologySchemaSnapshotV234 | None = None,
 ) -> RegistrationOptionCatalogV2341:
-    payload = _catalog_payload_v2341(request)
+    snapshot = core_snapshot or build_core_ontology_schema_snapshot_v234()
+    if (
+        request.core_ontology_view.authoritative_snapshot_sha256
+        != snapshot.snapshot_sha256
+    ):
+        raise ValueError("registration catalog Core Snapshot binding differs")
+    payload = _catalog_payload_v2341(request, core_snapshot=snapshot)
     rendered = RegistrationOptionCatalogV2341.model_construct(
         **payload,
         catalog_sha256="0" * 64,

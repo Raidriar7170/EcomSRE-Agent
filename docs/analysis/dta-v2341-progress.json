@@ -6,7 +6,8 @@
   "branch": "codex/dta-v2341-registration-alias-protocol",
   "frozen_predecessor_status": "BLOCKED_DTA_V234_PROVIDER",
   "completed_increments": [
-    "PREDECESSOR_HISTORY_BINDING_AND_RUNTIME_REGISTRATION_OPTION_CATALOG"
+    "PREDECESSOR_HISTORY_BINDING_AND_RUNTIME_REGISTRATION_OPTION_CATALOG",
+    "SIX_FIELD_ALIAS_PROVIDER_AND_DETERMINISTIC_FINAL_DRAFT_ASSEMBLER"
   ],
   "increment_1": {
     "status": "COMPLETE",
@@ -17,7 +18,15 @@
     "content_level_predecessor_audit_limitation_recorded": true
   },
   "increment_2": {
-    "status": "NOT_STARTED"
+    "status": "COMPLETE",
+    "development_gate_terminal": "DTA_V2341_PREDECESSOR_DEVELOPMENT_GATE_PASS",
+    "failed_provider_roles_protocol_valid": "5/5",
+    "hidden_known_reconstruction_pass": "2/2",
+    "declarative_ready_valid": "2/2",
+    "engineering_required_gap_selected": "1/1",
+    "canonical_order_failures": 0,
+    "duplicate_control_provider_calls": 0,
+    "insufficient_control_provider_calls": 0
   },
   "increment_3": {
     "status": "NOT_STARTED",

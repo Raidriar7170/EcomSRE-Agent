@@ -41,6 +41,22 @@ from ecomsre.dta_v2.v23.registration_provider_v234 import (
     OpenAICompatibleRegistrationDraftTransportV234,
     RegistrationDraftProviderV234,
 )
+from ecomsre.dta_v2.v23.registration_alias_provider_v2341 import (
+    OpenAICompatibleRegistrationAliasTransportV2341,
+    RegistrationAliasProviderV2341,
+    build_registration_alias_provider_request_v2341,
+    build_registration_alias_source_request_v2341,
+)
+from ecomsre.dta_v2.v23.registration_assembler_v2341 import (
+    RegistrationValidationContextV2341,
+    assemble_formal_registration_draft_v2341,
+)
+from ecomsre.dta_v2.v23.registration_catalog_v2341 import (
+    build_registration_option_catalog_v2341,
+)
+from ecomsre.dta_v2.v23.registration_store_v2341 import (
+    LocalRegistrationAliasStoreV2341,
+)
 from ecomsre.dta_v2.v23.registration_store_v234 import (
     LocalRegistrationDraftStoreV234,
 )
@@ -212,14 +228,40 @@ def build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_LOCAL_ROOT_V234,
     )
     ontology_commands.add_parser("snapshot")
+    ontology_catalog = ontology_commands.add_parser("catalog")
+    ontology_catalog.add_argument("authorization_id")
+    ontology_catalog.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
     ontology_generate = ontology_commands.add_parser("generate-draft")
     ontology_generate.add_argument("authorization_id")
+    ontology_generate.add_argument(
+        "--protocol",
+        choices=("alias-v2341", "legacy-v234"),
+        default="alias-v2341",
+    )
     provider_mode = ontology_generate.add_mutually_exclusive_group(required=True)
     provider_mode.add_argument("--development-fixture", action="store_true")
     provider_mode.add_argument("--provider-env", type=Path)
     ontology_generate.add_argument("--minimum-request-interval", type=float, default=6.0)
     ontology_generate.add_argument("--timeout", type=float, default=120.0)
     ontology_generate.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_show_selection = ontology_commands.add_parser("show-selection")
+    ontology_show_selection.add_argument("draft_id")
+    ontology_show_selection.add_argument(
+        "--local-root",
+        type=Path,
+        default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_assemble = ontology_commands.add_parser("assemble-draft")
+    ontology_assemble.add_argument("selection_id")
+    ontology_assemble.add_argument(
         "--local-root",
         type=Path,
         default=DEFAULT_LOCAL_ROOT_V234,
@@ -610,6 +652,25 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.ontology_command == "snapshot":
             print(build_core_ontology_schema_snapshot_v234().model_dump_json(indent=2))
             return 0
+        if args.ontology_command == "catalog":
+            ontology_store = LocalOntologyExpansionStoreV234(args.local_root)
+            authorization_context = ontology_store.load_authorization_result(
+                args.authorization_id
+            )
+            shadow = ontology_store.load_shadow_fault(
+                authorization_context.authorization.shadow_fault_id
+            )
+            source_request = build_registration_alias_source_request_v2341(
+                authorization_context=authorization_context,
+                shadow=shadow,
+                accepted_reports=ontology_store.load_accepted_reports(
+                    authorization_context
+                ),
+            )
+            catalog = build_registration_option_catalog_v2341(request=source_request)
+            LocalRegistrationAliasStoreV2341(args.local_root).save_catalog(catalog)
+            print(catalog.model_dump_json(indent=2))
+            return 0
         if args.ontology_command == "generate-draft":
             ontology_store = LocalOntologyExpansionStoreV234(args.local_root)
             authorization_context = ontology_store.load_authorization_result(
@@ -621,22 +682,74 @@ def main(argv: Sequence[str] | None = None) -> int:
             accepted_reports = ontology_store.load_accepted_reports(
                 authorization_context
             )
-            transport = None
+            config = None
             if args.provider_env is not None:
                 environment = load_private_provider_env(args.provider_env)
                 config = OpenAICompatibleConfig.from_environment(environment)
                 if config is None:
                     raise ValueError("Provider environment did not produce a configuration")
-                transport = OpenAICompatibleRegistrationDraftTransportV234(
-                    config=config,
-                    minimum_request_interval_seconds=args.minimum_request_interval,
-                    timeout_seconds=args.timeout,
+            if args.protocol == "legacy-v234":
+                legacy_transport = (
+                    OpenAICompatibleRegistrationDraftTransportV234(
+                        config=config,
+                        minimum_request_interval_seconds=args.minimum_request_interval,
+                        timeout_seconds=args.timeout,
+                    )
+                    if config is not None
+                    else None
                 )
-            draft = RegistrationDraftProviderV234(transport=transport).generate(
-                authorization_context=authorization_context,
-                shadow=shadow,
-                accepted_reports=accepted_reports,
-            )
+                draft = RegistrationDraftProviderV234(
+                    transport=legacy_transport
+                ).generate(
+                    authorization_context=authorization_context,
+                    shadow=shadow,
+                    accepted_reports=accepted_reports,
+                )
+            else:
+                source_request = build_registration_alias_source_request_v2341(
+                    authorization_context=authorization_context,
+                    shadow=shadow,
+                    accepted_reports=accepted_reports,
+                )
+                catalog = build_registration_option_catalog_v2341(
+                    request=source_request
+                )
+                provider_request = build_registration_alias_provider_request_v2341(
+                    source_request=source_request,
+                    catalog=catalog,
+                )
+                alias_transport = (
+                    OpenAICompatibleRegistrationAliasTransportV2341(
+                        config=config,
+                        minimum_request_interval_seconds=args.minimum_request_interval,
+                        timeout_seconds=args.timeout,
+                        raw_artifact_dir=(
+                            args.local_root.resolve().parent
+                            / "dta-v2341"
+                            / "provider-raw"
+                        ),
+                    )
+                    if config is not None
+                    else None
+                )
+                provider_result = RegistrationAliasProviderV2341(
+                    transport=alias_transport
+                ).select(request=provider_request, catalog=catalog)
+                assembly = assemble_formal_registration_draft_v2341(
+                    authorization_context=authorization_context,
+                    shadow=shadow,
+                    accepted_reports=accepted_reports,
+                    catalog=catalog,
+                    provider_result=provider_result,
+                    validation_context=(
+                        RegistrationValidationContextV2341.PRODUCTION_REGISTRATION
+                    ),
+                )
+                alias_store = LocalRegistrationAliasStoreV2341(args.local_root)
+                alias_store.save_catalog(catalog)
+                alias_store.save_provider_result(provider_result)
+                alias_store.save_assembly(assembly)
+                draft = assembly.formal_draft
             draft_store = LocalRegistrationDraftStoreV234(args.local_root)
             draft_store.save_draft(draft)
             draft_store.record_draft_generated(
@@ -645,6 +758,43 @@ def main(argv: Sequence[str] | None = None) -> int:
                 transitioned_at=datetime.now(timezone.utc),
             )
             print(draft.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "show-selection":
+            alias_store = LocalRegistrationAliasStoreV2341(args.local_root)
+            assembly = alias_store.load_assembly(args.draft_id)
+            result = alias_store.find_provider_result(
+                assembly.alias_provider_result_sha256
+            )
+            print(result.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "assemble-draft":
+            alias_store = LocalRegistrationAliasStoreV2341(args.local_root)
+            result = alias_store.load_provider_result(args.selection_id)
+            catalog = alias_store.load_catalog(result.authorization_id)
+            ontology_store = LocalOntologyExpansionStoreV234(args.local_root)
+            authorization_context = ontology_store.load_authorization_result(
+                result.authorization_id
+            )
+            shadow = ontology_store.load_shadow_fault(
+                authorization_context.authorization.shadow_fault_id
+            )
+            assembly = assemble_formal_registration_draft_v2341(
+                authorization_context=authorization_context,
+                shadow=shadow,
+                accepted_reports=ontology_store.load_accepted_reports(
+                    authorization_context
+                ),
+                catalog=catalog,
+                provider_result=result,
+                validation_context=(
+                    RegistrationValidationContextV2341.PRODUCTION_REGISTRATION
+                ),
+            )
+            alias_store.save_assembly(assembly)
+            LocalRegistrationDraftStoreV234(args.local_root).save_draft(
+                assembly.formal_draft
+            )
+            print(assembly.formal_draft.model_dump_json(indent=2))
             return 0
         if args.ontology_command == "validate-draft":
             draft_store = LocalRegistrationDraftStoreV234(args.local_root)

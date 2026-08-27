@@ -69,5 +69,17 @@
   "protocol_repair_requests": 12,
   "real_fixes": 2,
   "maximum_real_fixes": 2,
+  "successor_development_gate": {
+    "terminal": "DTA_V2341_PREDECESSOR_DEVELOPMENT_GATE_PASS",
+    "gate_sha256": "8265957292c184b9330928cddb7dcc6484a74f3ff1d02b6bfdbbf45ba73df47b",
+    "failed_provider_role_count": 5,
+    "protocol_valid_role_count": 5,
+    "hidden_known_reconstruction_pass_count": 2,
+    "declarative_ready_valid_count": 2,
+    "engineering_required_gap_count": 1,
+    "duplicate_control_provider_calls": 0,
+    "insufficient_control_provider_calls": 0,
+    "changed_iteration_count": 1
+  },
   "action_authority_violations": 0
 }

@@ -91,7 +91,7 @@
         "predicate_slug": "metric-latency-strong",
         "implementation_mode": "REUSE_CORE_PREDICATE",
         "evidence_source": "METRICS",
-        "service_binding": "TARGET",
+        "service_binding": "TARGET_OR_PARENT",
         "require_exact_parent": false,
         "semantic_definition": "The metric latency strong predicate is defined by its typed extraction rule and accepted evidence binding.",
         "extraction_rule": {
@@ -134,7 +134,7 @@
         },
         {
           "predicate_name": "METRIC_LATENCY_STRONG",
-          "service_binding": "TARGET",
+          "service_binding": "TARGET_OR_PARENT",
           "require_exact_parent": false
         }
       ],
@@ -182,7 +182,7 @@
         },
         {
           "predicate_name": "METRIC_LATENCY_STRONG",
-          "service_binding": "TARGET",
+          "service_binding": "TARGET_OR_PARENT",
           "require_exact_parent": false
         }
       ],
@@ -232,5 +232,5 @@
   ],
   "engineering_gap_options": [],
   "provider_calls": 0,
-  "catalog_sha256": "ed4e37ad89414a4fe62cd92e26632b67e06c7799675d3cf088e47eb27cc37479"
+  "catalog_sha256": "a9aa20edd839acca05149738c7bee9c2a10b82b47d96e4f64d24ccca1770c243"
 }

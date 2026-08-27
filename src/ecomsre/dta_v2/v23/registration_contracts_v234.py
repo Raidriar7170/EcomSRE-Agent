@@ -561,6 +561,43 @@ class RegistrationProviderTraceV234(DtaModelV22):
         return self
 
 
+class RegistrationAliasProviderTraceV2341(DtaModelV22):
+    """Bind the real six-field response separately from Runtime assembly."""
+
+    schema_version: Literal["dta-v2341.registration-alias-provider-trace.v1"]
+    provider_mode: RegistrationProviderModeV234
+    request_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    raw_response_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    canonical_selection_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    assembled_content_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    provider_calls: StrictInt = Field(ge=0, le=12)
+    protocol_repairs: StrictInt = Field(ge=0, le=2)
+    transport_retries: StrictInt = Field(ge=0, le=9)
+    max_exact_request_retries: Literal[3]
+    semantic_retries: Literal[0]
+    raw_provider_artifacts_scope: Literal[".local/dta-v2341/provider-raw"]
+    trace_sha256: str
+
+    @model_validator(mode="after")
+    def require_trace(self) -> "RegistrationAliasProviderTraceV2341":
+        if (
+            self.provider_mode is RegistrationProviderModeV234.DETERMINISTIC_DEVELOPMENT
+            and self.provider_calls != 0
+        ):
+            raise ValueError("deterministic alias trace claims Provider calls")
+        expected = semantic_sha256_v22(
+            self.model_dump(mode="json", exclude={"trace_sha256"})
+        )
+        if self.trace_sha256 != expected:
+            raise ValueError("registration alias Provider trace digest differs")
+        return self
+
+
+RegistrationProviderTraceAnyV2341: TypeAlias = (
+    RegistrationProviderTraceV234 | RegistrationAliasProviderTraceV2341
+)
+
+
 class RegistrationDraftContentV234(DtaModelV22):
     """The only semantic content accepted from a registration Provider."""
 
@@ -626,7 +663,7 @@ class FormalFaultRegistrationDraftV234(DtaModelV22):
     test_plan: RegistrationTestPlanV234
     unresolved_engineering_questions: tuple[str, ...]
     remediation_registration: Literal["NOT_INCLUDED"]
-    provider_trace: RegistrationProviderTraceV234
+    provider_trace: RegistrationProviderTraceAnyV2341
     action_authority: Literal["NONE"]
     repository_write_authority: Literal["NONE"]
     draft_sha256: str
@@ -684,17 +721,22 @@ class FormalFaultRegistrationDraftV234(DtaModelV22):
                 raise ValueError("engineering-required draft lacks an engineering gap")
         elif self.support_clauses:
             raise ValueError("non-registrable draft carries support clauses")
-        if self.provider_trace.response_sha256 != (
-            provider_authored_content_sha256_v234(self)
-        ):
-            raise ValueError("Provider-authored content digest differs")
+        assembled_content_sha256 = provider_authored_content_sha256_v234(self)
+        if isinstance(self.provider_trace, RegistrationProviderTraceV234):
+            response_identity_sha256 = self.provider_trace.response_sha256
+            if response_identity_sha256 != assembled_content_sha256:
+                raise ValueError("Provider-authored content digest differs")
+        else:
+            response_identity_sha256 = self.provider_trace.canonical_selection_sha256
+            if self.provider_trace.assembled_content_sha256 != assembled_content_sha256:
+                raise ValueError("Runtime-assembled content digest differs")
         expected_id = _draft_id_v234(
             authorization_id=self.authorization_id,
             shadow_fault_id=self.shadow_fault_id,
             registration_seed_sha256=self.registration_seed_sha256,
             core_ontology_snapshot_sha256=self.core_ontology_snapshot_sha256,
             mechanism_slug=self.mechanism.mechanism_slug,
-            response_sha256=self.provider_trace.response_sha256,
+            response_sha256=response_identity_sha256,
         )
         if self.draft_id != expected_id:
             raise ValueError("formal draft identity differs")
@@ -822,6 +864,38 @@ def build_provider_trace_v234(
     )
 
 
+def build_alias_provider_trace_v2341(
+    *,
+    provider_mode: RegistrationProviderModeV234,
+    request_sha256: str,
+    raw_response_sha256: str,
+    canonical_selection_sha256: str,
+    assembled_content_sha256: str,
+    provider_calls: int,
+    protocol_repairs: int,
+    transport_retries: int,
+) -> RegistrationAliasProviderTraceV2341:
+    payload: dict[str, Any] = {
+        "schema_version": "dta-v2341.registration-alias-provider-trace.v1",
+        "provider_mode": provider_mode,
+        "request_sha256": request_sha256,
+        "raw_response_sha256": raw_response_sha256,
+        "canonical_selection_sha256": canonical_selection_sha256,
+        "assembled_content_sha256": assembled_content_sha256,
+        "provider_calls": provider_calls,
+        "protocol_repairs": protocol_repairs,
+        "transport_retries": transport_retries,
+        "max_exact_request_retries": 3,
+        "semantic_retries": 0,
+        "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw",
+    }
+    return hashed_model_v234(
+        RegistrationAliasProviderTraceV2341,
+        payload,
+        "trace_sha256",
+    )
+
+
 def build_formal_registration_draft_v234(
     *,
     authorization_id: str,
@@ -829,15 +903,20 @@ def build_formal_registration_draft_v234(
     registration_seed_sha256: str,
     core_ontology_snapshot_sha256: str,
     content: RegistrationDraftContentV234,
-    provider_trace: RegistrationProviderTraceV234,
+    provider_trace: RegistrationProviderTraceAnyV2341,
 ) -> FormalFaultRegistrationDraftV234:
+    response_identity_sha256 = (
+        provider_trace.response_sha256
+        if isinstance(provider_trace, RegistrationProviderTraceV234)
+        else provider_trace.canonical_selection_sha256
+    )
     draft_id = _draft_id_v234(
         authorization_id=authorization_id,
         shadow_fault_id=shadow_fault_id,
         registration_seed_sha256=registration_seed_sha256,
         core_ontology_snapshot_sha256=core_ontology_snapshot_sha256,
         mechanism_slug=content.mechanism.mechanism_slug,
-        response_sha256=provider_trace.response_sha256,
+        response_sha256=response_identity_sha256,
     )
     payload: dict[str, Any] = {
         "schema_version": "dta-v234.formal-fault-registration-draft.v1",
@@ -870,17 +949,28 @@ def rebuild_formal_registration_draft_v234(
             for field in RegistrationDraftContentV234.model_fields
         }
     )
-    previous_trace = RegistrationProviderTraceV234.model_validate(
-        payload["provider_trace"]
-    )
-    provider_trace = build_provider_trace_v234(
-        provider_mode=previous_trace.provider_mode,
-        request_sha256=previous_trace.request_sha256,
-        response_sha256=provider_authored_content_sha256_v234(content),
-        provider_calls=previous_trace.provider_calls,
-        protocol_repairs=previous_trace.protocol_repairs,
-        transport_retries=previous_trace.transport_retries,
-    )
+    previous_trace = draft.provider_trace
+    assembled_content_sha256 = provider_authored_content_sha256_v234(content)
+    if isinstance(previous_trace, RegistrationProviderTraceV234):
+        provider_trace: RegistrationProviderTraceAnyV2341 = build_provider_trace_v234(
+            provider_mode=previous_trace.provider_mode,
+            request_sha256=previous_trace.request_sha256,
+            response_sha256=assembled_content_sha256,
+            provider_calls=previous_trace.provider_calls,
+            protocol_repairs=previous_trace.protocol_repairs,
+            transport_retries=previous_trace.transport_retries,
+        )
+    else:
+        provider_trace = build_alias_provider_trace_v2341(
+            provider_mode=previous_trace.provider_mode,
+            request_sha256=previous_trace.request_sha256,
+            raw_response_sha256=previous_trace.raw_response_sha256,
+            canonical_selection_sha256=previous_trace.canonical_selection_sha256,
+            assembled_content_sha256=assembled_content_sha256,
+            provider_calls=previous_trace.provider_calls,
+            protocol_repairs=previous_trace.protocol_repairs,
+            transport_retries=previous_trace.transport_retries,
+        )
     return build_formal_registration_draft_v234(
         authorization_id=cast(str, payload["authorization_id"]),
         shadow_fault_id=cast(str, payload["shadow_fault_id"]),
@@ -910,6 +1000,8 @@ __all__ = (
     "RegistrationDraftContentV234",
     "RegistrationImplementationModeV234",
     "RegistrationProviderModeV234",
+    "RegistrationAliasProviderTraceV2341",
+    "RegistrationProviderTraceAnyV2341",
     "RegistrationProviderTraceV234",
     "RegistrationTestPlanV234",
     "ResourceCpuThresholdRuleV234",
@@ -921,6 +1013,7 @@ __all__ = (
     "TraceFirstErrorAtServiceRuleV234",
     "TracePathContainsRuleV234",
     "build_formal_registration_draft_v234",
+    "build_alias_provider_trace_v2341",
     "build_provider_trace_v234",
     "hashed_model_v234",
     "mechanism_display_name_v234",

@@ -1,0 +1,15 @@
+{
+  "clause_aliases": [
+    "C00",
+    "C01",
+    "C02"
+  ],
+  "confusable_aliases": [
+    "M00",
+    "M01"
+  ],
+  "disposition_alias": "D00",
+  "engineering_gap_aliases": [],
+  "mechanism_concept": "connection pool exhaustion",
+  "semantic_rationale": "Pool wait evidence and error behavior support a distinct bounded mechanism."
+}
