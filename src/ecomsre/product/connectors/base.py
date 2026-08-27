@@ -13,6 +13,7 @@ from ecomsre.dta_v2.v22.read_contracts import (
     EvidenceSourceV22,
     LogRecordV22,
     MetricFactV22,
+    MetricKindV22,
     ReadRecordV22,
     ReadSourceStatusV22,
     RecentChangeRecordV22,
@@ -78,6 +79,11 @@ class ConnectorAvailabilityV1(str, Enum):
     UNAVAILABLE = "UNAVAILABLE"
 
 
+class ConnectorQueryPurposeV1(str, Enum):
+    BASELINE = "BASELINE"
+    INCIDENT = "INCIDENT"
+
+
 class ConnectorQueryContextV1(ProductModelV1):
     schema_version: Literal["ecomsre.product.connector-query-context.v1"] = (
         "ecomsre.product.connector-query-context.v1"
@@ -87,6 +93,13 @@ class ConnectorQueryContextV1(ProductModelV1):
     service_aliases: dict[str, str] = Field(default_factory=dict, max_length=1000)
     window: ConnectorWindowV1
     maximum_records: int = Field(ge=1, le=10_000)
+    purpose: ConnectorQueryPurposeV1 = ConnectorQueryPurposeV1.INCIDENT
+    requested_source: EvidenceSourceV22 | None = None
+    request_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    metric_kinds: tuple[MetricKindV22, ...] = ()
+    neighborhood_hops: int | None = Field(default=None, ge=1, le=2)
+    sampling_window_seconds: int | None = Field(default=None, ge=1, le=30)
+    sample_count: int | None = Field(default=None, ge=2, le=10)
 
     @model_validator(mode="after")
     def require_canonical_services(self) -> "ConnectorQueryContextV1":
@@ -94,6 +107,10 @@ class ConnectorQueryContextV1(ProductModelV1):
             raise ValueError("requested services are not canonical")
         if tuple(self.service_aliases) != tuple(sorted(self.service_aliases)):
             raise ValueError("service alias map is not canonical")
+        if self.metric_kinds != tuple(
+            sorted(set(self.metric_kinds), key=lambda item: item.value)
+        ):
+            raise ValueError("connector metric kinds are not canonical")
         if any(
             not alias
             or len(alias) > 120
@@ -254,6 +271,7 @@ __all__ = (
     "ConnectorCapabilityV1",
     "ConnectorHealthResultV1",
     "ConnectorQueryContextV1",
+    "ConnectorQueryPurposeV1",
     "ConnectorQueryResultV1",
     "ConnectorWindowV1",
     "ProductConnectorV1",

@@ -8,6 +8,7 @@ import httpx
 
 from ecomsre.product.connectors.base import ProductConnectorV1
 from ecomsre.product.connectors.credentials import CredentialResolverV1
+from ecomsre.product.connectors.fixture import FixtureConnectorV1
 from ecomsre.product.connectors.http_health import HttpHealthConnectorV1
 from ecomsre.product.connectors.jaeger import JaegerConnectorV1
 from ecomsre.product.connectors.opensearch import OpenSearchConnectorV1
@@ -32,6 +33,8 @@ class ConnectorRegistryV1:
 
     def create(self, config: ConnectorConfigV1) -> ProductConnectorV1:
         transport = self._transports.get(config.name)
+        if config.kind is ConnectorKindV1.FIXTURE:
+            return FixtureConnectorV1(config)
         if config.kind is ConnectorKindV1.PROMETHEUS:
             return PrometheusConnectorV1(
                 config,

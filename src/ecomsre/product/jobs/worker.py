@@ -5,8 +5,10 @@ from __future__ import annotations
 import os
 import secrets
 import time
+import math
 
 from ecomsre.product.baselines import BaselineRepositoryV1, HistoricalBaselineServiceV1
+from ecomsre.product.changes import ChangeEventRepositoryV1
 from ecomsre.product.connectors.credentials import CredentialResolverV1
 from ecomsre.product.connectors.registry import ConnectorRegistryV1
 from ecomsre.product.environment.capabilities import CapabilityMatrixRepositoryV1
@@ -14,15 +16,26 @@ from ecomsre.product.environment.repository import EnvironmentRepositoryV1
 from ecomsre.product.environment.services import ServiceCatalogRepositoryV1
 from ecomsre.product.environment.verification import EnvironmentVerificationServiceV1
 from ecomsre.product.errors import ProductError
+from ecomsre.product.incidents.diagnosis_bridge import ProductDiagnosisBridgeV1
+from ecomsre.product.incidents.read_backend import ProductReadBackendV1
+from ecomsre.product.incidents.repository import (
+    DiagnosisRepositoryV1,
+    IncidentRepositoryV1,
+)
 from ecomsre.product.jobs.contracts import JobLeaseFenceV1, ProductJobTypeV1
 from ecomsre.product.jobs.handlers import (
     handle_baseline_build,
     handle_environment_verify,
-    handle_fixture_environment_verify,
+    handle_incident_diagnosis,
 )
 from ecomsre.product.jobs.repository import JobRepositoryV1
 from ecomsre.product.settings import ProductSettingsV1
+from ecomsre.product.storage.object_store import ContentAddressedObjectStoreV1
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
+from ecomsre.product.telemetry.metrics import ProductMetricsV1
+
+
+_LEGACY_FIXTURE_RESULT_DATASETS = frozenset({"increment-1", "product-increment-1"})
 
 
 def run_one_job(
@@ -36,6 +49,21 @@ def run_one_job(
     environments = EnvironmentRepositoryV1(store)
     services = ServiceCatalogRepositoryV1(store)
     capabilities = CapabilityMatrixRepositoryV1(store)
+    baseline_repository = BaselineRepositoryV1(store)
+    change_repository = ChangeEventRepositoryV1(store)
+    object_store = ContentAddressedObjectStoreV1(
+        settings.object_store_root,
+        metadata_store=store,
+    )
+    metrics = ProductMetricsV1(store)
+    incidents = IncidentRepositoryV1(
+        store,
+        environments=environments,
+        services=services,
+        capabilities=capabilities,
+        baselines=baseline_repository,
+    )
+    diagnoses = DiagnosisRepositoryV1(store, object_store)
     job = jobs.claim_next(
         worker_id,
         lease_seconds=settings.job_lease_seconds,
@@ -65,8 +93,13 @@ def run_one_job(
     )
     baselines = HistoricalBaselineServiceV1(
         connectors=connector_registry,
-        repository=BaselineRepositoryV1(store),
+        repository=baseline_repository,
         maximum_records_per_source=settings.maximum_evidence_records_per_source,
+    )
+    read_backend = ProductReadBackendV1(
+        connectors=connector_registry,
+        changes=change_repository,
+        metrics=metrics,
     )
     fence = JobLeaseFenceV1(
         job_id=job.job_id,
@@ -76,15 +109,27 @@ def run_one_job(
     )
     try:
         if job.job_type is ProductJobTypeV1.ENVIRONMENT_VERIFY:
-            if job.payload.get("fixture") is True:
-                result = handle_fixture_environment_verify(job, environments)
-            else:
-                result = handle_environment_verify(
-                    job,
-                    environments,
-                    verification,
-                    fence=fence,
-                )
+            environment = environments.get(str(job.payload.get("environment_id", "")))
+            legacy_result_shape = bool(environment.connector_configs) and all(
+                connector.kind.value == "FIXTURE"
+                and str(connector.settings.get("dataset", ""))
+                in _LEGACY_FIXTURE_RESULT_DATASETS
+                for connector in environment.connector_configs
+            )
+            verified = handle_environment_verify(
+                job,
+                environments,
+                verification,
+                fence=fence,
+            )
+            result = (
+                {
+                    "environment_id": environment.environment_id,
+                    "fixture_verified": True,
+                }
+                if legacy_result_shape
+                else verified
+            )
         elif job.job_type is ProductJobTypeV1.BASELINE_BUILD:
             result = handle_baseline_build(
                 job,
@@ -92,6 +137,19 @@ def run_one_job(
                 services,
                 capabilities,
                 baselines,
+                fence=fence,
+            )
+        elif job.job_type is ProductJobTypeV1.DIAGNOSIS:
+            result = handle_incident_diagnosis(
+                job,
+                incidents,
+                diagnoses,
+                environments,
+                services,
+                capabilities,
+                baseline_repository,
+                read_backend,
+                ProductDiagnosisBridgeV1(),
                 fence=fence,
             )
         else:
@@ -106,6 +164,29 @@ def run_one_job(
             result,
             now=now,
         )
+        metrics.increment(
+            "ecomsre_jobs_total",
+            {"job_type": job.job_type.value, "status": "SUCCEEDED"},
+        )
+        metrics.increment(
+            "ecomsre_job_duration_seconds",
+            {"job_type": job.job_type.value, "status": "SUCCEEDED"},
+            amount=max(
+                0,
+                math.ceil((time.time() if now is None else now) - job.created_at),
+            ),
+        )
+        if job.job_type is ProductJobTypeV1.DIAGNOSIS:
+            terminal = str(result.get("terminal", "UNKNOWN"))
+            metrics.increment(
+                "ecomsre_diagnosis_terminals_total",
+                {"terminal": terminal},
+            )
+            if terminal == "OPEN_WORLD":
+                metrics.increment(
+                    "ecomsre_open_world_reports_total",
+                    {"terminal": terminal},
+                )
     except ProductError as exc:
         if exc.code == "JOB_LEASE_LOST":
             return True
@@ -116,6 +197,18 @@ def run_one_job(
                 job.attempt_count,
                 exc.code,
                 now=now,
+            )
+            metrics.increment(
+                "ecomsre_jobs_total",
+                {"job_type": job.job_type.value, "status": "FAILED"},
+            )
+            metrics.increment(
+                "ecomsre_job_duration_seconds",
+                {"job_type": job.job_type.value, "status": "FAILED"},
+                amount=max(
+                    0,
+                    math.ceil((time.time() if now is None else now) - job.created_at),
+                ),
             )
         except ProductError as finish_error:
             if finish_error.code != "JOB_LEASE_LOST":

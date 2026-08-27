@@ -18,9 +18,14 @@ from ecomsre.product.environment.repository import EnvironmentRepositoryV1
 from ecomsre.product.environment.services import ServiceCatalogRepositoryV1
 from ecomsre.product.errors import ProductError
 from ecomsre.product.jobs.repository import JobRepositoryV1
+from ecomsre.product.incidents.repository import (
+    DiagnosisRepositoryV1,
+    IncidentRepositoryV1,
+)
 from ecomsre.product.settings import ProductSettingsV1
 from ecomsre.product.storage.object_store import ContentAddressedObjectStoreV1
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
+from ecomsre.product.telemetry.metrics import ProductMetricsV1
 
 
 LOGGER = logging.getLogger(__name__)
@@ -47,6 +52,30 @@ def create_app(settings: ProductSettingsV1 | None = None) -> FastAPI:
     app.state.baselines = BaselineRepositoryV1(store)
     app.state.changes = ChangeEventRepositoryV1(store)
     app.state.jobs = JobRepositoryV1(store)
+    app.state.incidents = IncidentRepositoryV1(
+        store,
+        environments=app.state.environments,
+        services=app.state.services,
+        capabilities=app.state.capabilities,
+        baselines=app.state.baselines,
+    )
+    app.state.diagnoses = DiagnosisRepositoryV1(store, app.state.object_store)
+    app.state.metrics = ProductMetricsV1(store)
+
+    @app.middleware("http")
+    async def record_http_request(request: Request, call_next: object):
+        response = await call_next(request)  # type: ignore[operator]
+        route = request.scope.get("route")
+        route_path = getattr(route, "path", "unmatched")
+        app.state.metrics.increment(
+            "ecomsre_http_requests_total",
+            {
+                "method": request.method,
+                "route": route_path,
+                "status_class": f"{response.status_code // 100}xx",
+            },
+        )
+        return response
 
     @app.exception_handler(ProductError)
     async def product_error_handler(

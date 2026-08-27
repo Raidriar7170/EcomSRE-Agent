@@ -1,10 +1,16 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 import json
 
 import httpx
 
+from ecomsre.dta_v2.v22.action_catalog import (
+    EvidenceActionV22,
+    StaticTopologyV22,
+    build_action_catalog_v22,
+    build_tool_capability_registry_v22,
+)
 from ecomsre.dta_v2.v22.read_contracts import (
     EvidenceSourceV22,
     LogRecordV22,
@@ -26,6 +32,7 @@ from ecomsre.product.connectors.jaeger import JaegerConnectorV1
 from ecomsre.product.connectors.opensearch import OpenSearchConnectorV1
 from ecomsre.product.connectors.prometheus import PrometheusConnectorV1
 from ecomsre.product.contracts import ConnectorConfigV1
+from ecomsre.product.incidents.read_backend import _combine_results
 
 
 WINDOW = ConnectorWindowV1(
@@ -38,6 +45,42 @@ CONTEXT = ConnectorQueryContextV1(
     window=WINDOW,
     maximum_records=200,
 )
+
+
+def _action(source: EvidenceSourceV22) -> EvidenceActionV22:
+    catalog = build_action_catalog_v22(
+        candidate_services=("payment",),
+        topology=StaticTopologyV22.build(services=("payment",), edges=()),
+        capability_registry=build_tool_capability_registry_v22(),
+        executed_action_ids=(),
+        remaining_budget=100.0,
+    )
+    return next(item for item in catalog.registry_actions if item.source is source)
+
+
+def _action_context(action: EvidenceActionV22) -> ConnectorQueryContextV1:
+    seconds = action.request.lookback_seconds or action.request.sampling_window_seconds or 60
+    window = ConnectorWindowV1(
+        started_at=WINDOW.ended_at - timedelta(seconds=seconds),
+        ended_at=WINDOW.ended_at,
+    )
+    return ConnectorQueryContextV1(
+        environment_id="env-0123456789abcdef01234567",
+        requested_services=action.target_services,
+        window=window,
+        maximum_records=int(
+            action.request.max_results
+            or action.request.max_records
+            or action.request.max_spans
+            or len(action.target_services)
+        ),
+        requested_source=action.source,
+        request_sha256=action.request_sha256,
+        metric_kinds=action.request.metric_kinds,
+        neighborhood_hops=action.request.neighborhood_hops,
+        sampling_window_seconds=action.request.sampling_window_seconds,
+        sample_count=action.request.sample_count,
+    )
 
 
 def test_prometheus_connector_discovers_and_normalizes_metrics_and_resources() -> None:
@@ -124,6 +167,107 @@ def test_prometheus_connector_discovers_and_normalizes_metrics_and_resources() -
     assert "/api/v1/label/service_name/values" in seen_paths
     assert seen_paths.count("/api/v1/query_range") == 5
     assert len(request_fences) == len(seen_paths)
+
+
+def test_prometheus_executes_metric_and_resource_action_parameters() -> None:
+    requested_queries: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/api/v1/query_range"
+        query = request.url.params["query"]
+        requested_queries.append(query)
+        started = float(request.url.params["start"])
+        ended = float(request.url.params["end"])
+        if query.startswith(("cpu", "memory")):
+            assert request.url.params["step"] == "2.5"
+            timestamps = [started + index * 2.5 for index in range(5)]
+        else:
+            timestamps = [started, ended]
+        values = [
+            [
+                timestamp,
+                str(
+                    100 + index
+                    if query.startswith("memory")
+                    else 0.01 + index * 0.01
+                    if query.startswith("errors")
+                    else 10 + index
+                ),
+            ]
+            for index, timestamp in enumerate(timestamps)
+        ]
+        return httpx.Response(
+            200,
+            json={
+                "status": "success",
+                "data": {
+                    "resultType": "matrix",
+                    "result": [{"metric": {"service_name": "payment"}, "values": values}],
+                },
+            },
+        )
+
+    connector = PrometheusConnectorV1(
+        ConnectorConfigV1(
+            name="prometheus",
+            kind="PROMETHEUS",
+            endpoint="https://prometheus.test",
+            settings={
+                "query_templates": {
+                    "error_rate": "errors{service=\"{service}\"}",
+                    "request_support": "requests{service=\"{service}\"}",
+                    "latency": "latency{service=\"{service}\"}",
+                    "cpu": "cpu{service=\"{service}\"}",
+                    "memory": "memory{service=\"{service}\"}",
+                },
+                "service_label": "service_name",
+                "step_seconds": 15,
+            },
+            credential_refs={},
+        ),
+        credential_resolver=CredentialResolverV1(environment={}),
+        timeout_seconds=2,
+        transport=httpx.MockTransport(handler),
+    )
+
+    metric_action = _action(EvidenceSourceV22.METRICS)
+    metric_context = _action_context(metric_action)
+    metric_component = connector.query(metric_context)[0]
+    metric_combined = _combine_results(
+        action=metric_action,
+        window=metric_context.window,
+        results=(metric_component,),
+    )
+    assert metric_combined.status is ReadSourceStatusV22.SUCCESS_NONEMPTY, (
+        metric_component.model_dump(mode="json"),
+        metric_combined.model_dump(mode="json"),
+    )
+    assert {item.metric_kind.value for item in metric_combined.records} == {
+        "ERROR_RATE",
+        "LATENCY_P95_MS",
+        "REQUEST_SUPPORT",
+    }
+    assert len(requested_queries) == 3
+    assert not any(query.startswith(("cpu", "memory")) for query in requested_queries)
+
+    requested_queries.clear()
+    resource_action = _action(EvidenceSourceV22.RESOURCES)
+    resource_context = _action_context(resource_action)
+    resource_component = connector.query(resource_context)[0]
+    resource_combined = _combine_results(
+        action=resource_action,
+        window=resource_context.window,
+        results=(resource_component,),
+    )
+    assert resource_combined.status is ReadSourceStatusV22.SUCCESS_NONEMPTY
+    resource = resource_combined.records[0]
+    assert isinstance(resource, ResourceUsageRecordV22)
+    assert resource.sampling_window_seconds == 10
+    assert len(resource.samples) == 5
+    assert len(requested_queries) == 2
+    assert all(query.startswith(("cpu", "memory")) for query in requested_queries)
+
+    connector.close()
 
 
 def test_opensearch_connector_uses_bounded_search_and_projects_only_log_fields() -> None:
@@ -266,6 +410,94 @@ def test_jaeger_connector_discovers_and_normalizes_causal_spans() -> None:
     assert child.service_path == ("frontend", "payment")
     assert child.parent_service == "frontend"
     assert child.first_error_location is True
+
+
+def test_jaeger_projects_trace_records_to_action_neighborhood() -> None:
+    action = _action(EvidenceSourceV22.TRACES)
+    context = _action_context(action)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/api/traces"
+        start = int(context.window.started_at.timestamp() * 1_000_000)
+        return httpx.Response(
+            200,
+            json={
+                "data": [
+                    {
+                        "processes": {
+                            "p1": {"resource": {"service": {"name": "frontend"}}},
+                            "p2": {"resource": {"service": {"name": "checkout"}}},
+                            "p3": {"resource": {"service": {"name": "payment"}}},
+                        },
+                        "spans": [
+                            {
+                                "spanID": "root",
+                                "operationName": "entry",
+                                "startTime": start + 1_000_000,
+                                "duration": 10_000,
+                                "processID": "p1",
+                                "references": [],
+                                "tags": [],
+                            },
+                            {
+                                "spanID": "middle",
+                                "operationName": "checkout",
+                                "startTime": start + 2_000_000,
+                                "duration": 10_000,
+                                "processID": "p2",
+                                "references": [
+                                    {"refType": "CHILD_OF", "spanID": "root"}
+                                ],
+                                "tags": [],
+                            },
+                            {
+                                "spanID": "target",
+                                "operationName": "charge",
+                                "startTime": start + 3_000_000,
+                                "duration": 10_000,
+                                "processID": "p3",
+                                "references": [
+                                    {"refType": "CHILD_OF", "spanID": "middle"}
+                                ],
+                                "tags": [],
+                            },
+                        ],
+                    }
+                ]
+            },
+        )
+
+    connector = JaegerConnectorV1(
+        ConnectorConfigV1(
+            name="traces",
+            kind="JAEGER",
+            endpoint="https://jaeger.test",
+            settings={
+                "limit": 12,
+                "minimum_duration_ms": 0,
+                "service_field_behavior": "resource.service.name",
+            },
+            credential_refs={},
+        ),
+        credential_resolver=CredentialResolverV1(environment={}),
+        timeout_seconds=2,
+        transport=httpx.MockTransport(handler),
+    )
+    component = connector.query(context)[0]
+    combined = _combine_results(
+        action=action,
+        window=context.window,
+        results=(component,),
+    )
+
+    assert combined.status is ReadSourceStatusV22.SUCCESS_NONEMPTY, (
+        component.model_dump(mode="json"),
+        combined.model_dump(mode="json"),
+    )
+    assert {item.service for item in combined.records} == {"payment"}
+    assert combined.truncated is False
+
+    connector.close()
 
 
 def test_http_health_connector_distinguishes_unhealthy_from_transport_failure() -> None:

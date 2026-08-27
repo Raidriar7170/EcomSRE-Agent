@@ -161,15 +161,45 @@ class PrometheusConnectorV1:
         context: ConnectorQueryContextV1,
     ) -> tuple[ConnectorQueryResultV1, ...]:
         context = ConnectorQueryContextV1.model_validate(context.model_dump())
+        if (
+            context.requested_source is EvidenceSourceV22.METRICS
+            and not context.metric_kinds
+        ) or (
+            context.requested_source is EvidenceSourceV22.RESOURCES
+            and (
+                context.sampling_window_seconds is None
+                or context.sample_count is None
+            )
+        ):
+            return _failure_results(
+                context,
+                ConnectorRequestError(
+                    ReadSourceStatusV22.FAILURE_SCHEMA,
+                    "CONNECTOR_ACTION_CONTRACT_INVALID",
+                    0.0,
+                ),
+            )
+        selected_templates = tuple(
+            (name, template)
+            for name, template in self._settings.query_templates.items()
+            if context.requested_source is None
+            or (
+                context.requested_source is EvidenceSourceV22.METRICS
+                and _METRIC_KIND_BY_TEMPLATE[name] in set(context.metric_kinds)
+            )
+            or (
+                context.requested_source is EvidenceSourceV22.RESOURCES
+                and name in {"cpu", "memory"}
+            )
+        )
         metric_records: list[MetricFactV22] = []
         series_by_service: dict[str, dict[str, list[tuple[float, float]]]] = {}
-        covered: set[str] = set()
         truncated = False
         latency_ms = 0.0
         try:
             for service in context.requested_services:
                 for source_alias in context.aliases_for(service):
-                    for template_name, template in self._settings.query_templates.items():
+                    for template_name, template in selected_templates:
                         samples, query_truncated, query_latency = self._query_range(
                             template=self._render_template(template, source_alias, context),
                             context=context,
@@ -178,21 +208,21 @@ class PrometheusConnectorV1:
                         truncated = truncated or query_truncated
                         if not samples:
                             continue
-                        covered.add(service)
                         metric_kind = _METRIC_KIND_BY_TEMPLATE[template_name]
-                        metric_records.append(
-                            MetricFactV22(
-                                schema_version="dta-v22.metric-fact.v1",
-                                service=service,
-                                metric_kind=metric_kind,
-                                support_status=MetricSupportStatusV22.SUPPORTED,
-                                sample_count=len(samples),
-                                value=sum(value for _, value in samples) / len(samples),
-                                unit=METRIC_UNIT_BY_KIND_V22[metric_kind],
-                                window_started_at=context.window.started_at,
-                                window_ended_at=context.window.ended_at,
+                        if context.requested_source is not EvidenceSourceV22.RESOURCES:
+                            metric_records.append(
+                                MetricFactV22(
+                                    schema_version="dta-v22.metric-fact.v1",
+                                    service=service,
+                                    metric_kind=metric_kind,
+                                    support_status=MetricSupportStatusV22.SUPPORTED,
+                                    sample_count=len(samples),
+                                    value=sum(value for _, value in samples) / len(samples),
+                                    unit=METRIC_UNIT_BY_KIND_V22[metric_kind],
+                                    window_started_at=context.window.started_at,
+                                    window_ended_at=context.window.ended_at,
+                                )
                             )
-                        )
                         series_by_service.setdefault(service, {}).setdefault(
                             template_name,
                             [],
@@ -216,13 +246,19 @@ class PrometheusConnectorV1:
         resource_records: list[ResourceUsageRecordV22] = []
         for service in context.requested_services:
             series = series_by_service.get(service, {})
-            resource = self._resource_record(service, series.get("cpu"), series.get("memory"))
+            resource = self._resource_record(
+                service,
+                series.get("cpu"),
+                series.get("memory"),
+                sampling_window_seconds=context.sampling_window_seconds,
+                sample_count=context.sample_count,
+            )
             if resource is not None:
                 resource_records.append(resource)
         if len(resource_records) > maximum_records:
             resource_records = resource_records[:maximum_records]
             truncated = True
-        return (
+        results = (
             _query_result(
                 source=EvidenceSourceV22.METRICS,
                 context=context,
@@ -239,6 +275,12 @@ class PrometheusConnectorV1:
                 truncated=truncated,
                 latency_ms=latency_ms,
             ),
+        )
+        return tuple(
+            result
+            for result in results
+            if context.requested_source is None
+            or result.source is context.requested_source
         )
 
     def query_instant(
@@ -381,7 +423,7 @@ class PrometheusConnectorV1:
                 "query": template,
                 "start": context.window.started_at.timestamp(),
                 "end": context.window.ended_at.timestamp(),
-                "step": self._settings.step_seconds,
+                "step": self._query_step(context),
             },
         )
         body = require_mapping(payload)
@@ -430,7 +472,7 @@ class PrometheusConnectorV1:
             "{service}": service,
             "{start}": str(int(context.window.started_at.timestamp())),
             "{end}": str(int(context.window.ended_at.timestamp())),
-            "{step}": str(self._settings.step_seconds),
+            "{step}": str(self._query_step(context)),
         }
         rendered = template
         for marker, value in replacements.items():
@@ -442,6 +484,9 @@ class PrometheusConnectorV1:
         service: str,
         cpu_samples: list[tuple[float, float]] | None,
         memory_samples: list[tuple[float, float]] | None,
+        *,
+        sampling_window_seconds: int | None,
+        sample_count: int | None,
     ) -> ResourceUsageRecordV22 | None:
         if not cpu_samples or not memory_samples:
             return None
@@ -451,12 +496,37 @@ class PrometheusConnectorV1:
         if len(timestamps) < 2:
             return None
         end = timestamps[-1]
-        timestamps = [item for item in timestamps if end - item <= 30][-10:]
+        requested_window = sampling_window_seconds or 30
+        timestamps = [
+            item for item in timestamps if end - item <= requested_window
+        ]
+        if sampling_window_seconds is not None and sample_count is not None:
+            started = end - sampling_window_seconds
+            if (
+                len(timestamps) < sample_count
+                or not math.isclose(timestamps[0], started, abs_tol=1e-6)
+            ):
+                return None
+            indexes = tuple(
+                round(index * (len(timestamps) - 1) / (sample_count - 1))
+                for index in range(sample_count)
+            )
+            timestamps = [timestamps[index] for index in indexes]
+        else:
+            timestamps = timestamps[-10:]
         if len(timestamps) < 2:
             return None
         started = timestamps[0]
         duration = end - started
-        if duration < 1 or duration > 30 or not float(duration).is_integer():
+        if (
+            duration < 1
+            or duration > requested_window
+            or not float(duration).is_integer()
+            or (
+                sampling_window_seconds is not None
+                and duration != sampling_window_seconds
+            )
+        ):
             return None
         if any(not memory[item].is_integer() for item in timestamps):
             return None
@@ -478,6 +548,15 @@ class PrometheusConnectorV1:
             )
             / duration,
         )
+
+    def _query_step(self, context: ConnectorQueryContextV1) -> float | int:
+        if (
+            context.requested_source is EvidenceSourceV22.RESOURCES
+            and context.sampling_window_seconds is not None
+            and context.sample_count is not None
+        ):
+            return context.sampling_window_seconds / (context.sample_count - 1)
+        return self._settings.step_seconds
 
     def close(self) -> None:
         self._http.close()

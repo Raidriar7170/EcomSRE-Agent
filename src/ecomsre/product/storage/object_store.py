@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import sqlite3
 import tempfile
 from typing import Any
 
@@ -49,15 +50,33 @@ class ContentAddressedObjectStoreV1:
         return self.sha_root / object_sha256[:2] / f"{object_sha256}.json"
 
     def put_json(self, payload: Any) -> StoredObjectV1:
+        stored = self.prepare_json(payload)
+        self._bind_metadata(
+            object_sha256=stored.object_sha256,
+            byte_size=stored.byte_size,
+            media_type=stored.media_type,
+        )
+        return stored
+
+    def prepare_json(self, payload: Any) -> StoredObjectV1:
         data = json.dumps(
             payload,
             ensure_ascii=False,
             sort_keys=True,
             separators=(",", ":"),
         ).encode("utf-8")
-        return self.put_bytes(data, media_type="application/json")
+        return self.prepare_bytes(data, media_type="application/json")
 
     def put_bytes(self, data: bytes, *, media_type: str) -> StoredObjectV1:
+        stored = self.prepare_bytes(data, media_type=media_type)
+        self._bind_metadata(
+            object_sha256=stored.object_sha256,
+            byte_size=stored.byte_size,
+            media_type=stored.media_type,
+        )
+        return stored
+
+    def prepare_bytes(self, data: bytes, *, media_type: str) -> StoredObjectV1:
         if (
             not media_type
             or len(media_type) > 255
@@ -85,17 +104,42 @@ class ContentAddressedObjectStoreV1:
             _fsync_directory(path.parent)
         finally:
             temporary_path.unlink(missing_ok=True)
-        self._bind_metadata(
-            object_sha256=object_sha256,
-            byte_size=len(data),
-            media_type=media_type,
-        )
         return StoredObjectV1(
             object_sha256=object_sha256,
             byte_size=len(data),
             media_type=media_type,
             path=path,
         )
+
+    @staticmethod
+    def bind_prepared(
+        connection: sqlite3.Connection,
+        stored: StoredObjectV1,
+        *,
+        created_at: datetime,
+    ) -> None:
+        existing = connection.execute(
+            "SELECT byte_size, media_type FROM evidence_objects "
+            "WHERE object_sha256 = ?",
+            (stored.object_sha256,),
+        ).fetchone()
+        if existing is None:
+            connection.execute(
+                "INSERT INTO evidence_objects("
+                "object_sha256, byte_size, media_type, created_at"
+                ") VALUES (?, ?, ?, ?)",
+                (
+                    stored.object_sha256,
+                    stored.byte_size,
+                    stored.media_type,
+                    created_at.isoformat(),
+                ),
+            )
+        elif (
+            existing["byte_size"] != stored.byte_size
+            or existing["media_type"] != stored.media_type
+        ):
+            raise ObjectStoreIntegrityError("existing object metadata differs")
 
     def read_bytes(self, object_sha256: str) -> bytes:
         path = self._path_for(object_sha256)
@@ -126,28 +170,16 @@ class ContentAddressedObjectStoreV1:
         with self.metadata_store.connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
             try:
-                existing = connection.execute(
-                    "SELECT byte_size, media_type FROM evidence_objects "
-                    "WHERE object_sha256 = ?",
-                    (object_sha256,),
-                ).fetchone()
-                if existing is None:
-                    connection.execute(
-                        "INSERT INTO evidence_objects("
-                        "object_sha256, byte_size, media_type, created_at"
-                        ") VALUES (?, ?, ?, ?)",
-                        (
-                            object_sha256,
-                            byte_size,
-                            media_type,
-                            datetime.now(UTC).isoformat(),
-                        ),
-                    )
-                elif (
-                    existing["byte_size"] != byte_size
-                    or existing["media_type"] != media_type
-                ):
-                    raise ObjectStoreIntegrityError("existing object metadata differs")
+                self.bind_prepared(
+                    connection,
+                    StoredObjectV1(
+                        object_sha256=object_sha256,
+                        byte_size=byte_size,
+                        media_type=media_type,
+                        path=self._path_for(object_sha256),
+                    ),
+                    created_at=datetime.now(UTC),
+                )
                 connection.execute("COMMIT")
             except Exception:
                 connection.execute("ROLLBACK")

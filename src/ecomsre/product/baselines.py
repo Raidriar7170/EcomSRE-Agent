@@ -25,7 +25,11 @@ from ecomsre.dta_v2.v22.read_contracts import (
     semantic_sha256_v22,
 )
 from ecomsre.product.connectors.base import ConnectorQueryResultV1
-from ecomsre.product.connectors.base import ConnectorQueryContextV1, ConnectorWindowV1
+from ecomsre.product.connectors.base import (
+    ConnectorQueryContextV1,
+    ConnectorQueryPurposeV1,
+    ConnectorWindowV1,
+)
 from ecomsre.product.connectors.registry import ConnectorRegistryV1
 from ecomsre.product.contracts import (
     ConnectorKindV1,
@@ -360,7 +364,27 @@ class BaselineRepositoryV1:
             return None
         payload = json.loads(row["payload_json"])
         payload["active"] = bool(row["active"])
-        return EnvironmentBaselineV1.model_validate(payload)
+        return EnvironmentBaselineV1.model_validate_json(
+            json.dumps(payload, sort_keys=True, separators=(",", ":"))
+        )
+
+    def get_active(self, environment_id: str) -> EnvironmentBaselineV1:
+        with self.store.connect() as connection:
+            row = connection.execute(
+                "SELECT payload_json FROM baseline_versions "
+                "WHERE environment_id = ? AND active = 1",
+                (environment_id,),
+            ).fetchone()
+        if row is None:
+            raise ProductError(
+                "BASELINE_REQUIRED",
+                "The environment must have one active baseline before incident ingestion.",
+            )
+        payload = json.loads(row["payload_json"])
+        payload["active"] = True
+        return EnvironmentBaselineV1.model_validate_json(
+            json.dumps(payload, sort_keys=True, separators=(",", ":"))
+        )
 
     def list(self, environment_id: str) -> tuple[EnvironmentBaselineV1, ...]:
         with self.store.connect() as connection:
@@ -396,6 +420,7 @@ _ALIAS_FIELD_BY_KIND = {
     ConnectorKindV1.OPENSEARCH: "opensearch",
     ConnectorKindV1.JAEGER: "jaeger",
     ConnectorKindV1.HTTP_HEALTH: "http_health",
+    ConnectorKindV1.FIXTURE: None,
 }
 
 
@@ -467,8 +492,6 @@ class HistoricalBaselineServiceV1:
         connector_instances = []
         try:
             for config in environment.connector_configs:
-                if config.kind is ConnectorKindV1.FIXTURE:
-                    continue
                 connector = self._connectors.create(config)
                 if any(
                     capability.supports_baseline
@@ -488,17 +511,22 @@ class HistoricalBaselineServiceV1:
                 results: list[ConnectorQueryResultV1] = []
                 for kind, connector in connector_instances:
                     alias_field = _ALIAS_FIELD_BY_KIND[kind]
-                    alias_map = {
-                        alias: identity.logical_service
-                        for identity in identity_map.services
-                        for alias in getattr(identity.aliases, alias_field)
-                    }
+                    alias_map = (
+                        {}
+                        if alias_field is None
+                        else {
+                            alias: identity.logical_service
+                            for identity in identity_map.services
+                            for alias in getattr(identity.aliases, alias_field)
+                        }
+                    )
                     context = ConnectorQueryContextV1(
                         environment_id=environment.environment_id,
                         requested_services=logical_services,
                         service_aliases=dict(sorted(alias_map.items())),
                         window=window,
                         maximum_records=min(self._maximum_records_per_source, 200),
+                        purpose=ConnectorQueryPurposeV1.BASELINE,
                     )
                     connector_results = connector.query(context)
                     expected_sources = {

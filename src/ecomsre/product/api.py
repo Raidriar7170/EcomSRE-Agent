@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 
 from fastapi import APIRouter, Depends, Header, Request, Response, status
+from fastapi.responses import PlainTextResponse
 
 from ecomsre.product.auth import require_mutation_auth
 from ecomsre.product.baselines import BaselineJobCreateV1, BaselineListV1
@@ -17,6 +18,12 @@ from ecomsre.product.contracts import (
 )
 from ecomsre.product.jobs.contracts import ProductJobRecordV1, ProductJobTypeV1
 from ecomsre.product.environment.capabilities import EnvironmentCapabilityMatrixV1
+from ecomsre.product.incidents.contracts import (
+    DiagnosisResultV1,
+    EvidenceBundleV1,
+    IncidentCreateV1,
+    IncidentRecordV1,
+)
 
 
 router = APIRouter()
@@ -33,6 +40,14 @@ def readyz(request: Request, response: Response) -> HealthResultV1:
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
         return HealthResultV1(status="not-ready")
     return HealthResultV1(status="ready")
+
+
+@router.get("/metrics", response_class=PlainTextResponse)
+def metrics(request: Request) -> PlainTextResponse:
+    return PlainTextResponse(
+        request.app.state.metrics.render(),
+        media_type="text/plain; version=0.0.4",
+    )
 
 
 @router.post(
@@ -172,6 +187,60 @@ def create_environment_change(
     payload: ChangeEventCreateV1,
 ) -> ChangeEventRecordV1:
     return request.app.state.changes.create(environment_id, payload)
+
+
+@router.post(
+    "/v1/incidents",
+    dependencies=[Depends(require_mutation_auth)],
+    response_model=IncidentRecordV1,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_incident(
+    request: Request,
+    payload: IncidentCreateV1,
+) -> IncidentRecordV1:
+    return request.app.state.incidents.create(payload)
+
+
+@router.get("/v1/incidents/{incident_id}", response_model=IncidentRecordV1)
+def get_incident(request: Request, incident_id: str) -> IncidentRecordV1:
+    return request.app.state.incidents.get(incident_id)
+
+
+@router.post(
+    "/v1/incidents/{incident_id}/diagnosis-jobs",
+    dependencies=[Depends(require_mutation_auth)],
+    response_model=ProductJobRecordV1,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def create_diagnosis_job(
+    request: Request,
+    incident_id: str,
+) -> ProductJobRecordV1:
+    request.app.state.incidents.get(incident_id)
+    return request.app.state.jobs.enqueue(
+        ProductJobTypeV1.DIAGNOSIS,
+        {"incident_id": incident_id},
+        idempotency_key=f"diagnosis:{incident_id}",
+    )
+
+
+@router.get(
+    "/v1/incidents/{incident_id}/diagnosis",
+    response_model=DiagnosisResultV1,
+)
+def get_diagnosis(request: Request, incident_id: str) -> DiagnosisResultV1:
+    request.app.state.incidents.get(incident_id)
+    return request.app.state.diagnoses.get(incident_id)
+
+
+@router.get(
+    "/v1/incidents/{incident_id}/evidence",
+    response_model=EvidenceBundleV1,
+)
+def get_evidence(request: Request, incident_id: str) -> EvidenceBundleV1:
+    request.app.state.incidents.get(incident_id)
+    return request.app.state.diagnoses.evidence(incident_id)
 
 
 @router.get("/v1/jobs/{job_id}", response_model=ProductJobRecordV1)

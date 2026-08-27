@@ -180,6 +180,32 @@ MIGRATIONS: tuple[tuple[int, str, tuple[str, ...]], ...] = (
             "ON baseline_versions(environment_id) WHERE active = 1",
         ),
     ),
+    (
+        3,
+        "incident-diagnosis-v1",
+        (
+            "CREATE UNIQUE INDEX diagnosis_results_incident_idx "
+            "ON diagnosis_results(incident_id)",
+            """CREATE TABLE diagnosis_evidence_links (
+                diagnosis_id TEXT NOT NULL REFERENCES diagnosis_results(diagnosis_id),
+                incident_id TEXT NOT NULL REFERENCES incidents(incident_id),
+                object_sha256 TEXT NOT NULL REFERENCES evidence_objects(object_sha256),
+                evidence_ref TEXT NOT NULL,
+                source TEXT NOT NULL,
+                action_id TEXT NOT NULL,
+                role TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                PRIMARY KEY(diagnosis_id, evidence_ref)
+            )""",
+            """CREATE TABLE product_metric_counters (
+                metric_name TEXT NOT NULL,
+                labels_json TEXT NOT NULL,
+                value INTEGER NOT NULL CHECK(value >= 0),
+                updated_at TEXT NOT NULL,
+                PRIMARY KEY(metric_name, labels_json)
+            )""",
+        ),
+    ),
 )
 
 __all__ = ("MIGRATIONS",)

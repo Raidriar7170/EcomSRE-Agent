@@ -163,6 +163,48 @@ def test_change_event_is_idempotent_and_maps_to_frozen_v22_contract(tmp_path) ->
         )
 
 
+def test_change_query_is_window_bounded_and_reports_truncation(tmp_path) -> None:
+    store = SqliteStoreV1(tmp_path / "product.sqlite3")
+    environment = _environment(store)
+    service = ServiceCatalogRepositoryV1(store).get_map(environment.environment_id).services[0]
+    changes = ChangeEventRepositoryV1(store)
+    for index in range(15):
+        changes.create(
+            environment.environment_id,
+            {
+                "service_id": service.service_id,
+                "category": "DEPLOYMENT",
+                "occurred_at": (NOW + timedelta(seconds=index)).isoformat(),
+                "revision": f"release-{index}",
+                "summary": f"bounded rollout {index}",
+                "external_change_id": f"deploy-{index}",
+            },
+        )
+    changes.create(
+        environment.environment_id,
+        {
+            "service_id": service.service_id,
+            "category": "DEPLOYMENT",
+            "occurred_at": (NOW - timedelta(days=1)).isoformat(),
+            "revision": "outside-window",
+            "summary": "outside the requested window",
+            "external_change_id": "outside-window",
+        },
+    )
+
+    records, truncated = changes.list_v22(
+        environment_id=environment.environment_id,
+        logical_services=("payment",),
+        started_at=NOW,
+        ended_at=NOW + timedelta(minutes=1),
+        limit=12,
+    )
+
+    assert len(records) == 12
+    assert truncated is True
+    assert all(NOW <= item.observed_at <= NOW + timedelta(minutes=1) for item in records)
+
+
 def test_historical_baseline_aggregates_six_windows_and_promotes_explicitly(tmp_path) -> None:
     store = SqliteStoreV1(tmp_path / "product.sqlite3")
     environment = _environment(store)

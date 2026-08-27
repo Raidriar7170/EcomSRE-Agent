@@ -171,6 +171,21 @@ class JaegerConnectorV1:
                             require_mapping(trace),
                             context=context,
                         )
+                        if context.neighborhood_hops is not None:
+                            normalized = [
+                                record
+                                for record in normalized
+                                if record.service in record.service_path
+                                and any(
+                                    target in record.service_path
+                                    and abs(
+                                        record.service_path.index(target)
+                                        - record.service_path.index(record.service)
+                                    )
+                                    <= context.neighborhood_hops
+                                    for target in context.requested_services
+                                )
+                            ]
                         available = maximum_records - len(records)
                         if len(normalized) > available:
                             records.extend(normalized[:available])

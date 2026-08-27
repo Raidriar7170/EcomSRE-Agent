@@ -183,6 +183,47 @@ class ChangeEventRepositoryV1:
                 connection.execute("ROLLBACK")
                 raise
 
+    def list_v22(
+        self,
+        *,
+        environment_id: str,
+        logical_services: tuple[str, ...],
+        started_at: datetime,
+        ended_at: datetime,
+        limit: int,
+    ) -> tuple[tuple[RecentChangeRecordV22, ...], bool]:
+        if not 1 <= limit <= 20:
+            raise ValueError("change query limit is outside the canonical bound")
+        if logical_services != tuple(sorted(set(logical_services))):
+            raise ValueError("change query services are not canonical")
+        if started_at.tzinfo is None or ended_at.tzinfo is None or ended_at <= started_at:
+            raise ValueError("change query window is invalid")
+        placeholders = ",".join("?" for _item in logical_services)
+        with self.store.connect() as connection:
+            rows = connection.execute(
+                "SELECT payload_json FROM change_events WHERE environment_id = ? "
+                f"AND json_extract(payload_json, '$.v22_record.service') IN ({placeholders}) "
+                "AND julianday(json_extract(payload_json, '$.v22_record.observed_at')) "
+                "BETWEEN julianday(?) AND julianday(?) "
+                "ORDER BY json_extract(payload_json, '$.v22_record.observed_at'), "
+                "change_event_id LIMIT ?",
+                (
+                    environment_id,
+                    *logical_services,
+                    started_at.isoformat(),
+                    ended_at.isoformat(),
+                    limit + 1,
+                ),
+            ).fetchall()
+        selected = tuple(
+            record.v22_record
+            for row in rows
+            for record in (ChangeEventRecordV1.model_validate_json(row["payload_json"]),)
+            if record.v22_record.service in set(logical_services)
+            and started_at <= record.v22_record.observed_at <= ended_at
+        )
+        return selected[:limit], len(selected) > limit
+
 
 __all__ = (
     "ChangeEventCreateV1",
