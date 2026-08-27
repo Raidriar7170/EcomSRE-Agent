@@ -29,7 +29,13 @@
     "insufficient_control_provider_calls": 0
   },
   "increment_3": {
-    "status": "NOT_STARTED",
+    "status": "SMOKE_SURFACE_FROZEN",
+    "task_count": 8,
+    "provider_called_task_count": 6,
+    "zero_call_control_count": 2,
+    "catalog_feasibility_terminal": "DTA_V2341_CATALOG_FEASIBILITY_PASS",
+    "deterministic_preflight_terminal": "DTA_V2341_SMOKE_PREFLIGHT_PASS",
+    "smoke_manifest_sha256": "0e8d7e0215a854d69d6841552c29fbff3ac5377e70c286136b4e15f3a1f48811",
     "provider_smoke_execution_count": 0
   },
   "increment_4": {

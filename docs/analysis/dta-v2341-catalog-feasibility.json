@@ -1,0 +1,101 @@
+{
+  "schema_version": "dta-v2341.smoke-catalog-feasibility.v1",
+  "task_count": 8,
+  "provider_called_task_count": 6,
+  "catalog_feasibility_pass_count": 6,
+  "deterministic_zero_call_control_count": 2,
+  "hidden_target_leaks": 0,
+  "provider_calls": 0,
+  "tasks": [
+    {
+      "task_id": "smoke-v2341-01",
+      "role": "HIDDEN_KNOWN_RECONSTRUCTION",
+      "provider_call_expected": true,
+      "predicate_option_count": 2,
+      "clause_option_count": 1,
+      "engineering_gap_option_count": 0,
+      "hidden_target_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "smoke-v2341-02",
+      "role": "HIDDEN_KNOWN_RECONSTRUCTION",
+      "provider_call_expected": true,
+      "predicate_option_count": 2,
+      "clause_option_count": 1,
+      "engineering_gap_option_count": 0,
+      "hidden_target_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "smoke-v2341-03",
+      "role": "DECLARATIVE_READY_NEW",
+      "provider_call_expected": true,
+      "predicate_option_count": 2,
+      "clause_option_count": 1,
+      "engineering_gap_option_count": 0,
+      "hidden_target_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "smoke-v2341-04",
+      "role": "DECLARATIVE_READY_NEW",
+      "provider_call_expected": true,
+      "predicate_option_count": 2,
+      "clause_option_count": 1,
+      "engineering_gap_option_count": 0,
+      "hidden_target_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "smoke-v2341-05",
+      "role": "ENGINEERING_REQUIRED",
+      "provider_call_expected": true,
+      "predicate_option_count": 2,
+      "clause_option_count": 1,
+      "engineering_gap_option_count": 1,
+      "hidden_target_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "smoke-v2341-06",
+      "role": "DUPLICATE_CONTROL",
+      "provider_call_expected": false,
+      "predicate_option_count": 0,
+      "clause_option_count": 0,
+      "engineering_gap_option_count": 0,
+      "hidden_target_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "smoke-v2341-07",
+      "role": "INSUFFICIENT_CONTROL",
+      "provider_call_expected": false,
+      "predicate_option_count": 0,
+      "clause_option_count": 0,
+      "engineering_gap_option_count": 0,
+      "hidden_target_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    {
+      "task_id": "smoke-v2341-08",
+      "role": "AMBIGUOUS_CLAUSE_COMPOSITION",
+      "provider_call_expected": true,
+      "predicate_option_count": 3,
+      "clause_option_count": 3,
+      "engineering_gap_option_count": 0,
+      "hidden_target_leaks": 0,
+      "provider_calls": 0,
+      "status": "PASS"
+    }
+  ],
+  "terminal": "DTA_V2341_CATALOG_FEASIBILITY_PASS",
+  "artifact_sha256": "48cda07a8ef8174ce7a30a23f842ccd4c44c8c0b9866acebcb5b9cd8f7f4cdc9"
+}

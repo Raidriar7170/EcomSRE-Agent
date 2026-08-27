@@ -57,6 +57,12 @@ from ecomsre.dta_v2.v23.registration_catalog_v2341 import (
 from ecomsre.dta_v2.v23.registration_store_v2341 import (
     LocalRegistrationAliasStoreV2341,
 )
+from ecomsre.dta_v2.v23.provider_smoke_v2341 import (
+    RegistrationSmokeModeV2341,
+    load_smoke_tasks_v2341,
+    load_smoke_truth_v2341,
+    run_provider_smoke_v2341,
+)
 from ecomsre.dta_v2.v23.registration_store_v234 import (
     LocalRegistrationDraftStoreV234,
 )
@@ -265,6 +271,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--local-root",
         type=Path,
         default=DEFAULT_LOCAL_ROOT_V234,
+    )
+    ontology_smoke = ontology_commands.add_parser("smoke")
+    ontology_smoke.add_argument("--split", choices=("v2341-smoke",), required=True)
+    ontology_smoke.add_argument(
+        "--repository-root",
+        type=Path,
+        default=Path.cwd(),
     )
     ontology_validate = ontology_commands.add_parser("validate-draft")
     ontology_validate.add_argument("draft_id")
@@ -795,6 +808,17 @@ def main(argv: Sequence[str] | None = None) -> int:
                 assembly.formal_draft
             )
             print(assembly.formal_draft.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "smoke" and args.split == "v2341-smoke":
+            repository_root = args.repository_root.resolve()
+            smoke_root = repository_root / "config/dta-v2341/smoke"
+            result = run_provider_smoke_v2341(
+                repository_root=repository_root,
+                task_set=load_smoke_tasks_v2341(smoke_root / "tasks.json"),
+                truth_set=load_smoke_truth_v2341(smoke_root / "truth.json"),
+                mode=RegistrationSmokeModeV2341.DETERMINISTIC_FIXTURE,
+            )
+            print(result.model_dump_json(indent=2))
             return 0
         if args.ontology_command == "validate-draft":
             draft_store = LocalRegistrationDraftStoreV234(args.local_root)

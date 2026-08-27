@@ -1,0 +1,82 @@
+{
+  "schema_version": "dta-v2341.registration-smoke-manifest.v1",
+  "predecessor_head": "edb313655c4be64295012c383cfa19ed48ccb894",
+  "branch": "codex/dta-v2341-registration-alias-protocol",
+  "provider_model": "gpt-5.4-mini-2026-03-17",
+  "planned_task_count": 8,
+  "planned_provider_called_task_count": 6,
+  "planned_execution_count": 1,
+  "current_execution_count": 0,
+  "fixed_evaluation_execution_count": 0,
+  "frozen_files": [
+    {
+      "path": "config/dta-v2341/smoke/tasks.json",
+      "sha256": "5804ce895af828b4767346b9b675150a95dbe04413280502e0a6e198a8093ad1"
+    },
+    {
+      "path": "config/dta-v2341/smoke/truth.json",
+      "sha256": "69fbaa1c73984f84a3c6438d2dc7c5d0c4826ed9b648884fbb04087fa9657d96"
+    },
+    {
+      "path": "docs/analysis/dta-v2341-catalog-feasibility.json",
+      "sha256": "1ec00ec656e5bc2e3ac022f9d25bf1caaa0a4162a3253a7455763af1b3f71056"
+    },
+    {
+      "path": "scripts/analysis/generate_dta_v2341_smoke_data.py",
+      "sha256": "ec8eca3c367e9e865c3fee19232018cdc9d57ff0f7e2e05e42326d567f61f2d5"
+    },
+    {
+      "path": "scripts/analysis/run_dta_v2341_catalog_feasibility.py",
+      "sha256": "f87bc9b1b1bdeea3712d7774fe27495732a74fc7a8bf5245e3856a86447beb98"
+    },
+    {
+      "path": "scripts/analysis/run_dta_v2341_provider_smoke.py",
+      "sha256": "abcd22bc892320042e9d34d8cc7c7dc31334e7c8a2c0cff601289e8af5d3bbec"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/cli.py",
+      "sha256": "8cea58916e0908927bfe9e1bb4e4a92ebe8381b3f1acae469ca04be4d896403b"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/provider_smoke_v2341.py",
+      "sha256": "e86fb6a67b8f5e75b479d6d95fa7e18a5094fd61924ddd5f0bd2810dac83a194"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/registration_alias_provider_v2341.py",
+      "sha256": "7c6f48e9d1258cf69e860c0dcc07aa3bb2fa8b2beefa6f96c89dc433221a12c6"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/registration_assembler_v2341.py",
+      "sha256": "63d28003807b0cfb03e00869707466fc61cc652d23cd1de9e0ec68ea6b6db11f"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/registration_catalog_v2341.py",
+      "sha256": "a2218c5bc82b6ac369035bb7d6c4b9ce23a6542e6a2c3d69bb9db4a25d12faa1"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/registration_compiler_v234.py",
+      "sha256": "32a34f8bc676ad55402b106d47cb8c48402766287232eb210fff8bf40943c2ac"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/registration_contracts_v234.py",
+      "sha256": "024f946d76f763e8c297cb73606bc29611370da0350108c4d12c97e26cfc4485"
+    },
+    {
+      "path": "src/ecomsre/dta_v2/v23/registration_validator_v234.py",
+      "sha256": "be5a909e31b971fac0618c4394e6a0170e0f0146d3ac6d7be1fb10113e4e7b8a"
+    },
+    {
+      "path": "tests/dta_v2341/test_provider_smoke_v2341.py",
+      "sha256": "59f55b130c06f49aad1de7ab0c7e113f3729855f914ab1ead26f9c2a163c8a57"
+    },
+    {
+      "path": "tests/dta_v2341/test_registration_alias_protocol_v2341.py",
+      "sha256": "1500638aec3d81de7310ab5fa7f7055c4b2db2ce899fd4e7f4b28c0781518570"
+    }
+  ],
+  "provider_prompt_sha256": "aa7a1c9572893f95afc03a9b80c7cc2b5bb7b9f74d42e5bc4834a2034184d9ae",
+  "alias_response_schema_sha256": "2b56d07d02be65cb8445b9869c7373ffda401a7e7e4f367db2466a864909e73e",
+  "output_path": "docs/analysis/dta-v2341-provider-smoke.json",
+  "terminal": "DTA_V2341_SMOKE_SURFACE_FROZEN",
+  "manifest_sha256": "0e8d7e0215a854d69d6841552c29fbff3ac5377e70c286136b4e15f3a1f48811"
+}

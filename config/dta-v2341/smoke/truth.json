@@ -1,0 +1,54 @@
+{
+  "schema_version": "dta-v2341.registration-smoke-truth-set.v1",
+  "truths": [
+    {
+      "task_id": "smoke-v2341-01",
+      "target_mechanism": "CONFIGURATION_ERROR",
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_broad_fault_domain": "CONFIGURATION"
+    },
+    {
+      "task_id": "smoke-v2341-02",
+      "target_mechanism": "DEPENDENCY_LATENCY",
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_broad_fault_domain": "DEPENDENCY"
+    },
+    {
+      "task_id": "smoke-v2341-03",
+      "target_mechanism": null,
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_broad_fault_domain": "CONCURRENCY"
+    },
+    {
+      "task_id": "smoke-v2341-04",
+      "target_mechanism": null,
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_broad_fault_domain": "CONCURRENCY"
+    },
+    {
+      "task_id": "smoke-v2341-05",
+      "target_mechanism": null,
+      "expected_implementation_mode": "ENGINEERING_REQUIRED",
+      "expected_broad_fault_domain": "NETWORK"
+    },
+    {
+      "task_id": "smoke-v2341-06",
+      "target_mechanism": null,
+      "expected_implementation_mode": "DUPLICATE_EXISTING",
+      "expected_broad_fault_domain": "DEPENDENCY"
+    },
+    {
+      "task_id": "smoke-v2341-07",
+      "target_mechanism": null,
+      "expected_implementation_mode": "INSUFFICIENT_EVIDENCE",
+      "expected_broad_fault_domain": null
+    },
+    {
+      "task_id": "smoke-v2341-08",
+      "target_mechanism": null,
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_broad_fault_domain": "EXTERNAL"
+    }
+  ],
+  "truth_sha256": "72843039ed79bd30c5097ab16814c3030359ed6c05b4e8b8ca14c4280bf70d71"
+}
