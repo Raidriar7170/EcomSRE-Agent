@@ -24,6 +24,21 @@ from ecomsre.product.incidents.contracts import (
     IncidentCreateV1,
     IncidentRecordV1,
 )
+from ecomsre.product.knowledge.contracts import (
+    FamilyRegistrationDraftV1,
+    FaultFamilyListV1,
+    FaultFamilyMergeV1,
+    FaultFamilyV1,
+    HumanReviewCreateV1,
+    HumanReviewV1,
+    PromotionCreateV1,
+    PromotionRecordV1,
+    RegistrationDraftCreateV1,
+    RevocationCreateV1,
+    RevocationRecordV1,
+    ShadowEvaluationCreateV1,
+    ShadowEvaluationV1,
+)
 
 
 router = APIRouter()
@@ -241,6 +256,119 @@ def get_diagnosis(request: Request, incident_id: str) -> DiagnosisResultV1:
 def get_evidence(request: Request, incident_id: str) -> EvidenceBundleV1:
     request.app.state.incidents.get(incident_id)
     return request.app.state.diagnoses.evidence(incident_id)
+
+
+@router.get(
+    "/v1/environments/{environment_id}/fault-families",
+    response_model=FaultFamilyListV1,
+)
+def list_fault_families(request: Request, environment_id: str) -> FaultFamilyListV1:
+    request.app.state.environments.get(environment_id)
+    return request.app.state.knowledge.list_families(environment_id)
+
+
+@router.get("/v1/fault-families/{family_id}", response_model=FaultFamilyV1)
+def get_fault_family(request: Request, family_id: str) -> FaultFamilyV1:
+    return request.app.state.knowledge.get_family(family_id)
+
+
+@router.post(
+    "/v1/fault-families/{family_id}/reviews",
+    dependencies=[Depends(require_mutation_auth)],
+    response_model=HumanReviewV1,
+    status_code=status.HTTP_201_CREATED,
+)
+def review_fault_family(
+    request: Request,
+    family_id: str,
+    payload: HumanReviewCreateV1,
+) -> HumanReviewV1:
+    return request.app.state.knowledge.review(family_id, payload)
+
+
+@router.post(
+    "/v1/fault-families/{family_id}/merge",
+    dependencies=[Depends(require_mutation_auth)],
+    response_model=FaultFamilyV1,
+)
+def merge_fault_family(
+    request: Request,
+    family_id: str,
+    payload: FaultFamilyMergeV1,
+) -> FaultFamilyV1:
+    return request.app.state.knowledge.merge(family_id, payload)
+
+
+@router.post(
+    "/v1/fault-families/{family_id}/registration-drafts",
+    dependencies=[Depends(require_mutation_auth)],
+    response_model=FamilyRegistrationDraftV1,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_registration_draft(
+    request: Request,
+    family_id: str,
+    payload: RegistrationDraftCreateV1,
+) -> FamilyRegistrationDraftV1:
+    return request.app.state.knowledge.create_registration_draft(family_id, payload)
+
+
+@router.get(
+    "/v1/registrations/{registration_id}",
+    response_model=FamilyRegistrationDraftV1,
+)
+def get_registration(
+    request: Request,
+    registration_id: str,
+) -> FamilyRegistrationDraftV1:
+    return request.app.state.knowledge.get_registration(registration_id)
+
+
+@router.post(
+    "/v1/registrations/{registration_id}/shadow-evaluation-jobs",
+    dependencies=[Depends(require_mutation_auth)],
+    response_model=ShadowEvaluationV1,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_shadow_evaluation(
+    request: Request,
+    registration_id: str,
+    _payload: ShadowEvaluationCreateV1,
+) -> ShadowEvaluationV1:
+    return request.app.state.knowledge.create_shadow_evaluation(registration_id)
+
+
+@router.post(
+    "/v1/registrations/{registration_id}/promotions",
+    dependencies=[Depends(require_mutation_auth)],
+    response_model=PromotionRecordV1,
+    status_code=status.HTTP_201_CREATED,
+)
+def promote_registration(
+    request: Request,
+    registration_id: str,
+    payload: PromotionCreateV1,
+) -> PromotionRecordV1:
+    result = request.app.state.knowledge.promote(registration_id, payload)
+    request.app.state.metrics.increment(
+        "ecomsre_registration_promotions_total",
+        {"environment_id": result.environment_id, "status": "ACTIVE"},
+    )
+    return result
+
+
+@router.post(
+    "/v1/registrations/{registration_id}/revocations",
+    dependencies=[Depends(require_mutation_auth)],
+    response_model=RevocationRecordV1,
+    status_code=status.HTTP_201_CREATED,
+)
+def revoke_registration(
+    request: Request,
+    registration_id: str,
+    payload: RevocationCreateV1,
+) -> RevocationRecordV1:
+    return request.app.state.knowledge.revoke(registration_id, payload)
 
 
 @router.get("/v1/jobs/{job_id}", response_model=ProductJobRecordV1)

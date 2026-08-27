@@ -178,6 +178,7 @@ class ProductDiagnosisBridgeV1:
                     admission.no_incident_admissible
                     and not anomalies
                     and required_coverage
+                    and not failed_sources
                 ):
                     terminal = DiagnosisTerminalV1.NO_INCIDENT
                     lane = DiagnosisLaneV1.NO_INCIDENT

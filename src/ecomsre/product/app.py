@@ -18,6 +18,7 @@ from ecomsre.product.environment.repository import EnvironmentRepositoryV1
 from ecomsre.product.environment.services import ServiceCatalogRepositoryV1
 from ecomsre.product.errors import ProductError
 from ecomsre.product.jobs.repository import JobRepositoryV1
+from ecomsre.product.knowledge.repository import KnowledgeRepositoryV1
 from ecomsre.product.incidents.repository import (
     DiagnosisRepositoryV1,
     IncidentRepositoryV1,
@@ -60,6 +61,7 @@ def create_app(settings: ProductSettingsV1 | None = None) -> FastAPI:
         baselines=app.state.baselines,
     )
     app.state.diagnoses = DiagnosisRepositoryV1(store, app.state.object_store)
+    app.state.knowledge = KnowledgeRepositoryV1(store, app.state.object_store)
     app.state.metrics = ProductMetricsV1(store)
 
     @app.middleware("http")

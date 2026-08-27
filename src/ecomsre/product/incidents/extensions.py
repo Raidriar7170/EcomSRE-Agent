@@ -47,7 +47,7 @@ class ProductExtensionMatchV1:
     supporting_evidence_refs: tuple[str, ...]
 
 
-def _runtime_input(
+def build_product_extension_runtime_input_v1(
     *,
     case_id: str,
     candidate_services: tuple[str, ...],
@@ -126,7 +126,7 @@ class ProductExtensionMatcherV1:
         generic_anomalies: tuple[GenericAnomalyV23, ...],
         raw_outcomes: tuple[ReadOutcomeV22, ...],
     ) -> tuple[ProductExtensionMatchV1, ...]:
-        runtime_input = _runtime_input(
+        runtime_input = build_product_extension_runtime_input_v1(
             case_id=case_id,
             candidate_services=candidate_services,
             topology_edges=topology_edges,
@@ -162,6 +162,7 @@ class ProductExtensionMatcherV1:
 
 
 __all__ = (
+    "build_product_extension_runtime_input_v1",
     "ProductExtensionMatchV1",
     "ProductExtensionMatcherV1",
     "ProductExtensionRegistrationV1",

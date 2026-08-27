@@ -439,6 +439,24 @@ class ProductReadBackendV1:
             outcome = _build_outcome(action, result)
             raw.append(outcome)
             coverage[action.source].update(result.covered_services)
+            memory_outcome: MemoryReadOutcomeV22 | None
+            if action.source is not EvidenceSourceV22.RUNTIME:
+                memory_outcome = outcome
+            elif (
+                fixture_backed
+                and outcome.status is ReadSourceStatusV22.SUCCESS_NONEMPTY
+            ):
+                memory_outcome = _fixture_runtime_memory(
+                    incident=incident,
+                    action=action,
+                    outcome=outcome,
+                    window=window,
+                    latency_ms=result.latency_ms,
+                )
+            else:
+                memory_outcome = None
+                limitations.add("RUNTIME_MEMORY_AUTHORITY_UNAVAILABLE")
+                limitations.add("RUNTIME_DIAGNOSIS_UNAVAILABLE")
             snapshots.append(
                 {
                     "schema_version": "ecomsre.product.read-snapshot.v1",
@@ -447,26 +465,15 @@ class ProductReadBackendV1:
                     "connector_components": [item.model_dump(mode="json") for item in components],
                     "connector_result": result.model_dump(mode="json"),
                     "read_outcome": outcome.model_dump(mode="json"),
+                    "memory_outcome": (
+                        None
+                        if memory_outcome is None
+                        else memory_outcome.model_dump(mode="json")
+                    ),
                 }
             )
-            if action.source is not EvidenceSourceV22.RUNTIME:
-                memory.append(outcome)
-            elif (
-                fixture_backed
-                and outcome.status is ReadSourceStatusV22.SUCCESS_NONEMPTY
-            ):
-                memory.append(
-                    _fixture_runtime_memory(
-                        incident=incident,
-                        action=action,
-                        outcome=outcome,
-                        window=window,
-                        latency_ms=result.latency_ms,
-                    )
-                )
-            else:
-                limitations.add("RUNTIME_MEMORY_AUTHORITY_UNAVAILABLE")
-                limitations.add("RUNTIME_DIAGNOSIS_UNAVAILABLE")
+            if memory_outcome is not None:
+                memory.append(memory_outcome)
         return ProductReadAcquisitionV1(
             raw_outcomes=tuple(raw),
             memory_outcomes=tuple(memory),

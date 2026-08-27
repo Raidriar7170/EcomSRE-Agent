@@ -134,6 +134,18 @@ def build_environment_capability_matrix(
                 }
             )
         )
+        target_complete_without_discovery = any(
+            item.status is ConnectorAvailabilityV1.AVAILABLE
+            and any(
+                capability.source is source
+                and capability.supports_target_complete_coverage
+                and not capability.supports_service_discovery
+                for capability in item.capabilities
+            )
+            for item in relevant
+        )
+        if target_complete_without_discovery:
+            covered = tuple(sorted(set(logical_services)))
         if source is EvidenceSourceV22.CHANGES and changes_available:
             status = SourceCapabilityStatusV1.AVAILABLE
             covered = tuple(sorted(set(logical_services)))

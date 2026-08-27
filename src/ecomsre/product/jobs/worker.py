@@ -17,6 +17,7 @@ from ecomsre.product.environment.services import ServiceCatalogRepositoryV1
 from ecomsre.product.environment.verification import EnvironmentVerificationServiceV1
 from ecomsre.product.errors import ProductError
 from ecomsre.product.incidents.diagnosis_bridge import ProductDiagnosisBridgeV1
+from ecomsre.product.incidents.extensions import ProductExtensionMatcherV1
 from ecomsre.product.incidents.read_backend import ProductReadBackendV1
 from ecomsre.product.incidents.repository import (
     DiagnosisRepositoryV1,
@@ -29,6 +30,7 @@ from ecomsre.product.jobs.handlers import (
     handle_incident_diagnosis,
 )
 from ecomsre.product.jobs.repository import JobRepositoryV1
+from ecomsre.product.knowledge.repository import KnowledgeRepositoryV1
 from ecomsre.product.settings import ProductSettingsV1
 from ecomsre.product.storage.object_store import ContentAddressedObjectStoreV1
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
@@ -64,6 +66,7 @@ def run_one_job(
         baselines=baseline_repository,
     )
     diagnoses = DiagnosisRepositoryV1(store, object_store)
+    knowledge = KnowledgeRepositoryV1(store, object_store)
     job = jobs.claim_next(
         worker_id,
         lease_seconds=settings.job_lease_seconds,
@@ -140,6 +143,7 @@ def run_one_job(
                 fence=fence,
             )
         elif job.job_type is ProductJobTypeV1.DIAGNOSIS:
+            incident = incidents.get(str(job.payload.get("incident_id", "")))
             result = handle_incident_diagnosis(
                 job,
                 incidents,
@@ -149,9 +153,25 @@ def run_one_job(
                 capabilities,
                 baseline_repository,
                 read_backend,
-                ProductDiagnosisBridgeV1(),
+                ProductDiagnosisBridgeV1(
+                    ProductExtensionMatcherV1(
+                        knowledge.active_extensions(incident.environment_id)
+                    )
+                ),
                 fence=fence,
             )
+            if str(result.get("terminal")) == "OPEN_WORLD":
+                family = knowledge.ingest_open_world(
+                    incident.incident_id,
+                    fence=fence,
+                )
+                metrics.increment(
+                    "ecomsre_fault_families_total",
+                    {
+                        "environment_id": family.environment_id,
+                        "status": family.status.value,
+                    },
+                )
         else:
             raise ProductError(
                 "INTERNAL_CONTRACT_FAILURE",

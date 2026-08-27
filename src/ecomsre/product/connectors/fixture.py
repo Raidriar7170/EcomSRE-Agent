@@ -41,6 +41,7 @@ _SUPPORTED_DATASETS = {
     "capture-7f31",
     "capture-c2aa",
     "product-mvp-demo",
+    "product-knowledge-loop",
 }
 
 
@@ -103,20 +104,37 @@ class FixtureConnectorV1:
             if context.requested_source is None
             else (context.requested_source,)
         )
-        return tuple(
-            self._result(
-                source=source,
-                context=context,
-                records=self._records(
-                    source=source,
-                    context=context,
-                    current_observation=(
-                        context.purpose is ConnectorQueryPurposeV1.INCIDENT
-                    ),
-                ),
-            )
-            for source in sources
+        current_observation = context.purpose is ConnectorQueryPurposeV1.INCIDENT
+        knowledge_failure_slot = (
+            current_observation
+            and self._settings.dataset == "product-knowledge-loop"
+            and context.window.ended_at.minute % 10 == 8
         )
+        results = []
+        for source in sources:
+            if knowledge_failure_slot and source is EvidenceSourceV22.LOGS:
+                results.append(
+                    self._result(
+                        source=source,
+                        context=context,
+                        records=(),
+                        status=ReadSourceStatusV22.FAILURE_UNAVAILABLE,
+                        safe_error_code="FIXTURE_SOURCE_UNAVAILABLE",
+                    )
+                )
+            else:
+                results.append(
+                    self._result(
+                        source=source,
+                        context=context,
+                        records=self._records(
+                            source=source,
+                            context=context,
+                            current_observation=current_observation,
+                        ),
+                    )
+                )
+        return tuple(results)
 
     def _records(
         self,
@@ -127,6 +145,12 @@ class FixtureConnectorV1:
     ) -> tuple[ReadRecordV22, ...]:
         records: list[ReadRecordV22] = []
         observed_at = context.window.ended_at - timedelta(milliseconds=1)
+        knowledge_slot = (
+            context.window.ended_at.minute % 10
+            if current_observation
+            and self._settings.dataset == "product-knowledge-loop"
+            else None
+        )
         for service in context.requested_services:
             if source is EvidenceSourceV22.METRICS:
                 metric_kinds = context.metric_kinds or (
@@ -157,7 +181,10 @@ class FixtureConnectorV1:
             elif source is EvidenceSourceV22.LOGS:
                 unknown = (
                     current_observation
-                    and self._settings.dataset == "capture-c2aa"
+                    and (
+                        self._settings.dataset == "capture-c2aa"
+                        or knowledge_slot in {0, 1, 2, 6, 7, 8, 9}
+                    )
                 )
                 records.append(
                     LogRecordV22(
@@ -189,7 +216,10 @@ class FixtureConnectorV1:
             elif source is EvidenceSourceV22.RUNTIME:
                 unavailable = (
                     current_observation
-                    and self._settings.dataset == "capture-7f31"
+                    and (
+                        self._settings.dataset == "capture-7f31"
+                        or knowledge_slot == 3
+                    )
                 )
                 records.append(
                     RuntimeRecordV22(

@@ -206,6 +206,31 @@ MIGRATIONS: tuple[tuple[int, str, tuple[str, ...]], ...] = (
             )""",
         ),
     ),
+    (
+        4,
+        "environment-knowledge-loop-v1",
+        (
+            "CREATE UNIQUE INDEX incident_fingerprints_incident_idx "
+            "ON incident_fingerprints(incident_id)",
+            """CREATE TABLE predicate_matrices (
+                predicate_matrix_sha256 TEXT PRIMARY KEY,
+                family_id TEXT NOT NULL REFERENCES fault_families(family_id),
+                payload_json TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )""",
+            """CREATE TABLE environment_extension_registry_versions (
+                environment_id TEXT NOT NULL REFERENCES environments(environment_id),
+                registry_version INTEGER NOT NULL CHECK(registry_version >= 1),
+                registration_id TEXT NOT NULL,
+                status TEXT NOT NULL CHECK(status IN ('ACTIVE', 'REVOKED')),
+                payload_json TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                PRIMARY KEY(environment_id, registry_version)
+            )""",
+            "CREATE INDEX environment_extension_registry_versions_registration_idx "
+            "ON environment_extension_registry_versions(registration_id, registry_version)",
+        ),
+    ),
 )
 
 __all__ = ("MIGRATIONS",)
