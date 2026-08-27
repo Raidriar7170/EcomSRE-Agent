@@ -598,38 +598,6 @@ class OpenAICompatibleRegistrationAliasTransportV2341:
     def _tool() -> dict[str, object]:
         schema = RegistrationAliasSelectionV2341.model_json_schema()
         schema["additionalProperties"] = False
-        schema["allOf"] = [
-            {
-                "if": {"properties": {"disposition_alias": {"const": "D00"}}},
-                "then": {
-                    "properties": {
-                        "clause_aliases": {"minItems": 1},
-                        "engineering_gap_aliases": {"maxItems": 0},
-                    }
-                },
-            },
-            {
-                "if": {"properties": {"disposition_alias": {"const": "D01"}}},
-                "then": {
-                    "properties": {
-                        "engineering_gap_aliases": {"minItems": 1},
-                    }
-                },
-            },
-            {
-                "if": {
-                    "properties": {
-                        "disposition_alias": {"enum": ["D02", "D03"]}
-                    }
-                },
-                "then": {
-                    "properties": {
-                        "clause_aliases": {"maxItems": 0},
-                        "engineering_gap_aliases": {"maxItems": 0},
-                    }
-                },
-            },
-        ]
         return {
             "type": "function",
             "function": {

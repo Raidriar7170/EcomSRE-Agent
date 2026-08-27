@@ -222,8 +222,21 @@ def main() -> int:
             if composite_transport is not None
             else artifact.provider_call_count
         ),
+        "prior_repair_network_provider_call_count": (
+            repair_record.prior_attempt_network_call_count
+            if repair_record is not None
+            and repair_record.prior_attempt_network_call_count is not None
+            else 0
+        ),
         "cumulative_network_provider_call_count": (
-            7 + composite_transport.live_call_count
+            7
+            + (
+                repair_record.prior_attempt_network_call_count
+                if repair_record is not None
+                and repair_record.prior_attempt_network_call_count is not None
+                else 0
+            )
+            + composite_transport.live_call_count
             if composite_transport is not None
             else artifact.provider_call_count
         ),

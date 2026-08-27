@@ -78,22 +78,22 @@ def test_deterministic_smoke_preflight_passes_all_eight_roles() -> None:
     )
 
 
-def test_smoke_manifest_preserves_one_execution_and_binds_fix_one() -> None:
+def test_smoke_manifest_preserves_one_execution_and_binds_final_fix() -> None:
     manifest = load_smoke_manifest_v2341(
         ROOT / "config/dta-v2341/smoke/manifest.json"
     )
 
     assert manifest.current_execution_count == 1
     assert manifest.fixed_evaluation_execution_count == 0
-    assert manifest.real_fix_count == 1
+    assert manifest.real_fix_count == 2
     assert manifest.repair_record_path == (
-        "docs/analysis/dta-v2341-provider-smoke-repair-1.json"
+        "docs/analysis/dta-v2341-provider-smoke-repair-2.json"
     )
     assert manifest.repair_record_sha256 == (
-        "ee52efd2e997a4d756c03ab056d3ea3c1fb5094577e13a892a3df7150a1622f5"
+        "ea01ea4f156f087f23d647fc4440683af6a3269f1b864b959cf40aaf415ffcd1"
     )
     assert manifest.prior_manifest_sha256 == (
-        "0e8d7e0215a854d69d6841552c29fbff3ac5377e70c286136b4e15f3a1f48811"
+        "e630e9891573ef83ff73b9186c3b9dc8be3b46f5947fcea4b62543221fa1ccd4"
     )
     assert manifest.planned_task_count == 8
     assert manifest.planned_provider_called_task_count == 6
@@ -121,6 +121,34 @@ def test_smoke_fix_one_records_bind_the_consumed_campaign() -> None:
     assert diagnostic.diagnostic_sha256 == repair.diagnostic_sha256
     assert diagnostic.raw_bindings_sha256 == repair.raw_bindings_sha256
     assert diagnostic.blocker_sha256 == repair.blocker_sha256
+
+
+def test_smoke_fix_two_records_bind_fix_one_transport_blocker() -> None:
+    diagnostic = RegistrationSmokeRepairDiagnosticV2341.model_validate_json(
+        (
+            ROOT
+            / "docs/analysis/dta-v2341-provider-smoke-fix2-diagnostic.json"
+        ).read_bytes()
+    )
+    repair = RegistrationSmokeRepairRecordV2341.model_validate_json(
+        (
+            ROOT / "docs/analysis/dta-v2341-provider-smoke-repair-2.json"
+        ).read_bytes()
+    )
+
+    assert diagnostic.execution_count == repair.execution_count == 1
+    assert diagnostic.repair_ordinal == repair.repair_ordinal == 2
+    assert diagnostic.fixed_evaluation_execution_count == 0
+    assert repair.fixed_evaluation_execution_count == 0
+    assert diagnostic.safe_error == "HTTP_400"
+    assert diagnostic.prior_attempt_network_call_count == 1
+    assert diagnostic.prior_repair_record_sha256 == (
+        "ee52efd2e997a4d756c03ab056d3ea3c1fb5094577e13a892a3df7150a1622f5"
+    )
+    assert diagnostic.diagnostic_sha256 == repair.diagnostic_sha256
+    assert diagnostic.prior_attempt_blocker_sha256 == (
+        repair.prior_attempt_blocker_sha256
+    )
 
 
 def test_replay_then_live_transport_does_not_repeat_completed_network_calls() -> None:

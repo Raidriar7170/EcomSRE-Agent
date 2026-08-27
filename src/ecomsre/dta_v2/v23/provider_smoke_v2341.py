@@ -292,9 +292,18 @@ class RegistrationSmokeRepairDiagnosticV2341(DtaModelV22):
     fixed_evaluation_execution_count: Literal[0]
     failure_task_id: Literal["smoke-v2341-05"]
     failure_role: Literal["ENGINEERING_REQUIRED"]
-    safe_exception_type: Literal["DiscoveryProviderProtocolFailureV23"]
-    safe_error: Literal["registration alias Provider exhausted two protocol repairs"]
-    fix_code: Literal["V2341_DISPOSITION_GAP_CARDINALITY_BINDING"]
+    safe_exception_type: Literal[
+        "DiscoveryProviderProtocolFailureV23",
+        "DiscoveryProviderTransportErrorV23",
+    ]
+    safe_error: Literal[
+        "registration alias Provider exhausted two protocol repairs",
+        "HTTP_400",
+    ]
+    fix_code: Literal[
+        "V2341_DISPOSITION_GAP_CARDINALITY_BINDING",
+        "V2341_PROVIDER_TOOL_SCHEMA_COMPATIBILITY",
+    ]
     prior_manifest_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     prior_manifest_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     prior_sentinel_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
@@ -306,6 +315,14 @@ class RegistrationSmokeRepairDiagnosticV2341(DtaModelV22):
     raw_bindings: tuple[RegistrationSmokeRawBindingV2341, ...]
     raw_bindings_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     original_provider_call_count: Literal[7]
+    campaign_manifest_sha256: str | None = None
+    campaign_manifest_file_sha256: str | None = None
+    prior_repair_record_sha256: str | None = None
+    prior_repair_record_file_sha256: str | None = None
+    prior_attempt_sentinel_file_sha256: str | None = None
+    prior_attempt_blocker_sha256: str | None = None
+    prior_attempt_blocker_file_sha256: str | None = None
+    prior_attempt_network_call_count: StrictInt | None = Field(default=None, ge=1)
     diagnosed_at_utc: datetime
     diagnostic_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
 
@@ -325,13 +342,38 @@ class RegistrationSmokeRepairDiagnosticV2341(DtaModelV22):
             [item.model_dump(mode="json") for item in self.raw_bindings]
         ):
             raise ValueError("v2.3.4.1 smoke raw binding digest differs")
+        successor_fields = (
+            self.campaign_manifest_sha256,
+            self.campaign_manifest_file_sha256,
+            self.prior_repair_record_sha256,
+            self.prior_repair_record_file_sha256,
+            self.prior_attempt_sentinel_file_sha256,
+            self.prior_attempt_blocker_sha256,
+            self.prior_attempt_blocker_file_sha256,
+            self.prior_attempt_network_call_count,
+        )
+        if self.repair_ordinal == 1:
+            if (
+                self.fix_code != "V2341_DISPOSITION_GAP_CARDINALITY_BINDING"
+                or any(item is not None for item in successor_fields)
+            ):
+                raise ValueError("v2.3.4.1 smoke repair-1 chain differs")
+        elif (
+            self.fix_code != "V2341_PROVIDER_TOOL_SCHEMA_COMPATIBILITY"
+            or any(item is None for item in successor_fields)
+        ):
+            raise ValueError("v2.3.4.1 smoke repair-2 chain differs")
         if (
             self.diagnosed_at_utc.tzinfo is None
             or self.diagnosed_at_utc.utcoffset() != timedelta(0)
         ):
             raise ValueError("v2.3.4.1 smoke diagnosis timestamp is not UTC")
         expected = semantic_sha256_v22(
-            self.model_dump(mode="json", exclude={"diagnostic_sha256"})
+            self.model_dump(
+                mode="json",
+                exclude={"diagnostic_sha256"},
+                exclude_none=True,
+            )
         )
         if self.diagnostic_sha256 != expected:
             raise ValueError("v2.3.4.1 smoke diagnosis digest differs")
@@ -343,7 +385,10 @@ class RegistrationSmokeRepairRecordV2341(DtaModelV22):
     repair_ordinal: StrictInt = Field(ge=1, le=2)
     execution_count: Literal[1]
     fixed_evaluation_execution_count: Literal[0]
-    fix_code: Literal["V2341_DISPOSITION_GAP_CARDINALITY_BINDING"]
+    fix_code: Literal[
+        "V2341_DISPOSITION_GAP_CARDINALITY_BINDING",
+        "V2341_PROVIDER_TOOL_SCHEMA_COMPATIBILITY",
+    ]
     prior_manifest_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     prior_manifest_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     superseded_manifest_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
@@ -356,6 +401,14 @@ class RegistrationSmokeRepairRecordV2341(DtaModelV22):
     task_set_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     truth_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     fix_files: tuple[str, ...]
+    campaign_manifest_sha256: str | None = None
+    campaign_manifest_file_sha256: str | None = None
+    prior_repair_record_sha256: str | None = None
+    prior_repair_record_file_sha256: str | None = None
+    prior_attempt_sentinel_file_sha256: str | None = None
+    prior_attempt_blocker_sha256: str | None = None
+    prior_attempt_blocker_file_sha256: str | None = None
+    prior_attempt_network_call_count: StrictInt | None = Field(default=None, ge=1)
     recorded_at_utc: datetime
     record_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
 
@@ -365,13 +418,38 @@ class RegistrationSmokeRepairRecordV2341(DtaModelV22):
             raise ValueError("v2.3.4.1 smoke repair files are not canonical")
         if self.prior_manifest_file_sha256 != self.superseded_manifest_file_sha256:
             raise ValueError("v2.3.4.1 superseded smoke manifest binding differs")
+        successor_fields = (
+            self.campaign_manifest_sha256,
+            self.campaign_manifest_file_sha256,
+            self.prior_repair_record_sha256,
+            self.prior_repair_record_file_sha256,
+            self.prior_attempt_sentinel_file_sha256,
+            self.prior_attempt_blocker_sha256,
+            self.prior_attempt_blocker_file_sha256,
+            self.prior_attempt_network_call_count,
+        )
+        if self.repair_ordinal == 1:
+            if (
+                self.fix_code != "V2341_DISPOSITION_GAP_CARDINALITY_BINDING"
+                or any(item is not None for item in successor_fields)
+            ):
+                raise ValueError("v2.3.4.1 smoke repair-1 record chain differs")
+        elif (
+            self.fix_code != "V2341_PROVIDER_TOOL_SCHEMA_COMPATIBILITY"
+            or any(item is None for item in successor_fields)
+        ):
+            raise ValueError("v2.3.4.1 smoke repair-2 record chain differs")
         if (
             self.recorded_at_utc.tzinfo is None
             or self.recorded_at_utc.utcoffset() != timedelta(0)
         ):
             raise ValueError("v2.3.4.1 smoke repair timestamp is not UTC")
         expected = semantic_sha256_v22(
-            self.model_dump(mode="json", exclude={"record_sha256"})
+            self.model_dump(
+                mode="json",
+                exclude={"record_sha256"},
+                exclude_none=True,
+            )
         )
         if self.record_sha256 != expected:
             raise ValueError("v2.3.4.1 smoke repair record digest differs")
@@ -447,6 +525,9 @@ def verify_smoke_repair_resume_v2341(
     prior_manifest = json.loads(superseded_path.read_text(encoding="utf-8"))
     blocker = json.loads(blocker_path.read_text(encoding="utf-8"))
     sentinel = json.loads(sentinel_path.read_text(encoding="utf-8"))
+    campaign_manifest_sha256 = (
+        record.campaign_manifest_sha256 or record.prior_manifest_sha256
+    )
     if (
         _file_sha256_v2341(diagnostic_path) != record.diagnostic_file_sha256
         or diagnostic.diagnostic_sha256 != record.diagnostic_sha256
@@ -456,7 +537,7 @@ def verify_smoke_repair_resume_v2341(
         or _file_sha256_v2341(sentinel_path) != record.prior_sentinel_file_sha256
         or sentinel.get("status") != "STARTED"
         or sentinel.get("execution_count") != 1
-        or sentinel.get("manifest_sha256") != record.prior_manifest_sha256
+        or sentinel.get("manifest_sha256") != campaign_manifest_sha256
         or _file_sha256_v2341(blocker_path) != record.blocker_file_sha256
         or blocker.get("blocker_sha256") != record.blocker_sha256
         or blocker.get("terminal") != "BLOCKED_DTA_V2341_PROVIDER_SMOKE"
@@ -471,6 +552,81 @@ def verify_smoke_repair_resume_v2341(
         != record.truth_file_sha256
     ):
         raise ValueError("v2.3.4.1 smoke repair evidence binding differs")
+    if (
+        diagnostic.repair_ordinal != record.repair_ordinal
+        or diagnostic.fix_code != record.fix_code
+        or diagnostic.prior_manifest_sha256 != record.prior_manifest_sha256
+        or diagnostic.prior_manifest_file_sha256
+        != record.prior_manifest_file_sha256
+        or diagnostic.campaign_manifest_sha256 != record.campaign_manifest_sha256
+        or diagnostic.campaign_manifest_file_sha256
+        != record.campaign_manifest_file_sha256
+        or diagnostic.prior_repair_record_sha256
+        != record.prior_repair_record_sha256
+        or diagnostic.prior_repair_record_file_sha256
+        != record.prior_repair_record_file_sha256
+        or diagnostic.prior_attempt_sentinel_file_sha256
+        != record.prior_attempt_sentinel_file_sha256
+        or diagnostic.prior_attempt_blocker_sha256
+        != record.prior_attempt_blocker_sha256
+        or diagnostic.prior_attempt_blocker_file_sha256
+        != record.prior_attempt_blocker_file_sha256
+        or diagnostic.prior_attempt_network_call_count
+        != record.prior_attempt_network_call_count
+    ):
+        raise ValueError("v2.3.4.1 smoke repair diagnosis lineage differs")
+    if repair_ordinal == 2:
+        campaign_manifest_path = (
+            repository_root
+            / "docs/analysis/dta-v2341-smoke-manifest-fix1-superseded.json"
+        )
+        prior_repair_path = (
+            repository_root / "docs/analysis/dta-v2341-provider-smoke-repair-1.json"
+        )
+        prior_attempt_sentinel = (
+            repository_root / ".local/dta-v2341/provider-smoke-fix-1.started.json"
+        )
+        prior_attempt_blocker = (
+            repository_root
+            / "docs/analysis/dta-v2341-provider-smoke-fix1-blocker.json"
+        )
+        prior_repair = RegistrationSmokeRepairRecordV2341.model_validate_json(
+            prior_repair_path.read_bytes()
+        )
+        prior_blocker = json.loads(
+            prior_attempt_blocker.read_text(encoding="utf-8")
+        )
+        campaign_manifest = json.loads(
+            campaign_manifest_path.read_text(encoding="utf-8")
+        )
+        prior_raw_files = tuple(
+            sorted(
+                (
+                    repository_root
+                    / ".local/dta-v2341/provider-raw/smoke-fix-1"
+                ).glob("*.json")
+            )
+        )
+        if (
+            campaign_manifest.get("manifest_sha256")
+            != record.campaign_manifest_sha256
+            or _file_sha256_v2341(campaign_manifest_path)
+            != record.campaign_manifest_file_sha256
+            or prior_repair.record_sha256 != record.prior_repair_record_sha256
+            or _file_sha256_v2341(prior_repair_path)
+            != record.prior_repair_record_file_sha256
+            or _file_sha256_v2341(prior_attempt_sentinel)
+            != record.prior_attempt_sentinel_file_sha256
+            or prior_blocker.get("blocker_sha256")
+            != record.prior_attempt_blocker_sha256
+            or _file_sha256_v2341(prior_attempt_blocker)
+            != record.prior_attempt_blocker_file_sha256
+            or prior_blocker.get("safe_error") != "HTTP_400"
+            or prior_blocker.get("repair_ordinal") != 1
+            or record.prior_attempt_network_call_count != 1
+            or prior_raw_files
+        ):
+            raise ValueError("v2.3.4.1 smoke repair-2 predecessor differs")
     raw_bindings = diagnostic.raw_bindings
     if diagnostic.raw_bindings_sha256 != record.raw_bindings_sha256:
         raise ValueError("v2.3.4.1 smoke repair raw lineage differs")

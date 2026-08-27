@@ -1,0 +1,19 @@
+{
+  "action_authority_violations": 0,
+  "agent_writes": 0,
+  "blocker_sha256": "474ad4fd2b6122f848382ef6f36ef3dd2a6b498ffa5bab53ee7ab2a341dad54e",
+  "execution_count": 1,
+  "fixed_evaluation_execution_count": 0,
+  "manifest_sha256": "e630e9891573ef83ff73b9186c3b9dc8be3b46f5947fcea4b62543221fa1ccd4",
+  "prior_blocker_preserved": true,
+  "provider_model": "gpt-5.4-mini-2026-03-17",
+  "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw/smoke-fix-1",
+  "real_fix_count": 1,
+  "repair_ordinal": 1,
+  "repair_record_sha256": "ee52efd2e997a4d756c03ab056d3ea3c1fb5094577e13a892a3df7150a1622f5",
+  "runbook_executions": 0,
+  "safe_error": "HTTP_400",
+  "safe_exception_type": "DiscoveryProviderTransportErrorV23",
+  "schema_version": "dta-v2341.provider-smoke-blocker.v1",
+  "terminal": "BLOCKED_DTA_V2341_PROVIDER_SMOKE"
+}

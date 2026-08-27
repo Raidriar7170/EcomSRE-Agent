@@ -120,6 +120,15 @@ def main() -> int:
                 superseded_relative,
             )
         )
+        if args.repair_ordinal == 2:
+            frozen_paths.extend(
+                (
+                    "docs/analysis/dta-v2341-provider-smoke-fix1-blocker.json",
+                    "docs/analysis/dta-v2341-provider-smoke-fix1-diagnostic.json",
+                    "docs/analysis/dta-v2341-provider-smoke-repair-1.json",
+                    "docs/analysis/dta-v2341-smoke-manifest-fix1-superseded.json",
+                )
+            )
     bindings = []
     for relative in tuple(sorted(set(frozen_paths))):
         path = root / relative

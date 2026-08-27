@@ -8,11 +8,11 @@
   "planned_execution_count": 1,
   "current_execution_count": 1,
   "fixed_evaluation_execution_count": 0,
-  "real_fix_count": 2,
-  "repair_record_path": "docs/analysis/dta-v2341-provider-smoke-repair-2.json",
-  "repair_record_sha256": "ea01ea4f156f087f23d647fc4440683af6a3269f1b864b959cf40aaf415ffcd1",
-  "prior_manifest_sha256": "e630e9891573ef83ff73b9186c3b9dc8be3b46f5947fcea4b62543221fa1ccd4",
-  "prior_manifest_file_sha256": "3962b38c4a7517284777a6ac5c1d6ccefd7678fa5f154b93fcec7ae47a65cfb3",
+  "real_fix_count": 1,
+  "repair_record_path": "docs/analysis/dta-v2341-provider-smoke-repair-1.json",
+  "repair_record_sha256": "ee52efd2e997a4d756c03ab056d3ea3c1fb5094577e13a892a3df7150a1622f5",
+  "prior_manifest_sha256": "0e8d7e0215a854d69d6841552c29fbff3ac5377e70c286136b4e15f3a1f48811",
+  "prior_manifest_file_sha256": "99abb02aba276da24377dfabb7092f16ecc33cd02c0c6ec5136a088dcf787f0f",
   "frozen_files": [
     {
       "path": "config/dta-v2341/smoke/tasks.json",
@@ -31,36 +31,20 @@
       "sha256": "416299db95e1590141fbe4d20b048d50aa26cbdee3b21301652049453535fa49"
     },
     {
-      "path": "docs/analysis/dta-v2341-provider-smoke-fix1-blocker.json",
-      "sha256": "fe8bb462590f088faf4305bcfcd9e34a5093614fda2284cb4ef5236815ba4c04"
-    },
-    {
       "path": "docs/analysis/dta-v2341-provider-smoke-fix1-diagnostic.json",
       "sha256": "ed861d7fed732ed087068b567e35a0263454d960594b6845943218bc63b2f333"
-    },
-    {
-      "path": "docs/analysis/dta-v2341-provider-smoke-fix2-diagnostic.json",
-      "sha256": "9c7ada6e55c6efb78d4c0a89b95247c2d57ca9cdba586a3fa957d3fd2e3e8673"
     },
     {
       "path": "docs/analysis/dta-v2341-provider-smoke-repair-1.json",
       "sha256": "ef553af5d70b97bb4cef0001b117fb7508295ff41e8dc66445c206d4e458dd3a"
     },
     {
-      "path": "docs/analysis/dta-v2341-provider-smoke-repair-2.json",
-      "sha256": "8e1056a43b985481d8d7f1f5f549919739c7147dd6ab6624f530dbc8e77dd9c8"
-    },
-    {
       "path": "docs/analysis/dta-v2341-smoke-manifest-fix1-superseded.json",
       "sha256": "99abb02aba276da24377dfabb7092f16ecc33cd02c0c6ec5136a088dcf787f0f"
     },
     {
-      "path": "docs/analysis/dta-v2341-smoke-manifest-fix2-superseded.json",
-      "sha256": "3962b38c4a7517284777a6ac5c1d6ccefd7678fa5f154b93fcec7ae47a65cfb3"
-    },
-    {
       "path": "scripts/analysis/generate_dta_v2341_smoke_data.py",
-      "sha256": "a463357d4c4a711f58185764452a3dfbf6bb997264c0d0540214ea9e8e8acb2a"
+      "sha256": "11ba449aef4538e4d6e41692a37e11e9ead095763f6d65b4da571faacecea7cc"
     },
     {
       "path": "scripts/analysis/run_dta_v2341_catalog_feasibility.py",
@@ -68,7 +52,7 @@
     },
     {
       "path": "scripts/analysis/run_dta_v2341_provider_smoke.py",
-      "sha256": "ce078d962d7c2f0413f11aeb198a763ddc2f7d7d58faeae5f96b5fe77d37dfb8"
+      "sha256": "6cd063f32570e89d77dcf9fd9d4dae5f879194b7c134b6f1ee21a7a9d66703c6"
     },
     {
       "path": "src/ecomsre/dta_v2/v23/cli.py",
@@ -76,11 +60,11 @@
     },
     {
       "path": "src/ecomsre/dta_v2/v23/provider_smoke_v2341.py",
-      "sha256": "58864b1b0d5df7b2b5a0ea27f04610097d96f375b465525efe30751753974cbc"
+      "sha256": "7741564fbd58f3d45776ab70f41eee818150e705b97a9f741c24dac4ffe5ebd1"
     },
     {
       "path": "src/ecomsre/dta_v2/v23/registration_alias_provider_v2341.py",
-      "sha256": "0e5525cf219b2c0c541897627726b47a714994d877f69e841ed8057d3d041c2b"
+      "sha256": "ebcac1084916838e0f3fd41c98f413ea9306c150ab431b093732e51a6861eb88"
     },
     {
       "path": "src/ecomsre/dta_v2/v23/registration_assembler_v2341.py",
@@ -104,16 +88,16 @@
     },
     {
       "path": "tests/dta_v2341/test_provider_smoke_v2341.py",
-      "sha256": "37e2c0004fa2f2a100f532627f5024b7d615192c0bc6861ad128ae75f075fea7"
+      "sha256": "868876b731075cf97129dbd91cec3153c7502b0e2e9db2374948bb5d372958f9"
     },
     {
       "path": "tests/dta_v2341/test_registration_alias_protocol_v2341.py",
-      "sha256": "b49ff3d26c07cda031e8e029f9d39a97589c45b0c1e8570c7ef73a1d2deeb20f"
+      "sha256": "da90b12af8321ea549eaf81d605566fc75f1ecd58f4efd9e34378e04976a935f"
     }
   ],
   "provider_prompt_sha256": "7fa7f11bd4c77f41eb9d2f0a4fd8feed1c651862dc41a3a98524f467be351bbc",
   "alias_response_schema_sha256": "2b56d07d02be65cb8445b9869c7373ffda401a7e7e4f367db2466a864909e73e",
   "output_path": "docs/analysis/dta-v2341-provider-smoke.json",
   "terminal": "DTA_V2341_SMOKE_SURFACE_FROZEN",
-  "manifest_sha256": "1804d14e03c604d8200065d75fe4ad53f72f92ffae5a78744bdd7abb93c3ebea"
+  "manifest_sha256": "e630e9891573ef83ff73b9186c3b9dc8be3b46f5947fcea4b62543221fa1ccd4"
 }

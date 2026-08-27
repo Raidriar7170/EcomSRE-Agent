@@ -505,4 +505,4 @@ def test_engineering_gap_repair_explicitly_binds_d01_cardinality(
         for item in provider_request.visible_format_examples
     )
     schema = OpenAICompatibleRegistrationAliasTransportV2341._tool()["function"]
-    assert len(schema["parameters"]["allOf"]) == 3
+    assert "allOf" not in schema["parameters"]
