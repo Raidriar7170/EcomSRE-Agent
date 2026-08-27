@@ -1,0 +1,182 @@
+{
+  "schema_version": "dta-v2341.registration-evaluation-truth-set.v1",
+  "truths": [
+    {
+      "task_id": "rt-101",
+      "target_mechanism": "CONFIGURATION_ERROR",
+      "target_mechanism_slug": "configuration-error",
+      "expected_broad_fault_domain": "CONFIGURATION",
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_core_clause_ids": [
+        "configuration:change-and-error-metric",
+        "configuration:change-and-log",
+        "configuration:error-metric-and-first-error-trace"
+      ],
+      "declarative_compilation_expected": false
+    },
+    {
+      "task_id": "rt-102",
+      "target_mechanism": "CONFIGURATION_ERROR",
+      "target_mechanism_slug": "configuration-error",
+      "expected_broad_fault_domain": "CONFIGURATION",
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_core_clause_ids": [
+        "configuration:change-and-error-metric",
+        "configuration:change-and-log",
+        "configuration:error-metric-and-first-error-trace"
+      ],
+      "declarative_compilation_expected": false
+    },
+    {
+      "task_id": "rt-103",
+      "target_mechanism": "SERVICE_UNAVAILABLE",
+      "target_mechanism_slug": "service-unavailable",
+      "expected_broad_fault_domain": "RUNTIME",
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_core_clause_ids": [
+        "service-unavailable:not-running",
+        "service-unavailable:unhealthy-error-metric",
+        "service-unavailable:unhealthy-first-error"
+      ],
+      "declarative_compilation_expected": false
+    },
+    {
+      "task_id": "rt-104",
+      "target_mechanism": "SERVICE_UNAVAILABLE",
+      "target_mechanism_slug": "service-unavailable",
+      "expected_broad_fault_domain": "RUNTIME",
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_core_clause_ids": [
+        "service-unavailable:not-running",
+        "service-unavailable:unhealthy-error-metric",
+        "service-unavailable:unhealthy-first-error"
+      ],
+      "declarative_compilation_expected": false
+    },
+    {
+      "task_id": "rt-105",
+      "target_mechanism": "CPU_SATURATION",
+      "target_mechanism_slug": "cpu-saturation",
+      "expected_broad_fault_domain": "RESOURCE",
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_core_clause_ids": [
+        "cpu-saturation:resource-and-healthy"
+      ],
+      "declarative_compilation_expected": false
+    },
+    {
+      "task_id": "rt-106",
+      "target_mechanism": "CPU_SATURATION",
+      "target_mechanism_slug": "cpu-saturation",
+      "expected_broad_fault_domain": "RESOURCE",
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_core_clause_ids": [
+        "cpu-saturation:resource-and-healthy"
+      ],
+      "declarative_compilation_expected": false
+    },
+    {
+      "task_id": "rt-107",
+      "target_mechanism": "MEMORY_LEAK",
+      "target_mechanism_slug": "memory-leak",
+      "expected_broad_fault_domain": "RESOURCE",
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_core_clause_ids": [
+        "memory-leak:growth-and-healthy",
+        "memory-leak:growth-and-log",
+        "memory-leak:growth-and-restarts"
+      ],
+      "declarative_compilation_expected": false
+    },
+    {
+      "task_id": "rt-108",
+      "target_mechanism": "MEMORY_LEAK",
+      "target_mechanism_slug": "memory-leak",
+      "expected_broad_fault_domain": "RESOURCE",
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_core_clause_ids": [
+        "memory-leak:growth-and-healthy",
+        "memory-leak:growth-and-log",
+        "memory-leak:growth-and-restarts"
+      ],
+      "declarative_compilation_expected": false
+    },
+    {
+      "task_id": "rt-109",
+      "target_mechanism": "DEPENDENCY_LATENCY",
+      "target_mechanism_slug": "dependency-latency",
+      "expected_broad_fault_domain": "DEPENDENCY",
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_core_clause_ids": [
+        "dependency-latency:trace-and-metric"
+      ],
+      "declarative_compilation_expected": false
+    },
+    {
+      "task_id": "rt-110",
+      "target_mechanism": "DEPENDENCY_LATENCY",
+      "target_mechanism_slug": "dependency-latency",
+      "expected_broad_fault_domain": "DEPENDENCY",
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_core_clause_ids": [
+        "dependency-latency:trace-and-metric"
+      ],
+      "declarative_compilation_expected": false
+    },
+    {
+      "task_id": "rt-111",
+      "target_mechanism": null,
+      "target_mechanism_slug": "connection-pool-exhaustion",
+      "expected_broad_fault_domain": "CONCURRENCY",
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_core_clause_ids": [],
+      "declarative_compilation_expected": true
+    },
+    {
+      "task_id": "rt-112",
+      "target_mechanism": null,
+      "target_mechanism_slug": "queue-backlog-saturation",
+      "expected_broad_fault_domain": "CONCURRENCY",
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_core_clause_ids": [],
+      "declarative_compilation_expected": true
+    },
+    {
+      "task_id": "rt-113",
+      "target_mechanism": null,
+      "target_mechanism_slug": "external-quota-throttling",
+      "expected_broad_fault_domain": "EXTERNAL",
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "expected_core_clause_ids": [],
+      "declarative_compilation_expected": true
+    },
+    {
+      "task_id": "rt-114",
+      "target_mechanism": null,
+      "target_mechanism_slug": "network-transport-degradation",
+      "expected_broad_fault_domain": "NETWORK",
+      "expected_implementation_mode": "ENGINEERING_REQUIRED",
+      "expected_core_clause_ids": [],
+      "declarative_compilation_expected": false
+    },
+    {
+      "task_id": "rt-115",
+      "target_mechanism": null,
+      "target_mechanism_slug": "configuration-error",
+      "expected_broad_fault_domain": "CONFIGURATION",
+      "expected_implementation_mode": "DUPLICATE_EXISTING",
+      "expected_core_clause_ids": [],
+      "declarative_compilation_expected": false
+    },
+    {
+      "task_id": "rt-116",
+      "target_mechanism": null,
+      "target_mechanism_slug": null,
+      "expected_broad_fault_domain": null,
+      "expected_implementation_mode": "INSUFFICIENT_EVIDENCE",
+      "expected_core_clause_ids": [],
+      "declarative_compilation_expected": false
+    }
+  ],
+  "truth_sha256": "277ece36fb14676ae65b55ebfcf90ac29a3ff9cdd9cd9230ddd9510cc76cbabf"
+}

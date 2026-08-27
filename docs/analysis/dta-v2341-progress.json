@@ -47,7 +47,14 @@
     "canonical_order_failures": 0
   },
   "increment_4": {
-    "status": "NOT_STARTED",
+    "status": "PRE_EXECUTION_REVIEW_COMPLETE",
+    "evaluation_data_terminal": "DTA_V2341_EVALUATION_DATA_PASS",
+    "evaluation_data_admission_sha256": "35e165750c0754d2cf6a3cfb0fd0a92875bb1bc17db257cedcb1985ee6684818",
+    "runtime_preflight_terminal": "DTA_V2341_RUNTIME_PREFLIGHT_PASS",
+    "runtime_preflight_sha256": "020105a7ab121430532571ad77524c00272d6126a459a7545bafe2bc95bfddab",
+    "pre_execution_review_must_fix": 0,
+    "pre_execution_review_claim_accuracy": "PASS",
+    "evaluation_manifest_sha256": "cb4e0abc8ff2807f49c74cfaeb185e5c1d773ba903ac970069df8d6847d1ec33",
     "fixed_evaluation_execution_count": 0
   },
   "action_authority_violations": 0,

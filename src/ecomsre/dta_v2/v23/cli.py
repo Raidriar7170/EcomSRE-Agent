@@ -6,6 +6,7 @@ import argparse
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import tempfile
 from typing import Sequence
 
 from ecomsre.dta_v2.v22.predicates import MechanismV22
@@ -117,6 +118,9 @@ from ecomsre.dta_v2.v23.evaluation_data_v233 import (
 from ecomsre.dta_v2.v23.evaluation_study_v233 import (
     EvaluationCaseComparisonV233,
     run_fixed_evaluation_once_v233,
+)
+from ecomsre.dta_v2.v23.evaluation_study_v2341 import (
+    run_runtime_preflight_v2341,
 )
 from ecomsre.dta_v2.v23.evaluation_v233 import (
     run_combined_arm_v233,
@@ -275,6 +279,17 @@ def build_parser() -> argparse.ArgumentParser:
     ontology_smoke = ontology_commands.add_parser("smoke")
     ontology_smoke.add_argument("--split", choices=("v2341-smoke",), required=True)
     ontology_smoke.add_argument(
+        "--repository-root",
+        type=Path,
+        default=Path.cwd(),
+    )
+    ontology_evaluate = ontology_commands.add_parser("evaluate")
+    ontology_evaluate.add_argument(
+        "--split",
+        choices=("v2341-fixed",),
+        required=True,
+    )
+    ontology_evaluate.add_argument(
         "--repository-root",
         type=Path,
         default=Path.cwd(),
@@ -818,6 +833,23 @@ def main(argv: Sequence[str] | None = None) -> int:
                 truth_set=load_smoke_truth_v2341(smoke_root / "truth.json"),
                 mode=RegistrationSmokeModeV2341.DETERMINISTIC_FIXTURE,
             )
+            print(result.model_dump_json(indent=2))
+            return 0
+        if args.ontology_command == "evaluate" and args.split == "v2341-fixed":
+            repository_root = args.repository_root.resolve()
+            private_root = repository_root / ".local/dta-v2341"
+            private_root.mkdir(parents=True, exist_ok=True)
+            with tempfile.TemporaryDirectory(
+                prefix="cli-runtime-preflight-",
+                dir=private_root,
+            ) as raw:
+                result = run_runtime_preflight_v2341(
+                    repository_root=repository_root,
+                    evaluation_root=(
+                        repository_root / "config/dta-v2341/evaluation"
+                    ),
+                    local_root=Path(raw),
+                )
             print(result.model_dump_json(indent=2))
             return 0
         if args.ontology_command == "validate-draft":
