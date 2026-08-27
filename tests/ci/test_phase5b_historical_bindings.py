@@ -10,8 +10,10 @@ from ecomsre.phase5b.contracts import FrozenEvaluationManifest
 from scripts.ci.verify_phase5b_historical_bindings import (
     HISTORICAL_MANIFEST_SHA256,
     _verify_declared_historical_bindings,
-    main,
     verify_historical_bindings,
+)
+from scripts.ci.verify_product_mvp_v01_historical_bindings import (
+    main as product_successor_main,
 )
 
 
@@ -152,7 +154,7 @@ def test_historical_binding_rejects_identity_drift(
 def test_cli_reports_verified_historical_bindings(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    assert main(
+    assert product_successor_main(
         [
             "--project-root",
             str(PROJECT_ROOT),
@@ -161,14 +163,16 @@ def test_cli_reports_verified_historical_bindings(
     output = json.loads(capsys.readouterr().out)
     assert output["evaluation_version"] == "phase5b.v1"
     assert output["frozen_file_count"] > 1
-    assert output["status"] == "PHASE5B_HISTORICAL_BINDINGS_VERIFIED"
+    assert output["status"] == (
+        "PHASE5B_PRODUCT_SUCCESSOR_HISTORICAL_BINDINGS_VERIFIED"
+    )
 
 
 def test_agent_mainline_uses_successor_safe_historical_binding_gate() -> None:
     workflow = AGENT_MAINLINE_WORKFLOW.read_text(encoding="utf-8")
 
     assert "Phase 5B historical bindings" in workflow
-    assert "scripts.ci.verify_phase5b_historical_bindings" in workflow
+    assert "scripts.ci.verify_product_mvp_v01_historical_bindings" in workflow
     assert "make phase5b-preflight" not in workflow
     assert "src/ecomsre/dta_v2" in workflow
     assert "scripts/ci" in workflow

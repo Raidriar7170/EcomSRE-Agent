@@ -1,0 +1,74 @@
+name: ecomsre-product-mvp-v01
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.product
+    image: ecomsre-product-mvp-v01:local
+    pull_policy: never
+    command: python -m ecomsre.product.app
+    labels:
+      io.ecomsre.product: ecomsre-product-mvp-v01
+    environment:
+      ECOMSRE_ADMIN_TOKEN: ${ECOMSRE_ADMIN_TOKEN:?set ECOMSRE_ADMIN_TOKEN}
+      ECOMSRE_PRODUCT_API_HOST: 0.0.0.0
+      ECOMSRE_PRODUCT_API_PORT: 8080
+      ECOMSRE_PRODUCT_DATA_ROOT: /var/lib/ecomsre
+    ports:
+      - "127.0.0.1:${ECOMSRE_PRODUCT_API_PORT:-8080}:8080"
+    volumes:
+      - ecomsre-product-data:/var/lib/ecomsre
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:8080/readyz', timeout=2).read()
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.product
+    image: ecomsre-product-mvp-v01:local
+    pull_policy: never
+    command: python -m ecomsre.product.jobs.worker
+    labels:
+      io.ecomsre.product: ecomsre-product-mvp-v01
+    environment:
+      ECOMSRE_PRODUCT_DATA_ROOT: /var/lib/ecomsre
+    volumes:
+      - ecomsre-product-data:/var/lib/ecomsre
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+
+volumes:
+  ecomsre-product-data:
+    labels:
+      io.ecomsre.product: ecomsre-product-mvp-v01
+
+networks:
+  default:
+    name: ecomsre-product-mvp-v01-default
+    labels:
+      io.ecomsre.product: ecomsre-product-mvp-v01

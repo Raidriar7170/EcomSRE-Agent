@@ -1,0 +1,69 @@
+{
+  "name": "local-otel-demo",
+  "description": "Read-only local OpenTelemetry Demo connector profile",
+  "timezone": "UTC",
+  "service_identity_policy": {
+    "prometheus_label": "service_name",
+    "opensearch_field": "resource.service.name",
+    "jaeger_service_field": "serviceName",
+    "health_service_field": "service_id"
+  },
+  "connector_configs": [
+    {
+      "name": "prometheus",
+      "kind": "PROMETHEUS",
+      "endpoint": "http://host.docker.internal:19090",
+      "settings": {
+        "query_templates": {
+          "request_support": "sum(rate(traces_span_metrics_calls_total{service_name=\"{service}\"}[5m]))",
+          "error_rate": "sum(rate(traces_span_metrics_calls_total{service_name=\"{service}\",status_code=\"STATUS_CODE_ERROR\"}[5m])) / clamp_min(sum(rate(traces_span_metrics_calls_total{service_name=\"{service}\"}[5m])), 1)",
+          "latency": "histogram_quantile(0.95, sum by (le) (rate(traces_span_metrics_duration_milliseconds_bucket{service_name=\"{service}\"}[5m])))",
+          "cpu": "sum(rate(container_cpu_usage_seconds_total{service_name=\"{service}\"}[5m])) * 100",
+          "memory": "sum(container_memory_usage_bytes{service_name=\"{service}\"})"
+        }
+      },
+      "credential_refs": {}
+    },
+    {
+      "name": "opensearch",
+      "kind": "OPENSEARCH",
+      "endpoint": "http://host.docker.internal:19200",
+      "settings": {
+        "index_pattern": "otel-logs-*",
+        "timestamp_field": "observedTimestamp",
+        "service_field": "resource.service.name",
+        "service_query_field": "resource.service.name.keyword",
+        "severity_field": "severity.text",
+        "message_field": "body",
+        "trace_id_field": "trace_id",
+        "severity_filter": ["ERROR", "FATAL", "WARN"]
+      },
+      "credential_refs": {}
+    },
+    {
+      "name": "jaeger",
+      "kind": "JAEGER",
+      "endpoint": "http://host.docker.internal:11686/jaeger/ui",
+      "settings": {
+        "minimum_duration_ms": 5000
+      },
+      "credential_refs": {}
+    },
+    {
+      "name": "health",
+      "kind": "HTTP_HEALTH",
+      "endpoint": null,
+      "settings": {
+        "services": [
+          {
+            "service_id": "frontend-proxy",
+            "health_url": "http://host.docker.internal:18080/",
+            "success_statuses": [200]
+          }
+        ]
+      },
+      "credential_refs": {}
+    }
+  ],
+  "explicit_service_catalog": []
+}

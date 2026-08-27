@@ -11,6 +11,29 @@ LOCAL_DEMO successor proved one known local Payment configuration restoration;
 its strict R3 diagnosis remained negative because of a fault-class mismatch.
 That bounded result is not general live-remediation or production evidence.
 
+## Product MVP v0.1: read-only diagnosis and knowledge evolution
+
+Product MVP v0.1 is the repository's self-hosted engineering surface, separate
+from its frozen research/evaluation evidence. It provides FastAPI/OpenAPI, one
+SQLite WAL store, a content-addressed evidence store, one background worker,
+bounded Prometheus/OpenSearch/Jaeger/HTTP-health connectors, versioned
+environment baselines, asynchronous read-only diagnosis, and an
+environment-local human-reviewed knowledge loop.
+
+The Product preserves the fixed runtime order `Core Known -> Environment
+Extension -> No-Incident -> Open-World`. Promotion-critical extension rules are
+mined and shadow-evaluated from multiple positive incidents plus confusable
+negatives; an LLM may supply only a label and explanation. Every diagnosis and
+extension remains non-actionable with `action_authority = NONE`. The Product
+API exposes no remediation, Runbook, shell, Docker, Kubernetes, Agent-write, or
+repository-write path.
+
+Start with the [Product quickstart](docs/product/QUICKSTART.md), then see the
+[architecture](docs/product/ARCHITECTURE.md), [connector guide](docs/product/CONNECTORS.md),
+and [limitations](docs/product/LIMITATIONS.md). The local OTel acceptance is a
+single evaluator-controlled, no-fault, read-only integration check. It is not
+production-readiness, generalization, or autonomous-remediation evidence.
+
 <!-- dta-v21-pr-f-final-capability-closeout -->
 ### DTA v2.1 frozen-Agent capability closeout
 

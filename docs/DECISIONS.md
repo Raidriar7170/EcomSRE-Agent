@@ -71,6 +71,7 @@ conflicts with this register, this register wins.
 | DEC-057 | DTA v2.3 open-world provisional discovery lane | accepted | DTA v2.3 under `dta-v23-open-world-discovery-v1` | `DECISIONS.md` | v2.3 ontology view, novelty gate, provisional reports, human review, shadow registry | Yes — ontology leakage, actionable provisional output, or fixed-evaluation drift blocks v2.3 |
 | DEC-058 | DTA v2.3.1 conflict-aware novelty resolution | accepted | DTA v2.3.1 under `dta-v231-conflict-aware-discovery-v1` | `DECISIONS.md` | conflict model, discriminating read, frozen negative and blocked successor evidence | Yes — consumed studies and their blockers remain immutable |
 | DEC-059 | DTA v2.3.4.1 Runtime-owned registration alias protocol | accepted | DTA v2.3.4.1 under `dta-v2341-registration-alias-protocol-v1` | `DECISIONS.md` | predecessor history, catalog, alias Provider, assembler, evaluation | Yes — predecessor drift, catalog leakage, Provider overreach, or one-shot drift blocks completion |
+| DEC-060 | Product MVP v0.1 read-only platform and historical dependency successor | accepted | Product MVP v0.1 under `ecomsre-product-mvp-v01` | `DECISIONS.md` | Product package, dependency gate, API, worker, connectors, knowledge evolution | Yes — authority drift, secret persistence, historical-binding drift, or false acceptance blocks completion |
 
 ## DEC-001 — Supported host baseline
 
@@ -1427,6 +1428,36 @@ only after smoke PASS and source freeze, a fresh 16-task two-arm fixed study
 executed exactly once. Evaluator truth loads only after both arms for a task.
 Docker calls, new live faults, Agent writes, Runbook executions, remediation
 registrations, and LLM repository-write authority remain zero.
+
+## DEC-060 — Product MVP v0.1 Read-Only Platform and Historical Dependency Successor
+
+**Status: `accepted` for the user-designated `ecomsre-product-mvp-v01` Goal.**
+
+The Product MVP begins at exact public main
+`21fd8204441f3e9f79729e5a97726868ac83ecfe` and adds a separate
+`src/ecomsre/product` adapter layer. Existing `dta_v2` research packages and
+their frozen results remain in place. Product state lives only in SQLite WAL
+and a content-addressed local object store outside tracked repository paths.
+The Product has `action_authority = NONE`, Runbook and remediation authority
+`NONE`, no Shell or Kubernetes mutation surface, and no LLM repository-write
+authority.
+
+The Goal explicitly requires `fastapi`, `uvicorn`, and `httpx` in
+`pyproject.toml`. Historical Phase 5B bound both the predecessor
+`pyproject.toml` and its generated `uv.lock`,
+so Product verification must not rewrite the immutable manifest or pretend the
+current dependency file still has the predecessor bytes. The Product successor
+verifier therefore allows exactly those two dependency files to evolve, proves
+their old blobs at Phase 5B base
+`30c202adb74d5f2e9224098e4f51eb19f214f275` still match the manifest, and
+continues to verify every other frozen path
+against the current tree. A separate exact allowlist test binds the current
+Product dependencies. No other Phase 5B successor override is accepted.
+
+This Decision does not authorize Docker execution, a live OTel acceptance,
+Provider use, commit, push, PR creation, merge, deployment, or release. Those
+remain separately protected actions. Product engineering terminals cannot
+rewrite Phase 0 or DTA study terminals.
 
 ## Upstream references
 

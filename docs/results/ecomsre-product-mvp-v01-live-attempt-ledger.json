@@ -1,0 +1,91 @@
+{
+  "schema_version": "ecomsre.product.live-attempt-retrospective-ledger.v1",
+  "evidence_kind": "RETROSPECTIVE_SESSION_LEDGER",
+  "authoritative_runtime_terminal_artifact": false,
+  "purpose": "Preserve the known failed-run truth without presenting a retrospective ledger as a runner-emitted artifact.",
+  "common_terminal": "BLOCKED_ECOMSRE_PRODUCT_LIVE_ACCEPTANCE",
+  "common_safe_error": "Product job failed safely: BASELINE_INSUFFICIENT_WINDOWS",
+  "attempts": [
+    {
+      "attempt": 1,
+      "private_root": "/tmp/ecomsre-product-live.7IcjQ3",
+      "terminal_capture_origin": "Codex task command output",
+      "runtime_terminal_artifact_available": false,
+      "cleanup_artifact_available": false,
+      "post_run_cleanup_observation": "NO_OWNED_RESOURCES_OBSERVED",
+      "residual_control_artifacts": [
+        {
+          "path": "control/image-lock.json",
+          "mtime_utc": "2026-08-27T11:52:14Z",
+          "sha256": "3b86ed76d7e1a0d0d73f6653a7eb750c4d9ce5308503d6ace80de3cbef408258"
+        },
+        {
+          "path": "control/resolved-compose.json",
+          "mtime_utc": "2026-08-27T11:52:14Z",
+          "sha256": "4954e3b91749351a8068f3f8b2b28376cfbcd5a10f9e19758c3674655d03f02d"
+        },
+        {
+          "path": "runtime/flagd/demo.flagd.json",
+          "mtime_utc": "2026-08-27T11:52:13Z",
+          "sha256": "14bd13734d46566828779fd61b16e654cc260274a0e30ae9948371a9dbba5beb"
+        }
+      ]
+    },
+    {
+      "attempt": 2,
+      "private_root": "/tmp/ecomsre-product-live.ZjY0MX",
+      "terminal_capture_origin": "Codex task command output",
+      "runtime_terminal_artifact_available": false,
+      "cleanup_artifact_available": false,
+      "post_run_cleanup_observation": "NO_OWNED_RESOURCES_OBSERVED",
+      "residual_control_artifacts": [
+        {
+          "path": "control/image-lock.json",
+          "mtime_utc": "2026-08-27T12:03:22Z",
+          "sha256": "5a4bb9814fca2987ffc1e38026a5d6863c392856c700752d56a6d763ec679b28"
+        },
+        {
+          "path": "control/resolved-compose.json",
+          "mtime_utc": "2026-08-27T12:03:22Z",
+          "sha256": "ad1b039c85bc38ed7acde043b364b627a1fe78ed7aa4cbb1af8067b7aefbab4b"
+        },
+        {
+          "path": "runtime/flagd/demo.flagd.json",
+          "mtime_utc": "2026-08-27T12:03:21Z",
+          "sha256": "14bd13734d46566828779fd61b16e654cc260274a0e30ae9948371a9dbba5beb"
+        }
+      ]
+    },
+    {
+      "attempt": 3,
+      "private_root": "/tmp/ecomsre-product-live.G42usI",
+      "terminal_capture_origin": "Codex task command output",
+      "runtime_terminal_artifact_available": false,
+      "cleanup_artifact_available": false,
+      "post_run_cleanup_observation": "NO_OWNED_RESOURCES_OBSERVED",
+      "residual_control_artifacts": [
+        {
+          "path": "control/image-lock.json",
+          "mtime_utc": "2026-08-27T12:23:19Z",
+          "sha256": "a16ea04f0df938b7886e1cb3d37454064f6512be34fbbd48554b4c2acb8b6938"
+        },
+        {
+          "path": "control/resolved-compose.json",
+          "mtime_utc": "2026-08-27T12:23:18Z",
+          "sha256": "28f1a6ae21e290d160ddf0199b12a14ef9b20a36d36029421019d83c3c3ad949"
+        },
+        {
+          "path": "runtime/flagd/demo.flagd.json",
+          "mtime_utc": "2026-08-27T12:23:18Z",
+          "sha256": "14bd13734d46566828779fd61b16e654cc260274a0e30ae9948371a9dbba5beb"
+        }
+      ]
+    }
+  ],
+  "forward_fix": {
+    "runner_failure_artifact": "<private-root>/report/product-live-read-only-failure.json",
+    "sha_bound": true,
+    "records_cleanup": true,
+    "applies_to_historical_attempts": false
+  }
+}

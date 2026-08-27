@@ -1,0 +1,212 @@
+{
+  "schema_version": "ecomsre.product.mvp-v01-acceptance.v1",
+  "report_kind": "ENGINEERING_ACCEPTANCE",
+  "causal_algorithm_effect_study": false,
+  "current_terminal": "ECOMSRE_PRODUCT_MVP_V01_LIVE_READONLY_PASS",
+  "final_completion_terminal": null,
+  "increment_checkpoints": [
+    {
+      "increment": 1,
+      "terminal": "ECOMSRE_PRODUCT_MVP_V01_API_PASS",
+      "result": "PASS",
+      "persistence_after_restart": true
+    },
+    {
+      "increment": 2,
+      "terminal": "ECOMSRE_PRODUCT_MVP_V01_CONNECTOR_PASS",
+      "result": "PASS",
+      "historical_baseline_windows": 6,
+      "historical_baseline_successful_windows": 6
+    },
+    {
+      "increment": 3,
+      "terminal": "ECOMSRE_PRODUCT_MVP_V01_DIAGNOSIS_PASS",
+      "result": "PASS",
+      "known_terminal": "CORE_KNOWN",
+      "unknown_terminal": "OPEN_WORLD"
+    },
+    {
+      "increment": 4,
+      "terminal": "ECOMSRE_PRODUCT_MVP_V01_KNOWLEDGE_LOOP_PASS",
+      "result": "PASS"
+    },
+    {
+      "increment": 5,
+      "terminal": "ECOMSRE_PRODUCT_MVP_V01_LIVE_READONLY_PASS",
+      "result": "PASS"
+    }
+  ],
+  "api_endpoints_exercised": [
+    "GET /readyz",
+    "GET /metrics",
+    "POST /v1/environments",
+    "POST /v1/environments/{environment_id}/verify-jobs",
+    "GET /v1/jobs/{job_id}",
+    "POST /v1/environments/{environment_id}/baseline-jobs",
+    "POST /v1/incidents",
+    "POST /v1/incidents/{incident_id}/diagnosis-jobs",
+    "GET /v1/incidents/{incident_id}/diagnosis",
+    "GET /v1/incidents/{incident_id}/evidence",
+    "GET /v1/environments/{environment_id}/fault-families",
+    "POST /v1/fault-families/{family_id}/reviews",
+    "POST /v1/fault-families/{family_id}/registration-drafts",
+    "POST /v1/registrations/{registration_id}/shadow-evaluation-jobs",
+    "POST /v1/registrations/{registration_id}/promotions",
+    "GET /v1/registrations/{registration_id}"
+  ],
+  "connector_sources_exercised": [
+    "PROMETHEUS:METRICS",
+    "PROMETHEUS:RESOURCES",
+    "OPENSEARCH:LOGS",
+    "JAEGER:TRACES",
+    "HTTP_HEALTH:RUNTIME",
+    "PRODUCT_STORE:CHANGES"
+  ],
+  "baseline_versions": [
+    {
+      "mode": "HISTORICAL",
+      "window_count": 6,
+      "successful_windows": 6,
+      "source": "deterministic Increment 2 checkpoint"
+    },
+    {
+      "mode": "DEMO_ONLY",
+      "baseline_id": "base-c4c1052e1be8980d2645cfcd",
+      "window_count": 5,
+      "successful_windows": 5,
+      "source": "live read-only local OTel acceptance"
+    }
+  ],
+  "incident_terminals": {
+    "core_control": "CORE_KNOWN",
+    "three_novel_positives": "OPEN_WORLD",
+    "two_no_incident_controls": "NO_INCIDENT",
+    "disjoint_recurrence": "EXTENSION_KNOWN",
+    "live_no_fault_observation": "INSUFFICIENT_EVIDENCE"
+  },
+  "knowledge_evolution": {
+    "family_count": 1,
+    "positive_occurrences": 3,
+    "family_review_state": "REVIEW_READY",
+    "human_review": "SIMULATED HUMAN REVIEW",
+    "rule_mining_result": "DECLARATIVE_READY",
+    "shadow_gate_passed": true,
+    "shadow_strata_present": 7,
+    "other_extension_control": {
+      "status": "NOT_AVAILABLE",
+      "reason_code": "NO_ACTIVE_OTHER_EXTENSION_CONTROL_AVAILABLE"
+    },
+    "promotion_reviewer": "TEST_REVIEWER",
+    "promoted_state_persisted_after_restart": true,
+    "recurrence_terminal": "EXTENSION_KNOWN",
+    "recurrence_provider_calls": 0
+  },
+  "live_read_only_acceptance": {
+    "schema_version": "ecomsre.product.live-read-only-acceptance.v1",
+    "terminal": "ECOMSRE_PRODUCT_MVP_V01_LIVE_READONLY_PASS",
+    "observed_at": "2026-08-27T12:44:52.134581Z",
+    "docker_context": "desktop-linux",
+    "docker_daemon_id_sha256": "698f925e8a37293ca00dbc398ce62617b61c3221ee7cf464d90db147870a2365",
+    "sources": {
+      "HTTP_HEALTH": "AVAILABLE",
+      "JAEGER": "AVAILABLE",
+      "OPENSEARCH": "AVAILABLE",
+      "PROMETHEUS": "AVAILABLE"
+    },
+    "normalized_service_count": 20,
+    "environment_id": "env-241639532d5fa3d0dc458632",
+    "baseline_id": "base-c4c1052e1be8980d2645cfcd",
+    "baseline_mode": "DEMO_ONLY",
+    "successful_baseline_windows": 5,
+    "incident_id": "inc-fe63be2fce5490c66522d9ee",
+    "diagnosis_terminal": "INSUFFICIENT_EVIDENCE",
+    "evidence_object_count": 6,
+    "evidence_refs_resolved": true,
+    "connector_raw_failures": 1,
+    "explicit_source_failures": [
+      "RUNTIME:CONNECTOR_TARGET_UNAVAILABLE:a:runtime:payment"
+    ],
+    "agent_writes": 0,
+    "runbook_executions": 0,
+    "fault_injections": 0,
+    "forward_mutations": 0,
+    "product_cleanup": "CLEAN",
+    "demo_cleanup": "CLEAN",
+    "owned_containers_after_cleanup": 0,
+    "owned_networks_after_cleanup": 0,
+    "owned_volumes_after_cleanup": 0,
+    "non_owned_resources_changed": false,
+    "report_sha256": "31adec8252186ff5108b35ebf4037d3a851e8a14eafe1966592eb2dad596524e"
+  },
+  "live_attempt_history": [
+    {
+      "attempt": 1,
+      "terminal": "BLOCKED_ECOMSRE_PRODUCT_LIVE_ACCEPTANCE",
+      "safe_error_code": "BASELINE_INSUFFICIENT_WINDOWS"
+    },
+    {
+      "attempt": 2,
+      "terminal": "BLOCKED_ECOMSRE_PRODUCT_LIVE_ACCEPTANCE",
+      "safe_error_code": "BASELINE_INSUFFICIENT_WINDOWS"
+    },
+    {
+      "attempt": 3,
+      "terminal": "BLOCKED_ECOMSRE_PRODUCT_LIVE_ACCEPTANCE",
+      "safe_error_code": "BASELINE_INSUFFICIENT_WINDOWS"
+    },
+    {
+      "attempt": 4,
+      "terminal": "ECOMSRE_PRODUCT_MVP_V01_LIVE_READONLY_PASS",
+      "safe_error_code": null
+    }
+  ],
+  "live_attempt_history_evidence": {
+    "path": "docs/results/ecomsre-product-mvp-v01-live-attempt-ledger.json",
+    "evidence_kind": "RETROSPECTIVE_SESSION_LEDGER",
+    "historical_runtime_terminal_artifacts_available": false,
+    "future_failure_reports_sha_bound": true
+  },
+  "job_and_persistence_checks": {
+    "separate_api_and_worker_processes": true,
+    "job_lease_and_reclaim_covered": true,
+    "job_idempotency_covered": true,
+    "sqlite_and_objects_persist_after_restart": true,
+    "active_extension_persisted_after_restart": true
+  },
+  "protected_action_counters": {
+    "provider_calls_on_extension_recurrence": 0,
+    "agent_writes": 0,
+    "runbook_executions": 0,
+    "fault_injections": 0,
+    "forward_mutations": 0
+  },
+  "repository_acceptance": {
+    "focused_product_tests": "PASS_97",
+    "full_pytest": {
+      "result": "PASS",
+      "clean_committed_head": true,
+      "passed": 5213,
+      "skipped": 6,
+      "warnings": 3,
+      "duration_seconds": 424.94
+    },
+    "precommit_full_pytest": {
+      "passed": 5201,
+      "skipped": 6,
+      "failed": 3,
+      "failure_classes": [
+        "DIRTY_WORKTREE_SCOPE_GATE",
+        "HISTORICAL_SQUASH_LINEAGE_GATE_FIXED_AFTER_RUN",
+        "FINAL_REVIEW_ARTIFACT_MISSING_AT_RUN"
+      ]
+    },
+    "ruff": "PASS",
+    "mypy_touched_product": "PASS",
+    "git_diff_check": "PASS",
+    "github_ci": "PENDING",
+    "independent_final_review": "PASS_MUST_FIX_0_CLAIM_ACCURACY_PASS",
+    "draft_pr": 74,
+    "squash_merged": false
+  },
+  "known_limitations_document": "docs/results/ecomsre-product-mvp-v01-limitations.md"
+}

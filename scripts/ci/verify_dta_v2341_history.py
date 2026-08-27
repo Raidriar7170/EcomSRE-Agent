@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "config/dta-v2341/historical-results.v1.json"
 PREDECESSOR_HEAD = "edb313655c4be64295012c383cfa19ed48ccb894"
 PUBLIC_MAIN_BASE = "da423b9104ac532f0bf323f314d37b527671c679"
+PUBLIC_SQUASH_SUCCESSOR = "21fd8204441f3e9f79729e5a97726868ac83ecfe"
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -43,8 +44,18 @@ def verify() -> None:
         raise ValueError("v2.3.4.1 predecessor-head binding differs")
     if manifest.get("frozen_predecessor_status") != "BLOCKED_DTA_V234_PROVIDER":
         raise ValueError("v2.3.4 predecessor terminal differs")
-    if _git("merge-base", PREDECESSOR_HEAD, "HEAD") != PREDECESSOR_HEAD:
-        raise ValueError("successor does not descend from the frozen predecessor head")
+    predecessor_lineage = (
+        _git("merge-base", PREDECESSOR_HEAD, "HEAD") == PREDECESSOR_HEAD
+    )
+    public_squash_lineage = (
+        _git("merge-base", PUBLIC_SQUASH_SUCCESSOR, "HEAD")
+        == PUBLIC_SQUASH_SUCCESSOR
+    )
+    if not predecessor_lineage and not public_squash_lineage:
+        raise ValueError(
+            "successor descends from neither the frozen predecessor head nor "
+            "its public squash successor"
+        )
     if _git("merge-base", PUBLIC_MAIN_BASE, PREDECESSOR_HEAD) != PUBLIC_MAIN_BASE:
         raise ValueError("frozen predecessor does not descend from the bound main base")
 

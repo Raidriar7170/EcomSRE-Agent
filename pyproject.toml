@@ -4,8 +4,11 @@ version = "0.1.0"
 description = "Deterministic Phase 0 control and evidence contracts for EcomSRE-Agent"
 requires-python = ">=3.11"
 dependencies = [
+    "fastapi>=0.116,<1",
+    "httpx>=0.28,<1",
     "pydantic>=2.0,<3",
     "tiktoken==0.13.0",
+    "uvicorn>=0.35,<1",
 ]
 
 [dependency-groups]
