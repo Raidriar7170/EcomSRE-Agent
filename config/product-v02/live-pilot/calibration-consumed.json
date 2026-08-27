@@ -1,0 +1,13 @@
+{
+  "schema_version": "ecomsre.product.v02.calibration-consumed.v1",
+  "goal_version": "ecomsre-product-v02-live-knowledge-loop-pilot-v1",
+  "campaign_consumed": true,
+  "terminal": "BLOCKED_ECOMSRE_PRODUCT_V02_UNKNOWN_FAULT_PROFILE",
+  "observed_at": "2026-08-27T18:08:36.779952+00:00",
+  "live_attempt_count": 0,
+  "calibration_start_sha256": "d8df2eda26684c1c57d311270e33d5aa34006b37516dc6f2d5936bac5eb9391f",
+  "private_report_sha256": "81442f6cd7a0a36c5cda703d6d054d2ff57fbc4f6f4a9aa7630626d74dbb3c9b",
+  "public_calibration_report_sha256": "85ba95b599423a5eeed5073b6ca9b128d06f98d5bda21828f6fd4c3ba35dbf38",
+  "public_result_sha256": "7fea321690a2cc4ff306b3144f1c945684137266f41b212379b86e26e5a0d85e",
+  "consumed_sha256": "96a4fb7fb5ea5c6cb8e8c1811a15f300115fe17fee85aff18ce596113870765d"
+}

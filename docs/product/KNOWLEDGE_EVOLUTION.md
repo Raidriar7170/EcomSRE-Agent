@@ -47,3 +47,12 @@ matching extensions become a conflict. Every result retains
 Human review is a real product boundary, not a model self-approval. Repository
 tests and demos use `TEST_REVIEWER` and label all such decisions
 `SIMULATED HUMAN REVIEW`.
+
+## v0.2 live-pilot boundary
+
+The v0.2 harness was intended to exercise this pipeline on one multi-incident
+live family. Its one authorized calibration stopped at Product baseline
+construction with `BASELINE_INSUFFICIENT_WINDOWS`, before any candidate fault
+attempt. No family decision, Predicate Matrix, clause mining, shadow gate,
+promotion, or held-out recurrence exists; the terminal remains
+`BLOCKED_ECOMSRE_PRODUCT_V02_UNKNOWN_FAULT_PROFILE`.

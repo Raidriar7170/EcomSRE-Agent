@@ -1,0 +1,17 @@
+{
+  "action_authority": "NONE",
+  "agent_writes": 0,
+  "attempts": [],
+  "baseline_restoration": false,
+  "demo_cleanup": "CLEAN",
+  "live_attempt_count": 0,
+  "observed_at": "2026-08-27T18:08:36.779952+00:00",
+  "outer_baseline_restored": true,
+  "private_report_sha256": "81442f6cd7a0a36c5cda703d6d054d2ff57fbc4f6f4a9aa7630626d74dbb3c9b",
+  "report_sha256": "85ba95b599423a5eeed5073b6ca9b128d06f98d5bda21828f6fd4c3ba35dbf38",
+  "runbook_executions": 0,
+  "schema_version": "ecomsre.product.v02.profile-calibration.v1",
+  "selected_profile_sha256": null,
+  "selected_root_service": null,
+  "terminal": "BLOCKED_ECOMSRE_PRODUCT_V02_UNKNOWN_FAULT_PROFILE"
+}

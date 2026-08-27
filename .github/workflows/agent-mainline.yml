@@ -171,6 +171,16 @@ jobs:
           uv run --frozen --no-sync python -m
           scripts.ci.verify_phase5b_execution_historical_bindings
 
+      - name: Product v0.2 historical Product v0.1 bindings
+        run: >-
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_product_v02_history
+
+      - name: Product v0.2 frozen blocked result
+        run: >-
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_product_v02_blocked_result
+
       - name: Verify Phase 5B protocol
         run: make phase5b-protocol-verify
 

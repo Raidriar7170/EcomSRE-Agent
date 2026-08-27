@@ -1,5 +1,10 @@
 # Product MVP v0.1 Quickstart
 
+> This quickstart remains the v0.1 product path. The separate v0.2 live-pilot
+> calibration is consumed and frozen as
+> `BLOCKED_ECOMSRE_PRODUCT_V02_UNKNOWN_FAULT_PROFILE`; do not invoke its live
+> calibration command as a quickstart or retry.
+
 ## 1. Start the Product
 
 Requirements: Docker Desktop with Compose v2, `curl`, and `jq`. Choose a local

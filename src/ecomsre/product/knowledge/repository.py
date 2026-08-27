@@ -6,7 +6,6 @@ from collections import Counter
 from dataclasses import dataclass
 from datetime import UTC, datetime
 import json
-import re
 from typing import Any
 
 from ecomsre.dta_v2.v22.memory import (
@@ -96,14 +95,11 @@ from ecomsre.product.knowledge.runtime import (
     evaluate_shadow_gate_v1,
     mine_candidate_clauses_v1,
 )
+from ecomsre.product.pilot.leakage_guard_v02 import normalized_observed_log_tokens_v02
 from ecomsre.product.storage.object_store import ContentAddressedObjectStoreV1
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
 
 
-_TOKEN = re.compile(r"[a-z][a-z0-9-]{2,}")
-_STOP_TOKENS = frozenset(
-    {"and", "are", "bounded", "detected", "for", "from", "the", "this", "with"}
-)
 _SOURCE_BY_ANOMALY = {
     kind.value: (
         "METRICS"
@@ -281,9 +277,7 @@ def build_product_fingerprint_observation_v1(
             resources.append(f"{service}:{bucket}")
         elif "log-record" in schema:
             message = str(record.get("normalized_template") or record.get("message") or "")
-            log_tokens.extend(
-                token for token in _TOKEN.findall(message.casefold()) if token not in _STOP_TOKENS
-            )
+            log_tokens.extend(normalized_observed_log_tokens_v02(message))
         elif "trace-span" in schema and record.get("first_error_location") is True:
             trace_roles.append(f"{service}:TARGET")
     return FingerprintObservationV1(

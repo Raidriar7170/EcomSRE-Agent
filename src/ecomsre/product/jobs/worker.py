@@ -32,6 +32,9 @@ from ecomsre.product.jobs.handlers import (
 from ecomsre.product.jobs.repository import JobRepositoryV1
 from ecomsre.product.knowledge.repository import KnowledgeRepositoryV1
 from ecomsre.product.settings import ProductSettingsV1
+from ecomsre.product.pilot.runtime_authority_v02 import (
+    load_pilot_runtime_authority_v02,
+)
 from ecomsre.product.storage.object_store import ContentAddressedObjectStoreV1
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
 from ecomsre.product.telemetry.metrics import ProductMetricsV1
@@ -88,6 +91,7 @@ def run_one_job(
         credential_resolver=CredentialResolverV1(),
         timeout_seconds=settings.connector_timeout_seconds,
         before_request=renew_lease,
+        data_root=settings.data_root,
     )
     verification = EnvironmentVerificationServiceV1(
         services=services,
@@ -99,10 +103,16 @@ def run_one_job(
         repository=baseline_repository,
         maximum_records_per_source=settings.maximum_evidence_records_per_source,
     )
+    pilot_runtime_authority = (
+        None
+        if settings.pilot_runtime_authority_path is None
+        else load_pilot_runtime_authority_v02(settings.pilot_runtime_authority_path)
+    )
     read_backend = ProductReadBackendV1(
         connectors=connector_registry,
         changes=change_repository,
         metrics=metrics,
+        pilot_runtime_authority=pilot_runtime_authority,
     )
     fence = JobLeaseFenceV1(
         job_id=job.job_id,

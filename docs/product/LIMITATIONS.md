@@ -26,6 +26,9 @@ Product MVP v0.1 is deliberately narrow:
 - no production scale, reliability, security certification, unknown-fault
   generalization, causal algorithm effect, or autonomous remediation claim is
   established.
+- the separate v0.2 live knowledge-loop pilot stopped before its first fault
+  attempt with `BASELINE_INSUFFICIENT_WINDOWS`; it establishes no live profile,
+  family, rule-mining, shadow, promotion, or recurrence result.
 
 The Product API exposes no remediation, Runbook, shell, Agent write, Docker,
 Kubernetes mutation, or repository write. All diagnosis and extension results

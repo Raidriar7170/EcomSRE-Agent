@@ -13,6 +13,7 @@ from ecomsre.dta_v2.tool_contracts import (
     RuntimeRecord,
     RuntimeState as RuntimeStateV2,
     ToolCounters,
+    ReadAuthorityContext,
     build_fake_read_authority,
     build_inspect_service_runtime_request,
     build_read_tool_observation,
@@ -64,6 +65,7 @@ _ALIAS_FIELD_BY_KIND = {
     ConnectorKindV1.OPENSEARCH: "opensearch",
     ConnectorKindV1.JAEGER: "jaeger",
     ConnectorKindV1.HTTP_HEALTH: "http_health",
+    ConnectorKindV1.PILOT_RUNTIME: None,
     ConnectorKindV1.FIXTURE: None,
 }
 
@@ -283,13 +285,14 @@ def _records_match_action(
     )
 
 
-def _fixture_runtime_memory(
+def _runtime_memory(
     *,
     incident: IncidentRecordV1,
     action: EvidenceActionV22,
     outcome: ReadOutcomeV22,
     window: ConnectorWindowV1,
     latency_ms: float,
+    authority: ReadAuthorityContext,
 ) -> RuntimeReadOutcomeV22:
     runtime_records = tuple(
         record for record in outcome.records if isinstance(record, RuntimeRecordV22)
@@ -322,7 +325,7 @@ def _fixture_runtime_memory(
     )
     observation = build_read_tool_observation(
         request=request,
-        authority=build_fake_read_authority(),
+        authority=authority,
         duplicate_of_request_sha256=None,
         status=ObservationStatus.SUCCESS,
         error_code=None,
@@ -352,10 +355,32 @@ class ProductReadBackendV1:
         connectors: ConnectorRegistryV1,
         changes: ChangeEventRepositoryV1,
         metrics: ProductMetricsV1,
+        pilot_runtime_authority: Any | None = None,
     ) -> None:
         self._connectors = connectors
         self._changes = changes
         self._metrics = metrics
+        self._pilot_runtime_authority = pilot_runtime_authority
+
+    def _pilot_runtime_admitted(
+        self,
+        *,
+        environment: EnvironmentRecordV1,
+        services: tuple[str, ...],
+    ) -> bool:
+        return (
+            self._pilot_runtime_authority is not None
+            and self._pilot_runtime_authority.admits(
+                environment_id=environment.environment_id,
+                services=services,
+            )
+            and any(
+                config.kind is ConnectorKindV1.PILOT_RUNTIME
+                and config.settings.get("authority_sha256")
+                == self._pilot_runtime_authority.connector_binding_sha256
+                for config in environment.connector_configs
+            )
+        )
 
     def acquire(
         self,
@@ -411,6 +436,7 @@ class ProductReadBackendV1:
             if item.status is not SourceCapabilityStatusV1.AVAILABLE
         }
         identity_by_logical = {item.logical_service: item for item in identity_map.services}
+        pilot_runtime_authority = self._pilot_runtime_authority
         for action in actions:
             seconds = action.request.lookback_seconds or action.request.sampling_window_seconds or 60
             window = ConnectorWindowV1(
@@ -446,12 +472,29 @@ class ProductReadBackendV1:
                 fixture_backed
                 and outcome.status is ReadSourceStatusV22.SUCCESS_NONEMPTY
             ):
-                memory_outcome = _fixture_runtime_memory(
+                memory_outcome = _runtime_memory(
                     incident=incident,
                     action=action,
                     outcome=outcome,
                     window=window,
                     latency_ms=result.latency_ms,
+                    authority=build_fake_read_authority(),
+                )
+            elif (
+                pilot_runtime_authority is not None
+                and self._pilot_runtime_admitted(
+                    environment=environment,
+                    services=action.target_services,
+                )
+                and outcome.status is ReadSourceStatusV22.SUCCESS_NONEMPTY
+            ):
+                memory_outcome = _runtime_memory(
+                    incident=incident,
+                    action=action,
+                    outcome=outcome,
+                    window=window,
+                    latency_ms=result.latency_ms,
+                    authority=pilot_runtime_authority.read_authority,
                 )
             else:
                 memory_outcome = None
@@ -521,7 +564,16 @@ class ProductReadBackendV1:
             return result, False, (result,)
         matching: list[ConnectorQueryResultV1] = []
         matching_kinds: list[ConnectorKindV1] = []
+        pilot_runtime_selected = (
+            action.source is EvidenceSourceV22.RUNTIME
+            and self._pilot_runtime_admitted(
+                environment=environment,
+                services=action.target_services,
+            )
+        )
         for config in environment.connector_configs:
+            if pilot_runtime_selected and config.kind is not ConnectorKindV1.PILOT_RUNTIME:
+                continue
             connector = self._connectors.create(config)
             try:
                 if not any(item.source is action.source for item in connector.capabilities()):

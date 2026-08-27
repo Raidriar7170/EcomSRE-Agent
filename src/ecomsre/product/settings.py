@@ -40,6 +40,7 @@ class ProductSettingsV1(BaseModel):
     fault_family_review_min_occurrences: int = Field(default=2, ge=2)
     rule_miner_beam_width: int = Field(default=20, ge=1, le=100)
     rule_miner_max_clause_size: int = Field(default=3, ge=1, le=3)
+    pilot_runtime_authority_path: Path | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -57,6 +58,12 @@ class ProductSettingsV1(BaseModel):
         self.data_root = self.data_root.expanduser().resolve()
         self.sqlite_path = self.sqlite_path.expanduser().resolve()
         self.object_store_root = self.object_store_root.expanduser().resolve()
+        if self.pilot_runtime_authority_path is not None:
+            self.pilot_runtime_authority_path = (
+                self.pilot_runtime_authority_path.expanduser().resolve()
+            )
+            if not self.pilot_runtime_authority_path.is_relative_to(self.data_root):
+                raise ValueError("pilot Runtime authority must be inside Product data root")
         token = os.environ.get(self.admin_token_env)
         self._admin_token_snapshot = token if token is not None and token.strip() else None
         if self._admin_token_snapshot is None and self.api_host not in _LOOPBACK_HOSTS:
@@ -80,6 +87,8 @@ class ProductSettingsV1(BaseModel):
             values["api_port"] = int(port)
         if token_env := os.environ.get("ECOMSRE_PRODUCT_ADMIN_TOKEN_ENV"):
             values["admin_token_env"] = token_env
+        if path := os.environ.get("ECOMSRE_PRODUCT_PILOT_RUNTIME_AUTHORITY_PATH"):
+            values["pilot_runtime_authority_path"] = Path(path)
         return cls.model_validate(values)
 
 
