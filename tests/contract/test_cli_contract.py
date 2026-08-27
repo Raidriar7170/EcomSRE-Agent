@@ -1120,8 +1120,11 @@ def test_pyproject_declares_python_311_and_only_approved_dependencies() -> None:
 
     assert pyproject["project"]["requires-python"] == ">=3.11"
     assert pyproject["project"]["dependencies"] == [
+        "fastapi>=0.116,<1",
+        "httpx>=0.28,<1",
         "pydantic>=2.0,<3",
         "tiktoken==0.13.0",
+        "uvicorn>=0.35,<1",
     ]
     assert pyproject["dependency-groups"]["dev"] == ["pytest>=8.0,<9"]
     assert "scripts" not in pyproject["project"]

@@ -1,0 +1,42 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.product
+    command: python -m ecomsre.product.app
+    environment:
+      ECOMSRE_ADMIN_TOKEN: ${ECOMSRE_ADMIN_TOKEN:?set ECOMSRE_ADMIN_TOKEN}
+      ECOMSRE_PRODUCT_API_HOST: 0.0.0.0
+      ECOMSRE_PRODUCT_API_PORT: 8080
+      ECOMSRE_PRODUCT_DATA_ROOT: /var/lib/ecomsre
+    ports:
+      - "127.0.0.1:${ECOMSRE_PRODUCT_API_PORT:-8080}:8080"
+    volumes:
+      - ecomsre-product-data:/var/lib/ecomsre
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:8080/readyz', timeout=2).read()
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.product
+    command: python -m ecomsre.product.jobs.worker
+    environment:
+      ECOMSRE_PRODUCT_DATA_ROOT: /var/lib/ecomsre
+    volumes:
+      - ecomsre-product-data:/var/lib/ecomsre
+    restart: unless-stopped
+
+volumes:
+  ecomsre-product-data:

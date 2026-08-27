@@ -1,0 +1,48 @@
+{
+  "name": "local-otel-demo",
+  "description": "Read-only local OpenTelemetry Demo connector profile",
+  "timezone": "UTC",
+  "service_identity_policy": {
+    "prometheus_label": "service_name",
+    "opensearch_field": "resource.service.name",
+    "jaeger_service_field": "serviceName",
+    "health_service_field": "service_id"
+  },
+  "connector_configs": [
+    {
+      "name": "prometheus",
+      "kind": "PROMETHEUS",
+      "endpoint": "http://host.docker.internal:9090",
+      "settings": {},
+      "credential_refs": {}
+    },
+    {
+      "name": "opensearch",
+      "kind": "OPENSEARCH",
+      "endpoint": "http://host.docker.internal:9200",
+      "settings": {
+        "index_pattern": "otel-*",
+        "timestamp_field": "@timestamp",
+        "service_field": "resource.service.name"
+      },
+      "credential_refs": {}
+    },
+    {
+      "name": "jaeger",
+      "kind": "JAEGER",
+      "endpoint": "http://host.docker.internal:16686",
+      "settings": {},
+      "credential_refs": {}
+    },
+    {
+      "name": "health",
+      "kind": "HTTP_HEALTH",
+      "endpoint": null,
+      "settings": {
+        "services": []
+      },
+      "credential_refs": {}
+    }
+  ],
+  "explicit_service_catalog": []
+}

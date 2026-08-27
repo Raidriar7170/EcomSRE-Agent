@@ -43,8 +43,8 @@ def _adapt_historical_phase5b_preflight_for_successor_tests(
         "test_execution_preflight_exposes_main_readiness_and_ablation_gap"
     ):
         return
-    from scripts.ci.verify_phase5b_historical_bindings import (
-        verify_historical_bindings,
+    from scripts.ci.verify_product_mvp_v01_historical_bindings import (
+        verify_product_mvp_historical_bindings,
     )
     from scripts.ci.verify_phase5b_execution_historical_bindings import (
         verify_historical_execution_bindings,
@@ -54,7 +54,7 @@ def _adapt_historical_phase5b_preflight_for_successor_tests(
     monkeypatch.setattr(
         execution_cli,
         "verify_freeze_manifest",
-        verify_historical_bindings,
+        verify_product_mvp_historical_bindings,
     )
     monkeypatch.setattr(
         execution_cli,

@@ -104,7 +104,7 @@ jobs:
         run: >-
           env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
           uv run --frozen --no-sync python -m
-          scripts.ci.verify_phase5b_historical_bindings
+          scripts.ci.verify_product_mvp_v01_historical_bindings
 
       - name: DTA v2 historical bindings for v2.1
         run: make dta-v21-historical-verify
@@ -197,6 +197,7 @@ jobs:
           uv run --frozen --no-sync mypy
           src/ecomsre/backends
           src/ecomsre/model
+          src/ecomsre/product
           src/ecomsre/phase1
           src/ecomsre/phase2
           src/ecomsre/phase3
