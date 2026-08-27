@@ -1,0 +1,3978 @@
+{
+  "schema_version": "dta-v2341.fixed-evaluation.v1",
+  "execution_count": 1,
+  "task_count": 16,
+  "run_count": 32,
+  "provider_model": "gpt-5.4-mini-2026-03-17",
+  "arms": [
+    "V23_TEMPLATE_REGISTRATION_SEED",
+    "V2341_ALIAS_FORMAL_REGISTRATION"
+  ],
+  "comparisons": [
+    {
+      "task_id": "rt-101",
+      "runs": [
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-101",
+          "arm": "V23_TEMPLATE_REGISTRATION_SEED",
+          "baseline_seed": {
+            "schema_version": "dta-v23.registration-draft.v1",
+            "proposed_mechanism_slug": "candidate-pattern-101",
+            "broad_fault_domain": "CONFIGURATION",
+            "human_definition": "Recent opaque state movement coincides with strong target error evidence. Human review note: SIMULATED HUMAN REVIEW for fixed registration assistance.",
+            "candidate_generic_anomalies": [
+              "METRIC_ERROR_OUTLIER",
+              "RECENT_CHANGE_CORRELATION"
+            ],
+            "candidate_evidence_sources": [
+              "CHANGES",
+              "METRICS"
+            ],
+            "candidate_support_clause_description": "Require corroborating generic anomalies from the listed evidence sources; the exact formal predicate clause remains a later human-led decision.",
+            "distinguishing_negative_examples": [
+              "known-control-a"
+            ],
+            "positive_case_ids": [
+              "dta-v234-rt-101"
+            ],
+            "required_replay_tests": [
+              "negative-confusable-control",
+              "positive-replay-with-valid-evidence-refs"
+            ],
+            "suggested_formal_files": [
+              "src/ecomsre/dta_v2/v22/predicates.py",
+              "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+            ],
+            "remediation_registration": "NOT_INCLUDED",
+            "draft_sha256": "542c422a2a3f191baac63b470b44588556397fc8464a148bdffb20ad43b31711"
+          },
+          "formal_draft": null,
+          "typed_disposition": null,
+          "validation_context": null,
+          "validation_status": null,
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "2909eed4544c63181dbd8c00eb4d3458bf488514323c216b4a03c536e47d97ba"
+        },
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-101",
+          "arm": "V2341_ALIAS_FORMAL_REGISTRATION",
+          "baseline_seed": null,
+          "formal_draft": {
+            "schema_version": "dta-v234.formal-fault-registration-draft.v1",
+            "draft_id": "draft-v234-e848d19a3082878f",
+            "authorization_id": "authorization-v234-7e4e58e42fd8158d",
+            "shadow_fault_id": "shadow-v23-b65b77ca924c85ab",
+            "registration_seed_sha256": "734926b8de6842203fe9e3af8624746089c9cf677b9dd385e351b91be49f787a",
+            "core_ontology_snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa",
+            "implementation_mode": "DECLARATIVE_READY",
+            "mechanism": {
+              "mechanism_enum_name": "BOUNDED_FAULT_MECHANISM",
+              "mechanism_slug": "bounded-fault-mechanism",
+              "display_name": "Bounded Fault Mechanism",
+              "broad_fault_domain": "CONFIGURATION",
+              "human_definition": "The bounded fault mechanism mechanism is defined by bounded evidence predicates and canonical support clauses.",
+              "distinguishing_summary": "The bounded fault mechanism mechanism is distinguished by its canonical clauses and evidence bindings.",
+              "confusable_core_mechanisms": [
+                "CPU_SATURATION"
+              ],
+              "confusable_extension_mechanisms": []
+            },
+            "predicates": [
+              {
+                "predicate_name": "CHANGE_RECENT_ROLLOUT",
+                "predicate_slug": "change-recent-rollout",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "CHANGES",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The change recent rollout predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "CHANGE_RECENT_ROLLOUT"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:changes:svc-50b4ddc9a9:0:ffff1e8da068"
+                ],
+                "positive_examples": [
+                  "The change recent rollout predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The change recent rollout predicate is absent from accepted evidence."
+                ]
+              },
+              {
+                "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                "predicate_slug": "metric-error-rate-strong",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "METRICS",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The metric error rate strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "METRIC_ERROR_RATE_STRONG"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:metrics:svc-50b4ddc9a9:core:0:5614acf99476"
+                ],
+                "positive_examples": [
+                  "The metric error rate strong predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The metric error rate strong predicate is absent from accepted evidence."
+                ]
+              }
+            ],
+            "support_clauses": [
+              {
+                "clause_id": "bounded-fault-mechanism:clause-01",
+                "mechanism_slug": "bounded-fault-mechanism",
+                "requirements": [
+                  {
+                    "predicate_name": "CHANGE_RECENT_ROLLOUT",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  },
+                  {
+                    "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  }
+                ],
+                "rationale": "The clause requires its canonical predicates at their declared service bindings."
+              }
+            ],
+            "test_plan": {
+              "positive_report_ids": [
+                "report-v23-21f73a29f91d2396"
+              ],
+              "positive_case_ids": [
+                "dta-v234-rt-101"
+              ],
+              "confusable_core_mechanisms": [
+                "CPU_SATURATION"
+              ],
+              "required_known_controls": [
+                "known-cpu-saturation-control"
+              ],
+              "required_no_incident_controls": [
+                "no-incident-configuration-control"
+              ],
+              "required_counterfactuals": [
+                "clause-01-target-counterfactual"
+              ],
+              "required_source_failure_tests": [
+                "changes-unavailable-fails-closed",
+                "metrics-unavailable-fails-closed"
+              ],
+              "required_clause_binding_tests": [
+                "clause-01-binding-control"
+              ]
+            },
+            "unresolved_engineering_questions": [],
+            "remediation_registration": "NOT_INCLUDED",
+            "provider_trace": {
+              "schema_version": "dta-v2341.registration-alias-provider-trace.v1",
+              "provider_mode": "OPENAI_COMPATIBLE",
+              "request_sha256": "eaa804a558a337ed1247154cd5dc1cd366c14e9f8fc8866b3bf9e7ac0cc9f3db",
+              "raw_response_sha256": "1fe632bdfe27ba08d270114a692c34755fc63cfe2453fa55b47a44e94573e364",
+              "canonical_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+              "assembled_content_sha256": "65ed54d6ddaf2d0d5b6b977af1775947512551eb637b7aec8775ee7b556c8c19",
+              "provider_calls": 1,
+              "protocol_repairs": 0,
+              "transport_retries": 0,
+              "max_exact_request_retries": 3,
+              "semantic_retries": 0,
+              "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw",
+              "trace_sha256": "c8e01480013492d5fcfc6de127ff64861804ff6559d72fa0f7cdf703fde7629a"
+            },
+            "action_authority": "NONE",
+            "repository_write_authority": "NONE",
+            "draft_sha256": "37f56867c720dfdb92b1366ae37ce75c99680adf8386a7fc4658f668b77654d7"
+          },
+          "typed_disposition": "DECLARATIVE_READY",
+          "validation_context": "HIDDEN_KNOWN_RECONSTRUCTION",
+          "validation_status": "INVALID",
+          "validation_error_codes": [
+            "CORE_CONTROL_ABSORPTION"
+          ],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [
+            "CORE_CONTROL_ABSORPTION"
+          ],
+          "catalog_sha256": "11502f29167e9750689ff49caae7b8a8c0594b31c8838f8b27c3da7eb01d6ff2",
+          "alias_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+          "assembly_sha256": "39de0339e53b2d89c352733f82264085ad9b35ea49099339913cd5b807ab670c",
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": true,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 1,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 1014,
+          "output_tokens": 67,
+          "total_tokens": 1081,
+          "latency_ms": 2686.8661250337027,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "37d74a1df29664e500903fc3800201cad83b44fbba0b7856a8cdd03e4f7e28d1"
+        }
+      ],
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "provider_schema_valid": true,
+      "alias_resolution_and_assembly_valid": true,
+      "existing_format_structural_valid": true,
+      "mechanism_identity_accurate": false,
+      "broad_domain_accurate": true,
+      "core_predicate_reuse_precision": 1.0,
+      "core_predicate_reuse_recall": 0.6666666666666666,
+      "behavioral_clause_equivalent": true,
+      "confusable_negative_coverage": false,
+      "new_mode_correct": null,
+      "control_non_promotable": null,
+      "declarative_compile_valid": null,
+      "patch_bundle_complete": null,
+      "shadow_plan_complete": true,
+      "comparison_sha256": "dd9f2bd2c08cc3adf4a13908dcc89b585fb1a4461306b73c84d72d0b989516d3"
+    },
+    {
+      "task_id": "rt-102",
+      "runs": [
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-102",
+          "arm": "V23_TEMPLATE_REGISTRATION_SEED",
+          "baseline_seed": {
+            "schema_version": "dta-v23.registration-draft.v1",
+            "proposed_mechanism_slug": "candidate-pattern-102",
+            "broad_fault_domain": "CONFIGURATION",
+            "human_definition": "A second opaque state movement coincides with strong target error evidence. Human review note: SIMULATED HUMAN REVIEW for fixed registration assistance.",
+            "candidate_generic_anomalies": [
+              "METRIC_ERROR_OUTLIER",
+              "RECENT_CHANGE_CORRELATION"
+            ],
+            "candidate_evidence_sources": [
+              "CHANGES",
+              "METRICS"
+            ],
+            "candidate_support_clause_description": "Require corroborating generic anomalies from the listed evidence sources; the exact formal predicate clause remains a later human-led decision.",
+            "distinguishing_negative_examples": [
+              "known-control-a"
+            ],
+            "positive_case_ids": [
+              "dta-v234-rt-102"
+            ],
+            "required_replay_tests": [
+              "negative-confusable-control",
+              "positive-replay-with-valid-evidence-refs"
+            ],
+            "suggested_formal_files": [
+              "src/ecomsre/dta_v2/v22/predicates.py",
+              "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+            ],
+            "remediation_registration": "NOT_INCLUDED",
+            "draft_sha256": "4f65af869ba645ffa2187419f8e67403a4a729f46f5f71c86ff54151eaa970f6"
+          },
+          "formal_draft": null,
+          "typed_disposition": null,
+          "validation_context": null,
+          "validation_status": null,
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "963a21588def5b2fe2ebad45029fab55a21aa6689d8ed6c7e18f69194ea2c0a3"
+        },
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-102",
+          "arm": "V2341_ALIAS_FORMAL_REGISTRATION",
+          "baseline_seed": null,
+          "formal_draft": {
+            "schema_version": "dta-v234.formal-fault-registration-draft.v1",
+            "draft_id": "draft-v234-40ddc382da73968e",
+            "authorization_id": "authorization-v234-dc02c723094367ec",
+            "shadow_fault_id": "shadow-v23-05d3330d1f9fe8bf",
+            "registration_seed_sha256": "a82b0fa2dfe77441324d45bd78716f63092ca9e50818b5190e823e497e9d5494",
+            "core_ontology_snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa",
+            "implementation_mode": "DECLARATIVE_READY",
+            "mechanism": {
+              "mechanism_enum_name": "BOUNDED_FAULT_MECHANISM",
+              "mechanism_slug": "bounded-fault-mechanism",
+              "display_name": "Bounded Fault Mechanism",
+              "broad_fault_domain": "CONFIGURATION",
+              "human_definition": "The bounded fault mechanism mechanism is defined by bounded evidence predicates and canonical support clauses.",
+              "distinguishing_summary": "The bounded fault mechanism mechanism is distinguished by its canonical clauses and evidence bindings.",
+              "confusable_core_mechanisms": [
+                "CPU_SATURATION"
+              ],
+              "confusable_extension_mechanisms": []
+            },
+            "predicates": [
+              {
+                "predicate_name": "CHANGE_RECENT_ROLLOUT",
+                "predicate_slug": "change-recent-rollout",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "CHANGES",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The change recent rollout predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "CHANGE_RECENT_ROLLOUT"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:changes:svc-77d4c9fe68:0:e494a9a8f5f5"
+                ],
+                "positive_examples": [
+                  "The change recent rollout predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The change recent rollout predicate is absent from accepted evidence."
+                ]
+              },
+              {
+                "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                "predicate_slug": "metric-error-rate-strong",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "METRICS",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The metric error rate strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "METRIC_ERROR_RATE_STRONG"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:metrics:svc-77d4c9fe68:core:0:075aca22cbfa"
+                ],
+                "positive_examples": [
+                  "The metric error rate strong predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The metric error rate strong predicate is absent from accepted evidence."
+                ]
+              }
+            ],
+            "support_clauses": [
+              {
+                "clause_id": "bounded-fault-mechanism:clause-01",
+                "mechanism_slug": "bounded-fault-mechanism",
+                "requirements": [
+                  {
+                    "predicate_name": "CHANGE_RECENT_ROLLOUT",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  },
+                  {
+                    "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  }
+                ],
+                "rationale": "The clause requires its canonical predicates at their declared service bindings."
+              }
+            ],
+            "test_plan": {
+              "positive_report_ids": [
+                "report-v23-f024a46a4db74381"
+              ],
+              "positive_case_ids": [
+                "dta-v234-rt-102"
+              ],
+              "confusable_core_mechanisms": [
+                "CPU_SATURATION"
+              ],
+              "required_known_controls": [
+                "known-cpu-saturation-control"
+              ],
+              "required_no_incident_controls": [
+                "no-incident-configuration-control"
+              ],
+              "required_counterfactuals": [
+                "clause-01-target-counterfactual"
+              ],
+              "required_source_failure_tests": [
+                "changes-unavailable-fails-closed",
+                "metrics-unavailable-fails-closed"
+              ],
+              "required_clause_binding_tests": [
+                "clause-01-binding-control"
+              ]
+            },
+            "unresolved_engineering_questions": [],
+            "remediation_registration": "NOT_INCLUDED",
+            "provider_trace": {
+              "schema_version": "dta-v2341.registration-alias-provider-trace.v1",
+              "provider_mode": "OPENAI_COMPATIBLE",
+              "request_sha256": "b5afdd2e19be665f64b4371ffee5129f0aa0a99670cf6fcc939b8bcdb9888bb3",
+              "raw_response_sha256": "1fe632bdfe27ba08d270114a692c34755fc63cfe2453fa55b47a44e94573e364",
+              "canonical_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+              "assembled_content_sha256": "dad94742122002c9c7c08d7aa3c7304434e60fc1e18053b30ac5a05175cc8d19",
+              "provider_calls": 1,
+              "protocol_repairs": 0,
+              "transport_retries": 0,
+              "max_exact_request_retries": 3,
+              "semantic_retries": 0,
+              "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw",
+              "trace_sha256": "44a2e99a855d1e8bf35e83f1d5a3919305b09d28a0ae195330f23bc3ae8df79c"
+            },
+            "action_authority": "NONE",
+            "repository_write_authority": "NONE",
+            "draft_sha256": "769fc386f6ca1bc54b5e3e1cdb56202b3118cba3859649c2c89c6dca0eab3cec"
+          },
+          "typed_disposition": "DECLARATIVE_READY",
+          "validation_context": "HIDDEN_KNOWN_RECONSTRUCTION",
+          "validation_status": "INVALID",
+          "validation_error_codes": [
+            "CORE_CONTROL_ABSORPTION"
+          ],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [
+            "CORE_CONTROL_ABSORPTION"
+          ],
+          "catalog_sha256": "c071540fff480660efb86df88e81343a90340b199c5599f22a8bbc62585ef20b",
+          "alias_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+          "assembly_sha256": "4cc9eebfbc1a1dff2bb664bc6a9a4e7720a6f7342cb73b72a999286b30032bcf",
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": true,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 1,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 1019,
+          "output_tokens": 67,
+          "total_tokens": 1086,
+          "latency_ms": 1388.9392919954844,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "3e13dab194ce7821c0263edac3d21ba5495876e32ca6c1be461cb901aed43d11"
+        }
+      ],
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "provider_schema_valid": true,
+      "alias_resolution_and_assembly_valid": true,
+      "existing_format_structural_valid": true,
+      "mechanism_identity_accurate": false,
+      "broad_domain_accurate": true,
+      "core_predicate_reuse_precision": 1.0,
+      "core_predicate_reuse_recall": 0.6666666666666666,
+      "behavioral_clause_equivalent": true,
+      "confusable_negative_coverage": false,
+      "new_mode_correct": null,
+      "control_non_promotable": null,
+      "declarative_compile_valid": null,
+      "patch_bundle_complete": null,
+      "shadow_plan_complete": true,
+      "comparison_sha256": "11b52607a67b249d153378f00b8e4148a0c001b1e9d0a6c5b93c9d5d705ded0a"
+    },
+    {
+      "task_id": "rt-103",
+      "runs": [
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-103",
+          "arm": "V23_TEMPLATE_REGISTRATION_SEED",
+          "baseline_seed": {
+            "schema_version": "dta-v23.registration-draft.v1",
+            "proposed_mechanism_slug": "candidate-pattern-103",
+            "broad_fault_domain": "RUNTIME",
+            "human_definition": "The target runtime is absent while strong target error evidence remains. Human review note: SIMULATED HUMAN REVIEW for fixed registration assistance.",
+            "candidate_generic_anomalies": [
+              "METRIC_ERROR_OUTLIER",
+              "RUNTIME_NOT_RUNNING"
+            ],
+            "candidate_evidence_sources": [
+              "METRICS",
+              "RUNTIME"
+            ],
+            "candidate_support_clause_description": "Require corroborating generic anomalies from the listed evidence sources; the exact formal predicate clause remains a later human-led decision.",
+            "distinguishing_negative_examples": [
+              "known-control-a"
+            ],
+            "positive_case_ids": [
+              "dta-v234-rt-103"
+            ],
+            "required_replay_tests": [
+              "negative-confusable-control",
+              "positive-replay-with-valid-evidence-refs"
+            ],
+            "suggested_formal_files": [
+              "src/ecomsre/dta_v2/v22/predicates.py",
+              "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+            ],
+            "remediation_registration": "NOT_INCLUDED",
+            "draft_sha256": "118e3dcd37e0f863ecd6f62526c7b883cb1d973d6ee3b9845bf008731fafaa6c"
+          },
+          "formal_draft": null,
+          "typed_disposition": null,
+          "validation_context": null,
+          "validation_status": null,
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "db169129746da8e9a2fcad55b7b294de133ec70df5a6f1bfe4934e8d58bdf249"
+        },
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-103",
+          "arm": "V2341_ALIAS_FORMAL_REGISTRATION",
+          "baseline_seed": null,
+          "formal_draft": {
+            "schema_version": "dta-v234.formal-fault-registration-draft.v1",
+            "draft_id": "draft-v234-8cdbf6aa01bc347a",
+            "authorization_id": "authorization-v234-de5fc8413c29a67a",
+            "shadow_fault_id": "shadow-v23-a2eb08a572a4f8da",
+            "registration_seed_sha256": "6fd054ff1c8170c33257342bf83fb53e5f2bd0243fae231437c87f0a3b320ffc",
+            "core_ontology_snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa",
+            "implementation_mode": "DECLARATIVE_READY",
+            "mechanism": {
+              "mechanism_enum_name": "BOUNDED_FAULT_MECHANISM",
+              "mechanism_slug": "bounded-fault-mechanism",
+              "display_name": "Bounded Fault Mechanism",
+              "broad_fault_domain": "RUNTIME",
+              "human_definition": "The bounded fault mechanism mechanism is defined by bounded evidence predicates and canonical support clauses.",
+              "distinguishing_summary": "The bounded fault mechanism mechanism is distinguished by its canonical clauses and evidence bindings.",
+              "confusable_core_mechanisms": [
+                "CONFIGURATION_ERROR"
+              ],
+              "confusable_extension_mechanisms": []
+            },
+            "predicates": [
+              {
+                "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                "predicate_slug": "metric-error-rate-strong",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "METRICS",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The metric error rate strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "METRIC_ERROR_RATE_STRONG"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:metrics:svc-8452f9b829:core:0:6514fafa0be9"
+                ],
+                "positive_examples": [
+                  "The metric error rate strong predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The metric error rate strong predicate is absent from accepted evidence."
+                ]
+              },
+              {
+                "predicate_name": "RUNTIME_NOT_RUNNING",
+                "predicate_slug": "runtime-not-running",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "RUNTIME",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The runtime not running predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "RUNTIME_NOT_RUNNING"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:runtime:all-candidates:1ddd3cfb0e0f:0:013d6e7e7e7b"
+                ],
+                "positive_examples": [
+                  "The runtime not running predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The runtime not running predicate is absent from accepted evidence."
+                ]
+              }
+            ],
+            "support_clauses": [
+              {
+                "clause_id": "bounded-fault-mechanism:clause-01",
+                "mechanism_slug": "bounded-fault-mechanism",
+                "requirements": [
+                  {
+                    "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  },
+                  {
+                    "predicate_name": "RUNTIME_NOT_RUNNING",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  }
+                ],
+                "rationale": "The clause requires its canonical predicates at their declared service bindings."
+              }
+            ],
+            "test_plan": {
+              "positive_report_ids": [
+                "report-v23-fa22112501ae4271"
+              ],
+              "positive_case_ids": [
+                "dta-v234-rt-103"
+              ],
+              "confusable_core_mechanisms": [
+                "CONFIGURATION_ERROR"
+              ],
+              "required_known_controls": [
+                "known-configuration-error-control"
+              ],
+              "required_no_incident_controls": [
+                "no-incident-runtime-control"
+              ],
+              "required_counterfactuals": [
+                "clause-01-target-counterfactual"
+              ],
+              "required_source_failure_tests": [
+                "metrics-unavailable-fails-closed",
+                "runtime-unavailable-fails-closed"
+              ],
+              "required_clause_binding_tests": [
+                "clause-01-binding-control"
+              ]
+            },
+            "unresolved_engineering_questions": [],
+            "remediation_registration": "NOT_INCLUDED",
+            "provider_trace": {
+              "schema_version": "dta-v2341.registration-alias-provider-trace.v1",
+              "provider_mode": "OPENAI_COMPATIBLE",
+              "request_sha256": "6d5c776bd6044954e49ab346134ee73b8bb24ea4c25978f59c8b84acbaaf953f",
+              "raw_response_sha256": "1fe632bdfe27ba08d270114a692c34755fc63cfe2453fa55b47a44e94573e364",
+              "canonical_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+              "assembled_content_sha256": "714c607b88a70ca5cb7a36a026b0aad8aac3342878ca86b66c2185002769ae3c",
+              "provider_calls": 1,
+              "protocol_repairs": 0,
+              "transport_retries": 0,
+              "max_exact_request_retries": 3,
+              "semantic_retries": 0,
+              "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw",
+              "trace_sha256": "3c754ee06791b18ad6134f447a69074ddd8d0b2365a7ce1de15b09760d20c137"
+            },
+            "action_authority": "NONE",
+            "repository_write_authority": "NONE",
+            "draft_sha256": "2a5976de3f644371c962d0930cc6afedab78a31724f76dc93468120e524b434b"
+          },
+          "typed_disposition": "DECLARATIVE_READY",
+          "validation_context": "HIDDEN_KNOWN_RECONSTRUCTION",
+          "validation_status": "VALID",
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": "97fb53bf54186bdaa8ddf89c714d24bb107eacd95f836f16fc4b531fb5e01108",
+          "alias_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+          "assembly_sha256": "da96e199d911d909fa896f1fc895915ac371daa41b3e98f71b56eb89c4da274e",
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": true,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 1,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 1012,
+          "output_tokens": 67,
+          "total_tokens": 1079,
+          "latency_ms": 1939.508624956943,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "bd48404a7ca8c94e4608f94234c7a372adefd0a2899b13dac39b0d47d72987df"
+        }
+      ],
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "provider_schema_valid": true,
+      "alias_resolution_and_assembly_valid": true,
+      "existing_format_structural_valid": true,
+      "mechanism_identity_accurate": false,
+      "broad_domain_accurate": true,
+      "core_predicate_reuse_precision": 1.0,
+      "core_predicate_reuse_recall": 0.5,
+      "behavioral_clause_equivalent": false,
+      "confusable_negative_coverage": false,
+      "new_mode_correct": null,
+      "control_non_promotable": null,
+      "declarative_compile_valid": null,
+      "patch_bundle_complete": null,
+      "shadow_plan_complete": true,
+      "comparison_sha256": "6561bacad5a54025a62933827d0d27e75d3fbf7640f3fda21f2133f705683539"
+    },
+    {
+      "task_id": "rt-104",
+      "runs": [
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-104",
+          "arm": "V23_TEMPLATE_REGISTRATION_SEED",
+          "baseline_seed": {
+            "schema_version": "dta-v23.registration-draft.v1",
+            "proposed_mechanism_slug": "candidate-pattern-104",
+            "broad_fault_domain": "RUNTIME",
+            "human_definition": "A second target runtime is absent while strong target error evidence remains. Human review note: SIMULATED HUMAN REVIEW for fixed registration assistance.",
+            "candidate_generic_anomalies": [
+              "METRIC_ERROR_OUTLIER",
+              "RUNTIME_NOT_RUNNING"
+            ],
+            "candidate_evidence_sources": [
+              "METRICS",
+              "RUNTIME"
+            ],
+            "candidate_support_clause_description": "Require corroborating generic anomalies from the listed evidence sources; the exact formal predicate clause remains a later human-led decision.",
+            "distinguishing_negative_examples": [
+              "known-control-a"
+            ],
+            "positive_case_ids": [
+              "dta-v234-rt-104"
+            ],
+            "required_replay_tests": [
+              "negative-confusable-control",
+              "positive-replay-with-valid-evidence-refs"
+            ],
+            "suggested_formal_files": [
+              "src/ecomsre/dta_v2/v22/predicates.py",
+              "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+            ],
+            "remediation_registration": "NOT_INCLUDED",
+            "draft_sha256": "d6103ed85dc97907e52c01b3f6df654c65d0e54e239b0928da59e55a59097c9f"
+          },
+          "formal_draft": null,
+          "typed_disposition": null,
+          "validation_context": null,
+          "validation_status": null,
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "0945e53777094fbc4383db8fc805c89823444344de3dae52a6ee018411a1a751"
+        },
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-104",
+          "arm": "V2341_ALIAS_FORMAL_REGISTRATION",
+          "baseline_seed": null,
+          "formal_draft": {
+            "schema_version": "dta-v234.formal-fault-registration-draft.v1",
+            "draft_id": "draft-v234-e744b4bf3f735491",
+            "authorization_id": "authorization-v234-aababe78c49e910b",
+            "shadow_fault_id": "shadow-v23-e852d8c0e92ab16e",
+            "registration_seed_sha256": "e416c068001edc2674bb5da0428dde16dbe4224eccf14ff6ae64fb44bceba136",
+            "core_ontology_snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa",
+            "implementation_mode": "DECLARATIVE_READY",
+            "mechanism": {
+              "mechanism_enum_name": "BOUNDED_FAULT_MECHANISM",
+              "mechanism_slug": "bounded-fault-mechanism",
+              "display_name": "Bounded Fault Mechanism",
+              "broad_fault_domain": "RUNTIME",
+              "human_definition": "The bounded fault mechanism mechanism is defined by bounded evidence predicates and canonical support clauses.",
+              "distinguishing_summary": "The bounded fault mechanism mechanism is distinguished by its canonical clauses and evidence bindings.",
+              "confusable_core_mechanisms": [
+                "CONFIGURATION_ERROR"
+              ],
+              "confusable_extension_mechanisms": []
+            },
+            "predicates": [
+              {
+                "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                "predicate_slug": "metric-error-rate-strong",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "METRICS",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The metric error rate strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "METRIC_ERROR_RATE_STRONG"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:metrics:svc-75a0bd2dea:core:0:0da6345959db"
+                ],
+                "positive_examples": [
+                  "The metric error rate strong predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The metric error rate strong predicate is absent from accepted evidence."
+                ]
+              },
+              {
+                "predicate_name": "RUNTIME_NOT_RUNNING",
+                "predicate_slug": "runtime-not-running",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "RUNTIME",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The runtime not running predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "RUNTIME_NOT_RUNNING"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:runtime:all-candidates:bc9dd3983569:1:6c7edde9f499"
+                ],
+                "positive_examples": [
+                  "The runtime not running predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The runtime not running predicate is absent from accepted evidence."
+                ]
+              }
+            ],
+            "support_clauses": [
+              {
+                "clause_id": "bounded-fault-mechanism:clause-01",
+                "mechanism_slug": "bounded-fault-mechanism",
+                "requirements": [
+                  {
+                    "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  },
+                  {
+                    "predicate_name": "RUNTIME_NOT_RUNNING",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  }
+                ],
+                "rationale": "The clause requires its canonical predicates at their declared service bindings."
+              }
+            ],
+            "test_plan": {
+              "positive_report_ids": [
+                "report-v23-3223fd3f6644b790"
+              ],
+              "positive_case_ids": [
+                "dta-v234-rt-104"
+              ],
+              "confusable_core_mechanisms": [
+                "CONFIGURATION_ERROR"
+              ],
+              "required_known_controls": [
+                "known-configuration-error-control"
+              ],
+              "required_no_incident_controls": [
+                "no-incident-runtime-control"
+              ],
+              "required_counterfactuals": [
+                "clause-01-target-counterfactual"
+              ],
+              "required_source_failure_tests": [
+                "metrics-unavailable-fails-closed",
+                "runtime-unavailable-fails-closed"
+              ],
+              "required_clause_binding_tests": [
+                "clause-01-binding-control"
+              ]
+            },
+            "unresolved_engineering_questions": [],
+            "remediation_registration": "NOT_INCLUDED",
+            "provider_trace": {
+              "schema_version": "dta-v2341.registration-alias-provider-trace.v1",
+              "provider_mode": "OPENAI_COMPATIBLE",
+              "request_sha256": "e2390de543345921f4e4be43a62d8349d33c6d503bd883039794ac3380de63bb",
+              "raw_response_sha256": "1fe632bdfe27ba08d270114a692c34755fc63cfe2453fa55b47a44e94573e364",
+              "canonical_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+              "assembled_content_sha256": "1f594980182464adaf467c34948cfba0a1dcbeef1928c267b29d23e546472a85",
+              "provider_calls": 1,
+              "protocol_repairs": 0,
+              "transport_retries": 0,
+              "max_exact_request_retries": 3,
+              "semantic_retries": 0,
+              "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw",
+              "trace_sha256": "ef87e027eee3f7103020da08a45dbb6c6efc54132729696b8171562a2b548243"
+            },
+            "action_authority": "NONE",
+            "repository_write_authority": "NONE",
+            "draft_sha256": "9a565d4318e5d112cfd39a2e50b2ab74726cd71f727951510aa785da4fd821f9"
+          },
+          "typed_disposition": "DECLARATIVE_READY",
+          "validation_context": "HIDDEN_KNOWN_RECONSTRUCTION",
+          "validation_status": "VALID",
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": "b094c53b5c1187dc3cf29ce16b2b5ac406511ddda363ab47f8bbca9cc6169911",
+          "alias_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+          "assembly_sha256": "b735a0f9abbf5e2785adab3cddf9b35cef7587b01d5783305e3631c7c8533a54",
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": true,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 1,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 1017,
+          "output_tokens": 67,
+          "total_tokens": 1084,
+          "latency_ms": 1878.8100419915281,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "c0acce2c6aa1b97fa24c6d68dc99896bc786e5214704dc967fb8d008812652f8"
+        }
+      ],
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "provider_schema_valid": true,
+      "alias_resolution_and_assembly_valid": true,
+      "existing_format_structural_valid": true,
+      "mechanism_identity_accurate": false,
+      "broad_domain_accurate": true,
+      "core_predicate_reuse_precision": 1.0,
+      "core_predicate_reuse_recall": 0.5,
+      "behavioral_clause_equivalent": false,
+      "confusable_negative_coverage": false,
+      "new_mode_correct": null,
+      "control_non_promotable": null,
+      "declarative_compile_valid": null,
+      "patch_bundle_complete": null,
+      "shadow_plan_complete": true,
+      "comparison_sha256": "56f3f9c988f743fc07ccda072310bde340619f8b3b604a6b3d5982c619abaf3a"
+    },
+    {
+      "task_id": "rt-105",
+      "runs": [
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-105",
+          "arm": "V23_TEMPLATE_REGISTRATION_SEED",
+          "baseline_seed": {
+            "schema_version": "dta-v23.registration-draft.v1",
+            "proposed_mechanism_slug": "candidate-pattern-105",
+            "broad_fault_domain": "RESOURCE",
+            "human_definition": "Sustained target compute utilization coincides with strong error evidence. Human review note: SIMULATED HUMAN REVIEW for fixed registration assistance.",
+            "candidate_generic_anomalies": [
+              "METRIC_ERROR_OUTLIER",
+              "RESOURCE_CPU_OUTLIER"
+            ],
+            "candidate_evidence_sources": [
+              "METRICS",
+              "RESOURCES"
+            ],
+            "candidate_support_clause_description": "Require corroborating generic anomalies from the listed evidence sources; the exact formal predicate clause remains a later human-led decision.",
+            "distinguishing_negative_examples": [
+              "known-control-a"
+            ],
+            "positive_case_ids": [
+              "dta-v234-rt-105"
+            ],
+            "required_replay_tests": [
+              "negative-confusable-control",
+              "positive-replay-with-valid-evidence-refs"
+            ],
+            "suggested_formal_files": [
+              "src/ecomsre/dta_v2/v22/predicates.py",
+              "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+            ],
+            "remediation_registration": "NOT_INCLUDED",
+            "draft_sha256": "e1a5e404efaef9b7c3746df14343ed97e396018652d363caacb3e2916d2f0539"
+          },
+          "formal_draft": null,
+          "typed_disposition": null,
+          "validation_context": null,
+          "validation_status": null,
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "f63ef824059bb1100552a91ced6a0c8182c079ea18941c088577fd1a4b11690d"
+        },
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-105",
+          "arm": "V2341_ALIAS_FORMAL_REGISTRATION",
+          "baseline_seed": null,
+          "formal_draft": {
+            "schema_version": "dta-v234.formal-fault-registration-draft.v1",
+            "draft_id": "draft-v234-46e6ebe9b9ed43c7",
+            "authorization_id": "authorization-v234-b3abdbeb56e2e46c",
+            "shadow_fault_id": "shadow-v23-809945e75dabd102",
+            "registration_seed_sha256": "937b956c146ce410ded541c86d4addd527b28da18f469a645a6bd449f23b35e6",
+            "core_ontology_snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa",
+            "implementation_mode": "DECLARATIVE_READY",
+            "mechanism": {
+              "mechanism_enum_name": "BOUNDED_FAULT_MECHANISM",
+              "mechanism_slug": "bounded-fault-mechanism",
+              "display_name": "Bounded Fault Mechanism",
+              "broad_fault_domain": "RESOURCE",
+              "human_definition": "The bounded fault mechanism mechanism is defined by bounded evidence predicates and canonical support clauses.",
+              "distinguishing_summary": "The bounded fault mechanism mechanism is distinguished by its canonical clauses and evidence bindings.",
+              "confusable_core_mechanisms": [
+                "CONFIGURATION_ERROR"
+              ],
+              "confusable_extension_mechanisms": []
+            },
+            "predicates": [
+              {
+                "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                "predicate_slug": "metric-error-rate-strong",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "METRICS",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The metric error rate strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "METRIC_ERROR_RATE_STRONG"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:metrics:svc-c64512f0e1:core:0:6754547d7ed4"
+                ],
+                "positive_examples": [
+                  "The metric error rate strong predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The metric error rate strong predicate is absent from accepted evidence."
+                ]
+              },
+              {
+                "predicate_name": "RESOURCE_CPU_STRONG",
+                "predicate_slug": "resource-cpu-strong",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "RESOURCES",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The resource cpu strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "RESOURCE_CPU_STRONG"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:resources:svc-c64512f0e1:0:6205300f5d3f"
+                ],
+                "positive_examples": [
+                  "The resource cpu strong predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The resource cpu strong predicate is absent from accepted evidence."
+                ]
+              }
+            ],
+            "support_clauses": [
+              {
+                "clause_id": "bounded-fault-mechanism:clause-01",
+                "mechanism_slug": "bounded-fault-mechanism",
+                "requirements": [
+                  {
+                    "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  },
+                  {
+                    "predicate_name": "RESOURCE_CPU_STRONG",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  }
+                ],
+                "rationale": "The clause requires its canonical predicates at their declared service bindings."
+              }
+            ],
+            "test_plan": {
+              "positive_report_ids": [
+                "report-v23-5aaa9f950e5ccfc7"
+              ],
+              "positive_case_ids": [
+                "dta-v234-rt-105"
+              ],
+              "confusable_core_mechanisms": [
+                "CONFIGURATION_ERROR"
+              ],
+              "required_known_controls": [
+                "known-configuration-error-control"
+              ],
+              "required_no_incident_controls": [
+                "no-incident-resource-control"
+              ],
+              "required_counterfactuals": [
+                "clause-01-target-counterfactual"
+              ],
+              "required_source_failure_tests": [
+                "metrics-unavailable-fails-closed",
+                "resources-unavailable-fails-closed"
+              ],
+              "required_clause_binding_tests": [
+                "clause-01-binding-control"
+              ]
+            },
+            "unresolved_engineering_questions": [],
+            "remediation_registration": "NOT_INCLUDED",
+            "provider_trace": {
+              "schema_version": "dta-v2341.registration-alias-provider-trace.v1",
+              "provider_mode": "OPENAI_COMPATIBLE",
+              "request_sha256": "c2f2fa9155a33007d0316591f6ea24575149116aa780ccd3688454658877ce19",
+              "raw_response_sha256": "1fe632bdfe27ba08d270114a692c34755fc63cfe2453fa55b47a44e94573e364",
+              "canonical_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+              "assembled_content_sha256": "a6f7c08dbb5cc1a0634b94318454a8b1e2227adcada446a7739cd1f913641c27",
+              "provider_calls": 1,
+              "protocol_repairs": 0,
+              "transport_retries": 0,
+              "max_exact_request_retries": 3,
+              "semantic_retries": 0,
+              "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw",
+              "trace_sha256": "3454a5a96740c3f28487b3c79af978a3f273b213a9ae39d93d7e004a83a1806d"
+            },
+            "action_authority": "NONE",
+            "repository_write_authority": "NONE",
+            "draft_sha256": "64d169691485201263cebb53252527b899b16a4d3e0bb3c60f69ee44e5bb1427"
+          },
+          "typed_disposition": "DECLARATIVE_READY",
+          "validation_context": "HIDDEN_KNOWN_RECONSTRUCTION",
+          "validation_status": "VALID",
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": "9ef254fdbcae157ee2028c19f7e883b6ac76a9c70ac262c7708f051bd40e51e0",
+          "alias_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+          "assembly_sha256": "ce2c337488361a38c8506fe7210e4a949580885ab09c1f71b7c873e40231d365",
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": true,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 1,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 1011,
+          "output_tokens": 67,
+          "total_tokens": 1078,
+          "latency_ms": 2019.004333007615,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "3ebe192c1e47ce991a3fa4292acfd25d6c456124bf42b99a0cf0dc1add0c6e81"
+        }
+      ],
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "provider_schema_valid": true,
+      "alias_resolution_and_assembly_valid": true,
+      "existing_format_structural_valid": true,
+      "mechanism_identity_accurate": false,
+      "broad_domain_accurate": true,
+      "core_predicate_reuse_precision": 0.5,
+      "core_predicate_reuse_recall": 0.5,
+      "behavioral_clause_equivalent": false,
+      "confusable_negative_coverage": false,
+      "new_mode_correct": null,
+      "control_non_promotable": null,
+      "declarative_compile_valid": null,
+      "patch_bundle_complete": null,
+      "shadow_plan_complete": true,
+      "comparison_sha256": "0dc2ef5a29a6222fd5d229b863348ceafa68d687006fc60857e894161480beba"
+    },
+    {
+      "task_id": "rt-106",
+      "runs": [
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-106",
+          "arm": "V23_TEMPLATE_REGISTRATION_SEED",
+          "baseline_seed": {
+            "schema_version": "dta-v23.registration-draft.v1",
+            "proposed_mechanism_slug": "candidate-pattern-106",
+            "broad_fault_domain": "RESOURCE",
+            "human_definition": "A second sustained target utilization signal coincides with strong error evidence. Human review note: SIMULATED HUMAN REVIEW for fixed registration assistance.",
+            "candidate_generic_anomalies": [
+              "METRIC_ERROR_OUTLIER",
+              "RESOURCE_CPU_OUTLIER"
+            ],
+            "candidate_evidence_sources": [
+              "METRICS",
+              "RESOURCES"
+            ],
+            "candidate_support_clause_description": "Require corroborating generic anomalies from the listed evidence sources; the exact formal predicate clause remains a later human-led decision.",
+            "distinguishing_negative_examples": [
+              "known-control-a"
+            ],
+            "positive_case_ids": [
+              "dta-v234-rt-106"
+            ],
+            "required_replay_tests": [
+              "negative-confusable-control",
+              "positive-replay-with-valid-evidence-refs"
+            ],
+            "suggested_formal_files": [
+              "src/ecomsre/dta_v2/v22/predicates.py",
+              "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+            ],
+            "remediation_registration": "NOT_INCLUDED",
+            "draft_sha256": "86994c38a8ea7755319323334e0dd58f35fc8b75335f90050fc30ecdf87fad9f"
+          },
+          "formal_draft": null,
+          "typed_disposition": null,
+          "validation_context": null,
+          "validation_status": null,
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "4414c3de2bf654f8f198507f18ce67e0ea72a072063a999dc64fd621ac782d6a"
+        },
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-106",
+          "arm": "V2341_ALIAS_FORMAL_REGISTRATION",
+          "baseline_seed": null,
+          "formal_draft": {
+            "schema_version": "dta-v234.formal-fault-registration-draft.v1",
+            "draft_id": "draft-v234-495c8ab7684b130d",
+            "authorization_id": "authorization-v234-8c94b27e1a0f0ca2",
+            "shadow_fault_id": "shadow-v23-96b4be9e8e2035c9",
+            "registration_seed_sha256": "3dc26d68c90d9bdbe3ce8997dee7518fab348bd15f9d0cb6795254e60444b345",
+            "core_ontology_snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa",
+            "implementation_mode": "DECLARATIVE_READY",
+            "mechanism": {
+              "mechanism_enum_name": "BOUNDED_FAULT_MECHANISM",
+              "mechanism_slug": "bounded-fault-mechanism",
+              "display_name": "Bounded Fault Mechanism",
+              "broad_fault_domain": "RESOURCE",
+              "human_definition": "The bounded fault mechanism mechanism is defined by bounded evidence predicates and canonical support clauses.",
+              "distinguishing_summary": "The bounded fault mechanism mechanism is distinguished by its canonical clauses and evidence bindings.",
+              "confusable_core_mechanisms": [
+                "CONFIGURATION_ERROR"
+              ],
+              "confusable_extension_mechanisms": []
+            },
+            "predicates": [
+              {
+                "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                "predicate_slug": "metric-error-rate-strong",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "METRICS",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The metric error rate strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "METRIC_ERROR_RATE_STRONG"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:metrics:svc-aee314eeda:core:0:07ab413cf85f"
+                ],
+                "positive_examples": [
+                  "The metric error rate strong predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The metric error rate strong predicate is absent from accepted evidence."
+                ]
+              },
+              {
+                "predicate_name": "RESOURCE_CPU_STRONG",
+                "predicate_slug": "resource-cpu-strong",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "RESOURCES",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The resource cpu strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "RESOURCE_CPU_STRONG"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:resources:svc-aee314eeda:0:e27ca1760a78"
+                ],
+                "positive_examples": [
+                  "The resource cpu strong predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The resource cpu strong predicate is absent from accepted evidence."
+                ]
+              }
+            ],
+            "support_clauses": [
+              {
+                "clause_id": "bounded-fault-mechanism:clause-01",
+                "mechanism_slug": "bounded-fault-mechanism",
+                "requirements": [
+                  {
+                    "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  },
+                  {
+                    "predicate_name": "RESOURCE_CPU_STRONG",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  }
+                ],
+                "rationale": "The clause requires its canonical predicates at their declared service bindings."
+              }
+            ],
+            "test_plan": {
+              "positive_report_ids": [
+                "report-v23-866581a5b6d74b0f"
+              ],
+              "positive_case_ids": [
+                "dta-v234-rt-106"
+              ],
+              "confusable_core_mechanisms": [
+                "CONFIGURATION_ERROR"
+              ],
+              "required_known_controls": [
+                "known-configuration-error-control"
+              ],
+              "required_no_incident_controls": [
+                "no-incident-resource-control"
+              ],
+              "required_counterfactuals": [
+                "clause-01-target-counterfactual"
+              ],
+              "required_source_failure_tests": [
+                "metrics-unavailable-fails-closed",
+                "resources-unavailable-fails-closed"
+              ],
+              "required_clause_binding_tests": [
+                "clause-01-binding-control"
+              ]
+            },
+            "unresolved_engineering_questions": [],
+            "remediation_registration": "NOT_INCLUDED",
+            "provider_trace": {
+              "schema_version": "dta-v2341.registration-alias-provider-trace.v1",
+              "provider_mode": "OPENAI_COMPATIBLE",
+              "request_sha256": "efb35546f8a7db7507330f82edec1a608bd058444400a8313b307839755cfdbe",
+              "raw_response_sha256": "1fe632bdfe27ba08d270114a692c34755fc63cfe2453fa55b47a44e94573e364",
+              "canonical_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+              "assembled_content_sha256": "e25c5d1174314b32de22642cdce1091b00f4439575acc0c01569f90b5902cd4e",
+              "provider_calls": 1,
+              "protocol_repairs": 0,
+              "transport_retries": 0,
+              "max_exact_request_retries": 3,
+              "semantic_retries": 0,
+              "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw",
+              "trace_sha256": "f46db210937a7869228adee5c3b86d218f5d3aeaf27783601c68adb615c229e3"
+            },
+            "action_authority": "NONE",
+            "repository_write_authority": "NONE",
+            "draft_sha256": "2ac9c382c30168df4e661c7622c9f0738253fc9b1fa19d82c36b814ed85f6728"
+          },
+          "typed_disposition": "DECLARATIVE_READY",
+          "validation_context": "HIDDEN_KNOWN_RECONSTRUCTION",
+          "validation_status": "VALID",
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": "dc6cbe45bbba6c9d2625f681bb06e27ea83e0184d686aadc18646ec6d4f0f45b",
+          "alias_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+          "assembly_sha256": "81468e83ff4b5b45f56694bb3006b9d169cfd07beea7b7be4bf6e6df9ebe883c",
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": true,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 1,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 1016,
+          "output_tokens": 67,
+          "total_tokens": 1083,
+          "latency_ms": 1636.4116670447402,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "5945a5e02ae9b64eb386376996661d948105fc367bd616ac578089fe04473a83"
+        }
+      ],
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "provider_schema_valid": true,
+      "alias_resolution_and_assembly_valid": true,
+      "existing_format_structural_valid": true,
+      "mechanism_identity_accurate": false,
+      "broad_domain_accurate": true,
+      "core_predicate_reuse_precision": 0.5,
+      "core_predicate_reuse_recall": 0.5,
+      "behavioral_clause_equivalent": false,
+      "confusable_negative_coverage": false,
+      "new_mode_correct": null,
+      "control_non_promotable": null,
+      "declarative_compile_valid": null,
+      "patch_bundle_complete": null,
+      "shadow_plan_complete": true,
+      "comparison_sha256": "fed578578b8eaaeda7afd3f78bc3d3a86c1f0df14d9b76c3b7564cc438cc7cde"
+    },
+    {
+      "task_id": "rt-107",
+      "runs": [
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-107",
+          "arm": "V23_TEMPLATE_REGISTRATION_SEED",
+          "baseline_seed": {
+            "schema_version": "dta-v23.registration-draft.v1",
+            "proposed_mechanism_slug": "candidate-pattern-107",
+            "broad_fault_domain": "RESOURCE",
+            "human_definition": "Monotonic target allocation growth coincides with an error log cluster. Human review note: SIMULATED HUMAN REVIEW for fixed registration assistance.",
+            "candidate_generic_anomalies": [
+              "LOG_ERROR_CLUSTER",
+              "RESOURCE_MEMORY_TREND"
+            ],
+            "candidate_evidence_sources": [
+              "LOGS",
+              "RESOURCES"
+            ],
+            "candidate_support_clause_description": "Require corroborating generic anomalies from the listed evidence sources; the exact formal predicate clause remains a later human-led decision.",
+            "distinguishing_negative_examples": [
+              "known-control-a"
+            ],
+            "positive_case_ids": [
+              "dta-v234-rt-107"
+            ],
+            "required_replay_tests": [
+              "negative-confusable-control",
+              "positive-replay-with-valid-evidence-refs"
+            ],
+            "suggested_formal_files": [
+              "src/ecomsre/dta_v2/v22/predicates.py",
+              "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+            ],
+            "remediation_registration": "NOT_INCLUDED",
+            "draft_sha256": "1fe98935f268875a8aa54a165ebc2a352f02d713a383f947e22e3f73ce381e98"
+          },
+          "formal_draft": null,
+          "typed_disposition": null,
+          "validation_context": null,
+          "validation_status": null,
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "e625a73db98be5fbb4ffd78268ca68734d53864ad76730f1609a1769921535d7"
+        },
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-107",
+          "arm": "V2341_ALIAS_FORMAL_REGISTRATION",
+          "baseline_seed": null,
+          "formal_draft": {
+            "schema_version": "dta-v234.formal-fault-registration-draft.v1",
+            "draft_id": "draft-v234-9ce8b0ed2494d3b3",
+            "authorization_id": "authorization-v234-d866355fadf104ca",
+            "shadow_fault_id": "shadow-v23-0b79a23642528006",
+            "registration_seed_sha256": "eb580c50a630dfa0febbbe66da533eae09ec6701f1ea3c49ff49b66e747635bd",
+            "core_ontology_snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa",
+            "implementation_mode": "DECLARATIVE_READY",
+            "mechanism": {
+              "mechanism_enum_name": "BOUNDED_FAULT_MECHANISM",
+              "mechanism_slug": "bounded-fault-mechanism",
+              "display_name": "Bounded Fault Mechanism",
+              "broad_fault_domain": "RESOURCE",
+              "human_definition": "The bounded fault mechanism mechanism is defined by bounded evidence predicates and canonical support clauses.",
+              "distinguishing_summary": "The bounded fault mechanism mechanism is distinguished by its canonical clauses and evidence bindings.",
+              "confusable_core_mechanisms": [
+                "CONFIGURATION_ERROR"
+              ],
+              "confusable_extension_mechanisms": []
+            },
+            "predicates": [
+              {
+                "predicate_name": "LOG_ERROR_CLUSTER_SIGNAL",
+                "predicate_slug": "log-error-cluster-signal",
+                "implementation_mode": "DECLARATIVE_EXTENSION_PREDICATE",
+                "evidence_source": "LOGS",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The log error cluster signal predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "GENERIC_ANOMALY_KIND",
+                  "anomaly_kind": "LOG_ERROR_CLUSTER"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:logs:svc-0d7b707a36:0:3bc3fdb0f20b"
+                ],
+                "positive_examples": [
+                  "The log error cluster signal predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The log error cluster signal predicate is absent from accepted evidence."
+                ]
+              },
+              {
+                "predicate_name": "RESOURCE_MEMORY_GROWTH_STRONG",
+                "predicate_slug": "resource-memory-growth-strong",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "RESOURCES",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The resource memory growth strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "RESOURCE_MEMORY_GROWTH_STRONG"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:resources:svc-0d7b707a36:0:ce02487942f2"
+                ],
+                "positive_examples": [
+                  "The resource memory growth strong predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The resource memory growth strong predicate is absent from accepted evidence."
+                ]
+              }
+            ],
+            "support_clauses": [
+              {
+                "clause_id": "bounded-fault-mechanism:clause-01",
+                "mechanism_slug": "bounded-fault-mechanism",
+                "requirements": [
+                  {
+                    "predicate_name": "LOG_ERROR_CLUSTER_SIGNAL",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  },
+                  {
+                    "predicate_name": "RESOURCE_MEMORY_GROWTH_STRONG",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  }
+                ],
+                "rationale": "The clause requires its canonical predicates at their declared service bindings."
+              }
+            ],
+            "test_plan": {
+              "positive_report_ids": [
+                "report-v23-8922f97c7c54c206"
+              ],
+              "positive_case_ids": [
+                "dta-v234-rt-107"
+              ],
+              "confusable_core_mechanisms": [
+                "CONFIGURATION_ERROR"
+              ],
+              "required_known_controls": [
+                "known-configuration-error-control"
+              ],
+              "required_no_incident_controls": [
+                "no-incident-resource-control"
+              ],
+              "required_counterfactuals": [
+                "clause-01-target-counterfactual"
+              ],
+              "required_source_failure_tests": [
+                "logs-unavailable-fails-closed",
+                "resources-unavailable-fails-closed"
+              ],
+              "required_clause_binding_tests": [
+                "clause-01-binding-control"
+              ]
+            },
+            "unresolved_engineering_questions": [],
+            "remediation_registration": "NOT_INCLUDED",
+            "provider_trace": {
+              "schema_version": "dta-v2341.registration-alias-provider-trace.v1",
+              "provider_mode": "OPENAI_COMPATIBLE",
+              "request_sha256": "d6105badf66157fa63e59d4612169c75532023e790b5bf4e69021c3ca120b1fb",
+              "raw_response_sha256": "1fe632bdfe27ba08d270114a692c34755fc63cfe2453fa55b47a44e94573e364",
+              "canonical_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+              "assembled_content_sha256": "ef0276934609fc45daedffb0f5a8a05401a846a19ee56bfd35917f1e3d51e937",
+              "provider_calls": 1,
+              "protocol_repairs": 0,
+              "transport_retries": 0,
+              "max_exact_request_retries": 3,
+              "semantic_retries": 0,
+              "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw",
+              "trace_sha256": "c9f2a099731e9ff477205c98a8c49728eaf4cb06af864b2d59103fddf99d5735"
+            },
+            "action_authority": "NONE",
+            "repository_write_authority": "NONE",
+            "draft_sha256": "aa96b3659bcd8b09859b1d263e1f6cec08ac77dcc0a40e1c18d2b47f061880a8"
+          },
+          "typed_disposition": "DECLARATIVE_READY",
+          "validation_context": "HIDDEN_KNOWN_RECONSTRUCTION",
+          "validation_status": "VALID",
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": "4db849f8bae842a99f7a97d14571e1e15aa81c349be322851f25b4dc6fb2dd0d",
+          "alias_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+          "assembly_sha256": "888c25400143dc0c8d24b39743fe2a187384480f47629e642e8cd0420203df8e",
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": true,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 1,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 1019,
+          "output_tokens": 67,
+          "total_tokens": 1086,
+          "latency_ms": 1478.915165993385,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "06e383f917df4853ef35567c5ae113d92c973a6fd41cc386f0b01deefcd0a916"
+        }
+      ],
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "provider_schema_valid": true,
+      "alias_resolution_and_assembly_valid": true,
+      "existing_format_structural_valid": true,
+      "mechanism_identity_accurate": false,
+      "broad_domain_accurate": true,
+      "core_predicate_reuse_precision": 1.0,
+      "core_predicate_reuse_recall": 0.3333333333333333,
+      "behavioral_clause_equivalent": false,
+      "confusable_negative_coverage": false,
+      "new_mode_correct": null,
+      "control_non_promotable": null,
+      "declarative_compile_valid": null,
+      "patch_bundle_complete": null,
+      "shadow_plan_complete": true,
+      "comparison_sha256": "4817782b20dd1021d1f0f94c04ffedfd9345893b60d3e7696f57a9771784d6f1"
+    },
+    {
+      "task_id": "rt-108",
+      "runs": [
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-108",
+          "arm": "V23_TEMPLATE_REGISTRATION_SEED",
+          "baseline_seed": {
+            "schema_version": "dta-v23.registration-draft.v1",
+            "proposed_mechanism_slug": "candidate-pattern-108",
+            "broad_fault_domain": "RESOURCE",
+            "human_definition": "A second monotonic allocation signal coincides with an error log cluster. Human review note: SIMULATED HUMAN REVIEW for fixed registration assistance.",
+            "candidate_generic_anomalies": [
+              "LOG_ERROR_CLUSTER",
+              "RESOURCE_MEMORY_TREND"
+            ],
+            "candidate_evidence_sources": [
+              "LOGS",
+              "RESOURCES"
+            ],
+            "candidate_support_clause_description": "Require corroborating generic anomalies from the listed evidence sources; the exact formal predicate clause remains a later human-led decision.",
+            "distinguishing_negative_examples": [
+              "known-control-a"
+            ],
+            "positive_case_ids": [
+              "dta-v234-rt-108"
+            ],
+            "required_replay_tests": [
+              "negative-confusable-control",
+              "positive-replay-with-valid-evidence-refs"
+            ],
+            "suggested_formal_files": [
+              "src/ecomsre/dta_v2/v22/predicates.py",
+              "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+            ],
+            "remediation_registration": "NOT_INCLUDED",
+            "draft_sha256": "baae8a07303b63fb04e57caa982bd84a93f9759c2e7a1b6e76dc00f69543f414"
+          },
+          "formal_draft": null,
+          "typed_disposition": null,
+          "validation_context": null,
+          "validation_status": null,
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "7347812f4c87addfc05feec08ee445950b42b54173c37c6cc9962fcc0181902b"
+        },
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-108",
+          "arm": "V2341_ALIAS_FORMAL_REGISTRATION",
+          "baseline_seed": null,
+          "formal_draft": {
+            "schema_version": "dta-v234.formal-fault-registration-draft.v1",
+            "draft_id": "draft-v234-ddf97334970e6fe3",
+            "authorization_id": "authorization-v234-0c657fca7b93e98c",
+            "shadow_fault_id": "shadow-v23-81560151adf7b9b2",
+            "registration_seed_sha256": "d6e45cdeb351957a3b501c4c38d04dc329f66d5b919e35f4e55fb81ca788a81c",
+            "core_ontology_snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa",
+            "implementation_mode": "DECLARATIVE_READY",
+            "mechanism": {
+              "mechanism_enum_name": "BOUNDED_FAULT_MECHANISM",
+              "mechanism_slug": "bounded-fault-mechanism",
+              "display_name": "Bounded Fault Mechanism",
+              "broad_fault_domain": "RESOURCE",
+              "human_definition": "The bounded fault mechanism mechanism is defined by bounded evidence predicates and canonical support clauses.",
+              "distinguishing_summary": "The bounded fault mechanism mechanism is distinguished by its canonical clauses and evidence bindings.",
+              "confusable_core_mechanisms": [
+                "CONFIGURATION_ERROR"
+              ],
+              "confusable_extension_mechanisms": []
+            },
+            "predicates": [
+              {
+                "predicate_name": "LOG_ERROR_CLUSTER_SIGNAL",
+                "predicate_slug": "log-error-cluster-signal",
+                "implementation_mode": "DECLARATIVE_EXTENSION_PREDICATE",
+                "evidence_source": "LOGS",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The log error cluster signal predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "GENERIC_ANOMALY_KIND",
+                  "anomaly_kind": "LOG_ERROR_CLUSTER"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:logs:svc-e51b9e1bcc:0:3a5963d56534"
+                ],
+                "positive_examples": [
+                  "The log error cluster signal predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The log error cluster signal predicate is absent from accepted evidence."
+                ]
+              },
+              {
+                "predicate_name": "RESOURCE_MEMORY_GROWTH_STRONG",
+                "predicate_slug": "resource-memory-growth-strong",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "RESOURCES",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The resource memory growth strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "RESOURCE_MEMORY_GROWTH_STRONG"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:resources:svc-e51b9e1bcc:0:ec3f701f36c3"
+                ],
+                "positive_examples": [
+                  "The resource memory growth strong predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The resource memory growth strong predicate is absent from accepted evidence."
+                ]
+              }
+            ],
+            "support_clauses": [
+              {
+                "clause_id": "bounded-fault-mechanism:clause-01",
+                "mechanism_slug": "bounded-fault-mechanism",
+                "requirements": [
+                  {
+                    "predicate_name": "LOG_ERROR_CLUSTER_SIGNAL",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  },
+                  {
+                    "predicate_name": "RESOURCE_MEMORY_GROWTH_STRONG",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  }
+                ],
+                "rationale": "The clause requires its canonical predicates at their declared service bindings."
+              }
+            ],
+            "test_plan": {
+              "positive_report_ids": [
+                "report-v23-d19961a3a5711bd8"
+              ],
+              "positive_case_ids": [
+                "dta-v234-rt-108"
+              ],
+              "confusable_core_mechanisms": [
+                "CONFIGURATION_ERROR"
+              ],
+              "required_known_controls": [
+                "known-configuration-error-control"
+              ],
+              "required_no_incident_controls": [
+                "no-incident-resource-control"
+              ],
+              "required_counterfactuals": [
+                "clause-01-target-counterfactual"
+              ],
+              "required_source_failure_tests": [
+                "logs-unavailable-fails-closed",
+                "resources-unavailable-fails-closed"
+              ],
+              "required_clause_binding_tests": [
+                "clause-01-binding-control"
+              ]
+            },
+            "unresolved_engineering_questions": [],
+            "remediation_registration": "NOT_INCLUDED",
+            "provider_trace": {
+              "schema_version": "dta-v2341.registration-alias-provider-trace.v1",
+              "provider_mode": "OPENAI_COMPATIBLE",
+              "request_sha256": "a722db87e3d00ca80d8797c1d83b6ffa099740de6c15c46a3cdf8d55ba1a0a8b",
+              "raw_response_sha256": "1fe632bdfe27ba08d270114a692c34755fc63cfe2453fa55b47a44e94573e364",
+              "canonical_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+              "assembled_content_sha256": "377733fedcea197f1e8a0d06a48d7414bb96a295ab43c010e92138cd3c9be60f",
+              "provider_calls": 1,
+              "protocol_repairs": 0,
+              "transport_retries": 0,
+              "max_exact_request_retries": 3,
+              "semantic_retries": 0,
+              "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw",
+              "trace_sha256": "33fe8541301c7246f13c63cd335476f2d133fd8cf1a27df288aed915284085c6"
+            },
+            "action_authority": "NONE",
+            "repository_write_authority": "NONE",
+            "draft_sha256": "65fa129dae6a98816d50c9892307e88e9ee8bd66e4c39987d78e04131748df28"
+          },
+          "typed_disposition": "DECLARATIVE_READY",
+          "validation_context": "HIDDEN_KNOWN_RECONSTRUCTION",
+          "validation_status": "VALID",
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": "648320a066d7eb1aea53d55c9cbb5ad5f94920ad0b66237edc228b21cb51b4a1",
+          "alias_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+          "assembly_sha256": "db0dcb3f896ec935096f90349ee1fcadc921ef10322eceff692d2f5afcd28386",
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": true,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 1,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 1019,
+          "output_tokens": 67,
+          "total_tokens": 1086,
+          "latency_ms": 1511.886875028722,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "7c128ba283485b1313d3b86587f6ea12a7a9702468846cd582e5b2d3ff1d8004"
+        }
+      ],
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "provider_schema_valid": true,
+      "alias_resolution_and_assembly_valid": true,
+      "existing_format_structural_valid": true,
+      "mechanism_identity_accurate": false,
+      "broad_domain_accurate": true,
+      "core_predicate_reuse_precision": 1.0,
+      "core_predicate_reuse_recall": 0.3333333333333333,
+      "behavioral_clause_equivalent": false,
+      "confusable_negative_coverage": false,
+      "new_mode_correct": null,
+      "control_non_promotable": null,
+      "declarative_compile_valid": null,
+      "patch_bundle_complete": null,
+      "shadow_plan_complete": true,
+      "comparison_sha256": "7e85e4f5a229fa1b7ea9dfdac5d32161d0542a1d70003284416c8b8cf64fd513"
+    },
+    {
+      "task_id": "rt-109",
+      "runs": [
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-109",
+          "arm": "V23_TEMPLATE_REGISTRATION_SEED",
+          "baseline_seed": {
+            "schema_version": "dta-v23.registration-draft.v1",
+            "proposed_mechanism_slug": "candidate-pattern-109",
+            "broad_fault_domain": "DEPENDENCY",
+            "human_definition": "A slow downstream path coincides with strong target latency evidence. Human review note: SIMULATED HUMAN REVIEW for fixed registration assistance.",
+            "candidate_generic_anomalies": [
+              "METRIC_LATENCY_OUTLIER",
+              "TRACE_LATENCY_OUTLIER"
+            ],
+            "candidate_evidence_sources": [
+              "METRICS",
+              "TRACES"
+            ],
+            "candidate_support_clause_description": "Require corroborating generic anomalies from the listed evidence sources; the exact formal predicate clause remains a later human-led decision.",
+            "distinguishing_negative_examples": [
+              "known-control-a"
+            ],
+            "positive_case_ids": [
+              "dta-v234-rt-109"
+            ],
+            "required_replay_tests": [
+              "negative-confusable-control",
+              "positive-replay-with-valid-evidence-refs"
+            ],
+            "suggested_formal_files": [
+              "src/ecomsre/dta_v2/v22/predicates.py",
+              "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+            ],
+            "remediation_registration": "NOT_INCLUDED",
+            "draft_sha256": "be36a34aed09108ac573909fc159bdb35644ff14968bd0f2eb4f97fe4b3457ff"
+          },
+          "formal_draft": null,
+          "typed_disposition": null,
+          "validation_context": null,
+          "validation_status": null,
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "fe2c9402da0d18df3cdd989f4331500d1930253a93e1063b8572b32526709d81"
+        },
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-109",
+          "arm": "V2341_ALIAS_FORMAL_REGISTRATION",
+          "baseline_seed": null,
+          "formal_draft": {
+            "schema_version": "dta-v234.formal-fault-registration-draft.v1",
+            "draft_id": "draft-v234-b7546e2574aed7e2",
+            "authorization_id": "authorization-v234-b9fee39a10dec071",
+            "shadow_fault_id": "shadow-v23-3de82eca69db2369",
+            "registration_seed_sha256": "45be9c4eadeb8c14529366861aa8dae78cd9db54c6b13c7c6905be4d67f2e03f",
+            "core_ontology_snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa",
+            "implementation_mode": "DECLARATIVE_READY",
+            "mechanism": {
+              "mechanism_enum_name": "BOUNDED_FAULT_MECHANISM",
+              "mechanism_slug": "bounded-fault-mechanism",
+              "display_name": "Bounded Fault Mechanism",
+              "broad_fault_domain": "DEPENDENCY",
+              "human_definition": "The bounded fault mechanism mechanism is defined by bounded evidence predicates and canonical support clauses.",
+              "distinguishing_summary": "The bounded fault mechanism mechanism is distinguished by its canonical clauses and evidence bindings.",
+              "confusable_core_mechanisms": [
+                "CONFIGURATION_ERROR"
+              ],
+              "confusable_extension_mechanisms": []
+            },
+            "predicates": [
+              {
+                "predicate_name": "METRIC_LATENCY_STRONG",
+                "predicate_slug": "metric-latency-strong",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "METRICS",
+                "service_binding": "TARGET_OR_PARENT",
+                "require_exact_parent": false,
+                "semantic_definition": "The metric latency strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "METRIC_LATENCY_STRONG"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:metrics:svc-64b3d3907c:core:1:8257c113645b"
+                ],
+                "positive_examples": [
+                  "The metric latency strong predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The metric latency strong predicate is absent from accepted evidence."
+                ]
+              },
+              {
+                "predicate_name": "TRACE_DEPENDENCY_LATENCY",
+                "predicate_slug": "trace-dependency-latency",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "TRACES",
+                "service_binding": "TARGET",
+                "require_exact_parent": true,
+                "semantic_definition": "The trace dependency latency predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "TRACE_DEPENDENCY_LATENCY"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:traces:svc-64b3d3907c:0:13efe914844f"
+                ],
+                "positive_examples": [
+                  "The trace dependency latency predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The trace dependency latency predicate is absent from accepted evidence."
+                ]
+              }
+            ],
+            "support_clauses": [
+              {
+                "clause_id": "bounded-fault-mechanism:clause-01",
+                "mechanism_slug": "bounded-fault-mechanism",
+                "requirements": [
+                  {
+                    "predicate_name": "METRIC_LATENCY_STRONG",
+                    "service_binding": "TARGET_OR_PARENT",
+                    "require_exact_parent": false
+                  },
+                  {
+                    "predicate_name": "TRACE_DEPENDENCY_LATENCY",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": true
+                  }
+                ],
+                "rationale": "The clause requires its canonical predicates at their declared service bindings."
+              }
+            ],
+            "test_plan": {
+              "positive_report_ids": [
+                "report-v23-d9a4bc9575a27554"
+              ],
+              "positive_case_ids": [
+                "dta-v234-rt-109"
+              ],
+              "confusable_core_mechanisms": [
+                "CONFIGURATION_ERROR"
+              ],
+              "required_known_controls": [
+                "known-configuration-error-control"
+              ],
+              "required_no_incident_controls": [
+                "no-incident-dependency-control"
+              ],
+              "required_counterfactuals": [
+                "clause-01-target-counterfactual"
+              ],
+              "required_source_failure_tests": [
+                "metrics-unavailable-fails-closed",
+                "traces-unavailable-fails-closed"
+              ],
+              "required_clause_binding_tests": [
+                "clause-01-binding-control"
+              ]
+            },
+            "unresolved_engineering_questions": [],
+            "remediation_registration": "NOT_INCLUDED",
+            "provider_trace": {
+              "schema_version": "dta-v2341.registration-alias-provider-trace.v1",
+              "provider_mode": "OPENAI_COMPATIBLE",
+              "request_sha256": "15ca94ada109aebfd29b693c8eca9ff02f062aa5ba332a23a2db80e1711c301a",
+              "raw_response_sha256": "1fe632bdfe27ba08d270114a692c34755fc63cfe2453fa55b47a44e94573e364",
+              "canonical_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+              "assembled_content_sha256": "b9d9b4b3941fc2152efc9f32f9ab361e2844877c5ed451f8dafc1e6760392a31",
+              "provider_calls": 1,
+              "protocol_repairs": 0,
+              "transport_retries": 0,
+              "max_exact_request_retries": 3,
+              "semantic_retries": 0,
+              "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw",
+              "trace_sha256": "8be345fc6a47f19a40ba2736e05732e9fad27354b09eceb1dcf5fbb5fac81bee"
+            },
+            "action_authority": "NONE",
+            "repository_write_authority": "NONE",
+            "draft_sha256": "ed05013aef227aaeca943fa3c338c9d1f6016cc0c7f0be4444f855d10cdd2f48"
+          },
+          "typed_disposition": "DECLARATIVE_READY",
+          "validation_context": "HIDDEN_KNOWN_RECONSTRUCTION",
+          "validation_status": "INVALID",
+          "validation_error_codes": [
+            "CORE_CONTROL_ABSORPTION",
+            "CORE_SEMANTIC_EQUIVALENCE"
+          ],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [
+            "CORE_CONTROL_ABSORPTION",
+            "CORE_SEMANTIC_EQUIVALENCE"
+          ],
+          "catalog_sha256": "ca9ab7b16ce8bfa5fd4bce05575f4c3839e3a2226ff8af20cefb8dda62038fd5",
+          "alias_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+          "assembly_sha256": "75d3c57ae9fff964b1d170d55af4d582b14233c0154900bfb21ebb02cc52c154",
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": true,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 1,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 1017,
+          "output_tokens": 67,
+          "total_tokens": 1084,
+          "latency_ms": 1545.0830420013517,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "69f0329500fee5db27915f85f245788cbc948b907c1c2268aac52771340c54fe"
+        }
+      ],
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "provider_schema_valid": true,
+      "alias_resolution_and_assembly_valid": true,
+      "existing_format_structural_valid": true,
+      "mechanism_identity_accurate": false,
+      "broad_domain_accurate": true,
+      "core_predicate_reuse_precision": 1.0,
+      "core_predicate_reuse_recall": 1.0,
+      "behavioral_clause_equivalent": true,
+      "confusable_negative_coverage": false,
+      "new_mode_correct": null,
+      "control_non_promotable": null,
+      "declarative_compile_valid": null,
+      "patch_bundle_complete": null,
+      "shadow_plan_complete": true,
+      "comparison_sha256": "f62af4e0143a2ad3dbe79effb3b72a00954234ced640a84493cb9cc58de4fe89"
+    },
+    {
+      "task_id": "rt-110",
+      "runs": [
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-110",
+          "arm": "V23_TEMPLATE_REGISTRATION_SEED",
+          "baseline_seed": {
+            "schema_version": "dta-v23.registration-draft.v1",
+            "proposed_mechanism_slug": "candidate-pattern-110",
+            "broad_fault_domain": "DEPENDENCY",
+            "human_definition": "A second slow downstream path coincides with strong target latency evidence. Human review note: SIMULATED HUMAN REVIEW for fixed registration assistance.",
+            "candidate_generic_anomalies": [
+              "METRIC_LATENCY_OUTLIER",
+              "TRACE_LATENCY_OUTLIER"
+            ],
+            "candidate_evidence_sources": [
+              "METRICS",
+              "TRACES"
+            ],
+            "candidate_support_clause_description": "Require corroborating generic anomalies from the listed evidence sources; the exact formal predicate clause remains a later human-led decision.",
+            "distinguishing_negative_examples": [
+              "known-control-a"
+            ],
+            "positive_case_ids": [
+              "dta-v234-rt-110"
+            ],
+            "required_replay_tests": [
+              "negative-confusable-control",
+              "positive-replay-with-valid-evidence-refs"
+            ],
+            "suggested_formal_files": [
+              "src/ecomsre/dta_v2/v22/predicates.py",
+              "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+            ],
+            "remediation_registration": "NOT_INCLUDED",
+            "draft_sha256": "da9b2f3106244a13ce426d9ff21650257dcc5a344ddc0b5cfeb5245620dc6578"
+          },
+          "formal_draft": null,
+          "typed_disposition": null,
+          "validation_context": null,
+          "validation_status": null,
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "13f56effda9e22f00805c7e90e484224e379edd614c60536a4a59de10eef30d8"
+        },
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-110",
+          "arm": "V2341_ALIAS_FORMAL_REGISTRATION",
+          "baseline_seed": null,
+          "formal_draft": {
+            "schema_version": "dta-v234.formal-fault-registration-draft.v1",
+            "draft_id": "draft-v234-dcfbc6046977ac85",
+            "authorization_id": "authorization-v234-97994eb078aa57db",
+            "shadow_fault_id": "shadow-v23-8593fed61d221531",
+            "registration_seed_sha256": "7c2cbb187266295368ed7a7d4c9ecad529a606b076559be774e8e4797d188343",
+            "core_ontology_snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa",
+            "implementation_mode": "DECLARATIVE_READY",
+            "mechanism": {
+              "mechanism_enum_name": "BOUNDED_FAULT_MECHANISM",
+              "mechanism_slug": "bounded-fault-mechanism",
+              "display_name": "Bounded Fault Mechanism",
+              "broad_fault_domain": "DEPENDENCY",
+              "human_definition": "The bounded fault mechanism mechanism is defined by bounded evidence predicates and canonical support clauses.",
+              "distinguishing_summary": "The bounded fault mechanism mechanism is distinguished by its canonical clauses and evidence bindings.",
+              "confusable_core_mechanisms": [
+                "CONFIGURATION_ERROR"
+              ],
+              "confusable_extension_mechanisms": []
+            },
+            "predicates": [
+              {
+                "predicate_name": "METRIC_LATENCY_STRONG",
+                "predicate_slug": "metric-latency-strong",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "METRICS",
+                "service_binding": "TARGET_OR_PARENT",
+                "require_exact_parent": false,
+                "semantic_definition": "The metric latency strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "METRIC_LATENCY_STRONG"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:metrics:svc-c7902c06b9:core:1:517dd22fd0a4"
+                ],
+                "positive_examples": [
+                  "The metric latency strong predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The metric latency strong predicate is absent from accepted evidence."
+                ]
+              },
+              {
+                "predicate_name": "TRACE_DEPENDENCY_LATENCY",
+                "predicate_slug": "trace-dependency-latency",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "TRACES",
+                "service_binding": "TARGET",
+                "require_exact_parent": true,
+                "semantic_definition": "The trace dependency latency predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "TRACE_DEPENDENCY_LATENCY"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:traces:svc-c7902c06b9:0:d2ef0c8244e6"
+                ],
+                "positive_examples": [
+                  "The trace dependency latency predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The trace dependency latency predicate is absent from accepted evidence."
+                ]
+              }
+            ],
+            "support_clauses": [
+              {
+                "clause_id": "bounded-fault-mechanism:clause-01",
+                "mechanism_slug": "bounded-fault-mechanism",
+                "requirements": [
+                  {
+                    "predicate_name": "METRIC_LATENCY_STRONG",
+                    "service_binding": "TARGET_OR_PARENT",
+                    "require_exact_parent": false
+                  },
+                  {
+                    "predicate_name": "TRACE_DEPENDENCY_LATENCY",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": true
+                  }
+                ],
+                "rationale": "The clause requires its canonical predicates at their declared service bindings."
+              }
+            ],
+            "test_plan": {
+              "positive_report_ids": [
+                "report-v23-dff4ab40a4bb945e"
+              ],
+              "positive_case_ids": [
+                "dta-v234-rt-110"
+              ],
+              "confusable_core_mechanisms": [
+                "CONFIGURATION_ERROR"
+              ],
+              "required_known_controls": [
+                "known-configuration-error-control"
+              ],
+              "required_no_incident_controls": [
+                "no-incident-dependency-control"
+              ],
+              "required_counterfactuals": [
+                "clause-01-target-counterfactual"
+              ],
+              "required_source_failure_tests": [
+                "metrics-unavailable-fails-closed",
+                "traces-unavailable-fails-closed"
+              ],
+              "required_clause_binding_tests": [
+                "clause-01-binding-control"
+              ]
+            },
+            "unresolved_engineering_questions": [],
+            "remediation_registration": "NOT_INCLUDED",
+            "provider_trace": {
+              "schema_version": "dta-v2341.registration-alias-provider-trace.v1",
+              "provider_mode": "OPENAI_COMPATIBLE",
+              "request_sha256": "4814623814792ded796f4171b62e47a34e1f59099408e06e4e578d036275a625",
+              "raw_response_sha256": "1fe632bdfe27ba08d270114a692c34755fc63cfe2453fa55b47a44e94573e364",
+              "canonical_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+              "assembled_content_sha256": "d81ffcf6c4929a08df52e1ffb447fc2ae1b33f5142c377d30b99dbeb439da0d6",
+              "provider_calls": 1,
+              "protocol_repairs": 0,
+              "transport_retries": 0,
+              "max_exact_request_retries": 3,
+              "semantic_retries": 0,
+              "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw",
+              "trace_sha256": "9dd8b857c3dcdc445f8f973c556b727d19462252e4d407f88ec8af6626886723"
+            },
+            "action_authority": "NONE",
+            "repository_write_authority": "NONE",
+            "draft_sha256": "13d3bfab5ed111240458af1fb5d05d27e754f42d523cfddd8ad292a0240a067a"
+          },
+          "typed_disposition": "DECLARATIVE_READY",
+          "validation_context": "HIDDEN_KNOWN_RECONSTRUCTION",
+          "validation_status": "INVALID",
+          "validation_error_codes": [
+            "CORE_CONTROL_ABSORPTION",
+            "CORE_SEMANTIC_EQUIVALENCE"
+          ],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [
+            "CORE_CONTROL_ABSORPTION",
+            "CORE_SEMANTIC_EQUIVALENCE"
+          ],
+          "catalog_sha256": "1a18bdee54c86656a5179bcc3db0b078aafea0701d4310a22ccaa5692ab830a9",
+          "alias_selection_sha256": "eec25f59b65cfb28087706928f51a751c1af1df9cebbbbea649a3e1f5161bcfa",
+          "assembly_sha256": "83129018e150196ef1ce0649e1542f4a5f876cb3d5b232a780ec382d6a59b656",
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": true,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 1,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 1022,
+          "output_tokens": 67,
+          "total_tokens": 1089,
+          "latency_ms": 1790.3983329888433,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "ab3e6469b1cf4ba407e6e9bd3eaf8437bc95aa9b579c39bb907ffe7314ddb27d"
+        }
+      ],
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "provider_schema_valid": true,
+      "alias_resolution_and_assembly_valid": true,
+      "existing_format_structural_valid": true,
+      "mechanism_identity_accurate": false,
+      "broad_domain_accurate": true,
+      "core_predicate_reuse_precision": 1.0,
+      "core_predicate_reuse_recall": 1.0,
+      "behavioral_clause_equivalent": true,
+      "confusable_negative_coverage": false,
+      "new_mode_correct": null,
+      "control_non_promotable": null,
+      "declarative_compile_valid": null,
+      "patch_bundle_complete": null,
+      "shadow_plan_complete": true,
+      "comparison_sha256": "e5083efa1e685fb10ee86c8ed73c2126f36e5cf2a707bb696752b9ccf2c8c8c5"
+    },
+    {
+      "task_id": "rt-111",
+      "runs": [
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-111",
+          "arm": "V23_TEMPLATE_REGISTRATION_SEED",
+          "baseline_seed": {
+            "schema_version": "dta-v23.registration-draft.v1",
+            "proposed_mechanism_slug": "candidate-pattern-111",
+            "broad_fault_domain": "CONCURRENCY",
+            "human_definition": "Concurrent work waits for bounded connection capacity while target errors rise. Human review note: SIMULATED HUMAN REVIEW for fixed registration assistance.",
+            "candidate_generic_anomalies": [
+              "LOG_UNKNOWN_ERROR_PATTERN",
+              "METRIC_ERROR_OUTLIER"
+            ],
+            "candidate_evidence_sources": [
+              "LOGS",
+              "METRICS"
+            ],
+            "candidate_support_clause_description": "Require corroborating generic anomalies from the listed evidence sources; the exact formal predicate clause remains a later human-led decision.",
+            "distinguishing_negative_examples": [
+              "known-control-a"
+            ],
+            "positive_case_ids": [
+              "dta-v234-rt-111"
+            ],
+            "required_replay_tests": [
+              "negative-confusable-control",
+              "positive-replay-with-valid-evidence-refs"
+            ],
+            "suggested_formal_files": [
+              "src/ecomsre/dta_v2/v22/predicates.py",
+              "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+            ],
+            "remediation_registration": "NOT_INCLUDED",
+            "draft_sha256": "dfffd88994f9e690439d632756d8d456b3c4da92febf929756b57d8d7121a4c8"
+          },
+          "formal_draft": null,
+          "typed_disposition": null,
+          "validation_context": null,
+          "validation_status": null,
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "610a630a77d95124b6d1bbfdc61d9670944df22f64f435ebb811b79b518b117d"
+        },
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-111",
+          "arm": "V2341_ALIAS_FORMAL_REGISTRATION",
+          "baseline_seed": null,
+          "formal_draft": {
+            "schema_version": "dta-v234.formal-fault-registration-draft.v1",
+            "draft_id": "draft-v234-9e207a9b0306c7d7",
+            "authorization_id": "authorization-v234-56902baabfc98895",
+            "shadow_fault_id": "shadow-v23-9206ab52b9e448fb",
+            "registration_seed_sha256": "3595c9259be16815b727178ca28d273f67420ecbc7cee909a7e94279144b86f2",
+            "core_ontology_snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa",
+            "implementation_mode": "DECLARATIVE_READY",
+            "mechanism": {
+              "mechanism_enum_name": "CANDIDATE_PATTERN_111",
+              "mechanism_slug": "candidate-pattern-111",
+              "display_name": "Candidate Pattern 111",
+              "broad_fault_domain": "CONCURRENCY",
+              "human_definition": "The candidate pattern 111 mechanism is defined by bounded evidence predicates and canonical support clauses.",
+              "distinguishing_summary": "The candidate pattern 111 mechanism is distinguished by its canonical clauses and evidence bindings.",
+              "confusable_core_mechanisms": [
+                "DEPENDENCY_LATENCY"
+              ],
+              "confusable_extension_mechanisms": []
+            },
+            "predicates": [
+              {
+                "predicate_name": "LOG_UNKNOWN_ERROR_PATTERN_SIGNAL",
+                "predicate_slug": "log-unknown-error-pattern-signal",
+                "implementation_mode": "DECLARATIVE_EXTENSION_PREDICATE",
+                "evidence_source": "LOGS",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The log unknown error pattern signal predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "GENERIC_ANOMALY_KIND",
+                  "anomaly_kind": "LOG_UNKNOWN_ERROR_PATTERN"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:logs:svc-28037ae9fb:0:0cfba90b96b8"
+                ],
+                "positive_examples": [
+                  "The log unknown error pattern signal predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The log unknown error pattern signal predicate is absent from accepted evidence."
+                ]
+              },
+              {
+                "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                "predicate_slug": "metric-error-rate-strong",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "METRICS",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The metric error rate strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "METRIC_ERROR_RATE_STRONG"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:metrics:svc-28037ae9fb:core:0:887ff5bde1c6"
+                ],
+                "positive_examples": [
+                  "The metric error rate strong predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The metric error rate strong predicate is absent from accepted evidence."
+                ]
+              }
+            ],
+            "support_clauses": [
+              {
+                "clause_id": "candidate-pattern-111:clause-01",
+                "mechanism_slug": "candidate-pattern-111",
+                "requirements": [
+                  {
+                    "predicate_name": "LOG_UNKNOWN_ERROR_PATTERN_SIGNAL",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  },
+                  {
+                    "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  }
+                ],
+                "rationale": "The clause requires its canonical predicates at their declared service bindings."
+              }
+            ],
+            "test_plan": {
+              "positive_report_ids": [
+                "report-v23-2c906b236939cc2d"
+              ],
+              "positive_case_ids": [
+                "dta-v234-rt-111"
+              ],
+              "confusable_core_mechanisms": [
+                "DEPENDENCY_LATENCY"
+              ],
+              "required_known_controls": [
+                "known-dependency-latency-control"
+              ],
+              "required_no_incident_controls": [
+                "no-incident-concurrency-control"
+              ],
+              "required_counterfactuals": [
+                "clause-01-target-counterfactual"
+              ],
+              "required_source_failure_tests": [
+                "logs-unavailable-fails-closed",
+                "metrics-unavailable-fails-closed"
+              ],
+              "required_clause_binding_tests": [
+                "clause-01-binding-control"
+              ]
+            },
+            "unresolved_engineering_questions": [],
+            "remediation_registration": "NOT_INCLUDED",
+            "provider_trace": {
+              "schema_version": "dta-v2341.registration-alias-provider-trace.v1",
+              "provider_mode": "OPENAI_COMPATIBLE",
+              "request_sha256": "b4f406cdea9ac290bdecd512f3d0e37423aaf4f2bb9d75fee47173c9af8aaf89",
+              "raw_response_sha256": "51e97fa1ad6257410e8799d00bc973458dbbe224d330911cc2db2ca41f16ed5d",
+              "canonical_selection_sha256": "aa6acb022a694cb0cc0c788dc54263e507e50e22e6f5b026c09270c2c7d629c4",
+              "assembled_content_sha256": "fd37b27a29bd0b222efb2c77378d92ddd3994ae13a9a39442e672e27b4ae9b04",
+              "provider_calls": 1,
+              "protocol_repairs": 0,
+              "transport_retries": 0,
+              "max_exact_request_retries": 3,
+              "semantic_retries": 0,
+              "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw",
+              "trace_sha256": "06d0e536d0792424b0a346171995c3536d04b56c95d585c3fd462db623d5925c"
+            },
+            "action_authority": "NONE",
+            "repository_write_authority": "NONE",
+            "draft_sha256": "3da8dabba5b1cd0abf37b5df7b04609889c0ca878039243663a9829c79cc3160"
+          },
+          "typed_disposition": "DECLARATIVE_READY",
+          "validation_context": "PRODUCTION_REGISTRATION",
+          "validation_status": "VALID",
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": true,
+          "collision_evidence_codes": [],
+          "catalog_sha256": "81d022c3a3a6b0c8652985c4cb80f916691cbdb2e82ac69e7e22f3feb4284084",
+          "alias_selection_sha256": "aa6acb022a694cb0cc0c788dc54263e507e50e22e6f5b026c09270c2c7d629c4",
+          "assembly_sha256": "ceb7eaa2f167f7d68978a459a71445d7ed799100f417da3af4339cd820df5fc2",
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": true,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": "46e9bf3652e2c17eb19851262f82a243d59daa9d35c88d12e51b025422451df0",
+          "patch_bundle_sha256": "9ba48744e2823ef40947fcecae74118a8b0d6e41e7bf47cf764829c91f09f184",
+          "patch_bundle_file_count": 7,
+          "provider_calls": 1,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 1035,
+          "output_tokens": 72,
+          "total_tokens": 1107,
+          "latency_ms": 1536.1934580141678,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "5e1b6c09e225753f67707d1a0b6ecf20e18ac3b9be00704f119c4f363d2f1e5d"
+        }
+      ],
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "provider_schema_valid": true,
+      "alias_resolution_and_assembly_valid": true,
+      "existing_format_structural_valid": true,
+      "mechanism_identity_accurate": null,
+      "broad_domain_accurate": null,
+      "core_predicate_reuse_precision": null,
+      "core_predicate_reuse_recall": null,
+      "behavioral_clause_equivalent": null,
+      "confusable_negative_coverage": null,
+      "new_mode_correct": true,
+      "control_non_promotable": null,
+      "declarative_compile_valid": true,
+      "patch_bundle_complete": true,
+      "shadow_plan_complete": true,
+      "comparison_sha256": "d0b332c86225fdc735324d525b4a43b0cf24614399a07bd3462d291e633d6e7a"
+    },
+    {
+      "task_id": "rt-112",
+      "runs": [
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-112",
+          "arm": "V23_TEMPLATE_REGISTRATION_SEED",
+          "baseline_seed": {
+            "schema_version": "dta-v23.registration-draft.v1",
+            "proposed_mechanism_slug": "candidate-pattern-112",
+            "broad_fault_domain": "CONCURRENCY",
+            "human_definition": "Backlog pressure delays bounded workers while target errors rise. Human review note: SIMULATED HUMAN REVIEW for fixed registration assistance.",
+            "candidate_generic_anomalies": [
+              "LOG_UNKNOWN_ERROR_PATTERN",
+              "METRIC_ERROR_OUTLIER"
+            ],
+            "candidate_evidence_sources": [
+              "LOGS",
+              "METRICS"
+            ],
+            "candidate_support_clause_description": "Require corroborating generic anomalies from the listed evidence sources; the exact formal predicate clause remains a later human-led decision.",
+            "distinguishing_negative_examples": [
+              "known-control-a"
+            ],
+            "positive_case_ids": [
+              "dta-v234-rt-112"
+            ],
+            "required_replay_tests": [
+              "negative-confusable-control",
+              "positive-replay-with-valid-evidence-refs"
+            ],
+            "suggested_formal_files": [
+              "src/ecomsre/dta_v2/v22/predicates.py",
+              "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+            ],
+            "remediation_registration": "NOT_INCLUDED",
+            "draft_sha256": "7f978f5f7247621b40b56a11ceac4c943d345958e56f6bf64905a5dbc4a34161"
+          },
+          "formal_draft": null,
+          "typed_disposition": null,
+          "validation_context": null,
+          "validation_status": null,
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "58a95617e4b8edc4e26f2332c0036ae7ae9f20bdb286b130f87caebe9b1c72a5"
+        },
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-112",
+          "arm": "V2341_ALIAS_FORMAL_REGISTRATION",
+          "baseline_seed": null,
+          "formal_draft": {
+            "schema_version": "dta-v234.formal-fault-registration-draft.v1",
+            "draft_id": "draft-v234-9a10b07bee419775",
+            "authorization_id": "authorization-v234-99e7444bff537b61",
+            "shadow_fault_id": "shadow-v23-bf0265f685aa2917",
+            "registration_seed_sha256": "0326b233a119998e4dd9f3e3be120f68fc17d9aec8202fc19382b0ef4a5122f3",
+            "core_ontology_snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa",
+            "implementation_mode": "DECLARATIVE_READY",
+            "mechanism": {
+              "mechanism_enum_name": "CANDIDATE_PATTERN_112",
+              "mechanism_slug": "candidate-pattern-112",
+              "display_name": "Candidate Pattern 112",
+              "broad_fault_domain": "CONCURRENCY",
+              "human_definition": "The candidate pattern 112 mechanism is defined by bounded evidence predicates and canonical support clauses.",
+              "distinguishing_summary": "The candidate pattern 112 mechanism is distinguished by its canonical clauses and evidence bindings.",
+              "confusable_core_mechanisms": [
+                "DEPENDENCY_LATENCY"
+              ],
+              "confusable_extension_mechanisms": []
+            },
+            "predicates": [
+              {
+                "predicate_name": "LOG_UNKNOWN_ERROR_PATTERN_SIGNAL",
+                "predicate_slug": "log-unknown-error-pattern-signal",
+                "implementation_mode": "DECLARATIVE_EXTENSION_PREDICATE",
+                "evidence_source": "LOGS",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The log unknown error pattern signal predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "GENERIC_ANOMALY_KIND",
+                  "anomaly_kind": "LOG_UNKNOWN_ERROR_PATTERN"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:logs:svc-1dc3d6375c:0:f19f1f8d7a95"
+                ],
+                "positive_examples": [
+                  "The log unknown error pattern signal predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The log unknown error pattern signal predicate is absent from accepted evidence."
+                ]
+              },
+              {
+                "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                "predicate_slug": "metric-error-rate-strong",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "METRICS",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The metric error rate strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "METRIC_ERROR_RATE_STRONG"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:metrics:svc-1dc3d6375c:core:0:7228865163c5"
+                ],
+                "positive_examples": [
+                  "The metric error rate strong predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The metric error rate strong predicate is absent from accepted evidence."
+                ]
+              }
+            ],
+            "support_clauses": [
+              {
+                "clause_id": "candidate-pattern-112:clause-01",
+                "mechanism_slug": "candidate-pattern-112",
+                "requirements": [
+                  {
+                    "predicate_name": "LOG_UNKNOWN_ERROR_PATTERN_SIGNAL",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  },
+                  {
+                    "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  }
+                ],
+                "rationale": "The clause requires its canonical predicates at their declared service bindings."
+              }
+            ],
+            "test_plan": {
+              "positive_report_ids": [
+                "report-v23-0598061a379d99fe"
+              ],
+              "positive_case_ids": [
+                "dta-v234-rt-112"
+              ],
+              "confusable_core_mechanisms": [
+                "DEPENDENCY_LATENCY"
+              ],
+              "required_known_controls": [
+                "known-dependency-latency-control"
+              ],
+              "required_no_incident_controls": [
+                "no-incident-concurrency-control"
+              ],
+              "required_counterfactuals": [
+                "clause-01-target-counterfactual"
+              ],
+              "required_source_failure_tests": [
+                "logs-unavailable-fails-closed",
+                "metrics-unavailable-fails-closed"
+              ],
+              "required_clause_binding_tests": [
+                "clause-01-binding-control"
+              ]
+            },
+            "unresolved_engineering_questions": [],
+            "remediation_registration": "NOT_INCLUDED",
+            "provider_trace": {
+              "schema_version": "dta-v2341.registration-alias-provider-trace.v1",
+              "provider_mode": "OPENAI_COMPATIBLE",
+              "request_sha256": "2b147a756167d3a3e75820911a45e58114cb2086fdc6b5f40a5c7a7182b559f0",
+              "raw_response_sha256": "51e97fa1ad6257410e8799d00bc973458dbbe224d330911cc2db2ca41f16ed5d",
+              "canonical_selection_sha256": "aa6acb022a694cb0cc0c788dc54263e507e50e22e6f5b026c09270c2c7d629c4",
+              "assembled_content_sha256": "aad3f32bf9e463c0804d09158f982206143e6d295dd69127bdfb78805eea5627",
+              "provider_calls": 1,
+              "protocol_repairs": 0,
+              "transport_retries": 0,
+              "max_exact_request_retries": 3,
+              "semantic_retries": 0,
+              "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw",
+              "trace_sha256": "f55e60afd5d4627c6dd6036c092707b498f518c7c324a8539ff536d49906ebbb"
+            },
+            "action_authority": "NONE",
+            "repository_write_authority": "NONE",
+            "draft_sha256": "1186f014804ccd78d1b93a90c2f7cfbdc48fb0477f1eb58a396b59eb19e256a1"
+          },
+          "typed_disposition": "DECLARATIVE_READY",
+          "validation_context": "PRODUCTION_REGISTRATION",
+          "validation_status": "VALID",
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": true,
+          "collision_evidence_codes": [],
+          "catalog_sha256": "392bdd6eda574124448eabdf3c79b5f0ddc0786223edc07bbb2cfa8d02e82eff",
+          "alias_selection_sha256": "aa6acb022a694cb0cc0c788dc54263e507e50e22e6f5b026c09270c2c7d629c4",
+          "assembly_sha256": "c32c221f244c3e5371267885d19fc90f2471180fb002a11cdce391670ca07bbe",
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": true,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": "feefd8aef65cddc11737f27c99dff678df04f98c47a1674655df8e15ad1d20a3",
+          "patch_bundle_sha256": "f18fcaeb3ef4dd52155a956764b8a6cc4f721d6b485f6472c9ed0b30e97d6499",
+          "patch_bundle_file_count": 7,
+          "provider_calls": 1,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 1026,
+          "output_tokens": 72,
+          "total_tokens": 1098,
+          "latency_ms": 1556.5625000162981,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "6f6ada21371bdeae5e1aabea3a826707810067ee743efb56a43c119ad66b0b50"
+        }
+      ],
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "provider_schema_valid": true,
+      "alias_resolution_and_assembly_valid": true,
+      "existing_format_structural_valid": true,
+      "mechanism_identity_accurate": null,
+      "broad_domain_accurate": null,
+      "core_predicate_reuse_precision": null,
+      "core_predicate_reuse_recall": null,
+      "behavioral_clause_equivalent": null,
+      "confusable_negative_coverage": null,
+      "new_mode_correct": true,
+      "control_non_promotable": null,
+      "declarative_compile_valid": true,
+      "patch_bundle_complete": true,
+      "shadow_plan_complete": true,
+      "comparison_sha256": "012181aaca15d5584d83d5988f762941e88e809f0eb039207e6c3fe97f9e7164"
+    },
+    {
+      "task_id": "rt-113",
+      "runs": [
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-113",
+          "arm": "V23_TEMPLATE_REGISTRATION_SEED",
+          "baseline_seed": {
+            "schema_version": "dta-v23.registration-draft.v1",
+            "proposed_mechanism_slug": "candidate-pattern-113",
+            "broad_fault_domain": "EXTERNAL",
+            "human_definition": "External throttle responses coincide with strong target error evidence. Human review note: SIMULATED HUMAN REVIEW for fixed registration assistance.",
+            "candidate_generic_anomalies": [
+              "LOG_UNKNOWN_ERROR_PATTERN",
+              "METRIC_ERROR_OUTLIER"
+            ],
+            "candidate_evidence_sources": [
+              "LOGS",
+              "METRICS"
+            ],
+            "candidate_support_clause_description": "Require corroborating generic anomalies from the listed evidence sources; the exact formal predicate clause remains a later human-led decision.",
+            "distinguishing_negative_examples": [
+              "known-control-a"
+            ],
+            "positive_case_ids": [
+              "dta-v234-rt-113"
+            ],
+            "required_replay_tests": [
+              "negative-confusable-control",
+              "positive-replay-with-valid-evidence-refs"
+            ],
+            "suggested_formal_files": [
+              "src/ecomsre/dta_v2/v22/predicates.py",
+              "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+            ],
+            "remediation_registration": "NOT_INCLUDED",
+            "draft_sha256": "6407aa4a786f7c1ac97b6bb2b001a983fe7d2bcaf200d99149e80c8fdc617800"
+          },
+          "formal_draft": null,
+          "typed_disposition": null,
+          "validation_context": null,
+          "validation_status": null,
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "8b22fac983fe17c8cb989f4e7fe02ccc2813588e17d57a93e5dd39ca419755d3"
+        },
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-113",
+          "arm": "V2341_ALIAS_FORMAL_REGISTRATION",
+          "baseline_seed": null,
+          "formal_draft": {
+            "schema_version": "dta-v234.formal-fault-registration-draft.v1",
+            "draft_id": "draft-v234-467c7ebc2a461efc",
+            "authorization_id": "authorization-v234-881e0ddc55e57395",
+            "shadow_fault_id": "shadow-v23-90bfcd03ae989c70",
+            "registration_seed_sha256": "b9c976e08c8eff74d8c0d9c9c0b5bb7cf6ea35bf2ae74ac13e41cdd32c2e16f5",
+            "core_ontology_snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa",
+            "implementation_mode": "DECLARATIVE_READY",
+            "mechanism": {
+              "mechanism_enum_name": "CANDIDATE_PATTERN_113",
+              "mechanism_slug": "candidate-pattern-113",
+              "display_name": "Candidate Pattern 113",
+              "broad_fault_domain": "EXTERNAL",
+              "human_definition": "The candidate pattern 113 mechanism is defined by bounded evidence predicates and canonical support clauses.",
+              "distinguishing_summary": "The candidate pattern 113 mechanism is distinguished by its canonical clauses and evidence bindings.",
+              "confusable_core_mechanisms": [
+                "DEPENDENCY_LATENCY"
+              ],
+              "confusable_extension_mechanisms": []
+            },
+            "predicates": [
+              {
+                "predicate_name": "LOG_UNKNOWN_ERROR_PATTERN_SIGNAL",
+                "predicate_slug": "log-unknown-error-pattern-signal",
+                "implementation_mode": "DECLARATIVE_EXTENSION_PREDICATE",
+                "evidence_source": "LOGS",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The log unknown error pattern signal predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "GENERIC_ANOMALY_KIND",
+                  "anomaly_kind": "LOG_UNKNOWN_ERROR_PATTERN"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:logs:svc-9470751930:0:32318e59e7b4"
+                ],
+                "positive_examples": [
+                  "The log unknown error pattern signal predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The log unknown error pattern signal predicate is absent from accepted evidence."
+                ]
+              },
+              {
+                "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                "predicate_slug": "metric-error-rate-strong",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "METRICS",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The metric error rate strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "METRIC_ERROR_RATE_STRONG"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:metrics:svc-9470751930:core:0:a85110456c7e"
+                ],
+                "positive_examples": [
+                  "The metric error rate strong predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The metric error rate strong predicate is absent from accepted evidence."
+                ]
+              }
+            ],
+            "support_clauses": [
+              {
+                "clause_id": "candidate-pattern-113:clause-01",
+                "mechanism_slug": "candidate-pattern-113",
+                "requirements": [
+                  {
+                    "predicate_name": "LOG_UNKNOWN_ERROR_PATTERN_SIGNAL",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  },
+                  {
+                    "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  }
+                ],
+                "rationale": "The clause requires its canonical predicates at their declared service bindings."
+              }
+            ],
+            "test_plan": {
+              "positive_report_ids": [
+                "report-v23-e08b30cac2186070"
+              ],
+              "positive_case_ids": [
+                "dta-v234-rt-113"
+              ],
+              "confusable_core_mechanisms": [
+                "DEPENDENCY_LATENCY"
+              ],
+              "required_known_controls": [
+                "known-dependency-latency-control"
+              ],
+              "required_no_incident_controls": [
+                "no-incident-external-control"
+              ],
+              "required_counterfactuals": [
+                "clause-01-target-counterfactual"
+              ],
+              "required_source_failure_tests": [
+                "logs-unavailable-fails-closed",
+                "metrics-unavailable-fails-closed"
+              ],
+              "required_clause_binding_tests": [
+                "clause-01-binding-control"
+              ]
+            },
+            "unresolved_engineering_questions": [],
+            "remediation_registration": "NOT_INCLUDED",
+            "provider_trace": {
+              "schema_version": "dta-v2341.registration-alias-provider-trace.v1",
+              "provider_mode": "OPENAI_COMPATIBLE",
+              "request_sha256": "1d17ce141f4b8e7481f16157c915e00784398b6d033e38327f36584c40cce6e1",
+              "raw_response_sha256": "51e97fa1ad6257410e8799d00bc973458dbbe224d330911cc2db2ca41f16ed5d",
+              "canonical_selection_sha256": "aa6acb022a694cb0cc0c788dc54263e507e50e22e6f5b026c09270c2c7d629c4",
+              "assembled_content_sha256": "f5328af1ade86b19244c5ae595df6d6febc431f49108f3ab55110995bc7b2ed2",
+              "provider_calls": 1,
+              "protocol_repairs": 0,
+              "transport_retries": 0,
+              "max_exact_request_retries": 3,
+              "semantic_retries": 0,
+              "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw",
+              "trace_sha256": "0a4509986aaf4bbf0d8203fd9e5a50c7ee0d3299c9872c8af243ca66a84df187"
+            },
+            "action_authority": "NONE",
+            "repository_write_authority": "NONE",
+            "draft_sha256": "2098dfe8d4a7f079972787ddabff206854f99c2a6d0b9178c70b5d4724927dfe"
+          },
+          "typed_disposition": "DECLARATIVE_READY",
+          "validation_context": "PRODUCTION_REGISTRATION",
+          "validation_status": "VALID",
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": true,
+          "collision_evidence_codes": [],
+          "catalog_sha256": "c2e46b0da537c3b28699cae651baaf17551fd3260688edbe15bd4caaf3922e20",
+          "alias_selection_sha256": "aa6acb022a694cb0cc0c788dc54263e507e50e22e6f5b026c09270c2c7d629c4",
+          "assembly_sha256": "1e69f4c42189541efd4904fd342e2ea617e96404fe5708bec7a8add47082ae2c",
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": true,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": "1ecba83d54e6385eb5bce3f9ba1fbac823c59b23aae4240ad192d42ddb6e3fac",
+          "patch_bundle_sha256": "1e4999a9e3332e68b2fb84ce6acca5eeaf77994cf3ee61a397fa28cd9adbc971",
+          "patch_bundle_file_count": 7,
+          "provider_calls": 1,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 1023,
+          "output_tokens": 72,
+          "total_tokens": 1095,
+          "latency_ms": 2284.9655839963816,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "f8e6a0b9751a6b030dea460069e677bb4185404827dbac9eb930fcc727c02f99"
+        }
+      ],
+      "expected_implementation_mode": "DECLARATIVE_READY",
+      "provider_schema_valid": true,
+      "alias_resolution_and_assembly_valid": true,
+      "existing_format_structural_valid": true,
+      "mechanism_identity_accurate": null,
+      "broad_domain_accurate": null,
+      "core_predicate_reuse_precision": null,
+      "core_predicate_reuse_recall": null,
+      "behavioral_clause_equivalent": null,
+      "confusable_negative_coverage": null,
+      "new_mode_correct": true,
+      "control_non_promotable": null,
+      "declarative_compile_valid": true,
+      "patch_bundle_complete": true,
+      "shadow_plan_complete": true,
+      "comparison_sha256": "1c768d6ea116a0951ed7636208c73458b96180c52bfa84b7970ed8568a0148f6"
+    },
+    {
+      "task_id": "rt-114",
+      "runs": [
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-114",
+          "arm": "V23_TEMPLATE_REGISTRATION_SEED",
+          "baseline_seed": {
+            "schema_version": "dta-v23.registration-draft.v1",
+            "proposed_mechanism_slug": "candidate-pattern-114",
+            "broad_fault_domain": "NETWORK",
+            "human_definition": "Ordering-sensitive transport resets require correlation beyond bounded declarative rules. Human review note: SIMULATED HUMAN REVIEW for fixed registration assistance.",
+            "candidate_generic_anomalies": [
+              "LOG_UNKNOWN_ERROR_PATTERN",
+              "METRIC_ERROR_OUTLIER"
+            ],
+            "candidate_evidence_sources": [
+              "LOGS",
+              "METRICS"
+            ],
+            "candidate_support_clause_description": "Require corroborating generic anomalies from the listed evidence sources; the exact formal predicate clause remains a later human-led decision.",
+            "distinguishing_negative_examples": [
+              "known-control-a"
+            ],
+            "positive_case_ids": [
+              "dta-v234-rt-114"
+            ],
+            "required_replay_tests": [
+              "negative-confusable-control",
+              "positive-replay-with-valid-evidence-refs"
+            ],
+            "suggested_formal_files": [
+              "src/ecomsre/dta_v2/v22/predicates.py",
+              "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+            ],
+            "remediation_registration": "NOT_INCLUDED",
+            "draft_sha256": "6b6245c55a9078bdb036f493abbf9d5548f197faf8137f59ba75f766fbe2b475"
+          },
+          "formal_draft": null,
+          "typed_disposition": null,
+          "validation_context": null,
+          "validation_status": null,
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "ce8d58aec9eb273631dae8bfde8d210f417cb8637d8198151ceaa9afb7ed9897"
+        },
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-114",
+          "arm": "V2341_ALIAS_FORMAL_REGISTRATION",
+          "baseline_seed": null,
+          "formal_draft": {
+            "schema_version": "dta-v234.formal-fault-registration-draft.v1",
+            "draft_id": "draft-v234-e030e78cf4024174",
+            "authorization_id": "authorization-v234-b2553c8cc74c9274",
+            "shadow_fault_id": "shadow-v23-906dcea951126b56",
+            "registration_seed_sha256": "5d3af60a0d6532f782c635ab18b825aba0253dc778378c5e82b56922669ef25d",
+            "core_ontology_snapshot_sha256": "9760a03b7febfc911d6e9c28eea5281633dab9f1f1742c3933b484180e41beaa",
+            "implementation_mode": "DECLARATIVE_READY",
+            "mechanism": {
+              "mechanism_enum_name": "CANDIDATE_PATTERN_114",
+              "mechanism_slug": "candidate-pattern-114",
+              "display_name": "Candidate Pattern 114",
+              "broad_fault_domain": "NETWORK",
+              "human_definition": "The candidate pattern 114 mechanism is defined by bounded evidence predicates and canonical support clauses.",
+              "distinguishing_summary": "The candidate pattern 114 mechanism is distinguished by its canonical clauses and evidence bindings.",
+              "confusable_core_mechanisms": [
+                "SERVICE_UNAVAILABLE"
+              ],
+              "confusable_extension_mechanisms": []
+            },
+            "predicates": [
+              {
+                "predicate_name": "LOG_UNKNOWN_ERROR_PATTERN_SIGNAL",
+                "predicate_slug": "log-unknown-error-pattern-signal",
+                "implementation_mode": "DECLARATIVE_EXTENSION_PREDICATE",
+                "evidence_source": "LOGS",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The log unknown error pattern signal predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "GENERIC_ANOMALY_KIND",
+                  "anomaly_kind": "LOG_UNKNOWN_ERROR_PATTERN"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:logs:svc-4c39ea767b:0:f617d2873e4a"
+                ],
+                "positive_examples": [
+                  "The log unknown error pattern signal predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The log unknown error pattern signal predicate is absent from accepted evidence."
+                ]
+              },
+              {
+                "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                "predicate_slug": "metric-error-rate-strong",
+                "implementation_mode": "REUSE_CORE_PREDICATE",
+                "evidence_source": "METRICS",
+                "service_binding": "TARGET",
+                "require_exact_parent": false,
+                "semantic_definition": "The metric error rate strong predicate is defined by its typed extraction rule and accepted evidence binding.",
+                "extraction_rule": {
+                  "kind": "CORE_PREDICATE_REFERENCE",
+                  "predicate_kind": "METRIC_ERROR_RATE_STRONG"
+                },
+                "threshold_rule": null,
+                "supporting_report_evidence_refs": [
+                  "e:a:metrics:svc-4c39ea767b:core:0:76ab8671bd80"
+                ],
+                "positive_examples": [
+                  "The metric error rate strong predicate is present in accepted evidence."
+                ],
+                "negative_examples": [
+                  "The metric error rate strong predicate is absent from accepted evidence."
+                ]
+              }
+            ],
+            "support_clauses": [
+              {
+                "clause_id": "candidate-pattern-114:clause-01",
+                "mechanism_slug": "candidate-pattern-114",
+                "requirements": [
+                  {
+                    "predicate_name": "LOG_UNKNOWN_ERROR_PATTERN_SIGNAL",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  },
+                  {
+                    "predicate_name": "METRIC_ERROR_RATE_STRONG",
+                    "service_binding": "TARGET",
+                    "require_exact_parent": false
+                  }
+                ],
+                "rationale": "The clause requires its canonical predicates at their declared service bindings."
+              }
+            ],
+            "test_plan": {
+              "positive_report_ids": [
+                "report-v23-17d9ec20ced7a8d5"
+              ],
+              "positive_case_ids": [
+                "dta-v234-rt-114"
+              ],
+              "confusable_core_mechanisms": [
+                "SERVICE_UNAVAILABLE"
+              ],
+              "required_known_controls": [
+                "known-service-unavailable-control"
+              ],
+              "required_no_incident_controls": [
+                "no-incident-network-control"
+              ],
+              "required_counterfactuals": [
+                "clause-01-target-counterfactual"
+              ],
+              "required_source_failure_tests": [
+                "logs-unavailable-fails-closed",
+                "metrics-unavailable-fails-closed"
+              ],
+              "required_clause_binding_tests": [
+                "clause-01-binding-control"
+              ]
+            },
+            "unresolved_engineering_questions": [],
+            "remediation_registration": "NOT_INCLUDED",
+            "provider_trace": {
+              "schema_version": "dta-v2341.registration-alias-provider-trace.v1",
+              "provider_mode": "OPENAI_COMPATIBLE",
+              "request_sha256": "2fdcb088bfde23372bd54f311650676887f9ff6b9aa4695db0dc9df7a83b1f71",
+              "raw_response_sha256": "8c959fb56cae56f34564648ffc3af03bf494c504fd00d625cc4ddb95cbf8d23a",
+              "canonical_selection_sha256": "ff326daa80c3be13b5c43b95ffab41a9d2aebb394496c6984df2f34d488adfed",
+              "assembled_content_sha256": "ebcc588ad3ec91780d468eaa99fdc3dd117801e03094ca4a12c0456e91928da7",
+              "provider_calls": 1,
+              "protocol_repairs": 0,
+              "transport_retries": 0,
+              "max_exact_request_retries": 3,
+              "semantic_retries": 0,
+              "raw_provider_artifacts_scope": ".local/dta-v2341/provider-raw",
+              "trace_sha256": "bd1251ece7d92176293bdc878757e0190eee1e63e9b98a26f7df7c4efd1dd1e2"
+            },
+            "action_authority": "NONE",
+            "repository_write_authority": "NONE",
+            "draft_sha256": "84884548076a87b4f7b46806f137f7d1bb71b5a1f01068c8f0d118caddd54970"
+          },
+          "typed_disposition": "DECLARATIVE_READY",
+          "validation_context": "PRODUCTION_REGISTRATION",
+          "validation_status": "VALID",
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": true,
+          "collision_evidence_codes": [],
+          "catalog_sha256": "de2ad974bc8a200279a4133dcc0e449931489636996ce3898fa2ffdc14a7ce99",
+          "alias_selection_sha256": "ff326daa80c3be13b5c43b95ffab41a9d2aebb394496c6984df2f34d488adfed",
+          "assembly_sha256": "36343e2a6d2bcca315cff045fb6b9fb01a08439be26f4dabf348cad671b18050",
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": true,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": "b95cb391cbd6aed63b22646a169ae5f415a7755ee7d8673de871c82bb0d39b88",
+          "patch_bundle_sha256": "00aefe97a92b87533d1ad6aadd32bb41850e6ab3dd046358d058c16d537eaa9a",
+          "patch_bundle_file_count": 7,
+          "provider_calls": 1,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 1108,
+          "output_tokens": 67,
+          "total_tokens": 1175,
+          "latency_ms": 1627.5684169959277,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "d6de5e02ee3c7913cdda836dc59a7725c84797dfcdd6585e33a91d995a106101"
+        }
+      ],
+      "expected_implementation_mode": "ENGINEERING_REQUIRED",
+      "provider_schema_valid": true,
+      "alias_resolution_and_assembly_valid": true,
+      "existing_format_structural_valid": true,
+      "mechanism_identity_accurate": null,
+      "broad_domain_accurate": null,
+      "core_predicate_reuse_precision": null,
+      "core_predicate_reuse_recall": null,
+      "behavioral_clause_equivalent": null,
+      "confusable_negative_coverage": null,
+      "new_mode_correct": false,
+      "control_non_promotable": null,
+      "declarative_compile_valid": false,
+      "patch_bundle_complete": false,
+      "shadow_plan_complete": true,
+      "comparison_sha256": "8d434363933eb8b9f88b0b01d506fa73e7640c23d585c07f769cb67f3b5943c6"
+    },
+    {
+      "task_id": "rt-115",
+      "runs": [
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-115",
+          "arm": "V23_TEMPLATE_REGISTRATION_SEED",
+          "baseline_seed": {
+            "schema_version": "dta-v23.registration-draft.v1",
+            "proposed_mechanism_slug": "visible-active-pattern",
+            "broad_fault_domain": "CONFIGURATION",
+            "human_definition": "Visible evidence already satisfies an active Runtime registration.",
+            "candidate_generic_anomalies": [],
+            "candidate_evidence_sources": [],
+            "candidate_support_clause_description": "Require corroborating generic anomalies before any formal registration.",
+            "distinguishing_negative_examples": [
+              "known-control-a"
+            ],
+            "positive_case_ids": [
+              "dta-v234-rt-115"
+            ],
+            "required_replay_tests": [
+              "negative-confusable-control"
+            ],
+            "suggested_formal_files": [
+              "src/ecomsre/dta_v2/v22/predicates.py",
+              "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+            ],
+            "remediation_registration": "NOT_INCLUDED",
+            "draft_sha256": "29c197c2e7d067e37b8e3e6e98f472c0c265adc84be0cd3f5cca501d4a16a737"
+          },
+          "formal_draft": null,
+          "typed_disposition": null,
+          "validation_context": null,
+          "validation_status": null,
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "69fd3cb546950843a5b360376b1a244ae7a87c6bac2eb244bdc0177a043af29b"
+        },
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-115",
+          "arm": "V2341_ALIAS_FORMAL_REGISTRATION",
+          "baseline_seed": null,
+          "formal_draft": null,
+          "typed_disposition": "DUPLICATE_EXISTING",
+          "validation_context": "PRODUCTION_REGISTRATION",
+          "validation_status": "NON_REGISTRABLE",
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "c18e1459db67afd4f5f289c6624d44edc0a6354bc5ae22cac07679a3642d9a62"
+        }
+      ],
+      "expected_implementation_mode": "DUPLICATE_EXISTING",
+      "provider_schema_valid": true,
+      "alias_resolution_and_assembly_valid": true,
+      "existing_format_structural_valid": true,
+      "mechanism_identity_accurate": null,
+      "broad_domain_accurate": null,
+      "core_predicate_reuse_precision": null,
+      "core_predicate_reuse_recall": null,
+      "behavioral_clause_equivalent": null,
+      "confusable_negative_coverage": null,
+      "new_mode_correct": null,
+      "control_non_promotable": true,
+      "declarative_compile_valid": null,
+      "patch_bundle_complete": null,
+      "shadow_plan_complete": null,
+      "comparison_sha256": "0f7723eeb286fd8b0391c31728f4fa2b2fa658cb7bad6596c68e2ff6812e02e7"
+    },
+    {
+      "task_id": "rt-116",
+      "runs": [
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-116",
+          "arm": "V23_TEMPLATE_REGISTRATION_SEED",
+          "baseline_seed": {
+            "schema_version": "dta-v23.registration-draft.v1",
+            "proposed_mechanism_slug": "weak-observation-pattern",
+            "broad_fault_domain": "UNKNOWN",
+            "human_definition": "The available observation does not establish a formal incident mechanism.",
+            "candidate_generic_anomalies": [],
+            "candidate_evidence_sources": [],
+            "candidate_support_clause_description": "Require corroborating generic anomalies before any formal registration.",
+            "distinguishing_negative_examples": [
+              "known-control-a"
+            ],
+            "positive_case_ids": [
+              "dta-v234-rt-116"
+            ],
+            "required_replay_tests": [
+              "negative-confusable-control"
+            ],
+            "suggested_formal_files": [
+              "src/ecomsre/dta_v2/v22/predicates.py",
+              "tests/dta_v22/test_v22_memory_predicates_diagnosis.py"
+            ],
+            "remediation_registration": "NOT_INCLUDED",
+            "draft_sha256": "78f87432957305b168bf1460243b9fbcd46906f273d3cce80376dcf2d7c0d09e"
+          },
+          "formal_draft": null,
+          "typed_disposition": null,
+          "validation_context": null,
+          "validation_status": null,
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "bd50d7cf9772e6c4b7cf9b6ad3cc06b44150eff89407a1b4f7672f24d80791d5"
+        },
+        {
+          "schema_version": "dta-v2341.registration-arm-run.v1",
+          "task_id": "rt-116",
+          "arm": "V2341_ALIAS_FORMAL_REGISTRATION",
+          "baseline_seed": null,
+          "formal_draft": null,
+          "typed_disposition": "INSUFFICIENT_EVIDENCE",
+          "validation_context": "PRODUCTION_REGISTRATION",
+          "validation_status": "NON_REGISTRABLE",
+          "validation_error_codes": [],
+          "context_pass": true,
+          "promotion_eligible": false,
+          "collision_evidence_codes": [],
+          "catalog_sha256": null,
+          "alias_selection_sha256": null,
+          "assembly_sha256": null,
+          "provider_schema_valid": true,
+          "aliases_resolved": true,
+          "draft_assembled": false,
+          "canonical_order_failures": 0,
+          "compiled_registration_sha256": null,
+          "patch_bundle_sha256": null,
+          "patch_bundle_file_count": 0,
+          "provider_calls": 0,
+          "protocol_repairs": 0,
+          "transport_retries": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "total_tokens": 0,
+          "latency_ms": 0.0,
+          "provider_error_code": null,
+          "simulation": true,
+          "action_authority_violations": 0,
+          "agent_writes": 0,
+          "runbook_executions": 0,
+          "remediation_registrations": 0,
+          "run_sha256": "b724e20896fb7f950db32a5e2734c064c7d23ee8ec92cc50e800bfbc4f43cb90"
+        }
+      ],
+      "expected_implementation_mode": "INSUFFICIENT_EVIDENCE",
+      "provider_schema_valid": true,
+      "alias_resolution_and_assembly_valid": true,
+      "existing_format_structural_valid": true,
+      "mechanism_identity_accurate": null,
+      "broad_domain_accurate": null,
+      "core_predicate_reuse_precision": null,
+      "core_predicate_reuse_recall": null,
+      "behavioral_clause_equivalent": null,
+      "confusable_negative_coverage": null,
+      "new_mode_correct": null,
+      "control_non_promotable": true,
+      "declarative_compile_valid": null,
+      "patch_bundle_complete": null,
+      "shadow_plan_complete": null,
+      "comparison_sha256": "653bbb6fd074a8a0b586d0f325b279b4c88e421ea992c4513ff557192ecc9030"
+    }
+  ],
+  "metrics": {
+    "treatment_provider_schema_validity": 1.0,
+    "treatment_alias_resolution_and_assembly_validity": 1.0,
+    "first_pass_parse_rate": 1.0,
+    "post_repair_parse_rate": 1.0,
+    "unknown_alias_count": 0,
+    "catalog_coverage_failures": 0,
+    "canonical_order_failures": 0,
+    "existing_format_structural_validity": 1.0,
+    "hidden_known_mechanism_identity_accuracy": 0.0,
+    "hidden_known_broad_domain_accuracy": 1.0,
+    "core_predicate_reuse_precision": 0.9,
+    "core_predicate_reuse_recall": 0.6,
+    "hidden_known_behavioral_clause_equivalence": 0.4,
+    "confusable_negative_coverage": 0.0,
+    "correct_new_implementation_mode_count": 3,
+    "declarative_ready_new_count": 4,
+    "honest_engineering_required_count": 0,
+    "duplicate_noise_non_promotable_count": 2,
+    "duplicate_noise_false_promotion_count": 0,
+    "declarative_compiler_validity": 0.75,
+    "patch_bundle_completeness": 0.75,
+    "shadow_evaluation_plan_completeness": 1.0,
+    "evidence_ref_validity": 1.0,
+    "core_known_regression": 0,
+    "no_incident_regression": 0,
+    "extension_overlap": 0,
+    "remediation_registration_violations": 0,
+    "action_authority_violations": 0,
+    "provider_failures": 0,
+    "provider_calls": 14,
+    "protocol_repairs": 0,
+    "transport_retries": 0,
+    "input_tokens": 14358,
+    "output_tokens": 953,
+    "total_tokens": 15311,
+    "latency_ms": 24881.11345906509
+  },
+  "measured_result_terminal": "DTA_V2341_REGISTRATION_ASSISTANCE_NOT_OBSERVED",
+  "truth_load_count": 16,
+  "manifest_sha256": "cb4e0abc8ff2807f49c74cfaeb185e5c1d773ba903ac970069df8d6847d1ec33",
+  "provider_smoke_sha256": "387da2b62bba3b559fe4439814052e4bbd8cda0ed028d0c08b6797b887ae5c07",
+  "independent_review_sha256": "37981d14a0cb6b696414980c8bee4048d92104aba0c943660301e80fd842ed2c",
+  "runtime_exceptions": 0,
+  "action_authority_violations": 0,
+  "agent_writes": 0,
+  "runbook_executions": 0,
+  "remediation_registrations": 0,
+  "docker_calls": 0,
+  "new_live_faults": 0,
+  "artifact_sha256": "ac68ac416485b7bda60989df5f83fbdc83ada579908043670d94e40b160badc2"
+}

@@ -8,7 +8,8 @@
   "completed_increments": [
     "PREDECESSOR_HISTORY_BINDING_AND_RUNTIME_REGISTRATION_OPTION_CATALOG",
     "SIX_FIELD_ALIAS_PROVIDER_AND_DETERMINISTIC_FINAL_DRAFT_ASSEMBLER",
-    "FRESH_SMOKE_ONLY_PROVIDER_CAMPAIGN"
+    "FRESH_SMOKE_ONLY_PROVIDER_CAMPAIGN",
+    "FRESH_FIXED_REGISTRATION_ASSISTANCE_STUDY"
   ],
   "increment_1": {
     "status": "COMPLETE",
@@ -47,7 +48,7 @@
     "canonical_order_failures": 0
   },
   "increment_4": {
-    "status": "PRE_EXECUTION_REVIEW_COMPLETE",
+    "status": "MEASURED_RESULT_FROZEN_PENDING_REPOSITORY_ACCEPTANCE",
     "evaluation_data_terminal": "DTA_V2341_EVALUATION_DATA_PASS",
     "evaluation_data_admission_sha256": "35e165750c0754d2cf6a3cfb0fd0a92875bb1bc17db257cedcb1985ee6684818",
     "runtime_preflight_terminal": "DTA_V2341_RUNTIME_PREFLIGHT_PASS",
@@ -55,7 +56,24 @@
     "pre_execution_review_must_fix": 0,
     "pre_execution_review_claim_accuracy": "PASS",
     "evaluation_manifest_sha256": "cb4e0abc8ff2807f49c74cfaeb185e5c1d773ba903ac970069df8d6847d1ec33",
-    "fixed_evaluation_execution_count": 0
+    "fixed_evaluation_execution_count": 1,
+    "fixed_task_count": 16,
+    "fixed_run_count": 32,
+    "provider_calls": 14,
+    "provider_failures": 0,
+    "protocol_repairs": 0,
+    "transport_retries": 0,
+    "provider_schema_validity": 1.0,
+    "alias_resolution_and_assembly_validity": 1.0,
+    "existing_format_structural_validity": 1.0,
+    "hidden_known_mechanism_identity_accuracy": 0.0,
+    "hidden_known_behavioral_clause_equivalence": 0.4,
+    "correct_new_implementation_mode_count": 3,
+    "control_non_promotable_count": 2,
+    "artifact_sha256": "ac68ac416485b7bda60989df5f83fbdc83ada579908043670d94e40b160badc2",
+    "output_json_sha256": "389bbef5dcf91698e6da9633096defc02010563efcf355fe76b99fba01ba64d3",
+    "output_markdown_sha256": "0d9a2c1a48810ea9810119cdebfb5ff4a7f407a6af9dd0847b29a3990de6dcc9",
+    "measured_result_terminal": "DTA_V2341_REGISTRATION_ASSISTANCE_NOT_OBSERVED"
   },
   "action_authority_violations": 0,
   "agent_writes": 0,
@@ -63,6 +81,6 @@
   "remediation_registrations": 0,
   "docker_calls": 0,
   "new_live_faults": 0,
-  "measured_result_terminal": null,
+  "measured_result_terminal": "DTA_V2341_REGISTRATION_ASSISTANCE_NOT_OBSERVED",
   "engineering_terminal": null
 }
