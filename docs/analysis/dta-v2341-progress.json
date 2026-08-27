@@ -48,7 +48,7 @@
     "canonical_order_failures": 0
   },
   "increment_4": {
-    "status": "MEASURED_RESULT_FROZEN_PENDING_REPOSITORY_ACCEPTANCE",
+    "status": "FINAL_REVIEW_COMPLETE_PENDING_EXACT_HEAD_CI_AND_MERGE",
     "evaluation_data_terminal": "DTA_V2341_EVALUATION_DATA_PASS",
     "evaluation_data_admission_sha256": "35e165750c0754d2cf6a3cfb0fd0a92875bb1bc17db257cedcb1985ee6684818",
     "runtime_preflight_terminal": "DTA_V2341_RUNTIME_PREFLIGHT_PASS",
@@ -73,7 +73,18 @@
     "artifact_sha256": "ac68ac416485b7bda60989df5f83fbdc83ada579908043670d94e40b160badc2",
     "output_json_sha256": "389bbef5dcf91698e6da9633096defc02010563efcf355fe76b99fba01ba64d3",
     "output_markdown_sha256": "0d9a2c1a48810ea9810119cdebfb5ff4a7f407a6af9dd0847b29a3990de6dcc9",
-    "measured_result_terminal": "DTA_V2341_REGISTRATION_ASSISTANCE_NOT_OBSERVED"
+    "measured_result_terminal": "DTA_V2341_REGISTRATION_ASSISTANCE_NOT_OBSERVED",
+    "focused_tests": "20 passed",
+    "full_repository_tests": "5116 passed, 6 skipped",
+    "ruff": "PASS",
+    "mypy_v23": "PASS",
+    "ci_code_result_head": "7c84e4e8165c95d3a3f62565f5eee0133b553666",
+    "ci_agent_mainline_run": 33038728331,
+    "ci_agent_mainline": "PASS",
+    "ci_rcaeval_re2_v2_run": 33038728360,
+    "ci_rcaeval_re2_v2": "PASS",
+    "final_review_must_fix": 0,
+    "final_review_claim_accuracy": "PASS"
   },
   "action_authority_violations": 0,
   "agent_writes": 0,
