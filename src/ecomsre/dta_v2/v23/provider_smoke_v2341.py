@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from datetime import datetime, timedelta
 from enum import Enum
 import hashlib
 import json
 from pathlib import Path
+import re
 import tempfile
 from typing import Any, Literal, cast
 
@@ -36,6 +38,7 @@ from ecomsre.dta_v2.v23.ontology_expansion_v234 import (
     LocalOntologyExpansionStoreV234,
 )
 from ecomsre.dta_v2.v23.registration_alias_provider_v2341 import (
+    OpenAICompatibleRegistrationAliasTransportV2341,
     RegistrationAliasProviderV2341,
     build_registration_alias_provider_request_v2341,
     build_registration_alias_source_request_v2341,
@@ -227,8 +230,13 @@ class RegistrationSmokeManifestV2341(DtaModelV22):
     planned_task_count: Literal[8]
     planned_provider_called_task_count: Literal[6]
     planned_execution_count: Literal[1]
-    current_execution_count: Literal[0]
+    current_execution_count: Literal[0, 1]
     fixed_evaluation_execution_count: Literal[0]
+    real_fix_count: StrictInt = Field(ge=0, le=2)
+    repair_record_path: str | None
+    repair_record_sha256: str | None
+    prior_manifest_sha256: str | None
+    prior_manifest_file_sha256: str | None
     frozen_files: tuple[RegistrationSmokeManifestFileV2341, ...]
     provider_prompt_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     alias_response_schema_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
@@ -241,12 +249,256 @@ class RegistrationSmokeManifestV2341(DtaModelV22):
         paths = tuple(item.path for item in self.frozen_files)
         if paths != tuple(sorted(set(paths))):
             raise ValueError("v2.3.4.1 smoke manifest paths are not canonical")
+        repair_fields = (
+            self.repair_record_path,
+            self.repair_record_sha256,
+            self.prior_manifest_sha256,
+            self.prior_manifest_file_sha256,
+        )
+        if self.current_execution_count == 0:
+            if self.real_fix_count != 0 or any(item is not None for item in repair_fields):
+                raise ValueError("fresh v2.3.4.1 smoke manifest claims a repair")
+        elif (
+            self.real_fix_count not in {1, 2}
+            or any(item is None for item in repair_fields)
+            or self.repair_record_path not in paths
+        ):
+            raise ValueError("repaired v2.3.4.1 smoke manifest lacks its chain")
+        for digest in repair_fields[1:]:
+            if digest is not None and re.fullmatch(r"[0-9a-f]{64}", digest) is None:
+                raise ValueError("v2.3.4.1 smoke repair digest is invalid")
         expected = semantic_sha256_v22(
             self.model_dump(mode="json", exclude={"manifest_sha256"})
         )
         if self.manifest_sha256 != expected:
             raise ValueError("v2.3.4.1 smoke manifest digest differs")
         return self
+
+
+class RegistrationSmokeRawBindingV2341(DtaModelV22):
+    path: str = Field(
+        pattern=(
+            r"^\.local/dta-v2341/provider-raw/smoke/"
+            r"(?:request|response)-[0-9]{3}\.json$"
+        )
+    )
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class RegistrationSmokeRepairDiagnosticV2341(DtaModelV22):
+    schema_version: Literal["dta-v2341.provider-smoke-repair-diagnostic.v1"]
+    repair_ordinal: StrictInt = Field(ge=1, le=2)
+    execution_count: Literal[1]
+    fixed_evaluation_execution_count: Literal[0]
+    failure_task_id: Literal["smoke-v2341-05"]
+    failure_role: Literal["ENGINEERING_REQUIRED"]
+    safe_exception_type: Literal["DiscoveryProviderProtocolFailureV23"]
+    safe_error: Literal["registration alias Provider exhausted two protocol repairs"]
+    fix_code: Literal["V2341_DISPOSITION_GAP_CARDINALITY_BINDING"]
+    prior_manifest_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    prior_manifest_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    prior_sentinel_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    blocker_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    blocker_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    raw_provider_artifacts_scope: Literal[
+        ".local/dta-v2341/provider-raw/smoke"
+    ]
+    raw_bindings: tuple[RegistrationSmokeRawBindingV2341, ...]
+    raw_bindings_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    original_provider_call_count: Literal[7]
+    diagnosed_at_utc: datetime
+    diagnostic_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+    @model_validator(mode="after")
+    def require_diagnostic(self) -> "RegistrationSmokeRepairDiagnosticV2341":
+        paths = tuple(item.path for item in self.raw_bindings)
+        expected_paths = tuple(
+            sorted(
+                f".local/dta-v2341/provider-raw/smoke/{kind}-{ordinal:03d}.json"
+                for kind in ("request", "response")
+                for ordinal in range(1, 8)
+            )
+        )
+        if paths != expected_paths:
+            raise ValueError("v2.3.4.1 smoke raw repair bindings differ")
+        if self.raw_bindings_sha256 != semantic_sha256_v22(
+            [item.model_dump(mode="json") for item in self.raw_bindings]
+        ):
+            raise ValueError("v2.3.4.1 smoke raw binding digest differs")
+        if (
+            self.diagnosed_at_utc.tzinfo is None
+            or self.diagnosed_at_utc.utcoffset() != timedelta(0)
+        ):
+            raise ValueError("v2.3.4.1 smoke diagnosis timestamp is not UTC")
+        expected = semantic_sha256_v22(
+            self.model_dump(mode="json", exclude={"diagnostic_sha256"})
+        )
+        if self.diagnostic_sha256 != expected:
+            raise ValueError("v2.3.4.1 smoke diagnosis digest differs")
+        return self
+
+
+class RegistrationSmokeRepairRecordV2341(DtaModelV22):
+    schema_version: Literal["dta-v2341.provider-smoke-repair.v1"]
+    repair_ordinal: StrictInt = Field(ge=1, le=2)
+    execution_count: Literal[1]
+    fixed_evaluation_execution_count: Literal[0]
+    fix_code: Literal["V2341_DISPOSITION_GAP_CARDINALITY_BINDING"]
+    prior_manifest_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    prior_manifest_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    superseded_manifest_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    prior_sentinel_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    blocker_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    blocker_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    raw_bindings_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    diagnostic_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    diagnostic_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    task_set_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    truth_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    fix_files: tuple[str, ...]
+    recorded_at_utc: datetime
+    record_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+    @model_validator(mode="after")
+    def require_record(self) -> "RegistrationSmokeRepairRecordV2341":
+        if self.fix_files != tuple(sorted(set(self.fix_files))):
+            raise ValueError("v2.3.4.1 smoke repair files are not canonical")
+        if self.prior_manifest_file_sha256 != self.superseded_manifest_file_sha256:
+            raise ValueError("v2.3.4.1 superseded smoke manifest binding differs")
+        if (
+            self.recorded_at_utc.tzinfo is None
+            or self.recorded_at_utc.utcoffset() != timedelta(0)
+        ):
+            raise ValueError("v2.3.4.1 smoke repair timestamp is not UTC")
+        expected = semantic_sha256_v22(
+            self.model_dump(mode="json", exclude={"record_sha256"})
+        )
+        if self.record_sha256 != expected:
+            raise ValueError("v2.3.4.1 smoke repair record digest differs")
+        return self
+
+
+class ReplayThenLiveRegistrationAliasTransportV2341:
+    """Replay completed decisions, then continue through the live transport."""
+
+    def __init__(
+        self,
+        *,
+        replayed_responses: tuple[str, ...],
+        live_transport: Callable[[str], str],
+    ) -> None:
+        self._replayed = iter(replayed_responses)
+        self._remaining_replays = len(replayed_responses)
+        self._live_transport = live_transport
+        self.replayed_call_count = 0
+        self.live_call_count = 0
+
+    def __call__(self, body: str) -> str:
+        if self._remaining_replays:
+            self._remaining_replays -= 1
+            self.replayed_call_count += 1
+            return next(self._replayed)
+        self.live_call_count += 1
+        return self._live_transport(body)
+
+
+def _file_sha256_v2341(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def verify_smoke_repair_resume_v2341(
+    *,
+    repository_root: Path,
+    manifest: RegistrationSmokeManifestV2341,
+    repair_record_path: Path,
+    repair_ordinal: int,
+    sentinel_path: Path,
+    blocker_path: Path,
+) -> tuple[RegistrationSmokeRepairRecordV2341, tuple[str, ...]]:
+    """Bind a resumed smoke to the consumed campaign and replayable prefix."""
+
+    record = RegistrationSmokeRepairRecordV2341.model_validate_json(
+        repair_record_path.read_bytes()
+    )
+    expected_record_path = repair_record_path.resolve().relative_to(
+        repository_root.resolve()
+    ).as_posix()
+    if (
+        record.repair_ordinal != repair_ordinal
+        or manifest.current_execution_count != 1
+        or manifest.real_fix_count != repair_ordinal
+        or manifest.repair_record_path != expected_record_path
+        or manifest.repair_record_sha256 != record.record_sha256
+        or manifest.prior_manifest_sha256 != record.prior_manifest_sha256
+        or manifest.prior_manifest_file_sha256 != record.prior_manifest_file_sha256
+    ):
+        raise ValueError("v2.3.4.1 smoke repair manifest binding differs")
+    diagnostic_path = (
+        repository_root
+        / f"docs/analysis/dta-v2341-provider-smoke-fix{repair_ordinal}-diagnostic.json"
+    )
+    superseded_path = (
+        repository_root
+        / f"docs/analysis/dta-v2341-smoke-manifest-fix{repair_ordinal}-superseded.json"
+    )
+    diagnostic = RegistrationSmokeRepairDiagnosticV2341.model_validate_json(
+        diagnostic_path.read_bytes()
+    )
+    prior_manifest = json.loads(superseded_path.read_text(encoding="utf-8"))
+    blocker = json.loads(blocker_path.read_text(encoding="utf-8"))
+    sentinel = json.loads(sentinel_path.read_text(encoding="utf-8"))
+    if (
+        _file_sha256_v2341(diagnostic_path) != record.diagnostic_file_sha256
+        or diagnostic.diagnostic_sha256 != record.diagnostic_sha256
+        or _file_sha256_v2341(superseded_path)
+        != record.superseded_manifest_file_sha256
+        or prior_manifest.get("manifest_sha256") != record.prior_manifest_sha256
+        or _file_sha256_v2341(sentinel_path) != record.prior_sentinel_file_sha256
+        or sentinel.get("status") != "STARTED"
+        or sentinel.get("execution_count") != 1
+        or sentinel.get("manifest_sha256") != record.prior_manifest_sha256
+        or _file_sha256_v2341(blocker_path) != record.blocker_file_sha256
+        or blocker.get("blocker_sha256") != record.blocker_sha256
+        or blocker.get("terminal") != "BLOCKED_DTA_V2341_PROVIDER_SMOKE"
+        or blocker.get("execution_count") != 1
+        or _file_sha256_v2341(
+            repository_root / "config/dta-v2341/smoke/tasks.json"
+        )
+        != record.task_set_file_sha256
+        or _file_sha256_v2341(
+            repository_root / "config/dta-v2341/smoke/truth.json"
+        )
+        != record.truth_file_sha256
+    ):
+        raise ValueError("v2.3.4.1 smoke repair evidence binding differs")
+    raw_bindings = diagnostic.raw_bindings
+    if diagnostic.raw_bindings_sha256 != record.raw_bindings_sha256:
+        raise ValueError("v2.3.4.1 smoke repair raw lineage differs")
+    actual_paths = tuple(
+        sorted(
+            path.relative_to(repository_root).as_posix()
+            for path in (repository_root / diagnostic.raw_provider_artifacts_scope).glob(
+                "*.json"
+            )
+        )
+    )
+    if actual_paths != tuple(item.path for item in raw_bindings):
+        raise ValueError("v2.3.4.1 smoke raw artifact set differs")
+    for binding in raw_bindings:
+        if _file_sha256_v2341(repository_root / binding.path) != binding.sha256:
+            raise ValueError("v2.3.4.1 smoke raw artifact bytes differ")
+    replayed: list[str] = []
+    for ordinal in range(1, 5):
+        payload = json.loads(
+            (
+                repository_root
+                / f".local/dta-v2341/provider-raw/smoke/response-{ordinal:03d}.json"
+            ).read_text(encoding="utf-8")
+        )
+        replayed.append(
+            OpenAICompatibleRegistrationAliasTransportV2341._extract(payload)
+        )
+    return record, tuple(replayed)
 
 
 class RegistrationSmokeTaskResultV2341(DtaModelV22):

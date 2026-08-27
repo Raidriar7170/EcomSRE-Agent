@@ -55,7 +55,11 @@ The human authorized FORMAL_DRAFT_ONLY. Choose only opaque aliases from the supp
 Runtime-owned catalog. Return exactly the six response fields. Do not emit canonical
 names, fixed prose, DSL objects, service bindings, evidence refs, IDs, hashes, code,
 paths, URLs, commands, Runbooks, remediation, actions, or repository writes. Alias
-ordering is irrelevant. Do not invent an alias."""
+ordering is irrelevant. Do not invent an alias. Cardinality is mandatory: D00 requires
+one or more clause aliases and zero engineering-gap aliases; D01 requires one or more
+engineering-gap aliases and may include safe partial clauses; D02 and D03 require zero
+clause aliases and zero engineering-gap aliases. If any engineering-gap alias is
+selected, never use D00."""
 
 _SELECTION_FIELDS_V2341 = frozenset(
     {
@@ -253,8 +257,9 @@ def build_registration_alias_provider_request_v2341(
         "human_canonical_label_seed": source_request.shadow_fault.canonical_label,
         "broad_fault_domain": source_request.shadow_fault.broad_fault_domain.value,
         "registration_option_catalog": catalog.provider_projection(),
-        "visible_format_examples": (
-            {
+        "visible_format_examples": tuple(
+            [
+                {
                 "disposition_alias": "D00",
                 "mechanism_concept": "bounded fault mechanism",
                 "clause_aliases": ["C00"],
@@ -263,7 +268,26 @@ def build_registration_alias_provider_request_v2341(
                 "semantic_rationale": (
                     "Accepted evidence supports one bounded mechanism."
                 ),
-            },
+                }
+            ]
+            + (
+                [
+                    {
+                        "disposition_alias": "D01",
+                        "mechanism_concept": "bounded extraction gap",
+                        "clause_aliases": [],
+                        "confusable_aliases": [],
+                        "engineering_gap_aliases": [
+                            catalog.engineering_gap_options[0].engineering_gap_alias
+                        ],
+                        "semantic_rationale": (
+                            "Accepted evidence requires one bounded extraction capability."
+                        ),
+                    }
+                ]
+                if catalog.engineering_gap_options
+                else []
+            )
         ),
         "source_registration_request_sha256": source_request.request_sha256,
         "catalog_sha256": catalog.catalog_sha256,
@@ -403,13 +427,26 @@ def _request_body_v2341(
             "fields": tuple(sorted(_SELECTION_FIELDS_V2341)),
             "format": "one JSON object only",
             "alias_order": "arbitrary",
+            "cardinality_rules": {
+                "D00": "one or more clause aliases and zero engineering-gap aliases",
+                "D01": "one or more engineering-gap aliases; safe partial clauses allowed",
+                "D02": "zero clause aliases and zero engineering-gap aliases",
+                "D03": "zero clause aliases and zero engineering-gap aliases",
+                "gap_binding": "any selected engineering-gap alias requires D01, never D00",
+            },
         },
     }
     if repair_ordinal:
         payload["protocol_repair"] = {
             "ordinal": repair_ordinal,
             "safe_issue_codes": issue_codes or ("PRIOR_RESPONSE_PROTOCOL_INVALID",),
-            "instruction": "Return the same six fields using only listed aliases.",
+            "instruction": (
+                "Return the same six fields using only listed aliases. Resolve every "
+                "safe issue code and obey cardinality exactly: D00 requires at least "
+                "one clause and zero gaps; D01 requires at least one gap; any selected "
+                "gap requires D01 and must never be paired with D00; D02 and D03 use "
+                "zero clauses and zero gaps."
+            ),
         }
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
@@ -561,6 +598,38 @@ class OpenAICompatibleRegistrationAliasTransportV2341:
     def _tool() -> dict[str, object]:
         schema = RegistrationAliasSelectionV2341.model_json_schema()
         schema["additionalProperties"] = False
+        schema["allOf"] = [
+            {
+                "if": {"properties": {"disposition_alias": {"const": "D00"}}},
+                "then": {
+                    "properties": {
+                        "clause_aliases": {"minItems": 1},
+                        "engineering_gap_aliases": {"maxItems": 0},
+                    }
+                },
+            },
+            {
+                "if": {"properties": {"disposition_alias": {"const": "D01"}}},
+                "then": {
+                    "properties": {
+                        "engineering_gap_aliases": {"minItems": 1},
+                    }
+                },
+            },
+            {
+                "if": {
+                    "properties": {
+                        "disposition_alias": {"enum": ["D02", "D03"]}
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "clause_aliases": {"maxItems": 0},
+                        "engineering_gap_aliases": {"maxItems": 0},
+                    }
+                },
+            },
+        ]
         return {
             "type": "function",
             "function": {

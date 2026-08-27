@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,7 @@ from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 from ecomsre.dta_v2.v23.provider_smoke_v2341 import (
     RegistrationSmokeManifestFileV2341,
     RegistrationSmokeManifestV2341,
+    RegistrationSmokeRepairRecordV2341,
     build_smoke_data_v2341,
 )
 from ecomsre.dta_v2.v23.registration_alias_provider_v2341 import (
@@ -59,16 +61,67 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repository-root", type=Path, default=Path.cwd())
     parser.add_argument("--provider-env", type=Path, required=True)
+    parser.add_argument("--repair-ordinal", type=int, choices=(1, 2))
+    parser.add_argument("--repair-record", type=Path)
     args = parser.parse_args()
     root = args.repository_root.resolve()
     output_root = root / "config/dta-v2341/smoke"
+    if (args.repair_ordinal is None) != (args.repair_record is None):
+        raise ValueError("v2.3.4.1 smoke repair arguments must be paired")
     tasks, truths = build_smoke_data_v2341(repository_root=root)
     _write_bound(output_root / "tasks.json", tasks.model_dump_json(indent=2) + "\n")
     _write_bound(output_root / "truth.json", truths.model_dump_json(indent=2) + "\n")
 
     values = load_private_provider_env(args.provider_env)
+    repair_record: RegistrationSmokeRepairRecordV2341 | None = None
+    prior_manifest_sha256: str | None = None
+    prior_manifest_file_sha256: str | None = None
+    repair_record_relative: str | None = None
+    frozen_paths = list(FROZEN_PATHS)
+    if args.repair_ordinal is not None and args.repair_record is not None:
+        repair_record_path = args.repair_record.resolve()
+        repair_record_relative_value = repair_record_path.relative_to(root).as_posix()
+        repair_record_relative = repair_record_relative_value
+        repair_record = RegistrationSmokeRepairRecordV2341.model_validate_json(
+            repair_record_path.read_bytes()
+        )
+        if repair_record.repair_ordinal != args.repair_ordinal:
+            raise ValueError("v2.3.4.1 smoke repair ordinal differs")
+        superseded_relative = (
+            f"docs/analysis/dta-v2341-smoke-manifest-fix{args.repair_ordinal}"
+            "-superseded.json"
+        )
+        superseded_path = root / superseded_relative
+        active_manifest_path = output_root / "manifest.json"
+        if active_manifest_path.read_bytes() != superseded_path.read_bytes():
+            active_manifest = RegistrationSmokeManifestV2341.model_validate_json(
+                active_manifest_path.read_bytes()
+            )
+            if (
+                active_manifest.current_execution_count != 1
+                or active_manifest.real_fix_count != args.repair_ordinal
+                or active_manifest.repair_record_sha256 != repair_record.record_sha256
+            ):
+                raise ValueError("v2.3.4.1 active smoke manifest repair differs")
+        prior_manifest = json.loads(superseded_path.read_text(encoding="utf-8"))
+        prior_manifest_sha256 = str(prior_manifest["manifest_sha256"])
+        prior_manifest_file_sha256 = _sha256(superseded_path)
+        if (
+            prior_manifest_sha256 != repair_record.prior_manifest_sha256
+            or prior_manifest_file_sha256
+            != repair_record.superseded_manifest_file_sha256
+        ):
+            raise ValueError("v2.3.4.1 smoke repair predecessor differs")
+        frozen_paths.extend(
+            (
+                "docs/analysis/dta-v2341-provider-smoke-blocker.json",
+                f"docs/analysis/dta-v2341-provider-smoke-fix{args.repair_ordinal}-diagnostic.json",
+                repair_record_relative_value,
+                superseded_relative,
+            )
+        )
     bindings = []
-    for relative in FROZEN_PATHS:
+    for relative in tuple(sorted(set(frozen_paths))):
         path = root / relative
         if not path.is_file():
             raise FileNotFoundError(f"v2.3.4.1 smoke freeze input is absent: {relative}")
@@ -86,8 +139,15 @@ def main() -> int:
         "planned_task_count": 8,
         "planned_provider_called_task_count": 6,
         "planned_execution_count": 1,
-        "current_execution_count": 0,
+        "current_execution_count": int(args.repair_ordinal is not None),
         "fixed_evaluation_execution_count": 0,
+        "real_fix_count": args.repair_ordinal or 0,
+        "repair_record_path": repair_record_relative,
+        "repair_record_sha256": (
+            repair_record.record_sha256 if repair_record is not None else None
+        ),
+        "prior_manifest_sha256": prior_manifest_sha256,
+        "prior_manifest_file_sha256": prior_manifest_file_sha256,
         "frozen_files": tuple(sorted(bindings, key=lambda item: item.path)),
         "provider_prompt_sha256": hashlib.sha256(
             REGISTRATION_ALIAS_SYSTEM_PROMPT_V2341.encode("utf-8")
@@ -109,10 +169,12 @@ def main() -> int:
             ),
         }
     )
-    _write_bound(
-        output_root / "manifest.json",
-        manifest.model_dump_json(indent=2) + "\n",
-    )
+    rendered_manifest = manifest.model_dump_json(indent=2) + "\n"
+    manifest_path = output_root / "manifest.json"
+    if repair_record is None:
+        _write_bound(manifest_path, rendered_manifest)
+    else:
+        manifest_path.write_text(rendered_manifest, encoding="utf-8")
     print("DTA_V2341_SMOKE_SURFACE_FROZEN")
     print(f"task_set_sha256={tasks.task_set_sha256}")
     print(f"manifest_sha256={manifest.manifest_sha256}")

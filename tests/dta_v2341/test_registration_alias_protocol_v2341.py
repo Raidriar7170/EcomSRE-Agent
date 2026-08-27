@@ -17,6 +17,7 @@ from ecomsre.dta_v2.v23.registration_catalog_v2341 import (
     evaluate_catalog_feasibility_v2341,
 )
 from ecomsre.dta_v2.v23.registration_alias_provider_v2341 import (
+    OpenAICompatibleRegistrationAliasTransportV2341,
     RegistrationAliasProviderV2341,
     RegistrationAliasSelectionV2341,
     build_registration_alias_provider_request_v2341,
@@ -430,3 +431,78 @@ def test_predecessor_failed_roles_pass_bounded_alias_development_gate() -> None:
     assert gate.insufficient_control_provider_calls == 0
     assert gate.rt_011_canonical_order_failure_eliminated is True
     assert gate.action_authority_violations == 0
+
+
+def test_engineering_gap_repair_explicitly_binds_d01_cardinality(
+    tmp_path: Path,
+) -> None:
+    task = load_registration_tasks_v234(
+        ROOT / "config/dta-v234/evaluation/tasks.json"
+    ).require("rt-014")
+    item, shadow, authorization = _prepare_authorized_task_v234(
+        repository_root=ROOT,
+        task=task,
+        local_root=tmp_path / ".local" / "engineering-repair",
+    )
+    ontology_view = load_core_schema_views_v234(
+        ROOT / "config/dta-v234/evaluation/core-schema-snapshot.json"
+    ).require("rt-014")
+    source_request = build_registration_draft_provider_request_v234(
+        authorization_context=authorization,
+        shadow_fault=shadow,
+        accepted_reports=(project_development_report_v234(item),),
+        ontology_view=ontology_view,
+    )
+    catalog = build_registration_option_catalog_v2341(request=source_request)
+    provider_request = build_registration_alias_provider_request_v2341(
+        source_request=source_request,
+        catalog=catalog,
+    )
+    invalid = json.dumps(
+        {
+            "disposition_alias": "D00",
+            "mechanism_concept": "bounded transport ordering pressure",
+            "clause_aliases": ["C00"],
+            "confusable_aliases": [],
+            "engineering_gap_aliases": ["G00"],
+            "semantic_rationale": (
+                "Accepted evidence requires one bounded extraction capability."
+            ),
+        }
+    )
+    valid = json.dumps(
+        {
+            "disposition_alias": "D01",
+            "mechanism_concept": "bounded transport ordering pressure",
+            "clause_aliases": [],
+            "confusable_aliases": [],
+            "engineering_gap_aliases": ["G00"],
+            "semantic_rationale": (
+                "Accepted evidence requires one bounded extraction capability."
+            ),
+        }
+    )
+    responses = iter((invalid, valid))
+    bodies: list[str] = []
+
+    def transport(body: str) -> str:
+        bodies.append(body)
+        return next(responses)
+
+    result = RegistrationAliasProviderV2341(transport=transport).select(
+        request=provider_request,
+        catalog=catalog,
+    )
+
+    assert result.selection.disposition_alias == "D01"
+    assert result.selection.engineering_gap_aliases == ("G00",)
+    assert result.trace.provider_calls == 2
+    assert result.trace.protocol_repairs == 1
+    repair = json.loads(bodies[1])["protocol_repair"]
+    assert "any selected gap requires D01" in repair["instruction"]
+    assert any(
+        item["disposition_alias"] == "D01"
+        for item in provider_request.visible_format_examples
+    )
+    schema = OpenAICompatibleRegistrationAliasTransportV2341._tool()["function"]
+    assert len(schema["parameters"]["allOf"]) == 3
