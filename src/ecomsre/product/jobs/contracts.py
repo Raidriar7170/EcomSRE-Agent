@@ -42,4 +42,18 @@ class ProductJobRecordV1(ProductModelV1):
     updated_at: float
 
 
-__all__ = ("ProductJobRecordV1", "ProductJobStatusV1", "ProductJobTypeV1")
+class JobLeaseFenceV1(ProductModelV1):
+    """The exact worker attempt authorized to commit durable job side effects."""
+
+    job_id: str = Field(pattern=r"^job-[0-9a-f]{24}$")
+    claimed_by: str = Field(min_length=1, max_length=200)
+    attempt_count: int = Field(ge=1)
+    checked_at: float | None = None
+
+
+__all__ = (
+    "JobLeaseFenceV1",
+    "ProductJobRecordV1",
+    "ProductJobStatusV1",
+    "ProductJobTypeV1",
+)

@@ -155,6 +155,45 @@ class JobRepositoryV1:
             now=now,
         )
 
+    def renew_lease(
+        self,
+        job_id: str,
+        worker_id: str,
+        attempt_count: int,
+        *,
+        lease_seconds: int,
+        now: float | None = None,
+    ) -> None:
+        timestamp = time.time() if now is None else now
+        with self.store.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            try:
+                cursor = connection.execute(
+                    """UPDATE diagnosis_jobs
+                       SET lease_expires_at = ?, updated_at = ?
+                       WHERE job_id = ? AND status = ? AND claimed_by = ?
+                         AND attempt_count = ? AND lease_expires_at > ?""",
+                    (
+                        timestamp + lease_seconds,
+                        timestamp,
+                        job_id,
+                        ProductJobStatusV1.RUNNING.value,
+                        worker_id,
+                        attempt_count,
+                        timestamp,
+                    ),
+                )
+                if cursor.rowcount != 1:
+                    raise ProductError(
+                        "JOB_LEASE_LOST",
+                        "The worker no longer owns this job lease.",
+                        status_code=409,
+                    )
+                connection.execute("COMMIT")
+            except Exception:
+                connection.execute("ROLLBACK")
+                raise
+
     def fail(
         self,
         job_id: str,

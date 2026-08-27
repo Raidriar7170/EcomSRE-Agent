@@ -7,6 +7,8 @@ import re
 from fastapi import APIRouter, Depends, Header, Request, Response, status
 
 from ecomsre.product.auth import require_mutation_auth
+from ecomsre.product.baselines import BaselineJobCreateV1, BaselineListV1
+from ecomsre.product.changes import ChangeEventCreateV1, ChangeEventRecordV1
 from ecomsre.product.contracts import (
     EnvironmentCreateV1,
     EnvironmentListV1,
@@ -14,6 +16,7 @@ from ecomsre.product.contracts import (
     HealthResultV1,
 )
 from ecomsre.product.jobs.contracts import ProductJobRecordV1, ProductJobTypeV1
+from ecomsre.product.environment.capabilities import EnvironmentCapabilityMatrixV1
 
 
 router = APIRouter()
@@ -80,7 +83,7 @@ def create_environment_verify_job(
             "INVALID_REQUEST",
             "The Idempotency-Key header is invalid.",
         )
-    fixture = any(
+    fixture = bool(environment.connector_configs) and all(
         connector.kind.value == "FIXTURE"
         for connector in environment.connector_configs
     )
@@ -93,6 +96,82 @@ def create_environment_verify_job(
             else f"environment-verify:{environment_id}:{idempotency_key}"
         ),
     )
+
+
+@router.get(
+    "/v1/environments/{environment_id}/capabilities",
+    response_model=EnvironmentCapabilityMatrixV1,
+)
+def get_environment_capabilities(
+    request: Request,
+    environment_id: str,
+) -> EnvironmentCapabilityMatrixV1:
+    request.app.state.environments.get(environment_id)
+    return request.app.state.capabilities.get(environment_id)
+
+
+@router.post(
+    "/v1/environments/{environment_id}/baseline-jobs",
+    dependencies=[Depends(require_mutation_auth)],
+    response_model=ProductJobRecordV1,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def create_environment_baseline_job(
+    request: Request,
+    environment_id: str,
+    payload: BaselineJobCreateV1,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+) -> ProductJobRecordV1:
+    request.app.state.environments.get(environment_id)
+    request.app.state.capabilities.get(environment_id)
+    if idempotency_key is not None and not re.fullmatch(
+        r"[a-zA-Z0-9_.:-]{1,128}",
+        idempotency_key,
+    ):
+        from ecomsre.product.errors import ProductError
+
+        raise ProductError(
+            "INVALID_REQUEST",
+            "The Idempotency-Key header is invalid.",
+        )
+    return request.app.state.jobs.enqueue(
+        ProductJobTypeV1.BASELINE_BUILD,
+        {
+            "environment_id": environment_id,
+            "request": payload.model_dump(mode="json"),
+        },
+        idempotency_key=(
+            None
+            if idempotency_key is None
+            else f"baseline-build:{environment_id}:{idempotency_key}"
+        ),
+    )
+
+
+@router.get(
+    "/v1/environments/{environment_id}/baselines",
+    response_model=BaselineListV1,
+)
+def list_environment_baselines(
+    request: Request,
+    environment_id: str,
+) -> BaselineListV1:
+    request.app.state.environments.get(environment_id)
+    return BaselineListV1(items=request.app.state.baselines.list(environment_id))
+
+
+@router.post(
+    "/v1/environments/{environment_id}/changes",
+    dependencies=[Depends(require_mutation_auth)],
+    response_model=ChangeEventRecordV1,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_environment_change(
+    request: Request,
+    environment_id: str,
+    payload: ChangeEventCreateV1,
+) -> ChangeEventRecordV1:
+    return request.app.state.changes.create(environment_id, payload)
 
 
 @router.get("/v1/jobs/{job_id}", response_model=ProductJobRecordV1)

@@ -6,10 +6,20 @@ import os
 import secrets
 import time
 
+from ecomsre.product.baselines import BaselineRepositoryV1, HistoricalBaselineServiceV1
+from ecomsre.product.connectors.credentials import CredentialResolverV1
+from ecomsre.product.connectors.registry import ConnectorRegistryV1
+from ecomsre.product.environment.capabilities import CapabilityMatrixRepositoryV1
 from ecomsre.product.environment.repository import EnvironmentRepositoryV1
+from ecomsre.product.environment.services import ServiceCatalogRepositoryV1
+from ecomsre.product.environment.verification import EnvironmentVerificationServiceV1
 from ecomsre.product.errors import ProductError
-from ecomsre.product.jobs.contracts import ProductJobTypeV1
-from ecomsre.product.jobs.handlers import handle_fixture_environment_verify
+from ecomsre.product.jobs.contracts import JobLeaseFenceV1, ProductJobTypeV1
+from ecomsre.product.jobs.handlers import (
+    handle_baseline_build,
+    handle_environment_verify,
+    handle_fixture_environment_verify,
+)
 from ecomsre.product.jobs.repository import JobRepositoryV1
 from ecomsre.product.settings import ProductSettingsV1
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
@@ -24,6 +34,8 @@ def run_one_job(
     store = SqliteStoreV1(settings.sqlite_path)
     jobs = JobRepositoryV1(store)
     environments = EnvironmentRepositoryV1(store)
+    services = ServiceCatalogRepositoryV1(store)
+    capabilities = CapabilityMatrixRepositoryV1(store)
     job = jobs.claim_next(
         worker_id,
         lease_seconds=settings.job_lease_seconds,
@@ -31,9 +43,57 @@ def run_one_job(
     )
     if job is None:
         return False
+
+    def renew_lease() -> None:
+        jobs.renew_lease(
+            job.job_id,
+            worker_id,
+            job.attempt_count,
+            lease_seconds=settings.job_lease_seconds,
+            now=now,
+        )
+
+    connector_registry = ConnectorRegistryV1(
+        credential_resolver=CredentialResolverV1(),
+        timeout_seconds=settings.connector_timeout_seconds,
+        before_request=renew_lease,
+    )
+    verification = EnvironmentVerificationServiceV1(
+        services=services,
+        capabilities=capabilities,
+        connectors=connector_registry,
+    )
+    baselines = HistoricalBaselineServiceV1(
+        connectors=connector_registry,
+        repository=BaselineRepositoryV1(store),
+        maximum_records_per_source=settings.maximum_evidence_records_per_source,
+    )
+    fence = JobLeaseFenceV1(
+        job_id=job.job_id,
+        claimed_by=worker_id,
+        attempt_count=job.attempt_count,
+        checked_at=now,
+    )
     try:
         if job.job_type is ProductJobTypeV1.ENVIRONMENT_VERIFY:
-            result = handle_fixture_environment_verify(job, environments)
+            if job.payload.get("fixture") is True:
+                result = handle_fixture_environment_verify(job, environments)
+            else:
+                result = handle_environment_verify(
+                    job,
+                    environments,
+                    verification,
+                    fence=fence,
+                )
+        elif job.job_type is ProductJobTypeV1.BASELINE_BUILD:
+            result = handle_baseline_build(
+                job,
+                environments,
+                services,
+                capabilities,
+                baselines,
+                fence=fence,
+            )
         else:
             raise ProductError(
                 "INTERNAL_CONTRACT_FAILURE",

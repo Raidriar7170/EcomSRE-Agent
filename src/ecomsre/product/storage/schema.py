@@ -1,6 +1,6 @@
 """SQLite schema identity."""
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 REQUIRED_TABLES = (
     "schema_migrations",
@@ -20,6 +20,8 @@ REQUIRED_TABLES = (
     "registration_drafts",
     "shadow_evaluations",
     "environment_extension_registrations",
+    "environment_capability_matrices",
+    "change_events",
     "promotion_records",
     "revocation_records",
 )

@@ -10,6 +10,8 @@ from ecomsre.product.contracts import (
     ConnectorConfigV1,
     EnvironmentCreateV1,
     EnvironmentRecordV1,
+    ServiceIdentityV1,
+    ServiceSourceAliasesV1,
 )
 from ecomsre.product.errors import not_found
 from ecomsre.product.ids import new_product_id
@@ -57,7 +59,7 @@ class EnvironmentRepositoryV1:
                         request.name,
                         request.description,
                         request.timezone,
-                        _json(request.service_identity_policy),
+                        _json(request.service_identity_policy.model_dump(mode="json")),
                         _json(request.explicit_service_catalog),
                         created_at,
                         created_at,
@@ -78,6 +80,36 @@ class EnvironmentRepositoryV1:
                             _json(connector.settings),
                             _json(connector.credential_refs),
                             created_at,
+                        ),
+                    )
+                rules = {
+                    item.logical_service: item
+                    for item in request.service_identity_policy.services
+                }
+                logical_services = tuple(
+                    sorted(set(request.explicit_service_catalog).union(rules))
+                )
+                for logical_service in logical_services:
+                    identity = ServiceIdentityV1(
+                        service_id=new_product_id("svc"),
+                        logical_service=logical_service,
+                        aliases=(
+                            rules[logical_service].aliases
+                            if logical_service in rules
+                            else ServiceSourceAliasesV1()
+                        ),
+                    )
+                    connection.execute(
+                        """INSERT INTO services(
+                            service_id, environment_id, payload_json, created_at,
+                            logical_service
+                        ) VALUES (?, ?, ?, ?, ?)""",
+                        (
+                            identity.service_id,
+                            environment_id,
+                            _json(identity.model_dump(mode="json")),
+                            created_at,
+                            logical_service,
                         ),
                     )
                 connection.execute("COMMIT")

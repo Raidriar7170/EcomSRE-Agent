@@ -151,6 +151,35 @@ MIGRATIONS: tuple[tuple[int, str, tuple[str, ...]], ...] = (
             )""",
         ),
     ),
+    (
+        2,
+        "connector-gateway-v1",
+        (
+            "ALTER TABLE services ADD COLUMN logical_service TEXT",
+            "UPDATE services SET logical_service = "
+            "json_extract(payload_json, '$.logical_service') "
+            "WHERE logical_service IS NULL",
+            "CREATE UNIQUE INDEX services_environment_logical_idx "
+            "ON services(environment_id, logical_service)",
+            """CREATE TABLE environment_capability_matrices (
+                environment_id TEXT PRIMARY KEY REFERENCES environments(environment_id)
+                    ON DELETE CASCADE,
+                payload_json TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )""",
+            """CREATE TABLE change_events (
+                change_event_id TEXT PRIMARY KEY,
+                environment_id TEXT NOT NULL REFERENCES environments(environment_id)
+                    ON DELETE CASCADE,
+                external_change_id TEXT NOT NULL,
+                payload_json TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                UNIQUE(environment_id, external_change_id)
+            )""",
+            "CREATE UNIQUE INDEX baseline_versions_one_active_idx "
+            "ON baseline_versions(environment_id) WHERE active = 1",
+        ),
+    ),
 )
 
 __all__ = ("MIGRATIONS",)

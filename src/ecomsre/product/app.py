@@ -11,7 +11,11 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 import uvicorn
 
 from ecomsre.product.api import router
+from ecomsre.product.baselines import BaselineRepositoryV1
+from ecomsre.product.changes import ChangeEventRepositoryV1
+from ecomsre.product.environment.capabilities import CapabilityMatrixRepositoryV1
 from ecomsre.product.environment.repository import EnvironmentRepositoryV1
+from ecomsre.product.environment.services import ServiceCatalogRepositoryV1
 from ecomsre.product.errors import ProductError
 from ecomsre.product.jobs.repository import JobRepositoryV1
 from ecomsre.product.settings import ProductSettingsV1
@@ -38,6 +42,10 @@ def create_app(settings: ProductSettingsV1 | None = None) -> FastAPI:
         metadata_store=store,
     )
     app.state.environments = EnvironmentRepositoryV1(store)
+    app.state.services = ServiceCatalogRepositoryV1(store)
+    app.state.capabilities = CapabilityMatrixRepositoryV1(store)
+    app.state.baselines = BaselineRepositoryV1(store)
+    app.state.changes = ChangeEventRepositoryV1(store)
     app.state.jobs = JobRepositoryV1(store)
 
     @app.exception_handler(ProductError)
