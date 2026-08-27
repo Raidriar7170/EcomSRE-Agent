@@ -1,0 +1,38 @@
+{
+  "schema_version": "dta-v2341.progress.v1",
+  "goal_version": "dta-v2341-registration-alias-protocol-v1",
+  "public_main_base": "da423b9104ac532f0bf323f314d37b527671c679",
+  "frozen_predecessor_head": "edb313655c4be64295012c383cfa19ed48ccb894",
+  "branch": "codex/dta-v2341-registration-alias-protocol",
+  "frozen_predecessor_status": "BLOCKED_DTA_V234_PROVIDER",
+  "completed_increments": [
+    "PREDECESSOR_HISTORY_BINDING_AND_RUNTIME_REGISTRATION_OPTION_CATALOG"
+  ],
+  "increment_1": {
+    "status": "COMPLETE",
+    "history_terminal": "DTA_V2341_PREDECESSOR_HISTORY_VERIFIED",
+    "catalog_feasibility_terminal": "DTA_V2341_CATALOG_FEASIBILITY_PASS",
+    "provider_calls": 0,
+    "raw_predecessor_payloads_inspected": false,
+    "content_level_predecessor_audit_limitation_recorded": true
+  },
+  "increment_2": {
+    "status": "NOT_STARTED"
+  },
+  "increment_3": {
+    "status": "NOT_STARTED",
+    "provider_smoke_execution_count": 0
+  },
+  "increment_4": {
+    "status": "NOT_STARTED",
+    "fixed_evaluation_execution_count": 0
+  },
+  "action_authority_violations": 0,
+  "agent_writes": 0,
+  "runbook_executions": 0,
+  "remediation_registrations": 0,
+  "docker_calls": 0,
+  "new_live_faults": 0,
+  "measured_result_terminal": null,
+  "engineering_terminal": null
+}

@@ -69,6 +69,8 @@ conflicts with this register, this register wins.
 | DEC-055 | DTA v2.2 execution report and administrative successor provenance | accepted | DTA v2.2 PR-A through PR-F | `DECISIONS.md` | Frozen reports, exact-head acceptance, successor attestations | Yes — provenance mismatch blocks closure |
 | DEC-056 | DTA v2.2 practical completion successor | accepted | Practical successor only | `DECISIONS.md` | Simple Provider adapter, legacy replay clauses, 8/12 paired evaluation | Yes — truth leakage, Provider instability, or nonzero Agent writes block practical closure |
 | DEC-057 | DTA v2.3 open-world provisional discovery lane | accepted | DTA v2.3 under `dta-v23-open-world-discovery-v1` | `DECISIONS.md` | v2.3 ontology view, novelty gate, provisional reports, human review, shadow registry | Yes — ontology leakage, actionable provisional output, or fixed-evaluation drift blocks v2.3 |
+| DEC-058 | DTA v2.3.1 conflict-aware novelty resolution | accepted | DTA v2.3.1 under `dta-v231-conflict-aware-discovery-v1` | `DECISIONS.md` | conflict model, discriminating read, frozen negative and blocked successor evidence | Yes — consumed studies and their blockers remain immutable |
+| DEC-059 | DTA v2.3.4.1 Runtime-owned registration alias protocol | accepted | DTA v2.3.4.1 under `dta-v2341-registration-alias-protocol-v1` | `DECISIONS.md` | predecessor history, catalog, alias Provider, assembler, evaluation | Yes — predecessor drift, catalog leakage, Provider overreach, or one-shot drift blocks completion |
 
 ## DEC-001 — Supported host baseline
 
@@ -1389,6 +1391,42 @@ v2.3 strict arm failed on `vx-113` with `KeyError: LOG_ERROR_CLUSTER` after
 that frozen study. Its exact repository status is
 `BLOCKED_DTA_V231_REPOSITORY_ACCEPTANCE`; neither the predecessor nor the
 successor mints `DTA_V231_CONFLICT_AWARE_DISCOVERY_COMPLETE`.
+
+## DEC-059 — DTA v2.3.4.1 Runtime-Owned Registration Alias Protocol
+
+**Status: `accepted` for the user-designated
+`dta-v2341-registration-alias-protocol-v1` Goal.**
+
+DTA v2.3.4.1 descends from the exact blocked v2.3.4 engineering head
+`edb313655c4be64295012c383cfa19ed48ccb894`. PR #72, its
+`BLOCKED_DTA_V234_PROVIDER` terminal, its single consumed Provider smoke, two
+consumed repairs, and zero fixed-study executions remain immutable. The
+successor neither repairs nor reruns that campaign.
+
+The Human-in-the-loop authorization, bounded predicate DSL, deterministic
+validator and compiler, shadow evaluation, extension registry, promotion,
+revocation, and non-actionable diagnosis paths remain authoritative. Only the
+registration-draft Provider boundary changes. Runtime now owns a digest-bound
+Registration Option Catalog, canonical predicates and clauses, fixed prose,
+service and evidence bindings, IDs, ordering, test-plan defaults, and final
+draft assembly. The Provider may return only one disposition alias, a short
+mechanism concept, clause aliases, visible-confusable aliases, engineering-gap
+aliases, and one non-executable rationale. Provider alias order is never a
+validation requirement.
+
+Hidden-known reconstruction is an evaluator or smoke context only. It may
+record semantically correct reconstruction while the unchanged production
+validator safely reports a core collision and keeps the draft non-promotable.
+It cannot supply compiler, human draft approval, shadow promotion, or registry
+promotion authority. Duplicate and insufficient controls are deterministic
+zero-Provider outcomes.
+
+The successor permits at most two alias-protocol repairs per Provider decision
+and three exact-request transport retries. It uses a fresh eight-task smoke and,
+only after smoke PASS and source freeze, a fresh 16-task two-arm fixed study
+executed exactly once. Evaluator truth loads only after both arms for a task.
+Docker calls, new live faults, Agent writes, Runbook executions, remediation
+registrations, and LLM repository-write authority remain zero.
 
 ## Upstream references
 
