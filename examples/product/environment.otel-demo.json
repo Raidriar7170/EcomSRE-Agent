@@ -12,7 +12,7 @@
     {
       "name": "prometheus",
       "kind": "PROMETHEUS",
-      "endpoint": "http://host.docker.internal:9090",
+      "endpoint": "http://host.docker.internal:19090",
       "settings": {
         "query_templates": {
           "request_support": "sum(rate(traces_span_metrics_calls_total{service_name=\"{service}\"}[5m]))",
@@ -27,22 +27,26 @@
     {
       "name": "opensearch",
       "kind": "OPENSEARCH",
-      "endpoint": "http://host.docker.internal:9200",
+      "endpoint": "http://host.docker.internal:19200",
       "settings": {
-        "index_pattern": "otel-*",
-        "timestamp_field": "@timestamp",
+        "index_pattern": "otel-logs-*",
+        "timestamp_field": "observedTimestamp",
         "service_field": "resource.service.name",
-        "severity_field": "severity_text",
+        "service_query_field": "resource.service.name.keyword",
+        "severity_field": "severity.text",
         "message_field": "body",
-        "trace_id_field": "trace_id"
+        "trace_id_field": "trace_id",
+        "severity_filter": ["ERROR", "FATAL", "WARN"]
       },
       "credential_refs": {}
     },
     {
       "name": "jaeger",
       "kind": "JAEGER",
-      "endpoint": "http://host.docker.internal:16686",
-      "settings": {},
+      "endpoint": "http://host.docker.internal:11686/jaeger/ui",
+      "settings": {
+        "minimum_duration_ms": 5000
+      },
       "credential_refs": {}
     },
     {
@@ -50,7 +54,13 @@
       "kind": "HTTP_HEALTH",
       "endpoint": null,
       "settings": {
-        "services": []
+        "services": [
+          {
+            "service_id": "frontend-proxy",
+            "health_url": "http://host.docker.internal:18080/",
+            "success_statuses": [200]
+          }
+        ]
       },
       "credential_refs": {}
     }

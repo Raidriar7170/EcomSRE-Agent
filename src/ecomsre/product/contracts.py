@@ -75,6 +75,7 @@ class OpenSearchConnectorSettingsV1(ProductModelV1):
     index_pattern: str = Field(min_length=1, max_length=255)
     timestamp_field: str = Field(min_length=1, max_length=255)
     service_field: str = Field(min_length=1, max_length=255)
+    service_query_field: str | None = Field(default=None, min_length=1, max_length=255)
     severity_field: str = Field(min_length=1, max_length=255)
     message_field: str = Field(min_length=1, max_length=255)
     trace_id_field: str | None = Field(default=None, min_length=1, max_length=255)

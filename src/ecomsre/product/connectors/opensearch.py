@@ -34,6 +34,8 @@ from ecomsre.product.contracts import (
 
 
 def _field(source: Mapping[str, object], path: str) -> object:
+    if path in source:
+        return source[path]
     current: object = source
     for segment in path.split("."):
         if not isinstance(current, Mapping) or segment not in current:
@@ -43,6 +45,8 @@ def _field(source: Mapping[str, object], path: str) -> object:
 
 
 def _optional_field(source: Mapping[str, object], path: str) -> object | None:
+    if path in source:
+        return source[path]
     current: object = source
     for segment in path.split("."):
         if not isinstance(current, Mapping) or segment not in current:
@@ -77,6 +81,9 @@ class OpenSearchConnectorV1:
         self._index_pattern = self._settings.index_pattern
         self._timestamp_field = self._settings.timestamp_field
         self._service_field = self._settings.service_field
+        self._service_query_field = (
+            self._settings.service_query_field or self._service_field
+        )
         self._severity_field = self._settings.severity_field
         self._message_field = self._settings.message_field
         self._trace_id_field = self._settings.trace_id_field
@@ -116,7 +123,7 @@ class OpenSearchConnectorV1:
                     "aggs": {
                         "services": {
                             "terms": {
-                                "field": self._service_field,
+                                "field": self._service_query_field,
                                 "size": min(self._settings.maximum_result_count, 1000),
                             }
                         }
@@ -162,7 +169,7 @@ class OpenSearchConnectorV1:
         filters: list[object] = [
             {
                 "terms": {
-                    self._service_field: [
+                    self._service_query_field: [
                         alias
                         for service in context.requested_services
                         for alias in context.aliases_for(service)

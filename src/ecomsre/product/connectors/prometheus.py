@@ -127,7 +127,9 @@ class PrometheusConnectorV1:
                 supports_multi_target=True,
                 supports_service_discovery=True,
                 supports_baseline=True,
-                supports_target_complete_coverage=True,
+                # Label discovery is endpoint-wide. It does not prove that every
+                # configured template has samples for every discovered service.
+                supports_target_complete_coverage=False,
                 maximum_window_seconds=3600,
             )
             for source in (EvidenceSourceV22.METRICS, EvidenceSourceV22.RESOURCES)
@@ -447,14 +449,23 @@ class PrometheusConnectorV1:
                     raise ValueError("Prometheus sample is invalid")
                 timestamp = float(pair[0])
                 value = float(pair[1])
-                if not math.isfinite(timestamp) or not math.isfinite(value):
-                    raise ValueError("Prometheus sample is non-finite")
+                if not math.isfinite(timestamp):
+                    raise ValueError("Prometheus sample timestamp is non-finite")
+                # Prometheus legitimately returns NaN for sparse histogram
+                # quantiles. It is missing evidence, not a schema failure.
+                if not math.isfinite(value):
+                    continue
+                tolerance_seconds = 1.0
                 if not (
-                    context.window.started_at.timestamp()
+                    context.window.started_at.timestamp() - tolerance_seconds
                     <= timestamp
-                    <= context.window.ended_at.timestamp()
+                    <= context.window.ended_at.timestamp() + tolerance_seconds
                 ):
                     raise ValueError("Prometheus sample is outside the requested window")
+                timestamp = min(
+                    context.window.ended_at.timestamp(),
+                    max(context.window.started_at.timestamp(), timestamp),
+                )
                 samples.append((timestamp, value))
         if len(samples) > self._settings.maximum_sample_count:
             samples = samples[: self._settings.maximum_sample_count]

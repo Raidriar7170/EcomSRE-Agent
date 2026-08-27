@@ -154,6 +154,10 @@ def test_prometheus_connector_discovers_and_normalizes_metrics_and_resources() -
         EvidenceSourceV22.METRICS,
         EvidenceSourceV22.RESOURCES,
     }
+    assert all(
+        not item.supports_target_complete_coverage
+        for item in health.capabilities
+    )
     metrics = next(item for item in results if item.source is EvidenceSourceV22.METRICS)
     resources = next(
         item for item in results if item.source is EvidenceSourceV22.RESOURCES
@@ -270,6 +274,71 @@ def test_prometheus_executes_metric_and_resource_action_parameters() -> None:
     connector.close()
 
 
+def test_prometheus_normalizes_subsecond_precision_and_skips_nan_samples() -> None:
+    offset_seconds = -0.5
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        query = request.url.params["query"]
+        started = float(request.url.params["start"])
+        value = "NaN" if query.startswith("latency") else "1"
+        return httpx.Response(
+            200,
+            json={
+                "status": "success",
+                "data": {
+                    "resultType": "matrix",
+                    "result": [
+                        {
+                            "metric": {"service_name": "payment"},
+                            "values": [[started + offset_seconds, value]],
+                        }
+                    ],
+                },
+            },
+        )
+
+    connector = PrometheusConnectorV1(
+        ConnectorConfigV1(
+            name="prometheus",
+            kind="PROMETHEUS",
+            endpoint="https://prometheus.test",
+            settings={
+                "query_templates": {
+                    "error_rate": "errors{service=\"{service}\"}",
+                    "request_support": "requests{service=\"{service}\"}",
+                    "latency": "latency{service=\"{service}\"}",
+                    "cpu": "cpu{service=\"{service}\"}",
+                    "memory": "memory{service=\"{service}\"}",
+                }
+            },
+            credential_refs={},
+        ),
+        credential_resolver=CredentialResolverV1(environment={}),
+        timeout_seconds=2,
+        transport=httpx.MockTransport(handler),
+    )
+
+    accepted = connector.query(CONTEXT)
+
+    metrics = next(
+        item for item in accepted if item.source is EvidenceSourceV22.METRICS
+    )
+    assert metrics.status is ReadSourceStatusV22.SUCCESS_NONEMPTY
+    assert "LATENCY_P95_MS" not in {
+        item.metric_kind.value for item in metrics.records
+    }
+    assert "REQUEST_SUPPORT" in {
+        item.metric_kind.value for item in metrics.records
+    }
+
+    offset_seconds = -2
+    rejected = connector.query(CONTEXT)
+
+    assert all(
+        item.status is ReadSourceStatusV22.FAILURE_SCHEMA for item in rejected
+    )
+
+
 def test_opensearch_connector_uses_bounded_search_and_projects_only_log_fields() -> None:
     requests: list[dict[str, object]] = []
 
@@ -338,6 +407,69 @@ def test_opensearch_connector_uses_bounded_search_and_projects_only_log_fields()
     assert "scenario_truth" not in result.model_dump_json()
     assert requests[1]["size"] == 50
     assert "trace_id" in requests[1]["_source"]
+
+
+def test_opensearch_connector_accepts_otel_flat_dotted_source_fields() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        if body["size"] == 0:
+            assert (
+                body["aggs"]["services"]["terms"]["field"]
+                == "resource.service.name.keyword"
+            )
+            return httpx.Response(
+                200,
+                json={
+                    "hits": {"hits": []},
+                    "aggregations": {"services": {"buckets": [{"key": "payment"}]}},
+                },
+            )
+        return httpx.Response(
+            200,
+            json={
+                "hits": {
+                    "hits": [
+                        {
+                            "_source": {
+                                "observedTimestamp": "2026-08-27T00:04:00Z",
+                                "resource.service.name": "payment",
+                                "severity.text": "WARN",
+                                "body": "flat OTel log",
+                                "trace_id": "abc",
+                            }
+                        }
+                    ],
+                    "total": {"value": 1},
+                }
+            },
+        )
+
+    connector = OpenSearchConnectorV1(
+        ConnectorConfigV1(
+            name="logs",
+            kind="OPENSEARCH",
+            endpoint="https://opensearch.test",
+            settings={
+                "index_pattern": "otel-logs-*",
+                "timestamp_field": "observedTimestamp",
+                "service_field": "resource.service.name",
+                "service_query_field": "resource.service.name.keyword",
+                "severity_field": "severity.text",
+                "message_field": "body",
+                "trace_id_field": "trace_id",
+            },
+            credential_refs={},
+        ),
+        credential_resolver=CredentialResolverV1(environment={}),
+        timeout_seconds=2,
+        transport=httpx.MockTransport(handler),
+    )
+
+    assert connector.verify().status is ConnectorAvailabilityV1.AVAILABLE
+    result = connector.query(CONTEXT)[0]
+
+    assert result.status is ReadSourceStatusV22.SUCCESS_NONEMPTY
+    assert result.records[0].message == "flat OTel log"
 
 
 def test_jaeger_connector_discovers_and_normalizes_causal_spans() -> None:
