@@ -138,6 +138,13 @@ class OpenSearchPublicSchemaFingerprintV022(ProductModelV1):
         return self
 
 
+class OpenSearchProbeTrafficProfileV022(ProductModelV1):
+    request_seed: int = Field(ge=0)
+    maximum_request_count: int = Field(ge=1, le=60)
+    requests_per_second: float = Field(gt=0, le=2, allow_inf_nan=False)
+    error_budget: int = Field(ge=1, le=10)
+
+
 class OpenSearchSchemaProbeProfileV022(ProductModelV1):
     schema_version: Literal["ecomsre.product.opensearch-schema-probe-profile.v022"] = (
         "ecomsre.product.opensearch-schema-probe-profile.v022"
@@ -149,6 +156,8 @@ class OpenSearchSchemaProbeProfileV022(ProductModelV1):
     maximum_sample_documents: Literal[5]
     maximum_response_bytes: Literal[2_000_000]
     recent_window_seconds: int = Field(ge=60, le=3600)
+    stabilization_seconds: int = Field(ge=0, le=120)
+    healthy_traffic_profile: OpenSearchProbeTrafficProfileV022
     private_root: Literal[
         ".local/product-v022/opensearch-schema-probe/private"
     ]
@@ -744,6 +753,7 @@ __all__ = (
     "OpenSearchMappingSnapshotV022",
     "OpenSearchProfileResolutionV022",
     "OpenSearchPublicSchemaFingerprintV022",
+    "OpenSearchProbeTrafficProfileV022",
     "OpenSearchSampleShapeSummaryV022",
     "OpenSearchSchemaProbeProfileV022",
     "build_public_schema_fingerprint_v022",
