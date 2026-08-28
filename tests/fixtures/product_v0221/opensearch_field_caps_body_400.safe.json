@@ -1,0 +1,27 @@
+{
+  "provenance": "SAFE_REPRODUCTION_NOT_HISTORICAL_RAW_RESPONSE",
+  "request": {
+    "method": "POST",
+    "path_template": "/{index}/_field_caps",
+    "query_parameters": {},
+    "body": {
+      "fields": [
+        "resource.service.name.keyword",
+        "observed.timestamp"
+      ]
+    }
+  },
+  "response": {
+    "error": {
+      "root_cause": [
+        {
+          "type": "illegal_argument_exception",
+          "reason": "request body does not support [fields]"
+        }
+      ],
+      "type": "illegal_argument_exception",
+      "reason": "request body does not support [fields]"
+    },
+    "status": 400
+  }
+}

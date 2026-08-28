@@ -1,0 +1,186 @@
+{
+  "schema_version": "ecomsre.product-v0221.historical-results.v1",
+  "goal_version": "ecomsre-product-v0221-opensearch-probe-protocol-v1",
+  "public_main_base": "8398a063de048064f160a7ffed236fbb3327b701",
+  "v02": {
+    "pr": 75,
+    "branch": "codex/product-v02-live-knowledge-loop-pilot",
+    "head": "a439f8882cd2fcdd3767f6bcfd5d955219fa1e15",
+    "terminal": "BLOCKED_ECOMSRE_PRODUCT_V02_UNKNOWN_FAULT_PROFILE",
+    "classification": "VALID_BLOCKED_ENGINEERING_EVIDENCE",
+    "readiness_blocker": "BASELINE_INSUFFICIENT_WINDOWS",
+    "fault_attempt_count": 0,
+    "merged": false,
+    "rerun_authority": 0,
+    "review_disposition": "DRAFT_REVIEW_REQUIRED",
+    "tracked_review_artifact": "docs/external-reviews/product-v02-pre-campaign-review.md",
+    "github_review_object_count": 0,
+    "github_comment_object_count": 0,
+    "pr_body_sha256": "cb4d67b2e4de684a32bccbc0e93010d48fec5244e09d8c7f74d17a7d66b85953"
+  },
+  "v021": {
+    "pr": 76,
+    "branch": "codex/product-v021-baseline-readiness-successor",
+    "head": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+    "terminal": "BLOCKED_ECOMSRE_PRODUCT_V021_BASELINE_READINESS",
+    "classification": "VALID_BLOCKED_ENGINEERING_EVIDENCE",
+    "readiness_attempt_count": 2,
+    "readiness_run_count": 2,
+    "accepted_window_count": 0,
+    "logs_terminal": "FAILURE_SCHEMA/CONNECTOR_SCHEMA_INVALID",
+    "fault_attempt_count": 0,
+    "merged": false,
+    "rerun_authority": 0,
+    "review_disposition": "DRAFT_REVIEW_REQUIRED",
+    "tracked_final_review": "ABSENT_AT_FROZEN_HEAD",
+    "github_review_object_count": 0,
+    "github_comment_object_count": 0,
+    "pr_body_review_summary": "Must Fix 0 / Should Fix 0 / Claim Accuracy PASS",
+    "pr_body_sha256": "2b66b0c457df32c6e628cb39e89b6859610a89a8ee4151dd768d77e9a1c883a7"
+  },
+  "v022": {
+    "pr": 77,
+    "branch": "codex/product-v022-opensearch-baseline-compatibility",
+    "head": "1568c72c3262befb90fb4e191592e51aa345bdcb",
+    "terminal": "BLOCKED_ECOMSRE_PRODUCT_V022_SCHEMA_PROBE",
+    "classification": "VALID_BLOCKED_ENGINEERING_EVIDENCE",
+    "campaign_id": "product-v022-schema-discovery-1",
+    "execution_count": 1,
+    "failure_stage": "FIELD_CAPS_QUERY",
+    "safe_message": "OpenSearch schema probe HTTP status 400",
+    "request_count": 2,
+    "maximum_request_count": 12,
+    "sample_count": 0,
+    "maximum_sample_count": 5,
+    "baseline_unchanged": true,
+    "owned_demo_cleanup": "CLEAN",
+    "retry_authority": "NONE",
+    "fault_attempt_count": 0,
+    "baseline_readiness_campaign_count": 0,
+    "knowledge_loop_campaign_count": 0,
+    "agent_writes": 0,
+    "runbook_executions": 0,
+    "action_authority": "NONE",
+    "merged": false,
+    "rerun_authority": 0,
+    "review_disposition": "DRAFT_REVIEW_REQUIRED",
+    "tracked_final_review": "ABSENT_AT_FROZEN_HEAD",
+    "github_review_object_count": 0,
+    "github_comment_object_count": 0,
+    "pr_body_sha256": "e4ce29f0be40e16b8b20407327633712997e1044a2bc8602ab5f7c8ff836ba8b"
+  },
+  "files": [
+    {
+      "path": "config/product-v02/live-pilot/calibration-consumed.json",
+      "revision": "a439f8882cd2fcdd3767f6bcfd5d955219fa1e15",
+      "role": "V02_CONSUMED_MARKER",
+      "sha256": "bd42c096efe5e85bedc79adb9446020a262bb1bfc0805e096e492eddedde6482",
+      "size_bytes": 798
+    },
+    {
+      "path": "docs/analysis/product-v02-cleanup-closure.json",
+      "revision": "a439f8882cd2fcdd3767f6bcfd5d955219fa1e15",
+      "role": "V02_CLEANUP_CLOSURE",
+      "sha256": "c581c7f0a46d5eeed9708b1243cee69bd52f5e8d2916549d1927d0e3a67eac83",
+      "size_bytes": 781
+    },
+    {
+      "path": "docs/analysis/product-v02-progress.json",
+      "revision": "a439f8882cd2fcdd3767f6bcfd5d955219fa1e15",
+      "role": "V02_PROGRESS",
+      "sha256": "c6e518dbb9e1532b870d46fa366f3ab24c15587084d375703adc289695e93795",
+      "size_bytes": 384
+    },
+    {
+      "path": "docs/results/product-v02-live-knowledge-loop.json",
+      "revision": "a439f8882cd2fcdd3767f6bcfd5d955219fa1e15",
+      "role": "V02_BLOCKED_RESULT",
+      "sha256": "ff1beef483107a362834b253de3bdbc38a29569ffb5d77a6a0a2117696f45eeb",
+      "size_bytes": 942
+    },
+    {
+      "path": "docs/external-reviews/product-v02-pre-campaign-review.md",
+      "revision": "a439f8882cd2fcdd3767f6bcfd5d955219fa1e15",
+      "role": "V02_REVIEW",
+      "sha256": "ff5a6e5b8ff666ba50814f4036fac73465203041fc849bce249f8df4a5a7d3a3",
+      "size_bytes": 1879
+    },
+    {
+      "path": "config/product-v021/baseline-readiness/profile.json",
+      "revision": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+      "role": "V021_QUERY_BINDING_PROFILE",
+      "sha256": "4104cf2b500592dfde9579c70125d9e54e642874cc7f4f4bc7dc8699a8fd3648",
+      "size_bytes": 1165
+    },
+    {
+      "path": "docs/analysis/product-v021-baseline-readiness.json",
+      "revision": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+      "role": "V021_BLOCKED_RESULT",
+      "sha256": "34ce8ac756a406853f1b2b3d25e57873911bfba26040ecded88f2cee5241aa41",
+      "size_bytes": 101532
+    },
+    {
+      "path": "docs/analysis/product-v021-baseline-readiness.md",
+      "revision": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+      "role": "V021_FINAL_REPORT",
+      "sha256": "95c409c611a9013b0551a48b1a1fdcac8084db14cc1db6c48cdce6a80628ad23",
+      "size_bytes": 546
+    },
+    {
+      "path": "docs/analysis/product-v021-baseline-readiness-attempt-1.json",
+      "revision": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+      "role": "V021_READINESS_ATTEMPT_1",
+      "sha256": "a4b3528c27dab7dfdbb004c1a1bcac2f3bcf4e921aae9acf8099ee64c6feb72a",
+      "size_bytes": 30894
+    },
+    {
+      "path": "docs/analysis/product-v021-baseline-readiness-attempt-2.json",
+      "revision": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+      "role": "V021_READINESS_ATTEMPT_2",
+      "sha256": "809ed7a83cca7dcdb886d82ce9c66cc70bf9dbfa64cd5da24acc48a84ea9594d",
+      "size_bytes": 30886
+    },
+    {
+      "path": "docs/analysis/product-v021-predecessor-baseline-audit.json",
+      "revision": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+      "role": "V021_PREDECESSOR_AUDIT",
+      "sha256": "cabe84b0d62ca5d987ba2941ffca5fd93b563700d027e83bf64f608d20f103c2",
+      "size_bytes": 2041
+    },
+    {
+      "path": "docs/analysis/product-v021-progress.json",
+      "revision": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+      "role": "V021_PROGRESS",
+      "sha256": "5d0a9c8246314c8df1266b0a7344830cf8002abd70efe1816ae026199cea1971",
+      "size_bytes": 844
+    },
+    {
+      "path": "config/product-v022/historical-results.v1.json",
+      "revision": "1568c72c3262befb90fb4e191592e51aa345bdcb",
+      "role": "V022_PREDECESSOR_HISTORY",
+      "sha256": "d1c8adcd48ef18e2c4407eacd09abea14c0c61a5301de7ee80bfa18017cb8948",
+      "size_bytes": 4693
+    },
+    {
+      "path": "config/product-v022/opensearch-probe/profile.json",
+      "revision": "1568c72c3262befb90fb4e191592e51aa345bdcb",
+      "role": "V022_PROBE_PROFILE",
+      "sha256": "a91eca7c9928e23c15c4fa1e4ed119b07be4a8a90d3d75ded2853f9f6f91f346",
+      "size_bytes": 994
+    },
+    {
+      "path": "docs/analysis/product-v022-schema-probe-blocker.json",
+      "revision": "1568c72c3262befb90fb4e191592e51aa345bdcb",
+      "role": "V022_BLOCKER",
+      "sha256": "6841f96afe66daf0858fa523c8bb5ca5f9da6c5b245db17ed1e7f2d856f25801",
+      "size_bytes": 1791
+    },
+    {
+      "path": "docs/analysis/product-v022-progress.json",
+      "revision": "1568c72c3262befb90fb4e191592e51aa345bdcb",
+      "role": "V022_PROGRESS",
+      "sha256": "0cd699cc5811a669c88cbb61325393011829291c2bd885dd31151a3ad3ddebc6",
+      "size_bytes": 1020
+    }
+  ]
+}
