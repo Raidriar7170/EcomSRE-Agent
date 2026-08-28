@@ -35,6 +35,9 @@ from ecomsre.product.settings import ProductSettingsV1
 from ecomsre.product.pilot.runtime_authority_v02 import (
     load_pilot_runtime_authority_v02,
 )
+from ecomsre.product.pilot.baseline_audit_v021 import (
+    BaselineReadinessAuditRepositoryV021,
+)
 from ecomsre.product.storage.object_store import ContentAddressedObjectStoreV1
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
 from ecomsre.product.telemetry.metrics import ProductMetricsV1
@@ -55,6 +58,7 @@ def run_one_job(
     services = ServiceCatalogRepositoryV1(store)
     capabilities = CapabilityMatrixRepositoryV1(store)
     baseline_repository = BaselineRepositoryV1(store)
+    baseline_audit_repository = BaselineReadinessAuditRepositoryV021(store)
     change_repository = ChangeEventRepositoryV1(store)
     object_store = ContentAddressedObjectStoreV1(
         settings.object_store_root,
@@ -102,6 +106,7 @@ def run_one_job(
         connectors=connector_registry,
         repository=baseline_repository,
         maximum_records_per_source=settings.maximum_evidence_records_per_source,
+        audit_repository=baseline_audit_repository,
     )
     pilot_runtime_authority = (
         None

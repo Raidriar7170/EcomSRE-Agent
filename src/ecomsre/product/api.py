@@ -17,6 +17,7 @@ from ecomsre.product.contracts import (
     HealthResultV1,
 )
 from ecomsre.product.jobs.contracts import ProductJobRecordV1, ProductJobTypeV1
+from ecomsre.product.pilot.baseline_audit_v021 import BaselineReadinessAuditV021
 from ecomsre.product.environment.capabilities import EnvironmentCapabilityMatrixV1
 from ecomsre.product.incidents.contracts import (
     DiagnosisResultV1,
@@ -188,6 +189,29 @@ def list_environment_baselines(
 ) -> BaselineListV1:
     request.app.state.environments.get(environment_id)
     return BaselineListV1(items=request.app.state.baselines.list(environment_id))
+
+
+@router.get(
+    "/v1/environments/{environment_id}/baseline-readiness",
+    response_model=BaselineReadinessAuditV021,
+)
+def get_environment_baseline_readiness(
+    request: Request,
+    environment_id: str,
+) -> BaselineReadinessAuditV021:
+    request.app.state.environments.get(environment_id)
+    return request.app.state.baseline_readiness_audits.get_latest(environment_id)
+
+
+@router.get(
+    "/v1/baselines/{baseline_id}/window-audit",
+    response_model=BaselineReadinessAuditV021,
+)
+def get_baseline_window_audit(
+    request: Request,
+    baseline_id: str,
+) -> BaselineReadinessAuditV021:
+    return request.app.state.baseline_readiness_audits.get_by_baseline(baseline_id)
 
 
 @router.post(

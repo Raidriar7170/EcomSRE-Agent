@@ -181,6 +181,11 @@ jobs:
           uv run --frozen --no-sync python -m
           scripts.ci.verify_product_v02_blocked_result
 
+      - name: Product v0.2.1 predecessor and baseline-audit verification
+        run: >-
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_product_v021_increment1
+
       - name: Verify Phase 5B protocol
         run: make phase5b-protocol-verify
 

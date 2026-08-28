@@ -1,0 +1,33 @@
+{
+  "schema_version": "ecomsre.product.pilot.campaign.v021",
+  "goal_version": "ecomsre-product-v021-live-baseline-knowledge-loop-successor-v1",
+  "required_readiness_terminal": "ECOMSRE_PRODUCT_V021_BASELINE_READINESS_PASS",
+  "required_profile_terminal": "ECOMSRE_PRODUCT_V021_UNKNOWN_FAULT_PROFILE_PASS",
+  "accepted_schedule": [
+    "N0",
+    "P1",
+    "P2",
+    "P3"
+  ],
+  "heldout_schedule": [
+    "H1"
+  ],
+  "episode_roles": {
+    "N0": "LIVE_NO_FAULT_NEGATIVE",
+    "P1": "FIT_POSITIVE",
+    "P2": "FIT_POSITIVE",
+    "P3": "SHADOW_POSITIVE",
+    "H1": "FINAL_HELDOUT_RECURRENCE"
+  },
+  "maximum_infrastructure_replacements_per_episode": 1,
+  "maximum_changed_calibration_iterations": 2,
+  "positive_episode_count": 3,
+  "live_no_fault_negative_count": 1,
+  "heldout_recurrence_maximum": 1,
+  "human_checkpoint_a": "UNFULFILLED",
+  "human_checkpoint_b": "UNFULFILLED",
+  "private_root": ".local/product-v021/private-live-control",
+  "product_data_root": ".local/product-v021/live-pilot",
+  "action_authority": "NONE",
+  "runbook_authority": "NONE"
+}

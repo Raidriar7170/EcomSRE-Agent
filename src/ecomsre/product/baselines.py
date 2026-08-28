@@ -8,6 +8,7 @@ from enum import Enum
 import json
 import math
 import re
+import sqlite3
 import statistics
 from typing import Literal
 
@@ -19,7 +20,6 @@ from ecomsre.dta_v2.v22.read_contracts import (
     LogRecordV22,
     MetricFactV22,
     MetricKindV22,
-    ReadSourceStatusV22,
     ResourceUsageRecordV22,
     TraceSpanV22,
     semantic_sha256_v22,
@@ -45,6 +45,15 @@ from ecomsre.product.errors import ProductError, not_found
 from ecomsre.product.ids import new_product_id
 from ecomsre.product.jobs.contracts import JobLeaseFenceV1
 from ecomsre.product.jobs.fencing import require_live_job_fence
+from ecomsre.product.pilot.baseline_audit_v021 import (
+    BaselineConnectorBindingV021,
+    BaselineConnectorExpectationV021,
+    BaselineReadinessAuditV021,
+    BaselineReadinessAuditRepositoryV021,
+    _put_readiness_audit_in_transaction_v021,
+    build_baseline_readiness_audit_v021,
+    evaluate_baseline_windows_v021,
+)
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
 
 
@@ -165,41 +174,70 @@ def build_environment_baseline(
     built_at: datetime,
     baseline_id: str | None = None,
     required_complete_sources: tuple[EvidenceSourceV22, ...] = (),
+    expected_windows_v021: tuple[ConnectorWindowV1, ...] | None = None,
+    connector_bindings_v021: tuple[
+        tuple[BaselineConnectorBindingV021, ...], ...
+    ]
+    | None = None,
+    connector_expectations_v021: tuple[
+        tuple[BaselineConnectorExpectationV021, ...], ...
+    ]
+    | None = None,
 ) -> EnvironmentBaselineV1:
     if len(window_results) > build_policy.window_count:
         raise ProductError(
             "BASELINE_WINDOW_COUNT_INVALID",
             "The baseline contains more windows than its policy allows.",
         )
+    if expected_windows_v021 is not None and len(window_results) != build_policy.window_count:
+        raise ProductError(
+            "BASELINE_WINDOW_COUNT_INVALID",
+            "The audited baseline window count differs from its policy.",
+            details={
+                "actual_window_count": len(window_results),
+                "required_window_count": build_policy.window_count,
+            },
+        )
+    expected_windows = expected_windows_v021 or tuple(
+        (
+            results[0].window
+            if results
+            else ConnectorWindowV1(
+                started_at=built_at - timedelta(seconds=index + 1),
+                ended_at=built_at - timedelta(seconds=index),
+            )
+        )
+        for index, results in enumerate(window_results)
+    )
+    evaluation = evaluate_baseline_windows_v021(
+        window_results=window_results,
+        required_complete_sources=required_complete_sources,
+        expected_windows=expected_windows,
+        connector_bindings=connector_bindings_v021,
+        connector_expectations=connector_expectations_v021,
+    )
     successful = tuple(
-        results
-        for results in window_results
-        if results
-        and all(
-            item.status
-            in {
-                ReadSourceStatusV22.SUCCESS_NONEMPTY,
-                ReadSourceStatusV22.SUCCESS_EMPTY,
-            }
-            and not item.truncated
-            for item in results
-        )
-        and any(item.records for item in results)
-        and all(
-            len(source_results) == 1
-            and set(source_results[0].requested_services).issubset(
-                source_results[0].covered_services
-            )
-            for required_source in required_complete_sources
-            for source_results in (
-                tuple(item for item in results if item.source is required_source),
-            )
-        )
+        window_results[ordinal - 1]
+        for ordinal in evaluation.accepted_ordinals
     )
     if len(successful) < build_policy.minimum_successful_windows:
         raise ProductError(
             "BASELINE_INSUFFICIENT_WINDOWS",
             "The baseline did not produce enough successful windows.",
+            details={
+                "accepted_window_ordinals": list(evaluation.accepted_ordinals),
+                "rejected_windows": [
+                    {
+                        "window_ordinal": item.window_ordinal,
+                        "rejection_reason_codes": [
+                            reason.value for reason in item.rejection_reason_codes
+                        ],
+                    }
+                    for item in evaluation.windows
+                    if not item.accepted
+                ],
+                "parity_sha256": evaluation.parity_sha256,
+            },
         )
     metric_values: dict[tuple[str, MetricKindV22], list[float]] = defaultdict(list)
     trace_values: dict[tuple[str, str], list[float]] = defaultdict(list)
@@ -307,48 +345,96 @@ class BaselineRepositoryV1:
         activate: bool,
         fence: JobLeaseFenceV1 | None = None,
     ) -> None:
+        with self.store.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            try:
+                require_live_job_fence(connection, fence)
+                self._put_in_transaction(connection, baseline, activate=activate)
+                connection.execute("COMMIT")
+            except Exception:
+                connection.execute("ROLLBACK")
+                raise
+
+    @staticmethod
+    def _put_in_transaction(
+        connection: sqlite3.Connection,
+        baseline: EnvironmentBaselineV1,
+        *,
+        activate: bool,
+    ) -> None:
         stored = baseline.model_copy(update={"active": False})
         serialized = json.dumps(
             stored.model_dump(mode="json"),
             sort_keys=True,
             separators=(",", ":"),
         )
+        existing = connection.execute(
+            "SELECT payload_json, active FROM baseline_versions WHERE baseline_id = ?",
+            (baseline.baseline_id,),
+        ).fetchone()
+        if existing is not None:
+            if existing["payload_json"] != serialized or bool(
+                existing["active"]
+            ) != activate:
+                raise ProductError(
+                    "BASELINE_IMMUTABLE_CONFLICT",
+                    "The baseline version already exists with different content.",
+                    status_code=409,
+                )
+            return
+        if activate:
+            connection.execute(
+                "UPDATE baseline_versions SET active = 0 WHERE environment_id = ?",
+                (baseline.environment_id,),
+            )
+        connection.execute(
+            """INSERT INTO baseline_versions(
+                baseline_id, environment_id, payload_json, active, created_at
+            ) VALUES (?, ?, ?, ?, ?)""",
+            (
+                baseline.baseline_id,
+                baseline.environment_id,
+                serialized,
+                int(activate),
+                baseline.built_at.isoformat(),
+            ),
+        )
+
+    def put_with_readiness_audit_v021(
+        self,
+        baseline: EnvironmentBaselineV1,
+        audit: BaselineReadinessAuditV021,
+        *,
+        activate: bool,
+        created_at: datetime,
+        fence: JobLeaseFenceV1 | None = None,
+    ) -> None:
+        """Atomically persist a passing v0.2.1 audit and its baseline."""
+
+        if (
+            not audit.final_builder_would_pass
+            or audit.environment_id != baseline.environment_id
+            or audit.baseline_entity_service_ids != baseline.service_ids
+            or audit.capability_sha256 != baseline.source_capability_sha256
+            or audit.build_policy != baseline.build_policy.model_dump(mode="json")
+            or audit.accepted_window_count != baseline.successful_windows
+        ):
+            raise ProductError(
+                "BASELINE_READINESS_AUDIT_PARITY_INVALID",
+                "The baseline and readiness audit do not describe the same accepted inputs.",
+                status_code=409,
+            )
         with self.store.connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
             try:
                 require_live_job_fence(connection, fence)
-                existing = connection.execute(
-                    "SELECT payload_json, active FROM baseline_versions WHERE baseline_id = ?",
-                    (baseline.baseline_id,),
-                ).fetchone()
-                if existing is not None:
-                    if existing["payload_json"] != serialized or bool(
-                        existing["active"]
-                    ) != activate:
-                        raise ProductError(
-                            "BASELINE_IMMUTABLE_CONFLICT",
-                            "The baseline version already exists with different content.",
-                            status_code=409,
-                        )
-                    connection.execute("COMMIT")
-                    return
-                if activate:
-                    connection.execute(
-                        "UPDATE baseline_versions SET active = 0 WHERE environment_id = ?",
-                        (baseline.environment_id,),
-                    )
-                connection.execute(
-                    """INSERT INTO baseline_versions(
-                        baseline_id, environment_id, payload_json, active, created_at
-                    ) VALUES (?, ?, ?, ?, ?)""",
-                    (
-                        baseline.baseline_id,
-                        baseline.environment_id,
-                        serialized,
-                        int(activate),
-                        baseline.built_at.isoformat(),
-                    ),
+                _put_readiness_audit_in_transaction_v021(
+                    connection,
+                    audit,
+                    baseline_id=baseline.baseline_id,
+                    created_at=created_at,
                 )
+                self._put_in_transaction(connection, baseline, activate=activate)
                 connection.execute("COMMIT")
             except Exception:
                 connection.execute("ROLLBACK")
@@ -431,10 +517,12 @@ class HistoricalBaselineServiceV1:
         connectors: ConnectorRegistryV1,
         repository: BaselineRepositoryV1,
         maximum_records_per_source: int,
+        audit_repository: BaselineReadinessAuditRepositoryV021 | None = None,
     ) -> None:
         self._connectors = connectors
         self._repository = repository
         self._maximum_records_per_source = maximum_records_per_source
+        self._audit_repository = audit_repository
 
     def build(
         self,
@@ -457,6 +545,7 @@ class HistoricalBaselineServiceV1:
                         status_code=409,
                     )
                 return existing
+        resolved_baseline_id = baseline_id or new_product_id("base")
         logical_services = tuple(
             sorted(item.logical_service for item in identity_map.services)
         )
@@ -498,7 +587,7 @@ class HistoricalBaselineServiceV1:
                     and capability.supports_historical_range
                     for capability in connector.capabilities()
                 ):
-                    connector_instances.append((config.kind, connector))
+                    connector_instances.append((config, connector))
                 else:
                     connector.close()
             if not connector_instances:
@@ -507,10 +596,16 @@ class HistoricalBaselineServiceV1:
                     "No configured connector supports a historical baseline range.",
                 )
             window_results: list[tuple[ConnectorQueryResultV1, ...]] = []
+            window_bindings: list[tuple[BaselineConnectorBindingV021, ...]] = []
+            window_expectations: list[
+                tuple[BaselineConnectorExpectationV021, ...]
+            ] = []
             for window in windows:
                 results: list[ConnectorQueryResultV1] = []
-                for kind, connector in connector_instances:
-                    alias_field = _ALIAS_FIELD_BY_KIND[kind]
+                bindings: list[BaselineConnectorBindingV021] = []
+                expectations: list[BaselineConnectorExpectationV021] = []
+                for config, connector in connector_instances:
+                    alias_field = _ALIAS_FIELD_BY_KIND[config.kind]
                     alias_map = (
                         {}
                         if alias_field is None
@@ -535,16 +630,60 @@ class HistoricalBaselineServiceV1:
                         if capability.supports_baseline
                         and capability.supports_historical_range
                     }
-                    if {item.source for item in connector_results} != expected_sources:
-                        raise ProductError(
-                            "BASELINE_CONNECTOR_CONTRACT_INVALID",
-                            "A connector omitted or added a historical baseline source.",
+                    expectations.append(
+                        BaselineConnectorExpectationV021(
+                            connector_name=config.name,
+                            connector_kind=config.kind,
+                            expected_sources=tuple(
+                                sorted(expected_sources, key=lambda item: item.value)
+                            ),
                         )
+                    )
                     results.extend(connector_results)
+                    bindings.extend(
+                        BaselineConnectorBindingV021(
+                            connector_name=config.name,
+                            connector_kind=config.kind,
+                        )
+                        for _item in connector_results
+                    )
                 window_results.append(tuple(results))
+                window_bindings.append(tuple(bindings))
+                window_expectations.append(tuple(expectations))
         finally:
-            for _kind, connector in connector_instances:
+            for _config, connector in connector_instances:
                 connector.close()
+        required_complete_sources = tuple(
+            item.source
+            for item in capability_matrix.sources
+            if item.target_complete_coverage
+            and item.status is SourceCapabilityStatusV1.AVAILABLE
+            and item.source is not EvidenceSourceV22.CHANGES
+        )
+        readiness_audit = build_baseline_readiness_audit_v021(
+            environment_id=environment.environment_id,
+            service_ids=logical_services,
+            baseline_entity_service_ids=tuple(
+                sorted(item.service_id for item in identity_map.services)
+            ),
+            build_policy=policy.model_dump(mode="json"),
+            capability_sha256=capability_matrix.capability_sha256,
+            required_complete_sources=required_complete_sources,
+            window_results=tuple(window_results),
+            expected_windows=windows,
+            connector_bindings=tuple(window_bindings),
+            connector_expectations=tuple(window_expectations),
+        )
+        if (
+            self._audit_repository is not None
+            and not readiness_audit.final_builder_would_pass
+        ):
+            self._audit_repository.put(
+                readiness_audit,
+                baseline_id=resolved_baseline_id,
+                created_at=built_at,
+                fence=fence,
+            )
         baseline = build_environment_baseline(
             environment_id=environment.environment_id,
             identity_map=identity_map,
@@ -552,16 +691,28 @@ class HistoricalBaselineServiceV1:
             build_policy=policy,
             window_results=tuple(window_results),
             built_at=built_at,
-            baseline_id=baseline_id,
-            required_complete_sources=tuple(
-                item.source
-                for item in capability_matrix.sources
-                if item.target_complete_coverage
-                and item.status is SourceCapabilityStatusV1.AVAILABLE
-                and item.source is not EvidenceSourceV22.CHANGES
-            ),
+            baseline_id=resolved_baseline_id,
+            required_complete_sources=required_complete_sources,
+            expected_windows_v021=windows,
+            connector_bindings_v021=tuple(window_bindings),
+            connector_expectations_v021=tuple(window_expectations),
         )
-        self._repository.put(baseline, activate=request.activate, fence=fence)
+        if self._audit_repository is None:
+            self._repository.put(baseline, activate=request.activate, fence=fence)
+        else:
+            if self._audit_repository.store.path != self._repository.store.path:
+                raise ProductError(
+                    "BASELINE_READINESS_STORE_MISMATCH",
+                    "The baseline and readiness audit must use the same store.",
+                    status_code=500,
+                )
+            self._repository.put_with_readiness_audit_v021(
+                baseline,
+                readiness_audit,
+                activate=request.activate,
+                created_at=built_at,
+                fence=fence,
+            )
         listed = self._repository.list(environment.environment_id)
         return next(item for item in listed if item.baseline_id == baseline.baseline_id)
 
