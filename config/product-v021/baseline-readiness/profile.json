@@ -14,7 +14,7 @@
   "connector_query_bindings": {
     "HTTP_HEALTH": "per-target-live-readiness-v1",
     "JAEGER": "bounded-traces-v1",
-    "OPENSEARCH": "bounded-logs-v1",
+    "OPENSEARCH": "bounded-logs-required-fields-v2",
     "PROMETHEUS": "per-query-covered-services-v1"
   },
   "healthy_traffic_profile": {
@@ -27,7 +27,7 @@
   "maximum_changed_attempts": 2,
   "private_root": ".local/product-v021/private-baseline-readiness",
   "profile_id": "checkout-stable-baseline-v021",
-  "profile_sha256": "3cf464d7713e3967f8279abc7301536c0dc778fd031d3c63a34b34eb5db52220",
+  "profile_sha256": "0dc3d5077a10224ac0c62b6a23619b838b88a44c5cc73234e132608f05fac44a",
   "public_root": ".local/product-v021/baseline-readiness",
   "schema_version": "ecomsre.product.baseline-readiness-profile.v021",
   "stabilization_seconds": 60

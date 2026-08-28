@@ -12,8 +12,10 @@ from ecomsre.dta_v2.v22.read_contracts import (
 )
 from ecomsre.product.baselines import (
     BaselineBuildModeV1,
+    BaselineJobCreateV1,
     BaselineBuildPolicyV1,
     BaselineRepositoryV1,
+    _select_candidate_identity_map_v021,
     build_environment_baseline,
 )
 from ecomsre.product.app import create_app
@@ -352,6 +354,30 @@ def test_non_required_multi_target_same_source_results_remain_valid() -> None:
 
     assert evaluation.accepted_ordinals == (1,)
     assert evaluation.windows[0].rejection_reason_codes == ()
+
+
+def test_candidate_service_selection_is_explicit_and_canonical(tmp_path) -> None:
+    store = SqliteStoreV1(tmp_path / "product.sqlite3")
+    environment = EnvironmentRepositoryV1(store).create(
+        {
+            "name": "v021-candidate-scope",
+            "explicit_service_catalog": ["checkout", "payment"],
+        },
+    )
+    identity_map = ServiceCatalogRepositoryV1(store).get_map(environment.environment_id)
+    request = BaselineJobCreateV1(candidate_services=("checkout",), activate=True)
+
+    selected = _select_candidate_identity_map_v021(identity_map, request)
+
+    assert tuple(item.logical_service for item in selected.services) == ("checkout",)
+    with pytest.raises(ValueError, match="canonical"):
+        BaselineJobCreateV1(candidate_services=("payment", "checkout"))
+    with pytest.raises(ProductError) as missing:
+        _select_candidate_identity_map_v021(
+            identity_map,
+            BaselineJobCreateV1(candidate_services=("frontend",)),
+        )
+    assert missing.value.code == "BASELINE_CANDIDATE_SERVICE_UNRESOLVED"
 
 
 def test_audit_pass_and_real_builder_share_accepted_ordinals(tmp_path) -> None:

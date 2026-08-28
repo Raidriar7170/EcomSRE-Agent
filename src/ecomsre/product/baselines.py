@@ -57,6 +57,11 @@ from ecomsre.product.pilot.baseline_audit_v021 import (
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
 
 
+BASELINE_REQUIRED_COMPLETE_SOURCE_POLICY_V021 = (
+    "GLOBAL_AVAILABLE_TARGET_COMPLETE_V1"
+)
+
+
 class BaselineBuildModeV1(str, Enum):
     HISTORICAL = "HISTORICAL"
     DEMO_ONLY = "DEMO_ONLY"
@@ -95,7 +100,20 @@ class BaselineBuildPolicyV1(ProductModelV1):
 
 class BaselineJobCreateV1(ProductModelV1):
     build_policy: BaselineBuildPolicyV1 = Field(default_factory=BaselineBuildPolicyV1)
+    candidate_services: tuple[str, ...] | None = Field(
+        default=None,
+        min_length=1,
+        max_length=20,
+    )
     activate: bool = False
+
+    @model_validator(mode="after")
+    def require_canonical_candidate_services(self) -> "BaselineJobCreateV1":
+        if self.candidate_services is not None and self.candidate_services != tuple(
+            sorted(set(self.candidate_services))
+        ):
+            raise ValueError("baseline candidate services are not canonical")
+        return self
 
 
 class TopologyEdgeV1(ProductModelV1):
@@ -510,6 +528,28 @@ _ALIAS_FIELD_BY_KIND = {
 }
 
 
+def _select_candidate_identity_map_v021(
+    identity_map: ServiceIdentityMapV1,
+    request: BaselineJobCreateV1,
+) -> ServiceIdentityMapV1:
+    if request.candidate_services is None:
+        return identity_map
+    by_logical = {item.logical_service: item for item in identity_map.services}
+    missing = tuple(
+        service for service in request.candidate_services if service not in by_logical
+    )
+    if missing:
+        raise ProductError(
+            "BASELINE_CANDIDATE_SERVICE_UNRESOLVED",
+            "One or more baseline candidate services are not verified.",
+            details={"missing_candidate_services": list(missing)},
+        )
+    return ServiceIdentityMapV1.build(
+        environment_id=identity_map.environment_id,
+        services=tuple(by_logical[service] for service in request.candidate_services),
+    )
+
+
 class HistoricalBaselineServiceV1:
     def __init__(
         self,
@@ -546,6 +586,7 @@ class HistoricalBaselineServiceV1:
                     )
                 return existing
         resolved_baseline_id = baseline_id or new_product_id("base")
+        identity_map = _select_candidate_identity_map_v021(identity_map, request)
         logical_services = tuple(
             sorted(item.logical_service for item in identity_map.services)
         )
@@ -718,6 +759,7 @@ class HistoricalBaselineServiceV1:
 
 
 __all__ = (
+    "BASELINE_REQUIRED_COMPLETE_SOURCE_POLICY_V021",
     "BaselineBuildModeV1",
     "BaselineBuildPolicyV1",
     "BaselineJobCreateV1",

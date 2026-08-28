@@ -1,0 +1,826 @@
+{
+  "accepted_window_count": 0,
+  "action_authority": "NONE",
+  "action_authority_violations": 0,
+  "agent_writes": 0,
+  "api_restart_verified": false,
+  "attempt_signature_sha256": "92b0bd0741822fe8cd2b9c29b0b5e27184328365114061bc82d13e012d7794c9",
+  "audit": {
+    "accepted_window_count": 0,
+    "audit_sha256": "97f2cd6f610038eda811e055b1c8f41d2f02b240e0295730b0c3fa2c7bfe23f9",
+    "baseline_entity_service_ids": [
+      "svc-8e722819b1ce8fb5f160f31c"
+    ],
+    "build_policy": {
+      "lookback_seconds": 180,
+      "minimum_successful_windows": 4,
+      "mode": "DEMO_ONLY",
+      "schema_version": "ecomsre.product.baseline-build-policy.v1",
+      "warmup_seconds": 180,
+      "window_count": 5
+    },
+    "capability_sha256": "6a9c7158e79bfd5ab1a24485e1a465e1a281a160119d6c9df91696e18bba502f",
+    "configured_window_count": 5,
+    "coverage_matrix": {
+      "METRICS": {
+        "checkout": 5
+      }
+    },
+    "environment_id": "env-43213d8ceb62f67ba9a5f79d",
+    "final_builder_would_pass": false,
+    "parity_sha256": "367236081e57ff0be235d74df73d70a677209912ff1b546e7bb32e4212efd362",
+    "required_complete_sources": [],
+    "required_window_count": 4,
+    "scheduled_window_count": 5,
+    "schema_version": "ecomsre.product.baseline-readiness-audit.v021",
+    "service_ids": [
+      "checkout"
+    ],
+    "source_acceptance_rates": {
+      "LOGS": 0.0,
+      "METRICS": 1.0,
+      "RESOURCES": 1.0,
+      "TRACES": 1.0
+    },
+    "windows": [
+      {
+        "accepted": false,
+        "connector_expectations": [
+          {
+            "connector_kind": "JAEGER",
+            "connector_name": "jaeger",
+            "expected_sources": [
+              "TRACES"
+            ],
+            "schema_version": "ecomsre.product.baseline-connector-expectation.v021"
+          },
+          {
+            "connector_kind": "OPENSEARCH",
+            "connector_name": "opensearch",
+            "expected_sources": [
+              "LOGS"
+            ],
+            "schema_version": "ecomsre.product.baseline-connector-expectation.v021"
+          },
+          {
+            "connector_kind": "PROMETHEUS",
+            "connector_name": "prometheus",
+            "expected_sources": [
+              "METRICS",
+              "RESOURCES"
+            ],
+            "schema_version": "ecomsre.product.baseline-connector-expectation.v021"
+          }
+        ],
+        "disposition": "REJECTED",
+        "has_any_record": true,
+        "rejection_reason_codes": [
+          "SOURCE_STATUS_FAILED"
+        ],
+        "required_sources_present": true,
+        "schema_version": "ecomsre.product.baseline-window-audit.v021",
+        "source_results": [
+          {
+            "accepted": false,
+            "connector_kind": "OPENSEARCH",
+            "connector_name": "opensearch",
+            "covered_services": [],
+            "latency_ms": 759.6302910023951,
+            "missing_services": [
+              "checkout"
+            ],
+            "record_count": 0,
+            "rejection_reason_codes": [
+              "SOURCE_STATUS_FAILED"
+            ],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "163dfe0666ca3469cccd6e908d424cbcea80507470bc0919ca927b34b83cb8d0",
+            "safe_error_code": "CONNECTOR_SCHEMA_INVALID",
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "LOGS",
+            "status": "FAILURE_SCHEMA",
+            "target_complete_required": false,
+            "target_complete_satisfied": false,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:52:05.207217Z",
+            "window_started_at": "2026-08-28T08:51:29.207217Z"
+          },
+          {
+            "accepted": true,
+            "connector_kind": "PROMETHEUS",
+            "connector_name": "prometheus",
+            "covered_services": [
+              "checkout"
+            ],
+            "latency_ms": 18.022959000518313,
+            "missing_services": [],
+            "record_count": 2,
+            "rejection_reason_codes": [],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "61385ca50724493d77d9b30e6f078ba39863ca4cbc11f1420d89f9a23f88dd4f",
+            "safe_error_code": null,
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "METRICS",
+            "status": "SUCCESS_NONEMPTY",
+            "target_complete_required": false,
+            "target_complete_satisfied": true,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:52:05.207217Z",
+            "window_started_at": "2026-08-28T08:51:29.207217Z"
+          },
+          {
+            "accepted": true,
+            "connector_kind": "PROMETHEUS",
+            "connector_name": "prometheus",
+            "covered_services": [],
+            "latency_ms": 18.022959000518313,
+            "missing_services": [
+              "checkout"
+            ],
+            "record_count": 0,
+            "rejection_reason_codes": [],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "875a4314f1f63e7b5e5b23480443fe18b3860562711f9bc6cddc59ec712ace21",
+            "safe_error_code": null,
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "RESOURCES",
+            "status": "SUCCESS_EMPTY",
+            "target_complete_required": false,
+            "target_complete_satisfied": false,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:52:05.207217Z",
+            "window_started_at": "2026-08-28T08:51:29.207217Z"
+          },
+          {
+            "accepted": true,
+            "connector_kind": "JAEGER",
+            "connector_name": "jaeger",
+            "covered_services": [],
+            "latency_ms": 5.33704199915519,
+            "missing_services": [
+              "checkout"
+            ],
+            "record_count": 0,
+            "rejection_reason_codes": [],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "801d676b0d27e925e09a315709ecc7a0fefa9f4824171da4f472434fcdf5c16a",
+            "safe_error_code": null,
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "TRACES",
+            "status": "SUCCESS_EMPTY",
+            "target_complete_required": false,
+            "target_complete_satisfied": false,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:52:05.207217Z",
+            "window_started_at": "2026-08-28T08:51:29.207217Z"
+          }
+        ],
+        "target_complete_sources_satisfied": true,
+        "window": {
+          "ended_at": "2026-08-28T08:52:05.207217Z",
+          "started_at": "2026-08-28T08:51:29.207217Z"
+        },
+        "window_ordinal": 1,
+        "window_sha256": "f20cbeb9106eded67c67e5d360efdcab6b0b45238af94d1cbcb999ee03444ea4"
+      },
+      {
+        "accepted": false,
+        "connector_expectations": [
+          {
+            "connector_kind": "JAEGER",
+            "connector_name": "jaeger",
+            "expected_sources": [
+              "TRACES"
+            ],
+            "schema_version": "ecomsre.product.baseline-connector-expectation.v021"
+          },
+          {
+            "connector_kind": "OPENSEARCH",
+            "connector_name": "opensearch",
+            "expected_sources": [
+              "LOGS"
+            ],
+            "schema_version": "ecomsre.product.baseline-connector-expectation.v021"
+          },
+          {
+            "connector_kind": "PROMETHEUS",
+            "connector_name": "prometheus",
+            "expected_sources": [
+              "METRICS",
+              "RESOURCES"
+            ],
+            "schema_version": "ecomsre.product.baseline-connector-expectation.v021"
+          }
+        ],
+        "disposition": "REJECTED",
+        "has_any_record": true,
+        "rejection_reason_codes": [
+          "SOURCE_STATUS_FAILED"
+        ],
+        "required_sources_present": true,
+        "schema_version": "ecomsre.product.baseline-window-audit.v021",
+        "source_results": [
+          {
+            "accepted": false,
+            "connector_kind": "OPENSEARCH",
+            "connector_name": "opensearch",
+            "covered_services": [],
+            "latency_ms": 13.410958003078122,
+            "missing_services": [
+              "checkout"
+            ],
+            "record_count": 0,
+            "rejection_reason_codes": [
+              "SOURCE_STATUS_FAILED"
+            ],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "5ae336d20012e6b874c58590b94b557c1a91adedeee0fb07eb487df5ac336443",
+            "safe_error_code": "CONNECTOR_SCHEMA_INVALID",
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "LOGS",
+            "status": "FAILURE_SCHEMA",
+            "target_complete_required": false,
+            "target_complete_satisfied": false,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:52:41.207217Z",
+            "window_started_at": "2026-08-28T08:52:05.207217Z"
+          },
+          {
+            "accepted": true,
+            "connector_kind": "PROMETHEUS",
+            "connector_name": "prometheus",
+            "covered_services": [
+              "checkout"
+            ],
+            "latency_ms": 13.140331007889472,
+            "missing_services": [],
+            "record_count": 2,
+            "rejection_reason_codes": [],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "9279573a548096f0d6e2fe97261b3a76a4266cd75a0ff9b8100655c7e108ff4a",
+            "safe_error_code": null,
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "METRICS",
+            "status": "SUCCESS_NONEMPTY",
+            "target_complete_required": false,
+            "target_complete_satisfied": true,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:52:41.207217Z",
+            "window_started_at": "2026-08-28T08:52:05.207217Z"
+          },
+          {
+            "accepted": true,
+            "connector_kind": "PROMETHEUS",
+            "connector_name": "prometheus",
+            "covered_services": [],
+            "latency_ms": 13.140331007889472,
+            "missing_services": [
+              "checkout"
+            ],
+            "record_count": 0,
+            "rejection_reason_codes": [],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "5afa71599339b36263da8cc0f0a458f76650b74ba95b0e8467fd35090964fde9",
+            "safe_error_code": null,
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "RESOURCES",
+            "status": "SUCCESS_EMPTY",
+            "target_complete_required": false,
+            "target_complete_satisfied": false,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:52:41.207217Z",
+            "window_started_at": "2026-08-28T08:52:05.207217Z"
+          },
+          {
+            "accepted": true,
+            "connector_kind": "JAEGER",
+            "connector_name": "jaeger",
+            "covered_services": [],
+            "latency_ms": 5.019958000048064,
+            "missing_services": [
+              "checkout"
+            ],
+            "record_count": 0,
+            "rejection_reason_codes": [],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "f309987d308d4fb293c716cc0b44be0dff0623e089b00daec43c699e2e86da6e",
+            "safe_error_code": null,
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "TRACES",
+            "status": "SUCCESS_EMPTY",
+            "target_complete_required": false,
+            "target_complete_satisfied": false,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:52:41.207217Z",
+            "window_started_at": "2026-08-28T08:52:05.207217Z"
+          }
+        ],
+        "target_complete_sources_satisfied": true,
+        "window": {
+          "ended_at": "2026-08-28T08:52:41.207217Z",
+          "started_at": "2026-08-28T08:52:05.207217Z"
+        },
+        "window_ordinal": 2,
+        "window_sha256": "75c6f10cd49afbd74ad3ce77d242d18d9170be3ad254fe0293a9b5c5e0d2f0b7"
+      },
+      {
+        "accepted": false,
+        "connector_expectations": [
+          {
+            "connector_kind": "JAEGER",
+            "connector_name": "jaeger",
+            "expected_sources": [
+              "TRACES"
+            ],
+            "schema_version": "ecomsre.product.baseline-connector-expectation.v021"
+          },
+          {
+            "connector_kind": "OPENSEARCH",
+            "connector_name": "opensearch",
+            "expected_sources": [
+              "LOGS"
+            ],
+            "schema_version": "ecomsre.product.baseline-connector-expectation.v021"
+          },
+          {
+            "connector_kind": "PROMETHEUS",
+            "connector_name": "prometheus",
+            "expected_sources": [
+              "METRICS",
+              "RESOURCES"
+            ],
+            "schema_version": "ecomsre.product.baseline-connector-expectation.v021"
+          }
+        ],
+        "disposition": "REJECTED",
+        "has_any_record": true,
+        "rejection_reason_codes": [
+          "SOURCE_STATUS_FAILED"
+        ],
+        "required_sources_present": true,
+        "schema_version": "ecomsre.product.baseline-window-audit.v021",
+        "source_results": [
+          {
+            "accepted": false,
+            "connector_kind": "OPENSEARCH",
+            "connector_name": "opensearch",
+            "covered_services": [],
+            "latency_ms": 9.471290999499615,
+            "missing_services": [
+              "checkout"
+            ],
+            "record_count": 0,
+            "rejection_reason_codes": [
+              "SOURCE_STATUS_FAILED"
+            ],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "6d0733642c01f8dda79ad3844bc917335e7cb2be95ee8df8ae422061857c7f40",
+            "safe_error_code": "CONNECTOR_SCHEMA_INVALID",
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "LOGS",
+            "status": "FAILURE_SCHEMA",
+            "target_complete_required": false,
+            "target_complete_satisfied": false,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:53:17.207217Z",
+            "window_started_at": "2026-08-28T08:52:41.207217Z"
+          },
+          {
+            "accepted": true,
+            "connector_kind": "PROMETHEUS",
+            "connector_name": "prometheus",
+            "covered_services": [
+              "checkout"
+            ],
+            "latency_ms": 12.046707997797057,
+            "missing_services": [],
+            "record_count": 2,
+            "rejection_reason_codes": [],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "502cbc401850720bea8c11a78526f32816fd4e28430b46ca658e9af04656fd0c",
+            "safe_error_code": null,
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "METRICS",
+            "status": "SUCCESS_NONEMPTY",
+            "target_complete_required": false,
+            "target_complete_satisfied": true,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:53:17.207217Z",
+            "window_started_at": "2026-08-28T08:52:41.207217Z"
+          },
+          {
+            "accepted": true,
+            "connector_kind": "PROMETHEUS",
+            "connector_name": "prometheus",
+            "covered_services": [],
+            "latency_ms": 12.046707997797057,
+            "missing_services": [
+              "checkout"
+            ],
+            "record_count": 0,
+            "rejection_reason_codes": [],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "4d07a167f23f9eaa51d305ee8165bcce60a2a16175b7ac6736d6dc339bf1f7b4",
+            "safe_error_code": null,
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "RESOURCES",
+            "status": "SUCCESS_EMPTY",
+            "target_complete_required": false,
+            "target_complete_satisfied": false,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:53:17.207217Z",
+            "window_started_at": "2026-08-28T08:52:41.207217Z"
+          },
+          {
+            "accepted": true,
+            "connector_kind": "JAEGER",
+            "connector_name": "jaeger",
+            "covered_services": [],
+            "latency_ms": 4.991959001927171,
+            "missing_services": [
+              "checkout"
+            ],
+            "record_count": 0,
+            "rejection_reason_codes": [],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "0a1cb28c1046d7fecdd2d162ac344a6c5aab9c5d9ed40c60d5bb763897734d1d",
+            "safe_error_code": null,
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "TRACES",
+            "status": "SUCCESS_EMPTY",
+            "target_complete_required": false,
+            "target_complete_satisfied": false,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:53:17.207217Z",
+            "window_started_at": "2026-08-28T08:52:41.207217Z"
+          }
+        ],
+        "target_complete_sources_satisfied": true,
+        "window": {
+          "ended_at": "2026-08-28T08:53:17.207217Z",
+          "started_at": "2026-08-28T08:52:41.207217Z"
+        },
+        "window_ordinal": 3,
+        "window_sha256": "dffc7aa46462ac453d5dab9949f195e7bedddbb748c622d14433b98dbab2c928"
+      },
+      {
+        "accepted": false,
+        "connector_expectations": [
+          {
+            "connector_kind": "JAEGER",
+            "connector_name": "jaeger",
+            "expected_sources": [
+              "TRACES"
+            ],
+            "schema_version": "ecomsre.product.baseline-connector-expectation.v021"
+          },
+          {
+            "connector_kind": "OPENSEARCH",
+            "connector_name": "opensearch",
+            "expected_sources": [
+              "LOGS"
+            ],
+            "schema_version": "ecomsre.product.baseline-connector-expectation.v021"
+          },
+          {
+            "connector_kind": "PROMETHEUS",
+            "connector_name": "prometheus",
+            "expected_sources": [
+              "METRICS",
+              "RESOURCES"
+            ],
+            "schema_version": "ecomsre.product.baseline-connector-expectation.v021"
+          }
+        ],
+        "disposition": "REJECTED",
+        "has_any_record": true,
+        "rejection_reason_codes": [
+          "SOURCE_STATUS_FAILED"
+        ],
+        "required_sources_present": true,
+        "schema_version": "ecomsre.product.baseline-window-audit.v021",
+        "source_results": [
+          {
+            "accepted": false,
+            "connector_kind": "OPENSEARCH",
+            "connector_name": "opensearch",
+            "covered_services": [],
+            "latency_ms": 9.680666000349447,
+            "missing_services": [
+              "checkout"
+            ],
+            "record_count": 0,
+            "rejection_reason_codes": [
+              "SOURCE_STATUS_FAILED"
+            ],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "ce9b65c456f37056692ab6e4c5458ab92a01f04f1cec808fd191ca81980f3296",
+            "safe_error_code": "CONNECTOR_SCHEMA_INVALID",
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "LOGS",
+            "status": "FAILURE_SCHEMA",
+            "target_complete_required": false,
+            "target_complete_satisfied": false,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:53:53.207217Z",
+            "window_started_at": "2026-08-28T08:53:17.207217Z"
+          },
+          {
+            "accepted": true,
+            "connector_kind": "PROMETHEUS",
+            "connector_name": "prometheus",
+            "covered_services": [
+              "checkout"
+            ],
+            "latency_ms": 14.176207001582952,
+            "missing_services": [],
+            "record_count": 2,
+            "rejection_reason_codes": [],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "4da7ad6af7dcb60866b3bce87ca6c0778fd9027203cd785861feb32729e4dd95",
+            "safe_error_code": null,
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "METRICS",
+            "status": "SUCCESS_NONEMPTY",
+            "target_complete_required": false,
+            "target_complete_satisfied": true,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:53:53.207217Z",
+            "window_started_at": "2026-08-28T08:53:17.207217Z"
+          },
+          {
+            "accepted": true,
+            "connector_kind": "PROMETHEUS",
+            "connector_name": "prometheus",
+            "covered_services": [],
+            "latency_ms": 14.176207001582952,
+            "missing_services": [
+              "checkout"
+            ],
+            "record_count": 0,
+            "rejection_reason_codes": [],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "bfa00f9a49703f382944e293bd2472f4c2885f0ebe15a06bd8c120b7d8cc3279",
+            "safe_error_code": null,
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "RESOURCES",
+            "status": "SUCCESS_EMPTY",
+            "target_complete_required": false,
+            "target_complete_satisfied": false,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:53:53.207217Z",
+            "window_started_at": "2026-08-28T08:53:17.207217Z"
+          },
+          {
+            "accepted": true,
+            "connector_kind": "JAEGER",
+            "connector_name": "jaeger",
+            "covered_services": [],
+            "latency_ms": 5.0905829994007945,
+            "missing_services": [
+              "checkout"
+            ],
+            "record_count": 0,
+            "rejection_reason_codes": [],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "f5ff5e3e2c749912c25d1be7c4e3174875d91d673affeb86ba119f5a26c96332",
+            "safe_error_code": null,
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "TRACES",
+            "status": "SUCCESS_EMPTY",
+            "target_complete_required": false,
+            "target_complete_satisfied": false,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:53:53.207217Z",
+            "window_started_at": "2026-08-28T08:53:17.207217Z"
+          }
+        ],
+        "target_complete_sources_satisfied": true,
+        "window": {
+          "ended_at": "2026-08-28T08:53:53.207217Z",
+          "started_at": "2026-08-28T08:53:17.207217Z"
+        },
+        "window_ordinal": 4,
+        "window_sha256": "3484d46f1f28ff91ae80d6f82d1935adce77a8137c04c9469aa5189827250ba2"
+      },
+      {
+        "accepted": false,
+        "connector_expectations": [
+          {
+            "connector_kind": "JAEGER",
+            "connector_name": "jaeger",
+            "expected_sources": [
+              "TRACES"
+            ],
+            "schema_version": "ecomsre.product.baseline-connector-expectation.v021"
+          },
+          {
+            "connector_kind": "OPENSEARCH",
+            "connector_name": "opensearch",
+            "expected_sources": [
+              "LOGS"
+            ],
+            "schema_version": "ecomsre.product.baseline-connector-expectation.v021"
+          },
+          {
+            "connector_kind": "PROMETHEUS",
+            "connector_name": "prometheus",
+            "expected_sources": [
+              "METRICS",
+              "RESOURCES"
+            ],
+            "schema_version": "ecomsre.product.baseline-connector-expectation.v021"
+          }
+        ],
+        "disposition": "REJECTED",
+        "has_any_record": true,
+        "rejection_reason_codes": [
+          "SOURCE_STATUS_FAILED"
+        ],
+        "required_sources_present": true,
+        "schema_version": "ecomsre.product.baseline-window-audit.v021",
+        "source_results": [
+          {
+            "accepted": false,
+            "connector_kind": "OPENSEARCH",
+            "connector_name": "opensearch",
+            "covered_services": [],
+            "latency_ms": 12.118958002247382,
+            "missing_services": [
+              "checkout"
+            ],
+            "record_count": 0,
+            "rejection_reason_codes": [
+              "SOURCE_STATUS_FAILED"
+            ],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "ff92483dce97bfd095793353eea240d105bad6cfee7d73a44f28423991eb6e0b",
+            "safe_error_code": "CONNECTOR_SCHEMA_INVALID",
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "LOGS",
+            "status": "FAILURE_SCHEMA",
+            "target_complete_required": false,
+            "target_complete_satisfied": false,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:54:29.207217Z",
+            "window_started_at": "2026-08-28T08:53:53.207217Z"
+          },
+          {
+            "accepted": true,
+            "connector_kind": "PROMETHEUS",
+            "connector_name": "prometheus",
+            "covered_services": [
+              "checkout"
+            ],
+            "latency_ms": 17.51349800179014,
+            "missing_services": [],
+            "record_count": 2,
+            "rejection_reason_codes": [],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "4dcfe6913ee0f5724bd2ecb1a27419904955d4c8d7427d88865e4dc58934825c",
+            "safe_error_code": null,
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "METRICS",
+            "status": "SUCCESS_NONEMPTY",
+            "target_complete_required": false,
+            "target_complete_satisfied": true,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:54:29.207217Z",
+            "window_started_at": "2026-08-28T08:53:53.207217Z"
+          },
+          {
+            "accepted": true,
+            "connector_kind": "PROMETHEUS",
+            "connector_name": "prometheus",
+            "covered_services": [],
+            "latency_ms": 17.51349800179014,
+            "missing_services": [
+              "checkout"
+            ],
+            "record_count": 0,
+            "rejection_reason_codes": [],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "28a3ecf5651de5d57134d8d1357d56261002177bc49e8d53c94fcb360962c7e1",
+            "safe_error_code": null,
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "RESOURCES",
+            "status": "SUCCESS_EMPTY",
+            "target_complete_required": false,
+            "target_complete_satisfied": false,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:54:29.207217Z",
+            "window_started_at": "2026-08-28T08:53:53.207217Z"
+          },
+          {
+            "accepted": true,
+            "connector_kind": "JAEGER",
+            "connector_name": "jaeger",
+            "covered_services": [],
+            "latency_ms": 6.136625001090579,
+            "missing_services": [
+              "checkout"
+            ],
+            "record_count": 0,
+            "rejection_reason_codes": [],
+            "requested_services": [
+              "checkout"
+            ],
+            "result_sha256": "b3259709cd4d17f22af859f7b894b4fa63cfbe2b4aac8470d6b2bba9f2eef4ed",
+            "safe_error_code": null,
+            "schema_version": "ecomsre.product.baseline-source-window-audit.v021",
+            "source": "TRACES",
+            "status": "SUCCESS_EMPTY",
+            "target_complete_required": false,
+            "target_complete_satisfied": false,
+            "truncated": false,
+            "window_ended_at": "2026-08-28T08:54:29.207217Z",
+            "window_started_at": "2026-08-28T08:53:53.207217Z"
+          }
+        ],
+        "target_complete_sources_satisfied": true,
+        "window": {
+          "ended_at": "2026-08-28T08:54:29.207217Z",
+          "started_at": "2026-08-28T08:53:53.207217Z"
+        },
+        "window_ordinal": 5,
+        "window_sha256": "127153b38cce1bdb31fbe3cfe3e4be2985a96eab50d1e851230c345d2ee0493c"
+      }
+    ]
+  },
+  "audit_sha256": "97f2cd6f610038eda811e055b1c8f41d2f02b240e0295730b0c3fa2c7bfe23f9",
+  "baseline_active": false,
+  "baseline_id": null,
+  "baseline_job_safe_error_code": "BASELINE_INSUFFICIENT_WINDOWS",
+  "baseline_sha256": null,
+  "changed_attempt_number": 1,
+  "changed_parameter": "INITIAL",
+  "disposition": "TARGETED_REPAIR_ELIGIBLE",
+  "environment_id": "env-43213d8ceb62f67ba9a5f79d",
+  "failure_before_cleanup_sha256": "e85fccc72b310ac42923435ef2ccee2cd645a1e7ef34768ab6116f2af12a2bc3",
+  "failure_domain": "CAMPAIGN",
+  "fault_attempt_count": 0,
+  "healthy_traffic_stopped": true,
+  "infrastructure_replacement": false,
+  "observed_at": "2026-08-28T08:58:47.243538Z",
+  "outer_baseline_restored": true,
+  "owned_demo_cleanup": "CLEAN",
+  "parity_sha256": "367236081e57ff0be235d74df73d70a677209912ff1b546e7bb32e4212efd362",
+  "private_report_sha256": "663d5f346981ff7b2f7df923397c0aff9ecf9fb56ee4246b5600c16afd259949",
+  "queue_default_unchanged": true,
+  "report_sha256": "d743ff1e89edfc20262a7346bd8f93db0ce492488c6a1e788b6b247a7c5fe94d",
+  "run_number": 1,
+  "runbook_executions": 0,
+  "safe_error_type": "RuntimeError",
+  "scheduled_window_count": 5,
+  "schema_version": "ecomsre.product.public-baseline-readiness-attempt.v021",
+  "terminal": "ECOMSRE_PRODUCT_V021_BASELINE_READINESS_REPAIR_REQUIRED",
+  "traffic_result": {
+    "attempted": 180,
+    "duration_seconds": 385.2899532500014,
+    "failed": 0,
+    "request_seed": 501,
+    "result_sha256": "1a1fc9bff9a4bee1e6d8dcb44ab4494dc66a9efc38585618f317df5363481c8e",
+    "schema_version": "ecomsre.product.healthy-traffic-result.v021",
+    "stopped_on_error_budget": false,
+    "succeeded": 180
+  },
+  "worker_restart_verified": false
+}

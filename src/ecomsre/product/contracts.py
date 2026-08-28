@@ -79,6 +79,10 @@ class OpenSearchConnectorSettingsV1(ProductModelV1):
     service_query_field: str | None = Field(default=None, min_length=1, max_length=255)
     severity_field: str = Field(min_length=1, max_length=255)
     message_field: str = Field(min_length=1, max_length=255)
+    message_projection_policy: Literal[
+        "AS_OBSERVED",
+        "OBSERVER_SYMPTOM_V1",
+    ] = "AS_OBSERVED"
     trace_id_field: str | None = Field(default=None, min_length=1, max_length=255)
     severity_filter: tuple[str, ...] = Field(default_factory=tuple, max_length=4)
     maximum_result_count: int = Field(default=200, ge=1, le=200)
