@@ -193,6 +193,12 @@ jobs:
           uv run --frozen --no-sync python -m
           scripts.ci.verify_product_v022_increment1
 
+      - name: Product v0.2.2 consumed schema-probe blocker verification
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_product_v022_schema_probe_blocker
+
       - name: Product v0.2.2 focused fixture tests
         run: >-
           env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"

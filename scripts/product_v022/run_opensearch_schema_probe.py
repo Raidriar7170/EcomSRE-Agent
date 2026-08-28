@@ -24,6 +24,31 @@ def verify_opensearch_schema_probe_contract_v022(
     profile = load_schema_probe_profile_v022(
         config_path or root / "config/product-v022/opensearch-probe/profile.json"
     )
+    blocker_path = root / "docs/analysis/product-v022-schema-probe-blocker.json"
+    if blocker_path.exists():
+        from scripts.ci.verify_product_v022_schema_probe_blocker import (
+            verify_product_v022_schema_probe_blocker,
+        )
+
+        blocker = verify_product_v022_schema_probe_blocker(root)
+        return {
+            "status": blocker["status"],
+            "history_status": history["status"],
+            "campaign_id": profile.campaign_id,
+            "profile_sha256": profile.profile_sha256,
+            "maximum_request_count": profile.maximum_request_count,
+            "maximum_sample_documents": profile.maximum_sample_documents,
+            "maximum_response_bytes": profile.maximum_response_bytes,
+            "execution_count": blocker["execution_count"],
+            "completed": True,
+            "request_count": blocker["request_count"],
+            "sample_count": blocker["sample_count"],
+            "baseline_unchanged": blocker["baseline_unchanged"],
+            "owned_demo_cleanup": blocker["owned_demo_cleanup"],
+            "fault_attempt_count": 0,
+            "agent_writes": 0,
+            "runbook_executions": 0,
+        }
     private_root = root / profile.private_root
     start = private_root / "schema-probe-start.json"
     complete = private_root / "schema-probe-complete.json"
@@ -67,14 +92,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         if arguments.config.is_absolute()
         else arguments.project_root / arguments.config
     )
-    if arguments.execute_live:
+    current = verify_opensearch_schema_probe_contract_v022(
+        arguments.project_root,
+        config,
+    )
+    if arguments.execute_live and current["execution_count"] == 0:
         live = import_module("ecomsre.product.pilot.live_schema_probe_v022")
         result = live.run_live_schema_probe_v022(arguments.project_root, config)
     else:
-        result = verify_opensearch_schema_probe_contract_v022(
-            arguments.project_root,
-            config,
-        )
+        result = current
     print(json.dumps(result, separators=(",", ":"), sort_keys=True))
     return 0
 

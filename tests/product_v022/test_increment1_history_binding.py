@@ -27,11 +27,11 @@ def test_v022_history_binds_both_blocked_predecessors() -> None:
     assert result["runbook_executions"] == 0
 
 
-def test_increment1_terminal_is_bound_without_live_execution() -> None:
+def test_increment1_instrumentation_remains_bound_after_probe_consumption() -> None:
     result = verify_product_v022_increment1(ROOT)
     assert result["status"] == (
         "ECOMSRE_PRODUCT_V022_SCHEMA_INSTRUMENTATION_READY"
     )
     assert result["typed_error_code_count"] == 30
-    assert result["schema_probe_execution_count"] == 0
+    assert result["schema_probe_execution_count"] == 1
     assert result["v021_readiness_attempt_count"] == 2

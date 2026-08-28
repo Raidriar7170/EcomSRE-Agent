@@ -31,7 +31,7 @@ def test_history_verify_cli_reports_both_frozen_predecessors() -> None:
     assert result["fault_attempt_count"] == 0
 
 
-def test_probe_cli_defaults_to_check_only_without_consuming_campaign() -> None:
+def test_probe_cli_reports_consumed_blocker_without_another_campaign() -> None:
     private_root = (
         ROOT / ".local/product-v022/opensearch-schema-probe/private"
     )
@@ -44,7 +44,26 @@ def test_probe_cli_defaults_to_check_only_without_consuming_campaign() -> None:
     )
     after = tuple(private_root.glob("schema-probe-*.json"))
 
-    assert result["status"] == "ECOMSRE_PRODUCT_V022_SCHEMA_PROBE_CONTRACT_READY"
-    assert result["execution_count"] == 0
+    assert result["status"] == "BLOCKED_ECOMSRE_PRODUCT_V022_SCHEMA_PROBE"
+    assert result["execution_count"] == 1
+    assert result["request_count"] == 2
+    assert result["owned_demo_cleanup"] == "CLEAN"
     assert result["maximum_request_count"] == 12
-    assert before == after == ()
+    assert before == after
+
+
+def test_probe_cli_refuses_a_second_live_execution() -> None:
+    private_root = ROOT / ".local/product-v022/opensearch-schema-probe/private"
+    before = tuple(private_root.glob("schema-probe-*.json"))
+    result = _run(
+        "product-v022",
+        "opensearch-probe",
+        "--config",
+        "config/product-v022/opensearch-probe/profile.json",
+        "--execute-live",
+    )
+    after = tuple(private_root.glob("schema-probe-*.json"))
+
+    assert result["status"] == "BLOCKED_ECOMSRE_PRODUCT_V022_SCHEMA_PROBE"
+    assert result["execution_count"] == 1
+    assert before == after

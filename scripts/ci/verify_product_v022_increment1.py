@@ -40,12 +40,8 @@ def verify_product_v022_increment1(project_root: Path) -> dict[str, object]:
             "ecomsre-product-v022-opensearch-baseline-compatibility-v1"
         ),
         "branch": "codex/product-v022-opensearch-baseline-compatibility",
-        "increment": 1,
-        "terminal": READY_TERMINAL,
         "v02_terminal": "BLOCKED_ECOMSRE_PRODUCT_V02_UNKNOWN_FAULT_PROFILE",
         "v021_terminal": "BLOCKED_ECOMSRE_PRODUCT_V021_BASELINE_READINESS",
-        "next_boundary": "ONE_LIVE_SCHEMA_DISCOVERY_CAMPAIGN",
-        "schema_probe_execution_count": 0,
         "offline_changed_iteration_count": 0,
         "connector_smoke_changed_attempt_count": 0,
         "baseline_readiness_campaign_count": 0,
@@ -61,6 +57,28 @@ def verify_product_v022_increment1(project_root: Path) -> dict[str, object]:
     }
     if {key: progress.get(key) for key in expected} != expected:
         raise ValueError("Product v0.2.2 Increment 1 progress differs")
+    allowed_phase = (
+        (
+            1,
+            READY_TERMINAL,
+            "ONE_LIVE_SCHEMA_DISCOVERY_CAMPAIGN",
+            0,
+        ),
+        (
+            2,
+            "BLOCKED_ECOMSRE_PRODUCT_V022_SCHEMA_PROBE",
+            "STOPPED_CONSUMED_SCHEMA_PROBE",
+            1,
+        ),
+    )
+    phase = (
+        progress.get("increment"),
+        progress.get("terminal"),
+        progress.get("next_boundary"),
+        progress.get("schema_probe_execution_count"),
+    )
+    if phase not in allowed_phase:
+        raise ValueError("Product v0.2.2 Increment 1 monotonic progress differs")
     digest = progress.get("progress_sha256")
     if digest != semantic_sha256_v22(
         {key: value for key, value in progress.items() if key != "progress_sha256"}
@@ -85,7 +103,7 @@ def verify_product_v022_increment1(project_root: Path) -> dict[str, object]:
         "history_status": history["status"],
         "schema_probe_contract_status": probe["status"],
         "typed_error_code_count": len(OpenSearchSchemaErrorCodeV022),
-        "schema_probe_execution_count": probe["execution_count"],
+        "schema_probe_execution_count": progress["schema_probe_execution_count"],
         "v021_readiness_attempt_count": 2,
         "fault_attempt_count": 0,
         "agent_writes": 0,
