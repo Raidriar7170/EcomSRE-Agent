@@ -1,0 +1,115 @@
+{
+  "schema_version": "ecomsre.product-v022.historical-results.v1",
+  "goal_version": "ecomsre-product-v022-opensearch-baseline-compatibility-v1",
+  "public_main_base": "8398a063de048064f160a7ffed236fbb3327b701",
+  "v02": {
+    "pr": 75,
+    "branch": "codex/product-v02-live-knowledge-loop-pilot",
+    "head": "a439f8882cd2fcdd3767f6bcfd5d955219fa1e15",
+    "terminal": "BLOCKED_ECOMSRE_PRODUCT_V02_UNKNOWN_FAULT_PROFILE",
+    "classification": "VALID_BLOCKED_ENGINEERING_EVIDENCE",
+    "readiness_blocker": "BASELINE_INSUFFICIENT_WINDOWS",
+    "fault_attempt_count": 0,
+    "merged": false,
+    "rerun_authority": 0
+  },
+  "v021": {
+    "pr": 76,
+    "branch": "codex/product-v021-baseline-readiness-successor",
+    "head": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+    "terminal": "BLOCKED_ECOMSRE_PRODUCT_V021_BASELINE_READINESS",
+    "classification": "VALID_BLOCKED_ENGINEERING_EVIDENCE",
+    "readiness_attempt_count": 2,
+    "readiness_run_count": 2,
+    "accepted_window_count": 0,
+    "logs_terminal": "FAILURE_SCHEMA/CONNECTOR_SCHEMA_INVALID",
+    "fault_attempt_count": 0,
+    "merged": false,
+    "rerun_authority": 0,
+    "review_disposition": "DRAFT_REVIEW_REQUIRED",
+    "tracked_final_review": "ABSENT_AT_FROZEN_HEAD",
+    "github_review_object_count": 0,
+    "github_comment_object_count": 0,
+    "pr_body_review_summary": "Must Fix 0 / Should Fix 0 / Claim Accuracy PASS",
+    "pr_body_sha256": "2b66b0c457df32c6e628cb39e89b6859610a89a8ee4151dd768d77e9a1c883a7"
+  },
+  "files": [
+    {
+      "path": "config/product-v02/live-pilot/calibration-consumed.json",
+      "revision": "a439f8882cd2fcdd3767f6bcfd5d955219fa1e15",
+      "role": "V02_CONSUMED_MARKER",
+      "sha256": "bd42c096efe5e85bedc79adb9446020a262bb1bfc0805e096e492eddedde6482",
+      "size_bytes": 798
+    },
+    {
+      "path": "docs/analysis/product-v02-cleanup-closure.json",
+      "revision": "a439f8882cd2fcdd3767f6bcfd5d955219fa1e15",
+      "role": "V02_CLEANUP_CLOSURE",
+      "sha256": "c581c7f0a46d5eeed9708b1243cee69bd52f5e8d2916549d1927d0e3a67eac83",
+      "size_bytes": 781
+    },
+    {
+      "path": "docs/analysis/product-v02-progress.json",
+      "revision": "a439f8882cd2fcdd3767f6bcfd5d955219fa1e15",
+      "role": "V02_PROGRESS",
+      "sha256": "c6e518dbb9e1532b870d46fa366f3ab24c15587084d375703adc289695e93795",
+      "size_bytes": 384
+    },
+    {
+      "path": "docs/results/product-v02-live-knowledge-loop.json",
+      "revision": "a439f8882cd2fcdd3767f6bcfd5d955219fa1e15",
+      "role": "V02_BLOCKED_RESULT",
+      "sha256": "ff1beef483107a362834b253de3bdbc38a29569ffb5d77a6a0a2117696f45eeb",
+      "size_bytes": 942
+    },
+    {
+      "path": "config/product-v021/baseline-readiness/profile.json",
+      "revision": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+      "role": "V021_QUERY_BINDING_PROFILE",
+      "sha256": "4104cf2b500592dfde9579c70125d9e54e642874cc7f4f4bc7dc8699a8fd3648",
+      "size_bytes": 1165
+    },
+    {
+      "path": "docs/analysis/product-v021-baseline-readiness.json",
+      "revision": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+      "role": "V021_BLOCKED_RESULT",
+      "sha256": "34ce8ac756a406853f1b2b3d25e57873911bfba26040ecded88f2cee5241aa41",
+      "size_bytes": 101532
+    },
+    {
+      "path": "docs/analysis/product-v021-baseline-readiness.md",
+      "revision": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+      "role": "V021_FINAL_REPORT",
+      "sha256": "95c409c611a9013b0551a48b1a1fdcac8084db14cc1db6c48cdce6a80628ad23",
+      "size_bytes": 546
+    },
+    {
+      "path": "docs/analysis/product-v021-baseline-readiness-attempt-1.json",
+      "revision": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+      "role": "V021_READINESS_ATTEMPT_1",
+      "sha256": "a4b3528c27dab7dfdbb004c1a1bcac2f3bcf4e921aae9acf8099ee64c6feb72a",
+      "size_bytes": 30894
+    },
+    {
+      "path": "docs/analysis/product-v021-baseline-readiness-attempt-2.json",
+      "revision": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+      "role": "V021_READINESS_ATTEMPT_2",
+      "sha256": "809ed7a83cca7dcdb886d82ce9c66cc70bf9dbfa64cd5da24acc48a84ea9594d",
+      "size_bytes": 30886
+    },
+    {
+      "path": "docs/analysis/product-v021-predecessor-baseline-audit.json",
+      "revision": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+      "role": "V021_PREDECESSOR_AUDIT",
+      "sha256": "cabe84b0d62ca5d987ba2941ffca5fd93b563700d027e83bf64f608d20f103c2",
+      "size_bytes": 2041
+    },
+    {
+      "path": "docs/analysis/product-v021-progress.json",
+      "revision": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+      "role": "V021_PROGRESS",
+      "sha256": "5d0a9c8246314c8df1266b0a7344830cf8002abd70efe1816ae026199cea1971",
+      "size_bytes": 844
+    }
+  ]
+}

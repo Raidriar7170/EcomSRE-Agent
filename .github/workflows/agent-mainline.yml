@@ -187,6 +187,17 @@ jobs:
           uv run --frozen --no-sync python -m
           scripts.ci.verify_product_v021_increment1
 
+      - name: Product v0.2.2 predecessor and schema instrumentation verification
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_product_v022_increment1
+
+      - name: Product v0.2.2 focused fixture tests
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync pytest tests/product_v022 -q
+
       - name: Verify Phase 5B protocol
         run: make phase5b-protocol-verify
 
@@ -233,5 +244,6 @@ jobs:
           scripts/rcaeval
           scripts/ci
           scripts/live_sandbox
+          scripts/product_v022
           tests/dta_v21
           tests/phase5b
