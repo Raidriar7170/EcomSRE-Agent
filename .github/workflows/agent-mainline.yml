@@ -204,6 +204,17 @@ jobs:
           env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
           uv run --frozen --no-sync pytest tests/product_v022 -q
 
+      - name: Product v0.2.2.1 request-protocol verification
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_product_v0221_increment2
+
+      - name: Product v0.2.2.1 focused offline tests
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync pytest tests/product_v0221 -q
+
       - name: Verify Phase 5B protocol
         run: make phase5b-protocol-verify
 

@@ -1,0 +1,173 @@
+{
+  "provenance": "SANITIZED_SYNTHETIC_OFFLINE_PROTOCOL_MATRIX",
+  "mapping": {
+    "otel-v1-apm-span-0001": {
+      "mappings": {
+        "properties": {
+          "observed": {
+            "properties": {
+              "timestamp": {
+                "type": "date"
+              }
+            }
+          },
+          "resource": {
+            "properties": {
+              "service": {
+                "properties": {
+                  "name": {
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "body": {
+            "properties": {
+              "stringValue": {
+                "type": "text"
+              }
+            }
+          },
+          "severityText": {
+            "type": "keyword"
+          },
+          "traceId": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  },
+  "field_caps": {
+    "fields": {
+      "observed.timestamp": {
+        "date": {
+          "type": "date",
+          "searchable": true,
+          "aggregatable": true
+        }
+      },
+      "resource.service.name": {
+        "text": {
+          "type": "text",
+          "searchable": true,
+          "aggregatable": false
+        }
+      },
+      "resource.service.name.keyword": {
+        "keyword": {
+          "type": "keyword",
+          "searchable": true,
+          "aggregatable": true
+        }
+      },
+      "body.stringValue": {
+        "text": {
+          "type": "text",
+          "searchable": true,
+          "aggregatable": false
+        }
+      },
+      "severityText": {
+        "keyword": {
+          "type": "keyword",
+          "searchable": true,
+          "aggregatable": true
+        }
+      },
+      "traceId": {
+        "keyword": {
+          "type": "keyword",
+          "searchable": true,
+          "aggregatable": true
+        }
+      }
+    }
+  },
+  "samples": [
+    {
+      "observed": {
+        "timestamp": "2026-08-28T12:00:00+00:00"
+      },
+      "resource": {
+        "service": {
+          "name": "checkoutservice"
+        }
+      },
+      "body": {
+        "stringValue": "checkout completed"
+      },
+      "severityText": "INFO",
+      "traceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "observed": {
+        "timestamp": "2026-08-28T12:00:01+00:00"
+      },
+      "resource": {
+        "service": {
+          "name": "checkoutservice"
+        }
+      },
+      "body": {
+        "stringValue": "checkout completed"
+      },
+      "severityText": "INFO",
+      "traceId": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    }
+  ],
+  "service_aggregation_response": {
+    "aggregations": {
+      "services": {
+        "buckets": [
+          {
+            "key": "checkoutservice",
+            "doc_count": 2
+          }
+        ]
+      }
+    }
+  },
+  "timestamp_range_response": {
+    "timed_out": false,
+    "_shards": {
+      "failed": 0
+    },
+    "hits": {
+      "hits": []
+    }
+  },
+  "profile_verification_response": {
+    "timed_out": false,
+    "_shards": {
+      "failed": 0
+    },
+    "hits": {
+      "hits": [
+        {
+          "_source": {
+            "observed": {
+              "timestamp": "2026-08-28T12:00:01+00:00"
+            },
+            "resource": {
+              "service": {
+                "name": "checkoutservice"
+              }
+            },
+            "body": {
+              "stringValue": "checkout completed"
+            },
+            "severityText": "INFO",
+            "traceId": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -50,6 +50,7 @@ class OpenSearchProbeChangeReasonV0221(str, Enum):
     FIELD_CAPS_ENDPOINT_NOT_FOUND = "FIELD_CAPS_ENDPOINT_NOT_FOUND"
     FIELD_CAPS_PERMISSION_DENIED = "FIELD_CAPS_PERMISSION_DENIED"
     FIELD_CAPS_UNSUPPORTED = "FIELD_CAPS_UNSUPPORTED"
+    FIELD_CAPS_GET_HTTP_400 = "FIELD_CAPS_GET_HTTP_400"
     RESPONSE_SHAPE_INCOMPATIBLE = "RESPONSE_SHAPE_INCOMPATIBLE"
 
 
@@ -203,6 +204,7 @@ class OpenSearchProbeRequestPlanV0221(ProductModelV1):
     aggregation_request: OpenSearchProbeRequestV0221 | None
     sample_requests: tuple[OpenSearchProbeRequestV0221, ...]
     maximum_requests: Literal[16]
+    semantic_plan_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     plan_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
 
     @model_validator(mode="after")
@@ -225,6 +227,34 @@ class OpenSearchProbeRequestPlanV0221(ProductModelV1):
             raise ValueError("OpenSearch plan request IDs are duplicated")
         if len(requests) > self.maximum_requests:
             raise ValueError("OpenSearch plan exceeds the request budget")
+        expected_semantic = semantic_sha256_v22(
+            {
+                "mapping_request": _semantic_request_payload_v0221(
+                    self.mapping_request
+                ),
+                "field_caps_request": (
+                    _semantic_request_payload_v0221(self.field_caps_request)
+                    if self.field_caps_request is not None
+                    else None
+                ),
+                "field_mapping_requests": tuple(
+                    _semantic_request_payload_v0221(request)
+                    for request in self.field_mapping_requests
+                ),
+                "aggregation_request": (
+                    _semantic_request_payload_v0221(self.aggregation_request)
+                    if self.aggregation_request is not None
+                    else None
+                ),
+                "sample_requests": tuple(
+                    _semantic_request_payload_v0221(request)
+                    for request in self.sample_requests
+                ),
+                "maximum_requests": self.maximum_requests,
+            }
+        )
+        if self.semantic_plan_sha256 != expected_semantic:
+            raise ValueError("OpenSearch semantic plan digest differs")
         expected = semantic_sha256_v22(
             self.model_dump(mode="json", exclude={"plan_sha256"})
         )
@@ -238,15 +268,296 @@ class OpenSearchProbeRequestPlanV0221(ProductModelV1):
             "schema_version": "ecomsre.product.opensearch-probe-plan.v0221",
             **values,
         }
-        draft = cls.model_construct(**body, plan_sha256="0" * 64)
-        serialized = draft.model_dump(mode="json", exclude={"plan_sha256"})
+        draft = cls.model_construct(
+            **body,
+            semantic_plan_sha256="0" * 64,
+            plan_sha256="0" * 64,
+        )
+        semantic_source = draft.model_dump(
+            mode="json",
+            exclude={
+                "schema_version",
+                "plan_id",
+                "parent_plan_id",
+                "change_reason_code",
+                "semantic_plan_sha256",
+                "plan_sha256",
+            },
+        )
+        for key in (
+            "mapping_request",
+            "field_caps_request",
+            "field_mapping_requests",
+            "aggregation_request",
+            "sample_requests",
+        ):
+            semantic_source[key] = _strip_request_identity_v0221(
+                semantic_source[key]
+            )
+        semantic_plan_sha256 = semantic_sha256_v22(semantic_source)
+        serialized = draft.model_dump(
+            mode="json", exclude={"semantic_plan_sha256", "plan_sha256"}
+        )
+        serialized["semantic_plan_sha256"] = semantic_plan_sha256
         return cls.model_validate(
             {**serialized, "plan_sha256": semantic_sha256_v22(serialized)}
         )
 
 
+def _strip_request_identity_v0221(value: object) -> object:
+    if isinstance(value, dict):
+        return {
+            key: _strip_request_identity_v0221(nested)
+            for key, nested in value.items()
+            if key not in {"schema_version", "request_id", "request_sha256"}
+        }
+    if isinstance(value, list):
+        return [_strip_request_identity_v0221(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_strip_request_identity_v0221(item) for item in value)
+    return value
+
+
+def _semantic_request_payload_v0221(
+    request: OpenSearchProbeRequestV0221,
+) -> object:
+    return _strip_request_identity_v0221(request.model_dump(mode="json"))
+
+
+class OpenSearchProbePlanResultV0221(ProductModelV1):
+    schema_version: Literal["ecomsre.product.opensearch-probe-plan-result.v0221"] = (
+        "ecomsre.product.opensearch-probe-plan-result.v0221"
+    )
+    plan_id: str = Field(pattern=r"^[a-z0-9][a-z0-9-]{2,79}$")
+    request_results: tuple[OpenSearchProbeRequestAttemptV0221, ...]
+    mapping_status: str = Field(min_length=1, max_length=80)
+    field_caps_status: str = Field(min_length=1, max_length=80)
+    sample_status: str = Field(min_length=1, max_length=80)
+    profile_resolution_status: str = Field(min_length=1, max_length=80)
+    terminal: str = Field(min_length=1, max_length=120)
+    result_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+    @model_validator(mode="after")
+    def require_bound_result(self) -> "OpenSearchProbePlanResultV0221":
+        expected = semantic_sha256_v22(
+            self.model_dump(mode="json", exclude={"result_sha256"})
+        )
+        if self.result_sha256 != expected:
+            raise ValueError("OpenSearch plan result digest differs")
+        return self
+
+    @classmethod
+    def build(cls, **values: Any) -> "OpenSearchProbePlanResultV0221":
+        payload = {
+            "schema_version": "ecomsre.product.opensearch-probe-plan-result.v0221",
+            **values,
+        }
+        draft = cls.model_construct(**payload, result_sha256="0" * 64)
+        serialized = draft.model_dump(mode="json", exclude={"result_sha256"})
+        return cls.model_validate(
+            {**serialized, "result_sha256": semantic_sha256_v22(serialized)}
+        )
+
+
+class OpenSearchProbeSessionLedgerV0221:
+    """In-memory changed-plan ledger; tracked artifacts persist its projections."""
+
+    def __init__(self) -> None:
+        self.plans: list[OpenSearchProbeRequestPlanV0221] = []
+        self.attempts: list[OpenSearchProbeRequestAttemptV0221] = []
+
+    def register_plan(self, plan: OpenSearchProbeRequestPlanV0221) -> None:
+        if len(self.plans) >= 3:
+            raise ValueError("OpenSearch changed-plan budget exhausted")
+        if any(
+            previous.semantic_plan_sha256 == plan.semantic_plan_sha256
+            for previous in self.plans
+        ):
+            raise ValueError("OpenSearch semantic plan repeat is forbidden")
+        if self.plans and plan.parent_plan_id != self.plans[-1].plan_id:
+            raise ValueError("OpenSearch changed plan parent differs")
+        if not self.plans and plan.parent_plan_id is not None:
+            raise ValueError("OpenSearch initial plan cannot have a parent")
+        self.plans.append(plan)
+
+    def record_attempt(self, attempt: OpenSearchProbeRequestAttemptV0221) -> None:
+        if attempt.plan_id not in {plan.plan_id for plan in self.plans}:
+            raise ValueError("OpenSearch attempt plan is not registered")
+        if len(self.attempts) >= 16 or attempt.ordinal != len(self.attempts) + 1:
+            raise ValueError("OpenSearch request budget or ordinal differs")
+        self.attempts.append(attempt)
+
+
+def _request_v0221(
+    *,
+    request_id: str,
+    endpoint_kind: OpenSearchProbeEndpointKindV0221,
+    method: Literal["GET", "POST"],
+    path_template: str,
+    query_parameters: dict[str, str] | None = None,
+    body_shape: OpenSearchProbeBodyShapeV0221 = OpenSearchProbeBodyShapeV0221.NONE,
+    required: bool = True,
+    fallback_rank: int = 0,
+) -> OpenSearchProbeRequestV0221:
+    return OpenSearchProbeRequestV0221.build(
+        request_id=request_id,
+        endpoint_kind=endpoint_kind,
+        method=method,
+        path_template=path_template,
+        query_parameters=query_parameters or {},
+        body_shape=body_shape,
+        required=required,
+        fallback_rank=fallback_rank,
+    )
+
+
+def build_probe_request_plan_v0221(
+    *,
+    variant: OpenSearchProbePlanVariantV0221,
+    fields: tuple[str, ...],
+    parent_plan_id: str | None,
+    change_reason_code: OpenSearchProbeChangeReasonV0221,
+) -> OpenSearchProbeRequestPlanV0221:
+    if not fields or fields != tuple(sorted(set(fields))):
+        raise ValueError("OpenSearch Field Caps fields are not canonical")
+    mapping = _request_v0221(
+        request_id="mapping",
+        endpoint_kind=OpenSearchProbeEndpointKindV0221.MAPPING,
+        method="GET",
+        path_template="/{index}/_mapping",
+    )
+    field_caps: OpenSearchProbeRequestV0221 | None
+    field_mapping: tuple[OpenSearchProbeRequestV0221, ...] = ()
+    if variant is OpenSearchProbePlanVariantV0221.PLAN_A_FIELD_CAPS_GET_QUERY:
+        if parent_plan_id is not None or change_reason_code not in {
+            OpenSearchProbeChangeReasonV0221.INITIAL_OFFICIAL_PROTOCOL,
+            OpenSearchProbeChangeReasonV0221.FIELD_CAPS_FIELDS_BODY_HTTP_400,
+        }:
+            raise ValueError("OpenSearch Plan A lineage differs")
+        plan_id = "plan-a-field-caps-get-query"
+        method: Literal["GET", "POST"] = "GET"
+    elif variant is OpenSearchProbePlanVariantV0221.PLAN_B_FIELD_CAPS_POST_QUERY:
+        if parent_plan_id is None or change_reason_code not in {
+            OpenSearchProbeChangeReasonV0221.FIELD_CAPS_METHOD_NOT_ALLOWED,
+            OpenSearchProbeChangeReasonV0221.FIELD_CAPS_GET_HTTP_400,
+            OpenSearchProbeChangeReasonV0221.RESPONSE_SHAPE_INCOMPATIBLE,
+        }:
+            raise ValueError("OpenSearch Plan B evidence differs")
+        plan_id = "plan-b-field-caps-post-query"
+        method = "POST"
+    else:
+        if parent_plan_id is None or change_reason_code not in {
+            OpenSearchProbeChangeReasonV0221.FIELD_CAPS_PERMISSION_DENIED,
+            OpenSearchProbeChangeReasonV0221.FIELD_CAPS_ENDPOINT_NOT_FOUND,
+            OpenSearchProbeChangeReasonV0221.FIELD_CAPS_UNSUPPORTED,
+        }:
+            raise ValueError("OpenSearch Plan C requires Field Caps unavailability")
+        plan_id = "plan-c-mapping-sample-empirical"
+        field_caps = None
+        field_mapping = (
+            _request_v0221(
+                request_id="focused-field-mapping",
+                endpoint_kind=OpenSearchProbeEndpointKindV0221.FIELD_MAPPING,
+                method="GET",
+                path_template="/{index}/_mapping/field/{candidate_fields}",
+                required=False,
+                fallback_rank=1,
+            ),
+        )
+        return OpenSearchProbeRequestPlanV0221.build(
+            plan_id=plan_id,
+            parent_plan_id=parent_plan_id,
+            change_reason_code=change_reason_code,
+            mapping_request=mapping,
+            field_caps_request=field_caps,
+            field_mapping_requests=field_mapping,
+            aggregation_request=_request_v0221(
+                request_id="service-aggregation",
+                endpoint_kind=OpenSearchProbeEndpointKindV0221.SERVICE_AGGREGATION,
+                method="POST",
+                path_template="/{index}/_search",
+                body_shape=OpenSearchProbeBodyShapeV0221.SEARCH_AGGREGATION,
+            ),
+            sample_requests=(
+                _request_v0221(
+                    request_id="broad-sample",
+                    endpoint_kind=OpenSearchProbeEndpointKindV0221.SAMPLE_SEARCH,
+                    method="POST",
+                    path_template="/{index}/_search",
+                    body_shape=OpenSearchProbeBodyShapeV0221.SEARCH_SAMPLE,
+                ),
+                _request_v0221(
+                    request_id="timestamp-range-verification",
+                    endpoint_kind=OpenSearchProbeEndpointKindV0221.TIMESTAMP_RANGE,
+                    method="POST",
+                    path_template="/{index}/_search",
+                    body_shape=OpenSearchProbeBodyShapeV0221.SEARCH_VERIFICATION,
+                ),
+                _request_v0221(
+                    request_id="checkout-sample",
+                    endpoint_kind=OpenSearchProbeEndpointKindV0221.SAMPLE_SEARCH,
+                    method="POST",
+                    path_template="/{index}/_search",
+                    body_shape=OpenSearchProbeBodyShapeV0221.SEARCH_SAMPLE,
+                ),
+                _request_v0221(
+                    request_id="profile-verification",
+                    endpoint_kind=OpenSearchProbeEndpointKindV0221.PROFILE_VERIFICATION,
+                    method="POST",
+                    path_template="/{index}/_search",
+                    body_shape=OpenSearchProbeBodyShapeV0221.SEARCH_VERIFICATION,
+                ),
+            ),
+            maximum_requests=16,
+        )
+    field_caps = _request_v0221(
+        request_id=(
+            "field-caps-get-query" if method == "GET" else "field-caps-post-query"
+        ),
+        endpoint_kind=OpenSearchProbeEndpointKindV0221.FIELD_CAPS,
+        method=method,
+        path_template="/{index}/_field_caps",
+        query_parameters={"fields": ",".join(fields)},
+        required=False,
+    )
+    return OpenSearchProbeRequestPlanV0221.build(
+        plan_id=plan_id,
+        parent_plan_id=parent_plan_id,
+        change_reason_code=change_reason_code,
+        mapping_request=mapping,
+        field_caps_request=field_caps,
+        field_mapping_requests=(),
+        aggregation_request=_request_v0221(
+            request_id="service-aggregation",
+            endpoint_kind=OpenSearchProbeEndpointKindV0221.SERVICE_AGGREGATION,
+            method="POST",
+            path_template="/{index}/_search",
+            body_shape=OpenSearchProbeBodyShapeV0221.SEARCH_AGGREGATION,
+        ),
+        sample_requests=(
+            _request_v0221(
+                request_id="checkout-sample",
+                endpoint_kind=OpenSearchProbeEndpointKindV0221.SAMPLE_SEARCH,
+                method="POST",
+                path_template="/{index}/_search",
+                body_shape=OpenSearchProbeBodyShapeV0221.SEARCH_SAMPLE,
+            ),
+            _request_v0221(
+                request_id="profile-verification",
+                endpoint_kind=OpenSearchProbeEndpointKindV0221.PROFILE_VERIFICATION,
+                method="POST",
+                path_template="/{index}/_search",
+                body_shape=OpenSearchProbeBodyShapeV0221.SEARCH_VERIFICATION,
+            ),
+        ),
+        maximum_requests=16,
+    )
+
+
 def select_next_request_plan_variant_v0221(
     envelope: "OpenSearchHttpErrorEnvelopeV0221",
+    *,
+    current_variant: OpenSearchProbePlanVariantV0221 | None = None,
 ) -> OpenSearchProbePlanVariantV0221 | None:
     """Choose only the next evidence-authorized request-plan variant."""
 
@@ -256,21 +567,43 @@ def select_next_request_plan_variant_v0221(
 
     if envelope.endpoint_kind is not OpenSearchProbeEndpointKindV0221.FIELD_CAPS:
         return None
-    if envelope.method == "POST" and envelope.query_parameter_names == () and (
-        envelope.safe_error_code
+    if (
+        current_variant is None
+        and envelope.method == "POST"
+        and envelope.query_parameter_names == ()
+        and envelope.safe_error_code
         in {
             OpenSearchHttpErrorCodeV0221.OPENSEARCH_REQUEST_PARAMETER_INVALID,
             OpenSearchHttpErrorCodeV0221.OPENSEARCH_REQUEST_BODY_INVALID,
         }
     ):
         return OpenSearchProbePlanVariantV0221.PLAN_A_FIELD_CAPS_GET_QUERY
-    if envelope.safe_error_code is OpenSearchHttpErrorCodeV0221.OPENSEARCH_METHOD_NOT_ALLOWED:
+    if (
+        current_variant
+        is OpenSearchProbePlanVariantV0221.PLAN_A_FIELD_CAPS_GET_QUERY
+        and envelope.safe_error_code
+        in {
+            OpenSearchHttpErrorCodeV0221.OPENSEARCH_METHOD_NOT_ALLOWED,
+            OpenSearchHttpErrorCodeV0221.OPENSEARCH_REQUEST_PARAMETER_INVALID,
+            OpenSearchHttpErrorCodeV0221.OPENSEARCH_REQUEST_BODY_INVALID,
+        }
+    ):
         return OpenSearchProbePlanVariantV0221.PLAN_B_FIELD_CAPS_POST_QUERY
-    if envelope.safe_error_code in {
-        OpenSearchHttpErrorCodeV0221.OPENSEARCH_PERMISSION_DENIED,
-        OpenSearchHttpErrorCodeV0221.OPENSEARCH_ENDPOINT_NOT_FOUND,
-        OpenSearchHttpErrorCodeV0221.OPENSEARCH_FIELD_CAPS_UNSUPPORTED,
-    }:
+    if (
+        current_variant
+        in {
+            OpenSearchProbePlanVariantV0221.PLAN_A_FIELD_CAPS_GET_QUERY,
+            OpenSearchProbePlanVariantV0221.PLAN_B_FIELD_CAPS_POST_QUERY,
+        }
+        and envelope.safe_error_code
+        in {
+            OpenSearchHttpErrorCodeV0221.OPENSEARCH_PERMISSION_DENIED,
+            OpenSearchHttpErrorCodeV0221.OPENSEARCH_ENDPOINT_NOT_FOUND,
+            OpenSearchHttpErrorCodeV0221.OPENSEARCH_FIELD_CAPS_UNSUPPORTED,
+            OpenSearchHttpErrorCodeV0221.OPENSEARCH_REQUEST_PARAMETER_INVALID,
+            OpenSearchHttpErrorCodeV0221.OPENSEARCH_REQUEST_BODY_INVALID,
+        }
+    ):
         return OpenSearchProbePlanVariantV0221.PLAN_C_MAPPING_SAMPLE_EMPIRICAL
     return None
 
@@ -280,8 +613,11 @@ __all__ = (
     "OpenSearchProbeChangeReasonV0221",
     "OpenSearchProbeEndpointKindV0221",
     "OpenSearchProbePlanVariantV0221",
+    "OpenSearchProbePlanResultV0221",
     "OpenSearchProbeRequestAttemptV0221",
     "OpenSearchProbeRequestPlanV0221",
     "OpenSearchProbeRequestV0221",
+    "OpenSearchProbeSessionLedgerV0221",
+    "build_probe_request_plan_v0221",
     "select_next_request_plan_variant_v0221",
 )

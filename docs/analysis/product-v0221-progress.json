@@ -2,11 +2,13 @@
   "schema_version": "ecomsre.product.v0221.progress.v1",
   "goal_version": "ecomsre-product-v0221-opensearch-probe-protocol-v1",
   "branch": "codex/product-v0221-opensearch-probe-protocol",
-  "increment": 1,
-  "terminal": "ECOMSRE_PRODUCT_V0221_REQUEST_PROTOCOL_READY",
+  "increment": 2,
+  "terminal": "ECOMSRE_PRODUCT_V0221_REQUEST_PROTOCOL_PASS",
   "history_status": "ECOMSRE_PRODUCT_V0221_HISTORY_VERIFIED",
   "predecessor_audit_status": "ECOMSRE_PRODUCT_V0221_PREDECESSOR_AUDIT_PASS",
-  "next_boundary": "INCREMENT_2_OFFLINE_PROTOCOL_MATRIX",
+  "next_boundary": "INCREMENT_3_LIVE_SCHEMA_SESSION",
+  "offline_protocol_case_count": 9,
+  "request_protocol_matrix_sha256": "a95ecab7b0d4f40f04340ff062b109eaa5fc35ef5ed5b88c863a30e23190d3ed",
   "live_schema_discovery_session_count": 0,
   "changed_request_plan_count": 0,
   "total_read_only_opensearch_request_count": 0,
@@ -21,5 +23,5 @@
   "agent_writes": 0,
   "runbook_executions": 0,
   "action_authority": "NONE",
-  "progress_sha256": "b38b5f2f1aaa89fa7ece5079d02d6e754e56d738f0ba479e7634b109154fe67a"
+  "progress_sha256": "cc5f9a6f85a16acbf7508a824f235d50f2c886b9ecde2744cb1b768f0e5fa1c4"
 }

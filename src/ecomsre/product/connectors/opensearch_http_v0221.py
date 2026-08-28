@@ -101,6 +101,17 @@ class OpenSearchHttpErrorV0221(RuntimeError):
         self.attempt = attempt
 
 
+class OpenSearchTransportErrorV0221(RuntimeError):
+    def __init__(
+        self,
+        attempt: OpenSearchProbeRequestAttemptV0221,
+        cause: httpx.TransportError,
+    ) -> None:
+        super().__init__("OpenSearch probe transport failure")
+        self.attempt = attempt
+        self.cause = cause
+
+
 def _body_schema_v0221(value: object) -> object:
     if value is None:
         return {"type": "null"}
@@ -398,12 +409,35 @@ class OpenSearchProbeClientV0221:
             raise RuntimeError("OpenSearch probe request budget exhausted")
         self.request_count += 1
         started = time.perf_counter()
-        response = self._client.request(
-            method,
-            path,
-            params=dict(query_parameters),
-            json=json_body,
-        )
+        try:
+            response = self._client.request(
+                method,
+                path,
+                params=dict(query_parameters),
+                json=json_body,
+            )
+        except httpx.TransportError as error:
+            latency_ms = (time.perf_counter() - started) * 1000
+            attempt = OpenSearchProbeRequestAttemptV0221.build(
+                ordinal=self.request_count,
+                plan_id=plan_id,
+                request_id=request_id,
+                method=method,
+                endpoint_kind=endpoint_kind,
+                path_template=path_template,
+                query_parameter_names=tuple(sorted(query_parameters)),
+                request_body_schema_sha256=request_body_schema_sha256_v0221(
+                    json_body
+                ),
+                http_status=None,
+                latency_ms=latency_ms,
+                response_bytes=0,
+                response_sha256=hashlib.sha256(b"").hexdigest(),
+                transport_retry_count=transport_retry_count,
+                safe_error_envelope_sha256=None,
+            )
+            self.attempts.append(attempt)
+            raise OpenSearchTransportErrorV0221(attempt, error) from error
         latency_ms = (time.perf_counter() - started) * 1000
         content = response.content
         if len(content) > self.maximum_response_bytes:
@@ -462,6 +496,33 @@ class OpenSearchProbeClientV0221:
             raise ValueError("OpenSearch probe response is not JSON") from error
         return payload, content, attempt
 
+    def request_json_with_transport_retries(
+        self,
+        *,
+        maximum_transport_retries: int,
+        **request: Any,
+    ) -> tuple[object, bytes, OpenSearchProbeRequestAttemptV0221]:
+        if not 0 <= maximum_transport_retries <= 2:
+            raise ValueError("OpenSearch transport retry bound differs")
+        retry_count = 0
+        while True:
+            try:
+                return self.request_json(
+                    **request,
+                    transport_retry_count=retry_count,
+                )
+            except OpenSearchTransportErrorV0221:
+                if retry_count >= maximum_transport_retries:
+                    raise
+            except OpenSearchHttpErrorV0221 as error:
+                if (
+                    error.envelope.safe_error_code
+                    is not OpenSearchHttpErrorCodeV0221.OPENSEARCH_HTTP_TRANSIENT
+                    or retry_count >= maximum_transport_retries
+                ):
+                    raise
+            retry_count += 1
+
     def close(self) -> None:
         self._client.close()
 
@@ -472,6 +533,7 @@ __all__ = (
     "OpenSearchHttpErrorV0221",
     "OpenSearchProbeClientV0221",
     "OpenSearchRootCauseV0221",
+    "OpenSearchTransportErrorV0221",
     "build_opensearch_http_error_envelope_v0221",
     "request_body_schema_sha256_v0221",
 )

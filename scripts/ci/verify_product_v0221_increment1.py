@@ -46,6 +46,7 @@ def verify_product_v0221_increment1(project_root: Path) -> dict[str, object]:
     progress = _load_object(root / "docs/analysis/product-v0221-progress.json")
     _verify_digest(audit, "audit_sha256")
     _verify_digest(progress, "progress_sha256")
+    progress_increment = progress.get("increment")
     if (
         audit.get("status") != "ECOMSRE_PRODUCT_V0221_PREDECESSOR_AUDIT_PASS"
         or audit.get("bound_file_count") != history["bound_file_count"]
@@ -55,14 +56,23 @@ def verify_product_v0221_increment1(project_root: Path) -> dict[str, object]:
         or audit.get("v022_retry_authority") != "NONE"
         or audit.get("baseline_unchanged") is not True
         or audit.get("owned_demo_cleanup") != "CLEAN"
-        or progress.get("increment") != 1
-        or progress.get("terminal") != READY_TERMINAL
+        or not isinstance(progress_increment, int)
+        or not 1 <= progress_increment <= 4
+        or progress.get("schema_version") != "ecomsre.product.v0221.progress.v1"
+        or progress.get("goal_version")
+        != "ecomsre-product-v0221-opensearch-probe-protocol-v1"
+        or progress.get("branch")
+        != "codex/product-v0221-opensearch-probe-protocol"
         or progress.get("history_status") != history["status"]
         or progress.get("predecessor_audit_status") != audit["status"]
-        or progress.get("live_schema_discovery_session_count") != 0
-        or progress.get("changed_request_plan_count") != 0
-        or progress.get("total_read_only_opensearch_request_count") != 0
-        or progress.get("transport_retry_count") != 0
+        or not isinstance(progress.get("live_schema_discovery_session_count"), int)
+        or not 0 <= progress["live_schema_discovery_session_count"] <= 1
+        or not isinstance(progress.get("changed_request_plan_count"), int)
+        or not 0 <= progress["changed_request_plan_count"] <= 3
+        or not isinstance(progress.get("total_read_only_opensearch_request_count"), int)
+        or not 0 <= progress["total_read_only_opensearch_request_count"] <= 16
+        or not isinstance(progress.get("transport_retry_count"), int)
+        or not 0 <= progress["transport_retry_count"] <= 2
         or progress.get("fault_attempt_count") != 0
         or progress.get("baseline_readiness_attempt_count") != 0
         or progress.get("knowledge_loop_campaign_count") != 0
@@ -71,6 +81,14 @@ def verify_product_v0221_increment1(project_root: Path) -> dict[str, object]:
         or progress.get("action_authority") != "NONE"
     ):
         raise ValueError("Product v0.2.2.1 Increment 1 audit or progress differs")
+    if progress_increment == 1 and (
+        progress.get("terminal") != READY_TERMINAL
+        or progress.get("live_schema_discovery_session_count") != 0
+        or progress.get("changed_request_plan_count") != 0
+        or progress.get("total_read_only_opensearch_request_count") != 0
+        or progress.get("transport_retry_count") != 0
+    ):
+        raise ValueError("Product v0.2.2.1 Increment 1 checkpoint differs")
     fixture = _load_object(
         root
         / "tests/fixtures/product_v0221/opensearch_field_caps_body_400.safe.json"
