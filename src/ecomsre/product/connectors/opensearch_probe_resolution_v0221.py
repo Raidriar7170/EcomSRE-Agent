@@ -470,16 +470,7 @@ def resolve_normalization_profile_v0221(
         sample_shapes=sample_shapes,
         checkout_aliases=checkout_aliases,
     )
-    required_ties = tuple(
-        item
-        for item in base.tie_breaks
-        if item.split(":", 1)[0] in {"timestamp", "service", "message"}
-    )
     timestamp_field = base.profile.timestamp_extraction.extraction.paths[0]
-    if required_ties:
-        raise _block_ambiguous_v0221(
-            "OpenSearch required profile candidates remain tied"
-        )
     if (
         empirical_verification.service_query_field
         != base.profile.service_query_field
@@ -487,6 +478,29 @@ def resolve_normalization_profile_v0221(
     ):
         raise _block_ambiguous_v0221(
             "OpenSearch empirical query fields do not bind the selected profile"
+        )
+    unresolved_required_ties: list[str] = []
+    resolved_ties: list[str] = []
+    for tie in base.tie_breaks:
+        category = tie.split(":", 1)[0]
+        if category == "timestamp":
+            resolved_ties.append("timestamp:EMPIRICAL_RANGE_QUERY")
+        elif category == "service":
+            selected_source = base.profile.service_source_field
+            empirical_source = empirical_verification.service_query_field.removesuffix(
+                ".keyword"
+            )
+            if empirical_source == selected_source:
+                resolved_ties.append("service:EMPIRICAL_TERMS_QUERY")
+            else:
+                unresolved_required_ties.append(tie)
+        elif category == "message":
+            unresolved_required_ties.append(tie)
+        else:
+            resolved_ties.append(tie)
+    if unresolved_required_ties:
+        raise _block_ambiguous_v0221(
+            "OpenSearch required profile candidates remain tied"
         )
     status = (
         OpenSearchFieldCapsStatusV0221.AVAILABLE
@@ -514,7 +528,7 @@ def resolve_normalization_profile_v0221(
         "terminal": PROFILE_VERIFIED_V0221,
         "profile": profile,
         "candidate_rankings": base.candidate_rankings,
-        "tie_breaks": base.tie_breaks,
+        "tie_breaks": tuple(resolved_ties),
         "empirical_verification": empirical_verification,
     }
     draft = OpenSearchProfileResolutionV0221.model_construct(

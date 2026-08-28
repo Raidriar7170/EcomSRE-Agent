@@ -234,13 +234,39 @@ def test_mapping_sample_empirical_fallback_produces_verified_profile() -> None:
     )
 
 
-def test_required_candidate_tie_blocks_instead_of_lexical_tie_break() -> None:
+def test_empirically_selected_timestamp_resolves_a_mapping_sample_tie() -> None:
     mapping_payload = deepcopy(_mapping())
     properties = mapping_payload["otel-v1-apm-span-0001"]["mappings"]["properties"]  # type: ignore[index]
     properties["recorded"] = {"properties": {"timestamp": {"type": "date"}}}  # type: ignore[index]
     samples = list(_samples())
     for sample in samples:
         sample["recorded"] = deepcopy(sample["observed"])
+
+    resolution = resolve_normalization_profile_v0221(
+        index_pattern="otel-v1-apm-span-*",
+        mapping=parse_mapping_v022(mapping_payload),
+        field_caps=None,
+        samples=tuple(samples),
+        sample_shapes=summarize_sample_shapes_v022(tuple(samples)),
+        checkout_aliases=("checkoutservice",),
+        empirical_verification=_verification(),
+    )
+
+    assert resolution.profile.timestamp_extraction.extraction.paths == (
+        "observed.timestamp",
+    )
+    assert "timestamp:EMPIRICAL_RANGE_QUERY" in resolution.tie_breaks
+
+
+def test_required_message_tie_blocks_instead_of_lexical_tie_break() -> None:
+    mapping_payload = deepcopy(_mapping())
+    properties = mapping_payload["otel-v1-apm-span-0001"]["mappings"]["properties"]  # type: ignore[index]
+    properties["event"] = {  # type: ignore[index]
+        "properties": {"stringValue": {"type": "text"}}
+    }
+    samples = list(_samples())
+    for sample in samples:
+        sample["event"] = deepcopy(sample["body"])
 
     with pytest.raises(OpenSearchProbeProtocolBlockerV0221) as raised:
         resolve_normalization_profile_v0221(

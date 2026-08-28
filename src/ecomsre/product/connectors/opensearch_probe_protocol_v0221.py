@@ -536,6 +536,13 @@ def build_probe_request_plan_v0221(
         ),
         sample_requests=(
             _request_v0221(
+                request_id="timestamp-range-verification",
+                endpoint_kind=OpenSearchProbeEndpointKindV0221.TIMESTAMP_RANGE,
+                method="POST",
+                path_template="/{index}/_search",
+                body_shape=OpenSearchProbeBodyShapeV0221.SEARCH_VERIFICATION,
+            ),
+            _request_v0221(
                 request_id="checkout-sample",
                 endpoint_kind=OpenSearchProbeEndpointKindV0221.SAMPLE_SEARCH,
                 method="POST",

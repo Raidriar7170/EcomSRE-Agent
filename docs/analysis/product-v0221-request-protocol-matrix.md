@@ -7,8 +7,8 @@ live OpenSearch requests remain zero at this checkpoint.
 
 ## Plans
 
-- `plan-a-field-caps-get-query`: semantic `767c9422e6260938d6e4b79019102c3cdba8b394dd4b629547702b69997c436b`
-- `plan-b-field-caps-post-query`: semantic `097099c042c7499d8fddb5947b6b456184837d6f6101bd10d86dbd0b9a18edac`
+- `plan-a-field-caps-get-query`: semantic `5fee96d93b3b0b0bab289d5c4210e020245eca4165e398e3c237d6149c001806`
+- `plan-b-field-caps-post-query`: semantic `ce4207de3828c11baa1453b255575ea9f8560acea7fa55bb50b9fe7dbff639c1`
 - `plan-c-mapping-sample-empirical`: semantic `5e3db0b890bfb40bb147f2eb3327cf0bc37a3c07ff1e67dd180254b490f0356b`
 
 ## Cases
@@ -30,4 +30,4 @@ samples, service aggregation, timestamp range, and final profile
 verification establish one unique profile. No default field guessing
 is permitted.
 
-Matrix SHA-256: `a95ecab7b0d4f40f04340ff062b109eaa5fc35ef5ed5b88c863a30e23190d3ed`
+Matrix SHA-256: `c49b2d5bfcac3976fe0d8e7d1f7aee8cc6be74d0ebe50bcd2fe148266fd1fe58`

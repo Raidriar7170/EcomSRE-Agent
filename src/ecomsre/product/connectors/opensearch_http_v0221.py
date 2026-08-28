@@ -95,10 +95,12 @@ class OpenSearchHttpErrorV0221(RuntimeError):
         self,
         envelope: OpenSearchHttpErrorEnvelopeV0221,
         attempt: OpenSearchProbeRequestAttemptV0221,
+        response_body: bytes,
     ) -> None:
         super().__init__(f"OpenSearch probe {envelope.safe_error_code.value}")
         self.envelope = envelope
         self.attempt = attempt
+        self.response_body = response_body
 
 
 class OpenSearchTransportErrorV0221(RuntimeError):
@@ -472,7 +474,7 @@ class OpenSearchProbeClientV0221:
                 safe_error_envelope_sha256=envelope.envelope_sha256,
             )
             self.attempts.append(attempt)
-            raise OpenSearchHttpErrorV0221(envelope, attempt)
+            raise OpenSearchHttpErrorV0221(envelope, attempt, content)
         attempt = OpenSearchProbeRequestAttemptV0221.build(
             ordinal=self.request_count,
             plan_id=plan_id,
