@@ -27,9 +27,23 @@ from ecomsre.product.connectors.base import (
     ConnectorQueryResultV1,
 )
 from ecomsre.product.connectors.credentials import CredentialResolverV1
+from ecomsre.product.connectors.opensearch_normalization_v022 import (
+    OpenSearchSchemaExceptionV022,
+    normalize_opensearch_search_v022,
+)
+from ecomsre.product.connectors.opensearch_profile_binding_v023 import (
+    OpenSearchConnectorDiagnosticsV023,
+    OpenSearchConnectorProfileBindingV023,
+)
+from ecomsre.product.connectors.opensearch_schema_v022 import (
+    OpenSearchBatchNormalizationV022,
+    OpenSearchBatchStatusV022,
+    OpenSearchNormalizationProfileV022,
+)
 from ecomsre.product.contracts import (
     ConnectorConfigV1,
     ConnectorKindV1,
+    OpenSearchConnectorSettingsModeV1,
     OpenSearchConnectorSettingsV1,
 )
 
@@ -119,16 +133,67 @@ class OpenSearchConnectorV1:
             raise ValueError("OpenSearch connector configuration is invalid")
         self.config = config
         self._settings = OpenSearchConnectorSettingsV1.model_validate(config.settings)
-        self._index_pattern = self._settings.index_pattern
-        self._timestamp_field = self._settings.timestamp_field
-        self._service_field = self._settings.service_field
-        self._service_query_field = (
-            self._settings.service_query_field or self._service_field
-        )
-        self._severity_field = self._settings.severity_field
-        self._message_field = self._settings.message_field
-        self._message_projection_policy = self._settings.message_projection_policy
-        self._trace_id_field = self._settings.trace_id_field
+        self._profile_binding: OpenSearchConnectorProfileBindingV023 | None = None
+        self._normalization_profile: OpenSearchNormalizationProfileV022 | None = None
+        self._last_profile_batch: OpenSearchBatchNormalizationV022 | None = None
+        self._last_profile_failure: ConnectorRequestError | None = None
+        self._message_projection_policy: str
+        if self._settings.mode is OpenSearchConnectorSettingsModeV1.PROFILE_BOUND:
+            self._profile_binding = OpenSearchConnectorProfileBindingV023.model_validate(
+                self._settings.profile_binding
+            )
+            binding = self._profile_binding
+            self._normalization_profile = binding.as_normalization_profile()
+            self._index_pattern = binding.index_pattern
+            self._timestamp_field = binding.timestamp_query_field
+            self._service_field = binding.service_source_field
+            self._service_query_field = binding.service_query_field
+            self._severity_field = binding.severity_field
+            self._message_field = binding.message_field
+            self._message_projection_policy = binding.message_projection_policy
+            self._trace_id_field = binding.trace_id_field
+            self._projected_source_fields = binding.projected_source_fields
+        else:
+            if any(
+                field is None
+                for field in (
+                    self._settings.index_pattern,
+                    self._settings.timestamp_field,
+                    self._settings.service_field,
+                    self._settings.severity_field,
+                    self._settings.message_field,
+                    self._settings.message_projection_policy,
+                )
+            ):
+                raise ValueError("legacy OpenSearch connector settings are incomplete")
+            self._index_pattern = cast(str, self._settings.index_pattern)
+            self._timestamp_field = cast(str, self._settings.timestamp_field)
+            self._service_field = cast(str, self._settings.service_field)
+            self._service_query_field = (
+                self._settings.service_query_field or self._service_field
+            )
+            self._severity_field = cast(str, self._settings.severity_field)
+            self._message_field = cast(str, self._settings.message_field)
+            self._message_projection_policy = cast(
+                str,
+                self._settings.message_projection_policy,
+            )
+            self._trace_id_field = self._settings.trace_id_field
+            self._projected_source_fields = tuple(
+                dict.fromkeys(
+                    (
+                        self._timestamp_field,
+                        self._service_field,
+                        self._severity_field,
+                        self._message_field,
+                        *(
+                            ()
+                            if self._trace_id_field is None
+                            else (self._trace_id_field,)
+                        ),
+                    )
+                )
+            )
         endpoint = config.endpoint.rstrip("/")
         index = quote(self._index_pattern, safe="*,-_")
         self._search_url = f"{endpoint}/{index}/_search"
@@ -151,6 +216,24 @@ class OpenSearchConnectorV1:
                 supports_baseline=True,
                 supports_target_complete_coverage=False,
                 maximum_window_seconds=3600,
+            ),
+        )
+
+    def profile_diagnostics(self) -> OpenSearchConnectorDiagnosticsV023 | None:
+        if self._profile_binding is None:
+            return None
+        return OpenSearchConnectorDiagnosticsV023.build(
+            self._profile_binding,
+            batch=self._last_profile_batch,
+            failure_status=(
+                None
+                if self._last_profile_failure is None
+                else self._last_profile_failure.status
+            ),
+            safe_error_code=(
+                None
+                if self._last_profile_failure is None
+                else self._last_profile_failure.safe_error_code
             ),
         )
 
@@ -206,6 +289,9 @@ class OpenSearchConnectorV1:
         context: ConnectorQueryContextV1,
     ) -> tuple[ConnectorQueryResultV1, ...]:
         context = ConnectorQueryContextV1.model_validate(context.model_dump())
+        if self._profile_binding is not None:
+            self._last_profile_batch = None
+            self._last_profile_failure = None
         limit = min(context.maximum_records, self._settings.maximum_result_count, 200)
         latency_ms = 0.0
         filters: list[object] = [
@@ -244,13 +330,8 @@ class OpenSearchConnectorV1:
             )
         try:
             projected_fields = [
-                self._timestamp_field,
-                self._service_field,
-                self._severity_field,
-                self._message_field,
+                *self._projected_source_fields,
             ]
-            if self._trace_id_field is not None:
-                projected_fields.append(self._trace_id_field)
             payload, _, latency_ms = self._http.request_json(
                 "POST",
                 self._search_url,
@@ -265,6 +346,48 @@ class OpenSearchConnectorV1:
                     "_source": list(dict.fromkeys(projected_fields)),
                 },
             )
+            if self._normalization_profile is not None:
+                batch = normalize_opensearch_search_v022(
+                    payload,
+                    profile=self._normalization_profile,
+                    context=context,
+                    latency_ms=latency_ms,
+                )
+                self._last_profile_batch = batch
+                if batch.status in {
+                    OpenSearchBatchStatusV022.PARTIAL_SCHEMA,
+                    OpenSearchBatchStatusV022.FAILURE_SCHEMA,
+                }:
+                    return (
+                        self._failure(
+                            context,
+                            ConnectorRequestError(
+                                ReadSourceStatusV22.FAILURE_SCHEMA,
+                                "OPENSEARCH_PROFILE_RECORDS_REJECTED",
+                                latency_ms,
+                            ),
+                        ),
+                    )
+                normalized_records = tuple(
+                    item.record for item in batch.normalizations
+                )
+                return (
+                    ConnectorQueryResultV1.build(
+                        source=EvidenceSourceV22.LOGS,
+                        status=(
+                            ReadSourceStatusV22.SUCCESS_NONEMPTY
+                            if normalized_records
+                            else ReadSourceStatusV22.SUCCESS_EMPTY
+                        ),
+                        requested_services=context.requested_services,
+                        covered_services=batch.covered_services,
+                        window=context.window,
+                        records=normalized_records,
+                        truncated=batch.truncated,
+                        safe_error_code=None,
+                        latency_ms=latency_ms,
+                    ),
+                )
             body = require_mapping(payload)
             hits_body = require_mapping(body.get("hits"))
             hits = hits_body.get("hits")
@@ -316,6 +439,17 @@ class OpenSearchConnectorV1:
                 )
         except ConnectorRequestError as error:
             return (self._failure(context, error),)
+        except OpenSearchSchemaExceptionV022 as error:
+            return (
+                self._failure(
+                    context,
+                    ConnectorRequestError(
+                        ReadSourceStatusV22.FAILURE_SCHEMA,
+                        error.failure.code.value,
+                        latency_ms,
+                    ),
+                ),
+            )
         except (ValueError, TypeError):
             return (
                 self._failure(
@@ -356,6 +490,8 @@ class OpenSearchConnectorV1:
         context: ConnectorQueryContextV1,
         error: ConnectorRequestError,
     ) -> ConnectorQueryResultV1:
+        if self._profile_binding is not None:
+            self._last_profile_failure = error
         return ConnectorQueryResultV1.build(
             source=EvidenceSourceV22.LOGS,
             status=error.status,
