@@ -1,0 +1,540 @@
+{
+  "action_authority": "NONE",
+  "active_baseline_id": "base-b25440a36089a8f0e6b9f1dc",
+  "active_baseline_sha256": "6d3d2d7a4854d1cfc2477746e7d0c940ed8a08644ebc69b7b91066eabe45ae64",
+  "active_profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+  "agent_writes": 0,
+  "attempt": {
+    "completion": {
+      "action_authority": "NONE",
+      "active_baseline_id": "base-b25440a36089a8f0e6b9f1dc",
+      "active_baseline_sha256": "6d3d2d7a4854d1cfc2477746e7d0c940ed8a08644ebc69b7b91066eabe45ae64",
+      "agent_writes": 0,
+      "attempt_ordinal": 1,
+      "builder_job_disposition": "SUCCEEDED",
+      "builder_job_evidence_sha256": "a344ada1c1baff572705ad577abdc4f8fd9718f5dafc41a90a4dc327765b0ba4",
+      "builder_job_id": "job-b25440a36089a8f0e6b9f1dc",
+      "builder_job_record": {
+        "attempt_count": 1,
+        "claimed_by": null,
+        "created_at": 1788016520.050169,
+        "idempotency_key": "baseline-build:env-2b5c86f47f449acfc54cfcec:product-v023-attempt-1-7bdcfa6a6e593ee3895ac458",
+        "job_id": "job-b25440a36089a8f0e6b9f1dc",
+        "job_type": "BASELINE_BUILD",
+        "lease_expires_at": null,
+        "payload": {
+          "environment_id": "env-2b5c86f47f449acfc54cfcec",
+          "request": {
+            "activate": true,
+            "build_policy": {
+              "lookback_seconds": 180,
+              "minimum_successful_windows": 4,
+              "mode": "DEMO_ONLY",
+              "schema_version": "ecomsre.product.baseline-build-policy.v1",
+              "warmup_seconds": 180,
+              "window_count": 5
+            },
+            "candidate_services": [
+              "checkout"
+            ],
+            "planned_windows": [
+              {
+                "ended_at": "2026-08-29T15:09:51.304598Z",
+                "started_at": "2026-08-29T15:09:15.304598Z"
+              },
+              {
+                "ended_at": "2026-08-29T15:10:27.304598Z",
+                "started_at": "2026-08-29T15:09:51.304598Z"
+              },
+              {
+                "ended_at": "2026-08-29T15:11:03.304598Z",
+                "started_at": "2026-08-29T15:10:27.304598Z"
+              },
+              {
+                "ended_at": "2026-08-29T15:11:39.304598Z",
+                "started_at": "2026-08-29T15:11:03.304598Z"
+              },
+              {
+                "ended_at": "2026-08-29T15:12:15.304598Z",
+                "started_at": "2026-08-29T15:11:39.304598Z"
+              }
+            ]
+          }
+        },
+        "result": {
+          "active": true,
+          "baseline_id": "base-b25440a36089a8f0e6b9f1dc",
+          "baseline_sha256": "6d3d2d7a4854d1cfc2477746e7d0c940ed8a08644ebc69b7b91066eabe45ae64",
+          "build_policy": {
+            "lookback_seconds": 180,
+            "minimum_successful_windows": 4,
+            "mode": "DEMO_ONLY",
+            "schema_version": "ecomsre.product.baseline-build-policy.v1",
+            "warmup_seconds": 180,
+            "window_count": 5
+          },
+          "built_at": "2026-08-29T15:15:20.050169Z",
+          "environment_id": "env-2b5c86f47f449acfc54cfcec",
+          "normal_log_templates": [
+            {
+              "observation_count": 137,
+              "service": "checkout",
+              "template": "[PlaceOrder]"
+            },
+            {
+              "observation_count": 137,
+              "service": "checkout",
+              "template": "order confirmation email sent"
+            },
+            {
+              "observation_count": 137,
+              "service": "checkout",
+              "template": "order placed"
+            },
+            {
+              "observation_count": 137,
+              "service": "checkout",
+              "template": "payment went through"
+            }
+          ],
+          "readiness_audit_v023": {
+            "active_opensearch_profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+            "audit_sha256": "dbe43c6f8a11d75aeb7b15f06f128c13f62cc9f396d3a115a87e3da46b872a87",
+            "baseline_entity_service_ids": [
+              "svc-5dc8cf30d92ea9e3211e467d"
+            ],
+            "baseline_id": "base-b25440a36089a8f0e6b9f1dc",
+            "baseline_sha256": "6d3d2d7a4854d1cfc2477746e7d0c940ed8a08644ebc69b7b91066eabe45ae64",
+            "build_policy": {
+              "lookback_seconds": 180,
+              "minimum_successful_windows": 4,
+              "mode": "DEMO_ONLY",
+              "schema_version": "ecomsre.product.baseline-build-policy.v1",
+              "warmup_seconds": 180,
+              "window_count": 5
+            },
+            "capability_sha256": "b278a6694b1c9596e291ee7cb514298319c4d3bb0989b0addb041c25690d511e",
+            "environment_id": "env-2b5c86f47f449acfc54cfcec",
+            "evaluation": {
+              "accepted_checkout_log_record_count": 548,
+              "accepted_ordinals": [
+                1,
+                2,
+                3,
+                4,
+                5
+              ],
+              "active_opensearch_profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+              "aggregate_rejection_reason_codes": [],
+              "final_builder_would_pass": true,
+              "has_normal_checkout_log_template": true,
+              "logs_nonempty_window_count": 5,
+              "parity_sha256": "235c78749678c9d1dd53e919f0c366996afa4148d9462c5a3a2149b7653a7e54",
+              "profile_sha256": "60d1dafcbeb1bf02bcc1ae9217b187e3493ab4729bc7ee551103eb3122b1c2de",
+              "schema_version": "ecomsre.product.baseline-window-evaluation.v023",
+              "terminal": "ECOMSRE_PRODUCT_V023_BASELINE_PREFLIGHT_PASS",
+              "windows": [
+                {
+                  "accepted": true,
+                  "opensearch_diagnostics_sha256": "9710740badde345f7a96f5217f796408071f553e99372be5469912eb94910bc5",
+                  "prometheus_diagnostics_sha256": "8f26db50497aad6fdea915ee07233fea5d05f476d43fcf0d9b7f54faf55e19d7",
+                  "rejection_reason_codes": [],
+                  "result_sha256s": [
+                    "23081fd3bb257542e8f6edfddd29b53f8affc886a4f5b480e3b13f3f99af412f",
+                    "7353792b3883afa6328c7f17dd709f85b43f241dd9c7ad8a20cdb5d2c0bd8339",
+                    "c4d0880ca815e5e801f57cf23eda0f9621ccfc92303987cfa139e5d6dfba686e",
+                    "cb1d14f556464ea47a657a959f5eeed5adf05f1ae1464bc41d0d6366b584f83b"
+                  ],
+                  "schema_version": "ecomsre.product.baseline-window-audit.v023",
+                  "window": {
+                    "ended_at": "2026-08-29T15:09:51.304598Z",
+                    "started_at": "2026-08-29T15:09:15.304598Z"
+                  },
+                  "window_ordinal": 1,
+                  "window_sha256": "4babaf2cc6cb670e72e52d344ca4ce1d1a95fd0dddf17c6d12817dab6af18dd1"
+                },
+                {
+                  "accepted": true,
+                  "opensearch_diagnostics_sha256": "8dc2867c1744bdab3ecae8094ff93d627ad5880c32f0dc15215af5311b7c882e",
+                  "prometheus_diagnostics_sha256": "8427aee284112188d2bb133155144c9d58cdbfdd471fe8c9a1dd6c12ef41731e",
+                  "rejection_reason_codes": [],
+                  "result_sha256s": [
+                    "242881eb8277d26a886a8881d72bce309885adec93238fa8c1546150086abd88",
+                    "49821ddadbd1828ea3b90a43c94ecfe9c2abe798fb308d238e92ec33114967a5",
+                    "90b662faf5c7d31295f77e9921f8aefe49f63dd84b90c31d2ebf93c592b8e7e3",
+                    "b2e8ecff52f2243880130d45d4347a0ca5ed14f554bf670c46070ee3690f70bd"
+                  ],
+                  "schema_version": "ecomsre.product.baseline-window-audit.v023",
+                  "window": {
+                    "ended_at": "2026-08-29T15:10:27.304598Z",
+                    "started_at": "2026-08-29T15:09:51.304598Z"
+                  },
+                  "window_ordinal": 2,
+                  "window_sha256": "762c11f0d87280c0d23ce9dbdacbd55bc27a9f0b320e3f33b9d8b750b6135f1f"
+                },
+                {
+                  "accepted": true,
+                  "opensearch_diagnostics_sha256": "c6bfc9114d9abb5a99f387e86ffdce6fb950e623d041de0f9a52d8945bffb5c7",
+                  "prometheus_diagnostics_sha256": "40529fb027a4477541fcdff4e54b279afecd9b5bdf998d2d540020272d916056",
+                  "rejection_reason_codes": [],
+                  "result_sha256s": [
+                    "22bd5230cc9ebcec8f161e553bd2112c63028725056825b03fd84760b8d607bd",
+                    "6b5b570b2f6a396772a0ccbd76486a6c6c20fbd6b354396513f127d86531cd99",
+                    "83fa06d6a82ac0409be37a25506d6ab1caabbf928444fe4310feac62a3a97627",
+                    "e712921eef38f5ca8a3d40538cc16189f85815c29e3f3774617424aea1e6df36"
+                  ],
+                  "schema_version": "ecomsre.product.baseline-window-audit.v023",
+                  "window": {
+                    "ended_at": "2026-08-29T15:11:03.304598Z",
+                    "started_at": "2026-08-29T15:10:27.304598Z"
+                  },
+                  "window_ordinal": 3,
+                  "window_sha256": "114894a487802e6933021aa865ee7731a781f9998d449d649b06a37b3166bbc6"
+                },
+                {
+                  "accepted": true,
+                  "opensearch_diagnostics_sha256": "1eba91133cb7c35ecf679441a6c4ddaaa570eb0e04594a5569227a49a228e41f",
+                  "prometheus_diagnostics_sha256": "dcaeea9dd0548aabf37998e4a2367a4070695fb2cad35babfd60d5b742c88de3",
+                  "rejection_reason_codes": [],
+                  "result_sha256s": [
+                    "4410f3372e7cf2a95a5c4f809550d6496c5d33730f4c2943e4e698639f71349c",
+                    "8b814cd2b3ca17fe536acc48e2f8706960d75d3992063d14a5248f610003d4f1",
+                    "d982374e63b1d32866800a1a2baa3f04ec46bf3448e757cb16d798ff5230d842",
+                    "f7cf91994bb6f79eee1442b53cded17669d0044ceae690d44f68d8489d39ff26"
+                  ],
+                  "schema_version": "ecomsre.product.baseline-window-audit.v023",
+                  "window": {
+                    "ended_at": "2026-08-29T15:11:39.304598Z",
+                    "started_at": "2026-08-29T15:11:03.304598Z"
+                  },
+                  "window_ordinal": 4,
+                  "window_sha256": "2cd127812344e20d182a694eec6cd19df425ccd7462b7222e9c290200ae8eeec"
+                },
+                {
+                  "accepted": true,
+                  "opensearch_diagnostics_sha256": "8df89ebffa7c347852af5569e5ebac62c62d8aeaaceb9ca7cfd694800960e55f",
+                  "prometheus_diagnostics_sha256": "da3a27176c8cf5e665e6c816be714b991fcccdbfadfd83f16654eb1eb324441c",
+                  "rejection_reason_codes": [],
+                  "result_sha256s": [
+                    "133380650a468956707fdb349f1da5dc9e44a6b5c8cf505077be40a901413af6",
+                    "51b9e163a3388fab0bb2636d13febb2cbe3c2fba550c59c6234ca6d32af40e3b",
+                    "caa4a763e48c05acd714d9a12cb59f6d9b6e74658b8dae99d370d43fbb5e5551",
+                    "cfd233dbd418c07b73ee2f63451351d3c41192ce09a331858e7ae8471d52ebc8"
+                  ],
+                  "schema_version": "ecomsre.product.baseline-window-audit.v023",
+                  "window": {
+                    "ended_at": "2026-08-29T15:12:15.304598Z",
+                    "started_at": "2026-08-29T15:11:39.304598Z"
+                  },
+                  "window_ordinal": 5,
+                  "window_sha256": "413fdb458a39aa195c4217e14dc812f772447e38a0bc71cf61899c6afea1dfe6"
+                }
+              ]
+            },
+            "final_builder_would_pass": true,
+            "parity_sha256": "235c78749678c9d1dd53e919f0c366996afa4148d9462c5a3a2149b7653a7e54",
+            "profile_sha256": "60d1dafcbeb1bf02bcc1ae9217b187e3493ab4729bc7ee551103eb3122b1c2de",
+            "schema_version": "ecomsre.product.baseline-readiness-audit.v023",
+            "service_identity_sha256": "2df1ed6969b5e3a1ce4563130915ab4101a7178c90b9601dd9adcda04420e19d",
+            "service_ids": [
+              "checkout"
+            ]
+          },
+          "schema_version": "ecomsre.product.environment-baseline.v1",
+          "service_ids": [
+            "svc-5dc8cf30d92ea9e3211e467d"
+          ],
+          "source_capability_sha256": "b278a6694b1c9596e291ee7cb514298319c4d3bb0989b0addb041c25690d511e",
+          "successful_windows": 5,
+          "topology_edges": [],
+          "v22_baseline_profile": {
+            "baseline_sha256": "594d5969e5a40c27c023723fd7e6da94866057057e0279aa40bfa62ea786b916",
+            "metric_stats": [
+              {
+                "mean": 38.59271298936621,
+                "metric_kind": "LATENCY_P95_MS",
+                "service": "checkout",
+                "standard_deviation": 3.9193356008234006
+              },
+              {
+                "mean": 2.7213256571983413,
+                "metric_kind": "REQUEST_SUPPORT",
+                "service": "checkout",
+                "standard_deviation": 1.4608957739064212
+              }
+            ],
+            "resource_stats": [],
+            "schema_version": "dta-v22.baseline-profile.v1",
+            "trace_stats": []
+          },
+          "window_count": 5
+        },
+        "safe_error_code": null,
+        "schema_version": "ecomsre.product.job.v1",
+        "status": "SUCCEEDED",
+        "updated_at": 1788016521.348303
+      },
+      "cleanup": "CLEAN",
+      "completed_at": "2026-08-29T15:16:36.306144Z",
+      "completion_sha256": "0d8328aab3c982fc917bef28a64d221cfc52abee68d262a47a7747f1ce3b9ad4",
+      "failure_code": null,
+      "failure_evidence_sha256": null,
+      "failure_kind": null,
+      "per_window_audit": {
+        "active_opensearch_profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+        "audit_sha256": "dbe43c6f8a11d75aeb7b15f06f128c13f62cc9f396d3a115a87e3da46b872a87",
+        "baseline_entity_service_ids": [
+          "svc-5dc8cf30d92ea9e3211e467d"
+        ],
+        "baseline_id": "base-b25440a36089a8f0e6b9f1dc",
+        "baseline_sha256": "6d3d2d7a4854d1cfc2477746e7d0c940ed8a08644ebc69b7b91066eabe45ae64",
+        "build_policy": {
+          "lookback_seconds": 180,
+          "minimum_successful_windows": 4,
+          "mode": "DEMO_ONLY",
+          "schema_version": "ecomsre.product.baseline-build-policy.v1",
+          "warmup_seconds": 180,
+          "window_count": 5
+        },
+        "capability_sha256": "b278a6694b1c9596e291ee7cb514298319c4d3bb0989b0addb041c25690d511e",
+        "environment_id": "env-2b5c86f47f449acfc54cfcec",
+        "evaluation": {
+          "accepted_checkout_log_record_count": 548,
+          "accepted_ordinals": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "active_opensearch_profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+          "aggregate_rejection_reason_codes": [],
+          "final_builder_would_pass": true,
+          "has_normal_checkout_log_template": true,
+          "logs_nonempty_window_count": 5,
+          "parity_sha256": "235c78749678c9d1dd53e919f0c366996afa4148d9462c5a3a2149b7653a7e54",
+          "profile_sha256": "60d1dafcbeb1bf02bcc1ae9217b187e3493ab4729bc7ee551103eb3122b1c2de",
+          "schema_version": "ecomsre.product.baseline-window-evaluation.v023",
+          "terminal": "ECOMSRE_PRODUCT_V023_BASELINE_PREFLIGHT_PASS",
+          "windows": [
+            {
+              "accepted": true,
+              "opensearch_diagnostics_sha256": "9710740badde345f7a96f5217f796408071f553e99372be5469912eb94910bc5",
+              "prometheus_diagnostics_sha256": "8f26db50497aad6fdea915ee07233fea5d05f476d43fcf0d9b7f54faf55e19d7",
+              "rejection_reason_codes": [],
+              "result_sha256s": [
+                "23081fd3bb257542e8f6edfddd29b53f8affc886a4f5b480e3b13f3f99af412f",
+                "7353792b3883afa6328c7f17dd709f85b43f241dd9c7ad8a20cdb5d2c0bd8339",
+                "c4d0880ca815e5e801f57cf23eda0f9621ccfc92303987cfa139e5d6dfba686e",
+                "cb1d14f556464ea47a657a959f5eeed5adf05f1ae1464bc41d0d6366b584f83b"
+              ],
+              "schema_version": "ecomsre.product.baseline-window-audit.v023",
+              "window": {
+                "ended_at": "2026-08-29T15:09:51.304598Z",
+                "started_at": "2026-08-29T15:09:15.304598Z"
+              },
+              "window_ordinal": 1,
+              "window_sha256": "4babaf2cc6cb670e72e52d344ca4ce1d1a95fd0dddf17c6d12817dab6af18dd1"
+            },
+            {
+              "accepted": true,
+              "opensearch_diagnostics_sha256": "8dc2867c1744bdab3ecae8094ff93d627ad5880c32f0dc15215af5311b7c882e",
+              "prometheus_diagnostics_sha256": "8427aee284112188d2bb133155144c9d58cdbfdd471fe8c9a1dd6c12ef41731e",
+              "rejection_reason_codes": [],
+              "result_sha256s": [
+                "242881eb8277d26a886a8881d72bce309885adec93238fa8c1546150086abd88",
+                "49821ddadbd1828ea3b90a43c94ecfe9c2abe798fb308d238e92ec33114967a5",
+                "90b662faf5c7d31295f77e9921f8aefe49f63dd84b90c31d2ebf93c592b8e7e3",
+                "b2e8ecff52f2243880130d45d4347a0ca5ed14f554bf670c46070ee3690f70bd"
+              ],
+              "schema_version": "ecomsre.product.baseline-window-audit.v023",
+              "window": {
+                "ended_at": "2026-08-29T15:10:27.304598Z",
+                "started_at": "2026-08-29T15:09:51.304598Z"
+              },
+              "window_ordinal": 2,
+              "window_sha256": "762c11f0d87280c0d23ce9dbdacbd55bc27a9f0b320e3f33b9d8b750b6135f1f"
+            },
+            {
+              "accepted": true,
+              "opensearch_diagnostics_sha256": "c6bfc9114d9abb5a99f387e86ffdce6fb950e623d041de0f9a52d8945bffb5c7",
+              "prometheus_diagnostics_sha256": "40529fb027a4477541fcdff4e54b279afecd9b5bdf998d2d540020272d916056",
+              "rejection_reason_codes": [],
+              "result_sha256s": [
+                "22bd5230cc9ebcec8f161e553bd2112c63028725056825b03fd84760b8d607bd",
+                "6b5b570b2f6a396772a0ccbd76486a6c6c20fbd6b354396513f127d86531cd99",
+                "83fa06d6a82ac0409be37a25506d6ab1caabbf928444fe4310feac62a3a97627",
+                "e712921eef38f5ca8a3d40538cc16189f85815c29e3f3774617424aea1e6df36"
+              ],
+              "schema_version": "ecomsre.product.baseline-window-audit.v023",
+              "window": {
+                "ended_at": "2026-08-29T15:11:03.304598Z",
+                "started_at": "2026-08-29T15:10:27.304598Z"
+              },
+              "window_ordinal": 3,
+              "window_sha256": "114894a487802e6933021aa865ee7731a781f9998d449d649b06a37b3166bbc6"
+            },
+            {
+              "accepted": true,
+              "opensearch_diagnostics_sha256": "1eba91133cb7c35ecf679441a6c4ddaaa570eb0e04594a5569227a49a228e41f",
+              "prometheus_diagnostics_sha256": "dcaeea9dd0548aabf37998e4a2367a4070695fb2cad35babfd60d5b742c88de3",
+              "rejection_reason_codes": [],
+              "result_sha256s": [
+                "4410f3372e7cf2a95a5c4f809550d6496c5d33730f4c2943e4e698639f71349c",
+                "8b814cd2b3ca17fe536acc48e2f8706960d75d3992063d14a5248f610003d4f1",
+                "d982374e63b1d32866800a1a2baa3f04ec46bf3448e757cb16d798ff5230d842",
+                "f7cf91994bb6f79eee1442b53cded17669d0044ceae690d44f68d8489d39ff26"
+              ],
+              "schema_version": "ecomsre.product.baseline-window-audit.v023",
+              "window": {
+                "ended_at": "2026-08-29T15:11:39.304598Z",
+                "started_at": "2026-08-29T15:11:03.304598Z"
+              },
+              "window_ordinal": 4,
+              "window_sha256": "2cd127812344e20d182a694eec6cd19df425ccd7462b7222e9c290200ae8eeec"
+            },
+            {
+              "accepted": true,
+              "opensearch_diagnostics_sha256": "8df89ebffa7c347852af5569e5ebac62c62d8aeaaceb9ca7cfd694800960e55f",
+              "prometheus_diagnostics_sha256": "da3a27176c8cf5e665e6c816be714b991fcccdbfadfd83f16654eb1eb324441c",
+              "rejection_reason_codes": [],
+              "result_sha256s": [
+                "133380650a468956707fdb349f1da5dc9e44a6b5c8cf505077be40a901413af6",
+                "51b9e163a3388fab0bb2636d13febb2cbe3c2fba550c59c6234ca6d32af40e3b",
+                "caa4a763e48c05acd714d9a12cb59f6d9b6e74658b8dae99d370d43fbb5e5551",
+                "cfd233dbd418c07b73ee2f63451351d3c41192ce09a331858e7ae8471d52ebc8"
+              ],
+              "schema_version": "ecomsre.product.baseline-window-audit.v023",
+              "window": {
+                "ended_at": "2026-08-29T15:12:15.304598Z",
+                "started_at": "2026-08-29T15:11:39.304598Z"
+              },
+              "window_ordinal": 5,
+              "window_sha256": "413fdb458a39aa195c4217e14dc812f772447e38a0bc71cf61899c6afea1dfe6"
+            }
+          ]
+        },
+        "final_builder_would_pass": true,
+        "parity_sha256": "235c78749678c9d1dd53e919f0c366996afa4148d9462c5a3a2149b7653a7e54",
+        "profile_sha256": "60d1dafcbeb1bf02bcc1ae9217b187e3493ab4729bc7ee551103eb3122b1c2de",
+        "schema_version": "ecomsre.product.baseline-readiness-audit.v023",
+        "service_identity_sha256": "2df1ed6969b5e3a1ce4563130915ab4101a7178c90b9601dd9adcda04420e19d",
+        "service_ids": [
+          "checkout"
+        ]
+      },
+      "per_window_audit_sha256": "dbe43c6f8a11d75aeb7b15f06f128c13f62cc9f396d3a115a87e3da46b872a87",
+      "runbook_executions": 0,
+      "schema_version": "ecomsre.product.baseline-attempt-completion.v023",
+      "start_sha256": "7bdcfa6a6e593ee3895ac458552f1ef1cbf30c428829bf2019a27f25dd3f4946",
+      "terminal": "ECOMSRE_PRODUCT_V023_BASELINE_READINESS_PASS",
+      "traffic_result": {
+        "completed_request_count": 180,
+        "error_count": 0,
+        "maximum_error_fraction": 0.01,
+        "passed": true,
+        "planned_request_count": 180,
+        "profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+        "queue_fault_flag": 0,
+        "requests_per_second": 0.5,
+        "result_sha256": "589f521588400a8d9fd722bc7a021d0ec5ab81e3bd0bb37c0f2e6a876593d6d7",
+        "schema_version": "ecomsre.product.baseline-traffic-result.v023",
+        "semantics_sha256": "b42944eca75b086f4dec98c904cfd8e787e0e4310ab8bcb5c8364f6fa09bde92"
+      }
+    },
+    "start": {
+      "action_authority": "NONE",
+      "attempt_ordinal": 1,
+      "changed_parameter": "INITIAL",
+      "environment_id": "env-2b5c86f47f449acfc54cfcec",
+      "maximum_changed_attempts": 2,
+      "planned_windows": [
+        {
+          "ended_at": "2026-08-29T15:09:51.304598Z",
+          "started_at": "2026-08-29T15:09:15.304598Z"
+        },
+        {
+          "ended_at": "2026-08-29T15:10:27.304598Z",
+          "started_at": "2026-08-29T15:09:51.304598Z"
+        },
+        {
+          "ended_at": "2026-08-29T15:11:03.304598Z",
+          "started_at": "2026-08-29T15:10:27.304598Z"
+        },
+        {
+          "ended_at": "2026-08-29T15:11:39.304598Z",
+          "started_at": "2026-08-29T15:11:03.304598Z"
+        },
+        {
+          "ended_at": "2026-08-29T15:12:15.304598Z",
+          "started_at": "2026-08-29T15:11:39.304598Z"
+        }
+      ],
+      "prior_completion_sha256": null,
+      "product_data_root": "/Users/raidriar/Documents/EcomSRE-Agent-worktrees/product-v023-fresh-baseline-nofault/.local/product-v023/baseline-readiness/runs/20260829T150806-1eaee825/product",
+      "profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+      "readiness_profile_sha256": "60d1dafcbeb1bf02bcc1ae9217b187e3493ab4729bc7ee551103eb3122b1c2de",
+      "schema_version": "ecomsre.product.baseline-attempt-start.v023",
+      "semantic_inputs": {
+        "baseline_accumulation_seconds": 360,
+        "connector_query_binding_sha256": "a09d7aa4544b5b4c076179fe292e010802c5a6a1caaaeed07928780a6dccf924",
+        "healthy_traffic_request_count": 180,
+        "healthy_traffic_requests_per_second": 0.5,
+        "implementation_revision_sha256": "d90ae9ac050e7391bffb2c794d19c7cb9c6a8d13f0424ba030491bddbe4b392b",
+        "maximum_error_fraction": 0.01,
+        "minimum_accepted_windows": 4,
+        "queue_fault_flag": 0,
+        "service_alias_binding_sha256": "15718f27dbab39d11607d45b11b5a1d992b8ed022898c9bb3b48b8ac143604e6",
+        "warmup_seconds": 180
+      },
+      "semantics_sha256": "b42944eca75b086f4dec98c904cfd8e787e0e4310ab8bcb5c8364f6fa09bde92",
+      "start_sha256": "7bdcfa6a6e593ee3895ac458552f1ef1cbf30c428829bf2019a27f25dd3f4946",
+      "started_at": "2026-08-29T15:09:15.304598Z"
+    }
+  },
+  "baseline_attempt_count": 1,
+  "demo_cleanup": "CLEAN",
+  "demo_cleanup_observation": {
+    "non_owned_resources_changed": false,
+    "owned_containers": 0,
+    "owned_networks": 0,
+    "owned_volumes": 0,
+    "verdict": "CLEAN"
+  },
+  "environment_configuration_sha256": "b188b606fa87502cb615ede3ed55cac45d9f2239942d8d6adf4ca9cec0cfac00",
+  "environment_id": "env-2b5c86f47f449acfc54cfcec",
+  "execution_head": "b2e9e57532a0a3234137cf4e9d7c1e9e21412023",
+  "fault_attempt_count": 0,
+  "knowledge_campaign_count": 0,
+  "ledger_sha256": "90a7c2daf514886cac131b494ac85f9235b1eebb292dbe798da87459252e892e",
+  "outer_baseline_before_sha256": "14bd13734d46566828779fd61b16e654cc260274a0e30ae9948371a9dbba5beb",
+  "outer_baseline_unchanged": true,
+  "parity_sha256": "235c78749678c9d1dd53e919f0c366996afa4148d9462c5a3a2149b7653a7e54",
+  "private_report_sha256": "8b8cf766ca486503a4b1abd98d3f0934faa983e9bb5b445edabe691fbec0beae",
+  "product_cleanup": "CLEAN",
+  "product_cleanup_observation": {
+    "launches": [
+      {
+        "api_instance_id": "api-9882b009820df68e8fe520f7",
+        "api_pid": 86209,
+        "launch_ordinal": 1,
+        "worker_instance_id": "worker-f365a73b33c3154a96628b0f",
+        "worker_pid": 86210
+      }
+    ],
+    "non_owned_resources_changed": false,
+    "owned_host_processes": 0,
+    "product_api_port": 18081,
+    "product_api_port_available": true,
+    "safe_error": null,
+    "schema_version": "ecomsre.product.host-process-cleanup.v023",
+    "verdict": "CLEAN"
+  },
+  "queue_default_unchanged": true,
+  "readiness_audit_sha256": "dbe43c6f8a11d75aeb7b15f06f128c13f62cc9f396d3a115a87e3da46b872a87",
+  "readiness_profile_sha256": "60d1dafcbeb1bf02bcc1ae9217b187e3493ab4729bc7ee551103eb3122b1c2de",
+  "restart_proof_sha256": null,
+  "runbook_executions": 0,
+  "schema_version": "ecomsre.product.public-baseline-attempt.v023",
+  "terminal": "BLOCKED_ECOMSRE_PRODUCT_V023_BASELINE_RESTART"
+}

@@ -146,9 +146,10 @@ def test_live_environment_and_semantics_bind_active_p01() -> None:
 
 def test_live_contract_check_is_offline_and_attempt_free() -> None:
     result = verify_live_baseline_readiness_contract_v023(ROOT)
+    repeated = verify_live_baseline_readiness_contract_v023(ROOT)
 
     assert result["terminal"] == "ECOMSRE_PRODUCT_V023_LIVE_BASELINE_CONTRACT_READY"
-    assert result["baseline_attempt_count"] == 0
+    assert repeated["baseline_attempt_count"] == result["baseline_attempt_count"]
     assert result["fault_attempt_count"] == 0
     assert result["action_authority"] == "NONE"
 

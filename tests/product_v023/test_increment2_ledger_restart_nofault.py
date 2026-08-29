@@ -1521,7 +1521,8 @@ def _snapshot(
         "active_baseline_id": audit.baseline_id,
         "active_baseline_sha256": audit.baseline_sha256,
         "baseline_count": 1,
-        "service_identity_sha256": audit.service_identity_sha256,
+        "service_identity_sha256": "6" * 64,
+        "baseline_candidate_identity_sha256": audit.service_identity_sha256,
         "capability_sha256": audit.capability_sha256,
         "api_instance_id": "api-" + instance_marker * 24,
         "worker_instance_id": "worker-" + instance_marker * 24,
@@ -1548,6 +1549,11 @@ def test_restart_proof_preserves_every_binding_and_does_not_build_again() -> Non
     assert proof.terminal == BASELINE_RESTART_PASS_V023
     assert proof.new_baseline_count == 0
     assert proof.queue_healthy is True
+    assert proof.after.service_identity_sha256 == "6" * 64
+    assert (
+        proof.after.baseline_candidate_identity_sha256
+        == audit.service_identity_sha256
+    )
 
     with pytest.raises(ValidationError):
         BaselineRestartProofV023.build(
@@ -1658,7 +1664,7 @@ def _nofault_inputs(
         "incident_id": "inc-" + "9" * 24,
         "baseline_id": audit.baseline_id,
         "baseline_sha256": audit.baseline_sha256,
-        "service_identity_sha256": audit.service_identity_sha256,
+        "service_identity_sha256": restart.after.service_identity_sha256,
         "source_capability_sha256": audit.capability_sha256,
         "candidate_logical_services": ("checkout",),
         "diagnosis_observed_at": NOW + timedelta(minutes=6),
@@ -1897,6 +1903,7 @@ def test_nofault_scorer_mints_only_the_three_measured_terminals(
     )
 
     assert result.terminal.value == expected
+    assert result.service_identity_sha256 == restart.after.service_identity_sha256
     if hidden_failure:
         assert "HIDDEN_CONNECTOR_FAILURE" in result.reasons
 
@@ -2594,7 +2601,7 @@ def test_nofault_queue_snapshot_must_be_post_diagnosis() -> None:
     ("field", "value"),
     (
         ("environment_id", "env-" + "f" * 24),
-        ("service_identity_sha256", "f" * 64),
+        ("baseline_candidate_identity_sha256", "f" * 64),
         ("capability_sha256", "f" * 64),
     ),
 )
@@ -2781,6 +2788,55 @@ def test_nofault_result_digest_binds_specific_evidence_object_bytes() -> None:
         original_acceptance.evidence_bundle_sha256
     )
     assert changed_acceptance.result_sha256 != original_acceptance.result_sha256
+
+
+def test_nofault_resolution_accepts_additional_content_addressed_observations() -> None:
+    (
+        audit,
+        restart,
+        incident,
+        diagnosis,
+        bundle,
+        assessment,
+        execution_profile,
+        traffic_result,
+        queue_snapshot,
+    ) = _nofault_inputs()
+    extra = _object(
+        "traces:extra",
+        EvidenceSourceV22.TRACES,
+        {"note": "additional resolved observation"},
+    )
+    expanded = EvidenceBundleV1(
+        incident_id=bundle.incident_id,
+        diagnosis_id=bundle.diagnosis_id,
+        objects=(*bundle.objects, extra),
+        supporting_evidence_refs=bundle.supporting_evidence_refs,
+        contradicting_evidence_refs=bundle.contradicting_evidence_refs,
+    )
+
+    result = score_nofault_v023(
+        baseline_audit=audit,
+        restart_proof=restart,
+        incident=incident,
+        diagnosis=diagnosis,
+        bundle=expanded,
+        capability_assessment=assessment,
+        execution_profile=execution_profile,
+        traffic_result=traffic_result,
+        queue_snapshot=queue_snapshot,
+        active_profile_sha256=ACTIVE_PROFILE_SHA256_V023,
+        incident_count=1,
+        diagnosis_count=1,
+        fault_family_count=0,
+        action_authority_violations=0,
+        agent_writes=0,
+        runbook_executions=0,
+    )
+
+    assert result.terminal.value == NOFAULT_FULLY_SUPPORTED_V023
+    assert result.evidence_resolution.all_references_resolved is True
+    assert result.evidence_resolution.all_object_sha256_resolved is True
 
 
 def test_nofault_external_action_counters_fail_closed() -> None:

@@ -1,0 +1,175 @@
+{
+  "connector_configs": [
+    {
+      "credential_refs": {},
+      "endpoint": "http://127.0.0.1:19090",
+      "kind": "PROMETHEUS",
+      "name": "prometheus",
+      "settings": {
+        "maximum_response_bytes": 10000000,
+        "maximum_sample_count": 10000,
+        "maximum_series_count": 1000,
+        "query_templates": {
+          "cpu": "sum(rate(container_cpu_usage_seconds_total{service_name=\"{service}\"}[5m])) * 100",
+          "error_rate": "sum(rate(traces_span_metrics_calls_total{service_name=\"{service}\",status_code=\"STATUS_CODE_ERROR\"}[5m])) / clamp_min(sum(rate(traces_span_metrics_calls_total{service_name=\"{service}\"}[5m])), 1)",
+          "latency": "histogram_quantile(0.95, sum by (le) (rate(traces_span_metrics_duration_milliseconds_bucket{service_name=\"{service}\"}[5m])))",
+          "memory": "sum(container_memory_usage_bytes{service_name=\"{service}\"})",
+          "request_support": "sum(rate(traces_span_metrics_calls_total{service_name=\"{service}\"}[5m]))"
+        },
+        "service_label": "service_name",
+        "step_seconds": 15
+      }
+    },
+    {
+      "credential_refs": {},
+      "endpoint": "http://127.0.0.1:19200",
+      "kind": "OPENSEARCH",
+      "name": "opensearch",
+      "settings": {
+        "maximum_response_bytes": 10000000,
+        "maximum_result_count": 200,
+        "mode": "PROFILE_BOUND",
+        "profile_binding": {
+          "baseline_handoff_sha256": "fee46e6f335f106f365c3c0c85bb1cf8e7fb0b7cbf00289f5555ec84ea0cdaa7",
+          "binding_sha256": "e35903cfd93b28edf4244c00e6f589788353817e7c9b515ba667360be14421e2",
+          "candidate_set_sha256": "f3aeaf272ab199c1284238c9e7785ec89f46b1cb54ad1608188a052c27f9d4de",
+          "capture_bundle_sha256": "4084941d8368c4f74ec2db95ac2215f36c9531367f9904b9b90cd653bceeea94",
+          "field_caps_response_sha256": "25d4d1160b430850831a3cfeccf049b41f8600aedad4c7c78efd78fc414c5371",
+          "index_pattern": "otel-logs-*",
+          "mapping_response_sha256": "0ef44391e2302b420c67684d05d264b34eb7165c9542c8b3b435e4c272d50e6e",
+          "maximum_record_rejection_fraction": 0.2,
+          "message_extraction": {
+            "extraction": {
+              "mode": "DOTTED_OR_NESTED_PATH",
+              "paths": [
+                "body"
+              ]
+            },
+            "mode": "STRING_VALUE"
+          },
+          "message_projection_policy": "AS_OBSERVED",
+          "operator_decision_sha256": "51effb280e9390d5619bf18fed80c2c158214db2dd98dcfce3634275125b8b5e",
+          "profile_id": "product-v0222-operator-selected-profile",
+          "profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+          "profile_source": "CAPTURE_FIRST_OPERATOR_SELECTION_V0222",
+          "profile_status": "ACTIVE",
+          "schema_version": "ecomsre.product.opensearch-connector-profile-binding.v023",
+          "selected_candidate_alias": "P01",
+          "selected_candidate_sha256": "d056dd8e86a8277fb361fe111ffd447d87fd6cd56bd93afc938f06e316f387bd",
+          "service_extraction": {
+            "mode": "DOTTED_OR_NESTED_PATH",
+            "paths": [
+              "resource.service.name"
+            ]
+          },
+          "service_query_field": "resource.service.name.keyword",
+          "service_source_field": "resource.service.name",
+          "severity_extraction": {
+            "extraction": {
+              "mode": "DOTTED_OR_NESTED_PATH",
+              "paths": [
+                "severity.text"
+              ]
+            },
+            "mode": "STRING_VALUE"
+          },
+          "structural_sample_response_sha256": "82e878bc5e3e44edc27097ad2a2584f9fef2cacba92043076a51f4998d658562",
+          "timestamp_extraction": {
+            "extraction": {
+              "mode": "DOTTED_OR_NESTED_PATH",
+              "paths": [
+                "@timestamp"
+              ]
+            },
+            "parsers": [
+              "ISO_8601"
+            ]
+          },
+          "trace_id_extraction": {
+            "mode": "DOTTED_OR_NESTED_PATH",
+            "paths": [
+              "traceId"
+            ]
+          }
+        },
+        "severity_filter": []
+      }
+    },
+    {
+      "credential_refs": {},
+      "endpoint": "http://127.0.0.1:11686/jaeger/ui",
+      "kind": "JAEGER",
+      "name": "jaeger",
+      "settings": {
+        "limit": 100,
+        "lookback_seconds": 3600,
+        "maximum_response_bytes": 10000000,
+        "minimum_duration_ms": 5000,
+        "service_field_behavior": "serviceName",
+        "tags": {}
+      }
+    },
+    {
+      "credential_refs": {},
+      "endpoint": null,
+      "kind": "HTTP_HEALTH",
+      "name": "health",
+      "settings": {
+        "services": [
+          {
+            "health_url": "http://127.0.0.1:18080/",
+            "service_id": "frontend-proxy",
+            "success_statuses": [
+              200
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "credential_refs": {},
+      "endpoint": null,
+      "kind": "PILOT_RUNTIME",
+      "name": "pilot-runtime",
+      "settings": {
+        "authority_sha256": "ee49aaa2835b97645c639a3a9cae01471e51e6aa427e92f353d7b4fdf3840915",
+        "maximum_age_seconds": 600,
+        "snapshot_ref": "pilot/runtime-readiness.json"
+      }
+    }
+  ],
+  "description": "Fresh read-only Product v0.2.3 environment bound to ACTIVE P01.",
+  "explicit_service_catalog": [
+    "checkout"
+  ],
+  "name": "product-v023-fresh-baseline-nofault",
+  "service_identity_policy": {
+    "canonical_field": null,
+    "health_service_field": null,
+    "jaeger_service_field": null,
+    "opensearch_field": null,
+    "prometheus_label": null,
+    "schema_version": "ecomsre.product.service-identity-policy.v1",
+    "services": [
+      {
+        "aliases": {
+          "http_health": [],
+          "jaeger": [
+            "checkout"
+          ],
+          "opensearch": [
+            "checkout",
+            "checkoutservice"
+          ],
+          "prometheus": [
+            "checkout",
+            "checkoutservice"
+          ]
+        },
+        "approved_many_to_one": true,
+        "logical_service": "checkout"
+      }
+    ]
+  },
+  "timezone": "UTC"
+}

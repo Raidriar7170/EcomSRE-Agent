@@ -267,6 +267,13 @@ def test_product_mvp_demo_fixture_can_verify_and_build_baseline(tmp_path: Path) 
     assert all(item["status"] != "UNAVAILABLE" for item in capability.json()["sources"])
     assert diagnosis["terminal"] == "NO_INCIDENT"
     assert diagnosis["core_or_extension_or_open_world"] == "NO_INCIDENT"
+    assert diagnosis["supporting_evidence_refs"]
+    objects_by_ref = {item["evidence_ref"]: item for item in evidence["objects"]}
+    assert set(diagnosis["supporting_evidence_refs"]).issubset(objects_by_ref)
+    assert {
+        objects_by_ref[reference]["source"]
+        for reference in diagnosis["supporting_evidence_refs"]
+    }.issuperset({"LOGS", "METRICS", "RUNTIME"})
     assert diagnosis["agent_writes"] == 0
     assert diagnosis["runbook_executions"] == 0
     assert diagnosis["provider_calls"] == 0

@@ -434,7 +434,7 @@ class ProductReadBackendV1:
         limitations: set[str] = {
             f"SOURCE_{item.source.value}_{item.status.value}"
             for item in capability_matrix.sources
-            if item.status is not SourceCapabilityStatusV1.AVAILABLE
+            if item.status is SourceCapabilityStatusV1.UNAVAILABLE
         }
         identity_by_logical = {item.logical_service: item for item in identity_map.services}
         pilot_runtime_authority = self._pilot_runtime_authority
@@ -520,6 +520,12 @@ class ProductReadBackendV1:
             )
             if memory_outcome is not None:
                 memory.append(memory_outcome)
+        limitations.update(
+            f"SOURCE_{item.source.value}_{item.status.value}"
+            for item in capability_matrix.sources
+            if item.status is SourceCapabilityStatusV1.PARTIAL
+            and not set(candidates).issubset(coverage[item.source])
+        )
         return ProductReadAcquisitionV1(
             raw_outcomes=tuple(raw),
             memory_outcomes=tuple(memory),

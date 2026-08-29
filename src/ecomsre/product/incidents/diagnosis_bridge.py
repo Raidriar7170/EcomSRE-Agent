@@ -182,6 +182,11 @@ class ProductDiagnosisBridgeV1:
                 ):
                     terminal = DiagnosisTerminalV1.NO_INCIDENT
                     lane = DiagnosisLaneV1.NO_INCIDENT
+                    first_ref_by_source = {
+                        reference.source: reference.evidence_ref
+                        for reference in reversed(memory.evidence_refs)
+                    }
+                    support = tuple(sorted(first_ref_by_source.values()))
                 else:
                     graph = build_residual_evidence_graph_v23(
                         candidate_services=candidates,

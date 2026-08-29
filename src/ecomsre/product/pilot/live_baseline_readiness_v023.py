@@ -725,6 +725,7 @@ def _restart_snapshot(
     *,
     environment_id: str,
     service_identity_sha256: str,
+    baseline_candidate_identity_sha256: str,
     capability_sha256: str,
 ) -> BaselineRestartSnapshotV023:
     environment = EnvironmentRecordV1.model_validate(
@@ -752,6 +753,9 @@ def _restart_snapshot(
         active_baseline_sha256=str(baseline["baseline_sha256"]),
         baseline_count=1,
         service_identity_sha256=service_identity_sha256,
+        baseline_candidate_identity_sha256=(
+            baseline_candidate_identity_sha256
+        ),
         capability_sha256=capability_sha256,
         api_instance_id=processes.api_instance_id,
         worker_instance_id=processes.worker_instance_id,
@@ -760,6 +764,29 @@ def _restart_snapshot(
         running_jobs=running,
         failed_jobs=failed,
     )
+
+
+def _baseline_candidate_identity_sha256_v023(
+    identity_map: ServiceIdentityMapV1,
+    audit: ProductBaselineReadinessAuditV023,
+) -> str:
+    """Bind the candidate-scoped Baseline audit to the full verified map."""
+
+    by_id = {item.service_id: item for item in identity_map.services}
+    if set(audit.baseline_entity_service_ids) != set(by_id).intersection(
+        audit.baseline_entity_service_ids
+    ):
+        raise RuntimeError("BASELINE_V023_CANDIDATE_IDENTITY_MISSING")
+    selected = tuple(by_id[item] for item in audit.baseline_entity_service_ids)
+    if tuple(sorted(item.logical_service for item in selected)) != audit.service_ids:
+        raise RuntimeError("BASELINE_V023_CANDIDATE_IDENTITY_CHANGED")
+    candidate = ServiceIdentityMapV1.build(
+        environment_id=identity_map.environment_id,
+        services=selected,
+    )
+    if candidate.identity_sha256 != audit.service_identity_sha256:
+        raise RuntimeError("BASELINE_V023_CANDIDATE_IDENTITY_CHANGED")
+    return candidate.identity_sha256
 
 
 def verify_live_baseline_readiness_contract_v023(root: Path) -> dict[str, object]:
@@ -1211,16 +1238,18 @@ def run_live_baseline_readiness_v023(
         audit = ProductBaselineReadinessAuditV023.model_validate(raw_audit)
         if not audit.final_builder_would_pass:
             raise RuntimeError("BASELINE_V023_PREFLIGHT_BLOCKED")
-        if (
-            audit.service_identity_sha256 != identity_sha256
-            or audit.capability_sha256 != capability_sha256
-        ):
+        candidate_identity_sha256 = _baseline_candidate_identity_sha256_v023(
+            identity_map,
+            audit,
+        )
+        if audit.capability_sha256 != capability_sha256:
             raise RuntimeError("BASELINE_V023_VERIFICATION_BINDING_CHANGED")
         stage = "BASELINE_PASS"
         before = _restart_snapshot(
             processes,
             environment_id=environment_id,
             service_identity_sha256=identity_sha256,
+            baseline_candidate_identity_sha256=candidate_identity_sha256,
             capability_sha256=capability_sha256,
         )
         processes.restart()
@@ -1256,8 +1285,15 @@ def run_live_baseline_readiness_v023(
             raise RuntimeError("BASELINE_RESTART_VERIFICATION_ENVIRONMENT_CHANGED")
         restart_identity_sha256 = restart_identity_map.identity_sha256
         restart_capability_sha256 = restart_capability_matrix.capability_sha256
+        restart_candidate_identity_sha256 = (
+            _baseline_candidate_identity_sha256_v023(
+                restart_identity_map,
+                audit,
+            )
+        )
         if (
-            audit.service_identity_sha256 != restart_identity_sha256
+            identity_sha256 != restart_identity_sha256
+            or candidate_identity_sha256 != restart_candidate_identity_sha256
             or audit.capability_sha256 != restart_capability_sha256
         ):
             raise RuntimeError("BASELINE_RESTART_VERIFICATION_BINDING_CHANGED")
@@ -1272,6 +1308,9 @@ def run_live_baseline_readiness_v023(
             processes,
             environment_id=environment_id,
             service_identity_sha256=restart_identity_sha256,
+            baseline_candidate_identity_sha256=(
+                restart_candidate_identity_sha256
+            ),
             capability_sha256=restart_capability_sha256,
         )
         restart_proof = BaselineRestartProofV023.build(

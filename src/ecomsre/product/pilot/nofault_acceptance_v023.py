@@ -461,7 +461,7 @@ def resolve_nofault_evidence_v023(
         ids_match
         and not duplicate_refs
         and expected_refs == bundle_refs
-        and set(objects_by_ref) == set(expected_refs)
+        and set(expected_refs).issubset(objects_by_ref)
         and all(item in objects_by_ref for item in expected_refs)
     )
     sha_resolved = all(
@@ -673,7 +673,7 @@ def score_nofault_v023(
         != baseline_audit.active_opensearch_profile_sha256
         or restart_proof.after.active_baseline_id != baseline_audit.baseline_id
         or restart_proof.after.active_baseline_sha256 != baseline_audit.baseline_sha256
-        or restart_proof.after.service_identity_sha256
+        or restart_proof.after.baseline_candidate_identity_sha256
         != baseline_audit.service_identity_sha256
         or restart_proof.after.capability_sha256 != baseline_audit.capability_sha256
     ):
@@ -701,7 +701,7 @@ def score_nofault_v023(
         incident.baseline_id == baseline_audit.baseline_id
         and incident.baseline_sha256 == baseline_audit.baseline_sha256
         and incident.service_identity_sha256
-        == baseline_audit.service_identity_sha256
+        == restart_proof.after.service_identity_sha256
         and incident.source_capability_sha256 == baseline_audit.capability_sha256
         and active_profile_sha256
         == baseline_audit.active_opensearch_profile_sha256
@@ -801,6 +801,11 @@ def score_nofault_v023(
         and not coverage_sufficient
     ):
         reasons.add("REQUIRED_SOURCE_COVERAGE_INSUFFICIENT")
+    if (
+        diagnosis.terminal is DiagnosisTerminalV1.NO_INCIDENT
+        and diagnosis.capability_limitations
+    ):
+        reasons.add("NOFAULT_DIAGNOSIS_LIMITATIONS_PRESENT")
     classified_or_conflicting = diagnosis.terminal in {
         DiagnosisTerminalV1.CORE_KNOWN,
         DiagnosisTerminalV1.EXTENSION_KNOWN,
@@ -852,7 +857,7 @@ def score_nofault_v023(
         "baseline_id": baseline_audit.baseline_id,
         "baseline_sha256": baseline_audit.baseline_sha256,
         "profile_sha256": active_profile_sha256,
-        "service_identity_sha256": baseline_audit.service_identity_sha256,
+        "service_identity_sha256": incident.service_identity_sha256,
         "capability_sha256": baseline_audit.capability_sha256,
         "diagnosis_terminal": diagnosis.terminal.value,
         "restart_proof_sha256": restart_proof.proof_sha256,

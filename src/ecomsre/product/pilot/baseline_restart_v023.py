@@ -30,6 +30,7 @@ class BaselineRestartSnapshotV023(ProductModelV1):
     active_baseline_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     baseline_count: Literal[1]
     service_identity_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    baseline_candidate_identity_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     capability_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     api_instance_id: str = Field(pattern=r"^api-[0-9a-f]{24}$")
     worker_instance_id: str = Field(pattern=r"^worker-[0-9a-f]{24}$")
@@ -91,6 +92,7 @@ class BaselineRestartProofV023(ProductModelV1):
             "active_baseline_sha256",
             "baseline_count",
             "service_identity_sha256",
+            "baseline_candidate_identity_sha256",
             "capability_sha256",
         )
         if any(getattr(self.before, name) != getattr(self.after, name) for name in immutable_fields):
