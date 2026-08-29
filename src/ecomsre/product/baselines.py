@@ -70,9 +70,7 @@ from ecomsre.product.pilot.baseline_readiness_v023 import (
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
 
 
-BASELINE_REQUIRED_COMPLETE_SOURCE_POLICY_V021 = (
-    "GLOBAL_AVAILABLE_TARGET_COMPLETE_V1"
-)
+BASELINE_REQUIRED_COMPLETE_SOURCE_POLICY_V021 = "GLOBAL_AVAILABLE_TARGET_COMPLETE_V1"
 
 
 class BaselineBuildModeV1(str, Enum):
@@ -101,7 +99,9 @@ class BaselineBuildPolicyV1(ProductModelV1):
                 or self.minimum_successful_windows != 4
                 or self.warmup_seconds != 0
             ):
-                raise ValueError("historical baseline policy differs from the MVP contract")
+                raise ValueError(
+                    "historical baseline policy differs from the MVP contract"
+                )
         elif (
             self.lookback_seconds > 180
             or self.window_count != 5
@@ -118,6 +118,7 @@ class BaselineJobCreateV1(ProductModelV1):
         min_length=1,
         max_length=20,
     )
+    planned_windows: tuple[ConnectorWindowV1, ...] | None = None
     activate: bool = False
 
     @model_validator(mode="after")
@@ -126,6 +127,26 @@ class BaselineJobCreateV1(ProductModelV1):
             sorted(set(self.candidate_services))
         ):
             raise ValueError("baseline candidate services are not canonical")
+        if self.planned_windows is not None:
+            policy = self.build_policy
+            window_seconds = policy.lookback_seconds / policy.window_count
+            if (
+                policy.mode is not BaselineBuildModeV1.DEMO_ONLY
+                or len(self.planned_windows) != policy.window_count
+                or not float(window_seconds).is_integer()
+                or any(
+                    window.ended_at - window.started_at
+                    != timedelta(seconds=int(window_seconds))
+                    for window in self.planned_windows
+                )
+                or any(
+                    left.ended_at != right.started_at
+                    for left, right in zip(
+                        self.planned_windows, self.planned_windows[1:]
+                    )
+                )
+            ):
+                raise ValueError("baseline planned-window schedule differs")
         return self
 
 
@@ -206,9 +227,7 @@ def build_environment_baseline(
     baseline_id: str | None = None,
     required_complete_sources: tuple[EvidenceSourceV22, ...] = (),
     expected_windows_v021: tuple[ConnectorWindowV1, ...] | None = None,
-    connector_bindings_v021: tuple[
-        tuple[BaselineConnectorBindingV021, ...], ...
-    ]
+    connector_bindings_v021: tuple[tuple[BaselineConnectorBindingV021, ...], ...]
     | None = None,
     connector_expectations_v021: tuple[
         tuple[BaselineConnectorExpectationV021, ...], ...
@@ -221,7 +240,10 @@ def build_environment_baseline(
             "BASELINE_WINDOW_COUNT_INVALID",
             "The baseline contains more windows than its policy allows.",
         )
-    if expected_windows_v021 is not None and len(window_results) != build_policy.window_count:
+    if (
+        expected_windows_v021 is not None
+        and len(window_results) != build_policy.window_count
+    ):
         raise ProductError(
             "BASELINE_WINDOW_COUNT_INVALID",
             "The audited baseline window count differs from its policy.",
@@ -241,9 +263,7 @@ def build_environment_baseline(
         expected_window_values = tuple(
             results[0].window if results else None for results in window_results
         )
-        evaluated_window_values = tuple(
-            item.window for item in evaluation_v023.windows
-        )
+        evaluated_window_values = tuple(item.window for item in evaluation_v023.windows)
         policy_is_v023 = (
             build_policy.mode is BaselineBuildModeV1.DEMO_ONLY
             and build_policy.lookback_seconds == 180
@@ -307,10 +327,7 @@ def build_environment_baseline(
             if not item.accepted
         ]
         parity_sha256 = evaluation.parity_sha256
-    successful = tuple(
-        window_results[ordinal - 1]
-        for ordinal in accepted_ordinals
-    )
+    successful = tuple(window_results[ordinal - 1] for ordinal in accepted_ordinals)
     if len(successful) < build_policy.minimum_successful_windows:
         raise ProductError(
             "BASELINE_INSUFFICIENT_WINDOWS",
@@ -331,9 +348,13 @@ def build_environment_baseline(
         for result in results:
             for record in result.records:
                 if isinstance(record, MetricFactV22) and record.value is not None:
-                    metric_values[(record.service, record.metric_kind)].append(record.value)
+                    metric_values[(record.service, record.metric_kind)].append(
+                        record.value
+                    )
                 elif isinstance(record, TraceSpanV22):
-                    trace_values[(record.service, record.operation)].append(record.duration_ms)
+                    trace_values[(record.service, record.operation)].append(
+                        record.duration_ms
+                    )
                     if record.parent_service is not None:
                         topology.add((record.parent_service, record.service))
                 elif isinstance(record, ResourceUsageRecordV22):
@@ -344,7 +365,9 @@ def build_environment_baseline(
                         record.memory_slope_bytes_per_second
                     )
                 elif isinstance(record, LogRecordV22):
-                    log_templates[(record.service, _normal_log_template(record.message))] += 1
+                    log_templates[
+                        (record.service, _normal_log_template(record.message))
+                    ] += 1
     profile = BaselineProfileV22.build(
         metric_stats=tuple(
             (
@@ -455,9 +478,10 @@ class BaselineRepositoryV1:
             (baseline.baseline_id,),
         ).fetchone()
         if existing is not None:
-            if existing["payload_json"] != serialized or bool(
-                existing["active"]
-            ) != activate:
+            if (
+                existing["payload_json"] != serialized
+                or bool(existing["active"]) != activate
+            ):
                 raise ProductError(
                     "BASELINE_IMMUTABLE_CONFLICT",
                     "The baseline version already exists with different content.",
@@ -744,18 +768,30 @@ class HistoricalBaselineServiceV1:
                 "BASELINE_WINDOW_POLICY_INVALID",
                 "The baseline window schedule is not integral.",
             )
-        end = built_at - timedelta(seconds=policy.warmup_seconds)
-        windows = tuple(
-            ConnectorWindowV1(
-                started_at=end
-                - timedelta(seconds=int(window_seconds) * (policy.window_count - index)),
-                ended_at=end
-                - timedelta(
-                    seconds=int(window_seconds) * (policy.window_count - index - 1)
-                ),
+        if request.planned_windows is not None:
+            if not use_v023_readiness or request.planned_windows[
+                -1
+            ].ended_at > built_at - timedelta(seconds=policy.warmup_seconds):
+                raise ProductError(
+                    "BASELINE_PLANNED_WINDOWS_INVALID",
+                    "The explicit v0.2.3 Baseline window schedule is not admissible.",
+                )
+            windows = request.planned_windows
+        else:
+            end = built_at - timedelta(seconds=policy.warmup_seconds)
+            windows = tuple(
+                ConnectorWindowV1(
+                    started_at=end
+                    - timedelta(
+                        seconds=int(window_seconds) * (policy.window_count - index)
+                    ),
+                    ended_at=end
+                    - timedelta(
+                        seconds=int(window_seconds) * (policy.window_count - index - 1)
+                    ),
+                )
+                for index in range(policy.window_count)
             )
-            for index in range(policy.window_count)
-        )
         connector_instances = []
         try:
             for config in environment.connector_configs:
@@ -775,15 +811,9 @@ class HistoricalBaselineServiceV1:
                 )
             window_results: list[tuple[ConnectorQueryResultV1, ...]] = []
             window_bindings: list[tuple[BaselineConnectorBindingV021, ...]] = []
-            window_expectations: list[
-                tuple[BaselineConnectorExpectationV021, ...]
-            ] = []
-            window_prometheus_diagnostics: list[
-                PrometheusWindowDiagnosticsV023
-            ] = []
-            window_opensearch_diagnostics: list[
-                OpenSearchWindowDiagnosticsV023
-            ] = []
+            window_expectations: list[tuple[BaselineConnectorExpectationV021, ...]] = []
+            window_prometheus_diagnostics: list[PrometheusWindowDiagnosticsV023] = []
+            window_opensearch_diagnostics: list[OpenSearchWindowDiagnosticsV023] = []
             for window in windows:
                 results: list[ConnectorQueryResultV1] = []
                 bindings: list[BaselineConnectorBindingV021] = []
@@ -857,7 +887,9 @@ class HistoricalBaselineServiceV1:
                             window=window,
                             log_result_sha256=log_results[0].result_sha256,
                             profile_sha256=captured.profile_sha256,
-                            query_status=ReadSourceStatusV22(captured.last_query_status),
+                            query_status=ReadSourceStatusV22(
+                                captured.last_query_status
+                            ),
                             safe_error_code=captured.last_safe_error_code,
                             sampled_record_count=captured.last_sampled_record_count,
                             accepted_record_count=captured.last_accepted_record_count,

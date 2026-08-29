@@ -131,7 +131,11 @@ def _logs(window: ConnectorWindowV1, index: int) -> tuple[LogRecordV22, ...]:
     )
 
 
-def _window_evidence(index: int):
+def _window_evidence(
+    index: int,
+    *,
+    opensearch_rejection_codes: dict[str, int] | None = None,
+):
     window = _window(index)
     metrics = (
         _metric(window, MetricKindV22.REQUEST_SUPPORT, 20.0),
@@ -158,16 +162,18 @@ def _window_evidence(index: int):
             for name in ("error_rate", "latency", "request_support")
         ),
     )
+    rejection_codes = opensearch_rejection_codes or {}
+    rejected_count = sum(rejection_codes.values())
     logs = OpenSearchWindowDiagnosticsV023.build(
         window=window,
         log_result_sha256=results[2].result_sha256,
         profile_sha256=ACTIVE_PROFILE_SHA256_V023,
         query_status=ReadSourceStatusV22.SUCCESS_NONEMPTY,
-        sampled_record_count=3,
+        sampled_record_count=3 + rejected_count,
         accepted_record_count=3,
-        rejected_record_count=0,
-        rejection_fraction=0.0,
-        rejection_codes_by_count={},
+        rejected_record_count=rejected_count,
+        rejection_fraction=rejected_count / (3 + rejected_count),
+        rejection_codes_by_count=rejection_codes,
     )
     bindings = (
         BaselineConnectorBindingV021(
@@ -207,12 +213,26 @@ def _window_evidence(index: int):
     return results, prom, logs, bindings, expectations
 
 
-def _evaluation(*, missing_request_support_ordinal: int | None = None):
-    rows = [_window_evidence(index) for index in range(5)]
+def _evaluation(
+    *,
+    missing_request_support_ordinals: tuple[int, ...] = (),
+    opensearch_service_failure_ordinals: tuple[int, ...] = (),
+):
+    rows = [
+        _window_evidence(
+            index,
+            opensearch_rejection_codes=(
+                {"OPENSEARCH_SERVICE_ALIAS_UNMAPPED": 1}
+                if index + 1 in opensearch_service_failure_ordinals
+                else None
+            ),
+        )
+        for index in range(5)
+    ]
     prom = [row[1] for row in rows]
-    if missing_request_support_ordinal is not None:
-        original = prom[missing_request_support_ordinal - 1]
-        prom[missing_request_support_ordinal - 1] = PrometheusWindowDiagnosticsV023.build(
+    for ordinal in missing_request_support_ordinals:
+        original = prom[ordinal - 1]
+        prom[ordinal - 1] = PrometheusWindowDiagnosticsV023.build(
             window=original.window,
             metric_result_sha256=original.metric_result_sha256,
             resource_result_sha256=original.resource_result_sha256,
@@ -264,12 +284,21 @@ def test_v023_profile_and_five_window_evaluator_pass_the_exact_goal_contract() -
 
 
 def test_request_support_empty_rejects_that_window_without_inventing_metric_support() -> None:
-    evaluation = _evaluation(missing_request_support_ordinal=2)
+    evaluation = _evaluation(missing_request_support_ordinals=(2,))
 
     assert evaluation.accepted_ordinals == (1, 3, 4, 5)
     assert evaluation.final_builder_would_pass is True
     assert evaluation.windows[1].rejection_reason_codes == (
         BaselineRejectionReasonCodeV023.METRICS_REQUEST_SUPPORT_EMPTY,
+    )
+
+
+def test_window_audit_preserves_exact_service_alias_rejection_codes() -> None:
+    evaluation = _evaluation(opensearch_service_failure_ordinals=(1, 2))
+
+    assert evaluation.final_builder_would_pass is False
+    assert evaluation.windows[0].opensearch_rejection_codes == (
+        "OPENSEARCH_SERVICE_ALIAS_UNMAPPED",
     )
 
 
@@ -486,6 +515,7 @@ def test_historical_service_builds_and_atomically_persists_the_v023_baseline(
                 warmup_seconds=180,
             ),
             candidate_services=("checkout",),
+            planned_windows=tuple(_window(index) for index in range(5)),
             activate=True,
         ),
         built_at=NOW + timedelta(minutes=10),
@@ -500,6 +530,9 @@ def test_historical_service_builds_and_atomically_persists_the_v023_baseline(
     assert audit.baseline_sha256 == baseline.baseline_sha256
     assert audit.parity_sha256 == audit.evaluation.parity_sha256
     assert audit.active_opensearch_profile_sha256 == ACTIVE_PROFILE_SHA256_V023
+    assert tuple(item.window for item in audit.evaluation.windows) == tuple(
+        _window(index) for index in range(5)
+    )
 
     job = ProductJobRecordV1(
         job_id="job-" + "f" * 24,

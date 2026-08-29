@@ -3,7 +3,9 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 import hashlib
 import json
-from typing import Any
+from pathlib import Path
+from types import SimpleNamespace
+from typing import Any, cast
 
 import pytest
 from pydantic import ValidationError
@@ -44,6 +46,7 @@ from ecomsre.product.connectors.opensearch_profile_binding_v023 import (
     ACTIVE_PROFILE_BINDING_SHA256_V023,
 )
 from ecomsre.product.pilot.baseline_attempts_v023 import (
+    BASELINE_READINESS_BLOCKED_V023,
     BASELINE_READINESS_PASS_V023,
     BASELINE_REPAIR_REQUIRED_V023,
     BaselineAttemptCompletionV023,
@@ -54,15 +57,27 @@ from ecomsre.product.pilot.baseline_attempts_v023 import (
     BaselineChangedParameterV023,
     BaselineTrafficResultV023,
     baseline_builder_job_evidence_sha256_v023,
+    baseline_builder_interruption_evidence_sha256_v023,
+    baseline_builder_submission_failure_evidence_sha256_v023,
+    baseline_builder_transport_failure_evidence_sha256_v023,
+    validate_changed_attempt_parameter_v023,
 )
 from ecomsre.product.pilot.baseline_readiness_v023 import (
     ACTIVE_PROFILE_SHA256_V023,
+    BaselineRejectionReasonCodeV023,
+    BaselineWindowAuditV023,
+    BaselineWindowEvaluationV023,
     ProductBaselineReadinessAuditV023,
+    ProductBaselineReadinessAuditRepositoryV023,
 )
 from ecomsre.product.pilot.baseline_restart_v023 import (
     BASELINE_RESTART_PASS_V023,
     BaselineRestartProofV023,
     BaselineRestartSnapshotV023,
+)
+from ecomsre.product.pilot.live_baseline_readiness_v023 import (
+    _failed_builder_kind_v023,
+    _read_latest_baseline_audit_from_store_v023,
 )
 from ecomsre.product.pilot.nofault_acceptance_v023 import (
     NOFAULT_CAPABILITY_LIMITED_V023,
@@ -74,6 +89,7 @@ from ecomsre.product.pilot.nofault_acceptance_v023 import (
     NoFaultTrafficResultV023,
     score_nofault_v023,
 )
+from ecomsre.product.storage.sqlite_store import SqliteStoreV1
 
 from tests.product_v023.test_increment2_baseline_preflight import (
     NOW,
@@ -124,6 +140,10 @@ def _builder_job_record(
             "request": {
                 "build_policy": audit.build_policy,
                 "candidate_services": ["checkout"],
+                "planned_windows": [
+                    item.window.model_dump(mode="json")
+                    for item in audit.evaluation.windows
+                ],
                 "activate": True,
             },
         },
@@ -171,8 +191,7 @@ def _windows(*, offset_minutes: int) -> tuple:
             update={
                 "started_at": _window(index).started_at
                 + timedelta(minutes=offset_minutes),
-                "ended_at": _window(index).ended_at
-                + timedelta(minutes=offset_minutes),
+                "ended_at": _window(index).ended_at + timedelta(minutes=offset_minutes),
             }
         )
         for index in range(5)
@@ -216,11 +235,20 @@ def test_attempt_two_requires_exactly_one_declared_semantic_change() -> None:
         terminal=BASELINE_REPAIR_REQUIRED_V023,
         completed_at=NOW + timedelta(minutes=4),
     )
+    validate_changed_attempt_parameter_v023(
+        prior_completion=first_completion,
+        changed_parameter=BaselineChangedParameterV023.IMPLEMENTATION_REVISION_SHA256,
+    )
+    with pytest.raises(ValueError, match="does not match prior failure"):
+        validate_changed_attempt_parameter_v023(
+            prior_completion=first_completion,
+            changed_parameter=(
+                BaselineChangedParameterV023.CONNECTOR_QUERY_BINDING_SHA256
+            ),
+        )
     second_start = BaselineAttemptStartV023.build(
         attempt_ordinal=2,
-        changed_parameter=(
-            BaselineChangedParameterV023.IMPLEMENTATION_REVISION_SHA256
-        ),
+        changed_parameter=(BaselineChangedParameterV023.IMPLEMENTATION_REVISION_SHA256),
         prior_completion_sha256=first_completion.completion_sha256,
         environment_id="env-" + "3" * 24,
         product_data_root="/tmp/product-v023-attempt-2",
@@ -232,6 +260,7 @@ def test_attempt_two_requires_exactly_one_declared_semantic_change() -> None:
     second_baseline, second_audit = _baseline_audit(
         environment_id=second_start.environment_id,
         baseline_id="base-" + "5" * 24,
+        window_offset_minutes=6,
     )
     second_job = _builder_job_record(
         job_id="job-" + "4" * 24,
@@ -257,7 +286,7 @@ def test_attempt_two_requires_exactly_one_declared_semantic_change() -> None:
         builder_job_disposition="SUCCEEDED",
         active_baseline_id="base-" + "5" * 24,
         active_baseline_sha256=second_baseline.baseline_sha256,
-        cleanup="NOT_REQUIRED",
+        cleanup="CLEAN",
         terminal=BASELINE_READINESS_PASS_V023,
         completed_at=NOW + timedelta(minutes=10),
     )
@@ -302,9 +331,7 @@ def test_attempt_two_requires_exactly_one_declared_semantic_change() -> None:
         attempts[0],
         BaselineAttemptV023(
             start=BaselineAttemptStartV023.model_validate(changed_twice),
-            completion=BaselineAttemptCompletionV023.build(
-                **replacement_completion
-            ),
+            completion=BaselineAttemptCompletionV023.build(**replacement_completion),
         ),
     )
     with pytest.raises(ValidationError, match="more than one parameter"):
@@ -324,6 +351,7 @@ def test_attempt_two_requires_exactly_one_declared_semantic_change() -> None:
     mismatched_baseline, mismatched_audit = _baseline_audit(
         environment_id=mismatched_start.environment_id,
         baseline_id="base-" + "8" * 24,
+        window_offset_minutes=6,
     )
     mismatched_job = _builder_job_record(
         job_id="job-" + "7" * 24,
@@ -349,7 +377,7 @@ def test_attempt_two_requires_exactly_one_declared_semantic_change() -> None:
         builder_job_disposition="SUCCEEDED",
         active_baseline_id="base-" + "8" * 24,
         active_baseline_sha256=mismatched_baseline.baseline_sha256,
-        cleanup="NOT_REQUIRED",
+        cleanup="CLEAN",
         terminal=BASELINE_READINESS_PASS_V023,
         completed_at=NOW + timedelta(minutes=10),
     )
@@ -401,13 +429,11 @@ def test_repair_terminal_cannot_relabel_a_successful_baseline() -> None:
             per_window_audit_sha256=audit.audit_sha256,
             builder_job_id="job-" + "2" * 24,
             builder_job_record=job,
-            builder_job_evidence_sha256=baseline_builder_job_evidence_sha256_v023(
-                job
-            ),
+            builder_job_evidence_sha256=baseline_builder_job_evidence_sha256_v023(job),
             builder_job_disposition="SUCCEEDED",
             active_baseline_id="base-" + "3" * 24,
             active_baseline_sha256=baseline.baseline_sha256,
-            cleanup="NOT_REQUIRED",
+            cleanup="CLEAN",
             failure_kind=BaselineAttemptFailureKindV023.IMPLEMENTATION,
             failure_code="FALSE_REPAIR_TERMINAL",
             failure_evidence_sha256="e" * 64,
@@ -464,7 +490,7 @@ def test_passing_attempt_requires_active_checkout_builder_request_and_result() -
             builder_job_disposition="SUCCEEDED",
             active_baseline_id=baseline.baseline_id,
             active_baseline_sha256=baseline.baseline_sha256,
-            cleanup="NOT_REQUIRED",
+            cleanup="CLEAN",
             terminal=BASELINE_READINESS_PASS_V023,
             completed_at=NOW + timedelta(minutes=4),
         )
@@ -507,9 +533,7 @@ def test_failed_builder_cannot_claim_an_active_baseline() -> None:
             per_window_audit_sha256=audit.audit_sha256,
             builder_job_id="job-" + "2" * 24,
             builder_job_record=job,
-            builder_job_evidence_sha256=baseline_builder_job_evidence_sha256_v023(
-                job
-            ),
+            builder_job_evidence_sha256=baseline_builder_job_evidence_sha256_v023(job),
             builder_job_disposition="FAILED",
             active_baseline_id="base-" + "3" * 24,
             active_baseline_sha256=baseline.baseline_sha256,
@@ -573,6 +597,7 @@ def test_attempt_two_requires_clean_attempt_one_cleanup() -> None:
     baseline, audit = _baseline_audit(
         environment_id=second_start.environment_id,
         baseline_id="base-" + "4" * 24,
+        window_offset_minutes=6,
     )
     job = _builder_job_record(
         job_id="job-" + "3" * 24,
@@ -596,7 +621,7 @@ def test_attempt_two_requires_clean_attempt_one_cleanup() -> None:
         builder_job_disposition="SUCCEEDED",
         active_baseline_id="base-" + "4" * 24,
         active_baseline_sha256=baseline.baseline_sha256,
-        cleanup="NOT_REQUIRED",
+        cleanup="CLEAN",
         terminal=BASELINE_READINESS_PASS_V023,
         completed_at=NOW + timedelta(minutes=10),
     )
@@ -702,6 +727,9 @@ def test_attempt_two_requires_fresh_namespace_and_frozen_profile_schedule(
     second_baseline, second_audit = _baseline_audit(
         environment_id=second_start.environment_id,
         baseline_id="base-" + "5" * 24,
+        window_offset_minutes=(
+            0 if planned_windows[0] == _windows(offset_minutes=0)[0] else 6
+        ),
     )
     second_job = _builder_job_record(
         job_id="job-" + "4" * 24,
@@ -727,7 +755,7 @@ def test_attempt_two_requires_fresh_namespace_and_frozen_profile_schedule(
         builder_job_disposition="SUCCEEDED",
         active_baseline_id="base-" + "5" * 24,
         active_baseline_sha256=second_baseline.baseline_sha256,
-        cleanup="NOT_REQUIRED",
+        cleanup="CLEAN",
         terminal=BASELINE_READINESS_PASS_V023,
         completed_at=NOW + timedelta(minutes=10),
     )
@@ -792,6 +820,7 @@ def _baseline_audit(
     *,
     environment_id: str = "env-" + "1" * 24,
     baseline_id: str = "base-" + "2" * 24,
+    window_offset_minutes: int = 0,
 ) -> tuple[EnvironmentBaselineV1, ProductBaselineReadinessAuditV023]:
     evaluation = _evaluation()
     identity = ServiceIdentityMapV1.build(
@@ -831,11 +860,650 @@ def _baseline_audit(
         capability_sha256="6" * 64,
         evaluation=evaluation,
     )
+    if window_offset_minutes:
+        payload = audit.model_dump(mode="json")
+        evaluation_payload = payload["evaluation"]
+        for item in evaluation_payload["windows"]:
+            window = item["window"]
+            window["started_at"] = (
+                datetime.fromisoformat(window["started_at"])
+                + timedelta(minutes=window_offset_minutes)
+            ).isoformat()
+            window["ended_at"] = (
+                datetime.fromisoformat(window["ended_at"])
+                + timedelta(minutes=window_offset_minutes)
+            ).isoformat()
+            draft_window = BaselineWindowAuditV023.model_construct(
+                schema_version=item["schema_version"],
+                window_ordinal=item["window_ordinal"],
+                window=ConnectorWindowV1.model_validate(item["window"]),
+                result_sha256s=tuple(item["result_sha256s"]),
+                prometheus_diagnostics_sha256=item["prometheus_diagnostics_sha256"],
+                opensearch_diagnostics_sha256=item["opensearch_diagnostics_sha256"],
+                opensearch_rejection_codes=tuple(
+                    item.get("opensearch_rejection_codes", ())
+                ),
+                accepted=item["accepted"],
+                rejection_reason_codes=tuple(
+                    BaselineRejectionReasonCodeV023(value)
+                    for value in item["rejection_reason_codes"]
+                ),
+                window_sha256="0" * 64,
+            )
+            normalized_window = draft_window.model_dump(
+                mode="json", exclude={"window_sha256"}
+            )
+            item["window_sha256"] = semantic_sha256_v22(normalized_window)
+        typed_windows = tuple(
+            BaselineWindowAuditV023.model_validate(item)
+            for item in evaluation_payload["windows"]
+        )
+        draft_evaluation = BaselineWindowEvaluationV023.model_construct(
+            schema_version=evaluation_payload["schema_version"],
+            terminal=evaluation_payload["terminal"],
+            profile_sha256=evaluation_payload["profile_sha256"],
+            active_opensearch_profile_sha256=evaluation_payload[
+                "active_opensearch_profile_sha256"
+            ],
+            windows=typed_windows,
+            accepted_ordinals=tuple(evaluation_payload["accepted_ordinals"]),
+            logs_nonempty_window_count=evaluation_payload["logs_nonempty_window_count"],
+            accepted_checkout_log_record_count=evaluation_payload[
+                "accepted_checkout_log_record_count"
+            ],
+            has_normal_checkout_log_template=evaluation_payload[
+                "has_normal_checkout_log_template"
+            ],
+            aggregate_rejection_reason_codes=tuple(
+                evaluation_payload["aggregate_rejection_reason_codes"]
+            ),
+            final_builder_would_pass=evaluation_payload["final_builder_would_pass"],
+            parity_sha256="0" * 64,
+        )
+        normalized_evaluation = draft_evaluation.model_dump(
+            mode="json", exclude={"parity_sha256"}
+        )
+        evaluation_payload["parity_sha256"] = semantic_sha256_v22(normalized_evaluation)
+        typed_evaluation = BaselineWindowEvaluationV023.model_validate(
+            evaluation_payload
+        )
+        payload["parity_sha256"] = evaluation_payload["parity_sha256"]
+        draft_audit = ProductBaselineReadinessAuditV023.model_construct(
+            schema_version=payload["schema_version"],
+            environment_id=payload["environment_id"],
+            baseline_id=payload["baseline_id"],
+            baseline_sha256=payload["baseline_sha256"],
+            service_ids=tuple(payload["service_ids"]),
+            baseline_entity_service_ids=tuple(payload["baseline_entity_service_ids"]),
+            build_policy=payload["build_policy"],
+            profile_sha256=payload["profile_sha256"],
+            active_opensearch_profile_sha256=payload[
+                "active_opensearch_profile_sha256"
+            ],
+            service_identity_sha256=payload["service_identity_sha256"],
+            capability_sha256=payload["capability_sha256"],
+            evaluation=typed_evaluation,
+            final_builder_would_pass=payload["final_builder_would_pass"],
+            parity_sha256=payload["parity_sha256"],
+            audit_sha256="0" * 64,
+        )
+        normalized_audit = draft_audit.model_dump(mode="json", exclude={"audit_sha256"})
+        payload["audit_sha256"] = semantic_sha256_v22(normalized_audit)
+        audit = ProductBaselineReadinessAuditV023.model_validate(payload)
     return baseline, audit
 
 
 def _audit() -> ProductBaselineReadinessAuditV023:
     return _baseline_audit()[1]
+
+
+def test_late_failed_job_recovers_its_persisted_readiness_audit(
+    tmp_path: Path,
+) -> None:
+    audit = _audit()
+    store = SqliteStoreV1(tmp_path / "product.sqlite3")
+    with store.connect() as connection:
+        connection.execute(
+            "INSERT INTO environments(environment_id, name, description, timezone, "
+            "service_identity_policy_json, explicit_service_catalog_json, "
+            "created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                audit.environment_id,
+                "late-audit",
+                "late-audit",
+                "UTC",
+                "{}",
+                "[]",
+                NOW.isoformat(),
+                NOW.isoformat(),
+            ),
+        )
+    ProductBaselineReadinessAuditRepositoryV023(store).put(
+        audit,
+        created_at=NOW,
+    )
+
+    recovered = _read_latest_baseline_audit_from_store_v023(
+        tmp_path,
+        audit.environment_id,
+    )
+
+    assert recovered == audit
+
+
+def _failed_audit(
+    evaluation: BaselineWindowEvaluationV023,
+) -> ProductBaselineReadinessAuditV023:
+    identity = ServiceIdentityMapV1.build(
+        environment_id="env-" + "1" * 24,
+        services=(
+            ServiceIdentityV1(
+                service_id="svc-" + "4" * 24,
+                logical_service="checkout",
+            ),
+        ),
+    )
+    return ProductBaselineReadinessAuditV023.build(
+        environment_id=identity.environment_id,
+        baseline_id="base-" + "2" * 24,
+        baseline_sha256=None,
+        service_ids=("checkout",),
+        baseline_entity_service_ids=("svc-" + "4" * 24,),
+        build_policy=BaselineBuildPolicyV1(
+            mode=BaselineBuildModeV1.DEMO_ONLY,
+            lookback_seconds=180,
+            window_count=5,
+            minimum_successful_windows=4,
+            warmup_seconds=180,
+        ).model_dump(mode="json"),
+        service_identity_sha256=identity.identity_sha256,
+        capability_sha256="6" * 64,
+        evaluation=evaluation,
+    )
+
+
+def test_failed_builder_classification_uses_exact_window_evidence() -> None:
+    metrics_audit = _failed_audit(_evaluation(missing_request_support_ordinals=(1, 2)))
+    metrics_job = _builder_job_record(
+        job_id="job-" + "7" * 24,
+        audit=metrics_audit,
+        baseline=None,
+        status=ProductJobStatusV1.FAILED,
+        safe_error_code="BASELINE_V023_PREFLIGHT_BLOCKED",
+    )
+    alias_audit = _failed_audit(_evaluation(opensearch_service_failure_ordinals=(1, 2)))
+    alias_job = _builder_job_record(
+        job_id="job-" + "8" * 24,
+        audit=alias_audit,
+        baseline=None,
+        status=ProductJobStatusV1.FAILED,
+        safe_error_code="BASELINE_V023_PREFLIGHT_BLOCKED",
+    )
+
+    assert (
+        _failed_builder_kind_v023(metrics_job, metrics_audit)
+        is BaselineAttemptFailureKindV023.CONNECTOR_QUERY_BINDING
+    )
+    assert (
+        _failed_builder_kind_v023(alias_job, alias_audit)
+        is BaselineAttemptFailureKindV023.SERVICE_ALIAS_BINDING
+    )
+
+    field_missing_audit = cast(
+        ProductBaselineReadinessAuditV023,
+        SimpleNamespace(
+            evaluation=SimpleNamespace(
+                aggregate_rejection_reason_codes=(),
+                windows=(
+                    SimpleNamespace(
+                        rejection_reason_codes=(
+                            BaselineRejectionReasonCodeV023.OPENSEARCH_QUERY_FAILED,
+                        ),
+                        opensearch_rejection_codes=(
+                            "OPENSEARCH_SERVICE_FIELD_MISSING",
+                        ),
+                    ),
+                ),
+            )
+        ),
+    )
+    assert (
+        _failed_builder_kind_v023(alias_job, field_missing_audit)
+        is BaselineAttemptFailureKindV023.CONNECTOR_QUERY_BINDING
+    )
+
+    mixed_audit = cast(
+        ProductBaselineReadinessAuditV023,
+        SimpleNamespace(
+            evaluation=SimpleNamespace(
+                aggregate_rejection_reason_codes=("MINIMUM_ACCEPTED_WINDOWS_NOT_MET",),
+                windows=(
+                    SimpleNamespace(
+                        rejection_reason_codes=(
+                            BaselineRejectionReasonCodeV023.OPENSEARCH_REQUIRED_EXTRACTION_FAILED,
+                            BaselineRejectionReasonCodeV023.METRICS_REQUEST_SUPPORT_EMPTY,
+                        ),
+                        opensearch_rejection_codes=(
+                            "OPENSEARCH_SERVICE_ALIAS_UNMAPPED",
+                            "OPENSEARCH_SERVICE_FIELD_MISSING",
+                        ),
+                    ),
+                ),
+            )
+        ),
+    )
+    assert (
+        _failed_builder_kind_v023(alias_job, mixed_audit)
+        is BaselineAttemptFailureKindV023.IMPLEMENTATION
+    )
+
+
+@pytest.mark.parametrize(
+    ("disposition", "status", "safe_error_code", "failure_code"),
+    (
+        ("FAILED", ProductJobStatusV1.FAILED, "BUILDER_FAILED", "BUILDER_FAILED"),
+        (
+            "CANCELLED",
+            ProductJobStatusV1.CANCELLED,
+            None,
+            "BASELINE_BUILDER_CANCELLED",
+        ),
+        (
+            "TIMED_OUT",
+            ProductJobStatusV1.RUNNING,
+            None,
+            "BASELINE_BUILDER_TIMEOUT",
+        ),
+    ),
+)
+def test_builder_terminal_without_audit_can_close_the_attempt_ledger(
+    disposition: str,
+    status: ProductJobStatusV1,
+    safe_error_code: str | None,
+    failure_code: str,
+) -> None:
+    semantics = _attempt_semantics()
+    start = BaselineAttemptStartV023.build(
+        attempt_ordinal=1,
+        changed_parameter=BaselineChangedParameterV023.INITIAL,
+        prior_completion_sha256=None,
+        environment_id="env-" + "1" * 24,
+        product_data_root="/tmp/product-v023-builder-terminal",
+        profile_sha256=ACTIVE_PROFILE_SHA256_V023,
+        planned_windows=_windows(offset_minutes=0),
+        semantic_inputs=semantics,
+        started_at=NOW,
+    )
+    job = ProductJobRecordV1(
+        job_id="job-" + "9" * 24,
+        job_type=ProductJobTypeV1.BASELINE_BUILD,
+        status=status,
+        payload={
+            "environment_id": start.environment_id,
+            "request": {
+                "build_policy": {
+                    "mode": "DEMO_ONLY",
+                    "lookback_seconds": 180,
+                    "window_count": 5,
+                    "minimum_successful_windows": 4,
+                    "warmup_seconds": 180,
+                },
+                "candidate_services": ["checkout"],
+                "planned_windows": [
+                    item.model_dump(mode="json") for item in start.planned_windows
+                ],
+                "activate": True,
+            },
+        },
+        result=None,
+        safe_error_code=safe_error_code,
+        idempotency_key="product-v023-builder-terminal",
+        claimed_by="worker-v023",
+        lease_expires_at=None,
+        attempt_count=1,
+        created_at=1.0,
+        updated_at=2.0,
+    )
+    completion = BaselineAttemptCompletionV023.build(
+        attempt_ordinal=1,
+        start_sha256=start.start_sha256,
+        traffic_result=_traffic(
+            passed=True,
+            semantics=semantics,
+            profile_sha256=start.profile_sha256,
+        ),
+        per_window_audit=None,
+        per_window_audit_sha256=None,
+        builder_job_id=job.job_id,
+        builder_job_record=job,
+        builder_job_evidence_sha256=baseline_builder_job_evidence_sha256_v023(job),
+        builder_job_disposition=disposition,
+        active_baseline_id=None,
+        active_baseline_sha256=None,
+        cleanup="CLEAN",
+        failure_kind=BaselineAttemptFailureKindV023.BUILDER,
+        failure_code=failure_code,
+        failure_evidence_sha256=baseline_builder_job_evidence_sha256_v023(job),
+        terminal=BASELINE_REPAIR_REQUIRED_V023,
+        completed_at=NOW + timedelta(minutes=4),
+    )
+
+    ledger = BaselineAttemptLedgerV023.build(
+        (BaselineAttemptV023(start=start, completion=completion),)
+    )
+
+    assert ledger.attempts[0].completion.builder_job_disposition == disposition
+
+
+def test_builder_submission_failure_can_close_the_attempt_ledger() -> None:
+    semantics = _attempt_semantics()
+    start = BaselineAttemptStartV023.build(
+        attempt_ordinal=1,
+        changed_parameter=BaselineChangedParameterV023.INITIAL,
+        prior_completion_sha256=None,
+        environment_id="env-" + "1" * 24,
+        product_data_root="/tmp/product-v023-builder-submission",
+        profile_sha256=ACTIVE_PROFILE_SHA256_V023,
+        planned_windows=_windows(offset_minutes=0),
+        semantic_inputs=semantics,
+        started_at=NOW,
+    )
+    traffic = _traffic(
+        passed=True,
+        semantics=semantics,
+        profile_sha256=start.profile_sha256,
+    )
+    failure_evidence = baseline_builder_submission_failure_evidence_sha256_v023(
+        start_sha256=start.start_sha256,
+        traffic_result_sha256=traffic.result_sha256,
+    )
+    completion = BaselineAttemptCompletionV023.build(
+        attempt_ordinal=1,
+        start_sha256=start.start_sha256,
+        traffic_result=traffic,
+        per_window_audit=None,
+        per_window_audit_sha256=None,
+        builder_job_id=None,
+        builder_job_record=None,
+        builder_job_evidence_sha256=None,
+        builder_job_disposition="NOT_SUBMITTED",
+        active_baseline_id=None,
+        active_baseline_sha256=None,
+        cleanup="CLEAN",
+        failure_kind=BaselineAttemptFailureKindV023.IMPLEMENTATION,
+        failure_code="BASELINE_BUILDER_SUBMISSION_FAILED",
+        failure_evidence_sha256=failure_evidence,
+        terminal=BASELINE_REPAIR_REQUIRED_V023,
+        completed_at=NOW + timedelta(minutes=4),
+    )
+
+    ledger = BaselineAttemptLedgerV023.build(
+        (BaselineAttemptV023(start=start, completion=completion),)
+    )
+
+    assert ledger.attempts[0].completion.failure_evidence_sha256 == failure_evidence
+
+
+def test_exhausted_transport_retries_close_blocked_without_repair_authority() -> None:
+    semantics = _attempt_semantics()
+    start = BaselineAttemptStartV023.build(
+        attempt_ordinal=1,
+        changed_parameter=BaselineChangedParameterV023.INITIAL,
+        prior_completion_sha256=None,
+        environment_id="env-" + "1" * 24,
+        product_data_root="/tmp/product-v023-builder-transport",
+        profile_sha256=ACTIVE_PROFILE_SHA256_V023,
+        planned_windows=_windows(offset_minutes=0),
+        semantic_inputs=semantics,
+        started_at=NOW,
+    )
+    traffic = _traffic(
+        passed=True,
+        semantics=semantics,
+        profile_sha256=start.profile_sha256,
+    )
+    failure_codes = ("TIMEOUT", "HTTP_5XX", "HTTP_429", "CONNECTION_RESET")
+    idempotency_sha256 = "d" * 64
+    failure_evidence = baseline_builder_transport_failure_evidence_sha256_v023(
+        start_sha256=start.start_sha256,
+        traffic_result_sha256=traffic.result_sha256,
+        idempotency_key_sha256=idempotency_sha256,
+        failure_codes=failure_codes,
+        retry_count=3,
+    )
+    completion = BaselineAttemptCompletionV023.build(
+        attempt_ordinal=1,
+        start_sha256=start.start_sha256,
+        traffic_result=traffic,
+        per_window_audit=None,
+        per_window_audit_sha256=None,
+        builder_job_id=None,
+        builder_job_record=None,
+        builder_job_evidence_sha256=None,
+        builder_job_disposition="NOT_SUBMITTED",
+        builder_transport_failure_codes=failure_codes,
+        builder_transport_retry_count=3,
+        builder_idempotency_key_sha256=idempotency_sha256,
+        active_baseline_id=None,
+        active_baseline_sha256=None,
+        cleanup="CLEAN",
+        failure_kind=BaselineAttemptFailureKindV023.TRANSPORT,
+        failure_code="BASELINE_BUILDER_TRANSPORT_RETRIES_EXHAUSTED",
+        failure_evidence_sha256=failure_evidence,
+        terminal=BASELINE_READINESS_BLOCKED_V023,
+        completed_at=NOW + timedelta(minutes=4),
+    )
+
+    ledger = BaselineAttemptLedgerV023.build(
+        (BaselineAttemptV023(start=start, completion=completion),)
+    )
+
+    assert ledger.attempts[0].completion.terminal == BASELINE_READINESS_BLOCKED_V023
+    with pytest.raises(ValueError, match="does not match prior failure"):
+        validate_changed_attempt_parameter_v023(
+            prior_completion=completion,
+            changed_parameter=BaselineChangedParameterV023.IMPLEMENTATION_REVISION_SHA256,
+        )
+
+
+def test_late_acknowledgement_preserves_transport_evidence_without_timeout() -> None:
+    semantics = _attempt_semantics()
+    start = BaselineAttemptStartV023.build(
+        attempt_ordinal=1,
+        changed_parameter=BaselineChangedParameterV023.INITIAL,
+        prior_completion_sha256=None,
+        environment_id="env-" + "1" * 24,
+        product_data_root="/tmp/product-v023-late-ack",
+        profile_sha256=ACTIVE_PROFILE_SHA256_V023,
+        planned_windows=_windows(offset_minutes=0),
+        semantic_inputs=semantics,
+        started_at=NOW,
+    )
+    traffic = _traffic(
+        passed=True,
+        semantics=semantics,
+        profile_sha256=start.profile_sha256,
+    )
+    job = ProductJobRecordV1(
+        job_id="job-" + "b" * 24,
+        job_type=ProductJobTypeV1.BASELINE_BUILD,
+        status=ProductJobStatusV1.PENDING,
+        payload={
+            "environment_id": start.environment_id,
+            "request": {
+                "build_policy": {
+                    "mode": "DEMO_ONLY",
+                    "lookback_seconds": 180,
+                    "window_count": 5,
+                    "minimum_successful_windows": 4,
+                    "warmup_seconds": 180,
+                },
+                "candidate_services": ["checkout"],
+                "planned_windows": [
+                    item.model_dump(mode="json") for item in start.planned_windows
+                ],
+                "activate": True,
+            },
+        },
+        result=None,
+        safe_error_code=None,
+        idempotency_key="product-v023-late-ack",
+        claimed_by=None,
+        lease_expires_at=None,
+        attempt_count=0,
+        created_at=1.0,
+        updated_at=1.0,
+    )
+    job_evidence = baseline_builder_job_evidence_sha256_v023(job)
+    failure_codes = ("TIMEOUT",) * 4
+    idempotency_sha256 = "e" * 64
+    failure_evidence = baseline_builder_transport_failure_evidence_sha256_v023(
+        start_sha256=start.start_sha256,
+        traffic_result_sha256=traffic.result_sha256,
+        idempotency_key_sha256=idempotency_sha256,
+        failure_codes=failure_codes,
+        retry_count=3,
+        builder_job_disposition="LATE_ACKNOWLEDGED",
+        builder_job_evidence_sha256=job_evidence,
+    )
+    completion = BaselineAttemptCompletionV023.build(
+        attempt_ordinal=1,
+        start_sha256=start.start_sha256,
+        traffic_result=traffic,
+        per_window_audit=None,
+        per_window_audit_sha256=None,
+        builder_job_id=job.job_id,
+        builder_job_record=job,
+        builder_job_evidence_sha256=job_evidence,
+        builder_job_disposition="LATE_ACKNOWLEDGED",
+        builder_transport_failure_codes=failure_codes,
+        builder_transport_retry_count=3,
+        builder_idempotency_key_sha256=idempotency_sha256,
+        active_baseline_id=None,
+        active_baseline_sha256=None,
+        cleanup="CLEAN",
+        failure_kind=BaselineAttemptFailureKindV023.TRANSPORT,
+        failure_code="BASELINE_BUILDER_TRANSPORT_RETRIES_EXHAUSTED",
+        failure_evidence_sha256=failure_evidence,
+        terminal=BASELINE_READINESS_BLOCKED_V023,
+        completed_at=NOW + timedelta(minutes=4),
+    )
+
+    attempt = BaselineAttemptV023(start=start, completion=completion)
+
+    assert attempt.completion.builder_job_disposition == "LATE_ACKNOWLEDGED"
+    assert attempt.completion.failure_kind is BaselineAttemptFailureKindV023.TRANSPORT
+
+    contradictory_job = job.model_copy(
+        update={
+            "result": {"forged": True},
+            "safe_error_code": "FORGED_ERROR_ON_PENDING",
+        }
+    )
+    contradictory_evidence = baseline_builder_job_evidence_sha256_v023(
+        contradictory_job
+    )
+    with pytest.raises(
+        ValueError,
+        match="interrupted baseline JobRecord status matrix differs",
+    ):
+        BaselineAttemptCompletionV023.build(
+            attempt_ordinal=1,
+            start_sha256=start.start_sha256,
+            traffic_result=traffic,
+            per_window_audit=None,
+            per_window_audit_sha256=None,
+            builder_job_id=contradictory_job.job_id,
+            builder_job_record=contradictory_job,
+            builder_job_evidence_sha256=contradictory_evidence,
+            builder_job_disposition="INTERRUPTED",
+            active_baseline_id=None,
+            active_baseline_sha256=None,
+            cleanup="CLEAN",
+            failure_kind=BaselineAttemptFailureKindV023.INTERRUPTED,
+            failure_code="BASELINE_ATTEMPT_INTERRUPTED",
+            failure_evidence_sha256=(
+                baseline_builder_interruption_evidence_sha256_v023(
+                    start_sha256=start.start_sha256,
+                    traffic_result_sha256=traffic.result_sha256,
+                    builder_job_evidence_sha256=contradictory_evidence,
+                )
+            ),
+            terminal=BASELINE_READINESS_BLOCKED_V023,
+            completed_at=NOW + timedelta(minutes=4),
+        )
+
+
+def test_failed_job_without_audit_must_match_the_frozen_build_policy() -> None:
+    semantics = _attempt_semantics()
+    start = BaselineAttemptStartV023.build(
+        attempt_ordinal=1,
+        changed_parameter=BaselineChangedParameterV023.INITIAL,
+        prior_completion_sha256=None,
+        environment_id="env-" + "1" * 24,
+        product_data_root="/tmp/product-v023-policy-mismatch",
+        profile_sha256=ACTIVE_PROFILE_SHA256_V023,
+        planned_windows=_windows(offset_minutes=0),
+        semantic_inputs=semantics,
+        started_at=NOW,
+    )
+    job = ProductJobRecordV1(
+        job_id="job-" + "a" * 24,
+        job_type=ProductJobTypeV1.BASELINE_BUILD,
+        status=ProductJobStatusV1.FAILED,
+        payload={
+            "environment_id": start.environment_id,
+            "request": {
+                "build_policy": {
+                    "mode": "DEMO_ONLY",
+                    "lookback_seconds": 180,
+                    "window_count": 5,
+                    "minimum_successful_windows": 3,
+                    "warmup_seconds": 180,
+                },
+                "candidate_services": ["checkout"],
+                "planned_windows": [
+                    item.model_dump(mode="json") for item in start.planned_windows
+                ],
+                "activate": True,
+            },
+        },
+        result=None,
+        safe_error_code="BUILDER_FAILED",
+        idempotency_key="product-v023-policy-mismatch",
+        claimed_by="worker-v023",
+        lease_expires_at=None,
+        attempt_count=1,
+        created_at=1.0,
+        updated_at=2.0,
+    )
+    job_evidence = baseline_builder_job_evidence_sha256_v023(job)
+    completion = BaselineAttemptCompletionV023.build(
+        attempt_ordinal=1,
+        start_sha256=start.start_sha256,
+        traffic_result=_traffic(
+            passed=True,
+            semantics=semantics,
+            profile_sha256=start.profile_sha256,
+        ),
+        per_window_audit=None,
+        per_window_audit_sha256=None,
+        builder_job_id=job.job_id,
+        builder_job_record=job,
+        builder_job_evidence_sha256=job_evidence,
+        builder_job_disposition="FAILED",
+        active_baseline_id=None,
+        active_baseline_sha256=None,
+        cleanup="CLEAN",
+        failure_kind=BaselineAttemptFailureKindV023.BUILDER,
+        failure_code="BUILDER_FAILED",
+        failure_evidence_sha256=job_evidence,
+        terminal=BASELINE_REPAIR_REQUIRED_V023,
+        completed_at=NOW + timedelta(minutes=4),
+    )
+
+    with pytest.raises(ValueError, match="Builder request differs from start"):
+        BaselineAttemptV023(start=start, completion=completion)
 
 
 def _snapshot(
@@ -998,9 +1666,7 @@ def _nofault_inputs(
     }
     incident = _seal(IncidentRecordV1, incident_payload, "incident_sha256")
     limitations = (
-        ("TRACES_DIAGNOSIS_UNAVAILABLE",)
-        if terminal == "INSUFFICIENT_EVIDENCE"
-        else ()
+        ("TRACES_DIAGNOSIS_UNAVAILABLE",) if terminal == "INSUFFICIENT_EVIDENCE" else ()
     )
     lane_by_terminal = {
         "CORE_KNOWN": DiagnosisLaneV1.CORE,
@@ -1097,12 +1763,8 @@ def _nofault_inputs(
             "status": "SUCCESS_NONEMPTY",
         },
     }
-    runtime_payload = {
-        "connector_result": runtime_result.model_dump(mode="json")
-    }
-    metrics_payload = {
-        "connector_result": metrics_result.model_dump(mode="json")
-    }
+    runtime_payload = {"connector_result": runtime_result.model_dump(mode="json")}
+    metrics_payload = {"connector_result": metrics_result.model_dump(mode="json")}
     evidence_objects = [
         _object("logs:1", EvidenceSourceV22.LOGS, logs_payload),
         _object("metrics:1", EvidenceSourceV22.METRICS, metrics_payload),
@@ -1159,9 +1821,7 @@ def _nofault_inputs(
         healthy_traffic_passed=True,
         healthy_traffic_result_sha256=traffic_result.result_sha256,
         limitation_evidence_refs=(
-            {"TRACES_DIAGNOSIS_UNAVAILABLE": "traces:1"}
-            if limitations
-            else {}
+            {"TRACES_DIAGNOSIS_UNAVAILABLE": "traces:1"} if limitations else {}
         ),
     )
     queue_snapshot = NoFaultQueueSnapshotV023.build(
@@ -1329,9 +1989,7 @@ def test_nofault_traffic_result_cannot_be_replayed_across_episodes(
         mode="python",
         exclude={"schema_version", "result_sha256"},
     )
-    replayed = NoFaultTrafficResultV023.build(
-        **{**traffic_payload, **traffic_update}
-    )
+    replayed = NoFaultTrafficResultV023.build(**{**traffic_payload, **traffic_update})
 
     result = score_nofault_v023(
         baseline_audit=audit,
@@ -1391,7 +2049,9 @@ def test_nofault_no_incident_requires_sufficient_source_coverage() -> None:
         incident_id=incident.incident_id,
         diagnosis_id=diagnosis.diagnosis_id,
         objects=tuple(
-            item for item in bundle.objects if item.source is not EvidenceSourceV22.METRICS
+            item
+            for item in bundle.objects
+            if item.source is not EvidenceSourceV22.METRICS
         ),
         supporting_evidence_refs=diagnosis.supporting_evidence_refs,
         contradicting_evidence_refs=(),
@@ -1803,11 +2463,11 @@ def test_nofault_logs_profile_binding_requires_connector_diagnostics() -> None:
         traffic_result,
         queue_snapshot,
     ) = _nofault_inputs()
-    logs = next(item for item in bundle.objects if item.source is EvidenceSourceV22.LOGS)
+    logs = next(
+        item for item in bundle.objects if item.source is EvidenceSourceV22.LOGS
+    )
     payload = dict(logs.payload)
-    payload["connector_diagnostics"] = [
-        {"profile_sha256": ACTIVE_PROFILE_SHA256_V023}
-    ]
+    payload["connector_diagnostics"] = [{"profile_sha256": ACTIVE_PROFILE_SHA256_V023}]
     bundle = bundle.model_copy(
         update={
             "objects": tuple(

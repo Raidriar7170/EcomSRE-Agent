@@ -355,6 +355,10 @@ class BaselineWindowAuditV023(ProductModelV1):
     result_sha256s: tuple[str, ...]
     prometheus_diagnostics_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     opensearch_diagnostics_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    opensearch_rejection_codes: tuple[str, ...] = Field(
+        default=(),
+        exclude_if=lambda value: not value,
+    )
     accepted: bool
     rejection_reason_codes: tuple[BaselineRejectionReasonCodeV023, ...]
     window_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
@@ -363,6 +367,10 @@ class BaselineWindowAuditV023(ProductModelV1):
     def require_bound_window(self) -> "BaselineWindowAuditV023":
         if self.accepted != (not self.rejection_reason_codes):
             raise ValueError("Product v0.2.3 window disposition differs")
+        if self.opensearch_rejection_codes != tuple(
+            sorted(set(self.opensearch_rejection_codes))
+        ):
+            raise ValueError("Product v0.2.3 OpenSearch rejection codes are not canonical")
         if self.result_sha256s != tuple(sorted(set(self.result_sha256s))):
             raise ValueError("Product v0.2.3 result digests are not canonical")
         expected = semantic_sha256_v22(
@@ -749,6 +757,15 @@ def evaluate_baseline_windows_v023(
             )
         )
         ordered_reasons = tuple(sorted(reasons, key=_REASON_ORDER_V023.__getitem__))
+        exact_opensearch_rejections = tuple(
+            sorted(
+                code
+                for code, count in opensearch_diagnostics[
+                    index
+                ].rejection_codes_by_count.items()
+                if count > 0
+            )
+        )
         body: dict[str, Any] = {
             "schema_version": "ecomsre.product.baseline-window-audit.v023",
             "window_ordinal": index + 1,
@@ -763,6 +780,8 @@ def evaluate_baseline_windows_v023(
             "accepted": not ordered_reasons,
             "rejection_reason_codes": tuple(item.value for item in ordered_reasons),
         }
+        if exact_opensearch_rejections:
+            body["opensearch_rejection_codes"] = exact_opensearch_rejections
         audits.append(BaselineWindowAuditV023.model_validate(_sealed_model(BaselineWindowAuditV023, body)))
     accepted_ordinals = tuple(item.window_ordinal for item in audits if item.accepted)
     accepted_results = tuple(window_results[index - 1] for index in accepted_ordinals)

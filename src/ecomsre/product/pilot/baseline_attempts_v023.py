@@ -30,12 +30,8 @@ from ecomsre.product.pilot.baseline_readiness_v023 import (
 
 
 BASELINE_READINESS_PASS_V023 = "ECOMSRE_PRODUCT_V023_BASELINE_READINESS_PASS"
-BASELINE_REPAIR_REQUIRED_V023 = (
-    "ECOMSRE_PRODUCT_V023_BASELINE_REPAIR_REQUIRED"
-)
-BASELINE_READINESS_BLOCKED_V023 = (
-    "BLOCKED_ECOMSRE_PRODUCT_V023_BASELINE_READINESS"
-)
+BASELINE_REPAIR_REQUIRED_V023 = "ECOMSRE_PRODUCT_V023_BASELINE_REPAIR_REQUIRED"
+BASELINE_READINESS_BLOCKED_V023 = "BLOCKED_ECOMSRE_PRODUCT_V023_BASELINE_READINESS"
 
 
 class BaselineChangedParameterV023(str, Enum):
@@ -53,6 +49,8 @@ class BaselineChangedParameterV023(str, Enum):
 
 class BaselineAttemptFailureKindV023(str, Enum):
     HEALTHY_TRAFFIC = "HEALTHY_TRAFFIC"
+    TRANSPORT = "TRANSPORT"
+    INTERRUPTED = "INTERRUPTED"
     CONNECTOR_QUERY_BINDING = "CONNECTOR_QUERY_BINDING"
     SERVICE_ALIAS_BINDING = "SERVICE_ALIAS_BINDING"
     BUILDER = "BUILDER"
@@ -64,6 +62,8 @@ _ALLOWED_REPAIR_PARAMETER_BY_FAILURE_V023 = {
     BaselineAttemptFailureKindV023.HEALTHY_TRAFFIC: frozenset(
         {BaselineChangedParameterV023.IMPLEMENTATION_REVISION_SHA256}
     ),
+    BaselineAttemptFailureKindV023.TRANSPORT: frozenset(),
+    BaselineAttemptFailureKindV023.INTERRUPTED: frozenset(),
     BaselineAttemptFailureKindV023.CONNECTOR_QUERY_BINDING: frozenset(
         {
             BaselineChangedParameterV023.CONNECTOR_QUERY_BINDING_SHA256,
@@ -88,16 +88,106 @@ _ALLOWED_REPAIR_PARAMETER_BY_FAILURE_V023 = {
 }
 
 
+def validate_changed_attempt_parameter_v023(
+    *,
+    prior_completion: "BaselineAttemptCompletionV023",
+    changed_parameter: BaselineChangedParameterV023,
+) -> None:
+    """Reject an ineligible Attempt 2 before any live resource is touched."""
+
+    failure_kind = prior_completion.failure_kind
+    if (
+        prior_completion.attempt_ordinal != 1
+        or prior_completion.terminal != BASELINE_REPAIR_REQUIRED_V023
+        or prior_completion.cleanup != "CLEAN"
+        or failure_kind is None
+        or changed_parameter
+        not in _ALLOWED_REPAIR_PARAMETER_BY_FAILURE_V023[failure_kind]
+    ):
+        raise ValueError("second baseline attempt change does not match prior failure")
+
+
 def baseline_builder_job_evidence_sha256_v023(
     job: ProductJobRecordV1,
 ) -> str:
     return semantic_sha256_v22(job.model_dump(mode="json"))
 
 
+def baseline_builder_submission_failure_evidence_sha256_v023(
+    *,
+    start_sha256: str,
+    traffic_result_sha256: str,
+) -> str:
+    """Bind a confirmed no-JobRecord submission failure to its frozen attempt."""
+
+    return semantic_sha256_v22(
+        {
+            "schema_version": (
+                "ecomsre.product.baseline-builder-submission-failure.v023"
+            ),
+            "start_sha256": start_sha256,
+            "traffic_result_sha256": traffic_result_sha256,
+            "builder_job_disposition": "NOT_SUBMITTED",
+            "failure_code": "BASELINE_BUILDER_SUBMISSION_FAILED",
+        }
+    )
+
+
+def baseline_builder_transport_failure_evidence_sha256_v023(
+    *,
+    start_sha256: str,
+    traffic_result_sha256: str,
+    idempotency_key_sha256: str,
+    failure_codes: tuple[str, ...],
+    retry_count: int,
+    builder_job_disposition: str = "NOT_SUBMITTED",
+    builder_job_evidence_sha256: str | None = None,
+) -> str:
+    """Bind exhausted same-request retries and the stable no-job observation."""
+
+    return semantic_sha256_v22(
+        {
+            "schema_version": (
+                "ecomsre.product.baseline-builder-transport-failure.v023"
+            ),
+            "start_sha256": start_sha256,
+            "traffic_result_sha256": traffic_result_sha256,
+            "idempotency_key_sha256": idempotency_key_sha256,
+            "failure_codes": failure_codes,
+            "retry_count": retry_count,
+            "builder_job_disposition": builder_job_disposition,
+            "builder_job_evidence_sha256": builder_job_evidence_sha256,
+            "failure_code": "BASELINE_BUILDER_TRANSPORT_RETRIES_EXHAUSTED",
+        }
+    )
+
+
+def baseline_builder_interruption_evidence_sha256_v023(
+    *,
+    start_sha256: str,
+    traffic_result_sha256: str,
+    builder_job_evidence_sha256: str | None = None,
+) -> str:
+    return semantic_sha256_v22(
+        {
+            "schema_version": "ecomsre.product.baseline-builder-interruption.v023",
+            "start_sha256": start_sha256,
+            "traffic_result_sha256": traffic_result_sha256,
+            "builder_job_disposition": (
+                "NOT_SUBMITTED"
+                if builder_job_evidence_sha256 is None
+                else "INTERRUPTED"
+            ),
+            "builder_job_evidence_sha256": builder_job_evidence_sha256,
+            "failure_code": "BASELINE_ATTEMPT_INTERRUPTED",
+        }
+    )
+
+
 class BaselineTrafficResultV023(ProductModelV1):
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.baseline-traffic-result.v023"] = (
         "ecomsre.product.baseline-traffic-result.v023"
-    ] = "ecomsre.product.baseline-traffic-result.v023"
+    )
     planned_request_count: int = Field(ge=1)
     completed_request_count: int = Field(ge=0)
     error_count: int = Field(ge=0)
@@ -125,7 +215,9 @@ class BaselineTrafficResultV023(ProductModelV1):
             and measured_error_fraction <= self.maximum_error_fraction
         )
         if self.passed != measured_pass:
-            raise ValueError("baseline traffic disposition differs from measured counts")
+            raise ValueError(
+                "baseline traffic disposition differs from measured counts"
+            )
         expected = semantic_sha256_v22(
             self.model_dump(mode="json", exclude={"result_sha256"})
         )
@@ -139,20 +231,16 @@ class BaselineTrafficResultV023(ProductModelV1):
             "schema_version": "ecomsre.product.baseline-traffic-result.v023",
             **payload,
         }
-        return cls.model_validate(
-            {**body, "result_sha256": semantic_sha256_v22(body)}
-        )
+        return cls.model_validate({**body, "result_sha256": semantic_sha256_v22(body)})
 
 
 class BaselineAttemptStartV023(ProductModelV1):
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.baseline-attempt-start.v023"] = (
         "ecomsre.product.baseline-attempt-start.v023"
-    ] = "ecomsre.product.baseline-attempt-start.v023"
+    )
     attempt_ordinal: int = Field(ge=1, le=2)
     changed_parameter: BaselineChangedParameterV023
-    prior_completion_sha256: str | None = Field(
-        default=None, pattern=r"^[0-9a-f]{64}$"
-    )
+    prior_completion_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     environment_id: str = Field(pattern=r"^env-[0-9a-f]{24}$")
     product_data_root: str = Field(min_length=2, max_length=1024)
     profile_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
@@ -181,9 +269,7 @@ class BaselineAttemptStartV023(ProductModelV1):
             ),
             "maximum_error_fraction": readiness.maximum_error_fraction,
             "warmup_seconds": readiness.warmup_seconds,
-            "baseline_accumulation_seconds": (
-                readiness.baseline_accumulation_seconds
-            ),
+            "baseline_accumulation_seconds": (readiness.baseline_accumulation_seconds),
             "minimum_accepted_windows": readiness.minimum_accepted_windows,
             "queue_fault_flag": readiness.queue_fault_flag,
         }
@@ -195,7 +281,8 @@ class BaselineAttemptStartV023(ProductModelV1):
         if (
             self.profile_sha256 != ACTIVE_PROFILE_SHA256_V023
             or self.readiness_profile_sha256 != readiness.profile_sha256
-            or set(self.semantic_inputs) != set(frozen_semantics).union(mutable_semantics)
+            or set(self.semantic_inputs)
+            != set(frozen_semantics).union(mutable_semantics)
             or any(
                 self.semantic_inputs.get(name) != value
                 for name, value in frozen_semantics.items()
@@ -209,12 +296,19 @@ class BaselineAttemptStartV023(ProductModelV1):
             raise ValueError("baseline attempt differs from frozen v0.2.3 profiles")
         if len(self.planned_windows) != 5:
             raise ValueError("baseline attempt must plan all five windows")
-        if any(
-            left.ended_at > right.started_at
-            for left, right in zip(self.planned_windows, self.planned_windows[1:])
-        ) or self.planned_windows[0].started_at < self.started_at:
-            raise ValueError("baseline attempt windows are not a future canonical schedule")
-        if self.started_at.tzinfo is None or self.started_at.utcoffset() != timedelta(0):
+        if (
+            any(
+                left.ended_at > right.started_at
+                for left, right in zip(self.planned_windows, self.planned_windows[1:])
+            )
+            or self.planned_windows[0].started_at < self.started_at
+        ):
+            raise ValueError(
+                "baseline attempt windows are not a future canonical schedule"
+            )
+        if self.started_at.tzinfo is None or self.started_at.utcoffset() != timedelta(
+            0
+        ):
             raise ValueError("baseline attempt start time must be UTC")
         if self.semantics_sha256 != semantic_sha256_v22(self.semantic_inputs):
             raise ValueError("baseline attempt semantic-input digest differs")
@@ -268,28 +362,45 @@ class BaselineAttemptStartV023(ProductModelV1):
 
 
 class BaselineAttemptCompletionV023(ProductModelV1):
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.baseline-attempt-completion.v023"] = (
         "ecomsre.product.baseline-attempt-completion.v023"
-    ] = "ecomsre.product.baseline-attempt-completion.v023"
+    )
     attempt_ordinal: int = Field(ge=1, le=2)
     start_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     traffic_result: BaselineTrafficResultV023 | None
     per_window_audit: ProductBaselineReadinessAuditV023 | None = None
-    per_window_audit_sha256: str | None = Field(
-        default=None, pattern=r"^[0-9a-f]{64}$"
-    )
+    per_window_audit_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     builder_job_id: str | None = Field(default=None, pattern=r"^job-[0-9a-f]{24}$")
     builder_job_record: ProductJobRecordV1 | None = None
     builder_job_evidence_sha256: str | None = Field(
         default=None, pattern=r"^[0-9a-f]{64}$"
     )
-    builder_job_disposition: Literal["SUCCEEDED", "FAILED", "NOT_SUBMITTED"]
-    active_baseline_id: str | None = Field(
-        default=None, pattern=r"^base-[0-9a-f]{24}$"
+    builder_job_disposition: Literal[
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELLED",
+        "TIMED_OUT",
+        "INTERRUPTED",
+        "LATE_ACKNOWLEDGED",
+        "NOT_SUBMITTED",
+    ]
+    builder_transport_failure_codes: tuple[str, ...] = Field(
+        default=(),
+        exclude_if=lambda value: not value,
     )
-    active_baseline_sha256: str | None = Field(
-        default=None, pattern=r"^[0-9a-f]{64}$"
+    builder_transport_retry_count: int = Field(
+        default=0,
+        ge=0,
+        le=3,
+        exclude_if=lambda value: value == 0,
     )
+    builder_idempotency_key_sha256: str | None = Field(
+        default=None,
+        pattern=r"^[0-9a-f]{64}$",
+        exclude_if=lambda value: value is None,
+    )
+    active_baseline_id: str | None = Field(default=None, pattern=r"^base-[0-9a-f]{24}$")
+    active_baseline_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     cleanup: Literal["CLEAN", "BLOCKED", "NOT_REQUIRED"]
     failure_kind: BaselineAttemptFailureKindV023 | None = None
     failure_code: str | None = Field(
@@ -313,7 +424,10 @@ class BaselineAttemptCompletionV023(ProductModelV1):
 
     @model_validator(mode="after")
     def require_bound_completion(self) -> "BaselineAttemptCompletionV023":
-        if self.completed_at.tzinfo is None or self.completed_at.utcoffset() != timedelta(0):
+        if (
+            self.completed_at.tzinfo is None
+            or self.completed_at.utcoffset() != timedelta(0)
+        ):
             raise ValueError("baseline attempt completion time must be UTC")
         has_baseline = self.active_baseline_id is not None
         if has_baseline != (self.active_baseline_sha256 is not None):
@@ -323,8 +437,7 @@ class BaselineAttemptCompletionV023(ProductModelV1):
             raise ValueError("baseline attempt readiness audit evidence differs")
         if (
             self.per_window_audit is not None
-            and self.per_window_audit.audit_sha256
-            != self.per_window_audit_sha256
+            and self.per_window_audit.audit_sha256 != self.per_window_audit_sha256
         ):
             raise ValueError("baseline attempt readiness audit SHA differs")
         has_builder_job = self.builder_job_id is not None
@@ -335,55 +448,108 @@ class BaselineAttemptCompletionV023(ProductModelV1):
         if self.builder_job_disposition == "NOT_SUBMITTED":
             if has_builder_job or has_baseline:
                 raise ValueError("unsubmitted baseline builder has job or baseline")
-        elif self.builder_job_disposition == "FAILED":
+        elif self.builder_job_disposition in {
+            "FAILED",
+            "CANCELLED",
+            "TIMED_OUT",
+            "INTERRUPTED",
+            "LATE_ACKNOWLEDGED",
+        }:
             if not has_builder_job or has_baseline:
                 raise ValueError("failed baseline builder state is contradictory")
         elif not has_builder_job:
             raise ValueError("successful baseline builder lacks job evidence")
         if has_baseline and self.builder_job_disposition != "SUCCEEDED":
             raise ValueError("active baseline lacks successful builder disposition")
+        has_transport_evidence = bool(self.builder_transport_failure_codes)
+        if self.failure_kind is BaselineAttemptFailureKindV023.TRANSPORT:
+            allowed_transport_codes = {
+                "TIMEOUT",
+                "CONNECTION_RESET",
+                "HTTP_429",
+                "HTTP_5XX",
+            }
+            if (
+                self.builder_job_disposition
+                not in {"NOT_SUBMITTED", "LATE_ACKNOWLEDGED"}
+                or self.builder_transport_retry_count != 3
+                or len(self.builder_transport_failure_codes) != 4
+                or not set(self.builder_transport_failure_codes).issubset(
+                    allowed_transport_codes
+                )
+                or self.builder_idempotency_key_sha256 is None
+                or self.terminal != BASELINE_READINESS_BLOCKED_V023
+            ):
+                raise ValueError("baseline transport failure evidence differs")
+        elif (
+            has_transport_evidence
+            or self.builder_transport_retry_count != 0
+            or self.builder_idempotency_key_sha256 is not None
+        ):
+            raise ValueError("non-transport attempt contains transport evidence")
         if has_builder_job:
             if (
                 self.builder_job_id is None
                 or self.builder_job_record is None
                 or self.builder_job_disposition == "NOT_SUBMITTED"
-                or self.per_window_audit is None
-                or self.per_window_audit_sha256 is None
             ):
-                raise ValueError("submitted baseline builder lacks window audit")
+                raise ValueError("submitted baseline builder evidence is incomplete")
             job = self.builder_job_record
             audit = self.per_window_audit
             try:
-                request = BaselineJobCreateV1.model_validate(
-                    job.payload.get("request")
-                )
+                request = BaselineJobCreateV1.model_validate(job.payload.get("request"))
             except (TypeError, ValueError) as error:
                 raise ValueError("baseline builder request binding differs") from error
-            expected_status = (
-                ProductJobStatusV1.SUCCEEDED
-                if self.builder_job_disposition == "SUCCEEDED"
-                else ProductJobStatusV1.FAILED
-            )
+            expected_statuses = {
+                "SUCCEEDED": {ProductJobStatusV1.SUCCEEDED},
+                "FAILED": {ProductJobStatusV1.FAILED},
+                "CANCELLED": {ProductJobStatusV1.CANCELLED},
+                "TIMED_OUT": {
+                    ProductJobStatusV1.PENDING,
+                    ProductJobStatusV1.RUNNING,
+                },
+                "INTERRUPTED": {
+                    ProductJobStatusV1.PENDING,
+                    ProductJobStatusV1.RUNNING,
+                    ProductJobStatusV1.SUCCEEDED,
+                    ProductJobStatusV1.FAILED,
+                    ProductJobStatusV1.CANCELLED,
+                },
+                "LATE_ACKNOWLEDGED": {
+                    ProductJobStatusV1.PENDING,
+                    ProductJobStatusV1.RUNNING,
+                },
+            }[self.builder_job_disposition]
             if (
                 job.job_id != self.builder_job_id
                 or job.job_type is not ProductJobTypeV1.BASELINE_BUILD
-                or job.status is not expected_status
-                or job.payload.get("environment_id") != audit.environment_id
+                or job.status not in expected_statuses
                 or not request.activate
                 or request.candidate_services != ("checkout",)
+            ):
+                raise ValueError("baseline builder JobRecord binding differs")
+            if audit is not None and (
+                job.payload.get("environment_id") != audit.environment_id
                 or request.build_policy.model_dump(mode="json") != audit.build_policy
                 or audit.service_ids != ("checkout",)
             ):
-                raise ValueError("baseline builder JobRecord binding differs")
+                raise ValueError("baseline builder readiness audit binding differs")
             expected_job_evidence = baseline_builder_job_evidence_sha256_v023(job)
             if self.builder_job_evidence_sha256 != expected_job_evidence:
                 raise ValueError("baseline builder job evidence is not bound")
             if self.builder_job_disposition == "SUCCEEDED":
-                if job.safe_error_code is not None or not isinstance(job.result, dict):
+                if (
+                    audit is None
+                    or self.per_window_audit_sha256 is None
+                    or job.safe_error_code is not None
+                    or not isinstance(job.result, dict)
+                ):
                     raise ValueError("successful baseline JobRecord lacks result")
                 raw_audit = job.result.get("readiness_audit_v023")
                 if not isinstance(raw_audit, dict):
-                    raise ValueError("successful baseline JobRecord lacks readiness audit")
+                    raise ValueError(
+                        "successful baseline JobRecord lacks readiness audit"
+                    )
                 result_audit = ProductBaselineReadinessAuditV023.model_validate(
                     raw_audit
                 )
@@ -406,10 +572,13 @@ class BaselineAttemptCompletionV023(ProductModelV1):
                 result_baseline_id = result_baseline.baseline_id
                 result_baseline_sha256 = result_baseline.baseline_sha256
                 if (
-                    not result_baseline.active
+                    (
+                        self.failure_kind
+                        is not BaselineAttemptFailureKindV023.PERSISTENCE
+                        and not result_baseline.active
+                    )
                     or result_baseline.environment_id != audit.environment_id
-                    or result_baseline.service_ids
-                    != audit.baseline_entity_service_ids
+                    or result_baseline.service_ids != audit.baseline_entity_service_ids
                     or result_baseline.source_capability_sha256
                     != audit.capability_sha256
                     or result_baseline.build_policy.model_dump(mode="json")
@@ -426,8 +595,36 @@ class BaselineAttemptCompletionV023(ProductModelV1):
                     or result_baseline_sha256 != audit.baseline_sha256
                 ):
                     raise ValueError("Builder JobRecord differs from readiness audit")
-            elif job.safe_error_code is None or job.result is not None:
+            elif self.builder_job_disposition == "FAILED" and (
+                job.safe_error_code is None or job.result is not None
+            ):
                 raise ValueError("failed baseline JobRecord lacks safe error")
+            elif self.builder_job_disposition in {
+                "CANCELLED",
+                "TIMED_OUT",
+                "LATE_ACKNOWLEDGED",
+            } and (job.result is not None):
+                raise ValueError("incomplete baseline JobRecord has a result")
+            elif self.builder_job_disposition == "INTERRUPTED":
+                interrupted_matrix_valid = {
+                    ProductJobStatusV1.PENDING: (
+                        job.result is None and job.safe_error_code is None
+                    ),
+                    ProductJobStatusV1.RUNNING: (
+                        job.result is None and job.safe_error_code is None
+                    ),
+                    ProductJobStatusV1.SUCCEEDED: (
+                        isinstance(job.result, dict) and job.safe_error_code is None
+                    ),
+                    ProductJobStatusV1.FAILED: (
+                        job.result is None and job.safe_error_code is not None
+                    ),
+                    ProductJobStatusV1.CANCELLED: job.result is None,
+                }[job.status]
+                if not interrupted_matrix_valid:
+                    raise ValueError(
+                        "interrupted baseline JobRecord status matrix differs"
+                    )
         if self.terminal == BASELINE_READINESS_PASS_V023:
             if (
                 self.traffic_result is None
@@ -439,7 +636,7 @@ class BaselineAttemptCompletionV023(ProductModelV1):
                 or self.failure_kind is not None
                 or self.failure_code is not None
                 or self.failure_evidence_sha256 is not None
-                or self.cleanup != "NOT_REQUIRED"
+                or self.cleanup != "CLEAN"
             ):
                 raise ValueError("passing baseline attempt is incomplete")
         else:
@@ -479,6 +676,47 @@ class BaselineAttemptCompletionV023(ProductModelV1):
             if self.failure_code != "HEALTHY_TRAFFIC_INCOMPLETE":
                 raise ValueError("baseline traffic failure code differs")
             return traffic.result_sha256
+        if failure_kind is BaselineAttemptFailureKindV023.TRANSPORT:
+            if (
+                traffic is None
+                or not traffic.passed
+                or self.builder_job_disposition
+                not in {"NOT_SUBMITTED", "LATE_ACKNOWLEDGED"}
+                or self.failure_code != "BASELINE_BUILDER_TRANSPORT_RETRIES_EXHAUSTED"
+                or self.builder_idempotency_key_sha256 is None
+            ):
+                raise ValueError("baseline transport failure state is contradictory")
+            if self.builder_job_disposition == "LATE_ACKNOWLEDGED" and (
+                job_evidence is None or self.builder_job_record is None
+            ):
+                raise ValueError("late baseline acknowledgement evidence is absent")
+            return baseline_builder_transport_failure_evidence_sha256_v023(
+                start_sha256=self.start_sha256,
+                traffic_result_sha256=traffic.result_sha256,
+                idempotency_key_sha256=self.builder_idempotency_key_sha256,
+                failure_codes=self.builder_transport_failure_codes,
+                retry_count=self.builder_transport_retry_count,
+                builder_job_disposition=self.builder_job_disposition,
+                builder_job_evidence_sha256=job_evidence,
+            )
+        if failure_kind is BaselineAttemptFailureKindV023.INTERRUPTED:
+            if (
+                traffic is None
+                or not traffic.passed
+                or self.builder_job_disposition not in {"NOT_SUBMITTED", "INTERRUPTED"}
+                or self.failure_code != "BASELINE_ATTEMPT_INTERRUPTED"
+                or self.terminal != BASELINE_READINESS_BLOCKED_V023
+            ):
+                raise ValueError("baseline interruption state is contradictory")
+            if self.builder_job_disposition == "INTERRUPTED" and (
+                job_evidence is None or self.builder_job_record is None
+            ):
+                raise ValueError("interrupted baseline JobRecord is absent")
+            return baseline_builder_interruption_evidence_sha256_v023(
+                start_sha256=self.start_sha256,
+                traffic_result_sha256=traffic.result_sha256,
+                builder_job_evidence_sha256=job_evidence,
+            )
         if failure_kind in {
             BaselineAttemptFailureKindV023.CONNECTOR_QUERY_BINDING,
             BaselineAttemptFailureKindV023.SERVICE_ALIAS_BINDING,
@@ -487,7 +725,11 @@ class BaselineAttemptCompletionV023(ProductModelV1):
                 traffic is None
                 or not traffic.passed
                 or audit is None
-                or self.builder_job_disposition != "NOT_SUBMITTED"
+                or self.builder_job_disposition not in {"FAILED", "NOT_SUBMITTED"}
+                or (
+                    self.builder_job_disposition == "FAILED"
+                    and (job_evidence is None or self.builder_job_record is None)
+                )
             ):
                 raise ValueError("baseline connector failure state is contradictory")
             expected_code = (
@@ -504,15 +746,40 @@ class BaselineAttemptCompletionV023(ProductModelV1):
             BaselineAttemptFailureKindV023.IMPLEMENTATION,
         }:
             if (
+                failure_kind is BaselineAttemptFailureKindV023.IMPLEMENTATION
+                and self.builder_job_disposition == "NOT_SUBMITTED"
+            ):
+                if traffic is None or not traffic.passed:
+                    raise ValueError(
+                        "baseline Builder submission failure state is contradictory"
+                    )
+                if self.failure_code != "BASELINE_BUILDER_SUBMISSION_FAILED":
+                    raise ValueError("baseline Builder submission failure code differs")
+                return baseline_builder_submission_failure_evidence_sha256_v023(
+                    start_sha256=self.start_sha256,
+                    traffic_result_sha256=traffic.result_sha256,
+                )
+            if (
                 traffic is None
                 or not traffic.passed
-                or audit is None
-                or self.builder_job_disposition != "FAILED"
+                or self.builder_job_disposition
+                not in {"FAILED", "CANCELLED", "TIMED_OUT"}
                 or job_evidence is None
                 or self.builder_job_record is None
             ):
                 raise ValueError("baseline builder failure state is contradictory")
-            if self.failure_code != self.builder_job_record.safe_error_code:
+            builder_failure_code: str | None = {
+                "FAILED": self.builder_job_record.safe_error_code,
+                "CANCELLED": (
+                    self.builder_job_record.safe_error_code
+                    or "BASELINE_BUILDER_CANCELLED"
+                ),
+                "TIMED_OUT": "BASELINE_BUILDER_TIMEOUT",
+            }[self.builder_job_disposition]
+            if (
+                builder_failure_code is None
+                or self.failure_code != builder_failure_code
+            ):
                 raise ValueError("baseline builder failure code differs")
             return job_evidence
         if failure_kind is BaselineAttemptFailureKindV023.PERSISTENCE:
@@ -588,9 +855,7 @@ class BaselineAttemptV023(ProductModelV1):
                 "requests_per_second": semantic_inputs.get(
                     "healthy_traffic_requests_per_second"
                 ),
-                "maximum_error_fraction": semantic_inputs.get(
-                    "maximum_error_fraction"
-                ),
+                "maximum_error_fraction": semantic_inputs.get("maximum_error_fraction"),
                 "queue_fault_flag": semantic_inputs.get("queue_fault_flag", 0),
                 "profile_sha256": self.start.profile_sha256,
                 "semantics_sha256": self.start.semantics_sha256,
@@ -600,19 +865,47 @@ class BaselineAttemptV023(ProductModelV1):
                     "baseline traffic result differs from frozen attempt inputs"
                 )
         audit = self.completion.per_window_audit
-        if audit is not None and (
-            audit.environment_id != self.start.environment_id
-            or audit.profile_sha256 != self.start.readiness_profile_sha256
-            or audit.active_opensearch_profile_sha256 != self.start.profile_sha256
-        ):
-            raise ValueError("baseline attempt readiness audit differs from start")
+        job = self.completion.builder_job_record
+        request = (
+            None
+            if job is None
+            else BaselineJobCreateV1.model_validate(job.payload.get("request"))
+        )
+        if job is not None:
+            readiness = ProductBaselineReadinessProfileV023.default()
+            if (
+                job.payload.get("environment_id") != self.start.environment_id
+                or request is None
+                or request.planned_windows != self.start.planned_windows
+                or request.candidate_services != readiness.candidate_services
+                or not request.activate
+                or request.build_policy.mode.value != readiness.mode
+                or request.build_policy.lookback_seconds != readiness.lookback_seconds
+                or request.build_policy.window_count != readiness.window_count
+                or request.build_policy.minimum_successful_windows
+                != self.start.semantic_inputs.get("minimum_accepted_windows")
+                or request.build_policy.warmup_seconds
+                != self.start.semantic_inputs.get("warmup_seconds")
+            ):
+                raise ValueError("baseline attempt Builder request differs from start")
+        if audit is not None:
+            audited_windows = tuple(item.window for item in audit.evaluation.windows)
+            if (
+                audit.environment_id != self.start.environment_id
+                or audit.profile_sha256 != self.start.readiness_profile_sha256
+                or audit.active_opensearch_profile_sha256 != self.start.profile_sha256
+                or request is None
+                or request.planned_windows != self.start.planned_windows
+                or audited_windows != self.start.planned_windows
+            ):
+                raise ValueError("baseline attempt readiness audit differs from start")
         return self
 
 
 class BaselineAttemptLedgerV023(ProductModelV1):
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.baseline-attempt-ledger.v023"] = (
         "ecomsre.product.baseline-attempt-ledger.v023"
-    ] = "ecomsre.product.baseline-attempt-ledger.v023"
+    )
     attempts: tuple[BaselineAttemptV023, ...]
     maximum_changed_attempts: Literal[2] = 2
     ledger_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
@@ -633,7 +926,9 @@ class BaselineAttemptLedgerV023(ProductModelV1):
                 or current.start.prior_completion_sha256
                 != prior.completion.completion_sha256
             ):
-                raise ValueError("second baseline attempt lacks eligible prior evidence")
+                raise ValueError(
+                    "second baseline attempt lacks eligible prior evidence"
+                )
             if (
                 prior.start.environment_id == current.start.environment_id
                 or Path(prior.start.product_data_root).resolve()
@@ -687,7 +982,9 @@ class BaselineAttemptLedgerV023(ProductModelV1):
                 )
             )
             if changed != (current.start.changed_parameter.value,):
-                raise ValueError("second baseline attempt changed more than one parameter")
+                raise ValueError(
+                    "second baseline attempt changed more than one parameter"
+                )
             failure_kind = prior.completion.failure_kind
             if (
                 failure_kind is None
@@ -714,9 +1011,7 @@ class BaselineAttemptLedgerV023(ProductModelV1):
             "attempts": tuple(item.model_dump(mode="json") for item in attempts),
             "maximum_changed_attempts": 2,
         }
-        return cls.model_validate(
-            {**body, "ledger_sha256": semantic_sha256_v22(body)}
-        )
+        return cls.model_validate({**body, "ledger_sha256": semantic_sha256_v22(body)})
 
 
 __all__ = (
@@ -731,4 +1026,8 @@ __all__ = (
     "BaselineChangedParameterV023",
     "BaselineTrafficResultV023",
     "baseline_builder_job_evidence_sha256_v023",
+    "baseline_builder_interruption_evidence_sha256_v023",
+    "baseline_builder_submission_failure_evidence_sha256_v023",
+    "baseline_builder_transport_failure_evidence_sha256_v023",
+    "validate_changed_attempt_parameter_v023",
 )
