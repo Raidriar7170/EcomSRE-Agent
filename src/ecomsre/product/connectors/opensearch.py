@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+import re
 from typing import Callable, Literal, Mapping, cast
 from urllib.parse import quote
 
@@ -33,12 +34,46 @@ from ecomsre.product.contracts import (
 )
 
 
+_FEATURE_CONTROL_CAUSE_V1 = re.compile(
+    r"(?i)(?:feature\s*flag)\s+['\"][^'\"]{1,120}['\"]\s+"
+    r"is\s+activated,\s*"
+)
+_OVERLOAD_SIMULATION_COUNT_V1 = re.compile(
+    r"(?i)done\s+with\s+#\d+\s+messages\s+for\s+overload\s+simulation\.?"
+)
+_OBSERVER_TRUTH_REMAINDER_V1 = re.compile(
+    r"(?i)feature\s*flag|#\d+\s+messages\s+for\s+overload\s+simulation|"
+    r"['\"][a-z]+(?:[A-Z][A-Za-z0-9]*)+['\"]"
+)
+
+
+def _project_observer_message_v1(message: str, *, policy: str) -> str:
+    if policy == "AS_OBSERVED":
+        return message[:500]
+    if policy != "OBSERVER_SYMPTOM_V1":
+        raise ValueError("OpenSearch message projection policy is unsupported")
+    projected = _FEATURE_CONTROL_CAUSE_V1.sub("", message)
+    projected = _OVERLOAD_SIMULATION_COUNT_V1.sub(
+        "Queue overload activity completed.",
+        projected,
+    )
+    if _OBSERVER_TRUTH_REMAINDER_V1.search(projected):
+        raise ValueError("OpenSearch observer message retained control truth")
+    return projected[:500]
+
+
 def _field(source: Mapping[str, object], path: str) -> object:
     if path in source:
         return source[path]
     current: object = source
-    for segment in path.split("."):
-        if not isinstance(current, Mapping) or segment not in current:
+    segments = path.split(".")
+    for index, segment in enumerate(segments):
+        if not isinstance(current, Mapping):
+            raise ValueError("OpenSearch source field is unavailable")
+        remaining = ".".join(segments[index:])
+        if remaining in current:
+            return current[remaining]
+        if segment not in current:
             raise ValueError("OpenSearch source field is unavailable")
         current = current[segment]
     return current
@@ -48,8 +83,14 @@ def _optional_field(source: Mapping[str, object], path: str) -> object | None:
     if path in source:
         return source[path]
     current: object = source
-    for segment in path.split("."):
-        if not isinstance(current, Mapping) or segment not in current:
+    segments = path.split(".")
+    for index, segment in enumerate(segments):
+        if not isinstance(current, Mapping):
+            return None
+        remaining = ".".join(segments[index:])
+        if remaining in current:
+            return current[remaining]
+        if segment not in current:
             return None
         current = current[segment]
     return current
@@ -86,6 +127,7 @@ class OpenSearchConnectorV1:
         )
         self._severity_field = self._settings.severity_field
         self._message_field = self._settings.message_field
+        self._message_projection_policy = self._settings.message_projection_policy
         self._trace_id_field = self._settings.trace_id_field
         endpoint = config.endpoint.rstrip("/")
         index = quote(self._index_pattern, safe="*,-_")
@@ -184,6 +226,17 @@ class OpenSearchConnectorV1:
                     }
                 }
             },
+            *(
+                {"exists": {"field": field}}
+                for field in dict.fromkeys(
+                    (
+                        self._timestamp_field,
+                        self._service_field,
+                        self._severity_field,
+                        self._message_field,
+                    )
+                )
+            ),
         ]
         if self._settings.severity_filter:
             filters.append(
@@ -255,7 +308,10 @@ class OpenSearchConnectorV1:
                         observed_at=observed_at,
                         service=service,
                         severity=normalized_severity,
-                        message=message[:500],
+                        message=_project_observer_message_v1(
+                            message,
+                            policy=self._message_projection_policy,
+                        ),
                     )
                 )
         except ConnectorRequestError as error:

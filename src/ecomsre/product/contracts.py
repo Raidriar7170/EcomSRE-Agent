@@ -27,6 +27,7 @@ class ConnectorKindV1(str, Enum):
     OPENSEARCH = "OPENSEARCH"
     JAEGER = "JAEGER"
     HTTP_HEALTH = "HTTP_HEALTH"
+    PILOT_RUNTIME = "PILOT_RUNTIME"
     FIXTURE = "FIXTURE"
 
 
@@ -78,6 +79,10 @@ class OpenSearchConnectorSettingsV1(ProductModelV1):
     service_query_field: str | None = Field(default=None, min_length=1, max_length=255)
     severity_field: str = Field(min_length=1, max_length=255)
     message_field: str = Field(min_length=1, max_length=255)
+    message_projection_policy: Literal[
+        "AS_OBSERVED",
+        "OBSERVER_SYMPTOM_V1",
+    ] = "AS_OBSERVED"
     trace_id_field: str | None = Field(default=None, min_length=1, max_length=255)
     severity_filter: tuple[str, ...] = Field(default_factory=tuple, max_length=4)
     maximum_result_count: int = Field(default=200, ge=1, le=200)
@@ -168,6 +173,14 @@ class HttpHealthConnectorSettingsV1(ProductModelV1):
         return self
 
 
+class PilotRuntimeConnectorSettingsV02(ProductModelV1):
+    snapshot_ref: str = Field(
+        pattern=r"^pilot/[a-zA-Z0-9_.-]{1,120}\.json$",
+    )
+    authority_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    maximum_age_seconds: int = Field(default=300, ge=1, le=600)
+
+
 def _validate_connector_settings(
     kind: ConnectorKindV1,
     settings: dict[str, Any],
@@ -183,6 +196,8 @@ def _validate_connector_settings(
         model = JaegerConnectorSettingsV1.model_validate(settings)
     elif kind is ConnectorKindV1.HTTP_HEALTH:
         model = HttpHealthConnectorSettingsV1.model_validate(settings)
+    elif kind is ConnectorKindV1.PILOT_RUNTIME:
+        model = PilotRuntimeConnectorSettingsV02.model_validate(settings)
     else:
         raise ValueError("connector kind is not supported")
     return model.model_dump(mode="json", exclude_none=True)
@@ -418,7 +433,14 @@ class EnvironmentCreateV1(ProductModelV1):
         if len(connector_kinds_sequence) != len(set(connector_kinds_sequence)):
             raise ValueError("connector kinds must be unique within an environment")
         connector_kinds = {connector.kind for connector in self.connector_configs}
-        if ConnectorKindV1.FIXTURE in connector_kinds and len(connector_kinds) > 1:
+        allowed_fixture_mix = {
+            ConnectorKindV1.FIXTURE,
+            ConnectorKindV1.PILOT_RUNTIME,
+        }
+        if (
+            ConnectorKindV1.FIXTURE in connector_kinds
+            and not connector_kinds.issubset(allowed_fixture_mix)
+        ):
             raise ValueError("fixture connectors cannot be mixed with real connectors")
         catalog = tuple(sorted(set(self.explicit_service_catalog)))
         for service_id in catalog:

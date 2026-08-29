@@ -1,0 +1,47 @@
+{
+  "schema_version": "ecomsre.product-v021.predecessor-baseline-audit.v1",
+  "predecessor_head": "a439f8882cd2fcdd3767f6bcfd5d955219fa1e15",
+  "predecessor_terminal": "BLOCKED_ECOMSRE_PRODUCT_V02_UNKNOWN_FAULT_PROFILE",
+  "tracked_artifact_facts": {
+    "accepted_window_count": 0,
+    "blocker_code": "BASELINE_INSUFFICIENT_WINDOWS",
+    "blocker_stage": "PRODUCT_BASELINE",
+    "fault_attempt_count": 0,
+    "outer_baseline_restored": true,
+    "owned_cleanup": "CLEAN",
+    "pilot_outcome": "NOT_REACHED"
+  },
+  "preserved_private_root_facts": {
+    "available_in_successor_worktree": false,
+    "content_audit_claimed": false,
+    "preserved_private_report_sha256": "81442f6cd7a0a36c5cda703d6d054d2ff57fbc4f6f4a9aa7630626d74dbb3c9b"
+  },
+  "tracked_code_path_inferences": [
+    {
+      "classification": "TRACKED_CODE_PATH_INFERENCE",
+      "inference": "The frozen PILOT_RUNTIME connector advertised target-complete semantics but not historical baseline collection. If the unavailable predecessor capability-matrix bytes marked Runtime AVAILABLE and target-complete, the frozen builder would require that source without collecting it, producing the shape REQUIRED_SOURCE_MISSING. The condition cannot be confirmed from tracked artifacts.",
+      "measured_predecessor_cause": false
+    }
+  ],
+  "unavailable_facts": [
+    "raw per-window source status",
+    "raw record counts and truncation flags",
+    "requested, covered, and missing services per source",
+    "raw safe error codes",
+    "private capability-matrix bytes",
+    "cold-start and query-timing attribution"
+  ],
+  "known_good_v01_reference": {
+    "accepted_windows": 5,
+    "configured_windows": 5,
+    "mode": "DEMO_ONLY",
+    "normalized_services": 20,
+    "sources_available": [
+      "HTTP_HEALTH",
+      "JAEGER",
+      "OPENSEARCH",
+      "PROMETHEUS"
+    ]
+  },
+  "claim_boundary": "No predecessor source-level measured cause is available. In particular, the audit does not claim that the v0.2 blocker repeated the historical v0.1 Prometheus coverage defect."
+}

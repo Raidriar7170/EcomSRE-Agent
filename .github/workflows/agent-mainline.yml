@@ -171,6 +171,61 @@ jobs:
           uv run --frozen --no-sync python -m
           scripts.ci.verify_phase5b_execution_historical_bindings
 
+      - name: Product v0.2 historical Product v0.1 bindings
+        run: >-
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_product_v02_history
+
+      - name: Product v0.2 frozen blocked result
+        run: >-
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_product_v02_blocked_result
+
+      - name: Product v0.2.1 predecessor and baseline-audit verification
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_product_v021_increment1
+
+      - name: Product v0.2.2 predecessor and schema instrumentation verification
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_product_v022_increment1
+
+      - name: Product v0.2.2 consumed schema-probe blocker verification
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_product_v022_schema_probe_blocker
+
+      - name: Product v0.2.2 focused fixture tests
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync pytest tests/product_v022 -q
+
+      - name: Product v0.2.2.1 schema-session verification
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_product_v0221_schema_blocker
+
+      - name: Product v0.2.2.1 focused offline tests
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync pytest tests/product_v0221 -q
+
+      - name: Product v0.2.2.2 capture-first operator-profile verification
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_product_v0222_increment5
+
+      - name: Product v0.2.2.2 focused offline tests
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync pytest tests/product_v0222 -q
+
       - name: Verify Phase 5B protocol
         run: make phase5b-protocol-verify
 
@@ -217,5 +272,6 @@ jobs:
           scripts/rcaeval
           scripts/ci
           scripts/live_sandbox
+          scripts/product_v022
           tests/dta_v21
           tests/phase5b

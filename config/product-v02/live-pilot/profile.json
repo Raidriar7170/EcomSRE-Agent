@@ -1,0 +1,13 @@
+{
+  "schema_version": "ecomsre.product.pilot.queue-profile.v02",
+  "profile_id": "checkout-queue-overload-v02-candidate",
+  "profile_name": "CHECKOUT_KAFKA_QUEUE_OVERLOAD",
+  "candidate_values": [
+    5,
+    10,
+    20
+  ],
+  "maximum_calibration_changes": 2,
+  "expected_default_value": 0,
+  "profile_sha256": null
+}

@@ -19,6 +19,9 @@ from ecomsre.product.environment.services import ServiceCatalogRepositoryV1
 from ecomsre.product.errors import ProductError
 from ecomsre.product.jobs.repository import JobRepositoryV1
 from ecomsre.product.knowledge.repository import KnowledgeRepositoryV1
+from ecomsre.product.pilot.baseline_audit_v021 import (
+    BaselineReadinessAuditRepositoryV021,
+)
 from ecomsre.product.incidents.repository import (
     DiagnosisRepositoryV1,
     IncidentRepositoryV1,
@@ -51,6 +54,7 @@ def create_app(settings: ProductSettingsV1 | None = None) -> FastAPI:
     app.state.services = ServiceCatalogRepositoryV1(store)
     app.state.capabilities = CapabilityMatrixRepositoryV1(store)
     app.state.baselines = BaselineRepositoryV1(store)
+    app.state.baseline_readiness_audits = BaselineReadinessAuditRepositoryV021(store)
     app.state.changes = ChangeEventRepositoryV1(store)
     app.state.jobs = JobRepositoryV1(store)
     app.state.incidents = IncidentRepositoryV1(

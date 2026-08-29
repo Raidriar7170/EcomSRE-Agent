@@ -1,0 +1,42 @@
+{
+  "schema_version": "ecomsre.product.v0221.predecessor-audit.v1",
+  "goal_version": "ecomsre-product-v0221-opensearch-probe-protocol-v1",
+  "status": "ECOMSRE_PRODUCT_V0221_PREDECESSOR_AUDIT_PASS",
+  "public_main_base": "8398a063de048064f160a7ffed236fbb3327b701",
+  "predecessors": [
+    {
+      "pr": 75,
+      "head": "a439f8882cd2fcdd3767f6bcfd5d955219fa1e15",
+      "terminal": "BLOCKED_ECOMSRE_PRODUCT_V02_UNKNOWN_FAULT_PROFILE"
+    },
+    {
+      "pr": 76,
+      "head": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+      "terminal": "BLOCKED_ECOMSRE_PRODUCT_V021_BASELINE_READINESS"
+    },
+    {
+      "pr": 77,
+      "head": "1568c72c3262befb90fb4e191592e51aa345bdcb",
+      "terminal": "BLOCKED_ECOMSRE_PRODUCT_V022_SCHEMA_PROBE"
+    }
+  ],
+  "v022_campaign_id": "product-v022-schema-discovery-1",
+  "v022_execution_count": 1,
+  "v022_failure_stage": "FIELD_CAPS_QUERY",
+  "v022_safe_message": "OpenSearch schema probe HTTP status 400",
+  "v022_request_count": 2,
+  "v022_maximum_request_count": 12,
+  "v022_sample_count": 0,
+  "v022_maximum_sample_count": 5,
+  "v022_retry_authority": "NONE",
+  "bound_file_count": 16,
+  "baseline_unchanged": true,
+  "owned_demo_cleanup": "CLEAN",
+  "fault_attempt_count": 0,
+  "baseline_readiness_attempt_count": 0,
+  "knowledge_loop_campaign_count": 0,
+  "agent_writes": 0,
+  "runbook_executions": 0,
+  "action_authority": "NONE",
+  "audit_sha256": "eab37555ee371963e93c7f8f16591b9c3846355044ef61086f71f9ea115e6165"
+}

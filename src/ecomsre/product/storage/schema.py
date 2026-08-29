@@ -1,6 +1,6 @@
 """SQLite schema identity."""
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 6
 
 REQUIRED_TABLES = (
     "schema_migrations",
@@ -28,6 +28,9 @@ REQUIRED_TABLES = (
     "revocation_records",
     "diagnosis_evidence_links",
     "product_metric_counters",
+    "live_pilot_episodes_v02",
+    "live_pilot_attempt_events_v02",
+    "baseline_readiness_audits_v021",
 )
 
 __all__ = ("REQUIRED_TABLES", "SCHEMA_VERSION")

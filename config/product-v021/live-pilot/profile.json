@@ -1,0 +1,20 @@
+{
+  "schema_version": "ecomsre.product.pilot.queue-profile.v021",
+  "profile_id": "checkout-queue-overload-v021-candidate",
+  "profile_name": "CHECKOUT_KAFKA_QUEUE_OVERLOAD",
+  "candidate_values": [
+    5,
+    10,
+    20
+  ],
+  "maximum_calibration_changes": 2,
+  "expected_default_value": 0,
+  "baseline_binding_required": true,
+  "selected_value": null,
+  "selected_root_service": null,
+  "calibration_report_sha256": null,
+  "calibration_contract_sha256": null,
+  "calibration_runtime_binding_sha256": null,
+  "calibrated_at": null,
+  "profile_sha256": null
+}

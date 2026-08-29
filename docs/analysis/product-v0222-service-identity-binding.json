@@ -1,0 +1,20 @@
+{
+  "accepted_checkout_record_count": 15,
+  "configured_service_aliases": [
+    "checkout",
+    "checkoutservice"
+  ],
+  "connector_smoke_sha256": "a3573782f56f5445db8920301e267840d9a1296e51027c0fda841bfd4bd303c2",
+  "identity_sha256": "a84e3f82180cd40024f9449096586b0ac94ceea8b492f59d58c58c28d7828d72",
+  "logical_service": "checkout",
+  "schema_version": "ecomsre.product.service-identity-binding.v0222",
+  "service_query_field": "resource.service.name.keyword",
+  "service_source_field": "resource.service.name",
+  "smoke_service_identity_sha256": "d310d31a00decfc65c9d55296ba4fdcc743106d7e8dae7488fe8ce48996da7b4",
+  "successful_query_count": 3,
+  "successful_query_result_sha256": [
+    "b815f35ccd70ac3f58d8b1847592f9b9d0e6e82206580083ae6208267bbaf87f",
+    "79d0dc012af21a4a32ca65340fe144b239bd459657795b43b2a89f9bddb70935",
+    "18b31596d9af4fdc17d870ee5710f0651258e4f42786b15c292c5b1b01508c91"
+  ]
+}

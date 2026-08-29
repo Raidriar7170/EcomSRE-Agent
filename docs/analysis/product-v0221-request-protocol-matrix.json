@@ -1,0 +1,88 @@
+{
+  "schema_version": "ecomsre.product.v0221.request-protocol-matrix.v1",
+  "goal_version": "ecomsre-product-v0221-opensearch-probe-protocol-v1",
+  "terminal": "ECOMSRE_PRODUCT_V0221_REQUEST_PROTOCOL_PASS",
+  "increment1_terminal": "ECOMSRE_PRODUCT_V0221_REQUEST_PROTOCOL_READY",
+  "fixture_provenance": "SANITIZED_SYNTHETIC_OFFLINE_PROTOCOL_MATRIX",
+  "cases": [
+    {
+      "case_id": "OFFICIAL_GET_FIELD_CAPS_QUERY",
+      "outcome": "PASS",
+      "method": "GET",
+      "query_parameter_names": [
+        "fields"
+      ],
+      "body_shape": "NONE"
+    },
+    {
+      "case_id": "METHOD_405_TO_POST_QUERY",
+      "outcome": "PASS",
+      "next_plan": "PLAN_B_FIELD_CAPS_POST_QUERY"
+    },
+    {
+      "case_id": "PERMISSION_403_TO_MAPPING_EMPIRICAL",
+      "outcome": "PASS",
+      "next_plan": "PLAN_C_MAPPING_SAMPLE_EMPIRICAL"
+    },
+    {
+      "case_id": "POST_400_TO_MAPPING_EMPIRICAL",
+      "outcome": "PASS",
+      "next_plan": "PLAN_C_MAPPING_SAMPLE_EMPIRICAL"
+    },
+    {
+      "case_id": "FIELD_CAPS_AVAILABLE_PROFILE",
+      "outcome": "PASS",
+      "profile_resolution_mode": "MAPPING_FIELD_CAPS_SAMPLE",
+      "profile_sha256": "acde7ee7677d0cae2deb091532b26c4cb5b4e9fbfc084cf9442a8479fabee860"
+    },
+    {
+      "case_id": "FIELD_CAPS_OPTIONAL_FALLBACK",
+      "outcome": "PASS",
+      "profile_resolution_mode": "MAPPING_SAMPLE_EMPIRICAL",
+      "profile_sha256": "6e1eccdf8165f68c3bbaa6a97d2ef7b9ad624df9674e51791811fad3ae86400f"
+    },
+    {
+      "case_id": "REQUIRED_TIE_FAILS_CLOSED",
+      "outcome": "PASS",
+      "blocker": "BLOCKED_ECOMSRE_PRODUCT_V0221_SCHEMA_AMBIGUOUS"
+    },
+    {
+      "case_id": "SEMANTIC_PLAN_REPEAT_REJECTED",
+      "outcome": "PASS"
+    },
+    {
+      "case_id": "HTTP_400_NOT_RETRIED_UNCHANGED",
+      "outcome": "PASS"
+    }
+  ],
+  "plans": [
+    {
+      "plan_id": "plan-a-field-caps-get-query",
+      "semantic_plan_sha256": "5fee96d93b3b0b0bab289d5c4210e020245eca4165e398e3c237d6149c001806",
+      "plan_sha256": "3af3b7425b661863a1e2888536fe68993f43f04915d89b72acfc21d06ceef432"
+    },
+    {
+      "plan_id": "plan-b-field-caps-post-query",
+      "semantic_plan_sha256": "ce4207de3828c11baa1453b255575ea9f8560acea7fa55bb50b9fe7dbff639c1",
+      "plan_sha256": "0b686b1b1932372540737525bb851bb5c1c9bbdd0087056616c85acee676f7e9"
+    },
+    {
+      "plan_id": "plan-c-mapping-sample-empirical",
+      "semantic_plan_sha256": "5e3db0b890bfb40bb147f2eb3327cf0bc37a3c07ff1e67dd180254b490f0356b",
+      "plan_sha256": "b1122eef5de3558997afe8b77c61016235b6bf98b3c3bcc2a6830a77c26dab09"
+    }
+  ],
+  "mapping_sha256": "3ec212a1fc5e545bd5adc7294f3dbaa068e1bf2c5297b7f773edd630762da36f",
+  "field_caps_sha256": "ed2d6af46a3b70589de280920071251a91b61fbb276c0a3b6ad7cd8ebfaa8284",
+  "sample_shape_sha256": "0765627a94017c36666e7acf3c0ab54b2aa546e4cd74293d308b85ab0aa428e1",
+  "empirical_query_verification_sha256": "05f50919c9dcbe4584615d0e37c10e1f8a778b74383af43be47b44abbb848139",
+  "live_schema_discovery_session_count": 0,
+  "total_live_read_only_opensearch_request_count": 0,
+  "fault_attempt_count": 0,
+  "baseline_readiness_attempt_count": 0,
+  "knowledge_loop_campaign_count": 0,
+  "agent_writes": 0,
+  "runbook_executions": 0,
+  "action_authority": "NONE",
+  "matrix_sha256": "c49b2d5bfcac3976fe0d8e7d1f7aee8cc6be74d0ebe50bcd2fe148266fd1fe58"
+}

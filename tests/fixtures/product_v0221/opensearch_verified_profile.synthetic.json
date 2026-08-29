@@ -1,0 +1,58 @@
+{
+  "schema_version": "ecomsre.product.opensearch-normalization-profile.v0221",
+  "profile_id": "otel-checkout-0765627a9401",
+  "index_pattern": "otel-v1-apm-span-*",
+  "mapping_sha256": "3ec212a1fc5e545bd5adc7294f3dbaa068e1bf2c5297b7f773edd630762da36f",
+  "field_caps_status": "UNAVAILABLE_OPTIONAL",
+  "field_caps_sha256": null,
+  "sample_shape_sha256": "0765627a94017c36666e7acf3c0ab54b2aa546e4cd74293d308b85ab0aa428e1",
+  "empirical_query_verification_sha256": "05f50919c9dcbe4584615d0e37c10e1f8a778b74383af43be47b44abbb848139",
+  "profile_resolution_mode": "MAPPING_SAMPLE_EMPIRICAL",
+  "timestamp_extraction": {
+    "extraction": {
+      "mode": "DOTTED_OR_NESTED_PATH",
+      "paths": [
+        "observed.timestamp"
+      ]
+    },
+    "parsers": [
+      "ISO_8601"
+    ]
+  },
+  "service_extraction": {
+    "mode": "DOTTED_OR_NESTED_PATH",
+    "paths": [
+      "resource.service.name"
+    ]
+  },
+  "service_source_field": "resource.service.name",
+  "service_query_field": "resource.service.name.keyword",
+  "severity_extraction": {
+    "extraction": {
+      "mode": "DIRECT_KEY",
+      "paths": [
+        "severityText"
+      ]
+    },
+    "mode": "STRING_VALUE"
+  },
+  "message_extraction": {
+    "extraction": {
+      "mode": "OTLP_VALUE_WRAPPER",
+      "paths": [
+        "body"
+      ]
+    },
+    "mode": "OTLP_STRING_VALUE_WRAPPER"
+  },
+  "trace_id_extraction": {
+    "mode": "OPTIONAL",
+    "paths": [
+      "traceId"
+    ]
+  },
+  "message_projection_policy": "OBSERVER_SYMPTOM_V1",
+  "maximum_record_rejection_fraction": 0.25,
+  "profile_source": "LIVE_SCHEMA_PROBE_V0221",
+  "profile_sha256": "6e1eccdf8165f68c3bbaa6a97d2ef7b9ad624df9674e51791811fad3ae86400f"
+}

@@ -1,0 +1,83 @@
+{
+  "schema_version": "ecomsre.product.pilot.campaign.v021",
+  "goal_version": "ecomsre-product-v021-live-baseline-knowledge-loop-successor-v1",
+  "required_readiness_terminal": "ECOMSRE_PRODUCT_V021_BASELINE_READINESS_PASS",
+  "required_profile_terminal": "ECOMSRE_PRODUCT_V021_UNKNOWN_FAULT_PROFILE_PASS",
+  "accepted_schedule": [
+    "N0",
+    "P1",
+    "P2",
+    "P3"
+  ],
+  "heldout_schedule": [
+    "H1"
+  ],
+  "episode_roles": {
+    "N0": "LIVE_NO_FAULT_NEGATIVE",
+    "P1": "FIT_POSITIVE",
+    "P2": "FIT_POSITIVE",
+    "P3": "SHADOW_POSITIVE",
+    "H1": "FINAL_HELDOUT_RECURRENCE"
+  },
+  "maximum_infrastructure_replacements_per_episode": 1,
+  "maximum_changed_calibration_iterations": 2,
+  "positive_episode_count": 3,
+  "live_no_fault_negative_count": 1,
+  "heldout_recurrence_maximum": 1,
+  "human_checkpoint_a": "UNFULFILLED",
+  "human_checkpoint_b": "UNFULFILLED",
+  "private_root": ".local/product-v021/private-live-control",
+  "product_data_root": ".local/product-v021/live-pilot",
+  "traffic_profiles": {
+    "CALIBRATION": {
+      "schema_version": "ecomsre.product.pilot.traffic-profile.v02",
+      "profile_id": "calibration-v021",
+      "request_seed": 101,
+      "maximum_request_count": 10,
+      "requests_per_second": 1.0,
+      "error_budget": 2
+    },
+    "N0": {
+      "schema_version": "ecomsre.product.pilot.traffic-profile.v02",
+      "profile_id": "n0-v021",
+      "request_seed": 201,
+      "maximum_request_count": 8,
+      "requests_per_second": 1.0,
+      "error_budget": 2
+    },
+    "P1": {
+      "schema_version": "ecomsre.product.pilot.traffic-profile.v02",
+      "profile_id": "p1-v021",
+      "request_seed": 301,
+      "maximum_request_count": 10,
+      "requests_per_second": 1.0,
+      "error_budget": 2
+    },
+    "P2": {
+      "schema_version": "ecomsre.product.pilot.traffic-profile.v02",
+      "profile_id": "p2-v021",
+      "request_seed": 302,
+      "maximum_request_count": 12,
+      "requests_per_second": 1.5,
+      "error_budget": 2
+    },
+    "P3": {
+      "schema_version": "ecomsre.product.pilot.traffic-profile.v02",
+      "profile_id": "p3-v021",
+      "request_seed": 303,
+      "maximum_request_count": 14,
+      "requests_per_second": 2.0,
+      "error_budget": 2
+    },
+    "H1": {
+      "schema_version": "ecomsre.product.pilot.traffic-profile.v02",
+      "profile_id": "h1-v021",
+      "request_seed": 401,
+      "maximum_request_count": 11,
+      "requests_per_second": 1.5,
+      "error_budget": 2
+    }
+  },
+  "action_authority": "NONE",
+  "runbook_authority": "NONE"
+}

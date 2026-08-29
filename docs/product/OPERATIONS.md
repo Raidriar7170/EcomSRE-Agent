@@ -69,3 +69,12 @@ container, network, or volume name collisions before Compose starts. Cleanup
 freezes the IDs created by that run and refuses `docker compose down` unless
 the project-label IDs, Product-label IDs, and frozen inventory remain exactly
 equal; unknown same-project resources are never removed.
+
+## Frozen v0.2 calibration
+
+The Product v0.2 live-pilot campaign is a separate, consumed one-shot study.
+It stopped before the first fault attempt because baseline construction
+returned `BASELINE_INSUFFICIENT_WINDOWS`. The runner restored the outer
+baseline and closed owned Demo cleanup as `CLEAN`; it must not be rerun under
+the same Goal or repaired by changing its recorded result. Any successor needs
+a new execution contract and fresh roots.

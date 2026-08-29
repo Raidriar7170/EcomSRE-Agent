@@ -1,0 +1,80 @@
+{
+  "accepted_checkout_record_count": 5,
+  "accepted_record_count": 5,
+  "action_authority": "NONE",
+  "agent_writes": 0,
+  "baseline_readiness_attempt_count": 0,
+  "baseline_unchanged": true,
+  "candidate_set_sha256": "f3aeaf272ab199c1284238c9e7785ec89f46b1cb54ad1608188a052c27f9d4de",
+  "capture_bundle_sha256": "4084941d8368c4f74ec2db95ac2215f36c9531367f9904b9b90cd653bceeea94",
+  "cleanup": "CLEAN",
+  "ended_at": "2026-08-29T06:04:24.589273Z",
+  "fault_attempt_count": 0,
+  "holdout_verification_session_count": 1,
+  "knowledge_loop_campaign_count": 0,
+  "message_extraction_failures": 0,
+  "observer_projection_failures": 0,
+  "operator_decision_sha256": "51effb280e9390d5619bf18fed80c2c158214db2dd98dcfce3634275125b8b5e",
+  "outer_schema_failure_count": 0,
+  "product_diagnosis_attempt_count": 0,
+  "profile_bytes_unchanged": true,
+  "read_only_request_count": 3,
+  "record_dispositions": [
+    {
+      "accepted_service": "checkout",
+      "disposition": "ACCEPTED",
+      "hit_ordinal": 0,
+      "rejection_code": null
+    },
+    {
+      "accepted_service": "checkout",
+      "disposition": "ACCEPTED",
+      "hit_ordinal": 1,
+      "rejection_code": null
+    },
+    {
+      "accepted_service": "checkout",
+      "disposition": "ACCEPTED",
+      "hit_ordinal": 2,
+      "rejection_code": null
+    },
+    {
+      "accepted_service": "checkout",
+      "disposition": "ACCEPTED",
+      "hit_ordinal": 3,
+      "rejection_code": null
+    },
+    {
+      "accepted_service": "checkout",
+      "disposition": "ACCEPTED",
+      "hit_ordinal": 4,
+      "rejection_code": null
+    }
+  ],
+  "rejected_record_count": 0,
+  "rejection_codes_by_count": {},
+  "rejection_fraction": 0.0,
+  "runbook_executions": 0,
+  "sampled_record_count": 5,
+  "schema_version": "ecomsre.product.opensearch-holdout-verification.v0222",
+  "selected_candidate_alias": "P01",
+  "selected_profile_file_sha256_after": "ce4dbcec6f7dcb84e6ee20c08b8d4205bf03b978679bff7086d7b6c6b433fbce",
+  "selected_profile_file_sha256_before": "ce4dbcec6f7dcb84e6ee20c08b8d4205bf03b978679bff7086d7b6c6b433fbce",
+  "selected_profile_sha256": "5df99c0417c1842d90c2fd708e977817c87f4ba37a01360a701cb0d3fe39d4e2",
+  "service_aggregation_observed_aliases": [
+    "checkout"
+  ],
+  "service_aggregation_response_sha256": "2eced3eb7e60855ae99903df0cd4a3061883c8b0a9963fc501994982b6c0c479",
+  "service_alias_ambiguity_count": 0,
+  "service_alias_failures": 0,
+  "session_id": "product-v0222-holdout-1",
+  "started_at": "2026-08-29T05:54:24.589273Z",
+  "targeted_checkout_query_status": "PASS",
+  "targeted_response_sha256": "00b2aecbcd19124a38f515a773480c44635ad9ca629d2dbd918de256f72ff767",
+  "terminal": "ECOMSRE_PRODUCT_V0222_HOLDOUT_VERIFICATION_PASS",
+  "timestamp_parse_failures": 0,
+  "timestamp_range_query_status": "PASS",
+  "timestamp_range_response_sha256": "3fcb31c90c90344d832f9b347d2fbee0a183f8a1ed3a179d8f57804a4406972c",
+  "transport_retry_count": 0,
+  "verification_sha256": "a30fbac9277267093fd9cfaaae33b87164d28711ec3b655025db38dbc083cd25"
+}

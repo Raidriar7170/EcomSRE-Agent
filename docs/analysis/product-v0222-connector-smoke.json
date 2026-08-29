@@ -1,0 +1,103 @@
+{
+  "accepted_checkout_record_count": 15,
+  "action_authority": "NONE",
+  "active_profile_file_sha256_after": "d25b7bcab53487041d0fa37dfe82318410e9ce9ae5b49c236860cc16b7d47a58",
+  "active_profile_file_sha256_before": "d25b7bcab53487041d0fa37dfe82318410e9ce9ae5b49c236860cc16b7d47a58",
+  "active_profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+  "active_profile_survived_restart": true,
+  "agent_writes": 0,
+  "all_records_rejected_failure_count": 0,
+  "baseline_readiness_attempt_count": 0,
+  "baseline_unchanged": true,
+  "cleanup": "CLEAN",
+  "connector_verify_status": "AVAILABLE",
+  "discovered_services": [
+    "cart",
+    "frontend-proxy",
+    "load-generator",
+    "otelcol-contrib",
+    "product-catalog"
+  ],
+  "fault_attempt_count": 0,
+  "healthy_traffic_attempted": 30,
+  "healthy_traffic_result_sha256": "51da2e3403ff959632d27ea1478f3dae557648264a103e0a7d981e9658316789",
+  "healthy_traffic_succeeded": 30,
+  "knowledge_loop_campaign_count": 0,
+  "nonempty_window_count": 3,
+  "opensearch_capability_sha256": "92ce7d055a917b15ac8d527de0d152b1a5061cf547b1c7333a776ddbb8f06c85",
+  "outer_schema_failure_count": 0,
+  "product_diagnosis_attempt_count": 0,
+  "query_count": 3,
+  "query_diagnostics": [
+    {
+      "accepted_checkout_record_count": 5,
+      "all_records_rejected_failure_count": 0,
+      "latency_ms": 805.6129999895347,
+      "outer_schema_failure_count": 0,
+      "query_completed": true,
+      "query_result_sha256": "b815f35ccd70ac3f58d8b1847592f9b9d0e6e82206580083ae6208267bbaf87f",
+      "rejected_record_count": 0,
+      "rejection_fraction": 0.0,
+      "returned_record_count": 5,
+      "safe_error_code": null,
+      "service_alias_unmapped_count": 0,
+      "status": "SUCCESS_NONEMPTY",
+      "timestamp_parse_failure_count": 0,
+      "window": {
+        "ended_at": "2026-08-29T06:19:28.264111Z",
+        "started_at": "2026-08-29T06:19:17.355720Z"
+      },
+      "window_ordinal": 1
+    },
+    {
+      "accepted_checkout_record_count": 5,
+      "all_records_rejected_failure_count": 0,
+      "latency_ms": 6.6582500003278255,
+      "outer_schema_failure_count": 0,
+      "query_completed": true,
+      "query_result_sha256": "79d0dc012af21a4a32ca65340fe144b239bd459657795b43b2a89f9bddb70935",
+      "rejected_record_count": 0,
+      "rejection_fraction": 0.0,
+      "returned_record_count": 5,
+      "safe_error_code": null,
+      "service_alias_unmapped_count": 0,
+      "status": "SUCCESS_NONEMPTY",
+      "timestamp_parse_failure_count": 0,
+      "window": {
+        "ended_at": "2026-08-29T06:19:39.172503Z",
+        "started_at": "2026-08-29T06:19:28.264112Z"
+      },
+      "window_ordinal": 2
+    },
+    {
+      "accepted_checkout_record_count": 5,
+      "all_records_rejected_failure_count": 0,
+      "latency_ms": 5.5670830042799935,
+      "outer_schema_failure_count": 0,
+      "query_completed": true,
+      "query_result_sha256": "18b31596d9af4fdc17d870ee5710f0651258e4f42786b15c292c5b1b01508c91",
+      "rejected_record_count": 0,
+      "rejection_fraction": 0.0,
+      "returned_record_count": 5,
+      "safe_error_code": null,
+      "service_alias_unmapped_count": 0,
+      "status": "SUCCESS_NONEMPTY",
+      "timestamp_parse_failure_count": 0,
+      "window": {
+        "ended_at": "2026-08-29T06:19:50.080895Z",
+        "started_at": "2026-08-29T06:19:39.172504Z"
+      },
+      "window_ordinal": 3
+    }
+  ],
+  "queue_flag_value": 0,
+  "runbook_executions": 0,
+  "schema_version": "ecomsre.product.opensearch-connector-smoke.v0222",
+  "service_alias_unmapped_count": 0,
+  "service_identity_sha256": "d310d31a00decfc65c9d55296ba4fdcc743106d7e8dae7488fe8ce48996da7b4",
+  "session_id": "product-v0222-connector-smoke-1",
+  "smoke_profile_sha256": "6dc171bc1565a7052eb27519bd38f47c3141df1b991b93956f08cb17077923d8",
+  "smoke_sha256": "a3573782f56f5445db8920301e267840d9a1296e51027c0fda841bfd4bd303c2",
+  "terminal": "ECOMSRE_PRODUCT_V0222_CONNECTOR_SMOKE_PASS",
+  "timestamp_parse_failure_count": 0
+}

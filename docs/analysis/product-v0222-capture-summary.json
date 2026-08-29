@@ -1,0 +1,1354 @@
+{
+  "action_authority": "NONE",
+  "agent_writes": 0,
+  "baseline_readiness_attempt_count": 0,
+  "baseline_unchanged": true,
+  "candidate_count": 2,
+  "candidate_set_sha256": "f3aeaf272ab199c1284238c9e7785ec89f46b1cb54ad1608188a052c27f9d4de",
+  "candidate_set_terminal": "ECOMSRE_PRODUCT_V0222_CANDIDATE_SET_READY",
+  "capture_bundle_sha256": "4084941d8368c4f74ec2db95ac2215f36c9531367f9904b9b90cd653bceeea94",
+  "capture_terminal": "ECOMSRE_PRODUCT_V0222_CAPTURE_FIRST_PASS",
+  "changed_request_plan_count": 1,
+  "cleanup": "CLEAN",
+  "fault_attempt_count": 0,
+  "goal_version": "ecomsre-product-v0222-capture-first-operator-profile-v1",
+  "initial_consumed_session_completion_sha256": "8a566b8ddb24eb98f08a723deb890a6f5c3ff0f7c6f89306cd9353578264a515",
+  "initial_consumed_session_terminal": "BLOCKED_ECOMSRE_PRODUCT_V0222_CAPTURE_PROTOCOL",
+  "knowledge_loop_campaign_count": 0,
+  "offline_analysis_iteration_count": 1,
+  "offline_analysis_report_sha256": "0e44ce7777387824e30170f3db23b76dcd27bfeb2c0c450a437348c9fc87b045",
+  "product_diagnosis_attempt_count": 0,
+  "public_structural_summary": {
+    "capture_bundle_sha256": "4084941d8368c4f74ec2db95ac2215f36c9531367f9904b9b90cd653bceeea94",
+    "capture_completeness": true,
+    "field_caps_types": {
+      "@timestamp": [
+        "date"
+      ],
+      "attributes": [
+        "object"
+      ],
+      "attributes.otelServiceName": [
+        "text"
+      ],
+      "attributes.otelServiceName.keyword": [
+        "keyword"
+      ],
+      "attributes.otelTraceID": [
+        "text"
+      ],
+      "attributes.otelTraceID.keyword": [
+        "keyword"
+      ],
+      "attributes.otelTraceSampled": [
+        "boolean"
+      ],
+      "attributes.quote_service_addr": [
+        "text"
+      ],
+      "attributes.quote_service_addr.keyword": [
+        "keyword"
+      ],
+      "body": [
+        "text"
+      ],
+      "body.keyword": [
+        "keyword"
+      ],
+      "observedTimestamp": [
+        "date"
+      ],
+      "resource": [
+        "object"
+      ],
+      "resource.service": [
+        "object"
+      ],
+      "resource.service.criticality": [
+        "text"
+      ],
+      "resource.service.criticality.keyword": [
+        "keyword"
+      ],
+      "resource.service.instance": [
+        "object"
+      ],
+      "resource.service.instance.id": [
+        "text"
+      ],
+      "resource.service.instance.id.keyword": [
+        "keyword"
+      ],
+      "resource.service.name": [
+        "text"
+      ],
+      "resource.service.name.keyword": [
+        "keyword"
+      ],
+      "resource.service.namespace": [
+        "text"
+      ],
+      "resource.service.namespace.keyword": [
+        "keyword"
+      ],
+      "resource.service.version": [
+        "text"
+      ],
+      "resource.service.version.keyword": [
+        "keyword"
+      ],
+      "severity": [
+        "object"
+      ],
+      "severity.number": [
+        "long"
+      ],
+      "severity.text": [
+        "text"
+      ],
+      "severity.text.keyword": [
+        "keyword"
+      ],
+      "traceId": [
+        "text"
+      ],
+      "traceId.keyword": [
+        "keyword"
+      ]
+    },
+    "json_path_inventory": {
+      "@timestamp": "string",
+      "attributes": "object",
+      "attributes.data_stream": "object",
+      "attributes.data_stream.dataset": "string",
+      "attributes.data_stream.namespace": "string",
+      "attributes.data_stream.type": "string",
+      "attributes.demo.order.amount": "number",
+      "attributes.demo.order.id": "string",
+      "attributes.demo.order.items.count": "integer",
+      "attributes.demo.shipping.amount": "number",
+      "attributes.demo.shipping.tracking.id": "string",
+      "attributes.transaction_id": "string",
+      "attributes.user_currency": "string",
+      "attributes.user_id": "string",
+      "body": "string",
+      "instrumentationScope": "object",
+      "instrumentationScope.name": "string",
+      "observedTimestamp": "string",
+      "resource": "object",
+      "resource.host.arch": "string",
+      "resource.host.cpu.cache.l2.size": "string",
+      "resource.host.cpu.family": "string",
+      "resource.host.cpu.model.id": "string",
+      "resource.host.cpu.model.name": "string",
+      "resource.host.cpu.stepping": "string",
+      "resource.host.cpu.vendor.id": "string",
+      "resource.host.name": "string",
+      "resource.os.description": "string",
+      "resource.os.type": "string",
+      "resource.service.criticality": "string",
+      "resource.service.name": "string",
+      "resource.service.namespace": "string",
+      "resource.service.version": "string",
+      "resource.telemetry.sdk.language": "string",
+      "resource.telemetry.sdk.name": "string",
+      "resource.telemetry.sdk.version": "string",
+      "severity": "object",
+      "severity.number": "integer",
+      "severity.text": "string",
+      "spanId": "string",
+      "traceId": "string"
+    },
+    "mapping_types": {
+      "@timestamp": [
+        "date"
+      ],
+      "attributes": [
+        "object"
+      ],
+      "attributes.ContentRoot": [
+        "text"
+      ],
+      "attributes.ContentRoot.keyword": [
+        "keyword"
+      ],
+      "attributes.EnvName": [
+        "text"
+      ],
+      "attributes.EnvName.keyword": [
+        "keyword"
+      ],
+      "attributes.NumCPU": [
+        "long"
+      ],
+      "attributes.State": [
+        "text"
+      ],
+      "attributes.State.keyword": [
+        "keyword"
+      ],
+      "attributes.Version": [
+        "text"
+      ],
+      "attributes.Version.keyword": [
+        "keyword"
+      ],
+      "attributes.addr": [
+        "text"
+      ],
+      "attributes.addr.keyword": [
+        "keyword"
+      ],
+      "attributes.address": [
+        "text"
+      ],
+      "attributes.address.keyword": [
+        "keyword"
+      ],
+      "attributes.amount": [
+        "object"
+      ],
+      "attributes.amount.currencyCode": [
+        "text"
+      ],
+      "attributes.amount.currencyCode.keyword": [
+        "keyword"
+      ],
+      "attributes.amount.nanos": [
+        "long"
+      ],
+      "attributes.amount.units": [
+        "object"
+      ],
+      "attributes.amount.units.high": [
+        "long"
+      ],
+      "attributes.amount.units.low": [
+        "long"
+      ],
+      "attributes.amount.units.unsigned": [
+        "boolean"
+      ],
+      "attributes.cardType": [
+        "text"
+      ],
+      "attributes.cardType.keyword": [
+        "keyword"
+      ],
+      "attributes.cents": [
+        "long"
+      ],
+      "attributes.check_interval": [
+        "long"
+      ],
+      "attributes.code": [
+        "object"
+      ],
+      "attributes.code.file": [
+        "object"
+      ],
+      "attributes.code.file.path": [
+        "text"
+      ],
+      "attributes.code.file.path.keyword": [
+        "keyword"
+      ],
+      "attributes.code.function": [
+        "object"
+      ],
+      "attributes.code.function.name": [
+        "text"
+      ],
+      "attributes.code.function.name.keyword": [
+        "keyword"
+      ],
+      "attributes.code.line": [
+        "object"
+      ],
+      "attributes.code.line.number": [
+        "long"
+      ],
+      "attributes.context": [
+        "object"
+      ],
+      "attributes.context.total": [
+        "float"
+      ],
+      "attributes.currency": [
+        "object"
+      ],
+      "attributes.currency.from": [
+        "text"
+      ],
+      "attributes.currency.from.keyword": [
+        "keyword"
+      ],
+      "attributes.currency.to": [
+        "text"
+      ],
+      "attributes.currency.to.keyword": [
+        "keyword"
+      ],
+      "attributes.data points": [
+        "long"
+      ],
+      "attributes.data_stream": [
+        "object"
+      ],
+      "attributes.data_stream.dataset": [
+        "text"
+      ],
+      "attributes.data_stream.dataset.keyword": [
+        "keyword"
+      ],
+      "attributes.data_stream.namespace": [
+        "text"
+      ],
+      "attributes.data_stream.namespace.keyword": [
+        "keyword"
+      ],
+      "attributes.data_stream.type": [
+        "text"
+      ],
+      "attributes.data_stream.type.keyword": [
+        "keyword"
+      ],
+      "attributes.demo": [
+        "object"
+      ],
+      "attributes.demo.order": [
+        "object"
+      ],
+      "attributes.demo.order.amount": [
+        "float"
+      ],
+      "attributes.demo.order.id": [
+        "text"
+      ],
+      "attributes.demo.order.id.keyword": [
+        "keyword"
+      ],
+      "attributes.demo.order.items": [
+        "object"
+      ],
+      "attributes.demo.order.items.count": [
+        "long"
+      ],
+      "attributes.demo.product": [
+        "object"
+      ],
+      "attributes.demo.product.id": [
+        "text"
+      ],
+      "attributes.demo.product.id.keyword": [
+        "keyword"
+      ],
+      "attributes.demo.product.name": [
+        "text"
+      ],
+      "attributes.demo.product.name.keyword": [
+        "keyword"
+      ],
+      "attributes.demo.shipping": [
+        "object"
+      ],
+      "attributes.demo.shipping.amount": [
+        "float"
+      ],
+      "attributes.demo.shipping.tracking": [
+        "object"
+      ],
+      "attributes.demo.shipping.tracking.id": [
+        "text"
+      ],
+      "attributes.demo.shipping.tracking.id.keyword": [
+        "keyword"
+      ],
+      "attributes.destination": [
+        "object"
+      ],
+      "attributes.destination.address": [
+        "text"
+      ],
+      "attributes.destination.address.keyword": [
+        "keyword"
+      ],
+      "attributes.dollars": [
+        "long"
+      ],
+      "attributes.endpoint": [
+        "text"
+      ],
+      "attributes.endpoint.keyword": [
+        "keyword"
+      ],
+      "attributes.event": [
+        "object"
+      ],
+      "attributes.event.name": [
+        "text"
+      ],
+      "attributes.event.name.keyword": [
+        "keyword"
+      ],
+      "attributes.feature_flag_key": [
+        "text"
+      ],
+      "attributes.feature_flag_key.keyword": [
+        "keyword"
+      ],
+      "attributes.feature_flag_provider_name": [
+        "text"
+      ],
+      "attributes.feature_flag_provider_name.keyword": [
+        "keyword"
+      ],
+      "attributes.feature_flag_variant": [
+        "text"
+      ],
+      "attributes.feature_flag_variant.keyword": [
+        "keyword"
+      ],
+      "attributes.http": [
+        "text"
+      ],
+      "attributes.http.keyword": [
+        "keyword"
+      ],
+      "attributes.https": [
+        "text"
+      ],
+      "attributes.https.keyword": [
+        "keyword"
+      ],
+      "attributes.jobName": [
+        "text"
+      ],
+      "attributes.jobName.keyword": [
+        "keyword"
+      ],
+      "attributes.lastFourDigits": [
+        "text"
+      ],
+      "attributes.lastFourDigits.keyword": [
+        "keyword"
+      ],
+      "attributes.limit_mib": [
+        "long"
+      ],
+      "attributes.limit_percentage": [
+        "long"
+      ],
+      "attributes.log records": [
+        "long"
+      ],
+      "attributes.loyalty_level": [
+        "text"
+      ],
+      "attributes.loyalty_level.keyword": [
+        "keyword"
+      ],
+      "attributes.metrics": [
+        "long"
+      ],
+      "attributes.name": [
+        "text"
+      ],
+      "attributes.name.keyword": [
+        "keyword"
+      ],
+      "attributes.otelServiceName": [
+        "text"
+      ],
+      "attributes.otelServiceName.keyword": [
+        "keyword"
+      ],
+      "attributes.otelSpanID": [
+        "text"
+      ],
+      "attributes.otelSpanID.keyword": [
+        "keyword"
+      ],
+      "attributes.otelTraceID": [
+        "text"
+      ],
+      "attributes.otelTraceID.keyword": [
+        "keyword"
+      ],
+      "attributes.otelTraceSampled": [
+        "boolean"
+      ],
+      "attributes.productId": [
+        "text"
+      ],
+      "attributes.productId.keyword": [
+        "keyword"
+      ],
+      "attributes.products": [
+        "long"
+      ],
+      "attributes.quantity": [
+        "long"
+      ],
+      "attributes.quote_service_addr": [
+        "text"
+      ],
+      "attributes.quote_service_addr.keyword": [
+        "keyword"
+      ],
+      "attributes.resource": [
+        "object"
+      ],
+      "attributes.resource logs": [
+        "long"
+      ],
+      "attributes.resource metrics": [
+        "long"
+      ],
+      "attributes.resource spans": [
+        "long"
+      ],
+      "attributes.resource.host": [
+        "object"
+      ],
+      "attributes.resource.host.arch": [
+        "text"
+      ],
+      "attributes.resource.host.arch.keyword": [
+        "keyword"
+      ],
+      "attributes.resource.host.cpu": [
+        "object"
+      ],
+      "attributes.resource.host.cpu.cache": [
+        "object"
+      ],
+      "attributes.resource.host.cpu.cache.l2": [
+        "object"
+      ],
+      "attributes.resource.host.cpu.cache.l2.size": [
+        "long"
+      ],
+      "attributes.resource.host.cpu.family": [
+        "text"
+      ],
+      "attributes.resource.host.cpu.family.keyword": [
+        "keyword"
+      ],
+      "attributes.resource.host.cpu.model": [
+        "object"
+      ],
+      "attributes.resource.host.cpu.model.id": [
+        "text"
+      ],
+      "attributes.resource.host.cpu.model.id.keyword": [
+        "keyword"
+      ],
+      "attributes.resource.host.cpu.model.name": [
+        "text"
+      ],
+      "attributes.resource.host.cpu.model.name.keyword": [
+        "keyword"
+      ],
+      "attributes.resource.host.cpu.stepping": [
+        "text"
+      ],
+      "attributes.resource.host.cpu.stepping.keyword": [
+        "keyword"
+      ],
+      "attributes.resource.host.cpu.vendor": [
+        "object"
+      ],
+      "attributes.resource.host.cpu.vendor.id": [
+        "text"
+      ],
+      "attributes.resource.host.cpu.vendor.id.keyword": [
+        "keyword"
+      ],
+      "attributes.resource.host.name": [
+        "text"
+      ],
+      "attributes.resource.host.name.keyword": [
+        "keyword"
+      ],
+      "attributes.resource.os": [
+        "object"
+      ],
+      "attributes.resource.os.description": [
+        "text"
+      ],
+      "attributes.resource.os.description.keyword": [
+        "keyword"
+      ],
+      "attributes.resource.os.type": [
+        "text"
+      ],
+      "attributes.resource.os.type.keyword": [
+        "keyword"
+      ],
+      "attributes.server": [
+        "object"
+      ],
+      "attributes.server.address": [
+        "text"
+      ],
+      "attributes.server.address.keyword": [
+        "keyword"
+      ],
+      "attributes.source": [
+        "object"
+      ],
+      "attributes.source.address": [
+        "text"
+      ],
+      "attributes.source.address.keyword": [
+        "keyword"
+      ],
+      "attributes.spans": [
+        "long"
+      ],
+      "attributes.spike_limit_mib": [
+        "long"
+      ],
+      "attributes.spike_limit_percentage": [
+        "long"
+      ],
+      "attributes.total_memory_mib": [
+        "long"
+      ],
+      "attributes.tracking_id": [
+        "text"
+      ],
+      "attributes.tracking_id.keyword": [
+        "keyword"
+      ],
+      "attributes.transactionId": [
+        "text"
+      ],
+      "attributes.transactionId.keyword": [
+        "keyword"
+      ],
+      "attributes.transaction_id": [
+        "text"
+      ],
+      "attributes.transaction_id.keyword": [
+        "keyword"
+      ],
+      "attributes.upstream": [
+        "object"
+      ],
+      "attributes.upstream.cluster": [
+        "text"
+      ],
+      "attributes.upstream.cluster.keyword": [
+        "keyword"
+      ],
+      "attributes.upstream.host": [
+        "text"
+      ],
+      "attributes.upstream.host.keyword": [
+        "keyword"
+      ],
+      "attributes.url": [
+        "object"
+      ],
+      "attributes.url.full": [
+        "text"
+      ],
+      "attributes.url.full.keyword": [
+        "keyword"
+      ],
+      "attributes.url.path": [
+        "text"
+      ],
+      "attributes.url.path.keyword": [
+        "keyword"
+      ],
+      "attributes.url.query": [
+        "text"
+      ],
+      "attributes.url.query.keyword": [
+        "keyword"
+      ],
+      "attributes.url.template": [
+        "text"
+      ],
+      "attributes.url.template.keyword": [
+        "keyword"
+      ],
+      "attributes.urls": [
+        "text"
+      ],
+      "attributes.urls.keyword": [
+        "keyword"
+      ],
+      "attributes.userId": [
+        "text"
+      ],
+      "attributes.userId.keyword": [
+        "keyword"
+      ],
+      "attributes.user_agent": [
+        "object"
+      ],
+      "attributes.user_agent.original": [
+        "text"
+      ],
+      "attributes.user_agent.original.keyword": [
+        "keyword"
+      ],
+      "attributes.user_currency": [
+        "text"
+      ],
+      "attributes.user_currency.keyword": [
+        "keyword"
+      ],
+      "attributes.user_id": [
+        "text"
+      ],
+      "attributes.user_id.keyword": [
+        "keyword"
+      ],
+      "attributes.values": [
+        "object"
+      ],
+      "attributes.values.[0]": [
+        "object"
+      ],
+      "attributes.values.[0].modified": [
+        "text"
+      ],
+      "attributes.values.[0].modified.keyword": [
+        "keyword"
+      ],
+      "attributes.values.[0].original": [
+        "text"
+      ],
+      "attributes.values.[0].original.keyword": [
+        "keyword"
+      ],
+      "attributes.values.[1]": [
+        "object"
+      ],
+      "attributes.values.[1].modified": [
+        "text"
+      ],
+      "attributes.values.[1].modified.keyword": [
+        "keyword"
+      ],
+      "attributes.values.[1].original": [
+        "text"
+      ],
+      "attributes.values.[1].original.keyword": [
+        "keyword"
+      ],
+      "body": [
+        "text"
+      ],
+      "body.keyword": [
+        "keyword"
+      ],
+      "eventName": [
+        "text"
+      ],
+      "eventName.keyword": [
+        "keyword"
+      ],
+      "instrumentationScope": [
+        "object"
+      ],
+      "instrumentationScope.attributes": [
+        "object"
+      ],
+      "instrumentationScope.attributes.otelcol": [
+        "object"
+      ],
+      "instrumentationScope.attributes.otelcol.component": [
+        "object"
+      ],
+      "instrumentationScope.attributes.otelcol.component.id": [
+        "text"
+      ],
+      "instrumentationScope.attributes.otelcol.component.id.keyword": [
+        "keyword"
+      ],
+      "instrumentationScope.attributes.otelcol.component.kind": [
+        "text"
+      ],
+      "instrumentationScope.attributes.otelcol.component.kind.keyword": [
+        "keyword"
+      ],
+      "instrumentationScope.attributes.otelcol.pipeline": [
+        "object"
+      ],
+      "instrumentationScope.attributes.otelcol.pipeline.id": [
+        "text"
+      ],
+      "instrumentationScope.attributes.otelcol.pipeline.id.keyword": [
+        "keyword"
+      ],
+      "instrumentationScope.attributes.otelcol.signal": [
+        "object"
+      ],
+      "instrumentationScope.attributes.otelcol.signal.output": [
+        "text"
+      ],
+      "instrumentationScope.attributes.otelcol.signal.output.keyword": [
+        "keyword"
+      ],
+      "instrumentationScope.attributes.otelcol_signal": [
+        "text"
+      ],
+      "instrumentationScope.attributes.otelcol_signal.keyword": [
+        "keyword"
+      ],
+      "instrumentationScope.name": [
+        "text"
+      ],
+      "instrumentationScope.name.keyword": [
+        "keyword"
+      ],
+      "instrumentationScope.version": [
+        "text"
+      ],
+      "instrumentationScope.version.keyword": [
+        "keyword"
+      ],
+      "observedTimestamp": [
+        "date"
+      ],
+      "resource": [
+        "object"
+      ],
+      "resource.cluster_name": [
+        "text"
+      ],
+      "resource.cluster_name.keyword": [
+        "keyword"
+      ],
+      "resource.container": [
+        "object"
+      ],
+      "resource.container.id": [
+        "text"
+      ],
+      "resource.container.id.keyword": [
+        "keyword"
+      ],
+      "resource.host": [
+        "object"
+      ],
+      "resource.host.arch": [
+        "text"
+      ],
+      "resource.host.arch.keyword": [
+        "keyword"
+      ],
+      "resource.host.cpu": [
+        "object"
+      ],
+      "resource.host.cpu.cache": [
+        "object"
+      ],
+      "resource.host.cpu.cache.l2": [
+        "object"
+      ],
+      "resource.host.cpu.cache.l2.size": [
+        "text"
+      ],
+      "resource.host.cpu.cache.l2.size.keyword": [
+        "keyword"
+      ],
+      "resource.host.cpu.family": [
+        "text"
+      ],
+      "resource.host.cpu.family.keyword": [
+        "keyword"
+      ],
+      "resource.host.cpu.model": [
+        "object"
+      ],
+      "resource.host.cpu.model.id": [
+        "text"
+      ],
+      "resource.host.cpu.model.id.keyword": [
+        "keyword"
+      ],
+      "resource.host.cpu.model.name": [
+        "text"
+      ],
+      "resource.host.cpu.model.name.keyword": [
+        "keyword"
+      ],
+      "resource.host.cpu.stepping": [
+        "text"
+      ],
+      "resource.host.cpu.stepping.keyword": [
+        "keyword"
+      ],
+      "resource.host.cpu.vendor": [
+        "object"
+      ],
+      "resource.host.cpu.vendor.id": [
+        "text"
+      ],
+      "resource.host.cpu.vendor.id.keyword": [
+        "keyword"
+      ],
+      "resource.host.name": [
+        "text"
+      ],
+      "resource.host.name.keyword": [
+        "keyword"
+      ],
+      "resource.log_name": [
+        "text"
+      ],
+      "resource.log_name.keyword": [
+        "keyword"
+      ],
+      "resource.node_name": [
+        "text"
+      ],
+      "resource.node_name.keyword": [
+        "keyword"
+      ],
+      "resource.os": [
+        "object"
+      ],
+      "resource.os.description": [
+        "text"
+      ],
+      "resource.os.description.keyword": [
+        "keyword"
+      ],
+      "resource.os.name": [
+        "text"
+      ],
+      "resource.os.name.keyword": [
+        "keyword"
+      ],
+      "resource.os.type": [
+        "text"
+      ],
+      "resource.os.type.keyword": [
+        "keyword"
+      ],
+      "resource.os.version": [
+        "text"
+      ],
+      "resource.os.version.keyword": [
+        "keyword"
+      ],
+      "resource.process": [
+        "object"
+      ],
+      "resource.process.args_count": [
+        "text"
+      ],
+      "resource.process.args_count.keyword": [
+        "keyword"
+      ],
+      "resource.process.command": [
+        "text"
+      ],
+      "resource.process.command.keyword": [
+        "keyword"
+      ],
+      "resource.process.command_args": [
+        "text"
+      ],
+      "resource.process.command_args.keyword": [
+        "keyword"
+      ],
+      "resource.process.command_line": [
+        "text"
+      ],
+      "resource.process.command_line.keyword": [
+        "keyword"
+      ],
+      "resource.process.executable": [
+        "object"
+      ],
+      "resource.process.executable.name": [
+        "text"
+      ],
+      "resource.process.executable.name.keyword": [
+        "keyword"
+      ],
+      "resource.process.executable.path": [
+        "text"
+      ],
+      "resource.process.executable.path.keyword": [
+        "keyword"
+      ],
+      "resource.process.owner": [
+        "text"
+      ],
+      "resource.process.owner.keyword": [
+        "keyword"
+      ],
+      "resource.process.pid": [
+        "text"
+      ],
+      "resource.process.pid.keyword": [
+        "keyword"
+      ],
+      "resource.process.runtime": [
+        "object"
+      ],
+      "resource.process.runtime.description": [
+        "text"
+      ],
+      "resource.process.runtime.description.keyword": [
+        "keyword"
+      ],
+      "resource.process.runtime.name": [
+        "text"
+      ],
+      "resource.process.runtime.name.keyword": [
+        "keyword"
+      ],
+      "resource.process.runtime.version": [
+        "text"
+      ],
+      "resource.process.runtime.version.keyword": [
+        "keyword"
+      ],
+      "resource.service": [
+        "object"
+      ],
+      "resource.service.criticality": [
+        "text"
+      ],
+      "resource.service.criticality.keyword": [
+        "keyword"
+      ],
+      "resource.service.instance": [
+        "object"
+      ],
+      "resource.service.instance.id": [
+        "text"
+      ],
+      "resource.service.instance.id.keyword": [
+        "keyword"
+      ],
+      "resource.service.name": [
+        "text"
+      ],
+      "resource.service.name.keyword": [
+        "keyword"
+      ],
+      "resource.service.namespace": [
+        "text"
+      ],
+      "resource.service.namespace.keyword": [
+        "keyword"
+      ],
+      "resource.service.version": [
+        "text"
+      ],
+      "resource.service.version.keyword": [
+        "keyword"
+      ],
+      "resource.telemetry": [
+        "object"
+      ],
+      "resource.telemetry.auto": [
+        "object"
+      ],
+      "resource.telemetry.auto.version": [
+        "text"
+      ],
+      "resource.telemetry.auto.version.keyword": [
+        "keyword"
+      ],
+      "resource.telemetry.distro": [
+        "object"
+      ],
+      "resource.telemetry.distro.name": [
+        "text"
+      ],
+      "resource.telemetry.distro.name.keyword": [
+        "keyword"
+      ],
+      "resource.telemetry.distro.version": [
+        "text"
+      ],
+      "resource.telemetry.distro.version.keyword": [
+        "keyword"
+      ],
+      "resource.telemetry.sdk": [
+        "object"
+      ],
+      "resource.telemetry.sdk.language": [
+        "text"
+      ],
+      "resource.telemetry.sdk.language.keyword": [
+        "keyword"
+      ],
+      "resource.telemetry.sdk.name": [
+        "text"
+      ],
+      "resource.telemetry.sdk.name.keyword": [
+        "keyword"
+      ],
+      "resource.telemetry.sdk.version": [
+        "text"
+      ],
+      "resource.telemetry.sdk.version.keyword": [
+        "keyword"
+      ],
+      "resource.zone_name": [
+        "text"
+      ],
+      "resource.zone_name.keyword": [
+        "keyword"
+      ],
+      "severity": [
+        "object"
+      ],
+      "severity.number": [
+        "long"
+      ],
+      "severity.text": [
+        "text"
+      ],
+      "severity.text.keyword": [
+        "keyword"
+      ],
+      "spanId": [
+        "text"
+      ],
+      "spanId.keyword": [
+        "keyword"
+      ],
+      "traceId": [
+        "text"
+      ],
+      "traceId.keyword": [
+        "keyword"
+      ]
+    },
+    "message_type_classes": [
+      "text"
+    ],
+    "presence_rates": {
+      "@timestamp": [
+        5,
+        5
+      ],
+      "attributes": [
+        5,
+        5
+      ],
+      "attributes.data_stream": [
+        5,
+        5
+      ],
+      "attributes.data_stream.dataset": [
+        5,
+        5
+      ],
+      "attributes.data_stream.namespace": [
+        5,
+        5
+      ],
+      "attributes.data_stream.type": [
+        5,
+        5
+      ],
+      "attributes.demo.order.amount": [
+        1,
+        5
+      ],
+      "attributes.demo.order.id": [
+        1,
+        5
+      ],
+      "attributes.demo.order.items.count": [
+        1,
+        5
+      ],
+      "attributes.demo.shipping.amount": [
+        1,
+        5
+      ],
+      "attributes.demo.shipping.tracking.id": [
+        1,
+        5
+      ],
+      "attributes.transaction_id": [
+        1,
+        5
+      ],
+      "attributes.user_currency": [
+        2,
+        5
+      ],
+      "attributes.user_id": [
+        2,
+        5
+      ],
+      "body": [
+        5,
+        5
+      ],
+      "instrumentationScope": [
+        5,
+        5
+      ],
+      "instrumentationScope.name": [
+        5,
+        5
+      ],
+      "observedTimestamp": [
+        5,
+        5
+      ],
+      "resource": [
+        5,
+        5
+      ],
+      "resource.host.arch": [
+        5,
+        5
+      ],
+      "resource.host.cpu.cache.l2.size": [
+        5,
+        5
+      ],
+      "resource.host.cpu.family": [
+        5,
+        5
+      ],
+      "resource.host.cpu.model.id": [
+        5,
+        5
+      ],
+      "resource.host.cpu.model.name": [
+        5,
+        5
+      ],
+      "resource.host.cpu.stepping": [
+        5,
+        5
+      ],
+      "resource.host.cpu.vendor.id": [
+        5,
+        5
+      ],
+      "resource.host.name": [
+        5,
+        5
+      ],
+      "resource.os.description": [
+        5,
+        5
+      ],
+      "resource.os.type": [
+        5,
+        5
+      ],
+      "resource.service.criticality": [
+        5,
+        5
+      ],
+      "resource.service.name": [
+        5,
+        5
+      ],
+      "resource.service.namespace": [
+        5,
+        5
+      ],
+      "resource.service.version": [
+        5,
+        5
+      ],
+      "resource.telemetry.sdk.language": [
+        5,
+        5
+      ],
+      "resource.telemetry.sdk.name": [
+        5,
+        5
+      ],
+      "resource.telemetry.sdk.version": [
+        5,
+        5
+      ],
+      "severity": [
+        5,
+        5
+      ],
+      "severity.number": [
+        5,
+        5
+      ],
+      "severity.text": [
+        5,
+        5
+      ],
+      "spanId": [
+        4,
+        5
+      ],
+      "traceId": [
+        4,
+        5
+      ]
+    },
+    "private_structural_shape_sha256": "1d1e25e71e8bbb3aaf1787b25d01227c7ed256095d5c14058d60158772033704",
+    "response_sha256s": [
+      "0ef44391e2302b420c67684d05d264b34eb7165c9542c8b3b435e4c272d50e6e",
+      "25d4d1160b430850831a3cfeccf049b41f8600aedad4c7c78efd78fc414c5371",
+      "35a1815eb7a900e8ff8cbcdd2638b08188246cb4e6b8958e5c0e404ea40d56f1",
+      "6c197cc3654435021c5f6972ee6717a43eab854f3ce35f33a82d75613705663c",
+      "82e878bc5e3e44edc27097ad2a2584f9fef2cacba92043076a51f4998d658562",
+      "94b296bdda8c472d4f1048d02e2c13378a54b0d85c021c9fa01f6a5d9d0a3b44",
+      "b1fb1994d7f18bd4693b50c3436a3a2c656c98fc86eaa981f9ba529dcc6a5e00"
+    ],
+    "schema_version": "ecomsre.product.opensearch-public-structure.v0222",
+    "service_alias_counts": {
+      "attributes.otelServiceName": 0,
+      "attributes.otelServiceName.keyword": 0,
+      "resource.service": 0,
+      "resource.service.name": 5,
+      "resource.service.name.keyword": 0,
+      "resource.service.namespace": 0,
+      "resource.service.namespace.keyword": 0
+    },
+    "session_id": "product-v0222-capture-1",
+    "severity_type_classes": [
+      "keyword",
+      "long",
+      "object",
+      "text"
+    ],
+    "summary_sha256": "e66277852a1db2db2c72100cff13584720abc0a3675a8552dbb4fd595bdcb2fe",
+    "timestamp_parseability_counts": {
+      "@timestamp": [
+        5,
+        5
+      ],
+      "observedTimestamp": [
+        5,
+        5
+      ]
+    },
+    "trace_id_type_classes": [
+      "keyword",
+      "text"
+    ]
+  },
+  "read_only_request_count": 7,
+  "recommendation_status": "OPERATOR_SELECTION_REQUIRED",
+  "recommended_candidate_alias": null,
+  "runbook_executions": 0,
+  "schema_version": "ecomsre.product.opensearch-capture-summary.v0222",
+  "session_id": "product-v0222-capture-1",
+  "summary_sha256": "5531f9f864e94bfbc0a404454eb7e314487d7ad5f3f59aea7e603fb51a5b8a7e",
+  "terminal": "BLOCKED_ECOMSRE_PRODUCT_V0222_OPERATOR_SELECTION",
+  "transport_retry_count": 0
+}

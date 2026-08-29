@@ -1,0 +1,283 @@
+{
+  "capture_bundle_sha256": "4084941d8368c4f74ec2db95ac2215f36c9531367f9904b9b90cd653bceeea94",
+  "ended_at": "2026-01-01T00:05:00Z",
+  "fixture_sha256": "cc6e1cd400cc2935a7c03bb6605e63c827a4d618581ecaad3884f0d27da8c15a",
+  "normalization_profile_sha256": "5df99c0417c1842d90c2fd708e977817c87f4ba37a01360a701cb0d3fe39d4e2",
+  "private_sample_response_sha256": "82e878bc5e3e44edc27097ad2a2584f9fef2cacba92043076a51f4998d658562",
+  "requested_services": [
+    "checkout"
+  ],
+  "response": {
+    "_shards": {
+      "failed": 0,
+      "skipped": 0,
+      "successful": 1,
+      "total": 1
+    },
+    "hits": {
+      "hits": [
+        {
+          "_id": "sanitized-hit-1",
+          "_index": "otel-logs-sanitized",
+          "_score": null,
+          "_source": {
+            "@timestamp": "2026-01-01T00:02:30Z",
+            "attributes": {
+              "data_stream": {
+                "dataset": "value",
+                "namespace": "value",
+                "type": "value"
+              }
+            },
+            "body": "Checkout request completed.",
+            "instrumentationScope": {
+              "name": "value"
+            },
+            "observedTimestamp": "value",
+            "resource": {
+              "host.arch": "value",
+              "host.cpu.cache.l2.size": "value",
+              "host.cpu.family": "value",
+              "host.cpu.model.id": "value",
+              "host.cpu.model.name": "value",
+              "host.cpu.stepping": "value",
+              "host.cpu.vendor.id": "value",
+              "host.name": "value",
+              "os.description": "value",
+              "os.type": "value",
+              "service.criticality": "value",
+              "service.name": "checkoutservice",
+              "service.namespace": "value",
+              "service.version": "value",
+              "telemetry.sdk.language": "value",
+              "telemetry.sdk.name": "value",
+              "telemetry.sdk.version": "value"
+            },
+            "severity": {
+              "number": 1,
+              "text": "INFO"
+            }
+          },
+          "sort": [
+            1
+          ]
+        },
+        {
+          "_id": "sanitized-hit-2",
+          "_index": "otel-logs-sanitized",
+          "_score": null,
+          "_source": {
+            "@timestamp": "2026-01-01T00:02:30Z",
+            "attributes": {
+              "data_stream": {
+                "dataset": "value",
+                "namespace": "value",
+                "type": "value"
+              },
+              "demo.order.amount": 1.0,
+              "demo.order.id": "value",
+              "demo.order.items.count": 1,
+              "demo.shipping.amount": 1.0,
+              "demo.shipping.tracking.id": "value"
+            },
+            "body": "Checkout request completed.",
+            "instrumentationScope": {
+              "name": "value"
+            },
+            "observedTimestamp": "value",
+            "resource": {
+              "host.arch": "value",
+              "host.cpu.cache.l2.size": "value",
+              "host.cpu.family": "value",
+              "host.cpu.model.id": "value",
+              "host.cpu.model.name": "value",
+              "host.cpu.stepping": "value",
+              "host.cpu.vendor.id": "value",
+              "host.name": "value",
+              "os.description": "value",
+              "os.type": "value",
+              "service.criticality": "value",
+              "service.name": "checkoutservice",
+              "service.namespace": "value",
+              "service.version": "value",
+              "telemetry.sdk.language": "value",
+              "telemetry.sdk.name": "value",
+              "telemetry.sdk.version": "value"
+            },
+            "severity": {
+              "number": 1,
+              "text": "INFO"
+            },
+            "spanId": "value",
+            "traceId": "00000000000000000000000000000000"
+          },
+          "sort": [
+            1
+          ]
+        },
+        {
+          "_id": "sanitized-hit-3",
+          "_index": "otel-logs-sanitized",
+          "_score": null,
+          "_source": {
+            "@timestamp": "2026-01-01T00:02:30Z",
+            "attributes": {
+              "data_stream": {
+                "dataset": "value",
+                "namespace": "value",
+                "type": "value"
+              },
+              "transaction_id": "value"
+            },
+            "body": "Checkout request completed.",
+            "instrumentationScope": {
+              "name": "value"
+            },
+            "observedTimestamp": "value",
+            "resource": {
+              "host.arch": "value",
+              "host.cpu.cache.l2.size": "value",
+              "host.cpu.family": "value",
+              "host.cpu.model.id": "value",
+              "host.cpu.model.name": "value",
+              "host.cpu.stepping": "value",
+              "host.cpu.vendor.id": "value",
+              "host.name": "value",
+              "os.description": "value",
+              "os.type": "value",
+              "service.criticality": "value",
+              "service.name": "checkoutservice",
+              "service.namespace": "value",
+              "service.version": "value",
+              "telemetry.sdk.language": "value",
+              "telemetry.sdk.name": "value",
+              "telemetry.sdk.version": "value"
+            },
+            "severity": {
+              "number": 1,
+              "text": "INFO"
+            },
+            "spanId": "value",
+            "traceId": "00000000000000000000000000000000"
+          },
+          "sort": [
+            1
+          ]
+        },
+        {
+          "_id": "sanitized-hit-4",
+          "_index": "otel-logs-sanitized",
+          "_score": null,
+          "_source": {
+            "@timestamp": "2026-01-01T00:02:30Z",
+            "attributes": {
+              "data_stream": {
+                "dataset": "value",
+                "namespace": "value",
+                "type": "value"
+              },
+              "user_currency": "value",
+              "user_id": "value"
+            },
+            "body": "Checkout request completed.",
+            "instrumentationScope": {
+              "name": "value"
+            },
+            "observedTimestamp": "value",
+            "resource": {
+              "host.arch": "value",
+              "host.cpu.cache.l2.size": "value",
+              "host.cpu.family": "value",
+              "host.cpu.model.id": "value",
+              "host.cpu.model.name": "value",
+              "host.cpu.stepping": "value",
+              "host.cpu.vendor.id": "value",
+              "host.name": "value",
+              "os.description": "value",
+              "os.type": "value",
+              "service.criticality": "value",
+              "service.name": "checkoutservice",
+              "service.namespace": "value",
+              "service.version": "value",
+              "telemetry.sdk.language": "value",
+              "telemetry.sdk.name": "value",
+              "telemetry.sdk.version": "value"
+            },
+            "severity": {
+              "number": 1,
+              "text": "INFO"
+            },
+            "spanId": "value",
+            "traceId": "00000000000000000000000000000000"
+          },
+          "sort": [
+            1
+          ]
+        },
+        {
+          "_id": "sanitized-hit-5",
+          "_index": "otel-logs-sanitized",
+          "_score": null,
+          "_source": {
+            "@timestamp": "2026-01-01T00:02:30Z",
+            "attributes": {
+              "data_stream": {
+                "dataset": "value",
+                "namespace": "value",
+                "type": "value"
+              },
+              "user_currency": "value",
+              "user_id": "value"
+            },
+            "body": "Checkout request completed.",
+            "instrumentationScope": {
+              "name": "value"
+            },
+            "observedTimestamp": "value",
+            "resource": {
+              "host.arch": "value",
+              "host.cpu.cache.l2.size": "value",
+              "host.cpu.family": "value",
+              "host.cpu.model.id": "value",
+              "host.cpu.model.name": "value",
+              "host.cpu.stepping": "value",
+              "host.cpu.vendor.id": "value",
+              "host.name": "value",
+              "os.description": "value",
+              "os.type": "value",
+              "service.criticality": "value",
+              "service.name": "checkoutservice",
+              "service.namespace": "value",
+              "service.version": "value",
+              "telemetry.sdk.language": "value",
+              "telemetry.sdk.name": "value",
+              "telemetry.sdk.version": "value"
+            },
+            "severity": {
+              "number": 1,
+              "text": "INFO"
+            },
+            "spanId": "value",
+            "traceId": "00000000000000000000000000000000"
+          },
+          "sort": [
+            1
+          ]
+        }
+      ],
+      "max_score": null,
+      "total": {
+        "relation": "eq",
+        "value": 5
+      }
+    },
+    "timed_out": false,
+    "took": 1
+  },
+  "schema_version": "ecomsre.product.opensearch-selected-profile-shape.v0222",
+  "service_aliases": {
+    "checkout": "checkout",
+    "checkoutservice": "checkout"
+  },
+  "started_at": "2026-01-01T00:00:00Z"
+}

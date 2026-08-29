@@ -1,0 +1,13 @@
+{
+  "schema_version": "ecomsre.product-v02.historical-results.v1",
+  "starting_main": "8398a063de048064f160a7ffed236fbb3327b701",
+  "v01_terminal": "ECOMSRE_PRODUCT_MVP_V01_LIVE_READONLY_PASS",
+  "report_kind": "ENGINEERING_ACCEPTANCE",
+  "production_claim": false,
+  "files": {
+    "docs/external-reviews/ecomsre-product-mvp-v01-final-review.md": "074af81ee10453a33de01db7abd3a31a50097333a2a78c853f31a5c623262b8b",
+    "docs/results/ecomsre-product-mvp-v01-acceptance.json": "315b142e62255750eca35c3d070341e01b7b9b9a61cba69782de8c85bb28ec87",
+    "docs/results/ecomsre-product-mvp-v01-acceptance.md": "3f371932bafa912298ffbd4c415cd983e62f2abe3e340e79167535825e93448a",
+    "docs/results/ecomsre-product-mvp-v01-limitations.md": "a8a4e931a1966812a14a55aacaceaca2da05cf7e725043841095eef09ff080b9"
+  }
+}

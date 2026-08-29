@@ -1,0 +1,36 @@
+{
+  "active_profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+  "connector_config": {
+    "credential_refs": {},
+    "endpoint": "http://127.0.0.1:19200",
+    "kind": "OPENSEARCH",
+    "name": "logs",
+    "settings": {
+      "index_pattern": "otel-logs-*",
+      "maximum_response_bytes": 2000000,
+      "maximum_result_count": 5,
+      "message_field": "body",
+      "message_projection_policy": "AS_OBSERVED",
+      "service_field": "resource.service.name",
+      "service_query_field": "resource.service.name.keyword",
+      "severity_field": "severity.text",
+      "severity_filter": [],
+      "timestamp_field": "@timestamp",
+      "trace_id_field": "traceId"
+    }
+  },
+  "healthy_traffic_profile": {
+    "error_budget": 5,
+    "maximum_request_count": 30,
+    "request_seed": 5223,
+    "requests_per_second": 1.0,
+    "schema_version": "ecomsre.product.healthy-traffic-profile.v021"
+  },
+  "index_settle_seconds": 10,
+  "maximum_records_per_window": 5,
+  "private_root": ".local/product-v0222/opensearch-connector-smoke/private",
+  "schema_version": "ecomsre.product.opensearch-connector-smoke-profile.v0222",
+  "session_id": "product-v0222-connector-smoke-1",
+  "smoke_profile_sha256": "6dc171bc1565a7052eb27519bd38f47c3141df1b991b93956f08cb17077923d8",
+  "window_count": 3
+}

@@ -231,6 +231,55 @@ MIGRATIONS: tuple[tuple[int, str, tuple[str, ...]], ...] = (
             "ON environment_extension_registry_versions(registration_id, registry_version)",
         ),
     ),
+    (
+        5,
+        "product-v02-live-pilot",
+        (
+            """CREATE TABLE live_pilot_episodes_v02 (
+                episode_id TEXT PRIMARY KEY,
+                environment_id TEXT NOT NULL,
+                role TEXT NOT NULL,
+                episode_sha256 TEXT NOT NULL UNIQUE,
+                payload_json TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )""",
+            "CREATE INDEX live_pilot_episodes_v02_environment_role_idx "
+            "ON live_pilot_episodes_v02(environment_id, role, created_at)",
+            """CREATE TABLE live_pilot_attempt_events_v02 (
+                event_id TEXT PRIMARY KEY,
+                attempt_id TEXT NOT NULL,
+                slot_id TEXT NOT NULL,
+                role TEXT NOT NULL,
+                attempt_number INTEGER NOT NULL CHECK(attempt_number >= 1),
+                sequence INTEGER NOT NULL CHECK(sequence >= 1),
+                stage TEXT NOT NULL,
+                attempt_signature_sha256 TEXT NOT NULL,
+                event_sha256 TEXT NOT NULL UNIQUE,
+                payload_json TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                UNIQUE(attempt_id, sequence)
+            )""",
+            "CREATE UNIQUE INDEX live_pilot_attempt_events_v02_slot_attempt_idx "
+            "ON live_pilot_attempt_events_v02(slot_id, attempt_number) WHERE sequence = 1",
+            "CREATE INDEX live_pilot_attempt_events_v02_slot_idx "
+            "ON live_pilot_attempt_events_v02(slot_id, attempt_number, sequence)",
+        ),
+    ),
+    (
+        6,
+        "product-v021-baseline-readiness-audit",
+        (
+            """CREATE TABLE baseline_readiness_audits_v021 (
+                audit_sha256 TEXT PRIMARY KEY,
+                environment_id TEXT NOT NULL REFERENCES environments(environment_id),
+                baseline_id TEXT NOT NULL UNIQUE,
+                payload_json TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )""",
+            "CREATE INDEX baseline_readiness_audits_v021_environment_idx "
+            "ON baseline_readiness_audits_v021(environment_id, created_at)",
+        ),
+    ),
 )
 
 __all__ = ("MIGRATIONS",)

@@ -1,0 +1,10 @@
+{
+  "accepted_positive_episode_count": 0,
+  "heldout_recurrence_count": 0,
+  "increment": 1,
+  "live_attempt_count": 0,
+  "next_boundary": "STOPPED_UNKNOWN_FAULT_PROFILE",
+  "progress_sha256": "780cf603f5b716a875bd5bc05934820ad54e2929e7e838f36d9795b2e6dcd1d3",
+  "schema_version": "ecomsre.product.v02.progress.v1",
+  "terminal": "BLOCKED_ECOMSRE_PRODUCT_V02_UNKNOWN_FAULT_PROFILE"
+}

@@ -472,6 +472,143 @@ def test_opensearch_connector_accepts_otel_flat_dotted_source_fields() -> None:
     assert result.records[0].message == "flat OTel log"
 
 
+def test_opensearch_connector_requires_every_projected_log_field() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        if body["size"] == 0:
+            return httpx.Response(
+                200,
+                json={
+                    "hits": {"hits": []},
+                    "aggregations": {"services": {"buckets": [{"key": "payment"}]}},
+                },
+            )
+        filters = body["query"]["bool"]["filter"]
+        assert {item["exists"]["field"] for item in filters if "exists" in item} == {
+            "observedTimestamp",
+            "resource.service.name",
+            "severity.text",
+            "body",
+        }
+        return httpx.Response(
+            200,
+            json={
+                "hits": {
+                    "hits": [
+                        {
+                            "_source": {
+                                "observedTimestamp": "2026-08-27T00:04:00Z",
+                                "resource.service.name": "payment",
+                                "severity.text": "INFO",
+                                "body": "healthy checkout log",
+                            }
+                        }
+                    ],
+                    "total": {"value": 1},
+                }
+            },
+        )
+
+    connector = OpenSearchConnectorV1(
+        ConnectorConfigV1(
+            name="logs",
+            kind="OPENSEARCH",
+            endpoint="https://opensearch.test",
+            settings={
+                "index_pattern": "otel-logs-*",
+                "timestamp_field": "observedTimestamp",
+                "service_field": "resource.service.name",
+                "service_query_field": "resource.service.name.keyword",
+                "severity_field": "severity.text",
+                "message_field": "body",
+            },
+            credential_refs={},
+        ),
+        credential_resolver=CredentialResolverV1(environment={}),
+        timeout_seconds=2,
+        transport=httpx.MockTransport(handler),
+    )
+
+    result = connector.query(CONTEXT)[0]
+
+    assert result.status is ReadSourceStatusV22.SUCCESS_NONEMPTY
+    assert result.records[0].message == "healthy checkout log"
+
+
+def test_opensearch_observer_projection_removes_feature_control_truth() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        if body["size"] == 0:
+            return httpx.Response(
+                200,
+                json={
+                    "hits": {"hits": []},
+                    "aggregations": {"services": {"buckets": [{"key": "payment"}]}},
+                },
+            )
+        return httpx.Response(
+            200,
+            json={
+                "hits": {
+                    "hits": [
+                        {
+                            "_source": {
+                                "@timestamp": "2026-08-27T00:04:00Z",
+                                "service": "payment",
+                                "severity": "WARN",
+                                "body": (
+                                    "Warning: FeatureFlag 'kafkaQueueProblems' is "
+                                    "activated, overloading queue now."
+                                ),
+                            }
+                        },
+                        {
+                            "_source": {
+                                "@timestamp": "2026-08-27T00:04:01Z",
+                                "service": "payment",
+                                "severity": "INFO",
+                                "body": "Done with #5 messages for overload simulation.",
+                            }
+                        },
+                    ],
+                    "total": {"value": 2},
+                }
+            },
+        )
+
+    connector = OpenSearchConnectorV1(
+        ConnectorConfigV1(
+            name="logs",
+            kind="OPENSEARCH",
+            endpoint="https://opensearch.test",
+            settings={
+                "index_pattern": "otel-*",
+                "timestamp_field": "@timestamp",
+                "service_field": "service",
+                "severity_field": "severity",
+                "message_field": "body",
+                "message_projection_policy": "OBSERVER_SYMPTOM_V1",
+            },
+            credential_refs={},
+        ),
+        credential_resolver=CredentialResolverV1(environment={}),
+        timeout_seconds=2,
+        transport=httpx.MockTransport(handler),
+    )
+
+    result = connector.query(CONTEXT)[0]
+    serialized = result.model_dump_json().casefold()
+
+    assert result.status is ReadSourceStatusV22.SUCCESS_NONEMPTY
+    assert tuple(item.message for item in result.records) == (
+        "Warning: overloading queue now.",
+        "Queue overload activity completed.",
+    )
+    assert "kafkaqueueproblems" not in serialized
+    assert "featureflag" not in serialized
+    assert "#5" not in serialized
+
+
 def test_jaeger_connector_discovers_and_normalizes_causal_spans() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         if request.url.path == "/api/services":

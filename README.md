@@ -34,6 +34,18 @@ and [limitations](docs/product/LIMITATIONS.md). The local OTel acceptance is a
 single evaluator-controlled, no-fault, read-only integration check. It is not
 production-readiness, generalization, or autonomous-remediation evidence.
 
+### Product v0.2 live knowledge-loop pilot
+
+The v0.2 pilot engineering harness adds bounded live episode persistence,
+owned Runtime authority, evaluator/private control separation, deterministic
+checkout traffic, and fail-closed recovery checks. Its single authorized
+calibration stopped before the first fault attempt because the Product baseline
+had insufficient usable windows. The frozen terminal is
+`BLOCKED_ECOMSRE_PRODUCT_V02_UNKNOWN_FAULT_PROFILE`; no family, rule,
+promotion, or held-out recurrence result exists. See the
+[blocked result](docs/results/product-v02-live-knowledge-loop.md) and
+[limitations](docs/results/product-v02-live-knowledge-loop-limitations.md).
+
 <!-- dta-v21-pr-f-final-capability-closeout -->
 ### DTA v2.1 frozen-Agent capability closeout
 

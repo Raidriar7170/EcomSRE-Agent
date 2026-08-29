@@ -1,0 +1,63 @@
+{
+  "accepted_checkout_record_count": 5,
+  "accepted_record_count": 5,
+  "action_authority": "NONE",
+  "agent_writes": 0,
+  "baseline_readiness_attempt_count": 0,
+  "baseline_unchanged": true,
+  "candidate_set_sha256": "f3aeaf272ab199c1284238c9e7785ec89f46b1cb54ad1608188a052c27f9d4de",
+  "capture_bundle_sha256": "4084941d8368c4f74ec2db95ac2215f36c9531367f9904b9b90cd653bceeea94",
+  "cleanup": "CLEAN",
+  "fault_attempt_count": 0,
+  "fixture_sha256": "cc6e1cd400cc2935a7c03bb6605e63c827a4d618581ecaad3884f0d27da8c15a",
+  "knowledge_loop_campaign_count": 0,
+  "message_extraction_failures": 0,
+  "normalization_profile_sha256": "5df99c0417c1842d90c2fd708e977817c87f4ba37a01360a701cb0d3fe39d4e2",
+  "observer_projection_failures": 0,
+  "offline_changed_iteration_count": 2,
+  "operator_decision_sha256": "51effb280e9390d5619bf18fed80c2c158214db2dd98dcfce3634275125b8b5e",
+  "outer_schema_failure_code": null,
+  "product_diagnosis_attempt_count": 0,
+  "record_dispositions": [
+    {
+      "accepted_service": "checkout",
+      "disposition": "ACCEPTED",
+      "hit_ordinal": 0,
+      "rejection_code": null
+    },
+    {
+      "accepted_service": "checkout",
+      "disposition": "ACCEPTED",
+      "hit_ordinal": 1,
+      "rejection_code": null
+    },
+    {
+      "accepted_service": "checkout",
+      "disposition": "ACCEPTED",
+      "hit_ordinal": 2,
+      "rejection_code": null
+    },
+    {
+      "accepted_service": "checkout",
+      "disposition": "ACCEPTED",
+      "hit_ordinal": 3,
+      "rejection_code": null
+    },
+    {
+      "accepted_service": "checkout",
+      "disposition": "ACCEPTED",
+      "hit_ordinal": 4,
+      "rejection_code": null
+    }
+  ],
+  "rejected_record_count": 0,
+  "rejection_codes_by_count": {},
+  "rejection_fraction": 0.0,
+  "report_sha256": "a62b00a0fa4d8abbb96a7bdbbeb6749a3e6bab41550027b0cdc11856a550484f",
+  "runbook_executions": 0,
+  "sampled_record_count": 5,
+  "schema_version": "ecomsre.product.offline-profile-report.v0222",
+  "service_alias_failures": 0,
+  "terminal": "ECOMSRE_PRODUCT_V0222_OFFLINE_PROFILE_PASS",
+  "timestamp_parse_failures": 0
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": "ecomsre.product.v02.live-knowledge-loop-result.v1",
+  "engineering_terminal": "BLOCKED_ECOMSRE_PRODUCT_V02_UNKNOWN_FAULT_PROFILE",
+  "pilot_outcome": "NOT_REACHED",
+  "stopped_increment": 1,
+  "blocker_stage": "PRODUCT_BASELINE",
+  "blocker_code": "BASELINE_INSUFFICIENT_WINDOWS",
+  "live_calibration_attempt_count": 0,
+  "positive_episode_count": 0,
+  "heldout_recurrence_count": 0,
+  "outer_baseline_restored": true,
+  "owned_demo_cleanup": "CLEAN",
+  "action_authority": "NONE",
+  "agent_writes": 0,
+  "runbook_executions": 0,
+  "calibration_start_sha256": "d8df2eda26684c1c57d311270e33d5aa34006b37516dc6f2d5936bac5eb9391f",
+  "cleanup_closure_sha256": "98d7444d89219d124425ac0653a5a8bae1b1f67976e79ceb1e4276da3cec1dda",
+  "private_calibration_report_sha256": "81442f6cd7a0a36c5cda703d6d054d2ff57fbc4f6f4a9aa7630626d74dbb3c9b",
+  "result_sha256": "7fea321690a2cc4ff306b3144f1c945684137266f41b212379b86e26e5a0d85e"
+}

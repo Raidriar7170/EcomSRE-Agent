@@ -1,0 +1,16 @@
+{
+  "schema_version": "ecomsre.product.v02.cleanup-closure.v1",
+  "observed_at": "2026-08-27T18:25:59Z",
+  "source_private_report_sha256": "81442f6cd7a0a36c5cda703d6d054d2ff57fbc4f6f4a9aa7630626d74dbb3c9b",
+  "cleanup_contract_verdict": "CLEAN",
+  "cleanup_contract_owned_containers_after": 0,
+  "cleanup_contract_owned_networks_after": 0,
+  "cleanup_contract_owned_volumes_after": 0,
+  "cleanup_contract_non_owned_resources_changed": false,
+  "postrun_docker_daemon_identity_sha256": "8f35d76c9d3ffed228384bcee83b4dbdfd5e6f49419595d847546c4585236ad2",
+  "postrun_owned_containers": 0,
+  "postrun_owned_networks": 0,
+  "postrun_owned_volumes": 0,
+  "postrun_reserved_port_listener_count": 0,
+  "closure_sha256": "98d7444d89219d124425ac0653a5a8bae1b1f67976e79ceb1e4276da3cec1dda"
+}

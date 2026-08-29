@@ -1,0 +1,20 @@
+{
+  "schema_version": "ecomsre.product.pilot.negative-controls.v021",
+  "live_no_fault": "N0",
+  "known_core_negative": {
+    "preferred": "FRESH_OWNED_AD_CPU_IF_EXACT_PREFLIGHT_PASSES",
+    "fallback": "VALIDATED_REAL_CAPTURE_NEGATIVE",
+    "fallback_source": "docs/results/dta-v226-real-fault-comparison.json"
+  },
+  "fit_strata": [
+    "LIVE_NO_FAULT",
+    "KNOWN_CORE_NEGATIVE",
+    "SAME_DOMAIN_REPLAY_CONTROL"
+  ],
+  "shadow_strata": [
+    "ADDITIONAL_NO_INCIDENT",
+    "CONFUSABLE_CORE_KNOWN",
+    "SOURCE_FAILURE",
+    "MOVED_TARGET_COUNTERFACTUAL"
+  ]
+}
