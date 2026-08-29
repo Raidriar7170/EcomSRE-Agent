@@ -1,0 +1,61 @@
+{
+  "candidate_set_sha256": "f3aeaf272ab199c1284238c9e7785ec89f46b1cb54ad1608188a052c27f9d4de",
+  "capture_bundle_sha256": "4084941d8368c4f74ec2db95ac2215f36c9531367f9904b9b90cd653bceeea94",
+  "field_caps_response_sha256": "25d4d1160b430850831a3cfeccf049b41f8600aedad4c7c78efd78fc414c5371",
+  "index_pattern": "otel-logs-*",
+  "mapping_response_sha256": "0ef44391e2302b420c67684d05d264b34eb7165c9542c8b3b435e4c272d50e6e",
+  "maximum_record_rejection_fraction": 0.2,
+  "message_extraction": {
+    "extraction": {
+      "mode": "DOTTED_OR_NESTED_PATH",
+      "paths": [
+        "body"
+      ]
+    },
+    "mode": "STRING_VALUE"
+  },
+  "message_projection_policy": "AS_OBSERVED",
+  "operator_decision_sha256": "51effb280e9390d5619bf18fed80c2c158214db2dd98dcfce3634275125b8b5e",
+  "profile_id": "product-v0222-operator-selected-profile",
+  "profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+  "profile_source": "CAPTURE_FIRST_OPERATOR_SELECTION_V0222",
+  "profile_status": "ACTIVE",
+  "schema_version": "ecomsre.product.opensearch-normalization-profile.v0222",
+  "selected_candidate_alias": "P01",
+  "selected_candidate_sha256": "d056dd8e86a8277fb361fe111ffd447d87fd6cd56bd93afc938f06e316f387bd",
+  "service_extraction": {
+    "mode": "DOTTED_OR_NESTED_PATH",
+    "paths": [
+      "resource.service.name"
+    ]
+  },
+  "service_query_field": "resource.service.name.keyword",
+  "service_source_field": "resource.service.name",
+  "severity_extraction": {
+    "extraction": {
+      "mode": "DOTTED_OR_NESTED_PATH",
+      "paths": [
+        "severity.text"
+      ]
+    },
+    "mode": "STRING_VALUE"
+  },
+  "structural_sample_response_sha256": "82e878bc5e3e44edc27097ad2a2584f9fef2cacba92043076a51f4998d658562",
+  "timestamp_extraction": {
+    "extraction": {
+      "mode": "DOTTED_OR_NESTED_PATH",
+      "paths": [
+        "@timestamp"
+      ]
+    },
+    "parsers": [
+      "ISO_8601"
+    ]
+  },
+  "trace_id_extraction": {
+    "mode": "DOTTED_OR_NESTED_PATH",
+    "paths": [
+      "traceId"
+    ]
+  }
+}

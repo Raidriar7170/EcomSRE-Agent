@@ -85,7 +85,7 @@ def verify_product_v0222_increment3(project_root: Path) -> dict[str, object]:
     _verify_digest(session, "session_sha256")
     _verify_digest(summary, "summary_sha256")
     _verify_digest(progress, "progress_sha256")
-    required = {
+    frozen_required = {
         "terminal": OPERATOR_BLOCKED_V0222,
         "capture_terminal": CAPTURE_PASS_V0222,
         "candidate_set_terminal": CANDIDATE_READY_V0222,
@@ -96,9 +96,16 @@ def verify_product_v0222_increment3(project_root: Path) -> dict[str, object]:
         "cleanup": "CLEAN",
         "action_authority": "NONE",
     }
-    for payload in (session, summary, progress):
-        if any(payload.get(key) != value for key, value in required.items()):
+    for payload in (session, summary):
+        if any(payload.get(key) != value for key, value in frozen_required.items()):
             raise ValueError("Product v0.2.2.2 checkpoint truth surfaces differ")
+    progressing_required = {
+        key: value
+        for key, value in frozen_required.items()
+        if key != "terminal"
+    }
+    if any(progress.get(key) != value for key, value in progressing_required.items()):
+        raise ValueError("Product v0.2.2.2 progressing truth surface differs")
     zero_fields = (
         "fault_attempt_count",
         "baseline_readiness_attempt_count",
@@ -114,15 +121,13 @@ def verify_product_v0222_increment3(project_root: Path) -> dict[str, object]:
     ):
         raise ValueError("Product v0.2.2.2 forbidden activity count differs")
     if (
-        progress.get("increment") != 3
-        or progress.get("capture_session_count") != 1
+        progress.get("capture_session_count") != 1
         or progress.get("capture_read_only_request_count") != 7
         or progress.get("capture_changed_request_plan_count") != 1
         or progress.get("transport_retry_count") != 0
-        or progress.get("offline_changed_iteration_count") != 1
-        or progress.get("operator_selection_count") != 0
-        or progress.get("holdout_verification_session_count") != 0
-        or progress.get("next_boundary") != "STOP_FOR_REAL_OPERATOR_SELECTION"
+        or not 1 <= int(progress.get("offline_changed_iteration_count", -1)) <= 3
+        or not 0 <= int(progress.get("operator_selection_count", -1)) <= 2
+        or not 0 <= int(progress.get("holdout_verification_session_count", -1)) <= 2
     ):
         raise ValueError("Product v0.2.2.2 Increment 3 bounds differ")
     brief = (

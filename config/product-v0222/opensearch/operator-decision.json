@@ -1,0 +1,19 @@
+{
+  "candidate_set_sha256": "f3aeaf272ab199c1284238c9e7785ec89f46b1cb54ad1608188a052c27f9d4de",
+  "decisions": [
+    {
+      "candidate_set_sha256": "f3aeaf272ab199c1284238c9e7785ec89f46b1cb54ad1608188a052c27f9d4de",
+      "decided_at": "2026-08-29T05:52:21.522234Z",
+      "decision": "SELECT_PROFILE",
+      "decision_id": "product-v0222-profile-decision-1",
+      "decision_sha256": "51effb280e9390d5619bf18fed80c2c158214db2dd98dcfce3634275125b8b5e",
+      "review_note": "Selected P01 from the frozen Candidate Set.",
+      "reviewer": "Raidriar",
+      "schema_version": "ecomsre.product.opensearch-operator-decision.v0222",
+      "selected_candidate_alias": "P01",
+      "selection_ordinal": 1
+    }
+  ],
+  "ledger_sha256": "500991b56f23256ebe6499b669d72abffc7b1935bda9e49070ac1f0f37d06e1a",
+  "schema_version": "ecomsre.product.opensearch-operator-decision-ledger.v0222"
+}
