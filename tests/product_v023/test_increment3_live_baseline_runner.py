@@ -23,6 +23,10 @@ from ecomsre.product.jobs.contracts import (
     ProductJobTypeV1,
 )
 from ecomsre.product.jobs.repository import JobRepositoryV1
+from ecomsre.product.pilot.baseline_attempts_v023 import (
+    BaselineAttemptStartV023,
+    BaselineChangedParameterV023,
+)
 from ecomsre.product.pilot.live_baseline_readiness_v023 import (
     _ProductHostProcessesV023,
     _RetryableTransportV023,
@@ -55,6 +59,32 @@ def test_live_attempt_plans_all_five_windows_before_execution() -> None:
         left["ended_at"] == right["started_at"]
         for left, right in zip(windows, windows[1:])
     )
+
+
+def test_live_planned_window_dicts_are_canonicalized_before_start_digest() -> None:
+    started_at = datetime(2026, 8, 29, 1, 2, 3, tzinfo=UTC)
+    environment = build_product_v023_environment_payload(
+        repository_root=ROOT,
+        runtime_authority_sha256="a" * 64,
+    )
+
+    start = BaselineAttemptStartV023.build(
+        attempt_ordinal=1,
+        changed_parameter=BaselineChangedParameterV023.INITIAL,
+        prior_completion_sha256=None,
+        environment_id="env-" + "1" * 24,
+        product_data_root="/tmp/product-v023-live-start-digest",
+        profile_sha256=ACTIVE_PROFILE_SHA256_V023,
+        planned_windows=planned_baseline_windows_v023(started_at),
+        semantic_inputs=attempt_semantic_inputs_v023(
+            root=ROOT,
+            environment_payload=environment,
+        ),
+        started_at=started_at,
+    )
+
+    assert isinstance(start.planned_windows[0], ConnectorWindowV1)
+    assert len(start.start_sha256) == 64
 
 
 def test_live_attempt_rejects_non_utc_schedule() -> None:

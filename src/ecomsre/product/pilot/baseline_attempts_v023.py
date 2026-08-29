@@ -333,6 +333,10 @@ class BaselineAttemptStartV023(ProductModelV1):
     @classmethod
     def build(cls, **payload: Any) -> "BaselineAttemptStartV023":
         readiness = ProductBaselineReadinessProfileV023.default()
+        planned_windows = tuple(
+            ConnectorWindowV1.model_validate(item)
+            for item in payload["planned_windows"]
+        )
         semantic_inputs = {
             "healthy_traffic_request_count": readiness.healthy_traffic_request_count,
             "healthy_traffic_requests_per_second": (
@@ -348,6 +352,7 @@ class BaselineAttemptStartV023(ProductModelV1):
         body = {
             "schema_version": "ecomsre.product.baseline-attempt-start.v023",
             **payload,
+            "planned_windows": planned_windows,
             "readiness_profile_sha256": readiness.profile_sha256,
             "semantic_inputs": semantic_inputs,
             "semantics_sha256": semantic_sha256_v22(semantic_inputs),
