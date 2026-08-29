@@ -1,0 +1,104 @@
+{
+  "schema_version": "ecomsre.product.opensearch-candidate-set.v0222",
+  "capture_bundle_sha256": "4084941d8368c4f74ec2db95ac2215f36c9531367f9904b9b90cd653bceeea94",
+  "candidates": [
+    {
+      "schema_version": "ecomsre.product.opensearch-profile-candidate.v0222",
+      "candidate_alias": "P00",
+      "timestamp_component_alias": "timestamp-00",
+      "service_source_component_alias": "service-source-00",
+      "service_query_component_alias": "service-query-00",
+      "message_component_alias": "message-00",
+      "severity_component_alias": "severity-00",
+      "trace_id_component_alias": "trace-id-00",
+      "profile_fields": {
+        "timestamp": "@timestamp",
+        "service_source": "resource.service.name",
+        "service_query": "resource.service.name.keyword",
+        "message": "body",
+        "severity": "severity.number",
+        "trace_id": "traceId"
+      },
+      "static_compatibility": true,
+      "sample_parse_report": {
+        "total_records": 5,
+        "accepted_records": 5,
+        "window_match_count": 5,
+        "observer_projection_success_count": 5
+      },
+      "empirical_query_report": {
+        "checkout_query_verification": "PASS",
+        "service_query_field": "resource.service.name.keyword"
+      },
+      "support_score": 22,
+      "contradiction_score": 0,
+      "net_score": 22,
+      "supporting_capture_refs": [
+        "objects/sha256/0e/0ef44391e2302b420c67684d05d264b34eb7165c9542c8b3b435e4c272d50e6e",
+        "objects/sha256/25/25d4d1160b430850831a3cfeccf049b41f8600aedad4c7c78efd78fc414c5371",
+        "objects/sha256/6c/6c197cc3654435021c5f6972ee6717a43eab854f3ce35f33a82d75613705663c",
+        "objects/sha256/82/82e878bc5e3e44edc27097ad2a2584f9fef2cacba92043076a51f4998d658562",
+        "objects/sha256/94/94b296bdda8c472d4f1048d02e2c13378a54b0d85c021c9fa01f6a5d9d0a3b44",
+        "objects/sha256/b1/b1fb1994d7f18bd4693b50c3436a3a2c656c98fc86eaa981f9ba529dcc6a5e00"
+      ],
+      "contradicting_capture_refs": [],
+      "rejection_codes": [],
+      "candidate_sha256": "9228f38426bd491e58bac0e686818329190c6d6401d88995e483eea704d0a352"
+    },
+    {
+      "schema_version": "ecomsre.product.opensearch-profile-candidate.v0222",
+      "candidate_alias": "P01",
+      "timestamp_component_alias": "timestamp-00",
+      "service_source_component_alias": "service-source-00",
+      "service_query_component_alias": "service-query-00",
+      "message_component_alias": "message-00",
+      "severity_component_alias": "severity-01",
+      "trace_id_component_alias": "trace-id-00",
+      "profile_fields": {
+        "timestamp": "@timestamp",
+        "service_source": "resource.service.name",
+        "service_query": "resource.service.name.keyword",
+        "message": "body",
+        "severity": "severity.text",
+        "trace_id": "traceId"
+      },
+      "static_compatibility": true,
+      "sample_parse_report": {
+        "total_records": 5,
+        "accepted_records": 5,
+        "window_match_count": 5,
+        "observer_projection_success_count": 5
+      },
+      "empirical_query_report": {
+        "checkout_query_verification": "PASS",
+        "service_query_field": "resource.service.name.keyword"
+      },
+      "support_score": 22,
+      "contradiction_score": 0,
+      "net_score": 22,
+      "supporting_capture_refs": [
+        "objects/sha256/0e/0ef44391e2302b420c67684d05d264b34eb7165c9542c8b3b435e4c272d50e6e",
+        "objects/sha256/25/25d4d1160b430850831a3cfeccf049b41f8600aedad4c7c78efd78fc414c5371",
+        "objects/sha256/6c/6c197cc3654435021c5f6972ee6717a43eab854f3ce35f33a82d75613705663c",
+        "objects/sha256/82/82e878bc5e3e44edc27097ad2a2584f9fef2cacba92043076a51f4998d658562",
+        "objects/sha256/94/94b296bdda8c472d4f1048d02e2c13378a54b0d85c021c9fa01f6a5d9d0a3b44",
+        "objects/sha256/b1/b1fb1994d7f18bd4693b50c3436a3a2c656c98fc86eaa981f9ba529dcc6a5e00"
+      ],
+      "contradicting_capture_refs": [],
+      "rejection_codes": [],
+      "candidate_sha256": "d056dd8e86a8277fb361fe111ffd447d87fd6cd56bd93afc938f06e316f387bd"
+    }
+  ],
+  "recommended_candidate_alias": null,
+  "recommendation_status": "OPERATOR_SELECTION_REQUIRED",
+  "score_margin": 0,
+  "eliminated_candidates": [
+    "service-source-01:CHECKOUT_ALIAS_UNOBSERVED",
+    "severity-02:SEVERITY_UNPARSEABLE",
+    "severity-03:SEVERITY_UNPARSEABLE",
+    "trace-id-01:TRACE_ID_UNPARSEABLE",
+    "trace-id-02:TRACE_ID_UNPARSEABLE",
+    "trace-id-03:TRACE_ID_UNPARSEABLE"
+  ],
+  "candidate_set_sha256": "f3aeaf272ab199c1284238c9e7785ec89f46b1cb54ad1608188a052c27f9d4de"
+}

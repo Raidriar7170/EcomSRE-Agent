@@ -287,9 +287,26 @@ def test_unrequested_mapped_service_is_distinct_from_unmapped_alias() -> None:
     )
 
 
+def test_dotted_or_nested_path_accepts_a_dotted_key_below_a_nested_object() -> None:
+    source = _source()
+    source["resource"] = {"service.name": "checkoutservice"}
+
+    batch = normalize_opensearch_search_v022(
+        _payload(source),
+        profile=_profile(),
+        context=_context(),
+        latency_ms=1.0,
+    )
+
+    assert batch.status is OpenSearchBatchStatusV022.SUCCESS_NONEMPTY
+    assert batch.normalizations[0].record.service == "checkout"
+
+
 def test_otlp_wrapper_and_epoch_timestamp_are_profile_driven() -> None:
     source = _source()
-    source["observed"] = {"timestamp": int((NOW + timedelta(seconds=5)).timestamp() * 1000)}
+    source["observed"] = {
+        "timestamp": int((NOW + timedelta(seconds=5)).timestamp() * 1000)
+    }
     source["body"] = {"stringValue": "checkout completed"}
     batch = normalize_opensearch_search_v022(
         _payload(source),

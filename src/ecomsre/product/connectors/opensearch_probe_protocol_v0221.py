@@ -25,6 +25,7 @@ _SECRET_PARAMETER = re.compile(
 
 
 class OpenSearchProbeEndpointKindV0221(str, Enum):
+    INDEX_RESOLUTION = "INDEX_RESOLUTION"
     MAPPING = "MAPPING"
     FIELD_MAPPING = "FIELD_MAPPING"
     FIELD_CAPS = "FIELD_CAPS"
@@ -108,9 +109,13 @@ class OpenSearchProbeRequestV0221(ProductModelV1):
     def request_contract_is_consistent(self) -> "OpenSearchProbeRequestV0221":
         if self.endpoint_kind is OpenSearchProbeEndpointKindV0221.FIELD_CAPS:
             if self.body_shape is OpenSearchProbeBodyShapeV0221.FIELDS_BODY:
-                raise ValueError("OpenSearch Field Caps fields in request body are forbidden")
+                raise ValueError(
+                    "OpenSearch Field Caps fields in request body are forbidden"
+                )
             if set(self.query_parameters) != {"fields"}:
-                raise ValueError("OpenSearch Field Caps requires the fields query parameter")
+                raise ValueError(
+                    "OpenSearch Field Caps requires the fields query parameter"
+                )
             if self.body_shape not in {
                 OpenSearchProbeBodyShapeV0221.NONE,
                 OpenSearchProbeBodyShapeV0221.INDEX_FILTER,
@@ -152,7 +157,7 @@ class OpenSearchProbeRequestAttemptV0221(ProductModelV1):
     latency_ms: float = Field(ge=0, le=120_000, allow_inf_nan=False)
     response_bytes: int = Field(ge=0, le=2_000_000)
     response_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
-    transport_retry_count: int = Field(ge=0, le=2)
+    transport_retry_count: int = Field(ge=0, le=3)
     safe_error_envelope_sha256: str | None = Field(
         default=None,
         pattern=r"^[0-9a-f]{64}$",
@@ -216,10 +221,15 @@ class OpenSearchProbeRequestPlanV0221(ProductModelV1):
             + ((self.aggregation_request,) if self.aggregation_request else ())
             + self.sample_requests
         )
-        if self.mapping_request.endpoint_kind is not OpenSearchProbeEndpointKindV0221.MAPPING:
+        if (
+            self.mapping_request.endpoint_kind
+            is not OpenSearchProbeEndpointKindV0221.MAPPING
+        ):
             raise ValueError("OpenSearch plan mapping request differs")
-        if self.field_caps_request is not None and self.field_caps_request.endpoint_kind is not (
-            OpenSearchProbeEndpointKindV0221.FIELD_CAPS
+        if (
+            self.field_caps_request is not None
+            and self.field_caps_request.endpoint_kind
+            is not (OpenSearchProbeEndpointKindV0221.FIELD_CAPS)
         ):
             raise ValueError("OpenSearch plan Field Caps request differs")
         request_ids = tuple(request.request_id for request in requests)
@@ -291,9 +301,7 @@ class OpenSearchProbeRequestPlanV0221(ProductModelV1):
             "aggregation_request",
             "sample_requests",
         ):
-            semantic_source[key] = _strip_request_identity_v0221(
-                semantic_source[key]
-            )
+            semantic_source[key] = _strip_request_identity_v0221(semantic_source[key])
         semantic_plan_sha256 = semantic_sha256_v22(semantic_source)
         serialized = draft.model_dump(
             mode="json", exclude={"semantic_plan_sha256", "plan_sha256"}
@@ -586,8 +594,7 @@ def select_next_request_plan_variant_v0221(
     ):
         return OpenSearchProbePlanVariantV0221.PLAN_A_FIELD_CAPS_GET_QUERY
     if (
-        current_variant
-        is OpenSearchProbePlanVariantV0221.PLAN_A_FIELD_CAPS_GET_QUERY
+        current_variant is OpenSearchProbePlanVariantV0221.PLAN_A_FIELD_CAPS_GET_QUERY
         and envelope.safe_error_code
         in {
             OpenSearchHttpErrorCodeV0221.OPENSEARCH_METHOD_NOT_ALLOWED,
@@ -596,21 +603,16 @@ def select_next_request_plan_variant_v0221(
         }
     ):
         return OpenSearchProbePlanVariantV0221.PLAN_B_FIELD_CAPS_POST_QUERY
-    if (
-        current_variant
-        in {
-            OpenSearchProbePlanVariantV0221.PLAN_A_FIELD_CAPS_GET_QUERY,
-            OpenSearchProbePlanVariantV0221.PLAN_B_FIELD_CAPS_POST_QUERY,
-        }
-        and envelope.safe_error_code
-        in {
-            OpenSearchHttpErrorCodeV0221.OPENSEARCH_PERMISSION_DENIED,
-            OpenSearchHttpErrorCodeV0221.OPENSEARCH_ENDPOINT_NOT_FOUND,
-            OpenSearchHttpErrorCodeV0221.OPENSEARCH_FIELD_CAPS_UNSUPPORTED,
-            OpenSearchHttpErrorCodeV0221.OPENSEARCH_REQUEST_PARAMETER_INVALID,
-            OpenSearchHttpErrorCodeV0221.OPENSEARCH_REQUEST_BODY_INVALID,
-        }
-    ):
+    if current_variant in {
+        OpenSearchProbePlanVariantV0221.PLAN_A_FIELD_CAPS_GET_QUERY,
+        OpenSearchProbePlanVariantV0221.PLAN_B_FIELD_CAPS_POST_QUERY,
+    } and envelope.safe_error_code in {
+        OpenSearchHttpErrorCodeV0221.OPENSEARCH_PERMISSION_DENIED,
+        OpenSearchHttpErrorCodeV0221.OPENSEARCH_ENDPOINT_NOT_FOUND,
+        OpenSearchHttpErrorCodeV0221.OPENSEARCH_FIELD_CAPS_UNSUPPORTED,
+        OpenSearchHttpErrorCodeV0221.OPENSEARCH_REQUEST_PARAMETER_INVALID,
+        OpenSearchHttpErrorCodeV0221.OPENSEARCH_REQUEST_BODY_INVALID,
+    }:
         return OpenSearchProbePlanVariantV0221.PLAN_C_MAPPING_SAMPLE_EMPIRICAL
     return None
 

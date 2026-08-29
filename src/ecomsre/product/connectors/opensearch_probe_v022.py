@@ -111,9 +111,9 @@ class OpenSearchProfileResolutionV022(ProductModelV1):
 
 
 class OpenSearchPublicSchemaFingerprintV022(ProductModelV1):
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.opensearch-schema-fingerprint.v022"] = (
         "ecomsre.product.opensearch-schema-fingerprint.v022"
-    ] = "ecomsre.product.opensearch-schema-fingerprint.v022"
+    )
     terminal: Literal["ECOMSRE_PRODUCT_V022_SCHEMA_DISCOVERY_PASS"]
     index_names: tuple[str, ...]
     field_paths: tuple[str, ...]
@@ -158,9 +158,7 @@ class OpenSearchSchemaProbeProfileV022(ProductModelV1):
     recent_window_seconds: int = Field(ge=60, le=3600)
     stabilization_seconds: int = Field(ge=0, le=120)
     healthy_traffic_profile: OpenSearchProbeTrafficProfileV022
-    private_root: Literal[
-        ".local/product-v022/opensearch-schema-probe/private"
-    ]
+    private_root: Literal[".local/product-v022/opensearch-schema-probe/private"]
     public_fingerprint_json: Literal[
         "docs/analysis/product-v022-opensearch-schema-fingerprint.json"
     ]
@@ -289,7 +287,9 @@ def parse_mapping_v022(payload: object) -> OpenSearchMappingSnapshotV022:
 
 
 def parse_field_caps_v022(payload: object) -> OpenSearchFieldCapsSnapshotV022:
-    if not isinstance(payload, Mapping) or not isinstance(payload.get("fields"), Mapping):
+    if not isinstance(payload, Mapping) or not isinstance(
+        payload.get("fields"), Mapping
+    ):
         raise _probe_error_v022(
             OpenSearchSchemaErrorCodeV022.OPENSEARCH_FIELD_CAPS_RESPONSE_INVALID
         )
@@ -298,7 +298,11 @@ def parse_field_caps_v022(payload: object) -> OpenSearchFieldCapsSnapshotV022:
     assert isinstance(raw_fields, Mapping)
     for path in sorted(raw_fields):
         raw_types = raw_fields[path]
-        if not isinstance(path, str) or not isinstance(raw_types, Mapping) or not raw_types:
+        if (
+            not isinstance(path, str)
+            or not isinstance(raw_types, Mapping)
+            or not raw_types
+        ):
             raise _probe_error_v022(
                 OpenSearchSchemaErrorCodeV022.OPENSEARCH_FIELD_CAPS_RESPONSE_INVALID,
                 field_path=str(path),
@@ -406,8 +410,14 @@ def _sample_value_v022(sample: Mapping[str, object], path: str) -> object:
     if path in sample:
         return sample[path]
     current: object = sample
-    for segment in path.split("."):
-        if not isinstance(current, Mapping) or segment not in current:
+    segments = path.split(".")
+    for index, segment in enumerate(segments):
+        if not isinstance(current, Mapping):
+            return None
+        remaining = ".".join(segments[index:])
+        if remaining in current:
+            return current[remaining]
+        if segment not in current:
             return None
         current = current[segment]
     return current
@@ -464,11 +474,7 @@ def _rank_candidates_v022(
         mapping_types = (
             cap.mapping_types
             if cap is not None
-            else (
-                (mapping_field.mapping_type,)
-                if mapping_field is not None
-                else ()
-            )
+            else ((mapping_field.mapping_type,) if mapping_field is not None else ())
         )
         complexity = path.count(".")
         score = (
@@ -494,7 +500,9 @@ def _rank_candidates_v022(
                 "score": score,
             }
         )
-    ordered = sorted(drafts, key=lambda item: (-int(item["score"]), str(item["field_path"])))
+    ordered = sorted(
+        drafts, key=lambda item: (-int(item["score"]), str(item["field_path"]))
+    )
     score_counts = Counter(int(item["score"]) for item in ordered)
     return tuple(
         OpenSearchCandidateRankingV022(
@@ -562,8 +570,8 @@ def resolve_normalization_profile_v022(
     sample_shapes: OpenSearchSampleShapeSummaryV022,
     checkout_aliases: tuple[str, ...],
 ) -> OpenSearchProfileResolutionV022:
-    all_paths = set(mapping.fields) | set(field_caps.fields) | set(
-        sample_shapes.field_presence
+    all_paths = (
+        set(mapping.fields) | set(field_caps.fields) | set(sample_shapes.field_presence)
     )
     by_category: defaultdict[str, list[str]] = defaultdict(list)
     for path in all_paths:
@@ -586,7 +594,11 @@ def resolve_normalization_profile_v022(
                 OpenSearchSchemaErrorCodeV022.OPENSEARCH_REQUIRED_FIELD_NOT_DISCOVERED,
                 field_path=category,
             )
-    selected = {category: values[0].field_path for category, values in rankings.items() if values}
+    selected = {
+        category: values[0].field_path
+        for category, values in rankings.items()
+        if values
+    }
     if any(rankings[name][0].sample_coverage == 0 for name in required):
         raise _probe_error_v022(
             OpenSearchSchemaErrorCodeV022.OPENSEARCH_REQUIRED_FIELD_NOT_DISCOVERED
@@ -618,7 +630,10 @@ def resolve_normalization_profile_v022(
     wrapper_path: str | None = None
     if message_path.endswith(".stringValue"):
         candidate = message_path.removesuffix(".stringValue")
-        if all(isinstance(_sample_value_v022(sample, candidate), Mapping) for sample in samples):
+        if all(
+            isinstance(_sample_value_v022(sample, candidate), Mapping)
+            for sample in samples
+        ):
             wrapper_path = candidate
     severity_path = selected.get("severity")
     trace_path = selected.get("trace_id")

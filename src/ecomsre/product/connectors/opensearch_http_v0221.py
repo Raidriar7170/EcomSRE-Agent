@@ -332,6 +332,9 @@ class OpenSearchProbeClientV0221:
         maximum_response_bytes: int,
         transport: httpx.BaseTransport | None = None,
         capture_store: OpenSearchCaptureStoreV0222 | None = None,
+        request_count_bound: int = 16,
+        transport_retry_bound: int = 2,
+        capture_request_ordinal_offset: int = 0,
     ) -> None:
         parsed = urlsplit(base_url)
         if (
@@ -345,12 +348,21 @@ class OpenSearchProbeClientV0221:
             or parsed.fragment
         ):
             raise ValueError("OpenSearch probe endpoint must be loopback")
-        if not 1 <= maximum_request_count <= 16:
+        if (
+            request_count_bound not in {16, 20}
+            or not 1 <= maximum_request_count <= request_count_bound
+        ):
             raise ValueError("OpenSearch probe request bound differs")
+        if transport_retry_bound not in {2, 3}:
+            raise ValueError("OpenSearch probe transport retry bound differs")
+        if not 0 <= capture_request_ordinal_offset <= 19:
+            raise ValueError("OpenSearch capture request ordinal offset differs")
         if not 1 <= maximum_response_bytes <= 2_000_000:
             raise ValueError("OpenSearch probe response-byte bound differs")
         self.maximum_request_count = maximum_request_count
         self.maximum_response_bytes = maximum_response_bytes
+        self.transport_retry_bound = transport_retry_bound
+        self.capture_request_ordinal_offset = capture_request_ordinal_offset
         self.request_count = 0
         self.attempts: list[OpenSearchProbeRequestAttemptV0221] = []
         self._capture_store = capture_store
@@ -378,7 +390,15 @@ class OpenSearchProbeClientV0221:
             raise ValueError("OpenSearch probe request path is invalid")
         if any(_SECRET_PARAMETER.search(name) for name in query_parameters):
             raise ValueError("OpenSearch query parameter name is secret-bearing")
-        if endpoint_kind is OpenSearchProbeEndpointKindV0221.MAPPING:
+        if endpoint_kind is OpenSearchProbeEndpointKindV0221.INDEX_RESOLUTION:
+            valid = (
+                method == "GET"
+                and path_template == "/_resolve/index/{index}"
+                and path.startswith("/_resolve/index/")
+                and not query_parameters
+                and json_body is None
+            )
+        elif endpoint_kind is OpenSearchProbeEndpointKindV0221.MAPPING:
             valid = (
                 method == "GET"
                 and path_template == "/{index}/_mapping"
@@ -452,10 +472,10 @@ class OpenSearchProbeClientV0221:
                 endpoint_class=path_template,
                 index_binding=index_binding,
                 query_parameter_names=tuple(sorted(query_parameters)),
-                request_body_schema_sha256=request_body_schema_sha256_v0221(
-                    json_body
+                request_body_schema_sha256=request_body_schema_sha256_v0221(json_body),
+                request_ordinal=(
+                    self.capture_request_ordinal_offset + self.request_count
                 ),
-                request_ordinal=self.request_count,
             )
         started = time.perf_counter()
         try:
@@ -475,9 +495,7 @@ class OpenSearchProbeClientV0221:
                 endpoint_kind=endpoint_kind,
                 path_template=path_template,
                 query_parameter_names=tuple(sorted(query_parameters)),
-                request_body_schema_sha256=request_body_schema_sha256_v0221(
-                    json_body
-                ),
+                request_body_schema_sha256=request_body_schema_sha256_v0221(json_body),
                 http_status=None,
                 latency_ms=latency_ms,
                 response_bytes=0,
@@ -587,7 +605,7 @@ class OpenSearchProbeClientV0221:
         maximum_transport_retries: int,
         **request: Any,
     ) -> tuple[object, bytes, OpenSearchProbeRequestAttemptV0221]:
-        if not 0 <= maximum_transport_retries <= 2:
+        if not 0 <= maximum_transport_retries <= self.transport_retry_bound:
             raise ValueError("OpenSearch transport retry bound differs")
         retry_count = 0
         while True:

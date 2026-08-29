@@ -1,0 +1,26 @@
+{
+  "schema_version": "ecomsre.product.opensearch-capture-profile.v0222",
+  "session_id": "product-v0222-capture-1",
+  "index_pattern": "otel-logs-*",
+  "checkout_aliases": [
+    "checkout",
+    "checkoutservice"
+  ],
+  "maximum_changed_plan_count": 3,
+  "maximum_request_count": 20,
+  "maximum_transport_retries": 3,
+  "protocol_transport_retries": 2,
+  "maximum_sample_documents": 5,
+  "maximum_response_bytes": 2000000,
+  "recent_window_seconds": 600,
+  "stabilization_seconds": 30,
+  "healthy_traffic_profile": {
+    "schema_version": "ecomsre.product.healthy-traffic-profile.v021",
+    "request_seed": 5222,
+    "maximum_request_count": 30,
+    "requests_per_second": 1.0,
+    "error_budget": 5
+  },
+  "private_root": ".local/product-v0222/opensearch-capture/private",
+  "profile_sha256": "42e8bb3cef1c751e2fb3aca34474bbb09b04fb4f084d9cc98cc2ad3b3cb06718"
+}

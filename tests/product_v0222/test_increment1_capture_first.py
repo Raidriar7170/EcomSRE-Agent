@@ -107,9 +107,7 @@ def test_completed_responses_survive_later_profile_resolution_failure(
     assert bundle.timestamp_range_refs
     assert bundle.profile_verification_refs
 
-    loaded = OpenSearchCaptureStoreV0222.load_bundle(
-        private_root=tmp_path / "private"
-    )
+    loaded = OpenSearchCaptureStoreV0222.load_bundle(private_root=tmp_path / "private")
     assert loaded == bundle
     assert store.verify_content_addressed_objects() == 7
 
@@ -173,9 +171,7 @@ def test_http_client_records_intent_before_transport_and_response_before_json_pa
     )
     assert store.verify_content_addressed_objects() == 1
     assert (
-        tmp_path
-        / "private"
-        / ledger.events[1].event_payload["response_object_ref"]
+        tmp_path / "private" / ledger.events[1].event_payload["response_object_ref"]
     ).read_bytes() == b"not-json but must remain captured"
     assert "must-not-persist" not in (
         tmp_path / "private" / "capture-ledger.jsonl"
@@ -254,3 +250,44 @@ def test_capture_ledger_detects_append_only_chain_tampering(tmp_path: Path) -> N
             session_id="product-v0222-capture-1",
             maximum_response_bytes=2_000_000,
         )
+
+
+def test_v0222_client_supports_bounded_index_resolution_request(
+    tmp_path: Path,
+) -> None:
+    store = OpenSearchCaptureStoreV0222(
+        private_root=tmp_path / "private",
+        session_id="product-v0222-capture-1",
+        maximum_response_bytes=2_000_000,
+    )
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/_resolve/index/otel-logs-*"
+        return httpx.Response(200, json={"indices": [{"name": "otel-logs-1"}]})
+
+    client = OpenSearchProbeClientV0221(
+        base_url="http://127.0.0.1:19200",
+        maximum_request_count=20,
+        maximum_response_bytes=2_000_000,
+        request_count_bound=20,
+        transport_retry_bound=3,
+        transport=httpx.MockTransport(handler),
+        capture_store=store,
+    )
+    try:
+        payload, _, _ = client.request_json_with_transport_retries(
+            maximum_transport_retries=3,
+            plan_id="capture-plan-a",
+            request_id="resolved-index",
+            method="GET",
+            endpoint_kind=OpenSearchProbeEndpointKindV0221.INDEX_RESOLUTION,
+            path="/_resolve/index/otel-logs-*",
+            path_template="/_resolve/index/{index}",
+            query_parameters={},
+            json_body=None,
+        )
+    finally:
+        client.close()
+
+    assert payload == {"indices": [{"name": "otel-logs-1"}]}
+    assert store.build_bundle().resolved_index_response_refs

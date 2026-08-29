@@ -76,8 +76,14 @@ def _path_v022(
     if direct:
         return _MISSING_V022
     current: object = source
-    for segment in path.split("."):
-        if not isinstance(current, Mapping) or segment not in current:
+    segments = path.split(".")
+    for index, segment in enumerate(segments):
+        if not isinstance(current, Mapping):
+            return _MISSING_V022
+        remaining = ".".join(segments[index:])
+        if remaining in current:
+            return current[remaining]
+        if segment not in current:
             return _MISSING_V022
         current = current[segment]
     return current
@@ -499,16 +505,16 @@ def normalize_opensearch_search_v022(
     total: object = hits_container.get("total", len(hits))
     if isinstance(total, Mapping):
         total = total.get("value", len(hits))
-    total_hit_count = total if isinstance(total, int) and total >= len(hits) else len(hits)
+    total_hit_count = (
+        total if isinstance(total, int) and total >= len(hits) else len(hits)
+    )
     return build_opensearch_batch_v022(
         total_hit_count=total_hit_count,
         sampled_hit_count=len(hits),
         normalizations=tuple(normalizations),
         rejections=tuple(rejections),
         requested_services=context.requested_services,
-        maximum_record_rejection_fraction=(
-            profile.maximum_record_rejection_fraction
-        ),
+        maximum_record_rejection_fraction=(profile.maximum_record_rejection_fraction),
         truncated=total_hit_count > len(hits),
         latency_ms=latency_ms,
     )
