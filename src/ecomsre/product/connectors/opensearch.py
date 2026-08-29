@@ -66,8 +66,14 @@ def _field(source: Mapping[str, object], path: str) -> object:
     if path in source:
         return source[path]
     current: object = source
-    for segment in path.split("."):
-        if not isinstance(current, Mapping) or segment not in current:
+    segments = path.split(".")
+    for index, segment in enumerate(segments):
+        if not isinstance(current, Mapping):
+            raise ValueError("OpenSearch source field is unavailable")
+        remaining = ".".join(segments[index:])
+        if remaining in current:
+            return current[remaining]
+        if segment not in current:
             raise ValueError("OpenSearch source field is unavailable")
         current = current[segment]
     return current
@@ -77,8 +83,14 @@ def _optional_field(source: Mapping[str, object], path: str) -> object | None:
     if path in source:
         return source[path]
     current: object = source
-    for segment in path.split("."):
-        if not isinstance(current, Mapping) or segment not in current:
+    segments = path.split(".")
+    for index, segment in enumerate(segments):
+        if not isinstance(current, Mapping):
+            return None
+        remaining = ".".join(segments[index:])
+        if remaining in current:
+            return current[remaining]
+        if segment not in current:
             return None
         current = current[segment]
     return current

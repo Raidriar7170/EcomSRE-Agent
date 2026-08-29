@@ -1,0 +1,20 @@
+{
+  "action_authority": "NONE",
+  "active_profile_file_sha256": "d25b7bcab53487041d0fa37dfe82318410e9ce9ae5b49c236860cc16b7d47a58",
+  "active_profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+  "child_payload_sha256": "54836c4ef959f88dac619b2dc2518afaaee7fa400b0b80e1cc5ef295205645a7",
+  "child_pid": 50474,
+  "connector_config_sha256": "a2bcb30f1dc40a8f87358a6708fc510dcdc875c4f6f3f88315aea483cc6be1d9",
+  "connector_smoke_sha256": "a3573782f56f5445db8920301e267840d9a1296e51027c0fda841bfd4bd303c2",
+  "live_opensearch_capability_sha256": "92ce7d055a917b15ac8d527de0d152b1a5061cf547b1c7333a776ddbb8f06c85",
+  "live_smoke_rerun_count": 0,
+  "network_request_count": 0,
+  "parent_pid": 50473,
+  "process_relation": "DISTINCT_CONSUMER_PROCESS",
+  "proof_sha256": "b2b0ea37d763316a7be9acb65899f2a7d1fddcdb7f222ca05f63bab742fda69b",
+  "reloaded_capabilities_sha256": "9f55b120aabea0c08cbf91be4cb197b81d424896a2c9ac0a0ee94617429f115b",
+  "schema_version": "ecomsre.product.active-profile-restart-proof.v0222",
+  "smoke_profile_file_sha256": "63460b3fade826b3f96a035a6447b5bcfae63eb78024b5a99d54145889bcb8ed",
+  "smoke_profile_sha256": "6dc171bc1565a7052eb27519bd38f47c3141df1b991b93956f08cb17077923d8",
+  "terminal": "ECOMSRE_PRODUCT_V0222_ACTIVE_PROFILE_RESTART_PROOF_PASS"
+}

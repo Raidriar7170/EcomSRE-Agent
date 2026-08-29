@@ -1,0 +1,44 @@
+{
+  "action_authority": "NONE",
+  "active_normalization_profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+  "active_profile_restart_proof_sha256": "b2b0ea37d763316a7be9acb65899f2a7d1fddcdb7f222ca05f63bab742fda69b",
+  "agent_writes": 0,
+  "baseline_readiness_attempt_count": 0,
+  "candidate_set_sha256": "f3aeaf272ab199c1284238c9e7785ec89f46b1cb54ad1608188a052c27f9d4de",
+  "capture_bundle_sha256": "4084941d8368c4f74ec2db95ac2215f36c9531367f9904b9b90cd653bceeea94",
+  "connector_smoke_sha256": "a3573782f56f5445db8920301e267840d9a1296e51027c0fda841bfd4bd303c2",
+  "fault_attempt_count": 0,
+  "handoff_sha256": "fee46e6f335f106f365c3c0c85bb1cf8e7fb0b7cbf00289f5555ec84ea0cdaa7",
+  "holdout_verification_sha256": "a30fbac9277267093fd9cfaaae33b87164d28711ec3b655025db38dbc083cd25",
+  "knowledge_loop_campaign_count": 0,
+  "known_limitations": [
+    "No Baseline Readiness or Product Diagnosis was run in this Goal.",
+    "The active profile is verified against the project-owned local Sandbox.",
+    "Trace ID remains optional because one retained capture record omitted it.",
+    "The current Product connector fails a window closed on any schema-invalid hit."
+  ],
+  "offline_parser_report_sha256": "a62b00a0fa4d8abbb96a7bdbbeb6749a3e6bab41550027b0cdc11856a550484f",
+  "opensearch_capability_sha256": "92ce7d055a917b15ac8d527de0d152b1a5061cf547b1c7333a776ddbb8f06c85",
+  "operator_decision_sha256": "51effb280e9390d5619bf18fed80c2c158214db2dd98dcfce3634275125b8b5e",
+  "product_diagnosis_attempt_count": 0,
+  "recommended_baseline_query_binding": {
+    "logical_service": "checkout",
+    "maximum_record_rejection_fraction": 0.2,
+    "message_field": "body",
+    "service_aliases": [
+      "checkout",
+      "checkoutservice"
+    ],
+    "service_query_field": "resource.service.name.keyword",
+    "service_source_field": "resource.service.name",
+    "severity_field": "severity.text",
+    "timestamp_field": "@timestamp"
+  },
+  "recommended_next_goal": "Product v0.2.3 Fresh Baseline Readiness and No-Fault Acceptance",
+  "runbook_executions": 0,
+  "sanitized_fixture_sha256": "cc6e1cd400cc2935a7c03bb6605e63c827a4d618581ecaad3884f0d27da8c15a",
+  "schema_version": "ecomsre.product.baseline-handoff.v0222",
+  "service_identity_sha256": "a84e3f82180cd40024f9449096586b0ac94ceea8b492f59d58c58c28d7828d72",
+  "smoke_service_identity_sha256": "d310d31a00decfc65c9d55296ba4fdcc743106d7e8dae7488fe8ce48996da7b4",
+  "status": "ECOMSRE_PRODUCT_V0222_BASELINE_HANDOFF_READY"
+}
