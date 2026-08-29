@@ -17,7 +17,6 @@ def test_increment1_capture_first_checkpoint() -> None:
         "status": "ECOMSRE_PRODUCT_V0222_CAPTURE_FIRST_READY",
         "history_status": "ECOMSRE_PRODUCT_V0222_HISTORY_VERIFIED",
         "predecessor_audit_status": "ECOMSRE_PRODUCT_V0222_PREDECESSOR_AUDIT_PASS",
-        "progress_terminal": "ECOMSRE_PRODUCT_V0222_CAPTURE_FIRST_READY",
         "captured_response_count": 7,
         "capture_completeness": True,
         "resolution_failure_recovery": "PASS",

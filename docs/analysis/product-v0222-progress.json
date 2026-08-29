@@ -2,15 +2,15 @@
   "schema_version": "ecomsre.product.v0222.progress.v1",
   "goal_version": "ecomsre-product-v0222-capture-first-operator-profile-v1",
   "branch": "codex/product-v0222-capture-first-operator-profile",
-  "increment": 1,
-  "terminal": "ECOMSRE_PRODUCT_V0222_CAPTURE_FIRST_READY",
+  "increment": 2,
+  "terminal": "ECOMSRE_PRODUCT_V0222_CANDIDATE_SET_ENGINE_READY",
   "history_status": "ECOMSRE_PRODUCT_V0222_HISTORY_VERIFIED",
   "predecessor_audit_status": "ECOMSRE_PRODUCT_V0222_PREDECESSOR_AUDIT_PASS",
   "capture_first_storage_status": "READY",
   "capture_ledger_status": "APPEND_ONLY_CHAINED",
   "content_addressed_object_status": "VERIFIED",
   "public_structural_summary_status": "READY",
-  "candidate_set_status": "NOT_STARTED",
+  "candidate_set_status": "ENGINE_READY_SYNTHETIC_ONLY",
   "operator_decision_status": "ABSENT",
   "offline_parser_status": "NOT_STARTED",
   "holdout_verification_status": "NOT_STARTED",
@@ -29,6 +29,6 @@
   "agent_writes": 0,
   "runbook_executions": 0,
   "action_authority": "NONE",
-  "next_boundary": "INCREMENT_2_CANDIDATE_SET_ENGINE",
-  "progress_sha256": "6065a4b1f6e3d6e875ccc40c0c58696908b4da2f7a30f3209d96c22e4e59c30c"
+  "next_boundary": "INCREMENT_3_ONE_LIVE_CAPTURE",
+  "progress_sha256": "85175312874005a7a8f045d365627b2073e49c007af76a67eb7b813a412aed5b"
 }

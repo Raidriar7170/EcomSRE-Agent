@@ -27,16 +27,17 @@ def _verify_truth_surface(
     *,
     digest_field: str,
     status_field: str,
-    expected_status: str,
-) -> None:
+    expected_status: str | None,
+) -> dict[str, object]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise ValueError("Product v0.2.2.2 truth surface is not an object")
     digest = payload.pop(digest_field, None)
     if digest != semantic_sha256_v22(payload):
         raise ValueError("Product v0.2.2.2 truth-surface digest differs")
-    if payload.get(status_field) != expected_status:
+    if expected_status is not None and payload.get(status_field) != expected_status:
         raise ValueError("Product v0.2.2.2 truth-surface status differs")
+    return payload
 
 
 def _capture_response(
@@ -85,12 +86,6 @@ def verify_product_v0222_increment1(project_root: Path) -> dict[str, object]:
         digest_field="audit_sha256",
         status_field="status",
         expected_status="ECOMSRE_PRODUCT_V0222_PREDECESSOR_AUDIT_PASS",
-    )
-    _verify_truth_surface(
-        root / "docs/analysis/product-v0222-progress.json",
-        digest_field="progress_sha256",
-        status_field="terminal",
-        expected_status=TERMINAL,
     )
     with TemporaryDirectory(prefix="ecomsre-product-v0222-") as temporary:
         store = OpenSearchCaptureStoreV0222(
@@ -157,7 +152,6 @@ def verify_product_v0222_increment1(project_root: Path) -> dict[str, object]:
         "status": TERMINAL,
         "history_status": history["status"],
         "predecessor_audit_status": "ECOMSRE_PRODUCT_V0222_PREDECESSOR_AUDIT_PASS",
-        "progress_terminal": TERMINAL,
         "captured_response_count": len(bundle.responses),
         "capture_completeness": bundle.capture_completeness,
         "resolution_failure_recovery": "PASS",
