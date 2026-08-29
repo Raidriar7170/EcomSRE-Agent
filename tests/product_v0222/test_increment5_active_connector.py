@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 import httpx
+import pytest
 
 from ecomsre.dta_v2.v22.read_contracts import (
     EvidenceSourceV22,
@@ -236,8 +237,10 @@ def test_three_window_smoke_report_binds_restart_and_diagnostics() -> None:
 
 def test_active_profile_is_reloaded_by_a_distinct_consumer_process(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     output = tmp_path / "restart-proof.json"
+    monkeypatch.delenv("PYTHONPATH", raising=False)
 
     proof = run_active_profile_restart_proof_v0222(ROOT, output_path=output)
 

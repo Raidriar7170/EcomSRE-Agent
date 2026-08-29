@@ -119,6 +119,15 @@ def run_active_profile_restart_proof_v0222(
     if smoke.terminal != CONNECTOR_SMOKE_PASS_V0222:
         raise ValueError("Product v0.2.2.2 restart proof requires smoke PASS")
 
+    child_environment = os.environ.copy()
+    inherited_pythonpath = child_environment.get("PYTHONPATH")
+    child_pythonpath: tuple[str, ...] = (
+        str(repository),
+        str(repository / "src"),
+    )
+    if inherited_pythonpath:
+        child_pythonpath = (*child_pythonpath, inherited_pythonpath)
+    child_environment["PYTHONPATH"] = os.pathsep.join(child_pythonpath)
     completed = subprocess.run(
         (
             sys.executable,
@@ -129,13 +138,16 @@ def run_active_profile_restart_proof_v0222(
             "--child",
         ),
         cwd=repository,
+        env=child_environment,
         check=False,
         capture_output=True,
         text=True,
         timeout=30,
     )
     if completed.returncode != 0:
-        raise RuntimeError("Product v0.2.2.2 restart child failed")
+        diagnostic = completed.stderr.strip().splitlines()
+        suffix = "" if not diagnostic else f": {diagnostic[-1][:240]}"
+        raise RuntimeError(f"Product v0.2.2.2 restart child failed{suffix}")
     try:
         child = json.loads(completed.stdout)
     except json.JSONDecodeError as error:

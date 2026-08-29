@@ -57,6 +57,22 @@ Key bindings checked by the reviewer:
 The reviewer did not start Docker, issue a live OpenSearch request, repeat the
 connector smoke, change Product state, or modify repository files.
 
+## Post-review CI portability follow-up
+
+The first exact-head CI attempt at
+`4007c2f2b61b3c1612b42265ffac27b49d43adf0` exposed one portability failure:
+the fresh child process could not import the source tree when full pytest ran
+without a `PYTHONPATH`. The repository uses `[tool.uv] package = false`, while
+pytest's configured `pythonpath = ["src"]` affects the parent process only.
+
+The narrow repair explicitly gives the child process the repository root and
+`src` path while preserving any inherited `PYTHONPATH`. A regression test now
+deletes `PYTHONPATH` before launching the child. The independent reviewer
+rechecked this repair and again returned `Must Fix: 0 / Claim Accuracy: PASS`,
+confirming that it retains the distinct-process boundary, issues no network
+request, does not rerun the live smoke, and leaves all frozen smoke and restart
+proof hashes unchanged.
+
 ## Optional improvement
 
 A future proof helper could attach an HTTP request hook to turn the current
