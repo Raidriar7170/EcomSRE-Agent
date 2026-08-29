@@ -38,6 +38,9 @@ PROFILE_BINDING_BLOCKED_V023 = "BLOCKED_ECOMSRE_PRODUCT_V023_PROFILE_BINDING"
 ACTIVE_PROFILE_SHA256_V023 = (
     "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2"
 )
+ACTIVE_PROFILE_BINDING_SHA256_V023 = (
+    "e35903cfd93b28edf4244c00e6f589788353817e7c9b515ba667360be14421e2"
+)
 CANDIDATE_SET_SHA256_V023 = (
     "f3aeaf272ab199c1284238c9e7785ec89f46b1cb54ad1608188a052c27f9d4de"
 )
@@ -105,6 +108,7 @@ class OpenSearchConnectorProfileBindingV023(ProductModelV1):
             or self.operator_decision_sha256 != OPERATOR_DECISION_SHA256_V023
             or self.capture_bundle_sha256 != CAPTURE_BUNDLE_SHA256_V023
             or self.baseline_handoff_sha256 != BASELINE_HANDOFF_SHA256_V023
+            or self.binding_sha256 != ACTIVE_PROFILE_BINDING_SHA256_V023
         ):
             raise ValueError("Product v0.2.3 frozen OpenSearch binding differs")
         expected = semantic_sha256_v22(
@@ -279,6 +283,11 @@ class OpenSearchConnectorDiagnosticsV023(ProductModelV1):
 
     @model_validator(mode="after")
     def require_bound_diagnostics(self) -> "OpenSearchConnectorDiagnosticsV023":
+        if (
+            self.profile_binding_sha256 != ACTIVE_PROFILE_BINDING_SHA256_V023
+            or self.profile_sha256 != ACTIVE_PROFILE_SHA256_V023
+        ):
+            raise ValueError("Product v0.2.3 connector diagnostics profile differs")
         if self.last_sampled_record_count != (
             self.last_accepted_record_count + self.last_rejected_record_count
         ):
@@ -562,6 +571,7 @@ def build_product_v023_environment_payload(
 
 
 __all__ = (
+    "ACTIVE_PROFILE_BINDING_SHA256_V023",
     "ACTIVE_PROFILE_SHA256_V023",
     "BASELINE_HANDOFF_SHA256_V023",
     "CANDIDATE_SET_SHA256_V023",

@@ -38,6 +38,10 @@ from ecomsre.product.contracts import (
     ConnectorKindV1,
     PrometheusConnectorSettingsV1,
 )
+from ecomsre.product.pilot.baseline_readiness_v023 import (
+    PrometheusTemplateDiagnosticV023,
+    PrometheusWindowDiagnosticsV023,
+)
 
 
 _METRIC_KIND_BY_TEMPLATE = {
@@ -118,6 +122,9 @@ class PrometheusConnectorV1:
             transport=transport,
             before_request=before_request,
         )
+        self._last_baseline_diagnostics_v023: (
+            PrometheusWindowDiagnosticsV023 | None
+        ) = None
 
     def capabilities(self) -> tuple[ConnectorCapabilityV1, ...]:
         return tuple(
@@ -163,6 +170,7 @@ class PrometheusConnectorV1:
         context: ConnectorQueryContextV1,
     ) -> tuple[ConnectorQueryResultV1, ...]:
         context = ConnectorQueryContextV1.model_validate(context.model_dump())
+        self._last_baseline_diagnostics_v023 = None
         if (
             context.requested_source is EvidenceSourceV22.METRICS
             and not context.metric_kinds
@@ -196,18 +204,28 @@ class PrometheusConnectorV1:
         )
         metric_records: list[MetricFactV22] = []
         series_by_service: dict[str, dict[str, list[tuple[float, float]]]] = {}
+        template_sample_counts: dict[tuple[str, str], int] = {}
+        attempted_templates: set[tuple[str, str]] = set()
+        failed_template: tuple[str, str] | None = None
         truncated = False
         latency_ms = 0.0
         try:
             for service in context.requested_services:
                 for source_alias in context.aliases_for(service):
                     for template_name, template in selected_templates:
+                        failed_template = (service, template_name)
                         samples, query_truncated, query_latency = self._query_range(
                             template=self._render_template(template, source_alias, context),
                             context=context,
                         )
                         latency_ms += query_latency
                         truncated = truncated or query_truncated
+                        attempted_templates.add((service, template_name))
+                        template_sample_counts[(service, template_name)] = (
+                            template_sample_counts.get((service, template_name), 0)
+                            + len(samples)
+                        )
+                        failed_template = None
                         if not samples:
                             continue
                         metric_kind = _METRIC_KIND_BY_TEMPLATE[template_name]
@@ -230,16 +248,25 @@ class PrometheusConnectorV1:
                             [],
                         ).extend(samples)
         except (ConnectorRequestError, ValueError) as error:
-            if isinstance(error, ConnectorRequestError):
-                return _failure_results(context, error)
-            return _failure_results(
-                context,
-                ConnectorRequestError(
+            failure = (
+                error
+                if isinstance(error, ConnectorRequestError)
+                else ConnectorRequestError(
                     ReadSourceStatusV22.FAILURE_SCHEMA,
                     "CONNECTOR_SCHEMA_INVALID",
                     latency_ms,
-                ),
+                )
             )
+            failed_results = _failure_results(context, failure)
+            self._capture_baseline_diagnostics_v023(
+                context=context,
+                results=failed_results,
+                attempted_templates=attempted_templates,
+                template_sample_counts=template_sample_counts,
+                failed_template=failed_template,
+                failure=failure,
+            )
+            return failed_results
 
         maximum_records = min(context.maximum_records, 200)
         if len(metric_records) > maximum_records:
@@ -278,11 +305,74 @@ class PrometheusConnectorV1:
                 latency_ms=latency_ms,
             ),
         )
+        self._capture_baseline_diagnostics_v023(
+            context=context,
+            results=results,
+            attempted_templates=attempted_templates,
+            template_sample_counts=template_sample_counts,
+        )
         return tuple(
             result
             for result in results
             if context.requested_source is None
             or result.source is context.requested_source
+        )
+
+    def baseline_diagnostics_v023(self) -> PrometheusWindowDiagnosticsV023 | None:
+        """Return the immutable provenance captured by the most recent range query."""
+
+        return self._last_baseline_diagnostics_v023
+
+    def _capture_baseline_diagnostics_v023(
+        self,
+        *,
+        context: ConnectorQueryContextV1,
+        results: tuple[ConnectorQueryResultV1, ...],
+        attempted_templates: set[tuple[str, str]],
+        template_sample_counts: Mapping[tuple[str, str], int],
+        failed_template: tuple[str, str] | None = None,
+        failure: ConnectorRequestError | None = None,
+    ) -> None:
+        if context.requested_source is not None or len(results) != 2:
+            return
+        by_source = {item.source: item for item in results}
+        metrics = by_source.get(EvidenceSourceV22.METRICS)
+        resources = by_source.get(EvidenceSourceV22.RESOURCES)
+        if metrics is None or resources is None:
+            return
+        keys = set(attempted_templates)
+        if failed_template is not None:
+            keys.add(failed_template)
+        diagnostics = []
+        for service, template_name in sorted(keys):
+            sample_count = template_sample_counts.get((service, template_name), 0)
+            is_failure = failed_template == (service, template_name) and failure is not None
+            failure_status = None if failure is None else failure.status
+            failure_code = None if failure is None else failure.safe_error_code
+            if is_failure:
+                if failure_status is None:
+                    raise RuntimeError("Prometheus failure diagnostic lacks a status")
+                template_status = failure_status
+            else:
+                template_status = (
+                    ReadSourceStatusV22.SUCCESS_NONEMPTY
+                    if sample_count
+                    else ReadSourceStatusV22.SUCCESS_EMPTY
+                )
+            diagnostics.append(
+                PrometheusTemplateDiagnosticV023.build(
+                    template_name=template_name,
+                    logical_service=service,
+                    status=template_status,
+                    sample_count=0 if is_failure else sample_count,
+                    safe_error_code=failure_code if is_failure else None,
+                )
+            )
+        self._last_baseline_diagnostics_v023 = PrometheusWindowDiagnosticsV023.build(
+            window=context.window,
+            metric_result_sha256=metrics.result_sha256,
+            resource_result_sha256=resources.result_sha256,
+            templates=tuple(diagnostics),
         )
 
     def query_instant(

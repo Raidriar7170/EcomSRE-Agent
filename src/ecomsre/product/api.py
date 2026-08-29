@@ -18,6 +18,9 @@ from ecomsre.product.contracts import (
 )
 from ecomsre.product.jobs.contracts import ProductJobRecordV1, ProductJobTypeV1
 from ecomsre.product.pilot.baseline_audit_v021 import BaselineReadinessAuditV021
+from ecomsre.product.pilot.baseline_readiness_v023 import (
+    ProductBaselineReadinessAuditV023,
+)
 from ecomsre.product.environment.capabilities import EnvironmentCapabilityMatrixV1
 from ecomsre.product.incidents.contracts import (
     DiagnosisResultV1,
@@ -212,6 +215,31 @@ def get_baseline_window_audit(
     baseline_id: str,
 ) -> BaselineReadinessAuditV021:
     return request.app.state.baseline_readiness_audits.get_by_baseline(baseline_id)
+
+
+@router.get(
+    "/v1/environments/{environment_id}/baseline-readiness-v023",
+    response_model=ProductBaselineReadinessAuditV023,
+)
+def get_environment_baseline_readiness_v023(
+    request: Request,
+    environment_id: str,
+) -> ProductBaselineReadinessAuditV023:
+    request.app.state.environments.get(environment_id)
+    return request.app.state.baseline_readiness_audits_v023.get_latest(environment_id)
+
+
+@router.get(
+    "/v1/baselines/{baseline_id}/window-audit-v023",
+    response_model=ProductBaselineReadinessAuditV023,
+)
+def get_baseline_window_audit_v023(
+    request: Request,
+    baseline_id: str,
+) -> ProductBaselineReadinessAuditV023:
+    return request.app.state.baseline_readiness_audits_v023.get_by_baseline(
+        baseline_id
+    )
 
 
 @router.post(

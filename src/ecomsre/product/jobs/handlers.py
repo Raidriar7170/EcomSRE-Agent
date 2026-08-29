@@ -81,7 +81,13 @@ def handle_baseline_build(
         built_at=datetime.fromtimestamp(job.created_at, UTC),
         fence=fence,
     )
-    return result.model_dump(mode="json")
+    payload = result.model_dump(mode="json")
+    readiness_audit = baselines.get_readiness_audit_v023_optional(
+        result.baseline_id
+    )
+    if readiness_audit is not None:
+        payload["readiness_audit_v023"] = readiness_audit.model_dump(mode="json")
+    return payload
 
 
 def handle_incident_diagnosis(

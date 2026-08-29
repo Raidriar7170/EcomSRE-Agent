@@ -38,12 +38,25 @@ from ecomsre.product.pilot.runtime_authority_v02 import (
 from ecomsre.product.pilot.baseline_audit_v021 import (
     BaselineReadinessAuditRepositoryV021,
 )
+from ecomsre.product.pilot.baseline_readiness_v023 import (
+    ProductBaselineReadinessAuditRepositoryV023,
+)
 from ecomsre.product.storage.object_store import ContentAddressedObjectStoreV1
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
 from ecomsre.product.telemetry.metrics import ProductMetricsV1
 
 
 _LEGACY_FIXTURE_RESULT_DATASETS = frozenset({"increment-1", "product-increment-1"})
+
+
+def should_ingest_open_world_v023(
+    *,
+    diagnosis_terminal: str,
+    incident_labels: dict[str, str],
+) -> bool:
+    """Keep No-Fault false incidents without creating Knowledge artifacts."""
+
+    return diagnosis_terminal == "OPEN_WORLD" and incident_labels.get("fault") != "none"
 
 
 def run_one_job(
@@ -59,6 +72,9 @@ def run_one_job(
     capabilities = CapabilityMatrixRepositoryV1(store)
     baseline_repository = BaselineRepositoryV1(store)
     baseline_audit_repository = BaselineReadinessAuditRepositoryV021(store)
+    baseline_audit_repository_v023 = ProductBaselineReadinessAuditRepositoryV023(
+        store
+    )
     change_repository = ChangeEventRepositoryV1(store)
     object_store = ContentAddressedObjectStoreV1(
         settings.object_store_root,
@@ -107,6 +123,7 @@ def run_one_job(
         repository=baseline_repository,
         maximum_records_per_source=settings.maximum_evidence_records_per_source,
         audit_repository=baseline_audit_repository,
+        audit_repository_v023=baseline_audit_repository_v023,
     )
     pilot_runtime_authority = (
         None
@@ -175,7 +192,10 @@ def run_one_job(
                 ),
                 fence=fence,
             )
-            if str(result.get("terminal")) == "OPEN_WORLD":
+            if should_ingest_open_world_v023(
+                diagnosis_terminal=str(result.get("terminal")),
+                incident_labels=incident.labels,
+            ):
                 family = knowledge.ingest_open_world(
                     incident.incident_id,
                     fence=fence,

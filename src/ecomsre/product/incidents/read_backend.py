@@ -361,6 +361,7 @@ class ProductReadBackendV1:
         self._changes = changes
         self._metrics = metrics
         self._pilot_runtime_authority = pilot_runtime_authority
+        self._last_connector_diagnostics_v023: tuple[dict[str, Any], ...] = ()
 
     def _pilot_runtime_admitted(
         self,
@@ -450,6 +451,7 @@ class ProductReadBackendV1:
                 identity_by_logical=identity_by_logical,
                 window=window,
             )
+            connector_diagnostics = self._last_connector_diagnostics_v023
             self._metrics.increment(
                 "ecomsre_connector_requests_total",
                 {"source": action.source.value, "status": result.status.value},
@@ -506,6 +508,7 @@ class ProductReadBackendV1:
                     "incident_id": incident.incident_id,
                     "action": action.model_dump(mode="json"),
                     "connector_components": [item.model_dump(mode="json") for item in components],
+                    "connector_diagnostics": list(connector_diagnostics),
                     "connector_result": result.model_dump(mode="json"),
                     "read_outcome": outcome.model_dump(mode="json"),
                     "memory_outcome": (
@@ -536,6 +539,7 @@ class ProductReadBackendV1:
         identity_by_logical: dict[str, Any],
         window: ConnectorWindowV1,
     ) -> tuple[ConnectorQueryResultV1, bool, tuple[ConnectorQueryResultV1, ...]]:
+        self._last_connector_diagnostics_v023 = ()
         if action.source is EvidenceSourceV22.CHANGES and not any(
             config.kind is ConnectorKindV1.FIXTURE for config in environment.connector_configs
         ):
@@ -564,6 +568,7 @@ class ProductReadBackendV1:
             return result, False, (result,)
         matching: list[ConnectorQueryResultV1] = []
         matching_kinds: list[ConnectorKindV1] = []
+        connector_diagnostics: list[dict[str, Any]] = []
         pilot_runtime_selected = (
             action.source is EvidenceSourceV22.RUNTIME
             and self._pilot_runtime_admitted(
@@ -605,6 +610,15 @@ class ProductReadBackendV1:
                 )
                 returned = connector.query(context)
                 matching.extend(item for item in returned if item.source is action.source)
+                profile_diagnostics = getattr(
+                    connector,
+                    "profile_diagnostics",
+                    lambda: None,
+                )()
+                if profile_diagnostics is not None:
+                    connector_diagnostics.append(
+                        profile_diagnostics.model_dump(mode="json")
+                    )
             finally:
                 connector.close()
         combined = _combine_results(
@@ -615,6 +629,7 @@ class ProductReadBackendV1:
         fixture_backed = bool(matching_kinds) and all(
             kind is ConnectorKindV1.FIXTURE for kind in matching_kinds
         )
+        self._last_connector_diagnostics_v023 = tuple(connector_diagnostics)
         return combined, fixture_backed, tuple(matching)
 
 

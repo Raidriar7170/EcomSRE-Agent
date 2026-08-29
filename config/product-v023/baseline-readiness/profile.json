@@ -1,0 +1,18 @@
+{
+  "active_opensearch_profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+  "baseline_accumulation_seconds": 360,
+  "candidate_services": [
+    "checkout"
+  ],
+  "healthy_traffic_request_count": 180,
+  "healthy_traffic_requests_per_second": 0.5,
+  "lookback_seconds": 180,
+  "maximum_error_fraction": 0.01,
+  "minimum_accepted_windows": 4,
+  "mode": "DEMO_ONLY",
+  "profile_sha256": "60d1dafcbeb1bf02bcc1ae9217b187e3493ab4729bc7ee551103eb3122b1c2de",
+  "queue_fault_flag": 0,
+  "schema_version": "ecomsre.product.baseline-readiness-profile.v023",
+  "warmup_seconds": 180,
+  "window_count": 5
+}
