@@ -7,7 +7,7 @@ import hashlib
 import json
 import re
 import time
-from typing import Any, Literal, Mapping, Sequence
+from typing import Any, Literal, Mapping, Sequence, TYPE_CHECKING
 from urllib.parse import urlsplit
 
 import httpx
@@ -19,6 +19,12 @@ from ecomsre.product.connectors.opensearch_probe_protocol_v0221 import (
     OpenSearchProbeRequestAttemptV0221,
 )
 from ecomsre.product.contracts import ProductModelV1
+
+
+if TYPE_CHECKING:
+    from ecomsre.product.connectors.opensearch_capture_v0222 import (
+        OpenSearchCaptureStoreV0222,
+    )
 
 
 _SECRET_PARAMETER = re.compile(
@@ -147,6 +153,27 @@ def _body_schema_v0221(value: object) -> object:
 
 def request_body_schema_sha256_v0221(request_body: object) -> str:
     return semantic_sha256_v22(_body_schema_v0221(request_body))
+
+
+def _response_structure_sha256_v0221(response_body: bytes) -> str:
+    try:
+        payload = json.loads(response_body)
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        payload = b""
+    return request_body_schema_sha256_v0221(payload)
+
+
+def _capture_request_kind_v0222(
+    endpoint_kind: OpenSearchProbeEndpointKindV0221,
+) -> str:
+    if endpoint_kind in {
+        OpenSearchProbeEndpointKindV0221.MAPPING,
+        OpenSearchProbeEndpointKindV0221.FIELD_MAPPING,
+    }:
+        return "MAPPING"
+    if endpoint_kind is OpenSearchProbeEndpointKindV0221.SAMPLE_SEARCH:
+        return "STRUCTURAL_SAMPLE"
+    return endpoint_kind.value
 
 
 def _request_scalar_values_v0221(value: object) -> set[str]:
@@ -304,6 +331,7 @@ class OpenSearchProbeClientV0221:
         maximum_request_count: int,
         maximum_response_bytes: int,
         transport: httpx.BaseTransport | None = None,
+        capture_store: OpenSearchCaptureStoreV0222 | None = None,
     ) -> None:
         parsed = urlsplit(base_url)
         if (
@@ -325,6 +353,7 @@ class OpenSearchProbeClientV0221:
         self.maximum_response_bytes = maximum_response_bytes
         self.request_count = 0
         self.attempts: list[OpenSearchProbeRequestAttemptV0221] = []
+        self._capture_store = capture_store
         self._client = httpx.Client(
             base_url=base_url.rstrip("/"),
             timeout=15.0,
@@ -410,6 +439,24 @@ class OpenSearchProbeClientV0221:
         if self.request_count >= self.maximum_request_count:
             raise RuntimeError("OpenSearch probe request budget exhausted")
         self.request_count += 1
+        capture_request_id = (
+            f"{request_id[:60].rstrip('-')}-attempt-{self.request_count}"
+        )
+        if self._capture_store is not None:
+            index_binding = path.lstrip("/").split("/", 1)[0]
+            self._capture_store.record_request_intent(
+                request_id=capture_request_id,
+                request_plan_id=plan_id,
+                request_kind=_capture_request_kind_v0222(endpoint_kind),
+                method=method,
+                endpoint_class=path_template,
+                index_binding=index_binding,
+                query_parameter_names=tuple(sorted(query_parameters)),
+                request_body_schema_sha256=request_body_schema_sha256_v0221(
+                    json_body
+                ),
+                request_ordinal=self.request_count,
+            )
         started = time.perf_counter()
         try:
             response = self._client.request(
@@ -442,6 +489,14 @@ class OpenSearchProbeClientV0221:
             raise OpenSearchTransportErrorV0221(attempt, error) from error
         latency_ms = (time.perf_counter() - started) * 1000
         content = response.content
+        if self._capture_store is not None:
+            self._capture_store.record_response(
+                request_id=capture_request_id,
+                http_status=response.status_code,
+                response_headers=dict(response.headers),
+                response_body=content,
+                transport_latency_ms=latency_ms,
+            )
         if len(content) > self.maximum_response_bytes:
             raise RuntimeError("OpenSearch probe response exceeds byte bound")
         response_sha256 = hashlib.sha256(content).hexdigest()
@@ -474,6 +529,16 @@ class OpenSearchProbeClientV0221:
                 safe_error_envelope_sha256=envelope.envelope_sha256,
             )
             self.attempts.append(attempt)
+            if self._capture_store is not None:
+                self._capture_store.record_parse_result(
+                    request_id=capture_request_id,
+                    safe_parse_stage="HTTP_ERROR_ENVELOPE",
+                    safe_error_code=envelope.safe_error_code.value,
+                    structural_summary_sha256=(
+                        _response_structure_sha256_v0221(content)
+                    ),
+                    accepted=False,
+                )
             raise OpenSearchHttpErrorV0221(envelope, attempt, content)
         attempt = OpenSearchProbeRequestAttemptV0221.build(
             ordinal=self.request_count,
@@ -495,7 +560,25 @@ class OpenSearchProbeClientV0221:
         try:
             payload = json.loads(content)
         except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            if self._capture_store is not None:
+                self._capture_store.record_parse_result(
+                    request_id=capture_request_id,
+                    safe_parse_stage="JSON_DECODE",
+                    safe_error_code="OPENSEARCH_RESPONSE_NOT_JSON",
+                    structural_summary_sha256=(
+                        _response_structure_sha256_v0221(content)
+                    ),
+                    accepted=False,
+                )
             raise ValueError("OpenSearch probe response is not JSON") from error
+        if self._capture_store is not None:
+            self._capture_store.record_parse_result(
+                request_id=capture_request_id,
+                safe_parse_stage="JSON_DECODED",
+                safe_error_code=None,
+                structural_summary_sha256=request_body_schema_sha256_v0221(payload),
+                accepted=True,
+            )
         return payload, content, attempt
 
     def request_json_with_transport_retries(

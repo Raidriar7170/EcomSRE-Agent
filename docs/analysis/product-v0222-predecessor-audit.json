@@ -1,0 +1,53 @@
+{
+  "schema_version": "ecomsre.product.v0222.predecessor-audit.v1",
+  "goal_version": "ecomsre-product-v0222-capture-first-operator-profile-v1",
+  "status": "ECOMSRE_PRODUCT_V0222_PREDECESSOR_AUDIT_PASS",
+  "public_main_base": "8398a063de048064f160a7ffed236fbb3327b701",
+  "predecessors": [
+    {
+      "pr": 75,
+      "head": "a439f8882cd2fcdd3767f6bcfd5d955219fa1e15",
+      "terminal": "BLOCKED_ECOMSRE_PRODUCT_V02_UNKNOWN_FAULT_PROFILE"
+    },
+    {
+      "pr": 76,
+      "head": "55ccae45738c00a8be3752b81fecf19f37c87ce5",
+      "terminal": "BLOCKED_ECOMSRE_PRODUCT_V021_BASELINE_READINESS"
+    },
+    {
+      "pr": 77,
+      "head": "1568c72c3262befb90fb4e191592e51aa345bdcb",
+      "terminal": "BLOCKED_ECOMSRE_PRODUCT_V022_SCHEMA_PROBE"
+    },
+    {
+      "pr": 78,
+      "head": "08e813f9a48da091069dc95c5e312a552076aa99",
+      "terminal": "BLOCKED_ECOMSRE_PRODUCT_V0221_SCHEMA_AMBIGUOUS"
+    }
+  ],
+  "transitive_bound_file_count": 16,
+  "direct_v0221_bound_file_count": 8,
+  "v0221_live_schema_session_count": 1,
+  "v0221_request_plan_count": 1,
+  "v0221_changed_request_plan_count": 0,
+  "v0221_read_only_request_count": 6,
+  "v0221_transport_retry_count": 0,
+  "v0221_failure_stage": "PROFILE_RESOLUTION",
+  "v0221_mapping_status": "SUCCEEDED_IN_MEMORY_NOT_RETAINED",
+  "v0221_field_caps_status": "AVAILABLE_IN_MEMORY_NOT_RETAINED",
+  "v0221_bounded_sample_status": "PRESENT_IN_MEMORY_NOT_RETAINED",
+  "v0221_normalization_profile_status": "ABSENT",
+  "v0221_sanitized_fixture_status": "ABSENT",
+  "v0221_offline_parser_status": "NOT_STARTED",
+  "v0221_connector_smoke_status": "NOT_STARTED",
+  "baseline_unchanged": true,
+  "cleanup": "CLEAN",
+  "fault_attempt_count": 0,
+  "baseline_readiness_attempt_count": 0,
+  "product_diagnosis_attempt_count": 0,
+  "knowledge_loop_campaign_count": 0,
+  "agent_writes": 0,
+  "runbook_executions": 0,
+  "action_authority": "NONE",
+  "audit_sha256": "3530cf28bcee53d8eb52e7ccc21bef27762431d2e92e669c89f695081f950458"
+}
