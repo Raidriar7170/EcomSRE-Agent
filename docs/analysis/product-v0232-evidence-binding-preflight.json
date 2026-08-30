@@ -1,0 +1,110 @@
+{
+  "agent_writes": 0,
+  "case_count": 10,
+  "cases": [
+    {
+      "assessment_sha256": "35b3980e0f7a81541c0ce603db7ba77cab521e6b22af33883c4767436b91eac9",
+      "case_id": "01_FRESH_RUNTIME_EXPLICIT",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_FULLY_SUPPORTED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_FULLY_SUPPORTED",
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "assessment_sha256": "3b4f5efbd8f9d3e3d9676b08d94d72e759b5f818f6d366f3e9ce4f5a49795948",
+      "case_id": "02_STALE_RUNTIME",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "passed": true,
+      "reasons": [
+        "CONNECTOR_PROVENANCE_INVALID",
+        "FRESH_HEALTHY_RUNTIME_MISSING"
+      ]
+    },
+    {
+      "assessment_sha256": "35b3980e0f7a81541c0ce603db7ba77cab521e6b22af33883c4767436b91eac9",
+      "case_id": "03_ACTIVE_P01_EXPLICIT",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_FULLY_SUPPORTED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_FULLY_SUPPORTED",
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "assessment_sha256": "33bc208a9497cba2d073136978977e8dd6a42b93212df66f93b12ffa766ef0f4",
+      "case_id": "04_LOGS_WITHOUT_PROFILE",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "passed": true,
+      "reasons": [
+        "LOGS_PROFILE_BINDING_MISSING"
+      ]
+    },
+    {
+      "assessment_sha256": "f7d3e7b819d5a069634cac3bd6ae5f11dad64179058db6998acc86dec1f78aca",
+      "case_id": "05_SOURCE_FAILURE_BOUND",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_CAPABILITY_LIMITED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_CAPABILITY_LIMITED",
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "assessment_sha256": "0b93b070a1ca5fdb0a9e6b712fbdfc0b7d951848da0934825c84cb3ead79486c",
+      "case_id": "06_SOURCE_LIMITATION_UNBOUND",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "passed": true,
+      "reasons": [
+        "CAPABILITY_LIMITATION_NOT_EVIDENCE_BACKED"
+      ]
+    },
+    {
+      "assessment_sha256": "379e01511db6d11011c3e1f626bd91f6728247d60437a3b7549ffe82061637c2",
+      "case_id": "07_ALGORITHMIC_REASON_SEPARATED",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "passed": true,
+      "reasons": [
+        "CAPABILITY_LIMITATION_NOT_EVIDENCE_BACKED"
+      ]
+    },
+    {
+      "assessment_sha256": "35b3980e0f7a81541c0ce603db7ba77cab521e6b22af33883c4767436b91eac9",
+      "case_id": "08_NO_INCIDENT_COMPLETE",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_FULLY_SUPPORTED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_FULLY_SUPPORTED",
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "assessment_sha256": "f7d3e7b819d5a069634cac3bd6ae5f11dad64179058db6998acc86dec1f78aca",
+      "case_id": "09_INSUFFICIENT_EVIDENCE_BOUND",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_CAPABILITY_LIMITED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_CAPABILITY_LIMITED",
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "assessment_sha256": "ab6c00093a1e71a0aac3da3ba660feea924dcbbb64be712081abfe17e0cda46f",
+      "case_id": "10_FALSE_OPEN_WORLD_HEALTHY",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "passed": true,
+      "reasons": [
+        "FALSE_INCIDENT_TERMINAL"
+      ]
+    }
+  ],
+  "evidence_bundle_v1_compatible": true,
+  "index_deterministic": true,
+  "index_deterministic_and_immutable": true,
+  "index_immutable_persistence": true,
+  "index_seal_rejects_mutation": true,
+  "passed_case_count": 10,
+  "predecessor_result_verified": true,
+  "preflight_sha256": "13b0f45f6943152ed2d13259d35955bcffe1432023ef941269be7d88e47d9160",
+  "provider_calls": 0,
+  "reference_evidence_index_sha256": "54d740fbf929ba960491cc0480911802c3178f3c802eaa87c76664e489f0bfbe",
+  "runbook_executions": 0,
+  "schema_version": "ecomsre.product.evidence-binding-preflight.v0232",
+  "terminal": "ECOMSRE_PRODUCT_V0232_EVIDENCE_BINDING_CONTRACT_PASS"
+}

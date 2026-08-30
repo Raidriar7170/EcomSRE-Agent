@@ -37,6 +37,12 @@ from ecomsre.product.incidents.extensions import (
     ProductExtensionMatchV1,
     ProductExtensionMatcherV1,
 )
+from ecomsre.product.incidents.evidence_binding_v0232 import (
+    CapabilityEvidenceObservationV0232,
+    CapabilityLimitationCandidateV0232,
+    DiagnosisDecisionTraceV0232,
+)
+from ecomsre.product.environment.capabilities import SourceCapabilityStatusV1
 from ecomsre.product.incidents.read_backend import ProductReadBackendV1, _combine_results
 from ecomsre.product.incidents.repository import DiagnosisRepositoryV1
 from ecomsre.product.jobs.contracts import JobLeaseFenceV1, ProductJobTypeV1
@@ -280,6 +286,48 @@ def test_product_mvp_demo_fixture_can_verify_and_build_baseline(tmp_path: Path) 
     assert len(evidence["objects"]) == 8
 
 
+def test_v0232_diagnosis_evidence_index_is_retrievable_and_deterministic(
+    tmp_path: Path,
+) -> None:
+    settings = _settings(tmp_path)
+    with TestClient(create_app(settings)) as client:
+        environment_id, service_id = _prepare_environment(
+            client,
+            settings,
+            dataset="product-mvp-demo",
+            name="v0232-index",
+        )
+        diagnosis, evidence = _diagnose(
+            client,
+            settings,
+            environment_id=environment_id,
+            service_id=service_id,
+            external_key="v0232-index",
+        )
+        first = client.get(
+            f"/v1/incidents/{diagnosis['incident_id']}/evidence-index"
+        )
+        second = client.get(
+            f"/v1/incidents/{diagnosis['incident_id']}/evidence-index"
+        )
+
+    assert first.status_code == 200
+    assert second.json() == first.json()
+    index = first.json()
+    assert index["diagnosis_id"] == diagnosis["diagnosis_id"]
+    assert index["all_object_refs"] == sorted(
+        item["evidence_ref"] for item in evidence["objects"]
+    )
+    assert index["all_object_sha256_by_ref"] == {
+        item["evidence_ref"]: item["object_sha256"]
+        for item in sorted(evidence["objects"], key=lambda item: item["evidence_ref"])
+    }
+    assert index["linked_support_refs"] == diagnosis["supporting_evidence_refs"]
+    assert index["evidence_bundle_sha256"] == semantic_sha256_v22(evidence)
+    assert index["decision_trace_sha256"]
+    assert index["index_sha256"]
+
+
 def test_extension_lane_runs_after_core_and_before_open_world(
     tmp_path: Path,
     monkeypatch,
@@ -374,7 +422,7 @@ def test_multiple_extension_admissions_fail_closed(tmp_path: Path, monkeypatch) 
 
     assert result["terminal"] == "CONFLICTING_EVIDENCE"
     assert result["core_or_extension_or_open_world"] == "ABSTAIN"
-    assert "EXTENSION_MULTIPLE_ADMISSIONS" in result["capability_limitations"]
+    assert "EXTENSION_MULTIPLE_ADMISSIONS" not in result["capability_limitations"]
     assert result["provider_calls"] == 0
 
 
@@ -521,16 +569,47 @@ def test_lost_diagnosis_lease_cannot_bind_evidence_metadata(tmp_path: Path) -> N
         metadata_store=store,
     )
     diagnoses = DiagnosisRepositoryV1(store, object_store)
+    capability_observation = CapabilityEvidenceObservationV0232.build(
+        source=EvidenceSourceV22.LOGS,
+        capability_matrix_sha256="a" * 64,
+        capability_status=SourceCapabilityStatusV1.UNAVAILABLE,
+        required_services=("payment",),
+        available_services=(),
+        reason_code="TEST_LIMITATION",
+    )
+    limitation_candidate = CapabilityLimitationCandidateV0232.build(
+        limitation_code="TEST_LIMITATION",
+        category="SOURCE_UNAVAILABLE",
+        source=EvidenceSourceV22.LOGS,
+        capability_status=SourceCapabilityStatusV1.UNAVAILABLE,
+        connector_action_id=None,
+        connector_result_sha256=None,
+        safe_error_code=None,
+        coverage_required_services=("payment",),
+        coverage_observed_services=(),
+    )
+    decision_trace = DiagnosisDecisionTraceV0232.build(
+        incident_id=result.incident_id,
+        diagnosis_id=result.diagnosis_id,
+        known_admission_status="NONE",
+        extension_match_count=0,
+        no_incident_admissible=False,
+        required_coverage_satisfied=False,
+        failed_sources=(EvidenceSourceV22.LOGS,),
+        novelty_gate_disposition=None,
+        novelty_gate_reason_codes=(),
+        residual_anomaly_ids=(),
+    )
 
     with pytest.raises(ProductError, match="no longer owns"):
         diagnoses.put(
             result=result,
             observations=(
                 {
-                    "evidence_ref": "o:a:logs:payment:test",
+                    "evidence_ref": capability_observation.evidence_ref,
                     "source": "LOGS",
-                    "action_id": "a:logs:payment",
-                    "payload": {"bounded": True},
+                    "action_id": "capability:v0232:logs",
+                    "payload": capability_observation.model_dump(mode="json"),
                 },
             ),
             fence=JobLeaseFenceV1(
@@ -539,6 +618,8 @@ def test_lost_diagnosis_lease_cannot_bind_evidence_metadata(tmp_path: Path) -> N
                 attempt_count=claimed.attempt_count,
                 checked_at=111.0,
             ),
+            decision_trace_v0232=decision_trace,
+            limitation_candidates_v0232=(limitation_candidate,),
         )
 
     with store.connect() as connection:
@@ -550,12 +631,14 @@ def test_lost_diagnosis_lease_cannot_bind_evidence_metadata(tmp_path: Path) -> N
                 "evidence_objects",
                 "diagnosis_results",
                 "diagnosis_evidence_links",
+                "diagnosis_evidence_indexes",
             )
         }
     assert counts == {
         "evidence_objects": 0,
         "diagnosis_results": 0,
         "diagnosis_evidence_links": 0,
+        "diagnosis_evidence_indexes": 0,
     }
 
 
@@ -628,3 +711,91 @@ def test_idempotent_diagnosis_reentry_cannot_bind_unlinked_metadata(
 
     assert returned.result_sha256 == diagnosis["result_sha256"]
     assert after == before
+
+
+def test_v0232_diagnosis_reentry_requires_matching_immutable_index(
+    tmp_path: Path,
+) -> None:
+    settings = _settings(tmp_path)
+    with TestClient(create_app(settings)) as client:
+        environment_id, service_id = _prepare_environment(
+            client,
+            settings,
+            dataset="product-mvp-demo",
+            name="immutable-v0232-index",
+        )
+        diagnosis, evidence = _diagnose(
+            client,
+            settings,
+            environment_id=environment_id,
+            service_id=service_id,
+            external_key="immutable-v0232-index",
+        )
+    assert diagnosis["capability_limitations"] == []
+
+    store = SqliteStoreV1(settings.sqlite_path)
+    diagnoses = DiagnosisRepositoryV1(
+        store,
+        ContentAddressedObjectStoreV1(
+            settings.object_store_root,
+            metadata_store=store,
+        ),
+    )
+    jobs = JobRepositoryV1(store)
+    timestamp = time.time()
+    queued = jobs.enqueue(ProductJobTypeV1.DIAGNOSIS, {}, now=timestamp)
+    claimed = jobs.claim_next("v0232-reentry", lease_seconds=60, now=timestamp)
+    assert claimed is not None and claimed.job_id == queued.job_id
+    fence = JobLeaseFenceV1(
+        job_id=claimed.job_id,
+        claimed_by="v0232-reentry",
+        attempt_count=claimed.attempt_count,
+        checked_at=timestamp,
+    )
+    observations = tuple(
+        {
+            "evidence_ref": item["evidence_ref"],
+            "source": item["source"],
+            "action_id": item["action_id"],
+            "payload": item["payload"],
+        }
+        for item in evidence["objects"]
+    )
+    conflicting_trace = DiagnosisDecisionTraceV0232.build(
+        incident_id=str(diagnosis["incident_id"]),
+        diagnosis_id=str(diagnosis["diagnosis_id"]),
+        known_admission_status="NONE",
+        extension_match_count=0,
+        no_incident_admissible=True,
+        required_coverage_satisfied=True,
+        failed_sources=(),
+        novelty_gate_disposition="INSUFFICIENT_EVIDENCE",
+        novelty_gate_reason_codes=("IMMUTABLE_CONFLICT_PROBE",),
+        residual_anomaly_ids=(),
+    )
+
+    with pytest.raises(
+        ProductError,
+        match="Evidence Index differs",
+    ):
+        diagnoses.put(
+            result=DiagnosisResultV1.model_validate(diagnosis),
+            observations=observations,
+            fence=fence,
+            decision_trace_v0232=conflicting_trace,
+            limitation_candidates_v0232=(),
+        )
+
+    with store.connect() as connection:
+        connection.execute(
+            "DELETE FROM diagnosis_evidence_indexes WHERE incident_id = ?",
+            (diagnosis["incident_id"],),
+        )
+    with pytest.raises(ProductError, match="has no v0.2.3.2 Evidence Index"):
+        diagnoses.put(
+            result=DiagnosisResultV1.model_validate(diagnosis),
+            observations=observations,
+            fence=fence,
+            decision_trace_v0232=conflicting_trace,
+            limitation_candidates_v0232=(),
+        )

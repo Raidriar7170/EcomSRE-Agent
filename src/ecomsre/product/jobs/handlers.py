@@ -106,6 +106,7 @@ def handle_incident_diagnosis(
     incident_id = str(job.payload.get("incident_id", ""))
     existing = diagnoses.get_optional(incident_id)
     if existing is not None:
+        diagnoses.evidence_index(incident_id)
         return existing.model_dump(mode="json")
     incident = incidents.get(incident_id)
     baseline = baselines.get_optional(incident.baseline_id)
@@ -135,7 +136,7 @@ def handle_incident_diagnosis(
             (item.parent_service, item.child_service) for item in baseline.topology_edges
         ),
     )
-    result, observations = bridge.diagnose(
+    result, observations, decision_trace_v0232 = bridge.diagnose(
         incident=incident,
         baseline=baseline,
         identity_map=identity_map,
@@ -147,6 +148,10 @@ def handle_incident_diagnosis(
         result=result,
         observations=observations,
         fence=fence,
+        decision_trace_v0232=decision_trace_v0232,
+        limitation_candidates_v0232=(
+            acquisition.capability_limitation_candidates_v0232
+        ),
     )
     return stored.model_dump(mode="json")
 

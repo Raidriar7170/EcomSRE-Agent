@@ -152,6 +152,7 @@ class PilotRuntimeConnectorV02:
         self._settings = PilotRuntimeConnectorSettingsV02.model_validate(config.settings)
         self._data_root = Path(data_root).resolve()
         self._snapshot_path = (self._data_root / self._settings.snapshot_ref).resolve()
+        self._last_snapshot_v0232: PilotRuntimeSnapshotV02 | None = None
         if not self._snapshot_path.is_relative_to(self._data_root):
             raise ValueError("pilot Runtime snapshot escapes Product data root")
 
@@ -202,8 +203,10 @@ class PilotRuntimeConnectorV02:
         if context.requested_source not in {None, EvidenceSourceV22.RUNTIME}:
             return ()
         started = time.monotonic()
+        self._last_snapshot_v0232 = None
         try:
             snapshot = self._snapshot()
+            self._last_snapshot_v0232 = snapshot
             if (
                 snapshot.environment_id != context.environment_id
                 or snapshot.observed_at > context.window.ended_at
@@ -248,6 +251,9 @@ class PilotRuntimeConnectorV02:
                 latency_ms=max(0.0, (time.monotonic() - started) * 1000),
             )
         return (result,)
+
+    def evidence_binding_v0232(self) -> PilotRuntimeSnapshotV02 | None:
+        return self._last_snapshot_v0232
 
     def close(self) -> None:
         return None

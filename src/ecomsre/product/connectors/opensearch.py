@@ -237,6 +237,20 @@ class OpenSearchConnectorV1:
             ),
         )
 
+    def evidence_binding_v0232(
+        self,
+    ) -> (
+        tuple[
+            OpenSearchConnectorProfileBindingV023,
+            OpenSearchConnectorDiagnosticsV023,
+        ]
+        | None
+    ):
+        diagnostics = self.profile_diagnostics()
+        if self._profile_binding is None or diagnostics is None:
+            return None
+        return self._profile_binding, diagnostics
+
     def verify(self) -> ConnectorHealthResultV1:
         started_latency = 0.0
         try:

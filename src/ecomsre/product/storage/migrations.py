@@ -295,6 +295,19 @@ MIGRATIONS: tuple[tuple[int, str, tuple[str, ...]], ...] = (
             "ON baseline_readiness_audits_v023(environment_id, created_at)",
         ),
     ),
+    (
+        8,
+        "product-v0232-diagnosis-evidence-index",
+        (
+            """CREATE TABLE diagnosis_evidence_indexes (
+                diagnosis_id TEXT PRIMARY KEY REFERENCES diagnosis_results(diagnosis_id),
+                incident_id TEXT NOT NULL UNIQUE REFERENCES incidents(incident_id),
+                payload_json TEXT NOT NULL,
+                index_sha256 TEXT NOT NULL UNIQUE,
+                created_at TEXT NOT NULL
+            )""",
+        ),
+    ),
 )
 
 __all__ = ("MIGRATIONS",)

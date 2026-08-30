@@ -33,6 +33,9 @@ from ecomsre.product.incidents.contracts import (
     IncidentRecordV1,
 )
 from ecomsre.product.incidents.extensions import ProductExtensionMatcherV1
+from ecomsre.product.incidents.evidence_binding_v0232 import (
+    DiagnosisDecisionTraceV0232,
+)
 from ecomsre.product.incidents.read_backend import ProductReadAcquisitionV1
 
 
@@ -65,7 +68,11 @@ class ProductDiagnosisBridgeV1:
         acquisition: ProductReadAcquisitionV1,
         diagnosis_id: str | None,
         created_at: datetime,
-    ) -> tuple[DiagnosisResultV1, tuple[dict[str, Any], ...]]:
+    ) -> tuple[
+        DiagnosisResultV1,
+        tuple[dict[str, Any], ...],
+        DiagnosisDecisionTraceV0232,
+    ]:
         memory, _full = build_memory_views_v22(
             outcomes=acquisition.memory_outcomes,
             baseline=baseline.v22_baseline_profile,
@@ -112,11 +119,17 @@ class ProductDiagnosisBridgeV1:
         contradict: tuple[str, ...] = ()
         report_payload: dict[str, Any] | None = None
         limitations = set(acquisition.capability_limitations)
+        algorithmic_reasons: set[str] = set()
+        extension_match_count = 0
+        required_coverage = False
+        novelty_gate_disposition: NoveltyDispositionV23 | None = None
+        novelty_gate_reason_codes: tuple[str, ...] = ()
+        residual_anomaly_ids: tuple[str, ...] = ()
 
         if admission.conflicting_evidence:
             terminal = DiagnosisTerminalV1.CONFLICTING_EVIDENCE
             lane = DiagnosisLaneV1.ABSTAIN
-            limitations.add("CORE_MULTIPLE_ADMISSIONS")
+            algorithmic_reasons.add("CORE_MULTIPLE_ADMISSIONS")
             support = tuple(
                 sorted(
                     {
@@ -144,6 +157,7 @@ class ProductDiagnosisBridgeV1:
                 generic_anomalies=anomalies,
                 raw_outcomes=acquisition.raw_outcomes,
             )
+            extension_match_count = len(extension_matches)
             if len(extension_matches) > 1:
                 terminal = DiagnosisTerminalV1.CONFLICTING_EVIDENCE
                 lane = DiagnosisLaneV1.ABSTAIN
@@ -156,7 +170,7 @@ class ProductDiagnosisBridgeV1:
                         }
                     )
                 )
-                limitations.add("EXTENSION_MULTIPLE_ADMISSIONS")
+                algorithmic_reasons.add("EXTENSION_MULTIPLE_ADMISSIONS")
             elif extension_matches:
                 match = extension_matches[0]
                 terminal = DiagnosisTerminalV1.EXTENSION_KNOWN
@@ -203,6 +217,9 @@ class ProductDiagnosisBridgeV1:
                         required_source_failures=failed_sources,
                         conflicting_evidence=False,
                     )
+                    novelty_gate_disposition = gate.disposition
+                    novelty_gate_reason_codes = tuple(sorted(gate.reason_codes))
+                    residual_anomaly_ids = tuple(sorted(graph.residual_anomaly_ids))
                     strong = tuple(
                         item
                         for item in anomalies
@@ -267,7 +284,7 @@ class ProductDiagnosisBridgeV1:
                             else DiagnosisTerminalV1.INSUFFICIENT_EVIDENCE
                         )
                         lane = DiagnosisLaneV1.ABSTAIN
-                        limitations.update(gate.reason_codes)
+                        algorithmic_reasons.update(gate.reason_codes)
 
         result_payload: dict[str, Any] = {
             "schema_version": "ecomsre.product.diagnosis-result.v1",
@@ -300,6 +317,26 @@ class ProductDiagnosisBridgeV1:
                 ),
             }
         )
+        trace = DiagnosisDecisionTraceV0232.build(
+            incident_id=incident.incident_id,
+            diagnosis_id=result.diagnosis_id,
+            known_admission_status=(
+                "MULTIPLE_ADMISSIONS"
+                if admission.conflicting_evidence
+                else "SINGLE_ADMISSION"
+                if admission.admitted_diagnosis is not None
+                else "NONE"
+            ),
+            extension_match_count=extension_match_count,
+            no_incident_admissible=admission.no_incident_admissible,
+            required_coverage_satisfied=required_coverage,
+            failed_sources=failed_sources,
+            novelty_gate_disposition=novelty_gate_disposition,
+            novelty_gate_reason_codes=tuple(
+                sorted(set(novelty_gate_reason_codes).union(algorithmic_reasons))
+            ),
+            residual_anomaly_ids=residual_anomaly_ids,
+        )
         refs_by_action: dict[str, list[str]] = {}
         for reference in memory.evidence_refs:
             refs_by_action.setdefault(reference.action_id, []).append(reference.evidence_ref)
@@ -320,7 +357,16 @@ class ProductDiagnosisBridgeV1:
                         "payload": snapshot,
                     }
                 )
-        return result, tuple(observations)
+        observations.extend(
+            {
+                "evidence_ref": observation.evidence_ref,
+                "source": observation.source.value,
+                "action_id": f"capability:v0232:{observation.source.value.lower()}",
+                "payload": observation.model_dump(mode="json"),
+            }
+            for observation in acquisition.capability_observations_v0232
+        )
+        return result, tuple(observations), trace
 
 
 __all__ = ("ProductDiagnosisBridgeV1",)

@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from enum import Enum
 import re
-from typing import Any, Literal, Protocol
+from typing import Any, Literal, Protocol, runtime_checkable
 
 from pydantic import Field, model_validator
 
@@ -266,6 +266,13 @@ class ProductConnectorV1(Protocol):
     def close(self) -> None: ...
 
 
+@runtime_checkable
+class ProductConnectorEvidenceV0232(Protocol):
+    """Optional connector capability exposing exact post-query provenance inputs."""
+
+    def evidence_binding_v0232(self) -> object | None: ...
+
+
 __all__ = (
     "ConnectorAvailabilityV1",
     "ConnectorCapabilityV1",
@@ -275,4 +282,5 @@ __all__ = (
     "ConnectorQueryResultV1",
     "ConnectorWindowV1",
     "ProductConnectorV1",
+    "ProductConnectorEvidenceV0232",
 )

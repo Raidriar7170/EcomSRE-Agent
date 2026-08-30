@@ -264,17 +264,25 @@ def verify_product_v0232_traffic(
         progress_path or project / "docs/analysis/product-v0232-progress.json"
     )
     progress = _load_object(bound_progress_path)
-    verify_product_v0232_written_reports(
-        project,
-        progress_path=bound_progress_path,
-        expected_progress_terminal=TRAFFIC_CONTRACT_PASS_V0232,
-        expected_progress_increment=2,
-        expected_offline_changed_iteration_count=2,
-        expected_progress_bindings={
-            "traffic_contract_sha256": contract.contract_sha256,
-            "traffic_contract_report_sha256": expected_report["report_sha256"],
-        },
-    )
+    progress_bindings = {
+        "traffic_contract_sha256": contract.contract_sha256,
+        "traffic_contract_report_sha256": expected_report["report_sha256"],
+    }
+    if progress.get("increment") == 2:
+        verify_product_v0232_written_reports(
+            project,
+            progress_path=bound_progress_path,
+            expected_progress_terminal=TRAFFIC_CONTRACT_PASS_V0232,
+            expected_progress_increment=2,
+            expected_offline_changed_iteration_count=2,
+            expected_progress_bindings=progress_bindings,
+        )
+    else:
+        verify_product_v0232_written_reports(
+            project,
+            progress_path=bound_progress_path,
+            expected_progress_bindings=progress_bindings,
+        )
     if progress.get("clone_sha256") != _CLONE_SHA256:
         raise ValueError("Product v0.2.3.2 traffic progress clone differs")
     public_bytes = b"\n".join(

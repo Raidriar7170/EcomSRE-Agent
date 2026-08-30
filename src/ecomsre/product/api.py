@@ -28,6 +28,9 @@ from ecomsre.product.incidents.contracts import (
     IncidentCreateV1,
     IncidentRecordV1,
 )
+from ecomsre.product.incidents.evidence_binding_v0232 import (
+    DiagnosisEvidenceIndexV0232,
+)
 from ecomsre.product.knowledge.contracts import (
     FamilyRegistrationDraftV1,
     FaultFamilyListV1,
@@ -308,6 +311,18 @@ def get_diagnosis(request: Request, incident_id: str) -> DiagnosisResultV1:
 def get_evidence(request: Request, incident_id: str) -> EvidenceBundleV1:
     request.app.state.incidents.get(incident_id)
     return request.app.state.diagnoses.evidence(incident_id)
+
+
+@router.get(
+    "/v1/incidents/{incident_id}/evidence-index",
+    response_model=DiagnosisEvidenceIndexV0232,
+)
+def get_evidence_index(
+    request: Request,
+    incident_id: str,
+) -> DiagnosisEvidenceIndexV0232:
+    request.app.state.incidents.get(incident_id)
+    return request.app.state.diagnoses.evidence_index(incident_id)
 
 
 @router.get(

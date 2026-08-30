@@ -76,6 +76,111 @@ _PRIVATE_STATE_V0232 = {
         "4c8d838c8c2e4a773e4c45353a84620367ef6647140b88ccdbed8f802b2796ab"
     ),
 }
+_EVIDENCE_PREFLIGHT_CASES_V0232 = (
+    (
+        "01_FRESH_RUNTIME_EXPLICIT",
+        "ECOMSRE_PRODUCT_V0232_NOFAULT_FULLY_SUPPORTED",
+        (),
+        (),
+    ),
+    (
+        "02_STALE_RUNTIME",
+        "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+        (
+            "CONNECTOR_PROVENANCE_INVALID",
+            "FRESH_HEALTHY_RUNTIME_MISSING",
+        ),
+        (),
+    ),
+    (
+        "03_ACTIVE_P01_EXPLICIT",
+        "ECOMSRE_PRODUCT_V0232_NOFAULT_FULLY_SUPPORTED",
+        (),
+        (),
+    ),
+    (
+        "04_LOGS_WITHOUT_PROFILE",
+        "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+        ("LOGS_PROFILE_BINDING_MISSING",),
+        (),
+    ),
+    (
+        "05_SOURCE_FAILURE_BOUND",
+        "ECOMSRE_PRODUCT_V0232_NOFAULT_CAPABILITY_LIMITED",
+        (),
+        (),
+    ),
+    (
+        "06_SOURCE_LIMITATION_UNBOUND",
+        "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+        ("CAPABILITY_LIMITATION_NOT_EVIDENCE_BACKED",),
+        (),
+    ),
+    (
+        "07_ALGORITHMIC_REASON_SEPARATED",
+        "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+        ("CAPABILITY_LIMITATION_NOT_EVIDENCE_BACKED",),
+        ("ALGORITHMIC_REASON_MASQUERADES_AS_CAPABILITY",),
+    ),
+    (
+        "08_NO_INCIDENT_COMPLETE",
+        "ECOMSRE_PRODUCT_V0232_NOFAULT_FULLY_SUPPORTED",
+        (),
+        (),
+    ),
+    (
+        "09_INSUFFICIENT_EVIDENCE_BOUND",
+        "ECOMSRE_PRODUCT_V0232_NOFAULT_CAPABILITY_LIMITED",
+        (),
+        (),
+    ),
+    (
+        "10_FALSE_OPEN_WORLD_HEALTHY",
+        "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+        ("FALSE_INCIDENT_TERMINAL",),
+        (),
+    ),
+)
+
+
+def _evidence_preflight_cases_match(payload: Mapping[str, Any]) -> bool:
+    cases = payload.get("cases")
+    if not isinstance(cases, list) or len(cases) != len(
+        _EVIDENCE_PREFLIGHT_CASES_V0232
+    ):
+        return False
+    expected_keys = {
+        "case_id",
+        "expected_terminal",
+        "observed_terminal",
+        "reasons",
+        "assessment_sha256",
+        "passed",
+    }
+    for case, (case_id, terminal, required, forbidden) in zip(
+        cases,
+        _EVIDENCE_PREFLIGHT_CASES_V0232,
+        strict=True,
+    ):
+        if not isinstance(case, dict) or set(case) != expected_keys:
+            return False
+        reasons = case.get("reasons")
+        digest = case.get("assessment_sha256")
+        if (
+            case.get("case_id") != case_id
+            or case.get("expected_terminal") != terminal
+            or case.get("observed_terminal") != terminal
+            or case.get("passed") is not True
+            or not isinstance(reasons, list)
+            or reasons != sorted(set(reasons))
+            or reasons != list(required)
+            or set(forbidden).intersection(reasons)
+            or not isinstance(digest, str)
+            or len(digest) != 64
+            or any(character not in "0123456789abcdef" for character in digest)
+        ):
+            return False
+    return True
 
 
 def expected_source_repository_binding_v0232() -> dict[str, object]:
@@ -315,6 +420,7 @@ def verify_product_v0232_written_reports(
     audit_path: Path | None = None,
     clone_path: Path | None = None,
     progress_path: Path | None = None,
+    evidence_preflight_path: Path | None = None,
     expected_progress_terminal: str | None = None,
     expected_progress_increment: int | None = None,
     expected_offline_changed_iteration_count: int | None = None,
@@ -356,6 +462,7 @@ def verify_product_v0232_written_reports(
         "runbook_executions": 0,
         "provider_calls": 0,
     }
+    evidence_preflight: dict[str, Any] | None = None
     if expected_progress_increment is None:
         observed_increment = progress.get("increment")
         if observed_increment == 1:
@@ -366,8 +473,67 @@ def verify_product_v0232_written_reports(
             expected_progress_terminal = "ECOMSRE_PRODUCT_V0232_TRAFFIC_CONTRACT_PASS"
             expected_progress_increment = 2
             expected_offline_changed_iteration_count = 2
+        elif observed_increment == 3:
+            expected_progress_terminal = (
+                "ECOMSRE_PRODUCT_V0232_EVIDENCE_BINDING_CONTRACT_PASS"
+            )
+            expected_progress_increment = 3
+            expected_offline_changed_iteration_count = 3
         else:
             raise ValueError("Product v0.2.3.2 progress lifecycle differs")
+    if expected_progress_increment == 3:
+        evidence_preflight = _load_object(
+            evidence_preflight_path
+            or root / "docs/analysis/product-v0232-evidence-binding-preflight.json"
+        )
+        _require_seal(evidence_preflight, "preflight_sha256")
+        if (
+            evidence_preflight.get("schema_version")
+            != "ecomsre.product.evidence-binding-preflight.v0232"
+            or evidence_preflight.get("terminal")
+            != "ECOMSRE_PRODUCT_V0232_EVIDENCE_BINDING_CONTRACT_PASS"
+            or evidence_preflight.get("case_count") != 10
+            or evidence_preflight.get("passed_case_count") != 10
+            or not _evidence_preflight_cases_match(evidence_preflight)
+            or evidence_preflight.get("predecessor_result_verified") is not True
+            or evidence_preflight.get("evidence_bundle_v1_compatible") is not True
+            or evidence_preflight.get("index_deterministic") is not True
+            or evidence_preflight.get("index_seal_rejects_mutation") is not True
+            or evidence_preflight.get("index_immutable_persistence") is not True
+            or evidence_preflight.get("index_deterministic_and_immutable") is not True
+            or any(
+                evidence_preflight.get(key) != 0
+                for key in (
+                    "agent_writes",
+                    "runbook_executions",
+                    "provider_calls",
+                )
+            )
+        ):
+            raise ValueError("Product v0.2.3.2 Evidence preflight binding differs")
+        derived_progress_bindings = {
+            "evidence_binding_preflight_sha256": evidence_preflight[
+                "preflight_sha256"
+            ],
+            "reference_evidence_index_sha256": evidence_preflight[
+                "reference_evidence_index_sha256"
+            ],
+        }
+        if expected_progress_bindings is None:
+            expected_progress_bindings = derived_progress_bindings
+        else:
+            if any(
+                key in expected_progress_bindings
+                and expected_progress_bindings[key] != value
+                for key, value in derived_progress_bindings.items()
+            ):
+                raise ValueError(
+                    "Product v0.2.3.2 expected Evidence progress binding differs"
+                )
+            expected_progress_bindings = {
+                **expected_progress_bindings,
+                **derived_progress_bindings,
+            }
     if (
         expected_progress_terminal is None
         or expected_offline_changed_iteration_count is None
@@ -413,9 +579,12 @@ def verify_product_v0232_written_reports(
         )
     ):
         raise ValueError("Product v0.2.3.2 written report binding differs")
+    public_payloads = [audit, clone_payload, progress]
+    if evidence_preflight is not None:
+        public_payloads.append(evidence_preflight)
     public_bytes = b"\n".join(
         json.dumps(payload, sort_keys=True).encode("utf-8")
-        for payload in (audit, clone_payload, progress)
+        for payload in public_payloads
     )
     if b"/Users/" in public_bytes or b"/home/" in public_bytes:
         raise ValueError("Product v0.2.3.2 public report leaks a local locator")
