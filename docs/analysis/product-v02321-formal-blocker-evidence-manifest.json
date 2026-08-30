@@ -1,0 +1,133 @@
+{
+  "schema_version": "ecomsre.product.formal-blocker-evidence-manifest.v02321",
+  "goal_version": "ecomsre-product-v02321-traffic-harness-repair-nofault-v1",
+  "terminal": "BLOCKED_ECOMSRE_PRODUCT_V02321_NOFAULT_INFRASTRUCTURE",
+  "execution_head": "ca2860bd96405512839354a5b2be0453b43384b0",
+  "blocker_stage": "PROCESS_INTERRUPTED_AFTER_FORMAL_TRAFFIC_PASS",
+  "one_shot_consumed": true,
+  "formal_healthy_traffic_execution_count": 1,
+  "measured_terminal": null,
+  "nofault_acceptance_complete": false,
+  "knowledge_loop_handoff_authorized": false,
+  "formal_rerun_authorized": false,
+  "artifacts": {
+    "pre_formal_progress": {
+      "public_path": "docs/analysis/product-v02321-progress-pre-formal.json",
+      "file_sha256": "ee0cdabed806d1aafe36adbfa0641e5dd0aced64d01127da3440f2b5ee45c372",
+      "semantic_sha256": "7e9f1b910c5053e132f987bc349ae95ac91d3604da215be8079dbef9c8d2f594"
+    },
+    "formal_admission": {
+      "private_path": ".local/product-v02321/formal/admission.json",
+      "file_sha256": "8d9e326bae35f4d4ddaaf503c869bb7e19ca5ef52f283e8579e5061e686e2a51",
+      "semantic_sha256": "e17c39e144f1b9a2e58b225cf03ae3db7041b0cebbf2fb2649155ffe84f4accb"
+    },
+    "formal_state_clone": {
+      "public_path": "docs/analysis/product-v02321-product-state-clone-formal.json",
+      "file_sha256": "e6dc52dffcfa3bcdf52f5b77404375579915e49f64ec00948dd9e6947466d21d",
+      "semantic_sha256": "7073a69315430e72b73a1d4ad54b06d5b3cc400d11465e583252a2f75c38fbb5",
+      "clone_sha256": "ebe5fce84300475cca3873bbbd6e3ec00cb9d5467789e7f210b564820bc68546"
+    },
+    "runtime_authority": {
+      "public_path": "docs/analysis/product-v02321-runtime-authority.json",
+      "file_sha256": "6afaf7a68148887fb2b6967f67cb663efe0a92603d41ba6c1cc1e450c4928be2",
+      "semantic_sha256": "9708e7b09d18be9616edbd03f77a27ef24dcd0f6ac3a49dcbed47f7690008bd4"
+    },
+    "baseline_restart": {
+      "public_path": "docs/analysis/product-v02321-baseline-restart.json",
+      "file_sha256": "6e8548e963666b0b1ba4c2c3319be682f67c9f9672e162c97ec7da7d2dd8845d",
+      "semantic_sha256": "8b9cde499435c7955b18f5177d146d52d59c90262f699cc52818950065990335"
+    },
+    "traffic_consumption": {
+      "private_path": ".local/product-v02321/formal/traffic-consumption.json",
+      "file_sha256": "29c964631f0e3cf8e67ceac055c6399c9215e8e0fd122abdf94d795893848e1c",
+      "semantic_sha256": "32472fb0eac5b8fd0f46dac547f62e5d5a3e0842792e244ee84211a53e2e6df1"
+    },
+    "traffic_execution": {
+      "private_path": ".local/product-v02321/formal/traffic-execution.json",
+      "file_sha256": "68b5bcb33dac6649555a15feff48c9fbd6031fb1026ec66b56790f513d87071b",
+      "semantic_sha256": "930d5985c88aa8d797f0c1a268ae4b8ece26302480bff3797a61a0988899406e"
+    },
+    "formal_traffic": {
+      "public_path": "docs/analysis/product-v02321-formal-traffic.json",
+      "file_sha256": "0358a7fe7c650efa9e38842084ac2768726fec2e9dedcd615cfafed912528ad6",
+      "semantic_sha256": "b5306c69613255517f2fc7a1089c1b717d32ae219da10ccaf4bd9943316be146",
+      "execution_sha256": "930d5985c88aa8d797f0c1a268ae4b8ece26302480bff3797a61a0988899406e"
+    },
+    "fresh_runtime_snapshot": {
+      "public_path": "docs/analysis/product-v02321-fresh-runtime-snapshot.json",
+      "file_sha256": "bd72ace7d7573721e717ac1ec039758dc072b297bc3b114095484de282e6f8a1",
+      "semantic_sha256": "87397ce672d3b833a61d2e9b4105f407e30ab3c1eadcba4adf00adcc185187e3"
+    },
+    "successor_incident": {
+      "private_path": ".local/product-v02321/formal/incident.json",
+      "file_sha256": "567d17c923f0f17ebaae28e8bfdbe781bb49c76b233c2666324e214dc0edf5ff",
+      "semantic_sha256": "108e0cd7fb94bc0a4aaa723295ed68a74ebd6dfa72195a0d83128f3d82201af2",
+      "incident_id": "inc-a5a8df708ab77c2f2e19da63"
+    },
+    "incident_traffic_binding": {
+      "private_path": ".local/product-v02321/formal/incident-traffic-binding.json",
+      "file_sha256": "fb09d3ea34cf985cf81d7fcf380aebd3c68f59b8afccd90a291fdd013309a19c",
+      "semantic_sha256": "7e4ce75c638749547f5e9919447c5438318737962bb1c083c02553b6dc543657",
+      "incident_id": "inc-a5a8df708ab77c2f2e19da63",
+      "traffic_execution_sha256": "930d5985c88aa8d797f0c1a268ae4b8ece26302480bff3797a61a0988899406e"
+    },
+    "diagnosis_job_pending": {
+      "private_path": ".local/product-v02321/formal/diagnosis-job.json",
+      "file_sha256": "aa1c00ec8a68aa3265172bc2e47f080a3bff89363e8a10d1f8b75442b72ee639",
+      "semantic_sha256": "6bd0916c93780b780818986ad7285e485f302297419383a18ac33095b9c98d75",
+      "job_id": "job-216dd1caac0b92270b1870a2",
+      "status": "PENDING"
+    },
+    "diagnosis_job_failed": {
+      "private_path": ".local/product-v02321/formal/diagnosis-job-completion.json",
+      "file_sha256": "52c10429309d313dd9dc55c9014d89e479d956fc3a8b9e3a4c40ba3d57fd9f35",
+      "semantic_sha256": "2c1354f003737edd766e3b1cfb5a22e54704f08003723e66ac81d53d5e035b21",
+      "job_id": "job-216dd1caac0b92270b1870a2",
+      "status": "FAILED",
+      "safe_error_code": "INTERNAL_CONTRACT_FAILURE"
+    },
+    "source_poststate": {
+      "private_path": ".local/product-v02321/formal/source-poststate.json",
+      "file_sha256": "85790781e2497826e0d30fd6be1ad3d73749c53c0e975cba25df806bfe0b0bc0",
+      "semantic_sha256": "2a156e08872fa5abbfcc3883121137bc43f7c6219dfd08c82518475c56cea340",
+      "source_sha256": "0860c3cefe795378b36293342fa7250bab97bb75e8767d3b5a8c200c3e05741c"
+    },
+    "blocker_closure": {
+      "private_path": ".local/product-v02321/formal/blocker-closure-evidence.json",
+      "file_sha256": "9a6dfc19168b18199eaf9700fa9a0b0799510662b68abd736ca83f11a3791f1d",
+      "semantic_sha256": "1830fbc352718cec6907151768fd12bba9801bb5c0395a0499cacab7e8101adf",
+      "verdict": "CLEAN"
+    },
+    "formal_blocker": {
+      "public_path": "docs/analysis/product-v02321-formal-blocker.json",
+      "private_path": ".local/product-v02321/formal/blocker.json",
+      "public_file_sha256": "75c881ccb5e7082291a35465ba7b35f8c608befed20f6b263bef46dd26da8a9a",
+      "private_file_sha256": "75c881ccb5e7082291a35465ba7b35f8c608befed20f6b263bef46dd26da8a9a",
+      "semantic_sha256": "2f8f6fd26c7783091c00fb9cdcfaa29f145b4d29b31f16ec6ac1c8fb3e9999f1"
+    }
+  },
+  "observed_counts": {
+    "starting_incident_count": 1,
+    "observed_incident_count": 2,
+    "accepted_successor_incident_count": 1,
+    "starting_diagnosis_count": 1,
+    "observed_diagnosis_count": 1,
+    "successor_diagnosis_count": 0,
+    "observed_diagnosis_job_count": 2,
+    "fault_family_count": 0,
+    "knowledge_artifact_count": 0,
+    "provider_calls": 0,
+    "agent_writes": 0,
+    "runbook_executions": 0
+  },
+  "authority_and_closure": {
+    "action_authority": "NONE",
+    "product_cleanup": "CLEAN",
+    "demo_cleanup": "CLEAN",
+    "queue_default_unchanged": true,
+    "outer_baseline_unchanged": true,
+    "source_state_unchanged": true,
+    "non_owned_resources_changed": false
+  },
+  "manifest_sha256": "6104953a87e3307ae826de6e3348d651d82fd7708f7dbf8341962666a0b93129"
+}
