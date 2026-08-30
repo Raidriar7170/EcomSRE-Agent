@@ -78,3 +78,27 @@ returned `BASELINE_INSUFFICIENT_WINDOWS`. The runner restored the outer
 baseline and closed owned Demo cleanup as `CLEAN`; it must not be rerun under
 the same Goal or repaired by changing its recorded result. Any successor needs
 a new execution contract and fresh roots.
+
+## Frozen v0.2.3.1 Runtime-continuity session
+
+Product v0.2.3.1 consumed one Runtime Authority Continuation Session from clean
+execution HEAD `e2c2f640d34a9bd928e32d8394894fd54d93722a`. The same session proved
+Runtime-authority continuity and Product restart before creating exactly one
+No-Fault Incident and one Diagnosis. It reused the existing Baseline and did
+not create a new Baseline or verify job.
+
+The attempted healthy-profile episode did not pass: only `1 / 30` requests
+completed and that request errored. The frozen measured terminal is
+`ECOMSRE_PRODUCT_V0231_NOFAULT_NOT_SUPPORTED`. Do not rerun it, reinterpret it
+as a healthy-system pass, or use Session 2; Incident creation made Session 2
+illegal. The Knowledge-Loop handoff is not authorized. Fault injection,
+calibration, promotion, remediation, Agent writes, and Runbooks remain outside
+this result.
+
+Offline verification of the tracked result is safe and does not call Docker or
+live connectors:
+
+```bash
+PYTHONPATH=src:. uv run --frozen --no-sync python -m \
+  scripts.ci.verify_product_v0231_result
+```

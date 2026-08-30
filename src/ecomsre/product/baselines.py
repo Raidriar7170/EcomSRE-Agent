@@ -20,6 +20,7 @@ from ecomsre.dta_v2.v22.read_contracts import (
     LogRecordV22,
     MetricFactV22,
     MetricKindV22,
+    ReadSourceStatusV22,
     ResourceUsageRecordV22,
     TraceSpanV22,
     semantic_sha256_v22,
@@ -34,6 +35,8 @@ from ecomsre.product.connectors.registry import ConnectorRegistryV1
 from ecomsre.product.contracts import (
     ConnectorKindV1,
     EnvironmentRecordV1,
+    OpenSearchConnectorSettingsModeV1,
+    OpenSearchConnectorSettingsV1,
     ProductModelV1,
     ServiceIdentityMapV1,
 )
@@ -54,12 +57,20 @@ from ecomsre.product.pilot.baseline_audit_v021 import (
     build_baseline_readiness_audit_v021,
     evaluate_baseline_windows_v021,
 )
+from ecomsre.product.pilot.baseline_readiness_v023 import (
+    BaselineWindowEvaluationV023,
+    OpenSearchWindowDiagnosticsV023,
+    ProductBaselineReadinessAuditRepositoryV023,
+    ProductBaselineReadinessAuditV023,
+    ProductBaselineReadinessProfileV023,
+    PrometheusWindowDiagnosticsV023,
+    evaluate_baseline_windows_v023,
+    put_readiness_audit_in_transaction_v023,
+)
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
 
 
-BASELINE_REQUIRED_COMPLETE_SOURCE_POLICY_V021 = (
-    "GLOBAL_AVAILABLE_TARGET_COMPLETE_V1"
-)
+BASELINE_REQUIRED_COMPLETE_SOURCE_POLICY_V021 = "GLOBAL_AVAILABLE_TARGET_COMPLETE_V1"
 
 
 class BaselineBuildModeV1(str, Enum):
@@ -88,7 +99,9 @@ class BaselineBuildPolicyV1(ProductModelV1):
                 or self.minimum_successful_windows != 4
                 or self.warmup_seconds != 0
             ):
-                raise ValueError("historical baseline policy differs from the MVP contract")
+                raise ValueError(
+                    "historical baseline policy differs from the MVP contract"
+                )
         elif (
             self.lookback_seconds > 180
             or self.window_count != 5
@@ -105,6 +118,7 @@ class BaselineJobCreateV1(ProductModelV1):
         min_length=1,
         max_length=20,
     )
+    planned_windows: tuple[ConnectorWindowV1, ...] | None = None
     activate: bool = False
 
     @model_validator(mode="after")
@@ -113,6 +127,26 @@ class BaselineJobCreateV1(ProductModelV1):
             sorted(set(self.candidate_services))
         ):
             raise ValueError("baseline candidate services are not canonical")
+        if self.planned_windows is not None:
+            policy = self.build_policy
+            window_seconds = policy.lookback_seconds / policy.window_count
+            if (
+                policy.mode is not BaselineBuildModeV1.DEMO_ONLY
+                or len(self.planned_windows) != policy.window_count
+                or not float(window_seconds).is_integer()
+                or any(
+                    window.ended_at - window.started_at
+                    != timedelta(seconds=int(window_seconds))
+                    for window in self.planned_windows
+                )
+                or any(
+                    left.ended_at != right.started_at
+                    for left, right in zip(
+                        self.planned_windows, self.planned_windows[1:]
+                    )
+                )
+            ):
+                raise ValueError("baseline planned-window schedule differs")
         return self
 
 
@@ -193,21 +227,23 @@ def build_environment_baseline(
     baseline_id: str | None = None,
     required_complete_sources: tuple[EvidenceSourceV22, ...] = (),
     expected_windows_v021: tuple[ConnectorWindowV1, ...] | None = None,
-    connector_bindings_v021: tuple[
-        tuple[BaselineConnectorBindingV021, ...], ...
-    ]
+    connector_bindings_v021: tuple[tuple[BaselineConnectorBindingV021, ...], ...]
     | None = None,
     connector_expectations_v021: tuple[
         tuple[BaselineConnectorExpectationV021, ...], ...
     ]
     | None = None,
+    evaluation_v023: BaselineWindowEvaluationV023 | None = None,
 ) -> EnvironmentBaselineV1:
     if len(window_results) > build_policy.window_count:
         raise ProductError(
             "BASELINE_WINDOW_COUNT_INVALID",
             "The baseline contains more windows than its policy allows.",
         )
-    if expected_windows_v021 is not None and len(window_results) != build_policy.window_count:
+    if (
+        expected_windows_v021 is not None
+        and len(window_results) != build_policy.window_count
+    ):
         raise ProductError(
             "BASELINE_WINDOW_COUNT_INVALID",
             "The audited baseline window count differs from its policy.",
@@ -216,45 +252,90 @@ def build_environment_baseline(
                 "required_window_count": build_policy.window_count,
             },
         )
-    expected_windows = expected_windows_v021 or tuple(
-        (
-            results[0].window
-            if results
-            else ConnectorWindowV1(
-                started_at=built_at - timedelta(seconds=index + 1),
-                ended_at=built_at - timedelta(seconds=index),
-            )
+    if evaluation_v023 is not None:
+        expected_result_sha256s = tuple(
+            tuple(sorted(item.result_sha256 for item in results))
+            for results in window_results
         )
-        for index, results in enumerate(window_results)
-    )
-    evaluation = evaluate_baseline_windows_v021(
-        window_results=window_results,
-        required_complete_sources=required_complete_sources,
-        expected_windows=expected_windows,
-        connector_bindings=connector_bindings_v021,
-        connector_expectations=connector_expectations_v021,
-    )
-    successful = tuple(
-        window_results[ordinal - 1]
-        for ordinal in evaluation.accepted_ordinals
-    )
+        evaluated_result_sha256s = tuple(
+            item.result_sha256s for item in evaluation_v023.windows
+        )
+        expected_window_values = tuple(
+            results[0].window if results else None for results in window_results
+        )
+        evaluated_window_values = tuple(item.window for item in evaluation_v023.windows)
+        policy_is_v023 = (
+            build_policy.mode is BaselineBuildModeV1.DEMO_ONLY
+            and build_policy.lookback_seconds == 180
+            and build_policy.window_count == 5
+            and build_policy.minimum_successful_windows == 4
+            and build_policy.warmup_seconds == 180
+        )
+        if (
+            not policy_is_v023
+            or not evaluation_v023.final_builder_would_pass
+            or len(window_results) != build_policy.window_count
+            or expected_result_sha256s != evaluated_result_sha256s
+            or expected_window_values != evaluated_window_values
+        ):
+            raise ProductError(
+                "BASELINE_V023_EVALUATION_PARITY_INVALID",
+                "The Product v0.2.3 evaluation does not bind the Builder inputs.",
+                status_code=409,
+                details={"parity_sha256": evaluation_v023.parity_sha256},
+            )
+        accepted_ordinals = evaluation_v023.accepted_ordinals
+        rejected_windows = [
+            {
+                "window_ordinal": item.window_ordinal,
+                "rejection_reason_codes": [
+                    reason.value for reason in item.rejection_reason_codes
+                ],
+            }
+            for item in evaluation_v023.windows
+            if not item.accepted
+        ]
+        parity_sha256 = evaluation_v023.parity_sha256
+    else:
+        expected_windows = expected_windows_v021 or tuple(
+            (
+                results[0].window
+                if results
+                else ConnectorWindowV1(
+                    started_at=built_at - timedelta(seconds=index + 1),
+                    ended_at=built_at - timedelta(seconds=index),
+                )
+            )
+            for index, results in enumerate(window_results)
+        )
+        evaluation = evaluate_baseline_windows_v021(
+            window_results=window_results,
+            required_complete_sources=required_complete_sources,
+            expected_windows=expected_windows,
+            connector_bindings=connector_bindings_v021,
+            connector_expectations=connector_expectations_v021,
+        )
+        accepted_ordinals = evaluation.accepted_ordinals
+        rejected_windows = [
+            {
+                "window_ordinal": item.window_ordinal,
+                "rejection_reason_codes": [
+                    reason.value for reason in item.rejection_reason_codes
+                ],
+            }
+            for item in evaluation.windows
+            if not item.accepted
+        ]
+        parity_sha256 = evaluation.parity_sha256
+    successful = tuple(window_results[ordinal - 1] for ordinal in accepted_ordinals)
     if len(successful) < build_policy.minimum_successful_windows:
         raise ProductError(
             "BASELINE_INSUFFICIENT_WINDOWS",
             "The baseline did not produce enough successful windows.",
             details={
-                "accepted_window_ordinals": list(evaluation.accepted_ordinals),
-                "rejected_windows": [
-                    {
-                        "window_ordinal": item.window_ordinal,
-                        "rejection_reason_codes": [
-                            reason.value for reason in item.rejection_reason_codes
-                        ],
-                    }
-                    for item in evaluation.windows
-                    if not item.accepted
-                ],
-                "parity_sha256": evaluation.parity_sha256,
+                "accepted_window_ordinals": list(accepted_ordinals),
+                "rejected_windows": rejected_windows,
+                "parity_sha256": parity_sha256,
             },
         )
     metric_values: dict[tuple[str, MetricKindV22], list[float]] = defaultdict(list)
@@ -267,9 +348,13 @@ def build_environment_baseline(
         for result in results:
             for record in result.records:
                 if isinstance(record, MetricFactV22) and record.value is not None:
-                    metric_values[(record.service, record.metric_kind)].append(record.value)
+                    metric_values[(record.service, record.metric_kind)].append(
+                        record.value
+                    )
                 elif isinstance(record, TraceSpanV22):
-                    trace_values[(record.service, record.operation)].append(record.duration_ms)
+                    trace_values[(record.service, record.operation)].append(
+                        record.duration_ms
+                    )
                     if record.parent_service is not None:
                         topology.add((record.parent_service, record.service))
                 elif isinstance(record, ResourceUsageRecordV22):
@@ -280,7 +365,9 @@ def build_environment_baseline(
                         record.memory_slope_bytes_per_second
                     )
                 elif isinstance(record, LogRecordV22):
-                    log_templates[(record.service, _normal_log_template(record.message))] += 1
+                    log_templates[
+                        (record.service, _normal_log_template(record.message))
+                    ] += 1
     profile = BaselineProfileV22.build(
         metric_stats=tuple(
             (
@@ -391,9 +478,10 @@ class BaselineRepositoryV1:
             (baseline.baseline_id,),
         ).fetchone()
         if existing is not None:
-            if existing["payload_json"] != serialized or bool(
-                existing["active"]
-            ) != activate:
+            if (
+                existing["payload_json"] != serialized
+                or bool(existing["active"]) != activate
+            ):
                 raise ProductError(
                     "BASELINE_IMMUTABLE_CONFLICT",
                     "The baseline version already exists with different content.",
@@ -450,6 +538,47 @@ class BaselineRepositoryV1:
                     connection,
                     audit,
                     baseline_id=baseline.baseline_id,
+                    created_at=created_at,
+                )
+                self._put_in_transaction(connection, baseline, activate=activate)
+                connection.execute("COMMIT")
+            except Exception:
+                connection.execute("ROLLBACK")
+                raise
+
+    def put_with_readiness_audit_v023(
+        self,
+        baseline: EnvironmentBaselineV1,
+        audit: ProductBaselineReadinessAuditV023,
+        *,
+        activate: bool,
+        created_at: datetime,
+        fence: JobLeaseFenceV1 | None = None,
+    ) -> None:
+        """Atomically persist the strict v0.2.3 audit and real baseline."""
+
+        if (
+            not audit.final_builder_would_pass
+            or audit.baseline_id != baseline.baseline_id
+            or audit.baseline_sha256 != baseline.baseline_sha256
+            or audit.environment_id != baseline.environment_id
+            or audit.baseline_entity_service_ids != baseline.service_ids
+            or audit.capability_sha256 != baseline.source_capability_sha256
+            or audit.build_policy != baseline.build_policy.model_dump(mode="json")
+            or len(audit.evaluation.accepted_ordinals) != baseline.successful_windows
+        ):
+            raise ProductError(
+                "BASELINE_V023_AUDIT_PARITY_INVALID",
+                "The Product v0.2.3 baseline and audit bindings differ.",
+                status_code=409,
+            )
+        with self.store.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            try:
+                require_live_job_fence(connection, fence)
+                put_readiness_audit_in_transaction_v023(
+                    connection,
+                    audit,
                     created_at=created_at,
                 )
                 self._put_in_transaction(connection, baseline, activate=activate)
@@ -558,11 +687,32 @@ class HistoricalBaselineServiceV1:
         repository: BaselineRepositoryV1,
         maximum_records_per_source: int,
         audit_repository: BaselineReadinessAuditRepositoryV021 | None = None,
+        audit_repository_v023: (
+            ProductBaselineReadinessAuditRepositoryV023 | None
+        ) = None,
+        readiness_profile_v023: ProductBaselineReadinessProfileV023 | None = None,
     ) -> None:
         self._connectors = connectors
         self._repository = repository
         self._maximum_records_per_source = maximum_records_per_source
         self._audit_repository = audit_repository
+        self._audit_repository_v023 = audit_repository_v023
+        self._readiness_profile_v023 = (
+            readiness_profile_v023 or ProductBaselineReadinessProfileV023.default()
+        )
+
+    def get_readiness_audit_v023_optional(
+        self,
+        baseline_id: str,
+    ) -> ProductBaselineReadinessAuditV023 | None:
+        if self._audit_repository_v023 is None:
+            return None
+        try:
+            return self._audit_repository_v023.get_by_baseline(baseline_id)
+        except ProductError as error:
+            if error.code == "BASELINE_V023_AUDIT_NOT_FOUND":
+                return None
+            raise
 
     def build(
         self,
@@ -601,24 +751,47 @@ class HistoricalBaselineServiceV1:
                 "The environment service catalog exceeds the Product query bound.",
             )
         policy = request.build_policy
+        v023_profile_bound = any(
+            config.kind is ConnectorKindV1.OPENSEARCH
+            and OpenSearchConnectorSettingsV1.model_validate(config.settings).mode
+            is OpenSearchConnectorSettingsModeV1.PROFILE_BOUND
+            for config in environment.connector_configs
+        )
+        use_v023_readiness = (
+            policy.mode is BaselineBuildModeV1.DEMO_ONLY
+            and logical_services == self._readiness_profile_v023.candidate_services
+            and v023_profile_bound
+        )
         window_seconds = policy.lookback_seconds / policy.window_count
         if not float(window_seconds).is_integer() or window_seconds < 1:
             raise ProductError(
                 "BASELINE_WINDOW_POLICY_INVALID",
                 "The baseline window schedule is not integral.",
             )
-        end = built_at - timedelta(seconds=policy.warmup_seconds)
-        windows = tuple(
-            ConnectorWindowV1(
-                started_at=end
-                - timedelta(seconds=int(window_seconds) * (policy.window_count - index)),
-                ended_at=end
-                - timedelta(
-                    seconds=int(window_seconds) * (policy.window_count - index - 1)
-                ),
+        if request.planned_windows is not None:
+            if not use_v023_readiness or request.planned_windows[
+                -1
+            ].ended_at > built_at - timedelta(seconds=policy.warmup_seconds):
+                raise ProductError(
+                    "BASELINE_PLANNED_WINDOWS_INVALID",
+                    "The explicit v0.2.3 Baseline window schedule is not admissible.",
+                )
+            windows = request.planned_windows
+        else:
+            end = built_at - timedelta(seconds=policy.warmup_seconds)
+            windows = tuple(
+                ConnectorWindowV1(
+                    started_at=end
+                    - timedelta(
+                        seconds=int(window_seconds) * (policy.window_count - index)
+                    ),
+                    ended_at=end
+                    - timedelta(
+                        seconds=int(window_seconds) * (policy.window_count - index - 1)
+                    ),
+                )
+                for index in range(policy.window_count)
             )
-            for index in range(policy.window_count)
-        )
         connector_instances = []
         try:
             for config in environment.connector_configs:
@@ -638,13 +811,15 @@ class HistoricalBaselineServiceV1:
                 )
             window_results: list[tuple[ConnectorQueryResultV1, ...]] = []
             window_bindings: list[tuple[BaselineConnectorBindingV021, ...]] = []
-            window_expectations: list[
-                tuple[BaselineConnectorExpectationV021, ...]
-            ] = []
+            window_expectations: list[tuple[BaselineConnectorExpectationV021, ...]] = []
+            window_prometheus_diagnostics: list[PrometheusWindowDiagnosticsV023] = []
+            window_opensearch_diagnostics: list[OpenSearchWindowDiagnosticsV023] = []
             for window in windows:
                 results: list[ConnectorQueryResultV1] = []
                 bindings: list[BaselineConnectorBindingV021] = []
                 expectations: list[BaselineConnectorExpectationV021] = []
+                prometheus_diagnostic: PrometheusWindowDiagnosticsV023 | None = None
+                opensearch_diagnostic: OpenSearchWindowDiagnosticsV023 | None = None
                 for config, connector in connector_instances:
                     alias_field = _ALIAS_FIELD_BY_KIND[config.kind]
                     alias_map = (
@@ -665,6 +840,65 @@ class HistoricalBaselineServiceV1:
                         purpose=ConnectorQueryPurposeV1.BASELINE,
                     )
                     connector_results = connector.query(context)
+                    if use_v023_readiness and config.kind is ConnectorKindV1.PROMETHEUS:
+                        captured = getattr(
+                            connector,
+                            "baseline_diagnostics_v023",
+                            lambda: None,
+                        )()
+                        if not isinstance(captured, PrometheusWindowDiagnosticsV023):
+                            raise ProductError(
+                                "BASELINE_V023_PROMETHEUS_DIAGNOSTICS_REQUIRED",
+                                "The v0.2.3 baseline lacks Prometheus template provenance.",
+                            )
+                        if prometheus_diagnostic is not None:
+                            raise ProductError(
+                                "BASELINE_V023_PROMETHEUS_SOURCE_AMBIGUOUS",
+                                "The v0.2.3 baseline has multiple Prometheus sources.",
+                            )
+                        prometheus_diagnostic = captured
+                    if use_v023_readiness and config.kind is ConnectorKindV1.OPENSEARCH:
+                        captured = getattr(
+                            connector,
+                            "profile_diagnostics",
+                            lambda: None,
+                        )()
+                        log_results = tuple(
+                            item
+                            for item in connector_results
+                            if item.source is EvidenceSourceV22.LOGS
+                        )
+                        if captured is None or len(log_results) != 1:
+                            raise ProductError(
+                                "BASELINE_V023_OPENSEARCH_DIAGNOSTICS_REQUIRED",
+                                "The v0.2.3 baseline lacks profile-bound Logs provenance.",
+                            )
+                        if opensearch_diagnostic is not None:
+                            raise ProductError(
+                                "BASELINE_V023_OPENSEARCH_SOURCE_AMBIGUOUS",
+                                "The v0.2.3 baseline has multiple OpenSearch sources.",
+                            )
+                        if captured.last_query_status is None:
+                            raise ProductError(
+                                "BASELINE_V023_OPENSEARCH_DIAGNOSTICS_REQUIRED",
+                                "The v0.2.3 profile diagnostics lack a query result.",
+                            )
+                        opensearch_diagnostic = OpenSearchWindowDiagnosticsV023.build(
+                            window=window,
+                            log_result_sha256=log_results[0].result_sha256,
+                            profile_sha256=captured.profile_sha256,
+                            query_status=ReadSourceStatusV22(
+                                captured.last_query_status
+                            ),
+                            safe_error_code=captured.last_safe_error_code,
+                            sampled_record_count=captured.last_sampled_record_count,
+                            accepted_record_count=captured.last_accepted_record_count,
+                            rejected_record_count=captured.last_rejected_record_count,
+                            rejection_fraction=captured.last_rejection_fraction,
+                            rejection_codes_by_count=(
+                                captured.last_rejection_codes_by_count
+                            ),
+                        )
                     expected_sources = {
                         capability.source
                         for capability in connector.capabilities()
@@ -691,6 +925,14 @@ class HistoricalBaselineServiceV1:
                 window_results.append(tuple(results))
                 window_bindings.append(tuple(bindings))
                 window_expectations.append(tuple(expectations))
+                if use_v023_readiness:
+                    if prometheus_diagnostic is None or opensearch_diagnostic is None:
+                        raise ProductError(
+                            "BASELINE_V023_SOURCE_DIAGNOSTICS_REQUIRED",
+                            "The v0.2.3 baseline source diagnostics are incomplete.",
+                        )
+                    window_prometheus_diagnostics.append(prometheus_diagnostic)
+                    window_opensearch_diagnostics.append(opensearch_diagnostic)
         finally:
             for _config, connector in connector_instances:
                 connector.close()
@@ -701,6 +943,91 @@ class HistoricalBaselineServiceV1:
             and item.status is SourceCapabilityStatusV1.AVAILABLE
             and item.source is not EvidenceSourceV22.CHANGES
         )
+        if use_v023_readiness:
+            evaluation_v023 = evaluate_baseline_windows_v023(
+                profile=self._readiness_profile_v023,
+                window_results=tuple(window_results),
+                expected_windows=windows,
+                connector_bindings=tuple(window_bindings),
+                connector_expectations=tuple(window_expectations),
+                prometheus_diagnostics=tuple(window_prometheus_diagnostics),
+                opensearch_diagnostics=tuple(window_opensearch_diagnostics),
+            )
+            entity_service_ids = tuple(
+                sorted(item.service_id for item in identity_map.services)
+            )
+            if not evaluation_v023.final_builder_would_pass:
+                failed_audit = ProductBaselineReadinessAuditV023.build(
+                    environment_id=environment.environment_id,
+                    baseline_id=resolved_baseline_id,
+                    baseline_sha256=None,
+                    service_ids=logical_services,
+                    baseline_entity_service_ids=entity_service_ids,
+                    build_policy=policy.model_dump(mode="json"),
+                    service_identity_sha256=identity_map.identity_sha256,
+                    capability_sha256=capability_matrix.capability_sha256,
+                    evaluation=evaluation_v023,
+                )
+                if self._audit_repository_v023 is not None:
+                    self._audit_repository_v023.put(
+                        failed_audit,
+                        created_at=built_at,
+                        fence=fence,
+                    )
+                raise ProductError(
+                    "BASELINE_V023_PREFLIGHT_BLOCKED",
+                    "The Product v0.2.3 source-aware baseline preflight failed.",
+                    details={
+                        "parity_sha256": evaluation_v023.parity_sha256,
+                        "rejection_reason_codes": list(
+                            evaluation_v023.aggregate_rejection_reason_codes
+                        ),
+                    },
+                )
+            baseline = build_environment_baseline(
+                environment_id=environment.environment_id,
+                identity_map=identity_map,
+                source_capability_sha256=capability_matrix.capability_sha256,
+                build_policy=policy,
+                window_results=tuple(window_results),
+                built_at=built_at,
+                baseline_id=resolved_baseline_id,
+                evaluation_v023=evaluation_v023,
+            )
+            readiness_audit_v023 = ProductBaselineReadinessAuditV023.build(
+                environment_id=environment.environment_id,
+                baseline_id=baseline.baseline_id,
+                baseline_sha256=baseline.baseline_sha256,
+                service_ids=logical_services,
+                baseline_entity_service_ids=entity_service_ids,
+                build_policy=policy.model_dump(mode="json"),
+                service_identity_sha256=identity_map.identity_sha256,
+                capability_sha256=capability_matrix.capability_sha256,
+                evaluation=evaluation_v023,
+            )
+            if self._audit_repository_v023 is None:
+                raise ProductError(
+                    "BASELINE_V023_AUDIT_REPOSITORY_REQUIRED",
+                    "The Product v0.2.3 Builder requires its immutable audit store.",
+                    status_code=500,
+                )
+            if self._audit_repository_v023.store.path != self._repository.store.path:
+                raise ProductError(
+                    "BASELINE_V023_READINESS_STORE_MISMATCH",
+                    "The Product v0.2.3 baseline and audit must use the same store.",
+                    status_code=500,
+                )
+            self._repository.put_with_readiness_audit_v023(
+                baseline,
+                readiness_audit_v023,
+                activate=request.activate,
+                created_at=built_at,
+                fence=fence,
+            )
+            listed = self._repository.list(environment.environment_id)
+            return next(
+                item for item in listed if item.baseline_id == baseline.baseline_id
+            )
         readiness_audit = build_baseline_readiness_audit_v021(
             environment_id=environment.environment_id,
             service_ids=logical_services,

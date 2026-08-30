@@ -46,6 +46,25 @@ promotion, or held-out recurrence result exists. See the
 [blocked result](docs/results/product-v02-live-knowledge-loop.md) and
 [limitations](docs/results/product-v02-live-knowledge-loop-limitations.md).
 
+### Product v0.2.3.1 Runtime-continuity successor
+
+Product v0.2.3.1 reused the preserved Product v0.2.3 SQLite store, active P01
+profile, and immutable Baseline without rebuilding them. One owned local
+session proved exact pre-start Compose continuity, post-start Runtime authority
+continuity, and an ordinary Product API/Worker restart against the same data
+root. The session then attempted the frozen healthy-profile No-Fault episode;
+traffic did not pass (`1 / 30` completed, `1` error), so the measured terminal
+is `ECOMSRE_PRODUCT_V0231_NOFAULT_NOT_SUPPORTED`, not a healthy-system or
+production-readiness result.
+
+Exactly one Incident and one Diagnosis were preserved. Fault attempts,
+knowledge campaigns, Agent writes, Runbooks, and Provider calls remained zero;
+action authority remained `NONE`, cleanup was Product/Demo `CLEAN / CLEAN`, and
+the Knowledge-Loop handoff is explicitly not authorized. See the
+[acceptance result](docs/results/product-v0231-nofault-acceptance.md),
+[limitations](docs/results/product-v0231-limitations.md), and
+[handoff](docs/analysis/product-v0231-knowledge-loop-handoff.md).
+
 <!-- dta-v21-pr-f-final-capability-closeout -->
 ### DTA v2.1 frozen-Agent capability closeout
 

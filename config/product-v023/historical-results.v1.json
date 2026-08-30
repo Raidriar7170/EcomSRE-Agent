@@ -1,0 +1,114 @@
+{
+  "schema_version": "ecomsre.product-v023.historical-results.v1",
+  "goal_version": "ecomsre-product-v023-fresh-baseline-nofault-v1",
+  "starting_main": "613f6203e4a174b4549b912cb16ca7998cf6238c",
+  "v0222": {
+    "pr": 79,
+    "terminal": "ECOMSRE_PRODUCT_V0222_CAPTURE_FIRST_OPERATOR_PROFILE_COMPLETE",
+    "handoff_terminal": "ECOMSRE_PRODUCT_V0222_BASELINE_HANDOFF_READY",
+    "active_profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+    "selected_candidate_alias": "P01",
+    "candidate_set_sha256": "f3aeaf272ab199c1284238c9e7785ec89f46b1cb54ad1608188a052c27f9d4de",
+    "operator_decision_sha256": "51effb280e9390d5619bf18fed80c2c158214db2dd98dcfce3634275125b8b5e",
+    "capture_bundle_sha256": "4084941d8368c4f74ec2db95ac2215f36c9531367f9904b9b90cd653bceeea94",
+    "offline_parser_sha256": "a62b00a0fa4d8abbb96a7bdbbeb6749a3e6bab41550027b0cdc11856a550484f",
+    "holdout_verification_sha256": "a30fbac9277267093fd9cfaaae33b87164d28711ec3b655025db38dbc083cd25",
+    "connector_smoke_sha256": "a3573782f56f5445db8920301e267840d9a1296e51027c0fda841bfd4bd303c2",
+    "active_profile_restart_proof_sha256": "b2b0ea37d763316a7be9acb65899f2a7d1fddcdb7f222ca05f63bab742fda69b",
+    "service_identity_sha256": "a84e3f82180cd40024f9449096586b0ac94ceea8b492f59d58c58c28d7828d72",
+    "handoff_sha256": "fee46e6f335f106f365c3c0c85bb1cf8e7fb0b7cbf00289f5555ec84ea0cdaa7",
+    "fault_attempt_count": 0,
+    "baseline_readiness_attempt_count": 0,
+    "product_diagnosis_attempt_count": 0,
+    "knowledge_loop_campaign_count": 0,
+    "agent_writes": 0,
+    "runbook_executions": 0,
+    "action_authority": "NONE"
+  },
+  "files": [
+    {
+      "path": "config/product-v0222/historical-results.v1.json",
+      "revision": "613f6203e4a174b4549b912cb16ca7998cf6238c",
+      "role": "V0222_PREDECESSOR_HISTORY",
+      "sha256": "96bd2eb523d48645a547f63bded62a1b993671f82702dc1405ff3c2c6784369a",
+      "size_bytes": 5074
+    },
+    {
+      "path": "config/product-v0222/opensearch/normalization-profile.json",
+      "revision": "613f6203e4a174b4549b912cb16ca7998cf6238c",
+      "role": "V0222_ACTIVE_PROFILE",
+      "sha256": "d25b7bcab53487041d0fa37dfe82318410e9ce9ae5b49c236860cc16b7d47a58",
+      "size_bytes": 2028
+    },
+    {
+      "path": "config/product-v0222/opensearch/candidate-set.json",
+      "revision": "613f6203e4a174b4549b912cb16ca7998cf6238c",
+      "role": "V0222_CANDIDATE_SET",
+      "sha256": "9453b72b9ea3d9f59b09c84b811b6d12669ce550241c9db27064f81042fb41da",
+      "size_bytes": 4550
+    },
+    {
+      "path": "config/product-v0222/opensearch/operator-decision.json",
+      "revision": "613f6203e4a174b4549b912cb16ca7998cf6238c",
+      "role": "V0222_OPERATOR_DECISION",
+      "sha256": "62db979f1bd5a1c04c57cf5d97f955737adc1966c591436903da1986c89874f4",
+      "size_bytes": 880
+    },
+    {
+      "path": "docs/analysis/product-v0222-capture-summary.json",
+      "revision": "613f6203e4a174b4549b912cb16ca7998cf6238c",
+      "role": "V0222_CAPTURE_SUMMARY",
+      "sha256": "10ae9cd38a2feb178a6a689fd70272162cea07ef93659d6ab458987d6d312b8e",
+      "size_bytes": 30639
+    },
+    {
+      "path": "docs/analysis/product-v0222-offline-profile.json",
+      "revision": "613f6203e4a174b4549b912cb16ca7998cf6238c",
+      "role": "V0222_OFFLINE_PROFILE",
+      "sha256": "aae24ae59a0c81f539d801b61669acb1b89534ca08e41e27d80c8688a78f53a5",
+      "size_bytes": 2093
+    },
+    {
+      "path": "docs/analysis/product-v0222-holdout-verification.json",
+      "revision": "613f6203e4a174b4549b912cb16ca7998cf6238c",
+      "role": "V0222_HOLDOUT_VERIFICATION",
+      "sha256": "2473aa99ceebc06faf90b91283d85802e5ec5b912210f22fb3b7ca91ece91a83",
+      "size_bytes": 3007
+    },
+    {
+      "path": "docs/analysis/product-v0222-connector-smoke.json",
+      "revision": "613f6203e4a174b4549b912cb16ca7998cf6238c",
+      "role": "V0222_CONNECTOR_SMOKE",
+      "sha256": "1ab510c25a61a87fb28c85f24712e367436f89cf54c1489412d0afac929f6cab",
+      "size_bytes": 3988
+    },
+    {
+      "path": "docs/analysis/product-v0222-active-profile-restart-proof.json",
+      "revision": "613f6203e4a174b4549b912cb16ca7998cf6238c",
+      "role": "V0222_ACTIVE_PROFILE_RESTART",
+      "sha256": "4aa914cee55200619facf3021f0e0cbcb5203d390d1150f13826e67a24f49d6b",
+      "size_bytes": 1307
+    },
+    {
+      "path": "docs/analysis/product-v0222-service-identity-binding.json",
+      "revision": "613f6203e4a174b4549b912cb16ca7998cf6238c",
+      "role": "V0222_SERVICE_IDENTITY",
+      "sha256": "c2bedba7da7b09c5daf1f314ba963c46cd836fa4cea75fb8615fbb5171f06fce",
+      "size_bytes": 909
+    },
+    {
+      "path": "docs/analysis/product-v0222-baseline-handoff.json",
+      "revision": "613f6203e4a174b4549b912cb16ca7998cf6238c",
+      "role": "V0222_BASELINE_HANDOFF",
+      "sha256": "65987a29e8a07991a03d660b4c6a695e12ac092050a0b1b81b318b5ce3debcdb",
+      "size_bytes": 2502
+    },
+    {
+      "path": "docs/analysis/product-v0222-progress.json",
+      "revision": "613f6203e4a174b4549b912cb16ca7998cf6238c",
+      "role": "V0222_PROGRESS",
+      "sha256": "966264e0e60887d068804add5f9b90ea551ed8419118e14ca23d152f57402297",
+      "size_bytes": 3124
+    }
+  ]
+}

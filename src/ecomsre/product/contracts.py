@@ -72,17 +72,26 @@ class PrometheusConnectorSettingsV1(ProductModelV1):
         return dict(sorted(value.items()))
 
 
+class OpenSearchConnectorSettingsModeV1(str, Enum):
+    LEGACY_EXPLICIT_FIELDS = "LEGACY_EXPLICIT_FIELDS"
+    PROFILE_BOUND = "PROFILE_BOUND"
+
+
 class OpenSearchConnectorSettingsV1(ProductModelV1):
-    index_pattern: str = Field(min_length=1, max_length=255)
-    timestamp_field: str = Field(min_length=1, max_length=255)
-    service_field: str = Field(min_length=1, max_length=255)
+    mode: OpenSearchConnectorSettingsModeV1 = (
+        OpenSearchConnectorSettingsModeV1.LEGACY_EXPLICIT_FIELDS
+    )
+    profile_binding: Any | None = None
+    index_pattern: str | None = Field(default=None, min_length=1, max_length=255)
+    timestamp_field: str | None = Field(default=None, min_length=1, max_length=255)
+    service_field: str | None = Field(default=None, min_length=1, max_length=255)
     service_query_field: str | None = Field(default=None, min_length=1, max_length=255)
-    severity_field: str = Field(min_length=1, max_length=255)
-    message_field: str = Field(min_length=1, max_length=255)
+    severity_field: str | None = Field(default=None, min_length=1, max_length=255)
+    message_field: str | None = Field(default=None, min_length=1, max_length=255)
     message_projection_policy: Literal[
         "AS_OBSERVED",
         "OBSERVER_SYMPTOM_V1",
-    ] = "AS_OBSERVED"
+    ] | None = None
     trace_id_field: str | None = Field(default=None, min_length=1, max_length=255)
     severity_filter: tuple[str, ...] = Field(default_factory=tuple, max_length=4)
     maximum_result_count: int = Field(default=200, ge=1, le=200)
@@ -90,7 +99,9 @@ class OpenSearchConnectorSettingsV1(ProductModelV1):
 
     @field_validator("index_pattern")
     @classmethod
-    def index_pattern_is_bounded(cls, value: str) -> str:
+    def index_pattern_is_bounded(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
         if (
             ".." in value
             or not re.fullmatch(r"[A-Za-z0-9_.*,-]+", value)
@@ -98,6 +109,48 @@ class OpenSearchConnectorSettingsV1(ProductModelV1):
         ):
             raise ValueError("OpenSearch index pattern is invalid")
         return value
+
+    @model_validator(mode="after")
+    def require_exactly_one_settings_mode(self) -> "OpenSearchConnectorSettingsV1":
+        explicit_fields = {
+            "index_pattern": self.index_pattern,
+            "timestamp_field": self.timestamp_field,
+            "service_field": self.service_field,
+            "service_query_field": self.service_query_field,
+            "severity_field": self.severity_field,
+            "message_field": self.message_field,
+            "message_projection_policy": self.message_projection_policy,
+            "trace_id_field": self.trace_id_field,
+        }
+        if self.mode is OpenSearchConnectorSettingsModeV1.LEGACY_EXPLICIT_FIELDS:
+            if self.profile_binding is not None:
+                raise ValueError("legacy OpenSearch settings cannot bind a profile")
+            required = (
+                "index_pattern",
+                "timestamp_field",
+                "service_field",
+                "severity_field",
+                "message_field",
+            )
+            if any(explicit_fields[field] is None for field in required):
+                raise ValueError("legacy OpenSearch explicit fields are incomplete")
+            if self.message_projection_policy is None:
+                self.message_projection_policy = "AS_OBSERVED"
+            return self
+        if any(value is not None for value in explicit_fields.values()):
+            raise ValueError(
+                "profile-bound OpenSearch settings reject independent field overrides"
+            )
+        if self.profile_binding is None:
+            raise ValueError("profile-bound OpenSearch settings require one profile")
+        from ecomsre.product.connectors.opensearch_profile_binding_v023 import (
+            OpenSearchConnectorProfileBindingV023,
+        )
+
+        self.profile_binding = OpenSearchConnectorProfileBindingV023.model_validate(
+            self.profile_binding
+        )
+        return self
 
     @field_validator("severity_filter")
     @classmethod
@@ -200,7 +253,13 @@ def _validate_connector_settings(
         model = PilotRuntimeConnectorSettingsV02.model_validate(settings)
     else:
         raise ValueError("connector kind is not supported")
-    return model.model_dump(mode="json", exclude_none=True)
+    serialized = model.model_dump(mode="json", exclude_none=True)
+    if (
+        isinstance(model, OpenSearchConnectorSettingsV1)
+        and model.mode is OpenSearchConnectorSettingsModeV1.LEGACY_EXPLICIT_FIELDS
+    ):
+        serialized.pop("mode", None)
+    return serialized
 
 
 class ConnectorConfigV1(ProductModelV1):
@@ -472,6 +531,8 @@ __all__ = (
     "EnvironmentListV1",
     "EnvironmentRecordV1",
     "HealthResultV1",
+    "OpenSearchConnectorSettingsModeV1",
+    "OpenSearchConnectorSettingsV1",
     "ProductModelV1",
     "ServiceIdentityMapV1",
     "ServiceIdentityPolicyV1",

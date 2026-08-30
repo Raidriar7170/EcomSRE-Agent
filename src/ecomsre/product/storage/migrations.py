@@ -280,6 +280,21 @@ MIGRATIONS: tuple[tuple[int, str, tuple[str, ...]], ...] = (
             "ON baseline_readiness_audits_v021(environment_id, created_at)",
         ),
     ),
+    (
+        7,
+        "product-v023-baseline-readiness-audit",
+        (
+            """CREATE TABLE baseline_readiness_audits_v023 (
+                audit_sha256 TEXT PRIMARY KEY,
+                environment_id TEXT NOT NULL REFERENCES environments(environment_id),
+                baseline_id TEXT NOT NULL UNIQUE,
+                payload_json TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )""",
+            "CREATE INDEX baseline_readiness_audits_v023_environment_idx "
+            "ON baseline_readiness_audits_v023(environment_id, created_at)",
+        ),
+    ),
 )
 
 __all__ = ("MIGRATIONS",)

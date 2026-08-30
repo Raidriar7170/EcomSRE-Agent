@@ -1,0 +1,17 @@
+{
+  "schema_version": "ecomsre.product.continuity-campaign.v0231",
+  "goal_version": "ecomsre-product-v0231-runtime-authority-continuity-nofault-v1",
+  "predecessor_pr": 80,
+  "predecessor_head": "b15072c48acf8b143d0a950e7248a1684d3eedf0",
+  "maximum_live_sessions": 2,
+  "profile_binding_sha256": "149c1d7ed786dd3ce367d68c8b9c6c1126b1ce662891db63853c74cdf292527c",
+  "runtime_continuity_descriptor_sha256": "b103990c21d1804177a5d15900252259481e520dc2c5380547db0754c76c2e65",
+  "active_baseline_id": "base-b25440a36089a8f0e6b9f1dc",
+  "active_baseline_sha256": "6d3d2d7a4854d1cfc2477746e7d0c940ed8a08644ebc69b7b91066eabe45ae64",
+  "accepted_incident_limit": 1,
+  "diagnosis_limit": 1,
+  "fault_attempt_limit": 0,
+  "knowledge_loop_campaign_limit": 0,
+  "action_authority": "NONE",
+  "campaign_sha256": "ddfebdd183ce434f30eca45fed5894bfd390aa213213e1ee8d4fb9b88a50f45b"
+}

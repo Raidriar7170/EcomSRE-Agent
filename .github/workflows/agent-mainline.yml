@@ -226,6 +226,17 @@ jobs:
           env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
           uv run --frozen --no-sync pytest tests/product_v0222 -q
 
+      - name: Product v0.2.3.1 frozen No-Fault result verification
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_product_v0231_result
+
+      - name: Product v0.2.3.1 focused offline tests
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync pytest tests/product_v0231 -q
+
       - name: Verify Phase 5B protocol
         run: make phase5b-protocol-verify
 

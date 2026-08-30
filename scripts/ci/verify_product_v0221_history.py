@@ -14,6 +14,10 @@ from typing import Any, Sequence
 from scripts.ci.verify_product_v022_schema_probe_blocker import (
     verify_product_v022_schema_probe_blocker,
 )
+from scripts.ci.product_squash_history_v0231 import (
+    require_product_import_ancestry_v0231,
+    require_product_import_bytes_v0231,
+)
 
 
 PUBLIC_MAIN = "8398a063de048064f160a7ffed236fbb3327b701"
@@ -194,6 +198,11 @@ def _verify_bound_files(root: Path, manifest: dict[str, Any]) -> int:
             raise ValueError(f"Product predecessor byte drift: {relative}")
         if _git_bytes(root, revision, relative) != current:
             raise ValueError(f"Product predecessor head binding drift: {relative}")
+        require_product_import_bytes_v0231(
+            root,
+            relative=relative,
+            expected=current,
+        )
         paths.add(relative)
         roles.add(role)
     if roles != REQUIRED_ROLES:
@@ -239,7 +248,7 @@ def verify_product_v0221_history(
     _require_ancestry(root, PUBLIC_MAIN, V02_HEAD)
     _require_ancestry(root, V02_HEAD, V021_HEAD)
     _require_ancestry(root, V021_HEAD, V022_HEAD)
-    _require_ancestry(root, V022_HEAD, "HEAD")
+    require_product_import_ancestry_v0231(root)
     _require_review_boundary(root)
     blocker = verify_product_v022_schema_probe_blocker(root)
     if blocker.get("status") != V022_TERMINAL:

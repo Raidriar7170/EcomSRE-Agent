@@ -15,6 +15,10 @@ from scripts.ci.verify_product_v0221_history import verify_product_v0221_history
 from scripts.ci.verify_product_v0221_schema_blocker import (
     verify_product_v0221_schema_blocker,
 )
+from scripts.ci.product_squash_history_v0231 import (
+    require_product_import_ancestry_v0231,
+    require_product_import_bytes_v0231,
+)
 
 
 PUBLIC_MAIN = "8398a063de048064f160a7ffed236fbb3327b701"
@@ -175,6 +179,11 @@ def _verify_bound_files(root: Path, manifest: dict[str, Any]) -> int:
             raise ValueError(f"Product v0.2.2.1 byte drift: {relative}")
         if _git_bytes(root, revision, relative) != current:
             raise ValueError(f"Product v0.2.2.1 head binding drift: {relative}")
+        require_product_import_bytes_v0231(
+            root,
+            relative=relative,
+            expected=current,
+        )
         roles.add(role)
         paths.add(relative)
     if roles != REQUIRED_ROLES:
@@ -203,7 +212,7 @@ def verify_product_v0222_history(
     _require_ancestry(root, V02_HEAD, V021_HEAD)
     _require_ancestry(root, V021_HEAD, V022_HEAD)
     _require_ancestry(root, V022_HEAD, V0221_HEAD)
-    _require_ancestry(root, V0221_HEAD, "HEAD")
+    require_product_import_ancestry_v0231(root)
     return {
         "status": VERIFIED_TERMINAL,
         "v02_head": V02_HEAD,

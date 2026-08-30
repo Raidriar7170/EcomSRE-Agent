@@ -15,6 +15,10 @@ from scripts.ci.verify_product_v02_blocked_result import (
     verify_product_v02_blocked_result,
 )
 from scripts.ci.verify_product_v02_history import verify_product_v02_history
+from scripts.ci.product_squash_history_v0231 import (
+    require_product_import_ancestry_v0231,
+    require_product_import_bytes_v0231,
+)
 
 
 PUBLIC_MAIN = "8398a063de048064f160a7ffed236fbb3327b701"
@@ -169,9 +173,14 @@ def verify_product_v021_history(
             raise ValueError(f"Product v0.2.1 predecessor byte drift: {relative}")
         if _git_bytes(root, PREDECESSOR_HEAD, relative) != current:
             raise ValueError(f"Product v0.2.1 predecessor head binding drift: {relative}")
+        require_product_import_bytes_v0231(
+            root,
+            relative=relative,
+            expected=current,
+        )
 
     _require_ancestry(root, PUBLIC_MAIN, PREDECESSOR_HEAD)
-    _require_ancestry(root, PREDECESSOR_HEAD, "HEAD")
+    require_product_import_ancestry_v0231(root)
     v01 = verify_product_v02_history(root)
     v02 = verify_product_v02_blocked_result(root)
     if v01.get("status") != "ECOMSRE_PRODUCT_V02_HISTORY_VERIFIED":
