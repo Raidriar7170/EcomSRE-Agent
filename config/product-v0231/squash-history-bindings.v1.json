@@ -1,0 +1,59 @@
+{
+  "bindings": [
+    {
+      "binding_sha256": "dc5ce9b1e99e8d4424a84f51da9d17eb3d2981decd823bc04098d0238538161b",
+      "bound_files": [
+        {
+          "path": "config/product-v02/live-pilot/calibration-consumed.json",
+          "sha256": "bd42c096efe5e85bedc79adb9446020a262bb1bfc0805e096e492eddedde6482",
+          "size_bytes": 798
+        },
+        {
+          "path": "docs/analysis/product-v02-cleanup-closure.json",
+          "sha256": "c581c7f0a46d5eeed9708b1243cee69bd52f5e8d2916549d1927d0e3a67eac83",
+          "size_bytes": 781
+        },
+        {
+          "path": "docs/analysis/product-v02-profile-calibration.json",
+          "sha256": "1d60b297ffac7832a61040f5ffa7c07585dff9501043dfdd7f40f8c92e766754",
+          "size_bytes": 657
+        },
+        {
+          "path": "docs/analysis/product-v02-progress.json",
+          "sha256": "c6e518dbb9e1532b870d46fa366f3ab24c15587084d375703adc289695e93795",
+          "size_bytes": 384
+        },
+        {
+          "path": "docs/external-reviews/product-v02-pre-campaign-review.md",
+          "sha256": "ff5a6e5b8ff666ba50814f4036fac73465203041fc849bce249f8df4a5a7d3a3",
+          "size_bytes": 1879
+        },
+        {
+          "path": "docs/results/product-v02-live-knowledge-loop-limitations.md",
+          "sha256": "b5aa9bb580aee22ccc0eda7b9246185045b585b271e873272f9077f32d9d65a2",
+          "size_bytes": 755
+        },
+        {
+          "path": "docs/results/product-v02-live-knowledge-loop.json",
+          "sha256": "ff1beef483107a362834b253de3bdbc38a29569ffb5d77a6a0a2117696f45eeb",
+          "size_bytes": 942
+        },
+        {
+          "path": "docs/results/product-v02-live-knowledge-loop.md",
+          "sha256": "d92840aaf548a1bdde3d8bdda801e381111a95616a1850d99d8dcb5e1a7aff8f",
+          "size_bytes": 1017
+        }
+      ],
+      "import_pr": 79,
+      "import_squash_merge_commit": "613f6203e4a174b4549b912cb16ca7998cf6238c",
+      "public_base": "8398a063de048064f160a7ffed236fbb3327b701",
+      "schema_version": "ecomsre.product.squash-merge-history-binding.v0231",
+      "source_branch": "codex/product-v02-live-knowledge-loop-pilot",
+      "source_head": "a439f8882cd2fcdd3767f6bcfd5d955219fa1e15",
+      "source_pr": 75,
+      "source_terminal": "BLOCKED_ECOMSRE_PRODUCT_V02_UNKNOWN_FAULT_PROFILE"
+    }
+  ],
+  "goal_version": "ecomsre-product-v0231-runtime-authority-continuity-nofault-v1",
+  "schema_version": "ecomsre.product.squash-history-bindings.v0231"
+}

@@ -1,0 +1,127 @@
+{
+  "schema_version": "ecomsre.product-v0231.historical-results.v1",
+  "goal_version": "ecomsre-product-v0231-runtime-authority-continuity-nofault-v1",
+  "public_main_base": "613f6203e4a174b4549b912cb16ca7998cf6238c",
+  "predecessor": {
+    "pr": 80,
+    "branch": "codex/product-v023-fresh-baseline-nofault",
+    "head": "b15072c48acf8b143d0a950e7248a1684d3eedf0",
+    "terminal": "BLOCKED_ECOMSRE_PRODUCT_V023_NOFAULT_INFRASTRUCTURE",
+    "baseline_readiness_terminal": "ECOMSRE_PRODUCT_V023_BASELINE_READINESS_PASS",
+    "baseline_public_terminal": "BLOCKED_ECOMSRE_PRODUCT_V023_BASELINE_RESTART",
+    "environment_id": "env-2b5c86f47f449acfc54cfcec",
+    "active_baseline_id": "base-b25440a36089a8f0e6b9f1dc",
+    "active_baseline_sha256": "6d3d2d7a4854d1cfc2477746e7d0c940ed8a08644ebc69b7b91066eabe45ae64",
+    "readiness_audit_sha256": "dbe43c6f8a11d75aeb7b15f06f128c13f62cc9f396d3a115a87e3da46b872a87",
+    "window_evaluation_parity_sha256": "235c78749678c9d1dd53e919f0c366996afa4148d9462c5a3a2149b7653a7e54",
+    "active_profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+    "nofault_execution_profile_sha256": "7b580805f8dc86e1239811903044035f46e5d7eb10a239431bebbe18476c7e10",
+    "preserved_runtime_read_authority_sha256": "ea132c5d6e4498012404865b5210a8359262047f117f3e11a7c792b91f5e8a1c",
+    "preserved_pilot_runtime_authority_sha256": "bd1546ecdf961206d3c7a4c9c065bdb2882357da56dfd775ff5d6aed9edad57c",
+    "preserved_connector_binding_sha256": "ee49aaa2835b97645c639a3a9cae01471e51e6aa427e92f353d7b4fdf3840915",
+    "preserved_resolved_compose_sha256": "ae69ca454a77f189fe6c403f0473e3faa28a7352a4898dd881faf18fb70daa24",
+    "frozen_blocker_report_sha256": "2940fab104e7d76a464640c25048ebd0c88edcb56b18b4fe25ac72fecfae98d2",
+    "frozen_progress_sha256": "be58137b5cd30e761528b475a2211169f251d99edf3ee51938a7614b2076fa6a",
+    "baseline_readiness_attempt_count": 1,
+    "infrastructure_replacement_count": 1,
+    "accepted_incident_count": 0,
+    "diagnosis_count": 0,
+    "fault_attempt_count": 0,
+    "fault_family_count": 0,
+    "knowledge_loop_campaign_count": 0,
+    "knowledge_artifact_count": 0,
+    "agent_writes": 0,
+    "runbook_executions": 0,
+    "action_authority": "NONE",
+    "product_cleanup": "CLEAN",
+    "demo_cleanup": "CLEAN"
+  },
+  "tracked_files": [
+    {
+      "path": "config/product-v023/baseline-readiness/profile.json",
+      "revision": "b15072c48acf8b143d0a950e7248a1684d3eedf0",
+      "role": "V023_BASELINE_PROFILE",
+      "sha256": "42d90640f95f68f1e58f1d595b593b233418158a7a58788d90c6f8380580213b",
+      "size_bytes": 628
+    },
+    {
+      "path": "config/product-v023/environment.otel-demo.json",
+      "revision": "b15072c48acf8b143d0a950e7248a1684d3eedf0",
+      "role": "V023_ENVIRONMENT",
+      "sha256": "b188b606fa87502cb615ede3ed55cac45d9f2239942d8d6adf4ca9cec0cfac00",
+      "size_bytes": 6130
+    },
+    {
+      "path": "config/product-v023/historical-results.v1.json",
+      "revision": "b15072c48acf8b143d0a950e7248a1684d3eedf0",
+      "role": "V023_PREDECESSOR_HISTORY",
+      "sha256": "29b0b89838002529e9f5eea26613ece01416adc8baf5b5ce100d77bc59809e00",
+      "size_bytes": 5182
+    },
+    {
+      "path": "config/product-v023/nofault/profile.json",
+      "revision": "b15072c48acf8b143d0a950e7248a1684d3eedf0",
+      "role": "V023_NOFAULT_PROFILE",
+      "sha256": "0b4b38a4fc4fe030f51d003f4c97ceca8f9cfb9c0766a869c55a367c76a79e48",
+      "size_bytes": 373
+    },
+    {
+      "path": "docs/analysis/product-v023-baseline-attempt-1.json",
+      "revision": "b15072c48acf8b143d0a950e7248a1684d3eedf0",
+      "role": "V023_BASELINE_ATTEMPT",
+      "sha256": "99727e9910351b08b173ad4d956da15d1c1beef94cfb5a93f9042615ab876aa0",
+      "size_bytes": 26254
+    },
+    {
+      "path": "docs/analysis/product-v023-baseline-preflight.json",
+      "revision": "b15072c48acf8b143d0a950e7248a1684d3eedf0",
+      "role": "V023_BASELINE_PREFLIGHT",
+      "sha256": "d87cb5aeef34d65460759ffdb22d33c96fb4a6cccc677a7e187d508b95328b05",
+      "size_bytes": 1808
+    },
+    {
+      "path": "docs/analysis/product-v023-baseline-readiness.json",
+      "revision": "b15072c48acf8b143d0a950e7248a1684d3eedf0",
+      "role": "V023_BASELINE_READINESS",
+      "sha256": "6de97d8c1f838be17c9f55e83ec33a7c43efc459cd3f126f855cf4b5d146509d",
+      "size_bytes": 26584
+    },
+    {
+      "path": "docs/analysis/product-v023-baseline-readiness.md",
+      "revision": "b15072c48acf8b143d0a950e7248a1684d3eedf0",
+      "role": "V023_BASELINE_REPORT",
+      "sha256": "d0b7cd9a3472864e55f47857fddc6b94a0f354aa8086da8abc3cd8db3175df79",
+      "size_bytes": 658
+    },
+    {
+      "path": "docs/analysis/product-v023-profile-binding.json",
+      "revision": "b15072c48acf8b143d0a950e7248a1684d3eedf0",
+      "role": "V023_PROFILE_BINDING",
+      "sha256": "4470bfa46b8cd75ed754f921dca60047d43856ae95e3155133de2ac21f13a1dc",
+      "size_bytes": 1880
+    },
+    {
+      "path": "docs/analysis/product-v023-progress.json",
+      "revision": "b15072c48acf8b143d0a950e7248a1684d3eedf0",
+      "role": "V023_PROGRESS",
+      "sha256": "4cbc3375b8d962860daab8921dc7ed3834196d7e128c78990ca12fd86eeac89a",
+      "size_bytes": 2521
+    }
+  ],
+  "private_state": {
+    "baseline_private_report_locator": ".local/product-v023/baseline-readiness/runs/20260829T150806-1eaee825/private/attempt-completion.json",
+    "baseline_private_report_sha256": "8b8cf766ca486503a4b1abd98d3f0934faa983e9bb5b445edabe691fbec0beae",
+    "product_data_root_locator": ".local/product-v023/baseline-readiness/runs/20260829T150806-1eaee825/product",
+    "product_database_sha256": "adf35ac7a3a6504baab7c8b8777030104dbdfb463b4853e50820845378453b04",
+    "product_database_wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "product_database_shm_sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb",
+    "nofault_blocker_locator": ".local/product-v023/nofault/runs/20260829T153651-afbddc43/acceptance.json",
+    "nofault_blocker_sha256": "2940fab104e7d76a464640c25048ebd0c88edcb56b18b4fe25ac72fecfae98d2",
+    "runtime_authority_locator": ".local/product-v023/baseline-readiness/runs/20260829T150806-1eaee825/product/pilot/runtime-authority.json",
+    "runtime_authority_file_sha256": "b51603e94550b1b2511313970f527ac87fad950c008d46fbd66239b085ccc066",
+    "resolved_compose_locator": ".local/product-v023/baseline-readiness/runs/20260829T150806-1eaee825/private/demo/control/resolved-compose.json",
+    "resolved_compose_file_sha256": "37c6d9e0e948fcbb702073f2ab273a5a6914219bf65868fbdb6b118836cb318f",
+    "flagd_file_locator": ".local/product-v023/baseline-readiness/runs/20260829T150806-1eaee825/private/demo/runtime/flagd/demo.flagd.json",
+    "flagd_file_sha256": "14bd13734d46566828779fd61b16e654cc260274a0e30ae9948371a9dbba5beb"
+  }
+}

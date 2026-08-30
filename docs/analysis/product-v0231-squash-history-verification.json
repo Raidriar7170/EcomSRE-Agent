@@ -1,0 +1,16 @@
+{
+  "binding_count": 1,
+  "direct_bound_file_count": 8,
+  "import_pr": 79,
+  "import_squash_merge_commit": "613f6203e4a174b4549b912cb16ca7998cf6238c",
+  "legacy_verifiers": {
+    "v021": "ECOMSRE_PRODUCT_V021_HISTORY_VERIFIED",
+    "v022": "ECOMSRE_PRODUCT_V022_HISTORY_VERIFIED",
+    "v0221": "ECOMSRE_PRODUCT_V0221_HISTORY_VERIFIED",
+    "v0222": "ECOMSRE_PRODUCT_V0222_HISTORY_VERIFIED",
+    "v023": "ECOMSRE_PRODUCT_V023_HISTORY_VERIFIED"
+  },
+  "schema_version": "ecomsre.product.squash-history-verification.v0231",
+  "terminal": "ECOMSRE_PRODUCT_V0231_SQUASH_HISTORY_PASS",
+  "verification_sha256": "685ab39643bf540e8d7c7f5778d76f224911fe6b3680a0b2bb85754affbe7593"
+}
