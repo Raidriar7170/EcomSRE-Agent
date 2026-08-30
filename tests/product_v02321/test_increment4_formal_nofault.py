@@ -75,6 +75,7 @@ from ecomsre.product.pilot.product_state_clone_v0232 import ProductStateSourceV0
 from ecomsre.product.pilot.traffic_preflight_v0232 import (
     load_traffic_profile_v0232,
 )
+from ecomsre.product.storage.sqlite_store import SqliteStoreV1
 from ecomsre_live_sandbox.contracts import canonical_json_bytes, write_private_json
 from scripts.product_v02321 import run_state_clone
 from scripts.product_v02321 import run_formal_nofault
@@ -195,8 +196,20 @@ def _prepare_temp_formal_repository(root: Path) -> str:
     return head
 
 
+def _rebind_state_locator(
+    state: ProductStateSourceV0232,
+    locator: str,
+) -> ProductStateSourceV0232:
+    body = state.model_dump(mode="json", exclude={"source_sha256"})
+    body["source_locator"] = locator
+    return ProductStateSourceV0232.model_validate(
+        {**body, "source_sha256": semantic_sha256_v22(body)}
+    )
+
+
 def _prepare_temp_recoverable_formal_clone(
     root: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> tuple[FormalExecutionAdmissionV02321, bytes]:
     _prepare_temp_formal_repository(root)
     admission, _freeze, _review = run_formal_nofault._strict_admission(root)
@@ -206,11 +219,22 @@ def _prepare_temp_recoverable_formal_clone(
         ).read_bytes()
     )
     destination_root = root / admission.formal_clone_destination_locator
-    shutil.copytree(ROOT / preflight.destination_locator, destination_root)
-    destination = run_state_clone._admit_state(
-        destination_root,
-        locator=admission.formal_clone_destination_locator,
+    destination_root.mkdir(parents=True)
+    destination = _rebind_state_locator(
+        preflight.destination_state,
+        admission.formal_clone_destination_locator,
     )
+
+    def admit_fixture(
+        state_root: Path,
+        *,
+        locator: str,
+    ) -> ProductStateSourceV0232:
+        if state_root != destination_root or locator != destination.source_locator:
+            raise AssertionError("unexpected formal clone fixture admission")
+        return destination
+
+    monkeypatch.setattr(run_formal_nofault, "_admit_state", admit_fixture)
     clone = run_state_clone._bind_existing_clone(
         source=preflight.source_state,
         destination=destination,
@@ -235,12 +259,16 @@ def _prepare_temp_recoverable_formal_clone(
 
 def _prepare_consumed_recovery_fixture(
     root: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> tuple[
     FormalExecutionAdmissionV02321,
     Path,
     FormalTrafficConsumptionV02321,
 ]:
-    admission, _report_bytes = _prepare_temp_recoverable_formal_clone(root)
+    admission, _report_bytes = _prepare_temp_recoverable_formal_clone(
+        root,
+        monkeypatch,
+    )
     private_root = root / ".local/product-v02321/formal"
     private_root.mkdir(parents=True)
     write_private_json(
@@ -824,8 +852,12 @@ def test_reserved_readmission_regular_path_gate_rejects_symlink_substitution(
 
 def test_reserved_readmission_accepts_only_the_exact_validated_clone_report(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    admission, report_bytes = _prepare_temp_recoverable_formal_clone(tmp_path)
+    admission, report_bytes = _prepare_temp_recoverable_formal_clone(
+        tmp_path,
+        monkeypatch,
+    )
     assert not (tmp_path / ".local/product-v02321/formal").exists()
     assert (
         run_formal_nofault._validated_formal_clone_report_bytes_v02321(
@@ -848,8 +880,12 @@ def test_reserved_readmission_accepts_only_the_exact_validated_clone_report(
 
 def test_reserved_readmission_rejects_noncanonical_clone_report_before_live(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    admission, report_bytes = _prepare_temp_recoverable_formal_clone(tmp_path)
+    admission, report_bytes = _prepare_temp_recoverable_formal_clone(
+        tmp_path,
+        monkeypatch,
+    )
     report_path = (
         tmp_path / "docs/analysis/product-v02321-product-state-clone-formal.json"
     )
@@ -1150,7 +1186,10 @@ def test_reentry_ignores_orphan_live_closure_and_seals_one_unproven_blocker(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    admission, private_root, _consumption = _prepare_consumed_recovery_fixture(tmp_path)
+    admission, private_root, _consumption = _prepare_consumed_recovery_fixture(
+        tmp_path,
+        monkeypatch,
+    )
     orphan = FormalBlockerClosureV02321.build(
         product_cleanup={
             "observation_complete": False,
@@ -1204,10 +1243,12 @@ def test_reentry_ignores_orphan_live_closure_and_seals_one_unproven_blocker(
 @pytest.mark.parametrize("checkpoint", ("reservation", "admission"))
 def test_reserved_recovery_rejects_noncanonical_admission_chain(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
     checkpoint: str,
 ) -> None:
     _admission_value, private_root, _consumption = _prepare_consumed_recovery_fixture(
-        tmp_path
+        tmp_path,
+        monkeypatch,
     )
     path = (
         tmp_path / ".local/product-v02321/formal-reservation.json"
@@ -1310,7 +1351,10 @@ def test_real_git_reentry_seals_and_replays_with_the_exact_clone_report(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    admission, _report_bytes = _prepare_temp_recoverable_formal_clone(tmp_path)
+    admission, _report_bytes = _prepare_temp_recoverable_formal_clone(
+        tmp_path,
+        monkeypatch,
+    )
     private_root = tmp_path / ".local/product-v02321/formal"
     private_root.mkdir(parents=True)
     write_private_json(
@@ -1398,9 +1442,13 @@ def test_real_git_reentry_seals_and_replays_with_the_exact_clone_report(
 )
 def test_blocker_replay_rejects_forged_admission_and_consumption(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
     forged_field: str,
 ) -> None:
-    admission, private_root, consumption = _prepare_consumed_recovery_fixture(tmp_path)
+    admission, private_root, consumption = _prepare_consumed_recovery_fixture(
+        tmp_path,
+        monkeypatch,
+    )
     closure = _unproven_closure(admission)
     values = {
         "execution_head": admission.execution_head,
@@ -1429,8 +1477,14 @@ def test_blocker_replay_rejects_forged_admission_and_consumption(
         )
 
 
-def test_blocker_replay_rejects_count_and_journal_drift(tmp_path: Path) -> None:
-    admission, private_root, consumption = _prepare_consumed_recovery_fixture(tmp_path)
+def test_blocker_replay_rejects_count_and_journal_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    admission, private_root, consumption = _prepare_consumed_recovery_fixture(
+        tmp_path,
+        monkeypatch,
+    )
     closure = _unproven_closure(admission)
     count_drift = FormalExecutionBlockerV02321.build(
         execution_head=admission.execution_head,
@@ -1491,7 +1545,10 @@ def test_replay_rejects_traffic_terminal_after_successor_cardinality(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    admission, private_root, consumption = _prepare_consumed_recovery_fixture(tmp_path)
+    admission, private_root, consumption = _prepare_consumed_recovery_fixture(
+        tmp_path,
+        monkeypatch,
+    )
     monkeypatch.setattr(
         run_formal_nofault,
         "_observe_formal_cardinality",
@@ -1532,7 +1589,10 @@ def test_replay_rejects_infrastructure_terminal_that_replaces_traffic_or_pass(
     monkeypatch: pytest.MonkeyPatch,
     stage: str,
 ) -> None:
-    admission, private_root, _consumption = _prepare_consumed_recovery_fixture(tmp_path)
+    admission, private_root, _consumption = _prepare_consumed_recovery_fixture(
+        tmp_path,
+        monkeypatch,
+    )
     monkeypatch.setattr(
         run_formal_nofault,
         "_observe_formal_cardinality",
@@ -1572,7 +1632,10 @@ def test_replay_rejects_unavailable_observation_when_state_is_observable(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    admission, private_root, _consumption = _prepare_consumed_recovery_fixture(tmp_path)
+    admission, private_root, _consumption = _prepare_consumed_recovery_fixture(
+        tmp_path,
+        monkeypatch,
+    )
     monkeypatch.setattr(
         run_formal_nofault,
         "_observe_formal_cardinality",
@@ -1602,8 +1665,14 @@ def test_replay_rejects_unavailable_observation_when_state_is_observable(
         )
 
 
-def test_recovery_rejects_misbound_formal_traffic_result(tmp_path: Path) -> None:
-    admission, private_root, consumption = _prepare_consumed_recovery_fixture(tmp_path)
+def test_recovery_rejects_misbound_formal_traffic_result(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    admission, private_root, consumption = _prepare_consumed_recovery_fixture(
+        tmp_path,
+        monkeypatch,
+    )
     execution = _successful_formal_execution()
     _write_full_traffic_journal(
         private_root=private_root,
@@ -1642,7 +1711,10 @@ def test_replay_rejects_forged_clean_cleanup_with_exact_source_poststate(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    admission, private_root, _consumption = _prepare_consumed_recovery_fixture(tmp_path)
+    admission, private_root, _consumption = _prepare_consumed_recovery_fixture(
+        tmp_path,
+        monkeypatch,
+    )
     monkeypatch.setattr(
         run_formal_nofault,
         "_observe_formal_cardinality",
@@ -1801,7 +1873,10 @@ def test_recovery_authority_drift_forces_exact_infrastructure_blocker(
     field: str,
     value: int | str,
 ) -> None:
-    admission, private_root, _consumption = _prepare_consumed_recovery_fixture(tmp_path)
+    admission, private_root, _consumption = _prepare_consumed_recovery_fixture(
+        tmp_path,
+        monkeypatch,
+    )
     observed_state = _observed_state(1)
     observed_state[field] = value
     monkeypatch.setattr(
@@ -1830,18 +1905,57 @@ def test_recovery_authority_drift_forces_exact_infrastructure_blocker(
     assert getattr(blocker, observed_field) == value
 
 
-def test_real_clone_observation_binds_zero_authority_counters(tmp_path: Path) -> None:
-    admission, _private_root, _consumption = _prepare_consumed_recovery_fixture(
-        tmp_path
-    )
-    preflight = PreflightStateCloneReportV02321.model_validate_json(
-        (
-            tmp_path / "docs/analysis/product-v02321-product-state-clone-preflight.json"
-        ).read_bytes()
-    )
+def test_hermetic_clone_observation_binds_zero_authority_counters(
+    tmp_path: Path,
+) -> None:
+    data_root = tmp_path / "product"
+    data_root.mkdir()
+    store = SqliteStoreV1(data_root / "product.sqlite3")
+    diagnosis, _bundle, _index, _trace = _fixture()
+    environment_id = "env-" + "1" * 24
+    with store.connect() as connection:
+        connection.execute("BEGIN IMMEDIATE")
+        connection.execute(
+            "INSERT INTO environments(environment_id, name, description, timezone, "
+            "service_identity_policy_json, explicit_service_catalog_json, created_at, "
+            "updated_at) VALUES (?, 'fixture', '', 'UTC', '{}', '[]', ?, ?)",
+            (
+                environment_id,
+                "2026-08-30T00:00:00+00:00",
+                "2026-08-30T00:00:00+00:00",
+            ),
+        )
+        connection.execute(
+            "INSERT INTO incidents(incident_id, environment_id, external_incident_key, "
+            "payload_json, created_at) VALUES (?, ?, 'fixture', '{}', ?)",
+            (
+                diagnosis.incident_id,
+                environment_id,
+                "2026-08-30T00:00:00+00:00",
+            ),
+        )
+        connection.execute(
+            "INSERT INTO diagnosis_results(diagnosis_id, incident_id, payload_json, "
+            "created_at) VALUES (?, ?, ?, ?)",
+            (
+                diagnosis.diagnosis_id,
+                diagnosis.incident_id,
+                canonical_json_bytes(diagnosis.model_dump(mode="json")).decode(),
+                "2026-08-30T00:00:00+00:00",
+            ),
+        )
+        connection.execute(
+            "INSERT INTO diagnosis_jobs(job_id, job_type, status, payload_json, "
+            "result_json, safe_error_code, idempotency_key, claimed_by, "
+            "lease_expires_at, attempt_count, created_at, updated_at) "
+            "VALUES ('job-fixture', 'DIAGNOSIS', 'SUCCEEDED', '{}', '{}', NULL, "
+            "'diagnosis:fixture', NULL, NULL, 1, 1.0, 1.0)"
+        )
+        connection.execute("COMMIT")
+
     observed = run_formal_nofault._observe_formal_cardinality(
-        tmp_path / admission.formal_clone_destination_locator,
-        environment_id=preflight.source_state.source_environment_id,
+        data_root,
+        environment_id=environment_id,
     )
 
     assert observed is not None
