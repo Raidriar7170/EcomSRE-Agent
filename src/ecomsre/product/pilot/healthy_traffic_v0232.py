@@ -246,14 +246,18 @@ class CheckoutTransactionObservationV0232(ProductModelV1):
     contract_sha256: str = Field(pattern=_SHA256_PATTERN)
     cart_request_schema_sha256: str = Field(pattern=_SHA256_PATTERN)
     cart_status: int | None = Field(default=None, ge=100, le=599)
+    cart_response_content_type: str | None = Field(default=None, max_length=200)
     cart_response_shape_sha256: str | None = Field(
         default=None, pattern=_SHA256_PATTERN
     )
+    cart_response_shape_summary: str | None = Field(default=None, max_length=200)
     checkout_request_schema_sha256: str = Field(pattern=_SHA256_PATTERN)
     checkout_status: int | None = Field(default=None, ge=100, le=599)
+    checkout_response_content_type: str | None = Field(default=None, max_length=200)
     checkout_response_shape_sha256: str | None = Field(
         default=None, pattern=_SHA256_PATTERN
     )
+    checkout_response_shape_summary: str | None = Field(default=None, max_length=200)
     business_success: bool
     failure_stage: CheckoutTrafficStageV0232 | None = None
     safe_error_code: TrafficSafeErrorCodeV0232 | None = None
@@ -271,6 +275,14 @@ class CheckoutTransactionObservationV0232(ProductModelV1):
             self.transaction_started_at.tzinfo is None
             or self.transaction_ended_at.tzinfo is None
             or self.transaction_ended_at < self.transaction_started_at
+            or (self.cart_status is None)
+            != (self.cart_response_content_type is None)
+            or (self.checkout_status is None)
+            != (self.checkout_response_content_type is None)
+            or (self.cart_response_shape_sha256 is None)
+            != (self.cart_response_shape_summary is None)
+            or (self.checkout_response_shape_sha256 is None)
+            != (self.checkout_response_shape_summary is None)
         ):
             raise ValueError("traffic transaction timestamps differ")
         success = (
@@ -279,6 +291,8 @@ class CheckoutTransactionObservationV0232(ProductModelV1):
             and self.safe_error_code is None
             and self.cart_status == 200
             and self.checkout_status == 200
+            and self.cart_response_content_type == "application/json"
+            and self.checkout_response_content_type == "application/json"
             and self.cart_response_shape_sha256 is not None
             and self.checkout_response_shape_sha256 is not None
         )
@@ -922,6 +936,41 @@ def _response_shape_sha256(value: object) -> str:
     return semantic_sha256_v22(_response_shape(value))
 
 
+def _response_shape_summary(value: object) -> str:
+    """Return a bounded, value-free top-level response-shape summary."""
+
+    def kind(item: object) -> str:
+        if isinstance(item, dict):
+            return "object"
+        if isinstance(item, list):
+            return "array"
+        if item is None:
+            return "null"
+        if isinstance(item, bool):
+            return "boolean"
+        if isinstance(item, int):
+            return "integer"
+        if isinstance(item, float):
+            return "number"
+        if isinstance(item, str):
+            return "string"
+        return "unsupported"
+
+    if isinstance(value, dict):
+        counts = Counter(kind(item) for item in value.values())
+        detail = ",".join(f"{name}={counts[name]}" for name in sorted(counts))
+        return f"object:fields={len(value)}:types={detail}"[:200]
+    if isinstance(value, list):
+        counts = Counter(kind(item) for item in value)
+        detail = ",".join(f"{name}={counts[name]}" for name in sorted(counts))
+        return f"array:items={len(value)}:types={detail}"[:200]
+    return kind(value)
+
+
+def _response_content_type(response: httpx.Response) -> str:
+    return response.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+
+
 def _json_within_depth(value: object) -> bool:
     pending: list[tuple[object, int]] = [(value, 1)]
     while pending:
@@ -1065,9 +1114,13 @@ class HealthyTrafficRunnerV0232:
         contract: CheckoutTrafficContractV0232,
         started_at: datetime,
         cart_status: int | None = None,
+        cart_content_type: str | None = None,
         cart_shape: str | None = None,
+        cart_shape_summary: str | None = None,
         checkout_status: int | None = None,
+        checkout_content_type: str | None = None,
         checkout_shape: str | None = None,
+        checkout_shape_summary: str | None = None,
         business_success: bool,
         failure_stage: CheckoutTrafficStageV0232 | None,
         safe_error_code: TrafficSafeErrorCodeV0232 | None,
@@ -1082,12 +1135,16 @@ class HealthyTrafficRunnerV0232:
                 contract.cart_request_schema
             ),
             cart_status=cart_status,
+            cart_response_content_type=cart_content_type,
             cart_response_shape_sha256=cart_shape,
+            cart_response_shape_summary=cart_shape_summary,
             checkout_request_schema_sha256=semantic_sha256_v22(
                 contract.checkout_request_schema
             ),
             checkout_status=checkout_status,
+            checkout_response_content_type=checkout_content_type,
             checkout_response_shape_sha256=checkout_shape,
+            checkout_response_shape_summary=checkout_shape_summary,
             business_success=business_success,
             failure_stage=failure_stage,
             safe_error_code=safe_error_code,
@@ -1150,8 +1207,12 @@ class HealthyTrafficRunnerV0232:
             )
         cart_latency = max(0.0, (self.monotonic() - cart_started) * 1000)
         cart_json = _json_response(cart_response)
+        cart_content_type = _response_content_type(cart_response)
         cart_shape = (
             None if cart_json is None else _response_shape_sha256(cart_json)
+        )
+        cart_shape_summary = (
+            None if cart_json is None else _response_shape_summary(cart_json)
         )
         if cart_response.status_code not in contract.cart_success_statuses:
             return self._observation(
@@ -1160,7 +1221,9 @@ class HealthyTrafficRunnerV0232:
                 contract=contract,
                 started_at=started_at,
                 cart_status=cart_response.status_code,
+                cart_content_type=cart_content_type,
                 cart_shape=cart_shape,
+                cart_shape_summary=cart_shape_summary,
                 business_success=False,
                 failure_stage=CheckoutTrafficStageV0232.CART_HTTP,
                 safe_error_code=TrafficSafeErrorCodeV0232.CART_HTTP_NON_SUCCESS,
@@ -1173,7 +1236,9 @@ class HealthyTrafficRunnerV0232:
                 contract=contract,
                 started_at=started_at,
                 cart_status=cart_response.status_code,
+                cart_content_type=cart_content_type,
                 cart_shape=cart_shape,
+                cart_shape_summary=cart_shape_summary,
                 business_success=False,
                 failure_stage=CheckoutTrafficStageV0232.CART_RESPONSE,
                 safe_error_code=(
@@ -1199,7 +1264,9 @@ class HealthyTrafficRunnerV0232:
                 contract=contract,
                 started_at=started_at,
                 cart_status=cart_response.status_code,
+                cart_content_type=cart_content_type,
                 cart_shape=cart_shape,
+                cart_shape_summary=cart_shape_summary,
                 business_success=False,
                 failure_stage=CheckoutTrafficStageV0232.BUSINESS_SUCCESS,
                 safe_error_code=(
@@ -1217,7 +1284,9 @@ class HealthyTrafficRunnerV0232:
                 contract=contract,
                 started_at=started_at,
                 cart_status=cart_response.status_code,
+                cart_content_type=cart_content_type,
                 cart_shape=cart_shape,
+                cart_shape_summary=cart_shape_summary,
                 business_success=False,
                 failure_stage=CheckoutTrafficStageV0232.CHECKOUT_REQUEST_BUILD,
                 safe_error_code=(
@@ -1239,7 +1308,9 @@ class HealthyTrafficRunnerV0232:
                 contract=contract,
                 started_at=started_at,
                 cart_status=cart_response.status_code,
+                cart_content_type=cart_content_type,
                 cart_shape=cart_shape,
+                cart_shape_summary=cart_shape_summary,
                 business_success=False,
                 failure_stage=CheckoutTrafficStageV0232.CHECKOUT_TRANSPORT,
                 safe_error_code=TrafficSafeErrorCodeV0232.TRAFFIC_TRANSACTION_TIMEOUT,
@@ -1255,7 +1326,9 @@ class HealthyTrafficRunnerV0232:
                 contract=contract,
                 started_at=started_at,
                 cart_status=cart_response.status_code,
+                cart_content_type=cart_content_type,
                 cart_shape=cart_shape,
+                cart_shape_summary=cart_shape_summary,
                 business_success=False,
                 failure_stage=CheckoutTrafficStageV0232.CHECKOUT_TRANSPORT,
                 safe_error_code=(
@@ -1270,8 +1343,12 @@ class HealthyTrafficRunnerV0232:
             0.0, (self.monotonic() - checkout_started) * 1000
         )
         checkout_json = _json_response(checkout_response)
+        checkout_content_type = _response_content_type(checkout_response)
         checkout_shape = (
             None if checkout_json is None else _response_shape_sha256(checkout_json)
+        )
+        checkout_shape_summary = (
+            None if checkout_json is None else _response_shape_summary(checkout_json)
         )
         if checkout_response.status_code not in contract.checkout_success_statuses:
             return self._observation(
@@ -1280,9 +1357,13 @@ class HealthyTrafficRunnerV0232:
                 contract=contract,
                 started_at=started_at,
                 cart_status=cart_response.status_code,
+                cart_content_type=cart_content_type,
                 cart_shape=cart_shape,
+                cart_shape_summary=cart_shape_summary,
                 checkout_status=checkout_response.status_code,
+                checkout_content_type=checkout_content_type,
                 checkout_shape=checkout_shape,
+                checkout_shape_summary=checkout_shape_summary,
                 business_success=False,
                 failure_stage=CheckoutTrafficStageV0232.CHECKOUT_HTTP,
                 safe_error_code=(
@@ -1298,9 +1379,13 @@ class HealthyTrafficRunnerV0232:
                 contract=contract,
                 started_at=started_at,
                 cart_status=cart_response.status_code,
+                cart_content_type=cart_content_type,
                 cart_shape=cart_shape,
+                cart_shape_summary=cart_shape_summary,
                 checkout_status=checkout_response.status_code,
+                checkout_content_type=checkout_content_type,
                 checkout_shape=checkout_shape,
+                checkout_shape_summary=checkout_shape_summary,
                 business_success=False,
                 failure_stage=CheckoutTrafficStageV0232.CHECKOUT_RESPONSE,
                 safe_error_code=(
@@ -1329,9 +1414,13 @@ class HealthyTrafficRunnerV0232:
                 contract=contract,
                 started_at=started_at,
                 cart_status=cart_response.status_code,
+                cart_content_type=cart_content_type,
                 cart_shape=cart_shape,
+                cart_shape_summary=cart_shape_summary,
                 checkout_status=checkout_response.status_code,
+                checkout_content_type=checkout_content_type,
                 checkout_shape=checkout_shape,
+                checkout_shape_summary=checkout_shape_summary,
                 business_success=False,
                 failure_stage=CheckoutTrafficStageV0232.BUSINESS_SUCCESS,
                 safe_error_code=(
@@ -1346,9 +1435,13 @@ class HealthyTrafficRunnerV0232:
             contract=contract,
             started_at=started_at,
             cart_status=cart_response.status_code,
+            cart_content_type=cart_content_type,
             cart_shape=cart_shape,
+            cart_shape_summary=cart_shape_summary,
             checkout_status=checkout_response.status_code,
+            checkout_content_type=checkout_content_type,
             checkout_shape=checkout_shape,
+            checkout_shape_summary=checkout_shape_summary,
             business_success=True,
             failure_stage=None,
             safe_error_code=None,
@@ -1387,9 +1480,6 @@ class HealthyTrafficRunnerV0232:
                 checkout_payload=checkout_payload,
             )
             observations.append(observation)
-            failed = sum(not item.business_success for item in observations)
-            if failed > profile.maximum_failures:
-                break
             if ordinal < profile.transactions:
                 self.sleep(1.0 / profile.requests_per_second)
         failures = Counter(

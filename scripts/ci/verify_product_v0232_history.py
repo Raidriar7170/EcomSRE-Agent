@@ -425,6 +425,7 @@ def verify_product_v0232_written_reports(
     expected_progress_increment: int | None = None,
     expected_offline_changed_iteration_count: int | None = None,
     expected_progress_bindings: Mapping[str, object] | None = None,
+    expected_live_traffic_preflight_attempt_count: int = 0,
 ) -> dict[str, object]:
     root = root.resolve()
     audit = _load_object(
@@ -452,7 +453,9 @@ def verify_product_v0232_written_reports(
         "failed_transactions": 1,
     }
     expected_zero_counters = {
-        "live_traffic_preflight_attempt_count": 0,
+        "live_traffic_preflight_attempt_count": (
+            expected_live_traffic_preflight_attempt_count
+        ),
         "formal_healthy_traffic_execution_count": 0,
         "accepted_successor_incident_count": 0,
         "successor_diagnosis_count": 0,
@@ -479,9 +482,45 @@ def verify_product_v0232_written_reports(
             )
             expected_progress_increment = 3
             expected_offline_changed_iteration_count = 3
+        elif observed_increment == 4:
+            attempt_files = tuple(
+                root
+                / "docs/analysis"
+                / f"product-v0232-traffic-preflight-attempt-{ordinal}.json"
+                for ordinal in (1, 2)
+            )
+            observed_attempt_count = sum(path.is_file() for path in attempt_files)
+            if observed_attempt_count not in {1, 2} or (
+                attempt_files[1].is_file() and not attempt_files[0].is_file()
+            ):
+                raise ValueError(
+                    "Product v0.2.3.2 traffic preflight Attempt inventory differs"
+                )
+            observed_terminal = progress.get("terminal")
+            if observed_terminal == "ECOMSRE_PRODUCT_V0232_TRAFFIC_PREFLIGHT_PASS":
+                expected_progress_terminal = observed_terminal
+            elif observed_terminal == "BLOCKED_ECOMSRE_PRODUCT_V0232_TRAFFIC_PREFLIGHT":
+                from scripts.ci.verify_product_v0232_blocker import (
+                    verify_product_v0232_blocker,
+                )
+
+                blocker = verify_product_v0232_blocker(root)
+                if blocker.get("attempt_ordinal") != observed_attempt_count:
+                    raise ValueError(
+                        "Product v0.2.3.2 blocked Attempt inventory differs"
+                    )
+                expected_progress_terminal = observed_terminal
+            else:
+                raise ValueError("Product v0.2.3.2 Increment 4 terminal differs")
+            expected_progress_increment = 4
+            expected_offline_changed_iteration_count = 3
+            expected_live_traffic_preflight_attempt_count = observed_attempt_count
+            expected_zero_counters["live_traffic_preflight_attempt_count"] = (
+                expected_live_traffic_preflight_attempt_count
+            )
         else:
             raise ValueError("Product v0.2.3.2 progress lifecycle differs")
-    if expected_progress_increment == 3:
+    if expected_progress_increment >= 3:
         evidence_preflight = _load_object(
             evidence_preflight_path
             or root / "docs/analysis/product-v0232-evidence-binding-preflight.json"

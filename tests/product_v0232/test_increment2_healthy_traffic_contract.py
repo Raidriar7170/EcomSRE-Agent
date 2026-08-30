@@ -237,6 +237,24 @@ def test_cart_http_failure_stops_before_checkout_with_one_disposition() -> None:
     assert execution.run.passed is False
 
 
+def test_preflight_attempt_still_observes_all_ten_transactions_after_failure() -> None:
+    requests: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request.url.path)
+        return httpx.Response(503, json={"safe": "unavailable"})
+
+    execution = _run(httpx.MockTransport(handler), transactions=10)
+
+    assert requests == ["/api/cart"] * 10
+    assert execution.run.planned_transactions == 10
+    assert execution.run.completed_transactions == 10
+    assert execution.run.successful_transactions == 0
+    assert execution.run.failed_transactions == 10
+    assert execution.run.stage_failure_counts == {"CART_HTTP": 10}
+    assert execution.run.passed is False
+
+
 def test_checkout_transport_failure_is_not_retried() -> None:
     requests: list[str] = []
 

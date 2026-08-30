@@ -1,0 +1,12 @@
+{
+  "schema_version": "ecomsre.product.healthy-traffic-profile.v0232",
+  "profile_id": "product-v0232-formal",
+  "transactions": 30,
+  "requests_per_second": 1.0,
+  "request_seed": 23083202,
+  "maximum_failures": 0,
+  "stabilization_seconds": 0,
+  "minimum_full_episode_duration_seconds": 300,
+  "queue_fault_flag": 0,
+  "profile_sha256": "0110803ab9b39bf397295f1fd8904aee31fabf9b82b314bf586fae98188f6ce7"
+}
