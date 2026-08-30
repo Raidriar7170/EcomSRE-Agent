@@ -518,7 +518,7 @@ def verify_product_v0231_written_reports(
     )
     if binding != _EXPECTED_PRIVATE_BINDING_V0231:
         raise ValueError("Product v0.2.3.1 written report private binding differs")
-    _require_ancestry(root, PREDECESSOR_HEAD_V0231, "HEAD")
+    _require_commit(root, PREDECESSOR_HEAD_V0231)
     tracked_count = _verify_tracked_predecessor_files(root, manifest)
     _verify_progress_semantics(root, _EXPECTED_PREDECESSOR_V0231)
     squash = verify_product_v0231_squash_history(root)

@@ -1,0 +1,61 @@
+{
+  "all_transactions_have_exact_disposition": true,
+  "canonical_proto_corroboration_sha256": "28e2c4badedcbed88543afdafc8c60f9d9e9e5cc499ee3b7098a6438d3deaf85",
+  "checkout_test_corroboration_sha256": "a3c1aee4b5006af285b5a5dba1818151e2d9015d3206b689ab902d835e1d9954",
+  "contract_sha256": "8e2e6fabb139413ff5ff54efe516023e00f7d04c7b84b4d296b1aa42bf39ce1b",
+  "full_synthetic_payloads_persisted_in_execution_or_evidence_artifacts": false,
+  "mocked_fixture_dispositions": [
+    {
+      "business_success": true,
+      "cart_status": 200,
+      "case": "success",
+      "checkout_status": 200,
+      "failure_stage": null,
+      "safe_error_code": null,
+      "transport_retry_count": 0
+    },
+    {
+      "business_success": false,
+      "cart_status": 503,
+      "case": "cart_http_failure",
+      "checkout_status": null,
+      "failure_stage": "CART_HTTP",
+      "safe_error_code": "CART_HTTP_NON_SUCCESS",
+      "transport_retry_count": 0
+    },
+    {
+      "business_success": false,
+      "cart_status": 200,
+      "case": "checkout_http_failure",
+      "checkout_status": 503,
+      "failure_stage": "CHECKOUT_HTTP",
+      "safe_error_code": "CHECKOUT_HTTP_NON_SUCCESS",
+      "transport_retry_count": 0
+    },
+    {
+      "business_success": false,
+      "cart_status": 200,
+      "case": "cart_schema_failure",
+      "checkout_status": null,
+      "failure_stage": "CART_RESPONSE",
+      "safe_error_code": "CART_RESPONSE_SCHEMA_INVALID",
+      "transport_retry_count": 0
+    },
+    {
+      "business_success": false,
+      "cart_status": 200,
+      "case": "business_semantic_failure",
+      "checkout_status": 200,
+      "failure_stage": "BUSINESS_SUCCESS",
+      "safe_error_code": "CHECKOUT_BUSINESS_SUCCESS_MISSING",
+      "transport_retry_count": 0
+    }
+  ],
+  "mocked_transaction_count": 5,
+  "report_sha256": "94da03d8b19fac0928e74a95ae3abb70ceb7fe6575fe12109d8e2a8dfd024213",
+  "schema_version": "ecomsre.product.traffic-contract-report.v0232",
+  "source_file_binding_count": 7,
+  "terminal": "ECOMSRE_PRODUCT_V0232_TRAFFIC_CONTRACT_PASS",
+  "transport_retry_count": 0,
+  "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
+}

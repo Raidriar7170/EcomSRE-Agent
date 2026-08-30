@@ -8,7 +8,7 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 from ecomsre.product.pilot.product_state_clone_v0232 import (
@@ -315,6 +315,10 @@ def verify_product_v0232_written_reports(
     audit_path: Path | None = None,
     clone_path: Path | None = None,
     progress_path: Path | None = None,
+    expected_progress_terminal: str | None = None,
+    expected_progress_increment: int | None = None,
+    expected_offline_changed_iteration_count: int | None = None,
+    expected_progress_bindings: Mapping[str, object] | None = None,
 ) -> dict[str, object]:
     root = root.resolve()
     audit = _load_object(
@@ -352,6 +356,23 @@ def verify_product_v0232_written_reports(
         "runbook_executions": 0,
         "provider_calls": 0,
     }
+    if expected_progress_increment is None:
+        observed_increment = progress.get("increment")
+        if observed_increment == 1:
+            expected_progress_terminal = HISTORY_AND_STATE_PASS_V0232
+            expected_progress_increment = 1
+            expected_offline_changed_iteration_count = 1
+        elif observed_increment == 2:
+            expected_progress_terminal = "ECOMSRE_PRODUCT_V0232_TRAFFIC_CONTRACT_PASS"
+            expected_progress_increment = 2
+            expected_offline_changed_iteration_count = 2
+        else:
+            raise ValueError("Product v0.2.3.2 progress lifecycle differs")
+    if (
+        expected_progress_terminal is None
+        or expected_offline_changed_iteration_count is None
+    ):
+        raise ValueError("Product v0.2.3.2 expected progress binding is incomplete")
     if (
         audit.get("terminal") != HISTORY_AND_STATE_PASS_V0232
         or audit.get("source_product_process_owner_count") != 0
@@ -377,14 +398,19 @@ def verify_product_v0232_written_reports(
         or clone.source_active_baseline_sha256
         != source.source_active_baseline_sha256
         or clone.source_profile_sha256 != source.source_profile_sha256
-        or progress.get("terminal") != HISTORY_AND_STATE_PASS_V0232
-        or progress.get("increment") != 1
+        or progress.get("terminal") != expected_progress_terminal
+        or progress.get("increment") != expected_progress_increment
         or progress.get("history_terminal") != HISTORY_VERIFIED_V0232
         or progress.get("source_clone_count") != 1
-        or progress.get("offline_changed_iteration_count") != 1
+        or progress.get("offline_changed_iteration_count")
+        != expected_offline_changed_iteration_count
         or progress.get("action_authority") != "NONE"
         or progress.get("clone_sha256") != clone.clone_sha256
         or any(progress.get(key) != value for key, value in expected_zero_counters.items())
+        or any(
+            progress.get(key) != value
+            for key, value in (expected_progress_bindings or {}).items()
+        )
     ):
         raise ValueError("Product v0.2.3.2 written report binding differs")
     public_bytes = b"\n".join(

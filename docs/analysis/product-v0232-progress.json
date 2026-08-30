@@ -6,15 +6,17 @@
   "fault_attempt_count": 0,
   "formal_healthy_traffic_execution_count": 0,
   "history_terminal": "ECOMSRE_PRODUCT_V0232_HISTORY_VERIFIED",
-  "increment": 1,
+  "increment": 2,
   "knowledge_loop_campaign_count": 0,
   "live_traffic_preflight_attempt_count": 0,
-  "offline_changed_iteration_count": 1,
-  "progress_sha256": "cd44b2a6c012f2a9d21d98471eeb9504b8c9b0e999cb38b51c5afe150affe3ec",
+  "offline_changed_iteration_count": 2,
+  "progress_sha256": "fcac028523a203a38fb36ab89ca767e5deebda14aef5ad144e863cc80e34da71",
   "provider_calls": 0,
   "runbook_executions": 0,
   "schema_version": "ecomsre.product.progress.v0232",
   "source_clone_count": 1,
   "successor_diagnosis_count": 0,
-  "terminal": "ECOMSRE_PRODUCT_V0232_HISTORY_AND_STATE_PASS"
+  "terminal": "ECOMSRE_PRODUCT_V0232_TRAFFIC_CONTRACT_PASS",
+  "traffic_contract_report_sha256": "94da03d8b19fac0928e74a95ae3abb70ceb7fe6575fe12109d8e2a8dfd024213",
+  "traffic_contract_sha256": "8e2e6fabb139413ff5ff54efe516023e00f7d04c7b84b4d296b1aa42bf39ce1b"
 }
