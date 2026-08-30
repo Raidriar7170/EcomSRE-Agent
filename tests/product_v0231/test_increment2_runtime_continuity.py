@@ -31,6 +31,7 @@ from ecomsre_live_sandbox.contracts import (
     load_bundle,
 )
 from ecomsre_live_sandbox.control import build_flag_documents
+from ecomsre_live_sandbox.environment import DockerSnapshot
 from scripts.product_v0231.run_continuity_preflight import (
     _contains_absolute_locator,
 )
@@ -802,6 +803,27 @@ def test_cleanup_reauthenticates_full_authority_before_destructive_down(
     ):
         lifecycle.cleanup_owned(baseline_unchanged=True)
     assert environment.cleanup_count == 0
+
+
+def test_interrupted_cleanup_reauthenticates_and_uses_persisted_snapshot(
+    tmp_path: Path,
+) -> None:
+    lifecycle, _environment, _bundle, _raw_compose, _resolved_value = (
+        _passing_lifecycle(tmp_path)
+    )
+    lifecycle.environment = None
+
+    result = lifecycle.recover_cleanup_owned(
+        baseline_snapshot=DockerSnapshot(
+            containers=frozenset(),
+            networks=frozenset(),
+            volumes=frozenset(),
+        ),
+        baseline_unchanged=True,
+    )
+
+    assert result.verdict == "CLEAN"
+    assert lifecycle.environment.cleanup_count == 1
 
 
 def test_start_boundary_rejects_fresh_compose_or_owned_resource_drift(
