@@ -103,8 +103,7 @@ def _formal_freeze_fixture(tmp_path: Path) -> Path:
     )
     clone = json.loads(
         (
-            tmp_path
-            / "docs/analysis/product-v02321-product-state-clone-preflight.json"
+            tmp_path / "docs/analysis/product-v02321-product-state-clone-preflight.json"
         ).read_text(encoding="utf-8")
     )
     progress.update(
@@ -159,9 +158,7 @@ def _pre_session_reservation_payload(
             {"changed_source_bindings": changed_source_bindings}
         ),
         "repair_rationale": "initial recovery fixture",
-        "infrastructure_session_count_before": (
-            infrastructure_session_count_before
-        ),
+        "infrastructure_session_count_before": (infrastructure_session_count_before),
         "traffic_attempt_count_before": traffic_attempt_count_before,
         "formal_healthy_traffic_execution_count": 0,
         "accepted_successor_incident_count": 0,
@@ -263,17 +260,13 @@ def _successful_ledger(
     assert isinstance(prior_attempt_start, TrafficPreflightAttemptStartV02321)
     assert isinstance(prior_completion, TrafficPreflightAttemptCompletionV02321)
     assert isinstance(prior_closure, TrafficHarnessClosureV02321)
-    assert isinstance(
-        prior_session_completion, InfrastructureSessionCompletionV02321
-    )
+    assert isinstance(prior_session_completion, InfrastructureSessionCompletionV02321)
 
     session_start_body = prior_session_start.model_dump(
         mode="json", exclude={"session_id", "event_sha256"}
     )
     session_start_body["state_clone_sha256"] = state_clone_sha256
-    session_start = InfrastructureSessionStartV02321.build(
-        **session_start_body
-    )
+    session_start = InfrastructureSessionStartV02321.build(**session_start_body)
 
     attempt_start_body = prior_attempt_start.model_dump(
         mode="json", exclude={"attempt_id", "event_sha256"}
@@ -284,13 +277,9 @@ def _successful_ledger(
         session_start_sha256=session_start.event_sha256,
     )
     attempt_start_body["profile_sha256"] = execution.run.profile_sha256
-    attempt_start = TrafficPreflightAttemptStartV02321.build(
-        **attempt_start_body
-    )
+    attempt_start = TrafficPreflightAttemptStartV02321.build(**attempt_start_body)
 
-    completion_body = prior_completion.model_dump(
-        mode="json", exclude={"event_sha256"}
-    )
+    completion_body = prior_completion.model_dump(mode="json", exclude={"event_sha256"})
     completion_body.update(
         attempt_id=attempt_start.attempt_id,
         attempt_start_sha256=attempt_start.event_sha256,
@@ -305,18 +294,14 @@ def _successful_ledger(
         safe_error_code=None,
         terminal="ATTEMPT_PASS",
     )
-    completion = TrafficPreflightAttemptCompletionV02321.build(
-        **completion_body
-    )
+    completion = TrafficPreflightAttemptCompletionV02321.build(**completion_body)
 
     stages = list(prior_closure.observed_stage_sequence)
     stages.insert(
         stages.index(TrafficHarnessStageV02321.QUEUE_POSTSTATE_CAPTURED),
         TrafficHarnessStageV02321.TRAFFIC_EXECUTION_COMPLETE,
     )
-    closure_body = prior_closure.model_dump(
-        mode="json", exclude={"closure_sha256"}
-    )
+    closure_body = prior_closure.model_dump(mode="json", exclude={"closure_sha256"})
     closure_body.update(
         prior_event_sha256=completion.event_sha256,
         session_id=session_start.session_id,
@@ -375,9 +360,7 @@ def _successful_live_attempt() -> LiveTrafficPreflightAttemptV02321:
         knowledge_artifact_count=0,
     )
     execution = _successful_execution()
-    ledger = _successful_ledger(
-        execution, state_clone_sha256=clone.clone_sha256
-    )
+    ledger = _successful_ledger(execution, state_clone_sha256=clone.clone_sha256)
     session_start = ledger.events[0]
     attempt_start = ledger.events[1]
     closure = ledger.events[3]
@@ -432,9 +415,7 @@ def _frozen_source_and_clone() -> tuple[
     )
     source = ProductStateSourceV0232.model_validate(audit["source_state"])
     clone = ProductStateCloneV0232.model_validate_json(
-        (
-            ROOT / "docs/analysis/product-v0232-product-state-clone.json"
-        ).read_bytes()
+        (ROOT / "docs/analysis/product-v0232-product-state-clone.json").read_bytes()
     )
     return source, clone
 
@@ -501,6 +482,7 @@ def test_preflight_clone_runner_writes_one_cross_bound_successor_report(
     monkeypatch.setattr(
         run_state_clone, "_load_frozen_source_state", lambda _root: source
     )
+
     def admit_fixture(_root: Path, *, locator: str) -> ProductStateSourceV0232:
         if locator == source.source_locator:
             return source
@@ -538,8 +520,7 @@ def test_preflight_clone_runner_writes_one_cross_bound_successor_report(
     assert report.knowledge_artifact_count == 0
     written = PreflightStateCloneReportV02321.model_validate_json(
         (
-            tmp_path
-            / "docs/analysis/product-v02321-product-state-clone-preflight.json"
+            tmp_path / "docs/analysis/product-v02321-product-state-clone-preflight.json"
         ).read_bytes()
     )
     assert written == report
@@ -552,8 +533,7 @@ def test_preflight_clone_runner_writes_one_cross_bound_successor_report(
         )
 
     report_path = (
-        tmp_path
-        / "docs/analysis/product-v02321-product-state-clone-preflight.json"
+        tmp_path / "docs/analysis/product-v02321-product-state-clone-preflight.json"
     )
     report_path.unlink()
     monkeypatch.setattr(
@@ -571,8 +551,9 @@ def test_preflight_clone_runner_writes_one_cross_bound_successor_report(
     assert recovered == report
 
 
-def test_formal_contract_freeze_binds_preflight_semantics_and_uncreated_clone_plan(
-) -> None:
+def test_formal_contract_freeze_binds_preflight_semantics_and_uncreated_clone_plan() -> (
+    None
+):
     freeze = build_formal_contract_freeze_v02321(ROOT)
 
     assert freeze.terminal == FORMAL_CONTRACT_FREEZE_PASS_V02321
@@ -587,9 +568,7 @@ def test_formal_contract_freeze_binds_preflight_semantics_and_uncreated_clone_pl
         "0110803ab9b39bf397295f1fd8904aee31fabf9b82b314bf586fae98188f6ce7"
     )
     assert freeze.formal_clone_plan.status == "PLANNED_NOT_CREATED"
-    assert freeze.formal_clone_plan.source_state_sha256 == (
-        freeze.source_state_sha256
-    )
+    assert freeze.formal_clone_plan.source_state_sha256 == (freeze.source_state_sha256)
     assert not (ROOT / freeze.formal_clone_plan.destination_locator).exists()
     assert freeze.formal_healthy_traffic_execution_count == 0
     assert freeze.accepted_successor_incident_count == 0
@@ -631,9 +610,9 @@ def test_formal_contract_freeze_rejects_broken_formal_clone_symlink(
     _use_root_traffic_contract(monkeypatch)
     source = ProductStateSourceV0232.model_validate(
         json.loads(
-            (
-                project / "docs/analysis/product-v0232-predecessor-audit.json"
-            ).read_text(encoding="utf-8")
+            (project / "docs/analysis/product-v0232-predecessor-audit.json").read_text(
+                encoding="utf-8"
+            )
         )["source_state"]
     )
     clone_root = (
@@ -657,6 +636,36 @@ def test_formal_contract_freeze_rejects_premature_formal_output(
     output = project / "docs/analysis/product-v02321-formal-traffic.json"
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text("{}", encoding="utf-8")
+
+    with pytest.raises(FileExistsError, match="formal output already exists"):
+        build_formal_contract_freeze_v02321(project)
+
+
+@pytest.mark.parametrize(
+    "relative",
+    (
+        ".local/product-v02321/formal-reservation.json",
+        "docs/analysis/product-v02321-fresh-runtime-snapshot.json",
+        "docs/analysis/product-v02321-formal-blocker.json",
+    ),
+)
+@pytest.mark.parametrize("kind", ("file", "directory", "broken-symlink"))
+def test_formal_contract_freeze_rejects_every_new_premature_formal_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    relative: str,
+    kind: str,
+) -> None:
+    project = _formal_freeze_fixture(tmp_path)
+    _use_root_traffic_contract(monkeypatch)
+    output = project / relative
+    output.parent.mkdir(parents=True, exist_ok=True)
+    if kind == "file":
+        output.write_text("{}\n", encoding="utf-8")
+    elif kind == "directory":
+        output.mkdir()
+    else:
+        os.symlink(output.parent / "missing-target", output)
 
     with pytest.raises(FileExistsError, match="formal output already exists"):
         build_formal_contract_freeze_v02321(project)
@@ -755,9 +764,7 @@ def test_preflight_clone_runner_rejects_state_not_equal_to_frozen_audit(
     )
     monkeypatch.setattr(run_state_clone, "_require_source_unowned", lambda _p: None)
     monkeypatch.setattr(run_state_clone, "_admit_state", lambda *_a, **_k: drifted)
-    monkeypatch.setattr(
-        run_state_clone, "_load_frozen_source_state", lambda _r: frozen
-    )
+    monkeypatch.setattr(run_state_clone, "_load_frozen_source_state", lambda _r: frozen)
     monkeypatch.setattr(
         run_state_clone,
         "clone_product_state_v0232",
@@ -794,9 +801,7 @@ def test_preflight_clone_report_rejects_destination_rebinding() -> None:
     )
     body = report.model_dump(mode="json", exclude={"report_sha256"})
     body["destination_locator"] = (
-        ".local/product-v02321/product-state/preflight-"
-        + "f" * 24
-        + "/product"
+        ".local/product-v02321/product-state/preflight-" + "f" * 24 + "/product"
     )
 
     with pytest.raises(ValueError, match="clone binding differs"):
@@ -836,17 +841,13 @@ def test_live_preflight_pass_requires_exact_10_of_10_clean_evidence() -> None:
 
 def test_live_preflight_attempt_rejects_source_or_clone_report_drift() -> None:
     attempt = _successful_live_attempt()
-    payload = attempt.model_dump(
-        mode="json", exclude={"terminal", "attempt_sha256"}
-    )
+    payload = attempt.model_dump(mode="json", exclude={"terminal", "attempt_sha256"})
     payload["source_state_after_sha256"] = "0" * 64
 
     with pytest.raises(ValueError, match="evidence binding differs"):
         LiveTrafficPreflightAttemptV02321.build(**payload)
 
-    payload = attempt.model_dump(
-        mode="json", exclude={"terminal", "attempt_sha256"}
-    )
+    payload = attempt.model_dump(mode="json", exclude={"terminal", "attempt_sha256"})
     payload["product_state_after_sha256"] = "0" * 64
     with pytest.raises(ValueError, match="evidence binding differs"):
         LiveTrafficPreflightAttemptV02321.build(**payload)
@@ -854,9 +855,7 @@ def test_live_preflight_attempt_rejects_source_or_clone_report_drift() -> None:
 
 def test_live_preflight_rejects_resealed_ledger_or_profile_rebinding() -> None:
     attempt = _successful_live_attempt()
-    payload = attempt.model_dump(
-        mode="json", exclude={"terminal", "attempt_sha256"}
-    )
+    payload = attempt.model_dump(mode="json", exclude={"terminal", "attempt_sha256"})
     payload["traffic_profile_sha256"] = "0" * 64
 
     with pytest.raises(ValueError, match="evidence binding differs"):
@@ -935,15 +934,12 @@ def test_publication_bundle_recovers_without_replaying_traffic(
         "_write_public_exact_or_create",
         exact_create,
     )
-    recovered = run_traffic_preflight._publish_publication_bundle(
-        tmp_path, bundle
-    )
+    recovered = run_traffic_preflight._publish_publication_bundle(tmp_path, bundle)
     assert recovered == attempt
     assert run_traffic_preflight._load_private_ledger(tmp_path) == ledger
     assert json.loads(
         (
-            tmp_path
-            / "docs/analysis/product-v02321-traffic-preflight-attempt-1.json"
+            tmp_path / "docs/analysis/product-v02321-traffic-preflight-attempt-1.json"
         ).read_text(encoding="utf-8")
     ) == attempt.model_dump(mode="json")
 
@@ -967,9 +963,7 @@ def test_pre_session_failure_requires_changed_source_before_new_reservation(
         changed_source_paths=(),
         repair_rationale=None,
     )
-    first_root = (
-        tmp_path / ".local/product-v02321/traffic-preflight/pre-session-1"
-    )
+    first_root = tmp_path / ".local/product-v02321/traffic-preflight/pre-session-1"
     first_root.mkdir(parents=True)
     (first_root / "pre-session-start.json").write_text(
         json.dumps(first), encoding="utf-8"
@@ -1149,9 +1143,7 @@ def test_closed_session_only_retry_also_rejects_identical_implementation(
         changed_source_paths=(),
         repair_rationale=None,
     )
-    first_root = (
-        tmp_path / ".local/product-v02321/traffic-preflight/closed-session-1"
-    )
+    first_root = tmp_path / ".local/product-v02321/traffic-preflight/closed-session-1"
     first_root.mkdir(parents=True)
     (first_root / "pre-session-start.json").write_text(
         json.dumps(first), encoding="utf-8"
@@ -1273,7 +1265,9 @@ def test_open_attempt_recovery_closes_ledger_without_transport_replay(
                 verdict="BLOCKED",
             )
 
-    monkeypatch.setattr(run_traffic_preflight, "verify_product_v02321_history", lambda _r: {})
+    monkeypatch.setattr(
+        run_traffic_preflight, "verify_product_v02321_history", lambda _r: {}
+    )
     monkeypatch.setattr(
         run_traffic_preflight.TrafficHarnessTypedRequestPlanV02321,
         "model_validate_json",
@@ -1284,15 +1278,37 @@ def test_open_attempt_recovery_closes_ledger_without_transport_replay(
             )
         ),
     )
-    monkeypatch.setattr(run_traffic_preflight, "_verify_profile_binding", lambda *_a, **_k: "a" * 64)
-    monkeypatch.setattr(run_traffic_preflight, "_admit_source_state", lambda _r: clone_report.source_state)
-    monkeypatch.setattr(run_traffic_preflight, "_admit_clone_state", lambda *_a: (clone_report.destination_state, product_root))
+    monkeypatch.setattr(
+        run_traffic_preflight, "_verify_profile_binding", lambda *_a, **_k: "a" * 64
+    )
+    monkeypatch.setattr(
+        run_traffic_preflight,
+        "_admit_source_state",
+        lambda _r: clone_report.source_state,
+    )
+    monkeypatch.setattr(
+        run_traffic_preflight,
+        "_admit_clone_state",
+        lambda *_a: (clone_report.destination_state, product_root),
+    )
     monkeypatch.setattr(run_traffic_preflight, "_database_owner_count", lambda _p: 0)
-    monkeypatch.setattr(run_traffic_preflight, "_ProductHostProcessesV023", FakeProcesses)
-    monkeypatch.setattr(run_traffic_preflight, "load_traffic_profile_v0232", lambda *_a, **_k: SimpleNamespace(queue_fault_flag=0))
+    monkeypatch.setattr(
+        run_traffic_preflight, "_ProductHostProcessesV023", FakeProcesses
+    )
+    monkeypatch.setattr(
+        run_traffic_preflight,
+        "load_traffic_profile_v0232",
+        lambda *_a, **_k: SimpleNamespace(queue_fault_flag=0),
+    )
     monkeypatch.setattr(run_traffic_preflight, "load_bundle", lambda _p: object())
-    monkeypatch.setattr(run_traffic_preflight, "load_preserved_runtime_inputs_v0231", lambda **_k: (object(), {}))
-    monkeypatch.setattr(run_traffic_preflight, "AuthorityContinuousSandboxLifecycleV0231", FakeLifecycle)
+    monkeypatch.setattr(
+        run_traffic_preflight,
+        "load_preserved_runtime_inputs_v0231",
+        lambda **_k: (object(), {}),
+    )
+    monkeypatch.setattr(
+        run_traffic_preflight, "AuthorityContinuousSandboxLifecycleV0231", FakeLifecycle
+    )
     monkeypatch.setattr(
         run_traffic_preflight,
         "verify_queue_default_v021",
@@ -1317,9 +1333,10 @@ def test_open_attempt_recovery_closes_ledger_without_transport_replay(
         (private_root / "pre-session-completion.json").read_text(encoding="utf-8")
     )
     assert pre_session_completion["attempt_label"] == "recover-1"
-    assert pre_session_completion["reservation_sha256"] == reservation[
-        "reservation_sha256"
-    ]
+    assert (
+        pre_session_completion["reservation_sha256"]
+        == reservation["reservation_sha256"]
+    )
     assert pre_session_completion["infrastructure_session_count_after"] == 1
     assert pre_session_completion["traffic_attempt_count_before"] == 0
     assert (
@@ -1444,9 +1461,7 @@ def test_same_label_recovers_session_start_before_completion_checkpoint(
 
     def recover(**payload: object) -> None:
         recovered.append(str(payload["attempt_label"]))
-        (private_root / "publication-bundle.json").write_text(
-            "{}", encoding="utf-8"
-        )
+        (private_root / "publication-bundle.json").write_text("{}", encoding="utf-8")
 
     monkeypatch.setattr(
         run_traffic_preflight,

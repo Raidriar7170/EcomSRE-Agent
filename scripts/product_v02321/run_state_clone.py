@@ -17,7 +17,16 @@ from ecomsre.product.pilot.product_state_clone_v0232 import (
     clone_product_state_v0232,
 )
 from ecomsre.product.pilot.product_state_clone_v02321 import (
+    FormalStateCloneReportV02321,
     PreflightStateCloneReportV02321,
+)
+from ecomsre.product.pilot.formal_nofault_v02321 import (
+    FormalExecutionAdmissionV02321,
+)
+from ecomsre.product.pilot.formal_contract_v02321 import (
+    FormalContractFreezeV02321,
+    verify_formal_contract_freeze_v02321,
+    verify_formal_pre_execution_review_v02321,
 )
 from ecomsre_live_sandbox.contracts import canonical_json_bytes
 from scripts.ci.verify_product_v0232_history import (
@@ -53,9 +62,7 @@ def _write_create_once(path: Path, payload: dict[str, Any]) -> None:
         raise
 
 
-def _admit_state(
-    state_root: Path, *, locator: str
-) -> ProductStateSourceV0232:
+def _admit_state(state_root: Path, *, locator: str) -> ProductStateSourceV0232:
     return admit_product_state_source_v0232(
         state_root,
         source_locator=locator,
@@ -63,9 +70,7 @@ def _admit_state(
         expected_baseline_id=BASELINE_ID_V0232,
         expected_baseline_sha256=BASELINE_SHA256_V0232,
         expected_profile_sha256=PROFILE_SHA256_V0232,
-        expected_pilot_runtime_authority_sha256=(
-            PILOT_RUNTIME_AUTHORITY_SHA256_V0232
-        ),
+        expected_pilot_runtime_authority_sha256=(PILOT_RUNTIME_AUTHORITY_SHA256_V0232),
         expected_runtime_connector_binding_sha256=(
             RUNTIME_CONNECTOR_BINDING_SHA256_V0232
         ),
@@ -157,9 +162,7 @@ def create_preflight_state_clone_v02321(
     )
     destination_root = root / destination_locator
     if destination_root.exists() and not destination_root.is_symlink():
-        destination_state = _admit_state(
-            destination_root, locator=destination_locator
-        )
+        destination_state = _admit_state(destination_root, locator=destination_locator)
         clone = _bind_existing_clone(
             source=source,
             destination=destination_state,
@@ -182,9 +185,7 @@ def create_preflight_state_clone_v02321(
                 RUNTIME_CONNECTOR_BINDING_SHA256_V0232
             ),
         )
-        destination_state = _admit_state(
-            destination_root, locator=destination_locator
-        )
+        destination_state = _admit_state(destination_root, locator=destination_locator)
     report = PreflightStateCloneReportV02321.build(
         source_repository_binding=source_repository_binding,
         predecessor_private_acceptance=private_acceptance,
@@ -201,6 +202,120 @@ def create_preflight_state_clone_v02321(
     return report
 
 
+def create_formal_state_clone_v02321(
+    *,
+    project_root: Path,
+    source_root: Path,
+    predecessor_private_acceptance: Path,
+    admission: FormalExecutionAdmissionV02321,
+    strict_gate_already_verified: bool = False,
+) -> FormalStateCloneReportV02321:
+    """Create the formal clone after rechecking the strict absence-bound gate."""
+
+    root = Path(project_root).resolve(strict=True)
+    if strict_gate_already_verified:
+        freeze = FormalContractFreezeV02321.model_validate_json(
+            (
+                root / "docs/analysis/product-v02321-formal-contract-freeze.json"
+            ).read_bytes()
+        )
+        review_sha256 = admission.pre_execution_review_sha256
+    else:
+        review = verify_formal_pre_execution_review_v02321(root)
+        freeze = verify_formal_contract_freeze_v02321(root)
+        review_sha256 = review.review_sha256
+    if (
+        admission.formal_contract_freeze_sha256 != freeze.freeze_sha256
+        or admission.pre_execution_review_sha256 != review_sha256
+        or admission.source_state_sha256 != freeze.source_state_sha256
+        or admission.formal_clone_plan_sha256 != freeze.formal_clone_plan.plan_sha256
+        or admission.formal_clone_destination_locator
+        != freeze.formal_clone_plan.destination_locator
+    ):
+        raise ValueError("Product v0.2.3.2.1 formal admission binding differs")
+
+    source_product = Path(source_root).resolve(strict=True)
+    report_path = root / "docs/analysis/product-v02321-product-state-clone-formal.json"
+    if report_path.is_symlink():
+        raise FileExistsError("Product v0.2.3.2.1 formal clone report differs")
+    private_acceptance = verify_product_v0232_private_result(
+        predecessor_private_acceptance
+    )
+    source_repository_binding = _require_fixed_source_root(source_product)
+    if source_repository_binding != expected_source_repository_binding_v0232():
+        raise ValueError("Product v0.2.3.2.1 source repository binding differs")
+    _require_source_unowned(source_product / "product.sqlite3")
+    source = _admit_state(source_product, locator=SOURCE_LOCATOR_V0232)
+    if source != _load_frozen_source_state(root):
+        raise ValueError("Product v0.2.3.2.1 frozen source state differs")
+    destination_locator = freeze.formal_clone_plan.destination_locator
+    destination_root = root / destination_locator
+    if report_path.exists():
+        report = FormalStateCloneReportV02321.model_validate_json(
+            report_path.read_bytes()
+        )
+        if (
+            report.formal_admission_sha256 != admission.admission_sha256
+            or report.formal_clone_plan_sha256 != freeze.formal_clone_plan.plan_sha256
+            or report.source_repository_binding != source_repository_binding
+            or report.predecessor_private_acceptance != private_acceptance
+            or report.source_state != source
+            or report.destination_locator != destination_locator
+        ):
+            raise ValueError("Product v0.2.3.2.1 recovered formal clone differs")
+        destination_state = _admit_state(destination_root, locator=destination_locator)
+        expected_clone = _bind_existing_clone(
+            source=source,
+            destination=destination_state,
+            destination_locator=destination_locator,
+        )
+        if (
+            report.destination_state != destination_state
+            or report.clone != expected_clone
+        ):
+            raise ValueError("Product v0.2.3.2.1 recovered formal state differs")
+        return report
+    if destination_root.is_symlink():
+        raise FileExistsError("Product v0.2.3.2.1 formal clone differs")
+    if destination_root.exists():
+        destination_state = _admit_state(destination_root, locator=destination_locator)
+        clone = _bind_existing_clone(
+            source=source,
+            destination=destination_state,
+            destination_locator=destination_locator,
+        )
+    else:
+        clone = clone_product_state_v0232(
+            source_product,
+            destination_root,
+            source_locator=SOURCE_LOCATOR_V0232,
+            destination_locator=destination_locator,
+            expected_environment_id=ENVIRONMENT_ID_V0232,
+            expected_baseline_id=BASELINE_ID_V0232,
+            expected_baseline_sha256=BASELINE_SHA256_V0232,
+            expected_profile_sha256=PROFILE_SHA256_V0232,
+            expected_pilot_runtime_authority_sha256=(
+                PILOT_RUNTIME_AUTHORITY_SHA256_V0232
+            ),
+            expected_runtime_connector_binding_sha256=(
+                RUNTIME_CONNECTOR_BINDING_SHA256_V0232
+            ),
+        )
+        destination_state = _admit_state(destination_root, locator=destination_locator)
+    report = FormalStateCloneReportV02321.build(
+        formal_admission_sha256=admission.admission_sha256,
+        formal_clone_plan_sha256=freeze.formal_clone_plan.plan_sha256,
+        source_repository_binding=source_repository_binding,
+        predecessor_private_acceptance=private_acceptance,
+        source_state=source.model_dump(mode="json"),
+        clone=clone.model_dump(mode="json"),
+        destination_state=destination_state.model_dump(mode="json"),
+        destination_locator=destination_locator,
+    )
+    _write_create_once(report_path, report.model_dump(mode="json"))
+    return report
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -209,9 +324,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         default=Path(__file__).resolve().parents[2],
     )
     parser.add_argument("--source-root", type=Path, required=True)
-    parser.add_argument(
-        "--predecessor-private-acceptance", type=Path, required=True
-    )
+    parser.add_argument("--predecessor-private-acceptance", type=Path, required=True)
     arguments = parser.parse_args(argv)
     result = create_preflight_state_clone_v02321(
         project_root=arguments.project_root,
@@ -227,5 +340,6 @@ if __name__ == "__main__":
 
 
 __all__ = (
+    "create_formal_state_clone_v02321",
     "create_preflight_state_clone_v02321",
 )

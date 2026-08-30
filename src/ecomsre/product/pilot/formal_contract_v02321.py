@@ -45,9 +45,7 @@ from ecomsre.product.pilot.typed_request_plan_v02321 import (
 
 FORMAL_CONTRACT_FREEZE_PASS_V02321: Literal[
     "ECOMSRE_PRODUCT_V02321_FORMAL_CONTRACT_FREEZE_PASS"
-] = (
-    "ECOMSRE_PRODUCT_V02321_FORMAL_CONTRACT_FREEZE_PASS"
-)
+] = "ECOMSRE_PRODUCT_V02321_FORMAL_CONTRACT_FREEZE_PASS"
 _SHA256_PATTERN = r"^[0-9a-f]{64}$"
 _FROZEN_FILE_ROLES_V02321 = {
     "TRAFFIC_CONTRACT": "config/product-v0232/traffic/contract.json",
@@ -66,26 +64,42 @@ _FROZEN_FILE_ROLES_V02321 = {
     "PREFLIGHT_ATTEMPT": (
         "docs/analysis/product-v02321-traffic-preflight-attempt-1.json"
     ),
-    "PREFLIGHT_LEDGER": (
-        "docs/analysis/product-v02321-traffic-preflight-ledger.json"
-    ),
+    "PREFLIGHT_LEDGER": ("docs/analysis/product-v02321-traffic-preflight-ledger.json"),
     "PREFLIGHT_PASS": "docs/analysis/product-v02321-traffic-preflight.json",
     "INCREMENT3_PROGRESS": "docs/analysis/product-v02321-progress.json",
-    "TYPED_REQUEST_SCHEMA": (
-        "src/ecomsre/product/pilot/typed_request_plan_v02321.py"
-    ),
+    "TYPED_REQUEST_SCHEMA": ("src/ecomsre/product/pilot/typed_request_plan_v02321.py"),
     "EVIDENCE_BUNDLE_SCHEMA": "src/ecomsre/product/incidents/contracts.py",
     "EVIDENCE_INDEX_SCHEMA": (
         "src/ecomsre/product/incidents/evidence_binding_v0232.py"
     ),
     "NOFAULT_SCORER": "src/ecomsre/product/pilot/nofault_acceptance_v0232.py",
 }
+_REVIEWED_IMPLEMENTATION_FILES_V02321 = {
+    "formal_contract_verifier_file_sha256": (
+        "src/ecomsre/product/pilot/formal_contract_v02321.py"
+    ),
+    "formal_nofault_contract_file_sha256": (
+        "src/ecomsre/product/pilot/formal_nofault_v02321.py"
+    ),
+    "formal_nofault_runner_file_sha256": (
+        "scripts/product_v02321/run_formal_nofault.py"
+    ),
+    "formal_state_clone_contract_file_sha256": (
+        "src/ecomsre/product/pilot/product_state_clone_v02321.py"
+    ),
+    "formal_state_clone_runner_file_sha256": (
+        "scripts/product_v02321/run_state_clone.py"
+    ),
+}
 _PREMATURE_FORMAL_PATHS_V02321 = (
     ".local/product-v02321/formal",
+    ".local/product-v02321/formal-reservation.json",
     "docs/analysis/product-v02321-product-state-clone-formal.json",
     "docs/analysis/product-v02321-runtime-authority.json",
     "docs/analysis/product-v02321-baseline-restart.json",
     "docs/analysis/product-v02321-formal-traffic.json",
+    "docs/analysis/product-v02321-fresh-runtime-snapshot.json",
+    "docs/analysis/product-v02321-formal-blocker.json",
     "docs/results/product-v02321-nofault-acceptance.json",
     "docs/results/product-v02321-nofault-acceptance.md",
     "docs/results/product-v02321-limitations.md",
@@ -96,9 +110,7 @@ _PREMATURE_FORMAL_PATHS_V02321 = (
 _REVIEW_JSON_START_V02321 = (
     "<!-- ECOMSRE_PRODUCT_V02321_REVIEW_JSON_START -->\n```json\n"
 )
-_REVIEW_JSON_END_V02321 = (
-    "\n```\n<!-- ECOMSRE_PRODUCT_V02321_REVIEW_JSON_END -->"
-)
+_REVIEW_JSON_END_V02321 = "\n```\n<!-- ECOMSRE_PRODUCT_V02321_REVIEW_JSON_END -->"
 
 
 def _sha256_file(path: Path) -> str:
@@ -241,9 +253,7 @@ class FormalClonePlanV02321(ProductModelV1):
             "starting_knowledge_artifact_count": 0,
             "create_only_after_pre_execution_review": True,
         }
-        return cls.model_validate(
-            {**body, "plan_sha256": semantic_sha256_v22(body)}
-        )
+        return cls.model_validate({**body, "plan_sha256": semantic_sha256_v22(body)})
 
 
 class FormalContractFreezeV02321(ProductModelV1):
@@ -252,9 +262,9 @@ class FormalContractFreezeV02321(ProductModelV1):
     schema_version: Literal["ecomsre.product.formal-contract-freeze.v02321"] = (
         "ecomsre.product.formal-contract-freeze.v02321"
     )
-    terminal: Literal[
-        "ECOMSRE_PRODUCT_V02321_FORMAL_CONTRACT_FREEZE_PASS"
-    ] = FORMAL_CONTRACT_FREEZE_PASS_V02321
+    terminal: Literal["ECOMSRE_PRODUCT_V02321_FORMAL_CONTRACT_FREEZE_PASS"] = (
+        FORMAL_CONTRACT_FREEZE_PASS_V02321
+    )
     traffic_preflight_sha256: str = Field(pattern=_SHA256_PATTERN)
     traffic_preflight_attempt_sha256: str = Field(pattern=_SHA256_PATTERN)
     traffic_execution_sha256: str = Field(pattern=_SHA256_PATTERN)
@@ -309,8 +319,7 @@ class FormalContractFreezeV02321(ProductModelV1):
                 self.nofault_assessment_schema_sha256,
             )
             != expected_schema_hashes
-            or self.formal_clone_plan.source_state_sha256
-            != self.source_state_sha256
+            or self.formal_clone_plan.source_state_sha256 != self.source_state_sha256
             or observed_paths != expected_paths
             or self.freeze_sha256 != semantic_sha256_v22(body)
         ):
@@ -332,17 +341,15 @@ class FormalContractFreezeV02321(ProductModelV1):
             "terminal": FORMAL_CONTRACT_FREEZE_PASS_V02321,
             **serializable,
         }
-        return cls.model_validate(
-            {**body, "freeze_sha256": semantic_sha256_v22(body)}
-        )
+        return cls.model_validate({**body, "freeze_sha256": semantic_sha256_v22(body)})
 
 
 class FormalPreExecutionReviewV02321(ProductModelV1):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.formal-pre-execution-review.v02321"] = (
         "ecomsre.product.formal-pre-execution-review.v02321"
-    ] = "ecomsre.product.formal-pre-execution-review.v02321"
+    )
     reviewed_at_utc: str
     review_disposition: Literal["PASS"] = "PASS"
     must_fix_count: Literal[0] = 0
@@ -363,6 +370,11 @@ class FormalPreExecutionReviewV02321(ProductModelV1):
     formal_clone_plan_sha256: str = Field(pattern=_SHA256_PATTERN)
     formal_clone_destination_locator: str = Field(min_length=1, max_length=512)
     formal_clone_observed_status: Literal["ABSENT"] = "ABSENT"
+    formal_contract_verifier_file_sha256: str = Field(pattern=_SHA256_PATTERN)
+    formal_nofault_contract_file_sha256: str = Field(pattern=_SHA256_PATTERN)
+    formal_nofault_runner_file_sha256: str = Field(pattern=_SHA256_PATTERN)
+    formal_state_clone_contract_file_sha256: str = Field(pattern=_SHA256_PATTERN)
+    formal_state_clone_runner_file_sha256: str = Field(pattern=_SHA256_PATTERN)
     infrastructure_session_count: Literal[1] = 1
     traffic_attempt_count: Literal[1] = 1
     formal_healthy_traffic_execution_count: Literal[0] = 0
@@ -411,8 +423,7 @@ def build_formal_contract_freeze_v02321(root: Path) -> FormalContractFreezeV0232
     source = ProductStateSourceV0232.model_validate(source_payload.get("source_state"))
     attempt = LiveTrafficPreflightAttemptV02321.model_validate_json(
         (
-            project
-            / "docs/analysis/product-v02321-traffic-preflight-attempt-1.json"
+            project / "docs/analysis/product-v02321-traffic-preflight-attempt-1.json"
         ).read_bytes()
     )
     ledger = TrafficPreflightLedgerV02321.model_validate_json(
@@ -425,8 +436,7 @@ def build_formal_contract_freeze_v02321(root: Path) -> FormalContractFreezeV0232
     )
     clone_report = PreflightStateCloneReportV02321.model_validate_json(
         (
-            project
-            / "docs/analysis/product-v02321-product-state-clone-preflight.json"
+            project / "docs/analysis/product-v02321-product-state-clone-preflight.json"
         ).read_bytes()
     )
     progress = _load_progress(project)
@@ -490,8 +500,7 @@ def build_formal_contract_freeze_v02321(root: Path) -> FormalContractFreezeV0232
         or clone_report.source_state != source
         or preflight.frozen_traffic_contract_sha256 != contract.contract_sha256
         or attempt.traffic_contract_sha256 != contract.contract_sha256
-        or preflight.frozen_preflight_profile_sha256
-        != preflight_profile.profile_sha256
+        or preflight.frozen_preflight_profile_sha256 != preflight_profile.profile_sha256
         or attempt.traffic_profile_sha256 != preflight_profile.profile_sha256
         or preflight.frozen_formal_profile_sha256 != formal_profile.profile_sha256
         or attempt.formal_profile_sha256 != formal_profile.profile_sha256
@@ -536,9 +545,7 @@ def build_formal_contract_freeze_v02321(root: Path) -> FormalContractFreezeV0232
         diagnosis_evidence_index_schema_sha256=_schema_sha256(
             DiagnosisEvidenceIndexV0232
         ),
-        nofault_assessment_schema_sha256=_schema_sha256(
-            NoFaultEvidenceAssessmentV0232
-        ),
+        nofault_assessment_schema_sha256=_schema_sha256(NoFaultEvidenceAssessmentV0232),
         source_state_sha256=source.source_sha256,
         formal_clone_plan=plan,
         frozen_files=bindings,
@@ -560,8 +567,7 @@ def verify_formal_contract_freeze_v02321(
     project = Path(root).resolve(strict=True)
     frozen = FormalContractFreezeV02321.model_validate_json(
         (
-            project
-            / "docs/analysis/product-v02321-formal-contract-freeze.json"
+            project / "docs/analysis/product-v02321-formal-contract-freeze.json"
         ).read_bytes()
     )
     rebuilt = build_formal_contract_freeze_v02321(project)
@@ -581,17 +587,11 @@ def require_formal_pre_execution_review_binding_v02321(
         "formal_contract_freeze_file_sha256": freeze_file_sha256,
         "progress_sha256": freeze.progress_sha256,
         "traffic_preflight_sha256": freeze.traffic_preflight_sha256,
-        "traffic_preflight_attempt_sha256": (
-            freeze.traffic_preflight_attempt_sha256
-        ),
+        "traffic_preflight_attempt_sha256": (freeze.traffic_preflight_attempt_sha256),
         "traffic_execution_sha256": freeze.traffic_execution_sha256,
-        "traffic_preflight_ledger_sha256": (
-            freeze.traffic_preflight_ledger_sha256
-        ),
+        "traffic_preflight_ledger_sha256": (freeze.traffic_preflight_ledger_sha256),
         "typed_request_plan_sha256": freeze.typed_request_plan_sha256,
-        "product_state_clone_report_sha256": (
-            freeze.product_state_clone_report_sha256
-        ),
+        "product_state_clone_report_sha256": (freeze.product_state_clone_report_sha256),
         "product_state_clone_sha256": freeze.product_state_clone_sha256,
         "source_state_sha256": freeze.source_state_sha256,
         "formal_clone_plan_sha256": freeze.formal_clone_plan.plan_sha256,
@@ -601,9 +601,7 @@ def require_formal_pre_execution_review_binding_v02321(
         "formal_healthy_traffic_execution_count": (
             freeze.formal_healthy_traffic_execution_count
         ),
-        "accepted_successor_incident_count": (
-            freeze.accepted_successor_incident_count
-        ),
+        "accepted_successor_incident_count": (freeze.accepted_successor_incident_count),
         "successor_diagnosis_count": freeze.successor_diagnosis_count,
         "fault_attempt_count": freeze.fault_attempt_count,
         "knowledge_loop_campaign_count": freeze.knowledge_loop_campaign_count,
@@ -643,11 +641,23 @@ def verify_formal_pre_execution_review_v02321(
         _REVIEW_JSON_END_V02321, 1
     )[0]
     review = FormalPreExecutionReviewV02321.model_validate_json(payload_text)
-    return require_formal_pre_execution_review_binding_v02321(
+    review = require_formal_pre_execution_review_binding_v02321(
         review,
         freeze,
         freeze_file_sha256=_sha256_file(freeze_path),
     )
+    implementation_hashes = {
+        field: _sha256_file(project / relative)
+        for field, relative in _REVIEWED_IMPLEMENTATION_FILES_V02321.items()
+    }
+    if any(
+        getattr(review, field) != observed
+        for field, observed in implementation_hashes.items()
+    ):
+        raise ValueError(
+            "Product v0.2.3.2.1 pre-execution implementation review differs"
+        )
+    return review
 
 
 __all__ = [

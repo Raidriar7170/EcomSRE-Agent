@@ -6,7 +6,7 @@ The independent read-only review passed with zero Must Fix items. This authorize
 ```json
 {
   "schema_version": "ecomsre.product.formal-pre-execution-review.v02321",
-  "reviewed_at_utc": "2026-08-30T16:08:08Z",
+  "reviewed_at_utc": "2026-08-30T19:35:47Z",
   "review_disposition": "PASS",
   "must_fix_count": 0,
   "claim_accuracy": "PASS",
@@ -26,6 +26,11 @@ The independent read-only review passed with zero Must Fix items. This authorize
   "formal_clone_plan_sha256": "c058824e391d93fa3255ad6c1bec0a8a6e50cb23ba7df818bd57c5dfcea280f4",
   "formal_clone_destination_locator": ".local/product-v02321/product-state/formal-0860c3cefe795378b3629334/product",
   "formal_clone_observed_status": "ABSENT",
+  "formal_contract_verifier_file_sha256": "ac15d8a51147760f1a6f5e6f5b7ddbe2fc28004578fbc9749b090215ce2d105b",
+  "formal_nofault_contract_file_sha256": "965756bef48ebfe721ae1cdeef26273c5f5296f298cc07cb674f762d0fa47b01",
+  "formal_nofault_runner_file_sha256": "cea938cd9ee2383ab0555931c676d7f6d6000842ab324199d3463bcdff44a31b",
+  "formal_state_clone_contract_file_sha256": "cd381d963fc4457504525d4901dc0f2909cc7f625c9ba73290f1534456f0b83e",
+  "formal_state_clone_runner_file_sha256": "6ffd2f013ec0cc83cc08ef8969808427d8997811d22fba288843255da79dc18a",
   "infrastructure_session_count": 1,
   "traffic_attempt_count": 1,
   "formal_healthy_traffic_execution_count": 0,
@@ -36,9 +41,9 @@ The independent read-only review passed with zero Must Fix items. This authorize
   "agent_writes": 0,
   "runbook_executions": 0,
   "provider_calls": 0,
-  "review_sha256": "f9c34bea2d6c3975a8e625775bb25324f870cb58260b706d196e7a1a0c9b44d6"
+  "review_sha256": "d1f190e65dc7ca723a2a802a224fab769b7ea2d1f899613d8f73385b5e0ab309"
 }
 ```
 <!-- ECOMSRE_PRODUCT_V02321_REVIEW_JSON_END -->
 
-Verification evidence: `197 passed`; Ruff `PASS`; mypy `PASS`; history verifier `PASS`; freeze verifier `PASS`; frozen asset verification scanned and hashed 19 files (173,700 bytes, zero cache hits).
+Verification evidence: independent review round 12 `PASS` with Must Fix `0` and Claim Accuracy `PASS`; Increment 4 focused tests `52 passed`; related Product tests `190 passed`; Ruff `PASS`; mypy `PASS`; history verifier `PASS`; freeze verifier `PASS`.
