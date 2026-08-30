@@ -244,7 +244,10 @@ def test_history_verifier_rejects_substituted_tracked_path_with_fresh_seal(
 def test_offline_harness_preflight_reproduces_repairs_and_audits_call_sites() -> None:
     report = run_harness_contract_preflight_v02321(ROOT)
 
-    assert report["terminal"] == TYPED_REQUEST_PLAN_PASS_V02321
+    assert report["terminal"] == (
+        "ECOMSRE_PRODUCT_V02321_PREFLIGHT_CLOSURE_CONTRACT_PASS"
+    )
+    assert report["typed_request_plan_terminal"] == TYPED_REQUEST_PLAN_PASS_V02321
     assert report["history_terminal"] == HISTORY_AND_REUSE_PASS_V02321
     assert report["predecessor_failure"] == {
         "failure_stage": "RUNTIME_INSPECT_REQUEST_BUILD",

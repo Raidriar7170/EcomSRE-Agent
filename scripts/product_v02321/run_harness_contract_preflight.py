@@ -354,6 +354,17 @@ def _reproduce_predecessor_failure() -> dict[str, object]:
     }
 
 
+from ecomsre.product.pilot.traffic_harness_closure_v02321 import (  # noqa: E402
+    PREFLIGHT_CLOSURE_CONTRACT_PASS_V02321,
+    TrafficHarnessClosureContractV02321,
+    bind_changed_source_files_v02321,
+)
+from ecomsre.product.pilot.traffic_preflight_harness_v02321 import (  # noqa: E402
+    OfflineTrafficPreflightBindingsV02321,
+    execute_offline_failure_matrix_v02321,
+)
+
+
 def _load_successor_campaign_sha256(root: Path) -> str:
     campaign_path = root / "config/product-v02321/campaign.json"
     campaign = json.loads(campaign_path.read_text(encoding="utf-8"))
@@ -377,7 +388,9 @@ def _load_successor_campaign_sha256(root: Path) -> str:
     return supplied
 
 
-def run_harness_contract_preflight_v02321(project_root: Path) -> dict[str, Any]:
+def _run_increment1_contract_preflight_v02321(
+    project_root: Path,
+) -> dict[str, Any]:
     root = Path(project_root).resolve(strict=True)
     history = verify_product_v02321_history(root)
     predecessor_failure = _reproduce_predecessor_failure()
@@ -433,11 +446,111 @@ def run_harness_contract_preflight_v02321(project_root: Path) -> dict[str, Any]:
     return {**body, "preflight_sha256": semantic_sha256_v22(body)}
 
 
+def build_increment2_closure_contract_v02321(
+    project_root: Path,
+) -> TrafficHarnessClosureContractV02321:
+    root = Path(project_root).resolve(strict=True)
+    increment1 = _run_increment1_contract_preflight_v02321(root)
+    plan_payload = increment1["offline_fixture_request_plan"]
+    if not isinstance(plan_payload, dict):
+        raise ValueError("offline fixture request plan differs")
+    entries = plan_payload.get("request_entries")
+    if not isinstance(entries, list) or len(entries) != 1:
+        raise ValueError("offline fixture request entries differ")
+    request_entry = entries[0]
+    if not isinstance(request_entry, dict):
+        raise ValueError("offline fixture request entry differs")
+    runtime_descriptor = json.loads(
+        (
+            root
+            / "docs/analysis/product-v0231-runtime-authority-descriptor.json"
+        ).read_text(encoding="utf-8")
+    )
+    if not isinstance(runtime_descriptor, dict):
+        raise ValueError("Runtime continuity descriptor differs")
+    changed_source_bindings = bind_changed_source_files_v02321(
+        root,
+        (
+            "scripts/product_v02321/run_harness_contract_preflight.py",
+            "src/ecomsre/product/pilot/traffic_harness_closure_v02321.py",
+            "src/ecomsre/product/pilot/traffic_preflight_harness_v02321.py",
+        ),
+    )
+    bindings = OfflineTrafficPreflightBindingsV02321(
+        request_plan_sha256=cast(str, plan_payload["plan_sha256"]),
+        state_clone_sha256=_OFFLINE_STATE_CLONE_FIXTURE_SHA256,
+        runtime_continuity_descriptor_sha256=cast(
+            str, runtime_descriptor["descriptor_sha256"]
+        ),
+        runtime_inspect_request_sha256=cast(
+            str, request_entry["request_sha256"]
+        ),
+        traffic_contract_sha256=(
+            "8e2e6fabb139413ff5ff54efe516023e00f7d04c7b84b4d296b1aa42bf39ce1b"
+        ),
+        profile_sha256=(
+            "20481ac92973ccf5de7510f565f066f13b9e1161e0e36faecec11cd12a40aa4a"
+        ),
+        queue_sha256=(
+            "14bd13734d46566828779fd61b16e654cc260274a0e30ae9948371a9dbba5beb"
+        ),
+        outer_baseline_sha256=(
+            "14bd13734d46566828779fd61b16e654cc260274a0e30ae9948371a9dbba5beb"
+        ),
+        endpoint_sha256=semantic_sha256_v22(
+            {"endpoint": "http://127.0.0.1:18080/api/checkout"}
+        ),
+        first_cart_payload_sha256=semantic_sha256_v22(
+            {
+                "userId": "successor-contract-fixture",
+                "item": {"productId": "0PUK6V6EV0", "quantity": 1},
+            }
+        ),
+        changed_source_bindings=changed_source_bindings,
+    )
+    scenarios = execute_offline_failure_matrix_v02321(bindings)
+    return TrafficHarnessClosureContractV02321.build(
+        terminal=PREFLIGHT_CLOSURE_CONTRACT_PASS_V02321,
+        typed_request_plan_terminal=TYPED_REQUEST_PLAN_PASS_V02321,
+        offline_fixture_request_plan_sha256=bindings.request_plan_sha256,
+        offline_fixture_state_clone_sha256=bindings.state_clone_sha256,
+        runtime_continuity_descriptor_sha256=(
+            bindings.runtime_continuity_descriptor_sha256
+        ),
+        traffic_contract_sha256=bindings.traffic_contract_sha256,
+        scenarios=[item.model_dump(mode="json") for item in scenarios],
+        request_plan_failure_consumes_neither=True,
+        sandbox_start_consumes_session_only=True,
+        runtime_failure_consumes_session_only=True,
+        first_cart_send_consumes_attempt=True,
+        queue_baseline_prestate_before_runtime_inspect=True,
+        resource_absence_not_promoted_to_clean=True,
+        append_only_ledger=True,
+        live_authorization=False,
+        infrastructure_session_count=0,
+        traffic_attempt_count=0,
+        formal_healthy_traffic_execution_count=0,
+    )
+
+
+def run_harness_contract_preflight_v02321(project_root: Path) -> dict[str, Any]:
+    increment1 = _run_increment1_contract_preflight_v02321(project_root)
+    closure = build_increment2_closure_contract_v02321(project_root)
+    body = {
+        **{key: value for key, value in increment1.items() if key != "preflight_sha256"},
+        "terminal": closure.terminal,
+        "typed_request_plan_terminal": increment1["terminal"],
+        "preflight_closure_contract_sha256": closure.contract_sha256,
+        "offline_failure_injection_scenario_count": len(closure.scenarios),
+    }
+    return {**body, "preflight_sha256": semantic_sha256_v22(body)}
+
+
 def build_increment1_artifacts_v02321(
     project_root: Path,
 ) -> dict[str, dict[str, Any]]:
     root = Path(project_root).resolve(strict=True)
-    report = run_harness_contract_preflight_v02321(root)
+    report = _run_increment1_contract_preflight_v02321(root)
     manifest = json.loads(
         (root / "config/product-v02321/historical-results.v1.json").read_text(
             encoding="utf-8"
@@ -456,6 +569,15 @@ def build_increment1_artifacts_v02321(
         "frozen_files_match_predecessor_head": True,
     }
     audit = {**audit_body, "audit_sha256": semantic_sha256_v22(audit_body)}
+    return {
+        "docs/analysis/product-v02321-predecessor-audit.json": audit,
+        "docs/analysis/product-v02321-harness-contract-preflight.json": report,
+    }
+
+
+def _build_increment1_progress_v02321(
+    report: dict[str, Any],
+) -> dict[str, Any]:
     fixture_plan = report["offline_fixture_request_plan"]
     progress_body: dict[str, Any] = {
         "schema_version": "ecomsre.product.progress.v02321",
@@ -484,14 +606,49 @@ def build_increment1_artifacts_v02321(
         "provider_calls": 0,
         "action_authority": "NONE",
     }
-    progress = {
+    return {
+        **progress_body,
+        "progress_sha256": semantic_sha256_v22(progress_body),
+    }
+
+
+def build_increment2_artifacts_v02321(
+    project_root: Path,
+) -> dict[str, dict[str, Any]]:
+    root = Path(project_root).resolve(strict=True)
+    contract = build_increment2_closure_contract_v02321(root)
+    progress = _build_increment1_progress_v02321(
+        _run_increment1_contract_preflight_v02321(root)
+    )
+    base = dict(progress)
+    supplied = base.pop("progress_sha256", None)
+    if (
+        supplied != semantic_sha256_v22(base)
+        or base.get("increment") != 1
+        or base.get("terminal") != TYPED_REQUEST_PLAN_PASS_V02321
+        or base.get("infrastructure_session_count") != 0
+        or base.get("traffic_attempt_count") != 0
+        or base.get("formal_healthy_traffic_execution_count") != 0
+    ):
+        raise ValueError("Product v0.2.3.2.1 Increment 1 progress differs")
+    progress_body = {
+        **base,
+        "increment": 2,
+        "terminal": contract.terminal,
+        "typed_request_plan_terminal": TYPED_REQUEST_PLAN_PASS_V02321,
+        "preflight_closure_contract_sha256": contract.contract_sha256,
+        "offline_failure_injection_scenario_count": len(contract.scenarios),
+        "offline_harness_iteration_count": 2,
+    }
+    updated_progress = {
         **progress_body,
         "progress_sha256": semantic_sha256_v22(progress_body),
     }
     return {
-        "docs/analysis/product-v02321-predecessor-audit.json": audit,
-        "docs/analysis/product-v02321-harness-contract-preflight.json": report,
-        "docs/analysis/product-v02321-progress.json": progress,
+        "docs/analysis/product-v02321-preflight-closure-contract.json": (
+            contract.model_dump(mode="json")
+        ),
+        "docs/analysis/product-v02321-progress.json": updated_progress,
     }
 
 
@@ -519,5 +676,7 @@ if __name__ == "__main__":
 __all__ = (
     "TYPED_REQUEST_PLAN_PASS_V02321",
     "build_increment1_artifacts_v02321",
+    "build_increment2_artifacts_v02321",
+    "build_increment2_closure_contract_v02321",
     "run_harness_contract_preflight_v02321",
 )
