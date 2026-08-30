@@ -8,7 +8,7 @@ import os
 from pathlib import Path, PurePosixPath
 import sqlite3
 import stat
-from typing import Any, Literal, Mapping
+from typing import Any, Callable, cast, Literal, Mapping
 
 from pydantic import Field, field_validator, model_validator
 
@@ -28,6 +28,15 @@ from ecomsre.product.pilot.baseline_readiness_v023 import (
 from ecomsre.product.pilot.runtime_authority_v02 import (
     PilotRuntimeAuthorityV02,
 )
+from ecomsre_live_sandbox.contracts import (
+    ConfigBundle,
+    ResolvedSandbox,
+    canonical_json_bytes,
+    ensure_private_directory,
+    write_private_json,
+)
+from ecomsre_live_sandbox.control import build_flag_documents
+from ecomsre_live_sandbox.environment import SandboxEnvironment
 
 
 def _require_relative_locator(value: str) -> str:
@@ -176,6 +185,832 @@ class ProductBaselineContinuationContextV0231(ProductModelV1):
         )
 
 
+class FlagdBindDescriptorV0231(ProductModelV1):
+    schema_version: Literal["ecomsre.product.flagd-bind-descriptor.v0231"] = (
+        "ecomsre.product.flagd-bind-descriptor.v0231"
+    )
+    source_attempt_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    flagd_directory_locator: str
+    flagd_directory_locator_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    flag_file_locator: str
+    flag_file_locator_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    flag_file_bytes_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    flag_file_mode: Literal[384]
+    directory_mode: Literal[448]
+    container_destination: Literal["/etc/flagd"]
+    mount_mode: Literal["READ_ONLY"]
+    baseline_document_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    fault_document_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    config_bundle_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    resolved_compose_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    descriptor_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+    _relative_locators = field_validator(
+        "flagd_directory_locator",
+        "flag_file_locator",
+    )(_require_relative_locator)
+
+    @model_validator(mode="after")
+    def require_exact_self_sealed_descriptor(self) -> "FlagdBindDescriptorV0231":
+        if self.flag_file_locator != str(
+            PurePosixPath(self.flagd_directory_locator) / "demo.flagd.json"
+        ):
+            raise ValueError("flagd descriptor file locator differs")
+        if self.flag_file_bytes_sha256 != self.baseline_document_sha256:
+            raise ValueError("flagd descriptor Baseline bytes differ")
+        expected = semantic_sha256_v22(
+            self.model_dump(mode="json", exclude={"descriptor_sha256"})
+        )
+        if self.descriptor_sha256 != expected:
+            raise ValueError("flagd descriptor digest differs")
+        return self
+
+    @classmethod
+    def build(cls, **payload: Any) -> "FlagdBindDescriptorV0231":
+        body = {
+            "schema_version": "ecomsre.product.flagd-bind-descriptor.v0231",
+            **payload,
+        }
+        draft = cls.model_construct(**body, descriptor_sha256="0" * 64)
+        normalized = draft.model_dump(mode="json", exclude={"descriptor_sha256"})
+        return cls.model_validate(
+            {**normalized, "descriptor_sha256": semantic_sha256_v22(normalized)}
+        )
+
+
+class RuntimeAuthorityContinuityDescriptorV0231(ProductModelV1):
+    schema_version: Literal[
+        "ecomsre.product.runtime-authority-continuity-descriptor.v0231"
+    ] = "ecomsre.product.runtime-authority-continuity-descriptor.v0231"
+    environment_id: str = Field(pattern=r"^env-[0-9a-f]{24}$")
+    allowed_logical_services: tuple[str, ...] = Field(min_length=1)
+    profile_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    daemon_identity_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    docker_context_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    config_bundle_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    resolved_sandbox_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    resolved_endpoints_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    ownership_scope_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    read_authority_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    pilot_runtime_authority_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    connector_binding_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    resolved_compose_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    flagd_bind_descriptor_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    active_baseline_id: str = Field(pattern=r"^base-[0-9a-f]{24}$")
+    active_baseline_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    descriptor_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+    @model_validator(mode="after")
+    def require_canonical_self_sealed_descriptor(
+        self,
+    ) -> "RuntimeAuthorityContinuityDescriptorV0231":
+        if self.allowed_logical_services != tuple(
+            sorted(set(self.allowed_logical_services))
+        ):
+            raise ValueError("Runtime continuity services are not canonical")
+        expected = semantic_sha256_v22(
+            self.model_dump(mode="json", exclude={"descriptor_sha256"})
+        )
+        if self.descriptor_sha256 != expected:
+            raise ValueError("Runtime authority descriptor digest differs")
+        return self
+
+    @classmethod
+    def build(cls, **payload: Any) -> "RuntimeAuthorityContinuityDescriptorV0231":
+        body = {
+            "schema_version": (
+                "ecomsre.product.runtime-authority-continuity-descriptor.v0231"
+            ),
+            **payload,
+            "allowed_logical_services": tuple(
+                sorted(set(payload["allowed_logical_services"]))
+            ),
+        }
+        draft = cls.model_construct(**body, descriptor_sha256="0" * 64)
+        normalized = draft.model_dump(mode="json", exclude={"descriptor_sha256"})
+        return cls.model_validate(
+            {**normalized, "descriptor_sha256": semantic_sha256_v22(normalized)}
+        )
+
+
+class ContinuityPreflightReportV0231(ProductModelV1):
+    schema_version: Literal["ecomsre.product.continuity-preflight.v0231"] = (
+        "ecomsre.product.continuity-preflight.v0231"
+    )
+    terminal: Literal["ECOMSRE_PRODUCT_V0231_CONTINUITY_PREFLIGHT_PASS"]
+    descriptor_terminal: Literal[
+        "ECOMSRE_PRODUCT_V0231_CONTINUITY_DESCRIPTOR_PASS"
+    ]
+    context_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    flagd_bind_descriptor_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    runtime_authority_descriptor_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    resolved_compose_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    resolved_sandbox_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    read_authority_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    pilot_runtime_authority_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    connector_binding_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    flagd_path_exact: Literal[True]
+    flagd_bytes_exact: Literal[True]
+    resolved_compose_exact: Literal[True]
+    config_bundle_exact: Literal[True]
+    daemon_identity_exact: Literal[True]
+    docker_context_exact: Literal[True]
+    resolved_sandbox_exact: Literal[True]
+    resolved_endpoints_exact: Literal[True]
+    ownership_scope_exact: Literal[True]
+    product_baseline_exact: Literal[True]
+    docker_start_count: Literal[0]
+    live_session_count: Literal[0]
+    accepted_incident_count: Literal[0]
+    diagnosis_count: Literal[0]
+    fault_attempt_count: Literal[0]
+    knowledge_loop_campaign_count: Literal[0]
+    fault_family_count: Literal[0]
+    agent_writes: Literal[0]
+    runbook_executions: Literal[0]
+    action_authority: Literal["NONE"]
+    owned_resource_count: Literal[0]
+    report_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+    @model_validator(mode="after")
+    def require_self_sealed_report(self) -> "ContinuityPreflightReportV0231":
+        expected = semantic_sha256_v22(
+            self.model_dump(mode="json", exclude={"report_sha256"})
+        )
+        if self.report_sha256 != expected:
+            raise ValueError("continuity preflight digest differs")
+        return self
+
+    @classmethod
+    def build(cls, **payload: Any) -> "ContinuityPreflightReportV0231":
+        body = {
+            "schema_version": "ecomsre.product.continuity-preflight.v0231",
+            **payload,
+        }
+        draft = cls.model_construct(**body, report_sha256="0" * 64)
+        normalized = draft.model_dump(mode="json", exclude={"report_sha256"})
+        return cls.model_validate(
+            {**normalized, "report_sha256": semantic_sha256_v22(normalized)}
+        )
+
+
+def _flagd_mounts_are_exact(
+    resolved_compose: Mapping[str, Any],
+    *,
+    directory: Path,
+) -> bool:
+    services = resolved_compose.get("services")
+    if not isinstance(services, Mapping):
+        return False
+    expected = {
+        "flagd": ("/etc/flagd", True),
+        "flagd-ui": ("/app/data", False),
+    }
+    for service_name, (target, read_only) in expected.items():
+        service = services.get(service_name)
+        volumes = service.get("volumes") if isinstance(service, Mapping) else None
+        if not isinstance(volumes, list) or len(volumes) != 1:
+            return False
+        volume = volumes[0]
+        if not isinstance(volume, Mapping):
+            return False
+        observed_read_only = volume.get("read_only") is True
+        if (
+            volume.get("type") != "bind"
+            or volume.get("source") != str(directory)
+            or volume.get("target") != target
+            or observed_read_only is not read_only
+        ):
+            return False
+    return True
+
+
+def admit_flagd_bind_descriptor_v0231(
+    *,
+    predecessor_root: Path,
+    binding: ProductV023PrivateStateBindingV0231,
+    context: ProductBaselineContinuationContextV0231,
+    bundle: ConfigBundle,
+    resolved_compose: Mapping[str, Any],
+    reconstruction_proof_path: Path | None = None,
+) -> FlagdBindDescriptorV0231:
+    root_input = Path(predecessor_root).expanduser()
+    if root_input.is_symlink():
+        raise ValueError("predecessor checkout must not be a symlink")
+    root = root_input.resolve(strict=True)
+    attempt_root = PurePosixPath(binding.baseline_private_report_locator).parent.parent
+    expected_directory = attempt_root / "private/demo/runtime/flagd"
+    expected_file = expected_directory / "demo.flagd.json"
+    if (
+        PurePosixPath(binding.product_data_root_locator) != attempt_root / "product"
+        or PurePosixPath(binding.flagd_file_locator) != expected_file
+        or context.product_data_root_locator != binding.product_data_root_locator
+        or context.source_private_report_sha256
+        != binding.baseline_private_report_sha256
+    ):
+        raise ValueError("flagd descriptor attempt binding differs")
+
+    root_fd = _open_root_fd(root)
+    directory_fd = -1
+    file_fd = -1
+    try:
+        directory_fd = _open_bound_path_fd(
+            root_fd,
+            str(expected_directory),
+            regular_file=False,
+        )
+        directory_metadata = os.fstat(directory_fd)
+        if directory_metadata.st_uid != os.getuid():
+            raise PermissionError("exact flagd ownership differs")
+        directory_mode = stat.S_IMODE(directory_metadata.st_mode)
+        if directory_mode != 0o700:
+            raise PermissionError("exact flagd directory mode differs")
+        upstream_fd = _open_bound_path_fd(
+            root_fd,
+            "third_party/opentelemetry-demo/src/flagd/demo.flagd.json",
+            regular_file=True,
+        )
+        try:
+            upstream = json.loads(_descriptor_bytes(upstream_fd))
+        finally:
+            os.close(upstream_fd)
+        if not isinstance(upstream, Mapping):
+            raise ValueError("upstream flag document is invalid")
+        baseline, fault = build_flag_documents(upstream, bundle)
+        baseline_bytes = canonical_json_bytes(baseline)
+        baseline_sha256 = hashlib.sha256(baseline_bytes).hexdigest()
+        if (
+            baseline_sha256 != binding.flagd_file_sha256
+            or baseline_sha256 != bundle.scenario.baseline_document_sha256
+        ):
+            raise ValueError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0231_FLAGD_BIND_CONTINUITY: "
+                "reconstructed Baseline bytes differ before write"
+            )
+        try:
+            file_fd = _open_bound_path_fd(
+                root_fd,
+                str(expected_file),
+                regular_file=True,
+            )
+        except FileNotFoundError:
+            if reconstruction_proof_path is None:
+                raise ValueError(
+                    "BLOCKED_ECOMSRE_PRODUCT_V0231_FLAGD_BIND_CONTINUITY: "
+                    "exact flagd file is absent"
+                ) from None
+            proof_parent_fd, proof_name = _prepare_private_create_once_target(
+                reconstruction_proof_path
+            )
+            try:
+                file_fd = _create_exact_flag_file(
+                    directory_fd,
+                    payload=baseline_bytes,
+                )
+                try:
+                    _write_private_reconstruction_proof(
+                        proof_parent_fd,
+                        proof_name=proof_name,
+                        payload={
+                            "schema_version": (
+                                "ecomsre.product.flagd-reconstruction-proof.v0231"
+                            ),
+                        "source_attempt_sha256": context.source_attempt_sha256,
+                        "flag_file_locator": str(expected_file),
+                        "flag_file_bytes_sha256": baseline_sha256,
+                            "baseline_document_sha256": (
+                                bundle.scenario.baseline_document_sha256
+                            ),
+                            "config_bundle_sha256": semantic_sha256_v22(
+                                bundle.model_dump(mode="json")
+                            ),
+                        },
+                    )
+                except BaseException:
+                    os.close(file_fd)
+                    file_fd = -1
+                    os.unlink("demo.flagd.json", dir_fd=directory_fd)
+                    raise
+            finally:
+                os.close(proof_parent_fd)
+        file_metadata = os.fstat(file_fd)
+        if file_metadata.st_uid != os.getuid():
+            raise PermissionError("exact flagd ownership differs")
+        file_mode = stat.S_IMODE(file_metadata.st_mode)
+        if file_mode != 0o600:
+            raise PermissionError("exact flag file mode differs")
+        flag_bytes = _descriptor_bytes(file_fd)
+        if hashlib.sha256(flag_bytes).hexdigest() != binding.flagd_file_sha256:
+            raise ValueError("exact flagd file bytes differ")
+        if flag_bytes != baseline_bytes:
+            raise ValueError("exact flagd file differs from frozen Baseline document")
+        directory = root / expected_directory
+        if not _flagd_mounts_are_exact(resolved_compose, directory=directory):
+            raise ValueError("exact flagd mounts differ")
+        return FlagdBindDescriptorV0231.build(
+            source_attempt_sha256=context.source_attempt_sha256,
+            flagd_directory_locator=str(expected_directory),
+            flagd_directory_locator_sha256=hashlib.sha256(
+                os.fsencode(str(directory))
+            ).hexdigest(),
+            flag_file_locator=str(expected_file),
+            flag_file_locator_sha256=hashlib.sha256(
+                os.fsencode(str(root / expected_file))
+            ).hexdigest(),
+            flag_file_bytes_sha256=binding.flagd_file_sha256,
+            flag_file_mode=file_mode,
+            directory_mode=directory_mode,
+            container_destination="/etc/flagd",
+            mount_mode="READ_ONLY",
+            baseline_document_sha256=bundle.scenario.baseline_document_sha256,
+            fault_document_sha256=bundle.scenario.fault_document_sha256,
+            config_bundle_sha256=semantic_sha256_v22(bundle.model_dump(mode="json")),
+            resolved_compose_sha256=semantic_sha256_v22(resolved_compose),
+        )
+    finally:
+        if file_fd >= 0:
+            os.close(file_fd)
+        if directory_fd >= 0:
+            os.close(directory_fd)
+        os.close(root_fd)
+
+
+def _prepare_private_create_once_target(path: Path) -> tuple[int, str]:
+    target = Path(path).expanduser()
+    parent = target.parent
+    if not target.name or target.name in {".", ".."}:
+        raise ValueError("private reconstruction proof target is invalid")
+    if parent.resolve(strict=True) != parent.absolute():
+        raise ValueError("private reconstruction proof parent contains a symlink")
+    descriptor = _open_root_fd(parent)
+    metadata = os.fstat(descriptor)
+    if metadata.st_uid != os.getuid() or stat.S_IMODE(metadata.st_mode) != 0o700:
+        os.close(descriptor)
+        raise PermissionError("private reconstruction proof directory differs")
+    try:
+        os.stat(target.name, dir_fd=descriptor, follow_symlinks=False)
+    except FileNotFoundError:
+        return descriptor, target.name
+    os.close(descriptor)
+    raise FileExistsError(f"private reconstruction proof already exists: {target.name}")
+
+
+def _create_exact_flag_file(directory_fd: int, *, payload: bytes) -> int:
+    descriptor = os.open(
+        "demo.flagd.json",
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+        0o600,
+        dir_fd=directory_fd,
+    )
+    try:
+        offset = 0
+        while offset < len(payload):
+            written = os.write(descriptor, payload[offset:])
+            if written <= 0:
+                raise OSError("exact flagd reconstruction write made no progress")
+            offset += written
+        os.fsync(descriptor)
+    except BaseException:
+        os.close(descriptor)
+        os.unlink("demo.flagd.json", dir_fd=directory_fd)
+        raise
+    else:
+        os.close(descriptor)
+    try:
+        return os.open(
+            "demo.flagd.json",
+            os.O_RDONLY | os.O_NOFOLLOW,
+            dir_fd=directory_fd,
+        )
+    except BaseException:
+        os.unlink("demo.flagd.json", dir_fd=directory_fd)
+        raise
+
+
+def _write_private_reconstruction_proof(
+    parent_fd: int,
+    *,
+    proof_name: str,
+    payload: Mapping[str, Any],
+) -> None:
+    descriptor = os.open(
+        proof_name,
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+        0o600,
+        dir_fd=parent_fd,
+    )
+    try:
+        body = canonical_json_bytes(payload)
+        offset = 0
+        while offset < len(body):
+            written = os.write(descriptor, body[offset:])
+            if written <= 0:
+                raise OSError("private reconstruction proof write made no progress")
+            offset += written
+        os.fsync(descriptor)
+    except BaseException:
+        os.close(descriptor)
+        os.unlink(proof_name, dir_fd=parent_fd)
+        raise
+    else:
+        os.close(descriptor)
+
+
+def build_runtime_authority_continuity_descriptor_v0231(
+    *,
+    authority: PilotRuntimeAuthorityV02,
+    context: ProductBaselineContinuationContextV0231,
+    flagd_descriptor: FlagdBindDescriptorV0231,
+    resolved_compose_sha256: str,
+) -> RuntimeAuthorityContinuityDescriptorV0231:
+    read_authority = authority.read_authority
+    if (
+        authority.environment_id != context.environment_id
+        or authority.pilot_authority_sha256 != context.runtime_authority_sha256
+        or read_authority.config_bundle_sha256
+        != flagd_descriptor.config_bundle_sha256
+        or resolved_compose_sha256 != flagd_descriptor.resolved_compose_sha256
+        or any(
+            value is None
+            for value in (
+                read_authority.daemon_identity_sha256,
+                read_authority.docker_context_sha256,
+                read_authority.config_bundle_sha256,
+                read_authority.resolved_sandbox_sha256,
+            )
+        )
+    ):
+        raise ValueError(
+            "BLOCKED_ECOMSRE_PRODUCT_V0231_RUNTIME_AUTHORITY_CONTINUITY: "
+            "preserved descriptor inputs differ"
+        )
+    return RuntimeAuthorityContinuityDescriptorV0231.build(
+        environment_id=authority.environment_id,
+        allowed_logical_services=authority.allowed_logical_services,
+        profile_sha256=authority.profile_sha256,
+        daemon_identity_sha256=read_authority.daemon_identity_sha256,
+        docker_context_sha256=read_authority.docker_context_sha256,
+        config_bundle_sha256=read_authority.config_bundle_sha256,
+        resolved_sandbox_sha256=read_authority.resolved_sandbox_sha256,
+        resolved_endpoints_sha256=read_authority.resolved_endpoints_sha256,
+        ownership_scope_sha256=read_authority.ownership_scope_sha256,
+        read_authority_sha256=read_authority.authority_sha256,
+        pilot_runtime_authority_sha256=authority.pilot_authority_sha256,
+        connector_binding_sha256=authority.connector_binding_sha256,
+        resolved_compose_sha256=resolved_compose_sha256,
+        flagd_bind_descriptor_sha256=flagd_descriptor.descriptor_sha256,
+        active_baseline_id=context.active_baseline_id,
+        active_baseline_sha256=context.active_baseline_sha256,
+    )
+
+
+def _expected_rebound_authority_v0231(
+    *,
+    preserved: PilotRuntimeAuthorityV02,
+    docker: Mapping[str, str],
+    bundle: ConfigBundle,
+    resolved: ResolvedSandbox,
+) -> PilotRuntimeAuthorityV02:
+    return PilotRuntimeAuthorityV02.build(
+        environment_id=preserved.environment_id,
+        allowed_logical_services=preserved.allowed_logical_services,
+        profile_sha256=preserved.profile_sha256,
+        daemon_identity_sha256=semantic_sha256_v22(
+            {"daemon_identity": docker["daemon_id"].strip()}
+        ),
+        docker_context_sha256=semantic_sha256_v22(
+            {"docker_context": docker["context"]}
+        ),
+        config_bundle_sha256=semantic_sha256_v22(bundle.model_dump(mode="json")),
+        resolved_sandbox_sha256=semantic_sha256_v22(
+            resolved.model_dump(mode="json")
+        ),
+        resolved_endpoints_sha256=semantic_sha256_v22(
+            {
+                "prometheus": resolved.endpoints.prometheus,
+                "opensearch": resolved.endpoints.opensearch,
+                "jaeger": resolved.endpoints.jaeger,
+                "docker": docker["endpoint"],
+            }
+        ),
+        ownership_scope_sha256=semantic_sha256_v22(
+            {
+                "compose_project": bundle.environment.compose_project,
+                "sandbox_label_key": bundle.environment.sandbox_label_key,
+                "sandbox_label_value": bundle.environment.sandbox_id,
+            }
+        ),
+    )
+
+
+class AuthorityContinuousSandboxLifecycleV0231:
+    """Product lifecycle that preserves the predecessor checkout and flag path."""
+
+    def __init__(
+        self,
+        *,
+        predecessor_root: Path,
+        private_root: Path,
+        binding: ProductV023PrivateStateBindingV0231,
+        context: ProductBaselineContinuationContextV0231,
+        bundle: ConfigBundle,
+        preserved_authority: PilotRuntimeAuthorityV02,
+        preserved_resolved_compose: Mapping[str, Any],
+        environment_factory: Callable[..., Any] = SandboxEnvironment,
+    ) -> None:
+        self.predecessor_root = Path(predecessor_root).resolve(strict=True)
+        self.private_root = Path(private_root)
+        self.binding = binding
+        self.context = context
+        self.bundle = bundle
+        self.preserved_authority = preserved_authority
+        self.preserved_resolved_compose = dict(preserved_resolved_compose)
+        self.environment_factory = environment_factory
+        self.environment: Any = None
+        self.flagd_descriptor: FlagdBindDescriptorV0231 | None = None
+        self.runtime_descriptor: RuntimeAuthorityContinuityDescriptorV0231 | None = (
+            None
+        )
+        self.preflight_report: ContinuityPreflightReportV0231 | None = None
+        self.admitted_resolved_sha256: str | None = None
+        self._admitted_raw_compose: Mapping[str, Any] | None = None
+        self.started = False
+        self.ready = False
+        self.controller: Any = None
+
+    @property
+    def flag_file(self) -> Path:
+        return self.predecessor_root / self.binding.flagd_file_locator
+
+    def admit_prestart(self) -> ContinuityPreflightReportV0231:
+        if self.preflight_report is not None:
+            return self.preflight_report
+        ensure_private_directory(self.private_root)
+        preserved_compose_sha256 = semantic_sha256_v22(
+            self.preserved_resolved_compose
+        )
+        flagd = admit_flagd_bind_descriptor_v0231(
+            predecessor_root=self.predecessor_root,
+            binding=self.binding,
+            context=self.context,
+            bundle=self.bundle,
+            resolved_compose=self.preserved_resolved_compose,
+            reconstruction_proof_path=(
+                self.private_root / "flagd-reconstruction.json"
+            ),
+        )
+        runtime = build_runtime_authority_continuity_descriptor_v0231(
+            authority=self.preserved_authority,
+            context=self.context,
+            flagd_descriptor=flagd,
+            resolved_compose_sha256=preserved_compose_sha256,
+        )
+        environment = self.environment_factory(
+            repository_root=self.predecessor_root,
+            bundle=self.bundle,
+            flagd_directory=self.flag_file.parent,
+        )
+        docker = environment.verify_local_docker()
+        if not isinstance(docker, Mapping) or any(
+            not isinstance(docker.get(name), str)
+            for name in ("context", "endpoint", "daemon_id")
+        ):
+            raise ValueError("fresh local Docker identity is incomplete")
+        docker_identity = {
+            name: str(docker[name]) for name in ("context", "endpoint", "daemon_id")
+        }
+        environment.verify_upstream()
+        owned = environment.verify_owned_resources(require_complete=False)
+        if (
+            not isinstance(owned, Mapping)
+            or set(owned) != {"container", "network", "volume"}
+            or any(
+                not isinstance(value, int) or value != 0 for value in owned.values()
+            )
+        ):
+            raise ValueError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0231_PREEXISTING_OWNED_RESOURCES"
+            )
+        resolved, raw_compose = environment.resolve()
+        if not isinstance(resolved, ResolvedSandbox) or not isinstance(
+            raw_compose, Mapping
+        ):
+            raise TypeError("fresh pre-start Compose resolve is malformed")
+        current_compose_sha256 = semantic_sha256_v22(raw_compose)
+        current_resolved_sha256 = semantic_sha256_v22(
+            resolved.model_dump(mode="json")
+        )
+        if (
+            current_compose_sha256 != preserved_compose_sha256
+            or resolved.compose_sha256 != preserved_compose_sha256
+            or current_resolved_sha256
+            != self.preserved_authority.read_authority.resolved_sandbox_sha256
+        ):
+            raise ValueError("BLOCKED_ECOMSRE_PRODUCT_V0231_COMPOSE_CONTINUITY")
+        rebound = _expected_rebound_authority_v0231(
+            preserved=self.preserved_authority,
+            docker=docker_identity,
+            bundle=self.bundle,
+            resolved=resolved,
+        )
+        if rebound != self.preserved_authority:
+            raise ValueError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0231_RUNTIME_AUTHORITY_CONTINUITY"
+            )
+        revalidated_flagd = admit_flagd_bind_descriptor_v0231(
+            predecessor_root=self.predecessor_root,
+            binding=self.binding,
+            context=self.context,
+            bundle=self.bundle,
+            resolved_compose=raw_compose,
+        )
+        if revalidated_flagd != flagd:
+            raise ValueError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0231_FLAGD_BIND_CONTINUITY"
+            )
+
+        write_private_json(
+            self.private_root / "pre-start-resolve.json",
+            {
+                "schema_version": (
+                    "ecomsre.product.private-pre-start-resolve.v0231"
+                ),
+                "predecessor_root": str(self.predecessor_root),
+                "flagd_directory": str(self.flag_file.parent),
+                "docker": docker_identity,
+                "raw_compose": raw_compose,
+                "resolved_sandbox": resolved.model_dump(mode="json"),
+                "rebound_authority": rebound.model_dump(mode="json"),
+            },
+            create_once=True,
+        )
+        report = ContinuityPreflightReportV0231.build(
+            terminal="ECOMSRE_PRODUCT_V0231_CONTINUITY_PREFLIGHT_PASS",
+            descriptor_terminal="ECOMSRE_PRODUCT_V0231_CONTINUITY_DESCRIPTOR_PASS",
+            context_sha256=self.context.context_sha256,
+            flagd_bind_descriptor_sha256=flagd.descriptor_sha256,
+            runtime_authority_descriptor_sha256=runtime.descriptor_sha256,
+            resolved_compose_sha256=current_compose_sha256,
+            resolved_sandbox_sha256=current_resolved_sha256,
+            read_authority_sha256=rebound.read_authority.authority_sha256,
+            pilot_runtime_authority_sha256=rebound.pilot_authority_sha256,
+            connector_binding_sha256=rebound.connector_binding_sha256,
+            flagd_path_exact=True,
+            flagd_bytes_exact=True,
+            resolved_compose_exact=True,
+            config_bundle_exact=True,
+            daemon_identity_exact=True,
+            docker_context_exact=True,
+            resolved_sandbox_exact=True,
+            resolved_endpoints_exact=True,
+            ownership_scope_exact=True,
+            product_baseline_exact=True,
+            docker_start_count=0,
+            live_session_count=0,
+            accepted_incident_count=0,
+            diagnosis_count=0,
+            fault_attempt_count=0,
+            knowledge_loop_campaign_count=0,
+            fault_family_count=0,
+            agent_writes=0,
+            runbook_executions=0,
+            action_authority="NONE",
+            owned_resource_count=0,
+        )
+        self.environment = environment
+        self.flagd_descriptor = flagd
+        self.runtime_descriptor = runtime
+        self.preflight_report = report
+        self.admitted_resolved_sha256 = current_resolved_sha256
+        self._admitted_raw_compose = dict(raw_compose)
+        return report
+
+    def start(self) -> None:
+        if (
+            self.preflight_report is None
+            or self.environment is None
+            or self.flagd_descriptor is None
+            or self._admitted_raw_compose is None
+        ):
+            raise RuntimeError("Runtime-continuity preflight has not passed")
+        if self.started:
+            raise RuntimeError("Runtime-continuity lifecycle already started")
+        docker = self.environment.verify_local_docker()
+        if not isinstance(docker, Mapping) or any(
+            not isinstance(docker.get(name), str)
+            for name in ("context", "endpoint", "daemon_id")
+        ):
+            raise ValueError("fresh pre-start Docker identity is incomplete")
+        docker_identity = {
+            name: str(docker[name]) for name in ("context", "endpoint", "daemon_id")
+        }
+        self.environment.verify_upstream()
+        owned = self.environment.verify_owned_resources(require_complete=False)
+        if (
+            not isinstance(owned, Mapping)
+            or set(owned) != {"container", "network", "volume"}
+            or any(
+                not isinstance(value, int) or value != 0 for value in owned.values()
+            )
+        ):
+            raise ValueError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0231_PREEXISTING_OWNED_RESOURCES"
+            )
+        resolved, raw_compose = self.environment.resolve()
+        if not isinstance(resolved, ResolvedSandbox) or not isinstance(
+            raw_compose, Mapping
+        ):
+            raise TypeError("fresh start-boundary Compose resolve is malformed")
+        compose_sha256 = semantic_sha256_v22(raw_compose)
+        resolved_sha256 = semantic_sha256_v22(resolved.model_dump(mode="json"))
+        if (
+            compose_sha256
+            != semantic_sha256_v22(self.preserved_resolved_compose)
+            or resolved.compose_sha256 != compose_sha256
+            or resolved_sha256 != self.admitted_resolved_sha256
+            or resolved_sha256
+            != self.preserved_authority.read_authority.resolved_sandbox_sha256
+        ):
+            raise ValueError("BLOCKED_ECOMSRE_PRODUCT_V0231_COMPOSE_CONTINUITY")
+        rebound = _expected_rebound_authority_v0231(
+            preserved=self.preserved_authority,
+            docker=docker_identity,
+            bundle=self.bundle,
+            resolved=resolved,
+        )
+        if rebound != self.preserved_authority:
+            raise ValueError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0231_RUNTIME_AUTHORITY_CONTINUITY"
+            )
+        revalidated = admit_flagd_bind_descriptor_v0231(
+            predecessor_root=self.predecessor_root,
+            binding=self.binding,
+            context=self.context,
+            bundle=self.bundle,
+            resolved_compose=raw_compose,
+        )
+        if revalidated != self.flagd_descriptor:
+            raise ValueError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0231_FLAGD_BIND_CONTINUITY"
+            )
+        self.environment.start()
+        self.started = True
+
+    def wait_ready(self, *, timeout_seconds: float = 300) -> None:
+        if not self.started:
+            raise RuntimeError("Runtime-continuity lifecycle has not started")
+        self.environment.wait_healthy(timeout_seconds=timeout_seconds)
+        self.ready = True
+
+    def authorize_reads(self, *, timeout_seconds: float = 5.0) -> Any:
+        from ecomsre.dta_v2.telemetry_adapters import (
+            LocalSandboxReadBackend,
+            _issue_owned_read_capability,
+        )
+
+        if (
+            not self.ready
+            or self.environment is None
+            or self.admitted_resolved_sha256 is None
+        ):
+            raise RuntimeError("Runtime-continuity lifecycle is not ready")
+        capability = _issue_owned_read_capability(
+            environment=self.environment,
+            bundle=self.bundle,
+            admitted_resolved_sha256=self.admitted_resolved_sha256,
+            timeout_seconds=timeout_seconds,
+        )
+        backend = LocalSandboxReadBackend._from_owned_capability(capability)
+        authority_inputs = {
+            "daemon_identity_sha256": backend.authority.daemon_identity_sha256,
+            "docker_context_sha256": backend.authority.docker_context_sha256,
+            "config_bundle_sha256": backend.authority.config_bundle_sha256,
+            "resolved_sandbox_sha256": backend.authority.resolved_sandbox_sha256,
+            "resolved_endpoints_sha256": backend.authority.resolved_endpoints_sha256,
+            "ownership_scope_sha256": backend.authority.ownership_scope_sha256,
+        }
+        if any(not isinstance(value, str) for value in authority_inputs.values()):
+            raise ValueError("fresh post-start Runtime authority is incomplete")
+        rebound = PilotRuntimeAuthorityV02.build(
+            environment_id=self.preserved_authority.environment_id,
+            allowed_logical_services=(
+                self.preserved_authority.allowed_logical_services
+            ),
+            profile_sha256=self.preserved_authority.profile_sha256,
+            **cast(dict[str, str], authority_inputs),
+        )
+        if rebound != self.preserved_authority:
+            raise ValueError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0231_RUNTIME_AUTHORITY_CONTINUITY"
+            )
+        return backend
+
+    def cleanup_owned(self, *, baseline_unchanged: bool) -> Any:
+        if self.environment is None:
+            raise RuntimeError("Runtime-continuity lifecycle is unavailable")
+        return self.environment.cleanup(baseline_restored=baseline_unchanged)
+
+
 def _open_root_fd(root: Path) -> int:
     before = root.lstat()
     if stat.S_ISLNK(before.st_mode) or not stat.S_ISDIR(before.st_mode):
@@ -250,6 +1085,31 @@ def _bound_file_bytes(root: Path, locator: str, expected_sha256: str) -> bytes:
         return _bound_file_bytes_from_fd(root_fd, locator, expected_sha256)
     finally:
         os.close(root_fd)
+
+
+def load_preserved_runtime_inputs_v0231(
+    *,
+    predecessor_root: Path,
+    binding: ProductV023PrivateStateBindingV0231,
+) -> tuple[PilotRuntimeAuthorityV02, dict[str, Any]]:
+    root = Path(predecessor_root).expanduser().resolve(strict=True)
+    authority = PilotRuntimeAuthorityV02.model_validate_json(
+        _bound_file_bytes(
+            root,
+            binding.runtime_authority_locator,
+            binding.runtime_authority_file_sha256,
+        )
+    )
+    compose = json.loads(
+        _bound_file_bytes(
+            root,
+            binding.resolved_compose_locator,
+            binding.resolved_compose_file_sha256,
+        )
+    )
+    if not isinstance(compose, dict):
+        raise ValueError("preserved resolved Compose is not an object")
+    return authority, compose
 
 
 _SQLITE_BUNDLE_NAMES_V0231 = (
@@ -618,9 +1478,16 @@ def admit_product_baseline_continuation_context_v0231(
 
 
 __all__ = (
+    "AuthorityContinuousSandboxLifecycleV0231",
+    "ContinuityPreflightReportV0231",
+    "FlagdBindDescriptorV0231",
     "ProductBaselineContinuationContextV0231",
     "ProductV023PrivateStateBindingV0231",
+    "RuntimeAuthorityContinuityDescriptorV0231",
     "SquashMergeBoundFileV0231",
     "SquashMergeHistoryBindingV0231",
+    "admit_flagd_bind_descriptor_v0231",
     "admit_product_baseline_continuation_context_v0231",
+    "build_runtime_authority_continuity_descriptor_v0231",
+    "load_preserved_runtime_inputs_v0231",
 )
