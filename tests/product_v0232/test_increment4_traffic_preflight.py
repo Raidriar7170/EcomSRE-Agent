@@ -20,6 +20,7 @@ from ecomsre.product.pilot.traffic_preflight_v0232 import (
 )
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 from scripts.ci.verify_product_v0232_preflight import (
+    _frozen_bindings,
     verify_product_v0232_preflight,
 )
 from scripts.product_v0232.run_traffic_preflight import _blocked_progress
@@ -182,6 +183,35 @@ def test_frozen_profiles_and_campaign_match_the_goal() -> None:
     assert campaign.maximum_live_traffic_preflight_attempts == 2
     assert campaign.formal_healthy_traffic_execution_limit == 1
     assert campaign.action_authority == "NONE"
+
+
+def test_public_frozen_bindings_do_not_require_private_product_state(
+    tmp_path: Path,
+) -> None:
+    public_paths = (
+        "docs/analysis/product-v0231-flagd-bind-descriptor.json",
+        "docs/analysis/product-v0231-runtime-authority-descriptor.json",
+        "docs/analysis/product-v0232-predecessor-audit.json",
+        "docs/analysis/product-v0232-product-state-clone.json",
+    )
+    for relative in public_paths:
+        destination = tmp_path / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes((ROOT / relative).read_bytes())
+
+    frozen = _frozen_bindings(tmp_path)
+
+    assert not (tmp_path / ".local").exists()
+    assert frozen["source_state_sha256"] == (
+        "0860c3cefe795378b36293342fa7250bab97bb75e8767d3b5a8c200c3e05741c"
+    )
+    assert frozen["product_state_clone_sha256"] == (
+        "6920044cea06a68f38624803468aeeb0f854caee695f7f876ff2d6f6ef074205"
+    )
+    assert frozen["product_state_sha256"] == (
+        "076b41e929c8700f1663ea2e3063197cbaa35898e0942daa7dccc6ceb7bc1129"
+    )
+    assert frozen["incident_count"] == frozen["diagnosis_count"] == 1
 
 
 def test_attempt_one_pass_binds_exact_runtime_traffic_and_cleanup() -> None:

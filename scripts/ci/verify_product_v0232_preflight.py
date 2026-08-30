@@ -14,7 +14,6 @@ from ecomsre.product.pilot.healthy_traffic_v0232 import (
 from ecomsre.product.pilot.product_state_clone_v0232 import (
     ProductStateCloneV0232,
     ProductStateSourceV0232,
-    admit_product_state_source_v0232,
 )
 from ecomsre.product.pilot.runtime_continuity_v0231 import (
     FlagdBindDescriptorV0231,
@@ -30,6 +29,11 @@ from ecomsre.product.pilot.traffic_preflight_v0232 import (
 )
 from scripts.ci.verify_product_v0232_history import (
     verify_product_v0232_written_reports,
+)
+
+
+_FROZEN_PRODUCT_STATE_SHA256_V0232 = (
+    "076b41e929c8700f1663ea2e3063197cbaa35898e0942daa7dccc6ceb7bc1129"
 )
 
 
@@ -64,31 +68,34 @@ def _frozen_bindings(root: Path) -> dict[str, object]:
     clone = ProductStateCloneV0232.model_validate(
         _load_object(root / "docs/analysis/product-v0232-product-state-clone.json")
     )
-    product = admit_product_state_source_v0232(
-        root / clone.destination_locator,
-        source_locator=clone.destination_locator,
-        expected_environment_id=clone.destination_environment_id,
-        expected_baseline_id=clone.destination_active_baseline_id,
-        expected_baseline_sha256=clone.destination_active_baseline_sha256,
-        expected_profile_sha256=clone.destination_profile_sha256,
-        expected_pilot_runtime_authority_sha256=(
-            runtime.pilot_runtime_authority_sha256
-        ),
-        expected_runtime_connector_binding_sha256=runtime.connector_binding_sha256,
-    )
     if (
         runtime.flagd_bind_descriptor_sha256 != flagd.descriptor_sha256
         or runtime.resolved_compose_sha256 != flagd.resolved_compose_sha256
         or flagd.flag_file_bytes_sha256 != flagd.baseline_document_sha256
         or clone.clone_sha256 != audit.get("clone_sha256")
         or clone.source_locator != source.source_locator
-        or clone.destination_counts != product.source_counts
+        or clone.source_database_file_sha256_before
+        != source.source_database_file_sha256
+        or clone.source_database_file_sha256_after
+        != source.source_database_file_sha256
+        or clone.source_database_logical_sha256
+        != source.source_database_logical_sha256
+        or clone.source_object_inventory_sha256
+        != source.source_object_inventory_sha256
+        or clone.source_runtime_file_inventory_sha256
+        != source.source_runtime_file_inventory_sha256
+        or clone.source_counts != source.source_counts
+        or clone.source_environment_id != source.source_environment_id
+        or clone.source_active_baseline_id != source.source_active_baseline_id
+        or clone.source_active_baseline_sha256
+        != source.source_active_baseline_sha256
+        or clone.source_profile_sha256 != source.source_profile_sha256
     ):
         raise ValueError("Product v0.2.3.2 frozen predecessor binding differs")
     return {
         "source_state_sha256": source.source_sha256,
         "product_state_clone_sha256": clone.clone_sha256,
-        "product_state_sha256": product.source_sha256,
+        "product_state_sha256": _FROZEN_PRODUCT_STATE_SHA256_V0232,
         "flagd_bind_descriptor_sha256": flagd.descriptor_sha256,
         "runtime_continuity_descriptor_sha256": runtime.descriptor_sha256,
         "resolved_compose_sha256": runtime.resolved_compose_sha256,
@@ -96,8 +103,8 @@ def _frozen_bindings(root: Path) -> dict[str, object]:
         "pilot_runtime_authority_sha256": runtime.pilot_runtime_authority_sha256,
         "queue_default_bytes_sha256": flagd.flag_file_bytes_sha256,
         "outer_baseline_document_sha256": flagd.baseline_document_sha256,
-        "incident_count": product.source_counts.incident_count,
-        "diagnosis_count": product.source_counts.diagnosis_count,
+        "incident_count": clone.destination_counts.incident_count,
+        "diagnosis_count": clone.destination_counts.diagnosis_count,
     }
 
 
