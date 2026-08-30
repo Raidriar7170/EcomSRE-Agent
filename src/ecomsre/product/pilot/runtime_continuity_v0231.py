@@ -29,13 +29,16 @@ from ecomsre.product.pilot.runtime_authority_v02 import (
     PilotRuntimeAuthorityV02,
 )
 from ecomsre_live_sandbox.contracts import (
+    CleanupResult,
+    ConfigurationState,
     ConfigBundle,
+    LocalEndpoints,
     ResolvedSandbox,
     canonical_json_bytes,
     ensure_private_directory,
     write_private_json,
 )
-from ecomsre_live_sandbox.control import build_flag_documents
+from ecomsre_live_sandbox.control import _local_json, build_flag_documents
 from ecomsre_live_sandbox.environment import SandboxEnvironment
 
 
@@ -703,6 +706,62 @@ def _expected_rebound_authority_v0231(
     )
 
 
+class ReadOnlyFlagdBaselineObserverV0231:
+    """Three-way Baseline observer with no flag mutation capability."""
+
+    __slots__ = ("baseline_document", "bundle", "endpoints", "flag_file")
+
+    def __init__(
+        self,
+        *,
+        endpoints: LocalEndpoints,
+        bundle: ConfigBundle,
+        flag_file: Path,
+        baseline_document: Mapping[str, object],
+    ) -> None:
+        self.endpoints = endpoints
+        self.bundle = bundle
+        self.flag_file = Path(flag_file)
+        self.baseline_document = dict(baseline_document)
+        if (
+            hashlib.sha256(canonical_json_bytes(self.baseline_document)).hexdigest()
+            != bundle.scenario.baseline_document_sha256
+        ):
+            raise ValueError("read-only observer Baseline differs from scenario")
+
+    def read_current(self) -> ConfigurationState:
+        if self.flag_file.is_symlink() or not self.flag_file.is_file():
+            raise RuntimeError("private flag file is unavailable")
+        document = json.loads(self.flag_file.read_bytes())
+        if not isinstance(document, Mapping):
+            raise RuntimeError("private flag file is malformed")
+        document_sha256 = hashlib.sha256(canonical_json_bytes(document)).hexdigest()
+        if document_sha256 != self.bundle.scenario.baseline_document_sha256:
+            raise RuntimeError("private flag document is not the frozen Baseline")
+        readback = _local_json(f"{self.endpoints.flag_control}/read")
+        if not isinstance(readback, Mapping) or readback.get("flags") != document.get(
+            "flags"
+        ):
+            raise RuntimeError("flag UI readback differs from the private document")
+        evaluation = _local_json(
+            f"{self.endpoints.flag_evaluation}/ofrep/v1/evaluate/flags/"
+            f"{self.bundle.scenario.target_flag}",
+            method="POST",
+            payload={},
+        )
+        if (
+            not isinstance(evaluation, Mapping)
+            or evaluation.get("value") != self.bundle.scenario.baseline_value
+            or evaluation.get("variant") != self.bundle.scenario.baseline_variant
+        ):
+            raise RuntimeError("OFREP Baseline state differs")
+        return ConfigurationState(
+            variant=self.bundle.scenario.baseline_variant,
+            value=self.bundle.scenario.baseline_value,
+            document_sha256=document_sha256,
+        )
+
+
 class AuthorityContinuousSandboxLifecycleV0231:
     """Product lifecycle that preserves the predecessor checkout and flag path."""
 
@@ -737,6 +796,8 @@ class AuthorityContinuousSandboxLifecycleV0231:
         self.started = False
         self.ready = False
         self.controller: Any = None
+        self.baseline_read_count = 0
+        self.rebound_authority: PilotRuntimeAuthorityV02 | None = None
 
     @property
     def flag_file(self) -> Path:
@@ -885,7 +946,11 @@ class AuthorityContinuousSandboxLifecycleV0231:
         self._admitted_raw_compose = dict(raw_compose)
         return report
 
-    def start(self) -> None:
+    def start(
+        self,
+        *,
+        on_boundary_verified: Callable[[], None] | None = None,
+    ) -> None:
         if (
             self.preflight_report is None
             or self.environment is None
@@ -953,6 +1018,8 @@ class AuthorityContinuousSandboxLifecycleV0231:
             raise ValueError(
                 "BLOCKED_ECOMSRE_PRODUCT_V0231_FLAGD_BIND_CONTINUITY"
             )
+        if on_boundary_verified is not None:
+            on_boundary_verified()
         self.environment.start()
         self.started = True
 
@@ -1003,11 +1070,89 @@ class AuthorityContinuousSandboxLifecycleV0231:
             raise ValueError(
                 "BLOCKED_ECOMSRE_PRODUCT_V0231_RUNTIME_AUTHORITY_CONTINUITY"
             )
+        baseline = json.loads(self.flag_file.read_bytes())
+        if not isinstance(baseline, Mapping):
+            raise ValueError("exact flag document is invalid")
+        self.controller = ReadOnlyFlagdBaselineObserverV0231(
+            endpoints=capability.resolved_sandbox.endpoints,
+            bundle=self.bundle,
+            flag_file=self.flag_file,
+            baseline_document=baseline,
+        )
+        self.rebound_authority = rebound
         return backend
+
+    def read_baseline_sha256(self) -> str:
+        if self.controller is None:
+            raise RuntimeError("Runtime-continuity controller is unavailable")
+        observed = self.controller.read_current()
+        expected = self.bundle.scenario.baseline_document_sha256
+        self.baseline_read_count += 1
+        if observed.document_sha256 != expected:
+            raise RuntimeError("Runtime-continuity Baseline readback differs")
+        return str(observed.document_sha256)
 
     def cleanup_owned(self, *, baseline_unchanged: bool) -> Any:
         if self.environment is None:
             raise RuntimeError("Runtime-continuity lifecycle is unavailable")
+        if getattr(self.environment, "_baseline_snapshot", None) is None:
+            owned = self.environment.verify_owned_resources(require_complete=False)
+            if any(owned.values()):
+                raise RuntimeError("pre-mutation cleanup found owned resources")
+            return CleanupResult(
+                baseline_restored=baseline_unchanged,
+                owned_containers=0,
+                owned_networks=0,
+                owned_volumes=0,
+                non_owned_resources_changed=False,
+                verdict="CLEAN" if baseline_unchanged else "BLOCKED",
+            )
+        docker = self.environment.verify_local_docker()
+        if not isinstance(docker, Mapping) or any(
+            not isinstance(docker.get(name), str)
+            for name in ("context", "endpoint", "daemon_id")
+        ):
+            raise ValueError("cleanup Docker identity is incomplete")
+        self.environment.verify_upstream()
+        resolved, raw_compose = self.environment.resolve()
+        if not isinstance(resolved, ResolvedSandbox) or not isinstance(
+            raw_compose, Mapping
+        ):
+            raise TypeError("cleanup Compose resolve is malformed")
+        current_compose_sha256 = semantic_sha256_v22(raw_compose)
+        current_resolved_sha256 = semantic_sha256_v22(
+            resolved.model_dump(mode="json")
+        )
+        rebound = _expected_rebound_authority_v0231(
+            preserved=self.preserved_authority,
+            docker={
+                name: str(docker[name])
+                for name in ("context", "endpoint", "daemon_id")
+            },
+            bundle=self.bundle,
+            resolved=resolved,
+        )
+        if (
+            current_compose_sha256
+            != semantic_sha256_v22(self.preserved_resolved_compose)
+            or resolved.compose_sha256 != current_compose_sha256
+            or current_resolved_sha256 != self.admitted_resolved_sha256
+            or rebound != self.preserved_authority
+        ):
+            raise ValueError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0231_CLEANUP_AUTHORITY_CONTINUITY"
+            )
+        revalidated = admit_flagd_bind_descriptor_v0231(
+            predecessor_root=self.predecessor_root,
+            binding=self.binding,
+            context=self.context,
+            bundle=self.bundle,
+            resolved_compose=raw_compose,
+        )
+        if revalidated != self.flagd_descriptor:
+            raise ValueError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0231_CLEANUP_AUTHORITY_CONTINUITY"
+            )
         return self.environment.cleanup(baseline_restored=baseline_unchanged)
 
 
@@ -1264,6 +1409,21 @@ def _database_bindings(
                 "WHERE job_type = 'ENVIRONMENT_VERIFY'"
             ).fetchone()[0]
         )
+        pending_job_count = int(
+            connection.execute(
+                "SELECT COUNT(*) FROM diagnosis_jobs WHERE status = 'PENDING'"
+            ).fetchone()[0]
+        )
+        running_job_count = int(
+            connection.execute(
+                "SELECT COUNT(*) FROM diagnosis_jobs WHERE status = 'RUNNING'"
+            ).fetchone()[0]
+        )
+        failed_job_count = int(
+            connection.execute(
+                "SELECT COUNT(*) FROM diagnosis_jobs WHERE status = 'FAILED'"
+            ).fetchone()[0]
+        )
     if (
         environment_count != 1
         or len(baseline_rows) != 1
@@ -1298,6 +1458,9 @@ def _database_bindings(
         "knowledge_artifact_count": knowledge_artifact_count,
         "baseline_job_count": baseline_job_count,
         "verify_job_count": verify_job_count,
+        "pending_job_count": pending_job_count,
+        "running_job_count": running_job_count,
+        "failed_job_count": failed_job_count,
     }
     return baseline, audit, identity, capability, counts
 
@@ -1424,6 +1587,9 @@ def admit_product_baseline_continuation_context_v0231(
         )
         or counts["baseline_job_count"] != 1
         or counts["verify_job_count"] != 1
+        or counts["pending_job_count"] != 0
+        or counts["running_job_count"] != 0
+        or counts["failed_job_count"] != 0
         or baseline.baseline_id != predecessor["active_baseline_id"]
         or baseline.baseline_sha256 != predecessor["active_baseline_sha256"]
         or audit.audit_sha256 != predecessor["readiness_audit_sha256"]

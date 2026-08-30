@@ -1,0 +1,17 @@
+{
+  "schema_version": "ecomsre.product.nofault-profile-binding.v0231",
+  "source_profile_locator": "config/product-v023/nofault/profile.json",
+  "source_profile_file_sha256": "0b4b38a4fc4fe030f51d003f4c97ceca8f9cfb9c0766a869c55a367c76a79e48",
+  "source_profile_sha256": "7b580805f8dc86e1239811903044035f46e5d7eb10a239431bebbe18476c7e10",
+  "runtime_continuity_descriptor_sha256": "b103990c21d1804177a5d15900252259481e520dc2c5380547db0754c76c2e65",
+  "active_baseline_id": "base-b25440a36089a8f0e6b9f1dc",
+  "active_baseline_sha256": "6d3d2d7a4854d1cfc2477746e7d0c940ed8a08644ebc69b7b91066eabe45ae64",
+  "candidate_service": "checkout",
+  "queue_flag": 0,
+  "request_count": 30,
+  "requests_per_second": 1.0,
+  "maximum_error_fraction": 0.01,
+  "seed": 23082901,
+  "fault_label": "none",
+  "binding_sha256": "149c1d7ed786dd3ce367d68c8b9c6c1126b1ce662891db63853c74cdf292527c"
+}

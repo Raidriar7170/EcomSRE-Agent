@@ -23,6 +23,7 @@ from ecomsre.product.pilot.runtime_continuity_v0231 import (
     build_runtime_authority_continuity_descriptor_v0231,
 )
 from ecomsre_live_sandbox.contracts import (
+    CleanupResult,
     ConfigBundle,
     LocalEndpoints,
     ResolvedSandbox,
@@ -230,6 +231,8 @@ class _FakeEnvironment:
         self.docker_endpoint = "unix:///private/docker.sock"
         self.owned_resources = {"container": 0, "network": 0, "volume": 0}
         self.start_count = 0
+        self.cleanup_count = 0
+        self._baseline_snapshot: object | None = None
 
     def verify_local_docker(self) -> dict[str, str]:
         return {
@@ -250,6 +253,18 @@ class _FakeEnvironment:
 
     def start(self) -> None:
         self.start_count += 1
+        self._baseline_snapshot = object()
+
+    def cleanup(self, *, baseline_restored: bool) -> CleanupResult:
+        self.cleanup_count += 1
+        return CleanupResult(
+            baseline_restored=baseline_restored,
+            owned_containers=0,
+            owned_networks=0,
+            owned_volumes=0,
+            non_owned_resources_changed=False,
+            verdict="CLEAN" if baseline_restored else "BLOCKED",
+        )
 
 
 def _passing_lifecycle(
@@ -758,6 +773,37 @@ def test_exact_path_lifecycle_revalidates_flag_bytes_immediately_before_start(
     assert instances[0].start_count == 0
 
 
+def test_start_consumes_session_only_after_fresh_boundary_verification(
+    tmp_path: Path,
+) -> None:
+    lifecycle, environment, _bundle, _raw_compose, _resolved_value = (
+        _passing_lifecycle(tmp_path)
+    )
+    consumed: list[str] = []
+
+    lifecycle.start(on_boundary_verified=lambda: consumed.append("SESSION_1"))
+
+    assert consumed == ["SESSION_1"]
+    assert environment.start_count == 1
+
+
+def test_cleanup_reauthenticates_full_authority_before_destructive_down(
+    tmp_path: Path,
+) -> None:
+    lifecycle, environment, _bundle, _raw_compose, _resolved_value = (
+        _passing_lifecycle(tmp_path)
+    )
+    lifecycle.start()
+    environment.daemon_id = "drifted-daemon"
+
+    with pytest.raises(
+        ValueError,
+        match="BLOCKED_ECOMSRE_PRODUCT_V0231_CLEANUP_AUTHORITY_CONTINUITY",
+    ):
+        lifecycle.cleanup_owned(baseline_unchanged=True)
+    assert environment.cleanup_count == 0
+
+
 def test_start_boundary_rejects_fresh_compose_or_owned_resource_drift(
     tmp_path: Path,
 ) -> None:
@@ -769,11 +815,13 @@ def test_start_boundary_rejects_fresh_compose_or_owned_resource_drift(
     ] = False
     environment.resolved = _resolved(environment.raw_compose)
 
+    consumed: list[str] = []
     with pytest.raises(
         ValueError, match="BLOCKED_ECOMSRE_PRODUCT_V0231_COMPOSE_CONTINUITY"
     ):
-        lifecycle.start()
+        lifecycle.start(on_boundary_verified=lambda: consumed.append("SESSION_1"))
     assert environment.start_count == 0
+    assert consumed == []
 
     environment.raw_compose["services"]["flagd"]["volumes"][0][
         "read_only"
@@ -784,8 +832,9 @@ def test_start_boundary_rejects_fresh_compose_or_owned_resource_drift(
         ValueError,
         match="BLOCKED_ECOMSRE_PRODUCT_V0231_PREEXISTING_OWNED_RESOURCES",
     ):
-        lifecycle.start()
+        lifecycle.start(on_boundary_verified=lambda: consumed.append("SESSION_1"))
     assert environment.start_count == 0
+    assert consumed == []
 
 
 @pytest.mark.parametrize(
