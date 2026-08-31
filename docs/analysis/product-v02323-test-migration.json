@@ -1,0 +1,62 @@
+{
+  "schema_version": "ecomsre.product.test-migration.v02323",
+  "goal_version": "ecomsre-product-v02323-schema8-reconstruction-diagnosis-replay-v1",
+  "changed_tests": [
+    {
+      "category": "PATH_OR_SHA_REBINDING",
+      "path": "tests/product/test_increment1_historical_contract.py"
+    },
+    {
+      "category": "PHASE_FIXTURE_MIGRATION",
+      "path": "tests/product_v023/test_increment3_live_baseline_runner.py"
+    },
+    {
+      "category": "PHASE_FIXTURE_MIGRATION",
+      "path": "tests/product_v02321/test_increment3_state_clone_and_live_preflight.py"
+    },
+    {
+      "category": "PHASE_FIXTURE_MIGRATION",
+      "path": "tests/product_v02321/test_increment4_formal_nofault.py"
+    },
+    {
+      "category": "NEW_FORENSIC_COVERAGE",
+      "path": "tests/product_v02323/test_increment1_forensic_snapshot_and_digest.py"
+    },
+    {
+      "category": "NEW_FORENSIC_COVERAGE",
+      "path": "tests/product_v02323/test_increment2_schema8_reconstruction.py"
+    },
+    {
+      "category": "NEW_FORENSIC_COVERAGE",
+      "path": "tests/product_v02323/test_increment3_diagnosis_forensics.py"
+    },
+    {
+      "category": "NEW_FORENSIC_COVERAGE",
+      "path": "tests/product_v02323/test_increment4_persistence_replay.py"
+    },
+    {
+      "category": "NEW_FORENSIC_COVERAGE",
+      "path": "tests/product_v02323/test_increment5_repository_acceptance.py"
+    },
+    {
+      "category": "GENUINE_IMPLEMENTATION_REPAIR",
+      "path": "tests/unit/test_command_runner.py"
+    }
+  ],
+  "retained_test_roots": [
+    "tests/product_v0231",
+    "tests/product_v02321",
+    "tests/product_v02322",
+    "tests/product_v02323"
+  ],
+  "deleted_test_count": 0,
+  "skipped_or_xfailed_v02321_semantic_test_count": 0,
+  "categories": [
+    "PHASE_FIXTURE_MIGRATION",
+    "PATH_OR_SHA_REBINDING",
+    "GENUINE_IMPLEMENTATION_REPAIR",
+    "NEW_FORENSIC_COVERAGE"
+  ],
+  "terminal": "ECOMSRE_PRODUCT_V02323_TEST_MIGRATION_PASS",
+  "migration_sha256": "38840079296390e9c573b563326427fc0644803390f1ab1ef193fdd7cb9d7946"
+}

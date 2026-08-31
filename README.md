@@ -65,6 +65,28 @@ the Knowledge-Loop handoff is explicitly not authorized. See the
 [limitations](docs/results/product-v0231-limitations.md), and
 [handoff](docs/analysis/product-v0231-knowledge-loop-handoff.md).
 
+### Product v0.2.3.2.1 traffic-harness successor
+
+Product v0.2.3.2.1 preserved the blocked v0.2.3.2 attempt, repaired canonical
+Tool request IDs and traffic-attempt accounting, passed one `10 / 10` live
+preflight, and passed its only formal healthy workload at `30 / 30` with zero
+retries. Runtime authority, Baseline restart, fresh Runtime provenance, and
+typed cleanup all passed.
+
+The formal Product episode then stopped after creating one successor Incident:
+the only Diagnosis job failed with `INTERNAL_CONTRACT_FAILURE`. The frozen
+terminal is `BLOCKED_ECOMSRE_PRODUCT_V02321_NOFAULT_INFRASTRUCTURE`, not a
+measured No-Fault or production-readiness result. No successor Diagnosis,
+Evidence Bundle, Evidence Index, or Knowledge-Loop handoff exists. Fault,
+Knowledge, Provider, Agent, Runbook, and action-authority counters remained
+zero/`NONE`, and Product/Demo cleanup was `CLEAN / CLEAN`. See the
+[formal blocker](docs/results/product-v02321-formal-blocker.md),
+[limitations](docs/results/product-v02321-limitations.md), and
+[interview brief](docs/results/product-v02321-interview-brief.md). Repository
+acceptance is separately
+`BLOCKED_ECOMSRE_PRODUCT_V02321_REPOSITORY_ACCEPTANCE`; the Draft PR is not
+Ready or mergeable.
+
 <!-- dta-v21-pr-f-final-capability-closeout -->
 ### DTA v2.1 frozen-Agent capability closeout
 

@@ -102,3 +102,21 @@ live connectors:
 PYTHONPATH=src:. uv run --frozen --no-sync python -m \
   scripts.ci.verify_product_v0231_result
 ```
+
+## Frozen v0.2.3.2.1 formal blocker
+
+Product v0.2.3.2.1 consumed exactly one formal execution at HEAD
+`ca2860bd96405512839354a5b2be0453b43384b0`. The `30 / 30` healthy workload,
+Runtime-authority continuity, Baseline restart, and fresh Runtime snapshot all
+passed. One successor Incident was created, but its only Diagnosis job failed
+with `INTERNAL_CONTRACT_FAILURE` before a Diagnosis or Evidence Bundle could be
+published.
+
+The frozen terminal is
+`BLOCKED_ECOMSRE_PRODUCT_V02321_NOFAULT_INFRASTRUCTURE`. Product/Demo cleanup is
+`CLEAN / CLEAN`; queue default, outer Baseline, and preserved source state are
+unchanged. Do not rerun the formal command, resume the failed Diagnosis, or
+reinterpret the traffic PASS as a measured No-Fault result. A continuation
+requires a separately versioned successor. The public evidence boundary is the
+[formal blocker](../results/product-v02321-formal-blocker.md) and its
+[self-sealed evidence manifest](../analysis/product-v02321-formal-blocker-evidence-manifest.json).

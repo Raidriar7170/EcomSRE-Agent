@@ -1,0 +1,20 @@
+{
+  "action_authority": "NONE",
+  "audit_sha256": "7f9ed40ef32d9851041f9e244f2e8147da1357d6a1f8b876af9273e7b36cb54f",
+  "diagnosis_persistence_replay_attempts": 0,
+  "fault_attempts": 0,
+  "goal_version": "ecomsre-product-v02323-schema8-reconstruction-diagnosis-replay-v1",
+  "knowledge_loop_authority": "NONE",
+  "measured_nofault_authority": "NONE",
+  "new_business_traffic_executions": 0,
+  "new_product_incidents": 0,
+  "pr82_terminal": "BLOCKED_ECOMSRE_PRODUCT_V0232_TRAFFIC_PREFLIGHT",
+  "pr83_formal_terminal": "BLOCKED_ECOMSRE_PRODUCT_V02321_NOFAULT_INFRASTRUCTURE",
+  "pr83_repository_terminal": "BLOCKED_ECOMSRE_PRODUCT_V02321_REPOSITORY_ACCEPTANCE",
+  "pr84_terminal": "BLOCKED_ECOMSRE_PRODUCT_V02322_PRIVATE_PRODUCT_STATE",
+  "predecessor_head": "0dfd9c93f7e1f8797aacfee198694b5b2380221c",
+  "provider_agent_runbook_docker_calls": 0,
+  "schema_version": "ecomsre.product.predecessor-audit.v02323",
+  "starting_main": "73fe478886a4f0875b4d60b07b3600e8aae02132",
+  "terminal": "ECOMSRE_PRODUCT_V02323_HISTORY_AND_BLOCKER_PASS"
+}

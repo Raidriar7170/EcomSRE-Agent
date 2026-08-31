@@ -1,0 +1,9 @@
+{
+  "schema_version": "ecomsre.product.traffic-profile-binding.v02321",
+  "role": "PREFLIGHT",
+  "source_path": "config/product-v0232/traffic/preflight-profile.json",
+  "source_file_sha256": "f7655ca86fc4b02da71a07688be2074c371300af89d70c17c4fccac6ed0d16f4",
+  "profile_sha256": "20481ac92973ccf5de7510f565f066f13b9e1161e0e36faecec11cd12a40aa4a",
+  "predecessor_head": "cc270e5624af573a12bc31f3df9ca8cacad8685d",
+  "binding_sha256": "8f491b8927cdf9b18bcce904963c26927e8c851aa7ee08575dc9f2ad3dc70353"
+}

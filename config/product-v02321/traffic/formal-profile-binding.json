@@ -1,0 +1,9 @@
+{
+  "schema_version": "ecomsre.product.traffic-profile-binding.v02321",
+  "role": "FORMAL",
+  "source_path": "config/product-v0232/traffic/formal-profile.json",
+  "source_file_sha256": "17b6a653e023dfc4f6e649c45fa1cecb5becc24edafd9100f4eaca1aa4e552f5",
+  "profile_sha256": "0110803ab9b39bf397295f1fd8904aee31fabf9b82b314bf586fae98188f6ce7",
+  "predecessor_head": "cc270e5624af573a12bc31f3df9ca8cacad8685d",
+  "binding_sha256": "41ae895410563714aebeeedc4e61ba1cf6e4b040f838114769ff0fc139139e73"
+}

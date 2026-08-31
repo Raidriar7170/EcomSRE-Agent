@@ -45,7 +45,13 @@ from ecomsre.product.connectors.base import (
     ConnectorQueryPurposeV1,
     ConnectorQueryResultV1,
     ConnectorWindowV1,
+    ProductConnectorEvidenceV0232,
 )
+from ecomsre.product.connectors.opensearch_profile_binding_v023 import (
+    OpenSearchConnectorDiagnosticsV023,
+    OpenSearchConnectorProfileBindingV023,
+)
+from ecomsre.product.connectors.pilot_runtime import PilotRuntimeSnapshotV02
 from ecomsre.product.connectors.registry import ConnectorRegistryV1
 from ecomsre.product.contracts import (
     ConnectorKindV1,
@@ -57,6 +63,13 @@ from ecomsre.product.environment.capabilities import (
     SourceCapabilityStatusV1,
 )
 from ecomsre.product.incidents.contracts import IncidentRecordV1
+from ecomsre.product.incidents.evidence_binding_v0232 import (
+    CapabilityEvidenceObservationV0232,
+    CapabilityLimitationCandidateV0232,
+    build_connector_evidence_binding_v0232,
+    build_opensearch_profile_evidence_binding_v0232,
+    build_runtime_snapshot_evidence_binding_v0232,
+)
 from ecomsre.product.telemetry.metrics import ProductMetricsV1
 
 
@@ -77,6 +90,11 @@ class ProductReadAcquisitionV1:
     snapshots: tuple[dict[str, Any], ...]
     covered_services_by_source: dict[EvidenceSourceV22, tuple[str, ...]]
     capability_limitations: tuple[str, ...]
+    capability_observations_v0232: tuple[CapabilityEvidenceObservationV0232, ...]
+    capability_limitation_candidates_v0232: tuple[
+        CapabilityLimitationCandidateV0232,
+        ...,
+    ]
 
 
 def _build_outcome(
@@ -180,9 +198,8 @@ def _combine_results(
     covered = tuple(
         sorted({service for item in results for service in item.covered_services})
     )
-    if (
-        action.source is not EvidenceSourceV22.TRACES
-        and set(covered) - set(action.target_services)
+    if action.source is not EvidenceSourceV22.TRACES and set(covered) - set(
+        action.target_services
     ):
         return ConnectorQueryResultV1.build(
             source=action.source,
@@ -222,10 +239,13 @@ def _records_match_action(
     targets = set(action.target_services)
     request = action.request
     if action.source is EvidenceSourceV22.METRICS:
-        metric_records = tuple(item for item in records if isinstance(item, MetricFactV22))
+        metric_records = tuple(
+            item for item in records if isinstance(item, MetricFactV22)
+        )
         return (
             len(metric_records) == len(records)
-            and {item.metric_kind for item in metric_records} == set(request.metric_kinds)
+            and {item.metric_kind for item in metric_records}
+            == set(request.metric_kinds)
             and {item.service for item in metric_records} == targets
             and all(
                 item.window_started_at == window.started_at
@@ -236,22 +256,32 @@ def _records_match_action(
     if action.source is EvidenceSourceV22.LOGS:
         log_records = tuple(item for item in records if isinstance(item, LogRecordV22))
         return len(log_records) == len(records) and all(
-            item.service in targets and window.started_at <= item.observed_at <= window.ended_at
+            item.service in targets
+            and window.started_at <= item.observed_at <= window.ended_at
             for item in log_records
         )
     if action.source is EvidenceSourceV22.TRACES:
-        trace_records = tuple(item for item in records if isinstance(item, TraceSpanV22))
+        trace_records = tuple(
+            item for item in records if isinstance(item, TraceSpanV22)
+        )
         hops = request.neighborhood_hops
-        return len(trace_records) == len(records) and hops is not None and all(
-            window.started_at <= item.observed_at <= window.ended_at
-            and item.service in item.service_path
-            and any(
-                target in item.service_path
-                and abs(item.service_path.index(target) - item.service_path.index(item.service))
-                <= hops
-                for target in targets.intersection(item.service_path)
+        return (
+            len(trace_records) == len(records)
+            and hops is not None
+            and all(
+                window.started_at <= item.observed_at <= window.ended_at
+                and item.service in item.service_path
+                and any(
+                    target in item.service_path
+                    and abs(
+                        item.service_path.index(target)
+                        - item.service_path.index(item.service)
+                    )
+                    <= hops
+                    for target in targets.intersection(item.service_path)
+                )
+                for item in trace_records
             )
-            for item in trace_records
         )
     if action.source is EvidenceSourceV22.RUNTIME:
         runtime_records = tuple(
@@ -280,7 +310,8 @@ def _records_match_action(
         item for item in records if isinstance(item, RecentChangeRecordV22)
     )
     return len(change_records) == len(records) and all(
-        item.service in targets and window.started_at <= item.observed_at <= window.ended_at
+        item.service in targets
+        and window.started_at <= item.observed_at <= window.ended_at
         for item in change_records
     )
 
@@ -362,6 +393,7 @@ class ProductReadBackendV1:
         self._metrics = metrics
         self._pilot_runtime_authority = pilot_runtime_authority
         self._last_connector_diagnostics_v023: tuple[dict[str, Any], ...] = ()
+        self._last_connector_bindings_v0232: tuple[dict[str, Any], ...] = ()
 
     def _pilot_runtime_admitted(
         self,
@@ -399,7 +431,9 @@ class ProductReadBackendV1:
             if item.status is not SourceCapabilityStatusV1.UNAVAILABLE
         )
         registry = build_tool_capability_registry_v22(
-            disabled_sources=tuple(source for source in EvidenceSourceV22 if source not in enabled)
+            disabled_sources=tuple(
+                source for source in EvidenceSourceV22 if source not in enabled
+            )
         )
         catalog = build_action_catalog_v22(
             candidate_services=candidates,
@@ -436,10 +470,56 @@ class ProductReadBackendV1:
             for item in capability_matrix.sources
             if item.status is SourceCapabilityStatusV1.UNAVAILABLE
         }
-        identity_by_logical = {item.logical_service: item for item in identity_map.services}
+        capability_by_source = {
+            item.source: item for item in capability_matrix.sources
+        }
+        capability_observations: dict[
+            str,
+            CapabilityEvidenceObservationV0232,
+        ] = {}
+        limitation_candidates: dict[
+            str,
+            CapabilityLimitationCandidateV0232,
+        ] = {}
+        for item in capability_matrix.sources:
+            if item.status is SourceCapabilityStatusV1.AVAILABLE:
+                continue
+            limitation_code = f"SOURCE_{item.source.value}_{item.status.value}"
+            observation = CapabilityEvidenceObservationV0232.build(
+                source=item.source,
+                capability_matrix_sha256=capability_matrix.capability_sha256,
+                capability_status=item.status,
+                required_services=candidates,
+                available_services=tuple(
+                    sorted(set(item.covered_services).intersection(candidates))
+                ),
+                reason_code=limitation_code,
+            )
+            capability_observations[limitation_code] = observation
+            if item.status is SourceCapabilityStatusV1.UNAVAILABLE:
+                limitation_candidates[limitation_code] = (
+                    CapabilityLimitationCandidateV0232.build(
+                        limitation_code=limitation_code,
+                        category="SOURCE_UNAVAILABLE",
+                        source=item.source,
+                        capability_status=item.status,
+                        connector_action_id=None,
+                        connector_result_sha256=None,
+                        safe_error_code=None,
+                        coverage_required_services=candidates,
+                        coverage_observed_services=(),
+                    )
+                )
+        identity_by_logical = {
+            item.logical_service: item for item in identity_map.services
+        }
         pilot_runtime_authority = self._pilot_runtime_authority
         for action in actions:
-            seconds = action.request.lookback_seconds or action.request.sampling_window_seconds or 60
+            seconds = (
+                action.request.lookback_seconds
+                or action.request.sampling_window_seconds
+                or 60
+            )
             window = ConnectorWindowV1(
                 started_at=incident.diagnosis_observed_at - timedelta(seconds=seconds),
                 ended_at=incident.diagnosis_observed_at,
@@ -463,6 +543,37 @@ class ProductReadBackendV1:
                 self._metrics.increment(
                     "ecomsre_connector_failures_total",
                     {"source": action.source.value, "status": result.status.value},
+                )
+                limitation_code = f"SOURCE_{action.source.value}_QUERY_FAILURE"
+                limitations.add(limitation_code)
+                limitation_candidates[limitation_code] = (
+                    CapabilityLimitationCandidateV0232.build(
+                        limitation_code=limitation_code,
+                        category="QUERY_FAILURE",
+                        source=action.source,
+                        capability_status=capability_by_source[action.source].status,
+                        connector_action_id=action.action_id,
+                        connector_result_sha256=result.result_sha256,
+                        safe_error_code=result.safe_error_code,
+                        coverage_required_services=action.target_services,
+                        coverage_observed_services=result.covered_services,
+                    )
+                )
+            elif not set(action.target_services).issubset(result.covered_services):
+                limitation_code = f"SOURCE_{action.source.value}_COVERAGE_GAP"
+                limitations.add(limitation_code)
+                limitation_candidates[limitation_code] = (
+                    CapabilityLimitationCandidateV0232.build(
+                        limitation_code=limitation_code,
+                        category="COVERAGE_GAP",
+                        source=action.source,
+                        capability_status=capability_by_source[action.source].status,
+                        connector_action_id=action.action_id,
+                        connector_result_sha256=result.result_sha256,
+                        safe_error_code=None,
+                        coverage_required_services=action.target_services,
+                        coverage_observed_services=result.covered_services,
+                    )
                 )
             outcome = _build_outcome(action, result)
             raw.append(outcome)
@@ -500,15 +611,38 @@ class ProductReadBackendV1:
                 )
             else:
                 memory_outcome = None
-                limitations.add("RUNTIME_MEMORY_AUTHORITY_UNAVAILABLE")
-                limitations.add("RUNTIME_DIAGNOSIS_UNAVAILABLE")
+                for limitation_code in (
+                    "RUNTIME_MEMORY_AUTHORITY_UNAVAILABLE",
+                    "RUNTIME_DIAGNOSIS_UNAVAILABLE",
+                ):
+                    limitations.add(limitation_code)
+                    limitation_candidates[limitation_code] = (
+                        CapabilityLimitationCandidateV0232.build(
+                            limitation_code=limitation_code,
+                            category="RUNTIME_AUTHORITY_UNAVAILABLE",
+                            source=EvidenceSourceV22.RUNTIME,
+                            capability_status=capability_by_source[
+                                EvidenceSourceV22.RUNTIME
+                            ].status,
+                            connector_action_id=action.action_id,
+                            connector_result_sha256=result.result_sha256,
+                            safe_error_code="RUNTIME_AUTHORITY_UNAVAILABLE",
+                            coverage_required_services=action.target_services,
+                            coverage_observed_services=result.covered_services,
+                        )
+                    )
             snapshots.append(
                 {
                     "schema_version": "ecomsre.product.read-snapshot.v1",
                     "incident_id": incident.incident_id,
                     "action": action.model_dump(mode="json"),
-                    "connector_components": [item.model_dump(mode="json") for item in components],
+                    "connector_components": [
+                        item.model_dump(mode="json") for item in components
+                    ],
                     "connector_diagnostics": list(connector_diagnostics),
+                    "connector_bindings_v0232": list(
+                        self._last_connector_bindings_v0232
+                    ),
                     "connector_result": result.model_dump(mode="json"),
                     "read_outcome": outcome.model_dump(mode="json"),
                     "memory_outcome": (
@@ -526,6 +660,25 @@ class ProductReadBackendV1:
             if item.status is SourceCapabilityStatusV1.PARTIAL
             and not set(candidates).issubset(coverage[item.source])
         )
+        for limitation_code in tuple(sorted(limitations)):
+            if limitation_code in limitation_candidates:
+                continue
+            capability_observation = capability_observations.get(limitation_code)
+            if capability_observation is None:
+                continue
+            limitation_candidates[limitation_code] = (
+                CapabilityLimitationCandidateV0232.build(
+                    limitation_code=limitation_code,
+                    category="SOURCE_PARTIAL",
+                    source=capability_observation.source,
+                    capability_status=capability_observation.capability_status,
+                    connector_action_id=None,
+                    connector_result_sha256=None,
+                    safe_error_code=None,
+                    coverage_required_services=capability_observation.required_services,
+                    coverage_observed_services=capability_observation.available_services,
+                )
+            )
         return ProductReadAcquisitionV1(
             raw_outcomes=tuple(raw),
             memory_outcomes=tuple(memory),
@@ -534,6 +687,14 @@ class ProductReadBackendV1:
                 source: tuple(sorted(services)) for source, services in coverage.items()
             },
             capability_limitations=tuple(sorted(limitations)),
+            capability_observations_v0232=tuple(
+                capability_observations[code]
+                for code in sorted(limitations)
+                if code in capability_observations
+            ),
+            capability_limitation_candidates_v0232=tuple(
+                limitation_candidates[code] for code in sorted(limitation_candidates)
+            ),
         )
 
     def _execute(
@@ -546,8 +707,10 @@ class ProductReadBackendV1:
         window: ConnectorWindowV1,
     ) -> tuple[ConnectorQueryResultV1, bool, tuple[ConnectorQueryResultV1, ...]]:
         self._last_connector_diagnostics_v023 = ()
+        self._last_connector_bindings_v0232 = ()
         if action.source is EvidenceSourceV22.CHANGES and not any(
-            config.kind is ConnectorKindV1.FIXTURE for config in environment.connector_configs
+            config.kind is ConnectorKindV1.FIXTURE
+            for config in environment.connector_configs
         ):
             records, truncated = self._changes.list_v22(
                 environment_id=incident.environment_id,
@@ -575,6 +738,14 @@ class ProductReadBackendV1:
         matching: list[ConnectorQueryResultV1] = []
         matching_kinds: list[ConnectorKindV1] = []
         connector_diagnostics: list[dict[str, Any]] = []
+        binding_inputs: list[
+            tuple[
+                Any,
+                ConnectorQueryContextV1,
+                ConnectorQueryResultV1,
+                object | None,
+            ]
+        ] = []
         pilot_runtime_selected = (
             action.source is EvidenceSourceV22.RUNTIME
             and self._pilot_runtime_admitted(
@@ -583,11 +754,16 @@ class ProductReadBackendV1:
             )
         )
         for config in environment.connector_configs:
-            if pilot_runtime_selected and config.kind is not ConnectorKindV1.PILOT_RUNTIME:
+            if (
+                pilot_runtime_selected
+                and config.kind is not ConnectorKindV1.PILOT_RUNTIME
+            ):
                 continue
             connector = self._connectors.create(config)
             try:
-                if not any(item.source is action.source for item in connector.capabilities()):
+                if not any(
+                    item.source is action.source for item in connector.capabilities()
+                ):
                     continue
                 matching_kinds.append(config.kind)
                 alias_field = _ALIAS_FIELD_BY_KIND[config.kind]
@@ -597,7 +773,9 @@ class ProductReadBackendV1:
                     else {
                         alias: logical
                         for logical in action.target_services
-                        for alias in getattr(identity_by_logical[logical].aliases, alias_field)
+                        for alias in getattr(
+                            identity_by_logical[logical].aliases, alias_field
+                        )
                     }
                 )
                 context = ConnectorQueryContextV1(
@@ -615,7 +793,18 @@ class ProductReadBackendV1:
                     sample_count=action.request.sample_count,
                 )
                 returned = connector.query(context)
-                matching.extend(item for item in returned if item.source is action.source)
+                source_results = tuple(
+                    item for item in returned if item.source is action.source
+                )
+                matching.extend(source_results)
+                evidence_input = (
+                    connector.evidence_binding_v0232()
+                    if isinstance(connector, ProductConnectorEvidenceV0232)
+                    else None
+                )
+                binding_inputs.extend(
+                    (config, context, item, evidence_input) for item in source_results
+                )
                 profile_diagnostics = getattr(
                     connector,
                     "profile_diagnostics",
@@ -636,6 +825,78 @@ class ProductReadBackendV1:
             kind is ConnectorKindV1.FIXTURE for kind in matching_kinds
         )
         self._last_connector_diagnostics_v023 = tuple(connector_diagnostics)
+        connector_bindings: list[dict[str, Any]] = []
+        for config, context, component, evidence_input in sorted(
+            binding_inputs,
+            key=lambda item: (item[0].name, item[2].result_sha256),
+        ):
+            binding_kind = "GENERIC"
+            binding_payload = None
+            binding_payload_sha256 = component.result_sha256
+            if (
+                config.kind is ConnectorKindV1.OPENSEARCH
+                and isinstance(evidence_input, tuple)
+                and len(evidence_input) == 2
+            ):
+                try:
+                    profile_binding = (
+                        OpenSearchConnectorProfileBindingV023.model_validate(
+                            evidence_input[0]
+                        )
+                    )
+                    diagnostics = OpenSearchConnectorDiagnosticsV023.model_validate(
+                        evidence_input[1]
+                    )
+                    opensearch_specialized = (
+                        build_opensearch_profile_evidence_binding_v0232(
+                            profile_binding=profile_binding,
+                            diagnostics=diagnostics,
+                            connector_result=component,
+                        )
+                    )
+                except ValueError:
+                    opensearch_specialized = None
+                if opensearch_specialized is not None:
+                    binding_kind = "OPENSEARCH_PROFILE"
+                    binding_payload = opensearch_specialized.model_dump(mode="json")
+                    binding_payload_sha256 = opensearch_specialized.binding_sha256
+            elif (
+                config.kind is ConnectorKindV1.PILOT_RUNTIME
+                and isinstance(evidence_input, PilotRuntimeSnapshotV02)
+                and self._pilot_runtime_authority is not None
+            ):
+                try:
+                    runtime_specialized = build_runtime_snapshot_evidence_binding_v0232(
+                        snapshot=evidence_input,
+                        config=config,
+                        runtime_authority=self._pilot_runtime_authority,
+                        connector_result=component,
+                        formal_traffic_started_at=incident.started_at,
+                        diagnosis_observed_at=incident.diagnosis_observed_at,
+                    )
+                except ValueError:
+                    runtime_specialized = None
+                if runtime_specialized is not None:
+                    binding_kind = "RUNTIME_SNAPSHOT"
+                    binding_payload = runtime_specialized.model_dump(mode="json")
+                    binding_payload_sha256 = runtime_specialized.binding_sha256
+            generic = build_connector_evidence_binding_v0232(
+                incident_id=incident.incident_id,
+                action_id=action.action_id,
+                config=config,
+                context=context,
+                component_result=component,
+                combined_result=combined,
+                binding_kind=binding_kind,
+                binding_payload_sha256=binding_payload_sha256,
+            )
+            connector_bindings.append(
+                {
+                    "connector_binding": generic.model_dump(mode="json"),
+                    "binding_payload": binding_payload,
+                }
+            )
+        self._last_connector_bindings_v0232 = tuple(connector_bindings)
         return combined, fixture_backed, tuple(matching)
 
 

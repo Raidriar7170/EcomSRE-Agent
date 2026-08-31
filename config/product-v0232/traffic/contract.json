@@ -1,0 +1,148 @@
+{
+  "cart_before_checkout": true,
+  "cart_method": "POST",
+  "cart_path": "/api/cart",
+  "cart_request_schema": {
+    "properties": {
+      "item": {
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ],
+        "type": "object"
+      },
+      "userId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "userId",
+      "item"
+    ],
+    "type": "object"
+  },
+  "cart_success_statuses": [
+    200
+  ],
+  "cart_success_validator": "MATCHED_USER_AND_REQUESTED_ITEM_V0232",
+  "checkout_method": "POST",
+  "checkout_path": "/api/checkout",
+  "checkout_request_schema": {
+    "properties": {
+      "address": {
+        "properties": {
+          "city": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "streetAddress": {
+            "type": "string"
+          },
+          "zipCode": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "streetAddress",
+          "city",
+          "state",
+          "country",
+          "zipCode"
+        ],
+        "type": "object"
+      },
+      "creditCard": {
+        "properties": {
+          "creditCardCvv": {
+            "type": "integer"
+          },
+          "creditCardExpirationMonth": {
+            "type": "integer"
+          },
+          "creditCardExpirationYear": {
+            "type": "integer"
+          },
+          "creditCardNumber": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "creditCardNumber",
+          "creditCardCvv",
+          "creditCardExpirationYear",
+          "creditCardExpirationMonth"
+        ],
+        "type": "object"
+      },
+      "email": {
+        "type": "string"
+      },
+      "userCurrency": {
+        "type": "string"
+      },
+      "userId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "userId",
+      "userCurrency",
+      "address",
+      "email",
+      "creditCard"
+    ],
+    "type": "object"
+  },
+  "checkout_success_statuses": [
+    200
+  ],
+  "checkout_success_validator": "ORDER_ID_AND_REQUESTED_ITEM_V0232",
+  "contract_id": "CHECKOUT_CART_THEN_ORDER_V0232",
+  "contract_sha256": "8e2e6fabb139413ff5ff54efe516023e00f7d04c7b84b4d296b1aa42bf39ce1b",
+  "schema_version": "ecomsre.product.checkout-traffic-contract.v0232",
+  "source_file_bindings": [
+    {
+      "path": "src/frontend/gateways/Api.gateway.ts",
+      "sha256": "70871abdd9f2aac61f6e0fd2cb4e20794d05899874c1e076c56da0b9898f37ec"
+    },
+    {
+      "path": "src/frontend/pages/api/cart.ts",
+      "sha256": "baddb1546b9132f54928a87b789bdaf66170380492a0a69d8c479b35b9a273b5"
+    },
+    {
+      "path": "src/frontend/pages/api/checkout.ts",
+      "sha256": "48d272678bdee3a1a0e707453598d1fd8f8edc1896a8f2872166241ea3143983"
+    },
+    {
+      "path": "src/frontend/protos/demo.ts",
+      "sha256": "6d525d23e48a502b7f13079d7261beb29f0a30622b3f0b9ef916246a59da9212"
+    },
+    {
+      "path": "src/frontend/types/Cart.ts",
+      "sha256": "e57bbcca175d932b08bb8aa978babbdfc493c6b231c2ec713c93f7ac2cf1130a"
+    },
+    {
+      "path": "src/load-generator/people.json",
+      "sha256": "2e780c99cd1950213c798ba086c184b6ae89a98af8a6df4bb190b2e19bcf77ab"
+    },
+    {
+      "path": "src/load-generator/script.js",
+      "sha256": "cacfe65d69e2c20f2e22ebef618369a4ddf731ce750e275444f9c86cf50ac755"
+    }
+  ],
+  "synthetic_identity_policy": "SHA256_DERIVED_PUBLIC_IDENTITY_V0232",
+  "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
+}

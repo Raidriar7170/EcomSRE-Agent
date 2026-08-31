@@ -295,6 +295,41 @@ MIGRATIONS: tuple[tuple[int, str, tuple[str, ...]], ...] = (
             "ON baseline_readiness_audits_v023(environment_id, created_at)",
         ),
     ),
+    (
+        8,
+        "product-v0232-diagnosis-evidence-index",
+        (
+            """CREATE TABLE diagnosis_evidence_indexes (
+                diagnosis_id TEXT PRIMARY KEY REFERENCES diagnosis_results(diagnosis_id),
+                incident_id TEXT NOT NULL UNIQUE REFERENCES incidents(incident_id),
+                payload_json TEXT NOT NULL,
+                index_sha256 TEXT NOT NULL UNIQUE,
+                created_at TEXT NOT NULL
+            )""",
+        ),
+    ),
+    (
+        9,
+        "product-v02322-diagnosis-stage-journal",
+        (
+            "ALTER TABLE diagnosis_jobs ADD COLUMN failure_stage TEXT",
+            "ALTER TABLE diagnosis_jobs ADD COLUMN exception_fingerprint TEXT",
+            "ALTER TABLE diagnosis_jobs ADD COLUMN journal_tail_sha256 TEXT",
+            """CREATE TABLE diagnosis_stage_events_v02322 (
+                job_id TEXT NOT NULL REFERENCES diagnosis_jobs(job_id),
+                incident_id TEXT NOT NULL,
+                ordinal INTEGER NOT NULL CHECK(ordinal >= 1),
+                stage TEXT NOT NULL,
+                status TEXT NOT NULL CHECK(status IN ('STARTED', 'PASSED', 'FAILED')),
+                payload_json TEXT NOT NULL,
+                event_sha256 TEXT NOT NULL UNIQUE,
+                created_at TEXT NOT NULL,
+                UNIQUE(job_id, ordinal)
+            )""",
+            "CREATE INDEX diagnosis_stage_events_v02322_incident_idx "
+            "ON diagnosis_stage_events_v02322(incident_id, job_id, ordinal)",
+        ),
+    ),
 )
 
 __all__ = ("MIGRATIONS",)

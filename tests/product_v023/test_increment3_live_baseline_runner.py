@@ -7,6 +7,7 @@ import subprocess
 
 import pytest
 
+from ecomsre.product.pilot import live_baseline_readiness_v023
 from ecomsre.product.connectors.opensearch_profile_binding_v023 import (
     ACTIVE_PROFILE_SHA256_V023,
     build_product_v023_environment_payload,
@@ -144,7 +145,14 @@ def test_live_environment_and_semantics_bind_active_p01() -> None:
     assert all(len(value) == 64 for value in semantics.values())
 
 
-def test_live_contract_check_is_offline_and_attempt_free() -> None:
+def test_live_contract_check_is_offline_and_attempt_free(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        live_baseline_readiness_v023,
+        "_load_public_attempts",
+        lambda _root: (),
+    )
     result = verify_live_baseline_readiness_contract_v023(ROOT)
     repeated = verify_live_baseline_readiness_contract_v023(ROOT)
 

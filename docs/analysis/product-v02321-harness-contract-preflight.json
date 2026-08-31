@@ -1,0 +1,346 @@
+{
+  "accepted_successor_incident_count": 0,
+  "action_authority": "NONE",
+  "agent_writes": 0,
+  "all_requests_validated_before_sandbox": true,
+  "call_site_audit": [
+    {
+      "callee": "build_inspect_service_runtime_request",
+      "caller": "_verify_offline_reproduction",
+      "disposition": "FROZEN_PREDECESSOR_OFFLINE_REPRODUCTION",
+      "line": 139,
+      "path": "scripts/ci/verify_product_v0232_blocker.py",
+      "site_kind": "REQUEST_BUILDER_CALL",
+      "site_sha256": "4c2d42877815f421a8d51ecebe16f3b95ea2d71cd913357f478c92d7a252e2ca",
+      "source_expression": "build_inspect_service_runtime_request(run_id=FAILED_RUN_ID_V0232, services=('checkout',), max_results=1)"
+    },
+    {
+      "callee": "build_inspect_service_runtime_request",
+      "caller": "_verify_offline_reproduction",
+      "disposition": "FROZEN_PREDECESSOR_OFFLINE_REPRODUCTION",
+      "line": 139,
+      "path": "scripts/ci/verify_product_v0232_blocker.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "412eb6405a30c1d1abbf568ecac0b51e3f886659c65961d9bce6030ff1c87a04",
+      "source_expression": "FAILED_RUN_ID_V0232"
+    },
+    {
+      "callee": "build_inspect_service_runtime_request",
+      "caller": "_checkout_runtime",
+      "disposition": "FROZEN_INVALID_PREDECESSOR",
+      "line": 183,
+      "path": "scripts/product_v0232/run_traffic_preflight.py",
+      "site_kind": "REQUEST_BUILDER_CALL",
+      "site_sha256": "7e2ef470eb66090a42dfa85cb59d98a85c1bc05346831c6bb0a1245168ff82c0",
+      "source_expression": "build_inspect_service_runtime_request(run_id=run_id, services=('checkout',), max_results=1)"
+    },
+    {
+      "callee": "build_inspect_service_runtime_request",
+      "caller": "_checkout_runtime",
+      "disposition": "FROZEN_INVALID_PREDECESSOR",
+      "line": 183,
+      "path": "scripts/product_v0232/run_traffic_preflight.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "885fc031411b634d8fcfa6273f693902f467fdefb91e736a6471913332b1fab7",
+      "source_expression": "run_id"
+    },
+    {
+      "callee": "_checkout_runtime",
+      "caller": "run_traffic_preflight_v0232",
+      "disposition": "FROZEN_INVALID_PREDECESSOR_SOURCE",
+      "line": 517,
+      "path": "scripts/product_v0232/run_traffic_preflight.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "8648ad1949752ead7aa92a2e33ec1ca9b64a51862b45f757ad77415992551173",
+      "source_expression": "f'product-v0232-traffic-preflight-{attempt_ordinal}'"
+    },
+    {
+      "callee": "build_inspect_service_runtime_request",
+      "caller": "_reproduce_predecessor_failure",
+      "disposition": "V02321_OFFLINE_PREDECESSOR_REPRODUCTION",
+      "line": 330,
+      "path": "scripts/product_v02321/run_harness_contract_preflight.py",
+      "site_kind": "REQUEST_BUILDER_CALL",
+      "site_sha256": "123be0061047f6a2195aae4bde21272feae9bc3cd2b6067f30242e6fedc78cf9",
+      "source_expression": "build_inspect_service_runtime_request(run_id='product-v0232-traffic-preflight-1', services=('checkout',), max_results=1)"
+    },
+    {
+      "callee": "build_inspect_service_runtime_request",
+      "caller": "_reproduce_predecessor_failure",
+      "disposition": "V02321_OFFLINE_PREDECESSOR_REPRODUCTION",
+      "line": 330,
+      "path": "scripts/product_v02321/run_harness_contract_preflight.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "0f93a4e191f460fe5332d4df25363defbd103b4cf7208fd857c3c8f22f80d016",
+      "source_expression": "'product-v0232-traffic-preflight-1'"
+    },
+    {
+      "callee": "build_inspect_service_runtime_request",
+      "caller": "_runtime_memory",
+      "disposition": "EXISTING_SEMANTIC_SHA_PREFIX",
+      "line": 352,
+      "path": "src/ecomsre/product/incidents/read_backend.py",
+      "site_kind": "REQUEST_BUILDER_CALL",
+      "site_sha256": "68d889a27b7f1f3355d18b14db2b4451170a71e3f0eab29dedce34af552f6cb1",
+      "source_expression": "build_inspect_service_runtime_request(run_id=incident.incident_sha256[:32], services=action.target_services, max_results=len(action.target_services))"
+    },
+    {
+      "callee": "build_inspect_service_runtime_request",
+      "caller": "_runtime_memory",
+      "disposition": "EXISTING_SEMANTIC_SHA_PREFIX",
+      "line": 352,
+      "path": "src/ecomsre/product/incidents/read_backend.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "6593216c81de4ce97f9919eb8199c97abf0a522c0e901181dfb21fa2542216c8",
+      "source_expression": "incident.incident_sha256[:32]"
+    },
+    {
+      "callee": "reserve_readiness_attempt_v021",
+      "caller": "run_live_baseline_readiness_v021",
+      "disposition": "HISTORICAL_ATTEMPT_LEDGER_ID",
+      "line": 703,
+      "path": "src/ecomsre/product/pilot/live_baseline_readiness_v021.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "3a346a657b673298969cdd22322b99659fb7653075567fa4b8ce61c0be238246",
+      "source_expression": "run_id"
+    },
+    {
+      "callee": "_runtime_services",
+      "caller": "run_live_baseline_readiness_v021",
+      "disposition": "HISTORICAL_RANDOM_32HEX",
+      "line": 802,
+      "path": "src/ecomsre/product/pilot/live_baseline_readiness_v021.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "54492d175d8fcced94d4b938fdc5f9a17d07d54ac01fc63b02347ca360c72d5b",
+      "source_expression": "secrets.token_hex(16)"
+    },
+    {
+      "callee": "AuditedSubprocessRunner",
+      "caller": "_require_clean_head",
+      "disposition": "HISTORICAL_RANDOM_32HEX",
+      "line": 174,
+      "path": "src/ecomsre/product/pilot/live_baseline_readiness_v023.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "b26de92e1e94920cb732d48cffc0d3936c6c43723228464a08080192d78eddb6",
+      "source_expression": "secrets.token_hex(16)"
+    },
+    {
+      "callee": "_runtime_services",
+      "caller": "run_live_baseline_readiness_v023",
+      "disposition": "HISTORICAL_RANDOM_32HEX",
+      "line": 1007,
+      "path": "src/ecomsre/product/pilot/live_baseline_readiness_v023.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "ca832a77ce24da4dbd1787c0b11a760f207ad21a50e5c3cbe521ff454f1dcc5c",
+      "source_expression": "secrets.token_hex(16)"
+    },
+    {
+      "callee": "build_inspect_service_runtime_request",
+      "caller": "_runtime_services",
+      "disposition": "HISTORICAL_CALLER_SUPPLIED_VALIDATED",
+      "line": 231,
+      "path": "src/ecomsre/product/pilot/live_calibration_v02.py",
+      "site_kind": "REQUEST_BUILDER_CALL",
+      "site_sha256": "5cdcf42cd3b8c71e307fa980ba32d7e8afb9fcb38d89d47b9ea71239e3530816",
+      "source_expression": "build_inspect_service_runtime_request(run_id=run_id, services=_CANDIDATE_SERVICES_V02, max_results=len(_CANDIDATE_SERVICES_V02))"
+    },
+    {
+      "callee": "build_inspect_service_runtime_request",
+      "caller": "_runtime_services",
+      "disposition": "HISTORICAL_CALLER_SUPPLIED_VALIDATED",
+      "line": 231,
+      "path": "src/ecomsre/product/pilot/live_calibration_v02.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "e3b6a3d01312423f4a6b2ecb584fb0b1e9b4b8fbf85bfa79db81c097d6ddbbe3",
+      "source_expression": "run_id"
+    },
+    {
+      "callee": "_runtime_services",
+      "caller": "_run_candidate_attempt",
+      "disposition": "HISTORICAL_RANDOM_32HEX",
+      "line": 461,
+      "path": "src/ecomsre/product/pilot/live_calibration_v02.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "c406e379991b3e8844e4a9ca82c30779de0f534fae0e464db0c9456be6968c10",
+      "source_expression": "secrets.token_hex(16)"
+    },
+    {
+      "callee": "_runtime_services",
+      "caller": "_run_candidate_attempt",
+      "disposition": "HISTORICAL_RANDOM_32HEX",
+      "line": 568,
+      "path": "src/ecomsre/product/pilot/live_calibration_v02.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "3fb5bad24ff5f1d2eb5528fd42cd4ac86ec7df6a7a0ce94886f5ef38dfa521d4",
+      "source_expression": "secrets.token_hex(16)"
+    },
+    {
+      "callee": "_runtime_services",
+      "caller": "run_live_calibration_v02",
+      "disposition": "HISTORICAL_RANDOM_32HEX",
+      "line": 908,
+      "path": "src/ecomsre/product/pilot/live_calibration_v02.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "863930f7a332ca6b1574e82808a68d202c55293edee6f549d80d31259f5e4ff5",
+      "source_expression": "secrets.token_hex(16)"
+    },
+    {
+      "callee": "_runtime_services",
+      "caller": "_run_candidate_attempt_v021",
+      "disposition": "HISTORICAL_RANDOM_32HEX",
+      "line": 855,
+      "path": "src/ecomsre/product/pilot/live_calibration_v021.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "af338558381ea90757cd105b1698c55509e8cf2d8d84c0a4cc4ef980b14ff961",
+      "source_expression": "secrets.token_hex(16)"
+    },
+    {
+      "callee": "_runtime_services",
+      "caller": "_run_candidate_attempt_v021",
+      "disposition": "HISTORICAL_RANDOM_32HEX",
+      "line": 976,
+      "path": "src/ecomsre/product/pilot/live_calibration_v021.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "53ed00808987c017d58d830ced546fe66c6fc5eaa1b39d20d565f285c977eb61",
+      "source_expression": "secrets.token_hex(16)"
+    },
+    {
+      "callee": "_runtime_services",
+      "caller": "_run_admitted_calibration_v021",
+      "disposition": "HISTORICAL_RANDOM_32HEX",
+      "line": 1335,
+      "path": "src/ecomsre/product/pilot/live_calibration_v021.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "1a7f0cfaa3aa12cc042bfb91ce2d6ef2348e4537ed3009b5d7a3a6617691127b",
+      "source_expression": "secrets.token_hex(16)"
+    },
+    {
+      "callee": "_runtime_services",
+      "caller": "_runtime_snapshot",
+      "disposition": "HISTORICAL_RANDOM_32HEX",
+      "line": 431,
+      "path": "src/ecomsre/product/pilot/live_nofault_acceptance_v023.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "c2f8f3c84040c10a230daf0f9304c9b74ed4123a452b2647a7f5c7f356944f4e",
+      "source_expression": "secrets.token_hex(16)"
+    },
+    {
+      "callee": "build_inspect_service_runtime_request",
+      "caller": "require_complete_bound_plan",
+      "disposition": "V02321_CANONICAL_FACTORY",
+      "line": 71,
+      "path": "src/ecomsre/product/pilot/typed_request_plan_v02321.py",
+      "site_kind": "REQUEST_BUILDER_CALL",
+      "site_sha256": "361e38eaff5e3d883af70ef1d90f79f45e2c5383e7bad37dd83f6993c1871d48",
+      "source_expression": "build_inspect_service_runtime_request(run_id=identifier.run_id, services=entry.target_services, max_results=len(entry.target_services))"
+    },
+    {
+      "callee": "build_inspect_service_runtime_request",
+      "caller": "require_complete_bound_plan",
+      "disposition": "V02321_CANONICAL_FACTORY",
+      "line": 71,
+      "path": "src/ecomsre/product/pilot/typed_request_plan_v02321.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "83954e36c8817d9d28f1ceddb597a0b6a15beb2b97e5a93a519760d751c18e80",
+      "source_expression": "identifier.run_id"
+    },
+    {
+      "callee": "build_inspect_service_runtime_request",
+      "caller": "build_traffic_harness_typed_request_plan_v02321",
+      "disposition": "V02321_CANONICAL_FACTORY",
+      "line": 105,
+      "path": "src/ecomsre/product/pilot/typed_request_plan_v02321.py",
+      "site_kind": "REQUEST_BUILDER_CALL",
+      "site_sha256": "3b7e76a2fe34666f25a460650fa032ac2b14c49ec6926ae7d5c7544ce4be3f38",
+      "source_expression": "build_inspect_service_runtime_request(run_id=identifier.run_id, services=identifier.target_services, max_results=1)"
+    },
+    {
+      "callee": "build_inspect_service_runtime_request",
+      "caller": "build_traffic_harness_typed_request_plan_v02321",
+      "disposition": "V02321_CANONICAL_FACTORY",
+      "line": 105,
+      "path": "src/ecomsre/product/pilot/typed_request_plan_v02321.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "5b090d3b3cdea033e1965f1d637760a91eeb9351ccd2c9d7dd43242f1b179c5b",
+      "source_expression": "identifier.run_id"
+    },
+    {
+      "callee": "TrafficHarnessTypedRequestEntryV02321",
+      "caller": "build_traffic_harness_typed_request_plan_v02321",
+      "disposition": "V02321_TYPED_PLAN_BINDING",
+      "line": 110,
+      "path": "src/ecomsre/product/pilot/typed_request_plan_v02321.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "0ecbfacb68d22102685429e86b50237c8fe51108a02210fe167febf101f79336",
+      "source_expression": "identifier.run_id"
+    },
+    {
+      "callee": "build_inspect_service_runtime_request",
+      "caller": "materialize_planned_request_v02321",
+      "disposition": "V02321_CANONICAL_FACTORY",
+      "line": 142,
+      "path": "src/ecomsre/product/pilot/typed_request_plan_v02321.py",
+      "site_kind": "REQUEST_BUILDER_CALL",
+      "site_sha256": "51d9e8acdbdf7b6052dae088b157ba99ced6f585136f12b30e693cb752791d04",
+      "source_expression": "build_inspect_service_runtime_request(run_id=entry.run_id, services=entry.target_services, max_results=len(entry.target_services))"
+    },
+    {
+      "callee": "build_inspect_service_runtime_request",
+      "caller": "materialize_planned_request_v02321",
+      "disposition": "V02321_CANONICAL_FACTORY",
+      "line": 142,
+      "path": "src/ecomsre/product/pilot/typed_request_plan_v02321.py",
+      "site_kind": "RUN_ID_ARGUMENT",
+      "site_sha256": "4601d2b2a4b81a901446fef35d8c94e5273587a1fb782f7cc1a2b8af58e08fbd",
+      "source_expression": "entry.run_id"
+    }
+  ],
+  "campaign_sha256": "c0c47c293ff038b2d9bbd71b649eba6aed43330ff02a738cdcfa721fa59150d4",
+  "fault_attempt_count": 0,
+  "formal_healthy_traffic_execution_count": 0,
+  "history_terminal": "ECOMSRE_PRODUCT_V02321_HISTORY_AND_REUSE_PASS",
+  "infrastructure_session_count": 0,
+  "knowledge_loop_campaign_count": 0,
+  "live_authorization": false,
+  "live_request_plan_status": "PENDING_FRESH_SUCCESSOR_CLONE",
+  "materialized_request_sha256": "21a485540f4d9739b860bfd7fb57675532651c24a6ce5e62ab678233dac94c88",
+  "offline_fixture_request_plan": {
+    "attempt_ordinal": 1,
+    "campaign_sha256": "c0c47c293ff038b2d9bbd71b649eba6aed43330ff02a738cdcfa721fa59150d4",
+    "plan_sha256": "3ff053e9a18e9356313bf9583b4d7f31fcd171a8a89ec8a5f6999bc3c24e87b4",
+    "request_entries": [
+      {
+        "request_model": "InspectServiceRuntimeRequest",
+        "request_sha256": "21a485540f4d9739b860bfd7fb57675532651c24a6ce5e62ab678233dac94c88",
+        "run_id": "b632f545e84b291c7eb6c77de589ec45",
+        "serialized_request_sha256": "bc96dfa12ceb587759b041c8d9c3b1ed9043c4fd5b3e770407ce3d682dd0487e",
+        "target_services": [
+          "checkout"
+        ],
+        "tool_name": "inspect_service_runtime"
+      }
+    ],
+    "role": "PREFLIGHT",
+    "schema_version": "ecomsre.product.traffic-typed-request-plan.v02321",
+    "state_clone_sha256": "15e0f23f6cab01fa05cc6cf4e3724b4c65bae6af7d3715afaad9995c277e3002"
+  },
+  "offline_fixture_state_clone_sha256": "15e0f23f6cab01fa05cc6cf4e3724b4c65bae6af7d3715afaad9995c277e3002",
+  "predecessor_failure": {
+    "failure_stage": "RUNTIME_INSPECT_REQUEST_BUILD",
+    "observed_run_id": "product-v0232-traffic-preflight-1",
+    "reproduced": true,
+    "required_pattern": "^[0-9a-f]{32}$",
+    "safe_error_code": "RUN_ID_SCHEMA_PATTERN_MISMATCH"
+  },
+  "predecessor_head": "cc270e5624af573a12bc31f3df9ca8cacad8685d",
+  "preflight_sha256": "bf53b410021a2b2a949d27c473141702224d950dc81322da7baa302d87536ace",
+  "provider_calls": 0,
+  "request_builder_call_site_count": 8,
+  "run_id_argument_call_site_count": 21,
+  "runbook_executions": 0,
+  "schema_version": "ecomsre.product.harness-contract-preflight.v02321",
+  "successor_diagnosis_count": 0,
+  "terminal": "ECOMSRE_PRODUCT_V02321_TYPED_REQUEST_PLAN_PASS",
+  "traffic_attempt_count": 0,
+  "typed_request_count": 1
+}

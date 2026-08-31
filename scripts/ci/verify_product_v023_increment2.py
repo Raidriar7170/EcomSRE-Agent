@@ -52,11 +52,11 @@ from ecomsre.product.pilot.nofault_acceptance_v023 import (
     NOFAULT_NOT_SUPPORTED_V023,
     NoFaultExecutionProfileV023,
 )
-from ecomsre.product.storage.schema import SCHEMA_VERSION
 from scripts.ci.verify_product_v023_increment1 import verify_product_v023_increment1
 
 
 NOW = datetime(2026, 8, 29, 4, 0, tzinfo=UTC)
+_FROZEN_SQLITE_SCHEMA_VERSION_V023 = 7
 
 
 def _load_object(path: Path) -> dict[str, Any]:
@@ -270,7 +270,9 @@ def _checkpoint(root: Path) -> dict[str, object]:
         "fixture_baseline_normal_log_template_count": len(
             baseline.normal_log_templates
         ),
-        "sqlite_schema_version": SCHEMA_VERSION,
+        # This verifier reconstructs the frozen v0.2.3 checkpoint, not the
+        # successor repository's current migration level.
+        "sqlite_schema_version": _FROZEN_SQLITE_SCHEMA_VERSION_V023,
         "attempt_budget": 2,
         "measured_nofault_terminals": [
             NOFAULT_FULLY_SUPPORTED_V023,

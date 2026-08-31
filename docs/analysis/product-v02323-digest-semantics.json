@@ -1,0 +1,26 @@
+{
+  "audit_sha256": "213b697be26f88752a14708882ab7e39032d1aa9c73e6558a94a1fed804e6183",
+  "claim_limitations": [
+    "The missing schema-8 SQLite file cannot be claimed byte-identical.",
+    "Raw SQLite equality and canonical logical equality remain separate claims.",
+    "No reconstruction produced by this Goal is a measured No-Fault result."
+  ],
+  "expected_digest_full": "25d0fae060c396e63f338de886da97885c21508d265a94f1e45b999b5bc206f6",
+  "expected_digest_kind": "RAW_SQLITE_FILE_SHA256",
+  "expected_digest_source_artifact": ".local/product-v02323/forensics/digest-source/pre-migration-shasum-event.jsonl",
+  "expected_digest_source_artifact_sha256": "d76226b3517366e4a01354af0b77fcca9f365b6ea7980510b7d31996afa459c1",
+  "expected_digest_source_field": "source_database_file_sha256",
+  "goal_version": "ecomsre-product-v02323-schema8-reconstruction-diagnosis-replay-v1",
+  "logical_digest_function_source_sha256": "354b348e4bb5f4f65ec0f3c9d989af3bd65bb9b2546b5f71aa00b0fd768faf62",
+  "logical_reconstruction_permitted": true,
+  "observed_contaminated_digest_full": "c8dbe4a5c500c577988e433ef9921b31cc920983e39d458907e5481937561d37",
+  "raw_byte_equality_required": false,
+  "raw_digest_function_source_sha256": "94abe846ace1677b0ab1db03054b9e124d9d47d6ca6538b10525944953590e78",
+  "schema_version": "ecomsre.product.digest-semantics-audit.v02323",
+  "semantic_interpretation": "The expected digest hashes the pre-migration SQLite file bytes. Those historical bytes are lost; a clean logical reconstruction may use a different page layout.",
+  "source_definition_commit": "142dc1094926f18e789ece3668c34918f859b512",
+  "source_definition_file_sha256": "ad71f30160252836a7caf963ae6d512e9fc8875302c364472f5039740507498c",
+  "source_definition_path": "src/ecomsre/product/pilot/product_state_clone_v0232.py",
+  "state_digest_function_source_sha256": "0b51a3b3f08a6bb8e2e61b6492e00e0935977b41b4ac4739fcfe57a1df26182b",
+  "terminal": "ECOMSRE_PRODUCT_V02323_DIGEST_SEMANTICS_PASS"
+}

@@ -12,7 +12,7 @@ import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from ipaddress import ip_address
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from urllib.parse import urlsplit
 
 from ecomsre.environment.preflight import CommandResult
@@ -202,9 +202,7 @@ class AuditedSubprocessRunner:
                 stderr = _completed_timeout_stream(error.stderr, trailing_stderr)
         monotonic_ended = time.monotonic()
         ended_at = datetime.now(UTC)
-        command_id = (
-            f"{time.monotonic_ns():020d}-{secrets.token_hex(8)}"
-        )
+        command_id = f"{time.monotonic_ns():020d}-{secrets.token_hex(8)}"
         stdout_relative = f"commands/{command_id}.stdout.json"
         stderr_relative = f"commands/{command_id}.stderr.json"
         stdout_hash = sha256_bytes(stdout.encode("utf-8"))
@@ -222,11 +220,7 @@ class AuditedSubprocessRunner:
         observed_effect_scope = (
             ("process-start-failed",)
             if start_failed
-            else (
-                ("process-group-terminated",)
-                if timed_out
-                else ("NOT_OBSERVED",)
-            )
+            else (("process-group-terminated",) if timed_out else ("NOT_OBSERVED",))
         )
         with EvaluatorEvidenceStore(
             self.artifacts_root,
@@ -316,6 +310,89 @@ class AuditedSubprocessRunner:
         )
 
 
+def read_git_object_bytes(
+    repository: Path,
+    *,
+    revision: str,
+    relative_path: str,
+) -> bytes:
+    """Read one committed Git object through the centralized process boundary."""
+
+    result = _run_read_only_git_object_command(
+        repository,
+        ("git", "show", f"{revision}:{relative_path}"),
+        revision=revision,
+        relative_path=relative_path,
+    )
+    return result
+
+
+def resolve_git_object_id(
+    repository: Path,
+    *,
+    revision: str,
+    relative_path: str,
+) -> str:
+    """Resolve one committed Git blob identifier without mutating the checkout."""
+
+    output = _run_read_only_git_object_command(
+        repository,
+        ("git", "rev-parse", f"{revision}:{relative_path}"),
+        revision=revision,
+        relative_path=relative_path,
+    )
+    object_id = output.decode("ascii").strip()
+    if re.fullmatch(r"[0-9a-f]{40}", object_id) is None:
+        raise ValueError("Git object id differs")
+    return object_id
+
+
+def _run_read_only_git_object_command(
+    repository: Path,
+    arguments: tuple[str, ...],
+    *,
+    revision: str,
+    relative_path: str,
+) -> bytes:
+    if re.fullmatch(r"[0-9a-f]{40}", revision) is None:
+        raise ValueError("Git revision differs")
+    relative = PurePosixPath(relative_path)
+    if (
+        not relative_path
+        or relative.is_absolute()
+        or "." in relative.parts
+        or ".." in relative.parts
+        or "\\" in relative_path
+        or ":" in relative_path
+        or relative_path != relative.as_posix()
+    ):
+        raise ValueError("Git object path differs")
+    project = Path(repository).resolve(strict=True)
+    process = _Popen(
+        arguments,
+        cwd=project,
+        env={
+            "PATH": _SAFE_PATH,
+            "LANG": "C.UTF-8",
+            "LC_ALL": "C.UTF-8",
+            "GIT_CONFIG_NOSYSTEM": "1",
+        },
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=False,
+        start_new_session=True,
+    )
+    try:
+        stdout, stderr = process.communicate(timeout=10)
+    except subprocess.TimeoutExpired as error:
+        _terminate_process_group(process)
+        raise ValueError("Git object read timed out") from error
+    if process.returncode != 0 or stderr:
+        raise ValueError("Git object read failed")
+    return stdout
+
+
 def _validated_registry_route(
     route: RegistryRouteCapability,
     *,
@@ -357,10 +434,7 @@ def _validated_registry_route(
     }.get(frozenset(environment))
     if (
         route.mode != expected_mode
-        or any(
-            not _is_safe_loopback_proxy_url(value)
-            for value in environment.values()
-        )
+        or any(not _is_safe_loopback_proxy_url(value) for value in environment.values())
         or canonical_json_sha256(
             {
                 "ECOMSRE_RUN_ID": route.run_id,
@@ -436,11 +510,7 @@ def _is_safe_loopback_proxy_url(value: str) -> bool:
         parsed = urlsplit(value)
         host = parsed.hostname
         port = parsed.port
-        address = (
-            ip_address(host)
-            if host is not None and "%" not in host
-            else None
-        )
+        address = ip_address(host) if host is not None and "%" not in host else None
     except ValueError:
         return False
     return (
@@ -519,9 +589,7 @@ def _classify_process(
     stderr: str,
 ) -> tuple[Outcome, str]:
     if _is_exact_scutil_proxy(arguments) and (
-        start_failed
-        or timed_out
-        or process_exit_code != 0
+        start_failed or timed_out or process_exit_code != 0
     ):
         return Outcome.BLOCKED_ENVIRONMENT, "PROXY_DISCOVERY_UNAVAILABLE"
     if start_failed:
@@ -588,9 +656,7 @@ def _network_access_scope(
     ):
         return "EXTERNAL_GIT"
     if executable == "docker":
-        if "pull" in remaining or (
-            "buildx" in remaining and "imagetools" in remaining
-        ):
+        if "pull" in remaining or ("buildx" in remaining and "imagetools" in remaining):
             return "EXTERNAL_REGISTRY"
         return "LOCAL_DOCKER_DAEMON"
     return "NONE"

@@ -39,7 +39,7 @@ from ecomsre_live_sandbox.contracts import (
     write_private_json,
 )
 from ecomsre_live_sandbox.control import _local_json, build_flag_documents
-from ecomsre_live_sandbox.environment import SandboxEnvironment
+from ecomsre_live_sandbox.environment import DockerSnapshot, SandboxEnvironment
 
 
 def _require_relative_locator(value: str) -> str:
@@ -1154,6 +1154,100 @@ class AuthorityContinuousSandboxLifecycleV0231:
                 "BLOCKED_ECOMSRE_PRODUCT_V0231_CLEANUP_AUTHORITY_CONTINUITY"
             )
         return self.environment.cleanup(baseline_restored=baseline_unchanged)
+
+    def recover_cleanup_owned(
+        self,
+        *,
+        baseline_snapshot: DockerSnapshot | None,
+        baseline_unchanged: bool,
+    ) -> Any:
+        """Re-authenticate and clean an interrupted owned lifecycle without restart."""
+
+        if self.environment is not None:
+            raise RuntimeError("Runtime-continuity recovery already initialized")
+        preserved_compose_sha256 = semantic_sha256_v22(
+            self.preserved_resolved_compose
+        )
+        flagd = admit_flagd_bind_descriptor_v0231(
+            predecessor_root=self.predecessor_root,
+            binding=self.binding,
+            context=self.context,
+            bundle=self.bundle,
+            resolved_compose=self.preserved_resolved_compose,
+        )
+        runtime = build_runtime_authority_continuity_descriptor_v0231(
+            authority=self.preserved_authority,
+            context=self.context,
+            flagd_descriptor=flagd,
+            resolved_compose_sha256=preserved_compose_sha256,
+        )
+        environment = self.environment_factory(
+            repository_root=self.predecessor_root,
+            bundle=self.bundle,
+            flagd_directory=self.flag_file.parent,
+        )
+        docker = environment.verify_local_docker()
+        if not isinstance(docker, Mapping) or any(
+            not isinstance(docker.get(name), str)
+            for name in ("context", "endpoint", "daemon_id")
+        ):
+            raise ValueError("recovery Docker identity is incomplete")
+        docker_identity = {
+            name: str(docker[name]) for name in ("context", "endpoint", "daemon_id")
+        }
+        environment.verify_upstream()
+        resolved, raw_compose = environment.resolve()
+        if not isinstance(resolved, ResolvedSandbox) or not isinstance(
+            raw_compose, Mapping
+        ):
+            raise TypeError("recovery Compose resolve is malformed")
+        resolved_sha256 = semantic_sha256_v22(resolved.model_dump(mode="json"))
+        rebound = _expected_rebound_authority_v0231(
+            preserved=self.preserved_authority,
+            docker=docker_identity,
+            bundle=self.bundle,
+            resolved=resolved,
+        )
+        revalidated_flagd = admit_flagd_bind_descriptor_v0231(
+            predecessor_root=self.predecessor_root,
+            binding=self.binding,
+            context=self.context,
+            bundle=self.bundle,
+            resolved_compose=raw_compose,
+        )
+        if (
+            semantic_sha256_v22(raw_compose) != preserved_compose_sha256
+            or resolved.compose_sha256 != preserved_compose_sha256
+            or resolved_sha256
+            != self.preserved_authority.read_authority.resolved_sandbox_sha256
+            or rebound != self.preserved_authority
+            or revalidated_flagd != flagd
+        ):
+            raise ValueError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0231_CLEANUP_AUTHORITY_CONTINUITY"
+            )
+        owned = environment.verify_owned_resources(require_complete=False)
+        if baseline_snapshot is None:
+            if any(owned.values()):
+                raise RuntimeError(
+                    "BLOCKED_ECOMSRE_PRODUCT_V02321_RECOVERY_SNAPSHOT_MISSING"
+                )
+            return CleanupResult(
+                baseline_restored=baseline_unchanged,
+                owned_containers=0,
+                owned_networks=0,
+                owned_volumes=0,
+                non_owned_resources_changed=False,
+                verdict="CLEAN" if baseline_unchanged else "BLOCKED",
+            )
+
+        environment._baseline_snapshot = baseline_snapshot
+        self.environment = environment
+        self.flagd_descriptor = flagd
+        self.runtime_descriptor = runtime
+        self.admitted_resolved_sha256 = resolved_sha256
+        self._admitted_raw_compose = dict(raw_compose)
+        return self.cleanup_owned(baseline_unchanged=baseline_unchanged)
 
 
 def _open_root_fd(root: Path) -> int:

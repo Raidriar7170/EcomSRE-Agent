@@ -1,0 +1,50 @@
+{
+  "schema_version": "ecomsre.product-v02321.historical-results.v1",
+  "goal_version": "ecomsre-product-v02321-traffic-harness-repair-nofault-v1",
+  "starting_main": "73fe478886a4f0875b4d60b07b3600e8aae02132",
+  "predecessor": {
+    "pr": 82,
+    "branch": "codex/product-v0232-healthy-traffic-evidence-nofault",
+    "head": "cc270e5624af573a12bc31f3df9ca8cacad8685d",
+    "blocker_evidence_commit": "6f5a629561d3e5e42dc3ae39ce13e3dc6e907be4",
+    "terminal": "BLOCKED_ECOMSRE_PRODUCT_V0232_TRAFFIC_PREFLIGHT",
+    "attempt_ordinal": 1,
+    "attempt_consumed": true,
+    "attempt_2_authorized": false,
+    "attempt_sha256": "5080a440ca6a96cb8b93f104f873ace85ddef01cdc508d6a5656e4219a0221f9",
+    "blocker_addendum_sha256": "775e8607768076340cbf4ad81a56bcc91bc1c1f99796e3e92e8f705fc9c8ffa5",
+    "failure_stage": "RUNTIME_INSPECT_REQUEST_BUILD",
+    "safe_error_code": "RUN_ID_SCHEMA_PATTERN_MISMATCH",
+    "observed_run_id": "product-v0232-traffic-preflight-1",
+    "required_run_id_pattern": "^[0-9a-f]{32}$",
+    "traffic_transactions": 0,
+    "formal_healthy_traffic_execution_count": 0,
+    "successor_incident_count": 0,
+    "successor_diagnosis_count": 0,
+    "product_cleanup": "CLEAN",
+    "demo_cleanup": "BLOCKED_BASELINE_UNCHANGED_UNPROVEN"
+  },
+  "frozen_bindings": {
+    "traffic_campaign_sha256": "7a62a210bb8e8194ee9d8a601ac678c41f0e32c87214c806f4a304d046e510b1",
+    "preflight_profile_sha256": "20481ac92973ccf5de7510f565f066f13b9e1161e0e36faecec11cd12a40aa4a",
+    "formal_profile_sha256": "0110803ab9b39bf397295f1fd8904aee31fabf9b82b314bf586fae98188f6ce7",
+    "traffic_contract_sha256": "8e2e6fabb139413ff5ff54efe516023e00f7d04c7b84b4d296b1aa42bf39ce1b",
+    "source_product_state_sha256": "0860c3cefe795378b36293342fa7250bab97bb75e8767d3b5a8c200c3e05741c",
+    "predecessor_product_state_clone_sha256": "6920044cea06a68f38624803468aeeb0f854caee695f7f876ff2d6f6ef074205"
+  },
+  "tracked_files": [
+    {"path":"config/product-v0232/campaign.json","revision":"cc270e5624af573a12bc31f3df9ca8cacad8685d","sha256":"0fbbc112ee59c2f7bfcb825c56a42442861edfdd2108566cc3ed87b5d1c6d2b1","size_bytes":2020},
+    {"path":"config/product-v0232/historical-results.v1.json","revision":"cc270e5624af573a12bc31f3df9ca8cacad8685d","sha256":"dbc1ec5c66729e5e8270f0b64ad54b9f747f7fae131b66005b4da237b8489471","size_bytes":5399},
+    {"path":"config/product-v0232/traffic/contract.json","revision":"cc270e5624af573a12bc31f3df9ca8cacad8685d","sha256":"b812f882a01ace100eecacb36f0381c7c50597753b760da7261d29a8e88ad309","size_bytes":3725},
+    {"path":"config/product-v0232/traffic/formal-profile.json","revision":"cc270e5624af573a12bc31f3df9ca8cacad8685d","sha256":"17b6a653e023dfc4f6e649c45fa1cecb5becc24edafd9100f4eaca1aa4e552f5","size_bytes":408},
+    {"path":"config/product-v0232/traffic/preflight-profile.json","revision":"cc270e5624af573a12bc31f3df9ca8cacad8685d","sha256":"f7655ca86fc4b02da71a07688be2074c371300af89d70c17c4fccac6ed0d16f4","size_bytes":410},
+    {"path":"docs/analysis/product-v0232-evidence-binding-preflight.json","revision":"cc270e5624af573a12bc31f3df9ca8cacad8685d","sha256":"fbfd91c88dd5d36e64e81ace02a9140b371dfede5b222ac1e8e3829f96d80a61","size_bytes":4471},
+    {"path":"docs/analysis/product-v0232-predecessor-audit.json","revision":"cc270e5624af573a12bc31f3df9ca8cacad8685d","sha256":"491cbb31729e9c4f2618a8d8ffbf6b67befc75e5aee8997b667d11358263a386","size_bytes":3082},
+    {"path":"docs/analysis/product-v0232-product-state-clone.json","revision":"cc270e5624af573a12bc31f3df9ca8cacad8685d","sha256":"57033775b583c4cbb3b13d1581d829d4e9b375034e539294fe8e8f2e3603c1cc","size_bytes":2747},
+    {"path":"docs/analysis/product-v0232-progress.json","revision":"cc270e5624af573a12bc31f3df9ca8cacad8685d","sha256":"0b3410f64c961ec1517feaefe72130819c6fed5e3a3b61a6105111f6279dc7c9","size_bytes":1207},
+    {"path":"docs/analysis/product-v0232-traffic-contract.json","revision":"cc270e5624af573a12bc31f3df9ca8cacad8685d","sha256":"1a46ceeab794575c14d264240e25faa3b79ae399c93b27fbd6684e5141a6a492","size_bytes":2157},
+    {"path":"docs/analysis/product-v0232-traffic-preflight-attempt-1-blocker-addendum.json","revision":"cc270e5624af573a12bc31f3df9ca8cacad8685d","sha256":"07bc202e85edcca00023acc29f0304af6cbd1ce50e7981f3e172492544361eec","size_bytes":1671},
+    {"path":"docs/analysis/product-v0232-traffic-preflight-attempt-1.json","revision":"cc270e5624af573a12bc31f3df9ca8cacad8685d","sha256":"89d989f1c8edc107df22c0fbb231e00bb5faf201c0d0df22cc3ee2b81fbf985b","size_bytes":2570}
+  ],
+  "manifest_sha256": "9bc702dd580f59af43a887132547e2173acdcd8074bf877e017935f790bb3f9d"
+}

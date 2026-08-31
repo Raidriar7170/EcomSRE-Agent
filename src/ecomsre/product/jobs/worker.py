@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 import os
 import secrets
 import time
 import math
 
+from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 from ecomsre.product.baselines import BaselineRepositoryV1, HistoricalBaselineServiceV1
 from ecomsre.product.changes import ChangeEventRepositoryV1
 from ecomsre.product.connectors.credentials import CredentialResolverV1
@@ -19,6 +21,13 @@ from ecomsre.product.errors import ProductError
 from ecomsre.product.incidents.diagnosis_bridge import ProductDiagnosisBridgeV1
 from ecomsre.product.incidents.extensions import ProductExtensionMatcherV1
 from ecomsre.product.incidents.read_backend import ProductReadBackendV1
+from ecomsre.product.incidents.diagnosis_pipeline_v02322 import (
+    DiagnosisPipelineStageV02322,
+    DiagnosisPipelineV02322,
+)
+from ecomsre.product.incidents.diagnosis_stage_journal_v02322 import (
+    DiagnosisStageJournalRepositoryV02322,
+)
 from ecomsre.product.incidents.repository import (
     DiagnosisRepositoryV1,
     IncidentRepositoryV1,
@@ -67,6 +76,7 @@ def run_one_job(
 ) -> bool:
     store = SqliteStoreV1(settings.sqlite_path)
     jobs = JobRepositoryV1(store)
+    stage_journal_v02322 = DiagnosisStageJournalRepositoryV02322(store)
     environments = EnvironmentRepositoryV1(store)
     services = ServiceCatalogRepositoryV1(store)
     capabilities = CapabilityMatrixRepositoryV1(store)
@@ -142,6 +152,7 @@ def run_one_job(
         attempt_count=job.attempt_count,
         checked_at=now,
     )
+    diagnosis_pipeline_v02322: DiagnosisPipelineV02322 | None = None
     try:
         if job.job_type is ProductJobTypeV1.ENVIRONMENT_VERIFY:
             environment = environments.get(str(job.payload.get("environment_id", "")))
@@ -175,7 +186,36 @@ def run_one_job(
                 fence=fence,
             )
         elif job.job_type is ProductJobTypeV1.DIAGNOSIS:
-            incident = incidents.get(str(job.payload.get("incident_id", "")))
+            incident_id = str(job.payload.get("incident_id", ""))
+            diagnosis_pipeline_v02322 = DiagnosisPipelineV02322(
+                stage_journal_v02322,
+                job_id=job.job_id,
+                incident_id=incident_id,
+                observed_at=(
+                    datetime.now(UTC)
+                    if now is None
+                    else datetime.fromtimestamp(now, UTC)
+                ),
+            )
+            job_payload_sha256 = semantic_sha256_v22(job.payload)
+            diagnosis_pipeline_v02322.run(
+                DiagnosisPipelineStageV02322.JOB_CLAIMED,
+                input_binding_sha256=job_payload_sha256,
+                operation=lambda: {"attempt_count": job.attempt_count},
+            )
+            incident = diagnosis_pipeline_v02322.run(
+                DiagnosisPipelineStageV02322.INCIDENT_LOAD_STARTED,
+                input_binding_sha256=job_payload_sha256,
+                operation=lambda: incidents.get(incident_id),
+            )
+            diagnosis_pipeline_v02322.run(
+                DiagnosisPipelineStageV02322.INCIDENT_LOADED,
+                input_binding_sha256=incident.incident_sha256,
+                operation=lambda: incident,
+            )
+            diagnosis_pipeline_v02322.bind_artifacts(
+                incident_sha256=incident.incident_sha256
+            )
             result = handle_incident_diagnosis(
                 job,
                 incidents,
@@ -191,6 +231,8 @@ def run_one_job(
                     )
                 ),
                 fence=fence,
+                stage_pipeline_v02322=diagnosis_pipeline_v02322,
+                loaded_incident_v02322=incident,
             )
             if should_ingest_open_world_v023(
                 diagnosis_terminal=str(result.get("terminal")),
@@ -212,13 +254,32 @@ def run_one_job(
                 "INTERNAL_CONTRACT_FAILURE",
                 "No handler is registered for this job type.",
             )
-        jobs.succeed(
-            job.job_id,
-            worker_id,
-            job.attempt_count,
-            result,
-            now=now,
-        )
+        if diagnosis_pipeline_v02322 is None:
+            jobs.succeed(
+                job.job_id,
+                worker_id,
+                job.attempt_count,
+                result,
+                now=now,
+            )
+        else:
+            result_sha256 = semantic_sha256_v22(result)
+            diagnosis_pipeline_v02322.run(
+                DiagnosisPipelineStageV02322.JOB_RESULT_PREPARED,
+                input_binding_sha256=result_sha256,
+                operation=lambda: result,
+            )
+            diagnosis_pipeline_v02322.run(
+                DiagnosisPipelineStageV02322.JOB_SUCCEEDED,
+                input_binding_sha256=result_sha256,
+                operation=lambda: jobs.succeed(
+                    job.job_id,
+                    worker_id,
+                    job.attempt_count,
+                    result,
+                    now=now,
+                ),
+            )
         metrics.increment(
             "ecomsre_jobs_total",
             {"job_type": job.job_type.value, "status": "SUCCEEDED"},
@@ -246,11 +307,22 @@ def run_one_job(
         if exc.code == "JOB_LEASE_LOST":
             return True
         try:
+            public_failure_v02322 = None
+            if diagnosis_pipeline_v02322 is not None:
+                public_failure_v02322, _envelope, _path = (
+                    diagnosis_pipeline_v02322.capture_failure(
+                        exc,
+                        data_root=settings.data_root,
+                        job_payload=job.payload,
+                        safe_error_code=exc.code,
+                    )
+                )
             jobs.fail(
                 job.job_id,
                 worker_id,
                 job.attempt_count,
                 exc.code,
+                public_failure_v02322=public_failure_v02322,
                 now=now,
             )
             metrics.increment(
@@ -268,13 +340,23 @@ def run_one_job(
         except ProductError as finish_error:
             if finish_error.code != "JOB_LEASE_LOST":
                 raise
-    except Exception:
+    except Exception as exc:
         try:
+            public_failure_v02322 = None
+            if diagnosis_pipeline_v02322 is not None:
+                public_failure_v02322, _envelope, _path = (
+                    diagnosis_pipeline_v02322.capture_failure(
+                        exc,
+                        data_root=settings.data_root,
+                        job_payload=job.payload,
+                    )
+                )
             jobs.fail(
                 job.job_id,
                 worker_id,
                 job.attempt_count,
                 "INTERNAL_CONTRACT_FAILURE",
+                public_failure_v02322=public_failure_v02322,
                 now=now,
             )
         except ProductError as finish_error:

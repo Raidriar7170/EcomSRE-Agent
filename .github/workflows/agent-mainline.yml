@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
   group: agent-mainline-${{ github.workflow }}-${{ github.ref }}
@@ -236,6 +237,29 @@ jobs:
         run: >-
           env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
           uv run --frozen --no-sync pytest tests/product_v0231 -q
+
+      - name: Product v0.2.3.2.3 repository acceptance verification
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_product_v02323_increment5
+          --expected-head "${EXPECTED_HEAD_SHA}"
+          --require-clean-head
+
+      - name: Product v0.2.3.2 through v0.2.3.2.3 focused offline tests
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync pytest
+          tests/product_v0232
+          tests/product_v02321
+          tests/product_v02322
+          tests/product_v02323
+          tests/product/test_increment1_historical_contract.py
+          tests/unit/test_command_runner.py
+          -q
 
       - name: Verify Phase 5B protocol
         run: make phase5b-protocol-verify

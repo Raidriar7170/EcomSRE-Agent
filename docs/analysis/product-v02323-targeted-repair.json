@@ -1,0 +1,14 @@
+{
+  "schema_version": "ecomsre.product.targeted-repair.v02323",
+  "goal_version": "ecomsre-product-v02323-schema8-reconstruction-diagnosis-replay-v1",
+  "root_cause_disposition": "ECOMSRE_PRODUCT_V02323_ORIGINAL_ROOT_CAUSE_UNPROVEN",
+  "root_cause_disposition_sha256": "1ec6fb08f653126511aaa22e4a9bf21ab994cefec68d6b095af9e98cf100c52d",
+  "deterministic_structural_defect_identified": false,
+  "targeted_repair": "NOT_APPLICABLE",
+  "targeted_repair_sha256": null,
+  "diagnosis_pipeline_replay_result_sha256": "20642e01c367f5cfc7ef481ae900d52587ee179676da0a188f6ca2519b962ea6",
+  "measured_nofault_authority": "NONE",
+  "knowledge_loop_authority": "NONE",
+  "terminal": "ECOMSRE_PRODUCT_V02323_NO_TARGETED_REPAIR_REQUIRED",
+  "report_sha256": "9694d4878284bac0b34366bbd031fdcc95f254d1ea3f3a0de9064571b10eeb17"
+}

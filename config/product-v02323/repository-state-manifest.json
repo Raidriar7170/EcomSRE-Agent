@@ -1,0 +1,109 @@
+{
+  "schema_version": "ecomsre.product.repository-state.v02323",
+  "goal_version": "ecomsre-product-v02323-schema8-reconstruction-diagnosis-replay-v1",
+  "phase": "DIAGNOSIS_REPLAY_COMPLETE",
+  "pr83_formal_blocker_sha256": "2f8f6fd26c7783091c00fb9cdcfaa29f145b4d29b31f16ec6ac1c8fb3e9999f1",
+  "pr84_private_state_contract_sha256": "4aebb50acef0e21a964cdb812cd4d2b6aa8983d3ff106e3d05a8a4df7aa61812",
+  "forensic_source_snapshot_sha256": "ac6bb8da8ba83d3a7a2879afa9f530efc7b75e08950a8429e3aeb0eeb6c1c814",
+  "reconstruction_disposition_sha256": "2484d82229338cf60ce7a477d630bf7faa3f416677e4a3f7293335731a3e4d01",
+  "replay_result_sha256": "20642e01c367f5cfc7ef481ae900d52587ee179676da0a188f6ca2519b962ea6",
+  "measured_nofault_result_sha256": null,
+  "allowed_artifacts": [
+    {
+      "role": "RECOVERY_JOB",
+      "path": "config/product-v02323/replay/recovery-job.json",
+      "file_sha256": "7514c7373f1a48db13e1c8343241bd61deeb03ddebc9f6b67d1d465a8935d8eb",
+      "size_bytes": 1270
+    },
+    {
+      "role": "PR83_FORMAL_BLOCKER",
+      "path": "docs/analysis/product-v02321-formal-blocker.json",
+      "file_sha256": "75c881ccb5e7082291a35465ba7b35f8c608befed20f6b263bef46dd26da8a9a",
+      "size_bytes": 2260
+    },
+    {
+      "role": "PR84_PRIVATE_FAILURE_CONTRACT",
+      "path": "docs/analysis/product-v02322-private-failure-contract.json",
+      "file_sha256": "8dae27ee1cc52fb18156579d4da6989b3eb37d739208e6a1ef64d03a81081861",
+      "size_bytes": 2034
+    },
+    {
+      "role": "PR84_STAGE_JOURNAL_CONTRACT",
+      "path": "docs/analysis/product-v02322-stage-journal-contract.json",
+      "file_sha256": "af303d6aa5f763a72c203364b9b93ce8cf25a7a3840694d988d220fc0f02afb8",
+      "size_bytes": 1980
+    },
+    {
+      "role": "DIAGNOSIS_PIPELINE_REPLAY",
+      "path": "docs/analysis/product-v02323-diagnosis-pipeline-replay.json",
+      "file_sha256": "6caf2ebda423dcb166c1c6f846a71b1a913bcb13cee6de893f8e32ff85793d48",
+      "size_bytes": 2721
+    },
+    {
+      "role": "DIAGNOSIS_REPLAY",
+      "path": "docs/analysis/product-v02323-diagnosis-replay.json",
+      "file_sha256": "6caf2ebda423dcb166c1c6f846a71b1a913bcb13cee6de893f8e32ff85793d48",
+      "size_bytes": 2721
+    },
+    {
+      "role": "ROOT_CAUSE_DISPOSITION",
+      "path": "docs/analysis/product-v02323-diagnosis-root-cause.json",
+      "file_sha256": "08fc9bc40e642053f0d6ef57d88cf65324fa58865c979850dde516261e42632b",
+      "size_bytes": 979
+    },
+    {
+      "role": "DIGEST_SEMANTICS",
+      "path": "docs/analysis/product-v02323-digest-semantics.json",
+      "file_sha256": "6d644e88eafee88df840c734cfe5ebc3109afff0c2b09df6a8ee62843d5fbd90",
+      "size_bytes": 1985
+    },
+    {
+      "role": "FORENSIC_SOURCE_SNAPSHOT",
+      "path": "docs/analysis/product-v02323-forensic-source-snapshot.json",
+      "file_sha256": "ef68bdf93f48d86c9f1a43e61dd5bda67970b9790578e9272b9769db9140b214",
+      "size_bytes": 4204
+    },
+    {
+      "role": "RECONSTRUCTION_DISPOSITION",
+      "path": "docs/analysis/product-v02323-reconstruction-disposition.json",
+      "file_sha256": "ada4321c104e9c9a57a8180fd3543c8ba16ede3dadf3aaaaee89c62ba2e2f27b",
+      "size_bytes": 1354
+    },
+    {
+      "role": "SCHEMA8_RECONSTRUCTION",
+      "path": "docs/analysis/product-v02323-schema8-reconstruction.json",
+      "file_sha256": "9287601da6098ab0cbae4e4360ecc742bad240a1af0a7e232daaded983c1001f",
+      "size_bytes": 4700
+    },
+    {
+      "role": "SCHEMA9_CONTAMINATION_AUDIT",
+      "path": "docs/analysis/product-v02323-schema9-contamination-audit.json",
+      "file_sha256": "62e2120400cdd2b7fb3d3bafc9f83a228c76a0bd62fed77068966ea845ea05db",
+      "size_bytes": 3478
+    },
+    {
+      "role": "TARGETED_REPAIR",
+      "path": "docs/analysis/product-v02323-targeted-repair.json",
+      "file_sha256": "5b79344e77741e1be9d4a6231254bede79b4672b175493109a1fd19ebf714ce7",
+      "size_bytes": 812
+    },
+    {
+      "role": "TEST_MIGRATION",
+      "path": "docs/analysis/product-v02323-test-migration.json",
+      "file_sha256": "1ce335b420157bab4ca5a59b86a70fe34a5af3799f8a35e42306edd387604217",
+      "size_bytes": 2016
+    },
+    {
+      "role": "FINAL_REVIEW",
+      "path": "docs/external-reviews/product-v02323-final-review.md",
+      "file_sha256": "998b5fb5f5baa7e20dab75e7312e14db6e96ef43857f10a44f8cd9034be07f78",
+      "size_bytes": 1464
+    }
+  ],
+  "forbidden_artifacts": [
+    "docs/analysis/product-v02323-knowledge-loop-handoff.json",
+    "docs/results/product-v02323-measured-nofault.json",
+    "docs/results/product-v02323-nofault-acceptance.json"
+  ],
+  "manifest_sha256": "81512ecaf550a2e5407d4f00c31d0ad5aba69ad85edcb19225484faaed0492dc"
+}

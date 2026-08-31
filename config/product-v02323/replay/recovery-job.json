@@ -1,0 +1,21 @@
+{
+  "schema_version": "ecomsre.product.diagnosis-recovery-job.v02323",
+  "goal_version": "ecomsre-product-v02323-schema8-reconstruction-diagnosis-replay-v1",
+  "replay_id": "replay-e2fe7afab670c4bf541168ea",
+  "replay_of_job_id": "job-216dd1caac0b92270b1870a2",
+  "recovery_job_id": "job-48a353f26b4ed3d0a134121e",
+  "recovery_job_status": "SUCCEEDED",
+  "recovery_job_sha256": "dd5c1335ca5ed09fce8b9786768a6527d61b3a535c5edc1c389a3dea9cf05dca",
+  "diagnosis_result_sha256": "a697e59a6ef448a8d2898ce73902f873478088649ba2d08b9f3bf97c20260f17",
+  "evidence_bundle_sha256": "129011ccfce80d1bc315f76751f4b53036d8159447c38af9393084a73018135b",
+  "evidence_index_sha256": "f53571a34bfd82443f907244972f1cdd14b9d1b905381a9032682d66de5eed48",
+  "decision_trace_sha256": "ceacda34e2cd17e6008825d8d6e27d6e1208593a8cc68c3fc30dbd68917ba1e0",
+  "decision_trace_object_sha256": "1509f9585595b81d6628aeaa8a1d150fe520f9382d308bc7cd0cb8113274d599",
+  "stage_event_count": 54,
+  "stage_journal_terminal": "JOB_SUCCEEDED",
+  "original_failed_job_unchanged": true,
+  "measured_nofault_authority": "NONE",
+  "knowledge_loop_authority": "NONE",
+  "terminal": "ECOMSRE_PRODUCT_V02323_RECOVERY_JOB_FROZEN",
+  "record_sha256": "4fbcf6a2d711b5a4998f2dcd8ec0898db12e1758f0a9018febe6cb8fded78ef1"
+}

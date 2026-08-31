@@ -1,0 +1,39 @@
+{
+  "audit_sha256": "e8b8c68090a2d8c6105c73a0ecd791c9dbeae663ae634352c00cfde65a503e88",
+  "frozen_bindings": {
+    "formal_profile_sha256": "0110803ab9b39bf397295f1fd8904aee31fabf9b82b314bf586fae98188f6ce7",
+    "predecessor_product_state_clone_sha256": "6920044cea06a68f38624803468aeeb0f854caee695f7f876ff2d6f6ef074205",
+    "preflight_profile_sha256": "20481ac92973ccf5de7510f565f066f13b9e1161e0e36faecec11cd12a40aa4a",
+    "source_product_state_sha256": "0860c3cefe795378b36293342fa7250bab97bb75e8767d3b5a8c200c3e05741c",
+    "traffic_campaign_sha256": "7a62a210bb8e8194ee9d8a601ac678c41f0e32c87214c806f4a304d046e510b1",
+    "traffic_contract_sha256": "8e2e6fabb139413ff5ff54efe516023e00f7d04c7b84b4d296b1aa42bf39ce1b"
+  },
+  "frozen_files_match_predecessor_head": true,
+  "historical_manifest_sha256": "9bc702dd580f59af43a887132547e2173acdcd8074bf877e017935f790bb3f9d",
+  "predecessor": {
+    "attempt_2_authorized": false,
+    "attempt_consumed": true,
+    "attempt_ordinal": 1,
+    "attempt_sha256": "5080a440ca6a96cb8b93f104f873ace85ddef01cdc508d6a5656e4219a0221f9",
+    "blocker_addendum_sha256": "775e8607768076340cbf4ad81a56bcc91bc1c1f99796e3e92e8f705fc9c8ffa5",
+    "blocker_evidence_commit": "6f5a629561d3e5e42dc3ae39ce13e3dc6e907be4",
+    "branch": "codex/product-v0232-healthy-traffic-evidence-nofault",
+    "demo_cleanup": "BLOCKED_BASELINE_UNCHANGED_UNPROVEN",
+    "failure_stage": "RUNTIME_INSPECT_REQUEST_BUILD",
+    "formal_healthy_traffic_execution_count": 0,
+    "head": "cc270e5624af573a12bc31f3df9ca8cacad8685d",
+    "observed_run_id": "product-v0232-traffic-preflight-1",
+    "pr": 82,
+    "product_cleanup": "CLEAN",
+    "required_run_id_pattern": "^[0-9a-f]{32}$",
+    "safe_error_code": "RUN_ID_SCHEMA_PATTERN_MISMATCH",
+    "successor_diagnosis_count": 0,
+    "successor_incident_count": 0,
+    "terminal": "BLOCKED_ECOMSRE_PRODUCT_V0232_TRAFFIC_PREFLIGHT",
+    "traffic_transactions": 0
+  },
+  "schema_version": "ecomsre.product.predecessor-audit.v02321",
+  "starting_main": "73fe478886a4f0875b4d60b07b3600e8aae02132",
+  "terminal": "ECOMSRE_PRODUCT_V02321_HISTORY_AND_REUSE_PASS",
+  "tracked_file_count": 12
+}

@@ -1,0 +1,107 @@
+{
+  "schema_version": "ecomsre.product-v02323.historical-results.v1",
+  "goal_version": "ecomsre-product-v02323-schema8-reconstruction-diagnosis-replay-v1",
+  "starting_main": "73fe478886a4f0875b4d60b07b3600e8aae02132",
+  "predecessors": {
+    "pr82": {
+      "pr": 82,
+      "branch": "codex/product-v0232-healthy-traffic-evidence-nofault",
+      "head": "cc270e5624af573a12bc31f3df9ca8cacad8685d",
+      "terminal": "BLOCKED_ECOMSRE_PRODUCT_V0232_TRAFFIC_PREFLIGHT",
+      "safe_error_code": "RUN_ID_SCHEMA_PATTERN_MISMATCH",
+      "business_traffic_completed": 0,
+      "formal_traffic_executions": 0
+    },
+    "pr83": {
+      "pr": 83,
+      "branch": "codex/product-v02321-traffic-harness-repair-nofault",
+      "head": "142dc1094926f18e789ece3668c34918f859b512",
+      "formal_terminal": "BLOCKED_ECOMSRE_PRODUCT_V02321_NOFAULT_INFRASTRUCTURE",
+      "repository_terminal": "BLOCKED_ECOMSRE_PRODUCT_V02321_REPOSITORY_ACCEPTANCE",
+      "formal_blocker_semantic_sha256": "2f8f6fd26c7783091c00fb9cdcfaa29f145b4d29b31f16ec6ac1c8fb3e9999f1",
+      "formal_state_clone_report_sha256": "7073a69315430e72b73a1d4ad54b06d5b3cc400d11465e583252a2f75c38fbb5",
+      "formal_state_clone_sha256": "ebe5fce84300475cca3873bbbd6e3ec00cb9d5467789e7f210b564820bc68546",
+      "formal_traffic_execution_sha256": "930d5985c88aa8d797f0c1a268ae4b8ece26302480bff3797a61a0988899406e",
+      "fresh_runtime_snapshot_proof_sha256": "87397ce672d3b833a61d2e9b4105f407e30ab3c1eadcba4adf00adcc185187e3",
+      "formal_blocker_evidence_manifest_sha256": "6104953a87e3307ae826de6e3348d651d82fd7708f7dbf8341962666a0b93129",
+      "formal_traffic_completed": 30,
+      "formal_traffic_retries": 0,
+      "successor_incident_count": 1,
+      "successor_diagnosis_count": 0,
+      "diagnosis_job_status": "FAILED",
+      "diagnosis_safe_error_code": "INTERNAL_CONTRACT_FAILURE",
+      "product_cleanup": "CLEAN",
+      "demo_cleanup": "CLEAN"
+    },
+    "pr84": {
+      "pr": 84,
+      "branch": "codex/product-v02322-diagnosis-forensics-replay",
+      "head": "0dfd9c93f7e1f8797aacfee198694b5b2380221c",
+      "terminal": "BLOCKED_ECOMSRE_PRODUCT_V02322_PRIVATE_PRODUCT_STATE",
+      "completed_increment": 2,
+      "completed_terminals": [
+        "ECOMSRE_PRODUCT_V02322_HISTORY_AND_BLOCKER_PASS",
+        "ECOMSRE_PRODUCT_V02322_REPOSITORY_STATE_MODEL_PASS",
+        "ECOMSRE_PRODUCT_V02322_DIAGNOSIS_STAGE_JOURNAL_PASS",
+        "ECOMSRE_PRODUCT_V02322_PRIVATE_FAILURE_EVIDENCE_PASS"
+      ],
+      "diagnosis_persistence_replay_attempts": 0
+    }
+  },
+  "lost_schema8_raw_digest_binding": {
+    "expected_digest_full": "25d0fae060c396e63f338de886da97885c21508d265a94f1e45b999b5bc206f6",
+    "observed_contaminated_digest_full": "c8dbe4a5c500c577988e433ef9921b31cc920983e39d458907e5481937561d37",
+    "expected_digest_kind": "RAW_SQLITE_FILE_SHA256",
+    "expected_digest_source_field": "source_database_file_sha256",
+    "source_artifact_role": "PRE_MIGRATION_RAW_SQLITE_SHASUM_EVENT",
+    "source_artifact_locator": ".local/product-v02323/forensics/digest-source/pre-migration-shasum-event.jsonl",
+    "source_artifact_sha256": "d76226b3517366e4a01354af0b77fcca9f365b6ea7980510b7d31996afa459c1",
+    "source_definition_commit": "142dc1094926f18e789ece3668c34918f859b512",
+    "source_definition_path": "src/ecomsre/product/pilot/product_state_clone_v0232.py",
+    "source_definition_file_sha256": "ad71f30160252836a7caf963ae6d512e9fc8875302c364472f5039740507498c",
+    "raw_digest_function_source_sha256": "94abe846ace1677b0ab1db03054b9e124d9d47d6ca6538b10525944953590e78",
+    "logical_digest_function_source_sha256": "354b348e4bb5f4f65ec0f3c9d989af3bd65bb9b2546b5f71aa00b0fd768faf62",
+    "state_digest_function_source_sha256": "0b51a3b3f08a6bb8e2e61b6492e00e0935977b41b4ac4739fcfe57a1df26182b"
+  },
+  "counters": {
+    "fault_attempts": 0,
+    "new_baseline_attempts": 0,
+    "new_business_traffic_executions": 0,
+    "new_product_incidents": 0,
+    "measured_nofault_terminals": 0,
+    "knowledge_loop_campaigns": 0,
+    "fault_family_rule_mining_promotions": 0,
+    "provider_agent_runbook_docker_calls": 0,
+    "diagnosis_persistence_replay_attempts": 0
+  },
+  "authority": {
+    "product_action_authority": "NONE",
+    "source_state_mutation_authority": "NONE",
+    "measured_nofault_authority": "NONE",
+    "knowledge_loop_authority": "NONE"
+  },
+  "pr84_tracked_files": [
+    {"path":"config/product-v02322/historical-results.v1.json","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"ee3cf42c818095778933e16a03c5b60c131f6dc0144c6fbf70fe6d6403881a35","size_bytes":14246},
+    {"path":"config/product-v02322/repository-state-manifest.json","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"417cbab1078bae0f412934f1c9dc84b2e0ed1f9e85fecae33fc45e214cdffb5a","size_bytes":3381},
+    {"path":"docs/analysis/product-v02322-predecessor-audit.json","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"c8a9f24797a3800da9cfd527e81a01a49f843f5cb45f4adeb20b17df46a351cd","size_bytes":2504},
+    {"path":"docs/analysis/product-v02322-private-failure-contract.json","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"8dae27ee1cc52fb18156579d4da6989b3eb37d739208e6a1ef64d03a81081861","size_bytes":2034},
+    {"path":"docs/analysis/product-v02322-progress.json","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"7137853d78510f5c28c41af7d7a453a3c61aacd04f29e212e7cacf6a50776085","size_bytes":1832},
+    {"path":"docs/analysis/product-v02322-repository-state-model.json","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"7f1e9bffafd071869e50a13f6c2f7408536cc239834bb1d270ce957755ffd716","size_bytes":1079},
+    {"path":"docs/analysis/product-v02322-stage-journal-contract.json","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"af303d6aa5f763a72c203364b9b93ce8cf25a7a3840694d988d220fc0f02afb8","size_bytes":1980},
+    {"path":"scripts/ci/verify_product_v02322_history.py","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"c58aca39aee97be16197333bfcf264fb062441b865659357dc0b00679b0556e8","size_bytes":9807},
+    {"path":"scripts/ci/verify_product_v02322_repository.py","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"dd6de9b3d5d1ab028b4e07d635b3f16e7d22a291c793c4f6ae71ea4e595419d1","size_bytes":1086},
+    {"path":"src/ecomsre/product/incidents/diagnosis_pipeline_v02322.py","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"e6e9f211f8234f8d806892f47349e228efc14c80d70aac9cd96d2e8cac06d067","size_bytes":22141},
+    {"path":"src/ecomsre/product/incidents/diagnosis_stage_journal_v02322.py","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"adf69f1f2620711ede7bdf5e8912d9f9f9d08b1ae5b6245427c7492ac4198b30","size_bytes":11529},
+    {"path":"src/ecomsre/product/incidents/repository.py","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"8410de5ce08d02f61f5eaf0af3a5a5db059fa060051d2ba28b148e6c8121ac44","size_bytes":29816},
+    {"path":"src/ecomsre/product/jobs/contracts.py","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"7b5506bafc27979c448cc08ec3798459f352e1bd01381691fea3444ca6800ab3","size_bytes":1773},
+    {"path":"src/ecomsre/product/jobs/handlers.py","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"41685219d5437d123a6998168eebcd39d135bb98a4779cf17e9beadd65816baa","size_bytes":12142},
+    {"path":"src/ecomsre/product/jobs/repository.py","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"4d1c8e7f5eb1293ef82682b0a0d0a5ec16146c37d0907b1d44b4215660f58323","size_bytes":12508},
+    {"path":"src/ecomsre/product/jobs/worker.py","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"2ce5c3f21a66b33856fc6441456af5dfec30c84b5963ffe217be895eb037d13e","size_bytes":14112},
+    {"path":"src/ecomsre/product/pilot/repository_state_v02322.py","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"d5a69b3e579bbbc6e6d5cb4813e8cec2989475f9c15b10d08b8782975d579caa","size_bytes":7123},
+    {"path":"src/ecomsre/product/storage/migrations.py","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"b75322e59c4714ef52ab58226f3f6545eafbe518aaa96d7f18227cdf84c46923","size_bytes":14695},
+    {"path":"src/ecomsre/product/storage/schema.py","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"dbec5a66a5f4ff72752bffcd8e6f959e5219afa69a0f565f58dce6d5df5bda61","size_bytes":997},
+    {"path":"tests/product_v02322/test_increment1_repository_state.py","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"a165ae91032cd986e74eec62142af4d827e9b7b75b6226cd96452fefa0168757","size_bytes":5309},
+    {"path":"tests/product_v02322/test_increment2_stage_journal.py","revision":"0dfd9c93f7e1f8797aacfee198694b5b2380221c","sha256":"29f3d25196389f70cf8eba5752f6b81fb337c8d111e50a99a0d71b8cf0070d79","size_bytes":11856}
+  ],
+  "manifest_sha256": "304adb1459465191907d81b38aa338d18ba0336a86c0668fe231cd1ecfd322cd"
+}
