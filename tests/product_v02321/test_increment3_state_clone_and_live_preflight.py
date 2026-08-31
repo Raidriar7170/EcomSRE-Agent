@@ -92,7 +92,12 @@ def _formal_freeze_fixture(tmp_path: Path) -> Path:
     for relative in _FORMAL_FREEZE_INPUTS:
         destination = tmp_path / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ROOT / relative, destination)
+        source = (
+            ROOT / "docs/analysis/product-v02321-progress-pre-formal.json"
+            if relative == "docs/analysis/product-v02321-progress.json"
+            else ROOT / relative
+        )
+        shutil.copy2(source, destination)
     progress_path = tmp_path / "docs/analysis/product-v02321-progress.json"
     progress = json.loads(progress_path.read_text(encoding="utf-8"))
     progress.pop("progress_sha256")
@@ -551,13 +556,19 @@ def test_preflight_clone_runner_writes_one_cross_bound_successor_report(
     assert recovered == report
 
 
-def test_formal_contract_freeze_binds_preflight_semantics_and_uncreated_clone_plan() -> (
-    None
-):
-    freeze = build_formal_contract_freeze_v02321(ROOT)
+def test_formal_contract_freeze_binds_preflight_semantics_and_uncreated_clone_plan(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project = _formal_freeze_fixture(tmp_path)
+    _use_root_traffic_contract(monkeypatch)
+    freeze = build_formal_contract_freeze_v02321(project)
 
     assert freeze.terminal == FORMAL_CONTRACT_FREEZE_PASS_V02321
-    assert verify_formal_contract_freeze_v02321(ROOT) == freeze
+    freeze_path = project / "docs/analysis/product-v02321-formal-contract-freeze.json"
+    freeze_path.parent.mkdir(parents=True, exist_ok=True)
+    freeze_path.write_bytes(canonical_json_bytes(freeze.model_dump(mode="json")))
+    assert verify_formal_contract_freeze_v02321(project) == freeze
     assert freeze.traffic_contract_sha256 == (
         "8e2e6fabb139413ff5ff54efe516023e00f7d04c7b84b4d296b1aa42bf39ce1b"
     )
@@ -569,7 +580,7 @@ def test_formal_contract_freeze_binds_preflight_semantics_and_uncreated_clone_pl
     )
     assert freeze.formal_clone_plan.status == "PLANNED_NOT_CREATED"
     assert freeze.formal_clone_plan.source_state_sha256 == (freeze.source_state_sha256)
-    assert not (ROOT / freeze.formal_clone_plan.destination_locator).exists()
+    assert not (project / freeze.formal_clone_plan.destination_locator).exists()
     assert freeze.formal_healthy_traffic_execution_count == 0
     assert freeze.accepted_successor_incident_count == 0
     assert freeze.successor_diagnosis_count == 0
@@ -718,9 +729,26 @@ def test_completed_preflight_progress_replaces_pending_clone_status() -> None:
     assert "PENDING_FRESH_SUCCESSOR_CLONE" not in progress.values()
 
 
-def test_pre_execution_review_is_self_sealed_and_exactly_freeze_bound() -> None:
-    freeze = verify_formal_contract_freeze_v02321(ROOT)
-    review = verify_formal_pre_execution_review_v02321(ROOT)
+def test_pre_execution_review_is_self_sealed_and_exactly_freeze_bound(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project = _formal_freeze_fixture(tmp_path)
+    _use_root_traffic_contract(monkeypatch)
+    for relative in (
+        "docs/analysis/product-v02321-formal-contract-freeze.json",
+        "docs/external-reviews/product-v02321-pre-execution-review.md",
+        "scripts/product_v02321/run_formal_nofault.py",
+        "scripts/product_v02321/run_state_clone.py",
+        "src/ecomsre/product/pilot/formal_contract_v02321.py",
+        "src/ecomsre/product/pilot/formal_nofault_v02321.py",
+        "src/ecomsre/product/pilot/product_state_clone_v02321.py",
+    ):
+        target = project / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT / relative, target)
+    freeze = verify_formal_contract_freeze_v02321(project)
+    review = verify_formal_pre_execution_review_v02321(project)
 
     assert review.review_disposition == "PASS"
     assert review.must_fix_count == 0

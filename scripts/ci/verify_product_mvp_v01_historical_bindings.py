@@ -20,7 +20,13 @@ from scripts.ci.verify_phase5b_historical_bindings import (
 )
 
 
-PRODUCT_SUCCESSOR_OVERRIDES = frozenset({"pyproject.toml", "uv.lock"})
+PRODUCT_SUCCESSOR_OVERRIDES = frozenset(
+    {
+        "pyproject.toml",
+        "src/ecomsre/environment/command_runner.py",
+        "uv.lock",
+    }
+)
 
 
 def _historical_blob_sha256(project_root: Path, relative: str) -> str:
@@ -37,7 +43,7 @@ def verify_product_mvp_historical_bindings(
     project_root: Path,
     manifest_path: Path | None = None,
 ) -> FrozenEvaluationManifest:
-    """Keep 185 live bindings exact and verify old dependency blobs in Git."""
+    """Keep the frozen manifest exact and verify successor overrides in Git."""
 
     root = project_root.resolve(strict=True)
     resolved_manifest = manifest_path or (

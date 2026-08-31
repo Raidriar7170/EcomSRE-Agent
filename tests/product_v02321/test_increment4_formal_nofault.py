@@ -125,7 +125,12 @@ def _prepare_temp_formal_repository(root: Path) -> str:
     for relative in sorted(paths):
         target = root / relative
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ROOT / relative, target)
+        source = (
+            ROOT / "docs/analysis/product-v02321-progress-pre-formal.json"
+            if relative == "docs/analysis/product-v02321-progress.json"
+            else ROOT / relative
+        )
+        shutil.copy2(source, target)
     review_path = root / "docs/external-reviews/product-v02321-pre-execution-review.md"
     review_text = review_path.read_text(encoding="utf-8")
     review_start = "<!-- ECOMSRE_PRODUCT_V02321_REVIEW_JSON_START -->\n```json\n"
@@ -2561,7 +2566,7 @@ def test_publication_cross_binding_accepts_one_complete_exact_chain(
         source_product_state_unchanged=True,
     )
     progress = run_formal_nofault._updated_progress(
-        ROOT,
+        tmp_path,
         result=acceptance,
         clone_report=clone_report,
         authority_proof=runtime_authority,
@@ -2644,11 +2649,7 @@ def test_publication_cross_binding_accepts_one_complete_exact_chain(
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(payload)
     recovery_progress = tmp_path / "docs/analysis/product-v02321-progress.json"
-    recovery_progress.parent.mkdir(parents=True, exist_ok=True)
     (tmp_path / "docs/results").mkdir(parents=True, exist_ok=True)
-    recovery_progress.write_bytes(
-        (ROOT / "docs/analysis/product-v02321-progress.json").read_bytes()
-    )
     run_formal_nofault._freeze_publication_bundle(
         project_root=tmp_path,
         private_root=recovery_private_root,
@@ -2785,7 +2786,7 @@ def test_publication_cross_binding_accepts_one_complete_exact_chain(
         candidate_traffic: FormalTrafficResultV02321 = traffic,
     ) -> dict[str, object]:
         return run_formal_nofault._updated_progress(
-            ROOT,
+            tmp_path,
             result=candidate,
             clone_report=clone_report,
             authority_proof=runtime_authority,

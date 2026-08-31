@@ -14,10 +14,16 @@ from scripts.ci.verify_product_mvp_v01_historical_bindings import (
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_product_successor_preserves_phase5b_history_with_two_explicit_overrides() -> None:
+def test_product_successor_preserves_phase5b_history_with_explicit_overrides() -> None:
     manifest = verify_product_mvp_historical_bindings(ROOT)
 
-    assert PRODUCT_SUCCESSOR_OVERRIDES == frozenset({"pyproject.toml", "uv.lock"})
+    assert PRODUCT_SUCCESSOR_OVERRIDES == frozenset(
+        {
+            "pyproject.toml",
+            "src/ecomsre/environment/command_runner.py",
+            "uv.lock",
+        }
+    )
     assert manifest.evaluation_version == "phase5b.v1"
     assert len(manifest.frozen_files) == 187
 

@@ -14,12 +14,15 @@ import re
 import shutil
 import sqlite3
 import stat
-import subprocess
 from typing import Any, cast, Iterator, Literal, Mapping, Sequence
 
 from pydantic import ConfigDict, Field, model_validator
 
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
+from ecomsre.environment.command_runner import (
+    read_git_object_bytes,
+    resolve_git_object_id,
+)
 from ecomsre.product.contracts import ProductModelV1
 from ecomsre.product.pilot.forensic_schema8_v02323 import (
     ForensicSqliteReaderV02323,
@@ -39,19 +42,13 @@ PR84_HEAD_V02323 = "0dfd9c93f7e1f8797aacfee198694b5b2380221c"
 PR84_MIGRATIONS_BLOB_V02323 = "195ce09b0b444979391e949f10c58cd5496a10ac"
 SCHEMA9_CONTAMINATION_AUDIT_PASS_V02323: Literal[
     "ECOMSRE_PRODUCT_V02323_SCHEMA9_CONTAMINATION_AUDIT_PASS"
-] = (
-    "ECOMSRE_PRODUCT_V02323_SCHEMA9_CONTAMINATION_AUDIT_PASS"
-)
+] = "ECOMSRE_PRODUCT_V02323_SCHEMA9_CONTAMINATION_AUDIT_PASS"
 RECONSTRUCTION_DISPOSITION_FROZEN_V02323: Literal[
     "ECOMSRE_PRODUCT_V02323_RECONSTRUCTION_DISPOSITION_FROZEN"
-] = (
-    "ECOMSRE_PRODUCT_V02323_RECONSTRUCTION_DISPOSITION_FROZEN"
-)
+] = "ECOMSRE_PRODUCT_V02323_RECONSTRUCTION_DISPOSITION_FROZEN"
 PRISTINE_BASE_DELTA_RECONSTRUCTION_PASS_V02323: Literal[
     "ECOMSRE_PRODUCT_V02323_PRISTINE_BASE_DELTA_RECONSTRUCTION_PASS"
-] = (
-    "ECOMSRE_PRODUCT_V02323_PRISTINE_BASE_DELTA_RECONSTRUCTION_PASS"
-)
+] = "ECOMSRE_PRODUCT_V02323_PRISTINE_BASE_DELTA_RECONSTRUCTION_PASS"
 SCHEMA8_PROJECTION_RECONSTRUCTION_PASS_V02323 = (
     "ECOMSRE_PRODUCT_V02323_SCHEMA8_PROJECTION_RECONSTRUCTION_PASS"
 )
@@ -79,9 +76,9 @@ class Schema8MigrationV02323(ProductModelV1):
 class Schema8DefinitionV02323(ProductModelV1):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.schema8-definition.v02323"] = (
         "ecomsre.product.schema8-definition.v02323"
-    ] = "ecomsre.product.schema8-definition.v02323"
+    )
     goal_version: Literal[
         "ecomsre-product-v02323-schema8-reconstruction-diagnosis-replay-v1"
     ] = GOAL_VERSION_V02323
@@ -149,9 +146,9 @@ class Schema8ProjectionTableV02323(ProductModelV1):
 class Schema8ProjectionExportV02323(ProductModelV1):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.schema8-projection-export.v02323"] = (
         "ecomsre.product.schema8-projection-export.v02323"
-    ] = "ecomsre.product.schema8-projection-export.v02323"
+    )
     goal_version: Literal[
         "ecomsre-product-v02323-schema8-reconstruction-diagnosis-replay-v1"
     ] = GOAL_VERSION_V02323
@@ -192,9 +189,9 @@ class FormalRowDeltaV02323(ProductModelV1):
 class FormalProductDeltaV02323(ProductModelV1):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.formal-product-delta.v02323"] = (
         "ecomsre.product.formal-product-delta.v02323"
-    ] = "ecomsre.product.formal-product-delta.v02323"
+    )
     goal_version: Literal[
         "ecomsre-product-v02323-schema8-reconstruction-diagnosis-replay-v1"
     ] = GOAL_VERSION_V02323
@@ -226,9 +223,9 @@ class FormalProductDeltaV02323(ProductModelV1):
 class PristineBaseAdmissionV02323(ProductModelV1):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.pristine-base-admission.v02323"] = (
         "ecomsre.product.pristine-base-admission.v02323"
-    ] = "ecomsre.product.pristine-base-admission.v02323"
+    )
     source_locator: str
     source_state_sha256: str = Field(pattern=_SHA256_PATTERN)
     source_database_logical_sha256: str = Field(pattern=_SHA256_PATTERN)
@@ -250,15 +247,15 @@ class PristineBaseAdmissionV02323(ProductModelV1):
 class Schema9ContaminationAuditV02323(ProductModelV1):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.schema9-contamination-audit.v02323"] = (
         "ecomsre.product.schema9-contamination-audit.v02323"
-    ] = "ecomsre.product.schema9-contamination-audit.v02323"
+    )
     goal_version: Literal[
         "ecomsre-product-v02323-schema8-reconstruction-diagnosis-replay-v1"
     ] = GOAL_VERSION_V02323
-    terminal: Literal[
-        "ECOMSRE_PRODUCT_V02323_SCHEMA9_CONTAMINATION_AUDIT_PASS"
-    ] = SCHEMA9_CONTAMINATION_AUDIT_PASS_V02323
+    terminal: Literal["ECOMSRE_PRODUCT_V02323_SCHEMA9_CONTAMINATION_AUDIT_PASS"] = (
+        SCHEMA9_CONTAMINATION_AUDIT_PASS_V02323
+    )
     contamination_class: Schema9ContaminationClassV02323
     schema8_definition_sha256: str = Field(pattern=_SHA256_PATTERN)
     schema9_definition_sha256: str = Field(pattern=_SHA256_PATTERN)
@@ -330,9 +327,9 @@ class PostFormalProductStateCountsV02323(ProductModelV1):
 class PostFormalProductStateV02323(ProductModelV1):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.post-formal-state.v02323"] = (
         "ecomsre.product.post-formal-state.v02323"
-    ] = "ecomsre.product.post-formal-state.v02323"
+    )
     counts: PostFormalProductStateCountsV02323
     environment_id: str
     active_baseline_id: str
@@ -388,9 +385,9 @@ class PostFormalProductStateV02323(ProductModelV1):
 class Schema8ReconstructionV02323(ProductModelV1):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.schema8-reconstruction.v02323"] = (
         "ecomsre.product.schema8-reconstruction.v02323"
-    ] = "ecomsre.product.schema8-reconstruction.v02323"
+    )
     reconstruction_locator: str
     schema8_definition_sha256: str = Field(pattern=_SHA256_PATTERN)
     formal_delta_sha256: str = Field(pattern=_SHA256_PATTERN)
@@ -431,15 +428,15 @@ class Schema8ReconstructionV02323(ProductModelV1):
 class ReconstructionDispositionV02323(ProductModelV1):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.reconstruction-disposition.v02323"] = (
         "ecomsre.product.reconstruction-disposition.v02323"
-    ] = "ecomsre.product.reconstruction-disposition.v02323"
+    )
     goal_version: Literal[
         "ecomsre-product-v02323-schema8-reconstruction-diagnosis-replay-v1"
     ] = GOAL_VERSION_V02323
-    terminal: Literal[
-        "ECOMSRE_PRODUCT_V02323_RECONSTRUCTION_DISPOSITION_FROZEN"
-    ] = RECONSTRUCTION_DISPOSITION_FROZEN_V02323
+    terminal: Literal["ECOMSRE_PRODUCT_V02323_RECONSTRUCTION_DISPOSITION_FROZEN"] = (
+        RECONSTRUCTION_DISPOSITION_FROZEN_V02323
+    )
     reconstruction_terminal: Literal[
         "ECOMSRE_PRODUCT_V02323_PRISTINE_BASE_DELTA_RECONSTRUCTION_PASS"
     ] = PRISTINE_BASE_DELTA_RECONSTRUCTION_PASS_V02323
@@ -451,9 +448,7 @@ class ReconstructionDispositionV02323(ProductModelV1):
     reconstruction_sha256: str = Field(pattern=_SHA256_PATTERN)
     post_formal_state_sha256: str = Field(pattern=_SHA256_PATTERN)
     historical_raw_byte_authority: Literal["LOST_RAW_BYTES_NOT_RECONSTRUCTED"]
-    historical_logical_authority: Literal[
-        "PRISTINE_BASE_DELTA_RECONSTRUCTION"
-    ]
+    historical_logical_authority: Literal["PRISTINE_BASE_DELTA_RECONSTRUCTION"]
     replay_authority: Literal["NOT_EXECUTED"]
     measured_nofault_authority: Literal["NONE"]
     knowledge_loop_authority: Literal["NONE"]
@@ -470,29 +465,29 @@ class ReconstructionDispositionV02323(ProductModelV1):
 
 
 def _git_bytes(repository: Path, revision: str, relative_path: str) -> bytes:
-    completed = subprocess.run(
-        ["git", "show", f"{revision}:{relative_path}"],
-        cwd=repository,
-        check=False,
-        capture_output=True,
-    )
-    if completed.returncode != 0 or completed.stderr:
-        raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
-    return completed.stdout
+    try:
+        return read_git_object_bytes(
+            repository,
+            revision=revision,
+            relative_path=relative_path,
+        )
+    except ValueError as error:
+        raise ReconstructionContractErrorV02323(
+            RECONSTRUCTION_BLOCKER_V02323
+        ) from error
 
 
 def _git_blob(repository: Path, revision: str, relative_path: str) -> str:
-    completed = subprocess.run(
-        ["git", "rev-parse", f"{revision}:{relative_path}"],
-        cwd=repository,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    blob = completed.stdout.strip()
-    if completed.returncode != 0 or completed.stderr or len(blob) != 40:
-        raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
-    return blob
+    try:
+        return resolve_git_object_id(
+            repository,
+            revision=revision,
+            relative_path=relative_path,
+        )
+    except ValueError as error:
+        raise ReconstructionContractErrorV02323(
+            RECONSTRUCTION_BLOCKER_V02323
+        ) from error
 
 
 def _parse_migrations(source: bytes) -> tuple[Schema8MigrationV02323, ...]:
@@ -592,7 +587,9 @@ def _normalized_schema_sql(sql: object) -> object:
 def _normalized_schema_inventory(
     inventory: Sequence[Mapping[str, object]],
 ) -> tuple[dict[str, object], ...]:
-    normalized = json.loads(json.dumps(inventory, sort_keys=True, separators=(",", ":")))
+    normalized = json.loads(
+        json.dumps(inventory, sort_keys=True, separators=(",", ":"))
+    )
     if not isinstance(normalized, list):
         raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
     result: list[dict[str, object]] = []
@@ -777,7 +774,10 @@ def load_schema9_definition_v02323(
 ) -> Schema9DefinitionV02323:
     root = Path(repository).resolve(strict=True)
     source = _git_bytes(root, PR84_HEAD_V02323, PR83_MIGRATIONS_PATH_V02323)
-    if _git_blob(root, PR84_HEAD_V02323, PR83_MIGRATIONS_PATH_V02323) != PR84_MIGRATIONS_BLOB_V02323:
+    if (
+        _git_blob(root, PR84_HEAD_V02323, PR83_MIGRATIONS_PATH_V02323)
+        != PR84_MIGRATIONS_BLOB_V02323
+    ):
         raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
     tree = ast.parse(source.decode("utf-8"))
     raw: object | None = None
@@ -798,7 +798,9 @@ def load_schema9_definition_v02323(
     version, name, statements = matches[0]
     connection = sqlite3.connect(":memory:", isolation_level=None)
     try:
-        _apply_schema(connection, schema8_definition.migrations, record_migrations=False)
+        _apply_schema(
+            connection, schema8_definition.migrations, record_migrations=False
+        )
         for statement in statements:
             connection.execute(statement)
         inventory = _schema_inventory(connection)
@@ -832,10 +834,10 @@ def _definition_tables(
             raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
         names: list[str] = []
         for column in columns:
-            if not isinstance(column, Mapping) or not isinstance(column.get("name"), str):
-                raise ReconstructionContractErrorV02323(
-                    RECONSTRUCTION_BLOCKER_V02323
-                )
+            if not isinstance(column, Mapping) or not isinstance(
+                column.get("name"), str
+            ):
+                raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
             names.append(str(column["name"]))
         result[name] = tuple(names)
     if len(result) != 30:
@@ -875,8 +877,7 @@ def _raw_projection_rows(
     }
     missing = set(tables) - present
     if missing and (
-        not allow_missing_schema8_tables
-        or missing != {"diagnosis_evidence_indexes"}
+        not allow_missing_schema8_tables or missing != {"diagnosis_evidence_indexes"}
     ):
         raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
     rows_by_table: dict[str, tuple[tuple[object, ...], ...]] = {}
@@ -929,9 +930,7 @@ def _projection_sha256(
     rows_by_table: Mapping[str, Sequence[Sequence[object]]],
 ) -> str:
     models = _projection_table_models(definition, rows_by_table)
-    return semantic_sha256_v22(
-        tuple(item.model_dump(mode="json") for item in models)
-    )
+    return semantic_sha256_v22(tuple(item.model_dump(mode="json") for item in models))
 
 
 def export_schema8_projection_v02323(
@@ -949,9 +948,7 @@ def export_schema8_projection_v02323(
     try:
         with _read_only_connection(database) as connection:
             if connection.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
-                raise ReconstructionContractErrorV02323(
-                    RECONSTRUCTION_BLOCKER_V02323
-                )
+                raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
             rows_by_table = _raw_projection_rows(
                 connection,
                 definition,
@@ -1000,15 +997,11 @@ def _primary_key_columns(
         all_columns: list[str] = []
         for column in columns:
             if not isinstance(column, Mapping):
-                raise ReconstructionContractErrorV02323(
-                    RECONSTRUCTION_BLOCKER_V02323
-                )
+                raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
             name = column.get("name")
             ordinal = column.get("primary_key_ordinal")
             if not isinstance(name, str) or not isinstance(ordinal, int):
-                raise ReconstructionContractErrorV02323(
-                    RECONSTRUCTION_BLOCKER_V02323
-                )
+                raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
             all_columns.append(name)
             if ordinal:
                 ordered.append((ordinal, name))
@@ -1017,9 +1010,7 @@ def _primary_key_columns(
 
 
 def _row_sha256(row: Sequence[object]) -> str:
-    return semantic_sha256_v22(
-        tuple(_normalized_sqlite_value(value) for value in row)
-    )
+    return semantic_sha256_v22(tuple(_normalized_sqlite_value(value) for value in row))
 
 
 def build_formal_product_delta_v02323(
@@ -1033,7 +1024,9 @@ def build_formal_product_delta_v02323(
     """Diff pristine schema-7 rows against the post-formal schema-8 projection."""
 
     columns_by_table = _definition_tables(definition)
-    if set(base_rows) != set(columns_by_table) or set(post_rows) != set(columns_by_table):
+    if set(base_rows) != set(columns_by_table) or set(post_rows) != set(
+        columns_by_table
+    ):
         raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
     changes: list[FormalRowDeltaV02323] = []
     replayed: dict[str, dict[tuple[object, ...], tuple[object, ...]]] = {}
@@ -1049,21 +1042,26 @@ def build_formal_product_delta_v02323(
             tuple(row[index] for index in primary_indexes): tuple(row)
             for row in post_rows[table]
         }
-        if len(base_map) != len(base_rows[table]) or len(post_map) != len(post_rows[table]):
+        if len(base_map) != len(base_rows[table]) or len(post_map) != len(
+            post_rows[table]
+        ):
             raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
         if set(base_map) - set(post_map):
             raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
         replayed[table] = dict(base_map)
-        for key in sorted(set(post_map), key=lambda value: json.dumps(value, default=str)):
+        for key in sorted(
+            set(post_map), key=lambda value: json.dumps(value, default=str)
+        ):
             before = base_map.get(key)
             after = post_map[key]
             if before == after:
                 continue
             provenance = provenance_by_table.get(table)
-            if provenance is None or re.fullmatch(_SHA256_PATTERN, provenance[1]) is None:
-                raise ReconstructionContractErrorV02323(
-                    RECONSTRUCTION_BLOCKER_V02323
-                )
+            if (
+                provenance is None
+                or re.fullmatch(_SHA256_PATTERN, provenance[1]) is None
+            ):
+                raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
             operation: Literal["INSERT", "UPDATE"] = (
                 "INSERT" if before is None else "UPDATE"
             )
@@ -1099,6 +1097,7 @@ def build_formal_product_delta_v02323(
     if require_goal_delta and changed_counts != expected_counts:
         raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
     if require_goal_delta:
+
         def mapped_rows(
             table: str, rows: Sequence[Sequence[object]]
         ) -> list[dict[str, object]]:
@@ -1113,9 +1112,7 @@ def build_formal_product_delta_v02323(
         ]
         job_rows = mapped_rows("diagnosis_jobs", post_rows["diagnosis_jobs"])
         formal_jobs = [
-            row
-            for row in job_rows
-            if row["job_id"] == "job-216dd1caac0b92270b1870a2"
+            row for row in job_rows if row["job_id"] == "job-216dd1caac0b92270b1870a2"
         ]
         event_rows = mapped_rows("job_events", post_rows["job_events"])
         formal_events = {
@@ -1254,7 +1251,11 @@ def admit_pristine_base_v02323(
     if observed != expected:
         raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
     with _read_only_connection(Path(source_root) / "product.sqlite3") as connection:
-        version = int(connection.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[0])
+        version = int(
+            connection.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[
+                0
+            ]
+        )
     body: dict[str, object] = {
         "schema_version": "ecomsre.product.pristine-base-admission.v02323",
         "source_locator": source_locator,
@@ -1331,9 +1332,7 @@ def _formal_facts(
         "formal_diagnosis_job_id": job_id,
         "formal_diagnosis_job_present": len(job) == 1,
         "formal_diagnosis_job_status": None if len(job) != 1 else str(job[0][0]),
-        "formal_diagnosis_safe_error_code": (
-            None if len(job) != 1 else str(job[0][1])
-        ),
+        "formal_diagnosis_safe_error_code": (None if len(job) != 1 else str(job[0][1])),
         "successor_diagnosis_absent": not diagnosis,
         "observed_incident_count": int(
             connection.execute("SELECT COUNT(*) FROM incidents").fetchone()[0]
@@ -1376,9 +1375,9 @@ def audit_schema9_contamination_v02323(
     try:
         with _read_only_connection(database) as connection:
             version = int(
-                connection.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[
-                    0
-                ]
+                connection.execute(
+                    "SELECT MAX(version) FROM schema_migrations"
+                ).fetchone()[0]
             )
             current_inventory = _schema_inventory(connection)
             current_by_key = {
@@ -1413,9 +1412,7 @@ def audit_schema9_contamination_v02323(
                     f"{kind}:{name}"
                     for (kind, name), reference in reference_by_key.items()
                     if (kind, name) in current_by_key
-                    and _normalized_schema_sql(
-                        current_by_key[(kind, name)].get("sql")
-                    )
+                    and _normalized_schema_sql(current_by_key[(kind, name)].get("sql"))
                     != _normalized_schema_sql(reference.get("sql"))
                     and not (kind == "table" and name == "diagnosis_jobs")
                 )
@@ -1486,8 +1483,7 @@ def audit_schema9_contamination_v02323(
     )
     inventory_matches = normalized_source_inventory == normalized_expected_inventory
     projection_matches = (
-        source_projection.overall_projection_sha256
-        == reconstructed_projection_sha256
+        source_projection.overall_projection_sha256 == reconstructed_projection_sha256
     )
     if not expected_schema or not inventory_matches or not foreign_keys_clean:
         classification = Schema9ContaminationClassV02323.UNPROVEN
@@ -1544,9 +1540,7 @@ def audit_schema9_contamination_v02323(
         "source_schema8_projection_sha256": (
             source_projection.overall_projection_sha256
         ),
-        "reconstructed_schema8_projection_sha256": (
-            reconstructed_projection_sha256
-        ),
+        "reconstructed_schema8_projection_sha256": (reconstructed_projection_sha256),
         "schema8_projection_matches_reconstruction": projection_matches,
         "foreign_key_check_clean": foreign_keys_clean,
         "source_object_inventory_sha256": reader.object_inventory_sha256(root),
@@ -1623,7 +1617,11 @@ def build_clean_schema8_database_v02323(
     """Build a create-once schema-8 DB from logical rows, never copied pages."""
 
     destination = Path(destination_product_root)
-    if destination.exists() or destination.is_symlink() or Path(reconstruction_locator).is_absolute():
+    if (
+        destination.exists()
+        or destination.is_symlink()
+        or Path(reconstruction_locator).is_absolute()
+    ):
         raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.mkdir(mode=0o700)
@@ -1648,7 +1646,9 @@ def build_clean_schema8_database_v02323(
                 for row in post_rows[table]:
                     connection.execute(statement, tuple(row))
             connection.execute("COMMIT")
-            foreign_key_check = connection.execute("PRAGMA foreign_key_check").fetchall()
+            foreign_key_check = connection.execute(
+                "PRAGMA foreign_key_check"
+            ).fetchall()
             integrity = str(connection.execute("PRAGMA integrity_check").fetchone()[0])
         except Exception:
             if connection.in_transaction:
@@ -1662,8 +1662,14 @@ def build_clean_schema8_database_v02323(
         source_reader = ForensicSqliteReaderV02323(source_assets / "product.sqlite3")
         source_object_inventory = source_reader.object_inventory_sha256(source_assets)
         source_runtime_inventory = _runtime_inventory_sha256(source_assets)
-        shutil.copytree(source_assets / "objects", destination / "objects", copy_function=shutil.copy2)
-        shutil.copytree(source_assets / "pilot", destination / "pilot", copy_function=shutil.copy2)
+        shutil.copytree(
+            source_assets / "objects",
+            destination / "objects",
+            copy_function=shutil.copy2,
+        )
+        shutil.copytree(
+            source_assets / "pilot", destination / "pilot", copy_function=shutil.copy2
+        )
         reconstructed_export, _ = export_schema8_projection_v02323(
             database,
             definition,
@@ -1671,7 +1677,9 @@ def build_clean_schema8_database_v02323(
         )
         with _read_only_connection(database) as readonly:
             version = int(
-                readonly.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[0]
+                readonly.execute(
+                    "SELECT MAX(version) FROM schema_migrations"
+                ).fetchone()[0]
             )
             schema_inventory = _schema_inventory(readonly)
             logical_sha256 = _logical_database_sha256(readonly)
@@ -1798,7 +1806,9 @@ def inspect_post_formal_state_v02323(
                 pending_job_count=statuses.get("PENDING", 0),
                 running_job_count=statuses.get("RUNNING", 0),
                 fault_family_count=count("fault_families"),
-                knowledge_artifact_count=sum(count(table) for table in knowledge_tables),
+                knowledge_artifact_count=sum(
+                    count(table) for table in knowledge_tables
+                ),
                 diagnosis_evidence_index_count=count("diagnosis_evidence_indexes"),
             )
             active = connection.execute(
@@ -1806,9 +1816,7 @@ def inspect_post_formal_state_v02323(
                 "FROM baseline_versions WHERE active = 1"
             ).fetchall()
             if len(active) != 1:
-                raise ReconstructionContractErrorV02323(
-                    RECONSTRUCTION_BLOCKER_V02323
-                )
+                raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
             baseline_payload = json.loads(str(active[0][2]))
             profile_bindings: list[Mapping[str, object]] = []
             for row in connection.execute(
@@ -1823,9 +1831,7 @@ def inspect_post_formal_state_v02323(
                 ):
                     profile_bindings.append(binding)
             if len(profile_bindings) != 1:
-                raise ReconstructionContractErrorV02323(
-                    RECONSTRUCTION_BLOCKER_V02323
-                )
+                raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
             profile_sha256 = profile_bindings[0].get("profile_sha256")
             successor_diagnosis_absent = not connection.execute(
                 "SELECT 1 FROM diagnosis_results WHERE incident_id = ?",
@@ -1871,8 +1877,7 @@ def freeze_reconstruction_disposition_v02323(
     contamination: Schema9ContaminationAuditV02323,
 ) -> ReconstructionDispositionV02323:
     if (
-        delta.post_formal_projection_sha256
-        != projection.overall_projection_sha256
+        delta.post_formal_projection_sha256 != projection.overall_projection_sha256
         or reconstruction.reconstructed_projection_sha256
         != projection.overall_projection_sha256
         or reconstruction.formal_delta_sha256 != delta.delta_sha256
@@ -1930,9 +1935,13 @@ def verify_schema8_reconstruction_v02323(
     )
     with _read_only_connection(database) as connection:
         version = int(
-            connection.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[0]
+            connection.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[
+                0
+            ]
         )
-        foreign_keys_clean = not connection.execute("PRAGMA foreign_key_check").fetchall()
+        foreign_keys_clean = not connection.execute(
+            "PRAGMA foreign_key_check"
+        ).fetchall()
         integrity = str(connection.execute("PRAGMA integrity_check").fetchone()[0])
         inventory = _schema_inventory(connection)
         logical = _logical_database_sha256(connection)
@@ -1959,7 +1968,10 @@ def verify_schema8_reconstruction_v02323(
         "object_inventory_sha256": reconstruction.reconstructed_object_inventory_sha256,
         "runtime_inventory_sha256": reconstruction.reconstructed_runtime_file_inventory_sha256,
     }
-    if observed != expected or export.overall_projection_sha256 != projection.overall_projection_sha256:
+    if (
+        observed != expected
+        or export.overall_projection_sha256 != projection.overall_projection_sha256
+    ):
         raise ReconstructionContractErrorV02323(RECONSTRUCTION_BLOCKER_V02323)
     return semantic_sha256_v22(
         {

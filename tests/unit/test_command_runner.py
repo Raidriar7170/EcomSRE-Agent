@@ -9,6 +9,8 @@ import pytest
 from ecomsre.environment.command_runner import (
     AuditedSubprocessRunner,
     _classify_process,
+    read_git_object_bytes,
+    resolve_git_object_id,
 )
 from ecomsre.environment.preflight import parse_port_observation
 from ecomsre.evidence.models import CommandLog
@@ -164,9 +166,7 @@ def test_compose_like_raw_stream_stays_evaluator_only_and_observer_is_safe(
 ) -> None:
     secret = '"adServiceFailure":{"defaultVariant":"on"}'
     compose_like = (
-        '{"services":{"flagd":{"environment":{"FEATURE_FLAGS":{'
-        + secret
-        + "}}}}}"
+        '{"services":{"flagd":{"environment":{"FEATURE_FLAGS":{' + secret + "}}}}}"
     )
     runner = AuditedSubprocessRunner(
         project_root=ROOT,
@@ -186,9 +186,7 @@ def test_compose_like_raw_stream_stays_evaluator_only_and_observer_is_safe(
     )
 
     raw_path = Path(result.stdout_artifact or "")
-    assert raw_path.is_relative_to(
-        tmp_path / "artifacts" / "evaluator-only" / RUN_ID
-    )
+    assert raw_path.is_relative_to(tmp_path / "artifacts" / "evaluator-only" / RUN_ID)
     raw_payload = json.loads(raw_path.read_text(encoding="utf-8"))
     assert secret in raw_payload["content"]
     assert raw_payload["content_sha256"] == result.stdout_sha256
@@ -266,7 +264,7 @@ def test_audited_runner_allows_literal_loopback_proxy_for_registry_inspect(
         (
             "#!/bin/sh\n"
             "printf '%s\\n%s\\n%s\\n' "
-            "\"$HTTP_PROXY\" \"$HTTPS_PROXY\" \"${ALL_PROXY-unset}\"\n"
+            '"$HTTP_PROXY" "$HTTPS_PROXY" "${ALL_PROXY-unset}"\n'
         ),
         encoding="utf-8",
     )
@@ -307,11 +305,7 @@ def test_audited_runner_allows_literal_loopback_proxy_for_registry_inspect(
     )
 
     assert result.exit_code == 0
-    assert result.stdout == (
-        "http://127.0.0.1:1097\n"
-        "http://[::1]:1097\n"
-        "unset\n"
-    )
+    assert result.stdout == ("http://127.0.0.1:1097\nhttp://[::1]:1097\nunset\n")
     observer_root = tmp_path / "artifacts" / "observer-visible" / RUN_ID
     observer_text = "\n".join(
         path.read_text(encoding="utf-8")
@@ -637,6 +631,119 @@ def test_production_subprocess_access_is_centralized() -> None:
             offenders.append(path.relative_to(ROOT).as_posix())
 
     assert offenders == []
+
+
+@pytest.mark.parametrize("revision", ("HEAD", "a" * 39, "A" * 40, "a" * 41))
+def test_git_object_reader_rejects_noncanonical_revision(revision: str) -> None:
+    with pytest.raises(ValueError, match="Git revision differs"):
+        read_git_object_bytes(
+            ROOT,
+            revision=revision,
+            relative_path="docs/DECISIONS.md",
+        )
+
+
+@pytest.mark.parametrize(
+    "relative_path",
+    (
+        "",
+        "/docs/DECISIONS.md",
+        "../docs/DECISIONS.md",
+        "docs/../DECISIONS.md",
+        "docs\\DECISIONS.md",
+        "docs/rev:path",
+    ),
+)
+def test_git_object_reader_rejects_unsafe_path(relative_path: str) -> None:
+    with pytest.raises(ValueError, match="Git object path differs"):
+        read_git_object_bytes(
+            ROOT,
+            revision="a" * 40,
+            relative_path=relative_path,
+        )
+
+
+@pytest.mark.parametrize(
+    ("returncode", "stderr"),
+    ((7, b""), (0, b"unexpected stderr")),
+)
+def test_git_object_reader_rejects_process_failure(
+    monkeypatch,
+    returncode: int,
+    stderr: bytes,
+) -> None:
+    from ecomsre.environment import command_runner
+
+    class FailedGit:
+        def __init__(self, observed_returncode: int) -> None:
+            self.returncode = observed_returncode
+
+        @staticmethod
+        def communicate(*, timeout):
+            assert timeout == 10
+            return b"payload", stderr
+
+    process = FailedGit(returncode)
+    monkeypatch.setattr(command_runner, "_Popen", lambda *_args, **_kwargs: process)
+
+    with pytest.raises(ValueError, match="Git object read failed"):
+        read_git_object_bytes(
+            ROOT,
+            revision="a" * 40,
+            relative_path="docs/DECISIONS.md",
+        )
+
+
+def test_git_object_reader_rejects_timeout(monkeypatch) -> None:
+    from ecomsre.environment import command_runner
+
+    class TimedOutGit:
+        returncode = None
+
+        @staticmethod
+        def communicate(*, timeout):
+            assert timeout == 10
+            raise command_runner.subprocess.TimeoutExpired("git", timeout)
+
+    process = TimedOutGit()
+    monkeypatch.setattr(command_runner, "_Popen", lambda *_args, **_kwargs: process)
+    monkeypatch.setattr(
+        command_runner,
+        "_terminate_process_group",
+        lambda observed: (b"", b"") if observed is process else None,
+    )
+
+    with pytest.raises(ValueError, match="Git object read timed out"):
+        read_git_object_bytes(
+            ROOT,
+            revision="a" * 40,
+            relative_path="docs/DECISIONS.md",
+        )
+
+
+def test_git_object_id_reader_rejects_non_object_output(monkeypatch) -> None:
+    from ecomsre.environment import command_runner
+
+    class InvalidObjectIdGit:
+        returncode = 0
+
+        @staticmethod
+        def communicate(*, timeout):
+            assert timeout == 10
+            return b"not-an-object-id\n", b""
+
+    monkeypatch.setattr(
+        command_runner,
+        "_Popen",
+        lambda *_args, **_kwargs: InvalidObjectIdGit(),
+    )
+
+    with pytest.raises(ValueError, match="Git object id differs"):
+        resolve_git_object_id(
+            ROOT,
+            revision="a" * 40,
+            relative_path="docs/DECISIONS.md",
+        )
 
 
 @pytest.mark.parametrize(

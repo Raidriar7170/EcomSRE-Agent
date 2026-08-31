@@ -81,6 +81,16 @@ _INCREMENT3_TERMINALS = [
     "ECOMSRE_PRODUCT_V02323_REPLAY_INPUT_PASS",
     "ECOMSRE_PRODUCT_V02323_ROOT_CAUSE_DISPOSITION_FROZEN",
 ]
+_INCREMENT4_TERMINALS = [*_INCREMENT3_TERMINALS, DIAGNOSIS_REPLAY_PASS]
+_INCREMENT5_PREMERGE_TERMINALS = [
+    *_INCREMENT4_TERMINALS,
+    "ECOMSRE_PRODUCT_V02323_REPOSITORY_ACCEPTANCE_PASS",
+]
+_INCREMENT5_POSTMERGE_TERMINALS = [
+    *_INCREMENT5_PREMERGE_TERMINALS,
+    "ECOMSRE_PRODUCT_V02323_FRESH_FORMAL_NOFAULT_HANDOFF_READY",
+    "ECOMSRE_PRODUCT_V02323_SCHEMA8_RECONSTRUCTION_DIAGNOSIS_REPLAY_COMPLETE",
+]
 
 
 def _load(path: Path) -> dict[str, Any]:
@@ -295,6 +305,7 @@ def verify_product_v02323_increment4(
     source_root: Path,
     pristine_root: Path,
     formal_private_root: Path,
+    allow_later_phase_artifacts: bool = False,
 ) -> dict[str, object]:
     project = Path(root).resolve(strict=True)
     increment3 = verify_product_v02323_increment3(
@@ -365,8 +376,11 @@ def verify_product_v02323_increment4(
         != (
             project / "docs/analysis/product-v02323-diagnosis-persistence-attempts.json"
         ).read_bytes()
-        or (publication / "product-v02323-progress.json").read_bytes()
-        != (project / "docs/analysis/product-v02323-progress.json").read_bytes()
+        or (
+            not allow_later_phase_artifacts
+            and (publication / "product-v02323-progress.json").read_bytes()
+            != (project / "docs/analysis/product-v02323-progress.json").read_bytes()
+        )
     ):
         raise ValueError("Product v0.2.3.2.3 staged publication differs")
     progress_before = _load(publication / "pre-publication-progress.json")
@@ -717,8 +731,48 @@ def verify_product_v02323_increment4(
         **expected_progress_body,
         "progress_sha256": semantic_sha256_v22(expected_progress_body),
     }
+    staged_progress = _load(publication / "product-v02323-progress.json")
+    if staged_progress != expected_progress:
+        raise ValueError("Product v0.2.3.2.3 staged Increment 4 progress differs")
+    if allow_later_phase_artifacts:
+        observed_terminals = progress.get("terminals")
+        premerge_transition = (
+            observed_terminals == _INCREMENT5_PREMERGE_TERMINALS
+            and progress.get("engineering_terminal")
+            == "PENDING_MERGE_AND_PREDECESSOR_CLOSEOUT"
+            and progress.get("next_gate") == "FINAL_REVIEW_EXACT_HEAD_CI_AND_MERGE"
+            and "fresh_formal_handoff_terminal" not in progress
+            and "fresh_formal_handoff_sha256" not in progress
+        )
+        postmerge_transition = (
+            observed_terminals == _INCREMENT5_POSTMERGE_TERMINALS
+            and progress.get("engineering_terminal")
+            == "ECOMSRE_PRODUCT_V02323_SCHEMA8_RECONSTRUCTION_DIAGNOSIS_REPLAY_COMPLETE"
+            and progress.get("fresh_formal_handoff_terminal")
+            == "ECOMSRE_PRODUCT_V02323_FRESH_FORMAL_NOFAULT_HANDOFF_READY"
+            and isinstance(progress.get("fresh_formal_handoff_sha256"), str)
+            and progress.get("next_gate")
+            == "PRODUCT_V0233_FRESH_FORMAL_EVIDENCE_BOUND_NOFAULT_ACCEPTANCE"
+        )
+        later_progress_valid = (
+            progress.get("increment") == 5
+            and progress.get("phase") == "DIAGNOSIS_REPLAY_COMPLETE"
+            and (premerge_transition or postmerge_transition)
+            and progress.get("diagnosis_pipeline_replay_result_sha256")
+            == result.result_sha256
+            and progress.get("diagnosis_persistence_replay_attempt_count") == 1
+            and progress.get("diagnosis_persistence_attempts_sha256") == attempts_sha256
+            and progress.get("provider_calls") == 0
+            and progress.get("agent_writes") == 0
+            and progress.get("runbook_executions") == 0
+            and progress.get("docker_calls") == 0
+            and progress.get("measured_nofault_authority") == "NONE"
+            and progress.get("knowledge_loop_authority") == "NONE"
+        )
+    else:
+        later_progress_valid = progress == expected_progress
     if (
-        progress != expected_progress
+        not later_progress_valid
         or result.replay_input_sha256 != replay_input.replay_input_sha256
         or result.diagnosis_persistence_replay_attempt_count != 1
         or result.provider_agent_runbook_docker_calls != 0
@@ -755,6 +809,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--source-root", type=Path, required=True)
     parser.add_argument("--pristine-root", type=Path, required=True)
     parser.add_argument("--formal-private-root", type=Path, required=True)
+    parser.add_argument("--allow-later-phase-artifacts", action="store_true")
     arguments = parser.parse_args(argv)
     print(
         json.dumps(
@@ -763,6 +818,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 source_root=arguments.source_root,
                 pristine_root=arguments.pristine_root,
                 formal_private_root=arguments.formal_private_root,
+                allow_later_phase_artifacts=arguments.allow_later_phase_artifacts,
             ),
             sort_keys=True,
             separators=(",", ":"),
