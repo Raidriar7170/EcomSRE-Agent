@@ -250,6 +250,8 @@ jobs:
           --require-clean-head
 
       - name: Product v0.2.3.2 through v0.2.3.2.3 focused offline tests
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: >-
           env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
           uv run --frozen --no-sync pytest
