@@ -1,0 +1,33 @@
+{
+  "action_authority": "NONE",
+  "agent_writes": 0,
+  "diagnosis_persistence_replay_attempt_count": 0,
+  "digest_semantics_audit_sha256": "213b697be26f88752a14708882ab7e39032d1aa9c73e6558a94a1fed804e6183",
+  "docker_calls": 0,
+  "expected_digest_kind": "RAW_SQLITE_FILE_SHA256",
+  "fault_attempt_count": 0,
+  "forensic_source_snapshot_sha256": "ac6bb8da8ba83d3a7a2879afa9f530efc7b75e08950a8429e3aeb0eeb6c1c814",
+  "goal_version": "ecomsre-product-v02323-schema8-reconstruction-diagnosis-replay-v1",
+  "history_audit_sha256": "7f9ed40ef32d9851041f9e244f2e8147da1357d6a1f8b876af9273e7b36cb54f",
+  "increment": 1,
+  "knowledge_loop_authority": "NONE",
+  "lost_schema8_database_file_sha256": "25d0fae060c396e63f338de886da97885c21508d265a94f1e45b999b5bc206f6",
+  "measured_nofault_authority": "NONE",
+  "new_baseline_attempt_count": 0,
+  "new_business_traffic_execution_count": 0,
+  "new_product_incident_count": 0,
+  "next_gate": "INCREMENT_2_SCHEMA9_CONTAMINATION_AND_SCHEMA8_RECONSTRUCTION",
+  "phase": "FORENSIC_SOURCE_BLOCKED",
+  "progress_sha256": "384f4511bfa68233dde81ca0e9ac7589643cae1e6755793b856649b339c82baf",
+  "provider_calls": 0,
+  "runbook_executions": 0,
+  "schema_version": "ecomsre.product.progress.v02323",
+  "source_database_file_sha256": "c8dbe4a5c500c577988e433ef9921b31cc920983e39d458907e5481937561d37",
+  "source_immutability_proof_sha256": "74f1628c561a55b66fa3a1b7ab83a2fb1dc9b8af3fc6830d1e80148b3ade7cb1",
+  "source_schema_version": 9,
+  "terminals": [
+    "ECOMSRE_PRODUCT_V02323_HISTORY_AND_BLOCKER_PASS",
+    "ECOMSRE_PRODUCT_V02323_FORENSIC_SOURCE_SNAPSHOT_PASS",
+    "ECOMSRE_PRODUCT_V02323_DIGEST_SEMANTICS_PASS"
+  ]
+}
