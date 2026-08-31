@@ -14,7 +14,10 @@ from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 from ecomsre.product.pilot.repository_state_v02322 import (
     HISTORY_AND_BLOCKER_PASS_V02322,
 )
-from scripts.ci.verify_product_v02321_history import verify_product_v02321_history
+from scripts.ci.verify_product_v02321_history import (
+    resolve_product_history_descendant,
+    verify_product_v02321_history,
+)
 
 
 STARTING_MAIN_V02322 = "73fe478886a4f0875b4d60b07b3600e8aae02132"
@@ -137,17 +140,17 @@ def verify_product_v02322_history(
     root: Path,
     *,
     manifest_path: Path | None = None,
+    descendant_revision: str | None = None,
 ) -> dict[str, object]:
     project = Path(root).resolve(strict=True)
+    descendant = descendant_revision or resolve_product_history_descendant(project)
     manifest = _load_object(
-        manifest_path
-        or project / "config/product-v02322/historical-results.v1.json"
+        manifest_path or project / "config/product-v02322/historical-results.v1.json"
     )
     body = dict(manifest)
     supplied_manifest_sha256 = body.pop("manifest_sha256", None)
     if (
-        manifest.get("schema_version")
-        != "ecomsre.product-v02322.historical-results.v1"
+        manifest.get("schema_version") != "ecomsre.product-v02322.historical-results.v1"
         or manifest.get("goal_version")
         != "ecomsre-product-v02322-diagnosis-forensics-replay-v1"
         or manifest.get("starting_main") != STARTING_MAIN_V02322
@@ -165,16 +168,14 @@ def verify_product_v02322_history(
         not isinstance(pr82, Mapping)
         or not isinstance(pr83, Mapping)
         or pr82.get("head") != PR82_HEAD_V02322
-        or pr82.get("terminal")
-        != "BLOCKED_ECOMSRE_PRODUCT_V0232_TRAFFIC_PREFLIGHT"
+        or pr82.get("terminal") != "BLOCKED_ECOMSRE_PRODUCT_V0232_TRAFFIC_PREFLIGHT"
         or pr82.get("safe_error_code") != "RUN_ID_SCHEMA_PATTERN_MISMATCH"
         or pr83.get("head") != PR83_HEAD_V02322
         or pr83.get("formal_terminal")
         != "BLOCKED_ECOMSRE_PRODUCT_V02321_NOFAULT_INFRASTRUCTURE"
         or pr83.get("repository_terminal")
         != "BLOCKED_ECOMSRE_PRODUCT_V02321_REPOSITORY_ACCEPTANCE"
-        or pr83.get("formal_blocker_semantic_sha256")
-        != FORMAL_BLOCKER_SHA256_V02322
+        or pr83.get("formal_blocker_semantic_sha256") != FORMAL_BLOCKER_SHA256_V02322
         or pr83.get("formal_blocker_evidence_manifest_sha256")
         != FORMAL_EVIDENCE_MANIFEST_SHA256_V02322
         or pr83.get("formal_traffic_completed") != 30
@@ -188,23 +189,24 @@ def verify_product_v02322_history(
     _require_commit(project, STARTING_MAIN_V02322)
     _require_commit(project, PR82_HEAD_V02322)
     _require_commit(project, PR83_HEAD_V02322)
+    _require_commit(project, descendant)
     _require_ancestry(project, STARTING_MAIN_V02322, PR82_HEAD_V02322)
     _require_ancestry(project, PR82_HEAD_V02322, PR83_HEAD_V02322)
-    _require_ancestry(project, PR83_HEAD_V02322, "HEAD")
+    _require_ancestry(project, PR83_HEAD_V02322, descendant)
     _require_tracked_bytes(project, manifest.get("tracked_files"))
 
-    prior = verify_product_v02321_history(project)
+    prior = verify_product_v02321_history(
+        project,
+        descendant_revision=descendant,
+    )
     if prior["blocker_terminal"] != pr82["terminal"]:
         raise ValueError("Product v0.2.3.2.2 PR #82 blocker differs")
 
-    blocker = _load_object(
-        project / "docs/analysis/product-v02321-formal-blocker.json"
-    )
+    blocker = _load_object(project / "docs/analysis/product-v02321-formal-blocker.json")
     blocker_body = dict(blocker)
     blocker_sha256 = blocker_body.pop("blocker_sha256", None)
     evidence = _load_object(
-        project
-        / "docs/analysis/product-v02321-formal-blocker-evidence-manifest.json"
+        project / "docs/analysis/product-v02321-formal-blocker-evidence-manifest.json"
     )
     evidence_body = dict(evidence)
     evidence_sha256 = evidence_body.pop("manifest_sha256", None)
@@ -233,7 +235,9 @@ def verify_product_v02322_history(
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[2])
+    parser.add_argument(
+        "--root", type=Path, default=Path(__file__).resolve().parents[2]
+    )
     arguments = parser.parse_args(argv)
     print(json.dumps(verify_product_v02322_history(arguments.root), sort_keys=True))
     return 0

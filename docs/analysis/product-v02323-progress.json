@@ -22,7 +22,7 @@
   "new_baseline_attempt_count": 0,
   "new_business_traffic_execution_count": 0,
   "new_product_incident_count": 0,
-  "next_gate": "FINAL_REVIEW_EXACT_HEAD_CI_AND_MERGE",
+  "next_gate": "PRODUCT_V0233_FRESH_FORMAL_EVIDENCE_BOUND_NOFAULT_ACCEPTANCE",
   "phase": "DIAGNOSIS_REPLAY_COMPLETE",
   "provider_calls": 0,
   "reconstructed_database_file_sha256": "59d8c25d3a53fc62af6e2f333eb3ac9d9bb7ef1f63d2d365cb4cd127eaf0bd7d",
@@ -56,12 +56,54 @@
     "ECOMSRE_PRODUCT_V02323_REPLAY_INPUT_PASS",
     "ECOMSRE_PRODUCT_V02323_ROOT_CAUSE_DISPOSITION_FROZEN",
     "ECOMSRE_PRODUCT_V02323_DIAGNOSIS_PIPELINE_REPLAY_PASS",
-    "ECOMSRE_PRODUCT_V02323_REPOSITORY_ACCEPTANCE_PASS"
+    "ECOMSRE_PRODUCT_V02323_REPOSITORY_ACCEPTANCE_PASS",
+    "ECOMSRE_PRODUCT_V02323_FRESH_FORMAL_NOFAULT_HANDOFF_READY",
+    "ECOMSRE_PRODUCT_V02323_SCHEMA8_RECONSTRUCTION_DIAGNOSIS_REPLAY_COMPLETE"
   ],
   "repository_state_manifest_sha256": "81512ecaf550a2e5407d4f00c31d0ad5aba69ad85edcb19225484faaed0492dc",
   "test_migration_sha256": "38840079296390e9c573b563326427fc0644803390f1ab1ef193fdd7cb9d7946",
   "repository_acceptance_terminal": "ECOMSRE_PRODUCT_V02323_REPOSITORY_ACCEPTANCE_PASS",
   "required_engineering_terminal": "ECOMSRE_PRODUCT_V02323_SCHEMA8_RECONSTRUCTION_DIAGNOSIS_REPLAY_COMPLETE",
-  "engineering_terminal": "PENDING_MERGE_AND_PREDECESSOR_CLOSEOUT",
-  "progress_sha256": "d8e8fa75958df7eba9b9ebeb140ea8c004f50c196a8ac049604e0a2d7611db5f"
+  "engineering_terminal": "ECOMSRE_PRODUCT_V02323_SCHEMA8_RECONSTRUCTION_DIAGNOSIS_REPLAY_COMPLETE",
+  "merged_successor_commit": "d1a2f934620bf904d354e176732d3e66bfe6bbca",
+  "successor_pull_request": 85,
+  "successor_merge": {
+    "pull_request": 85,
+    "state": "CLOSED",
+    "merged": true,
+    "merged_at": "2026-08-31T12:48:04Z",
+    "merge_commit_sha": "d1a2f934620bf904d354e176732d3e66bfe6bbca",
+    "head_ref": "codex/product-v02323-schema8-reconstruction-replay",
+    "head_sha": "75ab277982c25be6d2b37e027db247526580a111",
+    "base_ref": "main"
+  },
+  "predecessor_closeout": [
+    {
+      "pull_request": 82,
+      "state": "CLOSED",
+      "merged": false,
+      "merged_at": null,
+      "disposition": "SUPERSEDED_WITHOUT_MERGE",
+      "superseded_comment_marker": "ECOMSRE_PRODUCT_V02323_SUPERSEDED_BY_PR85_WITHOUT_MERGE"
+    },
+    {
+      "pull_request": 83,
+      "state": "CLOSED",
+      "merged": false,
+      "merged_at": null,
+      "disposition": "SUPERSEDED_WITHOUT_MERGE",
+      "superseded_comment_marker": "ECOMSRE_PRODUCT_V02323_SUPERSEDED_BY_PR85_WITHOUT_MERGE"
+    },
+    {
+      "pull_request": 84,
+      "state": "CLOSED",
+      "merged": false,
+      "merged_at": null,
+      "disposition": "SUPERSEDED_WITHOUT_MERGE",
+      "superseded_comment_marker": "ECOMSRE_PRODUCT_V02323_SUPERSEDED_BY_PR85_WITHOUT_MERGE"
+    }
+  ],
+  "fresh_formal_handoff_terminal": "ECOMSRE_PRODUCT_V02323_FRESH_FORMAL_NOFAULT_HANDOFF_READY",
+  "fresh_formal_handoff_sha256": "72d272951412d696d50fb6ee44c96bbc4a1a6e5ace63d574b0636297b848847f",
+  "progress_sha256": "0695aef296654dcba281e6d6bd1d634fa390e58ef9af4ef6e3067c8a3e44675f"
 }

@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
 import subprocess
 from typing import Any, Mapping, Sequence
 
@@ -133,6 +134,39 @@ def _require_ancestry(root: Path, ancestor: str, descendant: str) -> None:
     )
 
 
+def resolve_product_history_descendant(root: Path) -> str:
+    """Resolve the PR successor head across a verified squash-merge handoff."""
+
+    handoff_path = root / "docs/analysis/product-v02323-fresh-formal-handoff.json"
+    if not handoff_path.exists():
+        return "HEAD"
+    handoff = _load_object(handoff_path)
+    body = dict(handoff)
+    supplied_sha256 = body.pop("handoff_sha256", None)
+    successor_merge = handoff.get("successor_merge")
+    merged_successor_commit = handoff.get("merged_successor_commit")
+    if (
+        supplied_sha256 != semantic_sha256_v22(body)
+        or handoff.get("terminal")
+        != "ECOMSRE_PRODUCT_V02323_FRESH_FORMAL_NOFAULT_HANDOFF_READY"
+        or not isinstance(successor_merge, Mapping)
+        or successor_merge.get("merge_commit_sha") != merged_successor_commit
+        or not isinstance(merged_successor_commit, str)
+        or re.fullmatch(r"[0-9a-f]{40}", merged_successor_commit) is None
+    ):
+        raise ValueError("Product successor squash handoff differs")
+    successor_head = successor_merge.get("head_sha")
+    if (
+        not isinstance(successor_head, str)
+        or re.fullmatch(r"[0-9a-f]{40}", successor_head) is None
+    ):
+        raise ValueError("Product successor squash head differs")
+    _require_commit(root, merged_successor_commit)
+    _require_commit(root, successor_head)
+    _require_ancestry(root, merged_successor_commit, "HEAD")
+    return successor_head
+
+
 def _require_tracked_bytes(root: Path, tracked: object) -> None:
     expected_paths = tuple(sorted(_EXPECTED_TRACKED_FILES))
     if not isinstance(tracked, list) or len(tracked) != len(expected_paths):
@@ -156,9 +190,7 @@ def _require_tracked_bytes(root: Path, tracked: object) -> None:
             or item.get("sha256") != expected_binding[0]
             or item.get("size_bytes") != expected_binding[1]
         ):
-            raise ValueError(
-                "Product v0.2.3.2.1 historical tracked files differ"
-            )
+            raise ValueError("Product v0.2.3.2.1 historical tracked files differ")
         local_path = root / relative
         if local_path.is_symlink() or not local_path.is_file():
             raise ValueError("Product v0.2.3.2.1 frozen path differs")
@@ -178,21 +210,20 @@ def verify_product_v02321_history(
     root: Path,
     *,
     manifest_path: Path | None = None,
+    descendant_revision: str | None = None,
 ) -> dict[str, object]:
     project = Path(root).resolve(strict=True)
+    descendant = descendant_revision or resolve_product_history_descendant(project)
     manifest = _load_object(
-        manifest_path
-        or project / "config/product-v02321/historical-results.v1.json"
+        manifest_path or project / "config/product-v02321/historical-results.v1.json"
     )
     body = dict(manifest)
     supplied_manifest_sha256 = body.pop("manifest_sha256", None)
     if (
-        manifest.get("schema_version")
-        != "ecomsre.product-v02321.historical-results.v1"
+        manifest.get("schema_version") != "ecomsre.product-v02321.historical-results.v1"
         or manifest.get("goal_version")
         != "ecomsre-product-v02321-traffic-harness-repair-nofault-v1"
-        or manifest.get("starting_main")
-        != "73fe478886a4f0875b4d60b07b3600e8aae02132"
+        or manifest.get("starting_main") != "73fe478886a4f0875b4d60b07b3600e8aae02132"
         or manifest.get("predecessor") != _EXPECTED_PREDECESSOR
         or manifest.get("frozen_bindings") != _EXPECTED_FROZEN_BINDINGS
         or supplied_manifest_sha256 != semantic_sha256_v22(body)
@@ -200,8 +231,9 @@ def verify_product_v02321_history(
         raise ValueError("Product v0.2.3.2.1 historical manifest differs")
     _require_commit(project, PREDECESSOR_HEAD_V02321)
     _require_commit(project, BLOCKER_EVIDENCE_COMMIT_V02321)
+    _require_commit(project, descendant)
     _require_ancestry(project, BLOCKER_EVIDENCE_COMMIT_V02321, PREDECESSOR_HEAD_V02321)
-    _require_ancestry(project, PREDECESSOR_HEAD_V02321, "HEAD")
+    _require_ancestry(project, PREDECESSOR_HEAD_V02321, descendant)
     _require_tracked_bytes(project, manifest.get("tracked_files"))
     blocker = verify_product_v0232_blocker(project)
     if blocker != {
@@ -234,7 +266,9 @@ def verify_product_v02321_history(
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[2])
+    parser.add_argument(
+        "--root", type=Path, default=Path(__file__).resolve().parents[2]
+    )
     arguments = parser.parse_args(argv)
     print(json.dumps(verify_product_v02321_history(arguments.root), sort_keys=True))
     return 0
@@ -244,4 +278,8 @@ if __name__ == "__main__":
     raise SystemExit(main())
 
 
-__all__ = ("HISTORY_AND_REUSE_PASS_V02321", "verify_product_v02321_history")
+__all__ = (
+    "HISTORY_AND_REUSE_PASS_V02321",
+    "resolve_product_history_descendant",
+    "verify_product_v02321_history",
+)

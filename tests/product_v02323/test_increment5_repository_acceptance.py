@@ -7,6 +7,7 @@ import shutil
 import pytest
 
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
+from ecomsre.environment.command_runner import read_git_object_bytes
 from ecomsre.product.pilot.repository_state_v02323 import (
     REPOSITORY_STATE_MODEL_PASS_V02323,
     ProductV02323RepositoryStateManifest,
@@ -23,6 +24,7 @@ from scripts.product_v02323.build_increment5_closeout import (
 
 
 ROOT = Path(__file__).resolve().parents[2]
+PR85_HEAD = "75ab277982c25be6d2b37e027db247526580a111"
 _POST_MERGE_INPUTS = (
     "config/product-v02323/repository-state-manifest.json",
     "docs/analysis/product-v02321-formal-blocker.json",
@@ -249,7 +251,13 @@ def test_post_merge_finalizer_binds_commit_and_preserves_authority_boundary(
     for relative in _POST_MERGE_INPUTS:
         target = tmp_path / relative
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ROOT / relative, target)
+        target.write_bytes(
+            read_git_object_bytes(
+                ROOT,
+                revision=PR85_HEAD,
+                relative_path=relative,
+            )
+        )
 
     merged_successor_commit = "a" * 40
     result = finalize_post_merge_closeout(

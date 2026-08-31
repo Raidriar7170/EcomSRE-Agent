@@ -3,7 +3,7 @@
   "goal_version": "ecomsre-product-v02323-schema8-reconstruction-diagnosis-replay-v1",
   "phase": "DIAGNOSIS_REPLAY_COMPLETE",
   "repository_acceptance_terminal": "ECOMSRE_PRODUCT_V02323_REPOSITORY_ACCEPTANCE_PASS",
-  "engineering_terminal": "PENDING_MERGE_AND_PREDECESSOR_CLOSEOUT",
+  "engineering_terminal": "ECOMSRE_PRODUCT_V02323_SCHEMA8_RECONSTRUCTION_DIAGNOSIS_REPLAY_COMPLETE",
   "required_engineering_terminal": "ECOMSRE_PRODUCT_V02323_SCHEMA8_RECONSTRUCTION_DIAGNOSIS_REPLAY_COMPLETE",
   "reconstruction_disposition": "PRISTINE_BASE_DELTA_RECONSTRUCTION",
   "reconstruction_disposition_sha256": "2484d82229338cf60ce7a477d630bf7faa3f416677e4a3f7293335731a3e4d01",
@@ -33,5 +33,45 @@
     "No measured No-Fault or Knowledge-Loop authority is granted.",
     "Fresh formal v0.2.3.3 execution remains a separate campaign."
   ],
-  "closeout_sha256": "bf9af65cd2de88357dd016bf375181f70a070ba854a65e8384e944c1f5dda335"
+  "merged_successor_commit": "d1a2f934620bf904d354e176732d3e66bfe6bbca",
+  "successor_pull_request": 85,
+  "successor_merge": {
+    "pull_request": 85,
+    "state": "CLOSED",
+    "merged": true,
+    "merged_at": "2026-08-31T12:48:04Z",
+    "merge_commit_sha": "d1a2f934620bf904d354e176732d3e66bfe6bbca",
+    "head_ref": "codex/product-v02323-schema8-reconstruction-replay",
+    "head_sha": "75ab277982c25be6d2b37e027db247526580a111",
+    "base_ref": "main"
+  },
+  "predecessor_closeout": [
+    {
+      "pull_request": 82,
+      "state": "CLOSED",
+      "merged": false,
+      "merged_at": null,
+      "disposition": "SUPERSEDED_WITHOUT_MERGE",
+      "superseded_comment_marker": "ECOMSRE_PRODUCT_V02323_SUPERSEDED_BY_PR85_WITHOUT_MERGE"
+    },
+    {
+      "pull_request": 83,
+      "state": "CLOSED",
+      "merged": false,
+      "merged_at": null,
+      "disposition": "SUPERSEDED_WITHOUT_MERGE",
+      "superseded_comment_marker": "ECOMSRE_PRODUCT_V02323_SUPERSEDED_BY_PR85_WITHOUT_MERGE"
+    },
+    {
+      "pull_request": 84,
+      "state": "CLOSED",
+      "merged": false,
+      "merged_at": null,
+      "disposition": "SUPERSEDED_WITHOUT_MERGE",
+      "superseded_comment_marker": "ECOMSRE_PRODUCT_V02323_SUPERSEDED_BY_PR85_WITHOUT_MERGE"
+    }
+  ],
+  "fresh_formal_handoff_terminal": "ECOMSRE_PRODUCT_V02323_FRESH_FORMAL_NOFAULT_HANDOFF_READY",
+  "fresh_formal_handoff_sha256": "72d272951412d696d50fb6ee44c96bbc4a1a6e5ace63d574b0636297b848847f",
+  "closeout_sha256": "87ef73ec6c0843d41865bf6406e9df8e46a90dedaf1c6cabdd3ab9c25a49e025"
 }

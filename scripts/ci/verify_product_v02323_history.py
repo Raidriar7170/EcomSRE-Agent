@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
 import subprocess
 from typing import Any, Mapping, Sequence
 
@@ -68,6 +69,9 @@ EXPECTED_AUTHORITY_V02323 = {
     "measured_nofault_authority": "NONE",
     "knowledge_loop_authority": "NONE",
 }
+PR84_SUCCESSOR_OVERRIDES_V02323 = frozenset(
+    {"scripts/ci/verify_product_v02322_history.py"}
+)
 
 
 def _load_object(path: Path) -> dict[str, Any]:
@@ -104,6 +108,44 @@ def _require_ancestry(root: Path, ancestor: str, descendant: str) -> None:
     )
 
 
+def _successor_history_descendant(root: Path) -> str:
+    handoff_path = root / "docs/analysis/product-v02323-fresh-formal-handoff.json"
+    if not handoff_path.exists():
+        return "HEAD"
+    handoff = _load_object(handoff_path)
+    body = dict(handoff)
+    supplied_sha256 = body.pop("handoff_sha256", None)
+    successor_merge = handoff.get("successor_merge")
+    merged_successor_commit = handoff.get("merged_successor_commit")
+    if (
+        supplied_sha256 != semantic_sha256_v22(body)
+        or handoff.get("terminal")
+        != "ECOMSRE_PRODUCT_V02323_FRESH_FORMAL_NOFAULT_HANDOFF_READY"
+        or handoff.get("successor_pull_request") != 85
+        or not isinstance(successor_merge, Mapping)
+        or successor_merge.get("pull_request") != 85
+        or successor_merge.get("state") != "CLOSED"
+        or successor_merge.get("merged") is not True
+        or successor_merge.get("merge_commit_sha") != merged_successor_commit
+        or successor_merge.get("head_ref")
+        != "codex/product-v02323-schema8-reconstruction-replay"
+        or successor_merge.get("base_ref") != "main"
+        or not isinstance(merged_successor_commit, str)
+        or re.fullmatch(r"[0-9a-f]{40}", merged_successor_commit) is None
+    ):
+        raise ValueError("Product v0.2.3.2.3 squash successor history differs")
+    successor_head = successor_merge.get("head_sha")
+    if (
+        not isinstance(successor_head, str)
+        or re.fullmatch(r"[0-9a-f]{40}", successor_head) is None
+    ):
+        raise ValueError("Product v0.2.3.2.3 squash successor head differs")
+    _require_commit(root, merged_successor_commit)
+    _require_commit(root, successor_head)
+    _require_ancestry(root, merged_successor_commit, "HEAD")
+    return successor_head
+
+
 def _require_pr84_tracked_bytes(root: Path, tracked: object) -> None:
     if not isinstance(tracked, list) or not tracked:
         raise ValueError("Product v0.2.3.2.3 PR #84 bindings differ")
@@ -125,15 +167,21 @@ def _require_pr84_tracked_bytes(root: Path, tracked: object) -> None:
         local = root / relative
         predecessor = _git_bytes(root, PR84_HEAD_V02323, relative)
         if (
-            local.is_symlink()
-            or not local.is_file()
-            or local.read_bytes() != predecessor
-            or len(predecessor) != expected_size
+            len(predecessor) != expected_size
             or hashlib.sha256(predecessor).hexdigest() != expected_sha256
+        ):
+            raise ValueError(f"Product v0.2.3.2.3 PR #84 bytes differ: {relative}")
+        if local.is_symlink() or not local.is_file():
+            raise ValueError(f"Product v0.2.3.2.3 successor path differs: {relative}")
+        if (
+            relative not in PR84_SUCCESSOR_OVERRIDES_V02323
+            and local.read_bytes() != predecessor
         ):
             raise ValueError(f"Product v0.2.3.2.3 PR #84 bytes differ: {relative}")
     if paths != sorted(set(paths)):
         raise ValueError("Product v0.2.3.2.3 PR #84 path set differs")
+    if not PR84_SUCCESSOR_OVERRIDES_V02323.issubset(paths):
+        raise ValueError("Product v0.2.3.2.3 successor override differs")
 
 
 def verify_product_v02323_history(
@@ -143,14 +191,12 @@ def verify_product_v02323_history(
 ) -> dict[str, object]:
     project = Path(root).resolve(strict=True)
     manifest = _load_object(
-        manifest_path
-        or project / "config/product-v02323/historical-results.v1.json"
+        manifest_path or project / "config/product-v02323/historical-results.v1.json"
     )
     body = dict(manifest)
     supplied_sha256 = body.pop("manifest_sha256", None)
     if (
-        manifest.get("schema_version")
-        != "ecomsre.product-v02323.historical-results.v1"
+        manifest.get("schema_version") != "ecomsre.product-v02323.historical-results.v1"
         or manifest.get("goal_version")
         != "ecomsre-product-v02323-schema8-reconstruction-diagnosis-replay-v1"
         or manifest.get("starting_main") != STARTING_MAIN_V02323
@@ -169,17 +215,14 @@ def verify_product_v02323_history(
         or not isinstance(pr83, Mapping)
         or not isinstance(pr84, Mapping)
         or pr82.get("pr") != 82
-        or pr82.get("branch")
-        != "codex/product-v0232-healthy-traffic-evidence-nofault"
+        or pr82.get("branch") != "codex/product-v0232-healthy-traffic-evidence-nofault"
         or pr82.get("head") != PR82_HEAD_V02323
-        or pr82.get("terminal")
-        != "BLOCKED_ECOMSRE_PRODUCT_V0232_TRAFFIC_PREFLIGHT"
+        or pr82.get("terminal") != "BLOCKED_ECOMSRE_PRODUCT_V0232_TRAFFIC_PREFLIGHT"
         or pr82.get("safe_error_code") != "RUN_ID_SCHEMA_PATTERN_MISMATCH"
         or pr82.get("business_traffic_completed") != 0
         or pr82.get("formal_traffic_executions") != 0
         or pr83.get("pr") != 83
-        or pr83.get("branch")
-        != "codex/product-v02321-traffic-harness-repair-nofault"
+        or pr83.get("branch") != "codex/product-v02321-traffic-harness-repair-nofault"
         or pr83.get("head") != PR83_HEAD_V02323
         or pr83.get("formal_terminal")
         != "BLOCKED_ECOMSRE_PRODUCT_V02321_NOFAULT_INFRASTRUCTURE"
@@ -198,14 +241,12 @@ def verify_product_v02323_history(
         or pr83.get("product_cleanup") != "CLEAN"
         or pr83.get("demo_cleanup") != "CLEAN"
         or pr84.get("pr") != 84
-        or pr84.get("branch")
-        != "codex/product-v02322-diagnosis-forensics-replay"
+        or pr84.get("branch") != "codex/product-v02322-diagnosis-forensics-replay"
         or pr84.get("head") != PR84_HEAD_V02323
         or pr84.get("terminal")
         != "BLOCKED_ECOMSRE_PRODUCT_V02322_PRIVATE_PRODUCT_STATE"
         or pr84.get("completed_increment") != 2
-        or pr84.get("completed_terminals")
-        != EXPECTED_PR84_COMPLETED_TERMINALS_V02323
+        or pr84.get("completed_terminals") != EXPECTED_PR84_COMPLETED_TERMINALS_V02323
         or pr84.get("diagnosis_persistence_replay_attempts") != 0
         or manifest.get("counters") != EXPECTED_COUNTERS_V02323
         or manifest.get("authority") != EXPECTED_AUTHORITY_V02323
@@ -215,15 +256,12 @@ def verify_product_v02323_history(
     digest = manifest.get("lost_schema8_raw_digest_binding")
     if (
         not isinstance(digest, Mapping)
-        or digest.get("expected_digest_full")
-        != EXPECTED_SCHEMA8_RAW_SHA256_V02323
+        or digest.get("expected_digest_full") != EXPECTED_SCHEMA8_RAW_SHA256_V02323
         or digest.get("observed_contaminated_digest_full")
         != OBSERVED_SCHEMA9_RAW_SHA256_V02323
         or digest.get("expected_digest_kind") != "RAW_SQLITE_FILE_SHA256"
-        or digest.get("expected_digest_source_field")
-        != "source_database_file_sha256"
-        or digest.get("source_artifact_role")
-        != "PRE_MIGRATION_RAW_SQLITE_SHASUM_EVENT"
+        or digest.get("expected_digest_source_field") != "source_database_file_sha256"
+        or digest.get("source_artifact_role") != "PRE_MIGRATION_RAW_SQLITE_SHASUM_EVENT"
         or digest.get("source_artifact_locator")
         != (
             ".local/product-v02323/forensics/digest-source/"
@@ -255,10 +293,14 @@ def verify_product_v02323_history(
     _require_ancestry(project, STARTING_MAIN_V02323, PR82_HEAD_V02323)
     _require_ancestry(project, PR82_HEAD_V02323, PR83_HEAD_V02323)
     _require_ancestry(project, PR83_HEAD_V02323, PR84_HEAD_V02323)
-    _require_ancestry(project, PR84_HEAD_V02323, "HEAD")
+    successor_descendant = _successor_history_descendant(project)
+    _require_ancestry(project, PR84_HEAD_V02323, successor_descendant)
     _require_pr84_tracked_bytes(project, manifest.get("pr84_tracked_files"))
 
-    prior = verify_product_v02322_history(project)
+    prior = verify_product_v02322_history(
+        project,
+        descendant_revision=successor_descendant,
+    )
     if (
         prior["pr82_terminal"] != pr82["terminal"]
         or prior["pr83_formal_terminal"] != pr83["formal_terminal"]
@@ -271,6 +313,7 @@ def verify_product_v02323_history(
         "terminal": HISTORY_AND_BLOCKER_PASS_V02323,
         "starting_main": STARTING_MAIN_V02323,
         "predecessor_head": PR84_HEAD_V02323,
+        "successor_descendant": successor_descendant,
         "pr82_terminal": pr82["terminal"],
         "pr83_formal_terminal": pr83["formal_terminal"],
         "pr83_repository_terminal": pr83["repository_terminal"],
@@ -288,7 +331,9 @@ def verify_product_v02323_history(
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[2])
+    parser.add_argument(
+        "--root", type=Path, default=Path(__file__).resolve().parents[2]
+    )
     arguments = parser.parse_args(argv)
     print(json.dumps(verify_product_v02323_history(arguments.root), sort_keys=True))
     return 0
@@ -298,4 +343,7 @@ if __name__ == "__main__":
     raise SystemExit(main())
 
 
-__all__ = ("verify_product_v02323_history",)
+__all__ = (
+    "PR84_SUCCESSOR_OVERRIDES_V02323",
+    "verify_product_v02323_history",
+)

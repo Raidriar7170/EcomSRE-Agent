@@ -1,0 +1,73 @@
+{
+  "schema_version": "ecomsre.product.fresh-formal-handoff.v02323",
+  "goal_version": "ecomsre-product-v02323-schema8-reconstruction-diagnosis-replay-v1",
+  "terminal": "ECOMSRE_PRODUCT_V02323_FRESH_FORMAL_NOFAULT_HANDOFF_READY",
+  "merged_successor_commit": "d1a2f934620bf904d354e176732d3e66bfe6bbca",
+  "successor_pull_request": 85,
+  "successor_merge": {
+    "pull_request": 85,
+    "state": "CLOSED",
+    "merged": true,
+    "merged_at": "2026-08-31T12:48:04Z",
+    "merge_commit_sha": "d1a2f934620bf904d354e176732d3e66bfe6bbca",
+    "head_ref": "codex/product-v02323-schema8-reconstruction-replay",
+    "head_sha": "75ab277982c25be6d2b37e027db247526580a111",
+    "base_ref": "main"
+  },
+  "predecessor_closeout": [
+    {
+      "pull_request": 82,
+      "state": "CLOSED",
+      "merged": false,
+      "merged_at": null,
+      "disposition": "SUPERSEDED_WITHOUT_MERGE",
+      "superseded_comment_marker": "ECOMSRE_PRODUCT_V02323_SUPERSEDED_BY_PR85_WITHOUT_MERGE"
+    },
+    {
+      "pull_request": 83,
+      "state": "CLOSED",
+      "merged": false,
+      "merged_at": null,
+      "disposition": "SUPERSEDED_WITHOUT_MERGE",
+      "superseded_comment_marker": "ECOMSRE_PRODUCT_V02323_SUPERSEDED_BY_PR85_WITHOUT_MERGE"
+    },
+    {
+      "pull_request": 84,
+      "state": "CLOSED",
+      "merged": false,
+      "merged_at": null,
+      "disposition": "SUPERSEDED_WITHOUT_MERGE",
+      "superseded_comment_marker": "ECOMSRE_PRODUCT_V02323_SUPERSEDED_BY_PR85_WITHOUT_MERGE"
+    }
+  ],
+  "forensic_source_snapshot_sha256": "ac6bb8da8ba83d3a7a2879afa9f530efc7b75e08950a8429e3aeb0eeb6c1c814",
+  "digest_semantics_audit_sha256": "213b697be26f88752a14708882ab7e39032d1aa9c73e6558a94a1fed804e6183",
+  "schema9_contamination_audit_sha256": "0bb6380066297673d5df49f296e71a64b0cdf08b0d2efc86cb5c857304c5395c",
+  "reconstruction_disposition": "PRISTINE_BASE_DELTA_RECONSTRUCTION",
+  "reconstruction_disposition_sha256": "2484d82229338cf60ce7a477d630bf7faa3f416677e4a3f7293335731a3e4d01",
+  "sealed_schema8_reconstruction_sha256": "bb71d4eea393e01d697b3b6f32e0286e0f52edc211a5ee60db9497a983c5ec25",
+  "replay_classification": "STRUCTURAL_CONTRACT_REPLAY",
+  "root_cause_disposition": "ECOMSRE_PRODUCT_V02323_ORIGINAL_ROOT_CAUSE_UNPROVEN",
+  "root_cause_disposition_sha256": "1ec6fb08f653126511aaa22e4a9bf21ab994cefec68d6b095af9e98cf100c52d",
+  "targeted_repair_sha256": null,
+  "diagnosis_replay_result_sha256": "20642e01c367f5cfc7ef481ae900d52587ee179676da0a188f6ca2519b962ea6",
+  "stage_journal_contract_sha256": "270b28c0b26544ddc551bd476ddad8551f21c06bfad3e3c490b04e2ff010a0f3",
+  "private_failure_contract_sha256": "4aebb50acef0e21a964cdb812cd4d2b6aa8983d3ff106e3d05a8a4df7aa61812",
+  "repository_state_manifest_sha256": "81512ecaf550a2e5407d4f00c31d0ad5aba69ad85edcb19225484faaed0492dc",
+  "pr83_formal_blocker_sha256": "2f8f6fd26c7783091c00fb9cdcfaa29f145b4d29b31f16ec6ac1c8fb3e9999f1",
+  "next_milestone": {
+    "version": "Product v0.2.3.3",
+    "name": "Fresh Formal Evidence-Bound No-Fault Acceptance",
+    "requirements": [
+      "NEW_PRODUCT_STATE_CLONE",
+      "NEW_HEALTHY_FORMAL_WORKLOAD",
+      "NEW_PRODUCT_INCIDENT",
+      "NEW_PRODUCT_DIAGNOSIS",
+      "ONE_MEASURED_TERMINAL"
+    ]
+  },
+  "replay_is_live_nofault_result": false,
+  "measured_nofault_authority": "NONE",
+  "knowledge_loop_authority": "NONE",
+  "handoff_sha256": "72d272951412d696d50fb6ee44c96bbc4a1a6e5ace63d574b0636297b848847f"
+}
