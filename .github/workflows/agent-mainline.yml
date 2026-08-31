@@ -279,6 +279,8 @@ jobs:
         run: make agent-demo
 
       - name: Full repository tests
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: uv run --frozen --no-sync pytest -q
 
       - name: Ruff
