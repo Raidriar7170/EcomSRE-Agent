@@ -14,6 +14,9 @@ from ecomsre.product.jobs.contracts import (
     ProductJobStatusV1,
     ProductJobTypeV1,
 )
+from ecomsre.product.incidents.diagnosis_pipeline_v02322 import (
+    DiagnosisPublicFailureProjectionV02322,
+)
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
 
 
@@ -201,6 +204,7 @@ class JobRepositoryV1:
         attempt_count: int,
         safe_error_code: str,
         *,
+        public_failure_v02322: DiagnosisPublicFailureProjectionV02322 | None = None,
         now: float | None = None,
     ) -> ProductJobRecordV1:
         if not re.fullmatch(r"[A-Z][A-Z0-9_]{0,95}", safe_error_code):
@@ -212,6 +216,7 @@ class JobRepositoryV1:
             ProductJobStatusV1.FAILED,
             result=None,
             safe_error_code=safe_error_code,
+            public_failure_v02322=public_failure_v02322,
             now=now,
         )
 
@@ -224,7 +229,8 @@ class JobRepositoryV1:
         *,
         result: dict[str, Any] | None,
         safe_error_code: str | None,
-        now: float | None,
+        public_failure_v02322: DiagnosisPublicFailureProjectionV02322 | None = None,
+        now: float | None = None,
     ) -> ProductJobRecordV1:
         timestamp = time.time() if now is None else now
         with self.store.connect() as connection:
@@ -233,13 +239,30 @@ class JobRepositoryV1:
                 cursor = connection.execute(
                     """UPDATE diagnosis_jobs
                        SET status = ?, result_json = ?, safe_error_code = ?,
-                           claimed_by = NULL, lease_expires_at = NULL, updated_at = ?
+                           failure_stage = ?, exception_fingerprint = ?,
+                           journal_tail_sha256 = ?, claimed_by = NULL,
+                           lease_expires_at = NULL, updated_at = ?
                        WHERE job_id = ? AND status = ? AND claimed_by = ?
                          AND attempt_count = ? AND lease_expires_at > ?""",
                     (
                         status.value,
                         None if result is None else _json(result),
                         safe_error_code,
+                        (
+                            None
+                            if public_failure_v02322 is None
+                            else public_failure_v02322.failure_stage.value
+                        ),
+                        (
+                            None
+                            if public_failure_v02322 is None
+                            else public_failure_v02322.exception_fingerprint
+                        ),
+                        (
+                            None
+                            if public_failure_v02322 is None
+                            else public_failure_v02322.journal_tail_sha256
+                        ),
                         timestamp,
                         job_id,
                         ProductJobStatusV1.RUNNING.value,
@@ -282,6 +305,9 @@ class JobRepositoryV1:
             payload=json.loads(row["payload_json"]),
             result=None if row["result_json"] is None else json.loads(row["result_json"]),
             safe_error_code=row["safe_error_code"],
+            failure_stage=row["failure_stage"],
+            exception_fingerprint=row["exception_fingerprint"],
+            journal_tail_sha256=row["journal_tail_sha256"],
             idempotency_key=row["idempotency_key"],
             claimed_by=row["claimed_by"],
             lease_expires_at=row["lease_expires_at"],

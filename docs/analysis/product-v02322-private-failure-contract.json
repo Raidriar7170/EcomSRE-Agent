@@ -1,0 +1,54 @@
+{
+  "schema_version": "ecomsre.product.private-failure-contract.v02322",
+  "goal_version": "ecomsre-product-v02322-diagnosis-forensics-replay-v1",
+  "private_path": "<data-root>/private/diagnosis-failures/<job-id>/<failure-id>.json",
+  "file_mode": "0600",
+  "maximum_product_owned_frames": 12,
+  "maximum_cause_chain_entries": 5,
+  "maximum_message_characters": 512,
+  "public_projection_fields": [
+    "safe_error_code",
+    "failure_stage",
+    "exception_fingerprint",
+    "journal_tail_sha256"
+  ],
+  "private_binding_fields": [
+    "job_payload_sha256",
+    "incident_sha256",
+    "baseline_sha256",
+    "identity_sha256",
+    "capability_sha256",
+    "read_acquisition_sha256",
+    "bridge_output_sha256",
+    "prepared_evidence_sha256",
+    "journal_tail_sha256",
+    "source_code_sha256_by_frame",
+    "traceback_sha256",
+    "failure_envelope_sha256"
+  ],
+  "excluded_private_content": [
+    "AUTHORIZATION_HEADERS",
+    "CONNECTOR_CREDENTIALS",
+    "RAW_FULL_LOG_BODIES",
+    "COMPLETE_EVIDENCE_PAYLOADS",
+    "COMPLETE_SYNTHETIC_PAYMENT_DATA",
+    "HOST_SECRET_PATHS_OUTSIDE_PRODUCT_DATA_ROOT"
+  ],
+  "typed_pipeline_artifacts": [
+    "DiagnosisPipelineContextV02322",
+    "DiagnosisAcquisitionArtifactV02322",
+    "DiagnosisBridgeArtifactV02322",
+    "DiagnosisPersistencePlanV02322"
+  ],
+  "source_sha256": {
+    "src/ecomsre/product/incidents/diagnosis_pipeline_v02322.py": "e6e9f211f8234f8d806892f47349e228efc14c80d70aac9cd96d2e8cac06d067",
+    "src/ecomsre/product/incidents/repository.py": "8410de5ce08d02f61f5eaf0af3a5a5db059fa060051d2ba28b148e6c8121ac44",
+    "src/ecomsre/product/jobs/handlers.py": "41685219d5437d123a6998168eebcd39d135bb98a4779cf17e9beadd65816baa",
+    "src/ecomsre/product/jobs/worker.py": "2ce5c3f21a66b33856fc6441456af5dfec30c84b5963ffe217be895eb037d13e"
+  },
+  "public_secret_count": 0,
+  "provider_calls": 0,
+  "docker_calls": 0,
+  "terminal": "ECOMSRE_PRODUCT_V02322_PRIVATE_FAILURE_EVIDENCE_PASS",
+  "contract_sha256": "4aebb50acef0e21a964cdb812cd4d2b6aa8983d3ff106e3d05a8a4df7aa61812"
+}

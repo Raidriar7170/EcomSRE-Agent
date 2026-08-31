@@ -1,0 +1,59 @@
+{
+  "schema_version": "ecomsre.product.diagnosis-stage-journal-contract.v02322",
+  "goal_version": "ecomsre-product-v02322-diagnosis-forensics-replay-v1",
+  "sqlite_schema_version": 9,
+  "table": "diagnosis_stage_events_v02322",
+  "stage_count": 28,
+  "deterministic_failure_stage_count": 27,
+  "stages": [
+    "JOB_CLAIMED",
+    "INCIDENT_LOAD_STARTED",
+    "INCIDENT_LOADED",
+    "BASELINE_BINDING_STARTED",
+    "BASELINE_BOUND",
+    "SERVICE_IDENTITY_BINDING_STARTED",
+    "SERVICE_IDENTITY_BOUND",
+    "CAPABILITY_BINDING_STARTED",
+    "CAPABILITY_BOUND",
+    "ENVIRONMENT_LOAD_STARTED",
+    "ENVIRONMENT_LOADED",
+    "READ_ACQUISITION_STARTED",
+    "READ_ACQUISITION_COMPLETED",
+    "BRIDGE_DIAGNOSIS_STARTED",
+    "BRIDGE_DIAGNOSIS_COMPLETED",
+    "EVIDENCE_PREPARE_STARTED",
+    "EVIDENCE_OBJECTS_PREPARED",
+    "LIMITATION_BINDING_STARTED",
+    "LIMITATION_BINDING_COMPLETED",
+    "EVIDENCE_INDEX_STARTED",
+    "EVIDENCE_INDEX_VALIDATED",
+    "OBJECT_STORE_PREPARE_STARTED",
+    "OBJECT_STORE_PREPARED",
+    "SQL_TRANSACTION_STARTED",
+    "DIAGNOSIS_PERSISTED",
+    "JOB_RESULT_PREPARED",
+    "JOB_SUCCEEDED",
+    "FAILED"
+  ],
+  "statuses": [
+    "STARTED",
+    "PASSED",
+    "FAILED"
+  ],
+  "constraints": [
+    "UNIQUE(job_id, ordinal)",
+    "UNIQUE(event_sha256)",
+    "NO_UPDATE_PATH",
+    "NO_DELETE_PATH",
+    "ONE_CANONICAL_CHAIN",
+    "ONE_TERMINAL_EVENT"
+  ],
+  "source_sha256": {
+    "src/ecomsre/product/incidents/diagnosis_pipeline_v02322.py": "e6e9f211f8234f8d806892f47349e228efc14c80d70aac9cd96d2e8cac06d067",
+    "src/ecomsre/product/incidents/diagnosis_stage_journal_v02322.py": "adf69f1f2620711ede7bdf5e8912d9f9f9d08b1ae5b6245427c7492ac4198b30",
+    "src/ecomsre/product/storage/migrations.py": "b75322e59c4714ef52ab58226f3f6545eafbe518aaa96d7f18227cdf84c46923"
+  },
+  "focused_test_count": 31,
+  "terminal": "ECOMSRE_PRODUCT_V02322_DIAGNOSIS_STAGE_JOURNAL_PASS",
+  "contract_sha256": "270b28c0b26544ddc551bd476ddad8551f21c06bfad3e3c490b04e2ff010a0f3"
+}

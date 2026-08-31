@@ -34,6 +34,9 @@ class ProductJobRecordV1(ProductModelV1):
     payload: dict[str, Any]
     result: dict[str, Any] | None = None
     safe_error_code: str | None = None
+    failure_stage: str | None = None
+    exception_fingerprint: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    journal_tail_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     idempotency_key: str | None = None
     claimed_by: str | None = None
     lease_expires_at: float | None = None
