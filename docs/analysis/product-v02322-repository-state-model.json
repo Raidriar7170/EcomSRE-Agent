@@ -1,0 +1,28 @@
+{
+  "schema_version": "ecomsre.product.repository-state-model-report.v02322",
+  "goal_version": "ecomsre-product-v02322-diagnosis-forensics-replay-v1",
+  "terminal": "ECOMSRE_PRODUCT_V02322_REPOSITORY_STATE_MODEL_PASS",
+  "current_phase": "FORMAL_BLOCKED_DIAGNOSIS",
+  "repository_state_manifest_sha256": "92da5f2e7bfc2254efba8a72364551fbdd82d8e8394825b4fe3cb811572e3146",
+  "pre_formal_fixture": {
+    "phase": "PRE_FORMAL",
+    "accepted": true,
+    "formal_blocker_absent": true,
+    "pre_formal_semantics_retained": true
+  },
+  "current_tree": {
+    "phase": "FORMAL_BLOCKED_DIAGNOSIS",
+    "accepted": true,
+    "formal_blocker_present": true,
+    "root_cause_absent": true,
+    "replay_result_absent": true,
+    "measured_nofault_result_absent": true,
+    "knowledge_loop_handoff_absent": true
+  },
+  "phase_claims_mutually_exclusive": true,
+  "allowed_artifact_count": 10,
+  "forbidden_artifact_count": 5,
+  "measured_nofault_authority": "NONE",
+  "knowledge_loop_authority": "NONE",
+  "report_sha256": "432908642b9eed53044c8406dd441b90dcb4f909120b98be23d85044169b8637"
+}

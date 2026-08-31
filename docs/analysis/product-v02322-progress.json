@@ -1,0 +1,32 @@
+{
+  "schema_version": "ecomsre.product.progress.v02322",
+  "goal_version": "ecomsre-product-v02322-diagnosis-forensics-replay-v1",
+  "increment": 1,
+  "phase": "FORMAL_BLOCKED_DIAGNOSIS",
+  "terminals": [
+    "ECOMSRE_PRODUCT_V02322_HISTORY_AND_BLOCKER_PASS",
+    "ECOMSRE_PRODUCT_V02322_REPOSITORY_STATE_MODEL_PASS"
+  ],
+  "starting_main": "73fe478886a4f0875b4d60b07b3600e8aae02132",
+  "predecessor_head": "142dc1094926f18e789ece3668c34918f859b512",
+  "historical_manifest_sha256": "748f79c156b8597bb145292aaac046eede351231480aa71eb805d74955f51685",
+  "repository_state_manifest_sha256": "92da5f2e7bfc2254efba8a72364551fbdd82d8e8394825b4fe3cb811572e3146",
+  "formal_healthy_traffic_execution_count": 1,
+  "frozen_formal_traffic_completed": 30,
+  "frozen_successor_incident_count": 1,
+  "frozen_successor_diagnosis_count": 0,
+  "new_business_traffic_execution_count": 0,
+  "new_product_incident_count": 0,
+  "new_baseline_attempt_count": 0,
+  "diagnosis_replay_persistence_attempt_count": 0,
+  "fault_attempt_count": 0,
+  "provider_calls": 0,
+  "agent_writes": 0,
+  "runbook_executions": 0,
+  "docker_calls": 0,
+  "action_authority": "NONE",
+  "measured_nofault_authority": "NONE",
+  "knowledge_loop_authority": "NONE",
+  "next_gate": "INCREMENT_2_DIAGNOSIS_STAGE_JOURNAL_AND_PRIVATE_FAILURE_EVIDENCE",
+  "progress_sha256": "83ba529e758225529c2d8dd1df63ef66e73e821ebfb15ec55a8a9b8847fb899f"
+}
