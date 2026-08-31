@@ -92,6 +92,7 @@ def verify_product_v02323_increment1(
     *,
     source_root: Path | None = None,
     private_root: Path | None = None,
+    allow_later_phase_artifacts: bool = False,
 ) -> dict[str, object]:
     project = Path(root).resolve(strict=True)
     if source_root is None:
@@ -202,12 +203,48 @@ def verify_product_v02323_increment1(
         "knowledge_loop_authority": "NONE",
         "next_gate": "INCREMENT_2_SCHEMA9_CONTAMINATION_AND_SCHEMA8_RECONSTRUCTION",
     }
-    progress_sha256 = _require_exact_sealed_artifact(
-        progress,
-        seal_field="progress_sha256",
-        expected_body=expected_progress_body,
-        label="progress",
-    )
+    if allow_later_phase_artifacts:
+        progress_sha256 = _require_seal(progress, "progress_sha256")
+        required_terminals = {
+            "ECOMSRE_PRODUCT_V02323_HISTORY_AND_BLOCKER_PASS",
+            "ECOMSRE_PRODUCT_V02323_FORENSIC_SOURCE_SNAPSHOT_PASS",
+            "ECOMSRE_PRODUCT_V02323_DIGEST_SEMANTICS_PASS",
+        }
+        observed_terminals = progress.get("terminals")
+        if (
+            progress.get("schema_version") != expected_progress_body["schema_version"]
+            or progress.get("goal_version") != expected_progress_body["goal_version"]
+            or not isinstance(observed_terminals, list)
+            or not required_terminals.issubset(set(observed_terminals))
+            or progress.get("history_audit_sha256") != predecessor_sha256
+            or progress.get("forensic_source_snapshot_sha256")
+            != snapshot.snapshot_sha256
+            or progress.get("source_immutability_proof_sha256")
+            != immutability.proof_sha256
+            or progress.get("digest_semantics_audit_sha256") != digest.audit_sha256
+            or any(progress.get(field) != 0 for field in (
+                "fault_attempt_count",
+                "new_baseline_attempt_count",
+                "new_business_traffic_execution_count",
+                "new_product_incident_count",
+                "diagnosis_persistence_replay_attempt_count",
+                "provider_calls",
+                "agent_writes",
+                "runbook_executions",
+                "docker_calls",
+            ))
+            or progress.get("action_authority") != "NONE"
+            or progress.get("measured_nofault_authority") != "NONE"
+            or progress.get("knowledge_loop_authority") != "NONE"
+        ):
+            raise ValueError("Product v0.2.3.2.3 later progress breaks Increment 1")
+    else:
+        progress_sha256 = _require_exact_sealed_artifact(
+            progress,
+            seal_field="progress_sha256",
+            expected_body=expected_progress_body,
+            label="progress",
+        )
 
     if (
         snapshot.source_schema_version != 9
@@ -259,7 +296,9 @@ def verify_product_v02323_increment1(
         "docs/analysis/product-v02323-diagnosis-replay.json",
         "docs/results/product-v02323-engineering-closeout.json",
     )
-    if any((project / relative).exists() for relative in forbidden):
+    if not allow_later_phase_artifacts and any(
+        (project / relative).exists() for relative in forbidden
+    ):
         raise ValueError("Product v0.2.3.2.3 later-phase artifact exists")
 
     return {
