@@ -78,6 +78,7 @@ def verify_product_v02323_increment2(
     source_root: Path,
     pristine_root: Path,
     formal_private_root: Path,
+    allow_later_phase_artifacts: bool = False,
 ) -> dict[str, object]:
     project = Path(root).resolve(strict=True)
     verify_product_v02323_increment1(
@@ -373,7 +374,29 @@ def verify_product_v02323_increment2(
         "knowledge_loop_authority": "NONE",
         "next_gate": "INCREMENT_3_REPLAY_INPUT_AND_ROOT_CAUSE_DISPOSITION",
     }
-    if progress != {**expected_progress, "progress_sha256": progress_sha256}:
+    if allow_later_phase_artifacts:
+        later_ignored = {"increment", "phase", "terminals", "next_gate"}
+        required_terminals = {
+            "ECOMSRE_PRODUCT_V02323_HISTORY_AND_BLOCKER_PASS",
+            "ECOMSRE_PRODUCT_V02323_FORENSIC_SOURCE_SNAPSHOT_PASS",
+            "ECOMSRE_PRODUCT_V02323_DIGEST_SEMANTICS_PASS",
+            "ECOMSRE_PRODUCT_V02323_SCHEMA9_CONTAMINATION_AUDIT_PASS",
+            "ECOMSRE_PRODUCT_V02323_RECONSTRUCTION_DISPOSITION_FROZEN",
+        }
+        observed_terminals = progress.get("terminals")
+        if (
+            not isinstance(observed_terminals, list)
+            or not required_terminals.issubset(set(observed_terminals))
+            or not isinstance(progress.get("increment"), int)
+            or int(progress["increment"]) < 2
+            or any(
+                progress.get(key) != value
+                for key, value in expected_progress.items()
+                if key not in later_ignored
+            )
+        ):
+            raise ValueError("Product v0.2.3.2.3 later progress breaks Increment 2")
+    elif progress != {**expected_progress, "progress_sha256": progress_sha256}:
         raise ValueError("Product v0.2.3.2.3 Increment 2 progress differs")
     for relative, required in (
         (
