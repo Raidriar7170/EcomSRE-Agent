@@ -227,12 +227,13 @@ def verify_product_v02323_increment1(
                 "new_baseline_attempt_count",
                 "new_business_traffic_execution_count",
                 "new_product_incident_count",
-                "diagnosis_persistence_replay_attempt_count",
                 "provider_calls",
                 "agent_writes",
                 "runbook_executions",
                 "docker_calls",
             ))
+            or progress.get("diagnosis_persistence_replay_attempt_count")
+            not in {0, 1}
             or progress.get("action_authority") != "NONE"
             or progress.get("measured_nofault_authority") != "NONE"
             or progress.get("knowledge_loop_authority") != "NONE"

@@ -79,11 +79,15 @@ DIAGNOSIS_FORENSICS_PASS_V02323 = "ECOMSRE_PRODUCT_V02323_DIAGNOSIS_FORENSICS_PA
 ROOT_CAUSE_DISPOSITION_FROZEN_V02323 = (
     "ECOMSRE_PRODUCT_V02323_ROOT_CAUSE_DISPOSITION_FROZEN"
 )
+DIAGNOSIS_PIPELINE_REPLAY_PASS_V02323 = (
+    "ECOMSRE_PRODUCT_V02323_DIAGNOSIS_PIPELINE_REPLAY_PASS"
+)
 ORIGINAL_ROOT_CAUSE_UNPROVEN_V02323 = (
     "ECOMSRE_PRODUCT_V02323_ORIGINAL_ROOT_CAUSE_UNPROVEN"
 )
 REPLAY_INPUT_BLOCKER_V02323 = "BLOCKED_ECOMSRE_PRODUCT_V02323_REPLAY_INPUT"
 ROOT_CAUSE_BLOCKER_V02323 = "BLOCKED_ECOMSRE_PRODUCT_V02323_ROOT_CAUSE_DISPOSITION"
+DIAGNOSIS_REPLAY_BLOCKER_V02323 = "BLOCKED_ECOMSRE_PRODUCT_V02323_DIAGNOSIS_REPLAY"
 _SHA256_PATTERN = r"^[0-9a-f]{64}$"
 _EXACT_ACQUISITION_FIELDS = (
     "capability_observations",
@@ -280,6 +284,85 @@ class DiagnosisRootCauseDispositionV02323(ProductModelV1):
         body = self.model_dump(mode="json", exclude={"disposition_sha256"})
         if self.disposition_sha256 != semantic_sha256_v22(body):
             raise ValueError("root-cause disposition seal differs")
+        return self
+
+
+class DiagnosisPipelineReplayResultV02323(ProductModelV1):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    schema_version: Literal["ecomsre.product.diagnosis-pipeline-replay-result.v02323"]
+    goal_version: Literal[
+        "ecomsre-product-v02323-schema8-reconstruction-diagnosis-replay-v1"
+    ]
+    terminal: Literal["ECOMSRE_PRODUCT_V02323_DIAGNOSIS_PIPELINE_REPLAY_PASS"]
+    replay_id: str = Field(pattern=r"^replay-[0-9a-f]{24}$")
+    replay_input_sha256: str = Field(pattern=_SHA256_PATTERN)
+    reconstruction_disposition: Literal["PRISTINE_BASE_DELTA_RECONSTRUCTION"]
+    reconstruction_disposition_sha256: str = Field(pattern=_SHA256_PATTERN)
+    replay_classification: Literal["STRUCTURAL_CONTRACT_REPLAY"]
+    root_cause_disposition: Literal[
+        "ECOMSRE_PRODUCT_V02323_ORIGINAL_ROOT_CAUSE_UNPROVEN"
+    ]
+    root_cause_disposition_sha256: str = Field(pattern=_SHA256_PATTERN)
+    targeted_repair_sha256: None
+    formal_incident_id: str = Field(pattern=r"^inc-[0-9a-f]{24}$")
+    original_failed_job_id: str = Field(pattern=r"^job-[0-9a-f]{24}$")
+    original_failed_job_sha256_before: str = Field(pattern=_SHA256_PATTERN)
+    original_failed_job_sha256_after: str = Field(pattern=_SHA256_PATTERN)
+    recovery_job_id: str = Field(pattern=r"^job-[0-9a-f]{24}$")
+    recovery_job_sha256: str = Field(pattern=_SHA256_PATTERN)
+    recovery_job_status: Literal["SUCCEEDED"]
+    diagnosis_result_sha256: str = Field(pattern=_SHA256_PATTERN)
+    diagnosis_terminal: str
+    evidence_bundle_sha256: str = Field(pattern=_SHA256_PATTERN)
+    evidence_index_sha256: str = Field(pattern=_SHA256_PATTERN)
+    decision_trace_sha256: str = Field(pattern=_SHA256_PATTERN)
+    decision_trace_object_sha256: str = Field(pattern=_SHA256_PATTERN)
+    stage_event_count: Literal[54]
+    stage_journal_terminal: Literal["JOB_SUCCEEDED"]
+    journal_tail_sha256: str = Field(pattern=_SHA256_PATTERN)
+    diagnosis_count_before: int = Field(ge=0)
+    diagnosis_count_after: int = Field(ge=1)
+    evidence_index_count_before: int = Field(ge=0)
+    evidence_index_count_after: int = Field(ge=1)
+    evidence_object_count_before: int = Field(ge=0)
+    evidence_object_count_after: int = Field(ge=7)
+    evidence_link_count_before: int = Field(ge=0)
+    evidence_link_count_after: int = Field(ge=6)
+    job_count_before: int = Field(ge=1)
+    job_count_after: int = Field(ge=2)
+    replay_backend_call_count: Literal[1]
+    original_failed_job_unchanged: Literal[True]
+    sealed_reconstruction_unchanged: Literal[True]
+    forensic_source_snapshot_unchanged: Literal[True]
+    diagnosis_persistence_replay_attempt_count: Literal[1]
+    fault_attempts: Literal[0]
+    new_baseline_attempts: Literal[0]
+    new_business_traffic_executions: Literal[0]
+    new_product_incidents: Literal[0]
+    provider_agent_runbook_docker_calls: Literal[0]
+    measured_nofault_authority: Literal["NONE"]
+    knowledge_loop_authority: Literal["NONE"]
+    result_sha256: str = Field(pattern=_SHA256_PATTERN)
+
+    @model_validator(mode="after")
+    def persistence_replay_is_exact_and_sealed(
+        self,
+    ) -> DiagnosisPipelineReplayResultV02323:
+        if (
+            self.original_failed_job_id == self.recovery_job_id
+            or self.original_failed_job_sha256_before
+            != self.original_failed_job_sha256_after
+            or self.diagnosis_count_after != self.diagnosis_count_before + 1
+            or self.evidence_index_count_after != self.evidence_index_count_before + 1
+            or self.evidence_object_count_after != self.evidence_object_count_before + 7
+            or self.evidence_link_count_after != self.evidence_link_count_before + 6
+            or self.job_count_after != self.job_count_before + 1
+        ):
+            raise ValueError("Diagnosis persistence replay delta differs")
+        body = self.model_dump(mode="json", exclude={"result_sha256"})
+        if self.result_sha256 != semantic_sha256_v22(body):
+            raise ValueError("Diagnosis persistence replay result seal differs")
         return self
 
 
@@ -906,7 +989,9 @@ def freeze_root_cause_unproven_v02323(
 
 __all__ = (
     "DIAGNOSIS_FORENSICS_PASS_V02323",
+    "DIAGNOSIS_PIPELINE_REPLAY_PASS_V02323",
     "DiagnosisForensicsEvidenceV02323",
+    "DiagnosisPipelineReplayResultV02323",
     "DiagnosisReplayClassificationV02323",
     "DiagnosisReplayContractErrorV02323",
     "DiagnosisReplayReadBackendV02323",

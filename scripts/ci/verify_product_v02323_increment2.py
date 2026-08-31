@@ -375,7 +375,13 @@ def verify_product_v02323_increment2(
         "next_gate": "INCREMENT_3_REPLAY_INPUT_AND_ROOT_CAUSE_DISPOSITION",
     }
     if allow_later_phase_artifacts:
-        later_ignored = {"increment", "phase", "terminals", "next_gate"}
+        later_ignored = {
+            "increment",
+            "phase",
+            "terminals",
+            "diagnosis_persistence_replay_attempt_count",
+            "next_gate",
+        }
         required_terminals = {
             "ECOMSRE_PRODUCT_V02323_HISTORY_AND_BLOCKER_PASS",
             "ECOMSRE_PRODUCT_V02323_FORENSIC_SOURCE_SNAPSHOT_PASS",
@@ -389,6 +395,8 @@ def verify_product_v02323_increment2(
             or not required_terminals.issubset(set(observed_terminals))
             or not isinstance(progress.get("increment"), int)
             or int(progress["increment"]) < 2
+            or progress.get("diagnosis_persistence_replay_attempt_count")
+            not in {0, 1}
             or any(
                 progress.get(key) != value
                 for key, value in expected_progress.items()

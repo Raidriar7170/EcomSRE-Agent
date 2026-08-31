@@ -790,6 +790,7 @@ def verify_product_v02323_increment3(
     source_root: Path,
     pristine_root: Path,
     formal_private_root: Path,
+    allow_later_phase_artifacts: bool = False,
 ) -> dict[str, object]:
     project = Path(root).resolve(strict=True)
     increment2 = verify_product_v02323_increment2(
@@ -1330,9 +1331,18 @@ def verify_product_v02323_increment3(
         "knowledge_loop_authority": "NONE",
         "next_gate": "INCREMENT_4_NO_DEFECT_PATH_AND_SINGLE_PERSISTENCE_REPLAY",
     }
-    if len(progress) != 48 or any(
-        progress.get(key) != value for key, value in expected_later.items()
-    ):
+    mutable_later_keys = {
+        "increment",
+        "phase",
+        "terminals",
+        "diagnosis_persistence_replay_attempt_count",
+        "next_gate",
+    }
+    if any(
+        progress.get(key) != value
+        for key, value in expected_later.items()
+        if not allow_later_phase_artifacts or key not in mutable_later_keys
+    ) or (not allow_later_phase_artifacts and len(progress) != 48):
         raise ValueError("Product v0.2.3.2.3 Increment 3 progress differs")
 
     return {
@@ -1360,7 +1370,9 @@ def verify_product_v02323_increment3(
         "reconstruction_verification_sha256": increment2[
             "reconstruction_verification_sha256"
         ],
-        "diagnosis_persistence_replay_attempt_count": 0,
+        "diagnosis_persistence_replay_attempt_count": progress.get(
+            "diagnosis_persistence_replay_attempt_count"
+        ),
         "provider_agent_runbook_docker_calls": 0,
         "measured_nofault_authority": "NONE",
         "knowledge_loop_authority": "NONE",
