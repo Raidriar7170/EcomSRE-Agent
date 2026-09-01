@@ -103,7 +103,9 @@ from scripts.product_v0233.run_formal_nofault import (
     _selected_source,
     _sha256_file,
     _safety_observation,
+    SemanticGenerationTransitionRequiredV0233,
     strict_resume_formal_admission_v0233,
+    terminalize_nonrecoverable_attempt_v0233,
 )
 
 
@@ -236,7 +238,9 @@ def _seal_interrupted_job_v0233(
         ),
         None,
     )
-    pipeline.failing_stage = DiagnosisPipelineStageV02322.BRIDGE_DIAGNOSIS_STARTED
+    # A process interruption between journal events has no truthful fine-grained
+    # stage. Use the contract's neutral fallback and preserve the last passed stage.
+    pipeline.failing_stage = DiagnosisPipelineStageV02322.JOB_CLAIMED
     pipeline.bind_artifacts(
         incident_sha256=acquisition.incident_sha256,
         baseline_sha256=acquisition.baseline_sha256,
@@ -355,6 +359,7 @@ def _start_successor_after_nonrecoverable_v0233(
     attempt_id: str,
     latest: FormalExecutionCheckpointV0233,
     trigger: RuntimeError,
+    successor_semantic_generation: int | None = None,
 ) -> NoFaultAcceptanceResultV0233:
     if latest.state is not FormalExecutionStateV0233.NONRECOVERABLE_FAILURE:
         raise trigger
@@ -394,7 +399,11 @@ def _start_successor_after_nonrecoverable_v0233(
     return run_formal_nofault_v0233(
         project_root=root,
         attempt_id=_next_attempt_id_v0233(ledger),
-        semantic_generation=latest.semantic_generation,
+        semantic_generation=(
+            latest.semantic_generation
+            if successor_semantic_generation is None
+            else successor_semantic_generation
+        ),
     )
 
 
@@ -410,10 +419,40 @@ def resume_formal_nofault_v0233(
     private_root = attempt_root / "execution"
     reservation_path = attempt_root / "reservation.json"
     intent_path = private_root / "terminal-publication.json"
-    latest, semantic, operational = strict_resume_formal_admission_v0233(
-        root,
-        attempt_id=attempt_id,
-    )
+    try:
+        latest, semantic, operational = strict_resume_formal_admission_v0233(
+            root,
+            attempt_id=attempt_id,
+        )
+    except SemanticGenerationTransitionRequiredV0233 as transition:
+        repository = FormalCheckpointRepositoryV0233(attempt_root)
+        invalidated = FormalExecutionCheckpointV0233.build(
+            previous=transition.latest,
+            state=FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
+            created_at=datetime.now(UTC),
+            operational_surface_sha256=(
+                transition.operational.operational_surface_sha256
+            ),
+            formal_clone_sha256=transition.latest.formal_clone_sha256,
+            input_artifact_sha256s=transition.latest.input_artifact_sha256s,
+            output_artifact_sha256s=transition.latest.output_artifact_sha256s,
+        )
+        repository.append(invalidated)
+        terminal = terminalize_nonrecoverable_attempt_v0233(
+            root,
+            attempt_id=attempt_id,
+            latest=invalidated,
+            failure_stage="SEMANTIC_GENERATION_INVALIDATED",
+            safe_error_code="FORMAL_SEMANTIC_GENERATION_CHANGED",
+            next_gate="FRESH_CAPTURE_AT_NEXT_SEMANTIC_GENERATION",
+        )
+        return _start_successor_after_nonrecoverable_v0233(
+            root=root,
+            attempt_id=attempt_id,
+            latest=invalidated,
+            trigger=RuntimeError(terminal),
+            successor_semantic_generation=transition.semantic.semantic_generation,
+        )
     if intent_path.is_file():
         try:
             recovered = _recover_terminal_publication(
@@ -431,6 +470,19 @@ def resume_formal_nofault_v0233(
         if recovered is None:
             raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
         return recovered
+
+    if latest.state is FormalExecutionStateV0233.NONRECOVERABLE_FAILURE:
+        terminal = terminalize_nonrecoverable_attempt_v0233(
+            root,
+            attempt_id=attempt_id,
+            latest=latest,
+        )
+        return _start_successor_after_nonrecoverable_v0233(
+            root=root,
+            attempt_id=attempt_id,
+            latest=latest,
+            trigger=RuntimeError(terminal),
+        )
 
     repository = FormalCheckpointRepositoryV0233(attempt_root)
 

@@ -81,6 +81,27 @@ _FORWARD_TRANSITION: dict[FormalExecutionStateV0233, FormalExecutionStateV0233] 
 _RECOVERY_RESUME_STATES = frozenset(_FORWARD_TRANSITION)
 
 
+def _checkpoint_transition_allowed_v0233(
+    previous: FormalExecutionStateV0233,
+    current: FormalExecutionStateV0233,
+) -> bool:
+    allowed = {
+        _FORWARD_TRANSITION.get(previous),
+        FormalExecutionStateV0233.RECOVERABLE_FAILURE,
+        FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
+    }
+    if previous is FormalExecutionStateV0233.RECOVERABLE_FAILURE:
+        allowed = set(_RECOVERY_RESUME_STATES)
+        allowed.update(
+            {
+                FormalExecutionStateV0233.RECOVERABLE_FAILURE,
+                FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
+            }
+        )
+    allowed.discard(None)
+    return current in allowed
+
+
 def _sorted_sha256_mapping(value: Mapping[str, str]) -> dict[str, str]:
     normalized = dict(sorted(value.items()))
     if any(
@@ -438,21 +459,7 @@ class FormalExecutionCheckpointV0233(ProductModelV1):
             sequence = 1
             previous_sha256 = _ZERO_SHA256
         else:
-            allowed = {
-                _FORWARD_TRANSITION.get(previous.state),
-                FormalExecutionStateV0233.RECOVERABLE_FAILURE,
-                FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
-            }
-            if previous.state is FormalExecutionStateV0233.RECOVERABLE_FAILURE:
-                allowed = set(_RECOVERY_RESUME_STATES)
-                allowed.update(
-                    {
-                        FormalExecutionStateV0233.RECOVERABLE_FAILURE,
-                        FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
-                    }
-                )
-            allowed.discard(None)
-            if state not in allowed:
+            if not _checkpoint_transition_allowed_v0233(previous.state, state):
                 raise ValueError("Product v0.2.3.3 checkpoint transition differs")
             identity = (
                 (campaign_id, previous.campaign_id, "campaign"),
@@ -482,6 +489,15 @@ class FormalExecutionCheckpointV0233(ProductModelV1):
             )
             if formal_clone_sha256 is None:
                 formal_clone_sha256 = previous.formal_clone_sha256
+            elif (
+                previous.formal_clone_sha256 is not None
+                and formal_clone_sha256 != previous.formal_clone_sha256
+            ):
+                raise ValueError("Product v0.2.3.3 checkpoint clone differs")
+            if input_artifact_sha256s is None:
+                input_artifact_sha256s = previous.input_artifact_sha256s
+            if output_artifact_sha256s is None:
+                output_artifact_sha256s = previous.output_artifact_sha256s
             sequence = previous.sequence + 1
             previous_sha256 = previous.checkpoint_sha256
             if created_at < previous.created_at:
@@ -539,7 +555,28 @@ class FormalCheckpointRepositoryV0233:
                 checkpoint.sequence != previous.sequence + 1
                 or checkpoint.previous_checkpoint_sha256
                 != previous.checkpoint_sha256
+                or not _checkpoint_transition_allowed_v0233(
+                    previous.state, checkpoint.state
+                )
+                or checkpoint.campaign_id != previous.campaign_id
+                or checkpoint.semantic_generation != previous.semantic_generation
                 or checkpoint.attempt_id != previous.attempt_id
+                or checkpoint.semantic_surface_sha256
+                != previous.semantic_surface_sha256
+                or checkpoint.source_selection_sha256
+                != previous.source_selection_sha256
+                or checkpoint.input_artifact_sha256s
+                != previous.input_artifact_sha256s
+                or any(
+                    checkpoint.output_artifact_sha256s.get(path) != digest
+                    for path, digest in previous.output_artifact_sha256s.items()
+                )
+                or (
+                    previous.formal_clone_sha256 is not None
+                    and checkpoint.formal_clone_sha256
+                    != previous.formal_clone_sha256
+                )
+                or checkpoint.created_at < previous.created_at
             ):
                 raise ValueError("Product v0.2.3.3 checkpoint chain differs")
         elif checkpoint.sequence != 1:
@@ -575,6 +612,9 @@ class FormalCheckpointRepositoryV0233:
                     checkpoint.sequence != previous.sequence + 1
                     or checkpoint.previous_checkpoint_sha256
                     != previous.checkpoint_sha256
+                    or not _checkpoint_transition_allowed_v0233(
+                        previous.state, checkpoint.state
+                    )
                 ):
                     raise ValueError("Product v0.2.3.3 checkpoint chain differs")
                 if (
@@ -586,6 +626,18 @@ class FormalCheckpointRepositoryV0233:
                     != previous.semantic_surface_sha256
                     or checkpoint.source_selection_sha256
                     != previous.source_selection_sha256
+                    or checkpoint.input_artifact_sha256s
+                    != previous.input_artifact_sha256s
+                    or any(
+                        checkpoint.output_artifact_sha256s.get(path) != digest
+                        for path, digest in previous.output_artifact_sha256s.items()
+                    )
+                    or (
+                        previous.formal_clone_sha256 is not None
+                        and checkpoint.formal_clone_sha256
+                        != previous.formal_clone_sha256
+                    )
+                    or checkpoint.created_at < previous.created_at
                 ):
                     raise ValueError("Product v0.2.3.3 checkpoint identity differs")
             elif checkpoint.sequence != 1:

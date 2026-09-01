@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -17,12 +18,16 @@ from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
     final_diagnosis_idempotency_key_v0233,
 )
 from ecomsre.product.pilot.formal_live_v0233 import (
+    FormalExecutionAdmissionV0233,
+    FormalExecutionReservationV0233,
     FormalObservedStateCountsV0233,
     FormalSafetyObservationV0233,
 )
 from ecomsre.product.pilot.formal_recovery_v0233 import (
     FormalAttemptLedgerV0233,
     FormalAttemptRecordV0233,
+    FormalCheckpointRepositoryV0233,
+    FormalExecutionCheckpointV0233,
     FormalExecutionStateV0233,
 )
 from scripts.product_v0233 import resume_formal_nofault as resume_command
@@ -206,6 +211,294 @@ def test_recovery_starts_next_attempt_only_after_nonrecoverable_terminal_is_seal
             "semantic_generation": 2,
         }
     ]
+
+
+def test_successor_admission_recognizes_only_exact_sealed_prior_publication(
+    tmp_path: Path,
+) -> None:
+    attempt_id = "attempt-2"
+    terminal = "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
+    legacy = FormalAttemptRecordV0233.build(
+        attempt_id="attempt-1",
+        ordinal=1,
+        semantic_generation=1,
+        disposition="LEGACY_BLOCKED",
+        latest_state=FormalExecutionStateV0233.RECOVERABLE_FAILURE,
+        latest_checkpoint_sha256=None,
+        blocker_terminal=terminal,
+        measured_terminal=None,
+        evidence_sha256_by_path={},
+    )
+    retired = FormalAttemptRecordV0233.build(
+        attempt_id=attempt_id,
+        ordinal=2,
+        semantic_generation=2,
+        disposition="NONRECOVERABLE_FAILURE",
+        latest_state=FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
+        latest_checkpoint_sha256=_sha("2"),
+        blocker_terminal=terminal,
+        measured_terminal=None,
+        evidence_sha256_by_path={},
+    )
+    ledger = FormalAttemptLedgerV0233.build(
+        campaign_id="product-v0233-fresh-formal-nofault",
+        attempts=(legacy, retired),
+    )
+    public_payloads = {
+        "docs/analysis/product-v0233-attempts/attempt-2/formal-blocker.json": {
+            "terminal": terminal
+        },
+        "docs/analysis/product-v0233-attempts/attempt-2/repository-state-manifest.json": {
+            "phase": "FORMAL_BLOCKED"
+        },
+        "docs/analysis/product-v0233-attempts/attempt-2/progress.json": {
+            "terminal": terminal
+        },
+        "config/product-v0233/formal-attempt-ledger.json": ledger.model_dump(
+            mode="json"
+        ),
+    }
+    artifacts = [
+        {
+            "path": relative,
+            "mode": "REPLACE_JSON" if relative.startswith("config/") else "CREATE_JSON",
+            "payload": payload,
+        }
+        for relative, payload in public_payloads.items()
+    ]
+    bundle_body = {
+        "schema_version": "ecomsre.product.terminal-publication.v0233",
+        "kind": "BLOCKER",
+        "terminal": terminal,
+        "reservation_sha256": _sha("3"),
+        "artifacts": artifacts,
+    }
+    bundle = {
+        **bundle_body,
+        "publication_sha256": semantic_sha256_v22(bundle_body),
+    }
+    completion_body = {
+        "schema_version": "ecomsre.product.terminal-publication-completion.v0233",
+        "publication_sha256": bundle["publication_sha256"],
+        "terminal": terminal,
+    }
+    private_root = (
+        tmp_path
+        / ".local/product-v0233/attempts/attempt-2/execution"
+    )
+    private_root.mkdir(parents=True)
+    (private_root / "terminal-publication.json").write_text(
+        json.dumps(bundle), encoding="utf-8"
+    )
+    (private_root / "terminal-publication-completion.json").write_text(
+        json.dumps(
+            {
+                **completion_body,
+                "completion_sha256": semantic_sha256_v22(completion_body),
+            }
+        ),
+        encoding="utf-8",
+    )
+    for relative, payload in public_payloads.items():
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(run_command.canonical_json_bytes(payload))
+
+    allowed = run_command._sealed_nonrecoverable_publication_paths_v0233(
+        tmp_path,
+        ledger,
+    )
+    assert allowed == tuple(sorted(public_payloads))
+
+    blocker_path = tmp_path / next(iter(public_payloads))
+    blocker_path.write_text('{"drift":true}\n', encoding="utf-8")
+    with pytest.raises(RuntimeError, match="ACCEPTANCE_ARTIFACTS"):
+        run_command._sealed_nonrecoverable_publication_paths_v0233(
+            tmp_path,
+            ledger,
+        )
+
+
+def _prepared_checkpoint() -> FormalExecutionCheckpointV0233:
+    return FormalExecutionCheckpointV0233.build(
+        previous=None,
+        state=FormalExecutionStateV0233.PREPARED,
+        created_at=datetime(2026, 9, 1, tzinfo=UTC),
+        campaign_id="product-v0233-fresh-formal-nofault",
+        semantic_generation=2,
+        attempt_id="attempt-2",
+        semantic_surface_sha256=_sha("1"),
+        operational_surface_sha256=_sha("2"),
+        source_selection_sha256=_sha("3"),
+        input_artifact_sha256s={},
+        output_artifact_sha256s={},
+    )
+
+
+def test_resume_terminalizes_nonrecoverable_crash_window_before_routing_forward(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    prepared = _prepared_checkpoint()
+    latest = FormalExecutionCheckpointV0233.build(
+        previous=prepared,
+        state=FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
+        created_at=prepared.created_at + timedelta(seconds=1),
+    )
+    semantic = SimpleNamespace(semantic_surface_sha256=_sha("1"))
+    operational = SimpleNamespace(operational_surface_sha256=_sha("2"))
+    calls: list[tuple[str, object]] = []
+    expected = SimpleNamespace(result_sha256=_sha("4"))
+    monkeypatch.setattr(
+        resume_command,
+        "strict_resume_formal_admission_v0233",
+        lambda *_args, **_kwargs: (latest, semantic, operational),
+    )
+    monkeypatch.setattr(
+        resume_command,
+        "terminalize_nonrecoverable_attempt_v0233",
+        lambda *_args, **kwargs: (
+            calls.append(("terminalize", kwargs["latest"])),
+            "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS",
+        )[1],
+    )
+    monkeypatch.setattr(
+        resume_command,
+        "_start_successor_after_nonrecoverable_v0233",
+        lambda **kwargs: (calls.append(("successor", kwargs)), expected)[1],
+    )
+
+    observed = resume_command.resume_formal_nofault_v0233(
+        project_root=tmp_path,
+        attempt_id="attempt-2",
+    )
+
+    assert observed is expected
+    assert calls[0] == ("terminalize", latest)
+    assert calls[1][0] == "successor"
+
+
+def test_nonrecoverable_crash_window_publication_is_executable_and_sealed(
+    tmp_path: Path,
+) -> None:
+    repository_root = Path(run_command.__file__).resolve().parents[2]
+    for relative in (
+        "config/product-v0233/repository-state-manifest.json",
+        "config/product-v0233/formal-attempt-ledger.json",
+        "docs/analysis/product-v0233-progress.json",
+    ):
+        source = repository_root / relative
+        destination = tmp_path / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(source.read_bytes())
+    attempt_root = tmp_path / ".local/product-v0233/attempts/attempt-2"
+    checkpoint_repository = FormalCheckpointRepositoryV0233(attempt_root)
+    prepared = _prepared_checkpoint()
+    failed = FormalExecutionCheckpointV0233.build(
+        previous=prepared,
+        state=FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
+        created_at=prepared.created_at + timedelta(seconds=1),
+    )
+    checkpoint_repository.append(prepared)
+    checkpoint_repository.append(failed)
+    admission = FormalExecutionAdmissionV0233.build(
+        execution_head="1" * 40,
+        campaign_sha256=_sha("1"),
+        source_selection_sha256=_sha("2"),
+        formal_clone_plan_sha256=_sha("3"),
+        formal_contract_freeze_sha256=_sha("4"),
+        pre_execution_review_sha256=_sha("5"),
+        repository_state_manifest_sha256=_sha("6"),
+    )
+    reservation = FormalExecutionReservationV0233.build(
+        admission=admission,
+        reserved_at=datetime(2026, 9, 1, tzinfo=UTC),
+    )
+    reservation_path = attempt_root / "reservation.json"
+    reservation_path.parent.mkdir(parents=True, exist_ok=True)
+    reservation_path.write_text(reservation.model_dump_json(), encoding="utf-8")
+
+    terminal = run_command.terminalize_nonrecoverable_attempt_v0233(
+        tmp_path,
+        attempt_id="attempt-2",
+        latest=failed,
+    )
+
+    public_root = tmp_path / "docs/analysis/product-v0233-attempts/attempt-2"
+    observed_ledger = FormalAttemptLedgerV0233.model_validate_json(
+        (tmp_path / "config/product-v0233/formal-attempt-ledger.json").read_bytes()
+    )
+    assert terminal == "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
+    assert (public_root / "checkpoint-chain.json").is_file()
+    assert (public_root / "formal-blocker.json").is_file()
+    assert observed_ledger.attempts[-1].disposition == "NONRECOVERABLE_FAILURE"
+    assert set(observed_ledger.attempts[-1].evidence_sha256_by_path) == {
+        f"docs/analysis/product-v0233-attempts/attempt-2/{name}"
+        for name in (
+            "checkpoint-chain.json",
+            "formal-blocker.json",
+            "repository-state-manifest.json",
+            "progress.json",
+        )
+    }
+
+
+def test_reviewed_semantic_change_retires_generation_and_starts_fresh_capture(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    attempt_root = tmp_path / ".local/product-v0233/attempts/attempt-2"
+    repository = FormalCheckpointRepositoryV0233(attempt_root)
+    prepared = _prepared_checkpoint()
+    recoverable = FormalExecutionCheckpointV0233.build(
+        previous=prepared,
+        state=FormalExecutionStateV0233.RECOVERABLE_FAILURE,
+        created_at=prepared.created_at + timedelta(seconds=1),
+    )
+    repository.append(prepared)
+    repository.append(recoverable)
+    next_semantic = SimpleNamespace(
+        semantic_generation=3,
+        semantic_surface_sha256=_sha("4"),
+    )
+    next_operational = SimpleNamespace(operational_surface_sha256=_sha("5"))
+    transition = run_command.SemanticGenerationTransitionRequiredV0233(
+        latest=recoverable,
+        semantic=next_semantic,
+        operational=next_operational,
+    )
+    monkeypatch.setattr(
+        resume_command,
+        "strict_resume_formal_admission_v0233",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(transition),
+    )
+    terminalized: list[FormalExecutionCheckpointV0233] = []
+    monkeypatch.setattr(
+        resume_command,
+        "terminalize_nonrecoverable_attempt_v0233",
+        lambda *_args, **kwargs: (
+            terminalized.append(kwargs["latest"]),
+            "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS",
+        )[1],
+    )
+    successor_calls: list[dict[str, object]] = []
+    expected = SimpleNamespace(result_sha256=_sha("6"))
+    monkeypatch.setattr(
+        resume_command,
+        "_start_successor_after_nonrecoverable_v0233",
+        lambda **kwargs: (successor_calls.append(kwargs), expected)[1],
+    )
+
+    observed = resume_command.resume_formal_nofault_v0233(
+        project_root=tmp_path,
+        attempt_id="attempt-2",
+    )
+
+    assert observed is expected
+    assert terminalized[0].state is FormalExecutionStateV0233.NONRECOVERABLE_FAILURE
+    assert terminalized[0].semantic_generation == 2
+    assert successor_calls[0]["successor_semantic_generation"] == 3
+    assert repository.load_chain()[-1] == terminalized[0]
 
 
 @pytest.mark.parametrize(

@@ -47,7 +47,9 @@ def _sha(character: str) -> str:
     return character * 64
 
 
-def _semantic_surface(*, generation: int = 1) -> FormalSemanticSurfaceV0233:
+def _semantic_surface(
+    *, generation: int = 1, nofault_character: str = "c"
+) -> FormalSemanticSurfaceV0233:
     return FormalSemanticSurfaceV0233.build(
         semantic_generation=generation,
         checkout_traffic_contract_sha256=_sha("1"),
@@ -66,7 +68,7 @@ def _semantic_surface(*, generation: int = 1) -> FormalSemanticSurfaceV0233:
             "src/ecomsre/product/jobs/handlers.py": _sha("a"),
             "src/ecomsre/product/incidents/diagnosis_bridge.py": _sha("b"),
         },
-        nofault_scorer_source_sha256=_sha("c"),
+        nofault_scorer_source_sha256=_sha(nofault_character),
         stage_journal_contract_sha256=_sha("d"),
     )
 
@@ -451,6 +453,43 @@ def test_checkpoint_repository_is_append_only_and_rejects_corruption(
         repository.load_chain()
 
 
+def test_checkpoint_repository_rejects_self_sealed_transition_and_identity_drift(
+    tmp_path: Path,
+) -> None:
+    repository = FormalCheckpointRepositoryV0233(
+        tmp_path / ".local/product-v0233/attempts/attempt-2"
+    )
+    prepared = _first_checkpoint()
+    repository.append(prepared)
+    valid = FormalExecutionCheckpointV0233.build(
+        previous=prepared,
+        state=FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY,
+        created_at=prepared.created_at + timedelta(seconds=1),
+    )
+    skipped_payload = valid.model_dump(mode="json", exclude={"checkpoint_sha256"})
+    skipped_payload["state"] = FormalExecutionStateV0233.SCORED.value
+    skipped = FormalExecutionCheckpointV0233.model_validate(
+        {
+            **skipped_payload,
+            "checkpoint_sha256": semantic_sha256_v22(skipped_payload),
+        }
+    )
+    with pytest.raises(ValueError, match="chain"):
+        repository.append(skipped)
+
+    drifted_payload = valid.model_dump(mode="json", exclude={"checkpoint_sha256"})
+    drifted_payload["campaign_id"] = "product-v0233-different-campaign"
+    drifted = FormalExecutionCheckpointV0233.model_validate(
+        {
+            **drifted_payload,
+            "checkpoint_sha256": semantic_sha256_v22(drifted_payload),
+        }
+    )
+    with pytest.raises(ValueError, match="chain"):
+        repository.append(drifted)
+    assert repository.load_chain() == (prepared,)
+
+
 def test_checkpoint_repository_rejects_cross_checkpoint_identity_drift(
     tmp_path: Path,
 ) -> None:
@@ -791,6 +830,57 @@ def test_strict_new_attempt_and_resume_admissions_execute_live_contracts(
     assert latest == recoverable
     assert observed_semantic == semantic
     assert observed_operational == operational
+
+    changed_old_generation = _semantic_surface(
+        generation=2,
+        nofault_character="0",
+    )
+    changed_next_generation = _semantic_surface(
+        generation=3,
+        nofault_character="0",
+    )
+    next_review = RecoveryPreExecutionReviewV0233.build(
+        semantic_generation=3,
+        semantic_surface_sha256=changed_next_generation.semantic_surface_sha256,
+        operational_surface_sha256=operational.operational_surface_sha256,
+    )
+
+    def semantic_transition_review(*_args, **kwargs):
+        if kwargs["semantic_generation"] == 2:
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+        return (
+            "1" * 40,
+            changed_next_generation,
+            operational,
+            next_review,
+        )
+
+    monkeypatch.setattr(
+        run_command,
+        "_strict_recovery_head_review_v0233",
+        semantic_transition_review,
+    )
+    monkeypatch.setattr(
+        run_command,
+        "_formal_surfaces_v0233",
+        lambda *_args, **_kwargs: (changed_old_generation, operational),
+    )
+    with pytest.raises(run_command.SemanticGenerationTransitionRequiredV0233):
+        run_command.strict_resume_formal_admission_v0233(
+            tmp_path,
+            attempt_id="attempt-2",
+        )
+
+    monkeypatch.setattr(
+        run_command,
+        "_strict_recovery_head_review_v0233",
+        lambda *_args, **_kwargs: (
+            "1" * 40,
+            semantic,
+            operational,
+            review,
+        ),
+    )
 
     artifact.write_text('{"drift":true}\n', encoding="utf-8")
     with pytest.raises(ValueError, match="artifact"):

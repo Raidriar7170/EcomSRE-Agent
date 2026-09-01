@@ -426,6 +426,7 @@ def test_interrupted_job_is_terminally_sealed_before_recovery_generation(
     events = DiagnosisStageJournalRepositoryV02322(store).list_events(queued.job_id)
     assert failed.status.value == "FAILED"
     assert failed.safe_error_code == "FORMAL_WORKER_INTERRUPTED"
+    assert failed.failure_stage == "JOB_CLAIMED"
     assert events[-1].stage.value == "FAILED"
     assert events[-1].event_sha256 == failed.journal_tail_sha256
     assert tuple((tmp_path / "private/diagnosis-failures" / queued.job_id).glob("*.json"))

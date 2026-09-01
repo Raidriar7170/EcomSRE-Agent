@@ -539,10 +539,16 @@ def strict_recovery_formal_admission_v0233(
     """Admit one amendment-governed attempt while preserving Attempt 1."""
 
     project = Path(root).resolve(strict=True)
+    ledger = FormalAttemptLedgerV0233.model_validate_json(
+        (project / "config/product-v0233/formal-attempt-ledger.json").read_bytes()
+    )
+    allowed_prior_publication_paths = (
+        _sealed_nonrecoverable_publication_paths_v0233(project, ledger)
+    )
     head, _semantic, _operational, review = _strict_recovery_head_review_v0233(
         project,
         semantic_generation=semantic_generation,
-        allowed_dirty_paths=(),
+        allowed_dirty_paths=allowed_prior_publication_paths,
         allowed_dirty_prefixes=(),
     )
     if attempt_id == "attempt-1":
@@ -557,9 +563,6 @@ def strict_recovery_formal_admission_v0233(
     ):
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
 
-    ledger = FormalAttemptLedgerV0233.model_validate_json(
-        (project / "config/product-v0233/formal-attempt-ledger.json").read_bytes()
-    )
     legacy = build_legacy_attempt1_record_v0233(project)
     manifest = ProductV0233RepositoryStateManifest.model_validate_json(
         (project / "config/product-v0233/repository-state-manifest.json").read_bytes()
@@ -688,6 +691,22 @@ def _strict_recovery_head_review_v0233(
     return head, semantic, operational, review
 
 
+class SemanticGenerationTransitionRequiredV0233(RuntimeError):
+    """A reviewed semantic change must retire the old attempt before fresh capture."""
+
+    def __init__(
+        self,
+        *,
+        latest: FormalExecutionCheckpointV0233,
+        semantic: FormalSemanticSurfaceV0233,
+        operational: FormalOperationalSurfaceV0233,
+    ) -> None:
+        super().__init__("BLOCKED_ECOMSRE_PRODUCT_V0233_SEMANTIC_GENERATION_TRANSITION")
+        self.latest = latest
+        self.semantic = semantic
+        self.operational = operational
+
+
 def strict_resume_formal_admission_v0233(
     root: Path,
     *,
@@ -723,6 +742,12 @@ def strict_resume_formal_admission_v0233(
         if path.is_dir() and not path.is_symlink()
     }
     allowed_paths: set[str] = set()
+    public_attempt_prefix = f"{_attempt_public_locator_v0233(attempt_id)}/"
+    allowed_paths.update(
+        relative
+        for relative in latest.output_artifact_sha256s
+        if relative.startswith(public_attempt_prefix)
+    )
     intent_path = private_root / "terminal-publication.json"
     if intent_path.is_file():
         intent = _object(intent_path)
@@ -764,18 +789,48 @@ def strict_resume_formal_admission_v0233(
         )
     ):
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
-    _head, semantic, operational, _review = _strict_recovery_head_review_v0233(
-        project,
-        semantic_generation=latest.semantic_generation,
-        allowed_dirty_paths=tuple(sorted(allowed_paths)),
-        allowed_dirty_prefixes=(f"{_attempt_public_locator_v0233(attempt_id)}/",),
-    )
+    verify_checkpoint_artifacts_v0233(project, latest)
+    try:
+        _head, semantic, operational, _review = _strict_recovery_head_review_v0233(
+            project,
+            semantic_generation=latest.semantic_generation,
+            allowed_dirty_paths=tuple(sorted(allowed_paths)),
+            allowed_dirty_prefixes=(),
+        )
+    except RuntimeError as original_error:
+        next_generation = latest.semantic_generation + 1
+        try:
+            _head, semantic, operational, _review = (
+                _strict_recovery_head_review_v0233(
+                    project,
+                    semantic_generation=next_generation,
+                    allowed_dirty_paths=tuple(sorted(allowed_paths)),
+                    allowed_dirty_prefixes=(),
+                )
+            )
+        except RuntimeError:
+            raise original_error
+        changed_at_previous_generation = _formal_surfaces_v0233(
+            project,
+            semantic_generation=latest.semantic_generation,
+        )[0]
+        if (
+            changed_at_previous_generation.semantic_surface_sha256
+            == latest.semantic_surface_sha256
+        ):
+            raise RuntimeError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_SEMANTIC_DRIFT"
+            ) from original_error
+        raise SemanticGenerationTransitionRequiredV0233(
+            latest=latest,
+            semantic=semantic,
+            operational=operational,
+        ) from original_error
     if (
         latest.attempt_id != attempt_id
         or latest.semantic_surface_sha256 != semantic.semantic_surface_sha256
     ):
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_SEMANTIC_DRIFT")
-    verify_checkpoint_artifacts_v0233(project, latest)
     return latest, semantic, operational
 
 
@@ -1039,6 +1094,7 @@ _TERMINAL_PUBLICATION_ALLOWED = frozenset(
 _ATTEMPT_PUBLICATION_FILENAMES = frozenset(
     {
         "formal-state-clone.json",
+        "checkpoint-chain.json",
         "formal-closure.json",
         "formal-blocker.json",
         "diagnosis-stage-journal.json",
@@ -1230,6 +1286,275 @@ def _recover_terminal_publication(
             (root / "docs/results/product-v0233-nofault-acceptance.json").read_bytes()
         )
     raise RuntimeError(str(bundle.get("terminal")))
+
+
+def _sealed_nonrecoverable_publication_paths_v0233(
+    root: Path,
+    ledger: FormalAttemptLedgerV0233,
+) -> tuple[str, ...]:
+    """Verify prior failed-attempt publications and admit only their exact bytes."""
+
+    expected_by_path: dict[str, tuple[str, Mapping[str, Any] | str]] = {}
+    for record in ledger.attempts[1:]:
+        if record.disposition != "NONRECOVERABLE_FAILURE":
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+        private_root = (
+            root / _attempt_private_locator_v0233(record.attempt_id) / "execution"
+        )
+        bundle = _object(private_root / "terminal-publication.json")
+        completion = _object(
+            private_root / "terminal-publication-completion.json"
+        )
+        bundle_body = {
+            key: value for key, value in bundle.items() if key != "publication_sha256"
+        }
+        completion_body = {
+            key: value for key, value in completion.items() if key != "completion_sha256"
+        }
+        artifacts = bundle.get("artifacts")
+        if (
+            bundle.get("kind") != "BLOCKER"
+            or bundle.get("terminal") != record.blocker_terminal
+            or bundle.get("publication_sha256") != semantic_sha256_v22(bundle_body)
+            or completion.get("publication_sha256")
+            != bundle.get("publication_sha256")
+            or completion.get("terminal") != record.blocker_terminal
+            or completion.get("completion_sha256")
+            != semantic_sha256_v22(completion_body)
+            or not isinstance(artifacts, list)
+            or not artifacts
+        ):
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+        paths_in_bundle: set[str] = set()
+        attempt_blocker = (
+            f"{_attempt_public_locator_v0233(record.attempt_id)}/formal-blocker.json"
+        )
+        for artifact in artifacts:
+            relative = artifact.get("path") if isinstance(artifact, Mapping) else None
+            mode = artifact.get("mode") if isinstance(artifact, Mapping) else None
+            payload = artifact.get("payload") if isinstance(artifact, Mapping) else None
+            if (
+                not isinstance(relative, str)
+                or relative in paths_in_bundle
+                or not _terminal_publication_path_allowed_v0233(relative)
+                or mode not in {"CREATE_JSON", "CREATE_TEXT", "REPLACE_JSON"}
+                or (mode == "CREATE_TEXT" and not isinstance(payload, str))
+                or (mode != "CREATE_TEXT" and not isinstance(payload, Mapping))
+            ):
+                raise RuntimeError(
+                    "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
+                )
+            paths_in_bundle.add(relative)
+            assert isinstance(mode, str)
+            assert isinstance(payload, (Mapping, str))
+            expected_by_path[relative] = (mode, payload)
+        if attempt_blocker not in paths_in_bundle:
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+
+    for relative, (mode, payload) in expected_by_path.items():
+        path = root / relative
+        expected = (
+            payload.encode("utf-8")
+            if mode == "CREATE_TEXT" and isinstance(payload, str)
+            else canonical_json_bytes(dict(cast(Mapping[str, Any], payload)))
+        )
+        if path.is_symlink() or not path.is_file() or path.read_bytes() != expected:
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+    return tuple(sorted(expected_by_path))
+
+
+def terminalize_nonrecoverable_attempt_v0233(
+    root: Path,
+    *,
+    attempt_id: str,
+    latest: FormalExecutionCheckpointV0233,
+    failure_stage: str = "NONRECOVERABLE_FAILURE_RECOVERY",
+    safe_error_code: str = "FORMAL_NONRECOVERABLE_INTERRUPTION",
+    next_gate: str = "FRESH_CAPTURE_REQUIRED",
+) -> str:
+    """Publish a fail-closed terminal after a pre-acquisition crash window."""
+
+    if (
+        latest.attempt_id != attempt_id
+        or latest.state is not FormalExecutionStateV0233.NONRECOVERABLE_FAILURE
+    ):
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+    attempt_root = root / _attempt_private_locator_v0233(attempt_id)
+    private_root = attempt_root / "execution"
+    reservation = FormalExecutionReservationV0233.model_validate_json(
+        (attempt_root / "reservation.json").read_bytes()
+    )
+    checkpoint_repository = FormalCheckpointRepositoryV0233(attempt_root)
+    checkpoints = checkpoint_repository.load_chain()
+    if not checkpoints or checkpoints[-1] != latest:
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+    verify_checkpoint_artifacts_v0233(root, latest)
+
+    action_journal = FormalActionJournalV0233.build(
+        observation_status="UNAVAILABLE",
+        events=("RESERVATION_CONSUMED",),
+    )
+    safety = FormalSafetyObservationV0233.build(
+        observation_status="UNAVAILABLE",
+        action_journal=action_journal.model_dump(mode="json"),
+        starting_counts=None,
+        ending_counts=None,
+        new_incident_count=0,
+        new_diagnosis_count=0,
+        provider_calls=None,
+        agent_writes=None,
+        runbook_executions=None,
+        fault_attempts=None,
+        knowledge_loop_executions=None,
+        observed_action_authority=None,
+        safe=False,
+    )
+    clone: FreshFormalStateCloneV0233 | None = None
+    clone_path = root / _attempt_public_locator_v0233(attempt_id) / "formal-state-clone.json"
+    if clone_path.is_file() and not clone_path.is_symlink():
+        clone = FreshFormalStateCloneV0233.model_validate_json(clone_path.read_bytes())
+        if clone.clone_sha256 != latest.formal_clone_sha256:
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+    clone_count = 1 if latest.formal_clone_sha256 is not None else 0
+    closure: dict[str, Any] | None = None
+    cleanup_proof_sha256: str | None = None
+    if clone_count == 1:
+        closure_path = private_root / "formal-closure.json"
+        if clone is None or closure_path.is_symlink() or not closure_path.is_file():
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+        closure = _object(closure_path)
+        closure_body = {
+            key: value for key, value in closure.items() if key != "closure_sha256"
+        }
+        cleanup_proof_sha256 = closure.get("closure_sha256")
+        if cleanup_proof_sha256 != semantic_sha256_v22(closure_body):
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+        safety = FormalSafetyObservationV0233.model_validate(
+            closure.get("safety_observation")
+        )
+    blocker = FormalExecutionBlockerV0233.build(
+        terminal="BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS",
+        failure_stage=failure_stage,
+        safe_error_code=safe_error_code,
+        admission_sha256=reservation.admission.admission_sha256,
+        reservation_sha256=reservation.reservation_sha256,
+        formal_clone_count=clone_count,
+        formal_clone_proof_status=("NOT_CREATED" if clone_count == 0 else "OBSERVED"),
+        formal_clone_sha256=None if clone is None else clone.clone_sha256,
+        formal_execution_count=1,
+        new_incident_count=(0 if clone_count == 0 else safety.new_incident_count),
+        new_diagnosis_count=(0 if clone_count == 0 else safety.new_diagnosis_count),
+        cleanup_proof_sha256=cleanup_proof_sha256,
+        safety_observation=safety.model_dump(mode="json"),
+    )
+    blocked_manifest = _updated_manifest(
+        root,
+        phase=RepositoryPhaseV0233.FORMAL_BLOCKED.value,
+        formal_blocker_sha256=blocker.blocker_sha256,
+        cleanup_proof_sha256=cleanup_proof_sha256,
+        formal_clone_count=clone_count,
+        formal_execution_count=1,
+        new_incident_count=blocker.new_incident_count,
+        new_diagnosis_count=blocker.new_diagnosis_count,
+        measured_result_count=0,
+    )
+    blocked_progress = _progress_payload(
+        root,
+        phase="INCREMENT_4_FORMAL_BLOCKED",
+        current_terminal=blocker.terminal,
+        next_gate=next_gate,
+        formal_clone_count=clone_count,
+        formal_execution_count=1,
+        formal_transaction_count=None,
+        new_incident_count=blocker.new_incident_count,
+        new_diagnosis_count=blocker.new_diagnosis_count,
+        measured_result_count=0,
+        formal_blocker_sha256=blocker.blocker_sha256,
+        cleanup_proof_sha256=cleanup_proof_sha256,
+        repository_state_manifest_sha256=blocked_manifest.manifest_sha256,
+    )
+    current = FormalAttemptLedgerV0233.model_validate_json(
+        (root / "config/product-v0233/formal-attempt-ledger.json").read_bytes()
+    )
+    expected_attempt_id = f"attempt-{len(current.attempts) + 1}"
+    if attempt_id != expected_attempt_id or current.measured_result_count != 0:
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+    seed = FormalAttemptRecordV0233.build(
+        attempt_id=attempt_id,
+        ordinal=len(current.attempts) + 1,
+        semantic_generation=latest.semantic_generation,
+        disposition="NONRECOVERABLE_FAILURE",
+        latest_state=latest.state,
+        latest_checkpoint_sha256=latest.checkpoint_sha256,
+        blocker_terminal=blocker.terminal,
+        measured_terminal=None,
+        evidence_sha256_by_path={},
+    )
+    ledger = FormalAttemptLedgerV0233.build(
+        campaign_id=current.campaign_id,
+        attempts=(*current.attempts, seed),
+    )
+    public_attempt_locator = _attempt_public_locator_v0233(attempt_id)
+    artifacts: list[dict[str, Any]] = [
+        {
+            "path": f"{public_attempt_locator}/checkpoint-chain.json",
+            "mode": "CREATE_JSON",
+            "payload": _checkpoint_chain_public_v0233(checkpoints),
+        },
+        {
+            "path": f"{public_attempt_locator}/formal-blocker.json",
+            "mode": "CREATE_JSON",
+            "payload": blocker.model_dump(mode="json"),
+        },
+        {
+            "path": f"{public_attempt_locator}/repository-state-manifest.json",
+            "mode": "CREATE_JSON",
+            "payload": blocked_manifest.model_dump(mode="json"),
+        },
+        {
+            "path": f"{public_attempt_locator}/progress.json",
+            "mode": "CREATE_JSON",
+            "payload": blocked_progress,
+        },
+    ]
+    if clone is not None:
+        artifacts.insert(
+            1,
+            {
+                "path": f"{public_attempt_locator}/formal-state-clone.json",
+                "mode": "CREATE_JSON",
+                "payload": clone.model_dump(mode="json"),
+            },
+        )
+    if closure is not None:
+        artifacts.insert(
+            2,
+            {
+                "path": f"{public_attempt_locator}/formal-closure.json",
+                "mode": "CREATE_JSON",
+                "payload": closure,
+            },
+        )
+    public_ledger = _ledger_with_public_evidence_v0233(ledger, artifacts)
+    artifacts.append(
+        {
+            "path": "config/product-v0233/formal-attempt-ledger.json",
+            "mode": "REPLACE_JSON",
+            "payload": public_ledger.model_dump(mode="json"),
+        }
+    )
+    publication = _terminal_publication_bundle(
+        reservation=reservation,
+        kind="BLOCKER",
+        terminal=blocker.terminal,
+        artifacts=artifacts,
+    )
+    _persist_and_apply_terminal_publication(
+        root=root,
+        private_root=private_root,
+        bundle=publication,
+    )
+    return blocker.terminal
 
 
 def _cardinality(
@@ -1701,11 +2026,37 @@ def _diagnosis_lineage_v0233(
     return {**body, "lineage_sha256": semantic_sha256_v22(body)}
 
 
-def _measured_ledger_with_public_evidence_v0233(
-    measured_ledger: FormalAttemptLedgerV0233,
+def _checkpoint_chain_public_v0233(
+    checkpoints: Sequence[FormalExecutionCheckpointV0233],
+) -> dict[str, Any]:
+    if not checkpoints:
+        raise ValueError("Product v0.2.3.3 checkpoint chain is empty")
+    body = {
+        "schema_version": "ecomsre.product.checkpoint-chain.v0233",
+        "attempt_id": checkpoints[0].attempt_id,
+        "semantic_generation": checkpoints[0].semantic_generation,
+        "checkpoint_count": len(checkpoints),
+        "checkpoints": [
+            {
+                "sequence": checkpoint.sequence,
+                "state": checkpoint.state.value,
+                "previous_checkpoint_sha256": (
+                    checkpoint.previous_checkpoint_sha256
+                ),
+                "checkpoint_sha256": checkpoint.checkpoint_sha256,
+            }
+            for checkpoint in checkpoints
+        ],
+        "latest_checkpoint_sha256": checkpoints[-1].checkpoint_sha256,
+    }
+    return {**body, "chain_sha256": semantic_sha256_v22(body)}
+
+
+def _ledger_with_public_evidence_v0233(
+    ledger: FormalAttemptLedgerV0233,
     terminal_artifacts: Sequence[Mapping[str, Any]],
 ) -> FormalAttemptLedgerV0233:
-    seed = measured_ledger.attempts[-1]
+    seed = ledger.attempts[-1]
     public_evidence: dict[str, str] = {}
     for artifact in terminal_artifacts:
         relative = str(artifact["path"])
@@ -1724,16 +2075,16 @@ def _measured_ledger_with_public_evidence_v0233(
         attempt_id=seed.attempt_id,
         ordinal=seed.ordinal,
         semantic_generation=seed.semantic_generation,
-        disposition="MEASURED",
+        disposition=seed.disposition,
         latest_state=seed.latest_state,
         latest_checkpoint_sha256=seed.latest_checkpoint_sha256,
-        blocker_terminal=None,
+        blocker_terminal=seed.blocker_terminal,
         measured_terminal=seed.measured_terminal,
         evidence_sha256_by_path=public_evidence,
     )
     return FormalAttemptLedgerV0233.build(
-        campaign_id=measured_ledger.campaign_id,
-        attempts=(*measured_ledger.attempts[:-1], public_record),
+        campaign_id=ledger.campaign_id,
+        attempts=(*ledger.attempts[:-1], public_record),
     )
 
 
@@ -1769,6 +2120,22 @@ def _publish_measured_terminal_v0233(
     if not isinstance(closure_sha256, str):
         raise ValueError("Product v0.2.3.3 measured closure differs")
     evidence_sha256 = semantic_sha256_v22(evidence.model_dump(mode="json"))
+    successful_job = recovery_lineage.get("successful_job")
+    rescored_assessment = score_nofault_evidence_v0232(
+        diagnosis=diagnosis,
+        bundle=evidence,
+        index=index,
+        decision_trace=decision_trace,
+    )
+    review = RecoveryPreExecutionReviewV0233.model_validate_json(
+        (
+            root / "docs/analysis/product-v0233-recovery-pre-execution-review.json"
+        ).read_bytes()
+    )
+    selection = FreshFormalSourceSelectionV0233.model_validate_json(
+        (root / "config/product-v0233/source-selection.json").read_bytes()
+    )
+    measured_record = measured_ledger.attempts[-1]
     if (
         result.diagnosis_result_sha256 != diagnosis.result_sha256
         or result.evidence_bundle_sha256 != evidence_sha256
@@ -1782,6 +2149,26 @@ def _publish_measured_terminal_v0233(
         or pipeline.evidence_bundle_sha256 != evidence_sha256
         or pipeline.evidence_index_sha256 != index.index_sha256
         or pipeline.decision_trace_sha256 != decision_trace.trace_sha256
+        or not isinstance(successful_job, Mapping)
+        or pipeline.job_id != recovery_lineage.get("successful_job_id")
+        or successful_job.get("journal_tail_sha256")
+        != pipeline.journal_tail_sha256
+        or pipeline.journal_tail_sha256 != result.stage_journal_tail_sha256
+        or assessment != rescored_assessment
+        or result.measured_terminal
+        != assessment.terminal.value.replace("_V0232_", "_V0233_")
+        or result.reasons != assessment.reasons
+        or recovery_acquisition.campaign_id != measured_ledger.campaign_id
+        or recovery_acquisition.attempt_id != measured_record.attempt_id
+        or recovery_acquisition.semantic_generation
+        != measured_record.semantic_generation
+        or recovery_acquisition.semantic_generation != review.semantic_generation
+        or recovery_acquisition.semantic_surface_sha256
+        != review.semantic_surface_sha256
+        or recovery_acquisition.active_profile_sha256
+        != selection.active_profile_sha256
+        or recovery_acquisition.baseline_sha256
+        != selection.active_baseline_sha256
     ):
         raise ValueError("Product v0.2.3.3 measured evidence binding differs")
     public_outputs = (
@@ -1839,6 +2226,15 @@ def _publish_measured_terminal_v0233(
     repair_requirements = handoff.get("repair_requirements")
     if not isinstance(repair_requirements, (list, tuple)):
         raise ValueError("Product v0.2.3.3 Knowledge handoff differs")
+    checkpoint_chain = _checkpoint_chain_public_v0233(
+        FormalCheckpointRepositoryV0233(private_root.parent).load_chain()
+    )
+    if (
+        checkpoint_chain["attempt_id"] != measured_ledger.attempts[-1].attempt_id
+        or checkpoint_chain["latest_checkpoint_sha256"]
+        != measured_ledger.attempts[-1].latest_checkpoint_sha256
+    ):
+        raise ValueError("Product v0.2.3.3 measured checkpoint chain differs")
     handoff_requirements = (
         "\n".join(f"- {item}" for item in repair_requirements) or "- None"
     )
@@ -1855,6 +2251,11 @@ def _publish_measured_terminal_v0233(
             "path": f"{public_attempt_locator}/formal-state-clone.json",
             "mode": "CREATE_JSON",
             "payload": clone.model_dump(mode="json"),
+        },
+        {
+            "path": f"{public_attempt_locator}/checkpoint-chain.json",
+            "mode": "CREATE_JSON",
+            "payload": checkpoint_chain,
         },
         {
             "path": f"{public_attempt_locator}/formal-closure.json",
@@ -1973,7 +2374,7 @@ def _publish_measured_terminal_v0233(
             "payload": measured_progress,
         },
     ]
-    public_ledger = _measured_ledger_with_public_evidence_v0233(
+    public_ledger = _ledger_with_public_evidence_v0233(
         measured_ledger,
         terminal_artifacts,
     )
@@ -3341,8 +3742,16 @@ def _run_formal_nofault_once_v0233(
             blocker_terminal=blocker.terminal,
             measured_terminal=None,
         )
+        checkpoint_chain = _checkpoint_chain_public_v0233(
+            checkpoint_repository.load_chain()
+        )
         terminal_artifacts.extend(
             (
+                {
+                    "path": f"{public_attempt_locator}/checkpoint-chain.json",
+                    "mode": "CREATE_JSON",
+                    "payload": checkpoint_chain,
+                },
                 {
                     "path": f"{public_attempt_locator}/repository-state-manifest.json",
                     "mode": "CREATE_JSON",
@@ -3353,12 +3762,18 @@ def _run_formal_nofault_once_v0233(
                     "mode": "CREATE_JSON",
                     "payload": blocked_progress,
                 },
-                {
-                    "path": "config/product-v0233/formal-attempt-ledger.json",
-                    "mode": "REPLACE_JSON",
-                    "payload": attempt_ledger.model_dump(mode="json"),
-                },
             )
+        )
+        public_attempt_ledger = _ledger_with_public_evidence_v0233(
+            attempt_ledger,
+            terminal_artifacts,
+        )
+        terminal_artifacts.append(
+            {
+                "path": "config/product-v0233/formal-attempt-ledger.json",
+                "mode": "REPLACE_JSON",
+                "payload": public_attempt_ledger.model_dump(mode="json"),
+            }
         )
         publication = _terminal_publication_bundle(
             reservation=reservation,

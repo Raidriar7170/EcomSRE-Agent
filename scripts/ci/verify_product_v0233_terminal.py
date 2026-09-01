@@ -24,19 +24,23 @@ from ecomsre.product.pilot.formal_live_v0233 import (
     RuntimeAuthorityProofV0233,
 )
 from ecomsre.product.pilot.fresh_formal_source_v0233 import (
+    FreshFormalSourceSelectionV0233,
     FreshFormalStateCloneV0233,
 )
 from ecomsre.product.pilot.formal_recovery_v0233 import (
     DiagnosisAcquisitionCheckpointV0233,
     FormalAttemptLedgerV0233,
+    RecoveryPreExecutionReviewV0233,
     build_legacy_attempt1_record_v0233,
 )
 from ecomsre.product.pilot.fresh_formal_acceptance_v0233 import (
+    DiagnosisPipelineAcceptanceV0233,
     NoFaultAcceptanceResultV0233,
 )
 from ecomsre.product.pilot.healthy_traffic_v0232 import IncidentTrafficBindingV0232
 from ecomsre.product.pilot.nofault_acceptance_v0232 import (
     NoFaultEvidenceAssessmentV0232,
+    score_nofault_evidence_v0232,
 )
 from ecomsre.product.pilot.repository_state_v0233 import (
     ProductV0233RepositoryStateManifest,
@@ -47,6 +51,17 @@ from ecomsre.product.pilot.repository_state_v0233 import (
 _TERMINAL = "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
 _EXECUTION_HEAD = "466796648c2c4a3360b911a12be1ee806d39124e"
 _MANIFEST_SHA256 = "08fdbd61e3fa439b55b1ef903bdea26dee6a3c839129bef53ee99c19a3c61014"
+_V0233_TERMINAL_BY_V0232 = {
+    "ECOMSRE_PRODUCT_V0232_NOFAULT_FULLY_SUPPORTED": (
+        "ECOMSRE_PRODUCT_V0233_NOFAULT_FULLY_SUPPORTED"
+    ),
+    "ECOMSRE_PRODUCT_V0232_NOFAULT_CAPABILITY_LIMITED": (
+        "ECOMSRE_PRODUCT_V0233_NOFAULT_CAPABILITY_LIMITED"
+    ),
+    "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED": (
+        "ECOMSRE_PRODUCT_V0233_NOFAULT_NOT_SUPPORTED"
+    ),
+}
 _REQUIRED_ABSENCES = (
     "docs/analysis/product-v0233-fresh-runtime-snapshot.json",
     "docs/analysis/product-v0233-incident-traffic-binding.json",
@@ -110,17 +125,142 @@ def _verify_required_absences(root: Path, declared: list[object]) -> None:
             )
 
 
+def _verify_checkpoint_chain_v0233(
+    payload: Mapping[str, Any],
+    *,
+    attempt_id: str,
+    semantic_generation: int,
+    latest_checkpoint_sha256: str,
+    latest_state: str,
+) -> None:
+    body = {key: value for key, value in payload.items() if key != "chain_sha256"}
+    checkpoints = payload.get("checkpoints")
+    if not isinstance(checkpoints, list) or not checkpoints:
+        raise ValueError("Product v0.2.3.3 checkpoint chain differs")
+    forward = {
+        "PREPARED": "FORMAL_ENVIRONMENT_READY",
+        "TRAFFIC_PREFLIGHT_PASS": "FORMAL_ENVIRONMENT_READY",
+        "FORMAL_ENVIRONMENT_READY": "FORMAL_TRAFFIC_RUNNING",
+        "FORMAL_TRAFFIC_RUNNING": "FORMAL_TRAFFIC_PASS",
+        "FORMAL_TRAFFIC_PASS": "LIVE_CAPTURE_SEALED",
+        "LIVE_CAPTURE_SEALED": "INCIDENT_CREATED",
+        "INCIDENT_CREATED": "ACQUISITION_SEALED",
+        "ACQUISITION_SEALED": "DIAGNOSIS_RUNNING",
+        "DIAGNOSIS_RUNNING": "DIAGNOSIS_PERSISTED",
+        "DIAGNOSIS_PERSISTED": "SCORED",
+        "SCORED": "CLOSED",
+    }
+    recovery_resume = set(forward)
+    previous_state: str | None = None
+    previous_sha256 = "0" * 64
+    for sequence, checkpoint in enumerate(checkpoints, start=1):
+        if not isinstance(checkpoint, dict):
+            raise ValueError("Product v0.2.3.3 checkpoint chain differs")
+        state = checkpoint.get("state")
+        allowed = (
+            {"PREPARED"}
+            if previous_state is None
+            else (
+                recovery_resume | {"RECOVERABLE_FAILURE", "NONRECOVERABLE_FAILURE"}
+                if previous_state == "RECOVERABLE_FAILURE"
+                else {
+                    forward.get(previous_state),
+                    "RECOVERABLE_FAILURE",
+                    "NONRECOVERABLE_FAILURE",
+                }
+            )
+        )
+        allowed.discard(None)
+        observed_sha256 = checkpoint.get("checkpoint_sha256")
+        if (
+            checkpoint.get("sequence") != sequence
+            or checkpoint.get("previous_checkpoint_sha256") != previous_sha256
+            or state not in allowed
+            or not isinstance(observed_sha256, str)
+            or len(observed_sha256) != 64
+            or any(
+                character not in "0123456789abcdef"
+                for character in observed_sha256
+            )
+        ):
+            raise ValueError("Product v0.2.3.3 checkpoint chain differs")
+        previous_state = state
+        previous_sha256 = observed_sha256
+    if (
+        payload.get("attempt_id") != attempt_id
+        or payload.get("semantic_generation") != semantic_generation
+        or payload.get("checkpoint_count") != len(checkpoints)
+        or payload.get("latest_checkpoint_sha256") != previous_sha256
+        or previous_sha256 != latest_checkpoint_sha256
+        or previous_state != latest_state
+        or payload.get("chain_sha256") != semantic_sha256_v22(body)
+    ):
+        raise ValueError("Product v0.2.3.3 checkpoint chain differs")
+
+
+def _verify_nonrecoverable_history_v0233(
+    project: Path,
+    attempts: Sequence[Any],
+) -> None:
+    for attempt in attempts:
+        prefix = f"docs/analysis/product-v0233-attempts/{attempt.attempt_id}/"
+        required = {
+            f"{prefix}checkpoint-chain.json",
+            f"{prefix}formal-blocker.json",
+            f"{prefix}repository-state-manifest.json",
+            f"{prefix}progress.json",
+        }
+        evidence = attempt.evidence_sha256_by_path
+        if (
+            attempt.disposition != "NONRECOVERABLE_FAILURE"
+            or not evidence
+            or not required.issubset(evidence)
+            or any(not relative.startswith(prefix) for relative in evidence)
+            or any(
+                (project / relative).is_symlink()
+                or not (project / relative).is_file()
+                or _sha256_file(project / relative) != digest
+                for relative, digest in evidence.items()
+            )
+        ):
+            raise ValueError("Product v0.2.3.3 recovery attempt history differs")
+        blocker = FormalExecutionBlockerV0233.model_validate_json(
+            (project / f"{prefix}formal-blocker.json").read_bytes()
+        )
+        checkpoint_chain = _object(project / f"{prefix}checkpoint-chain.json")
+        if blocker.terminal != attempt.blocker_terminal:
+            raise ValueError("Product v0.2.3.3 recovery attempt history differs")
+        assert attempt.latest_checkpoint_sha256 is not None
+        _verify_checkpoint_chain_v0233(
+            checkpoint_chain,
+            attempt_id=attempt.attempt_id,
+            semantic_generation=attempt.semantic_generation,
+            latest_checkpoint_sha256=attempt.latest_checkpoint_sha256,
+            latest_state=attempt.latest_state.value,
+        )
+
+
 def _verify_measured_terminal(
     project: Path,
     ledger: FormalAttemptLedgerV0233,
 ) -> dict[str, object]:
+    expected_attempt_ids = tuple(
+        f"attempt-{ordinal}" for ordinal in range(1, len(ledger.attempts) + 1)
+    )
     if (
         len(ledger.attempts) < 2
         or ledger.attempts[0] != build_legacy_attempt1_record_v0233(project)
+        or tuple(attempt.attempt_id for attempt in ledger.attempts)
+        != expected_attempt_ids
+        or any(
+            attempt.disposition != "NONRECOVERABLE_FAILURE"
+            for attempt in ledger.attempts[1:-1]
+        )
         or ledger.measured_result_count != 1
         or ledger.attempts[-1].disposition != "MEASURED"
     ):
         raise ValueError("Product v0.2.3.3 recovery attempt ledger differs")
+    _verify_nonrecoverable_history_v0233(project, ledger.attempts[1:-1])
     attempt = ledger.attempts[-1]
     attempt_root = project / "docs/analysis/product-v0233-attempts" / attempt.attempt_id
     result = NoFaultAcceptanceResultV0233.model_validate_json(
@@ -159,6 +299,12 @@ def _verify_measured_terminal(
     decision_trace = DiagnosisDecisionTraceV0232.model_validate_json(
         (attempt_root / "decision-trace.json").read_bytes()
     )
+    rescored_assessment = score_nofault_evidence_v0232(
+        diagnosis=diagnosis,
+        bundle=evidence,
+        index=index,
+        decision_trace=decision_trace,
+    )
     closure = FormalClosureProofV0233.model_validate_json(
         (attempt_root / "formal-closure.json").read_bytes()
     )
@@ -167,6 +313,15 @@ def _verify_measured_terminal(
     acquisition_path = attempt_root / "diagnosis-acquisition-checkpoint.json"
     acquisition = DiagnosisAcquisitionCheckpointV0233.model_validate_json(
         acquisition_path.read_bytes()
+    )
+    checkpoint_chain = _object(attempt_root / "checkpoint-chain.json")
+    assert attempt.latest_checkpoint_sha256 is not None
+    _verify_checkpoint_chain_v0233(
+        checkpoint_chain,
+        attempt_id=attempt.attempt_id,
+        semantic_generation=attempt.semantic_generation,
+        latest_checkpoint_sha256=attempt.latest_checkpoint_sha256,
+        latest_state=attempt.latest_state.value,
     )
     lineage_body = {
         key: value for key, value in lineage.items() if key != "lineage_sha256"
@@ -177,12 +332,24 @@ def _verify_measured_terminal(
         for key, value in pipeline.items()
         if key != "public_projection_sha256"
     }
+    typed_pipeline = DiagnosisPipelineAcceptanceV0233.model_validate(
+        {key: value for key, value in pipeline_body.items() if key != "terminal"}
+    )
     handoff = _object(attempt_root / "knowledge-loop-handoff.json")
     handoff_body = {
         key: value for key, value in handoff.items() if key != "handoff_sha256"
     }
     repository = ProductV0233RepositoryStateManifest.model_validate_json(
         (project / "config/product-v0233/repository-state-manifest.json").read_bytes()
+    )
+    review = RecoveryPreExecutionReviewV0233.model_validate_json(
+        (
+            project
+            / "docs/analysis/product-v0233-recovery-pre-execution-review.json"
+        ).read_bytes()
+    )
+    selection = FreshFormalSourceSelectionV0233.model_validate_json(
+        (project / "config/product-v0233/source-selection.json").read_bytes()
     )
     progress = _object(project / "docs/analysis/product-v0233-progress.json")
     progress_body = {
@@ -250,6 +417,7 @@ def _verify_measured_terminal(
     expected_evidence_paths = {
         *(f"docs/analysis/product-v0233-attempts/{attempt.attempt_id}/{name}" for name in (
             "formal-state-clone.json",
+            "checkpoint-chain.json",
             "formal-closure.json",
             "diagnosis-acquisition-checkpoint.json",
             "diagnosis-recovery-lineage.json",
@@ -283,15 +451,32 @@ def _verify_measured_terminal(
     evidence_sha256 = semantic_sha256_v22(evidence.model_dump(mode="json"))
     if (
         attempt.measured_terminal != result.measured_terminal
+        or assessment != rescored_assessment
+        or _V0233_TERMINAL_BY_V0232.get(assessment.terminal.value)
+        != result.measured_terminal
+        or assessment.reasons != result.reasons
         or not evidence_exact
         or not lineage_exact
-        or pipeline.get("job_status") != "SUCCEEDED"
-        or pipeline.get("stage_journal_terminal") != "JOB_SUCCEEDED"
-        or pipeline.get("journal_tail_sha256") != result.stage_journal_tail_sha256
+        or typed_pipeline.job_status != "SUCCEEDED"
+        or typed_pipeline.stage_journal_terminal != "JOB_SUCCEEDED"
+        or pipeline.get("terminal")
+        != "ECOMSRE_PRODUCT_V0233_DIAGNOSIS_PIPELINE_PASS"
+        or typed_pipeline.job_id != lineage.get("successful_job_id")
+        or not isinstance(successful_job, dict)
+        or successful_job.get("journal_tail_sha256")
+        != typed_pipeline.journal_tail_sha256
+        or typed_pipeline.journal_tail_sha256
+        != result.stage_journal_tail_sha256
         or pipeline.get("public_projection_sha256")
         != semantic_sha256_v22(pipeline_body)
         or handoff.get("nofault_result_sha256") != result.result_sha256
         or handoff.get("measured_terminal") != result.measured_terminal
+        or handoff.get("terminal")
+        != (
+            "ECOMSRE_PRODUCT_V0233_KNOWLEDGE_LOOP_HANDOFF_READY"
+            if result.measured_terminal.endswith("FULLY_SUPPORTED")
+            else "ECOMSRE_PRODUCT_V0233_KNOWLEDGE_LOOP_HANDOFF_NOT_AUTHORIZED"
+        )
         or handoff.get("knowledge_loop_campaigns") != 0
         or handoff.get("action_authority") != "NONE"
         or handoff.get("handoff_sha256") != semantic_sha256_v22(handoff_body)
@@ -320,10 +505,16 @@ def _verify_measured_terminal(
         or index.diagnosis_id != diagnosis.diagnosis_id
         or index.evidence_bundle_sha256 != evidence_sha256
         or index.decision_trace_sha256 != decision_trace.trace_sha256
-        or pipeline.get("diagnosis_result_sha256") != diagnosis.result_sha256
-        or pipeline.get("evidence_bundle_sha256") != evidence_sha256
-        or pipeline.get("evidence_index_sha256") != index.index_sha256
-        or pipeline.get("decision_trace_sha256") != decision_trace.trace_sha256
+        or typed_pipeline.diagnosis_result_sha256 != diagnosis.result_sha256
+        or typed_pipeline.evidence_bundle_sha256 != evidence_sha256
+        or typed_pipeline.evidence_index_sha256 != index.index_sha256
+        or typed_pipeline.decision_trace_sha256 != decision_trace.trace_sha256
+        or acquisition.campaign_id != ledger.campaign_id
+        or acquisition.semantic_generation != attempt.semantic_generation
+        or acquisition.semantic_generation != review.semantic_generation
+        or acquisition.semantic_surface_sha256 != review.semantic_surface_sha256
+        or acquisition.active_profile_sha256 != selection.active_profile_sha256
+        or acquisition.baseline_sha256 != selection.active_baseline_sha256
         or result.measured_terminal
         not in {
             "ECOMSRE_PRODUCT_V0233_NOFAULT_FULLY_SUPPORTED",
@@ -333,6 +524,8 @@ def _verify_measured_terminal(
         or any(result.safety_counters.model_dump(mode="json").values())
         or result.cleanup_proof_sha256 != closure.closure_sha256
         or not closure.safety_observation.safe
+        or closure.safety_observation.new_incident_count != 1
+        or closure.safety_observation.new_diagnosis_count != new_diagnosis_count
         or repository.phase is not RepositoryPhaseV0233.MEASURED_COMPLETE
         or repository.formal_result_sha256 != result.result_sha256
         or repository.formal_blocker_sha256 is not None
