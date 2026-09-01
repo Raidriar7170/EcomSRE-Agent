@@ -199,9 +199,9 @@ def _sha256_file(path: Path) -> str:
 
 
 def _frozen_semantic_surface_sha256_v0233(root: Path) -> str:
-    """Rebuild the semantic-only Product/Diagnosis/scorer surface."""
+    """Rebuild the current generation-2 Product/Diagnosis/scorer surface."""
 
-    semantic, _operational = _formal_surfaces_v0233(root, semantic_generation=1)
+    semantic, _operational = _formal_surfaces_v0233(root, semantic_generation=2)
     return semantic.semantic_surface_sha256
 
 

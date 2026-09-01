@@ -50,9 +50,19 @@ from ecomsre.product.pilot.baseline_audit_v021 import (
 from ecomsre.product.pilot.baseline_readiness_v023 import (
     ProductBaselineReadinessAuditRepositoryV023,
 )
+from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
+    FormalDiagnosisJobContextV0233,
+    build_diagnosis_acquisition_checkpoint_v0233,
+    final_diagnosis_idempotency_key_v0233,
+    restore_diagnosis_acquisition_v0233,
+)
+from ecomsre.product.pilot.formal_recovery_v0233 import (
+    DiagnosisAcquisitionCheckpointV0233,
+)
 from ecomsre.product.storage.object_store import ContentAddressedObjectStoreV1
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
 from ecomsre.product.telemetry.metrics import ProductMetricsV1
+from ecomsre_live_sandbox.contracts import write_private_json
 
 
 _LEGACY_FIXTURE_RESULT_DATASETS = frozenset({"increment-1", "product-increment-1"})
@@ -216,6 +226,113 @@ def run_one_job(
             diagnosis_pipeline_v02322.bind_artifacts(
                 incident_sha256=incident.incident_sha256
             )
+            formal_context_v0233 = None
+            frozen_acquisition_v0233 = None
+            seal_acquisition_v0233 = None
+            raw_formal_context_v0233 = job.payload.get("formal_recovery_v0233")
+            if raw_formal_context_v0233 is not None:
+                formal_context_v0233 = FormalDiagnosisJobContextV0233.model_validate(
+                    raw_formal_context_v0233
+                )
+                checkpoint_path = (
+                    settings.data_root
+                    / formal_context_v0233.acquisition_checkpoint_locator
+                ).resolve()
+                if not checkpoint_path.is_relative_to(settings.data_root):
+                    raise ValueError(
+                        "Product v0.2.3.3 acquisition locator escapes data root"
+                    )
+                existing_checkpoint_v0233 = (
+                    None
+                    if not checkpoint_path.exists()
+                    else DiagnosisAcquisitionCheckpointV0233.model_validate_json(
+                        checkpoint_path.read_bytes()
+                    )
+                )
+                if (
+                    formal_context_v0233.acquisition_sha256 is not None
+                    and existing_checkpoint_v0233 is None
+                ):
+                    raise ValueError(
+                        "Product v0.2.3.3 recovery acquisition is missing"
+                    )
+                effective_context_v0233 = formal_context_v0233
+                if existing_checkpoint_v0233 is not None:
+                    effective_context_v0233 = FormalDiagnosisJobContextV0233.build(
+                        **formal_context_v0233.model_dump(
+                            mode="python",
+                            exclude={
+                                "schema_version",
+                                "context_sha256",
+                                "acquisition_checkpoint_locator",
+                                "acquisition_sha256",
+                            },
+                        ),
+                        acquisition_sha256=(
+                            existing_checkpoint_v0233.acquisition_sha256
+                        ),
+                    )
+                    if (
+                        formal_context_v0233.acquisition_sha256 is not None
+                        and formal_context_v0233.acquisition_sha256
+                        != existing_checkpoint_v0233.acquisition_sha256
+                    ):
+                        raise ValueError(
+                            "Product v0.2.3.3 recovery acquisition differs"
+                        )
+                    frozen_acquisition_v0233 = restore_diagnosis_acquisition_v0233(
+                        existing_checkpoint_v0233,
+                        context=effective_context_v0233,
+                        incident_id=incident.incident_id,
+                        incident_sha256=incident.incident_sha256,
+                    )
+
+                def seal_formal_acquisition_v0233(
+                    acquisition,
+                    sealed_incident,
+                    baseline_sha256,
+                    service_identity_sha256,
+                    capability_sha256,
+                ):
+                    checkpoint = build_diagnosis_acquisition_checkpoint_v0233(
+                        context=effective_context_v0233,
+                        acquisition=acquisition,
+                        incident_id=sealed_incident.incident_id,
+                        incident_sha256=sealed_incident.incident_sha256,
+                        incident_observation_started_at=sealed_incident.started_at,
+                        incident_observation_ended_at=(
+                            sealed_incident.diagnosis_observed_at
+                        ),
+                        baseline_sha256=baseline_sha256,
+                        service_identity_sha256=service_identity_sha256,
+                        capability_sha256=capability_sha256,
+                    )
+                    if (
+                        existing_checkpoint_v0233 is not None
+                        and checkpoint != existing_checkpoint_v0233
+                    ):
+                        raise ValueError(
+                            "Product v0.2.3.3 sealed acquisition differs"
+                        )
+                    write_private_json(
+                        checkpoint_path,
+                        checkpoint.model_dump(mode="json"),
+                        create_once=True,
+                    )
+                    jobs.bind_idempotency_key(
+                        job.job_id,
+                        worker_id,
+                        job.attempt_count,
+                        final_diagnosis_idempotency_key_v0233(
+                            context=effective_context_v0233,
+                            incident_sha256=sealed_incident.incident_sha256,
+                            acquisition_sha256=checkpoint.acquisition_sha256,
+                        ),
+                        now=now,
+                    )
+                    return checkpoint.acquisition_sha256
+
+                seal_acquisition_v0233 = seal_formal_acquisition_v0233
             result = handle_incident_diagnosis(
                 job,
                 incidents,
@@ -233,6 +350,8 @@ def run_one_job(
                 fence=fence,
                 stage_pipeline_v02322=diagnosis_pipeline_v02322,
                 loaded_incident_v02322=incident,
+                frozen_acquisition_v0233=frozen_acquisition_v0233,
+                seal_acquisition_v0233=seal_acquisition_v0233,
             )
             if should_ingest_open_world_v023(
                 diagnosis_terminal=str(result.get("terminal")),

@@ -13,7 +13,10 @@ from pydantic import ConfigDict, Field, model_validator
 
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 from ecomsre.product.contracts import ProductModelV1
-from ecomsre.product.pilot.serialization_v0233 import semantic_json_sha256_v0233
+from ecomsre.product.pilot.serialization_v0233 import (
+    canonical_jsonable_v0233,
+    semantic_json_sha256_v0233,
+)
 from ecomsre_live_sandbox.contracts import write_private_json
 
 
@@ -85,6 +88,15 @@ def _sorted_sha256_mapping(value: Mapping[str, str]) -> dict[str, str]:
     ):
         raise ValueError("Product v0.2.3.3 artifact SHA mapping differs")
     return normalized
+
+
+def _sorted_coverage_mapping(
+    value: Mapping[str, tuple[str, ...] | list[str]],
+) -> dict[str, tuple[str, ...]]:
+    return {
+        source: tuple(sorted(set(services)))
+        for source, services in sorted(value.items())
+    }
 
 
 class FormalSemanticSurfaceV0233(ProductModelV1):
@@ -180,6 +192,163 @@ class FormalOperationalSurfaceV0233(ProductModelV1):
                 **body,
                 "operational_surface_sha256": semantic_json_sha256_v0233(body),
             }
+        )
+
+
+class LiveCaptureBundleV0233(ProductModelV1):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    schema_version: Literal["ecomsre.product.live-capture-bundle.v0233"] = (
+        "ecomsre.product.live-capture-bundle.v0233"
+    )
+    campaign_id: str = Field(pattern=_ATTEMPT_PATTERN)
+    semantic_generation: int = Field(ge=1)
+    attempt_id: str = Field(pattern=_ATTEMPT_PATTERN)
+    formal_clone_sha256: str = Field(pattern=_SHA256_PATTERN)
+    source_selection_sha256: str = Field(pattern=_SHA256_PATTERN)
+    runtime_authority_proof_sha256: str = Field(pattern=_SHA256_PATTERN)
+    baseline_restart_proof_sha256: str = Field(pattern=_SHA256_PATTERN)
+    traffic_contract_sha256: str = Field(pattern=_SHA256_PATTERN)
+    formal_profile_sha256: str = Field(pattern=_SHA256_PATTERN)
+    formal_traffic_result_sha256: str = Field(pattern=_SHA256_PATTERN)
+    traffic_execution_sha256: str = Field(pattern=_SHA256_PATTERN)
+    episode_started_at: datetime
+    episode_ended_at: datetime
+    fresh_runtime_snapshot_raw: dict[str, Any]
+    fresh_runtime_snapshot_raw_sha256: str = Field(pattern=_SHA256_PATTERN)
+    runtime_connector_binding_sha256: str = Field(pattern=_SHA256_PATTERN)
+    queue_before_sha256: str = Field(pattern=_SHA256_PATTERN)
+    queue_after_sha256: str = Field(pattern=_SHA256_PATTERN)
+    outer_baseline_before_sha256: str = Field(pattern=_SHA256_PATTERN)
+    outer_baseline_after_sha256: str = Field(pattern=_SHA256_PATTERN)
+    active_profile_sha256: str = Field(pattern=_SHA256_PATTERN)
+    active_baseline_id: str
+    active_baseline_sha256: str = Field(pattern=_SHA256_PATTERN)
+    service_identity_sha256: str = Field(pattern=_SHA256_PATTERN)
+    capability_sha256: str = Field(pattern=_SHA256_PATTERN)
+    semantic_surface_sha256: str = Field(pattern=_SHA256_PATTERN)
+    live_capture_bundle_sha256: str = Field(pattern=_SHA256_PATTERN)
+
+    @model_validator(mode="after")
+    def require_closed_live_capture(self) -> LiveCaptureBundleV0233:
+        if (
+            self.episode_started_at.tzinfo is None
+            or self.episode_ended_at.tzinfo is None
+            or self.episode_ended_at < self.episode_started_at
+            or self.queue_before_sha256 != self.queue_after_sha256
+            or self.outer_baseline_before_sha256 != self.outer_baseline_after_sha256
+            or self.fresh_runtime_snapshot_raw_sha256
+            != semantic_json_sha256_v0233(self.fresh_runtime_snapshot_raw)
+            or self.live_capture_bundle_sha256
+            != semantic_sha256_v22(
+                self.model_dump(
+                    mode="json", exclude={"live_capture_bundle_sha256"}
+                )
+            )
+        ):
+            raise ValueError("Product v0.2.3.3 live capture bundle differs")
+        return self
+
+    @classmethod
+    def build(cls, **payload: Any) -> LiveCaptureBundleV0233:
+        body = canonical_jsonable_v0233(
+            {
+                "schema_version": "ecomsre.product.live-capture-bundle.v0233",
+                **payload,
+                "fresh_runtime_snapshot_raw_sha256": semantic_json_sha256_v0233(
+                    payload["fresh_runtime_snapshot_raw"]
+                ),
+            }
+        )
+        return cls.model_validate(
+            {
+                **body,
+                "live_capture_bundle_sha256": semantic_json_sha256_v0233(body),
+            }
+        )
+
+
+class DiagnosisAcquisitionCheckpointV0233(ProductModelV1):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    schema_version: Literal[
+        "ecomsre.product.diagnosis-acquisition-checkpoint.v0233"
+    ] = "ecomsre.product.diagnosis-acquisition-checkpoint.v0233"
+    campaign_id: str = Field(pattern=_ATTEMPT_PATTERN)
+    semantic_generation: int = Field(ge=1)
+    attempt_id: str = Field(pattern=_ATTEMPT_PATTERN)
+    incident_id: str = Field(pattern=r"^inc-[a-zA-Z0-9-]{1,120}$")
+    incident_sha256: str = Field(pattern=_SHA256_PATTERN)
+    incident_observation_started_at: datetime
+    incident_observation_ended_at: datetime
+    baseline_sha256: str = Field(pattern=_SHA256_PATTERN)
+    active_profile_sha256: str = Field(pattern=_SHA256_PATTERN)
+    service_identity_sha256: str = Field(pattern=_SHA256_PATTERN)
+    capability_sha256: str = Field(pattern=_SHA256_PATTERN)
+    connector_query_results: tuple[dict[str, Any], ...]
+    connector_provenance_bindings: tuple[dict[str, Any], ...]
+    runtime_snapshot_binding_sha256: str = Field(pattern=_SHA256_PATTERN)
+    source_coverage: dict[str, tuple[str, ...]]
+    capability_limitations: tuple[str, ...]
+    capability_observations: tuple[dict[str, Any], ...]
+    limitation_candidates: tuple[dict[str, Any], ...]
+    read_snapshots: tuple[dict[str, Any], ...]
+    read_snapshot_sha256s: dict[str, str]
+    semantic_surface_sha256: str = Field(pattern=_SHA256_PATTERN)
+    acquisition_sha256: str = Field(pattern=_SHA256_PATTERN)
+
+    @model_validator(mode="after")
+    def require_complete_acquisition(self) -> DiagnosisAcquisitionCheckpointV0233:
+        if (
+            self.incident_observation_started_at.tzinfo is None
+            or self.incident_observation_ended_at.tzinfo is None
+            or self.incident_observation_ended_at
+            < self.incident_observation_started_at
+            or not self.connector_query_results
+            or not self.connector_provenance_bindings
+            or self.source_coverage
+            != _sorted_coverage_mapping(self.source_coverage)
+            or self.capability_limitations
+            != tuple(sorted(set(self.capability_limitations)))
+            or not self.read_snapshots
+            or self.read_snapshot_sha256s
+            != _sorted_sha256_mapping(self.read_snapshot_sha256s)
+            or self.read_snapshot_sha256s
+            != {
+                f"read-snapshot-{ordinal:03d}.json": semantic_json_sha256_v0233(
+                    snapshot
+                )
+                for ordinal, snapshot in enumerate(self.read_snapshots)
+            }
+            or self.acquisition_sha256
+            != semantic_sha256_v22(
+                self.model_dump(mode="json", exclude={"acquisition_sha256"})
+            )
+        ):
+            raise ValueError("Product v0.2.3.3 Diagnosis acquisition differs")
+        return self
+
+    @classmethod
+    def build(cls, **payload: Any) -> DiagnosisAcquisitionCheckpointV0233:
+        body = canonical_jsonable_v0233(
+            {
+                "schema_version": (
+                    "ecomsre.product.diagnosis-acquisition-checkpoint.v0233"
+                ),
+                **payload,
+                "source_coverage": _sorted_coverage_mapping(
+                    payload["source_coverage"]
+                ),
+                "capability_limitations": sorted(
+                    set(payload["capability_limitations"])
+                ),
+                "read_snapshot_sha256s": _sorted_sha256_mapping(
+                    payload["read_snapshot_sha256s"]
+                ),
+            }
+        )
+        return cls.model_validate(
+            {**body, "acquisition_sha256": semantic_json_sha256_v0233(body)}
         )
 
 
@@ -634,6 +803,37 @@ def determine_earliest_safe_resume_state_v0233(
     return FormalExecutionStateV0233.PREPARED
 
 
+def formal_incident_external_key_v0233(bundle: LiveCaptureBundleV0233) -> str:
+    return (
+        f"product-v0233-g{bundle.semantic_generation}-"
+        f"{bundle.live_capture_bundle_sha256[:24]}"
+    )
+
+
+def formal_diagnosis_idempotency_key_v0233(
+    *,
+    incident_sha256: str,
+    acquisition_sha256: str,
+    semantic_surface_sha256: str,
+    diagnosis_generation: int,
+) -> str:
+    body = {
+        "incident_sha256": incident_sha256,
+        "acquisition_sha256": acquisition_sha256,
+        "semantic_surface_sha256": semantic_surface_sha256,
+        "diagnosis_generation": diagnosis_generation,
+    }
+    return f"formal-v0233-diagnosis-{semantic_json_sha256_v0233(body)[:32]}"
+
+
+def acquisition_recovery_is_compatible_v0233(
+    checkpoint: DiagnosisAcquisitionCheckpointV0233,
+    *,
+    semantic_surface_sha256: str,
+) -> bool:
+    return checkpoint.semantic_surface_sha256 == semantic_surface_sha256
+
+
 def verify_checkpoint_artifacts_v0233(
     project_root: Path,
     checkpoint: FormalExecutionCheckpointV0233,
@@ -661,6 +861,7 @@ def verify_checkpoint_artifacts_v0233(
 
 
 __all__ = (
+    "DiagnosisAcquisitionCheckpointV0233",
     "FormalAttemptLedgerV0233",
     "FormalAttemptRecordV0233",
     "FormalCheckpointRepositoryV0233",
@@ -668,7 +869,11 @@ __all__ = (
     "FormalExecutionStateV0233",
     "FormalOperationalSurfaceV0233",
     "FormalSemanticSurfaceV0233",
+    "LiveCaptureBundleV0233",
+    "acquisition_recovery_is_compatible_v0233",
     "build_legacy_attempt1_record_v0233",
     "determine_earliest_safe_resume_state_v0233",
+    "formal_diagnosis_idempotency_key_v0233",
+    "formal_incident_external_key_v0233",
     "verify_checkpoint_artifacts_v0233",
 )

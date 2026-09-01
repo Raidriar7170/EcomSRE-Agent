@@ -13,16 +13,22 @@ from ecomsre.product.pilot.formal_recovery_v0233 import (
     FormalAttemptLedgerV0233,
     FormalAttemptRecordV0233,
     FormalCheckpointRepositoryV0233,
+    DiagnosisAcquisitionCheckpointV0233,
     FormalExecutionCheckpointV0233,
     FormalExecutionStateV0233,
     FormalOperationalSurfaceV0233,
     FormalSemanticSurfaceV0233,
+    LiveCaptureBundleV0233,
+    acquisition_recovery_is_compatible_v0233,
     build_legacy_attempt1_record_v0233,
     determine_earliest_safe_resume_state_v0233,
+    formal_diagnosis_idempotency_key_v0233,
+    formal_incident_external_key_v0233,
     verify_checkpoint_artifacts_v0233,
 )
 from scripts.product_v0233 import resume_formal_nofault as resume_command
 from scripts.product_v0233.run_formal_nofault import _formal_surfaces_v0233
+from ecomsre_live_sandbox.contracts import canonical_json_bytes
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -111,7 +117,7 @@ def test_semantic_and_operational_surfaces_are_independent_and_self_sealed() -> 
 def test_live_repository_surface_builder_excludes_operational_code_from_semantics() -> (
     None
 ):
-    semantic, operational = _formal_surfaces_v0233(ROOT, semantic_generation=1)
+    semantic, operational = _formal_surfaces_v0233(ROOT, semantic_generation=2)
 
     assert "scripts/product_v0233/run_formal_nofault.py" not in (
         semantic.diagnosis_source_sha256_by_path
@@ -147,6 +153,143 @@ def test_checkpoint_chain_accepts_valid_transitions_and_operational_repair() -> 
     )
     assert determine_earliest_safe_resume_state_v0233(environment_ready) == (
         FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY
+    )
+
+
+def test_live_capture_bundle_seals_raw_runtime_before_presentation_artifacts(
+    tmp_path: Path,
+) -> None:
+    semantic = _semantic_surface()
+    observed_at = datetime(2026, 9, 1, 1, 0, tzinfo=UTC)
+    raw_runtime = {
+        "schema_version": "ecomsre.product.pilot-runtime-snapshot.v02",
+        "observed_at": observed_at,
+        "services": [{"service_id": "svc-checkout", "state": "RUNNING"}],
+    }
+    bundle = LiveCaptureBundleV0233.build(
+        campaign_id="product-v0233-fresh-formal-nofault",
+        semantic_generation=1,
+        attempt_id="attempt-2",
+        formal_clone_sha256=_sha("1"),
+        source_selection_sha256=_sha("2"),
+        runtime_authority_proof_sha256=_sha("3"),
+        baseline_restart_proof_sha256=_sha("4"),
+        traffic_contract_sha256=_sha("5"),
+        formal_profile_sha256=_sha("6"),
+        formal_traffic_result_sha256=_sha("7"),
+        traffic_execution_sha256=_sha("8"),
+        episode_started_at=observed_at - timedelta(seconds=300),
+        episode_ended_at=observed_at,
+        fresh_runtime_snapshot_raw=raw_runtime,
+        runtime_connector_binding_sha256=_sha("9"),
+        queue_before_sha256=_sha("a"),
+        queue_after_sha256=_sha("a"),
+        outer_baseline_before_sha256=_sha("b"),
+        outer_baseline_after_sha256=_sha("b"),
+        active_profile_sha256=_sha("c"),
+        active_baseline_id="base-" + "d" * 24,
+        active_baseline_sha256=_sha("d"),
+        service_identity_sha256=_sha("e"),
+        capability_sha256=_sha("f"),
+        semantic_surface_sha256=semantic.semantic_surface_sha256,
+    )
+    bundle_path = tmp_path / "live-capture-bundle.json"
+    bundle_path.write_bytes(canonical_json_bytes(bundle))
+
+    assert bundle.fresh_runtime_snapshot_raw_sha256 == semantic_sha256_v22(
+        {
+            "observed_at": "2026-09-01T01:00:00Z",
+            "schema_version": "ecomsre.product.pilot-runtime-snapshot.v02",
+            "services": [{"service_id": "svc-checkout", "state": "RUNNING"}],
+        }
+    )
+    assert bundle.live_capture_bundle_sha256 == semantic_sha256_v22(
+        bundle.model_dump(mode="json", exclude={"live_capture_bundle_sha256"})
+    )
+    with pytest.raises(RuntimeError, match="proof construction"):
+        raise RuntimeError("proof construction injected failure")
+    assert LiveCaptureBundleV0233.model_validate_json(bundle_path.read_bytes()) == bundle
+    assert formal_incident_external_key_v0233(bundle).startswith(
+        "product-v0233-g1-"
+    )
+
+
+def test_acquisition_checkpoint_binds_frozen_reads_and_recovery_idempotency() -> None:
+    semantic = _semantic_surface()
+    started = datetime(2026, 9, 1, tzinfo=UTC)
+    checkpoint = DiagnosisAcquisitionCheckpointV0233.build(
+        campaign_id="product-v0233-fresh-formal-nofault",
+        semantic_generation=1,
+        attempt_id="attempt-2",
+        incident_id="inc-" + "1" * 24,
+        incident_sha256=_sha("1"),
+        incident_observation_started_at=started,
+        incident_observation_ended_at=started + timedelta(seconds=300),
+        baseline_sha256=_sha("2"),
+        active_profile_sha256=_sha("3"),
+        service_identity_sha256=_sha("4"),
+        capability_sha256=_sha("5"),
+        connector_query_results=(
+            {"source": "METRICS", "status": "SUCCESS_NONEMPTY", "records": []},
+            {"source": "LOGS", "status": "SUCCESS_EMPTY", "records": []},
+        ),
+        connector_provenance_bindings=(
+            {"source": "METRICS", "evidence_sha256": _sha("6")},
+            {"source": "LOGS", "evidence_sha256": _sha("7")},
+        ),
+        runtime_snapshot_binding_sha256=_sha("8"),
+        source_coverage={
+            "LOGS": ("checkout",),
+            "METRICS": ("checkout",),
+            "RUNTIME": ("checkout",),
+        },
+        capability_limitations=(),
+        capability_observations=({"source": "LOGS", "available": True},),
+        limitation_candidates=(),
+        read_snapshots=(
+            {
+                "schema_version": "ecomsre.product.read-snapshot.v1",
+                "source": "LOGS",
+            },
+            {
+                "schema_version": "ecomsre.product.read-snapshot.v1",
+                "source": "METRICS",
+            },
+        ),
+        read_snapshot_sha256s={
+            "read-snapshot-000.json": semantic_sha256_v22(
+                {
+                    "schema_version": "ecomsre.product.read-snapshot.v1",
+                    "source": "LOGS",
+                }
+            ),
+            "read-snapshot-001.json": semantic_sha256_v22(
+                {
+                    "schema_version": "ecomsre.product.read-snapshot.v1",
+                    "source": "METRICS",
+                }
+            ),
+        },
+        semantic_surface_sha256=semantic.semantic_surface_sha256,
+    )
+    key = formal_diagnosis_idempotency_key_v0233(
+        incident_sha256=checkpoint.incident_sha256,
+        acquisition_sha256=checkpoint.acquisition_sha256,
+        semantic_surface_sha256=checkpoint.semantic_surface_sha256,
+        diagnosis_generation=1,
+    )
+
+    assert checkpoint.acquisition_sha256 == semantic_sha256_v22(
+        checkpoint.model_dump(mode="json", exclude={"acquisition_sha256"})
+    )
+    assert key.startswith("formal-v0233-diagnosis-")
+    assert acquisition_recovery_is_compatible_v0233(
+        checkpoint,
+        semantic_surface_sha256=semantic.semantic_surface_sha256,
+    )
+    assert not acquisition_recovery_is_compatible_v0233(
+        checkpoint,
+        semantic_surface_sha256=_sha("0"),
     )
 
 
