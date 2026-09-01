@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 import hashlib
 import json
 from pathlib import Path
@@ -26,7 +26,11 @@ from ecomsre.product.pilot.fresh_formal_acceptance_v0233 import (
 from ecomsre.product.pilot.formal_recovery_v0233 import (
     FormalAttemptLedgerV0233,
     FormalAttemptRecordV0233,
+    FormalExecutionCheckpointV0233,
     FormalExecutionStateV0233,
+)
+from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
+    FormalDiagnosisJobContextV0233,
 )
 from ecomsre.product.pilot.repository_state_v0233 import RepositoryPhaseV0233
 from ecomsre.product.pilot.nofault_acceptance_v0232 import (
@@ -112,9 +116,7 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
         supporting_evidence_refs=(),
         contradicting_evidence_refs=(),
     )
-    evidence_sha256 = semantic_sha256_v22(
-        evidence_bundle.model_dump(mode="json")
-    )
+    evidence_sha256 = semantic_sha256_v22(evidence_bundle.model_dump(mode="json"))
     decision_trace = DiagnosisDecisionTraceV0232.build(
         incident_id=incident_id,
         diagnosis_id=diagnosis_id,
@@ -150,30 +152,71 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
     )
     journal_tail_sha256 = _sha("9")
 
+    failed_context = FormalDiagnosisJobContextV0233.build(
+        campaign_id="product-v0233-fresh-formal-nofault",
+        semantic_generation=2,
+        attempt_id=attempt_id,
+        diagnosis_generation=1,
+        active_profile_sha256=_sha("a"),
+        semantic_surface_sha256=_sha("b"),
+        acquisition_sha256=None,
+    )
+    successful_context = (
+        FormalDiagnosisJobContextV0233.build(
+            campaign_id="product-v0233-fresh-formal-nofault",
+            semantic_generation=2,
+            attempt_id=attempt_id,
+            diagnosis_generation=2,
+            active_profile_sha256=_sha("a"),
+            semantic_surface_sha256=_sha("b"),
+            acquisition_sha256=acquisition_sha256,
+        )
+        if recovery_required
+        else failed_context
+    )
+    failed_payload = {
+        "incident_id": incident_id,
+        "formal_recovery_v0233": failed_context.model_dump(mode="json"),
+    }
+    successful_payload = {
+        "incident_id": incident_id,
+        "formal_recovery_v0233": successful_context.model_dump(mode="json"),
+    }
+
     failed_job_body = {
         "job_id": failed_job_id,
+        "job_type": "DIAGNOSIS",
         "status": "FAILED",
         "idempotency_key": "formal-v0233-failed",
         "attempt_count": 1,
-        "payload_sha256": _sha("1"),
+        "incident_id": incident_id,
+        "formal_recovery_context": failed_context.model_dump(mode="json"),
+        "payload_sha256": semantic_sha256_v22(failed_payload),
         "result_sha256": None,
         "diagnosis_result_sha256": None,
         "safe_error_code": "FORMAL_WORKER_INTERRUPTED",
-        "failure_stage": "BRIDGE_DIAGNOSIS_STARTED",
+        "failure_stage": "JOB_CLAIMED",
+        "last_passed_stage": "READ_ACQUISITION_COMPLETED",
+        "interruption_after_stage": "READ_ACQUISITION_COMPLETED",
         "exception_fingerprint": _sha("2"),
         "journal_tail_sha256": _sha("3"),
     }
     failed_job = _sealed(failed_job_body, "projection_sha256")
     successful_job_body = {
         "job_id": successful_job_id,
+        "job_type": "DIAGNOSIS",
         "status": "SUCCEEDED",
         "idempotency_key": "formal-v0233-recovered",
         "attempt_count": 1,
-        "payload_sha256": _sha("4"),
+        "incident_id": incident_id,
+        "formal_recovery_context": successful_context.model_dump(mode="json"),
+        "payload_sha256": semantic_sha256_v22(successful_payload),
         "result_sha256": _sha("5"),
         "diagnosis_result_sha256": diagnosis_sha256,
         "safe_error_code": None,
         "failure_stage": None,
+        "last_passed_stage": "JOB_SUCCEEDED",
+        "interruption_after_stage": None,
         "exception_fingerprint": None,
         "journal_tail_sha256": journal_tail_sha256,
     }
@@ -240,22 +283,36 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
         "SCORED",
         "CLOSED",
     )
-    checkpoint_hashes = tuple(_sha(character) for character in "123456789ab")
+    checkpoint_records: list[FormalExecutionCheckpointV0233] = []
+    previous_checkpoint = None
+    checkpoint_time = datetime(2026, 1, 1, tzinfo=UTC)
+    for sequence, state in enumerate(checkpoint_states, start=1):
+        checkpoint = FormalExecutionCheckpointV0233.build(
+            previous=previous_checkpoint,
+            state=FormalExecutionStateV0233(state),
+            campaign_id="product-v0233-fresh-formal-nofault",
+            semantic_generation=2,
+            attempt_id=attempt_id,
+            semantic_surface_sha256=_sha("b"),
+            operational_surface_sha256=_sha("c"),
+            source_selection_sha256=_sha("d"),
+            formal_clone_sha256=(None if sequence == 1 else _sha("1")),
+            input_artifact_sha256s={},
+            output_artifact_sha256s={},
+            created_at=checkpoint_time + timedelta(seconds=sequence),
+        )
+        checkpoint_records.append(checkpoint)
+        previous_checkpoint = checkpoint
+    checkpoint_hashes = tuple(
+        checkpoint.checkpoint_sha256 for checkpoint in checkpoint_records
+    )
     checkpoint_chain_body = {
         "schema_version": "ecomsre.product.checkpoint-chain.v0233",
         "attempt_id": attempt_id,
         "semantic_generation": 2,
         "checkpoint_count": len(checkpoint_states),
         "checkpoints": [
-            {
-                "sequence": sequence,
-                "state": state,
-                "previous_checkpoint_sha256": (
-                    "0" * 64 if sequence == 1 else checkpoint_hashes[sequence - 2]
-                ),
-                "checkpoint_sha256": checkpoint_hashes[sequence - 1],
-            }
-            for sequence, state in enumerate(checkpoint_states, start=1)
+            checkpoint.model_dump(mode="json") for checkpoint in checkpoint_records
         ],
         "latest_checkpoint_sha256": checkpoint_hashes[-1],
     }
@@ -271,6 +328,7 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
         ("incident-traffic-binding.json", {}),
         ("evidence-assessment.json", assessment.model_dump(mode="json")),
         ("formal-closure.json", {}),
+        ("live-capture-bundle.json", {}),
         ("diagnosis-acquisition-checkpoint.json", {}),
         ("diagnosis-recovery-lineage.json", lineage),
         ("diagnosis-result.json", diagnosis.model_dump(mode="json")),
@@ -381,9 +439,7 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
     monkeypatch.setattr(
         verifier, "build_legacy_attempt1_record_v0233", lambda _root: legacy
     )
-    monkeypatch.setattr(
-        verifier, "NoFaultAcceptanceResultV0233", _validated_as(result)
-    )
+    monkeypatch.setattr(verifier, "NoFaultAcceptanceResultV0233", _validated_as(result))
     monkeypatch.setattr(
         verifier,
         "FreshFormalStateCloneV0233",
@@ -404,10 +460,11 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
         "FormalTrafficResultV0233",
         _validated_as(
             SimpleNamespace(
+                result_sha256=_sha("7"),
                 execution=SimpleNamespace(
                     execution_sha256=_sha("4"),
                     run=SimpleNamespace(successful_transactions=30),
-                )
+                ),
             )
         ),
     )
@@ -415,6 +472,28 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
         verifier,
         "FreshRuntimeSnapshotProofV0233",
         _validated_as(SimpleNamespace(runtime_snapshot_sha256=_sha("5"))),
+    )
+    monkeypatch.setattr(
+        verifier,
+        "LiveCaptureBundleV0233",
+        _validated_as(
+            SimpleNamespace(
+                campaign_id=ledger.campaign_id,
+                attempt_id=attempt_id,
+                semantic_generation=2,
+                semantic_surface_sha256=_sha("b"),
+                source_selection_sha256=_sha("d"),
+                formal_clone_sha256=_sha("1"),
+                runtime_authority_proof_sha256=_sha("2"),
+                baseline_restart_proof_sha256=_sha("3"),
+                formal_traffic_result_sha256=_sha("7"),
+                traffic_execution_sha256=_sha("4"),
+                fresh_runtime_snapshot_raw={"snapshot_sha256": _sha("5")},
+                service_identity_sha256=_sha("c"),
+                capability_sha256=_sha("d"),
+                episode_started_at=datetime(2026, 1, 1, tzinfo=UTC),
+            )
+        ),
     )
     monkeypatch.setattr(
         verifier,
@@ -449,9 +528,12 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
                 acquisition_sha256=acquisition_sha256,
                 campaign_id=ledger.campaign_id,
                 semantic_generation=2,
-                semantic_surface_sha256=_sha("s"),
-                active_profile_sha256=_sha("p"),
+                semantic_surface_sha256=_sha("b"),
+                active_profile_sha256=_sha("a"),
                 baseline_sha256=_sha("b"),
+                service_identity_sha256=_sha("c"),
+                capability_sha256=_sha("d"),
+                incident_observation_started_at=datetime(2026, 1, 1, 0, 1, tzinfo=UTC),
             )
         ),
     )
@@ -466,7 +548,7 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
         _validated_as(
             SimpleNamespace(
                 semantic_generation=2,
-                semantic_surface_sha256=_sha("s"),
+                semantic_surface_sha256=_sha("b"),
             )
         ),
     )
@@ -475,8 +557,9 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
         "FreshFormalSourceSelectionV0233",
         _validated_as(
             SimpleNamespace(
-                active_profile_sha256=_sha("p"),
+                active_profile_sha256=_sha("a"),
                 active_baseline_sha256=_sha("b"),
+                selection_sha256=_sha("d"),
             )
         ),
     )

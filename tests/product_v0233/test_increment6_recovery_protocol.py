@@ -142,9 +142,7 @@ def _first_checkpoint(
         operational_surface_sha256=operational.operational_surface_sha256,
         source_selection_sha256=_sha("6"),
         formal_clone_sha256=None,
-        input_artifact_sha256s={
-            "config/product-v0233/campaign.json": _sha("1")
-        },
+        input_artifact_sha256s={"config/product-v0233/campaign.json": _sha("1")},
         output_artifact_sha256s={},
         created_at=datetime(2026, 9, 1, tzinfo=UTC),
     )
@@ -271,10 +269,10 @@ def test_live_capture_bundle_seals_raw_runtime_before_presentation_artifacts(
     )
     with pytest.raises(RuntimeError, match="proof construction"):
         raise RuntimeError("proof construction injected failure")
-    assert LiveCaptureBundleV0233.model_validate_json(bundle_path.read_bytes()) == bundle
-    assert formal_incident_external_key_v0233(bundle).startswith(
-        "product-v0233-g1-"
+    assert (
+        LiveCaptureBundleV0233.model_validate_json(bundle_path.read_bytes()) == bundle
     )
+    assert formal_incident_external_key_v0233(bundle).startswith("product-v0233-g1-")
 
 
 def test_acquisition_checkpoint_binds_frozen_reads_and_recovery_idempotency() -> None:
@@ -425,6 +423,57 @@ def test_checkpoint_rejects_invalid_transition_or_semantic_change_in_same_attemp
     assert generation_two.attempt_id == "attempt-3"
 
 
+@pytest.mark.parametrize(
+    "terminal_state",
+    (
+        FormalExecutionStateV0233.CLOSED,
+        FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
+    ),
+)
+@pytest.mark.parametrize(
+    "next_state",
+    (
+        FormalExecutionStateV0233.RECOVERABLE_FAILURE,
+        FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
+    ),
+)
+def test_terminal_checkpoint_rejects_every_followup_transition(
+    terminal_state: FormalExecutionStateV0233,
+    next_state: FormalExecutionStateV0233,
+) -> None:
+    previous = _first_checkpoint()
+    if terminal_state is FormalExecutionStateV0233.CLOSED:
+        for state in (
+            FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY,
+            FormalExecutionStateV0233.FORMAL_TRAFFIC_RUNNING,
+            FormalExecutionStateV0233.FORMAL_TRAFFIC_PASS,
+            FormalExecutionStateV0233.LIVE_CAPTURE_SEALED,
+            FormalExecutionStateV0233.INCIDENT_CREATED,
+            FormalExecutionStateV0233.ACQUISITION_SEALED,
+            FormalExecutionStateV0233.DIAGNOSIS_RUNNING,
+            FormalExecutionStateV0233.DIAGNOSIS_PERSISTED,
+            FormalExecutionStateV0233.SCORED,
+            FormalExecutionStateV0233.CLOSED,
+        ):
+            previous = FormalExecutionCheckpointV0233.build(
+                previous=previous,
+                state=state,
+                created_at=previous.created_at + timedelta(seconds=1),
+            )
+    else:
+        previous = FormalExecutionCheckpointV0233.build(
+            previous=previous,
+            state=terminal_state,
+            created_at=previous.created_at + timedelta(seconds=1),
+        )
+    with pytest.raises(ValueError, match="transition"):
+        FormalExecutionCheckpointV0233.build(
+            previous=previous,
+            state=next_state,
+            created_at=previous.created_at + timedelta(seconds=1),
+        )
+
+
 def test_checkpoint_repository_is_append_only_and_rejects_corruption(
     tmp_path: Path,
 ) -> None:
@@ -504,9 +553,7 @@ def test_checkpoint_repository_rejects_cross_checkpoint_identity_drift(
         formal_clone_sha256=_sha("1"),
         created_at=prepared.created_at + timedelta(seconds=1),
     )
-    payload = environment_ready.model_dump(
-        mode="json", exclude={"checkpoint_sha256"}
-    )
+    payload = environment_ready.model_dump(mode="json", exclude={"checkpoint_sha256"})
     payload["campaign_id"] = "product-v0233-different-campaign"
     payload["checkpoint_sha256"] = semantic_sha256_v22(payload)
     second_path = repository.checkpoint_path(environment_ready)
@@ -600,9 +647,7 @@ def test_resume_command_verifies_chain_surfaces_and_artifacts(
         attempt_id="attempt-2",
         state=FormalExecutionStateV0233.PREPARED,
         semantic_surface_sha256=semantic.semantic_surface_sha256,
-        operational_surface_sha256=(
-            checkpoint_operational.operational_surface_sha256
-        ),
+        operational_surface_sha256=(checkpoint_operational.operational_surface_sha256),
         source_selection_sha256=_sha("6"),
         formal_clone_sha256=None,
         input_artifact_sha256s={"config/product-v0233/campaign.json": digest},
@@ -653,9 +698,12 @@ def test_live_legacy_attempt1_record_binds_existing_bytes_without_checkpoint() -
         "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
     )
     assert record.measured_terminal is None
-    assert record.evidence_sha256_by_path[
-        "docs/analysis/product-v0233-formal-blocker.json"
-    ] == "a02cce3787c1a443f365c83c4207b6256de431d792ebd6fded628ca36bc32ed1"
+    assert (
+        record.evidence_sha256_by_path[
+            "docs/analysis/product-v0233-formal-blocker.json"
+        ]
+        == "a02cce3787c1a443f365c83c4207b6256de431d792ebd6fded628ca36bc32ed1"
+    )
 
 
 def test_exact_head_review_gate_executes_with_bound_ci_receipt(

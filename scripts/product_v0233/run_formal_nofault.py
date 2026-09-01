@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import signal
 import subprocess
 import time
 from typing import Any, cast, Literal, Mapping, NoReturn, Sequence
@@ -145,6 +146,7 @@ from ecomsre_live_sandbox.contracts import (
     load_bundle,
     write_private_json,
 )
+from ecomsre_live_sandbox.environment import DockerSnapshot
 from scripts.ci.verify_product_v0233_pre_execution import (
     verify_product_v0233_pre_execution,
 )
@@ -329,7 +331,10 @@ def _formal_surfaces_v0233(
                 != freeze.diagnosis_semantic_source_manifest_sha256
             )
         )
-        or campaign.campaign_sha256 != freeze.campaign_sha256
+        or (
+            semantic_generation == 1
+            and campaign.campaign_sha256 != freeze.campaign_sha256
+        )
         or preflight_profile.profile_sha256 != freeze.preflight_profile_sha256
         or formal_profile.profile_sha256 != freeze.formal_profile_sha256
         or _sha256_file(root / "config/product-v0233/traffic/preflight-profile.json")
@@ -530,6 +535,29 @@ def strict_formal_admission_v0233(root: Path) -> FormalExecutionAdmissionV0233:
     )
 
 
+def _is_exact_successor_identity_v0233(
+    ledger: FormalAttemptLedgerV0233,
+    *,
+    attempt_id: str,
+    semantic_generation: int,
+) -> bool:
+    """Require the next ordinal and an explicit same/new semantic generation."""
+
+    if not ledger.attempts:
+        return False
+    prior_successors = ledger.attempts[1:]
+    expected_attempt_id = f"attempt-{len(ledger.attempts) + 1}"
+    previous_generation = (
+        prior_successors[-1].semantic_generation if prior_successors else 1
+    )
+    allowed_generations = (
+        {2} if not prior_successors else {previous_generation, previous_generation + 1}
+    )
+    return (
+        attempt_id == expected_attempt_id and semantic_generation in allowed_generations
+    )
+
+
 def strict_recovery_formal_admission_v0233(
     root: Path,
     *,
@@ -542,8 +570,8 @@ def strict_recovery_formal_admission_v0233(
     ledger = FormalAttemptLedgerV0233.model_validate_json(
         (project / "config/product-v0233/formal-attempt-ledger.json").read_bytes()
     )
-    allowed_prior_publication_paths = (
-        _sealed_nonrecoverable_publication_paths_v0233(project, ledger)
+    allowed_prior_publication_paths = _sealed_nonrecoverable_publication_paths_v0233(
+        project, ledger
     )
     head, _semantic, _operational, review = _strict_recovery_head_review_v0233(
         project,
@@ -571,7 +599,9 @@ def strict_recovery_formal_admission_v0233(
         (project / "docs/analysis/product-v0233-formal-clone-plan.json").read_bytes()
     )
     freeze = FormalContractFreezeV0233.model_validate_json(
-        (project / "docs/analysis/product-v0233-formal-contract-freeze.json").read_bytes()
+        (
+            project / "docs/analysis/product-v0233-formal-contract-freeze.json"
+        ).read_bytes()
     )
     prior_private_attempts = {
         path.name
@@ -587,10 +617,13 @@ def strict_recovery_formal_admission_v0233(
         or ledger.attempts[0] != legacy
         or ledger.measured_result_count != 0
         or any(
-            item.disposition != "NONRECOVERABLE_FAILURE"
-            for item in prior_successors
+            item.disposition != "NONRECOVERABLE_FAILURE" for item in prior_successors
         )
-        or attempt_id in {item.attempt_id for item in ledger.attempts}
+        or not _is_exact_successor_identity_v0233(
+            ledger,
+            attempt_id=attempt_id,
+            semantic_generation=semantic_generation,
+        )
         or prior_private_attempts != recorded_private_attempts
         or manifest.phase is not RepositoryPhaseV0233.FORMAL_BLOCKED
         or manifest.measured_result_count != 0
@@ -648,7 +681,9 @@ def _strict_recovery_head_review_v0233(
     if (
         any(
             relative not in allowed
-            and not any(relative.startswith(prefix) for prefix in allowed_dirty_prefixes)
+            and not any(
+                relative.startswith(prefix) for prefix in allowed_dirty_prefixes
+            )
             for relative in changed
         )
         or branch != _BRANCH
@@ -669,9 +704,7 @@ def _strict_recovery_head_review_v0233(
             ).read_bytes()
         )
         receipt = RecoveryExactHeadCiReceiptV0233.model_validate_json(
-            (
-                project / ".local/product-v0233/recovery-exact-head-ci.json"
-            ).read_bytes()
+            (project / ".local/product-v0233/recovery-exact-head-ci.json").read_bytes()
         )
     except (OSError, ValueError) as error:
         raise RuntimeError(
@@ -680,8 +713,7 @@ def _strict_recovery_head_review_v0233(
     if (
         review.semantic_generation != semantic_generation
         or review.semantic_surface_sha256 != semantic.semantic_surface_sha256
-        or review.operational_surface_sha256
-        != operational.operational_surface_sha256
+        or review.operational_surface_sha256 != operational.operational_surface_sha256
         or receipt.execution_head != head
         or receipt.upstream_ref != _EXPECTED_UPSTREAM
         or receipt.pull_request_number != 86
@@ -761,9 +793,7 @@ def strict_resume_formal_admission_v0233(
                 or relative.startswith(("/", ".local/"))
                 or ".." in Path(relative).parts
             ):
-                raise RuntimeError(
-                    "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
-                )
+                raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
             allowed_paths.add(relative)
     expected_private_ids = set(recorded_successor_ids)
     if recorded is None:
@@ -800,13 +830,11 @@ def strict_resume_formal_admission_v0233(
     except RuntimeError as original_error:
         next_generation = latest.semantic_generation + 1
         try:
-            _head, semantic, operational, _review = (
-                _strict_recovery_head_review_v0233(
-                    project,
-                    semantic_generation=next_generation,
-                    allowed_dirty_paths=tuple(sorted(allowed_paths)),
-                    allowed_dirty_prefixes=(),
-                )
+            _head, semantic, operational, _review = _strict_recovery_head_review_v0233(
+                project,
+                semantic_generation=next_generation,
+                allowed_dirty_paths=tuple(sorted(allowed_paths)),
+                allowed_dirty_prefixes=(),
             )
         except RuntimeError:
             raise original_error
@@ -1302,22 +1330,21 @@ def _sealed_nonrecoverable_publication_paths_v0233(
             root / _attempt_private_locator_v0233(record.attempt_id) / "execution"
         )
         bundle = _object(private_root / "terminal-publication.json")
-        completion = _object(
-            private_root / "terminal-publication-completion.json"
-        )
+        completion = _object(private_root / "terminal-publication-completion.json")
         bundle_body = {
             key: value for key, value in bundle.items() if key != "publication_sha256"
         }
         completion_body = {
-            key: value for key, value in completion.items() if key != "completion_sha256"
+            key: value
+            for key, value in completion.items()
+            if key != "completion_sha256"
         }
         artifacts = bundle.get("artifacts")
         if (
             bundle.get("kind") != "BLOCKER"
             or bundle.get("terminal") != record.blocker_terminal
             or bundle.get("publication_sha256") != semantic_sha256_v22(bundle_body)
-            or completion.get("publication_sha256")
-            != bundle.get("publication_sha256")
+            or completion.get("publication_sha256") != bundle.get("publication_sha256")
             or completion.get("terminal") != record.blocker_terminal
             or completion.get("completion_sha256")
             != semantic_sha256_v22(completion_body)
@@ -1326,9 +1353,17 @@ def _sealed_nonrecoverable_publication_paths_v0233(
         ):
             raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
         paths_in_bundle: set[str] = set()
+        artifact_by_path: dict[str, Mapping[str, Any]] = {}
         attempt_blocker = (
             f"{_attempt_public_locator_v0233(record.attempt_id)}/formal-blocker.json"
         )
+        attempt_checkpoint_chain = (
+            f"{_attempt_public_locator_v0233(record.attempt_id)}/checkpoint-chain.json"
+        )
+        attempt_closure = (
+            f"{_attempt_public_locator_v0233(record.attempt_id)}/formal-closure.json"
+        )
+        public_ledger_path = "config/product-v0233/formal-attempt-ledger.json"
         for artifact in artifacts:
             relative = artifact.get("path") if isinstance(artifact, Mapping) else None
             mode = artifact.get("mode") if isinstance(artifact, Mapping) else None
@@ -1341,15 +1376,61 @@ def _sealed_nonrecoverable_publication_paths_v0233(
                 or (mode == "CREATE_TEXT" and not isinstance(payload, str))
                 or (mode != "CREATE_TEXT" and not isinstance(payload, Mapping))
             ):
-                raise RuntimeError(
-                    "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
-                )
+                raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
             paths_in_bundle.add(relative)
             assert isinstance(mode, str)
             assert isinstance(payload, (Mapping, str))
             expected_by_path[relative] = (mode, payload)
-        if attempt_blocker not in paths_in_bundle:
+            if isinstance(payload, Mapping):
+                artifact_by_path[relative] = payload
+        blocker = artifact_by_path.get(attempt_blocker)
+        checkpoint_chain = artifact_by_path.get(attempt_checkpoint_chain)
+        published_ledger_payload = artifact_by_path.get(public_ledger_path)
+        if (
+            blocker is None
+            or checkpoint_chain is None
+            or published_ledger_payload is None
+            or blocker.get("reservation_sha256") != bundle.get("reservation_sha256")
+            or blocker.get("terminal") != record.blocker_terminal
+            or checkpoint_chain.get("attempt_id") != record.attempt_id
+            or checkpoint_chain.get("semantic_generation") != record.semantic_generation
+            or checkpoint_chain.get("latest_checkpoint_sha256")
+            != record.latest_checkpoint_sha256
+            or not isinstance(checkpoint_chain.get("checkpoints"), list)
+            or not checkpoint_chain["checkpoints"]
+            or checkpoint_chain["checkpoints"][-1].get("state")
+            != record.latest_state.value
+        ):
             raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+        try:
+            published_ledger = FormalAttemptLedgerV0233.model_validate(
+                published_ledger_payload
+            )
+        except ValueError as error:
+            raise RuntimeError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
+            ) from error
+        evidence_paths = paths_in_bundle - {public_ledger_path}
+        expected_evidence = {
+            relative: hashlib.sha256(
+                (
+                    payload.encode("utf-8")
+                    if mode == "CREATE_TEXT" and isinstance(payload, str)
+                    else canonical_json_bytes(dict(cast(Mapping[str, Any], payload)))
+                )
+            ).hexdigest()
+            for relative, (mode, payload) in expected_by_path.items()
+            if relative in evidence_paths
+        }
+        if (
+            published_ledger.attempts[-1] != record
+            or record.evidence_sha256_by_path != expected_evidence
+        ):
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+        if blocker.get("formal_clone_count") == 1:
+            closure = artifact_by_path.get(attempt_closure)
+            if closure is None or closure.get("verdict") != "CLEAN":
+                raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
 
     for relative, (mode, payload) in expected_by_path.items():
         path = root / relative
@@ -1361,6 +1442,308 @@ def _sealed_nonrecoverable_publication_paths_v0233(
         if path.is_symlink() or not path.is_file() or path.read_bytes() != expected:
             raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
     return tuple(sorted(expected_by_path))
+
+
+def _persist_product_process_authority_v0233(
+    processes: _ProductHostProcessesV023,
+    *,
+    private_root: Path,
+) -> None:
+    body = {
+        "schema_version": "ecomsre.product.host-process-authority.v0233",
+        "repository_root": str(processes.root.resolve(strict=True)),
+        "product_data_root": str(processes.data_root.resolve(strict=True)),
+        "owner_token": processes.token,
+        "owner_token_sha256": hashlib.sha256(processes.token.encode()).hexdigest(),
+    }
+    write_private_json(
+        private_root / "host-process-authority.json",
+        {**body, "authority_sha256": semantic_sha256_v22(body)},
+        create_once=True,
+    )
+
+
+def _persist_docker_baseline_snapshot_v0233(
+    lifecycle: AuthorityContinuousSandboxLifecycleV0231,
+    *,
+    private_root: Path,
+) -> DockerSnapshot:
+    if lifecycle.environment is None:
+        raise RuntimeError("Runtime-continuity environment is unavailable")
+    snapshot = lifecycle.environment.snapshot_all_resources()
+    body = {
+        "schema_version": "ecomsre.product.docker-baseline-snapshot.v0233",
+        "containers": sorted(snapshot.containers),
+        "networks": sorted(snapshot.networks),
+        "volumes": sorted(snapshot.volumes),
+    }
+    write_private_json(
+        private_root / "docker-baseline-snapshot.json",
+        {**body, "snapshot_sha256": semantic_sha256_v22(body)},
+        create_once=True,
+    )
+    return snapshot
+
+
+def _load_docker_baseline_snapshot_v0233(path: Path) -> DockerSnapshot | None:
+    if not path.is_file() or path.is_symlink():
+        return None
+    payload = _object(path)
+    body = {key: value for key, value in payload.items() if key != "snapshot_sha256"}
+    if (
+        payload.get("schema_version")
+        != "ecomsre.product.docker-baseline-snapshot.v0233"
+        or payload.get("snapshot_sha256") != semantic_sha256_v22(body)
+        or any(
+            not isinstance(payload.get(name), list)
+            or payload[name] != sorted(set(payload[name]))
+            or any(not isinstance(item, str) for item in payload[name])
+            for name in ("containers", "networks", "volumes")
+        )
+    ):
+        raise ValueError("Product v0.2.3.3 Docker recovery snapshot differs")
+    return DockerSnapshot(
+        containers=frozenset(payload["containers"]),
+        networks=frozenset(payload["networks"]),
+        volumes=frozenset(payload["volumes"]),
+    )
+
+
+def _recover_owned_product_processes_v0233(
+    *,
+    root: Path,
+    product_root: Path,
+    private_root: Path,
+) -> dict[str, Any]:
+    authority_path = private_root / "host-process-authority.json"
+    if not authority_path.is_file() or authority_path.is_symlink():
+        return _ProductHostProcessesV023(
+            root=root,
+            data_root=product_root,
+            private_root=private_root,
+        ).cleanup_observation()
+    authority = _object(authority_path)
+    body = {key: value for key, value in authority.items() if key != "authority_sha256"}
+    token = authority.get("owner_token")
+    if (
+        authority.get("authority_sha256") != semantic_sha256_v22(body)
+        or authority.get("repository_root") != str(root.resolve(strict=True))
+        or authority.get("product_data_root") != str(product_root.resolve(strict=True))
+        or not isinstance(token, str)
+        or authority.get("owner_token_sha256")
+        != hashlib.sha256(token.encode()).hexdigest()
+    ):
+        raise ValueError("Product v0.2.3.3 host process authority differs")
+    process_table = subprocess.run(
+        ("ps", "eww", "-axo", "pid=,command="),
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=15,
+    ).stdout
+    marker = f"ECOMSRE_ADMIN_TOKEN={token}"
+    owned_pids: list[int] = []
+    for line in process_table.splitlines():
+        fields = line.strip().split(maxsplit=1)
+        if (
+            len(fields) == 2
+            and fields[0].isdigit()
+            and marker in fields[1]
+            and (
+                "-m ecomsre.product.app" in fields[1]
+                or "-m ecomsre.product.jobs.worker" in fields[1]
+            )
+        ):
+            owned_pids.append(int(fields[0]))
+    for pid in sorted(set(owned_pids)):
+        os.kill(pid, signal.SIGTERM)
+    deadline = time.monotonic() + 15
+    remaining = set(owned_pids)
+    while remaining and time.monotonic() < deadline:
+        for pid in tuple(remaining):
+            try:
+                os.kill(pid, 0)
+            except ProcessLookupError:
+                remaining.remove(pid)
+        if remaining:
+            time.sleep(0.1)
+    for pid in sorted(remaining):
+        os.kill(pid, signal.SIGKILL)
+    cleanup = _ProductHostProcessesV023(
+        root=root,
+        data_root=product_root,
+        private_root=private_root,
+    ).cleanup_observation()
+    return {
+        **cleanup,
+        "recovered_owned_process_count": len(set(owned_pids)),
+        "ownership_authority_sha256": authority["authority_sha256"],
+    }
+
+
+def _interrupted_cleanup_lifecycle_v0233(
+    *,
+    root: Path,
+    private_root: Path,
+) -> tuple[
+    AuthorityContinuousSandboxLifecycleV0231,
+    FreshFormalSourceSelectionV0233,
+    Path,
+]:
+    predecessor, source_root, source_before = _selected_source(root)
+    _require_preserved_runtime_root_v02321(predecessor, source_root)
+    manifest_v0231 = _object(root / "config/product-v0231/historical-results.v1.json")
+    binding = ProductV023PrivateStateBindingV0231.model_validate(
+        manifest_v0231.get("private_state")
+    )
+    context = ProductBaselineContinuationContextV0231.model_validate(
+        _object(root / "docs/analysis/product-v0231-baseline-continuation-context.json")
+    )
+    bundle = load_bundle(
+        predecessor / "config/live-telemetry-controlled-remediation-v1"
+    )
+    preserved_authority, resolved_compose = load_preserved_runtime_inputs_v0231(
+        predecessor_root=predecessor,
+        binding=binding,
+    )
+    return (
+        AuthorityContinuousSandboxLifecycleV0231(
+            predecessor_root=predecessor,
+            private_root=private_root / "demo",
+            binding=binding,
+            context=context,
+            bundle=bundle,
+            preserved_authority=preserved_authority,
+            preserved_resolved_compose=resolved_compose,
+        ),
+        source_before,
+        source_root,
+    )
+
+
+def recover_interrupted_attempt_cleanup_v0233(
+    root: Path,
+    *,
+    attempt_id: str,
+    latest: FormalExecutionCheckpointV0233,
+) -> dict[str, Any] | None:
+    """Re-authenticate and clean a clone-bearing hard-interrupted attempt."""
+
+    if latest.attempt_id != attempt_id:
+        raise ValueError("Product v0.2.3.3 interrupted attempt differs")
+    if latest.formal_clone_sha256 is None:
+        return None
+    private_root = root / _attempt_private_locator_v0233(attempt_id) / "execution"
+    closure_path = private_root / "formal-closure.json"
+    if closure_path.is_file() and not closure_path.is_symlink():
+        closure = _object(closure_path)
+        closure_body = {
+            key: value for key, value in closure.items() if key != "closure_sha256"
+        }
+        if closure.get("closure_sha256") != semantic_sha256_v22(closure_body):
+            raise ValueError("Product v0.2.3.3 interrupted cleanup proof differs")
+        return closure
+
+    action_journal = FormalActionJournalV0233.build(
+        observation_status="UNAVAILABLE",
+        events=("RESERVATION_CONSUMED", "FORMAL_CLONE_REQUESTED"),
+    )
+    safety = FormalSafetyObservationV0233.build(
+        observation_status="UNAVAILABLE",
+        action_journal=action_journal.model_dump(mode="json"),
+        starting_counts=None,
+        ending_counts=None,
+        new_incident_count=None,
+        new_diagnosis_count=None,
+        provider_calls=None,
+        agent_writes=None,
+        runbook_executions=None,
+        fault_attempts=None,
+        knowledge_loop_executions=None,
+        observed_action_authority=None,
+        safe=False,
+    )
+    product_cleanup: Mapping[str, Any] = {"verdict": "BLOCKED"}
+    demo_cleanup_payload: Mapping[str, Any] = {"verdict": "BLOCKED"}
+    source_before_sha256: str | None = None
+    source_after_sha256: str | None = None
+    queue_sha256: str | None = None
+    clone_owner_count: int | None = None
+    clone_binding_exact = False
+    safe_error_code: str | None = None
+    try:
+        lifecycle, source_before, _source_root = _interrupted_cleanup_lifecycle_v0233(
+            root=root,
+            private_root=private_root,
+        )
+        source_before_sha256 = source_before.selection_sha256
+        product_root = root / _attempt_product_locator_v0233(attempt_id)
+        product_cleanup = _recover_owned_product_processes_v0233(
+            root=root,
+            product_root=product_root,
+            private_root=private_root / "product-processes",
+        )
+        queue = verify_queue_default_v021(
+            lifecycle.flag_file,
+            expected_default_value=0,
+            expected_sha256=lifecycle.bundle.scenario.baseline_document_sha256,
+        )
+        queue_sha256 = queue.after_sha256
+        snapshot = _load_docker_baseline_snapshot_v0233(
+            private_root / "docker-baseline-snapshot.json"
+        )
+        demo_cleanup = lifecycle.recover_cleanup_owned(
+            baseline_snapshot=snapshot,
+            baseline_unchanged=True,
+        )
+        demo_cleanup_payload = {
+            "verdict": demo_cleanup.verdict,
+            "baseline_restored": demo_cleanup.baseline_restored,
+            "owned_containers": demo_cleanup.owned_containers,
+            "owned_networks": demo_cleanup.owned_networks,
+            "owned_volumes": demo_cleanup.owned_volumes,
+            "non_owned_resources_changed": demo_cleanup.non_owned_resources_changed,
+        }
+        _predecessor, _source_root, source_after = _selected_source(root)
+        source_after_sha256 = source_after.selection_sha256
+        clone_owner_count = _database_owner_count(product_root / "product.sqlite3")
+        clone_binding_exact = read_formal_active_binding_v0233(product_root) == {
+            "environment_id": source_before.active_environment_id,
+            "baseline_id": source_before.active_baseline_id,
+            "baseline_sha256": source_before.active_baseline_sha256,
+            "profile_sha256": source_before.active_profile_sha256,
+        }
+    except BaseException as error:
+        safe_error_code = type(error).__name__[:160]
+    clean = (
+        product_cleanup.get("verdict") == "CLEAN"
+        and demo_cleanup_payload.get("verdict") == "CLEAN"
+        and demo_cleanup_payload.get("non_owned_resources_changed") is False
+        and source_before_sha256 is not None
+        and source_before_sha256 == source_after_sha256
+        and queue_sha256 is not None
+        and clone_owner_count == 0
+        and clone_binding_exact
+        and safe_error_code is None
+    )
+    body = {
+        "schema_version": "ecomsre.product.interrupted-attempt-cleanup.v0233",
+        "verdict": "CLEAN" if clean else "BLOCKED",
+        "attempt_id": attempt_id,
+        "latest_checkpoint_sha256": latest.checkpoint_sha256,
+        "source_selection_before_sha256": source_before_sha256,
+        "source_selection_after_sha256": source_after_sha256,
+        "queue_sha256": queue_sha256,
+        "product_cleanup": dict(product_cleanup),
+        "demo_cleanup": dict(demo_cleanup_payload),
+        "formal_clone_database_owner_count": clone_owner_count,
+        "clone_baseline_binding_exact": clone_binding_exact,
+        "safety_observation": safety.model_dump(mode="json"),
+        "safe_error_code": safe_error_code,
+    }
+    closure = {**body, "closure_sha256": semantic_sha256_v22(body)}
+    write_private_json(closure_path, closure, create_once=True)
+    return closure
 
 
 def terminalize_nonrecoverable_attempt_v0233(
@@ -1410,7 +1793,9 @@ def terminalize_nonrecoverable_attempt_v0233(
         safe=False,
     )
     clone: FreshFormalStateCloneV0233 | None = None
-    clone_path = root / _attempt_public_locator_v0233(attempt_id) / "formal-state-clone.json"
+    clone_path = (
+        root / _attempt_public_locator_v0233(attempt_id) / "formal-state-clone.json"
+    )
     if clone_path.is_file() and not clone_path.is_symlink():
         clone = FreshFormalStateCloneV0233.model_validate_json(clone_path.read_bytes())
         if clone.clone_sha256 != latest.formal_clone_sha256:
@@ -1678,9 +2063,7 @@ def _closure_observation(
         demo_cleanup=demo_cleanup,
         clone_owner_count=clone_owner_count,
         clone_baseline_binding_exact=clone_baseline_binding_exact,
-        frozen_semantic_surface_before_sha256=(
-            frozen_semantic_surface_before_sha256
-        ),
+        frozen_semantic_surface_before_sha256=(frozen_semantic_surface_before_sha256),
         frozen_semantic_surface_after_sha256=frozen_semantic_surface_after_sha256,
         safety_observation=safety_observation,
     )
@@ -1965,12 +2348,51 @@ def _pipeline_public(
     return {**body, "public_projection_sha256": semantic_sha256_v22(body)}
 
 
-def _job_lineage_projection_v0233(job: ProductJobRecordV1) -> dict[str, Any]:
+def _job_lineage_projection_v0233(
+    job: ProductJobRecordV1,
+    *,
+    product_root: Path,
+) -> dict[str, Any]:
+    context = FormalDiagnosisJobContextV0233.model_validate(
+        job.payload.get("formal_recovery_v0233")
+    )
+    last_passed_stage: str | None = None
+    private_failure_envelope_sha256: str | None = None
+    if job.status is ProductJobStatusV1.FAILED:
+        failure_root = product_root / "private/diagnosis-failures" / job.job_id
+        failure_files = (
+            tuple(sorted(failure_root.glob("*.json"))) if failure_root.is_dir() else ()
+        )
+        if len(failure_files) != 1:
+            raise ValueError("Product v0.2.3.3 Diagnosis lineage differs")
+        envelope = DiagnosisPrivateFailureEnvelopeV02322.model_validate_json(
+            failure_files[0].read_bytes()
+        )
+        if (
+            envelope.job_id != job.job_id
+            or envelope.failing_stage.value != job.failure_stage
+            or envelope.exception_fingerprint != job.exception_fingerprint
+            or envelope.job_payload_sha256 != semantic_sha256_v22(job.payload)
+            or envelope.incident_id != job.payload.get("incident_id")
+            or job.journal_tail_sha256 is None
+        ):
+            raise ValueError("Product v0.2.3.3 Diagnosis lineage differs")
+        private_failure_envelope_sha256 = envelope.failure_envelope_sha256
+        last_passed_stage = (
+            None
+            if envelope.last_passed_stage is None
+            else envelope.last_passed_stage.value
+        )
+    elif job.status is ProductJobStatusV1.SUCCEEDED:
+        last_passed_stage = "JOB_SUCCEEDED"
     body = {
         "job_id": job.job_id,
+        "job_type": job.job_type.value,
         "status": job.status.value,
         "idempotency_key": job.idempotency_key,
         "attempt_count": job.attempt_count,
+        "incident_id": job.payload.get("incident_id"),
+        "formal_recovery_context": context.model_dump(mode="json"),
         "payload_sha256": semantic_sha256_v22(job.payload),
         "result_sha256": (
             None
@@ -1985,14 +2407,22 @@ def _job_lineage_projection_v0233(job: ProductJobRecordV1) -> dict[str, Any]:
         ),
         "safe_error_code": job.safe_error_code,
         "failure_stage": job.failure_stage,
+        "last_passed_stage": last_passed_stage,
+        "interruption_after_stage": (
+            last_passed_stage
+            if job.safe_error_code == "FORMAL_WORKER_INTERRUPTED"
+            else None
+        ),
         "exception_fingerprint": job.exception_fingerprint,
         "journal_tail_sha256": job.journal_tail_sha256,
+        "private_failure_envelope_sha256": private_failure_envelope_sha256,
     }
     return {**body, "projection_sha256": semantic_sha256_v22(body)}
 
 
 def _diagnosis_lineage_v0233(
     *,
+    product_root: Path,
     attempt_id: str,
     acquisition: DiagnosisAcquisitionCheckpointV0233,
     failed_jobs: Sequence[ProductJobRecordV1],
@@ -2016,10 +2446,14 @@ def _diagnosis_lineage_v0233(
         "acquisition_sha256": acquisition.acquisition_sha256,
         "preserved_failed_job_ids": [job.job_id for job in failed],
         "preserved_failed_jobs": [
-            _job_lineage_projection_v0233(job) for job in failed
+            _job_lineage_projection_v0233(job, product_root=product_root)
+            for job in failed
         ],
         "successful_job_id": successful_job.job_id,
-        "successful_job": _job_lineage_projection_v0233(successful_job),
+        "successful_job": _job_lineage_projection_v0233(
+            successful_job,
+            product_root=product_root,
+        ),
         "successful_diagnosis_generation": diagnosis_generation,
         "diagnosis_result_sha256": diagnosis.result_sha256,
     }
@@ -2037,15 +2471,7 @@ def _checkpoint_chain_public_v0233(
         "semantic_generation": checkpoints[0].semantic_generation,
         "checkpoint_count": len(checkpoints),
         "checkpoints": [
-            {
-                "sequence": checkpoint.sequence,
-                "state": checkpoint.state.value,
-                "previous_checkpoint_sha256": (
-                    checkpoint.previous_checkpoint_sha256
-                ),
-                "checkpoint_sha256": checkpoint.checkpoint_sha256,
-            }
-            for checkpoint in checkpoints
+            checkpoint.model_dump(mode="json") for checkpoint in checkpoints
         ],
         "latest_checkpoint_sha256": checkpoints[-1].checkpoint_sha256,
     }
@@ -2099,6 +2525,7 @@ def _publish_measured_terminal_v0233(
     restart: BaselineRestartProofV0233,
     traffic: FormalTrafficResultV0233,
     fresh_snapshot_proof: FreshRuntimeSnapshotProofV0233,
+    live_capture: LiveCaptureBundleV0233,
     incident_binding: IncidentTrafficBindingV0232,
     assessment: NoFaultEvidenceAssessmentV0232,
     pipeline: DiagnosisPipelineAcceptanceV0233,
@@ -2151,8 +2578,7 @@ def _publish_measured_terminal_v0233(
         or pipeline.decision_trace_sha256 != decision_trace.trace_sha256
         or not isinstance(successful_job, Mapping)
         or pipeline.job_id != recovery_lineage.get("successful_job_id")
-        or successful_job.get("journal_tail_sha256")
-        != pipeline.journal_tail_sha256
+        or successful_job.get("journal_tail_sha256") != pipeline.journal_tail_sha256
         or pipeline.journal_tail_sha256 != result.stage_journal_tail_sha256
         or assessment != rescored_assessment
         or result.measured_terminal
@@ -2165,10 +2591,27 @@ def _publish_measured_terminal_v0233(
         or recovery_acquisition.semantic_generation != review.semantic_generation
         or recovery_acquisition.semantic_surface_sha256
         != review.semantic_surface_sha256
-        or recovery_acquisition.active_profile_sha256
-        != selection.active_profile_sha256
-        or recovery_acquisition.baseline_sha256
-        != selection.active_baseline_sha256
+        or recovery_acquisition.active_profile_sha256 != selection.active_profile_sha256
+        or recovery_acquisition.baseline_sha256 != selection.active_baseline_sha256
+        or live_capture.campaign_id != measured_ledger.campaign_id
+        or live_capture.attempt_id != measured_record.attempt_id
+        or live_capture.semantic_generation != measured_record.semantic_generation
+        or live_capture.semantic_surface_sha256 != review.semantic_surface_sha256
+        or live_capture.source_selection_sha256 != selection.selection_sha256
+        or live_capture.formal_clone_sha256 != clone.clone_sha256
+        or live_capture.runtime_authority_proof_sha256 != authority.proof_sha256
+        or live_capture.baseline_restart_proof_sha256 != restart.proof_sha256
+        or live_capture.formal_traffic_result_sha256 != traffic.result_sha256
+        or live_capture.traffic_execution_sha256 != traffic.execution.execution_sha256
+        or live_capture.fresh_runtime_snapshot_raw.get("snapshot_sha256")
+        != fresh_snapshot_proof.runtime_snapshot_sha256
+        or live_capture.service_identity_sha256
+        != recovery_acquisition.service_identity_sha256
+        or live_capture.capability_sha256 != recovery_acquisition.capability_sha256
+        or recovery_acquisition.incident_observation_started_at
+        < live_capture.episode_started_at
+        or recovery_acquisition.incident_observation_ended_at
+        < recovery_acquisition.incident_observation_started_at
     ):
         raise ValueError("Product v0.2.3.3 measured evidence binding differs")
     public_outputs = (
@@ -2261,6 +2704,11 @@ def _publish_measured_terminal_v0233(
             "path": f"{public_attempt_locator}/formal-closure.json",
             "mode": "CREATE_JSON",
             "payload": dict(closure),
+        },
+        {
+            "path": f"{public_attempt_locator}/live-capture-bundle.json",
+            "mode": "CREATE_JSON",
+            "payload": live_capture.model_dump(mode="json"),
         },
         {
             "path": f"{public_attempt_locator}/diagnosis-acquisition-checkpoint.json",
@@ -2566,9 +3014,7 @@ def _run_formal_nofault_once_v0233(
             semantic_generation=semantic_generation,
             attempt_id=attempt_id,
             semantic_surface_sha256=semantic_surface.semantic_surface_sha256,
-            operational_surface_sha256=(
-                operational_surface.operational_surface_sha256
-            ),
+            operational_surface_sha256=(operational_surface.operational_surface_sha256),
             source_selection_sha256=source_before.selection_sha256,
             formal_clone_sha256=None if clone is None else clone.clone_sha256,
             input_artifact_sha256s=checkpoint_inputs,
@@ -2594,8 +3040,7 @@ def _run_formal_nofault_once_v0233(
             or observed.attempt_id != attempt_id
             or observed.incident_id != incident.incident_id
             or observed.incident_sha256 != incident.incident_sha256
-            or observed.active_profile_sha256
-            != diagnosis_context.active_profile_sha256
+            or observed.active_profile_sha256 != diagnosis_context.active_profile_sha256
             or observed.semantic_surface_sha256
             != semantic_surface.semantic_surface_sha256
         ):
@@ -2638,7 +3083,9 @@ def _run_formal_nofault_once_v0233(
         )
         if prior is not None and prior != current.attempts[-1]:
             raise ValueError("Product v0.2.3.3 attempt ledger order differs")
-        ordinal = len(current.attempts) if prior is not None else len(current.attempts) + 1
+        ordinal = (
+            len(current.attempts) if prior is not None else len(current.attempts) + 1
+        )
         record = FormalAttemptRecordV0233.build(
             attempt_id=attempt_id,
             ordinal=ordinal,
@@ -2753,9 +3200,9 @@ def _run_formal_nofault_once_v0233(
         if (
             _database_owner_count(product_root / "product.sqlite3") != 0
             or processes.cleanup_observation().get("verdict") != "CLEAN"
-            or _formal_surfaces_v0233(
-                root, semantic_generation=semantic_generation
-            )[0].semantic_surface_sha256
+            or _formal_surfaces_v0233(root, semantic_generation=semantic_generation)[
+                0
+            ].semantic_surface_sha256
             != frozen_semantic_surface_before
         ):
             raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_PRODUCT_RESTART")
@@ -2763,8 +3210,17 @@ def _run_formal_nofault_once_v0233(
         lifecycle.admit_prestart()
         if lifecycle.runtime_descriptor != tracked_runtime:
             raise RuntimeError("RUNTIME_DESCRIPTOR_DRIFT")
+        docker_baseline_snapshot = _persist_docker_baseline_snapshot_v0233(
+            lifecycle,
+            private_root=private_root,
+        )
         action_events.append("DEMO_START_REQUESTED")
         lifecycle.start()
+        if (
+            lifecycle.environment is None
+            or lifecycle.environment._baseline_snapshot != docker_baseline_snapshot
+        ):
+            raise RuntimeError("DOCKER_BASELINE_SNAPSHOT_DRIFT")
         stage = "SANDBOX_STARTED"
         lifecycle.wait_ready()
         backend = lifecycle.authorize_reads()
@@ -2818,12 +3274,16 @@ def _run_formal_nofault_once_v0233(
         stage = "RUNTIME_AUTHORITY_VERIFIED"
 
         if (
-            _formal_surfaces_v0233(
-                root, semantic_generation=semantic_generation
-            )[0].semantic_surface_sha256
+            _formal_surfaces_v0233(root, semantic_generation=semantic_generation)[
+                0
+            ].semantic_surface_sha256
             != frozen_semantic_surface_before
         ):
             raise RuntimeError("FROZEN_SEMANTIC_SURFACE_DRIFT")
+        _persist_product_process_authority_v0233(
+            processes,
+            private_root=private_root / "product-processes",
+        )
         action_events.append("PRODUCT_START_REQUESTED")
         processes.start()
         stage = "PRODUCT_STARTED"
@@ -3365,8 +3825,14 @@ def _run_formal_nofault_once_v0233(
 
     if live_error is not None and acquisition_checkpoint is None:
         try:
-            if promote_sealed_acquisition() is not None and latest_checkpoint is not None:
-                if latest_checkpoint.state is FormalExecutionStateV0233.INCIDENT_CREATED:
+            if (
+                promote_sealed_acquisition() is not None
+                and latest_checkpoint is not None
+            ):
+                if (
+                    latest_checkpoint.state
+                    is FormalExecutionStateV0233.INCIDENT_CREATED
+                ):
                     append_checkpoint(FormalExecutionStateV0233.ACQUISITION_SEALED)
         except BaseException as promotion_error:
             live_error = promotion_error
@@ -3561,9 +4027,7 @@ def _run_formal_nofault_once_v0233(
         ).is_file()
         try:
             append_checkpoint(
-                _failure_checkpoint_state_v0233(
-                    acquisition_sealed=acquisition_sealed
-                )
+                _failure_checkpoint_state_v0233(acquisition_sealed=acquisition_sealed)
             )
         except BaseException as checkpoint_error:
             if latest_checkpoint is None:
@@ -3572,9 +4036,7 @@ def _run_formal_nofault_once_v0233(
                 ) from checkpoint_error
         if acquisition_sealed and latest_checkpoint is not None:
             recovery_body = {
-                "schema_version": (
-                    "ecomsre.product.formal-recoverable-failure.v0233"
-                ),
+                "schema_version": ("ecomsre.product.formal-recoverable-failure.v0233"),
                 "campaign_id": _CAMPAIGN_ID,
                 "attempt_id": attempt_id,
                 "semantic_generation": semantic_generation,
@@ -3657,9 +4119,7 @@ def _run_formal_nofault_once_v0233(
         if pipeline is not None:
             terminal_artifacts.append(
                 {
-                    "path": (
-                        f"{public_attempt_locator}/diagnosis-stage-journal.json"
-                    ),
+                    "path": (f"{public_attempt_locator}/diagnosis-stage-journal.json"),
                     "mode": "CREATE_JSON",
                     "payload": _pipeline_public(pipeline),
                 }
@@ -3796,6 +4256,7 @@ def _run_formal_nofault_once_v0233(
     assert execution is not None
     assert traffic is not None
     assert fresh_snapshot_proof is not None
+    assert live_capture_bundle is not None
     assert incident_binding is not None
     assert diagnosis is not None
     assert evidence is not None
@@ -3820,6 +4281,7 @@ def _run_formal_nofault_once_v0233(
         measured_terminal=result.measured_terminal,
     )
     lineage = _diagnosis_lineage_v0233(
+        product_root=product_root,
         attempt_id=attempt_id,
         acquisition=acquisition_checkpoint,
         failed_jobs=(),
@@ -3837,6 +4299,7 @@ def _run_formal_nofault_once_v0233(
         restart=restart,
         traffic=traffic,
         fresh_snapshot_proof=fresh_snapshot_proof,
+        live_capture=live_capture_bundle,
         incident_binding=incident_binding,
         assessment=assessment,
         pipeline=pipeline,
@@ -3895,9 +4358,7 @@ def run_formal_nofault_v0233(
             )
             assert recovered is not None
             return recovered
-        raise RuntimeError(
-            "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_REQUIRED"
-        )
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_REQUIRED")
     try:
         return _run_formal_nofault_once_v0233(
             project_root=root,
@@ -3914,9 +4375,7 @@ def run_formal_nofault_v0233(
             assert recovered is not None
             return recovered
         if reservation_path.exists():
-            raise RuntimeError(
-                "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_REQUIRED"
-            )
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_REQUIRED")
         raise
 
 

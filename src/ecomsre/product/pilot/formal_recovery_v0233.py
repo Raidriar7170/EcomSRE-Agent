@@ -85,6 +85,11 @@ def _checkpoint_transition_allowed_v0233(
     previous: FormalExecutionStateV0233,
     current: FormalExecutionStateV0233,
 ) -> bool:
+    if previous in {
+        FormalExecutionStateV0233.CLOSED,
+        FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
+    }:
+        return False
     allowed = {
         _FORWARD_TRANSITION.get(previous),
         FormalExecutionStateV0233.RECOVERABLE_FAILURE,
@@ -216,9 +221,9 @@ class RecoveryPreExecutionReviewV0233(ProductModelV1):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.recovery-pre-execution-review.v0233"] = (
         "ecomsre.product.recovery-pre-execution-review.v0233"
-    ] = "ecomsre.product.recovery-pre-execution-review.v0233"
+    )
     semantic_generation: int = Field(ge=2)
     semantic_surface_sha256: str = Field(pattern=_SHA256_PATTERN)
     operational_surface_sha256: str = Field(pattern=_SHA256_PATTERN)
@@ -239,9 +244,7 @@ class RecoveryPreExecutionReviewV0233(ProductModelV1):
     @classmethod
     def build(cls, **payload: Any) -> RecoveryPreExecutionReviewV0233:
         body = {
-            "schema_version": (
-                "ecomsre.product.recovery-pre-execution-review.v0233"
-            ),
+            "schema_version": ("ecomsre.product.recovery-pre-execution-review.v0233"),
             **payload,
             "verdict": "PASS",
             "must_fix_count": 0,
@@ -258,9 +261,9 @@ class RecoveryExactHeadCiReceiptV0233(ProductModelV1):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.recovery-exact-head-ci-receipt.v0233"] = (
         "ecomsre.product.recovery-exact-head-ci-receipt.v0233"
-    ] = "ecomsre.product.recovery-exact-head-ci-receipt.v0233"
+    )
     execution_head: str = Field(pattern=r"^[0-9a-f]{40}$")
     upstream_ref: str
     pull_request_number: int = Field(gt=0)
@@ -276,10 +279,8 @@ class RecoveryExactHeadCiReceiptV0233(ProductModelV1):
         if (
             self.checked_at.tzinfo is None
             or not self.upstream_ref
-            or self.successful_checks
-            != ("Offline replay and verification", "verify")
-            or tuple(sorted(self.successful_check_run_ids))
-            != self.successful_checks
+            or self.successful_checks != ("Offline replay and verification", "verify")
+            or tuple(sorted(self.successful_check_run_ids)) != self.successful_checks
             or any(run_id <= 0 for run_id in self.successful_check_run_ids.values())
             or self.receipt_sha256
             != semantic_sha256_v22(
@@ -355,9 +356,7 @@ class LiveCaptureBundleV0233(ProductModelV1):
             != semantic_json_sha256_v0233(self.fresh_runtime_snapshot_raw)
             or self.live_capture_bundle_sha256
             != semantic_sha256_v22(
-                self.model_dump(
-                    mode="json", exclude={"live_capture_bundle_sha256"}
-                )
+                self.model_dump(mode="json", exclude={"live_capture_bundle_sha256"})
             )
         ):
             raise ValueError("Product v0.2.3.3 live capture bundle differs")
@@ -553,8 +552,7 @@ class FormalCheckpointRepositoryV0233:
             previous = existing[-1]
             if (
                 checkpoint.sequence != previous.sequence + 1
-                or checkpoint.previous_checkpoint_sha256
-                != previous.checkpoint_sha256
+                or checkpoint.previous_checkpoint_sha256 != previous.checkpoint_sha256
                 or not _checkpoint_transition_allowed_v0233(
                     previous.state, checkpoint.state
                 )
@@ -565,16 +563,14 @@ class FormalCheckpointRepositoryV0233:
                 != previous.semantic_surface_sha256
                 or checkpoint.source_selection_sha256
                 != previous.source_selection_sha256
-                or checkpoint.input_artifact_sha256s
-                != previous.input_artifact_sha256s
+                or checkpoint.input_artifact_sha256s != previous.input_artifact_sha256s
                 or any(
                     checkpoint.output_artifact_sha256s.get(path) != digest
                     for path, digest in previous.output_artifact_sha256s.items()
                 )
                 or (
                     previous.formal_clone_sha256 is not None
-                    and checkpoint.formal_clone_sha256
-                    != previous.formal_clone_sha256
+                    and checkpoint.formal_clone_sha256 != previous.formal_clone_sha256
                 )
                 or checkpoint.created_at < previous.created_at
             ):
@@ -619,8 +615,7 @@ class FormalCheckpointRepositoryV0233:
                     raise ValueError("Product v0.2.3.3 checkpoint chain differs")
                 if (
                     checkpoint.campaign_id != previous.campaign_id
-                    or checkpoint.semantic_generation
-                    != previous.semantic_generation
+                    or checkpoint.semantic_generation != previous.semantic_generation
                     or checkpoint.attempt_id != previous.attempt_id
                     or checkpoint.semantic_surface_sha256
                     != previous.semantic_surface_sha256
@@ -672,9 +667,7 @@ class FormalAttemptRecordV0233(ProductModelV1):
     semantic_generation: int = Field(ge=1)
     disposition: FormalAttemptDispositionV0233
     latest_state: FormalExecutionStateV0233
-    latest_checkpoint_sha256: str | None = Field(
-        default=None, pattern=_SHA256_PATTERN
-    )
+    latest_checkpoint_sha256: str | None = Field(default=None, pattern=_SHA256_PATTERN)
     blocker_terminal: str | None = None
     measured_terminal: MeasuredTerminalV0233 | None = None
     evidence_sha256_by_path: dict[str, str]
@@ -832,9 +825,7 @@ def build_legacy_attempt1_record_v0233(project_root: Path) -> FormalAttemptRecor
     artifacts = payload.get("artifacts")
     if not isinstance(artifacts, dict):
         raise ValueError("Product v0.2.3.3 Attempt 1 artifacts differ")
-    evidence = {
-        manifest_path.relative_to(root).as_posix(): _sha256_file(manifest_path)
-    }
+    evidence = {manifest_path.relative_to(root).as_posix(): _sha256_file(manifest_path)}
     for artifact in artifacts.values():
         if not isinstance(artifact, dict) or "public_path" not in artifact:
             continue
@@ -904,9 +895,7 @@ def verify_checkpoint_artifacts_v0233(
         try:
             resolved = path.resolve(strict=True)
         except OSError as error:
-            raise ValueError(
-                "Product v0.2.3.3 checkpoint artifact missing"
-            ) from error
+            raise ValueError("Product v0.2.3.3 checkpoint artifact missing") from error
         if (
             not resolved.is_relative_to(root)
             or path.is_symlink()

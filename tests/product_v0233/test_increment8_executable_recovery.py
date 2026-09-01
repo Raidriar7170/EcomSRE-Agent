@@ -39,17 +39,16 @@ def _sha(character: str) -> str:
 
 
 def _artifact(**values):
-    payload = {
-        key: getattr(value, "value", value)
-        for key, value in values.items()
-    }
+    payload = {key: getattr(value, "value", value) for key, value in values.items()}
     return SimpleNamespace(
         **values,
         model_dump=lambda mode="json": dict(payload),
     )
 
 
-def _counts(*, incident: int, jobs: int, diagnosis: int) -> FormalObservedStateCountsV0233:
+def _counts(
+    *, incident: int, jobs: int, diagnosis: int
+) -> FormalObservedStateCountsV0233:
     return FormalObservedStateCountsV0233(
         baseline_count=1,
         active_baseline_count=1,
@@ -120,12 +119,14 @@ def test_process_interruption_at_every_stage_is_classified_from_durable_acquisit
             FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
         }:
             continue
-        assert run_command._failure_checkpoint_state_v0233(
-            acquisition_sealed=False
-        ) is FormalExecutionStateV0233.NONRECOVERABLE_FAILURE, stage
-        assert run_command._failure_checkpoint_state_v0233(
-            acquisition_sealed=True
-        ) is FormalExecutionStateV0233.RECOVERABLE_FAILURE, stage
+        assert (
+            run_command._failure_checkpoint_state_v0233(acquisition_sealed=False)
+            is FormalExecutionStateV0233.NONRECOVERABLE_FAILURE
+        ), stage
+        assert (
+            run_command._failure_checkpoint_state_v0233(acquisition_sealed=True)
+            is FormalExecutionStateV0233.RECOVERABLE_FAILURE
+        ), stage
 
 
 def test_recovery_starts_next_attempt_only_after_nonrecoverable_terminal_is_sealed(
@@ -170,8 +171,7 @@ def test_recovery_starts_next_attempt_only_after_nonrecoverable_terminal_is_seal
         "terminal": terminal,
     }
     completion_path = (
-        tmp_path
-        / ".local/product-v0233/attempts/attempt-2/execution/"
+        tmp_path / ".local/product-v0233/attempts/attempt-2/execution/"
         "terminal-publication-completion.json"
     )
     completion_path.parent.mkdir(parents=True)
@@ -213,10 +213,7 @@ def test_recovery_starts_next_attempt_only_after_nonrecoverable_terminal_is_seal
     ]
 
 
-def test_successor_admission_recognizes_only_exact_sealed_prior_publication(
-    tmp_path: Path,
-) -> None:
-    attempt_id = "attempt-2"
+def test_successor_identity_requires_exact_next_attempt_and_generation() -> None:
     terminal = "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
     legacy = FormalAttemptRecordV0233.build(
         attempt_id="attempt-1",
@@ -229,8 +226,28 @@ def test_successor_admission_recognizes_only_exact_sealed_prior_publication(
         measured_terminal=None,
         evidence_sha256_by_path={},
     )
+    initial = FormalAttemptLedgerV0233.build(
+        campaign_id="product-v0233-fresh-formal-nofault",
+        attempts=(legacy,),
+    )
+    assert run_command._is_exact_successor_identity_v0233(
+        initial,
+        attempt_id="attempt-2",
+        semantic_generation=2,
+    )
+    assert not run_command._is_exact_successor_identity_v0233(
+        initial,
+        attempt_id="attempt-3",
+        semantic_generation=2,
+    )
+    assert not run_command._is_exact_successor_identity_v0233(
+        initial,
+        attempt_id="attempt-2",
+        semantic_generation=3,
+    )
+
     retired = FormalAttemptRecordV0233.build(
-        attempt_id=attempt_id,
+        attempt_id="attempt-2",
         ordinal=2,
         semantic_generation=2,
         disposition="NONRECOVERABLE_FAILURE",
@@ -240,77 +257,85 @@ def test_successor_admission_recognizes_only_exact_sealed_prior_publication(
         measured_terminal=None,
         evidence_sha256_by_path={},
     )
-    ledger = FormalAttemptLedgerV0233.build(
+    continued = FormalAttemptLedgerV0233.build(
         campaign_id="product-v0233-fresh-formal-nofault",
         attempts=(legacy, retired),
     )
-    public_payloads = {
-        "docs/analysis/product-v0233-attempts/attempt-2/formal-blocker.json": {
-            "terminal": terminal
-        },
-        "docs/analysis/product-v0233-attempts/attempt-2/repository-state-manifest.json": {
-            "phase": "FORMAL_BLOCKED"
-        },
-        "docs/analysis/product-v0233-attempts/attempt-2/progress.json": {
-            "terminal": terminal
-        },
-        "config/product-v0233/formal-attempt-ledger.json": ledger.model_dump(
-            mode="json"
-        ),
-    }
-    artifacts = [
-        {
-            "path": relative,
-            "mode": "REPLACE_JSON" if relative.startswith("config/") else "CREATE_JSON",
-            "payload": payload,
-        }
-        for relative, payload in public_payloads.items()
-    ]
-    bundle_body = {
-        "schema_version": "ecomsre.product.terminal-publication.v0233",
-        "kind": "BLOCKER",
-        "terminal": terminal,
-        "reservation_sha256": _sha("3"),
-        "artifacts": artifacts,
-    }
-    bundle = {
-        **bundle_body,
-        "publication_sha256": semantic_sha256_v22(bundle_body),
-    }
-    completion_body = {
-        "schema_version": "ecomsre.product.terminal-publication-completion.v0233",
-        "publication_sha256": bundle["publication_sha256"],
-        "terminal": terminal,
-    }
-    private_root = (
-        tmp_path
-        / ".local/product-v0233/attempts/attempt-2/execution"
+    for generation in (2, 3):
+        assert run_command._is_exact_successor_identity_v0233(
+            continued,
+            attempt_id="attempt-3",
+            semantic_generation=generation,
+        )
+    assert not run_command._is_exact_successor_identity_v0233(
+        continued,
+        attempt_id="attempt-4",
+        semantic_generation=2,
     )
-    private_root.mkdir(parents=True)
-    (private_root / "terminal-publication.json").write_text(
-        json.dumps(bundle), encoding="utf-8"
+    assert not run_command._is_exact_successor_identity_v0233(
+        continued,
+        attempt_id="attempt-3",
+        semantic_generation=4,
     )
-    (private_root / "terminal-publication-completion.json").write_text(
-        json.dumps(
-            {
-                **completion_body,
-                "completion_sha256": semantic_sha256_v22(completion_body),
-            }
-        ),
-        encoding="utf-8",
+
+
+def test_successor_admission_recognizes_only_exact_sealed_prior_publication(
+    tmp_path: Path,
+) -> None:
+    repository_root = Path(run_command.__file__).resolve().parents[2]
+    for relative in (
+        "config/product-v0233/repository-state-manifest.json",
+        "config/product-v0233/formal-attempt-ledger.json",
+        "docs/analysis/product-v0233-progress.json",
+    ):
+        source = repository_root / relative
+        destination = tmp_path / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(source.read_bytes())
+    attempt_root = tmp_path / ".local/product-v0233/attempts/attempt-2"
+    repository = FormalCheckpointRepositoryV0233(attempt_root)
+    prepared = _prepared_checkpoint()
+    failed = FormalExecutionCheckpointV0233.build(
+        previous=prepared,
+        state=FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
+        created_at=prepared.created_at + timedelta(seconds=1),
     )
-    for relative, payload in public_payloads.items():
-        path = tmp_path / relative
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(run_command.canonical_json_bytes(payload))
+    repository.append(prepared)
+    repository.append(failed)
+    admission = FormalExecutionAdmissionV0233.build(
+        execution_head="1" * 40,
+        campaign_sha256=_sha("1"),
+        source_selection_sha256=_sha("2"),
+        formal_clone_plan_sha256=_sha("3"),
+        formal_contract_freeze_sha256=_sha("4"),
+        pre_execution_review_sha256=_sha("5"),
+        repository_state_manifest_sha256=_sha("6"),
+    )
+    reservation = FormalExecutionReservationV0233.build(
+        admission=admission,
+        reserved_at=datetime(2026, 9, 1, tzinfo=UTC),
+    )
+    reservation_path = attempt_root / "reservation.json"
+    reservation_path.parent.mkdir(parents=True, exist_ok=True)
+    reservation_path.write_text(reservation.model_dump_json(), encoding="utf-8")
+    run_command.terminalize_nonrecoverable_attempt_v0233(
+        tmp_path,
+        attempt_id="attempt-2",
+        latest=failed,
+    )
+    ledger = FormalAttemptLedgerV0233.model_validate_json(
+        (tmp_path / "config/product-v0233/formal-attempt-ledger.json").read_bytes()
+    )
 
     allowed = run_command._sealed_nonrecoverable_publication_paths_v0233(
         tmp_path,
         ledger,
     )
-    assert allowed == tuple(sorted(public_payloads))
+    assert allowed
 
-    blocker_path = tmp_path / next(iter(public_payloads))
+    blocker_path = (
+        tmp_path / "docs/analysis/product-v0233-attempts/attempt-2/formal-blocker.json"
+    )
     blocker_path.write_text('{"drift":true}\n', encoding="utf-8")
     with pytest.raises(RuntimeError, match="ACCEPTANCE_ARTIFACTS"):
         run_command._sealed_nonrecoverable_publication_paths_v0233(
@@ -376,6 +401,80 @@ def test_resume_terminalizes_nonrecoverable_crash_window_before_routing_forward(
     assert observed is expected
     assert calls[0] == ("terminalize", latest)
     assert calls[1][0] == "successor"
+
+
+def test_resume_from_pre_acquisition_hard_interruption_seals_and_routes_successor(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository_root = Path(run_command.__file__).resolve().parents[2]
+    for relative in (
+        "config/product-v0233/repository-state-manifest.json",
+        "config/product-v0233/formal-attempt-ledger.json",
+        "docs/analysis/product-v0233-progress.json",
+    ):
+        source = repository_root / relative
+        destination = tmp_path / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(source.read_bytes())
+    attempt_root = tmp_path / ".local/product-v0233/attempts/attempt-2"
+    repository = FormalCheckpointRepositoryV0233(attempt_root)
+    prepared = _prepared_checkpoint()
+    repository.append(prepared)
+    admission = FormalExecutionAdmissionV0233.build(
+        execution_head="1" * 40,
+        campaign_sha256=_sha("1"),
+        source_selection_sha256=_sha("2"),
+        formal_clone_plan_sha256=_sha("3"),
+        formal_contract_freeze_sha256=_sha("4"),
+        pre_execution_review_sha256=_sha("5"),
+        repository_state_manifest_sha256=_sha("6"),
+    )
+    reservation = FormalExecutionReservationV0233.build(
+        admission=admission,
+        reserved_at=datetime(2026, 9, 1, tzinfo=UTC),
+    )
+    (attempt_root / "reservation.json").write_text(
+        reservation.model_dump_json(), encoding="utf-8"
+    )
+    expected = SimpleNamespace(result_sha256=_sha("7"))
+    successor_calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        resume_command,
+        "strict_resume_formal_admission_v0233",
+        lambda *_args, **_kwargs: (
+            prepared,
+            SimpleNamespace(semantic_surface_sha256=prepared.semantic_surface_sha256),
+            SimpleNamespace(
+                operational_surface_sha256=prepared.operational_surface_sha256
+            ),
+        ),
+    )
+    monkeypatch.setattr(
+        resume_command,
+        "run_formal_nofault_v0233",
+        lambda **kwargs: (successor_calls.append(kwargs), expected)[1],
+    )
+
+    observed = resume_command.resume_formal_nofault_v0233(
+        project_root=tmp_path,
+        attempt_id="attempt-2",
+    )
+
+    assert observed is expected
+    assert successor_calls == [
+        {
+            "project_root": tmp_path,
+            "attempt_id": "attempt-3",
+            "semantic_generation": 2,
+        }
+    ]
+    chain = repository.load_chain()
+    assert chain[-1].state is FormalExecutionStateV0233.NONRECOVERABLE_FAILURE
+    ledger = FormalAttemptLedgerV0233.model_validate_json(
+        (tmp_path / "config/product-v0233/formal-attempt-ledger.json").read_bytes()
+    )
+    assert run_command._sealed_nonrecoverable_publication_paths_v0233(tmp_path, ledger)
 
 
 def test_nonrecoverable_crash_window_publication_is_executable_and_sealed(
@@ -501,6 +600,106 @@ def test_reviewed_semantic_change_retires_generation_and_starts_fresh_capture(
     assert repository.load_chain()[-1] == terminalized[0]
 
 
+def test_clone_bearing_semantic_rollover_closes_before_fresh_generation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository_root = Path(run_command.__file__).resolve().parents[2]
+    for relative in (
+        "config/product-v0233/repository-state-manifest.json",
+        "config/product-v0233/formal-attempt-ledger.json",
+        "docs/analysis/product-v0233-progress.json",
+    ):
+        source = repository_root / relative
+        destination = tmp_path / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(source.read_bytes())
+    clone_payload = json.loads(
+        (
+            repository_root / "docs/analysis/product-v0233-formal-state-clone.json"
+        ).read_text(encoding="utf-8")
+    )
+    attempt_root = tmp_path / ".local/product-v0233/attempts/attempt-2"
+    repository = FormalCheckpointRepositoryV0233(attempt_root)
+    prepared = _prepared_checkpoint()
+    environment_ready = FormalExecutionCheckpointV0233.build(
+        previous=prepared,
+        state=FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY,
+        formal_clone_sha256=clone_payload["clone_sha256"],
+        created_at=prepared.created_at + timedelta(seconds=1),
+    )
+    recoverable = FormalExecutionCheckpointV0233.build(
+        previous=environment_ready,
+        state=FormalExecutionStateV0233.RECOVERABLE_FAILURE,
+        created_at=environment_ready.created_at + timedelta(seconds=1),
+    )
+    for checkpoint in (prepared, environment_ready, recoverable):
+        repository.append(checkpoint)
+    admission = FormalExecutionAdmissionV0233.build(
+        execution_head="1" * 40,
+        campaign_sha256=_sha("1"),
+        source_selection_sha256=_sha("2"),
+        formal_clone_plan_sha256=_sha("3"),
+        formal_contract_freeze_sha256=_sha("4"),
+        pre_execution_review_sha256=_sha("5"),
+        repository_state_manifest_sha256=_sha("6"),
+    )
+    reservation = FormalExecutionReservationV0233.build(
+        admission=admission,
+        reserved_at=datetime(2026, 9, 1, tzinfo=UTC),
+    )
+    (attempt_root / "reservation.json").write_text(
+        reservation.model_dump_json(), encoding="utf-8"
+    )
+    execution_root = attempt_root / "execution"
+    execution_root.mkdir(parents=True, exist_ok=True)
+    (execution_root / "formal-closure.json").write_bytes(
+        (
+            repository_root / "docs/analysis/product-v0233-formal-closure.json"
+        ).read_bytes()
+    )
+    public_root = tmp_path / "docs/analysis/product-v0233-attempts/attempt-2"
+    public_root.mkdir(parents=True, exist_ok=True)
+    (public_root / "formal-state-clone.json").write_bytes(
+        run_command.canonical_json_bytes(clone_payload)
+    )
+    transition = run_command.SemanticGenerationTransitionRequiredV0233(
+        latest=recoverable,
+        semantic=SimpleNamespace(
+            semantic_generation=3,
+            semantic_surface_sha256=_sha("7"),
+        ),
+        operational=SimpleNamespace(operational_surface_sha256=_sha("8")),
+    )
+    monkeypatch.setattr(
+        resume_command,
+        "strict_resume_formal_admission_v0233",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(transition),
+    )
+    expected = SimpleNamespace(result_sha256=_sha("9"))
+    successor_calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        resume_command,
+        "run_formal_nofault_v0233",
+        lambda **kwargs: (successor_calls.append(kwargs), expected)[1],
+    )
+
+    observed = resume_command.resume_formal_nofault_v0233(
+        project_root=tmp_path,
+        attempt_id="attempt-2",
+    )
+
+    assert observed is expected
+    assert successor_calls[0]["semantic_generation"] == 3
+    assert repository.load_chain()[-1].state is (
+        FormalExecutionStateV0233.NONRECOVERABLE_FAILURE
+    )
+    ledger = FormalAttemptLedgerV0233.model_validate_json(
+        (tmp_path / "config/product-v0233/formal-attempt-ledger.json").read_bytes()
+    )
+    assert run_command._sealed_nonrecoverable_publication_paths_v0233(tmp_path, ledger)
+
+
 @pytest.mark.parametrize(
     ("recovery_required", "latest_state", "private_acquisition"),
     (
@@ -519,7 +718,7 @@ def test_resume_executes_post_success_or_failed_job_recovery(
     attempt_id = "attempt-2"
     private_root = tmp_path / ".local/product-v0233/attempts" / attempt_id / "execution"
     private_root.mkdir(parents=True)
-    product_root = tmp_path / ".local/product-v0233/formal-state" / attempt_id
+    product_root = tmp_path / run_command._attempt_product_locator_v0233(attempt_id)
     product_root.mkdir(parents=True)
     (private_root / "diagnosis-job.json").write_text("{}\n", encoding="utf-8")
     if private_acquisition:
@@ -544,6 +743,7 @@ def test_resume_executes_post_success_or_failed_job_recovery(
         operational_surface_sha256=_sha("2"),
         source_selection_sha256=_sha("3"),
         formal_clone_sha256=_sha("4"),
+        input_artifact_sha256s={},
         output_artifact_sha256s=(
             {
                 ".local/product-v0233/attempts/attempt-2/execution/"
@@ -621,9 +821,12 @@ def test_resume_executes_post_success_or_failed_job_recovery(
         "incident_id": incident.incident_id,
         "formal_recovery_v0233": job_context.model_dump(mode="json"),
     }
+    if not private_acquisition:
+        worker_checkpoint = product_root / job_context.acquisition_checkpoint_locator
+        worker_checkpoint.parent.mkdir(parents=True, exist_ok=True)
+        worker_checkpoint.write_text("{}\n", encoding="utf-8")
     initial_idempotency_key = (
-        "formal-v0233-acquisition-"
-        f"{live_capture.live_capture_bundle_sha256[:32]}"
+        f"formal-v0233-acquisition-{live_capture.live_capture_bundle_sha256[:32]}"
     )
     rebound_idempotency_key = final_diagnosis_idempotency_key_v0233(
         context=job_context,
@@ -723,15 +926,17 @@ def test_resume_executes_post_success_or_failed_job_recovery(
     monkeypatch.setattr(
         resume_command,
         "_failed_formal_job_ids_v0233",
-        lambda **_kwargs: (
-            (original_job.job_id,) if recovery_required else ()
-        ),
+        lambda **_kwargs: (original_job.job_id,) if recovery_required else (),
     )
     monkeypatch.setattr(
         resume_command,
         "_append_checkpoint_v0233",
         lambda *, latest, state, outputs, **_kwargs: SimpleNamespace(
-            **{**latest.__dict__, "state": state, "output_artifact_sha256s": dict(outputs)}
+            **{
+                **latest.__dict__,
+                "state": state,
+                "output_artifact_sha256s": dict(outputs),
+            }
         ),
     )
     monkeypatch.setattr(
@@ -755,9 +960,15 @@ def test_resume_executes_post_success_or_failed_job_recovery(
         "_wait_job",
         lambda *_args, **_kwargs: successful_job,
     )
-    monkeypatch.setattr(resume_command, "_find_decision_trace", lambda *_args, **_kwargs: decision_trace)
-    monkeypatch.setattr(resume_command, "score_nofault_evidence_v0232", lambda **_kwargs: assessment)
-    monkeypatch.setattr(resume_command, "_diagnosis_acceptance", lambda **_kwargs: pipeline)
+    monkeypatch.setattr(
+        resume_command, "_find_decision_trace", lambda *_args, **_kwargs: decision_trace
+    )
+    monkeypatch.setattr(
+        resume_command, "score_nofault_evidence_v0232", lambda **_kwargs: assessment
+    )
+    monkeypatch.setattr(
+        resume_command, "_diagnosis_acceptance", lambda **_kwargs: pipeline
+    )
     monkeypatch.setattr(
         resume_command,
         "_selected_source",
@@ -816,6 +1027,15 @@ def test_resume_executes_post_success_or_failed_job_recovery(
         resume_command,
         "_build_measured_ledger_v0233",
         lambda **_kwargs: SimpleNamespace(),
+    )
+    monkeypatch.setattr(
+        resume_command,
+        "_diagnosis_lineage_v0233",
+        lambda **_kwargs: {
+            "preserved_failed_job_ids": (
+                [original_job.job_id] if recovery_required else []
+            )
+        },
     )
     monkeypatch.setattr(
         resume_command,

@@ -17,6 +17,7 @@ from ecomsre.product.connectors.base import (
 )
 from ecomsre.product.incidents.read_backend import ProductReadAcquisitionV1
 from ecomsre.product.incidents.diagnosis_pipeline_v02322 import (
+    DiagnosisPrivateFailureEnvelopeV02322,
     DiagnosisPipelineStageV02322,
     DiagnosisPipelineV02322,
 )
@@ -41,6 +42,7 @@ from ecomsre.product.settings import ProductSettingsV1
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
 from ecomsre_live_sandbox.contracts import write_private_json
 from scripts.product_v0233 import resume_formal_nofault as resume_command
+from scripts.product_v0233 import run_formal_nofault as run_command
 
 
 def _sha(character: str) -> str:
@@ -351,13 +353,16 @@ def test_only_expired_target_job_can_be_reclaimed_for_failure_sealing(
             "FORMAL_WORKER_INTERRUPTED",
             now=14.0,
         )
-    assert jobs.fail(
-        queued.job_id,
-        "worker-recovery",
-        reclaimed.attempt_count,
-        "FORMAL_WORKER_INTERRUPTED",
-        now=14.0,
-    ).status.value == "FAILED"
+    assert (
+        jobs.fail(
+            queued.job_id,
+            "worker-recovery",
+            reclaimed.attempt_count,
+            "FORMAL_WORKER_INTERRUPTED",
+            now=14.0,
+        ).status.value
+        == "FAILED"
+    )
 
 
 def test_interrupted_job_is_terminally_sealed_before_recovery_generation(
@@ -429,7 +434,31 @@ def test_interrupted_job_is_terminally_sealed_before_recovery_generation(
     assert failed.failure_stage == "JOB_CLAIMED"
     assert events[-1].stage.value == "FAILED"
     assert events[-1].event_sha256 == failed.journal_tail_sha256
-    assert tuple((tmp_path / "private/diagnosis-failures" / queued.job_id).glob("*.json"))
+    failure_files = tuple(
+        (tmp_path / "private/diagnosis-failures" / queued.job_id).glob("*.json")
+    )
+    assert len(failure_files) == 1
+    envelope = DiagnosisPrivateFailureEnvelopeV02322.model_validate_json(
+        failure_files[0].read_bytes()
+    )
+    assert (
+        envelope.last_passed_stage
+        is DiagnosisPipelineStageV02322.READ_ACQUISITION_COMPLETED
+    )
+    assert envelope.failing_stage is DiagnosisPipelineStageV02322.JOB_CLAIMED
+
+    projection = run_command._job_lineage_projection_v0233(
+        failed,
+        product_root=tmp_path,
+    )
+    assert projection["failure_stage"] == "JOB_CLAIMED"
+    assert projection["last_passed_stage"] == "READ_ACQUISITION_COMPLETED"
+    assert projection["interruption_after_stage"] == "READ_ACQUISITION_COMPLETED"
+    assert projection["formal_recovery_context"] == context.model_dump(mode="json")
+    assert (
+        projection["private_failure_envelope_sha256"]
+        == envelope.failure_envelope_sha256
+    )
 
 
 def test_failed_job_preserved_and_recovery_job_uses_exact_acquisition(

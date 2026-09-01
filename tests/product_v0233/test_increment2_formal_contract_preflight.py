@@ -95,9 +95,10 @@ def test_campaign_and_new_traffic_profiles_are_exact_and_self_sealed() -> None:
     assert campaign.traffic_contract_sha256 == (
         "8e2e6fabb139413ff5ff54efe516023e00f7d04c7b84b4d296b1aa42bf39ce1b"
     )
-    assert campaign.formal_execution_limit == 1
-    assert campaign.incident_limit == 1
-    assert campaign.diagnosis_limit == 1
+    assert campaign.engineering_attempt_limit == "NONE"
+    assert campaign.measured_result_limit == 1
+    assert campaign.incident_limit_per_live_attempt == 1
+    assert campaign.diagnosis_job_limit_per_acquisition == "NONE"
     assert campaign.fault_attempt_limit == 0
     assert campaign.knowledge_loop_limit == 0
     assert campaign.action_authority == "NONE"
@@ -257,14 +258,11 @@ def test_written_preflight_and_prepared_repository_manifest_are_exact(
     report = run_contract_preflight(isolated)
     written = json.loads(
         (
-            isolated
-            / "docs/analysis/product-v0233-formal-contract-preflight.json"
+            isolated / "docs/analysis/product-v0233-formal-contract-preflight.json"
         ).read_text()
     )
     manifest = ProductV0233RepositoryStateManifest.model_validate_json(
-        (
-            isolated / "config/product-v0233/repository-state-manifest.json"
-        ).read_bytes()
+        (isolated / "config/product-v0233/repository-state-manifest.json").read_bytes()
     )
 
     assert written == report.model_dump(mode="json")

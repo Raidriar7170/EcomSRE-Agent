@@ -99,6 +99,7 @@ from scripts.product_v0233.run_formal_nofault import (
     _knowledge_handoff,
     _publish_measured_terminal_v0233,
     _recover_terminal_publication,
+    recover_interrupted_attempt_cleanup_v0233,
     run_formal_nofault_v0233,
     _selected_source,
     _sha256_file,
@@ -137,13 +138,10 @@ def inspect_formal_resume_v0233(
         "latest_checkpoint_sha256": latest.checkpoint_sha256,
         "resume_state": resume_state.value,
         "semantic_surface_sha256": semantic.semantic_surface_sha256,
-        "checkpoint_operational_surface_sha256": (
-            latest.operational_surface_sha256
-        ),
+        "checkpoint_operational_surface_sha256": (latest.operational_surface_sha256),
         "current_operational_surface_sha256": operational.operational_surface_sha256,
         "operational_surface_changed": (
-            operational.operational_surface_sha256
-            != latest.operational_surface_sha256
+            operational.operational_surface_sha256 != latest.operational_surface_sha256
         ),
         "referenced_artifacts_verified": True,
     }
@@ -192,11 +190,7 @@ def _seal_interrupted_job_v0233(
 
     if job.status is not ProductJobStatusV1.RUNNING:
         return job
-    if (
-        not cleanup_clean
-        or job.claimed_by is None
-        or job.lease_expires_at is None
-    ):
+    if not cleanup_clean or job.claimed_by is None or job.lease_expires_at is None:
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_ACTIVE_LEASE")
     timestamp = time.time()
     if job.lease_expires_at <= timestamp:
@@ -316,8 +310,8 @@ def _build_measured_ledger_v0233(
     )
     complete_evidence = dict(evidence)
     for checkpoint_path in sorted(repository.root.glob("*.json")):
-        complete_evidence[checkpoint_path.relative_to(root).as_posix()] = (
-            _sha256_file(checkpoint_path)
+        complete_evidence[checkpoint_path.relative_to(root).as_posix()] = _sha256_file(
+            checkpoint_path
         )
     prior = next(
         (item for item in current.attempts if item.attempt_id == attempt_id), None
@@ -346,7 +340,9 @@ def _build_measured_ledger_v0233(
 
 
 def _next_attempt_id_v0233(ledger: FormalAttemptLedgerV0233) -> str:
-    expected = tuple(f"attempt-{ordinal}" for ordinal in range(1, len(ledger.attempts) + 1))
+    expected = tuple(
+        f"attempt-{ordinal}" for ordinal in range(1, len(ledger.attempts) + 1)
+    )
     observed = tuple(item.attempt_id for item in ledger.attempts)
     if observed != expected or ledger.measured_result_count != 0:
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
@@ -375,11 +371,7 @@ def _start_successor_after_nonrecoverable_v0233(
     )
     current = ledger.attempts[-1]
     completion_body = (
-        {
-            key: value
-            for key, value in completion.items()
-            if key != "completion_sha256"
-        }
+        {key: value for key, value in completion.items() if key != "completion_sha256"}
         if isinstance(completion, dict)
         else {}
     )
@@ -390,8 +382,7 @@ def _start_successor_after_nonrecoverable_v0233(
         or current.blocker_terminal != str(trigger)
         or not isinstance(completion, dict)
         or completion.get("terminal") != current.blocker_terminal
-        or completion.get("completion_sha256")
-        != semantic_sha256_v22(completion_body)
+        or completion.get("completion_sha256") != semantic_sha256_v22(completion_body)
     ):
         raise RuntimeError(
             "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
@@ -419,39 +410,71 @@ def resume_formal_nofault_v0233(
     private_root = attempt_root / "execution"
     reservation_path = attempt_root / "reservation.json"
     intent_path = private_root / "terminal-publication.json"
+
+    def retire_nonrecoverable(
+        checkpoint: FormalExecutionCheckpointV0233,
+        *,
+        failure_stage: str = "NONRECOVERABLE_FAILURE_RECOVERY",
+        safe_error_code: str = "FORMAL_NONRECOVERABLE_INTERRUPTION",
+        next_gate: str = "FRESH_CAPTURE_REQUIRED",
+        successor_semantic_generation: int | None = None,
+        operational_surface_sha256: str | None = None,
+    ) -> NoFaultAcceptanceResultV0233:
+        repository = FormalCheckpointRepositoryV0233(attempt_root)
+        retired = checkpoint
+        if retired.state is not FormalExecutionStateV0233.NONRECOVERABLE_FAILURE:
+            retired = FormalExecutionCheckpointV0233.build(
+                previous=retired,
+                state=FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
+                created_at=datetime.now(UTC),
+                operational_surface_sha256=(
+                    operational_surface_sha256 or retired.operational_surface_sha256
+                ),
+                formal_clone_sha256=retired.formal_clone_sha256,
+                input_artifact_sha256s=retired.input_artifact_sha256s,
+                output_artifact_sha256s=retired.output_artifact_sha256s,
+            )
+            repository.append(retired)
+        cleanup = recover_interrupted_attempt_cleanup_v0233(
+            root,
+            attempt_id=attempt_id,
+            latest=retired,
+        )
+        terminal = terminalize_nonrecoverable_attempt_v0233(
+            root,
+            attempt_id=attempt_id,
+            latest=retired,
+            failure_stage=failure_stage,
+            safe_error_code=safe_error_code,
+            next_gate=next_gate,
+        )
+        if retired.formal_clone_sha256 is not None and (
+            cleanup is None or cleanup.get("verdict") != "CLEAN"
+        ):
+            raise RuntimeError(terminal)
+        return _start_successor_after_nonrecoverable_v0233(
+            root=root,
+            attempt_id=attempt_id,
+            latest=retired,
+            trigger=RuntimeError(terminal),
+            successor_semantic_generation=successor_semantic_generation,
+        )
+
     try:
         latest, semantic, operational = strict_resume_formal_admission_v0233(
             root,
             attempt_id=attempt_id,
         )
     except SemanticGenerationTransitionRequiredV0233 as transition:
-        repository = FormalCheckpointRepositoryV0233(attempt_root)
-        invalidated = FormalExecutionCheckpointV0233.build(
-            previous=transition.latest,
-            state=FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
-            created_at=datetime.now(UTC),
-            operational_surface_sha256=(
-                transition.operational.operational_surface_sha256
-            ),
-            formal_clone_sha256=transition.latest.formal_clone_sha256,
-            input_artifact_sha256s=transition.latest.input_artifact_sha256s,
-            output_artifact_sha256s=transition.latest.output_artifact_sha256s,
-        )
-        repository.append(invalidated)
-        terminal = terminalize_nonrecoverable_attempt_v0233(
-            root,
-            attempt_id=attempt_id,
-            latest=invalidated,
+        return retire_nonrecoverable(
+            transition.latest,
             failure_stage="SEMANTIC_GENERATION_INVALIDATED",
             safe_error_code="FORMAL_SEMANTIC_GENERATION_CHANGED",
             next_gate="FRESH_CAPTURE_AT_NEXT_SEMANTIC_GENERATION",
-        )
-        return _start_successor_after_nonrecoverable_v0233(
-            root=root,
-            attempt_id=attempt_id,
-            latest=invalidated,
-            trigger=RuntimeError(terminal),
             successor_semantic_generation=transition.semantic.semantic_generation,
+            operational_surface_sha256=(
+                transition.operational.operational_surface_sha256
+            ),
         )
     if intent_path.is_file():
         try:
@@ -472,40 +495,33 @@ def resume_formal_nofault_v0233(
         return recovered
 
     if latest.state is FormalExecutionStateV0233.NONRECOVERABLE_FAILURE:
-        terminal = terminalize_nonrecoverable_attempt_v0233(
-            root,
-            attempt_id=attempt_id,
-            latest=latest,
-        )
-        return _start_successor_after_nonrecoverable_v0233(
-            root=root,
-            attempt_id=attempt_id,
-            latest=latest,
-            trigger=RuntimeError(terminal),
-        )
+        return retire_nonrecoverable(latest)
 
     repository = FormalCheckpointRepositoryV0233(attempt_root)
 
     product_root = root / _attempt_product_locator_v0233(attempt_id)
     acquisition_path = private_root / "diagnosis-acquisition-checkpoint.json"
     if not acquisition_path.is_file():
-        submitted = _load_model(
-            private_root / "diagnosis-job.json", ProductJobRecordV1
-        )
+        submitted_path = private_root / "diagnosis-job.json"
+        if not submitted_path.is_file() or submitted_path.is_symlink():
+            return retire_nonrecoverable(latest)
+        submitted = _load_model(submitted_path, ProductJobRecordV1)
         context = FormalDiagnosisJobContextV0233.model_validate(
             submitted.payload.get("formal_recovery_v0233")
         )
-        product_acquisition_path = (
-            product_root / context.acquisition_checkpoint_locator
-        )
+        product_acquisition_path = product_root / context.acquisition_checkpoint_locator
+        if (
+            not product_acquisition_path.is_file()
+            or product_acquisition_path.is_symlink()
+        ):
+            return retire_nonrecoverable(latest)
         promoted = _load_model(
             product_acquisition_path, DiagnosisAcquisitionCheckpointV0233
         )
         if (
             context.attempt_id != attempt_id
             or promoted.attempt_id != attempt_id
-            or promoted.semantic_surface_sha256
-            != semantic.semantic_surface_sha256
+            or promoted.semantic_surface_sha256 != semantic.semantic_surface_sha256
         ):
             raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_SEMANTIC_DRIFT")
         write_private_json(
@@ -533,8 +549,8 @@ def resume_formal_nofault_v0233(
         FormalExecutionStateV0233.INCIDENT_CREATED,
     }:
         recovered_outputs = dict(latest.output_artifact_sha256s)
-        recovered_outputs[acquisition_path.relative_to(root).as_posix()] = (
-            _sha256_file(acquisition_path)
+        recovered_outputs[acquisition_path.relative_to(root).as_posix()] = _sha256_file(
+            acquisition_path
         )
         latest = _append_checkpoint_v0233(
             repository=repository,
@@ -673,8 +689,7 @@ def resume_formal_nofault_v0233(
                 and submitted_context.semantic_surface_sha256
                 == acquisition.semantic_surface_sha256
                 and submitted_context.acquisition_sha256 is None
-                and submitted_job.payload.get("incident_id")
-                == acquisition.incident_id
+                and submitted_job.payload.get("incident_id") == acquisition.incident_id
             )
         if (
             current_job.payload != submitted_job.payload
@@ -742,9 +757,7 @@ def resume_formal_nofault_v0233(
             if recovery_job.status is ProductJobStatusV1.SUCCEEDED:
                 successful_job = recovery_job
                 submission = recovery_submission
-                diagnosis_generation = (
-                    recovery_submission.context.diagnosis_generation
-                )
+                diagnosis_generation = recovery_submission.context.diagnosis_generation
                 generation_root = latest_recovery_root
 
     failed_job_ids = _failed_formal_job_ids_v0233(
@@ -754,9 +767,7 @@ def resume_formal_nofault_v0233(
     )
     if successful_job is None:
         if not failed_job_ids:
-            raise RuntimeError(
-                "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"
-            )
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
         diagnosis_generation, existing_submission = _recovery_generation_v0233(
             recovery_root
         )
@@ -787,8 +798,8 @@ def resume_formal_nofault_v0233(
     outputs = dict(latest.output_artifact_sha256s)
 
     def capture(path: Path) -> None:
-        outputs[path.resolve(strict=True).relative_to(root).as_posix()] = (
-            _sha256_file(path)
+        outputs[path.resolve(strict=True).relative_to(root).as_posix()] = _sha256_file(
+            path
         )
 
     for recovery_artifact in (
@@ -1004,9 +1015,7 @@ def resume_formal_nofault_v0233(
     current_counts = read_fresh_formal_state_counts_v0233(product_root)
     FormalIncidentDiagnosisCardinalityV0233.build(
         phase=(
-            "POST_DIAGNOSIS_RECOVERED"
-            if failed_job_ids
-            else "POST_DIAGNOSIS_SUCCEEDED"
+            "POST_DIAGNOSIS_RECOVERED" if failed_job_ids else "POST_DIAGNOSIS_SUCCEEDED"
         ),
         source_incident_count=source_before.source_counts.incident_count,
         source_diagnosis_job_count=source_before.source_counts.diagnosis_job_count,
@@ -1040,8 +1049,7 @@ def resume_formal_nofault_v0233(
         observation_status="COMPLETE",
         events=cast(
             tuple[FormalActionEventV0233, ...],
-            original_journal.events
-            + ("DIAGNOSIS_CREATE_REQUESTED",) * recovery_count,
+            original_journal.events + ("DIAGNOSIS_CREATE_REQUESTED",) * recovery_count,
         ),
     )
     write_private_json(
@@ -1143,9 +1151,7 @@ def resume_formal_nofault_v0233(
         incident_traffic_binding_sha256=incident_binding.binding_sha256,
         incident_sha256=incident.incident_sha256,
         diagnosis_result_sha256=diagnosis.result_sha256,
-        evidence_bundle_sha256=semantic_sha256_v22(
-            evidence.model_dump(mode="json")
-        ),
+        evidence_bundle_sha256=semantic_sha256_v22(evidence.model_dump(mode="json")),
         evidence_index_sha256=index.index_sha256,
         decision_trace_sha256=decision_trace.trace_sha256,
         stage_journal_tail_sha256=pipeline.journal_tail_sha256,
@@ -1162,6 +1168,7 @@ def resume_formal_nofault_v0233(
     )
     capture(private_root / "nofault-acceptance-result.json")
     lineage = _diagnosis_lineage_v0233(
+        product_root=product_root,
         attempt_id=attempt_id,
         acquisition=acquisition,
         failed_jobs=tuple(jobs.get(job_id) for job_id in final_failed_job_ids),
@@ -1205,6 +1212,7 @@ def resume_formal_nofault_v0233(
         restart=restart,
         traffic=traffic,
         fresh_snapshot_proof=fresh_snapshot,
+        live_capture=live_capture,
         incident_binding=incident_binding,
         assessment=assessment,
         pipeline=pipeline,

@@ -15,11 +15,14 @@ from ecomsre.product.pilot.nofault_acceptance_v0232 import (
     NOFAULT_FULLY_SUPPORTED_V0232,
     NOFAULT_NOT_SUPPORTED_V0232,
 )
+
 _SHA256_PATTERN = r"^[0-9a-f]{64}$"
 
 
 def _semantic_json_sha256_v0233(value: Any) -> str:
     return semantic_sha256_v22(to_jsonable_python(value))
+
+
 _GOAL_VERSION = "ecomsre-product-v0233-fresh-formal-evidence-bound-nofault-v1"
 _STARTING_MAIN = "6e07964e5595b4138decf0276189c76c3e278d87"
 _HANDOFF_SHA256 = "72d272951412d696d50fb6ee44c96bbc4a1a6e5ace63d574b0636297b848847f"
@@ -52,12 +55,8 @@ _NOFAULT_SCORER_SOURCE_SHA256 = (
 FORMAL_CONTRACT_PREFLIGHT_PASS_V0233 = (
     "ECOMSRE_PRODUCT_V0233_FORMAL_CONTRACT_PREFLIGHT_PASS"
 )
-NOFAULT_FULLY_SUPPORTED_V0233 = (
-    "ECOMSRE_PRODUCT_V0233_NOFAULT_FULLY_SUPPORTED"
-)
-NOFAULT_CAPABILITY_LIMITED_V0233 = (
-    "ECOMSRE_PRODUCT_V0233_NOFAULT_CAPABILITY_LIMITED"
-)
+NOFAULT_FULLY_SUPPORTED_V0233 = "ECOMSRE_PRODUCT_V0233_NOFAULT_FULLY_SUPPORTED"
+NOFAULT_CAPABILITY_LIMITED_V0233 = "ECOMSRE_PRODUCT_V0233_NOFAULT_CAPABILITY_LIMITED"
 NOFAULT_NOT_SUPPORTED_V0233 = "ECOMSRE_PRODUCT_V0233_NOFAULT_NOT_SUPPORTED"
 
 _V0233_TERMINAL_BY_V0232 = {
@@ -68,7 +67,7 @@ _V0233_TERMINAL_BY_V0232 = {
 
 
 class FreshFormalCampaignV0233(ProductModelV1):
-    """One-shot campaign envelope; it grants no action authority."""
+    """Recovery campaign envelope; exactly one measured result may be frozen."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -93,9 +92,10 @@ class FreshFormalCampaignV0233(ProductModelV1):
     stage_journal_contract_sha256: str = Field(pattern=_SHA256_PATTERN)
     private_failure_contract_sha256: str = Field(pattern=_SHA256_PATTERN)
     nofault_scorer_source_sha256: str = Field(pattern=_SHA256_PATTERN)
-    formal_execution_limit: Literal[1] = 1
-    incident_limit: Literal[1] = 1
-    diagnosis_limit: Literal[1] = 1
+    engineering_attempt_limit: Literal["NONE"] = "NONE"
+    measured_result_limit: Literal[1] = 1
+    incident_limit_per_live_attempt: Literal[1] = 1
+    diagnosis_job_limit_per_acquisition: Literal["NONE"] = "NONE"
     fault_attempt_limit: Literal[0] = 0
     knowledge_loop_limit: Literal[0] = 0
     action_authority: Literal["NONE"] = "NONE"
@@ -112,14 +112,10 @@ class FreshFormalCampaignV0233(ProductModelV1):
             or self.active_baseline_sha256 != _ACTIVE_BASELINE_SHA256
             or self.runtime_continuity_descriptor_sha256
             != _RUNTIME_CONTINUITY_DESCRIPTOR_SHA256
-            or self.flagd_bind_descriptor_sha256
-            != _FLAGD_BIND_DESCRIPTOR_SHA256
-            or self.stage_journal_contract_sha256
-            != _STAGE_JOURNAL_CONTRACT_SHA256
-            or self.private_failure_contract_sha256
-            != _PRIVATE_FAILURE_CONTRACT_SHA256
-            or self.nofault_scorer_source_sha256
-            != _NOFAULT_SCORER_SOURCE_SHA256
+            or self.flagd_bind_descriptor_sha256 != _FLAGD_BIND_DESCRIPTOR_SHA256
+            or self.stage_journal_contract_sha256 != _STAGE_JOURNAL_CONTRACT_SHA256
+            or self.private_failure_contract_sha256 != _PRIVATE_FAILURE_CONTRACT_SHA256
+            or self.nofault_scorer_source_sha256 != _NOFAULT_SCORER_SOURCE_SHA256
         ):
             raise ValueError("Product v0.2.3.3 campaign binding differs")
         expected = semantic_sha256_v22(
@@ -321,10 +317,7 @@ class NoFaultAcceptanceResultV0233(ProductModelV1):
     def require_canonical_sealed_result(self) -> NoFaultAcceptanceResultV0233:
         if self.reasons != tuple(sorted(set(self.reasons))):
             raise ValueError("Product v0.2.3.3 No-Fault reasons are not canonical")
-        if (
-            self.measured_terminal == NOFAULT_FULLY_SUPPORTED_V0233
-            and self.reasons
-        ):
+        if self.measured_terminal == NOFAULT_FULLY_SUPPORTED_V0233 and self.reasons:
             raise ValueError("fully supported No-Fault result contains reasons")
         expected = semantic_sha256_v22(
             self.model_dump(mode="json", exclude={"result_sha256"})
@@ -543,9 +536,9 @@ class FormalContractPreflightV0233(ProductModelV1):
             "goal_version": _GOAL_VERSION,
             **payload,
         }
-        normalized = cls.model_construct(
-            **body, preflight_sha256="0" * 64
-        ).model_dump(mode="json", exclude={"preflight_sha256"})
+        normalized = cls.model_construct(**body, preflight_sha256="0" * 64).model_dump(
+            mode="json", exclude={"preflight_sha256"}
+        )
         return cls.model_validate(
             {**body, "preflight_sha256": _semantic_json_sha256_v0233(normalized)}
         )
