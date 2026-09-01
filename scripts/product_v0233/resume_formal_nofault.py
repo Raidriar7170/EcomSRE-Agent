@@ -569,27 +569,49 @@ def _reconcile_semantic_rollover_lineage_v0233(
         acquisition = _load_model(
             product_acquisition_path, DiagnosisAcquisitionCheckpointV0233
         )
-        rebound_context = context.model_copy(
-            update={"acquisition_sha256": acquisition.acquisition_sha256}
+        live_capture_path = private_root / "live-capture-bundle.json"
+        if not live_capture_path.is_file() or live_capture_path.is_symlink():
+            raise RuntimeError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"
+            )
+        live_capture = _load_model(live_capture_path, LiveCaptureBundleV0233)
+        initial_idempotency_key = (
+            "formal-v0233-acquisition-"
+            f"{live_capture.live_capture_bundle_sha256[:32]}"
         )
         if (
             submitted.job_type is not ProductJobTypeV1.DIAGNOSIS
+            or submitted.status is not ProductJobStatusV1.PENDING
+            or submitted.result is not None
+            or submitted.safe_error_code is not None
+            or submitted.claimed_by is not None
+            or submitted.lease_expires_at is not None
+            or submitted.attempt_count != 0
             or context.attempt_id != attempt_id
             or context.campaign_id != acquisition.campaign_id
             or context.semantic_generation != latest.semantic_generation
             or context.active_profile_sha256 != acquisition.active_profile_sha256
             or context.semantic_surface_sha256 != latest.semantic_surface_sha256
             or submitted.payload.get("incident_id") != acquisition.incident_id
-            or (
-                context.acquisition_sha256 is not None
-                and context.acquisition_sha256 != acquisition.acquisition_sha256
-            )
-            or submitted.idempotency_key
-            != final_diagnosis_idempotency_key_v0233(
-                context=rebound_context,
-                incident_sha256=acquisition.incident_sha256,
-                acquisition_sha256=acquisition.acquisition_sha256,
-            )
+            or context.acquisition_sha256 is not None
+            or submitted.idempotency_key != initial_idempotency_key
+            or live_capture.campaign_id != acquisition.campaign_id
+            or live_capture.semantic_generation != latest.semantic_generation
+            or live_capture.attempt_id != attempt_id
+            or live_capture.semantic_surface_sha256
+            != latest.semantic_surface_sha256
+            or live_capture.source_selection_sha256
+            != latest.source_selection_sha256
+            or live_capture.active_profile_sha256
+            != acquisition.active_profile_sha256
+            or live_capture.active_baseline_sha256 != acquisition.baseline_sha256
+            or live_capture.service_identity_sha256
+            != acquisition.service_identity_sha256
+            or live_capture.capability_sha256 != acquisition.capability_sha256
+            or live_capture.episode_started_at
+            != acquisition.incident_observation_started_at
+            or live_capture.episode_ended_at
+            != acquisition.incident_observation_ended_at
         ):
             raise RuntimeError(
                 "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"

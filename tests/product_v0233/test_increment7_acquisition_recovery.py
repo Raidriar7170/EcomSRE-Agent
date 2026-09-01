@@ -9,6 +9,7 @@ import pytest
 from ecomsre.dta_v2.v22.read_contracts import (
     EvidenceSourceV22,
     ReadSourceStatusV22,
+    RuntimeStateV22,
     semantic_sha256_v22,
 )
 from ecomsre.dta_v2.v22.action_catalog import (
@@ -28,6 +29,7 @@ from ecomsre.product.connectors.opensearch_profile_binding_v023 import (
     CANDIDATE_SET_SHA256_V023,
     OPERATOR_DECISION_SHA256_V023,
 )
+from ecomsre.product.connectors.pilot_runtime import PilotRuntimeSnapshotV02
 from ecomsre.product.incidents.read_backend import ProductReadAcquisitionV1
 from ecomsre.product.incidents.evidence_binding_v0232 import (
     ConnectorEvidenceBindingV0232,
@@ -57,6 +59,7 @@ from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
 )
 from ecomsre.product.pilot.formal_recovery_v0233 import (
     DiagnosisAcquisitionCheckpointV0233,
+    LiveCaptureBundleV0233,
 )
 from ecomsre.product.settings import ProductSettingsV1
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
@@ -371,8 +374,56 @@ def test_semantic_rollover_fences_running_or_preserves_completed_job(
     product_root.mkdir(parents=True)
     store = SqliteStoreV1(product_root / "product.sqlite3")
     jobs = JobRepositoryV1(store)
+    raw_runtime = PilotRuntimeSnapshotV02.build(
+        environment_id="env-" + "1" * 24,
+        authority_sha256=_sha("0"),
+        observed_at=checkpoint.incident_observation_ended_at,
+        services={
+            "checkout": {
+                "state": RuntimeStateV22.RUNNING,
+                "healthy": True,
+                "restart_count": 0,
+            }
+        },
+    )
+    live_capture = LiveCaptureBundleV0233.build(
+        campaign_id=context.campaign_id,
+        semantic_generation=context.semantic_generation,
+        attempt_id=attempt_id,
+        formal_clone_sha256=_sha("1"),
+        source_selection_sha256=_sha("2"),
+        runtime_authority_proof_sha256=_sha("3"),
+        baseline_restart_proof_sha256=_sha("4"),
+        traffic_contract_sha256=_sha("a"),
+        formal_profile_sha256=_sha("b"),
+        formal_traffic_result_sha256=_sha("c"),
+        traffic_execution_sha256=_sha("d"),
+        episode_started_at=checkpoint.incident_observation_started_at,
+        episode_ended_at=checkpoint.incident_observation_ended_at,
+        fresh_runtime_snapshot_raw=raw_runtime,
+        runtime_connector_binding_sha256=_sha("0"),
+        queue_before_sha256=_sha("e"),
+        queue_after_sha256=_sha("e"),
+        outer_baseline_before_sha256=_sha("f"),
+        outer_baseline_after_sha256=_sha("f"),
+        active_profile_sha256=checkpoint.active_profile_sha256,
+        active_baseline_id="base-" + "1" * 24,
+        active_baseline_sha256=checkpoint.baseline_sha256,
+        service_identity_sha256=checkpoint.service_identity_sha256,
+        capability_sha256=checkpoint.capability_sha256,
+        semantic_surface_sha256=checkpoint.semantic_surface_sha256,
+    )
     rebound = context.model_copy(
         update={"acquisition_sha256": checkpoint.acquisition_sha256}
+    )
+    initial_idempotency_key = (
+        "formal-v0233-acquisition-"
+        f"{live_capture.live_capture_bundle_sha256[:32]}"
+    )
+    final_idempotency_key = final_diagnosis_idempotency_key_v0233(
+        context=rebound,
+        incident_sha256=checkpoint.incident_sha256,
+        acquisition_sha256=checkpoint.acquisition_sha256,
     )
     job = jobs.enqueue(
         ProductJobTypeV1.DIAGNOSIS,
@@ -380,11 +431,7 @@ def test_semantic_rollover_fences_running_or_preserves_completed_job(
             "incident_id": checkpoint.incident_id,
             "formal_recovery_v0233": context.model_dump(mode="json"),
         },
-        idempotency_key=final_diagnosis_idempotency_key_v0233(
-            context=rebound,
-            incident_sha256=checkpoint.incident_sha256,
-            acquisition_sha256=checkpoint.acquisition_sha256,
-        ),
+        idempotency_key=initial_idempotency_key,
         now=started.timestamp(),
     )
     claimed = jobs.claim_next(
@@ -393,6 +440,15 @@ def test_semantic_rollover_fences_running_or_preserves_completed_job(
         now=started.timestamp() + 1,
     )
     assert claimed is not None
+    rebound_job = jobs.bind_idempotency_key(
+        claimed.job_id,
+        str(claimed.claimed_by),
+        claimed.attempt_count,
+        final_idempotency_key,
+        now=started.timestamp() + 1.5,
+    )
+    assert job.idempotency_key == initial_idempotency_key
+    assert rebound_job.idempotency_key == final_idempotency_key
     journal = DiagnosisStageJournalRepositoryV02322(store)
     claimed_event = journal.append(
         journal_id="journal-" + "1" * 24,
@@ -427,6 +483,11 @@ def test_semantic_rollover_fences_running_or_preserves_completed_job(
     private_root = (
         tmp_path / run_command._attempt_private_locator_v0233(attempt_id) / "execution"
     )
+    write_private_json(
+        private_root / "live-capture-bundle.json",
+        live_capture.model_dump(mode="json"),
+        create_once=True,
+    )
     acquisition_path = private_root / "diagnosis-acquisition-checkpoint.json"
     if private_acquisition_exists:
         write_private_json(
@@ -442,7 +503,7 @@ def test_semantic_rollover_fences_running_or_preserves_completed_job(
         )
         write_private_json(
             private_root / "diagnosis-job.json",
-            jobs.get(job.job_id).model_dump(mode="json"),
+            job.model_dump(mode="json"),
             create_once=True,
         )
     monkeypatch.setattr(
@@ -457,6 +518,7 @@ def test_semantic_rollover_fences_running_or_preserves_completed_job(
         latest=SimpleNamespace(
             semantic_generation=2,
             semantic_surface_sha256=_sha("5"),
+            source_selection_sha256=_sha("2"),
         ),
         successor_semantic_surface_sha256=_sha("d"),
     )
