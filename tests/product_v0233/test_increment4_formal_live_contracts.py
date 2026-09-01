@@ -838,6 +838,68 @@ def test_terminal_publication_intent_recovers_after_injected_write_failure(
     assert (private_root / "terminal-publication-completion.json").is_file()
 
 
+@pytest.mark.parametrize("existing_matches", (True, False))
+def test_terminal_publication_recovery_is_idempotent_only_for_identical_json(
+    tmp_path: Path,
+    existing_matches: bool,
+) -> None:
+    reservation = FormalExecutionReservationV0233.build(
+        admission=_admission(),
+        reserved_at=datetime.now(UTC),
+    )
+    clone_payload = {"clone_sha256": _sha("1")}
+    bundle = _terminal_publication_bundle(
+        reservation=reservation,
+        kind="BLOCKER",
+        terminal="BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS",
+        artifacts=(
+            {
+                "path": "docs/analysis/product-v0233-formal-state-clone.json",
+                "mode": "CREATE_JSON",
+                "payload": clone_payload,
+            },
+            {
+                "path": "docs/analysis/product-v0233-formal-blocker.json",
+                "mode": "CREATE_JSON",
+                "payload": {"terminal": "BLOCKED"},
+            },
+            {
+                "path": "config/product-v0233/repository-state-manifest.json",
+                "mode": "REPLACE_JSON",
+                "payload": {"phase": "FORMAL_BLOCKED"},
+            },
+            {
+                "path": "docs/analysis/product-v0233-progress.json",
+                "mode": "REPLACE_JSON",
+                "payload": {"phase": "FORMAL_BLOCKED"},
+            },
+        ),
+    )
+    clone_path = tmp_path / "docs/analysis/product-v0233-formal-state-clone.json"
+    formal_runner._write_public_create_once(
+        clone_path,
+        clone_payload if existing_matches else {"clone_sha256": _sha("2")},
+    )
+    private_root = tmp_path / ".local/product-v0233/formal-execution"
+
+    if existing_matches:
+        _persist_and_apply_terminal_publication(
+            root=tmp_path,
+            private_root=private_root,
+            bundle=bundle,
+        )
+        assert (tmp_path / "docs/analysis/product-v0233-formal-blocker.json").is_file()
+        assert (private_root / "terminal-publication-completion.json").is_file()
+    else:
+        with pytest.raises(FileExistsError, match="public artifact differs"):
+            _persist_and_apply_terminal_publication(
+                root=tmp_path,
+                private_root=private_root,
+                bundle=bundle,
+            )
+        assert not (private_root / "terminal-publication-completion.json").exists()
+
+
 def test_consumed_reservation_without_intent_freezes_typed_blocker(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

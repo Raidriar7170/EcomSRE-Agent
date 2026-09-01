@@ -249,6 +249,12 @@ jobs:
           --expected-head "${EXPECTED_HEAD_SHA}"
           --require-clean-head
 
+      - name: Product v0.2.3.3 blocked formal terminal verification
+        run: >-
+          env PYTHONPATH="${{ github.workspace }}:${{ github.workspace }}/src"
+          uv run --frozen --no-sync python -m
+          scripts.ci.verify_product_v0233_terminal
+
       - name: Product v0.2.3.2 through v0.2.3.2.3 focused offline tests
         env:
           GH_TOKEN: ${{ github.token }}
@@ -259,6 +265,7 @@ jobs:
           tests/product_v02321
           tests/product_v02322
           tests/product_v02323
+          tests/product_v0233
           tests/product/test_increment1_historical_contract.py
           tests/unit/test_command_runner.py
           -q

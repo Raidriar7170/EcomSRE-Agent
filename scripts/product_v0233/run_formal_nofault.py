@@ -113,7 +113,11 @@ from ecomsre.product.pilot.typed_request_plan_v02321 import (
     materialize_planned_request_v02321,
 )
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
-from ecomsre_live_sandbox.contracts import load_bundle, write_private_json
+from ecomsre_live_sandbox.contracts import (
+    canonical_json_bytes,
+    load_bundle,
+    write_private_json,
+)
 from scripts.ci.verify_product_v0233_pre_execution import (
     verify_product_v0233_pre_execution,
 )
@@ -375,6 +379,22 @@ def _write_public_text_create_once(path: Path, text: str) -> None:
         handle.write(payload)
         handle.flush()
         os.fsync(handle.fileno())
+
+
+def _write_public_json_recoverable(
+    path: Path,
+    payload: Mapping[str, Any],
+) -> None:
+    """Create once, or accept only the exact canonical bytes during recovery."""
+
+    try:
+        _write_public_create_once(path, payload)
+    except FileExistsError:
+        expected = canonical_json_bytes(dict(payload))
+        if path.is_symlink() or not path.is_file() or path.read_bytes() != expected:
+            raise FileExistsError(
+                f"Product v0.2.3.3 public artifact differs: {path.name}"
+            ) from None
 
 
 def _git(root: Path, *arguments: str) -> str:
@@ -797,7 +817,7 @@ def _apply_terminal_publication_bundle(
         path = root / relative
         if mode == "CREATE_JSON":
             assert isinstance(payload, Mapping)
-            _write_public_create_once(path, payload)
+            _write_public_json_recoverable(path, payload)
         elif mode == "CREATE_TEXT":
             assert isinstance(payload, str)
             _write_public_text_create_once(path, payload)
