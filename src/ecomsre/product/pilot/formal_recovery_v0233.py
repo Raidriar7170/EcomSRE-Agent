@@ -13,6 +13,7 @@ from pydantic import ConfigDict, Field, model_validator
 
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 from ecomsre.product.contracts import ProductModelV1
+from ecomsre.product.connectors.pilot_runtime import PilotRuntimeSnapshotV02
 from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
     DiagnosisAcquisitionCheckpointV0233,
     formal_diagnosis_idempotency_key_v0233,
@@ -32,6 +33,7 @@ _ATTEMPT_PATTERN = r"^[a-z0-9][a-z0-9-]{0,79}$"
 class FormalExecutionStateV0233(str, Enum):
     PREPARED = "PREPARED"
     TRAFFIC_PREFLIGHT_PASS = "TRAFFIC_PREFLIGHT_PASS"
+    CLONE_SEALED = "CLONE_SEALED"
     FORMAL_ENVIRONMENT_READY = "FORMAL_ENVIRONMENT_READY"
     FORMAL_TRAFFIC_RUNNING = "FORMAL_TRAFFIC_RUNNING"
     FORMAL_TRAFFIC_PASS = "FORMAL_TRAFFIC_PASS"
@@ -47,10 +49,11 @@ class FormalExecutionStateV0233(str, Enum):
 
 
 _FORWARD_TRANSITION: dict[FormalExecutionStateV0233, FormalExecutionStateV0233] = {
-    FormalExecutionStateV0233.PREPARED: (
-        FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY
-    ),
+    FormalExecutionStateV0233.PREPARED: (FormalExecutionStateV0233.CLONE_SEALED),
     FormalExecutionStateV0233.TRAFFIC_PREFLIGHT_PASS: (
+        FormalExecutionStateV0233.CLONE_SEALED
+    ),
+    FormalExecutionStateV0233.CLONE_SEALED: (
         FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY
     ),
     FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY: (
@@ -329,7 +332,7 @@ class LiveCaptureBundleV0233(ProductModelV1):
     traffic_execution_sha256: str = Field(pattern=_SHA256_PATTERN)
     episode_started_at: datetime
     episode_ended_at: datetime
-    fresh_runtime_snapshot_raw: dict[str, Any]
+    fresh_runtime_snapshot_raw: PilotRuntimeSnapshotV02
     fresh_runtime_snapshot_raw_sha256: str = Field(pattern=_SHA256_PATTERN)
     runtime_connector_binding_sha256: str = Field(pattern=_SHA256_PATTERN)
     queue_before_sha256: str = Field(pattern=_SHA256_PATTERN)
@@ -353,7 +356,9 @@ class LiveCaptureBundleV0233(ProductModelV1):
             or self.queue_before_sha256 != self.queue_after_sha256
             or self.outer_baseline_before_sha256 != self.outer_baseline_after_sha256
             or self.fresh_runtime_snapshot_raw_sha256
-            != semantic_json_sha256_v0233(self.fresh_runtime_snapshot_raw)
+            != semantic_json_sha256_v0233(
+                self.fresh_runtime_snapshot_raw.model_dump(mode="json")
+            )
             or self.live_capture_bundle_sha256
             != semantic_sha256_v22(
                 self.model_dump(mode="json", exclude={"live_capture_bundle_sha256"})
@@ -364,12 +369,16 @@ class LiveCaptureBundleV0233(ProductModelV1):
 
     @classmethod
     def build(cls, **payload: Any) -> LiveCaptureBundleV0233:
+        raw_snapshot = PilotRuntimeSnapshotV02.model_validate(
+            payload["fresh_runtime_snapshot_raw"]
+        )
         body = canonical_jsonable_v0233(
             {
                 "schema_version": "ecomsre.product.live-capture-bundle.v0233",
                 **payload,
+                "fresh_runtime_snapshot_raw": raw_snapshot,
                 "fresh_runtime_snapshot_raw_sha256": semantic_json_sha256_v0233(
-                    payload["fresh_runtime_snapshot_raw"]
+                    raw_snapshot.model_dump(mode="json")
                 ),
             }
         )

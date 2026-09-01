@@ -15,6 +15,9 @@ from ecomsre.product.incidents.evidence_binding_v0232 import (
     DiagnosisDecisionTraceV0232,
     DiagnosisEvidenceIndexV0232,
 )
+from ecomsre.product.incidents.diagnosis_stage_journal_v02322 import (
+    DiagnosisPipelineStageV02322,
+)
 from ecomsre.product.pilot.formal_live_v0233 import (
     BaselineRestartProofV0233,
     FormalClosureProofV0233,
@@ -30,12 +33,15 @@ from ecomsre.product.pilot.fresh_formal_source_v0233 import (
 from ecomsre.product.pilot.formal_recovery_v0233 import (
     DiagnosisAcquisitionCheckpointV0233,
     FormalAttemptLedgerV0233,
+    FormalExecutionCheckpointV0233,
     LiveCaptureBundleV0233,
     RecoveryPreExecutionReviewV0233,
     build_legacy_attempt1_record_v0233,
 )
 from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
     FormalDiagnosisJobContextV0233,
+    final_diagnosis_idempotency_key_v0233,
+    restore_diagnosis_acquisition_v0233,
 )
 from ecomsre.product.pilot.fresh_formal_acceptance_v0233 import (
     DiagnosisPipelineAcceptanceV0233,
@@ -103,6 +109,7 @@ def _job_projection_context_exact_v0233(
     campaign_id: str,
     attempt_id: str,
     semantic_generation: int,
+    diagnosis_generation: int,
     acquisition: DiagnosisAcquisitionCheckpointV0233,
 ) -> bool:
     try:
@@ -118,10 +125,31 @@ def _job_projection_context_exact_v0233(
     last_passed = projection.get("last_passed_stage")
     interruption_after = projection.get("interruption_after_stage")
     interrupted = projection.get("safe_error_code") == "FORMAL_WORKER_INTERRUPTED"
+    stages = tuple(
+        stage for stage in DiagnosisPipelineStageV02322 if stage.value != "FAILED"
+    )
+    expected_failure_stage: str | None = None
+    if interrupted:
+        try:
+            next_index = (
+                0
+                if last_passed is None
+                else tuple(stage.value for stage in stages).index(str(last_passed)) + 1
+            )
+            expected_failure_stage = stages[next_index].value
+        except (IndexError, ValueError):
+            return False
     acquisition_binding_exact = (
         context.acquisition_sha256 is None
         if context.diagnosis_generation == 1
         else context.acquisition_sha256 == acquisition.acquisition_sha256
+    )
+    expected_idempotency_key = final_diagnosis_idempotency_key_v0233(
+        context=context.model_copy(
+            update={"acquisition_sha256": acquisition.acquisition_sha256}
+        ),
+        incident_sha256=acquisition.incident_sha256,
+        acquisition_sha256=acquisition.acquisition_sha256,
     )
     return (
         projection.get("job_type") == "DIAGNOSIS"
@@ -130,10 +158,18 @@ def _job_projection_context_exact_v0233(
         and context.campaign_id == campaign_id
         and context.attempt_id == attempt_id
         and context.semantic_generation == semantic_generation
+        and context.diagnosis_generation == diagnosis_generation
         and context.active_profile_sha256 == acquisition.active_profile_sha256
         and context.semantic_surface_sha256 == acquisition.semantic_surface_sha256
         and acquisition_binding_exact
-        and (not interrupted or interruption_after == last_passed)
+        and projection.get("idempotency_key") == expected_idempotency_key
+        and (
+            not interrupted
+            or (
+                interruption_after == last_passed
+                and projection.get("failure_stage") == expected_failure_stage
+            )
+        )
     )
 
 
@@ -182,8 +218,9 @@ def _verify_checkpoint_chain_v0233(
     if not isinstance(checkpoints, list) or not checkpoints:
         raise ValueError("Product v0.2.3.3 checkpoint chain differs")
     forward = {
-        "PREPARED": "FORMAL_ENVIRONMENT_READY",
-        "TRAFFIC_PREFLIGHT_PASS": "FORMAL_ENVIRONMENT_READY",
+        "PREPARED": "CLONE_SEALED",
+        "TRAFFIC_PREFLIGHT_PASS": "CLONE_SEALED",
+        "CLONE_SEALED": "FORMAL_ENVIRONMENT_READY",
         "FORMAL_ENVIRONMENT_READY": "FORMAL_TRAFFIC_RUNNING",
         "FORMAL_TRAFFIC_RUNNING": "FORMAL_TRAFFIC_PASS",
         "FORMAL_TRAFFIC_PASS": "LIVE_CAPTURE_SEALED",
@@ -197,9 +234,17 @@ def _verify_checkpoint_chain_v0233(
     recovery_resume = set(forward)
     previous_state: str | None = None
     previous_sha256 = "0" * 64
+    previous_checkpoint: FormalExecutionCheckpointV0233 | None = None
+    first_checkpoint: FormalExecutionCheckpointV0233 | None = None
     for sequence, checkpoint in enumerate(checkpoints, start=1):
         if not isinstance(checkpoint, dict):
             raise ValueError("Product v0.2.3.3 checkpoint chain differs")
+        try:
+            typed_checkpoint = FormalExecutionCheckpointV0233.model_validate(checkpoint)
+        except ValueError as error:
+            raise ValueError("Product v0.2.3.3 checkpoint chain differs") from error
+        if first_checkpoint is None:
+            first_checkpoint = typed_checkpoint
         state = checkpoint.get("state")
         allowed = (
             {"PREPARED"}
@@ -233,10 +278,35 @@ def _verify_checkpoint_chain_v0233(
             or len(observed_sha256) != 64
             or any(character not in "0123456789abcdef" for character in observed_sha256)
             or observed_sha256 != semantic_sha256_v22(checkpoint_body)
+            or typed_checkpoint.campaign_id != first_checkpoint.campaign_id
+            or typed_checkpoint.attempt_id != attempt_id
+            or typed_checkpoint.semantic_generation != semantic_generation
+            or typed_checkpoint.semantic_surface_sha256
+            != first_checkpoint.semantic_surface_sha256
+            or typed_checkpoint.source_selection_sha256
+            != first_checkpoint.source_selection_sha256
+            or typed_checkpoint.input_artifact_sha256s
+            != first_checkpoint.input_artifact_sha256s
+            or (
+                previous_checkpoint is not None
+                and any(
+                    typed_checkpoint.output_artifact_sha256s.get(path) != digest
+                    for path, digest in (
+                        previous_checkpoint.output_artifact_sha256s.items()
+                    )
+                )
+            )
+            or (
+                previous_checkpoint is not None
+                and previous_checkpoint.formal_clone_sha256 is not None
+                and typed_checkpoint.formal_clone_sha256
+                != previous_checkpoint.formal_clone_sha256
+            )
         ):
             raise ValueError("Product v0.2.3.3 checkpoint chain differs")
         previous_state = state
         previous_sha256 = observed_sha256
+        previous_checkpoint = typed_checkpoint
     if (
         payload.get("attempt_id") != attempt_id
         or payload.get("semantic_generation") != semantic_generation
@@ -300,9 +370,88 @@ def _verify_nonrecoverable_history_v0233(
                 and closure.get("closure_sha256") == semantic_sha256_v22(closure_body)
                 and blocker.cleanup_proof_sha256 == closure.get("closure_sha256")
             )
+        live_capture_relative = f"{prefix}live-capture-bundle.json"
+        acquisition_relative = f"{prefix}diagnosis-acquisition-checkpoint.json"
+        lineage_relative = f"{prefix}interrupted-diagnosis-lineage.json"
+        live_capture: LiveCaptureBundleV0233 | None = None
+        acquisition: DiagnosisAcquisitionCheckpointV0233 | None = None
+        if live_capture_relative in evidence:
+            live_capture = LiveCaptureBundleV0233.model_validate_json(
+                (project / live_capture_relative).read_bytes()
+            )
+        if acquisition_relative in evidence:
+            acquisition = DiagnosisAcquisitionCheckpointV0233.model_validate_json(
+                (project / acquisition_relative).read_bytes()
+            )
+            restored_context = FormalDiagnosisJobContextV0233.build(
+                campaign_id=acquisition.campaign_id,
+                semantic_generation=acquisition.semantic_generation,
+                attempt_id=acquisition.attempt_id,
+                diagnosis_generation=1,
+                active_profile_sha256=acquisition.active_profile_sha256,
+                semantic_surface_sha256=acquisition.semantic_surface_sha256,
+                acquisition_sha256=acquisition.acquisition_sha256,
+            )
+            restore_diagnosis_acquisition_v0233(
+                acquisition,
+                context=restored_context,
+                incident_id=acquisition.incident_id,
+                incident_sha256=acquisition.incident_sha256,
+            )
+        optional_exact = (acquisition is None or live_capture is not None) and (
+            acquisition is None
+        ) == (lineage_relative not in evidence)
+        if acquisition is not None:
+            lineage = _object(project / lineage_relative)
+            failed_projections = lineage.get("failed_jobs")
+            lineage_body = {
+                key: value for key, value in lineage.items() if key != "lineage_sha256"
+            }
+            optional_exact = bool(
+                optional_exact
+                and live_capture is not None
+                and acquisition.campaign_id == live_capture.campaign_id
+                and acquisition.attempt_id == attempt.attempt_id
+                and acquisition.attempt_id == live_capture.attempt_id
+                and acquisition.semantic_generation == attempt.semantic_generation
+                and acquisition.semantic_generation == live_capture.semantic_generation
+                and acquisition.semantic_surface_sha256
+                == live_capture.semantic_surface_sha256
+                and lineage.get("attempt_id") == attempt.attempt_id
+                and lineage.get("incident_id") == acquisition.incident_id
+                and lineage.get("incident_sha256") == acquisition.incident_sha256
+                and lineage.get("acquisition_sha256") == acquisition.acquisition_sha256
+                and isinstance(failed_projections, list)
+                and failed_projections
+                and lineage.get("failed_job_count") == len(failed_projections)
+                and all(
+                    isinstance(projection, dict)
+                    and projection.get("status") == "FAILED"
+                    and projection.get("result_sha256") is None
+                    and _job_projection_context_exact_v0233(
+                        projection,
+                        campaign_id=acquisition.campaign_id,
+                        attempt_id=attempt.attempt_id,
+                        semantic_generation=attempt.semantic_generation,
+                        diagnosis_generation=ordinal + 1,
+                        acquisition=acquisition,
+                    )
+                    and projection.get("projection_sha256")
+                    == semantic_sha256_v22(
+                        {
+                            key: value
+                            for key, value in projection.items()
+                            if key != "projection_sha256"
+                        }
+                    )
+                    for ordinal, projection in enumerate(failed_projections)
+                )
+                and lineage.get("lineage_sha256") == semantic_sha256_v22(lineage_body)
+            )
         if (
             blocker.terminal != attempt.blocker_terminal
             or not closure_exact
+            or not optional_exact
             or repository.phase is not RepositoryPhaseV0233.FORMAL_BLOCKED
             or repository.formal_blocker_sha256 != blocker.blocker_sha256
             or repository.cleanup_proof_sha256 != blocker.cleanup_proof_sha256
@@ -329,6 +478,97 @@ def _verify_nonrecoverable_history_v0233(
         )
 
 
+def _verify_successor_generations_v0233(
+    project: Path,
+    attempts: Sequence[Any],
+) -> None:
+    previous_generation = 1
+    previous_semantic_sha256: str | None = None
+    for attempt in attempts:
+        chain = _object(
+            project
+            / "docs/analysis/product-v0233-attempts"
+            / attempt.attempt_id
+            / "checkpoint-chain.json"
+        )
+        checkpoints = chain.get("checkpoints")
+        if not isinstance(checkpoints, list) or not checkpoints:
+            raise ValueError("Product v0.2.3.3 recovery generation differs")
+        first = FormalExecutionCheckpointV0233.model_validate(checkpoints[0])
+        if attempt.semantic_generation not in {
+            previous_generation,
+            previous_generation + 1,
+        } or (
+            previous_semantic_sha256 is not None
+            and (
+                (attempt.semantic_generation == previous_generation)
+                != (first.semantic_surface_sha256 == previous_semantic_sha256)
+            )
+        ):
+            raise ValueError("Product v0.2.3.3 recovery generation differs")
+        previous_generation = attempt.semantic_generation
+        previous_semantic_sha256 = first.semantic_surface_sha256
+    if not attempts or attempts[0].semantic_generation != 2:
+        raise ValueError("Product v0.2.3.3 recovery generation differs")
+
+
+def _verify_recovery_blocked_terminal_v0233(
+    project: Path,
+    ledger: FormalAttemptLedgerV0233,
+) -> dict[str, object]:
+    expected_ids = tuple(
+        f"attempt-{ordinal}" for ordinal in range(1, len(ledger.attempts) + 1)
+    )
+    if (
+        len(ledger.attempts) < 2
+        or ledger.attempts[0] != build_legacy_attempt1_record_v0233(project)
+        or tuple(attempt.attempt_id for attempt in ledger.attempts) != expected_ids
+        or ledger.measured_result_count != 0
+        or any(
+            attempt.disposition != "NONRECOVERABLE_FAILURE"
+            for attempt in ledger.attempts[1:]
+        )
+        or (project / "docs/results/product-v0233-nofault-acceptance.json").exists()
+    ):
+        raise ValueError("Product v0.2.3.3 recovery blocked ledger differs")
+    _verify_nonrecoverable_history_v0233(project, ledger.attempts[1:])
+    _verify_successor_generations_v0233(project, ledger.attempts[1:])
+    latest = ledger.attempts[-1]
+    prefix = f"docs/analysis/product-v0233-attempts/{latest.attempt_id}/"
+    latest_repository_path = project / f"{prefix}repository-state-manifest.json"
+    latest_progress_path = project / f"{prefix}progress.json"
+    canonical_repository_path = (
+        project / "config/product-v0233/recovery-repository-state-manifest.json"
+    )
+    canonical_progress_path = (
+        project / "docs/analysis/product-v0233-recovery-progress.json"
+    )
+    repository = ProductV0233RepositoryStateManifest.model_validate_json(
+        canonical_repository_path.read_bytes()
+    )
+    progress = _object(canonical_progress_path)
+    if (
+        canonical_repository_path.read_bytes() != latest_repository_path.read_bytes()
+        or canonical_progress_path.read_bytes() != latest_progress_path.read_bytes()
+        or repository.formal_blocker_sha256 is None
+        or repository.measured_result_count != 0
+        or progress.get("current_terminal") != latest.blocker_terminal
+    ):
+        raise ValueError("Product v0.2.3.3 recovery canonical terminal differs")
+    return {
+        "terminal": latest.blocker_terminal,
+        "attempt_id": latest.attempt_id,
+        "semantic_generation": latest.semantic_generation,
+        "formal_clone_count": repository.formal_clone_count,
+        "formal_execution_count": repository.formal_execution_count,
+        "new_incident_count": repository.new_incident_count,
+        "new_diagnosis_count": repository.new_diagnosis_count,
+        "measured_result_count": 0,
+        "action_authority": "NONE",
+        "closure": "CLEAN",
+    }
+
+
 def _verify_measured_terminal(
     project: Path,
     ledger: FormalAttemptLedgerV0233,
@@ -350,6 +590,7 @@ def _verify_measured_terminal(
     ):
         raise ValueError("Product v0.2.3.3 recovery attempt ledger differs")
     _verify_nonrecoverable_history_v0233(project, ledger.attempts[1:-1])
+    _verify_successor_generations_v0233(project, ledger.attempts[1:])
     attempt = ledger.attempts[-1]
     attempt_root = project / "docs/analysis/product-v0233-attempts" / attempt.attempt_id
     result = NoFaultAcceptanceResultV0233.model_validate_json(
@@ -406,6 +647,21 @@ def _verify_measured_terminal(
     acquisition = DiagnosisAcquisitionCheckpointV0233.model_validate_json(
         acquisition_path.read_bytes()
     )
+    restored_context = FormalDiagnosisJobContextV0233.build(
+        campaign_id=acquisition.campaign_id,
+        semantic_generation=acquisition.semantic_generation,
+        attempt_id=acquisition.attempt_id,
+        diagnosis_generation=1,
+        active_profile_sha256=acquisition.active_profile_sha256,
+        semantic_surface_sha256=acquisition.semantic_surface_sha256,
+        acquisition_sha256=acquisition.acquisition_sha256,
+    )
+    restore_diagnosis_acquisition_v0233(
+        acquisition,
+        context=restored_context,
+        incident_id=acquisition.incident_id,
+        incident_sha256=acquisition.incident_sha256,
+    )
     checkpoint_chain = _object(attempt_root / "checkpoint-chain.json")
     assert attempt.latest_checkpoint_sha256 is not None
     _verify_checkpoint_chain_v0233(
@@ -432,7 +688,9 @@ def _verify_measured_terminal(
         key: value for key, value in handoff.items() if key != "handoff_sha256"
     }
     repository = ProductV0233RepositoryStateManifest.model_validate_json(
-        (project / "config/product-v0233/repository-state-manifest.json").read_bytes()
+        (
+            project / "config/product-v0233/recovery-repository-state-manifest.json"
+        ).read_bytes()
     )
     review = RecoveryPreExecutionReviewV0233.model_validate_json(
         (
@@ -442,7 +700,7 @@ def _verify_measured_terminal(
     selection = FreshFormalSourceSelectionV0233.model_validate_json(
         (project / "config/product-v0233/source-selection.json").read_bytes()
     )
-    progress = _object(project / "docs/analysis/product-v0233-progress.json")
+    progress = _object(project / "docs/analysis/product-v0233-recovery-progress.json")
     progress_body = {
         key: value for key, value in progress.items() if key != "progress_sha256"
     }
@@ -468,6 +726,7 @@ def _verify_measured_terminal(
                 campaign_id=ledger.campaign_id,
                 attempt_id=attempt.attempt_id,
                 semantic_generation=attempt.semantic_generation,
+                diagnosis_generation=ordinal + 1,
                 acquisition=acquisition,
             )
             and projection.get("projection_sha256")
@@ -489,6 +748,7 @@ def _verify_measured_terminal(
             campaign_id=ledger.campaign_id,
             attempt_id=attempt.attempt_id,
             semantic_generation=attempt.semantic_generation,
+            diagnosis_generation=len(failed_jobs) + 1,
             acquisition=acquisition,
         )
         and successful_job.get("projection_sha256")
@@ -547,8 +807,6 @@ def _verify_measured_terminal(
         "docs/results/product-v0233-limitations.md",
         "docs/results/product-v0233-interview-brief.md",
         "docs/analysis/product-v0233-knowledge-loop-handoff.md",
-        "config/product-v0233/repository-state-manifest.json",
-        "docs/analysis/product-v0233-progress.json",
     }
     evidence_exact = set(
         attempt.evidence_sha256_by_path
@@ -632,7 +890,7 @@ def _verify_measured_terminal(
         or live_capture.baseline_restart_proof_sha256 != restart.proof_sha256
         or live_capture.formal_traffic_result_sha256 != traffic.result_sha256
         or live_capture.traffic_execution_sha256 != traffic.execution.execution_sha256
-        or live_capture.fresh_runtime_snapshot_raw.get("snapshot_sha256")
+        or live_capture.fresh_runtime_snapshot_raw.snapshot_sha256
         != fresh_snapshot.runtime_snapshot_sha256
         or live_capture.service_identity_sha256 != acquisition.service_identity_sha256
         or live_capture.capability_sha256 != acquisition.capability_sha256
@@ -693,6 +951,8 @@ def verify_product_v0233_terminal(root: Path) -> dict[str, object]:
     )
     if ledger.measured_result_count == 1:
         return _verify_measured_terminal(project, ledger)
+    if len(ledger.attempts) > 1:
+        return _verify_recovery_blocked_terminal_v0233(project, ledger)
     manifest_path = (
         project / "docs/analysis/product-v0233-formal-blocker-evidence-manifest.json"
     )

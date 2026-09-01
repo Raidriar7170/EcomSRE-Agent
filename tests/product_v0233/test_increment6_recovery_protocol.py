@@ -8,7 +8,8 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
+from ecomsre.dta_v2.v22.read_contracts import RuntimeStateV22, semantic_sha256_v22
+from ecomsre.product.connectors.pilot_runtime import PilotRuntimeSnapshotV02
 from ecomsre.product.pilot.formal_recovery_v0233 import (
     FormalAttemptLedgerV0233,
     FormalAttemptRecordV0233,
@@ -21,7 +22,6 @@ from ecomsre.product.pilot.formal_recovery_v0233 import (
     LiveCaptureBundleV0233,
     RecoveryExactHeadCiReceiptV0233,
     RecoveryPreExecutionReviewV0233,
-    acquisition_recovery_is_compatible_v0233,
     build_legacy_attempt1_record_v0233,
     determine_earliest_safe_resume_state_v0233,
     formal_diagnosis_idempotency_key_v0233,
@@ -178,9 +178,8 @@ def test_live_repository_surface_builder_excludes_operational_code_from_semantic
     assert "scripts/product_v0233/run_formal_nofault.py" in (
         operational.operational_file_sha256_by_path
     )
-    assert "src/ecomsre/product/pilot/formal_recovery_v0233.py" in (
-        operational.operational_file_sha256_by_path
-    )
+    assert "src/ecomsre/product/pilot/formal_recovery_v0233.py" in semantic_paths
+    assert "src/ecomsre/product/pilot/diagnosis_recovery_v0233.py" in semantic_paths
     assert semantic_paths.isdisjoint(operational_paths)
     assert "src/ecomsre/product/pilot/serialization_v0233.py" not in semantic_paths
     assert "src/ecomsre/product/pilot/serialization_v0233.py" in operational_paths
@@ -193,9 +192,9 @@ def test_live_repository_surface_builder_excludes_operational_code_from_semantic
 
 def test_checkpoint_chain_accepts_valid_transitions_and_operational_repair() -> None:
     prepared = _first_checkpoint()
-    environment_ready = FormalExecutionCheckpointV0233.build(
+    clone_sealed = FormalExecutionCheckpointV0233.build(
         previous=prepared,
-        state=FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY,
+        state=FormalExecutionStateV0233.CLONE_SEALED,
         operational_surface_sha256=_operational_surface("0").operational_surface_sha256,
         formal_clone_sha256=_sha("1"),
         output_artifact_sha256s={
@@ -205,9 +204,16 @@ def test_checkpoint_chain_accepts_valid_transitions_and_operational_repair() -> 
         },
         created_at=prepared.created_at + timedelta(seconds=1),
     )
+    environment_ready = FormalExecutionCheckpointV0233.build(
+        previous=clone_sealed,
+        state=FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY,
+        created_at=clone_sealed.created_at + timedelta(seconds=1),
+    )
 
-    assert environment_ready.sequence == 2
-    assert environment_ready.previous_checkpoint_sha256 == prepared.checkpoint_sha256
+    assert environment_ready.sequence == 3
+    assert (
+        environment_ready.previous_checkpoint_sha256 == clone_sealed.checkpoint_sha256
+    )
     assert environment_ready.semantic_surface_sha256 == prepared.semantic_surface_sha256
     assert environment_ready.operational_surface_sha256 != (
         prepared.operational_surface_sha256
@@ -222,11 +228,18 @@ def test_live_capture_bundle_seals_raw_runtime_before_presentation_artifacts(
 ) -> None:
     semantic = _semantic_surface()
     observed_at = datetime(2026, 9, 1, 1, 0, tzinfo=UTC)
-    raw_runtime = {
-        "schema_version": "ecomsre.product.pilot-runtime-snapshot.v02",
-        "observed_at": observed_at,
-        "services": [{"service_id": "svc-checkout", "state": "RUNNING"}],
-    }
+    raw_runtime = PilotRuntimeSnapshotV02.build(
+        environment_id="env-" + "1" * 24,
+        authority_sha256=_sha("0"),
+        observed_at=observed_at,
+        services={
+            "checkout": {
+                "state": RuntimeStateV22.RUNNING,
+                "healthy": True,
+                "restart_count": 0,
+            }
+        },
+    )
     bundle = LiveCaptureBundleV0233.build(
         campaign_id="product-v0233-fresh-formal-nofault",
         semantic_generation=1,
@@ -258,11 +271,7 @@ def test_live_capture_bundle_seals_raw_runtime_before_presentation_artifacts(
     bundle_path.write_bytes(canonical_json_bytes(bundle))
 
     assert bundle.fresh_runtime_snapshot_raw_sha256 == semantic_sha256_v22(
-        {
-            "observed_at": "2026-09-01T01:00:00Z",
-            "schema_version": "ecomsre.product.pilot-runtime-snapshot.v02",
-            "services": [{"service_id": "svc-checkout", "state": "RUNNING"}],
-        }
+        raw_runtime.model_dump(mode="json")
     )
     assert bundle.live_capture_bundle_sha256 == semantic_sha256_v22(
         bundle.model_dump(mode="json", exclude={"live_capture_bundle_sha256"})
@@ -275,83 +284,46 @@ def test_live_capture_bundle_seals_raw_runtime_before_presentation_artifacts(
     assert formal_incident_external_key_v0233(bundle).startswith("product-v0233-g1-")
 
 
-def test_acquisition_checkpoint_binds_frozen_reads_and_recovery_idempotency() -> None:
+def test_acquisition_checkpoint_rejects_untyped_reads_and_key_is_bound() -> None:
     semantic = _semantic_surface()
     started = datetime(2026, 9, 1, tzinfo=UTC)
-    checkpoint = DiagnosisAcquisitionCheckpointV0233.build(
-        campaign_id="product-v0233-fresh-formal-nofault",
-        semantic_generation=1,
-        attempt_id="attempt-2",
-        incident_id="inc-" + "1" * 24,
-        incident_sha256=_sha("1"),
-        incident_observation_started_at=started,
-        incident_observation_ended_at=started + timedelta(seconds=300),
-        baseline_sha256=_sha("2"),
-        active_profile_sha256=_sha("3"),
-        service_identity_sha256=_sha("4"),
-        capability_sha256=_sha("5"),
-        connector_query_results=(
-            {"source": "METRICS", "status": "SUCCESS_NONEMPTY", "records": []},
-            {"source": "LOGS", "status": "SUCCESS_EMPTY", "records": []},
-        ),
-        connector_provenance_bindings=(
-            {"source": "METRICS", "evidence_sha256": _sha("6")},
-            {"source": "LOGS", "evidence_sha256": _sha("7")},
-        ),
-        runtime_snapshot_binding_sha256=_sha("8"),
-        source_coverage={
-            "LOGS": ("checkout",),
-            "METRICS": ("checkout",),
-            "RUNTIME": ("checkout",),
-        },
-        capability_limitations=(),
-        capability_observations=({"source": "LOGS", "available": True},),
-        limitation_candidates=(),
-        read_snapshots=(
-            {
-                "schema_version": "ecomsre.product.read-snapshot.v1",
-                "source": "LOGS",
-            },
-            {
-                "schema_version": "ecomsre.product.read-snapshot.v1",
-                "source": "METRICS",
-            },
-        ),
-        read_snapshot_sha256s={
-            "read-snapshot-000.json": semantic_sha256_v22(
+    with pytest.raises(ValidationError):
+        DiagnosisAcquisitionCheckpointV0233.build(
+            campaign_id="product-v0233-fresh-formal-nofault",
+            semantic_generation=1,
+            attempt_id="attempt-2",
+            incident_id="inc-" + "1" * 24,
+            incident_sha256=_sha("1"),
+            incident_observation_started_at=started,
+            incident_observation_ended_at=started + timedelta(seconds=300),
+            baseline_sha256=_sha("2"),
+            active_profile_sha256=_sha("3"),
+            service_identity_sha256=_sha("4"),
+            capability_sha256=_sha("5"),
+            connector_query_results=({"source": "LOGS"},),
+            connector_provenance_bindings=({"source": "LOGS"},),
+            runtime_snapshot_binding_sha256=_sha("8"),
+            source_coverage={"LOGS": ("checkout",)},
+            capability_limitations=(),
+            capability_observations=({"source": "LOGS"},),
+            limitation_candidates=(),
+            read_snapshots=(
                 {
                     "schema_version": "ecomsre.product.read-snapshot.v1",
                     "source": "LOGS",
-                }
+                },
             ),
-            "read-snapshot-001.json": semantic_sha256_v22(
-                {
-                    "schema_version": "ecomsre.product.read-snapshot.v1",
-                    "source": "METRICS",
-                }
-            ),
-        },
-        semantic_surface_sha256=semantic.semantic_surface_sha256,
-    )
+            read_snapshot_sha256s={"read-snapshot-000.json": _sha("9")},
+            semantic_surface_sha256=semantic.semantic_surface_sha256,
+        )
     key = formal_diagnosis_idempotency_key_v0233(
-        incident_sha256=checkpoint.incident_sha256,
-        acquisition_sha256=checkpoint.acquisition_sha256,
-        semantic_surface_sha256=checkpoint.semantic_surface_sha256,
+        incident_sha256=_sha("1"),
+        acquisition_sha256=_sha("2"),
+        semantic_surface_sha256=semantic.semantic_surface_sha256,
         diagnosis_generation=1,
     )
 
-    assert checkpoint.acquisition_sha256 == semantic_sha256_v22(
-        checkpoint.model_dump(mode="json", exclude={"acquisition_sha256"})
-    )
     assert key.startswith("formal-v0233-diagnosis-")
-    assert acquisition_recovery_is_compatible_v0233(
-        checkpoint,
-        semantic_surface_sha256=semantic.semantic_surface_sha256,
-    )
-    assert not acquisition_recovery_is_compatible_v0233(
-        checkpoint,
-        semantic_surface_sha256=_sha("0"),
-    )
 
 
 def test_recovery_cardinality_allows_failed_job_plus_one_persisted_diagnosis() -> None:
@@ -413,7 +385,7 @@ def test_checkpoint_rejects_invalid_transition_or_semantic_change_in_same_attemp
     with pytest.raises(ValueError, match="semantic surface"):
         FormalExecutionCheckpointV0233.build(
             previous=prepared,
-            state=FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY,
+            state=FormalExecutionStateV0233.CLONE_SEALED,
             semantic_surface_sha256=_sha("0"),
             created_at=prepared.created_at + timedelta(seconds=1),
         )
@@ -444,6 +416,7 @@ def test_terminal_checkpoint_rejects_every_followup_transition(
     previous = _first_checkpoint()
     if terminal_state is FormalExecutionStateV0233.CLOSED:
         for state in (
+            FormalExecutionStateV0233.CLONE_SEALED,
             FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY,
             FormalExecutionStateV0233.FORMAL_TRAFFIC_RUNNING,
             FormalExecutionStateV0233.FORMAL_TRAFFIC_PASS,
@@ -482,19 +455,19 @@ def test_checkpoint_repository_is_append_only_and_rejects_corruption(
     )
     prepared = _first_checkpoint()
     repository.append(prepared)
-    traffic_running = FormalExecutionCheckpointV0233.build(
+    clone_sealed = FormalExecutionCheckpointV0233.build(
         previous=prepared,
-        state=FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY,
+        state=FormalExecutionStateV0233.CLONE_SEALED,
         formal_clone_sha256=_sha("1"),
         created_at=prepared.created_at + timedelta(seconds=1),
     )
-    repository.append(traffic_running)
+    repository.append(clone_sealed)
 
-    assert repository.load_chain() == (prepared, traffic_running)
+    assert repository.load_chain() == (prepared, clone_sealed)
     with pytest.raises(FileExistsError):
-        repository.append(traffic_running)
+        repository.append(clone_sealed)
 
-    second_path = repository.checkpoint_path(traffic_running)
+    second_path = repository.checkpoint_path(clone_sealed)
     payload = json.loads(second_path.read_text(encoding="utf-8"))
     payload["state"] = FormalExecutionStateV0233.SCORED.value
     second_path.write_text(json.dumps(payload), encoding="utf-8")
@@ -512,7 +485,7 @@ def test_checkpoint_repository_rejects_self_sealed_transition_and_identity_drift
     repository.append(prepared)
     valid = FormalExecutionCheckpointV0233.build(
         previous=prepared,
-        state=FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY,
+        state=FormalExecutionStateV0233.CLONE_SEALED,
         created_at=prepared.created_at + timedelta(seconds=1),
     )
     skipped_payload = valid.model_dump(mode="json", exclude={"checkpoint_sha256"})
@@ -547,16 +520,16 @@ def test_checkpoint_repository_rejects_cross_checkpoint_identity_drift(
     )
     prepared = _first_checkpoint()
     repository.append(prepared)
-    environment_ready = FormalExecutionCheckpointV0233.build(
+    clone_sealed = FormalExecutionCheckpointV0233.build(
         previous=prepared,
-        state=FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY,
+        state=FormalExecutionStateV0233.CLONE_SEALED,
         formal_clone_sha256=_sha("1"),
         created_at=prepared.created_at + timedelta(seconds=1),
     )
-    payload = environment_ready.model_dump(mode="json", exclude={"checkpoint_sha256"})
+    payload = clone_sealed.model_dump(mode="json", exclude={"checkpoint_sha256"})
     payload["campaign_id"] = "product-v0233-different-campaign"
     payload["checkpoint_sha256"] = semantic_sha256_v22(payload)
-    second_path = repository.checkpoint_path(environment_ready)
+    second_path = repository.checkpoint_path(clone_sealed)
     second_path.parent.mkdir(parents=True, exist_ok=True)
     second_path.write_text(json.dumps(payload), encoding="utf-8")
 

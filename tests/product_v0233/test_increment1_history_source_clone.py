@@ -5,6 +5,8 @@ import hashlib
 import json
 from pathlib import Path
 import sqlite3
+import subprocess
+import sys
 
 import pytest
 
@@ -16,6 +18,7 @@ from ecomsre.product.pilot.fresh_formal_source_v0233 import (
     FreshFormalSourceCandidateV0233,
     FreshFormalSourceKindV0233,
     FreshFormalSourceSelectionErrorV0233,
+    FreshFormalStateCloneV0233,
     admit_fresh_formal_source_v0233,
     clone_fresh_formal_state_v0233,
     select_fresh_formal_source_v0233,
@@ -33,6 +36,7 @@ from scripts.ci.verify_product_v0233_history import (
     HISTORY_AND_HANDOFF_PASS_V0233,
     verify_product_v0233_history,
 )
+from scripts.product_v0233 import run_formal_nofault as run_command
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -43,7 +47,9 @@ PROFILE_SHA256 = "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7d
 
 
 def _json(payload: object) -> str:
-    return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return json.dumps(
+        payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    )
 
 
 def _build_source_state(root: Path, *, schema_version: int) -> Path:
@@ -162,7 +168,13 @@ def _build_source_state(root: Path, *, schema_version: int) -> Path:
                 "result_json, safe_error_code, idempotency_key, claimed_by, "
                 "lease_expires_at, attempt_count, created_at, updated_at) "
                 "VALUES (?, ?, 'SUCCEEDED', '{}', '{}', NULL, ?, NULL, NULL, 1, ?, ?)",
-                (job_id, job_type, f"fixture-{job_type}", float(ordinal), float(ordinal)),
+                (
+                    job_id,
+                    job_type,
+                    f"fixture-{job_type}",
+                    float(ordinal),
+                    float(ordinal),
+                ),
             )
         connection.execute(
             "INSERT INTO incidents(incident_id, environment_id, external_incident_key, "
@@ -212,7 +224,9 @@ def _build_source_state(root: Path, *, schema_version: int) -> Path:
     finally:
         connection.close()
 
-    object_path = root / "objects" / "sha256" / object_sha256[:2] / f"{object_sha256}.json"
+    object_path = (
+        root / "objects" / "sha256" / object_sha256[:2] / f"{object_sha256}.json"
+    )
     object_path.parent.mkdir(parents=True)
     object_path.write_bytes(object_bytes)
 
@@ -399,7 +413,9 @@ def test_clone_uses_online_backup_and_migrates_only_the_clone(tmp_path: Path) ->
     selection = admit_fresh_formal_source_v0233(
         candidate, owner_counter=lambda _database: 0
     )
-    source_before = hashlib.sha256((source_root / "product.sqlite3").read_bytes()).hexdigest()
+    source_before = hashlib.sha256(
+        (source_root / "product.sqlite3").read_bytes()
+    ).hexdigest()
     destination = tmp_path / "clone" / "product"
 
     clone = clone_fresh_formal_state_v0233(
@@ -414,21 +430,101 @@ def test_clone_uses_online_backup_and_migrates_only_the_clone(tmp_path: Path) ->
     assert clone.pre_migration_schema_version == 7
     assert clone.post_migration_schema_version == 9
     assert clone.source_counts == clone.starting_counts
-    assert clone.source_database_logical_sha256 == clone.clone_database_logical_sha256_before_migration
+    assert (
+        clone.source_database_logical_sha256
+        == clone.clone_database_logical_sha256_before_migration
+    )
     assert clone.active_baseline_id == BASELINE_ID
     assert clone.active_profile_sha256 == PROFILE_SHA256
-    assert hashlib.sha256((source_root / "product.sqlite3").read_bytes()).hexdigest() == source_before
+    assert (
+        hashlib.sha256((source_root / "product.sqlite3").read_bytes()).hexdigest()
+        == source_before
+    )
 
     readonly = sqlite3.connect(
         f"file:{(destination / 'product.sqlite3').as_posix()}?mode=ro&immutable=1",
         uri=True,
     )
     try:
-        assert readonly.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[0] == 9
-        assert readonly.execute("SELECT COUNT(*) FROM diagnosis_stage_events_v02322").fetchone()[0] == 0
-        assert readonly.execute("SELECT COUNT(*) FROM diagnosis_evidence_indexes").fetchone()[0] == 0
+        assert (
+            readonly.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[0]
+            == 9
+        )
+        assert (
+            readonly.execute(
+                "SELECT COUNT(*) FROM diagnosis_stage_events_v02322"
+            ).fetchone()[0]
+            == 0
+        )
+        assert (
+            readonly.execute(
+                "SELECT COUNT(*) FROM diagnosis_evidence_indexes"
+            ).fetchone()[0]
+            == 0
+        )
     finally:
         readonly.close()
+
+
+def test_hard_crash_after_atomic_clone_rename_recovers_and_publishes_exact_proof(
+    tmp_path: Path,
+) -> None:
+    source_locator = ".local/product-v023/source/product"
+    source_root = _build_source_state(tmp_path / source_locator, schema_version=7)
+    candidate = _candidate(
+        source_root,
+        kind=FreshFormalSourceKindV0233.PRISTINE_PREFORMAL_BASE,
+        locator=source_locator,
+    )
+    selection = admit_fresh_formal_source_v0233(
+        candidate,
+        owner_counter=lambda _database: 0,
+    )
+    selection_path = tmp_path / "config/product-v0233/source-selection.json"
+    selection_path.parent.mkdir(parents=True)
+    selection_path.write_text(selection.model_dump_json(), encoding="utf-8")
+    attempt_id = "attempt-2"
+    destination_locator = ".local/product-v0233/attempts/attempt-2/formal-state/product"
+    staging = tmp_path / (
+        ".local/product-v0233/attempts/attempt-2/formal-state/product.atomic-staging"
+    )
+    expected = clone_fresh_formal_state_v0233(
+        selection=selection,
+        source_root=source_root,
+        destination_root=staging,
+        destination_locator=destination_locator,
+        owner_counter=lambda _database: 0,
+    )
+    destination = tmp_path / destination_locator
+    crash = subprocess.run(
+        (
+            sys.executable,
+            "-c",
+            "import os,sys; os.replace(sys.argv[1],sys.argv[2]); os._exit(97)",
+            str(staging),
+            str(destination),
+        ),
+        check=False,
+    )
+    assert crash.returncode == 97
+    public_path = (
+        tmp_path
+        / "docs/analysis/product-v0233-attempts/attempt-2/formal-state-clone.json"
+    )
+    assert destination.is_dir()
+    assert not public_path.exists()
+
+    recovered = run_command._recover_existing_attempt_clone_v0233(
+        tmp_path,
+        attempt_id=attempt_id,
+        publish_missing=True,
+    )
+
+    assert recovered == expected
+    assert (
+        FreshFormalStateCloneV0233.model_validate_json(public_path.read_bytes())
+        == expected
+    )
 
 
 def test_repository_phase_model_is_exact() -> None:

@@ -97,7 +97,9 @@ from scripts.product_v0233.run_formal_nofault import (
     _diagnosis_acceptance,
     _formal_surfaces_v0233,
     _knowledge_handoff,
+    _persist_product_process_authority_v0233,
     _publish_measured_terminal_v0233,
+    _recover_existing_attempt_clone_v0233,
     _recover_terminal_publication,
     recover_interrupted_attempt_cleanup_v0233,
     run_formal_nofault_v0233,
@@ -232,9 +234,18 @@ def _seal_interrupted_job_v0233(
         ),
         None,
     )
-    # A process interruption between journal events has no truthful fine-grained
-    # stage. Use the contract's neutral fallback and preserve the last passed stage.
-    pipeline.failing_stage = DiagnosisPipelineStageV02322.JOB_CLAIMED
+    executable_stages = tuple(
+        stage
+        for stage in DiagnosisPipelineStageV02322
+        if stage is not DiagnosisPipelineStageV02322.FAILED
+    )
+    if pipeline.last_passed_stage is None:
+        pipeline.failing_stage = DiagnosisPipelineStageV02322.JOB_CLAIMED
+    else:
+        last_index = executable_stages.index(pipeline.last_passed_stage)
+        if last_index + 1 >= len(executable_stages):
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
+        pipeline.failing_stage = executable_stages[last_index + 1]
     pipeline.bind_artifacts(
         incident_sha256=acquisition.incident_sha256,
         baseline_sha256=acquisition.baseline_sha256,
@@ -422,24 +433,74 @@ def resume_formal_nofault_v0233(
     ) -> NoFaultAcceptanceResultV0233:
         repository = FormalCheckpointRepositoryV0233(attempt_root)
         retired = checkpoint
+        if retired.state is FormalExecutionStateV0233.CLOSED:
+            raise RuntimeError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0233_TERMINAL_PUBLICATION_REQUIRED"
+            )
+        recovered_clone = _recover_existing_attempt_clone_v0233(
+            root,
+            attempt_id=attempt_id,
+            publish_missing=True,
+        )
+        recovered_outputs = dict(retired.output_artifact_sha256s)
+        recovered_clone_sha256 = retired.formal_clone_sha256
+        if recovered_clone is not None:
+            recovered_clone_sha256 = recovered_clone.clone_sha256
+            public_clone_path = (
+                root
+                / _attempt_public_locator_v0233(attempt_id)
+                / "formal-state-clone.json"
+            )
+            recovered_outputs[public_clone_path.relative_to(root).as_posix()] = (
+                _sha256_file(public_clone_path)
+            )
         if retired.state is not FormalExecutionStateV0233.NONRECOVERABLE_FAILURE:
-            retired = FormalExecutionCheckpointV0233.build(
+            candidate = FormalExecutionCheckpointV0233.build(
                 previous=retired,
                 state=FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
                 created_at=datetime.now(UTC),
                 operational_surface_sha256=(
                     operational_surface_sha256 or retired.operational_surface_sha256
                 ),
-                formal_clone_sha256=retired.formal_clone_sha256,
+                formal_clone_sha256=recovered_clone_sha256,
                 input_artifact_sha256s=retired.input_artifact_sha256s,
-                output_artifact_sha256s=retired.output_artifact_sha256s,
+                output_artifact_sha256s=recovered_outputs,
             )
+            cleanup = recover_interrupted_attempt_cleanup_v0233(
+                root,
+                attempt_id=attempt_id,
+                latest=candidate,
+                persist=False,
+            )
+            if candidate.formal_clone_sha256 is not None and (
+                cleanup is None or cleanup.get("verdict") != "CLEAN"
+            ):
+                raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_INTERRUPTED_CLEANUP")
+            if candidate.formal_clone_sha256 is not None:
+                cleanup = recover_interrupted_attempt_cleanup_v0233(
+                    root,
+                    attempt_id=attempt_id,
+                    latest=candidate,
+                    persist=True,
+                )
+            retired = candidate
             repository.append(retired)
-        cleanup = recover_interrupted_attempt_cleanup_v0233(
-            root,
-            attempt_id=attempt_id,
-            latest=retired,
-        )
+        elif (
+            recovered_clone_sha256 != retired.formal_clone_sha256
+            or recovered_outputs != retired.output_artifact_sha256s
+        ):
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+        else:
+            cleanup = recover_interrupted_attempt_cleanup_v0233(
+                root,
+                attempt_id=attempt_id,
+                latest=retired,
+                persist=True,
+            )
+            if retired.formal_clone_sha256 is not None and (
+                cleanup is None or cleanup.get("verdict") != "CLEAN"
+            ):
+                raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_INTERRUPTED_CLEANUP")
         terminal = terminalize_nonrecoverable_attempt_v0233(
             root,
             attempt_id=attempt_id,
@@ -448,10 +509,6 @@ def resume_formal_nofault_v0233(
             safe_error_code=safe_error_code,
             next_gate=next_gate,
         )
-        if retired.formal_clone_sha256 is not None and (
-            cleanup is None or cleanup.get("verdict") != "CLEAN"
-        ):
-            raise RuntimeError(terminal)
         return _start_successor_after_nonrecoverable_v0233(
             root=root,
             attempt_id=attempt_id,
@@ -459,6 +516,28 @@ def resume_formal_nofault_v0233(
             trigger=RuntimeError(terminal),
             successor_semantic_generation=successor_semantic_generation,
         )
+
+    if intent_path.is_file():
+        chain = FormalCheckpointRepositoryV0233(attempt_root).load_chain()
+        if not chain:
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+        latest_for_publication = chain[-1]
+        try:
+            recovered = _recover_terminal_publication(
+                root,
+                reservation_path=reservation_path,
+                private_root=private_root,
+            )
+        except RuntimeError as error:
+            return _start_successor_after_nonrecoverable_v0233(
+                root=root,
+                attempt_id=attempt_id,
+                latest=latest_for_publication,
+                trigger=error,
+            )
+        if recovered is None:
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+        return recovered
 
     try:
         latest, semantic, operational = strict_resume_formal_admission_v0233(
@@ -476,24 +555,6 @@ def resume_formal_nofault_v0233(
                 transition.operational.operational_surface_sha256
             ),
         )
-    if intent_path.is_file():
-        try:
-            recovered = _recover_terminal_publication(
-                root,
-                reservation_path=reservation_path,
-                private_root=private_root,
-            )
-        except RuntimeError as error:
-            return _start_successor_after_nonrecoverable_v0233(
-                root=root,
-                attempt_id=attempt_id,
-                latest=latest,
-                trigger=error,
-            )
-        if recovered is None:
-            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
-        return recovered
-
     if latest.state is FormalExecutionStateV0233.NONRECOVERABLE_FAILURE:
         return retire_nonrecoverable(latest)
 
@@ -638,13 +699,16 @@ def resume_formal_nofault_v0233(
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
 
     jobs = JobRepositoryV1(SqliteStoreV1(product_root / "product.sqlite3"))
-    stale_processes = _ProductHostProcessesV023(
-        root=root,
-        data_root=product_root,
-        private_root=private_root / "product-processes",
+    stale_cleanup = recover_interrupted_attempt_cleanup_v0233(
+        root,
+        attempt_id=attempt_id,
+        latest=latest,
+        persist=False,
     )
-    stale_cleanup = stale_processes.cleanup_observation()
-    cleanup_clean = stale_cleanup.get("verdict") == "CLEAN"
+    cleanup_clean = (
+        stale_cleanup is not None
+        and stale_cleanup.get("resource_cleanup_verdict") == "CLEAN"
+    )
     if not cleanup_clean:
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_ACTIVE_LEASE")
 
@@ -854,6 +918,10 @@ def resume_formal_nofault_v0233(
     product_cleanup: Mapping[str, Any] = {"verdict": "BLOCKED"}
     execution_error: BaseException | None = None
     try:
+        _persist_product_process_authority_v0233(
+            processes,
+            private_root=generation_root / "product-processes",
+        )
         processes.start()
         if successful_job is not None:
             completed_job = successful_job

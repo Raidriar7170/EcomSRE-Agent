@@ -10,15 +10,26 @@ from typing import Any, Literal, Mapping
 from pydantic import ConfigDict, Field, model_validator
 from pydantic_core import to_jsonable_python
 
+from ecomsre.dta_v2.v22.action_catalog import EvidenceActionV22
 from ecomsre.dta_v2.v22.memory import RuntimeReadOutcomeV22
 from ecomsre.dta_v2.v22.read_contracts import EvidenceSourceV22, semantic_sha256_v22
 from ecomsre.dta_v2.v22.replay import ReadOutcomeV22
+from ecomsre.product.connectors.base import ConnectorQueryResultV1
+from ecomsre.product.connectors.opensearch_profile_binding_v023 import (
+    OpenSearchConnectorDiagnosticsV023,
+)
 from ecomsre.product.contracts import ProductModelV1
 from ecomsre.product.incidents.evidence_binding_v0232 import (
     CapabilityEvidenceObservationV0232,
     CapabilityLimitationCandidateV0232,
+    ConnectorBindingKindV0232,
+    ConnectorEvidenceBindingV0232,
+    OpenSearchProfileEvidenceBindingV0232,
+    RuntimeSnapshotEvidenceBindingV0232,
 )
 from ecomsre.product.incidents.read_backend import ProductReadAcquisitionV1
+
+
 _SHA256_PATTERN = r"^[0-9a-f]{64}$"
 _ATTEMPT_PATTERN = r"^[a-z0-9][a-z0-9-]{0,79}$"
 
@@ -64,6 +75,91 @@ def diagnosis_checkpoint_locator_v0233(attempt_id: str) -> str:
     return f"private/formal-v0233/{attempt_id}/diagnosis-acquisition-checkpoint.json"
 
 
+class DiagnosisConnectorProvenanceV0233(ProductModelV1):
+    """Typed generic and specialized provenance for one connector component."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    connector_binding: ConnectorEvidenceBindingV0232
+    binding_payload: (
+        OpenSearchProfileEvidenceBindingV0232
+        | RuntimeSnapshotEvidenceBindingV0232
+        | None
+    )
+
+    @model_validator(mode="after")
+    def require_matching_specialized_binding(
+        self,
+    ) -> DiagnosisConnectorProvenanceV0233:
+        kind = self.connector_binding.binding_kind
+        payload = self.binding_payload
+        if kind is ConnectorBindingKindV0232.GENERIC:
+            exact = (
+                payload is None
+                and self.connector_binding.binding_payload_sha256
+                == self.connector_binding.component_result_sha256
+            )
+        elif kind is ConnectorBindingKindV0232.OPENSEARCH_PROFILE:
+            exact = (
+                isinstance(payload, OpenSearchProfileEvidenceBindingV0232)
+                and self.connector_binding.binding_payload_sha256
+                == payload.binding_sha256
+            )
+        else:
+            exact = (
+                kind is ConnectorBindingKindV0232.RUNTIME_SNAPSHOT
+                and isinstance(payload, RuntimeSnapshotEvidenceBindingV0232)
+                and self.connector_binding.binding_payload_sha256
+                == payload.binding_sha256
+            )
+        if not exact:
+            raise ValueError("Product v0.2.3.3 connector provenance differs")
+        return self
+
+
+class DiagnosisReadSnapshotV0233(ProductModelV1):
+    """One restorable Product read snapshot with typed connector evidence."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    schema_version: Literal["ecomsre.product.read-snapshot.v1"]
+    incident_id: str = Field(pattern=r"^inc-[a-zA-Z0-9-]{1,120}$")
+    action: EvidenceActionV22
+    connector_components: tuple[ConnectorQueryResultV1, ...]
+    connector_diagnostics: tuple[OpenSearchConnectorDiagnosticsV023, ...]
+    connector_bindings_v0232: tuple[DiagnosisConnectorProvenanceV0233, ...]
+    connector_result: ConnectorQueryResultV1
+    read_outcome: ReadOutcomeV22
+    memory_outcome: ReadOutcomeV22 | RuntimeReadOutcomeV22 | None
+
+    @model_validator(mode="after")
+    def require_restorable_snapshot(self) -> DiagnosisReadSnapshotV0233:
+        component_hashes = {
+            component.result_sha256 for component in self.connector_components
+        }
+        if (
+            self.action.source is not self.connector_result.source
+            or self.action.action_id != self.read_outcome.action_id
+            or self.action.source is not self.read_outcome.source
+            or self.action.request_sha256 != self.read_outcome.request_sha256
+            or self.connector_result.status is not self.read_outcome.status
+            or tuple(self.connector_result.records) != tuple(self.read_outcome.records)
+            or self.connector_result.truncated != self.read_outcome.truncated
+            or any(
+                binding.connector_binding.incident_id != self.incident_id
+                or binding.connector_binding.action_id != self.action.action_id
+                or binding.connector_binding.source is not self.action.source
+                or binding.connector_binding.combined_result_sha256
+                != self.connector_result.result_sha256
+                or binding.connector_binding.component_result_sha256
+                not in component_hashes
+                for binding in self.connector_bindings_v0232
+            )
+        ):
+            raise ValueError("Product v0.2.3.3 read snapshot differs")
+        return self
+
+
 class DiagnosisAcquisitionCheckpointV0233(ProductModelV1):
     """Complete frozen read acquisition used by fresh and recovery Diagnosis jobs."""
 
@@ -83,14 +179,14 @@ class DiagnosisAcquisitionCheckpointV0233(ProductModelV1):
     active_profile_sha256: str = Field(pattern=_SHA256_PATTERN)
     service_identity_sha256: str = Field(pattern=_SHA256_PATTERN)
     capability_sha256: str = Field(pattern=_SHA256_PATTERN)
-    connector_query_results: tuple[dict[str, Any], ...]
-    connector_provenance_bindings: tuple[dict[str, Any], ...]
+    connector_query_results: tuple[ConnectorQueryResultV1, ...]
+    connector_provenance_bindings: tuple[DiagnosisConnectorProvenanceV0233, ...]
     runtime_snapshot_binding_sha256: str = Field(pattern=_SHA256_PATTERN)
     source_coverage: dict[str, tuple[str, ...]]
     capability_limitations: tuple[str, ...]
-    capability_observations: tuple[dict[str, Any], ...]
-    limitation_candidates: tuple[dict[str, Any], ...]
-    read_snapshots: tuple[dict[str, Any], ...]
+    capability_observations: tuple[CapabilityEvidenceObservationV0232, ...]
+    limitation_candidates: tuple[CapabilityLimitationCandidateV0232, ...]
+    read_snapshots: tuple[DiagnosisReadSnapshotV0233, ...]
     read_snapshot_sha256s: dict[str, str]
     semantic_surface_sha256: str = Field(pattern=_SHA256_PATTERN)
     acquisition_sha256: str = Field(pattern=_SHA256_PATTERN)
@@ -100,12 +196,10 @@ class DiagnosisAcquisitionCheckpointV0233(ProductModelV1):
         if (
             self.incident_observation_started_at.tzinfo is None
             or self.incident_observation_ended_at.tzinfo is None
-            or self.incident_observation_ended_at
-            < self.incident_observation_started_at
+            or self.incident_observation_ended_at < self.incident_observation_started_at
             or not self.connector_query_results
             or not self.connector_provenance_bindings
-            or self.source_coverage
-            != _sorted_coverage_mapping(self.source_coverage)
+            or self.source_coverage != _sorted_coverage_mapping(self.source_coverage)
             or self.capability_limitations
             != tuple(sorted(set(self.capability_limitations)))
             or not self.read_snapshots
@@ -114,10 +208,22 @@ class DiagnosisAcquisitionCheckpointV0233(ProductModelV1):
             or self.read_snapshot_sha256s
             != {
                 f"read-snapshot-{ordinal:03d}.json": _semantic_json_sha256_v0233(
-                    snapshot
+                    snapshot.model_dump(mode="json")
                 )
                 for ordinal, snapshot in enumerate(self.read_snapshots)
             }
+            or tuple(snapshot.connector_result for snapshot in self.read_snapshots)
+            != self.connector_query_results
+            or tuple(
+                binding
+                for snapshot in self.read_snapshots
+                for binding in snapshot.connector_bindings_v0232
+            )
+            != self.connector_provenance_bindings
+            or any(
+                snapshot.incident_id != self.incident_id
+                for snapshot in self.read_snapshots
+            )
             or self.acquisition_sha256
             != _semantic_json_sha256_v0233(
                 self.model_dump(mode="json", exclude={"acquisition_sha256"})
@@ -134,9 +240,7 @@ class DiagnosisAcquisitionCheckpointV0233(ProductModelV1):
                     "ecomsre.product.diagnosis-acquisition-checkpoint.v0233"
                 ),
                 **payload,
-                "source_coverage": _sorted_coverage_mapping(
-                    payload["source_coverage"]
-                ),
+                "source_coverage": _sorted_coverage_mapping(payload["source_coverage"]),
                 "capability_limitations": sorted(
                     set(payload["capability_limitations"])
                 ),
@@ -145,8 +249,11 @@ class DiagnosisAcquisitionCheckpointV0233(ProductModelV1):
                 ),
             }
         )
-        return cls.model_validate(
-            {**body, "acquisition_sha256": _semantic_json_sha256_v0233(body)}
+        return cls.model_validate_json(
+            json.dumps(
+                {**body, "acquisition_sha256": _semantic_json_sha256_v0233(body)},
+                sort_keys=True,
+            )
         )
 
 
@@ -170,13 +277,10 @@ class FormalDiagnosisJobContextV0233(ProductModelV1):
 
     @model_validator(mode="after")
     def require_bound_context(self) -> FormalDiagnosisJobContextV0233:
-        if (
-            self.acquisition_checkpoint_locator
-            != diagnosis_checkpoint_locator_v0233(self.attempt_id)
-            or self.context_sha256
-            != _semantic_json_sha256_v0233(
-                self.model_dump(mode="json", exclude={"context_sha256"})
-            )
+        if self.acquisition_checkpoint_locator != diagnosis_checkpoint_locator_v0233(
+            self.attempt_id
+        ) or self.context_sha256 != _semantic_json_sha256_v0233(
+            self.model_dump(mode="json", exclude={"context_sha256"})
         ):
             raise ValueError("Product v0.2.3.3 formal Diagnosis context differs")
         return self
@@ -235,8 +339,7 @@ class FormalDiagnosisRecoverySubmissionV0233(ProductModelV1):
             or not failed
             or failed != self.preserved_failed_job_ids
             or any(
-                not job_id.startswith("job-") or len(job_id) != 28
-                for job_id in failed
+                not job_id.startswith("job-") or len(job_id) != 28 for job_id in failed
             )
             or self.idempotency_key != expected_key
             or self.submission_sha256
@@ -305,15 +408,13 @@ def build_diagnosis_acquisition_checkpoint_v0233(
     runtime_bindings = tuple(
         item
         for item in provenance
-        if item.get("connector_binding", {}).get("binding_kind")
-        == "RUNTIME_SNAPSHOT"
+        if item.get("connector_binding", {}).get("binding_kind") == "RUNTIME_SNAPSHOT"
         and isinstance(item.get("binding_payload"), dict)
     )
     profile_bindings = tuple(
         item
         for item in provenance
-        if item.get("connector_binding", {}).get("binding_kind")
-        == "OPENSEARCH_PROFILE"
+        if item.get("connector_binding", {}).get("binding_kind") == "OPENSEARCH_PROFILE"
         and isinstance(item.get("binding_payload"), dict)
     )
     if len(runtime_bindings) != 1:
@@ -389,44 +490,25 @@ def restore_diagnosis_acquisition_v0233(
     raw_outcomes: list[ReadOutcomeV22] = []
     memory_outcomes: list[ReadOutcomeV22 | RuntimeReadOutcomeV22] = []
     for snapshot in checkpoint.read_snapshots:
-        raw_outcomes.append(
-            ReadOutcomeV22.model_validate_json(
-                json.dumps(snapshot["read_outcome"], sort_keys=True)
-            )
-        )
-        memory = snapshot.get("memory_outcome")
+        raw_outcomes.append(snapshot.read_outcome)
+        memory = snapshot.memory_outcome
         if memory is None:
             continue
-        memory_type = (
-            RuntimeReadOutcomeV22
-            if memory.get("schema_version") == "dta-v22.runtime-read-outcome.v1"
-            else ReadOutcomeV22
-        )
-        memory_outcomes.append(
-            memory_type.model_validate_json(json.dumps(memory, sort_keys=True))
-        )
+        memory_outcomes.append(memory)
 
     restored = ProductReadAcquisitionV1(
         raw_outcomes=tuple(raw_outcomes),
         memory_outcomes=tuple(memory_outcomes),
-        snapshots=checkpoint.read_snapshots,
+        snapshots=tuple(
+            snapshot.model_dump(mode="json") for snapshot in checkpoint.read_snapshots
+        ),
         covered_services_by_source={
             EvidenceSourceV22(source): services
             for source, services in checkpoint.source_coverage.items()
         },
         capability_limitations=checkpoint.capability_limitations,
-        capability_observations_v0232=tuple(
-            CapabilityEvidenceObservationV0232.model_validate_json(
-                json.dumps(item, sort_keys=True)
-            )
-            for item in checkpoint.capability_observations
-        ),
-        capability_limitation_candidates_v0232=tuple(
-            CapabilityLimitationCandidateV0232.model_validate_json(
-                json.dumps(item, sort_keys=True)
-            )
-            for item in checkpoint.limitation_candidates
-        ),
+        capability_observations_v0232=tuple(checkpoint.capability_observations),
+        capability_limitation_candidates_v0232=tuple(checkpoint.limitation_candidates),
     )
     rebound = build_diagnosis_acquisition_checkpoint_v0233(
         context=context.model_copy(update={"acquisition_sha256": None}),
@@ -476,6 +558,8 @@ def final_diagnosis_idempotency_key_v0233(
 
 __all__ = (
     "DiagnosisAcquisitionCheckpointV0233",
+    "DiagnosisConnectorProvenanceV0233",
+    "DiagnosisReadSnapshotV0233",
     "FormalDiagnosisJobContextV0233",
     "FormalDiagnosisRecoverySubmissionV0233",
     "build_diagnosis_acquisition_checkpoint_v0233",

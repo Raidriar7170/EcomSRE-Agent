@@ -10,12 +10,30 @@ from ecomsre.dta_v2.v22.read_contracts import (
     ReadSourceStatusV22,
     semantic_sha256_v22,
 )
+from ecomsre.dta_v2.v22.action_catalog import (
+    EvidenceActionV22,
+    StaticTopologyV22,
+    build_action_catalog_v22,
+    build_tool_capability_registry_v22,
+)
 from ecomsre.dta_v2.v22.replay import ReadOutcomeV22
 from ecomsre.product.connectors.base import (
     ConnectorQueryResultV1,
     ConnectorWindowV1,
 )
+from ecomsre.product.connectors.opensearch_profile_binding_v023 import (
+    ACTIVE_PROFILE_BINDING_SHA256_V023,
+    ACTIVE_PROFILE_SHA256_V023,
+    CANDIDATE_SET_SHA256_V023,
+    OPERATOR_DECISION_SHA256_V023,
+)
 from ecomsre.product.incidents.read_backend import ProductReadAcquisitionV1
+from ecomsre.product.incidents.evidence_binding_v0232 import (
+    ConnectorEvidenceBindingV0232,
+    OpenSearchProfileEvidenceBindingV0232,
+    RuntimeSnapshotEvidenceBindingV0232,
+)
+from ecomsre.product.contracts import ConnectorKindV1
 from ecomsre.product.incidents.diagnosis_pipeline_v02322 import (
     DiagnosisPrivateFailureEnvelopeV02322,
     DiagnosisPipelineStageV02322,
@@ -49,12 +67,25 @@ def _sha(character: str) -> str:
     return character * 64
 
 
-def _empty_outcome() -> ReadOutcomeV22:
+def _action(source: EvidenceSourceV22) -> EvidenceActionV22:
+    catalog = build_action_catalog_v22(
+        candidate_services=("checkout",),
+        topology=StaticTopologyV22.build(services=("checkout",), edges=()),
+        capability_registry=build_tool_capability_registry_v22(),
+        executed_action_ids=(),
+        remaining_budget=100.0,
+    )
+    return next(
+        action for action in catalog.registry_actions if action.source is source
+    )
+
+
+def _empty_outcome(action: EvidenceActionV22) -> ReadOutcomeV22:
     body = {
         "schema_version": "dta-v22.read-outcome.v1",
-        "action_id": "a:runtime:inspect",
-        "source": EvidenceSourceV22.RUNTIME,
-        "request_sha256": _sha("1"),
+        "action_id": action.action_id,
+        "source": action.source,
+        "request_sha256": action.request_sha256,
         "status": ReadSourceStatusV22.SUCCESS_EMPTY,
         "records": (),
         "truncated": False,
@@ -66,57 +97,140 @@ def _empty_outcome() -> ReadOutcomeV22:
 
 def _acquisition() -> ProductReadAcquisitionV1:
     started = datetime(2026, 9, 1, 2, 0, tzinfo=UTC)
-    result = ConnectorQueryResultV1.build(
+    window = ConnectorWindowV1(
+        started_at=started,
+        ended_at=started + timedelta(seconds=60),
+    )
+    runtime_action = _action(EvidenceSourceV22.RUNTIME)
+    logs_action = _action(EvidenceSourceV22.LOGS)
+    runtime_result = ConnectorQueryResultV1.build(
         source=EvidenceSourceV22.RUNTIME,
         status=ReadSourceStatusV22.SUCCESS_EMPTY,
         requested_services=("checkout",),
         covered_services=("checkout",),
-        window=ConnectorWindowV1(
-            started_at=started,
-            ended_at=started + timedelta(seconds=60),
-        ),
+        window=window,
         records=(),
         truncated=False,
         safe_error_code=None,
         latency_ms=1.0,
     )
-    outcome = _empty_outcome()
-    snapshot = {
+    logs_result = ConnectorQueryResultV1.build(
+        source=EvidenceSourceV22.LOGS,
+        status=ReadSourceStatusV22.SUCCESS_EMPTY,
+        requested_services=("checkout",),
+        covered_services=("checkout",),
+        window=window,
+        records=(),
+        truncated=False,
+        safe_error_code=None,
+        latency_ms=1.0,
+    )
+    runtime_outcome = _empty_outcome(runtime_action)
+    logs_outcome = _empty_outcome(logs_action)
+    specialized = RuntimeSnapshotEvidenceBindingV0232.build(
+        runtime_snapshot_sha256=_sha("2"),
+        runtime_snapshot_observed_at=started + timedelta(seconds=30),
+        runtime_snapshot_environment_id="env-" + "1" * 24,
+        runtime_snapshot_authority_sha256=_sha("3"),
+        pilot_runtime_authority_sha256=_sha("4"),
+        read_authority_sha256=_sha("5"),
+        connector_binding_sha256=_sha("3"),
+        maximum_age_seconds=60,
+        age_at_query_seconds=30.0,
+        requested_services=("checkout",),
+        covered_services=("checkout",),
+        connector_result_sha256=runtime_result.result_sha256,
+        query_window=runtime_result.window,
+    )
+    generic = ConnectorEvidenceBindingV0232.build(
+        binding_id="binding:v0232:" + "1" * 24,
+        incident_id="inc-" + "1" * 24,
+        action_id=runtime_action.action_id,
+        source=EvidenceSourceV22.RUNTIME,
+        connector_name="pilot-runtime",
+        connector_kind=ConnectorKindV1.PILOT_RUNTIME,
+        environment_id="env-" + "1" * 24,
+        connector_config_sha256=_sha("6"),
+        query_context_sha256=_sha("7"),
+        component_result_sha256=runtime_result.result_sha256,
+        combined_result_sha256=runtime_result.result_sha256,
+        requested_services=("checkout",),
+        covered_services=("checkout",),
+        window=runtime_result.window,
+        binding_kind="RUNTIME_SNAPSHOT",
+        binding_payload_sha256=specialized.binding_sha256,
+    )
+    profile = OpenSearchProfileEvidenceBindingV0232.build(
+        active_profile_id="product-v0222-operator-selected-profile",
+        active_profile_sha256=ACTIVE_PROFILE_SHA256_V023,
+        profile_binding_sha256=ACTIVE_PROFILE_BINDING_SHA256_V023,
+        selected_candidate_alias="P01",
+        candidate_set_sha256=CANDIDATE_SET_SHA256_V023,
+        operator_decision_sha256=OPERATOR_DECISION_SHA256_V023,
+        query_diagnostics_sha256=_sha("8"),
+        accepted_record_count=0,
+        rejected_record_count=0,
+        rejection_reason_codes=(),
+        connector_result_sha256=logs_result.result_sha256,
+        query_window=logs_result.window,
+    )
+    profile_generic = ConnectorEvidenceBindingV0232.build(
+        binding_id="binding:v0232:" + "2" * 24,
+        incident_id="inc-" + "1" * 24,
+        action_id=logs_action.action_id,
+        source=EvidenceSourceV22.LOGS,
+        connector_name="opensearch",
+        connector_kind=ConnectorKindV1.OPENSEARCH,
+        environment_id="env-" + "1" * 24,
+        connector_config_sha256=_sha("9"),
+        query_context_sha256=_sha("a"),
+        component_result_sha256=logs_result.result_sha256,
+        combined_result_sha256=logs_result.result_sha256,
+        requested_services=("checkout",),
+        covered_services=("checkout",),
+        window=logs_result.window,
+        binding_kind="OPENSEARCH_PROFILE",
+        binding_payload_sha256=profile.binding_sha256,
+    )
+    runtime_snapshot = {
         "schema_version": "ecomsre.product.read-snapshot.v1",
         "incident_id": "inc-" + "1" * 24,
-        "action": {"action_id": outcome.action_id},
-        "connector_components": [result.model_dump(mode="json")],
+        "action": runtime_action.model_dump(mode="json"),
+        "connector_components": [runtime_result.model_dump(mode="json")],
         "connector_diagnostics": [],
         "connector_bindings_v0232": [
             {
-                "connector_binding": {
-                    "binding_kind": "RUNTIME_SNAPSHOT",
-                    "binding_sha256": _sha("2"),
-                },
-                "binding_payload": {"binding_sha256": _sha("3")},
-            },
-            {
-                "connector_binding": {
-                    "binding_kind": "OPENSEARCH_PROFILE",
-                    "binding_sha256": _sha("a"),
-                },
-                "binding_payload": {
-                    "binding_sha256": _sha("b"),
-                    "active_profile_sha256": _sha("4"),
-                    "selected_candidate_alias": "P01",
-                },
-            },
+                "connector_binding": generic.model_dump(mode="json"),
+                "binding_payload": specialized.model_dump(mode="json"),
+            }
         ],
-        "connector_result": result.model_dump(mode="json"),
-        "read_outcome": outcome.model_dump(mode="json"),
+        "connector_result": runtime_result.model_dump(mode="json"),
+        "read_outcome": runtime_outcome.model_dump(mode="json"),
+        "memory_outcome": None,
+    }
+    logs_snapshot = {
+        "schema_version": "ecomsre.product.read-snapshot.v1",
+        "incident_id": "inc-" + "1" * 24,
+        "action": logs_action.model_dump(mode="json"),
+        "connector_components": [logs_result.model_dump(mode="json")],
+        "connector_diagnostics": [],
+        "connector_bindings_v0232": [
+            {
+                "connector_binding": profile_generic.model_dump(mode="json"),
+                "binding_payload": profile.model_dump(mode="json"),
+            }
+        ],
+        "connector_result": logs_result.model_dump(mode="json"),
+        "read_outcome": logs_outcome.model_dump(mode="json"),
         "memory_outcome": None,
     }
     return ProductReadAcquisitionV1(
-        raw_outcomes=(outcome,),
+        raw_outcomes=(runtime_outcome, logs_outcome),
         memory_outcomes=(),
-        snapshots=(snapshot,),
+        snapshots=(runtime_snapshot, logs_snapshot),
         covered_services_by_source={
             EvidenceSourceV22.RUNTIME: ("checkout",),
+            EvidenceSourceV22.LOGS: ("checkout",),
         },
         capability_limitations=(),
         capability_observations_v0232=(),
@@ -131,7 +245,7 @@ def test_acquisition_checkpoint_round_trips_exact_frozen_inputs() -> None:
         semantic_generation=2,
         attempt_id="attempt-2",
         diagnosis_generation=1,
-        active_profile_sha256=_sha("4"),
+        active_profile_sha256=ACTIVE_PROFILE_SHA256_V023,
         semantic_surface_sha256=_sha("5"),
         acquisition_sha256=None,
     )
@@ -167,10 +281,16 @@ def test_acquisition_checkpoint_round_trips_exact_frozen_inputs() -> None:
     )
 
     assert restored == acquisition
-    assert checkpoint.connector_query_results == (
-        acquisition.snapshots[0]["connector_result"],
+    assert (
+        checkpoint.connector_query_results[0].model_dump(mode="json")
+        == (acquisition.snapshots[0]["connector_result"])
     )
-    assert checkpoint.runtime_snapshot_binding_sha256 == _sha("3")
+    assert (
+        checkpoint.runtime_snapshot_binding_sha256
+        == acquisition.snapshots[0]["connector_bindings_v0232"][0]["binding_payload"][
+            "binding_sha256"
+        ]
+    )
     assert final_diagnosis_idempotency_key_v0233(
         context=recovery_context,
         incident_sha256=checkpoint.incident_sha256,
@@ -185,7 +305,7 @@ def test_recovery_submission_reuses_same_incident_and_frozen_acquisition() -> No
         semantic_generation=2,
         attempt_id="attempt-2",
         diagnosis_generation=1,
-        active_profile_sha256=_sha("4"),
+        active_profile_sha256=ACTIVE_PROFILE_SHA256_V023,
         semantic_surface_sha256=_sha("5"),
         acquisition_sha256=None,
     )
@@ -224,7 +344,7 @@ def test_resume_reuses_unfinished_generation_and_advances_after_failure(
         semantic_generation=2,
         attempt_id="attempt-2",
         diagnosis_generation=1,
-        active_profile_sha256=_sha("4"),
+        active_profile_sha256=ACTIVE_PROFILE_SHA256_V023,
         semantic_surface_sha256=_sha("5"),
         acquisition_sha256=None,
     )
@@ -376,7 +496,7 @@ def test_interrupted_job_is_terminally_sealed_before_recovery_generation(
         semantic_generation=2,
         attempt_id="attempt-2",
         diagnosis_generation=1,
-        active_profile_sha256=_sha("4"),
+        active_profile_sha256=ACTIVE_PROFILE_SHA256_V023,
         semantic_surface_sha256=_sha("5"),
         acquisition_sha256=None,
     )
@@ -431,7 +551,7 @@ def test_interrupted_job_is_terminally_sealed_before_recovery_generation(
     events = DiagnosisStageJournalRepositoryV02322(store).list_events(queued.job_id)
     assert failed.status.value == "FAILED"
     assert failed.safe_error_code == "FORMAL_WORKER_INTERRUPTED"
-    assert failed.failure_stage == "JOB_CLAIMED"
+    assert failed.failure_stage == "BRIDGE_DIAGNOSIS_STARTED"
     assert events[-1].stage.value == "FAILED"
     assert events[-1].event_sha256 == failed.journal_tail_sha256
     failure_files = tuple(
@@ -445,13 +565,15 @@ def test_interrupted_job_is_terminally_sealed_before_recovery_generation(
         envelope.last_passed_stage
         is DiagnosisPipelineStageV02322.READ_ACQUISITION_COMPLETED
     )
-    assert envelope.failing_stage is DiagnosisPipelineStageV02322.JOB_CLAIMED
+    assert (
+        envelope.failing_stage is DiagnosisPipelineStageV02322.BRIDGE_DIAGNOSIS_STARTED
+    )
 
     projection = run_command._job_lineage_projection_v0233(
         failed,
         product_root=tmp_path,
     )
-    assert projection["failure_stage"] == "JOB_CLAIMED"
+    assert projection["failure_stage"] == "BRIDGE_DIAGNOSIS_STARTED"
     assert projection["last_passed_stage"] == "READ_ACQUISITION_COMPLETED"
     assert projection["interruption_after_stage"] == "READ_ACQUISITION_COMPLETED"
     assert projection["formal_recovery_context"] == context.model_dump(mode="json")
@@ -491,7 +613,7 @@ def test_failed_job_preserved_and_recovery_job_uses_exact_acquisition(
         semantic_generation=2,
         attempt_id="attempt-2",
         diagnosis_generation=1,
-        active_profile_sha256=_sha("4"),
+        active_profile_sha256=ACTIVE_PROFILE_SHA256_V023,
         semantic_surface_sha256=_sha("5"),
         acquisition_sha256=None,
     )

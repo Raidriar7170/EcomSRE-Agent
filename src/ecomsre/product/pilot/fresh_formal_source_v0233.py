@@ -794,6 +794,81 @@ def _checkpoint_clone_database(database: Path) -> None:
             sidecar.unlink()
 
 
+def _clone_result_from_inspection_v0233(
+    *,
+    selection: FreshFormalSourceSelectionV0233,
+    inspection: _FreshFormalInspectionV0233,
+    destination_locator: str,
+) -> FreshFormalStateCloneV0233:
+    if (
+        inspection.schema_version != 9
+        or inspection.counts != selection.source_counts
+        or inspection.object_inventory_sha256
+        != selection.source_object_inventory_sha256
+        or inspection.runtime_inventory_sha256
+        != selection.source_runtime_inventory_sha256
+        or inspection.environment_id != selection.active_environment_id
+        or inspection.active_baseline_id != selection.active_baseline_id
+        or inspection.active_baseline_sha256 != selection.active_baseline_sha256
+        or inspection.active_profile_sha256 != selection.active_profile_sha256
+        or inspection.counts.diagnosis_stage_event_count != 0
+    ):
+        raise FreshFormalStateCloneErrorV0233(STATE_CLONE_BLOCKER_V0233)
+    body: dict[str, object] = {
+        "schema_version": "ecomsre.product.fresh-formal-state-clone.v0233",
+        "terminal": SOURCE_AND_CLONE_CONTRACT_PASS_V0233,
+        "source_selection_sha256": selection.selection_sha256,
+        "destination_locator": destination_locator,
+        "pre_migration_schema_version": selection.source_schema_version,
+        "post_migration_schema_version": inspection.schema_version,
+        "source_counts": selection.source_counts.model_dump(mode="json"),
+        "starting_counts": inspection.counts.model_dump(mode="json"),
+        "source_database_logical_sha256": selection.source_database_logical_sha256,
+        "clone_database_logical_sha256_before_migration": (
+            selection.source_database_logical_sha256
+        ),
+        "clone_database_logical_sha256_after_migration": (
+            inspection.database_logical_sha256
+        ),
+        "object_inventory_sha256": inspection.object_inventory_sha256,
+        "runtime_inventory_sha256": inspection.runtime_inventory_sha256,
+        "active_environment_id": inspection.environment_id,
+        "active_baseline_id": inspection.active_baseline_id,
+        "active_baseline_sha256": inspection.active_baseline_sha256,
+        "active_profile_sha256": inspection.active_profile_sha256,
+    }
+    return FreshFormalStateCloneV0233.model_validate(
+        {**body, "clone_sha256": semantic_sha256_v22(body)}
+    )
+
+
+def recover_fresh_formal_state_clone_v0233(
+    *,
+    selection: FreshFormalSourceSelectionV0233,
+    destination_root: Path,
+    destination_locator: str,
+) -> FreshFormalStateCloneV0233:
+    """Recompute the sealed clone proof after a hard interruption."""
+
+    try:
+        locator = _require_relative_locator(destination_locator)
+        inspection = _inspect_source(
+            Path(destination_root).resolve(strict=True),
+            owner_counter=lambda _database: 0,
+        )
+        return _clone_result_from_inspection_v0233(
+            selection=selection,
+            inspection=inspection,
+            destination_locator=locator,
+        )
+    except (
+        OSError,
+        ProductStateCloneErrorV0232,
+        FreshFormalSourceSelectionErrorV0233,
+    ) as error:
+        raise FreshFormalStateCloneErrorV0233(STATE_CLONE_BLOCKER_V0233) from error
+
+
 def clone_fresh_formal_state_v0233(
     *,
     selection: FreshFormalSourceSelectionV0233,
@@ -896,20 +971,6 @@ def clone_fresh_formal_state_v0233(
         SqliteStoreV1(temporary / "product.sqlite3")
         _checkpoint_clone_database(temporary / "product.sqlite3")
         after = _inspect_source(temporary, owner_counter=lambda _database: 0)
-        if (
-            after.schema_version != 9
-            or after.counts != selection.source_counts
-            or after.object_inventory_sha256 != selection.source_object_inventory_sha256
-            or after.runtime_inventory_sha256
-            != selection.source_runtime_inventory_sha256
-            or after.environment_id != selection.active_environment_id
-            or after.active_baseline_id != selection.active_baseline_id
-            or after.active_baseline_sha256 != selection.active_baseline_sha256
-            or after.active_profile_sha256 != selection.active_profile_sha256
-            or after.counts.diagnosis_stage_event_count != 0
-        ):
-            raise FreshFormalStateCloneErrorV0233(STATE_CLONE_BLOCKER_V0233)
-
         source_after = admit_fresh_formal_source_v0233(
             candidate,
             owner_counter=owner_counter,
@@ -918,31 +979,10 @@ def clone_fresh_formal_state_v0233(
         if source_after != selection:
             raise FreshFormalStateCloneErrorV0233(STATE_CLONE_BLOCKER_V0233)
 
-        body: dict[str, object] = {
-            "schema_version": "ecomsre.product.fresh-formal-state-clone.v0233",
-            "terminal": SOURCE_AND_CLONE_CONTRACT_PASS_V0233,
-            "source_selection_sha256": selection.selection_sha256,
-            "destination_locator": destination_locator,
-            "pre_migration_schema_version": before.schema_version,
-            "post_migration_schema_version": after.schema_version,
-            "source_counts": selection.source_counts.model_dump(mode="json"),
-            "starting_counts": after.counts.model_dump(mode="json"),
-            "source_database_logical_sha256": selection.source_database_logical_sha256,
-            "clone_database_logical_sha256_before_migration": (
-                before.database_logical_sha256
-            ),
-            "clone_database_logical_sha256_after_migration": (
-                after.database_logical_sha256
-            ),
-            "object_inventory_sha256": after.object_inventory_sha256,
-            "runtime_inventory_sha256": after.runtime_inventory_sha256,
-            "active_environment_id": after.environment_id,
-            "active_baseline_id": after.active_baseline_id,
-            "active_baseline_sha256": after.active_baseline_sha256,
-            "active_profile_sha256": after.active_profile_sha256,
-        }
-        result = FreshFormalStateCloneV0233.model_validate(
-            {**body, "clone_sha256": semantic_sha256_v22(body)}
+        result = _clone_result_from_inspection_v0233(
+            selection=selection,
+            inspection=after,
+            destination_locator=destination_locator,
         )
         temporary.replace(destination)
         completed = True
@@ -974,6 +1014,7 @@ __all__ = (
     "FreshFormalStateCountsV0233",
     "admit_fresh_formal_source_v0233",
     "clone_fresh_formal_state_v0233",
+    "recover_fresh_formal_state_clone_v0233",
     "configured_source_candidates_v0233",
     "read_fresh_formal_state_counts_v0233",
     "read_formal_active_binding_v0233",

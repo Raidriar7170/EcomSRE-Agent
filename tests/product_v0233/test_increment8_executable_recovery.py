@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 import json
+import os
 from pathlib import Path
+import subprocess
+import sys
+import time
 from types import SimpleNamespace
 
 import pytest
@@ -29,6 +33,9 @@ from ecomsre.product.pilot.formal_recovery_v0233 import (
     FormalCheckpointRepositoryV0233,
     FormalExecutionCheckpointV0233,
     FormalExecutionStateV0233,
+)
+from ecomsre.product.pilot.fresh_formal_source_v0233 import (
+    FreshFormalStateCloneV0233,
 )
 from scripts.product_v0233 import resume_formal_nofault as resume_command
 from scripts.product_v0233 import run_formal_nofault as run_command
@@ -108,6 +115,82 @@ class _Jobs:
         assert job_type is ProductJobTypeV1.DIAGNOSIS
         self.jobs[queued.job_id] = queued
         return queued
+
+
+def test_hard_interruption_recovers_parent_and_orphaned_worker_processes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    product_root = (
+        tmp_path / ".local/product-v0233/attempts/attempt-2/formal-state/product"
+    )
+    private_root = tmp_path / ".local/product-v0233/attempts/attempt-2/execution"
+    product_root.mkdir(parents=True)
+    private_root.mkdir(parents=True)
+    processes = run_command._ProductHostProcessesV023(
+        root=tmp_path,
+        data_root=product_root,
+        private_root=private_root,
+    )
+    run_command._persist_product_process_authority_v0233(
+        processes,
+        private_root=private_root,
+    )
+    child_pid_path = tmp_path / "orphan-worker.pid"
+    child_script = "import time; time.sleep(60)"
+    parent_script = (
+        "import pathlib,subprocess,sys,time;"
+        "child=subprocess.Popen([sys.executable,'-c',sys.argv[2],"
+        "'-m','ecomsre.product.jobs.worker'],stdin=subprocess.DEVNULL,"
+        "stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL);"
+        "pathlib.Path(sys.argv[1]).write_text(str(child.pid));"
+        "time.sleep(60)"
+    )
+    environment = {
+        **os.environ,
+        "ECOMSRE_ADMIN_TOKEN": processes.token,
+        "ECOMSRE_PRODUCT_DATA_ROOT": str(product_root),
+    }
+    parent = subprocess.Popen(
+        (
+            sys.executable,
+            "-c",
+            parent_script,
+            str(child_pid_path),
+            child_script,
+            "-m",
+            "ecomsre.product.app",
+        ),
+        cwd=tmp_path,
+        env=environment,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    deadline = time.monotonic() + 5
+    while not child_pid_path.is_file() and time.monotonic() < deadline:
+        time.sleep(0.01)
+    assert child_pid_path.is_file()
+    child_pid = int(child_pid_path.read_text(encoding="utf-8"))
+    monkeypatch.setattr(run_command, "_ProductHostProcessesV023", _Processes)
+
+    try:
+        cleanup = run_command._recover_owned_product_processes_v0233(
+            root=tmp_path,
+            product_root=product_root,
+            private_root=private_root,
+        )
+        parent.wait(timeout=5)
+    finally:
+        for pid in (parent.pid, child_pid):
+            try:
+                os.kill(pid, 9)
+            except ProcessLookupError:
+                pass
+
+    assert cleanup["verdict"] == "CLEAN"
+    assert cleanup["recovered_owned_process_count"] == 2
+    assert cleanup["remaining_owned_process_count"] == 0
 
 
 def test_process_interruption_at_every_stage_is_classified_from_durable_acquisition() -> (
@@ -234,16 +317,19 @@ def test_successor_identity_requires_exact_next_attempt_and_generation() -> None
         initial,
         attempt_id="attempt-2",
         semantic_generation=2,
+        expected_semantic_generation=2,
     )
     assert not run_command._is_exact_successor_identity_v0233(
         initial,
         attempt_id="attempt-3",
         semantic_generation=2,
+        expected_semantic_generation=2,
     )
     assert not run_command._is_exact_successor_identity_v0233(
         initial,
         attempt_id="attempt-2",
         semantic_generation=3,
+        expected_semantic_generation=2,
     )
 
     retired = FormalAttemptRecordV0233.build(
@@ -261,21 +347,29 @@ def test_successor_identity_requires_exact_next_attempt_and_generation() -> None
         campaign_id="product-v0233-fresh-formal-nofault",
         attempts=(legacy, retired),
     )
-    for generation in (2, 3):
-        assert run_command._is_exact_successor_identity_v0233(
-            continued,
-            attempt_id="attempt-3",
-            semantic_generation=generation,
-        )
+    assert run_command._is_exact_successor_identity_v0233(
+        continued,
+        attempt_id="attempt-3",
+        semantic_generation=2,
+        expected_semantic_generation=2,
+    )
+    assert run_command._is_exact_successor_identity_v0233(
+        continued,
+        attempt_id="attempt-3",
+        semantic_generation=3,
+        expected_semantic_generation=3,
+    )
     assert not run_command._is_exact_successor_identity_v0233(
         continued,
         attempt_id="attempt-4",
         semantic_generation=2,
+        expected_semantic_generation=2,
     )
     assert not run_command._is_exact_successor_identity_v0233(
         continued,
         attempt_id="attempt-3",
         semantic_generation=4,
+        expected_semantic_generation=3,
     )
 
 
@@ -285,8 +379,10 @@ def test_successor_admission_recognizes_only_exact_sealed_prior_publication(
     repository_root = Path(run_command.__file__).resolve().parents[2]
     for relative in (
         "config/product-v0233/repository-state-manifest.json",
+        "config/product-v0233/recovery-repository-state-manifest.json",
         "config/product-v0233/formal-attempt-ledger.json",
         "docs/analysis/product-v0233-progress.json",
+        "docs/analysis/product-v0233-recovery-progress.json",
     ):
         source = repository_root / relative
         destination = tmp_path / relative
@@ -410,8 +506,10 @@ def test_resume_from_pre_acquisition_hard_interruption_seals_and_routes_successo
     repository_root = Path(run_command.__file__).resolve().parents[2]
     for relative in (
         "config/product-v0233/repository-state-manifest.json",
+        "config/product-v0233/recovery-repository-state-manifest.json",
         "config/product-v0233/formal-attempt-ledger.json",
         "docs/analysis/product-v0233-progress.json",
+        "docs/analysis/product-v0233-recovery-progress.json",
     ):
         source = repository_root / relative
         destination = tmp_path / relative
@@ -483,8 +581,10 @@ def test_nonrecoverable_crash_window_publication_is_executable_and_sealed(
     repository_root = Path(run_command.__file__).resolve().parents[2]
     for relative in (
         "config/product-v0233/repository-state-manifest.json",
+        "config/product-v0233/recovery-repository-state-manifest.json",
         "config/product-v0233/formal-attempt-ledger.json",
         "docs/analysis/product-v0233-progress.json",
+        "docs/analysis/product-v0233-recovery-progress.json",
     ):
         source = repository_root / relative
         destination = tmp_path / relative
@@ -571,6 +671,11 @@ def test_reviewed_semantic_change_retires_generation_and_starts_fresh_capture(
         "strict_resume_formal_admission_v0233",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(transition),
     )
+    monkeypatch.setattr(
+        resume_command,
+        "_recover_existing_attempt_clone_v0233",
+        lambda *_args, **_kwargs: None,
+    )
     terminalized: list[FormalExecutionCheckpointV0233] = []
     monkeypatch.setattr(
         resume_command,
@@ -607,8 +712,10 @@ def test_clone_bearing_semantic_rollover_closes_before_fresh_generation(
     repository_root = Path(run_command.__file__).resolve().parents[2]
     for relative in (
         "config/product-v0233/repository-state-manifest.json",
+        "config/product-v0233/recovery-repository-state-manifest.json",
         "config/product-v0233/formal-attempt-ledger.json",
         "docs/analysis/product-v0233-progress.json",
+        "docs/analysis/product-v0233-recovery-progress.json",
     ):
         source = repository_root / relative
         destination = tmp_path / relative
@@ -622,18 +729,23 @@ def test_clone_bearing_semantic_rollover_closes_before_fresh_generation(
     attempt_root = tmp_path / ".local/product-v0233/attempts/attempt-2"
     repository = FormalCheckpointRepositoryV0233(attempt_root)
     prepared = _prepared_checkpoint()
-    environment_ready = FormalExecutionCheckpointV0233.build(
+    clone_sealed = FormalExecutionCheckpointV0233.build(
         previous=prepared,
-        state=FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY,
+        state=FormalExecutionStateV0233.CLONE_SEALED,
         formal_clone_sha256=clone_payload["clone_sha256"],
         created_at=prepared.created_at + timedelta(seconds=1),
+    )
+    environment_ready = FormalExecutionCheckpointV0233.build(
+        previous=clone_sealed,
+        state=FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY,
+        created_at=clone_sealed.created_at + timedelta(seconds=1),
     )
     recoverable = FormalExecutionCheckpointV0233.build(
         previous=environment_ready,
         state=FormalExecutionStateV0233.RECOVERABLE_FAILURE,
         created_at=environment_ready.created_at + timedelta(seconds=1),
     )
-    for checkpoint in (prepared, environment_ready, recoverable):
+    for checkpoint in (prepared, clone_sealed, environment_ready, recoverable):
         repository.append(checkpoint)
     admission = FormalExecutionAdmissionV0233.build(
         execution_head="1" * 40,
@@ -675,6 +787,18 @@ def test_clone_bearing_semantic_rollover_closes_before_fresh_generation(
         resume_command,
         "strict_resume_formal_admission_v0233",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(transition),
+    )
+    monkeypatch.setattr(
+        resume_command,
+        "_recover_existing_attempt_clone_v0233",
+        lambda *_args, **_kwargs: FreshFormalStateCloneV0233.model_validate(
+            clone_payload
+        ),
+    )
+    monkeypatch.setattr(
+        resume_command,
+        "recover_interrupted_attempt_cleanup_v0233",
+        lambda *_args, **_kwargs: {"verdict": "CLEAN"},
     )
     expected = SimpleNamespace(result_sha256=_sha("9"))
     successor_calls: list[dict[str, object]] = []
@@ -743,6 +867,7 @@ def test_resume_executes_post_success_or_failed_job_recovery(
         operational_surface_sha256=_sha("2"),
         source_selection_sha256=_sha("3"),
         formal_clone_sha256=_sha("4"),
+        checkpoint_sha256=_sha("d"),
         input_artifact_sha256s={},
         output_artifact_sha256s=(
             {
@@ -915,6 +1040,16 @@ def test_resume_executes_post_success_or_failed_job_recovery(
         resume_command,
         "strict_resume_formal_admission_v0233",
         lambda *_args, **_kwargs: (latest, semantic, operational),
+    )
+    monkeypatch.setattr(
+        resume_command,
+        "recover_interrupted_attempt_cleanup_v0233",
+        lambda *_args, **_kwargs: {"resource_cleanup_verdict": "CLEAN"},
+    )
+    monkeypatch.setattr(
+        resume_command,
+        "_persist_product_process_authority_v0233",
+        lambda *_args, **_kwargs: {},
     )
     monkeypatch.setattr(
         resume_command,
