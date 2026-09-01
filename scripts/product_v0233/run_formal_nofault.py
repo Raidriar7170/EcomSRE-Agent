@@ -44,6 +44,10 @@ from ecomsre.product.pilot.formal_live_v0233 import (
     FreshRuntimeSnapshotProofV0233,
     RuntimeAuthorityProofV0233,
 )
+from ecomsre.product.pilot.formal_recovery_v0233 import (
+    FormalOperationalSurfaceV0233,
+    FormalSemanticSurfaceV0233,
+)
 from ecomsre.product.pilot.formal_nofault_v02321 import (
     FormalTrafficConsumptionV02321,
     FormalTrafficDispatchCheckpointV02321,
@@ -195,13 +199,25 @@ def _sha256_file(path: Path) -> str:
 
 
 def _frozen_semantic_surface_sha256_v0233(root: Path) -> str:
-    """Rebuild the frozen Product/Diagnosis/scorer surface without Git state."""
+    """Rebuild the semantic-only Product/Diagnosis/scorer surface."""
 
-    sources = DiagnosisSemanticSourceManifestV0233.model_validate_json(
+    semantic, _operational = _formal_surfaces_v0233(root, semantic_generation=1)
+    return semantic.semantic_surface_sha256
+
+
+def _formal_surfaces_v0233(
+    root: Path,
+    *,
+    semantic_generation: int,
+) -> tuple[FormalSemanticSurfaceV0233, FormalOperationalSurfaceV0233]:
+    """Build disjoint semantic and operational surfaces from current bytes."""
+
+    frozen_sources = DiagnosisSemanticSourceManifestV0233.model_validate_json(
         (
             root / "docs/analysis/product-v0233-diagnosis-source-manifest.json"
         ).read_bytes()
     )
+    sources = _diagnosis_source_manifest(root)
     observed_sources = {
         path: _sha256_file(root / path) for path in sources.source_sha256_by_path
     }
@@ -215,23 +231,54 @@ def _frozen_semantic_surface_sha256_v0233(root: Path) -> str:
     scorer_sha256 = _sha256_file(
         root / "src/ecomsre/product/pilot/nofault_acceptance_v0232.py"
     )
-    execution_paths = (
+    selection = FreshFormalSourceSelectionV0233.model_validate_json(
+        (root / "config/product-v0233/source-selection.json").read_bytes()
+    )
+    clone_contract = _object(root / "docs/analysis/product-v0233-clone-contract.json")
+    clone_contract_sha256 = clone_contract.get("contract_sha256")
+    service_contract = observed_sources.get(
+        "src/ecomsre/product/environment/services.py"
+    )
+    capability_contract = observed_sources.get(
+        "src/ecomsre/product/environment/capabilities.py"
+    )
+    if not isinstance(clone_contract_sha256, str):
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+    runtime_authority_contract_sha256 = semantic_sha256_v22(
+        {
+            "runtime_continuity_descriptor_sha256": (
+                freeze.runtime_continuity_descriptor_sha256
+            ),
+            "flagd_bind_descriptor_sha256": freeze.flagd_bind_descriptor_sha256,
+            "pilot_runtime_authority_sha256": freeze.pilot_runtime_authority_sha256,
+            "read_authority_sha256": freeze.read_authority_sha256,
+            "resolved_compose_sha256": freeze.resolved_compose_sha256,
+        }
+    )
+    operational_paths = (
         "scripts/product_v0233/run_formal_nofault.py",
-        "scripts/product_v02321/run_formal_nofault.py",
-        "scripts/product_v02321/run_traffic_preflight.py",
-        "scripts/product_v0231/run_live_authority_restart.py",
+        "scripts/product_v0233/resume_formal_nofault.py",
+        "scripts/ci/verify_product_v0233_terminal.py",
+        ".github/workflows/agent-mainline.yml",
         "src/ecomsre/product/pilot/formal_live_v0233.py",
-        "src/ecomsre/product/pilot/fresh_formal_source_v0233.py",
         "src/ecomsre/product/pilot/fresh_formal_acceptance_v0233.py",
+        "src/ecomsre/product/pilot/formal_recovery_v0233.py",
+        "src/ecomsre/product/pilot/serialization_v0233.py",
         "src/ecomsre/product/pilot/repository_state_v0233.py",
     )
-    execution_sha256_by_path = {
-        path: _sha256_file(root / path) for path in execution_paths
+    operational_sha256_by_path = {
+        path: _sha256_file(root / path) for path in operational_paths
     }
     if (
         observed_sources != sources.source_sha256_by_path
-        or _diagnosis_source_manifest(root) != sources
-        or sources.manifest_sha256 != freeze.diagnosis_semantic_source_manifest_sha256
+        or (
+            semantic_generation == 1
+            and (
+                sources != frozen_sources
+                or sources.manifest_sha256
+                != freeze.diagnosis_semantic_source_manifest_sha256
+            )
+        )
         or campaign.campaign_sha256 != freeze.campaign_sha256
         or preflight_profile.profile_sha256 != freeze.preflight_profile_sha256
         or formal_profile.profile_sha256 != freeze.formal_profile_sha256
@@ -242,29 +289,35 @@ def _frozen_semantic_surface_sha256_v0233(root: Path) -> str:
         or traffic_contract.contract_sha256 != freeze.traffic_contract_sha256
         or scorer_sha256 != freeze.nofault_scorer_source_sha256
         or scorer_sha256 != campaign.nofault_scorer_source_sha256
+        or selection.selection_sha256 != freeze.source_selection_sha256
+        or service_contract is None
+        or capability_contract is None
     ):
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
-    body = {
-        "schema_version": "ecomsre.product.frozen-semantic-surface.v0233",
-        "formal_contract_freeze_sha256": freeze.freeze_sha256,
-        "diagnosis_semantic_source_manifest_sha256": sources.manifest_sha256,
-        "diagnosis_source_count": sources.source_count,
-        "preflight_profile_sha256": preflight_profile.profile_sha256,
-        "formal_profile_sha256": formal_profile.profile_sha256,
-        "traffic_contract_sha256": traffic_contract.contract_sha256,
-        "nofault_scorer_source_sha256": scorer_sha256,
-        "runtime_continuity_descriptor_sha256": (
-            freeze.runtime_continuity_descriptor_sha256
+    semantic = FormalSemanticSurfaceV0233.build(
+        semantic_generation=semantic_generation,
+        checkout_traffic_contract_sha256=traffic_contract.contract_sha256,
+        checkout_traffic_source_sha256=_sha256_file(
+            root / "src/ecomsre/product/pilot/healthy_traffic_v0232.py"
         ),
-        "flagd_bind_descriptor_sha256": freeze.flagd_bind_descriptor_sha256,
-        "pilot_runtime_authority_sha256": freeze.pilot_runtime_authority_sha256,
-        "active_profile_sha256": freeze.active_profile_sha256,
-        "active_baseline_sha256": freeze.active_baseline_sha256,
-        "stage_journal_contract_sha256": freeze.stage_journal_contract_sha256,
-        "private_failure_contract_sha256": freeze.private_failure_contract_sha256,
-        "execution_sha256_by_path": execution_sha256_by_path,
-    }
-    return semantic_sha256_v22(body)
+        preflight_profile_sha256=preflight_profile.profile_sha256,
+        formal_profile_sha256=formal_profile.profile_sha256,
+        active_profile_sha256=freeze.active_profile_sha256,
+        active_baseline_id=selection.active_baseline_id,
+        active_baseline_sha256=freeze.active_baseline_sha256,
+        source_selection_sha256=selection.selection_sha256,
+        formal_clone_contract_sha256=clone_contract_sha256,
+        runtime_authority_contract_sha256=runtime_authority_contract_sha256,
+        service_identity_contract_sha256=service_contract,
+        capability_contract_sha256=capability_contract,
+        diagnosis_source_sha256_by_path=observed_sources,
+        nofault_scorer_source_sha256=scorer_sha256,
+        stage_journal_contract_sha256=freeze.stage_journal_contract_sha256,
+    )
+    operational = FormalOperationalSurfaceV0233.build(
+        operational_file_sha256_by_path=operational_sha256_by_path
+    )
+    return semantic, operational
 
 
 def _safety_observation(

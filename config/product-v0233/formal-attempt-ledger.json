@@ -1,0 +1,32 @@
+{
+  "attempts": [
+    {
+      "attempt_id": "attempt-1",
+      "blocker_terminal": "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS",
+      "disposition": "LEGACY_BLOCKED",
+      "evidence_sha256_by_path": {
+        "config/product-v0233/repository-state-manifest.json": "19e89f646ba5ed23ca74b92516e9c0895b5994579afccb1582ad8210ed7db9cf",
+        "docs/analysis/product-v0233-baseline-restart.json": "3b07e99c3fa7f5bd57b43dff6ffaa3a9bca00a489204fb9eb57498099da5ac0f",
+        "docs/analysis/product-v0233-formal-blocker-evidence-manifest.json": "69e18971d75b62d53dbe6f86aff8b3ce46c756228b23cc1681260e4f0de9163e",
+        "docs/analysis/product-v0233-formal-blocker.json": "a02cce3787c1a443f365c83c4207b6256de431d792ebd6fded628ca36bc32ed1",
+        "docs/analysis/product-v0233-formal-closure.json": "2dded3760f5186e13805e8b6bfd7aa75cae71fee454f77a4c73db84e87024e14",
+        "docs/analysis/product-v0233-formal-state-clone.json": "830221172a79fb1d63fbd5d9f9dcb0f9c602f40c50dee40221521d1d01564979",
+        "docs/analysis/product-v0233-formal-traffic.json": "44ea769a91b49df6d69f0def28c43c1938cba7a499432faaa57d478c9c12d55d",
+        "docs/analysis/product-v0233-progress.json": "2c566c7336bd44730910fdafb6fe3722dde437a8e47925672a19a2955c3c3392",
+        "docs/analysis/product-v0233-runtime-authority.json": "41134e13794946f8839cbd457cac444047ce26ac3719b1d55ab92325738441c1"
+      },
+      "latest_checkpoint_sha256": null,
+      "latest_state": "RECOVERABLE_FAILURE",
+      "measured_terminal": null,
+      "ordinal": 1,
+      "record_sha256": "5383ebb3e79fa1bd0828f084c1bea4a2226c3fde7a52aca515e529e4e3f665e8",
+      "schema_version": "ecomsre.product.formal-attempt-record.v0233",
+      "semantic_generation": 1
+    }
+  ],
+  "campaign_id": "product-v0233-fresh-formal-nofault",
+  "latest_attempt_id": "attempt-1",
+  "ledger_sha256": "63cd906193b94026eade0c492c48da325dc61d7bf95ca36eaf0433b7df6aee69",
+  "measured_result_count": 0,
+  "schema_version": "ecomsre.product.formal-attempt-ledger.v0233"
+}
