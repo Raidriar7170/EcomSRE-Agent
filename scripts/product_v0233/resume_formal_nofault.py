@@ -380,19 +380,6 @@ def resume_formal_nofault_v0233(
         root,
         attempt_id=attempt_id,
     )
-    resume_state = (
-        latest.state
-        if latest.state is FormalExecutionStateV0233.CLOSED
-        else determine_earliest_safe_resume_state_v0233(latest)
-    )
-    if resume_state not in {
-        FormalExecutionStateV0233.ACQUISITION_SEALED,
-        FormalExecutionStateV0233.DIAGNOSIS_RUNNING,
-        FormalExecutionStateV0233.DIAGNOSIS_PERSISTED,
-        FormalExecutionStateV0233.SCORED,
-        FormalExecutionStateV0233.CLOSED,
-    }:
-        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_REQUIRED")
     if intent_path.is_file():
         recovered = _recover_terminal_publication(
             root,
@@ -432,24 +419,49 @@ def resume_formal_nofault_v0233(
             promoted.model_dump(mode="json"),
             create_once=True,
         )
-        promoted_outputs = dict(latest.output_artifact_sha256s)
-        promoted_outputs[acquisition_path.relative_to(root).as_posix()] = (
-            _sha256_file(acquisition_path)
-        )
-        if latest.state is FormalExecutionStateV0233.INCIDENT_CREATED:
-            latest = _append_checkpoint_v0233(
-                repository=repository,
-                latest=latest,
-                state=FormalExecutionStateV0233.ACQUISITION_SEALED,
-                operational_surface_sha256=operational.operational_surface_sha256,
-                outputs=promoted_outputs,
-            )
     acquisition = _load_model(acquisition_path, DiagnosisAcquisitionCheckpointV0233)
     if (
         acquisition.attempt_id != attempt_id
         or acquisition.semantic_surface_sha256 != semantic.semantic_surface_sha256
     ):
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_SEMANTIC_DRIFT")
+    earliest_state = (
+        latest.state
+        if latest.state is FormalExecutionStateV0233.CLOSED
+        else determine_earliest_safe_resume_state_v0233(latest)
+    )
+    if latest.state in {
+        FormalExecutionStateV0233.INCIDENT_CREATED,
+        FormalExecutionStateV0233.RECOVERABLE_FAILURE,
+    } and earliest_state in {
+        FormalExecutionStateV0233.PREPARED,
+        FormalExecutionStateV0233.LIVE_CAPTURE_SEALED,
+        FormalExecutionStateV0233.INCIDENT_CREATED,
+    }:
+        recovered_outputs = dict(latest.output_artifact_sha256s)
+        recovered_outputs[acquisition_path.relative_to(root).as_posix()] = (
+            _sha256_file(acquisition_path)
+        )
+        latest = _append_checkpoint_v0233(
+            repository=repository,
+            latest=latest,
+            state=FormalExecutionStateV0233.ACQUISITION_SEALED,
+            operational_surface_sha256=operational.operational_surface_sha256,
+            outputs=recovered_outputs,
+        )
+    resume_state = (
+        latest.state
+        if latest.state is FormalExecutionStateV0233.CLOSED
+        else determine_earliest_safe_resume_state_v0233(latest)
+    )
+    if resume_state not in {
+        FormalExecutionStateV0233.ACQUISITION_SEALED,
+        FormalExecutionStateV0233.DIAGNOSIS_RUNNING,
+        FormalExecutionStateV0233.DIAGNOSIS_PERSISTED,
+        FormalExecutionStateV0233.SCORED,
+        FormalExecutionStateV0233.CLOSED,
+    }:
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_REQUIRED")
 
     admission = _load_model(
         private_root / "admission.json", FormalExecutionAdmissionV0233

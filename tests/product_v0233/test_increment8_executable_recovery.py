@@ -11,6 +11,9 @@ from ecomsre.product.jobs.contracts import (
     ProductJobStatusV1,
     ProductJobTypeV1,
 )
+from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
+    FormalDiagnosisJobContextV0233,
+)
 from ecomsre.product.pilot.formal_live_v0233 import (
     FormalObservedStateCountsV0233,
     FormalSafetyObservationV0233,
@@ -98,19 +101,31 @@ class _Jobs:
         return queued
 
 
-@pytest.mark.parametrize("recovery_required", (False, True))
+@pytest.mark.parametrize(
+    ("recovery_required", "latest_state", "private_acquisition"),
+    (
+        (False, FormalExecutionStateV0233.RECOVERABLE_FAILURE, True),
+        (True, FormalExecutionStateV0233.RECOVERABLE_FAILURE, True),
+        (False, FormalExecutionStateV0233.INCIDENT_CREATED, False),
+    ),
+)
 def test_resume_executes_post_success_or_failed_job_recovery(
     tmp_path: Path,
     monkeypatch,
     recovery_required: bool,
+    latest_state: FormalExecutionStateV0233,
+    private_acquisition: bool,
 ) -> None:
     attempt_id = "attempt-2"
     private_root = tmp_path / ".local/product-v0233/attempts" / attempt_id / "execution"
     private_root.mkdir(parents=True)
     product_root = tmp_path / ".local/product-v0233/formal-state" / attempt_id
     product_root.mkdir(parents=True)
-    for name in ("diagnosis-acquisition-checkpoint.json", "diagnosis-job.json"):
-        (private_root / name).write_text("{}\n", encoding="utf-8")
+    (private_root / "diagnosis-job.json").write_text("{}\n", encoding="utf-8")
+    if private_acquisition:
+        (private_root / "diagnosis-acquisition-checkpoint.json").write_text(
+            "{}\n", encoding="utf-8"
+        )
     preflight_path = tmp_path / "docs/analysis/product-v0233-traffic-preflight.json"
     preflight_path.parent.mkdir(parents=True)
     preflight_path.write_text(
@@ -124,15 +139,19 @@ def test_resume_executes_post_success_or_failed_job_recovery(
         campaign_id="product-v0233-fresh-formal-nofault",
         semantic_generation=2,
         attempt_id=attempt_id,
-        state=FormalExecutionStateV0233.RECOVERABLE_FAILURE,
+        state=latest_state,
         semantic_surface_sha256=_sha("1"),
         operational_surface_sha256=_sha("2"),
         source_selection_sha256=_sha("3"),
         formal_clone_sha256=_sha("4"),
-        output_artifact_sha256s={
-            ".local/product-v0233/attempts/attempt-2/execution/"
-            "diagnosis-acquisition-checkpoint.json": _sha("8")
-        },
+        output_artifact_sha256s=(
+            {
+                ".local/product-v0233/attempts/attempt-2/execution/"
+                "diagnosis-acquisition-checkpoint.json": _sha("8")
+            }
+            if private_acquisition
+            else {}
+        ),
     )
     admission = _artifact(admission_sha256=_sha("5"))
     reservation = _artifact(
@@ -188,11 +207,24 @@ def test_resume_executes_post_success_or_failed_job_recovery(
         journal_tail_sha256=_sha("9"),
         acceptance_sha256=_sha("a"),
     )
+    job_context = FormalDiagnosisJobContextV0233.build(
+        campaign_id=acquisition.campaign_id,
+        semantic_generation=acquisition.semantic_generation,
+        attempt_id=attempt_id,
+        diagnosis_generation=1,
+        active_profile_sha256=acquisition.active_profile_sha256,
+        semantic_surface_sha256=acquisition.semantic_surface_sha256,
+        acquisition_sha256=None,
+    )
+    job_payload = {
+        "incident_id": incident.incident_id,
+        "formal_recovery_v0233": job_context.model_dump(mode="json"),
+    }
     successful_job = ProductJobRecordV1(
         job_id="job-" + ("2" if recovery_required else "1") * 24,
         job_type=ProductJobTypeV1.DIAGNOSIS,
         status=ProductJobStatusV1.SUCCEEDED,
-        payload={"incident_id": incident.incident_id},
+        payload=job_payload,
         result={"result_sha256": diagnosis.result_sha256},
         safe_error_code=None,
         idempotency_key="formal-v0233-diagnosis-success",
@@ -207,7 +239,7 @@ def test_resume_executes_post_success_or_failed_job_recovery(
             job_id="job-" + "1" * 24,
             job_type=ProductJobTypeV1.DIAGNOSIS,
             status=ProductJobStatusV1.FAILED,
-            payload={"incident_id": incident.incident_id},
+            payload=job_payload,
             result=None,
             safe_error_code="INTERNAL_CONTRACT_FAILURE",
             idempotency_key="formal-v0233-diagnosis-failed",
