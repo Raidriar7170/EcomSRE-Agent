@@ -19,12 +19,20 @@ from ecomsre.product.pilot.formal_recovery_v0233 import (
     FormalOperationalSurfaceV0233,
     FormalSemanticSurfaceV0233,
     LiveCaptureBundleV0233,
+    RecoveryExactHeadCiReceiptV0233,
+    RecoveryPreExecutionReviewV0233,
     acquisition_recovery_is_compatible_v0233,
     build_legacy_attempt1_record_v0233,
     determine_earliest_safe_resume_state_v0233,
     formal_diagnosis_idempotency_key_v0233,
     formal_incident_external_key_v0233,
     verify_checkpoint_artifacts_v0233,
+)
+from ecomsre.product.pilot.fresh_formal_acceptance_v0233 import (
+    FormalIncidentDiagnosisCardinalityV0233,
+)
+from ecomsre.product.pilot.repository_state_v0233 import (
+    ProductV0233RepositoryStateManifest,
 )
 from scripts.product_v0233 import resume_formal_nofault as resume_command
 from scripts.product_v0233.run_formal_nofault import _formal_surfaces_v0233
@@ -69,6 +77,30 @@ def _operational_surface(character: str = "e") -> FormalOperationalSurfaceV0233:
             "src/ecomsre/product/pilot/formal_recovery_v0233.py": _sha("f"),
         }
     )
+
+
+def test_recovery_review_and_exact_head_ci_receipt_are_independently_sealed() -> None:
+    semantic = _semantic_surface(generation=2)
+    operational = _operational_surface()
+    review = RecoveryPreExecutionReviewV0233.build(
+        semantic_generation=2,
+        semantic_surface_sha256=semantic.semantic_surface_sha256,
+        operational_surface_sha256=operational.operational_surface_sha256,
+    )
+    receipt = RecoveryExactHeadCiReceiptV0233.build(
+        execution_head="1" * 40,
+        upstream_ref="refs/remotes/origin/codex/example",
+        pull_request_number=86,
+        checked_at=datetime.now(UTC),
+        successful_checks=("unit", "lint", "unit"),
+        review_sha256=review.review_sha256,
+    )
+
+    assert receipt.successful_checks == ("lint", "unit")
+    with pytest.raises(ValidationError):
+        RecoveryExactHeadCiReceiptV0233.model_validate(
+            {**receipt.model_dump(mode="json"), "execution_head": "2" * 40}
+        )
 
 
 def _first_checkpoint(
@@ -291,6 +323,52 @@ def test_acquisition_checkpoint_binds_frozen_reads_and_recovery_idempotency() ->
         checkpoint,
         semantic_surface_sha256=_sha("0"),
     )
+
+
+def test_recovery_cardinality_allows_failed_job_plus_one_persisted_diagnosis() -> None:
+    cardinality = FormalIncidentDiagnosisCardinalityV0233.build(
+        phase="POST_DIAGNOSIS_RECOVERED",
+        source_incident_count=0,
+        source_diagnosis_job_count=0,
+        source_diagnosis_result_count=0,
+        source_evidence_index_count=0,
+        source_fault_family_count=0,
+        source_knowledge_artifact_count=0,
+        source_baseline_job_count=0,
+        current_incident_count=1,
+        current_diagnosis_job_count=2,
+        current_diagnosis_result_count=1,
+        current_evidence_index_count=1,
+        current_fault_family_count=0,
+        current_knowledge_artifact_count=0,
+        current_baseline_job_count=0,
+    )
+
+    assert cardinality.current_diagnosis_job_count == 2
+
+
+def test_measured_repository_state_counts_recovery_jobs_truthfully() -> None:
+    current = ProductV0233RepositoryStateManifest.model_validate_json(
+        (ROOT / "config/product-v0233/repository-state-manifest.json").read_bytes()
+    )
+    body = {
+        **current.model_dump(mode="json", exclude={"manifest_sha256"}),
+        "phase": "MEASURED_COMPLETE",
+        "formal_result_sha256": _sha("1"),
+        "formal_blocker_sha256": None,
+        "knowledge_handoff_sha256": _sha("2"),
+        "cleanup_proof_sha256": _sha("3"),
+        "formal_clone_count": 1,
+        "formal_execution_count": 1,
+        "new_incident_count": 1,
+        "new_diagnosis_count": 2,
+        "measured_result_count": 1,
+    }
+    manifest = ProductV0233RepositoryStateManifest.model_validate(
+        {**body, "manifest_sha256": semantic_sha256_v22(body)}
+    )
+
+    assert manifest.new_diagnosis_count == 2
 
 
 def test_checkpoint_rejects_invalid_transition_or_semantic_change_in_same_attempt() -> (

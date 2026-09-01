@@ -24,7 +24,8 @@ from ecomsre.product.incidents.diagnosis_stage_journal_v02322 import (
 from ecomsre.product.incidents.evidence_binding_v0232 import (
     DiagnosisEvidenceIndexV0232,
 )
-from ecomsre.product.jobs.contracts import ProductJobStatusV1
+from ecomsre.product.jobs.contracts import ProductJobStatusV1, ProductJobTypeV1
+from ecomsre.product.jobs.repository import JobRepositoryV1
 from ecomsre.product.pilot.baseline_readiness_v021 import verify_queue_default_v021
 from ecomsre.product.pilot.baseline_readiness_v023 import (
     ProductBaselineReadinessAuditV023,
@@ -45,8 +46,22 @@ from ecomsre.product.pilot.formal_live_v0233 import (
     RuntimeAuthorityProofV0233,
 )
 from ecomsre.product.pilot.formal_recovery_v0233 import (
+    DiagnosisAcquisitionCheckpointV0233,
+    FormalAttemptLedgerV0233,
+    FormalAttemptRecordV0233,
+    FormalCheckpointRepositoryV0233,
+    FormalExecutionCheckpointV0233,
+    FormalExecutionStateV0233,
+    LiveCaptureBundleV0233,
     FormalOperationalSurfaceV0233,
     FormalSemanticSurfaceV0233,
+    RecoveryExactHeadCiReceiptV0233,
+    RecoveryPreExecutionReviewV0233,
+    build_legacy_attempt1_record_v0233,
+    formal_incident_external_key_v0233,
+)
+from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
+    FormalDiagnosisJobContextV0233,
 )
 from ecomsre.product.pilot.formal_nofault_v02321 import (
     FormalTrafficConsumptionV02321,
@@ -131,9 +146,7 @@ from scripts.product_v0231.run_live_authority_restart import (
 )
 from scripts.product_v02321.run_formal_nofault import (  # noqa: PLC2701
     _find_decision_trace,
-    _recover_diagnosis_job,
     _recover_incident_by_external_key,
-    _request_or_recover_diagnosis_job_v02321,
     _request_or_recover_incident_v02321,
     _worktree_for_branch,
     run_formal_traffic_journaled_v02321,
@@ -169,6 +182,28 @@ _FORMAL_DESTINATION = (
     ".local/product-v0233/formal-state/product-v0233-fresh-formal-nofault/product"
 )
 _EXPECTED_UPSTREAM = f"refs/remotes/origin/{_BRANCH}"
+_CAMPAIGN_ID = "product-v0233-fresh-formal-nofault"
+
+
+def _attempt_private_locator_v0233(attempt_id: str) -> str:
+    if (
+        not attempt_id
+        or len(attempt_id) > 80
+        or not all(
+            character.islower() or character.isdigit() or character == "-"
+            for character in attempt_id
+        )
+    ):
+        raise ValueError("Product v0.2.3.3 attempt ID differs")
+    return f".local/product-v0233/attempts/{attempt_id}"
+
+
+def _attempt_public_locator_v0233(attempt_id: str) -> str:
+    return f"docs/analysis/product-v0233-attempts/{attempt_id}"
+
+
+def _attempt_product_locator_v0233(attempt_id: str) -> str:
+    return f"{_attempt_private_locator_v0233(attempt_id)}/formal-state/product"
 
 
 class _DiagnosisJobFailedV0233(RuntimeError):
@@ -540,6 +575,106 @@ def strict_formal_admission_v0233(root: Path) -> FormalExecutionAdmissionV0233:
     )
 
 
+def strict_recovery_formal_admission_v0233(
+    root: Path,
+    *,
+    attempt_id: str,
+    semantic_generation: int,
+) -> FormalExecutionAdmissionV0233:
+    """Admit one amendment-governed attempt while preserving Attempt 1."""
+
+    project = Path(root).resolve(strict=True)
+    try:
+        status = _git(project, "status", "--porcelain", "--untracked-files=all")
+        head = _git(project, "rev-parse", "HEAD")
+        branch = _git(project, "branch", "--show-current")
+        upstream = _git(project, "rev-parse", "--symbolic-full-name", "@{upstream}")
+        upstream_head = _git(project, "rev-parse", _EXPECTED_UPSTREAM)
+    except subprocess.CalledProcessError as error:
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_STARTING_HEAD") from error
+    if (
+        status
+        or branch != _BRANCH
+        or upstream != _EXPECTED_UPSTREAM
+        or upstream_head != head
+        or attempt_id == "attempt-1"
+        or semantic_generation < 2
+    ):
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_STARTING_HEAD")
+
+    attempt_root = project / _attempt_private_locator_v0233(attempt_id)
+    public_attempt_root = project / _attempt_public_locator_v0233(attempt_id)
+    final_result = project / "docs/results/product-v0233-nofault-acceptance.json"
+    if any(
+        path.exists() or path.is_symlink()
+        for path in (attempt_root, public_attempt_root, final_result)
+    ):
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+
+    ledger = FormalAttemptLedgerV0233.model_validate_json(
+        (project / "config/product-v0233/formal-attempt-ledger.json").read_bytes()
+    )
+    legacy = build_legacy_attempt1_record_v0233(project)
+    manifest = ProductV0233RepositoryStateManifest.model_validate_json(
+        (project / "config/product-v0233/repository-state-manifest.json").read_bytes()
+    )
+    clone_plan = FormalClonePlanV0233.model_validate_json(
+        (project / "docs/analysis/product-v0233-formal-clone-plan.json").read_bytes()
+    )
+    freeze = FormalContractFreezeV0233.model_validate_json(
+        (project / "docs/analysis/product-v0233-formal-contract-freeze.json").read_bytes()
+    )
+    semantic, operational = _formal_surfaces_v0233(
+        project,
+        semantic_generation=semantic_generation,
+    )
+    review_path = project / "docs/analysis/product-v0233-recovery-pre-execution-review.json"
+    receipt_path = project / ".local/product-v0233/recovery-exact-head-ci.json"
+    try:
+        review = RecoveryPreExecutionReviewV0233.model_validate_json(
+            review_path.read_bytes()
+        )
+        receipt = RecoveryExactHeadCiReceiptV0233.model_validate_json(
+            receipt_path.read_bytes()
+        )
+    except (OSError, ValueError) as error:
+        raise RuntimeError(
+            "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
+        ) from error
+    if (
+        ledger.attempts != (legacy,)
+        or ledger.measured_result_count != 0
+        or manifest.phase is not RepositoryPhaseV0233.FORMAL_BLOCKED
+        or manifest.formal_clone_count != 1
+        or manifest.formal_execution_count != 1
+        or manifest.new_incident_count != 0
+        or manifest.new_diagnosis_count != 0
+        or manifest.measured_result_count != 0
+        or review.semantic_generation != semantic_generation
+        or review.semantic_surface_sha256 != semantic.semantic_surface_sha256
+        or review.operational_surface_sha256
+        != operational.operational_surface_sha256
+        or receipt.execution_head != head
+        or receipt.upstream_ref != _EXPECTED_UPSTREAM
+        or receipt.pull_request_number != 86
+        or receipt.review_sha256 != review.review_sha256
+    ):
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+    campaign = load_fresh_formal_campaign_v0233(project)
+    selection = FreshFormalSourceSelectionV0233.model_validate_json(
+        (project / "config/product-v0233/source-selection.json").read_bytes()
+    )
+    return FormalExecutionAdmissionV0233.build(
+        execution_head=head,
+        campaign_sha256=campaign.campaign_sha256,
+        source_selection_sha256=selection.selection_sha256,
+        formal_clone_plan_sha256=clone_plan.plan_sha256,
+        formal_contract_freeze_sha256=freeze.freeze_sha256,
+        pre_execution_review_sha256=review.review_sha256,
+        repository_state_manifest_sha256=manifest.manifest_sha256,
+    )
+
+
 def _selected_source(
     root: Path,
 ) -> tuple[
@@ -774,6 +909,7 @@ def _progress_payload(root: Path, **updates: Any) -> dict[str, Any]:
 _TERMINAL_PUBLICATION_ALLOWED = frozenset(
     {
         "config/product-v0233/repository-state-manifest.json",
+        "config/product-v0233/formal-attempt-ledger.json",
         "docs/analysis/product-v0233-progress.json",
         "docs/analysis/product-v0233-formal-closure.json",
         "docs/analysis/product-v0233-formal-state-clone.json",
@@ -795,6 +931,45 @@ _TERMINAL_PUBLICATION_ALLOWED = frozenset(
         "docs/results/product-v0233-interview-brief.md",
     }
 )
+
+_ATTEMPT_PUBLICATION_FILENAMES = frozenset(
+    {
+        "formal-state-clone.json",
+        "formal-closure.json",
+        "formal-blocker.json",
+        "diagnosis-stage-journal.json",
+        "diagnosis-recovery-lineage.json",
+        "diagnosis-blocker.json",
+        "diagnosis-blocker.md",
+        "runtime-authority.json",
+        "baseline-restart.json",
+        "formal-traffic.json",
+        "fresh-runtime-snapshot.json",
+        "incident-traffic-binding.json",
+        "evidence-assessment.json",
+        "knowledge-loop-handoff.json",
+        "repository-state-manifest.json",
+        "progress.json",
+    }
+)
+
+
+def _terminal_publication_path_allowed_v0233(relative: str) -> bool:
+    if relative in _TERMINAL_PUBLICATION_ALLOWED:
+        return True
+    parts = Path(relative).parts
+    if (
+        len(parts) != 5
+        or parts[:3] != ("docs", "analysis", "product-v0233-attempts")
+        or not parts[3].startswith("attempt-")
+        or parts[4] not in _ATTEMPT_PUBLICATION_FILENAMES
+    ):
+        return False
+    try:
+        _attempt_private_locator_v0233(parts[3])
+    except ValueError:
+        return False
+    return True
 
 
 def _terminal_publication_bundle(
@@ -838,7 +1013,7 @@ def _apply_terminal_publication_bundle(
         payload = item.get("payload")
         if (
             not isinstance(relative, str)
-            or relative not in _TERMINAL_PUBLICATION_ALLOWED
+            or not _terminal_publication_path_allowed_v0233(relative)
             or mode not in {"CREATE_JSON", "CREATE_TEXT", "REPLACE_JSON"}
             or (mode == "CREATE_TEXT" and not isinstance(payload, str))
             or (mode != "CREATE_TEXT" and not isinstance(payload, Mapping))
@@ -853,12 +1028,26 @@ def _apply_terminal_publication_bundle(
             assert isinstance(payload, Mapping)
             normalized.append((relative, mode, payload))
     paths = [relative for relative, _mode, _payload in normalized]
-    if len(paths) != len(set(paths)) or set(paths) - _TERMINAL_PUBLICATION_ALLOWED:
+    if len(paths) != len(set(paths)) or any(
+        not _terminal_publication_path_allowed_v0233(path) for path in paths
+    ):
         raise ValueError("Product v0.2.3.3 terminal publication paths differ")
-    blocker_present = "docs/analysis/product-v0233-formal-blocker.json" in paths
+    blocker_present = any(
+        path == "docs/analysis/product-v0233-formal-blocker.json"
+        or path.endswith("/formal-blocker.json")
+        for path in paths
+    )
     result_present = "docs/results/product-v0233-nofault-acceptance.json" in paths
-    manifest_present = "config/product-v0233/repository-state-manifest.json" in paths
-    progress_present = "docs/analysis/product-v0233-progress.json" in paths
+    manifest_present = any(
+        path == "config/product-v0233/repository-state-manifest.json"
+        or path.endswith("/repository-state-manifest.json")
+        for path in paths
+    )
+    progress_present = any(
+        path == "docs/analysis/product-v0233-progress.json"
+        or path.endswith("/progress.json")
+        for path in paths
+    )
     if (
         blocker_present == result_present
         or blocker_present != (kind == "BLOCKER")
@@ -905,11 +1094,14 @@ def _persist_and_apply_terminal_publication(
 
 def _recover_terminal_publication(
     root: Path,
+    *,
+    reservation_path: Path | None = None,
+    private_root: Path | None = None,
 ) -> NoFaultAcceptanceResultV0233 | None:
-    reservation_path = root / _RESERVATION_LOCATOR
+    reservation_path = reservation_path or root / _RESERVATION_LOCATOR
     if not reservation_path.exists():
         return None
-    private_root = root / _PRIVATE_LOCATOR
+    private_root = private_root or root / _PRIVATE_LOCATOR
     intent_path = private_root / "terminal-publication.json"
     if not intent_path.is_file():
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
@@ -1390,17 +1582,241 @@ def _pipeline_public(
     return {**body, "public_projection_sha256": semantic_sha256_v22(body)}
 
 
+def _publish_measured_terminal_v0233(
+    *,
+    root: Path,
+    private_root: Path,
+    public_attempt_locator: str,
+    reservation: FormalExecutionReservationV0233,
+    clone: FreshFormalStateCloneV0233,
+    authority: RuntimeAuthorityProofV0233,
+    restart: BaselineRestartProofV0233,
+    traffic: FormalTrafficResultV0233,
+    fresh_snapshot_proof: FreshRuntimeSnapshotProofV0233,
+    incident_binding: IncidentTrafficBindingV0232,
+    assessment: NoFaultEvidenceAssessmentV0232,
+    pipeline: DiagnosisPipelineAcceptanceV0233,
+    closure: Mapping[str, Any],
+    result: NoFaultAcceptanceResultV0233,
+    handoff: Mapping[str, Any],
+    measured_ledger: FormalAttemptLedgerV0233,
+    new_diagnosis_count: int,
+    recovery_lineage: Mapping[str, Any] | None = None,
+) -> None:
+    if new_diagnosis_count < 1:
+        raise ValueError("Product v0.2.3.3 measured Diagnosis count differs")
+    closure_sha256 = closure.get("closure_sha256")
+    if not isinstance(closure_sha256, str):
+        raise ValueError("Product v0.2.3.3 measured closure differs")
+    public_outputs = (
+        (f"{public_attempt_locator}/runtime-authority.json", authority),
+        (f"{public_attempt_locator}/baseline-restart.json", restart),
+        (f"{public_attempt_locator}/formal-traffic.json", traffic),
+        (
+            f"{public_attempt_locator}/fresh-runtime-snapshot.json",
+            fresh_snapshot_proof,
+        ),
+        (
+            f"{public_attempt_locator}/incident-traffic-binding.json",
+            incident_binding,
+        ),
+        (f"{public_attempt_locator}/evidence-assessment.json", assessment),
+        ("docs/results/product-v0233-nofault-acceptance.json", result),
+    )
+    measured_manifest = _updated_manifest(
+        root,
+        phase=RepositoryPhaseV0233.MEASURED_COMPLETE.value,
+        formal_result_sha256=result.result_sha256,
+        formal_blocker_sha256=None,
+        knowledge_handoff_sha256=handoff["handoff_sha256"],
+        cleanup_proof_sha256=closure_sha256,
+        formal_clone_count=1,
+        formal_execution_count=1,
+        new_incident_count=1,
+        new_diagnosis_count=new_diagnosis_count,
+        measured_result_count=1,
+    )
+    measured_progress = _progress_payload(
+        root,
+        phase="INCREMENT_4_MEASURED_COMPLETE",
+        current_terminal="ECOMSRE_PRODUCT_V0233_NOFAULT_ACCEPTANCE_COMPLETE",
+        measured_terminal=result.measured_terminal,
+        next_gate="ECOMSRE_PRODUCT_V0233_REPOSITORY_ACCEPTANCE_PASS",
+        formal_clone_count=1,
+        formal_execution_count=1,
+        formal_transaction_count=30,
+        new_incident_count=1,
+        new_diagnosis_count=new_diagnosis_count,
+        measured_result_count=1,
+        formal_state_clone_sha256=clone.clone_sha256,
+        runtime_authority_proof_sha256=authority.proof_sha256,
+        baseline_restart_proof_sha256=restart.proof_sha256,
+        formal_traffic_result_sha256=traffic.result_sha256,
+        fresh_runtime_snapshot_sha256=fresh_snapshot_proof.runtime_snapshot_sha256,
+        diagnosis_pipeline_acceptance_sha256=pipeline.acceptance_sha256,
+        nofault_result_sha256=result.result_sha256,
+        knowledge_handoff_sha256=handoff["handoff_sha256"],
+        cleanup_proof_sha256=closure_sha256,
+        repository_state_manifest_sha256=measured_manifest.manifest_sha256,
+    )
+    reasons = "\n".join(f"- {reason}" for reason in result.reasons) or "- None"
+    repair_requirements = handoff.get("repair_requirements")
+    if not isinstance(repair_requirements, (list, tuple)):
+        raise ValueError("Product v0.2.3.3 Knowledge handoff differs")
+    handoff_requirements = (
+        "\n".join(f"- {item}" for item in repair_requirements) or "- None"
+    )
+    diagnosis_summary = (
+        "one ordinary Diagnosis pipeline"
+        if new_diagnosis_count == 1
+        else (
+            f"{new_diagnosis_count} Diagnosis jobs preserving failed recovery "
+            "lineage and one persisted result"
+        )
+    )
+    terminal_artifacts: list[dict[str, Any]] = [
+        {
+            "path": f"{public_attempt_locator}/formal-state-clone.json",
+            "mode": "CREATE_JSON",
+            "payload": clone.model_dump(mode="json"),
+        },
+        {
+            "path": f"{public_attempt_locator}/formal-closure.json",
+            "mode": "CREATE_JSON",
+            "payload": dict(closure),
+        },
+        *(
+            {
+                "path": locator,
+                "mode": "CREATE_JSON",
+                "payload": model.model_dump(mode="json"),
+            }
+            for locator, model in public_outputs
+        ),
+        {
+            "path": f"{public_attempt_locator}/diagnosis-stage-journal.json",
+            "mode": "CREATE_JSON",
+            "payload": _pipeline_public(pipeline),
+        },
+        {
+            "path": f"{public_attempt_locator}/knowledge-loop-handoff.json",
+            "mode": "CREATE_JSON",
+            "payload": dict(handoff),
+        },
+        {
+            "path": "docs/results/product-v0233-nofault-acceptance.md",
+            "mode": "CREATE_TEXT",
+            "payload": (
+                "# Product v0.2.3.3 No-Fault Acceptance\n\n"
+                f"- Measured terminal: `{result.measured_terminal}`\n"
+                f"- Result SHA-256: `{result.result_sha256}`\n"
+                "- Formal traffic: `30 / 30`, failures `0`, retries `0`\n"
+                f"- New Incident / Diagnosis jobs: `1 / {new_diagnosis_count}`\n"
+                "- Persisted Diagnosis results: `1`\n"
+                "- Fault / Knowledge / Agent / Runbook / Provider: `0 / 0 / 0 / 0 / 0`\n"
+                "- Action authority: `NONE`\n"
+                "- Cleanup: `CLEAN`\n\n"
+                "## Reasons\n\n"
+                f"{reasons}\n"
+            ),
+        },
+        {
+            "path": "docs/results/product-v0233-limitations.md",
+            "mode": "CREATE_TEXT",
+            "payload": (
+                "# Product v0.2.3.3 Limitations\n\n"
+                f"Measured terminal: `{result.measured_terminal}`.\n\n"
+                f"{reasons}\n\n"
+                "This campaign grants no Fault, Knowledge-Loop, Agent, Runbook, or Provider authority.\n"
+            ),
+        },
+        {
+            "path": "docs/results/product-v0233-interview-brief.md",
+            "mode": "CREATE_TEXT",
+            "payload": (
+                "# Product v0.2.3.3 Interview Brief\n\n"
+                "One fresh formal No-Fault campaign used a fresh Product-state clone, "
+                "preserved Runtime authority, 30/30 healthy transactions, one new "
+                f"Incident, and {diagnosis_summary}.\n\n"
+                f"The evidence-bound measured terminal is `{result.measured_terminal}`. "
+                "No fault, remediation, Agent write, Runbook execution, Provider call, "
+                "or Knowledge-Loop campaign was authorized or executed.\n"
+            ),
+        },
+        {
+            "path": "docs/analysis/product-v0233-knowledge-loop-handoff.md",
+            "mode": "CREATE_TEXT",
+            "payload": (
+                "# Product v0.2.3.3 Knowledge-Loop Handoff\n\n"
+                f"- Terminal: `{handoff['terminal']}`\n"
+                f"- Measured terminal: `{result.measured_terminal}`\n"
+                "- Knowledge-Loop campaigns: `0`\n"
+                "- Action authority: `NONE`\n\n"
+                "## Repair requirements\n\n"
+                f"{handoff_requirements}\n"
+            ),
+        },
+        {
+            "path": "config/product-v0233/repository-state-manifest.json",
+            "mode": "REPLACE_JSON",
+            "payload": measured_manifest.model_dump(mode="json"),
+        },
+        {
+            "path": "docs/analysis/product-v0233-progress.json",
+            "mode": "REPLACE_JSON",
+            "payload": measured_progress,
+        },
+        {
+            "path": "config/product-v0233/formal-attempt-ledger.json",
+            "mode": "REPLACE_JSON",
+            "payload": measured_ledger.model_dump(mode="json"),
+        },
+    ]
+    if recovery_lineage is not None:
+        terminal_artifacts.insert(
+            2,
+            {
+                "path": (
+                    f"{public_attempt_locator}/diagnosis-recovery-lineage.json"
+                ),
+                "mode": "CREATE_JSON",
+                "payload": dict(recovery_lineage),
+            },
+        )
+    publication = _terminal_publication_bundle(
+        reservation=reservation,
+        kind="MEASURED",
+        terminal=result.measured_terminal,
+        artifacts=terminal_artifacts,
+    )
+    _persist_and_apply_terminal_publication(
+        root=root,
+        private_root=private_root,
+        bundle=publication,
+    )
+
+
 def _run_formal_nofault_once_v0233(
     *,
     project_root: Path,
+    attempt_id: str = "attempt-2",
+    semantic_generation: int = 2,
 ) -> NoFaultAcceptanceResultV0233:
     root = Path(project_root).resolve(strict=True)
-    admission = strict_formal_admission_v0233(root)
+    attempt_locator = _attempt_private_locator_v0233(attempt_id)
+    attempt_root = root / attempt_locator
+    public_attempt_locator = _attempt_public_locator_v0233(attempt_id)
+    product_locator = _attempt_product_locator_v0233(attempt_id)
+    product_root = root / product_locator
+    private_root = attempt_root / "execution"
+    reservation_path = attempt_root / "reservation.json"
+    admission = strict_recovery_formal_admission_v0233(
+        root,
+        attempt_id=attempt_id,
+        semantic_generation=semantic_generation,
+    )
     predecessor, source_root, source_before = _selected_source(root)
     _require_preserved_runtime_root_v02321(predecessor, source_root)
-    clone_plan = FormalClonePlanV0233.model_validate_json(
-        (root / "docs/analysis/product-v0233-formal-clone-plan.json").read_bytes()
-    )
     campaign = load_fresh_formal_campaign_v0233(root)
     public_profile = load_fresh_traffic_profile_v0233(root, role="FORMAL")
     formal_profile = public_profile.engine_profile_v0232()
@@ -1455,14 +1871,16 @@ def _run_formal_nofault_once_v0233(
         or audit.baseline_sha256 != freeze.active_baseline_sha256
     ):
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RUNTIME_AUTHORITY")
-    frozen_semantic_surface_before = _frozen_semantic_surface_sha256_v0233(root)
-    product_root = root / clone_plan.destination_locator
+    semantic_surface, operational_surface = _formal_surfaces_v0233(
+        root,
+        semantic_generation=semantic_generation,
+    )
+    frozen_semantic_surface_before = semantic_surface.semantic_surface_sha256
     starting_counts = source_before.source_counts
     starting_observed_counts = FormalObservedStateCountsV0233.model_validate(
         starting_counts.model_dump(mode="json")
     )
     source_action_totals = read_formal_diagnosis_action_totals_v0233(source_root)
-    private_root = root / _PRIVATE_LOCATOR
     lifecycle = AuthorityContinuousSandboxLifecycleV0231(
         predecessor_root=predecessor,
         private_root=private_root / "demo",
@@ -1491,6 +1909,7 @@ def _run_formal_nofault_once_v0233(
     restart: BaselineRestartProofV0233 | None = None
     execution: HealthyTrafficExecutionV0232 | None = None
     traffic: FormalTrafficResultV0233 | None = None
+    live_capture_bundle: LiveCaptureBundleV0233 | None = None
     fresh_snapshot_proof: FreshRuntimeSnapshotProofV0233 | None = None
     incident: Any = None
     incident_binding: IncidentTrafficBindingV0232 | None = None
@@ -1513,10 +1932,92 @@ def _run_formal_nofault_once_v0233(
     diagnosis_failed = False
     safe_error_code = "FORMAL_EXECUTION_FAILED"
     action_events: list[FormalActionEventV0233] = []
+    checkpoint_repository = FormalCheckpointRepositoryV0233(attempt_root)
+    latest_checkpoint: FormalExecutionCheckpointV0233 | None = None
+    checkpoint_outputs: dict[str, str] = {}
+    checkpoint_inputs = {
+        relative: _sha256_file(root / relative)
+        for relative in (
+            "config/product-v0233/campaign.json",
+            "config/product-v0233/source-selection.json",
+            "config/product-v0233/formal-attempt-ledger.json",
+            "docs/analysis/product-v0233-formal-contract-freeze.json",
+            "docs/analysis/product-v0233-traffic-preflight.json",
+        )
+    }
+
+    def capture_checkpoint_artifact(path: Path) -> None:
+        resolved = path.resolve(strict=True)
+        relative = resolved.relative_to(root).as_posix()
+        checkpoint_outputs[relative] = _sha256_file(resolved)
+
+    def append_checkpoint(state: FormalExecutionStateV0233) -> None:
+        nonlocal latest_checkpoint
+        latest_checkpoint = FormalExecutionCheckpointV0233.build(
+            previous=latest_checkpoint,
+            state=state,
+            created_at=datetime.now(UTC),
+            campaign_id=_CAMPAIGN_ID,
+            semantic_generation=semantic_generation,
+            attempt_id=attempt_id,
+            semantic_surface_sha256=semantic_surface.semantic_surface_sha256,
+            operational_surface_sha256=(
+                operational_surface.operational_surface_sha256
+            ),
+            source_selection_sha256=source_before.selection_sha256,
+            formal_clone_sha256=None if clone is None else clone.clone_sha256,
+            input_artifact_sha256s=checkpoint_inputs,
+            output_artifact_sha256s=checkpoint_outputs,
+        )
+        checkpoint_repository.append(latest_checkpoint)
+
+    def build_attempt_ledger(
+        *,
+        disposition: Literal["RECOVERABLE_FAILURE", "MEASURED"],
+        blocker_terminal: str | None,
+        measured_terminal: str | None,
+    ) -> FormalAttemptLedgerV0233:
+        if latest_checkpoint is None:
+            raise ValueError("Product v0.2.3.3 latest checkpoint is absent")
+        evidence = dict(checkpoint_outputs)
+        for checkpoint_path in sorted(checkpoint_repository.root.glob("*.json")):
+            evidence[checkpoint_path.relative_to(root).as_posix()] = _sha256_file(
+                checkpoint_path
+            )
+        current = FormalAttemptLedgerV0233.model_validate_json(
+            (root / "config/product-v0233/formal-attempt-ledger.json").read_bytes()
+        )
+        prior = next(
+            (item for item in current.attempts if item.attempt_id == attempt_id),
+            None,
+        )
+        if prior is not None and prior != current.attempts[-1]:
+            raise ValueError("Product v0.2.3.3 attempt ledger order differs")
+        ordinal = len(current.attempts) if prior is not None else len(current.attempts) + 1
+        record = FormalAttemptRecordV0233.build(
+            attempt_id=attempt_id,
+            ordinal=ordinal,
+            semantic_generation=semantic_generation,
+            disposition=disposition,
+            latest_state=latest_checkpoint.state,
+            latest_checkpoint_sha256=latest_checkpoint.checkpoint_sha256,
+            blocker_terminal=blocker_terminal,
+            measured_terminal=measured_terminal,
+            evidence_sha256_by_path=evidence,
+        )
+        attempts = (
+            (*current.attempts[:-1], record)
+            if prior is not None
+            else (*current.attempts, record)
+        )
+        return FormalAttemptLedgerV0233.build(
+            campaign_id=_CAMPAIGN_ID,
+            attempts=attempts,
+        )
 
     action_events.append("RESERVATION_CONSUMED")
     write_private_json(
-        root / _RESERVATION_LOCATOR,
+        reservation_path,
         reservation.model_dump(mode="json"),
         create_once=True,
     )
@@ -1532,19 +2033,26 @@ def _run_formal_nofault_once_v0233(
             reservation.model_dump(mode="json"),
             create_once=True,
         )
+        for checkpoint_artifact in (
+            reservation_path,
+            private_root / "admission.json",
+            private_root / "reservation.json",
+        ):
+            capture_checkpoint_artifact(checkpoint_artifact)
+        append_checkpoint(FormalExecutionStateV0233.PREPARED)
 
         stage = "CLONE_PENDING"
         action_events.append("FORMAL_CLONE_REQUESTED")
         clone = clone_fresh_formal_state_v0233(
             selection=source_before,
             source_root=source_root,
-            destination_root=root / clone_plan.destination_locator,
-            destination_locator=clone_plan.destination_locator,
+            destination_root=product_root,
+            destination_locator=product_locator,
             owner_counter=_database_owner_count,
         )
         stage = "CLONE_CREATED"
         _write_public_create_once(
-            root / "docs/analysis/product-v0233-formal-state-clone.json",
+            root / public_attempt_locator / "formal-state-clone.json",
             clone.model_dump(mode="json"),
         )
         running_manifest = _updated_manifest(
@@ -1553,8 +2061,7 @@ def _run_formal_nofault_once_v0233(
             formal_clone_count=1,
             formal_execution_count=1,
         )
-        _publish_manifest(root, running_manifest)
-        _update_progress(
+        running_progress = _progress_payload(
             root,
             phase="INCREMENT_4_FORMAL_RUNNING",
             current_terminal="ECOMSRE_PRODUCT_V0233_FORMAL_EXECUTION_ADMITTED",
@@ -1564,6 +2071,22 @@ def _run_formal_nofault_once_v0233(
             formal_state_clone_sha256=clone.clone_sha256,
             repository_state_manifest_sha256=running_manifest.manifest_sha256,
         )
+        write_private_json(
+            private_root / "running-repository-state.json",
+            running_manifest.model_dump(mode="json"),
+            create_once=True,
+        )
+        write_private_json(
+            private_root / "running-progress.json",
+            running_progress,
+            create_once=True,
+        )
+        for checkpoint_artifact in (
+            root / public_attempt_locator / "formal-state-clone.json",
+            private_root / "running-repository-state.json",
+            private_root / "running-progress.json",
+        ):
+            capture_checkpoint_artifact(checkpoint_artifact)
 
         observed_starting_counts = read_fresh_formal_state_counts_v0233(product_root)
         if observed_starting_counts != starting_counts:
@@ -1585,7 +2108,9 @@ def _run_formal_nofault_once_v0233(
         if (
             _database_owner_count(product_root / "product.sqlite3") != 0
             or processes.cleanup_observation().get("verdict") != "CLEAN"
-            or _frozen_semantic_surface_sha256_v0233(root)
+            or _formal_surfaces_v0233(
+                root, semantic_generation=semantic_generation
+            )[0].semantic_surface_sha256
             != frozen_semantic_surface_before
         ):
             raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_PRODUCT_RESTART")
@@ -1648,7 +2173,9 @@ def _run_formal_nofault_once_v0233(
         stage = "RUNTIME_AUTHORITY_VERIFIED"
 
         if (
-            _frozen_semantic_surface_sha256_v0233(root)
+            _formal_surfaces_v0233(
+                root, semantic_generation=semantic_generation
+            )[0].semantic_surface_sha256
             != frozen_semantic_surface_before
         ):
             raise RuntimeError("FROZEN_SEMANTIC_SURFACE_DRIFT")
@@ -1716,6 +2243,12 @@ def _run_formal_nofault_once_v0233(
             create_once=True,
         )
         stage = "BASELINE_RESTART_VERIFIED"
+        for checkpoint_artifact in (
+            private_root / "runtime-authority.json",
+            private_root / "baseline-restart.json",
+        ):
+            capture_checkpoint_artifact(checkpoint_artifact)
+        append_checkpoint(FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY)
 
         episode_started_at = datetime.now(UTC)
         episode_started_monotonic = time.monotonic()
@@ -1732,6 +2265,8 @@ def _run_formal_nofault_once_v0233(
             create_once=True,
         )
         stage = "FORMAL_TRAFFIC_CONSUMED"
+        capture_checkpoint_artifact(private_root / "traffic-consumption.json")
+        append_checkpoint(FormalExecutionStateV0233.FORMAL_TRAFFIC_RUNNING)
         dispatches: list[FormalTrafficDispatchCheckpointV02321] = []
         observations: list[FormalTrafficObservationCheckpointV02321] = []
         transaction_observations: list[Any] = []
@@ -1786,6 +2321,12 @@ def _run_formal_nofault_once_v0233(
             create_once=True,
         )
         stage = "FORMAL_TRAFFIC_PASS"
+        for checkpoint_artifact in (
+            private_root / "traffic-execution.json",
+            private_root / "formal-traffic.json",
+        ):
+            capture_checkpoint_artifact(checkpoint_artifact)
+        append_checkpoint(FormalExecutionStateV0233.FORMAL_TRAFFIC_PASS)
 
         checkout_after = _checkout_runtime(backend, runtime_request)
         if checkout_after != ("RUNNING", True, 0):
@@ -1806,6 +2347,71 @@ def _run_formal_nofault_once_v0233(
             or fresh_snapshot.observed_at < traffic.episode_started_at
         ):
             raise RuntimeError("FRESH_RUNTIME_SNAPSHOT_DRIFT")
+        write_private_json(
+            private_root / "fresh-runtime-snapshot-raw.json",
+            fresh_snapshot.model_dump(mode="json"),
+            create_once=True,
+        )
+        queue_after_capture = verify_queue_default_v021(
+            lifecycle.flag_file,
+            expected_default_value=formal_profile.queue_fault_flag,
+            expected_sha256=queue_before_sha256,
+        )
+        queue_after_sha256 = queue_after_capture.after_sha256
+        outer_baseline_after = lifecycle.read_baseline_sha256()
+        if (
+            queue_after_sha256 != queue_before_sha256
+            or outer_baseline_after != outer_baseline_before
+        ):
+            raise RuntimeError("LIVE_CAPTURE_OUTER_STATE_DRIFT")
+        assert clone is not None
+        assert authority is not None
+        assert restart is not None
+        assert execution is not None
+        assert queue_before_sha256 is not None
+        assert queue_after_sha256 is not None
+        assert outer_baseline_before is not None
+        assert outer_baseline_after is not None
+        live_capture_bundle = LiveCaptureBundleV0233.build(
+            campaign_id=_CAMPAIGN_ID,
+            semantic_generation=semantic_generation,
+            attempt_id=attempt_id,
+            formal_clone_sha256=clone.clone_sha256,
+            source_selection_sha256=source_before.selection_sha256,
+            runtime_authority_proof_sha256=authority.proof_sha256,
+            baseline_restart_proof_sha256=restart.proof_sha256,
+            traffic_contract_sha256=contract.contract_sha256,
+            formal_profile_sha256=public_profile.profile_sha256,
+            formal_traffic_result_sha256=traffic.result_sha256,
+            traffic_execution_sha256=execution.execution_sha256,
+            episode_started_at=traffic.episode_started_at,
+            episode_ended_at=traffic.episode_ended_at,
+            fresh_runtime_snapshot_raw=fresh_snapshot.model_dump(mode="json"),
+            runtime_connector_binding_sha256=(
+                preserved_authority.connector_binding_sha256
+            ),
+            queue_before_sha256=queue_before_sha256,
+            queue_after_sha256=queue_after_sha256,
+            outer_baseline_before_sha256=outer_baseline_before,
+            outer_baseline_after_sha256=outer_baseline_after,
+            active_profile_sha256=audit.active_opensearch_profile_sha256,
+            active_baseline_id=audit.baseline_id,
+            active_baseline_sha256=audit.baseline_sha256,
+            service_identity_sha256=identity.identity_sha256,
+            capability_sha256=capability.capability_sha256,
+            semantic_surface_sha256=semantic_surface.semantic_surface_sha256,
+        )
+        write_private_json(
+            private_root / "live-capture-bundle.json",
+            live_capture_bundle.model_dump(mode="json"),
+            create_once=True,
+        )
+        for checkpoint_artifact in (
+            private_root / "fresh-runtime-snapshot-raw.json",
+            private_root / "live-capture-bundle.json",
+        ):
+            capture_checkpoint_artifact(checkpoint_artifact)
+        append_checkpoint(FormalExecutionStateV0233.LIVE_CAPTURE_SEALED)
         fresh_snapshot_proof = FreshRuntimeSnapshotProofV0233.build(
             admission_sha256=admission.admission_sha256,
             formal_traffic_result_sha256=traffic.result_sha256,
@@ -1841,7 +2447,8 @@ def _run_formal_nofault_once_v0233(
             new_incident_count=0,
             new_diagnosis_count=0,
         )
-        external_key = f"product-v0233-nofault-{campaign.campaign_sha256[:16]}"
+        assert live_capture_bundle is not None
+        external_key = formal_incident_external_key_v0233(live_capture_bundle)
         action_events.append("INCIDENT_CREATE_REQUESTED")
         incident = _request_or_recover_incident_v02321(
             request=lambda: _request_json(
@@ -1894,18 +2501,35 @@ def _run_formal_nofault_once_v0233(
             phase="POST_INCIDENT_PRE_DIAGNOSIS",
         )
         stage = "INCIDENT_CREATED"
+        for checkpoint_artifact in (
+            private_root / "fresh-runtime-snapshot.json",
+            private_root / "incident.json",
+            private_root / "incident-traffic-binding.json",
+        ):
+            capture_checkpoint_artifact(checkpoint_artifact)
+        append_checkpoint(FormalExecutionStateV0233.INCIDENT_CREATED)
 
         action_events.append("DIAGNOSIS_CREATE_REQUESTED")
-        queued = _request_or_recover_diagnosis_job_v02321(
-            request=lambda: _request_json(
-                processes,
-                "POST",
-                f"/v1/incidents/{incident.incident_id}/diagnosis-jobs",
-                payload=None,
-            ),
-            recover=lambda: _recover_diagnosis_job(
-                product_root,
-                incident_id=incident.incident_id,
+        diagnosis_context = FormalDiagnosisJobContextV0233.build(
+            campaign_id=_CAMPAIGN_ID,
+            semantic_generation=semantic_generation,
+            attempt_id=attempt_id,
+            diagnosis_generation=1,
+            active_profile_sha256=audit.active_opensearch_profile_sha256,
+            semantic_surface_sha256=semantic_surface.semantic_surface_sha256,
+            acquisition_sha256=None,
+        )
+        queued = JobRepositoryV1(
+            SqliteStoreV1(product_root / "product.sqlite3")
+        ).enqueue(
+            ProductJobTypeV1.DIAGNOSIS,
+            {
+                "incident_id": incident.incident_id,
+                "formal_recovery_v0233": diagnosis_context.model_dump(mode="json"),
+            },
+            idempotency_key=(
+                "formal-v0233-acquisition-"
+                f"{live_capture_bundle.live_capture_bundle_sha256[:32]}"
             ),
         )
         write_private_json(
@@ -1925,6 +2549,30 @@ def _run_formal_nofault_once_v0233(
             completed_job.model_dump(mode="json"),
             create_once=True,
         )
+        acquisition_path = (
+            product_root / diagnosis_context.acquisition_checkpoint_locator
+        )
+        if acquisition_path.is_file():
+            acquisition_checkpoint = (
+                DiagnosisAcquisitionCheckpointV0233.model_validate_json(
+                    acquisition_path.read_bytes()
+                )
+            )
+            write_private_json(
+                private_root / "diagnosis-acquisition-checkpoint.json",
+                acquisition_checkpoint.model_dump(mode="json"),
+                create_once=True,
+            )
+            for checkpoint_artifact in (
+                private_root / "diagnosis-job.json",
+                private_root / "diagnosis-job-completion.json",
+                private_root / "diagnosis-acquisition-checkpoint.json",
+            ):
+                capture_checkpoint_artifact(checkpoint_artifact)
+            append_checkpoint(FormalExecutionStateV0233.ACQUISITION_SEALED)
+            append_checkpoint(FormalExecutionStateV0233.DIAGNOSIS_RUNNING)
+        else:
+            raise RuntimeError("DIAGNOSIS_ACQUISITION_CHECKPOINT_MISSING")
         if completed_job.status is ProductJobStatusV1.SUCCEEDED and isinstance(
             completed_job.result, dict
         ):
@@ -1987,6 +2635,17 @@ def _run_formal_nofault_once_v0233(
             ):
                 raise RuntimeError("UNEXPECTED_ACTION_AUTHORITY")
             stage = "DIAGNOSIS_PIPELINE_PASS"
+            for checkpoint_artifact in (
+                private_root / "diagnosis.json",
+                private_root / "evidence-bundle.json",
+                private_root / "evidence-index.json",
+                private_root / "decision-trace.json",
+                private_root / "assessment.json",
+                private_root / "diagnosis-pipeline.json",
+            ):
+                capture_checkpoint_artifact(checkpoint_artifact)
+            append_checkpoint(FormalExecutionStateV0233.DIAGNOSIS_PERSISTED)
+            append_checkpoint(FormalExecutionStateV0233.SCORED)
         else:
             diagnosis_failed = True
             pipeline = _diagnosis_acceptance(
@@ -2058,7 +2717,9 @@ def _run_formal_nofault_once_v0233(
             if live_error is None:
                 live_error = error
         try:
-            frozen_semantic_surface_after = _frozen_semantic_surface_sha256_v0233(root)
+            frozen_semantic_surface_after = _formal_surfaces_v0233(
+                root, semantic_generation=semantic_generation
+            )[0].semantic_surface_sha256
         except BaseException as error:
             if live_error is None:
                 live_error = error
@@ -2140,6 +2801,20 @@ def _run_formal_nofault_once_v0233(
         if not closure_clean and live_error is None:
             live_error = RuntimeError("FORMAL_CLOSURE_NOT_CLEAN")
             safe_error_code = "FORMAL_CLOSURE_NOT_CLEAN"
+    if closure is not None:
+        try:
+            write_private_json(
+                private_root / "formal-closure.json",
+                closure,
+                create_once=True,
+            )
+            capture_checkpoint_artifact(private_root / "formal-closure.json")
+        except BaseException as error:
+            if live_error is None:
+                live_error = error
+                safe_error_code = "FORMAL_CLOSURE_PERSISTENCE_FAILED"
+    if (private_root / "action-journal.json").is_file():
+        capture_checkpoint_artifact(private_root / "action-journal.json")
 
     ending_counts = safety_observation.ending_counts
     new_incident_count = safety_observation.new_incident_count
@@ -2246,6 +2921,45 @@ def _run_formal_nofault_once_v0233(
             stage = "ACCEPTANCE_ARTIFACT_CONSTRUCTION"
             safe_error_code = f"{type(error).__name__}:{stage}"[:160]
     if live_error is not None:
+        try:
+            append_checkpoint(FormalExecutionStateV0233.RECOVERABLE_FAILURE)
+        except BaseException as checkpoint_error:
+            if latest_checkpoint is None:
+                raise RuntimeError(
+                    "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
+                ) from checkpoint_error
+        acquisition_sealed = (
+            private_root / "diagnosis-acquisition-checkpoint.json"
+        ).is_file()
+        if acquisition_sealed and latest_checkpoint is not None:
+            recovery_body = {
+                "schema_version": (
+                    "ecomsre.product.formal-recoverable-failure.v0233"
+                ),
+                "campaign_id": _CAMPAIGN_ID,
+                "attempt_id": attempt_id,
+                "semantic_generation": semantic_generation,
+                "failure_stage": stage,
+                "safe_error_code": safe_error_code,
+                "latest_checkpoint_sha256": latest_checkpoint.checkpoint_sha256,
+                "diagnosis_job_id": None if pipeline is None else pipeline.job_id,
+                "diagnosis_job_status": (
+                    None if pipeline is None else pipeline.job_status
+                ),
+                "cleanup_proof_sha256": closure_sha256,
+                "next_action": "RESUME_FROM_FROZEN_ACQUISITION",
+            }
+            write_private_json(
+                private_root / "recoverable-failure.json",
+                {
+                    **recovery_body,
+                    "failure_sha256": semantic_sha256_v22(recovery_body),
+                },
+                create_once=True,
+            )
+            raise RuntimeError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_REQUIRED"
+            ) from live_error
         terminal = _blocker_terminal(stage, diagnosis_failed=diagnosis_failed)
         blocker = FormalExecutionBlockerV0233.build(
             terminal=terminal,
@@ -2281,7 +2995,7 @@ def _run_formal_nofault_once_v0233(
         if clone is not None:
             terminal_artifacts.append(
                 {
-                    "path": "docs/analysis/product-v0233-formal-state-clone.json",
+                    "path": f"{public_attempt_locator}/formal-state-clone.json",
                     "mode": "CREATE_JSON",
                     "payload": clone.model_dump(mode="json"),
                 }
@@ -2289,14 +3003,14 @@ def _run_formal_nofault_once_v0233(
         if closure is not None:
             terminal_artifacts.append(
                 {
-                    "path": "docs/analysis/product-v0233-formal-closure.json",
+                    "path": f"{public_attempt_locator}/formal-closure.json",
                     "mode": "CREATE_JSON",
                     "payload": closure,
                 }
             )
         terminal_artifacts.append(
             {
-                "path": "docs/analysis/product-v0233-formal-blocker.json",
+                "path": f"{public_attempt_locator}/formal-blocker.json",
                 "mode": "CREATE_JSON",
                 "payload": blocker.model_dump(mode="json"),
             }
@@ -2305,7 +3019,7 @@ def _run_formal_nofault_once_v0233(
             terminal_artifacts.append(
                 {
                     "path": (
-                        "docs/analysis/product-v0233-diagnosis-stage-journal.json"
+                        f"{public_attempt_locator}/diagnosis-stage-journal.json"
                     ),
                     "mode": "CREATE_JSON",
                     "payload": _pipeline_public(pipeline),
@@ -2333,14 +3047,14 @@ def _run_formal_nofault_once_v0233(
             }
             terminal_artifacts.append(
                 {
-                    "path": "docs/analysis/product-v0233-diagnosis-blocker.json",
+                    "path": f"{public_attempt_locator}/diagnosis-blocker.json",
                     "mode": "CREATE_JSON",
                     "payload": diagnosis_blocker,
                 }
             )
             terminal_artifacts.append(
                 {
-                    "path": "docs/analysis/product-v0233-diagnosis-blocker.md",
+                    "path": f"{public_attempt_locator}/diagnosis-blocker.md",
                     "mode": "CREATE_TEXT",
                     "payload": (
                         "# Product v0.2.3.3 Diagnosis Blocker\n\n"
@@ -2384,17 +3098,27 @@ def _run_formal_nofault_once_v0233(
             cleanup_proof_sha256=closure_sha256,
             repository_state_manifest_sha256=blocked_manifest.manifest_sha256,
         )
+        attempt_ledger = build_attempt_ledger(
+            disposition="RECOVERABLE_FAILURE",
+            blocker_terminal=blocker.terminal,
+            measured_terminal=None,
+        )
         terminal_artifacts.extend(
             (
                 {
-                    "path": "config/product-v0233/repository-state-manifest.json",
-                    "mode": "REPLACE_JSON",
+                    "path": f"{public_attempt_locator}/repository-state-manifest.json",
+                    "mode": "CREATE_JSON",
                     "payload": blocked_manifest.model_dump(mode="json"),
                 },
                 {
-                    "path": "docs/analysis/product-v0233-progress.json",
-                    "mode": "REPLACE_JSON",
+                    "path": f"{public_attempt_locator}/progress.json",
+                    "mode": "CREATE_JSON",
                     "payload": blocked_progress,
+                },
+                {
+                    "path": "config/product-v0233/formal-attempt-ledger.json",
+                    "mode": "REPLACE_JSON",
+                    "payload": attempt_ledger.model_dump(mode="json"),
                 },
             )
         )
@@ -2428,19 +3152,26 @@ def _run_formal_nofault_once_v0233(
     assert pipeline is not None
     assert closure is not None
     assert closure_sha256 is not None
+    write_private_json(
+        private_root / "nofault-acceptance-result.json",
+        result.model_dump(mode="json"),
+        create_once=True,
+    )
+    capture_checkpoint_artifact(private_root / "nofault-acceptance-result.json")
+    append_checkpoint(FormalExecutionStateV0233.CLOSED)
     public_outputs = (
-        ("docs/analysis/product-v0233-runtime-authority.json", authority),
-        ("docs/analysis/product-v0233-baseline-restart.json", restart),
-        ("docs/analysis/product-v0233-formal-traffic.json", traffic),
+        (f"{public_attempt_locator}/runtime-authority.json", authority),
+        (f"{public_attempt_locator}/baseline-restart.json", restart),
+        (f"{public_attempt_locator}/formal-traffic.json", traffic),
         (
-            "docs/analysis/product-v0233-fresh-runtime-snapshot.json",
+            f"{public_attempt_locator}/fresh-runtime-snapshot.json",
             fresh_snapshot_proof,
         ),
         (
-            "docs/analysis/product-v0233-incident-traffic-binding.json",
+            f"{public_attempt_locator}/incident-traffic-binding.json",
             incident_binding,
         ),
-        ("docs/analysis/product-v0233-evidence-assessment.json", assessment),
+        (f"{public_attempt_locator}/evidence-assessment.json", assessment),
         ("docs/results/product-v0233-nofault-acceptance.json", result),
     )
     measured_manifest = _updated_manifest(
@@ -2483,14 +3214,19 @@ def _run_formal_nofault_once_v0233(
     handoff_requirements = (
         "\n".join(f"- {item}" for item in handoff["repair_requirements"]) or "- None"
     )
+    measured_ledger = build_attempt_ledger(
+        disposition="MEASURED",
+        blocker_terminal=None,
+        measured_terminal=result.measured_terminal,
+    )
     terminal_artifacts = [
         {
-            "path": "docs/analysis/product-v0233-formal-state-clone.json",
+            "path": f"{public_attempt_locator}/formal-state-clone.json",
             "mode": "CREATE_JSON",
             "payload": clone.model_dump(mode="json"),
         },
         {
-            "path": "docs/analysis/product-v0233-formal-closure.json",
+            "path": f"{public_attempt_locator}/formal-closure.json",
             "mode": "CREATE_JSON",
             "payload": closure,
         },
@@ -2503,12 +3239,12 @@ def _run_formal_nofault_once_v0233(
             for locator, model in public_outputs
         ),
         {
-            "path": "docs/analysis/product-v0233-diagnosis-stage-journal.json",
+            "path": f"{public_attempt_locator}/diagnosis-stage-journal.json",
             "mode": "CREATE_JSON",
             "payload": _pipeline_public(pipeline),
         },
         {
-            "path": "docs/analysis/product-v0233-knowledge-loop-handoff.json",
+            "path": f"{public_attempt_locator}/knowledge-loop-handoff.json",
             "mode": "CREATE_JSON",
             "payload": handoff,
         },
@@ -2574,6 +3310,11 @@ def _run_formal_nofault_once_v0233(
             "mode": "REPLACE_JSON",
             "payload": measured_progress,
         },
+        {
+            "path": "config/product-v0233/formal-attempt-ledger.json",
+            "mode": "REPLACE_JSON",
+            "payload": measured_ledger.model_dump(mode="json"),
+        },
     ]
     publication = _terminal_publication_bundle(
         reservation=reservation,
@@ -2610,30 +3351,47 @@ def _freeze_unbound_reservation_and_raise(
 def run_formal_nofault_v0233(
     *,
     project_root: Path,
+    attempt_id: str = "attempt-2",
+    semantic_generation: int = 2,
 ) -> NoFaultAcceptanceResultV0233:
-    """Run once, or complete only the terminal publication of consumed authority."""
+    """Run a new attempt or recover its terminal publication idempotently."""
 
     root = Path(project_root).resolve(strict=True)
-    reservation_path = root / _RESERVATION_LOCATOR
-    intent_path = root / _PRIVATE_LOCATOR / "terminal-publication.json"
+    attempt_root = root / _attempt_private_locator_v0233(attempt_id)
+    reservation_path = attempt_root / "reservation.json"
+    private_root = attempt_root / "execution"
+    intent_path = private_root / "terminal-publication.json"
     if reservation_path.exists():
         if intent_path.is_file():
-            recovered = _recover_terminal_publication(root)
+            recovered = _recover_terminal_publication(
+                root,
+                reservation_path=reservation_path,
+                private_root=private_root,
+            )
             assert recovered is not None
             return recovered
-        _freeze_unbound_reservation_and_raise(
-            root,
-            trigger=RuntimeError("CONSUMED_RESERVATION_WITHOUT_TERMINAL_INTENT"),
+        raise RuntimeError(
+            "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_REQUIRED"
         )
     try:
-        return _run_formal_nofault_once_v0233(project_root=root)
-    except BaseException as error:
+        return _run_formal_nofault_once_v0233(
+            project_root=root,
+            attempt_id=attempt_id,
+            semantic_generation=semantic_generation,
+        )
+    except BaseException:
+        if intent_path.is_file():
+            recovered = _recover_terminal_publication(
+                root,
+                reservation_path=reservation_path,
+                private_root=private_root,
+            )
+            assert recovered is not None
+            return recovered
         if reservation_path.exists():
-            if intent_path.is_file():
-                recovered = _recover_terminal_publication(root)
-                assert recovered is not None
-                return recovered
-            _freeze_unbound_reservation_and_raise(root, trigger=error)
+            raise RuntimeError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_REQUIRED"
+            )
         raise
 
 
@@ -2644,8 +3402,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         type=Path,
         default=Path(__file__).resolve().parents[2],
     )
+    parser.add_argument("--attempt", default="attempt-2")
+    parser.add_argument("--semantic-generation", type=int, default=2)
     arguments = parser.parse_args(argv)
-    result = run_formal_nofault_v0233(project_root=arguments.project_root)
+    result = run_formal_nofault_v0233(
+        project_root=arguments.project_root,
+        attempt_id=arguments.attempt,
+        semantic_generation=arguments.semantic_generation,
+    )
     print(result.model_dump_json())
     return 0
 
@@ -2657,4 +3421,5 @@ if __name__ == "__main__":
 __all__ = (
     "run_formal_nofault_v0233",
     "strict_formal_admission_v0233",
+    "strict_recovery_formal_admission_v0233",
 )

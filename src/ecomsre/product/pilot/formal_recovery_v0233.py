@@ -195,6 +195,98 @@ class FormalOperationalSurfaceV0233(ProductModelV1):
         )
 
 
+class RecoveryPreExecutionReviewV0233(ProductModelV1):
+    """Tracked review result bound to stable semantic and operational surfaces."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    schema_version: Literal[
+        "ecomsre.product.recovery-pre-execution-review.v0233"
+    ] = "ecomsre.product.recovery-pre-execution-review.v0233"
+    semantic_generation: int = Field(ge=2)
+    semantic_surface_sha256: str = Field(pattern=_SHA256_PATTERN)
+    operational_surface_sha256: str = Field(pattern=_SHA256_PATTERN)
+    verdict: Literal["PASS"] = "PASS"
+    must_fix_count: Literal[0] = 0
+    claim_accuracy: Literal["PASS"] = "PASS"
+    offline_validation: Literal["PASS"] = "PASS"
+    review_sha256: str = Field(pattern=_SHA256_PATTERN)
+
+    @model_validator(mode="after")
+    def require_review_seal(self) -> RecoveryPreExecutionReviewV0233:
+        if self.review_sha256 != semantic_sha256_v22(
+            self.model_dump(mode="json", exclude={"review_sha256"})
+        ):
+            raise ValueError("Product v0.2.3.3 recovery review differs")
+        return self
+
+    @classmethod
+    def build(cls, **payload: Any) -> RecoveryPreExecutionReviewV0233:
+        body = {
+            "schema_version": (
+                "ecomsre.product.recovery-pre-execution-review.v0233"
+            ),
+            **payload,
+            "verdict": "PASS",
+            "must_fix_count": 0,
+            "claim_accuracy": "PASS",
+            "offline_validation": "PASS",
+        }
+        return cls.model_validate(
+            {**body, "review_sha256": semantic_json_sha256_v0233(body)}
+        )
+
+
+class RecoveryExactHeadCiReceiptV0233(ProductModelV1):
+    """Ignored local receipt created only after exact-head CI is green."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    schema_version: Literal[
+        "ecomsre.product.recovery-exact-head-ci-receipt.v0233"
+    ] = "ecomsre.product.recovery-exact-head-ci-receipt.v0233"
+    execution_head: str = Field(pattern=r"^[0-9a-f]{40}$")
+    upstream_ref: str
+    pull_request_number: int = Field(gt=0)
+    checked_at: datetime
+    successful_checks: tuple[str, ...]
+    conclusion: Literal["PASS"] = "PASS"
+    review_sha256: str = Field(pattern=_SHA256_PATTERN)
+    receipt_sha256: str = Field(pattern=_SHA256_PATTERN)
+
+    @model_validator(mode="after")
+    def require_exact_head_ci_seal(self) -> RecoveryExactHeadCiReceiptV0233:
+        if (
+            self.checked_at.tzinfo is None
+            or not self.upstream_ref
+            or not self.successful_checks
+            or self.successful_checks
+            != tuple(sorted(set(self.successful_checks)))
+            or self.receipt_sha256
+            != semantic_sha256_v22(
+                self.model_dump(mode="json", exclude={"receipt_sha256"})
+            )
+        ):
+            raise ValueError("Product v0.2.3.3 exact-head CI receipt differs")
+        return self
+
+    @classmethod
+    def build(cls, **payload: Any) -> RecoveryExactHeadCiReceiptV0233:
+        body = canonical_jsonable_v0233(
+            {
+                "schema_version": (
+                    "ecomsre.product.recovery-exact-head-ci-receipt.v0233"
+                ),
+                **payload,
+                "successful_checks": sorted(set(payload["successful_checks"])),
+                "conclusion": "PASS",
+            }
+        )
+        return cls.model_validate(
+            {**body, "receipt_sha256": semantic_json_sha256_v0233(body)}
+        )
+
+
 class LiveCaptureBundleV0233(ProductModelV1):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -870,6 +962,8 @@ __all__ = (
     "FormalOperationalSurfaceV0233",
     "FormalSemanticSurfaceV0233",
     "LiveCaptureBundleV0233",
+    "RecoveryExactHeadCiReceiptV0233",
+    "RecoveryPreExecutionReviewV0233",
     "acquisition_recovery_is_compatible_v0233",
     "build_legacy_attempt1_record_v0233",
     "determine_earliest_safe_resume_state_v0233",

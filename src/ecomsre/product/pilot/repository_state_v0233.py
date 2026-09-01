@@ -104,7 +104,6 @@ class ProductV0233RepositoryStateManifest(ProductModelV1):
                 and self.new_diagnosis_count is not None
                 and self.new_incident_count >= 0
                 and self.new_diagnosis_count >= 0
-                and self.new_diagnosis_count <= self.new_incident_count
                 and self.measured_result_count == 0
             )
         elif self.phase is RepositoryPhaseV0233.FORMAL_BLOCKED:
@@ -135,7 +134,12 @@ class ProductV0233RepositoryStateManifest(ProductModelV1):
                 and self.formal_blocker_sha256 is None
                 and self.knowledge_handoff_sha256 is not None
                 and self.cleanup_proof_sha256 is not None
-                and counters == (1, 1, 1, 1, 1)
+                and self.formal_clone_count == 1
+                and self.formal_execution_count == 1
+                and self.new_incident_count == 1
+                and self.new_diagnosis_count is not None
+                and self.new_diagnosis_count >= 1
+                and self.measured_result_count == 1
             )
         if not valid:
             raise ValueError("Product v0.2.3.3 phase artifact/counter contract differs")

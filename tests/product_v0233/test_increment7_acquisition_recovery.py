@@ -21,6 +21,7 @@ from ecomsre.product.jobs.contracts import ProductJobTypeV1
 from ecomsre.product.jobs.repository import JobRepositoryV1
 from ecomsre.product.jobs.worker import run_one_job
 from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
+    FormalDiagnosisRecoverySubmissionV0233,
     FormalDiagnosisJobContextV0233,
     build_diagnosis_acquisition_checkpoint_v0233,
     final_diagnosis_idempotency_key_v0233,
@@ -31,6 +32,8 @@ from ecomsre.product.pilot.formal_recovery_v0233 import (
 )
 from ecomsre.product.settings import ProductSettingsV1
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
+from ecomsre_live_sandbox.contracts import write_private_json
+from scripts.product_v0233 import resume_formal_nofault as resume_command
 
 
 def _sha(character: str) -> str:
@@ -164,6 +167,93 @@ def test_acquisition_checkpoint_round_trips_exact_frozen_inputs() -> None:
         incident_sha256=checkpoint.incident_sha256,
         acquisition_sha256=checkpoint.acquisition_sha256,
     ).startswith("formal-v0233-diagnosis-")
+
+
+def test_recovery_submission_reuses_same_incident_and_frozen_acquisition() -> None:
+    started = datetime(2026, 9, 1, 2, 0, tzinfo=UTC)
+    original_context = FormalDiagnosisJobContextV0233.build(
+        campaign_id="product-v0233-fresh-formal-nofault",
+        semantic_generation=2,
+        attempt_id="attempt-2",
+        diagnosis_generation=1,
+        active_profile_sha256=_sha("4"),
+        semantic_surface_sha256=_sha("5"),
+        acquisition_sha256=None,
+    )
+    checkpoint = build_diagnosis_acquisition_checkpoint_v0233(
+        context=original_context,
+        acquisition=_acquisition(),
+        incident_id="inc-" + "1" * 24,
+        incident_sha256=_sha("6"),
+        incident_observation_started_at=started,
+        incident_observation_ended_at=started + timedelta(seconds=300),
+        baseline_sha256=_sha("7"),
+        service_identity_sha256=_sha("8"),
+        capability_sha256=_sha("9"),
+    )
+    submission = FormalDiagnosisRecoverySubmissionV0233.build(
+        checkpoint=checkpoint,
+        diagnosis_generation=2,
+        preserved_failed_job_ids=("job-" + "a" * 24,),
+    )
+
+    assert submission.incident_id == checkpoint.incident_id
+    assert submission.context.acquisition_sha256 == checkpoint.acquisition_sha256
+    assert submission.context.diagnosis_generation == 2
+    assert submission.job_payload == {
+        "incident_id": checkpoint.incident_id,
+        "formal_recovery_v0233": submission.context.model_dump(mode="json"),
+    }
+
+
+def test_resume_reuses_unfinished_generation_and_advances_after_failure(
+    tmp_path,
+) -> None:
+    started = datetime(2026, 9, 1, 2, 0, tzinfo=UTC)
+    context = FormalDiagnosisJobContextV0233.build(
+        campaign_id="product-v0233-fresh-formal-nofault",
+        semantic_generation=2,
+        attempt_id="attempt-2",
+        diagnosis_generation=1,
+        active_profile_sha256=_sha("4"),
+        semantic_surface_sha256=_sha("5"),
+        acquisition_sha256=None,
+    )
+    checkpoint = build_diagnosis_acquisition_checkpoint_v0233(
+        context=context,
+        acquisition=_acquisition(),
+        incident_id="inc-" + "1" * 24,
+        incident_sha256=_sha("6"),
+        incident_observation_started_at=started,
+        incident_observation_ended_at=started + timedelta(seconds=300),
+        baseline_sha256=_sha("7"),
+        service_identity_sha256=_sha("8"),
+        capability_sha256=_sha("9"),
+    )
+    recovery_root = tmp_path / "recovery"
+    assert resume_command._recovery_generation_v0233(recovery_root) == (2, None)
+    submission = FormalDiagnosisRecoverySubmissionV0233.build(
+        checkpoint=checkpoint,
+        diagnosis_generation=2,
+        preserved_failed_job_ids=("job-" + "a" * 24,),
+    )
+    generation_root = recovery_root / "diagnosis-generation-0002"
+    write_private_json(
+        generation_root / "submission.json",
+        submission.model_dump(mode="json"),
+        create_once=True,
+    )
+
+    generation, recovered = resume_command._recovery_generation_v0233(recovery_root)
+    assert generation == 2
+    assert recovered == submission
+
+    write_private_json(
+        generation_root / "diagnosis-job-completion.json",
+        {"status": "FAILED"},
+        create_once=True,
+    )
+    assert resume_command._recovery_generation_v0233(recovery_root) == (3, None)
 
 
 def test_running_job_rebinds_to_final_diagnosis_idempotency_once(tmp_path) -> None:

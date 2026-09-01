@@ -70,7 +70,12 @@ EXPECTED_AUTHORITY_V02323 = {
     "knowledge_loop_authority": "NONE",
 }
 PR84_SUCCESSOR_OVERRIDES_V02323 = frozenset(
-    {"scripts/ci/verify_product_v02322_history.py"}
+    {
+        "scripts/ci/verify_product_v02322_history.py",
+        "src/ecomsre/product/jobs/handlers.py",
+        "src/ecomsre/product/jobs/repository.py",
+        "src/ecomsre/product/jobs/worker.py",
+    }
 )
 
 

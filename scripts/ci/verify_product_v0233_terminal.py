@@ -15,10 +15,22 @@ from ecomsre.product.pilot.formal_live_v0233 import (
     FormalClosureProofV0233,
     FormalExecutionBlockerV0233,
     FormalTrafficResultV0233,
+    FreshRuntimeSnapshotProofV0233,
     RuntimeAuthorityProofV0233,
 )
 from ecomsre.product.pilot.fresh_formal_source_v0233 import (
     FreshFormalStateCloneV0233,
+)
+from ecomsre.product.pilot.formal_recovery_v0233 import (
+    FormalAttemptLedgerV0233,
+    build_legacy_attempt1_record_v0233,
+)
+from ecomsre.product.pilot.fresh_formal_acceptance_v0233 import (
+    NoFaultAcceptanceResultV0233,
+)
+from ecomsre.product.pilot.healthy_traffic_v0232 import IncidentTrafficBindingV0232
+from ecomsre.product.pilot.nofault_acceptance_v0232 import (
+    NoFaultEvidenceAssessmentV0232,
 )
 from ecomsre.product.pilot.repository_state_v0233 import (
     ProductV0233RepositoryStateManifest,
@@ -92,8 +104,177 @@ def _verify_required_absences(root: Path, declared: list[object]) -> None:
             )
 
 
+def _verify_measured_terminal(
+    project: Path,
+    ledger: FormalAttemptLedgerV0233,
+) -> dict[str, object]:
+    if (
+        len(ledger.attempts) < 2
+        or ledger.attempts[0] != build_legacy_attempt1_record_v0233(project)
+        or ledger.measured_result_count != 1
+        or ledger.attempts[-1].disposition != "MEASURED"
+    ):
+        raise ValueError("Product v0.2.3.3 recovery attempt ledger differs")
+    attempt = ledger.attempts[-1]
+    attempt_root = project / "docs/analysis/product-v0233-attempts" / attempt.attempt_id
+    result = NoFaultAcceptanceResultV0233.model_validate_json(
+        (project / "docs/results/product-v0233-nofault-acceptance.json").read_bytes()
+    )
+    clone = FreshFormalStateCloneV0233.model_validate_json(
+        (attempt_root / "formal-state-clone.json").read_bytes()
+    )
+    authority = RuntimeAuthorityProofV0233.model_validate_json(
+        (attempt_root / "runtime-authority.json").read_bytes()
+    )
+    restart = BaselineRestartProofV0233.model_validate_json(
+        (attempt_root / "baseline-restart.json").read_bytes()
+    )
+    traffic = FormalTrafficResultV0233.model_validate_json(
+        (attempt_root / "formal-traffic.json").read_bytes()
+    )
+    fresh_snapshot = FreshRuntimeSnapshotProofV0233.model_validate_json(
+        (attempt_root / "fresh-runtime-snapshot.json").read_bytes()
+    )
+    incident_binding = IncidentTrafficBindingV0232.model_validate_json(
+        (attempt_root / "incident-traffic-binding.json").read_bytes()
+    )
+    assessment = NoFaultEvidenceAssessmentV0232.model_validate_json(
+        (attempt_root / "evidence-assessment.json").read_bytes()
+    )
+    closure = FormalClosureProofV0233.model_validate_json(
+        (attempt_root / "formal-closure.json").read_bytes()
+    )
+    lineage_path = attempt_root / "diagnosis-recovery-lineage.json"
+    lineage = _object(lineage_path) if lineage_path.is_file() else None
+    lineage_body = (
+        None
+        if lineage is None
+        else {
+            key: value for key, value in lineage.items() if key != "lineage_sha256"
+        }
+    )
+    pipeline = _object(attempt_root / "diagnosis-stage-journal.json")
+    pipeline_body = {
+        key: value
+        for key, value in pipeline.items()
+        if key != "public_projection_sha256"
+    }
+    handoff = _object(attempt_root / "knowledge-loop-handoff.json")
+    handoff_body = {
+        key: value for key, value in handoff.items() if key != "handoff_sha256"
+    }
+    repository = ProductV0233RepositoryStateManifest.model_validate_json(
+        (project / "config/product-v0233/repository-state-manifest.json").read_bytes()
+    )
+    progress = _object(project / "docs/analysis/product-v0233-progress.json")
+    progress_body = {
+        key: value for key, value in progress.items() if key != "progress_sha256"
+    }
+    failed_jobs = (
+        [] if lineage is None else lineage.get("preserved_failed_job_ids")
+    )
+    failed_job_count = len(failed_jobs) if isinstance(failed_jobs, list) else -1
+    new_diagnosis_count = repository.new_diagnosis_count
+    lineage_exact = (
+        lineage is None
+        and new_diagnosis_count == 1
+        and attempt.latest_state.value == "CLOSED"
+    ) or (
+        isinstance(lineage, dict)
+        and isinstance(lineage_body, dict)
+        and isinstance(failed_jobs, list)
+        and bool(failed_jobs)
+        and len(failed_jobs) == len(set(failed_jobs))
+        and new_diagnosis_count == len(failed_jobs) + 1
+        and lineage.get("attempt_id") == attempt.attempt_id
+        and lineage.get("successful_diagnosis_generation", 0) >= 2
+        and lineage.get("diagnosis_result_sha256")
+        == result.diagnosis_result_sha256
+        and lineage.get("lineage_sha256") == semantic_sha256_v22(lineage_body)
+    )
+    required_public = (
+        "docs/results/product-v0233-nofault-acceptance.md",
+        "docs/results/product-v0233-limitations.md",
+        "docs/results/product-v0233-interview-brief.md",
+        "docs/analysis/product-v0233-knowledge-loop-handoff.md",
+    )
+    if (
+        attempt.measured_terminal != result.measured_terminal
+        or not lineage_exact
+        or pipeline.get("job_status") != "SUCCEEDED"
+        or pipeline.get("stage_journal_terminal") != "JOB_SUCCEEDED"
+        or pipeline.get("journal_tail_sha256") != result.stage_journal_tail_sha256
+        or pipeline.get("public_projection_sha256")
+        != semantic_sha256_v22(pipeline_body)
+        or handoff.get("nofault_result_sha256") != result.result_sha256
+        or handoff.get("measured_terminal") != result.measured_terminal
+        or handoff.get("knowledge_loop_campaigns") != 0
+        or handoff.get("action_authority") != "NONE"
+        or handoff.get("handoff_sha256") != semantic_sha256_v22(handoff_body)
+        or result.formal_clone_sha256 != clone.clone_sha256
+        or result.runtime_authority_proof_sha256 != authority.proof_sha256
+        or result.baseline_restart_proof_sha256 != restart.proof_sha256
+        or result.formal_traffic_execution_sha256
+        != traffic.execution.execution_sha256
+        or result.fresh_runtime_snapshot_sha256
+        != fresh_snapshot.runtime_snapshot_sha256
+        or result.incident_traffic_binding_sha256 != incident_binding.binding_sha256
+        or result.v0232_assessment_sha256 != assessment.result_sha256
+        or result.measured_terminal
+        not in {
+            "ECOMSRE_PRODUCT_V0233_NOFAULT_FULLY_SUPPORTED",
+            "ECOMSRE_PRODUCT_V0233_NOFAULT_CAPABILITY_LIMITED",
+            "ECOMSRE_PRODUCT_V0233_NOFAULT_NOT_SUPPORTED",
+        }
+        or any(result.safety_counters.model_dump(mode="json").values())
+        or result.cleanup_proof_sha256 != closure.closure_sha256
+        or not closure.safety_observation.safe
+        or repository.phase is not RepositoryPhaseV0233.MEASURED_COMPLETE
+        or repository.formal_result_sha256 != result.result_sha256
+        or repository.formal_blocker_sha256 is not None
+        or repository.cleanup_proof_sha256 != closure.closure_sha256
+        or repository.formal_clone_count != 1
+        or repository.formal_execution_count != 1
+        or repository.new_incident_count != 1
+        or new_diagnosis_count is None
+        or new_diagnosis_count < 1
+        or repository.measured_result_count != 1
+        or progress.get("progress_sha256") != semantic_sha256_v22(progress_body)
+        or progress.get("measured_terminal") != result.measured_terminal
+        or progress.get("nofault_result_sha256") != result.result_sha256
+        or progress.get("new_incident_count") != 1
+        or progress.get("new_diagnosis_count") != new_diagnosis_count
+        or progress.get("measured_result_count") != 1
+        or any(
+            (project / relative).is_symlink()
+            or not (project / relative).is_file()
+            for relative in required_public
+        )
+    ):
+        raise ValueError("Product v0.2.3.3 recovered terminal differs")
+    return {
+        "terminal": "ECOMSRE_PRODUCT_V0233_NOFAULT_ACCEPTANCE_COMPLETE",
+        "attempt_id": attempt.attempt_id,
+        "measured_terminal": result.measured_terminal,
+        "formal_clone_count": 1,
+        "formal_execution_count": 1,
+        "formal_transaction_count": traffic.execution.run.successful_transactions,
+        "new_incident_count": 1,
+        "new_diagnosis_count": new_diagnosis_count,
+        "failed_diagnosis_job_count": failed_job_count,
+        "measured_result_count": 1,
+        "action_authority": "NONE",
+        "closure": closure.verdict,
+    }
+
+
 def verify_product_v0233_terminal(root: Path) -> dict[str, object]:
     project = Path(root).resolve(strict=True)
+    ledger = FormalAttemptLedgerV0233.model_validate_json(
+        (project / "config/product-v0233/formal-attempt-ledger.json").read_bytes()
+    )
+    if ledger.measured_result_count == 1:
+        return _verify_measured_terminal(project, ledger)
     manifest_path = (
         project / "docs/analysis/product-v0233-formal-blocker-evidence-manifest.json"
     )

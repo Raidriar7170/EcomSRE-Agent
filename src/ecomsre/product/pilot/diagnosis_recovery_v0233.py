@@ -81,6 +81,94 @@ class FormalDiagnosisJobContextV0233(ProductModelV1):
         )
 
 
+class FormalDiagnosisRecoverySubmissionV0233(ProductModelV1):
+    """Idempotent recovery job bound to one failed lineage and frozen reads."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    schema_version: Literal[
+        "ecomsre.product.formal-diagnosis-recovery-submission.v0233"
+    ] = "ecomsre.product.formal-diagnosis-recovery-submission.v0233"
+    incident_id: str = Field(pattern=r"^inc-[a-zA-Z0-9-]{1,120}$")
+    incident_sha256: str = Field(pattern=_SHA256_PATTERN)
+    context: FormalDiagnosisJobContextV0233
+    idempotency_key: str
+    preserved_failed_job_ids: tuple[str, ...]
+    submission_sha256: str = Field(pattern=_SHA256_PATTERN)
+
+    @property
+    def job_payload(self) -> dict[str, Any]:
+        return {
+            "incident_id": self.incident_id,
+            "formal_recovery_v0233": self.context.model_dump(mode="json"),
+        }
+
+    @model_validator(mode="after")
+    def require_recovery_binding(self) -> FormalDiagnosisRecoverySubmissionV0233:
+        failed = tuple(sorted(set(self.preserved_failed_job_ids)))
+        expected_key = (
+            None
+            if self.context.acquisition_sha256 is None
+            else final_diagnosis_idempotency_key_v0233(
+                context=self.context,
+                incident_sha256=self.incident_sha256,
+                acquisition_sha256=self.context.acquisition_sha256,
+            )
+        )
+        if (
+            self.context.diagnosis_generation < 2
+            or self.context.acquisition_sha256 is None
+            or not failed
+            or failed != self.preserved_failed_job_ids
+            or any(
+                not job_id.startswith("job-") or len(job_id) != 28
+                for job_id in failed
+            )
+            or self.idempotency_key != expected_key
+            or self.submission_sha256
+            != semantic_json_sha256_v0233(
+                self.model_dump(mode="json", exclude={"submission_sha256"})
+            )
+        ):
+            raise ValueError("Product v0.2.3.3 Diagnosis recovery differs")
+        return self
+
+    @classmethod
+    def build(
+        cls,
+        *,
+        checkpoint: DiagnosisAcquisitionCheckpointV0233,
+        diagnosis_generation: int,
+        preserved_failed_job_ids: tuple[str, ...],
+    ) -> FormalDiagnosisRecoverySubmissionV0233:
+        context = FormalDiagnosisJobContextV0233.build(
+            campaign_id=checkpoint.campaign_id,
+            semantic_generation=checkpoint.semantic_generation,
+            attempt_id=checkpoint.attempt_id,
+            diagnosis_generation=diagnosis_generation,
+            active_profile_sha256=checkpoint.active_profile_sha256,
+            semantic_surface_sha256=checkpoint.semantic_surface_sha256,
+            acquisition_sha256=checkpoint.acquisition_sha256,
+        )
+        body = {
+            "schema_version": (
+                "ecomsre.product.formal-diagnosis-recovery-submission.v0233"
+            ),
+            "incident_id": checkpoint.incident_id,
+            "incident_sha256": checkpoint.incident_sha256,
+            "context": context.model_dump(mode="json"),
+            "idempotency_key": final_diagnosis_idempotency_key_v0233(
+                context=context,
+                incident_sha256=checkpoint.incident_sha256,
+                acquisition_sha256=checkpoint.acquisition_sha256,
+            ),
+            "preserved_failed_job_ids": sorted(set(preserved_failed_job_ids)),
+        }
+        return cls.model_validate(
+            {**body, "submission_sha256": semantic_json_sha256_v0233(body)}
+        )
+
+
 def build_diagnosis_acquisition_checkpoint_v0233(
     *,
     context: FormalDiagnosisJobContextV0233,
@@ -258,6 +346,7 @@ def final_diagnosis_idempotency_key_v0233(
 
 __all__ = (
     "FormalDiagnosisJobContextV0233",
+    "FormalDiagnosisRecoverySubmissionV0233",
     "build_diagnosis_acquisition_checkpoint_v0233",
     "diagnosis_checkpoint_locator_v0233",
     "final_diagnosis_idempotency_key_v0233",

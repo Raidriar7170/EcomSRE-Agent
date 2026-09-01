@@ -986,9 +986,11 @@ def test_frozen_semantic_surface_recheck_fails_on_scorer_drift(
         _frozen_semantic_surface_sha256_v0233(ROOT)
 
 
-def test_terminal_publication_intent_recovers_after_injected_write_failure(
+@pytest.mark.parametrize("failure_ordinal", (1, 2, 3, 4))
+def test_terminal_publication_intent_recovers_after_each_injected_write_failure(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    failure_ordinal: int,
 ) -> None:
     reservation = FormalExecutionReservationV0233.build(
         admission=_admission(),
@@ -1017,17 +1019,35 @@ def test_terminal_publication_intent_recovers_after_injected_write_failure(
         ),
     )
     private_root = tmp_path / ".local/product-v0233/formal-execution"
-    original = formal_runner._write_public_create_once
-    failures = 0
+    original_create = formal_runner._write_public_create_once
+    original_replace = formal_runner._replace_public
+    original_private = formal_runner.write_private_json
+    writes = 0
 
-    def fail_once(path: Path, payload: object) -> None:
-        nonlocal failures
-        failures += 1
-        if failures == 1:
+    def fail_at_selected_write(operation, path: Path, payload: object) -> None:
+        nonlocal writes
+        writes += 1
+        if writes == failure_ordinal:
             raise OSError("injected publication failure")
-        original(path, payload)
+        operation(path, payload)
 
-    monkeypatch.setattr(formal_runner, "_write_public_create_once", fail_once)
+    def create(path: Path, payload: object) -> None:
+        fail_at_selected_write(original_create, path, payload)
+
+    def replace(path: Path, payload: object) -> None:
+        fail_at_selected_write(original_replace, path, payload)
+
+    def private(path: Path, payload: object, *, create_once: bool) -> str:
+        nonlocal writes
+        if path.name == "terminal-publication-completion.json":
+            writes += 1
+            if writes == failure_ordinal:
+                raise OSError("injected publication failure")
+        return original_private(path, payload, create_once=create_once)
+
+    monkeypatch.setattr(formal_runner, "_write_public_create_once", create)
+    monkeypatch.setattr(formal_runner, "_replace_public", replace)
+    monkeypatch.setattr(formal_runner, "write_private_json", private)
     with pytest.raises(OSError, match="injected publication failure"):
         _persist_and_apply_terminal_publication(
             root=tmp_path,
@@ -1037,7 +1057,9 @@ def test_terminal_publication_intent_recovers_after_injected_write_failure(
     assert (private_root / "terminal-publication.json").is_file()
     assert not (private_root / "terminal-publication-completion.json").exists()
 
-    monkeypatch.setattr(formal_runner, "_write_public_create_once", original)
+    monkeypatch.setattr(formal_runner, "_write_public_create_once", original_create)
+    monkeypatch.setattr(formal_runner, "_replace_public", original_replace)
+    monkeypatch.setattr(formal_runner, "write_private_json", original_private)
     _persist_and_apply_terminal_publication(
         root=tmp_path,
         private_root=private_root,
@@ -1159,7 +1181,7 @@ def test_consumed_reservation_without_intent_freezes_typed_blocker(
         RuntimeError("injected post-finally construction failure"),
     ),
 )
-def test_public_runner_terminalizes_every_post_reservation_failure(
+def test_public_runner_preserves_attempt_for_resume_after_unpublished_failure(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     injected_error: BaseException,
@@ -1168,24 +1190,19 @@ def test_public_runner_terminalizes_every_post_reservation_failure(
         admission=_admission(),
         reserved_at=datetime.now(UTC),
     )
-    for relative in (
-        "config/product-v0233/repository-state-manifest.json",
-        "docs/analysis/product-v0233-progress.json",
+    def fail_after_reservation(
+        *, project_root: Path, attempt_id: str, semantic_generation: int
     ):
-        target = tmp_path / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes((ROOT / relative).read_bytes())
-
-    def unavailable_source(_root: Path):
-        raise RuntimeError("injected source read failure")
-
-    def fail_after_reservation(*, project_root: Path):
-        reservation_path = project_root / ".local/product-v0233/formal-reservation.json"
+        assert attempt_id == "attempt-2"
+        assert semantic_generation == 2
+        reservation_path = (
+            project_root
+            / ".local/product-v0233/attempts/attempt-2/reservation.json"
+        )
         reservation_path.parent.mkdir(parents=True)
         reservation_path.write_text(reservation.model_dump_json(), encoding="utf-8")
         raise injected_error
 
-    monkeypatch.setattr(formal_runner, "_selected_source", unavailable_source)
     monkeypatch.setattr(
         formal_runner,
         "_run_formal_nofault_once_v0233",
@@ -1193,13 +1210,11 @@ def test_public_runner_terminalizes_every_post_reservation_failure(
     )
     with pytest.raises(
         RuntimeError,
-        match="BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS",
+        match="BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_REQUIRED",
     ):
         formal_runner.run_formal_nofault_v0233(project_root=tmp_path)
 
-    blocker = __import__("json").loads(
-        (tmp_path / "docs/analysis/product-v0233-formal-blocker.json").read_text()
-    )
-    assert blocker["failure_stage"] == "FAIL_CLOSED_TERMINAL_RECOVERY"
-    assert blocker["formal_execution_count"] == 1
-    assert blocker["measured_result_count"] == 0
+    assert (
+        tmp_path / ".local/product-v0233/attempts/attempt-2/reservation.json"
+    ).is_file()
+    assert not (tmp_path / "docs/analysis/product-v0233-formal-blocker.json").exists()

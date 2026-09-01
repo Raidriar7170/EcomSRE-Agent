@@ -212,6 +212,7 @@ class FormalIncidentDiagnosisCardinalityV0233(ProductModelV1):
         "POST_INCIDENT_PRE_DIAGNOSIS",
         "POST_DIAGNOSIS_SUCCEEDED",
         "POST_DIAGNOSIS_FAILED",
+        "POST_DIAGNOSIS_RECOVERED",
     ]
     source_incident_count: int = Field(ge=0)
     source_diagnosis_job_count: int = Field(ge=0)
@@ -255,8 +256,14 @@ class FormalIncidentDiagnosisCardinalityV0233(ProductModelV1):
             "POST_INCIDENT_PRE_DIAGNOSIS": (1, 0, 0, 0, 0, 0, 0),
             "POST_DIAGNOSIS_SUCCEEDED": (1, 1, 1, 1, 0, 0, 0),
             "POST_DIAGNOSIS_FAILED": (1, 1, 0, 0, 0, 0, 0),
-        }[self.phase]
-        if deltas != expected:
+        }.get(self.phase)
+        recovered = (
+            self.phase == "POST_DIAGNOSIS_RECOVERED"
+            and deltas[0] == 1
+            and deltas[1] >= 2
+            and deltas[2:] == (1, 1, 0, 0, 0)
+        )
+        if not recovered and deltas != expected:
             raise ValueError("Product v0.2.3.3 formal cardinality differs")
         body = self.model_dump(mode="json", exclude={"cardinality_sha256"})
         if self.cardinality_sha256 != semantic_sha256_v22(body):
