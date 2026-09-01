@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import shutil
 
 import pytest
 
@@ -39,6 +40,24 @@ EXPECTED_CASES = (
     "11_SOURCE_CLONE_DELTA_VALIDATION",
     "12_REPOSITORY_PHASE_VALIDATION",
 )
+
+
+def _isolated_preflight_root(tmp_path: Path) -> Path:
+    paths = (
+        "config/product-v0233/campaign.json",
+        "config/product-v0233/source-selection.json",
+        "config/product-v0233/traffic/preflight-profile.json",
+        "config/product-v0233/traffic/formal-profile.json",
+        "docs/analysis/product-v0233-predecessor-audit.json",
+        "docs/analysis/product-v0233-clone-contract.json",
+        "docs/analysis/product-v0233-progress.json",
+    )
+    for locator in paths:
+        source = ROOT / locator
+        destination = tmp_path / locator
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+    return tmp_path
 
 
 def _sha(character: str) -> str:
@@ -199,8 +218,10 @@ def test_formal_incident_diagnosis_cardinality_is_delta_bound() -> None:
         )
 
 
-def test_complete_contract_preflight_uses_ordinary_worker_and_all_cases_pass() -> None:
-    report = run_contract_preflight(ROOT)
+def test_complete_contract_preflight_uses_ordinary_worker_and_all_cases_pass(
+    tmp_path: Path,
+) -> None:
+    report = run_contract_preflight(_isolated_preflight_root(tmp_path))
     assert report.terminal == FORMAL_CONTRACT_PREFLIGHT_PASS_V0233
     assert report.case_count == len(EXPECTED_CASES)
     assert report.passed_case_count == len(EXPECTED_CASES)
@@ -220,13 +241,21 @@ def test_complete_contract_preflight_uses_ordinary_worker_and_all_cases_pass() -
     assert report.new_diagnosis_count == 0
 
 
-def test_written_preflight_and_prepared_repository_manifest_are_exact() -> None:
-    report = run_contract_preflight(ROOT)
+def test_written_preflight_and_prepared_repository_manifest_are_exact(
+    tmp_path: Path,
+) -> None:
+    isolated = _isolated_preflight_root(tmp_path)
+    report = run_contract_preflight(isolated)
     written = json.loads(
-        (ROOT / "docs/analysis/product-v0233-formal-contract-preflight.json").read_text()
+        (
+            isolated
+            / "docs/analysis/product-v0233-formal-contract-preflight.json"
+        ).read_text()
     )
     manifest = ProductV0233RepositoryStateManifest.model_validate_json(
-        (ROOT / "config/product-v0233/repository-state-manifest.json").read_bytes()
+        (
+            isolated / "config/product-v0233/repository-state-manifest.json"
+        ).read_bytes()
     )
 
     assert written == report.model_dump(mode="json")
