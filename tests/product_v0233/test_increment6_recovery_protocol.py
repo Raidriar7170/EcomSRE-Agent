@@ -585,6 +585,80 @@ def test_public_checkpoint_verifier_binds_identity_and_monotonic_time() -> None:
         )
 
 
+def test_public_checkpoint_verifier_allows_operational_repair_after_failure() -> None:
+    prepared = _first_checkpoint()
+    failed = FormalExecutionCheckpointV0233.build(
+        previous=prepared,
+        state=FormalExecutionStateV0233.RECOVERABLE_FAILURE,
+        created_at=prepared.created_at + timedelta(seconds=1),
+    )
+    resumed = FormalExecutionCheckpointV0233.build(
+        previous=failed,
+        state=FormalExecutionStateV0233.CLONE_SEALED,
+        operational_surface_sha256=_operational_surface("0").operational_surface_sha256,
+        formal_clone_sha256=_sha("1"),
+        created_at=failed.created_at + timedelta(seconds=1),
+    )
+    payload = run_command._checkpoint_chain_public_v0233(
+        (prepared, failed, resumed)
+    )
+
+    terminal_verifier._verify_checkpoint_chain_v0233(
+        payload,
+        attempt_id=prepared.attempt_id,
+        semantic_generation=prepared.semantic_generation,
+        latest_checkpoint_sha256=resumed.checkpoint_sha256,
+        latest_state=resumed.state.value,
+        campaign_id=prepared.campaign_id,
+        semantic_surface_sha256=prepared.semantic_surface_sha256,
+        operational_surface_sha256=None,
+        source_selection_sha256=prepared.source_selection_sha256,
+    )
+
+
+def test_public_checkpoint_verifier_rejects_unfenced_operational_change() -> None:
+    prepared = _first_checkpoint()
+    changed = FormalExecutionCheckpointV0233.build(
+        previous=prepared,
+        state=FormalExecutionStateV0233.CLONE_SEALED,
+        operational_surface_sha256=_operational_surface("0").operational_surface_sha256,
+        formal_clone_sha256=_sha("1"),
+        created_at=prepared.created_at + timedelta(seconds=1),
+    )
+    payload = run_command._checkpoint_chain_public_v0233((prepared, changed))
+
+    with pytest.raises(ValueError, match="checkpoint chain"):
+        terminal_verifier._verify_checkpoint_chain_v0233(
+            payload,
+            attempt_id=prepared.attempt_id,
+            semantic_generation=prepared.semantic_generation,
+            latest_checkpoint_sha256=changed.checkpoint_sha256,
+            latest_state=changed.state.value,
+            campaign_id=prepared.campaign_id,
+            semantic_surface_sha256=prepared.semantic_surface_sha256,
+            operational_surface_sha256=None,
+            source_selection_sha256=prepared.source_selection_sha256,
+        )
+
+
+def test_public_checkpoint_verifier_retains_initial_operational_binding() -> None:
+    prepared = _first_checkpoint()
+    payload = run_command._checkpoint_chain_public_v0233((prepared,))
+
+    with pytest.raises(ValueError, match="checkpoint chain"):
+        terminal_verifier._verify_checkpoint_chain_v0233(
+            payload,
+            attempt_id=prepared.attempt_id,
+            semantic_generation=prepared.semantic_generation,
+            latest_checkpoint_sha256=prepared.checkpoint_sha256,
+            latest_state=prepared.state.value,
+            campaign_id=prepared.campaign_id,
+            semantic_surface_sha256=prepared.semantic_surface_sha256,
+            operational_surface_sha256=_operational_surface("0").operational_surface_sha256,
+            source_selection_sha256=prepared.source_selection_sha256,
+        )
+
+
 def test_checkpoint_repository_rejects_self_sealed_transition_and_identity_drift(
     tmp_path: Path,
 ) -> None:

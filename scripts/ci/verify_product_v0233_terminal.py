@@ -417,7 +417,7 @@ def _verify_checkpoint_chain_v0233(
     latest_state: str,
     campaign_id: str,
     semantic_surface_sha256: str,
-    operational_surface_sha256: str,
+    operational_surface_sha256: str | None,
     source_selection_sha256: str,
 ) -> None:
     body = {key: value for key, value in payload.items() if key != "chain_sha256"}
@@ -501,6 +501,12 @@ def _verify_checkpoint_chain_v0233(
             != first_checkpoint.input_artifact_sha256s
             or (
                 previous_checkpoint is not None
+                and typed_checkpoint.operational_surface_sha256
+                != previous_checkpoint.operational_surface_sha256
+                and previous_state != "RECOVERABLE_FAILURE"
+            )
+            or (
+                previous_checkpoint is not None
                 and any(
                     typed_checkpoint.output_artifact_sha256s.get(path) != digest
                     for path, digest in (
@@ -530,7 +536,11 @@ def _verify_checkpoint_chain_v0233(
         or first_checkpoint is None
         or first_checkpoint.campaign_id != campaign_id
         or first_checkpoint.semantic_surface_sha256 != semantic_surface_sha256
-        or first_checkpoint.operational_surface_sha256 != operational_surface_sha256
+        or (
+            operational_surface_sha256 is not None
+            and first_checkpoint.operational_surface_sha256
+            != operational_surface_sha256
+        )
         or first_checkpoint.source_selection_sha256 != source_selection_sha256
         or payload.get("chain_sha256") != semantic_sha256_v22(body)
     ):
@@ -1114,7 +1124,7 @@ def _verify_measured_terminal(
         latest_state=attempt.latest_state.value,
         campaign_id=ledger.campaign_id,
         semantic_surface_sha256=attempt_review.semantic_surface_sha256,
-        operational_surface_sha256=attempt_review.operational_surface_sha256,
+        operational_surface_sha256=None,
         source_selection_sha256=selection.selection_sha256,
     )
     lineage_body = {
