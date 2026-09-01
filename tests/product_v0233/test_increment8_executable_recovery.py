@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 from ecomsre.product.jobs.contracts import (
     ProductJobRecordV1,
     ProductJobStatusV1,
@@ -20,9 +21,12 @@ from ecomsre.product.pilot.formal_live_v0233 import (
     FormalSafetyObservationV0233,
 )
 from ecomsre.product.pilot.formal_recovery_v0233 import (
+    FormalAttemptLedgerV0233,
+    FormalAttemptRecordV0233,
     FormalExecutionStateV0233,
 )
 from scripts.product_v0233 import resume_formal_nofault as resume_command
+from scripts.product_v0233 import run_formal_nofault as run_command
 
 
 def _sha(character: str) -> str:
@@ -100,6 +104,108 @@ class _Jobs:
         assert job_type is ProductJobTypeV1.DIAGNOSIS
         self.jobs[queued.job_id] = queued
         return queued
+
+
+def test_process_interruption_at_every_stage_is_classified_from_durable_acquisition() -> (
+    None
+):
+    for stage in FormalExecutionStateV0233:
+        if stage in {
+            FormalExecutionStateV0233.CLOSED,
+            FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
+        }:
+            continue
+        assert run_command._failure_checkpoint_state_v0233(
+            acquisition_sealed=False
+        ) is FormalExecutionStateV0233.NONRECOVERABLE_FAILURE, stage
+        assert run_command._failure_checkpoint_state_v0233(
+            acquisition_sealed=True
+        ) is FormalExecutionStateV0233.RECOVERABLE_FAILURE, stage
+
+
+def test_recovery_starts_next_attempt_only_after_nonrecoverable_terminal_is_sealed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    attempt_id = "attempt-2"
+    terminal = "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
+    checkpoint_sha256 = _sha("2")
+    legacy = FormalAttemptRecordV0233.build(
+        attempt_id="attempt-1",
+        ordinal=1,
+        semantic_generation=1,
+        disposition="LEGACY_BLOCKED",
+        latest_state=FormalExecutionStateV0233.RECOVERABLE_FAILURE,
+        latest_checkpoint_sha256=None,
+        blocker_terminal=terminal,
+        measured_terminal=None,
+        evidence_sha256_by_path={},
+    )
+    retired = FormalAttemptRecordV0233.build(
+        attempt_id=attempt_id,
+        ordinal=2,
+        semantic_generation=2,
+        disposition="NONRECOVERABLE_FAILURE",
+        latest_state=FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
+        latest_checkpoint_sha256=checkpoint_sha256,
+        blocker_terminal=terminal,
+        measured_terminal=None,
+        evidence_sha256_by_path={},
+    )
+    ledger = FormalAttemptLedgerV0233.build(
+        campaign_id="product-v0233-fresh-formal-nofault",
+        attempts=(legacy, retired),
+    )
+    ledger_path = tmp_path / "config/product-v0233/formal-attempt-ledger.json"
+    ledger_path.parent.mkdir(parents=True)
+    ledger_path.write_text(ledger.model_dump_json(), encoding="utf-8")
+    completion_body = {
+        "schema_version": "ecomsre.product.terminal-publication-completion.v0233",
+        "publication_sha256": _sha("3"),
+        "terminal": terminal,
+    }
+    completion_path = (
+        tmp_path
+        / ".local/product-v0233/attempts/attempt-2/execution/"
+        "terminal-publication-completion.json"
+    )
+    completion_path.parent.mkdir(parents=True)
+    completion_path.write_text(
+        json.dumps(
+            {
+                **completion_body,
+                "completion_sha256": semantic_sha256_v22(completion_body),
+            }
+        ),
+        encoding="utf-8",
+    )
+    calls: list[dict[str, object]] = []
+    expected = SimpleNamespace(result_sha256=_sha("4"))
+    monkeypatch.setattr(
+        resume_command,
+        "run_formal_nofault_v0233",
+        lambda **kwargs: (calls.append(kwargs), expected)[1],
+    )
+
+    observed = resume_command._start_successor_after_nonrecoverable_v0233(
+        root=tmp_path,
+        attempt_id=attempt_id,
+        latest=SimpleNamespace(
+            state=FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
+            checkpoint_sha256=checkpoint_sha256,
+            semantic_generation=2,
+        ),
+        trigger=RuntimeError(terminal),
+    )
+
+    assert observed is expected
+    assert calls == [
+        {
+            "project_root": tmp_path,
+            "attempt_id": "attempt-3",
+            "semantic_generation": 2,
+        }
+    ]
 
 
 @pytest.mark.parametrize(

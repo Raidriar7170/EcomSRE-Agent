@@ -99,6 +99,7 @@ from scripts.product_v0233.run_formal_nofault import (
     _knowledge_handoff,
     _publish_measured_terminal_v0233,
     _recover_terminal_publication,
+    run_formal_nofault_v0233,
     _selected_source,
     _sha256_file,
     _safety_observation,
@@ -340,6 +341,63 @@ def _build_measured_ledger_v0233(
     )
 
 
+def _next_attempt_id_v0233(ledger: FormalAttemptLedgerV0233) -> str:
+    expected = tuple(f"attempt-{ordinal}" for ordinal in range(1, len(ledger.attempts) + 1))
+    observed = tuple(item.attempt_id for item in ledger.attempts)
+    if observed != expected or ledger.measured_result_count != 0:
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+    return f"attempt-{len(ledger.attempts) + 1}"
+
+
+def _start_successor_after_nonrecoverable_v0233(
+    *,
+    root: Path,
+    attempt_id: str,
+    latest: FormalExecutionCheckpointV0233,
+    trigger: RuntimeError,
+) -> NoFaultAcceptanceResultV0233:
+    if latest.state is not FormalExecutionStateV0233.NONRECOVERABLE_FAILURE:
+        raise trigger
+    ledger = FormalAttemptLedgerV0233.model_validate_json(
+        (root / "config/product-v0233/formal-attempt-ledger.json").read_bytes()
+    )
+    completion = json.loads(
+        (
+            root
+            / _attempt_private_locator_v0233(attempt_id)
+            / "execution/terminal-publication-completion.json"
+        ).read_text(encoding="utf-8")
+    )
+    current = ledger.attempts[-1]
+    completion_body = (
+        {
+            key: value
+            for key, value in completion.items()
+            if key != "completion_sha256"
+        }
+        if isinstance(completion, dict)
+        else {}
+    )
+    if (
+        current.attempt_id != attempt_id
+        or current.disposition != "NONRECOVERABLE_FAILURE"
+        or current.latest_checkpoint_sha256 != latest.checkpoint_sha256
+        or current.blocker_terminal != str(trigger)
+        or not isinstance(completion, dict)
+        or completion.get("terminal") != current.blocker_terminal
+        or completion.get("completion_sha256")
+        != semantic_sha256_v22(completion_body)
+    ):
+        raise RuntimeError(
+            "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
+        ) from trigger
+    return run_formal_nofault_v0233(
+        project_root=root,
+        attempt_id=_next_attempt_id_v0233(ledger),
+        semantic_generation=latest.semantic_generation,
+    )
+
+
 def resume_formal_nofault_v0233(
     *,
     project_root: Path,
@@ -357,11 +415,19 @@ def resume_formal_nofault_v0233(
         attempt_id=attempt_id,
     )
     if intent_path.is_file():
-        recovered = _recover_terminal_publication(
-            root,
-            reservation_path=reservation_path,
-            private_root=private_root,
-        )
+        try:
+            recovered = _recover_terminal_publication(
+                root,
+                reservation_path=reservation_path,
+                private_root=private_root,
+            )
+        except RuntimeError as error:
+            return _start_successor_after_nonrecoverable_v0233(
+                root=root,
+                attempt_id=attempt_id,
+                latest=latest,
+                trigger=error,
+            )
         if recovered is None:
             raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
         return recovered

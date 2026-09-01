@@ -381,6 +381,32 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
     assert observed["failed_diagnosis_job_count"] == (1 if recovery_required else 0)
     assert observed["new_diagnosis_count"] == (2 if recovery_required else 1)
 
+    omitted_path, *_remaining_paths = measured.evidence_sha256_by_path
+    incomplete = FormalAttemptRecordV0233.build(
+        **{
+            **measured.model_dump(mode="json", exclude={"record_sha256"}),
+            "evidence_sha256_by_path": {
+                path: digest
+                for path, digest in measured.evidence_sha256_by_path.items()
+                if path != omitted_path
+            },
+        }
+    )
+    incomplete_ledger = FormalAttemptLedgerV0233.build(
+        campaign_id=ledger.campaign_id,
+        attempts=(legacy, incomplete),
+    )
+    _write_json(
+        tmp_path / "config/product-v0233/formal-attempt-ledger.json",
+        incomplete_ledger.model_dump(mode="json"),
+    )
+    with pytest.raises(ValueError, match="recovered terminal"):
+        verifier.verify_product_v0233_terminal(tmp_path)
+    _write_json(
+        tmp_path / "config/product-v0233/formal-attempt-ledger.json",
+        ledger.model_dump(mode="json"),
+    )
+
     lineage["successful_job_id"] = "job-" + "9" * 24
     _write_json(attempt_root / "diagnosis-recovery-lineage.json", lineage)
     with pytest.raises(ValueError, match="recovered terminal"):

@@ -1375,6 +1375,18 @@ def _blocker_terminal(stage: str, *, diagnosis_failed: bool) -> str:
     return "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
 
 
+def _failure_checkpoint_state_v0233(
+    *, acquisition_sealed: bool
+) -> FormalExecutionStateV0233:
+    """Classify interrupted work from durable bytes, not transient stage labels."""
+
+    return (
+        FormalExecutionStateV0233.RECOVERABLE_FAILURE
+        if acquisition_sealed
+        else FormalExecutionStateV0233.NONRECOVERABLE_FAILURE
+    )
+
+
 def _terminalize_consumed_reservation_v0233(
     root: Path,
     *,
@@ -3148,9 +3160,9 @@ def _run_formal_nofault_once_v0233(
         ).is_file()
         try:
             append_checkpoint(
-                FormalExecutionStateV0233.RECOVERABLE_FAILURE
-                if acquisition_sealed
-                else FormalExecutionStateV0233.NONRECOVERABLE_FAILURE
+                _failure_checkpoint_state_v0233(
+                    acquisition_sealed=acquisition_sealed
+                )
             )
         except BaseException as checkpoint_error:
             if latest_checkpoint is None:
