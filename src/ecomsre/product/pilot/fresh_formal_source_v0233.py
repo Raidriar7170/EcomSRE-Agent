@@ -37,14 +37,10 @@ from ecomsre.product.storage.sqlite_store import SqliteStoreV1
 
 HISTORY_AND_HANDOFF_PASS_V0233: Literal[
     "ECOMSRE_PRODUCT_V0233_HISTORY_AND_HANDOFF_PASS"
-] = (
-    "ECOMSRE_PRODUCT_V0233_HISTORY_AND_HANDOFF_PASS"
-)
+] = "ECOMSRE_PRODUCT_V0233_HISTORY_AND_HANDOFF_PASS"
 SOURCE_AND_CLONE_CONTRACT_PASS_V0233: Literal[
     "ECOMSRE_PRODUCT_V0233_SOURCE_AND_CLONE_CONTRACT_PASS"
-] = (
-    "ECOMSRE_PRODUCT_V0233_SOURCE_AND_CLONE_CONTRACT_PASS"
-)
+] = "ECOMSRE_PRODUCT_V0233_SOURCE_AND_CLONE_CONTRACT_PASS"
 PRIVATE_PRODUCT_STATE_BLOCKER_V0233 = (
     "BLOCKED_ECOMSRE_PRODUCT_V0233_PRIVATE_PRODUCT_STATE"
 )
@@ -173,12 +169,12 @@ class FreshFormalSourceCandidateV0233(ProductModelV1):
 class FreshFormalSourceSelectionV0233(ProductModelV1):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.fresh-formal-source-selection.v0233"] = (
         "ecomsre.product.fresh-formal-source-selection.v0233"
-    ] = "ecomsre.product.fresh-formal-source-selection.v0233"
-    terminal: Literal[
-        "ECOMSRE_PRODUCT_V0233_SOURCE_AND_CLONE_CONTRACT_PASS"
-    ] = SOURCE_AND_CLONE_CONTRACT_PASS_V0233
+    )
+    terminal: Literal["ECOMSRE_PRODUCT_V0233_SOURCE_AND_CLONE_CONTRACT_PASS"] = (
+        SOURCE_AND_CLONE_CONTRACT_PASS_V0233
+    )
     source_kind: FreshFormalSourceKindV0233
     source_locator: str
     source_schema_version: Literal[7, 8]
@@ -217,12 +213,12 @@ class FreshFormalSourceSelectionV0233(ProductModelV1):
 class FreshFormalStateCloneV0233(ProductModelV1):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal[
+    schema_version: Literal["ecomsre.product.fresh-formal-state-clone.v0233"] = (
         "ecomsre.product.fresh-formal-state-clone.v0233"
-    ] = "ecomsre.product.fresh-formal-state-clone.v0233"
-    terminal: Literal[
-        "ECOMSRE_PRODUCT_V0233_SOURCE_AND_CLONE_CONTRACT_PASS"
-    ] = SOURCE_AND_CLONE_CONTRACT_PASS_V0233
+    )
+    terminal: Literal["ECOMSRE_PRODUCT_V0233_SOURCE_AND_CLONE_CONTRACT_PASS"] = (
+        SOURCE_AND_CLONE_CONTRACT_PASS_V0233
+    )
     source_selection_sha256: str = Field(pattern=_SHA256_PATTERN)
     destination_locator: str
     pre_migration_schema_version: Literal[7, 8]
@@ -230,12 +226,8 @@ class FreshFormalStateCloneV0233(ProductModelV1):
     source_counts: FreshFormalStateCountsV0233
     starting_counts: FreshFormalStateCountsV0233
     source_database_logical_sha256: str = Field(pattern=_SHA256_PATTERN)
-    clone_database_logical_sha256_before_migration: str = Field(
-        pattern=_SHA256_PATTERN
-    )
-    clone_database_logical_sha256_after_migration: str = Field(
-        pattern=_SHA256_PATTERN
-    )
+    clone_database_logical_sha256_before_migration: str = Field(pattern=_SHA256_PATTERN)
+    clone_database_logical_sha256_after_migration: str = Field(pattern=_SHA256_PATTERN)
     object_inventory_sha256: str = Field(pattern=_SHA256_PATTERN)
     runtime_inventory_sha256: str = Field(pattern=_SHA256_PATTERN)
     active_environment_id: str
@@ -299,7 +291,7 @@ def _count(connection: sqlite3.Connection, table: str) -> int:
     return int(connection.execute(f"SELECT COUNT(*) FROM {quoted}").fetchone()[0])
 
 
-def _state_counts(connection: sqlite3.Connection) -> FreshFormalStateCountsV0233:
+def _raw_state_counts(connection: sqlite3.Connection) -> dict[str, int]:
     jobs = {
         (str(row[0]), str(row[1])): int(row[2])
         for row in connection.execute(
@@ -323,46 +315,128 @@ def _state_counts(connection: sqlite3.Connection) -> FreshFormalStateCountsV0233
         "promotion_records",
         "revocation_records",
     )
+    return {
+        "baseline_count": _count(connection, "baseline_versions"),
+        "active_baseline_count": int(
+            connection.execute(
+                "SELECT COUNT(*) FROM baseline_versions WHERE active = 1"
+            ).fetchone()[0]
+        ),
+        "baseline_job_count": sum(
+            count for (kind, _status), count in jobs.items() if kind == "BASELINE_BUILD"
+        ),
+        "verify_job_count": sum(
+            count
+            for (kind, _status), count in jobs.items()
+            if kind == "ENVIRONMENT_VERIFY"
+        ),
+        "diagnosis_job_count": sum(
+            count for (kind, _status), count in jobs.items() if kind == "DIAGNOSIS"
+        ),
+        "incident_count": _count(connection, "incidents"),
+        "diagnosis_count": _count(connection, "diagnosis_results"),
+        "evidence_object_count": _count(connection, "evidence_objects"),
+        "diagnosis_evidence_index_count": _count(
+            connection, "diagnosis_evidence_indexes"
+        ),
+        "diagnosis_stage_event_count": _count(
+            connection, "diagnosis_stage_events_v02322"
+        ),
+        "fault_family_count": _count(connection, "fault_families"),
+        "knowledge_artifact_count": sum(
+            _count(connection, table) for table in knowledge_tables
+        ),
+        "pending_job_count": by_status.get("PENDING", 0),
+        "running_job_count": by_status.get("RUNNING", 0),
+        "failed_job_count": by_status.get("FAILED", 0),
+    }
+
+
+def _state_counts(connection: sqlite3.Connection) -> FreshFormalStateCountsV0233:
     try:
-        return FreshFormalStateCountsV0233(
-            baseline_count=_count(connection, "baseline_versions"),
-            active_baseline_count=int(
-                connection.execute(
-                    "SELECT COUNT(*) FROM baseline_versions WHERE active = 1"
-                ).fetchone()[0]
-            ),
-            baseline_job_count=sum(
-                count for (kind, _status), count in jobs.items() if kind == "BASELINE_BUILD"
-            ),
-            verify_job_count=sum(
-                count
-                for (kind, _status), count in jobs.items()
-                if kind == "ENVIRONMENT_VERIFY"
-            ),
-            diagnosis_job_count=sum(
-                count for (kind, _status), count in jobs.items() if kind == "DIAGNOSIS"
-            ),
-            incident_count=_count(connection, "incidents"),
-            diagnosis_count=_count(connection, "diagnosis_results"),
-            evidence_object_count=_count(connection, "evidence_objects"),
-            diagnosis_evidence_index_count=_count(
-                connection, "diagnosis_evidence_indexes"
-            ),
-            diagnosis_stage_event_count=_count(
-                connection, "diagnosis_stage_events_v02322"
-            ),
-            fault_family_count=_count(connection, "fault_families"),
-            knowledge_artifact_count=sum(
-                _count(connection, table) for table in knowledge_tables
-            ),
-            pending_job_count=by_status.get("PENDING", 0),
-            running_job_count=by_status.get("RUNNING", 0),
-            failed_job_count=by_status.get("FAILED", 0),
-        )
+        return FreshFormalStateCountsV0233.model_validate(_raw_state_counts(connection))
     except ValueError as error:
         raise FreshFormalSourceSelectionErrorV0233(
             "Product v0.2.3.3 source counts differ"
         ) from error
+
+
+def read_fresh_formal_state_counts_v0233(
+    product_root: Path,
+) -> FreshFormalStateCountsV0233:
+    """Read current formal-clone cardinalities without applying migrations."""
+
+    root = Path(product_root).expanduser().resolve(strict=True)
+    try:
+        with _read_only_connection(root / "product.sqlite3") as connection:
+            return _state_counts(connection)
+    except (OSError, sqlite3.Error, ValueError) as error:
+        raise FreshFormalStateCloneErrorV0233(STATE_CLONE_BLOCKER_V0233) from error
+
+
+def read_raw_formal_state_counts_v0233(product_root: Path) -> dict[str, int]:
+    """Read exact poststate counts without applying source-admission invariants."""
+
+    root = Path(product_root).expanduser().resolve(strict=True)
+    try:
+        with _read_only_connection(root / "product.sqlite3") as connection:
+            return _raw_state_counts(connection)
+    except (OSError, sqlite3.Error, ValueError) as error:
+        raise FreshFormalStateCloneErrorV0233(STATE_CLONE_BLOCKER_V0233) from error
+
+
+def read_formal_active_binding_v0233(product_root: Path) -> dict[str, str]:
+    """Read the clone's active environment/Baseline/Profile without mutation."""
+
+    root = Path(product_root).expanduser().resolve(strict=True)
+    try:
+        with _read_only_connection(root / "product.sqlite3") as connection:
+            environment_id, baseline_id, baseline_sha256, profile_sha256 = (
+                _active_bindings(connection)
+            )
+        return {
+            "environment_id": environment_id,
+            "baseline_id": baseline_id,
+            "baseline_sha256": baseline_sha256,
+            "profile_sha256": profile_sha256,
+        }
+    except (OSError, sqlite3.Error, ValueError) as error:
+        raise FreshFormalStateCloneErrorV0233(STATE_CLONE_BLOCKER_V0233) from error
+
+
+def read_formal_diagnosis_action_totals_v0233(
+    product_root: Path,
+) -> dict[str, int | bool]:
+    """Read persisted Diagnosis action counters through a read-only connection."""
+
+    root = Path(product_root).expanduser().resolve(strict=True)
+    totals: dict[str, int | bool] = {
+        "provider_calls": 0,
+        "agent_writes": 0,
+        "runbook_executions": 0,
+        "action_authority_none": True,
+    }
+    try:
+        with _read_only_connection(root / "product.sqlite3") as connection:
+            rows = connection.execute(
+                "SELECT payload_json FROM diagnosis_results ORDER BY diagnosis_id"
+            ).fetchall()
+        for row in rows:
+            payload = json.loads(str(row[0]))
+            if not isinstance(payload, dict):
+                raise ValueError("Diagnosis result payload differs")
+            for name in ("provider_calls", "agent_writes", "runbook_executions"):
+                value = payload.get(name)
+                if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+                    raise ValueError("Diagnosis action counter differs")
+                totals[name] = int(totals[name]) + value
+            totals["action_authority_none"] = (
+                bool(totals["action_authority_none"])
+                and payload.get("action_authority") == "NONE"
+            )
+        return totals
+    except (OSError, sqlite3.Error, json.JSONDecodeError, ValueError) as error:
+        raise FreshFormalStateCloneErrorV0233(STATE_CLONE_BLOCKER_V0233) from error
 
 
 def _validate_identity_and_capability(
@@ -444,9 +518,7 @@ def _inspect_source(
             environment_id, baseline_id, baseline_sha256, profile_sha256 = (
                 _active_bindings(connection)
             )
-            _validate_identity_and_capability(
-                connection, environment_id=environment_id
-            )
+            _validate_identity_and_capability(connection, environment_id=environment_id)
             object_inventory_sha256 = _object_inventory(root, connection)
         runtime_inventory_sha256 = _runtime_file_inventory(
             root,
@@ -606,8 +678,7 @@ def select_fresh_formal_source_v0233(
     owner_counter: Callable[[Path], int],
 ) -> FreshFormalSourceSelectionV0233:
     if (
-        preferred.source_kind
-        is not FreshFormalSourceKindV0233.PRISTINE_PREFORMAL_BASE
+        preferred.source_kind is not FreshFormalSourceKindV0233.PRISTINE_PREFORMAL_BASE
         or fallback.source_kind
         is not FreshFormalSourceKindV0233.SEALED_SCHEMA8_RECONSTRUCTION
     ):
@@ -796,7 +867,9 @@ def clone_fresh_formal_state_v0233(
         )
     clone_container.parent.mkdir(parents=True, exist_ok=True)
     temporary = Path(
-        tempfile.mkdtemp(prefix=".product-state-clone-v0233-", dir=clone_container.parent)
+        tempfile.mkdtemp(
+            prefix=".product-state-clone-v0233-", dir=clone_container.parent
+        )
     )
     clone_container.mkdir(mode=0o700)
     completed = False
@@ -826,8 +899,7 @@ def clone_fresh_formal_state_v0233(
         if (
             after.schema_version != 9
             or after.counts != selection.source_counts
-            or after.object_inventory_sha256
-            != selection.source_object_inventory_sha256
+            or after.object_inventory_sha256 != selection.source_object_inventory_sha256
             or after.runtime_inventory_sha256
             != selection.source_runtime_inventory_sha256
             or after.environment_id != selection.active_environment_id
@@ -903,5 +975,9 @@ __all__ = (
     "admit_fresh_formal_source_v0233",
     "clone_fresh_formal_state_v0233",
     "configured_source_candidates_v0233",
+    "read_fresh_formal_state_counts_v0233",
+    "read_formal_active_binding_v0233",
+    "read_formal_diagnosis_action_totals_v0233",
+    "read_raw_formal_state_counts_v0233",
     "select_fresh_formal_source_v0233",
 )

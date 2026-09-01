@@ -46,14 +46,12 @@ class ProductV0233RepositoryStateManifest(ProductModelV1):
     )
     formal_result_sha256: str | None = Field(default=None, pattern=_SHA256_PATTERN)
     formal_blocker_sha256: str | None = Field(default=None, pattern=_SHA256_PATTERN)
-    knowledge_handoff_sha256: str | None = Field(
-        default=None, pattern=_SHA256_PATTERN
-    )
+    knowledge_handoff_sha256: str | None = Field(default=None, pattern=_SHA256_PATTERN)
     cleanup_proof_sha256: str | None = Field(default=None, pattern=_SHA256_PATTERN)
     formal_clone_count: int = Field(ge=0, le=1)
     formal_execution_count: int = Field(ge=0, le=1)
-    new_incident_count: int = Field(ge=0, le=1)
-    new_diagnosis_count: int = Field(ge=0, le=1)
+    new_incident_count: int | None
+    new_diagnosis_count: int | None
     measured_result_count: int = Field(ge=0, le=1)
     action_authority: Literal["NONE"] = "NONE"
     manifest_sha256: str = Field(pattern=_SHA256_PATTERN)
@@ -102,6 +100,10 @@ class ProductV0233RepositoryStateManifest(ProductModelV1):
                 and self.cleanup_proof_sha256 is None
                 and self.formal_clone_count == 1
                 and self.formal_execution_count == 1
+                and self.new_incident_count is not None
+                and self.new_diagnosis_count is not None
+                and self.new_incident_count >= 0
+                and self.new_diagnosis_count >= 0
                 and self.new_diagnosis_count <= self.new_incident_count
                 and self.measured_result_count == 0
             )
@@ -111,9 +113,19 @@ class ProductV0233RepositoryStateManifest(ProductModelV1):
                 and self.formal_result_sha256 is None
                 and self.formal_blocker_sha256 is not None
                 and self.knowledge_handoff_sha256 is None
-                and self.cleanup_proof_sha256 is not None
-                and self.formal_clone_count == 1
-                and self.new_diagnosis_count <= self.new_incident_count
+                and self.formal_execution_count == 1
+                and (
+                    (
+                        self.formal_clone_count == 0
+                        and self.cleanup_proof_sha256 is None
+                        and self.new_incident_count == 0
+                        and self.new_diagnosis_count == 0
+                    )
+                    or (
+                        self.formal_clone_count == 1
+                        and self.cleanup_proof_sha256 is not None
+                    )
+                )
                 and self.measured_result_count == 0
             )
         elif self.phase is RepositoryPhaseV0233.MEASURED_COMPLETE:
