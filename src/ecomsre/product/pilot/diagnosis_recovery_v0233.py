@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Literal
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Literal, Mapping
 
 from pydantic import ConfigDict, Field, model_validator
 
@@ -16,15 +18,36 @@ from ecomsre.product.incidents.evidence_binding_v0232 import (
     CapabilityLimitationCandidateV0232,
 )
 from ecomsre.product.incidents.read_backend import ProductReadAcquisitionV1
-from ecomsre.product.pilot.formal_recovery_v0233 import (
-    DiagnosisAcquisitionCheckpointV0233,
-    formal_diagnosis_idempotency_key_v0233,
+from ecomsre.product.pilot.serialization_v0233 import (
+    canonical_jsonable_v0233,
+    semantic_json_sha256_v0233,
 )
-from ecomsre.product.pilot.serialization_v0233 import semantic_json_sha256_v0233
 
 
 _SHA256_PATTERN = r"^[0-9a-f]{64}$"
 _ATTEMPT_PATTERN = r"^[a-z0-9][a-z0-9-]{0,79}$"
+
+
+def _sorted_sha256_mapping(value: Mapping[str, str]) -> dict[str, str]:
+    normalized = dict(sorted(value.items()))
+    if any(
+        not path
+        or path.startswith("/")
+        or ".." in Path(path).parts
+        or len(digest) != 64
+        for path, digest in normalized.items()
+    ):
+        raise ValueError("Product v0.2.3.3 artifact SHA mapping differs")
+    return normalized
+
+
+def _sorted_coverage_mapping(
+    value: Mapping[str, tuple[str, ...] | list[str]],
+) -> dict[str, tuple[str, ...]]:
+    return {
+        source: tuple(sorted(set(services)))
+        for source, services in sorted(value.items())
+    }
 
 
 def diagnosis_checkpoint_locator_v0233(attempt_id: str) -> str:
@@ -34,6 +57,92 @@ def diagnosis_checkpoint_locator_v0233(attempt_id: str) -> str:
     ):
         raise ValueError("Product v0.2.3.3 attempt ID differs")
     return f"private/formal-v0233/{attempt_id}/diagnosis-acquisition-checkpoint.json"
+
+
+class DiagnosisAcquisitionCheckpointV0233(ProductModelV1):
+    """Complete frozen read acquisition used by fresh and recovery Diagnosis jobs."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    schema_version: Literal[
+        "ecomsre.product.diagnosis-acquisition-checkpoint.v0233"
+    ] = "ecomsre.product.diagnosis-acquisition-checkpoint.v0233"
+    campaign_id: str = Field(pattern=_ATTEMPT_PATTERN)
+    semantic_generation: int = Field(ge=1)
+    attempt_id: str = Field(pattern=_ATTEMPT_PATTERN)
+    incident_id: str = Field(pattern=r"^inc-[a-zA-Z0-9-]{1,120}$")
+    incident_sha256: str = Field(pattern=_SHA256_PATTERN)
+    incident_observation_started_at: datetime
+    incident_observation_ended_at: datetime
+    baseline_sha256: str = Field(pattern=_SHA256_PATTERN)
+    active_profile_sha256: str = Field(pattern=_SHA256_PATTERN)
+    service_identity_sha256: str = Field(pattern=_SHA256_PATTERN)
+    capability_sha256: str = Field(pattern=_SHA256_PATTERN)
+    connector_query_results: tuple[dict[str, Any], ...]
+    connector_provenance_bindings: tuple[dict[str, Any], ...]
+    runtime_snapshot_binding_sha256: str = Field(pattern=_SHA256_PATTERN)
+    source_coverage: dict[str, tuple[str, ...]]
+    capability_limitations: tuple[str, ...]
+    capability_observations: tuple[dict[str, Any], ...]
+    limitation_candidates: tuple[dict[str, Any], ...]
+    read_snapshots: tuple[dict[str, Any], ...]
+    read_snapshot_sha256s: dict[str, str]
+    semantic_surface_sha256: str = Field(pattern=_SHA256_PATTERN)
+    acquisition_sha256: str = Field(pattern=_SHA256_PATTERN)
+
+    @model_validator(mode="after")
+    def require_complete_acquisition(self) -> DiagnosisAcquisitionCheckpointV0233:
+        if (
+            self.incident_observation_started_at.tzinfo is None
+            or self.incident_observation_ended_at.tzinfo is None
+            or self.incident_observation_ended_at
+            < self.incident_observation_started_at
+            or not self.connector_query_results
+            or not self.connector_provenance_bindings
+            or self.source_coverage
+            != _sorted_coverage_mapping(self.source_coverage)
+            or self.capability_limitations
+            != tuple(sorted(set(self.capability_limitations)))
+            or not self.read_snapshots
+            or self.read_snapshot_sha256s
+            != _sorted_sha256_mapping(self.read_snapshot_sha256s)
+            or self.read_snapshot_sha256s
+            != {
+                f"read-snapshot-{ordinal:03d}.json": semantic_json_sha256_v0233(
+                    snapshot
+                )
+                for ordinal, snapshot in enumerate(self.read_snapshots)
+            }
+            or self.acquisition_sha256
+            != semantic_json_sha256_v0233(
+                self.model_dump(mode="json", exclude={"acquisition_sha256"})
+            )
+        ):
+            raise ValueError("Product v0.2.3.3 Diagnosis acquisition differs")
+        return self
+
+    @classmethod
+    def build(cls, **payload: Any) -> DiagnosisAcquisitionCheckpointV0233:
+        body = canonical_jsonable_v0233(
+            {
+                "schema_version": (
+                    "ecomsre.product.diagnosis-acquisition-checkpoint.v0233"
+                ),
+                **payload,
+                "source_coverage": _sorted_coverage_mapping(
+                    payload["source_coverage"]
+                ),
+                "capability_limitations": sorted(
+                    set(payload["capability_limitations"])
+                ),
+                "read_snapshot_sha256s": _sorted_sha256_mapping(
+                    payload["read_snapshot_sha256s"]
+                ),
+            }
+        )
+        return cls.model_validate(
+            {**body, "acquisition_sha256": semantic_json_sha256_v0233(body)}
+        )
 
 
 class FormalDiagnosisJobContextV0233(ProductModelV1):
@@ -330,6 +439,22 @@ def restore_diagnosis_acquisition_v0233(
     return restored
 
 
+def formal_diagnosis_idempotency_key_v0233(
+    *,
+    incident_sha256: str,
+    acquisition_sha256: str,
+    semantic_surface_sha256: str,
+    diagnosis_generation: int,
+) -> str:
+    body = {
+        "incident_sha256": incident_sha256,
+        "acquisition_sha256": acquisition_sha256,
+        "semantic_surface_sha256": semantic_surface_sha256,
+        "diagnosis_generation": diagnosis_generation,
+    }
+    return f"formal-v0233-diagnosis-{semantic_json_sha256_v0233(body)[:32]}"
+
+
 def final_diagnosis_idempotency_key_v0233(
     *,
     context: FormalDiagnosisJobContextV0233,
@@ -345,10 +470,12 @@ def final_diagnosis_idempotency_key_v0233(
 
 
 __all__ = (
+    "DiagnosisAcquisitionCheckpointV0233",
     "FormalDiagnosisJobContextV0233",
     "FormalDiagnosisRecoverySubmissionV0233",
     "build_diagnosis_acquisition_checkpoint_v0233",
     "diagnosis_checkpoint_locator_v0233",
     "final_diagnosis_idempotency_key_v0233",
+    "formal_diagnosis_idempotency_key_v0233",
     "restore_diagnosis_acquisition_v0233",
 )

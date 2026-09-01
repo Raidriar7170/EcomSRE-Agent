@@ -16,6 +16,13 @@ from ecomsre.product.connectors.base import (
     ConnectorWindowV1,
 )
 from ecomsre.product.incidents.read_backend import ProductReadAcquisitionV1
+from ecomsre.product.incidents.diagnosis_pipeline_v02322 import (
+    DiagnosisPipelineStageV02322,
+    DiagnosisPipelineV02322,
+)
+from ecomsre.product.incidents.diagnosis_stage_journal_v02322 import (
+    DiagnosisStageJournalRepositoryV02322,
+)
 from ecomsre.product.errors import ProductError
 from ecomsre.product.jobs.contracts import ProductJobTypeV1
 from ecomsre.product.jobs.repository import JobRepositoryV1
@@ -302,6 +309,126 @@ def test_running_job_rebinds_to_final_diagnosis_idempotency_once(tmp_path) -> No
             "formal-v0233-diagnosis-final",
             now=7.0,
         )
+
+
+def test_only_expired_target_job_can_be_reclaimed_for_failure_sealing(
+    tmp_path,
+) -> None:
+    jobs = JobRepositoryV1(SqliteStoreV1(tmp_path / "product.sqlite3"))
+    queued = jobs.enqueue(
+        ProductJobTypeV1.DIAGNOSIS,
+        {"incident_id": "inc-" + "1" * 24},
+        idempotency_key="formal-v0233-acquisition-first",
+        now=1.0,
+    )
+    claimed = jobs.claim_next("worker-original", lease_seconds=10, now=2.0)
+    assert claimed is not None
+
+    with pytest.raises(ProductError, match="lease"):
+        jobs.reclaim_expired(
+            queued.job_id,
+            expected_attempt_count=claimed.attempt_count,
+            worker_id="worker-recovery",
+            lease_seconds=30,
+            now=11.0,
+        )
+
+    reclaimed = jobs.reclaim_expired(
+        queued.job_id,
+        expected_attempt_count=claimed.attempt_count,
+        worker_id="worker-recovery",
+        lease_seconds=30,
+        now=13.0,
+    )
+    assert reclaimed.job_id == queued.job_id
+    assert reclaimed.claimed_by == "worker-recovery"
+    assert reclaimed.attempt_count == claimed.attempt_count + 1
+    with pytest.raises(ProductError, match="lease"):
+        jobs.fail(
+            queued.job_id,
+            "worker-original",
+            claimed.attempt_count,
+            "FORMAL_WORKER_INTERRUPTED",
+            now=14.0,
+        )
+    assert jobs.fail(
+        queued.job_id,
+        "worker-recovery",
+        reclaimed.attempt_count,
+        "FORMAL_WORKER_INTERRUPTED",
+        now=14.0,
+    ).status.value == "FAILED"
+
+
+def test_interrupted_job_is_terminally_sealed_before_recovery_generation(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    store = SqliteStoreV1(tmp_path / "product.sqlite3")
+    jobs = JobRepositoryV1(store)
+    context = FormalDiagnosisJobContextV0233.build(
+        campaign_id="product-v0233-fresh-formal-nofault",
+        semantic_generation=2,
+        attempt_id="attempt-2",
+        diagnosis_generation=1,
+        active_profile_sha256=_sha("4"),
+        semantic_surface_sha256=_sha("5"),
+        acquisition_sha256=None,
+    )
+    checkpoint = build_diagnosis_acquisition_checkpoint_v0233(
+        context=context,
+        acquisition=_acquisition(),
+        incident_id="inc-" + "1" * 24,
+        incident_sha256=_sha("6"),
+        incident_observation_started_at=datetime(2026, 9, 1, 2, 0, tzinfo=UTC),
+        incident_observation_ended_at=datetime(2026, 9, 1, 2, 5, tzinfo=UTC),
+        baseline_sha256=_sha("7"),
+        service_identity_sha256=_sha("8"),
+        capability_sha256=_sha("9"),
+    )
+    queued = jobs.enqueue(
+        ProductJobTypeV1.DIAGNOSIS,
+        {
+            "incident_id": checkpoint.incident_id,
+            "formal_recovery_v0233": context.model_dump(mode="json"),
+        },
+        idempotency_key="formal-v0233-acquisition-first",
+        now=1.0,
+    )
+    claimed = jobs.claim_next("worker-original", lease_seconds=10, now=2.0)
+    assert claimed is not None
+    pipeline = DiagnosisPipelineV02322(
+        DiagnosisStageJournalRepositoryV02322(store),
+        job_id=queued.job_id,
+        incident_id=checkpoint.incident_id,
+        observed_at=datetime(2026, 9, 1, 2, 0, tzinfo=UTC),
+    )
+    pipeline.run(
+        DiagnosisPipelineStageV02322.JOB_CLAIMED,
+        input_binding_sha256=_sha("a"),
+        operation=lambda: {"attempt_count": 1},
+    )
+    pipeline.run(
+        DiagnosisPipelineStageV02322.READ_ACQUISITION_COMPLETED,
+        input_binding_sha256=_sha("b"),
+        operation=lambda: {"acquisition_sha256": checkpoint.acquisition_sha256},
+    )
+    monkeypatch.setattr(resume_command.time, "time", lambda: 13.0)
+
+    failed = resume_command._seal_interrupted_job_v0233(
+        jobs=jobs,
+        product_root=tmp_path,
+        job=claimed,
+        acquisition=checkpoint,
+        cleanup_clean=True,
+    )
+
+    events = DiagnosisStageJournalRepositoryV02322(store).list_events(queued.job_id)
+    assert failed.status.value == "FAILED"
+    assert failed.safe_error_code == "FORMAL_WORKER_INTERRUPTED"
+    assert events[-1].stage.value == "FAILED"
+    assert events[-1].event_sha256 == failed.journal_tail_sha256
+    assert tuple((tmp_path / "private/diagnosis-failures" / queued.job_id).glob("*.json"))
 
 
 def test_failed_job_preserved_and_recovery_job_uses_exact_acquisition(

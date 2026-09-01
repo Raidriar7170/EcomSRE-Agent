@@ -22,6 +22,7 @@ from ecomsre.product.pilot.fresh_formal_source_v0233 import (
     FreshFormalStateCloneV0233,
 )
 from ecomsre.product.pilot.formal_recovery_v0233 import (
+    DiagnosisAcquisitionCheckpointV0233,
     FormalAttemptLedgerV0233,
     build_legacy_attempt1_record_v0233,
 )
@@ -146,6 +147,14 @@ def _verify_measured_terminal(
     )
     lineage_path = attempt_root / "diagnosis-recovery-lineage.json"
     lineage = _object(lineage_path) if lineage_path.is_file() else None
+    acquisition_path = attempt_root / "diagnosis-acquisition-checkpoint.json"
+    acquisition = (
+        DiagnosisAcquisitionCheckpointV0233.model_validate_json(
+            acquisition_path.read_bytes()
+        )
+        if acquisition_path.is_file()
+        else None
+    )
     lineage_body = (
         None
         if lineage is None
@@ -173,6 +182,10 @@ def _verify_measured_terminal(
     failed_jobs = (
         [] if lineage is None else lineage.get("preserved_failed_job_ids")
     )
+    failed_job_projections = (
+        [] if lineage is None else lineage.get("preserved_failed_jobs")
+    )
+    successful_job = None if lineage is None else lineage.get("successful_job")
     failed_job_count = len(failed_jobs) if isinstance(failed_jobs, list) else -1
     new_diagnosis_count = repository.new_diagnosis_count
     lineage_exact = (
@@ -183,10 +196,47 @@ def _verify_measured_terminal(
         isinstance(lineage, dict)
         and isinstance(lineage_body, dict)
         and isinstance(failed_jobs, list)
+        and isinstance(failed_job_projections, list)
+        and isinstance(successful_job, dict)
         and bool(failed_jobs)
         and len(failed_jobs) == len(set(failed_jobs))
+        and len(failed_job_projections) == len(failed_jobs)
+        and all(
+            isinstance(projection, dict)
+            and projection.get("job_id") == failed_jobs[ordinal]
+            and projection.get("status") == "FAILED"
+            and projection.get("result_sha256") is None
+            and projection.get("projection_sha256")
+            == semantic_sha256_v22(
+                {
+                    key: value
+                    for key, value in projection.items()
+                    if key != "projection_sha256"
+                }
+            )
+            for ordinal, projection in enumerate(failed_job_projections)
+        )
+        and successful_job.get("job_id") == lineage.get("successful_job_id")
+        and successful_job.get("status") == "SUCCEEDED"
+        and successful_job.get("diagnosis_result_sha256")
+        == result.diagnosis_result_sha256
+        and successful_job.get("projection_sha256")
+        == semantic_sha256_v22(
+            {
+                key: value
+                for key, value in successful_job.items()
+                if key != "projection_sha256"
+            }
+        )
         and new_diagnosis_count == len(failed_jobs) + 1
         and lineage.get("attempt_id") == attempt.attempt_id
+        and lineage.get("incident_id") == incident_binding.incident_id
+        and lineage.get("incident_sha256") == result.incident_sha256
+        and acquisition is not None
+        and acquisition.attempt_id == attempt.attempt_id
+        and acquisition.incident_id == incident_binding.incident_id
+        and acquisition.incident_sha256 == result.incident_sha256
+        and acquisition.acquisition_sha256 == lineage.get("acquisition_sha256")
         and lineage.get("successful_diagnosis_generation", 0) >= 2
         and lineage.get("diagnosis_result_sha256")
         == result.diagnosis_result_sha256
@@ -198,8 +248,17 @@ def _verify_measured_terminal(
         "docs/results/product-v0233-interview-brief.md",
         "docs/analysis/product-v0233-knowledge-loop-handoff.md",
     )
+    evidence_exact = bool(attempt.evidence_sha256_by_path) and all(
+        not relative.startswith(("/", ".local/"))
+        and ".." not in Path(relative).parts
+        and not (project / relative).is_symlink()
+        and (project / relative).is_file()
+        and _sha256_file(project / relative) == expected
+        for relative, expected in attempt.evidence_sha256_by_path.items()
+    )
     if (
         attempt.measured_terminal != result.measured_terminal
+        or not evidence_exact
         or not lineage_exact
         or pipeline.get("job_status") != "SUCCEEDED"
         or pipeline.get("stage_journal_terminal") != "JOB_SUCCEEDED"

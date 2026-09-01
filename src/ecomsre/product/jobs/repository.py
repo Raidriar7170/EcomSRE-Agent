@@ -139,6 +139,62 @@ class JobRepositoryV1:
                 raise
         return self.get(job_id)
 
+    def reclaim_expired(
+        self,
+        job_id: str,
+        *,
+        expected_attempt_count: int,
+        worker_id: str,
+        lease_seconds: int,
+        now: float | None = None,
+    ) -> ProductJobRecordV1:
+        """Fence and reclaim one named expired RUNNING job for terminal sealing."""
+
+        if expected_attempt_count < 1 or lease_seconds < 1 or not worker_id:
+            raise ValueError("expired job reclaim input is invalid")
+        timestamp = time.time() if now is None else now
+        lease_expires_at = timestamp + lease_seconds
+        with self.store.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            try:
+                cursor = connection.execute(
+                    """UPDATE diagnosis_jobs
+                       SET claimed_by = ?, lease_expires_at = ?,
+                           attempt_count = attempt_count + 1, updated_at = ?
+                       WHERE job_id = ? AND status = ?
+                         AND attempt_count = ? AND lease_expires_at <= ?""",
+                    (
+                        worker_id,
+                        lease_expires_at,
+                        timestamp,
+                        job_id,
+                        ProductJobStatusV1.RUNNING.value,
+                        expected_attempt_count,
+                        timestamp,
+                    ),
+                )
+                if cursor.rowcount != 1:
+                    raise ProductError(
+                        "JOB_LEASE_ACTIVE",
+                        "The named job lease is active or no longer matches the expected attempt.",
+                        status_code=409,
+                    )
+                self._append_event(
+                    connection,
+                    job_id,
+                    "RECLAIMED_EXPIRED",
+                    {
+                        "worker_id": worker_id,
+                        "previous_attempt_count": expected_attempt_count,
+                    },
+                    timestamp,
+                )
+                connection.execute("COMMIT")
+            except Exception:
+                connection.execute("ROLLBACK")
+                raise
+        return self.get(job_id)
+
     def succeed(
         self,
         job_id: str,

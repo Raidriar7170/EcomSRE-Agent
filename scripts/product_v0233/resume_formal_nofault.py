@@ -7,7 +7,8 @@ import argparse
 from datetime import UTC, datetime
 import json
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+import time
+from typing import Any, Mapping, Sequence, cast
 
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 from ecomsre.product.incidents.contracts import (
@@ -18,6 +19,14 @@ from ecomsre.product.incidents.contracts import (
 from ecomsre.product.incidents.evidence_binding_v0232 import (
     DiagnosisEvidenceIndexV0232,
 )
+from ecomsre.product.incidents.diagnosis_pipeline_v02322 import (
+    DiagnosisPipelineStageV02322,
+    DiagnosisPipelineV02322,
+)
+from ecomsre.product.incidents.diagnosis_stage_journal_v02322 import (
+    DiagnosisStageJournalRepositoryV02322,
+    DiagnosisStageStatusV02322,
+)
 from ecomsre.product.jobs.contracts import (
     ProductJobRecordV1,
     ProductJobStatusV1,
@@ -25,10 +34,12 @@ from ecomsre.product.jobs.contracts import (
 )
 from ecomsre.product.jobs.repository import JobRepositoryV1
 from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
+    FormalDiagnosisJobContextV0233,
     FormalDiagnosisRecoverySubmissionV0233,
 )
 from ecomsre.product.pilot.formal_live_v0233 import (
     BaselineRestartProofV0233,
+    FormalActionEventV0233,
     FormalActionJournalV0233,
     FormalClosureProofV0233,
     FormalExecutionAdmissionV0233,
@@ -46,6 +57,7 @@ from ecomsre.product.pilot.formal_recovery_v0233 import (
     FormalExecutionCheckpointV0233,
     FormalExecutionStateV0233,
     DiagnosisAcquisitionCheckpointV0233,
+    LiveCaptureBundleV0233,
     determine_earliest_safe_resume_state_v0233,
     verify_checkpoint_artifacts_v0233,
 )
@@ -88,6 +100,7 @@ from scripts.product_v0233.run_formal_nofault import (
     _selected_source,
     _sha256_file,
     _safety_observation,
+    strict_resume_formal_admission_v0233,
 )
 
 
@@ -160,6 +173,114 @@ def _failed_formal_job_ids_v0233(
         ):
             failed.append(str(row["job_id"]))
     return tuple(failed)
+
+
+def _job_lineage_projection_v0233(job: ProductJobRecordV1) -> dict[str, Any]:
+    body = {
+        "job_id": job.job_id,
+        "status": job.status.value,
+        "idempotency_key": job.idempotency_key,
+        "attempt_count": job.attempt_count,
+        "payload_sha256": semantic_json_sha256_v0233(job.payload),
+        "result_sha256": (
+            None
+            if not isinstance(job.result, dict)
+            else semantic_json_sha256_v0233(job.result)
+        ),
+        "diagnosis_result_sha256": (
+            job.result.get("result_sha256")
+            if isinstance(job.result, dict)
+            and isinstance(job.result.get("result_sha256"), str)
+            else None
+        ),
+        "safe_error_code": job.safe_error_code,
+        "failure_stage": job.failure_stage,
+        "exception_fingerprint": job.exception_fingerprint,
+        "journal_tail_sha256": job.journal_tail_sha256,
+    }
+    return {**body, "projection_sha256": semantic_json_sha256_v0233(body)}
+
+
+def _seal_interrupted_job_v0233(
+    *,
+    jobs: JobRepositoryV1,
+    product_root: Path,
+    job: ProductJobRecordV1,
+    acquisition: DiagnosisAcquisitionCheckpointV0233,
+    cleanup_clean: bool,
+) -> ProductJobRecordV1:
+    """Fence one abandoned RUNNING job and preserve a terminal failure journal."""
+
+    if job.status is not ProductJobStatusV1.RUNNING:
+        return job
+    if (
+        not cleanup_clean
+        or job.claimed_by is None
+        or job.lease_expires_at is None
+    ):
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_ACTIVE_LEASE")
+    timestamp = time.time()
+    if job.lease_expires_at <= timestamp:
+        claimed = jobs.reclaim_expired(
+            job.job_id,
+            expected_attempt_count=job.attempt_count,
+            worker_id=f"formal-v0233-recovery-{job.job_id[-8:]}",
+            lease_seconds=60,
+            now=timestamp,
+        )
+    else:
+        jobs.renew_lease(
+            job.job_id,
+            job.claimed_by,
+            job.attempt_count,
+            lease_seconds=60,
+            now=timestamp,
+        )
+        claimed = jobs.get(job.job_id)
+    store = SqliteStoreV1(product_root / "product.sqlite3")
+    journal = DiagnosisStageJournalRepositoryV02322(store)
+    events = journal.list_events(job.job_id)
+    if not events or events[-1].stage in {
+        DiagnosisPipelineStageV02322.JOB_SUCCEEDED,
+        DiagnosisPipelineStageV02322.FAILED,
+    }:
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
+    pipeline = DiagnosisPipelineV02322(
+        journal,
+        job_id=job.job_id,
+        incident_id=acquisition.incident_id,
+        observed_at=datetime.fromtimestamp(timestamp, UTC),
+    )
+    pipeline.last_passed_stage = next(
+        (
+            event.stage
+            for event in reversed(events)
+            if event.status is DiagnosisStageStatusV02322.PASSED
+        ),
+        None,
+    )
+    pipeline.failing_stage = DiagnosisPipelineStageV02322.BRIDGE_DIAGNOSIS_STARTED
+    pipeline.bind_artifacts(
+        incident_sha256=acquisition.incident_sha256,
+        baseline_sha256=acquisition.baseline_sha256,
+        identity_sha256=acquisition.service_identity_sha256,
+        capability_sha256=acquisition.capability_sha256,
+        read_acquisition_sha256=acquisition.acquisition_sha256,
+    )
+    projection, _envelope, _path = pipeline.capture_failure(
+        RuntimeError("formal worker interrupted after frozen acquisition"),
+        data_root=product_root,
+        job_payload=job.payload,
+        safe_error_code="FORMAL_WORKER_INTERRUPTED",
+    )
+    return jobs.fail(
+        claimed.job_id,
+        str(claimed.claimed_by),
+        claimed.attempt_count,
+        "FORMAL_WORKER_INTERRUPTED",
+        public_failure_v02322=projection,
+        now=time.time(),
+    )
 
 
 def _recovery_generation_v0233(
@@ -255,6 +376,23 @@ def resume_formal_nofault_v0233(
     private_root = attempt_root / "execution"
     reservation_path = attempt_root / "reservation.json"
     intent_path = private_root / "terminal-publication.json"
+    latest, semantic, operational = strict_resume_formal_admission_v0233(
+        root,
+        attempt_id=attempt_id,
+    )
+    resume_state = (
+        latest.state
+        if latest.state is FormalExecutionStateV0233.CLOSED
+        else determine_earliest_safe_resume_state_v0233(latest)
+    )
+    if resume_state not in {
+        FormalExecutionStateV0233.ACQUISITION_SEALED,
+        FormalExecutionStateV0233.DIAGNOSIS_RUNNING,
+        FormalExecutionStateV0233.DIAGNOSIS_PERSISTED,
+        FormalExecutionStateV0233.SCORED,
+        FormalExecutionStateV0233.CLOSED,
+    }:
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_REQUIRED")
     if intent_path.is_file():
         recovered = _recover_terminal_publication(
             root,
@@ -266,19 +404,46 @@ def resume_formal_nofault_v0233(
         return recovered
 
     repository = FormalCheckpointRepositoryV0233(attempt_root)
-    chain = repository.load_chain()
-    if not chain:
-        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_REQUIRED")
-    latest = chain[-1]
-    semantic, operational = _formal_surfaces_v0233(
-        root, semantic_generation=latest.semantic_generation
-    )
-    if semantic.semantic_surface_sha256 != latest.semantic_surface_sha256:
-        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_SEMANTIC_DRIFT")
-    verify_checkpoint_artifacts_v0233(root, latest)
 
     product_root = root / _attempt_product_locator_v0233(attempt_id)
     acquisition_path = private_root / "diagnosis-acquisition-checkpoint.json"
+    if not acquisition_path.is_file():
+        submitted = _load_model(
+            private_root / "diagnosis-job.json", ProductJobRecordV1
+        )
+        context = FormalDiagnosisJobContextV0233.model_validate(
+            submitted.payload.get("formal_recovery_v0233")
+        )
+        product_acquisition_path = (
+            product_root / context.acquisition_checkpoint_locator
+        )
+        promoted = _load_model(
+            product_acquisition_path, DiagnosisAcquisitionCheckpointV0233
+        )
+        if (
+            context.attempt_id != attempt_id
+            or promoted.attempt_id != attempt_id
+            or promoted.semantic_surface_sha256
+            != semantic.semantic_surface_sha256
+        ):
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_SEMANTIC_DRIFT")
+        write_private_json(
+            acquisition_path,
+            promoted.model_dump(mode="json"),
+            create_once=True,
+        )
+        promoted_outputs = dict(latest.output_artifact_sha256s)
+        promoted_outputs[acquisition_path.relative_to(root).as_posix()] = (
+            _sha256_file(acquisition_path)
+        )
+        if latest.state is FormalExecutionStateV0233.INCIDENT_CREATED:
+            latest = _append_checkpoint_v0233(
+                repository=repository,
+                latest=latest,
+                state=FormalExecutionStateV0233.ACQUISITION_SEALED,
+                operational_surface_sha256=operational.operational_surface_sha256,
+                outputs=promoted_outputs,
+            )
     acquisition = _load_model(acquisition_path, DiagnosisAcquisitionCheckpointV0233)
     if (
         acquisition.attempt_id != attempt_id
@@ -310,58 +475,173 @@ def resume_formal_nofault_v0233(
         private_root / "fresh-runtime-snapshot.json",
         FreshRuntimeSnapshotProofV0233,
     )
+    live_capture = _load_model(
+        private_root / "live-capture-bundle.json", LiveCaptureBundleV0233
+    )
     incident = _load_model(private_root / "incident.json", IncidentRecordV1)
     incident_binding = _load_model(
         private_root / "incident-traffic-binding.json", IncidentTrafficBindingV0232
     )
-    original_journal = _load_model(
-        private_root / "action-journal.json", FormalActionJournalV0233
+    action_journal_path = private_root / "action-journal.json"
+    original_journal = (
+        _load_model(action_journal_path, FormalActionJournalV0233)
+        if action_journal_path.is_file()
+        else FormalActionJournalV0233.build(
+            observation_status="COMPLETE",
+            events=(
+                "RESERVATION_CONSUMED",
+                "FORMAL_CLONE_REQUESTED",
+                "DEMO_START_REQUESTED",
+                "PRODUCT_START_REQUESTED",
+                "PRODUCT_RESTART_REQUESTED",
+                "FORMAL_TRAFFIC_REQUESTED",
+                "INCIDENT_CREATE_REQUESTED",
+                "DIAGNOSIS_CREATE_REQUESTED",
+            ),
+        )
     )
-    original_closure = _load_model(
-        private_root / "formal-closure.json", FormalClosureProofV0233
+    closure_path = private_root / "formal-closure.json"
+    original_closure = (
+        _load_model(closure_path, FormalClosureProofV0233)
+        if closure_path.is_file()
+        else None
     )
     if (
         reservation.admission != admission
         or clone.clone_sha256 != latest.formal_clone_sha256
         or incident.incident_id != acquisition.incident_id
         or incident.incident_sha256 != acquisition.incident_sha256
-        or original_closure.verdict != "CLEAN"
+        or (original_closure is not None and original_closure.verdict != "CLEAN")
     ):
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+
+    jobs = JobRepositoryV1(SqliteStoreV1(product_root / "product.sqlite3"))
+    stale_processes = _ProductHostProcessesV023(
+        root=root,
+        data_root=product_root,
+        private_root=private_root / "product-processes",
+    )
+    stale_cleanup = stale_processes.cleanup_observation()
+    cleanup_clean = stale_cleanup.get("verdict") == "CLEAN"
+    if not cleanup_clean:
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_ACTIVE_LEASE")
+
+    def reconcile_job(
+        *,
+        job_path: Path,
+        completion_path: Path,
+        expected_payload: Mapping[str, Any] | None = None,
+        expected_idempotency_key: str | None = None,
+    ) -> ProductJobRecordV1:
+        submitted_job = _load_model(job_path, ProductJobRecordV1)
+        current_job = jobs.get(submitted_job.job_id)
+        if (
+            current_job.payload != submitted_job.payload
+            or current_job.idempotency_key != submitted_job.idempotency_key
+            or (
+                expected_payload is not None
+                and current_job.payload != dict(expected_payload)
+            )
+            or (
+                expected_idempotency_key is not None
+                and current_job.idempotency_key != expected_idempotency_key
+            )
+        ):
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
+        current_job = _seal_interrupted_job_v0233(
+            jobs=jobs,
+            product_root=product_root,
+            job=current_job,
+            acquisition=acquisition,
+            cleanup_clean=cleanup_clean,
+        )
+        if current_job.status in {
+            ProductJobStatusV1.SUCCEEDED,
+            ProductJobStatusV1.FAILED,
+        }:
+            write_private_json(
+                completion_path,
+                current_job.model_dump(mode="json"),
+                create_once=True,
+            )
+        return current_job
+
+    original_job = reconcile_job(
+        job_path=private_root / "diagnosis-job.json",
+        completion_path=private_root / "diagnosis-job-completion.json",
+    )
+    recovery_root = private_root / "recovery"
+    successful_job: ProductJobRecordV1 | None = None
+    diagnosis_generation = 1
+    generation_root = private_root
+    submission: FormalDiagnosisRecoverySubmissionV0233 | None = None
+    if original_job.status is ProductJobStatusV1.SUCCEEDED:
+        successful_job = original_job
+    elif original_job.status is not ProductJobStatusV1.FAILED:
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
+
+    recovery_candidates = tuple(sorted(recovery_root.glob("diagnosis-generation-*")))
+    if successful_job is None and recovery_candidates:
+        latest_recovery_root = recovery_candidates[-1]
+        recovery_submission = _load_model(
+            latest_recovery_root / "submission.json",
+            FormalDiagnosisRecoverySubmissionV0233,
+        )
+        recovery_job_path = latest_recovery_root / "diagnosis-job.json"
+        if recovery_job_path.is_file():
+            recovery_job = reconcile_job(
+                job_path=recovery_job_path,
+                completion_path=(
+                    latest_recovery_root / "diagnosis-job-completion.json"
+                ),
+                expected_payload=recovery_submission.job_payload,
+                expected_idempotency_key=recovery_submission.idempotency_key,
+            )
+            if recovery_job.status is ProductJobStatusV1.SUCCEEDED:
+                successful_job = recovery_job
+                submission = recovery_submission
+                diagnosis_generation = (
+                    recovery_submission.context.diagnosis_generation
+                )
+                generation_root = latest_recovery_root
 
     failed_job_ids = _failed_formal_job_ids_v0233(
         product_root=product_root,
         attempt_id=attempt_id,
         incident_id=incident.incident_id,
     )
-    if not failed_job_ids:
-        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
-
-    recovery_root = private_root / "recovery"
-    diagnosis_generation, existing_submission = _recovery_generation_v0233(
-        recovery_root
-    )
-    generation_root = (
-        recovery_root / f"diagnosis-generation-{diagnosis_generation:04d}"
-    )
-    submission = existing_submission or FormalDiagnosisRecoverySubmissionV0233.build(
-        checkpoint=acquisition,
-        diagnosis_generation=diagnosis_generation,
-        preserved_failed_job_ids=failed_job_ids,
-    )
-    write_private_json(
-        generation_root / "submission.json",
-        submission.model_dump(mode="json"),
-        create_once=True,
-    )
-    checkpoint_destination = (
-        product_root / submission.context.acquisition_checkpoint_locator
-    )
-    write_private_json(
-        checkpoint_destination,
-        acquisition.model_dump(mode="json"),
-        create_once=True,
-    )
+    if successful_job is None:
+        if not failed_job_ids:
+            raise RuntimeError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"
+            )
+        diagnosis_generation, existing_submission = _recovery_generation_v0233(
+            recovery_root
+        )
+        generation_root = (
+            recovery_root / f"diagnosis-generation-{diagnosis_generation:04d}"
+        )
+        submission = (
+            existing_submission
+            or FormalDiagnosisRecoverySubmissionV0233.build(
+                checkpoint=acquisition,
+                diagnosis_generation=diagnosis_generation,
+                preserved_failed_job_ids=failed_job_ids,
+            )
+        )
+        write_private_json(
+            generation_root / "submission.json",
+            submission.model_dump(mode="json"),
+            create_once=True,
+        )
+        checkpoint_destination = (
+            product_root / submission.context.acquisition_checkpoint_locator
+        )
+        write_private_json(
+            checkpoint_destination,
+            acquisition.model_dump(mode="json"),
+            create_once=True,
+        )
     outputs = dict(latest.output_artifact_sha256s)
 
     def capture(path: Path) -> None:
@@ -369,8 +649,20 @@ def resume_formal_nofault_v0233(
             _sha256_file(path)
         )
 
-    capture(generation_root / "submission.json")
-    if latest.state is FormalExecutionStateV0233.RECOVERABLE_FAILURE:
+    for recovery_artifact in (
+        generation_root / "submission.json",
+        generation_root / "diagnosis-job.json",
+        generation_root / "diagnosis-job-completion.json",
+        private_root / "diagnosis-job.json",
+        private_root / "diagnosis-job-completion.json",
+        acquisition_path,
+    ):
+        if recovery_artifact.is_file():
+            capture(recovery_artifact)
+    if (
+        latest.state is FormalExecutionStateV0233.RECOVERABLE_FAILURE
+        and resume_state is FormalExecutionStateV0233.ACQUISITION_SEALED
+    ):
         latest = _append_checkpoint_v0233(
             repository=repository,
             latest=latest,
@@ -410,38 +702,44 @@ def resume_formal_nofault_v0233(
     execution_error: BaseException | None = None
     try:
         processes.start()
-        jobs = JobRepositoryV1(SqliteStoreV1(product_root / "product.sqlite3"))
-        queued_path = generation_root / "diagnosis-job.json"
-        if queued_path.is_file():
-            submitted_job = _load_model(queued_path, ProductJobRecordV1)
-            queued = jobs.get(submitted_job.job_id)
-            if (
-                submitted_job.payload != submission.job_payload
-                or submitted_job.idempotency_key != submission.idempotency_key
-                or queued.payload != submission.job_payload
-                or queued.idempotency_key != submission.idempotency_key
-            ):
+        if successful_job is not None:
+            completed_job = successful_job
+        else:
+            if submission is None:
                 raise RuntimeError(
                     "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"
                 )
-        else:
-            queued = jobs.enqueue(
-                ProductJobTypeV1.DIAGNOSIS,
-                submission.job_payload,
-                idempotency_key=submission.idempotency_key,
+            queued_path = generation_root / "diagnosis-job.json"
+            if queued_path.is_file():
+                submitted_job = _load_model(queued_path, ProductJobRecordV1)
+                queued = jobs.get(submitted_job.job_id)
+                if (
+                    submitted_job.payload != submission.job_payload
+                    or submitted_job.idempotency_key != submission.idempotency_key
+                    or queued.payload != submission.job_payload
+                    or queued.idempotency_key != submission.idempotency_key
+                ):
+                    raise RuntimeError(
+                        "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"
+                    )
+            else:
+                queued = jobs.enqueue(
+                    ProductJobTypeV1.DIAGNOSIS,
+                    submission.job_payload,
+                    idempotency_key=submission.idempotency_key,
+                )
+                write_private_json(
+                    queued_path,
+                    queued.model_dump(mode="json"),
+                    create_once=True,
+                )
+            capture(queued_path)
+            completed_job = _wait_job(
+                processes,
+                queued.job_id,
+                data_root=product_root,
+                timeout_seconds=240,
             )
-            write_private_json(
-                queued_path,
-                queued.model_dump(mode="json"),
-                create_once=True,
-            )
-        capture(queued_path)
-        completed_job = _wait_job(
-            processes,
-            queued.job_id,
-            data_root=product_root,
-            timeout_seconds=240,
-        )
         write_private_json(
             generation_root / "diagnosis-job-completion.json",
             completed_job.model_dump(mode="json"),
@@ -563,7 +861,11 @@ def resume_formal_nofault_v0233(
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_SEMANTIC_DRIFT")
     current_counts = read_fresh_formal_state_counts_v0233(product_root)
     FormalIncidentDiagnosisCardinalityV0233.build(
-        phase="POST_DIAGNOSIS_RECOVERED",
+        phase=(
+            "POST_DIAGNOSIS_RECOVERED"
+            if failed_job_ids
+            else "POST_DIAGNOSIS_SUCCEEDED"
+        ),
         source_incident_count=source_before.source_counts.incident_count,
         source_diagnosis_job_count=source_before.source_counts.diagnosis_job_count,
         source_diagnosis_result_count=source_before.source_counts.diagnosis_count,
@@ -594,8 +896,11 @@ def resume_formal_nofault_v0233(
     recovery_count = len(tuple(recovery_root.glob("diagnosis-generation-*")))
     action_journal = FormalActionJournalV0233.build(
         observation_status="COMPLETE",
-        events=original_journal.events
-        + ("DIAGNOSIS_CREATE_REQUESTED",) * recovery_count,
+        events=cast(
+            tuple[FormalActionEventV0233, ...],
+            original_journal.events
+            + ("DIAGNOSIS_CREATE_REQUESTED",) * recovery_count,
+        ),
     )
     write_private_json(
         generation_root / "action-journal.json",
@@ -627,10 +932,26 @@ def resume_formal_nofault_v0233(
     ):
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
     closure = FormalClosureProofV0233.build(
-        queue_before_sha256=original_closure.queue_before_sha256,
-        queue_after_sha256=original_closure.queue_after_sha256,
-        outer_baseline_before_sha256=original_closure.outer_baseline_before_sha256,
-        outer_baseline_after_sha256=original_closure.outer_baseline_after_sha256,
+        queue_before_sha256=(
+            live_capture.queue_before_sha256
+            if original_closure is None
+            else original_closure.queue_before_sha256
+        ),
+        queue_after_sha256=(
+            live_capture.queue_after_sha256
+            if original_closure is None
+            else original_closure.queue_after_sha256
+        ),
+        outer_baseline_before_sha256=(
+            live_capture.outer_baseline_before_sha256
+            if original_closure is None
+            else original_closure.outer_baseline_before_sha256
+        ),
+        outer_baseline_after_sha256=(
+            live_capture.outer_baseline_after_sha256
+            if original_closure is None
+            else original_closure.outer_baseline_after_sha256
+        ),
         source_selection_before_sha256=source_before.selection_sha256,
         source_selection_after_sha256=source_before.selection_sha256,
         source_database_before_sha256=source_before.source_database_file_sha256,
@@ -698,27 +1019,36 @@ def resume_formal_nofault_v0233(
         create_once=True,
     )
     capture(private_root / "nofault-acceptance-result.json")
-    lineage_body = {
-        "schema_version": "ecomsre.product.diagnosis-recovery-lineage.v0233",
-        "attempt_id": attempt_id,
-        "incident_id": incident.incident_id,
-        "incident_sha256": incident.incident_sha256,
-        "acquisition_sha256": acquisition.acquisition_sha256,
-        "preserved_failed_job_ids": final_failed_job_ids,
-        "successful_job_id": completed_job.job_id,
-        "successful_diagnosis_generation": diagnosis_generation,
-        "diagnosis_result_sha256": diagnosis.result_sha256,
-    }
-    lineage = {
-        **lineage_body,
-        "lineage_sha256": semantic_json_sha256_v0233(lineage_body),
-    }
-    write_private_json(
-        generation_root / "diagnosis-recovery-lineage.json",
-        lineage,
-        create_once=True,
-    )
-    capture(generation_root / "diagnosis-recovery-lineage.json")
+    lineage: dict[str, Any] | None = None
+    if final_failed_job_ids:
+        failed_job_projections = tuple(
+            _job_lineage_projection_v0233(jobs.get(job_id))
+            for job_id in final_failed_job_ids
+        )
+        successful_job_projection = _job_lineage_projection_v0233(completed_job)
+        lineage_body = {
+            "schema_version": "ecomsre.product.diagnosis-recovery-lineage.v0233",
+            "attempt_id": attempt_id,
+            "incident_id": incident.incident_id,
+            "incident_sha256": incident.incident_sha256,
+            "acquisition_sha256": acquisition.acquisition_sha256,
+            "preserved_failed_job_ids": final_failed_job_ids,
+            "preserved_failed_jobs": failed_job_projections,
+            "successful_job_id": completed_job.job_id,
+            "successful_job": successful_job_projection,
+            "successful_diagnosis_generation": diagnosis_generation,
+            "diagnosis_result_sha256": diagnosis.result_sha256,
+        }
+        lineage = {
+            **lineage_body,
+            "lineage_sha256": semantic_json_sha256_v0233(lineage_body),
+        }
+        write_private_json(
+            generation_root / "diagnosis-recovery-lineage.json",
+            lineage,
+            create_once=True,
+        )
+        capture(generation_root / "diagnosis-recovery-lineage.json")
     if latest.state is FormalExecutionStateV0233.SCORED:
         latest = _append_checkpoint_v0233(
             repository=repository,
@@ -758,6 +1088,7 @@ def resume_formal_nofault_v0233(
         measured_ledger=ledger,
         new_diagnosis_count=safety.new_diagnosis_count,
         recovery_lineage=lineage,
+        recovery_acquisition=(acquisition if lineage is not None else None),
     )
     return result
 

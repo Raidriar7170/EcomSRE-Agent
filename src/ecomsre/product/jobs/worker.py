@@ -51,13 +51,11 @@ from ecomsre.product.pilot.baseline_readiness_v023 import (
     ProductBaselineReadinessAuditRepositoryV023,
 )
 from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
+    DiagnosisAcquisitionCheckpointV0233,
     FormalDiagnosisJobContextV0233,
     build_diagnosis_acquisition_checkpoint_v0233,
     final_diagnosis_idempotency_key_v0233,
     restore_diagnosis_acquisition_v0233,
-)
-from ecomsre.product.pilot.formal_recovery_v0233 import (
-    DiagnosisAcquisitionCheckpointV0233,
 )
 from ecomsre.product.storage.object_store import ContentAddressedObjectStoreV1
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
