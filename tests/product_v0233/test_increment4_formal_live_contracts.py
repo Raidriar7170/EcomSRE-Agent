@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+import hashlib
 from pathlib import Path
 import subprocess
+from types import SimpleNamespace
 
 import httpx
 import pytest
@@ -29,6 +31,11 @@ from ecomsre.product.pilot.formal_live_v0233 import (
     FreshRuntimeSnapshotProofV0233,
     RuntimeAuthorityProofV0233,
 )
+from ecomsre.product.pilot.formal_recovery_v0233 import (
+    FormalAttemptLedgerV0233,
+    FormalAttemptRecordV0233,
+    FormalExecutionStateV0233,
+)
 from ecomsre.product.pilot.healthy_traffic_v0232 import (
     HealthyTrafficRunnerV0232,
     IncidentTrafficBindingV0232,
@@ -42,6 +49,7 @@ from ecomsre.product.pilot.serialization_v0233 import semantic_json_sha256_v0233
 from scripts.product_v0233 import run_formal_nofault as formal_runner
 from scripts.product_v0233.run_formal_nofault import (
     _frozen_semantic_surface_sha256_v0233,
+    _measured_claim_documents_v0233,
     _persist_and_apply_terminal_publication,
     _terminal_publication_bundle,
     strict_formal_admission_v0233,
@@ -652,6 +660,187 @@ def test_post_traffic_acceptance_artifact_dry_run_publishes_measured_result(
     )
     assert (private_root / "terminal-publication-completion.json").is_file()
     assert (tmp_path / "docs/results/product-v0233-nofault-acceptance.json").is_file()
+
+
+def test_measured_claim_documents_expose_capability_limitations() -> None:
+    documents = _measured_claim_documents_v0233(
+        measured_terminal="ECOMSRE_PRODUCT_V0233_NOFAULT_CAPABILITY_LIMITED",
+        result_sha256=_sha("1"),
+        reasons=(),
+        capability_limitations=(
+            "SOURCE_METRICS_QUERY_FAILURE",
+            "SOURCE_RESOURCES_COVERAGE_GAP",
+        ),
+        new_diagnosis_count=1,
+    )
+
+    acceptance = documents["docs/results/product-v0233-nofault-acceptance.md"]
+    limitations = documents["docs/results/product-v0233-limitations.md"]
+    assert "## Scoring reasons\n\n- None" in acceptance
+    assert "## Capability limitations" in acceptance
+    assert "- `SOURCE_METRICS_QUERY_FAILURE`" in acceptance
+    assert "- `SOURCE_RESOURCES_COVERAGE_GAP`" in acceptance
+    assert "- None" not in limitations
+    assert "- `SOURCE_METRICS_QUERY_FAILURE`" in limitations
+    assert "- `SOURCE_RESOURCES_COVERAGE_GAP`" in limitations
+
+
+def test_measured_claim_correction_is_append_only_idempotent_and_recoverable(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    attempt_id = "attempt-2"
+    attempt_root = tmp_path / ".local/product-v0233/attempts" / attempt_id
+    private_root = attempt_root / "execution"
+    public_attempt = tmp_path / "docs/analysis/product-v0233-attempts" / attempt_id
+    reservation = FormalExecutionReservationV0233.build(
+        admission=_admission(),
+        reserved_at=datetime(2026, 9, 1, tzinfo=UTC),
+    )
+    result = SimpleNamespace(
+        measured_terminal="ECOMSRE_PRODUCT_V0233_NOFAULT_CAPABILITY_LIMITED",
+        result_sha256=_sha("1"),
+        diagnosis_result_sha256=_sha("2"),
+        reasons=(),
+    )
+    diagnosis = SimpleNamespace(
+        result_sha256=_sha("2"),
+        capability_limitations=(
+            "SOURCE_METRICS_QUERY_FAILURE",
+            "SOURCE_RESOURCES_COVERAGE_GAP",
+        ),
+    )
+    repository = SimpleNamespace(new_diagnosis_count=1)
+    monkeypatch.setattr(
+        formal_runner,
+        "NoFaultAcceptanceResultV0233",
+        SimpleNamespace(model_validate_json=lambda _payload: result),
+    )
+    monkeypatch.setattr(
+        formal_runner,
+        "DiagnosisResultV1",
+        SimpleNamespace(model_validate_json=lambda _payload: diagnosis),
+    )
+    monkeypatch.setattr(
+        formal_runner,
+        "ProductV0233RepositoryStateManifest",
+        SimpleNamespace(model_validate_json=lambda _payload: repository),
+    )
+    original_acceptance = "# Acceptance\n\n## Reasons\n\n- None\n"
+    original_limitations = "# Limitations\n\n- None\n"
+    original_documents = {
+        "docs/results/product-v0233-nofault-acceptance.md": original_acceptance,
+        "docs/results/product-v0233-limitations.md": original_limitations,
+    }
+    legacy = FormalAttemptRecordV0233.build(
+        attempt_id="attempt-1",
+        ordinal=1,
+        semantic_generation=1,
+        disposition="LEGACY_BLOCKED",
+        latest_state=FormalExecutionStateV0233.RECOVERABLE_FAILURE,
+        latest_checkpoint_sha256=None,
+        blocker_terminal="BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS",
+        measured_terminal=None,
+        evidence_sha256_by_path={},
+    )
+    measured = FormalAttemptRecordV0233.build(
+        attempt_id=attempt_id,
+        ordinal=2,
+        semantic_generation=2,
+        disposition="MEASURED",
+        latest_state=FormalExecutionStateV0233.CLOSED,
+        latest_checkpoint_sha256=_sha("3"),
+        blocker_terminal=None,
+        measured_terminal=result.measured_terminal,
+        evidence_sha256_by_path={
+            relative: hashlib.sha256(payload.encode("utf-8")).hexdigest()
+            for relative, payload in original_documents.items()
+        },
+    )
+    ledger = FormalAttemptLedgerV0233.build(
+        campaign_id="product-v0233-fresh-formal-nofault",
+        attempts=(legacy, measured),
+    )
+    artifacts = [
+        {
+            "path": relative,
+            "mode": "CREATE_TEXT",
+            "payload": payload,
+        }
+        for relative, payload in original_documents.items()
+    ]
+    artifacts.append(
+        {
+            "path": "config/product-v0233/formal-attempt-ledger.json",
+            "mode": "REPLACE_JSON",
+            "payload": ledger.model_dump(mode="json"),
+        }
+    )
+    publication = _terminal_publication_bundle(
+        reservation=reservation,
+        kind="MEASURED",
+        terminal=result.measured_terminal,
+        artifacts=artifacts,
+    )
+    publication_completion_body = {
+        "schema_version": "ecomsre.product.terminal-publication-completion.v0233",
+        "publication_sha256": publication["publication_sha256"],
+        "terminal": result.measured_terminal,
+    }
+    formal_runner.write_private_json(
+        attempt_root / "reservation.json",
+        reservation.model_dump(mode="json"),
+        create_once=True,
+    )
+    formal_runner.write_private_json(
+        private_root / "terminal-publication.json",
+        publication,
+        create_once=True,
+    )
+    formal_runner.write_private_json(
+        private_root / "terminal-publication-completion.json",
+        {
+            **publication_completion_body,
+            "completion_sha256": semantic_sha256_v22(publication_completion_body),
+        },
+        create_once=True,
+    )
+    for relative, payload in original_documents.items():
+        formal_runner._write_public_text_create_once(tmp_path / relative, payload)
+    formal_runner._replace_public(
+        tmp_path / "config/product-v0233/formal-attempt-ledger.json",
+        ledger.model_dump(mode="json"),
+    )
+    for path in (
+        tmp_path / "docs/results/product-v0233-nofault-acceptance.json",
+        public_attempt / "diagnosis-result.json",
+        tmp_path / "config/product-v0233/recovery-repository-state-manifest.json",
+    ):
+        formal_runner._replace_public(path, {})
+
+    correction = formal_runner.correct_measured_claim_publication_v0233(
+        tmp_path,
+        attempt_id=attempt_id,
+    )
+    repeated = formal_runner.correct_measured_claim_publication_v0233(
+        tmp_path,
+        attempt_id=attempt_id,
+    )
+
+    assert repeated == correction
+    assert correction["original_publication_sha256"] == publication[
+        "publication_sha256"
+    ]
+    assert (public_attempt / "measured-claim-correction.json").is_file()
+    assert "SOURCE_METRICS_QUERY_FAILURE" in (
+        tmp_path / "docs/results/product-v0233-limitations.md"
+    ).read_text(encoding="utf-8")
+    recovered = formal_runner._recover_terminal_publication(
+        tmp_path,
+        reservation_path=attempt_root / "reservation.json",
+        private_root=private_root,
+    )
+    assert recovered is result
 
 
 def test_formal_closure_fails_closed_on_any_queue_baseline_or_source_drift() -> None:

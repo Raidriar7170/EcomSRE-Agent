@@ -96,6 +96,7 @@ from scripts.product_v0233.run_formal_nofault import (
     _attempt_private_locator_v0233,
     _attempt_product_locator_v0233,
     _attempt_public_locator_v0233,
+    correct_measured_claim_publication_v0233,
     _diagnosis_lineage_v0233,
     _diagnosis_acceptance,
     _formal_surfaces_v0233,
@@ -1933,8 +1934,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         default=Path(__file__).resolve().parents[2],
     )
     parser.add_argument("--inspect-only", action="store_true")
+    parser.add_argument("--correct-measured-claims", action="store_true")
     arguments = parser.parse_args(argv)
-    if arguments.inspect_only:
+    if arguments.inspect_only and arguments.correct_measured_claims:
+        parser.error("--inspect-only and --correct-measured-claims are mutually exclusive")
+    if arguments.correct_measured_claims:
+        correction = correct_measured_claim_publication_v0233(
+            arguments.project_root,
+            attempt_id=arguments.attempt,
+        )
+        print(json.dumps(correction, ensure_ascii=False, sort_keys=True))
+    elif arguments.inspect_only:
         decision = inspect_formal_resume_v0233(
             project_root=arguments.project_root,
             attempt_id=arguments.attempt,
@@ -1953,4 +1963,8 @@ if __name__ == "__main__":
     raise SystemExit(main())
 
 
-__all__ = ("inspect_formal_resume_v0233", "resume_formal_nofault_v0233")
+__all__ = (
+    "correct_measured_claim_publication_v0233",
+    "inspect_formal_resume_v0233",
+    "resume_formal_nofault_v0233",
+)

@@ -9,6 +9,11 @@
 - Action authority: `NONE`
 - Cleanup: `CLEAN`
 
-## Reasons
+## Scoring reasons
 
 - None
+
+## Capability limitations
+
+- `SOURCE_METRICS_QUERY_FAILURE`
+- `SOURCE_RESOURCES_COVERAGE_GAP`

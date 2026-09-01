@@ -77,6 +77,7 @@ from ecomsre.product.pilot.repository_state_v0233 import (
     RepositoryPhaseV0233,
 )
 from scripts.product_v0233.run_formal_nofault import (  # noqa: PLC2701
+    _measured_claim_documents_v0233,
     _verified_formal_closure_observation_v0233,
 )
 
@@ -86,6 +87,15 @@ _EXECUTION_HEAD = "466796648c2c4a3360b911a12be1ee806d39124e"
 _MANIFEST_SHA256 = "08fdbd61e3fa439b55b1ef903bdea26dee6a3c839129bef53ee99c19a3c61014"
 _ATTEMPT3_DIAGNOSIS_FAILURE_SUPPLEMENT_SHA256 = (
     "45ede4fd8453047ea9c9b6057491fcdd6243d3262f435eb2d07b9839d343f1ae"
+)
+_ATTEMPT4_MEASURED_RESULT_SHA256 = (
+    "9832687fcf71781e6b6bbe26e1de3fe574326e643245569680d8d41d0fbfa11b"
+)
+_ATTEMPT4_ORIGINAL_PUBLICATION_SHA256 = (
+    "2dd3fb981aeee3a443a76c42b5d431b1e7140284c13c422d813d38d46414f6f0"
+)
+_ATTEMPT4_MEASURED_CLAIM_CORRECTION_SHA256 = (
+    "1061f9463d4f312c492283701ae2d3cf09442b693fb8b3618754492d7eb21ada"
 )
 _ATTEMPT3_DIAGNOSIS_FAILURE_EXPECTED = {
     "job_id": "job-558b022c696cecd3041de475",
@@ -406,6 +416,138 @@ def _verify_required_absences(root: Path, declared: list[object]) -> None:
             raise ValueError(
                 f"Product v0.2.3.3 forbidden terminal artifact exists: {relative}"
             )
+
+
+def _verify_measured_claim_documents_v0233(
+    project: Path,
+    *,
+    result: Any,
+    diagnosis: DiagnosisResultV1,
+    new_diagnosis_count: int,
+) -> None:
+    expected = _measured_claim_documents_v0233(
+        measured_terminal=result.measured_terminal,
+        result_sha256=result.result_sha256,
+        reasons=result.reasons,
+        capability_limitations=diagnosis.capability_limitations,
+        new_diagnosis_count=new_diagnosis_count,
+    )
+    if any(
+        (path := project / relative).is_symlink()
+        or not path.is_file()
+        or path.read_text(encoding="utf-8") != payload
+        for relative, payload in expected.items()
+    ):
+        raise ValueError("Product v0.2.3.3 measured claim documents differ")
+
+
+def _verify_measured_claim_correction_v0233(
+    project: Path,
+    *,
+    attempt_id: str,
+    result: Any,
+    diagnosis: DiagnosisResultV1,
+) -> None:
+    path = (
+        project
+        / "docs/analysis/product-v0233-attempts"
+        / attempt_id
+        / "measured-claim-correction.json"
+    )
+    correction_required = (
+        attempt_id == "attempt-4"
+        and result.result_sha256 == _ATTEMPT4_MEASURED_RESULT_SHA256
+    )
+    if not path.exists() and not path.is_symlink():
+        if correction_required:
+            raise ValueError("Product v0.2.3.3 measured claim correction differs")
+        return
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("Product v0.2.3.3 measured claim correction differs")
+    correction = _object(path)
+    body = {
+        key: value for key, value in correction.items() if key != "correction_sha256"
+    }
+    artifacts = correction.get("artifacts")
+    expected_paths = (
+        "config/product-v0233/formal-attempt-ledger.json",
+        "docs/results/product-v0233-limitations.md",
+        "docs/results/product-v0233-nofault-acceptance.md",
+    )
+    if (
+        set(correction)
+        != {
+            "schema_version",
+            "attempt_id",
+            "correction_code",
+            "original_publication_sha256",
+            "measured_result_sha256",
+            "diagnosis_result_sha256",
+            "capability_limitations",
+            "artifacts",
+            "correction_sha256",
+        }
+        or correction.get("schema_version")
+        != "ecomsre.product.measured-claim-correction.v0233"
+        or correction.get("attempt_id") != attempt_id
+        or correction.get("correction_code")
+        != "CAPABILITY_LIMITATIONS_RENDERING_SOURCE"
+        or correction.get("measured_result_sha256") != result.result_sha256
+        or correction.get("diagnosis_result_sha256") != diagnosis.result_sha256
+        or correction.get("capability_limitations")
+        != list(diagnosis.capability_limitations)
+        or (
+            correction_required
+            and correction.get("original_publication_sha256")
+            != _ATTEMPT4_ORIGINAL_PUBLICATION_SHA256
+        )
+        or (
+            correction_required
+            and correction.get("correction_sha256")
+            != _ATTEMPT4_MEASURED_CLAIM_CORRECTION_SHA256
+        )
+        or not isinstance(correction.get("original_publication_sha256"), str)
+        or len(correction["original_publication_sha256"]) != 64
+        or any(
+            character not in "0123456789abcdef"
+            for character in correction["original_publication_sha256"]
+        )
+        or not isinstance(artifacts, list)
+        or tuple(
+            item.get("path") if isinstance(item, Mapping) else None
+            for item in artifacts
+        )
+        != expected_paths
+        or correction.get("correction_sha256") != semantic_sha256_v22(body)
+    ):
+        raise ValueError("Product v0.2.3.3 measured claim correction differs")
+    for item in artifacts:
+        if not isinstance(item, Mapping):
+            raise ValueError("Product v0.2.3.3 measured claim correction differs")
+        relative = item.get("path")
+        previous_sha256 = item.get("previous_sha256")
+        corrected_sha256 = item.get("corrected_sha256")
+        if (
+            set(item) != {"path", "previous_sha256", "corrected_sha256"}
+            or not isinstance(relative, str)
+            or not isinstance(previous_sha256, str)
+            or len(previous_sha256) != 64
+            or any(
+                character not in "0123456789abcdef"
+                for character in previous_sha256
+            )
+            or not isinstance(corrected_sha256, str)
+            or len(corrected_sha256) != 64
+            or any(
+                character not in "0123456789abcdef"
+                for character in corrected_sha256
+            )
+            or previous_sha256 == corrected_sha256
+            or (project / relative).is_symlink()
+            or not (project / relative).is_file()
+            or _sha256_file(project / relative) != corrected_sha256
+        ):
+            raise ValueError("Product v0.2.3.3 measured claim correction differs")
 
 
 def _verify_checkpoint_chain_v0233(
@@ -1162,6 +1304,20 @@ def _verify_measured_terminal(
     successful_job = lineage.get("successful_job")
     failed_job_count = len(failed_jobs) if isinstance(failed_jobs, list) else -1
     new_diagnosis_count = repository.new_diagnosis_count
+    if new_diagnosis_count is None:
+        raise ValueError("Product v0.2.3.3 recovered terminal differs")
+    _verify_measured_claim_documents_v0233(
+        project,
+        result=result,
+        diagnosis=diagnosis,
+        new_diagnosis_count=new_diagnosis_count,
+    )
+    _verify_measured_claim_correction_v0233(
+        project,
+        attempt_id=attempt.attempt_id,
+        result=result,
+        diagnosis=diagnosis,
+    )
     lineage_exact = (
         isinstance(failed_jobs, list)
         and isinstance(failed_job_projections, list)

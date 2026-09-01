@@ -12,6 +12,7 @@ from pathlib import Path
 import signal
 import stat
 import subprocess
+import tempfile
 import time
 from typing import Any, cast, Literal, Mapping, NoReturn, Sequence
 
@@ -1566,6 +1567,7 @@ _ATTEMPT_PUBLICATION_FILENAMES = frozenset(
         "incident-traffic-binding.json",
         "evidence-assessment.json",
         "knowledge-loop-handoff.json",
+        "measured-claim-correction.json",
         "repository-state-manifest.json",
         "progress.json",
     }
@@ -1731,6 +1733,14 @@ def _recover_terminal_publication(
     bundle = _object(intent_path)
     if bundle.get("reservation_sha256") != reservation.reservation_sha256:
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+    if bundle.get("kind") == "MEASURED" and _measured_claim_correction_applied_v0233(
+        root,
+        private_root=private_root,
+        publication=bundle,
+    ):
+        return NoFaultAcceptanceResultV0233.model_validate_json(
+            (root / "docs/results/product-v0233-nofault-acceptance.json").read_bytes()
+        )
     _persist_and_apply_terminal_publication(
         root=root,
         private_root=private_root,
@@ -3815,6 +3825,375 @@ def _ledger_with_public_evidence_v0233(
     )
 
 
+def _measured_claim_documents_v0233(
+    *,
+    measured_terminal: str,
+    result_sha256: str,
+    reasons: Sequence[str],
+    capability_limitations: Sequence[str],
+    new_diagnosis_count: int,
+) -> dict[str, str]:
+    reasons_text = "\n".join(f"- {reason}" for reason in reasons) or "- None"
+    limitations_text = (
+        "\n".join(f"- `{limitation}`" for limitation in capability_limitations)
+        or "- None"
+    )
+    return {
+        "docs/results/product-v0233-nofault-acceptance.md": (
+            "# Product v0.2.3.3 No-Fault Acceptance\n\n"
+            f"- Measured terminal: `{measured_terminal}`\n"
+            f"- Result SHA-256: `{result_sha256}`\n"
+            "- Formal traffic: `30 / 30`, failures `0`, retries `0`\n"
+            f"- New Incident / Diagnosis jobs: `1 / {new_diagnosis_count}`\n"
+            "- Persisted Diagnosis results: `1`\n"
+            "- Fault / Knowledge / Agent / Runbook / Provider: `0 / 0 / 0 / 0 / 0`\n"
+            "- Action authority: `NONE`\n"
+            "- Cleanup: `CLEAN`\n\n"
+            "## Scoring reasons\n\n"
+            f"{reasons_text}\n\n"
+            "## Capability limitations\n\n"
+            f"{limitations_text}\n"
+        ),
+        "docs/results/product-v0233-limitations.md": (
+            "# Product v0.2.3.3 Limitations\n\n"
+            f"Measured terminal: `{measured_terminal}`.\n\n"
+            f"{limitations_text}\n\n"
+            "This campaign grants no Fault, Knowledge-Loop, Agent, Runbook, or Provider authority.\n"
+        ),
+    }
+
+
+_MEASURED_CLAIM_PATHS_V0233 = (
+    "docs/results/product-v0233-nofault-acceptance.md",
+    "docs/results/product-v0233-limitations.md",
+)
+_MEASURED_LEDGER_PATH_V0233 = "config/product-v0233/formal-attempt-ledger.json"
+
+
+def _publication_artifact_bytes_v0233(
+    mode: str,
+    payload: Mapping[str, Any] | str,
+) -> bytes:
+    if mode == "CREATE_TEXT" and isinstance(payload, str):
+        return payload.encode("utf-8")
+    if mode in {"CREATE_JSON", "REPLACE_JSON"} and isinstance(payload, Mapping):
+        return canonical_json_bytes(dict(payload))
+    raise ValueError("Product v0.2.3.3 publication artifact differs")
+
+
+def _replace_public_text_v0233(path: Path, payload: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.",
+        dir=path.parent,
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _measured_claim_correction_material_v0233(
+    root: Path,
+    *,
+    attempt_id: str,
+    publication: Mapping[str, Any],
+) -> tuple[dict[str, Any], dict[str, bytes], dict[str, bytes]]:
+    publication_body = {
+        key: value for key, value in publication.items() if key != "publication_sha256"
+    }
+    artifacts = publication.get("artifacts")
+    if (
+        publication.get("kind") != "MEASURED"
+        or publication.get("publication_sha256")
+        != semantic_sha256_v22(publication_body)
+        or not isinstance(artifacts, list)
+    ):
+        raise ValueError("Product v0.2.3.3 measured publication differs")
+    artifact_by_path: dict[str, tuple[str, Mapping[str, Any] | str]] = {}
+    for artifact in artifacts:
+        if not isinstance(artifact, Mapping):
+            raise ValueError("Product v0.2.3.3 measured publication differs")
+        relative = artifact.get("path")
+        mode = artifact.get("mode")
+        payload = artifact.get("payload")
+        if (
+            not isinstance(relative, str)
+            or relative in artifact_by_path
+            or not isinstance(mode, str)
+            or not isinstance(payload, (Mapping, str))
+        ):
+            raise ValueError("Product v0.2.3.3 measured publication differs")
+        artifact_by_path[relative] = (mode, payload)
+    required = {*_MEASURED_CLAIM_PATHS_V0233, _MEASURED_LEDGER_PATH_V0233}
+    if not required.issubset(artifact_by_path):
+        raise ValueError("Product v0.2.3.3 measured publication differs")
+    result = NoFaultAcceptanceResultV0233.model_validate_json(
+        (root / "docs/results/product-v0233-nofault-acceptance.json").read_bytes()
+    )
+    diagnosis = DiagnosisResultV1.model_validate_json(
+        (
+            root
+            / _attempt_public_locator_v0233(attempt_id)
+            / "diagnosis-result.json"
+        ).read_bytes()
+    )
+    if (
+        publication.get("terminal") != result.measured_terminal
+        or result.diagnosis_result_sha256 != diagnosis.result_sha256
+        or (
+            result.measured_terminal.endswith("CAPABILITY_LIMITED")
+            and not diagnosis.capability_limitations
+        )
+    ):
+        raise ValueError("Product v0.2.3.3 measured claim correction differs")
+    original_ledger_mode, original_ledger_payload = artifact_by_path[
+        _MEASURED_LEDGER_PATH_V0233
+    ]
+    if original_ledger_mode != "REPLACE_JSON" or not isinstance(
+        original_ledger_payload, Mapping
+    ):
+        raise ValueError("Product v0.2.3.3 measured claim correction differs")
+    original_ledger = FormalAttemptLedgerV0233.model_validate(original_ledger_payload)
+    measured = original_ledger.attempts[-1]
+    if measured.attempt_id != attempt_id or measured.disposition != "MEASURED":
+        raise ValueError("Product v0.2.3.3 measured claim correction differs")
+    repository = ProductV0233RepositoryStateManifest.model_validate_json(
+        (
+            root / "config/product-v0233/recovery-repository-state-manifest.json"
+        ).read_bytes()
+    )
+    if repository.new_diagnosis_count is None:
+        raise ValueError("Product v0.2.3.3 measured claim correction differs")
+    claim_documents = _measured_claim_documents_v0233(
+        measured_terminal=result.measured_terminal,
+        result_sha256=result.result_sha256,
+        reasons=result.reasons,
+        capability_limitations=diagnosis.capability_limitations,
+        new_diagnosis_count=repository.new_diagnosis_count,
+    )
+    prior: dict[str, bytes] = {}
+    corrected: dict[str, bytes] = {
+        relative: payload.encode("utf-8")
+        for relative, payload in claim_documents.items()
+    }
+    for relative in _MEASURED_CLAIM_PATHS_V0233:
+        mode, payload = artifact_by_path[relative]
+        if mode != "CREATE_TEXT" or not isinstance(payload, str):
+            raise ValueError("Product v0.2.3.3 measured claim correction differs")
+        prior[relative] = payload.encode("utf-8")
+        if measured.evidence_sha256_by_path.get(relative) != hashlib.sha256(
+            prior[relative]
+        ).hexdigest():
+            raise ValueError("Product v0.2.3.3 measured claim correction differs")
+    corrected_evidence = dict(measured.evidence_sha256_by_path)
+    corrected_evidence.update(
+        {
+            relative: hashlib.sha256(payload).hexdigest()
+            for relative, payload in corrected.items()
+        }
+    )
+    corrected_record = FormalAttemptRecordV0233.build(
+        attempt_id=measured.attempt_id,
+        ordinal=measured.ordinal,
+        semantic_generation=measured.semantic_generation,
+        disposition=measured.disposition,
+        latest_state=measured.latest_state,
+        latest_checkpoint_sha256=measured.latest_checkpoint_sha256,
+        blocker_terminal=measured.blocker_terminal,
+        measured_terminal=measured.measured_terminal,
+        evidence_sha256_by_path=corrected_evidence,
+    )
+    corrected_ledger = FormalAttemptLedgerV0233.build(
+        campaign_id=original_ledger.campaign_id,
+        attempts=(*original_ledger.attempts[:-1], corrected_record),
+    )
+    prior[_MEASURED_LEDGER_PATH_V0233] = _publication_artifact_bytes_v0233(
+        original_ledger_mode,
+        original_ledger_payload,
+    )
+    corrected[_MEASURED_LEDGER_PATH_V0233] = canonical_json_bytes(
+        corrected_ledger.model_dump(mode="json")
+    )
+    correction_body = {
+        "schema_version": "ecomsre.product.measured-claim-correction.v0233",
+        "attempt_id": attempt_id,
+        "correction_code": "CAPABILITY_LIMITATIONS_RENDERING_SOURCE",
+        "original_publication_sha256": publication["publication_sha256"],
+        "measured_result_sha256": result.result_sha256,
+        "diagnosis_result_sha256": diagnosis.result_sha256,
+        "capability_limitations": list(diagnosis.capability_limitations),
+        "artifacts": [
+            {
+                "path": relative,
+                "previous_sha256": hashlib.sha256(prior[relative]).hexdigest(),
+                "corrected_sha256": hashlib.sha256(corrected[relative]).hexdigest(),
+            }
+            for relative in sorted(corrected)
+        ],
+    }
+    correction = {
+        **correction_body,
+        "correction_sha256": semantic_sha256_v22(correction_body),
+    }
+    return correction, corrected, prior
+
+
+def correct_measured_claim_publication_v0233(
+    root: Path,
+    *,
+    attempt_id: str,
+) -> dict[str, Any]:
+    project = Path(root).resolve(strict=True)
+    private_root = (
+        project / _attempt_private_locator_v0233(attempt_id) / "execution"
+    )
+    publication = _object(private_root / "terminal-publication.json")
+    publication_completion = _object(
+        private_root / "terminal-publication-completion.json"
+    )
+    completion_body = {
+        key: value
+        for key, value in publication_completion.items()
+        if key != "completion_sha256"
+    }
+    if (
+        publication_completion.get("publication_sha256")
+        != publication.get("publication_sha256")
+        or publication_completion.get("terminal") != publication.get("terminal")
+        or publication_completion.get("completion_sha256")
+        != semantic_sha256_v22(completion_body)
+    ):
+        raise ValueError("Product v0.2.3.3 measured publication completion differs")
+    correction, corrected, prior = _measured_claim_correction_material_v0233(
+        project,
+        attempt_id=attempt_id,
+        publication=publication,
+    )
+    private_intent = private_root / "measured-claim-correction.json"
+    public_intent = (
+        project
+        / _attempt_public_locator_v0233(attempt_id)
+        / "measured-claim-correction.json"
+    )
+    write_private_json(private_intent, correction, create_once=True)
+    _write_public_json_recoverable(public_intent, correction)
+    for relative, payload in corrected.items():
+        path = project / relative
+        if path.is_symlink() or not path.is_file():
+            raise ValueError("Product v0.2.3.3 measured claim artifact differs")
+        current = path.read_bytes()
+        if current not in {prior[relative], payload}:
+            raise ValueError("Product v0.2.3.3 measured claim artifact differs")
+        if current == payload:
+            continue
+        if relative.endswith(".md"):
+            _replace_public_text_v0233(path, payload)
+        else:
+            replacement = json.loads(payload)
+            if not isinstance(replacement, dict):
+                raise ValueError("Product v0.2.3.3 measured claim artifact differs")
+            _replace_public(path, replacement)
+    if any(
+        (project / relative).is_symlink()
+        or not (project / relative).is_file()
+        or (project / relative).read_bytes() != payload
+        for relative, payload in corrected.items()
+    ):
+        raise ValueError("Product v0.2.3.3 measured claim correction differs")
+    completion = {
+        "schema_version": (
+            "ecomsre.product.measured-claim-correction-completion.v0233"
+        ),
+        "correction_sha256": correction["correction_sha256"],
+        "verdict": "COMPLETE",
+    }
+    write_private_json(
+        private_root / "measured-claim-correction-completion.json",
+        {
+            **completion,
+            "completion_sha256": semantic_sha256_v22(completion),
+        },
+        create_once=True,
+    )
+    return correction
+
+
+def _measured_claim_correction_applied_v0233(
+    root: Path,
+    *,
+    private_root: Path,
+    publication: Mapping[str, Any],
+) -> bool:
+    private_intent = private_root / "measured-claim-correction.json"
+    private_completion = (
+        private_root / "measured-claim-correction-completion.json"
+    )
+    if not private_intent.exists() and not private_completion.exists():
+        return False
+    attempt_id = private_root.parent.name
+    public_intent = (
+        root
+        / _attempt_public_locator_v0233(attempt_id)
+        / "measured-claim-correction.json"
+    )
+    if any(
+        path.is_symlink() or not path.is_file()
+        for path in (private_intent, private_completion, public_intent)
+    ):
+        raise ValueError("Product v0.2.3.3 measured claim correction differs")
+    expected, corrected, _prior = _measured_claim_correction_material_v0233(
+        root,
+        attempt_id=attempt_id,
+        publication=publication,
+    )
+    completion = _object(private_completion)
+    completion_body = {
+        key: value for key, value in completion.items() if key != "completion_sha256"
+    }
+    if (
+        _object(private_intent) != expected
+        or _object(public_intent) != expected
+        or completion.get("schema_version")
+        != "ecomsre.product.measured-claim-correction-completion.v0233"
+        or completion.get("correction_sha256") != expected["correction_sha256"]
+        or completion.get("verdict") != "COMPLETE"
+        or completion.get("completion_sha256")
+        != semantic_sha256_v22(completion_body)
+        or any(
+            (root / relative).is_symlink()
+            or not (root / relative).is_file()
+            or (root / relative).read_bytes() != payload
+            for relative, payload in corrected.items()
+        )
+    ):
+        raise ValueError("Product v0.2.3.3 measured claim correction differs")
+    corrected_paths = set(corrected)
+    artifacts = publication.get("artifacts")
+    if not isinstance(artifacts, list):
+        raise ValueError("Product v0.2.3.3 measured claim correction differs")
+    for artifact in artifacts:
+        if not isinstance(artifact, Mapping):
+            raise ValueError("Product v0.2.3.3 measured claim correction differs")
+        relative = artifact.get("path")
+        mode = artifact.get("mode")
+        payload = artifact.get("payload")
+        if not isinstance(relative, str) or relative in corrected_paths:
+            continue
+        if not isinstance(mode, str) or not isinstance(payload, (Mapping, str)):
+            raise ValueError("Product v0.2.3.3 measured claim correction differs")
+        path = root / relative
+        expected_bytes = _publication_artifact_bytes_v0233(mode, payload)
+        if path.is_symlink() or not path.is_file() or path.read_bytes() != expected_bytes:
+            raise ValueError("Product v0.2.3.3 measured claim correction differs")
+    return True
+
+
 def _publish_measured_terminal_v0233(
     *,
     root: Path,
@@ -4066,7 +4445,13 @@ def _publish_measured_terminal_v0233(
         cleanup_proof_sha256=closure_sha256,
         repository_state_manifest_sha256=measured_manifest.manifest_sha256,
     )
-    reasons = "\n".join(f"- {reason}" for reason in result.reasons) or "- None"
+    claim_documents = _measured_claim_documents_v0233(
+        measured_terminal=result.measured_terminal,
+        result_sha256=result.result_sha256,
+        reasons=result.reasons,
+        capability_limitations=diagnosis.capability_limitations,
+        new_diagnosis_count=new_diagnosis_count,
+    )
     repair_requirements = handoff.get("repair_requirements")
     if not isinstance(repair_requirements, (list, tuple)):
         raise ValueError("Product v0.2.3.3 Knowledge handoff differs")
@@ -4162,29 +4547,14 @@ def _publish_measured_terminal_v0233(
         {
             "path": "docs/results/product-v0233-nofault-acceptance.md",
             "mode": "CREATE_TEXT",
-            "payload": (
-                "# Product v0.2.3.3 No-Fault Acceptance\n\n"
-                f"- Measured terminal: `{result.measured_terminal}`\n"
-                f"- Result SHA-256: `{result.result_sha256}`\n"
-                "- Formal traffic: `30 / 30`, failures `0`, retries `0`\n"
-                f"- New Incident / Diagnosis jobs: `1 / {new_diagnosis_count}`\n"
-                "- Persisted Diagnosis results: `1`\n"
-                "- Fault / Knowledge / Agent / Runbook / Provider: `0 / 0 / 0 / 0 / 0`\n"
-                "- Action authority: `NONE`\n"
-                "- Cleanup: `CLEAN`\n\n"
-                "## Reasons\n\n"
-                f"{reasons}\n"
-            ),
+            "payload": claim_documents[
+                "docs/results/product-v0233-nofault-acceptance.md"
+            ],
         },
         {
             "path": "docs/results/product-v0233-limitations.md",
             "mode": "CREATE_TEXT",
-            "payload": (
-                "# Product v0.2.3.3 Limitations\n\n"
-                f"Measured terminal: `{result.measured_terminal}`.\n\n"
-                f"{reasons}\n\n"
-                "This campaign grants no Fault, Knowledge-Loop, Agent, Runbook, or Provider authority.\n"
-            ),
+            "payload": claim_documents["docs/results/product-v0233-limitations.md"],
         },
         {
             "path": "docs/results/product-v0233-interview-brief.md",

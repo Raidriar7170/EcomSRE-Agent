@@ -104,6 +104,201 @@ def _validated_as(value: object) -> SimpleNamespace:
     return SimpleNamespace(model_validate_json=lambda _payload: value)
 
 
+def test_measured_claim_verifier_rejects_omitted_capability_limitations(
+    tmp_path: Path,
+) -> None:
+    result = SimpleNamespace(
+        measured_terminal="ECOMSRE_PRODUCT_V0233_NOFAULT_CAPABILITY_LIMITED",
+        result_sha256=_sha("1"),
+        reasons=(),
+    )
+    diagnosis = SimpleNamespace(
+        capability_limitations=(
+            "SOURCE_METRICS_QUERY_FAILURE",
+            "SOURCE_RESOURCES_COVERAGE_GAP",
+        )
+    )
+    documents = verifier._measured_claim_documents_v0233(
+        measured_terminal=result.measured_terminal,
+        result_sha256=result.result_sha256,
+        reasons=result.reasons,
+        capability_limitations=diagnosis.capability_limitations,
+        new_diagnosis_count=1,
+    )
+    for relative, payload in documents.items():
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(payload, encoding="utf-8")
+
+    verifier._verify_measured_claim_documents_v0233(
+        tmp_path,
+        result=result,
+        diagnosis=diagnosis,
+        new_diagnosis_count=1,
+    )
+
+    (tmp_path / "docs/results/product-v0233-limitations.md").write_text(
+        "# Product v0.2.3.3 Limitations\n\n- None\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="measured claim documents"):
+        verifier._verify_measured_claim_documents_v0233(
+            tmp_path,
+            result=result,
+            diagnosis=diagnosis,
+            new_diagnosis_count=1,
+        )
+
+
+def test_measured_claim_correction_verifier_binds_prior_and_corrected_hashes(
+    tmp_path: Path,
+) -> None:
+    attempt_id = "attempt-4"
+    result = SimpleNamespace(result_sha256=_sha("1"))
+    diagnosis = SimpleNamespace(
+        result_sha256=_sha("2"),
+        capability_limitations=(
+            "SOURCE_METRICS_QUERY_FAILURE",
+            "SOURCE_RESOURCES_COVERAGE_GAP",
+        ),
+    )
+    target_paths = (
+        "config/product-v0233/formal-attempt-ledger.json",
+        "docs/results/product-v0233-limitations.md",
+        "docs/results/product-v0233-nofault-acceptance.md",
+    )
+    for ordinal, relative in enumerate(target_paths, start=1):
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"corrected-{ordinal}\n", encoding="utf-8")
+    correction_body = {
+        "schema_version": "ecomsre.product.measured-claim-correction.v0233",
+        "attempt_id": attempt_id,
+        "correction_code": "CAPABILITY_LIMITATIONS_RENDERING_SOURCE",
+        "original_publication_sha256": _sha("3"),
+        "measured_result_sha256": result.result_sha256,
+        "diagnosis_result_sha256": diagnosis.result_sha256,
+        "capability_limitations": list(diagnosis.capability_limitations),
+        "artifacts": [
+            {
+                "path": relative,
+                "previous_sha256": _sha(str(ordinal)),
+                "corrected_sha256": _sha256_file(tmp_path / relative),
+            }
+            for ordinal, relative in enumerate(target_paths, start=4)
+        ],
+    }
+    correction = _sealed(correction_body, "correction_sha256")
+    correction_path = (
+        tmp_path
+        / "docs/analysis/product-v0233-attempts"
+        / attempt_id
+        / "measured-claim-correction.json"
+    )
+    _write_json(correction_path, correction)
+
+    verifier._verify_measured_claim_correction_v0233(
+        tmp_path,
+        attempt_id=attempt_id,
+        result=result,
+        diagnosis=diagnosis,
+    )
+
+    correction_body["artifacts"][0]["previous_sha256"] = correction_body[
+        "artifacts"
+    ][0]["corrected_sha256"]
+    _write_json(correction_path, _sealed(correction_body, "correction_sha256"))
+    with pytest.raises(ValueError, match="measured claim correction"):
+        verifier._verify_measured_claim_correction_v0233(
+            tmp_path,
+            attempt_id=attempt_id,
+            result=result,
+            diagnosis=diagnosis,
+        )
+
+
+def test_attempt4_current_result_requires_frozen_claim_correction(
+    tmp_path: Path,
+) -> None:
+    with pytest.raises(ValueError, match="measured claim correction"):
+        verifier._verify_measured_claim_correction_v0233(
+            tmp_path,
+            attempt_id="attempt-4",
+            result=SimpleNamespace(
+                result_sha256=verifier._ATTEMPT4_MEASURED_RESULT_SHA256
+            ),
+            diagnosis=SimpleNamespace(
+                result_sha256=_sha("2"),
+                capability_limitations=(
+                    "SOURCE_METRICS_QUERY_FAILURE",
+                    "SOURCE_RESOURCES_COVERAGE_GAP",
+                ),
+            ),
+        )
+
+
+def test_attempt4_claim_correction_rejects_resealed_wrong_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    attempt_id = "attempt-4"
+    result = SimpleNamespace(result_sha256=verifier._ATTEMPT4_MEASURED_RESULT_SHA256)
+    diagnosis = SimpleNamespace(
+        result_sha256=_sha("2"),
+        capability_limitations=(
+            "SOURCE_METRICS_QUERY_FAILURE",
+            "SOURCE_RESOURCES_COVERAGE_GAP",
+        ),
+    )
+    target_paths = (
+        "config/product-v0233/formal-attempt-ledger.json",
+        "docs/results/product-v0233-limitations.md",
+        "docs/results/product-v0233-nofault-acceptance.md",
+    )
+    for ordinal, relative in enumerate(target_paths, start=1):
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"corrected-{ordinal}\n", encoding="utf-8")
+    correction_body = {
+        "schema_version": "ecomsre.product.measured-claim-correction.v0233",
+        "attempt_id": attempt_id,
+        "correction_code": "CAPABILITY_LIMITATIONS_RENDERING_SOURCE",
+        "original_publication_sha256": _sha("9"),
+        "measured_result_sha256": result.result_sha256,
+        "diagnosis_result_sha256": diagnosis.result_sha256,
+        "capability_limitations": list(diagnosis.capability_limitations),
+        "artifacts": [
+            {
+                "path": relative,
+                "previous_sha256": _sha(str(ordinal)),
+                "corrected_sha256": _sha256_file(tmp_path / relative),
+            }
+            for ordinal, relative in enumerate(target_paths, start=4)
+        ],
+    }
+    correction = _sealed(correction_body, "correction_sha256")
+    correction_path = (
+        tmp_path
+        / "docs/analysis/product-v0233-attempts"
+        / attempt_id
+        / "measured-claim-correction.json"
+    )
+    _write_json(correction_path, correction)
+    monkeypatch.setattr(
+        verifier,
+        "_ATTEMPT4_MEASURED_CLAIM_CORRECTION_SHA256",
+        correction["correction_sha256"],
+    )
+
+    with pytest.raises(ValueError, match="measured claim correction"):
+        verifier._verify_measured_claim_correction_v0233(
+            tmp_path,
+            attempt_id=attempt_id,
+            result=result,
+            diagnosis=diagnosis,
+        )
+
+
 def _action(source: EvidenceSourceV22) -> EvidenceActionV22:
     catalog = build_action_catalog_v22(
         candidate_services=("checkout",),
@@ -654,15 +849,26 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
     _write_json(
         tmp_path / "docs/analysis/product-v0233-recovery-progress.json", progress
     )
-    for relative in (
-        "docs/results/product-v0233-nofault-acceptance.md",
-        "docs/results/product-v0233-limitations.md",
-        "docs/results/product-v0233-interview-brief.md",
-        "docs/analysis/product-v0233-knowledge-loop-handoff.md",
-    ):
+    claim_documents = verifier._measured_claim_documents_v0233(
+        measured_terminal=terminal,
+        result_sha256=result_sha256,
+        reasons=assessment.reasons,
+        capability_limitations=diagnosis.capability_limitations,
+        new_diagnosis_count=2 if recovery_required else 1,
+    )
+    public_documents = {
+        **claim_documents,
+        "docs/results/product-v0233-interview-brief.md": (
+            "verified recovery evidence\n"
+        ),
+        "docs/analysis/product-v0233-knowledge-loop-handoff.md": (
+            "verified recovery evidence\n"
+        ),
+    }
+    for relative, payload in public_documents.items():
         path = tmp_path / relative
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("verified recovery evidence\n", encoding="utf-8")
+        path.write_text(payload, encoding="utf-8")
 
     evidence_paths = (
         *tuple(path for path in attempt_root.iterdir() if path.is_file()),
@@ -963,7 +1169,10 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
         "LiveCaptureBundleV0233",
         _validated_as(mismatched_live_capture),
     )
-    with pytest.raises(ValueError, match="recovered terminal"):
+    with pytest.raises(
+        ValueError,
+        match="measured claim documents|recovered terminal",
+    ):
         verifier.verify_product_v0233_terminal(tmp_path)
     monkeypatch.setattr(
         verifier,
@@ -1102,7 +1311,10 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
         "NoFaultAcceptanceResultV0233",
         _validated_as(contradictory_result),
     )
-    with pytest.raises(ValueError, match="recovered terminal"):
+    with pytest.raises(
+        ValueError,
+        match="measured claim documents|recovered terminal",
+    ):
         verifier.verify_product_v0233_terminal(tmp_path)
     monkeypatch.setattr(
         verifier,
