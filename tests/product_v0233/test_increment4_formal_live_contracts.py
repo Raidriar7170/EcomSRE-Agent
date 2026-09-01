@@ -9,6 +9,8 @@ import pytest
 
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 from ecomsre.product.pilot.fresh_formal_acceptance_v0233 import (
+    NoFaultAcceptanceResultV0233,
+    admit_incident_creation_v0233,
     load_fresh_traffic_profile_v0233,
 )
 from ecomsre.product.pilot.fresh_formal_source_v0233 import (
@@ -24,15 +26,19 @@ from ecomsre.product.pilot.formal_live_v0233 import (
     FormalObservedStateCountsV0233,
     FormalSafetyObservationV0233,
     FormalTrafficResultV0233,
+    FreshRuntimeSnapshotProofV0233,
+    RuntimeAuthorityProofV0233,
 )
 from ecomsre.product.pilot.healthy_traffic_v0232 import (
     HealthyTrafficRunnerV0232,
+    IncidentTrafficBindingV0232,
     load_checkout_traffic_contract_v0232,
 )
 from ecomsre.product.pilot.repository_state_v0233 import (
     ProductV0233RepositoryStateManifest,
     RepositoryPhaseV0233,
 )
+from ecomsre.product.pilot.serialization_v0233 import semantic_json_sha256_v0233
 from scripts.product_v0233 import run_formal_nofault as formal_runner
 from scripts.product_v0233.run_formal_nofault import (
     _frozen_semantic_surface_sha256_v0233,
@@ -228,11 +234,54 @@ def test_formal_admission_and_reservation_are_exactly_once_and_self_sealed() -> 
     assert admission.measured_result_count == 0
     assert reservation.formal_execution_ordinal == 1
     assert reservation.action_authority == "NONE"
+    assert admission.admission_sha256 == semantic_sha256_v22(
+        admission.model_dump(mode="json", exclude={"admission_sha256"})
+    )
+    assert reservation.reservation_sha256 == semantic_sha256_v22(
+        reservation.model_dump(mode="json", exclude={"reservation_sha256"})
+    )
 
     with pytest.raises(ValueError, match="reservation"):
         FormalExecutionReservationV0233.model_validate(
             {**reservation.model_dump(mode="json"), "reservation_sha256": _sha("0")}
         )
+
+
+def test_json_seal_helper_normalizes_supported_acceptance_value_types() -> None:
+    admission = _admission()
+    value = {
+        "observed_at": datetime(2026, 9, 1, tzinfo=UTC),
+        "phase": RepositoryPhaseV0233.FORMAL_RUNNING,
+        "path": Path("attempts/attempt-2"),
+        "items": ("capture", "diagnosis"),
+        "admission": admission,
+    }
+    expected = {
+        "observed_at": "2026-09-01T00:00:00Z",
+        "phase": "FORMAL_RUNNING",
+        "path": "attempts/attempt-2",
+        "items": ["capture", "diagnosis"],
+        "admission": admission.model_dump(mode="json"),
+    }
+
+    assert semantic_json_sha256_v0233(value) == semantic_sha256_v22(expected)
+
+
+def test_runtime_authority_proof_is_canonically_sealed() -> None:
+    proof = RuntimeAuthorityProofV0233.build(
+        admission_sha256=_sha("1"),
+        runtime_continuity_descriptor_sha256=_sha("2"),
+        pilot_runtime_authority_sha256=_sha("3"),
+        runtime_connector_binding_sha256=_sha("4"),
+        runtime_snapshot_sha256=_sha("5"),
+        checkout_state="RUNNING",
+        checkout_healthy=True,
+        checkout_restart_count=0,
+    )
+
+    assert proof.proof_sha256 == semantic_sha256_v22(
+        proof.model_dump(mode="json", exclude={"proof_sha256"})
+    )
 
 
 def test_historical_source_attempt_uses_original_raw_seals() -> None:
@@ -401,6 +450,9 @@ def test_formal_traffic_requires_exact_30_zero_retry_and_minimum_duration() -> N
     assert result.execution.run.successful_transactions == 30
     assert result.execution.run.failed_transactions == 0
     assert result.execution.run.transport_retry_count == 0
+    assert result.result_sha256 == semantic_sha256_v22(
+        result.model_dump(mode="json", exclude={"result_sha256"})
+    )
 
     with pytest.raises(ValueError, match="formal traffic"):
         FormalTrafficResultV0233.model_validate(
@@ -410,6 +462,145 @@ def test_formal_traffic_requires_exact_30_zero_retry_and_minimum_duration() -> N
                 "result_sha256": _sha("0"),
             }
         )
+
+
+def test_fresh_runtime_snapshot_with_utc_datetime_is_canonically_sealed() -> None:
+    proof = FreshRuntimeSnapshotProofV0233.build(
+        admission_sha256=_sha("1"),
+        formal_traffic_result_sha256=_sha("2"),
+        runtime_snapshot_sha256=_sha("3"),
+        observed_at=datetime(2026, 9, 1, tzinfo=UTC),
+        pilot_runtime_authority_sha256=_sha("4"),
+        runtime_continuity_descriptor_sha256=_sha("5"),
+        runtime_connector_binding_sha256=_sha("6"),
+    )
+
+    assert proof.proof_sha256 == semantic_sha256_v22(
+        proof.model_dump(mode="json", exclude={"proof_sha256"})
+    )
+
+
+def test_post_traffic_acceptance_artifact_dry_run_publishes_measured_result(
+    tmp_path: Path,
+) -> None:
+    admission = _admission()
+    reservation = FormalExecutionReservationV0233.build(
+        admission=admission,
+        reserved_at=datetime(2026, 9, 1, tzinfo=UTC),
+    )
+    execution = _successful_execution()
+    profile = load_fresh_traffic_profile_v0233(ROOT, role="FORMAL")
+    episode_started_at = execution.run.started_at - timedelta(seconds=1)
+    episode_ended_at = episode_started_at + timedelta(seconds=300)
+    traffic = FormalTrafficResultV0233.build(
+        admission_sha256=admission.admission_sha256,
+        formal_profile_sha256=profile.profile_sha256,
+        traffic_contract_sha256=execution.run.contract_sha256,
+        execution=execution,
+        episode_started_at=episode_started_at,
+        episode_ended_at=episode_ended_at,
+        monotonic_duration_ms=300_000,
+    )
+    fresh_runtime = FreshRuntimeSnapshotProofV0233.build(
+        admission_sha256=admission.admission_sha256,
+        formal_traffic_result_sha256=traffic.result_sha256,
+        runtime_snapshot_sha256=_sha("3"),
+        observed_at=episode_ended_at,
+        pilot_runtime_authority_sha256=_sha("4"),
+        runtime_continuity_descriptor_sha256=_sha("5"),
+        runtime_connector_binding_sha256=_sha("6"),
+    )
+
+    admit_incident_creation_v0233(
+        runtime_authority_pass=True,
+        baseline_restart_pass=True,
+        formal_traffic_pass=True,
+        fresh_runtime_snapshot_pass=True,
+        new_incident_count=0,
+        new_diagnosis_count=0,
+    )
+    binding = IncidentTrafficBindingV0232.build(
+        incident_id="inc-product-v0233-dry-run",
+        execution=execution,
+        episode_started_at=episode_started_at,
+        episode_ended_at=episode_ended_at,
+    )
+    result = NoFaultAcceptanceResultV0233.build_from_v0232(
+        campaign_sha256=_sha("1"),
+        source_selection_sha256=_sha("2"),
+        formal_clone_sha256=_sha("3"),
+        runtime_authority_proof_sha256=_sha("4"),
+        baseline_restart_proof_sha256=_sha("5"),
+        traffic_preflight_sha256=_sha("6"),
+        formal_traffic_execution_sha256=traffic.result_sha256,
+        fresh_runtime_snapshot_sha256=fresh_runtime.proof_sha256,
+        incident_traffic_binding_sha256=binding.binding_sha256,
+        incident_sha256=_sha("a"),
+        diagnosis_result_sha256=_sha("b"),
+        evidence_bundle_sha256=_sha("c"),
+        evidence_index_sha256=_sha("d"),
+        decision_trace_sha256=_sha("e"),
+        stage_journal_tail_sha256=_sha("f"),
+        v0232_assessment_sha256=_sha("0"),
+        v0232_measured_terminal="ECOMSRE_PRODUCT_V0232_NOFAULT_FULLY_SUPPORTED",
+        reasons=(),
+        safety_counters={
+            "agent_writes": 0,
+            "runbook_executions": 0,
+            "provider_calls": 0,
+            "fault_attempts": 0,
+            "knowledge_loop_executions": 0,
+        },
+        cleanup_proof_sha256=_sha("1"),
+    )
+    bundle = _terminal_publication_bundle(
+        reservation=reservation,
+        kind="MEASURED",
+        terminal=result.measured_terminal,
+        artifacts=(
+            {
+                "path": "docs/analysis/product-v0233-fresh-runtime-snapshot.json",
+                "mode": "CREATE_JSON",
+                "payload": fresh_runtime.model_dump(mode="json"),
+            },
+            {
+                "path": "docs/analysis/product-v0233-incident-traffic-binding.json",
+                "mode": "CREATE_JSON",
+                "payload": binding.model_dump(mode="json"),
+            },
+            {
+                "path": "docs/results/product-v0233-nofault-acceptance.json",
+                "mode": "CREATE_JSON",
+                "payload": result.model_dump(mode="json"),
+            },
+            {
+                "path": "config/product-v0233/repository-state-manifest.json",
+                "mode": "REPLACE_JSON",
+                "payload": {"phase": "FORMAL_MEASURED"},
+            },
+            {
+                "path": "docs/analysis/product-v0233-progress.json",
+                "mode": "REPLACE_JSON",
+                "payload": {"phase": "FORMAL_MEASURED"},
+            },
+        ),
+    )
+    private_root = tmp_path / ".local/product-v0233/attempts/dry-run"
+
+    _persist_and_apply_terminal_publication(
+        root=tmp_path,
+        private_root=private_root,
+        bundle=bundle,
+    )
+
+    assert result.result_sha256 == semantic_sha256_v22(
+        result.model_dump(mode="json", exclude={"result_sha256"})
+    )
+    assert binding.binding_sha256 == semantic_sha256_v22(
+        binding.model_dump(mode="json", exclude={"binding_sha256"})
+    )
+    assert (private_root / "terminal-publication-completion.json").is_file()
+    assert (tmp_path / "docs/results/product-v0233-nofault-acceptance.json").is_file()
 
 
 def test_formal_closure_fails_closed_on_any_queue_baseline_or_source_drift() -> None:
@@ -437,6 +628,9 @@ def test_formal_closure_fails_closed_on_any_queue_baseline_or_source_drift() -> 
         safety_observation=safety.model_dump(mode="json"),
     )
     assert closure.verdict == "CLEAN"
+    assert closure.closure_sha256 == semantic_sha256_v22(
+        closure.model_dump(mode="json", exclude={"closure_sha256"})
+    )
 
     with pytest.raises(ValueError, match="closure"):
         FormalClosureProofV0233.model_validate(
@@ -501,6 +695,12 @@ def test_action_journal_observes_forbidden_dispatch_instead_of_hardcoding_zero()
 
     assert action_journal.fault_attempts == 1
     assert safety.safe is False
+    assert action_journal.journal_sha256 == semantic_sha256_v22(
+        action_journal.model_dump(mode="json", exclude={"journal_sha256"})
+    )
+    assert safety.observation_sha256 == semantic_sha256_v22(
+        safety.model_dump(mode="json", exclude={"observation_sha256"})
+    )
 
 
 def test_blocker_cannot_claim_a_measured_result() -> None:
@@ -525,6 +725,9 @@ def test_blocker_cannot_claim_a_measured_result() -> None:
     )
     assert blocker.measured_result_count == 0
     assert blocker.measured_terminal is None
+    assert blocker.blocker_sha256 == semantic_sha256_v22(
+        blocker.model_dump(mode="json", exclude={"blocker_sha256"})
+    )
 
     with pytest.raises(ValueError, match="Input should be None"):
         FormalExecutionBlockerV0233.model_validate(
@@ -642,6 +845,9 @@ def test_clone_zero_blocker_records_unavailable_poststate_without_fake_cleanup()
     assert blocker.formal_clone_count == 0
     assert blocker.cleanup_proof_sha256 is None
     assert blocker.safety_observation.observation_status == "UNAVAILABLE"
+    assert blocker.blocker_sha256 == semantic_sha256_v22(
+        blocker.model_dump(mode="json", exclude={"blocker_sha256"})
+    )
 
 
 def test_restart_allows_historical_failed_jobs_but_rejects_a_new_failure() -> None:
@@ -660,6 +866,9 @@ def test_restart_allows_historical_failed_jobs_but_rejects_a_new_failure() -> No
         failed_jobs_after=2,
     )
     assert proof.failed_jobs_after == 2
+    assert proof.proof_sha256 == semantic_sha256_v22(
+        proof.model_dump(mode="json", exclude={"proof_sha256"})
+    )
 
     with pytest.raises(ValueError, match="restart proof"):
         BaselineRestartProofV0233.model_validate(

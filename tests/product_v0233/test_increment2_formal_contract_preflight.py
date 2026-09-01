@@ -167,6 +167,12 @@ def test_stage_journal_success_and_failure_acceptance_are_disjoint() -> None:
     assert failure.job_status == "FAILED"
     assert failure.stage_journal_terminal == "FAILED"
     assert failure.diagnosis_result_sha256 is None
+    assert success.acceptance_sha256 == semantic_sha256_v22(
+        success.model_dump(mode="json", exclude={"acceptance_sha256"})
+    )
+    assert failure.acceptance_sha256 == semantic_sha256_v22(
+        failure.model_dump(mode="json", exclude={"acceptance_sha256"})
+    )
 
     with pytest.raises(ValueError, match="pipeline acceptance"):
         DiagnosisPipelineAcceptanceV0233.model_validate(
@@ -211,6 +217,9 @@ def test_formal_incident_diagnosis_cardinality_is_delta_bound() -> None:
         phase="POST_DIAGNOSIS_SUCCEEDED", **counts
     )
     assert accepted.phase == "POST_DIAGNOSIS_SUCCEEDED"
+    assert accepted.cardinality_sha256 == semantic_sha256_v22(
+        accepted.model_dump(mode="json", exclude={"cardinality_sha256"})
+    )
     with pytest.raises(ValueError, match="formal cardinality"):
         FormalIncidentDiagnosisCardinalityV0233.build(
             phase="POST_DIAGNOSIS_SUCCEEDED",

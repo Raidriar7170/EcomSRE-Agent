@@ -6,11 +6,11 @@ from datetime import datetime
 from typing import Any, Literal
 
 from pydantic import ConfigDict, Field, model_validator
-from pydantic_core import to_jsonable_python
 
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 from ecomsre.product.contracts import ProductModelV1
 from ecomsre.product.pilot.healthy_traffic_v0232 import HealthyTrafficExecutionV0232
+from ecomsre.product.pilot.serialization_v0233 import semantic_json_sha256_v0233
 
 
 _SHA256_PATTERN = r"^[0-9a-f]{64}$"
@@ -93,7 +93,7 @@ class FormalExecutionAdmissionV0233(ProductModelV1):
             "action_authority": "NONE",
         }
         return cls.model_validate(
-            {**body, "admission_sha256": semantic_sha256_v22(body)}
+            {**body, "admission_sha256": semantic_json_sha256_v0233(body)}
         )
 
 
@@ -138,7 +138,7 @@ class FormalExecutionReservationV0233(ProductModelV1):
         return cls.model_validate(
             {
                 **body,
-                "reservation_sha256": semantic_sha256_v22(to_jsonable_python(body)),
+                "reservation_sha256": semantic_json_sha256_v0233(body),
             }
         )
 
@@ -175,7 +175,9 @@ class RuntimeAuthorityProofV0233(ProductModelV1):
             "terminal": RUNTIME_AUTHORITY_CONTINUITY_PASS_V0233,
             **payload,
         }
-        return cls.model_validate({**body, "proof_sha256": semantic_sha256_v22(body)})
+        return cls.model_validate(
+            {**body, "proof_sha256": semantic_json_sha256_v0233(body)}
+        )
 
 
 class BaselineRestartProofV0233(ProductModelV1):
@@ -226,7 +228,9 @@ class BaselineRestartProofV0233(ProductModelV1):
             "pending_jobs_after": 0,
             "running_jobs_after": 0,
         }
-        return cls.model_validate({**body, "proof_sha256": semantic_sha256_v22(body)})
+        return cls.model_validate(
+            {**body, "proof_sha256": semantic_json_sha256_v0233(body)}
+        )
 
 
 class FormalTrafficResultV0233(ProductModelV1):
@@ -281,7 +285,7 @@ class FormalTrafficResultV0233(ProductModelV1):
         return cls.model_validate(
             {
                 **body,
-                "result_sha256": semantic_sha256_v22(to_jsonable_python(body)),
+                "result_sha256": semantic_json_sha256_v0233(body),
             }
         )
 
@@ -321,8 +325,13 @@ class FreshRuntimeSnapshotProofV0233(ProductModelV1):
             "schema_version": "ecomsre.product.fresh-runtime-snapshot-proof.v0233",
             "terminal": FRESH_RUNTIME_SNAPSHOT_PASS_V0233,
             **payload,
+            "checkout_state": "RUNNING",
+            "checkout_healthy": True,
+            "checkout_restart_count": 0,
         }
-        return cls.model_validate({**body, "proof_sha256": semantic_sha256_v22(body)})
+        return cls.model_validate(
+            {**body, "proof_sha256": semantic_json_sha256_v0233(body)}
+        )
 
 
 class FormalObservedStateCountsV0233(ProductModelV1):
@@ -402,7 +411,9 @@ class FormalActionJournalV0233(ProductModelV1):
             "fault_attempts": events.count("FAULT_ATTEMPT_REQUESTED"),
             "knowledge_loop_executions": events.count("KNOWLEDGE_LOOP_REQUESTED"),
         }
-        return cls.model_validate({**body, "journal_sha256": semantic_sha256_v22(body)})
+        return cls.model_validate(
+            {**body, "journal_sha256": semantic_json_sha256_v0233(body)}
+        )
 
 
 class FormalSafetyObservationV0233(ProductModelV1):
@@ -506,7 +517,7 @@ class FormalSafetyObservationV0233(ProductModelV1):
             **payload,
         }
         return cls.model_validate(
-            {**body, "observation_sha256": semantic_sha256_v22(body)}
+            {**body, "observation_sha256": semantic_json_sha256_v0233(body)}
         )
 
 
@@ -564,7 +575,9 @@ class FormalClosureProofV0233(ProductModelV1):
             "verdict": "CLEAN",
             **payload,
         }
-        return cls.model_validate({**body, "closure_sha256": semantic_sha256_v22(body)})
+        return cls.model_validate(
+            {**body, "closure_sha256": semantic_json_sha256_v0233(body)}
+        )
 
 
 class FormalExecutionBlockerV0233(ProductModelV1):
@@ -655,7 +668,9 @@ class FormalExecutionBlockerV0233(ProductModelV1):
             "measured_terminal": None,
             "action_authority": "NONE",
         }
-        return cls.model_validate({**body, "blocker_sha256": semantic_sha256_v22(body)})
+        return cls.model_validate(
+            {**body, "blocker_sha256": semantic_json_sha256_v0233(body)}
+        )
 
 
 __all__ = (
