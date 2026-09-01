@@ -3538,6 +3538,242 @@ def _checkpoint_chain_public_v0233(
     return {**body, "chain_sha256": semantic_sha256_v22(body)}
 
 
+def _public_recovery_lineage_v0233(
+    recovery_lineage: Mapping[str, Any],
+    *,
+    pipeline: DiagnosisPipelineAcceptanceV0233,
+    acquisition: DiagnosisAcquisitionCheckpointV0233,
+    measured_ledger: FormalAttemptLedgerV0233,
+    result: NoFaultAcceptanceResultV0233,
+) -> dict[str, Any]:
+    lineage_keys = {
+        "schema_version",
+        "attempt_id",
+        "incident_id",
+        "incident_sha256",
+        "acquisition_sha256",
+        "preserved_failed_job_ids",
+        "preserved_failed_jobs",
+        "successful_job_id",
+        "successful_job",
+        "successful_diagnosis_generation",
+        "diagnosis_result_sha256",
+        "lineage_sha256",
+    }
+    projection_keys = {
+        "job_id",
+        "job_type",
+        "status",
+        "idempotency_key",
+        "attempt_count",
+        "incident_id",
+        "formal_recovery_context",
+        "payload_sha256",
+        "result_sha256",
+        "diagnosis_result_sha256",
+        "safe_error_code",
+        "failure_stage",
+        "last_passed_stage",
+        "interruption_after_stage",
+        "exception_fingerprint",
+        "journal_tail_sha256",
+        "private_failure_envelope_sha256",
+        "projection_sha256",
+    }
+
+    def sha256_exact(value: object) -> bool:
+        return (
+            isinstance(value, str)
+            and len(value) == 64
+            and all(character in "0123456789abcdef" for character in value)
+        )
+
+    lineage_body = {
+        key: value for key, value in recovery_lineage.items() if key != "lineage_sha256"
+    }
+    failed_ids = lineage_body.get("preserved_failed_job_ids")
+    failed_values = lineage_body.get("preserved_failed_jobs")
+    successful_job_value = lineage_body.get("successful_job")
+    if (
+        set(recovery_lineage) != lineage_keys
+        or not isinstance(failed_ids, list)
+        or not isinstance(failed_values, list)
+        or not isinstance(successful_job_value, Mapping)
+        or any(not isinstance(job_id, str) for job_id in failed_ids)
+        or failed_ids != sorted(set(failed_ids))
+        or len(failed_values) != len(failed_ids)
+    ):
+        raise ValueError("Product v0.2.3.3 Diagnosis recovery lineage differs")
+    if (
+        recovery_lineage.get("lineage_sha256") != semantic_sha256_v22(lineage_body)
+        or lineage_body.get("schema_version")
+        != "ecomsre.product.diagnosis-recovery-lineage.v0233"
+        or not measured_ledger.attempts
+        or measured_ledger.campaign_id != acquisition.campaign_id
+        or lineage_body.get("attempt_id") != acquisition.attempt_id
+        or acquisition.attempt_id != measured_ledger.attempts[-1].attempt_id
+        or lineage_body.get("incident_id") != acquisition.incident_id
+        or lineage_body.get("incident_sha256") != acquisition.incident_sha256
+        or lineage_body.get("incident_sha256") != result.incident_sha256
+        or lineage_body.get("acquisition_sha256") != acquisition.acquisition_sha256
+        or lineage_body.get("successful_job_id") != pipeline.job_id
+        or lineage_body.get("successful_diagnosis_generation")
+        != len(failed_ids) + 1
+        or lineage_body.get("diagnosis_result_sha256")
+        != pipeline.diagnosis_result_sha256
+        or lineage_body.get("diagnosis_result_sha256")
+        != result.diagnosis_result_sha256
+        or pipeline.job_status != ProductJobStatusV1.SUCCEEDED.value
+        or pipeline.stage_journal_terminal != "JOB_SUCCEEDED"
+    ):
+        raise ValueError("Product v0.2.3.3 Diagnosis recovery lineage differs")
+    projections = (*failed_values, successful_job_value)
+    contexts: list[FormalDiagnosisJobContextV0233] = []
+    for ordinal, projection_value in enumerate(projections, start=1):
+        if not isinstance(projection_value, Mapping):
+            raise ValueError("Product v0.2.3.3 Diagnosis recovery lineage differs")
+        projection = dict(projection_value)
+        projection_body = {
+            key: value for key, value in projection.items() if key != "projection_sha256"
+        }
+        try:
+            context = FormalDiagnosisJobContextV0233.model_validate(
+                projection_body.get("formal_recovery_context")
+            )
+        except ValueError as error:
+            raise ValueError(
+                "Product v0.2.3.3 Diagnosis recovery lineage differs"
+            ) from error
+        expected_job_id = failed_ids[ordinal - 1] if ordinal <= len(failed_ids) else pipeline.job_id
+        expected_status = (
+            ProductJobStatusV1.FAILED.value
+            if ordinal <= len(failed_ids)
+            else ProductJobStatusV1.SUCCEEDED.value
+        )
+        rebound_context = context.model_copy(
+            update={"acquisition_sha256": lineage_body["acquisition_sha256"]}
+        )
+        if (
+            set(projection) != projection_keys
+            or projection.get("projection_sha256")
+            != semantic_sha256_v22(projection_body)
+            or projection_body.get("job_id") != expected_job_id
+            or projection_body.get("job_type") != ProductJobTypeV1.DIAGNOSIS.value
+            or projection_body.get("status") != expected_status
+            or projection_body.get("incident_id") != lineage_body["incident_id"]
+            or context.attempt_id != lineage_body["attempt_id"]
+            or context.diagnosis_generation != ordinal
+            or context.campaign_id != acquisition.campaign_id
+            or context.semantic_generation != acquisition.semantic_generation
+            or context.semantic_generation
+            != measured_ledger.attempts[-1].semantic_generation
+            or context.active_profile_sha256 != acquisition.active_profile_sha256
+            or context.semantic_surface_sha256
+            != acquisition.semantic_surface_sha256
+            or context.acquisition_sha256
+            != (None if ordinal == 1 else lineage_body["acquisition_sha256"])
+            or projection_body.get("payload_sha256")
+            != semantic_sha256_v22(
+                {
+                    "incident_id": lineage_body["incident_id"],
+                    "formal_recovery_v0233": context.model_dump(mode="json"),
+                }
+            )
+            or projection_body.get("idempotency_key")
+            != final_diagnosis_idempotency_key_v0233(
+                context=rebound_context,
+                incident_sha256=cast(str, lineage_body["incident_sha256"]),
+                acquisition_sha256=cast(str, lineage_body["acquisition_sha256"]),
+            )
+        ):
+            raise ValueError("Product v0.2.3.3 Diagnosis recovery lineage differs")
+        contexts.append(context)
+    first_context = contexts[0]
+    if any(
+        context.campaign_id != first_context.campaign_id
+        or context.semantic_generation != first_context.semantic_generation
+        or context.active_profile_sha256 != first_context.active_profile_sha256
+        or context.semantic_surface_sha256 != first_context.semantic_surface_sha256
+        for context in contexts[1:]
+    ):
+        raise ValueError("Product v0.2.3.3 Diagnosis recovery lineage differs")
+    executable_stages = tuple(
+        stage.value
+        for stage in DiagnosisPipelineStageV02322
+        if stage is not DiagnosisPipelineStageV02322.FAILED
+    )
+    for projection_value in failed_values:
+        failed_projection = cast(Mapping[str, Any], projection_value)
+        last_passed_stage = failed_projection.get("last_passed_stage")
+        valid_last_passed_stage = (
+            last_passed_stage is None or last_passed_stage in executable_stages[:-1]
+        )
+        expected_failure_stage = (
+            executable_stages[0]
+            if last_passed_stage is None
+            else (
+                executable_stages[executable_stages.index(last_passed_stage) + 1]
+                if last_passed_stage in executable_stages[:-1]
+                else None
+            )
+        )
+        expected_interruption_stage = (
+            last_passed_stage
+            if failed_projection.get("safe_error_code")
+            == "FORMAL_WORKER_INTERRUPTED"
+            else None
+        )
+        if (
+            failed_projection.get("result_sha256") is not None
+            or failed_projection.get("diagnosis_result_sha256") is not None
+            or not isinstance(failed_projection.get("safe_error_code"), str)
+            or not valid_last_passed_stage
+            or failed_projection.get("failure_stage") != expected_failure_stage
+            or failed_projection.get("interruption_after_stage")
+            != expected_interruption_stage
+            or not sha256_exact(failed_projection.get("exception_fingerprint"))
+            or not sha256_exact(failed_projection.get("journal_tail_sha256"))
+            or not sha256_exact(
+                failed_projection.get("private_failure_envelope_sha256")
+            )
+        ):
+            raise ValueError("Product v0.2.3.3 Diagnosis recovery lineage differs")
+    successful_job_body = {
+        key: value
+        for key, value in successful_job_value.items()
+        if key != "projection_sha256"
+    }
+    if (
+        successful_job_body.get("diagnosis_result_sha256")
+        != pipeline.diagnosis_result_sha256
+        or not sha256_exact(successful_job_body.get("result_sha256"))
+        or successful_job_body.get("safe_error_code") is not None
+        or successful_job_body.get("failure_stage") is not None
+        or successful_job_body.get("exception_fingerprint") is not None
+        or successful_job_body.get("private_failure_envelope_sha256") is not None
+        or successful_job_body.get("last_passed_stage") != "JOB_SUCCEEDED"
+        or successful_job_body.get("interruption_after_stage") is not None
+        or successful_job_body.get("journal_tail_sha256") is not None
+    ):
+        raise ValueError("Product v0.2.3.3 Diagnosis recovery lineage differs")
+    public_successful_job_body = {
+        **successful_job_body,
+        "journal_tail_sha256": pipeline.journal_tail_sha256,
+    }
+    public_successful_job = {
+        **public_successful_job_body,
+        "projection_sha256": semantic_sha256_v22(public_successful_job_body),
+    }
+    public_lineage_body = {
+        **lineage_body,
+        "successful_job": public_successful_job,
+    }
+    return {
+        **public_lineage_body,
+        "lineage_sha256": semantic_sha256_v22(public_lineage_body),
+    }
+
+
 def _ledger_with_public_evidence_v0233(
     ledger: FormalAttemptLedgerV0233,
     terminal_artifacts: Sequence[Mapping[str, Any]],
@@ -3612,7 +3848,15 @@ def _publish_measured_terminal_v0233(
     if not isinstance(closure_sha256, str):
         raise ValueError("Product v0.2.3.3 measured closure differs")
     evidence_sha256 = semantic_sha256_v22(evidence.model_dump(mode="json"))
-    successful_job = recovery_lineage.get("successful_job")
+    public_recovery_lineage = _public_recovery_lineage_v0233(
+        recovery_lineage,
+        pipeline=pipeline,
+        acquisition=recovery_acquisition,
+        measured_ledger=measured_ledger,
+        result=result,
+    )
+    measured_record = measured_ledger.attempts[-1]
+    successful_job = public_recovery_lineage.get("successful_job")
     rescored_assessment = score_nofault_evidence_v0232(
         diagnosis=diagnosis,
         bundle=evidence,
@@ -3646,7 +3890,6 @@ def _publish_measured_terminal_v0233(
         for service in raw_runtime.services
         if service.logical_service == "checkout"
     )
-    measured_record = measured_ledger.attempts[-1]
     if (
         result.diagnosis_result_sha256 != diagnosis.result_sha256
         or result.evidence_bundle_sha256 != evidence_sha256
@@ -3876,7 +4119,7 @@ def _publish_measured_terminal_v0233(
         {
             "path": f"{public_attempt_locator}/diagnosis-recovery-lineage.json",
             "mode": "CREATE_JSON",
-            "payload": dict(recovery_lineage),
+            "payload": public_recovery_lineage,
         },
         {
             "path": f"{public_attempt_locator}/diagnosis-result.json",

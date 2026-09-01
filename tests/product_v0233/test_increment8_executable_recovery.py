@@ -56,6 +56,285 @@ def _sha(character: str) -> str:
     return character * 64
 
 
+def _successful_private_lineage() -> tuple[
+    dict[str, object], object, object, object, object
+]:
+    attempt_id = "attempt-4"
+    incident_id = "inc-" + "1" * 24
+    incident_sha256 = _sha("b")
+    acquisition_sha256 = _sha("c")
+    diagnosis_result_sha256 = _sha("d")
+    context = FormalDiagnosisJobContextV0233.build(
+        campaign_id="product-v0233-fresh-formal-nofault",
+        semantic_generation=3,
+        attempt_id=attempt_id,
+        diagnosis_generation=1,
+        active_profile_sha256=_sha("e"),
+        semantic_surface_sha256=_sha("f"),
+        acquisition_sha256=None,
+    )
+    payload = {
+        "incident_id": incident_id,
+        "formal_recovery_v0233": context.model_dump(mode="json"),
+    }
+    job_body = {
+        "job_id": "job-" + "1" * 24,
+        "job_type": "DIAGNOSIS",
+        "status": "SUCCEEDED",
+        "idempotency_key": final_diagnosis_idempotency_key_v0233(
+            context=context,
+            incident_sha256=incident_sha256,
+            acquisition_sha256=acquisition_sha256,
+        ),
+        "attempt_count": 1,
+        "incident_id": incident_id,
+        "formal_recovery_context": context.model_dump(mode="json"),
+        "payload_sha256": semantic_sha256_v22(payload),
+        "result_sha256": _sha("1"),
+        "diagnosis_result_sha256": diagnosis_result_sha256,
+        "safe_error_code": None,
+        "failure_stage": None,
+        "last_passed_stage": "JOB_SUCCEEDED",
+        "interruption_after_stage": None,
+        "exception_fingerprint": None,
+        "journal_tail_sha256": None,
+        "private_failure_envelope_sha256": None,
+    }
+    job = {
+        **job_body,
+        "projection_sha256": semantic_sha256_v22(job_body),
+    }
+    lineage_body = {
+        "schema_version": "ecomsre.product.diagnosis-recovery-lineage.v0233",
+        "attempt_id": attempt_id,
+        "incident_id": incident_id,
+        "incident_sha256": incident_sha256,
+        "acquisition_sha256": acquisition_sha256,
+        "preserved_failed_job_ids": [],
+        "preserved_failed_jobs": [],
+        "successful_job_id": job["job_id"],
+        "successful_job": job,
+        "successful_diagnosis_generation": 1,
+        "diagnosis_result_sha256": diagnosis_result_sha256,
+    }
+    lineage = {
+        **lineage_body,
+        "lineage_sha256": semantic_sha256_v22(lineage_body),
+    }
+    pipeline = _artifact(
+        job_id=job["job_id"],
+        job_status="SUCCEEDED",
+        stage_journal_terminal="JOB_SUCCEEDED",
+        journal_tail_sha256=_sha("a"),
+        diagnosis_result_sha256=diagnosis_result_sha256,
+    )
+    acquisition = _artifact(
+        campaign_id=context.campaign_id,
+        attempt_id=attempt_id,
+        semantic_generation=context.semantic_generation,
+        semantic_surface_sha256=context.semantic_surface_sha256,
+        active_profile_sha256=context.active_profile_sha256,
+        incident_id=incident_id,
+        incident_sha256=incident_sha256,
+        acquisition_sha256=acquisition_sha256,
+    )
+    measured_ledger = _artifact(
+        campaign_id=context.campaign_id,
+        attempts=(
+            _artifact(
+                attempt_id=attempt_id,
+                semantic_generation=context.semantic_generation,
+            ),
+        ),
+    )
+    result = _artifact(
+        incident_sha256=incident_sha256,
+        diagnosis_result_sha256=diagnosis_result_sha256,
+    )
+    return lineage, pipeline, acquisition, measured_ledger, result
+
+
+def test_public_recovery_lineage_binds_success_journal_tail() -> None:
+    lineage, pipeline, acquisition, measured_ledger, result = (
+        _successful_private_lineage()
+    )
+
+    projected = run_command._public_recovery_lineage_v0233(  # noqa: SLF001
+        lineage,
+        pipeline=pipeline,
+        acquisition=acquisition,
+        measured_ledger=measured_ledger,
+        result=result,
+    )
+
+    assert projected["successful_job"]["journal_tail_sha256"] == _sha("a")
+    assert projected["successful_job"]["projection_sha256"] == semantic_sha256_v22(  # type: ignore[index]
+        {
+            **{
+                key: value
+                for key, value in projected["successful_job"].items()  # type: ignore[union-attr]
+                if key != "projection_sha256"
+            },
+        }
+    )
+    assert projected["lineage_sha256"] == semantic_sha256_v22(
+        {key: value for key, value in projected.items() if key != "lineage_sha256"}
+    )
+    assert lineage["successful_job"]["journal_tail_sha256"] is None  # type: ignore[index]
+
+
+@pytest.mark.parametrize(
+    ("mutation"),
+    (
+        "missing_attempt",
+        "fabricated_failed_projection",
+        "resealed_cross_attempt",
+        "success_interruption",
+        "invalid_failed_terminal",
+        "mismatched_success_tail",
+    ),
+)
+def test_public_recovery_lineage_rejects_unbound_success_projection(
+    mutation: str,
+) -> None:
+    lineage, pipeline, acquisition, measured_ledger, result = (
+        _successful_private_lineage()
+    )
+    lineage_body = {
+        key: value for key, value in lineage.items() if key != "lineage_sha256"
+    }
+    if mutation == "missing_attempt":
+        lineage_body.pop("attempt_id")
+    elif mutation == "fabricated_failed_projection":
+        lineage_body["preserved_failed_job_ids"] = ["job-" + "2" * 24]
+        lineage_body["preserved_failed_jobs"] = []
+    else:
+        successful_job = dict(lineage_body["successful_job"])  # type: ignore[arg-type]
+        successful_job_body = {
+            key: value
+            for key, value in successful_job.items()
+            if key != "projection_sha256"
+        }
+        if mutation == "invalid_failed_terminal":
+            failed_context = FormalDiagnosisJobContextV0233.model_validate(
+                successful_job_body["formal_recovery_context"]
+            )
+            successful_context = FormalDiagnosisJobContextV0233.build(
+                campaign_id=failed_context.campaign_id,
+                semantic_generation=failed_context.semantic_generation,
+                attempt_id=failed_context.attempt_id,
+                diagnosis_generation=2,
+                active_profile_sha256=failed_context.active_profile_sha256,
+                semantic_surface_sha256=failed_context.semantic_surface_sha256,
+                acquisition_sha256=lineage_body["acquisition_sha256"],  # type: ignore[arg-type]
+            )
+            failed_job_body = {
+                **successful_job_body,
+                "job_id": "job-" + "2" * 24,
+                "status": "FAILED",
+                "formal_recovery_context": failed_context.model_dump(mode="json"),
+                "result_sha256": None,
+                "diagnosis_result_sha256": None,
+                "safe_error_code": "FORMAL_WORKER_INTERRUPTED",
+                "failure_stage": None,
+                "last_passed_stage": "NOT_A_STAGE",
+                "interruption_after_stage": "NOT_A_STAGE",
+                "exception_fingerprint": _sha("2"),
+                "journal_tail_sha256": _sha("3"),
+                "private_failure_envelope_sha256": _sha("4"),
+            }
+            failed_job_body["payload_sha256"] = semantic_sha256_v22(
+                {
+                    "incident_id": lineage_body["incident_id"],
+                    "formal_recovery_v0233": failed_context.model_dump(mode="json"),
+                }
+            )
+            failed_job_body["idempotency_key"] = (
+                final_diagnosis_idempotency_key_v0233(
+                    context=failed_context,
+                    incident_sha256=lineage_body["incident_sha256"],  # type: ignore[arg-type]
+                    acquisition_sha256=lineage_body["acquisition_sha256"],  # type: ignore[arg-type]
+                )
+            )
+            lineage_body["preserved_failed_job_ids"] = [failed_job_body["job_id"]]
+            lineage_body["preserved_failed_jobs"] = [
+                {
+                    **failed_job_body,
+                    "projection_sha256": semantic_sha256_v22(failed_job_body),
+                }
+            ]
+            lineage_body["successful_diagnosis_generation"] = 2
+            successful_job_body["formal_recovery_context"] = (
+                successful_context.model_dump(mode="json")
+            )
+            successful_job_body["payload_sha256"] = semantic_sha256_v22(
+                {
+                    "incident_id": lineage_body["incident_id"],
+                    "formal_recovery_v0233": successful_context.model_dump(
+                        mode="json"
+                    ),
+                }
+            )
+            successful_job_body["idempotency_key"] = (
+                final_diagnosis_idempotency_key_v0233(
+                    context=successful_context,
+                    incident_sha256=lineage_body["incident_sha256"],  # type: ignore[arg-type]
+                    acquisition_sha256=lineage_body["acquisition_sha256"],  # type: ignore[arg-type]
+                )
+            )
+        elif mutation == "resealed_cross_attempt":
+            original_context = FormalDiagnosisJobContextV0233.model_validate(
+                successful_job_body["formal_recovery_context"]
+            )
+            context = FormalDiagnosisJobContextV0233.build(
+                campaign_id=original_context.campaign_id,
+                semantic_generation=original_context.semantic_generation,
+                attempt_id="attempt-9",
+                diagnosis_generation=original_context.diagnosis_generation,
+                active_profile_sha256=original_context.active_profile_sha256,
+                semantic_surface_sha256=original_context.semantic_surface_sha256,
+                acquisition_sha256=original_context.acquisition_sha256,
+            )
+            lineage_body["attempt_id"] = "attempt-9"
+            successful_job_body["formal_recovery_context"] = context.model_dump(
+                mode="json"
+            )
+            successful_job_body["payload_sha256"] = semantic_sha256_v22(
+                {
+                    "incident_id": lineage_body["incident_id"],
+                    "formal_recovery_v0233": context.model_dump(mode="json"),
+                }
+            )
+            successful_job_body["idempotency_key"] = (
+                final_diagnosis_idempotency_key_v0233(
+                    context=context,
+                    incident_sha256=lineage_body["incident_sha256"],  # type: ignore[arg-type]
+                    acquisition_sha256=lineage_body["acquisition_sha256"],  # type: ignore[arg-type]
+                )
+            )
+        elif mutation == "success_interruption":
+            successful_job_body["interruption_after_stage"] = "EVIDENCE_PERSISTED"
+        else:
+            successful_job_body["journal_tail_sha256"] = _sha("b")
+        lineage_body["successful_job"] = {
+            **successful_job_body,
+            "projection_sha256": semantic_sha256_v22(successful_job_body),
+        }
+    lineage = {
+        **lineage_body,
+        "lineage_sha256": semantic_sha256_v22(lineage_body),
+    }
+
+    with pytest.raises(ValueError, match="Diagnosis recovery lineage differs"):
+        run_command._public_recovery_lineage_v0233(  # noqa: SLF001
+            lineage,
+            pipeline=pipeline,
+            acquisition=acquisition,
+            measured_ledger=measured_ledger,
+            result=result,
+        )
+
+
 def _copy_legacy_recovery_state(
     repository_root: Path,
     destination_root: Path,
