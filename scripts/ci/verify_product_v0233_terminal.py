@@ -10,7 +10,15 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
-from ecomsre.product.incidents.contracts import DiagnosisResultV1, EvidenceBundleV1
+from ecomsre.product.environment.capabilities import EnvironmentCapabilityMatrixV1
+from ecomsre.product.incidents.contracts import (
+    DiagnosisResultV1,
+    EvidenceBundleV1,
+    IncidentRecordV1,
+)
+from ecomsre.product.incidents.diagnosis_pipeline_v02322 import (
+    DiagnosisPrivateFailureEnvelopeV02322,
+)
 from ecomsre.product.incidents.evidence_binding_v0232 import (
     DiagnosisDecisionTraceV0232,
     DiagnosisEvidenceIndexV0232,
@@ -18,6 +26,12 @@ from ecomsre.product.incidents.evidence_binding_v0232 import (
 )
 from ecomsre.product.incidents.diagnosis_stage_journal_v02322 import (
     DiagnosisPipelineStageV02322,
+    DiagnosisStageEventV02322,
+)
+from ecomsre.product.jobs.contracts import (
+    ProductJobRecordV1,
+    ProductJobStatusV1,
+    ProductJobTypeV1,
 )
 from ecomsre.product.pilot.formal_live_v0233 import (
     BaselineRestartProofV0233,
@@ -70,6 +84,27 @@ from scripts.product_v0233.run_formal_nofault import (  # noqa: PLC2701
 _TERMINAL = "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
 _EXECUTION_HEAD = "466796648c2c4a3360b911a12be1ee806d39124e"
 _MANIFEST_SHA256 = "08fdbd61e3fa439b55b1ef903bdea26dee6a3c839129bef53ee99c19a3c61014"
+_ATTEMPT3_DIAGNOSIS_FAILURE_SUPPLEMENT_SHA256 = (
+    "45ede4fd8453047ea9c9b6057491fcdd6243d3262f435eb2d07b9839d343f1ae"
+)
+_ATTEMPT3_DIAGNOSIS_FAILURE_EXPECTED = {
+    "job_id": "job-558b022c696cecd3041de475",
+    "incident_id": "inc-221cf5618424bad99df8aa63",
+    "incident_sha256": "20a2a39b9b33d4965ca05717b39e7639d4a12cba546a33aaff91db6b7fa72157",
+    "capability_sha256": "b278a6694b1c9596e291ee7cb514298319c4d3bb0989b0addb041c25690d511e",
+    "exception_fingerprint": (
+        "de6d2e8b91fbb7cbb0fbcd76ad99fb077725780eb2828b1b984f56c02c7de24a"
+    ),
+    "read_started_event_sha256": (
+        "073fcc87170beec64f7da499ff936b604be1aab768a51ccbea325cda5fc8057f"
+    ),
+    "failure_event_sha256": (
+        "4fcca7dfe6966e91d5532d767f450a2e9c4613e39f64f2f02a74f955471bc0c2"
+    ),
+    "failure_envelope_sha256": (
+        "b2cc3e72677280229235dd05b163d6179204462a6643d2f7ecef4f71cf70cdd6"
+    ),
+}
 _V0233_TERMINAL_BY_V0232 = {
     "ECOMSRE_PRODUCT_V0232_NOFAULT_FULLY_SUPPORTED": (
         "ECOMSRE_PRODUCT_V0233_NOFAULT_FULLY_SUPPORTED"
@@ -110,6 +145,165 @@ def _sha256_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _verify_attempt3_diagnosis_failure_supplement_v0233(
+    project: Path,
+    ledger: Mapping[str, Any],
+) -> dict[str, Any]:
+    path = (
+        project
+        / "docs/analysis/product-v0233-attempts/attempt-3/"
+        "diagnosis-failure-supplement.json"
+    )
+    supplement = _object(path)
+    body = {
+        key: value for key, value in supplement.items() if key != "supplement_sha256"
+    }
+    attempts = ledger.get("attempts")
+    attempt = next(
+        (
+            item
+            for item in attempts
+            if isinstance(item, dict) and item.get("attempt_id") == "attempt-3"
+        ),
+        None,
+    ) if isinstance(attempts, list) else None
+    if not isinstance(attempt, dict):
+        raise ValueError("Product v0.2.3.3 Attempt 3 supplement ledger differs")
+    blocker_path = path.parent / "formal-blocker.json"
+    blocker = FormalExecutionBlockerV0233.model_validate_json(
+        blocker_path.read_bytes()
+    )
+    job = ProductJobRecordV1.model_validate(supplement.get("diagnosis_job"))
+    context = FormalDiagnosisJobContextV0233.model_validate(
+        job.payload.get("formal_recovery_v0233")
+    )
+    incident = IncidentRecordV1.model_validate(supplement.get("incident"))
+    capability = EnvironmentCapabilityMatrixV1.model_validate(
+        supplement.get("capability_matrix")
+    )
+    journal_payload = supplement.get("journal_tail_events")
+    if not isinstance(journal_payload, list):
+        raise ValueError("Product v0.2.3.3 Attempt 3 journal supplement differs")
+    journal = tuple(DiagnosisStageEventV02322.model_validate(item) for item in journal_payload)
+    envelope = DiagnosisPrivateFailureEnvelopeV02322.model_validate(
+        supplement.get("failure_envelope")
+    )
+    source_scope = tuple(
+        (
+            item.source.value,
+            item.status.value,
+            "checkout" in item.covered_services,
+        )
+        for item in capability.sources
+    )
+    if (
+        supplement.get("schema_version")
+        != "ecomsre.product.attempt-diagnosis-failure-supplement.v0233"
+        or supplement.get("supplement_sha256") != semantic_sha256_v22(body)
+        or supplement.get("supplement_sha256")
+        != _ATTEMPT3_DIAGNOSIS_FAILURE_SUPPLEMENT_SHA256
+        or supplement.get("attempt_id") != "attempt-3"
+        or supplement.get("semantic_generation") != 2
+        or supplement.get("prior_semantic_surface_sha256")
+        != context.semantic_surface_sha256
+        or supplement.get("original_attempt_record_sha256")
+        != attempt.get("record_sha256")
+        or supplement.get("original_latest_checkpoint_sha256")
+        != attempt.get("latest_checkpoint_sha256")
+        or supplement.get("original_blocker_file_sha256")
+        != _sha256_file(blocker_path)
+        or supplement.get("original_blocker_sha256") != blocker.blocker_sha256
+        or supplement.get("candidate_logical_services") != ["checkout"]
+        or supplement.get("root_cause_code")
+        != "CANDIDATE_SCOPED_CAPABILITY_STATUS_MISMATCH"
+        or supplement.get("repair_classification")
+        != "SEMANTIC_GENERATION_CHANGE_REQUIRED"
+        or supplement.get("successor_semantic_generation") != 3
+        or ledger.get("campaign_id") != context.campaign_id
+        or attempt.get("semantic_generation") != 2
+        or job.job_type is not ProductJobTypeV1.DIAGNOSIS
+        or job.job_id != _ATTEMPT3_DIAGNOSIS_FAILURE_EXPECTED["job_id"]
+        or job.status is not ProductJobStatusV1.FAILED
+        or job.result is not None
+        or job.failure_stage != "READ_ACQUISITION_STARTED"
+        or job.safe_error_code != "INTERNAL_CONTRACT_FAILURE"
+        or context.attempt_id != "attempt-3"
+        or context.semantic_generation != 2
+        or context.diagnosis_generation != 1
+        or context.acquisition_sha256 is not None
+        or context.acquisition_checkpoint_locator
+        != "private/formal-v0233/attempt-3/diagnosis-acquisition-checkpoint.json"
+        or incident.incident_id != job.payload.get("incident_id")
+        or incident.incident_id
+        != _ATTEMPT3_DIAGNOSIS_FAILURE_EXPECTED["incident_id"]
+        or incident.incident_sha256
+        != _ATTEMPT3_DIAGNOSIS_FAILURE_EXPECTED["incident_sha256"]
+        or incident.candidate_logical_services != ("checkout",)
+        or incident.source_capability_sha256 != capability.capability_sha256
+        or capability.capability_sha256
+        != _ATTEMPT3_DIAGNOSIS_FAILURE_EXPECTED["capability_sha256"]
+        or len(journal) != 2
+        or any(item.job_id != job.job_id for item in journal)
+        or any(item.incident_id != incident.incident_id for item in journal)
+        or journal[0].journal_id != journal[1].journal_id
+        or journal[0].ordinal != 23
+        or journal[0].stage is not DiagnosisPipelineStageV02322.READ_ACQUISITION_STARTED
+        or journal[0].status.value != "STARTED"
+        or journal[0].event_sha256
+        != _ATTEMPT3_DIAGNOSIS_FAILURE_EXPECTED["read_started_event_sha256"]
+        or journal[1].ordinal != 24
+        or journal[1].stage is not DiagnosisPipelineStageV02322.FAILED
+        or journal[1].status.value != "FAILED"
+        or journal[1].event_sha256
+        != _ATTEMPT3_DIAGNOSIS_FAILURE_EXPECTED["failure_event_sha256"]
+        or journal[1].previous_event_sha256 != journal[0].event_sha256
+        or journal[1].input_binding_sha256 != journal[0].event_sha256
+        or journal[1].output_artifact_sha256 != envelope.failure_envelope_sha256
+        or job.journal_tail_sha256 != journal[1].event_sha256
+        or job.exception_fingerprint != journal[1].exception_fingerprint
+        or job.safe_error_code != journal[1].safe_error_code
+        or envelope.journal_tail_sha256 != journal[0].event_sha256
+        or envelope.job_id != job.job_id
+        or envelope.incident_id != incident.incident_id
+        or envelope.incident_sha256 != incident.incident_sha256
+        or envelope.capability_sha256 != capability.capability_sha256
+        or envelope.failing_stage.value != job.failure_stage
+        or envelope.exception_fingerprint != job.exception_fingerprint
+        or envelope.exception_fingerprint
+        != _ATTEMPT3_DIAGNOSIS_FAILURE_EXPECTED["exception_fingerprint"]
+        or envelope.failure_envelope_sha256
+        != _ATTEMPT3_DIAGNOSIS_FAILURE_EXPECTED["failure_envelope_sha256"]
+        or envelope.job_payload_sha256 != semantic_sha256_v22(job.payload)
+        or envelope.last_passed_stage is not DiagnosisPipelineStageV02322.ENVIRONMENT_LOADED
+        or "partial capability observation differs" not in envelope.bounded_message
+        or source_scope
+        != (
+            ("CHANGES", "AVAILABLE", True),
+            ("LOGS", "PARTIAL", True),
+            ("METRICS", "PARTIAL", True),
+            ("RESOURCES", "PARTIAL", True),
+            ("RUNTIME", "PARTIAL", True),
+            ("TRACES", "PARTIAL", True),
+        )
+        or blocker.terminal != "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
+        or blocker.failure_stage != "DIAGNOSIS_SUBMITTED"
+        or blocker.new_incident_count != 1
+        or blocker.new_diagnosis_count != 1
+        or blocker.exception_fingerprint is not None
+        or blocker.journal_tail_sha256 is not None
+        or blocker.private_failure_envelope_sha256 is not None
+    ):
+        raise ValueError("Product v0.2.3.3 Attempt 3 supplement differs")
+    return {
+        "attempt_id": "attempt-3",
+        "failure_stage": job.failure_stage,
+        "exception_fingerprint": job.exception_fingerprint,
+        "repair_classification": supplement["repair_classification"],
+        "successor_semantic_generation": supplement["successor_semantic_generation"],
+        "supplement_sha256": supplement["supplement_sha256"],
+    }
 
 
 def _job_projection_context_exact_v0233(
@@ -384,6 +578,7 @@ def _verify_nonrecoverable_history_v0233(
     selection = FreshFormalSourceSelectionV0233.model_validate_json(
         (project / "config/product-v0233/source-selection.json").read_bytes()
     )
+    ledger_payload = ledger.model_dump(mode="json")
     for attempt in attempts:
         prefix = f"docs/analysis/product-v0233-attempts/{attempt.attempt_id}/"
         required = {
@@ -624,6 +819,11 @@ def _verify_nonrecoverable_history_v0233(
             operational_surface_sha256=review.operational_surface_sha256,
             source_selection_sha256=selection.selection_sha256,
         )
+        if attempt.attempt_id == "attempt-3":
+            _verify_attempt3_diagnosis_failure_supplement_v0233(
+                project,
+                ledger_payload,
+            )
 
 
 def _verify_successor_generations_v0233(

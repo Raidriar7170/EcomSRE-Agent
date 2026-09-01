@@ -750,6 +750,21 @@ def test_resume_terminalizes_nonrecoverable_crash_window_before_routing_forward(
     assert calls[1][0] == "successor"
 
 
+def test_failed_diagnosis_before_acquisition_uses_failure_evidence_path() -> None:
+    assert (
+        run_command._diagnosis_completion_acquisition_state_v0233(
+            job_status=ProductJobStatusV1.FAILED,
+            acquisition_checkpoint=None,
+        )
+        == "FAILED_BEFORE_ACQUISITION"
+    )
+    with pytest.raises(RuntimeError, match="DIAGNOSIS_ACQUISITION_CHECKPOINT_MISSING"):
+        run_command._diagnosis_completion_acquisition_state_v0233(
+            job_status=ProductJobStatusV1.SUCCEEDED,
+            acquisition_checkpoint=None,
+        )
+
+
 def test_resume_from_pre_acquisition_hard_interruption_seals_and_routes_successor(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

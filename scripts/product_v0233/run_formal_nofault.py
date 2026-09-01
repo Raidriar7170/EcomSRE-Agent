@@ -2855,6 +2855,18 @@ def _blocker_terminal(stage: str, *, diagnosis_failed: bool) -> str:
     return "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
 
 
+def _diagnosis_completion_acquisition_state_v0233(
+    *,
+    job_status: ProductJobStatusV1,
+    acquisition_checkpoint: DiagnosisAcquisitionCheckpointV0233 | None,
+) -> Literal["ACQUISITION_SEALED", "FAILED_BEFORE_ACQUISITION"]:
+    if acquisition_checkpoint is not None:
+        return "ACQUISITION_SEALED"
+    if job_status is ProductJobStatusV1.FAILED:
+        return "FAILED_BEFORE_ACQUISITION"
+    raise RuntimeError("DIAGNOSIS_ACQUISITION_CHECKPOINT_MISSING")
+
+
 def _failure_checkpoint_state_v0233(
     *, acquisition_sealed: bool
 ) -> FormalExecutionStateV0233:
@@ -4716,11 +4728,13 @@ def _run_formal_nofault_once_v0233(
             completed_job.model_dump(mode="json"),
             create_once=True,
         )
-        if promote_sealed_acquisition() is not None:
+        acquisition_state = _diagnosis_completion_acquisition_state_v0233(
+            job_status=completed_job.status,
+            acquisition_checkpoint=promote_sealed_acquisition(),
+        )
+        if acquisition_state == "ACQUISITION_SEALED":
             append_checkpoint(FormalExecutionStateV0233.ACQUISITION_SEALED)
             append_checkpoint(FormalExecutionStateV0233.DIAGNOSIS_RUNNING)
-        else:
-            raise RuntimeError("DIAGNOSIS_ACQUISITION_CHECKPOINT_MISSING")
         if completed_job.status is ProductJobStatusV1.SUCCEEDED and isinstance(
             completed_job.result, dict
         ):

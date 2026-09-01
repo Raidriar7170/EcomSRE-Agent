@@ -379,6 +379,24 @@ def _runtime_memory(
     )
 
 
+def _project_capability_scope_v0232(
+    *,
+    status: SourceCapabilityStatusV1,
+    covered_services: tuple[str, ...],
+    required_services: tuple[str, ...],
+) -> tuple[SourceCapabilityStatusV1, tuple[str, ...]]:
+    available_services = (
+        ()
+        if status is SourceCapabilityStatusV1.UNAVAILABLE
+        else tuple(sorted(set(covered_services).intersection(required_services)))
+    )
+    if not available_services:
+        return SourceCapabilityStatusV1.UNAVAILABLE, ()
+    if available_services == required_services:
+        return SourceCapabilityStatusV1.AVAILABLE, available_services
+    return SourceCapabilityStatusV1.PARTIAL, available_services
+
+
 class ProductReadBackendV1:
     def __init__(
         self,
@@ -425,10 +443,19 @@ class ProductReadBackendV1:
         topology_edges: tuple[tuple[str, str], ...],
     ) -> ProductReadAcquisitionV1:
         candidates = incident.candidate_logical_services
+        capability_scope_by_source = {
+            item.source: _project_capability_scope_v0232(
+                status=item.status,
+                covered_services=item.covered_services,
+                required_services=candidates,
+            )
+            for item in capability_matrix.sources
+        }
         enabled = tuple(
             item.source
             for item in capability_matrix.sources
-            if item.status is not SourceCapabilityStatusV1.UNAVAILABLE
+            if capability_scope_by_source[item.source][0]
+            is not SourceCapabilityStatusV1.UNAVAILABLE
         )
         registry = build_tool_capability_registry_v22(
             disabled_sources=tuple(
@@ -466,12 +493,13 @@ class ProductReadBackendV1:
             source: set() for source in EvidenceSourceV22
         }
         limitations: set[str] = {
-            f"SOURCE_{item.source.value}_{item.status.value}"
+            f"SOURCE_{item.source.value}_{capability_scope_by_source[item.source][0].value}"
             for item in capability_matrix.sources
-            if item.status is SourceCapabilityStatusV1.UNAVAILABLE
+            if capability_scope_by_source[item.source][0]
+            is SourceCapabilityStatusV1.UNAVAILABLE
         }
-        capability_by_source = {
-            item.source: item for item in capability_matrix.sources
+        capability_status_by_source = {
+            source: scoped[0] for source, scoped in capability_scope_by_source.items()
         }
         capability_observations: dict[
             str,
@@ -482,27 +510,26 @@ class ProductReadBackendV1:
             CapabilityLimitationCandidateV0232,
         ] = {}
         for item in capability_matrix.sources:
-            if item.status is SourceCapabilityStatusV1.AVAILABLE:
+            scoped_status, available_services = capability_scope_by_source[item.source]
+            if scoped_status is SourceCapabilityStatusV1.AVAILABLE:
                 continue
-            limitation_code = f"SOURCE_{item.source.value}_{item.status.value}"
+            limitation_code = f"SOURCE_{item.source.value}_{scoped_status.value}"
             observation = CapabilityEvidenceObservationV0232.build(
                 source=item.source,
                 capability_matrix_sha256=capability_matrix.capability_sha256,
-                capability_status=item.status,
+                capability_status=scoped_status,
                 required_services=candidates,
-                available_services=tuple(
-                    sorted(set(item.covered_services).intersection(candidates))
-                ),
+                available_services=available_services,
                 reason_code=limitation_code,
             )
             capability_observations[limitation_code] = observation
-            if item.status is SourceCapabilityStatusV1.UNAVAILABLE:
+            if scoped_status is SourceCapabilityStatusV1.UNAVAILABLE:
                 limitation_candidates[limitation_code] = (
                     CapabilityLimitationCandidateV0232.build(
                         limitation_code=limitation_code,
                         category="SOURCE_UNAVAILABLE",
                         source=item.source,
-                        capability_status=item.status,
+                        capability_status=scoped_status,
                         connector_action_id=None,
                         connector_result_sha256=None,
                         safe_error_code=None,
@@ -551,7 +578,7 @@ class ProductReadBackendV1:
                         limitation_code=limitation_code,
                         category="QUERY_FAILURE",
                         source=action.source,
-                        capability_status=capability_by_source[action.source].status,
+                        capability_status=capability_status_by_source[action.source],
                         connector_action_id=action.action_id,
                         connector_result_sha256=result.result_sha256,
                         safe_error_code=result.safe_error_code,
@@ -567,7 +594,7 @@ class ProductReadBackendV1:
                         limitation_code=limitation_code,
                         category="COVERAGE_GAP",
                         source=action.source,
-                        capability_status=capability_by_source[action.source].status,
+                        capability_status=capability_status_by_source[action.source],
                         connector_action_id=action.action_id,
                         connector_result_sha256=result.result_sha256,
                         safe_error_code=None,
@@ -621,9 +648,9 @@ class ProductReadBackendV1:
                             limitation_code=limitation_code,
                             category="RUNTIME_AUTHORITY_UNAVAILABLE",
                             source=EvidenceSourceV22.RUNTIME,
-                            capability_status=capability_by_source[
+                            capability_status=capability_status_by_source[
                                 EvidenceSourceV22.RUNTIME
-                            ].status,
+                            ],
                             connector_action_id=action.action_id,
                             connector_result_sha256=result.result_sha256,
                             safe_error_code="RUNTIME_AUTHORITY_UNAVAILABLE",
@@ -655,9 +682,10 @@ class ProductReadBackendV1:
             if memory_outcome is not None:
                 memory.append(memory_outcome)
         limitations.update(
-            f"SOURCE_{item.source.value}_{item.status.value}"
+            f"SOURCE_{item.source.value}_{SourceCapabilityStatusV1.PARTIAL.value}"
             for item in capability_matrix.sources
-            if item.status is SourceCapabilityStatusV1.PARTIAL
+            if capability_status_by_source[item.source]
+            is SourceCapabilityStatusV1.PARTIAL
             and not set(candidates).issubset(coverage[item.source])
         )
         for limitation_code in tuple(sorted(limitations)):

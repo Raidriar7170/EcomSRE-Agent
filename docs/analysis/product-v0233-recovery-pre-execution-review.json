@@ -1,11 +1,11 @@
 {
   "schema_version": "ecomsre.product.recovery-pre-execution-review.v0233",
-  "semantic_generation": 2,
-  "semantic_surface_sha256": "0c98f3feda1389615849979eb7d2870ae7262ca9070cfdeca36529fd77247ccc",
-  "operational_surface_sha256": "40264a326933b1759d96db76231605f4bdb7781f6a57d0185baa23ee2d589d1e",
+  "semantic_generation": 3,
+  "semantic_surface_sha256": "5a8ff7261b11461b083378f2a86b214c4d856d505d99b506245ee750a1f44ee4",
+  "operational_surface_sha256": "67f2cb9c084653e94b9d293592f1e7599ef9caaebdb76041e86cc1757f6ca4c3",
   "verdict": "PASS",
   "must_fix_count": 0,
   "claim_accuracy": "PASS",
   "offline_validation": "PASS",
-  "review_sha256": "7d794e935b5877dfbaa43b2156dd5dcdba8e64f0ef502665fbf72f09e4c84008"
+  "review_sha256": "8fa58dce1c8ba73f7dc763899b4b3ed9cf3336e7c8f23b2d7985e6dd999e652e"
 }
