@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import UTC, datetime
+import hashlib
 import json
 from pathlib import Path
 import time
@@ -47,6 +48,7 @@ from ecomsre.product.pilot.formal_live_v0233 import (
     FormalExecutionAdmissionV0233,
     FormalExecutionReservationV0233,
     FormalObservedStateCountsV0233,
+    FormalSafetyObservationV0233,
     FormalTrafficResultV0233,
     FreshRuntimeSnapshotProofV0233,
     RuntimeAuthorityProofV0233,
@@ -885,6 +887,91 @@ def _start_successor_after_nonrecoverable_v0233(
     )
 
 
+def _resume_cleanup_admitted_v0233(
+    cleanup: Mapping[str, Any] | None,
+    *,
+    original_closure: FormalClosureProofV0233 | None,
+) -> bool:
+    """Admit quiescent post-closure resume despite unrelated Docker drift."""
+
+    if cleanup is None:
+        return False
+    if cleanup.get("resource_cleanup_verdict") == "CLEAN":
+        return True
+
+    def exact_zero(value: object) -> bool:
+        return type(value) is int and value == 0
+
+    product = cleanup.get("product_cleanup")
+    demo = cleanup.get("demo_cleanup")
+    try:
+        safety = FormalSafetyObservationV0233.model_validate(
+            cleanup.get("safety_observation")
+        )
+    except ValueError:
+        return False
+    return bool(
+        original_closure is not None
+        and cleanup.get("verdict") == "BLOCKED"
+        and cleanup.get("resource_cleanup_verdict") == "BLOCKED"
+        and cleanup.get("safe_error_code") is None
+        and cleanup.get("source_selection_before_sha256")
+        == original_closure.source_selection_before_sha256
+        and cleanup.get("source_selection_after_sha256")
+        == original_closure.source_selection_after_sha256
+        and cleanup.get("queue_sha256") == original_closure.queue_after_sha256
+        and exact_zero(cleanup.get("formal_clone_database_owner_count"))
+        and cleanup.get("clone_baseline_binding_exact") is True
+        and safety == original_closure.safety_observation
+        and isinstance(product, Mapping)
+        and product.get("schema_version")
+        == "ecomsre.product.host-process-cleanup.v023"
+        and product.get("verdict") == "CLEAN"
+        and exact_zero(product.get("owned_host_processes"))
+        and type(product.get("product_api_port")) is int
+        and product.get("product_api_port") == 18081
+        and product.get("product_api_port_available") is True
+        and product.get("non_owned_resources_changed") is False
+        and product.get("safe_error") is None
+        and exact_zero(product.get("remaining_owned_process_count"))
+        and isinstance(demo, Mapping)
+        and demo.get("verdict") == "BLOCKED"
+        and demo.get("baseline_restored") is True
+        and exact_zero(demo.get("owned_containers"))
+        and exact_zero(demo.get("owned_networks"))
+        and exact_zero(demo.get("owned_volumes"))
+        and demo.get("non_owned_resources_changed") is True
+    )
+
+
+def _load_bound_formal_closure_v0233(
+    *,
+    root: Path,
+    private_root: Path,
+    latest: FormalExecutionCheckpointV0233,
+) -> FormalClosureProofV0233 | None:
+    """Load one closure from the exact bytes committed by the latest checkpoint."""
+
+    closure_path = private_root / "formal-closure.json"
+    if not closure_path.exists() and not closure_path.is_symlink():
+        return None
+    try:
+        if closure_path.is_symlink() or not closure_path.is_file():
+            raise ValueError("Product v0.2.3.3 formal closure path differs")
+        closure_bytes = closure_path.read_bytes()
+        closure = FormalClosureProofV0233.model_validate_json(closure_bytes)
+        relative = closure_path.relative_to(root).as_posix()
+        if latest.output_artifact_sha256s.get(relative) != hashlib.sha256(
+            closure_bytes
+        ).hexdigest():
+            raise ValueError("Product v0.2.3.3 formal closure binding differs")
+    except (OSError, ValueError) as error:
+        raise RuntimeError(
+            "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
+        ) from error
+    return closure
+
+
 def resume_formal_nofault_v0233(
     *,
     project_root: Path,
@@ -1222,11 +1309,10 @@ def resume_formal_nofault_v0233(
             ),
         )
     )
-    closure_path = private_root / "formal-closure.json"
-    original_closure = (
-        _load_model(closure_path, FormalClosureProofV0233)
-        if closure_path.is_file()
-        else None
+    original_closure = _load_bound_formal_closure_v0233(
+        root=root,
+        private_root=private_root,
+        latest=latest,
     )
     if (
         reservation.admission != admission
@@ -1244,9 +1330,9 @@ def resume_formal_nofault_v0233(
         latest=latest,
         persist=False,
     )
-    cleanup_clean = (
-        stale_cleanup is not None
-        and stale_cleanup.get("resource_cleanup_verdict") == "CLEAN"
+    cleanup_clean = _resume_cleanup_admitted_v0233(
+        stale_cleanup,
+        original_closure=original_closure,
     )
     if not cleanup_clean:
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_ACTIVE_LEASE")

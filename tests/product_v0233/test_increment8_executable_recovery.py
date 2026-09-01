@@ -867,6 +867,50 @@ def test_used_clone_recovery_accepts_checkpointed_clean_post_diagnosis_state(
     assert recovered == clone
 
 
+def test_resume_loads_only_the_checkpoint_bound_formal_closure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _clone, closure, _inspection = _used_clone_recovery_fixture(tmp_path, monkeypatch)
+    latest = FormalCheckpointRepositoryV0233(
+        tmp_path / ".local/product-v0233/attempts/attempt-2"
+    ).load_chain()[-1]
+    private_root = tmp_path / ".local/product-v0233/attempts/attempt-2/execution"
+
+    assert (
+        resume_command._load_bound_formal_closure_v0233(
+            root=tmp_path,
+            private_root=private_root,
+            latest=latest,
+        )
+        == closure
+    )
+
+    alternate_body = closure.model_dump(mode="json", exclude={"closure_sha256"})
+    alternate_body.update(
+        {
+            "queue_before_sha256": _sha("7"),
+            "queue_after_sha256": _sha("7"),
+        }
+    )
+    alternate = FormalClosureProofV0233.model_validate(
+        {
+            **alternate_body,
+            "closure_sha256": semantic_sha256_v22(alternate_body),
+        }
+    )
+    (private_root / "formal-closure.json").write_bytes(
+        run_command.canonical_json_bytes(alternate)
+    )
+
+    with pytest.raises(RuntimeError, match="ACCEPTANCE_ARTIFACTS"):
+        resume_command._load_bound_formal_closure_v0233(
+            root=tmp_path,
+            private_root=private_root,
+            latest=latest,
+        )
+
+
 @pytest.mark.parametrize(
     "tamper",
     ("current-counts", "closure-binding", "public-binding"),
@@ -911,6 +955,127 @@ def test_used_clone_recovery_rejects_unbound_or_drifted_state(
             attempt_id="attempt-2",
             publish_missing=False,
         )
+
+
+def test_resume_cleanup_accepts_external_only_drift_after_clean_bound_closure() -> None:
+    repository_root = Path(run_command.__file__).resolve().parents[2]
+    closure = FormalClosureProofV0233.model_validate_json(
+        (
+            repository_root / "docs/analysis/product-v0233-formal-closure.json"
+        ).read_bytes()
+    )
+    cleanup = {
+        "verdict": "BLOCKED",
+        "resource_cleanup_verdict": "BLOCKED",
+        "source_selection_before_sha256": (
+            closure.source_selection_before_sha256
+        ),
+        "source_selection_after_sha256": closure.source_selection_after_sha256,
+        "queue_sha256": closure.queue_after_sha256,
+        "product_cleanup": {
+            "schema_version": "ecomsre.product.host-process-cleanup.v023",
+            "verdict": "CLEAN",
+            "owned_host_processes": 0,
+            "product_api_port": 18081,
+            "product_api_port_available": True,
+            "non_owned_resources_changed": False,
+            "safe_error": None,
+            "remaining_owned_process_count": 0,
+        },
+        "demo_cleanup": {
+            "verdict": "BLOCKED",
+            "baseline_restored": True,
+            "owned_containers": 0,
+            "owned_networks": 0,
+            "owned_volumes": 0,
+            "non_owned_resources_changed": True,
+        },
+        "formal_clone_database_owner_count": 0,
+        "clone_baseline_binding_exact": True,
+        "safety_observation": closure.safety_observation.model_dump(mode="json"),
+        "safe_error_code": None,
+    }
+
+    assert resume_command._resume_cleanup_admitted_v0233(
+        cleanup,
+        original_closure=closure,
+    )
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    (
+        ("formal_clone_database_owner_count", 1),
+        ("formal_clone_database_owner_count", False),
+        ("formal_clone_database_owner_count", 0.0),
+        ("clone_baseline_binding_exact", False),
+        ("safe_error_code", "RuntimeError"),
+        ("source_selection_after_sha256", _sha("9")),
+        ("product_cleanup.schema_version", None),
+        ("product_cleanup.owned_host_processes", 1),
+        ("product_cleanup.owned_host_processes", False),
+        ("product_cleanup.owned_host_processes", 0.0),
+        ("product_cleanup.product_api_port", 18080),
+        ("product_cleanup.product_api_port", 18081.0),
+        ("product_cleanup.product_api_port_available", False),
+        ("product_cleanup.safe_error", "PORT_BUSY"),
+        ("demo_cleanup.owned_containers", False),
+        ("demo_cleanup.owned_networks", 0.0),
+    ),
+)
+def test_resume_cleanup_rejects_unsafe_state_despite_prior_clean_closure(
+    field: str,
+    value: object,
+) -> None:
+    repository_root = Path(run_command.__file__).resolve().parents[2]
+    closure = FormalClosureProofV0233.model_validate_json(
+        (
+            repository_root / "docs/analysis/product-v0233-formal-closure.json"
+        ).read_bytes()
+    )
+    cleanup = {
+        "verdict": "BLOCKED",
+        "resource_cleanup_verdict": "BLOCKED",
+        "source_selection_before_sha256": (
+            closure.source_selection_before_sha256
+        ),
+        "source_selection_after_sha256": closure.source_selection_after_sha256,
+        "queue_sha256": closure.queue_after_sha256,
+        "product_cleanup": {
+            "schema_version": "ecomsre.product.host-process-cleanup.v023",
+            "verdict": "CLEAN",
+            "owned_host_processes": 0,
+            "product_api_port": 18081,
+            "product_api_port_available": True,
+            "non_owned_resources_changed": False,
+            "safe_error": None,
+            "remaining_owned_process_count": 0,
+        },
+        "demo_cleanup": {
+            "verdict": "BLOCKED",
+            "baseline_restored": True,
+            "owned_containers": 0,
+            "owned_networks": 0,
+            "owned_volumes": 0,
+            "non_owned_resources_changed": True,
+        },
+        "formal_clone_database_owner_count": 0,
+        "clone_baseline_binding_exact": True,
+        "safety_observation": closure.safety_observation.model_dump(mode="json"),
+        "safe_error_code": None,
+    }
+    if "." in field:
+        parent, child = field.split(".", maxsplit=1)
+        nested = cleanup[parent]
+        assert isinstance(nested, dict)
+        nested[child] = value
+    else:
+        cleanup[field] = value
+
+    assert not resume_command._resume_cleanup_admitted_v0233(
+        cleanup,
+        original_closure=closure,
+    )
 
 
 def test_resume_terminalizes_nonrecoverable_crash_window_before_routing_forward(
