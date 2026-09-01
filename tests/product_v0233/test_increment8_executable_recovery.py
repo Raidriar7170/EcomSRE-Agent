@@ -24,6 +24,7 @@ from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
 from ecomsre.product.pilot.formal_live_v0233 import (
     FormalClosureProofV0233,
     FormalExecutionAdmissionV0233,
+    FormalExecutionBlockerV0233,
     FormalExecutionReservationV0233,
     FormalObservedStateCountsV0233,
     FormalSafetyObservationV0233,
@@ -46,6 +47,40 @@ from scripts.ci import verify_product_v0233_terminal as terminal_verifier
 
 def _sha(character: str) -> str:
     return character * 64
+
+
+def _copy_legacy_recovery_state(
+    repository_root: Path,
+    destination_root: Path,
+) -> None:
+    source_manifest = (
+        repository_root / "config/product-v0233/repository-state-manifest.json"
+    )
+    source_progress = repository_root / "docs/analysis/product-v0233-progress.json"
+    for source, relative in (
+        (source_manifest, "config/product-v0233/repository-state-manifest.json"),
+        (
+            source_manifest,
+            "config/product-v0233/recovery-repository-state-manifest.json",
+        ),
+        (source_progress, "docs/analysis/product-v0233-progress.json"),
+        (source_progress, "docs/analysis/product-v0233-recovery-progress.json"),
+    ):
+        destination = destination_root / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(source.read_bytes())
+
+    tracked_ledger = FormalAttemptLedgerV0233.model_validate_json(
+        (
+            repository_root / "config/product-v0233/formal-attempt-ledger.json"
+        ).read_bytes()
+    )
+    legacy_ledger = FormalAttemptLedgerV0233.build(
+        campaign_id=tracked_ledger.campaign_id,
+        attempts=(tracked_ledger.attempts[0],),
+    )
+    ledger_path = destination_root / "config/product-v0233/formal-attempt-ledger.json"
+    ledger_path.write_text(legacy_ledger.model_dump_json(), encoding="utf-8")
 
 
 def _artifact(**values):
@@ -331,6 +366,94 @@ def test_public_verifier_strongly_types_interrupted_cleanup_and_binds_safety() -
         )
 
 
+def test_formal_closure_observation_requires_verified_clean_safety() -> None:
+    repository_root = Path(run_command.__file__).resolve().parents[2]
+    public_root = repository_root / "docs/analysis/product-v0233-attempts/attempt-2"
+    closure = json.loads((public_root / "formal-closure.json").read_bytes())
+    blocker = FormalExecutionBlockerV0233.model_validate_json(
+        (public_root / "formal-blocker.json").read_bytes()
+    )
+
+    assert run_command._verified_blocker_cleanup_sha256_v0233(
+        closure,
+        attempt_id="attempt-2",
+        latest_checkpoint_sha256=_sha("2"),
+        blocker=blocker,
+    ) == closure["closure_sha256"]
+    assert terminal_verifier._verify_cleanup_proof_v0233(
+        closure,
+        attempt_id="attempt-2",
+        latest_checkpoint_sha256=_sha("2"),
+        blocker=blocker,
+    ) == closure["closure_sha256"]
+
+    def blocked_product(payload: dict[str, object]) -> None:
+        payload["product_cleanup"]["verdict"] = "BLOCKED"  # type: ignore[index]
+
+    def invented_product_schema(payload: dict[str, object]) -> None:
+        payload["product_cleanup"]["schema_version"] = (  # type: ignore[index]
+            "invented-cleanup"
+        )
+
+    def product_safe_error(payload: dict[str, object]) -> None:
+        payload["product_cleanup"]["safe_error"] = "invented"  # type: ignore[index]
+
+    def product_boolean_count(payload: dict[str, object]) -> None:
+        payload["product_cleanup"]["owned_host_processes"] = False  # type: ignore[index]
+
+    def product_float_port(payload: dict[str, object]) -> None:
+        payload["product_cleanup"]["product_api_port"] = 18081.0  # type: ignore[index]
+
+    def clone_boolean_count(payload: dict[str, object]) -> None:
+        payload["formal_clone_database_owner_count"] = False
+
+    def unrestored_demo(payload: dict[str, object]) -> None:
+        payload["demo_cleanup"] = {
+            "baseline_restored": False,
+            "owned_containers": 0,
+            "owned_networks": 0,
+            "owned_volumes": 0,
+            "non_owned_resources_changed": False,
+            "verdict": "CLEAN",
+        }
+
+    def demo_float_count(payload: dict[str, object]) -> None:
+        unrestored_demo(payload)
+        payload["demo_cleanup"]["baseline_restored"] = True  # type: ignore[index]
+        payload["demo_cleanup"]["owned_containers"] = 0.0  # type: ignore[index]
+
+    for mutate in (
+        blocked_product,
+        invented_product_schema,
+        product_safe_error,
+        product_boolean_count,
+        product_float_port,
+        clone_boolean_count,
+        unrestored_demo,
+        demo_float_count,
+    ):
+        unsafe = json.loads(json.dumps(closure))
+        mutate(unsafe)
+        unsafe_body = {
+            key: value for key, value in unsafe.items() if key != "closure_sha256"
+        }
+        unsafe["closure_sha256"] = semantic_sha256_v22(unsafe_body)
+        with pytest.raises(ValueError, match="formal closure observation"):
+            run_command._verified_blocker_cleanup_sha256_v0233(
+                unsafe,
+                attempt_id="attempt-2",
+                latest_checkpoint_sha256=_sha("2"),
+                blocker=blocker,
+            )
+        with pytest.raises(ValueError, match="formal closure observation"):
+            terminal_verifier._verify_cleanup_proof_v0233(
+                unsafe,
+                attempt_id="attempt-2",
+                latest_checkpoint_sha256=_sha("2"),
+                blocker=blocker,
+            )
+
+
 def test_process_interruption_at_every_stage_is_classified_from_durable_acquisition() -> (
     None
 ):
@@ -515,17 +638,7 @@ def test_successor_admission_recognizes_only_exact_sealed_prior_publication(
     tmp_path: Path,
 ) -> None:
     repository_root = Path(run_command.__file__).resolve().parents[2]
-    for relative in (
-        "config/product-v0233/repository-state-manifest.json",
-        "config/product-v0233/recovery-repository-state-manifest.json",
-        "config/product-v0233/formal-attempt-ledger.json",
-        "docs/analysis/product-v0233-progress.json",
-        "docs/analysis/product-v0233-recovery-progress.json",
-    ):
-        source = repository_root / relative
-        destination = tmp_path / relative
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_bytes(source.read_bytes())
+    _copy_legacy_recovery_state(repository_root, tmp_path)
     attempt_root = tmp_path / ".local/product-v0233/attempts/attempt-2"
     repository = FormalCheckpointRepositoryV0233(attempt_root)
     prepared = _prepared_checkpoint()
@@ -642,17 +755,7 @@ def test_resume_from_pre_acquisition_hard_interruption_seals_and_routes_successo
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     repository_root = Path(run_command.__file__).resolve().parents[2]
-    for relative in (
-        "config/product-v0233/repository-state-manifest.json",
-        "config/product-v0233/recovery-repository-state-manifest.json",
-        "config/product-v0233/formal-attempt-ledger.json",
-        "docs/analysis/product-v0233-progress.json",
-        "docs/analysis/product-v0233-recovery-progress.json",
-    ):
-        source = repository_root / relative
-        destination = tmp_path / relative
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_bytes(source.read_bytes())
+    _copy_legacy_recovery_state(repository_root, tmp_path)
     attempt_root = tmp_path / ".local/product-v0233/attempts/attempt-2"
     repository = FormalCheckpointRepositoryV0233(attempt_root)
     prepared = _prepared_checkpoint()
@@ -717,17 +820,7 @@ def test_nonrecoverable_crash_window_publication_is_executable_and_sealed(
     tmp_path: Path,
 ) -> None:
     repository_root = Path(run_command.__file__).resolve().parents[2]
-    for relative in (
-        "config/product-v0233/repository-state-manifest.json",
-        "config/product-v0233/recovery-repository-state-manifest.json",
-        "config/product-v0233/formal-attempt-ledger.json",
-        "docs/analysis/product-v0233-progress.json",
-        "docs/analysis/product-v0233-recovery-progress.json",
-    ):
-        source = repository_root / relative
-        destination = tmp_path / relative
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_bytes(source.read_bytes())
+    _copy_legacy_recovery_state(repository_root, tmp_path)
     attempt_root = tmp_path / ".local/product-v0233/attempts/attempt-2"
     checkpoint_repository = FormalCheckpointRepositoryV0233(attempt_root)
     prepared = _prepared_checkpoint()
@@ -848,17 +941,7 @@ def test_clone_bearing_semantic_rollover_closes_before_fresh_generation(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     repository_root = Path(run_command.__file__).resolve().parents[2]
-    for relative in (
-        "config/product-v0233/repository-state-manifest.json",
-        "config/product-v0233/recovery-repository-state-manifest.json",
-        "config/product-v0233/formal-attempt-ledger.json",
-        "docs/analysis/product-v0233-progress.json",
-        "docs/analysis/product-v0233-recovery-progress.json",
-    ):
-        source = repository_root / relative
-        destination = tmp_path / relative
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_bytes(source.read_bytes())
+    _copy_legacy_recovery_state(repository_root, tmp_path)
     clone_payload = json.loads(
         (
             repository_root / "docs/analysis/product-v0233-formal-state-clone.json"

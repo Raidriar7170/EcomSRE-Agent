@@ -42,6 +42,7 @@ from ecomsre.product.pilot.formal_live_v0233 import (
     BaselineRestartProofV0233,
     FormalActionEventV0233,
     FormalActionJournalV0233,
+    FormalClosureProofV0233,
     FormalExecutionAdmissionV0233,
     FormalExecutionBlockerV0233,
     FormalExecutionReservationV0233,
@@ -1380,6 +1381,25 @@ def _updated_manifest(
     )
 
 
+def _running_manifest_v0233(root: Path) -> ProductV0233RepositoryStateManifest:
+    """Enter a fresh attempt without carrying the prior terminal projection."""
+
+    return _updated_manifest(
+        root,
+        locator=_RECOVERY_REPOSITORY_STATE_LOCATOR,
+        phase=RepositoryPhaseV0233.FORMAL_RUNNING.value,
+        formal_result_sha256=None,
+        formal_blocker_sha256=None,
+        knowledge_handoff_sha256=None,
+        cleanup_proof_sha256=None,
+        formal_clone_count=1,
+        formal_execution_count=1,
+        new_incident_count=0,
+        new_diagnosis_count=0,
+        measured_result_count=0,
+    )
+
+
 def _publish_manifest(
     root: Path,
     manifest: ProductV0233RepositoryStateManifest,
@@ -1650,6 +1670,206 @@ def _recover_terminal_publication(
     raise RuntimeError(str(bundle.get("terminal")))
 
 
+def _verified_blocker_cleanup_sha256_v0233(
+    payload: Mapping[str, Any],
+    *,
+    attempt_id: str,
+    latest_checkpoint_sha256: str,
+    blocker: FormalExecutionBlockerV0233,
+) -> str:
+    schema_version = payload.get("schema_version")
+    if schema_version == "ecomsre.product.formal-closure-proof.v0233":
+        closure = FormalClosureProofV0233.model_validate(payload)
+        closure_sha256 = closure.closure_sha256
+        safety = closure.safety_observation
+    elif schema_version == "ecomsre.product.interrupted-attempt-cleanup.v0233":
+        interrupted = InterruptedAttemptCleanupProofV0233.model_validate(payload)
+        if (
+            interrupted.attempt_id != attempt_id
+            or interrupted.latest_checkpoint_sha256 != latest_checkpoint_sha256
+        ):
+            raise ValueError("Product v0.2.3.3 interrupted cleanup proof differs")
+        closure_sha256 = interrupted.closure_sha256
+        safety = interrupted.safety_observation
+    elif schema_version == "ecomsre.product.formal-closure-observation.v0233":
+        closure_sha256, safety = _verified_formal_closure_observation_v0233(
+            payload,
+            blocker=blocker,
+        )
+    else:
+        raise ValueError("Product v0.2.3.3 formal closure schema differs")
+    if safety != blocker.safety_observation:
+        raise ValueError("Product v0.2.3.3 formal closure safety differs")
+    return closure_sha256
+
+
+def _verified_formal_closure_observation_v0233(
+    payload: Mapping[str, Any],
+    *,
+    blocker: FormalExecutionBlockerV0233,
+) -> tuple[str, FormalSafetyObservationV0233]:
+    expected_keys = {
+        "schema_version",
+        "verdict",
+        "queue_before_sha256",
+        "queue_after_sha256",
+        "outer_baseline_before_sha256",
+        "outer_baseline_after_sha256",
+        "source_selection_before_sha256",
+        "source_selection_after_sha256",
+        "source_database_before_sha256",
+        "source_database_after_sha256",
+        "product_cleanup",
+        "demo_cleanup",
+        "formal_clone_database_owner_count",
+        "clone_baseline_binding_exact",
+        "frozen_semantic_surface_before_sha256",
+        "frozen_semantic_surface_after_sha256",
+        "safety_observation",
+        "closure_sha256",
+    }
+    product_cleanup = payload.get("product_cleanup")
+    demo_cleanup = payload.get("demo_cleanup")
+    body = {key: value for key, value in payload.items() if key != "closure_sha256"}
+    closure_sha256 = payload.get("closure_sha256")
+    try:
+        safety = FormalSafetyObservationV0233.model_validate(
+            payload.get("safety_observation")
+        )
+    except ValueError as error:
+        raise ValueError(
+            "Product v0.2.3.3 formal closure observation differs"
+        ) from error
+
+    def sha256(value: object) -> bool:
+        return (
+            isinstance(value, str)
+            and len(value) == 64
+            and all(character in "0123456789abcdef" for character in value)
+        )
+
+    def exact_sha_pair(before_name: str, after_name: str) -> bool:
+        before = payload.get(before_name)
+        return sha256(before) and before == payload.get(after_name)
+
+    product_keys = {
+        "schema_version",
+        "verdict",
+        "owned_host_processes",
+        "product_api_port",
+        "product_api_port_available",
+        "launches",
+        "non_owned_resources_changed",
+        "safe_error",
+    }
+    launches = product_cleanup.get("launches") if isinstance(product_cleanup, Mapping) else None
+    product_clean = bool(
+        isinstance(product_cleanup, Mapping)
+        and set(product_cleanup) == product_keys
+        and product_cleanup.get("schema_version")
+        == "ecomsre.product.host-process-cleanup.v023"
+        and product_cleanup.get("verdict") == "CLEAN"
+        and type(product_cleanup.get("owned_host_processes")) is int
+        and product_cleanup.get("owned_host_processes") == 0
+        and type(product_cleanup.get("product_api_port")) is int
+        and product_cleanup.get("product_api_port") == 18081
+        and product_cleanup.get("product_api_port_available") is True
+        and isinstance(launches, list)
+        and product_cleanup.get("non_owned_resources_changed") is False
+        and product_cleanup.get("safe_error") is None
+    )
+    launch_keys = {
+        "launch_ordinal",
+        "api_pid",
+        "worker_pid",
+        "api_instance_id",
+        "worker_instance_id",
+    }
+    if product_clean:
+        assert isinstance(launches, list)
+        product_clean = all(
+            isinstance(launch, Mapping)
+            and set(launch) == launch_keys
+            and type(launch.get("launch_ordinal")) is int
+            and launch.get("launch_ordinal") == ordinal
+            and type(launch.get("api_pid")) is int
+            and launch["api_pid"] > 0
+            and type(launch.get("worker_pid")) is int
+            and launch["worker_pid"] > 0
+            and isinstance(launch.get("api_instance_id"), str)
+            and launch["api_instance_id"].startswith("api-")
+            and isinstance(launch.get("worker_instance_id"), str)
+            and launch["worker_instance_id"].startswith("worker-")
+            for ordinal, launch in enumerate(launches, start=1)
+        )
+
+    demo_keys = {
+        "baseline_restored",
+        "owned_containers",
+        "owned_networks",
+        "owned_volumes",
+        "non_owned_resources_changed",
+        "verdict",
+    }
+    demo_clean = bool(
+        isinstance(demo_cleanup, Mapping)
+        and set(demo_cleanup) == demo_keys
+        and demo_cleanup.get("baseline_restored") is True
+        and type(demo_cleanup.get("owned_containers")) is int
+        and demo_cleanup.get("owned_containers") == 0
+        and type(demo_cleanup.get("owned_networks")) is int
+        and demo_cleanup.get("owned_networks") == 0
+        and type(demo_cleanup.get("owned_volumes")) is int
+        and demo_cleanup.get("owned_volumes") == 0
+        and demo_cleanup.get("non_owned_resources_changed") is False
+        and demo_cleanup.get("verdict") == "CLEAN"
+    )
+    pre_sandbox_cleanup = bool(
+        blocker.failure_stage == "CLONE_CREATED"
+        and demo_cleanup is None
+        and payload.get("queue_before_sha256") is None
+        and payload.get("queue_after_sha256") is None
+        and payload.get("outer_baseline_before_sha256") is None
+        and payload.get("outer_baseline_after_sha256") is None
+    )
+    observed_runtime_clean = bool(
+        exact_sha_pair("queue_before_sha256", "queue_after_sha256")
+        and exact_sha_pair(
+            "outer_baseline_before_sha256",
+            "outer_baseline_after_sha256",
+        )
+        and demo_clean
+    )
+    if (
+        set(payload) != expected_keys
+        or payload.get("schema_version")
+        != "ecomsre.product.formal-closure-observation.v0233"
+        or payload.get("verdict") != "BLOCKED"
+        or not isinstance(closure_sha256, str)
+        or closure_sha256 != semantic_sha256_v22(body)
+        or not exact_sha_pair(
+            "source_selection_before_sha256",
+            "source_selection_after_sha256",
+        )
+        or not exact_sha_pair(
+            "source_database_before_sha256",
+            "source_database_after_sha256",
+        )
+        or not product_clean
+        or not (pre_sandbox_cleanup or observed_runtime_clean)
+        or type(payload.get("formal_clone_database_owner_count")) is not int
+        or payload.get("formal_clone_database_owner_count") != 0
+        or payload.get("clone_baseline_binding_exact") is not True
+        or not exact_sha_pair(
+            "frozen_semantic_surface_before_sha256",
+            "frozen_semantic_surface_after_sha256",
+        )
+        or not safety.safe
+    ):
+        raise ValueError("Product v0.2.3.3 formal closure observation differs")
+    return closure_sha256, safety
+
+
 def _sealed_nonrecoverable_publication_paths_v0233(
     root: Path,
     ledger: FormalAttemptLedgerV0233,
@@ -1771,7 +1991,20 @@ def _sealed_nonrecoverable_publication_paths_v0233(
             raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
         if blocker.get("formal_clone_count") == 1:
             closure = artifact_by_path.get(attempt_closure)
-            if closure is None or closure.get("verdict") != "CLEAN":
+            if closure is None or record.latest_checkpoint_sha256 is None:
+                raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
+            try:
+                cleanup_sha256 = _verified_blocker_cleanup_sha256_v0233(
+                    closure,
+                    attempt_id=record.attempt_id,
+                    latest_checkpoint_sha256=record.latest_checkpoint_sha256,
+                    blocker=FormalExecutionBlockerV0233.model_validate(blocker),
+                )
+            except ValueError as error:
+                raise RuntimeError(
+                    "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
+                ) from error
+            if cleanup_sha256 != blocker.get("cleanup_proof_sha256"):
                 raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
 
     for relative, (mode, payload) in expected_by_path.items():
@@ -3979,13 +4212,7 @@ def _run_formal_nofault_once_v0233(
             root / public_attempt_locator / "formal-state-clone.json",
             clone.model_dump(mode="json"),
         )
-        running_manifest = _updated_manifest(
-            root,
-            locator=_RECOVERY_REPOSITORY_STATE_LOCATOR,
-            phase=RepositoryPhaseV0233.FORMAL_RUNNING.value,
-            formal_clone_count=1,
-            formal_execution_count=1,
-        )
+        running_manifest = _running_manifest_v0233(root)
         running_progress = _progress_payload(
             root,
             locator=_RECOVERY_PROGRESS_LOCATOR,
@@ -4927,7 +5154,13 @@ def _run_formal_nofault_once_v0233(
             ),
             safety_observation=safety_observation.model_dump(mode="json"),
         )
-        terminal_artifacts: list[dict[str, Any]] = []
+        terminal_artifacts: list[dict[str, Any]] = [
+            {
+                "path": f"{public_attempt_locator}/pre-execution-review.json",
+                "mode": "CREATE_JSON",
+                "payload": attempt_review.model_dump(mode="json"),
+            }
+        ]
         if clone is not None:
             terminal_artifacts.append(
                 {

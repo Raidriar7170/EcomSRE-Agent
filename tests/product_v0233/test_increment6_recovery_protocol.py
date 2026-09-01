@@ -774,7 +774,11 @@ def test_live_legacy_attempt1_record_binds_existing_bytes_without_checkpoint() -
 
     assert record.attempt_id == "attempt-1"
     assert tracked_record == record
-    assert tracked_ledger.attempts == (record,)
+    assert tracked_ledger.attempts[0] == record
+    assert all(
+        attempt.attempt_id != record.attempt_id
+        for attempt in tracked_ledger.attempts[1:]
+    )
     assert record.disposition == "LEGACY_BLOCKED"
     assert record.latest_checkpoint_sha256 is None
     assert record.blocker_terminal == (
@@ -889,9 +893,13 @@ def test_strict_new_attempt_and_resume_admissions_execute_live_contracts(
         ),
     )
 
+    tracked_ledger = FormalAttemptLedgerV0233.model_validate_json(
+        (ROOT / "config/product-v0233/formal-attempt-ledger.json").read_bytes()
+    )
+    next_attempt_id = f"attempt-{len(tracked_ledger.attempts) + 1}"
     admission = run_command.strict_recovery_formal_admission_v0233(
         ROOT,
-        attempt_id="attempt-2",
+        attempt_id=next_attempt_id,
         semantic_generation=2,
     )
     assert admission.execution_head == "1" * 40

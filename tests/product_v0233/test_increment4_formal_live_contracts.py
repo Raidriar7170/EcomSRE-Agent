@@ -267,6 +267,57 @@ def test_json_seal_helper_normalizes_supported_acceptance_value_types() -> None:
     assert semantic_json_sha256_v0233(value) == semantic_sha256_v22(expected)
 
 
+def test_recovery_running_manifest_retires_prior_terminal_fields(
+    tmp_path: Path,
+) -> None:
+    manifest_path = (
+        tmp_path / "config/product-v0233/recovery-repository-state-manifest.json"
+    )
+    manifest_path.parent.mkdir(parents=True)
+    blocked_body = {
+        "schema_version": "ecomsre.product.repository-state.v0233",
+        "goal_version": (
+            "ecomsre-product-v0233-fresh-formal-evidence-bound-nofault-v1"
+        ),
+        "phase": "FORMAL_BLOCKED",
+        "history_and_handoff_sha256": _sha("1"),
+        "source_selection_sha256": _sha("2"),
+        "clone_contract_sha256": _sha("3"),
+        "campaign_sha256": _sha("4"),
+        "contract_preflight_sha256": _sha("5"),
+        "traffic_preflight_sha256": _sha("6"),
+        "formal_contract_freeze_sha256": _sha("7"),
+        "pre_execution_review_sha256": _sha("8"),
+        "formal_result_sha256": None,
+        "formal_blocker_sha256": _sha("9"),
+        "knowledge_handoff_sha256": None,
+        "cleanup_proof_sha256": _sha("a"),
+        "formal_clone_count": 1,
+        "formal_execution_count": 1,
+        "new_incident_count": 0,
+        "new_diagnosis_count": 0,
+        "measured_result_count": 0,
+        "action_authority": "NONE",
+    }
+    blocked = ProductV0233RepositoryStateManifest.model_validate(
+        {
+            **blocked_body,
+            "manifest_sha256": semantic_sha256_v22(blocked_body),
+        }
+    )
+    manifest_path.write_text(blocked.model_dump_json(), encoding="utf-8")
+
+    running = formal_runner._running_manifest_v0233(tmp_path)
+
+    assert running.phase is RepositoryPhaseV0233.FORMAL_RUNNING
+    assert running.formal_blocker_sha256 is None
+    assert running.cleanup_proof_sha256 is None
+    assert running.formal_clone_count == 1
+    assert running.formal_execution_count == 1
+    assert running.new_incident_count == 0
+    assert running.new_diagnosis_count == 0
+
+
 def test_runtime_authority_proof_is_canonically_sealed() -> None:
     proof = RuntimeAuthorityProofV0233.build(
         admission_sha256=_sha("1"),

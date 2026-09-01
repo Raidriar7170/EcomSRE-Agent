@@ -62,6 +62,9 @@ from ecomsre.product.pilot.repository_state_v0233 import (
     ProductV0233RepositoryStateManifest,
     RepositoryPhaseV0233,
 )
+from scripts.product_v0233.run_formal_nofault import (  # noqa: PLC2701
+    _verified_formal_closure_observation_v0233,
+)
 
 
 _TERMINAL = "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS"
@@ -361,6 +364,11 @@ def _verify_cleanup_proof_v0233(
             raise ValueError("Product v0.2.3.3 interrupted cleanup proof differs")
         closure_sha256 = interrupted.closure_sha256
         safety = interrupted.safety_observation
+    elif schema_version == "ecomsre.product.formal-closure-observation.v0233":
+        closure_sha256, safety = _verified_formal_closure_observation_v0233(
+            payload,
+            blocker=blocker,
+        )
     else:
         raise ValueError("Product v0.2.3.3 formal closure schema differs")
     if safety != blocker.safety_observation:
@@ -380,7 +388,6 @@ def _verify_nonrecoverable_history_v0233(
         prefix = f"docs/analysis/product-v0233-attempts/{attempt.attempt_id}/"
         required = {
             f"{prefix}checkpoint-chain.json",
-            f"{prefix}pre-execution-review.json",
             f"{prefix}formal-blocker.json",
             f"{prefix}repository-state-manifest.json",
             f"{prefix}progress.json",
@@ -405,6 +412,19 @@ def _verify_nonrecoverable_history_v0233(
         checkpoint_chain = _object(project / f"{prefix}checkpoint-chain.json")
         review = RecoveryPreExecutionReviewV0233.model_validate_json(
             (project / f"{prefix}pre-execution-review.json").read_bytes()
+        )
+        checkpoints = checkpoint_chain.get("checkpoints")
+        private_review_relative = (
+            f".local/product-v0233/attempts/{attempt.attempt_id}/"
+            "execution/pre-execution-review.json"
+        )
+        review_checkpoint_exact = bool(
+            isinstance(checkpoints, list)
+            and checkpoints
+            and isinstance(checkpoints[0], dict)
+            and isinstance(checkpoints[0].get("output_artifact_sha256s"), dict)
+            and checkpoints[0]["output_artifact_sha256s"].get(private_review_relative)
+            == _sha256_file(project / f"{prefix}pre-execution-review.json")
         )
         repository = ProductV0233RepositoryStateManifest.model_validate_json(
             (project / f"{prefix}repository-state-manifest.json").read_bytes()
@@ -573,6 +593,7 @@ def _verify_nonrecoverable_history_v0233(
             )
         if (
             blocker.terminal != attempt.blocker_terminal
+            or not review_checkpoint_exact
             or not closure_exact
             or not optional_exact
             or repository.phase is not RepositoryPhaseV0233.FORMAL_BLOCKED

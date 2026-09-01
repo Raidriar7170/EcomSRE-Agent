@@ -94,26 +94,27 @@ def test_exact_projection_rejects_existing_symlink(tmp_path: Path) -> None:
         )
 
 
-def test_blocked_repository_terminal_is_publicly_verifiable() -> None:
-    result = verify_product_v0233_terminal(Path(__file__).resolve().parents[2])
+def test_repository_terminal_is_publicly_verifiable() -> None:
+    root = Path(__file__).resolve().parents[2]
+    result = verify_product_v0233_terminal(root)
+    ledger = json.loads(
+        (root / "config/product-v0233/formal-attempt-ledger.json").read_bytes()
+    )
+    latest = ledger["attempts"][-1]
 
-    assert result == {
-        "terminal": "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS",
-        "failure_stage": "FORMAL_TRAFFIC_PASS",
-        "safe_error_code": "TypeError:FORMAL_TRAFFIC_PASS",
-        "one_shot_consumed": True,
-        "formal_clone_count": 1,
-        "formal_execution_count": 1,
-        "formal_transaction_count": 30,
-        "new_incident_count": 0,
-        "new_diagnosis_count": 0,
-        "measured_result_count": 0,
-        "measured_terminal": None,
-        "formal_rerun_authorized": False,
-        "diagnosis_retry_authorized": False,
-        "action_authority": "NONE",
-        "closure": "CLEAN",
-    }
+    assert result["attempt_id"] == latest["attempt_id"]
+    assert result["measured_result_count"] == ledger["measured_result_count"]
+    assert result["action_authority"] == "NONE"
+    assert result["closure"] == "CLEAN"
+    if ledger["measured_result_count"] == 0:
+        assert result["terminal"] == latest["blocker_terminal"]
+        assert result["new_incident_count"] == 0
+        assert result["new_diagnosis_count"] == 0
+    else:
+        assert result["terminal"] == (
+            "ECOMSRE_PRODUCT_V0233_NOFAULT_ACCEPTANCE_COMPLETE"
+        )
+        assert result["measured_terminal"] == latest["measured_terminal"]
 
 
 @pytest.mark.parametrize("relative_path", _REQUIRED_ABSENCES)
