@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import signal
+import stat
 import subprocess
 import time
 from typing import Any, cast, Literal, Mapping, NoReturn, Sequence
@@ -24,6 +25,7 @@ from ecomsre.product.incidents.diagnosis_stage_journal_v02322 import (
 )
 from ecomsre.product.incidents.evidence_binding_v0232 import (
     DiagnosisEvidenceIndexV0232,
+    RuntimeSnapshotEvidenceBindingV0232,
 )
 from ecomsre.product.jobs.contracts import (
     ProductJobRecordV1,
@@ -90,6 +92,7 @@ from ecomsre.product.pilot.fresh_formal_acceptance_v0233 import (
 from ecomsre.product.pilot.fresh_formal_source_v0233 import (
     FreshFormalSourceKindV0233,
     FreshFormalSourceSelectionV0233,
+    FreshFormalStateCloneErrorV0233,
     FreshFormalStateCloneV0233,
     FreshFormalStateCountsV0233,
     admit_fresh_formal_source_v0233,
@@ -222,6 +225,195 @@ def _attempt_product_locator_v0233(attempt_id: str) -> str:
     return f"{_attempt_private_locator_v0233(attempt_id)}/formal-state/product"
 
 
+def _owned_clone_staging_inventory_v0233(
+    staging: Path,
+) -> dict[str, Any]:
+    if not staging.name.startswith(".product-state-clone-v0233-"):
+        raise ValueError("Product v0.2.3.3 interrupted clone staging differs")
+    entries: list[dict[str, Any]] = []
+    pending = [staging]
+    while pending:
+        current = pending.pop()
+        metadata = current.lstat()
+        relative = (
+            "." if current == staging else current.relative_to(staging).as_posix()
+        )
+        if stat.S_ISLNK(metadata.st_mode):
+            raise ValueError("Product v0.2.3.3 interrupted clone staging differs")
+        if stat.S_ISDIR(metadata.st_mode):
+            entries.append({"path": relative, "kind": "DIRECTORY"})
+            pending.extend(sorted(current.iterdir(), reverse=True))
+            continue
+        if not stat.S_ISREG(metadata.st_mode):
+            raise ValueError("Product v0.2.3.3 interrupted clone staging differs")
+        entries.append(
+            {
+                "path": relative,
+                "kind": "FILE",
+                "size": metadata.st_size,
+                "sha256": _sha256_file(current),
+            }
+        )
+    body = {"entries": sorted(entries, key=lambda item: str(item["path"]))}
+    return {**body, "inventory_sha256": semantic_sha256_v22(body)}
+
+
+def _clone_staging_intent_v0233(
+    *,
+    attempt_id: str,
+    reservation_sha256: str,
+    source_selection_sha256: str,
+) -> dict[str, Any]:
+    destination_locator = _attempt_product_locator_v0233(attempt_id)
+    nonce = hashlib.sha256(
+        (
+            f"{attempt_id}:{reservation_sha256}:{source_selection_sha256}:"
+            f"{destination_locator}"
+        ).encode()
+    ).hexdigest()[:24]
+    body = {
+        "schema_version": "ecomsre.product.clone-staging-intent.v0233",
+        "attempt_id": attempt_id,
+        "reservation_sha256": reservation_sha256,
+        "source_selection_sha256": source_selection_sha256,
+        "destination_locator": destination_locator,
+        "staging_locator": (
+            f"{_attempt_private_locator_v0233(attempt_id)}/"
+            f".product-state-clone-v0233-{nonce}"
+        ),
+    }
+    return {**body, "intent_sha256": semantic_sha256_v22(body)}
+
+
+def _recover_interrupted_clone_staging_v0233(
+    root: Path,
+    *,
+    attempt_id: str,
+    selection: FreshFormalSourceSelectionV0233,
+) -> dict[str, Any] | None:
+    attempt_root = root / _attempt_private_locator_v0233(attempt_id)
+    product_root = root / _attempt_product_locator_v0233(attempt_id)
+    proof_path = attempt_root / "execution/interrupted-clone-staging-cleanup.json"
+    intent_path = attempt_root / "clone-staging-intent.json"
+    candidates = tuple(sorted(attempt_root.glob(".product-state-clone-v0233-*")))
+    if not intent_path.is_file() or intent_path.is_symlink():
+        if candidates or intent_path.exists() or intent_path.is_symlink():
+            raise ValueError("Product v0.2.3.3 interrupted clone staging differs")
+        return None
+    reservation = FormalExecutionReservationV0233.model_validate_json(
+        (attempt_root / "reservation.json").read_bytes()
+    )
+    expected_intent = _clone_staging_intent_v0233(
+        attempt_id=attempt_id,
+        reservation_sha256=reservation.reservation_sha256,
+        source_selection_sha256=selection.selection_sha256,
+    )
+    intent = _object(intent_path)
+    if intent != expected_intent:
+        raise ValueError("Product v0.2.3.3 interrupted clone staging intent differs")
+    staging = root / str(intent["staging_locator"])
+    if staging.parent != attempt_root or any(path != staging for path in candidates):
+        raise ValueError("Product v0.2.3.3 interrupted clone staging differs")
+    quarantine = attempt_root / "quarantine" / staging.name
+    if proof_path.exists() or proof_path.is_symlink():
+        if (
+            proof_path.is_symlink()
+            or not proof_path.is_file()
+            or candidates
+            or product_root.exists()
+            or product_root.is_symlink()
+            or quarantine.is_symlink()
+            or not quarantine.is_dir()
+        ):
+            raise ValueError("Product v0.2.3.3 interrupted clone cleanup differs")
+        proof = _object(proof_path)
+        body = {key: value for key, value in proof.items() if key != "proof_sha256"}
+        inventory = _owned_clone_staging_inventory_v0233(quarantine)
+        if (
+            set(proof)
+            != {
+                "schema_version",
+                "verdict",
+                "attempt_id",
+                "source_selection_sha256",
+                "staging_name",
+                "quarantine_locator",
+                "staging_inventory_sha256",
+                "proof_sha256",
+            }
+            or proof.get("schema_version")
+            != "ecomsre.product.interrupted-clone-staging-cleanup.v0233"
+            or proof.get("verdict") != "CLEAN"
+            or proof.get("attempt_id") != attempt_id
+            or proof.get("source_selection_sha256") != selection.selection_sha256
+            or proof.get("staging_name") != staging.name
+            or proof.get("quarantine_locator")
+            != quarantine.relative_to(root).as_posix()
+            or proof.get("staging_inventory_sha256")
+            != inventory["inventory_sha256"]
+            or proof.get("proof_sha256") != semantic_sha256_v22(body)
+        ):
+            raise ValueError("Product v0.2.3.3 interrupted clone cleanup differs")
+        return proof
+    if quarantine.exists() or quarantine.is_symlink():
+        if staging.exists() or staging.is_symlink() or quarantine.is_symlink():
+            raise ValueError("Product v0.2.3.3 interrupted clone staging differs")
+        inventory = _owned_clone_staging_inventory_v0233(quarantine)
+    elif not candidates:
+        return None
+    else:
+        if product_root.exists() or product_root.is_symlink():
+            raise ValueError("Product v0.2.3.3 interrupted clone staging differs")
+        inventory = _owned_clone_staging_inventory_v0233(staging)
+        clone_container = product_root.parent
+        if (
+            clone_container.is_symlink()
+            or not clone_container.is_dir()
+            or any(clone_container.iterdir())
+        ):
+            raise ValueError("Product v0.2.3.3 interrupted clone staging differs")
+        try:
+            recover_fresh_formal_state_clone_v0233(
+                selection=selection,
+                destination_root=staging,
+                destination_locator=_attempt_product_locator_v0233(attempt_id),
+            )
+        except (FreshFormalStateCloneErrorV0233, ValueError):
+            database = staging / "product.sqlite3"
+            if database.exists() and (
+                database.is_symlink()
+                or not database.is_file()
+                or _database_owner_count(database) != 0
+            ):
+                raise ValueError("Product v0.2.3.3 interrupted clone staging differs")
+            if quarantine.parent.exists() or quarantine.parent.is_symlink():
+                if quarantine.parent.is_symlink() or not quarantine.parent.is_dir():
+                    raise ValueError(
+                        "Product v0.2.3.3 interrupted clone staging differs"
+                    )
+            else:
+                quarantine.parent.mkdir(mode=0o700)
+            staging.replace(quarantine)
+            clone_container.rmdir()
+        else:
+            staging.replace(product_root)
+            return None
+    body = {
+        "schema_version": (
+            "ecomsre.product.interrupted-clone-staging-cleanup.v0233"
+        ),
+        "verdict": "CLEAN",
+        "attempt_id": attempt_id,
+        "source_selection_sha256": selection.selection_sha256,
+        "staging_name": staging.name,
+        "quarantine_locator": quarantine.relative_to(root).as_posix(),
+        "staging_inventory_sha256": inventory["inventory_sha256"],
+    }
+    proof = {**body, "proof_sha256": semantic_sha256_v22(body)}
+    write_private_json(proof_path, proof, create_once=True)
+    return proof
+
+
 def _recover_existing_attempt_clone_v0233(
     root: Path,
     *,
@@ -239,12 +431,34 @@ def _recover_existing_attempt_clone_v0233(
     if not product_root.exists():
         if public_path.exists():
             raise ValueError("Product v0.2.3.3 interrupted clone differs")
-        return None
+        intent_path = (
+            root
+            / _attempt_private_locator_v0233(attempt_id)
+            / "clone-staging-intent.json"
+        )
+        staging_candidates = tuple(
+            (
+                root / _attempt_private_locator_v0233(attempt_id)
+            ).glob(".product-state-clone-v0233-*")
+        )
+        if not intent_path.exists() and not intent_path.is_symlink() and not staging_candidates:
+            return None
+        selection = FreshFormalSourceSelectionV0233.model_validate_json(
+            (root / "config/product-v0233/source-selection.json").read_bytes()
+        )
+        _recover_interrupted_clone_staging_v0233(
+            root,
+            attempt_id=attempt_id,
+            selection=selection,
+        )
+        if not product_root.exists():
+            return None
+    else:
+        selection = FreshFormalSourceSelectionV0233.model_validate_json(
+            (root / "config/product-v0233/source-selection.json").read_bytes()
+        )
     if not product_root.is_dir():
         raise ValueError("Product v0.2.3.3 interrupted clone path differs")
-    selection = FreshFormalSourceSelectionV0233.model_validate_json(
-        (root / "config/product-v0233/source-selection.json").read_bytes()
-    )
     recovered = recover_fresh_formal_state_clone_v0233(
         selection=selection,
         destination_root=product_root,
@@ -366,6 +580,7 @@ def _formal_surfaces_v0233(
         ".github/workflows/agent-mainline.yml",
         "src/ecomsre/product/pilot/repository_state_v0233.py",
         "src/ecomsre/product/pilot/serialization_v0233.py",
+        "src/ecomsre/product/pilot/fresh_formal_source_v0233.py",
     )
     operational_sha256_by_path = {
         path: _sha256_file(root / path) for path in operational_paths
@@ -1229,6 +1444,8 @@ _TERMINAL_PUBLICATION_ALLOWED = frozenset(
 _ATTEMPT_PUBLICATION_FILENAMES = frozenset(
     {
         "formal-state-clone.json",
+        "interrupted-clone-staging-cleanup.json",
+        "pre-execution-review.json",
         "checkpoint-chain.json",
         "formal-closure.json",
         "formal-blocker.json",
@@ -1798,6 +2015,13 @@ def recover_interrupted_attempt_cleanup_v0233(
         raise ValueError("Product v0.2.3.3 interrupted attempt differs")
     if latest.formal_clone_sha256 is None:
         return None
+    committed = FormalCheckpointRepositoryV0233(
+        root / _attempt_private_locator_v0233(attempt_id)
+    ).load_chain()
+    if not committed or committed[-1] != latest:
+        raise ValueError(
+            "Product v0.2.3.3 interrupted cleanup committed checkpoint differs"
+        )
     private_root = root / _attempt_private_locator_v0233(attempt_id) / "execution"
     closure_path = private_root / "interrupted-cleanup.json"
     if closure_path.is_file() and not closure_path.is_symlink():
@@ -1805,7 +2029,60 @@ def recover_interrupted_attempt_cleanup_v0233(
         closure_body = {
             key: value for key, value in closure.items() if key != "closure_sha256"
         }
-        if closure.get("closure_sha256") != semantic_sha256_v22(closure_body):
+        observed_product_cleanup = closure.get("product_cleanup")
+        observed_demo_cleanup = closure.get("demo_cleanup")
+        safety_payload = closure.get("safety_observation")
+        try:
+            safety = FormalSafetyObservationV0233.model_validate(safety_payload)
+        except ValueError as error:
+            raise ValueError(
+                "Product v0.2.3.3 interrupted cleanup proof differs"
+            ) from error
+        resource_cleanup_clean = (
+            isinstance(observed_product_cleanup, Mapping)
+            and observed_product_cleanup.get("verdict") == "CLEAN"
+            and isinstance(observed_demo_cleanup, Mapping)
+            and observed_demo_cleanup.get("verdict") == "CLEAN"
+            and observed_demo_cleanup.get("non_owned_resources_changed") is False
+            and isinstance(closure.get("source_selection_before_sha256"), str)
+            and closure.get("source_selection_before_sha256")
+            == closure.get("source_selection_after_sha256")
+            and isinstance(closure.get("queue_sha256"), str)
+            and closure.get("formal_clone_database_owner_count") == 0
+            and closure.get("clone_baseline_binding_exact") is True
+            and closure.get("safe_error_code") is None
+        )
+        clean = resource_cleanup_clean and safety.safe
+        expected_keys = {
+            "schema_version",
+            "verdict",
+            "resource_cleanup_verdict",
+            "attempt_id",
+            "latest_checkpoint_sha256",
+            "source_selection_before_sha256",
+            "source_selection_after_sha256",
+            "queue_sha256",
+            "product_cleanup",
+            "demo_cleanup",
+            "formal_clone_database_owner_count",
+            "clone_baseline_binding_exact",
+            "safety_observation",
+            "safe_error_code",
+            "closure_sha256",
+        }
+        if (
+            set(closure) != expected_keys
+            or closure.get("schema_version")
+            != "ecomsre.product.interrupted-attempt-cleanup.v0233"
+            or closure.get("attempt_id") != attempt_id
+            or closure.get("latest_checkpoint_sha256")
+            != latest.checkpoint_sha256
+            or closure.get("resource_cleanup_verdict")
+            != ("CLEAN" if resource_cleanup_clean else "BLOCKED")
+            or closure.get("verdict") != ("CLEAN" if clean else "BLOCKED")
+            or closure.get("verdict") != "CLEAN"
+            or closure.get("closure_sha256") != semantic_sha256_v22(closure_body)
+        ):
             raise ValueError("Product v0.2.3.3 interrupted cleanup proof differs")
         return closure
 
@@ -1937,7 +2214,7 @@ def recover_interrupted_attempt_cleanup_v0233(
         "safe_error_code": safe_error_code,
     }
     closure = {**body, "closure_sha256": semantic_sha256_v22(body)}
-    if persist:
+    if persist and closure["verdict"] == "CLEAN":
         write_private_json(closure_path, closure, create_once=True)
     return closure
 
@@ -1999,6 +2276,26 @@ def terminalize_nonrecoverable_attempt_v0233(
     clone_count = 1 if latest.formal_clone_sha256 is not None else 0
     closure: dict[str, Any] | None = None
     cleanup_proof_sha256: str | None = None
+    clone_staging_cleanup: dict[str, Any] | None = None
+    clone_staging_cleanup_path = (
+        private_root / "interrupted-clone-staging-cleanup.json"
+    )
+    if clone_count == 0 and clone_staging_cleanup_path.is_file():
+        selection = FreshFormalSourceSelectionV0233.model_validate_json(
+            (root / "config/product-v0233/source-selection.json").read_bytes()
+        )
+        clone_staging_cleanup = _recover_interrupted_clone_staging_v0233(
+            root,
+            attempt_id=attempt_id,
+            selection=selection,
+        )
+        relative_cleanup = clone_staging_cleanup_path.relative_to(root).as_posix()
+        if (
+            clone_staging_cleanup is None
+            or latest.output_artifact_sha256s.get(relative_cleanup)
+            != _sha256_file(clone_staging_cleanup_path)
+        ):
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
     if clone_count == 1:
         interrupted_path = private_root / "interrupted-cleanup.json"
         closure_path = (
@@ -2013,7 +2310,19 @@ def terminalize_nonrecoverable_attempt_v0233(
             key: value for key, value in closure.items() if key != "closure_sha256"
         }
         cleanup_proof_sha256 = closure.get("closure_sha256")
-        if cleanup_proof_sha256 != semantic_sha256_v22(closure_body):
+        if (
+            cleanup_proof_sha256 != semantic_sha256_v22(closure_body)
+            or (
+                closure_path == interrupted_path
+                and (
+                    closure.get("schema_version")
+                    != "ecomsre.product.interrupted-attempt-cleanup.v0233"
+                    or closure.get("attempt_id") != attempt_id
+                    or closure.get("latest_checkpoint_sha256")
+                    != latest.checkpoint_sha256
+                )
+            )
+        ):
             raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS")
         safety = FormalSafetyObservationV0233.model_validate(
             closure.get("safety_observation")
@@ -2133,7 +2442,20 @@ def terminalize_nonrecoverable_attempt_v0233(
                 "payload": closure,
             },
         )
+    if clone_staging_cleanup is not None:
+        artifacts.insert(
+            1,
+            {
+                "path": (
+                    f"{public_attempt_locator}/"
+                    "interrupted-clone-staging-cleanup.json"
+                ),
+                "mode": "CREATE_JSON",
+                "payload": clone_staging_cleanup,
+            },
+        )
     for name, model in (
+        ("pre-execution-review.json", RecoveryPreExecutionReviewV0233),
         ("live-capture-bundle.json", LiveCaptureBundleV0233),
         (
             "diagnosis-acquisition-checkpoint.json",
@@ -2612,30 +2934,59 @@ def _job_lineage_projection_v0233(
     last_passed_stage: str | None = None
     private_failure_envelope_sha256: str | None = None
     if job.status is ProductJobStatusV1.FAILED:
-        failure_root = product_root / "private/diagnosis-failures" / job.job_id
-        failure_files = (
-            tuple(sorted(failure_root.glob("*.json"))) if failure_root.is_dir() else ()
-        )
-        if len(failure_files) != 1:
-            raise ValueError("Product v0.2.3.3 Diagnosis lineage differs")
-        envelope = DiagnosisPrivateFailureEnvelopeV02322.model_validate_json(
-            failure_files[0].read_bytes()
-        )
-        if (
-            envelope.job_id != job.job_id
-            or envelope.failing_stage.value != job.failure_stage
-            or envelope.exception_fingerprint != job.exception_fingerprint
-            or envelope.job_payload_sha256 != semantic_sha256_v22(job.payload)
-            or envelope.incident_id != job.payload.get("incident_id")
-            or job.journal_tail_sha256 is None
-        ):
-            raise ValueError("Product v0.2.3.3 Diagnosis lineage differs")
-        private_failure_envelope_sha256 = envelope.failure_envelope_sha256
-        last_passed_stage = (
-            None
-            if envelope.last_passed_stage is None
-            else envelope.last_passed_stage.value
-        )
+        if job.safe_error_code == "FORMAL_SEMANTIC_GENERATION_CHANGED":
+            fence_path = (
+                product_root
+                / "private/semantic-rollover-fences"
+                / f"{job.job_id}.json"
+            )
+            if fence_path.is_symlink() or not fence_path.is_file():
+                raise ValueError("Product v0.2.3.3 Diagnosis lineage differs")
+            fence = _object(fence_path)
+            fence_body = {
+                key: value for key, value in fence.items() if key != "proof_sha256"
+            }
+            if (
+                fence.get("schema_version")
+                != "ecomsre.product.semantic-rollover-job-fence.v0233"
+                or fence.get("job_id") != job.job_id
+                or fence.get("incident_id") != job.payload.get("incident_id")
+                or fence.get("failing_stage") != job.failure_stage
+                or fence.get("exception_fingerprint")
+                != job.exception_fingerprint
+                or fence.get("journal_tail_sha256") != job.journal_tail_sha256
+                or fence.get("proof_sha256") != semantic_sha256_v22(fence_body)
+            ):
+                raise ValueError("Product v0.2.3.3 Diagnosis lineage differs")
+            private_failure_envelope_sha256 = str(fence["proof_sha256"])
+            last_passed_stage = cast(str | None, fence.get("last_passed_stage"))
+        else:
+            failure_root = product_root / "private/diagnosis-failures" / job.job_id
+            failure_files = (
+                tuple(sorted(failure_root.glob("*.json")))
+                if failure_root.is_dir()
+                else ()
+            )
+            if len(failure_files) != 1:
+                raise ValueError("Product v0.2.3.3 Diagnosis lineage differs")
+            envelope = DiagnosisPrivateFailureEnvelopeV02322.model_validate_json(
+                failure_files[0].read_bytes()
+            )
+            if (
+                envelope.job_id != job.job_id
+                or envelope.failing_stage.value != job.failure_stage
+                or envelope.exception_fingerprint != job.exception_fingerprint
+                or envelope.job_payload_sha256 != semantic_sha256_v22(job.payload)
+                or envelope.incident_id != job.payload.get("incident_id")
+                or job.journal_tail_sha256 is None
+            ):
+                raise ValueError("Product v0.2.3.3 Diagnosis lineage differs")
+            private_failure_envelope_sha256 = envelope.failure_envelope_sha256
+            last_passed_stage = (
+                None
+                if envelope.last_passed_stage is None
+                else envelope.last_passed_stage.value
+            )
     elif job.status is ProductJobStatusV1.SUCCEEDED:
         last_passed_stage = "JOB_SUCCEEDED"
     body = {
@@ -2768,7 +3119,7 @@ def _interrupted_diagnosis_lineage_v0233(
                 "SELECT job_id FROM diagnosis_jobs ORDER BY created_at, job_id"
             ).fetchall()
         )
-    failed: list[ProductJobRecordV1] = []
+    terminal_jobs: list[ProductJobRecordV1] = []
     for job_id in job_ids:
         job = jobs.get(job_id)
         context_value = job.payload.get("formal_recovery_v0233")
@@ -2778,10 +3129,11 @@ def _interrupted_diagnosis_lineage_v0233(
         if (
             context.attempt_id == acquisition.attempt_id
             and job.payload.get("incident_id") == acquisition.incident_id
-            and job.status is ProductJobStatusV1.FAILED
+            and job.status
+            in {ProductJobStatusV1.FAILED, ProductJobStatusV1.SUCCEEDED}
         ):
-            failed.append(job)
-    failed.sort(
+            terminal_jobs.append(job)
+    terminal_jobs.sort(
         key=lambda job: (
             FormalDiagnosisJobContextV0233.model_validate(
                 job.payload.get("formal_recovery_v0233")
@@ -2792,7 +3144,7 @@ def _interrupted_diagnosis_lineage_v0233(
         FormalDiagnosisJobContextV0233.model_validate(
             job.payload.get("formal_recovery_v0233")
         )
-        for job in failed
+        for job in terminal_jobs
     )
     if tuple(context.diagnosis_generation for context in contexts) != tuple(
         range(1, len(contexts) + 1)
@@ -2814,7 +3166,20 @@ def _interrupted_diagnosis_lineage_v0233(
             incident_sha256=acquisition.incident_sha256,
             acquisition_sha256=acquisition.acquisition_sha256,
         )
-        for context, job in zip(contexts, failed, strict=True)
+        for context, job in zip(contexts, terminal_jobs, strict=True)
+    ):
+        raise ValueError("Product v0.2.3.3 interrupted Diagnosis lineage differs")
+    failed = [
+        job for job in terminal_jobs if job.status is ProductJobStatusV1.FAILED
+    ]
+    successful = [
+        job for job in terminal_jobs if job.status is ProductJobStatusV1.SUCCEEDED
+    ]
+    if (
+        not terminal_jobs
+        or len(successful) > 1
+        or (successful and terminal_jobs[-1] != successful[0])
+        or any(job.status is not ProductJobStatusV1.FAILED for job in terminal_jobs[:-1])
     ):
         raise ValueError("Product v0.2.3.3 interrupted Diagnosis lineage differs")
     body = {
@@ -2823,11 +3188,20 @@ def _interrupted_diagnosis_lineage_v0233(
         "incident_id": acquisition.incident_id,
         "incident_sha256": acquisition.incident_sha256,
         "acquisition_sha256": acquisition.acquisition_sha256,
+        "terminal_job_count": len(terminal_jobs),
         "failed_job_count": len(failed),
         "failed_jobs": [
             _job_lineage_projection_v0233(job, product_root=product_root)
             for job in failed
         ],
+        "successful_job_count": len(successful),
+        "successful_job": (
+            None
+            if not successful
+            else _job_lineage_projection_v0233(
+                successful[0], product_root=product_root
+            )
+        ),
     }
     return {**body, "lineage_sha256": semantic_sha256_v22(body)}
 
@@ -2939,6 +3313,20 @@ def _publish_measured_terminal_v0233(
     selection = FreshFormalSourceSelectionV0233.model_validate_json(
         (root / "config/product-v0233/source-selection.json").read_bytes()
     )
+    runtime_bindings = tuple(
+        binding.binding_payload
+        for binding in recovery_acquisition.connector_provenance_bindings
+        if isinstance(binding.binding_payload, RuntimeSnapshotEvidenceBindingV0232)
+    )
+    if len(runtime_bindings) != 1:
+        raise ValueError("Product v0.2.3.3 measured Runtime binding differs")
+    runtime_binding = runtime_bindings[0]
+    raw_runtime = live_capture.fresh_runtime_snapshot_raw
+    checkout_services = tuple(
+        service
+        for service in raw_runtime.services
+        if service.logical_service == "checkout"
+    )
     measured_record = measured_ledger.attempts[-1]
     if (
         result.diagnosis_result_sha256 != diagnosis.result_sha256
@@ -2970,6 +3358,47 @@ def _publish_measured_terminal_v0233(
         != review.semantic_surface_sha256
         or recovery_acquisition.active_profile_sha256 != selection.active_profile_sha256
         or recovery_acquisition.baseline_sha256 != selection.active_baseline_sha256
+        or live_capture.active_profile_sha256 != selection.active_profile_sha256
+        or live_capture.active_profile_sha256 != restart.active_profile_sha256
+        or live_capture.active_profile_sha256
+        != recovery_acquisition.active_profile_sha256
+        or live_capture.active_baseline_id != selection.active_baseline_id
+        or live_capture.active_baseline_id != restart.active_baseline_id
+        or live_capture.active_baseline_sha256 != selection.active_baseline_sha256
+        or live_capture.active_baseline_sha256 != restart.active_baseline_sha256
+        or live_capture.active_baseline_sha256
+        != recovery_acquisition.baseline_sha256
+        or live_capture.traffic_contract_sha256 != traffic.traffic_contract_sha256
+        or live_capture.formal_profile_sha256 != traffic.formal_profile_sha256
+        or live_capture.runtime_connector_binding_sha256
+        != authority.runtime_connector_binding_sha256
+        or live_capture.runtime_connector_binding_sha256
+        != fresh_snapshot_proof.runtime_connector_binding_sha256
+        or live_capture.runtime_connector_binding_sha256 != raw_runtime.authority_sha256
+        or authority.pilot_runtime_authority_sha256
+        != fresh_snapshot_proof.pilot_runtime_authority_sha256
+        or authority.pilot_runtime_authority_sha256
+        != runtime_binding.pilot_runtime_authority_sha256
+        or authority.runtime_continuity_descriptor_sha256
+        != fresh_snapshot_proof.runtime_continuity_descriptor_sha256
+        or raw_runtime.snapshot_sha256
+        != fresh_snapshot_proof.runtime_snapshot_sha256
+        or raw_runtime.snapshot_sha256 != runtime_binding.runtime_snapshot_sha256
+        or raw_runtime.authority_sha256
+        != runtime_binding.runtime_snapshot_authority_sha256
+        or raw_runtime.authority_sha256 != runtime_binding.connector_binding_sha256
+        or raw_runtime.environment_id != restart.environment_id
+        or raw_runtime.environment_id
+        != runtime_binding.runtime_snapshot_environment_id
+        or raw_runtime.observed_at != fresh_snapshot_proof.observed_at
+        or raw_runtime.observed_at != runtime_binding.runtime_snapshot_observed_at
+        or recovery_acquisition.runtime_snapshot_binding_sha256
+        != runtime_binding.binding_sha256
+        or len(checkout_services) != 1
+        or len(raw_runtime.services) != 1
+        or checkout_services[0].state.value != "RUNNING"
+        or checkout_services[0].healthy is not True
+        or checkout_services[0].restart_count != 0
         or live_capture.campaign_id != measured_ledger.campaign_id
         or live_capture.attempt_id != measured_record.attempt_id
         or live_capture.semantic_generation != measured_record.semantic_generation
@@ -2992,6 +3421,7 @@ def _publish_measured_terminal_v0233(
     ):
         raise ValueError("Product v0.2.3.3 measured evidence binding differs")
     public_outputs = (
+        (f"{public_attempt_locator}/pre-execution-review.json", review),
         (f"{public_attempt_locator}/runtime-authority.json", authority),
         (f"{public_attempt_locator}/baseline-restart.json", restart),
         (f"{public_attempt_locator}/formal-traffic.json", traffic),
@@ -3305,6 +3735,11 @@ def _run_formal_nofault_once_v0233(
         semantic_generation=semantic_generation,
     )
     frozen_semantic_surface_before = semantic_surface.semantic_surface_sha256
+    attempt_review = RecoveryPreExecutionReviewV0233.model_validate_json(
+        (
+            root / "docs/analysis/product-v0233-recovery-pre-execution-review.json"
+        ).read_bytes()
+    )
     starting_counts = source_before.source_counts
     starting_observed_counts = FormalObservedStateCountsV0233.model_validate(
         starting_counts.model_dump(mode="json")
@@ -3504,10 +3939,28 @@ def _run_formal_nofault_once_v0233(
             reservation.model_dump(mode="json"),
             create_once=True,
         )
+        write_private_json(
+            private_root / "pre-execution-review.json",
+            attempt_review.model_dump(mode="json"),
+            create_once=True,
+        )
+        clone_staging_intent = _clone_staging_intent_v0233(
+            attempt_id=attempt_id,
+            reservation_sha256=reservation.reservation_sha256,
+            source_selection_sha256=source_before.selection_sha256,
+        )
+        clone_staging_intent_path = attempt_root / "clone-staging-intent.json"
+        write_private_json(
+            clone_staging_intent_path,
+            clone_staging_intent,
+            create_once=True,
+        )
         for checkpoint_artifact in (
             reservation_path,
             private_root / "admission.json",
             private_root / "reservation.json",
+            private_root / "pre-execution-review.json",
+            clone_staging_intent_path,
         ):
             capture_checkpoint_artifact(checkpoint_artifact)
         append_checkpoint(FormalExecutionStateV0233.PREPARED)
@@ -3520,6 +3973,7 @@ def _run_formal_nofault_once_v0233(
             destination_root=product_root,
             destination_locator=product_locator,
             owner_counter=_database_owner_count,
+            staging_root=root / str(clone_staging_intent["staging_locator"]),
         )
         stage = "CLONE_CREATED"
         _write_public_create_once(

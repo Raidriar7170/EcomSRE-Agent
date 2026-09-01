@@ -13,6 +13,10 @@ import pytest
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 from ecomsre.product.connectors.pilot_runtime import PilotRuntimeSnapshotV02
 from ecomsre.product.environment.capabilities import EnvironmentCapabilityMatrixV1
+from ecomsre.product.pilot.formal_live_v0233 import (
+    FormalExecutionAdmissionV0233,
+    FormalExecutionReservationV0233,
+)
 from ecomsre.product.pilot.fresh_formal_source_v0233 import (
     SOURCE_AND_CLONE_CONTRACT_PASS_V0233,
     FreshFormalSourceCandidateV0233,
@@ -307,6 +311,41 @@ def _candidate(
     )
 
 
+def _write_clone_staging_intent_fixture(
+    root: Path,
+    *,
+    attempt_id: str,
+    source_selection_sha256: str,
+) -> Path:
+    admission = FormalExecutionAdmissionV0233.build(
+        execution_head="1" * 40,
+        campaign_sha256="1" * 64,
+        source_selection_sha256=source_selection_sha256,
+        formal_clone_plan_sha256="2" * 64,
+        formal_contract_freeze_sha256="3" * 64,
+        pre_execution_review_sha256="4" * 64,
+        repository_state_manifest_sha256="5" * 64,
+    )
+    reservation = FormalExecutionReservationV0233.build(
+        admission=admission,
+        reserved_at=datetime(2026, 9, 1, tzinfo=UTC),
+    )
+    attempt_root = root / run_command._attempt_private_locator_v0233(attempt_id)
+    attempt_root.mkdir(parents=True)
+    (attempt_root / "reservation.json").write_text(
+        reservation.model_dump_json(), encoding="utf-8"
+    )
+    intent = run_command._clone_staging_intent_v0233(
+        attempt_id=attempt_id,
+        reservation_sha256=reservation.reservation_sha256,
+        source_selection_sha256=source_selection_sha256,
+    )
+    (attempt_root / "clone-staging-intent.json").write_text(
+        _json(intent), encoding="utf-8"
+    )
+    return root / str(intent["staging_locator"])
+
+
 def test_history_and_handoff_bindings_are_exact() -> None:
     result = verify_product_v0233_history(ROOT)
 
@@ -484,6 +523,11 @@ def test_hard_crash_after_atomic_clone_rename_recovers_and_publishes_exact_proof
     selection_path.parent.mkdir(parents=True)
     selection_path.write_text(selection.model_dump_json(), encoding="utf-8")
     attempt_id = "attempt-2"
+    _write_clone_staging_intent_fixture(
+        tmp_path,
+        attempt_id=attempt_id,
+        source_selection_sha256=selection.selection_sha256,
+    )
     destination_locator = ".local/product-v0233/attempts/attempt-2/formal-state/product"
     staging = tmp_path / (
         ".local/product-v0233/attempts/attempt-2/formal-state/product.atomic-staging"
@@ -525,6 +569,107 @@ def test_hard_crash_after_atomic_clone_rename_recovers_and_publishes_exact_proof
         FreshFormalStateCloneV0233.model_validate_json(public_path.read_bytes())
         == expected
     )
+
+
+def test_hard_crash_before_atomic_clone_rename_promotes_owned_complete_staging(
+    tmp_path: Path,
+) -> None:
+    source_locator = ".local/product-v023/source/product"
+    source_root = _build_source_state(tmp_path / source_locator, schema_version=7)
+    selection = admit_fresh_formal_source_v0233(
+        _candidate(
+            source_root,
+            kind=FreshFormalSourceKindV0233.PRISTINE_PREFORMAL_BASE,
+            locator=source_locator,
+        ),
+        owner_counter=lambda _database: 0,
+    )
+    selection_path = tmp_path / "config/product-v0233/source-selection.json"
+    selection_path.parent.mkdir(parents=True)
+    selection_path.write_text(selection.model_dump_json(), encoding="utf-8")
+    attempt_root = tmp_path / ".local/product-v0233/attempts/attempt-2"
+    staging = _write_clone_staging_intent_fixture(
+        tmp_path,
+        attempt_id="attempt-2",
+        source_selection_sha256=selection.selection_sha256,
+    )
+    completed = attempt_root / "completed/product"
+    destination_locator = ".local/product-v0233/attempts/attempt-2/formal-state/product"
+    expected = clone_fresh_formal_state_v0233(
+        selection=selection,
+        source_root=source_root,
+        destination_root=completed,
+        destination_locator=destination_locator,
+        owner_counter=lambda _database: 0,
+    )
+    (attempt_root / "formal-state").mkdir()
+    crash = subprocess.run(
+        (
+            sys.executable,
+            "-c",
+            "import os,sys; os.replace(sys.argv[1],sys.argv[2]); os._exit(97)",
+            str(completed),
+            str(staging),
+        ),
+        check=False,
+    )
+    assert crash.returncode == 97
+    completed.parent.rmdir()
+
+    recovered = run_command._recover_existing_attempt_clone_v0233(
+        tmp_path,
+        attempt_id="attempt-2",
+        publish_missing=True,
+    )
+
+    assert recovered == expected
+    assert not staging.exists()
+    assert (attempt_root / "formal-state/product").is_dir()
+
+
+def test_incomplete_owned_clone_staging_is_quarantined_with_sealed_proof(
+    tmp_path: Path,
+) -> None:
+    source_locator = ".local/product-v023/source/product"
+    source_root = _build_source_state(tmp_path / source_locator, schema_version=7)
+    selection = admit_fresh_formal_source_v0233(
+        _candidate(
+            source_root,
+            kind=FreshFormalSourceKindV0233.PRISTINE_PREFORMAL_BASE,
+            locator=source_locator,
+        ),
+        owner_counter=lambda _database: 0,
+    )
+    selection_path = tmp_path / "config/product-v0233/source-selection.json"
+    selection_path.parent.mkdir(parents=True)
+    selection_path.write_text(selection.model_dump_json(), encoding="utf-8")
+    attempt_root = tmp_path / ".local/product-v0233/attempts/attempt-2"
+    staging = _write_clone_staging_intent_fixture(
+        tmp_path,
+        attempt_id="attempt-2",
+        source_selection_sha256=selection.selection_sha256,
+    )
+    (attempt_root / "formal-state").mkdir(parents=True)
+    staging.mkdir()
+    (staging / "partial.json").write_text("{}", encoding="utf-8")
+
+    recovered = run_command._recover_existing_attempt_clone_v0233(
+        tmp_path,
+        attempt_id="attempt-2",
+        publish_missing=False,
+    )
+
+    proof_path = attempt_root / "execution/interrupted-clone-staging-cleanup.json"
+    proof = json.loads(proof_path.read_text(encoding="utf-8"))
+    body = {key: value for key, value in proof.items() if key != "proof_sha256"}
+    assert recovered is None
+    assert not staging.exists()
+    assert not (attempt_root / "formal-state").exists()
+    assert (attempt_root / "quarantine" / staging.name).is_dir()
+    assert proof["verdict"] == "CLEAN"
+    assert proof["attempt_id"] == "attempt-2"
+    assert proof["source_selection_sha256"] == selection.selection_sha256
+    assert proof["proof_sha256"] == semantic_sha256_v22(body)
 
 
 def test_repository_phase_model_is_exact() -> None:

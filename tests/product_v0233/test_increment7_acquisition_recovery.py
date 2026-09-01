@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+import json
 from types import SimpleNamespace
 
 import pytest
@@ -41,9 +42,10 @@ from ecomsre.product.incidents.diagnosis_pipeline_v02322 import (
 )
 from ecomsre.product.incidents.diagnosis_stage_journal_v02322 import (
     DiagnosisStageJournalRepositoryV02322,
+    DiagnosisStageStatusV02322,
 )
 from ecomsre.product.errors import ProductError
-from ecomsre.product.jobs.contracts import ProductJobTypeV1
+from ecomsre.product.jobs.contracts import ProductJobStatusV1, ProductJobTypeV1
 from ecomsre.product.jobs.repository import JobRepositoryV1
 from ecomsre.product.jobs.worker import run_one_job
 from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
@@ -333,6 +335,141 @@ def test_recovery_submission_reuses_same_incident_and_frozen_acquisition() -> No
         "incident_id": checkpoint.incident_id,
         "formal_recovery_v0233": submission.context.model_dump(mode="json"),
     }
+
+
+@pytest.mark.parametrize("terminal_before_rollover", [False, True])
+def test_semantic_rollover_fences_running_or_preserves_completed_job(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+    terminal_before_rollover: bool,
+) -> None:
+    started = datetime(2026, 9, 1, 2, 0, tzinfo=UTC)
+    attempt_id = "attempt-2"
+    context = FormalDiagnosisJobContextV0233.build(
+        campaign_id="product-v0233-fresh-formal-nofault",
+        semantic_generation=2,
+        attempt_id=attempt_id,
+        diagnosis_generation=1,
+        active_profile_sha256=ACTIVE_PROFILE_SHA256_V023,
+        semantic_surface_sha256=_sha("5"),
+        acquisition_sha256=None,
+    )
+    checkpoint = build_diagnosis_acquisition_checkpoint_v0233(
+        context=context,
+        acquisition=_acquisition(),
+        incident_id="inc-" + "1" * 24,
+        incident_sha256=_sha("6"),
+        incident_observation_started_at=started,
+        incident_observation_ended_at=started + timedelta(seconds=300),
+        baseline_sha256=_sha("7"),
+        service_identity_sha256=_sha("8"),
+        capability_sha256=_sha("9"),
+    )
+    product_root = tmp_path / run_command._attempt_product_locator_v0233(attempt_id)
+    product_root.mkdir(parents=True)
+    store = SqliteStoreV1(product_root / "product.sqlite3")
+    jobs = JobRepositoryV1(store)
+    rebound = context.model_copy(
+        update={"acquisition_sha256": checkpoint.acquisition_sha256}
+    )
+    job = jobs.enqueue(
+        ProductJobTypeV1.DIAGNOSIS,
+        {
+            "incident_id": checkpoint.incident_id,
+            "formal_recovery_v0233": context.model_dump(mode="json"),
+        },
+        idempotency_key=final_diagnosis_idempotency_key_v0233(
+            context=rebound,
+            incident_sha256=checkpoint.incident_sha256,
+            acquisition_sha256=checkpoint.acquisition_sha256,
+        ),
+        now=started.timestamp(),
+    )
+    claimed = jobs.claim_next(
+        "worker-before-rollover",
+        lease_seconds=3600,
+        now=started.timestamp() + 1,
+    )
+    assert claimed is not None
+    journal = DiagnosisStageJournalRepositoryV02322(store)
+    claimed_event = journal.append(
+        journal_id="journal-" + "1" * 24,
+        job_id=job.job_id,
+        incident_id=checkpoint.incident_id,
+        stage=DiagnosisPipelineStageV02322.JOB_CLAIMED,
+        status=DiagnosisStageStatusV02322.PASSED,
+        input_binding_sha256=_sha("a"),
+        output_artifact_sha256=None,
+        source_code_sha256=_sha("b"),
+        observed_at=started + timedelta(seconds=1),
+    )
+    if terminal_before_rollover:
+        jobs.succeed(
+            claimed.job_id,
+            str(claimed.claimed_by),
+            claimed.attempt_count,
+            {"result_sha256": _sha("c")},
+            now=started.timestamp() + 2,
+        )
+        journal.append(
+            journal_id=claimed_event.journal_id,
+            job_id=job.job_id,
+            incident_id=checkpoint.incident_id,
+            stage=DiagnosisPipelineStageV02322.JOB_SUCCEEDED,
+            status=DiagnosisStageStatusV02322.PASSED,
+            input_binding_sha256=_sha("c"),
+            output_artifact_sha256=None,
+            source_code_sha256=_sha("b"),
+            observed_at=started + timedelta(seconds=2),
+        )
+    private_root = (
+        tmp_path / run_command._attempt_private_locator_v0233(attempt_id) / "execution"
+    )
+    write_private_json(
+        private_root / "diagnosis-acquisition-checkpoint.json",
+        checkpoint.model_dump(mode="json"),
+        create_once=True,
+    )
+    monkeypatch.setattr(
+        resume_command,
+        "_recover_owned_product_processes_v0233",
+        lambda **_kwargs: {"verdict": "CLEAN"},
+    )
+
+    paths = resume_command._reconcile_semantic_rollover_lineage_v0233(
+        root=tmp_path,
+        attempt_id=attempt_id,
+        latest=SimpleNamespace(
+            semantic_generation=2,
+            semantic_surface_sha256=_sha("5"),
+        ),
+        successor_semantic_surface_sha256=_sha("d"),
+    )
+
+    observed = jobs.get(job.job_id)
+    lineage_path = private_root / "interrupted-diagnosis-lineage.json"
+    lineage = json.loads(lineage_path.read_text(encoding="utf-8"))
+    assert lineage_path in paths
+    assert lineage["terminal_job_count"] == 1
+    if terminal_before_rollover:
+        assert observed.status is ProductJobStatusV1.SUCCEEDED
+        assert observed.result == {"result_sha256": _sha("c")}
+        assert lineage["failed_job_count"] == 0
+        assert lineage["successful_job_count"] == 1
+    else:
+        assert observed.status is ProductJobStatusV1.FAILED
+        assert observed.safe_error_code == "FORMAL_SEMANTIC_GENERATION_CHANGED"
+        assert lineage["failed_job_count"] == 1
+        assert lineage["successful_job_count"] == 0
+        with pytest.raises(ProductError) as lost:
+            jobs.succeed(
+                claimed.job_id,
+                str(claimed.claimed_by),
+                claimed.attempt_count,
+                {"result_sha256": _sha("e")},
+                now=started.timestamp() + 3,
+            )
+        assert lost.value.code == "JOB_LEASE_LOST"
 
 
 def test_resume_reuses_unfinished_generation_and_advances_after_failure(

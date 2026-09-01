@@ -193,6 +193,58 @@ def test_hard_interruption_recovers_parent_and_orphaned_worker_processes(
     assert cleanup["remaining_owned_process_count"] == 0
 
 
+def test_interrupted_cleanup_rejects_wrong_attempt_and_uncommitted_checkpoint(
+    tmp_path: Path,
+) -> None:
+    attempt_root = tmp_path / ".local/product-v0233/attempts/attempt-2"
+    repository = FormalCheckpointRepositoryV0233(attempt_root)
+    prepared = _prepared_checkpoint()
+    repository.append(prepared)
+    clone_sealed = FormalExecutionCheckpointV0233.build(
+        previous=prepared,
+        state=FormalExecutionStateV0233.CLONE_SEALED,
+        formal_clone_sha256=_sha("4"),
+        created_at=prepared.created_at + timedelta(seconds=1),
+    )
+    repository.append(clone_sealed)
+    closure_path = attempt_root / "execution/interrupted-cleanup.json"
+    closure_path.parent.mkdir(parents=True)
+    wrong_body = {
+        "schema_version": "ecomsre.product.interrupted-attempt-cleanup.v0233",
+        "verdict": "CLEAN",
+        "resource_cleanup_verdict": "CLEAN",
+        "attempt_id": "attempt-9",
+        "latest_checkpoint_sha256": clone_sealed.checkpoint_sha256,
+    }
+    closure_path.write_text(
+        json.dumps(
+            {**wrong_body, "closure_sha256": semantic_sha256_v22(wrong_body)}
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="cleanup proof"):
+        run_command.recover_interrupted_attempt_cleanup_v0233(
+            tmp_path,
+            attempt_id="attempt-2",
+            latest=clone_sealed,
+        )
+
+    closure_path.unlink()
+    uncommitted = FormalExecutionCheckpointV0233.build(
+        previous=clone_sealed,
+        state=FormalExecutionStateV0233.NONRECOVERABLE_FAILURE,
+        created_at=clone_sealed.created_at + timedelta(seconds=1),
+    )
+    with pytest.raises(ValueError, match="committed checkpoint"):
+        run_command.recover_interrupted_attempt_cleanup_v0233(
+            tmp_path,
+            attempt_id="attempt-2",
+            latest=uncommitted,
+            persist=True,
+        )
+
+
 def test_process_interruption_at_every_stage_is_classified_from_durable_acquisition() -> (
     None
 ):

@@ -4,9 +4,12 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
+import fcntl
 import hashlib
 import json
+import os
 from pathlib import Path
+import stat
 from typing import Any, Literal, Mapping
 
 from pydantic import ConfigDict, Field, model_validator
@@ -553,6 +556,25 @@ class FormalCheckpointRepositoryV0233:
         return self.root / f"{checkpoint.sequence:04d}-{state}.json"
 
     def append(self, checkpoint: FormalExecutionCheckpointV0233) -> Path:
+        self.attempt_root.mkdir(parents=True, exist_ok=True, mode=0o700)
+        lock_path = self.attempt_root / ".checkpoint-append.lock"
+        flags = os.O_CREAT | os.O_RDWR
+        if hasattr(os, "O_NOFOLLOW"):
+            flags |= os.O_NOFOLLOW
+        try:
+            descriptor = os.open(lock_path, flags, 0o600)
+        except OSError as error:
+            raise ValueError("Product v0.2.3.3 checkpoint lock differs") from error
+        try:
+            if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+                raise ValueError("Product v0.2.3.3 checkpoint lock differs")
+            fcntl.flock(descriptor, fcntl.LOCK_EX)
+            return self._append_locked(checkpoint)
+        finally:
+            fcntl.flock(descriptor, fcntl.LOCK_UN)
+            os.close(descriptor)
+
+    def _append_locked(self, checkpoint: FormalExecutionCheckpointV0233) -> Path:
         path = self.checkpoint_path(checkpoint)
         if path.exists() or path.is_symlink():
             raise FileExistsError(f"Product v0.2.3.3 checkpoint exists: {path.name}")

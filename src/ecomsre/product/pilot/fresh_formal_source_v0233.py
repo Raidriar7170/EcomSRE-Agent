@@ -876,6 +876,7 @@ def clone_fresh_formal_state_v0233(
     destination_root: Path,
     destination_locator: str,
     owner_counter: Callable[[Path], int],
+    staging_root: Path | None = None,
 ) -> FreshFormalStateCloneV0233:
     try:
         destination_locator = _require_relative_locator(destination_locator)
@@ -941,11 +942,25 @@ def clone_fresh_formal_state_v0233(
             "Product v0.2.3.3 clone destination already exists"
         )
     clone_container.parent.mkdir(parents=True, exist_ok=True)
-    temporary = Path(
-        tempfile.mkdtemp(
-            prefix=".product-state-clone-v0233-", dir=clone_container.parent
+    if staging_root is None:
+        temporary = Path(
+            tempfile.mkdtemp(
+                prefix=".product-state-clone-v0233-", dir=clone_container.parent
+            )
         )
-    )
+    else:
+        temporary = Path(staging_root).expanduser()
+        if not temporary.is_absolute():
+            temporary = temporary.absolute()
+        if (
+            temporary.parent != clone_container.parent
+            or not temporary.name.startswith(".product-state-clone-v0233-")
+            or temporary.name == ".product-state-clone-v0233-"
+            or temporary.exists()
+            or temporary.is_symlink()
+        ):
+            raise FreshFormalStateCloneErrorV0233(STATE_CLONE_BLOCKER_V0233)
+        temporary.mkdir(mode=0o700)
     clone_container.mkdir(mode=0o700)
     completed = False
     try:

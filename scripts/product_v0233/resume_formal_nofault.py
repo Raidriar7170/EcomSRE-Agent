@@ -24,6 +24,7 @@ from ecomsre.product.incidents.diagnosis_pipeline_v02322 import (
     DiagnosisPipelineV02322,
 )
 from ecomsre.product.incidents.diagnosis_stage_journal_v02322 import (
+    DiagnosisStageEventV02322,
     DiagnosisStageJournalRepositoryV02322,
     DiagnosisStageStatusV02322,
 )
@@ -99,6 +100,7 @@ from scripts.product_v0233.run_formal_nofault import (
     _knowledge_handoff,
     _persist_product_process_authority_v0233,
     _publish_measured_terminal_v0233,
+    _recover_owned_product_processes_v0233,
     _recover_existing_attempt_clone_v0233,
     _recover_terminal_publication,
     recover_interrupted_attempt_cleanup_v0233,
@@ -106,6 +108,7 @@ from scripts.product_v0233.run_formal_nofault import (
     _selected_source,
     _sha256_file,
     _safety_observation,
+    _interrupted_diagnosis_lineage_v0233,
     SemanticGenerationTransitionRequiredV0233,
     strict_resume_formal_admission_v0233,
     terminalize_nonrecoverable_attempt_v0233,
@@ -267,6 +270,376 @@ def _seal_interrupted_job_v0233(
         public_failure_v02322=projection,
         now=time.time(),
     )
+
+
+def _semantic_rollover_fence_payload_v0233(
+    *,
+    job: ProductJobRecordV1,
+    acquisition: DiagnosisAcquisitionCheckpointV0233,
+    successor_semantic_surface_sha256: str,
+    last_passed_stage: str | None,
+    failing_stage: str,
+    journal_tail_sha256: str,
+    observed_at: datetime,
+) -> dict[str, Any]:
+    intent_body = {
+        "schema_version": "ecomsre.product.semantic-rollover-job-fence.v0233",
+        "attempt_id": acquisition.attempt_id,
+        "job_id": job.job_id,
+        "incident_id": acquisition.incident_id,
+        "acquisition_sha256": acquisition.acquisition_sha256,
+        "prior_semantic_surface_sha256": acquisition.semantic_surface_sha256,
+        "successor_semantic_surface_sha256": successor_semantic_surface_sha256,
+        "diagnosis_generation": FormalDiagnosisJobContextV0233.model_validate(
+            job.payload.get("formal_recovery_v0233")
+        ).diagnosis_generation,
+        "idempotency_key": job.idempotency_key,
+        "attempt_count": job.attempt_count,
+        "last_passed_stage": last_passed_stage,
+        "failing_stage": failing_stage,
+        "safe_error_code": "FORMAL_SEMANTIC_GENERATION_CHANGED",
+    }
+    intent_sha256 = semantic_sha256_v22(intent_body)
+    body = {
+        **intent_body,
+        "fence_intent_sha256": intent_sha256,
+        "exception_fingerprint": semantic_sha256_v22(
+            {"semantic_rollover_fence": intent_sha256}
+        ),
+        "journal_tail_sha256": journal_tail_sha256,
+        "observed_at": observed_at.isoformat(),
+    }
+    return {**body, "proof_sha256": semantic_sha256_v22(body)}
+
+
+def _seal_semantic_rollover_job_v0233(
+    *,
+    jobs: JobRepositoryV1,
+    product_root: Path,
+    job: ProductJobRecordV1,
+    acquisition: DiagnosisAcquisitionCheckpointV0233,
+    successor_semantic_surface_sha256: str,
+) -> ProductJobRecordV1:
+    journal = DiagnosisStageJournalRepositoryV02322(jobs.store)
+    events = journal.list_events(job.job_id)
+    if not events:
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
+    terminal = events[-1]
+    fence_path = (
+        product_root
+        / "private/semantic-rollover-fences"
+        / f"{job.job_id}.json"
+    )
+    if job.status is ProductJobStatusV1.SUCCEEDED:
+        if not (
+            terminal.stage is DiagnosisPipelineStageV02322.JOB_SUCCEEDED
+            and terminal.status is DiagnosisStageStatusV02322.PASSED
+            and job.result is not None
+            and not fence_path.exists()
+        ):
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
+        return job
+    if job.status is ProductJobStatusV1.FAILED:
+        if job.safe_error_code != "FORMAL_SEMANTIC_GENERATION_CHANGED":
+            if not (
+                terminal.stage is DiagnosisPipelineStageV02322.FAILED
+                and terminal.status is DiagnosisStageStatusV02322.FAILED
+                and job.journal_tail_sha256 == terminal.event_sha256
+            ):
+                raise RuntimeError(
+                    "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"
+                )
+            return job
+        if not (
+            terminal.stage is DiagnosisPipelineStageV02322.FAILED
+            and terminal.status is DiagnosisStageStatusV02322.FAILED
+            and terminal.safe_error_code == "FORMAL_SEMANTIC_GENERATION_CHANGED"
+            and job.journal_tail_sha256 == terminal.event_sha256
+            and job.failure_stage is not None
+            and job.exception_fingerprint == terminal.exception_fingerprint
+        ):
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
+        prior = events[-2] if len(events) > 1 else None
+        proof = _semantic_rollover_fence_payload_v0233(
+            job=job,
+            acquisition=acquisition,
+            successor_semantic_surface_sha256=successor_semantic_surface_sha256,
+            last_passed_stage=(
+                None
+                if prior is None
+                else next(
+                    (
+                        event.stage.value
+                        for event in reversed(events[:-1])
+                        if event.status is DiagnosisStageStatusV02322.PASSED
+                    ),
+                    None,
+                )
+            ),
+            failing_stage=job.failure_stage,
+            journal_tail_sha256=terminal.event_sha256,
+            observed_at=terminal.observed_at,
+        )
+        if (
+            terminal.output_artifact_sha256 != proof["fence_intent_sha256"]
+            or terminal.exception_fingerprint != proof["exception_fingerprint"]
+        ):
+            raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
+        write_private_json(fence_path, proof, create_once=True)
+        return job
+    if job.status is not ProductJobStatusV1.RUNNING:
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
+    if terminal.stage in {
+        DiagnosisPipelineStageV02322.JOB_SUCCEEDED,
+        DiagnosisPipelineStageV02322.FAILED,
+    }:
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
+    last_passed = next(
+        (
+            event.stage
+            for event in reversed(events)
+            if event.status is DiagnosisStageStatusV02322.PASSED
+        ),
+        None,
+    )
+    executable = tuple(
+        stage
+        for stage in DiagnosisPipelineStageV02322
+        if stage is not DiagnosisPipelineStageV02322.FAILED
+    )
+    failing_stage = (
+        DiagnosisPipelineStageV02322.JOB_CLAIMED
+        if last_passed is None
+        else executable[executable.index(last_passed) + 1]
+    )
+    observed_at = datetime.now(UTC)
+    placeholder = _semantic_rollover_fence_payload_v0233(
+        job=job,
+        acquisition=acquisition,
+        successor_semantic_surface_sha256=successor_semantic_surface_sha256,
+        last_passed_stage=None if last_passed is None else last_passed.value,
+        failing_stage=failing_stage.value,
+        journal_tail_sha256="0" * 64,
+        observed_at=observed_at,
+    )
+    event = DiagnosisStageEventV02322.build(
+        journal_id=events[0].journal_id,
+        job_id=job.job_id,
+        incident_id=acquisition.incident_id,
+        ordinal=terminal.ordinal + 1,
+        stage=DiagnosisPipelineStageV02322.FAILED,
+        status=DiagnosisStageStatusV02322.FAILED,
+        input_binding_sha256=terminal.event_sha256,
+        output_artifact_sha256=placeholder["fence_intent_sha256"],
+        source_code_sha256=_sha256_file(Path(__file__)),
+        observed_at=observed_at,
+        safe_error_code="FORMAL_SEMANTIC_GENERATION_CHANGED",
+        exception_fingerprint=placeholder["exception_fingerprint"],
+        previous_event_sha256=terminal.event_sha256,
+    )
+    raced_job: ProductJobRecordV1 | None = None
+    with jobs.store.connect() as connection:
+        connection.execute("BEGIN IMMEDIATE")
+        try:
+            row = connection.execute(
+                "SELECT status, claimed_by, attempt_count, idempotency_key "
+                "FROM diagnosis_jobs WHERE job_id = ?",
+                (job.job_id,),
+            ).fetchone()
+            if row is None:
+                raise RuntimeError(
+                    "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"
+                )
+            if row["status"] != ProductJobStatusV1.RUNNING.value:
+                connection.execute("COMMIT")
+                raced_job = jobs.get(job.job_id)
+            else:
+                if (
+                    row["claimed_by"] != job.claimed_by
+                    or row["attempt_count"] != job.attempt_count
+                    or row["idempotency_key"] != job.idempotency_key
+                ):
+                    raise RuntimeError(
+                        "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"
+                    )
+                DiagnosisStageJournalRepositoryV02322._insert(  # noqa: SLF001
+                    connection, event
+                )
+                cursor = connection.execute(
+                    "UPDATE diagnosis_jobs SET status = ?, result_json = NULL, "
+                    "safe_error_code = ?, failure_stage = ?, "
+                    "exception_fingerprint = ?, journal_tail_sha256 = ?, "
+                    "claimed_by = NULL, lease_expires_at = NULL, updated_at = ? "
+                    "WHERE job_id = ? AND status = ? AND claimed_by = ? "
+                    "AND attempt_count = ? AND idempotency_key = ?",
+                    (
+                        ProductJobStatusV1.FAILED.value,
+                        "FORMAL_SEMANTIC_GENERATION_CHANGED",
+                        failing_stage.value,
+                        placeholder["exception_fingerprint"],
+                        event.event_sha256,
+                        observed_at.timestamp(),
+                        job.job_id,
+                        ProductJobStatusV1.RUNNING.value,
+                        job.claimed_by,
+                        job.attempt_count,
+                        job.idempotency_key,
+                    ),
+                )
+                if cursor.rowcount != 1:
+                    raise RuntimeError(
+                        "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"
+                    )
+                jobs._append_event(  # noqa: SLF001
+                    connection,
+                    job.job_id,
+                    "SEMANTIC_GENERATION_FENCED",
+                    {
+                        "successor_semantic_surface_sha256": (
+                            successor_semantic_surface_sha256
+                        )
+                    },
+                    observed_at.timestamp(),
+                )
+                connection.execute("COMMIT")
+        except Exception:
+            if connection.in_transaction:
+                connection.execute("ROLLBACK")
+            raise
+    if raced_job is not None:
+        return _seal_semantic_rollover_job_v0233(
+            jobs=jobs,
+            product_root=product_root,
+            job=raced_job,
+            acquisition=acquisition,
+            successor_semantic_surface_sha256=successor_semantic_surface_sha256,
+        )
+    sealed = jobs.get(job.job_id)
+    return _seal_semantic_rollover_job_v0233(
+        jobs=jobs,
+        product_root=product_root,
+        job=sealed,
+        acquisition=acquisition,
+        successor_semantic_surface_sha256=successor_semantic_surface_sha256,
+    )
+
+
+def _reconcile_semantic_rollover_lineage_v0233(
+    *,
+    root: Path,
+    attempt_id: str,
+    latest: FormalExecutionCheckpointV0233,
+    successor_semantic_surface_sha256: str,
+) -> tuple[Path, ...]:
+    private_root = root / _attempt_private_locator_v0233(attempt_id) / "execution"
+    acquisition_path = private_root / "diagnosis-acquisition-checkpoint.json"
+    if not acquisition_path.is_file() or acquisition_path.is_symlink():
+        return ()
+    acquisition = DiagnosisAcquisitionCheckpointV0233.model_validate_json(
+        acquisition_path.read_bytes()
+    )
+    if (
+        acquisition.attempt_id != attempt_id
+        or acquisition.semantic_generation != latest.semantic_generation
+        or acquisition.semantic_surface_sha256 != latest.semantic_surface_sha256
+    ):
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_SEMANTIC_DRIFT")
+    product_root = root / _attempt_product_locator_v0233(attempt_id)
+    cleanup = _recover_owned_product_processes_v0233(
+        root=root,
+        product_root=product_root,
+        private_root=private_root,
+    )
+    if cleanup.get("verdict") != "CLEAN":
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_ACTIVE_LEASE")
+    store = SqliteStoreV1(product_root / "product.sqlite3")
+    jobs = JobRepositoryV1(store)
+    matching: list[tuple[FormalDiagnosisJobContextV0233, ProductJobRecordV1]] = []
+    with store.connect() as connection:
+        job_ids = tuple(
+            str(row["job_id"])
+            for row in connection.execute(
+                "SELECT job_id FROM diagnosis_jobs WHERE job_type = ? "
+                "ORDER BY created_at, job_id",
+                (ProductJobTypeV1.DIAGNOSIS.value,),
+            ).fetchall()
+        )
+    for job_id in job_ids:
+        job = jobs.get(job_id)
+        context_value = job.payload.get("formal_recovery_v0233")
+        if not isinstance(context_value, Mapping):
+            continue
+        context = FormalDiagnosisJobContextV0233.model_validate(context_value)
+        if (
+            context.attempt_id == attempt_id
+            and job.payload.get("incident_id") == acquisition.incident_id
+        ):
+            matching.append((context, job))
+    matching.sort(key=lambda item: item[0].diagnosis_generation)
+    if not matching or tuple(context.diagnosis_generation for context, _ in matching) != tuple(
+        range(1, len(matching) + 1)
+    ):
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
+    for context, job in matching:
+        rebound_context = context.model_copy(
+            update={"acquisition_sha256": acquisition.acquisition_sha256}
+        )
+        if (
+            context.campaign_id != acquisition.campaign_id
+            or context.semantic_generation != acquisition.semantic_generation
+            or context.active_profile_sha256 != acquisition.active_profile_sha256
+            or context.semantic_surface_sha256 != acquisition.semantic_surface_sha256
+            or (
+                context.acquisition_sha256 is not None
+                if context.diagnosis_generation == 1
+                else context.acquisition_sha256 != acquisition.acquisition_sha256
+            )
+            or job.idempotency_key
+            != final_diagnosis_idempotency_key_v0233(
+                context=rebound_context,
+                incident_sha256=acquisition.incident_sha256,
+                acquisition_sha256=acquisition.acquisition_sha256,
+            )
+        ):
+            raise RuntimeError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"
+            )
+    statuses = tuple(job.status for _context, job in matching)
+    if (
+        sum(status is ProductJobStatusV1.RUNNING for status in statuses) > 1
+        or ProductJobStatusV1.PENDING in statuses
+        or ProductJobStatusV1.CANCELLED in statuses
+        or any(
+            status is ProductJobStatusV1.SUCCEEDED
+            for status in statuses[:-1]
+        )
+        or (
+            ProductJobStatusV1.RUNNING in statuses
+            and statuses[-1] is not ProductJobStatusV1.RUNNING
+        )
+    ):
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
+    for _context, job in matching:
+        _seal_semantic_rollover_job_v0233(
+            jobs=jobs,
+            product_root=product_root,
+            job=job,
+            acquisition=acquisition,
+            successor_semantic_surface_sha256=(
+                successor_semantic_surface_sha256
+            ),
+        )
+    lineage = _interrupted_diagnosis_lineage_v0233(
+        product_root=product_root,
+        acquisition=acquisition,
+    )
+    lineage_path = private_root / "interrupted-diagnosis-lineage.json"
+    write_private_json(lineage_path, lineage, create_once=True)
+    fence_root = product_root / "private/semantic-rollover-fences"
+    fence_paths = (
+        tuple(sorted(fence_root.glob("*.json"))) if fence_root.is_dir() else ()
+    )
+    return (acquisition_path, lineage_path, *fence_paths)
 
 
 def _recovery_generation_v0233(
@@ -454,6 +827,13 @@ def resume_formal_nofault_v0233(
             recovered_outputs[public_clone_path.relative_to(root).as_posix()] = (
                 _sha256_file(public_clone_path)
             )
+        staging_cleanup_path = (
+            attempt_root / "execution/interrupted-clone-staging-cleanup.json"
+        )
+        if staging_cleanup_path.is_file() and not staging_cleanup_path.is_symlink():
+            recovered_outputs[staging_cleanup_path.relative_to(root).as_posix()] = (
+                _sha256_file(staging_cleanup_path)
+            )
         if retired.state is not FormalExecutionStateV0233.NONRECOVERABLE_FAILURE:
             candidate = FormalExecutionCheckpointV0233.build(
                 previous=retired,
@@ -466,25 +846,19 @@ def resume_formal_nofault_v0233(
                 input_artifact_sha256s=retired.input_artifact_sha256s,
                 output_artifact_sha256s=recovered_outputs,
             )
-            cleanup = recover_interrupted_attempt_cleanup_v0233(
-                root,
-                attempt_id=attempt_id,
-                latest=candidate,
-                persist=False,
-            )
-            if candidate.formal_clone_sha256 is not None and (
-                cleanup is None or cleanup.get("verdict") != "CLEAN"
-            ):
-                raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_INTERRUPTED_CLEANUP")
+            retired = candidate
+            repository.append(retired)
             if candidate.formal_clone_sha256 is not None:
                 cleanup = recover_interrupted_attempt_cleanup_v0233(
                     root,
                     attempt_id=attempt_id,
-                    latest=candidate,
+                    latest=retired,
                     persist=True,
                 )
-            retired = candidate
-            repository.append(retired)
+                if cleanup is None or cleanup.get("verdict") != "CLEAN":
+                    raise RuntimeError(
+                        "BLOCKED_ECOMSRE_PRODUCT_V0233_INTERRUPTED_CLEANUP"
+                    )
         elif (
             recovered_clone_sha256 != retired.formal_clone_sha256
             or recovered_outputs != retired.output_artifact_sha256s
@@ -545,8 +919,70 @@ def resume_formal_nofault_v0233(
             attempt_id=attempt_id,
         )
     except SemanticGenerationTransitionRequiredV0233 as transition:
+        repository = FormalCheckpointRepositoryV0233(attempt_root)
+        rollover_intent_body = {
+            "schema_version": "ecomsre.product.semantic-rollover-intent.v0233",
+            "campaign_id": transition.latest.campaign_id,
+            "attempt_id": attempt_id,
+            "prior_semantic_generation": transition.latest.semantic_generation,
+            "prior_semantic_surface_sha256": (
+                transition.latest.semantic_surface_sha256
+            ),
+            "successor_semantic_generation": (
+                transition.semantic.semantic_generation
+            ),
+            "successor_semantic_surface_sha256": (
+                transition.semantic.semantic_surface_sha256
+            ),
+        }
+        rollover_intent = {
+            **rollover_intent_body,
+            "intent_sha256": semantic_sha256_v22(rollover_intent_body),
+        }
+        rollover_intent_path = private_root / "semantic-rollover-intent.json"
+        write_private_json(
+            rollover_intent_path,
+            rollover_intent,
+            create_once=True,
+        )
+        rollover_outputs = dict(transition.latest.output_artifact_sha256s)
+        rollover_outputs[rollover_intent_path.relative_to(root).as_posix()] = (
+            _sha256_file(rollover_intent_path)
+        )
+        rollover_latest = transition.latest
+        if rollover_outputs != rollover_latest.output_artifact_sha256s:
+            rollover_latest = _append_checkpoint_v0233(
+                repository=repository,
+                latest=rollover_latest,
+                state=FormalExecutionStateV0233.RECOVERABLE_FAILURE,
+                operational_surface_sha256=(
+                    transition.operational.operational_surface_sha256
+                ),
+                outputs=rollover_outputs,
+            )
+        reconciled_paths = _reconcile_semantic_rollover_lineage_v0233(
+            root=root,
+            attempt_id=attempt_id,
+            latest=rollover_latest,
+            successor_semantic_surface_sha256=(
+                transition.semantic.semantic_surface_sha256
+            ),
+        )
+        reconciled_outputs = dict(rollover_latest.output_artifact_sha256s)
+        for path in reconciled_paths:
+            reconciled_outputs[path.relative_to(root).as_posix()] = _sha256_file(path)
+        if reconciled_outputs != rollover_latest.output_artifact_sha256s:
+            rollover_latest = _append_checkpoint_v0233(
+                repository=repository,
+                latest=rollover_latest,
+                state=FormalExecutionStateV0233.RECOVERABLE_FAILURE,
+                operational_surface_sha256=(
+                    transition.operational.operational_surface_sha256
+                ),
+                outputs=reconciled_outputs,
+            )
         return retire_nonrecoverable(
-            transition.latest,
+            rollover_latest,
             failure_stage="SEMANTIC_GENERATION_INVALIDATED",
             safe_error_code="FORMAL_SEMANTIC_GENERATION_CHANGED",
             next_gate="FRESH_CAPTURE_AT_NEXT_SEMANTIC_GENERATION",

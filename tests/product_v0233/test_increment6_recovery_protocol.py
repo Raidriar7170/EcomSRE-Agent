@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 import hashlib
 import json
 from pathlib import Path
+import threading
 
 import pytest
 from pydantic import ValidationError
@@ -36,6 +37,7 @@ from ecomsre.product.pilot.repository_state_v0233 import (
 )
 from scripts.product_v0233 import resume_formal_nofault as resume_command
 from scripts.product_v0233 import run_formal_nofault as run_command
+from scripts.ci import verify_product_v0233_terminal as terminal_verifier
 from scripts.product_v0233.run_formal_nofault import _formal_surfaces_v0233
 from ecomsre_live_sandbox.contracts import canonical_json_bytes
 
@@ -473,6 +475,114 @@ def test_checkpoint_repository_is_append_only_and_rejects_corruption(
     second_path.write_text(json.dumps(payload), encoding="utf-8")
     with pytest.raises((ValueError, ValidationError), match="checkpoint"):
         repository.load_chain()
+
+
+def test_checkpoint_repository_serializes_concurrent_transitions(
+    tmp_path: Path,
+) -> None:
+    repository = FormalCheckpointRepositoryV0233(
+        tmp_path / ".local/product-v0233/attempts/attempt-2"
+    )
+    prepared = _first_checkpoint()
+    repository.append(prepared)
+    candidates = (
+        FormalExecutionCheckpointV0233.build(
+            previous=prepared,
+            state=FormalExecutionStateV0233.CLONE_SEALED,
+            formal_clone_sha256=_sha("1"),
+            created_at=prepared.created_at + timedelta(seconds=1),
+        ),
+        FormalExecutionCheckpointV0233.build(
+            previous=prepared,
+            state=FormalExecutionStateV0233.RECOVERABLE_FAILURE,
+            created_at=prepared.created_at + timedelta(seconds=1),
+        ),
+    )
+    barrier = threading.Barrier(3)
+    outcomes: list[str] = []
+
+    def append(checkpoint: FormalExecutionCheckpointV0233) -> None:
+        barrier.wait()
+        try:
+            repository.append(checkpoint)
+        except (FileExistsError, ValueError):
+            outcomes.append("REJECTED")
+        else:
+            outcomes.append("APPENDED")
+
+    threads = tuple(
+        threading.Thread(target=append, args=(checkpoint,))
+        for checkpoint in candidates
+    )
+    for thread in threads:
+        thread.start()
+    barrier.wait()
+    for thread in threads:
+        thread.join(timeout=5)
+
+    assert all(not thread.is_alive() for thread in threads)
+    assert sorted(outcomes) == ["APPENDED", "REJECTED"]
+    assert len(repository.load_chain()) == 2
+    assert (repository.attempt_root / ".checkpoint-append.lock").is_file()
+
+
+def test_public_checkpoint_verifier_binds_identity_and_monotonic_time() -> None:
+    prepared = _first_checkpoint()
+    clone_sealed = FormalExecutionCheckpointV0233.build(
+        previous=prepared,
+        state=FormalExecutionStateV0233.CLONE_SEALED,
+        formal_clone_sha256=_sha("1"),
+        created_at=prepared.created_at + timedelta(seconds=1),
+    )
+    valid = run_command._checkpoint_chain_public_v0233((prepared, clone_sealed))
+    arguments = {
+        "attempt_id": prepared.attempt_id,
+        "semantic_generation": prepared.semantic_generation,
+        "latest_checkpoint_sha256": clone_sealed.checkpoint_sha256,
+        "latest_state": clone_sealed.state.value,
+        "campaign_id": prepared.campaign_id,
+        "semantic_surface_sha256": prepared.semantic_surface_sha256,
+        "operational_surface_sha256": prepared.operational_surface_sha256,
+        "source_selection_sha256": prepared.source_selection_sha256,
+    }
+    terminal_verifier._verify_checkpoint_chain_v0233(valid, **arguments)
+
+    with pytest.raises(ValueError, match="checkpoint chain"):
+        terminal_verifier._verify_checkpoint_chain_v0233(
+            valid,
+            **{**arguments, "campaign_id": "forged-campaign"},
+        )
+
+    regressing_body = clone_sealed.model_dump(
+        mode="json", exclude={"checkpoint_sha256"}
+    )
+    regressing_body["created_at"] = (
+        prepared.created_at - timedelta(seconds=1)
+    ).isoformat()
+    regressing = {
+        **regressing_body,
+        "checkpoint_sha256": semantic_sha256_v22(regressing_body),
+    }
+    chain_body = {
+        "schema_version": "ecomsre.product.checkpoint-chain.v0233",
+        "attempt_id": prepared.attempt_id,
+        "semantic_generation": prepared.semantic_generation,
+        "checkpoint_count": 2,
+        "checkpoints": [prepared.model_dump(mode="json"), regressing],
+        "latest_checkpoint_sha256": regressing["checkpoint_sha256"],
+    }
+    regressing_chain = {
+        **chain_body,
+        "chain_sha256": semantic_sha256_v22(chain_body),
+    }
+    with pytest.raises(ValueError, match="checkpoint chain"):
+        terminal_verifier._verify_checkpoint_chain_v0233(
+            regressing_chain,
+            **{
+                **arguments,
+                "latest_checkpoint_sha256": regressing["checkpoint_sha256"],
+            },
+        )
 
 
 def test_checkpoint_repository_rejects_self_sealed_transition_and_identity_drift(

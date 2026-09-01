@@ -540,6 +540,7 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
 
     for name, payload in (
         ("formal-state-clone.json", {}),
+        ("pre-execution-review.json", {}),
         ("checkpoint-chain.json", checkpoint_chain),
         ("runtime-authority.json", {}),
         ("baseline-restart.json", {}),
@@ -636,7 +637,7 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
         runtime_authority_proof_sha256=_sha("2"),
         baseline_restart_proof_sha256=_sha("3"),
         formal_traffic_execution_sha256=_sha("4"),
-        fresh_runtime_snapshot_sha256=_sha("5"),
+        fresh_runtime_snapshot_sha256=_sha("2"),
         incident_traffic_binding_sha256=_sha("6"),
         v0232_assessment_sha256=assessment.result_sha256,
         reasons=assessment.reasons,
@@ -674,12 +675,27 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
     monkeypatch.setattr(
         verifier,
         "RuntimeAuthorityProofV0233",
-        _validated_as(SimpleNamespace(proof_sha256=_sha("2"))),
+        _validated_as(
+            SimpleNamespace(
+                proof_sha256=_sha("2"),
+                runtime_connector_binding_sha256=_sha("3"),
+                pilot_runtime_authority_sha256=_sha("4"),
+                runtime_continuity_descriptor_sha256=_sha("f"),
+            )
+        ),
     )
     monkeypatch.setattr(
         verifier,
         "BaselineRestartProofV0233",
-        _validated_as(SimpleNamespace(proof_sha256=_sha("3"))),
+        _validated_as(
+            SimpleNamespace(
+                proof_sha256=_sha("3"),
+                environment_id="env-" + "1" * 24,
+                active_baseline_id="base-" + "1" * 24,
+                active_baseline_sha256=_sha("b"),
+                active_profile_sha256=ACTIVE_PROFILE_SHA256_V023,
+            )
+        ),
     )
     monkeypatch.setattr(
         verifier,
@@ -687,6 +703,8 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
         _validated_as(
             SimpleNamespace(
                 result_sha256=_sha("7"),
+                traffic_contract_sha256=_sha("a"),
+                formal_profile_sha256=_sha("f"),
                 execution=SimpleNamespace(
                     execution_sha256=_sha("4"),
                     run=SimpleNamespace(successful_transactions=30),
@@ -697,29 +715,55 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
     monkeypatch.setattr(
         verifier,
         "FreshRuntimeSnapshotProofV0233",
-        _validated_as(SimpleNamespace(runtime_snapshot_sha256=_sha("5"))),
+        _validated_as(
+            SimpleNamespace(
+                runtime_snapshot_sha256=_sha("2"),
+                observed_at=datetime(2026, 1, 1, 0, 1, 30, tzinfo=UTC),
+                pilot_runtime_authority_sha256=_sha("4"),
+                runtime_continuity_descriptor_sha256=_sha("f"),
+                runtime_connector_binding_sha256=_sha("3"),
+            )
+        ),
+    )
+    live_capture = SimpleNamespace(
+        campaign_id=ledger.campaign_id,
+        attempt_id=attempt_id,
+        semantic_generation=2,
+        semantic_surface_sha256=_sha("b"),
+        source_selection_sha256=_sha("d"),
+        formal_clone_sha256=_sha("1"),
+        runtime_authority_proof_sha256=_sha("2"),
+        baseline_restart_proof_sha256=_sha("3"),
+        traffic_contract_sha256=_sha("a"),
+        formal_profile_sha256=_sha("f"),
+        formal_traffic_result_sha256=_sha("7"),
+        traffic_execution_sha256=_sha("4"),
+        fresh_runtime_snapshot_raw=SimpleNamespace(
+            snapshot_sha256=_sha("2"),
+            authority_sha256=_sha("3"),
+            environment_id="env-" + "1" * 24,
+            observed_at=datetime(2026, 1, 1, 0, 1, 30, tzinfo=UTC),
+            services=(
+                SimpleNamespace(
+                    logical_service="checkout",
+                    state=SimpleNamespace(value="RUNNING"),
+                    healthy=True,
+                    restart_count=0,
+                ),
+            ),
+        ),
+        runtime_connector_binding_sha256=_sha("3"),
+        active_profile_sha256=ACTIVE_PROFILE_SHA256_V023,
+        active_baseline_id="base-" + "1" * 24,
+        active_baseline_sha256=_sha("b"),
+        service_identity_sha256=_sha("c"),
+        capability_sha256=_sha("d"),
+        episode_started_at=datetime(2026, 1, 1, tzinfo=UTC),
     )
     monkeypatch.setattr(
         verifier,
         "LiveCaptureBundleV0233",
-        _validated_as(
-            SimpleNamespace(
-                campaign_id=ledger.campaign_id,
-                attempt_id=attempt_id,
-                semantic_generation=2,
-                semantic_surface_sha256=_sha("b"),
-                source_selection_sha256=_sha("d"),
-                formal_clone_sha256=_sha("1"),
-                runtime_authority_proof_sha256=_sha("2"),
-                baseline_restart_proof_sha256=_sha("3"),
-                formal_traffic_result_sha256=_sha("7"),
-                traffic_execution_sha256=_sha("4"),
-                fresh_runtime_snapshot_raw=SimpleNamespace(snapshot_sha256=_sha("5")),
-                service_identity_sha256=_sha("c"),
-                capability_sha256=_sha("d"),
-                episode_started_at=datetime(2026, 1, 1, tzinfo=UTC),
-            )
-        ),
+        _validated_as(live_capture),
     )
     monkeypatch.setattr(
         verifier,
@@ -755,6 +799,7 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
             SimpleNamespace(
                 semantic_generation=2,
                 semantic_surface_sha256=_sha("b"),
+                operational_surface_sha256=_sha("c"),
             )
         ),
     )
@@ -764,6 +809,7 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
         _validated_as(
             SimpleNamespace(
                 active_profile_sha256=ACTIVE_PROFILE_SHA256_V023,
+                active_baseline_id="base-" + "1" * 24,
                 active_baseline_sha256=_sha("b"),
                 selection_sha256=_sha("d"),
             )
@@ -780,6 +826,30 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
     assert observed["terminal"] == "ECOMSRE_PRODUCT_V0233_NOFAULT_ACCEPTANCE_COMPLETE"
     assert observed["failed_diagnosis_job_count"] == (1 if recovery_required else 0)
     assert observed["new_diagnosis_count"] == (2 if recovery_required else 1)
+
+    mismatched_live_capture = SimpleNamespace(
+        **{
+            **vars(live_capture),
+            "fresh_runtime_snapshot_raw": SimpleNamespace(
+                **{
+                    **vars(live_capture.fresh_runtime_snapshot_raw),
+                    "snapshot_sha256": _sha("5"),
+                }
+            ),
+        }
+    )
+    monkeypatch.setattr(
+        verifier,
+        "LiveCaptureBundleV0233",
+        _validated_as(mismatched_live_capture),
+    )
+    with pytest.raises(ValueError, match="recovered terminal"):
+        verifier.verify_product_v0233_terminal(tmp_path)
+    monkeypatch.setattr(
+        verifier,
+        "LiveCaptureBundleV0233",
+        _validated_as(live_capture),
+    )
 
     unsealed_intermediate = FormalAttemptRecordV0233.build(
         attempt_id="attempt-2",

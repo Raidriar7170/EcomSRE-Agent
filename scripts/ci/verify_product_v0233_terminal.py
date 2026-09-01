@@ -14,6 +14,7 @@ from ecomsre.product.incidents.contracts import DiagnosisResultV1, EvidenceBundl
 from ecomsre.product.incidents.evidence_binding_v0232 import (
     DiagnosisDecisionTraceV0232,
     DiagnosisEvidenceIndexV0232,
+    RuntimeSnapshotEvidenceBindingV0232,
 )
 from ecomsre.product.incidents.diagnosis_stage_journal_v02322 import (
     DiagnosisPipelineStageV02322,
@@ -212,6 +213,10 @@ def _verify_checkpoint_chain_v0233(
     semantic_generation: int,
     latest_checkpoint_sha256: str,
     latest_state: str,
+    campaign_id: str,
+    semantic_surface_sha256: str,
+    operational_surface_sha256: str,
+    source_selection_sha256: str,
 ) -> None:
     body = {key: value for key, value in payload.items() if key != "chain_sha256"}
     checkpoints = payload.get("checkpoints")
@@ -236,6 +241,7 @@ def _verify_checkpoint_chain_v0233(
     previous_sha256 = "0" * 64
     previous_checkpoint: FormalExecutionCheckpointV0233 | None = None
     first_checkpoint: FormalExecutionCheckpointV0233 | None = None
+    previous_created_at = None
     for sequence, checkpoint in enumerate(checkpoints, start=1):
         if not isinstance(checkpoint, dict):
             raise ValueError("Product v0.2.3.3 checkpoint chain differs")
@@ -278,6 +284,10 @@ def _verify_checkpoint_chain_v0233(
             or len(observed_sha256) != 64
             or any(character not in "0123456789abcdef" for character in observed_sha256)
             or observed_sha256 != semantic_sha256_v22(checkpoint_body)
+            or (
+                previous_created_at is not None
+                and typed_checkpoint.created_at < previous_created_at
+            )
             or typed_checkpoint.campaign_id != first_checkpoint.campaign_id
             or typed_checkpoint.attempt_id != attempt_id
             or typed_checkpoint.semantic_generation != semantic_generation
@@ -307,6 +317,7 @@ def _verify_checkpoint_chain_v0233(
         previous_state = state
         previous_sha256 = observed_sha256
         previous_checkpoint = typed_checkpoint
+        previous_created_at = typed_checkpoint.created_at
     if (
         payload.get("attempt_id") != attempt_id
         or payload.get("semantic_generation") != semantic_generation
@@ -314,6 +325,11 @@ def _verify_checkpoint_chain_v0233(
         or payload.get("latest_checkpoint_sha256") != previous_sha256
         or previous_sha256 != latest_checkpoint_sha256
         or previous_state != latest_state
+        or first_checkpoint is None
+        or first_checkpoint.campaign_id != campaign_id
+        or first_checkpoint.semantic_surface_sha256 != semantic_surface_sha256
+        or first_checkpoint.operational_surface_sha256 != operational_surface_sha256
+        or first_checkpoint.source_selection_sha256 != source_selection_sha256
         or payload.get("chain_sha256") != semantic_sha256_v22(body)
     ):
         raise ValueError("Product v0.2.3.3 checkpoint chain differs")
@@ -321,12 +337,17 @@ def _verify_checkpoint_chain_v0233(
 
 def _verify_nonrecoverable_history_v0233(
     project: Path,
+    ledger: FormalAttemptLedgerV0233,
     attempts: Sequence[Any],
 ) -> None:
+    selection = FreshFormalSourceSelectionV0233.model_validate_json(
+        (project / "config/product-v0233/source-selection.json").read_bytes()
+    )
     for attempt in attempts:
         prefix = f"docs/analysis/product-v0233-attempts/{attempt.attempt_id}/"
         required = {
             f"{prefix}checkpoint-chain.json",
+            f"{prefix}pre-execution-review.json",
             f"{prefix}formal-blocker.json",
             f"{prefix}repository-state-manifest.json",
             f"{prefix}progress.json",
@@ -349,6 +370,9 @@ def _verify_nonrecoverable_history_v0233(
             (project / f"{prefix}formal-blocker.json").read_bytes()
         )
         checkpoint_chain = _object(project / f"{prefix}checkpoint-chain.json")
+        review = RecoveryPreExecutionReviewV0233.model_validate_json(
+            (project / f"{prefix}pre-execution-review.json").read_bytes()
+        )
         repository = ProductV0233RepositoryStateManifest.model_validate_json(
             (project / f"{prefix}repository-state-manifest.json").read_bytes()
         )
@@ -356,7 +380,41 @@ def _verify_nonrecoverable_history_v0233(
         progress_body = {
             key: value for key, value in progress.items() if key != "progress_sha256"
         }
-        closure_exact = blocker.formal_clone_count == 0
+        staging_cleanup_relative = (
+            f"{prefix}interrupted-clone-staging-cleanup.json"
+        )
+        staging_cleanup_exact = staging_cleanup_relative not in evidence
+        if staging_cleanup_relative in evidence:
+            staging_cleanup = _object(project / staging_cleanup_relative)
+            staging_cleanup_body = {
+                key: value
+                for key, value in staging_cleanup.items()
+                if key != "proof_sha256"
+            }
+            staging_cleanup_exact = (
+                blocker.formal_clone_count == 0
+                and blocker.cleanup_proof_sha256 is None
+                and staging_cleanup.get("schema_version")
+                == "ecomsre.product.interrupted-clone-staging-cleanup.v0233"
+                and staging_cleanup.get("verdict") == "CLEAN"
+                and staging_cleanup.get("attempt_id") == attempt.attempt_id
+                and staging_cleanup.get("source_selection_sha256")
+                == selection.selection_sha256
+                and staging_cleanup.get("proof_sha256")
+                == semantic_sha256_v22(staging_cleanup_body)
+            )
+        private_attempt_root = (
+            project / ".local/product-v0233/attempts" / attempt.attempt_id
+        )
+        staging_absent = not any(
+            private_attempt_root.glob(".product-state-clone-v0233-*")
+        )
+        closure_exact = (
+            blocker.formal_clone_count == 0
+            and blocker.cleanup_proof_sha256 is None
+            and staging_cleanup_exact
+            and staging_absent
+        )
         if blocker.formal_clone_count == 1:
             closure_relative = f"{prefix}formal-closure.json"
             closure = _object(project / closure_relative)
@@ -369,6 +427,15 @@ def _verify_nonrecoverable_history_v0233(
                 and closure.get("verdict") == "CLEAN"
                 and closure.get("closure_sha256") == semantic_sha256_v22(closure_body)
                 and blocker.cleanup_proof_sha256 == closure.get("closure_sha256")
+                and (
+                    closure.get("schema_version")
+                    != "ecomsre.product.interrupted-attempt-cleanup.v0233"
+                    or (
+                        closure.get("attempt_id") == attempt.attempt_id
+                        and closure.get("latest_checkpoint_sha256")
+                        == attempt.latest_checkpoint_sha256
+                    )
+                )
             )
         live_capture_relative = f"{prefix}live-capture-bundle.json"
         acquisition_relative = f"{prefix}diagnosis-acquisition-checkpoint.json"
@@ -404,6 +471,7 @@ def _verify_nonrecoverable_history_v0233(
         if acquisition is not None:
             lineage = _object(project / lineage_relative)
             failed_projections = lineage.get("failed_jobs")
+            successful_projection = lineage.get("successful_job")
             lineage_body = {
                 key: value for key, value in lineage.items() if key != "lineage_sha256"
             }
@@ -422,8 +490,13 @@ def _verify_nonrecoverable_history_v0233(
                 and lineage.get("incident_sha256") == acquisition.incident_sha256
                 and lineage.get("acquisition_sha256") == acquisition.acquisition_sha256
                 and isinstance(failed_projections, list)
-                and failed_projections
                 and lineage.get("failed_job_count") == len(failed_projections)
+                and lineage.get("successful_job_count")
+                == (1 if isinstance(successful_projection, dict) else 0)
+                and lineage.get("terminal_job_count")
+                == len(failed_projections)
+                + (1 if isinstance(successful_projection, dict) else 0)
+                and lineage.get("terminal_job_count", 0) > 0
                 and all(
                     isinstance(projection, dict)
                     and projection.get("status") == "FAILED"
@@ -445,6 +518,30 @@ def _verify_nonrecoverable_history_v0233(
                         }
                     )
                     for ordinal, projection in enumerate(failed_projections)
+                )
+                and (
+                    successful_projection is None
+                    or (
+                        isinstance(successful_projection, dict)
+                        and successful_projection.get("status") == "SUCCEEDED"
+                        and successful_projection.get("result_sha256") is not None
+                        and _job_projection_context_exact_v0233(
+                            successful_projection,
+                            campaign_id=acquisition.campaign_id,
+                            attempt_id=attempt.attempt_id,
+                            semantic_generation=attempt.semantic_generation,
+                            diagnosis_generation=len(failed_projections) + 1,
+                            acquisition=acquisition,
+                        )
+                        and successful_projection.get("projection_sha256")
+                        == semantic_sha256_v22(
+                            {
+                                key: value
+                                for key, value in successful_projection.items()
+                                if key != "projection_sha256"
+                            }
+                        )
+                    )
                 )
                 and lineage.get("lineage_sha256") == semantic_sha256_v22(lineage_body)
             )
@@ -475,6 +572,10 @@ def _verify_nonrecoverable_history_v0233(
             semantic_generation=attempt.semantic_generation,
             latest_checkpoint_sha256=attempt.latest_checkpoint_sha256,
             latest_state=attempt.latest_state.value,
+            campaign_id=ledger.campaign_id,
+            semantic_surface_sha256=review.semantic_surface_sha256,
+            operational_surface_sha256=review.operational_surface_sha256,
+            source_selection_sha256=selection.selection_sha256,
         )
 
 
@@ -531,7 +632,7 @@ def _verify_recovery_blocked_terminal_v0233(
         or (project / "docs/results/product-v0233-nofault-acceptance.json").exists()
     ):
         raise ValueError("Product v0.2.3.3 recovery blocked ledger differs")
-    _verify_nonrecoverable_history_v0233(project, ledger.attempts[1:])
+    _verify_nonrecoverable_history_v0233(project, ledger, ledger.attempts[1:])
     _verify_successor_generations_v0233(project, ledger.attempts[1:])
     latest = ledger.attempts[-1]
     prefix = f"docs/analysis/product-v0233-attempts/{latest.attempt_id}/"
@@ -565,7 +666,13 @@ def _verify_recovery_blocked_terminal_v0233(
         "new_diagnosis_count": repository.new_diagnosis_count,
         "measured_result_count": 0,
         "action_authority": "NONE",
-        "closure": "CLEAN",
+        "closure": (
+            "CLEAN"
+            if repository.formal_clone_count == 1
+            or f"{prefix}interrupted-clone-staging-cleanup.json"
+            in latest.evidence_sha256_by_path
+            else "NOT_APPLICABLE"
+        ),
     }
 
 
@@ -589,7 +696,7 @@ def _verify_measured_terminal(
         or ledger.attempts[-1].disposition != "MEASURED"
     ):
         raise ValueError("Product v0.2.3.3 recovery attempt ledger differs")
-    _verify_nonrecoverable_history_v0233(project, ledger.attempts[1:-1])
+    _verify_nonrecoverable_history_v0233(project, ledger, ledger.attempts[1:-1])
     _verify_successor_generations_v0233(project, ledger.attempts[1:])
     attempt = ledger.attempts[-1]
     attempt_root = project / "docs/analysis/product-v0233-attempts" / attempt.attempt_id
@@ -647,6 +754,12 @@ def _verify_measured_terminal(
     acquisition = DiagnosisAcquisitionCheckpointV0233.model_validate_json(
         acquisition_path.read_bytes()
     )
+    attempt_review = RecoveryPreExecutionReviewV0233.model_validate_json(
+        (attempt_root / "pre-execution-review.json").read_bytes()
+    )
+    selection = FreshFormalSourceSelectionV0233.model_validate_json(
+        (project / "config/product-v0233/source-selection.json").read_bytes()
+    )
     restored_context = FormalDiagnosisJobContextV0233.build(
         campaign_id=acquisition.campaign_id,
         semantic_generation=acquisition.semantic_generation,
@@ -662,6 +775,18 @@ def _verify_measured_terminal(
         incident_id=acquisition.incident_id,
         incident_sha256=acquisition.incident_sha256,
     )
+    runtime_bindings = tuple(
+        binding.binding_payload
+        for binding in acquisition.connector_provenance_bindings
+        if isinstance(binding.binding_payload, RuntimeSnapshotEvidenceBindingV0232)
+    )
+    if len(runtime_bindings) != 1:
+        raise ValueError("Product v0.2.3.3 recovered Runtime binding differs")
+    runtime_binding = runtime_bindings[0]
+    raw_runtime = live_capture.fresh_runtime_snapshot_raw
+    checkout_services = tuple(
+        service for service in raw_runtime.services if service.logical_service == "checkout"
+    )
     checkpoint_chain = _object(attempt_root / "checkpoint-chain.json")
     assert attempt.latest_checkpoint_sha256 is not None
     _verify_checkpoint_chain_v0233(
@@ -670,6 +795,10 @@ def _verify_measured_terminal(
         semantic_generation=attempt.semantic_generation,
         latest_checkpoint_sha256=attempt.latest_checkpoint_sha256,
         latest_state=attempt.latest_state.value,
+        campaign_id=ledger.campaign_id,
+        semantic_surface_sha256=attempt_review.semantic_surface_sha256,
+        operational_surface_sha256=attempt_review.operational_surface_sha256,
+        source_selection_sha256=selection.selection_sha256,
     )
     lineage_body = {
         key: value for key, value in lineage.items() if key != "lineage_sha256"
@@ -696,9 +825,6 @@ def _verify_measured_terminal(
         (
             project / "docs/analysis/product-v0233-recovery-pre-execution-review.json"
         ).read_bytes()
-    )
-    selection = FreshFormalSourceSelectionV0233.model_validate_json(
-        (project / "config/product-v0233/source-selection.json").read_bytes()
     )
     progress = _object(project / "docs/analysis/product-v0233-recovery-progress.json")
     progress_body = {
@@ -783,6 +909,7 @@ def _verify_measured_terminal(
             f"docs/analysis/product-v0233-attempts/{attempt.attempt_id}/{name}"
             for name in (
                 "formal-state-clone.json",
+                "pre-execution-review.json",
                 "checkpoint-chain.json",
                 "formal-closure.json",
                 "live-capture-bundle.json",
@@ -880,6 +1007,44 @@ def _verify_measured_terminal(
         or acquisition.semantic_surface_sha256 != review.semantic_surface_sha256
         or acquisition.active_profile_sha256 != selection.active_profile_sha256
         or acquisition.baseline_sha256 != selection.active_baseline_sha256
+        or live_capture.active_profile_sha256 != selection.active_profile_sha256
+        or live_capture.active_profile_sha256 != restart.active_profile_sha256
+        or live_capture.active_profile_sha256 != acquisition.active_profile_sha256
+        or live_capture.active_baseline_id != selection.active_baseline_id
+        or live_capture.active_baseline_id != restart.active_baseline_id
+        or live_capture.active_baseline_sha256 != selection.active_baseline_sha256
+        or live_capture.active_baseline_sha256 != restart.active_baseline_sha256
+        or live_capture.active_baseline_sha256 != acquisition.baseline_sha256
+        or live_capture.traffic_contract_sha256 != traffic.traffic_contract_sha256
+        or live_capture.formal_profile_sha256 != traffic.formal_profile_sha256
+        or live_capture.runtime_connector_binding_sha256
+        != authority.runtime_connector_binding_sha256
+        or live_capture.runtime_connector_binding_sha256
+        != fresh_snapshot.runtime_connector_binding_sha256
+        or live_capture.runtime_connector_binding_sha256 != raw_runtime.authority_sha256
+        or authority.pilot_runtime_authority_sha256
+        != fresh_snapshot.pilot_runtime_authority_sha256
+        or authority.pilot_runtime_authority_sha256
+        != runtime_binding.pilot_runtime_authority_sha256
+        or authority.runtime_continuity_descriptor_sha256
+        != fresh_snapshot.runtime_continuity_descriptor_sha256
+        or raw_runtime.snapshot_sha256 != fresh_snapshot.runtime_snapshot_sha256
+        or raw_runtime.snapshot_sha256 != runtime_binding.runtime_snapshot_sha256
+        or raw_runtime.authority_sha256
+        != runtime_binding.runtime_snapshot_authority_sha256
+        or raw_runtime.authority_sha256 != runtime_binding.connector_binding_sha256
+        or raw_runtime.environment_id != restart.environment_id
+        or raw_runtime.environment_id
+        != runtime_binding.runtime_snapshot_environment_id
+        or raw_runtime.observed_at != fresh_snapshot.observed_at
+        or raw_runtime.observed_at != runtime_binding.runtime_snapshot_observed_at
+        or acquisition.runtime_snapshot_binding_sha256
+        != runtime_binding.binding_sha256
+        or len(checkout_services) != 1
+        or len(raw_runtime.services) != 1
+        or checkout_services[0].state.value != "RUNNING"
+        or checkout_services[0].healthy is not True
+        or checkout_services[0].restart_count != 0
         or live_capture.campaign_id != ledger.campaign_id
         or live_capture.attempt_id != attempt.attempt_id
         or live_capture.semantic_generation != attempt.semantic_generation
