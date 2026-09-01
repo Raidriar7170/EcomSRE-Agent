@@ -896,10 +896,52 @@ def test_strict_new_attempt_and_resume_admissions_execute_live_contracts(
     tracked_ledger = FormalAttemptLedgerV0233.model_validate_json(
         (ROOT / "config/product-v0233/formal-attempt-ledger.json").read_bytes()
     )
-    next_attempt_id = f"attempt-{len(tracked_ledger.attempts) + 1}"
+    tracked_legacy = tracked_ledger.attempts[0]
+    new_attempt_root = tmp_path / "new-attempt"
+    for source_relative, destination_relative in (
+        (
+            "config/product-v0233/repository-state-manifest.json",
+            "config/product-v0233/recovery-repository-state-manifest.json",
+        ),
+        ("config/product-v0233/campaign.json", "config/product-v0233/campaign.json"),
+        (
+            "config/product-v0233/source-selection.json",
+            "config/product-v0233/source-selection.json",
+        ),
+        (
+            "config/product-v0233/traffic/preflight-profile.json",
+            "config/product-v0233/traffic/preflight-profile.json",
+        ),
+        (
+            "config/product-v0233/traffic/formal-profile.json",
+            "config/product-v0233/traffic/formal-profile.json",
+        ),
+        (
+            "docs/analysis/product-v0233-formal-clone-plan.json",
+            "docs/analysis/product-v0233-formal-clone-plan.json",
+        ),
+        (
+            "docs/analysis/product-v0233-formal-contract-freeze.json",
+            "docs/analysis/product-v0233-formal-contract-freeze.json",
+        ),
+    ):
+        destination = new_attempt_root / destination_relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes((ROOT / source_relative).read_bytes())
+    legacy_ledger = FormalAttemptLedgerV0233.build(
+        campaign_id=tracked_ledger.campaign_id,
+        attempts=(tracked_legacy,),
+    )
+    ledger_path = new_attempt_root / "config/product-v0233/formal-attempt-ledger.json"
+    ledger_path.write_text(legacy_ledger.model_dump_json(), encoding="utf-8")
+    monkeypatch.setattr(
+        run_command,
+        "build_legacy_attempt1_record_v0233",
+        lambda _root, expected=tracked_legacy: expected,
+    )
     admission = run_command.strict_recovery_formal_admission_v0233(
-        ROOT,
-        attempt_id=next_attempt_id,
+        new_attempt_root,
+        attempt_id="attempt-2",
         semantic_generation=2,
     )
     assert admission.execution_head == "1" * 40
