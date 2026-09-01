@@ -12,6 +12,11 @@ from types import SimpleNamespace
 import pytest
 
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
+from ecomsre.product.incidents.diagnosis_stage_journal_v02322 import (
+    DiagnosisPipelineStageV02322,
+    DiagnosisStageEventV02322,
+    DiagnosisStageStatusV02322,
+)
 from ecomsre.product.jobs.contracts import (
     ProductJobRecordV1,
     ProductJobStatusV1,
@@ -762,6 +767,95 @@ def test_failed_diagnosis_before_acquisition_uses_failure_evidence_path() -> Non
         run_command._diagnosis_completion_acquisition_state_v0233(
             job_status=ProductJobStatusV1.SUCCEEDED,
             acquisition_checkpoint=None,
+        )
+
+
+def test_successful_diagnosis_acceptance_uses_terminal_journal_tail(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    job_id = "job-" + "1" * 24
+    incident_id = "inc-" + "2" * 24
+    previous = _sha("0")
+    events = []
+    for ordinal, (stage, status) in enumerate(
+        (
+            (stage, status)
+            for stage in DiagnosisPipelineStageV02322
+            if stage is not DiagnosisPipelineStageV02322.FAILED
+            for status in (
+                DiagnosisStageStatusV02322.STARTED,
+                DiagnosisStageStatusV02322.PASSED,
+            )
+        ),
+        start=1,
+    ):
+        event = DiagnosisStageEventV02322.build(
+            journal_id="journal-" + "3" * 24,
+            job_id=job_id,
+            incident_id=incident_id,
+            ordinal=ordinal,
+            stage=stage,
+            status=status,
+            input_binding_sha256=_sha("4"),
+            output_artifact_sha256=_sha("5"),
+            source_code_sha256=_sha("6"),
+            observed_at=datetime(2026, 9, 1, tzinfo=UTC),
+            previous_event_sha256=previous,
+        )
+        events.append(event)
+        previous = event.event_sha256
+    terminal = events[-1]
+    monkeypatch.setattr(
+        run_command.DiagnosisStageJournalRepositoryV02322,
+        "list_events",
+        lambda _self, _job_id: tuple(events),
+    )
+    job = SimpleNamespace(
+        job_id=job_id,
+        job_type=ProductJobTypeV1.DIAGNOSIS,
+        status=ProductJobStatusV1.SUCCEEDED,
+        payload={"incident_id": incident_id},
+        journal_tail_sha256=None,
+    )
+    pipeline = run_command._diagnosis_acceptance(
+        product_root=tmp_path,
+        job=job,
+        diagnosis=_artifact(result_sha256=_sha("1"), incident_id=incident_id),
+        evidence=_artifact(incident_id=incident_id),
+        index=_artifact(index_sha256=_sha("3")),
+        decision_trace_sha256=_sha("4"),
+    )
+
+    assert pipeline.job_status == "SUCCEEDED"
+    assert pipeline.journal_tail_sha256 == terminal.event_sha256
+    with pytest.raises(RuntimeError, match="DIAGNOSIS_PIPELINE"):
+        run_command._diagnosis_acceptance(
+            product_root=tmp_path,
+            job=SimpleNamespace(
+                **{
+                    **job.__dict__,
+                    "journal_tail_sha256": terminal.event_sha256,
+                }
+            ),
+            diagnosis=_artifact(result_sha256=_sha("1"), incident_id=incident_id),
+            evidence=_artifact(incident_id=incident_id),
+            index=_artifact(index_sha256=_sha("3")),
+            decision_trace_sha256=_sha("4"),
+        )
+    monkeypatch.setattr(
+        run_command.DiagnosisStageJournalRepositoryV02322,
+        "list_events",
+        lambda _self, _job_id: (terminal,),
+    )
+    with pytest.raises(RuntimeError, match="DIAGNOSIS_PIPELINE"):
+        run_command._diagnosis_acceptance(
+            product_root=tmp_path,
+            job=job,
+            diagnosis=_artifact(result_sha256=_sha("1"), incident_id=incident_id),
+            evidence=_artifact(incident_id=incident_id),
+            index=_artifact(index_sha256=_sha("3")),
+            decision_trace_sha256=_sha("4"),
         )
 
 

@@ -21,7 +21,9 @@ from ecomsre.product.incidents.diagnosis_pipeline_v02322 import (
     DiagnosisPrivateFailureEnvelopeV02322,
 )
 from ecomsre.product.incidents.diagnosis_stage_journal_v02322 import (
+    DiagnosisPipelineStageV02322,
     DiagnosisStageJournalRepositoryV02322,
+    DiagnosisStageStatusV02322,
 )
 from ecomsre.product.incidents.evidence_binding_v0232 import (
     DiagnosisEvidenceIndexV0232,
@@ -2749,13 +2751,44 @@ def _diagnosis_acceptance(
     decision_trace_sha256: str | None,
 ) -> DiagnosisPipelineAcceptanceV0233:
     store = SqliteStoreV1(product_root / "product.sqlite3")
-    events = DiagnosisStageJournalRepositoryV02322(store).list_events(job.job_id)
-    if not events or job.journal_tail_sha256 != events[-1].event_sha256:
+    journal = DiagnosisStageJournalRepositoryV02322(store)
+    try:
+        events = journal.list_events(job.job_id)
+        summary = journal.verify(job.job_id)
+    except ValueError as error:
+        raise RuntimeError(
+            "BLOCKED_ECOMSRE_PRODUCT_V0233_DIAGNOSIS_PIPELINE"
+        ) from error
+    incident_id = (
+        job.payload.get("incident_id") if isinstance(job.payload, Mapping) else None
+    )
+    if (
+        not events
+        or job.job_type is not ProductJobTypeV1.DIAGNOSIS
+        or not isinstance(incident_id, str)
+        or summary.get("job_id") != job.job_id
+        or summary.get("incident_id") != incident_id
+        or summary.get("event_count") != len(events)
+        or summary.get("journal_tail_sha256") != events[-1].event_sha256
+    ):
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_DIAGNOSIS_PIPELINE")
     if job.status is ProductJobStatusV1.SUCCEEDED:
         failure_root = product_root / "private/diagnosis-failures" / job.job_id
+        expected_events = tuple(
+            (stage, status)
+            for stage in DiagnosisPipelineStageV02322
+            if stage is not DiagnosisPipelineStageV02322.FAILED
+            for status in (
+                DiagnosisStageStatusV02322.STARTED,
+                DiagnosisStageStatusV02322.PASSED,
+            )
+        )
         if (
-            diagnosis is None
+            job.journal_tail_sha256 is not None
+            or summary.get("terminal_stage") != "JOB_SUCCEEDED"
+            or tuple((event.stage, event.status) for event in events)
+            != expected_events
+            or diagnosis is None
             or evidence is None
             or index is None
             or decision_trace_sha256 is None
@@ -2777,6 +2810,7 @@ def _diagnosis_acceptance(
         )
     if (
         job.status is not ProductJobStatusV1.FAILED
+        or job.journal_tail_sha256 != events[-1].event_sha256
         or events[-1].stage.value != "FAILED"
         or events[-1].status.value != "FAILED"
         or job.failure_stage is None
