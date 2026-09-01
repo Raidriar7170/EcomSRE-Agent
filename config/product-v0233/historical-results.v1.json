@@ -1,0 +1,73 @@
+{
+  "schema_version": "ecomsre.product.historical-results.v0233",
+  "goal_version": "ecomsre-product-v0233-fresh-formal-evidence-bound-nofault-v1",
+  "terminal": "ECOMSRE_PRODUCT_V0233_HISTORY_AND_HANDOFF_PASS",
+  "starting_main": "6e07964e5595b4138decf0276189c76c3e278d87",
+  "branch": "codex/product-v0233-fresh-formal-nofault-acceptance",
+  "predecessor": {
+    "pull_request": 85,
+    "merge_commit": "d1a2f934620bf904d354e176732d3e66bfe6bbca",
+    "head_commit": "75ab277982c25be6d2b37e027db247526580a111",
+    "engineering_terminal": "ECOMSRE_PRODUCT_V02323_SCHEMA8_RECONSTRUCTION_DIAGNOSIS_REPLAY_COMPLETE",
+    "engineering_closeout_sha256": "87ef73ec6c0843d41865bf6406e9df8e46a90dedaf1c6cabdd3ab9c25a49e025",
+    "repository_terminal": "ECOMSRE_PRODUCT_V02323_REPOSITORY_ACCEPTANCE_PASS",
+    "handoff_terminal": "ECOMSRE_PRODUCT_V02323_FRESH_FORMAL_NOFAULT_HANDOFF_READY",
+    "handoff_sha256": "72d272951412d696d50fb6ee44c96bbc4a1a6e5ace63d574b0636297b848847f",
+    "replay_classification": "STRUCTURAL_CONTRACT_REPLAY",
+    "root_cause_disposition": "ECOMSRE_PRODUCT_V02323_ORIGINAL_ROOT_CAUSE_UNPROVEN",
+    "measured_nofault_authority": "NONE",
+    "knowledge_loop_authority": "NONE"
+  },
+  "frozen_artifacts": [
+    {
+      "path": "config/product-v02323/repository-state-manifest.json",
+      "file_sha256": "7a2ef6e2b6f67528ee586bf184c5a29babf4d7715716ec28f1d11c99f81f3b77",
+      "size_bytes": 4632
+    },
+    {
+      "path": "docs/analysis/product-v02322-private-failure-contract.json",
+      "file_sha256": "8dae27ee1cc52fb18156579d4da6989b3eb37d739208e6a1ef64d03a81081861",
+      "size_bytes": 2034
+    },
+    {
+      "path": "docs/analysis/product-v02322-stage-journal-contract.json",
+      "file_sha256": "af303d6aa5f763a72c203364b9b93ce8cf25a7a3840694d988d220fc0f02afb8",
+      "size_bytes": 1980
+    },
+    {
+      "path": "docs/analysis/product-v02323-diagnosis-replay.json",
+      "file_sha256": "6caf2ebda423dcb166c1c6f846a71b1a913bcb13cee6de893f8e32ff85793d48",
+      "size_bytes": 2721
+    },
+    {
+      "path": "docs/analysis/product-v02323-fresh-formal-handoff.json",
+      "file_sha256": "3eac006e08ae08692f9f3c29ffd0607dd62fa64a3c3409b93e6b8b49a6dc941f",
+      "size_bytes": 3408
+    },
+    {
+      "path": "docs/analysis/product-v02323-reconstruction-disposition.json",
+      "file_sha256": "ada4321c104e9c9a57a8180fd3543c8ba16ede3dadf3aaaaee89c62ba2e2f27b",
+      "size_bytes": 1354
+    },
+    {
+      "path": "docs/results/product-v02323-engineering-closeout.json",
+      "file_sha256": "d0a816a9a626bea255f931be50540730456cbc805263d89b9ce0ef9e005b603d",
+      "size_bytes": 3742
+    }
+  ],
+  "safety_counters": {
+    "fault_attempts": 0,
+    "new_baseline_attempts": 0,
+    "opensearch_profile_changes": 0,
+    "knowledge_loop_campaigns": 0,
+    "fault_family_rule_mining_promotion": 0,
+    "provider_agent_runbook_calls": 0,
+    "formal_product_state_clones": 0,
+    "formal_healthy_traffic_executions": 0,
+    "new_product_incidents": 0,
+    "new_product_diagnoses": 0,
+    "measured_semantic_results": 0,
+    "action_authority": "NONE"
+  },
+  "manifest_sha256": "3b4ab22b43b8914b1ac3e35ba69aa5ff92074d2691ba20638ac0ba69a087fdc4"
+}

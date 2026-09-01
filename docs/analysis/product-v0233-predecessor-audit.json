@@ -1,0 +1,26 @@
+{
+  "audit_sha256": "fea5da11c41ce7c28013a97014c22b939b22891812de8165dc652b2fa0acab24",
+  "formal_clone_count": 0,
+  "formal_execution_count": 0,
+  "goal_version": "ecomsre-product-v0233-fresh-formal-evidence-bound-nofault-v1",
+  "history": {
+    "action_authority": "NONE",
+    "engineering_closeout_sha256": "87ef73ec6c0843d41865bf6406e9df8e46a90dedaf1c6cabdd3ab9c25a49e025",
+    "handoff_sha256": "72d272951412d696d50fb6ee44c96bbc4a1a6e5ace63d574b0636297b848847f",
+    "knowledge_loop_authority": "NONE",
+    "measured_nofault_authority": "NONE",
+    "merge_commit": "d1a2f934620bf904d354e176732d3e66bfe6bbca",
+    "merged_pull_request": 85,
+    "predecessor_head": "75ab277982c25be6d2b37e027db247526580a111",
+    "replay_classification": "STRUCTURAL_CONTRACT_REPLAY",
+    "root_cause_disposition": "ECOMSRE_PRODUCT_V02323_ORIGINAL_ROOT_CAUSE_UNPROVEN",
+    "starting_main": "6e07964e5595b4138decf0276189c76c3e278d87",
+    "terminal": "ECOMSRE_PRODUCT_V0233_HISTORY_AND_HANDOFF_PASS"
+  },
+  "measured_result_count": 0,
+  "new_diagnosis_count": 0,
+  "new_incident_count": 0,
+  "predecessor_artifacts_unchanged": true,
+  "schema_version": "ecomsre.product.predecessor-audit.v0233",
+  "terminal": "ECOMSRE_PRODUCT_V0233_HISTORY_AND_HANDOFF_PASS"
+}
