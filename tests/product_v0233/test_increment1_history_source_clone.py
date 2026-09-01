@@ -627,8 +627,10 @@ def test_hard_crash_before_atomic_clone_rename_promotes_owned_complete_staging(
     assert (attempt_root / "formal-state/product").is_dir()
 
 
+@pytest.mark.parametrize("clone_container_exists", (False, True))
 def test_incomplete_owned_clone_staging_is_quarantined_with_sealed_proof(
     tmp_path: Path,
+    clone_container_exists: bool,
 ) -> None:
     source_locator = ".local/product-v023/source/product"
     source_root = _build_source_state(tmp_path / source_locator, schema_version=7)
@@ -649,7 +651,8 @@ def test_incomplete_owned_clone_staging_is_quarantined_with_sealed_proof(
         attempt_id="attempt-2",
         source_selection_sha256=selection.selection_sha256,
     )
-    (attempt_root / "formal-state").mkdir(parents=True)
+    if clone_container_exists:
+        (attempt_root / "formal-state").mkdir(parents=True)
     staging.mkdir()
     (staging / "partial.json").write_text("{}", encoding="utf-8")
 

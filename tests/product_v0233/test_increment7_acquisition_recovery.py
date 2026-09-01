@@ -338,10 +338,12 @@ def test_recovery_submission_reuses_same_incident_and_frozen_acquisition() -> No
 
 
 @pytest.mark.parametrize("terminal_before_rollover", [False, True])
+@pytest.mark.parametrize("private_acquisition_exists", [False, True])
 def test_semantic_rollover_fences_running_or_preserves_completed_job(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
     terminal_before_rollover: bool,
+    private_acquisition_exists: bool,
 ) -> None:
     started = datetime(2026, 9, 1, 2, 0, tzinfo=UTC)
     attempt_id = "attempt-2"
@@ -425,11 +427,24 @@ def test_semantic_rollover_fences_running_or_preserves_completed_job(
     private_root = (
         tmp_path / run_command._attempt_private_locator_v0233(attempt_id) / "execution"
     )
-    write_private_json(
-        private_root / "diagnosis-acquisition-checkpoint.json",
-        checkpoint.model_dump(mode="json"),
-        create_once=True,
-    )
+    acquisition_path = private_root / "diagnosis-acquisition-checkpoint.json"
+    if private_acquisition_exists:
+        write_private_json(
+            acquisition_path,
+            checkpoint.model_dump(mode="json"),
+            create_once=True,
+        )
+    else:
+        write_private_json(
+            product_root / context.acquisition_checkpoint_locator,
+            checkpoint.model_dump(mode="json"),
+            create_once=True,
+        )
+        write_private_json(
+            private_root / "diagnosis-job.json",
+            jobs.get(job.job_id).model_dump(mode="json"),
+            create_once=True,
+        )
     monkeypatch.setattr(
         resume_command,
         "_recover_owned_product_processes_v0233",
@@ -449,6 +464,10 @@ def test_semantic_rollover_fences_running_or_preserves_completed_job(
     observed = jobs.get(job.job_id)
     lineage_path = private_root / "interrupted-diagnosis-lineage.json"
     lineage = json.loads(lineage_path.read_text(encoding="utf-8"))
+    assert acquisition_path in paths
+    assert DiagnosisAcquisitionCheckpointV0233.model_validate_json(
+        acquisition_path.read_bytes()
+    ) == checkpoint
     assert lineage_path in paths
     assert lineage["terminal_job_count"] == 1
     if terminal_before_rollover:

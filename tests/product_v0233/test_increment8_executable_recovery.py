@@ -22,10 +22,12 @@ from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
     final_diagnosis_idempotency_key_v0233,
 )
 from ecomsre.product.pilot.formal_live_v0233 import (
+    FormalClosureProofV0233,
     FormalExecutionAdmissionV0233,
     FormalExecutionReservationV0233,
     FormalObservedStateCountsV0233,
     FormalSafetyObservationV0233,
+    InterruptedAttemptCleanupProofV0233,
 )
 from ecomsre.product.pilot.formal_recovery_v0233 import (
     FormalAttemptLedgerV0233,
@@ -39,6 +41,7 @@ from ecomsre.product.pilot.fresh_formal_source_v0233 import (
 )
 from scripts.product_v0233 import resume_formal_nofault as resume_command
 from scripts.product_v0233 import run_formal_nofault as run_command
+from scripts.ci import verify_product_v0233_terminal as terminal_verifier
 
 
 def _sha(character: str) -> str:
@@ -242,6 +245,89 @@ def test_interrupted_cleanup_rejects_wrong_attempt_and_uncommitted_checkpoint(
             attempt_id="attempt-2",
             latest=uncommitted,
             persist=True,
+        )
+
+
+def test_public_verifier_strongly_types_interrupted_cleanup_and_binds_safety() -> None:
+    repository_root = Path(run_command.__file__).resolve().parents[2]
+    normal_closure = FormalClosureProofV0233.model_validate_json(
+        (
+            repository_root / "docs/analysis/product-v0233-formal-closure.json"
+        ).read_bytes()
+    )
+    body = {
+        "schema_version": "ecomsre.product.interrupted-attempt-cleanup.v0233",
+        "verdict": "CLEAN",
+        "resource_cleanup_verdict": "CLEAN",
+        "attempt_id": "attempt-2",
+        "latest_checkpoint_sha256": _sha("2"),
+        "source_selection_before_sha256": _sha("3"),
+        "source_selection_after_sha256": _sha("3"),
+        "queue_sha256": _sha("4"),
+        "product_cleanup": {
+            "schema_version": "ecomsre.product.host-process-cleanup.v023",
+            "verdict": "CLEAN",
+            "owned_host_processes": 0,
+            "product_api_port_available": True,
+            "non_owned_resources_changed": False,
+            "safe_error": None,
+            "remaining_owned_process_count": 0,
+        },
+        "demo_cleanup": {
+            "verdict": "CLEAN",
+            "baseline_restored": True,
+            "owned_containers": 0,
+            "owned_networks": 0,
+            "owned_volumes": 0,
+            "non_owned_resources_changed": False,
+        },
+        "formal_clone_database_owner_count": 0,
+        "clone_baseline_binding_exact": True,
+        "safety_observation": normal_closure.safety_observation.model_dump(mode="json"),
+        "safe_error_code": None,
+    }
+    proof = InterruptedAttemptCleanupProofV0233.model_validate(
+        {**body, "closure_sha256": semantic_sha256_v22(body)}
+    )
+    blocker = SimpleNamespace(safety_observation=normal_closure.safety_observation)
+
+    assert terminal_verifier._verify_cleanup_proof_v0233(
+        proof.model_dump(mode="json"),
+        attempt_id="attempt-2",
+        latest_checkpoint_sha256=_sha("2"),
+        blocker=blocker,
+    ) == proof.closure_sha256
+
+    invented_body = {**body, "schema_version": "invented-cleanup-proof"}
+    with pytest.raises(ValueError, match="closure schema"):
+        terminal_verifier._verify_cleanup_proof_v0233(
+            {
+                **invented_body,
+                "closure_sha256": semantic_sha256_v22(invented_body),
+            },
+            attempt_id="attempt-2",
+            latest_checkpoint_sha256=_sha("2"),
+            blocker=blocker,
+        )
+
+    unsafe_body = {
+        **body,
+        "product_cleanup": {**body["product_cleanup"], "verdict": "BLOCKED"},
+    }
+    with pytest.raises(ValueError, match="interrupted cleanup proof"):
+        terminal_verifier._verify_cleanup_proof_v0233(
+            {**unsafe_body, "closure_sha256": semantic_sha256_v22(unsafe_body)},
+            attempt_id="attempt-2",
+            latest_checkpoint_sha256=_sha("2"),
+            blocker=blocker,
+        )
+
+    with pytest.raises(ValueError, match="closure safety"):
+        terminal_verifier._verify_cleanup_proof_v0233(
+            proof.model_dump(mode="json"),
+            attempt_id="attempt-2",
+            latest_checkpoint_sha256=_sha("2"),
+            blocker=SimpleNamespace(safety_observation=object()),
         )
 
 

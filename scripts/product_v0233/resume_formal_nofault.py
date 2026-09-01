@@ -533,18 +533,83 @@ def _reconcile_semantic_rollover_lineage_v0233(
 ) -> tuple[Path, ...]:
     private_root = root / _attempt_private_locator_v0233(attempt_id) / "execution"
     acquisition_path = private_root / "diagnosis-acquisition-checkpoint.json"
+    product_root = root / _attempt_product_locator_v0233(attempt_id)
+    promoted_from_job_id: str | None = None
     if not acquisition_path.is_file() or acquisition_path.is_symlink():
-        return ()
-    acquisition = DiagnosisAcquisitionCheckpointV0233.model_validate_json(
-        acquisition_path.read_bytes()
-    )
+        if acquisition_path.exists() or acquisition_path.is_symlink():
+            raise RuntimeError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"
+            )
+        submitted_path = private_root / "diagnosis-job.json"
+        if not submitted_path.is_file() or submitted_path.is_symlink():
+            if submitted_path.exists() or submitted_path.is_symlink():
+                raise RuntimeError(
+                    "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"
+                )
+            return ()
+        submitted = _load_model(submitted_path, ProductJobRecordV1)
+        context = FormalDiagnosisJobContextV0233.model_validate(
+            submitted.payload.get("formal_recovery_v0233")
+        )
+        product_acquisition_path = (
+            product_root / context.acquisition_checkpoint_locator
+        )
+        if (
+            not product_acquisition_path.is_file()
+            or product_acquisition_path.is_symlink()
+        ):
+            if (
+                product_acquisition_path.exists()
+                or product_acquisition_path.is_symlink()
+            ):
+                raise RuntimeError(
+                    "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"
+                )
+            return ()
+        acquisition = _load_model(
+            product_acquisition_path, DiagnosisAcquisitionCheckpointV0233
+        )
+        rebound_context = context.model_copy(
+            update={"acquisition_sha256": acquisition.acquisition_sha256}
+        )
+        if (
+            submitted.job_type is not ProductJobTypeV1.DIAGNOSIS
+            or context.attempt_id != attempt_id
+            or context.campaign_id != acquisition.campaign_id
+            or context.semantic_generation != latest.semantic_generation
+            or context.active_profile_sha256 != acquisition.active_profile_sha256
+            or context.semantic_surface_sha256 != latest.semantic_surface_sha256
+            or submitted.payload.get("incident_id") != acquisition.incident_id
+            or (
+                context.acquisition_sha256 is not None
+                and context.acquisition_sha256 != acquisition.acquisition_sha256
+            )
+            or submitted.idempotency_key
+            != final_diagnosis_idempotency_key_v0233(
+                context=rebound_context,
+                incident_sha256=acquisition.incident_sha256,
+                acquisition_sha256=acquisition.acquisition_sha256,
+            )
+        ):
+            raise RuntimeError(
+                "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"
+            )
+        write_private_json(
+            acquisition_path,
+            acquisition.model_dump(mode="json"),
+            create_once=True,
+        )
+        promoted_from_job_id = submitted.job_id
+    else:
+        acquisition = DiagnosisAcquisitionCheckpointV0233.model_validate_json(
+            acquisition_path.read_bytes()
+        )
     if (
         acquisition.attempt_id != attempt_id
         or acquisition.semantic_generation != latest.semantic_generation
         or acquisition.semantic_surface_sha256 != latest.semantic_surface_sha256
     ):
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_SEMANTIC_DRIFT")
-    product_root = root / _attempt_product_locator_v0233(attempt_id)
     cleanup = _recover_owned_product_processes_v0233(
         root=root,
         product_root=product_root,
@@ -576,8 +641,14 @@ def _reconcile_semantic_rollover_lineage_v0233(
         ):
             matching.append((context, job))
     matching.sort(key=lambda item: item[0].diagnosis_generation)
-    if not matching or tuple(context.diagnosis_generation for context, _ in matching) != tuple(
-        range(1, len(matching) + 1)
+    if (
+        not matching
+        or (
+            promoted_from_job_id is not None
+            and all(job.job_id != promoted_from_job_id for _context, job in matching)
+        )
+        or tuple(context.diagnosis_generation for context, _ in matching)
+        != tuple(range(1, len(matching) + 1))
     ):
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
     for context, job in matching:

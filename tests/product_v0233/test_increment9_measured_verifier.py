@@ -48,6 +48,19 @@ from ecomsre.product.incidents.evidence_binding_v0232 import (
 from ecomsre.product.incidents.read_backend import ProductReadAcquisitionV1
 from ecomsre.product.pilot.fresh_formal_acceptance_v0233 import (
     DiagnosisPipelineAcceptanceV0233,
+    load_fresh_traffic_profile_v0233,
+)
+from ecomsre.product.pilot.formal_live_v0233 import (
+    BaselineRestartProofV0233,
+    FormalTrafficResultV0233,
+)
+from ecomsre.product.pilot.fresh_formal_source_v0233 import (
+    FreshFormalSourceSelectionV0233,
+    FreshFormalStateCloneV0233,
+)
+from ecomsre.product.pilot.healthy_traffic_v0232 import (
+    IncidentTrafficBindingV0232,
+    load_checkout_traffic_contract_v0232,
 )
 from ecomsre.product.pilot.formal_recovery_v0233 import (
     FormalAttemptLedgerV0233,
@@ -153,14 +166,14 @@ def _acquisition(incident_id: str) -> ProductReadAcquisitionV1:
     logs_outcome = _empty_outcome(logs_action)
     runtime_binding = RuntimeSnapshotEvidenceBindingV0232.build(
         runtime_snapshot_sha256=_sha("2"),
-        runtime_snapshot_observed_at=started + timedelta(seconds=30),
+        runtime_snapshot_observed_at=started + timedelta(seconds=60),
         runtime_snapshot_environment_id="env-" + "1" * 24,
         runtime_snapshot_authority_sha256=_sha("3"),
         pilot_runtime_authority_sha256=_sha("4"),
         read_authority_sha256=_sha("5"),
         connector_binding_sha256=_sha("3"),
         maximum_age_seconds=60,
-        age_at_query_seconds=30.0,
+        age_at_query_seconds=0.0,
         requested_services=("checkout",),
         covered_services=("checkout",),
         connector_result_sha256=runtime_result.result_sha256,
@@ -260,6 +273,76 @@ def _acquisition(incident_id: str) -> ProductReadAcquisitionV1:
         capability_observations_v0232=(),
         capability_limitation_candidates_v0232=(),
     )
+
+
+def test_typed_traffic_and_incident_models_bind_tracked_capture_surface() -> None:
+    root = Path(verifier.__file__).resolve().parents[2]
+    traffic = FormalTrafficResultV0233.model_validate_json(
+        (root / "docs/analysis/product-v0233-formal-traffic.json").read_bytes()
+    )
+    tracked_profile = load_fresh_traffic_profile_v0233(root, role="FORMAL")
+    tracked_engine_profile = tracked_profile.engine_profile_v0232()
+    tracked_contract = load_checkout_traffic_contract_v0232(root)
+    selection = FreshFormalSourceSelectionV0233.model_validate_json(
+        (root / "config/product-v0233/source-selection.json").read_bytes()
+    )
+    clone = FreshFormalStateCloneV0233.model_validate_json(
+        (root / "docs/analysis/product-v0233-formal-state-clone.json").read_bytes()
+    )
+    restart = BaselineRestartProofV0233.model_validate_json(
+        (root / "docs/analysis/product-v0233-baseline-restart.json").read_bytes()
+    )
+    incident_binding = IncidentTrafficBindingV0232.build(
+        incident_id="inc-" + "1" * 24,
+        execution=traffic.execution,
+        episode_started_at=traffic.episode_started_at,
+        episode_ended_at=traffic.episode_ended_at,
+    )
+    live_capture = SimpleNamespace(
+        traffic_contract_sha256=traffic.traffic_contract_sha256,
+        formal_profile_sha256=traffic.formal_profile_sha256,
+        episode_started_at=traffic.episode_started_at,
+        episode_ended_at=traffic.episode_ended_at,
+        source_selection_sha256=selection.selection_sha256,
+        fresh_runtime_snapshot_raw=SimpleNamespace(
+            environment_id=restart.environment_id,
+            observed_at=traffic.episode_ended_at,
+        ),
+    )
+    acquisition = SimpleNamespace(
+        incident_id=incident_binding.incident_id,
+        incident_observation_started_at=traffic.episode_started_at,
+        incident_observation_ended_at=traffic.episode_ended_at,
+    )
+    inputs = {
+        "incident_binding": incident_binding,
+        "live_capture": live_capture,
+        "acquisition": acquisition,
+        "selection": selection,
+        "clone": clone,
+        "restart": restart,
+        "tracked_formal_profile_sha256": tracked_profile.profile_sha256,
+        "tracked_engine_profile_sha256": tracked_engine_profile.profile_sha256,
+        "tracked_traffic_contract_sha256": tracked_contract.contract_sha256,
+    }
+
+    verifier._verify_measured_traffic_capture_v0233(traffic=traffic, **inputs)
+
+    with pytest.raises(ValueError, match="measured traffic binding"):
+        verifier._verify_measured_traffic_capture_v0233(
+            traffic=traffic.model_copy(update={"formal_profile_sha256": _sha("5")}),
+            **inputs,
+        )
+    with pytest.raises(ValueError, match="measured traffic binding"):
+        verifier._verify_measured_traffic_capture_v0233(
+            traffic=traffic,
+            **{
+                **inputs,
+                "incident_binding": incident_binding.model_copy(
+                    update={"traffic_execution_sha256": _sha("5")}
+                ),
+            },
+        )
 
 
 @pytest.mark.parametrize("recovery_required", (False, True))
@@ -670,7 +753,13 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
     monkeypatch.setattr(
         verifier,
         "FreshFormalStateCloneV0233",
-        _validated_as(SimpleNamespace(clone_sha256=_sha("1"))),
+        _validated_as(
+            SimpleNamespace(
+                clone_sha256=_sha("1"),
+                source_selection_sha256=_sha("d"),
+                active_environment_id="env-" + "1" * 24,
+            )
+        ),
     )
     monkeypatch.setattr(
         verifier,
@@ -697,20 +786,27 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
             )
         ),
     )
+    traffic = SimpleNamespace(
+        result_sha256=_sha("7"),
+        traffic_contract_sha256=_sha("a"),
+        formal_profile_sha256=_sha("f"),
+        episode_started_at=datetime(2026, 1, 1, 0, 1, tzinfo=UTC),
+        episode_ended_at=datetime(2026, 1, 1, 0, 1, 40, tzinfo=UTC),
+        execution=SimpleNamespace(
+            execution_sha256=_sha("4"),
+            run=SimpleNamespace(
+                successful_transactions=30,
+                profile_sha256=_sha("0"),
+                contract_sha256=_sha("a"),
+                started_at=datetime(2026, 1, 1, 0, 1, 5, tzinfo=UTC),
+                ended_at=datetime(2026, 1, 1, 0, 1, 30, tzinfo=UTC),
+            ),
+        ),
+    )
     monkeypatch.setattr(
         verifier,
         "FormalTrafficResultV0233",
-        _validated_as(
-            SimpleNamespace(
-                result_sha256=_sha("7"),
-                traffic_contract_sha256=_sha("a"),
-                formal_profile_sha256=_sha("f"),
-                execution=SimpleNamespace(
-                    execution_sha256=_sha("4"),
-                    run=SimpleNamespace(successful_transactions=30),
-                ),
-            )
-        ),
+        _validated_as(traffic),
     )
     monkeypatch.setattr(
         verifier,
@@ -718,7 +814,7 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
         _validated_as(
             SimpleNamespace(
                 runtime_snapshot_sha256=_sha("2"),
-                observed_at=datetime(2026, 1, 1, 0, 1, 30, tzinfo=UTC),
+                observed_at=datetime(2026, 1, 1, 0, 2, tzinfo=UTC),
                 pilot_runtime_authority_sha256=_sha("4"),
                 runtime_continuity_descriptor_sha256=_sha("f"),
                 runtime_connector_binding_sha256=_sha("3"),
@@ -742,7 +838,7 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
             snapshot_sha256=_sha("2"),
             authority_sha256=_sha("3"),
             environment_id="env-" + "1" * 24,
-            observed_at=datetime(2026, 1, 1, 0, 1, 30, tzinfo=UTC),
+            observed_at=datetime(2026, 1, 1, 0, 2, tzinfo=UTC),
             services=(
                 SimpleNamespace(
                     logical_service="checkout",
@@ -758,19 +854,29 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
         active_baseline_sha256=_sha("b"),
         service_identity_sha256=_sha("c"),
         capability_sha256=_sha("d"),
-        episode_started_at=datetime(2026, 1, 1, tzinfo=UTC),
+        episode_started_at=datetime(2026, 1, 1, 0, 1, tzinfo=UTC),
+        episode_ended_at=datetime(2026, 1, 1, 0, 2, tzinfo=UTC),
     )
     monkeypatch.setattr(
         verifier,
         "LiveCaptureBundleV0233",
         _validated_as(live_capture),
     )
+    incident_binding = SimpleNamespace(
+        incident_id=incident_id,
+        binding_sha256=_sha("6"),
+        traffic_execution_sha256=_sha("4"),
+        contract_sha256=_sha("a"),
+        formal_profile_sha256=_sha("0"),
+        episode_started_at=datetime(2026, 1, 1, 0, 1, tzinfo=UTC),
+        episode_ended_at=datetime(2026, 1, 1, 0, 2, tzinfo=UTC),
+        traffic_started_at=datetime(2026, 1, 1, 0, 1, 5, tzinfo=UTC),
+        traffic_ended_at=datetime(2026, 1, 1, 0, 1, 30, tzinfo=UTC),
+    )
     monkeypatch.setattr(
         verifier,
         "IncidentTrafficBindingV0232",
-        _validated_as(
-            SimpleNamespace(incident_id=incident_id, binding_sha256=_sha("6"))
-        ),
+        _validated_as(incident_binding),
     )
     monkeypatch.setattr(
         verifier,
@@ -811,9 +917,23 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
                 active_profile_sha256=ACTIVE_PROFILE_SHA256_V023,
                 active_baseline_id="base-" + "1" * 24,
                 active_baseline_sha256=_sha("b"),
+                active_environment_id="env-" + "1" * 24,
                 selection_sha256=_sha("d"),
             )
         ),
+    )
+    monkeypatch.setattr(
+        verifier,
+        "load_fresh_traffic_profile_v0233",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            profile_sha256=_sha("f"),
+            engine_profile_v0232=lambda: SimpleNamespace(profile_sha256=_sha("0")),
+        ),
+    )
+    monkeypatch.setattr(
+        verifier,
+        "load_checkout_traffic_contract_v0232",
+        lambda *_args, **_kwargs: SimpleNamespace(contract_sha256=_sha("a")),
     )
     monkeypatch.setattr(
         verifier,
@@ -850,6 +970,96 @@ def test_public_measured_verifier_binds_direct_and_recovery_evidence(
         "LiveCaptureBundleV0233",
         _validated_as(live_capture),
     )
+
+    binding_mutations = (
+        (
+            "FormalTrafficResultV0233",
+            SimpleNamespace(**{**vars(traffic), "formal_profile_sha256": _sha("5")}),
+        ),
+        (
+            "FormalTrafficResultV0233",
+            SimpleNamespace(
+                **{
+                    **vars(traffic),
+                    "execution": SimpleNamespace(
+                        **{
+                            **vars(traffic.execution),
+                            "run": SimpleNamespace(
+                                **{
+                                    **vars(traffic.execution.run),
+                                    "profile_sha256": _sha("5"),
+                                }
+                            ),
+                        }
+                    ),
+                }
+            ),
+        ),
+        (
+            "IncidentTrafficBindingV0232",
+            SimpleNamespace(
+                **{**vars(incident_binding), "traffic_execution_sha256": _sha("5")}
+            ),
+        ),
+        (
+            "IncidentTrafficBindingV0232",
+            SimpleNamespace(
+                **{
+                    **vars(incident_binding),
+                    "episode_ended_at": datetime(2026, 1, 1, 0, 1, 59, tzinfo=UTC),
+                }
+            ),
+        ),
+    )
+    for model_name, mutated in binding_mutations:
+        with monkeypatch.context() as mutation:
+            mutation.setattr(verifier, model_name, _validated_as(mutated))
+            with pytest.raises(ValueError, match="measured traffic binding"):
+                verifier.verify_product_v0233_terminal(tmp_path)
+
+    with monkeypatch.context() as mutation:
+        mutation.setattr(
+            verifier,
+            "FreshFormalStateCloneV0233",
+            _validated_as(
+                SimpleNamespace(
+                    clone_sha256=_sha("1"),
+                    source_selection_sha256=_sha("d"),
+                    active_environment_id="env-" + "9" * 24,
+                )
+            ),
+        )
+        with pytest.raises(ValueError, match="measured traffic binding"):
+            verifier.verify_product_v0233_terminal(tmp_path)
+
+    with monkeypatch.context() as mutation:
+        mutation.setattr(
+            verifier,
+            "DiagnosisAcquisitionCheckpointV0233",
+            _validated_as(
+                acquisition_checkpoint.model_copy(
+                    update={
+                        "incident_observation_started_at": datetime(
+                            2026, 1, 1, 0, 1, 1, tzinfo=UTC
+                        )
+                    }
+                )
+            ),
+        )
+        with pytest.raises(
+            ValueError,
+            match="acquisition recovery content|measured traffic binding",
+        ):
+            verifier.verify_product_v0233_terminal(tmp_path)
+
+    with monkeypatch.context() as mutation:
+        mutation.setattr(
+            verifier,
+            "load_checkout_traffic_contract_v0232",
+            lambda *_args, **_kwargs: SimpleNamespace(contract_sha256=_sha("5")),
+        )
+        with pytest.raises(ValueError, match="measured traffic binding"):
+            verifier.verify_product_v0233_terminal(tmp_path)
 
     unsealed_intermediate = FormalAttemptRecordV0233.build(
         attempt_id="attempt-2",

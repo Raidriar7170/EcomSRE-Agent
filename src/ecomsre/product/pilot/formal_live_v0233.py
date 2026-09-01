@@ -582,6 +582,64 @@ class FormalClosureProofV0233(ProductModelV1):
         )
 
 
+class InterruptedAttemptCleanupProofV0233(ProductModelV1):
+    """Fail-closed cleanup proof for a clone-bearing interrupted attempt."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    schema_version: Literal[
+        "ecomsre.product.interrupted-attempt-cleanup.v0233"
+    ] = "ecomsre.product.interrupted-attempt-cleanup.v0233"
+    verdict: Literal["CLEAN"] = "CLEAN"
+    resource_cleanup_verdict: Literal["CLEAN"] = "CLEAN"
+    attempt_id: str
+    latest_checkpoint_sha256: str = Field(pattern=_SHA256_PATTERN)
+    source_selection_before_sha256: str = Field(pattern=_SHA256_PATTERN)
+    source_selection_after_sha256: str = Field(pattern=_SHA256_PATTERN)
+    queue_sha256: str = Field(pattern=_SHA256_PATTERN)
+    product_cleanup: dict[str, Any]
+    demo_cleanup: dict[str, Any]
+    formal_clone_database_owner_count: Literal[0] = 0
+    clone_baseline_binding_exact: Literal[True] = True
+    safety_observation: FormalSafetyObservationV0233
+    safe_error_code: None = None
+    closure_sha256: str = Field(pattern=_SHA256_PATTERN)
+
+    @model_validator(mode="after")
+    def require_clean_interrupted_closure(
+        self,
+    ) -> InterruptedAttemptCleanupProofV0233:
+        product_clean = (
+            self.product_cleanup.get("schema_version")
+            == "ecomsre.product.host-process-cleanup.v023"
+            and self.product_cleanup.get("verdict") == "CLEAN"
+            and self.product_cleanup.get("owned_host_processes") == 0
+            and self.product_cleanup.get("product_api_port_available") is True
+            and self.product_cleanup.get("non_owned_resources_changed") is False
+            and self.product_cleanup.get("safe_error") is None
+            and self.product_cleanup.get("remaining_owned_process_count", 0) == 0
+        )
+        demo_clean = (
+            self.demo_cleanup.get("verdict") == "CLEAN"
+            and self.demo_cleanup.get("baseline_restored") is True
+            and self.demo_cleanup.get("owned_containers") == 0
+            and self.demo_cleanup.get("owned_networks") == 0
+            and self.demo_cleanup.get("owned_volumes") == 0
+            and self.demo_cleanup.get("non_owned_resources_changed") is False
+        )
+        if (
+            not product_clean
+            or not demo_clean
+            or self.source_selection_before_sha256
+            != self.source_selection_after_sha256
+            or not self.safety_observation.safe
+            or self.closure_sha256
+            != semantic_sha256_v22(_sealed_body(self, "closure_sha256"))
+        ):
+            raise ValueError("Product v0.2.3.3 interrupted cleanup proof differs")
+        return self
+
+
 class FormalExecutionBlockerV0233(ProductModelV1):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -685,6 +743,7 @@ __all__ = (
     "FormalClosureProofV0233",
     "FormalExecutionAdmissionV0233",
     "FormalExecutionBlockerV0233",
+    "InterruptedAttemptCleanupProofV0233",
     "FormalExecutionReservationV0233",
     "FormalActionJournalV0233",
     "FormalObservedStateCountsV0233",

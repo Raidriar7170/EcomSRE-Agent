@@ -25,6 +25,7 @@ from ecomsre.product.pilot.formal_live_v0233 import (
     FormalExecutionBlockerV0233,
     FormalTrafficResultV0233,
     FreshRuntimeSnapshotProofV0233,
+    InterruptedAttemptCleanupProofV0233,
     RuntimeAuthorityProofV0233,
 )
 from ecomsre.product.pilot.fresh_formal_source_v0233 import (
@@ -47,8 +48,12 @@ from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
 from ecomsre.product.pilot.fresh_formal_acceptance_v0233 import (
     DiagnosisPipelineAcceptanceV0233,
     NoFaultAcceptanceResultV0233,
+    load_fresh_traffic_profile_v0233,
 )
-from ecomsre.product.pilot.healthy_traffic_v0232 import IncidentTrafficBindingV0232
+from ecomsre.product.pilot.healthy_traffic_v0232 import (
+    IncidentTrafficBindingV0232,
+    load_checkout_traffic_contract_v0232,
+)
 from ecomsre.product.pilot.nofault_acceptance_v0232 import (
     NoFaultEvidenceAssessmentV0232,
     score_nofault_evidence_v0232,
@@ -335,6 +340,34 @@ def _verify_checkpoint_chain_v0233(
         raise ValueError("Product v0.2.3.3 checkpoint chain differs")
 
 
+def _verify_cleanup_proof_v0233(
+    payload: Mapping[str, Any],
+    *,
+    attempt_id: str,
+    latest_checkpoint_sha256: str,
+    blocker: FormalExecutionBlockerV0233,
+) -> str:
+    schema_version = payload.get("schema_version")
+    if schema_version == "ecomsre.product.formal-closure-proof.v0233":
+        closure = FormalClosureProofV0233.model_validate(payload)
+        closure_sha256 = closure.closure_sha256
+        safety = closure.safety_observation
+    elif schema_version == "ecomsre.product.interrupted-attempt-cleanup.v0233":
+        interrupted = InterruptedAttemptCleanupProofV0233.model_validate(payload)
+        if (
+            interrupted.attempt_id != attempt_id
+            or interrupted.latest_checkpoint_sha256 != latest_checkpoint_sha256
+        ):
+            raise ValueError("Product v0.2.3.3 interrupted cleanup proof differs")
+        closure_sha256 = interrupted.closure_sha256
+        safety = interrupted.safety_observation
+    else:
+        raise ValueError("Product v0.2.3.3 formal closure schema differs")
+    if safety != blocker.safety_observation:
+        raise ValueError("Product v0.2.3.3 formal closure safety differs")
+    return closure_sha256
+
+
 def _verify_nonrecoverable_history_v0233(
     project: Path,
     ledger: FormalAttemptLedgerV0233,
@@ -418,24 +451,17 @@ def _verify_nonrecoverable_history_v0233(
         if blocker.formal_clone_count == 1:
             closure_relative = f"{prefix}formal-closure.json"
             closure = _object(project / closure_relative)
-            closure_body = {
-                key: value for key, value in closure.items() if key != "closure_sha256"
-            }
+            assert attempt.latest_checkpoint_sha256 is not None
+            closure_sha256 = _verify_cleanup_proof_v0233(
+                closure,
+                attempt_id=attempt.attempt_id,
+                latest_checkpoint_sha256=attempt.latest_checkpoint_sha256,
+                blocker=blocker,
+            )
             closure_exact = (
                 evidence.get(closure_relative)
                 == _sha256_file(project / closure_relative)
-                and closure.get("verdict") == "CLEAN"
-                and closure.get("closure_sha256") == semantic_sha256_v22(closure_body)
-                and blocker.cleanup_proof_sha256 == closure.get("closure_sha256")
-                and (
-                    closure.get("schema_version")
-                    != "ecomsre.product.interrupted-attempt-cleanup.v0233"
-                    or (
-                        closure.get("attempt_id") == attempt.attempt_id
-                        and closure.get("latest_checkpoint_sha256")
-                        == attempt.latest_checkpoint_sha256
-                    )
-                )
+                and blocker.cleanup_proof_sha256 == closure_sha256
             )
         live_capture_relative = f"{prefix}live-capture-bundle.json"
         acquisition_relative = f"{prefix}diagnosis-acquisition-checkpoint.json"
@@ -676,6 +702,59 @@ def _verify_recovery_blocked_terminal_v0233(
     }
 
 
+def _verify_measured_traffic_capture_v0233(
+    *,
+    traffic: FormalTrafficResultV0233,
+    incident_binding: IncidentTrafficBindingV0232,
+    live_capture: LiveCaptureBundleV0233,
+    acquisition: DiagnosisAcquisitionCheckpointV0233,
+    selection: FreshFormalSourceSelectionV0233,
+    clone: FreshFormalStateCloneV0233,
+    restart: BaselineRestartProofV0233,
+    tracked_formal_profile_sha256: str,
+    tracked_engine_profile_sha256: str,
+    tracked_traffic_contract_sha256: str,
+) -> None:
+    raw_runtime = live_capture.fresh_runtime_snapshot_raw
+    if (
+        traffic.formal_profile_sha256 != tracked_formal_profile_sha256
+        or traffic.execution.run.profile_sha256 != tracked_engine_profile_sha256
+        or traffic.traffic_contract_sha256 != tracked_traffic_contract_sha256
+        or traffic.execution.run.contract_sha256 != tracked_traffic_contract_sha256
+        or live_capture.traffic_contract_sha256 != traffic.traffic_contract_sha256
+        or live_capture.formal_profile_sha256 != traffic.formal_profile_sha256
+        or incident_binding.incident_id != acquisition.incident_id
+        or incident_binding.traffic_execution_sha256
+        != traffic.execution.execution_sha256
+        or incident_binding.contract_sha256 != traffic.execution.run.contract_sha256
+        or incident_binding.contract_sha256 != traffic.traffic_contract_sha256
+        or incident_binding.formal_profile_sha256
+        != traffic.execution.run.profile_sha256
+        or incident_binding.episode_started_at != live_capture.episode_started_at
+        or incident_binding.episode_ended_at != live_capture.episode_ended_at
+        or incident_binding.traffic_started_at != traffic.execution.run.started_at
+        or incident_binding.traffic_ended_at != traffic.execution.run.ended_at
+        or traffic.episode_started_at != live_capture.episode_started_at
+        or traffic.episode_ended_at > live_capture.episode_ended_at
+        or raw_runtime.environment_id != restart.environment_id
+        or raw_runtime.environment_id != selection.active_environment_id
+        or raw_runtime.environment_id != clone.active_environment_id
+        or restart.environment_id != selection.active_environment_id
+        or restart.environment_id != clone.active_environment_id
+        or raw_runtime.observed_at != live_capture.episode_ended_at
+        or live_capture.source_selection_sha256 != selection.selection_sha256
+        or clone.source_selection_sha256 != selection.selection_sha256
+        or acquisition.incident_observation_started_at
+        != live_capture.episode_started_at
+        or acquisition.incident_observation_ended_at != live_capture.episode_ended_at
+        or acquisition.incident_observation_started_at
+        != incident_binding.episode_started_at
+        or acquisition.incident_observation_ended_at
+        != incident_binding.episode_ended_at
+    ):
+        raise ValueError("Product v0.2.3.3 measured traffic binding differs")
+
+
 def _verify_measured_terminal(
     project: Path,
     ledger: FormalAttemptLedgerV0233,
@@ -760,6 +839,11 @@ def _verify_measured_terminal(
     selection = FreshFormalSourceSelectionV0233.model_validate_json(
         (project / "config/product-v0233/source-selection.json").read_bytes()
     )
+    tracked_formal_profile = load_fresh_traffic_profile_v0233(
+        project, role="FORMAL"
+    )
+    tracked_engine_profile = tracked_formal_profile.engine_profile_v0232()
+    tracked_traffic_contract = load_checkout_traffic_contract_v0232(project)
     restored_context = FormalDiagnosisJobContextV0233.build(
         campaign_id=acquisition.campaign_id,
         semantic_generation=acquisition.semantic_generation,
@@ -786,6 +870,18 @@ def _verify_measured_terminal(
     raw_runtime = live_capture.fresh_runtime_snapshot_raw
     checkout_services = tuple(
         service for service in raw_runtime.services if service.logical_service == "checkout"
+    )
+    _verify_measured_traffic_capture_v0233(
+        traffic=traffic,
+        incident_binding=incident_binding,
+        live_capture=live_capture,
+        acquisition=acquisition,
+        selection=selection,
+        clone=clone,
+        restart=restart,
+        tracked_formal_profile_sha256=tracked_formal_profile.profile_sha256,
+        tracked_engine_profile_sha256=tracked_engine_profile.profile_sha256,
+        tracked_traffic_contract_sha256=tracked_traffic_contract.contract_sha256,
     )
     checkpoint_chain = _object(attempt_root / "checkpoint-chain.json")
     assert attempt.latest_checkpoint_sha256 is not None
@@ -1015,8 +1111,28 @@ def _verify_measured_terminal(
         or live_capture.active_baseline_sha256 != selection.active_baseline_sha256
         or live_capture.active_baseline_sha256 != restart.active_baseline_sha256
         or live_capture.active_baseline_sha256 != acquisition.baseline_sha256
+        or traffic.formal_profile_sha256 != tracked_formal_profile.profile_sha256
+        or traffic.execution.run.profile_sha256
+        != tracked_engine_profile.profile_sha256
+        or traffic.traffic_contract_sha256
+        != tracked_traffic_contract.contract_sha256
+        or traffic.execution.run.contract_sha256
+        != tracked_traffic_contract.contract_sha256
         or live_capture.traffic_contract_sha256 != traffic.traffic_contract_sha256
         or live_capture.formal_profile_sha256 != traffic.formal_profile_sha256
+        or incident_binding.incident_id != acquisition.incident_id
+        or incident_binding.traffic_execution_sha256
+        != traffic.execution.execution_sha256
+        or incident_binding.contract_sha256 != traffic.execution.run.contract_sha256
+        or incident_binding.contract_sha256 != traffic.traffic_contract_sha256
+        or incident_binding.formal_profile_sha256
+        != traffic.execution.run.profile_sha256
+        or incident_binding.episode_started_at != live_capture.episode_started_at
+        or incident_binding.episode_ended_at != live_capture.episode_ended_at
+        or incident_binding.traffic_started_at != traffic.execution.run.started_at
+        or incident_binding.traffic_ended_at != traffic.execution.run.ended_at
+        or traffic.episode_started_at != live_capture.episode_started_at
+        or traffic.episode_ended_at > live_capture.episode_ended_at
         or live_capture.runtime_connector_binding_sha256
         != authority.runtime_connector_binding_sha256
         or live_capture.runtime_connector_binding_sha256
@@ -1034,10 +1150,15 @@ def _verify_measured_terminal(
         != runtime_binding.runtime_snapshot_authority_sha256
         or raw_runtime.authority_sha256 != runtime_binding.connector_binding_sha256
         or raw_runtime.environment_id != restart.environment_id
+        or raw_runtime.environment_id != selection.active_environment_id
+        or raw_runtime.environment_id != clone.active_environment_id
+        or restart.environment_id != selection.active_environment_id
+        or restart.environment_id != clone.active_environment_id
         or raw_runtime.environment_id
         != runtime_binding.runtime_snapshot_environment_id
         or raw_runtime.observed_at != fresh_snapshot.observed_at
         or raw_runtime.observed_at != runtime_binding.runtime_snapshot_observed_at
+        or raw_runtime.observed_at != live_capture.episode_ended_at
         or acquisition.runtime_snapshot_binding_sha256
         != runtime_binding.binding_sha256
         or len(checkout_services) != 1
@@ -1050,6 +1171,7 @@ def _verify_measured_terminal(
         or live_capture.semantic_generation != attempt.semantic_generation
         or live_capture.semantic_surface_sha256 != review.semantic_surface_sha256
         or live_capture.source_selection_sha256 != selection.selection_sha256
+        or clone.source_selection_sha256 != selection.selection_sha256
         or live_capture.formal_clone_sha256 != clone.clone_sha256
         or live_capture.runtime_authority_proof_sha256 != authority.proof_sha256
         or live_capture.baseline_restart_proof_sha256 != restart.proof_sha256
@@ -1059,7 +1181,13 @@ def _verify_measured_terminal(
         != fresh_snapshot.runtime_snapshot_sha256
         or live_capture.service_identity_sha256 != acquisition.service_identity_sha256
         or live_capture.capability_sha256 != acquisition.capability_sha256
-        or acquisition.incident_observation_started_at < live_capture.episode_started_at
+        or acquisition.incident_observation_started_at
+        != live_capture.episode_started_at
+        or acquisition.incident_observation_ended_at != live_capture.episode_ended_at
+        or acquisition.incident_observation_started_at
+        != incident_binding.episode_started_at
+        or acquisition.incident_observation_ended_at
+        != incident_binding.episode_ended_at
         or result.measured_terminal
         not in {
             "ECOMSRE_PRODUCT_V0233_NOFAULT_FULLY_SUPPORTED",

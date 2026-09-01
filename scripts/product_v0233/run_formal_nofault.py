@@ -45,6 +45,7 @@ from ecomsre.product.pilot.formal_live_v0233 import (
     FormalExecutionAdmissionV0233,
     FormalExecutionBlockerV0233,
     FormalExecutionReservationV0233,
+    InterruptedAttemptCleanupProofV0233,
     FormalObservedStateCountsV0233,
     FormalSafetyObservationV0233,
     FormalTrafficResultV0233,
@@ -366,10 +367,12 @@ def _recover_interrupted_clone_staging_v0233(
             raise ValueError("Product v0.2.3.3 interrupted clone staging differs")
         inventory = _owned_clone_staging_inventory_v0233(staging)
         clone_container = product_root.parent
-        if (
-            clone_container.is_symlink()
-            or not clone_container.is_dir()
-            or any(clone_container.iterdir())
+        if clone_container.is_symlink() or (
+            clone_container.exists()
+            and (
+                not clone_container.is_dir()
+                or any(clone_container.iterdir())
+            )
         ):
             raise ValueError("Product v0.2.3.3 interrupted clone staging differs")
         try:
@@ -394,8 +397,11 @@ def _recover_interrupted_clone_staging_v0233(
             else:
                 quarantine.parent.mkdir(mode=0o700)
             staging.replace(quarantine)
-            clone_container.rmdir()
+            if clone_container.exists():
+                clone_container.rmdir()
         else:
+            if not clone_container.exists():
+                clone_container.mkdir(mode=0o700)
             staging.replace(product_root)
             return None
     body = {
@@ -2026,65 +2032,18 @@ def recover_interrupted_attempt_cleanup_v0233(
     closure_path = private_root / "interrupted-cleanup.json"
     if closure_path.is_file() and not closure_path.is_symlink():
         closure = _object(closure_path)
-        closure_body = {
-            key: value for key, value in closure.items() if key != "closure_sha256"
-        }
-        observed_product_cleanup = closure.get("product_cleanup")
-        observed_demo_cleanup = closure.get("demo_cleanup")
-        safety_payload = closure.get("safety_observation")
         try:
-            safety = FormalSafetyObservationV0233.model_validate(safety_payload)
+            validated = InterruptedAttemptCleanupProofV0233.model_validate(closure)
         except ValueError as error:
             raise ValueError(
                 "Product v0.2.3.3 interrupted cleanup proof differs"
             ) from error
-        resource_cleanup_clean = (
-            isinstance(observed_product_cleanup, Mapping)
-            and observed_product_cleanup.get("verdict") == "CLEAN"
-            and isinstance(observed_demo_cleanup, Mapping)
-            and observed_demo_cleanup.get("verdict") == "CLEAN"
-            and observed_demo_cleanup.get("non_owned_resources_changed") is False
-            and isinstance(closure.get("source_selection_before_sha256"), str)
-            and closure.get("source_selection_before_sha256")
-            == closure.get("source_selection_after_sha256")
-            and isinstance(closure.get("queue_sha256"), str)
-            and closure.get("formal_clone_database_owner_count") == 0
-            and closure.get("clone_baseline_binding_exact") is True
-            and closure.get("safe_error_code") is None
-        )
-        clean = resource_cleanup_clean and safety.safe
-        expected_keys = {
-            "schema_version",
-            "verdict",
-            "resource_cleanup_verdict",
-            "attempt_id",
-            "latest_checkpoint_sha256",
-            "source_selection_before_sha256",
-            "source_selection_after_sha256",
-            "queue_sha256",
-            "product_cleanup",
-            "demo_cleanup",
-            "formal_clone_database_owner_count",
-            "clone_baseline_binding_exact",
-            "safety_observation",
-            "safe_error_code",
-            "closure_sha256",
-        }
         if (
-            set(closure) != expected_keys
-            or closure.get("schema_version")
-            != "ecomsre.product.interrupted-attempt-cleanup.v0233"
-            or closure.get("attempt_id") != attempt_id
-            or closure.get("latest_checkpoint_sha256")
-            != latest.checkpoint_sha256
-            or closure.get("resource_cleanup_verdict")
-            != ("CLEAN" if resource_cleanup_clean else "BLOCKED")
-            or closure.get("verdict") != ("CLEAN" if clean else "BLOCKED")
-            or closure.get("verdict") != "CLEAN"
-            or closure.get("closure_sha256") != semantic_sha256_v22(closure_body)
+            validated.attempt_id != attempt_id
+            or validated.latest_checkpoint_sha256 != latest.checkpoint_sha256
         ):
             raise ValueError("Product v0.2.3.3 interrupted cleanup proof differs")
-        return closure
+        return validated.model_dump(mode="json")
 
     inferred_events: list[FormalActionEventV0233] = [
         "RESERVATION_CONSUMED",
@@ -2215,7 +2174,12 @@ def recover_interrupted_attempt_cleanup_v0233(
     }
     closure = {**body, "closure_sha256": semantic_sha256_v22(body)}
     if persist and closure["verdict"] == "CLEAN":
-        write_private_json(closure_path, closure, create_once=True)
+        validated = InterruptedAttemptCleanupProofV0233.model_validate(closure)
+        write_private_json(
+            closure_path,
+            validated.model_dump(mode="json"),
+            create_once=True,
+        )
     return closure
 
 
@@ -3313,6 +3277,11 @@ def _publish_measured_terminal_v0233(
     selection = FreshFormalSourceSelectionV0233.model_validate_json(
         (root / "config/product-v0233/source-selection.json").read_bytes()
     )
+    tracked_formal_profile = load_fresh_traffic_profile_v0233(
+        root, role="FORMAL"
+    )
+    tracked_engine_profile = tracked_formal_profile.engine_profile_v0232()
+    tracked_traffic_contract = load_checkout_traffic_contract_v0232(root)
     runtime_bindings = tuple(
         binding.binding_payload
         for binding in recovery_acquisition.connector_provenance_bindings
@@ -3368,8 +3337,28 @@ def _publish_measured_terminal_v0233(
         or live_capture.active_baseline_sha256 != restart.active_baseline_sha256
         or live_capture.active_baseline_sha256
         != recovery_acquisition.baseline_sha256
+        or traffic.formal_profile_sha256 != tracked_formal_profile.profile_sha256
+        or traffic.execution.run.profile_sha256
+        != tracked_engine_profile.profile_sha256
+        or traffic.traffic_contract_sha256
+        != tracked_traffic_contract.contract_sha256
+        or traffic.execution.run.contract_sha256
+        != tracked_traffic_contract.contract_sha256
         or live_capture.traffic_contract_sha256 != traffic.traffic_contract_sha256
         or live_capture.formal_profile_sha256 != traffic.formal_profile_sha256
+        or incident_binding.incident_id != recovery_acquisition.incident_id
+        or incident_binding.traffic_execution_sha256
+        != traffic.execution.execution_sha256
+        or incident_binding.contract_sha256 != traffic.execution.run.contract_sha256
+        or incident_binding.contract_sha256 != traffic.traffic_contract_sha256
+        or incident_binding.formal_profile_sha256
+        != traffic.execution.run.profile_sha256
+        or incident_binding.episode_started_at != live_capture.episode_started_at
+        or incident_binding.episode_ended_at != live_capture.episode_ended_at
+        or incident_binding.traffic_started_at != traffic.execution.run.started_at
+        or incident_binding.traffic_ended_at != traffic.execution.run.ended_at
+        or traffic.episode_started_at != live_capture.episode_started_at
+        or traffic.episode_ended_at > live_capture.episode_ended_at
         or live_capture.runtime_connector_binding_sha256
         != authority.runtime_connector_binding_sha256
         or live_capture.runtime_connector_binding_sha256
@@ -3388,10 +3377,15 @@ def _publish_measured_terminal_v0233(
         != runtime_binding.runtime_snapshot_authority_sha256
         or raw_runtime.authority_sha256 != runtime_binding.connector_binding_sha256
         or raw_runtime.environment_id != restart.environment_id
+        or raw_runtime.environment_id != selection.active_environment_id
+        or raw_runtime.environment_id != clone.active_environment_id
+        or restart.environment_id != selection.active_environment_id
+        or restart.environment_id != clone.active_environment_id
         or raw_runtime.environment_id
         != runtime_binding.runtime_snapshot_environment_id
         or raw_runtime.observed_at != fresh_snapshot_proof.observed_at
         or raw_runtime.observed_at != runtime_binding.runtime_snapshot_observed_at
+        or raw_runtime.observed_at != live_capture.episode_ended_at
         or recovery_acquisition.runtime_snapshot_binding_sha256
         != runtime_binding.binding_sha256
         or len(checkout_services) != 1
@@ -3404,6 +3398,7 @@ def _publish_measured_terminal_v0233(
         or live_capture.semantic_generation != measured_record.semantic_generation
         or live_capture.semantic_surface_sha256 != review.semantic_surface_sha256
         or live_capture.source_selection_sha256 != selection.selection_sha256
+        or clone.source_selection_sha256 != selection.selection_sha256
         or live_capture.formal_clone_sha256 != clone.clone_sha256
         or live_capture.runtime_authority_proof_sha256 != authority.proof_sha256
         or live_capture.baseline_restart_proof_sha256 != restart.proof_sha256
@@ -3415,9 +3410,13 @@ def _publish_measured_terminal_v0233(
         != recovery_acquisition.service_identity_sha256
         or live_capture.capability_sha256 != recovery_acquisition.capability_sha256
         or recovery_acquisition.incident_observation_started_at
-        < live_capture.episode_started_at
+        != live_capture.episode_started_at
         or recovery_acquisition.incident_observation_ended_at
-        < recovery_acquisition.incident_observation_started_at
+        != live_capture.episode_ended_at
+        or recovery_acquisition.incident_observation_started_at
+        != incident_binding.episode_started_at
+        or recovery_acquisition.incident_observation_ended_at
+        != incident_binding.episode_ended_at
     ):
         raise ValueError("Product v0.2.3.3 measured evidence binding differs")
     public_outputs = (
@@ -4326,7 +4325,7 @@ def _run_formal_nofault_once_v0233(
             formal_traffic_result_sha256=traffic.result_sha256,
             traffic_execution_sha256=execution.execution_sha256,
             episode_started_at=traffic.episode_started_at,
-            episode_ended_at=traffic.episode_ended_at,
+            episode_ended_at=fresh_snapshot.observed_at,
             fresh_runtime_snapshot_raw=fresh_snapshot.model_dump(mode="json"),
             runtime_connector_binding_sha256=(
                 preserved_authority.connector_binding_sha256
