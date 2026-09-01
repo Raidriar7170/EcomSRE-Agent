@@ -11,6 +11,9 @@ from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 from ecomsre.product.pilot.fresh_formal_acceptance_v0233 import (
     load_fresh_traffic_profile_v0233,
 )
+from ecomsre.product.pilot.fresh_formal_source_v0233 import (
+    FreshFormalSourceSelectionV0233,
+)
 from ecomsre.product.pilot.formal_live_v0233 import (
     BaselineRestartProofV0233,
     FormalActionJournalV0233,
@@ -229,6 +232,154 @@ def test_formal_admission_and_reservation_are_exactly_once_and_self_sealed() -> 
     with pytest.raises(ValueError, match="reservation"):
         FormalExecutionReservationV0233.model_validate(
             {**reservation.model_dump(mode="json"), "reservation_sha256": _sha("0")}
+        )
+
+
+def test_historical_source_attempt_uses_original_raw_seals() -> None:
+    payload = __import__("json").loads(
+        (ROOT / "docs/analysis/product-v023-baseline-attempt-1.json").read_text()
+    )
+    selection = FreshFormalSourceSelectionV0233.model_validate_json(
+        (ROOT / "config/product-v0233/source-selection.json").read_bytes()
+    )
+    source_root = Path(payload["attempt"]["start"]["product_data_root"])
+
+    audit = formal_runner._historical_source_audit_v0233(
+        payload=payload,
+        source_root=source_root,
+        selection=selection,
+    )
+
+    assert audit.audit_sha256 == payload["readiness_audit_sha256"]
+    assert audit.baseline_id == selection.active_baseline_id
+    assert audit.baseline_sha256 == selection.active_baseline_sha256
+    assert audit.active_opensearch_profile_sha256 == selection.active_profile_sha256
+
+
+def test_historical_source_loader_accepts_exact_head_bytes(tmp_path: Path) -> None:
+    canonical_bytes = (
+        ROOT / "docs/analysis/product-v023-baseline-attempt-1.json"
+    ).read_bytes()
+    payload = __import__("json").loads(canonical_bytes)
+    selection = FreshFormalSourceSelectionV0233.model_validate_json(
+        (ROOT / "config/product-v0233/source-selection.json").read_bytes()
+    )
+    source_root = Path(payload["attempt"]["start"]["product_data_root"])
+    predecessor = tmp_path / "predecessor"
+    canonical_root = tmp_path / "current"
+    for checkout in (predecessor, canonical_root):
+        path = checkout / "docs/analysis/product-v023-baseline-attempt-1.json"
+        path.parent.mkdir(parents=True)
+        path.write_bytes(canonical_bytes)
+
+    audit = formal_runner._load_historical_source_audit_v0233(
+        root=canonical_root,
+        predecessor=predecessor,
+        source_root=source_root,
+        selection=selection,
+    )
+
+    assert audit.audit_sha256 == payload["readiness_audit_sha256"]
+
+
+@pytest.mark.parametrize(
+    "drift",
+    (
+        "execution_head",
+        "outer_terminal",
+        "inner_terminal",
+        "source_root",
+        "profile_sha256",
+        "baseline",
+        "job_type",
+        "build_policy",
+        "audit",
+        "cleanup",
+        "zero_action",
+    ),
+)
+def test_historical_source_loader_rejects_fully_resealed_predecessor_drift(
+    tmp_path: Path,
+    drift: str,
+) -> None:
+    payload = __import__("json").loads(
+        (ROOT / "docs/analysis/product-v023-baseline-attempt-1.json").read_text()
+    )
+    selection = FreshFormalSourceSelectionV0233.model_validate_json(
+        (ROOT / "config/product-v0233/source-selection.json").read_bytes()
+    )
+    source_root = Path(payload["attempt"]["start"]["product_data_root"])
+    if drift == "execution_head":
+        payload["execution_head"] = "f" * 40
+    elif drift == "outer_terminal":
+        payload["terminal"] = "ECOMSRE_PRODUCT_V023_BASELINE_READINESS_PASS"
+    elif drift == "inner_terminal":
+        payload["attempt"]["completion"]["terminal"] = "BLOCKED"
+    elif drift == "source_root":
+        payload["attempt"]["start"]["product_data_root"] = "/tmp/dirty-source"
+    elif drift == "profile_sha256":
+        payload["attempt"]["start"]["profile_sha256"] = _sha("f")
+    elif drift == "baseline":
+        payload["active_baseline_id"] = "base-dirty"
+    elif drift == "job_type":
+        payload["attempt"]["completion"]["builder_job_record"]["job_type"] = "VERIFY"
+    elif drift == "build_policy":
+        payload["attempt"]["completion"]["builder_job_record"]["payload"]["request"][
+            "build_policy"
+        ]["lookback_seconds"] = 999
+    elif drift == "audit":
+        payload["attempt"]["completion"]["per_window_audit"][
+            "final_builder_would_pass"
+        ] = False
+    elif drift == "cleanup":
+        payload["product_cleanup"] = "UNKNOWN"
+    else:
+        payload["fault_attempt_count"] = 1
+    start = payload["attempt"]["start"]
+    start_body = {key: value for key, value in start.items() if key != "start_sha256"}
+    start["start_sha256"] = semantic_sha256_v22(start_body)
+    completion = payload["attempt"]["completion"]
+    audit_payload = completion["per_window_audit"]
+    audit_body = {
+        key: value for key, value in audit_payload.items() if key != "audit_sha256"
+    }
+    audit_payload["audit_sha256"] = semantic_sha256_v22(audit_body)
+    completion["per_window_audit_sha256"] = audit_payload["audit_sha256"]
+    completion["builder_job_record"]["result"]["readiness_audit_v023"] = audit_payload
+    completion["start_sha256"] = start["start_sha256"]
+    completion["builder_job_evidence_sha256"] = semantic_sha256_v22(
+        completion["builder_job_record"]
+    )
+    completion_body = {
+        key: value for key, value in completion.items() if key != "completion_sha256"
+    }
+    completion["completion_sha256"] = semantic_sha256_v22(completion_body)
+    ledger_body = {
+        "schema_version": "ecomsre.product.baseline-attempt-ledger.v023",
+        "attempts": [payload["attempt"]],
+        "maximum_changed_attempts": 2,
+    }
+    payload["ledger_sha256"] = semantic_sha256_v22(ledger_body)
+
+    predecessor = tmp_path / "predecessor"
+    canonical_root = tmp_path / "current"
+    predecessor_analysis = predecessor / "docs/analysis"
+    canonical_analysis = canonical_root / "docs/analysis"
+    predecessor_analysis.mkdir(parents=True)
+    canonical_analysis.mkdir(parents=True)
+    predecessor_path = predecessor_analysis / "product-v023-baseline-attempt-1.json"
+    canonical_path = canonical_analysis / "product-v023-baseline-attempt-1.json"
+    predecessor_path.write_text(__import__("json").dumps(payload))
+    canonical_path.write_bytes(
+        (ROOT / "docs/analysis/product-v023-baseline-attempt-1.json").read_bytes()
+    )
+
+    with pytest.raises(ValueError, match="historical Baseline frozen bytes"):
+        formal_runner._load_historical_source_audit_v0233(
+            root=canonical_root,
+            predecessor=predecessor,
+            source_root=source_root,
+            selection=selection,
         )
 
 

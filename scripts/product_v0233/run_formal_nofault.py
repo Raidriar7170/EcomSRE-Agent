@@ -85,7 +85,6 @@ from ecomsre.product.pilot.live_baseline_readiness_v023 import (
     _wait_job,
 )
 from ecomsre.product.pilot.live_nofault_acceptance_v023 import (
-    _attempt_context,
     _load_persisted_bindings,
     _runtime_snapshot,
 )
@@ -497,6 +496,163 @@ def _selected_source(
     if observed != selection:
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_PRIVATE_PRODUCT_STATE")
     return predecessor, candidate.source_root.resolve(strict=True), selection
+
+
+def _historical_source_audit_v0233(
+    *,
+    payload: Mapping[str, Any],
+    source_root: Path,
+    selection: FreshFormalSourceSelectionV0233,
+) -> ProductBaselineReadinessAuditV023:
+    """Verify frozen v0.2.3 bytes without reserializing them through newer models."""
+
+    attempt = payload.get("attempt")
+    if not isinstance(attempt, Mapping):
+        raise ValueError("Product v0.2.3.3 historical Baseline attempt differs")
+    start_value = attempt.get("start")
+    completion_value = attempt.get("completion")
+    if not isinstance(start_value, Mapping) or not isinstance(
+        completion_value, Mapping
+    ):
+        raise ValueError("Product v0.2.3.3 historical Baseline attempt differs")
+    start = dict(start_value)
+    completion = dict(completion_value)
+    start_sha256 = start.pop("start_sha256", None)
+    completion_sha256 = completion.pop("completion_sha256", None)
+    if (
+        start_sha256 != semantic_sha256_v22(start)
+        or completion_sha256 != semantic_sha256_v22(completion)
+        or completion.get("start_sha256") != start_sha256
+    ):
+        raise ValueError("Product v0.2.3.3 historical Baseline seals differ")
+    ledger_body = {
+        "schema_version": "ecomsre.product.baseline-attempt-ledger.v023",
+        "attempts": [dict(attempt)],
+        "maximum_changed_attempts": 2,
+    }
+    if payload.get("ledger_sha256") != semantic_sha256_v22(ledger_body):
+        raise ValueError("Product v0.2.3.3 historical Baseline ledger differs")
+
+    audit_value = completion.get("per_window_audit")
+    job_value = completion.get("builder_job_record")
+    if not isinstance(audit_value, Mapping) or not isinstance(job_value, Mapping):
+        raise ValueError("Product v0.2.3.3 historical Baseline evidence differs")
+    audit_payload = dict(audit_value)
+    job = dict(job_value)
+    job_payload = job.get("payload")
+    job_result = job.get("result")
+    if not isinstance(job_payload, Mapping) or not isinstance(job_result, Mapping):
+        raise ValueError("Product v0.2.3.3 historical Baseline Job differs")
+    request = job_payload.get("request")
+    if not isinstance(request, Mapping):
+        raise ValueError("Product v0.2.3.3 historical Baseline request differs")
+    audit = ProductBaselineReadinessAuditV023.model_validate(audit_payload)
+    expected_source_root = Path(str(start.get("product_data_root"))).resolve()
+    public_exact = (
+        payload.get("schema_version") == "ecomsre.product.public-baseline-attempt.v023"
+        and payload.get("terminal") == "BLOCKED_ECOMSRE_PRODUCT_V023_BASELINE_RESTART"
+        and payload.get("environment_id") == selection.active_environment_id
+        and payload.get("active_baseline_id") == selection.active_baseline_id
+        and payload.get("active_baseline_sha256") == selection.active_baseline_sha256
+        and payload.get("readiness_audit_sha256") == audit.audit_sha256
+        and payload.get("product_cleanup") == "CLEAN"
+        and payload.get("demo_cleanup") == "CLEAN"
+        and payload.get("outer_baseline_unchanged") is True
+        and payload.get("queue_default_unchanged") is True
+        and payload.get("fault_attempt_count") == 0
+        and payload.get("knowledge_campaign_count") == 0
+        and payload.get("agent_writes") == 0
+        and payload.get("runbook_executions") == 0
+        and payload.get("action_authority") == "NONE"
+    )
+    attempt_exact = (
+        start.get("schema_version") == "ecomsre.product.baseline-attempt-start.v023"
+        and start.get("attempt_ordinal") == 1
+        and start.get("changed_parameter") == "INITIAL"
+        and start.get("environment_id") == selection.active_environment_id
+        and expected_source_root == source_root.resolve()
+        and start.get("action_authority") == "NONE"
+        and completion.get("schema_version")
+        == "ecomsre.product.baseline-attempt-completion.v023"
+        and completion.get("attempt_ordinal") == 1
+        and completion.get("terminal") == "ECOMSRE_PRODUCT_V023_BASELINE_READINESS_PASS"
+        and completion.get("cleanup") == "CLEAN"
+        and completion.get("builder_job_disposition") == "SUCCEEDED"
+        and completion.get("active_baseline_id") == selection.active_baseline_id
+        and completion.get("active_baseline_sha256") == selection.active_baseline_sha256
+        and completion.get("per_window_audit_sha256") == audit.audit_sha256
+        and completion.get("action_authority") == "NONE"
+        and completion.get("agent_writes") == 0
+        and completion.get("runbook_executions") == 0
+        and isinstance(completion.get("traffic_result"), Mapping)
+        and completion["traffic_result"].get("passed") is True
+    )
+    job_exact = (
+        completion.get("builder_job_id") == job.get("job_id")
+        and completion.get("builder_job_evidence_sha256") == semantic_sha256_v22(job)
+        and job.get("job_type") == "BASELINE_BUILD"
+        and job.get("status") == "SUCCEEDED"
+        and job.get("safe_error_code") is None
+        and job_payload.get("environment_id") == selection.active_environment_id
+        and request.get("activate") is True
+        and request.get("candidate_services") == ["checkout"]
+        and job_result.get("readiness_audit_v023") == audit_payload
+        and job_result.get("baseline_id") == selection.active_baseline_id
+        and job_result.get("baseline_sha256") == selection.active_baseline_sha256
+    )
+    audit_exact = (
+        audit.final_builder_would_pass
+        and audit.environment_id == selection.active_environment_id
+        and audit.baseline_id == selection.active_baseline_id
+        and audit.baseline_sha256 == selection.active_baseline_sha256
+        and audit.active_opensearch_profile_sha256 == selection.active_profile_sha256
+        and audit.service_ids == ("checkout",)
+    )
+    if not (public_exact and attempt_exact and job_exact and audit_exact):
+        raise ValueError("Product v0.2.3.3 historical Baseline binding differs")
+    return audit
+
+
+def _load_historical_source_audit_v0233(
+    *,
+    root: Path,
+    predecessor: Path,
+    source_root: Path,
+    selection: FreshFormalSourceSelectionV0233,
+) -> ProductBaselineReadinessAuditV023:
+    predecessor_paths = tuple(
+        sorted(
+            (predecessor / "docs/analysis").glob("product-v023-baseline-attempt-*.json")
+        )
+    )
+    canonical_paths = tuple(
+        sorted((root / "docs/analysis").glob("product-v023-baseline-attempt-*.json"))
+    )
+    if (
+        len(predecessor_paths) != 1
+        or len(canonical_paths) != 1
+        or predecessor_paths[0].name != "product-v023-baseline-attempt-1.json"
+        or canonical_paths[0].name != "product-v023-baseline-attempt-1.json"
+        or predecessor_paths[0].is_symlink()
+        or canonical_paths[0].is_symlink()
+        or not predecessor_paths[0].is_file()
+        or not canonical_paths[0].is_file()
+    ):
+        raise ValueError("Product v0.2.3.3 historical Baseline source differs")
+    predecessor_bytes = predecessor_paths[0].read_bytes()
+    canonical_bytes = canonical_paths[0].read_bytes()
+    predecessor_sha256 = hashlib.sha256(predecessor_bytes).hexdigest()
+    canonical_sha256 = hashlib.sha256(canonical_bytes).hexdigest()
+    if predecessor_bytes != canonical_bytes or predecessor_sha256 != canonical_sha256:
+        raise ValueError("Product v0.2.3.3 historical Baseline frozen bytes differ")
+    payload = json.loads(predecessor_bytes)
+    if not isinstance(payload, dict):
+        raise ValueError("Product v0.2.3.3 historical Baseline source differs")
+    return _historical_source_audit_v0233(
+        payload=payload,
+        source_root=source_root,
+        selection=selection,
+    )
 
 
 def _updated_manifest(
@@ -1203,7 +1359,12 @@ def _run_formal_nofault_once_v0233(
         predecessor_root=predecessor,
         binding=binding,
     )
-    _attempt, audit, _source_data_root = _attempt_context(predecessor)
+    audit = _load_historical_source_audit_v0233(
+        root=root,
+        predecessor=predecessor,
+        source_root=source_root,
+        selection=source_before,
+    )
     freeze = FormalContractFreezeV0233.model_validate_json(
         (root / "docs/analysis/product-v0233-formal-contract-freeze.json").read_bytes()
     )
