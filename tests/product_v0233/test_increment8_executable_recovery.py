@@ -27,6 +27,7 @@ from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
     final_diagnosis_idempotency_key_v0233,
 )
 from ecomsre.product.pilot.formal_live_v0233 import (
+    FormalActionJournalV0233,
     FormalClosureProofV0233,
     FormalExecutionAdmissionV0233,
     FormalExecutionBlockerV0233,
@@ -44,6 +45,7 @@ from ecomsre.product.pilot.formal_recovery_v0233 import (
 )
 from ecomsre.product.pilot.fresh_formal_source_v0233 import (
     FreshFormalStateCloneV0233,
+    FreshFormalStateCountsV0233,
 )
 from scripts.product_v0233 import resume_formal_nofault as resume_command
 from scripts.product_v0233 import run_formal_nofault as run_command
@@ -710,6 +712,205 @@ def _prepared_checkpoint() -> FormalExecutionCheckpointV0233:
         input_artifact_sha256s={},
         output_artifact_sha256s={},
     )
+
+
+def _used_clone_recovery_fixture(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> tuple[FreshFormalStateCloneV0233, FormalClosureProofV0233, SimpleNamespace]:
+    repository_root = Path(run_command.__file__).resolve().parents[2]
+    clone_body = FreshFormalStateCloneV0233.model_validate_json(
+        (
+            repository_root / "docs/analysis/product-v0233-formal-state-clone.json"
+        ).read_bytes()
+    ).model_dump(mode="json", exclude={"clone_sha256"})
+    clone_body.update(
+        {
+            "destination_locator": (
+                ".local/product-v0233/attempts/attempt-2/formal-state/product"
+            ),
+            "source_selection_sha256": _sha("3"),
+        }
+    )
+    clone = FreshFormalStateCloneV0233.model_validate(
+        {**clone_body, "clone_sha256": semantic_sha256_v22(clone_body)}
+    )
+    starting = FormalObservedStateCountsV0233.model_validate(
+        clone.starting_counts.model_dump(mode="json")
+    )
+    ending_payload = starting.model_dump(mode="json")
+    ending_payload.update(
+        {
+            "diagnosis_job_count": starting.diagnosis_job_count + 1,
+            "incident_count": starting.incident_count + 1,
+            "diagnosis_count": starting.diagnosis_count + 1,
+            "evidence_object_count": starting.evidence_object_count + 7,
+            "diagnosis_evidence_index_count": (
+                starting.diagnosis_evidence_index_count + 1
+            ),
+            "diagnosis_stage_event_count": starting.diagnosis_stage_event_count + 54,
+        }
+    )
+    ending = FormalObservedStateCountsV0233.model_validate(ending_payload)
+    action_journal = FormalActionJournalV0233.build(
+        observation_status="COMPLETE",
+        events=("INCIDENT_CREATE_REQUESTED", "DIAGNOSIS_CREATE_REQUESTED"),
+    )
+    safety = FormalSafetyObservationV0233.build(
+        observation_status="OBSERVED",
+        action_journal=action_journal.model_dump(mode="json"),
+        starting_counts=starting.model_dump(mode="json"),
+        ending_counts=ending.model_dump(mode="json"),
+        new_incident_count=1,
+        new_diagnosis_count=1,
+        provider_calls=0,
+        agent_writes=0,
+        runbook_executions=0,
+        fault_attempts=0,
+        knowledge_loop_executions=0,
+        observed_action_authority="NONE",
+        safe=True,
+    )
+    closure = FormalClosureProofV0233.build(
+        queue_before_sha256=_sha("4"),
+        queue_after_sha256=_sha("4"),
+        outer_baseline_before_sha256=_sha("5"),
+        outer_baseline_after_sha256=_sha("5"),
+        source_selection_before_sha256=_sha("3"),
+        source_selection_after_sha256=_sha("3"),
+        source_database_before_sha256=_sha("6"),
+        source_database_after_sha256=_sha("6"),
+        product_cleanup="CLEAN",
+        demo_cleanup="CLEAN",
+        owned_host_processes=0,
+        owned_containers=0,
+        owned_networks=0,
+        owned_volumes=0,
+        formal_clone_database_owner_count=0,
+        non_owned_resources_changed=False,
+        clone_baseline_binding_exact=True,
+        frozen_semantic_surface_before_sha256=_sha("1"),
+        frozen_semantic_surface_after_sha256=_sha("1"),
+        safety_observation=safety.model_dump(mode="json"),
+    )
+    attempt_root = tmp_path / ".local/product-v0233/attempts/attempt-2"
+    product_root = attempt_root / "formal-state/product"
+    product_root.mkdir(parents=True)
+    public_path = (
+        tmp_path
+        / "docs/analysis/product-v0233-attempts/attempt-2/formal-state-clone.json"
+    )
+    public_path.parent.mkdir(parents=True)
+    public_path.write_bytes(run_command.canonical_json_bytes(clone))
+    closure_path = attempt_root / "execution/formal-closure.json"
+    closure_path.parent.mkdir(parents=True)
+    closure_path.write_bytes(run_command.canonical_json_bytes(closure))
+
+    repository = FormalCheckpointRepositoryV0233(attempt_root)
+    prepared = _prepared_checkpoint()
+    clone_relative = public_path.relative_to(tmp_path).as_posix()
+    closure_relative = closure_path.relative_to(tmp_path).as_posix()
+    clone_sealed = FormalExecutionCheckpointV0233.build(
+        previous=prepared,
+        state=FormalExecutionStateV0233.CLONE_SEALED,
+        formal_clone_sha256=clone.clone_sha256,
+        output_artifact_sha256s={
+            clone_relative: run_command._sha256_file(public_path),
+        },
+        created_at=prepared.created_at + timedelta(seconds=1),
+    )
+    ready = FormalExecutionCheckpointV0233.build(
+        previous=clone_sealed,
+        state=FormalExecutionStateV0233.FORMAL_ENVIRONMENT_READY,
+        created_at=clone_sealed.created_at + timedelta(seconds=1),
+    )
+    recoverable = FormalExecutionCheckpointV0233.build(
+        previous=ready,
+        state=FormalExecutionStateV0233.RECOVERABLE_FAILURE,
+        output_artifact_sha256s={
+            **ready.output_artifact_sha256s,
+            closure_relative: run_command._sha256_file(closure_path),
+        },
+        created_at=ready.created_at + timedelta(seconds=1),
+    )
+    for checkpoint in (prepared, clone_sealed, ready, recoverable):
+        repository.append(checkpoint)
+
+    inspection = SimpleNamespace(
+        schema_version=9,
+        counts=FreshFormalStateCountsV0233.model_validate(
+            ending.model_dump(mode="json")
+        ),
+        environment_id=clone.active_environment_id,
+        active_baseline_id=clone.active_baseline_id,
+        active_baseline_sha256=clone.active_baseline_sha256,
+        active_profile_sha256=clone.active_profile_sha256,
+    )
+    monkeypatch.setattr(run_command, "_inspect_source", lambda *_args, **_kwargs: inspection)
+    return clone, closure, inspection
+
+
+def test_used_clone_recovery_accepts_checkpointed_clean_post_diagnosis_state(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    clone, _closure, _inspection = _used_clone_recovery_fixture(
+        tmp_path, monkeypatch
+    )
+
+    recovered = run_command._recover_existing_attempt_clone_v0233(
+        tmp_path,
+        attempt_id="attempt-2",
+        publish_missing=False,
+    )
+
+    assert recovered == clone
+
+
+@pytest.mark.parametrize(
+    "tamper",
+    ("current-counts", "closure-binding", "public-binding"),
+)
+def test_used_clone_recovery_rejects_unbound_or_drifted_state(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    tamper: str,
+) -> None:
+    _clone, closure, inspection = _used_clone_recovery_fixture(tmp_path, monkeypatch)
+    attempt_root = tmp_path / ".local/product-v0233/attempts/attempt-2"
+    if tamper == "current-counts":
+        drifted = inspection.counts.model_dump(mode="json")
+        drifted["diagnosis_stage_event_count"] += 1
+        monkeypatch.setattr(
+            run_command,
+            "_inspect_source",
+            lambda *_args, **_kwargs: SimpleNamespace(
+                **{
+                    **inspection.__dict__,
+                    "counts": FreshFormalStateCountsV0233.model_validate(drifted),
+                }
+            ),
+        )
+    elif tamper == "closure-binding":
+        closure_path = attempt_root / "execution/formal-closure.json"
+        closure_path.write_bytes(
+            run_command.canonical_json_bytes(
+                closure.model_copy(update={"queue_after_sha256": _sha("7")})
+            )
+        )
+    else:
+        public_path = (
+            tmp_path
+            / "docs/analysis/product-v0233-attempts/attempt-2/formal-state-clone.json"
+        )
+        public_path.write_bytes(public_path.read_bytes() + b"\n")
+
+    with pytest.raises(ValueError, match="interrupted clone"):
+        run_command._recover_existing_attempt_clone_v0233(
+            tmp_path,
+            attempt_id="attempt-2",
+            publish_missing=False,
+        )
 
 
 def test_resume_terminalizes_nonrecoverable_crash_window_before_routing_forward(

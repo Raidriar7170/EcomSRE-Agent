@@ -2,10 +2,10 @@
   "schema_version": "ecomsre.product.recovery-pre-execution-review.v0233",
   "semantic_generation": 3,
   "semantic_surface_sha256": "5a8ff7261b11461b083378f2a86b214c4d856d505d99b506245ee750a1f44ee4",
-  "operational_surface_sha256": "0bf88e1607982151ae0e585eb38073fff59d63274787466362437676a3efea01",
+  "operational_surface_sha256": "764fc84d6722e43255e6ff2fb1784c964f47ae49e36d451bc95d7cc27ab38f37",
   "verdict": "PASS",
   "must_fix_count": 0,
   "claim_accuracy": "PASS",
   "offline_validation": "PASS",
-  "review_sha256": "7acd7d75af41b2bf0c8ec3d921b140edadb10608e8acfb1fe562856497e361b2"
+  "review_sha256": "d822d8e697db5c15383aa6957f5ac1bce834f7390e8e123f772ec2ec5271a935"
 }

@@ -94,8 +94,10 @@ from ecomsre.product.pilot.fresh_formal_acceptance_v0233 import (
     load_fresh_traffic_profile_v0233,
 )
 from ecomsre.product.pilot.fresh_formal_source_v0233 import (
+    _inspect_source,
     FreshFormalSourceKindV0233,
     FreshFormalSourceSelectionV0233,
+    FreshFormalSourceSelectionErrorV0233,
     FreshFormalStateCloneErrorV0233,
     FreshFormalStateCloneV0233,
     FreshFormalStateCountsV0233,
@@ -462,12 +464,81 @@ def _recover_existing_attempt_clone_v0233(
         )
         if not product_root.exists():
             return None
-    else:
-        selection = FreshFormalSourceSelectionV0233.model_validate_json(
-            (root / "config/product-v0233/source-selection.json").read_bytes()
-        )
     if not product_root.is_dir():
         raise ValueError("Product v0.2.3.3 interrupted clone path differs")
+    closure_path = (
+        root
+        / _attempt_private_locator_v0233(attempt_id)
+        / "execution/formal-closure.json"
+    )
+    if closure_path.exists() or closure_path.is_symlink():
+        try:
+            if (
+                closure_path.is_symlink()
+                or not closure_path.is_file()
+                or not public_path.is_file()
+            ):
+                raise ValueError("Product v0.2.3.3 interrupted clone path differs")
+            public_bytes = public_path.read_bytes()
+            closure_bytes = closure_path.read_bytes()
+            published = FreshFormalStateCloneV0233.model_validate_json(public_bytes)
+            closure = FormalClosureProofV0233.model_validate_json(closure_bytes)
+            attempt_root = root / _attempt_private_locator_v0233(attempt_id)
+            chain = FormalCheckpointRepositoryV0233(attempt_root).load_chain()
+            if not chain:
+                raise ValueError("Product v0.2.3.3 interrupted clone differs")
+            latest = chain[-1]
+            public_relative = public_path.relative_to(root).as_posix()
+            closure_relative = closure_path.relative_to(root).as_posix()
+            starting = closure.safety_observation.starting_counts
+            ending = closure.safety_observation.ending_counts
+            inspection = _inspect_source(
+                product_root,
+                owner_counter=_database_owner_count,
+            )
+            if (
+                published.destination_locator
+                != _attempt_product_locator_v0233(attempt_id)
+                or latest.formal_clone_sha256 != published.clone_sha256
+                or latest.source_selection_sha256
+                != published.source_selection_sha256
+                or latest.output_artifact_sha256s.get(public_relative)
+                != hashlib.sha256(public_bytes).hexdigest()
+                or latest.output_artifact_sha256s.get(closure_relative)
+                != hashlib.sha256(closure_bytes).hexdigest()
+                or closure.source_selection_before_sha256
+                != published.source_selection_sha256
+                or closure.source_selection_after_sha256
+                != published.source_selection_sha256
+                or closure.frozen_semantic_surface_before_sha256
+                != latest.semantic_surface_sha256
+                or closure.frozen_semantic_surface_after_sha256
+                != latest.semantic_surface_sha256
+                or starting is None
+                or ending is None
+                or published.starting_counts.model_dump(mode="json")
+                != starting.model_dump(mode="json")
+                or inspection.schema_version != published.post_migration_schema_version
+                or inspection.counts.model_dump(mode="json")
+                != ending.model_dump(mode="json")
+                or inspection.environment_id != published.active_environment_id
+                or inspection.active_baseline_id != published.active_baseline_id
+                or inspection.active_baseline_sha256
+                != published.active_baseline_sha256
+                or inspection.active_profile_sha256 != published.active_profile_sha256
+            ):
+                raise ValueError("Product v0.2.3.3 interrupted clone differs")
+        except (
+            OSError,
+            FreshFormalSourceSelectionErrorV0233,
+            FreshFormalStateCloneErrorV0233,
+            ValueError,
+        ) as error:
+            raise ValueError("Product v0.2.3.3 interrupted clone differs") from error
+        return published
+    selection = FreshFormalSourceSelectionV0233.model_validate_json(
+        (root / "config/product-v0233/source-selection.json").read_bytes()
+    )
     recovered = recover_fresh_formal_state_clone_v0233(
         selection=selection,
         destination_root=product_root,
