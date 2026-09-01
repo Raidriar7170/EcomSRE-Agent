@@ -602,6 +602,12 @@ def _reconcile_semantic_rollover_lineage_v0233(
         != acquisition.incident_observation_ended_at
     ):
         raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
+    if (
+        acquisition.attempt_id != attempt_id
+        or acquisition.semantic_generation != latest.semantic_generation
+        or acquisition.semantic_surface_sha256 != latest.semantic_surface_sha256
+    ):
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_SEMANTIC_DRIFT")
     if submitted is not None:
         assert submitted_context is not None
         initial_idempotency_key = (
@@ -636,12 +642,6 @@ def _reconcile_semantic_rollover_lineage_v0233(
             create_once=True,
         )
         promoted_from_job_id = submitted.job_id
-    if (
-        acquisition.attempt_id != attempt_id
-        or acquisition.semantic_generation != latest.semantic_generation
-        or acquisition.semantic_surface_sha256 != latest.semantic_surface_sha256
-    ):
-        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_SEMANTIC_DRIFT")
     cleanup = _recover_owned_product_processes_v0233(
         root=root,
         product_root=product_root,

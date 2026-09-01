@@ -372,13 +372,23 @@ def test_recovery_submission_reuses_same_incident_and_frozen_acquisition() -> No
 
 @pytest.mark.parametrize("terminal_before_rollover", [False, True])
 @pytest.mark.parametrize("private_acquisition_exists", [False, True])
-@pytest.mark.parametrize("latest_mismatch", [None, "campaign", "attempt", "clone"])
+@pytest.mark.parametrize(
+    "binding_mismatch",
+    [
+        None,
+        "campaign",
+        "attempt",
+        "clone",
+        "acquisition_generation",
+        "acquisition_surface",
+    ],
+)
 def test_semantic_rollover_fences_running_or_preserves_completed_job(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
     terminal_before_rollover: bool,
     private_acquisition_exists: bool,
-    latest_mismatch: str | None,
+    binding_mismatch: str | None,
 ) -> None:
     started = datetime(2026, 9, 1, 2, 0, tzinfo=UTC)
     attempt_id = "attempt-2"
@@ -402,6 +412,36 @@ def test_semantic_rollover_fences_running_or_preserves_completed_job(
         service_identity_sha256=_sha("8"),
         capability_sha256=_sha("9"),
     )
+    stored_checkpoint = checkpoint
+    if binding_mismatch in {"acquisition_generation", "acquisition_surface"}:
+        mismatched_context = FormalDiagnosisJobContextV0233.build(
+            campaign_id=context.campaign_id,
+            semantic_generation=(
+                3 if binding_mismatch == "acquisition_generation" else 2
+            ),
+            attempt_id=attempt_id,
+            diagnosis_generation=1,
+            active_profile_sha256=context.active_profile_sha256,
+            semantic_surface_sha256=(
+                _sha("4")
+                if binding_mismatch == "acquisition_surface"
+                else context.semantic_surface_sha256
+            ),
+            acquisition_sha256=None,
+        )
+        stored_checkpoint = build_diagnosis_acquisition_checkpoint_v0233(
+            context=mismatched_context,
+            acquisition=_acquisition(),
+            incident_id=checkpoint.incident_id,
+            incident_sha256=checkpoint.incident_sha256,
+            incident_observation_started_at=(
+                checkpoint.incident_observation_started_at
+            ),
+            incident_observation_ended_at=checkpoint.incident_observation_ended_at,
+            baseline_sha256=checkpoint.baseline_sha256,
+            service_identity_sha256=checkpoint.service_identity_sha256,
+            capability_sha256=checkpoint.capability_sha256,
+        )
     product_root = tmp_path / run_command._attempt_product_locator_v0233(attempt_id)
     product_root.mkdir(parents=True)
     store = SqliteStoreV1(product_root / "product.sqlite3")
@@ -524,13 +564,13 @@ def test_semantic_rollover_fences_running_or_preserves_completed_job(
     if private_acquisition_exists:
         write_private_json(
             acquisition_path,
-            checkpoint.model_dump(mode="json"),
+            stored_checkpoint.model_dump(mode="json"),
             create_once=True,
         )
     else:
         write_private_json(
             product_root / context.acquisition_checkpoint_locator,
-            checkpoint.model_dump(mode="json"),
+            stored_checkpoint.model_dump(mode="json"),
             create_once=True,
         )
         write_private_json(
@@ -547,19 +587,27 @@ def test_semantic_rollover_fences_running_or_preserves_completed_job(
         started=started,
         campaign_id=(
             "wrong-campaign"
-            if latest_mismatch == "campaign"
+            if binding_mismatch == "campaign"
             else context.campaign_id
         ),
-        attempt_id="attempt-99" if latest_mismatch == "attempt" else attempt_id,
+        attempt_id="attempt-99" if binding_mismatch == "attempt" else attempt_id,
         formal_clone_sha256=(
-            _sha("9") if latest_mismatch == "clone" else live_capture.formal_clone_sha256
+            _sha("9")
+            if binding_mismatch == "clone"
+            else live_capture.formal_clone_sha256
         ),
     )
 
-    if latest_mismatch is not None:
+    if binding_mismatch is not None:
+        expected_terminal = (
+            "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_SEMANTIC_DRIFT"
+            if binding_mismatch
+            in {"acquisition_generation", "acquisition_surface"}
+            else "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"
+        )
         with pytest.raises(
             RuntimeError,
-            match="BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING",
+            match=expected_terminal,
         ):
             resume_command._reconcile_semantic_rollover_lineage_v0233(
                 root=tmp_path,
