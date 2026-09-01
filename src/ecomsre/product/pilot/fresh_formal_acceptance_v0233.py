@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from pydantic import ConfigDict, Field, model_validator
+from pydantic_core import to_jsonable_python
 
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 from ecomsre.product.contracts import ProductModelV1
@@ -14,10 +15,11 @@ from ecomsre.product.pilot.nofault_acceptance_v0232 import (
     NOFAULT_FULLY_SUPPORTED_V0232,
     NOFAULT_NOT_SUPPORTED_V0232,
 )
-from ecomsre.product.pilot.serialization_v0233 import semantic_json_sha256_v0233
-
-
 _SHA256_PATTERN = r"^[0-9a-f]{64}$"
+
+
+def _semantic_json_sha256_v0233(value: Any) -> str:
+    return semantic_sha256_v22(to_jsonable_python(value))
 _GOAL_VERSION = "ecomsre-product-v0233-fresh-formal-evidence-bound-nofault-v1"
 _STARTING_MAIN = "6e07964e5595b4138decf0276189c76c3e278d87"
 _HANDOFF_SHA256 = "72d272951412d696d50fb6ee44c96bbc4a1a6e5ace63d574b0636297b848847f"
@@ -277,7 +279,7 @@ class FormalIncidentDiagnosisCardinalityV0233(ProductModelV1):
             **payload,
         }
         return cls.model_validate(
-            {**body, "cardinality_sha256": semantic_json_sha256_v0233(body)}
+            {**body, "cardinality_sha256": _semantic_json_sha256_v0233(body)}
         )
 
 
@@ -348,7 +350,7 @@ class NoFaultAcceptanceResultV0233(ProductModelV1):
             "measured_terminal": mapped,
         }
         return cls.model_validate(
-            {**body, "result_sha256": semantic_json_sha256_v0233(body)}
+            {**body, "result_sha256": _semantic_json_sha256_v0233(body)}
         )
 
 
@@ -415,7 +417,7 @@ class DiagnosisPipelineAcceptanceV0233(ProductModelV1):
     @classmethod
     def _build(cls, body: dict[str, Any]) -> DiagnosisPipelineAcceptanceV0233:
         return cls.model_validate(
-            {**body, "acceptance_sha256": semantic_json_sha256_v0233(body)}
+            {**body, "acceptance_sha256": _semantic_json_sha256_v0233(body)}
         )
 
     @classmethod
@@ -475,7 +477,7 @@ class FormalContractCaseV0233(ProductModelV1):
     @classmethod
     def build(cls, **payload: Any) -> FormalContractCaseV0233:
         return cls.model_validate(
-            {**payload, "case_sha256": semantic_json_sha256_v0233(payload)}
+            {**payload, "case_sha256": _semantic_json_sha256_v0233(payload)}
         )
 
 
@@ -545,7 +547,7 @@ class FormalContractPreflightV0233(ProductModelV1):
             **body, preflight_sha256="0" * 64
         ).model_dump(mode="json", exclude={"preflight_sha256"})
         return cls.model_validate(
-            {**body, "preflight_sha256": semantic_json_sha256_v0233(normalized)}
+            {**body, "preflight_sha256": _semantic_json_sha256_v0233(normalized)}
         )
 
 

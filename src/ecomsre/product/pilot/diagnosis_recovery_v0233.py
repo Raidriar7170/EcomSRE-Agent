@@ -8,9 +8,10 @@ from pathlib import Path
 from typing import Any, Literal, Mapping
 
 from pydantic import ConfigDict, Field, model_validator
+from pydantic_core import to_jsonable_python
 
 from ecomsre.dta_v2.v22.memory import RuntimeReadOutcomeV22
-from ecomsre.dta_v2.v22.read_contracts import EvidenceSourceV22
+from ecomsre.dta_v2.v22.read_contracts import EvidenceSourceV22, semantic_sha256_v22
 from ecomsre.dta_v2.v22.replay import ReadOutcomeV22
 from ecomsre.product.contracts import ProductModelV1
 from ecomsre.product.incidents.evidence_binding_v0232 import (
@@ -18,14 +19,18 @@ from ecomsre.product.incidents.evidence_binding_v0232 import (
     CapabilityLimitationCandidateV0232,
 )
 from ecomsre.product.incidents.read_backend import ProductReadAcquisitionV1
-from ecomsre.product.pilot.serialization_v0233 import (
-    canonical_jsonable_v0233,
-    semantic_json_sha256_v0233,
-)
-
-
 _SHA256_PATTERN = r"^[0-9a-f]{64}$"
 _ATTEMPT_PATTERN = r"^[a-z0-9][a-z0-9-]{0,79}$"
+
+
+def _canonical_jsonable_v0233(value: Any) -> Any:
+    """Canonicalize semantic inputs without depending on operational helpers."""
+
+    return to_jsonable_python(value)
+
+
+def _semantic_json_sha256_v0233(value: Any) -> str:
+    return semantic_sha256_v22(_canonical_jsonable_v0233(value))
 
 
 def _sorted_sha256_mapping(value: Mapping[str, str]) -> dict[str, str]:
@@ -108,13 +113,13 @@ class DiagnosisAcquisitionCheckpointV0233(ProductModelV1):
             != _sorted_sha256_mapping(self.read_snapshot_sha256s)
             or self.read_snapshot_sha256s
             != {
-                f"read-snapshot-{ordinal:03d}.json": semantic_json_sha256_v0233(
+                f"read-snapshot-{ordinal:03d}.json": _semantic_json_sha256_v0233(
                     snapshot
                 )
                 for ordinal, snapshot in enumerate(self.read_snapshots)
             }
             or self.acquisition_sha256
-            != semantic_json_sha256_v0233(
+            != _semantic_json_sha256_v0233(
                 self.model_dump(mode="json", exclude={"acquisition_sha256"})
             )
         ):
@@ -123,7 +128,7 @@ class DiagnosisAcquisitionCheckpointV0233(ProductModelV1):
 
     @classmethod
     def build(cls, **payload: Any) -> DiagnosisAcquisitionCheckpointV0233:
-        body = canonical_jsonable_v0233(
+        body = _canonical_jsonable_v0233(
             {
                 "schema_version": (
                     "ecomsre.product.diagnosis-acquisition-checkpoint.v0233"
@@ -141,7 +146,7 @@ class DiagnosisAcquisitionCheckpointV0233(ProductModelV1):
             }
         )
         return cls.model_validate(
-            {**body, "acquisition_sha256": semantic_json_sha256_v0233(body)}
+            {**body, "acquisition_sha256": _semantic_json_sha256_v0233(body)}
         )
 
 
@@ -169,7 +174,7 @@ class FormalDiagnosisJobContextV0233(ProductModelV1):
             self.acquisition_checkpoint_locator
             != diagnosis_checkpoint_locator_v0233(self.attempt_id)
             or self.context_sha256
-            != semantic_json_sha256_v0233(
+            != _semantic_json_sha256_v0233(
                 self.model_dump(mode="json", exclude={"context_sha256"})
             )
         ):
@@ -186,7 +191,7 @@ class FormalDiagnosisJobContextV0233(ProductModelV1):
             ),
         }
         return cls.model_validate(
-            {**body, "context_sha256": semantic_json_sha256_v0233(body)}
+            {**body, "context_sha256": _semantic_json_sha256_v0233(body)}
         )
 
 
@@ -235,7 +240,7 @@ class FormalDiagnosisRecoverySubmissionV0233(ProductModelV1):
             )
             or self.idempotency_key != expected_key
             or self.submission_sha256
-            != semantic_json_sha256_v0233(
+            != _semantic_json_sha256_v0233(
                 self.model_dump(mode="json", exclude={"submission_sha256"})
             )
         ):
@@ -274,7 +279,7 @@ class FormalDiagnosisRecoverySubmissionV0233(ProductModelV1):
             "preserved_failed_job_ids": sorted(set(preserved_failed_job_ids)),
         }
         return cls.model_validate(
-            {**body, "submission_sha256": semantic_json_sha256_v0233(body)}
+            {**body, "submission_sha256": _semantic_json_sha256_v0233(body)}
         )
 
 
@@ -326,7 +331,7 @@ def build_diagnosis_acquisition_checkpoint_v0233(
     if not isinstance(runtime_binding_sha256, str):
         raise ValueError("Product v0.2.3.3 Runtime acquisition binding differs")
     read_snapshot_sha256s = {
-        f"read-snapshot-{ordinal:03d}.json": semantic_json_sha256_v0233(snapshot)
+        f"read-snapshot-{ordinal:03d}.json": _semantic_json_sha256_v0233(snapshot)
         for ordinal, snapshot in enumerate(snapshots)
     }
     return DiagnosisAcquisitionCheckpointV0233.build(
@@ -452,7 +457,7 @@ def formal_diagnosis_idempotency_key_v0233(
         "semantic_surface_sha256": semantic_surface_sha256,
         "diagnosis_generation": diagnosis_generation,
     }
-    return f"formal-v0233-diagnosis-{semantic_json_sha256_v0233(body)[:32]}"
+    return f"formal-v0233-diagnosis-{_semantic_json_sha256_v0233(body)[:32]}"
 
 
 def final_diagnosis_idempotency_key_v0233(

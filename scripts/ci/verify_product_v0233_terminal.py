@@ -10,6 +10,11 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
+from ecomsre.product.incidents.contracts import DiagnosisResultV1, EvidenceBundleV1
+from ecomsre.product.incidents.evidence_binding_v0232 import (
+    DiagnosisDecisionTraceV0232,
+    DiagnosisEvidenceIndexV0232,
+)
 from ecomsre.product.pilot.formal_live_v0233 import (
     BaselineRestartProofV0233,
     FormalClosureProofV0233,
@@ -142,26 +147,30 @@ def _verify_measured_terminal(
     assessment = NoFaultEvidenceAssessmentV0232.model_validate_json(
         (attempt_root / "evidence-assessment.json").read_bytes()
     )
+    diagnosis = DiagnosisResultV1.model_validate_json(
+        (attempt_root / "diagnosis-result.json").read_bytes()
+    )
+    evidence = EvidenceBundleV1.model_validate_json(
+        (attempt_root / "evidence-bundle.json").read_bytes()
+    )
+    index = DiagnosisEvidenceIndexV0232.model_validate_json(
+        (attempt_root / "evidence-index.json").read_bytes()
+    )
+    decision_trace = DiagnosisDecisionTraceV0232.model_validate_json(
+        (attempt_root / "decision-trace.json").read_bytes()
+    )
     closure = FormalClosureProofV0233.model_validate_json(
         (attempt_root / "formal-closure.json").read_bytes()
     )
     lineage_path = attempt_root / "diagnosis-recovery-lineage.json"
-    lineage = _object(lineage_path) if lineage_path.is_file() else None
+    lineage = _object(lineage_path)
     acquisition_path = attempt_root / "diagnosis-acquisition-checkpoint.json"
-    acquisition = (
-        DiagnosisAcquisitionCheckpointV0233.model_validate_json(
-            acquisition_path.read_bytes()
-        )
-        if acquisition_path.is_file()
-        else None
+    acquisition = DiagnosisAcquisitionCheckpointV0233.model_validate_json(
+        acquisition_path.read_bytes()
     )
-    lineage_body = (
-        None
-        if lineage is None
-        else {
-            key: value for key, value in lineage.items() if key != "lineage_sha256"
-        }
-    )
+    lineage_body = {
+        key: value for key, value in lineage.items() if key != "lineage_sha256"
+    }
     pipeline = _object(attempt_root / "diagnosis-stage-journal.json")
     pipeline_body = {
         key: value
@@ -179,27 +188,17 @@ def _verify_measured_terminal(
     progress_body = {
         key: value for key, value in progress.items() if key != "progress_sha256"
     }
-    failed_jobs = (
-        [] if lineage is None else lineage.get("preserved_failed_job_ids")
-    )
-    failed_job_projections = (
-        [] if lineage is None else lineage.get("preserved_failed_jobs")
-    )
-    successful_job = None if lineage is None else lineage.get("successful_job")
+    failed_jobs = lineage.get("preserved_failed_job_ids")
+    failed_job_projections = lineage.get("preserved_failed_jobs")
+    successful_job = lineage.get("successful_job")
     failed_job_count = len(failed_jobs) if isinstance(failed_jobs, list) else -1
     new_diagnosis_count = repository.new_diagnosis_count
     lineage_exact = (
-        lineage is None
-        and new_diagnosis_count == 1
-        and attempt.latest_state.value == "CLOSED"
-    ) or (
-        isinstance(lineage, dict)
-        and isinstance(lineage_body, dict)
-        and isinstance(failed_jobs, list)
+        isinstance(failed_jobs, list)
         and isinstance(failed_job_projections, list)
         and isinstance(successful_job, dict)
-        and bool(failed_jobs)
         and len(failed_jobs) == len(set(failed_jobs))
+        and failed_jobs == sorted(failed_jobs)
         and len(failed_job_projections) == len(failed_jobs)
         and all(
             isinstance(projection, dict)
@@ -229,15 +228,15 @@ def _verify_measured_terminal(
             }
         )
         and new_diagnosis_count == len(failed_jobs) + 1
+        and attempt.latest_state.value == "CLOSED"
         and lineage.get("attempt_id") == attempt.attempt_id
         and lineage.get("incident_id") == incident_binding.incident_id
         and lineage.get("incident_sha256") == result.incident_sha256
-        and acquisition is not None
         and acquisition.attempt_id == attempt.attempt_id
         and acquisition.incident_id == incident_binding.incident_id
         and acquisition.incident_sha256 == result.incident_sha256
         and acquisition.acquisition_sha256 == lineage.get("acquisition_sha256")
-        and lineage.get("successful_diagnosis_generation", 0) >= 2
+        and lineage.get("successful_diagnosis_generation") == len(failed_jobs) + 1
         and lineage.get("diagnosis_result_sha256")
         == result.diagnosis_result_sha256
         and lineage.get("lineage_sha256") == semantic_sha256_v22(lineage_body)
@@ -248,14 +247,40 @@ def _verify_measured_terminal(
         "docs/results/product-v0233-interview-brief.md",
         "docs/analysis/product-v0233-knowledge-loop-handoff.md",
     )
-    evidence_exact = bool(attempt.evidence_sha256_by_path) and all(
-        not relative.startswith(("/", ".local/"))
-        and ".." not in Path(relative).parts
-        and not (project / relative).is_symlink()
+    expected_evidence_paths = {
+        *(f"docs/analysis/product-v0233-attempts/{attempt.attempt_id}/{name}" for name in (
+            "formal-state-clone.json",
+            "formal-closure.json",
+            "diagnosis-acquisition-checkpoint.json",
+            "diagnosis-recovery-lineage.json",
+            "diagnosis-result.json",
+            "evidence-bundle.json",
+            "evidence-index.json",
+            "decision-trace.json",
+            "runtime-authority.json",
+            "baseline-restart.json",
+            "formal-traffic.json",
+            "fresh-runtime-snapshot.json",
+            "incident-traffic-binding.json",
+            "evidence-assessment.json",
+            "diagnosis-stage-journal.json",
+            "knowledge-loop-handoff.json",
+        )),
+        "docs/results/product-v0233-nofault-acceptance.json",
+        "docs/results/product-v0233-nofault-acceptance.md",
+        "docs/results/product-v0233-limitations.md",
+        "docs/results/product-v0233-interview-brief.md",
+        "docs/analysis/product-v0233-knowledge-loop-handoff.md",
+        "config/product-v0233/repository-state-manifest.json",
+        "docs/analysis/product-v0233-progress.json",
+    }
+    evidence_exact = set(attempt.evidence_sha256_by_path) == expected_evidence_paths and all(
+        not (project / relative).is_symlink()
         and (project / relative).is_file()
         and _sha256_file(project / relative) == expected
         for relative, expected in attempt.evidence_sha256_by_path.items()
     )
+    evidence_sha256 = semantic_sha256_v22(evidence.model_dump(mode="json"))
     if (
         attempt.measured_terminal != result.measured_terminal
         or not evidence_exact
@@ -279,6 +304,26 @@ def _verify_measured_terminal(
         != fresh_snapshot.runtime_snapshot_sha256
         or result.incident_traffic_binding_sha256 != incident_binding.binding_sha256
         or result.v0232_assessment_sha256 != assessment.result_sha256
+        or result.diagnosis_result_sha256 != diagnosis.result_sha256
+        or result.evidence_bundle_sha256 != evidence_sha256
+        or result.evidence_index_sha256 != index.index_sha256
+        or result.decision_trace_sha256 != decision_trace.trace_sha256
+        or assessment.incident_id != incident_binding.incident_id
+        or assessment.diagnosis_id != diagnosis.diagnosis_id
+        or assessment.diagnosis_result_sha256 != diagnosis.result_sha256
+        or assessment.evidence_bundle_sha256 != evidence_sha256
+        or assessment.evidence_index_sha256 != index.index_sha256
+        or assessment.decision_trace_sha256 != decision_trace.trace_sha256
+        or evidence.incident_id != incident_binding.incident_id
+        or evidence.diagnosis_id != diagnosis.diagnosis_id
+        or index.incident_id != incident_binding.incident_id
+        or index.diagnosis_id != diagnosis.diagnosis_id
+        or index.evidence_bundle_sha256 != evidence_sha256
+        or index.decision_trace_sha256 != decision_trace.trace_sha256
+        or pipeline.get("diagnosis_result_sha256") != diagnosis.result_sha256
+        or pipeline.get("evidence_bundle_sha256") != evidence_sha256
+        or pipeline.get("evidence_index_sha256") != index.index_sha256
+        or pipeline.get("decision_trace_sha256") != decision_trace.trace_sha256
         or result.measured_terminal
         not in {
             "ECOMSRE_PRODUCT_V0233_NOFAULT_FULLY_SUPPORTED",

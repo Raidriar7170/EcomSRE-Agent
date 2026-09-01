@@ -41,9 +41,11 @@ def _validated_as(value: object) -> SimpleNamespace:
     return SimpleNamespace(model_validate_json=lambda _payload: value)
 
 
-def test_public_measured_verifier_binds_recovery_jobs_and_acquisition(
+@pytest.mark.parametrize("recovery_required", (False, True))
+def test_public_measured_verifier_binds_direct_and_recovery_evidence(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    recovery_required: bool,
 ) -> None:
     attempt_id = "attempt-2"
     terminal = "ECOMSRE_PRODUCT_V0233_NOFAULT_NOT_SUPPORTED"
@@ -83,24 +85,34 @@ def test_public_measured_verifier_binds_recovery_jobs_and_acquisition(
         "journal_tail_sha256": None,
     }
     successful_job = _sealed(successful_job_body, "projection_sha256")
+    failed_job_ids = [failed_job_id] if recovery_required else []
+    failed_job_projections = [failed_job] if recovery_required else []
     lineage_body = {
         "schema_version": "ecomsre.product.diagnosis-recovery-lineage.v0233",
         "attempt_id": attempt_id,
         "incident_id": incident_id,
         "incident_sha256": _sha("i"),
         "acquisition_sha256": acquisition_sha256,
-        "preserved_failed_job_ids": [failed_job_id],
-        "preserved_failed_jobs": [failed_job],
+        "preserved_failed_job_ids": failed_job_ids,
+        "preserved_failed_jobs": failed_job_projections,
         "successful_job_id": successful_job_id,
         "successful_job": successful_job,
-        "successful_diagnosis_generation": 2,
+        "successful_diagnosis_generation": 2 if recovery_required else 1,
         "diagnosis_result_sha256": diagnosis_sha256,
     }
     lineage = _sealed(lineage_body, "lineage_sha256")
+    evidence_payload = {"incident_id": incident_id, "diagnosis_id": "diag-" + "4" * 24}
+    evidence_sha256 = semantic_sha256_v22(evidence_payload)
+    index_sha256 = _sha("e")
+    decision_trace_sha256 = _sha("f")
     pipeline_body = {
         "job_status": "SUCCEEDED",
         "stage_journal_terminal": "JOB_SUCCEEDED",
         "journal_tail_sha256": _sha("j"),
+        "diagnosis_result_sha256": diagnosis_sha256,
+        "evidence_bundle_sha256": evidence_sha256,
+        "evidence_index_sha256": index_sha256,
+        "decision_trace_sha256": decision_trace_sha256,
     }
     pipeline = _sealed(pipeline_body, "public_projection_sha256")
     result_sha256 = _sha("r")
@@ -115,7 +127,7 @@ def test_public_measured_verifier_binds_recovery_jobs_and_acquisition(
         "measured_terminal": terminal,
         "nofault_result_sha256": result_sha256,
         "new_incident_count": 1,
-        "new_diagnosis_count": 2,
+        "new_diagnosis_count": 2 if recovery_required else 1,
         "measured_result_count": 1,
     }
     progress = _sealed(progress_body, "progress_sha256")
@@ -131,6 +143,10 @@ def test_public_measured_verifier_binds_recovery_jobs_and_acquisition(
         ("formal-closure.json", {}),
         ("diagnosis-acquisition-checkpoint.json", {}),
         ("diagnosis-recovery-lineage.json", lineage),
+        ("diagnosis-result.json", {}),
+        ("evidence-bundle.json", {}),
+        ("evidence-index.json", {}),
+        ("decision-trace.json", {}),
         ("diagnosis-stage-journal.json", pipeline),
         ("knowledge-loop-handoff.json", handoff),
     ):
@@ -197,6 +213,9 @@ def test_public_measured_verifier_binds_recovery_jobs_and_acquisition(
         measured_terminal=terminal,
         result_sha256=result_sha256,
         diagnosis_result_sha256=diagnosis_sha256,
+        evidence_bundle_sha256=evidence_sha256,
+        evidence_index_sha256=index_sha256,
+        decision_trace_sha256=decision_trace_sha256,
         incident_sha256=_sha("i"),
         stage_journal_tail_sha256=_sha("j"),
         formal_clone_sha256=_sha("1"),
@@ -225,7 +244,7 @@ def test_public_measured_verifier_binds_recovery_jobs_and_acquisition(
         formal_clone_count=1,
         formal_execution_count=1,
         new_incident_count=1,
-        new_diagnosis_count=2,
+        new_diagnosis_count=2 if recovery_required else 1,
         measured_result_count=1,
     )
     monkeypatch.setattr(
@@ -276,7 +295,56 @@ def test_public_measured_verifier_binds_recovery_jobs_and_acquisition(
     monkeypatch.setattr(
         verifier,
         "NoFaultEvidenceAssessmentV0232",
-        _validated_as(SimpleNamespace(result_sha256=_sha("7"))),
+        _validated_as(
+            SimpleNamespace(
+                result_sha256=_sha("7"),
+                incident_id=incident_id,
+                diagnosis_id=evidence_payload["diagnosis_id"],
+                diagnosis_result_sha256=diagnosis_sha256,
+                evidence_bundle_sha256=evidence_sha256,
+                evidence_index_sha256=index_sha256,
+                decision_trace_sha256=decision_trace_sha256,
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        verifier,
+        "DiagnosisResultV1",
+        _validated_as(
+            SimpleNamespace(
+                diagnosis_id=evidence_payload["diagnosis_id"],
+                result_sha256=diagnosis_sha256,
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        verifier,
+        "EvidenceBundleV1",
+        _validated_as(
+            SimpleNamespace(
+                incident_id=incident_id,
+                diagnosis_id=evidence_payload["diagnosis_id"],
+                model_dump=lambda mode="json": evidence_payload,
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        verifier,
+        "DiagnosisEvidenceIndexV0232",
+        _validated_as(
+            SimpleNamespace(
+                incident_id=incident_id,
+                diagnosis_id=evidence_payload["diagnosis_id"],
+                evidence_bundle_sha256=evidence_sha256,
+                decision_trace_sha256=decision_trace_sha256,
+                index_sha256=index_sha256,
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        verifier,
+        "DiagnosisDecisionTraceV0232",
+        _validated_as(SimpleNamespace(trace_sha256=decision_trace_sha256)),
     )
     monkeypatch.setattr(
         verifier,
@@ -310,8 +378,8 @@ def test_public_measured_verifier_binds_recovery_jobs_and_acquisition(
     observed = verifier.verify_product_v0233_terminal(tmp_path)
 
     assert observed["terminal"] == "ECOMSRE_PRODUCT_V0233_NOFAULT_ACCEPTANCE_COMPLETE"
-    assert observed["failed_diagnosis_job_count"] == 1
-    assert observed["new_diagnosis_count"] == 2
+    assert observed["failed_diagnosis_job_count"] == (1 if recovery_required else 0)
+    assert observed["new_diagnosis_count"] == (2 if recovery_required else 1)
 
     lineage["successful_job_id"] = "job-" + "9" * 24
     _write_json(attempt_root / "diagnosis-recovery-lineage.json", lineage)

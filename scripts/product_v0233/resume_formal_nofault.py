@@ -93,6 +93,7 @@ from scripts.product_v0233.run_formal_nofault import (
     _attempt_private_locator_v0233,
     _attempt_product_locator_v0233,
     _attempt_public_locator_v0233,
+    _diagnosis_lineage_v0233,
     _diagnosis_acceptance,
     _formal_surfaces_v0233,
     _knowledge_handoff,
@@ -174,32 +175,6 @@ def _failed_formal_job_ids_v0233(
         ):
             failed.append(str(row["job_id"]))
     return tuple(failed)
-
-
-def _job_lineage_projection_v0233(job: ProductJobRecordV1) -> dict[str, Any]:
-    body = {
-        "job_id": job.job_id,
-        "status": job.status.value,
-        "idempotency_key": job.idempotency_key,
-        "attempt_count": job.attempt_count,
-        "payload_sha256": semantic_json_sha256_v0233(job.payload),
-        "result_sha256": (
-            None
-            if not isinstance(job.result, dict)
-            else semantic_json_sha256_v0233(job.result)
-        ),
-        "diagnosis_result_sha256": (
-            job.result.get("result_sha256")
-            if isinstance(job.result, dict)
-            and isinstance(job.result.get("result_sha256"), str)
-            else None
-        ),
-        "safe_error_code": job.safe_error_code,
-        "failure_stage": job.failure_stage,
-        "exception_fingerprint": job.exception_fingerprint,
-        "journal_tail_sha256": job.journal_tail_sha256,
-    }
-    return {**body, "projection_sha256": semantic_json_sha256_v0233(body)}
 
 
 def _seal_interrupted_job_v0233(
@@ -1068,36 +1043,20 @@ def resume_formal_nofault_v0233(
         create_once=True,
     )
     capture(private_root / "nofault-acceptance-result.json")
-    lineage: dict[str, Any] | None = None
-    if final_failed_job_ids:
-        failed_job_projections = tuple(
-            _job_lineage_projection_v0233(jobs.get(job_id))
-            for job_id in final_failed_job_ids
-        )
-        successful_job_projection = _job_lineage_projection_v0233(completed_job)
-        lineage_body = {
-            "schema_version": "ecomsre.product.diagnosis-recovery-lineage.v0233",
-            "attempt_id": attempt_id,
-            "incident_id": incident.incident_id,
-            "incident_sha256": incident.incident_sha256,
-            "acquisition_sha256": acquisition.acquisition_sha256,
-            "preserved_failed_job_ids": final_failed_job_ids,
-            "preserved_failed_jobs": failed_job_projections,
-            "successful_job_id": completed_job.job_id,
-            "successful_job": successful_job_projection,
-            "successful_diagnosis_generation": diagnosis_generation,
-            "diagnosis_result_sha256": diagnosis.result_sha256,
-        }
-        lineage = {
-            **lineage_body,
-            "lineage_sha256": semantic_json_sha256_v0233(lineage_body),
-        }
-        write_private_json(
-            generation_root / "diagnosis-recovery-lineage.json",
-            lineage,
-            create_once=True,
-        )
-        capture(generation_root / "diagnosis-recovery-lineage.json")
+    lineage = _diagnosis_lineage_v0233(
+        attempt_id=attempt_id,
+        acquisition=acquisition,
+        failed_jobs=tuple(jobs.get(job_id) for job_id in final_failed_job_ids),
+        successful_job=completed_job,
+        diagnosis_generation=diagnosis_generation,
+        diagnosis=diagnosis,
+    )
+    write_private_json(
+        generation_root / "diagnosis-recovery-lineage.json",
+        lineage,
+        create_once=True,
+    )
+    capture(generation_root / "diagnosis-recovery-lineage.json")
     if latest.state is FormalExecutionStateV0233.SCORED:
         latest = _append_checkpoint_v0233(
             repository=repository,
@@ -1131,13 +1090,17 @@ def resume_formal_nofault_v0233(
         incident_binding=incident_binding,
         assessment=assessment,
         pipeline=pipeline,
+        diagnosis=diagnosis,
+        evidence=evidence,
+        index=index,
+        decision_trace=decision_trace,
         closure=closure.model_dump(mode="json"),
         result=result,
         handoff=handoff,
         measured_ledger=ledger,
         new_diagnosis_count=safety.new_diagnosis_count,
         recovery_lineage=lineage,
-        recovery_acquisition=(acquisition if lineage is not None else None),
+        recovery_acquisition=acquisition,
     )
     return result
 

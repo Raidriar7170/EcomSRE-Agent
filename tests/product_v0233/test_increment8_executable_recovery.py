@@ -432,9 +432,15 @@ def test_resume_executes_post_success_or_failed_job_recovery(
     assert jobs.enqueue_calls == (1 if recovery_required else 0)
     assert result.diagnosis_result_sha256 == diagnosis.result_sha256
     assert published["result"] == result
-    assert (published["recovery_lineage"] is not None) is recovery_required
-    assert (published["recovery_acquisition"] is not None) is recovery_required
+    assert published["recovery_lineage"] is not None
+    assert published["recovery_acquisition"] is acquisition
+    assert published["diagnosis"] is diagnosis
+    assert published["evidence"] is evidence
+    assert published["index"] is index
+    assert published["decision_trace"] is decision_trace
     if recovery_required:
-        assert published["recovery_lineage"]["preserved_failed_job_ids"] == (
-            original_job.job_id,
-        )
+        assert published["recovery_lineage"]["preserved_failed_job_ids"] == [
+            original_job.job_id
+        ]
+    else:
+        assert published["recovery_lineage"]["preserved_failed_job_ids"] == []

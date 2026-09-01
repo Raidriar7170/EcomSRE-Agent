@@ -182,8 +182,13 @@ def test_live_repository_surface_builder_excludes_operational_code_from_semantic
         operational.operational_file_sha256_by_path
     )
     assert semantic_paths.isdisjoint(operational_paths)
-    assert "src/ecomsre/product/pilot/serialization_v0233.py" in semantic_paths
-    assert "src/ecomsre/product/pilot/serialization_v0233.py" not in operational_paths
+    assert "src/ecomsre/product/pilot/serialization_v0233.py" not in semantic_paths
+    assert "src/ecomsre/product/pilot/serialization_v0233.py" in operational_paths
+    assert "src/ecomsre/product/pilot/fresh_formal_acceptance_v0233.py" in (
+        semantic_paths
+    )
+    assert "src/ecomsre/product/pilot/formal_live_v0233.py" in semantic_paths
+    assert "src/ecomsre/product/pilot/formal_safety_v0233.py" in semantic_paths
 
 
 def test_checkpoint_chain_accepts_valid_transitions_and_operational_repair() -> None:
@@ -751,6 +756,31 @@ def test_strict_new_attempt_and_resume_admissions_execute_live_contracts(
     )
     repository.append(prepared)
     repository.append(recoverable)
+    legacy = FormalAttemptRecordV0233.build(
+        attempt_id="attempt-1",
+        ordinal=1,
+        semantic_generation=1,
+        disposition="LEGACY_BLOCKED",
+        latest_state=FormalExecutionStateV0233.RECOVERABLE_FAILURE,
+        latest_checkpoint_sha256=None,
+        blocker_terminal="BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS",
+        measured_terminal=None,
+        evidence_sha256_by_path={
+            "docs/analysis/product-v0233-formal-blocker.json": _sha("1")
+        },
+    )
+    ledger_path = tmp_path / "config/product-v0233/formal-attempt-ledger.json"
+    ledger_path.parent.mkdir(parents=True)
+    ledger = FormalAttemptLedgerV0233.build(
+        campaign_id="product-v0233-fresh-formal-nofault",
+        attempts=(legacy,),
+    )
+    ledger_path.write_text(ledger.model_dump_json(), encoding="utf-8")
+    monkeypatch.setattr(
+        run_command,
+        "build_legacy_attempt1_record_v0233",
+        lambda _root: legacy,
+    )
 
     latest, observed_semantic, observed_operational = (
         run_command.strict_resume_formal_admission_v0233(
@@ -764,6 +794,28 @@ def test_strict_new_attempt_and_resume_admissions_execute_live_contracts(
 
     artifact.write_text('{"drift":true}\n', encoding="utf-8")
     with pytest.raises(ValueError, match="artifact"):
+        run_command.strict_resume_formal_admission_v0233(
+            tmp_path,
+            attempt_id="attempt-2",
+        )
+
+    measured = FormalAttemptRecordV0233.build(
+        attempt_id="attempt-2",
+        ordinal=2,
+        semantic_generation=2,
+        disposition="MEASURED",
+        latest_state=FormalExecutionStateV0233.CLOSED,
+        latest_checkpoint_sha256=_sha("2"),
+        blocker_terminal=None,
+        measured_terminal="ECOMSRE_PRODUCT_V0233_NOFAULT_CAPABILITY_LIMITED",
+        evidence_sha256_by_path={"docs/results/result.json": _sha("3")},
+    )
+    measured_ledger = FormalAttemptLedgerV0233.build(
+        campaign_id="product-v0233-fresh-formal-nofault",
+        attempts=(legacy, measured),
+    )
+    ledger_path.write_text(measured_ledger.model_dump_json(), encoding="utf-8")
+    with pytest.raises(RuntimeError, match="ACCEPTANCE_ARTIFACTS"):
         run_command.strict_resume_formal_admission_v0233(
             tmp_path,
             attempt_id="attempt-2",

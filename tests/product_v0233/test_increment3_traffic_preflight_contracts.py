@@ -234,6 +234,12 @@ def test_diagnosis_source_manifest_closes_transitive_local_imports() -> None:
     assert "src/ecomsre/product/incidents/read_backend.py" in (
         manifest.source_sha256_by_path
     )
+    assert "src/ecomsre/product/pilot/diagnosis_recovery_v0233.py" in (
+        manifest.source_sha256_by_path
+    )
+    assert "src/ecomsre/product/pilot/serialization_v0233.py" not in (
+        manifest.source_sha256_by_path
+    )
     assert manifest.source_count > len(manifest.entry_point_paths)
 
 
