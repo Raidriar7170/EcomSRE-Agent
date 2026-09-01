@@ -36,6 +36,7 @@ from ecomsre.product.jobs.repository import JobRepositoryV1
 from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
     FormalDiagnosisJobContextV0233,
     FormalDiagnosisRecoverySubmissionV0233,
+    final_diagnosis_idempotency_key_v0233,
 )
 from ecomsre.product.pilot.formal_live_v0233 import (
     BaselineRestartProofV0233,
@@ -544,12 +545,47 @@ def resume_formal_nofault_v0233(
         completion_path: Path,
         expected_payload: Mapping[str, Any] | None = None,
         expected_idempotency_key: str | None = None,
+        allow_initial_acquisition_rebind: bool = False,
     ) -> ProductJobRecordV1:
         submitted_job = _load_model(job_path, ProductJobRecordV1)
         current_job = jobs.get(submitted_job.job_id)
+        idempotency_exact = current_job.idempotency_key == submitted_job.idempotency_key
+        if allow_initial_acquisition_rebind:
+            submitted_context = FormalDiagnosisJobContextV0233.model_validate(
+                submitted_job.payload.get("formal_recovery_v0233")
+            )
+            initial_key = (
+                "formal-v0233-acquisition-"
+                f"{live_capture.live_capture_bundle_sha256[:32]}"
+            )
+            rebound_key = final_diagnosis_idempotency_key_v0233(
+                context=submitted_context,
+                incident_sha256=acquisition.incident_sha256,
+                acquisition_sha256=acquisition.acquisition_sha256,
+            )
+            idempotency_exact = (
+                submitted_job.idempotency_key == initial_key
+                and current_job.idempotency_key in {initial_key, rebound_key}
+                and not (
+                    current_job.status is ProductJobStatusV1.SUCCEEDED
+                    and current_job.idempotency_key != rebound_key
+                )
+                and submitted_context.campaign_id == acquisition.campaign_id
+                and submitted_context.semantic_generation
+                == acquisition.semantic_generation
+                and submitted_context.attempt_id == acquisition.attempt_id
+                and submitted_context.diagnosis_generation == 1
+                and submitted_context.active_profile_sha256
+                == acquisition.active_profile_sha256
+                and submitted_context.semantic_surface_sha256
+                == acquisition.semantic_surface_sha256
+                and submitted_context.acquisition_sha256 is None
+                and submitted_job.payload.get("incident_id")
+                == acquisition.incident_id
+            )
         if (
             current_job.payload != submitted_job.payload
-            or current_job.idempotency_key != submitted_job.idempotency_key
+            or not idempotency_exact
             or (
                 expected_payload is not None
                 and current_job.payload != dict(expected_payload)
@@ -581,6 +617,7 @@ def resume_formal_nofault_v0233(
     original_job = reconcile_job(
         job_path=private_root / "diagnosis-job.json",
         completion_path=private_root / "diagnosis-job-completion.json",
+        allow_initial_acquisition_rebind=True,
     )
     recovery_root = private_root / "recovery"
     successful_job: ProductJobRecordV1 | None = None

@@ -13,6 +13,7 @@ from ecomsre.product.jobs.contracts import (
 )
 from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
     FormalDiagnosisJobContextV0233,
+    final_diagnosis_idempotency_key_v0233,
 )
 from ecomsre.product.pilot.formal_live_v0233 import (
     FormalObservedStateCountsV0233,
@@ -178,6 +179,7 @@ def test_resume_executes_post_success_or_failed_job_recovery(
     traffic = _artifact(result_sha256=_sha("0"))
     fresh_snapshot = _artifact(runtime_snapshot_sha256=_sha("1"))
     live_capture = _artifact(
+        live_capture_bundle_sha256=_sha("c"),
         queue_before_sha256=_sha("2"),
         queue_after_sha256=_sha("2"),
         outer_baseline_before_sha256=_sha("3"),
@@ -220,6 +222,15 @@ def test_resume_executes_post_success_or_failed_job_recovery(
         "incident_id": incident.incident_id,
         "formal_recovery_v0233": job_context.model_dump(mode="json"),
     }
+    initial_idempotency_key = (
+        "formal-v0233-acquisition-"
+        f"{live_capture.live_capture_bundle_sha256[:32]}"
+    )
+    rebound_idempotency_key = final_diagnosis_idempotency_key_v0233(
+        context=job_context,
+        incident_sha256=acquisition.incident_sha256,
+        acquisition_sha256=acquisition.acquisition_sha256,
+    )
     successful_job = ProductJobRecordV1(
         job_id="job-" + ("2" if recovery_required else "1") * 24,
         job_type=ProductJobTypeV1.DIAGNOSIS,
@@ -227,7 +238,7 @@ def test_resume_executes_post_success_or_failed_job_recovery(
         payload=job_payload,
         result={"result_sha256": diagnosis.result_sha256},
         safe_error_code=None,
-        idempotency_key="formal-v0233-diagnosis-success",
+        idempotency_key=rebound_idempotency_key,
         claimed_by=None,
         lease_expires_at=None,
         attempt_count=1,
@@ -242,7 +253,7 @@ def test_resume_executes_post_success_or_failed_job_recovery(
             payload=job_payload,
             result=None,
             safe_error_code="INTERNAL_CONTRACT_FAILURE",
-            idempotency_key="formal-v0233-diagnosis-failed",
+            idempotency_key=rebound_idempotency_key,
             claimed_by=None,
             lease_expires_at=None,
             attempt_count=1,
@@ -251,6 +262,16 @@ def test_resume_executes_post_success_or_failed_job_recovery(
         )
         if recovery_required
         else successful_job
+    )
+    submitted_original_job = original_job.model_copy(
+        update={
+            "status": ProductJobStatusV1.PENDING,
+            "result": None,
+            "safe_error_code": None,
+            "idempotency_key": initial_idempotency_key,
+            "attempt_count": 0,
+            "updated_at": 1.0,
+        }
     )
     jobs = _Jobs(
         original_job,
@@ -269,7 +290,7 @@ def test_resume_executes_post_success_or_failed_job_recovery(
         "live-capture-bundle.json": live_capture,
         "incident.json": incident,
         "incident-traffic-binding.json": incident_binding,
-        "diagnosis-job.json": original_job,
+        "diagnosis-job.json": submitted_original_job,
     }
     base_counts = _counts(incident=10, jobs=10, diagnosis=10)
     current_counts = _counts(
