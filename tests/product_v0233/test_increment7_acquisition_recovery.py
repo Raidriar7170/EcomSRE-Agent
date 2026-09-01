@@ -59,6 +59,8 @@ from ecomsre.product.pilot.diagnosis_recovery_v0233 import (
 )
 from ecomsre.product.pilot.formal_recovery_v0233 import (
     DiagnosisAcquisitionCheckpointV0233,
+    FormalExecutionCheckpointV0233,
+    FormalExecutionStateV0233,
     LiveCaptureBundleV0233,
 )
 from ecomsre.product.settings import ProductSettingsV1
@@ -70,6 +72,34 @@ from scripts.product_v0233 import run_formal_nofault as run_command
 
 def _sha(character: str) -> str:
     return character * 64
+
+
+def _semantic_rollover_latest_checkpoint(
+    *,
+    started: datetime,
+    campaign_id: str = "product-v0233-fresh-formal-nofault",
+    attempt_id: str = "attempt-2",
+    formal_clone_sha256: str = _sha("1"),
+) -> FormalExecutionCheckpointV0233:
+    prepared = FormalExecutionCheckpointV0233.build(
+        previous=None,
+        campaign_id=campaign_id,
+        semantic_generation=2,
+        attempt_id=attempt_id,
+        state=FormalExecutionStateV0233.PREPARED,
+        semantic_surface_sha256=_sha("5"),
+        operational_surface_sha256=_sha("6"),
+        source_selection_sha256=_sha("2"),
+        input_artifact_sha256s={},
+        output_artifact_sha256s={},
+        created_at=started,
+    )
+    return FormalExecutionCheckpointV0233.build(
+        previous=prepared,
+        state=FormalExecutionStateV0233.CLONE_SEALED,
+        formal_clone_sha256=formal_clone_sha256,
+        created_at=started + timedelta(seconds=1),
+    )
 
 
 def _action(source: EvidenceSourceV22) -> EvidenceActionV22:
@@ -342,11 +372,13 @@ def test_recovery_submission_reuses_same_incident_and_frozen_acquisition() -> No
 
 @pytest.mark.parametrize("terminal_before_rollover", [False, True])
 @pytest.mark.parametrize("private_acquisition_exists", [False, True])
+@pytest.mark.parametrize("latest_mismatch", [None, "campaign", "attempt", "clone"])
 def test_semantic_rollover_fences_running_or_preserves_completed_job(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
     terminal_before_rollover: bool,
     private_acquisition_exists: bool,
+    latest_mismatch: str | None,
 ) -> None:
     started = datetime(2026, 9, 1, 2, 0, tzinfo=UTC)
     attempt_id = "attempt-2"
@@ -511,15 +543,44 @@ def test_semantic_rollover_fences_running_or_preserves_completed_job(
         "_recover_owned_product_processes_v0233",
         lambda **_kwargs: {"verdict": "CLEAN"},
     )
+    latest = _semantic_rollover_latest_checkpoint(
+        started=started,
+        campaign_id=(
+            "wrong-campaign"
+            if latest_mismatch == "campaign"
+            else context.campaign_id
+        ),
+        attempt_id="attempt-99" if latest_mismatch == "attempt" else attempt_id,
+        formal_clone_sha256=(
+            _sha("9") if latest_mismatch == "clone" else live_capture.formal_clone_sha256
+        ),
+    )
+
+    if latest_mismatch is not None:
+        with pytest.raises(
+            RuntimeError,
+            match="BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING",
+        ):
+            resume_command._reconcile_semantic_rollover_lineage_v0233(
+                root=tmp_path,
+                attempt_id=attempt_id,
+                latest=latest,
+                successor_semantic_surface_sha256=_sha("d"),
+            )
+        assert jobs.get(job.job_id).status is (
+            ProductJobStatusV1.SUCCEEDED
+            if terminal_before_rollover
+            else ProductJobStatusV1.RUNNING
+        )
+        assert not (private_root / "interrupted-diagnosis-lineage.json").exists()
+        if not private_acquisition_exists:
+            assert not acquisition_path.exists()
+        return
 
     paths = resume_command._reconcile_semantic_rollover_lineage_v0233(
         root=tmp_path,
         attempt_id=attempt_id,
-        latest=SimpleNamespace(
-            semantic_generation=2,
-            semantic_surface_sha256=_sha("5"),
-            source_selection_sha256=_sha("2"),
-        ),
+        latest=latest,
         successor_semantic_surface_sha256=_sha("d"),
     )
 

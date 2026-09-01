@@ -535,6 +535,8 @@ def _reconcile_semantic_rollover_lineage_v0233(
     acquisition_path = private_root / "diagnosis-acquisition-checkpoint.json"
     product_root = root / _attempt_product_locator_v0233(attempt_id)
     promoted_from_job_id: str | None = None
+    submitted: ProductJobRecordV1 | None = None
+    submitted_context: FormalDiagnosisJobContextV0233 | None = None
     if not acquisition_path.is_file() or acquisition_path.is_symlink():
         if acquisition_path.exists() or acquisition_path.is_symlink():
             raise RuntimeError(
@@ -548,11 +550,11 @@ def _reconcile_semantic_rollover_lineage_v0233(
                 )
             return ()
         submitted = _load_model(submitted_path, ProductJobRecordV1)
-        context = FormalDiagnosisJobContextV0233.model_validate(
+        submitted_context = FormalDiagnosisJobContextV0233.model_validate(
             submitted.payload.get("formal_recovery_v0233")
         )
         product_acquisition_path = (
-            product_root / context.acquisition_checkpoint_locator
+            product_root / submitted_context.acquisition_checkpoint_locator
         )
         if (
             not product_acquisition_path.is_file()
@@ -569,12 +571,39 @@ def _reconcile_semantic_rollover_lineage_v0233(
         acquisition = _load_model(
             product_acquisition_path, DiagnosisAcquisitionCheckpointV0233
         )
-        live_capture_path = private_root / "live-capture-bundle.json"
-        if not live_capture_path.is_file() or live_capture_path.is_symlink():
-            raise RuntimeError(
-                "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"
-            )
-        live_capture = _load_model(live_capture_path, LiveCaptureBundleV0233)
+    else:
+        acquisition = DiagnosisAcquisitionCheckpointV0233.model_validate_json(
+            acquisition_path.read_bytes()
+        )
+    live_capture_path = private_root / "live-capture-bundle.json"
+    if not live_capture_path.is_file() or live_capture_path.is_symlink():
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
+    live_capture = _load_model(live_capture_path, LiveCaptureBundleV0233)
+    if (
+        latest.campaign_id != acquisition.campaign_id
+        or latest.attempt_id != attempt_id
+        or acquisition.attempt_id != latest.attempt_id
+        or live_capture.campaign_id != latest.campaign_id
+        or live_capture.semantic_generation != latest.semantic_generation
+        or live_capture.attempt_id != latest.attempt_id
+        or latest.formal_clone_sha256 is None
+        or live_capture.formal_clone_sha256 != latest.formal_clone_sha256
+        or live_capture.semantic_surface_sha256
+        != latest.semantic_surface_sha256
+        or live_capture.source_selection_sha256 != latest.source_selection_sha256
+        or live_capture.active_profile_sha256 != acquisition.active_profile_sha256
+        or live_capture.active_baseline_sha256 != acquisition.baseline_sha256
+        or live_capture.service_identity_sha256
+        != acquisition.service_identity_sha256
+        or live_capture.capability_sha256 != acquisition.capability_sha256
+        or live_capture.episode_started_at
+        != acquisition.incident_observation_started_at
+        or live_capture.episode_ended_at
+        != acquisition.incident_observation_ended_at
+    ):
+        raise RuntimeError("BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING")
+    if submitted is not None:
+        assert submitted_context is not None
         initial_idempotency_key = (
             "formal-v0233-acquisition-"
             f"{live_capture.live_capture_bundle_sha256[:32]}"
@@ -587,31 +616,16 @@ def _reconcile_semantic_rollover_lineage_v0233(
             or submitted.claimed_by is not None
             or submitted.lease_expires_at is not None
             or submitted.attempt_count != 0
-            or context.attempt_id != attempt_id
-            or context.campaign_id != acquisition.campaign_id
-            or context.semantic_generation != latest.semantic_generation
-            or context.active_profile_sha256 != acquisition.active_profile_sha256
-            or context.semantic_surface_sha256 != latest.semantic_surface_sha256
-            or submitted.payload.get("incident_id") != acquisition.incident_id
-            or context.acquisition_sha256 is not None
-            or submitted.idempotency_key != initial_idempotency_key
-            or live_capture.campaign_id != acquisition.campaign_id
-            or live_capture.semantic_generation != latest.semantic_generation
-            or live_capture.attempt_id != attempt_id
-            or live_capture.semantic_surface_sha256
-            != latest.semantic_surface_sha256
-            or live_capture.source_selection_sha256
-            != latest.source_selection_sha256
-            or live_capture.active_profile_sha256
+            or submitted_context.attempt_id != latest.attempt_id
+            or submitted_context.campaign_id != latest.campaign_id
+            or submitted_context.semantic_generation != latest.semantic_generation
+            or submitted_context.active_profile_sha256
             != acquisition.active_profile_sha256
-            or live_capture.active_baseline_sha256 != acquisition.baseline_sha256
-            or live_capture.service_identity_sha256
-            != acquisition.service_identity_sha256
-            or live_capture.capability_sha256 != acquisition.capability_sha256
-            or live_capture.episode_started_at
-            != acquisition.incident_observation_started_at
-            or live_capture.episode_ended_at
-            != acquisition.incident_observation_ended_at
+            or submitted_context.semantic_surface_sha256
+            != latest.semantic_surface_sha256
+            or submitted.payload.get("incident_id") != acquisition.incident_id
+            or submitted_context.acquisition_sha256 is not None
+            or submitted.idempotency_key != initial_idempotency_key
         ):
             raise RuntimeError(
                 "BLOCKED_ECOMSRE_PRODUCT_V0233_RESUME_LINEAGE_MISSING"
@@ -622,10 +636,6 @@ def _reconcile_semantic_rollover_lineage_v0233(
             create_once=True,
         )
         promoted_from_job_id = submitted.job_id
-    else:
-        acquisition = DiagnosisAcquisitionCheckpointV0233.model_validate_json(
-            acquisition_path.read_bytes()
-        )
     if (
         acquisition.attempt_id != attempt_id
         or acquisition.semantic_generation != latest.semantic_generation
