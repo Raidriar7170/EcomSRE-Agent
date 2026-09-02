@@ -27,7 +27,7 @@ from ecomsre.product.connectors.opensearch_schema_v022 import (
 _MISSING_V022 = object()
 _FEATURE_CONTROL_CAUSE_V022 = re.compile(
     r"(?i)(?:feature\s*flag)\s+['\"][^'\"]{1,120}['\"]\s+"
-    r"is\s+activated,\s*"
+    r"is\s+(?:activated|enabled),\s*"
 )
 _OVERLOAD_SIMULATION_COUNT_V022 = re.compile(
     r"(?i)done\s+with\s+#\d+\s+messages\s+for\s+overload\s+simulation\.?"

@@ -52,6 +52,7 @@ class ProductV030SandboxEnvironment(ProductV024SandboxEnvironment):
                 or service.get("platform") != "linux/arm64"
                 or service.get("pull_policy") != "never"
                 or service.get("container_name") != f"ecomsre-live-sandbox-v1-{name}"
+                or not isinstance(service.get("labels"), dict)
                 or service.get("labels", {}).get(
                     self.bundle.environment.sandbox_label_key
                 )
@@ -60,7 +61,7 @@ class ProductV030SandboxEnvironment(ProductV024SandboxEnvironment):
                 or service.get("volumes")
                 or service.get("privileged") is True
                 or service.get("network_mode") == "host"
-                or not str(service.get("image", "")).endswith(f":3.0.0-{name}")
+                or service.get("image") != f"ghcr.io/open-telemetry/demo:3.0.0-{name}"
             ):
                 raise SandboxDriftError(f"Product v0.3 {name} isolation differs")
         # Parent verifies the exact existing read-only socket/config mount delta.

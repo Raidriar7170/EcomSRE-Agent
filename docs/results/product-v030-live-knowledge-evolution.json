@@ -2,7 +2,7 @@
   "schema_version": "ecomsre.product.live-knowledge-evolution-result.v030",
   "status": "RESOURCE_BLOCKED",
   "stage": "OFFLINE_PREPARATION_PARTIAL",
-  "observed_at": "2026-09-02T17:39:31Z",
+  "observed_at": "2026-09-02T17:49:09Z",
   "baseline_commit": "86a8dbc7859425ca9ef2e778dc7e4c7675b0cabb",
   "goal_sha256": "7141b67890aaee2f8cfc5c1b9ebfa2fc3ae03da98bea76722b9ec24e72e05f14",
   "branch": "codex/product-v030-live-knowledge-evolution",
@@ -17,10 +17,15 @@
     "core_queue_mechanism_added": false,
     "detector": "sample_count >= 3 and observed_lag >= max(20, baseline_mean + 5 * max(baseline_stddev, 1))",
     "full_mode_compose_resolution": "PASS_28_SERVICES_NO_DOCKER_UP",
+    "optional_action_acquisition_gates": "PASS_MOCK_TRANSPORT",
+    "full_mode_isolation_rejection_tests": "PASS_33_CASES",
+    "pinned_control_log_projection": "PASS_OFFLINE_BOTH_PARSERS",
+    "genuine_error_fatal_preserved": "PASS_OFFLINE",
     "actual_prometheus_metric_discovered": false,
     "live_leakage_check": "NOT_RUN"
   },
   "resource_blocker": {
+    "reverified_at": "2026-09-02T17:49:09Z",
     "missing_cached_images": [
       "ghcr.io/open-telemetry/demo:3.0.0-accounting",
       "ghcr.io/open-telemetry/demo:3.0.0-fraud-detection",
@@ -63,15 +68,25 @@
     "full_pytest_ruff_mypy": "NOT_RUN_RESERVED_FOR_PRE_MERGE",
     "independent_review": "PASS_FOR_OFFLINE_PREPARATION_PARTIAL",
     "must_fix_count": 0,
-    "nonblocking_test_gaps": [
-      "Exercise optional action gating through ProductReadBackend.acquire",
-      "Exercise full-mode isolation validator with adversarial resolved payloads"
-    ]
+    "nonblocking_test_gaps": [],
+    "followup_validation": {
+      "scope": "Product HTTP connectors and diagnosis, Product v022/v023/v024/v030, live_sandbox",
+      "tests_passed": 944,
+      "duration_seconds": 19.22,
+      "v030_tests_passed": 62,
+      "v030_tests_included_in_total": true,
+      "focused_ruff": "PASS",
+      "focused_mypy_source_files": 3,
+      "focused_mypy": "PASS",
+      "independent_review": "PASS_FOR_OFFLINE_PREPARATION_PARTIAL",
+      "must_fix_count": 0,
+      "note": "Earlier preparation counts above are retained history, not additive coverage. This is not the full pre-merge suite."
+    }
   },
   "remaining_implementation": [
     "Independent full-mode image authority and owned lifecycle admission",
     "Actual Prometheus consumer-lag metric and label discovery",
-    "INFO control-log projection plus live Evidence leakage check",
+    "Live Evidence leakage check after offline INFO control-log projection repair",
     "Exact incident-query METRICS coverage for conclusive negatives and Shadow",
     "Fresh five-window Baseline and ordinary Product live case harness",
     "Three-positive family acceptance, both human decisions, mining, Shadow and recurrence"

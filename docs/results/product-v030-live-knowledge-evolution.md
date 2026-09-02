@@ -9,19 +9,28 @@ checkout three-kind bundle and Core mechanism ontology remain unchanged.
 The full-mode Compose overlay resolves to 28 services, including checkout,
 accounting, fraud-detection and kafka; this is configuration validation only.
 
-Fresh focused validation: 836 Product/sandbox tests and 54 memory/domain tests
-passed. Focused Ruff and mypy checks across 18 changed source files passed. Full repository
-pytest, Ruff and mypy remain reserved for the pre-merge boundary.
+Latest focused validation: 944 affected tests passed, including 62 v0.3 tests.
+Focused Ruff and mypy across the three follow-up source files passed. The
+earlier 836 Product/sandbox and 54 memory/domain results are retained in the
+machine result as history, not additive coverage. Full repository pytest,
+Ruff and mypy remain reserved for the pre-merge boundary.
 
 Independent read-only review: `PASS` for this partial offline handoff, zero
-Must Fix findings. Non-blocking test gaps remain for acquisition-level optional
-action gating and adversarial full-mode resolved-payload validation. The
-full-mode environment is a preparation skeleton, not an admitted live runtime.
+Must Fix findings. Acquisition-level optional action gating is now tested
+through the real connector bridge with MockTransport; checkout retains exactly
+its original three kinds. All 33 adversarial full-mode isolation cases reject,
+including foreign image repositories and malformed ownership labels.
+
+Both log projection paths now normalize the pinned consumer INFO prefix
+(`is enabled`) to its symptom. Genuine ERROR/FATAL evidence is preserved and
+unknown control formats still fail closed. This is offline test evidence, not
+a live leakage pass. The full-mode environment remains a preparation skeleton,
+not an admitted live runtime.
 
 ## Resource blocker
 
 Read-only `docker image inspect --platform linux/arm64` reports `No such image`
-for exactly:
+for exactly (reverified 2026-09-02 17:49 UTC, with zero local containers):
 
 - `ghcr.io/open-telemetry/demo:3.0.0-accounting`
 - `ghcr.io/open-telemetry/demo:3.0.0-fraud-detection`
@@ -37,7 +46,7 @@ is proposed.
 
 ## Resume boundary
 
-The implementation remains partial. Live metric discovery, leakage projection,
+The implementation remains partial. Live metric discovery, Evidence leakage checks,
 incident-specific measured METRICS completeness, baseline/case harness, and
 knowledge-loop acceptance still require implementation and validation. In
 particular, endpoint-wide Prometheus capability discovery is not proof of exact

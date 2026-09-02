@@ -1,6 +1,12 @@
+from copy import deepcopy
 from pathlib import Path
 
+import pytest
+
+from ecomsre_live_sandbox.environment import SandboxDriftError
+from ecomsre_live_sandbox.product_v024 import ProductV024SandboxEnvironment
 from ecomsre_live_sandbox.product_v030 import (
+    FULL_SERVICES_V030,
     ProductV030SandboxEnvironment,
     build_product_v030_runtime_bundle,
 )
@@ -27,3 +33,84 @@ def test_full_mode_extends_the_owned_runtime_without_changing_upstream(tmp_path)
     assert (
         bundle.environment.upstream_commit == "1755859a9de82c2e5e225be68abc401a5ebf2b4f"
     )
+
+
+def _resolved_fixture(environment):
+    # Tests only the v0.3 delta; the parent contract has its own full fixtures.
+    services = {name: {} for name in environment.expected_services}
+    for name in FULL_SERVICES_V030:
+        services[name] = {
+            "platform": "linux/arm64",
+            "pull_policy": "never",
+            "container_name": f"ecomsre-live-sandbox-v1-{name}",
+            "labels": {
+                environment.bundle.environment.sandbox_label_key: environment.bundle.environment.sandbox_id
+            },
+            "image": f"ghcr.io/open-telemetry/demo:3.0.0-{name}",
+        }
+    return {"services": services}
+
+
+def test_full_mode_delegates_existing_contract_without_mutating_input(
+    tmp_path, monkeypatch
+):
+    environment = ProductV030SandboxEnvironment(
+        repository_root=ROOT,
+        bundle=build_product_v030_runtime_bundle(ROOT),
+        flagd_directory=tmp_path,
+    )
+    payload = _resolved_fixture(environment)
+    original = deepcopy(payload)
+    forwarded = []
+    monkeypatch.setattr(
+        ProductV024SandboxEnvironment,
+        "_verify_resolved_contract",
+        lambda self, value: forwarded.append(value),
+    )
+    environment._verify_resolved_contract(payload)
+    assert payload == original
+    assert len(forwarded) == 1
+    assert set(forwarded[0]["services"]) == (
+        set(environment.expected_services) - set(FULL_SERVICES_V030)
+    )
+    assert environment.product_v024_runtime_root == ROOT / "config/product-v030"
+
+
+@pytest.mark.parametrize("service_name", FULL_SERVICES_V030)
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("platform", "linux/amd64"),
+        ("pull_policy", "always"),
+        ("container_name", "unowned"),
+        ("labels", {}),
+        ("labels", []),
+        ("ports", [{"target": 9092, "published": "9092"}]),
+        ("volumes", [{"type": "bind", "source": "/tmp", "target": "/host"}]),
+        ("privileged", True),
+        ("network_mode", "host"),
+        ("image", "ghcr.io/open-telemetry/demo:latest"),
+        ("image", "foreign.example/demo:3.0.0-{service}"),
+    ],
+)
+def test_full_mode_rejects_extra_service_drift(
+    tmp_path, monkeypatch, service_name, field, value
+):
+    environment = ProductV030SandboxEnvironment(
+        repository_root=ROOT,
+        bundle=build_product_v030_runtime_bundle(ROOT),
+        flagd_directory=tmp_path,
+    )
+    payload = _resolved_fixture(environment)
+    payload["services"][service_name][field] = (
+        value.format(service=service_name) if isinstance(value, str) else value
+    )
+    forwarded = []
+    monkeypatch.setattr(
+        ProductV024SandboxEnvironment,
+        "_verify_resolved_contract",
+        lambda self, value: forwarded.append(value),
+    )
+    with pytest.raises(SandboxDriftError, match="isolation differs"):
+        environment._verify_resolved_contract(payload)
+    assert not forwarded
