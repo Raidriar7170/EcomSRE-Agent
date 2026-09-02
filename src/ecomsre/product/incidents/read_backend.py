@@ -63,6 +63,7 @@ from ecomsre.product.environment.capabilities import (
     SourceCapabilityStatusV1,
 )
 from ecomsre.product.incidents.contracts import IncidentRecordV1
+from ecomsre.product.incidents.queue_action import build_queue_lag_action_v030
 from ecomsre.product.incidents.evidence_binding_v0232 import (
     CapabilityEvidenceObservationV0232,
     CapabilityLimitationCandidateV0232,
@@ -613,6 +614,16 @@ class ProductReadBackendV1:
                 else len(action.target_services) == 1
             )
         )
+        if (
+            "fraud-detection" in candidates
+            and EvidenceSourceV22.METRICS in enabled
+            and any(
+                config.kind is ConnectorKindV1.PROMETHEUS
+                and "queue_lag" in config.settings.get("query_templates", {})
+                for config in environment.connector_configs
+            )
+        ):
+            actions = (*actions, build_queue_lag_action_v030())
         raw: list[ReadOutcomeV22] = []
         memory: list[MemoryReadOutcomeV22] = []
         snapshots: list[dict[str, Any]] = []

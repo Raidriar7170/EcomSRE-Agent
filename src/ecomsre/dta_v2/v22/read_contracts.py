@@ -85,6 +85,7 @@ class ReadSourceStatusV22(str, Enum):
 
 
 class MetricKindV22(str, Enum):
+    QUEUE_LAG = "QUEUE_LAG"
     ERROR_RATE = "ERROR_RATE"
     LATENCY_P95_MS = "LATENCY_P95_MS"
     REQUEST_SUPPORT = "REQUEST_SUPPORT"
@@ -101,6 +102,7 @@ class MetricUnitV22(str, Enum):
 
 
 METRIC_UNIT_BY_KIND_V22 = {
+    MetricKindV22.QUEUE_LAG: MetricUnitV22.COUNT,
     MetricKindV22.ERROR_RATE: MetricUnitV22.RATIO,
     MetricKindV22.LATENCY_P95_MS: MetricUnitV22.MILLISECONDS,
     MetricKindV22.REQUEST_SUPPORT: MetricUnitV22.COUNT,

@@ -146,6 +146,9 @@ _BASE_DOMAIN_BY_KIND_V233: dict[
     GenericAnomalyKindV23,
     tuple[tuple[ProvisionalFaultDomainV23, float], ...],
 ] = {
+    GenericAnomalyKindV23.METRIC_QUEUE_LAG_OUTLIER: (
+        (ProvisionalFaultDomainV23.CONCURRENCY, 3.0),
+    ),
     GenericAnomalyKindV23.METRIC_ERROR_OUTLIER: (
         (ProvisionalFaultDomainV23.RUNTIME, 1.5),
         (ProvisionalFaultDomainV23.RESOURCE, 0.5),

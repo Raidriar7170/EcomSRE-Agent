@@ -1,0 +1,79 @@
+{
+  "schema_version": "ecomsre.product.live-knowledge-evolution-result.v030",
+  "status": "RESOURCE_BLOCKED",
+  "stage": "OFFLINE_PREPARATION_PARTIAL",
+  "observed_at": "2026-09-02T17:39:31Z",
+  "baseline_commit": "86a8dbc7859425ca9ef2e778dc7e4c7675b0cabb",
+  "goal_sha256": "7141b67890aaee2f8cfc5c1b9ebfa2fc3ae03da98bea76722b9ec24e72e05f14",
+  "branch": "codex/product-v030-live-knowledge-evolution",
+  "completed_terminals": [],
+  "completion_terminal_minted": false,
+  "offline_implementation": {
+    "optional_queue_lag_template": true,
+    "product_only_queue_action": true,
+    "checkout_three_kind_bundle_unchanged": true,
+    "generic_queue_anomaly": true,
+    "broad_domain": "CONCURRENCY",
+    "core_queue_mechanism_added": false,
+    "detector": "sample_count >= 3 and observed_lag >= max(20, baseline_mean + 5 * max(baseline_stddev, 1))",
+    "full_mode_compose_resolution": "PASS_28_SERVICES_NO_DOCKER_UP",
+    "actual_prometheus_metric_discovered": false,
+    "live_leakage_check": "NOT_RUN"
+  },
+  "resource_blocker": {
+    "missing_cached_images": [
+      "ghcr.io/open-telemetry/demo:3.0.0-accounting",
+      "ghcr.io/open-telemetry/demo:3.0.0-fraud-detection",
+      "ghcr.io/open-telemetry/demo:3.0.0-kafka"
+    ],
+    "historical_image_lock_covers_full_mode": false,
+    "historical_image_lock_unchanged": true,
+    "historical_image_lock_sha256": "946e51415a198e5f43b2b5029f3e55a6177509632680c52117e2a921ee434081",
+    "required_authority": "Fetch only the three pinned 3.0.0 linux/arm64 images, verify their registry/platform identities, and create a separate private full-mode image lock without rewriting historical locks. No builds, fallback images, or amd64 emulation."
+  },
+  "live": {
+    "phase_a": "NOT_RUN",
+    "baseline": null,
+    "controls": [],
+    "positives": [],
+    "family": null,
+    "human_reviews": [],
+    "selected_clause": null,
+    "shadow_metrics": null,
+    "registry_version": null,
+    "h1": null
+  },
+  "safety": {
+    "docker_up_count": 0,
+    "image_pull_count": 0,
+    "fault_injection_count": 0,
+    "provider_calls": 0,
+    "agent_writes": 0,
+    "runbook_executions": 0,
+    "action_authority": "NONE",
+    "remediation_authority": "NONE",
+    "cleanup": "NOT_REQUIRED_NO_OWNED_RESOURCES_CREATED"
+  },
+  "validation": {
+    "product_and_sandbox_tests_passed": 836,
+    "memory_and_domain_tests_passed": 54,
+    "focused_ruff": "PASS",
+    "focused_mypy_source_files": 18,
+    "focused_mypy": "PASS",
+    "full_pytest_ruff_mypy": "NOT_RUN_RESERVED_FOR_PRE_MERGE",
+    "independent_review": "PASS_FOR_OFFLINE_PREPARATION_PARTIAL",
+    "must_fix_count": 0,
+    "nonblocking_test_gaps": [
+      "Exercise optional action gating through ProductReadBackend.acquire",
+      "Exercise full-mode isolation validator with adversarial resolved payloads"
+    ]
+  },
+  "remaining_implementation": [
+    "Independent full-mode image authority and owned lifecycle admission",
+    "Actual Prometheus consumer-lag metric and label discovery",
+    "INFO control-log projection plus live Evidence leakage check",
+    "Exact incident-query METRICS coverage for conclusive negatives and Shadow",
+    "Fresh five-window Baseline and ordinary Product live case harness",
+    "Three-positive family acceptance, both human decisions, mining, Shadow and recurrence"
+  ]
+}

@@ -45,6 +45,7 @@ from ecomsre.product.pilot.baseline_readiness_v023 import (
 
 
 _METRIC_KIND_BY_TEMPLATE = {
+    "queue_lag": MetricKindV22.QUEUE_LAG,
     "request_support": MetricKindV22.REQUEST_SUPPORT,
     "error_rate": MetricKindV22.ERROR_RATE,
     "latency": MetricKindV22.LATENCY_P95_MS,

@@ -61,7 +61,7 @@ class PrometheusConnectorSettingsV1(ProductModelV1):
     def query_templates_are_bounded(cls, value: dict[str, str]) -> dict[str, str]:
         allowed = {"request_support", "error_rate", "latency", "cpu", "memory"}
         allowed_variables = {"service", "start", "end", "step"}
-        if set(value) != allowed:
+        if not allowed.issubset(value) or not set(value).issubset(allowed | {"queue_lag"}):
             raise ValueError("Prometheus query templates are incomplete")
         if any(not template or len(template) > 4000 for template in value.values()):
             raise ValueError("Prometheus query template is invalid")

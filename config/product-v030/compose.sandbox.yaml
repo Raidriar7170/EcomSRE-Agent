@@ -1,0 +1,17 @@
+x-product-service: &product-service
+  platform: linux/arm64
+  pull_policy: never
+  labels:
+    io.ecomsre.sandbox.id: ${ECOMSRE_SANDBOX_ID:?ECOMSRE_SANDBOX_ID is required}
+  ports: !override []
+
+services:
+  accounting:
+    <<: *product-service
+    container_name: ecomsre-live-sandbox-v1-accounting
+  fraud-detection:
+    <<: *product-service
+    container_name: ecomsre-live-sandbox-v1-fraud-detection
+  kafka:
+    <<: *product-service
+    container_name: ecomsre-live-sandbox-v1-kafka

@@ -119,6 +119,8 @@ def _effective_admissions_v024(
 
 def _domain_for_anomalies(anomalies: tuple[Any, ...]) -> ProvisionalFaultDomainV23:
     values = {item.kind.value for item in anomalies}
+    if "METRIC_QUEUE_LAG_OUTLIER" in values:
+        return ProvisionalFaultDomainV23.CONCURRENCY
     if any(value.startswith("RUNTIME_") for value in values):
         return ProvisionalFaultDomainV23.RUNTIME
     if any(value.startswith("RESOURCE_") for value in values):

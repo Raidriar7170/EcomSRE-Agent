@@ -154,6 +154,7 @@ class HistoricalConflictAuditV231(DtaModelV22):
 
 
 _DOMAIN_BY_KIND = {
+    GenericAnomalyKindV23.METRIC_QUEUE_LAG_OUTLIER: ProvisionalFaultDomainV23.CONCURRENCY,
     GenericAnomalyKindV23.METRIC_ERROR_OUTLIER: ProvisionalFaultDomainV23.RUNTIME,
     GenericAnomalyKindV23.METRIC_LATENCY_OUTLIER: ProvisionalFaultDomainV23.DEPENDENCY,
     GenericAnomalyKindV23.RUNTIME_NOT_RUNNING: ProvisionalFaultDomainV23.RUNTIME,
