@@ -1,0 +1,118 @@
+{
+  "schema_version": "ecomsre.product.v024.false-positive-audit.v1",
+  "source_run_id": "20260902T1155Z-b2bd47c1",
+  "source_incident_id": "inc-3f64382febc52109e4307740",
+  "source_diagnosis_id": "diag-046925b9d8d8e99f58d42394",
+  "measured_terminal": {
+    "diagnosis": "OPEN_WORLD",
+    "nofault": "ECOMSRE_PRODUCT_V023_NOFAULT_NOT_SUPPORTED"
+  },
+  "baseline_freshness": {
+    "baseline_created_after_current_telemetry_changes": true,
+    "baseline_id": "base-19e0f35cb9124040d4d7bcec",
+    "baseline_created_at": "2026-09-02T12:05:33.099068Z",
+    "incident_started_at": "2026-09-02T12:05:35.294563Z",
+    "successful_windows": 5,
+    "mode": "DEMO_ONLY",
+    "source_capability_sha256": "bec143187215980e7255539068a96cebd0e4270be10455edfe9d47ba5d463508",
+    "telemetry_bindings": {
+      "metrics_error_rate_zero_fallback": true,
+      "resources_receiver": "otelcol-contrib docker_stats",
+      "resources_cpu_series": "container_cpu_usage_nanoseconds_total",
+      "resources_memory_series": "container_memory_usage_total_bytes",
+      "resources_container_label": "container_name=ecomsre-live-sandbox-v1-checkout",
+      "jaeger_minimum_duration_ms": 0
+    }
+  },
+  "residual_anomaly_ids": [
+    "ga:metric-latency-outlier:checkout:87905b58d2dc",
+    "ga:resource-memory-trend:checkout:37ccba35566f"
+  ],
+  "residual_anomalies": [
+    {
+      "anomaly_id": "ga:metric-latency-outlier:checkout:87905b58d2dc",
+      "kind": "METRIC_LATENCY_OUTLIER",
+      "source": "METRICS",
+      "service": "checkout",
+      "strength": "MODERATE",
+      "observed_values": {
+        "latency_p95_ms": 145.29307826172328,
+        "sample_count": 21
+      },
+      "baseline_values": {
+        "mean_latency_p95_ms": 96.8389830230388,
+        "standard_deviation_ms": 4.466501235697374
+      },
+      "ratios_and_deltas": {
+        "baseline_ratio": 1.5003573326163169,
+        "absolute_delta_ms": 48.45409523868449,
+        "z_score": 10.8483335572433
+      },
+      "supporting_evidence_refs": [
+        "e:a:metrics:checkout:core:1:d1938d852f69"
+      ]
+    },
+    {
+      "anomaly_id": "ga:resource-memory-trend:checkout:37ccba35566f",
+      "kind": "RESOURCE_MEMORY_TREND",
+      "source": "RESOURCES",
+      "service": "checkout",
+      "strength": "STRONG",
+      "observed_values": {
+        "memory_start_bytes": 14266368,
+        "memory_end_bytes": 14393344,
+        "memory_delta_bytes": 126976,
+        "memory_slope_bytes_per_second": 12697.6,
+        "sample_count": 5,
+        "memory_samples_bytes": [
+          14266368,
+          13615104,
+          11870208,
+          16711680,
+          14393344
+        ]
+      },
+      "baseline_values": {
+        "memory_slope_bytes_per_second": -11659.946666666667
+      },
+      "ratios_and_deltas": {
+        "signed_current_to_baseline_ratio": -1.088992974238876,
+        "absolute_slope_ratio": 1.088992974238876,
+        "slope_delta_bytes_per_second": 24357.54666666667,
+        "existing_moderate_threshold_bytes_per_second": 1.0,
+        "existing_strong_threshold_bytes_per_second": 1.0,
+        "ratio_semantics": "The existing detector has no signed memory-slope ratio; its max(1, baseline*factor) floor collapses to 1 when the healthy baseline slope is negative."
+      },
+      "supporting_evidence_refs": [
+        "e:a:resources:checkout:0:08964cf783ef"
+      ]
+    }
+  ],
+  "no_incident_admissible": false,
+  "novelty_gate": {
+    "disposition": "UNREGISTERED_INCIDENT_SUSPECTED",
+    "reasons": [
+      "STRONG_RESIDUAL_WITH_READY_COVERAGE"
+    ],
+    "required_coverage_satisfied": true,
+    "cause": "The memory trend was promoted to STRONG by the 1 byte/second floor; with healthy Runtime coverage, one strong residual independently admitted OPEN_WORLD."
+  },
+  "logs_observation": {
+    "status": "SUCCESS_NONEMPTY",
+    "truncated": true,
+    "record_count": 12,
+    "severities": [
+      "DIAGNOSTIC"
+    ],
+    "baseline_known_templates": [
+      "[PlaceOrder]",
+      "order confirmation email sent",
+      "order placed",
+      "payment went through"
+    ],
+    "fault_anomaly_count": 0,
+    "p01_provenance_valid_for_nofault": false
+  },
+  "capability_limitations": [],
+  "audit_conclusion": "A fresh post-telemetry Baseline was used, so no pre-change rerun is required. The false OPEN_WORLD terminal is driven by the signed memory-slope threshold collapse; the latency residual is only MODERATE. Bounded healthy logs separately fail the current No-Fault provenance completeness check but did not create a fault anomaly."
+}

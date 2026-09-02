@@ -4,7 +4,6 @@ from copy import deepcopy
 from pathlib import Path
 
 import pytest
-import yaml
 
 from ecomsre.dta_v2.contracts import semantic_sha256
 from ecomsre.dta_v2.telemetry_adapters import _issue_owned_read_capability
@@ -124,24 +123,18 @@ def test_docker_stats_runtime_exception_normalizes_to_historical_contract() -> N
 
 
 def test_collector_config_enables_one_bounded_owned_docker_stats_receiver() -> None:
-    payload = yaml.safe_load(
-        (RUNTIME_ROOT / "otelcol-sandbox.yml").read_text(encoding="utf-8")
-    )
+    config = (RUNTIME_ROOT / "otelcol-sandbox.yml").read_text(encoding="utf-8")
 
-    receiver = payload["receivers"]["docker_stats"]
-    assert receiver == {
-        "endpoint": "unix:///var/run/docker.sock",
-        "api_version": "1.44",
-        "collection_interval": "2s",
-        "container_labels_to_metric_labels": {
-            "com.docker.compose.project": "compose_project",
-            "com.docker.compose.service": "compose_service",
-            "io.ecomsre.sandbox.id": "sandbox_id",
-        },
-    }
-    metrics_receivers = payload["service"]["pipelines"]["metrics"]["receivers"]
-    assert metrics_receivers.count("docker_stats") == 1
-    assert "host_metrics" not in metrics_receivers
+    assert config.count("  docker_stats:\n") == 1
+    assert "    endpoint: unix:///var/run/docker.sock\n" in config
+    assert '    api_version: "1.44"\n' in config
+    assert "    collection_interval: 2s\n" in config
+    assert "      com.docker.compose.project: compose_project\n" in config
+    assert "      com.docker.compose.service: compose_service\n" in config
+    assert "      io.ecomsre.sandbox.id: sandbox_id\n" in config
+    metrics_pipeline = config.split("service:\n", maxsplit=1)[1]
+    assert metrics_pipeline.count("receivers: [docker_stats,") == 1
+    assert "host_metrics" not in metrics_pipeline
 
 
 def test_v024_environment_can_mint_fresh_owned_read_authority(

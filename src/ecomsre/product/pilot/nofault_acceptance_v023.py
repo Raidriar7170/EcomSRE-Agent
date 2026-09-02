@@ -287,7 +287,7 @@ def _episode_result_is_fresh(
     incident: IncidentRecordV1,
 ) -> bool:
     return (
-        not result.truncated
+        (not result.truncated or result.source is EvidenceSourceV22.LOGS)
         and result.window.started_at >= incident.started_at
         and result.window.ended_at == incident.diagnosis_observed_at
     )

@@ -35,10 +35,7 @@ from ecomsre.product.connectors.opensearch_profile_binding_v023 import (
     ACTIVE_PROFILE_SHA256_V023,
     build_product_v023_environment_payload,
 )
-from ecomsre.product.connectors.pilot_runtime import (
-    PilotRuntimeSnapshotV02,
-    write_pilot_runtime_snapshot_v02,
-)
+from ecomsre.product.connectors.pilot_runtime import write_pilot_runtime_snapshot_v02
 from ecomsre.product.contracts import ServiceIdentityMapV1
 from ecomsre.product.environment.capabilities import EnvironmentCapabilityMatrixV1
 from ecomsre.product.incidents.contracts import (
@@ -70,12 +67,12 @@ from ecomsre.product.pilot.live_baseline_readiness_v023 import (
 )
 from ecomsre.product.pilot.live_calibration_v02 import (
     _authority_inputs,
-    _runtime_services,
 )
 from ecomsre.product.pilot.live_nofault_acceptance_v023 import (
     _database_counts,
     _limitation_evidence_refs,
     _rotate_runtime_snapshot,
+    _runtime_snapshot,
     _successful_runtime_ref,
 )
 from ecomsre.product.pilot.nofault_acceptance_v023 import (
@@ -154,22 +151,6 @@ class _ProductV024Lifecycle(_SandboxOwnedSmokeLifecycle):
             create_once=True,
         )
         self.environment.verify_cached_images(resolved, control_root)
-
-
-def _runtime_snapshot(
-    *,
-    backend: LocalSandboxReadBackend,
-    authority: PilotRuntimeAuthorityV02,
-) -> PilotRuntimeSnapshotV02:
-    services, drift = _runtime_services(backend, run_id=secrets.token_hex(16))
-    if drift:
-        raise RuntimeError("Product v0.2.4 Runtime observation is unhealthy")
-    return PilotRuntimeSnapshotV02.build(
-        environment_id=authority.environment_id,
-        authority_sha256=authority.connector_binding_sha256,
-        observed_at=datetime.now(UTC),
-        services=services,
-    )
 
 
 def _source_results(
