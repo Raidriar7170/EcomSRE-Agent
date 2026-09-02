@@ -132,18 +132,109 @@ def _maximum_records(action: EvidenceActionV22) -> int:
     )
 
 
+def _metrics_contract_failure(
+    *,
+    action: EvidenceActionV22,
+    window: ConnectorWindowV1,
+    results: tuple[ConnectorQueryResultV1, ...],
+    records: tuple[ReadRecordV22, ...],
+) -> tuple[ReadSourceStatusV22, str] | None:
+    targets = set(action.target_services)
+    requested_kinds = set(action.request.metric_kinds)
+    if any(item.window != window for item in results) or any(
+        isinstance(item, MetricFactV22)
+        and (
+            item.window_started_at != window.started_at
+            or item.window_ended_at != window.ended_at
+        )
+        for item in records
+    ):
+        return ReadSourceStatusV22.FAILURE_SCHEMA, "METRICS_WINDOW_MISMATCH"
+    if (
+        set().union(*(set(item.requested_services) for item in results)) != targets
+        or any(
+            not set(item.requested_services).issubset(targets)
+            for item in results
+        )
+        or any(set(item.covered_services) - targets for item in results)
+        or any(
+            isinstance(item, MetricFactV22) and item.service not in targets
+            for item in records
+        )
+    ):
+        return ReadSourceStatusV22.FAILURE_SCHEMA, "METRICS_TARGET_MISMATCH"
+    if any(
+        item.status
+        not in {ReadSourceStatusV22.SUCCESS_EMPTY, ReadSourceStatusV22.SUCCESS_NONEMPTY}
+        for item in results
+    ):
+        return None
+    if len(records) > _maximum_records(action):
+        return (
+            ReadSourceStatusV22.FAILURE_SCHEMA,
+            "METRICS_RECORD_LIMIT_EXCEEDED",
+        )
+    metric_records = tuple(
+        item for item in records if isinstance(item, MetricFactV22)
+    )
+    if len(metric_records) != len(records) or any(
+        item.metric_kind not in requested_kinds for item in metric_records
+    ):
+        return ReadSourceStatusV22.FAILURE_SCHEMA, "METRICS_UNEXPECTED_KIND"
+    keys = tuple((item.service, item.metric_kind) for item in metric_records)
+    if len(keys) != len(set(keys)):
+        return ReadSourceStatusV22.FAILURE_SCHEMA, "METRICS_DUPLICATE_KIND"
+    expected_keys = {
+        (service, metric_kind)
+        for service in action.target_services
+        for metric_kind in action.request.metric_kinds
+    }
+    if set(keys) != expected_keys:
+        return ReadSourceStatusV22.FAILURE_UNAVAILABLE, "METRICS_MISSING_KIND"
+    return None
+
+
 def _combine_results(
     *,
     action: EvidenceActionV22,
     window: ConnectorWindowV1,
     results: tuple[ConnectorQueryResultV1, ...],
 ) -> ConnectorQueryResultV1:
-    if (
-        not results
-        or any(
-            item.source is not action.source or item.window != window
-            for item in results
+    if not results or any(item.source is not action.source for item in results):
+        return ConnectorQueryResultV1.build(
+            source=action.source,
+            status=ReadSourceStatusV22.FAILURE_SCHEMA,
+            requested_services=action.target_services,
+            covered_services=(),
+            window=window,
+            records=(),
+            truncated=False,
+            safe_error_code="CONNECTOR_ACTION_CONTRACT_INVALID",
+            latency_ms=0.0,
         )
+    records = tuple(record for item in results for record in item.records)
+    if action.source is EvidenceSourceV22.METRICS:
+        failure = _metrics_contract_failure(
+            action=action,
+            window=window,
+            results=results,
+            records=records,
+        )
+        if failure is not None:
+            status, safe_error_code = failure
+            return ConnectorQueryResultV1.build(
+                source=action.source,
+                status=status,
+                requested_services=action.target_services,
+                covered_services=(),
+                window=window,
+                records=(),
+                truncated=False,
+                safe_error_code=safe_error_code,
+                latency_ms=sum(item.latency_ms for item in results),
+            )
+    elif (
+        any(item.window != window for item in results)
         or set().union(*(set(item.requested_services) for item in results))
         != set(action.target_services)
         or any(
@@ -181,7 +272,6 @@ def _combine_results(
             safe_error_code=first.safe_error_code or "CONNECTOR_SOURCE_FAILED",
             latency_ms=sum(item.latency_ms for item in results),
         )
-    records = tuple(record for item in results for record in item.records)
     limit = _maximum_records(action)
     if len(records) > limit or not _records_match_action(action, records, window):
         return ConnectorQueryResultV1.build(
@@ -227,6 +317,25 @@ def _combine_results(
         safe_error_code=None,
         latency_ms=sum(item.latency_ms for item in results),
     )
+
+
+def _result_limitation(
+    action: EvidenceActionV22,
+    result: ConnectorQueryResultV1,
+) -> tuple[str, str] | None:
+    if result.status not in {
+        ReadSourceStatusV22.SUCCESS_EMPTY,
+        ReadSourceStatusV22.SUCCESS_NONEMPTY,
+    }:
+        if (
+            action.source is EvidenceSourceV22.METRICS
+            and result.safe_error_code == "METRICS_MISSING_KIND"
+        ):
+            return "SOURCE_METRICS_COVERAGE_GAP", "COVERAGE_GAP"
+        return f"SOURCE_{action.source.value}_QUERY_FAILURE", "QUERY_FAILURE"
+    if not set(action.target_services).issubset(result.covered_services):
+        return f"SOURCE_{action.source.value}_COVERAGE_GAP", "COVERAGE_GAP"
+    return None
 
 
 def _records_match_action(
@@ -563,41 +672,24 @@ class ProductReadBackendV1:
                 "ecomsre_connector_requests_total",
                 {"source": action.source.value, "status": result.status.value},
             )
-            if result.status not in {
-                ReadSourceStatusV22.SUCCESS_EMPTY,
-                ReadSourceStatusV22.SUCCESS_NONEMPTY,
-            }:
-                self._metrics.increment(
-                    "ecomsre_connector_failures_total",
-                    {"source": action.source.value, "status": result.status.value},
-                )
-                limitation_code = f"SOURCE_{action.source.value}_QUERY_FAILURE"
+            limitation = _result_limitation(action, result)
+            if limitation is not None:
+                limitation_code, limitation_category = limitation
+                if limitation_category == "QUERY_FAILURE":
+                    self._metrics.increment(
+                        "ecomsre_connector_failures_total",
+                        {"source": action.source.value, "status": result.status.value},
+                    )
                 limitations.add(limitation_code)
                 limitation_candidates[limitation_code] = (
                     CapabilityLimitationCandidateV0232.build(
                         limitation_code=limitation_code,
-                        category="QUERY_FAILURE",
+                        category=limitation_category,
                         source=action.source,
                         capability_status=capability_status_by_source[action.source],
                         connector_action_id=action.action_id,
                         connector_result_sha256=result.result_sha256,
                         safe_error_code=result.safe_error_code,
-                        coverage_required_services=action.target_services,
-                        coverage_observed_services=result.covered_services,
-                    )
-                )
-            elif not set(action.target_services).issubset(result.covered_services):
-                limitation_code = f"SOURCE_{action.source.value}_COVERAGE_GAP"
-                limitations.add(limitation_code)
-                limitation_candidates[limitation_code] = (
-                    CapabilityLimitationCandidateV0232.build(
-                        limitation_code=limitation_code,
-                        category="COVERAGE_GAP",
-                        source=action.source,
-                        capability_status=capability_status_by_source[action.source],
-                        connector_action_id=action.action_id,
-                        connector_result_sha256=result.result_sha256,
-                        safe_error_code=None,
                         coverage_required_services=action.target_services,
                         coverage_observed_services=result.covered_services,
                     )

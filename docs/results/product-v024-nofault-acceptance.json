@@ -1,0 +1,153 @@
+{
+  "schema_version": "ecomsre.product.v024.nofault-acceptance.v1",
+  "repository_disposition": "REVIEW_REQUIRED",
+  "completion_terminal": null,
+  "run_id": "20260902T1155Z-b2bd47c1",
+  "incident_id": "inc-3f64382febc52109e4307740",
+  "environment_id": "env-b4f0ec2ab47aaa7763d7d0c9",
+  "telemetry_source": {
+    "cadvisor_attempt_count": 1,
+    "cadvisor_image": "ghcr.io/google/cadvisor:v0.60.5",
+    "cadvisor_index_digest": "sha256:763aecf1c32c2be8a1a75f9abfc2fc461005c9dbbaa39cb356b354aac1296dbe",
+    "cadvisor_arm64_digest": "sha256:d0cc97d64ba9fc29bf9a752a6ed4a2857348bef3e01502770c494ad2df32f776",
+    "cadvisor_checkout_series_count": 0,
+    "cadvisor_cleanup": "CLEAN",
+    "selected_fallback": "otelcol-contrib docker_stats receiver",
+    "selected_container_label": "container_name",
+    "selected_container_label_value": "ecomsre-live-sandbox-v1-checkout",
+    "cpu_series": "container_cpu_usage_nanoseconds_total",
+    "memory_series": "container_memory_usage_total_bytes",
+    "host_metrics_used_as_checkout_evidence": false
+  },
+  "trace_diagnosis": {
+    "diagnosis_attempt_count": 1,
+    "selected_alias": "checkout",
+    "minimum_duration_ms_before": 5000,
+    "minimum_duration_ms_after": 0,
+    "five_second_raw_trace_count": 3,
+    "zero_duration_raw_trace_count": 12,
+    "zero_duration_normalized_span_count": 12,
+    "zero_duration_status": "SUCCESS_NONEMPTY",
+    "checkout_covered": true
+  },
+  "runtime": {
+    "fresh": true,
+    "healthy": true,
+    "authority_sha256": "e397ba0402d53308ec2cbe40461819eb1b031f2f100a418fe9a0e8e0d5442bce",
+    "runtime_snapshot_sha256": "494a1bef16628ffd2f08a401dc175e4af5ec988f8d8bb51b301d532a5bf3bdd4",
+    "compose_sha256": "afa2d69177420fce42aef35fec1dadaef1984af226c3518eb465e736b73dbef7"
+  },
+  "baseline": {
+    "fresh_for_v024": true,
+    "mode": "DEMO_ONLY",
+    "baseline_id": "base-19e0f35cb9124040d4d7bcec",
+    "baseline_sha256": "2374c32c306fe72e450076796b9ee87436a4573f0232a0d46e1e20bd7e1fc60b",
+    "audit_sha256": "bdb2d0e04b44da8e1ae898c71b8e4389fad721449edf5215f744cf36fcde12af",
+    "restart_proof_sha256": "589805fc179b43dba0b98057dbaa0a8ce13a4f113d9bd435a7ec24751f301796",
+    "successful_windows": 5,
+    "final_builder_would_pass": true
+  },
+  "traffic": {
+    "planned": 30,
+    "attempted": 30,
+    "succeeded": 30,
+    "failed": 0
+  },
+  "metrics": {
+    "terminal": "ECOMSRE_PRODUCT_V024_METRICS_CONTRACT_PASS",
+    "object_sha256": "b27e821b0948a76d39b6e8d4d9598db6c96821aa9cfdd5fa79b1ef31ce3f607b",
+    "status": "SUCCESS_NONEMPTY",
+    "requested_services": [
+      "checkout"
+    ],
+    "covered_services": [
+      "checkout"
+    ],
+    "record_count": 3,
+    "metric_sample_counts": {
+      "ERROR_RATE": 21,
+      "LATENCY_P95_MS": 21,
+      "REQUEST_SUPPORT": 21
+    },
+    "safe_error_code": null
+  },
+  "resources": {
+    "terminal": "ECOMSRE_PRODUCT_V024_RESOURCES_COVERAGE_PASS",
+    "object_sha256": "103ae8b900ff186c54fdd92652005c78458b3b571052bfb75de3bc3c31d249f9",
+    "status": "SUCCESS_NONEMPTY",
+    "requested_services": [
+      "checkout"
+    ],
+    "covered_services": [
+      "checkout"
+    ],
+    "record_count": 1,
+    "logical_service": "checkout",
+    "sampling_window_seconds": 10,
+    "sample_count": 5,
+    "cpu_values_finite": true,
+    "memory_values_non_negative_integers": true,
+    "safe_error_code": null
+  },
+  "traces": {
+    "terminal": "ECOMSRE_PRODUCT_V024_TRACES_COVERAGE_PASS",
+    "object_sha256": "aabc1127646b5232f6968c48b9203f25b05286c508ca7dc06454225e87569456",
+    "status": "SUCCESS_NONEMPTY",
+    "requested_services": [
+      "checkout"
+    ],
+    "covered_services": [
+      "checkout",
+      "shipping"
+    ],
+    "normalized_services": [
+      "checkout",
+      "shipping"
+    ],
+    "record_count": 12,
+    "truncated": true,
+    "safe_error_code": null
+  },
+  "logs": {
+    "status": "SUCCESS_NONEMPTY",
+    "covered_services": [
+      "checkout"
+    ],
+    "active_profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+    "result_truncated": true,
+    "p01_provenance_valid_for_nofault": false
+  },
+  "diagnosis": {
+    "terminal": "OPEN_WORLD",
+    "broad_domain": "RESOURCE",
+    "mechanism": "UNREGISTERED_OBSERVED_ANOMALY",
+    "result_sha256": "f5ac3b436794b6a4ac19270cbab7d76e736c44f19147341fb5425063a8175474",
+    "capability_limitations": [],
+    "observed_symptoms": [
+      "checkout has an abnormal LATENCY_P95_MS signal",
+      "checkout has an abnormal memory trend"
+    ],
+    "action_authority": "NONE",
+    "provider_calls": 0,
+    "agent_writes": 0,
+    "runbook_executions": 0
+  },
+  "scorer": {
+    "terminal": "ECOMSRE_PRODUCT_V023_NOFAULT_NOT_SUPPORTED",
+    "reasons": [
+      "FALSE_INCIDENT_TERMINAL",
+      "FRESH_HEALTHY_RUNTIME_MISSING",
+      "LOGS_PROFILE_BINDING_MISSING"
+    ],
+    "result_sha256": "10fc656da95b4c0c90346b67f44a00f46322ae785385351ebcf094c3d56a021b",
+    "complete_result_persisted": true
+  },
+  "evidence_bundle_sha256": "164fd95d63fde3bf4bbb41ca60f7ea465cbfdc70860533d25366ab4c1263b34a",
+  "stop_condition": "GENUINE_NOFAULT_FAILURE_OUTSIDE_AUTHORIZED_TELEMETRY_COVERAGE_REPAIR",
+  "cleanup": {
+    "product": "CLEAN",
+    "demo": "CLEAN",
+    "queue_default_unchanged": true,
+    "outer_baseline_unchanged": true
+  }
+}

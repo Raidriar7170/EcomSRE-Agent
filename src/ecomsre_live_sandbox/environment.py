@@ -210,6 +210,10 @@ class SandboxEnvironment:
         self._baseline_snapshot: DockerSnapshot | None = None
         self._daemon_id: str | None = None
 
+    @property
+    def expected_services(self) -> tuple[str, ...]:
+        return EXPECTED_SERVICES
+
     def _compose_env(self) -> dict[str, str]:
         value = dict(os.environ)
         value.update(
@@ -229,18 +233,13 @@ class SandboxEnvironment:
         files = tuple(self.repository_root / item for item in self.bundle.environment.compose_files)
         if any(not item.is_file() for item in files):
             raise SandboxDriftError("one or more frozen Compose inputs are unavailable")
-        return (
+        prefix = (
             "docker",
             "compose",
             "--project-name",
             self.bundle.environment.compose_project,
-            "-f",
-            str(files[0]),
-            "-f",
-            str(files[1]),
-            "-f",
-            str(files[2]),
         )
+        return (*prefix, *(item for path in files for item in ("-f", str(path))))
 
     def verify_local_docker(self) -> dict[str, str]:
         context = self.runner.run(
@@ -298,7 +297,10 @@ class SandboxEnvironment:
 
     def _verify_resolved_contract(self, value: Mapping[str, object]) -> None:
         services = value.get("services")
-        if not isinstance(services, Mapping) or tuple(sorted(services)) != EXPECTED_SERVICES:
+        if (
+            not isinstance(services, Mapping)
+            or tuple(sorted(services)) != EXPECTED_SERVICES
+        ):
             raise SandboxDriftError("resolved Compose service inventory drifted")
         expected_label = {
             self.bundle.environment.sandbox_label_key: self.bundle.environment.sandbox_id
@@ -555,7 +557,7 @@ class SandboxEnvironment:
         for kind, identifiers in owned.items():
             self._inspect_labels(kind, identifiers)
         if require_complete and (
-            len(owned["container"]) != len(EXPECTED_SERVICES)
+            len(owned["container"]) != len(self.expected_services)
             or len(owned["network"]) != 1
             or len(owned["volume"]) != 3
         ):
@@ -600,8 +602,8 @@ class SandboxEnvironment:
 
     def service_health(self) -> dict[str, bool]:
         identifiers = self._owned_ids("container")
-        if len(identifiers) != len(EXPECTED_SERVICES):
-            return {name: False for name in EXPECTED_SERVICES}
+        if len(identifiers) != len(self.expected_services):
+            return {name: False for name in self.expected_services}
         payload = json.loads(
             self.runner.run(
                 ("docker", "inspect", *sorted(identifiers)), cwd=self.repository_root
@@ -623,7 +625,7 @@ class SandboxEnvironment:
             )
             if isinstance(service, str):
                 output[service] = healthy
-        return {name: output.get(name, False) for name in EXPECTED_SERVICES}
+        return {name: output.get(name, False) for name in self.expected_services}
 
     def wait_healthy(self, *, timeout_seconds: float = 300) -> dict[str, bool]:
         deadline = time.monotonic() + timeout_seconds

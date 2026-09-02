@@ -41,9 +41,19 @@ def _tag_map(value: object) -> dict[str, object]:
     for raw_tag in value:
         tag = require_mapping(raw_tag)
         key = tag.get("key")
-        if not isinstance(key, str) or key in result:
+        if not isinstance(key, str):
             raise ValueError("Jaeger tag is invalid")
-        result[key] = tag.get("value")
+        tag_value = tag.get("value")
+        if key == "error" and isinstance(tag_value, str):
+            if tag_value.casefold() == "true":
+                tag_value = True
+            elif tag_value.casefold() == "false":
+                tag_value = False
+        if key in result:
+            if key != "error" or result[key] != tag_value:
+                raise ValueError("Jaeger tag is invalid")
+            continue
+        result[key] = tag_value
     return result
 
 
@@ -62,6 +72,31 @@ def _field(source: Mapping[str, object], path: str) -> object:
             raise ValueError("Jaeger service field is unavailable")
         current = current[segment]
     return current
+
+
+def _trace_has_missing_parent(trace: Mapping[str, object]) -> bool:
+    spans = trace.get("spans")
+    if not isinstance(spans, list):
+        raise ValueError("Jaeger trace is invalid")
+    span_ids = {
+        span_id
+        for raw_span in spans
+        if isinstance((span_id := require_mapping(raw_span).get("spanID")), str)
+    }
+    for raw_span in spans:
+        references = require_mapping(raw_span).get("references")
+        if not isinstance(references, list):
+            raise ValueError("Jaeger span references are invalid")
+        for raw_reference in references:
+            reference = require_mapping(raw_reference)
+            if reference.get("refType") != "CHILD_OF":
+                continue
+            parent_id = reference.get("spanID")
+            if not isinstance(parent_id, str):
+                raise ValueError("Jaeger parent reference is invalid")
+            if parent_id not in span_ids:
+                return True
+    return False
 
 
 class JaegerConnectorV1:
@@ -95,7 +130,7 @@ class JaegerConnectorV1:
                 supports_historical_range=True,
                 supports_multi_target=True,
                 supports_service_discovery=True,
-                supports_baseline=True,
+                supports_baseline=False,
                 supports_target_complete_coverage=False,
                 maximum_window_seconds=3600,
             ),
@@ -136,6 +171,7 @@ class JaegerConnectorV1:
         records: list[TraceSpanV22] = []
         latency_ms = 0.0
         truncated = False
+        rejected_trace_count = 0
         try:
             for service in context.requested_services:
                 for source_alias in context.aliases_for(service):
@@ -167,10 +203,19 @@ class JaegerConnectorV1:
                     if not isinstance(traces, list):
                         raise ValueError("Jaeger trace response is invalid")
                     for trace in traces:
-                        normalized = self._normalize_trace(
-                            require_mapping(trace),
-                            context=context,
-                        )
+                        try:
+                            trace_payload = require_mapping(trace)
+                            partial_trace = _trace_has_missing_parent(trace_payload)
+                            normalized = self._normalize_trace(
+                                trace_payload,
+                                context=context,
+                            )
+                        except ValueError:
+                            rejected_trace_count += 1
+                            truncated = True
+                            continue
+                        if partial_trace:
+                            truncated = True
                         if context.neighborhood_hops is not None:
                             normalized = [
                                 record
@@ -186,6 +231,11 @@ class JaegerConnectorV1:
                                     for target in context.requested_services
                                 )
                             ]
+                        normalized.sort(
+                            key=lambda record: (
+                                record.service not in context.requested_services
+                            )
+                        )
                         available = maximum_records - len(records)
                         if len(normalized) > available:
                             records.extend(normalized[:available])
@@ -197,6 +247,8 @@ class JaegerConnectorV1:
                         break
                 if len(records) >= maximum_records:
                     break
+            if rejected_trace_count and not records:
+                raise ValueError("Jaeger response contains no valid trace")
         except ConnectorRequestError as error:
             return (self._failure(context, error),)
         except (ValueError, TypeError, OverflowError):
@@ -289,11 +341,15 @@ class JaegerConnectorV1:
             parent_id = parent_by_id[span_id]
             if parent_id is None:
                 path: tuple[str, ...] = (service_by_id[span_id],)
+            elif parent_id not in raw_by_id:
+                path = (service_by_id[span_id],)
             else:
-                if parent_id not in raw_by_id:
-                    raise ValueError("Jaeger parent span is unavailable")
-                path = path_for(parent_id, visiting | {span_id}) + (
-                    service_by_id[span_id],
+                parent_path = path_for(parent_id, visiting | {span_id})
+                current_service = service_by_id[span_id]
+                path = (
+                    parent_path
+                    if parent_path[-1] == current_service
+                    else parent_path + (current_service,)
                 )
             if len(path) > 12:
                 raise ValueError("Jaeger causal path exceeds the bound")
@@ -302,17 +358,19 @@ class JaegerConnectorV1:
 
         records: list[TraceSpanV22] = []
 
-        def has_error_ancestor(span_id: str) -> bool:
+        def error_ancestry(span_id: str) -> tuple[bool, bool]:
             parent_id = parent_by_id[span_id]
             visited: set[str] = set()
             while parent_id is not None:
-                if parent_id in visited or parent_id not in error_by_id:
+                if parent_id in visited:
                     raise ValueError("Jaeger error ancestry is invalid")
+                if parent_id not in error_by_id:
+                    return False, False
                 visited.add(parent_id)
                 if error_by_id[parent_id]:
-                    return True
+                    return True, True
                 parent_id = parent_by_id[parent_id]
-            return False
+            return False, True
 
         for span_id, span in raw_by_id.items():
             duration = span.get("duration")
@@ -331,21 +389,24 @@ class JaegerConnectorV1:
             duration_ms = float(duration) / 1000
             if duration_ms < self._settings.minimum_duration_ms:
                 continue
-            parent_id = parent_by_id[span_id]
             is_error = error_by_id[span_id]
+            service_path = path_for(span_id)
+            has_error_ancestor, ancestry_complete = error_ancestry(span_id)
             records.append(
                 TraceSpanV22(
                     schema_version="dta-v22.trace-span.v1",
                     observed_at=datetime.fromtimestamp(float(started) / 1_000_000, UTC),
-                    service_path=path_for(span_id),
+                    service_path=service_path,
                     service=service_by_id[span_id],
                     parent_service=(
-                        service_by_id[parent_id] if parent_id is not None else None
+                        service_path[-2] if len(service_path) > 1 else None
                     ),
                     operation=operation.strip()[:160],
                     status=SpanStatusV22.ERROR if is_error else SpanStatusV22.UNSET,
                     duration_ms=duration_ms,
-                    first_error_location=is_error and not has_error_ancestor(span_id),
+                    first_error_location=(
+                        is_error and ancestry_complete and not has_error_ancestor
+                    ),
                 )
             )
         return records

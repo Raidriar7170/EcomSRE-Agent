@@ -43,7 +43,11 @@ from ecomsre.product.incidents.evidence_binding_v0232 import (
     DiagnosisDecisionTraceV0232,
 )
 from ecomsre.product.environment.capabilities import SourceCapabilityStatusV1
-from ecomsre.product.incidents.read_backend import ProductReadBackendV1, _combine_results
+from ecomsre.product.incidents.read_backend import (
+    ProductReadBackendV1,
+    _combine_results,
+    _result_limitation,
+)
 from ecomsre.product.incidents.repository import DiagnosisRepositoryV1
 from ecomsre.product.jobs.contracts import JobLeaseFenceV1, ProductJobTypeV1
 from ecomsre.product.jobs.repository import JobRepositoryV1
@@ -461,7 +465,7 @@ def test_non_fixture_runtime_is_explicitly_diagnosis_limited(
     assert result["provider_calls"] == 0
 
 
-def test_evidence_action_binding_rejects_partial_metrics_and_preserves_empty_coverage() -> None:
+def test_evidence_action_binding_reports_missing_metrics_as_coverage_gap() -> None:
     catalog = build_action_catalog_v22(
         candidate_services=("payment",),
         topology=StaticTopologyV22.build(services=("payment",), edges=()),
@@ -505,8 +509,13 @@ def test_evidence_action_binding_rejects_partial_metrics_and_preserves_empty_cov
         window=window,
         results=(partial_result,),
     )
-    assert rejected.status is ReadSourceStatusV22.FAILURE_SCHEMA
+    assert rejected.status is ReadSourceStatusV22.FAILURE_UNAVAILABLE
+    assert rejected.safe_error_code == "METRICS_MISSING_KIND"
     assert rejected.covered_services == ()
+    assert _result_limitation(action, rejected) == (
+        "SOURCE_METRICS_COVERAGE_GAP",
+        "COVERAGE_GAP",
+    )
 
     empty_result = ConnectorQueryResultV1.build(
         source=EvidenceSourceV22.METRICS,
@@ -524,8 +533,9 @@ def test_evidence_action_binding_rejects_partial_metrics_and_preserves_empty_cov
         window=window,
         results=(empty_result,),
     )
-    assert preserved.status is ReadSourceStatusV22.SUCCESS_EMPTY
-    assert preserved.covered_services == ("payment",)
+    assert preserved.status is ReadSourceStatusV22.FAILURE_UNAVAILABLE
+    assert preserved.safe_error_code == "METRICS_MISSING_KIND"
+    assert preserved.covered_services == ()
 
 
 def test_lost_diagnosis_lease_cannot_bind_evidence_metadata(tmp_path: Path) -> None:

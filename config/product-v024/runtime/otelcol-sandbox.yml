@@ -1,0 +1,27 @@
+# Product v0.2.4 final collector layer. The cAdvisor attempt was unusable on
+# Docker Desktop, so this layer enables the existing contrib docker_stats
+# receiver with only the owned Compose identity labels needed by Resources.
+connectors:
+  span_metrics:
+    metrics_flush_interval: 5s
+
+receivers:
+  docker_stats:
+    endpoint: unix:///var/run/docker.sock
+    api_version: "1.44"
+    collection_interval: 2s
+    container_labels_to_metric_labels:
+      com.docker.compose.project: compose_project
+      com.docker.compose.service: compose_service
+      io.ecomsre.sandbox.id: sandbox_id
+  host_metrics:
+    root_path: /
+
+processors:
+  resourcedetection:
+    detectors: [env, system]
+
+service:
+  pipelines:
+    metrics:
+      receivers: [docker_stats, http_check/frontend-proxy, nginx, otlp, redis, postgresql, prometheus/ad, span_metrics]

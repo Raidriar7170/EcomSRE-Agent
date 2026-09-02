@@ -1,0 +1,27 @@
+services:
+  otel-collector:
+    volumes: !override
+      - type: bind
+        source: ./src/otel-collector/otelcol-config.yml
+        target: /etc/otelcol-config.yml
+        read_only: true
+      - type: bind
+        source: ./src/otel-collector/otelcol-config-full.yml
+        target: /etc/otelcol-config-full.yml
+        read_only: true
+      - type: bind
+        source: ./src/otel-collector/otelcol-config-observability.yml
+        target: /etc/otelcol-config-observability.yml
+        read_only: true
+      - type: bind
+        source: ./src/otel-collector/otelcol-config-extras.yml
+        target: /etc/otelcol-config-extras.yml
+        read_only: true
+      - type: bind
+        source: ${SANDBOX_COLLECTOR_CONFIG:?SANDBOX_COLLECTOR_CONFIG is required}
+        target: /etc/otelcol-config-sandbox.yml
+        read_only: true
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true

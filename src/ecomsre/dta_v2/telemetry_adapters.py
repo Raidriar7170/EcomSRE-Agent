@@ -256,15 +256,19 @@ def _issue_owned_read_capability(
 
     from ecomsre_live_sandbox.contracts import ConfigBundle, ResolvedSandbox
     from ecomsre_live_sandbox.environment import SandboxEnvironment
+    from ecomsre_live_sandbox.product_v024 import ProductV024SandboxEnvironment
 
     if (
-        type(environment) is not SandboxEnvironment
+        type(environment) not in {SandboxEnvironment, ProductV024SandboxEnvironment}
         or type(bundle) is not ConfigBundle
-        or environment.bundle != bundle
     ):
         raise TypeError("owned read capability requires exact Sandbox lifecycle")
-    docker = environment.verify_local_docker()
-    resolved, raw_compose = environment.resolve()
+    owned_environment = cast(SandboxEnvironment, environment)
+    config_bundle = cast(ConfigBundle, bundle)
+    if owned_environment.bundle != config_bundle:
+        raise TypeError("owned read capability requires exact Sandbox lifecycle")
+    docker = owned_environment.verify_local_docker()
+    resolved, raw_compose = owned_environment.resolve()
     if type(resolved) is not ResolvedSandbox or not isinstance(raw_compose, dict):
         raise TypeError("fresh Sandbox resolve returned an invalid boundary type")
     fresh_resolved_sha256 = semantic_sha256(resolved.model_dump(mode="json"))
@@ -273,15 +277,15 @@ def _issue_owned_read_capability(
     authority = _build_owned_read_authority(
         daemon_identity=docker["daemon_id"],
         docker_context=docker["context"],
-        config_bundle_sha256=semantic_sha256(bundle.model_dump(mode="json")),
+        config_bundle_sha256=semantic_sha256(config_bundle.model_dump(mode="json")),
         resolved_sandbox_sha256=fresh_resolved_sha256,
         prometheus_base_url=resolved.endpoints.prometheus,
         opensearch_base_url=resolved.endpoints.opensearch,
         jaeger_base_url=resolved.endpoints.jaeger,
         docker_endpoint=docker["endpoint"],
-        compose_project=bundle.environment.compose_project,
-        sandbox_label_key=bundle.environment.sandbox_label_key,
-        sandbox_label_value=bundle.environment.sandbox_id,
+        compose_project=config_bundle.environment.compose_project,
+        sandbox_label_key=config_bundle.environment.sandbox_label_key,
+        sandbox_label_value=config_bundle.environment.sandbox_id,
     )
     config = LocalReadBackendConfig(
         prometheus_base_url=resolved.endpoints.prometheus,
@@ -289,9 +293,9 @@ def _issue_owned_read_capability(
         jaeger_base_url=resolved.endpoints.jaeger,
         opensearch_index="otel-logs-*",
         docker_endpoint=docker["endpoint"],
-        compose_project=bundle.environment.compose_project,
-        sandbox_label_key=bundle.environment.sandbox_label_key,
-        sandbox_label_value=bundle.environment.sandbox_id,
+        compose_project=config_bundle.environment.compose_project,
+        sandbox_label_key=config_bundle.environment.sandbox_label_key,
+        sandbox_label_value=config_bundle.environment.sandbox_id,
         timeout_seconds=timeout_seconds,
         authority=authority,
     )
