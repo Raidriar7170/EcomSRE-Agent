@@ -78,20 +78,20 @@
       "callee": "build_inspect_service_runtime_request",
       "caller": "_runtime_memory",
       "disposition": "EXISTING_SEMANTIC_SHA_PREFIX",
-      "line": 352,
+      "line": 461,
       "path": "src/ecomsre/product/incidents/read_backend.py",
       "site_kind": "REQUEST_BUILDER_CALL",
-      "site_sha256": "68d889a27b7f1f3355d18b14db2b4451170a71e3f0eab29dedce34af552f6cb1",
+      "site_sha256": "a243e18a9fd27c5034ccca132e704b9d5d9ecab7f5281da0a1f83014bb18e493",
       "source_expression": "build_inspect_service_runtime_request(run_id=incident.incident_sha256[:32], services=action.target_services, max_results=len(action.target_services))"
     },
     {
       "callee": "build_inspect_service_runtime_request",
       "caller": "_runtime_memory",
       "disposition": "EXISTING_SEMANTIC_SHA_PREFIX",
-      "line": 352,
+      "line": 461,
       "path": "src/ecomsre/product/incidents/read_backend.py",
       "site_kind": "RUN_ID_ARGUMENT",
-      "site_sha256": "6593216c81de4ce97f9919eb8199c97abf0a522c0e901181dfb21fa2542216c8",
+      "site_sha256": "eb6ee8c4409894f0f58ce88e51278de62aff4919fbdfb3afff732ab3b65e24ce",
       "source_expression": "incident.incident_sha256[:32]"
     },
     {
@@ -333,7 +333,7 @@
     "safe_error_code": "RUN_ID_SCHEMA_PATTERN_MISMATCH"
   },
   "predecessor_head": "cc270e5624af573a12bc31f3df9ca8cacad8685d",
-  "preflight_sha256": "bf53b410021a2b2a949d27c473141702224d950dc81322da7baa302d87536ace",
+  "preflight_sha256": "bb3e3a1d8e4980a1d048eeed3f47d668df93e58acadb66bd616add6c61c3b503",
   "provider_calls": 0,
   "request_builder_call_site_count": 8,
   "run_id_argument_call_site_count": 21,
