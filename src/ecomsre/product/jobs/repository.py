@@ -139,6 +139,62 @@ class JobRepositoryV1:
                 raise
         return self.get(job_id)
 
+    def reclaim_expired(
+        self,
+        job_id: str,
+        *,
+        expected_attempt_count: int,
+        worker_id: str,
+        lease_seconds: int,
+        now: float | None = None,
+    ) -> ProductJobRecordV1:
+        """Fence and reclaim one named expired RUNNING job for terminal sealing."""
+
+        if expected_attempt_count < 1 or lease_seconds < 1 or not worker_id:
+            raise ValueError("expired job reclaim input is invalid")
+        timestamp = time.time() if now is None else now
+        lease_expires_at = timestamp + lease_seconds
+        with self.store.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            try:
+                cursor = connection.execute(
+                    """UPDATE diagnosis_jobs
+                       SET claimed_by = ?, lease_expires_at = ?,
+                           attempt_count = attempt_count + 1, updated_at = ?
+                       WHERE job_id = ? AND status = ?
+                         AND attempt_count = ? AND lease_expires_at <= ?""",
+                    (
+                        worker_id,
+                        lease_expires_at,
+                        timestamp,
+                        job_id,
+                        ProductJobStatusV1.RUNNING.value,
+                        expected_attempt_count,
+                        timestamp,
+                    ),
+                )
+                if cursor.rowcount != 1:
+                    raise ProductError(
+                        "JOB_LEASE_ACTIVE",
+                        "The named job lease is active or no longer matches the expected attempt.",
+                        status_code=409,
+                    )
+                self._append_event(
+                    connection,
+                    job_id,
+                    "RECLAIMED_EXPIRED",
+                    {
+                        "worker_id": worker_id,
+                        "previous_attempt_count": expected_attempt_count,
+                    },
+                    timestamp,
+                )
+                connection.execute("COMMIT")
+            except Exception:
+                connection.execute("ROLLBACK")
+                raise
+        return self.get(job_id)
+
     def succeed(
         self,
         job_id: str,
@@ -196,6 +252,77 @@ class JobRepositoryV1:
             except Exception:
                 connection.execute("ROLLBACK")
                 raise
+
+    def bind_idempotency_key(
+        self,
+        job_id: str,
+        worker_id: str,
+        attempt_count: int,
+        idempotency_key: str,
+        *,
+        now: float | None = None,
+    ) -> ProductJobRecordV1:
+        """Bind a claimed acquisition job to its content-derived Diagnosis key."""
+
+        if (
+            not idempotency_key
+            or len(idempotency_key) > 200
+            or any(character in idempotency_key for character in "\r\n\x00")
+        ):
+            raise ValueError("job idempotency key is invalid")
+        timestamp = time.time() if now is None else now
+        with self.store.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            try:
+                row = connection.execute(
+                    "SELECT status, claimed_by, attempt_count, lease_expires_at, "
+                    "idempotency_key FROM diagnosis_jobs WHERE job_id = ?",
+                    (job_id,),
+                ).fetchone()
+                if (
+                    row is None
+                    or row["status"] != ProductJobStatusV1.RUNNING.value
+                    or row["claimed_by"] != worker_id
+                    or row["attempt_count"] != attempt_count
+                    or row["lease_expires_at"] is None
+                    or row["lease_expires_at"] <= timestamp
+                ):
+                    raise ProductError(
+                        "JOB_LEASE_LOST",
+                        "The worker no longer owns this job lease.",
+                        status_code=409,
+                    )
+                if row["idempotency_key"] == idempotency_key:
+                    connection.execute("COMMIT")
+                    return self.get(job_id)
+                conflict = connection.execute(
+                    "SELECT job_id FROM diagnosis_jobs "
+                    "WHERE job_type = ? AND idempotency_key = ? AND job_id != ?",
+                    (ProductJobTypeV1.DIAGNOSIS.value, idempotency_key, job_id),
+                ).fetchone()
+                if conflict is not None:
+                    raise ProductError(
+                        "JOB_IDEMPOTENCY_CONFLICT",
+                        "The idempotency key is already bound to a different job.",
+                        status_code=409,
+                    )
+                connection.execute(
+                    "UPDATE diagnosis_jobs SET idempotency_key = ?, updated_at = ? "
+                    "WHERE job_id = ?",
+                    (idempotency_key, timestamp, job_id),
+                )
+                self._append_event(
+                    connection,
+                    job_id,
+                    "IDEMPOTENCY_BOUND",
+                    {"idempotency_key": idempotency_key},
+                    timestamp,
+                )
+                connection.execute("COMMIT")
+            except Exception:
+                connection.execute("ROLLBACK")
+                raise
+        return self.get(job_id)
 
     def fail(
         self,

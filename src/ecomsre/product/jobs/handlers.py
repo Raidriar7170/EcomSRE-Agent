@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
 
@@ -24,7 +25,10 @@ from ecomsre.product.incidents.diagnosis_pipeline_v02322 import (
     DiagnosisPipelineV02322,
 )
 from ecomsre.product.incidents.contracts import IncidentRecordV1
-from ecomsre.product.incidents.read_backend import ProductReadBackendV1
+from ecomsre.product.incidents.read_backend import (
+    ProductReadAcquisitionV1,
+    ProductReadBackendV1,
+)
 from ecomsre.product.incidents.repository import (
     DiagnosisRepositoryV1,
     IncidentRepositoryV1,
@@ -113,6 +117,11 @@ def handle_incident_diagnosis(
     fence: JobLeaseFenceV1,
     stage_pipeline_v02322: DiagnosisPipelineV02322 | None = None,
     loaded_incident_v02322: IncidentRecordV1 | None = None,
+    frozen_acquisition_v0233: ProductReadAcquisitionV1 | None = None,
+    seal_acquisition_v0233: Callable[
+        [ProductReadAcquisitionV1, IncidentRecordV1, str, str, str], str
+    ]
+    | None = None,
 ) -> dict[str, Any]:
     def run_stage(stage, input_binding_sha256, operation):
         if stage_pipeline_v02322 is None:
@@ -217,15 +226,19 @@ def handle_incident_diagnosis(
     acquisition = run_stage(
         DiagnosisPipelineStageV02322.READ_ACQUISITION_STARTED,
         context_v02322.context_sha256,
-        lambda: read_backend.acquire(
-            incident=incident,
-            environment=environment,
-            identity_map=identity_map,
-            capability_matrix=capability_matrix,
-            topology_edges=tuple(
-                (item.parent_service, item.child_service)
-                for item in baseline.topology_edges
-            ),
+        lambda: (
+            frozen_acquisition_v0233
+            if frozen_acquisition_v0233 is not None
+            else read_backend.acquire(
+                incident=incident,
+                environment=environment,
+                identity_map=identity_map,
+                capability_matrix=capability_matrix,
+                topology_edges=tuple(
+                    (item.parent_service, item.child_service)
+                    for item in baseline.topology_edges
+                ),
+            )
         ),
     )
     acquisition_artifact_v02322 = DiagnosisAcquisitionArtifactV02322.build(
@@ -269,6 +282,16 @@ def handle_incident_diagnosis(
         acquisition_sha256,
         lambda: acquisition,
     )
+    if seal_acquisition_v0233 is not None:
+        sealed_sha256 = seal_acquisition_v0233(
+            acquisition,
+            incident,
+            baseline.baseline_sha256,
+            identity_map.identity_sha256,
+            capability_matrix.capability_sha256,
+        )
+        if len(sealed_sha256) != 64:
+            raise ValueError("Product v0.2.3.3 acquisition seal differs")
     diagnosed = run_stage(
         DiagnosisPipelineStageV02322.BRIDGE_DIAGNOSIS_STARTED,
         acquisition_sha256,

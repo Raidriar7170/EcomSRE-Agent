@@ -1,0 +1,150 @@
+{
+  "action_authority": "NONE",
+  "agent_writes": 0,
+  "campaign_sha256": "36e5fa13043ae5774420ef3ae8b6cd1c217bc09ce7f65dee79cb8309215e9f06",
+  "case_count": 12,
+  "cases": [
+    {
+      "case_id": "01_FULLY_SUPPORTED_HEALTHY",
+      "case_sha256": "77470d1922ba502524b7787bc7ff75fa3e6109db7b117142e4aae240d8cbf838",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_FULLY_SUPPORTED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_FULLY_SUPPORTED",
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "case_id": "02_CAPABILITY_LIMITED_BOUND",
+      "case_sha256": "7b50c6533db246d8004e44de41ecdbf0c9c734cc8aaefc31e4f4ff2bd9624626",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_CAPABILITY_LIMITED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_CAPABILITY_LIMITED",
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "case_id": "03_NOT_SUPPORTED_CORE_KNOWN",
+      "case_sha256": "74925109fe181a439e60efffe1a8c4d4156348abbc1111cad02df6c53870af24",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "passed": true,
+      "reasons": [
+        "FALSE_INCIDENT_TERMINAL"
+      ]
+    },
+    {
+      "case_id": "04_NOT_SUPPORTED_OPEN_WORLD",
+      "case_sha256": "1d6f6f64d5f3d405ba331d1f01d50d41d1f8c6733e12f7174345dcc2becd1136",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "passed": true,
+      "reasons": [
+        "FALSE_INCIDENT_TERMINAL"
+      ]
+    },
+    {
+      "case_id": "05_NOT_SUPPORTED_CONFLICTING",
+      "case_sha256": "368c6e97130dad75076020ca0951f1f612711cc0409fcee457a7104dcd945089",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "passed": true,
+      "reasons": [
+        "FALSE_INCIDENT_TERMINAL"
+      ]
+    },
+    {
+      "case_id": "06_NOT_SUPPORTED_STALE_RUNTIME",
+      "case_sha256": "30d54b0dec85a215deb47cfcca113d58d502711daa4aee43ba0261708ec39de9",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "passed": true,
+      "reasons": [
+        "CONNECTOR_PROVENANCE_INVALID",
+        "FRESH_HEALTHY_RUNTIME_MISSING"
+      ]
+    },
+    {
+      "case_id": "07_NOT_SUPPORTED_MISSING_P01",
+      "case_sha256": "5d4ad824030abb37014e2f82f31752040b150ab6cd7c630b984912e5d92e8c4f",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "passed": true,
+      "reasons": [
+        "LOGS_PROFILE_BINDING_MISSING"
+      ]
+    },
+    {
+      "case_id": "08_NOT_SUPPORTED_UNRESOLVED_EVIDENCE_REF",
+      "case_sha256": "1f045ec3e35a345111fb67e149a8c10a031a94c916d6dcf9dc8ece3af254f97a",
+      "expected_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "observed_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+      "passed": true,
+      "reasons": [
+        "EVIDENCE_INDEX_BINDING_INVALID"
+      ]
+    },
+    {
+      "case_id": "09_FAILED_DIAGNOSIS_STAGE",
+      "case_sha256": "b4432cca210c93a196cdcdcf9d76d67b49c1dbaff0354100dea6f6d131f86f8d",
+      "expected_terminal": "FAILED_WITH_JOURNAL_AND_PRIVATE_ENVELOPE",
+      "observed_terminal": "FAILED_WITH_JOURNAL_AND_PRIVATE_ENVELOPE",
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "case_id": "10_FORMAL_TRAFFIC_BLOCKER_BEFORE_INCIDENT",
+      "case_sha256": "264223f7469fc216518a1f4e7f085bb7c9f8861974c197acf59021abbbb14d50",
+      "expected_terminal": "FORMAL_TRAFFIC_NOT_PASS",
+      "observed_terminal": "FORMAL_TRAFFIC_NOT_PASS",
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "case_id": "11_SOURCE_CLONE_DELTA_VALIDATION",
+      "case_sha256": "2de30790ee6b52765867960831230e1dbeb45b27b5f3c73009748eb1548051a5",
+      "expected_terminal": "SOURCE_CLONE_DELTA_PASS",
+      "observed_terminal": "SOURCE_CLONE_DELTA_PASS",
+      "passed": true,
+      "reasons": []
+    },
+    {
+      "case_id": "12_REPOSITORY_PHASE_VALIDATION",
+      "case_sha256": "ed43f1c77e1496deb330ee5227dd8a6780e815a3e9f0473c3befab280154f5d1",
+      "expected_terminal": "PREPARED",
+      "observed_terminal": "PREPARED",
+      "passed": true,
+      "reasons": []
+    }
+  ],
+  "fixture_decision_trace_persisted": true,
+  "fixture_evidence_bundle_persisted": true,
+  "fixture_evidence_index_persisted": true,
+  "fixture_pipeline": {
+    "acceptance_sha256": "b7ad5f0b1c8643dd2c7f0bb03e9481500b0e0fbf87f97566690daea485c35540",
+    "decision_trace_sha256": "01ba4a3322997bc038c5aa156b0aab94c44f5110545d961543cefaaaec2e7ff0",
+    "diagnosis_result_sha256": "3fc39e1b0469bed1a8fd4a19d336afd53649ea1b4c7ef93fc2fa5bf9d6f26e2d",
+    "event_count": 54,
+    "evidence_bundle_sha256": "6dd89e41eb9f72cf9c0d38c8e732de14bc1784daf1922c354b977fb000f1dcef",
+    "evidence_index_sha256": "cc27ddbcbc25903c18715523292a303c67c25ff3b219442e82ce95a4afad9fce",
+    "exception_fingerprint": null,
+    "failure_stage": null,
+    "job_id": "job-0ae2eaec10899977873d00af",
+    "job_status": "SUCCEEDED",
+    "journal_tail_sha256": "900783baa50afee3bc254cb1e0692c311b0d498705329612e1b76a18f6bf3e93",
+    "private_failure_envelope_sha256": null,
+    "safe_error_code": null,
+    "schema_version": "ecomsre.product.diagnosis-pipeline-acceptance.v0233",
+    "stage_journal_terminal": "JOB_SUCCEEDED"
+  },
+  "fixture_scorer_expected_terminal": true,
+  "fixture_scorer_terminal": "ECOMSRE_PRODUCT_V0232_NOFAULT_NOT_SUPPORTED",
+  "formal_execution_count": 0,
+  "goal_version": "ecomsre-product-v0233-fresh-formal-evidence-bound-nofault-v1",
+  "new_diagnosis_count": 0,
+  "new_incident_count": 0,
+  "passed_case_count": 12,
+  "preflight_sha256": "bde2f91c623185640cab551b69b8c16d78cc2df8db33ff2425350aef6fac37d8",
+  "provider_calls": 0,
+  "runbook_executions": 0,
+  "schema_version": "ecomsre.product.formal-contract-preflight.v0233",
+  "source_selection_sha256": "8c7b47eddeffd2bbbdc03a7a059c2c251ef54098c5452a7d4d537a4d8c2b851c",
+  "terminal": "ECOMSRE_PRODUCT_V0233_FORMAL_CONTRACT_PREFLIGHT_PASS"
+}

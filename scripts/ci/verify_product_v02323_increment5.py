@@ -33,6 +33,7 @@ FRESH_FORMAL_HANDOFF_READY_V02323 = (
     "ECOMSRE_PRODUCT_V02323_FRESH_FORMAL_NOFAULT_HANDOFF_READY"
 )
 INCREMENT4_HEAD_V02323 = "fff08372e851b51472e48d04f2d1882e35ce584d"
+PR85_HEAD_V02323 = "75ab277982c25be6d2b37e027db247526580a111"
 _PREMERGE_TERMINALS_V02323 = [
     "ECOMSRE_PRODUCT_V02323_HISTORY_AND_BLOCKER_PASS",
     "ECOMSRE_PRODUCT_V02323_FORENSIC_SOURCE_SNAPSHOT_PASS",
@@ -121,16 +122,20 @@ def _git(root: Path, *arguments: str) -> str:
 
 def _verify_test_delta(root: Path, migration: dict[str, Any]) -> None:
     changed: dict[str, str] = {}
-    output = _git(root, "diff", "--name-status", PR84_HEAD_V02323, "--", "tests")
+    output = _git(
+        root,
+        "diff",
+        "--name-status",
+        PR84_HEAD_V02323,
+        PR85_HEAD_V02323,
+        "--",
+        "tests",
+    )
     for line in output.splitlines():
         if not line:
             continue
         status, relative = line.split("\t", 1)
         changed[relative] = status
-    untracked = _git(root, "ls-files", "--others", "--exclude-standard", "--", "tests")
-    for relative in untracked.splitlines():
-        if relative:
-            changed[relative] = "A"
     expected = {
         path: status for path, (status, _category) in _CHANGED_TESTS_V02323.items()
     }

@@ -1,0 +1,133 @@
+{
+  "schema_version": "ecomsre.product.formal-blocker-evidence-manifest.v0233",
+  "goal_version": "ecomsre-product-v0233-fresh-formal-evidence-bound-nofault-v1",
+  "terminal": "BLOCKED_ECOMSRE_PRODUCT_V0233_ACCEPTANCE_ARTIFACTS",
+  "execution_head": "466796648c2c4a3360b911a12be1ee806d39124e",
+  "failure_stage": "FORMAL_TRAFFIC_PASS",
+  "safe_error_code": "TypeError:FORMAL_TRAFFIC_PASS",
+  "one_shot_consumed": true,
+  "formal_rerun_authorized": false,
+  "diagnosis_retry_authorized": false,
+  "formal_healthy_traffic_execution_count": 1,
+  "formal_clone_count": 1,
+  "completed_transactions": 30,
+  "new_incident_count": 0,
+  "new_diagnosis_count": 0,
+  "measured_result_count": 0,
+  "measured_terminal": null,
+  "nofault_acceptance_complete": false,
+  "knowledge_loop_handoff_authorized": false,
+  "artifacts": {
+    "admission": {
+      "private_path": ".local/product-v0233/formal-execution/admission.json",
+      "file_sha256": "8edb4733a3598681a3b343875178f9543abcedfdada1e82e662bbcacb44fe295",
+      "semantic_sha256": "bbb982456f60049aa303f34c71d2006b461cbb0c07c568961c6cdc859f23a0c0"
+    },
+    "reservation": {
+      "private_path": ".local/product-v0233/formal-execution/reservation.json",
+      "file_sha256": "5d6ebc4d0db4f20c8962e9dbafa57eb93453c338c19d3bde4849537300fb9e92",
+      "semantic_sha256": "96d05d9659eebe3f284c7a7d3670559bf93875adbd39eb9c5fed469545177ea6"
+    },
+    "formal_state_clone": {
+      "public_path": "docs/analysis/product-v0233-formal-state-clone.json",
+      "file_sha256": "830221172a79fb1d63fbd5d9f9dcb0f9c602f40c50dee40221521d1d01564979",
+      "semantic_sha256": "764e44d7fdb68b490ea7150bd694ff4c660008f05d8cad915a1662ef6583c121"
+    },
+    "runtime_authority": {
+      "public_path": "docs/analysis/product-v0233-runtime-authority.json",
+      "private_path": ".local/product-v0233/formal-execution/runtime-authority.json",
+      "public_file_sha256": "41134e13794946f8839cbd457cac444047ce26ac3719b1d55ab92325738441c1",
+      "private_file_sha256": "41134e13794946f8839cbd457cac444047ce26ac3719b1d55ab92325738441c1",
+      "semantic_sha256": "77a2c5140739f09a5b695fba784b30704af3c42297778963e9cdc5d5c62594ea"
+    },
+    "baseline_restart": {
+      "public_path": "docs/analysis/product-v0233-baseline-restart.json",
+      "private_path": ".local/product-v0233/formal-execution/baseline-restart.json",
+      "public_file_sha256": "3b07e99c3fa7f5bd57b43dff6ffaa3a9bca00a489204fb9eb57498099da5ac0f",
+      "private_file_sha256": "3b07e99c3fa7f5bd57b43dff6ffaa3a9bca00a489204fb9eb57498099da5ac0f",
+      "semantic_sha256": "794e881fa2cdf9f44e19af6413b4c8f09418881114639e3d60a5711195f469d4"
+    },
+    "traffic_consumption": {
+      "private_path": ".local/product-v0233/formal-execution/traffic-consumption.json",
+      "file_sha256": "87df8db080bb08fde1d37baeb03d0aea3487d5173a98812332744cbabd352e7f",
+      "semantic_sha256": "5531a453943a6dd90f2f7abe588e753bedfb05a135b42ecb121b86e0bf2f811f"
+    },
+    "traffic_execution": {
+      "private_path": ".local/product-v0233/formal-execution/traffic-execution.json",
+      "file_sha256": "b1155464e11dd6130babe0834cd728d4cf56959a9fbc6ac78ece314910bc0c4c",
+      "semantic_sha256": "dcdd1d355bc698f9a26367d9097acd20553cdd1e789554be855819b5fb62103a"
+    },
+    "formal_traffic": {
+      "public_path": "docs/analysis/product-v0233-formal-traffic.json",
+      "private_path": ".local/product-v0233/formal-execution/formal-traffic.json",
+      "public_file_sha256": "44ea769a91b49df6d69f0def28c43c1938cba7a499432faaa57d478c9c12d55d",
+      "private_file_sha256": "44ea769a91b49df6d69f0def28c43c1938cba7a499432faaa57d478c9c12d55d",
+      "semantic_sha256": "e596985944c6f45e005f0f4036f8b2ec7a8fc1b653fc27461c8f87d3ab0610fd",
+      "execution_sha256": "dcdd1d355bc698f9a26367d9097acd20553cdd1e789554be855819b5fb62103a",
+      "traffic_run_sha256": "0c86e4df6364534128fd3b6e3258a751cf979510a27ff5d14f768c26155b9f79"
+    },
+    "action_journal": {
+      "private_path": ".local/product-v0233/formal-execution/action-journal.json",
+      "file_sha256": "4ba04b3f0957448c0dbe96b6d8ab358c2e42a39084eb897ba84ab5feb2178cf2",
+      "semantic_sha256": "d6e29cab0645b50bbed447e5e7eb8d95a54c0d2522e68e2ac8f99116d9a537f4"
+    },
+    "formal_closure": {
+      "public_path": "docs/analysis/product-v0233-formal-closure.json",
+      "file_sha256": "2dded3760f5186e13805e8b6bfd7aa75cae71fee454f77a4c73db84e87024e14",
+      "semantic_sha256": "cab7298192ca241663a55044a05dee9c7f7e2a84a22273166dac02bfa4af7b41"
+    },
+    "formal_blocker": {
+      "public_path": "docs/analysis/product-v0233-formal-blocker.json",
+      "file_sha256": "a02cce3787c1a443f365c83c4207b6256de431d792ebd6fded628ca36bc32ed1",
+      "semantic_sha256": "3cafc26325cebbbfab4760060356394ef52454bf3b6eb8ac7f6b28102adbf672"
+    },
+    "terminal_publication": {
+      "private_path": ".local/product-v0233/formal-execution/terminal-publication.json",
+      "file_sha256": "ab80dc99e9ca6959e4e581c7fc5490ca52939e0f6f79467f4b129ed69892b771",
+      "semantic_sha256": "10d28beed8d04664b4bd3016a7944606a4344179d49f14e75ffaf33357863aad"
+    },
+    "terminal_publication_completion": {
+      "private_path": ".local/product-v0233/formal-execution/terminal-publication-completion.json",
+      "file_sha256": "6c62377028f29153918996c709040b9846589dff1530a62ca2a1ecc972496c74",
+      "semantic_sha256": "b4a974d3c624851cf8a9c6c1c6c99d382235bb6d57cd2d1099e655c005795e60"
+    },
+    "repository_state": {
+      "public_path": "config/product-v0233/repository-state-manifest.json",
+      "file_sha256": "19e89f646ba5ed23ca74b92516e9c0895b5994579afccb1582ad8210ed7db9cf",
+      "semantic_sha256": "14dfb2361209e41aed740d9817f4c10a48dc466becb536e53bbcee576f75f514"
+    },
+    "progress": {
+      "public_path": "docs/analysis/product-v0233-progress.json",
+      "file_sha256": "2c566c7336bd44730910fdafb6fe3722dde437a8e47925672a19a2955c3c3392",
+      "semantic_sha256": "2681b4100be9eb41319b9f4ba85a4a795bc96e125e6202a6e373ec73e2f8d76c"
+    }
+  },
+  "required_absences": [
+    "docs/analysis/product-v0233-fresh-runtime-snapshot.json",
+    "docs/analysis/product-v0233-incident-traffic-binding.json",
+    "docs/analysis/product-v0233-evidence-assessment.json",
+    "docs/analysis/product-v0233-diagnosis-stage-journal.json",
+    "docs/analysis/product-v0233-diagnosis-blocker.json",
+    "docs/analysis/product-v0233-diagnosis-blocker.md",
+    "docs/analysis/product-v0233-knowledge-loop-handoff.json",
+    "docs/analysis/product-v0233-knowledge-loop-handoff.md",
+    "docs/results/product-v0233-nofault-acceptance.json",
+    "docs/results/product-v0233-nofault-acceptance.md",
+    "docs/results/product-v0233-limitations.md",
+    "docs/results/product-v0233-interview-brief.md"
+  ],
+  "authority_and_closure": {
+    "action_authority": "NONE",
+    "product_cleanup": "CLEAN",
+    "demo_cleanup": "CLEAN",
+    "source_state_unchanged": true,
+    "frozen_semantic_surface_unchanged_during_execution": true,
+    "provider_calls": 0,
+    "agent_writes": 0,
+    "runbook_executions": 0,
+    "fault_attempts": 0,
+    "knowledge_loop_executions": 0,
+    "non_owned_resources_changed": false
+  },
+  "manifest_sha256": "08fdbd61e3fa439b55b1ef903bdea26dee6a3c839129bef53ee99c19a3c61014"
+}

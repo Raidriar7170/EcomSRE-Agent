@@ -1,0 +1,447 @@
+{
+  "schema_version": "ecomsre.product.attempt-diagnosis-failure-supplement.v0233",
+  "attempt_id": "attempt-3",
+  "semantic_generation": 2,
+  "prior_semantic_surface_sha256": "0c98f3feda1389615849979eb7d2870ae7262ca9070cfdeca36529fd77247ccc",
+  "original_attempt_record_sha256": "2c029927dbd4831d87efaf4a14de2f6ebf773daa038b9acde363ac0e7e766a76",
+  "original_latest_checkpoint_sha256": "94df1c610f3bb3ee983402fc4c1574eea838b235993c8b43e33b20f9ed3bff87",
+  "original_blocker_file_sha256": "150794b70fbd59b613f44c5d885cf079e1108d63b3549ef94efd811436f97fd7",
+  "original_blocker_sha256": "2772965a59be940a8c408eee49d1c8f52642dacf569dc629cfc5e81b52a067c7",
+  "candidate_logical_services": [
+    "checkout"
+  ],
+  "root_cause_code": "CANDIDATE_SCOPED_CAPABILITY_STATUS_MISMATCH",
+  "repair_classification": "SEMANTIC_GENERATION_CHANGE_REQUIRED",
+  "successor_semantic_generation": 3,
+  "incident": {
+    "alert_name": "Product v0.2.3.3 No-Fault acceptance",
+    "baseline_id": "base-b25440a36089a8f0e6b9f1dc",
+    "baseline_sha256": "6d3d2d7a4854d1cfc2477746e7d0c940ed8a08644ebc69b7b91066eabe45ae64",
+    "candidate_logical_services": [
+      "checkout"
+    ],
+    "candidate_service_ids": [
+      "svc-5dc8cf30d92ea9e3211e467d"
+    ],
+    "created_at": "2026-09-01T19:05:34.789483Z",
+    "diagnosis_observed_at": "2026-09-01T19:05:34.754038Z",
+    "ended_at": "2026-09-01T19:05:34.754038Z",
+    "environment_id": "env-2b5c86f47f449acfc54cfcec",
+    "external_incident_key": "product-v0233-g2-38e549df74747a513333f6b2",
+    "incident_id": "inc-221cf5618424bad99df8aa63",
+    "incident_sha256": "20a2a39b9b33d4965ca05717b39e7639d4a12cba546a33aaff91db6b7fa72157",
+    "labels": {
+      "fault": "none"
+    },
+    "schema_version": "ecomsre.product.incident.v1",
+    "service_identity_sha256": "1e420ccef98b5a2b4a881a7fe5ca94f2b3ce31b2947f30a4750071bb6043b487",
+    "source_capability_sha256": "b278a6694b1c9596e291ee7cb514298319c4d3bb0989b0addb041c25690d511e",
+    "started_at": "2026-09-01T19:00:34.712390Z",
+    "summary": "Fresh formal healthy checkout observation with no fault active."
+  },
+  "capability_matrix": {
+    "capability_sha256": "b278a6694b1c9596e291ee7cb514298319c4d3bb0989b0addb041c25690d511e",
+    "effective_policy_sha256": "42c951a157b0938b305932e89ea68895217f582feb4e345554672fdfd78f897b",
+    "environment_id": "env-2b5c86f47f449acfc54cfcec",
+    "logical_services": [
+      "ad",
+      "cart",
+      "checkout",
+      "currency",
+      "email",
+      "flagd",
+      "frontend",
+      "frontend-proxy",
+      "frontend-web",
+      "image-provider",
+      "jaeger",
+      "load-generator",
+      "otelcol-contrib",
+      "payment",
+      "product-catalog",
+      "quote",
+      "recommendation",
+      "shipping",
+      "telemetry-docs"
+    ],
+    "mechanisms": [
+      {
+        "mechanism": "CONFIGURATION_ERROR",
+        "observable_sources": [
+          "CHANGES",
+          "LOGS",
+          "METRICS",
+          "TRACES"
+        ],
+        "status": "PARTIALLY_OBSERVABLE"
+      },
+      {
+        "mechanism": "CPU_SATURATION",
+        "observable_sources": [
+          "RESOURCES",
+          "RUNTIME"
+        ],
+        "status": "PARTIALLY_OBSERVABLE"
+      },
+      {
+        "mechanism": "DEPENDENCY_LATENCY",
+        "observable_sources": [
+          "METRICS",
+          "TRACES"
+        ],
+        "status": "PARTIALLY_OBSERVABLE"
+      },
+      {
+        "mechanism": "MEMORY_LEAK",
+        "observable_sources": [
+          "LOGS",
+          "RESOURCES",
+          "RUNTIME"
+        ],
+        "status": "PARTIALLY_OBSERVABLE"
+      },
+      {
+        "mechanism": "SERVICE_UNAVAILABLE",
+        "observable_sources": [
+          "METRICS",
+          "RUNTIME",
+          "TRACES"
+        ],
+        "status": "PARTIALLY_OBSERVABLE"
+      }
+    ],
+    "no_incident_eligible": false,
+    "schema_version": "ecomsre.product.environment-capability-matrix.v1",
+    "sources": [
+      {
+        "connector_names": [],
+        "covered_services": [
+          "ad",
+          "cart",
+          "checkout",
+          "currency",
+          "email",
+          "flagd",
+          "frontend",
+          "frontend-proxy",
+          "frontend-web",
+          "image-provider",
+          "jaeger",
+          "load-generator",
+          "otelcol-contrib",
+          "payment",
+          "product-catalog",
+          "quote",
+          "recommendation",
+          "shipping",
+          "telemetry-docs"
+        ],
+        "observable_predicates": [
+          "CHANGE_RECENT_ROLLOUT"
+        ],
+        "source": "CHANGES",
+        "status": "AVAILABLE",
+        "target_complete_coverage": true
+      },
+      {
+        "connector_names": [
+          "opensearch"
+        ],
+        "covered_services": [
+          "ad",
+          "cart",
+          "checkout",
+          "currency",
+          "email",
+          "frontend-proxy",
+          "load-generator",
+          "otelcol-contrib",
+          "payment",
+          "product-catalog",
+          "quote",
+          "recommendation",
+          "shipping"
+        ],
+        "observable_predicates": [
+          "LOG_CONFIGURATION_ERROR",
+          "LOG_DEPENDENCY_TIMEOUT",
+          "LOG_MEMORY_PRESSURE"
+        ],
+        "source": "LOGS",
+        "status": "PARTIAL",
+        "target_complete_coverage": false
+      },
+      {
+        "connector_names": [
+          "prometheus"
+        ],
+        "covered_services": [
+          "ad",
+          "cart",
+          "checkout",
+          "currency",
+          "email",
+          "flagd",
+          "frontend",
+          "frontend-proxy",
+          "frontend-web",
+          "image-provider",
+          "jaeger",
+          "load-generator",
+          "payment",
+          "product-catalog",
+          "quote",
+          "recommendation",
+          "shipping",
+          "telemetry-docs"
+        ],
+        "observable_predicates": [
+          "METRIC_ERROR_RATE_STRONG",
+          "METRIC_LATENCY_STRONG"
+        ],
+        "source": "METRICS",
+        "status": "PARTIAL",
+        "target_complete_coverage": false
+      },
+      {
+        "connector_names": [
+          "prometheus"
+        ],
+        "covered_services": [
+          "ad",
+          "cart",
+          "checkout",
+          "currency",
+          "email",
+          "flagd",
+          "frontend",
+          "frontend-proxy",
+          "frontend-web",
+          "image-provider",
+          "jaeger",
+          "load-generator",
+          "payment",
+          "product-catalog",
+          "quote",
+          "recommendation",
+          "shipping",
+          "telemetry-docs"
+        ],
+        "observable_predicates": [
+          "RESOURCE_CPU_STRONG",
+          "RESOURCE_MEMORY_GROWTH_STRONG"
+        ],
+        "source": "RESOURCES",
+        "status": "PARTIAL",
+        "target_complete_coverage": false
+      },
+      {
+        "connector_names": [
+          "health",
+          "pilot-runtime"
+        ],
+        "covered_services": [
+          "checkout",
+          "frontend-proxy"
+        ],
+        "observable_predicates": [
+          "RUNTIME_HEALTHY",
+          "RUNTIME_NOT_RUNNING",
+          "RUNTIME_RESTART_PRESSURE",
+          "RUNTIME_UNHEALTHY"
+        ],
+        "source": "RUNTIME",
+        "status": "PARTIAL",
+        "target_complete_coverage": false
+      },
+      {
+        "connector_names": [
+          "jaeger"
+        ],
+        "covered_services": [
+          "ad",
+          "cart",
+          "checkout",
+          "currency",
+          "email",
+          "flagd",
+          "frontend",
+          "frontend-proxy",
+          "frontend-web",
+          "image-provider",
+          "load-generator",
+          "payment",
+          "product-catalog",
+          "quote",
+          "recommendation",
+          "shipping",
+          "telemetry-docs"
+        ],
+        "observable_predicates": [
+          "TRACE_DEPENDENCY_LATENCY",
+          "TRACE_FIRST_ERROR"
+        ],
+        "source": "TRACES",
+        "status": "PARTIAL",
+        "target_complete_coverage": false
+      }
+    ],
+    "verified_at": "2026-08-29T15:09:14.050151Z"
+  },
+  "diagnosis_job": {
+    "attempt_count": 1,
+    "claimed_by": null,
+    "created_at": 1788289534.80032,
+    "exception_fingerprint": "de6d2e8b91fbb7cbb0fbcd76ad99fb077725780eb2828b1b984f56c02c7de24a",
+    "failure_stage": "READ_ACQUISITION_STARTED",
+    "idempotency_key": "formal-v0233-acquisition-38e549df74747a513333f6b2e4302a46",
+    "job_id": "job-558b022c696cecd3041de475",
+    "job_type": "DIAGNOSIS",
+    "journal_tail_sha256": "4fcca7dfe6966e91d5532d767f450a2e9c4613e39f64f2f02a74f955471bc0c2",
+    "lease_expires_at": null,
+    "payload": {
+      "formal_recovery_v0233": {
+        "acquisition_checkpoint_locator": "private/formal-v0233/attempt-3/diagnosis-acquisition-checkpoint.json",
+        "acquisition_sha256": null,
+        "active_profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+        "attempt_id": "attempt-3",
+        "campaign_id": "product-v0233-fresh-formal-nofault",
+        "context_sha256": "c5d4a09ed07a47101831670491a7ab66a838bb8a73d8fcdbda2330ec417d127d",
+        "diagnosis_generation": 1,
+        "schema_version": "ecomsre.product.formal-diagnosis-job-context.v0233",
+        "semantic_generation": 2,
+        "semantic_surface_sha256": "0c98f3feda1389615849979eb7d2870ae7262ca9070cfdeca36529fd77247ccc"
+      },
+      "incident_id": "inc-221cf5618424bad99df8aa63"
+    },
+    "result": null,
+    "safe_error_code": "INTERNAL_CONTRACT_FAILURE",
+    "schema_version": "ecomsre.product.job.v1",
+    "status": "FAILED",
+    "updated_at": 1788289535.5937438
+  },
+  "journal_tail_events": [
+    {
+      "event_sha256": "073fcc87170beec64f7da499ff936b604be1aab768a51ccbea325cda5fc8057f",
+      "exception_fingerprint": null,
+      "incident_id": "inc-221cf5618424bad99df8aa63",
+      "input_binding_sha256": "da37d1a117f048120e1a875c1f8e41bdb0ace6288f6bfab80eea5869c3a007cc",
+      "job_id": "job-558b022c696cecd3041de475",
+      "journal_id": "journal-7a71800571600ad5472350b6",
+      "observed_at": "2026-09-01T19:05:35.542778Z",
+      "ordinal": 23,
+      "output_artifact_sha256": null,
+      "previous_event_sha256": "fbff9dfe1a37096d4a983a12a8562c1cb760de9017cc9f3a86a67d1c9b09367d",
+      "safe_error_code": null,
+      "schema_version": "ecomsre.product.diagnosis-stage-event.v02322",
+      "source_code_sha256": "e6e9f211f8234f8d806892f47349e228efc14c80d70aac9cd96d2e8cac06d067",
+      "stage": "READ_ACQUISITION_STARTED",
+      "status": "STARTED"
+    },
+    {
+      "event_sha256": "4fcca7dfe6966e91d5532d767f450a2e9c4613e39f64f2f02a74f955471bc0c2",
+      "exception_fingerprint": "de6d2e8b91fbb7cbb0fbcd76ad99fb077725780eb2828b1b984f56c02c7de24a",
+      "incident_id": "inc-221cf5618424bad99df8aa63",
+      "input_binding_sha256": "073fcc87170beec64f7da499ff936b604be1aab768a51ccbea325cda5fc8057f",
+      "job_id": "job-558b022c696cecd3041de475",
+      "journal_id": "journal-7a71800571600ad5472350b6",
+      "observed_at": "2026-09-01T19:05:35.542778Z",
+      "ordinal": 24,
+      "output_artifact_sha256": "b2cc3e72677280229235dd05b163d6179204462a6643d2f7ecef4f71cf70cdd6",
+      "previous_event_sha256": "073fcc87170beec64f7da499ff936b604be1aab768a51ccbea325cda5fc8057f",
+      "safe_error_code": "INTERNAL_CONTRACT_FAILURE",
+      "schema_version": "ecomsre.product.diagnosis-stage-event.v02322",
+      "source_code_sha256": "e6e9f211f8234f8d806892f47349e228efc14c80d70aac9cd96d2e8cac06d067",
+      "stage": "FAILED",
+      "status": "FAILED"
+    }
+  ],
+  "failure_envelope": {
+    "baseline_sha256": "6d3d2d7a4854d1cfc2477746e7d0c940ed8a08644ebc69b7b91066eabe45ae64",
+    "bounded_cause_chain": [
+      "pydantic_core._pydantic_core.ValidationError: 1 validation error for CapabilityEvidenceObservationV0232   Value error, partial capability observation differs [type=value_error, input_value={'schema_version': 'ecoms...ab5a4a12b5a1b93e22b4bc'}, input_type=dict]     For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+    ],
+    "bounded_message": "1 validation error for CapabilityEvidenceObservationV0232   Value error, partial capability observation differs [type=value_error, input_value={'schema_version': 'ecoms...ab5a4a12b5a1b93e22b4bc'}, input_type=dict]     For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+    "bounded_stack_frames": [
+      {
+        "file": "src/ecomsre/product/jobs/worker.py",
+        "function": "run_one_job",
+        "line_number": 334,
+        "source_line_sha256": "b93398834924a21d465880583a833a7cad8e0a7a7e15dbfc68f6cebe178b2c98"
+      },
+      {
+        "file": "src/ecomsre/product/jobs/handlers.py",
+        "function": "handle_incident_diagnosis",
+        "line_number": 226,
+        "source_line_sha256": "e74fb78543be4c33ff765e0f6f71193d011e0a1aaf1f3f0400da6abdfa893e65"
+      },
+      {
+        "file": "src/ecomsre/product/jobs/handlers.py",
+        "function": "run_stage",
+        "line_number": 129,
+        "source_line_sha256": "fc2092990b6bea89bff4281fd2c4b0a4752c68cc7e678935292b4c7e9cc10f4a"
+      },
+      {
+        "file": "src/ecomsre/product/incidents/diagnosis_pipeline_v02322.py",
+        "function": "run",
+        "line_number": 391,
+        "source_line_sha256": "6def991edbbd1115544bd5a7a10c15622738308ec1079af2d6ac00dfb5003e20"
+      },
+      {
+        "file": "src/ecomsre/product/jobs/handlers.py",
+        "function": "<lambda>",
+        "line_number": 232,
+        "source_line_sha256": "23f7344929d61a77d09962303dad82a788e89cc86499b51d59b31086550f043f"
+      },
+      {
+        "file": "src/ecomsre/product/incidents/read_backend.py",
+        "function": "acquire",
+        "line_number": 488,
+        "source_line_sha256": "df156e62a9eda8d0d352537babd30a42ceaa8d47340aafdbf81fe06a9f5b4134"
+      },
+      {
+        "file": "src/ecomsre/product/incidents/evidence_binding_v0232.py",
+        "function": "build",
+        "line_number": 621,
+        "source_line_sha256": "a8b7eef36cae6dc208cafe9c0a8bc8780d3979e7c56e835b3af8f99ba9f12df0"
+      },
+      {
+        "file": "src/ecomsre/product/incidents/evidence_binding_v0232.py",
+        "function": "_build_sealed",
+        "line_number": 83,
+        "source_line_sha256": "fb43fea2a92d69376b9b86cdd17095e0a3d11c0cf4555e01c5e17b0ac31815b7"
+      }
+    ],
+    "bridge_output_sha256": null,
+    "capability_sha256": "b278a6694b1c9596e291ee7cb514298319c4d3bb0989b0addb041c25690d511e",
+    "created_at": "2026-09-01T19:05:35.542778Z",
+    "exception_class": "ValidationError",
+    "exception_fingerprint": "de6d2e8b91fbb7cbb0fbcd76ad99fb077725780eb2828b1b984f56c02c7de24a",
+    "exception_module": "pydantic_core._pydantic_core",
+    "failing_stage": "READ_ACQUISITION_STARTED",
+    "failure_envelope_sha256": "b2cc3e72677280229235dd05b163d6179204462a6643d2f7ecef4f71cf70cdd6",
+    "failure_id": "failure-1957b55cfaa05025b4fa69d5",
+    "identity_sha256": "1e420ccef98b5a2b4a881a7fe5ca94f2b3ce31b2947f30a4750071bb6043b487",
+    "incident_id": "inc-221cf5618424bad99df8aa63",
+    "incident_sha256": "20a2a39b9b33d4965ca05717b39e7639d4a12cba546a33aaff91db6b7fa72157",
+    "job_id": "job-558b022c696cecd3041de475",
+    "job_payload_sha256": "6c20d828495d59205eb5c83bba6cac7b65a65a6a3aeeada9e0466b98bcde609b",
+    "journal_tail_sha256": "073fcc87170beec64f7da499ff936b604be1aab768a51ccbea325cda5fc8057f",
+    "last_passed_stage": "ENVIRONMENT_LOADED",
+    "prepared_evidence_sha256": null,
+    "read_acquisition_sha256": null,
+    "schema_version": "ecomsre.product.diagnosis-private-failure.v02322",
+    "source_code_sha256_by_frame": {
+      "src/ecomsre/product/incidents/diagnosis_pipeline_v02322.py:run:391": "6def991edbbd1115544bd5a7a10c15622738308ec1079af2d6ac00dfb5003e20",
+      "src/ecomsre/product/incidents/evidence_binding_v0232.py:_build_sealed:83": "fb43fea2a92d69376b9b86cdd17095e0a3d11c0cf4555e01c5e17b0ac31815b7",
+      "src/ecomsre/product/incidents/evidence_binding_v0232.py:build:621": "a8b7eef36cae6dc208cafe9c0a8bc8780d3979e7c56e835b3af8f99ba9f12df0",
+      "src/ecomsre/product/incidents/read_backend.py:acquire:488": "df156e62a9eda8d0d352537babd30a42ceaa8d47340aafdbf81fe06a9f5b4134",
+      "src/ecomsre/product/jobs/handlers.py:<lambda>:232": "23f7344929d61a77d09962303dad82a788e89cc86499b51d59b31086550f043f",
+      "src/ecomsre/product/jobs/handlers.py:handle_incident_diagnosis:226": "e74fb78543be4c33ff765e0f6f71193d011e0a1aaf1f3f0400da6abdfa893e65",
+      "src/ecomsre/product/jobs/handlers.py:run_stage:129": "fc2092990b6bea89bff4281fd2c4b0a4752c68cc7e678935292b4c7e9cc10f4a",
+      "src/ecomsre/product/jobs/worker.py:run_one_job:334": "b93398834924a21d465880583a833a7cad8e0a7a7e15dbfc68f6cebe178b2c98"
+    },
+    "traceback_sha256": "235440d94e2434259ac0c62bf341246f3a432707452618364752929cb8dab54d"
+  },
+  "supplement_sha256": "45ede4fd8453047ea9c9b6057491fcdd6243d3262f435eb2d07b9839d343f1ae"
+}

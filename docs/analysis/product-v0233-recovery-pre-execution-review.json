@@ -1,0 +1,11 @@
+{
+  "schema_version": "ecomsre.product.recovery-pre-execution-review.v0233",
+  "semantic_generation": 3,
+  "semantic_surface_sha256": "5a8ff7261b11461b083378f2a86b214c4d856d505d99b506245ee750a1f44ee4",
+  "operational_surface_sha256": "5b64019f997805b4c5236212850a955426ce4746028a851808dbcd6123915111",
+  "verdict": "PASS",
+  "must_fix_count": 0,
+  "claim_accuracy": "PASS",
+  "offline_validation": "PASS",
+  "review_sha256": "3f94842dc383dea2913206639fe307dcc62fdc46e270d45960885ffd997482ff"
+}

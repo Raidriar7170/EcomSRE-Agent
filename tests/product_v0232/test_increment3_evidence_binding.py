@@ -46,7 +46,10 @@ from ecomsre.product.connectors.pilot_runtime import (
 )
 from ecomsre.product.contracts import ConnectorConfigV1, ConnectorKindV1
 from ecomsre.product.environment.capabilities import SourceCapabilityStatusV1
-from ecomsre.product.incidents.read_backend import ProductReadBackendV1
+from ecomsre.product.incidents.read_backend import (
+    ProductReadBackendV1,
+    _project_capability_scope_v0232,
+)
 from ecomsre.product.pilot.runtime_authority_v02 import PilotRuntimeAuthorityV02
 from ecomsre.product.incidents.evidence_binding_v0232 import (
     CapabilityEvidenceObservationV0232,
@@ -92,6 +95,110 @@ WINDOW = ConnectorWindowV1(
     ended_at=datetime(2026, 8, 29, 15, 1, tzinfo=UTC),
 )
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_capability_scope_projects_environment_partial_status_to_candidates() -> None:
+    status, available = _project_capability_scope_v0232(
+        status=SourceCapabilityStatusV1.PARTIAL,
+        covered_services=("checkout", "payment"),
+        required_services=("checkout",),
+    )
+
+    assert status is SourceCapabilityStatusV1.AVAILABLE
+    assert available == ("checkout",)
+
+    status, available = _project_capability_scope_v0232(
+        status=SourceCapabilityStatusV1.PARTIAL,
+        covered_services=("checkout",),
+        required_services=("checkout", "payment"),
+    )
+
+    assert status is SourceCapabilityStatusV1.PARTIAL
+    assert available == ("checkout",)
+
+    status, available = _project_capability_scope_v0232(
+        status=SourceCapabilityStatusV1.PARTIAL,
+        covered_services=("payment",),
+        required_services=("checkout",),
+    )
+
+    assert status is SourceCapabilityStatusV1.UNAVAILABLE
+    assert available == ()
+
+
+def test_read_acquisition_accepts_environment_partial_source_complete_for_candidate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def execute(self, *, action, incident, environment, identity_by_logical, window):
+        del self, incident, environment, identity_by_logical
+        return (
+            ConnectorQueryResultV1.build(
+                source=action.source,
+                status=ReadSourceStatusV22.SUCCESS_EMPTY,
+                requested_services=action.target_services,
+                covered_services=action.target_services,
+                window=window,
+                records=(),
+                truncated=False,
+                safe_error_code=None,
+                latency_ms=1.0,
+            ),
+            False,
+            (),
+        )
+
+    monkeypatch.setattr(ProductReadBackendV1, "_execute", execute)
+    backend = ProductReadBackendV1(
+        connectors=cast(Any, object()),
+        changes=cast(Any, object()),
+        metrics=cast(Any, SimpleNamespace(increment=lambda *args: None)),
+    )
+
+    acquisition = backend.acquire(
+        incident=cast(
+            Any,
+            SimpleNamespace(
+                incident_id=INCIDENT_ID,
+                incident_sha256=SHA["component"],
+                candidate_logical_services=("checkout",),
+                diagnosis_observed_at=WINDOW.ended_at,
+            ),
+        ),
+        environment=cast(Any, SimpleNamespace(connector_configs=())),
+        identity_map=cast(Any, SimpleNamespace(services=())),
+        capability_matrix=cast(
+            Any,
+            SimpleNamespace(
+                capability_sha256=SHA["matrix"],
+                sources=(
+                    SimpleNamespace(
+                        source=EvidenceSourceV22.LOGS,
+                        status=SourceCapabilityStatusV1.PARTIAL,
+                        covered_services=("checkout", "payment"),
+                    ),
+                    SimpleNamespace(
+                        source=EvidenceSourceV22.TRACES,
+                        status=SourceCapabilityStatusV1.PARTIAL,
+                        covered_services=("payment",),
+                    ),
+                ),
+            ),
+        ),
+        topology_edges=(),
+    )
+
+    assert len(acquisition.raw_outcomes) == 1
+    assert acquisition.capability_limitations == ("SOURCE_TRACES_UNAVAILABLE",)
+    assert len(acquisition.capability_observations_v0232) == 1
+    assert acquisition.capability_observations_v0232[0].source is EvidenceSourceV22.TRACES
+    assert acquisition.capability_observations_v0232[0].capability_status is (
+        SourceCapabilityStatusV1.UNAVAILABLE
+    )
+    assert acquisition.capability_observations_v0232[0].available_services == ()
+    assert len(acquisition.capability_limitation_candidates_v0232) == 1
+    assert acquisition.capability_limitation_candidates_v0232[0].limitation_code == (
+        "SOURCE_TRACES_UNAVAILABLE"
+    )
 
 
 def test_generic_connector_binding_seals_component_and_combined_results() -> None:
