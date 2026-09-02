@@ -9,7 +9,7 @@ checkout three-kind bundle and Core mechanism ontology remain unchanged.
 The full-mode Compose overlay resolves to 28 services, including checkout,
 accounting, fraud-detection and kafka; this is configuration validation only.
 
-Latest focused validation: 944 affected tests passed, including 62 v0.3 tests.
+Earlier implementation validation: 944 affected tests passed, including 62 v0.3 tests.
 Focused Ruff and mypy across the three follow-up source files passed. The
 earlier 836 Product/sandbox and 54 memory/domain results are retained in the
 machine result as history, not additive coverage. Full repository pytest,
@@ -27,10 +27,21 @@ unknown control formats still fail closed. This is offline test evidence, not
 a live leakage pass. The full-mode environment remains a preparation skeleton,
 not an admitted live runtime.
 
+The subsequent test-only slice passed 78 v0.3/knowledge-loop tests, including
+seven new queue-specific contracts; focused Ruff and independent review passed
+with zero Must Fix findings. Three synthetic windows produce pairwise fingerprint
+similarity 1.0. Runtime mines the two-source queue-anomaly plus healthy-Runtime
+clause from a conclusive fixture matrix; unknown or failed queue controls yield
+no passing candidate. Non-OpenWorld terminals are rejected by ingestion. The
+compiled shadow candidate matches only the lagging consumer and rejects healthy
+and source-failure inputs. These are unit contracts, not measured P1/P2/P3,
+repository-level Shadow, real human approval, an ACTIVE registry, or H1 evidence.
+No production behavior was changed in this test-only slice.
+
 ## Resource blocker
 
 Read-only `docker image inspect --platform linux/arm64` reports `No such image`
-for exactly (reverified 2026-09-02 17:49 UTC, with zero local containers):
+for exactly (reverified 2026-09-02 17:58 UTC, with zero local containers):
 
 - `ghcr.io/open-telemetry/demo:3.0.0-accounting`
 - `ghcr.io/open-telemetry/demo:3.0.0-fraud-detection`
@@ -51,6 +62,10 @@ incident-specific measured METRICS completeness, baseline/case harness, and
 knowledge-loop acceptance still require implementation and validation. In
 particular, endpoint-wide Prometheus capability discovery is not proof of exact
 query coverage; do not mark missing or failed queue reads as conclusive negatives.
+The current generic source-completeness gate still conservatively excludes
+Prometheus as conclusive coverage. Its repair must follow actual full-mode
+metric, per-service query, and baseline observations; this handoff does not
+replace it with a blanket completeness assertion.
 
 The requested human decisions remain unrecorded. Only the user may issue
 `ACCEPT_AS_NEW KAFKA_QUEUE_BACKLOG` and, after passing Shadow Evaluation,

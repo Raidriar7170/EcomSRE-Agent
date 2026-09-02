@@ -2,7 +2,7 @@
   "schema_version": "ecomsre.product.live-knowledge-evolution-result.v030",
   "status": "RESOURCE_BLOCKED",
   "stage": "OFFLINE_PREPARATION_PARTIAL",
-  "observed_at": "2026-09-02T17:49:09Z",
+  "observed_at": "2026-09-02T17:58:28Z",
   "baseline_commit": "86a8dbc7859425ca9ef2e778dc7e4c7675b0cabb",
   "goal_sha256": "7141b67890aaee2f8cfc5c1b9ebfa2fc3ae03da98bea76722b9ec24e72e05f14",
   "branch": "codex/product-v030-live-knowledge-evolution",
@@ -25,7 +25,7 @@
     "live_leakage_check": "NOT_RUN"
   },
   "resource_blocker": {
-    "reverified_at": "2026-09-02T17:49:09Z",
+    "reverified_at": "2026-09-02T17:58:28Z",
     "missing_cached_images": [
       "ghcr.io/open-telemetry/demo:3.0.0-accounting",
       "ghcr.io/open-telemetry/demo:3.0.0-fraud-detection",
@@ -81,6 +81,25 @@
       "independent_review": "PASS_FOR_OFFLINE_PREPARATION_PARTIAL",
       "must_fix_count": 0,
       "note": "Earlier preparation counts above are retained history, not additive coverage. This is not the full pre-merge suite."
+    },
+    "synthetic_knowledge_validation": {
+      "scope": "Product v030 and existing Product knowledge-loop tests",
+      "tests_passed": 78,
+      "new_queue_knowledge_tests_passed": 7,
+      "duration_seconds": 1.68,
+      "focused_ruff": "PASS",
+      "independent_review": "PASS_FOR_SYNTHETIC_TEST_SLICE",
+      "must_fix_count": 0,
+      "production_code_changed": false,
+      "three_window_fingerprint_similarities": [1.0, 1.0, 1.0],
+      "conclusive_fixture_matrix_mined_predicates": [
+        "core:RUNTIME_HEALTHY",
+        "ga:METRIC_QUEUE_LAG_OUTLIER"
+      ],
+      "unknown_or_failed_queue_controls_produce_no_candidate": true,
+      "non_open_world_ingestion_rejected": true,
+      "compiled_shadow_candidate_target_and_source_failure_checks": "PASS",
+      "boundary": "Synthetic unit inputs only. No measured controls, persisted target family, human decision, repository-level Shadow Evaluation, ACTIVE registry, or H1 result is established."
     }
   },
   "remaining_implementation": [
