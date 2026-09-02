@@ -16,10 +16,10 @@
       "settings": {
         "query_templates": {
           "request_support": "sum(rate(traces_span_metrics_calls_total{service_name=\"{service}\"}[5m]))",
-          "error_rate": "sum(rate(traces_span_metrics_calls_total{service_name=\"{service}\",status_code=\"STATUS_CODE_ERROR\"}[5m])) / clamp_min(sum(rate(traces_span_metrics_calls_total{service_name=\"{service}\"}[5m])), 1)",
+          "error_rate": "(sum(rate(traces_span_metrics_calls_total{service_name=\"{service}\",status_code=\"STATUS_CODE_ERROR\"}[5m])) or (0 * sum(rate(traces_span_metrics_calls_total{service_name=\"{service}\"}[5m])))) / clamp_min(sum(rate(traces_span_metrics_calls_total{service_name=\"{service}\"}[5m])), 1)",
           "latency": "histogram_quantile(0.95, sum by (le) (rate(traces_span_metrics_duration_milliseconds_bucket{service_name=\"{service}\"}[5m])))",
-          "cpu": "sum(rate(container_cpu_usage_seconds_total{service_name=\"{service}\"}[5m])) * 100",
-          "memory": "sum(container_memory_usage_bytes{service_name=\"{service}\"})"
+          "cpu": "sum(rate(container_cpu_usage_nanoseconds_total{container_name=\"ecomsre-live-sandbox-v1-{service}\"}[1m])) / 1000000000 * 100",
+          "memory": "sum(container_memory_usage_total_bytes{container_name=\"ecomsre-live-sandbox-v1-{service}\"})"
         }
       },
       "credential_refs": {}
@@ -45,7 +45,7 @@
       "kind": "JAEGER",
       "endpoint": "http://host.docker.internal:11686/jaeger/ui",
       "settings": {
-        "minimum_duration_ms": 5000
+        "minimum_duration_ms": 0
       },
       "credential_refs": {}
     },

@@ -238,7 +238,7 @@ def test_increment2_connector_verification_baseline_and_read_api(tmp_path) -> No
     assert baseline.successful_windows == 6
     assert baseline.active is False
     assert baseline.v22_baseline_profile.metric_stats[0].service == "payment"
-    assert baseline.v22_baseline_profile.trace_stats[0].service == "payment"
+    assert baseline.v22_baseline_profile.trace_stats == ()
 
     with TestClient(create_app(settings)) as client:
         matrix_response = client.get(

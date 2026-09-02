@@ -5,14 +5,31 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from ecomsre.dta_v2.v22.memory import build_memory_views_v22
+from ecomsre.dta_v2.v22.diagnosis import AdmittedDiagnosisV22
+from ecomsre.dta_v2.v22.memory import (
+    PredicateKindV22,
+    SalientEvidenceMemoryV22,
+    SignalStrengthV22,
+    build_memory_views_v22,
+)
+from ecomsre.dta_v2.v22.predicates import (
+    build_default_evidence_support_policy_v22,
+    evaluate_no_incident_v22,
+)
 from ecomsre.dta_v2.v22.read_contracts import EvidenceSourceV22, ReadSourceStatusV22, semantic_sha256_v22
 from ecomsre.dta_v2.v23.contracts import (
     ProvisionalFaultDomainV23,
     build_provisional_report_v23,
 )
-from ecomsre.dta_v2.v23.generic_anomalies import extract_generic_anomalies_v23
-from ecomsre.dta_v2.v23.known_admission import build_known_admission_state_v23
+from ecomsre.dta_v2.v23.generic_anomalies import (
+    GenericAnomalyKindV23,
+    GenericAnomalyV23,
+    extract_generic_anomalies_v23,
+)
+from ecomsre.dta_v2.v23.known_admission import (
+    KnownAdmissionStateV23,
+    build_known_admission_state_v23,
+)
 from ecomsre.dta_v2.v23.novelty_gate import (
     NoveltyDispositionV23,
     evaluate_novelty_gate_v23,
@@ -37,6 +54,67 @@ from ecomsre.product.incidents.evidence_binding_v0232 import (
     DiagnosisDecisionTraceV0232,
 )
 from ecomsre.product.incidents.read_backend import ProductReadAcquisitionV1
+
+
+_V024_ANOMALY_BY_PREDICATE = {
+    PredicateKindV22.METRIC_LATENCY_STRONG: (
+        GenericAnomalyKindV23.METRIC_LATENCY_OUTLIER
+    ),
+    PredicateKindV22.RESOURCE_CPU_STRONG: GenericAnomalyKindV23.RESOURCE_CPU_OUTLIER,
+    PredicateKindV22.RESOURCE_MEMORY_GROWTH_STRONG: (
+        GenericAnomalyKindV23.RESOURCE_MEMORY_TREND
+    ),
+    PredicateKindV22.LOG_CONFIGURATION_ERROR: GenericAnomalyKindV23.LOG_ERROR_CLUSTER,
+    PredicateKindV22.LOG_DEPENDENCY_TIMEOUT: GenericAnomalyKindV23.LOG_ERROR_CLUSTER,
+    PredicateKindV22.LOG_MEMORY_PRESSURE: GenericAnomalyKindV23.LOG_ERROR_CLUSTER,
+}
+
+
+def _effective_admissions_v024(
+    *,
+    admission: KnownAdmissionStateV23,
+    memory: SalientEvidenceMemoryV22,
+    anomalies: tuple[GenericAnomalyV23, ...],
+) -> tuple[AdmittedDiagnosisV22, ...]:
+    clauses = {
+        item.clause_id: item
+        for item in build_default_evidence_support_policy_v22().clauses
+    }
+    effective: list[AdmittedDiagnosisV22] = []
+    for item in admission.admitted_diagnoses:
+        clause = clauses[item.matched_clause_id]
+        guarded_kinds = {
+            requirement.predicate_kind
+            for requirement in clause.requirements
+            if requirement.predicate_kind in _V024_ANOMALY_BY_PREDICATE
+        }
+        valid = True
+        for kind in guarded_kinds:
+            predicates = tuple(
+                predicate
+                for predicate in memory.predicates
+                if predicate.predicate_kind is kind
+                and set(predicate.evidence_refs).issubset(
+                    item.supporting_evidence_refs
+                )
+            )
+            expected_anomaly = _V024_ANOMALY_BY_PREDICATE[kind]
+            if not predicates or not any(
+                anomaly.kind is expected_anomaly
+                and anomaly.strength is SignalStrengthV22.STRONG
+                and any(
+                    set(predicate.evidence_refs).intersection(
+                        anomaly.evidence_refs
+                    )
+                    for predicate in predicates
+                )
+                for anomaly in anomalies
+            ):
+                valid = False
+                break
+        if valid:
+            effective.append(item)
+    return tuple(effective)
 
 
 def _domain_for_anomalies(anomalies: tuple[Any, ...]) -> ProvisionalFaultDomainV23:
@@ -84,6 +162,14 @@ class ProductDiagnosisBridgeV1:
         topology_edges = tuple(
             (item.parent_service, item.child_service) for item in baseline.topology_edges
         )
+        anomalies = extract_generic_anomalies_v23(
+            memory=memory,
+            candidate_services=candidates,
+            baseline_known_log_templates=tuple(
+                (item.service, item.template) for item in baseline.normal_log_templates
+            ),
+            healthy_noise_guard_v024=True,
+        )
         failed_sources = tuple(
             sorted(
                 {
@@ -104,9 +190,23 @@ class ProductDiagnosisBridgeV1:
             topology_edges=topology_edges,
             evidence_source_unavailable=bool(failed_sources),
         )
-        anomalies = extract_generic_anomalies_v23(
+        effective_admissions = _effective_admissions_v024(
+            admission=admission,
+            memory=memory,
+            anomalies=anomalies,
+        )
+        effective_conflicting = len(effective_admissions) > 1
+        legacy_no_incident = evaluate_no_incident_v22(
             memory=memory,
             candidate_services=candidates,
+        )
+        false_anomaly_only = (
+            legacy_no_incident.denial_reasons == ("STRONG_ANOMALY_PRESENT",)
+            and not anomalies
+            and not effective_admissions
+        )
+        effective_no_incident_admissible = (
+            admission.no_incident_admissible or false_anomaly_only
         )
         by_logical = {item.logical_service: item.service_id for item in identity_map.services}
 
@@ -126,7 +226,7 @@ class ProductDiagnosisBridgeV1:
         novelty_gate_reason_codes: tuple[str, ...] = ()
         residual_anomaly_ids: tuple[str, ...] = ()
 
-        if admission.conflicting_evidence:
+        if effective_conflicting:
             terminal = DiagnosisTerminalV1.CONFLICTING_EVIDENCE
             lane = DiagnosisLaneV1.ABSTAIN
             algorithmic_reasons.add("CORE_MULTIPLE_ADMISSIONS")
@@ -134,13 +234,13 @@ class ProductDiagnosisBridgeV1:
                 sorted(
                     {
                         ref
-                        for diagnosis in admission.admitted_diagnoses
+                        for diagnosis in effective_admissions
                         for ref in diagnosis.supporting_evidence_refs
                     }
                 )
             )
-        elif admission.admitted_diagnosis is not None:
-            diagnosis = admission.admitted_diagnosis
+        elif effective_admissions:
+            diagnosis = effective_admissions[0]
             terminal = DiagnosisTerminalV1.CORE_KNOWN
             lane = DiagnosisLaneV1.CORE
             roots = (by_logical[diagnosis.root_service],)
@@ -189,7 +289,7 @@ class ProductDiagnosisBridgeV1:
                     )
                 ) and "RUNTIME_DIAGNOSIS_UNAVAILABLE" not in limitations
                 if (
-                    admission.no_incident_admissible
+                    effective_no_incident_admissible
                     and not anomalies
                     and required_coverage
                     and not failed_sources
@@ -322,13 +422,13 @@ class ProductDiagnosisBridgeV1:
             diagnosis_id=result.diagnosis_id,
             known_admission_status=(
                 "MULTIPLE_ADMISSIONS"
-                if admission.conflicting_evidence
+                if effective_conflicting
                 else "SINGLE_ADMISSION"
-                if admission.admitted_diagnosis is not None
+                if effective_admissions
                 else "NONE"
             ),
             extension_match_count=extension_match_count,
-            no_incident_admissible=admission.no_incident_admissible,
+            no_incident_admissible=effective_no_incident_admissible,
             required_coverage_satisfied=required_coverage,
             failed_sources=failed_sources,
             novelty_gate_disposition=novelty_gate_disposition,

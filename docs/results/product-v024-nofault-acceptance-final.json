@@ -1,0 +1,110 @@
+{
+  "schema_version": "ecomsre.product.v024.nofault-acceptance-final.v1",
+  "repository_disposition": "MERGE_READY_AFTER_VALIDATION",
+  "completion_terminal": "ECOMSRE_PRODUCT_V024_TELEMETRY_CAPABILITY_REPAIR_COMPLETE",
+  "historical_failure_preserved": {
+    "run_id": "20260902T1155Z-b2bd47c1",
+    "diagnosis_terminal": "OPEN_WORLD",
+    "scorer_terminal": "ECOMSRE_PRODUCT_V023_NOFAULT_NOT_SUPPORTED",
+    "tracked_evidence": "docs/results/product-v024-nofault-acceptance.json"
+  },
+  "run_id": "20260902T1403Z-ca18283e",
+  "incident_id": "inc-98efc49ae614af71d1972787",
+  "runtime": {
+    "fresh": true,
+    "healthy": true,
+    "authority_sha256": "aa7dea440fab0732f8e8fa429431a84b7edc7dfad8e150f939571645dc0775cc",
+    "runtime_snapshot_sha256": "4860ed729b8d9574f0185f0f1fd7bc912dcfcf1d64542f5d6bb8684ee08d74ae",
+    "compose_sha256": "b094519a30eb2449b8cff70caf5755457e1dbefb40279d6626301dfd32550aba"
+  },
+  "baseline": {
+    "fresh_for_v024": true,
+    "mode": "DEMO_ONLY",
+    "baseline_id": "base-ffd36aa2fdcf7f3ca855eb23",
+    "baseline_sha256": "0402993281f6950cd24124fca665792f87a664b3fe9356d8f080703c8c7053e1",
+    "audit_sha256": "31ea96dd88ee7d9d61e2d92cec4f4f2a5ea066340923f62a169b9060d6075102",
+    "restart_proof_sha256": "8a2539e3cf0e0076db066a8b14c531b291d8d8a9564851efa4ca37b9acdcb57f",
+    "successful_windows": 5
+  },
+  "traffic": {
+    "planned": 30,
+    "attempted": 30,
+    "succeeded": 30,
+    "failed": 0
+  },
+  "metrics": {
+    "terminal": "ECOMSRE_PRODUCT_V024_METRICS_CONTRACT_PASS",
+    "object_sha256": "ff080fc5694ce2f970feafc780c6ab30909940953fbea59973f3edcece5a3d85",
+    "status": "SUCCESS_NONEMPTY",
+    "covered_services": [
+      "checkout"
+    ],
+    "record_count": 3,
+    "metric_kinds": [
+      "ERROR_RATE",
+      "LATENCY_P95_MS",
+      "REQUEST_SUPPORT"
+    ],
+    "sample_count_per_kind": 21,
+    "safe_error_code": null
+  },
+  "resources": {
+    "terminal": "ECOMSRE_PRODUCT_V024_RESOURCES_COVERAGE_PASS",
+    "object_sha256": "2ea01ce16576d95e1be201580ff22854e680c787d15ba3407918ee486527ec50",
+    "status": "SUCCESS_NONEMPTY",
+    "covered_services": [
+      "checkout"
+    ],
+    "logical_service": "checkout",
+    "record_count": 1,
+    "sampling_window_seconds": 10,
+    "sample_count": 5,
+    "safe_error_code": null
+  },
+  "traces": {
+    "terminal": "ECOMSRE_PRODUCT_V024_TRACES_COVERAGE_PASS",
+    "object_sha256": "3dfc6d179ab155e569306799a6d67f6cfb3628c7fdf15d391b90e65fedbbcef4",
+    "status": "SUCCESS_NONEMPTY",
+    "covered_services": [
+      "checkout"
+    ],
+    "normalized_services": [
+      "checkout"
+    ],
+    "record_count": 12,
+    "safe_error_code": null
+  },
+  "logs": {
+    "status": "SUCCESS_NONEMPTY",
+    "covered_services": [
+      "checkout"
+    ],
+    "bounded_observation": true,
+    "active_profile_sha256": "b9577dfc4eaa933b62048bbcbd041ed470343f7c76255ab851cdcaeef60a7df2",
+    "p01_provenance_valid_for_nofault": true
+  },
+  "diagnosis": {
+    "terminal": "NO_INCIDENT",
+    "result_sha256": "cf85ea8dc9f29263cdb25017cbc1c34801294fb4ea41b35e067cf293401dace5",
+    "capability_limitations": []
+  },
+  "scorer": {
+    "terminal": "ECOMSRE_PRODUCT_V023_NOFAULT_FULLY_SUPPORTED",
+    "reasons": [],
+    "result_sha256": "e227ed10dfbc52dc05cfca48c6a7209f318ed438eb96a55add19ae581276d87c"
+  },
+  "safety": {
+    "fault_attempt_count": 0,
+    "action_authority": "NONE",
+    "provider_calls": 0,
+    "agent_writes": 0,
+    "runbook_executions": 0
+  },
+  "cleanup": {
+    "product": "CLEAN",
+    "demo": "CLEAN",
+    "queue_default_unchanged": true,
+    "outer_baseline_unchanged": true,
+    "non_owned_resources_changed": false
+  }
+}

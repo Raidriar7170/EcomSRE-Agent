@@ -18,6 +18,7 @@ from ecomsre.dta_v2.v22.memory import (
     SalientEvidenceMemoryV22,
     SignalStrengthV22,
     TraceSalientPayloadV22,
+    _normalize_log as _normalize_log_template_v024,
 )
 from ecomsre.dta_v2.v22.read_contracts import (
     DtaModelV22,
@@ -26,6 +27,23 @@ from ecomsre.dta_v2.v22.read_contracts import (
     RuntimeStateV22,
     semantic_sha256_v22,
 )
+
+
+_LATENCY_BASELINE_NOISE_FLOOR_MS_V024 = 50.0
+_LATENCY_ABSOLUTE_DEVIATION_FLOOR_MS_V024 = 50.0
+_MEMORY_SLOPE_NOISE_FLOOR_BYTES_PER_SECOND_V024 = 100_000.0
+_MEMORY_DELTA_NOISE_FLOOR_BYTES_V024 = 1_000_000
+_RESOURCE_MINIMUM_SAMPLE_COUNT_V024 = 5
+_V024_REEVALUATED_PREDICATES = {
+    PredicateKindV22.METRIC_LATENCY_STRONG,
+    PredicateKindV22.RESOURCE_CPU_STRONG,
+    PredicateKindV22.RESOURCE_MEMORY_GROWTH_STRONG,
+}
+_LOG_PREDICATES = {
+    PredicateKindV22.LOG_CONFIGURATION_ERROR,
+    PredicateKindV22.LOG_DEPENDENCY_TIMEOUT,
+    PredicateKindV22.LOG_MEMORY_PRESSURE,
+}
 
 
 class GenericAnomalyKindV23(str, Enum):
@@ -166,10 +184,17 @@ def extract_generic_anomalies_v23(
     *,
     memory: SalientEvidenceMemoryV22,
     candidate_services: tuple[str, ...],
+    baseline_known_log_templates: tuple[tuple[str, str], ...] = (),
+    healthy_noise_guard_v024: bool = False,
 ) -> tuple[GenericAnomalyV23, ...]:
     """Extract visible symptoms only; evaluator truth is not an input."""
 
     candidates = set(candidate_services)
+    baseline_logs = {
+        (service, _normalize_log_template_v024(template))
+        for service, template in baseline_known_log_templates
+    }
+    suppressed_log_refs: set[str] = set()
     anomalies: dict[tuple[object, ...], GenericAnomalyV23] = {}
 
     def add(anomaly: GenericAnomalyV23) -> None:
@@ -188,16 +213,35 @@ def extract_generic_anomalies_v23(
             if payload.metric_kind is MetricKindV22.ERROR_RATE and strength is SignalStrengthV22.STRONG:
                 kind = GenericAnomalyKindV23.METRIC_ERROR_OUTLIER
             elif payload.metric_kind is MetricKindV22.LATENCY_P95_MS:
-                if strength is SignalStrengthV22.STRONG:
+                if not healthy_noise_guard_v024 and strength is SignalStrengthV22.STRONG:
                     kind = GenericAnomalyKindV23.METRIC_LATENCY_OUTLIER
                 elif (
-                    payload.baseline_ratio is not None
+                    not healthy_noise_guard_v024
+                    and payload.baseline_ratio is not None
                     and payload.delta is not None
                     and payload.baseline_ratio >= 1.5
                     and payload.delta >= 5.0
                 ):
                     kind = GenericAnomalyKindV23.METRIC_LATENCY_OUTLIER
                     strength = SignalStrengthV22.MODERATE
+                elif (
+                    healthy_noise_guard_v024
+                    and payload.value is not None
+                    and payload.baseline_value is not None
+                    and payload.delta is not None
+                    and payload.value
+                    / max(payload.baseline_value, _LATENCY_BASELINE_NOISE_FLOOR_MS_V024)
+                    >= 1.5
+                    and payload.delta >= _LATENCY_ABSOLUTE_DEVIATION_FLOOR_MS_V024
+                ):
+                    kind = GenericAnomalyKindV23.METRIC_LATENCY_OUTLIER
+                    strength = (
+                        SignalStrengthV22.STRONG
+                        if payload.value
+                        / max(payload.baseline_value, _LATENCY_BASELINE_NOISE_FLOOR_MS_V024)
+                        >= 2.0
+                        else SignalStrengthV22.MODERATE
+                    )
             if kind is not None:
                 add(
                     _build_anomaly(
@@ -243,6 +287,7 @@ def extract_generic_anomalies_v23(
         elif isinstance(payload, ResourceSalientPayloadV22):
             if (
                 payload.cpu_baseline_ratio is not None
+                and (not healthy_noise_guard_v024 or payload.cpu_p50_percent >= 80.0)
                 and payload.cpu_p95_percent >= 80.0
                 and payload.cpu_baseline_ratio >= 2.0
             ):
@@ -262,8 +307,21 @@ def extract_generic_anomalies_v23(
                     )
                 )
             baseline_slope = payload.baseline_memory_slope_bytes_per_second
-            if (
+            if healthy_noise_guard_v024 and (
                 baseline_slope is not None
+                and payload.memory_slope_bytes_per_second
+                >= max(
+                    _MEMORY_SLOPE_NOISE_FLOOR_BYTES_PER_SECOND_V024,
+                    max(0.0, baseline_slope)
+                    + _MEMORY_SLOPE_NOISE_FLOOR_BYTES_PER_SECOND_V024,
+                )
+                and payload.memory_delta_bytes >= _MEMORY_DELTA_NOISE_FLOOR_BYTES_V024
+                and payload.sample_count >= _RESOURCE_MINIMUM_SAMPLE_COUNT_V024
+            ):
+                strength = SignalStrengthV22.STRONG
+            elif (
+                not healthy_noise_guard_v024
+                and baseline_slope is not None
                 and payload.memory_slope_bytes_per_second
                 > max(1.0, baseline_slope * 1.5)
             ):
@@ -272,6 +330,9 @@ def extract_generic_anomalies_v23(
                     if payload.memory_slope_bytes_per_second > max(1.0, baseline_slope * 2.0)
                     else SignalStrengthV22.MODERATE
                 )
+            else:
+                strength = None
+            if strength is not None:
                 add(
                     _build_anomaly(
                         kind=GenericAnomalyKindV23.RESOURCE_MEMORY_TREND,
@@ -327,6 +388,16 @@ def extract_generic_anomalies_v23(
                     )
                 )
         elif isinstance(payload, LogSalientPayloadV22):
+            if healthy_noise_guard_v024:
+                baseline_known = (
+                    fact.service,
+                    payload.normalized_template,
+                ) in baseline_logs
+                if payload.severity == "DIAGNOSTIC" or (
+                    baseline_known and payload.severity not in {"ERROR", "FATAL"}
+                ):
+                    suppressed_log_refs.update(fact.evidence_refs)
+                    continue
             if payload.category is not LogCategoryV22.OTHER:
                 kind = GenericAnomalyKindV23.LOG_ERROR_CLUSTER
             elif payload.severity in {"ERROR", "FATAL"}:
@@ -379,6 +450,14 @@ def extract_generic_anomalies_v23(
             PredicateKindV22.RUNTIME_HEALTHY,
             PredicateKindV22.RESOURCE_MEMORY_GROWTH_STRONG,
         }:
+            continue
+        if healthy_noise_guard_v024 and (
+            predicate.predicate_kind in _V024_REEVALUATED_PREDICATES
+            or (
+                predicate.predicate_kind in _LOG_PREDICATES
+                and set(predicate.evidence_refs).issubset(suppressed_log_refs)
+            )
+        ):
             continue
         kind = _PREDICATE_KIND_MAP.get(predicate.predicate_kind)
         if kind is None:

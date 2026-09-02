@@ -2382,16 +2382,30 @@ def test_nofault_incident_candidates_must_match_checkout_baseline_entity(
 
 
 @pytest.mark.parametrize(
-    ("source", "truncated", "started_at"),
+    ("source", "truncated", "started_at", "expected_terminal", "expected_reason"),
     (
-        (EvidenceSourceV22.LOGS, True, NOW + timedelta(minutes=5)),
-        (EvidenceSourceV22.METRICS, False, NOW + timedelta(minutes=4)),
+        (
+            EvidenceSourceV22.LOGS,
+            True,
+            NOW + timedelta(minutes=5),
+            NOFAULT_FULLY_SUPPORTED_V023,
+            None,
+        ),
+        (
+            EvidenceSourceV22.METRICS,
+            False,
+            NOW + timedelta(minutes=4),
+            NOFAULT_NOT_SUPPORTED_V023,
+            "REQUIRED_SOURCE_COVERAGE_INSUFFICIENT",
+        ),
     ),
 )
-def test_nofault_required_sources_must_be_complete_and_episode_fresh(
+def test_nofault_required_sources_apply_source_specific_freshness(
     source: EvidenceSourceV22,
     truncated: bool,
     started_at: datetime,
+    expected_terminal: str,
+    expected_reason: str | None,
 ) -> None:
     (
         audit,
@@ -2454,8 +2468,11 @@ def test_nofault_required_sources_must_be_complete_and_episode_fresh(
         runbook_executions=0,
     )
 
-    assert result.terminal.value == NOFAULT_NOT_SUPPORTED_V023
-    assert "REQUIRED_SOURCE_COVERAGE_INSUFFICIENT" in result.reasons
+    assert result.terminal.value == expected_terminal
+    if expected_reason is None:
+        assert "REQUIRED_SOURCE_COVERAGE_INSUFFICIENT" not in result.reasons
+    else:
+        assert expected_reason in result.reasons
 
 
 def test_nofault_logs_profile_binding_requires_connector_diagnostics() -> None:

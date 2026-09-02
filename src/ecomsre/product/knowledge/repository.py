@@ -1113,6 +1113,11 @@ class KnowledgeRepositoryV1:
             generic_anomalies=extract_generic_anomalies_v23(
                 memory=memory,
                 candidate_services=incident.candidate_logical_services,
+                baseline_known_log_templates=tuple(
+                    (item.service, item.template)
+                    for item in baseline.normal_log_templates
+                ),
+                healthy_noise_guard_v024=True,
             ),
             raw_outcomes=tuple(raw_outcomes),
         )

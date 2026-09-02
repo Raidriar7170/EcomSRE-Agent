@@ -51,6 +51,7 @@ _METRIC_KIND_BY_TEMPLATE = {
     "cpu": MetricKindV22.CPU_PERCENT,
     "memory": MetricKindV22.MEMORY_BYTES,
 }
+_RESOURCE_ALIGNMENT_TOLERANCE_SECONDS = 0.25
 
 
 def _query_result(
@@ -202,7 +203,10 @@ class PrometheusConnectorV1:
                 and name in {"cpu", "memory"}
             )
         )
-        metric_records: list[MetricFactV22] = []
+        metric_samples: dict[
+            tuple[str, MetricKindV22],
+            list[tuple[float, float]],
+        ] = {}
         series_by_service: dict[str, dict[str, list[tuple[float, float]]]] = {}
         template_sample_counts: dict[tuple[str, str], int] = {}
         attempted_templates: set[tuple[str, str]] = set()
@@ -230,19 +234,10 @@ class PrometheusConnectorV1:
                             continue
                         metric_kind = _METRIC_KIND_BY_TEMPLATE[template_name]
                         if context.requested_source is not EvidenceSourceV22.RESOURCES:
-                            metric_records.append(
-                                MetricFactV22(
-                                    schema_version="dta-v22.metric-fact.v1",
-                                    service=service,
-                                    metric_kind=metric_kind,
-                                    support_status=MetricSupportStatusV22.SUPPORTED,
-                                    sample_count=len(samples),
-                                    value=sum(value for _, value in samples) / len(samples),
-                                    unit=METRIC_UNIT_BY_KIND_V22[metric_kind],
-                                    window_started_at=context.window.started_at,
-                                    window_ended_at=context.window.ended_at,
-                                )
-                            )
+                            metric_samples.setdefault(
+                                (service, metric_kind),
+                                [],
+                            ).extend(samples)
                         series_by_service.setdefault(service, {}).setdefault(
                             template_name,
                             [],
@@ -268,6 +263,30 @@ class PrometheusConnectorV1:
             )
             return failed_results
 
+        metric_records: list[MetricFactV22] = []
+        for (service, metric_kind), samples in sorted(
+            metric_samples.items(),
+            key=lambda item: (item[0][0], item[0][1].value),
+        ):
+            bounded_samples = samples[: self._settings.maximum_sample_count]
+            if len(bounded_samples) != len(samples):
+                truncated = True
+            metric_records.append(
+                MetricFactV22(
+                schema_version="dta-v22.metric-fact.v1",
+                service=service,
+                metric_kind=metric_kind,
+                support_status=MetricSupportStatusV22.SUPPORTED,
+                sample_count=len(bounded_samples),
+                value=(
+                    sum(value for _, value in bounded_samples)
+                    / len(bounded_samples)
+                ),
+                unit=METRIC_UNIT_BY_KIND_V22[metric_kind],
+                window_started_at=context.window.started_at,
+                window_ended_at=context.window.ended_at,
+            )
+            )
         maximum_records = min(context.maximum_records, 200)
         if len(metric_records) > maximum_records:
             metric_records = metric_records[:maximum_records]
@@ -591,6 +610,42 @@ class PrometheusConnectorV1:
     ) -> ResourceUsageRecordV22 | None:
         if not cpu_samples or not memory_samples:
             return None
+        if sampling_window_seconds is not None and sample_count is not None:
+            aligned = PrometheusConnectorV1._align_resource_samples(
+                cpu_samples,
+                memory_samples,
+                sampling_window_seconds=sampling_window_seconds,
+                sample_count=sample_count,
+            )
+            if aligned is None:
+                return None
+            if any(not memory_value.is_integer() for _, _, memory_value in aligned):
+                return None
+            samples = tuple(
+                ResourceSampleV22(
+                    offset_ms=int(
+                        round(
+                            index
+                            * sampling_window_seconds
+                            / (sample_count - 1)
+                            * 1000
+                        )
+                    ),
+                    cpu_percent=cpu_value,
+                    memory_bytes=int(memory_value),
+                )
+                for index, (_, cpu_value, memory_value) in enumerate(aligned)
+            )
+            return ResourceUsageRecordV22(
+                schema_version="dta-v22.resource-usage-record.v1",
+                service=service,
+                sampling_window_seconds=sampling_window_seconds,
+                samples=samples,
+                memory_slope_bytes_per_second=(
+                    samples[-1].memory_bytes - samples[0].memory_bytes
+                )
+                / sampling_window_seconds,
+            )
         cpu = {timestamp: value for timestamp, value in cpu_samples}
         memory = {timestamp: value for timestamp, value in memory_samples}
         timestamps = sorted(set(cpu).intersection(memory))
@@ -648,6 +703,58 @@ class PrometheusConnectorV1:
                 samples[-1].memory_bytes - samples[0].memory_bytes
             )
             / duration,
+        )
+
+    @staticmethod
+    def _align_resource_samples(
+        cpu_samples: list[tuple[float, float]],
+        memory_samples: list[tuple[float, float]],
+        *,
+        sampling_window_seconds: int,
+        sample_count: int,
+    ) -> tuple[tuple[float, float, float], ...] | None:
+        if sample_count < 2:
+            return None
+        cpu = sorted(cpu_samples)
+        memory = sorted(memory_samples)
+        if len(cpu) < sample_count or len(memory) < sample_count:
+            return None
+        step = sampling_window_seconds / (sample_count - 1)
+        end = min(cpu[-1][0], memory[-1][0])
+        targets = tuple(
+            end - sampling_window_seconds + index * step
+            for index in range(sample_count)
+        )
+
+        def nearest(
+            series: list[tuple[float, float]],
+        ) -> tuple[tuple[float, float], ...] | None:
+            selected: list[tuple[float, float]] = []
+            used: set[int] = set()
+            for target in targets:
+                candidates = (
+                    (abs(timestamp - target), index, timestamp, value)
+                    for index, (timestamp, value) in enumerate(series)
+                    if index not in used
+                )
+                distance, index, timestamp, value = min(candidates)
+                if distance > _RESOURCE_ALIGNMENT_TOLERANCE_SECONDS:
+                    return None
+                used.add(index)
+                selected.append((timestamp, value))
+            return tuple(selected)
+
+        selected_cpu = nearest(cpu)
+        selected_memory = nearest(memory)
+        if selected_cpu is None or selected_memory is None:
+            return None
+        return tuple(
+            (
+                targets[index],
+                selected_cpu[index][1],
+                selected_memory[index][1],
+            )
+            for index in range(sample_count)
         )
 
     def _query_step(self, context: ConnectorQueryContextV1) -> float | int:
