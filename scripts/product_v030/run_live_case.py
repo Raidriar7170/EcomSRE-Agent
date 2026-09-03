@@ -89,6 +89,18 @@ def restore_case_flags(controller, result):
     )
 
 
+def queue_case_root_matches_unique_owner(
+    diagnosis: dict, strong_queue: list, by_logical: dict[str, str]
+) -> bool:
+    queue_owners = {item.service for item in strong_queue}
+    if len(queue_owners) != 1:
+        return False
+    owner = next(iter(queue_owners))
+    return owner in by_logical and diagnosis["root_service_ids"] == [
+        by_logical[owner]
+    ]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--private-root", required=True, type=Path)
@@ -354,6 +366,9 @@ def main() -> None:
                 )
                 result["queue_case_gate"] = bool(
                     strong_queue and runtime_healthy and exact_terminal
+                    and queue_case_root_matches_unique_owner(
+                        diagnosis, strong_queue, by_logical
+                    )
                     and all(set(item.evidence_refs).issubset(refs) for item in strong_queue)
                 )
                 if not result["queue_case_gate"]:

@@ -1,4 +1,5 @@
 import importlib.util
+import json
 from pathlib import Path
 
 import pytest
@@ -68,3 +69,175 @@ def test_fault_write_then_readback_failure_still_restores_baseline():
     assert calls == ["QUEUE", "BASELINE"]
     assert controller.state == "BASELINE"
     assert result == {"fault_write_attempt_count": 1, "fault_enable_count": 0}
+
+
+def test_current_control_leakage_gate_is_bound_to_fresh_run(tmp_path):
+    path = (
+        Path(__file__).resolve().parents[2]
+        / "scripts/product_v030/audit_existing_acquisition.py"
+    )
+    spec = importlib.util.spec_from_file_location("control_leakage_gate_test", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    private = tmp_path / "live-005"
+    (private / "cases/N0-A").mkdir(parents=True)
+    (private / "cases/N0-B").mkdir(parents=True)
+    baseline_sha = "a" * 64
+    (private / "baseline-result.json").write_text(
+        json.dumps(
+            {
+                "status": "PRODUCT_V030_FRESH_BASELINE_READY",
+                "environment": {"environment_id": "env-current"},
+                "baseline": {
+                    "baseline_id": "base-current",
+                    "baseline_sha256": baseline_sha,
+                },
+            }
+        )
+    )
+    expected_sources = {
+        "CHANGES",
+        "LOGS",
+        "METRICS",
+        "RESOURCES",
+        "RUNTIME",
+        "TRACES",
+    }
+    for case in ("N0-A", "N0-B"):
+        incident_id = f"inc-{case.lower()}"
+        (private / f"cases/{case}/result.json").write_text(
+            json.dumps(
+                {
+                    "case": case,
+                    "status": "PASS",
+                    "leaked_tokens": [],
+                    "supporting_refs_resolve": True,
+                    "incident": {
+                        "incident_id": incident_id,
+                        "environment_id": "env-current",
+                        "baseline_id": "base-current",
+                        "baseline_sha256": baseline_sha,
+                        "started_at": "2026-09-03T00:00:00Z",
+                        "ended_at": "2026-09-03T00:01:00Z",
+                    },
+                    "diagnosis": {
+                        "terminal": "NO_INCIDENT",
+                        "capability_limitations": [],
+                        "supporting_evidence_refs": [],
+                        "contradicting_evidence_refs": [],
+                        "action_authority": "NONE",
+                        "provider_calls": 0,
+                        "agent_writes": 0,
+                        "runbook_executions": 0,
+                    },
+                }
+            )
+        )
+        (private / f"cases/{case}/evidence.json").write_text(
+            json.dumps(
+                {
+                    "incident_id": incident_id,
+                    "objects": [
+                        {
+                            "source": source,
+                            "evidence_ref": f"e:{source.lower()}",
+                            "payload": {"summary": "observer-safe telemetry"},
+                        }
+                        for source in sorted(expected_sources)
+                    ],
+                }
+            )
+        )
+    historical = tmp_path / "historical.json"
+    historical.write_text(
+        json.dumps(
+            {
+                "status": "PASS",
+                "leaked_tokens": [],
+                "capability_limitations": ["SOURCE_TRACES_PARTIAL"],
+            }
+        )
+    )
+
+    result = module.build_current_control_leakage_gate(private, historical)
+
+    assert result["status"] == "PASS"
+    assert result["environment_id"] == "env-current"
+    assert result["baseline_id"] == "base-current"
+    assert result["capability_limitations"] == []
+    assert [item["case"] for item in result["current_control_checks"]] == [
+        "N0-A",
+        "N0-B",
+    ]
+    assert all(
+        set(item["sources"]) == expected_sources
+        for item in result["current_control_checks"]
+    )
+    assert result["historical_enabled_fault_audit"]["status"] == "PASS"
+
+    n0a_result_path = private / "cases/N0-A/result.json"
+    n0a_evidence_path = private / "cases/N0-A/evidence.json"
+    original_result = n0a_result_path.read_text()
+    original_evidence = n0a_evidence_path.read_text()
+    bad_result = json.loads(original_result)
+    bad_result["incident"]["environment_id"] = "env-other"
+    n0a_result_path.write_text(json.dumps(bad_result))
+    with pytest.raises(ValueError, match="environment or Baseline"):
+        module.build_current_control_leakage_gate(private, historical)
+    n0a_result_path.write_text(original_result)
+
+    bad_result = json.loads(original_result)
+    bad_result["diagnosis"]["capability_limitations"] = ["SOURCE_LOGS_COVERAGE_GAP"]
+    n0a_result_path.write_text(json.dumps(bad_result))
+    with pytest.raises(ValueError, match="current control did not pass"):
+        module.build_current_control_leakage_gate(private, historical)
+    n0a_result_path.write_text(original_result)
+
+    bad_evidence = json.loads(original_evidence)
+    bad_evidence["objects"][0]["payload"]["summary"] = "feature flag leaked"
+    n0a_evidence_path.write_text(json.dumps(bad_evidence))
+    with pytest.raises(ValueError, match="leakage"):
+        module.build_current_control_leakage_gate(private, historical)
+    n0a_evidence_path.write_text(original_evidence)
+
+    bad_result = json.loads(original_result)
+    bad_result["diagnosis"]["supporting_evidence_refs"] = ["e:missing"]
+    n0a_result_path.write_text(json.dumps(bad_result))
+    with pytest.raises(ValueError, match="references"):
+        module.build_current_control_leakage_gate(private, historical)
+    n0a_result_path.write_text(original_result)
+
+    bad_evidence = json.loads(original_evidence)
+    bad_evidence["objects"] = [
+        item for item in bad_evidence["objects"] if item["source"] != "TRACES"
+    ]
+    n0a_evidence_path.write_text(json.dumps(bad_evidence))
+    with pytest.raises(ValueError, match="source coverage"):
+        module.build_current_control_leakage_gate(private, historical)
+    n0a_evidence_path.write_text(original_evidence)
+
+    with pytest.raises(ValueError, match="historical enabled-fault audit"):
+        module.build_current_control_leakage_gate(
+            private, historical, expected_historical_sha256="b" * 64
+        )
+
+
+def test_queue_case_root_must_equal_the_unique_queue_owner():
+    path = Path(__file__).resolve().parents[2] / "scripts/product_v030/run_live_case.py"
+    spec = importlib.util.spec_from_file_location("queue_root_gate_test", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    by_logical = {"checkout": "svc-checkout", "fraud-detection": "svc-fraud"}
+    anomaly = type("Anomaly", (), {"service": "fraud-detection"})()
+    assert module.queue_case_root_matches_unique_owner(
+        {"root_service_ids": ["svc-fraud"]}, [anomaly], by_logical
+    )
+    assert not module.queue_case_root_matches_unique_owner(
+        {"root_service_ids": ["svc-checkout"]}, [anomaly], by_logical
+    )
+    assert not module.queue_case_root_matches_unique_owner(
+        {"root_service_ids": ["svc-fraud"]},
+        [anomaly, type("Anomaly", (), {"service": "checkout"})()],
+        by_logical,
+    )
