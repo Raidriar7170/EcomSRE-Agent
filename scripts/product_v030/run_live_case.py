@@ -21,6 +21,12 @@ from ecomsre.product.pilot.baseline_readiness_v021 import (
 )
 from ecomsre.product.pilot.live_calibration_v02 import _request_json, _run_product_job
 from ecomsre.product.pilot.live_knowledge_evolution_v030 import CANDIDATES_V030
+from ecomsre.product.pilot.control_gate_v030 import (
+    C1_CANDIDATES_V030,
+    case_gate_passes_v030,
+    control_record_passes_v030,
+    evaluate_c1_queue_negative_v030,
+)
 from ecomsre.product.pilot.live_nofault_acceptance_v023 import _rotate_runtime_snapshot
 from ecomsre.product.pilot.runtime_authority_v02 import PilotRuntimeAuthorityV02
 from ecomsre.product.settings import ProductSettingsV1
@@ -109,7 +115,7 @@ def main() -> None:
             raise ValueError("complete Product acquisition leakage gate has not passed")
         for control in ("N0-A", "N0-B", "C1"):
             record = json.loads((private / "cases" / control / "result.json").read_text())
-            if (record["status"] != "PASS" or record["diagnosis"]["capability_limitations"]
+            if (not control_record_passes_v030(record)
                 or record["incident"]["environment_id"] != gate["environment_id"]):
                 raise ValueError("the current environment's controls have not passed")
     if args.case == "H1":
@@ -142,7 +148,7 @@ def main() -> None:
         item["logical_service"]: item["service_id"]
         for item in baseline["verification"]["service_identity_map"]["services"]
     }
-    candidates = CANDIDATES_V030 if args.case == "C1" else CANDIDATES_V030[:3]
+    candidates = C1_CANDIDATES_V030 if args.case == "C1" else CANDIDATES_V030[:3]
     lifecycle = ProductV030Lifecycle(
         repository_root=root,
         private_root=private,
@@ -161,7 +167,9 @@ def main() -> None:
     write_private_json(case_root / "started.json", result, create_once=True)
     try:
         lifecycle.admit()
-        lifecycle.authorize_reads()
+        backend = lifecycle.authorize_reads()
+        if backend.authority != authority.read_authority:
+            raise ValueError("fresh runtime authority differs from the case environment")
         assert lifecycle.goal_controller is not None
         result["before_flags"] = lifecycle.goal_controller.read("BASELINE")
         with httpx.Client(timeout=10) as client:
@@ -271,7 +279,7 @@ def main() -> None:
                 "/v1/incidents",
                 payload={
                     "environment_id": environment_id,
-                    "external_incident_key": f"product-v030-{args.case.lower()}",
+                    "external_incident_key": f"product-v030-{private.name}-{args.case.lower()}",
                     "alert_name": "bounded-service-observation",
                     "summary": "Bounded local service telemetry observation.",
                     "started_at": started_at.isoformat(),
@@ -309,29 +317,11 @@ def main() -> None:
             result["supporting_refs_resolve"] = set(
                 diagnosis["supporting_evidence_refs"]
             ).issubset(refs)
-            result["status"] = (
-                "PASS"
-                if (
-                    diagnosis["terminal"] == expected
-                    and not diagnosis["capability_limitations"]
-                    and not result["leaked_tokens"]
-                    and result["supporting_refs_resolve"]
-                    and diagnosis["action_authority"] == "NONE"
-                    and all(
-                        diagnosis[key] == 0
-                        for key in (
-                            "provider_calls",
-                            "agent_writes",
-                            "runbook_executions",
-                        )
-                    )
-                    and (
-                        args.case != "C1"
-                        or diagnosis["mechanism"] == "CONFIGURATION_ERROR"
-                    )
+            if args.case == "C1":
+                result["queue_negative_evidence"] = evaluate_c1_queue_negative_v030(
+                    app.state.knowledge, incident_id
                 )
-                else "CASE_GATE_FAILED"
-            )
+            result["status"] = "PASS" if case_gate_passes_v030(result, expected) else "CASE_GATE_FAILED"
             if state == "QUEUE":
                 material = app.state.knowledge._shadow_runtime_material(incident_id)
                 strong_queue = [

@@ -1,42 +1,43 @@
-# Product v0.3 面试简报 — 控制集阻断，闭环未完成
+# Product v0.3 面试简报 — 控制集通过，H1 根一致性未通过
 
-当前事实是 ECOMSRE_PRODUCT_V030_BLOCKED_CONTROL_SET / REVIEW_REQUIRED。
+当前状态：ECOMSRE_PRODUCT_V030_BLOCKED_H1_ROOT_CONSISTENCY / REVIEW_REQUIRED。
+不能宣称完整知识演化 Goal 已完成或已合并。
 
-真实 full-mode 队列预检观察到 lag 302，完成三个独立高 lag 采样点后恢复归零。
-Kafka 方法 Trace 和真实 Produce p95 已接入，完整采集无控制令牌泄漏；
-方法耗时不代表 ACK 成功，append 计数也不与请求延迟严格同口径。
-Core 没有预埋 Kafka 积压机制，只新增通用 QUEUE_LAG 症状。
+两项窄修复已实测生效：Product 不再让孤立十秒内存增长独立成为强 Open-World
+残余，Bridge 与 Knowledge 重建使用同一策略；原始 Resources、数值阈值和
+冻结 Core 内存泄漏规则不变。C1 改为按 payment/checkout/fraud-detection
+及队列阴性相关来源验收，不再要求无关 Logs/Traces 全局完整。
 
-最新 live-003 Baseline 完成 5/5 窗口、30/30 健康交易，四服务 Resources 统计齐全。
-同一环境、同一 Baseline ID/SHA 的完整控制集仍未过关：
+live-004 使用唯一新 full-mode runtime 和一个新五窗口 Baseline。
+N0-A/N0-B 各 30/30 健康交易，均为 NO_INCIDENT；C1 十次预期失败被识别为
+CORE_KNOWN / CONFIGURATION_ERROR / payment。C1 lag=0<20，fraud Runtime
+健康，队列候选子句明确为 false，队列阴性结论 CONCLUSIVE；真实 Logs/Traces
+覆盖缺口仍保留。原 live-002/live-003 失败证据及旧 Baseline 未改写。
 
-- N0-A：30/30 交易成功，因 Kafka 十秒内存增长被判 OPEN_WORLD，失败。
-- N0-B：30/30 交易成功，因 checkout 内存增长被判 OPEN_WORLD，失败。
-- C1：10/10 请求按预期失败、真实 ChangeEvent 存在，已正确识别为
-  CORE_KNOWN / CONFIGURATION_ERROR；但 Logs/Traces 存在真实覆盖缺口，完整门禁仍失败。
+P1/P2/P3 均为 OPEN_WORLD / CONCURRENCY，强队列异常位于 fraud-detection。
+三例形成一个三窗口家族，相似度 0.8990/0.8945/0.9807，N0/C1 均被排除。
+按用户此前明确预授权记录一次 ACCEPT_AS_NEW 和一次 Promotion，不冒称
+用户刚刚人工逐项审阅。Runtime 自选 queue-lag + Runtime healthy 两来源规则；
+三正三负上的召回为 1，误报/Core 重叠为 0。严格 Shadow 指标全过，
+反事实及来源失败检查通过；首个扩展无可用 OTHER_EXTENSION 对照。
+Registry version 1 为 ACTIVE，action/remediation authority 均为 NONE。
 
-C1 的低流量分母缺陷已修复，并把仍限定十笔请求的观测对齐五分钟窗口。
-最新 Product 错误指标约 0.3474，仍不等于交易失败比例。另修复了 Baseline
-毫秒/微秒时间精度导致 Resources 统计丢失的问题；没有改 Core 或队列阈值。
-两条 N0 的原始值、Memory 与异常重建一致，尚未发现可解释误报的采样或单位错误。
-内存短窗口规则对健康波动敏感；修改持续性或门限将是策略变化，不能假装是计算修复。
+H1 是新实测：3/3 事务成功，识别为 EXTENSION_KNOWN / kafka-queue-backlog，
+根为 fraud-detection，支持引用可解析，没有 Open-World 报告或新家族。
+但三条历史 Open-World 报告的多数根是 checkout，故 H1 完整门禁失败。
+现有 Bridge 按排序后首个残余异常选根；扩展规则按实际队列谓词的 TARGET
+绑定服务，两者语义不一致。P1 错误指标窗口与 C1 重叠，但不能据此断言
+所有错误信号都来自 C1。没有手改旧根、降低 H1 门禁或重跑到通过。
 
-新的 N0 限制为空，C1 的限制为 SOURCE_LOGS_COVERAGE_GAP 和
-SOURCE_TRACES_COVERAGE_GAP；三例泄漏列表为空，支持引用可解析。
-新环境没有产生故障族。旧 live-002 三条正式结果（N0-B 通过，N0-A/C1 失败）、
-其单成员非目标故障族，以及所有失败准备记录均保留，未选择性复用旧的通过结果。
+可讲的成果是“实测完成未知故障聚类、Runtime 规则挖掘、Shadow、
+只读扩展注册，并在新复现中命中机制”；必须同时说明“历史发现根与扩展根
+一致性尚未解决，完整 Goal 未完成”，不能简化为全链路验收成功。
 
-已修复并测试知识层的负例完整性：缺数据不是无异常，Core 报告没有展示队列
-症状也不代表症状不存在；Shadow 的可达性与完整性分开校验。历史 CI 的两处兼容测试
-已最小修复，冻结证据和运行时拒绝条件不变，152 项影响范围回归通过。
-代码提交 `21ef82e` 的替代完整 CI 已通过：全仓 pytest 6,303 通过、6 跳过，
-Ruff 和 CI 范围 mypy（667 个源文件）通过。此后仅发布结果文档；CI 通过不等于实测门禁通过。
-三次正例、目标聚类、人审、规则挖掘、Shadow、Promotion
-和 H1 均未运行，不能在简历或面试中宣称已完成知识演化闭环。
+212 项聚焦回归、Ruff/mypy 和独立源码评审通过。旧绿色 CI 保留，但不证明
+新工作树已通过全仓验证；本次没有新跑全仓或触发 CI，唯一新全仓验证仍留到
+真正准备合并时。PR #88 保持 Draft，修复和最新结果留在既有本地分支。
+所有四次所属 runtime 均 CLEAN，非所属资源未变，证据和私有 DB 保留；
+Provider、Agent 写入、Runbook 均为零。ACTIVE 注册记录未删除或撤销。
 
-三个所属运行环境均已清理，最终所属资源为零，非所属资源未改；失败证据和私有数据库保留。
-Provider、Agent 写入、Runbook 均为零，Product action/remediation authority
-保持 NONE。PR 保持 Draft，未合并；下一步仍是资源误报语义与 C1 来源覆盖，
-不是降低门禁或重跑到通过。授权已经充足，当前阻断不是权限问题。
-
-完整状态见[结果](product-v030-live-knowledge-evolution.json)。
+完整数据见[结果](product-v030-live-knowledge-evolution.json)与
+[家族/规则摘要](../analysis/product-v030-family-and-rule-summary.json)。

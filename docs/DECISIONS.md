@@ -1490,6 +1490,31 @@ reviewed successor bytes, while all other artifact checks, Core query shapes,
 thresholds, support clauses, and Git provenance gates remain unchanged. This
 does not permit arbitrary future edits to either source under the old binding.
 
+### Product v0.3 narrow-control repair amendment
+
+The user's subsequent live-004 instruction revises only two Product-level
+control semantics in DEC-061. An isolated ten-second memory-growth record is
+not a strong residual without same-service memory-pressure logs, restart or
+unhealthy Runtime, error Metrics, first-error Trace localization, or a second
+independent, non-overlapping Resource window showing the same strong trend.
+Original Resource evidence, numeric thresholds, and frozen Core memory-leak
+clauses remain unchanged. Diagnosis and Knowledge shadow reconstruction share
+this Product policy; existing memory-growth-plus-log/restart admissions remain.
+
+C1 uses payment, checkout, and fraud-detection candidates. Its configuration
+error/payment admission and resolving support must accompany a conclusive
+queue-negative check: observed low fraud-detection queue lag, healthy running
+fraud-detection Runtime, no queue anomaly, and false—not unknown—evaluation of
+the expected queue-anomaly/Runtime-healthy conjunction. Unrelated Logs/Traces
+gaps remain disclosed and are not reclassified as complete. Runtime mining and
+Shadow criteria are unchanged; this check does not prescribe a selected rule.
+
+All live-002/live-003 results and green CI remain historical evidence. One new
+full-mode runtime/control set is live-004. Reuse of its predecessor Baseline
+requires unchanged Compose, queries, Resource sampling, and Baseline semantics;
+otherwise one new Baseline is built. Focused repair tests precede live execution;
+the next full repository suite is reserved for merge readiness.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)

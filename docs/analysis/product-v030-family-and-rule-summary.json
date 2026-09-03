@@ -1,28 +1,159 @@
 {
-  "status": "TARGET_FAMILY_NOT_OBSERVED_CONTROL_SET_BLOCKED",
-  "family_id": null,
-  "positive_incident_ids": [],
-  "pairwise_similarities": [],
-  "majority_root": null,
-  "majority_domain": null,
-  "shared_anomalies": [],
-  "supporting_evidence_refs": [],
-  "control_exclusion": "LIVE_003_NO_FAMILIES_N0_FAULT_NONE_AND_C1_CORE_KNOWN; LIVE_002_NON_TARGET_C1_FAMILY_PRESERVED",
-  "latest_control_environment": "env-e080b07aad1ac9e4b3c88513",
-  "latest_baseline_id": "base-26bcdd17ce69313c9a587efa",
-  "latest_baseline_sha256": "6910e0ad120237e9b56d356a5c61c4f03c7ce908f4420a6f2fe16555c447a172",
+  "status": "ECOMSRE_PRODUCT_V030_BLOCKED_H1_ROOT_CONSISTENCY",
+  "family_id": "family-cca68e10afe10fcc5407b3fb",
+  "positive_incident_ids": [
+    "inc-08ab11118286f0a0f9ebc352",
+    "inc-4843d59ef62a243f1e3fa95f",
+    "inc-db0e7ee51b16c2e74d5ffdd5"
+  ],
+  "pairwise_similarities": [
+    {
+      "left": "inc-db0e7ee51b16c2e74d5ffdd5",
+      "right": "inc-08ab11118286f0a0f9ebc352",
+      "similarity": 0.899025974026
+    },
+    {
+      "left": "inc-db0e7ee51b16c2e74d5ffdd5",
+      "right": "inc-4843d59ef62a243f1e3fa95f",
+      "similarity": 0.894512195122
+    },
+    {
+      "left": "inc-08ab11118286f0a0f9ebc352",
+      "right": "inc-4843d59ef62a243f1e3fa95f",
+      "similarity": 0.980681818182
+    }
+  ],
+  "majority_root": [
+    "checkout"
+  ],
+  "majority_domain": "CONCURRENCY",
+  "shared_anomalies": [
+    "METRIC_ERROR_OUTLIER",
+    "METRIC_LATENCY_OUTLIER",
+    "METRIC_QUEUE_LAG_OUTLIER"
+  ],
+  "supporting_evidence_refs": [
+    "e:a:metrics:checkout:core:0:0c96bd52e97d",
+    "e:a:metrics:checkout:core:0:e73e1b5c2c40",
+    "e:a:metrics:checkout:core:0:fad513895132",
+    "e:a:metrics:fraud-detection:core:0:08f87d5023cd",
+    "e:a:metrics:fraud-detection:core:0:527f7b75f462",
+    "e:a:metrics:fraud-detection:core:0:823d66b6222a",
+    "e:a:metrics:fraud-detection:core:1:4bd39d9bc14d",
+    "e:a:metrics:fraud-detection:core:1:4d72e1295b1a",
+    "e:a:metrics:fraud-detection:core:1:bbe1b48967a7",
+    "e:a:metrics:fraud-detection:queue-lag:0:676dbe010285",
+    "e:a:metrics:fraud-detection:queue-lag:0:96e627ff2c04",
+    "e:a:metrics:fraud-detection:queue-lag:0:b9d365a41efa",
+    "e:a:resources:checkout:0:b00c3f7782ad",
+    "e:a:resources:checkout:0:d0375098bd6e"
+  ],
+  "control_exclusion": true,
+  "excluded_control_incident_ids": [
+    "inc-2c8f2ad809ab5aead55404cb",
+    "inc-69f915e4521289c72b9b45a1",
+    "inc-dbc29a35bf6b604a05684ba6"
+  ],
+  "latest_control_environment": "env-3ed62ab80d67201580ca7764",
+  "latest_baseline_id": "base-e7679c5fc708af40c4ba057e",
+  "latest_baseline_sha256": "810b328c68ce68830fef345bfe45a82ae217cfe417559cd88a099ff9c6222328",
   "latest_control_gates": {
-    "N0-A": "FAILED_OPEN_WORLD_RESOURCE_KAFKA",
-    "N0-B": "FAILED_OPEN_WORLD_RESOURCE_CHECKOUT",
-    "C1": "CORE_KNOWN_CONFIGURATION_ERROR_BUT_FAILED_LOGS_TRACES_COVERAGE"
+    "N0-A": "NO_INCIDENT_PASS",
+    "N0-B": "NO_INCIDENT_PASS",
+    "C1": "CORE_KNOWN_CONFIGURATION_ERROR_PAYMENT_QUEUE_NEGATIVE_CONCLUSIVE_WITH_UNRELATED_GAPS_PRESERVED"
   },
-  "latest_family_count": 0,
-  "human_accept_as_new": null,
-  "runtime_selected_clause": null,
-  "shadow_evaluation": null,
-  "promotion": null,
-  "registry_version": null,
-  "h1": null,
+  "latest_family_count": 1,
+  "family_status": "PROMOTED",
+  "human_accept_as_new": {
+    "decision": "ACCEPT_AS_NEW",
+    "family_id": "family-cca68e10afe10fcc5407b3fb",
+    "merge_target_family_id": null,
+    "note": "Executed under the user's explicit prior authorization to continue Product v0.3 and perform ACCEPT_AS_NEW after measured controls and three-member clustering. This is not a claim of fresh manual inspection. P1/P2/P3 are OPEN_WORLD; N0/C1 excluded; 3 distinct windows, root consistency 1.0, pairwise similarity >=0.8945. The measured majority root is checkout, while queue evidence belongs to fraud-detection; this deviation is preserved and H1 must still match the measured majority root. No remediation or action authority granted.",
+    "review_id": "review-aefa9d3ffe03f22f92f541cb",
+    "review_sha256": "7803c0b15ef570d5c42f9c2d14dadbc5bd76607ddab6ccd377f730310a93666d",
+    "reviewed_at": "2026-09-03T10:23:11.428670Z",
+    "reviewer": "USER_EXPLICIT_PRIOR_AUTHORIZATION_EXECUTED_BY_CODEX",
+    "schema_version": "ecomsre.product.human-review.v1"
+  },
+  "runtime_selected_clause": {
+    "action_authority": "NONE",
+    "candidate_id": "candidate-3a20846412589221",
+    "core_known_overlap_rate": 0,
+    "evidence_sources": [
+      "METRICS",
+      "RUNTIME"
+    ],
+    "false_positive_rate": 0,
+    "no_incident_false_positive_rate": 0,
+    "positive_recall": 1,
+    "predicate_ids": [
+      "core:RUNTIME_HEALTHY",
+      "ga:METRIC_QUEUE_LAG_OUTLIER"
+    ],
+    "score": 0.6
+  },
+  "shadow_evaluation": {
+    "action_authority": "NONE",
+    "action_authority_violations": 0,
+    "core_known_overlap_rate": 0,
+    "counterfactual_consistency": 1,
+    "evaluation_id": "shadow-21fd376b78bfd43d",
+    "evaluation_sha256": "3249a1cc6187415997d1ef7ff05ea95a6b21387c44f38c8f11ce3bbe25f431b9",
+    "evidence_ref_validity": 1,
+    "false_positive_rate": 0,
+    "gate_passed": true,
+    "no_incident_false_positives": 0,
+    "other_extension_destructive_overlaps": 0,
+    "positive_recall": 1,
+    "reason_codes": [],
+    "registration_id": "registration-5446911d4590e18764f5272a",
+    "runtime_evaluation_sha256": "978aa89d9e25fe6af977a25faead5ffd2079225232ac8188d0dab2af5aea5b3f",
+    "schema_version": "ecomsre.product.shadow-evaluation.v1",
+    "source_failure_safe": true,
+    "source_reachability": 1
+  },
+  "shadow_unavailable_strata": [
+    {
+      "stratum": "OTHER_EXTENSION",
+      "origin": "NOT_AVAILABLE",
+      "reason_code": "NO_ACTIVE_OTHER_EXTENSION_CONTROL_AVAILABLE",
+      "actual_other_extension_overlap_experiment": false
+    }
+  ],
+  "promotion": {
+    "action_authority": "NONE",
+    "environment_id": "env-3ed62ab80d67201580ca7764",
+    "note": "Executed under the user's explicit prior authorization to PROMOTE KAFKA_QUEUE_BACKLOG after passing the original strict Shadow metrics. This records prior authorization, not fresh manual inspection. Runtime selected queue-lag plus Runtime healthy from 3 positives and 3 measured negatives; all strict metrics passed. The preserved checkout family-root versus fraud-detection queue-target discrepancy remains unresolved and is not waived: H1 must still satisfy exact measured majority-root equality. Read-only diagnosis only; no action/remediation authority.",
+    "promoted_at": "2026-09-03T10:24:56.917960Z",
+    "promotion_id": "promotion-96527954ce542a78a6825c42",
+    "promotion_sha256": "188b3be624276bc1f5f1272114c3ef74de55062601beb0ca66cfbd521509a8c5",
+    "registration_id": "registration-5446911d4590e18764f5272a",
+    "registry_version": 1,
+    "reviewer": "USER_EXPLICIT_PRIOR_AUTHORIZATION_EXECUTED_BY_CODEX",
+    "schema_version": "ecomsre.product.registration-promotion.v1",
+    "shadow_evaluation_id": "shadow-21fd376b78bfd43d",
+    "status": "ACTIVE"
+  },
+  "registry_version": 1,
+  "h1": {
+    "status": "CASE_GATE_FAILED",
+    "reason": "ROOT_DIFFERS_FROM_PROMOTED_FAMILY_MAJORITY",
+    "family_majority_root": [
+      "checkout"
+    ],
+    "h1_root": [
+      "fraud-detection"
+    ],
+    "extension_known": true,
+    "correct_slug": true,
+    "no_provisional_report": true,
+    "no_new_target_family": true,
+    "supporting_refs_resolve": true,
+    "source_limitations": [],
+    "leaked_tokens": [],
+    "actual_h1_execution_count": 1,
+    "diagnosis_or_fingerprint_roots_rewritten": false
+  },
   "action_authority": "NONE",
   "remediation_authority": "NONE",
   "non_target_family_preserved": {
@@ -32,5 +163,6 @@
       "inc-1d0a2f86bdeecc65ec8f1794"
     ],
     "is_queue_backlog_target_family": false
-  }
+  },
+  "completion_terminal_minted": false
 }

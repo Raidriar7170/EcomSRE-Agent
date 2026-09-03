@@ -1,13 +1,19 @@
 {
   "schema_version": "ecomsre.product.live-knowledge-evolution-result.v030",
-  "status": "ECOMSRE_PRODUCT_V030_BLOCKED_CONTROL_SET",
-  "stage": "CONTROL_SET_MEASURED_GATE_FAILED",
-  "observed_at": "2026-09-03T05:29:40.298631Z",
+  "status": "ECOMSRE_PRODUCT_V030_BLOCKED_H1_ROOT_CONSISTENCY",
+  "stage": "LIVE_004_CONTROLS_THROUGH_PROMOTION_PASS_H1_ROOT_GATE_FAILED",
+  "observed_at": "2026-09-03T10:28:53.533286+00:00",
   "baseline_commit": "86a8dbc7859425ca9ef2e778dc7e4c7675b0cabb",
   "goal_sha256": "7141b67890aaee2f8cfc5c1b9ebfa2fc3ae03da98bea76722b9ec24e72e05f14",
   "branch": "codex/product-v030-live-knowledge-evolution",
   "completed_terminals": [
-    "ECOMSRE_PRODUCT_V030_QUEUE_TELEMETRY_READY"
+    "ECOMSRE_PRODUCT_V030_QUEUE_TELEMETRY_READY",
+    "ECOMSRE_PRODUCT_V030_CONTROL_SET_READY",
+    "ECOMSRE_PRODUCT_V030_OPEN_WORLD_TRIPLICATE_PASS",
+    "ECOMSRE_PRODUCT_V030_FAULT_FAMILY_REVIEW_READY",
+    "ECOMSRE_PRODUCT_V030_REGISTRATION_DRAFT_READY",
+    "ECOMSRE_PRODUCT_V030_SHADOW_EVALUATION_PASS",
+    "ECOMSRE_PRODUCT_V030_PROMOTION_ACTIVE"
   ],
   "completion_terminal_minted": false,
   "offline_implementation": {
@@ -157,9 +163,9 @@
     }
   },
   "safety": {
-    "docker_up_count": 3,
+    "docker_up_count": 4,
     "image_pull_count": 3,
-    "fault_injection_count": 3,
+    "fault_injection_count": 8,
     "provider_calls": 0,
     "agent_writes": 0,
     "runbook_executions": 0,
@@ -169,6 +175,7 @@
       "first_runtime": "CLEAN",
       "second_runtime": "CLEAN",
       "third_runtime": "CLEAN",
+      "fourth_runtime": "CLEAN",
       "each_runtime_removed_owned_containers": 28,
       "each_runtime_removed_owned_networks": 1,
       "each_runtime_removed_owned_volumes": 3,
@@ -177,21 +184,24 @@
       "final_owned_volumes": 0,
       "non_owned_resources_changed": false,
       "private_databases_and_evidence_preserved": true,
-      "completed_at": "2026-09-03T05:29:40.298631Z"
+      "completed_at": "2026-09-03T10:28:53.533286+00:00"
     },
     "fault_enables": {
       "queue_preflight": 1,
-      "payment_control": 2,
-      "formal_queue_positives": 0,
-      "h1": 0
+      "payment_control": 3,
+      "formal_queue_positives": 3,
+      "h1": 1
     },
-    "formal_control_set_count": 2,
-    "formal_control_execution_count": 6,
+    "formal_control_set_count": 3,
+    "formal_control_execution_count": 9,
     "reexecuted_control_cases_in_fresh_set": 3,
+    "reexecuted_control_cases_in_fresh_set_scope": "Current live-004 only; cumulative live-003 plus live-004 repetitions are 6.",
+    "cumulative_reexecuted_control_cases": 6,
     "in_place_case_retries": 0,
     "selectively_reused_prior_passing_controls": 0
   },
   "validation": {
+    "scope": "Preserved pre-live-004 validation history; current repair validation is live_004.repair_validation. Historical green CI is not a new-tree full-suite result.",
     "product_and_sandbox_tests_passed": 836,
     "memory_and_domain_tests_passed": 54,
     "focused_ruff": "PASS",
@@ -301,11 +311,11 @@
     }
   },
   "remaining_implementation": [
-    "Reconcile full-mode resource-noise semantics without rewriting failed controls",
-    "Resolve C1's actual Logs/Traces coverage gaps without treating empty unobservable sources as complete",
-    "Do not start P1/P2/P3 until a separately justified control set passes",
-    "Target family, conditional preauthorized human reviews, Runtime mining, Shadow, Promotion and H1 remain unexecuted",
-    "Code-head full pytest, Ruff and mypy passed; merge remains gated on genuine live knowledge-evolution completion"
+    "Reconcile Open-World report-root selection with compiled TARGET semantics without rewriting measured P1/P2/P3 or H1 roots",
+    "H1 recognized kafka-queue-backlog on fraud-detection, but the promoted family's measured majority root is checkout; exact Goal root equality failed",
+    "Preserve live-004 controls, positives, Promotion and failed H1; do not hand-author a passing root or silently replace the fixed cases",
+    "No new runtime, repeated H1, detector retuning, full suite, or merge was performed after this failure; retain Draft / REVIEW_REQUIRED",
+    "One full suite remains reserved for genuine merge readiness; historical green CI is preserved but does not validate the new repair tree"
   ],
   "disposition": "Draft / REVIEW_REQUIRED",
   "post_control_offline_repairs": {
@@ -466,9 +476,723 @@
       "raw_result_sha256": "73fa3d5b5314a846836625454d97999b902583b1e07b40af7d69ea735ede7218"
     }
   },
+  "live_004": {
+    "scope": "ONE_LIVE_004_FULL_MODE_RUNTIME_CONTROL_SET_AND_ORIGINAL_GOAL_CONTINUATION",
+    "status": "ECOMSRE_PRODUCT_V030_BLOCKED_H1_ROOT_CONSISTENCY",
+    "runtime_starts": 1,
+    "image_pulls": 0,
+    "fresh_baseline_count": 1,
+    "environment_id": "env-3ed62ab80d67201580ca7764",
+    "baseline": {
+      "baseline_id": "base-e7679c5fc708af40c4ba057e",
+      "baseline_sha256": "810b328c68ce68830fef345bfe45a82ae217cfe417559cd88a099ff9c6222328",
+      "build_policy": {
+        "lookback_seconds": 180,
+        "minimum_successful_windows": 5,
+        "mode": "DEMO_ONLY",
+        "schema_version": "ecomsre.product.baseline-build-policy.v1",
+        "warmup_seconds": 180,
+        "window_count": 5
+      },
+      "successful_windows": 5,
+      "resource_services": [
+        "checkout",
+        "fraud-detection",
+        "kafka",
+        "payment"
+      ],
+      "healthy_traffic_attempted": 30,
+      "healthy_traffic_succeeded": 30,
+      "queue_mean": 0.7,
+      "queue_stddev": 0.1,
+      "frozen_queue_threshold": 20,
+      "reuse_decision": "New runtime-private flagd absolute bind changes resolved Compose SHA; built exactly one new Baseline instead of reusing base-26bcdd17ce69313c9a587efa. Queries, Resource sampling and Baseline semantics unchanged.",
+      "prior_compose_sha256": "e25c8c850298d15593559ac8c8c4cb0790a6f23dd630772b489dcb5191b96db6",
+      "resolved_compose_sha256": "b45d725a0d3f8af863cfe15351e92f1d1e60af2301b49583e35afc8e628624b7",
+      "raw_result_sha256": "d5ff37ef37063d39cfd785aac337f5e5e499ed356dc1c3857251ca4a164f1b03"
+    },
+    "preparation_history": {
+      "first_broker_probe": "FAILED_FIRST_TRANSACTION_HTTP_504_PRESERVED",
+      "resumed_probe": "PASS_3_OF_3_NO_LIMITATIONS_OR_LEAKS",
+      "probe_incident_or_baseline_or_fault_count": 0,
+      "promotion_export_recovery": "Read back the single already-committed Promotion after the summary code used the runtime-adapter type as a registry-entry type. No second POST or registry version was created. H1 first invocation failed before its started marker, Incident, traffic or mutation.",
+      "h1_actual_execution_count": 1
+    },
+    "control_set_terminal": "ECOMSRE_PRODUCT_V030_CONTROL_SET_READY",
+    "cases": [
+      {
+        "case": "N0-A",
+        "seed": 30001,
+        "status": "PASS",
+        "incident_id": "inc-dbc29a35bf6b604a05684ba6",
+        "diagnosis_id": "diag-baa1193a4fed646416c96766",
+        "actual": "NO_INCIDENT",
+        "lane": "NO_INCIDENT",
+        "mechanism": null,
+        "root_service_ids": [],
+        "root_logical_services": [],
+        "broad_domain": null,
+        "candidate_logical_services": [
+          "checkout",
+          "fraud-detection",
+          "kafka"
+        ],
+        "window": {
+          "started_at": "2026-09-03T10:06:04.730998Z",
+          "ended_at": "2026-09-03T10:07:08.180258Z"
+        },
+        "http_attempted": 30,
+        "http_success": 30,
+        "http_failed": 0,
+        "capability_limitations": [],
+        "leaked_tokens": [],
+        "supporting_refs_resolve": true,
+        "supporting_evidence_refs": [
+          "e:a:logs:checkout:0:814b817dde08",
+          "e:a:metrics:checkout:core:0:98ede84ab71a",
+          "e:a:resources:checkout:0:ff52370fa6a4",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:71f8db91f9d7"
+        ],
+        "memory_sha256": "30c5caf3d76f0b1e766e7d7dc8f8e03d32bba78887ed52a8cbf7bbf66dc78ae2",
+        "diagnosis_result_sha256": "4d7bf05195824e1d793881988cce176fb2721833c963b68ff96e403d3d6619d8",
+        "raw_result_sha256": "b6c100f9aa99e55152cecf65cc0e064394cb3899302459af095df412ea271894",
+        "raw_evidence_sha256": "c5d25f5d65281313e735f42998507d73d59f077651949523c670249079e687d0",
+        "queue_negative_evidence": null,
+        "queue_lag": null,
+        "queue_case_gate": null,
+        "all_flags_restored_and_queue_drained": true
+      },
+      {
+        "case": "N0-B",
+        "seed": 30002,
+        "status": "PASS",
+        "incident_id": "inc-69f915e4521289c72b9b45a1",
+        "diagnosis_id": "diag-420d1a870be6b615d04c7d9e",
+        "actual": "NO_INCIDENT",
+        "lane": "NO_INCIDENT",
+        "mechanism": null,
+        "root_service_ids": [],
+        "root_logical_services": [],
+        "broad_domain": null,
+        "candidate_logical_services": [
+          "checkout",
+          "fraud-detection",
+          "kafka"
+        ],
+        "window": {
+          "started_at": "2026-09-03T10:07:35.528032Z",
+          "ended_at": "2026-09-03T10:08:39.138356Z"
+        },
+        "http_attempted": 30,
+        "http_success": 30,
+        "http_failed": 0,
+        "capability_limitations": [],
+        "leaked_tokens": [],
+        "supporting_refs_resolve": true,
+        "supporting_evidence_refs": [
+          "e:a:logs:checkout:0:2424e2988192",
+          "e:a:metrics:checkout:core:0:403291ceeb1d",
+          "e:a:resources:checkout:0:7428760f1e32",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:0:dff903af06ed",
+          "e:a:traces:checkout:0:bfad851fe063"
+        ],
+        "memory_sha256": "0b432b53a6d69ffafc7eb7ebd67a136fbf322c6ed99160522798e286ad906e8e",
+        "diagnosis_result_sha256": "b8726df768d546cd0f58873794db99d77bfe77f964d8e16643725e4ba1c52460",
+        "raw_result_sha256": "629f5ae83310ef9b86e1f7b1c979ceae00aa62b9222fca5e595ef479b24c4a92",
+        "raw_evidence_sha256": "5f2f9209e524f774fc93d6154ac94645d230c4eb8b341c2ee707ad2b01763e6a",
+        "queue_negative_evidence": null,
+        "queue_lag": null,
+        "queue_case_gate": null,
+        "all_flags_restored_and_queue_drained": true
+      },
+      {
+        "case": "C1",
+        "seed": 30003,
+        "status": "PASS",
+        "incident_id": "inc-2c8f2ad809ab5aead55404cb",
+        "diagnosis_id": "diag-f9a2d793845c8147c47c99e2",
+        "actual": "CORE_KNOWN",
+        "lane": "CORE",
+        "mechanism": "CONFIGURATION_ERROR",
+        "root_service_ids": [
+          "svc-5433541ab7da521374969d08"
+        ],
+        "root_logical_services": [
+          "payment"
+        ],
+        "broad_domain": "CONFIGURATION",
+        "candidate_logical_services": [
+          "checkout",
+          "fraud-detection",
+          "payment"
+        ],
+        "window": {
+          "started_at": "2026-09-03T10:09:02.216252Z",
+          "ended_at": "2026-09-03T10:14:05.632519Z"
+        },
+        "http_attempted": 10,
+        "http_success": 0,
+        "http_failed": 10,
+        "capability_limitations": [
+          "SOURCE_LOGS_COVERAGE_GAP",
+          "SOURCE_TRACES_COVERAGE_GAP"
+        ],
+        "leaked_tokens": [],
+        "supporting_refs_resolve": true,
+        "supporting_evidence_refs": [
+          "e:a:changes:payment:0:25a89391ee96",
+          "e:a:metrics:payment:core:0:1cafcdd2299b"
+        ],
+        "memory_sha256": "55c0638035403dce76337101c98d2bb40b40c0a53ada2776bbb18021eecbf6de",
+        "diagnosis_result_sha256": "f167ae7f35d97add753bb2e4e263d50c5659b10866ed41d5d971849e825e58b0",
+        "raw_result_sha256": "d7a64cdecc42a5c8329ef1a7e0ad8e2d0a094dee28389eb94b1b651583760ed7",
+        "raw_evidence_sha256": "bf225742b18a1d71b81fa7dd5ac63f2986af114aebf16688e607e875f4084671",
+        "queue_negative_evidence": {
+          "capability_limitations_preserved": [
+            "SOURCE_LOGS_COVERAGE_GAP",
+            "SOURCE_TRACES_COVERAGE_GAP"
+          ],
+          "fraud_runtime_running_healthy": true,
+          "incident_id": "inc-2c8f2ad809ab5aead55404cb",
+          "intended_clause_state": false,
+          "intended_predicates": [
+            "core:RUNTIME_HEALTHY",
+            "ga:METRIC_QUEUE_LAG_OUTLIER"
+          ],
+          "payment_supporting_refs": [
+            "e:a:changes:payment:0:25a89391ee96",
+            "e:a:metrics:payment:core:0:1cafcdd2299b"
+          ],
+          "predicate_cells": [
+            {
+              "predicate_id": "core:RUNTIME_HEALTHY",
+              "source": "RUNTIME",
+              "state": "PRESENT"
+            },
+            {
+              "predicate_id": "ga:METRIC_QUEUE_LAG_OUTLIER",
+              "source": "METRICS",
+              "state": "ABSENT_WITH_COMPLETE_COVERAGE"
+            }
+          ],
+          "queue_metric_observed_below_threshold": true,
+          "queue_outlier_absent": true,
+          "queue_threshold": 20,
+          "queue_values": [
+            0
+          ],
+          "scope": "Expected queue-negative control check only; not Runtime candidate selection or source-completeness reclassification.",
+          "status": "CONCLUSIVE"
+        },
+        "queue_lag": null,
+        "queue_case_gate": null,
+        "all_flags_restored_and_queue_drained": true
+      },
+      {
+        "case": "P1",
+        "seed": 31001,
+        "status": "PASS",
+        "incident_id": "inc-db0e7ee51b16c2e74d5ffdd5",
+        "diagnosis_id": "diag-5b498302919c65ffa166892b",
+        "actual": "OPEN_WORLD",
+        "lane": "OPEN_WORLD",
+        "mechanism": "UNREGISTERED_OBSERVED_ANOMALY",
+        "root_service_ids": [
+          "svc-305c5ccc20bcd9e5d2f2cd26"
+        ],
+        "root_logical_services": [
+          "checkout"
+        ],
+        "broad_domain": "CONCURRENCY",
+        "candidate_logical_services": [
+          "checkout",
+          "fraud-detection",
+          "kafka"
+        ],
+        "window": {
+          "started_at": "2026-09-03T10:14:49.089833Z",
+          "ended_at": "2026-09-03T10:15:54.019148Z"
+        },
+        "http_attempted": 3,
+        "http_success": 3,
+        "http_failed": 0,
+        "capability_limitations": [],
+        "leaked_tokens": [],
+        "supporting_refs_resolve": true,
+        "supporting_evidence_refs": [
+          "e:a:metrics:checkout:core:0:0c96bd52e97d",
+          "e:a:metrics:fraud-detection:core:0:527f7b75f462",
+          "e:a:metrics:fraud-detection:core:1:bbe1b48967a7",
+          "e:a:metrics:fraud-detection:queue-lag:0:b9d365a41efa"
+        ],
+        "memory_sha256": "138b20592bf9f19f058ff2413c73b902109a64fb6c1e8d6d7ab0f96dedce1007",
+        "diagnosis_result_sha256": "3c3e840770d8fcddd78db13e51ec719b1cb63df2a52c1c07c5d6ee85e5595236",
+        "raw_result_sha256": "82beceb9f8cfddf680dd87cffa1bf546adff3385768f8934fb80eb189fcb7dc5",
+        "raw_evidence_sha256": "e22c4c5f5edaa121dfa8454f9a01624083af5011dc0e2e856b982761653d1a5e",
+        "queue_negative_evidence": null,
+        "queue_lag": 303,
+        "queue_case_gate": true,
+        "all_flags_restored_and_queue_drained": true
+      },
+      {
+        "case": "P2",
+        "seed": 31002,
+        "status": "PASS",
+        "incident_id": "inc-08ab11118286f0a0f9ebc352",
+        "diagnosis_id": "diag-a6dcc6fcdb3c55e1cbefb83a",
+        "actual": "OPEN_WORLD",
+        "lane": "OPEN_WORLD",
+        "mechanism": "UNREGISTERED_OBSERVED_ANOMALY",
+        "root_service_ids": [
+          "svc-305c5ccc20bcd9e5d2f2cd26"
+        ],
+        "root_logical_services": [
+          "checkout"
+        ],
+        "broad_domain": "CONCURRENCY",
+        "candidate_logical_services": [
+          "checkout",
+          "fraud-detection",
+          "kafka"
+        ],
+        "window": {
+          "started_at": "2026-09-03T10:16:37.075568Z",
+          "ended_at": "2026-09-03T10:17:42.081726Z"
+        },
+        "http_attempted": 3,
+        "http_success": 3,
+        "http_failed": 0,
+        "capability_limitations": [],
+        "leaked_tokens": [],
+        "supporting_refs_resolve": true,
+        "supporting_evidence_refs": [
+          "e:a:metrics:checkout:core:0:fad513895132",
+          "e:a:metrics:fraud-detection:core:0:823d66b6222a",
+          "e:a:metrics:fraud-detection:core:1:4d72e1295b1a",
+          "e:a:metrics:fraud-detection:queue-lag:0:676dbe010285",
+          "e:a:resources:checkout:0:d0375098bd6e"
+        ],
+        "memory_sha256": "e20eb62afd4b1aa511e7fa4559774cdb693754f8825d511d0319718f5574f2ca",
+        "diagnosis_result_sha256": "ad7b1668dd2e0bb522c9d30ecc78d03e6872065048731ae1f450390cf585faaa",
+        "raw_result_sha256": "158a522a288111d18d6b11fed4935ebca8e5885081811f6d546d353f847f8f7d",
+        "raw_evidence_sha256": "18d32f1325bc26e73ee2a656b16fb1a58c3709c7b5e4b40563af15eb71738442",
+        "queue_negative_evidence": null,
+        "queue_lag": 259.7142857142857,
+        "queue_case_gate": true,
+        "all_flags_restored_and_queue_drained": true
+      },
+      {
+        "case": "P3",
+        "seed": 31003,
+        "status": "PASS",
+        "incident_id": "inc-4843d59ef62a243f1e3fa95f",
+        "diagnosis_id": "diag-8d76ab4347ac6c8274c78972",
+        "actual": "OPEN_WORLD",
+        "lane": "OPEN_WORLD",
+        "mechanism": "UNREGISTERED_OBSERVED_ANOMALY",
+        "root_service_ids": [
+          "svc-305c5ccc20bcd9e5d2f2cd26"
+        ],
+        "root_logical_services": [
+          "checkout"
+        ],
+        "broad_domain": "CONCURRENCY",
+        "candidate_logical_services": [
+          "checkout",
+          "fraud-detection",
+          "kafka"
+        ],
+        "window": {
+          "started_at": "2026-09-03T10:18:15.040760Z",
+          "ended_at": "2026-09-03T10:19:20.017664Z"
+        },
+        "http_attempted": 3,
+        "http_success": 3,
+        "http_failed": 0,
+        "capability_limitations": [],
+        "leaked_tokens": [],
+        "supporting_refs_resolve": true,
+        "supporting_evidence_refs": [
+          "e:a:metrics:checkout:core:0:e73e1b5c2c40",
+          "e:a:metrics:fraud-detection:core:0:08f87d5023cd",
+          "e:a:metrics:fraud-detection:core:1:4bd39d9bc14d",
+          "e:a:metrics:fraud-detection:queue-lag:0:96e627ff2c04",
+          "e:a:resources:checkout:0:b00c3f7782ad"
+        ],
+        "memory_sha256": "fe193dcde361b1cd34b4c49fb135dcf6fb5e14743311d9d1335e5365006decb1",
+        "diagnosis_result_sha256": "e9811afe64aed721e656e5247dba49b510fb8e5f52294fdc5941e5492f499a7d",
+        "raw_result_sha256": "573b9924129908de0e180ce80d457521b9b56261f88470bb29cf83f40506b897",
+        "raw_evidence_sha256": "911cd11a0086caf263c73d0d4cc4837d5af54ea49a6e9e2f24d6edac9871d226",
+        "queue_negative_evidence": null,
+        "queue_lag": 259.7142857142857,
+        "queue_case_gate": true,
+        "all_flags_restored_and_queue_drained": true
+      },
+      {
+        "case": "H1",
+        "seed": 32001,
+        "status": "CASE_GATE_FAILED",
+        "incident_id": "inc-a492c77f705b89908269ba78",
+        "diagnosis_id": "diag-c23138cd870442b1593b418a",
+        "actual": "EXTENSION_KNOWN",
+        "lane": "EXTENSION",
+        "mechanism": "kafka-queue-backlog",
+        "root_service_ids": [
+          "svc-3b761e13be524f93e7271b84"
+        ],
+        "root_logical_services": [
+          "fraud-detection"
+        ],
+        "broad_domain": "CONCURRENCY",
+        "candidate_logical_services": [
+          "checkout",
+          "fraud-detection",
+          "kafka"
+        ],
+        "window": {
+          "started_at": "2026-09-03T10:26:09.077063Z",
+          "ended_at": "2026-09-03T10:27:14.021094Z"
+        },
+        "http_attempted": 3,
+        "http_success": 3,
+        "http_failed": 0,
+        "capability_limitations": [],
+        "leaked_tokens": [],
+        "supporting_refs_resolve": true,
+        "supporting_evidence_refs": [
+          "e:a:metrics:fraud-detection:queue-lag:0:d2537b2ec004",
+          "e:a:runtime:all-candidates:e390e9ffdfe2:1:4b2f6bc4f832"
+        ],
+        "memory_sha256": "aae765d35726e9da0437065586758f126974ee62f36bdca84098faf4d10c7fe1",
+        "diagnosis_result_sha256": "4afdafb3b77e128ee4a4553a06c9b4913ba65ac900526e1528c31e64a244d516",
+        "raw_result_sha256": "d6ffabfdbde3d0493035278d1bf7bbc6b216232b16ac9548e52c4a4dd3137838",
+        "raw_evidence_sha256": "20cfa28abe315c644cac9adc219b689a50172c50ce65f071288c96893ce9e86b",
+        "queue_negative_evidence": null,
+        "queue_lag": 303,
+        "queue_case_gate": false,
+        "all_flags_restored_and_queue_drained": true
+      }
+    ],
+    "family": {
+      "assignment_similarities": [
+        {
+          "basis": "Reconstructed from immutable fingerprints and chronological insertion; founding member has no assignment comparison.",
+          "incident_id": "inc-db0e7ee51b16c2e74d5ffdd5",
+          "similarity": null
+        },
+        {
+          "basis": "Reconstructed from immutable fingerprints and chronological insertion; founding member has no assignment comparison.",
+          "incident_id": "inc-08ab11118286f0a0f9ebc352",
+          "similarity": 0.899025974026
+        },
+        {
+          "basis": "Reconstructed from immutable fingerprints and chronological insertion; founding member has no assignment comparison.",
+          "incident_id": "inc-4843d59ef62a243f1e3fa95f",
+          "similarity": 0.980681818182
+        }
+      ],
+      "control_exclusion": true,
+      "excluded_control_incident_ids": [
+        "inc-2c8f2ad809ab5aead55404cb",
+        "inc-69f915e4521289c72b9b45a1",
+        "inc-dbc29a35bf6b604a05684ba6"
+      ],
+      "family": {
+        "created_at": "2026-09-03T10:15:55.166877Z",
+        "distinct_incident_windows": 3,
+        "environment_id": "env-3ed62ab80d67201580ca7764",
+        "evidence_source_diversity": 6,
+        "family_id": "family-cca68e10afe10fcc5407b3fb",
+        "family_sha256": "eb1ef7825dcf323217a72f51a1de34d6f0c382483079eb172648fa41ae80c401",
+        "member_fingerprint_sha256s": [
+          "7e66fa26b37b26b968c4d7caf61596888aba0313e469b9cddc20d4c8da660a1d",
+          "d2ec7e6e735f8ec19f469e73cf0b64440a16a5d5e75c037c8a390e5d0f0557c3",
+          "e9ed7f8f721e3f1a208b9076683bfb68dba14b3ffe022d09e02bb39513a778dc"
+        ],
+        "member_incident_ids": [
+          "inc-08ab11118286f0a0f9ebc352",
+          "inc-4843d59ef62a243f1e3fa95f",
+          "inc-db0e7ee51b16c2e74d5ffdd5"
+        ],
+        "merged_into_family_id": null,
+        "root_consistency": 1,
+        "schema_version": "ecomsre.product.fault-family.v1",
+        "status": "REVIEW_READY",
+        "updated_at": "2026-09-03T10:19:20.657434Z"
+      },
+      "majority_domain": "CONCURRENCY",
+      "majority_root_logical_services": [
+        "checkout"
+      ],
+      "majority_root_service_ids": [
+        "svc-305c5ccc20bcd9e5d2f2cd26"
+      ],
+      "observed_at": "2026-09-03T10:22:12.543485+00:00",
+      "pairwise_similarities": [
+        {
+          "left": "inc-db0e7ee51b16c2e74d5ffdd5",
+          "right": "inc-08ab11118286f0a0f9ebc352",
+          "similarity": 0.899025974026
+        },
+        {
+          "left": "inc-db0e7ee51b16c2e74d5ffdd5",
+          "right": "inc-4843d59ef62a243f1e3fa95f",
+          "similarity": 0.894512195122
+        },
+        {
+          "left": "inc-08ab11118286f0a0f9ebc352",
+          "right": "inc-4843d59ef62a243f1e3fa95f",
+          "similarity": 0.980681818182
+        }
+      ],
+      "preceding_terminal": "ECOMSRE_PRODUCT_V030_OPEN_WORLD_TRIPLICATE_PASS",
+      "root_deviation": "All measured Open-World roots are checkout; the queue anomaly is on fraud-detection. Preserved without relabeling. The expected queue-consumer root feature did not materialize; H1 must still satisfy exact measured majority-root equality.",
+      "shared_anomaly_kinds": [
+        "METRIC_ERROR_OUTLIER",
+        "METRIC_LATENCY_OUTLIER",
+        "METRIC_QUEUE_LAG_OUTLIER"
+      ],
+      "status": "ECOMSRE_PRODUCT_V030_FAULT_FAMILY_REVIEW_READY",
+      "supporting_evidence_refs": [
+        "e:a:metrics:checkout:core:0:0c96bd52e97d",
+        "e:a:metrics:checkout:core:0:e73e1b5c2c40",
+        "e:a:metrics:checkout:core:0:fad513895132",
+        "e:a:metrics:fraud-detection:core:0:08f87d5023cd",
+        "e:a:metrics:fraud-detection:core:0:527f7b75f462",
+        "e:a:metrics:fraud-detection:core:0:823d66b6222a",
+        "e:a:metrics:fraud-detection:core:1:4bd39d9bc14d",
+        "e:a:metrics:fraud-detection:core:1:4d72e1295b1a",
+        "e:a:metrics:fraud-detection:core:1:bbe1b48967a7",
+        "e:a:metrics:fraud-detection:queue-lag:0:676dbe010285",
+        "e:a:metrics:fraud-detection:queue-lag:0:96e627ff2c04",
+        "e:a:metrics:fraud-detection:queue-lag:0:b9d365a41efa",
+        "e:a:resources:checkout:0:b00c3f7782ad",
+        "e:a:resources:checkout:0:d0375098bd6e"
+      ]
+    },
+    "human_review": {
+      "decision": "ACCEPT_AS_NEW",
+      "family_id": "family-cca68e10afe10fcc5407b3fb",
+      "merge_target_family_id": null,
+      "note": "Executed under the user's explicit prior authorization to continue Product v0.3 and perform ACCEPT_AS_NEW after measured controls and three-member clustering. This is not a claim of fresh manual inspection. P1/P2/P3 are OPEN_WORLD; N0/C1 excluded; 3 distinct windows, root consistency 1.0, pairwise similarity >=0.8945. The measured majority root is checkout, while queue evidence belongs to fraud-detection; this deviation is preserved and H1 must still match the measured majority root. No remediation or action authority granted.",
+      "review_id": "review-aefa9d3ffe03f22f92f541cb",
+      "review_sha256": "7803c0b15ef570d5c42f9c2d14dadbc5bd76607ddab6ccd377f730310a93666d",
+      "reviewed_at": "2026-09-03T10:23:11.428670Z",
+      "reviewer": "USER_EXPLICIT_PRIOR_AUTHORIZATION_EXECUTED_BY_CODEX",
+      "schema_version": "ecomsre.product.human-review.v1"
+    },
+    "registration": {
+      "registration_id": "registration-5446911d4590e18764f5272a",
+      "implementation_mode": "DECLARATIVE_READY",
+      "positive_incident_ids": [
+        "inc-08ab11118286f0a0f9ebc352",
+        "inc-4843d59ef62a243f1e3fa95f",
+        "inc-db0e7ee51b16c2e74d5ffdd5"
+      ],
+      "negative_incident_ids": [
+        "inc-2c8f2ad809ab5aead55404cb",
+        "inc-69f915e4521289c72b9b45a1",
+        "inc-dbc29a35bf6b604a05684ba6"
+      ],
+      "predicate_matrix_sha256": "aaa43a46e8b2e81dd8741607d56081d85fe4d94929e5a6f678142fc2d134c665",
+      "draft_sha256": "d58b7965bcdc3129c391cb1252b60ba8430b46f2a6551f3d07fa69a890bea3b0",
+      "selected_candidate": {
+        "action_authority": "NONE",
+        "candidate_id": "candidate-3a20846412589221",
+        "core_known_overlap_rate": 0,
+        "evidence_sources": [
+          "METRICS",
+          "RUNTIME"
+        ],
+        "false_positive_rate": 0,
+        "no_incident_false_positive_rate": 0,
+        "positive_recall": 1,
+        "predicate_ids": [
+          "core:RUNTIME_HEALTHY",
+          "ga:METRIC_QUEUE_LAG_OUTLIER"
+        ],
+        "score": 0.6
+      },
+      "runtime_owned_selection": true,
+      "unresolved_gaps": [
+        "Measured Open-World family majority root is checkout; queue anomaly target is fraud-detection. H1 exact root-consistency requirement remains unproven."
+      ]
+    },
+    "shadow": {
+      "action_authority": "NONE",
+      "action_authority_violations": 0,
+      "core_known_overlap_rate": 0,
+      "counterfactual_consistency": 1,
+      "evaluation_id": "shadow-21fd376b78bfd43d",
+      "evaluation_sha256": "3249a1cc6187415997d1ef7ff05ea95a6b21387c44f38c8f11ce3bbe25f431b9",
+      "evidence_ref_validity": 1,
+      "false_positive_rate": 0,
+      "gate_passed": true,
+      "no_incident_false_positives": 0,
+      "other_extension_destructive_overlaps": 0,
+      "positive_recall": 1,
+      "reason_codes": [],
+      "registration_id": "registration-5446911d4590e18764f5272a",
+      "runtime_evaluation_sha256": "978aa89d9e25fe6af977a25faead5ffd2079225232ac8188d0dab2af5aea5b3f",
+      "schema_version": "ecomsre.product.shadow-evaluation.v1",
+      "source_failure_safe": true,
+      "source_reachability": 1
+    },
+    "shadow_case_counts": {
+      "CONFUSABLE_CORE_KNOWN": 1,
+      "INSUFFICIENT_OR_CONFLICT": 2,
+      "NO_INCIDENT": 2,
+      "OTHER_EXTENSION": 1,
+      "POSITIVE_INCIDENT": 3,
+      "SOURCE_FAILURE": 2,
+      "TARGET_COUNTERFACTUAL": 3
+    },
+    "shadow_unavailable_strata": [
+      {
+        "stratum": "OTHER_EXTENSION",
+        "origin": "NOT_AVAILABLE",
+        "reason_code": "NO_ACTIVE_OTHER_EXTENSION_CONTROL_AVAILABLE",
+        "actual_other_extension_overlap_experiment": false
+      }
+    ],
+    "promotion": {
+      "action_authority": "NONE",
+      "environment_id": "env-3ed62ab80d67201580ca7764",
+      "note": "Executed under the user's explicit prior authorization to PROMOTE KAFKA_QUEUE_BACKLOG after passing the original strict Shadow metrics. This records prior authorization, not fresh manual inspection. Runtime selected queue-lag plus Runtime healthy from 3 positives and 3 measured negatives; all strict metrics passed. The preserved checkout family-root versus fraud-detection queue-target discrepancy remains unresolved and is not waived: H1 must still satisfy exact measured majority-root equality. Read-only diagnosis only; no action/remediation authority.",
+      "promoted_at": "2026-09-03T10:24:56.917960Z",
+      "promotion_id": "promotion-96527954ce542a78a6825c42",
+      "promotion_sha256": "188b3be624276bc1f5f1272114c3ef74de55062601beb0ca66cfbd521509a8c5",
+      "registration_id": "registration-5446911d4590e18764f5272a",
+      "registry_version": 1,
+      "reviewer": "USER_EXPLICIT_PRIOR_AUTHORIZATION_EXECUTED_BY_CODEX",
+      "schema_version": "ecomsre.product.registration-promotion.v1",
+      "shadow_evaluation_id": "shadow-21fd376b78bfd43d",
+      "status": "ACTIVE"
+    },
+    "registry": {
+      "status": "ACTIVE",
+      "registry_version": 1,
+      "entry_sha256": "5b1357365450053e967fab4c1fb31f9a025974ecbbbbaf7af2bb04489cd7d094",
+      "mechanism_slug": "kafka-queue-backlog",
+      "family_status": "PROMOTED",
+      "action_authority": "NONE",
+      "remediation_authority": "NONE",
+      "remediation_registration": "NOT_INCLUDED"
+    },
+    "database_counts": {
+      "incidents": 7,
+      "fault_families": 1,
+      "human_reviews": 1,
+      "registration_drafts": 1,
+      "shadow_evaluations": 1,
+      "promotion_records": 1,
+      "environment_extension_registrations": 1,
+      "environment_extension_registry_versions": 1
+    },
+    "h1_gate": {
+      "status": "CASE_GATE_FAILED",
+      "reason": "ROOT_DIFFERS_FROM_PROMOTED_FAMILY_MAJORITY",
+      "family_majority_root": [
+        "checkout"
+      ],
+      "h1_root": [
+        "fraud-detection"
+      ],
+      "extension_known": true,
+      "correct_slug": true,
+      "no_provisional_report": true,
+      "no_new_target_family": true,
+      "supporting_refs_resolve": true,
+      "source_limitations": [],
+      "leaked_tokens": [],
+      "actual_h1_execution_count": 1,
+      "diagnosis_or_fingerprint_roots_rewritten": false
+    },
+    "root_cause": {
+      "code": "ProductDiagnosisBridgeV1 selects strong[0].service after generic anomaly-ID ordering; checkout ERROR_RATE precedes fraud queue. The compiled TARGET queue predicate matches fraud-detection, not the historical family root.",
+      "c1_metrics_window_overlap": "Observed P1 Core Metrics 10:10:54–10:15:54 UTC overlaps C1; queue window 10:14:54–10:15:54. Aggregate observations do not prove all error signals originated in C1.",
+      "shadow_boundary": "Runtime Shadow measures clause matching and counterfactual/source safety, not equality to historical family-majority roots."
+    },
+    "cleanup": {
+      "cleanup": {
+        "non_owned_resources_changed": false,
+        "owned_containers": 0,
+        "owned_networks": 0,
+        "owned_volumes": 0,
+        "verdict": "CLEAN"
+      },
+      "flags": {
+        "document_sha256": "4daa3da2131ad05887d9369e571dc58f61c919b86dfba944b9030183ed761206",
+        "evaluations": {
+          "kafkaQueueProblems": {
+            "value": 0,
+            "variant": "off"
+          },
+          "loadGeneratorTraffic": {
+            "value": 0,
+            "variant": "off"
+          },
+          "paymentFailure": {
+            "value": 0,
+            "variant": "off"
+          }
+        },
+        "observed_at": "2026-09-03T10:27:47.124972+00:00",
+        "state": "BASELINE"
+      },
+      "lag": {
+        "lag": 0,
+        "observed_at": "2026-09-03T10:27:47.154553+00:00",
+        "series": {
+          "metric": {
+            "__name__": "kafka_consumer_group_lag_ratio",
+            "group": "fraud-detection",
+            "host_name": "2beb555ef0ba",
+            "partition": "0",
+            "topic": "orders"
+          },
+          "value": [
+            1788431267.155,
+            "0"
+          ]
+        },
+        "source_timestamp": 1788431262.139
+      },
+      "observed_at": "2026-09-03T10:28:53.533286+00:00",
+      "removed_owned_counts": {
+        "container": 28,
+        "network": 1,
+        "volume": 3
+      }
+    },
+    "private_databases_and_all_failed_evidence_preserved": true,
+    "repair_validation": {
+      "focused_tests_passed": 212,
+      "focused_duration_seconds": 5.66,
+      "fresh_post_live_replay_tests_passed": 29,
+      "fresh_post_live_replay_duration_seconds": 2.38,
+      "post_live_test_scope": "The two new regression files only; overlapping with the earlier 212, not additive. No full suite.",
+      "focused_scope": "Product v030/v024 and existing incident-diagnosis/knowledge-loop tests",
+      "full_suite_rerun": false,
+      "focused_ruff": "PASS",
+      "focused_mypy_source_files": 5,
+      "focused_mypy": "PASS",
+      "independent_source_review": "PASS_MUST_FIX_0",
+      "independent_live_evidence_review": "PASS_FOR_BLOCKED_RESULT_TRUTH: seven CAS-to-Memory bindings, full six-row matrix, Runtime candidates, all fourteen Shadow outcomes, registry and single-version counts verified read-only; H1 root gate remains failed.",
+      "named_historical_files_verified_unchanged": 12,
+      "historical_public_result_sections_verified_unchanged": 4,
+      "retained_live003_replay": "N0-A/N0-B NO_INCIDENT and C1 CORE_CONFIG/payment queue-negative CONCLUSIVE; original bytes unchanged; this does not rewrite historical measured outcomes",
+      "scoped_source_tree_sha256": "9d7de98582e0577a7df734fe5701d54a8dacd6c334fe83e20394f6018a654ee1",
+      "source_baseline_commit": "1ad2e08c63daab3b475b29cbfc36290842be238d",
+      "boundary": "SCOPED_VERIFICATION only, not full repository FINAL_CLOSURE or validation of the old green CI against this new tree."
+    }
+  },
   "publication": {
     "pull_request": 88,
     "is_draft": true,
-    "merge": "NOT_PERFORMED_CONTROL_GATE_FAILED"
+    "merge": "NOT_PERFORMED_H1_ROOT_GATE_FAILED",
+    "repair_push": "NOT_PERFORMED_TO_AVOID_AN_EXTRA_FULL_CI_CYCLE_BEFORE_MERGE_READINESS",
+    "preserved_remote_head": "1ad2e08c63daab3b475b29cbfc36290842be238d"
   }
 }

@@ -1,9 +1,103 @@
-# Product v0.3 — blocked at the measured control set
+# Product v0.3 — controls pass; H1 root consistency blocks completion
 
-ECOMSRE_PRODUCT_V030_BLOCKED_CONTROL_SET / REVIEW_REQUIRED.
+ECOMSRE_PRODUCT_V030_BLOCKED_H1_ROOT_CONSISTENCY / REVIEW_REQUIRED.
 The completion terminal is not minted. PR #88 remains Draft; no merge.
 
-## Latest: complete live-003 control set after repairs
+## Latest: live-004, through Promotion and the failed H1 gate
+
+The two authorized Product repairs passed focused replay against the exact
+retained live-003 N0-A/N0-B/C1 evidence before the single new full-mode runtime.
+The old outcomes and evidence were not rewritten. Isolated ten-second memory
+growth no longer independently admits a Product residual: same-service memory
+pressure logs, restart/unhealthy Runtime, error Metrics, localized error Traces,
+or a second independent persistent Resource window must corroborate it.
+Resource records, numeric thresholds and frozen Core memory-leak clauses remain
+unchanged; growth-plus-log/restart regressions pass. Bridge and Knowledge shadow
+reconstruction share this Product policy.
+
+C1 uses checkout/fraud-detection/payment candidates, not Kafka. Its queue-negative
+gate checks actual payment support, complete low queue Metrics, healthy fraud
+Runtime and a conclusively false queue clause. Unrelated Logs/Traces coverage
+gaps remain disclosed, not reclassified as complete.
+
+The new private flagd absolute bind changed resolved Compose SHA, so the allowed
+fallback built exactly one new five-window DEMO_ONLY Baseline:
+`base-e7679c5fc708af40c4ba057e`, SHA
+`810b328c68ce68830fef345bfe45a82ae217cfe417559cd88a099ff9c6222328`, environment
+`env-3ed62ab80d67201580ca7764`. It has 5/5 windows, 30/30 healthy transactions and
+all four Resource services. Queries, sampling and Baseline semantics did not
+change; queue mean 0.7/stddev 0.1 leave the threshold at 20. The original
+`base-26bcdd17ce69313c9a587efa` remains intact. A first preparatory transaction's
+HTTP 504 and the existing bounded resumed probe's 3/3 success are both retained;
+neither created an Incident, Baseline or fault.
+
+| Case | Measured result | Full case gate |
+| --- | --- | --- |
+| N0-A, seed 30001 | 30/30 healthy; NO_INCIDENT | PASS |
+| N0-B, seed 30002 | 30/30 healthy; NO_INCIDENT | PASS |
+| C1, seed 30003 | 10/10 expected HTTP 500; CORE_KNOWN / CONFIGURATION_ERROR / payment | PASS; queue-negative CONCLUSIVE |
+| P1, seed 31001 | 3/3; OPEN_WORLD / CONCURRENCY; fraud queue 303 | PASS |
+| P2, seed 31002 | 3/3; OPEN_WORLD / CONCURRENCY; fraud queue 259.7143 | PASS |
+| P3, seed 31003 | 3/3; OPEN_WORLD / CONCURRENCY; fraud queue 259.7143 | PASS |
+| H1, seed 32001 | 3/3; EXTENSION_KNOWN / kafka-queue-backlog / fraud-detection | FAILED: root differs from family majority |
+
+ECOMSRE_PRODUCT_V030_CONTROL_SET_READY is measured. C1 queue lag is 0 < 20,
+fraud Runtime is running/healthy, and the intended queue-plus-Runtime clause is
+false with complete required coverage. SOURCE_LOGS_COVERAGE_GAP and
+SOURCE_TRACES_COVERAGE_GAP remain. All seven cases' support refs resolve and
+leakage lists are empty; their flags were restored and queues drained.
+
+The three positives formed `family-cca68e10afe10fcc5407b3fb`, with three distinct
+windows, root consistency 1.0, six evidence sources and pairwise similarities
+0.899025974026 / 0.894512195122 / 0.980681818182. N0/C1 are excluded.
+The measured majority root is **checkout**, not the expected queue consumer;
+this deviation was disclosed before both preauthorized checkpoints and retained
+in the registration draft's unresolved gaps. No root or fingerprint was edited.
+
+One ACCEPT_AS_NEW records the user's explicit prior authorization, not a fresh
+manual inspection. Runtime independently selected
+`core:RUNTIME_HEALTHY + ga:METRIC_QUEUE_LAG_OUTLIER` from the real three-positive,
+three-negative matrix. Recall is 1.0; false positives, Core overlap and
+No-Incident false positives are zero. Strict Shadow metrics all pass:
+recall/ref-validity/reachability/counterfactual-consistency 1.0; all error/overlap
+and authority-violation counts zero; source-failure safe. OTHER_EXTENSION is
+unavailable for this first extension. One preauthorized Promotion created
+registry version 1, ACTIVE, with action/remediation authority NONE and
+remediation registration NOT_INCLUDED.
+
+H1 then matched the Runtime-derived rule on fraud-detection, with no provisional
+report and no new family. Its exact majority-root check failed because the
+three Open-World reports chose checkout. The bridge currently takes the first
+residual anomaly after anomaly-ID ordering, which puts checkout's error signal
+before fraud's queue signal. The compiled TARGET predicate instead requires the
+queue anomaly on its matching service. Shadow checks matching, not equality to
+historical report roots. P1's Core Metrics window overlaps C1; this does not
+prove that every observed error signal came from C1. This is a distinct root
+semantics problem, not a failed control repair. H1 is preserved, not rerun or
+relabeled, and ECOMSRE_PRODUCT_V030_H1_EXTENSION_KNOWN_PASS is **not** minted.
+
+The Promotion summary initially read the runtime adapter as a registry entry;
+the single already-persisted Promotion was recovered by read-only lookup, with
+no duplicate POST/version. H1's first entry attempt stopped before its started
+marker, traffic or mutation because that export was absent; exactly one real
+H1 was subsequently executed.
+
+Cleanup was CLEAN at 2026-09-03T10:28:53.533286Z: 28 owned containers, one network
+and three temporary volumes removed, final owned resources zero, non-owned
+resources unchanged. Seven live-004 Incidents and one each of family, review,
+draft, Shadow, Promotion and ACTIVE registry entry remain in the private DB.
+Cumulative Goal counts: four runtimes, three full control sets/nine controls,
+one original queue preflight, three payment enables, three queue positives and
+one H1. Provider/Agent/Runbook writes remain zero.
+
+The repair's focused suite passed 212 tests; focused Ruff/mypy and independent
+source review passed (Must Fix 0). No new full suite or CI cycle was run during
+this repair. Historical green CI remains bound to its old head, not this tree.
+The changes remain local in the same branch/worktree; push and merge are withheld
+because a push would trigger another full CI before genuine merge readiness.
+No further root policy change or live rerun was made after H1 failed.
+
+## Preserved live-003 control set after earlier repairs
 
 The ordinary engineering recovery used a fresh runtime and one complete new
 control set. It did not reuse the old passing N0-B or discard any prior formal

@@ -56,6 +56,7 @@ from ecomsre.product.incidents.extensions import (
     build_product_extension_runtime_input_v1,
 )
 from ecomsre.product.incidents.queue_action import build_queue_lag_action_v030
+from ecomsre.product.incidents.anomaly_policy import extract_product_anomalies_v1
 from ecomsre.product.jobs.contracts import JobLeaseFenceV1
 from ecomsre.product.jobs.fencing import require_live_job_fence
 from ecomsre.product.knowledge.compiler import (
@@ -1150,14 +1151,14 @@ class KnowledgeRepositoryV1:
             ),
             baseline=baseline.v22_baseline_profile,
             memory=memory,
-            generic_anomalies=extract_generic_anomalies_v23(
+            generic_anomalies=extract_product_anomalies_v1(
                 memory=memory,
                 candidate_services=incident.candidate_logical_services,
                 baseline_known_log_templates=tuple(
                     (item.service, item.template)
                     for item in baseline.normal_log_templates
                 ),
-                healthy_noise_guard_v024=True,
+                snapshots=tuple(snapshots.values()),
             ),
             raw_outcomes=tuple(raw_outcomes),
         )

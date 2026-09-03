@@ -24,7 +24,6 @@ from ecomsre.dta_v2.v23.contracts import (
 from ecomsre.dta_v2.v23.generic_anomalies import (
     GenericAnomalyKindV23,
     GenericAnomalyV23,
-    extract_generic_anomalies_v23,
 )
 from ecomsre.dta_v2.v23.known_admission import (
     KnownAdmissionStateV23,
@@ -54,6 +53,7 @@ from ecomsre.product.incidents.evidence_binding_v0232 import (
     DiagnosisDecisionTraceV0232,
 )
 from ecomsre.product.incidents.read_backend import ProductReadAcquisitionV1
+from ecomsre.product.incidents.anomaly_policy import extract_product_anomalies_v1
 
 
 _V024_ANOMALY_BY_PREDICATE = {
@@ -164,13 +164,13 @@ class ProductDiagnosisBridgeV1:
         topology_edges = tuple(
             (item.parent_service, item.child_service) for item in baseline.topology_edges
         )
-        anomalies = extract_generic_anomalies_v23(
+        anomalies = extract_product_anomalies_v1(
             memory=memory,
             candidate_services=candidates,
             baseline_known_log_templates=tuple(
                 (item.service, item.template) for item in baseline.normal_log_templates
             ),
-            healthy_noise_guard_v024=True,
+            snapshots=acquisition.snapshots,
         )
         failed_sources = tuple(
             sorted(
