@@ -1481,6 +1481,15 @@ the resulting evidence. Runtime still owns clause mining and Shadow outcomes.
 Failure does not authorize a fabricated review, hand-authored passing clause,
 relaxed detector/clustering/Shadow criteria, or a false completion terminal.
 
+The Goal-required generic queue signal is an exact two-source-file successor
+of the historical PR-B/PR-C bindings: `read_contracts.py` adds only the
+`QUEUE_LAG` enum and its `COUNT` unit; `memory.py` adds only the specified
+baseline-only queue-strength branch. Historical manifests remain byte-exact.
+The verifier binds the old blobs at the Goal's fixed main commit and the exact
+reviewed successor bytes, while all other artifact checks, Core query shapes,
+thresholds, support clauses, and Git provenance gates remain unchanged. This
+does not permit arbitrary future edits to either source under the old binding.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)

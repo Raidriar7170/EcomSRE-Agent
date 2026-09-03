@@ -97,9 +97,28 @@ Memory hash. A fresh 125-test check passed; independent read-only reconstruction
 matches all three actual control hashes exactly. Review passed for Draft
 blocked-results publication only, with no remaining Must Fix or Should Fix.
 
-A successor needs a semantic decision about full-mode resource-noise
-calibration and the Core Known control/query contract. Do not raise thresholds,
-rewrite log symptoms, erase these cases or repeat windows until a pass appears.
+## Post-control engineering repair (offline only)
+
+The v0.3 error-ratio query now divides by the unchanged positive request rate;
+zero traffic is unsupported, not an invented healthy ratio. The old v0.2.3
+payload and these persisted control results are unchanged. This removes the
+known denominator-floor defect but does not establish a new live C1 result or
+remove the separate rolling-window limitation.
+
+CI run 33715012274 failed at the historical PR-B source hash before full tests.
+The repair preserves both frozen manifests and binds the old source blobs at
+the Goal base plus the exact reviewed queue-only successors. Other files,
+Core query shapes, thresholds, support clauses and provenance checks remain
+unchanged. Both PR-B and PR-C verifier CLIs now pass locally. Focused regression:
+139 passed, one existing historical-label test skipped; Ruff and mypy passed.
+This is not a full-suite or live-control success claim.
+
+N0-A's independent audit found no established alignment/unit bug. Raw Prometheus
+source timestamps were not retained, so source-sample independence is not
+claimed from the typed five-point record. Its measured endpoint arithmetic
+still crosses the existing guard. Full-mode resource-noise semantics remain
+unresolved. Do not raise thresholds, rewrite log symptoms, erase these cases
+or repeat windows until a pass appears.
 
 Machine state: [result](product-v030-live-knowledge-evolution.json).
 Family boundary: [summary](../analysis/product-v030-family-and-rule-summary.json).

@@ -31,13 +31,22 @@ def build_product_v030_environment_payload(
     prometheus["settings"]["query_templates"]["queue_lag"] = QUEUE_LAG_QUERY_V030
     prometheus["settings"]["step_seconds"] = 10
     templates = prometheus["settings"]["query_templates"]
+    # ERROR_RATE is a fraction, not an errors/second measurement. A floor of
+    # one on a per-second total suppresses real errors below one request/s.
+    # Preserve every positive denominator; no observed traffic is unsupported.
+    # This Goal-local correction leaves historical environment payloads intact.
+    span_total = 'sum(rate(traces_span_metrics_calls_total{service_name="{service}"}[5m]))'
+    span_errors = 'sum(rate(traces_span_metrics_calls_total{service_name="{service}",status_code="STATUS_CODE_ERROR"}[5m]))'
+    templates["error_rate"] = (
+        f"({span_errors} or (0 * {span_total})) / ({span_total} > 0)"
+    )
     # Native latency is the broker's Produce request-time histogram quantile.
     # Count/failed are partition-append counters (failed excludes expected errors),
     # not a complete network ACK success ratio or the latency sample population.
     # Method spans are execution evidence, never a broker latency substitute.
     native = {
         "request_support": 'sum(rate(kafka_request_count_total{service_name="{service}",type="produce"}[5m]))',
-        "error_rate": 'sum(rate(kafka_request_failed_total{service_name="{service}",type="produce"}[5m])) / clamp_min(sum(rate(kafka_request_count_total{service_name="{service}",type="produce"}[5m])), 0.000001)',
+        "error_rate": 'sum(rate(kafka_request_failed_total{service_name="{service}",type="produce"}[5m])) / (sum(rate(kafka_request_count_total{service_name="{service}",type="produce"}[5m])) > 0)',
         "latency": 'sum(kafka_produce_request_time_95p_milliseconds{service_name="{service}"})',
     }
     for name, query in native.items():

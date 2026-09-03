@@ -121,3 +121,29 @@ def test_native_broker_metrics_never_fall_back_to_method_span_metrics():
         assert fallback.count('service_name="{service}"') == fallback.count(
             'service_name!="kafka"'
         )
+
+
+def test_error_ratio_preserves_low_request_rates_and_rejects_zero_support():
+    payload = build_product_v030_environment_payload(
+        repository_root=ROOT, runtime_authority_sha256="a" * 64
+    )
+    templates = next(
+        item["settings"]["query_templates"]
+        for item in payload["connector_configs"] if item["kind"] == "PROMETHEUS"
+    )
+    # A positive vector comparison filters unsupported totals without replacing
+    # their values. In particular, 0.1 errors/s / 0.2 calls/s must remain 0.5,
+    # not 0.1 as it would with the historical one-request/s denominator floor.
+    native_total = (
+        'sum(rate(kafka_request_count_total'
+        '{service_name="{service}",type="produce"}[5m]))'
+    )
+    span_total = (
+        'sum(rate(traces_span_metrics_calls_total'
+        '{service_name="{service}",service_name!="kafka"}[5m]))'
+    )
+    assert f"/ ({native_total} > 0)" in templates["error_rate"]
+    assert f"/ ({span_total} > 0)" in templates["error_rate"]
+    assert "clamp_min" not in templates["error_rate"]
+    assert "bool" not in templates["error_rate"]
+    assert f"or (0 * {span_total})" in templates["error_rate"]
