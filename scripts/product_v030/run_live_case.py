@@ -47,6 +47,19 @@ FORBIDDEN = re.compile(
 )
 
 
+def case_traffic_profile(case: str) -> tuple[HealthyTrafficProfileV021, int]:
+    seed, state, count, _ = CASES[case]
+    # Core Metrics reads a frozen five-minute window of rolling rates. Keep
+    # C1's ten requests bounded but distribute them across that observation,
+    # rather than interpreting a ten-second burst as five minutes of failure.
+    return HealthyTrafficProfileV021(
+        request_seed=seed,
+        maximum_request_count=count,
+        requests_per_second=1 / 30 if state == "PAYMENT" else 1,
+        error_budget=count if state == "PAYMENT" else 1,
+    ), 300 if state == "PAYMENT" else 60
+
+
 def apply_case_fault(controller, state, result):
     # The controller writes before readback; a failed readback is mutation-possible.
     result["fault_write_attempt_count"] += 1
@@ -79,6 +92,7 @@ def main() -> None:
     if baseline["status"] != "PRODUCT_V030_FRESH_BASELINE_READY":
         raise ValueError("fresh five-window Baseline is not ready")
     seed, state, count, expected = CASES[args.case]
+    traffic_profile, minimum_observation_seconds = case_traffic_profile(args.case)
     if state == "QUEUE":
         gate = json.loads((private / "pre-p1-acquisition-leakage.json").read_text())
         if (gate["status"] != "PASS" or gate.get("capability_limitations") != []
@@ -133,6 +147,8 @@ def main() -> None:
         "started_at": datetime.now(UTC).isoformat(),
         "fault_enable_count": 0,
         "fault_write_attempt_count": 0,
+        "traffic_profile": traffic_profile.model_dump(mode="json"),
+        "minimum_observation_seconds": minimum_observation_seconds,
     }
     write_private_json(case_root / "started.json", result, create_once=True)
     try:
@@ -187,12 +203,7 @@ def main() -> None:
             ) as traffic_client:
                 measured = BoundedHealthyCheckoutTrafficV021(client=traffic_client).run(
                     endpoint="http://127.0.0.1:18080/api/checkout",
-                    profile=HealthyTrafficProfileV021(
-                        request_seed=seed,
-                        maximum_request_count=count,
-                        requests_per_second=1,
-                        error_budget=count if state == "PAYMENT" else 1,
-                    ),
+                    profile=traffic_profile,
                 )
             result["traffic"] = {
                 **measured.model_dump(mode="json"),
@@ -213,7 +224,9 @@ def main() -> None:
                     ):
                         strong_stamps.add(sample["source_timestamp"])
                     elapsed = (datetime.now(UTC) - started_at).total_seconds()
-                    if elapsed >= 60 and (state != "QUEUE" or len(strong_stamps) >= 3):
+                    if elapsed >= minimum_observation_seconds and (
+                        state != "QUEUE" or len(strong_stamps) >= 3
+                    ):
                         break
                     if time.monotonic() >= deadline:
                         raise RuntimeError(

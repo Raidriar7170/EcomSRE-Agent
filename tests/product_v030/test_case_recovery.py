@@ -4,6 +4,28 @@ from pathlib import Path
 import pytest
 
 
+def test_control_traffic_covers_frozen_metrics_window_without_changing_positives():
+    path = Path(__file__).resolve().parents[2] / "scripts/product_v030/run_live_case.py"
+    spec = importlib.util.spec_from_file_location("live_case_window_test", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    payment, duration = module.case_traffic_profile("C1")
+    assert payment.request_seed == 30003
+    assert payment.maximum_request_count == 10
+    assert payment.requests_per_second == 1 / 30
+    assert duration == 300
+    for name, seed in (("N0-A", 30001), ("N0-B", 30002)):
+        profile, duration = module.case_traffic_profile(name)
+        assert (profile.request_seed, profile.maximum_request_count) == (seed, 30)
+        assert profile.requests_per_second == 1
+        assert duration == 60
+    for name, seed in (("P1", 31001), ("P2", 31002), ("P3", 31003), ("H1", 32001)):
+        profile, duration = module.case_traffic_profile(name)
+        assert (profile.request_seed, profile.maximum_request_count) == (seed, 3)
+        assert profile.requests_per_second == 1
+        assert duration == 60
+
+
 def test_fault_write_then_readback_failure_still_restores_baseline():
     path = Path(__file__).resolve().parents[2] / "scripts/product_v030/run_live_case.py"
     spec = importlib.util.spec_from_file_location("live_case_recovery_test", path)

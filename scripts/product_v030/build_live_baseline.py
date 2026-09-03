@@ -64,9 +64,15 @@ def main() -> None:
     output = private
     product_root = private / "product"
     if args.from_broker_probe:
-        probe = json.loads((private / "broker-probe-resumed.json").read_text())
+        probe_path = private / "broker-probe-resumed.json"
+        if not probe_path.exists():
+            probe_path = private / "broker-probe.json"
+        probe = json.loads(probe_path.read_text())
         if probe["status"] != "BROKER_TELEMETRY_PROBE_PASS":
             raise ValueError("broker full-acquisition probe has not passed")
+        # Preserve the preparatory probe database and create a genuinely fresh
+        # formal environment; a successful first probe needs no failed setup.
+        product_root = private / "product-formal"
     if (output / "baseline-result.json").exists() and not args.resume_failed_setup:
         raise FileExistsError("Baseline already attempted; preserve its result")
     if args.resume_failed_setup:
