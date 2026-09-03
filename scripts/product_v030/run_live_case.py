@@ -60,6 +60,14 @@ def case_traffic_profile(case: str) -> tuple[HealthyTrafficProfileV021, int]:
     ), 300 if state == "PAYMENT" else 60
 
 
+def require_case_baseline(incident: dict, baseline: dict) -> None:
+    if any(
+        incident.get(field) != baseline[field]
+        for field in ("baseline_id", "baseline_sha256")
+    ):
+        raise ValueError("case Baseline binding differs from the fixed control set")
+
+
 def apply_case_fault(controller, state, result):
     # The controller writes before readback; a failed readback is mutation-possible.
     result["fault_write_attempt_count"] += 1
@@ -276,6 +284,7 @@ def main() -> None:
                     },
                 },
             )
+            require_case_baseline(result["incident"], baseline["baseline"])
             incident_id = result["incident"]["incident_id"]
             write_private_json(case_root / "observation.json", result, create_once=True)
             print(

@@ -4,6 +4,18 @@ from pathlib import Path
 import pytest
 
 
+def test_case_rejects_a_different_active_baseline():
+    path = Path(__file__).resolve().parents[2] / "scripts/product_v030/run_live_case.py"
+    spec = importlib.util.spec_from_file_location("live_case_baseline_test", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    baseline = {"baseline_id": "base-one", "baseline_sha256": "a" * 64}
+    module.require_case_baseline(baseline, baseline)
+    for field in baseline:
+        with pytest.raises(ValueError, match="case Baseline binding differs"):
+            module.require_case_baseline({**baseline, field: "different"}, baseline)
+
+
 def test_control_traffic_covers_frozen_metrics_window_without_changing_positives():
     path = Path(__file__).resolve().parents[2] / "scripts/product_v030/run_live_case.py"
     spec = importlib.util.spec_from_file_location("live_case_window_test", path)

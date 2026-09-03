@@ -63,7 +63,6 @@ from ecomsre.product.environment.capabilities import (
     SourceCapabilityStatusV1,
 )
 from ecomsre.product.incidents.contracts import IncidentRecordV1
-from ecomsre.product.incidents.queue_action import build_queue_lag_action_v030
 from ecomsre.product.incidents.evidence_binding_v0232 import (
     CapabilityEvidenceObservationV0232,
     CapabilityLimitationCandidateV0232,
@@ -623,6 +622,10 @@ class ProductReadBackendV1:
                 for config in environment.connector_configs
             )
         ):
+            # Keep the optional successor import out of the line-bound
+            # historical Runtime request construction surface above.
+            from ecomsre.product.incidents.queue_action import build_queue_lag_action_v030
+
             actions = (*actions, build_queue_lag_action_v030())
         raw: list[ReadOutcomeV22] = []
         memory: list[MemoryReadOutcomeV22] = []
