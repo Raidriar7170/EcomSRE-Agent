@@ -90,10 +90,14 @@ def restore_case_flags(controller, result):
 
 
 def queue_case_root_matches_unique_owner(
-    diagnosis: dict, strong_queue: list, by_logical: dict[str, str]
+    diagnosis: dict,
+    strong_queue: list,
+    by_logical: dict[str, str],
+    *,
+    expected_owner: str,
 ) -> bool:
     queue_owners = {item.service for item in strong_queue}
-    if len(queue_owners) != 1:
+    if queue_owners != {expected_owner}:
         return False
     owner = next(iter(queue_owners))
     return owner in by_logical and diagnosis["root_service_ids"] == [
@@ -340,7 +344,6 @@ def main() -> None:
                     item for item in material.runtime_input.generic_anomalies
                     if item.kind.value == "METRIC_QUEUE_LAG_OUTLIER"
                     and item.strength.value == "STRONG"
-                    and item.service == "fraud-detection"
                 ]
                 result["strong_queue_anomalies"] = [
                     item.model_dump(mode="json") for item in strong_queue
@@ -367,7 +370,10 @@ def main() -> None:
                 result["queue_case_gate"] = bool(
                     strong_queue and runtime_healthy and exact_terminal
                     and queue_case_root_matches_unique_owner(
-                        diagnosis, strong_queue, by_logical
+                        diagnosis,
+                        strong_queue,
+                        by_logical,
+                        expected_owner="fraud-detection",
                     )
                     and all(set(item.evidence_refs).issubset(refs) for item in strong_queue)
                 )

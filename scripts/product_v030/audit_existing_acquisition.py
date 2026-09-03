@@ -74,6 +74,12 @@ def build_current_control_leakage_gate(
             raise ValueError("current control environment or Baseline differs")
         if evidence.get("incident_id") != incident["incident_id"]:
             raise ValueError("current control Evidence incident differs")
+        diagnosis = record["diagnosis"]
+        if evidence.get("diagnosis_id") != diagnosis["diagnosis_id"]:
+            raise ValueError("current control Evidence Diagnosis differs")
+        for key in ("supporting_evidence_refs", "contradicting_evidence_refs"):
+            if evidence.get(key) != diagnosis[key]:
+                raise ValueError("current control Evidence Diagnosis references differ")
         leaked = sorted(set(FORBIDDEN.findall(evidence_bytes.decode("utf-8"))))
         if leaked:
             raise ValueError("current control Evidence contains evaluator leakage")
@@ -82,8 +88,8 @@ def build_current_control_leakage_gate(
         if sources != REQUIRED_SOURCES:
             raise ValueError("current control Evidence source coverage differs")
         refs = {item.get("evidence_ref") for item in objects}
-        diagnosis_refs = set(record["diagnosis"]["supporting_evidence_refs"]) | set(
-            record["diagnosis"]["contradicting_evidence_refs"]
+        diagnosis_refs = set(diagnosis["supporting_evidence_refs"]) | set(
+            diagnosis["contradicting_evidence_refs"]
         )
         if not diagnosis_refs.issubset(refs):
             raise ValueError("current control Diagnosis references do not resolve")

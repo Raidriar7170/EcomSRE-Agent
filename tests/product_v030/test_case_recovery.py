@@ -122,6 +122,7 @@ def test_current_control_leakage_gate_is_bound_to_fresh_run(tmp_path):
                         "ended_at": "2026-09-03T00:01:00Z",
                     },
                     "diagnosis": {
+                        "diagnosis_id": f"diag-{case.lower()}",
                         "terminal": "NO_INCIDENT",
                         "capability_limitations": [],
                         "supporting_evidence_refs": [],
@@ -138,6 +139,9 @@ def test_current_control_leakage_gate_is_bound_to_fresh_run(tmp_path):
             json.dumps(
                 {
                     "incident_id": incident_id,
+                    "diagnosis_id": f"diag-{case.lower()}",
+                    "supporting_evidence_refs": [],
+                    "contradicting_evidence_refs": [],
                     "objects": [
                         {
                             "source": source,
@@ -209,6 +213,13 @@ def test_current_control_leakage_gate_is_bound_to_fresh_run(tmp_path):
     n0a_result_path.write_text(original_result)
 
     bad_evidence = json.loads(original_evidence)
+    bad_evidence["diagnosis_id"] = "diag-other"
+    n0a_evidence_path.write_text(json.dumps(bad_evidence))
+    with pytest.raises(ValueError, match="Evidence Diagnosis differs"):
+        module.build_current_control_leakage_gate(private, historical)
+    n0a_evidence_path.write_text(original_evidence)
+
+    bad_evidence = json.loads(original_evidence)
     bad_evidence["objects"] = [
         item for item in bad_evidence["objects"] if item["source"] != "TRACES"
     ]
@@ -231,13 +242,20 @@ def test_queue_case_root_must_equal_the_unique_queue_owner():
     by_logical = {"checkout": "svc-checkout", "fraud-detection": "svc-fraud"}
     anomaly = type("Anomaly", (), {"service": "fraud-detection"})()
     assert module.queue_case_root_matches_unique_owner(
-        {"root_service_ids": ["svc-fraud"]}, [anomaly], by_logical
+        {"root_service_ids": ["svc-fraud"]},
+        [anomaly],
+        by_logical,
+        expected_owner="fraud-detection",
     )
     assert not module.queue_case_root_matches_unique_owner(
-        {"root_service_ids": ["svc-checkout"]}, [anomaly], by_logical
+        {"root_service_ids": ["svc-checkout"]},
+        [anomaly],
+        by_logical,
+        expected_owner="fraud-detection",
     )
     assert not module.queue_case_root_matches_unique_owner(
         {"root_service_ids": ["svc-fraud"]},
         [anomaly, type("Anomaly", (), {"service": "checkout"})()],
         by_logical,
+        expected_owner="fraud-detection",
     )
