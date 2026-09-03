@@ -44,6 +44,14 @@ from ecomsre_live_sandbox.knowledge_v030 import (
 )
 
 
+def require_baseline_resource_coverage(baseline: dict) -> None:
+    observed = {
+        item["service"] for item in baseline["v22_baseline_profile"]["resource_stats"]
+    }
+    if observed != set(CANDIDATES_V030):
+        raise RuntimeError("full-mode resource Baseline is incomplete")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--private-root", required=True, type=Path)
@@ -225,6 +233,7 @@ def main() -> None:
                 worker_id="product-v030-baseline",
             )
             result["baseline_job_id"] = job_id
+            require_baseline_resource_coverage(result["baseline"])
             result["status"] = "PRODUCT_V030_FRESH_BASELINE_READY"
     except Exception as error:
         result["status"] = "PRODUCT_V030_BASELINE_PREPARATION_FAILED"
