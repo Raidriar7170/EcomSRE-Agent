@@ -1,0 +1,10 @@
+# Kafka 4.3.1 RequestMetrics.TotalTimeMs for Produce, not pooled percentiles.
+# Extends the pinned Java agent's existing kafka-broker target system.
+rules:
+  - bean: kafka.network:type=RequestMetrics,name=TotalTimeMs,request=Produce
+    mapping:
+      95thPercentile:
+        metric: kafka.produce.request.time.95p
+        type: gauge
+        desc: Broker Produce request TotalTimeMs 95th percentile
+        unit: ms

@@ -257,9 +257,15 @@ def _issue_owned_read_capability(
     from ecomsre_live_sandbox.contracts import ConfigBundle, ResolvedSandbox
     from ecomsre_live_sandbox.environment import SandboxEnvironment
     from ecomsre_live_sandbox.product_v024 import ProductV024SandboxEnvironment
+    from ecomsre_live_sandbox.product_v030 import ProductV030SandboxEnvironment
 
     if (
-        type(environment) not in {SandboxEnvironment, ProductV024SandboxEnvironment}
+        type(environment)
+        not in {
+            SandboxEnvironment,
+            ProductV024SandboxEnvironment,
+            ProductV030SandboxEnvironment,
+        }
         or type(bundle) is not ConfigBundle
     ):
         raise TypeError("owned read capability requires exact Sandbox lifecycle")

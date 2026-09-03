@@ -8,11 +8,15 @@ import pytest
 from ecomsre.dta_v2.contracts import semantic_sha256
 from ecomsre.dta_v2.telemetry_adapters import _issue_owned_read_capability
 from ecomsre_live_sandbox.contracts import LocalEndpoints, ResolvedSandbox, load_bundle
-from ecomsre_live_sandbox.environment import EXPECTED_SERVICES, SandboxDriftError
+from ecomsre_live_sandbox.environment import SandboxDriftError
 from ecomsre_live_sandbox.product_v024 import (
     ProductV024SandboxEnvironment,
     build_product_v024_runtime_bundle,
     validate_collector_service_v024,
+)
+from ecomsre_live_sandbox.product_v030 import (
+    ProductV030SandboxEnvironment,
+    build_product_v030_runtime_bundle,
 )
 
 
@@ -117,8 +121,7 @@ def test_docker_stats_runtime_exception_normalizes_to_historical_contract() -> N
     assert normalized["volumes"][-1]["source"] == str(historical)
     assert normalized["volumes"][-1]["target"] == "/etc/otelcol-config-sandbox.yml"
     assert all(
-        volume["source"] != "/var/run/docker.sock"
-        for volume in normalized["volumes"]
+        volume["source"] != "/var/run/docker.sock" for volume in normalized["volumes"]
     )
 
 
@@ -137,18 +140,28 @@ def test_collector_config_enables_one_bounded_owned_docker_stats_receiver() -> N
     assert "host_metrics" not in metrics_pipeline
 
 
-def test_v024_environment_can_mint_fresh_owned_read_authority(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+@pytest.mark.parametrize(
+    "environment_type,bundle_builder",
+    [
+        (ProductV024SandboxEnvironment, build_product_v024_runtime_bundle),
+        (ProductV030SandboxEnvironment, build_product_v030_runtime_bundle),
+    ],
+)
+def test_product_environment_can_mint_fresh_owned_read_authority(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    environment_type,
+    bundle_builder,
 ) -> None:
-    bundle = build_product_v024_runtime_bundle(ROOT)
-    environment = ProductV024SandboxEnvironment(
+    bundle = bundle_builder(ROOT)
+    environment = environment_type(
         repository_root=ROOT,
         bundle=bundle,
         flagd_directory=tmp_path,
     )
     resolved = ResolvedSandbox(
         compose_sha256="a" * 64,
-        services=EXPECTED_SERVICES,
+        services=environment.expected_services,
         image_references=("example.invalid/image:1",),
         endpoints=LocalEndpoints(
             frontend="http://127.0.0.1:18080",
@@ -179,6 +192,23 @@ def test_v024_environment_can_mint_fresh_owned_read_authority(
 
     assert capability.resolved_sandbox == resolved
     assert capability.config.authority.mode.value == "OWNED_LOCAL"
+
+
+def test_product_owned_read_authority_rejects_arbitrary_subclass(tmp_path):
+    class UnknownEnvironment(ProductV030SandboxEnvironment):
+        pass
+
+    bundle = build_product_v030_runtime_bundle(ROOT)
+    environment = UnknownEnvironment(
+        repository_root=ROOT, bundle=bundle, flagd_directory=tmp_path
+    )
+    with pytest.raises(TypeError, match="exact Sandbox lifecycle"):
+        _issue_owned_read_capability(
+            environment=environment,
+            bundle=bundle,
+            admitted_resolved_sha256="a" * 64,
+            timeout_seconds=5,
+        )
 
 
 def test_collector_validator_rejects_writeable_product_config() -> None:

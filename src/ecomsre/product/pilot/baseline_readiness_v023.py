@@ -144,7 +144,7 @@ class PrometheusTemplateDiagnosticV023(ProductModelV1):
         "ecomsre.product.prometheus-template-diagnostic.v023"
     ] = "ecomsre.product.prometheus-template-diagnostic.v023"
     template_name: Literal[
-        "request_support", "error_rate", "latency", "cpu", "memory"
+        "request_support", "error_rate", "latency", "cpu", "memory", "queue_lag"
     ]
     logical_service: str = Field(pattern=r"^[a-z][a-z0-9-]{0,63}$")
     status: ReadSourceStatusV22

@@ -1,5 +1,5 @@
 {
-  "status": "NOT_OBSERVED_RESOURCE_BLOCKED",
+  "status": "TARGET_FAMILY_NOT_OBSERVED_CONTROL_SET_BLOCKED",
   "family_id": null,
   "positive_incident_ids": [],
   "pairwise_similarities": [],
@@ -7,7 +7,7 @@
   "majority_domain": null,
   "shared_anomalies": [],
   "supporting_evidence_refs": [],
-  "control_exclusion": "NOT_RUN",
+  "control_exclusion": "N0-A_NOT_INGESTED_N0-B_NOT_INGESTED_C1_NON_TARGET_FAMILY_PRESERVED",
   "human_accept_as_new": null,
   "runtime_selected_clause": null,
   "shadow_evaluation": null,
@@ -15,5 +15,13 @@
   "registry_version": null,
   "h1": null,
   "action_authority": "NONE",
-  "remediation_authority": "NONE"
+  "remediation_authority": "NONE",
+  "non_target_family_preserved": {
+    "family_id": "family-fd3d3a6060a85fb1eebc92c1",
+    "status": "ACCUMULATING",
+    "member_incident_ids": [
+      "inc-1d0a2f86bdeecc65ec8f1794"
+    ],
+    "is_queue_backlog_target_family": false
+  }
 }

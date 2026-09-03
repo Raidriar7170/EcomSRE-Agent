@@ -1459,6 +1459,28 @@ Provider use, commit, push, PR creation, merge, deployment, or release. Those
 remain separately protected actions. Product engineering terminals cannot
 rewrite Phase 0 or DTA study terminals.
 
+## DEC-061 — Product v0.3 Full-Mode Knowledge Evolution Authorization
+
+**Status: `accepted` for the user-designated Product v0.3 Goal and the user's
+subsequent explicit authorization to continue without further permission pauses.**
+
+The successor may acquire only the missing `3.0.0` `linux/arm64` accounting,
+fraud-detection, and kafka images from `ghcr.io/open-telemetry/demo`, verify their
+registry and local identities, and establish a separate private full-mode lock.
+Historical locks and upstream source remain unchanged. No builds, architecture
+emulation, version fallback, global cleanup, or non-owned mutation is authorized.
+The full-mode lifecycle and the Goal's bounded evaluator fault/traffic controls
+are authorized; Product action/remediation authority, Provider calls, Agent
+writes, and Runbook executions remain `NONE` or zero as applicable.
+
+The user's instruction supplies conditional standing authorization for the
+Goal's ACCEPT_AS_NEW and Promotion operations only after their original
+measured gates pass. Persisted review notes must identify that preauthorization
+and its source instruction; they must not claim the user subsequently inspected
+the resulting evidence. Runtime still owns clause mining and Shadow outcomes.
+Failure does not authorize a fabricated review, hand-authored passing clause,
+relaxed detector/clustering/Shadow criteria, or a false completion terminal.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)

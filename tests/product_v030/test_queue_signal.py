@@ -116,7 +116,8 @@ def test_optional_template_preserves_existing_contract():
         PrometheusConnectorSettingsV1(query_templates={**TEMPLATES, "arbitrary": "x"})
 
 
-def test_queue_connector_returns_one_count_fact_with_real_sample_count():
+@pytest.mark.parametrize("baseline_query", [False, True])
+def test_queue_connector_returns_one_count_fact_with_real_sample_count(baseline_query):
     queries = []
 
     def handler(request):
@@ -131,9 +132,8 @@ def test_queue_connector_returns_one_count_fact_with_real_sample_count():
                         {
                             "metric": {},
                             "values": [
-                                [NOW.timestamp() - 20, "30"],
-                                [NOW.timestamp() - 10, "40"],
-                                [NOW.timestamp(), "50"],
+                                [NOW.timestamp() - seconds, "0" if queries[-1].startswith("error_rate") else value]
+                                for seconds, value in ((20, "30"), (10, "40"), (0, "50"))
                             ],
                         }
                     ],
@@ -167,20 +167,27 @@ def test_queue_connector_returns_one_count_fact_with_real_sample_count():
                 window=ConnectorWindowV1(
                     started_at=NOW - timedelta(seconds=30), ended_at=NOW
                 ),
-                maximum_records=1,
-                requested_source=EvidenceSourceV22.METRICS,
+                maximum_records=10 if baseline_query else 1,
+                requested_source=None if baseline_query else EvidenceSourceV22.METRICS,
                 request_sha256="0" * 64,
                 metric_kinds=(MetricKindV22("QUEUE_LAG"),),
             )
         )[0]
     finally:
         connector.close()
-    assert queries == ['sum(lag{group="fraud-detection"})']
+    if baseline_query:
+        diagnostics = connector.baseline_diagnostics_v023()
+        assert diagnostics is not None
+        assert any(item.template_name == "queue_lag" and item.sample_count == 3 for item in diagnostics.templates)
+        assert len(queries) == 6
+    else:
+        assert queries == ['sum(lag{group="fraud-detection"})']
     assert result.covered_services == ("fraud-detection",)
-    assert len(result.records) == 1
-    assert result.records[0].unit is MetricUnitV22.COUNT
-    assert result.records[0].sample_count == 3
-    assert result.records[0].value == 40.0
+    queue_records = [item for item in result.records if isinstance(item, MetricFactV22) and item.metric_kind is MetricKindV22.QUEUE_LAG]
+    assert len(queue_records) == 1
+    assert queue_records[0].unit is MetricUnitV22.COUNT
+    assert queue_records[0].sample_count == 3
+    assert queue_records[0].value == 40.0
 
 
 def test_core_ontology_has_no_queue_mechanism():

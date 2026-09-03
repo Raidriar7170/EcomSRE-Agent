@@ -7,7 +7,15 @@ import re
 from typing import Any, Literal
 from urllib.parse import urlsplit
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SerializerFunctionWrapHandler,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 
 from ecomsre.dta_v2.v22.read_contracts import semantic_sha256_v22
 
@@ -391,10 +399,20 @@ class ServiceIdentityPolicyV1(ProductModelV1):
     opensearch_field: str | None = Field(default=None, min_length=1, max_length=255)
     jaeger_service_field: str | None = Field(default=None, min_length=1, max_length=255)
     health_service_field: str | None = Field(default=None, min_length=1, max_length=255)
+    discovery_mode: Literal["AUTO", "DECLARED_ONLY"] = "AUTO"
     services: tuple[ServiceIdentityRuleV1, ...] = Field(
         default_factory=tuple,
         max_length=20,
     )
+
+    @model_serializer(mode="wrap")
+    def preserve_default_serialization(
+        self, handler: SerializerFunctionWrapHandler
+    ) -> dict[str, Any]:
+        value = handler(self)
+        if self.discovery_mode == "AUTO":
+            value.pop("discovery_mode", None)
+        return value
 
     @model_validator(mode="after")
     def require_unambiguous_rules(self) -> "ServiceIdentityPolicyV1":

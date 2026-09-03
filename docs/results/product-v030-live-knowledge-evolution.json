@@ -1,12 +1,14 @@
 {
   "schema_version": "ecomsre.product.live-knowledge-evolution-result.v030",
-  "status": "RESOURCE_BLOCKED",
-  "stage": "OFFLINE_PREPARATION_PARTIAL",
-  "observed_at": "2026-09-02T17:58:28Z",
+  "status": "ECOMSRE_PRODUCT_V030_BLOCKED_CONTROL_SET",
+  "stage": "CONTROL_SET_MEASURED_GATE_FAILED",
+  "observed_at": "2026-09-03T04:16:43.270977Z",
   "baseline_commit": "86a8dbc7859425ca9ef2e778dc7e4c7675b0cabb",
   "goal_sha256": "7141b67890aaee2f8cfc5c1b9ebfa2fc3ae03da98bea76722b9ec24e72e05f14",
   "branch": "codex/product-v030-live-knowledge-evolution",
-  "completed_terminals": [],
+  "completed_terminals": [
+    "ECOMSRE_PRODUCT_V030_QUEUE_TELEMETRY_READY"
+  ],
   "completion_terminal_minted": false,
   "offline_implementation": {
     "optional_queue_lag_template": true,
@@ -16,48 +18,172 @@
     "broad_domain": "CONCURRENCY",
     "core_queue_mechanism_added": false,
     "detector": "sample_count >= 3 and observed_lag >= max(20, baseline_mean + 5 * max(baseline_stddev, 1))",
-    "full_mode_compose_resolution": "PASS_28_SERVICES_NO_DOCKER_UP",
+    "full_mode_compose_resolution": "LIVE_28_SERVICES_VERIFIED",
     "optional_action_acquisition_gates": "PASS_MOCK_TRANSPORT",
     "full_mode_isolation_rejection_tests": "PASS_33_CASES",
     "pinned_control_log_projection": "PASS_OFFLINE_BOTH_PARSERS",
     "genuine_error_fatal_preserved": "PASS_OFFLINE",
-    "actual_prometheus_metric_discovered": false,
-    "live_leakage_check": "NOT_RUN"
+    "actual_prometheus_metric_discovered": true,
+    "live_leakage_check": "PASS_COMPLETE_ACQUISITION_REQUERY_OF_CAPTURED_PHASE_A_WINDOW"
   },
   "resource_blocker": {
-    "reverified_at": "2026-09-02T17:58:28Z",
-    "missing_cached_images": [
-      "ghcr.io/open-telemetry/demo:3.0.0-accounting",
-      "ghcr.io/open-telemetry/demo:3.0.0-fraud-detection",
-      "ghcr.io/open-telemetry/demo:3.0.0-kafka"
-    ],
-    "historical_image_lock_covers_full_mode": false,
+    "status": "RESOLVED_BY_EXPLICIT_USER_AUTHORIZATION",
+    "image_pull_count": 3,
     "historical_image_lock_unchanged": true,
     "historical_image_lock_sha256": "946e51415a198e5f43b2b5029f3e55a6177509632680c52117e2a921ee434081",
-    "required_authority": "Fetch only the three pinned 3.0.0 linux/arm64 images, verify their registry/platform identities, and create a separate private full-mode image lock without rewriting historical locks. No builds, fallback images, or amd64 emulation."
+    "new_private_full_mode_lock": true
   },
   "live": {
-    "phase_a": "NOT_RUN",
-    "baseline": null,
-    "controls": [],
+    "phase_a": {
+      "status": "ECOMSRE_PRODUCT_V030_QUEUE_TELEMETRY_READY",
+      "fault_enable_count": 1,
+      "elevated_lag": 302,
+      "distinct_elevated_source_samples": 3,
+      "queue_restored_and_drained": true,
+      "metric": "kafka_consumer_group_lag_ratio",
+      "logical_service": "fraud-detection",
+      "unit": "COUNT",
+      "full_acquisition_leaked_tokens": [],
+      "traces_truncated": true,
+      "initial_pre_fault_traffic_failure_preserved": true,
+      "initial_projection_failure_preserved": true
+    },
+    "baseline": {
+      "status": "PRODUCT_V030_FRESH_BASELINE_READY",
+      "environment_id": "env-1c32961cf738f50ae03ab524",
+      "baseline_id": "base-b5f7e2734141be7396e7d57c",
+      "baseline_sha256": "1646fb2a15231c2784147c9fc0cc7a9e8b6bee6dca4f9063cbc6ef5e681d9482",
+      "successful_windows": 5,
+      "window_count": 5,
+      "healthy_traffic_succeeded": 30,
+      "healthy_traffic_attempted": 30,
+      "queue_lag_before": 0,
+      "queue_lag_after": 0,
+      "queue_baseline_mean": 0.65,
+      "queue_baseline_stddev": 0.1224744871391589,
+      "frozen_queue_threshold": 20
+    },
+    "controls": [
+      {
+        "case": "N0-A",
+        "seed": 30001,
+        "incident_id": "inc-be25555391c086d805f033a3",
+        "status": "CASE_GATE_FAILED",
+        "expected": "NO_INCIDENT",
+        "actual": "OPEN_WORLD",
+        "broad_domain": "RESOURCE",
+        "http_success": 30,
+        "http_attempted": 30,
+        "capability_limitations": [],
+        "leaked_tokens": [],
+        "supporting_refs_resolve": true,
+        "result_sha256": "61360a266b264829d745b4c8a82af8aca33e60e5d8e4fe80f09a6f46a48165b1"
+      },
+      {
+        "case": "N0-B",
+        "seed": 30002,
+        "incident_id": "inc-13e09fbc96a7027ee670acf9",
+        "status": "PASS",
+        "expected": "NO_INCIDENT",
+        "actual": "NO_INCIDENT",
+        "http_success": 30,
+        "http_attempted": 30,
+        "capability_limitations": [],
+        "leaked_tokens": [],
+        "supporting_refs_resolve": true,
+        "result_sha256": "1fec8b6bbf68b0990b6e4d2662e23a8ad5156c4fdcc48cc2515f3aae4303b276"
+      },
+      {
+        "case": "C1",
+        "seed": 30003,
+        "incident_id": "inc-1d0a2f86bdeecc65ec8f1794",
+        "status": "CASE_GATE_FAILED",
+        "expected": "CORE_KNOWN / CONFIGURATION_ERROR",
+        "actual": "OPEN_WORLD",
+        "broad_domain": "RESOURCE",
+        "http_500": 10,
+        "http_attempted": 10,
+        "change_event_recorded": true,
+        "capability_limitations": [],
+        "leaked_tokens": [],
+        "supporting_refs_resolve": true,
+        "result_sha256": "a2eb5c6d73a6712380f1cb3e24d18f768e6cd45fc42d94aa83878668b767bd66"
+      }
+    ],
     "positives": [],
     "family": null,
     "human_reviews": [],
     "selected_clause": null,
     "shadow_metrics": null,
     "registry_version": null,
-    "h1": null
+    "h1": null,
+    "broker_telemetry_probe": {
+      "status": "BROKER_TELEMETRY_PROBE_PASS",
+      "fault_enable_count": 0,
+      "incident_count_created": 0,
+      "planned_healthy_transactions": 3,
+      "method_trace": "kafka.server.KafkaApis[handleProduceRequest]",
+      "trace_semantics": "Method execution, not asynchronous ACK or end-to-end success",
+      "jmx_latency": "Produce TotalTimeMs 95thPercentile",
+      "policy_relaxation": false,
+      "healthy_transactions_succeeded": 3,
+      "healthy_transactions_attempted": 3,
+      "capability_limitations": [],
+      "leaked_tokens": [],
+      "native_count_error_semantics": "Partition append support and unexpected append failures (expected errors excluded); not complete ACK errors or the latency population",
+      "kafka_span_metric_fallback": false,
+      "initial_pre_verification_traffic_failure_preserved": true
+    },
+    "preparatory_baseline_preserved": {
+      "status": "PREPARATORY_BASELINE_BUILT_NOT_FINAL_AFTER_TELEMETRY_CHANGE",
+      "environment_id": "env-c09c6a13b1b8b9652f1e2169",
+      "baseline_id": "base-96ecba9302a34980eb46b715",
+      "successful_windows": 5,
+      "window_count": 5,
+      "healthy_traffic_succeeded": 30,
+      "healthy_traffic_attempted": 30,
+      "queue_lag_before": 0,
+      "queue_lag_after": 0,
+      "not_final_reason": "Actual complete acquisition identified missing Kafka request metric kinds and Kafka Trace coverage. Preserve this Baseline; do not use it after the telemetry configuration changes."
+    },
+    "non_target_family_preserved": {
+      "family_id": "family-fd3d3a6060a85fb1eebc92c1",
+      "status": "ACCUMULATING",
+      "member_incident_ids": [
+        "inc-1d0a2f86bdeecc65ec8f1794"
+      ],
+      "is_queue_backlog_target_family": false
+    }
   },
   "safety": {
-    "docker_up_count": 0,
-    "image_pull_count": 0,
-    "fault_injection_count": 0,
+    "docker_up_count": 2,
+    "image_pull_count": 3,
+    "fault_injection_count": 2,
     "provider_calls": 0,
     "agent_writes": 0,
     "runbook_executions": 0,
     "action_authority": "NONE",
     "remediation_authority": "NONE",
-    "cleanup": "NOT_REQUIRED_NO_OWNED_RESOURCES_CREATED"
+    "cleanup": {
+      "first_runtime": "CLEAN",
+      "second_runtime": "CLEAN",
+      "each_runtime_removed_owned_containers": 28,
+      "each_runtime_removed_owned_networks": 1,
+      "each_runtime_removed_owned_volumes": 3,
+      "final_owned_containers": 0,
+      "final_owned_networks": 0,
+      "final_owned_volumes": 0,
+      "non_owned_resources_changed": false,
+      "private_databases_and_evidence_preserved": true,
+      "completed_at": "2026-09-03T04:16:43.270977Z"
+    },
+    "fault_enables": {
+      "queue_preflight": 1,
+      "payment_control": 1,
+      "formal_queue_positives": 0,
+      "h1": 0
+    },
+    "formal_case_retry_count": 0
   },
   "validation": {
     "product_and_sandbox_tests_passed": 836,
@@ -66,7 +192,7 @@
     "focused_mypy_source_files": 18,
     "focused_mypy": "PASS",
     "full_pytest_ruff_mypy": "NOT_RUN_RESERVED_FOR_PRE_MERGE",
-    "independent_review": "PASS_FOR_OFFLINE_PREPARATION_PARTIAL",
+    "independent_review": "PASS_FOR_DRAFT_BLOCKED_RESULTS_ONLY",
     "must_fix_count": 0,
     "nonblocking_test_gaps": [],
     "followup_validation": {
@@ -91,7 +217,11 @@
       "independent_review": "PASS_FOR_SYNTHETIC_TEST_SLICE",
       "must_fix_count": 0,
       "production_code_changed": false,
-      "three_window_fingerprint_similarities": [1.0, 1.0, 1.0],
+      "three_window_fingerprint_similarities": [
+        1,
+        1,
+        1
+      ],
       "conclusive_fixture_matrix_mined_predicates": [
         "core:RUNTIME_HEALTHY",
         "ga:METRIC_QUEUE_LAG_OUTLIER"
@@ -100,14 +230,65 @@
       "non_open_world_ingestion_rejected": true,
       "compiled_shadow_candidate_target_and_source_failure_checks": "PASS",
       "boundary": "Synthetic unit inputs only. No measured controls, persisted target family, human decision, repository-level Shadow Evaluation, ACTIVE registry, or H1 result is established."
+    },
+    "latest_focused": {
+      "tests_passed": 1080,
+      "scope": "tests/product, product_v022, product_v023, product_v024, product_v030, live_sandbox",
+      "duration_seconds": 27.78,
+      "focused_ruff": "PASS",
+      "focused_mypy": "PASS",
+      "full_suite": false
+    },
+    "post_review_validation": {
+      "scope": "Product v030 and existing knowledge-loop tests after queue-last Shadow reconstruction repair",
+      "tests_passed": 125,
+      "duration_seconds": 1.66,
+      "focused_mypy_source_files": 19,
+      "focused_mypy": "PASS_WITH_TWO_KNOWLEDGE_FILES_RECHECKED_AFTER_FINAL_FIX",
+      "independent_actual_control_memory_hash_reconstruction": "PASS_3_OF_3_READ_ONLY",
+      "must_fix_count": 0,
+      "should_fix_count": 0,
+      "historical_diagnosis_results_rewritten": false
     }
   },
   "remaining_implementation": [
-    "Independent full-mode image authority and owned lifecycle admission",
-    "Actual Prometheus consumer-lag metric and label discovery",
-    "Live Evidence leakage check after offline INFO control-log projection repair",
-    "Exact incident-query METRICS coverage for conclusive negatives and Shadow",
-    "Fresh five-window Baseline and ordinary Product live case harness",
-    "Three-positive family acceptance, both human decisions, mining, Shadow and recurrence"
-  ]
+    "Reconcile full-mode resource-noise semantics without rewriting failed controls",
+    "Reconcile Core Known control/query semantics while retaining the frozen Core contract",
+    "Do not start P1/P2/P3 until a separately justified control set passes",
+    "Target family, conditional preauthorized human reviews, Runtime mining, Shadow, Promotion and H1 remain unexecuted",
+    "Full repository suite once and merge remain gated on genuine completion"
+  ],
+  "disposition": "Draft / REVIEW_REQUIRED",
+  "control_blockers": {
+    "n0_a": {
+      "classification": "MEASURED_HEALTHY_CONTROL_FALSE_POSITIVE",
+      "resource_window_seconds": 10,
+      "sample_count": 5,
+      "memory_start_bytes": 506048512,
+      "memory_end_bytes": 514895872,
+      "slope_bytes_per_second": 884736,
+      "baseline_slope_bytes_per_second": 63979.52,
+      "existing_v024_guard_threshold": 163979.52,
+      "arithmetic_correct": true,
+      "underlying_runtime_cause": "UNPROVEN"
+    },
+    "c1": {
+      "classification": "CORE_KNOWN_SUPPORT_CLAUSES_NOT_ESTABLISHED",
+      "observed_http_failure_fraction": 1,
+      "product_error_metric": 0.015837263832223995,
+      "baseline_error_metric": 0.0033800055891482967,
+      "required_core_error_delta": 0.05,
+      "inherited_query_rate_denominator_floor": 1,
+      "rolling_window_seconds": 300,
+      "query_sample_count": 31,
+      "product_error_metric_is_case_failure_fraction": false,
+      "configuration_log_pattern_observed": false,
+      "logs_and_traces_truncation_preserved": true
+    }
+  },
+  "publication": {
+    "pull_request": 88,
+    "is_draft": true,
+    "merge": "NOT_PERFORMED_CONTROL_GATE_FAILED"
+  }
 }

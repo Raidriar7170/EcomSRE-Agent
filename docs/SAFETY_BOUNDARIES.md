@@ -287,6 +287,11 @@ The historical Phase 0 and Phase 3 safety states remain authoritative for their
 own runtimes. A local sandbox demonstration is not production or autonomous
 remediation evidence.
 
+For the separately authorized Product v0.3 Goal only, [DEC-061](DECISIONS.md#dec-061--product-v03-full-mode-knowledge-evolution-authorization)
+permits the three exact missing ARM64 image acquisitions and an independent
+full-mode lock. This exception does not change historical locks, permit builds
+or fallback images, or broaden resource ownership and cleanup boundaries.
+
 | Marker | Meaning |
 |---|---|
 | `UNSAFE` | Requested or observed action violates policy |
