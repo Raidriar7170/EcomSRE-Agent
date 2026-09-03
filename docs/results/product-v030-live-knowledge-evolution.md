@@ -66,10 +66,17 @@ and the CI-defined 667-source-file mypy 1.20.2 scope passed with locked dependen
 An earlier noncanonical mypy 1.11.2 run failed on unchanged scripts; the pinned
 checker and CI dependency setup passed without changing them. Independent control/precision audits passed for
 the blocked-result claims, not Goal completion. CI run 33718317796 at code head
-3639ff9 reached full repository tests after all earlier gates passed. Its final
-outcome is not yet claimed here. Earlier CI failures and repairs are retained
-in the machine result; the pytest collection collision was repaired only by
-renaming the new test file, with test content unchanged.
+3639ff9 completed full pytest: 6,301 passed, 2 failed, 6 skipped in 692.16s.
+Both failures were historical-test compatibility assumptions: which changed
+source is rejected first, and using the expanded current enum to validate a
+frozen 13-kind totality artifact. Test-only repairs preserve the exact rejection,
+bind the old artifact bytes, retain all 48-arm/digest checks, and explicitly
+require the current runtime validator to keep rejecting the old incomplete
+surface. Production validators and frozen artifacts are unchanged. The two
+files' 12 tests pass; replacement full CI remains pending, not claimed green.
+Earlier CI failures and repairs are retained in the machine result; the pytest
+collection collision was repaired only by renaming the new test file, with
+test content unchanged.
 
 ## Preserved live-002 formal results
 

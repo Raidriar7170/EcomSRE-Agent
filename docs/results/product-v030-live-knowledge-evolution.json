@@ -197,7 +197,7 @@
     "focused_ruff": "PASS",
     "focused_mypy_source_files": 18,
     "focused_mypy": "PASS",
-    "full_pytest_ruff_mypy": "LOCAL_PINNED_FULL_RUFF_AND_CI_SCOPE_MYPY_PASS_CI_FULL_PYTEST_PENDING",
+    "full_pytest_ruff_mypy": "PINNED_RUFF_MYPY_PASS_FULL_CI_2_FAILURES_REPAIRED_IN_TARGETED_TESTS_REPLACEMENT_CI_PENDING",
     "independent_review": "PASS_FOR_DRAFT_BLOCKED_RESULTS_ONLY",
     "must_fix_count": 0,
     "nonblocking_test_gaps": [],
@@ -269,7 +269,20 @@
       "pinned_full_ruff": "PASS_RUFF_0.16.1",
       "local_checker_setup_diagnostics": "Noncanonical mypy 1.11.2 produced three unchanged-script errors; pinned checker with the CI pyarrow dependency and refreshed import cache passed without source changes.",
       "ci_run": 33718317796,
-      "ci_status_at_publication_preparation": "FULL_REPOSITORY_TESTS_IN_PROGRESS",
+      "ci_status_at_publication_preparation": "COMPLETED_FAILURE",
+      "full_ci_pytest": {"passed": 6301, "failed": 2, "skipped": 6, "duration_seconds": 692.16},
+      "full_ci_failure_repairs": {
+        "v231": "Test expects exact first actual source-hash drift instead of assuming cli.py; frozen preflight still rejects",
+        "v232": "Bind exact historical artifact SHA and validate all 48 arms in a test-local original-enum context; current runtime validator still rejects the old incomplete enum surface",
+        "runtime_sources_or_frozen_artifacts_modified": false,
+        "focused_tests_passed": 12,
+        "focused_duration_seconds": 0.21,
+        "broader_regression_tests_passed": 152,
+        "broader_regression_duration_seconds": 2.67,
+        "broader_scope": "DTA v231 successor, DTA v232, Product v030; includes the focused 12 tests",
+        "ruff": "PASS",
+        "full_replacement_ci": "PENDING"
+      },
       "ci_prior_failures_preserved": [
         {"run": 33716232766, "cause": "HISTORICAL_REQUEST_PROVENANCE_LINE_SHIFT", "repair": "OPTIONAL_IMPORT_MOVED_TO_QUEUE_BRANCH"},
         {"run": 33717077851, "cause": "PYTEST_COLLECTION_TEST_MODULE_NAME_COLLISION", "repair": "ONLY_NEW_V030_TEST_FILE_RENAMED_CONTENT_UNCHANGED"}

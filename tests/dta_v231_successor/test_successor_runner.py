@@ -3,7 +3,9 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import hashlib
 import inspect
+import json
 from pathlib import Path
+import re
 from types import SimpleNamespace
 
 import pytest
@@ -104,7 +106,7 @@ def test_successor_artifact_cannot_be_described_as_a_rerun() -> None:
     assert fields["study_relation"].default == "INDEPENDENT_SUCCESSOR_NOT_RERUN"
 
 
-def test_successor_preflight_accepts_frozen_surface_or_rejects_newer_cli(
+def test_successor_preflight_accepts_frozen_surface_or_rejects_newer_sources(
     tmp_path: Path,
 ) -> None:
     review_path = tmp_path / "review.json"
@@ -220,9 +222,20 @@ def test_successor_preflight_accepts_frozen_surface_or_rejects_newer_cli(
         "expected_provider_model": "gpt-5.4-mini-2026-03-17",
     }
     if (ROOT / "config/dta-v233/evaluation/manifest.json").is_file():
+        # Later successors can change an earlier bound file than cli.py. The
+        # frozen preflight must still reject exactly the first source drift.
+        runtime_manifest = json.loads(
+            (ROOT / "config/dta-v231/evaluation/manifest.json").read_text()
+        )
+        first_drift = next(
+            ROOT / binding["path"]
+            for binding in runtime_manifest["runtime_sources"]
+            if hashlib.sha256((ROOT / binding["path"]).read_bytes()).hexdigest()
+            != binding["sha256"]
+        )
         with pytest.raises(
             ValueError,
-            match=r"successor algorithm source differs: .*cli\.py",
+            match="^" + re.escape(f"successor algorithm source differs: {first_drift}") + "$",
         ):
             build_successor_evaluation_preflight_v231(**arguments)
         return
