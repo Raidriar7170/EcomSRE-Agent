@@ -61,7 +61,7 @@ non-owned resources unchanged. Databases and failed evidence remain. Across the
 Goal there are two formal control sets / six control executions, three runtime
 starts, one queue preflight and two C1 payment injections; no P1/P2/P3 or H1.
 
-Latest focused validation: 193 tests passed in 2.09s; full-repository Ruff 0.16.1
+Earlier repair validation: 193 tests passed in 2.09s; full-repository Ruff 0.16.1
 and the CI-defined 667-source-file mypy 1.20.2 scope passed with locked dependencies.
 An earlier noncanonical mypy 1.11.2 run failed on unchanged scripts; the pinned
 checker and CI dependency setup passed without changing them. Independent control/precision audits passed for
@@ -73,7 +73,14 @@ frozen 13-kind totality artifact. Test-only repairs preserve the exact rejection
 bind the old artifact bytes, retain all 48-arm/digest checks, and explicitly
 require the current runtime validator to keep rejecting the old incomplete
 surface. Production validators and frozen artifacts are unchanged. The two
-files' 12 tests pass; replacement full CI remains pending, not claimed green.
+files' 12 tests pass, and the affected-scope regression passed 152 tests.
+Replacement [CI run 33720670897](https://github.com/Raidriar7170/EcomSRE-Agent/actions/runs/33720670897)
+at code head `21ef82e19e5ee7479c47baa385d69109d475803d` completed successfully
+at 2026-09-03T06:13:46Z: full pytest passed 6,303 tests with 6 skipped and one
+warning in 701.22s; repository-wide Ruff and mypy's 667-source-file scope passed.
+This validation is bound to that code head; the following result publication is
+documentation-only. Green CI does not satisfy the failed live-control gates or
+establish Goal completion or merge readiness.
 Earlier CI failures and repairs are retained in the machine result; the pytest
 collection collision was repaired only by renaming the new test file, with
 test content unchanged.

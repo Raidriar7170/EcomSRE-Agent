@@ -197,7 +197,7 @@
     "focused_ruff": "PASS",
     "focused_mypy_source_files": 18,
     "focused_mypy": "PASS",
-    "full_pytest_ruff_mypy": "PINNED_RUFF_MYPY_PASS_FULL_CI_2_FAILURES_REPAIRED_IN_TARGETED_TESTS_REPLACEMENT_CI_PENDING",
+    "full_pytest_ruff_mypy": "PASS_AT_CODE_HEAD_21EF82E_LIVE_CONTROL_GATES_STILL_FAILED",
     "independent_review": "PASS_FOR_DRAFT_BLOCKED_RESULTS_ONLY",
     "must_fix_count": 0,
     "nonblocking_test_gaps": [],
@@ -281,7 +281,18 @@
         "broader_regression_duration_seconds": 2.67,
         "broader_scope": "DTA v231 successor, DTA v232, Product v030; includes the focused 12 tests",
         "ruff": "PASS",
-        "full_replacement_ci": "PENDING"
+        "full_replacement_ci": "SUCCESS_AT_CODE_HEAD_21EF82E"
+      },
+      "replacement_ci": {
+        "run": 33720670897,
+        "url": "https://github.com/Raidriar7170/EcomSRE-Agent/actions/runs/33720670897",
+        "code_head": "21ef82e19e5ee7479c47baa385d69109d475803d",
+        "status": "COMPLETED_SUCCESS",
+        "completed_at": "2026-09-03T06:13:46Z",
+        "full_pytest": {"passed": 6303, "failed": 0, "skipped": 6, "warnings": 1, "duration_seconds": 701.22},
+        "full_repository_ruff": "PASS",
+        "mypy": "PASS_667_SOURCE_FILES",
+        "boundary": "Validation is bound to the stated code head; publishing this result is documentation-only. Live control gates still fail; this is not Goal completion or merge readiness."
       },
       "ci_prior_failures_preserved": [
         {"run": 33716232766, "cause": "HISTORICAL_REQUEST_PROVENANCE_LINE_SHIFT", "repair": "OPTIONAL_IMPORT_MOVED_TO_QUEUE_BRANCH"},
@@ -294,7 +305,7 @@
     "Resolve C1's actual Logs/Traces coverage gaps without treating empty unobservable sources as complete",
     "Do not start P1/P2/P3 until a separately justified control set passes",
     "Target family, conditional preauthorized human reviews, Runtime mining, Shadow, Promotion and H1 remain unexecuted",
-    "Full repository suite once and merge remain gated on genuine completion"
+    "Code-head full pytest, Ruff and mypy passed; merge remains gated on genuine live knowledge-evolution completion"
   ],
   "disposition": "Draft / REVIEW_REQUIRED",
   "post_control_offline_repairs": {
