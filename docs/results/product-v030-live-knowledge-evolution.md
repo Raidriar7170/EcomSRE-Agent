@@ -1,9 +1,104 @@
-# Product v0.3 — controls pass; H1 root consistency blocks completion
+# Product v0.3 — live-005 knowledge evolution and H1 pass
 
-ECOMSRE_PRODUCT_V030_BLOCKED_H1_ROOT_CONSISTENCY / REVIEW_REQUIRED.
-The completion terminal is not minted. PR #88 remains Draft; no merge.
+ECOMSRE_PRODUCT_V030_H1_EXTENSION_KNOWN_PASS. This is the measured, cleaned
+pre-integration snapshot at 2026-09-03T16:25:35Z. The complete Goal terminal is
+not preclaimed: final independent review, one exact-head full CI and merge are
+recorded on [PR #88](https://github.com/Raidriar7170/EcomSRE-Agent/pull/88).
+No duplicate local full-suite run is planned. Historical green CI remains tied
+to its original head; it does not validate the later changes.
 
-## Subsequent offline implementation correction
+## Current measured result: live-005
+
+The user explicitly authorized this one append-only correction loop in the same
+Goal, branch, worktree and PR. It uses a fresh private Product environment and
+Baseline; live-002/live-003/live-004, including live-004's failed H1 root gate,
+remain unchanged. No detector threshold, clustering threshold, Core clause or
+Shadow criterion was relaxed.
+
+Environment `env-be0f718912d15af3f5e6523c` and Baseline
+`base-bee559ecbbe6395f56814f3e` bind all seven cases. The Baseline SHA is
+`99347dc9b6f499d18c6ae6959b7b460743869bf8b1a59f3eb8510ff9ba57c8db`:
+5/5 DEMO_ONLY windows, 30/30 healthy transactions, all four Resource services.
+Queue mean 0.75/stddev 0 keeps the unchanged threshold at 20.
+
+| Case | Traffic | Measured result | Full gate |
+| --- | --- | --- | --- |
+| N0-A, seed 30001 | 30/30 healthy | NO_INCIDENT | PASS |
+| N0-B, seed 30002 | 30/30 healthy | NO_INCIDENT | PASS |
+| C1, seed 30003 | 10/10 expected HTTP 500 | CORE_KNOWN / CONFIGURATION_ERROR / payment | PASS; queue-negative CONCLUSIVE |
+| P1, seed 31001 | 3/3 | OPEN_WORLD / CONCURRENCY / fraud-detection | PASS |
+| P2, seed 31002 | 3/3 | OPEN_WORLD / CONCURRENCY / fraud-detection | PASS |
+| P3, seed 31003 | 3/3 | OPEN_WORLD / CONCURRENCY / fraud-detection | PASS |
+| H1, seed 32001 | 3/3 | EXTENSION_KNOWN / kafka-queue-backlog / fraud-detection | PASS, including exact family-root equality |
+
+C1 candidates are checkout/payment/fraud-detection, not Kafka. Payment support
+resolves; fraud queue lag is 0 < 20, Runtime is running/healthy, the queue anomaly
+is absent and the intended conjunction is conclusively false.
+SOURCE_LOGS_COVERAGE_GAP and SOURCE_TRACES_COVERAGE_GAP remain disclosed.
+The current N0-A/N0-B six-source leakage gate binds their actual Evidence and the
+successful Baseline result bytes; it does not substitute an old acquisition for
+current coverage. All seven cases have resolving support and no control-token
+leakage, and each ended with flags restored and lag drained.
+
+The actual P1/P2/P3 IDs are `inc-1420a2683f311a82569dd08b`,
+`inc-c34a9e9a1bc2eb1efb67c0f5`, and `inc-3f6e97291f65ac20d6c4daa6`.
+They form only `family-60f955e2c8db53bec4200cc6`: three members/windows,
+REVIEW_READY before review, root consistency 1.0, six evidence sources, and
+pairwise similarities 0.80612244898 / 0.83 / 0.973195876289. N0/C1 are excluded.
+All three report and fingerprint roots are fraud-detection; their shared
+anomalies are queue lag and latency in domain CONCURRENCY. Typed queue values
+are 258.8571 / 303 / 274.1429, not claims about instantaneous peaks.
+
+One ACCEPT_AS_NEW and one Promotion execute the user's prior authorization;
+their notes explicitly do not claim a fresh manual inspection. Runtime selected
+`core:RUNTIME_HEALTHY + ga:METRIC_QUEUE_LAG_OUTLIER` from the actual three-positive,
+three-negative matrix, not from a Codex-authored clause. Draft
+`registration-df79efaa6066bd02075eb80c` is DECLARATIVE_READY with recall 1.0,
+FPR/Core overlap/No-Incident FPR 0 and two sources. All strict Shadow metrics
+pass: recall/ref-validity/reachability/counterfactual-consistency 1.0, all
+error/overlap/authority-violation counts 0, source-failure safe. Of 14 outcomes,
+13 are evaluated; OTHER_EXTENSION is NOT_AVAILABLE for this first extension,
+not an actual overlap experiment.
+
+Promotion creates one ACTIVE registry entry/version 1 and marks the family
+PROMOTED. H1 `inc-0c1ee61b8a5296759077661c` matches that extension with queue
+value 303, exact fraud-detection majority-root equality, no provisional report
+and no new family. Its support contains the actual queue Metrics and Runtime
+refs. The DB retains seven Incidents/Diagnoses, one three-member family and one
+each of review, draft, Shadow, Promotion and ACTIVE registry entry.
+
+Two pretraffic setup errors and one failed first pre-Baseline request are
+preserved. No Baseline or Incident existed at that failure. A bounded diagnostic
+then observed healthy owned Runtime, low lag and HTTP 200 cart/checkout; it does
+not establish the first request's root cause. One reviewed same-runtime recovery
+bound the exact authority, environment, data root and empty pre-Baseline state,
+preserved the old snapshot, and used the existing snapshot rotation. It completed
+30/30 and the only live-005 Baseline job. The first failed result was not
+overwritten. A later audit-path error was corrected offline to explicitly bind
+the resumed Baseline; no control was rerun.
+
+Cleanup is CLEAN: 28 containers, one network and three temporary volumes removed,
+final owned counts zero, non-owned inventory unchanged. Private DBs and all failed
+evidence remain. Cumulative Goal counts are five runtime starts, four complete
+control sets/twelve controls, one queue preflight, four payment enables, six
+discovery positives and two H1 executions; each historical H1 keeps its own gate.
+Provider calls, Agent writes, Runbook executions and Product action/remediation
+authority remain zero/NONE. This is a bounded local Demo, not production or
+autonomous-remediation evidence.
+
+Fresh focused validation: 221 passed, one existing Starlette warning, 6.52s;
+focused Ruff and seven-source-file mypy pass. Independent source, live-evidence
+and pre-integration document review passes with Must Fix 0 and Should Fix 0.
+Forty previously bound historical files were freshly verified unchanged; this
+is not an exhaustive historical-directory comparison. Before Shadow, 19 declared
+frozen/input files (7,761,792 bytes) were freshly hashed in 11.396ms, no cache or
+fallback. This is FROZEN_ASSET_VERIFIED, not repository-wide closure. The final
+exact-head CI/merge outcome belongs to the linked PR completion record.
+
+## Preserved history: offline correction after live-004
+
+The sections below retain the earlier observations at their stated timestamps;
+their then-blocked lifecycle statements are not the current live-005 result.
 
 The original Goal permits ordinary implementation fixes in the same PR. After
 the measured H1 failure, Product root selection was aligned with the existing
@@ -27,7 +122,7 @@ No new runtime, fault, Incident, registration version, full suite or CI cycle
 was executed. The full Goal remains blocked on fresh end-to-end root-consistent
 evidence; the fixed live-004 history cannot be rewritten to supply it.
 
-## Latest: live-004, through Promotion and the failed H1 gate
+## Preserved live-004: through Promotion and the failed H1 gate
 
 The two authorized Product repairs passed focused replay against the exact
 retained live-003 N0-A/N0-B/C1 evidence before the single new full-mode runtime.

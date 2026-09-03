@@ -1,91 +1,123 @@
 {
-  "status": "ECOMSRE_PRODUCT_V030_BLOCKED_H1_ROOT_CONSISTENCY",
-  "family_id": "family-cca68e10afe10fcc5407b3fb",
+  "status": "ECOMSRE_PRODUCT_V030_H1_EXTENSION_KNOWN_PASS",
+  "scope": "Current live-005 measured knowledge loop; integration state is recorded on PR #88.",
+  "family_id": "family-60f955e2c8db53bec4200cc6",
+  "family_status": "PROMOTED",
+  "review_ready_snapshot": {
+    "created_at": "2026-09-03T16:16:58.905885Z",
+    "distinct_incident_windows": 3,
+    "environment_id": "env-be0f718912d15af3f5e6523c",
+    "evidence_source_diversity": 6,
+    "family_id": "family-60f955e2c8db53bec4200cc6",
+    "family_sha256": "0a484ac01557120bf312c32e2c3f57f9fc7e5b3005a68126cc2547c7d275152c",
+    "member_fingerprint_sha256s": [
+      "1f8972b1fece35993588670cbceca8c5ea87670a9832bfda3d7379487db47952",
+      "877e9578b316c702f9352ecba20fc11f63d9eb635abaa3d1cf61d8d4267cdbfa",
+      "d161ef9587e1c29a36d7e4d1df67ef8bafff70415f675b051b94a5c3175d00cc"
+    ],
+    "member_incident_ids": [
+      "inc-1420a2683f311a82569dd08b",
+      "inc-3f6e97291f65ac20d6c4daa6",
+      "inc-c34a9e9a1bc2eb1efb67c0f5"
+    ],
+    "merged_into_family_id": null,
+    "root_consistency": 1.0,
+    "schema_version": "ecomsre.product.fault-family.v1",
+    "status": "REVIEW_READY",
+    "updated_at": "2026-09-03T16:20:12.696284Z"
+  },
   "positive_incident_ids": [
-    "inc-08ab11118286f0a0f9ebc352",
-    "inc-4843d59ef62a243f1e3fa95f",
-    "inc-db0e7ee51b16c2e74d5ffdd5"
+    "inc-1420a2683f311a82569dd08b",
+    "inc-3f6e97291f65ac20d6c4daa6",
+    "inc-c34a9e9a1bc2eb1efb67c0f5"
   ],
   "pairwise_similarities": [
     {
-      "left": "inc-db0e7ee51b16c2e74d5ffdd5",
-      "right": "inc-08ab11118286f0a0f9ebc352",
-      "similarity": 0.899025974026
+      "left": "inc-1420a2683f311a82569dd08b",
+      "right": "inc-c34a9e9a1bc2eb1efb67c0f5",
+      "similarity": 0.80612244898
     },
     {
-      "left": "inc-db0e7ee51b16c2e74d5ffdd5",
-      "right": "inc-4843d59ef62a243f1e3fa95f",
-      "similarity": 0.894512195122
+      "left": "inc-1420a2683f311a82569dd08b",
+      "right": "inc-3f6e97291f65ac20d6c4daa6",
+      "similarity": 0.83
     },
     {
-      "left": "inc-08ab11118286f0a0f9ebc352",
-      "right": "inc-4843d59ef62a243f1e3fa95f",
-      "similarity": 0.980681818182
+      "left": "inc-c34a9e9a1bc2eb1efb67c0f5",
+      "right": "inc-3f6e97291f65ac20d6c4daa6",
+      "similarity": 0.973195876289
+    }
+  ],
+  "assignment_similarities": [
+    {
+      "basis": "Reconstructed from persisted fingerprints in actual P1/P2/P3 insertion order; founding member has no comparison.",
+      "incident_id": "inc-1420a2683f311a82569dd08b",
+      "similarity": null
+    },
+    {
+      "basis": "Reconstructed from persisted fingerprints in actual P1/P2/P3 insertion order; founding member has no comparison.",
+      "incident_id": "inc-c34a9e9a1bc2eb1efb67c0f5",
+      "similarity": 0.80612244898
+    },
+    {
+      "basis": "Reconstructed from persisted fingerprints in actual P1/P2/P3 insertion order; founding member has no comparison.",
+      "incident_id": "inc-3f6e97291f65ac20d6c4daa6",
+      "similarity": 0.973195876289
     }
   ],
   "majority_root": [
-    "checkout"
+    "fraud-detection"
   ],
   "majority_domain": "CONCURRENCY",
   "shared_anomalies": [
-    "METRIC_ERROR_OUTLIER",
     "METRIC_LATENCY_OUTLIER",
     "METRIC_QUEUE_LAG_OUTLIER"
   ],
   "supporting_evidence_refs": [
-    "e:a:metrics:checkout:core:0:0c96bd52e97d",
-    "e:a:metrics:checkout:core:0:e73e1b5c2c40",
-    "e:a:metrics:checkout:core:0:fad513895132",
-    "e:a:metrics:fraud-detection:core:0:08f87d5023cd",
-    "e:a:metrics:fraud-detection:core:0:527f7b75f462",
-    "e:a:metrics:fraud-detection:core:0:823d66b6222a",
-    "e:a:metrics:fraud-detection:core:1:4bd39d9bc14d",
-    "e:a:metrics:fraud-detection:core:1:4d72e1295b1a",
-    "e:a:metrics:fraud-detection:core:1:bbe1b48967a7",
-    "e:a:metrics:fraud-detection:queue-lag:0:676dbe010285",
-    "e:a:metrics:fraud-detection:queue-lag:0:96e627ff2c04",
-    "e:a:metrics:fraud-detection:queue-lag:0:b9d365a41efa",
-    "e:a:resources:checkout:0:b00c3f7782ad",
-    "e:a:resources:checkout:0:d0375098bd6e"
+    "e:a:metrics:checkout:core:0:a1e5aeb2cfef",
+    "e:a:metrics:checkout:core:1:85ba3ddce254",
+    "e:a:metrics:checkout:core:1:8ba2781d811e",
+    "e:a:metrics:fraud-detection:core:0:2a01076616a0",
+    "e:a:metrics:fraud-detection:core:1:4090c276afa8",
+    "e:a:metrics:fraud-detection:core:1:7c665eed8f78",
+    "e:a:metrics:fraud-detection:core:1:d4016c3f6f1d",
+    "e:a:metrics:fraud-detection:queue-lag:0:582c9a4a74e6",
+    "e:a:metrics:fraud-detection:queue-lag:0:5c8671d46fbe",
+    "e:a:metrics:fraud-detection:queue-lag:0:b80340d19810",
+    "e:a:resources:checkout:0:4edcb85f8fde"
   ],
   "control_exclusion": true,
   "excluded_control_incident_ids": [
-    "inc-2c8f2ad809ab5aead55404cb",
-    "inc-69f915e4521289c72b9b45a1",
-    "inc-dbc29a35bf6b604a05684ba6"
+    "inc-7b32cede87364ea43e19dcfe",
+    "inc-e664c8c658eb4f4c2a47a754",
+    "inc-e10994edadb54da4c573ff89"
   ],
-  "latest_control_environment": "env-3ed62ab80d67201580ca7764",
-  "latest_baseline_id": "base-e7679c5fc708af40c4ba057e",
-  "latest_baseline_sha256": "810b328c68ce68830fef345bfe45a82ae217cfe417559cd88a099ff9c6222328",
-  "latest_control_gates": {
-    "N0-A": "NO_INCIDENT_PASS",
-    "N0-B": "NO_INCIDENT_PASS",
-    "C1": "CORE_KNOWN_CONFIGURATION_ERROR_PAYMENT_QUEUE_NEGATIVE_CONCLUSIVE_WITH_UNRELATED_GAPS_PRESERVED"
-  },
+  "latest_control_environment": "env-be0f718912d15af3f5e6523c",
+  "latest_baseline_id": "base-bee559ecbbe6395f56814f3e",
+  "latest_baseline_sha256": "99347dc9b6f499d18c6ae6959b7b460743869bf8b1a59f3eb8510ff9ba57c8db",
   "latest_family_count": 1,
-  "family_status": "PROMOTED",
   "human_accept_as_new": {
     "decision": "ACCEPT_AS_NEW",
-    "family_id": "family-cca68e10afe10fcc5407b3fb",
+    "family_id": "family-60f955e2c8db53bec4200cc6",
     "merge_target_family_id": null,
-    "note": "Executed under the user's explicit prior authorization to continue Product v0.3 and perform ACCEPT_AS_NEW after measured controls and three-member clustering. This is not a claim of fresh manual inspection. P1/P2/P3 are OPEN_WORLD; N0/C1 excluded; 3 distinct windows, root consistency 1.0, pairwise similarity >=0.8945. The measured majority root is checkout, while queue evidence belongs to fraud-detection; this deviation is preserved and H1 must still match the measured majority root. No remediation or action authority granted.",
-    "review_id": "review-aefa9d3ffe03f22f92f541cb",
-    "review_sha256": "7803c0b15ef570d5c42f9c2d14dadbc5bd76607ddab6ccd377f730310a93666d",
-    "reviewed_at": "2026-09-03T10:23:11.428670Z",
+    "note": "Executed under the user's explicit prior instruction to authorize necessary Goal actions without further permission pauses, followed by approval of the live-005 correction loop (DEC-061). This records prior authorization, not fresh manual inspection. Measured controls pass; three distinct OPEN_WORLD windows form one family, similarities 0.80612244898/0.83/0.973195876289, majority root fraud-detection, domain CONCURRENCY, controls excluded. No action or remediation authority granted.",
+    "review_id": "review-a67afebc32e12883725f9e46",
+    "review_sha256": "90176f08b6c7050d708a5735cabca54da17f9e4f028d9ede528a342f01b62e2c",
+    "reviewed_at": "2026-09-03T16:21:32.885145Z",
     "reviewer": "USER_EXPLICIT_PRIOR_AUTHORIZATION_EXECUTED_BY_CODEX",
     "schema_version": "ecomsre.product.human-review.v1"
   },
   "runtime_selected_clause": {
     "action_authority": "NONE",
-    "candidate_id": "candidate-3a20846412589221",
-    "core_known_overlap_rate": 0,
+    "candidate_id": "candidate-883c9196e209802b",
+    "core_known_overlap_rate": 0.0,
     "evidence_sources": [
       "METRICS",
       "RUNTIME"
     ],
-    "false_positive_rate": 0,
-    "no_incident_false_positive_rate": 0,
-    "positive_recall": 1,
+    "false_positive_rate": 0.0,
+    "no_incident_false_positive_rate": 0.0,
+    "positive_recall": 1.0,
     "predicate_ids": [
       "core:RUNTIME_HEALTHY",
       "ga:METRIC_QUEUE_LAG_OUTLIER"
@@ -95,84 +127,254 @@
   "shadow_evaluation": {
     "action_authority": "NONE",
     "action_authority_violations": 0,
-    "core_known_overlap_rate": 0,
-    "counterfactual_consistency": 1,
-    "evaluation_id": "shadow-21fd376b78bfd43d",
-    "evaluation_sha256": "3249a1cc6187415997d1ef7ff05ea95a6b21387c44f38c8f11ce3bbe25f431b9",
-    "evidence_ref_validity": 1,
-    "false_positive_rate": 0,
+    "core_known_overlap_rate": 0.0,
+    "counterfactual_consistency": 1.0,
+    "evaluation_id": "shadow-1489b72db205b20e",
+    "evaluation_sha256": "f0d07a39f1c1b7a104a0c54b562316db74617dffe5f88ba3aea6b8ec1948a3f1",
+    "evidence_ref_validity": 1.0,
+    "false_positive_rate": 0.0,
     "gate_passed": true,
     "no_incident_false_positives": 0,
     "other_extension_destructive_overlaps": 0,
-    "positive_recall": 1,
+    "positive_recall": 1.0,
     "reason_codes": [],
-    "registration_id": "registration-5446911d4590e18764f5272a",
-    "runtime_evaluation_sha256": "978aa89d9e25fe6af977a25faead5ffd2079225232ac8188d0dab2af5aea5b3f",
+    "registration_id": "registration-df79efaa6066bd02075eb80c",
+    "runtime_evaluation_sha256": "9cdb3a95e5988ae49457d8a836066e2651c8618888b1ca1d13379ae3bd25d544",
     "schema_version": "ecomsre.product.shadow-evaluation.v1",
     "source_failure_safe": true,
-    "source_reachability": 1
+    "source_reachability": 1.0
   },
   "shadow_unavailable_strata": [
     {
       "stratum": "OTHER_EXTENSION",
       "origin": "NOT_AVAILABLE",
       "reason_code": "NO_ACTIVE_OTHER_EXTENSION_CONTROL_AVAILABLE",
-      "actual_other_extension_overlap_experiment": false
+      "actual_experiment": false
     }
   ],
   "promotion": {
     "action_authority": "NONE",
-    "environment_id": "env-3ed62ab80d67201580ca7764",
-    "note": "Executed under the user's explicit prior authorization to PROMOTE KAFKA_QUEUE_BACKLOG after passing the original strict Shadow metrics. This records prior authorization, not fresh manual inspection. Runtime selected queue-lag plus Runtime healthy from 3 positives and 3 measured negatives; all strict metrics passed. The preserved checkout family-root versus fraud-detection queue-target discrepancy remains unresolved and is not waived: H1 must still satisfy exact measured majority-root equality. Read-only diagnosis only; no action/remediation authority.",
-    "promoted_at": "2026-09-03T10:24:56.917960Z",
-    "promotion_id": "promotion-96527954ce542a78a6825c42",
-    "promotion_sha256": "188b3be624276bc1f5f1272114c3ef74de55062601beb0ca66cfbd521509a8c5",
-    "registration_id": "registration-5446911d4590e18764f5272a",
+    "environment_id": "env-be0f718912d15af3f5e6523c",
+    "note": "Executed under the user's explicit prior authorization for necessary Goal actions without further permission pauses and subsequent approval of live-005 (DEC-061), after the measured strict Shadow gate. This records prior authorization, not fresh manual inspection. Runtime selected queue-lag plus Runtime-healthy; all required metrics pass. Family majority fraud-detection is preserved. OTHER_EXTENSION unavailable and C1 unrelated source gaps disclosed. H1 is pending. Read-only diagnosis only; no action or remediation authority.",
+    "promoted_at": "2026-09-03T16:22:47.562972Z",
+    "promotion_id": "promotion-226a698475806f323b650a41",
+    "promotion_sha256": "96237f9aad9f13bfd617dbc8e73f981375bbf7bcc2b7721d3b2b79982f381303",
+    "registration_id": "registration-df79efaa6066bd02075eb80c",
     "registry_version": 1,
     "reviewer": "USER_EXPLICIT_PRIOR_AUTHORIZATION_EXECUTED_BY_CODEX",
     "schema_version": "ecomsre.product.registration-promotion.v1",
-    "shadow_evaluation_id": "shadow-21fd376b78bfd43d",
+    "shadow_evaluation_id": "shadow-1489b72db205b20e",
     "status": "ACTIVE"
   },
   "registry_version": 1,
   "h1": {
-    "status": "CASE_GATE_FAILED",
-    "reason": "ROOT_DIFFERS_FROM_PROMOTED_FAMILY_MAJORITY",
-    "family_majority_root": [
-      "checkout"
-    ],
-    "h1_root": [
+    "status": "ECOMSRE_PRODUCT_V030_H1_EXTENSION_KNOWN_PASS",
+    "case_status": "PASS",
+    "incident_id": "inc-0c1ee61b8a5296759077661c",
+    "terminal": "EXTENSION_KNOWN",
+    "lane": "EXTENSION",
+    "mechanism_slug": "kafka-queue-backlog",
+    "root_logical_services": [
       "fraud-detection"
     ],
-    "extension_known": true,
-    "correct_slug": true,
+    "family_majority_root": [
+      "fraud-detection"
+    ],
+    "root_matches_family_majority": true,
     "no_provisional_report": true,
     "no_new_target_family": true,
+    "supporting_evidence_refs": [
+      "e:a:metrics:fraud-detection:queue-lag:0:73e918024420",
+      "e:a:runtime:all-candidates:e390e9ffdfe2:1:4b2f6bc4f832"
+    ],
     "supporting_refs_resolve": true,
-    "source_limitations": [],
-    "leaked_tokens": [],
-    "actual_h1_execution_count": 1,
-    "diagnosis_or_fingerprint_roots_rewritten": false
+    "provider_calls": 0,
+    "action_authority": "NONE"
   },
   "action_authority": "NONE",
   "remediation_authority": "NONE",
-  "non_target_family_preserved": {
-    "family_id": "family-fd3d3a6060a85fb1eebc92c1",
-    "status": "ACCUMULATING",
-    "member_incident_ids": [
-      "inc-1d0a2f86bdeecc65ec8f1794"
-    ],
-    "is_queue_backlog_target_family": false
-  },
   "completion_terminal_minted": false,
-  "subsequent_offline_root_alignment": {
-    "status": "FOCUSED_OFFLINE_PASS_NOT_LIVE_REVALIDATED",
-    "policy": "Use the unique owner of the existing report domain; retain ambiguous fallback.",
-    "unpersisted_positive_replay_roots": ["fraud-detection"],
-    "historical_majority_root_unchanged": ["checkout"],
-    "historical_h1_status_unchanged": "CASE_GATE_FAILED",
-    "related_focused_tests_passed": 218,
-    "new_live_cases_or_registry_versions": 0,
-    "evidence_or_database_rewritten": false
+  "integration_boundary": "Measured loop and cleanup pass. Final Goal terminal requires exact-head CI, review and merge; see PR #88 final completion record.",
+  "historical_live_004": {
+    "status": "ECOMSRE_PRODUCT_V030_BLOCKED_H1_ROOT_CONSISTENCY",
+    "family_id": "family-cca68e10afe10fcc5407b3fb",
+    "positive_incident_ids": [
+      "inc-08ab11118286f0a0f9ebc352",
+      "inc-4843d59ef62a243f1e3fa95f",
+      "inc-db0e7ee51b16c2e74d5ffdd5"
+    ],
+    "pairwise_similarities": [
+      {
+        "left": "inc-db0e7ee51b16c2e74d5ffdd5",
+        "right": "inc-08ab11118286f0a0f9ebc352",
+        "similarity": 0.899025974026
+      },
+      {
+        "left": "inc-db0e7ee51b16c2e74d5ffdd5",
+        "right": "inc-4843d59ef62a243f1e3fa95f",
+        "similarity": 0.894512195122
+      },
+      {
+        "left": "inc-08ab11118286f0a0f9ebc352",
+        "right": "inc-4843d59ef62a243f1e3fa95f",
+        "similarity": 0.980681818182
+      }
+    ],
+    "majority_root": [
+      "checkout"
+    ],
+    "majority_domain": "CONCURRENCY",
+    "shared_anomalies": [
+      "METRIC_ERROR_OUTLIER",
+      "METRIC_LATENCY_OUTLIER",
+      "METRIC_QUEUE_LAG_OUTLIER"
+    ],
+    "supporting_evidence_refs": [
+      "e:a:metrics:checkout:core:0:0c96bd52e97d",
+      "e:a:metrics:checkout:core:0:e73e1b5c2c40",
+      "e:a:metrics:checkout:core:0:fad513895132",
+      "e:a:metrics:fraud-detection:core:0:08f87d5023cd",
+      "e:a:metrics:fraud-detection:core:0:527f7b75f462",
+      "e:a:metrics:fraud-detection:core:0:823d66b6222a",
+      "e:a:metrics:fraud-detection:core:1:4bd39d9bc14d",
+      "e:a:metrics:fraud-detection:core:1:4d72e1295b1a",
+      "e:a:metrics:fraud-detection:core:1:bbe1b48967a7",
+      "e:a:metrics:fraud-detection:queue-lag:0:676dbe010285",
+      "e:a:metrics:fraud-detection:queue-lag:0:96e627ff2c04",
+      "e:a:metrics:fraud-detection:queue-lag:0:b9d365a41efa",
+      "e:a:resources:checkout:0:b00c3f7782ad",
+      "e:a:resources:checkout:0:d0375098bd6e"
+    ],
+    "control_exclusion": true,
+    "excluded_control_incident_ids": [
+      "inc-2c8f2ad809ab5aead55404cb",
+      "inc-69f915e4521289c72b9b45a1",
+      "inc-dbc29a35bf6b604a05684ba6"
+    ],
+    "latest_control_environment": "env-3ed62ab80d67201580ca7764",
+    "latest_baseline_id": "base-e7679c5fc708af40c4ba057e",
+    "latest_baseline_sha256": "810b328c68ce68830fef345bfe45a82ae217cfe417559cd88a099ff9c6222328",
+    "latest_control_gates": {
+      "N0-A": "NO_INCIDENT_PASS",
+      "N0-B": "NO_INCIDENT_PASS",
+      "C1": "CORE_KNOWN_CONFIGURATION_ERROR_PAYMENT_QUEUE_NEGATIVE_CONCLUSIVE_WITH_UNRELATED_GAPS_PRESERVED"
+    },
+    "latest_family_count": 1,
+    "family_status": "PROMOTED",
+    "human_accept_as_new": {
+      "decision": "ACCEPT_AS_NEW",
+      "family_id": "family-cca68e10afe10fcc5407b3fb",
+      "merge_target_family_id": null,
+      "note": "Executed under the user's explicit prior authorization to continue Product v0.3 and perform ACCEPT_AS_NEW after measured controls and three-member clustering. This is not a claim of fresh manual inspection. P1/P2/P3 are OPEN_WORLD; N0/C1 excluded; 3 distinct windows, root consistency 1.0, pairwise similarity >=0.8945. The measured majority root is checkout, while queue evidence belongs to fraud-detection; this deviation is preserved and H1 must still match the measured majority root. No remediation or action authority granted.",
+      "review_id": "review-aefa9d3ffe03f22f92f541cb",
+      "review_sha256": "7803c0b15ef570d5c42f9c2d14dadbc5bd76607ddab6ccd377f730310a93666d",
+      "reviewed_at": "2026-09-03T10:23:11.428670Z",
+      "reviewer": "USER_EXPLICIT_PRIOR_AUTHORIZATION_EXECUTED_BY_CODEX",
+      "schema_version": "ecomsre.product.human-review.v1"
+    },
+    "runtime_selected_clause": {
+      "action_authority": "NONE",
+      "candidate_id": "candidate-3a20846412589221",
+      "core_known_overlap_rate": 0,
+      "evidence_sources": [
+        "METRICS",
+        "RUNTIME"
+      ],
+      "false_positive_rate": 0,
+      "no_incident_false_positive_rate": 0,
+      "positive_recall": 1,
+      "predicate_ids": [
+        "core:RUNTIME_HEALTHY",
+        "ga:METRIC_QUEUE_LAG_OUTLIER"
+      ],
+      "score": 0.6
+    },
+    "shadow_evaluation": {
+      "action_authority": "NONE",
+      "action_authority_violations": 0,
+      "core_known_overlap_rate": 0,
+      "counterfactual_consistency": 1,
+      "evaluation_id": "shadow-21fd376b78bfd43d",
+      "evaluation_sha256": "3249a1cc6187415997d1ef7ff05ea95a6b21387c44f38c8f11ce3bbe25f431b9",
+      "evidence_ref_validity": 1,
+      "false_positive_rate": 0,
+      "gate_passed": true,
+      "no_incident_false_positives": 0,
+      "other_extension_destructive_overlaps": 0,
+      "positive_recall": 1,
+      "reason_codes": [],
+      "registration_id": "registration-5446911d4590e18764f5272a",
+      "runtime_evaluation_sha256": "978aa89d9e25fe6af977a25faead5ffd2079225232ac8188d0dab2af5aea5b3f",
+      "schema_version": "ecomsre.product.shadow-evaluation.v1",
+      "source_failure_safe": true,
+      "source_reachability": 1
+    },
+    "shadow_unavailable_strata": [
+      {
+        "stratum": "OTHER_EXTENSION",
+        "origin": "NOT_AVAILABLE",
+        "reason_code": "NO_ACTIVE_OTHER_EXTENSION_CONTROL_AVAILABLE",
+        "actual_other_extension_overlap_experiment": false
+      }
+    ],
+    "promotion": {
+      "action_authority": "NONE",
+      "environment_id": "env-3ed62ab80d67201580ca7764",
+      "note": "Executed under the user's explicit prior authorization to PROMOTE KAFKA_QUEUE_BACKLOG after passing the original strict Shadow metrics. This records prior authorization, not fresh manual inspection. Runtime selected queue-lag plus Runtime healthy from 3 positives and 3 measured negatives; all strict metrics passed. The preserved checkout family-root versus fraud-detection queue-target discrepancy remains unresolved and is not waived: H1 must still satisfy exact measured majority-root equality. Read-only diagnosis only; no action/remediation authority.",
+      "promoted_at": "2026-09-03T10:24:56.917960Z",
+      "promotion_id": "promotion-96527954ce542a78a6825c42",
+      "promotion_sha256": "188b3be624276bc1f5f1272114c3ef74de55062601beb0ca66cfbd521509a8c5",
+      "registration_id": "registration-5446911d4590e18764f5272a",
+      "registry_version": 1,
+      "reviewer": "USER_EXPLICIT_PRIOR_AUTHORIZATION_EXECUTED_BY_CODEX",
+      "schema_version": "ecomsre.product.registration-promotion.v1",
+      "shadow_evaluation_id": "shadow-21fd376b78bfd43d",
+      "status": "ACTIVE"
+    },
+    "registry_version": 1,
+    "h1": {
+      "status": "CASE_GATE_FAILED",
+      "reason": "ROOT_DIFFERS_FROM_PROMOTED_FAMILY_MAJORITY",
+      "family_majority_root": [
+        "checkout"
+      ],
+      "h1_root": [
+        "fraud-detection"
+      ],
+      "extension_known": true,
+      "correct_slug": true,
+      "no_provisional_report": true,
+      "no_new_target_family": true,
+      "supporting_refs_resolve": true,
+      "source_limitations": [],
+      "leaked_tokens": [],
+      "actual_h1_execution_count": 1,
+      "diagnosis_or_fingerprint_roots_rewritten": false
+    },
+    "action_authority": "NONE",
+    "remediation_authority": "NONE",
+    "non_target_family_preserved": {
+      "family_id": "family-fd3d3a6060a85fb1eebc92c1",
+      "status": "ACCUMULATING",
+      "member_incident_ids": [
+        "inc-1d0a2f86bdeecc65ec8f1794"
+      ],
+      "is_queue_backlog_target_family": false
+    },
+    "completion_terminal_minted": false,
+    "subsequent_offline_root_alignment": {
+      "status": "FOCUSED_OFFLINE_PASS_NOT_LIVE_REVALIDATED",
+      "policy": "Use the unique owner of the existing report domain; retain ambiguous fallback.",
+      "unpersisted_positive_replay_roots": [
+        "fraud-detection"
+      ],
+      "historical_majority_root_unchanged": [
+        "checkout"
+      ],
+      "historical_h1_status_unchanged": "CASE_GATE_FAILED",
+      "related_focused_tests_passed": 218,
+      "new_live_cases_or_registry_versions": 0,
+      "evidence_or_database_rewritten": false
+    }
   }
 }
