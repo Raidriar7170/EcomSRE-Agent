@@ -1515,6 +1515,16 @@ requires unchanged Compose, queries, Resource sampling, and Baseline semantics;
 otherwise one new Baseline is built. Focused repair tests precede live execution;
 the next full repository suite is reserved for merge readiness.
 
+After the measured live-004 H1 root-consistency failure and the subsequent
+offline root-alignment correction, the user explicitly authorized one
+append-only correction loop named live-005 in the same branch, worktree, and
+Draft PR. It repeats the complete measured control, discovery, registration,
+Shadow, Promotion, and H1 sequence with a fresh private Product state and
+Baseline. live-002/live-003/live-004 remain immutable historical evidence.
+This is not a new Product version, Goal, PR, authorization framework, or
+protocol; it permits no additional retry beyond live-005. The one final full
+repository suite remains reserved for merge readiness after live-005 passes.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)
