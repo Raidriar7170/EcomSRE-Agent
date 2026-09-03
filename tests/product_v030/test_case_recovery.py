@@ -259,3 +259,41 @@ def test_queue_case_root_must_equal_the_unique_queue_owner():
         by_logical,
         expected_owner="fraud-detection",
     )
+
+
+def test_baseline_recovery_accepts_only_the_exact_prebaseline_failure():
+    path = (
+        Path(__file__).resolve().parents[2]
+        / "scripts/product_v030/build_live_baseline.py"
+    )
+    spec = importlib.util.spec_from_file_location("baseline_recovery_test", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    previous = {
+        "status": "PRODUCT_V030_BASELINE_PREPARATION_FAILED",
+        "failure": {
+            "type": "RuntimeError",
+            "message": "fresh baseline healthy traffic did not complete",
+        },
+        "traffic_started_at": "2026-09-03T00:00:00Z",
+        "traffic": {
+            "attempted": 1,
+            "succeeded": 0,
+            "failed": 1,
+            "stopped_on_error_budget": True,
+        },
+        "environment": {"environment_id": "env-current"},
+        "verification": {"environment_id": "env-current"},
+    }
+    module.require_prebaseline_traffic_recovery(previous)
+    for replacement in (
+        {"status": "PRODUCT_V030_FRESH_BASELINE_READY"},
+        {"baseline": {}},
+        {"baseline_job_id": "job-existing"},
+        {"traffic": {**previous["traffic"], "attempted": 2}},
+        {"failure": {"type": "RuntimeError", "message": "different"}},
+    ):
+        with pytest.raises(ValueError, match="pre-Baseline traffic failure"):
+            module.require_prebaseline_traffic_recovery(
+                {**previous, **replacement}
+            )
