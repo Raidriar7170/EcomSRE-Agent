@@ -46,7 +46,7 @@ _SUCCESS_STATUSES_V023 = frozenset(
     {ReadSourceStatusV22.SUCCESS_EMPTY, ReadSourceStatusV22.SUCCESS_NONEMPTY}
 )
 _PROMETHEUS_TEMPLATE_NAMES_V023 = frozenset(
-    {"request_support", "error_rate", "latency", "cpu", "memory"}
+    {"request_support", "error_rate", "latency", "cpu", "memory", "queue_lag"}
 )
 _FORBIDDEN_LOG_REJECTION_FRAGMENTS_V023 = (
     "TIMESTAMP",
@@ -144,7 +144,7 @@ class PrometheusTemplateDiagnosticV023(ProductModelV1):
         "ecomsre.product.prometheus-template-diagnostic.v023"
     ] = "ecomsre.product.prometheus-template-diagnostic.v023"
     template_name: Literal[
-        "request_support", "error_rate", "latency", "cpu", "memory"
+        "request_support", "error_rate", "latency", "cpu", "memory", "queue_lag"
     ]
     logical_service: str = Field(pattern=r"^[a-z][a-z0-9-]{0,63}$")
     status: ReadSourceStatusV22

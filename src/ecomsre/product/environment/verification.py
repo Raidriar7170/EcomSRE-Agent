@@ -107,6 +107,12 @@ def normalize_service_identities(
         )
 
     _require_bounded_alias_sets(alias_sets)
+    declared_services = frozenset(alias_sets)
+    if policy.discovery_mode == "DECLARED_ONLY" and not declared_services:
+        raise ProductError(
+            "SERVICE_CATALOG_EMPTY",
+            "Declared-only discovery requires a nonempty service catalog.",
+        )
 
     normalized_health: list[ConnectorHealthResultV1] = []
     for health in connector_health:
@@ -118,6 +124,11 @@ def normalize_service_identities(
             )
             if resolved_logical is None and _LOGICAL_SERVICE.fullmatch(alias):
                 resolved_logical = alias
+            if (
+                policy.discovery_mode == "DECLARED_ONLY"
+                and resolved_logical not in declared_services
+            ):
+                continue
             if resolved_logical is None:
                 raise ProductError(
                     "SERVICE_IDENTITY_UNRESOLVED",

@@ -42,6 +42,7 @@ from ecomsre.product.knowledge.contracts import (
 
 
 _ANOMALY_SOURCE = {
+    GenericAnomalyKindV23.METRIC_QUEUE_LAG_OUTLIER: EvidenceSourceV22.METRICS,
     GenericAnomalyKindV23.METRIC_ERROR_OUTLIER: EvidenceSourceV22.METRICS,
     GenericAnomalyKindV23.METRIC_LATENCY_OUTLIER: EvidenceSourceV22.METRICS,
     GenericAnomalyKindV23.RUNTIME_NOT_RUNNING: EvidenceSourceV22.RUNTIME,

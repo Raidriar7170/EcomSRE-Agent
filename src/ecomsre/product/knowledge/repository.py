@@ -35,6 +35,8 @@ from ecomsre.dta_v2.v23.generic_anomalies import (
 from ecomsre.dta_v2.v23.registration_compiler_v234 import CompiledFaultRegistrationV234
 from ecomsre.dta_v2.v23.registration_contracts_v234 import hashed_model_v234
 from ecomsre.product.baselines import EnvironmentBaselineV1
+from ecomsre.product.contracts import EnvironmentRecordV1
+from ecomsre.product.environment.repository import EnvironmentRepositoryV1
 from ecomsre.product.environment.capabilities import (
     CapabilityMatrixRepositoryV1,
     EnvironmentCapabilityMatrixV1,
@@ -53,12 +55,15 @@ from ecomsre.product.incidents.extensions import (
     ProductExtensionRegistrationV1,
     build_product_extension_runtime_input_v1,
 )
+from ecomsre.product.incidents.queue_action import build_queue_lag_action_v030
+from ecomsre.product.incidents.anomaly_policy import extract_product_anomalies_v1
 from ecomsre.product.jobs.contracts import JobLeaseFenceV1
 from ecomsre.product.jobs.fencing import require_live_job_fence
 from ecomsre.product.knowledge.compiler import (
     build_product_shadow_candidate_v1,
     compile_product_registration_v1,
 )
+from ecomsre.product.knowledge.metric_coverage import complete_queue_aware_metrics_v1
 from ecomsre.product.knowledge.contracts import (
     EnvironmentExtensionRegistryEntryV1,
     FamilyRegistrationDraftV1,
@@ -141,6 +146,7 @@ class _ShadowRuntimeMaterialV1:
     raw_outcomes: tuple[ReadOutcomeV22, ...]
     memory_outcomes: tuple[ReadOutcomeV22 | RuntimeReadOutcomeV22, ...]
     runtime_input: ExtensionRuntimeInputV234
+    complete_sources: tuple[str, ...] = ()
 
 
 def _json(value: Any) -> str:
@@ -190,6 +196,8 @@ def _complete_source_coverage_v1(
     incident: IncidentRecordV1,
     evidence: EvidenceBundleV1,
     capability_matrix: EnvironmentCapabilityMatrixV1,
+    environment: EnvironmentRecordV1 | None = None,
+    baseline: EnvironmentBaselineV1 | None = None,
 ) -> tuple[str, ...]:
     if (
         capability_matrix.environment_id != incident.environment_id
@@ -204,6 +212,15 @@ def _complete_source_coverage_v1(
         and item.target_complete_coverage
         and candidates.issubset(item.covered_services)
     }
+    if any(
+        source.source is EvidenceSourceV22.METRICS
+        and source.status is SourceCapabilityStatusV1.AVAILABLE
+        and candidates.issubset(source.covered_services)
+        for source in capability_matrix.sources
+    ) and complete_queue_aware_metrics_v1(
+        incident=incident, evidence=evidence, environment=environment, baseline=baseline
+    ):
+        target_complete_sources.add("METRICS")
     requested_by_source: dict[str, set[str]] = {}
     invalid_sources: set[str] = set()
     for item in evidence.objects:
@@ -247,6 +264,7 @@ def build_product_fingerprint_observation_v1(
     evidence: EvidenceBundleV1,
     baseline: EnvironmentBaselineV1,
     capability_matrix: EnvironmentCapabilityMatrixV1,
+    environment: EnvironmentRecordV1 | None = None,
 ) -> FingerprintObservationV1:
     records = _records(evidence)
     evidence_sources = tuple(sorted({item.source.value for item in evidence.objects}))
@@ -254,7 +272,24 @@ def build_product_fingerprint_observation_v1(
         incident=incident,
         evidence=evidence,
         capability_matrix=capability_matrix,
+        environment=environment,
+        baseline=baseline,
     )
+    anomaly_kinds = set(_anomaly_kinds(result))
+    metric_outcomes = complete_queue_aware_metrics_v1(
+        incident=incident, evidence=evidence, environment=environment, baseline=baseline
+    )
+    if metric_outcomes:
+        metric_memory, _ = build_memory_views_v22(
+            outcomes=metric_outcomes, baseline=baseline.v22_baseline_profile,
+            observed_at=incident.diagnosis_observed_at, top_k=64,
+        )
+        # Known/no-incident routing can omit a provisional report. Its omission
+        # is not proof of absence: derive observable metric symptoms from reads.
+        anomaly_kinds.update(a.kind.value for a in extract_generic_anomalies_v23(
+            memory=metric_memory, candidate_services=incident.candidate_logical_services,
+            healthy_noise_guard_v024=True,
+        ))
     runtime: list[str] = []
     resources: list[str] = []
     log_tokens: list[str] = []
@@ -285,7 +320,7 @@ def build_product_fingerprint_observation_v1(
         incident_id=incident.incident_id,
         root_service_ids=result.root_service_ids,
         broad_domain=result.broad_domain or "UNKNOWN",
-        generic_anomaly_kinds=_anomaly_kinds(result),
+        generic_anomaly_kinds=tuple(sorted(anomaly_kinds)),
         evidence_sources=evidence_sources,
         topology_edges=tuple(
             sorted(
@@ -404,6 +439,7 @@ class KnowledgeRepositoryV1:
                 evidence=evidence,
                 baseline=self._baseline(incident.baseline_id),
                 capability_matrix=self._capability_matrix(incident),
+                environment=EnvironmentRepositoryV1(self.store).get(incident.environment_id),
             )
         )
 
@@ -1060,7 +1096,12 @@ class KnowledgeRepositoryV1:
         }
         raw_outcomes: list[ReadOutcomeV22] = []
         memory_outcomes: list[ReadOutcomeV22 | RuntimeReadOutcomeV22] = []
-        for action_id in sorted(snapshots):
+        # Product acquires the frozen, sorted Core catalog first, then appends
+        # its optional queue action. Memory summaries bind that original order.
+        queue_action_id = build_queue_lag_action_v030().action_id
+        for action_id in sorted(
+            snapshots, key=lambda value: (value == queue_action_id, value)
+        ):
             snapshot = snapshots[action_id]
             read_payload = snapshot.get("read_outcome")
             if not isinstance(read_payload, dict):
@@ -1110,52 +1151,33 @@ class KnowledgeRepositoryV1:
             ),
             baseline=baseline.v22_baseline_profile,
             memory=memory,
-            generic_anomalies=extract_generic_anomalies_v23(
+            generic_anomalies=extract_product_anomalies_v1(
                 memory=memory,
                 candidate_services=incident.candidate_logical_services,
                 baseline_known_log_templates=tuple(
                     (item.service, item.template)
                     for item in baseline.normal_log_templates
                 ),
-                healthy_noise_guard_v024=True,
+                snapshots=tuple(snapshots.values()),
             ),
             raw_outcomes=tuple(raw_outcomes),
         )
-        complete_sources = set(
-            _complete_source_coverage_v1(
-                incident=incident,
-                evidence=evidence,
-                capability_matrix=self._capability_matrix(incident),
-            )
+        complete_sources = _complete_source_coverage_v1(
+            incident=incident,
+            evidence=evidence,
+            capability_matrix=self._capability_matrix(incident),
+            environment=EnvironmentRepositoryV1(self.store).get(incident.environment_id),
+            baseline=baseline,
         )
-        coverage = tuple(
-            item.model_copy(
-                update={
-                    "reachable": item.reachable and item.source.value in complete_sources
-                }
-            )
-            for item in runtime_input.source_coverage
-        )
-        runtime_input = hashed_model_v234(
-            ExtensionRuntimeInputV234,
-            {
-                "schema_version": runtime_input.schema_version,
-                "case_id": runtime_input.case_id,
-                "candidate_services": runtime_input.candidate_services,
-                "adjacent_services": runtime_input.adjacent_services,
-                "baseline": runtime_input.baseline,
-                "memory": runtime_input.memory,
-                "generic_anomalies": runtime_input.generic_anomalies,
-                "source_coverage": coverage,
-            },
-            "runtime_input_sha256",
-        )
+        # Reachability describes returned statuses, not target completeness.
+        # Keep that typed fact intact; gate selected-source completeness separately.
         return _ShadowRuntimeMaterialV1(
             incident=incident,
             baseline=baseline,
             raw_outcomes=tuple(raw_outcomes),
             memory_outcomes=tuple(memory_outcomes),
             runtime_input=runtime_input,
+            complete_sources=complete_sources,
         )
 
     @staticmethod
@@ -1342,6 +1364,19 @@ class KnowledgeRepositoryV1:
                 row.incident_id,
                 self._shadow_runtime_material(row.incident_id),
             )
+            if stratum is not ShadowEvaluationStratumV1.INSUFFICIENT_OR_CONFLICT:
+                cells = {cell.predicate_id: cell.state for cell in row.cells}
+                if not set(required_sources).issubset(material.complete_sources) or any(
+                    cells.get(predicate) not in {
+                        PredicateCellStateV1.PRESENT,
+                        PredicateCellStateV1.ABSENT_WITH_COMPLETE_COVERAGE,
+                    }
+                    for predicate in selected.predicate_ids
+                ):
+                    raise ProductError(
+                        "SHADOW_SELECTED_EVIDENCE_INCOMPLETE",
+                        "A persisted shadow case lacks conclusive selected-predicate evidence.",
+                    )
             outcomes.append(
                 self._shadow_case_outcome(
                     case_id=f"shadow:{stratum.value.casefold()}:{row.incident_id}",

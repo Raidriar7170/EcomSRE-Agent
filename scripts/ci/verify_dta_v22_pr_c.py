@@ -12,6 +12,7 @@ import subprocess
 from typing import Any, get_args, Sequence
 
 from ecomsre.dta_v2.v21.registry import load_runbook_registry
+from scripts.ci.product_v030_source_successor import matches_queue_signal_successor_v030
 from ecomsre.dta_v2.v22.diagnosis import (
     CandidateActionV22,
     DiagnosisTerminalV22,
@@ -583,7 +584,13 @@ def verify_pr_c_bindings(
         ):
             raise ValueError("PR-C artifact binding differs")
         source = _regular_file(root, Path(artifact["path"]))
-        if hashlib.sha256(source.read_bytes()).hexdigest() != artifact["sha256"]:
+        current = source.read_bytes()
+        if (
+            hashlib.sha256(current).hexdigest() != artifact["sha256"]
+            and not matches_queue_signal_successor_v030(
+                root, artifact["path"], current, artifact["sha256"]
+            )
+        ):
             raise ValueError(f"PR-C artifact raw SHA-256 differs: {artifact['path']}")
     thresholds = PredicateThresholdsV22.frozen()
     if manifest.get("predicate_thresholds") != thresholds.model_dump(mode="json"):

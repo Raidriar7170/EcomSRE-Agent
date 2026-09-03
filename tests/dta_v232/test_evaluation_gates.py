@@ -1,8 +1,14 @@
 from __future__ import annotations
 
+import hashlib
 import inspect
+import json
 from pathlib import Path
 
+import pytest
+
+from ecomsre.dta_v2.v23.generic_anomalies import GenericAnomalyKindV23
+import ecomsre.dta_v2.v23.runtime_preflight_v232 as preflight_module
 from ecomsre.dta_v2.v23.evaluation_data_v232 import (
     AdmissionMatrixV232,
     load_evaluation_cases_v232,
@@ -47,12 +53,40 @@ def test_new_fixed_set_and_admission_matrix_are_complete() -> None:
     }
 
 
-def test_runtime_totality_preflight_covers_all_48_arms() -> None:
-    artifact = RuntimeTotalityPreflightV232.model_validate_json(
-        (
-            ROOT / "docs/analysis/dta-v232-runtime-totality-preflight.json"
-        ).read_bytes()
+def test_historical_runtime_totality_preflight_covers_all_48_arms(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    raw = (ROOT / "docs/analysis/dta-v232-runtime-totality-preflight.json").read_bytes()
+    # The frozen 13-kind result is historical evidence, not a new totality
+    # claim for the Product queue successor. Bind its exact unchanged bytes.
+    assert hashlib.sha256(raw).hexdigest() == (
+        "ce83430b3ea0808f7b3976f86ec920dde8dd126c5d6c5654c1b29ef675a12cac"
     )
+    frozen_kinds = tuple(
+        GenericAnomalyKindV23(value)
+        for value in json.loads(raw)["registered_anomaly_kinds"]
+    )
+    assert set(GenericAnomalyKindV23) - set(frozen_kinds) == {
+        GenericAnomalyKindV23.METRIC_QUEUE_LAG_OUTLIER
+    }
+    # The current, unmodified runtime gate must reject the historical closed
+    # surface. Only this local test context validates its original enum scope;
+    # schedule, typed traces, zero-authority checks and digest remain active.
+    with pytest.raises(ValueError, match="preflight registry is not enum-total"):
+        RuntimeTotalityPreflightV232.model_validate_json(raw)
+    with monkeypatch.context() as historical:
+        historical.setattr(preflight_module, "GenericAnomalyKindV23", frozen_kinds)
+        artifact = RuntimeTotalityPreflightV232.model_validate_json(raw)
+        for invalid_kinds in (
+            frozen_kinds[1:],
+            (*frozen_kinds, GenericAnomalyKindV23.METRIC_QUEUE_LAG_OUTLIER),
+        ):
+            changed = artifact.model_dump(mode="python")
+            changed["registered_anomaly_kinds"] = invalid_kinds
+            with pytest.raises(ValueError, match="preflight registry is not enum-total"):
+                RuntimeTotalityPreflightV232.model_validate(changed)
+    with pytest.raises(ValueError, match="preflight registry is not enum-total"):
+        RuntimeTotalityPreflightV232.model_validate_json(raw)
 
     assert artifact.status == "DTA_V232_RUNTIME_TOTALITY_PREFLIGHT_PASS"
     assert artifact.arm_run_count == 48

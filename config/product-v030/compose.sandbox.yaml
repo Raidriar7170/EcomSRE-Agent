@@ -1,0 +1,30 @@
+x-product-service: &product-service
+  platform: linux/arm64
+  pull_policy: never
+  labels:
+    io.ecomsre.sandbox.id: ${ECOMSRE_SANDBOX_ID:?ECOMSRE_SANDBOX_ID is required}
+  ports: !override []
+
+services:
+  accounting:
+    <<: *product-service
+    container_name: ecomsre-live-sandbox-v1-accounting
+  fraud-detection:
+    <<: *product-service
+    container_name: ecomsre-live-sandbox-v1-fraud-detection
+  kafka:
+    <<: *product-service
+    container_name: ecomsre-live-sandbox-v1-kafka
+    labels:
+      io.ecomsre.sandbox.id: ${ECOMSRE_SANDBOX_ID:?ECOMSRE_SANDBOX_ID is required}
+      io.ecomsre.telemetry.jmx.sha256: ${SANDBOX_KAFKA_JMX_SHA256:?SANDBOX_KAFKA_JMX_SHA256 is required}
+    environment:
+      OTEL_JMX_CONFIG: /etc/ecomsre/kafka-jmx.yml
+      OTEL_INSTRUMENTATION_METHODS_INCLUDE: kafka.server.KafkaApis[handleProduceRequest]
+    volumes:
+      - type: bind
+        source: ${SANDBOX_KAFKA_JMX_CONFIG:?SANDBOX_KAFKA_JMX_CONFIG is required}
+        target: /etc/ecomsre/kafka-jmx.yml
+        read_only: true
+        bind:
+          create_host_path: false

@@ -53,6 +53,7 @@ class NoveltyGateDecisionV23(DtaModelV22):
 
 
 _INTERPRETATION_DOMAIN_V23 = {
+    GenericAnomalyKindV23.METRIC_QUEUE_LAG_OUTLIER: "CONCURRENCY",
     GenericAnomalyKindV23.RUNTIME_NOT_RUNNING: "RUNTIME",
     GenericAnomalyKindV23.RUNTIME_UNHEALTHY: "RUNTIME",
     GenericAnomalyKindV23.RUNTIME_RESTART_ANOMALY: "RUNTIME",

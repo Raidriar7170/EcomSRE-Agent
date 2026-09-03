@@ -29,6 +29,7 @@ from scripts.ci.verify_dta_v22_pr_a import (
     assert_no_public_leak,
     verify_pr_a_protocol,
 )
+from scripts.ci.product_v030_source_successor import matches_queue_signal_successor_v030
 
 
 PR_B_BASE = "9d53002c3d86208a67b73d271c5eaf6e2f45b8b7"
@@ -622,7 +623,13 @@ def verify_pr_b_bindings(
         if not isinstance(item, dict) or set(item) != {"path", "sha256"}:
             raise ValueError("PR-B artifact binding shape differs")
         artifact = _regular_file(root, Path(item["path"]))
-        if hashlib.sha256(artifact.read_bytes()).hexdigest() != item["sha256"]:
+        current = artifact.read_bytes()
+        if (
+            hashlib.sha256(current).hexdigest() != item["sha256"]
+            and not matches_queue_signal_successor_v030(
+                root, item["path"], current, item["sha256"]
+            )
+        ):
             raise ValueError(f"PR-B artifact digest differs: {item['path']}")
     if manifest.get("canonical_request_profile") != EXPECTED_REQUEST_PROFILE:
         raise ValueError("PR-B canonical request profile differs")

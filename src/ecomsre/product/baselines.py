@@ -793,15 +793,19 @@ class HistoricalBaselineServiceV1:
                 for index in range(policy.window_count)
             )
         connector_instances = []
+        baseline_sources: set[EvidenceSourceV22] = set()
         try:
             for config in environment.connector_configs:
                 connector = self._connectors.create(config)
-                if any(
-                    capability.supports_baseline
-                    and capability.supports_historical_range
+                historical_sources = {
+                    capability.source
                     for capability in connector.capabilities()
-                ):
+                    if capability.supports_baseline
+                    and capability.supports_historical_range
+                }
+                if historical_sources:
                     connector_instances.append((config, connector))
+                    baseline_sources.update(historical_sources)
                 else:
                     connector.close()
             if not connector_instances:
@@ -942,6 +946,7 @@ class HistoricalBaselineServiceV1:
             if item.target_complete_coverage
             and item.status is SourceCapabilityStatusV1.AVAILABLE
             and item.source is not EvidenceSourceV22.CHANGES
+            and item.source in baseline_sources
         )
         if use_v023_readiness:
             evaluation_v023 = evaluate_baseline_windows_v023(

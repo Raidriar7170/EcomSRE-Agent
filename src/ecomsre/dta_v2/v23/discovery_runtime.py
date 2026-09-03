@@ -359,6 +359,7 @@ def _build_read_outcome_v23(
 
 
 _DOMAIN_BY_ANOMALY_KIND = {
+    GenericAnomalyKindV23.METRIC_QUEUE_LAG_OUTLIER: ProvisionalFaultDomainV23.CONCURRENCY,
     GenericAnomalyKindV23.RUNTIME_NOT_RUNNING: ProvisionalFaultDomainV23.RUNTIME,
     GenericAnomalyKindV23.RUNTIME_UNHEALTHY: ProvisionalFaultDomainV23.RUNTIME,
     GenericAnomalyKindV23.RUNTIME_RESTART_ANOMALY: ProvisionalFaultDomainV23.RUNTIME,

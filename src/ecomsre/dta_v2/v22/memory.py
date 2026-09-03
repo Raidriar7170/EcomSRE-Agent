@@ -969,6 +969,13 @@ def _metric_strength(
         return SignalStrengthV22.NONE
     ratio = _ratio(record.value, baseline.mean)
     delta = record.value - baseline.mean
+    if record.metric_kind is MetricKindV22.QUEUE_LAG:
+        # Product v0.3: frozen healthy-baseline-only observable symptom.
+        if record.sample_count >= 3 and record.value >= max(
+            20.0, baseline.mean + 5.0 * max(baseline.standard_deviation, 1.0)
+        ):
+            return SignalStrengthV22.STRONG
+        return SignalStrengthV22.NONE
     if record.metric_kind is MetricKindV22.ERROR_RATE:
         if (
             (

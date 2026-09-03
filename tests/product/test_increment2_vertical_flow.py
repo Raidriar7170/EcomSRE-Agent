@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 import json
 
 import httpx
+import pytest
 from fastapi.testclient import TestClient
 
 from ecomsre.product.app import create_app
@@ -13,6 +14,7 @@ from ecomsre.product.baselines import (
     HistoricalBaselineServiceV1,
 )
 from ecomsre.product.connectors.credentials import CredentialResolverV1
+from ecomsre.product.connectors.http_health import HttpHealthConnectorV1
 from ecomsre.product.connectors.registry import ConnectorRegistryV1
 from ecomsre.product.environment.capabilities import CapabilityMatrixRepositoryV1
 from ecomsre.product.environment.repository import EnvironmentRepositoryV1
@@ -197,7 +199,20 @@ def _health(_request: httpx.Request) -> httpx.Response:
     return httpx.Response(200, json={"healthy": True})
 
 
-def test_increment2_connector_verification_baseline_and_read_api(tmp_path) -> None:
+@pytest.mark.parametrize("complete_current_runtime", [False, True])
+def test_increment2_connector_verification_baseline_and_read_api(
+    tmp_path, monkeypatch, complete_current_runtime
+) -> None:
+    if complete_current_runtime:
+        original = HttpHealthConnectorV1.capabilities
+        monkeypatch.setattr(
+            HttpHealthConnectorV1,
+            "capabilities",
+            lambda self: tuple(
+                item.model_copy(update={"supports_target_complete_coverage": True})
+                for item in original(self)
+            ),
+        )
     settings = _settings(tmp_path)
     store = SqliteStoreV1(settings.sqlite_path)
     environments = EnvironmentRepositoryV1(store)

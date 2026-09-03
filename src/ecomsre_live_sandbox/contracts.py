@@ -31,7 +31,7 @@ class FrozenModel(BaseModel):
 
 class EnvironmentConfig(FrozenModel):
     schema_version: Literal["live-sandbox.environment.v1"]
-    compose_files: tuple[str, ...] = Field(min_length=3, max_length=4)
+    compose_files: tuple[str, ...] = Field(min_length=3, max_length=6)
     compose_project: Literal["ecomsre-live-sandbox-v1"]
     docker_endpoint_scheme: Literal["unix"]
     environment_id: Literal["opentelemetry-demo-local-v1"]

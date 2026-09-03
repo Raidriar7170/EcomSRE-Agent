@@ -45,6 +45,7 @@ from ecomsre.product.pilot.baseline_readiness_v023 import (
 
 
 _METRIC_KIND_BY_TEMPLATE = {
+    "queue_lag": MetricKindV22.QUEUE_LAG,
     "request_support": MetricKindV22.REQUEST_SUPPORT,
     "error_rate": MetricKindV22.ERROR_RATE,
     "latency": MetricKindV22.LATENCY_P95_MS,
@@ -673,11 +674,16 @@ class PrometheusConnectorV1:
         if len(timestamps) < 2:
             return None
         started = timestamps[0]
-        duration = end - started
+        observed_duration = end - started
+        # Prometheus returns millisecond timestamps; clipping the first point
+        # to a microsecond window boundary can shorten 30s by a fraction of a
+        # millisecond. Quantize only that representational error, never a real
+        # sampling gap. Keep the declared duration, offsets and slope coherent.
+        duration = round(observed_duration)
         if (
             duration < 1
             or duration > requested_window
-            or not float(duration).is_integer()
+            or not math.isclose(observed_duration, duration, rel_tol=0, abs_tol=0.001)
             or (
                 sampling_window_seconds is not None
                 and duration != sampling_window_seconds
@@ -686,13 +692,14 @@ class PrometheusConnectorV1:
             return None
         if any(not memory[item].is_integer() for item in timestamps):
             return None
+        started = end - duration
         samples = tuple(
             ResourceSampleV22(
-                offset_ms=int(round((timestamp - started) * 1000)),
+                offset_ms=0 if index == 0 else int(round((timestamp - started) * 1000)),
                 cpu_percent=cpu[timestamp],
                 memory_bytes=int(memory[timestamp]),
             )
-            for timestamp in timestamps
+            for index, timestamp in enumerate(timestamps)
         )
         return ResourceUsageRecordV22(
             schema_version="dta-v22.resource-usage-record.v1",

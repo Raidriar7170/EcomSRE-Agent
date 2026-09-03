@@ -47,6 +47,7 @@ _LOG_PREDICATES = {
 
 
 class GenericAnomalyKindV23(str, Enum):
+    METRIC_QUEUE_LAG_OUTLIER = "METRIC_QUEUE_LAG_OUTLIER"
     METRIC_ERROR_OUTLIER = "METRIC_ERROR_OUTLIER"
     METRIC_LATENCY_OUTLIER = "METRIC_LATENCY_OUTLIER"
     RUNTIME_NOT_RUNNING = "RUNTIME_NOT_RUNNING"
@@ -210,7 +211,9 @@ def extract_generic_anomalies_v23(
         if isinstance(payload, MetricSalientPayloadV22):
             kind = None
             strength = fact.signal_strength
-            if payload.metric_kind is MetricKindV22.ERROR_RATE and strength is SignalStrengthV22.STRONG:
+            if payload.metric_kind is MetricKindV22.QUEUE_LAG and strength is SignalStrengthV22.STRONG:
+                kind = GenericAnomalyKindV23.METRIC_QUEUE_LAG_OUTLIER
+            elif payload.metric_kind is MetricKindV22.ERROR_RATE and strength is SignalStrengthV22.STRONG:
                 kind = GenericAnomalyKindV23.METRIC_ERROR_OUTLIER
             elif payload.metric_kind is MetricKindV22.LATENCY_P95_MS:
                 if not healthy_noise_guard_v024 and strength is SignalStrengthV22.STRONG:

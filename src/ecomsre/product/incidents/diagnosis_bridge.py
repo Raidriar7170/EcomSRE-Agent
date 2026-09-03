@@ -24,7 +24,6 @@ from ecomsre.dta_v2.v23.contracts import (
 from ecomsre.dta_v2.v23.generic_anomalies import (
     GenericAnomalyKindV23,
     GenericAnomalyV23,
-    extract_generic_anomalies_v23,
 )
 from ecomsre.dta_v2.v23.known_admission import (
     KnownAdmissionStateV23,
@@ -54,6 +53,7 @@ from ecomsre.product.incidents.evidence_binding_v0232 import (
     DiagnosisDecisionTraceV0232,
 )
 from ecomsre.product.incidents.read_backend import ProductReadAcquisitionV1
+from ecomsre.product.incidents.anomaly_policy import extract_product_anomalies_v1
 
 
 _V024_ANOMALY_BY_PREDICATE = {
@@ -119,6 +119,8 @@ def _effective_admissions_v024(
 
 def _domain_for_anomalies(anomalies: tuple[Any, ...]) -> ProvisionalFaultDomainV23:
     values = {item.kind.value for item in anomalies}
+    if "METRIC_QUEUE_LAG_OUTLIER" in values:
+        return ProvisionalFaultDomainV23.CONCURRENCY
     if any(value.startswith("RUNTIME_") for value in values):
         return ProvisionalFaultDomainV23.RUNTIME
     if any(value.startswith("RESOURCE_") for value in values):
@@ -128,6 +130,20 @@ def _domain_for_anomalies(anomalies: tuple[Any, ...]) -> ProvisionalFaultDomainV
     if "RECENT_CHANGE_CORRELATION" in values:
         return ProvisionalFaultDomainV23.CONFIGURATION
     return ProvisionalFaultDomainV23.UNKNOWN
+
+
+def _root_for_domain(
+    anomalies: tuple[Any, ...], domain: ProvisionalFaultDomainV23
+) -> str:
+    domain_services = {
+        item.service
+        for item in anomalies
+        if _domain_for_anomalies((item,)) is domain
+    }
+    # Align an unambiguous domain owner; do not invent a new multi-service tie-break.
+    if len(domain_services) == 1:
+        return str(next(iter(domain_services)))
+    return str(anomalies[0].service)
 
 
 class ProductDiagnosisBridgeV1:
@@ -162,13 +178,13 @@ class ProductDiagnosisBridgeV1:
         topology_edges = tuple(
             (item.parent_service, item.child_service) for item in baseline.topology_edges
         )
-        anomalies = extract_generic_anomalies_v23(
+        anomalies = extract_product_anomalies_v1(
             memory=memory,
             candidate_services=candidates,
             baseline_known_log_templates=tuple(
                 (item.service, item.template) for item in baseline.normal_log_templates
             ),
-            healthy_noise_guard_v024=True,
+            snapshots=acquisition.snapshots,
         )
         failed_sources = tuple(
             sorted(
@@ -339,8 +355,8 @@ class ProductDiagnosisBridgeV1:
                         support = tuple(
                             sorted({ref for item in strong for ref in item.evidence_refs})
                         )
-                        root_logical = strong[0].service
                         domain = _domain_for_anomalies(strong)
+                        root_logical = _root_for_domain(strong, domain)
                         report = build_provisional_report_v23(
                             terminal="UNREGISTERED_INCIDENT_SUSPECTED",
                             candidate_services=candidates,

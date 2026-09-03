@@ -37,7 +37,7 @@ from ecomsre.dta_v2.v22.read_contracts import (
 from ecomsre.dta_v2.v22.real_fault_capture_v225 import RealFaultOpaqueCaptureV1
 
 
-_METRIC_KIND = {item.value: MetricKind(item.value) for item in MetricKindV22}
+_METRIC_KIND = {item.value: item for item in MetricKind}
 _FAILURE = {
     ReadSourceStatusV22.FAILURE_UNAVAILABLE: ToolErrorCode.SOURCE_UNAVAILABLE,
     ReadSourceStatusV22.FAILURE_TIMEOUT: ToolErrorCode.SOURCE_TIMEOUT,

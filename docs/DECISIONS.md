@@ -1459,6 +1459,72 @@ Provider use, commit, push, PR creation, merge, deployment, or release. Those
 remain separately protected actions. Product engineering terminals cannot
 rewrite Phase 0 or DTA study terminals.
 
+## DEC-061 — Product v0.3 Full-Mode Knowledge Evolution Authorization
+
+**Status: `accepted` for the user-designated Product v0.3 Goal and the user's
+subsequent explicit authorization to continue without further permission pauses.**
+
+The successor may acquire only the missing `3.0.0` `linux/arm64` accounting,
+fraud-detection, and kafka images from `ghcr.io/open-telemetry/demo`, verify their
+registry and local identities, and establish a separate private full-mode lock.
+Historical locks and upstream source remain unchanged. No builds, architecture
+emulation, version fallback, global cleanup, or non-owned mutation is authorized.
+The full-mode lifecycle and the Goal's bounded evaluator fault/traffic controls
+are authorized; Product action/remediation authority, Provider calls, Agent
+writes, and Runbook executions remain `NONE` or zero as applicable.
+
+The user's instruction supplies conditional standing authorization for the
+Goal's ACCEPT_AS_NEW and Promotion operations only after their original
+measured gates pass. Persisted review notes must identify that preauthorization
+and its source instruction; they must not claim the user subsequently inspected
+the resulting evidence. Runtime still owns clause mining and Shadow outcomes.
+Failure does not authorize a fabricated review, hand-authored passing clause,
+relaxed detector/clustering/Shadow criteria, or a false completion terminal.
+
+The Goal-required generic queue signal is an exact two-source-file successor
+of the historical PR-B/PR-C bindings: `read_contracts.py` adds only the
+`QUEUE_LAG` enum and its `COUNT` unit; `memory.py` adds only the specified
+baseline-only queue-strength branch. Historical manifests remain byte-exact.
+The verifier binds the old blobs at the Goal's fixed main commit and the exact
+reviewed successor bytes, while all other artifact checks, Core query shapes,
+thresholds, support clauses, and Git provenance gates remain unchanged. This
+does not permit arbitrary future edits to either source under the old binding.
+
+### Product v0.3 narrow-control repair amendment
+
+The user's subsequent live-004 instruction revises only two Product-level
+control semantics in DEC-061. An isolated ten-second memory-growth record is
+not a strong residual without same-service memory-pressure logs, restart or
+unhealthy Runtime, error Metrics, first-error Trace localization, or a second
+independent, non-overlapping Resource window showing the same strong trend.
+Original Resource evidence, numeric thresholds, and frozen Core memory-leak
+clauses remain unchanged. Diagnosis and Knowledge shadow reconstruction share
+this Product policy; existing memory-growth-plus-log/restart admissions remain.
+
+C1 uses payment, checkout, and fraud-detection candidates. Its configuration
+error/payment admission and resolving support must accompany a conclusive
+queue-negative check: observed low fraud-detection queue lag, healthy running
+fraud-detection Runtime, no queue anomaly, and false—not unknown—evaluation of
+the expected queue-anomaly/Runtime-healthy conjunction. Unrelated Logs/Traces
+gaps remain disclosed and are not reclassified as complete. Runtime mining and
+Shadow criteria are unchanged; this check does not prescribe a selected rule.
+
+All live-002/live-003 results and green CI remain historical evidence. One new
+full-mode runtime/control set is live-004. Reuse of its predecessor Baseline
+requires unchanged Compose, queries, Resource sampling, and Baseline semantics;
+otherwise one new Baseline is built. Focused repair tests precede live execution;
+the next full repository suite is reserved for merge readiness.
+
+After the measured live-004 H1 root-consistency failure and the subsequent
+offline root-alignment correction, the user explicitly authorized one
+append-only correction loop named live-005 in the same branch, worktree, and
+Draft PR. It repeats the complete measured control, discovery, registration,
+Shadow, Promotion, and H1 sequence with a fresh private Product state and
+Baseline. live-002/live-003/live-004 remain immutable historical evidence.
+This is not a new Product version, Goal, PR, authorization framework, or
+protocol; it permits no additional retry beyond live-005. The one final full
+repository suite remains reserved for merge readiness after live-005 passes.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)
