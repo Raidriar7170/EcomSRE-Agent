@@ -3,7 +3,78 @@
 ECOMSRE_PRODUCT_V030_BLOCKED_CONTROL_SET / REVIEW_REQUIRED.
 The completion terminal is not minted. PR #88 remains Draft; no merge.
 
-## Actual results
+## Latest: complete live-003 control set after repairs
+
+The ordinary engineering recovery used a fresh runtime and one complete new
+control set. It did not reuse the old passing N0-B or discard any prior formal
+case. No queue positive or detector retuning occurred.
+
+| Case | Healthy/expected-failure traffic | Actual Diagnosis | Full Goal gate |
+| --- | --- | --- | --- |
+| N0-A / seed 30001 | 30/30 HTTP 200 | OPEN_WORLD / RESOURCE, Kafka | Failed: healthy-control false positive |
+| N0-B / seed 30002 | 30/30 HTTP 200 | OPEN_WORLD / RESOURCE, checkout | Failed: healthy-control false positive |
+| C1 / seed 30003 | 10/10 expected HTTP 500 | CORE_KNOWN / CONFIGURATION_ERROR, payment | Failed: Logs/Traces coverage gaps |
+
+All three bind environment `env-e080b07aad1ac9e4b3c88513`, Baseline
+`base-26bcdd17ce69313c9a587efa`, SHA-256
+`6910e0ad120237e9b56d356a5c61c4f03c7ce908f4420a6f2fe16555c447a172`.
+The accepted DEMO_ONLY Baseline has 5/5 windows, all four resource-stat services,
+and 30/30 healthy transactions; queue mean 0.65/stddev 0.1224744871391589 keep
+the frozen threshold at 20. Every case's supporting refs resolve and no
+forbidden control tokens were found.
+
+Before these cases, a preparatory Baseline returned empty ResourceBaseline
+statistics: millisecond Prometheus timestamps clipped to a microsecond window
+made a nominal 30 seconds equal 29.999964 seconds and fail an integer check.
+The repair permits at most 1ms representation error, keeps real gaps rejected,
+and requires all four resource-stat services. The incomplete `base-da7bdc...`,
+its 30/30 traffic and original result bytes remain preserved; it was never used
+for a formal Incident. A new Baseline version was built in the same environment.
+The initial broker-probe HTTP 504 and bounded successful resumed probe are
+also retained; both preceded formal Incidents and fault injection.
+
+The repaired error-ratio query and fixed five-minute C1 observation now produce
+payment error metric 0.3473745490593028 (31 rolling points), against Baseline
+0.006011654834047838. With its actual payment ChangeEvent, ordinary Core routing
+correctly identifies CONFIGURATION_ERROR. This metric is still not the ten
+transactions' failure fraction. Full C1 acceptance fails because fraud-detection
+Logs are empty and fraud-detection/Kafka Traces are empty. Additional truncated
+Kafka/payment Logs and checkout/payment Traces remain visible; they are not the
+cause of the two named coverage-gap limitations. No source was declared complete
+merely to obtain a negative control.
+
+Independent CAS-to-Memory-to-Generic reconstruction matches both N0 diagnoses.
+N0-A's Kafka endpoint slope is 8,855,552 B/s; N0-B's checkout slope is
+364,134.4 B/s. Both exceed the unchanged effective 100,000 B/s guard and its
+delta/sample-count conditions. The existing short-window rule does not require
+persistent or monotonic growth. No sampling/unit defect explaining these false
+positives was established. Original source timestamps are not retained, so
+Collector staleness is neither proven nor ruled out. Changing the window,
+adding persistence, or raising thresholds would be a policy change, not the
+proven Baseline precision repair.
+
+Live-003 created three Incidents and zero families, reviews, drafts, Shadow
+evaluations, promotions or extensions. All flags were restored, lag returned
+to zero, and cleanup was CLEAN at 2026-09-03T05:29:40.298631Z: 28 owned containers,
+one network and three temporary volumes removed, final owned counts zero,
+non-owned resources unchanged. Databases and failed evidence remain. Across the
+Goal there are two formal control sets / six control executions, three runtime
+starts, one queue preflight and two C1 payment injections; no P1/P2/P3 or H1.
+
+Latest focused validation: 193 tests passed in 2.09s; full-repository Ruff 0.16.1
+and the CI-defined 667-source-file mypy 1.20.2 scope passed with locked dependencies.
+An earlier noncanonical mypy 1.11.2 run failed on unchanged scripts; the pinned
+checker and CI dependency setup passed without changing them. Independent control/precision audits passed for
+the blocked-result claims, not Goal completion. CI run 33718317796 at code head
+3639ff9 reached full repository tests after all earlier gates passed. Its final
+outcome is not yet claimed here. Earlier CI failures and repairs are retained
+in the machine result; the pytest collection collision was repaired only by
+renaming the new test file, with test content unchanged.
+
+## Preserved live-002 formal results
+
+Everything below is the earlier measured set and its engineering history,
+not the current cumulative counters or a replacement for live-003 above.
 
 | Case | Seed | HTTP checkout results | Required Diagnosis | Actual Diagnosis |
 | --- | ---: | --- | --- | --- |
@@ -39,7 +110,8 @@ though the existing capability-limitations list is empty.
 C1 automatically created family-fd3d3a6060a85fb1eebc92c1, status ACCUMULATING,
 with its single Incident. This is not a queue-backlog target family and is
 retained, not deleted or reclassified. N0-A's fault=none label prevented family
-ingestion. No formal case was retried.
+ingestion. At that snapshot no formal case had yet been reexecuted; the later
+complete live-003 set is disclosed above.
 
 ## Completed preparation, with its limits
 
@@ -72,7 +144,7 @@ that the queue symptom is absent. Shadow keeps reachability distinct from
 selected-source completeness. These are tested implementations, not measured
 family/mining/Shadow success.
 
-## Safety and remaining decision boundary
+## Historical live-002 safety and decision boundary
 
 P1/P2/P3 and H1 were not started. No ACCEPT_AS_NEW, registration draft, Shadow
 Evaluation, Promotion or ACTIVE extension exists. Conditional standing review
@@ -97,7 +169,7 @@ Memory hash. A fresh 125-test check passed; independent read-only reconstruction
 matches all three actual control hashes exactly. Review passed for Draft
 blocked-results publication only, with no remaining Must Fix or Should Fix.
 
-## Post-control engineering repair (offline only)
+## Historical post-live-002 engineering repair (then offline only)
 
 The v0.3 error-ratio query now divides by the unchanged positive request rate;
 zero traffic is unsupported, not an invented healthy ratio. The old v0.2.3

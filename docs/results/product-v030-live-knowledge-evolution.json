@@ -2,7 +2,7 @@
   "schema_version": "ecomsre.product.live-knowledge-evolution-result.v030",
   "status": "ECOMSRE_PRODUCT_V030_BLOCKED_CONTROL_SET",
   "stage": "CONTROL_SET_MEASURED_GATE_FAILED",
-  "observed_at": "2026-09-03T04:16:43.270977Z",
+  "observed_at": "2026-09-03T05:29:40.298631Z",
   "baseline_commit": "86a8dbc7859425ca9ef2e778dc7e4c7675b0cabb",
   "goal_sha256": "7141b67890aaee2f8cfc5c1b9ebfa2fc3ae03da98bea76722b9ec24e72e05f14",
   "branch": "codex/product-v030-live-knowledge-evolution",
@@ -34,6 +34,7 @@
     "new_private_full_mode_lock": true
   },
   "live": {
+    "scope": "PRESERVED_LIVE_001_PREPARATION_AND_LIVE_002_FORMAL_CONTROLS",
     "phase_a": {
       "status": "ECOMSRE_PRODUCT_V030_QUEUE_TELEMETRY_READY",
       "fault_enable_count": 1,
@@ -156,9 +157,9 @@
     }
   },
   "safety": {
-    "docker_up_count": 2,
+    "docker_up_count": 3,
     "image_pull_count": 3,
-    "fault_injection_count": 2,
+    "fault_injection_count": 3,
     "provider_calls": 0,
     "agent_writes": 0,
     "runbook_executions": 0,
@@ -167,6 +168,7 @@
     "cleanup": {
       "first_runtime": "CLEAN",
       "second_runtime": "CLEAN",
+      "third_runtime": "CLEAN",
       "each_runtime_removed_owned_containers": 28,
       "each_runtime_removed_owned_networks": 1,
       "each_runtime_removed_owned_volumes": 3,
@@ -175,15 +177,19 @@
       "final_owned_volumes": 0,
       "non_owned_resources_changed": false,
       "private_databases_and_evidence_preserved": true,
-      "completed_at": "2026-09-03T04:16:43.270977Z"
+      "completed_at": "2026-09-03T05:29:40.298631Z"
     },
     "fault_enables": {
       "queue_preflight": 1,
-      "payment_control": 1,
+      "payment_control": 2,
       "formal_queue_positives": 0,
       "h1": 0
     },
-    "formal_case_retry_count": 0
+    "formal_control_set_count": 2,
+    "formal_control_execution_count": 6,
+    "reexecuted_control_cases_in_fresh_set": 3,
+    "in_place_case_retries": 0,
+    "selectively_reused_prior_passing_controls": 0
   },
   "validation": {
     "product_and_sandbox_tests_passed": 836,
@@ -191,7 +197,7 @@
     "focused_ruff": "PASS",
     "focused_mypy_source_files": 18,
     "focused_mypy": "PASS",
-    "full_pytest_ruff_mypy": "NOT_RUN_RESERVED_FOR_PRE_MERGE",
+    "full_pytest_ruff_mypy": "LOCAL_PINNED_FULL_RUFF_AND_CI_SCOPE_MYPY_PASS_CI_FULL_PYTEST_PENDING",
     "independent_review": "PASS_FOR_DRAFT_BLOCKED_RESULTS_ONLY",
     "must_fix_count": 0,
     "nonblocking_test_gaps": [],
@@ -249,17 +255,37 @@
       "must_fix_count": 0,
       "should_fix_count": 0,
       "historical_diagnosis_results_rewritten": false
+    },
+    "live_003_repairs": {
+      "code_head": "3639ff9a6889fe7b8b187a9aa68c8736514f4f57",
+      "focused_tests_passed": 193,
+      "focused_duration_seconds": 2.09,
+      "scope": "Product v030, Product baseline/HTTP/knowledge-loop, Product v024, historical bindings",
+      "full_repository_ruff": "PASS",
+      "focused_mypy_source_files": 3,
+      "focused_mypy": "PASS",
+      "independent_precision_and_control_audit": "PASS_FOR_REPAIR_AND_BLOCKED_RESULT_TRUTH",
+      "pinned_ci_scope_mypy": "PASS_667_SOURCE_FILES_MYPY_1.20.2",
+      "pinned_full_ruff": "PASS_RUFF_0.16.1",
+      "local_checker_setup_diagnostics": "Noncanonical mypy 1.11.2 produced three unchanged-script errors; pinned checker with the CI pyarrow dependency and refreshed import cache passed without source changes.",
+      "ci_run": 33718317796,
+      "ci_status_at_publication_preparation": "FULL_REPOSITORY_TESTS_IN_PROGRESS",
+      "ci_prior_failures_preserved": [
+        {"run": 33716232766, "cause": "HISTORICAL_REQUEST_PROVENANCE_LINE_SHIFT", "repair": "OPTIONAL_IMPORT_MOVED_TO_QUEUE_BRANCH"},
+        {"run": 33717077851, "cause": "PYTEST_COLLECTION_TEST_MODULE_NAME_COLLISION", "repair": "ONLY_NEW_V030_TEST_FILE_RENAMED_CONTENT_UNCHANGED"}
+      ]
     }
   },
   "remaining_implementation": [
     "Reconcile full-mode resource-noise semantics without rewriting failed controls",
-    "Verify the corrected low-rate error query in a justified successor; rolling-window and Core Known observation semantics remain unresolved",
+    "Resolve C1's actual Logs/Traces coverage gaps without treating empty unobservable sources as complete",
     "Do not start P1/P2/P3 until a separately justified control set passes",
     "Target family, conditional preauthorized human reviews, Runtime mining, Shadow, Promotion and H1 remain unexecuted",
     "Full repository suite once and merge remain gated on genuine completion"
   ],
   "disposition": "Draft / REVIEW_REQUIRED",
   "post_control_offline_repairs": {
+    "scope": "HISTORICAL_OFFLINE_REPAIR_SNAPSHOT_AT_39D5E49_BEFORE_LIVE_003",
     "low_rate_error_ratio": "POSITIVE_DENOMINATOR_FILTER_NO_FLOOR",
     "zero_traffic": "UNSUPPORTED_NOT_HEALTHY",
     "historical_v023_environment_unchanged": true,
@@ -286,7 +312,7 @@
     "live_success_claim": false,
     "full_suite_claim": false
   },
-  "control_blockers": {
+  "historical_live_002_control_blockers": {
     "n0_a": {
       "classification": "MEASURED_HEALTHY_CONTROL_FALSE_POSITIVE",
       "resource_window_seconds": 10,
@@ -311,6 +337,109 @@
       "product_error_metric_is_case_failure_fraction": false,
       "configuration_log_pattern_observed": false,
       "logs_and_traces_truncation_preserved": true
+    }
+  },
+  "live_003": {
+    "status": "ECOMSRE_PRODUCT_V030_BLOCKED_CONTROL_SET",
+    "rationale": "One complete new control set after proven query, observation-window and preparatory Baseline repairs; all prior formal controls remain preserved, with no selection of the prior passing N0-B.",
+    "broker_probe": {
+      "initial_checkout_504_preserved": true,
+      "initial_fault_or_incident_count": 0,
+      "bounded_resumed_probe": "PASS_3_OF_3_HEALTHY",
+      "capability_limitations": [],
+      "leaked_tokens": []
+    },
+    "environment_id": "env-e080b07aad1ac9e4b3c88513",
+    "baseline": {
+      "baseline_id": "base-26bcdd17ce69313c9a587efa",
+      "baseline_sha256": "6910e0ad120237e9b56d356a5c61c4f03c7ce908f4420a6f2fe16555c447a172",
+      "built_at": "2026-09-03T05:16:57.219853Z",
+      "mode": "DEMO_ONLY",
+      "successful_windows": 5,
+      "window_count": 5,
+      "healthy_transactions": "30/30",
+      "resource_stat_services": ["checkout", "fraud-detection", "kafka", "payment"],
+      "queue_mean": 0.65,
+      "queue_stddev": 0.1224744871391589,
+      "frozen_queue_threshold": 20,
+      "all_case_id_and_sha_bindings_match": true,
+      "raw_result_sha256": "7b5e390906e73f0038a94ae0a10a14c60dc9ab4c31cf9bd7e4f7a09e3e24fe0b"
+    },
+    "preparatory_baseline_preserved": {
+      "baseline_id": "base-da7bdce612cf7bfe39e7e9df",
+      "baseline_sha256": "c9db8578cf717d77a6aded21a071d6fb7e40ba583f49cbb9df41a58635eca9cc",
+      "raw_result_sha256": "e75d8e1ebc8464b08f928ec2c7f6813914ad6025b3917af42ed4210bb8bf440d",
+      "healthy_transactions": "30/30",
+      "reason_not_used": "EMPTY_RESOURCE_STATS_TIMESTAMP_QUANTIZATION",
+      "formal_incidents_created_before_repair": 0,
+      "repair": "Normalize at most 1ms representation error, reject real duration gaps, require all four ResourceBaseline services before formal cases",
+      "same_environment_new_baseline_version": true,
+      "private_preparation_script_sha256": "1a5df016612c3c5aa5974fb4657597acce057c15509f2832addb529806da0f1e"
+    },
+    "controls": [
+      {
+        "case": "N0-A", "seed": 30001,
+        "incident_id": "inc-0081cfdda42202fdf9dd2e9e",
+        "status": "CASE_GATE_FAILED", "expected": "NO_INCIDENT", "actual": "OPEN_WORLD",
+        "root": "kafka", "broad_domain": "RESOURCE", "http_success": 30, "http_attempted": 30,
+        "capability_limitations": [], "leaked_tokens": [], "supporting_refs_resolve": true,
+        "memory_sha256": "f5f2da5a44f3d293aef952001a5cf3ea493bf9befefd814fc6481e5b4c82fe49",
+        "result_sha256": "9733c8f026f243981e27d110a7597b124a46700f65ceac49fc6db28ea8da00a6",
+        "raw_result_sha256": "ac890dacbac82c932cd6bb322a95cb1cfbebc54ed6a675ee0d86654a25e074ed",
+        "resource_memory_bytes": [449159168, 452673536, 449392640, 449404928, 537714688],
+        "resource_window_seconds": 10, "slope_bytes_per_second": 8855552,
+        "baseline_slope_bytes_per_second": -637474.1333333333, "effective_guard": 100000
+      },
+      {
+        "case": "N0-B", "seed": 30002,
+        "incident_id": "inc-1e3a4a7f574090b436547e65",
+        "status": "CASE_GATE_FAILED", "expected": "NO_INCIDENT", "actual": "OPEN_WORLD",
+        "root": "checkout", "broad_domain": "RESOURCE", "http_success": 30, "http_attempted": 30,
+        "capability_limitations": [], "leaked_tokens": [], "supporting_refs_resolve": true,
+        "memory_sha256": "b11fb067252da73df925f41bea32a4072edfc563f28bed4803eedf6660b77c08",
+        "result_sha256": "be69d191b6f24b63f6dc33c5fc02a01afedf108a73c5930d47632bc373729a35",
+        "raw_result_sha256": "e82c646d187aaaf92390aa93c83b44e629aa31f550a272fa7e1e7b5e01771999",
+        "resource_memory_bytes": [15319040, 17997824, 18554880, 19165184, 18960384],
+        "resource_window_seconds": 10, "slope_bytes_per_second": 364134.4,
+        "baseline_slope_bytes_per_second": -62477.653333333335, "effective_guard": 100000
+      },
+      {
+        "case": "C1", "seed": 30003,
+        "incident_id": "inc-635c9a02f1296f1270c43b12",
+        "status": "CASE_GATE_FAILED", "expected": "CORE_KNOWN / CONFIGURATION_ERROR with no capability limitations",
+        "actual": "CORE_KNOWN", "mechanism": "CONFIGURATION_ERROR", "root": "payment",
+        "http_500": 10, "http_attempted": 10, "minimum_observation_seconds": 300,
+        "change_event_id": "chg-f63e8555c859e6e07261f6c7",
+        "capability_limitations": ["SOURCE_LOGS_COVERAGE_GAP", "SOURCE_TRACES_COVERAGE_GAP"],
+        "empty_source_targets": {"LOGS": ["fraud-detection"], "TRACES": ["fraud-detection", "kafka"]},
+        "other_truncated_sources_preserved": ["LOGS:kafka", "LOGS:payment", "TRACES:checkout", "TRACES:payment"],
+        "product_error_metric": 0.3473745490593028, "baseline_error_mean": 0.006011654834047838,
+        "query_sample_count": 31, "query_window_seconds": 300,
+        "product_error_metric_is_case_failure_fraction": false,
+        "leaked_tokens": [], "supporting_refs_resolve": true,
+        "memory_sha256": "005c56c39902744282eb324dd13e4d5419c9b731549abc8f3d2a9838e48afef0",
+        "result_sha256": "ec99f2578456c030f0c5995d2400987681ac04345d8e4cbd5c101280e7011bfa",
+        "raw_result_sha256": "fd162f7f10a1ff602cea87af297d14136c54a2201f216b116ede12fea2bbc468"
+      }
+    ],
+    "resource_false_positive_audit": {
+      "cas_memory_and_generic_reconstruction_match": true,
+      "endpoint_arithmetic_correct": true,
+      "underlying_runtime_cause": "UNPROVEN",
+      "original_prometheus_source_timestamps_retained": false,
+      "proven_sampling_or_unit_defect_causing_false_positive": false,
+      "policy_changed_or_reinterpreted": false
+    },
+    "family_count": 0, "human_review_count": 0, "registration_draft_count": 0,
+    "shadow_evaluation_count": 0, "promotion_count": 0, "extension_count": 0,
+    "formal_queue_positive_count": 0, "h1_count": 0,
+    "all_cases_restored_and_drained": true,
+    "cleanup": {
+      "verdict": "CLEAN", "observed_at": "2026-09-03T05:29:40.298631Z",
+      "removed_containers": 28, "removed_networks": 1, "removed_volumes": 3,
+      "final_owned_containers": 0, "final_owned_networks": 0, "final_owned_volumes": 0,
+      "non_owned_resources_changed": false,
+      "raw_result_sha256": "73fa3d5b5314a846836625454d97999b902583b1e07b40af7d69ea735ede7218"
     }
   },
   "publication": {

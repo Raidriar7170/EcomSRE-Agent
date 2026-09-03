@@ -7,7 +7,16 @@
   "majority_domain": null,
   "shared_anomalies": [],
   "supporting_evidence_refs": [],
-  "control_exclusion": "N0-A_NOT_INGESTED_N0-B_NOT_INGESTED_C1_NON_TARGET_FAMILY_PRESERVED",
+  "control_exclusion": "LIVE_003_NO_FAMILIES_N0_FAULT_NONE_AND_C1_CORE_KNOWN; LIVE_002_NON_TARGET_C1_FAMILY_PRESERVED",
+  "latest_control_environment": "env-e080b07aad1ac9e4b3c88513",
+  "latest_baseline_id": "base-26bcdd17ce69313c9a587efa",
+  "latest_baseline_sha256": "6910e0ad120237e9b56d356a5c61c4f03c7ce908f4420a6f2fe16555c447a172",
+  "latest_control_gates": {
+    "N0-A": "FAILED_OPEN_WORLD_RESOURCE_KAFKA",
+    "N0-B": "FAILED_OPEN_WORLD_RESOURCE_CHECKOUT",
+    "C1": "CORE_KNOWN_CONFIGURATION_ERROR_BUT_FAILED_LOGS_TRACES_COVERAGE"
+  },
+  "latest_family_count": 0,
   "human_accept_as_new": null,
   "runtime_selected_clause": null,
   "shadow_evaluation": null,
