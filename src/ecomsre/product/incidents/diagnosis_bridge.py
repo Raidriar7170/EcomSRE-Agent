@@ -132,6 +132,20 @@ def _domain_for_anomalies(anomalies: tuple[Any, ...]) -> ProvisionalFaultDomainV
     return ProvisionalFaultDomainV23.UNKNOWN
 
 
+def _root_for_domain(
+    anomalies: tuple[Any, ...], domain: ProvisionalFaultDomainV23
+) -> str:
+    domain_services = {
+        item.service
+        for item in anomalies
+        if _domain_for_anomalies((item,)) is domain
+    }
+    # Align an unambiguous domain owner; do not invent a new multi-service tie-break.
+    if len(domain_services) == 1:
+        return str(next(iter(domain_services)))
+    return str(anomalies[0].service)
+
+
 class ProductDiagnosisBridgeV1:
     def __init__(
         self,
@@ -341,8 +355,8 @@ class ProductDiagnosisBridgeV1:
                         support = tuple(
                             sorted({ref for item in strong for ref in item.evidence_refs})
                         )
-                        root_logical = strong[0].service
                         domain = _domain_for_anomalies(strong)
+                        root_logical = _root_for_domain(strong, domain)
                         report = build_provisional_report_v23(
                             terminal="UNREGISTERED_INCIDENT_SUSPECTED",
                             candidate_services=candidates,

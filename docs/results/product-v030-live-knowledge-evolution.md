@@ -3,6 +3,30 @@
 ECOMSRE_PRODUCT_V030_BLOCKED_H1_ROOT_CONSISTENCY / REVIEW_REQUIRED.
 The completion terminal is not minted. PR #88 remains Draft; no merge.
 
+## Subsequent offline implementation correction
+
+The original Goal permits ordinary implementation fixes in the same PR. After
+the measured H1 failure, Product root selection was aligned with the existing
+domain classifier: when exactly one service owns the residual anomalies that
+select the report domain, use that service. Otherwise retain the existing
+multi-service fallback. This is a generic reporting consistency fix, not a
+new causal proof, service-name exception or detector/threshold change.
+
+Exact read-only P1/P2/P3 replays first failed for the checkout/fraud root mismatch,
+then passed with the unchanged Memory hashes, evidence refs and capability
+limitations. The recomputed, unpersisted roots agree with H1's observed fraud
+root. Historical P1/P2/P3 diagnoses and fingerprints, the checkout-majority
+family, registry version 1 and H1 CASE_GATE_FAILED all remain unchanged.
+These replays do not replace measured cases or make the original H1 gate pass.
+
+Two-file checks passed 30 tests; related Product v030/v024 and incident/knowledge
+regressions passed 218 tests in 6.04s (overlapping, not additive), with the one
+existing Starlette warning. Focused Ruff and one-source-file mypy passed.
+Independent review passed with Must Fix 0, explicitly for the offline correction.
+No new runtime, fault, Incident, registration version, full suite or CI cycle
+was executed. The full Goal remains blocked on fresh end-to-end root-consistent
+evidence; the fixed live-004 history cannot be rewritten to supply it.
+
 ## Latest: live-004, through Promotion and the failed H1 gate
 
 The two authorized Product repairs passed focused replay against the exact
@@ -95,7 +119,8 @@ source review passed (Must Fix 0). No new full suite or CI cycle was run during
 this repair. Historical green CI remains bound to its old head, not this tree.
 The changes remain local in the same branch/worktree; push and merge are withheld
 because a push would trigger another full CI before genuine merge readiness.
-No further root policy change or live rerun was made after H1 failed.
+At that initial handoff, no further root change or live rerun had been made.
+The later offline-only correction is described above; no live rerun followed it.
 
 ## Preserved live-003 control set after earlier repairs
 

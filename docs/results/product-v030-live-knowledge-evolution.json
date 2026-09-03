@@ -311,7 +311,7 @@
     }
   },
   "remaining_implementation": [
-    "Reconcile Open-World report-root selection with compiled TARGET semantics without rewriting measured P1/P2/P3 or H1 roots",
+    "Unique-domain Open-World root selection is corrected offline; fresh end-to-end root-consistent evidence remains absent and historical P1/P2/P3 or H1 roots cannot be rewritten",
     "H1 recognized kafka-queue-backlog on fraud-detection, but the promoted family's measured majority root is checkout; exact Goal root equality failed",
     "Preserve live-004 controls, positives, Promotion and failed H1; do not hand-author a passing root or silently replace the fixed cases",
     "No new runtime, repeated H1, detector retuning, full suite, or merge was performed after this failure; retain Draft / REVIEW_REQUIRED",
@@ -1187,6 +1187,34 @@
       "source_baseline_commit": "1ad2e08c63daab3b475b29cbfc36290842be238d",
       "boundary": "SCOPED_VERIFICATION only, not full repository FINAL_CLOSURE or validation of the old green CI against this new tree."
     }
+  },
+  "offline_root_alignment": {
+    "status": "FOCUSED_OFFLINE_PASS_NOT_LIVE_REVALIDATED",
+    "observed_at": "2026-09-03T10:46:31Z",
+    "source_baseline_commit": "956d3f7e8e87dc3f1991999280a3a3db473dc486",
+    "rule": "For new Open-World reports, choose the unique service whose residual anomalies select the existing report domain; preserve the existing fallback when domain ownership is ambiguous.",
+    "scope": "Product report consistency across existing domains; no service or mechanism hardcode, new threshold, frozen Core change, historical migration or new causal guarantee.",
+    "exact_retained_positive_replays": {
+      "cases": ["P1", "P2", "P3"],
+      "red_failures": 3,
+      "post_fix_passed": 3,
+      "unpersisted_recomputed_roots": ["fraud-detection"],
+      "memory_hashes_and_evidence_unchanged": true,
+      "measured_h1_root_matches_recomputed_roots": true,
+      "historical_family_majority_root": ["checkout"],
+      "historical_h1_status": "CASE_GATE_FAILED",
+      "historical_files_and_database_unchanged": true
+    },
+    "focused_tests": {"passed": 30, "duration_seconds": 2.81},
+    "related_regression": {"passed": 218, "warnings": 1, "duration_seconds": 6.04, "scope": "Product v030/v024 and existing incident-diagnosis/knowledge-loop tests; overlapping counts, not additive."},
+    "focused_ruff": "PASS",
+    "focused_mypy": "PASS_1_SOURCE_FILE",
+    "independent_review": "PASS_OFFLINE_ONLY_MUST_FIX_0",
+    "new_runtime_count": 0,
+    "new_live_case_count": 0,
+    "new_registration_version_count": 0,
+    "full_suite_or_ci_run": false,
+    "changes_measured_h1_acceptance": false
   },
   "publication": {
     "pull_request": 88,

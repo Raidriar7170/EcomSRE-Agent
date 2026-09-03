@@ -164,5 +164,15 @@
     ],
     "is_queue_backlog_target_family": false
   },
-  "completion_terminal_minted": false
+  "completion_terminal_minted": false,
+  "subsequent_offline_root_alignment": {
+    "status": "FOCUSED_OFFLINE_PASS_NOT_LIVE_REVALIDATED",
+    "policy": "Use the unique owner of the existing report domain; retain ambiguous fallback.",
+    "unpersisted_positive_replay_roots": ["fraud-detection"],
+    "historical_majority_root_unchanged": ["checkout"],
+    "historical_h1_status_unchanged": "CASE_GATE_FAILED",
+    "related_focused_tests_passed": 218,
+    "new_live_cases_or_registry_versions": 0,
+    "evidence_or_database_rewritten": false
+  }
 }

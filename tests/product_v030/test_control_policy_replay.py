@@ -1,4 +1,4 @@
-"""Read-only replay of exact retained controls; no live rerun or evidence rewrite."""
+"""Read-only replay of exact retained cases; no live rerun or evidence rewrite."""
 
 from contextlib import contextmanager
 from dataclasses import replace
@@ -33,14 +33,27 @@ HASHES = {
     "cases/C1/result.json": "fd162f7f10a1ff602cea87af297d14136c54a2201f216b116ede12fea2bbc468",
 }
 
+LIVE_004 = PRIVATE.parent / "live-004"
+LIVE_004_ROOT_HASHES = {
+    "cases/P1/result.json": "82beceb9f8cfddf680dd87cffa1bf546adff3385768f8934fb80eb189fcb7dc5",
+    "cases/P1/evidence.json": "e22c4c5f5edaa121dfa8454f9a01624083af5011dc0e2e856b982761653d1a5e",
+    "cases/P2/result.json": "158a522a288111d18d6b11fed4935ebca8e5885081811f6d546d353f847f8f7d",
+    "cases/P2/evidence.json": "18d32f1325bc26e73ee2a656b16fb1a58c3709c7b5e4b40563af15eb71738442",
+    "cases/P3/result.json": "573b9924129908de0e180ce80d457521b9b56261f88470bb29cf83f40506b897",
+    "cases/P3/evidence.json": "911cd11a0086caf263c73d0d4cc4837d5af54ea49a6e9e2f24d6edac9871d226",
+    "cases/H1/result.json": "d6ffabfdbde3d0493035278d1bf7bbc6b216232b16ac9548e52c4a4dd3137838",
+    "family-review.json": "f89b53f2c19eb8bf6e45c417fa5fa14f42f96f56c1ad4bbac25f2cc61233db18",
+}
+
 
 @pytest.fixture
-def retained_repo():
-    if not PRIVATE.exists():
-        pytest.skip("private retained live-003 evidence is not distributed with Git")
-    for name, expected in HASHES.items():
-        assert hashlib.sha256((PRIVATE / name).read_bytes()).hexdigest() == expected
-    product = PRIVATE / "product-formal"
+def retained_repo(request):
+    private, hashes = getattr(request, "param", (PRIVATE, HASHES))
+    if not private.exists():
+        pytest.skip("private retained evidence is not distributed with Git")
+    for name, expected in hashes.items():
+        assert hashlib.sha256((private / name).read_bytes()).hexdigest() == expected
+    product = private / "product-formal"
     database = product / "product.sqlite3"
     before = hashlib.sha256(database.read_bytes()).hexdigest()
 
@@ -62,12 +75,12 @@ def retained_repo():
     objects.metadata_store = store
     yield KnowledgeRepositoryV1(store, objects)
     assert hashlib.sha256(database.read_bytes()).hexdigest() == before
-    for name, expected in HASHES.items():
-        assert hashlib.sha256((PRIVATE / name).read_bytes()).hexdigest() == expected
+    for name, expected in hashes.items():
+        assert hashlib.sha256((private / name).read_bytes()).hexdigest() == expected
 
 
-def replay_case(repo, case):
-    recorded = json.loads((PRIVATE / f"cases/{case}/result.json").read_text())
+def replay_case(repo, case, private=PRIVATE):
+    recorded = json.loads((private / f"cases/{case}/result.json").read_text())
     incident_id = recorded["incident"]["incident_id"]
     material = repo._shadow_runtime_material(incident_id)
     original = repo._diagnosis(incident_id)
@@ -112,6 +125,39 @@ def replay_case(repo, case):
     )
     assert result.capability_limitations == original.capability_limitations
     return result, material, evidence, identity, trace
+
+
+@pytest.mark.parametrize(
+    "retained_repo", [(LIVE_004, LIVE_004_ROOT_HASHES)], indirect=True
+)
+@pytest.mark.parametrize("case", ["P1", "P2", "P3"])
+def test_retained_positive_root_follows_its_unique_domain_evidence(
+    retained_repo, case
+):
+    result, material, _evidence, identity, _trace = replay_case(
+        retained_repo, case, private=LIVE_004
+    )
+    queue_services = {
+        item.service
+        for item in material.runtime_input.generic_anomalies
+        if item.kind.value == "METRIC_QUEUE_LAG_OUTLIER"
+        and item.strength.value == "STRONG"
+    }
+    assert len(queue_services) == 1
+    expected_roots = tuple(
+        item.service_id
+        for item in identity.services
+        if item.logical_service in queue_services
+    )
+    assert result.terminal.value == "OPEN_WORLD"
+    assert result.broad_domain == "CONCURRENCY"
+    assert result.root_service_ids == expected_roots
+    h1 = json.loads((LIVE_004 / "cases/H1/result.json").read_text())
+    assert list(result.root_service_ids) == h1["diagnosis"]["root_service_ids"]
+    # This is an unpersisted regression replay, not a replacement measured run.
+    assert h1["status"] == "CASE_GATE_FAILED"
+    family = json.loads((LIVE_004 / "family-review.json").read_text())
+    assert family["majority_root_logical_services"] == ["checkout"]
 
 
 @pytest.mark.parametrize("case", ["N0-A", "N0-B"])

@@ -1,5 +1,7 @@
 from datetime import UTC, datetime, timedelta
+from itertools import permutations
 import json
+from types import SimpleNamespace
 
 import httpx
 import pytest
@@ -18,13 +20,19 @@ from ecomsre.dta_v2.v22.read_contracts import (
     semantic_sha256_v22,
 )
 from ecomsre.dta_v2.v22.replay import ReadOutcomeV22
-from ecomsre.dta_v2.v23.generic_anomalies import extract_generic_anomalies_v23
+from ecomsre.dta_v2.v23.generic_anomalies import (
+    GenericAnomalyKindV23,
+    extract_generic_anomalies_v23,
+)
 from ecomsre.dta_v2.v23.ontology_view import build_active_ontology_view_v23
 from ecomsre.product.connectors.base import ConnectorQueryContextV1, ConnectorWindowV1
 from ecomsre.product.connectors.credentials import CredentialResolverV1
 from ecomsre.product.connectors.prometheus import PrometheusConnectorV1
 from ecomsre.product.contracts import ConnectorConfigV1, PrometheusConnectorSettingsV1
-from ecomsre.product.incidents.diagnosis_bridge import _domain_for_anomalies
+from ecomsre.product.incidents.diagnosis_bridge import (
+    _domain_for_anomalies,
+    _root_for_domain,
+)
 
 
 NOW = datetime(2026, 9, 3, tzinfo=UTC)
@@ -38,6 +46,32 @@ TEMPLATES = {
         "memory",
     )
 }
+
+
+def test_unique_domain_owner_is_independent_of_service_name_and_anomaly_order():
+    signals = (
+        SimpleNamespace(kind=GenericAnomalyKindV23.METRIC_ERROR_OUTLIER, service="a"),
+        SimpleNamespace(kind=GenericAnomalyKindV23.METRIC_QUEUE_LAG_OUTLIER, service="z"),
+        SimpleNamespace(kind=GenericAnomalyKindV23.RUNTIME_UNHEALTHY, service="b"),
+    )
+    for ordered in permutations(signals):
+        domain = _domain_for_anomalies(ordered)
+        assert domain.value == "CONCURRENCY"
+        assert _root_for_domain(ordered, domain) == "z"
+
+
+@pytest.mark.parametrize("queue_present", [False, True])
+def test_ambiguous_domain_retains_existing_root_behavior(queue_present):
+    signals = (
+        SimpleNamespace(kind=GenericAnomalyKindV23.METRIC_ERROR_OUTLIER, service="a"),
+        SimpleNamespace(kind=GenericAnomalyKindV23.METRIC_ERROR_OUTLIER, service="b"),
+    )
+    if queue_present:
+        signals += tuple(
+            SimpleNamespace(kind=GenericAnomalyKindV23.METRIC_QUEUE_LAG_OUTLIER, service=s)
+            for s in ("b", "c")
+        )
+    assert _root_for_domain(signals, _domain_for_anomalies(signals)) == "a"
 
 
 @pytest.mark.parametrize(
