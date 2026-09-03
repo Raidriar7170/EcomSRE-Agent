@@ -180,6 +180,24 @@ def test_current_control_leakage_gate_is_bound_to_fresh_run(tmp_path):
     )
     assert result["historical_enabled_fault_audit"]["status"] == "PASS"
 
+    baseline_result = private / "baseline-result.json"
+    ready_baseline = baseline_result.read_text()
+    resumed_baseline = private / "baseline-traffic-resumed/baseline-result.json"
+    resumed_baseline.parent.mkdir()
+    resumed_baseline.write_text(ready_baseline)
+    baseline_result.write_text(
+        json.dumps({"status": "PRODUCT_V030_BASELINE_PREPARATION_FAILED"})
+    )
+    result = module.build_current_control_leakage_gate(
+        private,
+        historical,
+        baseline_result=resumed_baseline,
+    )
+    assert result["baseline_result_sha256"] == module.hashlib.sha256(
+        resumed_baseline.read_bytes()
+    ).hexdigest()
+    baseline_result.write_text(ready_baseline)
+
     n0a_result_path = private / "cases/N0-A/result.json"
     n0a_evidence_path = private / "cases/N0-A/evidence.json"
     original_result = n0a_result_path.read_text()

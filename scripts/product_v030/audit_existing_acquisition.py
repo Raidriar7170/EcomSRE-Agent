@@ -37,10 +37,20 @@ def build_current_control_leakage_gate(
     private: Path,
     historical_enabled_fault_audit: Path,
     *,
+    baseline_result: Path | None = None,
     expected_historical_sha256: str | None = None,
 ) -> dict:
     """Bind a new run's complete healthy-control Evidence to its own Baseline."""
-    baseline = json.loads((private / "baseline-result.json").read_text())
+    private = private.resolve()
+    baseline_path = (
+        private / "baseline-result.json"
+        if baseline_result is None
+        else baseline_result.resolve()
+    )
+    if not baseline_path.is_relative_to(private):
+        raise ValueError("current Baseline result is outside the current private root")
+    baseline_bytes = baseline_path.read_bytes()
+    baseline = json.loads(baseline_bytes)
     if baseline.get("status") != "PRODUCT_V030_FRESH_BASELINE_READY":
         raise ValueError("current fresh Baseline is not ready")
     environment_id = baseline["environment"]["environment_id"]
@@ -116,6 +126,7 @@ def build_current_control_leakage_gate(
         "environment_id": environment_id,
         "baseline_id": baseline_id,
         "baseline_sha256": baseline_sha256,
+        "baseline_result_sha256": hashlib.sha256(baseline_bytes).hexdigest(),
         "current_control_checks": checks,
         "capability_limitations": [],
         "leaked_tokens": [],
@@ -141,6 +152,7 @@ def build_current_control_leakage_gate(
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--current-private-root", type=Path)
+    parser.add_argument("--baseline-result", type=Path)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     if args.current_private_root is not None:
@@ -151,6 +163,7 @@ def main():
         result = build_current_control_leakage_gate(
             current,
             historical,
+            baseline_result=args.baseline_result,
             expected_historical_sha256=HISTORICAL_ENABLED_FAULT_AUDIT_SHA256,
         )
         write_private_json(
