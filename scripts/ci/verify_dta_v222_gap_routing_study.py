@@ -256,7 +256,13 @@ def verify_gap_routing_study_v222() -> dict[str, object]:
     }
     if reported != expected_hashes:
         raise ValueError("reported evidence hashes differ")
-    for path in (STUDY_MARKDOWN, ERROR_ANALYSIS, INTERVIEW_BRIEF, Path("README.md")):
+    # The public closeout moves historical terminals out of the root README.
+    for path in (
+        STUDY_MARKDOWN,
+        ERROR_ANALYSIS,
+        INTERVIEW_BRIEF,
+        Path("docs/history/PROJECT_EVOLUTION.md"),
+    ):
         if terminal not in (REPOSITORY_ROOT / path).read_text(encoding="utf-8"):
             raise ValueError(f"measured result terminal absent from {path}")
     return {

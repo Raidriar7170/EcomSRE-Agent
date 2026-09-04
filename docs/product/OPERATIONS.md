@@ -26,7 +26,7 @@ prevents the old attempt from publishing.
 - `ecomsre_registration_promotions_total`.
 
 Labels are bounded and exclude secrets, raw URLs, incident text, and evidence
-identities. No custom dashboard is required for v0.1.
+identities. No custom dashboard is required for the current Product.
 
 ## Data and backup
 
@@ -46,7 +46,12 @@ collect another read-only observation, not reinterpret it as No-Incident.
 Never repair by deleting evidence or rebuilding a baseline from the active
 incident window.
 
-## Manual live acceptance
+## Historical v0.1 manual live acceptance
+
+This retained runner documents the earlier acceptance path, not v0.3 reproduction.
+Use [Quickstart](QUICKSTART.md) for the verified Docker-free entry point and
+[STATUS](STATUS.md) for the current merged result. It was not rerun for the
+presentation closeout.
 
 Run only on local Docker with the pinned OTel Demo images already authorized:
 
@@ -71,6 +76,9 @@ the project-label IDs, Product-label IDs, and frozen inventory remain exactly
 equal; unknown same-project resources are never removed.
 
 ## Frozen v0.2 calibration
+
+The sections below preserve historical results, not current Product status.
+They do not supersede [the completed healthy and knowledge-loop results](STATUS.md).
 
 The Product v0.2 live-pilot campaign is a separate, consumed one-shot study.
 It stopped before the first fault attempt because baseline construction

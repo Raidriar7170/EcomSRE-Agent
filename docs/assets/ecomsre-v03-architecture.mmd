@@ -1,0 +1,32 @@
+flowchart TB
+    A["告警 / Incident"] --> B["Product API + Worker"]
+    B --> C["环境配置 · 服务身份 · Active Baseline"]
+    C --> D["证据运行时：有界动态取证"]
+    D --> M["Prometheus · Metrics / Resources"]
+    D --> L["OpenSearch · Logs"]
+    D --> T["Jaeger · Traces"]
+    D --> R["Runtime / Changes"]
+    M --> E["Typed Observations"]
+    L --> E
+    T --> E
+    R --> E
+    E --> S["Immutable Evidence Store · Salient Memory"]
+    S --> K["1 · Core Known"]
+    K -->|未命中| X["2 · Environment Extension"]
+    X -->|未命中| N["3 · No-Incident"]
+    N -->|未满足且有未解释强异常| O["4 · Open-World"]
+    K --> OUT["Evidence-backed Diagnosis"]
+    X --> OUT
+    N --> OUT
+    S --> STOP["冲突 / 证据不足：保留缺口"]
+    O --> F["Incident Fingerprint"]
+    F --> FF["Fault Family"]
+    FF --> H1["Human Review · ACCEPT_AS_NEW"]
+    H1 --> PM["Predicate Matrix · Runtime Rule Mining"]
+    PM --> SH["Shadow Evaluation"]
+    SH --> H2["Human Promotion"]
+    H2 --> REG["ACTIVE Extension Registry"]
+    REG --> X
+    LLM["Optional LLM · label / explanation only"] -.-> LABEL["非权威命名与说明"]
+    LABEL -.-> PM
+    AUTH["Action Authority = NONE"] --- OUT

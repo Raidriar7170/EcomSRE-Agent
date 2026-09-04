@@ -1,15 +1,17 @@
 # Product Connector Configuration
 
-Product MVP v0.1 accepts one connector of each kind: `PROMETHEUS`,
-`OPENSEARCH`, `JAEGER`, `HTTP_HEALTH`, or one standalone `FIXTURE` connector.
-Real and fixture connectors cannot be mixed. All network operations are bounded
+The current Product accepts at most one connector of each kind: `PROMETHEUS`,
+`OPENSEARCH`, `JAEGER`, `HTTP_HEALTH`, `PILOT_RUNTIME`, and `FIXTURE`.
+FIXTURE may be standalone or combined only with PILOT_RUNTIME, not other real
+connectors. Network operations are bounded
 HTTP reads; connector responses, records, fanout, windows, and timeouts have
 closed limits.
 
 ## Local OTel profile
 
 [`examples/product/environment.otel-demo.json`](../../examples/product/environment.otel-demo.json)
-is the accepted local profile. From the Product containers it reaches the
+is the historical base example, not the complete measured v0.3 profile.
+From the Product containers it reaches the
 owned sandbox through Docker Desktop's `host.docker.internal`:
 
 - Prometheus: `http://host.docker.internal:19090`;
@@ -19,6 +21,12 @@ owned sandbox through Docker Desktop's `host.docker.internal`:
 
 These ports belong to the repository's dual-labelled local sandbox. Do not
 reuse the profile for a remote or production environment.
+
+The [v0.3 profile builder](../../src/ecomsre/product/pilot/live_knowledge_evolution_v030.py)
+adds queue lag and Kafka-native metrics, uses a ratio-based error-rate query,
+changes log timestamp/projection to `@timestamp` / `OBSERVER_SYMPTOM_V1`,
+and replaces frontend HTTP health with bound Runtime evidence. Its private
+authority inputs are not a public one-command setup.
 
 ## Prometheus
 
@@ -33,6 +41,8 @@ service. Prometheus therefore preserves the exact per-query
 `covered_services` and does not advertise target-complete coverage from label
 discovery alone.
 
+An optional `queue_lag` template supplies the current queue anomaly signal.
+
 ## OpenSearch
 
 The connector performs one bounded aggregation for service discovery and
@@ -40,7 +50,7 @@ bounded `_search` calls. Configure an explicit index pattern plus timestamp,
 service, optional service query/aggregation, severity, message, and optional
 trace-ID fields. `*` and `_all` are rejected. The local profile reads
 `resource.service.name` from `_source` while using its `.keyword` field for
-terms/aggregation, and filters to warning/error severities so a healthy baseline
+terms/aggregation. The historical base example filters to warning/error severities so a healthy baseline
 is not truncated by high-volume diagnostic logs.
 
 ## Jaeger
@@ -57,6 +67,11 @@ codes, optional timeout, and optional boolean JSON field. Partial target success
 is represented as `PARTIAL`; timeouts and schema errors stay source failures.
 
 ## Identities and capabilities
+
+`PILOT_RUNTIME` reads a validated, authority-bound local Runtime snapshot;
+it is not an HTTP probe or Docker-socket grant. See the
+[adapter](../../src/ecomsre/product/connectors/pilot_runtime.py).
+The frontend HTTP health example is not sufficient evidence for every service.
 
 Discovered aliases are normalized to lowercase logical service names or through
 explicit source-specific rules. Alias collisions and unapproved many-to-one

@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="EcomSRE-Agent：证据驱动诊断、只读 Product 与人引导知识演化的中文项目手册。">
+<title>EcomSRE-Agent｜可验证诊断与知识演化</title>
+<style>
+:root{--ink:#132238;--muted:#5b687b;--paper:#f5f7fa;--card:#fff;--line:#d8e0e9;--navy:#143d59;--blue:#146c94;--teal:#16817a;--green:#2d7d46;--amber:#9a6813;--soft-blue:#eaf4f8;--soft-green:#eaf6ee;--soft-amber:#fbf4e4;--shadow:0 6px 20px rgba(24,48,72,.07)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:var(--paper);font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+a{color:var(--blue);text-underline-offset:3px}a:focus-visible,summary:focus-visible{outline:3px solid var(--teal);outline-offset:3px}code{padding:.12rem .3rem;border:1px solid #dce4ec;border-radius:4px;color:#24455e;background:#f2f6f9;font:.9em/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere}
+h1,h2,h3{line-height:1.3;letter-spacing:-.02em}h1{margin:.35rem 0 .8rem;font-size:clamp(2rem,4.4vw,3.6rem)}h2{margin:0 0 1rem;font-size:clamp(1.45rem,2.7vw,2.05rem)}h3{margin:1.3rem 0 .6rem;font-size:1.15rem}p{margin:.65rem 0}li+li{margin-top:.4rem}.wrap{width:min(1180px,calc(100% - 32px));margin:auto}
+header{color:#fff;background:radial-gradient(circle at 86% 16%,rgba(64,184,173,.28),transparent 28%),linear-gradient(135deg,#102f45 0%,#164f6b 58%,#176f74 100%);border-bottom:4px solid #62c7bb}.hero{padding:4rem 0 3rem}.eyebrow{color:#aee6de;font-size:.82rem;letter-spacing:.13em;font-weight:800}.hero-copy{max-width:920px;color:#deedf3;font-size:1.08rem}.badge-row{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.4rem}.badge{padding:.3rem .7rem;border:1px solid #ffffff65;border-radius:999px;font-size:.83rem}.hero-note{margin-top:1.4rem;border-left:4px solid #ffd486;padding:.8rem 1rem;color:#fff2cf;background:#1226334d}
+nav{position:sticky;top:0;z-index:20;overflow-x:auto;white-space:nowrap;background:#fffffff7;border-bottom:1px solid var(--line)}nav .wrap{display:flex;gap:.15rem}nav a{padding:.82rem .72rem;color:#33475b;font-size:.87rem;font-weight:700;text-decoration:none}nav a:hover,nav a:focus{background:var(--soft-blue);color:var(--blue)}
+main{padding:1.5rem 0 3rem}section{scroll-margin-top:74px;margin:1.15rem 0;padding:clamp(1.1rem,2.7vw,2rem);border:1px solid var(--line);border-radius:8px;background:var(--card);box-shadow:var(--shadow)}.section-kicker{margin:0 0 .3rem;color:var(--teal);font-size:.78rem;letter-spacing:.1em;font-weight:800}.lede{font-size:1.05rem;color:#34465b}.quote{padding:1rem 1.15rem;border-left:5px solid var(--teal);background:#edf8f6;font-weight:650}.callout{margin:1rem 0;padding:.9rem 1rem;border:1px solid #e6cb8c;border-left-width:5px;border-radius:6px;background:var(--soft-amber)}.muted,.caption{color:var(--muted);font-size:.88rem}
+.diagram-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:7px;background:#f9fbfc}.diagram-scroll svg{display:block;width:100%;height:auto;min-width:860px}.diagram-scroll:focus-visible,.table-wrap:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+.timeline{counter-reset:flow;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin:1rem 0;padding:0;list-style:none}.timeline li{position:relative;margin:0;padding:.8rem .8rem .8rem 3rem;border:1px solid var(--line);border-radius:6px;background:#fbfcfd}.timeline li::before{counter-increment:flow;content:counter(flow);position:absolute;top:.9rem;left:.7rem;width:1.65rem;height:1.65rem;display:grid;place-items:center;border-radius:50%;color:#fff;background:var(--blue);font-weight:800}.timeline small{display:block;color:var(--muted)}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}.metric-card{padding:1rem;border:1px solid var(--line);border-top:4px solid var(--teal);border-radius:7px}.metric-card .value{display:block;color:var(--navy);font-size:clamp(1.35rem,2.5vw,2rem);font-weight:850;line-height:1.3;overflow-wrap:anywhere}.metric-card .label{color:var(--muted);font-size:.85rem}
+.table-wrap{overflow-x:auto;margin:.9rem 0}table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:.65rem;border:1px solid var(--line);text-align:left;vertical-align:top}th{color:#20394e;background:#edf3f7}tbody tr:nth-child(even){background:#fbfcfd}.audit{min-width:940px}.tag{color:#1d6838;background:#dcf0e2;padding:.12rem .4rem;border-radius:4px;font-size:.78rem;white-space:nowrap}.qa{margin:1.1rem 0;padding-bottom:1rem;border-bottom:1px solid var(--line)}.qa h3{margin-top:.5rem}.reading li{padding:.25rem 0}footer{padding:2rem 0;border-top:1px solid var(--line);color:var(--muted);background:#edf1f5;font-size:.88rem}.skip{position:absolute;left:-9999px}.skip:focus{left:16px;top:10px;padding:8px;background:white;z-index:30}
+@media(max-width:700px){.hero{padding:2.6rem 0 2rem}.grid-3,.timeline{grid-template-columns:1fr}.wrap{width:calc(100% - 24px)}section{padding:1.1rem}nav .wrap{width:max-content;margin:0 12px}.metric-card .value{font-size:1.7rem}h2{font-size:1.45rem}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media print{@page{size:A4;margin:14mm}html{scroll-behavior:auto}body{background:white;font-size:10pt;line-height:1.55}header{background:#fff;color:#132238;border-bottom:2px solid #16817a}.hero{padding:.6rem 0}.hero-copy,.eyebrow,.hero-note{color:#132238}.hero-note{background:#fff}.badge{border-color:#82949e}h1{font-size:25pt}h2{font-size:17pt}.wrap{width:100%}nav,.skip{display:none}main{padding:0}section{border:0;border-bottom:1px solid #ddd;border-radius:0;box-shadow:none;padding:.8rem 0;margin:.5rem 0;break-inside:auto}h2,h3{break-after:avoid}.diagram-scroll{overflow:visible;break-inside:avoid}.diagram-scroll svg{min-width:0;max-height:220mm;width:100%}.table-wrap{overflow:visible}table,.audit{min-width:0;font-size:8pt;table-layout:fixed}th,td{overflow-wrap:anywhere;padding:.3rem}tr,.metric-card,.timeline li,.qa{break-inside:avoid}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.metric-card .value{font-size:14pt}.timeline{grid-template-columns:repeat(3,minmax(0,1fr))}a{color:#143d59}footer{background:white}}
+</style>
+</head>
+<body>
+<a class="skip" href="#problem">跳至正文</a>
+<header><div class="wrap hero">
+<p class="eyebrow">ECOMSRE-AGENT / PROJECT HANDBOOK</p>
+<h1>让诊断有证据，<br>让经验进入规则。</h1>
+<p class="hero-copy">从多源遥测中动态取证；已知故障走确定性诊断，未知故障经跨事件聚类、人工确认和影子评估后沉淀为环境规则。模型不持有执行权限。</p>
+<div class="badge-row"><span class="badge">v0.3 已完成</span><span class="badge">只读 Product 原型</span><span class="badge">Runtime 维护权威状态</span></div>
+<p class="hero-note">20 秒理解价值 · 3 分钟看懂架构 · 10 分钟沿结果与代码核验证据。<br>单环境、单机制的有界本地验证，不是生产就绪或通用故障诊断声明。</p>
+</div></header>
+<nav aria-label="章节导航"><div class="wrap">
+<a href="#problem">问题</a><a href="#architecture">架构</a><a href="#evidence">证据诊断</a><a href="#product">Product</a><a href="#evolution">知识演化</a><a href="#journeys">完整流程</a><a href="#results">结果</a><a href="#tradeoffs">取舍</a><a href="#code">代码</a><a href="#questions">问答</a><a href="#limits">限制</a>
+</div></nav>
+<main class="wrap">
+<section id="problem">
+<p class="section-kicker">01 / PROBLEM</p><h2>项目一句话与问题定义</h2>
+<p class="quote">面向微服务故障定位的可验证 SRE Agent：不是让模型自由操作环境，而是让每个诊断都能回答“用了什么证据、覆盖是否完整、为什么允许得出这个结论”。</p>
+<p>面向需要分析多服务告警的开发者和 SRE。指标、日志、调用链和运行状态是异构且不完整的：服务别名可能不一致，进程健康不代表没有积压，没查到日志也不等于没有故障。</p>
+<p>LLM 善于组织解释，但可能编造目标、工具或行动。当前系统把候选、读取边界、谓词、引用、诊断准入和权限放在确定性 Runtime。模型只作为可选的非权威命名与解释层。</p>
+<p>项目叙事只有三个阶段：证据驱动的可靠诊断 → 可部署的只读 Product MVP → 开放世界发现与人引导知识演化。历史试验与失败单独保留，不要求读者先理解所有微版本。</p>
+</section>
+<section id="architecture">
+<p class="section-kicker">02 / ARCHITECTURE</p><h2>最新架构图</h2>
+<p>读图顺序是环境与证据、固定诊断顺序、环境内知识循环。多个来源提供观测，不是多个模型投票；知识晋升改变扩展库，不改变动作权限。</p>
+<div class="diagram-scroll" tabindex="0" role="region" aria-label="架构图，可横向滚动"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 1050" role="img" aria-labelledby="architecture-title architecture-desc">
+  <title id="architecture-title">EcomSRE-Agent v0.3：证据、诊断与知识演化</title>
+  <desc id="architecture-desc">环境与 Baseline 绑定有界多源取证，生成类型化观测、不可变证据和 Salient Memory。诊断固定为 Core Known、Environment Extension、No-Incident、Open-World。未知报告经过 Fingerprint、Fault Family、Human Review、Runtime Rule Mining、Shadow Evaluation 和 Human Promotion，进入 ACTIVE Extension Registry。LLM 仅命名解释，Action Authority = NONE。</desc>
+  <defs>
+    <marker id="architecture-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8Z" fill="#52758b"/></marker>
+    <style>
+      .bg{fill:#f5f7fa}.band{fill:#fff;stroke:#d8e0e9}.box{fill:#eaf4f8;stroke:#80adbf;stroke-width:1.4}.green{fill:#eaf6ee;stroke:#8fbea2}.amber{fill:#fbf4e4;stroke:#cfaf64}.purple{fill:#f1eefb;stroke:#aa9bca}
+      .edge{fill:none;stroke:#52758b;stroke-width:1.6;marker-end:url(#architecture-arrow)}.dashed{stroke-dasharray:5 4}
+      text{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;fill:#132238;font-size:16px;text-anchor:middle}
+      .head{font-size:18px;font-weight:700;text-anchor:start;fill:#16817a}.strong{font-weight:700}.small{font-size:13px;fill:#5b687b}
+    </style>
+  </defs>
+  <rect class="bg" width="1120" height="1050" rx="8"/>
+  <rect class="band" x="16" y="16" width="1088" height="382" rx="8"/>
+  <text class="head" x="36" y="45">A · 环境与证据 / Environment &amp; Evidence</text>
+  <rect class="box" x="36" y="64" width="220" height="54" rx="6"/>
+  <text class="strong" x="146" y="97">告警 / Incident</text>
+  <path class="edge" d="M256 91H306"/>
+  <rect class="box" x="306" y="64" width="280" height="54" rx="6"/>
+  <text class="strong" x="446" y="97">Product API + Worker</text>
+  <path class="edge" d="M586 91H636"/>
+  <rect class="box" x="636" y="64" width="448" height="54" rx="6"/>
+  <text class="strong" x="860" y="88">环境配置 · 服务身份 · Capability Matrix</text>
+  <text x="860" y="108">Active 多窗口 Baseline</text>
+  <path class="edge" d="M860 118V140H560V156"/>
+  <rect class="box" x="36" y="156" width="1048" height="46" rx="6"/>
+  <text class="strong" x="560" y="185">证据运行时 · 有界动态取证 / Bounded Evidence Acquisition</text>
+  <path class="edge" d="M160 202V234"/><path class="edge" d="M425 202V234"/>
+  <path class="edge" d="M690 202V234"/><path class="edge" d="M955 202V234"/>
+  <rect class="box" x="36" y="234" width="248" height="60" rx="6"/>
+  <text class="strong" x="160" y="258">Prometheus</text><text x="160" y="281">Metrics / Resources</text>
+  <rect class="box" x="301" y="234" width="248" height="60" rx="6"/>
+  <text class="strong" x="425" y="258">OpenSearch</text><text x="425" y="281">Logs</text>
+  <rect class="box" x="566" y="234" width="248" height="60" rx="6"/>
+  <text class="strong" x="690" y="258">Jaeger</text><text x="690" y="281">Traces</text>
+  <rect class="box" x="831" y="234" width="253" height="60" rx="6"/>
+  <text class="strong" x="957" y="258">Runtime / Changes</text><text x="957" y="281">配置来源 / 授权快照</text>
+  <path class="edge" d="M160 294V326"/><path class="edge" d="M425 294V326"/>
+  <path class="edge" d="M690 294V326"/><path class="edge" d="M955 294V326"/>
+  <rect class="box green" x="36" y="326" width="1048" height="54" rx="6"/>
+  <text class="strong" x="560" y="349">Typed Observations → Immutable Evidence Store → Salient Memory</text>
+  <text class="small" x="560" y="370">来源 · 窗口 · 覆盖度 · 引用 · 持久化完整性均由 Runtime 维护</text>
+  <rect class="band" x="16" y="414" width="1088" height="258" rx="8"/>
+  <text class="head" x="36" y="443">B · 固定诊断顺序 / Deterministic Diagnosis</text>
+  <path class="edge" d="M146 380V406H26V503H36"/>
+  <text class="small" x="794" y="441">冲突或证据不足 → 保留缺口，不强行输出结论</text>
+  <rect class="box" x="36" y="474" width="216" height="58" rx="6"/>
+  <text class="strong" x="144" y="500">1 · Core Known</text><text class="small" x="144" y="522">内置类型准入</text>
+  <path class="edge" d="M252 503H296"/><text class="small" x="274" y="491">未中</text>
+  <rect class="box green" x="296" y="474" width="238" height="58" rx="6"/>
+  <text class="strong" x="415" y="500">2 · Environment Extension</text><text class="small" x="415" y="522">环境扩展匹配</text>
+  <path class="edge" d="M534 503H578"/><text class="small" x="556" y="491">未中</text>
+  <rect class="box" x="578" y="474" width="204" height="58" rx="6"/>
+  <text class="strong" x="680" y="500">3 · No-Incident</text><text class="small" x="680" y="522">必要健康证据成立</text>
+  <path class="edge" d="M782 503H826"/><text class="small" x="804" y="491">未满足</text>
+  <rect class="box amber" x="826" y="474" width="258" height="58" rx="6"/>
+  <text class="strong" x="955" y="500">4 · Open-World</text><text class="small" x="955" y="522">还需存在未解释的强异常</text>
+  <path class="edge" d="M144 532V580"/><path class="edge" d="M415 532V580"/><path class="edge" d="M680 532V580"/>
+  <rect class="box green" x="36" y="580" width="746" height="68" rx="6"/>
+  <text class="strong" x="409" y="608">Evidence-backed Diagnosis</text>
+  <text class="strong" x="409" y="633">Action Authority = NONE</text>
+  <path class="edge" d="M955 532V580"/>
+  <rect class="box amber" x="826" y="580" width="258" height="68" rx="6"/>
+  <text class="strong" x="955" y="608">Incident Fingerprint</text><text x="955" y="632">事件指纹</text>
+  <rect class="band" x="16" y="688" width="1088" height="344" rx="8"/>
+  <text class="head" x="36" y="718">C · 环境内知识演化 / Human-guided Knowledge Evolution</text>
+  <path class="edge" d="M955 648V752"/>
+  <rect class="box amber" x="826" y="752" width="258" height="66" rx="6"/>
+  <text class="strong" x="955" y="779">Fault Family</text><text x="955" y="803">多事件故障族</text>
+  <path class="edge" d="M826 785H784"/>
+  <rect class="box purple" x="546" y="752" width="238" height="66" rx="6"/>
+  <text class="strong" x="665" y="779">Human Review</text><text x="665" y="803">ACCEPT_AS_NEW</text>
+  <path class="edge" d="M546 785H504"/>
+  <rect class="box" x="246" y="752" width="258" height="66" rx="6"/>
+  <text class="strong" x="375" y="779">Predicate Matrix</text><text x="375" y="803">Runtime Rule Mining</text>
+  <path class="edge" d="M246 785H153V862"/>
+  <rect class="box" x="36" y="862" width="234" height="66" rx="6"/>
+  <text class="strong" x="153" y="890">Shadow Evaluation</text><text x="153" y="914">影子评估 · 失败关闭</text>
+  <path class="edge" d="M270 895H326"/>
+  <rect class="box purple" x="326" y="862" width="258" height="66" rx="6"/>
+  <text class="strong" x="455" y="890">Human Promotion</text><text x="455" y="914">人工门控后晋升</text>
+  <path class="edge" d="M584 895H640"/>
+  <rect class="box green" x="640" y="862" width="444" height="66" rx="6"/>
+  <text class="strong" x="862" y="890">ACTIVE Extension Registry</text><text x="862" y="914">复发 → EXTENSION_KNOWN</text>
+  <path class="edge" d="M1084 895H1094V458H415V474"/>
+  <rect class="box purple" x="36" y="958" width="548" height="50" rx="6"/>
+  <text class="strong" x="310" y="980">Optional LLM · label / explanation only</text>
+  <text class="small" x="310" y="999">仅非权威命名说明；不选谓词、不审批、不执行</text>
+  <text class="small" x="846" y="982">Runtime 决定规则与匹配，人负责治理门控</text>
+  <text class="small" x="846" y="1003">本地原型 · 无生产 / 通用泛化声明</text>
+</svg>
+</div>
+<p class="caption">移动端可横向查看完整图；打印使用自适应 SVG。前三种准入结果直接输出诊断；冲突或证据不足保留不确定性。<a href="../product/ARCHITECTURE.md">详细架构</a> · <a href="../assets/ecomsre-v03-architecture.mmd">Mermaid 源文件</a></p>
+</section>
+<section id="evidence">
+<p class="section-kicker">03 / EVIDENCE</p><h2>证据驱动诊断</h2>
+<p>环境登记先归一服务身份，验证连接器并建立能力矩阵。多窗口 Baseline 显式激活后，事件冻结它与服务映射的绑定。每次读取保留服务、来源、窗口、覆盖度和状态，规范化观测进入不可变 Evidence Store，Salient Memory 整理支持谓词的事实。</p>
+<p><code>PRESENT</code> 是已有支持证据；<code>ABSENT_WITH_COMPLETE_COVERAGE</code> 才是可用反证；<code>UNKNOWN</code> 与 <code>SOURCE_FAILED</code> 都不能被当成“没有异常”。哈希保证内容绑定，不保证传感器天然正确。</p>
+<p>判断固定为 <code>CORE_KNOWN</code> → <code>EXTENSION_KNOWN</code> → <code>NO_INCIDENT</code> → <code>OPEN_WORLD</code>。如果多条规则冲突或证据不够，保留 <code>CONFLICTING_EVIDENCE</code> / <code>INSUFFICIENT_EVIDENCE</code>，不能为输出一个答案而隐藏缺口。</p>
+<p>健康系统同样需要证明：孤立短窗口内存增长不单独形成强残差，必须有同服务独立佐证。这里区分冻结 Core 规则与 Product 残差策略，不把它们混成“调低阈值让测试通过”。</p>
+</section>
+<section id="product">
+<p class="section-kicker">04 / PRODUCT</p><h2>只读 Product MVP</h2>
+<p>FastAPI 接收事件、验证请求并提供查询接口；Worker 领取 SQLite 租约任务，执行连接器验证、Baseline 和诊断。SQLite WAL 保存产品状态，CAS 内容寻址存储保存证据对象。提交时 fencing 防止过期 Worker 发布结果。</p>
+<p>Product 可以写自己的数据库、证据和治理记录，但不能写被诊断系统。Compose 不挂 Docker socket，API 仅发布到 loopback。真实实验中的资源创建、故障注入与清理属于独立、显式授权的本地实验控制器。</p>
+<p>可运行入口是<a href="../product/QUICKSTART.md">Docker-free 确定性演示</a>：进程内 TestClient、合成遥测、模拟人工记录、扩展复发与应用重启验证；没有外部模型调用，不是 Kafka 实验的复跑。</p>
+<p class="muted">API 的 /v1、Python 的 V1 类型与数据库 schema 是兼容性标识，不因公开 v0.3 标签改名。后台任务与知识治理接口也不能仅凭 URL 中的 jobs 一词混为一谈。</p>
+</section>
+<section id="evolution">
+<p class="section-kicker">05 / KNOWLEDGE</p><h2>开放世界知识演化</h2>
+<p>未知强异常不是直接加入核心类型库。Runtime 生成指纹，在相同环境用异常、来源、领域、根服务、拓扑和状态的加权相似度聚类；这是确定性特征比较，不是文本 embedding 或一次模型猜测。</p>
+<ol class="timeline" aria-label="知识循环时间线">
+<li>发现未解释异常<small>OPEN_WORLD → Incident Fingerprint</small></li>
+<li>积累多事件故障族<small>不同窗口，检查根一致性和证据</small></li>
+<li>人工接受为新类型<small>Human ACCEPT_AS_NEW</small></li>
+<li>Runtime 挖掘规则<small>正负例矩阵，长度 1–3，beam width 20</small></li>
+<li>Shadow + 人工晋升<small>先验证误报、冲突和来源失败</small></li>
+<li>环境扩展识别复发<small>ACTIVE Registry → EXTENSION_KNOWN</small></li>
+</ol>
+<p>候选规则以召回、误报、重叠和复杂度评分；最终 Shadow 比挖掘候选更严格。只有完整覆盖的缺席可作负证据，未知和来源失败不能让弱规则“侥幸通过”。可选 LLM 仅建议标签与解释，不选择晋升关键谓词、不批准 Promotion。</p>
+<p>数据不足就继续积累或返回需要更多负例；晋升不是一次模型自我审批。完整契约与阈值见<a href="../product/KNOWLEDGE_EVOLUTION.md">知识演化说明</a>。</p>
+</section>
+<section id="journeys">
+<p class="section-kicker">06 / END TO END</p><h2>健康环境与未知故障两条完整流程</h2>
+<h3>健康路径：先证明覆盖，再说没有事件</h3>
+<p>登记环境并验证来源 → 激活多窗口 Baseline → 读取 checkout 的 Metrics / Resources / Logs / Traces / Runtime → 核查覆盖与健康证据 → 返回 NO_INCIDENT → 保存诊断和证据。实测 30/30 事务成功，No-Fault scorer FULLY_SUPPORTED，能力限制为 0；不代表所有服务长期健康。</p>
+<h3>未知路径：从第一次观察到下一次识别</h3>
+<p>N0-A / N0-B 健康控制各 30/30；C1 已知配置故障定位 payment，并确认队列阴性。随后 P1 / P2 / P3 三个窗口都进入 OPEN_WORLD，领域 CONCURRENCY、根服务 fraud-detection，组成一个三成员故障族。</p>
+<p>Runtime 从三个正例、三个实测负例选出 <code>core:RUNTIME_HEALTHY AND ga:METRIC_QUEUE_LAG_OUTLIER</code>。Shadow 通过后仅晋升一个 kafka-queue-backlog 扩展。晋升后新采集 H1 返回 EXTENSION_KNOWN，根服务与故障族多数根一致，不再生成临时报告或新族。</p>
+<p>H1 验证的是“新规则真正进入诊断路径”，不是跨环境泛化。C1 的无关 Logs / Traces 缺口仍然保留，不能说整个实验每个来源都完整。</p>
+</section>
+<section id="results">
+<p class="section-kicker">07 / VERIFIED RESULTS</p><h2>最终结果</h2>
+<div class="grid-3">
+<div class="metric-card"><span class="value">30 / 30</span><p class="label">健康 checkout 事务</p><p>五类遥测 · NO_INCIDENT<br>FULLY_SUPPORTED · 能力限制 0</p></div>
+<div class="metric-card"><span class="value">3 → 1 → 1</span><p class="label">未知窗口 → 故障族 → ACTIVE 扩展</p><p>根一致性 1.0<br>Runtime 健康 + 队列异常两源规则</p></div>
+<div class="metric-card"><span class="value">H1 命中扩展</span><p class="label">新的留出复发窗口</p><p>EXTENSION_KNOWN<br>无新故障族，无临时报告</p></div>
+</div>
+<p>两两相似度约 0.8061 / 0.8300 / 0.9732。Shadow recall = 3/3 = 1.0、FPR = 0/10 = 0.0、Core overlap = 0/1 = 0.0、健康误报 = 0/2。13 个已评估用例包含反事实与来源失败构造，不是 13 次独立 live 实验；OTHER_EXTENSION 无可用样本。</p>
+<p><strong>Provider / Agent write / Runbook = 0；action/remediation authority = NONE；cleanup = CLEAN。</strong></p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="证据映射表"><table>
+<caption>证据映射：指标、来源与安全说法</caption><thead><tr><th scope="col">主张 / 标签</th><th scope="col">直接来源</th><th scope="col">安全说法与风险</th></tr></thead><tbody>
+<tr><td>健康控制 <span class="tag">verified</span></td><td><a href="../results/product-v024-nofault-acceptance-final.json">健康验收 JSON</a></td><td>指定窗口、指定候选来源齐全；不能外推长期零误报。</td></tr>
+<tr><td>知识闭环 <span class="tag">verified</span></td><td><a href="../results/product-v030-live-knowledge-evolution.json">live_005 结果</a> · <a href="../analysis/product-v030-family-and-rule-summary.json">故障族与规则</a></td><td>同环境一个机制，H1 为留出复发；OTHER_EXTENSION 未实测。</td></tr>
+<tr><td>最终集成 <span class="tag">verified</span></td><td><a href="https://github.com/Raidriar7170/EcomSRE-Agent/pull/88#issuecomment-5529165572">PR #88 合并后记录</a></td><td>6,326 passed / 21 documented skips；Ruff 与 669 源文件 mypy 通过，两项 CI 绿色。不是本手册新执行的测试量。</td></tr>
+<tr><td>个人贡献 <span class="tag">有边界表述</span></td><td><a href="PROJECT_PITCH.md">讲法与职责边界</a> · 下节代码路线</td><td>代码存在可核验，个人/协作者分工需本人确认；不声称全部独立实现。</td></tr>
+</tbody></table></div>
+<p class="muted">结果文件保留集成前快照；其中未铸造完成标记的旧字段不代表当前仍阻塞。最终合并状态以 Git 与 PR 记录为准。十五个 CI skip 是未提交的私有证据回放，另六个保留历史边界；不同测试范围不可相加。</p>
+</section>
+<section id="tradeoffs">
+<p class="section-kicker">08 / TRADE-OFFS</p><h2>设计取舍</h2>
+<h3>不用模型自由路由换取“智能感”</h3>
+<p>复杂 Multi-Agent 的冻结比较没有支持预注册优势；真实故障取证的小样本里模型自由路由弱于确定性方案。因此当前优先把证据选择、覆盖和准入做成可检查契约。这不是 Multi-Agent 普遍无效的证明，见<a href="../history/PROJECT_EVOLUTION.md">历史索引与原始结果</a>。</p>
+<h3>未知不等于可注册，格式有效不等于语义正确</h3>
+<p>早期注册辅助研究中，结构全部合法并没有换来正确机制重建。当前让 Runtime 从多事件正负例挖规则，模型仅负责命名解释；代价是知识演化更慢、需要足够数据与人工门控，但错误不会直接扩展执行能力。</p>
+<h3>持久化原型与生产平台分开</h3>
+<p>SQLite / 单 Worker 简化本地部署与审计，但没有证明高可用或大规模并发。检查点让失败可恢复，不能抹去失败，也不能自动证明原始错误根因已定位。</p>
+<h3>贡献边界</h3>
+<p>最强项目贡献是证据契约、可持久化只读 Product、环境内知识闭环。个人讲述需区分实际承担的设计、实现、评估和协调；不能因为仓库属于自己就声称全部独立手写。上游 OTel Demo 是被观测环境，FastAPI 等框架能力不算个人自研。</p>
+<p>没有通用延迟、成本或生产 SLO 数据；不要用测试耗时当线上指标。本次知识闭环不依赖模型调用，不应用训练或微调收益解释它。</p>
+</section>
+<section id="code">
+<p class="section-kicker">09 / CODE ROUTE</p><h2>代码阅读路线</h2>
+<ol class="reading">
+<li><a href="../../src/ecomsre/product/app.py">app.py</a>：应用入口、状态与生命周期。</li>
+<li><a href="../../src/ecomsre/product/jobs/worker.py">worker.py</a>：任务领取、租约与执行。</li>
+<li><a href="../../src/ecomsre/product/baselines.py">baselines.py</a>：多窗口政策、激活与绑定。</li>
+<li><a href="../../src/ecomsre/product/incidents/read_backend.py">read_backend.py</a>：有界多源取证。</li>
+<li><a href="../../src/ecomsre/product/incidents/diagnosis_bridge.py">diagnosis_bridge.py</a>：固定诊断顺序与保守终态。</li>
+<li><a href="../../src/ecomsre/product/knowledge/runtime.py">knowledge/runtime.py</a>：指纹相似度、规则挖掘与 Shadow。</li>
+<li><a href="../../src/ecomsre/product/knowledge/repository.py">knowledge/repository.py</a>：人工门控、持久化与 ACTIVE 扩展。</li>
+<li><a href="../../scripts/product/run_product_mvp_demo.py">run_product_mvp_demo.py</a>：无 Docker 的端到端夹具演示。</li>
+</ol>
+</section>
+<section id="questions">
+<p class="section-kicker">10 / INTERVIEW</p><h2>高频问答</h2>
+<div class="qa"><h3>为什么不是 Multi-Agent？</h3><p>先证明复杂度收益。历史冻结比较收益不稳定，当前将取证和准入收敛为确定性 Runtime；保留模型解释能力，不把代理数量当质量指标。</p></div>
+<div class="qa"><h3>LLM 到底做什么？</h3><p>可选标签和解释。它不选晋升关键谓词、不定诊断根、不审批、不执行；本次 live Provider = 0。不是通过微调或向量 RAG 完成该知识闭环。</p></div>
+<div class="qa"><h3>如何保证证据有效？</h3><p>服务、时间窗口、覆盖度、引用和内容摘要逐层绑定；缺失与反证分开。完整性不是传感器正确性，连接器与算法仍需测试。</p></div>
+<div class="qa"><h3>如何防健康误报？</h3><p>实际流量与健康证据共同验证；孤立短时资源波动需要佐证；Shadow 必须包含健康控制且不能误报。有限窗口不等于长期零误报。</p></div>
+<div class="qa"><h3>怎么发现未注册故障？</h3><p>强异常没有被 Core 或环境扩展解释时形成 Open-World 报告，再按环境内特征聚类。不是凭空生成一个已验证机制。</p></div>
+<div class="qa"><h3>怎样挖规则并晋升？</h3><p>人工接受故障族，Runtime 建矩阵、搜索规则、运行 Shadow，最后人工晋升；实测规则要求运行健康与队列异常同时成立。</p></div>
+<div class="qa"><h3>为什么 H1 有意义？</h3><p>晋升后新采集窗口命中持久化扩展，并保持根服务一致，无新族或临时报告。证明实际匹配链路生效，不证明跨环境泛化。</p></div>
+<div class="qa"><h3>距离生产还差什么？</h3><p>独立机制与环境、其他扩展干扰、长期负载/健康窗口、多租户、HA、安全和恢复验证。当前是只读原型，不承诺自主修复。</p></div>
+<p><a href="PROJECT_PITCH.md">20 秒 / 90 秒讲法与简历候选表述</a></p>
+</section>
+<section id="limits">
+<p class="section-kicker">11 / BOUNDARIES</p><h2>限制与下一步</h2>
+<p>已验证一个有界本地 OTel 多服务环境、一个学到的 Kafka 队列积压机制。单租户 SQLite 没有长期规模、HA 或 Kubernetes 生产控制面验证；本地阈值不保证跨环境有效，部分完整 live 遥测、DB 与镜像锁未提交。</p>
+<p class="callout">治理说明：本次 ACCEPT_AS_NEW 与 Promotion 使用用户明确的事先授权，不是运行中重新逐条人工检查。OTHER_EXTENSION 分层不可用，不代表真实其他扩展重叠实验已经通过。两项边界都保留在证据中。</p>
+<p>下一步先补独立环境和机制、长期健康负对照、其他扩展冲突、聚类拆合质量与部署恢复，再讨论更强产品化；这些是方向，不是已经执行或自动授权的实验。</p>
+<h3>面试覆盖审计</h3>
+<p>以下审计检查文档是否足以解释项目，不认证个人经历。技术叙事可用；个人分工明确保留为本人确认项，不能删掉这个条件来扩大履历主张。</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="面试覆盖审计表"><table class="audit">
+<caption>高频问题与证据边界审计</caption><thead><tr><th scope="col">问题</th><th scope="col">类别</th><th scope="col">章节</th><th scope="col">覆盖</th><th scope="col">证据</th><th scope="col">风险</th><th scope="col">级别</th><th scope="col">建议</th></tr></thead><tbody>
+<tr><td>解决什么问题？</td><td>动机/用户</td><td>1、3</td><td>covered</td><td>架构/取证入口</td><td>泛化过宽</td><td>无阻塞</td><td>保持本地诊断边界</td></tr>
+<tr><td>为什么这些算法？</td><td>模型/比较</td><td>5、8</td><td>covered</td><td>历史比较、runtime.py</td><td>小样本因果夸大</td><td>无阻塞</td><td>不宣称 Multi-Agent 普遍无效</td></tr>
+<tr><td>证据和失败如何处理？</td><td>可靠性</td><td>3、4</td><td>covered</td><td>read_backend / bridge</td><td>哈希等同真相</td><td>无阻塞</td><td>区分覆盖与完整性</td></tr>
+<tr><td>指标到底证明什么？</td><td>评估/压力</td><td>6、7</td><td>covered</td><td>两份实验 JSON</td><td>13 次独立实验误读</td><td>无阻塞</td><td>说清分母与构造用例</td></tr>
+<tr><td>H1 及生产价值？</td><td>复发/边界</td><td>6、11</td><td>covered</td><td>规则摘要 h1</td><td>泛化/上线承诺</td><td>无阻塞</td><td>仅同机制留出复发</td></tr>
+<tr><td>权限和人工由谁决定？</td><td>安全/治理</td><td>4、11</td><td>covered</td><td>Promotion / safety</td><td>自主审批误读</td><td>无阻塞</td><td>保留事先授权说明</td></tr>
+<tr><td>延迟成本与部署？</td><td>工程</td><td>4、8、11</td><td>covered</td><td>拓扑与明确缺口</td><td>无通用 SLO 数据</td><td>无阻塞</td><td>不编造数字</td></tr>
+<tr><td>个人具体做了什么？</td><td>贡献</td><td>8、9</td><td>partial</td><td>代码可查，职责待本人确认</td><td>把团队/AI/上游算个人</td><td>Should Fix（履历使用前）</td><td>按实际职责选动词</td></tr>
+</tbody></table></div>
+<p><strong>文档结论：技术说明可用于面试准备；无未披露的指标或生产主张，个人职责需本人确认。</strong></p>
+</section>
+</main>
+<footer><div class="wrap">EcomSRE-Agent · 自包含离线手册 · 无外部脚本、字体或 CDN。<br>
+<a href="../../README.md">项目首页</a> · <a href="../product/STATUS.md">当前状态</a> · <a href="../product/LIMITATIONS.md">完整限制</a> · <a href="../history/PROJECT_EVOLUTION.md">历史证据</a>
+<p>单独下载本文件即可阅读正文和图；证据/代码链接需要同一仓库目录，GitHub 完成记录链接需要网络。</p>
+</div></footer>
+</body>
+</html>

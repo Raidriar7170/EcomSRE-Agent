@@ -16,10 +16,16 @@ observation; target-complete sources must cover the requested catalog.
 
 The bounded live-demo policy has five windows, at most 180 seconds of lookback,
 and exactly 180 seconds of warmup. It must be explicitly labelled
-`DEMO_ONLY`. The manual acceptance retains all five window outcomes and requires
+`DEMO_ONLY`. The historical v0.1 manual acceptance retains all five window outcomes and requires
 at least one complete successful window after the local Demo accumulates enough
 history; the exact successful-window count remains visible. DEMO_ONLY evidence
 must not be presented as a production baseline.
+
+This one-window minimum is not the current readiness acceptance rule.
+The default build policy requires four successful windows; the later v023
+readiness path requires at least four of five windows and binds a separate
+readiness evaluation. See [current results](STATUS.md) and
+[baseline contracts](../../src/ecomsre/product/baselines.py).
 
 ## Contents
 
