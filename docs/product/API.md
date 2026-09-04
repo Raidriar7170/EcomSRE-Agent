@@ -1,4 +1,6 @@
-# Product MVP v0.1 API
+# Product API · current v0.3 surface
+
+Public presentation v0.3 does not rename the stable `/v1` routes or schemas.
 
 The FastAPI application publishes OpenAPI at `/openapi.json`. Reads are public
 on the configured listener. Mutations require `Authorization: Bearer <token>`
@@ -23,6 +25,10 @@ token.
 | GET | `/v1/environments/{environment_id}/capabilities` |
 | POST | `/v1/environments/{environment_id}/baseline-jobs` |
 | GET | `/v1/environments/{environment_id}/baselines` |
+| GET | `/v1/environments/{environment_id}/baseline-readiness` |
+| GET | `/v1/environments/{environment_id}/baseline-readiness-v023` |
+| GET | `/v1/baselines/{baseline_id}/window-audit` |
+| GET | `/v1/baselines/{baseline_id}/window-audit-v023` |
 | POST | `/v1/environments/{environment_id}/changes` |
 
 Verify and baseline requests may carry `Idempotency-Key`. The key is bound to
@@ -38,6 +44,7 @@ error rather than silently changing work.
 | POST | `/v1/incidents/{incident_id}/diagnosis-jobs` |
 | GET | `/v1/incidents/{incident_id}/diagnosis` |
 | GET | `/v1/incidents/{incident_id}/evidence` |
+| GET | `/v1/incidents/{incident_id}/evidence-index` |
 
 `external_incident_key` is idempotent inside one environment. Reusing it with a
 different payload is a conflict. Every result declares a terminal, lane,

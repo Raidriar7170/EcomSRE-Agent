@@ -154,6 +154,7 @@ def test_increment5_compose_examples_docs_and_acceptance_surfaces_exist() -> Non
         "KNOWLEDGE_EVOLUTION.md",
         "OPERATIONS.md",
         "LIMITATIONS.md",
+        "STATUS.md",
     }
     assert required_docs == {
         path.name for path in (ROOT / "docs/product").glob("*.md")
@@ -162,8 +163,16 @@ def test_increment5_compose_examples_docs_and_acceptance_surfaces_exist() -> Non
     knowledge = (ROOT / "docs/product/KNOWLEDGE_EVOLUTION.md").read_text(
         encoding="utf-8"
     )
+    api_docs = (ROOT / "docs/product/API.md").read_text(encoding="utf-8")
+    # The public entry is now Docker-free; endpoint reference stays in API.md.
     for required in (
-        "docker compose",
+        "uv sync --frozen --python 3.11",
+        "scripts.product.run_product_mvp_demo",
+        "SIMULATED HUMAN REVIEW",
+        "不是 Kafka live 结果重现",
+    ):
+        assert required in quickstart
+    for required in (
         "/v1/environments",
         "verify-jobs",
         "baseline-jobs",
@@ -174,14 +183,14 @@ def test_increment5_compose_examples_docs_and_acceptance_surfaces_exist() -> Non
         "shadow-evaluation-jobs",
         "promotions",
     ):
-        assert required in quickstart
+        assert required in api_docs
     for required in (
         "PRESENT",
         "ABSENT_WITH_COMPLETE_COVERAGE",
         "UNKNOWN",
         "SOURCE_FAILED",
-        "conjunction sizes 1, 2, and 3",
-        "beam-width cap of 20",
+        "长度 1–3",
+        "beam width 20",
     ):
         assert required in knowledge
 

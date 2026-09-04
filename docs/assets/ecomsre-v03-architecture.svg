@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 1050" role="img" aria-labelledby="architecture-title architecture-desc">
+  <title id="architecture-title">EcomSRE-Agent v0.3：证据、诊断与知识演化</title>
+  <desc id="architecture-desc">环境与 Baseline 绑定有界多源取证，生成类型化观测、不可变证据和 Salient Memory。诊断固定为 Core Known、Environment Extension、No-Incident、Open-World。未知报告经过 Fingerprint、Fault Family、Human Review、Runtime Rule Mining、Shadow Evaluation 和 Human Promotion，进入 ACTIVE Extension Registry。LLM 仅命名解释，Action Authority = NONE。</desc>
+  <defs>
+    <marker id="architecture-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8Z" fill="#52758b"/></marker>
+    <style>
+      .bg{fill:#f5f7fa}.band{fill:#fff;stroke:#d8e0e9}.box{fill:#eaf4f8;stroke:#80adbf;stroke-width:1.4}.green{fill:#eaf6ee;stroke:#8fbea2}.amber{fill:#fbf4e4;stroke:#cfaf64}.purple{fill:#f1eefb;stroke:#aa9bca}
+      .edge{fill:none;stroke:#52758b;stroke-width:1.6;marker-end:url(#architecture-arrow)}.dashed{stroke-dasharray:5 4}
+      text{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;fill:#132238;font-size:16px;text-anchor:middle}
+      .head{font-size:18px;font-weight:700;text-anchor:start;fill:#16817a}.strong{font-weight:700}.small{font-size:13px;fill:#5b687b}
+    </style>
+  </defs>
+  <rect class="bg" width="1120" height="1050" rx="8"/>
+  <rect class="band" x="16" y="16" width="1088" height="382" rx="8"/>
+  <text class="head" x="36" y="45">A · 环境与证据 / Environment &amp; Evidence</text>
+  <rect class="box" x="36" y="64" width="220" height="54" rx="6"/>
+  <text class="strong" x="146" y="97">告警 / Incident</text>
+  <path class="edge" d="M256 91H306"/>
+  <rect class="box" x="306" y="64" width="280" height="54" rx="6"/>
+  <text class="strong" x="446" y="97">Product API + Worker</text>
+  <path class="edge" d="M586 91H636"/>
+  <rect class="box" x="636" y="64" width="448" height="54" rx="6"/>
+  <text class="strong" x="860" y="88">环境配置 · 服务身份 · Capability Matrix</text>
+  <text x="860" y="108">Active 多窗口 Baseline</text>
+  <path class="edge" d="M860 118V140H560V156"/>
+  <rect class="box" x="36" y="156" width="1048" height="46" rx="6"/>
+  <text class="strong" x="560" y="185">证据运行时 · 有界动态取证 / Bounded Evidence Acquisition</text>
+  <path class="edge" d="M160 202V234"/><path class="edge" d="M425 202V234"/>
+  <path class="edge" d="M690 202V234"/><path class="edge" d="M955 202V234"/>
+  <rect class="box" x="36" y="234" width="248" height="60" rx="6"/>
+  <text class="strong" x="160" y="258">Prometheus</text><text x="160" y="281">Metrics / Resources</text>
+  <rect class="box" x="301" y="234" width="248" height="60" rx="6"/>
+  <text class="strong" x="425" y="258">OpenSearch</text><text x="425" y="281">Logs</text>
+  <rect class="box" x="566" y="234" width="248" height="60" rx="6"/>
+  <text class="strong" x="690" y="258">Jaeger</text><text x="690" y="281">Traces</text>
+  <rect class="box" x="831" y="234" width="253" height="60" rx="6"/>
+  <text class="strong" x="957" y="258">Runtime / Changes</text><text x="957" y="281">配置来源 / 授权快照</text>
+  <path class="edge" d="M160 294V326"/><path class="edge" d="M425 294V326"/>
+  <path class="edge" d="M690 294V326"/><path class="edge" d="M955 294V326"/>
+  <rect class="box green" x="36" y="326" width="1048" height="54" rx="6"/>
+  <text class="strong" x="560" y="349">Typed Observations → Immutable Evidence Store → Salient Memory</text>
+  <text class="small" x="560" y="370">来源 · 窗口 · 覆盖度 · 引用 · 持久化完整性均由 Runtime 维护</text>
+  <rect class="band" x="16" y="414" width="1088" height="258" rx="8"/>
+  <text class="head" x="36" y="443">B · 固定诊断顺序 / Deterministic Diagnosis</text>
+  <path class="edge" d="M146 380V406H26V503H36"/>
+  <text class="small" x="794" y="441">冲突或证据不足 → 保留缺口，不强行输出结论</text>
+  <rect class="box" x="36" y="474" width="216" height="58" rx="6"/>
+  <text class="strong" x="144" y="500">1 · Core Known</text><text class="small" x="144" y="522">内置类型准入</text>
+  <path class="edge" d="M252 503H296"/><text class="small" x="274" y="491">未中</text>
+  <rect class="box green" x="296" y="474" width="238" height="58" rx="6"/>
+  <text class="strong" x="415" y="500">2 · Environment Extension</text><text class="small" x="415" y="522">环境扩展匹配</text>
+  <path class="edge" d="M534 503H578"/><text class="small" x="556" y="491">未中</text>
+  <rect class="box" x="578" y="474" width="204" height="58" rx="6"/>
+  <text class="strong" x="680" y="500">3 · No-Incident</text><text class="small" x="680" y="522">必要健康证据成立</text>
+  <path class="edge" d="M782 503H826"/><text class="small" x="804" y="491">未满足</text>
+  <rect class="box amber" x="826" y="474" width="258" height="58" rx="6"/>
+  <text class="strong" x="955" y="500">4 · Open-World</text><text class="small" x="955" y="522">还需存在未解释的强异常</text>
+  <path class="edge" d="M144 532V580"/><path class="edge" d="M415 532V580"/><path class="edge" d="M680 532V580"/>
+  <rect class="box green" x="36" y="580" width="746" height="68" rx="6"/>
+  <text class="strong" x="409" y="608">Evidence-backed Diagnosis</text>
+  <text class="strong" x="409" y="633">Action Authority = NONE</text>
+  <path class="edge" d="M955 532V580"/>
+  <rect class="box amber" x="826" y="580" width="258" height="68" rx="6"/>
+  <text class="strong" x="955" y="608">Incident Fingerprint</text><text x="955" y="632">事件指纹</text>
+  <rect class="band" x="16" y="688" width="1088" height="344" rx="8"/>
+  <text class="head" x="36" y="718">C · 环境内知识演化 / Human-guided Knowledge Evolution</text>
+  <path class="edge" d="M955 648V752"/>
+  <rect class="box amber" x="826" y="752" width="258" height="66" rx="6"/>
+  <text class="strong" x="955" y="779">Fault Family</text><text x="955" y="803">多事件故障族</text>
+  <path class="edge" d="M826 785H784"/>
+  <rect class="box purple" x="546" y="752" width="238" height="66" rx="6"/>
+  <text class="strong" x="665" y="779">Human Review</text><text x="665" y="803">ACCEPT_AS_NEW</text>
+  <path class="edge" d="M546 785H504"/>
+  <rect class="box" x="246" y="752" width="258" height="66" rx="6"/>
+  <text class="strong" x="375" y="779">Predicate Matrix</text><text x="375" y="803">Runtime Rule Mining</text>
+  <path class="edge" d="M246 785H153V862"/>
+  <rect class="box" x="36" y="862" width="234" height="66" rx="6"/>
+  <text class="strong" x="153" y="890">Shadow Evaluation</text><text x="153" y="914">影子评估 · 失败关闭</text>
+  <path class="edge" d="M270 895H326"/>
+  <rect class="box purple" x="326" y="862" width="258" height="66" rx="6"/>
+  <text class="strong" x="455" y="890">Human Promotion</text><text x="455" y="914">人工门控后晋升</text>
+  <path class="edge" d="M584 895H640"/>
+  <rect class="box green" x="640" y="862" width="444" height="66" rx="6"/>
+  <text class="strong" x="862" y="890">ACTIVE Extension Registry</text><text x="862" y="914">复发 → EXTENSION_KNOWN</text>
+  <path class="edge" d="M1084 895H1094V458H415V474"/>
+  <rect class="box purple" x="36" y="958" width="548" height="50" rx="6"/>
+  <text class="strong" x="310" y="980">Optional LLM · label / explanation only</text>
+  <text class="small" x="310" y="999">仅非权威命名说明；不选谓词、不审批、不执行</text>
+  <text class="small" x="846" y="982">Runtime 决定规则与匹配，人负责治理门控</text>
+  <text class="small" x="846" y="1003">本地原型 · 无生产 / 通用泛化声明</text>
+</svg>
