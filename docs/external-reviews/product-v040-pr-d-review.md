@@ -5,6 +5,9 @@
   Provider, live fault, or environment mutation.
 - Final verdict: **PASS**.
 - Must Fix: **0**.
+- Should Fix: None.
+- Nice to Have: None.
+- Scope Creep Warning: None; changes stay inside the activated PR-D boundary.
 - Claim Accuracy: **PASS**.
 
 The review inspected authority separation, immediate pre-send state and lease
@@ -25,7 +28,10 @@ Primary final Product checks: **267 passed / 15 warnings**, Ruff PASS, mypy PASS
 for 239 source files. Factual metadata refresh is covered by the final claim
 review and does not introduce further source changes.
 
-Acceptance is limited to offline PR-D behavior. The real isolated-network denial
+Evidence Gaps: acceptance is limited to offline PR-D behavior. The real isolated-network denial
 probe, actual Docker startup, fresh signed observer measurements and the one
 bounded live Payment campaign remain PR-E gates. Exact-head GitHub CI, committed
 content closure and squash merge remain integration requirements.
+
+Recommended Next Step: complete committed-content closure and exact-head CI,
+squash merge PR-D, then begin PR-E from the verified merged tree.
