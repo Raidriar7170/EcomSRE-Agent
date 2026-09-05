@@ -42,6 +42,8 @@ Active 多窗口 Baseline → 有界读取 → Typed Observations → Immutable 
 [ProductDiagnosisBridgeV1](../../src/ecomsre/product/incidents/diagnosis_bridge.py)
 维护分路；Runtime 维护候选、谓词、覆盖度、支持引用、匹配、持久化完整性与权限。
 Open-World 的领域和根服务是受证据约束的结果，不是普遍的因果发现保证。
+所选领域没有唯一根服务时保留 `INSUFFICIENT_EVIDENCE`，决策轨迹记录
+`OPEN_WORLD_ROOT_AMBIGUOUS`；保留支持证据，不生成临时报告或进入故障族。
 
 孤立短窗口内存增长不能单独成为强残差，需要同服务独立佐证。
 只有完整覆盖下的缺席才是负证据。

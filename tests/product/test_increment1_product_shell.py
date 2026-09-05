@@ -451,6 +451,122 @@ def test_fixture_job_completes_and_survives_repository_restart(tmp_path: Path) -
     }
 
 
+@pytest.mark.parametrize("outcome", ["SUCCEEDED", "FAILED", "INTERNAL_ERROR", "LEASE_LOST"])
+def test_worker_separates_queue_wait_and_monotonic_execution(tmp_path, monkeypatch, outcome):
+    from ecomsre.product.jobs import worker
+    from ecomsre.product.telemetry.metrics import ProductMetricsV1
+
+    settings = _settings(tmp_path)
+    store = SqliteStoreV1(settings.sqlite_path)
+    environment = EnvironmentRepositoryV1(store).create(_environment_payload(), now=100.0)
+    jobs = JobRepositoryV1(store)
+    job = jobs.enqueue(
+        ProductJobTypeV1.ENVIRONMENT_VERIFY,
+        {"environment_id": environment.environment_id}, now=101.0,
+    )
+    clock = {"value": 10.0}
+    monkeypatch.setattr(worker.time, "perf_counter", lambda: clock["value"])
+
+    def handle(*_args, **_kwargs):
+        clock["value"] = 10.125
+        if outcome == "INTERNAL_ERROR":
+            raise RuntimeError("synthetic handler failure")
+        if outcome != "SUCCEEDED":
+            raise ProductError(
+                "JOB_LEASE_LOST" if outcome == "LEASE_LOST" else "SYNTHETIC_FAILURE",
+                "synthetic handler failure",
+            )
+        return {"verified": True}
+
+    monkeypatch.setattr(worker, "handle_environment_verify", handle)
+    assert run_one_job(settings, worker_id="timed-worker", now=102.25)
+    metrics = ProductMetricsV1(store).render()
+    status = "FAILED" if outcome == "INTERNAL_ERROR" else outcome
+    assert 'ecomsre_job_queue_wait_seconds_sum{job_type="ENVIRONMENT_VERIFY"} 1.25' in metrics
+    assert f'ecomsre_job_execution_seconds_sum{{job_type="ENVIRONMENT_VERIFY",status="{status}"}} 0.125' in metrics
+    assert f'ecomsre_job_execution_seconds_count{{job_type="ENVIRONMENT_VERIFY",status="{status}"}} 1' in metrics
+    assert jobs.get(job.job_id).status.value == ("RUNNING" if outcome == "LEASE_LOST" else status)
+    if outcome == "SUCCEEDED":
+        assert 'ecomsre_job_duration_seconds{job_type="ENVIRONMENT_VERIFY",status="SUCCEEDED"} 2' in metrics
+
+
+def test_reclaimed_attempt_does_not_count_previous_execution_as_queue_wait(tmp_path, monkeypatch):
+    from ecomsre.product.jobs import worker
+    from ecomsre.product.telemetry.metrics import ProductMetricsV1
+
+    settings = _settings(tmp_path)
+    store = SqliteStoreV1(settings.sqlite_path)
+    environment = EnvironmentRepositoryV1(store).create(_environment_payload(), now=100.0)
+    jobs = JobRepositoryV1(store)
+    jobs.enqueue(ProductJobTypeV1.ENVIRONMENT_VERIFY, {"environment_id": environment.environment_id}, now=101.0)
+    first = jobs.claim_next("expired-worker", lease_seconds=1, now=102.0)
+    assert first is not None
+    monkeypatch.setattr(worker, "handle_environment_verify", lambda *_args, **_kwargs: {})
+    assert run_one_job(settings, worker_id="replacement-worker", now=104.0)
+    metrics = ProductMetricsV1(store).render()
+    assert "ecomsre_job_queue_wait_seconds_count" not in metrics
+    assert 'ecomsre_job_execution_seconds_count{job_type="ENVIRONMENT_VERIFY",status="SUCCEEDED"} 1' in metrics
+    assert jobs.get(first.job_id).attempt_count == 2
+
+
+@pytest.mark.parametrize("metric", [
+    "ecomsre_job_queue_wait_seconds", "ecomsre_job_execution_seconds",
+])
+@pytest.mark.parametrize("outcome", ["SUCCEEDED", "FAILED", "LEASE_LOST"])
+def test_duration_storage_failure_preserves_jobs_and_worker_progress(
+    tmp_path, monkeypatch, caplog, metric, outcome,
+):
+    from ecomsre.product.jobs import worker
+
+    settings = _settings(tmp_path)
+    store = SqliteStoreV1(settings.sqlite_path)
+    environment = EnvironmentRepositoryV1(store).create(_environment_payload(), now=100.0)
+    jobs = JobRepositoryV1(store)
+    job = jobs.enqueue(
+        ProductJobTypeV1.ENVIRONMENT_VERIFY,
+        {"environment_id": environment.environment_id}, now=101.0,
+    )
+    # Only the new histogram storage fails; job state and legacy metrics remain
+    # writable. The rollback must leave no partial sample behind.
+    with store.connect() as connection:
+        connection.execute(f"""CREATE TRIGGER reject_duration BEFORE INSERT
+            ON product_metric_counters WHEN NEW.metric_name = '{metric}_sum_microseconds'
+            BEGIN SELECT RAISE(ABORT, 'private database failure detail'); END""")
+
+    calls = []
+
+    def handle(*_args, **_kwargs):
+        calls.append(True)
+        if len(calls) == 1 and outcome != "SUCCEEDED":
+            raise ProductError(
+                "JOB_LEASE_LOST" if outcome == "LEASE_LOST" else "SYNTHETIC_FAILURE",
+                "synthetic handler failure",
+            )
+        return {"verified": True}
+
+    monkeypatch.setattr(worker, "handle_environment_verify", handle)
+    assert run_one_job(settings, worker_id="first-worker", now=102.0)
+    assert len(calls) == 1
+    result = jobs.get(job.job_id)
+    assert result.status.value == ("RUNNING" if outcome == "LEASE_LOST" else outcome)
+    assert result.safe_error_code == ("SYNTHETIC_FAILURE" if outcome == "FAILED" else None)
+
+    second = jobs.enqueue(
+        ProductJobTypeV1.ENVIRONMENT_VERIFY,
+        {"environment_id": environment.environment_id}, now=103.0,
+    )
+    assert run_one_job(settings, worker_id="second-worker", now=104.0)
+    assert len(calls) == 2
+    assert jobs.get(second.job_id).status is ProductJobStatusV1.SUCCEEDED
+    assert "Product duration observation was not persisted" in caplog.text
+    assert "private database failure detail" not in caplog.text
+    with store.connect() as connection:
+        assert connection.execute(
+            "SELECT COUNT(*) FROM product_metric_counters WHERE metric_name LIKE ?",
+            (metric + "%",),
+        ).fetchone()[0] == 0
+
+
 def test_api_enqueues_worker_completes_and_api_polls_fixture_job(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

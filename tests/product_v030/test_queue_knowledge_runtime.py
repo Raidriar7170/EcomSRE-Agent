@@ -241,7 +241,8 @@ def test_three_window_queue_fingerprints_cluster_with_frozen_threshold():
     assert [
         cluster_similarity_v1(left, right)
         for left, right in combinations(fingerprints, 2)
-    ] == [1.0] * 3
+    # Empty topology/logs/resources do not supply similarity evidence.
+    ] == [0.775] * 3
     assert all(item.broad_domain == "CONCURRENCY" for item in fingerprints)
 
 

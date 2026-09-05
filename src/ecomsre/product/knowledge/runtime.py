@@ -97,26 +97,34 @@ def build_incident_fingerprint_v1(
 def _jaccard(left: Iterable[object], right: Iterable[object]) -> float:
     left_set = set(left)
     right_set = set(right)
-    if not left_set and not right_set:
-        return 1.0
     union = left_set | right_set
-    return len(left_set & right_set) / len(union) if union else 1.0
+    return len(left_set & right_set) / len(union) if union else 0.0
 
 
 def cluster_similarity_v1(
     left: IncidentFingerprintV1,
     right: IncidentFingerprintV1,
 ) -> float | None:
+    """Fixed-weight similarity: missing features never count as agreement."""
     if left.environment_id != right.environment_id:
         return None
     state_match = (
-        float(left.runtime_state_signature == right.runtime_state_signature)
-        + float(left.resource_state_signature == right.resource_state_signature)
+        float(
+            bool(left.runtime_state_signature)
+            and left.runtime_state_signature == right.runtime_state_signature
+        )
+        + float(
+            bool(left.resource_state_signature)
+            and left.resource_state_signature == right.resource_state_signature
+        )
     ) / 2.0
     score = (
         0.30 * _jaccard(left.generic_anomaly_kinds, right.generic_anomaly_kinds)
         + 0.20 * _jaccard(left.evidence_sources, right.evidence_sources)
-        + 0.15 * float(left.broad_domain == right.broad_domain)
+        + 0.15 * float(
+            left.broad_domain != "UNKNOWN"
+            and left.broad_domain == right.broad_domain
+        )
         + 0.10 * _jaccard(left.root_service_ids, right.root_service_ids)
         + 0.10 * _jaccard(left.topology_edges, right.topology_edges)
         + 0.10 * _jaccard(left.normalized_log_tokens, right.normalized_log_tokens)

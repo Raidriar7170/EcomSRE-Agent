@@ -28,6 +28,37 @@ prevents the old attempt from publishing.
 Labels are bounded and exclude secrets, raw URLs, incident text, and evidence
 identities. No custom dashboard is required for the current Product.
 
+Two additive histograms provide latency distributions in seconds:
+
+- `ecomsre_job_queue_wait_seconds{job_type}` measures enqueue to first claim.
+  It uses persisted wall-clock timestamps, clamped at zero if the clock moved
+  backwards. Reclaimed attempts do not count prior execution as queue wait.
+- `ecomsre_job_execution_seconds{job_type,status}` measures each handled Worker
+  attempt with a monotonic clock, independently of queue age. Status is
+  `SUCCEEDED`, `FAILED`, or `LEASE_LOST`; a lost lease sample grants no result
+  publication authority.
+
+Both export cumulative `_bucket` series (including `+Inf`), `_sum`, and `_count`.
+Sums retain microsecond precision in the existing SQLite counter table; each
+observation is atomic across buckets, sum, and count and survives restart.
+Worker duration observations are best effort: a SQLite failure rolls back that
+sample and emits a fixed warning without database error details. It cannot
+prevent the business handler from running, alter its terminal, or stop the
+Worker loop. Invalid metric arguments remain errors rather than being hidden.
+The new metrics begin with new observations; they do not backfill old jobs.
+They are operational telemetry, not exactly-once evidence: process termination
+before an observation is persisted may lose that sample. Execution timing
+starts after claim and covers setup/handling/terminal bookkeeping; setup failure
+before the handler's exception boundary or abrupt process death has no final
+execution sample. Per-connector and per-diagnosis-stage histograms are not yet
+provided.
+
+`ecomsre_job_duration_seconds` remains the legacy rounded counter of lifetime
+from initial enqueue to terminal handling, including queue time and any earlier
+attempts. Its type and historical values are unchanged for compatibility;
+use the new histograms for latency quantiles rather than interpreting that
+counter as execution time or a latency distribution.
+
 ## Data and backup
 
 SQLite and content-addressed objects share `/var/lib/ecomsre` in the Product

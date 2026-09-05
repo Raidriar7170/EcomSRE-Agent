@@ -1525,6 +1525,35 @@ This is not a new Product version, Goal, PR, authorization framework, or
 protocol; it permits no additional retry beyond live-005. The one final full
 repository suite remains reserved for merge readiness after live-005 passes.
 
+## DEC-062 — Product review fixes for ambiguous roots and missing-feature similarity
+
+**Status: `accepted` for the user's September 5 request to fix the concrete
+code problems identified in the read-only project review; offline scope only.**
+
+The Product Open-World bridge emits a root only when the selected domain has
+one observed owner. Multiple or missing owners produce `INSUFFICIENT_EVIDENCE`
+with `OPEN_WORLD_ROOT_AMBIGUOUS` in the decision trace, preserved support, and
+no provisional report or family ingestion. Input order is not root evidence.
+This replaces the Product's first-anomaly fallback; frozen DTA code is unchanged.
+
+For subsequent Product family assignments, empty fingerprint sets and state
+signatures contribute zero similarity; `UNKNOWN` domain agreement also adds
+zero. The original weights and `0.65` assignment threshold stay fixed, without
+renormalization of missing dimensions. Incomplete matching fingerprints can
+therefore score below one. Existing stored evidence and the published v0.3
+similarities are historical observations, not rescored results of this repair.
+Rule mining, Shadow thresholds, promotion and action authority are unchanged.
+
+Duration observability is additive: the legacy rounded lifetime counter keeps
+its meaning, while new persistent histograms separate initial queue wait from
+monotonic per-attempt execution. See [Operations](product/OPERATIONS.md#metrics)
+for units, retry and crash limitations. No database migration is required.
+Worker duration-observation storage failures are isolated from job outcomes;
+the histogram store itself retains atomic failure semantics.
+The user's subsequent review-and-publication instruction authorizes the bounded
+review, repairs, commit, push and PR creation. It authorizes no live campaign,
+Provider call or merge.
+
 ## Upstream references
 
 - [OTel Demo 3.0.0 release](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/3.0.0)

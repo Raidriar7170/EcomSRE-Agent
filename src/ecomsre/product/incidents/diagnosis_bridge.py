@@ -134,16 +134,16 @@ def _domain_for_anomalies(anomalies: tuple[Any, ...]) -> ProvisionalFaultDomainV
 
 def _root_for_domain(
     anomalies: tuple[Any, ...], domain: ProvisionalFaultDomainV23
-) -> str:
+) -> str | None:
     domain_services = {
         item.service
         for item in anomalies
         if _domain_for_anomalies((item,)) is domain
     }
-    # Align an unambiguous domain owner; do not invent a new multi-service tie-break.
+    # A shared domain is not evidence that the first service is the root.
     if len(domain_services) == 1:
         return str(next(iter(domain_services)))
-    return str(anomalies[0].service)
+    return None
 
 
 class ProductDiagnosisBridgeV1:
@@ -357,41 +357,46 @@ class ProductDiagnosisBridgeV1:
                         )
                         domain = _domain_for_anomalies(strong)
                         root_logical = _root_for_domain(strong, domain)
-                        report = build_provisional_report_v23(
-                            terminal="UNREGISTERED_INCIDENT_SUSPECTED",
-                            candidate_services=candidates,
-                            suspected_root_services=(root_logical,),
-                            affected_services=tuple(
-                                sorted({item.service for item in strong})
-                            ),
-                            broad_fault_domain=domain,
-                            provisional_mechanism_label="unregistered-observed-anomaly",
-                            mechanism_description=(
-                                "A strong observer-visible anomaly remains outside the active "
-                                "core and environment extension registries."
-                            ),
-                            observed_symptoms=tuple(
-                                sorted({item.summary for item in strong})
-                            ),
-                            supporting_evidence_refs=support,
-                            contradicting_evidence_refs=(),
-                            unexplained_anomaly_ids=tuple(sorted(residual_refs)),
-                            alternative_hypotheses=(
-                                "Another unregistered mechanism may explain the same observation.",
-                            ),
-                            recommended_next_observations=(
-                                "Collect another bounded read-only observation for comparison.",
-                            ),
-                            confidence=0.55,
-                            memory=memory,
-                            residual_anomaly_refs=residual_refs,
-                        )
-                        terminal = DiagnosisTerminalV1.OPEN_WORLD
-                        lane = DiagnosisLaneV1.OPEN_WORLD
-                        roots = (by_logical[root_logical],)
-                        broad_domain = domain.value
-                        mechanism = "UNREGISTERED_OBSERVED_ANOMALY"
-                        report_payload = report.model_dump(mode="json")
+                        if root_logical is None:
+                            terminal = DiagnosisTerminalV1.INSUFFICIENT_EVIDENCE
+                            lane = DiagnosisLaneV1.ABSTAIN
+                            algorithmic_reasons.add("OPEN_WORLD_ROOT_AMBIGUOUS")
+                        else:
+                            report = build_provisional_report_v23(
+                                terminal="UNREGISTERED_INCIDENT_SUSPECTED",
+                                candidate_services=candidates,
+                                suspected_root_services=(root_logical,),
+                                affected_services=tuple(
+                                    sorted({item.service for item in strong})
+                                ),
+                                broad_fault_domain=domain,
+                                provisional_mechanism_label="unregistered-observed-anomaly",
+                                mechanism_description=(
+                                    "A strong observer-visible anomaly remains outside the active "
+                                    "core and environment extension registries."
+                                ),
+                                observed_symptoms=tuple(
+                                    sorted({item.summary for item in strong})
+                                ),
+                                supporting_evidence_refs=support,
+                                contradicting_evidence_refs=(),
+                                unexplained_anomaly_ids=tuple(sorted(residual_refs)),
+                                alternative_hypotheses=(
+                                    "Another unregistered mechanism may explain the same observation.",
+                                ),
+                                recommended_next_observations=(
+                                    "Collect another bounded read-only observation for comparison.",
+                                ),
+                                confidence=0.55,
+                                memory=memory,
+                                residual_anomaly_refs=residual_refs,
+                            )
+                            terminal = DiagnosisTerminalV1.OPEN_WORLD
+                            lane = DiagnosisLaneV1.OPEN_WORLD
+                            roots = (by_logical[root_logical],)
+                            broad_domain = domain.value
+                            mechanism = "UNREGISTERED_OBSERVED_ANOMALY"
+                            report_payload = report.model_dump(mode="json")
                     else:
                         terminal = (
                             DiagnosisTerminalV1.CONFLICTING_EVIDENCE

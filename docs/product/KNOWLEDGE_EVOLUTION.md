@@ -25,6 +25,12 @@ Core overlap = 0、健康误报 = 0、引用有效率及正例来源可达率 = 
 并满足反事实、来源失败与权限检查。阈值是本地契约，不是普适最优值。
 不足时保留 `NEEDS_MORE_INCIDENTS` / `NEEDS_MORE_NEGATIVES` 等状态。
 
+后续故障族分配按 [DEC-062](../DECISIONS.md#dec-062--product-review-fixes-for-ambiguous-roots-and-missing-feature-similarity)
+处理共同缺失：空特征、空状态签名和 `UNKNOWN` 领域一致不贡献相似分。
+权重与 `0.65` 门槛保持不变，不对缺失维度重新归一化。
+因此特征不完整时，即使已观测部分相同，总分也可能小于 1。
+下文 v0.3 live 相似度保留为修复前的历史观测，未用新逻辑重算。
+
 源码：[runtime.py](../../src/ecomsre/product/knowledge/runtime.py) ·
 [repository.py](../../src/ecomsre/product/knowledge/repository.py) ·
 [compiler.py](../../src/ecomsre/product/knowledge/compiler.py)。
