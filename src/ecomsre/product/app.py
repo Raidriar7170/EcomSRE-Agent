@@ -29,13 +29,13 @@ from ecomsre.product.incidents.repository import (
     DiagnosisRepositoryV1,
     IncidentRepositoryV1,
 )
-from ecomsre.product.remediation.attempts import RemediationAttemptRepositoryV1
+from ecomsre.product.remediation.runtime import configured_attempts
 from ecomsre.product.remediation.api import router as remediation_router
 from ecomsre.product.remediation.repository import RemediationRepositoryV1
 from ecomsre.product.settings import ProductSettingsV1
 from ecomsre.product.storage.object_store import ContentAddressedObjectStoreV1
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
-from ecomsre.product.telemetry.metrics import ProductMetricsV1
+from ecomsre.product.remediation.metrics import ProductRemediationMetricsV1
 
 
 LOGGER = logging.getLogger(__name__)
@@ -75,9 +75,9 @@ def create_app(settings: ProductSettingsV1 | None = None) -> FastAPI:
     )
     app.state.diagnoses = DiagnosisRepositoryV1(store, app.state.object_store)
     app.state.knowledge = KnowledgeRepositoryV1(store, app.state.object_store)
-    app.state.metrics = ProductMetricsV1(store)
+    app.state.metrics = ProductRemediationMetricsV1(store)
     app.state.remediation = RemediationRepositoryV1(store, app.state.object_store)
-    app.state.remediation_attempts = RemediationAttemptRepositoryV1(app.state.remediation)
+    app.state.remediation_attempts = configured_attempts(app.state.remediation)
 
     @app.middleware("http")
     async def record_http_request(request: Request, call_next: object):

@@ -74,7 +74,8 @@ class RemediationAttemptV1(SealedRemediationModelV1):
     lease_expires_at: datetime | None = None
     lease_generation: int = Field(default=0, strict=True, ge=0)
     write_intent_id: str | None = Field(default=None, pattern=r"^intent-[0-9a-f]{24}$")
-    forward_write_count: int = Field(default=0, strict=True, ge=0, le=1)
+    # None explicitly means external outcome is unknown, never a confirmed zero.
+    forward_write_count: int | None = Field(default=0, strict=True, ge=0, le=1)
     terminal: AttemptStateV1 | None = None
     safe_error_code: DenialReasonV1 | None = None
     final_disposition: Literal["PENDING", "NO_WRITE", "ESCALATE_HUMAN", "RECOVERED"] = (

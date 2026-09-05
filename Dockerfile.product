@@ -13,8 +13,8 @@ COPY src ./src
 COPY config/product-v040/remediation-registry.v1.json ./config/product-v040/remediation-registry.v1.json
 
 RUN useradd --create-home --uid 10001 ecomsre \
-    && mkdir -p /var/lib/ecomsre \
-    && chown -R ecomsre:ecomsre /var/lib/ecomsre
+    && mkdir -p /var/lib/ecomsre /var/lib/remediation-control /run/remediation-read /run/remediation-write /run/remediation-config \
+    && chown -R ecomsre:ecomsre /var/lib/ecomsre /var/lib/remediation-control /run/remediation-read /run/remediation-write /run/remediation-config
 
 ENV PATH="/app/.venv/bin:${PATH}" \
     PYTHONPATH="/app/src" \

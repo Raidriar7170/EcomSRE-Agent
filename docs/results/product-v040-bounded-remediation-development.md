@@ -1,9 +1,28 @@
 # Product v0.4 bounded remediation development
 
-PR-A (#91) and PR-B (#92) are merged. PR-B merged at `e1292b34d3fbca00522347db4d7c63af52907b9d`; its exact-head CI passed with 6,416 tests passed, 21 skipped, Ruff PASS and mypy PASS for 679 source files. Both merges preserved the reviewed and tested trees.
+Current stage: PR-D. Terminal: `ECOMSRE_PRODUCT_V040_D_EXECUTOR_AND_VERIFIER_PASS`.
+Status: `OFFLINE_PASS_INTEGRATION_PENDING`.
 
-PR-C implements fresh state binding, transactional single-use authorization, one-active-target enforcement, fenced leases and persistent write intents. Local validation passed with 233 focused tests, Ruff, mypy for 227 source files, and frozen-history verification. It reached `ECOMSRE_PRODUCT_V040_C_STATE_BOUND_AUTHORIZATION_PASS`; independent review returned PASS / Must Fix 0 / Claim Accuracy PASS after two repaired findings. Committed-content closure, exact-head GitHub CI and merge remain pending. The [state authorization audit](../analysis/product-v040-state-authorization-audit.md) records the guarantees and limits.
+PR-A #91, PR-B #92 and PR-C #93 are merged after independent review and exact-head
+CI. PR-D implements isolated, default-disabled execution, a fixed authenticated
+Payment gateway, create-once dispatch/receipts and policy-bound two-window
+verification. The standalone deterministic demo uses synthetic persisted Product
+inputs, one fake mutation and two fake windows. A temporary Unix-socket test uses
+a fake upstream and closes its server. Neither is measured Payment evidence.
 
-Diagnosis remains unchanged and read-only. PR-C contains no real state provider, executor, mutation adapter, receipt or recovery verifier. A committed intent does not itself execute a write. No Product v0.4 live campaign has run, and overall Goal completion is not claimed.
+Local Product validation: 268 passed / 15 warnings, Ruff PASS, mypy 239 source
+files PASS. Independent Reviewer: PASS / Must Fix 0 / Claim Accuracy PASS;
+35 independent executor/gateway regression tests passed. History binding retains
+404 original frozen artifacts and the exact activated Goal SHA.
 
-The canonical machine-readable development record is [product-v040-bounded-remediation-development.json](product-v040-bounded-remediation-development.json). Frozen Goal and history are verified by `PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v040_history`.
+Live v0.4 campaigns, live forward mutations and Provider calls remain 0. Actual
+Docker startup, network-denial checks and the single live campaign are PR-E gates.
+PR-D committed content verification, exact-head CI and squash merge are pending.
+See the [structured result](product-v040-bounded-remediation-development.json),
+[PR-D audit](../analysis/product-v040-executor-verifier-audit.md), and
+[independent review](../external-reviews/product-v040-pr-d-review.md).
+
+CI run `33981962864` retained a subprocess import-path test failure (6492 passed,
+1 failed, 21 skipped). The test-only correction passes all 268 Product tests with
+outer PYTHONPATH unset and has independent review PASS. New exact-head CI remains
+required; the failed run is not represented as a pass.

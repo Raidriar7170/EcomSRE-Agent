@@ -285,6 +285,9 @@ jobs:
       - name: Agent mainline demo
         run: make agent-demo
 
+      - name: Product v0.4 offline remediation development verification
+        run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v040_development
+
       - name: Full repository tests
         env:
           GH_TOKEN: ${{ github.token }}

@@ -23,6 +23,8 @@ from ecomsre.product.remediation.contracts import (
     RemediationCandidateV1,
 )
 from ecomsre.product.remediation.repository import RemediationRepositoryV1
+from ecomsre.product.remediation.recovery import RecoveryRepositoryV1
+from ecomsre.product.remediation.execution_contracts import StepReceiptV1
 
 
 router = APIRouter(tags=["remediation"])
@@ -135,3 +137,15 @@ def get_attempt_trace(
     request: Request,
 ) -> tuple[RemediationDecisionEventV1, ...]:
     return request.app.state.remediation_attempts.trace(attempt_id)
+
+
+@router.get("/v1/remediation-attempts/{attempt_id}/receipts", response_model=tuple[StepReceiptV1, ...])
+def get_receipts(attempt_id: Annotated[str, Path(pattern=r"^attempt-[0-9a-f]{24}$")], request: Request) -> tuple[StepReceiptV1, ...]:
+    receipt = RecoveryRepositoryV1(request.app.state.remediation_attempts).receipt(attempt_id)
+    return (receipt,) if receipt is not None else ()
+
+
+@router.get("/v1/remediation-attempts/{attempt_id}/recovery")
+def get_recovery(attempt_id: Annotated[str, Path(pattern=r"^attempt-[0-9a-f]{24}$")], request: Request) -> dict[str, object]:
+    recovery = RecoveryRepositoryV1(request.app.state.remediation_attempts)
+    return {"windows": recovery.windows(attempt_id), "evaluation": recovery.evaluation(attempt_id)}

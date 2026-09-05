@@ -1,0 +1,22 @@
+# Required together with docker-compose.product.yml for enabled remediation.
+# API/Worker only reach the read-only observation proxy. The unauthenticated
+# upstream flag control endpoint is reachable only from the gateway network.
+services:
+  api:
+    networks: !override [remediation-observation]
+  worker:
+    networks: !override [remediation-observation]
+  remediation-executor:
+    environment:
+      ECOMSRE_REMEDIATION_ISOLATED_PROFILE: product-v040-network-v1
+  remediation-control-gateway:
+    networks: [default, remediation-observation]
+    environment:
+      ECOMSRE_REMEDIATION_ISOLATED_PROFILE: product-v040-network-v1
+      ECOMSRE_REMEDIATION_READ_PROXY_PORT: "8081"
+
+networks:
+  remediation-observation:
+    internal: true
+    labels:
+      io.ecomsre.product: ecomsre-product-mvp-v01

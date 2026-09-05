@@ -26,11 +26,11 @@ def test_product_docker_and_compose_are_two_process_read_only_shell() -> None:
     assert "python -m ecomsre.product.jobs.worker" in compose
     assert "127.0.0.1:${ECOMSRE_PRODUCT_API_PORT:-8080}:8080" in compose
     assert "${ECOMSRE_ADMIN_TOKEN:?" in compose
-    assert compose.count("ecomsre-product-data:/var/lib/ecomsre") == 2
+    assert compose.split("  remediation-executor:", maxsplit=1)[0].count("ecomsre-product-data:/var/lib/ecomsre") == 2
     assert "ecomsre-product-data:" in compose
     assert "docker.sock" not in compose
     assert "privileged:" not in compose
-    worker_section = compose.split("  worker:", maxsplit=1)[1]
+    worker_section = compose.split("  worker:", maxsplit=1)[1].split("  remediation-executor:", maxsplit=1)[0]
     assert "ECOMSRE_ADMIN_TOKEN" not in worker_section
     assert dockerignore.splitlines()[0] == "*"
     assert "!src/**" in dockerignore
