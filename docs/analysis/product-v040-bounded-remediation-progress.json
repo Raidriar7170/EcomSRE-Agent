@@ -3,16 +3,37 @@
   "goal_version": "ecomsre-product-v040-bounded-remediation-v1",
   "goal_sha256": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a",
   "starting_main": "3f851bdfd17f686fe84a20a390122deb9c7276b7",
-  "current_main": "3f851bdfd17f686fe84a20a390122deb9c7276b7",
-  "current_pr_stage": "A",
-  "current_branch": "codex/product-v040-remediation-contracts",
-  "current_head": "286ff93066dfd3f548e25fb9333445a8cea9c0eb",
-  "completed_prs": [],
-  "active_terminal": "ECOMSRE_PRODUCT_V040_A_CONTRACTS_AND_CANDIDATE_PASS",
+  "current_main": "a823456185aa88809a73eb193b63aefcc3afa745",
+  "current_pr_stage": "B",
+  "current_branch": "codex/product-v040-approval-api",
+  "current_head": "a823456185aa88809a73eb193b63aefcc3afa745",
+  "completed_prs": [
+    {
+      "stage": "A",
+      "pull_request": 91,
+      "head": "e2a415a0025ce4ab0a6233e43efa7bd84c95b799",
+      "merge_commit": "a823456185aa88809a73eb193b63aefcc3afa745",
+      "tree_sha": "4154d398f08d15ef88ca4f3bd98c149f200877f3",
+      "merged_at": "2026-09-05T14:18:37Z",
+      "exact_head_ci_run": 33970146162,
+      "ci_conclusion": "SUCCESS",
+      "full_tests": {
+        "passed": 6388,
+        "skipped": 21,
+        "failed": 0
+      },
+      "ruff": "PASS",
+      "mypy": "PASS: 675 files",
+      "review": "PASS / Must Fix 0 / Claim Accuracy PASS",
+      "tracked_diff_sha256": "9a878a9d26059151a8a7fe1f440f78ba3f6615e1014941b526c8b4e011a13e6e",
+      "final_evidence_sha256": "25d68c5c5a97cda7791e0cca1c8b7430ef5cd4f2974e10d3156fe8f113f2adc2"
+    }
+  ],
+  "active_terminal": "ECOMSRE_PRODUCT_V040_B_APPROVAL_WORKFLOW_PASS",
   "definition_of_done": {
-    "contracts_and_history": "IN_PROGRESS",
-    "candidate": "NOT_STARTED",
-    "approval_authorization": "NOT_STARTED",
+    "contracts_and_history": "PASS_MERGED",
+    "candidate": "PASS_MERGED",
+    "approval_authorization": "APPROVAL_IMPLEMENTED_AUTHORIZATION_NOT_STARTED",
     "executor_verification": "NOT_STARTED",
     "live_campaign": "NOT_STARTED",
     "integration": "NOT_STARTED"
@@ -44,6 +65,15 @@
       },
       "postcommit_regression": "2 passed",
       "final_content_closure": "PASS before this validation metadata refresh; final head will be freshly verified before merge."
+    },
+    {
+      "stage": "B",
+      "focused_product_and_v040": "190 passed, 13 warnings, 11.73 seconds",
+      "final_v040": "57 passed",
+      "ruff": "PASS",
+      "mypy": "PASS: 10 entrypoint source files",
+      "history": "PASS: 404 frozen files",
+      "git_diff_check": "PASS"
     }
   ],
   "reviews": [
@@ -53,13 +83,22 @@
       "must_fix": 0,
       "claim_accuracy": "PASS",
       "artifact": "docs/external-reviews/product-v040-pr-a-review.md"
+    },
+    {
+      "stage": "B",
+      "verdict": "PASS",
+      "must_fix": 0,
+      "claim_accuracy": "PASS",
+      "artifact": "docs/external-reviews/product-v040-pr-b-review.md"
     }
   ],
   "known_limitations": [
-    "No approval, authorization, execution or live evidence yet.",
-    "PR-A local offline terminal does not imply merge or overall Goal completion."
+    "PR-B contains no attempt authorization, executor, or environment mutation.",
+    "Approval status and active-approval validation confer no execution authority. Single-use consumption is a PR-C transaction gate.",
+    "Exact-head PR-B GitHub CI and merge remain outstanding.",
+    "No Product v0.4 live campaign has run; overall Goal remains incomplete."
   ],
-  "next_action": "Commit PR-A reviewed delta, obtain exact-head GitHub CI PASS, squash merge, then begin PR-B from merged main.",
+  "next_action": "Complete PR-B independent review and local verification, commit, obtain exact-head GitHub CI, squash merge, then begin PR-C from merged main.",
   "scope": {
     "read": [
       "Product, historical DTA, safety and decision contracts, tests and CI at starting main"
@@ -71,7 +110,9 @@
       "scripts/ci/**",
       "docs/analysis/product-v040-*",
       "docs/results/product-v040-*",
-      "docs/external-reviews/product-v040-*"
+      "docs/external-reviews/product-v040-*",
+      "src/ecomsre/product/app.py",
+      "Dockerfile.product"
     ],
     "frozen": [
       "third_party/opentelemetry-demo/**",
@@ -81,7 +122,7 @@
       "existing docs/results/product-*",
       "existing docs/analysis/product-v030-*"
     ],
-    "final_repository": "Dedicated PR-A worktree relative to exact starting_main",
+    "final_repository": "Dedicated PR-B worktree relative to a823456185aa88809a73eb193b63aefcc3afa745",
     "ignored_volatile_roots": [
       ".venv/",
       ".pytest_cache/",
@@ -96,5 +137,5 @@
     "Original Goal UTF-8 bytes are losslessly stored in a JSON text envelope because Markdown hard-break spaces fail git diff --check. Decoded source retains the activated Goal SHA-256; no whitespace gate is bypassed."
   ],
   "head_snapshot_semantics": "Last independently reviewed implementation commit. Administrative evidence commits are resolved from live Git/PR state.",
-  "current_pull_request": 91
+  "current_pull_request": null
 }
