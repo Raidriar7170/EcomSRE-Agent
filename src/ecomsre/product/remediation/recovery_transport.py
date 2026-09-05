@@ -54,7 +54,7 @@ class SignedRecoveryWindowProviderV1:
                     started_after
                     < observation.started_at
                     < observation.ended_at
-                    <= datetime.now(UTC)
+                    <= observation.created_at <= datetime.now(UTC)
                     and (observation.ended_at - observation.started_at).total_seconds()
                     == policy.window_seconds
                 ):

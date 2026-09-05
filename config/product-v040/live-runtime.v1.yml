@@ -1,0 +1,101 @@
+# Exact local campaign overlay, used after the required network overlay.
+# Private host directories are created 0700; each process uses the local UID/GID.
+name: ecomsre-product-v040
+services:
+  api:
+    image: ${ECOMSRE_V040_IMAGE:?}
+    user: ${ECOMSRE_V040_USER:?}
+    restart: "no"
+    labels:
+      io.ecomsre.product.v040.goal: d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a
+    volumes: !override
+      - ${ECOMSRE_V040_ROOT:?}/product:/var/lib/ecomsre
+      - ${ECOMSRE_V040_ROOT:?}/read:/run/remediation-read:ro
+      - ${ECOMSRE_V040_ROOT:?}/config:/run/remediation-config:ro
+  worker:
+    image: ${ECOMSRE_V040_IMAGE:?}
+    user: ${ECOMSRE_V040_USER:?}
+    restart: "no"
+    labels:
+      io.ecomsre.product.v040.goal: d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a
+    environment:
+      ECOMSRE_PRODUCT_PILOT_RUNTIME_AUTHORITY_PATH: /var/lib/ecomsre/pilot/runtime-authority.json
+    volumes: !override
+      - ${ECOMSRE_V040_ROOT:?}/product:/var/lib/ecomsre
+  remediation-executor:
+    image: ${ECOMSRE_V040_IMAGE:?}
+    user: ${ECOMSRE_V040_USER:?}
+    labels:
+      io.ecomsre.product.v040.goal: d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a
+    environment:
+      ECOMSRE_REMEDIATION_WINDOW_TOKEN: ${ECOMSRE_REMEDIATION_WINDOW_TOKEN:-}
+    volumes: !override
+      - ${ECOMSRE_V040_ROOT:?}/product:/var/lib/ecomsre
+      - ${ECOMSRE_V040_ROOT:?}/config:/run/remediation-config:ro
+      - ${ECOMSRE_V040_ROOT:?}/read:/run/remediation-read:ro
+      - ${ECOMSRE_V040_ROOT:?}/write:/run/remediation-write:ro
+  remediation-control-gateway:
+    image: ${ECOMSRE_V040_IMAGE:?}
+    user: ${ECOMSRE_V040_USER:?}
+    networks: !override [default]
+    labels:
+      io.ecomsre.product.v040.goal: d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a
+    environment:
+      ECOMSRE_REMEDIATION_READ_PROXY_PORT: ""
+      ECOMSRE_REMEDIATION_WINDOW_TOKEN: ${ECOMSRE_REMEDIATION_WINDOW_TOKEN:-}
+      ECOMSRE_REMEDIATION_WINDOW_REQUESTS: /run/remediation-requests
+      ECOMSRE_REMEDIATION_WINDOW_RESPONSES: /run/remediation-observer/windows
+    volumes: !override
+      - ${ECOMSRE_V040_ROOT:?}/product:/var/lib/ecomsre
+      - ${ECOMSRE_V040_ROOT:?}/config:/run/remediation-config:ro
+      - ${ECOMSRE_V040_ROOT:?}/read:/run/remediation-read
+      - ${ECOMSRE_V040_ROOT:?}/write:/run/remediation-write
+      - ${ECOMSRE_V040_ROOT:?}/ledger:/var/lib/remediation-control
+      - ${ECOMSRE_V040_ROOT:?}/control:/run/remediation-private:ro
+      - ${ECOMSRE_V040_ROOT:?}/observer:/run/remediation-observer:ro
+      - ${ECOMSRE_V040_ROOT:?}/requests:/run/remediation-requests
+      - ${ECOMSRE_V040_ROOT:?}/sandbox/runtime/flagd:/runtime/payment-flags:ro
+  remediation-observer:
+    image: ${ECOMSRE_V040_IMAGE:?}
+    user: ${ECOMSRE_V040_USER:?}
+    pull_policy: never
+    command: python -m ecomsre.product.remediation.runtime observation-proxy
+    labels:
+      io.ecomsre.product: ecomsre-product-mvp-v01
+      io.ecomsre.product.v040.goal: d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a
+    environment:
+      ECOMSRE_REMEDIATION_ENABLED: "1"
+      ECOMSRE_REMEDIATION_ISOLATED_PROFILE: product-v040-network-v1
+    volumes:
+      - ${ECOMSRE_V040_ROOT:?}/proxy:/run/remediation-private:ro
+    networks: [default, remediation-observation]
+    read_only: true
+    tmpfs: [/tmp:rw,noexec,nosuid,nodev,size=16m]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    restart: "no"
+networks:
+  default:
+    name: ecomsre-product-v040-default
+    labels:
+      io.ecomsre.product.v040.goal: d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a
+  remediation-observation:
+    labels:
+      io.ecomsre.product.v040.goal: d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a
+
+volumes:
+  ecomsre-product-data:
+    labels:
+      io.ecomsre.product.v040.goal: d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a
+  remediation-config:
+    labels:
+      io.ecomsre.product.v040.goal: d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a
+  remediation-read:
+    labels:
+      io.ecomsre.product.v040.goal: d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a
+  remediation-write:
+    labels:
+      io.ecomsre.product.v040.goal: d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a
+  remediation-control-ledger:
+    labels:
+      io.ecomsre.product.v040.goal: d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a

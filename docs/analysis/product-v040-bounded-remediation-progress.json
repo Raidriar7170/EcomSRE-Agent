@@ -3,10 +3,10 @@
   "goal_version": "ecomsre-product-v040-bounded-remediation-v1",
   "goal_sha256": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a",
   "starting_main": "3f851bdfd17f686fe84a20a390122deb9c7276b7",
-  "current_main": "ded81cae5419d9bc950221c24f03cdee7bfa66df",
-  "current_pr_stage": "D",
-  "current_branch": "codex/product-v040-executor-verifier",
-  "current_head": "65f080a7e8d12cf8100f6a4edea45e45dc9f9a2b",
+  "current_main": "cc941b51cbff9287b876be49652cd0ad83030474",
+  "current_pr_stage": "E",
+  "current_branch": "codex/product-v040-live-payment",
+  "current_head": "cc941b51cbff9287b876be49652cd0ad83030474",
   "completed_prs": [
     {
       "stage": "A",
@@ -69,6 +69,27 @@
       "review": "PASS / Must Fix 0 / Claim Accuracy PASS",
       "tracked_diff_sha256": "4353a03399736047d044bfd7b36434b5d6e38fe9813fe3d4824c4b5cc2c584b2",
       "final_evidence_sha256": "93958438e8d75e371c7801015a9f52623ee3939b19fc4e0a7fd9505e4e44cc05"
+    },
+    {
+      "stage": "D",
+      "pull_request": 94,
+      "head": "107cbc588881310fede1f3f818ba6aa005dcae0a",
+      "merge_commit": "cc941b51cbff9287b876be49652cd0ad83030474",
+      "tree_sha": "1b3baa986bcffc00dd4064c8b6c147c30f15e4d3",
+      "merged_at": "2026-09-05T18:47:56Z",
+      "exact_head_ci_run": 33983758581,
+      "ci_conclusion": "SUCCESS",
+      "full_tests": {
+        "passed": 6493,
+        "skipped": 21,
+        "failed": 0,
+        "elapsed_seconds": 686.36
+      },
+      "ruff": "PASS",
+      "mypy": "PASS: 694 source files",
+      "review": "PASS / Must Fix 0 / Claim Accuracy PASS",
+      "tracked_diff_sha256": "c2e04dde309359689a9a7e844e49240bb6ab63ce8927373cf46b93e896df1b7c",
+      "final_evidence_sha256": "493a304be0b051bfb6c5b754ce6621a5db83e8a0cc85ce950a7f848a594daca1"
     }
   ],
   "active_terminal": "ECOMSRE_PRODUCT_V040_D_EXECUTOR_AND_VERIFIER_PASS",
@@ -76,7 +97,7 @@
     "contracts_and_history": "PASS_MERGED",
     "candidate": "PASS_MERGED",
     "approval_authorization": "PASS_MERGED",
-    "executor_verification": "OFFLINE_PASS_INTEGRATION_PENDING",
+    "executor_verification": "OFFLINE_PASS_MERGED",
     "live_campaign": "NOT_STARTED",
     "integration": "NOT_STARTED"
   },
@@ -160,6 +181,17 @@
       },
       "full_ruff": "PASS",
       "mainline_mypy_local": "PASS: 694 source files; existing frozen RCA100 dependency installed; no-incremental after refreshing a cached missing-import result"
+    },
+    {
+      "stage": "E_PREPARATION_SOURCE",
+      "focused_product": "292 passed before final added regressions",
+      "export_regressions": "9 passed",
+      "git_host_result_regressions": "26 passed",
+      "ruff": "PASS: full repository",
+      "mypy": "PASS: 264 scoped files; 698 mainline files",
+      "compose_resolution": "PASS: 5 services, 0 named volumes; no resource mutation",
+      "full_repository": "RUNNING; no aggregate PASS claimed",
+      "live": "NOT_STARTED"
     }
   ],
   "reviews": [
@@ -190,14 +222,21 @@
       "must_fix": 0,
       "claim_accuracy": "PASS",
       "artifact": "docs/external-reviews/product-v040-pr-d-review.md"
+    },
+    {
+      "stage": "E_PREPARATION_SOURCE",
+      "verdict": "PASS",
+      "must_fix": 0,
+      "claim_accuracy": "PASS",
+      "artifact": "docs/external-reviews/product-v040-preparation-source-review.md"
     }
   ],
   "known_limitations": [
-    "PR-A through PR-C are merged with exact-head CI and independent review.",
-    "PR-D is independently reviewed with offline fixtures and a temporary Unix-socket test only; GitHub CI and merge pending.",
-    "Actual Docker startup, API/Worker denied control reachability, live observer measurements and the Payment campaign remain PR-E gates."
+    "PR-A through PR-D are merged with exact-head CI and independent review.",
+    "PR-E integration preparation is in progress; actual network denial, healthy baseline and pre-execution freeze remain unmeasured.",
+    "Formal Payment fault campaign, accepted attempts, write intents, forward mutations and Provider calls remain zero."
   ],
-  "next_action": "Commit PR-D and verify complete content; exact-head GitHub CI, squash merge and merged tree comparison; only then enter PR-E.",
+  "next_action": "Complete PR-E offline integration, owned runtime preparation, independent pre-execution review and exact-head CI before freezing the single campaign.",
   "scope": {
     "read": [
       "Product, historical DTA, safety and decision contracts, tests and CI at starting main"
@@ -216,7 +255,8 @@
       "scripts/product/**",
       "examples/product/**",
       ".github/workflows/agent-mainline.yml",
-      "tests/product/**"
+      "tests/product/**",
+      "scripts/live_sandbox/**"
     ],
     "frozen": [
       "third_party/opentelemetry-demo/**",
@@ -226,7 +266,7 @@
       "existing docs/results/product-*",
       "existing docs/analysis/product-v030-*"
     ],
-    "final_repository": "Dedicated PR-D worktree relative to ded81cae5419d9bc950221c24f03cdee7bfa66df",
+    "final_repository": "Dedicated PR-E worktree relative to cc941b51cbff9287b876be49652cd0ad83030474",
     "ignored_volatile_roots": [
       ".venv/",
       ".pytest_cache/",
@@ -241,5 +281,5 @@
     "Original Goal UTF-8 bytes are losslessly stored in a JSON text envelope because Markdown hard-break spaces fail git diff --check. Decoded source retains the activated Goal SHA-256; no whitespace gate is bypassed."
   ],
   "head_snapshot_semantics": "Last independently reviewed implementation commit. Administrative evidence commits are resolved from live Git/PR state.",
-  "current_pull_request": 94
+  "current_pull_request": null
 }

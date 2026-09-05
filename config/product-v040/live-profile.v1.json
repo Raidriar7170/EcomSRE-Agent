@@ -1,0 +1,44 @@
+{
+  "schema_version": "ecomsre.product.v040.live-profile.v1",
+  "mode": "OWNED_LOCAL_ONLY",
+  "product_project": "ecomsre-product-v040",
+  "product_api_port": 18001,
+  "healthy_traffic": {
+    "request_seed": 40401,
+    "maximum_request_count": 30,
+    "requests_per_second": 0.16666666666666666,
+    "error_budget": 1
+  },
+  "healthy_observation_seconds": 360,
+  "baseline_build_policy": {
+    "mode": "DEMO_ONLY",
+    "lookback_seconds": 180,
+    "window_count": 5,
+    "minimum_successful_windows": 5,
+    "warmup_seconds": 180
+  },
+  "fault_traffic": {
+    "request_seed": 40402,
+    "maximum_request_count": 10,
+    "requests_per_second": 0.03333333333333333,
+    "error_budget": 10
+  },
+  "fault_observation_seconds": 300,
+  "recovery_window_seconds": 60,
+  "recovery_requests_per_window": 6,
+  "recovery_minimum_requests": 5,
+  "recovery_business_error_ratio_max": 0.0,
+  "recovery_request_seeds": [
+    40403,
+    40404
+  ],
+  "maximum_fault_campaigns": 1,
+  "maximum_accepted_attempts": 1,
+  "maximum_write_intents": 1,
+  "maximum_forward_mutations": 1,
+  "provider_calls": 0,
+  "recovery_request_interval_seconds": 8,
+  "recovery_request_timeout_seconds": 4,
+  "endpoint_observation": "CHECKOUT_PAYMENT_HTTP_STATUS",
+  "business_observation": "CHECKOUT_ORDER_ID_AND_NONEMPTY_ITEMS"
+}

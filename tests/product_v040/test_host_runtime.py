@@ -1,0 +1,163 @@
+"""No Docker calls: fixed runtime targeting, build inputs and business oracle."""
+
+from types import SimpleNamespace
+import json
+
+import httpx
+import pytest
+
+from scripts.live_sandbox.product_v040 import PinnedDockerRunnerV040
+from scripts.product.v040_observer import (
+    HostLoopbackTransportV040,
+    checkout_business_passed,
+)
+from scripts.product.v040_runtime import ProductRuntimeV040
+
+
+def test_runtime_build_context_includes_registry_excludes_private(
+    tmp_path, monkeypatch
+):
+    repo = tmp_path / "repository"
+    repo.mkdir()
+    runtime = ProductRuntimeV040(repo)
+    (runtime.private / "host").mkdir(mode=0o700, parents=True)
+    names = [
+        "Dockerfile.product",
+        "pyproject.toml",
+        "uv.lock",
+        "src/nested/module.py",
+        "config/product-v040/remediation-registry.v1.json",
+    ]
+    for name in names:
+        path = repo / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(name)
+    (repo / ".dockerignore").write_text("*\n!src/**\n")
+    (runtime.private / "host/secret.json").write_text("PRIVATE")
+    monkeypatch.setattr(
+        runtime,
+        "command",
+        lambda argv: "\0".join(f"100644 {'a' * 40} 0\t{name}" for name in names),
+    )
+    result = runtime.build_context()
+    assert set(result) == set(names)
+    context = runtime.private / "host/build-context"
+    assert {
+        str(p.relative_to(context)) for p in context.rglob("*") if p.is_file()
+    } == set(names)
+    assert not (context / ".dockerignore").exists()
+    with pytest.raises(FileExistsError):
+        runtime.build_context()
+
+
+def test_sandbox_docker_runner_uses_same_fixed_context(monkeypatch, tmp_path):
+    captured = []
+
+    def execute(argv, **kwargs):
+        captured.append((argv, kwargs))
+        return SimpleNamespace(returncode=0, stdout="ok", stderr="")
+
+    monkeypatch.setattr("ecomsre_live_sandbox.environment.subprocess.run", execute)
+    runner = PinnedDockerRunnerV040()
+    runner.run(
+        ("docker", "info"),
+        cwd=tmp_path,
+        env={
+            "PATH": "/bin",
+            "DOCKER_HOST": "tcp://wrong:2375",
+            "DOCKER_CONTEXT": "other",
+            "SANDBOX_FLAGD_DIR": "/owned",
+        },
+    )
+    argv, options = captured[0]
+    assert argv == ["docker", "--context", "desktop-linux", "info"]
+    assert options["env"] == {"PATH": "/bin", "SANDBOX_FLAGD_DIR": "/owned"}
+
+
+def test_product_does_not_accept_daemon_drift(tmp_path, monkeypatch):
+    runtime = ProductRuntimeV040(tmp_path)
+    (runtime.private / "host").mkdir(mode=0o700, parents=True)
+    expected = {
+        "context": "desktop-linux",
+        "endpoint": "unix:///local.sock",
+        "daemon_id": "old",
+    }
+    (runtime.private / "host/daemon.json").write_text(json.dumps(expected))
+    monkeypatch.setattr(
+        runtime,
+        "docker",
+        lambda *args: (
+            json.dumps("unix:///local.sock")
+            if args[0] == "context"
+            else json.dumps({"OSType": "linux", "Architecture": "aarch64", "ID": "new"})
+        ),
+    )
+    with pytest.raises(ValueError, match="drift"):
+        runtime.boundary()
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {},
+        {"orderId": "id", "items": []},
+        {"orderId": "", "items": [{}]},
+        {
+            "orderId": "id",
+            "items": [{"item": {"productId": "different", "quantity": 1}}],
+        },
+    ],
+)
+def test_business_oracle_rejects_nominal_http_success_without_order(payload):
+    assert not checkout_business_passed(payload)
+
+
+def test_business_oracle_requires_the_frozen_cart_item():
+    assert checkout_business_passed(
+        {
+            "orderId": "fictional",
+            "items": [{"item": {"productId": "0PUK6V6EV0", "quantity": 1}}],
+        }
+    )
+
+
+def test_host_mapping_preserves_profile_identity_and_rejects_other_origins():
+    transport = HostLoopbackTransportV040()
+    with pytest.raises(ValueError, match="outside"):
+        transport.handle_request(
+            httpx.Request("GET", "http://example.invalid:18080/read")
+        )
+    with pytest.raises(ValueError, match="outside"):
+        transport.handle_request(
+            httpx.Request("GET", "http://host.docker.internal:2375/read")
+        )
+    transport.close()
+
+
+def test_operation_lock_excludes_second_cleanup_process(tmp_path):
+    import subprocess
+    import sys
+    runtime = ProductRuntimeV040(tmp_path)
+    with runtime.operation_lock():
+        result = subprocess.run(
+            [sys.executable, "-c", "from pathlib import Path; from scripts.product.v040_runtime import ProductRuntimeV040; "
+             "runtime=ProductRuntimeV040(Path(__import__('sys').argv[1])); "
+             "runtime.operation_lock().__enter__()", str(tmp_path)],
+            capture_output=True, text=True,
+        )
+        assert result.returncode != 0 and "another campaign operation is active" in result.stderr
+    with runtime.operation_lock():
+        pass
+
+
+def test_cancelled_observer_cannot_acquire_or_sample(tmp_path):
+    import threading
+    from scripts.product.v040_observer import LiveObserverV040
+    observer = object.__new__(LiveObserverV040)
+    observer.stop_event = threading.Event()
+    observer.stop_event.set()
+    observer.private = tmp_path
+    request = SimpleNamespace(attempt_id="attempt-" + "a" * 24, ordinal=1)
+    with pytest.raises(InterruptedError, match="consumed window"):
+        observer.window(request, None)
+    assert not list(tmp_path.rglob("*"))
