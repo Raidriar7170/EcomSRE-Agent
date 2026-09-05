@@ -1,0 +1,22 @@
+{
+  "schema_version": "ecomsre.product.remediation-development.v1",
+  "goal_version": "ecomsre-product-v040-bounded-remediation-v1",
+  "stage": "A",
+  "terminal": "ECOMSRE_PRODUCT_V040_A_CONTRACTS_AND_CANDIDATE_PASS",
+  "status": "OFFLINE_PASS_INTEGRATION_PENDING",
+  "claim": "Offline contracts and deterministic non-actionable candidate projection only.",
+  "completed_prs": [],
+  "validation": {
+    "focused_product_and_v040": "162 passed before final added multi-admission regression",
+    "ruff": "PASS",
+    "mypy": "PASS: 212 source files",
+    "history": "PASS: 404 frozen files",
+    "final_v040": "30 passed",
+    "full_repository": "RUNNING; initial collection required existing CI-locked pyarrow installation"
+  },
+  "review": "PASS / Must Fix 0 / Claim Accuracy PASS",
+  "github_ci": "NOT_RUN",
+  "live_campaigns": 0,
+  "forward_mutations": 0,
+  "provider_calls": 0
+}

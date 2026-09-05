@@ -1,0 +1,31 @@
+{
+  "schema_version": "ecomsre.product.remediation-contract-audit.v1",
+  "stage": "A",
+  "status": "OFFLINE_REVIEW_PASS",
+  "implemented": [
+    "Product-owned sealed registry with exactly one LOW Payment configuration rollback mapping",
+    "Immutable deterministic non-actionable candidate and denial contracts",
+    "Read-only existing Product repository projection with CAS and effective Core admission reconstruction",
+    "Exact source/status/record/memory provenance and selected-source capability checks",
+    "Byte-exact Goal and 404 historical-artifact bindings"
+  ],
+  "not_implemented_in_pr_a": [
+    "Approval",
+    "Attempt authorization",
+    "Write intent",
+    "Executor",
+    "Recovery verifier",
+    "Live campaign"
+  ],
+  "diagnosis_contract_changes": false,
+  "historical_runtime_changes": false,
+  "provider_calls": 0,
+  "environment_mutations": 0,
+  "reviews": {
+    "ref_payload_swap": "Rejected by reconstructed exact observation mapping",
+    "raw_failure_successful_memory_laundering": "Rejected by connector/raw/memory consistency",
+    "capability_observation_matrix_drift": "Rejected by scoped matrix projection"
+  },
+  "timestamp_semantics": "Candidate created_at is the persisted diagnosis timestamp, an immutable semantic anchor for deterministic candidate construction; approval and authorization will carry fresh issue times. Registry and runbook have explicit UTC creation times.",
+  "scope_note": "The original Goal bytes are stored under allowed config/product-v040, not the example activation-prompt path. PR-A changes only new Product remediation, tests, verifier, and bounded Goal/evidence documentation."
+}

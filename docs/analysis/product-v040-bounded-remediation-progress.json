@@ -1,0 +1,87 @@
+{
+  "schema_version": "ecomsre.product.remediation-progress.v1",
+  "goal_version": "ecomsre-product-v040-bounded-remediation-v1",
+  "goal_sha256": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a",
+  "starting_main": "3f851bdfd17f686fe84a20a390122deb9c7276b7",
+  "current_main": "3f851bdfd17f686fe84a20a390122deb9c7276b7",
+  "current_pr_stage": "A",
+  "current_branch": "codex/product-v040-remediation-contracts",
+  "current_head": "3f851bdfd17f686fe84a20a390122deb9c7276b7",
+  "completed_prs": [],
+  "active_terminal": "ECOMSRE_PRODUCT_V040_A_CONTRACTS_AND_CANDIDATE_PASS",
+  "definition_of_done": {
+    "contracts_and_history": "IN_PROGRESS",
+    "candidate": "NOT_STARTED",
+    "approval_authorization": "NOT_STARTED",
+    "executor_verification": "NOT_STARTED",
+    "live_campaign": "NOT_STARTED",
+    "integration": "NOT_STARTED"
+  },
+  "live_authority": {
+    "activated": true,
+    "fault_campaigns_used": 0,
+    "write_intents_used": 0,
+    "forward_mutations_used": 0,
+    "measured_terminal": null
+  },
+  "validation": [
+    {
+      "stage": "A",
+      "focused_product_plus_v040": "162 passed before final added regression",
+      "final_v040": "30 passed",
+      "ruff": "PASS",
+      "mypy": "PASS: 212 source files",
+      "history": "PASS: 404 frozen files",
+      "git_diff_check": "PASS"
+    }
+  ],
+  "reviews": [
+    {
+      "stage": "A",
+      "verdict": "PASS",
+      "must_fix": 0,
+      "claim_accuracy": "PASS",
+      "artifact": "docs/external-reviews/product-v040-pr-a-review.md"
+    }
+  ],
+  "known_limitations": [
+    "No approval, authorization, execution or live evidence yet.",
+    "PR-A local offline terminal does not imply merge or overall Goal completion."
+  ],
+  "next_action": "Commit PR-A reviewed delta, obtain exact-head GitHub CI PASS, squash merge, then begin PR-B from merged main.",
+  "scope": {
+    "read": [
+      "Product, historical DTA, safety and decision contracts, tests and CI at starting main"
+    ],
+    "write": [
+      "config/product-v040/**",
+      "src/ecomsre/product/remediation/**",
+      "tests/product_v040/**",
+      "scripts/ci/**",
+      "docs/analysis/product-v040-*",
+      "docs/results/product-v040-*",
+      "docs/external-reviews/product-v040-*"
+    ],
+    "frozen": [
+      "third_party/opentelemetry-demo/**",
+      "src/ecomsre/dta_v2/**",
+      "config/dta-v2/**",
+      "existing docs/results/dta-*",
+      "existing docs/results/product-*",
+      "existing docs/analysis/product-v030-*"
+    ],
+    "final_repository": "Dedicated PR-A worktree relative to exact starting_main",
+    "ignored_volatile_roots": [
+      ".venv/",
+      ".pytest_cache/",
+      ".mypy_cache/",
+      ".ruff_cache/",
+      "**/__pycache__/"
+    ]
+  },
+  "assumptions": [
+    "The byte-exact Goal source is stored under the explicitly allowed config/product-v040 directory.",
+    "No OpenSpec configuration exists at the starting tree; no OpenSpec initialization is performed.",
+    "Original Goal UTF-8 bytes are losslessly stored in a JSON text envelope because Markdown hard-break spaces fail git diff --check. Decoded source retains the activated Goal SHA-256; no whitespace gate is bypassed."
+  ]
+}
