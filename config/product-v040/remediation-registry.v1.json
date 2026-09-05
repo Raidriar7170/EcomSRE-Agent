@@ -1,0 +1,41 @@
+{
+  "schema_version": "ecomsre.product.remediation-registry.v1",
+  "entries": [
+    {
+      "schema_version": "ecomsre.product.remediation-runbook.v1",
+      "runbook_id": "ROLLBACK_CONFIGURATION",
+      "version": "v1",
+      "supported_terminal": "CORE_KNOWN",
+      "supported_lane": "CORE",
+      "supported_domain": "CONFIGURATION",
+      "supported_mechanism": "CONFIGURATION_ERROR",
+      "target_logical_service": "payment",
+      "risk_level": "LOW",
+      "parameters": [],
+      "allowed_diagnosis_clause_ids": [
+        "configuration:change-and-error-metric",
+        "configuration:change-and-log"
+      ],
+      "preconditions": [
+        "OWNED_LOCAL_ENVIRONMENT",
+        "UNIQUE_ROOT",
+        "DIAGNOSIS_EVIDENCE_BOUND",
+        "CONFIGURATION_DRIFT_VISIBLE",
+        "BASELINE_HASH_BOUND",
+        "APPROVAL_ACTIVE",
+        "NO_ACTIVE_REMEDIATION"
+      ],
+      "forward_steps": [
+        "RESTORE_BASELINE_CONFIGURATION"
+      ],
+      "executor_id": "ProductPaymentConfigurationRollbackExecutor",
+      "verifier_id": "ProductPaymentConfigurationRecoveryVerifier",
+      "maximum_forward_steps": 1,
+      "failure_policy": "ESCALATE_HUMAN",
+      "created_at": "2026-09-05T00:00:00Z",
+      "runbook_sha256": "386e542b02e71969d0494ce92440443026c6686c91a297da071e58f2e3fecaed"
+    }
+  ],
+  "created_at": "2026-09-05T00:00:00Z",
+  "registry_sha256": "5722c03cbc94539212a054557ab65b1ecdb145e76e86904689d75df188b588b1"
+}

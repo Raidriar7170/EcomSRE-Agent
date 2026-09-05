@@ -1,0 +1,41 @@
+{
+  "schema_version": "ecomsre.product.remediation-goal-contract.v1",
+  "goal_version": "ecomsre-product-v040-bounded-remediation-v1",
+  "goal_sha256": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a",
+  "goal_source": "config/product-v040/goal-contract.source.json",
+  "starting_main": "3f851bdfd17f686fe84a20a390122deb9c7276b7",
+  "starting_tree": "61341661145010a785e5d256583107dc75bf8046",
+  "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+  "activated_at": "2026-09-05T13:16:25.263406+00:00",
+  "authorization_source": "USER_EXPLICIT_PRODUCT_V040_GOAL_AUTHORIZATION",
+  "activation_instruction": "激活",
+  "environment_assumptions": {
+    "host_os": "Darwin",
+    "host_architecture": "arm64",
+    "owned_local_only": true,
+    "runtime_state": "NOT_INSPECTED",
+    "provider_calls_required": 0
+  },
+  "scope": {
+    "sequential_prs": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+    ],
+    "runbook": "ROLLBACK_CONFIGURATION",
+    "target": "payment",
+    "maximum_forward_steps": 1,
+    "maximum_formal_fault_campaigns": 1,
+    "maximum_accepted_attempts": 1,
+    "maximum_write_intents": 1,
+    "maximum_forward_mutations": 1,
+    "required_recovery_windows_after_applied": 2,
+    "default_remediation_enabled": false
+  },
+  "live_authority_activated": true,
+  "live_execution_gate": "PR_E_REVIEW_AND_EXACT_HEAD_CI_REQUIRED",
+  "goal_source_encoding": "UTF-8 text field in lossless JSON envelope",
+  "contract_sha256": "caae637e6d4fdaf47c1768a8661bcfeb38f84c223fb0a2b89d489e51d584b787"
+}
