@@ -1,7 +1,10 @@
 # Product v0.4 bounded remediation development
 
-Current stage: PR-D. Terminal: `ECOMSRE_PRODUCT_V040_D_EXECUTOR_AND_VERIFIER_PASS`.
-Status: `OFFLINE_PASS_INTEGRATION_PENDING`.
+Current stage: PR-E. Status: `safety_checkpoint / BLOCKED_PRE_EXECUTION_OWNERSHIP`.
+PR-A through PR-D are merged. See the [current Human Brief](product-v040-payment-live-human-brief.md).
+
+The following section preserves the PR-D offline development evidence:
+`ECOMSRE_PRODUCT_V040_D_EXECUTOR_AND_VERIFIER_PASS`.
 
 PR-A #91, PR-B #92 and PR-C #93 are merged after independent review and exact-head
 CI. PR-D implements isolated, default-disabled execution, a fixed authenticated
@@ -17,7 +20,8 @@ files PASS. Independent Reviewer: PASS / Must Fix 0 / Claim Accuracy PASS;
 
 Live v0.4 campaigns, live forward mutations and Provider calls remain 0. Actual
 Docker startup, network-denial checks and the single live campaign are PR-E gates.
-PR-D committed content verification, exact-head CI and squash merge are pending.
+PR-D content verification, exact-head CI and squash merge completed as recorded
+in the [progress ledger](../analysis/product-v040-bounded-remediation-progress.json).
 See the [structured result](product-v040-bounded-remediation-development.json),
 [PR-D audit](../analysis/product-v040-executor-verifier-audit.md), and
 [independent review](../external-reviews/product-v040-pr-d-review.md).

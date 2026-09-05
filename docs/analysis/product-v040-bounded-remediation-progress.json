@@ -3,10 +3,10 @@
   "goal_version": "ecomsre-product-v040-bounded-remediation-v1",
   "goal_sha256": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a",
   "starting_main": "3f851bdfd17f686fe84a20a390122deb9c7276b7",
-  "current_main": "ded81cae5419d9bc950221c24f03cdee7bfa66df",
-  "current_pr_stage": "D",
-  "current_branch": "codex/product-v040-executor-verifier",
-  "current_head": "65f080a7e8d12cf8100f6a4edea45e45dc9f9a2b",
+  "current_main": "cc941b51cbff9287b876be49652cd0ad83030474",
+  "current_pr_stage": "E",
+  "current_branch": "codex/product-v040-live-payment",
+  "current_head": "a0e8aab077bdd6f9c8374f05f3f53127c4820fda",
   "completed_prs": [
     {
       "stage": "A",
@@ -69,6 +69,27 @@
       "review": "PASS / Must Fix 0 / Claim Accuracy PASS",
       "tracked_diff_sha256": "4353a03399736047d044bfd7b36434b5d6e38fe9813fe3d4824c4b5cc2c584b2",
       "final_evidence_sha256": "93958438e8d75e371c7801015a9f52623ee3939b19fc4e0a7fd9505e4e44cc05"
+    },
+    {
+      "stage": "D",
+      "pull_request": 94,
+      "head": "107cbc588881310fede1f3f818ba6aa005dcae0a",
+      "merge_commit": "cc941b51cbff9287b876be49652cd0ad83030474",
+      "tree_sha": "1b3baa986bcffc00dd4064c8b6c147c30f15e4d3",
+      "merged_at": "2026-09-05T18:47:56Z",
+      "exact_head_ci_run": 33983758581,
+      "ci_conclusion": "SUCCESS",
+      "full_tests": {
+        "passed": 6493,
+        "skipped": 21,
+        "failed": 0,
+        "elapsed_seconds": 686.36
+      },
+      "ruff": "PASS",
+      "mypy": "PASS: 694 source files",
+      "review": "PASS / Must Fix 0 / Claim Accuracy PASS",
+      "tracked_diff_sha256": "c2e04dde309359689a9a7e844e49240bb6ab63ce8927373cf46b93e896df1b7c",
+      "final_evidence_sha256": "493a304be0b051bfb6c5b754ce6621a5db83e8a0cc85ce950a7f848a594daca1"
     }
   ],
   "active_terminal": "ECOMSRE_PRODUCT_V040_D_EXECUTOR_AND_VERIFIER_PASS",
@@ -76,8 +97,8 @@
     "contracts_and_history": "PASS_MERGED",
     "candidate": "PASS_MERGED",
     "approval_authorization": "PASS_MERGED",
-    "executor_verification": "OFFLINE_PASS_INTEGRATION_PENDING",
-    "live_campaign": "NOT_STARTED",
+    "executor_verification": "OFFLINE_PASS_MERGED",
+    "live_campaign": "PREPARATION_FAILED_BEFORE_FORMAL_FREEZE",
     "integration": "NOT_STARTED"
   },
   "live_authority": {
@@ -160,6 +181,27 @@
       },
       "full_ruff": "PASS",
       "mainline_mypy_local": "PASS: 694 source files; existing frozen RCA100 dependency installed; no-incremental after refreshing a cached missing-import result"
+    },
+    {
+      "stage": "E_PREPARATION_SOURCE",
+      "focused_product": "292 passed before final added regressions",
+      "export_regressions": "9 passed",
+      "git_host_result_regressions": "26 passed",
+      "ruff": "PASS: full repository",
+      "mypy": "PASS: 264 scoped files; 698 mainline files",
+      "compose_resolution": "PASS: 5 services, 0 named volumes; no resource mutation",
+      "full_repository": "6537 passed, 21 skipped, 16 warnings in 614.44 seconds with explicit PYTHONPATH; no bare-environment aggregate claim",
+      "live": "NOT_STARTED",
+      "transient_validation": {
+        "precommit_full": {
+          "passed": 6522,
+          "failed": 1,
+          "skipped": 21,
+          "reason": "Historical attribution audit rejected uncommitted paths; exact clean-commit regression passed."
+        },
+        "bare_environment_reproduction": "New lock subprocess test failed to import ecomsre without inherited PYTHONPATH; corrected test-only cwd, minimal source path and timeout. Independent host-runtime file: 11 passed with outer PYTHONPATH unset. New clean full run and CI required."
+      },
+      "full_repository_bare_environment": "6537 passed, 21 skipped, 16 warnings in 613.54 seconds; outer PYTHONPATH unset"
     }
   ],
   "reviews": [
@@ -190,14 +232,21 @@
       "must_fix": 0,
       "claim_accuracy": "PASS",
       "artifact": "docs/external-reviews/product-v040-pr-d-review.md"
+    },
+    {
+      "stage": "E_PREPARATION_SOURCE",
+      "verdict": "PASS",
+      "must_fix": 0,
+      "claim_accuracy": "PASS",
+      "artifact": "docs/external-reviews/product-v040-preparation-source-review.md"
     }
   ],
   "known_limitations": [
-    "PR-A through PR-C are merged with exact-head CI and independent review.",
-    "PR-D is independently reviewed with offline fixtures and a temporary Unix-socket test only; GitHub CI and merge pending.",
-    "Actual Docker startup, API/Worker denied control reachability, live observer measurements and the Payment campaign remain PR-E gates."
+    "PR-A through PR-D are merged with exact-head CI and independent review.",
+    "First no-fault preparation failed before Product startup; all owned resources cleaned and evidence retained. Quoted tmpfs and private-process permission fixes require fresh validation.",
+    "Formal Payment fault campaigns, accepted attempts, write intents, forward mutations and Provider calls remain zero."
   ],
-  "next_action": "Commit PR-D and verify complete content; exact-head GitHub CI, squash merge and merged tree comparison; only then enter PR-E.",
+  "next_action": "Complete PR-E offline integration, owned runtime preparation, independent pre-execution review and exact-head CI before freezing the single campaign.",
   "scope": {
     "read": [
       "Product, historical DTA, safety and decision contracts, tests and CI at starting main"
@@ -216,7 +265,8 @@
       "scripts/product/**",
       "examples/product/**",
       ".github/workflows/agent-mainline.yml",
-      "tests/product/**"
+      "tests/product/**",
+      "scripts/live_sandbox/**"
     ],
     "frozen": [
       "third_party/opentelemetry-demo/**",
@@ -226,7 +276,7 @@
       "existing docs/results/product-*",
       "existing docs/analysis/product-v030-*"
     ],
-    "final_repository": "Dedicated PR-D worktree relative to ded81cae5419d9bc950221c24f03cdee7bfa66df",
+    "final_repository": "Dedicated PR-E worktree relative to cc941b51cbff9287b876be49652cd0ad83030474",
     "ignored_volatile_roots": [
       ".venv/",
       ".pytest_cache/",
@@ -241,5 +291,109 @@
     "Original Goal UTF-8 bytes are losslessly stored in a JSON text envelope because Markdown hard-break spaces fail git diff --check. Decoded source retains the activated Goal SHA-256; no whitespace gate is bypassed."
   ],
   "head_snapshot_semantics": "Last independently reviewed implementation commit. Administrative evidence commits are resolved from live Git/PR state.",
-  "current_pull_request": 94
+  "current_pull_request": 95,
+  "preparations": [
+    {
+      "ordinal": 1,
+      "head": "5657368e2d0e425cd74a99ad78f20de7270d2b4c",
+      "status": "PREPARATION_FAILED_BEFORE_FORMAL_FREEZE",
+      "safe_error_code": "INVALID_OBSERVER_TMPFS_MOUNT",
+      "preserved_evidence_sha256": "c9489a192ba49159668f4c9e5d43a90280eae0925cba7d14c526d73fb0e41756",
+      "fault_campaigns": 0,
+      "accepted_attempts": 0,
+      "write_intents": 0,
+      "forward_mutations": 0,
+      "cleanup": {
+        "verdict": "CLEAN",
+        "baseline_restored": true,
+        "owned_containers": 0,
+        "owned_networks": 0,
+        "owned_volumes": 0,
+        "non_owned_resources_changed": false
+      }
+    },
+    {
+      "ordinal": 2,
+      "head": "ddf2e1b25893af868b08b73cbffeced9dab0fcdb",
+      "status": "PREPARATION_FAILED_BEFORE_FORMAL_FREEZE",
+      "safe_error_code": "HOST_API_CONNECTION_REFUSED",
+      "preserved_evidence_sha256": "861a2c7dee3f961ca6ed5e2a457b5658ff4dbd3c84ae9d39f92096e403c75829",
+      "fault_campaigns": 0,
+      "accepted_attempts": 0,
+      "write_intents": 0,
+      "forward_mutations": 0,
+      "cleanup": {
+        "baseline_restored": true,
+        "non_owned_resources_changed": false,
+        "owned_containers": 0,
+        "owned_networks": 0,
+        "owned_volumes": 0,
+        "verdict": "CLEAN"
+      }
+    },
+    {
+      "ordinal": 3,
+      "head": "3d6c85cfa15f8987dfea58692b5ed56e24382a66",
+      "status": "PREPARATION_FAILED_BEFORE_FORMAL_FREEZE",
+      "safe_error_code": "HEALTHY_CHECKOUT_PROXY_DEADLINE",
+      "preserved_evidence_sha256": "abe9bbd9f07c385a2ed2f2b58520e59cb2f578aea56242ec6032ace1085753f6",
+      "fault_campaigns": 0,
+      "accepted_attempts": 0,
+      "write_intents": 0,
+      "forward_mutations": 0,
+      "cleanup": {
+        "baseline_restored": true,
+        "non_owned_resources_changed": false,
+        "owned_containers": 0,
+        "owned_networks": 0,
+        "owned_volumes": 0,
+        "verdict": "CLEAN"
+      }
+    },
+    {
+      "ordinal": 4,
+      "head": "a0e8aab077bdd6f9c8374f05f3f53127c4820fda",
+      "status": "PREPARATION_FAILED_BEFORE_FORMAL_FREEZE",
+      "safe_error_code": "NON_OWNED_RESOURCE_DRIFT_UNRESOLVED",
+      "preserved_evidence_sha256": "5a03c913884e5a76be956f3d07be2fc2c6fcdcf6521483b1a1883a576624f277",
+      "fault_campaigns": 0,
+      "accepted_attempts": 0,
+      "write_intents": 0,
+      "forward_mutations": 0,
+      "cleanup": {
+        "baseline_restored": true,
+        "non_owned_resources_changed": false,
+        "owned_containers": 0,
+        "owned_networks": 0,
+        "owned_volumes": 0,
+        "verdict": "CLEAN"
+      },
+      "cleanup_scope": "POST_CLEANUP_SNAPSHOT_AT_RECORDED_TIME_ONLY",
+      "later_non_owned_resources_changed": true,
+      "during_runtime_non_owned_unchanged_proven": false
+    }
+  ],
+  "ingress_diagnostics": [
+    {
+      "ordinal": 1,
+      "status": "API_EXIT_CAUSE_UNCONFIRMED",
+      "sandbox_starts": 0,
+      "fault_campaigns": 0,
+      "provider_calls": 0,
+      "owned_remaining": 0,
+      "non_owned_changed": false
+    },
+    {
+      "ordinal": 2,
+      "status": "INTERNAL_API_HEALTHY_HOST_MAPPING_ABSENT",
+      "sandbox_starts": 0,
+      "fault_campaigns": 0,
+      "provider_calls": 0,
+      "owned_remaining": 0,
+      "non_owned_changed": false
+    }
+  ],
+  "checkpoint": "safety_checkpoint",
+  "status": "BLOCKED_PRE_EXECUTION_OWNERSHIP",
+  "safety_checkpoint_artifact": "docs/results/product-v040-pre-execution-safety-checkpoint.json"
 }

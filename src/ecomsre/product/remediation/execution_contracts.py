@@ -111,7 +111,10 @@ class RecoveryObservationV1(SealedRemediationModelV1):
 
     @model_validator(mode="after")
     def coherent(self) -> Self:
-        if not self.started_at < self.ended_at == self.created_at:
+        if not (
+            self.started_at < self.ended_at <= self.created_at
+            and (self.created_at - self.ended_at).total_seconds() <= 30
+        ):
             raise ValueError("recovery time anchors differ")
         if self.business_errors > self.business_requests:
             raise ValueError("business counts differ")

@@ -698,3 +698,14 @@ def test_multiple_effective_core_admissions_cannot_be_resealed_as_single(materia
     )
     assert not result.candidates
     assert result.reason_codes[0].value == "DIAGNOSIS_BINDING_MISMATCH"
+
+
+def test_kafka_backlog_extension_contract_never_projects_payment_runbook(material):
+    """Synthetic KafkaBacklog lane denial; no Kafka fault or recovery measurement."""
+    payload = material["diagnosis"].model_dump(mode="python", exclude={"result_sha256"})
+    payload.update(terminal="EXTENSION_KNOWN", core_or_extension_or_open_world="EXTENSION",
+                   broad_domain="RESOURCE", mechanism="KafkaBacklog")
+    material["diagnosis"] = sealed(DiagnosisResultV1, "result_sha256", **payload)
+    result = project_candidate(**material)
+    assert result.candidates == ()
+    assert result.reason_codes[0].value == "EXTENSION_KNOWN"

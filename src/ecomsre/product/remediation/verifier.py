@@ -119,7 +119,7 @@ def evaluate(
         if (
             receipt is None
             or window.started_at <= receipt.ended_at
-            or window.ended_at > now
+            or window.created_at > now
             or (window.ended_at - window.started_at).total_seconds()
             != policy.window_seconds
         ):

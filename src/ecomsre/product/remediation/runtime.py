@@ -7,7 +7,7 @@ from pathlib import Path
 import threading
 import time
 
-from fastapi import Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from pydantic import ConfigDict
 import uvicorn
 
@@ -29,7 +29,10 @@ from ecomsre.product.remediation.payment_control import (
     control_apps,
     required_secret,
 )
-from ecomsre.product.remediation.recovery import RecoveryRepositoryV1
+from ecomsre.product.remediation.recovery import (
+    RecoveryRepositoryV1,
+    RecoveryWindowProviderV1,
+)
 from ecomsre.product.remediation.recovery_transport import (
     SignedRecoveryWindowProviderV1,
     UnixRecoveryWindowClientV1,
@@ -84,7 +87,7 @@ def executor_main() -> None:
     )
     windows = UnixRecoveryWindowClientV1(
         Path(os.environ["ECOMSRE_REMEDIATION_READ_SOCKET"]),
-        required_secret("ECOMSRE_REMEDIATION_READ_TOKEN"),
+        required_secret("ECOMSRE_REMEDIATION_WINDOW_TOKEN"),
     )
     while True:
         with repo.store.connect() as connection:
@@ -157,16 +160,30 @@ def gateway_main() -> None:
     policy = RecoveryPolicyV1.model_validate_json(
         Path(os.environ["ECOMSRE_REMEDIATION_POLICY_PATH"]).read_bytes()
     )
-    observer = SignedRecoveryWindowProviderV1(
+    observer: RecoveryWindowProviderV1 = SignedRecoveryWindowProviderV1(
         Path(os.environ["ECOMSRE_REMEDIATION_RECOVERY_WITNESS"]), witness_key
     )
+
+    if request_root := os.environ.get("ECOMSRE_REMEDIATION_WINDOW_REQUESTS"):
+        from ecomsre.product.remediation.window_requests import (
+            RequestedRecoveryWindowProviderV1,
+        )
+
+        observer = RequestedRecoveryWindowProviderV1(
+            RecoveryRepositoryV1(attempts),
+            Path(request_root),
+            Path(os.environ["ECOMSRE_REMEDIATION_WINDOW_RESPONSES"]),
+            witness_key,
+        )
+
+    window_token = required_secret("ECOMSRE_REMEDIATION_WINDOW_TOKEN")
 
     @read_app.post("/recovery-window")
     def recovery_window(
         body: WindowRequestV1, authorization: str | None = Header(default=None)
     ) -> RecoveryObservationV1:
         if authorization is None or not hmac.compare_digest(
-            authorization, "Bearer " + read_token.get_secret_value()
+            authorization, "Bearer " + window_token.get_secret_value()
         ):
             raise HTTPException(status_code=403, detail="CONTROL_AUTHORIZATION_DENIED")
         if (
@@ -226,9 +243,47 @@ def gateway_main() -> None:
     )
 
 
+def observation_proxy_app() -> FastAPI:
+    """Bootstrap has observation routes only and loads no write authority."""
+    from ecomsre.product.remediation.observation_proxy import (
+        ObservationProxyProfileV1,
+        mount_observation_proxy,
+    )
+
+    app = FastAPI(openapi_url=None, docs_url=None, redoc_url=None)
+    profile = ObservationProxyProfileV1.model_validate_json(
+        Path("/run/remediation-private/observation-proxy.json").read_bytes()
+    )
+    mount_observation_proxy(app, profile)
+    return app
+
+
+def observation_proxy_main() -> None:
+    if os.environ.get("ECOMSRE_PRODUCT_FIXED_INGRESS") == "1":
+        from ecomsre.product.remediation.product_ingress import product_ingress_app
+
+        # Separate listener; the observation application stays read-only.
+        threading.Thread(
+            target=uvicorn.run,
+            args=(product_ingress_app(),),
+            kwargs={"host": "0.0.0.0", "port": 8082,
+                    "access_log": False, "log_level": "critical"},
+            daemon=True,
+        ).start()
+    uvicorn.run(
+        observation_proxy_app(),
+        host="0.0.0.0",
+        port=8081,
+        access_log=False,
+        log_level="critical",
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("role", choices=("executor", "control-gateway"))
+    parser.add_argument(
+        "role", choices=("executor", "control-gateway", "observation-proxy")
+    )
     role = parser.parse_args().role
     if os.environ.get("ECOMSRE_REMEDIATION_ENABLED") != "1":
         raise SystemExit("REMEDIATION_DISABLED")
@@ -238,7 +293,11 @@ def main() -> None:
     ):
         raise SystemExit("REMEDIATION_ISOLATED_PROFILE_REQUIRED")
     try:
-        (executor_main if role == "executor" else gateway_main)()
+        {
+            "executor": executor_main,
+            "control-gateway": gateway_main,
+            "observation-proxy": observation_proxy_main,
+        }[role]()
     except Exception:
         raise SystemExit("REMEDIATION_PROCESS_FAILED_CLOSED") from None
 

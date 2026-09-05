@@ -59,8 +59,8 @@ def mount_observation_proxy(
             "/api/v1/label/service_name/values",
         ),
         "prometheus/api/v1/series": (profile.prometheus_base_url, "/api/v1/series"),
-        "jaeger/api/traces": (profile.jaeger_base_url, "/api/traces"),
-        "jaeger/api/services": (profile.jaeger_base_url, "/api/services"),
+        "jaeger/api/traces": (profile.jaeger_base_url, "/jaeger/ui/api/traces"),
+        "jaeger/api/services": (profile.jaeger_base_url, "/jaeger/ui/api/services"),
     }
 
     @app.get("/observability/{path:path}")

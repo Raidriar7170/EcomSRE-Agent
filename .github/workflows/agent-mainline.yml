@@ -286,7 +286,9 @@ jobs:
         run: make agent-demo
 
       - name: Product v0.4 offline remediation development verification
-        run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v040_development
+        run: |
+          PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v040_development
+          PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v040_live
 
       - name: Full repository tests
         env:

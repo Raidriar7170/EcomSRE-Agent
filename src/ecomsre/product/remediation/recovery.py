@@ -259,7 +259,7 @@ class RecoveryRepositoryV1:
                 )
                 if (
                     observation.started_at <= started_after
-                    or observation.ended_at > repo.clock()
+                    or observation.created_at > repo.clock()
                 ):
                     raise fail("REMEDIATION_RECOVERY_NOT_FRESH")
                 reference = repo.objects.put_json(
