@@ -98,6 +98,6 @@ class ApprovalRevocationV1(SealedRemediationModelV1):
 class ApprovalStatusV1(ProductModelV1):
     model_config = ConfigDict(extra="forbid", frozen=True)
     approval: OperatorApprovalV1
-    status: Literal["ACTIVE", "EXPIRED", "REVOKED", "NOT_YET_VALID"]
+    status: Literal["ACTIVE", "EXPIRED", "REVOKED", "NOT_YET_VALID", "CONSUMED"]
     revocation: ApprovalRevocationV1 | None = None
     action_authority: Literal["NONE"] = "NONE"

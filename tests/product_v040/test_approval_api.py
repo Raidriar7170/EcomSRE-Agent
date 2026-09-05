@@ -102,6 +102,10 @@ def test_candidate_get_is_read_only_and_creation_survives_restart(api):
     "path,body",
     [
         ("/v1/incidents/inc-" + "5" * 24 + "/remediation-candidates", None),
+        (
+            "/v1/remediation-candidates/cand-" + "0" * 24 + "/attempts",
+            {"approval_id": "appr-" + "0" * 24},
+        ),
         ("/v1/remediation-candidates/cand-" + "0" * 24 + "/approvals", APPROVAL),
         (
             "/v1/remediation-candidates/cand-" + "0" * 24 + "/revocations",
@@ -300,7 +304,6 @@ def test_public_response_contains_only_closed_projections_and_no_execution(api):
     ):
         assert forbidden not in serialized.lower()
     for route in (
-        f"/v1/remediation-candidates/{item['candidate_id']}/attempts",
         "/execute-shell",
         "/execute-command",
         "/write-url",

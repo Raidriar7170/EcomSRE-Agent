@@ -1,4 +1,4 @@
-"""Explicit admin-authorized approval workflow; no attempt or execution endpoint."""
+"""Admin-authorized approval and attempt orchestration; no execution endpoint."""
 
 from typing import Annotated
 
@@ -12,6 +12,11 @@ from ecomsre.product.remediation.approval import (
     ApprovalStatusV1,
     OperatorApprovalV1,
     RevocationRequestV1,
+)
+from ecomsre.product.remediation.attempt_contracts import (
+    AttemptRequestV1,
+    RemediationAttemptV1,
+    RemediationDecisionEventV1,
 )
 from ecomsre.product.remediation.contracts import (
     CandidateProjectionV1,
@@ -98,3 +103,35 @@ def revoke(
 @router.get("/v1/remediation-approvals/{approval_id}", response_model=ApprovalStatusV1)
 def approval_status(approval_id: ApprovalId, request: Request) -> ApprovalStatusV1:
     return repository(request).approval_status(approval_id)
+
+
+@router.post(
+    "/v1/remediation-candidates/{candidate_id}/attempts",
+    response_model=RemediationAttemptV1,
+    dependencies=[Depends(require_remediation_auth)],
+)
+def create_attempt(
+    candidate_id: CandidateId, body: AttemptRequestV1, request: Request, key: Key
+) -> RemediationAttemptV1:
+    return request.app.state.remediation_attempts.create(candidate_id, body, key)
+
+
+@router.get(
+    "/v1/remediation-attempts/{attempt_id}", response_model=RemediationAttemptV1
+)
+def get_attempt(
+    attempt_id: Annotated[str, Path(pattern=r"^attempt-[0-9a-f]{24}$")],
+    request: Request,
+) -> RemediationAttemptV1:
+    return request.app.state.remediation_attempts.get(attempt_id)
+
+
+@router.get(
+    "/v1/remediation-attempts/{attempt_id}/decision-trace",
+    response_model=tuple[RemediationDecisionEventV1, ...],
+)
+def get_attempt_trace(
+    attempt_id: Annotated[str, Path(pattern=r"^attempt-[0-9a-f]{24}$")],
+    request: Request,
+) -> tuple[RemediationDecisionEventV1, ...]:
+    return request.app.state.remediation_attempts.trace(attempt_id)

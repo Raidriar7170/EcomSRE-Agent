@@ -29,6 +29,7 @@ from ecomsre.product.incidents.repository import (
     DiagnosisRepositoryV1,
     IncidentRepositoryV1,
 )
+from ecomsre.product.remediation.attempts import RemediationAttemptRepositoryV1
 from ecomsre.product.remediation.api import router as remediation_router
 from ecomsre.product.remediation.repository import RemediationRepositoryV1
 from ecomsre.product.settings import ProductSettingsV1
@@ -76,6 +77,7 @@ def create_app(settings: ProductSettingsV1 | None = None) -> FastAPI:
     app.state.knowledge = KnowledgeRepositoryV1(store, app.state.object_store)
     app.state.metrics = ProductMetricsV1(store)
     app.state.remediation = RemediationRepositoryV1(store, app.state.object_store)
+    app.state.remediation_attempts = RemediationAttemptRepositoryV1(app.state.remediation)
 
     @app.middleware("http")
     async def record_http_request(request: Request, call_next: object):
