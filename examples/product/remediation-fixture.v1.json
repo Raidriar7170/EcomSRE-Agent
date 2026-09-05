@@ -1,0 +1,252 @@
+{
+  "mode": "OFFLINE_SYNTHETIC_FIXTURE",
+  "objects": {
+    "1379a85c531ae49b11f86469a0d1bbf02f70b464efeb7974e832958259dbdb8e": {
+      "diagnosis_id": "diag-666666666666666666666666",
+      "extension_match_count": 0,
+      "failed_sources": [],
+      "incident_id": "inc-555555555555555555555555",
+      "known_admission_status": "SINGLE_ADMISSION",
+      "no_incident_admissible": false,
+      "novelty_gate_disposition": null,
+      "novelty_gate_reason_codes": [],
+      "required_coverage_satisfied": false,
+      "residual_anomaly_ids": [],
+      "schema_version": "ecomsre.product.diagnosis-decision-trace.v0232",
+      "trace_sha256": "4c3d65d412af7cf2a84e698e0252654867129f54201bb7a33150727a4c758d79"
+    },
+    "a2457c0b24a250ae9fe729f225859ae8710f87d4ccf724c95ea272ea85059fae": {
+      "action": {
+        "action_id": "a:logs:payment",
+        "source": "LOGS"
+      },
+      "connector_result": {
+        "covered_services": [
+          "payment"
+        ],
+        "latency_ms": 1.0,
+        "records": [
+          {
+            "message": "invalid config revision 482 downstream=checkout",
+            "observed_at": "2026-08-20T00:00:00Z",
+            "schema_version": "dta-v22.log-record.v1",
+            "service": "payment",
+            "severity": "ERROR"
+          }
+        ],
+        "requested_services": [
+          "payment"
+        ],
+        "result_sha256": "028b97af60de1415154174fbd0b12559b61b7c55abb9cfb6630b2998c1018d23",
+        "safe_error_code": null,
+        "schema_version": "ecomsre.product.connector-query-result.v1",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-08-20T00:00:00Z",
+          "started_at": "2026-08-19T23:55:00Z"
+        }
+      },
+      "memory_outcome": {
+        "action_id": "a:logs:payment",
+        "outcome_sha256": "0649843c5ddeb5802b98bd75e0272af44068d99e885bd02008e400b8e85ea062",
+        "records": [
+          {
+            "message": "invalid config revision 482 downstream=checkout",
+            "observed_at": "2026-08-20T00:00:00Z",
+            "schema_version": "dta-v22.log-record.v1",
+            "service": "payment",
+            "severity": "ERROR"
+          }
+        ],
+        "request_sha256": "cfbb4da432d4ec3dafb6d64e021830da6e9c3cb37b6c85d0b893d60b8cd96380",
+        "schema_version": "dta-v22.read-outcome.v1",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "truncated": false
+      },
+      "read_outcome": {
+        "action_id": "a:logs:payment",
+        "outcome_sha256": "0649843c5ddeb5802b98bd75e0272af44068d99e885bd02008e400b8e85ea062",
+        "records": [
+          {
+            "message": "invalid config revision 482 downstream=checkout",
+            "observed_at": "2026-08-20T00:00:00Z",
+            "schema_version": "dta-v22.log-record.v1",
+            "service": "payment",
+            "severity": "ERROR"
+          }
+        ],
+        "request_sha256": "cfbb4da432d4ec3dafb6d64e021830da6e9c3cb37b6c85d0b893d60b8cd96380",
+        "schema_version": "dta-v22.read-outcome.v1",
+        "source": "LOGS",
+        "status": "SUCCESS_NONEMPTY",
+        "truncated": false
+      }
+    },
+    "ed61e465255e8b8b9fc4354276e4665a1684dd734f4611befa2636e3094c3126": {
+      "action": {
+        "action_id": "a:changes:payment",
+        "source": "CHANGES"
+      },
+      "connector_result": {
+        "covered_services": [
+          "payment"
+        ],
+        "latency_ms": 1.0,
+        "records": [
+          {
+            "category": "CONFIGURATION",
+            "observed_at": "2026-08-19T23:58:00Z",
+            "opaque_change_id": "chg_0123456789abcdef",
+            "revision_digest": "2222222222222222222222222222222222222222222222222222222222222222",
+            "rollout_state": "COMPLETED",
+            "schema_version": "dta-v22.recent-change-record.v1",
+            "service": "payment"
+          }
+        ],
+        "requested_services": [
+          "payment"
+        ],
+        "result_sha256": "e98ae54e3e50c482017c1c3bb984e015c28a990501d6b082865410811639ac3b",
+        "safe_error_code": null,
+        "schema_version": "ecomsre.product.connector-query-result.v1",
+        "source": "CHANGES",
+        "status": "SUCCESS_NONEMPTY",
+        "truncated": false,
+        "window": {
+          "ended_at": "2026-08-20T00:00:00Z",
+          "started_at": "2026-08-19T23:55:00Z"
+        }
+      },
+      "memory_outcome": {
+        "action_id": "a:changes:payment",
+        "outcome_sha256": "404d80afa9cc9eada922ce662ebd95743e457c7f016c5a0b3dfb34a90164fddf",
+        "records": [
+          {
+            "category": "CONFIGURATION",
+            "observed_at": "2026-08-19T23:58:00Z",
+            "opaque_change_id": "chg_0123456789abcdef",
+            "revision_digest": "2222222222222222222222222222222222222222222222222222222222222222",
+            "rollout_state": "COMPLETED",
+            "schema_version": "dta-v22.recent-change-record.v1",
+            "service": "payment"
+          }
+        ],
+        "request_sha256": "30423bffaa5be12d4fd6bf1a77c20f6adcdc7e41b579c179137705265588429c",
+        "schema_version": "dta-v22.read-outcome.v1",
+        "source": "CHANGES",
+        "status": "SUCCESS_NONEMPTY",
+        "truncated": false
+      },
+      "read_outcome": {
+        "action_id": "a:changes:payment",
+        "outcome_sha256": "404d80afa9cc9eada922ce662ebd95743e457c7f016c5a0b3dfb34a90164fddf",
+        "records": [
+          {
+            "category": "CONFIGURATION",
+            "observed_at": "2026-08-19T23:58:00Z",
+            "opaque_change_id": "chg_0123456789abcdef",
+            "revision_digest": "2222222222222222222222222222222222222222222222222222222222222222",
+            "rollout_state": "COMPLETED",
+            "schema_version": "dta-v22.recent-change-record.v1",
+            "service": "payment"
+          }
+        ],
+        "request_sha256": "30423bffaa5be12d4fd6bf1a77c20f6adcdc7e41b579c179137705265588429c",
+        "schema_version": "dta-v22.read-outcome.v1",
+        "source": "CHANGES",
+        "status": "SUCCESS_NONEMPTY",
+        "truncated": false
+      }
+    }
+  },
+  "rows": {
+    "baseline_versions": [
+      [
+        "base-333333333333333333333333",
+        "env-111111111111111111111111",
+        "{\"schema_version\":\"ecomsre.product.environment-baseline.v1\",\"baseline_id\":\"base-333333333333333333333333\",\"environment_id\":\"env-111111111111111111111111\",\"service_ids\":[\"svc-222222222222222222222222\"],\"source_capability_sha256\":\"181a06bcd27c249b4651a09eb0ba8f19b4668633bb7326128faefdc360e9b401\",\"v22_baseline_profile\":{\"schema_version\":\"dta-v22.baseline-profile.v1\",\"metric_stats\":[{\"service\":\"checkout\",\"metric_kind\":\"ERROR_RATE\",\"mean\":0.01,\"standard_deviation\":0.005},{\"service\":\"checkout\",\"metric_kind\":\"LATENCY_P95_MS\",\"mean\":100.0,\"standard_deviation\":10.0},{\"service\":\"checkout\",\"metric_kind\":\"REQUEST_SUPPORT\",\"mean\":1000.0,\"standard_deviation\":100.0},{\"service\":\"payment\",\"metric_kind\":\"ERROR_RATE\",\"mean\":0.01,\"standard_deviation\":0.005},{\"service\":\"payment\",\"metric_kind\":\"LATENCY_P95_MS\",\"mean\":100.0,\"standard_deviation\":10.0},{\"service\":\"payment\",\"metric_kind\":\"REQUEST_SUPPORT\",\"mean\":1000.0,\"standard_deviation\":100.0}],\"trace_stats\":[{\"service\":\"payment\",\"operation\":\"Charge\",\"duration_ms\":20.0}],\"resource_stats\":[{\"service\":\"payment\",\"cpu_p95_percent\":20.0,\"memory_slope_bytes_per_second\":0.0}],\"baseline_sha256\":\"eee664610c7f1805be66dafbe57f09ad2bca2aeacb09d4a07889e0bcd590adfb\"},\"topology_edges\":[],\"normal_log_templates\":[],\"build_policy\":{\"schema_version\":\"ecomsre.product.baseline-build-policy.v1\",\"mode\":\"HISTORICAL\",\"lookback_seconds\":3600,\"window_count\":6,\"minimum_successful_windows\":4,\"warmup_seconds\":0},\"window_count\":6,\"successful_windows\":6,\"built_at\":\"2026-08-19T23:00:00Z\",\"active\":true,\"baseline_sha256\":\"95ab5790bacfdcf320d1a0938458baca5c53c04ab598ab36a0b13db3f2ce007f\"}",
+        1,
+        "2026-08-20T00:00:00+00:00"
+      ]
+    ],
+    "diagnosis_evidence_indexes": [
+      [
+        "diag-666666666666666666666666",
+        "inc-555555555555555555555555",
+        "{\"schema_version\":\"ecomsre.product.diagnosis-evidence-index.v0232\",\"incident_id\":\"inc-555555555555555555555555\",\"diagnosis_id\":\"diag-666666666666666666666666\",\"evidence_bundle_sha256\":\"5b6cbd978aa04367fef2801e22cd3906f5d92ca1d3586e43d6caad703a3f609c\",\"all_object_refs\":[\"e:a:changes:payment:0:c6142dc57e42\",\"e:a:logs:payment:0:6d9adc87b5d9\"],\"all_object_sha256_by_ref\":{\"e:a:changes:payment:0:c6142dc57e42\":\"ed61e465255e8b8b9fc4354276e4665a1684dd734f4611befa2636e3094c3126\",\"e:a:logs:payment:0:6d9adc87b5d9\":\"a2457c0b24a250ae9fe729f225859ae8710f87d4ccf724c95ea272ea85059fae\"},\"linked_support_refs\":[\"e:a:changes:payment:0:c6142dc57e42\",\"e:a:logs:payment:0:6d9adc87b5d9\"],\"linked_contradiction_refs\":[],\"successful_source_refs\":[\"e:a:changes:payment:0:c6142dc57e42\",\"e:a:logs:payment:0:6d9adc87b5d9\"],\"failed_source_refs\":[],\"open_search_profile_binding_ref\":null,\"runtime_snapshot_binding_ref\":null,\"capability_limitation_bindings\":[],\"decision_trace_sha256\":\"4c3d65d412af7cf2a84e698e0252654867129f54201bb7a33150727a4c758d79\",\"index_sha256\":\"266632260531a19cce24d39fda809b564d5f9fe582f3d642cc3e131c1b281080\"}",
+        "266632260531a19cce24d39fda809b564d5f9fe582f3d642cc3e131c1b281080",
+        "2026-08-20T00:00:00+00:00"
+      ]
+    ],
+    "diagnosis_evidence_links": [
+      [
+        "diag-666666666666666666666666",
+        "inc-555555555555555555555555",
+        "ed61e465255e8b8b9fc4354276e4665a1684dd734f4611befa2636e3094c3126",
+        "e:a:changes:payment:0:c6142dc57e42",
+        "CHANGES",
+        "a:changes:payment",
+        "OBSERVATION",
+        "2026-08-20T00:00:00+00:00"
+      ],
+      [
+        "diag-666666666666666666666666",
+        "inc-555555555555555555555555",
+        "a2457c0b24a250ae9fe729f225859ae8710f87d4ccf724c95ea272ea85059fae",
+        "e:a:logs:payment:0:6d9adc87b5d9",
+        "LOGS",
+        "a:logs:payment",
+        "OBSERVATION",
+        "2026-08-20T00:00:00+00:00"
+      ]
+    ],
+    "diagnosis_results": [
+      [
+        "diag-666666666666666666666666",
+        "inc-555555555555555555555555",
+        "{\"schema_version\":\"ecomsre.product.diagnosis-result.v1\",\"diagnosis_id\":\"diag-666666666666666666666666\",\"incident_id\":\"inc-555555555555555555555555\",\"terminal\":\"CORE_KNOWN\",\"core_or_extension_or_open_world\":\"CORE\",\"root_service_ids\":[\"svc-222222222222222222222222\"],\"mechanism\":\"CONFIGURATION_ERROR\",\"broad_domain\":\"CONFIGURATION\",\"supporting_evidence_refs\":[\"e:a:changes:payment:0:c6142dc57e42\",\"e:a:logs:payment:0:6d9adc87b5d9\"],\"contradicting_evidence_refs\":[],\"capability_limitations\":[],\"provisional_report\":null,\"action_authority\":\"NONE\",\"agent_writes\":0,\"runbook_executions\":0,\"provider_calls\":0,\"memory_sha256\":\"6ca4bc95d1f2cb8f4447b5b5a70cf0fe2cdcf519e9c56ede34fc25d8e3fbe841\",\"created_at\":\"2026-08-20T00:00:00Z\",\"result_sha256\":\"93e36aaa3569a71a6a18a5b2a25e681765555b6649bf3ca779d87491372f3ac1\"}",
+        "2026-08-20T00:00:00+00:00"
+      ]
+    ],
+    "environment_capability_matrices": [
+      [
+        "env-111111111111111111111111",
+        "{\"capability_sha256\":\"181a06bcd27c249b4651a09eb0ba8f19b4668633bb7326128faefdc360e9b401\",\"effective_policy_sha256\":\"4444444444444444444444444444444444444444444444444444444444444444\",\"environment_id\":\"env-111111111111111111111111\",\"logical_services\":[\"payment\"],\"mechanisms\":[],\"no_incident_eligible\":true,\"schema_version\":\"ecomsre.product.environment-capability-matrix.v1\",\"sources\":[{\"connector_names\":[\"fixture\"],\"covered_services\":[\"payment\"],\"observable_predicates\":[\"CHANGE_RECENT_ROLLOUT\"],\"source\":\"CHANGES\",\"status\":\"AVAILABLE\",\"target_complete_coverage\":true},{\"connector_names\":[\"fixture\"],\"covered_services\":[\"payment\"],\"observable_predicates\":[\"LOG_CONFIGURATION_ERROR\",\"LOG_DEPENDENCY_TIMEOUT\",\"LOG_MEMORY_PRESSURE\"],\"source\":\"LOGS\",\"status\":\"AVAILABLE\",\"target_complete_coverage\":true},{\"connector_names\":[\"fixture\"],\"covered_services\":[\"payment\"],\"observable_predicates\":[\"METRIC_ERROR_RATE_STRONG\",\"METRIC_LATENCY_STRONG\"],\"source\":\"METRICS\",\"status\":\"AVAILABLE\",\"target_complete_coverage\":true},{\"connector_names\":[\"fixture\"],\"covered_services\":[\"payment\"],\"observable_predicates\":[\"RESOURCE_CPU_STRONG\",\"RESOURCE_MEMORY_GROWTH_STRONG\"],\"source\":\"RESOURCES\",\"status\":\"AVAILABLE\",\"target_complete_coverage\":true},{\"connector_names\":[\"fixture\"],\"covered_services\":[\"payment\"],\"observable_predicates\":[\"RUNTIME_HEALTHY\",\"RUNTIME_NOT_RUNNING\",\"RUNTIME_RESTART_PRESSURE\",\"RUNTIME_UNHEALTHY\"],\"source\":\"RUNTIME\",\"status\":\"AVAILABLE\",\"target_complete_coverage\":true},{\"connector_names\":[\"fixture\"],\"covered_services\":[\"payment\"],\"observable_predicates\":[\"TRACE_DEPENDENCY_LATENCY\",\"TRACE_FIRST_ERROR\"],\"source\":\"TRACES\",\"status\":\"AVAILABLE\",\"target_complete_coverage\":true}],\"verified_at\":\"2026-08-20T00:00:00Z\"}",
+        "2026-08-20T00:00:00+00:00"
+      ]
+    ],
+    "environments": [
+      [
+        "env-111111111111111111111111",
+        "test",
+        "fixture",
+        "UTC",
+        "{}",
+        "[\"payment\"]",
+        "2026-08-20T00:00:00+00:00",
+        "2026-08-20T00:00:00+00:00"
+      ]
+    ],
+    "incidents": [
+      [
+        "inc-555555555555555555555555",
+        "env-111111111111111111111111",
+        "synthetic-config",
+        "{\"environment_id\":\"env-111111111111111111111111\",\"external_incident_key\":\"synthetic-config\",\"alert_name\":\"synthetic-config\",\"summary\":\"Synthetic deterministic Product configuration observation\",\"started_at\":\"2026-08-19T23:55:00Z\",\"ended_at\":null,\"candidate_service_ids\":[\"svc-222222222222222222222222\"],\"labels\":{},\"schema_version\":\"ecomsre.product.incident.v1\",\"incident_id\":\"inc-555555555555555555555555\",\"baseline_id\":\"base-333333333333333333333333\",\"baseline_sha256\":\"95ab5790bacfdcf320d1a0938458baca5c53c04ab598ab36a0b13db3f2ce007f\",\"service_identity_sha256\":\"4b50256d7b68bbc8ea57db1dc2da498650efd72e80c028a4b11def54fa6941ea\",\"source_capability_sha256\":\"181a06bcd27c249b4651a09eb0ba8f19b4668633bb7326128faefdc360e9b401\",\"candidate_logical_services\":[\"payment\"],\"diagnosis_observed_at\":\"2026-08-20T00:00:00Z\",\"created_at\":\"2026-08-20T00:00:00Z\",\"incident_sha256\":\"f00a08cb906838656d4b210daeba1016a79252910222bc611b9ac2c4c64fcc06\"}",
+        "2026-08-20T00:00:00+00:00"
+      ]
+    ],
+    "services": [
+      [
+        "svc-222222222222222222222222",
+        "env-111111111111111111111111",
+        "{\"aliases\":{\"http_health\":[],\"jaeger\":[],\"opensearch\":[],\"prometheus\":[]},\"logical_service\":\"payment\",\"schema_version\":\"ecomsre.product.service-identity.v1\",\"service_id\":\"svc-222222222222222222222222\"}",
+        "2026-08-20T00:00:00+00:00",
+        "payment"
+      ]
+    ]
+  }
+}

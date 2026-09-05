@@ -14,11 +14,16 @@ services:
       ECOMSRE_ADMIN_TOKEN: ${ECOMSRE_ADMIN_TOKEN:?set ECOMSRE_ADMIN_TOKEN}
       ECOMSRE_PRODUCT_API_HOST: 0.0.0.0
       ECOMSRE_PRODUCT_API_PORT: 8080
+      ECOMSRE_REMEDIATION_BINDING_PATH: ${ECOMSRE_REMEDIATION_API_BINDING_PATH:-}
+      ECOMSRE_REMEDIATION_READ_SOCKET: /run/remediation-read/control.sock
+      ECOMSRE_REMEDIATION_READ_TOKEN: ${ECOMSRE_REMEDIATION_READ_TOKEN:-}
       ECOMSRE_PRODUCT_DATA_ROOT: /var/lib/ecomsre
     ports:
       - "127.0.0.1:${ECOMSRE_PRODUCT_API_PORT:-8080}:8080"
     volumes:
       - ecomsre-product-data:/var/lib/ecomsre
+      - remediation-read:/run/remediation-read:ro
+      - remediation-config:/run/remediation-config:ro
     read_only: true
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=64m
@@ -62,8 +67,86 @@ services:
       - ALL
     restart: unless-stopped
 
+  remediation-executor:
+    profiles: ["remediation"]
+    image: ecomsre-product-mvp-v01:local
+    pull_policy: never
+    command: python -m ecomsre.product.remediation.runtime executor
+    labels:
+      io.ecomsre.product: ecomsre-product-mvp-v01
+    environment:
+      ECOMSRE_PRODUCT_DATA_ROOT: /var/lib/ecomsre
+      ECOMSRE_REMEDIATION_ENABLED: "1"
+      ECOMSRE_REMEDIATION_BINDING_PATH: /run/remediation-config/binding.json
+      ECOMSRE_REMEDIATION_POLICY_PATH: /run/remediation-config/recovery-policy.json
+      ECOMSRE_REMEDIATION_READ_SOCKET: /run/remediation-read/control.sock
+      ECOMSRE_REMEDIATION_WRITE_SOCKET: /run/remediation-write/control.sock
+      ECOMSRE_REMEDIATION_READ_TOKEN: ${ECOMSRE_REMEDIATION_READ_TOKEN:-}
+      ECOMSRE_REMEDIATION_WRITE_TOKEN: ${ECOMSRE_REMEDIATION_WRITE_TOKEN:-}
+    volumes:
+      - ecomsre-product-data:/var/lib/ecomsre
+      - remediation-config:/run/remediation-config:ro
+      - remediation-read:/run/remediation-read:ro
+      - remediation-write:/run/remediation-write:ro
+    network_mode: none
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=16m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    restart: "no"
+
+  remediation-control-gateway:
+    profiles: ["remediation"]
+    image: ecomsre-product-mvp-v01:local
+    pull_policy: never
+    command: python -m ecomsre.product.remediation.runtime control-gateway
+    labels:
+      io.ecomsre.product: ecomsre-product-mvp-v01
+    environment:
+      ECOMSRE_PRODUCT_DATA_ROOT: /var/lib/ecomsre
+      ECOMSRE_REMEDIATION_ENABLED: "1"
+      ECOMSRE_REMEDIATION_PRIVATE_PROFILE: /run/remediation-private/profile.json
+      ECOMSRE_REMEDIATION_POLICY_PATH: /run/remediation-config/recovery-policy.json
+      ECOMSRE_REMEDIATION_CONTROL_LEDGER: /var/lib/remediation-control/dispatch.sqlite3
+      ECOMSRE_REMEDIATION_RECOVERY_WITNESS: /run/remediation-observer/recovery.json
+      ECOMSRE_REMEDIATION_READ_SOCKET: /run/remediation-read/control.sock
+      ECOMSRE_REMEDIATION_WRITE_SOCKET: /run/remediation-write/control.sock
+      ECOMSRE_REMEDIATION_READ_TOKEN: ${ECOMSRE_REMEDIATION_READ_TOKEN:-}
+      ECOMSRE_REMEDIATION_WRITE_TOKEN: ${ECOMSRE_REMEDIATION_WRITE_TOKEN:-}
+      ECOMSRE_REMEDIATION_OBSERVER_TOKEN: ${ECOMSRE_REMEDIATION_OBSERVER_TOKEN:-}
+    volumes:
+      - ecomsre-product-data:/var/lib/ecomsre
+      - remediation-config:/run/remediation-config:ro
+      - remediation-read:/run/remediation-read
+      - remediation-write:/run/remediation-write
+      - remediation-control-ledger:/var/lib/remediation-control
+      - ${ECOMSRE_REMEDIATION_PRIVATE_ROOT:-./.local/product-v040/control}:/run/remediation-private:ro
+      - ${ECOMSRE_REMEDIATION_OBSERVER_ROOT:-./.local/product-v040/observer}:/run/remediation-observer:ro
+      - ${ECOMSRE_REMEDIATION_FLAG_DIRECTORY:-./.local/product-v040/flags}:/runtime/payment-flags:ro
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=16m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    restart: "no"
+
 volumes:
   ecomsre-product-data:
+    labels:
+      io.ecomsre.product: ecomsre-product-mvp-v01
+  remediation-config:
+    labels:
+      io.ecomsre.product: ecomsre-product-mvp-v01
+  remediation-read:
+    labels:
+      io.ecomsre.product: ecomsre-product-mvp-v01
+  remediation-write:
+    labels:
+      io.ecomsre.product: ecomsre-product-mvp-v01
+  remediation-control-ledger:
     labels:
       io.ecomsre.product: ecomsre-product-mvp-v01
 

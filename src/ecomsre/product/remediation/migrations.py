@@ -36,9 +36,19 @@ V2_STATEMENTS = tuple(
 ) + (
     "CREATE UNIQUE INDEX remediation_one_active_target ON remediation_attempts(environment_id, target) WHERE terminal IS NULL",
 )
+V3_TABLES = {
+    "remediation_window_acquisitions": "attempt_id TEXT NOT NULL REFERENCES remediation_attempts(attempt_id), ordinal INTEGER NOT NULL CHECK(ordinal IN (1,2)), started_at TEXT NOT NULL, PRIMARY KEY(attempt_id, ordinal)",
+    "remediation_executor_dispatches": "attempt_id TEXT PRIMARY KEY REFERENCES remediation_attempts(attempt_id), write_intent_id TEXT NOT NULL UNIQUE REFERENCES remediation_write_intents(write_intent_id), dispatch_sha256 TEXT NOT NULL UNIQUE, payload_json TEXT NOT NULL",
+    "remediation_step_receipts": "attempt_id TEXT PRIMARY KEY REFERENCES remediation_attempts(attempt_id), receipt_sha256 TEXT NOT NULL UNIQUE, payload_json TEXT NOT NULL",
+    "remediation_recovery_policies": "environment_id TEXT PRIMARY KEY REFERENCES environments(environment_id), policy_sha256 TEXT NOT NULL UNIQUE, payload_json TEXT NOT NULL",
+    "remediation_recovery_windows": "attempt_id TEXT NOT NULL REFERENCES remediation_attempts(attempt_id), ordinal INTEGER NOT NULL CHECK(ordinal IN (1,2)), window_sha256 TEXT NOT NULL UNIQUE, payload_json TEXT NOT NULL, PRIMARY KEY(attempt_id, ordinal)",
+    "remediation_recovery_evaluations": "attempt_id TEXT PRIMARY KEY REFERENCES remediation_attempts(attempt_id), evaluation_sha256 TEXT NOT NULL UNIQUE, payload_json TEXT NOT NULL",
+}
+V3_STATEMENTS = tuple(f"CREATE TABLE {name} ({columns})" for name, columns in V3_TABLES.items())
 MIGRATIONS = (
     (1, MIGRATION_SHA256, STATEMENTS),
     (2, sha256("\n".join(V2_STATEMENTS).encode()).hexdigest(), V2_STATEMENTS),
+    (3, sha256("\n".join(V3_STATEMENTS).encode()).hexdigest(), V3_STATEMENTS),
 )
 
 

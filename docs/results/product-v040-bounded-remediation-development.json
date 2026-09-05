@@ -1,10 +1,10 @@
 {
   "schema_version": "ecomsre.product.remediation-development.v1",
   "goal_version": "ecomsre-product-v040-bounded-remediation-v1",
-  "stage": "C",
-  "terminal": "ECOMSRE_PRODUCT_V040_C_STATE_BOUND_AUTHORIZATION_PASS",
+  "stage": "D",
+  "terminal": "ECOMSRE_PRODUCT_V040_D_EXECUTOR_AND_VERIFIER_PASS",
   "status": "OFFLINE_PASS_INTEGRATION_PENDING",
-  "claim": "Fresh state-bound single-use authorization and persistent fenced write intent, with fake read-only providers only. No environment execution.",
+  "claim": "Default-disabled separate typed executor, authenticated fixed control gateway, sealed receipts and policy-bound two-window verification. Offline fixtures only.",
   "completed_prs": [
     {
       "stage": "A",
@@ -46,6 +46,27 @@
       "review": "PASS / Must Fix 0 / Claim Accuracy PASS",
       "tracked_diff_sha256": "bbdac4b30f6081eebf528e18dfd50b38226b13f701e020562e5ffdd0cdb572d9",
       "final_evidence_sha256": "57534e16d0314c68e84081c111e1534ea29c732eb3d253a26afb07dd176d0c1b"
+    },
+    {
+      "stage": "C",
+      "pull_request": 93,
+      "head": "4a83ea27381753c053ad85e269bf8340899080cd",
+      "merge_commit": "ded81cae5419d9bc950221c24f03cdee7bfa66df",
+      "tree_sha": "f05ab07a4a64993f6de0089876fb3ace6ef3d41f",
+      "merged_at": "2026-09-05T16:25:14Z",
+      "exact_head_ci_run": 33976288063,
+      "ci_conclusion": "SUCCESS",
+      "full_tests": {
+        "passed": 6458,
+        "skipped": 21,
+        "failed": 0,
+        "elapsed_seconds": 889.44
+      },
+      "ruff": "PASS",
+      "mypy": "PASS: 683 source files",
+      "review": "PASS / Must Fix 0 / Claim Accuracy PASS",
+      "tracked_diff_sha256": "4353a03399736047d044bfd7b36434b5d6e38fe9813fe3d4824c4b5cc2c584b2",
+      "final_evidence_sha256": "93958438e8d75e371c7801015a9f52623ee3939b19fc4e0a7fd9505e4e44cc05"
     }
   ],
   "prior_stage_validation": [
@@ -82,22 +103,50 @@
         "failed": 2,
         "reason": "Two regression assertions still expected the older parent-binding code after the new earlier response digest rejection. Corrected expected code; no implementation acceptance failure."
       }
+    },
+    {
+      "stage": "C",
+      "focused_product_and_v040": "233 passed, 15 warnings, 14.92 seconds",
+      "v040_tests": 100,
+      "ruff": "PASS: exact Goal local scope",
+      "mypy": "PASS: 227 source files; exact Goal local scope",
+      "history": "PASS: 404 frozen files, original Goal and upstream binding",
+      "git_diff_check": "PASS",
+      "independent_reproductions": "Initial stale-time and historical-binding findings repaired; reproduced delayed gates deny with zero intents."
     }
   ],
   "validation": {
-    "stage": "C",
-    "focused_product_and_v040": "233 passed, 15 warnings, 14.92 seconds",
-    "v040_tests": 100,
+    "stage": "D",
+    "focused_product_and_v040": "267 passed, 15 warnings, 18.46 seconds",
+    "v040_tests": 134,
     "ruff": "PASS: exact Goal local scope",
-    "mypy": "PASS: 227 source files; exact Goal local scope",
-    "history": "PASS: 404 frozen files, original Goal and upstream binding",
+    "mypy": "PASS: 239 source files; exact Goal local scope",
+    "history": "PASS: 404 frozen files and original Goal binding",
+    "offline_development": "PASS: one fake mutation, two windows, zero live/Provider activity",
+    "unix_socket_fixture": "PASS: temporary real Unix socket, fake upstream, auth and duplicate fences; server stopped",
     "git_diff_check": "PASS",
-    "independent_reproductions": "Initial stale-time and historical-binding findings repaired; reproduced delayed gates deny with zero intents."
+    "independent_regressions": "34 passed; all lease, receipt, policy, clock and upstream-compatibility findings resolved",
+    "transient_validation": [
+      "Extension migration test initially expected v2 rather than additive v3; adjusted expected extension version, base schema remains 9.",
+      "Recovery reentry test initially matched message casing; adjusted assertion to stable ProductError.code."
+    ]
   },
   "review": "PASS / Must Fix 0 / Claim Accuracy PASS",
   "github_ci": "PENDING_EXACT_FINAL_HEAD",
   "live_campaigns": 0,
   "forward_mutations": 0,
   "provider_calls": 0,
-  "pull_request": null
+  "pull_request": null,
+  "fixture": {
+    "diagnosis_action_authority": "NONE",
+    "final_disposition": "RECOVERED",
+    "fixture_sha256": "0ebbd7a769ae8df8ecc8c258d587217ca3d311de07f37fd336961043d2cc2e11",
+    "forward_fake_mutations": 1,
+    "live_campaigns": 0,
+    "live_mutations": 0,
+    "mode": "OFFLINE_SYNTHETIC_FIXTURE",
+    "provider_calls": 0,
+    "recovery_windows": 2,
+    "terminal": "RECOVERED"
+  }
 }

@@ -662,7 +662,18 @@ class RemediationAttemptRepositoryV1:
                 AttemptStateV1.AUTHORIZATION_EXPIRED,
                 AttemptStateV1.CANCELLED_BEFORE_WRITE,
             },
-            AttemptStateV1.WRITE_INTENT_COMMITTED: {AttemptStateV1.OUTCOME_UNKNOWN},
+            AttemptStateV1.WRITE_INTENT_COMMITTED: {
+                AttemptStateV1.EXECUTING, AttemptStateV1.OUTCOME_UNKNOWN,
+            },
+            AttemptStateV1.EXECUTING: {
+                AttemptStateV1.APPLIED, AttemptStateV1.EXECUTION_FAILED,
+                AttemptStateV1.OUTCOME_UNKNOWN,
+            },
+            AttemptStateV1.APPLIED: {AttemptStateV1.VERIFYING, AttemptStateV1.OUTCOME_UNKNOWN},
+            AttemptStateV1.VERIFYING: {
+                AttemptStateV1.RECOVERED, AttemptStateV1.VERIFICATION_FAILED,
+                AttemptStateV1.OUTCOME_UNKNOWN,
+            },
         }
         if result.state not in allowed.get(attempt.state, set()):
             raise fail("REMEDIATION_TRANSITION_DENIED")
@@ -679,10 +690,12 @@ class RemediationAttemptRepositoryV1:
                 "authorization_id",
                 "authorization_sha256",
                 "created_at",
-                "forward_write_count",
             )
         ):
             raise fail("REMEDIATION_TRANSITION_PARENT_MISMATCH")
+        from ecomsre.product.remediation.execution_guards import guard_execution_transition
+
+        guard_execution_transition(connection, attempt, result)
         if attempt.write_intent_id is not None and (
             result.write_intent_id != attempt.write_intent_id
             or result.write_intent_sha256 != attempt.write_intent_sha256

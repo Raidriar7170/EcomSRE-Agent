@@ -1,0 +1,31 @@
+# Product v0.4 PR-D independent review
+
+- Scope: PR-D worktree against `ded81cae5419d9bc950221c24f03cdee7bfa66df`.
+- Reviewer: independent read-only Codex Reviewer; no tracked edits, Docker,
+  Provider, live fault, or environment mutation.
+- Final verdict: **PASS**.
+- Must Fix: **0**.
+- Claim Accuracy: **PASS**.
+
+The review inspected authority separation, immediate pre-send state and lease
+fences, duplicate dispatch, crash after mutation, receipt persistence, default
+disabled execution, closed command surfaces, and two-window verification.
+
+Initial findings covered missing lease fences, incomplete typed receipt evidence,
+legacy upstream network bypass, exact timestamp equality, non-root volume
+ownership, upstream flags-only read shape, and atomic configuration replacement.
+Follow-up adversarial reproductions found persisted receipt dispatch substitution
+and recovery-policy substitution. All were corrected. The final policy digest
+is sealed into dispatch before the side effect and revalidated before mutation,
+receipt/recovery reads and final evaluation; rehashed threshold changes fail.
+
+Independent final checks: **34 tests passed** across executor and gateway
+regressions; offline development/history verifier PASS; `git diff --check` PASS.
+Primary final Product checks: **267 passed / 15 warnings**, Ruff PASS, mypy PASS
+for 239 source files. Factual metadata refresh is covered by the final claim
+review and does not introduce further source changes.
+
+Acceptance is limited to offline PR-D behavior. The real isolated-network denial
+probe, actual Docker startup, fresh signed observer measurements and the one
+bounded live Payment campaign remain PR-E gates. Exact-head GitHub CI, committed
+content closure and squash merge remain integration requirements.

@@ -632,7 +632,7 @@ def test_extension_v1_migrates_without_rewriting_prior_rows(material):
             connection.execute(
                 "SELECT max(version) FROM remediation_schema_migrations"
             ).fetchone()[0]
-            == 2
+            == 3
         )
         assert (
             connection.execute(
