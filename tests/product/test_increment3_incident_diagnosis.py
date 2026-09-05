@@ -430,6 +430,36 @@ def test_multiple_extension_admissions_fail_closed(tmp_path: Path, monkeypatch) 
     assert result["provider_calls"] == 0
 
 
+def test_unresolved_open_world_root_is_persisted_without_a_family(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    from ecomsre.product.incidents import diagnosis_bridge
+
+    # The root selector's permutation tests exercise ambiguity itself; this
+    # fixture exercises the API/Worker/persistence response to no unique root.
+    monkeypatch.setattr(diagnosis_bridge, "_root_for_domain", lambda *_: None)
+    settings = _settings(tmp_path)
+    with TestClient(create_app(settings)) as client:
+        environment_id, service_id = _prepare_environment(
+            client, settings, dataset="capture-c2aa", name="ambiguous-root",
+        )
+        result, evidence = _diagnose(
+            client, settings, environment_id=environment_id,
+            service_id=service_id, external_key="ambiguous-root",
+        )
+    assert result["terminal"] == "INSUFFICIENT_EVIDENCE"
+    assert result["core_or_extension_or_open_world"] == "ABSTAIN"
+    assert result["root_service_ids"] == []
+    assert result["provisional_report"] is None
+    assert result["supporting_evidence_refs"]
+    assert set(result["supporting_evidence_refs"]).issubset(
+        item["evidence_ref"] for item in evidence["objects"]
+    )
+    assert result["provider_calls"] == result["agent_writes"] == 0
+    with SqliteStoreV1(settings.sqlite_path).connect() as connection:
+        assert connection.execute("SELECT COUNT(*) FROM fault_families").fetchone()[0] == 0
+
+
 def test_non_fixture_runtime_is_explicitly_diagnosis_limited(
     tmp_path: Path,
     monkeypatch,

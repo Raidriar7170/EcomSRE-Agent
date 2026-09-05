@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
 from ecomsre.dta_v2.v22.read_contracts import EvidenceSourceV22, semantic_sha256_v22
@@ -91,7 +92,8 @@ def test_fingerprint_and_similarity_are_deterministic_and_environment_scoped() -
 
     assert first == repeated
     assert first.fingerprint_sha256 == repeated.fingerprint_sha256
-    assert cluster_similarity_v1(first, related) == 1.0
+    # Empty topology contributes no evidence of similarity.
+    assert cluster_similarity_v1(first, related) == 0.9
     assert cluster_similarity_v1(first, foreign) is None
 
 
@@ -104,9 +106,8 @@ def test_similarity_uses_the_goal_weights_and_threshold_boundary() -> None:
         )
     )
 
-    # All fields except the log-token Jaccard remain equal.  Token Jaccard is
-    # 2 / 4, so the exact weighted score is 0.95.
-    assert cluster_similarity_v1(reference, related) == 0.95
+    # Empty topology adds zero; log-token Jaccard is 2 / 4.
+    assert cluster_similarity_v1(reference, related) == 0.85
     at_threshold = build_incident_fingerprint_v1(
         _observation(
             "inc-threshold",
@@ -123,6 +124,42 @@ def test_similarity_uses_the_goal_weights_and_threshold_boundary() -> None:
         )
     )
     assert cluster_similarity_v1(reference, at_threshold) == 0.65
+
+
+def test_empty_fingerprints_cannot_form_a_similar_family() -> None:
+    observation = _observation("empty-a").model_copy(update={
+        "broad_domain": "UNKNOWN",
+        **{field: () for field in (
+            "root_service_ids", "generic_anomaly_kinds", "evidence_sources",
+            "topology_edges", "runtime_state_signature", "resource_state_signature",
+            "normalized_log_tokens", "trace_first_error_roles", "source_coverage",
+        )},
+    })
+    first = build_incident_fingerprint_v1(observation)
+    second = build_incident_fingerprint_v1(
+        observation.model_copy(update={"incident_id": "empty-b"})
+    )
+    assert cluster_similarity_v1(first, second) == 0.0
+
+
+@pytest.mark.parametrize("field", [
+    "root_service_ids", "generic_anomaly_kinds", "evidence_sources",
+    "topology_edges", "runtime_state_signature", "resource_state_signature",
+    "normalized_log_tokens",
+])
+def test_removing_a_mismatched_feature_cannot_increase_similarity(field) -> None:
+    observation = _observation("reference")
+    value = (("other", "service"),) if field == "topology_edges" else ("other",)
+    left = build_incident_fingerprint_v1(
+        observation.model_copy(update={field: (), "incident_id": "left"})
+    )
+    mismatched = build_incident_fingerprint_v1(
+        observation.model_copy(update={field: value, "incident_id": "right"})
+    )
+    missing = build_incident_fingerprint_v1(
+        observation.model_copy(update={field: (), "incident_id": "missing"})
+    )
+    assert cluster_similarity_v1(left, missing) == cluster_similarity_v1(left, mismatched)
 
 
 def _row(

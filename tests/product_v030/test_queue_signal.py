@@ -61,7 +61,7 @@ def test_unique_domain_owner_is_independent_of_service_name_and_anomaly_order():
 
 
 @pytest.mark.parametrize("queue_present", [False, True])
-def test_ambiguous_domain_retains_existing_root_behavior(queue_present):
+def test_ambiguous_domain_never_chooses_an_arbitrary_root(queue_present):
     signals = (
         SimpleNamespace(kind=GenericAnomalyKindV23.METRIC_ERROR_OUTLIER, service="a"),
         SimpleNamespace(kind=GenericAnomalyKindV23.METRIC_ERROR_OUTLIER, service="b"),
@@ -71,7 +71,12 @@ def test_ambiguous_domain_retains_existing_root_behavior(queue_present):
             SimpleNamespace(kind=GenericAnomalyKindV23.METRIC_QUEUE_LAG_OUTLIER, service=s)
             for s in ("b", "c")
         )
-    assert _root_for_domain(signals, _domain_for_anomalies(signals)) == "a"
+    for ordered in permutations(signals):
+        assert _root_for_domain(ordered, _domain_for_anomalies(ordered)) is None
+
+
+def test_empty_anomalies_have_no_root():
+    assert _root_for_domain((), _domain_for_anomalies(())) is None
 
 
 @pytest.mark.parametrize(

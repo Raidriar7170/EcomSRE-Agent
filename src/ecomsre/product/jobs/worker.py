@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+import logging
 import os
 import secrets
+import sqlite3
 import time
 import math
 
@@ -64,6 +66,22 @@ from ecomsre_live_sandbox.contracts import write_private_json
 
 
 _LEGACY_FIXTURE_RESULT_DATASETS = frozenset({"increment-1", "product-increment-1"})
+_LOGGER = logging.getLogger(__name__)
+
+
+def _observe_duration(
+    metrics: ProductMetricsV1,
+    metric_name: str,
+    seconds: float,
+    labels: dict[str, str],
+) -> None:
+    """A failed operational observation cannot change a business job outcome."""
+    try:
+        metrics.observe_duration(metric_name, seconds, labels)
+    except sqlite3.Error:
+        # Keep the lost sample visible without exposing database error details.
+        # Invalid metric arguments remain programmer errors and are not hidden.
+        _LOGGER.warning("Product duration observation was not persisted (%s).", metric_name)
 
 
 def should_ingest_open_world_v023(
@@ -115,6 +133,8 @@ def run_one_job(
     )
     if job is None:
         return False
+    execution_started = time.perf_counter()
+    execution_status = "FAILED"
 
     def renew_lease() -> None:
         jobs.renew_lease(
@@ -162,6 +182,13 @@ def run_one_job(
     )
     diagnosis_pipeline_v02322: DiagnosisPipelineV02322 | None = None
     try:
+        if job.attempt_count == 1:
+            _observe_duration(
+                metrics,
+                "ecomsre_job_queue_wait_seconds",
+                max(0.0, job.updated_at - job.created_at),
+                {"job_type": job.job_type.value},
+            )
         if job.job_type is ProductJobTypeV1.ENVIRONMENT_VERIFY:
             environment = environments.get(str(job.payload.get("environment_id", "")))
             legacy_result_shape = bool(environment.connector_configs) and all(
@@ -397,6 +424,7 @@ def run_one_job(
                     now=now,
                 ),
             )
+        execution_status = "SUCCEEDED"
         metrics.increment(
             "ecomsre_jobs_total",
             {"job_type": job.job_type.value, "status": "SUCCEEDED"},
@@ -422,6 +450,7 @@ def run_one_job(
                 )
     except ProductError as exc:
         if exc.code == "JOB_LEASE_LOST":
+            execution_status = "LEASE_LOST"
             return True
         try:
             public_failure_v02322 = None
@@ -457,6 +486,7 @@ def run_one_job(
         except ProductError as finish_error:
             if finish_error.code != "JOB_LEASE_LOST":
                 raise
+            execution_status = "LEASE_LOST"
     except Exception as exc:
         try:
             public_failure_v02322 = None
@@ -479,6 +509,14 @@ def run_one_job(
         except ProductError as finish_error:
             if finish_error.code != "JOB_LEASE_LOST":
                 raise
+            execution_status = "LEASE_LOST"
+    finally:
+        _observe_duration(
+            metrics,
+            "ecomsre_job_execution_seconds",
+            max(0.0, time.perf_counter() - execution_started),
+            {"job_type": job.job_type.value, "status": execution_status},
+        )
     return True
 
 
