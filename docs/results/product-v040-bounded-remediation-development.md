@@ -21,3 +21,8 @@ PR-D committed content verification, exact-head CI and squash merge are pending.
 See the [structured result](product-v040-bounded-remediation-development.json),
 [PR-D audit](../analysis/product-v040-executor-verifier-audit.md), and
 [independent review](../external-reviews/product-v040-pr-d-review.md).
+
+CI run `33981962864` retained a subprocess import-path test failure (6492 passed,
+1 failed, 21 skipped). The test-only correction passes all 268 Product tests with
+outer PYTHONPATH unset and has independent review PASS. New exact-head CI remains
+required; the failed run is not represented as a pass.

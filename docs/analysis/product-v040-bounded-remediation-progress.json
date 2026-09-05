@@ -6,7 +6,7 @@
   "current_main": "ded81cae5419d9bc950221c24f03cdee7bfa66df",
   "current_pr_stage": "D",
   "current_branch": "codex/product-v040-executor-verifier",
-  "current_head": "ded81cae5419d9bc950221c24f03cdee7bfa66df",
+  "current_head": "65f080a7e8d12cf8100f6a4edea45e45dc9f9a2b",
   "completed_prs": [
     {
       "stage": "A",
@@ -134,7 +134,7 @@
     },
     {
       "stage": "D",
-      "focused_product_and_v040": "268 passed, 15 warnings, 18.55 seconds",
+      "focused_product_and_v040": "268 passed, 15 warnings, 18.60 seconds; outer PYTHONPATH unset",
       "v040_tests": 135,
       "ruff": "PASS: exact Goal local scope",
       "mypy": "PASS: 239 source files; exact Goal local scope",
@@ -146,7 +146,20 @@
       "transient_validation": [
         "Extension migration test initially expected v2 rather than additive v3; adjusted expected extension version, base schema remains 9.",
         "Recovery reentry test initially matched message casing; adjusted assertion to stable ProductError.code."
-      ]
+      ],
+      "ci_failure_preserved": {
+        "run_id": 33981962864,
+        "head": "65f080a7e8d12cf8100f6a4edea45e45dc9f9a2b",
+        "failed": 1,
+        "passed": 6492,
+        "skipped": 21,
+        "warnings": 15,
+        "elapsed_seconds": 763.58,
+        "failure": "Default-disabled subprocess test could not import ecomsre without inherited PYTHONPATH; the runtime guard was not reached.",
+        "resolution": "Reproduced with outer PYTHONPATH unset. Test now supplies source path and working directory, a minimal environment without inherited control credentials, and a timeout. Production source unchanged; 268 Product tests pass in clean PYTHONPATH; independent targeted review PASS. New exact-head CI required."
+      },
+      "full_ruff": "PASS",
+      "mainline_mypy_local": "PASS: 694 source files; existing frozen RCA100 dependency installed; no-incremental after refreshing a cached missing-import result"
     }
   ],
   "reviews": [
@@ -228,5 +241,5 @@
     "Original Goal UTF-8 bytes are losslessly stored in a JSON text envelope because Markdown hard-break spaces fail git diff --check. Decoded source retains the activated Goal SHA-256; no whitespace gate is bypassed."
   ],
   "head_snapshot_semantics": "Last independently reviewed implementation commit. Administrative evidence commits are resolved from live Git/PR state.",
-  "current_pull_request": null
+  "current_pull_request": 94
 }

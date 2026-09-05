@@ -307,8 +307,13 @@ def test_executor_default_disabled_and_compose_isolates_write_capability():
     root = Path(__file__).resolve().parents[2]
     result = subprocess.run(
         [sys.executable, "-m", "ecomsre.product.remediation.runtime", "executor"],
+        cwd=root,
+        # pytest's pythonpath setting does not propagate to a child process.
+        # Supply the source tree explicitly and inherit no control credentials.
+        env={"PYTHONPATH": str(root / "src")},
         capture_output=True,
         text=True,
+        timeout=10,
     )
     assert result.returncode != 0 and "REMEDIATION_DISABLED" in result.stderr
     compose = (root / "docker-compose.product.yml").read_text()

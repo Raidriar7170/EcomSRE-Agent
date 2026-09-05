@@ -40,3 +40,10 @@ content closure and squash merge remain integration requirements.
 
 Recommended Next Step: complete committed-content closure and exact-head CI,
 squash merge PR-D, then begin PR-E from the verified merged tree.
+
+CI follow-up: run `33981962864` retained 1 failure / 6492 passes / 21 skips.
+The default-disabled subprocess test depended on an inherited PYTHONPATH.
+A test-only correction now supplies its source path and minimal credential-free
+environment. Independent clean-PYTHONPATH reproduction after the fix: 1 passed,
+34 deselected; PASS / Must Fix 0 / Claim Accuracy PASS. The guard assertion is
+unchanged. A new exact-head CI result remains required.

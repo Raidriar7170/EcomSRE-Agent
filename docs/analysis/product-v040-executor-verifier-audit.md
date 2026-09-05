@@ -73,10 +73,18 @@ fake mutation 与两个 fake recovery windows。输出明确标记 OFFLINE_SYNTH
 问题已修复并增加回归。重入采集测试初次因错误消息正则大小写不匹配而失败，已改为检查
 稳定 ProductError.code；未降低恢复门槛。
 
-最终本地完整 Product + v0.4：268 passed / 15 warnings / 18.55 秒，Ruff PASS，mypy 239
+最终本地完整 Product + v0.4：268 passed / 15 warnings / 18.60 秒（不设置外层 PYTHONPATH），Ruff PASS，mypy 239
 source files PASS。独立 Reviewer 重新运行 35 项执行器/gateway 测试和离线 verifier 后
 给出 PASS / Must Fix 0 / Claim Accuracy PASS。真实临时 Unix socket 测试使用 fake 上游，
 验证凭据、唯一发送和关闭过程，仍不构成 Docker 或 Payment 实测证据。
 提交内容核验、精确提交 GitHub CI 和合并仍是本阶段剩余门槛。
 Docker 实际启动、网络拒绝、签名观察进程的真实采集和 Payment 写入均未执行，不能从
 本阶段 fixture PASS 推断真实恢复成功。
+
+精确提交 `65f080a` 的 CI `33981962864` 保留为失败：6492 passed / 1 failed /
+21 skipped / 15 warnings，763.58 秒。唯一失败是默认关闭测试的子进程未继承 pytest
+的源码搜索路径，未能导入模块；本地移除外层 PYTHONPATH 后已复现。测试现在显式绑定
+源码路径与工作目录，并使用不继承控制凭据的最小环境和 10 秒超时。生产实现未改变。
+修正后的 268 项 Product 检查与独立单项复核通过；仍需新的精确提交 CI。
+本地补查全仓 Ruff PASS；安装 CI 已使用的冻结 pyarrow 依赖后，清除增量缓存影响的主线
+mypy 范围检查为 694 source files PASS。未新增依赖或修改工作流门槛。
