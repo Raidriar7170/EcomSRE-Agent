@@ -6,7 +6,7 @@
   "current_main": "cc941b51cbff9287b876be49652cd0ad83030474",
   "current_pr_stage": "E",
   "current_branch": "codex/product-v040-live-payment",
-  "current_head": "cc941b51cbff9287b876be49652cd0ad83030474",
+  "current_head": "19165069b7a07daf864b9c22981eb423a8273a90",
   "completed_prs": [
     {
       "stage": "A",
@@ -190,8 +190,17 @@
       "ruff": "PASS: full repository",
       "mypy": "PASS: 264 scoped files; 698 mainline files",
       "compose_resolution": "PASS: 5 services, 0 named volumes; no resource mutation",
-      "full_repository": "RUNNING; no aggregate PASS claimed",
-      "live": "NOT_STARTED"
+      "full_repository": "6537 passed, 21 skipped, 16 warnings in 614.44 seconds with explicit PYTHONPATH; no bare-environment aggregate claim",
+      "live": "NOT_STARTED",
+      "transient_validation": {
+        "precommit_full": {
+          "passed": 6522,
+          "failed": 1,
+          "skipped": 21,
+          "reason": "Historical attribution audit rejected uncommitted paths; exact clean-commit regression passed."
+        },
+        "bare_environment_reproduction": "New lock subprocess test failed to import ecomsre without inherited PYTHONPATH; corrected test-only cwd, minimal source path and timeout. Independent host-runtime file: 11 passed with outer PYTHONPATH unset. New clean full run and CI required."
+      }
     }
   ],
   "reviews": [
@@ -281,5 +290,5 @@
     "Original Goal UTF-8 bytes are losslessly stored in a JSON text envelope because Markdown hard-break spaces fail git diff --check. Decoded source retains the activated Goal SHA-256; no whitespace gate is bypassed."
   ],
   "head_snapshot_semantics": "Last independently reviewed implementation commit. Administrative evidence commits are resolved from live Git/PR state.",
-  "current_pull_request": null
+  "current_pull_request": 95
 }

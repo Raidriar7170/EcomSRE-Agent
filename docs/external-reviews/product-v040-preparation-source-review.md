@@ -19,3 +19,10 @@ This verdict covers preparation source only. Actual ownership, Docker network
 and filesystem isolation, control readback, healthy Active Baseline, exact-head
 CI, one-shot freeze and final live evidence require their own recorded checks.
 It is not the formal pre-execution PASS and does not claim measured recovery.
+
+Test-environment follow-up: independent Reviewer executed the host-runtime test
+file with outer PYTHONPATH unset: 11 passed, exit 0. The subprocess fixture now
+sets its exact source path, working directory and a 10-second timeout without
+inheriting control credentials. The lock assertion and production implementation
+are unchanged. PASS / Must Fix 0 / Claim Accuracy PASS. New exact-head CI remains
+required.

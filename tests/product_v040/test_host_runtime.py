@@ -135,15 +135,23 @@ def test_host_mapping_preserves_profile_identity_and_rejects_other_origins():
 
 
 def test_operation_lock_excludes_second_cleanup_process(tmp_path):
+    import os
+    from pathlib import Path
     import subprocess
     import sys
+
+    repository = Path(__file__).resolve().parents[2]
     runtime = ProductRuntimeV040(tmp_path)
     with runtime.operation_lock():
         result = subprocess.run(
             [sys.executable, "-c", "from pathlib import Path; from scripts.product.v040_runtime import ProductRuntimeV040; "
              "runtime=ProductRuntimeV040(Path(__import__('sys').argv[1])); "
              "runtime.operation_lock().__enter__()", str(tmp_path)],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
+            cwd=repository,
+            env={"PYTHONPATH": os.pathsep.join((str(repository / "src"), str(repository)))},
+            timeout=10,
         )
         assert result.returncode != 0 and "another campaign operation is active" in result.stderr
     with runtime.operation_lock():
