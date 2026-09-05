@@ -40,5 +40,12 @@
   "recovery_request_interval_seconds": 8,
   "recovery_request_timeout_seconds": 4,
   "endpoint_observation": "CHECKOUT_PAYMENT_HTTP_STATUS",
-  "business_observation": "CHECKOUT_ORDER_ID_AND_NONEMPTY_ITEMS"
+  "business_observation": "CHECKOUT_ORDER_ID_AND_NONEMPTY_ITEMS",
+  "application_warmup": {
+    "request_seed": 40400,
+    "maximum_transactions": 3,
+    "interval_seconds": 6,
+    "total_request_deadline_seconds": 120,
+    "telemetry_settlement_seconds": 330
+  }
 }

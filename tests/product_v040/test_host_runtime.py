@@ -183,3 +183,51 @@ def test_split_or_broadened_observer_tmpfs_is_rejected_before_start(mounts):
     plan["services"]["remediation-observer"]["tmpfs"] = mounts
     with pytest.raises(ValueError, match="tmpfs mount differs"):
         validate_resolved_tmpfs(plan)
+
+
+def test_demo_failure_capture_denies_unproven_ownership(tmp_path):
+    from scripts.live_sandbox.product_v040 import ProductV040Lifecycle
+
+    lifecycle = object.__new__(ProductV040Lifecycle)
+    lifecycle.private_root = tmp_path
+    lifecycle.repository_root = tmp_path
+    calls = []
+
+    def reject(kind, identities):
+        raise ValueError("unknown ownership")
+
+    lifecycle.environment = SimpleNamespace(
+        verify_local_docker=lambda: {}, _owned_ids=lambda kind: ["unknown"],
+        _inspect_labels=reject,
+        runner=SimpleNamespace(run=lambda *args, **kwargs: calls.append(args)),
+    )
+    lifecycle.capture_failure()
+    assert not calls
+    assert not (tmp_path / "control/failure-diagnostics.json").exists()
+
+
+def test_demo_failure_capture_keeps_partial_logs(tmp_path):
+    from scripts.live_sandbox.product_v040 import ProductV040Lifecycle
+
+    lifecycle = object.__new__(ProductV040Lifecycle)
+    lifecycle.private_root = tmp_path
+    lifecycle.repository_root = tmp_path
+    (tmp_path / "control").mkdir(mode=0o700)
+    verified = []
+
+    def run(args, **kwargs):
+        assert verified
+        if args[-1] == "stopped":
+            raise RuntimeError("container disappeared")
+        return SimpleNamespace(stdout="retained", stderr="diagnostic")
+
+    lifecycle.environment = SimpleNamespace(
+        verify_local_docker=lambda: {},
+        _owned_ids=lambda kind: ["stopped", "present"],
+        _inspect_labels=lambda *args: verified.append(True),
+        runner=SimpleNamespace(run=run),
+    )
+    lifecycle.capture_failure()
+    rows = json.loads((tmp_path / "control/failure-diagnostics.json").read_text())
+    assert rows[0]["error_type"] == "RuntimeError"
+    assert rows[1]["stderr"] == "diagnostic"

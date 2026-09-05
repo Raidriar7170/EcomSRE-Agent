@@ -56,3 +56,19 @@ This is source review only. The reviewer did not run Docker and does not claim
 real ingress reachability, Baseline readiness, final-head CI or formal live
 acceptance. The diagnostic API exit remains unexplained. Actual formal freeze
 requires the separate pre-execution review and all existing live gates.
+
+## Fixed application warmup review
+
+Following retained preparation 003, the reviewer inspected one pre-freeze
+warmup group with three distinct transactions, per-POST create-once intent,
+120-second total request deadline, bounded private response bodies and digests,
+no replay and no replacement group. The original 30/30 healthy control,
+360-second observation and five successful Baseline windows remain unchanged.
+The fixed 330-second quiet interval is not a claim of proven telemetry expiry;
+NO_INCIDENT remains an actual subsequent gate. Interrupted aggregate rows do
+not replace the separate intent/result evidence.
+
+The reviewer also inspected proven-owned Demo log capture before cleanup,
+including per-container failure retention. Final source disposition: PASS;
+Must Fix 0; Claim Accuracy PASS. This review ran no Docker environment and is
+not formal pre-execution approval or measured success.

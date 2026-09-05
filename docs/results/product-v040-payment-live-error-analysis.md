@@ -73,3 +73,40 @@ initialization as a variable; it does not prove that SQLite caused diagnostic
 001's exit. Preparation failure captures owned container state and both log
 streams before cleanup, with capture failure unable to block cleanup. The
 repaired ingress still requires real no-fault preparation and final source gates.
+
+## Preparation 003: first healthy checkout exceeded proxy deadline
+
+Source `3d6c85cfa15f8987dfea58692b5ed56e24382a66` established the host ingress,
+registered the environment and passed connector verification. The first cart
+returned 200; its checkout returned 504 after approximately 15 seconds. The
+fixed error budget stopped traffic at one attempted transaction, zero successes
+and one failure. No Active Baseline was created. Retained Payment and shipping
+logs show transaction completion approximately 1.2 seconds after the proxy
+response. These observations do not prove a cold-start cause.
+
+The failed preparation is retained with evidence-set SHA-256
+`abe9bbd9f07c385a2ed2f2b58520e59cb2f578aea56242ec6032ace1085753f6`.
+Cleanup was CLEAN, baseline readback restored, all owned resource counts zero
+and non-owned fingerprints unchanged. No formal freeze, fault or attempt
+occurred. The same source passed a clean full local test run: 6,564 passed,
+21 skipped, 16 warnings. Offline success does not alter this preparation result.
+
+A separate pre-freeze preparation adds exactly one bounded application-warmup
+group: at most three distinct transactions using seed 40400, a six-second
+interval and a 120-second total request deadline. Each POST has a create-once
+intent, bounded private response bytes and digest, status or transport error,
+and monotonic duration. A timed-out transaction is not replayed. The group
+cannot be replaced in that private root. All failures remain evidence; an
+interrupted request may have its own intent/result without a completed aggregate
+transaction row. Counts must therefore be read from both records.
+
+A fixed 330-second quiet interval follows a completed group with at least one
+business success. This allows five minutes plus a margin before the healthy
+control, but does not prove all telemetry has expired: Kafka native quantiles
+and delayed observations differ. The original healthy 30/30 requirement,
+error budget 1, 360-second observation and five successful Baseline windows
+remain unchanged, and the subsequent NO_INCIDENT control remains required.
+The pre-freeze workload policy changes are source-bound before any formal fault.
+Future preparation failures also capture proven-owned Demo logs before cleanup;
+a per-container log failure is recorded without discarding earlier captures or
+preventing cleanup.

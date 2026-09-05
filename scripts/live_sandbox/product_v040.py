@@ -55,6 +55,33 @@ class PinnedDockerRunnerV040(ExactCommandRunner):
 class ProductV040Lifecycle(ProductV030Lifecycle):
     """Imports frozen mechanics; emits only new v0.4 private authority evidence."""
 
+    def capture_failure(self) -> None:
+        """Read only proven owned Demo logs before cleanup; never block cleanup."""
+        try:
+            from ecomsre.product.remediation.window_requests import create_private_file
+
+            environment = self.environment
+            environment.verify_local_docker()
+            identifiers = environment._owned_ids("container")
+            environment._inspect_labels("container", identifiers)
+            rows = []
+            for identity in identifiers:
+                try:
+                    observed = environment.runner.run(
+                        ("docker", "logs", "--tail", "80", identity),
+                        cwd=self.repository_root, timeout_seconds=10,
+                    )
+                    rows.append({"container_id": identity,
+                                 "stdout": observed.stdout, "stderr": observed.stderr})
+                except Exception as error:
+                    rows.append({"container_id": identity, "error_type": type(error).__name__})
+            create_private_file(
+                self.private_root / "control/failure-diagnostics.json",
+                (json.dumps(rows, sort_keys=True, indent=2) + "\n").encode(),
+            )
+        except Exception:
+            pass
+
     def admit(self) -> None:
         root = self.repository_root
         control_root = self.private_root / "control"

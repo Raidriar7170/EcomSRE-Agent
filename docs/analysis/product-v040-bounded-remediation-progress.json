@@ -330,6 +330,25 @@
         "owned_volumes": 0,
         "verdict": "CLEAN"
       }
+    },
+    {
+      "ordinal": 3,
+      "head": "3d6c85cfa15f8987dfea58692b5ed56e24382a66",
+      "status": "PREPARATION_FAILED_BEFORE_FORMAL_FREEZE",
+      "safe_error_code": "HEALTHY_CHECKOUT_PROXY_DEADLINE",
+      "preserved_evidence_sha256": "abe9bbd9f07c385a2ed2f2b58520e59cb2f578aea56242ec6032ace1085753f6",
+      "fault_campaigns": 0,
+      "accepted_attempts": 0,
+      "write_intents": 0,
+      "forward_mutations": 0,
+      "cleanup": {
+        "baseline_restored": true,
+        "non_owned_resources_changed": false,
+        "owned_containers": 0,
+        "owned_networks": 0,
+        "owned_volumes": 0,
+        "verdict": "CLEAN"
+      }
     }
   ],
   "ingress_diagnostics": [

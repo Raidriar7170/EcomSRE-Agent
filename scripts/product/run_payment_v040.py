@@ -175,6 +175,7 @@ def prepare(runtime: ProductRuntimeV040, image_proofs: Path) -> None:
         )
     except Exception as error:
         runtime.capture_failure()
+        lifecycle.capture_failure()
         seal_private(
             runtime.private / "host/preparation-failure.json",
             {

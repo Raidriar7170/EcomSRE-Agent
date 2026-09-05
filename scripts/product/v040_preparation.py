@@ -26,6 +26,7 @@ from ecomsre.product.pilot.runtime_authority_v02 import (
 )
 from ecomsre_live_sandbox.knowledge_v030 import owned_runtime_observation_v030
 from scripts.live_sandbox.product_v040 import ProductV040Lifecycle
+from scripts.product.v040_warmup import application_warmup
 from scripts.product.v040_runtime import (
     ProductRuntimeV040,
     atomic_private,
@@ -226,6 +227,7 @@ def healthy_baseline(
     verification = api.job(
         f"/v1/environments/{environment_id}/verify-jobs", key="v040-verification"
     )
+    application_warmup(runtime, profile["application_warmup"])
     traffic = bounded_traffic(
         runtime,
         profile["healthy_traffic"],
