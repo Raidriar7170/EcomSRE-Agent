@@ -17,7 +17,7 @@ unchanged. No formal manifest, fault intent or attempt request was created.
 The fault, accepted-attempt, write-intent and forward-mutation counts were zero.
 
 All original private bytes were retained in a distinct failed-preparation root.
-Its preservation-index digest is
+Its preserved evidence-set digest is
 `c9489a192ba49159668f4c9e5d43a90280eae0925cba7d14c526d73fb0e41756`.
 The public-source build context is separately bound by the retained build-input
 manifest. No failed result or historical experiment was rewritten.
@@ -36,3 +36,40 @@ Fresh independent source review, clean full tests and exact-head CI are required
 for the corrected source. A new no-fault preparation may establish the real
 Baseline and isolation evidence; the one formal fault allowance is unconsumed.
 Once a formal manifest or fault intent exists, no rerun is permitted.
+
+## Further no-fault preparation and ingress diagnosis
+
+Preparation 002 used `ddf2e1b25893af868b08b73cbffeced9dab0fcdb`.
+The Demo and Product bootstrap reached container readiness, but the first host
+Product API request failed with connection refused. No environment was created
+and no formal fault/manifest/attempt existed. Cleanup was CLEAN, baseline was
+read back as restored, all owned resource counts were zero and non-owned
+fingerprints were unchanged. Retained evidence-set SHA-256:
+`861a2c7dee3f961ca6ed5e2a457b5658ff4dbd3c84ae9d39f92096e403c75829`.
+The actual Product database was observed with mode 0600 after cleanup; this is
+not a claim that transient WAL/SHM files were measured.
+
+Two separate Product-only ingress diagnostics started no Demo and consumed no
+fault or Provider call. Diagnostic 001 encountered an API process exit before
+its inspection stage. Its cause remains unknown because stderr was not captured
+before cleanup. Diagnostic 002 measured a healthy API listening on 0.0.0.0:8080,
+an empty Docker published mapping for that port, and repeated failed host GETs.
+Both diagnostics cleaned all owned resources and retained unchanged non-owned
+fingerprints. Their retained index file SHA-256 values are respectively
+`474db4201147cb78b3d96cfd9fbecda7bb107710fc97d163bb73531ebcd82403`
+and `afa55821645c689fcc356d6fec25d1ee9fa509aed874e747ef7329394403612e`.
+
+The bounded ingress repair retains API/Worker on the internal network and
+publishes a separate listener on the existing observer to host loopback. It
+forwards only the campaign's enumerated Product routes to literal `api:8080`,
+passes the caller's authentication, has no credentials of its own, and rejects
+control routes, arbitrary targets and redirects. A transport failure is never
+retried. Request/response sizes and transport timeouts are bounded. The existing
+observation application remains a separate read-only listener.
+
+Startup now initializes the API database before Worker starts and checks host
+readiness with bounded GETs before the first POST. This removes concurrent
+initialization as a variable; it does not prove that SQLite caused diagnostic
+001's exit. Preparation failure captures owned container state and both log
+streams before cleanup, with capture failure unable to block cleanup. The
+repaired ingress still requires real no-fault preparation and final source gates.

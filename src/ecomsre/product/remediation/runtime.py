@@ -259,6 +259,17 @@ def observation_proxy_app() -> FastAPI:
 
 
 def observation_proxy_main() -> None:
+    if os.environ.get("ECOMSRE_PRODUCT_FIXED_INGRESS") == "1":
+        from ecomsre.product.remediation.product_ingress import product_ingress_app
+
+        # Separate listener; the observation application stays read-only.
+        threading.Thread(
+            target=uvicorn.run,
+            args=(product_ingress_app(),),
+            kwargs={"host": "0.0.0.0", "port": 8082,
+                    "access_log": False, "log_level": "critical"},
+            daemon=True,
+        ).start()
     uvicorn.run(
         observation_proxy_app(),
         host="0.0.0.0",

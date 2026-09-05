@@ -311,6 +311,45 @@
         "owned_volumes": 0,
         "non_owned_resources_changed": false
       }
+    },
+    {
+      "ordinal": 2,
+      "head": "ddf2e1b25893af868b08b73cbffeced9dab0fcdb",
+      "status": "PREPARATION_FAILED_BEFORE_FORMAL_FREEZE",
+      "safe_error_code": "HOST_API_CONNECTION_REFUSED",
+      "preserved_evidence_sha256": "861a2c7dee3f961ca6ed5e2a457b5658ff4dbd3c84ae9d39f92096e403c75829",
+      "fault_campaigns": 0,
+      "accepted_attempts": 0,
+      "write_intents": 0,
+      "forward_mutations": 0,
+      "cleanup": {
+        "baseline_restored": true,
+        "non_owned_resources_changed": false,
+        "owned_containers": 0,
+        "owned_networks": 0,
+        "owned_volumes": 0,
+        "verdict": "CLEAN"
+      }
+    }
+  ],
+  "ingress_diagnostics": [
+    {
+      "ordinal": 1,
+      "status": "API_EXIT_CAUSE_UNCONFIRMED",
+      "sandbox_starts": 0,
+      "fault_campaigns": 0,
+      "provider_calls": 0,
+      "owned_remaining": 0,
+      "non_owned_changed": false
+    },
+    {
+      "ordinal": 2,
+      "status": "INTERNAL_API_HEALTHY_HOST_MAPPING_ABSENT",
+      "sandbox_starts": 0,
+      "fault_campaigns": 0,
+      "provider_calls": 0,
+      "owned_remaining": 0,
+      "non_owned_changed": false
     }
   ]
 }

@@ -174,6 +174,7 @@ def prepare(runtime: ProductRuntimeV040, image_proofs: Path) -> None:
             "PRE_EXECUTION_REVIEW_REQUIRED; fault=0; attempts=0; writes=0", flush=True
         )
     except Exception as error:
+        runtime.capture_failure()
         seal_private(
             runtime.private / "host/preparation-failure.json",
             {

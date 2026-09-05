@@ -3,6 +3,7 @@
 name: ecomsre-product-v040
 services:
   api:
+    ports: !reset []
     command: python -m ecomsre.product.remediation.private_process api
     image: ${ECOMSRE_V040_IMAGE:?}
     user: ${ECOMSRE_V040_USER:?}
@@ -70,8 +71,10 @@ services:
     environment:
       ECOMSRE_REMEDIATION_ENABLED: "1"
       ECOMSRE_REMEDIATION_ISOLATED_PROFILE: product-v040-network-v1
+      ECOMSRE_PRODUCT_FIXED_INGRESS: "1"
     volumes:
       - ${ECOMSRE_V040_ROOT:?}/proxy:/run/remediation-private:ro
+    ports: ["127.0.0.1:18001:8082"]
     networks: [default, remediation-observation]
     read_only: true
     tmpfs: ["/tmp:rw,noexec,nosuid,nodev,size=16m"]

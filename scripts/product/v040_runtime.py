@@ -18,6 +18,9 @@ from pathlib import Path
 import secrets
 import socket
 import subprocess
+import time
+
+import httpx
 from typing import Any
 
 from ecomsre.product.remediation.payment_control import digest
@@ -101,7 +104,8 @@ class ProductRuntimeV040:
             os.close(fd)
 
     def command(
-        self, argv: tuple[str, ...], *, timeout: int = 30, compose: bool = False
+        self, argv: tuple[str, ...], *, timeout: int = 30, compose: bool = False,
+        include_stderr: bool = False
     ) -> str:
         env = {
             key: value
@@ -143,7 +147,7 @@ class ProductRuntimeV040:
             raise RuntimeError(
                 "fixed local runtime operation failed; private evidence retained"
             )
-        return result.stdout
+        return result.stdout + (result.stderr if include_stderr else "")
 
     def docker(self, *args: str, timeout: int = 30) -> str:
         return self.command(
@@ -402,22 +406,52 @@ class ProductRuntimeV040:
             raise ValueError("Product resources already exist before startup")
         with socket.socket() as probe:
             probe.bind(("127.0.0.1", 18001))
+        # Initialize the shared database with one process before Worker opens it.
         self.compose(
-            "up",
-            "-d",
-            "--pull",
-            "never",
-            "--no-build",
-            "--wait",
-            "--wait-timeout",
-            "60",
-            "api",
-            "worker",
-            "remediation-observer",
-            timeout=90,
+            "up", "-d", "--pull", "never", "--no-build", "--wait",
+            "--wait-timeout", "60", "api", timeout=90,
+        )
+        self.compose(
+            "up", "-d", "--pull", "never", "--no-build", "--wait",
+            "--wait-timeout", "60", "worker", "remediation-observer", timeout=90,
         )
         if len(self.owned()["container"]) != 3:
             raise ValueError("Product bootstrap inventory differs")
+        self.wait_host_ready()
+
+    def wait_host_ready(self) -> None:
+        """Bounded read-only ingress check before the first state-changing POST."""
+        deadline = time.monotonic() + 30
+        with httpx.Client(timeout=2, trust_env=False, follow_redirects=False) as client:
+            while time.monotonic() < deadline:
+                try:
+                    if client.get("http://127.0.0.1:18001/readyz").status_code == 200:
+                        return
+                except httpx.HTTPError:
+                    pass
+                time.sleep(1)
+        raise RuntimeError("Product host ingress did not become ready")
+
+    def capture_failure(self) -> None:
+        """Best-effort private diagnostics; failure must never prevent cleanup."""
+        try:
+            rows = []
+            for identity in self.owned()["container"]:
+                item = json.loads(self.docker("container", "inspect", identity))[0]
+                rows.append({
+                    "service": item["Config"]["Labels"]["com.docker.compose.service"],
+                    "state": item["State"],
+                    "requested_ports": item["HostConfig"]["PortBindings"],
+                    "actual_ports": item["NetworkSettings"]["Ports"],
+                    "logs": self.command(
+                        ("docker", "--context", "desktop-linux", "logs",
+                         "--tail", "80", identity), include_stderr=True,
+                    ),
+                })
+            seal_private(self.private / "host/runtime-failure-diagnostics.json", rows)
+        except Exception:
+            # The original operation and cleanup outcomes remain authoritative.
+            pass
 
     def enable(self) -> None:
         self.boundary()
@@ -449,6 +483,7 @@ class ProductRuntimeV040:
         )
         if len(self.owned()["container"]) != 5:
             raise ValueError("enabled Product inventory differs")
+        self.wait_host_ready()
 
     def cleanup(self) -> dict[str, list[str]]:
         self.boundary()

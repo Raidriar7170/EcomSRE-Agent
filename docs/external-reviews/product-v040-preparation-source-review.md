@@ -39,3 +39,20 @@ PYTHONPATH unset, Reviewer executed private-process plus host-runtime tests:
 bootstrap setting umask before application dispatch/storage creation, real
 SQLite DB/WAL/SHM fixture modes, and the Product/ledger permission gate. Actual
 runtime permission measurements remain pending in a fresh preparation root.
+
+## Pre-freeze ingress repair review
+
+The read-only independent reviewer inspected the fixed Product ingress,
+loopback publication on the existing observer, unchanged API/Worker internal
+network, sequential bootstrap, host readiness and pre-cleanup diagnostics.
+Initial review found one Must Fix: per-I/O timeouts did not establish a total
+request deadline. The corrected handler covers inbound body, its sole upstream
+request and response stream with a 25-second asyncio deadline and returns 504
+without retransmission. Fourteen focused ingress tests pass, including slow
+inbound and delayed upstream cases.
+
+Reviewer disposition after correction: PASS; Must Fix 0; Claim Accuracy PASS.
+This is source review only. The reviewer did not run Docker and does not claim
+real ingress reachability, Baseline readiness, final-head CI or formal live
+acceptance. The diagnostic API exit remains unexplained. Actual formal freeze
+requires the separate pre-execution review and all existing live gates.
