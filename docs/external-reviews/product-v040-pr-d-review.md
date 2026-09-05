@@ -22,9 +22,14 @@ and recovery-policy substitution. All were corrected. The final policy digest
 is sealed into dispatch before the side effect and revalidated before mutation,
 receipt/recovery reads and final evaluation; rehashed threshold changes fail.
 
-Independent final checks: **34 tests passed** across executor and gateway
+A compatibility follow-up exercised the real Prometheus and OpenSearch connectors
+through the proxy. Service discovery and bounded log search now work; arbitrary
+DSL, origins, indexes and write operations remain denied. Independent follow-up
+review: PASS / Must Fix 0 / Claim Accuracy PASS.
+
+Independent final checks: **35 tests passed** across executor and gateway
 regressions; offline development/history verifier PASS; `git diff --check` PASS.
-Primary final Product checks: **267 passed / 15 warnings**, Ruff PASS, mypy PASS
+Primary final Product checks: **268 passed / 15 warnings**, Ruff PASS, mypy PASS
 for 239 source files. Factual metadata refresh is covered by the final claim
 review and does not introduce further source changes.
 

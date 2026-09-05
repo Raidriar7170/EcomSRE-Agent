@@ -134,15 +134,15 @@
     },
     {
       "stage": "D",
-      "focused_product_and_v040": "267 passed, 15 warnings, 18.46 seconds",
-      "v040_tests": 134,
+      "focused_product_and_v040": "268 passed, 15 warnings, 18.55 seconds",
+      "v040_tests": 135,
       "ruff": "PASS: exact Goal local scope",
       "mypy": "PASS: 239 source files; exact Goal local scope",
       "history": "PASS: 404 frozen files and original Goal binding",
       "offline_development": "PASS: one fake mutation, two windows, zero live/Provider activity",
       "unix_socket_fixture": "PASS: temporary real Unix socket, fake upstream, auth and duplicate fences; server stopped",
       "git_diff_check": "PASS",
-      "independent_regressions": "34 passed; all lease, receipt, policy, clock and upstream-compatibility findings resolved",
+      "independent_regressions": "35 passed; all lease, receipt, policy, clock and upstream-compatibility findings resolved",
       "transient_validation": [
         "Extension migration test initially expected v2 rather than additive v3; adjusted expected extension version, base schema remains 9.",
         "Recovery reentry test initially matched message casing; adjusted assertion to stable ProductError.code."

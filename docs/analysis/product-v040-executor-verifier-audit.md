@@ -38,8 +38,10 @@ SHA-256 保持 `d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a
 唯一 HTTP 发送前记录意图。它只提交预绑定的基线文档，禁止重定向、代理和 HTTP 重试。
 
 必须结合 [remediation 网络 overlay](../../config/product-v040/remediation-network.v1.yml)
-启用 profile。API/Worker 仅连接内部观察网络，通过 GET allowlist proxy 获取
-Prometheus/Jaeger 数据。执行器禁用网络，gateway 持有精确上游控制地址。普通 Product
+启用 profile。API/Worker 仅连接内部观察网络，通过固定只读入口获取
+Prometheus/Jaeger 数据，并转发严格重建、限制服务数、结果数与时间范围的 OpenSearch
+`POST /otel-logs-*/_search`。该 POST 是[上游 Search API](https://docs.opensearch.org/latest/api-reference/search-apis/search/)
+的查询操作；任意 DSL、脚本、索引和写路径均不转发。执行器禁用网络，gateway 持有精确上游控制地址。普通 Product
 默认启动不启用该 profile。进程要求隔离 profile 标记；PR-E 仍必须实测 API/Worker 到
 宿主控制接口的连接被拒绝，标记和静态配置不能替代实际网络证据。
 
@@ -71,8 +73,8 @@ fake mutation 与两个 fake recovery windows。输出明确标记 OFFLINE_SYNTH
 问题已修复并增加回归。重入采集测试初次因错误消息正则大小写不匹配而失败，已改为检查
 稳定 ProductError.code；未降低恢复门槛。
 
-最终本地完整 Product + v0.4：267 passed / 15 warnings / 18.46 秒，Ruff PASS，mypy 239
-source files PASS。独立 Reviewer 重新运行 34 项执行器/gateway 测试和离线 verifier 后
+最终本地完整 Product + v0.4：268 passed / 15 warnings / 18.55 秒，Ruff PASS，mypy 239
+source files PASS。独立 Reviewer 重新运行 35 项执行器/gateway 测试和离线 verifier 后
 给出 PASS / Must Fix 0 / Claim Accuracy PASS。真实临时 Unix socket 测试使用 fake 上游，
 验证凭据、唯一发送和关闭过程，仍不构成 Docker 或 Payment 实测证据。
 提交内容核验、精确提交 GitHub CI 和合并仍是本阶段剩余门槛。

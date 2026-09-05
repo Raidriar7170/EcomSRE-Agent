@@ -275,6 +275,7 @@ def test_proxy_has_no_arbitrary_origin_path_or_method():
         ObservationProxyProfileV1(
             prometheus_base_url="http://127.0.0.1:19090",
             jaeger_base_url="http://127.0.0.1:16686",
+            opensearch_base_url="http://127.0.0.1:19200",
         ),
         client=httpx.Client(transport=httpx.MockTransport(upstream)),
     )
@@ -369,3 +370,155 @@ def test_real_unix_socket_transport_with_fake_upstream(gateway, tmp_path):
             server.should_exit = True
             thread.join(timeout=5)
         assert not thread.is_alive()
+
+
+def test_real_product_connectors_work_through_fixed_observation_proxy():
+    from ecomsre.product.connectors.credentials import CredentialResolverV1
+    from ecomsre.product.connectors.opensearch import OpenSearchConnectorV1
+    from ecomsre.product.connectors.prometheus import PrometheusConnectorV1
+    from ecomsre.product.contracts import ConnectorConfigV1
+    from tests.product.test_increment2_http_connectors import CONTEXT
+
+    seen = []
+
+    def upstream(request):
+        seen.append(request)
+        if request.url.path == "/api/v1/label/service_name/values":
+            return httpx.Response(200, json={"status": "success", "data": ["payment"]})
+        if request.url.path == "/api/v1/series":
+            return httpx.Response(
+                200, json={"status": "success", "data": [{"service_name": "payment"}]}
+            )
+        if request.url.path == "/otel-logs-*/_search":
+            body = json.loads(request.content)
+            if body["size"] == 0:
+                return httpx.Response(
+                    200,
+                    json={
+                        "aggregations": {"services": {"buckets": [{"key": "payment"}]}}
+                    },
+                )
+            return httpx.Response(
+                200,
+                json={
+                    "hits": {
+                        "total": {"value": 1, "relation": "eq"},
+                        "hits": [
+                            {
+                                "_source": {
+                                    "@timestamp": CONTEXT.window.ended_at.isoformat(),
+                                    "resource": {"service": {"name": "payment"}},
+                                    "severity": {"text": "ERROR"},
+                                    "body": "payment request failed",
+                                    "traceId": "fixture-trace",
+                                }
+                            }
+                        ],
+                    }
+                },
+            )
+        return httpx.Response(404)
+
+    app = FastAPI()
+    profile = ObservationProxyProfileV1(
+        prometheus_base_url="http://127.0.0.1:19090",
+        jaeger_base_url="http://127.0.0.1:16686",
+        opensearch_base_url="http://127.0.0.1:19200",
+    )
+    mount_observation_proxy(
+        app, profile, client=httpx.Client(transport=httpx.MockTransport(upstream))
+    )
+    with TestClient(app) as proxy:
+
+        def transport(request):
+            response = proxy.request(
+                request.method,
+                request.url.path,
+                params=request.url.params,
+                content=request.content,
+            )
+            return httpx.Response(response.status_code, content=response.content)
+
+        resolver = CredentialResolverV1(environment={})
+        prometheus = PrometheusConnectorV1(
+            ConnectorConfigV1(
+                name="metrics",
+                kind="PROMETHEUS",
+                endpoint="http://proxy/observability/prometheus",
+                settings={
+                    "query_templates": {
+                        name: name + '{service_name="{service}"}'
+                        for name in (
+                            "request_support",
+                            "error_rate",
+                            "latency",
+                            "cpu",
+                            "memory",
+                        )
+                    },
+                    "service_label": "service_name",
+                },
+            ),
+            credential_resolver=resolver,
+            timeout_seconds=2,
+            transport=httpx.MockTransport(transport),
+        )
+        assert prometheus.verify().status.value == "AVAILABLE"
+        assert prometheus.query_series(
+            matcher='{service_name="payment"}', window=CONTEXT.window
+        ) == ({"service_name": "payment"},)
+        logs = OpenSearchConnectorV1(
+            ConnectorConfigV1(
+                name="logs",
+                kind="OPENSEARCH",
+                endpoint="http://proxy/observability/opensearch",
+                settings={
+                    "mode": "LEGACY_EXPLICIT_FIELDS",
+                    "index_pattern": "otel-logs-*",
+                    "timestamp_field": "@timestamp",
+                    "service_field": "resource.service.name",
+                    "service_query_field": "resource.service.name.keyword",
+                    "severity_field": "severity.text",
+                    "message_field": "body",
+                    "trace_id_field": "traceId",
+                    "message_projection_policy": "OBSERVER_SYMPTOM_V1",
+                    "maximum_result_count": 200,
+                },
+            ),
+            credential_resolver=resolver,
+            timeout_seconds=2,
+            transport=httpx.MockTransport(transport),
+        )
+        assert logs.verify().status.value == "AVAILABLE"
+        result = logs.query(CONTEXT)[0]
+        assert (
+            result.status.value == "SUCCESS_NONEMPTY"
+            and result.records[0].message == "payment request failed"
+        )
+        count = len(seen)
+        for path, body in (
+            (
+                "/observability/opensearch/otel-logs-*/_delete_by_query",
+                {"query": {"match_all": {}}},
+            ),
+            (
+                "/observability/opensearch/otel-logs-*/_search",
+                {"size": 1, "script": "forbidden"},
+            ),
+            (
+                "/observability/opensearch/otel-logs-*/_search",
+                {
+                    "size": 0,
+                    "aggs": {
+                        "services": {
+                            "terms": {
+                                "field": "resource.service.name.keyword",
+                                "size": 201,
+                            }
+                        }
+                    },
+                },
+            ),
+        ):
+            assert proxy.post(path, json=body).status_code in {404, 405, 422}
+        assert len(seen) == count

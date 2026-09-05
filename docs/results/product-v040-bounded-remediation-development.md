@@ -10,9 +10,9 @@ verification. The standalone deterministic demo uses synthetic persisted Product
 inputs, one fake mutation and two fake windows. A temporary Unix-socket test uses
 a fake upstream and closes its server. Neither is measured Payment evidence.
 
-Local Product validation: 267 passed / 15 warnings, Ruff PASS, mypy 239 source
+Local Product validation: 268 passed / 15 warnings, Ruff PASS, mypy 239 source
 files PASS. Independent Reviewer: PASS / Must Fix 0 / Claim Accuracy PASS;
-34 independent executor/gateway regression tests passed. History binding retains
+35 independent executor/gateway regression tests passed. History binding retains
 404 original frozen artifacts and the exact activated Goal SHA.
 
 Live v0.4 campaigns, live forward mutations and Provider calls remain 0. Actual
