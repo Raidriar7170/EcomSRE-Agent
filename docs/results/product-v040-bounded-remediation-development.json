@@ -1,12 +1,33 @@
 {
   "schema_version": "ecomsre.product.remediation-development.v1",
   "goal_version": "ecomsre-product-v040-bounded-remediation-v1",
-  "stage": "A",
-  "terminal": "ECOMSRE_PRODUCT_V040_A_CONTRACTS_AND_CANDIDATE_PASS",
+  "stage": "B",
+  "terminal": "ECOMSRE_PRODUCT_V040_B_APPROVAL_WORKFLOW_PASS",
   "status": "OFFLINE_PASS_INTEGRATION_PENDING",
-  "claim": "Offline contracts and deterministic non-actionable candidate projection only.",
-  "completed_prs": [],
-  "validation": {
+  "claim": "Persisted non-executable candidates, explicit token-authenticated operator approval, expiry and append-only revocation; no attempt or live execution.",
+  "completed_prs": [
+    {
+      "stage": "A",
+      "pull_request": 91,
+      "head": "e2a415a0025ce4ab0a6233e43efa7bd84c95b799",
+      "merge_commit": "a823456185aa88809a73eb193b63aefcc3afa745",
+      "tree_sha": "4154d398f08d15ef88ca4f3bd98c149f200877f3",
+      "merged_at": "2026-09-05T14:18:37Z",
+      "exact_head_ci_run": 33970146162,
+      "ci_conclusion": "SUCCESS",
+      "full_tests": {
+        "passed": 6388,
+        "skipped": 21,
+        "failed": 0
+      },
+      "ruff": "PASS",
+      "mypy": "PASS: 675 files",
+      "review": "PASS / Must Fix 0 / Claim Accuracy PASS",
+      "tracked_diff_sha256": "9a878a9d26059151a8a7fe1f440f78ba3f6615e1014941b526c8b4e011a13e6e",
+      "final_evidence_sha256": "25d68c5c5a97cda7791e0cca1c8b7430ef5cd4f2974e10d3156fe8f113f2adc2"
+    }
+  ],
+  "prior_stage_validation": {
     "focused_product_and_v040": "162 passed before final added multi-admission regression",
     "ruff": "PASS",
     "mypy": "PASS: 212 source files",
@@ -23,11 +44,25 @@
     },
     "postcommit_regression": "2 passed"
   },
+  "validation": {
+    "stage": "B",
+    "focused_product_and_v040": "191 passed, 13 warnings, 12.20 seconds",
+    "final_v040": "58 tests included in final focused suite",
+    "ruff": "PASS: exact Goal local scope",
+    "mypy": "PASS: 223 source files; exact Goal local scope",
+    "history": "PASS: 404 frozen files",
+    "git_diff_check": "PASS",
+    "transient_validation": {
+      "passed": 189,
+      "failed": 2,
+      "reason": "Two regression assertions still expected the older parent-binding code after the new earlier response digest rejection. Corrected expected code; no implementation acceptance failure."
+    }
+  },
   "review": "PASS / Must Fix 0 / Claim Accuracy PASS",
   "github_ci": "PENDING_EXACT_FINAL_HEAD",
   "live_campaigns": 0,
   "forward_mutations": 0,
   "provider_calls": 0,
-  "pull_request": 91,
-  "reviewed_implementation_head": "286ff93066dfd3f548e25fb9333445a8cea9c0eb"
+  "pull_request": 92,
+  "reviewed_implementation_head": "d050b4462a300fe6de9bf60e1d4c9fad0665e8c6"
 }

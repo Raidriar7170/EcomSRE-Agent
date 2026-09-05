@@ -29,6 +29,8 @@ from ecomsre.product.incidents.repository import (
     DiagnosisRepositoryV1,
     IncidentRepositoryV1,
 )
+from ecomsre.product.remediation.api import router as remediation_router
+from ecomsre.product.remediation.repository import RemediationRepositoryV1
 from ecomsre.product.settings import ProductSettingsV1
 from ecomsre.product.storage.object_store import ContentAddressedObjectStoreV1
 from ecomsre.product.storage.sqlite_store import SqliteStoreV1
@@ -73,6 +75,7 @@ def create_app(settings: ProductSettingsV1 | None = None) -> FastAPI:
     app.state.diagnoses = DiagnosisRepositoryV1(store, app.state.object_store)
     app.state.knowledge = KnowledgeRepositoryV1(store, app.state.object_store)
     app.state.metrics = ProductMetricsV1(store)
+    app.state.remediation = RemediationRepositoryV1(store, app.state.object_store)
 
     @app.middleware("http")
     async def record_http_request(request: Request, call_next: object):
@@ -154,6 +157,7 @@ def create_app(settings: ProductSettingsV1 | None = None) -> FastAPI:
         )
 
     app.include_router(router)
+    app.include_router(remediation_router)
     if resolved.resolved_admin_token() is None:
         LOGGER.warning("LOCAL_NO_AUTH: Product mutations are unauthenticated on loopback")
     return app

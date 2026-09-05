@@ -486,10 +486,9 @@ def test_raw_failure_cannot_be_laundered_by_successful_memory(material):
     )
 
 
-def test_repository_wrapper_uses_persisted_parents_and_performs_no_sql_writes(material):
+def persist_material(material):
     from ecomsre.product.environment.services import ServiceCatalogRepositoryV1
     from ecomsre.product.environment.capabilities import CapabilityMatrixRepositoryV1
-    from ecomsre.product.remediation.source import project_for_incident
 
     incident, diagnosis = material["incident"], material["diagnosis"]
     store = material["objects"].metadata_store
@@ -563,6 +562,14 @@ def test_repository_wrapper_uses_persisted_parents_and_performs_no_sql_writes(ma
             )
     ServiceCatalogRepositoryV1(store).put_map(material["identity"], created_at=stamp)
     CapabilityMatrixRepositoryV1(store).put(material["capability"])
+
+
+def test_repository_wrapper_uses_persisted_parents_and_performs_no_sql_writes(material):
+    from ecomsre.product.remediation.source import project_for_incident
+
+    persist_material(material)
+    store = material["objects"].metadata_store
+    incident = material["incident"]
     with store.connect() as connection:
         before = tuple(connection.iterdump())
     projected = project_for_incident(

@@ -10,6 +10,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
 COPY src ./src
+COPY config/product-v040/remediation-registry.v1.json ./config/product-v040/remediation-registry.v1.json
 
 RUN useradd --create-home --uid 10001 ecomsre \
     && mkdir -p /var/lib/ecomsre \
