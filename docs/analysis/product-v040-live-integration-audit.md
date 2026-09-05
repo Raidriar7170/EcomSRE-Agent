@@ -1,6 +1,6 @@
 # Product v0.4 PR-E integration preparation
 
-Status: PRE_EXECUTION_REVIEW_REQUIRED. No measured Payment result exists.
+Status: PREPARATION_FAILED_BEFORE_FORMAL_FREEZE, corrected source awaiting fresh validation. No measured Payment result exists.
 PR-A through PR-D are merged; PR-D merge is
 `cc941b51cbff9287b876be49652cd0ad83030474`.
 
@@ -68,3 +68,10 @@ coherent negative terminal construction, omitted build registry, pinned Docker
 context, checkout business oracle, observer cancellation, output classification,
 Git provenance, cross-object binding and historical cleanup truth preservation.
 No runtime success, recovery, or production capability is claimed here.
+
+The first no-fault preparation failed on an unquoted tmpfs flow list and was
+cleanly removed with zero formal allowance consumed. The failure is retained
+in the Payment error analysis. Corrected source validates resolved mounts before
+startup and sets private-process file creation permissions, with actual-mode
+checks at preparation and freeze. Independent repair review: PASS / Must Fix 0
+/ Claim Accuracy PASS; 24 targeted tests independently passed.

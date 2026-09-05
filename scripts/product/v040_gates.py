@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 import hashlib
 import json
+import stat
 from typing import Any
 
 from ecomsre.product.baselines import BaselineRepositoryV1
@@ -46,6 +47,36 @@ if os.environ.get("ECOMSRE_REMEDIATION_READ_TOKEN"):
         result["read_token_cannot_request_window"] = response.status_code == 403
 print(json.dumps(result))
 """
+
+
+def private_storage_modes(runtime: ProductRuntimeV040) -> dict[str, Any]:
+    """Measure Product-owned raw storage permissions, without chmod repairs."""
+    files = directories = wal = shm = databases = 0
+    for root in (runtime.private / "product", runtime.private / "ledger"):
+        for path in (root, *root.rglob("*")):
+            try:
+                info = path.lstat()
+            except FileNotFoundError:
+                if path.name.endswith(("-wal", "-shm")):
+                    continue  # A closed SQLite connection may remove its sidecars.
+                raise
+            if stat.S_ISDIR(info.st_mode):
+                directories += 1
+                expected = 0o700
+            elif stat.S_ISREG(info.st_mode):
+                files += 1
+                databases += path.name.endswith(".sqlite3")
+                wal += path.name.endswith("-wal")
+                shm += path.name.endswith("-shm")
+                expected = 0o600
+            else:
+                raise ValueError("private raw storage contains an unexpected object")
+            if stat.S_IMODE(info.st_mode) != expected:
+                raise ValueError("private raw storage permissions differ")
+    if databases < 1:
+        raise ValueError("private Product database is not observed")
+    return {"status": "PASS", "regular_files": files, "directories": directories,
+            "databases": databases, "wal_files": wal, "shm_files": shm}
 
 
 def network_denial(
@@ -110,6 +141,7 @@ def network_denial(
         "rootfs_readonly": True,
         "privileged": False,
     }
+    result["private_storage_permissions"] = private_storage_modes(runtime)
     result["status"] = "PASS"
     seal_private(runtime.private / "host/network-denial.json", result)
     return result
@@ -192,6 +224,7 @@ def freeze(runtime: ProductRuntimeV040, observer: LiveObserverV040) -> LiveManif
     }:
         raise ValueError("exact-head Agent mainline is not successful")
     verify_history(runtime.repository)
+    private_storage_modes(runtime)
     source_inputs = read_json(runtime.private / "host/build-inputs.json")
     current_entries = runtime.command(
         (

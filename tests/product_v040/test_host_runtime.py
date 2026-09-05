@@ -169,3 +169,17 @@ def test_cancelled_observer_cannot_acquire_or_sample(tmp_path):
     with pytest.raises(InterruptedError, match="consumed window"):
         observer.window(request, None)
     assert not list(tmp_path.rglob("*"))
+
+
+@pytest.mark.parametrize("mounts", [
+    ["/tmp:rw", "noexec", "nosuid", "nodev", "size=16m"],
+    ["/tmp:rw,noexec,nosuid,nodev,size=16m", "/extra"],
+    ["/tmp:rw,noexec,nosuid,nodev,size=64m"],
+])
+def test_split_or_broadened_observer_tmpfs_is_rejected_before_start(mounts):
+    from scripts.product.v040_runtime import SERVICES, validate_resolved_tmpfs
+    plan = {"services": {name: {"tmpfs": [f"/tmp:rw,noexec,nosuid,nodev,size={64 if name in {'api','worker'} else 16}m"]} for name in SERVICES}}
+    validate_resolved_tmpfs(plan)
+    plan["services"]["remediation-observer"]["tmpfs"] = mounts
+    with pytest.raises(ValueError, match="tmpfs mount differs"):
+        validate_resolved_tmpfs(plan)

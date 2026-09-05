@@ -26,3 +26,16 @@ sets its exact source path, working directory and a 10-second timeout without
 inheriting control credentials. The lock assertion and production implementation
 are unchanged. PASS / Must Fix 0 / Claim Accuracy PASS. New exact-head CI remains
 required.
+
+First actual no-fault preparation: invalid observer tmpfs flow-list caused
+startup failure. Cleanup was CLEAN, Baseline restored, all owned counts zero,
+non-owned unchanged, and no formal freeze/fault/attempt existed. The entire
+failed preparation was retained with its preservation index; see the
+[error analysis](../results/product-v040-payment-live-error-analysis.md).
+
+Independent repair review: PASS / Must Fix 0 / Claim Accuracy PASS. With outer
+PYTHONPATH unset, Reviewer executed private-process plus host-runtime tests:
+24 passed, exit 0. Review covers quoted/resolved tmpfs admission, closed role
+bootstrap setting umask before application dispatch/storage creation, real
+SQLite DB/WAL/SHM fixture modes, and the Product/ledger permission gate. Actual
+runtime permission measurements remain pending in a fresh preparation root.

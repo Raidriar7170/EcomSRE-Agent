@@ -3,6 +3,7 @@
 name: ecomsre-product-v040
 services:
   api:
+    command: python -m ecomsre.product.remediation.private_process api
     image: ${ECOMSRE_V040_IMAGE:?}
     user: ${ECOMSRE_V040_USER:?}
     restart: "no"
@@ -13,6 +14,7 @@ services:
       - ${ECOMSRE_V040_ROOT:?}/read:/run/remediation-read:ro
       - ${ECOMSRE_V040_ROOT:?}/config:/run/remediation-config:ro
   worker:
+    command: python -m ecomsre.product.remediation.private_process worker
     image: ${ECOMSRE_V040_IMAGE:?}
     user: ${ECOMSRE_V040_USER:?}
     restart: "no"
@@ -23,6 +25,7 @@ services:
     volumes: !override
       - ${ECOMSRE_V040_ROOT:?}/product:/var/lib/ecomsre
   remediation-executor:
+    command: python -m ecomsre.product.remediation.private_process executor
     image: ${ECOMSRE_V040_IMAGE:?}
     user: ${ECOMSRE_V040_USER:?}
     labels:
@@ -35,6 +38,7 @@ services:
       - ${ECOMSRE_V040_ROOT:?}/read:/run/remediation-read:ro
       - ${ECOMSRE_V040_ROOT:?}/write:/run/remediation-write:ro
   remediation-control-gateway:
+    command: python -m ecomsre.product.remediation.private_process control-gateway
     image: ${ECOMSRE_V040_IMAGE:?}
     user: ${ECOMSRE_V040_USER:?}
     networks: !override [default]
@@ -59,7 +63,7 @@ services:
     image: ${ECOMSRE_V040_IMAGE:?}
     user: ${ECOMSRE_V040_USER:?}
     pull_policy: never
-    command: python -m ecomsre.product.remediation.runtime observation-proxy
+    command: python -m ecomsre.product.remediation.private_process observation-proxy
     labels:
       io.ecomsre.product: ecomsre-product-mvp-v01
       io.ecomsre.product.v040.goal: d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a
@@ -70,7 +74,7 @@ services:
       - ${ECOMSRE_V040_ROOT:?}/proxy:/run/remediation-private:ro
     networks: [default, remediation-observation]
     read_only: true
-    tmpfs: [/tmp:rw,noexec,nosuid,nodev,size=16m]
+    tmpfs: ["/tmp:rw,noexec,nosuid,nodev,size=16m"]
     security_opt: [no-new-privileges:true]
     cap_drop: [ALL]
     restart: "no"

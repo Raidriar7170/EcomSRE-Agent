@@ -35,6 +35,16 @@ SERVICES = {
 GOAL_LABEL = "io.ecomsre.product.v040.goal"
 
 
+def validate_resolved_tmpfs(plan: dict[str, Any]) -> None:
+    """Reject YAML flow-list splitting before any Docker build or startup."""
+    if set(plan["services"]) != SERVICES:
+        raise ValueError("resolved service inventory differs")
+    for name, service in plan["services"].items():
+        size = 64 if name in {"api", "worker"} else 16
+        if service.get("tmpfs") != [f"/tmp:rw,noexec,nosuid,nodev,size={size}m"]:
+            raise ValueError("resolved private tmpfs mount differs")
+
+
 def read_json(path: Path) -> Any:
     if path.is_symlink():
         raise ValueError("private path is a symlink")
@@ -72,6 +82,7 @@ class ProductRuntimeV040:
     @contextmanager
     def operation_lock(self) -> Iterator[None]:
         """Exclude another campaign, cleanup or exporter process on this root."""
+        os.umask(0o077)
         parent = self.private.parent
         parent.mkdir(mode=0o700, parents=True, exist_ok=True)
         if parent.is_symlink() or stat.S_IMODE(parent.stat().st_mode) != 0o700:
@@ -335,6 +346,7 @@ class ProductRuntimeV040:
         resolved = json.loads(
             self.compose("--profile", "remediation", "config", "--format", "json")
         )
+        validate_resolved_tmpfs(resolved)
         for name, service in resolved["services"].items():
             if (
                 name not in SERVICES

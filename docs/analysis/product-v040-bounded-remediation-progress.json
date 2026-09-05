@@ -6,7 +6,7 @@
   "current_main": "cc941b51cbff9287b876be49652cd0ad83030474",
   "current_pr_stage": "E",
   "current_branch": "codex/product-v040-live-payment",
-  "current_head": "19165069b7a07daf864b9c22981eb423a8273a90",
+  "current_head": "5657368e2d0e425cd74a99ad78f20de7270d2b4c",
   "completed_prs": [
     {
       "stage": "A",
@@ -98,7 +98,7 @@
     "candidate": "PASS_MERGED",
     "approval_authorization": "PASS_MERGED",
     "executor_verification": "OFFLINE_PASS_MERGED",
-    "live_campaign": "NOT_STARTED",
+    "live_campaign": "PREPARATION_FAILED_BEFORE_FORMAL_FREEZE",
     "integration": "NOT_STARTED"
   },
   "live_authority": {
@@ -200,7 +200,8 @@
           "reason": "Historical attribution audit rejected uncommitted paths; exact clean-commit regression passed."
         },
         "bare_environment_reproduction": "New lock subprocess test failed to import ecomsre without inherited PYTHONPATH; corrected test-only cwd, minimal source path and timeout. Independent host-runtime file: 11 passed with outer PYTHONPATH unset. New clean full run and CI required."
-      }
+      },
+      "full_repository_bare_environment": "6537 passed, 21 skipped, 16 warnings in 613.54 seconds; outer PYTHONPATH unset"
     }
   ],
   "reviews": [
@@ -242,8 +243,8 @@
   ],
   "known_limitations": [
     "PR-A through PR-D are merged with exact-head CI and independent review.",
-    "PR-E integration preparation is in progress; actual network denial, healthy baseline and pre-execution freeze remain unmeasured.",
-    "Formal Payment fault campaign, accepted attempts, write intents, forward mutations and Provider calls remain zero."
+    "First no-fault preparation failed before Product startup; all owned resources cleaned and evidence retained. Quoted tmpfs and private-process permission fixes require fresh validation.",
+    "Formal Payment fault campaigns, accepted attempts, write intents, forward mutations and Provider calls remain zero."
   ],
   "next_action": "Complete PR-E offline integration, owned runtime preparation, independent pre-execution review and exact-head CI before freezing the single campaign.",
   "scope": {
@@ -290,5 +291,26 @@
     "Original Goal UTF-8 bytes are losslessly stored in a JSON text envelope because Markdown hard-break spaces fail git diff --check. Decoded source retains the activated Goal SHA-256; no whitespace gate is bypassed."
   ],
   "head_snapshot_semantics": "Last independently reviewed implementation commit. Administrative evidence commits are resolved from live Git/PR state.",
-  "current_pull_request": 95
+  "current_pull_request": 95,
+  "preparations": [
+    {
+      "ordinal": 1,
+      "head": "5657368e2d0e425cd74a99ad78f20de7270d2b4c",
+      "status": "PREPARATION_FAILED_BEFORE_FORMAL_FREEZE",
+      "safe_error_code": "INVALID_OBSERVER_TMPFS_MOUNT",
+      "preserved_evidence_sha256": "c9489a192ba49159668f4c9e5d43a90280eae0925cba7d14c526d73fb0e41756",
+      "fault_campaigns": 0,
+      "accepted_attempts": 0,
+      "write_intents": 0,
+      "forward_mutations": 0,
+      "cleanup": {
+        "verdict": "CLEAN",
+        "baseline_restored": true,
+        "owned_containers": 0,
+        "owned_networks": 0,
+        "owned_volumes": 0,
+        "non_owned_resources_changed": false
+      }
+    }
+  ]
 }
