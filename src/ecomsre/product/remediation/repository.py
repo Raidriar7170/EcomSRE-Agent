@@ -100,19 +100,27 @@ class RemediationRepositoryV1:
             connection.execute("BEGIN IMMEDIATE")
             try:
                 row = connection.execute(
-                    "SELECT request_sha256, response_json FROM remediation_idempotency_keys "
+                    "SELECT request_sha256, response_json, response_sha256 FROM remediation_idempotency_keys "
                     "WHERE operation = ? AND key_sha256 = ?",
                     (operation, key_hash),
                 ).fetchone()
                 if row is not None:
                     if row[0] != request_hash:
                         raise fail("IDEMPOTENCY_CONFLICT")
+                    if sha256(row[1].encode()).hexdigest() != row[2]:
+                        raise fail("REMEDIATION_IDEMPOTENCY_BINDING_MISMATCH")
                     result = model.model_validate_json(row[1])
                 else:
                     result = create(connection)
                     connection.execute(
-                        "INSERT INTO remediation_idempotency_keys VALUES (?, ?, ?, ?)",
-                        (operation, key_hash, request_hash, canonical(result)),
+                        "INSERT INTO remediation_idempotency_keys VALUES (?, ?, ?, ?, ?)",
+                        (
+                            operation,
+                            key_hash,
+                            request_hash,
+                            sha256(canonical(result).encode()).hexdigest(),
+                            canonical(result),
+                        ),
                     )
                 validate(connection, result)
                 connection.execute("COMMIT")

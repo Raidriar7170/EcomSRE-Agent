@@ -15,3 +15,5 @@ Evidence gaps: exact-head GitHub CI, committed-content closure and merge remain 
 Recommended next step: record the offline PR-B terminal after final local checks, commit, complete exact-head GitHub CI and squash merge before PR-C.
 
 Provenance: separate local read-only reviewer agent; no external browser review, Provider call or live operation.
+
+Follow-up review: PASS / Must Fix 0 / Claim Accuracy PASS. Five independent regressions passed; committed whitespace check passed. cached response SHA-256 prevents interchange of distinct approvals even when candidate and request are identical. The two swapped-cache regressions retain canonical response serialization and expect the earlier idempotency-binding denial.

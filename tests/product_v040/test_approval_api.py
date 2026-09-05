@@ -352,7 +352,8 @@ def test_active_gate_rejects_expired_revoked_future_and_mismatched(api):
         assert error.value.code == "REMEDIATION_APPROVAL_REVOKED"
 
 
-def test_swapped_valid_cached_approval_is_rejected(api):
+@pytest.mark.parametrize("second_ttl", [120, 300])
+def test_swapped_valid_cached_approval_is_rejected(api, second_ttl):
     from hashlib import sha256
     from ecomsre.product.remediation.repository import canonical
 
@@ -360,16 +361,23 @@ def test_swapped_valid_cached_approval_is_rejected(api):
     item = candidate(api)
     first = approve(api, item, key="first").json()
     second = approve(
-        api, item, key="second", payload={**APPROVAL, "ttl_seconds": 300}
+        api, item, key="second", payload={**APPROVAL, "ttl_seconds": second_ttl}
     ).json()
     with app.state.store.connect() as connection:
         connection.execute(
             "UPDATE remediation_idempotency_keys SET response_json = ? WHERE operation = 'approval' AND key_sha256 = ?",
-            (json.dumps(second), sha256(b"first").hexdigest()),
+            (
+                json.dumps(
+                    second, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+                ),
+                sha256(b"first").hexdigest(),
+            ),
         )
     response = approve(api, item, key="first")
     assert response.status_code == 409
-    assert response.json()["error"]["code"] == "REMEDIATION_APPROVAL_BINDING_MISMATCH"
+    assert (
+        response.json()["error"]["code"] == "REMEDIATION_IDEMPOTENCY_BINDING_MISMATCH"
+    )
     assert (
         client.get("/v1/remediation-approvals/" + first["approval_id"]).json()[
             "approval"

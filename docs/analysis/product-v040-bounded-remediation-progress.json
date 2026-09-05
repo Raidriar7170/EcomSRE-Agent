@@ -6,7 +6,7 @@
   "current_main": "a823456185aa88809a73eb193b63aefcc3afa745",
   "current_pr_stage": "B",
   "current_branch": "codex/product-v040-approval-api",
-  "current_head": "a823456185aa88809a73eb193b63aefcc3afa745",
+  "current_head": "d050b4462a300fe6de9bf60e1d4c9fad0665e8c6",
   "completed_prs": [
     {
       "stage": "A",
@@ -68,12 +68,17 @@
     },
     {
       "stage": "B",
-      "focused_product_and_v040": "190 passed, 13 warnings, 11.73 seconds",
-      "final_v040": "57 passed",
-      "ruff": "PASS",
-      "mypy": "PASS: 10 entrypoint source files",
+      "focused_product_and_v040": "191 passed, 13 warnings, 12.20 seconds",
+      "final_v040": "58 tests included in final focused suite",
+      "ruff": "PASS: exact Goal local scope",
+      "mypy": "PASS: 223 source files; exact Goal local scope",
       "history": "PASS: 404 frozen files",
-      "git_diff_check": "PASS"
+      "git_diff_check": "PASS",
+      "transient_validation": {
+        "passed": 189,
+        "failed": 2,
+        "reason": "Two regression assertions still expected the older parent-binding code after the new earlier response digest rejection. Corrected expected code; no implementation acceptance failure."
+      }
     }
   ],
   "reviews": [
@@ -137,5 +142,5 @@
     "Original Goal UTF-8 bytes are losslessly stored in a JSON text envelope because Markdown hard-break spaces fail git diff --check. Decoded source retains the activated Goal SHA-256; no whitespace gate is bypassed."
   ],
   "head_snapshot_semantics": "Last independently reviewed implementation commit. Administrative evidence commits are resolved from live Git/PR state.",
-  "current_pull_request": null
+  "current_pull_request": 92
 }

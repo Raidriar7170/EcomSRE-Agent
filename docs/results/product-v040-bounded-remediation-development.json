@@ -46,17 +46,23 @@
   },
   "validation": {
     "stage": "B",
-    "focused_product_and_v040": "190 passed, 13 warnings, 11.73 seconds",
-    "final_v040": "57 passed",
-    "ruff": "PASS",
-    "mypy": "PASS: 10 entrypoint source files",
+    "focused_product_and_v040": "191 passed, 13 warnings, 12.20 seconds",
+    "final_v040": "58 tests included in final focused suite",
+    "ruff": "PASS: exact Goal local scope",
+    "mypy": "PASS: 223 source files; exact Goal local scope",
     "history": "PASS: 404 frozen files",
-    "git_diff_check": "PASS"
+    "git_diff_check": "PASS",
+    "transient_validation": {
+      "passed": 189,
+      "failed": 2,
+      "reason": "Two regression assertions still expected the older parent-binding code after the new earlier response digest rejection. Corrected expected code; no implementation acceptance failure."
+    }
   },
   "review": "PASS / Must Fix 0 / Claim Accuracy PASS",
   "github_ci": "PENDING_EXACT_FINAL_HEAD",
   "live_campaigns": 0,
   "forward_mutations": 0,
   "provider_calls": 0,
-  "pull_request": null
+  "pull_request": 92,
+  "reviewed_implementation_head": "d050b4462a300fe6de9bf60e1d4c9fad0665e8c6"
 }

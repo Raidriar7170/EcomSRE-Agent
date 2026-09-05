@@ -11,7 +11,7 @@ TABLES = {
     "remediation_candidates": "candidate_id TEXT PRIMARY KEY, candidate_sha256 TEXT NOT NULL UNIQUE, incident_id TEXT NOT NULL REFERENCES incidents(incident_id), registry_sha256 TEXT NOT NULL REFERENCES remediation_registry_versions(registry_sha256), payload_json TEXT NOT NULL",
     "remediation_approvals": "approval_id TEXT PRIMARY KEY, candidate_id TEXT NOT NULL REFERENCES remediation_candidates(candidate_id), approval_sha256 TEXT NOT NULL UNIQUE, payload_json TEXT NOT NULL",
     "remediation_revocations": "revocation_id TEXT PRIMARY KEY, approval_id TEXT NOT NULL UNIQUE REFERENCES remediation_approvals(approval_id), payload_json TEXT NOT NULL",
-    "remediation_idempotency_keys": "operation TEXT NOT NULL, key_sha256 TEXT NOT NULL, request_sha256 TEXT NOT NULL, response_json TEXT NOT NULL, PRIMARY KEY(operation, key_sha256)",
+    "remediation_idempotency_keys": "operation TEXT NOT NULL, key_sha256 TEXT NOT NULL, request_sha256 TEXT NOT NULL, response_sha256 TEXT NOT NULL, response_json TEXT NOT NULL, PRIMARY KEY(operation, key_sha256)",
 }
 STATEMENTS = tuple(
     f"CREATE TABLE {name} ({columns})" for name, columns in TABLES.items()
