@@ -6,7 +6,7 @@
   "current_main": "3f851bdfd17f686fe84a20a390122deb9c7276b7",
   "current_pr_stage": "A",
   "current_branch": "codex/product-v040-remediation-contracts",
-  "current_head": "3f851bdfd17f686fe84a20a390122deb9c7276b7",
+  "current_head": "286ff93066dfd3f548e25fb9333445a8cea9c0eb",
   "completed_prs": [],
   "active_terminal": "ECOMSRE_PRODUCT_V040_A_CONTRACTS_AND_CANDIDATE_PASS",
   "definition_of_done": {
@@ -32,7 +32,18 @@
       "ruff": "PASS",
       "mypy": "PASS: 212 source files",
       "history": "PASS: 404 frozen files",
-      "git_diff_check": "PASS"
+      "git_diff_check": "PASS",
+      "full_repository": {
+        "passed": 6387,
+        "skipped": 21,
+        "failed": 1,
+        "elapsed_seconds": 620.19,
+        "failure": "Historical worktree whitelist audit observed precommit dirty state.",
+        "resolution": "Exact failing test passed after commit; encoded Goal binding test also passed (2 passed).",
+        "aggregate_claim": "The original full-suite invocation retains its one failure; final clean exact-head GitHub CI remains required."
+      },
+      "postcommit_regression": "2 passed",
+      "final_content_closure": "PASS before this validation metadata refresh; final head will be freshly verified before merge."
     }
   ],
   "reviews": [
@@ -83,5 +94,7 @@
     "The byte-exact Goal source is stored under the explicitly allowed config/product-v040 directory.",
     "No OpenSpec configuration exists at the starting tree; no OpenSpec initialization is performed.",
     "Original Goal UTF-8 bytes are losslessly stored in a JSON text envelope because Markdown hard-break spaces fail git diff --check. Decoded source retains the activated Goal SHA-256; no whitespace gate is bypassed."
-  ]
+  ],
+  "head_snapshot_semantics": "Last independently reviewed implementation commit. Administrative evidence commits are resolved from live Git/PR state.",
+  "current_pull_request": 91
 }
