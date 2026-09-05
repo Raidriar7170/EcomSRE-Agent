@@ -1,10 +1,10 @@
 {
   "schema_version": "ecomsre.product.remediation-development.v1",
   "goal_version": "ecomsre-product-v040-bounded-remediation-v1",
-  "stage": "B",
-  "terminal": "ECOMSRE_PRODUCT_V040_B_APPROVAL_WORKFLOW_PASS",
+  "stage": "C",
+  "terminal": "ECOMSRE_PRODUCT_V040_C_STATE_BOUND_AUTHORIZATION_PASS",
   "status": "OFFLINE_PASS_INTEGRATION_PENDING",
-  "claim": "Persisted non-executable candidates, explicit token-authenticated operator approval, expiry and append-only revocation; no attempt or live execution.",
+  "claim": "Fresh state-bound single-use authorization and persistent fenced write intent, with fake read-only providers only. No environment execution.",
   "completed_prs": [
     {
       "stage": "A",
@@ -25,44 +25,79 @@
       "review": "PASS / Must Fix 0 / Claim Accuracy PASS",
       "tracked_diff_sha256": "9a878a9d26059151a8a7fe1f440f78ba3f6615e1014941b526c8b4e011a13e6e",
       "final_evidence_sha256": "25d68c5c5a97cda7791e0cca1c8b7430ef5cd4f2974e10d3156fe8f113f2adc2"
+    },
+    {
+      "stage": "B",
+      "pull_request": 92,
+      "head": "2e851ba05ba4fd4b3e072346b063ef95fa9132d0",
+      "merge_commit": "e1292b34d3fbca00522347db4d7c63af52907b9d",
+      "tree_sha": "1d318e189ca42a9da7fc3184b6c760347f89c88f",
+      "merged_at": "2026-09-05T15:11:49Z",
+      "exact_head_ci_run": 33972831337,
+      "ci_conclusion": "SUCCESS",
+      "full_tests": {
+        "passed": 6416,
+        "skipped": 21,
+        "failed": 0,
+        "elapsed_seconds": 696.62
+      },
+      "ruff": "PASS",
+      "mypy": "PASS: 679 source files",
+      "review": "PASS / Must Fix 0 / Claim Accuracy PASS",
+      "tracked_diff_sha256": "bbdac4b30f6081eebf528e18dfd50b38226b13f701e020562e5ffdd0cdb572d9",
+      "final_evidence_sha256": "57534e16d0314c68e84081c111e1534ea29c732eb3d253a26afb07dd176d0c1b"
     }
   ],
-  "prior_stage_validation": {
-    "focused_product_and_v040": "162 passed before final added multi-admission regression",
-    "ruff": "PASS",
-    "mypy": "PASS: 212 source files",
-    "history": "PASS: 404 frozen files",
-    "final_v040": "30 passed",
-    "full_repository": {
-      "passed": 6387,
-      "skipped": 21,
-      "failed": 1,
-      "elapsed_seconds": 620.19,
-      "failure": "Historical worktree whitelist audit observed precommit dirty state.",
-      "resolution": "Exact failing test passed after commit; encoded Goal binding test also passed (2 passed).",
-      "aggregate_claim": "The original full-suite invocation retains its one failure; final clean exact-head GitHub CI remains required."
+  "prior_stage_validation": [
+    {
+      "stage": "A",
+      "focused_product_plus_v040": "162 passed before final added regression",
+      "final_v040": "30 passed",
+      "ruff": "PASS",
+      "mypy": "PASS: 212 source files",
+      "history": "PASS: 404 frozen files",
+      "git_diff_check": "PASS",
+      "full_repository": {
+        "passed": 6387,
+        "skipped": 21,
+        "failed": 1,
+        "elapsed_seconds": 620.19,
+        "failure": "Historical worktree whitelist audit observed precommit dirty state.",
+        "resolution": "Exact failing test passed after commit; encoded Goal binding test also passed (2 passed).",
+        "aggregate_claim": "The original full-suite invocation retains its one failure; final clean exact-head GitHub CI remains required."
+      },
+      "postcommit_regression": "2 passed",
+      "final_content_closure": "PASS before this validation metadata refresh; final head will be freshly verified before merge."
     },
-    "postcommit_regression": "2 passed"
-  },
-  "validation": {
-    "stage": "B",
-    "focused_product_and_v040": "191 passed, 13 warnings, 12.20 seconds",
-    "final_v040": "58 tests included in final focused suite",
-    "ruff": "PASS: exact Goal local scope",
-    "mypy": "PASS: 223 source files; exact Goal local scope",
-    "history": "PASS: 404 frozen files",
-    "git_diff_check": "PASS",
-    "transient_validation": {
-      "passed": 189,
-      "failed": 2,
-      "reason": "Two regression assertions still expected the older parent-binding code after the new earlier response digest rejection. Corrected expected code; no implementation acceptance failure."
+    {
+      "stage": "B",
+      "focused_product_and_v040": "191 passed, 13 warnings, 12.20 seconds",
+      "final_v040": "58 tests included in final focused suite",
+      "ruff": "PASS: exact Goal local scope",
+      "mypy": "PASS: 223 source files; exact Goal local scope",
+      "history": "PASS: 404 frozen files",
+      "git_diff_check": "PASS",
+      "transient_validation": {
+        "passed": 189,
+        "failed": 2,
+        "reason": "Two regression assertions still expected the older parent-binding code after the new earlier response digest rejection. Corrected expected code; no implementation acceptance failure."
+      }
     }
+  ],
+  "validation": {
+    "stage": "C",
+    "focused_product_and_v040": "233 passed, 15 warnings, 14.92 seconds",
+    "v040_tests": 100,
+    "ruff": "PASS: exact Goal local scope",
+    "mypy": "PASS: 227 source files; exact Goal local scope",
+    "history": "PASS: 404 frozen files, original Goal and upstream binding",
+    "git_diff_check": "PASS",
+    "independent_reproductions": "Initial stale-time and historical-binding findings repaired; reproduced delayed gates deny with zero intents."
   },
   "review": "PASS / Must Fix 0 / Claim Accuracy PASS",
   "github_ci": "PENDING_EXACT_FINAL_HEAD",
   "live_campaigns": 0,
   "forward_mutations": 0,
   "provider_calls": 0,
-  "pull_request": 92,
-  "reviewed_implementation_head": "d050b4462a300fe6de9bf60e1d4c9fad0665e8c6"
+  "pull_request": null
 }

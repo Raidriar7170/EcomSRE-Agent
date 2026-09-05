@@ -320,7 +320,18 @@ class RemediationRepositoryV1:
     def approval_status(self, approval_id: str) -> ApprovalStatusV1:
         with self.store.connect() as connection:
             connection.execute("BEGIN")
-            return self._status(connection, approval_id)
+            result = self._status(connection, approval_id)
+            consumed = connection.execute(
+                "SELECT 1 FROM remediation_approval_consumptions WHERE approval_id = ?",
+                (approval_id,),
+            ).fetchone()
+            if result.status == "ACTIVE" and consumed:
+                return ApprovalStatusV1(
+                    approval=result.approval,
+                    status="CONSUMED",
+                    revocation=result.revocation,
+                )
+            return result
 
     def require_active_approval(
         self, connection: sqlite3.Connection, approval_id: str, candidate_id: str
