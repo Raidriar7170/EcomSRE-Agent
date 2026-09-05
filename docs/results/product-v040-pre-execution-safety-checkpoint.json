@@ -1,0 +1,96 @@
+{
+  "schema_version": "ecomsre.product.v040.pre-execution-safety-checkpoint.v1",
+  "terminal": "safety_checkpoint",
+  "product_terminal": "BLOCKED_ECOMSRE_PRODUCT_V040_PAYMENT_BOUNDED_REMEDIATION",
+  "measured_formal_campaign": false,
+  "formal_allowance_consumed": false,
+  "goal_sha256": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a",
+  "code_head": "a0e8aab077bdd6f9c8374f05f3f53127c4820fda",
+  "main": "cc941b51cbff9287b876be49652cd0ad83030474",
+  "pull_request": 95,
+  "pr_disposition": "Draft / REVIEW_REQUIRED",
+  "blocked_stage": "PRE_EXECUTION_OWNERSHIP",
+  "safe_error_code": "NON_OWNED_BUILTIN_NETWORK_REPLACED",
+  "fault_injected": false,
+  "candidate_created": false,
+  "approval_created": false,
+  "authorization_created": false,
+  "write_intent_committed": false,
+  "fault_campaign_count": 0,
+  "accepted_attempt_count": 0,
+  "forward_mutation_count": 0,
+  "receipt_count": 0,
+  "recovery_window_count": 0,
+  "provider_call_count": 0,
+  "current_environment_state": "OWNED_RUNTIMES_STOPPED",
+  "baseline_restored": true,
+  "baseline_semantics": "last owned cleanup readback; no current running business-health claim",
+  "cleanup": {
+    "product_owned_containers": 0,
+    "product_owned_networks": 0,
+    "product_owned_volumes": 0,
+    "sandbox_owned_containers": 0,
+    "sandbox_owned_networks": 0,
+    "sandbox_owned_volumes": 0
+  },
+  "non_owned_resources_changed": true,
+  "non_owned_change_attribution": "UNKNOWN",
+  "original_preparation_cleanup": {
+    "baseline_restored": true,
+    "non_owned_resources_changed": false,
+    "owned_containers": 0,
+    "owned_networks": 0,
+    "owned_volumes": 0,
+    "verdict": "CLEAN"
+  },
+  "cleanup_truth_boundary": "Recorded cleanup equality held at that observation; later read-only inspection found a replacement builtin bridge network. Neither observation proves runtime-wide non-owned immutability.",
+  "preparation_observations": {
+    "ordinal": 4,
+    "application_warmup_transactions": 3,
+    "warmup_checkout_http_statuses": [
+      504,
+      200,
+      200
+    ],
+    "warmup_business_successes": 2,
+    "healthy_transactions": 30,
+    "healthy_succeeded": 30,
+    "healthy_failed": 0,
+    "healthy_observation_seconds": 360,
+    "active_baseline_created": true,
+    "network_denial_gate": "NOT_REACHED",
+    "nofault_diagnosis_gate": "NOT_REACHED"
+  },
+  "separate_ownership_gap": {
+    "component": "KAFKA_IMAGE_VOLUME_COVERAGE",
+    "uncovered_declared_volume_count": 3,
+    "original_drift_root_cause_confirmed": false,
+    "status": "OFFLINE_REPAIR_REQUIRED_BEFORE_STARTUP"
+  },
+  "validation": {
+    "head": "a0e8aab077bdd6f9c8374f05f3f53127c4820fda",
+    "local_full_pytest_passed": 6570,
+    "local_full_pytest_skipped": 21,
+    "ruff": "PASS",
+    "mainline_mypy": "PASS",
+    "mainline_mypy_files": 700,
+    "exact_head_ci_run": 33992709388,
+    "exact_head_ci": "SUCCESS",
+    "live_verifier": "PRE_EXECUTION_ONLY"
+  },
+  "preserved_evidence": {
+    "failed_preparation_roots": 4,
+    "product_only_diagnostic_roots": 2,
+    "preparation_004_evidence_sha256": "5a03c913884e5a76be956f3d07be2fc2c6fcdcf6521483b1a1883a576624f277",
+    "earlier_roots_bound_in_preparation_004": true,
+    "original_bytes_retained": true,
+    "raw_private_evidence_published": false
+  },
+  "required_successor_change": [
+    "Establish and record stable local Docker ownership after the unexplained builtin-network replacement. Do not mutate or restore non-owned resources.",
+    "Offline: cover every declared image VOLUME with explicit owned mounts and verify coverage before startup; preserve frozen historical source files.",
+    "Offline: preserve the first mismatching expected/actual fingerprints and same-observation safe details; do not remove comparison fields to manufacture PASS.",
+    "Independent ownership review and explicit resumption of the safety checkpoint before fresh owned preparation. Formal freeze and the one fault remain gated."
+  ],
+  "created_at": "2026-09-05T21:48:08.789784+00:00"
+}

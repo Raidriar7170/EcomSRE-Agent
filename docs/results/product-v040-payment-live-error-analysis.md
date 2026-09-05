@@ -110,3 +110,53 @@ The pre-freeze workload policy changes are source-bound before any formal fault.
 Future preparation failures also capture proven-owned Demo logs before cleanup;
 a per-container log failure is recorded without discarding earlier captures or
 preventing cleanup.
+
+## Preparation 004 and safety checkpoint
+
+Source `a0e8aab077bdd6f9c8374f05f3f53127c4820fda` measured warmup checkout
+statuses 504/200/200 with two independently inspectable business-success bodies.
+After the fixed quiet interval, the original healthy control completed 30/30
+successes and the Active Baseline was created. The first ownership witness
+then rejected `non-owned resource drift`, before executor enablement, runtime
+network-denial checks or the NO_INCIDENT control. The exact differing resource
+at that moment was not captured. This is a retained preparation failure, not
+formal Payment-remediation evidence.
+
+The cleanup record remains byte-exact: baseline restored, owned resources zero
+and non-owned equality at that observation. A subsequent read-only check was
+also equal. Later, before preservation, a fresh check detected replacement of
+the builtin bridge network identity; host/none and the three pre-existing
+anonymous volumes retained their identities. Both Goal projects have zero
+containers, networks and volumes, and the local Docker daemon identity still
+matches. The replacement bridge reports a creation time of
+2026-09-05T21:38:01.630151875Z. A bounded historical network-event read returned
+no events; absence of retained events does not identify a cause. Attribution is
+UNKNOWN. No non-owned network restoration or takeover was attempted.
+
+A separate read-only image inspection found three Kafka VOLUME declarations
+uncovered by the admitted Compose service mounts. Docker may create anonymous
+volumes for these paths, so resolved Compose mounts alone are insufficient to
+prove the intended ownership boundary. This is a concrete preflight gap, but
+it is not a proven explanation for the original witness failure. New runtime
+startup is stopped pending explicit owned mount coverage, first-difference
+capture and independent review. Omitting resources or comparison fields is not
+an acceptable repair.
+
+Preparation 004 retained evidence-set SHA-256:
+`5a03c913884e5a76be956f3d07be2fc2c6fcdcf6521483b1a1883a576624f277`.
+Its original cleanup record is not rewritten to hide the later change. The
+current safety checkpoint explicitly records non-owned resource change with
+unknown attribution; it makes no runtime-wide unchanged claim.
+
+The same runtime source passed local full tests (6,570 passed / 21 skipped),
+Ruff, mainline mypy and exact-head CI 33992709388. An earlier CI 33991830066
+failed an unchanged historical PID-file test at the interval between file
+creation and PID content write (549 passed / one failed in that step); its log
+and independent source diagnosis are retained. No test was skipped to obtain
+the newer result. Green CI does not override this ownership checkpoint.
+
+The formal manifest, fault intent, accepted attempt, write intent, forward
+mutation, receipt and recovery-window counts remain zero. The formal allowance
+is unconsumed. See the separate [machine-readable safety checkpoint](product-v040-pre-execution-safety-checkpoint.json)
+and [Chinese Human Brief](product-v040-payment-live-human-brief.md). No canonical
+formal manifest/result is published for a campaign that never began.

@@ -6,7 +6,7 @@
   "current_main": "cc941b51cbff9287b876be49652cd0ad83030474",
   "current_pr_stage": "E",
   "current_branch": "codex/product-v040-live-payment",
-  "current_head": "5657368e2d0e425cd74a99ad78f20de7270d2b4c",
+  "current_head": "a0e8aab077bdd6f9c8374f05f3f53127c4820fda",
   "completed_prs": [
     {
       "stage": "A",
@@ -349,6 +349,28 @@
         "owned_volumes": 0,
         "verdict": "CLEAN"
       }
+    },
+    {
+      "ordinal": 4,
+      "head": "a0e8aab077bdd6f9c8374f05f3f53127c4820fda",
+      "status": "PREPARATION_FAILED_BEFORE_FORMAL_FREEZE",
+      "safe_error_code": "NON_OWNED_RESOURCE_DRIFT_UNRESOLVED",
+      "preserved_evidence_sha256": "5a03c913884e5a76be956f3d07be2fc2c6fcdcf6521483b1a1883a576624f277",
+      "fault_campaigns": 0,
+      "accepted_attempts": 0,
+      "write_intents": 0,
+      "forward_mutations": 0,
+      "cleanup": {
+        "baseline_restored": true,
+        "non_owned_resources_changed": false,
+        "owned_containers": 0,
+        "owned_networks": 0,
+        "owned_volumes": 0,
+        "verdict": "CLEAN"
+      },
+      "cleanup_scope": "POST_CLEANUP_SNAPSHOT_AT_RECORDED_TIME_ONLY",
+      "later_non_owned_resources_changed": true,
+      "during_runtime_non_owned_unchanged_proven": false
     }
   ],
   "ingress_diagnostics": [
@@ -370,5 +392,8 @@
       "owned_remaining": 0,
       "non_owned_changed": false
     }
-  ]
+  ],
+  "checkpoint": "safety_checkpoint",
+  "status": "BLOCKED_PRE_EXECUTION_OWNERSHIP",
+  "safety_checkpoint_artifact": "docs/results/product-v040-pre-execution-safety-checkpoint.json"
 }
