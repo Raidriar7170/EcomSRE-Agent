@@ -146,7 +146,11 @@ def container_role(
             if kind == "volume"
             else "PRESERVE_HOST_SOURCE",
         }
-    tmpfs = dict(item.split(":", 1) for item in service.get("tmpfs") or [])
+    tmpfs = {}
+    for item in service.get("tmpfs") or []:
+        target, _, options = item.partition(":")
+        require(target.startswith("/") and target not in tmpfs, "UNBOUND_TMPFS")
+        tmpfs[target] = options
     declared = set(config.get("Volumes") or {})
     require(
         declared.issubset(set(mounts) | set(tmpfs)),

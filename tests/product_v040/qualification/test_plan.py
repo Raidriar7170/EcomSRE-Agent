@@ -59,3 +59,10 @@ def test_every_declared_image_volume_is_explicitly_bound() -> None:
     changed["Config"]["Volumes"]["/unbound"] = {}
     with pytest.raises(QualificationBlocked, match="UNBOUND_IMAGE_VOLUME"):
         container_role(service, compose, "project", changed, "AFTER_START", "identity")
+
+
+def test_compose_bare_tmpfs_path_has_explicit_default_options():
+    service, compose, image = role_fixture()
+    service["tmpfs"] = ["/run", "/tmp:rw,noexec"]
+    role = container_role(service, compose, "project", image, "AFTER_START", "identity")
+    assert role["tmpfs"] == {"/run": "", "/tmp": "rw,noexec"}

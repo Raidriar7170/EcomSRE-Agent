@@ -1,0 +1,10 @@
+{
+  "claim_accuracy": "PASS",
+  "future_formal_campaign": "WITHHOLD",
+  "must_fix": 0,
+  "no_fault_startup": "ALLOW_NEW_IDENTITY_FRESH_ROOT_ONLY",
+  "plan_sha256": "f94aa51eab13d4894d9ce30cb6054f2041b5dcf6e4a512b07a368a4fafb18eb4",
+  "plan_tests_passed": 3,
+  "preserved_qualification": "6b8f27a1e5b34222a14cb382f7158d4c",
+  "reviewer": "independent read-only review_qualification"
+}
