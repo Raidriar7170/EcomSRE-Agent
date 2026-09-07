@@ -1,0 +1,41 @@
+{
+  "environment_note": "Fresh successor venv initially lacked pyarrow; installed cached pyarrow23.0.1 offline and reran mypy without incremental cache. Initial failed logs retained. No frozen source or dependency lock modified.",
+  "formal_authority": false,
+  "formal_campaign_executions": 0,
+  "historical_integrity": {
+    "historical_private_changed": [],
+    "historical_private_files": 191,
+    "pr96_declared_evidence_changed": [],
+    "pr96_declared_evidence_files": 34,
+    "prior_private_index_sha256": "c5a4bc6fdd5c9824fd228ce9e67302ed6e5ebcaead3081daacfc39d6e22102ad",
+    "status": "PASS"
+  },
+  "historical_live": "PRE_EXECUTION_ONLY",
+  "mainline_mypy": {
+    "files": 702,
+    "fresh_cache": true,
+    "status": "PASS"
+  },
+  "new_qualification_tests": {
+    "passed": 100
+  },
+  "ownership_repair": "PASS_OFFLINE_ONLY",
+  "product_v040_tests": {
+    "passed": 535,
+    "seconds": 17.44,
+    "warnings": 16
+  },
+  "ruff": "PASS",
+  "runtime_source_head": "1dbe8d6d2cb41bed0df1a1f01cabcb92a1b41bb9",
+  "runtime_source_tree": "f8229cda2f26b071158e81375930327841e4159a",
+  "schema_version": "ecomsre.v040.qualification.verification.v1",
+  "validation_logs_sha256": {
+    "final-historical-live-verifier.json": "aaa002060e7c212e48093c4c9e62755ca9d4e58453003e6bf15ef57d06ea9563",
+    "final-mainline-mypy-fresh.log": "711705a9ebf40a9a66e000efd6a6c5f2138e2800ec22c77055cc18afca6af500",
+    "final-ownership-verifier.json": "90a50b3ebc436d9bfd77753437ddb89e125230f089c3d1bdd620a76c1f28ad80",
+    "final-product-v040-tests.log": "1c51ef7f71d1d24a9423a28b2f669c5821359df5d5b8d66ecc3f326c36766460",
+    "final-ruff.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "historical-integrity-before-publication.json": "de63b01008ed1c3c2638d5ba0ebc6ebff4db12cec1e18db665ce0647ffee4c1f",
+    "qualification-tests-008.log": "92d2ef36f8a931d38837e2d69e450aaaeb6d0a4c06636720603abffaba0562e9"
+  }
+}

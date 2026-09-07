@@ -1,0 +1,32 @@
+{
+  "accepted_checkpoints": 16,
+  "claim_accuracy": "PASS",
+  "cleanup_owned_remaining": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0
+  },
+  "first_divergence": "COPYUP_IDENTITY_MISMATCH",
+  "formal_authority": false,
+  "formal_campaign_executions": 0,
+  "formal_faults": 0,
+  "future_formal_campaign": "WITHHOLD",
+  "historical_private_files_byte_identical": 191,
+  "must_fix": 0,
+  "nonowned_unchanged": true,
+  "one_shot_allowance_consumed": false,
+  "planned_checkpoints": 57,
+  "preserved_qualification_roots": 4,
+  "provider_calls": 0,
+  "publication": "ALLOW_DRAFT_REVIEW_REQUIRED",
+  "qualification_status": "BLOCKED_PRE_EXECUTION",
+  "remediation_writes": 0,
+  "reviewer": "independent read-only review_qualification",
+  "runtime_results_sha256": "e831ecea72e4c17872369b0ed93a5623d9743f081a102d47e3dbf5ae9c628fb3",
+  "runtime_source_head": "1dbe8d6d2cb41bed0df1a1f01cabcb92a1b41bb9",
+  "runtime_source_tree": "f8229cda2f26b071158e81375930327841e4159a",
+  "schema_version": "ecomsre.v040.qualification.final-review.v1",
+  "sentinel_writeability": "NOT_EXECUTED",
+  "stop_condition": "Open successor Draft PR and stop. No further runtime attempt or formal execution authorized.",
+  "verified_private_indexed_files": 121
+}
