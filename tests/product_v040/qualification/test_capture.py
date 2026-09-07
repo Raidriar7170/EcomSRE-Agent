@@ -49,3 +49,19 @@ def test_live_adapter_retains_both_complete_inspect_passes(tmp_path, drift):
             validate_envelope(result)
     else:
         validate_envelope(result)
+
+
+def test_platform_manifest_is_not_invented_as_cached_reference():
+    from scripts.product.qualification_v040.capture import pinned_cached_reference
+
+    image = {
+        "Id": "sha256:platform",
+        "Descriptor": {"digest": "sha256:platform"},
+        "RepoDigests": ["registry/repo@sha256:index"],
+    }
+    assert (
+        pinned_cached_reference("registry/repo:tag", image)
+        == "registry/repo@sha256:index"
+    )
+    with pytest.raises(QualificationBlocked, match="IMAGE_REFERENCE_AMBIGUOUS"):
+        pinned_cached_reference("other/repo:tag", image)

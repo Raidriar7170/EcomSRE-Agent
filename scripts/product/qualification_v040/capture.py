@@ -50,6 +50,22 @@ def platform_images(runtime: Any, references: list[str]) -> dict[str, Any]:
     return result
 
 
+def pinned_cached_reference(source: str, observed: dict[str, Any]) -> str:
+    # Docker's platform .Id/Descriptor digest can identify the selected manifest
+    # without being a locally addressable image reference. Use the daemon's
+    # exact repository digest and separately retain the selected ARM64 binding.
+    repository = source.split("@", 1)[0]
+    if ":" in repository.rsplit("/", 1)[-1]:
+        repository = repository.rsplit(":", 1)[0]
+    candidates = [
+        r
+        for r in observed.get("RepoDigests") or []
+        if r.startswith(repository + "@sha256:")
+    ]
+    require(len(candidates) == 1, "IMAGE_REFERENCE_AMBIGUOUS", source)
+    return str(candidates[0])
+
+
 def capture(
     runtime: Any,
     qualification: str,

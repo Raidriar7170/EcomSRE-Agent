@@ -1,0 +1,27 @@
+{
+  "capture_tests_passed": 6,
+  "claim_accuracy": "PASS",
+  "code_sha256": {
+    "scripts/product/qualification_v040/__init__.py": "1c873e9163613951921524ae74e897ac9932b8be81ec3dae11757b41c3ca94a5",
+    "scripts/product/qualification_v040/__main__.py": "1f3ad887ddc8d07898ff438ed55428cb2fefcac935e9c3a8945e150ca8e6ab6c",
+    "scripts/product/qualification_v040/capture.py": "d875aec854ff9004c1915c0cad69df383243d0e26219b90ffe9475f8411277c3",
+    "scripts/product/qualification_v040/driver.py": "6397511afa5172797d6b089403dd17219b1c945ec7ebea6700a6f676622aa23f",
+    "scripts/product/qualification_v040/guard.py": "1ca2e6843fb3775a3d670851affe8a93c08d7d498006c389315e54e93107a8e7",
+    "scripts/product/qualification_v040/healthy.py": "f2efd1e56606df6a100eb7644c40c44f33c4970bb9d4cb7e126ae22b1b602580",
+    "scripts/product/qualification_v040/plan.py": "a6d652243be1fd0f1f55b2bf67e426d343cb02053bdbb7b3d80e5abd4972d9de",
+    "scripts/product/qualification_v040/runtime.py": "963af9cb88387fee7582e1cd443dc0bef45439576bc687d80394b5d315d81008",
+    "scripts/product/qualification_v040/volumes.py": "0d8d34c3b8ccf9375936ac3e68553950250b8420c32e87647c58ba09cb7ad4f2",
+    "tests/product_v040/qualification/test_capture.py": "5c928b05e08c1d2f85aaf7c572772457074f997e5931e86a0d1d858b14379d04",
+    "tests/product_v040/qualification/test_guard.py": "e0672e529ddfdfe376b4f0aadc979e470d14a030138b077da0210c67ff2f0b9e",
+    "tests/product_v040/qualification/test_plan.py": "c6a43c1699264efe125f73ccc717826be1e473cc2a799d8963a419b08ba545c4",
+    "tests/product_v040/qualification/test_volumes.py": "4be6f505ec5feca65b5e418441a866074aabc0e9d59265495ce7059eba23ca16"
+  },
+  "future_formal_campaign": "WITHHOLD",
+  "must_fix": 0,
+  "no_fault_startup": "ALLOW_NEW_IDENTITY_FRESH_ROOT_ONLY",
+  "previous_qualification": "cf12db1e00bc4ba284a58fe65b8d455d",
+  "previous_status": "BLOCKED_PRE_EXECUTION",
+  "qualification_tests_passed": 93,
+  "reviewer": "independent read-only review_qualification",
+  "schema_version": "ecomsre.v040.qualification.reference-fix-review.v1"
+}

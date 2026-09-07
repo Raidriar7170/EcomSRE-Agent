@@ -22,7 +22,11 @@ from scripts.product.v040_ownership import tree_commitment
 from scripts.product.v040_preparation import diagnosis
 from scripts.product.v040_gates import NETWORK_PROBE, private_storage_modes
 from scripts.product.v040_runtime import read_json, seal_private
-from scripts.product.qualification_v040.capture import capture, platform_images
+from scripts.product.qualification_v040.capture import (
+    capture,
+    platform_images,
+    pinned_cached_reference,
+)
 from scripts.product.qualification_v040.guard import (
     KINDS,
     QUAL_LABEL,
@@ -195,20 +199,21 @@ class Driver:
             for service in compose["services"].values():
                 source = service["image"]
                 observed = originals[source]
-                selected = (observed.get("Descriptor") or {}).get(
-                    "digest", observed["Id"]
-                )
-                service["image"] = (
-                    source.rsplit(":", 1)[0] + "@" + selected
-                    if source.startswith("ghcr.io/")
-                    else observed["Id"]
-                )
+                service["image"] = pinned_cached_reference(source, observed)
         self.references = sorted(
             {
                 service["image"]
                 for c in (sandbox, product)
                 for service in c["services"].values()
             }
+        )
+        pinned = platform_images(runtime, self.references)
+        require(
+            all(
+                pinned[pinned_cached_reference(ref, original)] == original
+                for ref, original in originals.items()
+            ),
+            "PINNED_PLATFORM_BINDING_DRIFT",
         )
         initial = self.snapshot()
         self.preflight_initial = initial
@@ -904,7 +909,10 @@ class Driver:
 
     def cleanup(self) -> dict[str, Any]:
         if self.journal is None:
-            final = self.snapshot()
+            # Cleanup inventory must not depend on a failed platform-reference lookup.
+            final = capture(
+                self.runtime, self.runtime.qualification, [], self.mutable_binds
+            )
             validate_envelope(final)
             self.zero_database_counts()
             seal_private(
