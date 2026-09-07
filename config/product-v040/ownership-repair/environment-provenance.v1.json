@@ -1,0 +1,2007 @@
+{
+  "authority": "OFFLINE_ONLY",
+  "counts": {
+    "formal_campaign_executions": 0,
+    "formal_faults": 0,
+    "provider_calls": 0,
+    "remediation_writes": 0
+  },
+  "future_requirements": [
+    "Fresh locally stable daemon and complete saved inventory with all image Config.Volumes",
+    "Numeric image seed ownership and real copy-up content remain unmeasured; no writeability claim",
+    "Bind current source and fresh per-stage provenance; historical mutable archive hashes are not initial state",
+    "Separate explicit authority required before startup; this increment contains none"
+  ],
+  "historical_head": "0045e8288efd847b909c03443c6fd1fc15018a44",
+  "historical_inputs_sha256": {
+    "host/image-proofs-original.json": "3cc9e3d2710d85348376bf8aa26ef7bac0bbe4291055110f1b3e2b9cab6e731c",
+    "host/kafka-declared-volumes.json": "80a1c2ee18b5b4a0a48c699c9f20cb11bee5d05e8b2d40b217792eff8caa7840",
+    "host/product-build.json": "73dd6ef1f8b68f8a6cf204f5e29d74231240c1e7e1e3be5de5342148679e4236",
+    "host/resolved-compose-bootstrap.json": "548c438766067b08ffe3f929c7f6357ee888d371bd25cc5d079b6df96f2ffb3b",
+    "sandbox/control/admission.json": "fbaed1f0c50122b68d4c528fc6afc55b4737bf0158ca6114cc6f2403e826b484"
+  },
+  "historical_product_compose_sha256": "54eea36559facee4966a1af80ab6cb1450e10d439e9e9886d1cd1278df2a9681",
+  "historical_sandbox_compose_sha256": "daa0114ca3ee74b59623711706beccc20a3c5b5a046ea9d948ea34a380cc1400",
+  "image_digests": [
+    "sha256:0139fb0653a471d10160198ef2a117b6a63263c071fef77e2cd393b9b0853d51",
+    "sha256:07eae46624d18e21cf2c19c055f58133d5cc008b31a74f4765b20e294a9ae5f0",
+    "sha256:0b8524ba9dd99a12f4223b82816d80751fbc3c06b39ccee4b08669040ac0ad6b",
+    "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+    "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6",
+    "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814",
+    "sha256:2dd680b26be9a124424c0e1237e37060c30edf91f31c25d2c4e4775653f3a2a9",
+    "sha256:370d920d330a145a5e6769eab82dd256a11c8186c78d7afd7927119f402d2438",
+    "sha256:3f1965d23056bf68614e34d407faa6a9c730ab37a0d8ef698709ebf7d9fe1e91",
+    "sha256:476f9d88b6660cf93b47aac9b50de842855cb5cb50a35eef0108e7bde58a6985",
+    "sha256:4e8197e55b8b1646775281f5613d457026573b17cc486e0f74ce6edf234eb634",
+    "sha256:5115fd9352d58fd41c7be775b33336f5e4b2cef8056bf5982f5c704d13ec590e",
+    "sha256:51c253309603d438fa5e7d529c3f568fdd2c07b6907ca4d28d48b29107079be9",
+    "sha256:55f41cacf3e8334ea89d76ada9cc546c09473650ab48a7861743bcbd83f5ef38",
+    "sha256:5dca3e6fe127f12a78765428bb86e9aad3ec8ee5b6498095e9d9b258cf8d64d3",
+    "sha256:7471d710ccf34ae074f15c7dfe5943fb731f8f21759bcfee2c81f670bf4d9363",
+    "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a",
+    "sha256:893da607ae8f600845a1039fb7922a3fdbf577fe4e265e2c87fb59262ae494f2",
+    "sha256:9b9495aa98049fe8987fcb9193312f70260fbacdba31b088089c789a2506a5c6",
+    "sha256:a34c69344d9c7da1f312c3c4516d5e04e75b44bdfe1eae824215f76d89c6f74e",
+    "sha256:b04ac2c1fa16c126c1077710dd31d5780f002c5f69f8892c54b83a3a74877898",
+    "sha256:bb6e142378a01f94d4f2cf322b8a145f2e33b20a2c41ba1643320b5039fe6b0e",
+    "sha256:bb8b48198974cb792b8bfc09d7e3c5f0d6e07508cb33e06817e2f24805778be5",
+    "sha256:c3622ca9ed2cadd4a6b7a28ca703549b7898ef5c7ee9c08ee34f2db410b547dd",
+    "sha256:c9bbe72133e9b6569f8e490441e7a1472f8767d12759b0eaf0af14e91e4a9d45",
+    "sha256:e2d67dae0dc224f4f2f5c64adb17a2d6e41aac9f2bd18bb59ac2a896d20b0fde",
+    "sha256:f1dd3522a7fde8bf8e505f42583ecdc00b4967a4b94d32ba1f890d118fe17335",
+    "sha256:f8459b4e3e6a5153acc4571f99de64be8658621f6fc1d06f7715644b9a1259d6",
+    "sha256:fdf464e80f1a6c536cad86e3b429fda48b87c2bb8dafe1f25507322ff73d8859"
+  ],
+  "image_volume_coverage": {
+    "kafka_declared_paths": [
+      "/etc/kafka/secrets",
+      "/mnt/shared/config",
+      "/var/lib/kafka/data"
+    ],
+    "kafka_uncovered_after_overlay": [],
+    "other_images": "EXISTING_EXPLICIT_MOUNTS_BOUND_BY_PLATFORM_IMAGE_AND_RESOLVED_PLAN"
+  },
+  "kafka_overlay_sha256": "a4a95a431111631832d650aa4915499a2e28c3d3e20a4fb61d589ff231633d1d",
+  "manifest_sha256": "0e09f663c0f00a04680567aecab2bf23a8b1b5fca5d8898479507f023e7cf2c8",
+  "mount_inventory": [
+    "product/api:/run/remediation-config",
+    "product/api:/run/remediation-read",
+    "product/api:/tmp",
+    "product/api:/var/lib/ecomsre",
+    "product/remediation-control-gateway:/run/remediation-config",
+    "product/remediation-control-gateway:/run/remediation-observer",
+    "product/remediation-control-gateway:/run/remediation-private",
+    "product/remediation-control-gateway:/run/remediation-read",
+    "product/remediation-control-gateway:/run/remediation-requests",
+    "product/remediation-control-gateway:/run/remediation-write",
+    "product/remediation-control-gateway:/runtime/payment-flags",
+    "product/remediation-control-gateway:/tmp",
+    "product/remediation-control-gateway:/var/lib/ecomsre",
+    "product/remediation-control-gateway:/var/lib/remediation-control",
+    "product/remediation-executor:/run/remediation-config",
+    "product/remediation-executor:/run/remediation-read",
+    "product/remediation-executor:/run/remediation-write",
+    "product/remediation-executor:/tmp",
+    "product/remediation-executor:/var/lib/ecomsre",
+    "product/remediation-observer:/run/remediation-private",
+    "product/remediation-observer:/tmp",
+    "product/worker:/tmp",
+    "product/worker:/var/lib/ecomsre",
+    "sandbox/astronomy-db:/docker-entrypoint-initdb.d/init.sql",
+    "sandbox/astronomy-db:/var/lib/postgresql",
+    "sandbox/checkout:/tmp",
+    "sandbox/flagd-ui:/app/data",
+    "sandbox/flagd:/etc/flagd",
+    "sandbox/grafana:/etc/grafana/grafana.ini",
+    "sandbox/grafana:/etc/grafana/provisioning",
+    "sandbox/jaeger:/etc/jaeger/config.yml",
+    "sandbox/jaeger:/etc/jaeger/ui-config.json",
+    "sandbox/jaeger:/tmp",
+    "sandbox/kafka:/etc/ecomsre/kafka-jmx.yml",
+    "sandbox/kafka:/etc/kafka/secrets",
+    "sandbox/kafka:/mnt/shared/config",
+    "sandbox/kafka:/var/lib/kafka/data",
+    "sandbox/otel-collector:/etc/otelcol-config-extras.yml",
+    "sandbox/otel-collector:/etc/otelcol-config-full.yml",
+    "sandbox/otel-collector:/etc/otelcol-config-observability.yml",
+    "sandbox/otel-collector:/etc/otelcol-config-sandbox.yml",
+    "sandbox/otel-collector:/etc/otelcol-config.yml",
+    "sandbox/otel-collector:/var/run/docker.sock",
+    "sandbox/product-catalog:/otel-config.yml",
+    "sandbox/product-catalog:/tmp",
+    "sandbox/prometheus:/etc/prometheus/prometheus-config.yaml",
+    "sandbox/prometheus:/prometheus",
+    "sandbox/shipping:/tmp"
+  ],
+  "mounts": [
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "sha256": "e9bbba7b34914d9799cc04bf77d6195fb516988a3bff8c1a957327b4c76d8d99"
+      },
+      "image_digest": "sha256:f1dd3522a7fde8bf8e505f42583ecdc00b4967a4b94d32ba1f890d118fe17335",
+      "lifecycle": "FROZEN_SOURCE_READ_ONLY_NO_CLEANUP",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": true,
+      "service": "sandbox/astronomy-db",
+      "source": "repo://third_party/opentelemetry-demo/src/postgresql/init.sql",
+      "target": "/docker-entrypoint-initdb.d/init.sql",
+      "type": "bind"
+    },
+    {
+      "cleanup": "EXACT_ID_AND_ALL_LABELS_REVALIDATED_OWNED_ONLY_NO_DOWN_V_NO_PRUNE",
+      "content": {
+        "commitment": {
+          "copy_up": true,
+          "path": "/var/lib/postgresql",
+          "platform_digest": "sha256:f1dd3522a7fde8bf8e505f42583ecdc00b4967a4b94d32ba1f890d118fe17335",
+          "runtime_path_digest": "NOT_MEASURED_OFFLINE"
+        },
+        "digest_kind": "IMAGE_SEED_COMMITMENT_V1",
+        "sha256": "9c6c8a15f6a772b5e3aa96647edf6fa74ddb689713905ae922afc81890326ab1"
+      },
+      "image_digest": "sha256:f1dd3522a7fde8bf8e505f42583ecdc00b4967a4b94d32ba1f890d118fe17335",
+      "lifecycle": "ABSENT_BEFORE_START_CREATE_ONCE_NO_REUSE_REMOVE_AFTER_OWNED_CONTAINERS_STOP",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": false,
+      "service": "sandbox/astronomy-db",
+      "source": "astronomy-db-data",
+      "target": "/var/lib/postgresql",
+      "type": "volume"
+    },
+    {
+      "cleanup": "EXACT_OWNED_CONTAINER_REMOVAL_ONLY",
+      "content": {
+        "commitment": {
+          "initial_entries": [],
+          "options": {
+            "tmpfs_options": ""
+          }
+        },
+        "digest_kind": "EMPTY_TMPFS_COMMITMENT_V1",
+        "sha256": "d0ee1001682a78c7e6096a9648e205e1bb244abaa49468e94d619fdef6486472"
+      },
+      "image_digest": "sha256:07eae46624d18e21cf2c19c055f58133d5cc008b31a74f4765b20e294a9ae5f0",
+      "lifecycle": "EPHEMERAL_EMPTY_AT_CONTAINER_CREATE_DISCARDED_WITH_CONTAINER",
+      "options": {
+        "tmpfs_options": ""
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": false,
+      "service": "sandbox/checkout",
+      "source": "tmpfs://sandbox/checkout/tmp",
+      "target": "/tmp",
+      "type": "tmpfs"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 2,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "f988d9aa8044ed10ee251fa7df2efbbd13cf815fb244f1101f56905a4203683d"
+      },
+      "image_digest": "sha256:5115fd9352d58fd41c7be775b33336f5e4b2cef8056bf5982f5c704d13ec590e",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": true,
+      "service": "sandbox/flagd",
+      "source": "private://sandbox/runtime/flagd",
+      "target": "/etc/flagd",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 2,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "f988d9aa8044ed10ee251fa7df2efbbd13cf815fb244f1101f56905a4203683d"
+      },
+      "image_digest": "sha256:bb6e142378a01f94d4f2cf322b8a145f2e33b20a2c41ba1643320b5039fe6b0e",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": false,
+      "service": "sandbox/flagd-ui",
+      "source": "private://sandbox/runtime/flagd",
+      "target": "/app/data",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "sha256": "58203fc2858f2f68612b06f953134330a789e813f1da3d9546a68d008648c5c9"
+      },
+      "image_digest": "sha256:55f41cacf3e8334ea89d76ada9cc546c09473650ab48a7861743bcbd83f5ef38",
+      "lifecycle": "FROZEN_SOURCE_READ_ONLY_NO_CLEANUP",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": true,
+      "service": "sandbox/grafana",
+      "source": "repo://third_party/opentelemetry-demo/src/grafana/grafana.ini",
+      "target": "/etc/grafana/grafana.ini",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 22,
+        "sha256": "623545c713fabf5a06dfaf421e02ab0e532b2f9d917935c66242ce65bb3fbed3"
+      },
+      "image_digest": "sha256:55f41cacf3e8334ea89d76ada9cc546c09473650ab48a7861743bcbd83f5ef38",
+      "lifecycle": "FROZEN_SOURCE_READ_ONLY_NO_CLEANUP",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": true,
+      "service": "sandbox/grafana",
+      "source": "repo://third_party/opentelemetry-demo/src/grafana/provisioning",
+      "target": "/etc/grafana/provisioning",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "sha256": "8fba622f6178e5d5dfb3f0f3470e66789bd2964ba6eb6840de3ff9cac4c069f1"
+      },
+      "image_digest": "sha256:476f9d88b6660cf93b47aac9b50de842855cb5cb50a35eef0108e7bde58a6985",
+      "lifecycle": "FROZEN_SOURCE_READ_ONLY_NO_CLEANUP",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": true,
+      "service": "sandbox/jaeger",
+      "source": "repo://third_party/opentelemetry-demo/src/jaeger/config.yml",
+      "target": "/etc/jaeger/config.yml",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "sha256": "f8aa7f1586260e58a6bbb58caaad394091e5dbdb1ce4a1b3deb247b130159c33"
+      },
+      "image_digest": "sha256:476f9d88b6660cf93b47aac9b50de842855cb5cb50a35eef0108e7bde58a6985",
+      "lifecycle": "FROZEN_SOURCE_READ_ONLY_NO_CLEANUP",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": true,
+      "service": "sandbox/jaeger",
+      "source": "repo://third_party/opentelemetry-demo/src/jaeger/ui-config.json",
+      "target": "/etc/jaeger/ui-config.json",
+      "type": "bind"
+    },
+    {
+      "cleanup": "EXACT_ID_AND_ALL_LABELS_REVALIDATED_OWNED_ONLY_NO_DOWN_V_NO_PRUNE",
+      "content": {
+        "commitment": {
+          "copy_up": true,
+          "path": "/tmp",
+          "platform_digest": "sha256:476f9d88b6660cf93b47aac9b50de842855cb5cb50a35eef0108e7bde58a6985",
+          "runtime_path_digest": "NOT_MEASURED_OFFLINE"
+        },
+        "digest_kind": "IMAGE_SEED_COMMITMENT_V1",
+        "sha256": "79a15f5793b63c71089d4859c3ff9a1b5feddb5d623a2f13a6ae1b4bf6d24a2a"
+      },
+      "image_digest": "sha256:476f9d88b6660cf93b47aac9b50de842855cb5cb50a35eef0108e7bde58a6985",
+      "lifecycle": "ABSENT_BEFORE_START_CREATE_ONCE_NO_REUSE_REMOVE_AFTER_OWNED_CONTAINERS_STOP",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": false,
+      "service": "sandbox/jaeger",
+      "source": "jaeger-data",
+      "target": "/tmp",
+      "type": "volume"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "sha256": "071814a1d27943a566b026a3d6f5fafc3c3969b2014de053022549a0ed4face7"
+      },
+      "image_digest": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a",
+      "lifecycle": "FROZEN_SOURCE_READ_ONLY_NO_CLEANUP",
+      "options": {
+        "bind": {
+          "create_host_path": false
+        }
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000",
+        "io.ecomsre.telemetry.jmx.sha256": "869ae5cfdcb2b06d5df4aa3d49ce50a671c8301367e378a31c2d6c54fec09055"
+      },
+      "read_only": true,
+      "service": "sandbox/kafka",
+      "source": "repo://config/product-v030/kafka-jmx.yml",
+      "target": "/etc/ecomsre/kafka-jmx.yml",
+      "type": "bind"
+    },
+    {
+      "cleanup": "EXACT_ID_AND_ALL_LABELS_REVALIDATED_OWNED_ONLY_NO_DOWN_V_NO_PRUNE",
+      "content": {
+        "commitment": {
+          "copy_up": true,
+          "image_user": "appuser",
+          "numeric_uid_gid": "INHERITED_FROM_BOUND_IMAGE_NOT_MEASURED",
+          "path": "/etc/kafka/secrets",
+          "platform_digest": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a",
+          "rootfs_diff_ids": [
+            "sha256:a8d26d037006414043b277ecb95287692d0960219289d9e27b0bcea0ce233b02",
+            "sha256:82baf9c1d57725bb1cb1ef74973fac84b0a8a9be642e27b5dde47aac3a000bad",
+            "sha256:0ce25d4981601d0c524d000cdd01487a37b77234f9a884c982d1b15beecff905",
+            "sha256:05ad289c803946f0f3b84c006b627b756a4a711805bb9af4cc85dd37d33f411d",
+            "sha256:2d4110215c54b6b001d3d63dd094b21578350307234ff95ecaa5e6095f7c6947",
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+            "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d",
+            "sha256:7def7e54ac1620332bb729288ee90047ef379ba897a8b729bec503f26cb19722",
+            "sha256:21ef8629d5b9605f180f2cbd33418197cab20ff8a67dbf808a4e94d3fc9845cd",
+            "sha256:c0b85c8af66c37ba61531d07704eadebd4c3acdc21a87d5e3b9c6d90fb203615",
+            "sha256:ab9159b4bf728e00dd5aeec66afc620e25d7d072c620f1fbc65a749b6b54e0c9",
+            "sha256:fc17c06fb73ba7cf1895c9624017480fb990a7caaeb034d8a08801e87f5191e7",
+            "sha256:201b00d55c0e11adfb672485734105857ec890e2b24ed49964b6bac676283eb4"
+          ],
+          "runtime_path_digest": "NOT_MEASURED_OFFLINE"
+        },
+        "digest_kind": "IMAGE_PATH_SEED_COMMITMENT_V1",
+        "sha256": "2b87bdeaa0271b5be37a51379cd981901d11b422276051c0f8f6115c27478687"
+      },
+      "image_digest": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a",
+      "lifecycle": "ABSENT_BEFORE_START_CREATE_ONCE_NO_REUSE_REMOVE_AFTER_OWNED_CONTAINERS_STOP",
+      "options": {
+        "volume": {
+          "nocopy": false
+        }
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.product.v040.ownership-repair": "offline-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": false,
+      "service": "sandbox/kafka",
+      "source": "kafka-secrets-ownership-v1",
+      "target": "/etc/kafka/secrets",
+      "type": "volume"
+    },
+    {
+      "cleanup": "EXACT_ID_AND_ALL_LABELS_REVALIDATED_OWNED_ONLY_NO_DOWN_V_NO_PRUNE",
+      "content": {
+        "commitment": {
+          "copy_up": true,
+          "image_user": "appuser",
+          "numeric_uid_gid": "INHERITED_FROM_BOUND_IMAGE_NOT_MEASURED",
+          "path": "/mnt/shared/config",
+          "platform_digest": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a",
+          "rootfs_diff_ids": [
+            "sha256:a8d26d037006414043b277ecb95287692d0960219289d9e27b0bcea0ce233b02",
+            "sha256:82baf9c1d57725bb1cb1ef74973fac84b0a8a9be642e27b5dde47aac3a000bad",
+            "sha256:0ce25d4981601d0c524d000cdd01487a37b77234f9a884c982d1b15beecff905",
+            "sha256:05ad289c803946f0f3b84c006b627b756a4a711805bb9af4cc85dd37d33f411d",
+            "sha256:2d4110215c54b6b001d3d63dd094b21578350307234ff95ecaa5e6095f7c6947",
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+            "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d",
+            "sha256:7def7e54ac1620332bb729288ee90047ef379ba897a8b729bec503f26cb19722",
+            "sha256:21ef8629d5b9605f180f2cbd33418197cab20ff8a67dbf808a4e94d3fc9845cd",
+            "sha256:c0b85c8af66c37ba61531d07704eadebd4c3acdc21a87d5e3b9c6d90fb203615",
+            "sha256:ab9159b4bf728e00dd5aeec66afc620e25d7d072c620f1fbc65a749b6b54e0c9",
+            "sha256:fc17c06fb73ba7cf1895c9624017480fb990a7caaeb034d8a08801e87f5191e7",
+            "sha256:201b00d55c0e11adfb672485734105857ec890e2b24ed49964b6bac676283eb4"
+          ],
+          "runtime_path_digest": "NOT_MEASURED_OFFLINE"
+        },
+        "digest_kind": "IMAGE_PATH_SEED_COMMITMENT_V1",
+        "sha256": "613fda1370e8bae8d20f2cf59c77a086183d0e526d42877e1514490171681387"
+      },
+      "image_digest": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a",
+      "lifecycle": "ABSENT_BEFORE_START_CREATE_ONCE_NO_REUSE_REMOVE_AFTER_OWNED_CONTAINERS_STOP",
+      "options": {
+        "volume": {
+          "nocopy": false
+        }
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.product.v040.ownership-repair": "offline-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": false,
+      "service": "sandbox/kafka",
+      "source": "kafka-config-ownership-v1",
+      "target": "/mnt/shared/config",
+      "type": "volume"
+    },
+    {
+      "cleanup": "EXACT_ID_AND_ALL_LABELS_REVALIDATED_OWNED_ONLY_NO_DOWN_V_NO_PRUNE",
+      "content": {
+        "commitment": {
+          "copy_up": true,
+          "image_user": "appuser",
+          "numeric_uid_gid": "INHERITED_FROM_BOUND_IMAGE_NOT_MEASURED",
+          "path": "/var/lib/kafka/data",
+          "platform_digest": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a",
+          "rootfs_diff_ids": [
+            "sha256:a8d26d037006414043b277ecb95287692d0960219289d9e27b0bcea0ce233b02",
+            "sha256:82baf9c1d57725bb1cb1ef74973fac84b0a8a9be642e27b5dde47aac3a000bad",
+            "sha256:0ce25d4981601d0c524d000cdd01487a37b77234f9a884c982d1b15beecff905",
+            "sha256:05ad289c803946f0f3b84c006b627b756a4a711805bb9af4cc85dd37d33f411d",
+            "sha256:2d4110215c54b6b001d3d63dd094b21578350307234ff95ecaa5e6095f7c6947",
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+            "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d",
+            "sha256:7def7e54ac1620332bb729288ee90047ef379ba897a8b729bec503f26cb19722",
+            "sha256:21ef8629d5b9605f180f2cbd33418197cab20ff8a67dbf808a4e94d3fc9845cd",
+            "sha256:c0b85c8af66c37ba61531d07704eadebd4c3acdc21a87d5e3b9c6d90fb203615",
+            "sha256:ab9159b4bf728e00dd5aeec66afc620e25d7d072c620f1fbc65a749b6b54e0c9",
+            "sha256:fc17c06fb73ba7cf1895c9624017480fb990a7caaeb034d8a08801e87f5191e7",
+            "sha256:201b00d55c0e11adfb672485734105857ec890e2b24ed49964b6bac676283eb4"
+          ],
+          "runtime_path_digest": "NOT_MEASURED_OFFLINE"
+        },
+        "digest_kind": "IMAGE_PATH_SEED_COMMITMENT_V1",
+        "sha256": "7e805f49a139dc063475f47f072fcd8d6f9dd3b800f52136109952fcd6517f4a"
+      },
+      "image_digest": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a",
+      "lifecycle": "ABSENT_BEFORE_START_CREATE_ONCE_NO_REUSE_REMOVE_AFTER_OWNED_CONTAINERS_STOP",
+      "options": {
+        "volume": {
+          "nocopy": false
+        }
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.product.v040.ownership-repair": "offline-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": false,
+      "service": "sandbox/kafka",
+      "source": "kafka-data-ownership-v1",
+      "target": "/var/lib/kafka/data",
+      "type": "volume"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "sha256": "970774e60decb0930c6ca40c7cbbb624646933c8f2ad30c45cc0e2ec7390b87e"
+      },
+      "image_digest": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6",
+      "lifecycle": "FROZEN_SOURCE_READ_ONLY_NO_CLEANUP",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": true,
+      "service": "sandbox/otel-collector",
+      "source": "repo://third_party/opentelemetry-demo/src/otel-collector/otelcol-config.yml",
+      "target": "/etc/otelcol-config.yml",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "sha256": "322a664f7729440c7425c32d16baa57bc448814510ca8e063289468e976c52e0"
+      },
+      "image_digest": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6",
+      "lifecycle": "FROZEN_SOURCE_READ_ONLY_NO_CLEANUP",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": true,
+      "service": "sandbox/otel-collector",
+      "source": "repo://third_party/opentelemetry-demo/src/otel-collector/otelcol-config-full.yml",
+      "target": "/etc/otelcol-config-full.yml",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "sha256": "ebc32018d5a665fa22852cdfb65b9d10d6b10eafd0e0270803e1ec8bc3f10395"
+      },
+      "image_digest": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6",
+      "lifecycle": "FROZEN_SOURCE_READ_ONLY_NO_CLEANUP",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": true,
+      "service": "sandbox/otel-collector",
+      "source": "repo://third_party/opentelemetry-demo/src/otel-collector/otelcol-config-observability.yml",
+      "target": "/etc/otelcol-config-observability.yml",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "sha256": "ac2b8f82b8a59af1c5997143789e1c529ba9793cc028f833a5f6743f837efe5f"
+      },
+      "image_digest": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6",
+      "lifecycle": "FROZEN_SOURCE_READ_ONLY_NO_CLEANUP",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": true,
+      "service": "sandbox/otel-collector",
+      "source": "repo://third_party/opentelemetry-demo/src/otel-collector/otelcol-config-extras.yml",
+      "target": "/etc/otelcol-config-extras.yml",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "sha256": "121db9aa77f656820c84556e4289efb9cf5aa02b2f80c44b27a8077ae03739cb"
+      },
+      "image_digest": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6",
+      "lifecycle": "FROZEN_SOURCE_READ_ONLY_NO_CLEANUP",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": true,
+      "service": "sandbox/otel-collector",
+      "source": "repo://config/product-v030/otelcol-sandbox.yml",
+      "target": "/etc/otelcol-config-sandbox.yml",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "commitment": {
+          "content_bytes": "NOT_A_REGULAR_FILE",
+          "daemon_boundary_sha256": "5423b6bbac463474ad4b9b98c25410ea3042a1c7f615af10c8f0e342627320f2",
+          "read_only": true
+        },
+        "digest_kind": "DAEMON_SOCKET_BINDING_V1",
+        "sha256": "1630b6af604025898ad1154d274511c5425609baf13add7b0bf4b121a036a667"
+      },
+      "image_digest": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6",
+      "lifecycle": "NON_OWNED_SOCKET_NEVER_MUTATE_OR_CLEAN",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": true,
+      "service": "sandbox/otel-collector",
+      "source": "daemon://local-unix-socket",
+      "target": "/var/run/docker.sock",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "sha256": "2ed830eb10e838e0bce9e8c4539442a009920f02989d5294465c6c63fdc2f14d"
+      },
+      "image_digest": "sha256:7471d710ccf34ae074f15c7dfe5943fb731f8f21759bcfee2c81f670bf4d9363",
+      "lifecycle": "FROZEN_SOURCE_READ_ONLY_NO_CLEANUP",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": true,
+      "service": "sandbox/product-catalog",
+      "source": "repo://third_party/opentelemetry-demo/otel-config.yml",
+      "target": "/otel-config.yml",
+      "type": "bind"
+    },
+    {
+      "cleanup": "EXACT_OWNED_CONTAINER_REMOVAL_ONLY",
+      "content": {
+        "commitment": {
+          "initial_entries": [],
+          "options": {
+            "tmpfs_options": ""
+          }
+        },
+        "digest_kind": "EMPTY_TMPFS_COMMITMENT_V1",
+        "sha256": "d0ee1001682a78c7e6096a9648e205e1bb244abaa49468e94d619fdef6486472"
+      },
+      "image_digest": "sha256:7471d710ccf34ae074f15c7dfe5943fb731f8f21759bcfee2c81f670bf4d9363",
+      "lifecycle": "EPHEMERAL_EMPTY_AT_CONTAINER_CREATE_DISCARDED_WITH_CONTAINER",
+      "options": {
+        "tmpfs_options": ""
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": false,
+      "service": "sandbox/product-catalog",
+      "source": "tmpfs://sandbox/product-catalog/tmp",
+      "target": "/tmp",
+      "type": "tmpfs"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "sha256": "7359543d3720f0038a374912bf9c93fb7314ade1da11979acb38b0e6d64ec114"
+      },
+      "image_digest": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814",
+      "lifecycle": "FROZEN_SOURCE_READ_ONLY_NO_CLEANUP",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": true,
+      "service": "sandbox/prometheus",
+      "source": "repo://third_party/opentelemetry-demo/src/prometheus/prometheus-config.yaml",
+      "target": "/etc/prometheus/prometheus-config.yaml",
+      "type": "bind"
+    },
+    {
+      "cleanup": "EXACT_ID_AND_ALL_LABELS_REVALIDATED_OWNED_ONLY_NO_DOWN_V_NO_PRUNE",
+      "content": {
+        "commitment": {
+          "copy_up": true,
+          "path": "/prometheus",
+          "platform_digest": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814",
+          "runtime_path_digest": "NOT_MEASURED_OFFLINE"
+        },
+        "digest_kind": "IMAGE_SEED_COMMITMENT_V1",
+        "sha256": "29fcd02b1a2db25dd056562e10a4dcdb4bc9b725670c6cd86cbb67d433414c92"
+      },
+      "image_digest": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814",
+      "lifecycle": "ABSENT_BEFORE_START_CREATE_ONCE_NO_REUSE_REMOVE_AFTER_OWNED_CONTAINERS_STOP",
+      "options": {},
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": false,
+      "service": "sandbox/prometheus",
+      "source": "prometheus-data",
+      "target": "/prometheus",
+      "type": "volume"
+    },
+    {
+      "cleanup": "EXACT_OWNED_CONTAINER_REMOVAL_ONLY",
+      "content": {
+        "commitment": {
+          "initial_entries": [],
+          "options": {
+            "tmpfs_options": ""
+          }
+        },
+        "digest_kind": "EMPTY_TMPFS_COMMITMENT_V1",
+        "sha256": "d0ee1001682a78c7e6096a9648e205e1bb244abaa49468e94d619fdef6486472"
+      },
+      "image_digest": "sha256:c3622ca9ed2cadd4a6b7a28ca703549b7898ef5c7ee9c08ee34f2db410b547dd",
+      "lifecycle": "EPHEMERAL_EMPTY_AT_CONTAINER_CREATE_DISCARDED_WITH_CONTAINER",
+      "options": {
+        "tmpfs_options": ""
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "read_only": false,
+      "service": "sandbox/shipping",
+      "source": "tmpfs://sandbox/shipping/tmp",
+      "target": "/tmp",
+      "type": "tmpfs"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 7,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "f33550c14bc32f7e4acad22b7ee312e4539ee926b5adee820ca0cb71d9f4d27a"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": false,
+      "service": "product/api",
+      "source": "private://product",
+      "target": "/var/lib/ecomsre",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "6fb98cbd0e8d1052d751f29efcf77d52dab76b2bc6ada6be3ff97645cc3c13c6"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": true,
+      "service": "product/api",
+      "source": "private://read",
+      "target": "/run/remediation-read",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 3,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "d84f8f2c5c2f7f29937b51b63c5218d4fdd3030cf217def631d3799f5df30869"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": true,
+      "service": "product/api",
+      "source": "private://config",
+      "target": "/run/remediation-config",
+      "type": "bind"
+    },
+    {
+      "cleanup": "EXACT_OWNED_CONTAINER_REMOVAL_ONLY",
+      "content": {
+        "commitment": {
+          "initial_entries": [],
+          "options": {
+            "tmpfs_options": "rw,noexec,nosuid,nodev,size=64m"
+          }
+        },
+        "digest_kind": "EMPTY_TMPFS_COMMITMENT_V1",
+        "sha256": "2dbcad71884a8bd9b40823b6b364d80f632865534cbd749e6e3131517729a2b4"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "EPHEMERAL_EMPTY_AT_CONTAINER_CREATE_DISCARDED_WITH_CONTAINER",
+      "options": {
+        "tmpfs_options": "rw,noexec,nosuid,nodev,size=64m"
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": false,
+      "service": "product/api",
+      "source": "tmpfs://product/api/tmp",
+      "target": "/tmp",
+      "type": "tmpfs"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 7,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "f33550c14bc32f7e4acad22b7ee312e4539ee926b5adee820ca0cb71d9f4d27a"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": false,
+      "service": "product/remediation-control-gateway",
+      "source": "private://product",
+      "target": "/var/lib/ecomsre",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 3,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "d84f8f2c5c2f7f29937b51b63c5218d4fdd3030cf217def631d3799f5df30869"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": true,
+      "service": "product/remediation-control-gateway",
+      "source": "private://config",
+      "target": "/run/remediation-config",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "6fb98cbd0e8d1052d751f29efcf77d52dab76b2bc6ada6be3ff97645cc3c13c6"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": false,
+      "service": "product/remediation-control-gateway",
+      "source": "private://read",
+      "target": "/run/remediation-read",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "6fb98cbd0e8d1052d751f29efcf77d52dab76b2bc6ada6be3ff97645cc3c13c6"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": false,
+      "service": "product/remediation-control-gateway",
+      "source": "private://write",
+      "target": "/run/remediation-write",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "6fb98cbd0e8d1052d751f29efcf77d52dab76b2bc6ada6be3ff97645cc3c13c6"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": false,
+      "service": "product/remediation-control-gateway",
+      "source": "private://ledger",
+      "target": "/var/lib/remediation-control",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 2,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "e0343c27f467b7330af512bb3fe3ee29deb105ee8fef423285d68e5cc1cc5fed"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": true,
+      "service": "product/remediation-control-gateway",
+      "source": "private://control",
+      "target": "/run/remediation-private",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 2,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "8c2bf34e24c83dee889684fa544af20985986f37dae38e087d3e2dec948c91fb"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": true,
+      "service": "product/remediation-control-gateway",
+      "source": "private://observer",
+      "target": "/run/remediation-observer",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "6fb98cbd0e8d1052d751f29efcf77d52dab76b2bc6ada6be3ff97645cc3c13c6"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": false,
+      "service": "product/remediation-control-gateway",
+      "source": "private://requests",
+      "target": "/run/remediation-requests",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 2,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "f988d9aa8044ed10ee251fa7df2efbbd13cf815fb244f1101f56905a4203683d"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": true,
+      "service": "product/remediation-control-gateway",
+      "source": "private://sandbox/runtime/flagd",
+      "target": "/runtime/payment-flags",
+      "type": "bind"
+    },
+    {
+      "cleanup": "EXACT_OWNED_CONTAINER_REMOVAL_ONLY",
+      "content": {
+        "commitment": {
+          "initial_entries": [],
+          "options": {
+            "tmpfs_options": "rw,noexec,nosuid,nodev,size=16m"
+          }
+        },
+        "digest_kind": "EMPTY_TMPFS_COMMITMENT_V1",
+        "sha256": "598bb0f696204c0eabdcfe4e8e0971405851680bb1cfccac2a0bc7bd200b2757"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "EPHEMERAL_EMPTY_AT_CONTAINER_CREATE_DISCARDED_WITH_CONTAINER",
+      "options": {
+        "tmpfs_options": "rw,noexec,nosuid,nodev,size=16m"
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": false,
+      "service": "product/remediation-control-gateway",
+      "source": "tmpfs://product/remediation-control-gateway/tmp",
+      "target": "/tmp",
+      "type": "tmpfs"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 7,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "f33550c14bc32f7e4acad22b7ee312e4539ee926b5adee820ca0cb71d9f4d27a"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": false,
+      "service": "product/remediation-executor",
+      "source": "private://product",
+      "target": "/var/lib/ecomsre",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 3,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "d84f8f2c5c2f7f29937b51b63c5218d4fdd3030cf217def631d3799f5df30869"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": true,
+      "service": "product/remediation-executor",
+      "source": "private://config",
+      "target": "/run/remediation-config",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "6fb98cbd0e8d1052d751f29efcf77d52dab76b2bc6ada6be3ff97645cc3c13c6"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": true,
+      "service": "product/remediation-executor",
+      "source": "private://read",
+      "target": "/run/remediation-read",
+      "type": "bind"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 1,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "6fb98cbd0e8d1052d751f29efcf77d52dab76b2bc6ada6be3ff97645cc3c13c6"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": true,
+      "service": "product/remediation-executor",
+      "source": "private://write",
+      "target": "/run/remediation-write",
+      "type": "bind"
+    },
+    {
+      "cleanup": "EXACT_OWNED_CONTAINER_REMOVAL_ONLY",
+      "content": {
+        "commitment": {
+          "initial_entries": [],
+          "options": {
+            "tmpfs_options": "rw,noexec,nosuid,nodev,size=16m"
+          }
+        },
+        "digest_kind": "EMPTY_TMPFS_COMMITMENT_V1",
+        "sha256": "598bb0f696204c0eabdcfe4e8e0971405851680bb1cfccac2a0bc7bd200b2757"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "EPHEMERAL_EMPTY_AT_CONTAINER_CREATE_DISCARDED_WITH_CONTAINER",
+      "options": {
+        "tmpfs_options": "rw,noexec,nosuid,nodev,size=16m"
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": false,
+      "service": "product/remediation-executor",
+      "source": "tmpfs://product/remediation-executor/tmp",
+      "target": "/tmp",
+      "type": "tmpfs"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 2,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "33b875e51a102ecba3e999d8d8971a82815b864f5fdc2a6fa7d15ee3c557e27e"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": true,
+      "service": "product/remediation-observer",
+      "source": "private://proxy",
+      "target": "/run/remediation-private",
+      "type": "bind"
+    },
+    {
+      "cleanup": "EXACT_OWNED_CONTAINER_REMOVAL_ONLY",
+      "content": {
+        "commitment": {
+          "initial_entries": [],
+          "options": {
+            "tmpfs_options": "rw,noexec,nosuid,nodev,size=16m"
+          }
+        },
+        "digest_kind": "EMPTY_TMPFS_COMMITMENT_V1",
+        "sha256": "598bb0f696204c0eabdcfe4e8e0971405851680bb1cfccac2a0bc7bd200b2757"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "EPHEMERAL_EMPTY_AT_CONTAINER_CREATE_DISCARDED_WITH_CONTAINER",
+      "options": {
+        "tmpfs_options": "rw,noexec,nosuid,nodev,size=16m"
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": false,
+      "service": "product/remediation-observer",
+      "source": "tmpfs://product/remediation-observer/tmp",
+      "target": "/tmp",
+      "type": "tmpfs"
+    },
+    {
+      "cleanup": "PRESERVE_SOURCE_AND_EVIDENCE_NEVER_DELETE_BIND_SOURCE",
+      "content": {
+        "digest_kind": "FILES_NAMES_MODES_OWNERS_V1",
+        "entries": 7,
+        "observation_semantics": "PRESERVED_POST_FAILURE_CONTENT_NOT_A_FUTURE_INITIAL_SEED",
+        "sha256": "f33550c14bc32f7e4acad22b7ee312e4539ee926b5adee820ca0cb71d9f4d27a"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "MUTABLE_PRIVATE_EVIDENCE_PRESERVED_NO_DELETE",
+      "options": {
+        "bind": {}
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": false,
+      "service": "product/worker",
+      "source": "private://product",
+      "target": "/var/lib/ecomsre",
+      "type": "bind"
+    },
+    {
+      "cleanup": "EXACT_OWNED_CONTAINER_REMOVAL_ONLY",
+      "content": {
+        "commitment": {
+          "initial_entries": [],
+          "options": {
+            "tmpfs_options": "rw,noexec,nosuid,nodev,size=64m"
+          }
+        },
+        "digest_kind": "EMPTY_TMPFS_COMMITMENT_V1",
+        "sha256": "2dbcad71884a8bd9b40823b6b364d80f632865534cbd749e6e3131517729a2b4"
+      },
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "lifecycle": "EPHEMERAL_EMPTY_AT_CONTAINER_CREATE_DISCARDED_WITH_CONTAINER",
+      "options": {
+        "tmpfs_options": "rw,noexec,nosuid,nodev,size=64m"
+      },
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "read_only": false,
+      "service": "product/worker",
+      "source": "tmpfs://product/worker/tmp",
+      "target": "/tmp",
+      "type": "tmpfs"
+    }
+  ],
+  "networks": {
+    "product": {
+      "default": {
+        "ipam": {},
+        "labels": {
+          "io.ecomsre.product": "ecomsre-product-mvp-v01",
+          "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+        },
+        "name": "ecomsre-product-v040-default"
+      },
+      "remediation-observation": {
+        "internal": true,
+        "ipam": {},
+        "labels": {
+          "io.ecomsre.product": "ecomsre-product-mvp-v01",
+          "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+        },
+        "name": "ecomsre-product-v040_remediation-observation"
+      }
+    },
+    "sandbox": {
+      "default": {
+        "driver": "bridge",
+        "ipam": {},
+        "labels": {
+          "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+        },
+        "name": "ecomsre-live-sandbox-v1-default"
+      }
+    }
+  },
+  "planned_sandbox_compose_sha256": "cfcae9711ed00d35f875cedbf2f84cd4792912e50a3e0393afcfb34875c64046",
+  "runtime_readiness": "NOT_AUTHORIZED_NOT_MEASURED",
+  "schema_version": "ecomsre.product.v040.offline-environment-provenance.v1",
+  "services": {
+    "product/api": {
+      "command_sha256": "fc41c4ead927f9e0000f02fd6b9713a70e4719f560ebffd396c3be58cb66c7c8",
+      "environment_sha256": "c555644521208d2913e6e91a74efe261d0845376b7551c0d38d399c87cffa2bc",
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "image_reference": "ecomsre-product-v040:a0e8aab077bd",
+      "mount_targets": [
+        "/run/remediation-config",
+        "/run/remediation-read",
+        "/tmp",
+        "/var/lib/ecomsre"
+      ],
+      "networks": [
+        "remediation-observation"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "resolved_service_sha256": "6f0814edc0437b2cdc3ca13c2650c0c5e69dec041d8afae863608b9cc28b766d"
+    },
+    "product/remediation-control-gateway": {
+      "command_sha256": "4666ef4667f6b601172bedcc2dea1a83e396be28c9c505a6ad9dde8843b7f238",
+      "environment_sha256": "ec0d22f4de987078f21ae61fa496e5408675a115082fd587f6efcb9857c19723",
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "image_reference": "ecomsre-product-v040:a0e8aab077bd",
+      "mount_targets": [
+        "/run/remediation-config",
+        "/run/remediation-observer",
+        "/run/remediation-private",
+        "/run/remediation-read",
+        "/run/remediation-requests",
+        "/run/remediation-write",
+        "/runtime/payment-flags",
+        "/tmp",
+        "/var/lib/ecomsre",
+        "/var/lib/remediation-control"
+      ],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "resolved_service_sha256": "56789d44899ed025dfada5b1931a14e6f8500430c6dd5e4085f8d96d63e6ca87"
+    },
+    "product/remediation-executor": {
+      "command_sha256": "7600f8a057772353904bd159f1e939162d36a5c2a1208b560619b3378222dad3",
+      "environment_sha256": "349f3050d7eedaaa3296a36777b2633b74c9d28f24440427fe6f0b09eff77a37",
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "image_reference": "ecomsre-product-v040:a0e8aab077bd",
+      "mount_targets": [
+        "/run/remediation-config",
+        "/run/remediation-read",
+        "/run/remediation-write",
+        "/tmp",
+        "/var/lib/ecomsre"
+      ],
+      "networks": [],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "resolved_service_sha256": "178f79430ac62c5872c5a09ac5e6b98d4877a0e51b75f216a4e56d7ec53ca1fa"
+    },
+    "product/remediation-observer": {
+      "command_sha256": "4c73895f78368b3b197b746667de1e165743fb9731e49e18cd1c28265ffba5a5",
+      "environment_sha256": "35c6e9a890543cb39e1182365363e91a57647cef0e30424813f5b2e4f3c51992",
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "image_reference": "ecomsre-product-v040:a0e8aab077bd",
+      "mount_targets": [
+        "/run/remediation-private",
+        "/tmp"
+      ],
+      "networks": [
+        "default",
+        "remediation-observation"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "resolved_service_sha256": "e1d0d263dba224aed365232857919c986fa7c1a2566824a25a886838a206c5ab"
+    },
+    "product/worker": {
+      "command_sha256": "656e7d733015a4ddd17217d2d02cdded937e0f9eeece22a7fe968096e3b5f0a8",
+      "environment_sha256": "40ed8b1ab95a5e78fba7e238c26e0cd0ea85a4b01f52481b259d0f8d11cbba05",
+      "image_digest": "sha256:1eca3ddaf3310075afa0b6d1197a1d5b8c6e3ab271dc30e20af866707f4c72b1",
+      "image_reference": "ecomsre-product-v040:a0e8aab077bd",
+      "mount_targets": [
+        "/tmp",
+        "/var/lib/ecomsre"
+      ],
+      "networks": [
+        "remediation-observation"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-product-v040",
+        "io.ecomsre.product": "ecomsre-product-mvp-v01",
+        "io.ecomsre.product.v040.goal": "d8ec6455a6108f40d67eb8441f18e952670b087255c0fb15fc14ccb87e32695a"
+      },
+      "resolved_service_sha256": "1d7f401851a62a90d9d9db0d4700f2e65b8fb08e5ab773a264d5c4b382ce3fa4"
+    },
+    "sandbox/accounting": {
+      "command_sha256": "b658d4b7c905496923a5d6233ba83ff501df1bc92f75cfdc59e124a12689e7ff",
+      "environment_sha256": "6c2d37955c46b31a2d73b4ceeaa5f26e21615f553017fc4c67dc84672430af0f",
+      "image_digest": "sha256:0139fb0653a471d10160198ef2a117b6a63263c071fef77e2cd393b9b0853d51",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-accounting",
+      "mount_targets": [],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "ae01032dd721605766be8372a1fe98cfc08312d3db5756a04944784f9e000f78"
+    },
+    "sandbox/ad": {
+      "command_sha256": "b84988d6821cd8fb7e654640bf98ad37c64942df4c923cceaa7f155122c1f273",
+      "environment_sha256": "fadacbab84dfdc0a981e47396a249c2143de634454cc552b3bf40c639875a0c6",
+      "image_digest": "sha256:3f1965d23056bf68614e34d407faa6a9c730ab37a0d8ef698709ebf7d9fe1e91",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-ad",
+      "mount_targets": [],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "5058873cae5b86322690c5fe57e4dd1bea0b237871289d3cc62eb1d4dcd16088"
+    },
+    "sandbox/astronomy-db": {
+      "command_sha256": "5ba19c42d36c91c461046dc933cda53867d23ee738c473c4686ff9fb5a04af27",
+      "environment_sha256": "a09b86a4c230766cbbb54322cf408cf5da311c364bcaf34116af2fe3a5f03a50",
+      "image_digest": "sha256:f1dd3522a7fde8bf8e505f42583ecdc00b4967a4b94d32ba1f890d118fe17335",
+      "image_reference": "postgres:18.4",
+      "mount_targets": [
+        "/docker-entrypoint-initdb.d/init.sql",
+        "/var/lib/postgresql"
+      ],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "f5c9109c293cb95512967f56a5a4ee226b89b6d9e35e42e56d85ff8fd98d3bcc"
+    },
+    "sandbox/cart": {
+      "command_sha256": "b658d4b7c905496923a5d6233ba83ff501df1bc92f75cfdc59e124a12689e7ff",
+      "environment_sha256": "de43318e53a55a6d091f4d24453514e05bbc54fb5fb6a13a3eac6c5c9f5e04cd",
+      "image_digest": "sha256:2dd680b26be9a124424c0e1237e37060c30edf91f31c25d2c4e4775653f3a2a9",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-cart",
+      "mount_targets": [],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "b8b99e235bc103b8245084b2f82c878847996b61cb78eb33eb83fb4bb83048fc"
+    },
+    "sandbox/checkout": {
+      "command_sha256": "3f8afa0323974b852205fe09bc3957f8e0000ae6b1e6fc9de49144b588e64941",
+      "environment_sha256": "d2fd4a294113b82390a8cc63ca3254cdd8f42dd99d142c0b6b9890e61d6c4d84",
+      "image_digest": "sha256:07eae46624d18e21cf2c19c055f58133d5cc008b31a74f4765b20e294a9ae5f0",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-checkout",
+      "mount_targets": [
+        "/tmp"
+      ],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "b902e7d89007f5f36d3f48ea7f618828276a7b542d5388aa5f4a958f44ceb154"
+    },
+    "sandbox/currency": {
+      "command_sha256": "5c74e91eaa45a5cfb17826d75ecaff6162b7389f4b66ed51be21546056c56533",
+      "environment_sha256": "abfbcee83d1e614992a1d0b1c04c248fdc63172ef33a79d1fe20126767eb7360",
+      "image_digest": "sha256:4e8197e55b8b1646775281f5613d457026573b17cc486e0f74ce6edf234eb634",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-currency",
+      "mount_targets": [],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "a4061853689f3745296714353c16d56662c62297c47c106da729e17be741f8dd"
+    },
+    "sandbox/email": {
+      "command_sha256": "f29a7e8ad97c49b2148279c686bf288f13dd1f0fa3e4334526306584ac446eed",
+      "environment_sha256": "ad90285a358ef2e73028c6b823a7946fd771b14485cf19d69cf21e87e239a22e",
+      "image_digest": "sha256:893da607ae8f600845a1039fb7922a3fdbf577fe4e265e2c87fb59262ae494f2",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-email",
+      "mount_targets": [],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "346ec1d55dcf303748eb922b4f0219a2fc9c246d7483029cf5ab3bb33861ab94"
+    },
+    "sandbox/flagd": {
+      "command_sha256": "376c3dd8f7323ec451d1c827e6dd40345b7e334fa658c48659c6aadc3b826065",
+      "environment_sha256": "472550be39b9afc67a97b450c21924822552aba132b6325c6a73e0015e2d1fdc",
+      "image_digest": "sha256:5115fd9352d58fd41c7be775b33336f5e4b2cef8056bf5982f5c704d13ec590e",
+      "image_reference": "ghcr.io/open-feature/flagd:v0.16.0",
+      "mount_targets": [
+        "/etc/flagd"
+      ],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "2164dd3b6c60bc6c92522f2539666d907fab9ba065243921ce61f205f38a24ad"
+    },
+    "sandbox/flagd-ui": {
+      "command_sha256": "e9701b25d39221711c8e872078cf55ebdabc7d4bb29e6f0213bf9366b59ca84e",
+      "environment_sha256": "b3a98843f173ff7a592e68194e7cfb461747fb89090abcaf5c53a8b6e3ddf197",
+      "image_digest": "sha256:bb6e142378a01f94d4f2cf322b8a145f2e33b20a2c41ba1643320b5039fe6b0e",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-flagd-ui",
+      "mount_targets": [
+        "/app/data"
+      ],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "3c86bf47a8f6829a86a85dc83c1071f43d825ef34c6aa3c4a4361d2c865d7e31"
+    },
+    "sandbox/fraud-detection": {
+      "command_sha256": "b658d4b7c905496923a5d6233ba83ff501df1bc92f75cfdc59e124a12689e7ff",
+      "environment_sha256": "6bd611fcd8a8d337e2c36c03f80e81782c92f4bb35dceaa22687c938d73a41ce",
+      "image_digest": "sha256:fdf464e80f1a6c536cad86e3b429fda48b87c2bb8dafe1f25507322ff73d8859",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-fraud-detection",
+      "mount_targets": [],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "954ba206f63b76243b1a705369394e2aa41fb734743644fe1b9f1718a8a8e66e"
+    },
+    "sandbox/frontend": {
+      "command_sha256": "46c74d274f44d8b659dc2ad027e0f08714f1897ea969bcbf110a4f61aa866497",
+      "environment_sha256": "b60c449c648af4b4716e413159d91c4303d83a5dd7928da87fafc94b4114fb9d",
+      "image_digest": "sha256:9b9495aa98049fe8987fcb9193312f70260fbacdba31b088089c789a2506a5c6",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-frontend",
+      "mount_targets": [],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "706da262661222b9712c4e404e8d1d5a2789903e15da1735e2b8281901ea5bd8"
+    },
+    "sandbox/frontend-proxy": {
+      "command_sha256": "77de3015929addc6a40eebcf4059d7eba5729969bc62da26eec68b0d9be54519",
+      "environment_sha256": "0e827937f09325be7c6a4c7c5604772ec39dca51ea99ac0319a47d6d75680c6e",
+      "image_digest": "sha256:5dca3e6fe127f12a78765428bb86e9aad3ec8ee5b6498095e9d9b258cf8d64d3",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-frontend-proxy",
+      "mount_targets": [],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "c8e384379266ce6b4bc8a52b053bfde0d5fa4818df0edce819bd7a1942c07f78"
+    },
+    "sandbox/grafana": {
+      "command_sha256": "b658d4b7c905496923a5d6233ba83ff501df1bc92f75cfdc59e124a12689e7ff",
+      "environment_sha256": "af547a04646260c369282aefc672e82f9c921fab5fcbc37697cdcd1f2ec7e051",
+      "image_digest": "sha256:55f41cacf3e8334ea89d76ada9cc546c09473650ab48a7861743bcbd83f5ef38",
+      "image_reference": "grafana/grafana:13.1.0",
+      "mount_targets": [
+        "/etc/grafana/grafana.ini",
+        "/etc/grafana/provisioning"
+      ],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "2b24cd85cb4b6ea6e501fa27df4b0f40fe067195e642e87749508dca4d74210f"
+    },
+    "sandbox/image-provider": {
+      "command_sha256": "f33e3829028d609528060bf1316ef507a3710a1a5550ca2703eb954661e15229",
+      "environment_sha256": "75adac759e541a3381cd3393c44c27d72401a7c9a08c904cc5b5c128098a0492",
+      "image_digest": "sha256:a34c69344d9c7da1f312c3c4516d5e04e75b44bdfe1eae824215f76d89c6f74e",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-image-provider",
+      "mount_targets": [],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "57fbd3aeb32ed030a83f0ff58c487053f1623ba3e810048758b8cd0e6f3aeca2"
+    },
+    "sandbox/jaeger": {
+      "command_sha256": "fc767dcbbdceaa32c8cda985e46d8ce222e47f3d5e46f8549a6d878a2269fb6a",
+      "environment_sha256": "248977e73c1ae614715b48f616350e3a87f8e1a396db34e9981fd915c40ed07d",
+      "image_digest": "sha256:476f9d88b6660cf93b47aac9b50de842855cb5cb50a35eef0108e7bde58a6985",
+      "image_reference": "quay.io/jaegertracing/jaeger:2.19.0",
+      "mount_targets": [
+        "/etc/jaeger/config.yml",
+        "/etc/jaeger/ui-config.json",
+        "/tmp"
+      ],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "dab0335c03b98e7023747b5231c42e211aadf73bde3d2cca1728a93f2bda7a5b"
+    },
+    "sandbox/kafka": {
+      "command_sha256": "53583e4e2143d7444a16865fb420b231af1b9dd7aa2819dcac630ebdf0289e08",
+      "environment_sha256": "5064c619c2bc6f7aadeb285b3a4781270552ec36c4b54686731f324ac8d70de3",
+      "image_digest": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-kafka",
+      "mount_targets": [
+        "/etc/ecomsre/kafka-jmx.yml",
+        "/etc/kafka/secrets",
+        "/mnt/shared/config",
+        "/var/lib/kafka/data"
+      ],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000",
+        "io.ecomsre.telemetry.jmx.sha256": "869ae5cfdcb2b06d5df4aa3d49ce50a671c8301367e378a31c2d6c54fec09055"
+      },
+      "resolved_service_sha256": "edc0e6af7e8a167c9f1653262fe3ce264b4613d6b460be88671827b7ed9dbea9"
+    },
+    "sandbox/load-generator": {
+      "command_sha256": "eb4a7fdbc7727ee03004014de337c1c8801647dded8ab1ac19ab5c7027b5526f",
+      "environment_sha256": "315ca437fe770c3f8459062ac32168752088a6ab5a5e61e27f6c13aed64777b3",
+      "image_digest": "sha256:b04ac2c1fa16c126c1077710dd31d5780f002c5f69f8892c54b83a3a74877898",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-load-generator",
+      "mount_targets": [],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "0339ee4af6181cf015f539ea154874804788eb23f5d73432cd75d3ffa59e956d"
+    },
+    "sandbox/opamp-server": {
+      "command_sha256": "dbf4034b2e346c52877131d7c9e3668e0ef975baf513d465803d81238b9d70f9",
+      "environment_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "image_digest": "sha256:f8459b4e3e6a5153acc4571f99de64be8658621f6fc1d06f7715644b9a1259d6",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-opamp-server",
+      "mount_targets": [],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "93309e0b7f8e304d8a07fd02d9ea9be6db1897b0e8d36d9ff00386162e429694"
+    },
+    "sandbox/opensearch": {
+      "command_sha256": "c59f775f417ea1569ebb53990ce6727691e7c479764dcf0505b86abfbf0095d9",
+      "environment_sha256": "880d7842476c5402403c426762d3681dbe0942858f389eedced389956360ab74",
+      "image_digest": "sha256:e2d67dae0dc224f4f2f5c64adb17a2d6e41aac9f2bd18bb59ac2a896d20b0fde",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-opensearch",
+      "mount_targets": [],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "51a53140b6a48eae9f103fb516bc6f87169cb1d20a3e92e4f6fa2c0781e3bfe1"
+    },
+    "sandbox/otel-collector": {
+      "command_sha256": "8d97103015603703a21bd7926c094b8501a45e4d016866a73e98f011986d909b",
+      "environment_sha256": "773f389974ebb7baeadfa4e54eee41897e1c32c2cc8e8396bcf957a8b96a2b99",
+      "image_digest": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6",
+      "image_reference": "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.157.0",
+      "mount_targets": [
+        "/etc/otelcol-config-extras.yml",
+        "/etc/otelcol-config-full.yml",
+        "/etc/otelcol-config-observability.yml",
+        "/etc/otelcol-config-sandbox.yml",
+        "/etc/otelcol-config.yml",
+        "/var/run/docker.sock"
+      ],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "05f2e15fed7840e3acc6da424663b1d1bcc31908b61de684888f3caad541e8aa"
+    },
+    "sandbox/payment": {
+      "command_sha256": "8caeb3e6941a45f146143de204ea6a31ecda774f63f1aa54f556fe4dcc734f31",
+      "environment_sha256": "9874340e7514ec6ef771345f93ea6ffe23578401a76a21cc892e9d96fed285c7",
+      "image_digest": "sha256:c9bbe72133e9b6569f8e490441e7a1472f8767d12759b0eaf0af14e91e4a9d45",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-payment",
+      "mount_targets": [],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "39fcc21373b88526684c54f033d738c85ee3e93693441088b42d372fcbd7495f"
+    },
+    "sandbox/product-catalog": {
+      "command_sha256": "9732d0b2d7c26ba7854dfd43b46ee09168708e5ec44f955a9e05eaf26108964c",
+      "environment_sha256": "e87f34769b823744a841dd9d83bdeac4a3ec1b8ef5b90896c14397e2c0ed63dd",
+      "image_digest": "sha256:7471d710ccf34ae074f15c7dfe5943fb731f8f21759bcfee2c81f670bf4d9363",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-product-catalog",
+      "mount_targets": [
+        "/otel-config.yml",
+        "/tmp"
+      ],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "97bbdf5363968c5cbba5a74e63838ccd4a09b67397d7f2ca457a55e46363890e"
+    },
+    "sandbox/prometheus": {
+      "command_sha256": "d7a8cc50b411ea8c9828c2831a7d7c92640d56c231d4c579fbab5b2eff0b0dfa",
+      "environment_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "image_digest": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814",
+      "image_reference": "quay.io/prometheus/prometheus:v3.13.1",
+      "mount_targets": [
+        "/etc/prometheus/prometheus-config.yaml",
+        "/prometheus"
+      ],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "ce936608df7499eac6a6744681776f0b84a43c27b7ba5e947aeeb97ec64eb61e"
+    },
+    "sandbox/quote": {
+      "command_sha256": "b203c275e980910d582ed751f175f1f3d1f21042ff7f76efbe0b18ff0ece2940",
+      "environment_sha256": "eaa0d47fdc7c8503c8feda1c135fdb61a384f807ac1bb9335bd50a52abf8b9ac",
+      "image_digest": "sha256:370d920d330a145a5e6769eab82dd256a11c8186c78d7afd7927119f402d2438",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-quote",
+      "mount_targets": [],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "ab7f597c04b36bf0c9f2d2d65d11d21168c651db2d4c39bd59aa54d52ceed083"
+    },
+    "sandbox/recommendation": {
+      "command_sha256": "4bfb600fd814e2495ffcfbd8e0c4fe0ae367f4d04939361ef5923d4b2e394d0b",
+      "environment_sha256": "2446aef27e00bd073c0febd18c89b3a49b10097a98ed55f909589095536ac013",
+      "image_digest": "sha256:0b8524ba9dd99a12f4223b82816d80751fbc3c06b39ccee4b08669040ac0ad6b",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-recommendation",
+      "mount_targets": [],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "bb9ed3b8683793d955f255c70eb693545e4f5f4fcad1202082b1d9024445a0c1"
+    },
+    "sandbox/shipping": {
+      "command_sha256": "24795d476410578cce530bd4680a82e32d356cde8974063def671d18b60f1414",
+      "environment_sha256": "2218e44a3b7f103d9b0d9cf27c4f15605e5d3d513698a0dc62099ea6aed2a7a1",
+      "image_digest": "sha256:c3622ca9ed2cadd4a6b7a28ca703549b7898ef5c7ee9c08ee34f2db410b547dd",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-shipping",
+      "mount_targets": [
+        "/tmp"
+      ],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "ebfdd523dc91420f04acf79f0110e83129339041958bf2895b38e6788e15f50f"
+    },
+    "sandbox/telemetry-docs": {
+      "command_sha256": "ccb1f43f07d2dd68a5a899788e4a715718c6b533c039287fa8dda3cc5acfd21a",
+      "environment_sha256": "03663c8e3ecf2ab131304f2befdfac49f8a74e99d6c0cf22589c1c1100216c3a",
+      "image_digest": "sha256:51c253309603d438fa5e7d529c3f568fdd2c07b6907ca4d28d48b29107079be9",
+      "image_reference": "ghcr.io/open-telemetry/demo:3.0.0-telemetry-docs",
+      "mount_targets": [],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "cc483b9856b71314b32f3631a284ece3f1ce0e70c4fbd20ef77542d8e50a8ca6"
+    },
+    "sandbox/valkey-cart": {
+      "command_sha256": "58d2d50499f68c3f340852b9cf683b99424b16ad680997534bf529ddddda8930",
+      "environment_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "image_digest": "sha256:bb8b48198974cb792b8bfc09d7e3c5f0d6e07508cb33e06817e2f24805778be5",
+      "image_reference": "ghcr.io/valkey-io/valkey:9.0.4-alpine3.23",
+      "mount_targets": [],
+      "networks": [
+        "default"
+      ],
+      "owner_labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "resolved_service_sha256": "0cb8e05e98dedd6225ec3119c09dc2a5aa5aa5237a839b67855b89a73b21ab01"
+    }
+  },
+  "stages": [
+    "PREFLIGHT",
+    "BEFORE_BUILD",
+    "AFTER_BUILD",
+    "BEFORE_SANDBOX_START",
+    "AFTER_SANDBOX_START",
+    "AFTER_SANDBOX_READY",
+    "BEFORE_PRODUCT_START",
+    "AFTER_PRODUCT_START",
+    "AFTER_WARMUP",
+    "AFTER_HEALTHY_CONTROL",
+    "AFTER_BASELINE",
+    "BEFORE_OBSERVER",
+    "AFTER_OBSERVER",
+    "BEFORE_ENABLE",
+    "AFTER_ENABLE",
+    "AFTER_NETWORK_GATE",
+    "AFTER_NO_INCIDENT",
+    "BEFORE_FORMAL_FREEZE",
+    "BEFORE_FAULT",
+    "BEFORE_APPROVAL",
+    "BEFORE_AUTHORIZATION",
+    "BEFORE_REMEDIATION",
+    "BEFORE_CLEANUP",
+    "AFTER_PRODUCT_CLEANUP",
+    "AFTER_SANDBOX_CLEANUP",
+    "POST_CLEANUP_READBACK"
+  ],
+  "upstream_commit": "1755859a9de82c2e5e225be68abc401a5ebf2b4f",
+  "volumes": {
+    "astronomy-db-data": {
+      "cleanup": "EXACT_ID_AND_ALL_LABELS_REVALIDATED_OWNED_ONLY_NO_DOWN_V_NO_PRUNE",
+      "labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "lifecycle": "ABSENT_BEFORE_START_CREATE_ONCE_NO_REUSE_REMOVE_AFTER_OWNED_CONTAINERS_STOP",
+      "name": "ecomsre-live-sandbox-v1-e477da43-27e7-4c55-8491-1d45cda03000-astronomy-db-data"
+    },
+    "jaeger-data": {
+      "cleanup": "EXACT_ID_AND_ALL_LABELS_REVALIDATED_OWNED_ONLY_NO_DOWN_V_NO_PRUNE",
+      "labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "lifecycle": "ABSENT_BEFORE_START_CREATE_ONCE_NO_REUSE_REMOVE_AFTER_OWNED_CONTAINERS_STOP",
+      "name": "ecomsre-live-sandbox-v1-e477da43-27e7-4c55-8491-1d45cda03000-jaeger-data"
+    },
+    "kafka-config-ownership-v1": {
+      "cleanup": "EXACT_ID_AND_ALL_LABELS_REVALIDATED_OWNED_ONLY_NO_DOWN_V_NO_PRUNE",
+      "labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.product.v040.ownership-repair": "offline-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "lifecycle": "ABSENT_BEFORE_START_CREATE_ONCE_NO_REUSE_REMOVE_AFTER_OWNED_CONTAINERS_STOP",
+      "name": "ecomsre-v040-offline-review-kafka-config"
+    },
+    "kafka-data-ownership-v1": {
+      "cleanup": "EXACT_ID_AND_ALL_LABELS_REVALIDATED_OWNED_ONLY_NO_DOWN_V_NO_PRUNE",
+      "labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.product.v040.ownership-repair": "offline-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "lifecycle": "ABSENT_BEFORE_START_CREATE_ONCE_NO_REUSE_REMOVE_AFTER_OWNED_CONTAINERS_STOP",
+      "name": "ecomsre-v040-offline-review-kafka-data"
+    },
+    "kafka-secrets-ownership-v1": {
+      "cleanup": "EXACT_ID_AND_ALL_LABELS_REVALIDATED_OWNED_ONLY_NO_DOWN_V_NO_PRUNE",
+      "labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.product.v040.ownership-repair": "offline-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "lifecycle": "ABSENT_BEFORE_START_CREATE_ONCE_NO_REUSE_REMOVE_AFTER_OWNED_CONTAINERS_STOP",
+      "name": "ecomsre-v040-offline-review-kafka-secrets"
+    },
+    "prometheus-data": {
+      "cleanup": "EXACT_ID_AND_ALL_LABELS_REVALIDATED_OWNED_ONLY_NO_DOWN_V_NO_PRUNE",
+      "labels": {
+        "com.docker.compose.project": "ecomsre-live-sandbox-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "lifecycle": "ABSENT_BEFORE_START_CREATE_ONCE_NO_REUSE_REMOVE_AFTER_OWNED_CONTAINERS_STOP",
+      "name": "ecomsre-live-sandbox-v1-e477da43-27e7-4c55-8491-1d45cda03000-prometheus-data"
+    }
+  }
+}

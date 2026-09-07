@@ -1,0 +1,79 @@
+{
+  "baseline": "0045e8288efd847b909c03443c6fd1fc15018a44",
+  "counts": {
+    "formal_campaign_executions": 0,
+    "formal_faults": 0,
+    "provider_calls": 0,
+    "remediation_writes": 0
+  },
+  "counts_semantics": "real operations for this offline increment; synthetic fixture effects are not formal campaign executions",
+  "development_verifier": "PASS",
+  "formal_allowance_consumed": false,
+  "historical_live_verifier": "PRE_EXECUTION_ONLY",
+  "historical_private_evidence": {
+    "content_unchanged": true,
+    "excluded": "copied build-context source trees; all indexed historical evidence covered",
+    "files": 191,
+    "index_sha256": "c5a4bc6fdd5c9824fd228ce9e67302ed6e5ebcaead3081daacfc39d6e22102ad"
+  },
+  "independent_review": {
+    "claim_accuracy": "PASS",
+    "must_fix": 0,
+    "scope": "Draft repair PR publication only",
+    "verdict": "PASS"
+  },
+  "no_campaign_private_root_created": true,
+  "no_formal_manifest_created": true,
+  "offline_preflight": "PASS_OFFLINE_ONLY",
+  "reviewed_source_sha256": {
+    "config/product-v040/ownership-repair/compose.kafka-overlays.v1.json": "be74a9d05ed0f7aaa9e1ff2dd615533642796509111798e9562e018d8e1a50c1",
+    "config/product-v040/ownership-repair/environment-provenance.v1.json": "5e5fc71dde2a214245e2ea3156a7a30f1b78823eeb2c644fb6e1b3179151c83d",
+    "scripts/ci/verify_product_v040_ownership_repair.py": "3f0b8d50c98240a1ac9a014bf38857c0c59ff88082d945a0fcf60e31988519ea",
+    "scripts/product/replay_v040_ownership.py": "e0bc1b152c4cd702e49978ea3822e39501c0304d842755467328df43aa8f579d",
+    "scripts/product/run_payment_v040.py": "29f17137c58e774fc7c178e53f8f564123b74fca7b8f9d9cdefb30f6d40679c4",
+    "scripts/product/v040_inventory_capture.py": "2e0532e6f5122b777139bc9d26880e9a5f42dc7123294b329b993258f23e35a6",
+    "scripts/product/v040_ownership.py": "4674027272c7a7e3a97062f8775be6c9a4a15f32e51edb890c25146e330fe05d",
+    "scripts/product/v040_ownership_provenance.py": "9bf528548f4ac58275682b15667a4afa5b2ab0811a79bb6696b19fde84b98ba0",
+    "tests/product_v040/ownership_repair/test_inventory.py": "294c6cf735a97ec2766208242e8fcbbab91773a9e274fb2e767685bf52783a70"
+  },
+  "ruff": "PASS",
+  "schema_version": "ecomsre.product.v040.offline-ownership-verification.v1",
+  "scope": "tests/product_v040 plus deployment contract; no repository-wide test claim",
+  "scoped_mypy": {
+    "source_files": 6,
+    "status": "PASS"
+  },
+  "status": "OFFLINE_REPAIR_REVIEW_REQUIRED",
+  "tests": {
+    "docker_runtime_tests": 0,
+    "elapsed_seconds": 17.53,
+    "passed": 438,
+    "warnings": 16
+  },
+  "validation_log_bindings": {
+    "development.json": {
+      "bytes": 920,
+      "sha256": "bd397350b9a023760f3a7123d827cc6346289ba5368106b4876cd3da996fbd3b"
+    },
+    "live-verifier.json": {
+      "bytes": 418,
+      "sha256": "aaa002060e7c212e48093c4c9e62755ca9d4e58453003e6bf15ef57d06ea9563"
+    },
+    "mypy.log": {
+      "bytes": 43,
+      "sha256": "ab35ee42183d4d6d3ba483825ab037d18a5a15622d03be01d82220b1564851ff"
+    },
+    "preflight.json": {
+      "bytes": 642,
+      "sha256": "90a50b3ebc436d9bfd77753437ddb89e125230f089c3d1bdd620a76c1f28ad80"
+    },
+    "regression.log": {
+      "bytes": 9235,
+      "sha256": "4832b076b4d5fea9ed5710ed0588f1e15da358c3bb6f37116352a728a1a445a6"
+    },
+    "ruff.log": {
+      "bytes": 19,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    }
+  }
+}

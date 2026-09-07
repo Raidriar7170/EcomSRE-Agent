@@ -32,6 +32,8 @@ from scripts.product.v040_preparation import (
     healthy_baseline,
 )
 from scripts.product.v040_runtime import ProductRuntimeV040, read_json, seal_private
+from scripts.product.v040_ownership import require_offline_only
+from scripts.product.v040_inventory_capture import checkpoint as ownership_checkpoint
 
 
 def cleanup(
@@ -76,6 +78,7 @@ def cleanup(
 
 
 def prepare(runtime: ProductRuntimeV040, image_proofs: Path) -> None:
+    require_offline_only()
     proof = image_proofs.read_bytes()
     if hashlib.sha256(proof).hexdigest() != IMAGE_PROOF_SHA256:
         raise ValueError("historical image proof content differs")
@@ -193,6 +196,7 @@ def prepare(runtime: ProductRuntimeV040, image_proofs: Path) -> None:
 
 
 def campaign(runtime: ProductRuntimeV040, lifecycle: ProductV040Lifecycle) -> None:
+    require_offline_only()
     if (runtime.private / "host/fault-intent.json").exists() or (
         runtime.private / "host/frozen-manifest.json"
     ).exists():
@@ -206,8 +210,10 @@ def campaign(runtime: ProductRuntimeV040, lifecycle: ProductV040Lifecycle) -> No
     observer_loop = ObserverLoopV040(observer)
     try:
         with observer_loop:
+            ownership_checkpoint(runtime, "BEFORE_FORMAL_FREEZE")
             manifest = freeze(runtime, observer)
             result["manifest_sha256"] = manifest.manifest_sha256
+            ownership_checkpoint(runtime, "BEFORE_FAULT")
             inject_once(observer, manifest.manifest_sha256)
             started_at = datetime.now(UTC).isoformat()
             baseline = read_json(runtime.private / "host/healthy-baseline.json")
@@ -276,6 +282,7 @@ def campaign(runtime: ProductRuntimeV040, lifecycle: ProductV040Lifecycle) -> No
                 raise ValueError("exactly one supported candidate required")
             candidate = result["candidate"] = projection["candidates"][0]
             stage = "APPROVAL"
+            ownership_checkpoint(runtime, "BEFORE_APPROVAL")
             approval = result["approval"] = api.call(
                 "POST",
                 f"/v1/remediation-candidates/{candidate['candidate_id']}/approvals",
@@ -293,6 +300,7 @@ def campaign(runtime: ProductRuntimeV040, lifecycle: ProductV040Lifecycle) -> No
                 },
             )
             stage = "AUTHORIZATION"
+            ownership_checkpoint(runtime, "BEFORE_AUTHORIZATION")
             seal_private(
                 runtime.private / "host/attempt-request-intent.json",
                 {
@@ -301,6 +309,7 @@ def campaign(runtime: ProductRuntimeV040, lifecycle: ProductV040Lifecycle) -> No
                     "created_at": datetime.now(UTC).isoformat(),
                 },
             )
+            ownership_checkpoint(runtime, "BEFORE_REMEDIATION")
             attempt = result["attempt_creation"] = api.call(
                 "POST",
                 f"/v1/remediation-candidates/{candidate['candidate_id']}/attempts",
@@ -352,6 +361,9 @@ def campaign(runtime: ProductRuntimeV040, lifecycle: ProductV040Lifecycle) -> No
 
 
 def main() -> None:
+    # This successor has offline repair authority only. Deny before constructing
+    # a runtime, creating operation locks, reading historical state or cleanup.
+    require_offline_only()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("phase", choices=("prepare", "campaign", "cleanup"))
     parser.add_argument("--image-proofs", type=Path)

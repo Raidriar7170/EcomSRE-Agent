@@ -1,0 +1,58 @@
+{
+  "services": {
+    "kafka": {
+      "volumes": [
+        {
+          "read_only": false,
+          "source": "kafka-secrets-ownership-v1",
+          "target": "/etc/kafka/secrets",
+          "type": "volume",
+          "volume": {
+            "nocopy": false
+          }
+        },
+        {
+          "read_only": false,
+          "source": "kafka-config-ownership-v1",
+          "target": "/mnt/shared/config",
+          "type": "volume",
+          "volume": {
+            "nocopy": false
+          }
+        },
+        {
+          "read_only": false,
+          "source": "kafka-data-ownership-v1",
+          "target": "/var/lib/kafka/data",
+          "type": "volume",
+          "volume": {
+            "nocopy": false
+          }
+        }
+      ]
+    }
+  },
+  "volumes": {
+    "kafka-config-ownership-v1": {
+      "labels": {
+        "io.ecomsre.product.v040.ownership-repair": "offline-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "name": "ecomsre-v040-offline-review-kafka-config"
+    },
+    "kafka-data-ownership-v1": {
+      "labels": {
+        "io.ecomsre.product.v040.ownership-repair": "offline-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "name": "ecomsre-v040-offline-review-kafka-data"
+    },
+    "kafka-secrets-ownership-v1": {
+      "labels": {
+        "io.ecomsre.product.v040.ownership-repair": "offline-v1",
+        "io.ecomsre.sandbox.id": "e477da43-27e7-4c55-8491-1d45cda03000"
+      },
+      "name": "ecomsre-v040-offline-review-kafka-secrets"
+    }
+  }
+}
