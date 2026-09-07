@@ -1,0 +1,62 @@
+{
+  "docker_log_evidence": [
+    {
+      "excerpt_sha256": "5f492b75028ba62b53b88ec19d25c76bbc6bdb4a5e6f91b97c625d67c1127cb7",
+      "first_line": 4880,
+      "last_line": 4906,
+      "source": "com.docker.backend.log.20260906-063803.656",
+      "source_sha256": "9bbdaca2995e5b83e24ce2ed3d304187628343554acd306f3d0eb4ee7961bcb5"
+    },
+    {
+      "excerpt_sha256": "53c209292a490bd723b4a3dcf5d48f3e72de5fefff4135c40b186e06b2613a53",
+      "first_line": 4995,
+      "last_line": 5007,
+      "source": "com.docker.backend.log.20260906-063803.656",
+      "source_sha256": "9bbdaca2995e5b83e24ce2ed3d304187628343554acd306f3d0eb4ee7961bcb5"
+    },
+    {
+      "excerpt_sha256": "ac802f3a341ea8fd6d74e10d75a630e3a682ff844e58e6fee7845b733c8c3ec5",
+      "first_line": 1166,
+      "last_line": 1183,
+      "source": "init.log",
+      "source_sha256": "f747940b513a1e6242e548642b23d50542e08d497e62ec835bc6d741125e2096"
+    },
+    {
+      "excerpt_sha256": "9503ff2e383f34020c0484fb5a0c2e6cedca803b3ae14e46a735a458e156755f",
+      "first_line": 2020,
+      "last_line": 2040,
+      "source": "init.log",
+      "source_sha256": "f747940b513a1e6242e548642b23d50542e08d497e62ec835bc6d741125e2096"
+    }
+  ],
+  "first_anomaly": {
+    "cause": "UNKNOWN",
+    "observed_at": "2026-09-05T21:31:08.612087Z",
+    "resource": "UNKNOWN",
+    "stage": "OBSERVER_ENTRY_WITNESS_BEFORE_ENABLE"
+  },
+  "formal_allowance_consumed": false,
+  "historical_checkpoint_unchanged": true,
+  "later_bridge_replacement": {
+    "causal_strength": "IDLE_STOP_WAKE_DIRECTLY_LOGGED_BRIDGE_RECREATION_DURING_INITIALIZATION_IS_TEMPORAL_INFERENCE",
+    "earliest_observable_cause": "DOCKER_DESKTOP_IDLE_SHUTDOWN_THEN_IMAGE_INSPECT_TRIGGERED_WAKE",
+    "first_preserved_checkpoint_observation_at": "2026-09-05T21:44:12.500424Z",
+    "idle_reduction_at": "2026-09-05T21:37:56.624367Z",
+    "initiating_process_or_person": "UNKNOWN",
+    "new_bridge_created_at": "2026-09-05T21:38:01.630151875Z",
+    "same_cause_as_first_anomaly_confirmed": false,
+    "stage": "POST_CLEANUP_READ_ONLY_DIAGNOSTICS_DURING_DESKTOP_WAKE",
+    "vm_stop_at": "2026-09-05T21:37:57.499964Z",
+    "vm_wake_at": "2026-09-05T21:38:00.546827Z"
+  },
+  "live_activity": {
+    "docker_image_inspect_calls": 1,
+    "docker_mutating_commands": 0,
+    "formal_campaign_executions": 0,
+    "formal_faults": 0,
+    "provider_calls": 0,
+    "remediation_writes": 0
+  },
+  "schema_version": "ecomsre.product.v040.ownership-repair-forensics.v1",
+  "subsequent_preflight": "SAVED_FILES_ONLY_NO_DAEMON_API"
+}
