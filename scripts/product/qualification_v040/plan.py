@@ -255,3 +255,26 @@ def build_plan(
             "/var/lib/kafka/data": "IMMUTABLE_SEED_WITH_EXPECTED_MUTABLE_KAFKA_LOG_DATA",
         },
     }
+
+
+def compose_defaults(value: dict[str, Any]) -> dict[str, Any]:
+    """Canonicalize only observed Compose default-value serialization.
+
+    Explicit true read_only/nocopy, nonempty IPAM and all sources/labels remain
+    significant. This does not accept any runtime resource drift.
+    """
+    result = deepcopy(value)
+    if not result.get("volumes"):
+        result.pop("volumes", None)
+    for network in result.get("networks", {}).values():
+        if network.get("external") is True:
+            network.setdefault("ipam", {})
+    for service in result.get("services", {}).values():
+        for mount in service.get("volumes") or []:
+            if mount.get("read_only") is False:
+                mount.pop("read_only")
+            if mount.get("type") == "volume":
+                options = mount.setdefault("volume", {})
+                if options.get("nocopy") is False:
+                    options.pop("nocopy")
+    return result

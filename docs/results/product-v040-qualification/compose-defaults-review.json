@@ -1,0 +1,13 @@
+{
+  "claim_accuracy": "PASS",
+  "code_sha256": {
+    "scripts/product/qualification_v040/driver.py": "33cfedd331fd75190826704c916c1385f649460a8309b7bae216ecde3a03c4e5",
+    "scripts/product/qualification_v040/plan.py": "8cc79cf0eaecb341c87dc703eca4f450652c8fa2ac7a64e22666a66b008342d1"
+  },
+  "future_formal_campaign": "WITHHOLD",
+  "must_fix": 0,
+  "no_fault_startup": "ALLOW_NEW_IDENTITY_FRESH_ROOT_ONLY",
+  "plan_tests_passed": 4,
+  "preserved_qualification": "c55c0a48ffce49f9a5cf8de1ee5844cb",
+  "reviewer": "independent read-only review_qualification"
+}

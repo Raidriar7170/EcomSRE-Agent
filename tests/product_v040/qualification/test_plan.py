@@ -66,3 +66,38 @@ def test_compose_bare_tmpfs_path_has_explicit_default_options():
     service["tmpfs"] = ["/run", "/tmp:rw,noexec"]
     role = container_role(service, compose, "project", image, "AFTER_START", "identity")
     assert role["tmpfs"] == {"/run": "", "/tmp": "rw,noexec"}
+
+
+def test_compose_defaults_preserve_behavior_relevant_differences():
+    from scripts.product.qualification_v040.plan import compose_defaults
+
+    original = {
+        "networks": {"n": {"external": True}},
+        "services": {
+            "kafka": {
+                "volumes": [
+                    {
+                        "type": "volume",
+                        "source": "owned",
+                        "target": "/data",
+                        "read_only": False,
+                        "volume": {"nocopy": False},
+                    }
+                ]
+            }
+        },
+    }
+    expanded = deepcopy(original)
+    expanded["networks"]["n"]["ipam"] = {}
+    mount = expanded["services"]["kafka"]["volumes"][0]
+    mount.pop("read_only")
+    mount["volume"] = {}
+    assert compose_defaults(original) == compose_defaults(expanded)
+    for key, value in (
+        ("source", "other"),
+        ("read_only", True),
+        ("volume", {"nocopy": True}),
+    ):
+        changed = deepcopy(expanded)
+        changed["services"]["kafka"]["volumes"][0][key] = value
+        assert compose_defaults(original) != compose_defaults(changed)

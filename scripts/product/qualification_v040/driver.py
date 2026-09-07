@@ -48,6 +48,7 @@ from scripts.product.qualification_v040.plan import (
     SANDBOX_PROJECT,
     build_plan,
     container_role,
+    compose_defaults,
 )
 from scripts.product.qualification_v040.runtime import (
     BaselineReader,
@@ -313,11 +314,13 @@ class Driver:
             expanded = json.loads(
                 runtime.compose_plan(project, path, "config", "--format", "json")
             )
-            # Only harmless absent empty top-level volume maps may normalize away.
-            if not startup.get("volumes"):
-                startup.pop("volumes", None)
+            seal_private(
+                runtime.private / "host" / (group + "-compose-expanded.json"), expanded
+            )
             require(
-                expanded == startup, "QUALIFICATION_COMPOSE_REEXPANSION_DRIFT", group
+                compose_defaults(expanded) == compose_defaults(startup),
+                "QUALIFICATION_COMPOSE_REEXPANSION_DRIFT",
+                group,
             )
             self.compose_paths[group] = path
             plan[group + "_compose_sha256"] = sha(expanded)
