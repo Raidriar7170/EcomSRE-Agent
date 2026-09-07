@@ -1,0 +1,28 @@
+{
+  "claim_accuracy": "PASS",
+  "code_sha256": {
+    "scripts/product/qualification_v040/__init__.py": "1c873e9163613951921524ae74e897ac9932b8be81ec3dae11757b41c3ca94a5",
+    "scripts/product/qualification_v040/__main__.py": "1f3ad887ddc8d07898ff438ed55428cb2fefcac935e9c3a8945e150ca8e6ab6c",
+    "scripts/product/qualification_v040/capture.py": "1e7f86d5766f79f1765027bddbba0b7e7d0fee41e6aeb1ad800e1947c11d27a9",
+    "scripts/product/qualification_v040/driver.py": "6d912ecc12618d64d853df245957273cce1be7f9b2b17837edeb8e3fe12fef83",
+    "scripts/product/qualification_v040/guard.py": "1ca2e6843fb3775a3d670851affe8a93c08d7d498006c389315e54e93107a8e7",
+    "scripts/product/qualification_v040/healthy.py": "f2efd1e56606df6a100eb7644c40c44f33c4970bb9d4cb7e126ae22b1b602580",
+    "scripts/product/qualification_v040/plan.py": "a6d652243be1fd0f1f55b2bf67e426d343cb02053bdbb7b3d80e5abd4972d9de",
+    "scripts/product/qualification_v040/runtime.py": "963af9cb88387fee7582e1cd443dc0bef45439576bc687d80394b5d315d81008",
+    "scripts/product/qualification_v040/volumes.py": "0d8d34c3b8ccf9375936ac3e68553950250b8420c32e87647c58ba09cb7ad4f2",
+    "tests/product_v040/qualification/test_capture.py": "caf726d3ec25cc9956ca4efa8e3ef4107f63c4b8adf18238f645d2e5abcf1819",
+    "tests/product_v040/qualification/test_guard.py": "e0672e529ddfdfe376b4f0aadc979e470d14a030138b077da0210c67ff2f0b9e",
+    "tests/product_v040/qualification/test_plan.py": "c6a43c1699264efe125f73ccc717826be1e473cc2a799d8963a419b08ba545c4",
+    "tests/product_v040/qualification/test_volumes.py": "4be6f505ec5feca65b5e418441a866074aabc0e9d59265495ce7059eba23ca16"
+  },
+  "focused_tests": {
+    "passed": 92,
+    "warnings": 1
+  },
+  "formal_authority": false,
+  "future_formal_campaign": "WITHHOLD_PENDING_RUNTIME_EVIDENCE_AND_FINAL_REVIEW",
+  "must_fix": 0,
+  "no_fault_startup": "ALLOW",
+  "reviewer": "independent read-only review_qualification",
+  "schema_version": "ecomsre.v040.qualification.pre-start-review.v1"
+}
