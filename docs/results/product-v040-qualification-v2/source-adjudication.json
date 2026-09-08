@@ -1,0 +1,68 @@
+{
+  "status": "PASS_SOURCE_ADJUDICATION_ONLY",
+  "runtime_decision": "WITHHOLD_PENDING_POLICY_REVIEW",
+  "archive_sha256": "2381e338230f746003668444ffadc22bca736090b38d13774a96a0fb11f21175",
+  "source": {
+    "platform_digest": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a",
+    "config_digest": "sha256:2c8a663bc5fd9aeadece70a6715b18dda9a61dc794f5f119613368c9f90abecb",
+    "paths": {
+      "/etc/kafka/secrets": {
+        "path": "/etc/kafka/secrets",
+        "kind": "directory",
+        "uid": 1000,
+        "gid": 0,
+        "mode": 509,
+        "size": 0,
+        "layer_index": 6,
+        "layer_digest": "sha256:98ab838cde0915d1868de0be191db3e7826bece444774cf2bbb66b644e60b1d1",
+        "rootfs_diff_id": "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d"
+      },
+      "/mnt/shared/config": {
+        "path": "/mnt/shared/config",
+        "kind": "directory",
+        "uid": 1000,
+        "gid": 1000,
+        "mode": 493,
+        "size": 0,
+        "layer_index": 6,
+        "layer_digest": "sha256:98ab838cde0915d1868de0be191db3e7826bece444774cf2bbb66b644e60b1d1",
+        "rootfs_diff_id": "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d"
+      },
+      "/var/lib/kafka/data": {
+        "path": "/var/lib/kafka/data",
+        "kind": "directory",
+        "uid": 1000,
+        "gid": 0,
+        "mode": 509,
+        "size": 0,
+        "layer_index": 6,
+        "layer_digest": "sha256:98ab838cde0915d1868de0be191db3e7826bece444774cf2bbb66b644e60b1d1",
+        "rootfs_diff_id": "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d"
+      }
+    },
+    "rootfs_diff_ids": [
+      "sha256:a8d26d037006414043b277ecb95287692d0960219289d9e27b0bcea0ce233b02",
+      "sha256:82baf9c1d57725bb1cb1ef74973fac84b0a8a9be642e27b5dde47aac3a000bad",
+      "sha256:0ce25d4981601d0c524d000cdd01487a37b77234f9a884c982d1b15beecff905",
+      "sha256:05ad289c803946f0f3b84c006b627b756a4a711805bb9af4cc85dd37d33f411d",
+      "sha256:2d4110215c54b6b001d3d63dd094b21578350307234ff95ecaa5e6095f7c6947",
+      "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+      "sha256:41e65ad54a54e8d2f613431b3e8afce995e00f9a29c94b4783b7ebd6365edf6d",
+      "sha256:7def7e54ac1620332bb729288ee90047ef379ba897a8b729bec503f26cb19722",
+      "sha256:21ef8629d5b9605f180f2cbd33418197cab20ff8a67dbf808a4e94d3fc9845cd",
+      "sha256:c0b85c8af66c37ba61531d07704eadebd4c3acdc21a87d5e3b9c6d90fb203615",
+      "sha256:ab9159b4bf728e00dd5aeec66afc620e25d7d072c620f1fbc65a749b6b54e0c9",
+      "sha256:fc17c06fb73ba7cf1895c9624017480fb990a7caaeb034d8a08801e87f5191e7",
+      "sha256:201b00d55c0e11adfb672485734105857ec890e2b24ed49964b6bac676283eb4"
+    ],
+    "evidence_kind": "DIRECT_HASH_VERIFIED_OCI_LAYER_CONTENT",
+    "image_index_binding_kind": "DAEMON_REPODIGEST_TO_PLATFORM_BINDING",
+    "original_index_bytes_in_export": false
+  },
+  "prior_v1_result_preserved": true,
+  "no_fault_qualification_count": 0,
+  "formal_faults": 0,
+  "remediation_writes": 0,
+  "provider_calls": 0,
+  "formal_campaign_executions": 0
+}

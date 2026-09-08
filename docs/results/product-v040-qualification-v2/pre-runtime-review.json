@@ -1,0 +1,45 @@
+{
+  "status": "PASS",
+  "must_fix": 0,
+  "claim_accuracy": "PASS",
+  "runtime_decision": "FRESH_NOFAULT_QUALIFICATION_ALLOW",
+  "justified_successor_security_contract": true,
+  "reviewer": "independent read-only review_qualification (Anscombe)",
+  "policy_file_sha256": "64f19a543958c38eb57f878a9162ccb59ff2997d30622f3616509caef580c7fb",
+  "policy_sha256": "d4a11c1d6913f6e625d158c1c8bc5306e6c01f7fe3bf2425fd9caedc293492f3",
+  "implementation_sha256": {
+    "scripts/product/qualification_v040_v2/__init__.py": "0e1661aabf000ae8d0071efb6a514d58cda72975508517256790ee3989a5d45f",
+    "scripts/product/qualification_v040_v2/__main__.py": "023845452db90a944cd88f430bd3d3dd6b1a1607cff654b1080648584247a905",
+    "scripts/product/qualification_v040_v2/data.py": "84475ce50252bc949c1978b73ae37fa0cf9f7196df1f8e8b989a2c57f9ba2d41",
+    "scripts/product/qualification_v040_v2/driver.py": "6a0b6cbc831a2304c743805eea710e90217e8c8fa0406f7ab100cc78ccb31738",
+    "scripts/product/qualification_v040_v2/freeze.py": "1e433c3dfb7792819771fa816ffae4be19e2c1a83aa97a48086266ff84e5604e",
+    "scripts/product/qualification_v040_v2/journal.py": "80ae7f2cfeb7f4daee7b3f05fb1c97419be1c9f7b09662e9bedaafc9530dbba6",
+    "scripts/product/qualification_v040_v2/oci.py": "588c415e37b7f8219415ad33cc8d75c50c469393f09905451bad0ab0dec3dbd2",
+    "scripts/product/qualification_v040_v2/policy.py": "9679f6e285c43f7d583161d295c5d6da4454bb7945fca4aaac7a1973995ebcec",
+    "scripts/product/qualification_v040_v2/processes.py": "c96381fcef7bf28f452bbf8b44126b09cdf1f63345d79eb8afaaa78373817e81",
+    "scripts/product/qualification_v040_v2/sentinel.py": "45b07ce18229eb33b9ffaf42b3be2f4b9765d595a56bcaf08d4a55590b4974a2",
+    "scripts/product/qualification_v040/__init__.py": "1c873e9163613951921524ae74e897ac9932b8be81ec3dae11757b41c3ca94a5",
+    "scripts/product/qualification_v040/__main__.py": "1f3ad887ddc8d07898ff438ed55428cb2fefcac935e9c3a8945e150ca8e6ab6c",
+    "scripts/product/qualification_v040/capture.py": "d875aec854ff9004c1915c0cad69df383243d0e26219b90ffe9475f8411277c3",
+    "scripts/product/qualification_v040/driver.py": "33cfedd331fd75190826704c916c1385f649460a8309b7bae216ecde3a03c4e5",
+    "scripts/product/qualification_v040/guard.py": "1ca2e6843fb3775a3d670851affe8a93c08d7d498006c389315e54e93107a8e7",
+    "scripts/product/qualification_v040/healthy.py": "f2efd1e56606df6a100eb7644c40c44f33c4970bb9d4cb7e126ae22b1b602580",
+    "scripts/product/qualification_v040/plan.py": "8cc79cf0eaecb341c87dc703eca4f450652c8fa2ac7a64e22666a66b008342d1",
+    "scripts/product/qualification_v040/runtime.py": "963af9cb88387fee7582e1cd443dc0bef45439576bc687d80394b5d315d81008",
+    "scripts/product/qualification_v040/volumes.py": "0d8d34c3b8ccf9375936ac3e68553950250b8420c32e87647c58ba09cb7ad4f2"
+  },
+  "implementation_mapping_sha256": "831827cf866026d9d67a7c4bd75027d61824c18bd69e6f24f97033b4715772e3",
+  "oci_source_sha256": "f6aed25788c16538a646c8f7f254f63fa0f9e9d1ae7e845c0efebf726a896595",
+  "independent_tests": {
+    "passed": 47,
+    "scope": "tests/product_v040/qualification_v2"
+  },
+  "decision": "Exactly one fresh no-fault qualification after freeze verification. Any failure is terminal; no repair-and-retry. V1 remains unchanged.",
+  "formal_campaign": "WITHHOLD",
+  "runtime_observed": false,
+  "resolved_must_fixes": [
+    "Two complete PID identity and argv passes, retained and compared",
+    "Role PID/PPID and cardinality binding with required stage readers",
+    "Pre-frozen exact JVM argv and 107-entry classpath under explicit LC_ALL=C override"
+  ]
+}
