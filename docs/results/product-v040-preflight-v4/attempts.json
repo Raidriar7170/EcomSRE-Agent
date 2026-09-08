@@ -185,6 +185,97 @@
         "nonowned_unchanged": true,
         "original_result_preserved": true
       }
+    },
+    {
+      "schema_version": "ecomsre.product.v040.preflight-v4-attempt.v1",
+      "attempt_id": "efa9f57de6394435ab2d0c0a68fb96a8",
+      "attempt_ordinal": 3,
+      "goal_sha256": "3f3751ec1b957547da508e0068d36eb1c7877d4374477820f2b370de2d16ece5",
+      "source_head": "5bc530b1aa50be37b9eb51173aab94d12ff735ba",
+      "runtime_surface_sha256": "110d9c4c640ff1f8524f205604320284be98944262e985bed5842e50bcaaf790",
+      "terminal": "FAILED",
+      "cleanup_terminal": "BLOCKED_SAFETY",
+      "last_completed_stage": "12-14-PROBE_REMOVED",
+      "safe_error_code": "UNPROVABLE_CREATED_IDENTITY",
+      "probe": {
+        "created": true,
+        "provenance": true,
+        "process_access": true,
+        "sentinel": true,
+        "removed_before_sandbox": true
+      },
+      "sandbox": {
+        "expected_roles": [
+          "accounting",
+          "ad",
+          "astronomy-db",
+          "cart",
+          "checkout",
+          "currency",
+          "email",
+          "flagd",
+          "flagd-ui",
+          "fraud-detection",
+          "frontend",
+          "frontend-proxy",
+          "grafana",
+          "image-provider",
+          "jaeger",
+          "kafka",
+          "load-generator",
+          "opamp-server",
+          "opensearch",
+          "otel-collector",
+          "payment",
+          "product-catalog",
+          "prometheus",
+          "quote",
+          "recommendation",
+          "shipping",
+          "telemetry-docs",
+          "valkey-cart"
+        ],
+        "observed_roles": [],
+        "per_service_health": {},
+        "healthy": false
+      },
+      "traffic": {
+        "warmup_succeeded": null,
+        "planned": null,
+        "completed": null,
+        "succeeded": null,
+        "failed": null,
+        "retries": null
+      },
+      "baseline": {
+        "baseline_id": null,
+        "window_count": null,
+        "successful_windows": null,
+        "active": null
+      },
+      "product": {
+        "ready": false,
+        "environment_id": null,
+        "incident_id": null,
+        "diagnosis_id": null,
+        "terminal": null,
+        "capability_limitations": null,
+        "evidence_refs_resolve": false
+      },
+      "formal_counters": null,
+      "provider_calls": 0,
+      "formal_authority": "NONE",
+      "product_image_id": "sha256:435fbd8ca2ec222b344c68d89003edb4ae35c042024a345ad644a2be9ff6fc74",
+      "evidence_index_sha256": "b6408f0ba2786dc2fe6a1f4d130aad6837a7be47e402aeebb4b48d682339d9a7",
+      "claim_boundary": "ENGINEERING_PREFLIGHT_ONLY; NO_FORMAL_REMEDIATION_OR_PRODUCTION_READINESS",
+      "cleanup_recovery": {
+        "head": "346f081b281faba35e4f71db253a39c59ac11a09",
+        "review": "ALLOW / Must Fix 0",
+        "terminal": "CLEAN",
+        "owned_remaining": 0,
+        "nonowned_unchanged": true,
+        "original_result_preserved": true
+      }
     }
   ]
 }

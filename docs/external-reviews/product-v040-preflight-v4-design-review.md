@@ -39,3 +39,11 @@ The frozen `c71f954c65a2347634523ae07833137377a326d2` implementation had receive
 Sagan independently approved cleanup-only repair HEAD `3f82e3513e71e03689efea640e5ccef7d95bae80`, tree `358c3c0f3e693641b1c85404a9446b4b037a76a6`. The original receipt passed full repaired birth validation. The reviewer verified all eight create/remove chains, fresh identity checks for four removals, double final owned-zero/non-owned-unchanged captures, unchanged images and free listeners. Original failure remained intact.
 
 Implementation code gate: ALLOW. Must Fix: 0. Claim Accuracy: PASS. This covers the implementation repair; final publication-head review, offline checks, exact-head CI and new image/fresh baseline admission remain required before Attempt 3.
+
+## Attempt 3 network cleanup review
+
+Before Attempt 3, Sagan bound the publication head `5bc530b1aa50be37b9eb51173aab94d12ff735ba` and tree `3ddd40daaa94222e7f86cb2fb56e6b31d3a17fe9`: code gate ALLOW / Must Fix 0 / Claim Accuracy PASS. The one-line attempt-count correction was independently proven runtime/tests/config/lock neutral; local full-test applicability retained tested_head `20c0ce4`. Exact-head GitHub CI subsequently passed.
+
+The network-options repair `346f081b281faba35e4f71db253a39c59ac11a09`, tree `e458502967b6a33c6dd7152a0024746100c14adb`, received cleanup-only ALLOW / Must Fix 0. The original create-default receipt passed the repaired validator without replacement. This disposition covered only recovery and exact removal of the retained network, with no start or new attempt. New runtime admission remains pending published-head review and full gates.
+
+After cleanup, Sagan independently verified the new exact remove-default chain and fresh preflight, owned-zero double captures, unchanged non-owned inventory/images and free ports. Implementation code gate for `346f081`: ALLOW / Must Fix 0 / Claim Accuracy PASS. Full published-head gates remain separate.

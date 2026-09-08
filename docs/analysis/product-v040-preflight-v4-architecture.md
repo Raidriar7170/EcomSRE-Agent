@@ -4,7 +4,7 @@ The activated [Goal](../goals/EcomSRE_Product_v0.4_Live_Harness_Engineering_Pref
 
 ## State
 
-Two attempts consumed 2/5 and failed before Probe start. Attempt 1 retains its original non-owned bridge drift. Attempt 2 failed on an exact index/platform representation mismatch; reviewed cleanup subsequently returned CLEAN with zero owned resources and unchanged non-owned resources. Neither failed attempt is rewritten as PASS. Full repository tests on runtime head `c71f954` passed 6632 tests with 21 skips and both CI workflows passed. The current identity/cleanup repair has 140 focused tests passing and awaits final published-head verification.
+Three attempts consumed 3/5; zero complete PASS. Attempts 1 and 2 failed before Probe start. Attempt 3 completed Probe qualification and removal, then failed at birth of the first Sandbox network because Docker exposed exact default IP-family options. Its independently reviewed cleanup-only repair removed the retained network. Attempts 2 and 3 later have CLEAN cleanup with zero owned resources; original failed results remain unchanged. Current repair: 154 focused tests, Ruff and scoped mypy PASS; full published-head checks pending. Last complete runtime admission was `5bc530b`, with successful CI and 6633 local full tests on the independently verified equivalent `20c0ce4` runtime tree.
 
 Policy v2 treats Mounts array ordering as serialization while retaining every keyed mount field. Docker readiness uses only `version/info` as Goal section 18 requires. An authorized exact-source Product build is scheduled after CI and immediately before the new double baseline. A diagnostic `system df` probe was performed before this restriction was reconciled; it is preserved as a scoped read-only deviation and is not part of the admitted execution path. A narrowly committed recovery proof can acknowledge the prior exact owned closure after an independently observed daemon event without changing the old failed result or accepting its non-owned comparison as unchanged. Every new attempt still requires its own complete admission.
 
@@ -39,3 +39,7 @@ A pass requires complete traffic, baseline, diagnosis, zero formal actions and v
 ## Exact index identity and cleanup recovery
 
 A container may retain the frozen immutable image index while platform-selective image inspect returns the selected manifest. The added birth path requires the exact digest reference, exact platform descriptor and linux/arm64. It does not admit tags or an unbound index. `cleanup_resume.py` binds an independently reviewed cleanup head/tree to the original plan/source and replays only existing create receipts, then revalidates fresh identity before exact deletion. Its command gate allows only cleanup verbs. Attempt 2 exercised this path without starting the Probe or creating a replacement.
+
+## Explicit network defaults
+
+Network birth accepts the observed exact two IP-family options only for bridge/local, IPv4 enabled, IPv6 disabled, and non-config-only networks. Existing checks still reject internal, ingress, attachable and populated networks. Additional or changed options remain rejected. Raw birth fields are never normalized; fresh cleanup compares complete network identity and checks both endpoints and container attachments before deletion.

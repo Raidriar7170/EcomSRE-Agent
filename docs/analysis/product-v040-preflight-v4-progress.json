@@ -1,15 +1,15 @@
 {
   "schema_version": "ecomsre.preflight.v4.progress.v1",
   "goal_sha256": "3f3751ec1b957547da508e0068d36eb1c7877d4374477820f2b370de2d16ece5",
-  "stage": "POST_ATTEMPT_2_IMAGE_IDENTITY_REPAIR",
-  "attempt_count": 2,
+  "stage": "POST_ATTEMPT_3_BRIDGE_OPTIONS_REPAIR",
+  "attempt_count": 3,
   "maximum_attempts": 5,
   "consecutive_complete_passes": 0,
   "live_admission": "WITHHOLD",
   "terminal": null,
   "formal_authority": "NONE",
   "provider_calls": 0,
-  "last_attempt": "ca131709ca59447ba17f2445af19da5e",
+  "last_attempt": "efa9f57de6394435ab2d0c0a68fb96a8",
   "last_attempt_result": "FAILED",
   "owned_remaining": 0,
   "nonowned_unchanged_in_last_attempt": true
