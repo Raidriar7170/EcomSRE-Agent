@@ -8,6 +8,7 @@ from pathlib import Path
 import subprocess
 from typing import Any
 from .common import Failure, KINDS, REPO, require, now
+from .transport import bounded
 
 
 class Docker:
@@ -15,7 +16,7 @@ class Docker:
         self.env = {
             k: v
             for k, v in os.environ.items()
-            if not k.startswith(("DOCKER_", "COMPOSE_"))
+            if not k.startswith(("DOCKER_", "COMPOSE_", "BUILDX_"))
         }
         self.env["DOCKER_CONTEXT"] = "desktop-linux"
         self.bound: Any = None
@@ -28,13 +29,14 @@ class Docker:
         cwd: Path = REPO,
         env: dict[str, str] | None = None,
     ) -> subprocess.CompletedProcess[str]:
-        return subprocess.run(
-            ["docker", *args],
-            cwd=cwd,
-            env={**self.env, **(env or {})},
-            capture_output=True,
-            text=True,
-            timeout=timeout,
+        result = bounded(
+            ["docker", *args], cwd=cwd, env={**self.env, **(env or {})}, timeout=timeout
+        )
+        return subprocess.CompletedProcess(
+            result.args,
+            result.returncode,
+            result.stdout.decode("utf-8"),
+            result.stderr.decode("utf-8"),
         )
 
     def read(
@@ -127,8 +129,23 @@ def static_inventory(view: dict[str, Any]) -> dict[str, Any]:
     result = deepcopy(view)
     result.pop("utc", None)
     result.pop("monotonic_ns", None)
+    result["images"] = image_inventory(view["images"])
     for c in result["resources"]["container"]:
         c.pop("State", None)
         c.pop("RestartCount", None)
         c["Mounts"] = sorted(c["Mounts"], key=lambda x: json.dumps(x, sort_keys=True))
     return result
+
+
+def image_inventory(images: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Human-relative CreatedSince is not immutable image identity."""
+    return sorted(
+        [
+            {
+                key: row[key]
+                for key in ("ID", "Repository", "Tag", "Digest", "CreatedAt")
+            }
+            for row in images
+        ],
+        key=lambda row: json.dumps(row, sort_keys=True),
+    )

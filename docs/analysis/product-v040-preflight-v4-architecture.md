@@ -4,7 +4,7 @@ The activated [Goal](../goals/EcomSRE_Product_v0.4_Live_Harness_Engineering_Pref
 
 ## State
 
-Implementation in progress. No v4 runtime resource has been created; 0/5 attempts consumed. The initial 94 identity and role tests pass. Full tests, CI, complete coordinator and Live Admission review remain pending.
+Implementation in progress. No v4 runtime resource has been created; 0/5 attempts consumed. The focused suite currently passes 130 tests. The complete coordinator, independent probe, Product flow, private build context and recovery journal are implemented. Mainline mypy passes 695 source files. Full tests, exact-head CI and frozen-head Live Admission remain pending.
 
 ## Components and authority
 
@@ -12,7 +12,7 @@ Implementation in progress. No v4 runtime resource has been created; 0/5 attempt
 - `docker.py`: local daemon/context binding and complete double-enumerated read captures. The general transport is internal plumbing, not mutation authority.
 - `identity.py`: independently resolved Compose/image process semantics, immutable configuration projection, exact role-to-birth-ID health map.
 - `processes.py`, `copyup.py`, `sentinel.py`: selectively adapted pure probe parsers/protocols. No old driver, journal, cleanup plan or attempt fuse is imported.
-- Planned coordinator: freezes a complete plan before birth, journals intent before each mutation and immutable receipt afterward, and binds cleanup targets to the verified birth IDs. Restart recovery reads receipts and observes postconditions before deciding whether any still-unexecuted command is eligible.
+- `resources.py` coordinator: freezes a complete plan before birth, journals intent before each mutation and immutable receipt afterward, and binds cleanup targets to the verified birth IDs. Restart recovery reads receipts and observes postconditions before deciding whether any still-unexecuted command is eligible.
 
 Actual `ProductV030SandboxEnvironment.resolve()` provides read-only baseline Compose rendering. v4 rewrites resource namespaces, pins image references, binds every image-declared volume and re-expands the final model before admission. No upstream files change. The separate probe has no Sandbox Compose labels and must be removed, including its builtin `none` endpoint, before Sandbox creation.
 
@@ -20,13 +20,13 @@ Copy-up uses fixed read-only `docker cp <birth-id>:<declared-path> -`, without `
 
 Product API/Worker have no remediation profile, Docker socket or remediation mount. They connect directly to fixed Prometheus, Jaeger and OpenSearch endpoints on the attempt-owned Sandbox network. Shared Sandbox networks are removed only after Product and Sandbox containers. Future remediation profile isolation is checked through separate static Compose expansion, never runtime activation.
 
-## Independent design findings to close before live admission
+## Independent design review
 
-1. Add exact network/platform bindings and stage-aware endpoint validation.
-2. Bind running process start/restart identity, distinguishing first start, stable running and exact stop.
-3. Replace the OOM boolean placeholder with a same-ID, same-daemon, stage-bound effective cgroup proof; preserve raw false/null differences.
+Read-only review required full network/platform and running-process anchors, typed probe OOM evidence, partial-create recovery, append-only intent reconciliation, strict non-owned identity comparison and creation-receipt-bound birth authority. These are implemented. Subsequent review required complete pre-start identity checks, budget consumption on observed creation even when birth validation fails, diagnostic failure isolation, and rejection of previous project resources before a new attempt. The fixes are covered by focused tests; final admission remains withheld until the reviewer binds the implementation head/tree.
 
-These findings are not a terminal and do not authorize a live attempt. Role readiness must come from current fixed endpoint/dependency observations, not ungrounded booleans.
+Budget reservation checks prior cleanup and rejects an identical failed surface before any new create. Actual resource creation consumes the allowance independently of cleanup eligibility. Interrupted operations reconcile original intents and observations without repeating mutations. Failure diagnostics cannot skip safe cleanup; cleanup and closure failures retain separate typed records and the original attempt failure.
+
+Docker image compatibility normalization is limited to documented absent/default Config fields, retaining raw captures. Immutable index/platform, RootFS and effective image configuration commitments remain verified. The private flagd input is readable through the planned host UID; no runtime permission repair is performed. Build-time source permissions allow the planned Product UID to read the copied application.
 
 ## Evidence and claims
 

@@ -1,0 +1,62 @@
+# Standalone preflight topology. The host freezes substitutions before creation.
+name: ${V4_PROJECT:?required}
+x-runtime: &runtime
+  image: ${V4_PRODUCT_IMAGE:?required}
+  platform: linux/arm64
+  pull_policy: never
+  user: ${V4_HOST_UID:?required}:${V4_HOST_GID:?required}
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  restart: "no"
+  tmpfs: [/tmp:rw,noexec,nosuid,nodev,size=64m]
+  volumes:
+    - type: bind
+      source: ${V4_PRODUCT_DATA:?required}
+      target: /var/lib/ecomsre
+      bind:
+        create_host_path: false
+  networks: [default, sandbox]
+  environment: &environment
+    ECOMSRE_PRODUCT_DATA_ROOT: /var/lib/ecomsre
+    ECOMSRE_PRODUCT_PILOT_RUNTIME_AUTHORITY_PATH: /var/lib/ecomsre/runtime-authority.json
+services:
+  api:
+    <<: *runtime
+    hostname: api
+    container_name: ${V4_PROJECT:?required}-api
+    command: [python, -m, ecomsre.product.app]
+    environment:
+      <<: *environment
+      ECOMSRE_ADMIN_TOKEN: ${V4_ADMIN_TOKEN:?required}
+      ECOMSRE_PRODUCT_API_HOST: 0.0.0.0
+      ECOMSRE_PRODUCT_API_PORT: "8080"
+    ports: [127.0.0.1:18001:8080]
+    labels:
+      io.ecomsre.preflight.v4.attempt: ${V4_ATTEMPT:?required}
+      io.ecomsre.preflight.v4.goal: ${V4_GOAL_SHA:?required}
+      io.ecomsre.preflight.v4.role: api
+      io.ecomsre.preflight.v4.owner: live-harness
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/readyz', timeout=2).read()"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+  worker:
+    <<: *runtime
+    hostname: worker
+    container_name: ${V4_PROJECT:?required}-worker
+    command: [python, -m, ecomsre.product.jobs.worker]
+    labels:
+      io.ecomsre.preflight.v4.attempt: ${V4_ATTEMPT:?required}
+      io.ecomsre.preflight.v4.goal: ${V4_GOAL_SHA:?required}
+      io.ecomsre.preflight.v4.role: worker
+      io.ecomsre.preflight.v4.owner: live-harness
+networks:
+  default:
+    external: true
+    name: ${V4_PROJECT:?required}-default
+  sandbox:
+    external: true
+    name: ${V4_SANDBOX_NETWORK:?required}

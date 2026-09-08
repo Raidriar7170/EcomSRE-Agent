@@ -61,3 +61,61 @@ def parse_copyup(payload: bytes, path: str) -> dict[str, Any]:
         "archive_sha256": hashlib.sha256(payload).hexdigest(),
         "content_bytes": total,
     }
+
+
+def validate_copyup(
+    measurements: list[dict[str, Any]],
+    provenance: dict[str, Any],
+    image: dict[str, Any],
+) -> None:
+    source = provenance["image"]
+    require(
+        source["platform_digest"] == image["platform_digest"]
+        and source["config_volumes"] == image["config"].get("Volumes")
+        and source["rootfs_diff_ids"] == image["rootfs"]["Layers"],
+        "COPYUP_IMAGE_BINDING_DRIFT",
+    )
+    require(
+        image["config"].get("User") == source["config_user"] == "appuser",
+        "COPYUP_IMAGE_USER",
+    )
+    passwd = [
+        line.split(":")
+        for line in source["identity_files"]["/etc/passwd"].splitlines()
+        if line.startswith("appuser:")
+    ]
+    require(
+        len(passwd) == 1 and passwd[0][2:4] == ["1000", "1000"], "COPYUP_IMAGE_IDENTITY"
+    )
+    require(
+        len(measurements) == len(KAFKA_PATHS)
+        and {m["path"] for m in measurements} == set(KAFKA_PATHS),
+        "COPYUP_PATH_COVERAGE",
+    )
+    for measurement in measurements:
+        path = measurement["path"]
+        expected = {}
+        for name, metadata in source["entries"].items():
+            if name == path or name.startswith(path + "/"):
+                relative = "." if name == path else name[len(path) + 1 :]
+                expected[relative] = {
+                    k: metadata[k] for k in ("kind", "uid", "gid", "mode", "size")
+                }
+                if metadata["kind"] == "file":
+                    expected[relative]["sha256"] = metadata["sha256"]
+        require(measurement["entries"] == expected, "COPYUP_PROVENANCE_DRIFT:" + path)
+        root = expected["."]
+        require(
+            root["uid"] == 1000
+            and root["mode"] & 0o700 == 0o700
+            and root["mode"] & 0o7022 == (0o20 if root["gid"] == 0 else 0),
+            "COPYUP_ACCESS_UNSAFE:" + path,
+        )
+        # Every parent is an OCI-proven real directory. Probe read-only rootfs,
+        # census and exclusive volume attachments keep them stable during sentinel.
+        for name, metadata in source["entries"].items():
+            if path.startswith(name + "/"):
+                require(
+                    metadata["kind"] == "directory" and not metadata["mode"] & 0o2,
+                    "COPYUP_PARENT_UNSAFE",
+                )

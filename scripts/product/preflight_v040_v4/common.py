@@ -79,3 +79,20 @@ def git(*args: str) -> str:
 def load(path: Path) -> Any:
     require(not path.is_symlink(), "EVIDENCE_SYMLINK")
     return json.loads(path.read_bytes())
+
+
+def seal_bytes(root: Path, name: str, data: bytes) -> str:
+    path = root / name
+    require(
+        not path.is_symlink()
+        and ".." not in Path(name).parts
+        and not Path(name).is_absolute(),
+        "EVIDENCE_PATH",
+    )
+    path.parent.mkdir(parents=True, mode=0o700, exist_ok=True)
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+    with os.fdopen(fd, "wb") as stream:
+        stream.write(data)
+        stream.flush()
+        os.fsync(stream.fileno())
+    return sha(data)

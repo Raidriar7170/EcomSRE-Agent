@@ -288,6 +288,9 @@ jobs:
       - name: Product v0.4 offline remediation development verification
         run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v040_development
 
+      - name: Product v0.4 preflight v4 contract and scope verification
+        run: PYTHONPATH=src:. uv run --frozen --no-sync python -m scripts.ci.verify_product_v040_preflight_v4
+
       - name: Full repository tests
         env:
           GH_TOKEN: ${{ github.token }}

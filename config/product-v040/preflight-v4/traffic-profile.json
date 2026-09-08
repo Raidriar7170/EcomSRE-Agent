@@ -11,7 +11,7 @@
   "baseline": {
     "lookback_seconds": 180,
     "window_count": 5,
-    "minimum_sample_count": 5,
+    "minimum_successful_windows": 5,
     "warmup_seconds": 180
   },
   "formal_authority": "NONE"

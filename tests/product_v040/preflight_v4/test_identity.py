@@ -115,18 +115,11 @@ def test_separate_probe_and_unrelated_container():
     assert health([row(), probe])["payment"]["ready"]
 
 
-def test_oom_exception_is_narrow():
+def test_oom_boolean_cannot_grant_admission():
     before = row("kafka-volume-probe")
     after = deepcopy(before)
     after["HostConfig"]["OomKillDisable"] = None
-    lifecycle(
-        before, after, role="kafka-volume-probe", stage="running", oom_evidence=True
-    )
-    for role, evidence in [("payment", True), ("kafka-volume-probe", False)]:
-        with pytest.raises(Failure):
-            lifecycle(before, after, role=role, stage="running", oom_evidence=evidence)
-    after["HostConfig"]["Privileged"] = True
-    with pytest.raises(Failure):
+    with pytest.raises(Failure, match="OOM_REPRESENTATION"):
         lifecycle(
             before, after, role="kafka-volume-probe", stage="running", oom_evidence=True
         )

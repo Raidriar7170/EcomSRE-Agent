@@ -55,14 +55,55 @@ def verify(root: Path) -> dict[str, object]:
         all(p in exact or p.startswith(allowed) for p in paths),
         "UNDECLARED_TRACKED_PATH",
     )
+    provenance = json.loads(
+        (
+            root / "config/product-v040/preflight-v4/kafka-image-provenance.json"
+        ).read_text()
+    )
+    source = provenance["source"]
+    raw_policy = subprocess.check_output(
+        ["git", "show", source["commit"] + ":" + source["path"]], cwd=root
+    )
+    require(sha(raw_policy) == source["sha256"], "HISTORICAL_POLICY_HASH_DRIFT")
+    old_policy = json.loads(raw_policy)
+    require(
+        old_policy["source_archive_sha256"] == source["archive_sha256"],
+        "HISTORICAL_ARCHIVE_DRIFT",
+    )
+    image_source = old_policy["image_source"]
+    for key, value in provenance["image"].items():
+        if key in ("entries", "identity_files"):
+            continue
+        require(value == image_source[key], "HISTORICAL_IMAGE_PROJECTION_DRIFT:" + key)
+    image_facts = json.loads(
+        (root / "config/product-v040/preflight-v4/images.json").read_text()
+    )
+    historical_index = json.loads(
+        subprocess.check_output(
+            [
+                "git",
+                "show",
+                image_facts["source_commit"]
+                + ":docs/results/product-v040-qualification-v3/qualification-evidence-index.json",
+            ],
+            cwd=root,
+        )
+    )
+    require(
+        historical_index["files"][image_facts["source_record"]]
+        == image_facts["source_record_sha256"],
+        "HISTORICAL_IMAGE_EVIDENCE_DRIFT",
+    )
+    require(len(image_facts["images"]) == 28, "IMAGE_ROLE_COUNT")
     progress = json.loads(
         (root / "docs/analysis/product-v040-preflight-v4-progress.json").read_text()
     )
     require(0 <= progress["attempt_count"] <= 5, "ATTEMPT_BUDGET")
     return {
         "status": "PASS",
-        "scope": "CONTRACT_AND_TRACKED_SCOPE_ONLY",
+        "scope": "CONTRACT_TRACKED_SCOPE_AND_HISTORY_INTEGRITY",
         "tracked_delta_count": len(paths),
+        "history_integrity": "PASS",
         "live_admission": progress["live_admission"],
         "attempt_count": progress["attempt_count"],
     }
