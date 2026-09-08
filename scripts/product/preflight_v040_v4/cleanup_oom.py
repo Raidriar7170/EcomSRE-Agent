@@ -4,7 +4,8 @@ from __future__ import annotations
 import hashlib
 from typing import Any, TYPE_CHECKING
 from .common import require, Failure, digest, load, seal, git, now
-from .identity import immutable
+from .identity import immutable, stable_running
+from pathlib import Path
 from .oom import OOM_PROTOCOL
 
 if TYPE_CHECKING:
@@ -95,6 +96,16 @@ def admit_running_cleanup(resources: Resources, before: dict[str, Any]) -> None:
         == {"policy": POLICY, "container_id": CONTAINER, "role": ROLE},
         "RUNNING_CLEANUP_NOT_ADMITTED",
     )
+    if (resources.root / "cleanup-only-oom-proof.json").exists():
+        birth = resources.find_birth("container", ROLE)
+        current = next(
+            r for r in before["resources"]["container"] if r["Id"] == CONTAINER
+        )
+        require(
+            permits_cleanup(birth, current, before["binding"], resources.attempt),
+            "CLEANUP_PROOF_REUSE_DRIFT",
+        )
+        return
     birth = resources.find_birth("container", ROLE)
     require(birth["record"]["Id"] == CONTAINER, "CLEANUP_CENSUS_TARGET_DRIFT")
 
@@ -127,6 +138,7 @@ def admit_running_cleanup(resources: Resources, before: dict[str, Any]) -> None:
         "CLEANUP_CENSUS_START_CHAIN_DRIFT",
     )
     started = target(receipt["observation"])
+    stable_running(started, row)
     require(
         row["State"]["Pid"] == started["State"]["Pid"]
         and row["State"]["StartedAt"] == started["State"]["StartedAt"],
@@ -175,6 +187,8 @@ def admit_running_cleanup(resources: Resources, before: dict[str, Any]) -> None:
     )
     after = resources.capture("after-cleanup-oom-census")
     fresh = target(after)
+    stable_running(row, fresh)
+    seal(resources.root, "cleanup-oom-census-after.json", after)
     require(
         row["State"]["Pid"] == fresh["State"]["Pid"]
         and row["State"]["StartedAt"] == fresh["State"]["StartedAt"],
@@ -210,9 +224,89 @@ def admit_running_cleanup(resources: Resources, before: dict[str, Any]) -> None:
             "before_digest": digest(before),
             "after_digest": digest(after),
             "evidence": parsed,
+            "networks": row["NetworkSettings"]["Networks"],
             **now(),
         },
     )
+
+
+def load_validated_proof(
+    root: Path, birth: dict[str, Any], admission: dict[str, Any]
+) -> dict[str, Any]:
+    proof = load(root / "cleanup-only-oom-proof.json")
+    census = load(root / "cleanup-oom-census-intent.json")
+    raw = load(root / "cleanup-oom-census-raw.json")
+    after = load(root / "cleanup-oom-census-after.json")
+    before = census["before"]
+    receipt = load(root / "journal/receipts/start-astronomy-db.json")
+    intent = load(root / "journal/intents/start-astronomy-db.json")
+    create = load(root / "journal/receipts" / (birth["create_key"] + ".json"))
+    create_intent = load(root / "journal/intents" / (birth["create_key"] + ".json"))
+    require(
+        census["policy"] == POLICY
+        and census["command"]
+        == [
+            "exec",
+            "--user",
+            "1000:1000",
+            CONTAINER,
+            "/bin/bash",
+            "--noprofile",
+            "--norc",
+            "-c",
+            OOM_PROTOCOL,
+        ]
+        and census["admission_digest"] == proof["admission_digest"] == digest(admission)
+        and census["birth_digest"] == digest(birth)
+        and census["start_receipt_digest"] == digest(receipt)
+        and receipt["intent_digest"] == digest(intent)
+        and receipt["postcondition"] is True
+        and receipt["outcome"]["client_exit_status"] == 0
+        and intent["command"] == ["container", "start", CONTAINER]
+        and digest(create) == birth["create_receipt_digest"]
+        and digest(create_intent)
+        == birth["create_intent_digest"]
+        == create["intent_digest"]
+        and proof["before_digest"] == digest(before)
+        and proof["after_digest"] == digest(after)
+        and before["binding"]
+        == after["binding"]
+        == receipt["observation"]["binding"]
+        == birth["binding"],
+        "CLEANUP_PROOF_CHAIN_DRIFT",
+    )
+    rows = []
+    for view in (receipt["observation"], before, after):
+        targets = [r for r in view["resources"]["container"] if r["Id"] == CONTAINER]
+        require(len(targets) == 1, "CLEANUP_PROOF_TARGET_DRIFT")
+        row = targets[0]
+        require(
+            immutable(row) == immutable(birth["record"])
+            and birth["record"]["HostConfig"]["OomKillDisable"] is False
+            and row["HostConfig"]["OomKillDisable"] is None
+            and row["State"]["Pid"] > 0
+            and not row["State"].get("Paused")
+            and not row["State"].get("Restarting"),
+            "CLEANUP_PROOF_IDENTITY_DRIFT",
+        )
+        rows.append(row)
+    stable_running(rows[0], rows[1])
+    stable_running(rows[1], rows[2])
+    row = rows[1]
+    require(raw["returncode"] == 0, "CLEANUP_PROOF_CAPTURE_FAILED")
+    parsed = parse_cleanup_oom(raw["stdout"])
+    value = parsed["first"]
+    require(
+        proof["evidence"] == parsed
+        and proof["networks"] == row["NetworkSettings"]["Networks"]
+        and value["cgroup"] == "0::/"
+        and value["cgroup_fs"] == "cgroup2"
+        and value["memory_max"] == str(row["HostConfig"]["Memory"])
+        and value["memory_oom_group"] == "0"
+        and value["oom_score_adj"] == str(row["HostConfig"].get("OomScoreAdj", 0)),
+        "CLEANUP_PROOF_EFFECTIVE_DRIFT",
+    )
+    return proof
 
 
 def permits_cleanup(
@@ -222,6 +316,20 @@ def permits_cleanup(
     attempt: str,
 ) -> bool:
     proof = birth.get("cleanup_only_oom_proof") or {}
+    if not proof or not birth.get("cleanup_proof_root"):
+        return False
+    original = {
+        k: v
+        for k, v in birth.items()
+        if k
+        not in ("cleanup_only_oom_proof", "cleanup_admission", "cleanup_proof_root")
+    }
+    validated = load_validated_proof(
+        Path(birth["cleanup_proof_root"]),
+        original,
+        birth.get("cleanup_admission") or {},
+    )
+    require(validated == proof, "CLEANUP_PROOF_RELOADED_DRIFT")
     admission = birth.get("cleanup_admission") or {}
     return bool(
         attempt == ATTEMPT
@@ -240,6 +348,10 @@ def permits_cleanup(
         and proof.get("binding_digest") == digest(binding)
         and proof.get("immutable_digest") == digest(immutable(current))
         and proof.get("started_at") == current["State"].get("StartedAt")
+        and (
+            not current["State"]["Running"]
+            or current["NetworkSettings"]["Networks"] == proof["networks"]
+        )
         and current["RestartCount"] == 0
         and current["State"]["Pid"]
         == (proof.get("pid") if current["State"]["Running"] else 0)

@@ -466,7 +466,12 @@ class Resources:
             birth["oom_proof"] = load(proof)
         cleanup_proof = self.root / "cleanup-only-oom-proof.json"
         if self.cleanup_only and role == "astronomy-db" and cleanup_proof.exists():
-            birth["cleanup_only_oom_proof"] = load(cleanup_proof)
+            from .cleanup_oom import load_validated_proof
+
+            birth["cleanup_only_oom_proof"] = load_validated_proof(
+                self.root, birth, self.cleanup_admission or {}
+            )
+            birth["cleanup_proof_root"] = str(self.root)
             birth["cleanup_admission"] = self.cleanup_admission
         return birth
 
