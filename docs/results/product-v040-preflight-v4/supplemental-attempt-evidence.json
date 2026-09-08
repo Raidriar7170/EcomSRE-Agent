@@ -1,0 +1,1037 @@
+{
+  "schema_version": "ecomsre.preflight.v4.attempt-supplements.v1",
+  "attempts": [
+    {
+      "attempt_id": "b8d4b937be174a87978f9d6314ac963b",
+      "attempt_ordinal": 1,
+      "original_public_summary_sha256": "04bf01792c4e7ccda6c93385b9dbc7847a07b904f1f7a529322dcf780d6b4083",
+      "original_attempt_result_sha256": "38d507095e28197f1216629d60f3fd2dfa509ab299d0c7961f9c89fd991cd070",
+      "original_evidence_index_sha256": "f2291b242ea430be4344522d44650753f8976084c954884d25c055f3f6339835",
+      "evidence_addendum_sha256": "b7bd76a0af6379a037c1fba784ea0b80edae4ef21c9693300645808ceaf1cc6f",
+      "source_head": "d058ea685a648084dffcc44a290ab58cc058ced2",
+      "policy_sha256": "fa5b23f3ccbcabb44dfb2481389b8faa73e0dcf0a53be51e5d1f5a315eb2e59d",
+      "compose_sha256s": {
+        "product": "a6b24cae54e36434f08757dc472044d65fbf342f9e1cbe75efefa1e62b7cfb20",
+        "sandbox": "865070995db592488a0960c8920ee0e9f02d857c86db443c98e19d1f3f862add"
+      },
+      "semantic_compose_sha256": "b9ac5f21a53c8f613d3ca219af7b37b0e6cc58dfbe73c563ebd1efb74f34dabd",
+      "image_commitments": {
+        "ghcr.io/open-feature/flagd:v0.16.0": {
+          "image_id": "sha256:32234e63c1d0634883aabd31cbd46802934aaaef0153dfd653b5d1017940bb4e",
+          "index_reference": "ghcr.io/open-feature/flagd@sha256:32234e63c1d0634883aabd31cbd46802934aaaef0153dfd653b5d1017940bb4e",
+          "platform_digest": "sha256:5115fd9352d58fd41c7be775b33336f5e4b2cef8056bf5982f5c704d13ec590e"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-accounting": {
+          "image_id": "sha256:74c490f862da264bc7c3b93fefb1a6cfce138861c3c6a8e0ceb32363bef17aaf",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:74c490f862da264bc7c3b93fefb1a6cfce138861c3c6a8e0ceb32363bef17aaf",
+          "platform_digest": "sha256:0139fb0653a471d10160198ef2a117b6a63263c071fef77e2cd393b9b0853d51"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-ad": {
+          "image_id": "sha256:e6c593fe75eb0309392951d35c7ac85fcd15c0b80430500921b7d2e9c332a6db",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:e6c593fe75eb0309392951d35c7ac85fcd15c0b80430500921b7d2e9c332a6db",
+          "platform_digest": "sha256:3f1965d23056bf68614e34d407faa6a9c730ab37a0d8ef698709ebf7d9fe1e91"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-cart": {
+          "image_id": "sha256:3f89a444250a8a56050ba59756be3ca269af500bf44e33579e79ba9c74cab8c1",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:3f89a444250a8a56050ba59756be3ca269af500bf44e33579e79ba9c74cab8c1",
+          "platform_digest": "sha256:2dd680b26be9a124424c0e1237e37060c30edf91f31c25d2c4e4775653f3a2a9"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-checkout": {
+          "image_id": "sha256:3d18cb304a6af6a512c5e488bb19ee42be7d71bdf75a9786aa7296b8fb0a5036",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:3d18cb304a6af6a512c5e488bb19ee42be7d71bdf75a9786aa7296b8fb0a5036",
+          "platform_digest": "sha256:07eae46624d18e21cf2c19c055f58133d5cc008b31a74f4765b20e294a9ae5f0"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-currency": {
+          "image_id": "sha256:f82a7805e7ba635b62c08f8fe67a5deccb06c91dc51cb56ae88767f582ad7f75",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:f82a7805e7ba635b62c08f8fe67a5deccb06c91dc51cb56ae88767f582ad7f75",
+          "platform_digest": "sha256:4e8197e55b8b1646775281f5613d457026573b17cc486e0f74ce6edf234eb634"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-email": {
+          "image_id": "sha256:d674d4081ca4201cbec9994e753ddf8f6a6fea7d57451c54fc964de6ac51c76c",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:d674d4081ca4201cbec9994e753ddf8f6a6fea7d57451c54fc964de6ac51c76c",
+          "platform_digest": "sha256:893da607ae8f600845a1039fb7922a3fdbf577fe4e265e2c87fb59262ae494f2"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-flagd-ui": {
+          "image_id": "sha256:92873a8e277d4db925f61b680708f4043e3aa08d8073c8e9000b83731f288bb7",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:92873a8e277d4db925f61b680708f4043e3aa08d8073c8e9000b83731f288bb7",
+          "platform_digest": "sha256:bb6e142378a01f94d4f2cf322b8a145f2e33b20a2c41ba1643320b5039fe6b0e"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-fraud-detection": {
+          "image_id": "sha256:1cdfd1bcf476914c39afff9d91144fe7a6bffd6b897b4e29b20485791c8ec6a5",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:1cdfd1bcf476914c39afff9d91144fe7a6bffd6b897b4e29b20485791c8ec6a5",
+          "platform_digest": "sha256:fdf464e80f1a6c536cad86e3b429fda48b87c2bb8dafe1f25507322ff73d8859"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-frontend": {
+          "image_id": "sha256:9505e349e140ed5efde4b03b77cf500ef5d53c568ea83502c7e9c26494b964a3",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:9505e349e140ed5efde4b03b77cf500ef5d53c568ea83502c7e9c26494b964a3",
+          "platform_digest": "sha256:9b9495aa98049fe8987fcb9193312f70260fbacdba31b088089c789a2506a5c6"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-frontend-proxy": {
+          "image_id": "sha256:1c53bfb596970a014682925f804c686762c0c593949ce58a90ac38563f317841",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:1c53bfb596970a014682925f804c686762c0c593949ce58a90ac38563f317841",
+          "platform_digest": "sha256:5dca3e6fe127f12a78765428bb86e9aad3ec8ee5b6498095e9d9b258cf8d64d3"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-image-provider": {
+          "image_id": "sha256:93e1585e97ac3de0e2ace6929dc5e2a797e2c009fbb3eba668fa3990f4f271b5",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:93e1585e97ac3de0e2ace6929dc5e2a797e2c009fbb3eba668fa3990f4f271b5",
+          "platform_digest": "sha256:a34c69344d9c7da1f312c3c4516d5e04e75b44bdfe1eae824215f76d89c6f74e"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-kafka": {
+          "image_id": "sha256:0601750a3ca4db7d27f746dc73f4180fda162e7a92a1a4847f5b6ae9ac51d477",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:0601750a3ca4db7d27f746dc73f4180fda162e7a92a1a4847f5b6ae9ac51d477",
+          "platform_digest": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-load-generator": {
+          "image_id": "sha256:cd12cb42fb150fb2283fc05df5353fde88d5e35f3bf8189058756a6458eede87",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:cd12cb42fb150fb2283fc05df5353fde88d5e35f3bf8189058756a6458eede87",
+          "platform_digest": "sha256:b04ac2c1fa16c126c1077710dd31d5780f002c5f69f8892c54b83a3a74877898"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-opamp-server": {
+          "image_id": "sha256:62cfae32adb1f51904d5772727a846eb90c8304170c01c2e6ca09925cc49a693",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:62cfae32adb1f51904d5772727a846eb90c8304170c01c2e6ca09925cc49a693",
+          "platform_digest": "sha256:f8459b4e3e6a5153acc4571f99de64be8658621f6fc1d06f7715644b9a1259d6"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-opensearch": {
+          "image_id": "sha256:8950f637638476318a9f8eaf8fd608e4d3a164fbd3f429612f65009ee31677f5",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:8950f637638476318a9f8eaf8fd608e4d3a164fbd3f429612f65009ee31677f5",
+          "platform_digest": "sha256:e2d67dae0dc224f4f2f5c64adb17a2d6e41aac9f2bd18bb59ac2a896d20b0fde"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-payment": {
+          "image_id": "sha256:d498c7434d22ff7a82ec86843efd22c93c52cb8c6df4961a7110617b1e08c15f",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:d498c7434d22ff7a82ec86843efd22c93c52cb8c6df4961a7110617b1e08c15f",
+          "platform_digest": "sha256:c9bbe72133e9b6569f8e490441e7a1472f8767d12759b0eaf0af14e91e4a9d45"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-product-catalog": {
+          "image_id": "sha256:278aff685646443b88cf1ab7d83812d82204fbb16ea279296161d05bf1329080",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:278aff685646443b88cf1ab7d83812d82204fbb16ea279296161d05bf1329080",
+          "platform_digest": "sha256:7471d710ccf34ae074f15c7dfe5943fb731f8f21759bcfee2c81f670bf4d9363"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-quote": {
+          "image_id": "sha256:6bc8f7f6809e1435241dc9ea404e602657d192cf237bcd175d7344cec9e0d615",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:6bc8f7f6809e1435241dc9ea404e602657d192cf237bcd175d7344cec9e0d615",
+          "platform_digest": "sha256:370d920d330a145a5e6769eab82dd256a11c8186c78d7afd7927119f402d2438"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-recommendation": {
+          "image_id": "sha256:6510027907f925b1d76d0c645c9c757427c8735577ea9a422291c7b4b770bfd5",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:6510027907f925b1d76d0c645c9c757427c8735577ea9a422291c7b4b770bfd5",
+          "platform_digest": "sha256:0b8524ba9dd99a12f4223b82816d80751fbc3c06b39ccee4b08669040ac0ad6b"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-shipping": {
+          "image_id": "sha256:02602e60edbfa7e019b21fa98f95e3d44bc3181c9aafaf82a73b5169ae8f9031",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:02602e60edbfa7e019b21fa98f95e3d44bc3181c9aafaf82a73b5169ae8f9031",
+          "platform_digest": "sha256:c3622ca9ed2cadd4a6b7a28ca703549b7898ef5c7ee9c08ee34f2db410b547dd"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-telemetry-docs": {
+          "image_id": "sha256:3519858704e72fe6ef8ce8c41e70dbd41410e79bdc1eea9608658e9eade06d05",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:3519858704e72fe6ef8ce8c41e70dbd41410e79bdc1eea9608658e9eade06d05",
+          "platform_digest": "sha256:51c253309603d438fa5e7d529c3f568fdd2c07b6907ca4d28d48b29107079be9"
+        },
+        "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.157.0": {
+          "image_id": "sha256:f2f01157055a9b2aab9df7118e1f1c9abf345e99b23bc7a2bc791db374a7d0f6",
+          "index_reference": "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib@sha256:f2f01157055a9b2aab9df7118e1f1c9abf345e99b23bc7a2bc791db374a7d0f6",
+          "platform_digest": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6"
+        },
+        "ghcr.io/valkey-io/valkey:9.0.4-alpine3.23": {
+          "image_id": "sha256:107b203169a20ef7c87548c157f4e4a833dbbbd20fefd3a26740b7f98ac80216",
+          "index_reference": "ghcr.io/valkey-io/valkey@sha256:107b203169a20ef7c87548c157f4e4a833dbbbd20fefd3a26740b7f98ac80216",
+          "platform_digest": "sha256:bb8b48198974cb792b8bfc09d7e3c5f0d6e07508cb33e06817e2f24805778be5"
+        },
+        "grafana/grafana:13.1.0": {
+          "image_id": "sha256:121a7a9ece6dc10b969f1f96eed64b4f07dfac0d0b8abc070f7cb83bbde86f63",
+          "index_reference": "grafana/grafana@sha256:121a7a9ece6dc10b969f1f96eed64b4f07dfac0d0b8abc070f7cb83bbde86f63",
+          "platform_digest": "sha256:55f41cacf3e8334ea89d76ada9cc546c09473650ab48a7861743bcbd83f5ef38"
+        },
+        "postgres:18.4": {
+          "image_id": "sha256:3a82e1f56c8f0f5616a11103ac3d47e632c3938698946a7ad26da0df1334744a",
+          "index_reference": "postgres@sha256:3a82e1f56c8f0f5616a11103ac3d47e632c3938698946a7ad26da0df1334744a",
+          "platform_digest": "sha256:f1dd3522a7fde8bf8e505f42583ecdc00b4967a4b94d32ba1f890d118fe17335"
+        },
+        "quay.io/jaegertracing/jaeger:2.19.0": {
+          "image_id": "sha256:ede4864215be4cd85bd8c3129a2fea6c5713c5653c7282c429dba123014bc68b",
+          "index_reference": "quay.io/jaegertracing/jaeger@sha256:ede4864215be4cd85bd8c3129a2fea6c5713c5653c7282c429dba123014bc68b",
+          "platform_digest": "sha256:476f9d88b6660cf93b47aac9b50de842855cb5cb50a35eef0108e7bde58a6985"
+        },
+        "quay.io/prometheus/prometheus:v3.13.1": {
+          "image_id": "sha256:3c42b892cf723fa54d2f262c37a0e1f80aa8c8ddb1da7b9b0df9455a35a7f893",
+          "index_reference": "quay.io/prometheus/prometheus@sha256:3c42b892cf723fa54d2f262c37a0e1f80aa8c8ddb1da7b9b0df9455a35a7f893",
+          "platform_digest": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814"
+        }
+      },
+      "product_image": {
+        "image_id": "sha256:f574d152c99e3eb41f4b92df758f3af4371b297f044a698a4b185e6c9da63dc1",
+        "platform_digest": "sha256:f574d152c99e3eb41f4b92df758f3af4371b297f044a698a4b185e6c9da63dc1",
+        "config_digest": "sha256:8bca5e62785aa707af5a850ed39467bf66c17bc5b6aecdca830f849eddc95e6e",
+        "context_digest": "ecf4ffd9cea76d7fff4d3782da84ffbe3c17733664256e2dce785e04a26ac7a2"
+      },
+      "started_at": "2026-09-08T16:19:47.431636+00:00",
+      "started_at_basis": "Attempt identity seal timestamp; not first runtime creation",
+      "first_runtime_creation_observed_at": "2026-09-08T16:19:49.851023+00:00",
+      "plan_frozen_at": "2026-09-08T16:19:47.432635+00:00",
+      "plan_frozen_at_basis": "First stage timestamp; not first runtime mutation",
+      "ended_at": "2026-09-08T16:20:04.006690+00:00",
+      "failure_stage": "08-COPYUP_MEASURE",
+      "runtime_surface_sha256": "17dc04e96e813053e32fdfaed62032716bb099c908ee99d349aaac38548b454c",
+      "formal_counters": {
+        "observation": "NOT_REACHED",
+        "database_counts": null,
+        "basis": "Product was never started; stage and mutation journals contain no formal execution.",
+        "provider_calls": 0,
+        "formal_authority": "NONE"
+      },
+      "capability_sha256": null,
+      "capability_observation": "NOT_REACHED",
+      "original_cleanup": {
+        "terminal": "BLOCKED_SAFETY",
+        "remaining": {
+          "container": 0,
+          "network": 0,
+          "volume": 0
+        },
+        "nonowned_unchanged": false,
+        "nonowned_observation_basis": "Explicit NONOWNED_DRIFT in original failure",
+        "evidence_sha256": "25eb1162de3b408b934eff7d1d6e62e0884670091c3fd3a9a61f4c117ab932c7"
+      },
+      "reviewed_cleanup": {
+        "terminal": "OWNED_REMOVED_NONOWNED_DRIFT",
+        "remaining": {
+          "container": 0,
+          "network": 0,
+          "volume": 0
+        },
+        "nonowned_unchanged": false,
+        "evidence_sha256": "496ec999f70f2204b7a5d000e704c31e37637a833d5f8e9d3f0035d4df2d86cd"
+      },
+      "original_failure_retained": true,
+      "root_cause_analysis": {
+        "cause": "Copy-up pre-read guard compared raw Mounts array order; keyed contents matched. Independently, builtin bridge ID/Created changed across the first volume creation.",
+        "repair": "Compare only target-keyed exact mount content; retain bridge drift and separately bound daemon-event recovery.",
+        "uncertainty": "Backend logs directly show idle VM wake; bridge reinitialization causation remains a supported inference."
+      }
+    },
+    {
+      "attempt_id": "ca131709ca59447ba17f2445af19da5e",
+      "attempt_ordinal": 2,
+      "original_public_summary_sha256": "368a777e7ff878e47ec3dc4d5957e3484ae13d11e25b0946fd5d16acfd0bc393",
+      "original_attempt_result_sha256": "2fccbb6c12163685cc15f1eb49328b4f3b27260998b027dc29ec61422f207610",
+      "original_evidence_index_sha256": "023add364018468e1b3451aa2fc7785f441ef6d0f3cc0e3aaead8d5524b47f7e",
+      "evidence_addendum_sha256": "3334274cdd4448622198693e896906e859610353feb38f5a11fff267de9f47f9",
+      "source_head": "c71f954c65a2347634523ae07833137377a326d2",
+      "policy_sha256": "583df7d3ed7e9d43bd0f5f53b9a4be1d34e2f07a3c9f3332f18076147fc3d6f8",
+      "compose_sha256s": {
+        "product": "85048c2682e9ba99f51e6194d410463208e69419111b2a71379d4a7f9c6eefcb",
+        "sandbox": "a8bdc147c07910a5000e1ec8da3f6df7b591d57ad52a0249725b754b06866b01"
+      },
+      "semantic_compose_sha256": "91eb5b1d85159e100865d21ec6a39a7eb9b93c7582be560be9b0c7f66b996638",
+      "image_commitments": {
+        "ghcr.io/open-feature/flagd:v0.16.0": {
+          "image_id": "sha256:5115fd9352d58fd41c7be775b33336f5e4b2cef8056bf5982f5c704d13ec590e",
+          "index_reference": "ghcr.io/open-feature/flagd@sha256:32234e63c1d0634883aabd31cbd46802934aaaef0153dfd653b5d1017940bb4e",
+          "platform_digest": "sha256:5115fd9352d58fd41c7be775b33336f5e4b2cef8056bf5982f5c704d13ec590e"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-accounting": {
+          "image_id": "sha256:0139fb0653a471d10160198ef2a117b6a63263c071fef77e2cd393b9b0853d51",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:74c490f862da264bc7c3b93fefb1a6cfce138861c3c6a8e0ceb32363bef17aaf",
+          "platform_digest": "sha256:0139fb0653a471d10160198ef2a117b6a63263c071fef77e2cd393b9b0853d51"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-ad": {
+          "image_id": "sha256:3f1965d23056bf68614e34d407faa6a9c730ab37a0d8ef698709ebf7d9fe1e91",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:e6c593fe75eb0309392951d35c7ac85fcd15c0b80430500921b7d2e9c332a6db",
+          "platform_digest": "sha256:3f1965d23056bf68614e34d407faa6a9c730ab37a0d8ef698709ebf7d9fe1e91"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-cart": {
+          "image_id": "sha256:2dd680b26be9a124424c0e1237e37060c30edf91f31c25d2c4e4775653f3a2a9",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:3f89a444250a8a56050ba59756be3ca269af500bf44e33579e79ba9c74cab8c1",
+          "platform_digest": "sha256:2dd680b26be9a124424c0e1237e37060c30edf91f31c25d2c4e4775653f3a2a9"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-checkout": {
+          "image_id": "sha256:07eae46624d18e21cf2c19c055f58133d5cc008b31a74f4765b20e294a9ae5f0",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:3d18cb304a6af6a512c5e488bb19ee42be7d71bdf75a9786aa7296b8fb0a5036",
+          "platform_digest": "sha256:07eae46624d18e21cf2c19c055f58133d5cc008b31a74f4765b20e294a9ae5f0"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-currency": {
+          "image_id": "sha256:4e8197e55b8b1646775281f5613d457026573b17cc486e0f74ce6edf234eb634",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:f82a7805e7ba635b62c08f8fe67a5deccb06c91dc51cb56ae88767f582ad7f75",
+          "platform_digest": "sha256:4e8197e55b8b1646775281f5613d457026573b17cc486e0f74ce6edf234eb634"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-email": {
+          "image_id": "sha256:893da607ae8f600845a1039fb7922a3fdbf577fe4e265e2c87fb59262ae494f2",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:d674d4081ca4201cbec9994e753ddf8f6a6fea7d57451c54fc964de6ac51c76c",
+          "platform_digest": "sha256:893da607ae8f600845a1039fb7922a3fdbf577fe4e265e2c87fb59262ae494f2"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-flagd-ui": {
+          "image_id": "sha256:bb6e142378a01f94d4f2cf322b8a145f2e33b20a2c41ba1643320b5039fe6b0e",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:92873a8e277d4db925f61b680708f4043e3aa08d8073c8e9000b83731f288bb7",
+          "platform_digest": "sha256:bb6e142378a01f94d4f2cf322b8a145f2e33b20a2c41ba1643320b5039fe6b0e"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-fraud-detection": {
+          "image_id": "sha256:fdf464e80f1a6c536cad86e3b429fda48b87c2bb8dafe1f25507322ff73d8859",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:1cdfd1bcf476914c39afff9d91144fe7a6bffd6b897b4e29b20485791c8ec6a5",
+          "platform_digest": "sha256:fdf464e80f1a6c536cad86e3b429fda48b87c2bb8dafe1f25507322ff73d8859"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-frontend": {
+          "image_id": "sha256:9b9495aa98049fe8987fcb9193312f70260fbacdba31b088089c789a2506a5c6",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:9505e349e140ed5efde4b03b77cf500ef5d53c568ea83502c7e9c26494b964a3",
+          "platform_digest": "sha256:9b9495aa98049fe8987fcb9193312f70260fbacdba31b088089c789a2506a5c6"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-frontend-proxy": {
+          "image_id": "sha256:5dca3e6fe127f12a78765428bb86e9aad3ec8ee5b6498095e9d9b258cf8d64d3",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:1c53bfb596970a014682925f804c686762c0c593949ce58a90ac38563f317841",
+          "platform_digest": "sha256:5dca3e6fe127f12a78765428bb86e9aad3ec8ee5b6498095e9d9b258cf8d64d3"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-image-provider": {
+          "image_id": "sha256:a34c69344d9c7da1f312c3c4516d5e04e75b44bdfe1eae824215f76d89c6f74e",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:93e1585e97ac3de0e2ace6929dc5e2a797e2c009fbb3eba668fa3990f4f271b5",
+          "platform_digest": "sha256:a34c69344d9c7da1f312c3c4516d5e04e75b44bdfe1eae824215f76d89c6f74e"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-kafka": {
+          "image_id": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:0601750a3ca4db7d27f746dc73f4180fda162e7a92a1a4847f5b6ae9ac51d477",
+          "platform_digest": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-load-generator": {
+          "image_id": "sha256:b04ac2c1fa16c126c1077710dd31d5780f002c5f69f8892c54b83a3a74877898",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:cd12cb42fb150fb2283fc05df5353fde88d5e35f3bf8189058756a6458eede87",
+          "platform_digest": "sha256:b04ac2c1fa16c126c1077710dd31d5780f002c5f69f8892c54b83a3a74877898"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-opamp-server": {
+          "image_id": "sha256:f8459b4e3e6a5153acc4571f99de64be8658621f6fc1d06f7715644b9a1259d6",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:62cfae32adb1f51904d5772727a846eb90c8304170c01c2e6ca09925cc49a693",
+          "platform_digest": "sha256:f8459b4e3e6a5153acc4571f99de64be8658621f6fc1d06f7715644b9a1259d6"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-opensearch": {
+          "image_id": "sha256:e2d67dae0dc224f4f2f5c64adb17a2d6e41aac9f2bd18bb59ac2a896d20b0fde",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:8950f637638476318a9f8eaf8fd608e4d3a164fbd3f429612f65009ee31677f5",
+          "platform_digest": "sha256:e2d67dae0dc224f4f2f5c64adb17a2d6e41aac9f2bd18bb59ac2a896d20b0fde"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-payment": {
+          "image_id": "sha256:c9bbe72133e9b6569f8e490441e7a1472f8767d12759b0eaf0af14e91e4a9d45",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:d498c7434d22ff7a82ec86843efd22c93c52cb8c6df4961a7110617b1e08c15f",
+          "platform_digest": "sha256:c9bbe72133e9b6569f8e490441e7a1472f8767d12759b0eaf0af14e91e4a9d45"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-product-catalog": {
+          "image_id": "sha256:7471d710ccf34ae074f15c7dfe5943fb731f8f21759bcfee2c81f670bf4d9363",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:278aff685646443b88cf1ab7d83812d82204fbb16ea279296161d05bf1329080",
+          "platform_digest": "sha256:7471d710ccf34ae074f15c7dfe5943fb731f8f21759bcfee2c81f670bf4d9363"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-quote": {
+          "image_id": "sha256:370d920d330a145a5e6769eab82dd256a11c8186c78d7afd7927119f402d2438",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:6bc8f7f6809e1435241dc9ea404e602657d192cf237bcd175d7344cec9e0d615",
+          "platform_digest": "sha256:370d920d330a145a5e6769eab82dd256a11c8186c78d7afd7927119f402d2438"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-recommendation": {
+          "image_id": "sha256:0b8524ba9dd99a12f4223b82816d80751fbc3c06b39ccee4b08669040ac0ad6b",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:6510027907f925b1d76d0c645c9c757427c8735577ea9a422291c7b4b770bfd5",
+          "platform_digest": "sha256:0b8524ba9dd99a12f4223b82816d80751fbc3c06b39ccee4b08669040ac0ad6b"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-shipping": {
+          "image_id": "sha256:c3622ca9ed2cadd4a6b7a28ca703549b7898ef5c7ee9c08ee34f2db410b547dd",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:02602e60edbfa7e019b21fa98f95e3d44bc3181c9aafaf82a73b5169ae8f9031",
+          "platform_digest": "sha256:c3622ca9ed2cadd4a6b7a28ca703549b7898ef5c7ee9c08ee34f2db410b547dd"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-telemetry-docs": {
+          "image_id": "sha256:51c253309603d438fa5e7d529c3f568fdd2c07b6907ca4d28d48b29107079be9",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:3519858704e72fe6ef8ce8c41e70dbd41410e79bdc1eea9608658e9eade06d05",
+          "platform_digest": "sha256:51c253309603d438fa5e7d529c3f568fdd2c07b6907ca4d28d48b29107079be9"
+        },
+        "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.157.0": {
+          "image_id": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6",
+          "index_reference": "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib@sha256:f2f01157055a9b2aab9df7118e1f1c9abf345e99b23bc7a2bc791db374a7d0f6",
+          "platform_digest": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6"
+        },
+        "ghcr.io/valkey-io/valkey:9.0.4-alpine3.23": {
+          "image_id": "sha256:bb8b48198974cb792b8bfc09d7e3c5f0d6e07508cb33e06817e2f24805778be5",
+          "index_reference": "ghcr.io/valkey-io/valkey@sha256:107b203169a20ef7c87548c157f4e4a833dbbbd20fefd3a26740b7f98ac80216",
+          "platform_digest": "sha256:bb8b48198974cb792b8bfc09d7e3c5f0d6e07508cb33e06817e2f24805778be5"
+        },
+        "grafana/grafana:13.1.0": {
+          "image_id": "sha256:55f41cacf3e8334ea89d76ada9cc546c09473650ab48a7861743bcbd83f5ef38",
+          "index_reference": "grafana/grafana@sha256:121a7a9ece6dc10b969f1f96eed64b4f07dfac0d0b8abc070f7cb83bbde86f63",
+          "platform_digest": "sha256:55f41cacf3e8334ea89d76ada9cc546c09473650ab48a7861743bcbd83f5ef38"
+        },
+        "postgres:18.4": {
+          "image_id": "sha256:f1dd3522a7fde8bf8e505f42583ecdc00b4967a4b94d32ba1f890d118fe17335",
+          "index_reference": "postgres@sha256:3a82e1f56c8f0f5616a11103ac3d47e632c3938698946a7ad26da0df1334744a",
+          "platform_digest": "sha256:f1dd3522a7fde8bf8e505f42583ecdc00b4967a4b94d32ba1f890d118fe17335"
+        },
+        "quay.io/jaegertracing/jaeger:2.19.0": {
+          "image_id": "sha256:476f9d88b6660cf93b47aac9b50de842855cb5cb50a35eef0108e7bde58a6985",
+          "index_reference": "quay.io/jaegertracing/jaeger@sha256:ede4864215be4cd85bd8c3129a2fea6c5713c5653c7282c429dba123014bc68b",
+          "platform_digest": "sha256:476f9d88b6660cf93b47aac9b50de842855cb5cb50a35eef0108e7bde58a6985"
+        },
+        "quay.io/prometheus/prometheus:v3.13.1": {
+          "image_id": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814",
+          "index_reference": "quay.io/prometheus/prometheus@sha256:3c42b892cf723fa54d2f262c37a0e1f80aa8c8ddb1da7b9b0df9455a35a7f893",
+          "platform_digest": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814"
+        }
+      },
+      "product_image": {
+        "image_id": "sha256:3cd394c7af1a62b7692e5bcc3ca1a100a11df6c485d78b8b8869cc811b415672",
+        "platform_digest": "sha256:3cd394c7af1a62b7692e5bcc3ca1a100a11df6c485d78b8b8869cc811b415672",
+        "config_digest": "sha256:8193ed58271b2e60aa7da94008ecb1813c537b2afae0c52f02b7d16321ceb893",
+        "context_digest": "ecf4ffd9cea76d7fff4d3782da84ffbe3c17733664256e2dce785e04a26ac7a2"
+      },
+      "started_at": "2026-09-08T17:07:37.468750+00:00",
+      "started_at_basis": "Attempt identity seal timestamp; not first runtime creation",
+      "first_runtime_creation_observed_at": "2026-09-08T17:07:38.681824+00:00",
+      "plan_frozen_at": "2026-09-08T17:07:37.469666+00:00",
+      "plan_frozen_at_basis": "First stage timestamp; not first runtime mutation",
+      "ended_at": "2026-09-08T17:07:44.915781+00:00",
+      "failure_stage": "07-PROBE_CREATE",
+      "runtime_surface_sha256": "4e01d7095f16585770671ddb886ebd54e2ee7c57492184d0bc99fc9a87b08b5c",
+      "formal_counters": {
+        "observation": "NOT_REACHED",
+        "database_counts": null,
+        "basis": "Product was never started; stage and mutation journals contain no formal execution.",
+        "provider_calls": 0,
+        "formal_authority": "NONE"
+      },
+      "capability_sha256": null,
+      "capability_observation": "NOT_REACHED",
+      "original_cleanup": {
+        "terminal": "BLOCKED_SAFETY",
+        "remaining": {
+          "container": 1,
+          "network": 0,
+          "volume": 3
+        },
+        "nonowned_unchanged": null,
+        "nonowned_observation_basis": "Original cleanup did not complete nonowned check; later verified separately",
+        "evidence_sha256": "1b68b2bcab9872d31aff0479a39d73993ae27ebd8b41fb8c07a51116383ce636"
+      },
+      "reviewed_cleanup": {
+        "terminal": "CLEAN",
+        "remaining": {
+          "container": 0,
+          "network": 0,
+          "volume": 0
+        },
+        "nonowned_unchanged": true,
+        "evidence_sha256": "929a09a6228404a7b4862697703b584b78cc53babacbf148ec4286ba0f4c706c"
+      },
+      "original_failure_retained": true,
+      "root_cause_analysis": {
+        "cause": "Probe container Image retained the exact frozen index while its exact arm64 descriptor selected the platform manifest.",
+        "repair": "Require exact frozen digest plus exact linux/arm64 manifest descriptor; no tag substitution."
+      }
+    },
+    {
+      "attempt_id": "efa9f57de6394435ab2d0c0a68fb96a8",
+      "attempt_ordinal": 3,
+      "original_public_summary_sha256": "3f841c76772643fed767402f31ddb190e293a54d4ddf5159b99d4a7c781b8f36",
+      "original_attempt_result_sha256": "115c89edcaf0a65834f31fccc58b22dd7b014824fa20019647ae901cc1fa2905",
+      "original_evidence_index_sha256": "b6408f0ba2786dc2fe6a1f4d130aad6837a7be47e402aeebb4b48d682339d9a7",
+      "evidence_addendum_sha256": "ac35dcfefc464a5f8f247dff5508570f3cc71b994414fd94dab9810d545937f1",
+      "source_head": "5bc530b1aa50be37b9eb51173aab94d12ff735ba",
+      "policy_sha256": "583df7d3ed7e9d43bd0f5f53b9a4be1d34e2f07a3c9f3332f18076147fc3d6f8",
+      "compose_sha256s": {
+        "product": "44a01eef3ca7f3d7720b6e79bf60298bb4daf629c8e47906aa9e68080b552b26",
+        "sandbox": "6f9d608cb6f4803985ff54ee0988aed7449041421612ba450eb4a02262789f34"
+      },
+      "semantic_compose_sha256": "1ce7223e9dacc41c3dff49d73994300ab8783ebe937c12309b3834fd2f543deb",
+      "image_commitments": {
+        "ghcr.io/open-feature/flagd:v0.16.0": {
+          "image_id": "sha256:5115fd9352d58fd41c7be775b33336f5e4b2cef8056bf5982f5c704d13ec590e",
+          "index_reference": "ghcr.io/open-feature/flagd@sha256:32234e63c1d0634883aabd31cbd46802934aaaef0153dfd653b5d1017940bb4e",
+          "platform_digest": "sha256:5115fd9352d58fd41c7be775b33336f5e4b2cef8056bf5982f5c704d13ec590e"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-accounting": {
+          "image_id": "sha256:0139fb0653a471d10160198ef2a117b6a63263c071fef77e2cd393b9b0853d51",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:74c490f862da264bc7c3b93fefb1a6cfce138861c3c6a8e0ceb32363bef17aaf",
+          "platform_digest": "sha256:0139fb0653a471d10160198ef2a117b6a63263c071fef77e2cd393b9b0853d51"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-ad": {
+          "image_id": "sha256:3f1965d23056bf68614e34d407faa6a9c730ab37a0d8ef698709ebf7d9fe1e91",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:e6c593fe75eb0309392951d35c7ac85fcd15c0b80430500921b7d2e9c332a6db",
+          "platform_digest": "sha256:3f1965d23056bf68614e34d407faa6a9c730ab37a0d8ef698709ebf7d9fe1e91"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-cart": {
+          "image_id": "sha256:2dd680b26be9a124424c0e1237e37060c30edf91f31c25d2c4e4775653f3a2a9",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:3f89a444250a8a56050ba59756be3ca269af500bf44e33579e79ba9c74cab8c1",
+          "platform_digest": "sha256:2dd680b26be9a124424c0e1237e37060c30edf91f31c25d2c4e4775653f3a2a9"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-checkout": {
+          "image_id": "sha256:07eae46624d18e21cf2c19c055f58133d5cc008b31a74f4765b20e294a9ae5f0",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:3d18cb304a6af6a512c5e488bb19ee42be7d71bdf75a9786aa7296b8fb0a5036",
+          "platform_digest": "sha256:07eae46624d18e21cf2c19c055f58133d5cc008b31a74f4765b20e294a9ae5f0"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-currency": {
+          "image_id": "sha256:4e8197e55b8b1646775281f5613d457026573b17cc486e0f74ce6edf234eb634",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:f82a7805e7ba635b62c08f8fe67a5deccb06c91dc51cb56ae88767f582ad7f75",
+          "platform_digest": "sha256:4e8197e55b8b1646775281f5613d457026573b17cc486e0f74ce6edf234eb634"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-email": {
+          "image_id": "sha256:893da607ae8f600845a1039fb7922a3fdbf577fe4e265e2c87fb59262ae494f2",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:d674d4081ca4201cbec9994e753ddf8f6a6fea7d57451c54fc964de6ac51c76c",
+          "platform_digest": "sha256:893da607ae8f600845a1039fb7922a3fdbf577fe4e265e2c87fb59262ae494f2"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-flagd-ui": {
+          "image_id": "sha256:bb6e142378a01f94d4f2cf322b8a145f2e33b20a2c41ba1643320b5039fe6b0e",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:92873a8e277d4db925f61b680708f4043e3aa08d8073c8e9000b83731f288bb7",
+          "platform_digest": "sha256:bb6e142378a01f94d4f2cf322b8a145f2e33b20a2c41ba1643320b5039fe6b0e"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-fraud-detection": {
+          "image_id": "sha256:fdf464e80f1a6c536cad86e3b429fda48b87c2bb8dafe1f25507322ff73d8859",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:1cdfd1bcf476914c39afff9d91144fe7a6bffd6b897b4e29b20485791c8ec6a5",
+          "platform_digest": "sha256:fdf464e80f1a6c536cad86e3b429fda48b87c2bb8dafe1f25507322ff73d8859"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-frontend": {
+          "image_id": "sha256:9b9495aa98049fe8987fcb9193312f70260fbacdba31b088089c789a2506a5c6",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:9505e349e140ed5efde4b03b77cf500ef5d53c568ea83502c7e9c26494b964a3",
+          "platform_digest": "sha256:9b9495aa98049fe8987fcb9193312f70260fbacdba31b088089c789a2506a5c6"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-frontend-proxy": {
+          "image_id": "sha256:5dca3e6fe127f12a78765428bb86e9aad3ec8ee5b6498095e9d9b258cf8d64d3",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:1c53bfb596970a014682925f804c686762c0c593949ce58a90ac38563f317841",
+          "platform_digest": "sha256:5dca3e6fe127f12a78765428bb86e9aad3ec8ee5b6498095e9d9b258cf8d64d3"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-image-provider": {
+          "image_id": "sha256:a34c69344d9c7da1f312c3c4516d5e04e75b44bdfe1eae824215f76d89c6f74e",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:93e1585e97ac3de0e2ace6929dc5e2a797e2c009fbb3eba668fa3990f4f271b5",
+          "platform_digest": "sha256:a34c69344d9c7da1f312c3c4516d5e04e75b44bdfe1eae824215f76d89c6f74e"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-kafka": {
+          "image_id": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:0601750a3ca4db7d27f746dc73f4180fda162e7a92a1a4847f5b6ae9ac51d477",
+          "platform_digest": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-load-generator": {
+          "image_id": "sha256:b04ac2c1fa16c126c1077710dd31d5780f002c5f69f8892c54b83a3a74877898",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:cd12cb42fb150fb2283fc05df5353fde88d5e35f3bf8189058756a6458eede87",
+          "platform_digest": "sha256:b04ac2c1fa16c126c1077710dd31d5780f002c5f69f8892c54b83a3a74877898"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-opamp-server": {
+          "image_id": "sha256:f8459b4e3e6a5153acc4571f99de64be8658621f6fc1d06f7715644b9a1259d6",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:62cfae32adb1f51904d5772727a846eb90c8304170c01c2e6ca09925cc49a693",
+          "platform_digest": "sha256:f8459b4e3e6a5153acc4571f99de64be8658621f6fc1d06f7715644b9a1259d6"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-opensearch": {
+          "image_id": "sha256:e2d67dae0dc224f4f2f5c64adb17a2d6e41aac9f2bd18bb59ac2a896d20b0fde",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:8950f637638476318a9f8eaf8fd608e4d3a164fbd3f429612f65009ee31677f5",
+          "platform_digest": "sha256:e2d67dae0dc224f4f2f5c64adb17a2d6e41aac9f2bd18bb59ac2a896d20b0fde"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-payment": {
+          "image_id": "sha256:c9bbe72133e9b6569f8e490441e7a1472f8767d12759b0eaf0af14e91e4a9d45",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:d498c7434d22ff7a82ec86843efd22c93c52cb8c6df4961a7110617b1e08c15f",
+          "platform_digest": "sha256:c9bbe72133e9b6569f8e490441e7a1472f8767d12759b0eaf0af14e91e4a9d45"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-product-catalog": {
+          "image_id": "sha256:7471d710ccf34ae074f15c7dfe5943fb731f8f21759bcfee2c81f670bf4d9363",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:278aff685646443b88cf1ab7d83812d82204fbb16ea279296161d05bf1329080",
+          "platform_digest": "sha256:7471d710ccf34ae074f15c7dfe5943fb731f8f21759bcfee2c81f670bf4d9363"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-quote": {
+          "image_id": "sha256:370d920d330a145a5e6769eab82dd256a11c8186c78d7afd7927119f402d2438",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:6bc8f7f6809e1435241dc9ea404e602657d192cf237bcd175d7344cec9e0d615",
+          "platform_digest": "sha256:370d920d330a145a5e6769eab82dd256a11c8186c78d7afd7927119f402d2438"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-recommendation": {
+          "image_id": "sha256:0b8524ba9dd99a12f4223b82816d80751fbc3c06b39ccee4b08669040ac0ad6b",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:6510027907f925b1d76d0c645c9c757427c8735577ea9a422291c7b4b770bfd5",
+          "platform_digest": "sha256:0b8524ba9dd99a12f4223b82816d80751fbc3c06b39ccee4b08669040ac0ad6b"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-shipping": {
+          "image_id": "sha256:c3622ca9ed2cadd4a6b7a28ca703549b7898ef5c7ee9c08ee34f2db410b547dd",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:02602e60edbfa7e019b21fa98f95e3d44bc3181c9aafaf82a73b5169ae8f9031",
+          "platform_digest": "sha256:c3622ca9ed2cadd4a6b7a28ca703549b7898ef5c7ee9c08ee34f2db410b547dd"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-telemetry-docs": {
+          "image_id": "sha256:51c253309603d438fa5e7d529c3f568fdd2c07b6907ca4d28d48b29107079be9",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:3519858704e72fe6ef8ce8c41e70dbd41410e79bdc1eea9608658e9eade06d05",
+          "platform_digest": "sha256:51c253309603d438fa5e7d529c3f568fdd2c07b6907ca4d28d48b29107079be9"
+        },
+        "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.157.0": {
+          "image_id": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6",
+          "index_reference": "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib@sha256:f2f01157055a9b2aab9df7118e1f1c9abf345e99b23bc7a2bc791db374a7d0f6",
+          "platform_digest": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6"
+        },
+        "ghcr.io/valkey-io/valkey:9.0.4-alpine3.23": {
+          "image_id": "sha256:bb8b48198974cb792b8bfc09d7e3c5f0d6e07508cb33e06817e2f24805778be5",
+          "index_reference": "ghcr.io/valkey-io/valkey@sha256:107b203169a20ef7c87548c157f4e4a833dbbbd20fefd3a26740b7f98ac80216",
+          "platform_digest": "sha256:bb8b48198974cb792b8bfc09d7e3c5f0d6e07508cb33e06817e2f24805778be5"
+        },
+        "grafana/grafana:13.1.0": {
+          "image_id": "sha256:55f41cacf3e8334ea89d76ada9cc546c09473650ab48a7861743bcbd83f5ef38",
+          "index_reference": "grafana/grafana@sha256:121a7a9ece6dc10b969f1f96eed64b4f07dfac0d0b8abc070f7cb83bbde86f63",
+          "platform_digest": "sha256:55f41cacf3e8334ea89d76ada9cc546c09473650ab48a7861743bcbd83f5ef38"
+        },
+        "postgres:18.4": {
+          "image_id": "sha256:f1dd3522a7fde8bf8e505f42583ecdc00b4967a4b94d32ba1f890d118fe17335",
+          "index_reference": "postgres@sha256:3a82e1f56c8f0f5616a11103ac3d47e632c3938698946a7ad26da0df1334744a",
+          "platform_digest": "sha256:f1dd3522a7fde8bf8e505f42583ecdc00b4967a4b94d32ba1f890d118fe17335"
+        },
+        "quay.io/jaegertracing/jaeger:2.19.0": {
+          "image_id": "sha256:476f9d88b6660cf93b47aac9b50de842855cb5cb50a35eef0108e7bde58a6985",
+          "index_reference": "quay.io/jaegertracing/jaeger@sha256:ede4864215be4cd85bd8c3129a2fea6c5713c5653c7282c429dba123014bc68b",
+          "platform_digest": "sha256:476f9d88b6660cf93b47aac9b50de842855cb5cb50a35eef0108e7bde58a6985"
+        },
+        "quay.io/prometheus/prometheus:v3.13.1": {
+          "image_id": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814",
+          "index_reference": "quay.io/prometheus/prometheus@sha256:3c42b892cf723fa54d2f262c37a0e1f80aa8c8ddb1da7b9b0df9455a35a7f893",
+          "platform_digest": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814"
+        }
+      },
+      "product_image": {
+        "image_id": "sha256:435fbd8ca2ec222b344c68d89003edb4ae35c042024a345ad644a2be9ff6fc74",
+        "platform_digest": "sha256:435fbd8ca2ec222b344c68d89003edb4ae35c042024a345ad644a2be9ff6fc74",
+        "config_digest": "sha256:f038b077e4ee7bb550ed266c67d6672e7862d386d853c56590a7981a51b5dfad",
+        "context_digest": "ecf4ffd9cea76d7fff4d3782da84ffbe3c17733664256e2dce785e04a26ac7a2"
+      },
+      "started_at": "2026-09-08T17:57:40.465650+00:00",
+      "started_at_basis": "Attempt identity seal timestamp; not first runtime creation",
+      "first_runtime_creation_observed_at": "2026-09-08T17:57:41.649889+00:00",
+      "plan_frozen_at": "2026-09-08T17:57:40.466590+00:00",
+      "plan_frozen_at_basis": "First stage timestamp; not first runtime mutation",
+      "ended_at": "2026-09-08T17:58:33.099239+00:00",
+      "failure_stage": "15-16-SANDBOX_STORAGE",
+      "runtime_surface_sha256": "110d9c4c640ff1f8524f205604320284be98944262e985bed5842e50bcaaf790",
+      "formal_counters": {
+        "observation": "NOT_REACHED",
+        "database_counts": null,
+        "basis": "Product was never started; stage and mutation journals contain no formal execution.",
+        "provider_calls": 0,
+        "formal_authority": "NONE"
+      },
+      "capability_sha256": null,
+      "capability_observation": "NOT_REACHED",
+      "original_cleanup": {
+        "terminal": "BLOCKED_SAFETY",
+        "remaining": {
+          "container": 0,
+          "network": 1,
+          "volume": 0
+        },
+        "nonowned_unchanged": null,
+        "nonowned_observation_basis": "Original cleanup did not complete nonowned check; later verified separately",
+        "evidence_sha256": "c0f503a66193685b478e0e4da5be7d9017f0089e7be2cfe932abaa5695c90648"
+      },
+      "reviewed_cleanup": {
+        "terminal": "CLEAN",
+        "remaining": {
+          "container": 0,
+          "network": 0,
+          "volume": 0
+        },
+        "nonowned_unchanged": true,
+        "evidence_sha256": "fcdb985e360564b74bfb7b8a571ead99e60b9a06ea0ee8a168ee885dc4a8aaf3"
+      },
+      "original_failure_retained": true,
+      "root_cause_analysis": {
+        "cause": "Created ordinary bridge/local network exposed explicit IPv4 true / IPv6 false default options.",
+        "repair": "Admit only the exact two-option default combination with original full network safety validation."
+      }
+    },
+    {
+      "attempt_id": "d23af9f0de954f0fac21622a753a357c",
+      "attempt_ordinal": 4,
+      "original_public_summary_sha256": "0bc511d57b48e78e9bf3bf03a2286f8e3d10439b98dd70f20dcdbcd1186d4a08",
+      "original_attempt_result_sha256": "6bb56327c36f8888c27b856a1703ffb6af729ad9a44ef47fe67c865ada1a58ee",
+      "original_evidence_index_sha256": "3ebe1220abfe33fa51bbc63f73dce7baed45040ea6dfde84bf32209621d9a1af",
+      "evidence_addendum_sha256": "ad9a9b8bf159a85d2c54311afcd19fc9cb9f29f4a225d03b82e088a2a7e5fbf9",
+      "source_head": "85ca64299a9afa086e22ec3aa9fbee71673e0bf7",
+      "policy_sha256": "583df7d3ed7e9d43bd0f5f53b9a4be1d34e2f07a3c9f3332f18076147fc3d6f8",
+      "compose_sha256s": {
+        "product": "f87af199e42186ff1bd56817640b2b13d83ba082f7411962ebb7fb0d94dc9995",
+        "sandbox": "80a08c418f26b7a249c9f0edcbdac531e9778274f56df59895b4c8bc9a7d48e0"
+      },
+      "semantic_compose_sha256": "c322a497bdd6deb31613622d65451c2f3682e708b4fc72adf855e1eb411736a9",
+      "image_commitments": {
+        "ghcr.io/open-feature/flagd:v0.16.0": {
+          "image_id": "sha256:5115fd9352d58fd41c7be775b33336f5e4b2cef8056bf5982f5c704d13ec590e",
+          "index_reference": "ghcr.io/open-feature/flagd@sha256:32234e63c1d0634883aabd31cbd46802934aaaef0153dfd653b5d1017940bb4e",
+          "platform_digest": "sha256:5115fd9352d58fd41c7be775b33336f5e4b2cef8056bf5982f5c704d13ec590e"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-accounting": {
+          "image_id": "sha256:0139fb0653a471d10160198ef2a117b6a63263c071fef77e2cd393b9b0853d51",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:74c490f862da264bc7c3b93fefb1a6cfce138861c3c6a8e0ceb32363bef17aaf",
+          "platform_digest": "sha256:0139fb0653a471d10160198ef2a117b6a63263c071fef77e2cd393b9b0853d51"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-ad": {
+          "image_id": "sha256:3f1965d23056bf68614e34d407faa6a9c730ab37a0d8ef698709ebf7d9fe1e91",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:e6c593fe75eb0309392951d35c7ac85fcd15c0b80430500921b7d2e9c332a6db",
+          "platform_digest": "sha256:3f1965d23056bf68614e34d407faa6a9c730ab37a0d8ef698709ebf7d9fe1e91"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-cart": {
+          "image_id": "sha256:2dd680b26be9a124424c0e1237e37060c30edf91f31c25d2c4e4775653f3a2a9",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:3f89a444250a8a56050ba59756be3ca269af500bf44e33579e79ba9c74cab8c1",
+          "platform_digest": "sha256:2dd680b26be9a124424c0e1237e37060c30edf91f31c25d2c4e4775653f3a2a9"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-checkout": {
+          "image_id": "sha256:07eae46624d18e21cf2c19c055f58133d5cc008b31a74f4765b20e294a9ae5f0",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:3d18cb304a6af6a512c5e488bb19ee42be7d71bdf75a9786aa7296b8fb0a5036",
+          "platform_digest": "sha256:07eae46624d18e21cf2c19c055f58133d5cc008b31a74f4765b20e294a9ae5f0"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-currency": {
+          "image_id": "sha256:4e8197e55b8b1646775281f5613d457026573b17cc486e0f74ce6edf234eb634",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:f82a7805e7ba635b62c08f8fe67a5deccb06c91dc51cb56ae88767f582ad7f75",
+          "platform_digest": "sha256:4e8197e55b8b1646775281f5613d457026573b17cc486e0f74ce6edf234eb634"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-email": {
+          "image_id": "sha256:893da607ae8f600845a1039fb7922a3fdbf577fe4e265e2c87fb59262ae494f2",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:d674d4081ca4201cbec9994e753ddf8f6a6fea7d57451c54fc964de6ac51c76c",
+          "platform_digest": "sha256:893da607ae8f600845a1039fb7922a3fdbf577fe4e265e2c87fb59262ae494f2"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-flagd-ui": {
+          "image_id": "sha256:bb6e142378a01f94d4f2cf322b8a145f2e33b20a2c41ba1643320b5039fe6b0e",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:92873a8e277d4db925f61b680708f4043e3aa08d8073c8e9000b83731f288bb7",
+          "platform_digest": "sha256:bb6e142378a01f94d4f2cf322b8a145f2e33b20a2c41ba1643320b5039fe6b0e"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-fraud-detection": {
+          "image_id": "sha256:fdf464e80f1a6c536cad86e3b429fda48b87c2bb8dafe1f25507322ff73d8859",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:1cdfd1bcf476914c39afff9d91144fe7a6bffd6b897b4e29b20485791c8ec6a5",
+          "platform_digest": "sha256:fdf464e80f1a6c536cad86e3b429fda48b87c2bb8dafe1f25507322ff73d8859"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-frontend": {
+          "image_id": "sha256:9b9495aa98049fe8987fcb9193312f70260fbacdba31b088089c789a2506a5c6",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:9505e349e140ed5efde4b03b77cf500ef5d53c568ea83502c7e9c26494b964a3",
+          "platform_digest": "sha256:9b9495aa98049fe8987fcb9193312f70260fbacdba31b088089c789a2506a5c6"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-frontend-proxy": {
+          "image_id": "sha256:5dca3e6fe127f12a78765428bb86e9aad3ec8ee5b6498095e9d9b258cf8d64d3",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:1c53bfb596970a014682925f804c686762c0c593949ce58a90ac38563f317841",
+          "platform_digest": "sha256:5dca3e6fe127f12a78765428bb86e9aad3ec8ee5b6498095e9d9b258cf8d64d3"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-image-provider": {
+          "image_id": "sha256:a34c69344d9c7da1f312c3c4516d5e04e75b44bdfe1eae824215f76d89c6f74e",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:93e1585e97ac3de0e2ace6929dc5e2a797e2c009fbb3eba668fa3990f4f271b5",
+          "platform_digest": "sha256:a34c69344d9c7da1f312c3c4516d5e04e75b44bdfe1eae824215f76d89c6f74e"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-kafka": {
+          "image_id": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:0601750a3ca4db7d27f746dc73f4180fda162e7a92a1a4847f5b6ae9ac51d477",
+          "platform_digest": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-load-generator": {
+          "image_id": "sha256:b04ac2c1fa16c126c1077710dd31d5780f002c5f69f8892c54b83a3a74877898",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:cd12cb42fb150fb2283fc05df5353fde88d5e35f3bf8189058756a6458eede87",
+          "platform_digest": "sha256:b04ac2c1fa16c126c1077710dd31d5780f002c5f69f8892c54b83a3a74877898"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-opamp-server": {
+          "image_id": "sha256:f8459b4e3e6a5153acc4571f99de64be8658621f6fc1d06f7715644b9a1259d6",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:62cfae32adb1f51904d5772727a846eb90c8304170c01c2e6ca09925cc49a693",
+          "platform_digest": "sha256:f8459b4e3e6a5153acc4571f99de64be8658621f6fc1d06f7715644b9a1259d6"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-opensearch": {
+          "image_id": "sha256:e2d67dae0dc224f4f2f5c64adb17a2d6e41aac9f2bd18bb59ac2a896d20b0fde",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:8950f637638476318a9f8eaf8fd608e4d3a164fbd3f429612f65009ee31677f5",
+          "platform_digest": "sha256:e2d67dae0dc224f4f2f5c64adb17a2d6e41aac9f2bd18bb59ac2a896d20b0fde"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-payment": {
+          "image_id": "sha256:c9bbe72133e9b6569f8e490441e7a1472f8767d12759b0eaf0af14e91e4a9d45",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:d498c7434d22ff7a82ec86843efd22c93c52cb8c6df4961a7110617b1e08c15f",
+          "platform_digest": "sha256:c9bbe72133e9b6569f8e490441e7a1472f8767d12759b0eaf0af14e91e4a9d45"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-product-catalog": {
+          "image_id": "sha256:7471d710ccf34ae074f15c7dfe5943fb731f8f21759bcfee2c81f670bf4d9363",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:278aff685646443b88cf1ab7d83812d82204fbb16ea279296161d05bf1329080",
+          "platform_digest": "sha256:7471d710ccf34ae074f15c7dfe5943fb731f8f21759bcfee2c81f670bf4d9363"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-quote": {
+          "image_id": "sha256:370d920d330a145a5e6769eab82dd256a11c8186c78d7afd7927119f402d2438",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:6bc8f7f6809e1435241dc9ea404e602657d192cf237bcd175d7344cec9e0d615",
+          "platform_digest": "sha256:370d920d330a145a5e6769eab82dd256a11c8186c78d7afd7927119f402d2438"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-recommendation": {
+          "image_id": "sha256:0b8524ba9dd99a12f4223b82816d80751fbc3c06b39ccee4b08669040ac0ad6b",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:6510027907f925b1d76d0c645c9c757427c8735577ea9a422291c7b4b770bfd5",
+          "platform_digest": "sha256:0b8524ba9dd99a12f4223b82816d80751fbc3c06b39ccee4b08669040ac0ad6b"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-shipping": {
+          "image_id": "sha256:c3622ca9ed2cadd4a6b7a28ca703549b7898ef5c7ee9c08ee34f2db410b547dd",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:02602e60edbfa7e019b21fa98f95e3d44bc3181c9aafaf82a73b5169ae8f9031",
+          "platform_digest": "sha256:c3622ca9ed2cadd4a6b7a28ca703549b7898ef5c7ee9c08ee34f2db410b547dd"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-telemetry-docs": {
+          "image_id": "sha256:51c253309603d438fa5e7d529c3f568fdd2c07b6907ca4d28d48b29107079be9",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:3519858704e72fe6ef8ce8c41e70dbd41410e79bdc1eea9608658e9eade06d05",
+          "platform_digest": "sha256:51c253309603d438fa5e7d529c3f568fdd2c07b6907ca4d28d48b29107079be9"
+        },
+        "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.157.0": {
+          "image_id": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6",
+          "index_reference": "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib@sha256:f2f01157055a9b2aab9df7118e1f1c9abf345e99b23bc7a2bc791db374a7d0f6",
+          "platform_digest": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6"
+        },
+        "ghcr.io/valkey-io/valkey:9.0.4-alpine3.23": {
+          "image_id": "sha256:bb8b48198974cb792b8bfc09d7e3c5f0d6e07508cb33e06817e2f24805778be5",
+          "index_reference": "ghcr.io/valkey-io/valkey@sha256:107b203169a20ef7c87548c157f4e4a833dbbbd20fefd3a26740b7f98ac80216",
+          "platform_digest": "sha256:bb8b48198974cb792b8bfc09d7e3c5f0d6e07508cb33e06817e2f24805778be5"
+        },
+        "grafana/grafana:13.1.0": {
+          "image_id": "sha256:55f41cacf3e8334ea89d76ada9cc546c09473650ab48a7861743bcbd83f5ef38",
+          "index_reference": "grafana/grafana@sha256:121a7a9ece6dc10b969f1f96eed64b4f07dfac0d0b8abc070f7cb83bbde86f63",
+          "platform_digest": "sha256:55f41cacf3e8334ea89d76ada9cc546c09473650ab48a7861743bcbd83f5ef38"
+        },
+        "postgres:18.4": {
+          "image_id": "sha256:f1dd3522a7fde8bf8e505f42583ecdc00b4967a4b94d32ba1f890d118fe17335",
+          "index_reference": "postgres@sha256:3a82e1f56c8f0f5616a11103ac3d47e632c3938698946a7ad26da0df1334744a",
+          "platform_digest": "sha256:f1dd3522a7fde8bf8e505f42583ecdc00b4967a4b94d32ba1f890d118fe17335"
+        },
+        "quay.io/jaegertracing/jaeger:2.19.0": {
+          "image_id": "sha256:476f9d88b6660cf93b47aac9b50de842855cb5cb50a35eef0108e7bde58a6985",
+          "index_reference": "quay.io/jaegertracing/jaeger@sha256:ede4864215be4cd85bd8c3129a2fea6c5713c5653c7282c429dba123014bc68b",
+          "platform_digest": "sha256:476f9d88b6660cf93b47aac9b50de842855cb5cb50a35eef0108e7bde58a6985"
+        },
+        "quay.io/prometheus/prometheus:v3.13.1": {
+          "image_id": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814",
+          "index_reference": "quay.io/prometheus/prometheus@sha256:3c42b892cf723fa54d2f262c37a0e1f80aa8c8ddb1da7b9b0df9455a35a7f893",
+          "platform_digest": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814"
+        }
+      },
+      "product_image": {
+        "image_id": "sha256:e30335f232679262918e3f03a5ea93dd82ad3b1f2f68c0bf6c0565be3a61026b",
+        "platform_digest": "sha256:e30335f232679262918e3f03a5ea93dd82ad3b1f2f68c0bf6c0565be3a61026b",
+        "config_digest": "sha256:73ef4e49b7dd78d7bf13e0030fad3d2bbd47017f5beaca86a4b9bc90494148e8",
+        "context_digest": "ecf4ffd9cea76d7fff4d3782da84ffbe3c17733664256e2dce785e04a26ac7a2"
+      },
+      "started_at": "2026-09-08T18:39:10.166556+00:00",
+      "started_at_basis": "Attempt identity seal timestamp; not first runtime creation",
+      "first_runtime_creation_observed_at": "2026-09-08T18:39:11.374213+00:00",
+      "plan_frozen_at": "2026-09-08T18:39:10.167493+00:00",
+      "plan_frozen_at_basis": "First stage timestamp; not first runtime mutation",
+      "ended_at": "2026-09-08T18:40:59.050730+00:00",
+      "failure_stage": "17-18-SANDBOX_CREATE",
+      "runtime_surface_sha256": "3e9a49eb8757b99c3ec8040ba0c793c8b1f6c92dc6e11bccf3136ecdf3e5c960",
+      "formal_counters": {
+        "observation": "NOT_REACHED",
+        "database_counts": null,
+        "basis": "Product was never started; stage and mutation journals contain no formal execution.",
+        "provider_calls": 0,
+        "formal_authority": "NONE"
+      },
+      "capability_sha256": null,
+      "capability_observation": "NOT_REACHED",
+      "original_cleanup": {
+        "terminal": "BLOCKED_SAFETY",
+        "remaining": {
+          "container": 5,
+          "network": 0,
+          "volume": 4
+        },
+        "nonowned_unchanged": null,
+        "nonowned_observation_basis": "Original cleanup did not complete nonowned check; later verified separately",
+        "evidence_sha256": "198fc76058f5ce10cf64dc882b592d16cb35a0d6cba67aeb6ed336fdf6cc16aa"
+      },
+      "reviewed_cleanup": {
+        "terminal": "CLEAN",
+        "remaining": {
+          "container": 0,
+          "network": 0,
+          "volume": 0
+        },
+        "nonowned_unchanged": true,
+        "evidence_sha256": "e684632f6a6c0e50b6ee1b03f16dc93af342cc65ee4cf7f2e0ae38be001f688c"
+      },
+      "original_failure_retained": true,
+      "root_cause_analysis": {
+        "cause": "Four explicit-null Compose variables serialized as bare unset entries; astronomy-db exact bound arm64 manifest carried v8 variant.",
+        "repair": "Admit bare keys only for explicit null, retaining unset semantics; exact arm64 descriptor allows absent/v8 only."
+      }
+    },
+    {
+      "attempt_id": "c979432b498c4aca989c11f86ede0346",
+      "attempt_ordinal": 5,
+      "original_public_summary_sha256": "65764a59968cf4928f80b6e2b0ad79041adfb3bc509b48667fd73979b8d2bf6d",
+      "original_attempt_result_sha256": "a9156507267e6262d98acf4dd9f51b77a39d342fdffb22d5443ec0d09f2360ba",
+      "original_evidence_index_sha256": "82306a8d7f5e0526400d53cc0dae0db8a0e37ffa08d34b0d9c0400230e0ba729",
+      "evidence_addendum_sha256": "de8866d8ecb4f2b4f961913413f8376e5800b9c3e0c81cbece5b0b63481ba981",
+      "source_head": "33a34b379d092ba9ac05453c0471739781865355",
+      "policy_sha256": "15732cb9636e7caa114fcba407176f48aa771ed23380e8aac3c35ec9ae505792",
+      "compose_sha256s": {
+        "product": "3d8c4a14587e9d114591600076427379b9d2ac46afffd1c075830f13601aaf96",
+        "sandbox": "450e44cce189244b582fcae2ce3619e246ed2c231526a98f27e2130f62b56139"
+      },
+      "semantic_compose_sha256": "e3845fa15220562b1c88fdafe37ab1f70138ff0fe062049923762e6391507919",
+      "image_commitments": {
+        "ghcr.io/open-feature/flagd:v0.16.0": {
+          "image_id": "sha256:5115fd9352d58fd41c7be775b33336f5e4b2cef8056bf5982f5c704d13ec590e",
+          "index_reference": "ghcr.io/open-feature/flagd@sha256:32234e63c1d0634883aabd31cbd46802934aaaef0153dfd653b5d1017940bb4e",
+          "platform_digest": "sha256:5115fd9352d58fd41c7be775b33336f5e4b2cef8056bf5982f5c704d13ec590e"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-accounting": {
+          "image_id": "sha256:0139fb0653a471d10160198ef2a117b6a63263c071fef77e2cd393b9b0853d51",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:74c490f862da264bc7c3b93fefb1a6cfce138861c3c6a8e0ceb32363bef17aaf",
+          "platform_digest": "sha256:0139fb0653a471d10160198ef2a117b6a63263c071fef77e2cd393b9b0853d51"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-ad": {
+          "image_id": "sha256:3f1965d23056bf68614e34d407faa6a9c730ab37a0d8ef698709ebf7d9fe1e91",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:e6c593fe75eb0309392951d35c7ac85fcd15c0b80430500921b7d2e9c332a6db",
+          "platform_digest": "sha256:3f1965d23056bf68614e34d407faa6a9c730ab37a0d8ef698709ebf7d9fe1e91"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-cart": {
+          "image_id": "sha256:2dd680b26be9a124424c0e1237e37060c30edf91f31c25d2c4e4775653f3a2a9",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:3f89a444250a8a56050ba59756be3ca269af500bf44e33579e79ba9c74cab8c1",
+          "platform_digest": "sha256:2dd680b26be9a124424c0e1237e37060c30edf91f31c25d2c4e4775653f3a2a9"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-checkout": {
+          "image_id": "sha256:07eae46624d18e21cf2c19c055f58133d5cc008b31a74f4765b20e294a9ae5f0",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:3d18cb304a6af6a512c5e488bb19ee42be7d71bdf75a9786aa7296b8fb0a5036",
+          "platform_digest": "sha256:07eae46624d18e21cf2c19c055f58133d5cc008b31a74f4765b20e294a9ae5f0"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-currency": {
+          "image_id": "sha256:4e8197e55b8b1646775281f5613d457026573b17cc486e0f74ce6edf234eb634",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:f82a7805e7ba635b62c08f8fe67a5deccb06c91dc51cb56ae88767f582ad7f75",
+          "platform_digest": "sha256:4e8197e55b8b1646775281f5613d457026573b17cc486e0f74ce6edf234eb634"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-email": {
+          "image_id": "sha256:893da607ae8f600845a1039fb7922a3fdbf577fe4e265e2c87fb59262ae494f2",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:d674d4081ca4201cbec9994e753ddf8f6a6fea7d57451c54fc964de6ac51c76c",
+          "platform_digest": "sha256:893da607ae8f600845a1039fb7922a3fdbf577fe4e265e2c87fb59262ae494f2"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-flagd-ui": {
+          "image_id": "sha256:bb6e142378a01f94d4f2cf322b8a145f2e33b20a2c41ba1643320b5039fe6b0e",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:92873a8e277d4db925f61b680708f4043e3aa08d8073c8e9000b83731f288bb7",
+          "platform_digest": "sha256:bb6e142378a01f94d4f2cf322b8a145f2e33b20a2c41ba1643320b5039fe6b0e"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-fraud-detection": {
+          "image_id": "sha256:fdf464e80f1a6c536cad86e3b429fda48b87c2bb8dafe1f25507322ff73d8859",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:1cdfd1bcf476914c39afff9d91144fe7a6bffd6b897b4e29b20485791c8ec6a5",
+          "platform_digest": "sha256:fdf464e80f1a6c536cad86e3b429fda48b87c2bb8dafe1f25507322ff73d8859"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-frontend": {
+          "image_id": "sha256:9b9495aa98049fe8987fcb9193312f70260fbacdba31b088089c789a2506a5c6",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:9505e349e140ed5efde4b03b77cf500ef5d53c568ea83502c7e9c26494b964a3",
+          "platform_digest": "sha256:9b9495aa98049fe8987fcb9193312f70260fbacdba31b088089c789a2506a5c6"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-frontend-proxy": {
+          "image_id": "sha256:5dca3e6fe127f12a78765428bb86e9aad3ec8ee5b6498095e9d9b258cf8d64d3",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:1c53bfb596970a014682925f804c686762c0c593949ce58a90ac38563f317841",
+          "platform_digest": "sha256:5dca3e6fe127f12a78765428bb86e9aad3ec8ee5b6498095e9d9b258cf8d64d3"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-image-provider": {
+          "image_id": "sha256:a34c69344d9c7da1f312c3c4516d5e04e75b44bdfe1eae824215f76d89c6f74e",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:93e1585e97ac3de0e2ace6929dc5e2a797e2c009fbb3eba668fa3990f4f271b5",
+          "platform_digest": "sha256:a34c69344d9c7da1f312c3c4516d5e04e75b44bdfe1eae824215f76d89c6f74e"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-kafka": {
+          "image_id": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:0601750a3ca4db7d27f746dc73f4180fda162e7a92a1a4847f5b6ae9ac51d477",
+          "platform_digest": "sha256:80478d79c95aba98f487dc8df11b10a1db1ddf537b739d32eac9e6ad1b887f9a"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-load-generator": {
+          "image_id": "sha256:b04ac2c1fa16c126c1077710dd31d5780f002c5f69f8892c54b83a3a74877898",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:cd12cb42fb150fb2283fc05df5353fde88d5e35f3bf8189058756a6458eede87",
+          "platform_digest": "sha256:b04ac2c1fa16c126c1077710dd31d5780f002c5f69f8892c54b83a3a74877898"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-opamp-server": {
+          "image_id": "sha256:f8459b4e3e6a5153acc4571f99de64be8658621f6fc1d06f7715644b9a1259d6",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:62cfae32adb1f51904d5772727a846eb90c8304170c01c2e6ca09925cc49a693",
+          "platform_digest": "sha256:f8459b4e3e6a5153acc4571f99de64be8658621f6fc1d06f7715644b9a1259d6"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-opensearch": {
+          "image_id": "sha256:e2d67dae0dc224f4f2f5c64adb17a2d6e41aac9f2bd18bb59ac2a896d20b0fde",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:8950f637638476318a9f8eaf8fd608e4d3a164fbd3f429612f65009ee31677f5",
+          "platform_digest": "sha256:e2d67dae0dc224f4f2f5c64adb17a2d6e41aac9f2bd18bb59ac2a896d20b0fde"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-payment": {
+          "image_id": "sha256:c9bbe72133e9b6569f8e490441e7a1472f8767d12759b0eaf0af14e91e4a9d45",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:d498c7434d22ff7a82ec86843efd22c93c52cb8c6df4961a7110617b1e08c15f",
+          "platform_digest": "sha256:c9bbe72133e9b6569f8e490441e7a1472f8767d12759b0eaf0af14e91e4a9d45"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-product-catalog": {
+          "image_id": "sha256:7471d710ccf34ae074f15c7dfe5943fb731f8f21759bcfee2c81f670bf4d9363",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:278aff685646443b88cf1ab7d83812d82204fbb16ea279296161d05bf1329080",
+          "platform_digest": "sha256:7471d710ccf34ae074f15c7dfe5943fb731f8f21759bcfee2c81f670bf4d9363"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-quote": {
+          "image_id": "sha256:370d920d330a145a5e6769eab82dd256a11c8186c78d7afd7927119f402d2438",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:6bc8f7f6809e1435241dc9ea404e602657d192cf237bcd175d7344cec9e0d615",
+          "platform_digest": "sha256:370d920d330a145a5e6769eab82dd256a11c8186c78d7afd7927119f402d2438"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-recommendation": {
+          "image_id": "sha256:0b8524ba9dd99a12f4223b82816d80751fbc3c06b39ccee4b08669040ac0ad6b",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:6510027907f925b1d76d0c645c9c757427c8735577ea9a422291c7b4b770bfd5",
+          "platform_digest": "sha256:0b8524ba9dd99a12f4223b82816d80751fbc3c06b39ccee4b08669040ac0ad6b"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-shipping": {
+          "image_id": "sha256:c3622ca9ed2cadd4a6b7a28ca703549b7898ef5c7ee9c08ee34f2db410b547dd",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:02602e60edbfa7e019b21fa98f95e3d44bc3181c9aafaf82a73b5169ae8f9031",
+          "platform_digest": "sha256:c3622ca9ed2cadd4a6b7a28ca703549b7898ef5c7ee9c08ee34f2db410b547dd"
+        },
+        "ghcr.io/open-telemetry/demo:3.0.0-telemetry-docs": {
+          "image_id": "sha256:51c253309603d438fa5e7d529c3f568fdd2c07b6907ca4d28d48b29107079be9",
+          "index_reference": "ghcr.io/open-telemetry/demo@sha256:3519858704e72fe6ef8ce8c41e70dbd41410e79bdc1eea9608658e9eade06d05",
+          "platform_digest": "sha256:51c253309603d438fa5e7d529c3f568fdd2c07b6907ca4d28d48b29107079be9"
+        },
+        "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.157.0": {
+          "image_id": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6",
+          "index_reference": "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib@sha256:f2f01157055a9b2aab9df7118e1f1c9abf345e99b23bc7a2bc791db374a7d0f6",
+          "platform_digest": "sha256:1fef9f07f04eb6775b4076ea4f817d6b7b9050e23e52941f0756ba08df798ea6"
+        },
+        "ghcr.io/valkey-io/valkey:9.0.4-alpine3.23": {
+          "image_id": "sha256:bb8b48198974cb792b8bfc09d7e3c5f0d6e07508cb33e06817e2f24805778be5",
+          "index_reference": "ghcr.io/valkey-io/valkey@sha256:107b203169a20ef7c87548c157f4e4a833dbbbd20fefd3a26740b7f98ac80216",
+          "platform_digest": "sha256:bb8b48198974cb792b8bfc09d7e3c5f0d6e07508cb33e06817e2f24805778be5"
+        },
+        "grafana/grafana:13.1.0": {
+          "image_id": "sha256:55f41cacf3e8334ea89d76ada9cc546c09473650ab48a7861743bcbd83f5ef38",
+          "index_reference": "grafana/grafana@sha256:121a7a9ece6dc10b969f1f96eed64b4f07dfac0d0b8abc070f7cb83bbde86f63",
+          "platform_digest": "sha256:55f41cacf3e8334ea89d76ada9cc546c09473650ab48a7861743bcbd83f5ef38"
+        },
+        "postgres:18.4": {
+          "image_id": "sha256:f1dd3522a7fde8bf8e505f42583ecdc00b4967a4b94d32ba1f890d118fe17335",
+          "index_reference": "postgres@sha256:3a82e1f56c8f0f5616a11103ac3d47e632c3938698946a7ad26da0df1334744a",
+          "platform_digest": "sha256:f1dd3522a7fde8bf8e505f42583ecdc00b4967a4b94d32ba1f890d118fe17335"
+        },
+        "quay.io/jaegertracing/jaeger:2.19.0": {
+          "image_id": "sha256:476f9d88b6660cf93b47aac9b50de842855cb5cb50a35eef0108e7bde58a6985",
+          "index_reference": "quay.io/jaegertracing/jaeger@sha256:ede4864215be4cd85bd8c3129a2fea6c5713c5653c7282c429dba123014bc68b",
+          "platform_digest": "sha256:476f9d88b6660cf93b47aac9b50de842855cb5cb50a35eef0108e7bde58a6985"
+        },
+        "quay.io/prometheus/prometheus:v3.13.1": {
+          "image_id": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814",
+          "index_reference": "quay.io/prometheus/prometheus@sha256:3c42b892cf723fa54d2f262c37a0e1f80aa8c8ddb1da7b9b0df9455a35a7f893",
+          "platform_digest": "sha256:2d61f37ba9f2185195dfad94ee500d7ac1986560bac79a77d0a6de182a5bf814"
+        }
+      },
+      "product_image": {
+        "image_id": "sha256:4badcd80b38bdecbf79809c83424bbb7a8f9cedfbd25faeefa40f268a31367b9",
+        "platform_digest": "sha256:4badcd80b38bdecbf79809c83424bbb7a8f9cedfbd25faeefa40f268a31367b9",
+        "config_digest": "sha256:b1a27eddfe49edec8ad9bce24e57dff3c99ad265bc865d6fd292acdc3eaa033c",
+        "context_digest": "ecf4ffd9cea76d7fff4d3782da84ffbe3c17733664256e2dce785e04a26ac7a2"
+      },
+      "started_at": "2026-09-08T19:15:33.161475+00:00",
+      "started_at_basis": "Attempt identity seal timestamp; not first runtime creation",
+      "first_runtime_creation_observed_at": "2026-09-08T19:15:34.364597+00:00",
+      "plan_frozen_at": "2026-09-08T19:15:33.162438+00:00",
+      "plan_frozen_at_basis": "First stage timestamp; not first runtime mutation",
+      "ended_at": "2026-09-08T19:17:25.421698+00:00",
+      "failure_stage": "17-18-SANDBOX_START",
+      "runtime_surface_sha256": "218f6e00ee1ec6e80a26b1e15f65e4ace28c37d3eac363d91b52838d2e2bc5bd",
+      "formal_counters": {
+        "observation": "NOT_REACHED",
+        "database_counts": null,
+        "basis": "Product was never started; stage and mutation journals contain no formal execution.",
+        "provider_calls": 0,
+        "formal_authority": "NONE"
+      },
+      "capability_sha256": null,
+      "capability_observation": "NOT_REACHED",
+      "original_cleanup": {
+        "terminal": "BLOCKED_SAFETY",
+        "remaining": {
+          "container": 1,
+          "network": 1,
+          "volume": 6
+        },
+        "nonowned_unchanged": null,
+        "nonowned_observation_basis": "Original cleanup did not complete nonowned check; later verified separately",
+        "evidence_sha256": "655fa8c82cbe487dbb1647c12fb13c7cc5daa1f9ce4b57b8f59f0ed985515103"
+      },
+      "reviewed_cleanup": {
+        "terminal": "CLEAN",
+        "remaining": {
+          "container": 0,
+          "network": 0,
+          "volume": 0
+        },
+        "nonowned_unchanged": true,
+        "evidence_sha256": "93f0534bf73d6fd19d56688eb64b2503d174f741e982dd8f44dfd2431b6246cb"
+      },
+      "original_failure_retained": true,
+      "root_cause_analysis": {
+        "cause": "After astronomy-db start, the same bound container serialized OomKillDisable false to null. The ordinary running validator rejected it.",
+        "repair": "Cleanup-only exact-container nonroot double cgroup census, full raw/birth/start/process/network/admission proof validation, then precise cleanup.",
+        "unresolved": "Ordinary runtime representation remains fail-closed; no successful end-to-end attempt."
+      }
+    }
+  ]
+}

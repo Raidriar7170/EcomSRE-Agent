@@ -1,0 +1,98 @@
+{
+  "schema_version": "ecomsre.preflight.v4.final.v1",
+  "terminal": "engineering_preflight_exhausted_checkpoint",
+  "starting_main": "cc941b51cbff9287b876be49652cd0ad83030474",
+  "goal_sha256": "3f3751ec1b957547da508e0068d36eb1c7877d4374477820f2b370de2d16ece5",
+  "attempts_consumed": 5,
+  "complete_passes": 0,
+  "consecutive_pass_attempt_ids": [],
+  "attempts": [
+    {
+      "attempt_id": "b8d4b937be174a87978f9d6314ac963b",
+      "ordinal": 1,
+      "terminal": "FAILED",
+      "source_head": "d058ea685a648084dffcc44a290ab58cc058ced2"
+    },
+    {
+      "attempt_id": "ca131709ca59447ba17f2445af19da5e",
+      "ordinal": 2,
+      "terminal": "FAILED",
+      "source_head": "c71f954c65a2347634523ae07833137377a326d2"
+    },
+    {
+      "attempt_id": "efa9f57de6394435ab2d0c0a68fb96a8",
+      "ordinal": 3,
+      "terminal": "FAILED",
+      "source_head": "5bc530b1aa50be37b9eb51173aab94d12ff735ba"
+    },
+    {
+      "attempt_id": "d23af9f0de954f0fac21622a753a357c",
+      "ordinal": 4,
+      "terminal": "FAILED",
+      "source_head": "85ca64299a9afa086e22ec3aa9fbee71673e0bf7"
+    },
+    {
+      "attempt_id": "c979432b498c4aca989c11f86ede0346",
+      "ordinal": 5,
+      "terminal": "FAILED",
+      "source_head": "33a34b379d092ba9ac05453c0471739781865355"
+    }
+  ],
+  "last_runtime_attempt_head": "33a34b379d092ba9ac05453c0471739781865355",
+  "cleanup_repair_head": "1b2fd87879b3f97aa3156387e370609dc735935f",
+  "remaining_owned_resources": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0
+  },
+  "cleanup": {
+    "latest_attempt": "CLEAN",
+    "all_owned_resources_removed": true,
+    "historical_attempt1": "OWNED_REMOVED_NONOWNED_DRIFT",
+    "other_attempts": "CLEAN after separately reviewed recovery; original FAILED / BLOCKED_SAFETY retained"
+  },
+  "best_reached_stage": "All 28 Sandbox containers created and birth validated; astronomy-db started and observed healthy; full Sandbox start/health not reached",
+  "unresolved_blockers": [
+    "No complete end-to-end engineering PASS in five attempts",
+    "Ordinary Sandbox OOM false-to-null transition remains fail-closed; cleanup-only proof does not repair runtime",
+    "28-service health, warmup, healthy traffic, Product readiness, baseline and NO_INCIDENT remain unverified"
+  ],
+  "formal_action_counters": {
+    "product_database_observation": "NOT_REACHED",
+    "database_counts": null,
+    "provider_calls": 0,
+    "formal_authority": "NONE",
+    "basis": "No Product runtime, fault injection, remediation or formal campaign in all five stage/mutation journals"
+  },
+  "known_limitations": [
+    "Attempt1 non-owned builtin bridge identity changed during observed idle-VM wake; causation is a supported inference, not normalized",
+    "One post-attempt read-only system df diagnostic exceeded section18; retained and removed from execution path",
+    "Offline checks and CI do not establish live end-to-end acceptance"
+  ],
+  "future_formal_campaign": "WITHHOLD",
+  "pr_disposition": "Draft / REVIEW_REQUIRED",
+  "merge_authorized_by_this_terminal": false,
+  "validation": {
+    "tested_head": "1b2fd87879b3f97aa3156387e370609dc735935f",
+    "full_pytest": {
+      "passed": 6663,
+      "skipped": 21,
+      "warnings": 15,
+      "elapsed_seconds": 626.96,
+      "log_sha256": "2f502a8b4dfa314ceb206d77ebe48b68cbd1d81499a5463b8d0effa9d55dff27"
+    },
+    "focused_passed": 170,
+    "ruff": "PASS",
+    "mainline_mypy": "PASS",
+    "v4_mypy": "PASS",
+    "history_and_scope": "PASS",
+    "diff_check": "PASS",
+    "frozen_dependency_sync": "PASS",
+    "publication_changes": "Documentation-only from tested cleanup head; exact publication-head CI and final review are recorded in PR closure"
+  },
+  "review": {
+    "cleanup_implementation": "Sagan ALLOW / Must Fix 0",
+    "cleanup_evidence": "Sagan PASS / ALLOW / Must Fix 0",
+    "final_publication": "See final-review.md and exact final-head review in PR closure; no MERGE_ALLOW"
+  }
+}

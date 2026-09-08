@@ -55,3 +55,14 @@ Sagan admitted publication head `85ca64299a9afa086e22ec3aa9fbee71673e0bf7`, tree
 Cleanup repair `679df7afcf21d743145a5651f088774db2b81789`, tree `98e4aa37e582b0ec4d0ff4d42554c9156c9a1c7c`, received cleanup-only ALLOW / Must Fix 0. The reviewer verified the exact null environment mapping, fresh image v8 match, unchanged created-container identities, and all 28 original receipt rows passing complete repaired birth validation. Cleanup authority covered only the five retained containers and four volumes; no new start or create was allowed.
 
 After recovery, Sagan verified all five recovered container and six volume deletion chains (11 groups, including all nine new removals), fresh preflights, double final owned-zero/non-owned-unchanged captures, unchanged images and free listeners. Code gate for `679df7a`: ALLOW / Must Fix 0 / Claim Accuracy PASS. Original failure remains immutable.
+
+
+## Attempt 5 bounded running cleanup review
+
+Runtime Attempt 5 used `33a34b379d092ba9ac05453c0471739781865355` after independent admission, 6648 full local tests (21 skips) and exact-head CI passed. The first Sandbox start failed on OOM false-to-null representation; the attempt remained FAILED.
+
+Review of cleanup implementation fd192ff withheld authority for missing persisted raw/proof-chain validation and full running endpoint binding. Review of 260d4a3 additionally required derived PID/StartedAt metadata to match the verified census observation. These gaps were fixed and negative tests added before any census or cleanup.
+
+Sagan approved cleanup-only HEAD `1b2fd87879b3f97aa3156387e370609dc735935f`, tree `778ed351be6777fb392c4921d50b1156592ee7cd`: ALLOW / Must Fix 0, with 15 independent focused proof tests. Authority covered one fixed nonroot read-only census, then exact proof-gated stop/remove and dependent cleanup; no new attempt or ordinary runtime extension.
+
+Post-cleanup independent evidence review: PASS / ALLOW / Must Fix 0. Exactly one census, nine exact cleanup chains, double owned-zero/non-owned-unchanged captures, unchanged images, free ports, and original failed result preservation were verified. Earlier interrupted full tests on fd192ff and 260d4a3 do not count as PASS. Budget remains 5/5, zero complete PASS.

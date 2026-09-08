@@ -4,9 +4,9 @@ The activated [Goal](../goals/EcomSRE_Product_v0.4_Live_Harness_Engineering_Pref
 
 ## State
 
-Four attempts consumed 4/5; zero complete PASS. Attempt 4 completed Probe qualification/removal, storage and actual creation of all 28 Sandbox containers, then failed five birth validations before Sandbox start. Reviewed recovery removed all remaining owned resources; its later cleanup is CLEAN and original FAILED/BLOCKED_SAFETY remains unchanged. The remaining one attempt cannot satisfy two consecutive passes; no additional budget is inferred. Current repair: 155 focused tests, Ruff and scoped mypy PASS, with full published-head validation pending. Previous runtime `85ca642` passed 6647 local full tests (21 skips) and exact-head CI.
+All five attempts are consumed with zero complete PASS. Terminal: `engineering_preflight_exhausted_checkpoint`, Draft / REVIEW_REQUIRED, future formal campaign WITHHOLD. Attempt 5 created and birth-validated all 28 Sandbox containers, then started astronomy-db and observed healthy before ordinary OOM representation validation failed. Its reviewed cleanup reached CLEAN with owned zero, unchanged non-owned inventory/images and free ports. Attempt 1 retains its historical NONOWNED_DRIFT; every original FAILED/BLOCKED_SAFETY remains unchanged. Full service health, traffic and Product were not reached. No new attempt is authorized.
 
-The versioned policy treats Mounts array ordering as serialization while retaining every keyed mount field. Docker readiness uses only `version/info` as Goal section 18 requires. An authorized exact-source Product build is scheduled after CI and immediately before the new double baseline. A diagnostic `system df` probe was performed before this restriction was reconciled; it is preserved as a scoped read-only deviation and is not part of the admitted execution path. A narrowly committed recovery proof can acknowledge the prior exact owned closure after an independently observed daemon event without changing the old failed result or accepting its non-owned comparison as unchanged. Every new attempt still requires its own complete admission.
+The versioned policy treats Mounts array ordering as serialization while retaining every keyed mount field. Docker readiness uses only `version/info` as Goal section 18 requires. For each historical attempt, the authorized exact-source Product build followed CI and immediately preceded its new double baseline. A diagnostic `system df` probe was performed before this restriction was reconciled; it is preserved as a scoped read-only deviation and is not part of the admitted execution path. A narrowly committed recovery proof can acknowledge the prior exact owned closure after an independently observed daemon event without changing the old failed result or accepting its non-owned comparison as unchanged. Every new attempt still requires its own complete admission.
 
 ## Components and authority
 
@@ -24,7 +24,7 @@ Product API/Worker have no remediation profile, Docker socket or remediation mou
 
 ## Independent design review
 
-Read-only review required full network/platform and running-process anchors, typed probe OOM evidence, partial-create recovery, append-only intent reconciliation, strict non-owned identity comparison and creation-receipt-bound birth authority. These are implemented. Subsequent review required complete pre-start identity checks, budget consumption on observed creation even when birth validation fails, diagnostic failure isolation, and rejection of previous project resources before a new attempt. The fixes are covered by focused tests; final admission remains withheld until the reviewer binds the implementation head/tree.
+Read-only review required full network/platform and running-process anchors, typed probe OOM evidence, partial-create recovery, append-only intent reconciliation, strict non-owned identity comparison and creation-receipt-bound birth authority. These are implemented. Subsequent review required complete pre-start identity checks, budget consumption on observed creation even when birth validation fails, diagnostic failure isolation, and rejection of previous project resources before a new attempt. The fixes are covered by focused tests and historical head/tree-bound review. The budget is now exhausted; no further runtime admission is open.
 
 Budget reservation checks prior cleanup and rejects an identical failed surface before any new create. Actual resource creation consumes the allowance independently of cleanup eligibility. Interrupted operations reconcile original intents and observations without repeating mutations. Failure diagnostics cannot skip safe cleanup; cleanup and closure failures retain separate typed records and the original attempt failure.
 
@@ -34,7 +34,7 @@ Docker image compatibility normalization is limited to documented absent/default
 
 Private runtime evidence is append-only, mode 0600 under directories 0700. Public files contain safe commitments and accurate progress. The frozen image records are selected immutable image facts from hash-verified historical observations; they provide no old resource identity or execution authority. Every attempt freshly verifies current image commitments and resources. All historical outcomes remain unchanged.
 
-A pass requires complete traffic, baseline, diagnosis, zero formal actions and verified cleanup. Two consecutive complete passes must bind the same runtime surface and Product image. No live result is currently claimed.
+A pass requires complete traffic, baseline, diagnosis, zero formal actions and verified cleanup. Two consecutive complete passes must bind the same runtime surface and Product image. No complete live PASS or formal acceptance is claimed.
 
 ## Exact index identity and cleanup recovery
 
@@ -47,3 +47,12 @@ Network birth accepts the observed exact two IP-family options only for bridge/l
 ## Explicit unset and arm64 variant representation
 
 Policy v3 admits bare environment entries only for keys explicitly null in the frozen service. Null removes an inherited value; it is never equivalent to an empty or nonempty assignment. Duplicate and unknown bare entries fail closed. Image index acceptance continues to bind the exact frozen selected manifest and permits only linux/arm64 with an absent or v8 variant, as observed in the fresh image and container records. Raw evidence remains intact.
+
+
+## Attempt 5 cleanup-only OOM evidence
+
+Policy v4 adds a separately reviewed exception for the single exact Attempt 5 astronomy-db identity. It retains the normal Probe-only running OOM policy. A fixed read-only bash census executes once with numeric UID/GID 1000 and records actual PID1 credentials rather than assuming Probe credentials. Two complete matching cgroup-v2 reads verify memory.max, memory.oom.group and oom_score_adj; raw output is sealed before parsing.
+
+Every proof reload revalidates original raw protocol, before/after captures, birth/create/start chains, cleanup admission, daemon and derived process-lifetime digests. Full running network entries match start, before and after. Fresh stop/remove authorization checks the same birth and process lifetime; only the stopped PID zero lifecycle is accepted for removal. Missing or altered proof fails closed. An existing fully validated proof may be reused without a second exec; an incomplete one-shot intent prevents replay.
+
+Independent cleanup-only ALLOW binds `1b2fd87879b3f97aa3156387e370609dc735935f`. The actual census and nine cleanup command chains passed independent evidence review. This proves safe cleanup of a failed attempt, not ordinary runtime compatibility or end-to-end acceptance. Final validation bindings are recorded in the final review and PR closure.

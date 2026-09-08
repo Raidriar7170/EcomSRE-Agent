@@ -1,0 +1,42 @@
+{
+  "schema_version": "ecomsre.preflight.v4.evidence-manifest.v1",
+  "goal_sha256": "3f3751ec1b957547da508e0068d36eb1c7877d4374477820f2b370de2d16ece5",
+  "starting_main": "cc941b51cbff9287b876be49652cd0ad83030474",
+  "attempt_indexes": [
+    {
+      "attempt_id": "b8d4b937be174a87978f9d6314ac963b",
+      "original_index_sha256": "f2291b242ea430be4344522d44650753f8976084c954884d25c055f3f6339835",
+      "addendum_sha256": "b7bd76a0af6379a037c1fba784ea0b80edae4ef21c9693300645808ceaf1cc6f"
+    },
+    {
+      "attempt_id": "ca131709ca59447ba17f2445af19da5e",
+      "original_index_sha256": "023add364018468e1b3451aa2fc7785f441ef6d0f3cc0e3aaead8d5524b47f7e",
+      "addendum_sha256": "3334274cdd4448622198693e896906e859610353feb38f5a11fff267de9f47f9"
+    },
+    {
+      "attempt_id": "efa9f57de6394435ab2d0c0a68fb96a8",
+      "original_index_sha256": "b6408f0ba2786dc2fe6a1f4d130aad6837a7be47e402aeebb4b48d682339d9a7",
+      "addendum_sha256": "ac35dcfefc464a5f8f247dff5508570f3cc71b994414fd94dab9810d545937f1"
+    },
+    {
+      "attempt_id": "d23af9f0de954f0fac21622a753a357c",
+      "original_index_sha256": "3ebe1220abfe33fa51bbc63f73dce7baed45040ea6dfde84bf32209621d9a1af",
+      "addendum_sha256": "ad9a9b8bf159a85d2c54311afcd19fc9cb9f29f4a225d03b82e088a2a7e5fbf9"
+    },
+    {
+      "attempt_id": "c979432b498c4aca989c11f86ede0346",
+      "original_index_sha256": "82306a8d7f5e0526400d53cc0dae0db8a0e37ffa08d34b0d9c0400230e0ba729",
+      "addendum_sha256": "de8866d8ecb4f2b4f961913413f8376e5800b9c3e0c81cbece5b0b63481ba981"
+    }
+  ],
+  "public_attempt_hashes": {
+    "attempt-01.json": "04bf01792c4e7ccda6c93385b9dbc7847a07b904f1f7a529322dcf780d6b4083",
+    "attempt-02.json": "368a777e7ff878e47ec3dc4d5957e3484ae13d11e25b0946fd5d16acfd0bc393",
+    "attempt-03.json": "3f841c76772643fed767402f31ddb190e293a54d4ddf5159b99d4a7c781b8f36",
+    "attempt-04.json": "0bc511d57b48e78e9bf3bf03a2286f8e3d10439b98dd70f20dcdbcd1186d4a08",
+    "attempt-05.json": "65764a59968cf4928f80b6e2b0ad79041adfb3bc509b48667fd73979b8d2bf6d"
+  },
+  "final_closure": "Fresh complete BASE-to-final-reviewed-HEAD SHA-256 closure with cache_hits=0, published by hash in Draft PR body; this manifest does not self-hash",
+  "validation_review": "../../external-reviews/product-v040-preflight-v4-final-review.md",
+  "private_evidence": "Raw journals, captures, census, cleanup receipts, source/image/Compose bindings retained locally; bounded public commitments only"
+}
