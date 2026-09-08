@@ -42,6 +42,7 @@ class Resources:
         )
         self.execution_head = source_head
         self.cleanup_only = cleanup_admission is not None
+        self.cleanup_admission = cleanup_admission
         if cleanup_admission is not None:
             require(
                 cleanup_admission["goal_sha256"] == GOAL_SHA
@@ -463,6 +464,10 @@ class Resources:
         proof = self.root / "oom-proof.json"
         if role == "kafka-volume-probe" and proof.exists():
             birth["oom_proof"] = load(proof)
+        cleanup_proof = self.root / "cleanup-only-oom-proof.json"
+        if self.cleanup_only and role == "astronomy-db" and cleanup_proof.exists():
+            birth["cleanup_only_oom_proof"] = load(cleanup_proof)
+            birth["cleanup_admission"] = self.cleanup_admission
         return birth
 
     def remove(self, birth: dict[str, Any]) -> None:

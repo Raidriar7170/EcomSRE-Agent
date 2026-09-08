@@ -46,15 +46,18 @@ def resume(admission_path: Path) -> dict[str, Any]:
             [tuple(t) for t in intent["authority"]["target_plan"]],
         )
     before = resources.capture("before-reviewed-cleanup")
-    require(
-        all(
-            not r["State"]["Running"]
-            for r in before["resources"]["container"]
-            if (r["Config"].get("Labels") or {}).get("io.ecomsre.preflight.v4.attempt")
-            == identifier
-        ),
-        "CLEANUP_RESUME_EXPECTED_CREATED_ONLY",
-    )
+    running = [
+        r
+        for r in before["resources"]["container"]
+        if r["State"]["Running"]
+        and (r["Config"].get("Labels") or {}).get("io.ecomsre.preflight.v4.attempt")
+        == identifier
+    ]
+    if running:
+        from .cleanup_oom import CONTAINER, admit_running_cleanup
+
+        require([r["Id"] for r in running] == [CONTAINER], "UNADMITTED_RUNNING_CLEANUP")
+        admit_running_cleanup(resources, before)
     try:
         result = resources.cleanup(load(root / "initial-inventory-1.json"))
     except Exception as error:

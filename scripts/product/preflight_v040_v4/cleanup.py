@@ -5,6 +5,7 @@ from typing import Any
 from copy import deepcopy
 from .common import LABEL, require, digest
 from .identity import immutable, process_matches, validate_network_stage
+from .cleanup_oom import permits_cleanup
 
 
 def resource_identity(kind: str, row: dict[str, Any]) -> dict[str, Any]:
@@ -79,13 +80,20 @@ def cleanup_command(
     ):
         proof = birth.get("oom_proof") or {}
         require(
-            birth["role"] == "kafka-volume-probe"
-            and original_identity["OomKillDisable"] is False
-            and current_identity["OomKillDisable"] is None
-            and proof.get("container_id") == current["Id"]
-            and proof.get("binding_digest") == digest(inventory["binding"])
-            and proof.get("immutable_digest") == digest(immutable(current))
-            and proof.get("started_at") == current["State"].get("StartedAt"),
+            (
+                birth["role"] == "kafka-volume-probe"
+                and original_identity["OomKillDisable"] is False
+                and current_identity["OomKillDisable"] is None
+                and proof.get("container_id") == current["Id"]
+                and proof.get("binding_digest") == digest(inventory["binding"])
+                and proof.get("immutable_digest") == digest(immutable(current))
+                and proof.get("started_at") == current["State"].get("StartedAt")
+            )
+            or (
+                original_identity["OomKillDisable"] is False
+                and current_identity["OomKillDisable"] is None
+                and permits_cleanup(birth, current, inventory["binding"], attempt)
+            ),
             "CLEANUP_OOM_DRIFT",
         )
         current_identity["OomKillDisable"] = False

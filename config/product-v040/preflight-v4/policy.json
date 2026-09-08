@@ -1,5 +1,5 @@
 {
-  "schema_version": "ecomsre.preflight.v4.policy.v3",
+  "schema_version": "ecomsre.preflight.v4.policy.v4",
   "probe_namespace": "independent",
   "probe_death_before_sandbox_birth": true,
   "kafka_paths": [
@@ -25,5 +25,6 @@
   "prior_failed_attempt_recovery": "only-tracked-commitment-to-independent-daemon-event-and-exact-owned-cleanup",
   "environment_unset_policy": "only-bare-keys-explicitly-null-in-frozen-service; never-empty-or-assigned",
   "image_descriptor_policy": "exact-frozen-index-and-platform; linux-arm64-with-absent-or-v8-variant-only",
-  "network_default_options_policy": "exact-ipv4-true-ipv6-false-on-ordinary-bridge-local-only"
+  "network_default_options_policy": "exact-ipv4-true-ipv6-false-on-ordinary-bridge-local-only",
+  "cleanup_only_oom_policy": "attempt5-astronomy-db-cleanup-cgroup-v1; reviewed exact ID; nonroot read-only observer; running-to-stopped only"
 }
